@@ -9,14 +9,17 @@
  *                 blocks.  Also added routine to delete the selected Data
  *                 blocks. 
  *
- * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.6  2000/07/17 21:01:14  dennis
+ *  Minor reformat of documentation
+ *
  *  Revision 1.5  2000/07/14 14:40:09  dennis
  *  Added copy(ds) method to copy the contents of a DataSet ds
  *  to the current DataSet
  *
  *  Revision 1.4  2000/07/11 21:17:47  dennis
- *  Added method getIndex_of_data() to get the index of a specific Data block in the DataSet
+ *  Added method getIndex_of_data() to get the index of a specific Data 
+ *   block in the DataSet
  *
  *  Revision 1.3  2000/07/10 22:23:54  dennis
  *  July 10, 2000 version... many changes
