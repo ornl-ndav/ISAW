@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.45  2003/04/25 19:51:44  rmikk
+ * Fixed error. Now the Script Load command returns an integer
+ *    representing the number of DataSets and not 0
+ *
  * Revision 1.44  2003/03/21 20:16:08  rmikk
  * Deleted IObservers from some DataSets that leave the
  *   scripting system
@@ -188,7 +192,12 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     Vector Params = new Vector();      // Saves all Global parameters
                                        // added on Script
     //w. param execute
-    
+    public execOneLine( int i)
+      { 
+        initt();        
+        OL = new IObserverList();        
+        PC = new PropertyChangeSupport( this );
+       }
 
     /** 
      *  
@@ -641,7 +650,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         dss = Load( filename , varname);
         
         int length = dss.length;
-        dss = null;
+        
         if( perror >= 0 )
             perror = start;
         
@@ -649,6 +658,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             Result = new Integer( 0);
         else
             Result = new Integer( length );
+        dss = null;
         return j;
         
      
@@ -2736,6 +2746,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * Initialized the variables and workspace for a new run
      */
     public  void initt(){
+        
         BoolInfo = new Hashtable();
         BoolInfo.put("FALSE",new Boolean(false));
         BoolInfo.put("TRUE", new Boolean(true));
@@ -3427,6 +3438,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * a new data set
      */
     public void deleteIObserver( IObserver iobs ){
+
         OL.deleteIObserver( iobs );
     }
 
