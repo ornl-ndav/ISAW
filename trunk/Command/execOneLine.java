@@ -101,7 +101,7 @@ public class execOneLine implements IObservable ,
 
      String serror;                 // error message.
  
-   
+    Vector Graphs = new Vector();                // Saves all displays so as to delete them when done.
     
 
 /** 
@@ -205,6 +205,26 @@ public class execOneLine implements IObservable ,
 	    for(i = 0 ; i<ds.length ; i++)
                 System.out.println( "AddDataSet: ds[i]=:"+ds[i]);
       }
+/*
+*  Removes all displays created by the CommandPane
+*
+* @see  Display( String , String , String)
+*/
+    public void removeDisplays()
+    {  if( Graphs == null)
+	return;
+       if( Graphs.size() <= 0 )
+	   return;
+       ViewManager vm;
+       for( int i = 0 ; i < Graphs.size() ; i++)
+	   { vm  = (ViewManager)Graphs.get( i );
+             vm.destroy();
+             vm= null;
+           }  
+        vm= null;
+        Graphs= new Vector();      
+       
+    }
    
 /**
 *execute starts lexing, parsing, and executing the String S until the end of the String, a colon or
@@ -943,7 +963,9 @@ public class execOneLine implements IObservable ,
            { seterror( 1000 , ER_ImproperArgument+" "+ DisplayType );
              return;
            }
-         new JDataViewUI().ShowDataSet( ds , FrameType, X );
+	 ViewManager  vm = new ViewManager(ds , X );
+        
+         Graphs.add( vm );
       }
 
     private int  execSave( String S , int start, int end )
@@ -2150,8 +2172,8 @@ public class execOneLine implements IObservable ,
          Ivalnames[0] = "FALSE";
          Ivalnames[1] = "TRUE";
          Ivalnames[2] = null;
-        
-
+         
+         
          Fvals = null;  
          Fvalnames = null;
          lds = null;                         // May need an Empty data set somewhere but where?
