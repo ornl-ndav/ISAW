@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/04/16 20:30:17  millermi
+ *  - DataSetData no longer used as a parameter, now used to
+ *    convert DataSets to IVirtualArrayList1D objects.
+ *
  *  Revision 1.15  2004/03/15 19:33:58  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -91,18 +95,19 @@ import DataSetTools.components.View.*;
 import java.awt.event.*;
 import java.awt.*;
 
+import gov.anl.ipns.ViewTools.Components.OneD.VirtualArrayList1D;
+
 public class DataSetViewerMaker  extends DataSetViewer
   {
    DataSet ds;
    ViewerState state;
-   DataSetData viewArray;
+   VirtualArrayList1D viewArray;
    FunctionViewComponent viewComp;
-   DataSetData update_array;
 
 
    public DataSetViewerMaker( DataSet               ds, 
                               ViewerState           state, 
-                              DataSetData           viewArray, 
+                              VirtualArrayList1D    viewArray, 
                               FunctionViewComponent viewComp )
      {
       super( ds, state);
@@ -124,9 +129,7 @@ public class DataSetViewerMaker  extends DataSetViewer
       
       PrintComponentActionListener.setUpMenuItem( getMenuBar(), this);
       SaveImageActionListener.setUpMenuItem( getMenuBar(), this);
-      East.add( Box.createRigidArea(new Dimension(30,500)) );    
-      viewArray.addActionListener( new ArrayActionListener());
-      viewComp.addActionListener( new CompActionListener());
+      East.add( Box.createRigidArea(new Dimension(30,500)) );
       setLayout( new GridLayout( 1,1));
       SplitPaneWithState the_pane =
        new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
@@ -138,16 +141,19 @@ public class DataSetViewerMaker  extends DataSetViewer
 
   public void redraw( String reason)
     {
-       if ( !validDataSet() )
-         return;
-       if( reason.equals( "SELECTION CHANGED" ) )
-       {
-          update_array = new DataSetData( getDataSet() );
-          viewComp.dataChanged(update_array);
-         // viewComp.getGraphJPanel().repaint();
-       }
-       else if( reason.equals( "POINTED AT CHANGED" )) 
-          viewComp.dataChanged();
+      if ( !validDataSet() )
+        return;
+      if( reason.equals( "SELECTION CHANGED" ) )
+      {
+        viewArray = DataSetData.convertToVirtualArray(getDataSet());
+        viewComp.dataChanged(viewArray);
+        // viewComp.getGraphJPanel().repaint();
+      }
+      else if( reason.equals( "POINTED AT CHANGED" ))
+      {
+        viewArray.setPointedAtGraph( getDataSet().getPointedAtIndex() );
+        viewComp.dataChanged();
+      }
     }
     /**
      *  Change the DataSet being viewed to the specified DataSet.  Derived
@@ -159,25 +165,11 @@ public class DataSetViewerMaker  extends DataSetViewer
     public void setDataSet( DataSet ds )
     {
       super.setDataSet(ds);
-      viewArray.setDataSet(ds);
+      viewArray = DataSetData.convertToVirtualArray(ds);
+      viewComp.dataChanged(viewArray);
       repaint();
     }
-    
 
-  public class ArrayActionListener  implements ActionListener
-    {
-     public void actionPerformed( ActionEvent evt)
-       {
-         viewComp.dataChanged(new DataSetData( getDataSet() ));
-       }
-     }
-
-  public class CompActionListener implements ActionListener
-    {
-     public void actionPerformed( ActionEvent evt)
-       {
-       }
-    }
   private class ancestor_listener implements AncestorListener {
     //methods
     public void ancestorRemoved(AncestorEvent event) {
