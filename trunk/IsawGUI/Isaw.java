@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.179  2004/01/09 15:42:24  bouzekc
+ *  Added Wizards to the menu.
+ *
  *  Revision 1.178  2004/01/06 20:49:46  dennis
  *  Changed version to 1.6.1 alpha 2
  *
@@ -524,6 +527,13 @@ public class Isaw
   private static final String INSTR_VIEW_M       = "Instrument Info";
 
   private static final String MACRO_M            = "Macros";
+  
+  private static final String WIZARD_M           = "Wizards";
+  private static final String SCD_M                  = "SCD";
+  private static final String SAD_M                  = "SAD";
+  private static final String IPW_MI                  = "Initial Peaks Wizard";
+  private static final String DPW_MI                = "Daily Peaks Wizard";
+  private static final String RW_MI                   = "Reduce Wizard";
 
   private static final String OPERATOR_M         = "Operations";
 
@@ -774,6 +784,23 @@ public class Isaw
     opMenu macrosMenu = new opMenu(SP, jdt, sessionLog , Isaw.this);
     macrosMenu.setOpMenuLabel( MACRO_M );
     //macrosMenu.addStatusPane( SharedData.getStatusPane() ); //REMOVE
+    
+    //***************************************************create Wizard menu
+    JMenu wizardMenu = new JMenu( WIZARD_M );
+    JMenu SCDMenu = new JMenu( SCD_M );
+    JMenu SADMenu = new JMenu( SAD_M );
+    JMenuItem InitPeaksWItem = new JMenuItem( IPW_MI ); 
+    JMenuItem DailyPeaksWItem = new JMenuItem( DPW_MI );
+    JMenuItem ReduceWItem = new JMenuItem( RW_MI );
+    SCDMenu.add( InitPeaksWItem );
+    SCDMenu.add( DailyPeaksWItem );
+    SADMenu.add( ReduceWItem );
+    wizardMenu.add( SADMenu );
+    wizardMenu.add( SCDMenu );
+    InitPeaksWItem.addActionListener( menu_item_handler );
+    DailyPeaksWItem.addActionListener( menu_item_handler );
+    ReduceWItem.addActionListener( menu_item_handler );
+    //***************************************************end create Wizard menu
 
     JMenu hMenu               = new JMenu( HELP_M );
     JMenuItem helpAbout       = new JMenuItem( ABOUT_MI );
@@ -891,6 +918,7 @@ public class Isaw
     menuBar.add(vMenu);
     menuBar.add(oMenu);
     menuBar.add(macrosMenu);
+    menuBar.add( wizardMenu );
     menuBar.add(hMenu);
     setJMenuBar(menuBar);
   }
@@ -1245,6 +1273,14 @@ public class Isaw
       String s = ev.getActionCommand();
       if( s.equals(EXIT_MI) )
         System.exit(0);
+        
+      if( s == IPW_MI ) {
+        new Wizard.TOF_SCD.InitialPeaksWizard( false ).wizardLoader( null );
+      } else if( s == DPW_MI ) {
+        new Wizard.TOF_SCD.DailyPeaksWizard( false ).wizardLoader( null );
+      } else if( s == RW_MI ) {
+        new Wizard.TOF_SAD.ReduceWizard( false ).wizardLoader( null );
+      }  
                     
       if( s.equals( SAVE_ISAW_DATA_MI ))
       {
