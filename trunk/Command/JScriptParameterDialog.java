@@ -69,7 +69,7 @@ public class JScriptParameterDialog implements Serializable
         opDialog.getContentPane().setLayout(new GridLayout(num_param+5,1));
         Parameter param;
         JParameterGUI paramGUI;
-        op.setDefaultParameters();
+      
         for (int i = 0; i<num_param; i++)
         {  
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
