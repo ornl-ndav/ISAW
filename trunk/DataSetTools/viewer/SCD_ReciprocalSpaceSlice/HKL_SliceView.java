@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/10 17:56:35  dennis
+ * Conversions table now activated.
+ * Now sends, but does not receive POINTED_AT_CHANGED messages
+ *
  * Revision 1.6  2004/03/06 21:59:22  dennis
  * Changed to work with corrected calculation of inverse matrix.
  *
@@ -84,6 +88,7 @@ import DataSetTools.viewer.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
@@ -111,13 +116,13 @@ public class HKL_SliceView extends DataSetViewer
   private JPanel             image_container; 
   private JPanel             ivc_controls; 
   private JPanel             control_panel; 
+  private JPanel             table_panel;
   private SliceSelectorUI    slice_selector;
 
   // the ivc must be reconstructed whenever the rows and colums change.
 
   private ImageViewComponent ivc = null;
-  private DataSetXConversionsTable image_table = 
-                                   new DataSetXConversionsTable( getDataSet() );
+  private DataSetXConversionsTable image_table = null;
 
   // the Q_SliceExtractor, orientation matrix and valid flag must be 
   // reconstructed whenever the DataSet is changed
@@ -130,6 +135,17 @@ public class HKL_SliceView extends DataSetViewer
   private boolean debug = false;
 
   private CursorOutputControl cursor_output = null;
+
+  private boolean ignore_pointed_at = false;
+
+  private final  Vector3D I_VEC = new Vector3D( 1, 0, 0 );
+  private final  Vector3D J_VEC = new Vector3D( 0, 1, 0 );
+  private final  Vector3D K_VEC = new Vector3D( 0, 0, 1 );
+
+  private final double THRESHOLD = 0.9999; // if dot products are this close to
+                                           //  +- 1 then we assume the plane is
+                                           // aligned with the coordinate axes.
+
 
 /* --------------------------------------------------------------------------
  *
@@ -161,13 +177,13 @@ public class HKL_SliceView extends DataSetViewer
     common_controls.setPreferredSize( new Dimension(220,85) );
     common_controls.setLayout( new GridLayout(2,1) );
 
-    ivc_controls  = new JPanel();
+    ivc_controls = new JPanel();
     ivc_controls.setLayout( new GridLayout(1,1) );
 
-    split_pane    = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
-                                            image_container,
-                                            control_panel,
-                                           .75f );
+    split_pane = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
+                                         image_container,
+                                         control_panel,
+                                        .75f );
     setLayout( new GridLayout(1,1) );
     add ( split_pane ); 
 
@@ -179,9 +195,10 @@ public class HKL_SliceView extends DataSetViewer
     control_panel.setBorder( border );
 
     image_table = new DataSetXConversionsTable( getDataSet() );
-    JPanel table_panel = new JPanel();
+    table_panel = new JPanel();
     table_panel.setLayout( new BorderLayout() );
     JPanel filler = new JPanel();
+    image_table = new DataSetXConversionsTable( getDataSet() );
     table_panel.add( image_table.getTable(), BorderLayout.NORTH );
     table_panel.add( filler, BorderLayout.CENTER );
 
@@ -215,7 +232,11 @@ public class HKL_SliceView extends DataSetViewer
         ((ControlCheckboxButton)ctrl[i]).setButtonFont( FontUtil.LABEL_FONT );
 
       if ( ctrl[i] instanceof ControlSlider )
-        common_controls.add(ctrl[i]);
+      {
+        ControlSlider slider = (ControlSlider)ctrl[i];
+        slider.setValue(30);
+        common_controls.add(slider);
+      }
       else
         controls.add(ctrl[i]);
     }
@@ -250,6 +271,20 @@ public class HKL_SliceView extends DataSetViewer
     if ( extractor == null || ivc == null )
       return;
 
+                                                  // for now ignore pointed at
+    if ( reason == IObserver.POINTED_AT_CHANGED )     
+      return;
+                                                  // for now ignore selection 
+    if ( reason == IObserver.SELECTION_CHANGED )     
+      return;
+/*
+    if ( ignore_pointed_at && reason == IObserver.POINTED_AT_CHANGED  )
+    {
+      ignore_pointed_at = false; 
+      return; 
+    }
+*/
+
     if ( image_container.getComponent(0) instanceof JLabel )
     {
       image_container.removeAll();
@@ -275,6 +310,11 @@ public class HKL_SliceView extends DataSetViewer
     super.setDataSet( ds );
 
     resetBorderTitles();
+    table_panel.removeAll();
+    image_table = new DataSetXConversionsTable( getDataSet() );
+    JPanel filler = new JPanel();
+    table_panel.add( image_table.getTable(), BorderLayout.NORTH );
+    table_panel.add( filler, BorderLayout.CENTER );
 
     valid_ds = isValid_SCD_DataSet();
     orientation_matrix = getOrientationMatrix();
@@ -357,6 +397,7 @@ public class HKL_SliceView extends DataSetViewer
   /*
    *  Determine appropriate axes and title for the slice 
    */
+/*
   private void setAxesAndTitle( IVirtualArray2D va2D )
   {
     SlicePlane3D plane = slice_selector.getPlane();
@@ -381,7 +422,7 @@ public class HKL_SliceView extends DataSetViewer
       setGeneralAxis( AxisInfo.Y_AXIS, -height/2.0f, height/2.0f, v, va2D );
     }
   }
-
+*/
 
   /* --------------------------- setGeneralAxis -------------------------- */
   /*
@@ -424,31 +465,34 @@ public class HKL_SliceView extends DataSetViewer
   {
     String title = null;
 
-    if ( vector.dot( new Vector3D( 1, 0, 0 ) ) >= 0.99999 )
+    float shifted_min = min;
+    float shifted_max = max;
+
+    if ( vector.dot( new Vector3D( 1, 0, 0 ) ) >= THRESHOLD )
     {
       title = "H Index";
-      min += origin.get()[0];
-      max += origin.get()[0];
+      shifted_min += origin.get()[0];
+      shifted_max += origin.get()[0];
     }
 
-    else if ( vector.dot( new Vector3D( 0, 1, 0 ) ) >= 0.99999 )
+    else if ( vector.dot( new Vector3D( 0, 1, 0 ) ) >= THRESHOLD )
     {
       title = "K Index";
-      min += origin.get()[1];
-      max += origin.get()[1];
+      shifted_min += origin.get()[1];
+      shifted_max += origin.get()[1];
     }
 
-    else if ( vector.dot( new Vector3D( 0, 0, 1 ) ) >= 0.99999 )
+    else if ( vector.dot( new Vector3D( 0, 0, 1 ) ) >= THRESHOLD )
     {
       title = "L Index";
-      min += origin.get()[2];
-      max += origin.get()[2];
+      shifted_min += origin.get()[2];
+      shifted_max += origin.get()[2];
     }
 
     if ( title != null )
-      va2D.setAxisInfo( axis_num, min, max, "", title, true );
+      va2D.setAxisInfo( axis_num, shifted_min, shifted_max, "", title, true );
     else 
-      setGeneralAxis( axis_num, min, max, vector, va2D );
+      setGeneralAxis( axis_num, shifted_min, shifted_max, vector, va2D );
   }
 
 
@@ -731,6 +775,54 @@ public class HKL_SliceView extends DataSetViewer
   }
 
 
+  /* --------------------- MapDisplayedPointToQ ---------------------------- */
+  /*
+   *  Map a point on the image display to to Q.
+   */
+  private Vector3D MapDisplayedPointToQ( floatPoint2D current_point )
+  {
+    // find point in 3D by finding deviation from the center point
+    // in 3D.
+    float min = ivc.getAxisInformation( AxisInfo.X_AXIS ).getMin();
+    float max = ivc.getAxisInformation( AxisInfo.X_AXIS ).getMax();
+    float x_ave = (min + max)/2;
+
+    min = ivc.getAxisInformation( AxisInfo.Y_AXIS ).getMin();
+    max = ivc.getAxisInformation( AxisInfo.Y_AXIS ).getMax();
+    float y_ave = (min + max)/2;
+
+    //
+    // First make sure plane is in same units as the Display mode
+    //
+    SlicePlane3D plane = slice_selector.getPlane();
+    if ( slice_selector.getDisplayMode() != slice_selector.getSliceMode() )
+    {
+      if ( slice_selector.getSliceMode() == SliceSelectorUI.HKL_MODE )
+        plane = MapPlaneToQ( plane );
+      else
+        plane = MapPlaneToHKL( plane );
+    }
+
+    Vector3D point = plane.getOrigin();
+    Vector3D u     = plane.getU();
+    Vector3D v     = plane.getV();
+
+    u.multiply( current_point.x - x_ave );
+    v.multiply( current_point.y - y_ave );
+
+    point.add( u );
+    point.add( v );
+  
+    //
+    //  Now map point to Q.
+    //
+    if ( slice_selector.getDisplayMode() == SliceSelectorUI.HKL_MODE )
+      orientation_matrix.apply_to( point, point );
+
+     return point;
+  }
+
+
   /* ----------------------- MapPlaneToHKL ------------------------------ */
   /*
    *  Map the specified plane from Q to HKL, as nearly as possible.
@@ -762,24 +854,16 @@ public class HKL_SliceView extends DataSetViewer
    */
   private boolean isAligned( SlicePlane3D plane )
   {
-    final double THRESHOLD = 0.9999;   // if dot products are this close to
-                                       //  +- 1 then we assume the plane is
-                                       // aligned with the coordinate axes.
-
-    Vector3D i_vec = new Vector3D( 1, 0, 0 );
-    Vector3D j_vec = new Vector3D( 0, 1, 0 );
-    Vector3D k_vec = new Vector3D( 0, 0, 1 );
-
     Vector3D u = plane.getU();
-    if (  Math.abs( u.dot( i_vec ) ) < THRESHOLD  &&
-          Math.abs( u.dot( j_vec ) ) < THRESHOLD  &&
-          Math.abs( u.dot( k_vec ) ) < THRESHOLD   )
+    if (  Math.abs( u.dot( I_VEC ) ) < THRESHOLD  &&
+          Math.abs( u.dot( J_VEC ) ) < THRESHOLD  &&
+          Math.abs( u.dot( K_VEC ) ) < THRESHOLD   )
       return false; 
     
     Vector3D v = plane.getV();
-    if (  Math.abs( v.dot( i_vec ) ) < THRESHOLD  &&
-          Math.abs( v.dot( j_vec ) ) < THRESHOLD  &&
-          Math.abs( v.dot( k_vec ) ) < THRESHOLD   )
+    if (  Math.abs( v.dot( I_VEC ) ) < THRESHOLD  &&
+          Math.abs( v.dot( J_VEC ) ) < THRESHOLD  &&
+          Math.abs( v.dot( K_VEC ) ) < THRESHOLD   )
       return false;   
 
                    // since the planes u,v,n vectors are orthonormal, we don't
@@ -852,7 +936,43 @@ public class HKL_SliceView extends DataSetViewer
       String message = e.getActionCommand();
       if ( message.equals( IViewComponent.POINTED_AT_CHANGED ) )
       {
-        setCurrentPoint( ivc.getPointedAt() );
+        floatPoint2D current_point = ivc.getPointedAt();
+        setCurrentPoint( current_point );
+
+        if ( extractor != null )
+        {
+          Vector3D q_point = MapDisplayedPointToQ( current_point );
+          Vector calculators = extractor.getCalculators();
+          boolean found = false;
+          int i = 0;
+          while ( !found && i < calculators.size() )
+          {
+            VecQToTOF transformer = (VecQToTOF)(calculators.elementAt(i));
+            float value = transformer.intensityAtQ( q_point );
+            if ( value >= 0 )
+            {                                // found the point, for this det
+               found = true;
+               float rc_tof[] = transformer.QtoRowColTOF( q_point );   
+               if ( rc_tof != null )
+               {
+                 IDataGrid grid = transformer.getDataGrid();
+                 Data d = grid.getData_entry( (int)rc_tof[0], (int)rc_tof[1] );
+                 int index = getDataSet().getIndex_of_data( d );
+                 if ( index >= 0 ) 
+                 {
+                   getDataSet().setPointedAtIndex( index );
+                   getDataSet().setPointedAtX( rc_tof[2] );
+
+                   image_table.showConversions( rc_tof[2], index );
+                   ignore_pointed_at = true;
+                   getDataSet().notifyIObservers(IObserver.POINTED_AT_CHANGED);
+                 }
+               } 
+            }
+            i++;
+          }
+
+        }
       }
     }
   }
