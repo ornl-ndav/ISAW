@@ -4,6 +4,9 @@
  *  Maintain list of generic operators and create instance of them as needed.  
  *
  *  $Log$
+ *  Revision 1.12  2000/11/07 15:52:37  dennis
+ *  Added "echo" operator.
+ *
  *  Revision 1.11  2000/10/03 21:28:51  dennis
  *  Renamed FudgeFactor operator to DetectorNormalizationFactors operator
  *
@@ -43,7 +46,8 @@ public class GenericOperatorList implements Serializable
                                           "OneHist",
                                           "DetNormFac",
                                           "PrintDS",
-                                          "Pause"    };
+                                          "Pause",
+                                          "Echo"    };
 
   /**
    *  Private constructor ... don't let anyone instantiate this class
@@ -137,6 +141,9 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals( "Pause" ) )
       return new pause();
+
+    else if ( op_name.equals( "Echo" ) )
+      return new EchoObject();
 
      return null;
   }
