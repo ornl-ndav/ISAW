@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/03/05 20:46:49  dennis
+ *  Changed default attribute mode to FULL_ATTRIBUTES in the utility
+ *  methods that build Command objects.
+ *  Added method to make a GetDataCommand object, taking all options
+ *  as parameters.
+ *
  *  Revision 1.12  2003/03/04 20:27:52  dennis
  *  Now resets "server_alive" flag to false if the connection to the
  *  server is lost.
@@ -347,16 +353,16 @@ abstract public class RemoteDataRetriever extends    Retriever
 
 
 /**
- *  Get a CommandObject configured with the GET_DS_TYPES.  If the server is
- *  the LiveDataServer, the file name is ignored.
+ *  Get a GetDataCommand object configured with the GET_DS_TYPES command.
+ *  If the server is the LiveDataServer, the file name is ignored.
  *
  *  @param  file_name  String containing the fully qualified name of the
  *                     file. 
  *
- *  @return a CommandObject requesting the list of DataSet types on
+ *  @return a GetDataCommand requesting the list of DataSet types from 
  *          the LiveDataServer server.
  */
-  protected CommandObject getDS_Types( String file_name )
+  protected GetDataCommand getDS_Types( String file_name )
   {
     String user_name = System.getProperty("user.name");
     String password  = "dummy password";
@@ -367,19 +373,19 @@ abstract public class RemoteDataRetriever extends    Retriever
                               CommandObject.ALL_IDS,
                               0,0, 
                               1, 
-                              0 );
+                              Attribute.FULL_ATTRIBUTES );
   }
 
 /**
- *  Get a CommandObject configured with the GET_DS_NAME command. If the 
- *  server is the LiveDataServer, the file name is ignored. 
+ *  Get a GetDataCommand object configured with the GET_DS_NAME command.  
+ *  If the server is the LiveDataServer, the file name is ignored. 
  *
  *  @param  file_name  String containing the fully qualified name of the
  *                     file. 
  *
  *  @param  ds_num  the number of the DataSet whose name is requested.
  * 
- *  @return a CommandObject requesting the name of a DataSet on 
+ *  @return a GetDataCommand requesting the name of a DataSet from 
  *          the LiveDataServer server.  
  */ 
   protected CommandObject getDS_Name( String file_name, int ds_num )
@@ -393,11 +399,11 @@ abstract public class RemoteDataRetriever extends    Retriever
                               CommandObject.ALL_IDS,
                               0,0, 
                               1, 
-                              0 );
+                              Attribute.FULL_ATTRIBUTES );
   }
 
 /**
- *  Get a CommandObject configured to get an entier DataSet.  If the
+ *  Get a GetDataCommand object configured to get an entire DataSet.  If the
  *  server is a LiveDataServer, the file name is ignored.
  *
  *  @param  file_name  String containing the fully qualified name of the
@@ -405,10 +411,10 @@ abstract public class RemoteDataRetriever extends    Retriever
  *
  *  @param  ds_num  the number of the DataSet requested.
  * 
- *  @return a CommandObject requesting a complete DataSet on       
+ *  @return a GetDataCommand requesting a complete DataSet from       
  *          the LiveDataServer server.
  */ 
-  protected CommandObject getDS( String file_name, int ds_num )
+  protected GetDataCommand getDS( String file_name, int ds_num )
   {
     String user_name = System.getProperty("user.name");
     String password  = "dummy password";
@@ -419,7 +425,52 @@ abstract public class RemoteDataRetriever extends    Retriever
                               CommandObject.ALL_IDS,
                               0,0, 
                               1, 
-                              0 );
+                              Attribute.FULL_ATTRIBUTES );
+  }
+
+
+/**
+ *  Get a GetDataCommand object configured to get a specified portion of the 
+ *  specified DataSet.  If the server is a LiveDataServer, the file name is
+ *  ignored.
+ *
+ *  @param  file_name     String containing the fully qualified name of the
+ *                        file.
+ *  @param  ds_num        The number of the DataSet to be returned.
+ *  @param  group_ids     String listing the required group IDs.
+ *  @param  min_x         The start of the interval of x values for which
+ *                        the data is needed.
+ *  @param  max_x         The end of the interval of x values for which
+ *                        the data is needed.
+ *  @param  rebin_factor  Integer giving the number of adjacent bins that
+ *                        should be combined.
+ *  @param  attr_mode     Integer code for number of attributes requested,
+ *                        one of:
+ *                           Attribute.NO_ATTRIBUTES
+ *                           Attribute.ANALYSIS_ATTRIBUTES
+ *                           Attribute.FULL_ATTRIBUTES
+ *
+ *  @return a GetDataCommand requesting a portion of a DataSet from       
+ *          the LiveDataServer server.
+ */
+  public GetDataCommand getDataSet( String file_name,
+                                    int    ds_num,
+                                    String group_ids,
+                                    float  min_x,
+                                    float  max_x,
+                                    int    rebin_factor,
+                                    int    attr_mode      )
+  {
+    String user_name = System.getProperty("user.name");
+    String password  = "dummy password";
+    return new GetDataCommand( CommandObject.GET_DS,
+                              user_name, password,
+                              file_name,
+                              ds_num,
+                              group_ids,
+                              min_x, max_x,
+                              rebin_factor,
+                              attr_mode );
   }
 
 
