@@ -32,6 +32,12 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.9  2001/09/27 19:15:04  dennis
+ *  After converting the DataSet to energy loss, the "x" values are very
+ *  non-uniform.  When the DataSet is subsequently converted to a function,
+ *  the "y" values are now divided by the width of the bins, to reflect a
+ *  density function (counts per unit x) rather than a raw histogram (counts).
+ *
  *  Revision 1.8  2001/09/14 20:50:14  dennis
  *  Fixed calculation of G to use the same expression when e_transf < 0 as
  *  when e_transf > 0.  Clamp exp( -e_transf/kt ) to exp( 10 ) when
@@ -261,7 +267,7 @@ public class SpectrometerGeneralizedEnergyDistributionFunction
     // ConvertHistogramToFunction for the new energy loss DataSet
 
     // System.out.println("\n\nConvertHistogramToFunction start...");
-    op = new ConvertHistogramToFunction( new_ds, false, false );
+    op = new ConvertHistogramToFunction( new_ds, true, false );
     op.getResult();
       
     // ResampleDataSet for the new energy loss DataSet
