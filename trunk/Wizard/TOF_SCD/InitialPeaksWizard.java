@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2003/12/15 02:47:33  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.14  2003/11/05 02:20:30  bouzekc
  * Changed to work with new Wizard and Form design.
  *
@@ -81,24 +84,11 @@
  */
 package Wizard.TOF_SCD;
 
-import DataSetTools.operator.*;
-
 import DataSetTools.parameter.*;
-
-import DataSetTools.util.*;
 
 import DataSetTools.wizard.*;
 
 import Operators.TOF_SCD.*;
-
-import java.awt.*;
-import java.awt.event.*;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
 
 
 /**
