@@ -262,9 +262,9 @@ public class CommandPane  extends JPanel
 
            Commands = new JTextArea( 7 , 50 ) ; 
            Commands.setLineWrap( true ) ; 
-           Commands.setFont(FontUtil.MONO_FONT ) ;
+           //Commands.setFont(FontUtil.MONO_FONT ) ;
            Immediate = new JTextArea( 5 , 50 ) ; 
-           Immediate .setFont(FontUtil.MONO_FONT ) ;
+           //Immediate .setFont(FontUtil.MONO_FONT ) ;
            Immediate.addKeyListener( new MyKeyListener(this)) ;        
 	 
            JSplitPane JPS = new JSplitPane(JSplitPane.VERTICAL_SPLIT) ; 
@@ -367,18 +367,23 @@ public class CommandPane  extends JPanel
               new IsawGUI.Util().appendDoc(logDocument , S);
             }
        ExecLine.initt() ; 
+       ExecLine.resetError();
        perror = -1 ; 
-       line = executeBlock( Doc , 0 ,  true  ) ; 
+       line = executeBlock( Doc , 0 ,  true ,0 ) ; 
+       if( perror < 0)seterror( ExecLine.getErrorCharPos(),ExecLine.getErrorMessage());
+       if( perror >= 0 ) 
+          if( lerror < 0 )lerror = line;
        if( line  <  E.getElementCount() )
 	   if( perror < 0 )
               {seterror(  line , "Did Not finish program" ) ; 
                lerror = line;
               }
-      
-          if( MacroDocument == null)
-	      new IsawGUI.Util().appendDoc( logDocument , "#$ End Program Run");
-         else
-              new IsawGUI.Util().appendDoc(logDocument , "#$ End Macro Run");        
+       
+
+       if( MacroDocument == null)
+	  new IsawGUI.Util().appendDoc( logDocument , "#$ End Program Run");
+       else
+          new IsawGUI.Util().appendDoc(logDocument , "#$ End Macro Run");        
       
          
     }
@@ -411,45 +416,50 @@ public class CommandPane  extends JPanel
              if( perror >= 0 )
                 serror = ExecLine.getErrorMessage()+" in Parameters" ;
              if( perror >= 0)
-               {lerror = 0;
-                return;
+               {lerror = i;
+                //return;  must reset dataset titles
                }
             }
 
        }
-      new IsawGUI.Util().appendDoc(logDocument , "#$ Start Macro Run");
-      S="(";
-      int line;
-      if( Args != null)
-      for( i=0; i< Args.length ; i++)
-         {S = S + Args[i].getValue().toString();
-          if( i+1 < Args.length) S = S+",";
+      int k =lerror; 
+      if( perror < 0)
+        { new IsawGUI.Util().appendDoc(logDocument , "#$ Start Macro Run");
+          S="(";
+          int line;
+          if( Args != null)
+          for( i=0; i< Args.length ; i++)
+             {S = S + Args[i].getValue().toString();
+              if( i+1 < Args.length) S = S+",";
+             }
+           S = S + ")";
+          new IsawGUI.Util().appendDoc(logDocument , "Args ="+S);
+
+          Element E = MacroDocument.getDefaultRootElement() ; 
+          for( line = 0 ; line < E.getElementCount(); line ++)
+             { S = getLine( MacroDocument , line);
+                new IsawGUI.Util().appendDoc(logDocument , S);
+              }
+
+          k = executeBlock( MacroDocument ,2 ,true ,0) ;
+          new IsawGUI.Util().appendDoc(logDocument , "#$ End Macro Run");
          }
-       S = S + ")";
-        new IsawGUI.Util().appendDoc(logDocument , "Args ="+S);
 
-       Element E = MacroDocument.getDefaultRootElement() ; 
-         for( line = 0 ; line < E.getElementCount(); line ++)
-           { S = getLine( MacroDocument , line);
-              new IsawGUI.Util().appendDoc(logDocument , S);
-            }
-
-     int k = executeBlock( MacroDocument ,2 ,true ) ;
-  
      for(i = 0 ; i < (vnames.size()/2) ; i++)
-      {DataSet ds =(DataSet)(vnames.get( 2*i + 1));
-       ds.setTitle( vnames.get( 2*i ).toString() );
-      }
-    seterror( ExecLine.getErrorCharPos(), ExecLine.getErrorMessage());
+       {DataSet ds =(DataSet)(vnames.get( 2*i + 1));
+        ds.setTitle( vnames.get( 2*i ).toString() );
+       }
+    if( perror < 0)
+         seterror( ExecLine.getErrorCharPos(), ExecLine.getErrorMessage());
     if( (perror >= 0) && (lerror <  0 ))
         lerror = k;
         
-     new IsawGUI.Util().appendDoc(logDocument , "#$ End Macro Run");
-
-    }
-   private int executeBlock ( Document Doc , int start ,  boolean exec )
-     { int line ; 
+      }
+   private int executeBlock ( Document Doc , int start ,  boolean exec ,int onerror )
+     { int line ;
+      
        String S ; 
+     
       if( Doc == null)
          { seterror (0 , "No Document");
            if( Debug)System.out.println("NO DOCUMENT");
@@ -461,15 +471,7 @@ public class CommandPane  extends JPanel
        line = start ; 
        if(Debug)System.out.print( "In exeBlock line ,ex=" + line+","+exec + perror ) ; 
        while ( ( line < E.getElementCount() ) && ( perror < 0 ) )
-	   {//F =  E.getElement( line ) ; 
-            //try
-	      //{
- 	       //S = Doc.getText( F.getStartOffset() , F.getEndOffset() - F.getStartOffset() ) ; 
-              //}
-           // catch( BadLocationException s )
-		//{ seterror( 1000 ,  "Internal Error p" ) ; 
-		  //return line ; 
-               // }
+	   {
            S = getLine( Doc , line );
            
            
@@ -493,18 +495,24 @@ public class CommandPane  extends JPanel
             else if( S.trim().indexOf( "#") == 0 )
                {
                }
-            else if( S.toUpperCase().trim().indexOf( "FOR " ) == 0 )
-	      line = executeForBlock ( Doc , line , exec ) ; 
-	    else if ( S.toUpperCase().trim().indexOf( "ENDFOR" ) == 0 )
-	      return line ; 
-	    else if( S.toUpperCase().trim().indexOf( "ON ERROR" ) == 0 )
-	       line = executeErrorBlock( Doc , line , true ) ; 
             else if( S.toUpperCase().trim().indexOf( "ELSE ERROR" ) == 0 )
 	       return line ; 
 	    else if( S.toUpperCase().trim().indexOf( "END ERROR" ) == 0 )
 	      return line ; 
-            else if( S.toUpperCase().trim().indexOf("IF ") == 0)
-               line = executeIfStruct( Doc, line, true );
+            else if( S.toUpperCase().trim().indexOf( "ON ERROR" ) == 0 )
+	       line = executeErrorBlock( Doc , line , exec ) ;               
+
+            else if( onerror > 0 )
+              {
+              }
+            else if( S.toUpperCase().trim().indexOf( "FOR " ) == 0 )
+	      line = executeForBlock ( Doc , line , exec ,onerror ) ; 
+	    else if( S.toUpperCase().trim().indexOf( "ENDFOR" ) == 0 )
+	      return line ; 
+	             else if( S.toUpperCase().trim().indexOf("IF ") == 0)
+               {line = executeIfStruct( Doc, line, exec , onerror );              
+                
+               }
             else if( S.toUpperCase().trim().equals("ELSE"))
                return line;
             else if( S.toUpperCase().trim().indexOf("ELSEIF") == 0)
@@ -520,7 +528,7 @@ public class CommandPane  extends JPanel
              }
           
             if( perror >= 0 )
-	      {lerror = line ; 
+	      {if( lerror < 0 )lerror = line ; 
 		  if(Debug)
                     System.out.println("errbot"+line) ; 
 		return line ; 
@@ -586,7 +594,7 @@ public class CommandPane  extends JPanel
        return Res;
       }
 
-    private int executeForBlock( Document Doc , int start , boolean execute )
+    private int executeForBlock( Document Doc , int start , boolean execute, int onerror )
     { String var ; 
       Command.ListHandler LL ; 
       int i , j , k ; 
@@ -615,12 +623,16 @@ public class CommandPane  extends JPanel
        String Iter = SubsRangeVars( S.substring( j + 4 ).trim());
        if(Debug)
 	   System.out.println("Iter = "+ Iter);
+       
        if( (Iter == null) || ( perror >= 0) )
+         if( onerror == 0)
 	   { if(perror >=  0) {perror = 0;} else serror = "Improper Iterator";
              seterror ( perror + j+4 , serror );
              lerror = start;
-	     return start;
+	     //return start;
            }
+          else
+            execute = false;
        
        LL = new Command.ListHandler(Iter ) ; 
        LL.start() ; 
@@ -629,15 +641,15 @@ public class CommandPane  extends JPanel
        while( (NextI != null ) && ( line < E.getElementCount() ) )
 	   {S = var + " = " + NextI ; 
             NextI =  LL.next() ; 
-	    i = ExecLine.execute ( S , 0 , S.length() ) ; 
-            if( perror >= 0 )
+	    if( execute) i = ExecLine.execute ( S , 0 , S.length() ) ; 
+            if( (perror >= 0) && (onerror == 0) )
 		{ return start ; 
                 }
-            line = executeBlock( Doc , start + 1 , execute ) ; 
-	    if ( perror >= 0 )
+            if(execute) line = executeBlock( Doc , start + 1 , execute ,0 ) ; 
+	    if ( (perror >= 0) && (onerror == 0) )
 		return line ; 
             if( line >= E.getElementCount() )
-	      { seterror( 0 , "No EndFor for a FORb" + S ) ; 
+              { seterror( 0 , "No EndFor for a FORb" + S ) ; 
 	        return line ; 
               }
          
@@ -667,7 +679,7 @@ public class CommandPane  extends JPanel
       int i , j , k ; 
       int line ; 
        String S ; 
-       boolean mode ; 
+       int mode ; 
        Element  E ,
 	        F ;  
        if(Debug) System.out.println("In exec Error" ) ; 
@@ -686,18 +698,19 @@ public class CommandPane  extends JPanel
 	   {seterror ( 0, "internal error d" ) ; 
 	    return start ; 
            }
-       line = executeBlock( Doc , start + 1 , true ) ; 
+       line = executeBlock( Doc , start + 1 , execute, 0 ) ; 
        if( perror >= 0 )
 	 {ExecLine.resetError() ; 
 	   perror = -1 ; 
            serror="";
-         if(Debug) System.out.println("In ExERROR ERROR occured");
-  	   line = executeBlock( Doc , line , false ) ; 
-          mode  = true ;    
-          if(Debug) System.out.println("After EXERROR ocurred "+line);
+           if(Debug) System.out.println("In ExERROR ERROR occured");
+          
+  	   line = executeBlock( Doc , line , false, 1 ) ; 
+           mode  = 0  ;    
+           if(Debug) System.out.println("After EXERROR ocurred "+line);
           
          }
-       else mode = false ; 
+       else mode = 1 ; 
  
        if( line >= E.getElementCount() )
          {seterror ( 0 , " No ENDERROR for On Error" ) ; 
@@ -711,11 +724,23 @@ public class CommandPane  extends JPanel
 	  return start ; 
 	 }
       if( S.toUpperCase().trim().equals( "ELSE ERROR" ) )
-	{ 
-          line =executeBlock( Doc , line + 1 ,mode ) ;  
+	{ if(Debug)
+            System.out.println("ELSE ERROR on line="+line+","+execute+mode);
+          line =executeBlock( Doc , line + 1 , execute, mode ) ;
+          
+          if( perror >= 0)
+            {lerror = line;
+             if(Debug) System.out.println( "ELSE ERROR ERROR ob lin"+line);
+             int pperror = perror;
+             perror = -1;
+             line = executeBlock( Doc, line, execute, 1);
+             perror = pperror;
+             if(Debug)System.out.println("ELSE ERROR ERROR2, line,perror ="+line+","+perror);
+            }
+            
 	}
       else if( S.toUpperCase().trim().equals( "END ERROR" ) )
-	  {   if(Debug)System.out.println("ENd ERROR occurred"+perror+","+line);
+	  {if(Debug)System.out.println("ENd ERROR occurred"+perror+","+line);
             return line ; 
           
         }
@@ -724,7 +749,8 @@ public class CommandPane  extends JPanel
 	   return line ;  
 	}
 
-         
+    
+          
 
      S = getLine( Doc , line );
      if( S == null )
@@ -733,12 +759,18 @@ public class CommandPane  extends JPanel
 	 }
      if( !S.toUpperCase().trim().equals( "END ERROR") )
       {seterror( 0 , " NO ELSE or END Error for On ERRor" ) ;  }
-      return line ;  
+
+      if(Debug)System.out.println("ENd ERROR occurred"+perror+","+line+","+lerror);
+
+      if( perror < 0)
+          return line ; 
+      else 
+          return line+1; // in case nested on errors 
       
 
 
       }
-  private int executeIfStruct( Document Doc, int line, boolean execute )
+  private int executeIfStruct( Document Doc, int line, boolean execute, int onerror )
      { String S;
        int i , 
            j;
@@ -755,7 +787,7 @@ public class CommandPane  extends JPanel
         } 
       i = S.toUpperCase().indexOf( "IF " ) ;
       if( i < 0)
-        {perror = 0;
+        { perror = 0;
           serror = "Internal Error 12";
           lerror = line;
           return line;
@@ -764,7 +796,7 @@ public class CommandPane  extends JPanel
       j = S.length();
       if( S.trim().length() >= 8 )
         if( S.trim().substring( S.trim().length() - 5 ).equals( " THEN" ) )
-          j = S.trim().length() - 5 ;
+          j = S.toUpperCase().lastIndexOf("THEN") ;
 
       boolean b;
       if( execute )
@@ -776,7 +808,7 @@ public class CommandPane  extends JPanel
       if( perror >= 0 )
          return line;
      
-      j = executeBlock ( Doc , line + 1 , b && execute ) ;
+      j = executeBlock ( Doc , line + 1 , b && execute , 0 ) ;
       if( Debug)
            System.out.println( "ExIf::aft exe 1st block, perror=" + perror +serror );
       if( perror >= 0 ) 
@@ -792,12 +824,12 @@ public class CommandPane  extends JPanel
       int x=0;
       if( S.toUpperCase().trim().indexOf( "ELSE" ) == 0)
         if( S.toUpperCase().trim().indexOf( "ELSEIF" ) == 0 )
-          { j = executeIfStruct( Doc , j , !b && execute );  
+          { j = executeIfStruct( Doc , j , !b && execute ,0);  
             return j;
 	             
           }
         else 
-            {j = executeBlock( Doc , j+1 , !b && execute );
+            {j = executeBlock( Doc , j+1 , (!b) && execute, 0 );
              x = 2;
             }
       if(Debug) 
@@ -1013,7 +1045,7 @@ public class CommandPane  extends JPanel
       char op;
       Object Result;
 
-     S= delSpaces(S);
+     if(start < S.length())S= S.substring(0,start)+delSpaces(S.substring(start));     
      if( Debug) 
         System.out.println( "START eval" + start + "," + end );
      if (S == null) 
@@ -1109,7 +1141,7 @@ public class CommandPane  extends JPanel
 
     i = findQuote( S, 1, start, "<>=", "(){}[]"  );
     if( Debug ) 
-      System.out.println( "ineq at i, start=" + i + "," + start );
+      System.out.println( "ineq at i, start=" + i + "," + start +":"+S+":");
     if( i < end )
        {   perror = -1;
 	  j = ExecLine.execute ( S , start , i );
@@ -1125,7 +1157,7 @@ public class CommandPane  extends JPanel
                return false;
              }
            
-          
+         
           
           if (i + 1 >= end ) 
             return false;
@@ -1615,6 +1647,8 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
           {MacroDocument = null;
             return;
           }
+      
+         
        
         StatusLine.setText( "" ) ; 
         perror = -1 ; 
@@ -1627,7 +1661,8 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
                                     perror+"on line"+lerror); 
           }
         else
-         {  execute( doc ) ; 
+         { MacroDocument = null; 
+           execute( doc ) ; 
           }
 	MacroDocument = null;
         if( perror >= 0 )
@@ -1652,7 +1687,7 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
       // Commands.setText("");
       // Immediate.setText("");
        ExecLine.removeDisplays();
-       //StatusLine.setText("");
+       StatusLine.setText("");
        ExecLine.initt();
       }
     else if( e.getSource().equals( Save ) || e.getSource().equals( Open ))
@@ -1904,7 +1939,7 @@ private int findQuote(String S, int dir ,int start, String SrchChars,String brcp
             else if( quote )
                { }
            
-            else if(SrchChars.indexOf(c)>=0)
+            else if(SrchChars.indexOf(c) >= 0)
                {if( brclevel == 0)
                    return i;
                }
