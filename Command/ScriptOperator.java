@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2003/03/25 22:49:13  pfpeterson
+ * Added a EOL when printing the return of getResult in main.
+ *
  * Revision 1.21  2003/03/10 19:27:06  pfpeterson
  * Uses StringBuffer rather than Document. Also modernized some code.
  *
@@ -482,7 +485,7 @@ public class ScriptOperator extends GenericOperator
             dialogbox=true;
         }else{
             Object XX = SO.getResult();
-            System.out.print("Result =" +XX );        
+            System.out.println("Result =" +XX );        
         }
 
         if( SO != null)
