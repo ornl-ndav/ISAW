@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/05/06 17:33:36  rmikk
+ * Added a setTime Method to the interface
+ * Added an argument to the Selected2D constructor
+ *
  * Revision 1.12  2004/03/15 19:33:59  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -196,11 +200,11 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
         if (D != null) {
             for (int i = 0; i < tbArray.getNumRows(); i++) {
                 if (tbArray.getDataValue(i, 0) == GroupID)
-                    return new SelectedData2D(i, 0);
+                    return new SelectedData2D(i, 0,PointedAtTime);
             }
           
         }
-        return new SelectedData2D(-1, -1);
+        return new SelectedData2D(-1, -1, Float.NaN);
     }
 
 
@@ -231,8 +235,15 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
 
         }
     }
-
-
+   
+   /**
+    *  Sets the time from an external source, like pointed at
+    *  Does nothing
+    */
+   public void setTime( float time){
+   	
+   	
+   }
 
     //-------------------- IArrayMaker Methods --------------------------------
  
