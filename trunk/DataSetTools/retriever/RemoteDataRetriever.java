@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/08/14 15:12:38  dennis
+ *  Added status messages for LiveDataServer status.
+ *
  *  Revision 1.5  2001/08/13 23:29:59  dennis
  *  Now has separate error messages for bad user name and bad password.
  *  Added String form for error messages, and method error_message()
@@ -76,6 +79,10 @@ abstract public class RemoteDataRetriever extends    Retriever
   public static final int BAD_PASSWORD         = -3;
   public static final int SERVER_DOWN          = -4;
   public static final int WRONG_SERVER_TYPE    = -5;
+  public static final int DATA_OLD             = -6;
+  public static final int DATA_LIVE            = -7;
+  public static final int DAS_OFFLINE          = -8;
+  public static final int NOT_CONNECTED        = -9;
 
   public static final String SERVER_OK_STRING         = "Server OK";
   public static final String SERVER_ERROR_STRING      = "Server Error: ";
@@ -85,13 +92,21 @@ abstract public class RemoteDataRetriever extends    Retriever
   public static final String BAD_PASSWORD_STRING      = "Wrong Password";
   public static final String SERVER_DOWN_STRING       = "Server Down";
   public static final String WRONG_SERVER_TYPE_STRING = "Wrong Server Type";
+  public static final String DATA_OLD_STRING          = "Data Old: ";
+  public static final String DATA_LIVE_STRING         = "Data Live: ";
+  public static final String DAS_OFFLINE_STRING       = "DAS OFFLINE: ";
+  public static final String NOT_CONNECTED_STRING     = "NOT Connected";
 
   private static final String error_messages[] = { NO_DATA_SETS_STRING,
                                                    BAD_FILE_NAME_STRING,
                                                    BAD_USER_NAME_STRING,
                                                    BAD_PASSWORD_STRING,
                                                    SERVER_DOWN_STRING,
-                                                   WRONG_SERVER_TYPE_STRING };
+                                                   WRONG_SERVER_TYPE_STRING,
+                                                   DATA_OLD_STRING,
+                                                   DATA_LIVE_STRING,
+                                                   DAS_OFFLINE_STRING,
+                                                   NOT_CONNECTED_STRING };
   TCPComm tcp_io = null;
 
   protected boolean  server_alive = false;
