@@ -4,6 +4,11 @@
  * Programmer:  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.3  2001/01/29 21:28:01  dennis
+ *  Print error message if the DataSet is null in the
+ *  constructor.
+ *  Also, now uses CVS version numbers.
+ *
  *  Revision 1.2  2000/12/07 23:09:06  dennis
  *  Now includes basic support for maintaining ViewerState.
  *  Also refined some reasons for doing an update.
@@ -131,6 +136,8 @@ public class InternalViewManager extends    JInternalFrame
       setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
       
       dataSet = ds; 
+      if ( ds == null )
+         System.out.println("ERROR: ds is null in ViewManager constructor");
       dataSet.addIObserver( this );
 
       addInternalFrameListener(new InternalFrameAdapter()
