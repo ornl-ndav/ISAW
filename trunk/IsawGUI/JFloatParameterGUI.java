@@ -21,6 +21,8 @@ import java.io.Serializable;
  * @version 1.0  
  */
 
+
+
 public class JFloatParameterGUI extends JParameterGUI implements Serializable
 {
     private JPanel segment;

@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.Color.*;
 import DataSetTools.dataset.*;
 import DataSetTools.*;
+import DataSetTools.components.ui.*;
 import DataSetTools.util.*;
 import java.io.*;
 import javax.swing.*;
@@ -36,13 +37,15 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
      private JTree logTree;
      private DefaultMutableTreeNode root;
      private JTable table;
-     private JTabbedPane jtp;
+     public JTabbedPane jtp;
      private JTextField textArea;
+     private JPanel livePanel;
      Document sessionLog=null;
      DefaultTreeModel model;
      DefaultTableModel dtm ;
      DataSet current_ds = null;
-
+     Vector tab_titles;
+     
          /** @associates <{IsawGUI.JCommandUI}> */
         // private com.sun.java.util.collections.TreeSet lnkJCommandUI;
      
@@ -56,9 +59,8 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
 	    setLayout(new GridLayout(1,1));
         root = new DefaultMutableTreeNode("TreeLog");
         model = new DefaultTreeModel(root);
-        
+        String server_name = System.getProperty("Inst1_Path");
         dtm = new DefaultTableModel();
-       
         table = new JTable(dtm);
         logTree = new JTree(model);
         logTree.setShowsRootHandles(true);
@@ -99,16 +101,38 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
         //pane.setMinimumSize(new Dimension(50,50));
        // add(pane);
        
-       
+     //   String tab_names [] = {"DataSet Log", "Session Log", "Detector Info", "System Properties", "CommandPane"};
         jtp = new JTabbedPane();
         jtp.addTab("DataSet Log", pane);
         jtp.addTab("Session Log", njsp);
         jtp.addTab("Detector Info", sp);
         jtp.addTab("System Properties", ta);
 	  jtp.addTab("CommandPane", cp);
+
+   //  for (int i=0; i<tab_names.length; i++)
+	 //   {
+	  //      String attr = tab_names[i];
+	       
+	  //       tab_titles.addElement(attr);
+	  //  }
+
+//System.out.println("Tab names   " +tab_titles);
         add(jtp);
 	 }
-	 
+
+
+	 public void setTab(String tab_title, JPanel obj)
+       {
+          jtp.addTab(tab_title, obj);
+       }
+
+      	 public void setTab(String tab_title, JScrollPane obj)
+       {
+          jtp.addTab(tab_title, obj);
+       }
+
+
+
 	 public void showLog(DataSet ds)
 	 {
 		if(ds == current_ds)    //Only draw the log for a different dataset.

@@ -14,9 +14,12 @@ import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import DataSetTools.retriever.*;
 import javax.swing.text.*; 
-import java.io.*; 
+import java.io.*;
+import java.util.*;
+import java.awt.*; 
 import javax.swing.filechooser.*;
-
+import javax.swing.table.*;
+import javax.swing.*;
 /**
  * Utility class for ISAW. 
  *
@@ -141,15 +144,67 @@ public String saveDoc(Document doc, String filename)
           catch( javax.swing.text.BadLocationException s )
                  {return "status Usuccessful";                 }
 	      
-                   
-         
-      
-
-
-
 
 }
 
+   public Vector listProperties()
+   {
+      StringBuffer buf = new StringBuffer();
+      String pName, pVal;
+      Vector data = new Vector();
+      Properties props = new Properties();
+
+      String path = System.getProperty("user.home")+"\\";
+       path = StringUtil.fixSeparator(path);
+       try {
+	    FileInputStream input = new FileInputStream(path + "props.dat" );
+          props.load(input);
+         }
+       
+       catch (IOException ex) {
+          System.out.println("Properties file could not be loaded due to error :" +ex);
+       }
+        
+      Enumeration enum = props.propertyNames();
+
+      while( enum.hasMoreElements() ) {
+         pName = enum.nextElement().toString();
+         pVal = props.getProperty( pName );
+         Vector oo = new Vector();
+	        oo.addElement(pName); 
+	        oo.addElement(pVal);
+	        data.addElement(oo);
+       
+       }
+        System.out.println("The vector properties are "+data.toString());
+       return data ;
+   }
+
+   public JScrollPane viewProperties()
+   {
+       JTable table;
+
+
+           	
+           	
+       Vector heading = new Vector();
+	 heading.addElement("Attribute" ); 
+	 heading.addElement("Value");
+	 Vector data = listProperties();
+	 DefaultTableModel dtm = new DefaultTableModel(data, heading);
+       table = new JTable(dtm);
+	 table.setModel(dtm);
+       table.setSize( 30, 30 );    // the numbers used don't seem to
+                                   // be important, but setting the 
+                                   // size get's the table to fill out
+                                   // the available space.
+       ExcelAdapter myAd = new ExcelAdapter(table);
+       JScrollPane scrollPane = new JScrollPane(table);
+       //getContentPane().add( scrollPane );
+
+       
+       return scrollPane ;
+   }
 
 
 }
