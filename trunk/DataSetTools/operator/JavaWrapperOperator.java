@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.8  2004/02/03 23:45:48  bouzekc
+ * Added clone test to main().
+ *
  * Revision 1.7  2004/02/01 01:36:45  bouzekc
  * Added clone.  The JavaWrapperOperators can now be called from Scripts.
  *
@@ -287,6 +290,16 @@ public class JavaWrapperOperator extends GenericOperator {
     }
     System.out.println( wrapper.getCommand(  ) );
     System.out.println( wrapper.getResult(  ) );
+    
+    //this test is good only for WrappedCrunch
+    wrapper.getParameter( 1 ).setValue( new Float( 5.0f ) );
+    JavaWrapperOperator clonedOp = ( JavaWrapperOperator )wrapper.clone(  );
+    
+    System.out.print( "Original value: " );
+    System.out.println( wrapper.getParameter( 1 ) );
+    System.out.print( "New value: " );
+    System.out.println( clonedOp.getParameter( 1 ) );
+    
   }
 
   /**
