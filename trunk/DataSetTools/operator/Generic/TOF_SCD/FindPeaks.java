@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.24  2004/07/14 16:18:34  rmikk
+ * Added the Pixel row and column numbers to include so peaks near the 
+ * edges of the detector are not added to the initial peaks Vector
+ *
  * Revision 1.23  2004/04/21 19:06:49  dennis
  * Added the min and max time channel to use as parameters
  * to FindPeaks.
@@ -93,7 +97,8 @@ import DataSetTools.operator.Parameter;
 import DataSetTools.operator.DataSet.Attribute.LoadSCDCalib;
 import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.util.SharedData;
-
+import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Numeric.*;
 /** 
  * This operator is a small building block of an ISAW version of
  * A.J.Schultz's PEAKS program. While the original program found all
@@ -107,6 +112,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   private              int        run_number            = -1;
   private              int        maxNumPeaks           = 0;
   private              int        min_count             = 0;
+  private             IntListString PixelRow         =new IntListString("1:400");
   
   /* ------------------------ Default constructor ------------------------- */ 
   /**
@@ -134,7 +140,8 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                     int     maxNumPeaks,
                     int     min_count,
                     int     minTimeChan,
-                    int     maxTimeChan ) {
+                    int     maxTimeChan,
+                    IntListString PixelRows ) {
     this(); 
     parameters = new Vector();
     addParameter( new Parameter("Histogram", data_set) );
@@ -146,6 +153,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                                  new Integer(minTimeChan) ) );
     addParameter( new Parameter("Maximum Time Channel", 
                                  new Integer(maxTimeChan) ) );
+    addParameter( new Parameter("Pixel Rows/Cols", new IntListString("1:200")));
   }
   
   /* --------------------------- getCommand ------------------------------- */ 
@@ -197,6 +205,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     addParameter( new Parameter("Minimum Counts", new Integer(0) ) );
     addParameter( new Parameter("Minimum Time Channel", new Integer(0) ) );
     addParameter( new Parameter("Maximum Time Channel", new Integer(10000) ));
+    addParameter( new Parameter("Pixel Rows/Cols to include",new IntListString("1:200")));
   }
   
   /* ----------------------------- getResult ------------------------------ */ 
@@ -213,7 +222,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     this.min_count    = ((Integer)(getParameter(3).getValue())).intValue();
     int minTimeChan   = ((Integer)(getParameter(4).getValue())).intValue();
     int maxTimeChan   = ((Integer)(getParameter(5).getValue())).intValue();
-    
+    IntListString PixelRows = ((IntListString)(getParameter(6).getValue())); 
     //System.out.print("====================================");
     //System.out.println("==================================");
     Data data=data_set.getData_entry(0);
@@ -261,7 +270,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                                       data_set,
                                       det_number[i],
                                       minTimeChan,
-                                      maxTimeChan );
+                                      maxTimeChan, PixelRows );
 
       if(innerPeakList!=null && innerPeakList.size()>0)
         peaks.addAll(innerPeakList);
@@ -288,7 +297,8 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
                             DataSet     data_set,
                             int         detNum,
                             int         minTimeChan,
-                            int         maxTimeChan ){
+                            int         maxTimeChan,
+                            IntListString PixelRow ){
     pkfac.detnum(detNum);
 
     // create an array of for indexing into the data
@@ -344,10 +354,14 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     pkfac.detA(detA);
     pkfac.detA2(detA2);
     pkfac.detD(detD);
-
+    int[] rowList= IntList.ToArray( PixelRow.toString());
+    java.util.Arrays.sort(rowList);
     // stay off of the edges
     for( int i=minColumn+1 ; i<maxColumn-1 ; i++ ){  // loop over column
-      for( int j=minRow+1 ; j<maxRow-1 ; j++ ){      // loop over row
+      for( int j=minRow+1 ; j<maxRow-1 ; j++ )
+      if( java.util.Arrays.binarySearch(rowList,i)>=0)
+      if( java.util.Arrays.binarySearch(rowList,j)>=0)
+      {      // loop over row
         // set up datasets for adjacent pixels
         Dpp=data_set.getData_entry(ids[i-1][j-1]).getCopyOfY_values();
         Dpt=data_set.getData_entry(ids[i+0][j-1]).getCopyOfY_values();
@@ -470,6 +484,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     float minT=getMinT(peaks);
     
     while(sortPeaks.size()<origPeaksSize ){
+        
       for( int i=0 ; i<peaks.size() ; i++ ){
         if(((Peak)peaks.elementAt(i)).z()==minT){
           peak=(Peak)peaks.elementAt(i);
@@ -545,7 +560,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     //op.getResult();
     
     //System.out.println("Findpeaks("+datfile+",100,0)");
-    op = new FindPeaks( rds, monct, 10, 20, 0, 10000 );
+    op = new FindPeaks( rds, monct, 10, 20, 0, 10000 , new IntListString("1:200"));
     Vector peaked=(Vector)op.getResult();
     
     //System.out.println(((int[])rds.getAttributeValue(Attribute.RUN_NUM))[0]);
