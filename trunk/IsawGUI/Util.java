@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2002/12/20 20:00:04  pfpeterson
+ * Now puts up a warning dialog when the save method is called with an
+ * unknown file extension.
+ *
  * Revision 1.15  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -196,6 +200,21 @@ public class Util
       }
       else
       {
+        // determine what the extension is
+        int index=filename.lastIndexOf(".");
+        if(index<0)
+          index=filename.lastIndexOf("/");
+        if(index<0)
+          index=filename.lastIndexOf("\\");
+        if(index<0)
+          index=0;
+        if(index>0)
+          index++;
+
+        // pop up a warning dialog
+        JOptionPane.showMessageDialog(new JFrame(),
+                               "Unknown extension: "+filename.substring(index),
+                               "Error in Saving", JOptionPane.WARNING_MESSAGE);
 
          return;
       }
