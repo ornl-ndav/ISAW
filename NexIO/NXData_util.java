@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/17 13:53:12  rmikk
+ * Fixed error so group numbers increased
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
@@ -318,7 +321,7 @@ public class NXData_util
           
            };
         DS.addData_entry( newData );
-    
+        
         group_id++;
        }
      
@@ -347,3 +350,4 @@ public static void main( String args[] )
    }
 
   }
+
