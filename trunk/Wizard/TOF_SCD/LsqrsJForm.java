@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.26  2004/01/08 23:27:48  bouzekc
+ * Removed unused variables.
+ *
  * Revision 1.25  2003/12/15 02:24:21  bouzekc
  * Removed unused imports.
  *
@@ -152,11 +155,6 @@ public class LsqrsJForm extends Form {
 
   protected static int RUN_NUMBER_WIDTH = 5;
   private static final String identmat  = "[[1,0,0][0,1,0][0,0,1]]";
-
-  //~ Instance fields **********************************************************
-
-  private boolean useIdentity        = false;
-  private BooleanPG useIdentCheckBox;
 
   //~ Constructors *************************************************************
 
