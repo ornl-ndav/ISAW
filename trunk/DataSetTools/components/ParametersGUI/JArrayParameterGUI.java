@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/05/26 18:25:29  rmikk
+ * Eliminated an unused variable
+ *
  * Revision 1.7  2004/03/15 23:57:39  dennis
  * Changed some instances to static methods to be through the
  * class name instead of an instance.
@@ -103,7 +106,7 @@ public class JArrayParameterGUI extends    JParameterGUI
 
    private String ArraytoString(Vector V)
    {
-      execOneLine execLine = new execOneLine();
+      //execOneLine execLine = new execOneLine();
       String res = execOneLine.Vect_to_String(V);
       return res;
     }
