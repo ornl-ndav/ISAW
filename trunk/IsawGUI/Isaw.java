@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.131  2003/05/09 21:43:25  pfpeterson
+ *  Added option '-t' to show timing information during load process.
+ *
  *  Revision 1.130  2003/05/08 20:50:40  pfpeterson
  *  Changed the default version number.
  *
@@ -328,6 +331,7 @@ public class Isaw
      
   private static final String TITLE              = "ISAW";
     //private static final String VERSION            = "Release 1.2";
+  private static long   time=System.currentTimeMillis();
 
   private static final String FILE_M             = "File";
   private static final String LOAD_DATA_M        = "Load Data";
@@ -412,6 +416,7 @@ public class Isaw
   private static final String DB_URL     = IPNS_URL+"computing/ISAW/";
   private static final String WIN_ID     = "Windows";
 
+  private static boolean showTiming=false;
   JDataTree jdt;  
 
   JPropertiesUI jpui;
@@ -444,10 +449,19 @@ public class Isaw
   {
     super( TITLE+" "+getVersion(false) );
                       //used for loading runfiles
+    if(showTiming){
+      System.out.println("00:"+(System.currentTimeMillis()-time)/1000.);
+      time=System.currentTimeMillis();
+      System.out.println("RESETING TIMER");
+    }
     util = new Util(); 
     Vector mm = util.listProperties();
     JScrollPane tt = util.viewProperties();
+    if(showTiming)
+      System.out.println("01:"+(System.currentTimeMillis()-time)/1000.);
     cp = new Command.CommandPane();
+    if(showTiming)
+      System.out.println("02:"+(System.currentTimeMillis()-time)/1000.);
     cp.addIObserver( this );
     cp.setLogDoc(sessionLog);
 
@@ -479,7 +493,12 @@ public class Isaw
        command line are loaded immediatly.*/
     parse_args( args );
 
+    if(showTiming)
+      System.out.println("03:"+(System.currentTimeMillis()-time)/1000.);
     setupMenuBar();        
+    if(showTiming)
+      System.out.println("04:"+(System.currentTimeMillis()-time)/1000.);
+
     
     cp.addPropertyChangeListener(SharedData.getStatusPane());
 
@@ -1712,6 +1731,8 @@ public class Isaw
         }else if("-v".equals(args[i])){
             Script_Class_List_Handler.LoadDebug=true;
             SharedData.DEBUG=true;
+        }else if("-t".equals(args[i])){
+          showTiming=true;
         }
     }
 
