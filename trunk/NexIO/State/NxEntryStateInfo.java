@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/12/12 17:27:48  rmikk
+ * If an NXentry has no "description" SDS field, the "analysis"(old) field is also
+ *   checked
+ *
  * Revision 1.1  2003/11/16 21:43:46  rmikk
  * Initial Checkin
  *
@@ -66,6 +70,8 @@ public class NxEntryStateInfo extends StateInfo{
                 NxfileStateInfo Params ){
      Name = NxEntryNode.getNodeName();
      description = NexUtils.getStringFieldValue( NxEntryNode,"description");
+     if( description == null)
+       description = NexUtils.getStringFieldValue( NxEntryNode,"analysis");
 
   }
   
