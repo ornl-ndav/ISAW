@@ -5,8 +5,10 @@
  *                  Added method "compare" to compare objects.
  *                  Removed method "greater_than" to compare objects.
  *
- * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.6  2000/11/10 22:50:00  dennis
+ *  Added constant for Q_VALUE
+ *
  *  Revision 1.5  2000/07/26 14:52:20  dennis
  *  Now includes method to add() attributes.
  *
@@ -87,6 +89,10 @@ abstract public class Attribute implements Serializable
   public static final String  MAGNETIC_FIELD    = "Magnetic Field";
   public static final String  NUMBER_OF_PULSES  = "Number of Pulses";
   public static final String  TOTAL_COUNT       = "Total Count";
+
+  public static final String  Q_VALUE           = "Q(invA)";
+
+
   private String name;
 
 
