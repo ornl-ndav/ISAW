@@ -87,7 +87,7 @@ public class CommandPane  extends JPanel
     String FilePath = null  ;                   // for macro storage and retrieval
     Document logDocument = null;
 
-    boolean Debug = true;
+    boolean Debug = false;
 
 
     /** Constructor with Visual Editor and no data sets from outside this program
@@ -406,6 +406,14 @@ public class CommandPane  extends JPanel
 	       return line ; 
 	    else if( S.toUpperCase().trim().indexOf( "END ERROR" ) == 0 )
 	      return line ; 
+            else if( S.toUpperCase().trim().indexOf("IF ") == 0)
+               line = executeIfStruct( Doc, line, true);
+            else if( S.toUpperCase().trim().equals("ELSE"))
+               return line;
+            else if( S.toUpperCase().trim().indexOf("ELSEIF") == 0)
+               return line;
+            else if( S.toUpperCase().trim().equals("ENDIF"))
+               return line;
            else if( S.trim().length() <= 0 )
 	      {}
             
@@ -638,25 +646,111 @@ public class CommandPane  extends JPanel
 
 
       }
+  private int executeIfStruct( Document Doc, int line, boolean execute)
+     { String S;
+       int i , j;
+       if( Debug) System.out.print("Start if line=" + line);
+       S = getLine( Doc, line);
+       if( Debug)System.out.println(":: line is "+S);
+      if( S == null)
+        { perror = 0;
+          serror = "Internal Error 12";
+          lerror = line;
+          return line;
+        } 
+      i = S.toUpperCase().indexOf("IF ");
+      if( i< 0)
+        {perror = 0;
+          serror = "Internal Error 12";
+          lerror = line;
+          return line;
+          }
+      i = i + 3;
+      j = S.length();
+      if( S.trim().length() >=8)
+        if( S.trim().substring( S.trim().length()-5).equals(" THEN"))
+          j = S.trim().length() -5;
 
+      boolean b;
+      if( execute)
+         b= evaluate( S, i, j);
+      else
+         b = false;
+      if(Debug) System.out.println("aft eval b and err ="+b+","+perror);
+      if( perror >= 0)
+         return line;
+
+      j = executeBlock ( Doc , line + 1 , b && execute) ;
+      if( Debug)System.out.println("ExIf::aft exe 1st block, perror="+perror);
+      if( perror >= 0 ) return j;
+      S = getLine ( Doc , j );
+       if(Debug) System.out.println("ExIf:: Els or Elseif?"+S);
+      if( S == null)
+       { seterror( 0 , "Improper line");
+         lerror = j;
+         return j;
+       }
+      int x=0;
+      if( S.toUpperCase().trim().indexOf("ELSE") == 0)
+        if( S.toUpperCase().trim().indexOf("ELSEIF") == 0 )
+          { j = executeIfStruct( Doc , j , !b && execute);  
+            return j;
+	             
+          }
+        else 
+            {j = executeBlock( Doc , j+1 , !b && execute);
+             x = 2;
+            }
+      if(Debug) System.out.println("ExIf:: aft exec 1st block, perror="+perror);
+      if( perror >= 0) return j;
+
+      S = getLine ( Doc , j );
+       if(Debug) System.out.println("ExIf:: ENDIF?"+S);
+      if( S == null)
+        {seterror( 0, "Improper line");
+         lerror = j;
+         return j;
+        }
+      if(! S.toUpperCase().trim().equals("ENDIF"))
+       {seterror( 0, "If without an ENDIF");
+        lerror = line;
+         return j;
+       }  
+      if( Debug) System.out.println( "ExIF end OK, line is "+j);       
+      return j;
+      
+     } 
+  private String getLine( Document Doc, int start )
+    {
+    String var ;      
+      int i , j , k ; 
+      int line ; 
+       String S ; 
+       boolean mode ; 
+       Element  E ,
+	        F ;  
+       
+       if( Doc == null ) return null ; 
+       E = Doc.getDefaultRootElement() ; 
+       if( start < 0 ) return null ; 
+       if( start >= E.getElementCount() ) return null ;   
+       F = E.getElement( start ) ; 
+       try{
+         S = Doc.getText( F.getStartOffset() , F.getEndOffset()  -  F.getStartOffset() ) ; 
+          }
+       catch( BadLocationException s )
+	 {seterror ( 0 , "Internal Errorc" ) ; 
+	  return null ; 
+	 }
+      return S;
+
+    }
     public void seterror( int poserr , String ermess )
       { perror = poserr ; 
         serror = ermess ; 
       }
       
-       /*  for(i = 0 ; 
-              (i < Doc.getDefaultRootElement().getElementCount() ) && ( perror < 0 ) ; 
-                              i++ )
-	  {
-           execute1( Doc , i ) ; 
-            if( perror >= 0 )
-               {
-                 lerror = i ; 
-                 return ; 
-               }
-        }
-    }
-       */
+    
  public String delSpaces( String S)
     { boolean quote,
               onespace; 
@@ -858,6 +952,7 @@ public class CommandPane  extends JPanel
     // For test purposes will just use numbers here
 
     i = findQuote( S, 1, start, "<>=", "(){}[]"  );
+    if( Debug ) System.out.println( "ineq at i, start="+i+","+start);
     if( i < end )
        {   perror = -1;
 	  j = ExecLine.execute ( S , start , i);
@@ -1099,32 +1194,36 @@ public class CommandPane  extends JPanel
         
     else if( e.getSource().equals( Help ) )
         {BrowserControl H = new BrowserControl() ; 
-	String S;
-        String Base="IPNS_Software";
-        S= System.getProperty("user.dir");
-        //System.out.print("us dir="+S+",");
-        int kk = S.indexOf("/"+Base);
-        //System.out.print("A:k="+kk+",");
-        if(kk < 0) kk = S.indexOf("\\"+Base);
-        //System.out.println("B:k="+kk+",");
-        if( kk >= 0 )
-	    S = "file://"+S.substring(0,kk)+"/"+Base+"/IsawHelp/CommandPane.html";
+	 String S;
+         
+         String Base="IPNS_Software";
+         S= System.getProperty("user.dir").trim();
+         if( S!=null) if( S.length() > 0 ) if(  "\\/".indexOf(S.charAt(S.length() - 1 ) ) < 0)
+	    S = S + "/";
+	 if( !new File( S + "IsawHelp/CommandPane.html").exists()) 
+            S = null;
         else
-	    {S = System.getProperty("java.class.path");
-	    //System.out.print("classpth dir="+S+",");
-             kk = S.indexOf("/"+Base);
-	     //System.out.print("C:k="+kk+",");
-            if(kk < 0) kk = S.indexOf("\\"+Base); 
-	    //System.out.print("D:k="+kk+",");
-            if( kk >= 0) 
-               S = "file://"+S.substring(0,kk)+"/"+Base+"/IsawHelp/CommandPane.html";
-            else
-		S = null;
-	    //if( S!=null) System.out.println(S.substring(7));
-	    if( S!= null) if (new File( S.substring(7)).exists()){} else S = null;
+            S=S.replace( '\\','/');
+            
+       
+        if( S != null )
+	    S = S + "IsawHelp/CommandPane.html";
+        else
+	    {String CP = System.getProperty("java.class.path").replace( '\\','/') ;
+	    int s, t ;
+            for( s = 0; (s < CP.length()) && (S == null); )
+	      {t = CP.indexOf( ";", s+1);
+               if( t < 0) t = CP.length();
+               S = CP.substring(s,t) .trim();
+               if( S.length() > 0 ) if ( S.charAt( S.length() -1) != '/') S = S + "/";
+               if( new File( S + "IsawHelp/CommandPane.html").exists())
+                 S= S + "IsawHelp/CommandPane.html";
+               else S = null;     
            
-            }
+                }
+              }
          if( S == null )S = "http://www.pns.anl.gov/isaw/IsawHelp/CommandPane.html";
+         else S = "file://" + S;
          H.displayURL( S ) ; 
           
         
