@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2002/11/08 23:09:29  dennis
+ * Set background back to dark gray
+ *
  * Revision 1.5  2002/11/01 00:12:04  dennis
  * Improved documentation, increased marker size to 10 and made pick IDs
  * unique through out all spectra.
@@ -183,7 +186,7 @@ public class SCDRecipLat
 
     scene_f.getContentPane().add( split_pane );
 
-    vec_Q_space.setBackground( new Color( 176, 196, 222 ) );
+    vec_Q_space.setBackground( new Color( 90, 90, 90 ) );
     draw_axes(1, vec_Q_space );
     scene_f.setSize(900,700);
 
