@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/02/12 20:03:11  dennis
+ * Switched to use PixelInfoList instead of SegmentInfoList
+ *
  * Revision 1.2  2003/02/10 23:04:21  pfpeterson
  * Changed the constructor from being public and throwing an
  * InstantiationError to being private and doing nothing.
@@ -42,6 +45,7 @@ package DataSetTools.operator.Generic.TOF_SCD;
 
 import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
+import DataSetTools.math.*;
 
 public class Util{
   /**
@@ -56,30 +60,17 @@ public class Util{
    * @return the in plane angle in degrees
    */
   static public float detector_angle(DataSet ds){
-    SegInfoListAttribute detI;
-    SegmentInfo det;
-    Data data=ds.getData_entry(0);
-    float angle=0f;
-    Float Fangle=new Float(0f);
-    int total=0;
+    PixelInfoListAttribute pil_attr;
+    Data data=ds.getData_entry(0); 
 
-    Fangle=(Float)data.getAttributeValue(Attribute.DETECTOR_CEN_ANGLE);
-    if(Fangle!=null){
-      angle=Fangle.floatValue();
-    }
-    if(angle==0f){
-      for( int i=0 ; i< ds.getNum_entries() ; i++ ){
-        data=ds.getData_entry(i);
-        detI=(SegInfoListAttribute)
-          data.getAttribute(Attribute.SEGMENT_INFO_LIST);
-        det=((SegmentInfo[])detI.getValue())[0];
-        angle+=det.getPosition().getScatteringAngle();
-        total++;
-      }
-      angle=(float)((180f*angle)/((float)(total+1)*Math.PI));
-    }
+    pil_attr =
+          (PixelInfoListAttribute)data.getAttribute(Attribute.PIXEL_INFO_LIST);
+    PixelInfoList pil  = (PixelInfoList)pil_attr.getValue();   
+    Vector3D      vec  = pil.pixel(0).DataGrid().position();
+    Position3D    position     = new Position3D( vec );
+    float         cyl_coords[] = position.getCylindricalCoords(); 
     
-    return angle;
+    return cyl_coords[1];
   }
 
   /**
@@ -98,38 +89,18 @@ public class Util{
    * @return the distance in cm
    */
   static public float detector_distance(DataSet ds, float avg_angle){
-    SegInfoListAttribute detI;
-    SegmentInfo det;
+    // NOTE: avg_angle is no longer needed.
+  
+    PixelInfoListAttribute pil_attr;
     Data data=ds.getData_entry(0);
-    float angle=0f;
-    float distance=0f;
-    Float Fdistance=new Float(distance);
-    int total=0;
-    
-    Fdistance=(Float)data.getAttributeValue(Attribute.DETECTOR_CEN_DISTANCE);
-    if(Fdistance!=null){
-      distance=Fdistance.floatValue();
-    }
-    
-    if(distance==0f){
-      for( int i=0 ; i< ds.getNum_entries() ; i++ ){
-        data=ds.getData_entry(i);
-        detI=(SegInfoListAttribute)
-          data.getAttribute(Attribute.SEGMENT_INFO_LIST);
-        det=((SegmentInfo[])detI.getValue())[0];
-        
-        angle=det.getPosition().getScatteringAngle();
-        angle=angle-2f*avg_angle/(float)Math.PI;
-        
-        angle=(float)Math.abs(Math.cos((double)angle));
-        
-        distance+=angle*det.getPosition().getDistance();
-        total++;
-      }
-      distance=distance/((float)(total+1));
-    }
-    
-    return distance*100f;
+   
+    pil_attr =
+          (PixelInfoListAttribute)data.getAttribute(Attribute.PIXEL_INFO_LIST);
+    PixelInfoList pil  = (PixelInfoList)pil_attr.getValue();
+    Vector3D      vec  = pil.pixel(0).DataGrid().position();
+    float         dist = vec.length();
+
+    return dist*100f;
   }
 
   /**
@@ -144,24 +115,17 @@ public class Util{
     int row,col;
     int rowMax=-1;
     int colMax=-1;
-    SegmentInfo[] seginfo=null;
 
     // determine the maximum number of rows and columns
-    for( int i=0; i< ds.getNum_entries(); i++){
-      Attribute attr =
-        ds.getData_entry( i ).getAttribute(Attribute.SEGMENT_INFO_LIST);;
-      if( attr!=null && attr instanceof SegInfoListAttribute ){
-        seginfo=(SegmentInfo[])(attr.getValue());
-        if( seginfo!=null && seginfo.length>0 ){
-          row = seginfo[0].getRow();
-          col = seginfo[0].getColumn();
-          if( row>rowMax && row>0)
-            rowMax = row;
-          if( col>colMax && col>0)
-            colMax = col;
-        }
-      }
-    }
+    Attribute attr=ds.getData_entry(0).getAttribute(Attribute.PIXEL_INFO_LIST);
+    if( attr == null || !(attr instanceof PixelInfoListAttribute) )
+      return null;
+
+    PixelInfoList  pil  = (PixelInfoList)attr.getValue();
+    IDataGrid      grid = pil.pixel(0).DataGrid();
+ 
+    rowMax = grid.num_rows();
+    colMax = grid.num_cols();
     // check that we got sensible values
     if( rowMax < 1 || colMax<1 ) return null;
 
@@ -178,15 +142,13 @@ public class Util{
     Object idObj=null;
     for( int id=0; id<ds.getNum_entries(); id++){
       data=ds.getData_entry(id);
-      Attribute attr = data.getAttribute(Attribute.SEGMENT_INFO_LIST);;
-      if( attr!=null && attr instanceof SegInfoListAttribute ){
-        seginfo=(SegmentInfo[])(attr.getValue());
-        if( seginfo!=null && seginfo.length>0 ){
-          row = seginfo[0].getRow();
-          col = seginfo[0].getColumn();
-          if( (row>=0) && (col>=0) )
-            ids[col][row] = id;
-        }
+      attr = data.getAttribute(Attribute.PIXEL_INFO_LIST);;
+      if( attr!=null && attr instanceof PixelInfoListAttribute ){
+        pil = (PixelInfoList)attr.getValue();
+        row = (int)pil.row();
+        col = (int)pil.col();
+        if( (row>=0) && (col>=0) )
+          ids[col][row] = id;
       }
     }
 
