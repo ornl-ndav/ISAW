@@ -16,6 +16,8 @@
 #
 # $Date$
 
+$Category = Operator, Utils, Tests
+
 $ filename LoadFileString Runfile
 
 Load filename,"ds"
