@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/07/29 21:29:35  dennis
+ *  Now uses named constants for indices to all parameters that
+ *  can be optimized.  Added detector distance parameter, but either
+ *  this, or the detector width and height should be kept fixed.
+ *
  *  Revision 1.4  2003/07/29 19:51:22  dennis
  *  Constructor now accepts a list of boolean flags to indicate
  *  which of the parameters are actually used in the optimization.
@@ -69,8 +74,17 @@ public class SCDcal   extends    OneVarParameterizedFunction
   public static final int SX_INDEX    = 3;
   public static final int SY_INDEX    = 4;
   public static final int SZ_INDEX    = 5;
-  public static final int DET_BASE_INDEX = 6;
-  public static final int N_DET_PARAMS   = 7;   // number of params per detector
+  public static final int DET_BASE_INDEX   = 6;
+  public static final int N_DET_PARAMS     = 8; // number of params per detector
+
+  public static final int DET_WIDTH_INDEX  = 0; // relative to the start of the 
+  public static final int DET_HEIGHT_INDEX = 1; // parameters for a detector
+  public static final int DET_X_OFF_INDEX  = 2;
+  public static final int DET_Y_OFF_INDEX  = 3;
+  public static final int DET_D_INDEX      = 4;
+  public static final int DET_PHI_INDEX    = 5;
+  public static final int DET_CHI_INDEX    = 6;
+  public static final int DET_OMEGA_INDEX  = 7;
 
   private int    n_peaks;
   private int    run[]; 
@@ -272,27 +286,23 @@ public class SCDcal   extends    OneVarParameterizedFunction
     for ( int i = 0; i < parameters.length; i++ )
       all_parameters[ all_p_index[i] ] = parameters[i];
 
-    int index = DET_BASE_INDEX;
-    Enumeration e = grids.elements();
     int det_count = 0;
+    int index     = DET_BASE_INDEX;
+    Enumeration e = grids.elements();
     while ( e.hasMoreElements() )
     {
+      index = DET_BASE_INDEX + det_count * N_DET_PARAMS;
+
       UniformGrid_d grid = (UniformGrid_d)e.nextElement();
       Vector3D_d nom_pos = (Vector3D_d)nominal_position.elementAt(det_count);
-      double width = all_parameters[ index ];
-      index++;
-      double height = all_parameters[ index ];
-      index++;
-      double x_off = all_parameters[ index ];
-      index++;
-      double y_off = all_parameters[ index ];
-      index++;
-      double phi = all_parameters[index];
-      index++;
-      double chi = all_parameters[index];
-      index++;
-      double omega = all_parameters[index];
-      index++;
+      double width  = all_parameters[ index + DET_WIDTH_INDEX  ];
+      double height = all_parameters[ index + DET_HEIGHT_INDEX ];
+      double x_off  = all_parameters[ index + DET_X_OFF_INDEX  ];
+      double y_off  = all_parameters[ index + DET_Y_OFF_INDEX  ];
+      double det_d  = all_parameters[ index + DET_D_INDEX      ];
+      double phi    = all_parameters[ index + DET_PHI_INDEX    ];
+      double chi    = all_parameters[ index + DET_CHI_INDEX    ];
+      double omega  = all_parameters[ index + DET_OMEGA_INDEX  ];
 
       grid.setWidth( width );
       grid.setHeight( height );
@@ -308,6 +318,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
       Vector3D_d y_shift = new Vector3D_d( y_vec );
       x_shift.multiply( x_off );
       y_shift.multiply( y_off );
+      center.normalize();
+      center.multiply( det_d );
       center.add( x_shift ); 
       center.add( y_shift ); 
       grid.setCenter( center );
@@ -455,29 +467,51 @@ public class SCDcal   extends    OneVarParameterizedFunction
   private void show_progress( double B[][], boolean show )
   {
     if ( eval_count % 1000 == 0 || show )
-    {
+    {                                  // first show observed cell parameters
+                                       // for current stage of calibration
       double my_B[][] = copy ( B );
       System.out.println( ""+eval_count/1000 );
       for ( int k = 0; k < 3; k++ )
         for ( int j = 0; j < 3; j++ )
           my_B[k][j] /= (2*Math.PI);
+
       double cell_params[] = lattice_calc.LatticeParamsOfUB( my_B );
+      System.out.println("==================================================");
+      System.out.println("Observed cell parameters now are.... "); 
       LinearAlgebra.print( cell_params );
+                                      
+                                       // then show the standard deviation of
+                                       // the error in q, from all zeros
       double index[] = new double[n_peaks];
       for ( int i = 0; i < index.length; i++ )
         index[i] = i;
+
       double vals[] = getValues( index );
       double s_dev = 0;
       for ( int i = 0; i < vals.length; i++ )
         s_dev += vals[i] * vals[i];
+
       s_dev = Math.sqrt( s_dev/vals.length );
+
+      System.out.println();
       System.out.println("1 standard dev error distance in Q = " + s_dev );
 
-      for ( int i = 0; i < parameters.length; i ++ )
+                                       // finally, dump out the current
+                                       // parameter estimates
+      int det_count = 0;
+      System.out.println();
+      System.out.println("Instrument & Sample parameters: " );
+      for ( int i = 0; i < all_parameters.length; i ++ )
       {
         if ( (i - DET_BASE_INDEX) % N_DET_PARAMS == 0 )
+        {
           System.out.println();
-        System.out.print( " " + Format.real(parameters[i], 12, 5 ) );
+          System.out.println();
+          System.out.println("Parameters for Detector " + det_count );
+          det_count++;
+        }
+        if ( used_p_index[i] >= 0 )
+          System.out.print( " " + Format.real(all_parameters[i], 12, 5 ) );
       }
       System.out.println();
     }
@@ -490,8 +524,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
                                       double sig1  )
   {
     System.out.print( Format.string(name,17)  );
-    System.out.print( Format.real(value,17,9) + " +- " );
-    System.out.print( Format.real(sig1, 17,9) + " +- " );
+    System.out.print( Format.real(value,20,9) + "  +-" );
+    System.out.print( Format.real(sig1, 20,9) );
     System.out.println();
   }
 
@@ -645,48 +679,56 @@ public class SCDcal   extends    OneVarParameterizedFunction
       parameters[ SY_INDEX ]  = 0.0;
       parameters[ SZ_INDEX ]  = 0.0;
 
-      int index = DET_BASE_INDEX;
+      int index     = DET_BASE_INDEX;
+      int det_count = 0;
       Enumeration e = grids.elements();
       while ( e.hasMoreElements() )
       {
+        index = DET_BASE_INDEX + det_count * N_DET_PARAMS;
+
         UniformGrid_d grid = (UniformGrid_d)e.nextElement();
         int id = grid.ID();
-        parameter_names[index] = "Det " + id + "    Width";
-        parameters[index] = grid.width();
-        index++; 
+        parameter_names[index + DET_WIDTH_INDEX ] = "Det " + id + "    Width";
+        parameters     [index + DET_WIDTH_INDEX ] = grid.width();
 
-        parameter_names[index] = "Det " + id + "   Height";
-        parameters[index] = grid.height();
-        index++;
+        parameter_names[index + DET_HEIGHT_INDEX] = "Det " + id + "   Height";
+        parameters     [index + DET_HEIGHT_INDEX] = grid.height();
 
-        parameter_names[index] = "Det " + id + " x_offset";
-        parameters[index] = 0;
-        index++;
+        parameter_names[index + DET_X_OFF_INDEX ] = "Det " + id + " x_offset";
+        parameters     [index + DET_X_OFF_INDEX ] = 0;
 
-        parameter_names[index] = "Det " + id + " y_offset";
-        parameters[index] = 0;
-        index++;
+        parameter_names[index + DET_Y_OFF_INDEX ] = "Det " + id + " y_offset";
+        parameters     [index + DET_Y_OFF_INDEX ] = 0;
 
-        parameter_names[index] = "Det " + id + "      phi";
-        parameters[index] = 0;
-        index++;
+        parameter_names[index + DET_D_INDEX     ] = "Det " + id + " distance";
+        parameters     [index + DET_D_INDEX     ] = grid.position().length();
 
-        parameter_names[index] = "Det " + id + "      chi";
-        parameters[index] = 0;
-        index++;
+        parameter_names[index + DET_PHI_INDEX   ] = "Det " + id + "      phi";
+        parameters     [index + DET_PHI_INDEX   ] = 0;
 
-        parameter_names[index] = "Det " + id + "    omega";
-        parameters[index] = 0;
-        index++;
+        parameter_names[index + DET_CHI_INDEX   ] = "Det " + id + "      chi";
+        parameters     [index + DET_CHI_INDEX   ] = 0;
+
+        parameter_names[index + DET_OMEGA_INDEX ] = "Det " + id + "    omega";
+        parameters     [index + DET_OMEGA_INDEX ] = 0;
+
+        det_count++;
       } 
 
       boolean is_used[] = new boolean[n_params];
       for ( int i = 0; i < n_params; i++ )
         is_used[i] = true;
-                              // insert code at this point to mark some params
-      is_used[ A_INDEX ] = false;
-      //is_used[ 6 ] = false;
-      //is_used[ 7 ] = false;
+                              // Insert code at this point to mark some params.
+                              // First turn off any params shared by all dets.
+    //  is_used[ A_INDEX ] = false;
+                              // then turn off some params for all detectors.
+      for ( int i = 0; i < det_count; i++ )   
+      {
+        index = DET_BASE_INDEX + i * N_DET_PARAMS;
+        is_used[ index + DET_D_INDEX      ] = false;
+    //  is_used[ index + DET_WIDTH_INDEX  ] = false;
+    //  is_used[ index + DET_HEIGHT_INDEX ] = false;
+      }
                               // now count the number that were used
       int n_used = 0;
       for ( int i = 0; i < n_params; i++ )
@@ -764,7 +806,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
       System.out.println();
       error_f.show_progress( error_f.B_observed, true );
 
-      int i = DET_BASE_INDEX;
+      det_count = 0;
       e = grids.elements();
       while ( e.hasMoreElements())
       {
@@ -773,23 +815,29 @@ public class SCDcal   extends    OneVarParameterizedFunction
         System.out.println("USING DETECTOR: " + grid.ID());
         System.out.println();
 
-        System.out.print( Format.real( 100*parameters[0], 9, 3 ) );
-        System.out.print( Format.real( parameters[1], 8, 3 ) );
-        double x2cm = 100*parameters[i]/N_COLS;        // this is step between
-        i++;                                           // pixel centers
-        double y2cm = 100*parameters[i]/N_ROWS;  
-        i++;
-                                                       //this is to edge of det
-        double xLeft  = 100*parameters[i] - x2cm*N_COLS/2.0;
-        i++;                                           //not center of first pix
-        double yLower = 100*parameters[i] - y2cm*N_ROWS/2.0;
-        i++;
-        phi = parameters[i];
-        i++;
-        chi = parameters[i];
-        i++;
-        omega = parameters[i];
-        i++;
+        System.out.print( Format.real( 100*parameters[L1_INDEX], 9, 3 ) );
+        System.out.print( Format.real( parameters[T0_INDEX], 8, 3 ) );
+                                                 
+        index = DET_BASE_INDEX + det_count * N_DET_PARAMS;
+                                                       // width and height are
+                                                       // from outer edge to 
+                                                       // outer edge.
+        double x2cm = 100*parameters[ index + DET_WIDTH_INDEX ]  / N_COLS; 
+        double y2cm = 100*parameters[ index + DET_HEIGHT_INDEX ] / N_ROWS;  
+
+                                                //this is to edge of detector
+                                                //not center of first pixel
+        double xLeft  = 100*parameters[index + DET_X_OFF_INDEX] 
+                        - x2cm*N_COLS/2.0;
+
+        double yLower = 100*parameters[index + DET_Y_OFF_INDEX]
+                        - y2cm*N_ROWS/2.0;
+
+        phi   = parameters[ index + DET_PHI_INDEX ];
+        chi   = parameters[ index + DET_CHI_INDEX ];
+        omega = parameters[ index + DET_OMEGA_INDEX ];
+        det_count++;
+
         System.out.print( Format.real( x2cm, 11, 6 ) );
         System.out.print( Format.real( y2cm, 11, 6 ) );
         System.out.print( Format.real( xLeft,  11, 6 ) );
