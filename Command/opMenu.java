@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2003/05/28 18:53:46  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.24  2003/03/06 22:53:05  pfpeterson
  * Sets a boolean in Script_Class_List_Handler so scripts are not
  * reloaded when asked for during its operation. Also code cleanup
@@ -255,7 +258,7 @@ public class opMenu extends JMenu{
     public static void main( String args[] ){
         java.util.Properties isawProp;
         isawProp = new java.util.Properties(System.getProperties());
-        String path = System.getProperty("user.home")+"\\";
+        String path = SharedData.getProperty("user.home")+"\\";
         path = StringUtil.setFileSeparator(path);
         try {
 	    FileInputStream input = new FileInputStream(path+"IsawProps.dat");

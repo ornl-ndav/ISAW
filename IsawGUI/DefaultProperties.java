@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2003/05/28 18:58:20  pfpeterson
+ *  Changed System.getProperty to SharedData.getProperty
+ *
  *  Revision 1.18  2003/04/21 16:13:38  pfpeterson
  *  Added SCD Live Data information, privatized load(String), and removed unused code.
  *
@@ -123,7 +126,7 @@ public class DefaultProperties{
      * working version of ISAW to base the directory information on.
      */
     public DefaultProperties(){
-        String temp=System.getProperty("user.home");
+        String temp=SharedData.getProperty("user.home");
         if(temp!=null){
             UserHome=FilenameUtil.setForwardSlash(temp);
         }

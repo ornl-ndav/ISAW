@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2003/05/28 18:58:20  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.19  2003/03/10 19:14:57  pfpeterson
  * Moved code that reads a text file into a StringBuffer to be its
  * own method.
@@ -385,7 +388,7 @@ public class Util
       Vector data = new Vector();
       Properties props = new Properties();
 
-      String path = System.getProperty( "user.home" ) + "\\";
+      String path = SharedData.getProperty( "user.home" ) + "\\";
 
       path = StringUtil.setFileSeparator( path );
       try
