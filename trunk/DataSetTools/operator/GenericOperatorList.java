@@ -4,6 +4,9 @@
  *  Maintain list of generic operators and create instance of them as needed.  
  *
  *  $Log$
+ *  Revision 1.9  2000/08/03 21:45:49  dennis
+ *  Added Dongfeng's utility for quick printing.
+ *
  *  Revision 1.8  2000/08/03 15:47:30  dennis
  *  Added $Log to enable recording of comments.
  *
@@ -32,7 +35,8 @@ public class GenericOperatorList implements Serializable
                                           "OneFile",
                                           "Mon",
                                           "OneHist",
-                                          "FF"       };
+                                          "FF",
+                                          "PrintDS"   };
 
   /**
    *  Private constructor ... don't let anyone instantiate this class
@@ -120,6 +124,9 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals( "FF" ) )
       return new SpectrometerFudgeFactor();
+
+    else if ( op_name.equals( "PrintDS" ) )
+      return new DataSetPrint();
 
      return null;
   }
