@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/07/17 18:46:06  bouzekc
+ *  Removed main()'s inner class.
+ *
  *  Revision 1.2  2003/07/17 18:27:42  bouzekc
  *  No longer implements PropertyChanger, now correctly
  *  invalidates itself when a radio button is clicked, fixed
@@ -186,7 +189,10 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
    * @param e The triggering ActionEvent.
    */
   public void actionPerformed( ActionEvent e ) {
+    //System.out.println( "Previous value: " + getValue(  ) );
     this.selectedState = e.getActionCommand(  );
+
+    //System.out.println( "New value: " + getValue(  ) );
     this.setValid( false );
   }
 
@@ -247,13 +253,6 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
    */
   public static void main( String[] args ) {
     JFrame mainWindow = new JFrame(  );
-    JPanel testPanel  = new JPanel( new GridLayout(  ) );
-    JButton valButton = new JButton( "Get Value" );
-    Box bBox          = new Box( BoxLayout.X_AXIS );
-
-    bBox.add( valButton );
-    testPanel.add( bBox );
-
     RadioButtonPG rpg = new RadioButtonPG( "Tester", false );
 
     rpg.init( null );
@@ -264,37 +263,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
 
     //rpg.setValue( "Choice 5" );
     rpg.setValue( "Choice 1" );
-    testPanel.add( rpg.getGUIPanel(  ) );
-    mainWindow.getContentPane(  )
-              .add( testPanel );
-    mainWindow.setSize( new Dimension( 400, 200 ) );
-    mainWindow.show(  );
-
-    /**
-     * Inner TEST CLASS for the getValue button.
-     */
-    class ButtonListener implements ActionListener {
-      RadioButtonPG innerRPG;
-
-      /**
-       * Creates a new ButtonListener object.
-       *
-       * @param rpg2 The RadioButtonPG to work with
-       */
-      ButtonListener( RadioButtonPG rpg2 ) {
-        innerRPG = rpg2;
-      }
-
-      /**
-       * ActionListener implementation.
-       *
-       * @param e ignored.
-       */
-      public void actionPerformed( ActionEvent e ) {
-        System.out.println( innerRPG.getValue(  ) );
-      }
-    }
-    valButton.addActionListener( new ButtonListener( rpg ) );
+    rpg.showGUIPanel(  );
   }
 
   /**
