@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2001/07/26 19:21:18  rmikk
+ * Fixed a null pointer exception case that arise for files
+ * with missing data
+ *
  * Revision 1.5  2001/07/26 14:56:26  rmikk
  * Fixed utility to NOT change group_id's from defaults
  * unless information is in the nexus file
@@ -459,39 +463,40 @@ public static void setOtherAttributes( NxNode detNode ,Data newData, int index)
 	 if( nx != null)
 	     theta = Arrayfloatconvert(nx.getNodeValue());
          
-	
-	 X=(ndis.getAttrValue("solid_angle"));
-         if( X != null)if( X instanceof float[])
+	 if( ndis != null)
+	 { X=(ndis.getAttrValue("solid_angle"));
+           if( X != null)if( X instanceof float[])
 	     solidAngle =(float[])X;
 
-	 X=(ndis.getAttrValue("total_count"));
-         if( X != null)if( X instanceof float[])
+	   X=(ndis.getAttrValue("total_count"));
+           if( X != null)if( X instanceof float[])
 	     Total_Count =(float[])X;
 
-	 X=(ndis.getAttrValue("delta_2theta"));
-         if( X != null)if( X instanceof float[])
+	   X=(ndis.getAttrValue("delta_2theta"));
+           if( X != null)if( X instanceof float[])
 	     Delta_2Theta =(float[])X;
 
-          X = ndis.getAttrValue("time_field_type");
-          if( X!= null)if( X instanceof int[])
+            X = ndis.getAttrValue("time_field_type");
+            if( X!= null)if( X instanceof int[])
                Time_Field =(int[])X;
 
-          X = ndis.getAttrValue("group_id");
-          if( X!= null)if( X instanceof int[])
+            X = ndis.getAttrValue("group_id");
+            if( X!= null)if( X instanceof int[])
                Group_ID =(int[])X;
          
-          nx = detNode.getChildNode( "efficiency");
-          if( nx != null)
-            {X = nx.getNodeValue();
-             Float ff = DD.cnvertoFloat( X );
-             if( ff != null)
+            nx = detNode.getChildNode( "efficiency");
+            if( nx != null)
+             {X = nx.getNodeValue();
+              Float ff = DD.cnvertoFloat( X );
+              if( ff != null)
                if( ff.floatValue() != Float.NaN)
                  efficiency = ff.floatValue();
-            }
-           X = ndis.getAttrValue("raw_angle");
-          if( X instanceof float[])
+             }
+             X = ndis.getAttrValue("raw_angle");
+             if( X instanceof float[])
                Raw_Angle =(float[])X;
-         }
+	 }//distance node != null
+	 }//detNode != null
      
      float d,t,p,s,ra;
      int T;
