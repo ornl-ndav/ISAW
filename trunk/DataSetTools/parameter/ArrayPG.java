@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2003/09/13 23:29:45  bouzekc
+ *  Moved calls from setValid(true) to validateSelf().
+ *
  *  Revision 1.27  2003/09/09 23:06:25  bouzekc
  *  Implemented validateSelf().
  *
@@ -233,7 +236,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
         ArraytoString( value ) );
     }
 
-    setValid( true );
+    validateSelf(  );
   }
 
   /**

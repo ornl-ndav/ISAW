@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/09/13 23:29:47  bouzekc
+ *  Moved calls from setValid(true) to validateSelf().
+ *
  *  Revision 1.9  2003/08/15 23:50:05  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -93,6 +96,7 @@ public class IntArrayPG extends StringEntryPG implements ParamUsesString{
         super.setEntryValue(value);
       else
         this.value=value;
+      validateSelf();
     }
 
     public int[] getArrayValue(){
