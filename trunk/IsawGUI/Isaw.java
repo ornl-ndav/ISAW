@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.216  2005/02/27 20:12:25  rmikk
+ *  Changed the Help Menu ordering
+ *
  *  Revision 1.215  2005/02/17 23:12:31  dennis
  *  Changed version to 1.7.1 rc 2
  *
@@ -658,11 +661,14 @@ public class Isaw
 
   private static final String HOME_LINK_MI    = "ISAW Homepage";
   private static final String FTP_LINK_MI     = "ISAW FTP Site";
-  private static final String USERMAN_LINK_MI = "Online Documentation";
-  private static final String HOME_LINK       = "http://www.pns.anl.gov/ISAW/";
+  private static final String USERMAN_LINK_MI = "User/Ref Manuals";
+  private static final String HOME_LINK       = "http://www.pns.anl.gov/computing/ISAW/";
   private static final String FTP_LINK        = "ftp://zuul.pns.anl.gov/isaw/";
   private static final String USERMAN_LINK    = "ftp://zuul.pns.anl.gov/isaw/Documents/";
-
+  private static final String TUTORIAL_MI     = "Tutorial";
+  private static final String ISAWPROPS_MI     = "Preferences using IsawProps";
+  private static final String OPERATORINFO_MI  ="Creating Operators";
+  
   public static final String FILE_CMD = "-F";
 
   private static final String DATA_DIR_ENV = "Data_Directory";
@@ -923,7 +929,9 @@ public class Isaw
     JMenuItem homeLink        = new JMenuItem( HOME_LINK_MI );
     JMenuItem ftpLink         = new JMenuItem( FTP_LINK_MI );
     JMenuItem docLink         = new JMenuItem( USERMAN_LINK_MI );
-
+    JMenuItem TutLink         = new JMenuItem( TUTORIAL_MI);
+    JMenuItem IsawPropLink    = new JMenuItem(ISAWPROPS_MI );
+    JMenuItem OpWrite         = new JMenuItem( OPERATORINFO_MI);
     fMenu.add(fileLoadDataset);
     fileLoadDataset.add(Runfile);
     fileLoadDataset.add(LiveData);
@@ -979,7 +987,7 @@ public class Isaw
     if(instrumentInfoView!=null)
       vMenu.add(instrumentInfoView);         
       
-    hMenu.add(helpAbout);
+   /* hMenu.add(helpAbout);
     hMenu.add(helpOperations);
     hMenu.add(helpCommandPane);
     hMenu.add(glossary);
@@ -989,7 +997,27 @@ public class Isaw
     hMenu.add(homeLink);
     hMenu.add(ftpLink);
     hMenu.add(docLink);
-
+  */
+    hMenu.add(new IsawHelp.SiteHelp());
+    hMenu.add( TutLink);
+    hMenu.add( IsawPropLink);
+    JMenu Res= new JMenu("Resources on the Net");
+    
+      Res.add(homeLink);
+      Res.add(docLink);
+      Res.add( ftpLink);
+      hMenu.add( Res);
+    Res = new JMenu("Scripts");
+       Res.add(helpOperations);
+       Res.add(helpCommandPane);
+       hMenu.add(Res);
+    Res = new JMenu("Programming Information");
+       Res.add( OpWrite );
+       Res.add( apiDocs );
+       Res.add(glossary);
+       hMenu.add(Res);
+    hMenu.add( helpAbout);
+    
     fileExit.addActionListener(menu_item_handler);
     Runfile.addActionListener(load_menu_handler);
     LiveData.addActionListener(load_menu_handler);
@@ -1026,7 +1054,9 @@ public class Isaw
     homeLink.addActionListener(menu_item_handler);
     ftpLink.addActionListener(menu_item_handler);
     docLink.addActionListener(menu_item_handler);
-   
+    TutLink.addActionListener(menu_item_handler);
+    IsawPropLink.addActionListener(menu_item_handler); 
+    OpWrite.addActionListener(menu_item_handler);   
     menuBar.add(fMenu);
     menuBar.add(eMenu);
     menuBar.add(vMenu);
@@ -1694,6 +1724,27 @@ public class Isaw
 				     +" in web browser");
 	   BrowserControl.displayURL( USERMAN_LINK );
       }
+     
+        
+        
+      if( s.equals(TUTORIAL_MI)){
+         String S = DataSetTools.util.FilenameUtil.helpDir("user/ISAWTutorials.html");
+
+         HTMLPage H = new HTMLPage( S ) ;
+         sizeHTMLViewer(H,.95f,.95f);
+      }
+      if( s.equals(ISAWPROPS_MI)){
+        String S = DataSetTools.util.FilenameUtil.helpDir("user/IsawProps.html");
+
+        HTMLPage H = new HTMLPage( S ) ;
+        sizeHTMLViewer(H,.6f,.6f);
+      }
+      if( s.equals(OPERATORINFO_MI)){
+        String S = DataSetTools.util.FilenameUtil.helpDir("user/Operators.html");
+
+        HTMLPage H = new HTMLPage( S ) ;
+        sizeHTMLViewer(H,.9f,.9f);
+      }
 
 
                                     //remove some node from the tree.  since
@@ -2317,6 +2368,21 @@ public class Isaw
     return pairs;
   }
 
+  private void sizeHTMLViewer( HTMLPage H, float w, float h){
+      if( !H.isValid())
+         return;
+      Dimension D = getToolkit().getScreenSize();
+      // make the help window pop up centered and 60% of screen size
+      H.setSize((int)(w*D.width) , (int)(h*D.height) ); 
+      H.setLocation((int)Math.max(0,(int)(.5*(D.width-w*D.width))), 
+                  (int)Math.max(0,(int)(.5*(D.height-h*D.height))) );
+      try{
+          H.show();
+      }
+      catch(Exception e){
+          SharedData.addmsg("CANNOT FIND HELP FILE");
+      }
+  }
 
   /**
    * organizes a number of selections on the tree into a
