@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2003/02/19 16:49:20  pfpeterson
+ *  Now leaves the default value alone, if exists, in DataDirectoryString,
+ *  LoadFileString, SaveFileString, and InstrumentNameString.
+ *
  *  Revision 1.34  2003/01/29 17:08:51  pfpeterson
  *  Made the help window that is brought up not editable.
  *
@@ -361,14 +365,16 @@ public class JParametersDialog implements Serializable,
                  }
               else if( param.getValue() instanceof DataDirectoryString )
                 { 
-                 String DirPath = System.getProperty("Data_Directory");
-                 if( DirPath != null )
-                    DirPath = DataSetTools.util.StringUtil.
-                                 fixSeparator(DirPath+"\\");
-                 else
-                    DirPath = "";
+                  String DirPath=param.getValue().toString();
+                  if(DirPath==null || DirPath.length()<=0){
+                    DirPath = System.getProperty("Data_Directory");
+                    if( DirPath != null )
+                      DirPath = StringUtil.setFileSeparator(DirPath+"\\");
+                    else
+                      DirPath = "";
 
-                param.setValue( new DataDirectoryString(DirPath) );
+                    param.setValue( new DataDirectoryString(DirPath) );
+                  }
                 paramGUI = new JOneFileChooserParameterGUI( param ) ;
                 }
 
@@ -395,35 +401,37 @@ public class JParametersDialog implements Serializable,
 
               else if( param.getValue() instanceof InstrumentNameString)
                 {
-                 String XX = System.getProperty("DefaultInstrument");
+                 String XX = param.getValue().toString();
+                 if(XX==null || XX.length()<=0)
+                   System.getProperty("DefaultInstrument");
 
                  if( XX == null )
-                    XX = "";
+                   XX = "";
 
                  param.setValue(new InstrumentNameString( XX ));
                  paramGUI= new JStringParameterGUI( param);
                 }
               else if( param.getValue() instanceof LoadFileString){
-                 String FileName=System.getProperty("Data_Directory");
-                 if(FileName!=null){
-                    FileName
-                       =DataSetTools.util.StringUtil.fixSeparator(FileName+"\\");
-                 }else{
-                    FileName="";
-                   }
+                String FileName=param.getValue().toString();
+                if(FileName==null || FileName.length()<=0)
+                  FileName=System.getProperty("Data_Directory")+"\\";
+                if(FileName!=null && FileName.length()>0)
+                  FileName=StringUtil.setFileSeparator(FileName);
+                else
+                  FileName="";
 
-                 param.setValue( new LoadFileString(FileName) );
-                 paramGUI=new JLoadFileParameterGUI(param);
+                param.setValue( new LoadFileString(FileName) );
+                paramGUI=new JLoadFileParameterGUI(param);
                 }
               else if( param.getValue() instanceof SaveFileString){
-                 String FileName=System.getProperty("Data_Directory");
-                 if(FileName!=null){
-                    FileName
-                       =DataSetTools.util.StringUtil.fixSeparator(FileName+"\\");
-                 }else{
-                    FileName="";
-                 }
-
+                 String FileName=param.getValue().toString();
+                 if(FileName==null || FileName.length()<=0)
+                   FileName=System.getProperty("Data_Directory")+"\\";
+                 if(FileName!=null && FileName.length()>0)
+                   FileName=StringUtil.setFileSeparator(FileName);
+                 else
+                   FileName="";
+                 
                  param.setValue( new SaveFileString(FileName) );
                  paramGUI=new JSaveFileParameterGUI(param);
                 }
