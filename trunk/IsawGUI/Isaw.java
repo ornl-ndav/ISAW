@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.101  2002/06/11 19:19:13  pfpeterson
+ *  Removed three lines to increase stability of the JSplitPanes.
+ *
  *  Revision 1.100  2002/06/11 14:48:43  pfpeterson
  *  Changed default version to 1.4.0alpha.
  *
@@ -557,7 +560,6 @@ public class Isaw
   JTextArea propsText = new JTextArea(5,20);
   JFrame kp;
 
-  static boolean    initialized=false;
   static JSplitPane upper_sp;
   static JSplitPane main_sp;
 
@@ -1927,8 +1929,6 @@ public class Isaw
      * resizes.
      */
     private static void mw_resized(int width, int height){
-        if(!initialized) return;
-        
         // Set the tree width
         double tree_widthD=
             Double.parseDouble(System.getProperty("Tree_Width","0.2"));
@@ -2087,7 +2087,6 @@ public class Isaw
                 System.exit(0);
             } 
         } );
-    initialized=true;
     mw_resized(Isaw.getWidth(),Isaw.getHeight());
   }
  
