@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2001/08/10 18:40:14  rmikk
+ *  Adjusted the size of the dialog box to reduce the amount
+ *  of excess space when  there are a lot of options
+ *
  *  Revision 1.12  2001/08/09 14:12:25  rmikk
  *  Added a getResult method to the dialog box so that Java
  *  programmers can actually get the result of an operation.
@@ -113,7 +117,8 @@ public class JParametersDialog implements Serializable,
         this.ds_src = ds_src;
         this.sessionLog = sessionLog;    
         this.io = io;
-        opDialog = new JDialog( new JFrame(), op.getTitle(),true);
+        opDialog = new JDialog( new JFrame(), op.getTitle(), true );
+        //opDialog.addComponentListener( new MyComponentListener());       
         int Size = 0 ;
         int Size1 = 0;
         String SS ="Operation "+op.getTitle();
@@ -205,7 +210,7 @@ public class JParametersDialog implements Serializable,
              if ( op.getTitle().indexOf( "DataSet" ) >= 0 )
                attr_list = ds.getAttributeList();
 
-             else
+	      else
              {
                Data data = ds.getData_entry(0);
                if ( data != null )
@@ -213,7 +218,8 @@ public class JParametersDialog implements Serializable,
                else
                  attr_list = new AttributeList();
              }
-
+             System.out.println("Num attributes="+
+                    attr_list.getNum_attributes());
              paramGUI = new JAttributeNameParameterGUI(param, attr_list);
            }
 
@@ -326,7 +332,7 @@ public class JParametersDialog implements Serializable,
         opDialog.getContentPane().add( BB);
         //#
        
-        Size += (num_param +5)*8;
+        Size += (num_param  + 4 )*7 + 7;
         
         opDialog.setSize((int)(.4* Width) , new Float(Size +.8).intValue());
         opDialog.validate();
@@ -355,7 +361,21 @@ public class JParametersDialog implements Serializable,
     public Object getLastResult()   
      {return Result;
      }           
-
+  public class MyComponentListener extends ComponentAdapter
+  {
+   public void componentHidden(ComponentEvent e)
+      { System.out.println( "in Component Hidden ");       
+      }
+   public void componentResized(ComponentEvent e)
+      {System.out.println("in Component resized");
+      }
+   public void componentMoved(ComponentEvent e)
+      {System.out.println( "In Component moved");
+      }
+   public void componentShown(ComponentEvent e)
+      { System.out.println( "In componentShown ");
+      }
+  }
   public class ApplyButtonHandler implements ActionListener,
                                   IObservable
   {
