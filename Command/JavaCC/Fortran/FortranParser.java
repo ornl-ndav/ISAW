@@ -53,10 +53,15 @@ public class FortranParser implements FortranParserConstants {
    */
   public static String parseText( String text ) throws ParseException {
     standalone = false;
-    //need a semicolon on the end
-    if( text.indexOf( ";" ) < 0 ) {
-      text = text.trim(  ) + ";";
+
+    if( text == null ) {
+      return null;
     }
+
+    if( text.indexOf( "\n" ) < 0 ) {
+      text = text + "\n";
+    }
+
     if( myParser == null ) {
       myParser = new FortranParser( new StringReader( text )  );
     } else {
