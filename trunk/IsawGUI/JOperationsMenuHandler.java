@@ -1,10 +1,10 @@
 /*
- * @(#)Isaw.java     1.0  99/09/02  Alok Chatterjee
+ * @(#)JOperationsMenuHandler.java     1.0  99/09/02  Alok Chatterjee
  *
  * 1.0  99/09/02  Added the comments and made this a part of package IsawGUI
- *
+ * 
  */
-
+ 
 package IsawGUI;
 
 import DataSetTools.dataset.*;
@@ -14,7 +14,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
  
-
+/**
+ * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
+ * ChopTools and graph packages.
+ *
+ * @version 1.0  
+ */
+ 
 public class JOperationsMenuHandler implements ActionListener, Serializable
 {
     private DataSet ds;
@@ -32,6 +38,7 @@ public class JOperationsMenuHandler implements ActionListener, Serializable
             DataSetOperator op = ds.getOperator(0);
             String s=ev.getActionCommand();
            // for (int i = 0; i<ds.getNum_operators(); i++)
+    
            boolean found = false;
            int i = 0;
            while(!found && i<ds.getNum_operators())

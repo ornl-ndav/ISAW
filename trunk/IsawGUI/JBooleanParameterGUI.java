@@ -2,17 +2,25 @@
  * @(#)JBooleanParameterGUI.java     1.0  99/09/02  Alok Chatterjee
  *
  * 1.0  99/09/02  Added the comments and made this a part of package IsawGUI
- *
+ * 
  */
-
+ 
 package IsawGUI;
 
 import javax.swing.*;
+//import javax.swing.*;
 import DataSetTools.*;
 import DataSetTools.operator.*;
 import java.awt.*;
 import java.util.zip.*;
 import java.io.Serializable;
+
+/**
+ * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
+ * ChopTools and graph packages.
+ *
+ * @version 1.0  
+ */
 
 public class JBooleanParameterGUI extends JParameterGUI implements Serializable
 {

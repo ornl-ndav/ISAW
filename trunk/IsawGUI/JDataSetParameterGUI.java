@@ -1,13 +1,14 @@
 /*
- * @(#)Isaw.java     1.0  99/09/02  Alok Chatterjee
+ * @(#)JDataSetParameterGUI.java     1.0  99/09/02  Alok Chatterjee
  *
  * 1.0  99/09/02  Added the comments and made this a part of package IsawGUI
- *
+ * 
  */
-
+ 
 package IsawGUI;
 
 import javax.swing.*;
+//import javax.swing.*;
 import DataSetTools.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
@@ -15,6 +16,13 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.tree.*;
 import javax.swing.JTree.*;
+
+/**
+ * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
+ * ChopTools and graph packages.
+ *
+ * @version 1.0  
+ */
 
 public class JDataSetParameterGUI extends JParameterGUI
 {
@@ -30,11 +38,13 @@ public class JDataSetParameterGUI extends JParameterGUI
         
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)jtui.getTree().getModel().getRoot();
         int n_containers = root.getChildCount();
+  
         for(int i = 0; i<n_containers; i++)
         {
             DefaultMutableTreeNode  container =(DefaultMutableTreeNode)root.getChildAt(i);
+            //DefaultMutableTreeNode  container =(DefaultMutableTreeNode)jtui.getSelectedNode();
             int n_children = container.getChildCount();
-            for(int k = 0; k<n_children; k++)
+            for(int k = 0; k < n_children; k++)
             {
                 DefaultMutableTreeNode  child =(DefaultMutableTreeNode)container.getChildAt(k);
                 DataSet ds = (DataSet)child.getUserObject();
