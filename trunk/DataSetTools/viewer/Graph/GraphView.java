@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2001/07/17 20:46:00  dennis
+ *  Now checks validDataSet() before using it.
+ *  If rebinning, the graphs are now drawn based on the
+ *  x_scale obtained from getXConversionScale() method.
+ *
  *  Revision 1.11  2001/06/04 22:45:18  dennis
  *  Now uses DS_Util.getData_ID_String() to construct border labels for the
  *  graphs.
@@ -149,10 +154,14 @@ public class GraphView extends    DataSetViewer
  */
 
 /* ------------------------------------------------------------------------ */
+
 public GraphView( DataSet data_set, ViewerState state ) 
 {
   super( data_set, state );       
   AddOptionsToMenu();
+
+  if ( !validDataSet() )
+    return;
 
   init();
   DrawGraphs();
@@ -164,8 +173,20 @@ public GraphView( DataSet data_set, ViewerState state )
  *
  */
 
+
+/* ----------------------------- redraw --------------------------------- */
+/**
+ * Redraw all or part of the graphs. The amount that needs to be redrawn is
+ * determined by the "reason" parameter.  
+ *
+ * @param  reason  The reason the redraw is needed.
+ */
+
 public void redraw( String reason )
 {
+  if ( !validDataSet() )
+    return;
+
   if ( reason == IObserver.SELECTION_CHANGED )
     DrawSelectedGraphs();
 
@@ -177,24 +198,29 @@ public void redraw( String reason )
 }
 
 
+/* ----------------------------- setDataSet ------------------------------- */
+/**
+ * Specify a different DataSet to be shown by this viewer.
+ *
+ * @param  ds   The new DataSet to view
+ *
+ */
+
 public void setDataSet( DataSet ds )
 {
   setVisible(false);
   super.setDataSet( ds );
+
+  if ( !validDataSet() )
+    return;
+
   init();
   redraw( NEW_DATA_SET );
   setVisible(true);
 }
 
 
-public void doLayout()
-{
-  if ( main_split_pane != null )
-    main_split_pane.my_setDividerLocation( 0.7f );
-
-  super.doLayout();
-}
-
+/* ------------------------ getXConversionScale -------------------------- */
  /**
   *  Return a range of X values specified by the user to be used to
   *  control X-Axis conversions.
@@ -484,7 +510,6 @@ private void DrawGraphs( )
   }
 
   viewport.setVisible(true);
-//  viewport.repaint();           // is this needed?
 }
 
 /* -------------------------- DrawSelectedGraphs ------------------------- */
@@ -538,20 +563,19 @@ private void DrawSpecifiedGraph( int index )
   if ( index < 0 || index >= num_data_blocks )
     return;                           // index is invalid, so nothing to do
 
-  float x_min = x_range_ui.getMin();
-  float x_max = x_range_ui.getMax();
-  int num_cols = (int)n_bins_ui.getValue();
- 
-  Data data_block;
+  Data data_block = getDataSet().getData_entry( index );
+
   if ( getState().getRebin() )
   {
-    Data temp_data_block = getDataSet().getData_entry( index );
-    data_block = (Data)temp_data_block.clone();
-    UniformXScale x_scale = new UniformXScale( x_min, x_max, num_cols );
+    UniformXScale x_scale = getXConversionScale();
+    int num_cols = x_scale.getNum_x() + 1;
+    float x_min  = x_scale.getStart_x();
+    float x_max  = x_scale.getEnd_x();
+    x_scale = new UniformXScale( x_min, x_max, num_cols );
+
+    data_block = (Data)data_block.clone();
     data_block.ResampleUniformly( x_scale );
   }
-  else
-    data_block = getDataSet().getData_entry( index ); 
 
   JPanel border_panel = (JPanel)h_graph[ index ].getParent();
   TitledBorder border = (TitledBorder)border_panel.getBorder();
@@ -571,7 +595,10 @@ private void DrawSpecifiedGraph( int index )
     was_selected[index] = false;
   }
 
-  float x[] = data_block.getX_scale().getXs();
+  XScale x_scale = data_block.getX_scale();
+  float  x_min  = x_scale.getStart_x();
+  float x_max  = x_scale.getEnd_x();
+  float x[] = x_scale.getXs();
   float y[] = data_block.getY_values();
   h_graph[index].setData( x, y, 0, true );
 
