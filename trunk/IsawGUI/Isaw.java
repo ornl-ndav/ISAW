@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.153  2003/08/28 23:12:46  dennis
+ *  Set version number to 1.5.1 beta 3
+ *
  *  Revision 1.152  2003/08/28 18:52:38  dennis
  *  Added support for loading .csd files (concatenated files from
  *  Ideas MC simulations).
@@ -599,7 +602,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.5.1 beta 2";
+          version="1.5.1 beta 3";
         else
           version=SharedData.VERSION;
 
