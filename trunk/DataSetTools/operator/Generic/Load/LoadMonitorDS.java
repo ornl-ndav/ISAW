@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/12/20 17:50:43  dennis
+ *  Added getDocumentation() method. (Chris Bouzek)
+ *
  *  Revision 1.4  2002/11/27 23:21:16  pfpeterson
  *  standardized header
  *
@@ -62,13 +65,13 @@ import DataSetTools.parameter.*;
  * @see DataSetTools.operator.Operator
  */
 
-public class LoadMonitorDS extends    GenericLoad 
+public class LoadMonitorDS extends    GenericLoad
                            implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
    * Construct an operator with a default parameter list.  If this constructor
-   * is used, meaningful values for the parameters should be set before 
+   * is used, meaningful values for the parameters should be set before
    * calling getResult().
    */
    public LoadMonitorDS( )
@@ -79,7 +82,7 @@ public class LoadMonitorDS extends    GenericLoad
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
-   *  Construct an operator for with the specified parameter values so 
+   *  Construct an operator for with the specified parameter values so
    *  that the operation can be invoked immediately by calling getResult().
    *
    *  @param  file_name   The fully qualified runfile name
@@ -91,11 +94,11 @@ public class LoadMonitorDS extends    GenericLoad
 
       IParameter parameter = getParameter(0);
       parameter.setValue( file_name );
-   } 
+   }
 
   /* -------------------------- setDefaultParameters ----------------------- */
   /**
-   *  Set the parameters to default values.  
+   *  Set the parameters to default values.
    */
   public void setDefaultParameters()
   {
@@ -108,7 +111,8 @@ public class LoadMonitorDS extends    GenericLoad
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, Mon
+   * @return  the command name to be used with script processor: 
+   *          in this case, Mon
    *
    */
    public String getCommand()
@@ -116,11 +120,31 @@ public class LoadMonitorDS extends    GenericLoad
      return "Mon";
    }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+   public String getDocumentation()
+   {
+     StringBuffer s = new StringBuffer("");
+     s.append("@overview This operator loads the Monitor DataSet from ");
+     s.append("one IPNS runfile.");
+     s.append("@assumptions The file exists and it contains valid ");
+     s.append("runfile data.");
+     s.append("@algorithm Uses the IPNS runfile data to create a new");
+     s.append("DataSet.");
+     s.append("@param file_name The fully qualified runfile name.");
+     s.append("@return A new DataSet containing the monitor data for the ");
+     s.append("specified run.");
+     s.append("@error Returns an ErrorString if the file could not be ");
+     s.append("opened.");
+     return s.toString();
+   }
 
   /* ----------------------------- getResult ---------------------------- */
   /**
-   * Returns the object that is the result of applying this operation.  This
-   * should be called after setting the appropriate parameters.  
+   * Load the monitor DataSet from an IPNS runfile. 
    *
    * @return  A DataSet containing the monitor data for the specified run
    *          is returned as a java Object, or an error string is returned
@@ -130,7 +154,7 @@ public class LoadMonitorDS extends    GenericLoad
    {
      RunfileRetriever rr;
                                           // get the parameters specifying the
-                                          // runs         
+                                          // runs
      String    file_name   = (String)getParameter(0).getValue();
 
      rr = new RunfileRetriever( file_name );
@@ -147,13 +171,13 @@ public class LoadMonitorDS extends    GenericLoad
 
 
    /* -------------------------------- main ------------------------------ */
-   /* 
-    * main program for test purposes only  
+   /*
+    * main program for test purposes only
     */
 
    public static void main(String[] args)
    {
-     LoadMonitorDS loader = new LoadMonitorDS( 
+     LoadMonitorDS loader = new LoadMonitorDS(
                                 "/IPNShome/dennis/ARGONNE_DATA/hrcs2444.run" );
 
       Object result = loader.getResult();
@@ -165,5 +189,8 @@ public class LoadMonitorDS extends    GenericLoad
       }
       else
         System.out.println( result.toString() );
-   } 
-} 
+
+      System.out.println("\nCalling getDocumentation():\n");
+      System.out.println(loader.getDocumentation());
+   }
+}
