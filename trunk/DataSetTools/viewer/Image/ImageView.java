@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2002/08/02 15:33:30  dennis
+ *  improved handling of POINTED_AT_CHANGED messages
+ *
  *  Revision 1.35  2002/07/29 16:46:53  dennis
  *  ImageView no longer sets "PointedAt" to 0 when drawing it's
  *  default horizontal graph.  DataSet observers are no longer
@@ -373,27 +376,26 @@ public void redraw( String reason )
 
     if ( n_data > 0 )
     {
-      floatPoint2D pt = image_Jpanel.getCurrent_WC_point();
-      int   index = getDataSet().getPointedAtIndex();
-      float x     = getDataSet().getPointedAtX();
-      pt.y = index;
-      pt.y = pt.y * ( n_data - 1 )/ n_data + 0.5f;
-      if ( x != Float.NaN )
-        pt.x = x;
-
       if ( !image_sent_pointed_at )
       {
+        floatPoint2D pt = image_Jpanel.getCurrent_WC_point();
+        int   index = getDataSet().getPointedAtIndex();
+        float x     = getDataSet().getPointedAtX();
+        pt.y = index;
+        pt.y = pt.y * ( n_data - 1 )/ n_data + 0.5f;
+        if ( x != Float.NaN )
+          pt.x = x;
+
         SyncVImageScrollBar();
         if ( index != DataSet.INVALID_INDEX && x != Float.NaN )
           image_table.showConversions( x, index );
+
+        image_Jpanel.set_crosshair_WC( pt );
+        getState().set_int( ViewerState.POINTED_AT_INDEX, index );
+        getState().set_float( ViewerState.POINTED_AT_X, pt.x );
       }
       else
         image_sent_pointed_at = false;   // only skip one POINTED_AT message
-
-      image_Jpanel.set_crosshair_WC( pt );
-
-      getState().set_int( ViewerState.POINTED_AT_INDEX, index );
-      getState().set_float( ViewerState.POINTED_AT_X, pt.x );
     }
   }
   else
