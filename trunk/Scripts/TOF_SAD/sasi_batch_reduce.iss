@@ -129,7 +129,7 @@ Echo("Loading Background Scattering "&RUNBds)
 load Input_Path&inst&CadmiumFile&ext,"RUNCds"
 Echo("Loading Cadmium Scattering "&RUNCds)
 
-EFR = Output_Path&"sens"&EffFile&".dat"
+EFR = Output_Path&"EFR"&EffFile&".dat"
 sensitivity = Output_Path&"sens"&SensFile&".dat"
 Eff =Read3Col1D( EFR,"Efficiency")
 Echo("Reading Efficiency Ratio file "&EFR)
