@@ -36,6 +36,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2002/11/25 13:51:07  rmikk
+ *  The panel containing the SGT ContourPlot now is a CoordJPanel with all the cursor controls.
+ *  Expanding the split pane with the ContourPlot now works.
+ *
  *  Revision 1.21  2002/10/18 19:05:34  rmikk
  *  Fixed the notify system to be more robust
  *
@@ -143,6 +147,7 @@ import DataSetTools.retriever.*;
 import DataSetTools.operator.*;
 import gov.noaa.pmel.sgt.dm.*;
 import DataSetTools.operator.DataSet.*;
+import DataSetTools.components.image.*;
 
 /**
  * Example demonstrating how to use <code>JPlotLayout</code>
@@ -163,7 +168,7 @@ public class ContourView extends DataSetViewer
    JMenuItem tree_;
    DataSetXConversionsTable dct;
    JPanel ConvTableHolder = null;
-   JPanel rpl_Holder = null;
+   CoordJPanel rpl_Holder = null;
    JScrollPane dctScroll = null;
    XScaleChooserUI Xscl = null;
    JPanel  XsclHolder = null;
@@ -195,6 +200,7 @@ public class ContourView extends DataSetViewer
    float note_time;
    float note_group; 
    protected IAxesHandler Transf;
+   MyMouseListener cursors;
   public ContourView( DataSet ds, ViewerState state1 )
      { this( ds, state1, null,null,null);
       }
@@ -218,6 +224,7 @@ public class ContourView extends DataSetViewer
         return;
        }
      sliderTime_index = 0;
+     cursors = new MyMouseListener( this );
      PrevGroup = ds.getPointedAtIndex();
      if( state1 == null)
        {state = new ViewerState();
@@ -297,17 +304,19 @@ public class ContourView extends DataSetViewer
      intensity.setBorder( BorderFactory.createTitledBorder( BorderFactory.createEtchedBorder(),
                         "Intensity") );
      
-     intensity.addChangeListener( new MyChange());
+     intensity.addChangeListener( new MyChange( this ));
      intensityHolder = new JPanel( new GridLayout(1,1));
      intensityHolder.add( intensity);
 
      
       
-     rpl_Holder = new JPanel(new GridLayout(1,1));//MyJPanel( rpl_, Color.white);
+     rpl_Holder = new CoordJPanel();
+     rpl_Holder.setLayout(new GridLayout(1,1));//MyJPanel( rpl_, Color.white);
      rpl_Holder.add( rpl_);
+     rpl_Holder.addActionListener( new CoordJPanelActionListener());
      setLayout(jpEast );
-     rpl_.addFocusListener( new MyFocusListener());
-     
+     //rpl_.addFocusListener( new MyFocusListener());
+     //rpl_.addMouseMotionListener( new MyMouseMotionListener());
      //main.setDividerLocation( .70);
      /*  main = new JPanel();
      GridBagLayout gbl = new GridBagLayout();
@@ -355,13 +364,28 @@ public class ContourView extends DataSetViewer
      // end grid bag layout for all components
      */  
      setLayout( new GridLayout( 1,1));
-     main.addComponentListener( new MyComponentListener() );
+     rpl_Holder.addComponentListener( new MyComponentListener() );
      add( main);
      validate();
      rpldrawn=false;
     }
 
+  class MyMouseMotionListener implements MouseMotionListener
+  {
+   public void mouseDragged(MouseEvent e)
+   {
+    rpl_Holder.dispatchEvent( e);
 
+    }
+
+   public void mouseMoved(MouseEvent e)
+   {
+    rpl_Holder.dispatchEvent( e);
+    }
+
+
+
+  }//MyMouseLotionListener
   // main splitpane with state, 
   public void setLayout(JPanel jpEast)
     {jpEast.add( ac );
@@ -387,7 +411,67 @@ public class ContourView extends DataSetViewer
        
     }
 
+  class CoordJPanelActionListener implements ActionListener
+    {
+      public void actionPerformed( ActionEvent evt )
+        { if( rpl_Holder == null) 
+            return;
+         if( evt.getActionCommand().equals(CoordJPanel.CURSOR_MOVED))
+          { Point P = rpl_Holder.getCurrent_pixel_point() ;
+            cursors.mouseClicked( new MouseEvent(rpl_, MouseEvent.MOUSE_CLICKED,
+                          (long)0,0,P.x,P.y,1,false));
+          }
+          else if( evt.getActionCommand().equals(CoordJPanel.ZOOM_IN))
+          { Rectangle R = rpl_Holder.getZoom_region();
+           
+            if( R == null )
+              return;
+            
+            gov.noaa.pmel.sgt.Layer L = rpl_.getFirstLayer();
+            gov.noaa.pmel.sgt.Graph g = L.getGraph();
+        
+            if( !( g instanceof CartesianGraph ) )
+               return;
+            CartesianGraph cg = ( CartesianGraph )g;
 
+            rpl_.setBatch(true);
+            double xl = cg.getXPtoU( L.getXDtoP( R.x ) );
+            double yl = cg.getYPtoU( L.getYDtoP( R.y ) );
+            double xr = cg.getXPtoU( L.getXDtoP( R.x+R.width ) );
+            double yr = cg.getYPtoU( L.getYDtoP( R.y +R.height) );
+            double y;
+            if( yl > yr)
+              {y = yl;
+               yl = yr;
+               yr = y;
+              }
+          
+            try{
+              rpl_.setRange( new Domain(new Range2D(xl,xr), new Range2D(yl,yr)));
+                }
+            catch( Exception sss)
+              {System.out.println("could not set the range"+sss);
+              }
+            Component[] comps = rpl_.getComponents();
+            Layer ly;
+            for(int i=0; i < comps.length; i++) {
+              if(comps[i] instanceof Layer) {
+                ly = (Layer)comps[i];
+                ((CartesianGraph)ly.getGraph()).setClip(xl, xr,
+                                                  yl, yr);
+               
+              }
+             }
+           
+            rpl_.setBatch(false);
+            rpl_.draw();
+          }
+          else if(evt.getActionCommand().equals(CoordJPanel.RESET_ZOOM))
+          { rpl_.resetZoom();
+          }
+
+         }
+     }//CoordJPanelActionListener()
   public void doLayout2()
     {if( acHolder == null)
        {super.doLayout();
@@ -535,7 +619,7 @@ public class ContourView extends DataSetViewer
      //rpl_.setKeyBoundsP(new Rectangle2D.Double(2.0,2.0,ls.width,1.0 )); 
      //rpl_.setKeyLocationP( new Point2D.Double( 2.0,2.0));
 
-     rpl_.addMouseListener( new MyMouseListener() );
+     rpl_.addMouseListener( cursors );
      //gridKeyPane = rpl_.getKeyPane();
      //rpl_.setBatch(true);
      //rpl_.setLayout( new GridLayout( 1,1));
@@ -944,11 +1028,23 @@ public class ContourView extends DataSetViewer
        * Create the layout without a Logo image and with the
        * ColorKey on a separate Pane object.
        */
-      rpl = new JPlotLayout( true, false, false, "ISAW Layout", null, false);
+      rpl = new MJPlotLayout( true, false, false, "ISAW Layout", null, false);
      
       gov.noaa.pmel.util.Dimension2D sz =new Dimension2D( 6.0, 6.0);
       rpl.setLayerSizeP( sz );
         //rpl.setKeyLocationP( new Point2D.Double(0.0,1.0));
+
+      /*MouseListener[] E = (MouseListener[]) rpl.getListeners(MouseListener.class );
+     
+      for(int i=0;i<E.length;i++)
+         rpl.removeMouseListener( E[i]);
+
+      MouseMotionListener[] E1 = (MouseMotionListener[])rpl.getListeners(MouseMotionListener.class);
+      for(int i=0;i<E1.length;i++)
+         rpl.removeMouseMotionListener( E1[i]); 
+
+      */
+      
       int style =state.get_int("Contour.Style");
       if( style != GridAttribute.CONTOUR)
         { 
@@ -976,8 +1072,7 @@ public class ContourView extends DataSetViewer
        */
       IndexedColorMap cmap = createColorMap( datar, state, clevels );
       
-      
-      
+ 
       if( style != GridAttribute.CONTOUR)
         { gridAttr_ = new GridAttribute( style,cmap);
           if( gridAttr_.isContour())
@@ -1045,6 +1140,20 @@ public class ContourView extends DataSetViewer
       return cmap;
    }
   
+  class MJPlotLayout extends JPlotLayout
+    {
+      public MJPlotLayout(boolean x, boolean y, boolean z, String S,java.awt.Image u,boolean zz)
+      { super( x,y,z,S,u,zz);
+       }
+
+      public void processEvent( AWTEvent evt)
+      {
+        rpl_Holder.dispatchEvent( evt);
+       }
+
+     }
+
+    
    // For testing purposes only
   public static void main2( String[] args )
    {
@@ -1233,6 +1342,15 @@ public class ContourView extends DataSetViewer
 
   class MyChange implements javax.swing.event.ChangeListener
    {
+
+      JPanel panel;
+
+      public MyChange( JPanel panel )
+      {
+        this.panel = panel;
+      }
+
+
       public void stateChanged( javax.swing.event.ChangeEvent event )
       { 
          Object obj = event.getSource();
@@ -1243,7 +1361,8 @@ public class ContourView extends DataSetViewer
          rpl_Holder.remove( rpl_);
          rpl_ = makeGraph( times[sliderTime_index], state);
          rpl_Holder.add( rpl_);
-         rpl_.addMouseListener( new MyMouseListener() );
+         rpl_.addMouseListener( cursors );
+         
          rpl_Holder.validate();
          rpl_.draw();
             
@@ -1402,7 +1521,8 @@ public class ContourView extends DataSetViewer
             return;
 
          //main.invalidate();
-
+         if( cursors != null)
+           cursors.clearcursors();
          rpl_.draw();
 
       }
@@ -1412,20 +1532,82 @@ public class ContourView extends DataSetViewer
       { 
          //if( rpl_ != null)
          // rpl_.draw();
+         
          componentResized( e );
       }
 
 
       public void componentHidden( ComponentEvent e )
-      {}
+      { if( cursors != null)
+           cursors.clearcursors();
+      }
+
+
 
    }
 
 
   class MyMouseListener extends MouseAdapter
-   {
+   {  CrosshairCursor crossHair;
+     
+      boolean crossHairDrawn, boxDrawn;
+      JPanel panel;
+      
+      public MyMouseListener( JPanel panel)
+      { this.panel = panel = null;
+        if( panel != null)
+          {
+            crossHair = new CrosshairCursor( panel );
+            crossHairDrawn = false;
+            boxDrawn = false;
+            //box = new BoxCursor( panel );
+           }
+        
+       }
+
+      public void clearcursors()
+      {  if( rpl_Holder != null)
+           if( rpl_Holder.isDoingBox())
+              rpl_Holder.stop_box( new Point( 0,0), false);
+           else if( rpl_Holder.isDoingCrosshair())
+              rpl_Holder.stop_crosshair( new Point(0,0));
+       //crossHairDrawn = false;
+       //crossHair.stop(new Point( 0,0));
+
+      }
+
+
+      public void handleCrossHairs( MouseEvent e)
+      {if( panel == null) 
+         return;
+       int x = e.getX(),
+           y = e.getY();
+       
+       Component cc = (Component)e.getSource();
+       if( e.getSource() instanceof JPane)
+       { JPane jp = (JPane) e.getSource();
+         System.out.println("in getSource instance of JPane");
+         cc = jp.getParent();
+         if( cc == null) return;
+         if( !(cc instanceof JPanel)) return;
+         x = x +(jp.getBounds().x - panel.getBounds().x );
+         y = y +(jp.getBounds().y - panel.getBounds().y );
+        
+       }
+
+       crossHair.start(  new Point(x,y));
+       crossHair.redraw( new Point(x,y));
+      
+
+      }
+
+
+
+
       public void mouseClicked( MouseEvent e )
       { //JPlotLayout jp = (JPlotLayout)(e.getSource());
+         handleCrossHairs( e );
+         
          gov.noaa.pmel.sgt.Layer L = rpl_.getFirstLayer();
          gov.noaa.pmel.sgt.Graph g = L.getGraph();
         
@@ -1512,6 +1694,15 @@ public class ContourView extends DataSetViewer
        }
 
     }
+  
+
+  public void paint( Graphics g)
+  { super.paint( g);
+    if( cursors != null)
+    {
+     cursors.clearcursors();
+     }
+   }
   public void paint1( Graphics g)
    {System.out.println("In ContourView paint");
      Graphics g1 = g;
