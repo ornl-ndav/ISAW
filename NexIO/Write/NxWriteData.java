@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2005/01/10 17:30:36  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.13  2005/01/10 16:18:13  rmikk
  * Now processes a data set that has LPSD's and area grids
  *
@@ -697,7 +700,7 @@ public class NxWriteData {
     * @param nxInstr   The NXinstrument node for this NXentry
     * @param DS        The DataSet to be written
     * @param makelinks   Not used. Links are made
-    * @return
+    * @return  1 if successful or -1 if unsuccessful
     */
     public int processDSgrid(NxWriteNode nodeEntr, NxWriteNode nxInstr, 
         DataSet DS, boolean makelinks) {
