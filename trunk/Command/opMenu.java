@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2004/03/17 20:25:09  dennis
+ * Fixed @see tag that was broken when view components, math and
+ * util were moved to gov package.
+ *
  * Revision 1.30  2004/03/15 23:58:31  dennis
  * Changed some references to static methods to be through the
  * class name instead of an instance.
@@ -115,7 +119,7 @@ public class opMenu extends JMenu{
      * @param iobs an iobserver of these operations
      * @see OperatorHandler 
      * @see DataSetTools.components.ParametersGUI.IDataSetListHandler 
-     * @see DataSetTools.util.IObserver
+     * @see gov.anl.ipns.Util.Messaging.IObserver
      */
     public opMenu(OperatorHandler op , IDataSetListHandler DS, Document logdoc,
                                                               IObserver iobs){
