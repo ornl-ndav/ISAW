@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/11/12 23:40:22  dennis
+ *  Added getDocumentation() and main() methods.  Added documentation to
+ *  getResult() method.  ( Modified by Shannon Hintzman )
+ *
  *  Revision 1.2  2002/09/19 16:02:35  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -44,7 +48,7 @@
  *  Added copyright and GPL info at the start of the file.
  *
  *  Revision 1.5  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
+ *    Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
  *  classes.  The abstract base class hierarchy is now:
  *
@@ -99,7 +103,9 @@ package DataSetTools.operator.DataSet.Math.Scalar;
 
 import  java.io.*;
 import  java.util.Vector;
+import  DataSetTools.viewer.*;
 import  DataSetTools.dataset.*;
+import  DataSetTools.operator.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
@@ -155,10 +161,52 @@ public class DataSetScalarMultiply extends    ScalarOp
                                     // this operator should operate on
   }
 
+  /* ---------------------------- getDocumentation -------------------------- */
+ 
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    
+    Res.append("@overview This operator multiplies all data objects in a ");
+    Res.append("DataSet by a constant. When the operation is successful and a");
+    Res.append(" new DataSet is created, a reference to this new DataSet is ");
+    Res.append("returned. If a new DataSet is NOT created, the result is ");
+    Res.append("stored in the current DataSet and a reference to the current ");
+    Res.append("DataSet is returned. If the operation is NOT successful, an ");
+    Res.append("error string is returned.");
+     
+    Res.append("@algorithm If make a new DataSet is selected, construct a new");
+    Res.append(" DataSet with the same title, units and operations as the ");
+    Res.append("current DataSet, multiply each value of the current DataSet ");
+    Res.append("by the constant and store in the new DataSet. If it is not ");
+    Res.append("selected, multiply each value of the current DataSet by the ");
+    Res.append("constant value and replace the value in the current DataSet ");
+    Res.append("with it.");
+    
+    Res.append("@param ds - the current DataSet on which the operator will be");
+    Res.append(" performed.");
+    Res.append("@param value - the value to multiply each point in each data ");
+    Res.append("block of the current DataSet by.");
+    Res.append("@param make_new_ds - a boolean value which determines if a ");
+    Res.append("new DataSet is created or not.");
+    
+    Res.append("@return returns a new DataSet or an ErrorString.");
+    Res.append("If \"create a new DataSet\" is selected and operation is ");
+    Res.append("successful, a reference to a new DataSet will be returned. If");
+    Res.append(" the operation is successful without creating a new DataSet, ");
+    Res.append("a reference to the current DataSet will be returned. If the ");
+    Res.append("operation is not successful, an ErrorString will be returned");
+    
+    Res.append("@error \"ERROR: unsupported operation in DoDSScalarOp\"");
+    
+    return Res.toString();
+  }
+
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, Mult
+   * @return	the command name to be used with script processor: in this case,
+   *		 Mult
    */
    public String getCommand()
    {
@@ -183,7 +231,14 @@ public class DataSetScalarMultiply extends    ScalarOp
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+ /**
+   * @return returns a DataSet or an Error String
+   * The return object may be a new DataSet containing the current DataSet 
+   * values multiplied by the constant value if "Create a new DataSet" is 
+   * selected, the current data set multiplied by the constant value if 
+   * "Create a new DataSet" was not selected, or an ErrorString if the 
+   * operation was invalid ("Error: unsupported operation in DoDSScalarOp").
+   */
   public Object getResult()
   {
     return DSOpsImplementation.DoDSScalarOp( this );
@@ -206,6 +261,20 @@ public class DataSetScalarMultiply extends    ScalarOp
 
     return new_op;
   }
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    DataSet ds = DataSetFactory.getTestDataSet();
+    ViewManager viewer = new ViewManager(ds, ViewManager.IMAGE); 
 
-
+    Operator op = new DataSetScalarMultiply( ds, 50, true );
+    DataSet new_ds = (DataSet)op.getResult();
+    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE); 
+    
+    System.out.println(op.getDocumentation());
+    System.out.println(op.getResult().toString());
+  }
 }
