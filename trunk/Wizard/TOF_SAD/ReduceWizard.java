@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2004/01/30 02:46:52  bouzekc
+ * Removed unused variable LOAD_FILE_TYPE.
+ *
  * Revision 1.4  2004/01/05 23:44:13  rmikk
  * Last form now shows resultant data sets
  *
@@ -56,10 +59,6 @@ import java.io.*;
  * Wizard, BlindJ is used for creating a matrix file.
  */
 public class ReduceWizard extends Wizard {
-  //~ Static fields/initializers ***********************************************
-
-  private static final String LOADFILETYPE = "LoadFile";
-
   //~ Constructors *************************************************************
 
   /**
