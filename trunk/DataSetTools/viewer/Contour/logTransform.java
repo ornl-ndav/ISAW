@@ -38,6 +38,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/08/01 22:12:39  rmikk
+ *  Changed the transform algorithm so the readout is
+ *    lighter longer
+ *
  *  Revision 1.3  2002/07/15 22:14:01  rmikk
  *  Added the intensity to the log transform
  *
@@ -62,6 +66,7 @@ public class logTransform  implements Transform
     double pstart0,pend0,ustart0,uend0;
     float intensity;
     double a,b,K;
+    int sgn;
    /** Transforms [ustart,uend] to [pstart, pend] as follows:<P>
    *   p = a*log( u+b) +K, where b is intensity -min(ustart,uend) and
    *  getTransU( pstart) = ustart and getTransu(pend) = uend.
@@ -76,6 +81,7 @@ public class logTransform  implements Transform
       pend0=pend;
       ustart0=ustart;
       uend0=uend;
+     
      setIntensity( intensity);
      calc();
     // System.out.println("in logTransform "+pstart+","+pend+","+ustart+","+uend);
@@ -87,10 +93,18 @@ public class logTransform  implements Transform
    */
    public void setIntensity( int intensity)
      { if( intensity <0)
-        this.intensity = 10.f;
+        this.intensity = 1.f;
        if( intensity > 100)
-        this.intensity = .1f;
-       this.intensity = (float)(10.- .099*intensity);
+        this.intensity = .001f;
+       else
+         this.intensity = (float)(1.- .00999*intensity);
+       float x = (this.intensity -.001f)/(.999f);
+       x = x*x*x;
+      
+       this.intensity = x +.001f;
+       //if( intensity < 50) sgn = -1;
+      //else sgn =1;
+       sgn = 1;
        calc();
      }
    /** Sets the physical range
@@ -174,9 +188,9 @@ public class logTransform  implements Transform
          return;
        
         }
-      b=intensity-Math.min(ustart,uend);
-      a = (pend-pstart)/(Math.log(uend + b)-Math.log(ustart + b));
-      K=pstart - a*Math.log( ustart + b);
+      b =intensity-Math.min(sgn*ustart,sgn*uend);
+      a = (pend-pstart)/(Math.log(sgn*uend + b)-Math.log(sgn*ustart + b));
+      K = pstart - a*Math.log( sgn*ustart + b);
        
      }
 
