@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2005/01/07 18:03:18  rmikk
+ * Now implements IWrappableWithCategoryList
+ *
  * Revision 1.3  2004/08/02 21:14:06  rmikk
  * Removed Unused imports
  *
@@ -43,7 +46,7 @@
  */
 package DataSetTools.operator.Generic.TOF_SAD;
 
-import DataSetTools.operator.Wrappable;
+import DataSetTools.operator.*;
 import java.util.*;
 //import DataSetTools.util.*;
 import java.io.*;
@@ -56,7 +59,7 @@ import gov.anl.ipns.Util.SpecialStrings.*;
  *  runs.
  */
 
-public class ScaleWrap implements Wrappable {
+public class ScaleWrap implements IWrappableWithCategoryList {
  
 
   /**
@@ -67,6 +70,9 @@ public class ScaleWrap implements Wrappable {
     return "Scale";
   }
 
+  public String[] getCategoryList(){
+    return DataSetTools.operator.Operator.TOF_NSAS;
+  }
   
   public String getDocumentation(  ) {
    
