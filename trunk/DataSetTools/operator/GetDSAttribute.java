@@ -3,8 +3,10 @@
  *             
  * This operator sets a DataSet Attribute
  *
- * ---------------------------------------------------------------------------
  *  
+ * $Log$
+ * Revision 1.3  2000/11/07 15:50:33  dennis
+ * Major rewrite... properly supports getting selections.
  *
  *
  */
@@ -37,7 +39,7 @@ public class GetDSAttribute extends    DataSetOperator
 
   public GetDSAttribute( )
   {
-    super( "Get Data Set Attribute" );
+    super( "Get DataSet Attribute" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -89,10 +91,6 @@ public class GetDSAttribute extends    DataSetOperator
 
     Parameter parameter = new Parameter( "Attribute?", new AttributeNameString("") );
     addParameter( parameter );
-   
-   
-    
-    
   }
 
 
@@ -107,9 +105,8 @@ public class GetDSAttribute extends    DataSetOperator
      if ( O == null)
 	 return new ErrorString(" Attribute "+ S+ " not in List");
      return O;
-     
-    
   }  
+
 
   /* ------------------------------ clone ------------------------------- */
   /**
