@@ -1,5 +1,5 @@
 /*
- * File:  NxWriteNode.java 
+ * File:  NexWriteNode.java 
  *             
  * Copyright (C) 2001, Ruth Mikkelson
  *
@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/11/24 14:21:08  rmikk
+ * Eliminated some commented out code
+ * Added getNodeName method
+ * Eliminated some debugging printing
+ *
  * Revision 1.8  2003/10/15 02:37:50  bouzekc
  * Fixed javadoc errors.
  *
@@ -141,7 +146,13 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     parent = null;
     errormessage = "";
   }
-
+  String nodeName = null;
+  public String getNodeName(){
+     return nodename;
+  }
+  public void setNodeName( String nodeName){
+     this.nodeName = nodeName;
+  }
   private boolean canWrite( String filename ){
     String F = filename.replace('\\','/');
     int k = F.lastIndexOf('/');   
@@ -446,23 +457,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
       
            if( Debug )
              System.out.print( "ere putdata info"+ranks.length+","+ranks[ 0] );
-    
-/*
-  if( Debug)
-  System.out.print( "Array length = "+Array.getLength( array )+" " );
-  
-  Object XX1 = array;
-  if( array instanceof Object[] )        
-  {if( Debug) 
-  System.out.print( "element leng =" +
-  Array.getLength( ( ( Object[] )array )[ 0 ] ) );
-  XX1 = ( ( Object[] )array )[ 0 ];          
-  }
-  
-  // if( XX1.getClass().isArray( ) )
-  //   if( !( XX1 instanceof Object[] ) )
-  //    System.out.print( Array.getFloat( XX1 , 0 )+","+Array.getFloat( XX1 , 1 ) );
-  */
+          
            nf.putdata( array );
            SetDataLink( nf , linkInfo , children );
            nf.closedata( );
@@ -486,7 +481,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
   
        return;
      }
-     
+    
      errormessage = "";
      for( int i = 0; i < children.size() ; i++ ){
        Object X = children.elementAt( i );
@@ -498,12 +493,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
          }else if( X instanceof String ){
            String S = ( String )X;
            X = linkInfo.get( S );
-           //System.out.print( "S ,X = "+S+"," );
-           if( Debug )
-             if( X == null )
-               System.out.println( "null" );
-             else 
-               System.out.println( X.getClass() );
+           
            if( ( X instanceof NXlink )&&( X !=  null ) ){
              nf.makelink( ( NXlink )X );
            }else{
@@ -517,15 +507,14 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
            }
          }else{
            Vector V = ( Vector )X;
-           //if( V.lastElement() instanceof NexWriteNode ){
+           
            NXlink nlink ;
-           //System.out.println( "in getlink" );
+           
            if( classname.equals( "SDS" ) )
              nlink = nf.getdataID();
            else
              nlink = nf.getgroupID();
            V.setElementAt( nlink , 1 );
-           //System.out.println( "after link made"+V.firstElement() );
            linkInfo.put( V.firstElement() , nlink );
          }
        }catch( Exception s ){
@@ -568,7 +557,15 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
        // let it drop on the floor
      }
   }//write
-
+  private String ShwDims( Object X){
+    if( X == null) return "";
+    if( ! X.getClass().isArray())
+       return null;
+    int n = Array.getLength( X);
+    if( n <=0)
+       return ""+n;
+    return ""+n+","+ShwDims( Array.get(X,0));
+  }
   public void Showw( String prompt , Hashtable HT ){
     System.out.println( prompt );
     Enumeration E = HT.keys(); 
@@ -594,6 +591,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
       }
       LinkInfo.put( ident , nl );
     }
+  
   }
 
   /**
@@ -613,6 +611,13 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
   }
 
   public void show(){
+    System.out.println( "parent :" + nodename);
+    for( int i = 0; i< children.size(); i++){
+        if( children.elementAt(i) instanceof NexWriteNode){
+           NexWriteNode node = (NexWriteNode)(children.elementAt(i));
+           node.show();
+        }
+    }
   }
 
   private int convertArrayR( int rankoffset, Object value, int valueoffset,
@@ -675,7 +680,6 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     if( value instanceof Object[] )
       return value;
     errormessage += "1";
-     
     if( ranks == null )
       return null;
 
