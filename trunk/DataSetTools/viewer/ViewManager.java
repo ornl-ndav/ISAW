@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.41  2004/01/24 22:02:38  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.40  2003/12/12 18:11:34  dennis
  *  Now uses the WindowShower utility class to display the ViewManager
  *  from the Swing event handling thread, instead of showing it directly.
@@ -131,13 +134,11 @@ import DataSetTools.operator.DataSet.Math.DataSet.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ui.*;
-import DataSetTools.viewer.util.*;
 import DataSetTools.viewer.Graph.*;
 import DataSetTools.viewer.Image.*;
 import DataSetTools.viewer.ThreeD.*;
 import DataSetTools.viewer.Table.*;
 import DataSetTools.viewer.Contour.*;
-import DataSetTools.viewer.ViewerTemplate.*;
 import DataSetTools.components.View.*;
 import DataSetTools.components.View.OneD.*;
 import DataSetTools.parameter.*;
@@ -146,7 +147,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
-import javax.swing.event.*;
 
 /**
  *  A ViewManager object manages viewers for a DataSet in an external 
