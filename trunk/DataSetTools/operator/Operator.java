@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2001/08/10 18:41:24  rmikk
+ *  Initialize the parameters variable in this constructor.
+ *
  *  Revision 1.9  2001/08/08 22:25:56  rmikk
  *  Added Code so null parameters values( for Objects data
  *  types ) will not crash
@@ -157,6 +160,7 @@ abstract public class Operator implements Serializable
    protected Operator( String title )
    {
       this.title = title;
+      parameters = new Vector();
       setDefaultParameters();
    } 
 
