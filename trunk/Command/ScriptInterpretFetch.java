@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/06/17 18:28:58  rmikk
+ * Uses a null Document in the constructor so no Python error occurs. The
+ *   only error should be ClassNotFound when the Jython.jar is not present
+ *
  * Revision 1.4  2003/10/10 01:20:04  bouzekc
  * Changed references from: ScriptProcessorOperator to IScriptProcessor,
  * ScriptProcessor to ScriptOperator, and pyScriptProcessor to
@@ -82,7 +86,7 @@ public class ScriptInterpretFetch
     
       try
         {
-          return new PyScriptOperator( doc ); 
+          return new PyScriptOperator( (Document)null ); 
         }
       catch( Throwable ss)
         {
