@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/06/26 16:27:27  bouzekc
+ * "Update Peaks File" now defaults to true.
+ *
  * Revision 1.4  2003/06/25 20:25:33  bouzekc
  * Unused private variables removed, reformatted for
  * consistency.
@@ -118,6 +121,9 @@ public class DailyPeaksWizard extends Wizard {
     };  //SCD calibration file line
 
     FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
+
+    //A.J. Schultz wants the "update" parameter to default to true
+    peaksform.getParameter( 6 ).setValue( Boolean.TRUE );
 
     //these Forms rely on previously calculated values, so set them
     //up as having constants with "true"
