@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.13  2003/06/25 20:26:02  bouzekc
+ * Unused private variables removed.
+ *
  * Revision 1.12  2003/06/25 16:11:22  bouzekc
  * Reformatted for clarity.
  *
@@ -104,7 +107,7 @@ import java.util.Vector;
 public class LsqrsJForm extends Form {
   protected static int RUN_NUMBER_WIDTH = 5;
   private static final String identmat  = "[[1,0,0][0,1,0][0,0,1]]";
-  private boolean useIdentity        = false;
+  private boolean useIdentity           = false;
   private BooleanPG useIdentCheckBox;
 
   /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
