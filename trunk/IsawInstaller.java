@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.13  2002/09/27 20:04:18  pfpeterson
+ * Small modification on exec script written for sun os.
+ *
  * Revision 1.12  2002/08/16 15:18:56  pfpeterson
  * Fixed bug where you couldn't install from a directory with
  * spaces in the name.
@@ -583,7 +586,7 @@ public class IsawInstaller extends JFrame
 	    content="#!/bin/sh"+newline
 		+"ISAW="+isaw_home+newline
 		+"JAVA="+java_home+newline
-		+"export LD_LIBRARY_PATH="+lib_home+newline
+		+"LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
 		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/IPNS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
