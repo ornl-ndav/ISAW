@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/03/06 23:25:41  pfpeterson
+ * Changed call from fixSeparator to appropriate method.
+ *
  * Revision 1.12  2003/01/29 17:47:34  dennis
  * Removed found_param and found_error conditionals to fix problem with
  * <br> tag and simplify code for bulleted lists. (Chris Bouzek)
@@ -435,7 +438,7 @@ public class HTMLizer{
         e.printStackTrace();
       }//catch
 
-      help_dir=FilenameUtil.fixSeparator(help_dir);
+      help_dir=FilenameUtil.setForwardSlash(help_dir);
     }
 
     try
