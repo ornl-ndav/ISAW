@@ -6,6 +6,10 @@ package OverplotView;
  * graphing implemented by the sgt package
  *
  * $Log$
+ * Revision 1.5  2000/07/28 14:51:24  neffk
+ * changed the position of the graph so that one can see the units and lable for
+ * the horizontal axis.
+ *
  * Revision 1.4  2000/07/27 16:40:49  neffk
  * graph is now isawGraph, instead of isawLineProfileLayout.  graph resizes to use
  * full advantage of screen space as a result.
@@ -266,7 +270,7 @@ public class sgtSelectedGraph
 
 
     graph.init(  new Point2D.Double( (width/10.0), width-(width/50) ),
-                 new Point2D.Double( (height/10.0), height-(width/50) ),
+                 new Point2D.Double( (height/3.0), height-(width/30) ),
                  width,
                  height,
                  0,
