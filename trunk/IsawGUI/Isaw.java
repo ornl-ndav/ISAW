@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.74  2002/01/10 17:07:24  rmikk
+ *  Now most SaveAs filechoosers remember the last Save
+ *  directory
+ *
  *  Revision 1.73  2002/01/10 15:46:01  rmikk
  *  Now uses the Global Status Pane
  *     DataSetTools.util.SharedData.status_pane
@@ -1154,9 +1158,11 @@ public class Isaw
         if( node instanceof DataSetMutableTreeNode )
         {
           try
-          {
+          { 
             String title = new String( "Please choose the File to save" );
-            fc.setCurrentDirectory(  new File( System.getProperty("user.home") )  );
+            if(filename ==  null)
+               filename =System.getProperty("user.home");
+            fc.setCurrentDirectory(  new File( filename )  );
             fc.setMultiSelectionEnabled( false );
             fc.addChoosableFileFilter(  new NeutronDataFileFilter( true )  ); 
             fc.addChoosableFileFilter(  new NexIO.NexusfileFilter()  );
@@ -1170,6 +1176,7 @@ public class Isaw
             setCursor(  Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR )  );                        
                         
             File f =  fc.getSelectedFile();
+            filename = f.toString();
             DataSet ds = ( (DataSetMutableTreeNode)node ).getUserObject();
            // if(   !DataSet_IO.SaveDataSet(  ds, f.toString()  )   )   
            // System.out.println("Could not save File");
@@ -1208,7 +1215,7 @@ public class Isaw
                                   //hence, there is only one DataSet object
                                   //to be loaded.
       if( s.equals(LOAD_LOCAL_DATA_MI) )
-      { System.out.println("filename="+filename);
+      {
         try
         { if( filename == null) filename= System.getProperty("user.home");
                                              //create a file dialog box and get
@@ -1376,7 +1383,9 @@ public class Isaw
       if( s.equals(GSAS_EXPORT_MI) )
       {
         //fc = new JFileChooser(new File(System.getProperty("user.dir")) );
-                  
+        if( filename == null)
+           filename = System.getProperty("user.dir");
+        fc.setCurrentDirectory( new File(filename));          
         int state = fc.showSaveDialog(null);
         if (state ==0 && fc.getSelectedFile() != null)
         {
@@ -2167,7 +2176,7 @@ public class Isaw
         load_files(  fc.getSelectedFiles()  );
       
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        data_dir = fc.getCurrentDirectory().getName();
+        data_dir = fc.getSelectedFile().toString();
       }
     }
 
