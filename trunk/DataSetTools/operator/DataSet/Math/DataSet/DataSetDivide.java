@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/12/06 14:40:55  dennis
+ *  getDocumentation() now includes name of parameter. (Chris Bouzek)
+ *
  *  Revision 1.5  2002/11/27 23:18:49  pfpeterson
  *  standardized header
  *
@@ -88,7 +91,7 @@ public class DataSetDivide extends  DataSetOp
    *  by calling getResult().
    *  
    *  @param  ds            The DataSet to which the operation is applied
-   *  @parm   ds_to_divide  The DataSet to be divided into DataSet ds.
+   *  @param  ds_to_divide  The DataSet to be divided into DataSet ds.
    *  @param  make_new_ds   Flag that determines whether a new DataSet is
    *                        constructed, or the Data blocks of the second
    *                        DataSet are just divided into the Data blocks of the
@@ -152,14 +155,14 @@ public class DataSetDivide extends  DataSetOp
     s.append("@overview This operator divides this DataSet by another.");
     s.append("@assumptions The units on the two DataSets are compatible.");
     s.append("@algorithm Uses the binary divide from DSOpsImplementation.");
-    s.append("@param The DataSet for the operation.");
-    s.append("@param The DataSet with which to divide by.");
-    s.append("@param A boolean value of true if you want a new DataSet to be ");
-    s.append("created, or false if you want the operation performed on the ");
-    s.append("original DataSet.");
+    s.append("@param ds The DataSet for the operation.");
+    s.append("@param ds_to_divide The DataSet with which to divide by.");
+    s.append("@param make_new_ds A boolean value of true if you want a new ");
+    s.append("DataSet to be created, or false if you want the operation  ");
+    s.append("performed on the original DataSet.");
     s.append("@return The DataSet which is the result of dividing the ");
     s.append("first DataSet by the second");
-    s.append("@return An error if the units of the two DataSets do not match.");
+    s.append("@error An error if the units of the two DataSets do not match.");
     return s.toString();
   }
 

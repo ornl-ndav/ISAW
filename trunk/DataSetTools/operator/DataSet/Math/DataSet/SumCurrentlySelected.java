@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/12/06 14:40:55  dennis
+ * getDocumentation() now includes name of parameter. (Chris Bouzek)
+ *
  * Revision 1.4  2002/11/27 23:18:49  pfpeterson
  * standardized header
  *
@@ -162,19 +165,20 @@ public class SumCurrentlySelected  extends    DataSetOp
     s.append("@algorithm Constructs a new empty DataSet with the same title. ");
     s.append("units, and operations as the current DataSet.  Sums the data ");
     s.append("blocks in the current DataSet which meet the given parameters.");
-    s.append("@param The DataSet for the operation.");
-    s.append("@param Flag that determines whether the selected or un-selected Data ");
-    s.append("blocks are summed.  If status==true, the selected blocks are summed.  ");
+    s.append("@param ds The DataSet for the operation.");
+    s.append("@param status Flag that determines whether the selected or ");
+    s.append("un-selected Data blocks are summed.  If status==true, the selected ");
+    s.append("blocks are summed.");
     s.append("If status==false, the un-selected blocks are summed.");
-    s.append("@param Flag that determines whether removing the Data blocks makes a ");
-    s.append("new DataSet and returns the new DataSet as a value, or just sums and ");
-    s.append("removes the Data blocks from the current DataSet and returns a  ");
-    s.append("message indicating that the sum operation was done.");
+    s.append("@param make_new_ds Flag that determines whether removing the Data ");
+    s.append("blocks makes a new DataSet and returns the new DataSet as a value, ");
+    s.append("or just sums and removes the Data blocks from the current DataSet ");
+    s.append("and returns a message indicating that the sum operation was done.");
     s.append("@return A new DataSet which is the result of summing the selected data ");
     s.append("blocks, or the old DataSet which has had the selected data blocks ");
     s.append("replaced by the sum of the data blocks.");
-    s.append("@error Returns an error message if no selected data blocks meet the selection ");
-    s.append("criteria.");
+    s.append("@error Returns an error message if no selected data blocks meet the ");
+    s.append("selection criteria.");
     return s.toString();
   }
 
