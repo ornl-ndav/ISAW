@@ -31,7 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2005/02/18 06:39:39  kramer
+ * Added user documentation for the HTML "Help" window for this operator.
+ *
  * Revision 1.9  2004/12/01 20:03:46  kramer
+ *
  * Fixed some of the javadoc statements so that there weren't @param
  * arguments referring to variables that didn't exist.
  *
@@ -345,17 +349,113 @@ public class SavitzkyGolayFilter extends GenericSpecial
    /** 
     *  Returns the documentation for this method as a String.  The format 
     *  follows standard JavaDoc conventions.  
-    */                                                                                 
+    */
    public String getDocumentation()
    {
      StringBuffer s = new StringBuffer("");
      
-     s.append("@overview This operator smoothes all Data blocks in ");
-     s.append("          a DataSet using a Savitzky-Golay smoothing ");
-     s.append("          filter.");
+     s.append("@overview   This operator smooths a user defined ");
+     s.append("            selection of Data blocks in a DataSet using the ");
+     s.append("            Savitzky-Golay smoothing filter.");
      
-     s.append("@param  ds  The DataSet to process.");
+     s.append("@param      The DataSet to process.");
      
+     s.append("@param      A given point of data is smoothed based on ");
+     s.append("            points around it.  This parameter inputs the ");
+     s.append("            number of points to use to the left of the ");
+     s.append("            point being smoothed.");
+     
+     s.append("@param      A given point of data is smoothed based on ");
+     s.append("            points around it.  This parameter inputs the ");
+     s.append("            number of points to use to the right of the ");
+     s.append("            point being smoothed.");
+     
+     s.append("@param      After the points to the left and right of the ");
+     s.append("            point being smoothed are collected, a ");
+     s.append("            polynomial of best fit is constructed.  This ");
+     s.append("            parameter inputs the degree of this polynomial.");
+     
+     s.append("@param      Here the user can select the Data blocks in a ");
+     s.append("            DataSet to smooth by specitying their IDs.  A ':' ");
+     s.append("            is used to specify a range of Data blocks to ");
+     s.append("            use.  For example, '40:50' specifies all Data ");
+     s.append("            blocks with IDs between 40 and 50 including 40 ");
+     s.append("            and 50.  A ',' are used to specify specific ");
+     s.append("            IDs.  For example, '40,50' specifies Data blocks ");
+     s.append("            with IDs 40 and 50.");
+     
+     s.append("@param      This parameter specifies the x value at which ");
+     s.append("            smoothing starts.  Smoothing will start at this ");
+     s.append("            x value for all Data blocks.");
+     
+     s.append("@param      This parameter specifies the x value at which ");
+     s.append("            smoothing ends.  Smoothing will end at this ");
+     s.append("            x value for all Data blocks.");
+     
+     s.append("@param      If this box is checked, the quick method for ");
+     s.append("            smoothing the data will be used.  See the ");
+     s.append("            algorithm section for a description of the ");
+     s.append("            quick method and how it compares to the regular ");
+     s.append("            algorithm used to smooth the data.");
+     
+     s.append("@param      If this box is checked, a new DataSet is created ");
+     s.append("            with the smoothed data.  If this box is not ");
+     s.append("            checked, the DataSet whose data is being smoothed ");
+     s.append("            has its data replaced with the smoothed data.");
+     
+     s.append("@algorithm ");
+     s.append("With this operator, the Savitzky-Golay smoothing operator is ");
+     s.append("used to smooth a user defined section of a DataSet.  The user ");
+     s.append("can select specific Data blocks in a DataSet to smooth.  ");
+     s.append("Futhermore, a specific range of x values from these Data ");
+     s.append("blocks can be choosen.  This range of x values is the only ");
+     s.append("data that will in turn be smoothed for each Data block.");
+     s.append("\n\n");
+     s.append("To smooth the data, each Data block is smoothed one at a ");
+     s.append("time.  Smoothing starts at the first x value and ends at the ");
+     s.append("last x value in the range of x values to smooth.  To smooth ");
+     s.append("a specific point (x0,y0) in the data, a selected number ");
+     s.append("of points to the left and right of the point are collected.  ");
+     s.append("Then, a curve of best fit, called the smoothing polynomial, ");
+     s.append("is constructed that fits the points collected.  The degree ");
+     s.append("of this 'smoothing polynomial' is user defined.  Next, after ");
+     s.append("the smoothing polynomial is constructed, the y value of the ");
+     s.append("smoothing polynomial at the x value, x0, is used as the ");
+     s.append("smoothed value of the data.  This process is repeated for ");
+     s.append("every data point in every Data block being smoothed.");
+     s.append("\n\n");
+     s.append("It is important to note that a point of data in a DataSet ");
+     s.append("is not replaced by its smoothed value counterpart in the ");
+     s.append("middle of the smoothing process.  Instead the data is ");
+     s.append("recorded in a copy of the DataSet being smoothed.  By ");
+     s.append("doing this, a point's smoothed value isn't calculated ");
+     s.append("based on previously smoothed values.  If smoothed values ");
+     s.append("were used to smooth data found later in the DataSet, the ");
+     s.append("smoothing would introduce extra errors in the data.");
+     s.append("\n\n");
+     s.append("Next, the user can select if he/she wants to make a new ");
+     s.append("DataSet.  If he/she selects to do this, a new DataSet will ");
+     s.append("be created that has the smoothed data from the old DataSets ");
+     s.append("as its data.  If a new DataSet is not selected to be ");
+     s.append("created, the data in the DataSet being smoothed will have ");
+     s.append("its data replaced with its smoothed data.");
+     s.append("\n\n");
+     s.append("Lastly, the algorithm to smooth the data is very time ");
+     s.append("consuming.  However, a 'quick' version of the algorithm ");
+     s.append("has been mathematically constructed from the original ");
+     s.append("algorithm.  If the data in a particular section of a DataSet ");
+     s.append("being smoothed has x values that are evenly spaced, the ");
+     s.append("quick method smooths data exactly the same as the original ");
+     s.append("algorithm.  However, the quick method will smooth the data ");
+     s.append("in a lot less time.  In other words, both algorithms produce ");
+     s.append("the exact same results in this situation.");
+     s.append("\n\n");               
+     s.append("The downside of using the quick method is that if it is ");
+     s.append("used to smooth data with x values that are not evenly ");
+     s.append("spaced, extra errors can be introduced in the smoothed ");
+     s.append("data.  Thus, when using this operator the user should compare ");
+     s.append("how much less time the quick algorithm can smooth the data ");
+     s.append("to the extra errors it may introduce.");
      return s.toString();
    }
    
