@@ -3,6 +3,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.9  2002/08/06 21:30:37  pfpeterson
+ * Gsas files are no longer accepted by this filter.
+ *
  * Revision 1.8  2002/06/18 19:48:19  rmikk
  * Added file types xmi, xmn and zip. xml replaced
  *
@@ -124,9 +127,10 @@ public class NeutronDataFileFilter
    if(!SaveFilter)
        S =  "*."+ISAW_NATIVE+"(Temporary) *."+XML+"(Isaw XML) *.zip";
    else
-       S =  "*." + ISAW_NATIVE+"(Temporary),*."+XML+",*."+GSAS+
-              "(gsas) *."+XML+"(Isaw XML) *.zip"   ;
-   S += " )";
+       S =  "*." + ISAW_NATIVE+"(Temporary),*."+XML+"(Isaw XML) *.zip"   ;
+   /*S =  "*." + ISAW_NATIVE+"(Temporary),*."+XML+",*."+GSAS+
+     "(gsas) *."+XML+"(Isaw XML) *.zip"   ;*/
+   //S += " )";
    return S;
   }
 
