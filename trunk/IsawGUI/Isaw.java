@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.217  2005/03/06 23:36:42  dennis
+ *  Changed version to 1.7.1
+ *
  *  Revision 1.216  2005/02/27 20:12:25  rmikk
  *  Changed the Help Menu ordering
  *
@@ -785,7 +788,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.7.1 rc 2";
+          version="1.7.1";
         else
           version=SharedData.VERSION;
 
