@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.53  2003/07/03 15:57:30  bouzekc
+ * changed private method writeForms() to only take a File
+ * to write to, rather than a Forms Vector and a File.  This
+ * was left over from when the Wizard was Serialized.
+ *
  * Revision 1.52  2003/07/03 15:50:53  bouzekc
  * Added all missing javadocs and some additional code comments.
  *
@@ -731,7 +736,7 @@ public abstract class Wizard implements PropertyChangeListener {
         return;
       }
 
-      writeForms( forms, file );
+      writeForms( file );
     }
   }
 
@@ -1472,10 +1477,9 @@ public abstract class Wizard implements PropertyChangeListener {
    * actually written are the Form's IParameterGUI types, name, and value in
    * XML format along with XML tags for the Form index.
    *
-   * @param conc_forms The Vector of Forms to write to a file.
    * @param file the File to write to.
    */
-  private void writeForms( Vector conc_forms, File file ) {
+  private void writeForms( File file ) {
     StringBuffer s = new StringBuffer(  );
     Form f;
 
@@ -1487,12 +1491,12 @@ public abstract class Wizard implements PropertyChangeListener {
     try {
       fw = new FileWriter( file );
 
-      for( int i = 0; i < conc_forms.size(  ); i++ ) {
+      for( int i = 0; i < forms.size(  ); i++ ) {
         s.append( "<Form number=" );
         s.append( i );
         s.append( ">\n" );
 
-        f = ( Form )conc_forms.elementAt( i );
+        f = ( Form )forms.elementAt( i );
 
         for( int j = 0; j < f.getNum_parameters(  ); j++ ) {
           ipg = ( IParameterGUI )f.getParameter( j );
