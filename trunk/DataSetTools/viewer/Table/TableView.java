@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2005/01/18 21:49:01  rmikk
+ *  Eliminated an unused variable warning
+ *
  *  Revision 1.9  2004/07/30 14:29:08  rmikk
  *  Eliminated unused Variables
  *
@@ -171,7 +174,7 @@ public class TableView extends DataSetViewer
       table_view tv = new table_view(0);
       tv.setDataSets( DS);
       tv.restoreState( state);
-      DefaultListModel LM= tv.getListModel();
+      //DefaultListModel LM= tv.getListModel();
       int[] sel = new int[4];
       sel[0]=0; sel[1]=2; sel[2]=4; sel[3]=6;
       //table_view.Gen_TableModel tm= tv.getGenTableModel( DS[1],LM,"HT,FG",sel);
