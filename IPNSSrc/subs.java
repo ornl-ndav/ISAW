@@ -58,6 +58,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/02/10 18:58:06  pfpeterson
+ * Created a second version of tstvol which returns the value rather
+ * than augmenting one of the arguments.
+ *
  * Revision 1.2  2003/02/10 18:36:18  pfpeterson
  * Reformatted code.
  *
@@ -185,14 +189,23 @@ public class subs {
   }
 
   /**
-   *
+   * @see #tstvol(double[])
    */
   public static void tstvol (double [] u, doubleW volume)  {
+    volume.val=tstvol(u);
+    return;
+  }
+
+  /**
+   *
+   */
+  public static double tstvol (double [] u){
     int u_offset=0;
     double [] a= new double[(3)];
     double [] b= new double[(3)];
     double [] c= new double[(3)];
     double [] axb= new double[(3)];
+    double volume=0.0;
 
     a[0] = u[0 + 0*3 + u_offset];
     a[1] = u[0 + 1*3 + u_offset];
@@ -206,10 +219,10 @@ public class subs {
 
     cross(b,c,axb);
 
-    volume.val = a[0]*axb[0]+a[1]*axb[1]+a[2]*axb[2];
-    volume.val = 1./volume.val;
+    volume = a[0]*axb[0]+a[1]*axb[1]+a[2]*axb[2];
+    volume = 1./volume;
 
-    return;
+    return volume;
   }
 
   /**
