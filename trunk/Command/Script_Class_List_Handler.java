@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.59  2004/05/11 00:07:37  rmikk
+ * The main program now displays the debug info
+ *
  * Revision 1.58  2004/03/15 03:30:15  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -1314,7 +1317,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
       //load up IsawProps.dat
         new PropertiesLoader("IsawProps.dat"  );
         
-        //Script_Class_List_Handler.LoadDebug = true;
+        Script_Class_List_Handler.LoadDebug = true;
         Script_Class_List_Handler BB = new Script_Class_List_Handler();
         System.out.println("-------------------------------------------"
                            +"-------------------------------");
