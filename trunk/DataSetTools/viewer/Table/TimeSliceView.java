@@ -31,6 +31,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.4  2002/08/21 15:49:14  rmikk
+ * -If pointedAtX is NaN(undefined) defaults to 0th frame
+ *  -Initialized with pointed at Time and group
+ *
  * Revision 1.3  2002/07/26 22:04:10  rmikk
  * Place more information in the state variable and got it
  *   working when returning to this view.
@@ -83,7 +87,7 @@ public class TimeSliceView  extends STableView
          }
      ((Time_Slice_TableModel)table_model).setTime( xvals1[TimeIndex]);
      jtb.invalidate();
-    
+     super.redraw( IObserver.POINTED_AT_CHANGED );    
    }
 
    /** Sets the xvals- the times for the slicing
@@ -257,6 +261,8 @@ public class TimeSliceView  extends STableView
      // converts time in getPointedAtX to index in time slice array
      private int getPointedAtXindex()
      {float X = getDataSet().getPointedAtX();
+      if( Float.isNaN( X))
+        return 0;
       int index = java.util.Arrays.binarySearch( xvals1, X);
       if( index < 0)
          index =-index-1;
@@ -275,18 +281,18 @@ public class TimeSliceView  extends STableView
   public void redraw( String reason)
     {
      if( reason == IObserver.POINTED_AT_CHANGED )
-      { 
+       { 
         float x = getDataSet().getPointedAtX();
         int indexX = getPointedAtXindex();
         int index =getDataSet().getPointedAtIndex();
         if( acontrol.getFrameNumber() != indexX)
-          {  state.set_int("TableTS_TimeInd", indexX);
-             acontrol.setFrameNumber( indexX );
-           }
+          {state.set_int("TableTS_TimeInd", indexX);
+           acontrol.setFrameNumber( indexX );
+          }
         
        }
      super.redraw(reason);
-     }
+    }
 
    /** Test program for this module.  It needsone argument, the filename
    */
@@ -405,7 +411,11 @@ public class TimeSliceView  extends STableView
        xvals1 = calcXvals();
        
        acontrol.setFrame_values( xvals1);
-       acontrol.setFrameValue( getDataSet().getPointedAtX());
+       float X = getDataSet().getPointedAtX();
+       if( Float.isNaN(X))
+         acontrol.setFrameNumber( 0);
+       else
+          acontrol.setFrameValue(  X );
        state.set_int( "TableTS_TimeInd" , getPointedAtXindex( ));
        state.set_float("TABLE_TS_MIN_TIME", xvals1[0]);
        state.set_float("TABLE_TS_MAX_TIME" ,xvals1[ xvals1.length - 1 ]);
