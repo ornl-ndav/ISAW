@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.48  2002/07/31 16:38:36  dennis
+ *  Corrects SCD detector position to -90 degrees.
+ *  Added methods to get portions of histograms:
+ *     getDataSet( int data_set_num, int ids[] )
+ *     getAvailableIDs( int data_set_num )
+ *
  *  Revision 1.47  2002/07/24 14:59:30  dennis
  *  TIME_FIELD_TYPE attribute no longer added
  *  OMEGA attribute only added for TOF_DIFFRACTOMETER
@@ -239,6 +245,7 @@ import DataSetTools.instruments.DetectorInfo;
 import IPNS.Runfile.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
+import java.util.*;
 import java.io.*;
 
 /**
@@ -461,7 +468,8 @@ public class RunfileRetriever extends    Retriever
  *                        that is to be read from the runfile.  data_set_num
  *                        must be between 0 and numDataSets()-1
  *
- *  @return the requested DataSet.
+ *  @return the requested DataSet, if data_set_num specifies a valid DataSet,
+ *          .
  */
   public DataSet getDataSet( int data_set_num )
   {
@@ -473,7 +481,71 @@ public class RunfileRetriever extends    Retriever
     if ( data_set_num < 0 || data_set_num >= num_data_sets )
       return null;
 
-    return getDataSet( data_set_num, instrument_type );
+    int ids[] = getAvailableIDs( data_set_num );
+
+    return getDataSet( data_set_num, instrument_type, ids );
+  }
+
+
+/**
+ *  Get a DataSet from the runfile containing only the the specified group 
+ *  IDs from within the specified DataSet.  
+ *  NOTE: The list of group IDs must be in increasing order.
+ * 
+ *  @param  data_set_num  The number of the DataSet in this runfile 
+ *                        that is to be read from the runfile.  data_set_num
+ *                        must be between 0 and numDataSets()-1
+ *
+ *  @param  ids           The list of group IDs from the specified DataSet
+ *                        that are to be read from the runfile and returned 
+ *                        in the DataSet, in increasing order.
+ *
+ *  @return a DataSet containing only the specified groups, if the data_set_num
+ *          and ID list specify a non-empty set of Data blocks, or null
+ *          otherwise.
+ */
+  public DataSet getDataSet( int data_set_num, int ids[] )
+  {
+    if ( run_file == null )
+      return null;
+
+//    System.out.println("======= getting dataset for >>>" + data_source_name );
+
+    if ( data_set_num < 0              || 
+         data_set_num >= num_data_sets ||
+         ids          == null          || 
+         ids.length   == 0             )
+      return null;
+
+    return getDataSet( data_set_num, instrument_type, ids );
+  }
+
+
+/**
+ *  Get the list of available IDs in the specified DataSet.
+ *
+ *  @param  data_set_num  The number of the DataSet in this runfile.
+ *
+ *  @return An array of IDs that are available in this DataSet, in increasing
+ *          order.
+ */
+  public int[] getAvailableIDs( int data_set_num )
+  {
+    if ( data_set_num < 0 || data_set_num >= num_data_sets )
+      return new int[0];
+
+    int histogram_num = histogram[ data_set_num ];  
+    int first_id = run_file.MinSubgroupID( histogram_num );
+    int last_id  = run_file.MaxSubgroupID( histogram_num );
+
+    int ids[] = new int[ last_id - first_id + 1 ];
+    int id = first_id;
+    for ( int i = 0; i < ids.length; i++ )
+    {
+      ids[i] = id;
+      id++;
+    }
+    return ids;
   }
 
 
@@ -560,10 +632,15 @@ private float CalculateEIn()
  *                               InstrumentType.TOF_DIFFRACTOMETER
  *                               InstrumentType.TOF_DG_SPECTROMETER
  *                           are supported.
+ *  @param  ids              The list of segment IDs from the specified DataSet
+ *                           that are to be read from the runfile and returned 
+ *                           in the DataSet, in increasing order.
  *
  *  @return the requested DataSet.
  */
-  private DataSet getDataSet( int data_set_num, int instrument_type )
+  private DataSet getDataSet( int data_set_num, 
+                              int instrument_type,
+                              int ids[] )
   {
     int               num_times = 0;
     XScale            x_scale = new UniformXScale(0,1,2);
@@ -607,8 +684,7 @@ private float CalculateEIn()
       }
  
     try
-    {
-                                            // Construct the empty DataSet
+    {                                       // Construct the empty DataSet
                                             // with reasonable defaults
 
      DataSetFactory ds_factory = new DataSetFactory( title );
@@ -657,34 +733,36 @@ private float CalculateEIn()
 
      for ( group_id = first_id; group_id <= last_id; group_id++ )
      {
-      Segment group_segments[] = run_file.SegsInSubgroup( group_id );
-
-      if ( group_segments.length > 0 )  // only deal with non-trivial groups
-                                        // and then pick out the groups of the
-                                        // correct type, in case there are 
-                                        // several types in this histogram
-      if ( is_monitor      &&  run_file.IsSubgroupBeamMonitor(group_id) ||
-           is_pulse_height &&  run_file.IsPulseHeight(group_id)         ||
-           is_histogram                               && 
-            !run_file.IsSubgroupBeamMonitor(group_id) &&
-            !run_file.IsPulseHeight(group_id)                            )
+      if ( Arrays.binarySearch( ids, group_id ) > 0 ) // skip if not in the list
       {
-        tf_type = run_file.TimeFieldType(group_id);
-        if ( tf_type != last_tf_type )      // only get the times if it's a
-                                            // new time field type
-        { 
-          bin_boundaries = run_file.TimeChannelBoundaries(group_id);
-          num_times      = bin_boundaries.length;
-          last_tf_type   = tf_type;
+       Segment group_segments[] = run_file.SegsInSubgroup( group_id );
 
-          if ( is_pulse_height )          // change bin bounds to channel number
-            for ( int chan=0; chan<num_times; chan ++ )
-              bin_boundaries[chan] = chan;
+       if ( group_segments.length > 0 )  // only deal with non-trivial groups
+                                         // and then pick out the groups of the
+                                         // correct type, in case there are 
+                                         // several types in this histogram
+       if ( is_monitor      &&  run_file.IsSubgroupBeamMonitor(group_id) ||
+            is_pulse_height &&  run_file.IsPulseHeight(group_id)         ||
+            is_histogram                               && 
+             !run_file.IsSubgroupBeamMonitor(group_id) &&
+             !run_file.IsPulseHeight(group_id)                            )
+       {
+         tf_type = run_file.TimeFieldType(group_id);
+         if ( tf_type != last_tf_type )      // only get the times if it's a
+                                             // new time field type
+         { 
+           bin_boundaries = run_file.TimeChannelBoundaries(group_id);
+           num_times      = bin_boundaries.length;
+           last_tf_type   = tf_type;
+ 
+           if ( is_pulse_height )          // change bin bounds to channel number
+             for ( int chan=0; chan<num_times; chan ++ )
+               bin_boundaries[chan] = chan;
 
-            // change times to sample to detector TOF for spectrometers 
-            // and groups that are NOT beam monitors 
-            // if there is valid source_to_sample information available
-          else if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER &&
+           // change times to sample to detector TOF for spectrometers 
+           // and groups that are NOT beam monitors 
+           // if there is valid source_to_sample information available
+           else if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER &&
                    !is_monitor                                           )
            {
              source_to_sample_tof = 
@@ -695,10 +773,10 @@ private float CalculateEIn()
                  bin_boundaries[i] -= source_to_sample_tof;
            }
            x_scale = XScale.getInstance( bin_boundaries );
-        }
+         }
 
-        if ( num_times > 1 )
-        {
+         if ( num_times > 1 )
+         {
           raw_spectrum = run_file.Get1DSpectrum( group_id );
           if ( raw_spectrum.length >= 1 )
           {
@@ -717,7 +795,8 @@ private float CalculateEIn()
             // Now add the spectrum to the DataSet -------------------------
             data_set.addData_entry( spectrum );
           }
-        }
+         }
+       }
       }
     }
 
@@ -934,13 +1013,19 @@ private float CalculateEIn()
     else           //  Just get the values from the runfile where possible
     {              //  don't weight by solid angles
 
-      angle = (float)run_file.DetectorAngle(group_segments[0], histogram_num);
-      angle      *= (float)(Math.PI / 180.0);
+      angle  = (float)run_file.DetectorAngle(group_segments[0], histogram_num);
+      angle *= (float)(Math.PI / 180.0);
 
       height     = getAverageHeight( group_segments, histogram_num, false );
       final_path = getAverageFlightPath(group_segments, histogram_num, false);
     }
 
+    if ( instrument_type == InstrumentType.TOF_SCD )   // ###### temporary fix
+      angle -= (float)Math.PI;                         // for SCD since runfile
+                                                       // rotates detector to
+                                                       // plus 90 degrees.
+                                                       // 1 of 2 places this is
+                                                       // adjusted !!!
 
     // We should probably use the following to form weighted average of 
     // effective detector angles, heights and flight path lengths, for all 
@@ -1029,6 +1114,14 @@ private float CalculateEIn()
         rho = seg_path;
       else
         rho  = (float)Math.sqrt(seg_path * seg_path - seg_height * seg_height);
+
+      if ( instrument_type == InstrumentType.TOF_SCD ) // ###### temporary fix
+        seg_angle -= (float)Math.PI;                   // for SCD since runfile
+                                                       // rotates detector to
+                                                       // plus 90 degrees.
+                                                       // 2 of 2 places this is
+                                                       // adjusted !!!
+
       
       det_position.setCylindricalCoords( rho, seg_angle, seg_height );
 
