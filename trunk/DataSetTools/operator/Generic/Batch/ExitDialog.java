@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/01/24 19:44:43  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.4  2003/02/07 13:50:01  dennis
  * Added getDocumentation() method. (Mike Miller)
  *
@@ -49,10 +52,7 @@ package DataSetTools.operator.Generic.Batch;
 
 import  java.io.*;
 import  java.util.*;
-import  DataSetTools.operator.Operator;
-import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.Generic.Batch.GenericBatch;
-import  DataSetTools.parameter.*;
 
 /**
  * This operator is used by scripts to make the JParametersDialog box to exit 
