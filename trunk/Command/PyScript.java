@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/06/18 18:13:09  pfpeterson
+ * Added a method to get the classname that should be in the script.
+ * isValid() now checks that the class is defined in the script.
+ *
  * Revision 1.3  2003/06/13 20:05:57  pfpeterson
  * Added a comment.
  *
@@ -73,6 +77,8 @@ public class PyScript extends Script{
     if(valid!=null)
       return valid.booleanValue();
 
+    boolean hasClass=false;
+
     int numLines=this.numLines();
     String line=null;
     for( int i=0 ; i<numLines ; i++ ){
@@ -84,10 +90,14 @@ public class PyScript extends Script{
       }else if(line.startsWith("#")){
         continue;
       }else if(line.startsWith("class")){
+        if(line.indexOf(this.getClassname())>0)
+          hasClass=true;
         continue;
       }else if(line.startsWith("from")){
         continue;
       }else if(line.startsWith("import")){
+        continue;
+      }else if(line.startsWith("def")){
         continue;
       }else if(line.startsWith("if")){
         int name_index=line.indexOf("__name__");
@@ -101,8 +111,24 @@ public class PyScript extends Script{
     }
     line=null;
 
-    valid=new Boolean(true);
+    valid=new Boolean(hasClass);
     return valid.booleanValue();
+  }
+
+  public String getClassname(){
+    // the class name must match the filename
+    String filename=this.getFilename();
+    if(filename==null || filename.equals(UNKNOWN)) return null;
+
+    // ditch the directory name
+    int index=filename.lastIndexOf("/");
+    if(index<0)
+      index=0;
+    else
+      index++;
+
+    // return the filename with out the '.py'
+    return filename.substring(index,filename.length()-3);
   }
 
   public ParseError generateError(PyException pyexcep){
