@@ -30,6 +30,17 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.42  2005/02/07 22:30:55  dennis
+ *  Added protected method copyFields( Data d ) that copies data
+ *  members from Data object d to the current Data object.  This
+ *  is a convenience method for derived classes that makes the
+ *  clone method more reliable.
+ *  Added convenience method getLabelName() to get the name of
+ *  the attribute to be used as a label, IF the label is specified
+ *  by an attribute name.
+ *  Fixed bug in add() method.  Adding a Data object that was not
+ *  an instance of TabluatedData would have failed.
+ *
  *  Revision 1.41  2004/06/22 15:34:18  rmikk
  *  Added documentation for setGridId method and associated variable
  *
@@ -229,7 +240,7 @@ public abstract class Data implements IData,
   }
 
   /**
-   *  Create an instance of a Data object representing a function or histogram.    
+   *  Create an instance of a Data object representing a function or histogram.
    *  Since the x & y values are specified, this form of getInstance() returns
    *  a TabulatedData object.  If there is one more x value than there are 
    *  y values a HistogramTable is returned.  Otherwise a FunctionTable is
@@ -440,6 +451,42 @@ public abstract class Data implements IData,
 
     return label_string;
   }
+
+  /**
+   *  Get the name of the label's attribute, if the label is based on an
+   *  attribute, or null if the label has not been specified, or is specified
+   *  as just a String.
+   *  
+   *  @return  A String label for this Data block. 
+   */
+  public String getLabelName()
+  {
+    if ( label_is_attribute )
+      return label_string;
+
+    return null;
+  }
+
+  /**
+   *  Copy the fields from the specified Data object to the current Data
+   *  object.  This is a convenience method to be used by derived classes
+   *  when they are creating a clone.
+   *
+   *  @param  d   The Data object whose fields are to be copied.
+   */
+   protected void copyFields( Data d )
+   {
+     if ( d == null )
+       return;
+
+     selected           = d.selected;
+     hide               = d.hide;
+     label_string       = d.label_string;
+     label_is_attribute = d.label_is_attribute;
+     use_sqrt_errors    = d.use_sqrt_errors;
+     if ( d.gridIDs != null )
+       gridIDs = (Hashtable)(d.gridIDs.clone());
+   }
 
   /**
    * Combine the attribute list of the specified Data object with the attribute
@@ -983,7 +1030,7 @@ public abstract class Data implements IData,
 
   public Data add( float val, float err )
   {
-    TabulatedData temp = (TabulatedData)this.clone();
+    TabulatedData temp = TabulatedData.getInstance( this, this.group_id ); 
 
     for ( int i = 0; i < temp.y_values.length; i++ )     // add values 
       temp.y_values[i] += val;
