@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/11/24 14:22:14  rmikk
+ * Implemented the setNodeName and getNodeName methods
+ *
  * Revision 1.5  2003/10/15 02:37:51  bouzekc
  * Fixed javadoc errors.
  *
@@ -86,6 +89,12 @@ public abstract class NexWriteUtil implements NxWriteNode {
     num_nxEntries = 0;
   }
 
+  public String getNodeName(){
+     return nodename;
+  }
+
+  public void setNodeName( String args){
+  }
   /**
    * Returns the number of NXentries in this file
    *
