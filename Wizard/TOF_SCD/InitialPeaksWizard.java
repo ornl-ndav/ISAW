@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/07/16 16:29:13  bouzekc
+ * Now uses the base class's wizardLoader().
+ *
  * Revision 1.10  2003/07/08 23:04:47  bouzekc
  * Added second IndexJ OperatorForm to end of Wizard.
  *
@@ -133,17 +136,7 @@ public class InitialPeaksWizard extends Wizard {
    */
   public static void main( String[] args ) {
     InitialPeaksWizard w = new InitialPeaksWizard( true );
-
-    //specified a --nogui switch but forgot to give a filename
-    if( args.length == 1 ) {
-      System.out.println( 
-        "USAGE: java Wizard.TOF_SCD.InitialPeaksWizard " +
-        "[--nogui] <Wizard Save File>" );
-    } else if( args.length == 2 ) {
-      w.executeNoGUI( args[1] );
-    } else {
-      w.showForm( 0 );
-    }
+    w.wizardLoader( args );
   }
 
   /**
