@@ -3,6 +3,12 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.4  2001/08/03 16:14:12  neffk
+ * improved parsing of the string returned from the parameter dialog.
+ * this version is INCOMPLETE, untested, and not at all intended
+ * for use.  however, my appointment is up today, so i need to commit
+ * all of my changes or my partially completed work will be lost.
+ *
  * Revision 1.3  2001/07/25 17:36:46  neffk
  * commented method setParameter() out.
  *
@@ -104,11 +110,8 @@ public class IntervalSelectionOp
                                  //interval
     int[] index_list = new int[ getDataSet().getNum_entries() ];
 
-    Interval interval = null;
+    Interval[] intervals = null;
     int selected_so_far_count = 0;
-
-    System.out.println( "num: " + getNum_parameters() );
-    System.out.println( "size: " + parameters.size() );
 
     for(  int i=0;  i<getNum_parameters();  i++ )
     {
@@ -125,29 +128,35 @@ public class IntervalSelectionOp
       else if(  p.getValue() instanceof String  )
       {
         String s = (String)p.getValue();
-        interval = new Interval( s );
 
-        System.out.println( "s: " + s );
+        String[] blocks = parse_blocks( s );
+        intervals = parse_intervals( blocks );
+
+//        System.out.println(  "I: " + interval.toString()  );
 
         selected_so_far_count = 0;
         for(  int j=0;  j<getDataSet().getNum_entries();  j++ )
         { 
           Data d = getDataSet().getData_entry(j);
-          Attribute a = d.getAttribute( interval.getType() );
+          Attribute a = d.getAttribute(  intervals[j].getType()  );
 
-          if(  interval.within( a )  )
-          {
-            getDataSet().getData_entry(i).setSelected( true );
-            index_list[ selected_so_far_count++ ] = d.getGroup_ID();
+          for(  int k=0;  k<intervals.length;  k++ )
+          { 
+            if(  intervals[k].within( a )  )
+            {
+              d.setSelected( true );
+              index_list[ selected_so_far_count++ ] = d.getGroup_ID();
+            }
+            else
+              d.setSelected( false );
           }
-          else
-            d.setSelected( false );
- 
-          getDataSet().notifyIObservers( IObserver.SELECTION_CHANGED );
         }
       }
+      getDataSet().notifyIObservers( IObserver.SELECTION_CHANGED );
     }
-    
+
+                                  //pack into a more appropriatly 
+                                  //sized array
     int[] return_list = new int[ selected_so_far_count ];
     for(  int i=0;  i<selected_so_far_count;  i++ )
       return_list[i] = index_list[i];
@@ -156,6 +165,99 @@ public class IntervalSelectionOp
   }
 
 
+  /**
+   * parses comma separated intervals and values out of the parameter
+   */ 
+  public String[] parse_blocks( String str )
+  {
+
+                                 //intervals and individual numbers
+                                 //must be separated by commas, so 
+                                 //break up 'str' at commas    
+    int comma_count = 0;
+    for( int i=0;  i<str.length();  i++ )
+      if(  str.charAt(i) == ','  )
+        comma_count++;
+
+    String[] blocks = new String[ comma_count + 1 ];
+
+    if( comma_count == 0 )
+    {
+      int start = 0;
+      int end   = str.length();
+      blocks[0] = str.substring( start, end );
+      return blocks;
+    }
+    
+    int start = 0;
+    int end   = str.indexOf( "," );
+    blocks[0] = str.substring( start, end );
+    str = str.substring(  end + 1, str.length()  );
+
+
+    int count = 1;
+    while(  count < comma_count  )
+    {
+      start = 0;
+      end   = str.indexOf( "," );
+
+      blocks[count] = str.substring( start, end ).trim();
+      str = str.substring(  end + 1, str.length()   );
+
+      count++;
+    }
+
+    blocks[ comma_count ] = str.trim();
+
+    return blocks;
+  }
+
+
+  /**
+   *
+   */ 
+  public Interval[] parse_intervals( String[] blocks )
+  {
+    String type = "";
+
+    Interval[] intervals = new Interval[ blocks.length ];
+    for( int i=0;  i<blocks.length;  i++ )
+    {
+      String block = blocks[i];
+      int separator = block.indexOf( Interval.SEPARATOR );
+
+                     //if there's a SEPARATOR, then it must
+                     //be an interval
+      if( separator > 0 )
+      {
+        intervals[i] = new Interval( type + block );
+      }
+
+                 //if there's no SEPARATOR, then we'll assume
+                 //this is an individual number. 
+      else 
+      {
+        Double value = new Double( block );
+        if(  value.isNaN()  ) 
+          System.out.println( "bad number: " + block );
+//          throw IllegalArgumentException( "illegal: " + block );
+          
+        String str = new String(  "[" + 
+                                  value.toString() + 
+                                  Interval.SEPARATOR +
+                                  value.toString() + 
+                                  "]"  );
+        intervals[i] = new Interval( str );
+      }
+    }
+ 
+    return intervals;
+  }
+
+
+  /**
+   * make a deep copy of this object.
+   */ 
   public Object clone()
   {
     IntervalSelectionOp new_op = new IntervalSelectionOp();
@@ -167,16 +269,19 @@ public class IntervalSelectionOp
   }
 
 
-/*
-  public boolean setParameter( Parameter p, int i )
+  public static void main( String args[] )
   {
-    if(  p.getValue() instanceof String )
-      System.out.println(  (String)(p.getValue())  );
-    else if(  p.getValue() instanceof DataSet  )
-      System.out.println(  p.getValue() );
+    IntervalSelectionOp isop = new IntervalSelectionOp();
 
-    return super.setParameter( p, i );
+    System.out.println( "----- blocks -----" );
+    String[] strs = isop.parse_blocks( "[0:1)" );
+    for( int i=0;  i<strs.length;  i++ )
+      System.out.println( strs[i] );
+
+    System.out.println( "\n" + "----- intervals -----" );
+    Interval[] intervals = isop.parse_intervals( strs );
+    for( int i=0;  i<intervals.length;  i++ )
+      System.out.println(  intervals[i].toString()  );
+    
   }
-*/
-
 }
