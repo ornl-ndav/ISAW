@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/01/12 20:03:52  bouzekc
+ * Moved constants into ConsoleWizardFrontEnd.
+ *
  * Revision 1.4  2004/01/09 22:26:13  bouzekc
  * Separated out some methods into IGUIWizardFrontEnd.
  *
@@ -56,20 +59,6 @@ import java.io.*;
  * This is a package level interface defining the front end for a Wizard.
  */
 interface IWizardFrontEnd {
-  //~ Static fields/initializers ***********************************************
-
-  public static final int FIRST_COMMAND       = 1;
-  public static final int BACK_COMMAND        = 2;
-  public static final int NEXT_COMMAND        = 3;
-  public static final int LAST_COMMAND        = 4;
-  public static final int CLEAR_COMMAND       = 5;
-  public static final int CLEAR_ALL_COMMAND   = 6;
-  public static final int EXEC_COMMAND        = 7;
-  public static final int EXEC_ALL_COMMAND    = 8;
-  public static final int SAVE_WIZARD_COMMAND = 9;
-  public static final int LOAD_WIZARD_COMMAND = 10;
-  public static final int EXIT_COMMAND        = 11;
-
   //~ Methods ******************************************************************
 
   /**
