@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/12/23 12:53:03  rmikk
+ * updated to NeXus standard v 1.0.  Uses detector_number instead of id 
+ *   and looks for the axes attribute to determine axes.
+ *
  * Revision 1.2  2003/12/08 17:28:23  rmikk
  * Eliminated a debu print
  *
@@ -76,12 +80,12 @@ public class NxDataStateInfo extends StateInfo{
 
   /**
    *   Determines whether the Datablock ID's are determined by the NXdetector.id
-   *   if present or by the default GroupID.  Not used yet
+   *   or NXdetector.detector_number if present or by the default GroupID. 
    */
   public boolean hasIntIDField;
 
   /**
-   *   The starting Default GroupID for the Data Blocks in this NXdata
+   *   The starting Default GroupID if there is no id or detector_number field.
    */
   public int startGroupID;
 
@@ -107,6 +111,7 @@ public class NxDataStateInfo extends StateInfo{
    */
   public NxDataStateInfo( NxNode NxDataNode, NxNode NxInstrumentNode, 
                 NxfileStateInfo Params, int startGroupID ){
+                  
      Name = NxDataNode.getNodeName();
      axisName = new String[4];
      axisName[0] = axisName[1]= axisName[2] = axisName[3] = null;
@@ -116,26 +121,40 @@ public class NxDataStateInfo extends StateInfo{
      this.startGroupID = startGroupID;
 
      for( int i = 0; i < NxDataNode.getNChildNodes(); i++){
+       
         NxNode child = NxDataNode.getChildNode( i);
         if( child.getNodeClass().equals("SDS")){
+          
            int axNum = ConvertDataTypes.intValue( child.getAttrValue("axis"));
            if( (axNum >=1) &&( axNum < 4))
               axisName[axNum-1] = child.getNodeName();
 
            if( child.getNodeName().equals("data")){
+             
               dimensions = child.getDimension();
+              
               labelName = ConvertDataTypes.StringValue( child.getAttrValue("label"));
+              Object O= child.getAttrValue("axes");
+              if( O instanceof String[]){
+                for( int j=0; j< ((String[])O).length;j++)
+                   axisName[j]= ((String[])O)[j];
+              }
+              
            }
            String L = ConvertDataTypes.StringValue(child.getAttrValue("link")); 
           
            if( L != null){
               linkName = L;
            } 
-           if( child.getNodeName().equals("id")){
+           
+           if( child.getNodeName().equals("id") || child.getNodeName().
+                       equals("detector_number")){
+                         
                Object O =child.getNodeValue();
                if( O != null)
-                 if( O instanceof int[])
+                 if( O instanceof int[]){                 
                     hasIntIDField = true;
+                 }
 
            }
 
