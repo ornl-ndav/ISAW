@@ -1,4 +1,4 @@
-/**
+/*
  * File:  ViewerTemplate.java
  *
  * Copyright (C) 2000, Dennis Mikkelson
@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,13 +30,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.4  2001/07/13 22:00:42  dennis
- * Main (test) program now includes code to read a
- * sample runfile.
- *
- * Revision 1.3  2001/04/26 14:31:32  dennis
- * Added copyright and GPL info at the start of the file.
- *
+ * Revision 1.5  2002/11/27 23:25:59  pfpeterson
+ * standardized header
  *
  */
 

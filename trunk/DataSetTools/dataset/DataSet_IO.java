@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,14 +30,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2001/04/25 19:03:41  dennis
- * Added copyright and GPL info at the start of the file.
- *
- *
- * Revision 1.1  2000/07/10 22:21:09  dennis
- * Serialized I/O for DataSets.  This is needed since the DataSet contains 
- * a list of observers, all observers are also serialized if serialization 
- * is done directly.
+ * Revision 1.3  2002/11/27 23:14:06  pfpeterson
+ * standardized header
  *
  */
 

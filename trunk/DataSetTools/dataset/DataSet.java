@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2002/11/27 23:14:06  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.34  2002/10/03 15:34:33  dennis
  *  readObject() method now handles the case where the instrument type
  *  attribute is NOT an int array.  If it is a single integer, it is
@@ -97,103 +99,6 @@
  *  Revision 1.20  2002/02/22 20:35:06  pfpeterson
  *  Operator Reorganization.
  *
- *  Revision 1.19  2001/07/16 22:50:53  dennis
- *  Added method to get an array of selected indices.
- *
- *  Revision 1.18  2001/07/02 16:41:43  dennis
- *  Added methods:
- *    getAttribute( index )
- *    getAttribute( name )
- *
- *  Revision 1.17  2001/06/29 22:05:21  dennis
- *  Removed un-needed calls to System.gc
- *  (They introduced a large time delay!!)
- *
- *  Revision 1.16  2001/06/07 21:19:07  dennis
- *  Added calls to System.gc() at the end of clone() and copy()
- *  methods.
- *
- *  Revision 1.15  2001/06/06 21:20:24  dennis
- *  The copy() method now also preserves the last_sort_attribute value.
- *
- *  Revision 1.14  2001/06/04 22:48:12  dennis
- *  Added method getLastSortAttribute().
- *
- *  Revision 1.13  2001/06/04 20:01:33  dennis
- *  Added Quick Sort option to Sort() method.
- *
- *  Revision 1.12  2001/04/25 19:03:35  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.11  2001/04/02 20:49:40  dennis
- *  Added method to remove an operator from the DataSet.
- *
- *  Revision 1.10  2001/02/15 23:29:05  dennis
- *  Now the copy() method will not attempt to copy a DataSet
- *  into itself.  The observers will just be notified with
- *  a DATA_CHANGED message.
- *
- *  Revision 1.9  2000/11/07 16:02:58  dennis
- *  Changed the return type of the getYRange() method from a UniformXScale to
- *  a ClosedInterval so that the case where the YRange degenerated to one point
- *  could be handled.
- *
- *  Revision 1.8  2000/10/03 21:37:34  dennis
- *  Modified to add a unique integer "tag" to each DataSet as it is created.
- *  Added routine to get the "tag".
- *  Changed vector.clear() to vector.removeAllElements() for compatibility
- *  with 1.1.8 version of Java.
- *
- *  Revision 1.7  2000/08/01 01:33:21  dennis
- *  Changed clone() to display an error message if a null Data block is
- *  found while cloning
- *
- *  Revision 1.6  2000/07/17 21:01:14  dennis
- *  Minor reformat of documentation
- *
- *  Revision 1.5  2000/07/14 14:40:09  dennis
- *  Added copy(ds) method to copy the contents of a DataSet ds
- *  to the current DataSet
- *
- *  Revision 1.4  2000/07/11 21:17:47  dennis
- *  Added method getIndex_of_data() to get the index of a specific Data 
- *   block in the DataSet
- *
- *  Revision 1.3  2000/07/10 22:23:54  dennis
- *  Now using CVS 
- *
- *  Revision 1.27  2000/06/15 15:17:32  dennis
- *  Added methods insertData_entry() and replaceData_entry()
- *
- *  Revision 1.26  2000/06/15 14:15:33  dennis
- *  Added methods to get/set the list of observers as a whole.  This was
- *  needed to make the object serializable.  Specifically, if the DataSet
- *  is serialized, all objects that it refers to would also be serialized,
- *  includeing the viewers, etc.  Since this was not desired, it was
- *  necessary to serialize the DataSet in four steps:
- *    1.get the list of observers
- *    2.remove all observers from the DataSet itself
- *    3.serialize the DataSet
- *    4.set the original list of obervers back in the DataSet
- *
- *  Revision 1.25  2000/06/08 15:10:47  dennis
- *  Added wrapper methods th directly set/get attributes without getting
- *  the entire list of attributes.
- *
- *  Revision 1.24  2000/05/12 15:44:34  dennis
- *  Modified the getXRange() method to use a new form of UniformXScale.expand()
- *  that does not alter the current UniformXScale.
- *
- *  Revision 1.23  2000/05/11 16:00:45  dennis
- *  Added RCS logging
- *
- * 1.03 2000/03/16 Added routines to work with "selection" tags on the Data
- *                 blocks.  Also added routine to delete the selected Data
- *                 blocks.
- *
- * 1.02  99/06/04  Added a vector of operations to the data set.  When a
- *                 data set is constructed, the list of operations that are
- *                 allowed on this data set should also be specified.
  */
 
 package  DataSetTools.dataset;

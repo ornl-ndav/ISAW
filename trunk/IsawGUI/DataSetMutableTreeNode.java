@@ -1,32 +1,37 @@
-
 /*
- * $Id$
+ * File: DataSetMutableTreeNode.java
+ *
+ * Copyright (C) 2001, Kevin Neff
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Alok Chatterjee <achatterjee@anl.gov>
+ *           Intense Pulsed Neutron Source Division
+ *           Argonne National Laboratory
+ *           9700 South Cass Avenue, Bldg 360
+ *           Argonne, IL 60439-4845, USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+
  *
  * $Log$
- * Revision 1.6  2001/07/31 16:02:32  neffk
- * added the extinguish() method, which helps reclaim memory that this
- * objects uses after it's severed from the tree.
- *
- * Revision 1.5  2001/07/25 17:34:15  neffk
- * changed 'name' to represent the tag and title of the DataSet object.
- * the getTitle() method of DataSet returns the only the title, however
- * the toString() method returns the title prepended w/ a tag number,
- * making the DataSet object's apparent title unique within ISAW.
- *
- * Revision 1.4  2001/07/23 13:59:31  neffk
- * added a selected flag.
- *
- * Revision 1.3  2001/07/20 16:33:08  neffk
- * fixed a synch problem, fixed removeFromParent().  removed a redundant
- * index check; karma--;
- *
- * Revision 1.2  2001/07/18 16:38:02  neffk
- * uses DataMutableTreeNodes instead of DefaultMutableTreeNodes.
- * also, fixed setParent(...) to set the parent of this node, not
- * its children.  (oops)
- *
- * Revision 1.1  2001/07/15 05:26:23  neffk
- * contains Data objects in JDataTree.
+ * Revision 1.7  2002/11/27 23:27:07  pfpeterson
+ * standardized header
  *
  */
 

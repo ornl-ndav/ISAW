@@ -20,8 +20,7 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2002/11/27 23:29:07  pfpeterson
+ * standardized header
+ *
  * Revision 1.9  2002/11/20 16:15:21  pfpeterson
  * reformating
  *
@@ -45,22 +47,6 @@
  * Revision 1.6  2002/02/26 15:49:08  rmikk
  * Add the getDimension routine
  * Added a debug field
- *
- * Revision 1.5  2001/08/15 18:30:41  rmikk
- * Returns an ERror bad file message
- *
- * Revision 1.4  2001/07/26 20:52:23  rmikk
- * Changed Test program
- *
- * Revision 1.3  2001/07/26 13:52:52  rmikk
- * Removed Dependence on NDS package
- *
- * Revision 1.2  2001/07/24 20:11:57  rmikk
- * Added routines to determine if two nodes are the same
- * link
- *
- * Revision 1.1  2001/07/05 21:45:10  rmikk
- * New Nexus datasource IO handlers
  *
  */
 package NexIO.NexApi;

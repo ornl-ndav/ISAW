@@ -20,8 +20,7 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2002/11/27 23:28:17  pfpeterson
+ * standardized header
+ *
  * Revision 1.13  2002/11/20 16:14:38  pfpeterson
  * reformating
  *
@@ -67,27 +69,6 @@
  * When retrieving the data, getDimension is used.  The axes are matched to the
  *   dimensions.  There is now no need to determine if the axes are for
  *   histogram or  functions.
- *
- * Revision 1.6  2001/07/26 19:21:18  rmikk
- * Fixed a null pointer exception case that arise for files
- * with missing data
- *
- * Revision 1.5  2001/07/26 14:56:26  rmikk
- * Fixed utility to NOT change group_id's from defaults
- * unless information is in the nexus file
- *
- * Revision 1.4  2001/07/26 13:52:42  rmikk
- * Removed Dependence on NDS package
- *
- * Revision 1.3  2001/07/24 20:02:58  rmikk
- * Separated out common functionality so it can be used
- * by NxMonitor
- *
- * Revision 1.2  2001/07/17 13:53:12  rmikk
- * Fixed error so group numbers increased
- *
- * Revision 1.1  2001/07/05 21:45:10  rmikk
- * New Nexus datasource IO handlers
  *
  */
 package NexIO;

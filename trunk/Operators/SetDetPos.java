@@ -17,12 +17,11 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Alok Chatterjee achatterjee@anl.gov>
+ * Contact : Alok Chatterjee <achatterjee@anl.gov>
  *           Intense Pulsed Neutron Source Division
  *           Argonne National Laboratory
- *           9700 S. Cass Avenue, Bldg 360
- *           Argonne, IL 60440
- *           USA
+ *           9700 South Cass Avenue, Bldg 360
+ *           Argonne, IL 60439-4845, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -32,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/11/27 23:29:54  pfpeterson
+ * standardized header
+ *
  * Revision 1.1  2002/05/14 22:25:30  pfpeterson
  * Added to CVS on Alok's behalf.
  *
@@ -40,10 +42,6 @@
  *
  * Revision 1.2  2001/11/27 18:20:13  dennis
  * Added operator title to constructor java docs.
- *
- * Revision 1.1  2001/11/21 21:27:42  dennis
- * Example of user-supplied add-on operator.
- *
  *
  */
 package Operators;

@@ -2,7 +2,6 @@
  * File:  SetDSDataAttributes.java 
  *
  * Copyright (C) 2000, Ruth Mikkelson,
- *                     Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -32,18 +30,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/11/27 23:16:41  pfpeterson
+ * standardized header
+ *
  * Revision 1.2  2002/09/19 16:00:07  pfpeterson
  * Now uses IParameters rather than Parameters.
  *
  * Revision 1.1  2002/02/22 21:00:10  pfpeterson
  * Operator reorganization.
- *
- * Revision 1.8  2001/06/01 21:18:00  rmikk
- * Improved documentation for getCommand() method
- *
- * Revision 1.7  2001/04/26 19:10:38  dennis
- * Added copyright and GPL info at the start of the file.
- *
  *
  */
 

@@ -2,7 +2,6 @@
  * File:  dataSource.java 
  *
  * Copyright (C) 2001, Ruth Mikkelson,
- *                     Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -32,18 +30,9 @@
  * Modified:
  *
  * $Log$
- * Revision 1.4  2001/08/09 20:17:07  dennis
- * Now properly parses shortened data source strings such as
- * machine;port
- * Added debug prints in "if (debug_dataSource)" block.
+ * Revision 1.5  2002/11/27 23:23:16  pfpeterson
+ * standardized header
  *
- * Revision 1.3  2001/08/03 21:36:04  dennis
- * getUserName() now returns the user name from the System properties,
- * if no user name is specified.
- *
- * Revision 1.2  2001/08/01 21:52:52  dennis
- * Added java docs and changed methods to return blank strings instead of
- * null when fields are misssing.
  */
 
 package DataSetTools.retriever;

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,25 +30,8 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.3  2001/04/25 21:32:23  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.2  2000/07/17 15:21:13  dennis
- *  Added convenience routines to compute area and moments over the default
- *  extent of the peak.
- *
- *  Revision 1.1  2000/07/10 22:48:59  dennis
- *  New classes to deal with peaks/peak fitting
- *
- *  Revision 1.5  2000/06/15 16:49:20  dennis
- *  improved documentation
- *
- *  Revision 1.3  2000/06/13 20:39:15  dennis
- *  added setEvaluationMode() to select between Peak, Background and
- *  Peak plus Background
- *
- *  Revision 1.2  2000/05/11 16:09:42  dennis
- *  added RCS logging
+ *  Revision 1.4  2002/11/27 23:22:56  pfpeterson
+ *  standardized header
  *
  */
 

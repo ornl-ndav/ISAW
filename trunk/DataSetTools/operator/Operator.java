@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2002/11/27 23:16:15  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.18  2002/10/09 16:33:34  dennis
  *  Made form of getDocumentation() method consistent with the earlier code.
  *
@@ -53,85 +55,6 @@
  *  Temporarilly added names for new Abstract base classs for
  *  Generic operators for various instruments.
  *
- *  Revision 1.11  2001/08/15 02:06:44  rmikk
- *  Fixed error if parameter's value is null.
- *
- *  Revision 1.10  2001/08/10 18:41:24  rmikk
- *  Initialize the parameters variable in this constructor.
- *
- *  Revision 1.9  2001/08/08 22:25:56  rmikk
- *  Added Code so null parameters values( for Objects data
- *  types ) will not crash
- *
- *  Revision 1.8  2001/07/30 19:52:29  dennis
- *  Added GENERIC SAVE category.
- *
- *  Revision 1.7  2001/06/01 21:18:00  rmikk
- *  Improved documentation for getCommand() method
- *
- *  Revision 1.6  2001/05/23 17:41:46  dennis
- *  Minor improvement to documentation.
- *
- *  Revision 1.5  2001/04/26 19:10:12  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.4  2000/11/10 22:41:34  dennis
- *    Introduced additional abstract classes to better categorize the operators.
- *  Existing operators were modified to be derived from one of the new abstract
- *  classes.  The abstract base class hierarchy is now:
- *
- *   Operator
- *
- *    -GenericOperator
- *       --GenericLoad
- *       --GenericBatch
- *
- *    -DataSetOperator
- *      --DS_EditList
- *      --DS_Math
- *         ---ScalarOp
- *         ---DataSetOp
- *         ---AnalyzeOp
- *      --DS_Attribute
- *      --DS_Conversion
- *         ---XAxisConversionOp
- *         ---YAxisConversionOp
- *         ---XYAxesConversionOp
- *      --DS_Special
- *
- *     To allow for automatic generation of hierarchial menus, each new operator
- *  should fall into one of these categories, or a new category should be
- *  constructed within this hierarchy for the new operator.
- *
- *  Revision 1.3  2000/10/03 21:51:40  dennis
- *  Replaced vector.clear() with vector.removeAllElements() for
- *  compatibility with Java 1.1.8
- *
- *  Revision 1.2  2000/07/10 22:36:12  dennis
- *  Now Using CVS 
- *
- *  Revision 1.8  2000/06/14 16:46:28  dennis
- *  improved comments
- *
- *  Revision 1.7  2000/06/09 16:12:35  dennis
- *  Added getCommand() method to return the abbreviated command string for
- *  this operator
- *
- *  Revision 1.6  2000/05/16 15:35:34  dennis
- *  fixed error in documentation due to DOS text format
- *
- *  Revision 1.5  2000/05/16 15:22:11  dennis
- *  Changed CopyParametersFrom() method to first clear the list of parameters.
- * 
- *  Revision 1.4  2000/05/15 21:43:45  dennis
- *  now uses constant Parameter.NUM_BINS rather than the string
- * "Number of Bins"
- *
- *  Revision 1.3  2000/05/11 16:41:28  dennis
- *  Added RCS logging
- * 
- *  99/06/04  0.2, modified to use the Parameter class, rather than the
- *                 attribute class.
  */
 
 package DataSetTools.operator;

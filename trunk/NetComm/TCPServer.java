@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,38 +30,8 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.8  2001/09/20 17:39:27  dennis
- *  Fixed @see javadoc comment
- *
- *  Revision 1.7  2001/08/14 15:09:16  dennis
- *  Now gets date string from DateUtil
- *
- *  Revision 1.6  2001/08/14 01:32:14  dennis
- *  Added comments to ProcessCommand() method.  Now usually makes
- *  a log entry before doing the command.
- *
- *  Revision 1.5  2001/08/13 23:37:32  dennis
- *  Added code for basic handling of get status command.
- *
- *  Revision 1.4  2001/08/10 19:36:16  dennis
- *  Added methods to parse command line arguments and show usage.
- *  Also added methods to get/set the TCP port, get the server and
- *  log file names.
- *  Added error checking to methods that set the TCP port and server
- *  and log file names.
- *
- *  Revision 1.3  2001/08/09 21:45:47  dennis
- *  Added start_TCP() method to start the TCPServer.
- *
- *  Revision 1.2  2001/08/09 15:33:18  dennis
- *  Added concept of "data_name" and now handles command to
- *  get the data_name.  Also added debug_server flag and
- *  put debug prints in "if ( debug_server )" blocks.
- *
- *  Revision 1.1  2001/08/03 21:25:33  dennis
- *  Base class for TCP servers, manages connections, user names and
- *  passwords.
- *
+ *  Revision 1.9  2002/11/27 23:27:59  pfpeterson
+ *  standardized header
  *
  */
 package NetComm;

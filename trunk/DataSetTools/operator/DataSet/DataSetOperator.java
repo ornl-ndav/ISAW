@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,48 +30,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/11/27 23:16:27  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.2  2002/03/05 19:25:01  pfpeterson
  *  Updated @see references in javadocs.
  *
  *  Revision 1.1  2002/02/22 20:59:43  pfpeterson
  *  Operator reorganization.
- *
- *  Revision 1.5  2001/04/26 19:06:30  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.4  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
- *  Existing operators were modified to be derived from one of the new abstract
- *  classes.  The abstract base class hierarchy is now:
- *
- *   Operator
- *
- *    -GenericOperator
- *       --GenericLoad
- *       --GenericBatch
- *
- *    -DataSetOperator
- *      --DS_EditList
- *      --DS_Math
- *         ---ScalarOp
- *         ---DataSetOp
- *         ---AnalyzeOp
- *      --DS_Attribute
- *      --DS_Conversion
- *         ---XAxisConversionOp
- *         ---YAxisConversionOp
- *         ---XYAxesConversionOp
- *      --DS_Special
- *
- *     To allow for automatic generation of hierarchial menus, each new operator
- *  should fall into one of these categories, or a new category should be
- *  constructed within this hierarchy for the new operator.
- *
- *  Revision 1.3  2000/07/10 22:35:55  dennis
- *  Now Using CVS 
- *
- *  Revision 1.7  2000/05/11 16:41:28  dennis
- *  Added RCS logging
  *
  */
 

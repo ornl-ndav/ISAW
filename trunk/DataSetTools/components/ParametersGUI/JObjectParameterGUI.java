@@ -20,31 +20,22 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2002/11/27 23:12:34  pfpeterson
+ * standardized header
+ *
  * Revision 1.6  2002/03/08 16:20:46  pfpeterson
  * Added method to disable the GUIs. This is to help out wizards.
- *
- * Revision 1.5  2001/08/16 14:34:57  rmikk
- * Supports the data type IntListString
- *
- * Revision 1.4  2001/08/07 20:59:38  rmikk
- * Changed segments layout to a 3 by 2 grid and included
- * a beveled border
- *
- * Revision 1.3  2001/06/26 18:37:35  dennis
- * Added Copyright and GPL license.
- * Removed un-needed imports and improved
- * code format.
  *
  */
 

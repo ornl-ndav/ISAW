@@ -20,8 +20,7 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,15 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/11/27 23:27:07  pfpeterson
+ * standardized header
+ *
  * Revision 1.3  2002/02/22 20:39:14  pfpeterson
  * Operator reorganization.
- *
- * Revision 1.2  2001/08/15 22:37:19  chatterjee
- * Added session log to the current constructor
- * Fixed port number error, Caught illegal server path
- *
- * Revision 1.1  2001/08/15 02:12:39  rmikk
- * Initial Checkin
  *
 */
 package IsawGUI;

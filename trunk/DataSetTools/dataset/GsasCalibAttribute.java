@@ -20,6 +20,7 @@
  * Contact : Peter F. Peterson <pfpeterson@anl.gov>
  *           Intense Pulsed Neutron Source Division
  *           Argonne National Laboratory
+ *           9700 South Cass Avenue, Bldg 360
  *           Argonne, IL 60439-4845, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
@@ -30,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.5  2002/11/27 23:14:06  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.4  2002/11/12 23:02:42  pfpeterson
  *  Implemented more appropriate combine and add methods. This
  *  ignores the attribute to be combined (or added) and returns

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2002/11/27 23:14:07  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.14  2002/11/12 22:03:12  dennis
  *  Made clone() method more efficient by creating the Vector of
  *  Attributes to be of the correct size.
@@ -51,43 +53,6 @@
  *
  *  Revision 1.10  2002/06/14 20:48:37  rmikk
  *  Implements the IXmlIO interface
- *
- *  Revision 1.9  2001/07/23 18:40:24  dennis
- *  Fixed error: no longer using "==" for String comparison.
- *
- *  Revision 1.8  2001/04/25 19:03:29  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.7  2000/12/13 00:15:50  dennis
- *  Modified setAttribute() method to leave the attribute that is set in
- *  it's original position in the AttributeList, if it was originally in the
- *  list.
- *
- *  Revision 1.6  2000/11/10 22:52:10  dennis
- *  Trivial change to documentation.
- *
- *  Revision 1.5  2000/10/03 21:50:12  dennis
- *  Removed code in the combine() method that dealt with DataSet tags,
- *  since the DataSet tags will no longer be attributes, but will be
- *  a field in the DataSet.
- *
- *  Revision 1.4  2000/08/01 01:31:17  dennis
- *  Changed so that if an attribute is present in the first list, but not the
- *  second, the attribute from the first list used.
- *
- *  Revision 1.3  2000/07/26 19:15:41  dennis
- *  Now has method add() that will allow adding the values of a specified
- *  attribute from two lists and setting the summed attribute into the
- *  current list.
- *
- *  Revision 1.2  2000/07/10 22:23:52  dennis
- *  Now using CVS 
- *
- *  Revision 1.10  2000/06/08 15:13:30  dennis
- *  Fixed minor documentation errors.
- *
- *  Revision 1.9  2000/05/11 16:00:45  dennis
- *  Added RCS logging
  *
  */
 

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/11/27 23:14:06  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.8  2002/11/12 00:15:46  dennis
  *  Made immutable by:
  *  1. remove setValue() method
@@ -56,21 +58,6 @@
  *  Now the combine() method will not form LABEL attributes longer than
  *  a specified MAX length.
  *
- *  Revision 1.4  2001/04/25 19:04:07  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.3  2000/07/10 22:24:05  dennis
- *  Now Using CVS 
- *
- *  Revision 1.5  2000/05/12 15:50:13  dennis
- *  removed DOS TEXT  ^M
- *
- *  Revision 1.4  2000/05/11 16:00:45  dennis
- *  Added RCS logging
- *
- *  99/06/02, 1.01, Added methods to set the attribute's name and value.
- *                  Added method "compare" to compare objects.
- *                  Removed method "greater_than" to compare objects.
  */
 
 package  DataSetTools.dataset;

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,30 +30,8 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.2  2001/08/13 23:42:02  dennis
- *  ProcessCommand() now calls super.ProcessCommand() for commands
- *  that are not handled.
- *
- *  Revision 1.1  2001/08/10 21:59:18  dennis
- *  Renamed from FileDataSetServer.
- *
- *  Revision 1.5  2001/08/10 20:19:57  dennis
- *  Main program exits if help message was requested.
- *
- *  Revision 1.4  2001/08/10 19:45:13  dennis
- *  Changed main program to use the command line arguments and other
- *  new features of the servers.
- *
- *  Revision 1.3  2001/08/09 21:47:26  dennis
- *  Uses start_TCP() method to start the TCPServer.
- *
- *  Revision 1.2  2001/08/09 15:35:46  dennis
- *  Added concept of "data_name".  Removed un-needed debug
- *  prints and put other debug prints in "if ( debug_server )" blocks.
- *
- *  Revision 1.1  2001/08/03 21:33:00  dennis
- *  Server for .run and .nxs files.
- *
+ *  Revision 1.3  2002/11/27 23:27:59  pfpeterson
+ *  standardized header
  *
  */
 package NetComm;

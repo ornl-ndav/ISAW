@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/11/27 23:29:54  pfpeterson
+ * standardized header
+ *
  * Revision 1.4  2002/03/13 16:26:25  dennis
  * Converted to new abstract Data class.
  *
@@ -39,10 +41,6 @@
  *
  * Revision 1.2  2001/11/27 18:19:17  dennis
  * Added operator title to constructor java docs.
- *
- * Revision 1.1  2001/11/21 21:27:39  dennis
- * Example of user-supplied add-on operator.
- *
  *
  */
 package Operators;

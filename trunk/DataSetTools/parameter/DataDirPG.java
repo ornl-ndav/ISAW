@@ -18,8 +18,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
  * Contact : Peter F. Peterson <pfpeterson@anl.gov>
- *           Intense Pulse Neutron Source Division
+ *           Intense Pulsed Neutron Source Division
  *           Argonne National Laboratory
+ *           9700 South Cass Avenue, Bldg 360
  *           Argonne, IL 60439-4845, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
@@ -30,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/11/27 23:22:42  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.5  2002/10/23 18:50:43  pfpeterson
  *  Now supports a javax.swing.filechooser.FileFilter to be specified
  *  for browsing options. Also fixed bug where it did not automatically

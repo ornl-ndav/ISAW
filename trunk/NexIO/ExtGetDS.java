@@ -20,8 +20,7 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2002/11/27 23:28:17  pfpeterson
+ * standardized header
+ *
  * Revision 1.11  2002/11/20 16:14:36  pfpeterson
  * reformating
  *
@@ -49,26 +51,6 @@
  * Revision 1.7  2002/02/26 15:27:10  rmikk
  * Added a debug field.
  * Added code for the TOFNDGS instrument definition
- *
- * Revision 1.6  2001/09/20 17:36:44  dennis
- * Fixed @see javadoc comment
- *
- * Revision 1.5  2001/08/01 14:36:23  rmikk
- * Isaw's instrument type is Now tied to the NXentry
- * analysis field
- *
- * Revision 1.4  2001/07/26 13:52:34  rmikk
- * Removed Dependence on NDS package
- *
- * Revision 1.3  2001/07/24 20:01:41  rmikk
- * Major Reorganization to allow several NXdata's for one
- * DataSet ( Group those with like x values)
- *
- * Revision 1.2  2001/07/17 13:52:50  rmikk
- * Added Changes to get more fields
- *
- * Revision 1.1  2001/07/05 21:45:10  rmikk
- * New Nexus datasource IO handlers
  *
  */
 package NexIO ;

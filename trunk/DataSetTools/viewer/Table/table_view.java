@@ -5,7 +5,7 @@
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
- * of the License, or (at yoJTableur option) any later version.
+ * of the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,8 +19,7 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -30,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.29  2002/11/27 23:25:37  pfpeterson
+ * standardized header
+ *
  * Revision 1.28  2002/07/17 19:58:56  rmikk
  * Changed the naming for the different type of tables
  *
@@ -114,50 +116,6 @@
  *       b) The header tab shows in the table mode
  *       c) The header information states in all capital letters:
  *          NO SELECTED INDICES  (Ruth)
- *
- * Revision 1.13  2001/09/06 14:18:56  dennis
- * Removed <control-M> characters.
- *
- * Revision 1.12  2001/09/06 14:13:51  dennis
- * - The "Save to File", "Make a Table", and "Write to Console" radio
- *   buttons are now command buttons.  The Display command button is now deleted.
- * - The Prompt when Selecting Group indices is changed to include a
- *   sample entry.  The sample entry in the text box has been deleted.(Ruth)
- *
- * Revision 1.11  2001/08/30 14:35:58  dennis
- * Added a "Copy Selected" JMenuItem to the Select Menu
- * in the table's menu bar. (Ruth)
- *
- * Revision 1.10  2001/08/17 21:17:21  rmikk
- * Fixed major errors in views when groups are paired.
- *
- * Revision 1.9  2001/08/16 17:08:45  rmikk
- * Spelled Pressure Correctly
- *
- * Revision 1.8  2001/08/15 14:13:16  rmikk
- * Added scroll pane to one of the lists.
- * Reset the data sets SetField operator parameters to
- *   default parameters so as not to interfere with subsequent
- *   uses of this operator.
- *
- * Revision 1.6  2001/08/14 01:59:00  rmikk
- * Improved layout.
- * Added line indicating the selected indices.
- * Added the state feature to save and restore state when
- *    traversing several views
- *
- * Revision 1.5  2001/08/13 16:08:47  rmikk
- * Added method setDataSet
- *
- * Revision 1.4  2001/08/13 14:39:36  rmikk
- * The header and the table in the table view is now in
- *    tabbed panes.
- * The JTable column headings in the table part are now the
- *   column headings from the table.
- *
- * Revision 1.3  2001/08/09 21:50:42  rmikk
- * Added Documentation.
- * Added new Fields- Group Index, Raw Angle, Solid Angle
  *
  */
 

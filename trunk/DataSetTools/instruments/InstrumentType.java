@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,37 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/11/27 23:15:15  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.9  2002/08/02 22:54:57  dennis
  *  Code to form runfile name from instument name + run number
  *  now also works for SCD.
- *
- *  Revision 1.8  2001/04/25 20:28:10  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.7  2001/03/01 20:50:12  dennis
- *  Now takes the instrument type codes from the class
- *  IPNS.Runfile.InstrumentType
- *
- *  Revision 1.6  2001/02/16 21:53:49  dennis
- *  Added instrument types for triple axis spectrometer and four
- *  mono-chromatic instrument types. ( For compatibility with NeXus.)
- *
- *  Revision 1.5  2000/08/03 21:50:32  dennis
- *  Added methods to get the path and file name separately from the fully
- *  qualified file name.
- *
- *  Revision 1.4  2000/07/13 14:28:28  dennis
- *  Changed formIPNSFileName() method to NOT include the path
- *
- *  Revision 1.3  2000/07/12 18:33:29  dennis
- *  Added method formIPNSFileName() to construct a IPNS runfile
- *  name from the path, instrument name and run number.
- *
- *  Revision 1.2  2000/07/10 22:24:44  dennis
- *  Now Using CVS 
- *
- *  Revision 1.2  2000/05/11 16:42:51  dennis
- *  added RCS logging
  *
  */
 package DataSetTools.instruments;

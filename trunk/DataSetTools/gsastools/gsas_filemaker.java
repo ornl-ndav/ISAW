@@ -20,8 +20,8 @@
  * Contact : Peter F. Peterson <pfpeterson@anl.gov>
  *           Intense Pulsed Neutron Source Division
  *           Argonne National Laboratory
- *           Argonne, IL 60439-4845
- *           USA
+ *           9700 South Cass Avenue, Bldg 360
+ *           Argonne, IL 60439-4845, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2002/11/27 23:15:00  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.21  2002/07/25 19:29:05  pfpeterson
  *  Many changes, the largest of which is time map support.
  *
@@ -72,34 +75,6 @@
  *
  *  Revision 1.11  2002/01/04 16:43:49  pfpeterson
  *  Modified format. Now more closely matches sumruns results.
- *
- *  Revision 1.10  2001/11/21 19:59:10  pfpeterson
- *  Fixed bug of array indexing. Added feature where if 0deg monitor has zero counts 180deg monitor is printed in file.
- *
- *  Revision 1.9  2001/11/20 21:37:06  pfpeterson
- *  Modified GSAS data file format to reflect new found information.
- *
- *  Revision 1.8  2001/11/09 19:40:06  dennis
- *  Now allows the monitor DataSet to be null.
- *
- *  Revision 1.7  2001/11/08 22:28:49  chatterjee
- *  Added lines required to be read as a PDF file. GSAS will ignore the 
- *  extra lines.
- *
- *  Revision 1.6  2001/09/21 19:11:35  dennis
- *  Improved label on file name that's printed to the console.
- *
- *  Revision 1.5  2001/09/21 18:39:36  dennis
- *  Removed some debugging println() statements.
- *
- *  Revision 1.4  2001/06/25 20:11:44  chatter
- *  Added the header info in the GSAS output file
- *
- *  Revision 1.3  2001/06/08 23:24:25  chatter
- *  Fixed GSAS write file for SEPD
- *
- *  Revision 1.2  2001/04/25 19:26:07  dennis
- *  Added copyright and GPL info at the start of the file.
  *
  */
 package DataSetTools.gsastools;

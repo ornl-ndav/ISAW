@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/11/27 23:18:49  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.3  2002/11/21 22:33:48  dennis
  *  Added getDocumentation() method and documentation on getResult().
  *  (Chris Bouzek)
@@ -41,82 +43,6 @@
  *  Revision 1.1  2002/02/22 21:02:59  pfpeterson
  *  Operator reorganization.
  *
- *  Revision 1.7  2001/08/16 19:15:44  dennis
- *  Now calls DSImplementationOps.AddDataBlocks to form the sum
- *  and to form an average DetectorPosition, weighted by
- *  the solid angles ( if present ).
- *
- *  Revision 1.6  2001/07/23 18:50:47  dennis
- *  Fixed error: no longer using "==" for String comparison.
- *
- *  Revision 1.5  2001/06/01 21:18:00  rmikk
- *  Improved documentation for getCommand() method
- *
- *  Revision 1.4  2001/04/26 19:11:46  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.3  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
- *  Existing operators were modified to be derived from one of the new abstract
- *  classes.  The abstract base class hierarchy is now:
- *
- *   Operator
- *
- *    -GenericOperator
- *       --GenericLoad
- *       --GenericBatch
- *
- *    -DataSetOperator
- *      --DS_EditList
- *      --DS_Math
- *         ---ScalarOp
- *         ---DataSetOp
- *         ---AnalyzeOp
- *      --DS_Attribute
- *      --DS_Conversion
- *         ---XAxisConversionOp
- *         ---YAxisConversionOp
- *         ---XYAxesConversionOp
- *      --DS_Special
- *
- *     To allow for automatic generation of hierarchial menus, each new operator
- *  should fall into one of these categories, or a new category should be
- *  constructed within this hierarchy for the new operator.
- *
- *  Revision 1.2  2000/11/07 15:42:19  dennis
- *  Replaced "Data blocks" with "Groups" in operator title.
- *
- *  Revision 1.1  2000/07/10 22:36:24  dennis
- *  Now Using CVS 
- *
- *  Revision 1.2  2000/06/09 16:12:35  dennis
- *  Added getCommand() method to return the abbreviated command string for
- *  this operator
- *
- *  Revision 1.1  2000/06/09 15:00:11  dennis
- *  Initial revision
- *
- *  Revision 1.8  2000/06/08 15:27:51  dennis
- *  Changed type casting of attribute names from (SpecialString) to
- *  (AttributeNameString)
- *
- *  Revision 1.7  2000/06/05 14:14:25  dennis
- *  Fixed documentation format problem.
- *
- *  Revision 1.6  2000/05/16 15:36:34  dennis
- *  Fixed clone() method to also copy the parameter values from
- *  the current operator.
- * 
- *  Revision 1.5  2000/05/11 16:41:28  dennis
- *  Added RCS logging
- *
- *  2000/06/09  This operator was renamed from SumSelectedData 
- *             
- *  2000/05/09  Now returns error message if any of the Data blocks are
- *              not compatible
- *
- *    99/08/16  Dennis Mikkelson
- *              Added constructor to allow calling operator directly 
  */
 
 package DataSetTools.operator.DataSet.Math.DataSet;

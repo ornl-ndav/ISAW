@@ -1,8 +1,7 @@
 /*
  * File: JAttributeNameParameterGUI.java 
  *
- * Copyright (C) 2001, Ruth Mikkelson,
- *                     Alok Chatterjee
+ * Copyright (C) 2001, Ruth Mikkelson, Alok Chatterjee
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,18 +17,24 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Alok Chatterjee achatterjee@anl.gov>
+ * Contact : Alok Chatterjee <achatterjee@anl.gov>
  *           Intense Pulsed Neutron Source Division
  *           Argonne National Laboratory
- *           9700 S. Cass Avenue, Bldg 360
- *           Argonne, IL 60440
- *           USA
+ *           9700 South Cass Avenue, Bldg 360
+ *           Argonne, IL 60439-4845, USA
  *
- * For further information, see http://www.pns.anl.gov/ISAW/>
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
  *
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/11/27 23:12:35  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.7  2002/03/08 16:20:43  pfpeterson
  *  Added method to disable the GUIs. This is to help out wizards.
  *
@@ -39,23 +44,6 @@
  *
  *  Revision 1.5  2001/11/27 18:39:07  dennis
  *  Set Editable to false. Only members of the list can be selected.(Ruth)
- *
- *  Revision 1.4  2001/08/16 01:03:46  rmikk
- *  Set the Selected member of the Combobox to be the
- *  parameters value .toString() so that it is a string
- *
- *  Revision 1.3  2001/08/15 02:08:30  rmikk
- *  Set the selected item of the combo box to the value of
- *  the parameter
- *
- *  Revision 1.2  2001/08/07 20:58:36  rmikk
- *  Eliminated setPreferred size and set segment layout to a
- *  grid layout
- *
- *  Revision 1.1  2001/08/06 22:16:59  rmikk
- *  New File: Handles all the IStringList parameter Values
- *
- * 
  *
  */
 package DataSetTools.components.ParametersGUI;

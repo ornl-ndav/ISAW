@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,17 +30,8 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.3  2001/04/23 19:44:04  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.2  2001/04/20 20:25:11  dennis
- *  Rewrote the conversions using low level logical operations
- *  "<<", "&" and "|".  It will now work correctly for negative
- *  integers as well as for positive integers.
- *
- *  Revision 1.1  2001/01/30 23:27:12  dennis
- *  Initial version, network communications for ISAW.
- *
+ *  Revision 1.4  2002/11/27 23:27:59  pfpeterson
+ *  standardized header
  *
  */
 

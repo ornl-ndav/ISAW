@@ -17,18 +17,24 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Peter Peterson <pfpeterson@anl.gov>
+ * Contact : Peter F. Peterson <pfpeterson@anl.gov>
  *           Intense Pulsed Neutron Source Division
  *           Argonne National Laboratory
- *           9700 S. Cass Avenue, Bldg 360
- *           Argonne, IL 60440
- *           USA
+ *           9700 South Cass Avenue, Bldg 360
+ *           Argonne, IL 60439-4845, USA
  *
- * For further information, see http://www.pns.anl.gov/ISAW/>
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
  *
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/11/27 23:12:34  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.2  2002/10/23 18:51:56  pfpeterson
  *  Now supports a javax.swing.filechooser.FileFilter to be specified
  *  for browsing options. Also fixed bug when the JFileChooser was

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,47 +30,15 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2002/11/27 23:27:59  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.12  2002/07/24 23:16:20  dennis
  *  Default INSTRUMENT_COMPUTER is now loopback: 127.0.0.1
  *
  *  Revision 1.11  2001/12/10 22:05:06  dennis
  *  Now will pad run numbers with leading zeros, to length 4 when
  *  forming the file name string.
- *
- *  Revision 1.10  2001/08/10 22:14:51  dennis
- *  Now sends message to LiveDataServer if the run number is 0.
- *
- *  Revision 1.9  2001/06/08 16:13:22  dennis
- *  Change PORT to DEFAULT_PORT and now allow specifying
- *  different ports.
- *
- *  Revision 1.8  2001/06/07 21:14:48  dennis
- *  Added periodic call to System.gc().
- *
- *  Revision 1.7  2001/06/01 22:04:23  dennis
- *  Now runs "forever" instead of terminating after sending 20,000
- *  spectra.
- *
- *  Revision 1.6  2001/04/23 19:44:07  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.5  2001/04/20 20:26:48  dennis
- *  Fixed documentation for the squence of bytes sent by SendSpectrum.
- *
- *  Revision 1.4  2001/02/22 20:58:46  dennis
- *  Now sends all DataSets in a runfile, not just the monitor DataSet
- *  and the first histogram.
- *
- *  Revision 1.3  2001/02/15 21:51:15  dennis
- *  added debug message
- *
- *  Revision 1.2  2001/02/02 21:00:51  dennis
- *  Now sends the instrument name and run number with each UPD packet.
- *  To run this test, specify the instrument name and run number
- *  as two separate arguments on the command line.
- *
- *  Revision 1.1  2001/01/30 23:27:17  dennis
- *  Initial version, network communications for ISAW.
  *
  */
 package NetComm;

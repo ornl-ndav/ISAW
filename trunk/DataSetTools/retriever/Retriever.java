@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,36 +30,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/11/27 23:23:16  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.9  2002/10/10 21:10:50  dennis
  *  Added method getDataSet( data_set_num, ids[] ).  At this base class
  *  level, it just calls getDataSet( data_set_num ), and issues a warning
  *  message, so that derived classes can still function without implementing
  *  this method.  All derived classes should eventually implement this.
- *
- *  Revision 1.8  2001/08/09 15:22:52  dennis
- *  Added debug_retriever flag.
- *
- *  Revision 1.7  2001/08/03 21:37:53  dennis
- *  Improved the docs and now allow numDataSets() to return a negative
- *  value as an error code.
- *
- *  Revision 1.6  2001/07/30 18:47:28  dennis
- *  Minor documentation improvements.
- *
- *  Revision 1.5  2001/04/25 21:57:55  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.4  2001/01/29 21:12:05  dennis
- *  Now uses CVS revision numbers.
- *
- *  Revision 1.3  2000/10/10 20:24:02  dennis
- *  Added constant for PULSE_HEIGHT_DATASET
- *
- *  Revision 1.2  2000/07/10 22:49:45  dennis
- *  Now Using CVS 
- *
- *  Revision 1.3  2000/05/11 16:19:12  dennis
- *  added RCS logging
  *
  */
 

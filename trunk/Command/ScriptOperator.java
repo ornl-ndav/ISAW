@@ -20,17 +20,20 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2002/11/27 23:12:10  pfpeterson
+ * standardized header
+ *
  * Revision 1.18  2002/09/19 15:57:21  pfpeterson
  * Now uses IParameters rather than Parameters.
  *
@@ -40,59 +43,6 @@
  * Revision 1.16  2002/02/22 20:33:41  pfpeterson
  * Operator Reorganization.
  *
- * Revision 1.15  2001/11/12 21:27:55  dennis
- *   1. Supports  GROUP1_HOME, GROUP2_HOME, etc. These will be separated
- *      under IsawGUI's Macros menu into  Group Scripts, Group1 Scripts,
- *      Group2 Scripts, etc.
- *
- * Revision 1.14  2001/11/09 18:23:20  dennis
- *   1. Eliminated the System.exit(0) when the JParametersDialog is
- *      needed for parameters. Used a Window Listener to exit when
- *      the Dialog box is closed.
- *   2. Eliminated an error that occurred when a file had no directory
- *      in its name.  The directory was assumed to be the user.dir,
- *      the directory where the program was launched.
- *
- * Revision 1.13  2001/08/02 15:52:01  chatter
- * Changed message in the log entry for running this as a batch file
- *
- * Revision 1.12  2001/07/31 22:16:26  rmikk
- * Used Dennis' DataSet.util Shared Data to load the Isaw
- * Props.dat file
- *
- * Revision 1.11  2001/07/20 21:23:31  rmikk
- * Fixed Main program so a script and or class file(?) can
- * be executed as follows:
- *     "java Command.ScriptOperator  filename"
- * The dialog box will pop up if there are any script parameters
- *
- * Revision 1.10  2001/06/27 18:37:53  rmikk
- * Change USER_HOME to GROUP_HOME.
- * Changed Category List to contain Isaw Scripts if the leading
- *     directory part of the file matches ISAW_HOME
- * Changed Category List to contain Group Scripts and user
- *    Scripts if the leading part of the filename matches
- *    GROUP_HOME and user.home resp.
- *
- * Revision 1.9  2001/06/26 14:41:18  rmikk
- * -Used ISAW_HOME ,USER_HOME, and user.home
- * environmental variables to trim filename path.
- * -If no title given in script, the title will be the command name
- *
- * Revision 1.8  2001/06/05 16:50:35  rmikk
- * Changed props.dat to IsawProps.dat
- *
- * Revision 1.7  2001/06/04 20:14:20  rmikk
- * Updated Documentation
- *
- * Revision 1.6  2001/06/04 14:10:38  rmikk
- * *** empty log message ***
- *
- * Revision 1.5  2001/06/01 21:14:13  rmikk
- * Added Documentation for javadocs etc.
- *
-
- * 5-25-2001   Created 
  */
 package Command;
 

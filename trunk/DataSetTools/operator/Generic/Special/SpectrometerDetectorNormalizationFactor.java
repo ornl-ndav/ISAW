@@ -2,7 +2,6 @@
  * File:  SpectrometerDetectorNormalizationFactor.java   
  *
  * Copyright (C) 2000, Dongfeng Chen,
- *                     Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -32,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/11/27 23:21:43  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.6  2002/09/19 16:05:49  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -55,75 +56,6 @@
  *  Revision 1.1  2002/02/22 20:58:33  pfpeterson
  *  Operator reorganization.
  *
- *  Revision 1.8  2001/10/24 18:36:33  dennis
- *  Fixed indexing error in calculating the experimentally determined
- *  "fudge factor".  Also, now uses two different cases.  If the
- *  DataSet has tabulated function values X0...Xn, Y0...Yn, the calculation
- *  is the same as the original FORTRAN codes.  If the DataSet has
- *  histogram values: X0...Xn, Y0...Yn-1, the "x" values used are the
- *  bin center values.
- *
- *  Revision 1.7  2001/10/05 17:53:36  dennis
- *  Added a parameter giving the angle between the normal to the sample
- *  slab and the beam direction.
- *  SLABMS() no longer hard codes the slab angle, but uses the angle
- *  parameter and computes the complement of the angle sample slab angle.
- *  Improved documentation and did some general code clean up.
- *
- *  Revision 1.6  2001/08/31 20:30:20  dennis
- *  Now extends GenericSpecial operator, rather than DS_Special operator,
- *  so that it is properly found as a GenericOperator.
- *
- *  Revision 1.5  2001/06/01 21:18:00  rmikk
- *  Improved documentation for getCommand() method
- *
- *  Revision 1.4  2001/04/26 19:10:49  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.3  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the 
- *     operators.
- *  Existing operators were modified to be derived from one of the new abstract
- *  classes.  The abstract base class hierarchy is now:
- *
- *   Operator
- *
- *    -GenericOperator
- *       --GenericLoad
- *       --GenericBatch
- *
- *    -DataSetOperator
- *      --DS_EditList
- *      --DS_Math
- *         ---ScalarOp
- *         ---DataSetOp
- *         ---AnalyzeOp
- *      --DS_Attribute
- *      --DS_Conversion
- *         ---XAxisConversionOp
- *         ---YAxisConversionOp
- *         ---XYAxesConversionOp
- *      --DS_Special
- *
- *     To allow for automatic generation of hierarchial menus, each new operator
- *  should fall into one of these categories, or a new category should be
- *  constructed within this hierarchy for the new operator.
- *
- *  Revision 1.2  2000/10/10 20:21:43  dennis
- *  Log message was missing.  New operator for HRMECS.
- *
- *  Revision 1.3  2000/09/11 23:03:58  dennis
- *  minor improvement to documentation
- *
- *  Revision 1.2  2000/08/02 21:11:45  dennis
- *  Made this an instance of a generic Operator rather than a DataSetOperator
- *  so that it does not have to be placed in the list of operators for
- *  DataSets.
- *
- *  Revision 1.1  2000/08/02 20:16:25  dennis
- *  SpectrometerFudgeFactor operator to calibrate detectors based on
- *  a vanadium run.
- *   
  */
 
 package DataSetTools.operator.Generic.Special;

@@ -1,5 +1,5 @@
 /*
- * @(#)IViewManager.java 
+ * File: IViewManager.java 
  *
  * Copyright (C) 2000, Dennis Mikkelson
  *
@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/11/27 23:24:18  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.8  2002/07/17 19:10:14  rmikk
  *  Fixed up the table views menu choices
  *
@@ -39,24 +41,6 @@
  *
  *  Revision 1.6  2002/07/10 19:38:21  rmikk
  *  Added a string for the Contour view
- *
- *  Revision 1.5  2001/08/13 16:19:34  dennis
- *  Added Ruth's Table view
- *
- *  Revision 1.4  2001/05/09 21:32:55  dennis
- *  Added code to include the ThreeDViewer
- *
- *  Revision 1.3  2001/04/26 14:21:35  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.2  2001/01/29 21:26:48  dennis
- *  Now uses CVS version numbers.
- *
- *  Revision 1.1  2000/07/10 22:59:14  dennis
- *  Now Using CVS
- *
- *  Revision 1.3  2000/05/11 15:50:58  dennis
- *  Added RCS logging
  *
  */
 

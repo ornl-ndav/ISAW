@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/11/27 23:18:38  pfpeterson
+ * standardized header
+ *
  * Revision 1.4  2002/11/18 21:42:59  dennis
  * Added getDocumentation() method, trivial main() program, and
  * documentation for getResult() method. (Tyler Stelzer)
@@ -43,15 +45,6 @@
  *
  * Revision 1.1  2002/02/22 21:02:30  pfpeterson
  * Operator reorganization.
- *
- * Revision 1.3  2001/06/01 21:18:00  rmikk
- * Improved documentation for getCommand() method
- *
- * Revision 1.2  2001/04/26 19:09:17  dennis
- * Added copyright and GPL info at the start of the file.
- *
- * Revision 1.1  2000/12/07 22:36:58  dennis
- * Operator to replace or extend a Data block with a least squares polynomial
  *
  */
 

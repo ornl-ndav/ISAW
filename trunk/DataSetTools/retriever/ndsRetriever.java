@@ -20,8 +20,7 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,19 +30,9 @@
  * Modified:
  *
  * $Log$
- * Revision 1.4  2001/08/16 20:31:46  rmikk
- * Fixed the javadocs
+ * Revision 1.5  2002/11/27 23:23:16  pfpeterson
+ * standardized header
  *
- * Revision 1.3  2001/08/10 13:41:32  rmikk
- * Added code to return some error information
- *
- * Revision 1.2  2001/08/09 16:17:15  rmikk
- * Fixed bug so that the Title is correct when loaded.( Untested)
- *
- * Revision 1.1  2001/08/01 21:04:43  rmikk
- * Initial Checkin
- *
-
 */
 
 package DataSetTools.retriever ;

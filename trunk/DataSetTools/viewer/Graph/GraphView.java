@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2002/11/27 23:24:43  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.23  2002/10/04 14:42:26  dennis
  *  Now handles "Pointed At" messages properly.
  *
@@ -53,89 +55,6 @@
  *
  *  Revision 1.19  2002/03/13 16:12:18  dennis
  *  Converted to new abstract Data class.
- *
- *  Revision 1.18  2001/08/16 01:19:59  dennis
- *  Now sends POINTED AT CHANGED messages when the mouse moves
- *  over the SAME Data block, if there is only one Data block.
- *
- *  Revision 1.17  2001/07/27 15:59:33  dennis
- *  Removed debug print and changed rebin menu item from "Rebin Data" to
- *  "Graph Rebinned Data".
- *
- *  Revision 1.16  2001/07/26 14:30:06  dennis
- *  Now preserves Auto-Scale value in the ViewerState.
- *
- *  Revision 1.15  2001/07/25 18:09:49  dennis
- *  Now uses new "generic" methods to get/set state information
- *  in the ViewerState object.
- *
- *  Revision 1.14  2001/07/23 16:35:50  dennis
- *  Fixed error: no longer using "==" for String comparison.
- *
- *  Revision 1.13  2001/07/20 16:52:24  dennis
- *  Now uses an XScaleChooserUI to let the user specify new
- *  x_scales.  Also uses method Data.getY_values( x_scale )
- *  to get resampled y_values.
- *
- *  Revision 1.12  2001/07/17 20:46:00  dennis
- *  Now checks validDataSet() before using it.
- *  If rebinning, the graphs are now drawn based on the
- *  x_scale obtained from getXConversionScale() method.
- *
- *  Revision 1.11  2001/06/04 22:45:18  dennis
- *  Now uses DS_Util.getData_ID_String() to construct border labels for the
- *  graphs.
- *
- *  Revision 1.10  2001/06/04 18:11:41  dennis
- *  All drawing now goes through DrawSpecifiedGraph().
- *  Added option to rebin data for graph.
- *
- *  Revision 1.9  2001/05/29 15:08:24  dennis
- *  Now uses initializeWorldCoords to reset both the local and
- *  global transforms.
- *
- *  Revision 1.8  2001/04/26 14:23:51  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.7  2001/04/02 20:43:12  dennis
- *  num_bins_ui is now properly initilized to max X steps - 1.
- *
- *  Revision 1.6  2001/02/09 14:20:15  dennis
- *  Added last update time to graph title, if it is present as
- *  a Data attribute.
- *
- *  Revision 1.5  2000/12/07 22:44:00  dennis
- *  Now shows raw data rather than resampling the data uniformly
- *  before drawing the graphs.
- *
- *  Revision 1.4  2000/11/07 15:26:36  dennis
- *  Includes ViewerState object in constructor and uses ViewerState for
- *  horizontal scrolling state.
- *  Consumes key events, so that the cursor arrow keys don't also scroll
- *  the scrolled panes.  This caused errors in the XOR drawing of the
- *  crosshair cursor on windows.
- *
- *  Revision 1.3  2000/10/10 19:54:10  dennis
- *  redraw() due to selection changes now only draws graphs for which the
- *  selection status changed.  This is much more efficient.
- *  Cursor readout and "Pointed At" data block now changes with mouse
- *  click as well as with mouse drag event.
- *
- *  Revision 1.2  2000/08/02 01:50:42  dennis
- *  Now calls Data.ResampleUniformly() instead of Data.ReBin()
- *
- *  Revision 1.1  2000/07/10 23:02:50  dennis
- *  Now Using CVS 
- *
- *  Revision 1.20  2000/06/12 20:10:03  dennis
- *  now implements Serializable
- *
- *  Revision 1.19  2000/05/18 20:06:20  dennis
- *  added getXConversionScale() method.
- *  Added n_bins_ui control to control the number of bins.
- *
- *  Revision 1.18  2000/05/11 15:23:11  dennis
- *  added RCS logging
  *
  */
 package DataSetTools.viewer.Graph;

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -33,6 +32,9 @@
  * Programmer:  Dennis Mikkelson
  *             
  * $Log$
+ * Revision 1.4  2002/11/27 23:19:19  pfpeterson
+ * standardized header
+ *
  * Revision 1.3  2002/09/19 16:02:51  pfpeterson
  * Now uses IParameters rather than Parameters.
  *
@@ -41,20 +43,6 @@
  *
  * Revision 1.1  2002/02/22 21:03:42  pfpeterson
  * Operator reorganization.
- *
- * Revision 1.4  2001/06/01 21:18:00  rmikk
- * Improved documentation for getCommand() method
- *
- * Revision 1.3  2001/04/26 19:09:20  dennis
- * Added copyright and GPL info at the start of the file.
- *
- * Revision 1.2  2000/12/15 05:11:47  dennis
- * Added new group ID parameter to allow specifying which
- * group ID the incident spectrum was focussed for.
- *
- * Revision 1.1  2000/12/13 00:10:44  dennis
- * Added static method IncSpecFocus to focus the incident spectrum
- * to a bank of detectors for a powder diffractometer.
  *
  */
 

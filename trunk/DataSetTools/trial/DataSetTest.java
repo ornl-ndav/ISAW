@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,9 +30,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.3  2001/04/26 15:28:26  dennis
- * Added copyright and GPL info at the start of the file.
- *
+ * Revision 1.4  2002/11/27 23:23:30  pfpeterson
+ * standardized header
  *
  */
 

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *  
  *  $Log$
+ *  Revision 1.5  2002/11/27 23:21:16  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.4  2002/09/19 16:05:36  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -42,70 +44,6 @@
  *
  *  Revision 1.1  2002/02/22 20:57:58  pfpeterson
  *  Operator reorganization.
- *
- *  Revision 1.11  2001/09/13 22:53:39  dennis
- *  Added call to fixCase() on the file name in one place where it was missing.
- *
- *  Revision 1.10  2001/06/01 21:18:00  rmikk
- *  Improved documentation for getCommand() method
- *
- *  Revision 1.9  2001/04/26 19:11:51  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.8  2001/03/01 20:57:43  dennis
- *  Modified import statments to JUST import IPNS.Runfile.Runfile
- *  and to explicitly import DataSetTools.instruments.InstrumentType.
- *  This resolved conflicting names between the InstrumentType
- *  class in IPNS.Runfile and in DataSetTools.instruments.
- *
- *  Revision 1.7  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
- *  Existing operators were modified to be derived from one of the new abstract
- *  classes.  The abstract base class hierarchy is now:
- *
- *   Operator
- *
- *    -GenericOperator
- *       --GenericLoad
- *       --GenericBatch
- *
- *    -DataSetOperator
- *      --DS_EditList
- *      --DS_Math
- *         ---ScalarOp
- *         ---DataSetOp
- *         ---AnalyzeOp
- *      --DS_Attribute
- *      --DS_Conversion
- *         ---XAxisConversionOp
- *         ---YAxisConversionOp
- *         ---XYAxesConversionOp
- *      --DS_Special
- *
- *     To allow for automatic generation of hierarchial menus, each new operator
- *  should fall into one of these categories, or a new category should be
- *  constructed within this hierarchy for the new operator.
- *
- *  Revision 1.6  2000/11/07 15:40:02  dennis
- *  Fixed print statements to print DataSet not Data Set.
- *
- *  Revision 1.5  2000/08/03 21:42:10  dennis
- *  Now calls FilenameUtil.fixCase() to check for case errors in basic
- *  filename
- *
- *  Revision 1.4  2000/07/31 15:44:48  dennis
- *  Now uses SpecialStrings for the paramters so that the GUI can create
- *  appropriate components.
- *
- *  Revision 1.3  2000/07/21 19:52:01  dennis
- *  Now only do monitor pulse checking for direct geometry spectrometers
- *
- *  Revision 1.2  2000/07/21 19:17:38  dennis
- *  Now includes a group mask parameter to mask off certain groups of detectors.
- *
- *  Revision 1.1  2000/07/21 14:52:57  dennis
- *  Copied from MultiRunfileLoader.java and changed to use String form for
- *  the list of run numbers
  *
  */
 

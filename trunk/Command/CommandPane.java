@@ -20,17 +20,20 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *
  * Modified:
  *
  * $Log$
+ * Revision 1.42  2002/11/27 23:12:10  pfpeterson
+ * standardized header
+ *
  * Revision 1.41  2002/11/01 20:29:33  pfpeterson
  * Moved debuging statement to only print when debug flag is on.
  *
@@ -77,135 +80,6 @@
  * 3: The open and save buttons now use the new actionlisteners:
  *    OpenFileToDocListener and SaveDocToFileListener
  *
- * Revision 1.32  2001/11/19 19:04:09  Ruth
- * Now uses a new constructor for JParametersDialog, that makes the
- * dialog box modal.  If there is an error when the dialog box is
- * exited, the cursor will be on the line with the error.
- *
- * Revision 1.31  2001/11/12 21:20:06  dennis
- *  1. Eliminated a Debug print that appears when using the
- *     immediate pane.
- *
- * Revision 1.30  2001/11/09 18:25:29  dennis
- *   1. Made Changes to use arbitrary SciptProcessorOperator's like Jython
- *   2. The statusLine is now resizable
- *   3. The title bar in the stand alone CommandPane now says
- *      Command Pane instead of Test.
- *   4. The latest filename now appears as the title of the
- *      Program Editor window.
- *   5. Changed several utility routines from ScriptProcessor to static methods
- *
- * Revision 1.29  2001/09/07 16:17:02  dennis
- * Removed debug print (Ruth)
- *
- * Revision 1.28  2001/08/02 16:21:16  rmikk
- * Added a routine to take care of the differing end of line
- * indicators from different wordprocessors.
- *
- * Revision 1.27  2001/07/18 16:23:00  neffk
- * changed the DataSet[] parameter of getExecScropt(...) to
- * IDataSetListHandler so that CommandPane could have a dynamic list
- * of DataSet objects.
- *
- * Revision 1.26  2001/07/11 20:53:22  rmikk
- * Change the Prgm on the Command Pane buttons to the
- * word "Script"
- *
- * Revision 1.25  2001/07/03 22:14:17  rmikk
- * Added Code to eliminate the "UNKNOWN" description at
- * the top of the JParametersDialog
- *
- * Revision 1.24  2001/06/26 14:34:54  rmikk
- * Fixed Session Log reporting
- *
- * Revision 1.23  2001/06/25 19:59:31  chatter
- * Added Last Parameter to JParametersDialog Constructor
- *
- * Revision 1.22  2001/06/25 19:25:26  rmikk
- * Added SplitPane With State and Clearred the
- * Status Line before every run
- *
- * Revision 1.21  2001/06/05 16:50:35  rmikk
- * Changed props.dat to IsawProps.dat
- *
- * Revision 1.20  2001/06/04 20:04:17  rmikk
- * Fixed Documentation
- * Change ; to pathSeparator
- *
- * Revision 1.19  2001/06/01 21:14:12  rmikk
- * Added Documentation for javadocs etc.
- *
-
-
-
-/* 6/4/2000:
-   a)Implemented GUI Interface to project
-       i)Improve: Titles should not dissapear when scrolling
-       ii) Save Button: Fix so the Dialog box says Save instead of Open
-       iii) Improve documntation initiated by the Help Button
-   b) Parser just started
-         Load a string constant and Display a Dataset Variable are all that
-         are implemented
-
-   6/15/2000
-    c) For - End FOR and On Error-Else Error -End Error implemented
-
-    d) Rem and blank lines caught
-
-    e) Help button HTML documents passable.  Need to update for current version.
-
-    f) var[0] --> var0  and [I] can be inbetween brackets
-
-    g) The Batch facility has been implemented and tested
-
-    h)  send and get a data set have been implemented and tested
-
-    i) The save facility should use Dennis' save.(elim IObservers before th Object save
-   To Do
-
-    1) Load one Isaw Data set
-
-    2) plan and implement dataset.Title 
-
-  7/14/2000
-    1) If- else- elseif- endif implemented
-
-    2) GetDSAttr, GetDataAttr, GetField, and appropriate Sets have been 
-       implemented in the DataSetTools.operator.
-
- 7/28/00
-   1) Parameters and Macros with parameters have been implemented.
-      Interfaces so a GUI gets a value of the parameters is available.
-      Macros have not been implemented as an instruction yet.
-
-   2) This class contributes to the Isaw session log.   
-
-9-14-2000
-   -Fixed on error, end-error structure with nesting
-   -Fixed if-then error.  The "if" need not be in column 1
-   -Eliminated a debug print when not in debug mode
-   -if  and elseif statements use the new Boolean type
-
-10-1-2000
-   - Implemented starting character $ for parameters in addition to #$$
-
-12-1-2000
-   - Fixed IsawHelp search path
-   - Added support for the parameter data types 
-     DSFieldString, DSSettableFieldString in addition to the other supported data types
-     InstrumentNameString and DataDirectoryString
-
-2-2-2001
-   - For loops now use Arrays and can be variables.
-
-5-17-2001
-   - Converting CommandPane to an operator "successfully"
-   - JFrame returned in a function call
-
-5-20-2001
-   -Separated out the GUI part of CommandPane from the processor part
-    which went to ScriptProcessor.java
-   -Added a wide Cursor  
 */
 package Command; 
 

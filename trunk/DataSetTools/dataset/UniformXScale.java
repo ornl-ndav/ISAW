@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/11/27 23:14:07  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.9  2002/11/12 21:58:50  dennis
  *  Removed clone() method, since UniformXScales are immutable, it is
  *  not needed.  Also, made "step" private.
@@ -51,30 +53,6 @@
  *  of individual points in the list.
  *  Added instance variable "step" to avoid recalculating it every time it's
  *  needed.
- *
- *  Revision 1.5  2001/04/25 19:04:10  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.4  2000/12/07 22:27:21  dennis
- *  Added methods getStep(),
- *                extend(),
- *
- *  Added main() with test code for extend() method.
- *
- *  Uses partial double precision for calculating the x values.
- *
- *  Revision 1.3  2000/07/10 22:24:06  dennis
- *  Now Using CVS 
- *
- *  Revision 1.3  2000/05/12 15:41:35  dennis
- *  Made UniformXScales IMMUTABLE so that they may be shared.  This required
- *  two changes:
- *  1. Removed method:  setNum_x()
- *  2. Modified method:  expand()  so that it creates and returns a new
- *     UniformXScale rather than altering the contents of the current one.
- *
- *  Revision 1.2  2000/05/11 16:00:45  dennis
- *  Added RCS logging
  *
  */
 

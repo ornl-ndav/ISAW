@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/11/27 23:22:56  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.7  2002/03/18 21:19:13  dennis
  *  Now omits first and last few channels when searching for peak.
  *  Also, if the peak is too near either end of the array, the linear
@@ -38,34 +40,6 @@
  *
  *  Revision 1.6  2002/03/13 16:15:23  dennis
  *  Converted to new abstract Data class.
- *
- *  Revision 1.5  2001/04/25 21:32:20  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.4  2000/08/01 20:56:38  dennis
- *  In calculate linear background, now trap return value of -1
- *  from get_index_of() method in the case that the x value searched for
- *  is larger than the last entry in x_vals[]
- *
- *  Revision 1.3  2000/07/17 15:21:12  dennis
- *  Added convenience routines to compute area and moments over the default
- *  extent of the peak.
- *
- *  Revision 1.2  2000/07/13 22:19:58  dennis
- *  Added constructor that also specifies the extent factor
- *
- *  Revision 1.1  2000/07/10 22:48:58  dennis
- *  New classes to deal with peaks/peak fitting
- *
- *  Revision 1.3  2000/06/15 16:49:20  dennis
- *  improved documentation
- *
- *  Revision 1.2  2000/06/14 21:15:07  dennis
- *  Placed fitting of linear background in a private method.
- *  Added PrintPeakInfo() to show basic information about the peak.
- *
- *  Revision 1.1  2000/06/14 19:25:18  dennis
- *  Initial revision
  *
  */
 

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2002/11/27 23:15:47  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.15  2002/07/10 20:23:05  dennis
  *  Removed debug print.
  *
@@ -63,22 +65,6 @@
  *
  *  Revision 1.8  2002/03/13 16:22:12  dennis
  *  Converted to new abstract Data class.
- *
- *  Revision 1.7  2001/04/25 20:56:57  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.6  2001/01/29 21:06:00  dennis
- *  Now uses CVS revision numbers.
- *
- *  Revision 1.5  2000/12/15 05:16:46  dennis
- *  Fixed bugs in preliminary version of IncSpecFocus:
- *  1.Bank angles are really 2*theta
- *  2.Now works for very small angle ranges, eg. one detector
- *  3.New Data's Detector position was set wrong.
- *
- *  Revision 1.4  2000/12/13 00:09:26  dennis
- *  Added static method IncSpecFocus to focus the incident spectrum
- *  to a bank of detectors for a powder diffractometer.
  *
  */
 

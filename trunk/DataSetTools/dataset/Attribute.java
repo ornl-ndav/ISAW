@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2002/11/27 23:14:06  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.30  2002/11/12 00:20:18  dennis
  *  Made immutable by:
  *  1. remove setValue() method
@@ -103,59 +105,6 @@
  *  These attributes are currently commented out to avoid breaking the
  *  server<->client communication.
  *
- *  Revision 1.14  2001/10/17 18:37:46  dennis
- *  Added constants for Crate, Slot and Input, as comments only, to avoid
- *  breaking communication with servers.  These should be un-commented
- *  when a major revision is made.
- *
- *  Revision 1.13  2001/08/16 14:35:39  rmikk
- *  Added IntListString case BEFORE SpecialString so it will
- *  be dealt with correctly
- *
- *  Revision 1.12  2001/07/30 18:46:46  dennis
- *  Added DS_TYPE attribute and some suggested type names.
- *
- *  Revision 1.11  2001/07/10 19:08:39  dennis
- *  Added attributes for Omega, DETECTOR_INFO and
- *  DETECTOR_INFO_LIST.
- *
- *  Revision 1.10  2001/04/25 19:03:26  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.9  2001/02/09 14:18:34  dennis
- *  Changed CURRENT_TIME attribute to UPDATE_TIME.
- *
- *  Revision 1.8  2001/02/02 20:53:05  dennis
- *  Added CURRENT_TIME attribute for LiveDataServer.
- *
- *  Revision 1.7  2000/11/17 23:45:55  dennis
- *  Added method Build( name, value ) to construct an Attribute of the correct
- *  subclass based on the type of the Object "value".
- *
- *  Revision 1.6  2000/11/10 22:50:00  dennis
- *  Added constant for Q_VALUE
- *
- *  Revision 1.5  2000/07/26 14:52:20  dennis
- *  Now includes method to add() attributes.
- *
- *  Revision 1.4  2000/07/13 14:29:33  dennis
- *  Removed redundant TOTAL_COUNTS attribute, leaving only TOTAL_COUNT
- *
- *  Revision 1.3  2000/07/10 22:23:51  dennis
- *  Now using CVS 
- *
- *  Revision 1.12  2000/05/23 18:51:50  dennis
- *  Added attributes for solid angle, efficiency and delta 2 theta
- *
- *  Revision 1.11  2000/05/18 21:27:40  dennis
- *  Added the FILE_NAME and TIME_FIELD_TYPE attribute names.
- *
- *  Revision 1.10  2000/05/11 16:00:45  dennis
- *  Added RCS logging
- *
- *  99/06/02, 1.01, Added methods to set the attribute's name and value.
- *                  Added method "compare" to compare objects.
- *                  Removed method "greater_than" to compare objects.
  */
 
 package  DataSetTools.dataset;

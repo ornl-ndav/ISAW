@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.6  2002/11/27 23:18:38  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.5  2002/11/18 21:42:48  dennis
  *  Added getDocumentation() method, trivial main() program, and
  *  documentation for getResult() method. (Tyler Stelzer)
@@ -47,76 +49,6 @@
  *  Revision 1.1  2002/02/22 21:02:29  pfpeterson
  *  Operator reorganization.
  *
- *  Revision 1.13  2001/07/23 19:00:17  dennis
- *  Fixed error: no longer using "==" for String comparison.
- *
- *  Revision 1.12  2001/07/16 15:16:19  dennis
- *  Fixed bug ( missed integral of last group ).
- *
- *  Revision 1.11  2001/06/04 20:02:47  dennis
- *  Modified to use Quick Sort on DataSet, when possible.
- *
- *  Revision 1.10  2001/06/01 21:18:00  rmikk
- *  Improved documentation for getCommand() method
- *
- *  Revision 1.9  2001/04/26 19:05:43  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.8  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
- *  Existing operators were modified to be derived from one of the new abstract
- *  classes.  The abstract base class hierarchy is now:
- *
- *   Operator
- *
- *    -GenericOperator
- *       --GenericLoad
- *       --GenericBatch
- *
- *    -DataSetOperator
- *      --DS_EditList
- *      --DS_Math
- *         ---ScalarOp
- *         ---DataSetOp
- *         ---AnalyzeOp
- *      --DS_Attribute
- *      --DS_Conversion
- *         ---XAxisConversionOp
- *         ---YAxisConversionOp
- *         ---XYAxesConversionOp
- *      --DS_Special
- *
- *     To allow for automatic generation of hierarchial menus, each new operator
- *  should fall into one of these categories, or a new category should be
- *  constructed within this hierarchy for the new operator.
- *
- *  Revision 1.7  2000/11/07 16:00:28  dennis
- *  Fixed y-label and y-units to work properly for both histograms and functions.
- *
- *  Revision 1.6  2000/08/02 20:18:27  dennis
- *  Changed to use TrapIntegrate() for function data instead of just using
- *  IntegrateHistogram for histogram data
- *
- *  Revision 1.5  2000/07/10 22:35:50  dennis
- *  Now Using CVS 
- *
- *  Revision 1.7  2000/06/09 16:12:35  dennis
- *  Added getCommand() method to return the abbreviated command string for
- *  this operator
- *
- *  Revision 1.6  2000/06/08 15:25:59  dennis
- *  Changed type casting of attribute names from (SpecialString) to
- *  (AttributeNameString).
- *
- *  Revision 1.5  2000/05/16 15:36:34  dennis
- *  Fixed clone() method to also copy the parameter values from
- *  the current operator.
- *
- *  Revision 1.4  2000/05/11 16:41:28  dennis
- *  Added RCS logging
- *
- *  99/08/16   Added constructor to allow
- *             calling operator directly
  */
 
 package DataSetTools.operator.DataSet.Math.Analyze;
