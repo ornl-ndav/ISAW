@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/06/23 15:20:56  bouzekc
+ * Renamed the buttons to slightly less offensive names.
+ *
  * Revision 1.10  2003/06/23 15:00:32  bouzekc
  * Removed testbed and inner ActionListener class.
  *
@@ -100,7 +103,7 @@ abstract public class VectorPG extends ParameterGUI
     ParameterGUI param;
     PropertyChangeSupport pcs;
     MJPanel GUI;
-    JButton butt;
+    JButton vectorButton;
     JPanel buttonHolder;
     Vector listeners = new Vector();
   
@@ -112,7 +115,7 @@ abstract public class VectorPG extends ParameterGUI
    *                   JFrame when the button is pressed
    *
    *  The ParameterGUI is just a button in a JPanel.  When the button is pressed a more complicated
-   *  JFrame is created with the list box and editting buttons
+   *  JFrame is created with the list box and editing buttons
    */
   public VectorPG( ParameterGUI param, String Prompt){
     super();
@@ -121,19 +124,19 @@ abstract public class VectorPG extends ParameterGUI
     setName( Prompt);
     pcs = new PropertyChangeSupport( this);
     GUI = null;  //new MJPanel( param );
-    butt = null;//new JButton( param.getName());
+    vectorButton= null;//new JButton( param.getName());
     buttonHolder = null;//new JPanel( new GridLayout( 1,1) );
   }
 
   public void init(){
     GUI = new MJPanel( param );
     GUI.addPropertyChangeListener( new MyPropertyChangeListener() );
-    entrywidget = butt;
+    entrywidget = vectorButton;
     GUI.setValue( value);
-    butt = new JButton( param.getName());
+    vectorButton= new JButton( param.getName());
     buttonHolder = new JPanel( new GridLayout( 1,1) );
-    buttonHolder.add( butt );
-    butt.addActionListener(  this );
+    buttonHolder.add( vectorButton);
+    vectorButton.addActionListener(  this );
   }
 
   /**
@@ -145,7 +148,7 @@ abstract public class VectorPG extends ParameterGUI
   }
 
   public JComponent getEntryWidget(){
-    return (JComponent)butt;
+    return (JComponent)vectorButton;
   }
   
   public void addActionListener( ActionListener listener){
@@ -414,16 +417,16 @@ abstract public class VectorPG extends ParameterGUI
     }
 
     public void actionPerformed( ActionEvent evt){
-      JButton butt = (JButton)(evt.getSource());
-      if( butt == Up){
+      JButton actionButton= (JButton)(evt.getSource());
+      if( actionButton== Up){
         move(-1);
-      }else if ( butt == Down){
+      }else if ( actionButton== Down){
         move( +1);
-      }else if ( butt == Edit){
+      }else if ( actionButton== Edit){
         newVal( jlist.getSelectedIndex());
-      }else if ( butt == Add){
+      }else if ( actionButton== Add){
         newVal( -1);    
-      }else if ( butt == Delete){
+      }else if ( actionButton== Delete){
         int j = jlist.getSelectedIndex();
         position = -1;
         if( j < 0) return;
@@ -431,10 +434,10 @@ abstract public class VectorPG extends ParameterGUI
         if( j >=0)
           if( j < jlistModel.getSize() )
             jlist.setSelectedIndex( j );
-      }else if ( butt == Show){ 
+      }else if ( actionButton== Show){ 
         (new JOptionPane()).showMessageDialog(null, 
           StringUtil.toString( jlist.getSelectedValue()));
-      }else if ( butt == OK){ 
+      }else if ( actionButton== OK){ 
         Vector newVector = getValues();
         pcs.firePropertyChange("DataChanged", oldVector, newVector);
         oldVector = newVector;
