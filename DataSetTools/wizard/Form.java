@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.28  2003/07/03 14:07:48  bouzekc
+ * Added all missing javadoc comments.
+ *
  * Revision 1.27  2003/07/02 22:52:10  bouzekc
  * Sorted methods according to access rights.
  *
@@ -173,37 +176,43 @@ import javax.swing.border.*;
 
 
 /**
- *  The Form class is controls one operation of the sequence of operations
- *  managed by a Wizard.  The Form produces a panel containing the title
- *  of the form, up to three lists of parameters for the form and an execute
- *  button.  This form class by itself does not do anything productive.
- *  Derived classes should override the execute() method to actually do
- *  some operations involving the parameters.  The execute() method is
- *  responsible for using the input parameters and producing new values for
- *  the result parameters. If special layouts and parameter interfaces are
- *  needed, the MakeGUI() method can also be overridden in sub classes.
+ * The Form class is controls one operation of the sequence of operations
+ * managed by a Wizard.  The Form produces a panel containing the title of the
+ * form, up to three lists of parameters for the form and an execute button.
+ * This form class by itself does not do anything productive. Derived classes
+ * should override the execute() method to actually do some operations
+ * involving the parameters.  The execute() method is responsible for using
+ * the input parameters and producing new values for the result parameters. If
+ * special layouts and parameter interfaces are needed, the MakeGUI() method
+ * can also be overridden in sub classes.
  *
- *  @see Wizard
- *  @see Wizard.MathWizard
- *  @see Wizard.AdderExampleForm
- *
- *  Note that Forms are set up by default as standalone Forms, or the first Form
- *  in a Wizard.  To set a Form to have constant parameters that rely on
- *  values obtained from previous Forms, set the HAS_CONSTANTS variable to
- *  true by using the appropriate constructor.
+ * @see Wizard
+ * @see Wizard.MathWizard
+ * @see Wizard.AdderExampleForm Note that Forms are set up by default as
+ *      standalone Forms, or the first Form in a Wizard.  To set a Form to
+ *      have constant parameters that rely on values obtained from previous
+ *      Forms, set the HAS_CONSTANTS variable to true by using the appropriate
+ *      constructor.
  */
 public abstract class Form extends Operator implements PropertyChanger {
+  //~ Static fields/initializers ***********************************************
+
   private static final String CONS_FRAME_HEAD = "CONSTANT PARAMETERS";
   private static final String VAR_FRAME_HEAD  = "USER SPECIFIED PARAMETERS";
   private static final String RES_FRAME_HEAD  = "RESULTS";
   public static final String PERCENT_DONE     = "Percent Form Done";
-  public static final String[] PARAM_NAMES    = { CONS_FRAME_HEAD, VAR_FRAME_HEAD, RES_FRAME_HEAD };
-  public static final int CONST_PARAM         = 0;
-  public static final int VAR_PARAM           = 1;
-  public static final int RESULT_PARAM        = 2;
-  private final boolean DEBUG                 = false;
+  public static final String[] PARAM_NAMES    = {
+    CONS_FRAME_HEAD, VAR_FRAME_HEAD, RES_FRAME_HEAD
+  };
+  public static final int CONST_PARAM  = 0;
+  public static final int VAR_PARAM    = 1;
+  public static final int RESULT_PARAM = 2;
+
+  //~ Instance fields **********************************************************
+
+  private final boolean DEBUG = false;
   protected JPanel panel;  // panel that the Wizard will draw
-  private int[][] param_ref                   = null;
+  private int[][] param_ref   = null;
 
   //used for standalone or first Forms.  Default is standalone.
   protected boolean HAS_CONSTANTS          = false;
@@ -218,12 +227,12 @@ public abstract class Form extends Operator implements PropertyChanger {
   //used for the progress bars
   protected float increment;
 
+  //~ Constructors *************************************************************
+
   /**
-   *  Construct a form with the given title to work with
-   *  the specified Wizard.
+   * Construct a form with the given title to work with the specified Wizard.
    *
-   *  @param  title           The title to show on this form
-   *
+   * @param title The title to show on this form
    */
   public Form( String title ) {
     super( title );
@@ -233,44 +242,53 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   *  Construct a form with the given title to work with
-   *  the specified Wizard.  This constructor also allows
-   *  for setting whether or not this Form has constant
-   *  parameters.
+   * Construct a form with the given title to work with the specified Wizard.
+   * This constructor also allows for setting whether or not this Form has
+   * constant parameters.
    *
-   *  @param  title           The title to show on this form
-   *
+   * @param title The title to show on this form
+   * @param hasConstantParams true if the Form has constant parameters.
    */
   public Form( String title, boolean hasConstantParams ) {
     this( title );
     this.HAS_CONSTANTS = hasConstantParams;
   }
 
-  /* ---------------------------- setParameter --------------------------- */
+  //~ Methods ******************************************************************
 
   /**
-   * Set the parameter at the specified index in the list of parameters
-   * for this Form.  The parameter that is set MUST have the same type
-   * of value object as that was originally placed in the list of parameters
-   * using the addParameter() method.
+   * Set the parameter at the specified index in the list of parameters for
+   * this Form.  The parameter that is set MUST have the same type of value
+   * object as that was originally placed in the list of parameters using the
+   * addParameter() method.
    *
-   *  @param  index    The index in the list of parameters of the parameter
-   *                   that is to be set.  "index" must be between 0 and the
-   *                   number of parameters - 1.
+   * @param iparam The IParameterGUI to set.
+   * @param index The index in the list of parameters of the parameter that is
+   *        to be set.  "index" must be between 0 and the number of parameters
+   *        - 1.
    *
-   *  @return  Returns true if the parameter was properly set, and returns
-   *           false otherwise.  Specifically, it returns false if either
-   *           the given index is invalid, or the specified parameter
-   *           has a different data type than the parameter at the given
-   *           index.
+   * @return Returns true if the parameter was properly set, and returns false
+   *         otherwise.  Specifically, it returns false if either the given
+   *         index is invalid, or the specified parameter has a different data
+   *         type than the parameter at the given index.
    */
   public boolean setParameter( IParameterGUI iparam, int index ) {
     return super.setParameter( iparam, index );
   }
 
   /**
-   *  Similar to the above method, but takes a IParameter.  This needed to be
-   *  overridden from Operator, and so had to have the same signature.
+   * Similar to the above method, but takes a IParameter.  This needed to be
+   * overridden from Operator, and so had to have the same signature.
+   *
+   * @param iparam The IParameter to set.
+   * @param index The index in the list of parameters of the parameter that is
+   *        to be set.  "index" must be between 0 and the number of parameters
+   *        - 1.
+   *
+   * @return Returns true if the parameter was properly set, and returns false
+   *         otherwise.  Specifically, it returns false if either the given
+   *         index is invalid, or the specified parameter has a different data
+   *         type than the parameter at the given index.
    */
   public boolean setParameter( IParameter iparam, int index ) {
     if( iparam instanceof IParameterGUI ) {
@@ -281,17 +299,17 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   *  Returns the array of indices for the variable parameters.
+   * @return The array of indices for the variable parameters.
    */
   public final int[] getVarParamIndices(  ) {
     return this.getParamType( VAR_PARAM );
   }
 
   /**
-   *  Get the panel to display in the Wizard when this form is displayed.
-   *  This will typically only be called by the Wizard controlling this form.
+   * Get the panel to display in the Wizard when this form is displayed. This
+   * will typically only be called by the Wizard controlling this form.
    *
-   *  @returns The panel to display for this form.
+   * @return The panel to display for this form.
    */
   public JPanel getPanel(  ) {
     if( panel == null ) {
@@ -302,11 +320,11 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   *  Overridden to some functionality for child Forms.
+   * Overridden to some functionality for child Forms.
    *
-   *  @return     The result of validateParameterGUIs(), which is either
-   *              Boolean.TRUE or an ErrorString, depending on the whether the
-   *              parameters successfully validated or not, respectively.
+   * @return The result of validateParameterGUIs(), which is either
+   *         Boolean.TRUE or an ErrorString, depending on the whether the
+   *         parameters successfully validated or not, respectively.
    */
   public Object getResult(  ) {
     //for progress bars
@@ -316,15 +334,14 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
+   * This is called when displaying or hiding the current form.  While this
+   * currently only sets the form to be visible or not, additional
+   * functionality could be added so that it will ensure that the Form's
+   * execute() method is called before advancing to the next Form.  Replaces
+   * show() and hide().
    *
-   *  This is called when displaying or hiding the current form.  While
-   *  this currently only sets the form to be visible or not, additional
-   *  functionality could be added so that it will ensure that the
-   *  Form's execute() method is called before advancing to the next
-   *  Form.  Replaces show() and hide().
-   *
-   *  @param boolean show true when you want the form to show, false
-   *                      when you do not.
+   * @param boolean show = true when you want the form to show, false when you
+   *        do not.
    */
   public void setVisible( boolean show ) {
     if( show ) {
@@ -338,11 +355,12 @@ public abstract class Form extends Operator implements PropertyChanger {
     }
   }
 
-  /* -------------------- PropertyChanger methods --------------------------*/
-
   /**
-   *  Adds the property change listener pcl to this Form's
-   *  PropertyChangeSupport propBind variable.
+   * Adds the property change listener pcl to this Form's PropertyChangeSupport
+   * propBind variable.
+   *
+   * @param property The property to listen to.
+   * @param pcl The PropertyChangeListener used for listening.
    */
   public void addPropertyChangeListener( 
     String property, PropertyChangeListener pcl ) {
@@ -355,8 +373,10 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   *  Adds the property change listener pcl to this Form's
-   *  PropertyChangeSupport propBind variable.
+   * Adds the property change listener pcl to this Form's PropertyChangeSupport
+   * propBind variable.
+   *
+   * @param pcl The PropertyChangeListener used for listening.
    */
   public void addPropertyChangeListener( PropertyChangeListener pcl ) {
     //this one is for the Form progress messages
@@ -368,10 +388,10 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   *  Check whether or not this form has been successfully completed.
+   * Check whether or not this form has been successfully completed.
    *
-   *  @return true if the form's operation has been successfully carried out
-   *               and none of the parameters have been subsequently altered
+   * @return true if the form's operation has been successfully carried out and
+   *         none of the parameters have been subsequently altered
    */
   public boolean done(  ) {
     int areSet     = 0;
@@ -391,7 +411,7 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   *  Sets the valid state of all result parameters to false.
+   * Sets the valid state of all result parameters to false.
    */
   public void invalidate(  ) {
     if( DEBUG ) {
@@ -414,8 +434,10 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   *  Removes the property change listener pcl from this Form's
-   *  PropertyChangeSupport propBind variable.
+   * Removes the property change listener pcl from this Form's
+   * PropertyChangeSupport propBind variable.
+   *
+   * @param pcl The PropertyChangeListener to remove.
    */
   public void removePropertyChangeListener( PropertyChangeListener pcl ) {
     if( propBind != null ) {
@@ -424,7 +446,12 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   * Returns the array of indices for the different types of parameters
+   * Returns the array of indices for the different types of parameters.
+   *
+   * @param type The type of parameter index array to return: CONST_PARAM,
+   *        VAR_PARAM, or RESULT_PARAM.
+   *
+   * @return The array of indices associated with the parameter types.
    */
   protected final int[] getParamType( int type ) {
     if( type == CONST_PARAM ) {
@@ -439,8 +466,12 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   * Method to set the parameter types. If you don't want one set then
-   * pass in null or a zero length array.
+   * Method to set the parameter types. If you don't want one set then pass in
+   * null or a zero length array.
+   *
+   * @param constant The array of indices of the constant parameters.
+   * @param variable The array of indices of the variable parameters.
+   * @param result The array of indices of the result parameters.
    */
   protected final void setParamTypes( 
     int[] constant, int[] variable, int[] result ) {
@@ -459,29 +490,28 @@ public abstract class Form extends Operator implements PropertyChanger {
     param_ref = new int[][]{ constant, variable, result };
   }
 
-  /* ---------------------------- addParameter ---------------------------- */
-
   /**
    * Add the reference for the specified parameter to the list of parameters
    * for this operation object.
    *
-   *  @param   iparam   The new IParameterGUI to be added to the list
-   *                    of parameters for this object.
+   * @param iparam The new IParameterGUI to be added to the list of parameters
+   *        for this object.
    */
   protected void addParameter( IParameterGUI iparam ) {
     parameters.addElement( iparam );
   }
 
   /**
-   *  This builds the portions of the default form panel that contain a
-   *  list of parameters inside of a panel with a titled border.  It is
-   *  used to build up to three portions, corresponding to the constant,
-   *  user-specified and result parameters.
+   * This builds the portions of the default form panel that contain a list of
+   * parameters inside of a panel with a titled border.  It is used to build
+   * up to three portions, corresponding to the constant, user-specified and
+   * result parameters.
    *
-   *  @param  title  The title to put on the border
-   *  @param  num    The reference to the particular parameters (i.e
-   *                 editable, result, or constant) within the
-   *                 parameters Vector.
+   * @param title The title to put on the border
+   * @param num The reference to the particular parameters (i.e editable,
+   *        result, or constant) within the parameters Vector.
+   *
+   * @return The JPanel which was built.
    */
   protected final JPanel build_param_panel( String title, int[] num ) {
     if( getNum_parameters(  ) <= 0 ) {
@@ -493,7 +523,6 @@ public abstract class Form extends Operator implements PropertyChanger {
 
     border = new TitledBorder( LineBorder.createBlackLineBorder(  ), title );
 
-    //border.setTitleFont( FontUtil.BORDER_FONT );
     sub_panel.setBorder( border );
     sub_panel.setLayout( new GridLayout( num.length, 1 ) );
 
@@ -508,9 +537,8 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   * Sets the enable/disable state of the parameters according to the
-   * types declared using {@link #setParamTypes(int[],int[],int[])
-   * setParamTypes}.
+   * Sets the enable/disable state of the parameters according to the types
+   * declared using {@link #setParamTypes(int[],int[],int[]) setParamTypes}.
    */
   protected final void enableParameters(  ) {
     boolean enable = false;
@@ -540,10 +568,10 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   * This method takes care of the setting up the gui to build in.
+   * This method takes care of the setting up the GUI to build in.
    *
-   * @param container where all of the gui components will be packed
-   * into.
+   * @param container Container that all of the GUI components will be  packed
+   *        into.
    */
   protected final void prepGUI( java.awt.Container container ) {
     if( panel == null ) {
@@ -555,17 +583,16 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   *  Convenience method for subclassed Forms to return an
-   *  "invalid" message to the Wizard, and output an appropriate
-   *  error message to the user.
+   * Convenience method for subclassed Forms to return an "invalid" message to
+   * the Wizard, and output an appropriate error message to the user.
    *
-   *  @param  errmessage           The error message that you want the user
-   *                               to see.
+   * @param errmessage The error message that you want the user to see.
    *
-   *  @return                      A new ErrorString containing the error
-   *                               message.
+   * @return A new ErrorString containing the error message.
    */
   protected Object errorOut( Object errmessage ) {
+    //do not change this method's signature.  At some point in time, we may not
+    //want to return an ErrorString.
     String message;
 
     if( errmessage instanceof String ) {
@@ -580,26 +607,28 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   *  Convenience method for subclassed Forms to return an
-   *  "invalid" message to the Wizard, and output an appropriate
-   *  error message to the user as well as invalidating a parameter.
+   * Convenience method for subclassed Forms to return an "invalid" message to
+   * the Wizard, and output an appropriate error message to the user as well
+   * as invalidating a parameter.
    *
-   *  @param  param                The IParameterGUI to set invalid.
+   * @param param The IParameterGUI to set invalid.
+   * @param errmessage The error message that you want the user to see.
    *
-   *  @param  errmessage           The error message that you want the user
-   *                               to see.
-   *
-   *  @return                      A new ErrorString containing the error
-   *                               message.
+   * @return A new ErrorString containing the error message.
    */
   protected Object errorOut( IParameterGUI param, Object errmessage ) {
+    //do not change this method's signature.  At some point in time, we may not
+    //want to return an ErrorString.
     param.setValid( false );
 
     return this.errorOut( errmessage );
   }
 
   /**
-   *  Utility method to fire property change events.
+   * Utility method to fire property change events.
+   *
+   * @param oldValue The old value of the property.
+   * @param newValue The new value of the property.
    */
   protected void fireValueChangeEvent( int oldValue, int newValue ) {
     if( ( propBind != null ) && ( oldValue != newValue ) ) {
@@ -609,15 +638,15 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   *  This method makes the GUI for the Form.  If a derived class
-   *  overrides this method, it must build it's own user interface in
-   *  the current JPanel, panel, since that is what is returned to the
-   *  Wizard to show the form.  Also, this method is NOT just called
-   *  at construction time, but is called each time the Form is shown
-   *  by the Wizard.  This guarantees that the parameter values will be
-   *  properly displayed using their current values.
-   *  @see Form#prepGUI(java.awt.Container) prepGUI
-   *  @see Form#enableParameters() enableParameters
+   * This method makes the GUI for the Form.  If a derived class overrides this
+   * method, it must build it's own user interface in the current JPanel,
+   * panel, since that is what is returned to the Wizard to show the form.
+   * Also, this method is NOT just called at construction time, but is called
+   * each time the Form is shown by the Wizard.  This guarantees that the
+   * parameter values will be properly displayed using their current values.
+   *
+   * @see Form#prepGUI(java.awt.Container) prepGUI
+   * @see Form#enableParameters() enableParameters
    */
   protected void makeGUI(  ) {
     if( DEBUG ) {
@@ -649,16 +678,14 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   *  Convenience method for checking variable parameters.  Although it
-   *  can be overwritten to provide a more customized approach to validating
-   *  parameters, this should not usually be necessary, as the
-   *  recommended approach is to retrieve all parameters, validate
-   *  them using this method, then perform any special validations
-   *  directly in the child class.
+   * Convenience method for checking variable parameters.  Although it can be
+   * overwritten to provide a more customized approach to validating
+   * parameters, this should not usually be necessary, as the recommended
+   * approach is to retrieve all parameters, validate them using this method,
+   * then perform any special validations directly in the child class.
    *
-   *  @return     Either Boolean.TRUE or an ErrorString, depending on the
-   *              whether the parameters successfully validated or not,
-   *              respectively.
+   * @return Either Boolean.TRUE or an ErrorString, depending on the whether
+   *         the parameters successfully validated or not, respectively.
    */
   protected Object validateParameterGUIs(  ) {
     IParameterGUI ipg;
@@ -750,10 +777,9 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   *  Utility method to add a property change listener to the parameters.
+   * Utility method to add a property change listener to the parameters.
    *
-   *  @param  listener          The PropertyChangeListener to add.
-   *
+   * @param listener The PropertyChangeListener to add.
    */
   private void addListenerToParameters( PropertyChangeListener listener ) {
     //add the listener to the parameter.  No parameters?  Don't listen to them 
