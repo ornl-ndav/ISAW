@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/08/11 18:06:11  bouzekc
+ * Now uses PyScriptOperator.
+ *
  * Revision 1.6  2003/06/11 21:24:40  pfpeterson
  * Added jython functionality.
  *
@@ -60,6 +63,7 @@ import Command.ScriptOperator;
 import DataSetTools.components.ParametersGUI.JParametersDialog;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Operator;
+import DataSetTools.operator.PyScriptOperator;
 import DataSetTools.parameter.IParameter;
 import DataSetTools.parameter.DataSetPG;
 import DataSetTools.parameter.StringPG;
@@ -134,9 +138,7 @@ public class IsawLite{
       File file=new File(filename);
       if(file.isFile()){
         try{
-          DataSetTools.operator.PyOperatorFactory pyFac=
-                                 new DataSetTools.operator.PyOperatorFactory();
-          operator=pyFac.getInstance(filename);
+          operator = new PyScriptOperator(filename);
         }catch(NoClassDefFoundError e){
           if(LoadDebug) System.out.print("(Jython not found)");
           operator=null;
