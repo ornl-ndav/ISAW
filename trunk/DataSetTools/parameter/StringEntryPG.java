@@ -31,11 +31,11 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.17  2003/10/08 22:39:09  dennis
- *  Reverting to previous version, that was in ISAW 1.5.1 beta 8.
- *  The most recent checkin (10/07/03) also removed the clone() method
- *  and was not consistent with the version in CVS.  ISAW crashed on
- *  startup with null pointer exception.
+ *  Revision 1.18  2003/10/11 19:12:46  bouzekc
+ *  Now implements clone() using reflection.  Now implements ParamUsesString.
+ *
+ *  Revision 1.16  2003/10/07 18:32:58  bouzekc
+ *  Now implements ParamUsesString.
  *
  *  Revision 1.15  2003/09/16 22:46:55  bouzekc
  *  Removed addition of this as a PropertyChangeListener.  This is already done
@@ -97,6 +97,8 @@ import DataSetTools.util.StringFilterer;
 import java.beans.*;
 
 import java.lang.String;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 import java.util.Vector;
 
@@ -107,7 +109,7 @@ import javax.swing.*;
  * This is a superclass to take care of many of the common details of
  * StringEntryPGs.
  */
-public abstract class StringEntryPG extends ParameterGUI {
+public abstract class StringEntryPG extends ParameterGUI implements ParamUsesString{
   //~ Static fields/initializers ***********************************************
 
   protected static final int DEF_COLS = 20;
@@ -156,8 +158,6 @@ public abstract class StringEntryPG extends ParameterGUI {
     return FILTER;
   }
 
-  // ********** IParameter requirements **********
-
   /**
    * Returns the value of the parameter. While this is a generic object
    * specific parameters will return appropriate objects. There can also be a
@@ -176,6 +176,45 @@ public abstract class StringEntryPG extends ParameterGUI {
     }
 
     return value;
+  }
+
+  /**
+   * Override of clone() to preserve the filter on the string entry GUI.
+   *
+   * @return A clone of this StringEntryPG.
+   */
+  public Object clone(  ) {
+    try {
+      Class klass           = this.getClass(  );
+      Constructor construct = klass.getConstructor( 
+          new Class[]{ String.class, Object.class } );
+      StringEntryPG pg      = ( StringEntryPG )construct.newInstance( 
+          new Object[]{ null, null } );
+      pg.setName( new String( this.getName(  ) ) );
+      pg.setValue( this.getValue(  ) );
+      pg.setDrawValid( this.getDrawValid(  ) );
+      pg.setValid( this.getValid(  ) );
+
+      StringFilterer newFilter = this.getStringFilter(  );
+
+      if( newFilter != null ) {
+        pg.FILTER = newFilter;
+      }
+
+      if( this.initialized ) {
+        pg.initGUI( null );
+      }
+
+      return pg;
+    } catch( InstantiationException e ) {
+      throw new InstantiationError( e.getMessage(  ) );
+    } catch( IllegalAccessException e ) {
+      throw new IllegalAccessError( e.getMessage(  ) );
+    } catch( NoSuchMethodException e ) {
+      throw new NoSuchMethodError( e.getMessage(  ) );
+    } catch( InvocationTargetException e ) {
+      throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
+    }
   }
 
   /**
@@ -203,7 +242,6 @@ public abstract class StringEntryPG extends ParameterGUI {
     } else {
       entrywidget = new EntryWidget( new StringEntry( "", DEF_COLS, FILTER ) );
     }
-
     super.initGUI(  );
   }
 
@@ -215,6 +253,7 @@ public abstract class StringEntryPG extends ParameterGUI {
    */
   public void validateSelf(  ) {
     StringFilterer sf = getStringFilter(  );
+
     if( sf == null ) {
       setValid( false );
     } else {
@@ -243,7 +282,6 @@ public abstract class StringEntryPG extends ParameterGUI {
     } else {
       return;
     }
-
     this.setValid( true );
   }
 }
