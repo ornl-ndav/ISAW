@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/11/23 23:53:19  rmikk
+ * If a NxData does not have a link attribute one one of its fields
+ *   the old system is used
+ *
  * Revision 1.14  2003/11/16 21:52:23  rmikk
  * -The default GroupIDs are now different for every Spectra in a NeXus file
  * -Incorporated the new methods that follow the State model
@@ -78,6 +82,7 @@ import java.lang.reflect.*;
 import NexIO.State.*;
 import NexIO.Process.*;
 import NexIO.Util.*;
+import NexIO.Query.*;
 import DataSetTools.util.*;
 
 /**  Class that retrieves DataSets from sources with an NxNode interface AND
@@ -201,7 +206,8 @@ public class ExtGetDS{
    DS.setAttributeList( AL ) ;
  
    FileState.Push( EntryState);
-   ProcessNxEntry entry = new ProcessNxEntry();
+   IProcessNxEntry entry = QueryNxEntry.getNxEntryProcessor(FileState, dsInf.NxdataNode,
+                 null, dsInf.startGroupID);
    boolean res = entry.processDS( DS, EntryNode, dsInf.NxdataNode, FileState,
            dsInf.startGroupID);
    if( res){
