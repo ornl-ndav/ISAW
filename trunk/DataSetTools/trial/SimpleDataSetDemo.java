@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2001/05/29 15:21:41  dennis
+ * Now also pops up 3D view
+ *
  * Revision 1.4  2001/04/26 15:29:05  dennis
  * Added copyright and GPL info at the start of the file.
  *
@@ -70,7 +73,8 @@ public static void main(String args[])
 //  String       run_A = "/IPNShome/dennis/ARGONNE_DATA/hrcs2445.run";
 //  String       run_A = "/IPNShome/dennis/ARGONNE_DATA/hrcs2444.run";
 //  String       run_A = "/IPNShome/dennis/ARGONNE_DATA/hrcs2451.run";
-  String       run_A = "/usr/home/dennis/ARGONNE_DATA/hrcs2936.run";
+//  String       run_A = "/usr/home/dennis/ARGONNE_DATA/hrcs2936.run";
+  String       run_A = "/usr/home/dennis/ARGONNE_DATA/GPPD12358.RUN";
 
   // Get the DataSet from the runfile and show it.
 
@@ -85,6 +89,7 @@ public static void main(String args[])
   A_histogram_ds = rr.getDataSet( 1 );
   rr = null;
   view_manager = new ViewManager( A_histogram_ds, IViewManager.IMAGE );
+  view_manager = new ViewManager( A_histogram_ds, IViewManager.THREE_D );
   }
 
 } 
