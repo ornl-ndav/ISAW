@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2002/07/17 20:16:13  pfpeterson
+ *  Now uses DataSetTools.util.Format for string formatting.
+ *  Determines if scale is constant by seeing if is instance
+ *  of UniformXScale.
+ *
  *  Revision 1.19  2002/07/10 16:02:49  pfpeterson
  *  Added to CVS.
  *
@@ -102,7 +107,7 @@ import java.awt.*;
 import java.io.*;
 import javax.swing.*;
 import java.text.DateFormat;
-import java.text.*;
+//import java.text.*;
 import DataSetTools.math.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Special.*;
@@ -213,19 +218,6 @@ public class gsas_filemaker
     }
     
     /**
-     * This method opens the banknum group and calls the other form of
-     * printbank.
-     *
-     * @deprecated This is a redundant function incorporated in the
-     *             write() method
-     */
-    private void printBank(int banknum){
-	Data dd = data.getData_entry_with_id(banknum);
-	printBank(banknum,dd);
-	return;
-    }
-
-    /**
      * This method determines the BINTYPE and TYPE of the group
      * specified by ds then prints the entire bank information. The
      * value of banknum is strictly used for printing purposes and is
@@ -288,6 +280,7 @@ public class gsas_filemaker
      */
     private void getBinType( Data data, String units ){
 	int numX=data.getX_scale().getNum_x();
+        XScale xscale=data.getX_scale();
 	float[] xval=data.getX_scale().getXs();
 	float scale=0.0f;
 	units=units.toLowerCase();
@@ -300,6 +293,10 @@ public class gsas_filemaker
 		scale=0.001f;
 	    }
 	    units="time";
+        }else if(units.indexOf("inverse angstroms")==0){
+            units="q";
+        }else if(units.indexOf("angstroms")==0){
+            units="d";
 	}else{
 	    // unsuported right now
 	}
@@ -317,17 +314,13 @@ public class gsas_filemaker
 	    }
 	}
 	//System.out.println("min="+minX+" max="+maxX);
-
 	float dX=xval[1]-xval[0];
-	for( int i=1 ; i<numX ; i++ ){
-	    if((xval[i]-xval[i-1])==dX){
-		// do nothing
-	    }else{
-		System.out.println("not constant steps "+(xval[i]-xval[i-1])+" not "+dX);
-		dX=0.0f;
-		i=numX;
-	    }
-	}
+        if(xscale instanceof UniformXScale){
+            dX=(float)((UniformXScale)xscale).getStep();
+        }else{
+            System.out.println("not UniformXScale");
+            dX=0f;
+        }
 
 	// check that there was constant spacing
 	if(dX>0.0f){
@@ -361,7 +354,7 @@ public class gsas_filemaker
 	    if(((xval[i]-xval[i-1])/xval[i-1])==dX){
 		// do nothing
 	    }else{
-		System.out.println("not constant steps "+((xval[i]-xval[i-1])/xval[i-1])+" not "+dX);
+		System.out.println("not log steps "+((xval[i]-xval[i-1])/xval[i-1])+" not "+dX);
 		dX=0.0f;
 		i=numX;
 	    }
@@ -407,11 +400,12 @@ public class gsas_filemaker
 	    // the data does not have error of a supported type
 	    return;
 	}
-        sb.append("BANK   ").append(format(banknum,6)).append("    ")
-            .append(format(nchan,6)).append("     ")
-            .append(format(nrec,6)).append(formatc(bintype,8))
-            .append(format(bCoef1,14)).append("     ")
-            .append(format(bCoef2,10)).append("  ");
+        sb.append("BANK   ").append(Format.integer(banknum,6)).append("    ")
+            .append(Format.integer(nchan,6)).append("     ")
+            .append(Format.integer(nrec,6)).append(" ")
+            .append(Format.string(bintype,7,false))
+            .append(Format.real(bCoef1,14,7)).append("     ")
+            .append(Format.real(bCoef2,10,7)).append("  ");
         if(type.equals("STD")){
             sb.append("       ");
         }else{
@@ -442,7 +436,7 @@ public class gsas_filemaker
                 if(l>=y.length){
                     sb.append("        ");
                 }else{
-                    sb.append("  ").append(format((int)y[l],6));
+                    sb.append("  ").append(Format.integer(y[l],6));
                 }
             }
             sb.append("\n");
@@ -475,7 +469,8 @@ public class gsas_filemaker
                 if(l>=y.length){
                     sb.append("        ");
                 }else{
-                    sb.append("  "+format((int)y[l],6)+"  "+format((int)dy[l],6));
+                    sb.append("  "+Format.integer(y[l],6)+"  "
+                              +Format.integer(dy[l],6));
                 }
             }
             sb.append("\n");
@@ -485,66 +480,6 @@ public class gsas_filemaker
 	} catch(Exception d){}
     }
 
-    /**
-     * Format a string so it is padded with spaces on either side.
-     */
-    static private String formatc(String stuff, int length){
-	StringBuffer rs=new StringBuffer(length);
-        rs.append(stuff);
-	while(rs.length()<length){
-	    rs.append(" ");
-	    if(rs.length()<length){
-		rs.insert(0," ");
-	    }
-	}
-	return rs.toString();
-    }
-
-    /**
-     * Format a string by padding on the right.
-     */
-    static private String format(String stuff, int length){
-        StringBuffer sb=new StringBuffer(length);
-        sb.append(stuff);
-        return format(sb,length);
-    }
-
-    /**
-     * Format a string buffer by padding on the right.
-     */
-    static private String format(StringBuffer stuff, int length){
-        while(stuff.length()<length){
-            stuff.append(" ");
-        }
-        return stuff.toString();
-    }
-
-    static private String formatl(StringBuffer stuff, int length){
-        while(stuff.length()<length){
-            stuff.insert(0," ");
-        }
-        return stuff.toString();
-    }
-
-    /**
-     * Format an integer by padding on the left.
-     */
-    static private String format(int number, int length){
-	StringBuffer rs=new StringBuffer(length);
-        rs.append(number);
-        return formatl(rs,length);
-    }
-
-    /**
-     * Format a float by padding on the left and making it have seven
-     * digits past the decimal.
-     */
-    static private String format(float number, int length){
-    	DecimalFormat df=new DecimalFormat("#####0.0000000");
-	StringBuffer rs=new StringBuffer(length);
-        rs.append(df.format(number));
-        return formatl(rs,length);
-    }
 
     /**
      * Prints the short table of bank information near the top of the
@@ -554,7 +489,7 @@ public class gsas_filemaker
     private void printBankInfo(){
 	try{
 	// write the bank information header
-	outStream.write(format("#             Ref Angle  Total length",80)+"\n");
+	outStream.write(Format.string("#             Ref Angle  Total length",80,false)+"\n");
 	Data dd=null;
 	if(mon!=null && export_monitor){
 	    dd = mon.getData_entry(monNum);
@@ -594,8 +529,10 @@ public class gsas_filemaker
 	float ref_angle = (float)(cylindrical_coords[1]*180.0/(java.lang.Math.PI));
 	
 	try{
-	    outStream.write ("#BANK " +format(banknum,4)+"  "+format(ref_angle,12)+"  "
-			     +format(total_length,5)+format(" ",44)+"\n");
+	    outStream.write ("#BANK " +Format.integer(banknum,4)+"  "
+                             +Format.real(ref_angle,12,7)+"  "
+			     +Format.real(total_length,5,7)
+                             +Format.string(" ",44)+"\n");
 	}catch(Exception e){}
     }
 
@@ -609,7 +546,7 @@ public class gsas_filemaker
             StringBuffer sb=new StringBuffer(81);
             sb.append((String)
                data.getAttributeList().getAttributeValue(Attribute.RUN_TITLE));
-	    outStream.write( format(sb,80) +"\n");
+	    outStream.write( Format.string(sb,80,false) +"\n");
 	    
 	} catch(Exception d){}
 	
@@ -626,7 +563,7 @@ public class gsas_filemaker
             StringBuffer sb=new StringBuffer(80);
             sb.append("Instrument parameter ").append(S);
             try{
-                outStream.write( format(sb,80)+"\n");
+                outStream.write( Format.string(sb,80,false)+"\n");
             }catch(Exception e){}
         }
     }
@@ -640,7 +577,7 @@ public class gsas_filemaker
 	    float monCount=this.getMonitorCount();
 	    if(monCount>0.0f){
                 sb.append("MONITOR: ").append(monCount);
-		outStream.write (format(sb,80)+"\n");
+		outStream.write (Format.string(sb,80,false)+"\n");
 	    }
 	} catch(Exception d){}
     }
@@ -758,7 +695,7 @@ public class gsas_filemaker
      */
     public static void main(String[] args){
 	String prefix="/IPNShome/pfpeterson/";
-	String infile=prefix+"data/II_VI/SEPD/dec2001/runfiles/sepd18124.run";
+	String infile=prefix+"data/II_VI/SEPD/dec2001/sepd18124.run";
 	String outfile=prefix+"ISAW/DataSetTools/gsastools/lookatme.gsa";
 	//System.out.println(infile);
 	//System.out.println(outfile);
@@ -770,5 +707,6 @@ public class gsas_filemaker
 	gsas_filemaker gf = new gsas_filemaker(rds,outfile);
 	gf.write();
 	gf.close();
+        System.exit(0);
     }
 }
