@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2002/07/23 18:24:37  dennis
+ * Now sends/processes POINTED_AT_CHANGED messages when the
+ * pointed at "X" value is changed as well as when the
+ * pointed at Data block is changed.
+ *
  * Revision 1.22  2002/07/12 18:49:38  dennis
  * Now traps for invalid (null) XScale from the x_scale_ui
  * and uses the XScale from the first Data block of the DataSet as
@@ -164,8 +169,10 @@ public class ThreeDView extends DataSetViewer
   private final String DETECTOR_MARKER = "Marker";
   private final String DETECTOR_NONE   = "NOT DRAWN";
 
-  private String group_draw_mode    = GROUP_MARKER_SMALL;
-  private String detector_draw_mode = DETECTOR_NONE;
+  private String  group_draw_mode     = GROUP_MARKER_SMALL;
+  private String  detector_draw_mode  = DETECTOR_NONE;
+  private float   last_pointed_at_x   = Float.NaN;
+  private boolean notify_ds_observers = true;
 
   private ThreeD_JPanel            threeD_panel      = null; 
 
@@ -186,6 +193,8 @@ public class ThreeDView extends DataSetViewer
   private final String  AXES            = "Axes";
   private final String  BEAM            = "Beam";
   private final String  INSTRUMENT      = "Inst";
+
+  private boolean debug = false;
 
 /* --------------------------------------------------------------------------
  *
@@ -247,8 +256,26 @@ public void redraw( String reason )
 
    else if ( reason.equals(IObserver.POINTED_AT_CHANGED) )
    {
+      if ( threeD_panel.isDoingBox() )           // ignore pointed at messages
+        return;                                  // if currently zooming in
+
       DataSet ds = getDataSet();
       Vector3D detector_location = group_location( ds.getPointedAtIndex() );
+
+      if ( debug )
+      {
+        System.out.println("ThreeDView.redraw(), reason = " + reason );
+        System.out.println("PAX  = " + ds.getPointedAtX() );
+        System.out.println("last = " + last_pointed_at_x );
+      }
+      if ( ds.getPointedAtX() != last_pointed_at_x )
+      {
+        last_pointed_at_x = ds.getPointedAtX();
+        notify_ds_observers = false;             // since we are setting the
+                                                 // frame controller by request,
+                                                 // don't notify ds observers
+        frame_control.setFrameValue( ds.getPointedAtX() );
+      }
 
       Point   pixel_point;
       if ( detector_location != null )
@@ -942,7 +969,6 @@ public static void main(String[] args)
  *
  */ 
 
-
 private void init()
 {
   if ( threeD_panel != null )          // get rid of old components first 
@@ -1010,7 +1036,6 @@ private void init()
   JPanel filler = new JPanel();
   filler.setPreferredSize( new Dimension( 120, 2000 ) );
   control_panel.add( filler );
- 
                                         // make a titled border around the
                                         // whole viewer, using an appropriate
                                         // title from the DataSet. 
@@ -1088,9 +1113,9 @@ private class ViewMouseMotionAdapter extends MouseMotionAdapter
          ds.setPointedAtIndex( index );
          ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
 
-         float y_val = frame_control.getFrameValue();
-         if ( y_val != Float.NaN )
-           conv_table.showConversions( y_val, index );
+         float frame_val = frame_control.getFrameValue();
+         if ( frame_val != Float.NaN )
+           conv_table.showConversions( frame_val, index );
        }
      }
    }
@@ -1152,6 +1177,17 @@ private class FrameControlListener implements ActionListener
     String action = e.getActionCommand();
     int    frame  = Integer.valueOf(action).intValue();
     set_colors( frame );
+
+    float frame_val = frame_control.getFrameValue();
+    if ( frame_val != Float.NaN && notify_ds_observers )
+    {
+      getDataSet().setPointedAtX( frame_val );
+      getState().set_float( ViewerState.POINTED_AT_X, frame_val );
+      if ( debug )
+        System.out.println("ThreeD viewer CALLING NOTIFY: " + frame_val);
+      getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
+    }
+    notify_ds_observers = true;  // only skip one message from frame control
   }
 }
 
