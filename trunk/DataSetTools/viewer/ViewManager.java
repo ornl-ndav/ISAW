@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2001/08/13 16:19:39  dennis
+ *  Added Ruth's Table view
+ *
  *  Revision 1.14  2001/08/09 16:04:40  dennis
  *  Added debug_view_manager flag.
  *  Now checks viewer != null to check if the viewer has been
@@ -132,6 +135,7 @@ import DataSetTools.viewer.util.*;
 import DataSetTools.viewer.Graph.*;
 import DataSetTools.viewer.Image.*;
 import DataSetTools.viewer.ThreeD.*;
+import DataSetTools.viewer.Table.*;
 import OverplotView.*;                      // import this for Kevin's viewer
 import DataSetTools.viewer.ViewerTemplate.*;
 import java.awt.*;
@@ -286,6 +290,8 @@ public class ViewManager extends    JFrame
       else if ( view_type.equals( SELECTED_GRAPHS ))             // use either
         viewer = new GraphableDataManager( tempDataSet );        // Kevin's or
 //        viewer = new ViewerTemplate( tempDataSet, state );     // Template  
+      else if ( view_type.equals( TABLE ) )
+        viewer = new TabView( tempDataSet, state ); 
       else
       {
         System.out.println( "ERROR: Unsupported view type in ViewManager:" );
@@ -607,11 +613,15 @@ private void BuildViewMenu()
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
+  button = new JMenuItem( SELECTED_GRAPHS );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
+
   button = new JMenuItem( THREE_D );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
-  button = new JMenuItem( SELECTED_GRAPHS );
+  button = new JMenuItem( TABLE );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 }
