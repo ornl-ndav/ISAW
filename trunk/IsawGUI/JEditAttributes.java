@@ -1,10 +1,10 @@
 /*
- * @(#)Isaw.java     1.0  99/09/02  Alok Chatterjee
+ * @(#)JEditAttributes.java     1.0  99/09/02  Alok Chatterjee
  *
  * 1.0  99/09/02  Added the comments and made this a part of package IsawGUI
- *
+ * 
  */
-
+ 
 package IsawGUI;
 
 import javax.swing.*;
@@ -16,6 +16,13 @@ import java.awt.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.instruments.*;
+
+/**
+ * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
+ * ChopTools and graph packages.
+ *
+ * @version 1.0  
+ */
 
 public class JEditAttributes implements Serializable
 {

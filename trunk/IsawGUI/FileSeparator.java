@@ -1,7 +1,7 @@
 /*
  * @(#)FileSeparator.java     1.0  99/09/10  
  *
- * 1.0  99/09/02  Added the comments and made this a part of package IsawTools
+ * 1.0  99/09/02  Added the comments and made this a part of package IsawGUI
  *
  * GUI for Dongfeng to separate Runfiles into Sample and Background runs
  * and perform different operations on them.
@@ -23,7 +23,7 @@ public class FileSeparator extends JFrame implements ListSelectionListener
 	private Vector vrunfiles;
 	private Vector vsamplefiles;
 	private Vector vbackgroundfiles;
-	private FileDialog fd;
+	private String dir;
 	private DefaultListModel listModelA;  
 	private DefaultListModel listModelB;  
 	private DefaultListModel listModelC;  
@@ -42,7 +42,7 @@ public class FileSeparator extends JFrame implements ListSelectionListener
 	private JButton removeNoisyDetButton;
 	
 	
-	public FileSeparator()
+	public FileSeparator(String dir)
 	{
 	    super("File Separator");
 	    listModelA = new DefaultListModel();
@@ -63,16 +63,13 @@ public class FileSeparator extends JFrame implements ListSelectionListener
 	    chkGroupingButton = new JButton();
 	    removeNoisyDetButton = new JButton();
 	    
-	    fd = new FileDialog(new Frame(), "Choose Folder", FileDialog.LOAD);
-        fd.setDirectory("H:\\UPLOAD\\Data\\hrmecs");
-        fd.show();
+	   
         
         vrunfiles = new Vector();
         vsamplefiles = new Vector();
         vbackgroundfiles = new Vector();
         
-        File f = new File(fd.getDirectory(), fd.getFile());
-        String dir = fd.getDirectory();
+        
         String[] fileList = new File(dir).list();//dir listing
      
         for(int i = 0; i<fileList.length; i++)
@@ -197,6 +194,7 @@ public class FileSeparator extends JFrame implements ListSelectionListener
                     
                     if(RunfilesList.getSelectedIndices()!= null)
                     {
+                        int index = RunfilesList.getSelectedIndex();
                         Object[] leftSelected = RunfilesList.getSelectedValues();
                         String[] value = new String[leftSelected.length];
                        
@@ -207,7 +205,10 @@ public class FileSeparator extends JFrame implements ListSelectionListener
                         {
                         listModelA.removeElementAt(leftSelectedIndices[i] -i);
                         
-                        RunfilesList.setSelectedIndex(i);
+                        if (index == listModelA.getSize())
+                        index--;
+                        //otherwise select same index
+                        RunfilesList.setSelectedIndex(index);
                         }
                         for(int i = 0; i<leftSelected.length; i++)
                         {
@@ -233,13 +234,29 @@ public class FileSeparator extends JFrame implements ListSelectionListener
                  
                  if(SamplefilesList.getSelectedIndex()!= -1)
                     {
+                        int index = SamplefilesList.getSelectedIndex();
+                        Object[] rightSelected = SamplefilesList.getSelectedValues();
                         int[] rightSelectedIndices = SamplefilesList.getSelectedIndices();
+                        String[] value = new String[rightSelectedIndices.length];
+                        
                         DefaultListModel listModelB = (DefaultListModel)SamplefilesList.getModel();
+                        DefaultListModel listModelA = (DefaultListModel)RunfilesList.getModel();
+                        
                         for (int i = 0; i<rightSelectedIndices.length; ++i)
                         {
                             listModelB.removeElementAt(rightSelectedIndices[i] -i);
-                            SamplefilesList.setSelectedIndex(i);
+                            if (index == listModelB.getSize())
+                            index--;
+                            //otherwise select same index
+                            SamplefilesList.setSelectedIndex(index);
                         }
+                        
+                        for(int i = 0; i<rightSelectedIndices.length; i++)
+                        {
+                            value[i] = rightSelected[i].toString();
+                            listModelA.addElement(value[i]);
+                        }
+                        
                         int size = listModelB.getSize();
 
                         if (size == 0)
@@ -262,7 +279,7 @@ public class FileSeparator extends JFrame implements ListSelectionListener
             try{
                 //Enter Code here for backgroundAddButton
                  System.out.println("Now clicked backgroundAddButton");
-                 
+                 int index = RunfilesList.getSelectedIndex();
                  if(RunfilesList.getSelectedIndices()!= null)
                     {
                         Object[] leftSelected = RunfilesList.getSelectedValues();
@@ -275,7 +292,11 @@ public class FileSeparator extends JFrame implements ListSelectionListener
                         {
                         listModelA.removeElementAt(leftSelectedIndices[i] -i);
                         
-                        RunfilesList.setSelectedIndex(i);
+                        if (index == listModelA.getSize())
+                        index--;
+                        //otherwise select same index
+                        RunfilesList.setSelectedIndex(index);
+                        
                         }
                         for(int i = 0; i<leftSelected.length; i++)
                         {
@@ -302,12 +323,27 @@ public class FileSeparator extends JFrame implements ListSelectionListener
                  
                  if(BackgroundfilesList.getSelectedIndex()!= -1)
                     {
+                        int index = BackgroundfilesList.getSelectedIndex();
+                        Object[] rightSelected = BackgroundfilesList.getSelectedValues();
                         int[] rightSelectedIndices = BackgroundfilesList.getSelectedIndices();
+                        String[] value = new String[rightSelectedIndices.length];
+                        
                         DefaultListModel listModelC = (DefaultListModel)BackgroundfilesList.getModel();
+                        DefaultListModel listModelA = (DefaultListModel)RunfilesList.getModel();
+                        
                         for (int i = 0; i<rightSelectedIndices.length; ++i)
                         {
                             listModelC.removeElementAt(rightSelectedIndices[i] -i);
-                            BackgroundfilesList.setSelectedIndex(i);
+                            
+                            if (index == listModelC.getSize())
+                            index--;
+                            //otherwise select same index
+                            BackgroundfilesList.setSelectedIndex(index);
+                        }
+                        for(int i = 0; i<rightSelectedIndices.length; i++)
+                        {
+                            value[i] = rightSelected[i].toString();
+                            listModelA.addElement(value[i]);
                         }
                         int size = listModelC.getSize();
 
