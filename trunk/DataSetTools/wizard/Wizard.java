@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.66  2003/07/29 00:37:59  bouzekc
+ * Now prints the stack trace to writeASCII.err when an error is
+ * encountered during writeASCII().
+ *
  * Revision 1.65  2003/07/28 15:34:22  dennis
  * Now prints a stack trace when an error is encountered.  The stack
  * trace is essential for debugging.  It should eventually be included
@@ -901,7 +905,10 @@ public abstract class Wizard implements PropertyChangeListener {
    * @param text2Write The String to write to the file.
    */
   public static void writeASCII( File file2Write, String text2Write ) {
-    FileWriter fw = null;
+    FileWriter fw  = null;
+    PrintWriter pw = null;
+    String errFile = StringUtil.setFileSeparator( 
+        SharedData.getProperty( "user.dir" ) + "/writeASCII.err" );
 
     try {
       fw = new FileWriter( file2Write );
@@ -909,8 +916,20 @@ public abstract class Wizard implements PropertyChangeListener {
     } catch( IOException e ) {
       e.printStackTrace(  );
       JOptionPane.showMessageDialog( 
-        null, "Error saving file: " + file2Write.toString(  ), "ERROR",
-        JOptionPane.ERROR_MESSAGE );
+        null,
+        "Error saving file: " + file2Write.toString(  ) +
+        ".  Please see writeASCII.err file.", "ERROR", JOptionPane.ERROR_MESSAGE );
+
+      try {
+        pw = new PrintWriter( new FileWriter( new File( errFile ) ) );
+        e.printStackTrace( pw );
+      } catch( IOException e2 ) {
+        //drop it on the floor
+      } finally {
+        if( pw != null ) {
+          pw.close(  );
+        }
+      }
     } finally {
       if( fw != null ) {
         try {
@@ -1813,7 +1832,7 @@ public abstract class Wizard implements PropertyChangeListener {
             SharedData.getProperty( "user.dir" ) + "/wizard.err" );
 
         Wizard.writeASCII( new File( errFile ), e.toString(  ) );
-        e.printStackTrace();
+        e.printStackTrace(  );
 
         message = "Failure";
 
