@@ -10,6 +10,10 @@ package OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.10  2001/12/12 21:20:52  dennis
+ * Fixed problem with redrawing display when selections were changed
+ * in the ImageView. ( Ruth )
+ *
  * Revision 1.9  2001/09/27 19:49:55  dennis
  * Added editing for labels, line styles, etc.
  *
@@ -144,7 +148,12 @@ public class GraphableDataManager
    
   }
 
-  
+  /** Needed to prevent window from drawing a blank screen in some cases.
+  * This routine just calls super.paint
+  */
+  public void paint( Graphics g)
+     {super.paint(g);
+      }
   /**
    * This will be called by the "outside world" if the contents of the
    * DataSet are changed and it is necesary to redraw the graphs using the
@@ -152,13 +161,14 @@ public class GraphableDataManager
    * selection.
    */
   public void redraw( String reason ) 
-  {  inittt( getDataSet() );
+  {  //inittt( getDataSet() );
     //System.out.println( "DataSetViewer> " + reason );
-      /*
+      
     if ( reason == IObserver.DESTROY )
     {
       graphable_data = null;
       graph = null;  
+      redraw();
     }
     else if( reason == IObserver.DATA_REORDERED)
     {
@@ -168,6 +178,7 @@ public class GraphableDataManager
     }
     else if( reason == IObserver.SELECTION_CHANGED )
     { DataSet ds = getDataSet();
+       Error = "No Data Blocks Selected";
        if( ds.getSelectedIndices().length  > 0)
            Error = null;
        redraw();
@@ -202,12 +213,13 @@ public class GraphableDataManager
     {
     }
     else if( reason == DataSetViewer.NEW_DATA_SET )
-     {System.out.println("in NEW_DATA_SET");
+     {//System.out.println("in NEW_DATA_SET");
       inittt( getDataSet());
       redraw();
      } 
-    else
-      redraw();                         //default is to redraw the entire
+    //else  don't redraw
+      //redraw();                      
+                                     //default is to redraw the entire
                                         //viewer so that future expansions
                                         //in the variety of messages
                                         //will not break existing code.
@@ -215,7 +227,7 @@ public class GraphableDataManager
                                         //effecient ways to update the viewer,
                                         //please maintain this code to catch
                                         //to deal with the update appropriately.
-*/
+
   }
 
 
@@ -245,7 +257,7 @@ public class GraphableDataManager
       {graph_component = graph.redraw();
        graph_component.setLayout( new GridLayout( 1,1 ));
        graph_component.addComponentListener( new 
-             MyComponentListener(graph_component));
+             MyComponentListener(graph.getJPane()));
         graph_component.doLayout();
       }
     else
@@ -264,15 +276,15 @@ public class GraphableDataManager
   }
 
   public class MyComponentListener extends ComponentAdapter
-   {JComponent g;
-    public MyComponentListener( JComponent g)
+   {JPlotLayout g;
+    public MyComponentListener( JPlotLayout g)
       {this.g = g;
       }
     public void componentResized(ComponentEvent e)
-     {g.repaint();
+     {g.draw();
      }
     public void componentShown(ComponentEvent e)
-     { g.repaint();
+     { g.draw();
      }
    }
   /**
