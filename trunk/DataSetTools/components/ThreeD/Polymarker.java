@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/14 20:26:39  dennis
+ * Removed unused imports
+ *
  * Revision 1.3  2003/10/15 23:27:25  dennis
  * Fixed javadocs to build cleanly with jdk 1.4.2
  *
@@ -43,8 +46,6 @@ package DataSetTools.components.ThreeD;
 import java.awt.*;
 import java.io.*;
 import DataSetTools.math.*;
-import DataSetTools.components.image.*;
-
 
 /**
  *  This class represents a 3D polymarker of one color.
