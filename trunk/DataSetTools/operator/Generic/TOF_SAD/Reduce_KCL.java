@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2003/12/02 15:58:18  rmikk
+ * Changed (Float) to (Number) to eliminate a Class Cast exception when
+ *   dealing with Python
+ *
  * Revision 1.16  2003/10/28 19:56:40  rmikk
  * Fixed javadoc error
  *
@@ -393,7 +397,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
          }
         qu = new float[ Qu.size()];
         for( int i=0; i < Qu.size(); i++){
-          qu[i] = ((Float)Qu.elementAt(i)).floatValue();
+          qu[i] = ((Number)Qu.elementAt(i)).floatValue();
         }
         
         if ((NQxBins < 1) || (NQyBins < 1))
