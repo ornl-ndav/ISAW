@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2001/07/25 18:09:49  dennis
+ *  Now uses new "generic" methods to get/set state information
+ *  in the ViewerState object.
+ *
  *  Revision 1.14  2001/07/23 16:35:50  dennis
  *  Fixed error: no longer using "==" for String comparison.
  *
@@ -337,12 +341,12 @@ private void AddOptionsToMenu()
   JMenu option_menu = menu_bar.getMenu( OPTION_MENU_ID );
                                                     // Horizontal scroll option
   JCheckBoxMenuItem cb_button = new JCheckBoxMenuItem( HORIZONTAL_SCROLL );
-  cb_button.setState( getState().getHorizontal_scrolling() );
+  cb_button.setState( getState().get_boolean( ViewerState.H_SCROLL ) );
   cb_button.addActionListener( option_menu_handler );
   option_menu.add( cb_button );
 
   cb_button = new JCheckBoxMenuItem( DO_REBIN );
-  cb_button.setState( getState().getRebin() );
+  cb_button.setState( getState().get_boolean( ViewerState.REBIN ) );
   cb_button.addActionListener( option_menu_handler );
   option_menu.add( cb_button );
 }
@@ -437,7 +441,7 @@ private void MakeConnections()
 /* --------------------- SetHorizontalScrolling ------------------------ */
 private void SetHorizontalScrolling( boolean state )
 {
-  getState().setHorizontal_scrolling( state );
+  getState().set_boolean( ViewerState.H_SCROLL, state );
   if ( state )
   {
     XScale x_scale = getXConversionScale();
@@ -445,8 +449,9 @@ private void SetHorizontalScrolling( boolean state )
     JScrollBar scroll_bar = hgraph_scroll_pane.getHorizontalScrollBar();
     int min = scroll_bar.getMinimum();
     int max = scroll_bar.getMaximum();
-    int position = (int)
-               ((max-min) * getState().getHorizontal_scroll_fraction() + min );
+    int position = (int) ((max-min) 
+                        * getState().get_float(ViewerState.H_SCROLL_POSITION) 
+                        + min );
     scroll_bar.setValue( position );
   }
   else
@@ -463,7 +468,7 @@ private void SetHorizontalScrolling( boolean state )
 /* ----------------------------- SetRebin ------------------------------- */
 private void SetRebin( boolean state )
 {
-  getState().setRebin( state );
+  getState().set_boolean( ViewerState.REBIN, state );
   DrawGraphs();
 }
 
@@ -487,7 +492,7 @@ private void DrawGraphs( )
 
   viewport.setLayout( new GridLayout(num_data_blocks, 1) );
 
-  SetHorizontalScrolling( getState().getHorizontal_scrolling() );
+  SetHorizontalScrolling( getState().get_boolean( ViewerState.H_SCROLL ) );
 
   SelectionKeyAdapter key_adapter = new SelectionKeyAdapter();
 
@@ -586,7 +591,7 @@ private void DrawSpecifiedGraph( int index )
 
   float x[];
   float y[];
-  if ( getState().getRebin() )
+  if ( getState().get_boolean( ViewerState.REBIN ) )
   {
     XScale x_scale = getXConversionScale();
     x = x_scale.getXs();
@@ -807,7 +812,7 @@ private class SelectionKeyAdapter extends    KeyAdapter
         fraction = 0;
       else
         fraction = (bar_value - bar_min)/(bar_max - bar_min);
-      getState().setHorizontal_scroll_fraction( fraction );
+      getState().set_float( ViewerState.H_SCROLL_POSITION, fraction );
     }
   }
 
