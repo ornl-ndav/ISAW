@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.19  2003/07/08 21:01:24  bouzekc
+ * Changed default values for some parameters.
+ *
  * Revision 1.18  2003/07/03 14:26:39  bouzekc
  * Added all missing javadoc comments and formatted existing
  * comments.
@@ -199,14 +202,14 @@ public class FindMultiplePeaksForm extends Form {
     addParameter( new DataDirPG( "Peaks File Output Path", null, false ) );
 
     //2
-    addParameter( new IntArrayPG( "Run Numbers", "06496:06498", false ) );
+    addParameter( new IntArrayPG( "Run Numbers", "6496:6498", false ) );
 
     //3
     addParameter( new StringPG( "Experiment name", "quartz", false ) );
 
     //4
     addParameter( 
-      new IntegerPG( "Maximum Number of Peaks", new Integer( 50 ), false ) );
+      new IntegerPG( "Maximum Number of Peaks", new Integer( 30 ), false ) );
 
     //5
     addParameter( 
