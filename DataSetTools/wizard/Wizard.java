@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.38  2003/06/26 16:24:34  bouzekc
+ * Removed unused FRAME_WIDTH and FRAME_HEIGHT instance
+ * variables.
+ *
  * Revision 1.37  2003/06/26 16:22:24  bouzekc
  * Reformatted for consistency.
  *
@@ -287,8 +291,6 @@ import javax.swing.*;
  */
 public abstract class Wizard implements PropertyChangeListener {
   // size of the window
-  private static final int FRAME_WIDTH   = 650;
-  private static final int FRAME_HEIGHT  = 500;
   private static final int FORM_PROGRESS = 100;
   private static final int STRUT_HEIGHT  = 5;
 
