@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.77  2003/08/12 05:22:55  dennis
+ *  Removed temporary fix that forced monitor 1 to be upstream
+ *  on SAND.
+ *
  *  Revision 1.76  2003/08/05 14:44:51  dennis
  *  Added temporary fix for SAND area detector positions.  The
  *  effective positions of the pixels are now set from the area
@@ -814,21 +818,6 @@ private float CalculateEIn()
         d = tof_data_calc.NewEnergyInData( (TabulatedData)d, calculated_E_in );
         data_set.replaceData_entry( d, i );
       } 
-
-                                     // make sure that detector 1 is upstream
-    if ( instrument_type == InstrumentType.TOF_SAD && is_monitor )
-    {
-      System.out.println("TEMPORARY FIX FOR SAND MONITOR 1 .....");
-      Data d = data_set.getData_entry(0);
-      DetectorPosition position = 
-         (DetectorPosition)d.getAttributeValue(Attribute.DETECTOR_POS);
-      float coords[] = position.getCartesianCoords();
-      if ( coords[0] > 0 )
-        coords[0] *= -1;
-
-      position.setCartesianCoords( coords[0], coords[1], coords[2] ); 
-      d.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS, position ));
-    }
 
                                      // make effective positions match grid 
     if ( instrument_type == InstrumentType.TOF_SAD && is_histogram )
