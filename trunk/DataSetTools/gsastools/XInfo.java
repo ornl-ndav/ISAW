@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/08/06 21:27:09  pfpeterson
+ *  Added constructor which takes a gsas powder file bank header.
+ *
  *  Revision 1.1  2002/07/25 19:28:42  pfpeterson
  *  Added to CVS.
  *
@@ -42,6 +45,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.util.*; 
 import java.awt.*;
 import java.io.*;
+import java.lang.Character;
 import javax.swing.*;
 import java.text.DateFormat;
 import DataSetTools.math.*;
@@ -158,6 +162,64 @@ public class XInfo{
             nrec=(int)((float)nchan/5f+0.9f);
         }
     } // end of constructor
+
+    /**
+     * A constructor that takes a gsas bank header as a string.
+     */
+    public XInfo(String bankhead){
+        this.bintype="invalid";
+        this.coef1=0f;
+        this.coef2=0f;
+        this.coef3=0f;
+        this.coef4=0f;
+        this.nxchan=0;
+        this.nchan=0;
+        this.nrec=0;
+        this.type="invalid";
+        this.usetimemap=false;
+        this.timemap=null;
+
+        StringBuffer sb=new StringBuffer(bankhead.trim());
+        //System.out.println("SB0:"+sb);
+        Integer tempI=null;
+        String  tempS=null;
+        int end=0;
+        // pull off the bank number if necessary
+        if(sb.toString().startsWith(GsasUtil.BANK)){
+            sb.delete(0,4);
+            StringUtil.trim(sb);
+            StringUtil.getInt(sb);
+        }
+        //System.out.println("SB1:"+sb);
+
+        // determine the number of channels
+        this.nchan=StringUtil.getInt(sb);
+        //System.out.println("SB2:"+sb);
+        
+        // determine the number of records
+        this.nrec=StringUtil.getInt(sb);
+        //System.out.println("SB3:"+sb);
+
+        // get the bintype
+        tempS=StringUtil.getString(sb);
+        if(tempS.startsWith("CONS")) tempS=GsasUtil.CONS;
+        this.bintype=tempS;
+        //System.out.println("SB4:"+sb);
+        
+        // get the coefs
+        this.coef1=StringUtil.getFloat(sb);
+        this.coef2=StringUtil.getFloat(sb);
+        this.coef3=StringUtil.getFloat(sb);
+        this.coef4=StringUtil.getFloat(sb);
+        
+        // get the type
+        if(sb.length()<=0){
+            this.type=STD;
+        }else{
+            this.type=sb.toString();
+        }
+
+    }
 
     public String bintype(){
         return new String(this.bintype);
