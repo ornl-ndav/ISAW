@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/01/02 21:54:07  pfpeterson
+ *  Fixed small error in full constructor.
+ *
  *  Revision 1.11  2002/11/27 23:31:01  pfpeterson
  *  standardized header
  *
@@ -106,7 +109,6 @@ public class Blind extends    GenericTOF_SCD {
   public Blind( LoadFileString file, IntListString seq_nums ){
     this();
     
-    parameters=new Vector();
     getParameter(0).setValue(file.toString());
     getParameter(1).setValue(seq_nums.toString());
   }
