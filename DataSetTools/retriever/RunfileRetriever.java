@@ -12,6 +12,9 @@
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/07/11 21:18:35  dennis
+ *  Added private method to show information about the detectors in a group
+ *
  *  Revision 1.3  2000/07/10 22:49:46  dennis
  *  July 10, 2000 version...many changes
  *
@@ -329,6 +332,8 @@ public class RunfileRetriever extends    Retriever
         if ( num_times > 1 )
         {
            raw_spectrum = run_file.Get1DSpectrum( group_id );
+
+//         ShowGroupDetectorInfo( group_id, histogram_num );
 
           if ( raw_spectrum.length >= 1 )
           {
@@ -675,6 +680,81 @@ public class RunfileRetriever extends    Retriever
 
   }
 
+
+/**
+ *  Show Group Detector Info
+ */
+  private void ShowGroupDetectorInfo( int group_id, int hist )
+  {
+    int ids[] = run_file.IdsInSubgroup( group_id );
+    int type, 
+        id;
+    float area,
+          length,
+          width,
+          raw_dist,
+          nom_radius,
+          nom_height,
+          nom_dist = 0,
+          solid_angle,
+          total_solid_angle = 0;
+
+    try
+    {
+      System.out.println("---------- GROUP ID " + group_id + " ----------");
+      for ( int i = 0; i < ids.length; i++ )
+      {
+        id = ids[i];
+        type = run_file.DetectorType( id );
+        length = Runfile.LENGTH[ type ] / 100;   // convert cm to m
+        width  = Runfile.WIDTH[ type ] / 100;    // convert cm to m
+
+        nom_radius = (float) run_file.RawFlightPath( id );
+        nom_height = (float) run_file.RawDetectorHeight( id );
+        nom_dist   = (float) Math.sqrt( nom_radius * nom_radius +
+                                        nom_height * nom_height );
+
+        raw_dist = (float) Math.sqrt( nom_dist * nom_dist -
+                                    length * length / 12.0 );
+        solid_angle = length*width / (raw_dist * raw_dist);
+
+        System.out.println("ID = " + ids[i] +
+           "  Ang= " + (float)run_file.RawDetectorAngle( ids[i] ) +
+           "  Ht= " + (float)nom_height +
+           "  Pth= " + (float)nom_radius +
+           "  RawD= " + raw_dist +
+           "  SAng= " + solid_angle );
+        total_solid_angle += solid_angle;
+      }
+      System.out.println("Group Effective Values:" );
+      System.out.println(
+           "Ang= " + (float)run_file.DetectorAngle( ids[0], hist ) +
+           "  Ht= " +(float)run_file.DetectorHeight( ids[0] ) +
+           "  Pth= " + (float)run_file.FlightPath( ids[0], hist ) +
+           "  NomD= " + (float) nom_dist +
+           "  SAng = " + total_solid_angle );
+
+      DetectorPosition position = new DetectorPosition();
+
+      float angle  = (float)run_file.DetectorAngle( ids[0], hist );
+      angle       *= (float)(Math.PI / 180.0);
+      float height = getAverageHeight( ids );
+      float path   = (float)run_file.FlightPath( ids[0], hist );
+      float r      = (float)Math.sqrt( path * path - height * height );
+      position.setCylindricalCoords( r, angle, height );
+
+    // Show effective position
+      float sphere_coords[] = position.getSphericalCoords();
+      System.out.println( " R = " + sphere_coords[0] +
+                          " Theta = " + sphere_coords[1]*180/3.14159265f +
+                          " Phi = " + sphere_coords[2]*180/3.14159265f );
+    }
+    catch ( Exception e )
+    {
+      System.out.println( "Exception in RunfileRetriever.getAverageAngle:" );
+      System.out.println( "Exception is " + e );
+    }
+  }
 
 
   public static void main(String[] args)
