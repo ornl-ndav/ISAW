@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2001/06/07 19:01:43  rmikk
+ * Added a Test to catch parameters with null values.
+ *
  * Revision 1.5  2001/06/04 20:14:51  rmikk
  * Updated Documentation.
  * Fixed Title = so no space after = needed
@@ -1449,7 +1452,13 @@ public Object getResult()
      lerror = -1;
      
      for( i = 0 ; i < getNum_parameters() ; i++)
-       {  if( getParameter( i ).getValue() instanceof DataSet)
+	 { if(getParameter( i ).getValue() == null)
+            {serror = "Undefined Parameter "+i;
+             perror =i;
+             lerror = i;
+             return new ErrorString( serror );
+              }
+           else if( getParameter( i ).getValue() instanceof DataSet)
             { DataSet ds = (DataSet)(getParameter( i ).getValue());        
               
               ExecLine.addParameterDataSet( ds , (String)vnames.elementAt(i));
