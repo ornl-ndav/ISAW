@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/02/18 19:33:50  dennis
+ * Removed ^M characters.
+ *
  * Revision 1.1  2003/01/20 16:20:21  rmikk
  * Initial Checkin
  *
