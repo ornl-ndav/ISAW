@@ -32,6 +32,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.23  2004/06/16 21:59:53  rmikk
+ * The ParameterGUI for n dimension arrays of int, float, double, short, 
+ *    and long is now the RealArrayPG.  These arrays are now passed
+ *   by reference.
+ *
  * Revision 1.22  2004/06/15 18:54:08  robertsonj
  * Added PrinterNameString which is a special string so the JavaWrapperOperator
  * can use the PrinterNamePG
@@ -350,10 +355,17 @@ public class JavaWrapperOperator extends GenericOperator {
             //StringPG
           } else if( ( type == Character.TYPE ) || ( type == String.class ) ) {
             addParameter( new StringPG( name, val ) );
-          } else if( ( type.isArray(  ) ) || ( type == Vector.class ) ) {
+          } else if( ( type.isArray(  ) ) ) {
             //ArrayPG
-           
-            addParameter( new ArrayPG( name, val ) );
+            Object multiArray = RealArrayPG.getZeroLengthedArray(type);
+            if((multiArray == null))
+               addParameter( new ArrayPG( name, val ) );
+            else if(val != null)
+               addParameter( new RealArrayPG(name , val));
+            else
+               addParameter( new RealArrayPG(name , multiArray));  
+          }else if( type == Vector.class ) {
+             addParameter( new ArrayPG( name, val ) );
           } else if( type == DataSet.class ) {
             addParameter( new DataSetPG( name, val ) );
           } else if( type == DataDirectoryString.class ) {
@@ -449,7 +461,8 @@ public class JavaWrapperOperator extends GenericOperator {
            }catch(Exception ss){
                return new ErrorString( "improp params "+ss.toString());
            }
-          }
+          }else
+          fieldParams[k].set(wrapped, values[k]);
         } else if( 
           SpecialString.class.isAssignableFrom( fieldParams[k].getType(  ) ) ) {
           try{
