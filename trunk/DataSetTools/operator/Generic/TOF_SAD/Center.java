@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/04/18 02:12:21  dennis
+ * Added check that the dimensions of the area detector sensitivity
+ * data matches the dimensions of the sample run used for calculating
+ * the beam center.
+ * Fixed off by one error on bounds check for last channel to use.
+ *
  * Revision 1.9  2004/04/08 15:18:09  dennis
  * Now uses "new" DataSetPGs consistently and calls clear() after getting the
  * value from the DataSetPG, to avoid memory leaks.
@@ -172,17 +178,33 @@ public class Center extends GenericTOF_SAD{
      GridIDs = Grid_util.getAreaGridIDs(SensDS);
      if( GridIDs == null)
         return new ErrorString("No Sensitivity Data Set Grids set up for "+ SensDS.toString());
+
      if( GridIDs.length < 1)
         return new ErrorString("No Sensitivity Data Set Grids set up for "+ SensDS.toString());
+
      UniformGrid SensGrid =(UniformGrid)Grid_util.getAreaGrid( SensDS,GridIDs[0]);
      SensGrid.setDataEntriesInAllGrids( SensDS);
-     StartTimeChan--; EndTimeChan --;
 
+     if ( SensGrid.num_rows() != DSGrid.num_rows() )
+       return new ErrorString("Wrong size sensitivity grid, rows = " + 
+                               SensGrid.num_rows() + ", NOT " + DSGrid.num_rows() );
+
+     if ( SensGrid.num_cols() != DSGrid.num_cols() )
+       return new ErrorString("Wrong size sensitivity grid, cols = " + 
+                               SensGrid.num_cols() + ", NOT " + DSGrid.num_cols() );
+
+     StartTimeChan--; 
+     EndTimeChan --;
+     if ( EndTimeChan < StartTimeChan )
+       EndTimeChan = StartTimeChan;
+
+                              // start < 0 is flag to say use all channels
      if( StartTimeChan < 0){
-       StartTimeChan =0;
-       EndTimeChan = DS.getData_entry(0).getX_scale().getNum_x()-1;
-     }else if( EndTimeChan >DS.getData_entry(0).getX_scale().getNum_x()-1)
-       EndTimeChan = DS.getData_entry(0).getX_scale().getNum_x()-1;
+       StartTimeChan = 0;
+       EndTimeChan = DS.getData_entry(0).getX_scale().getNum_x()-2;
+     }
+     else if( EndTimeChan >DS.getData_entry(0).getX_scale().getNum_x()-2)
+       EndTimeChan = DS.getData_entry(0).getX_scale().getNum_x()-2;
       
      float[][] CollapsedData = new float[DSGrid.num_rows()+1][DSGrid.num_cols()+1];
      float TotCount = 0.0f;
