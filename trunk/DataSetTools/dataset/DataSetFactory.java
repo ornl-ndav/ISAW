@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2003/02/12 20:07:42  dennis
+ *  Now adds PixelInfo_op instead of SegmentInfo_op
+ *
  *  Revision 1.36  2003/01/15 20:54:25  dennis
  *  Changed to use SegmentInfo, SegInfoListAttribute, etc.
  *
@@ -407,7 +410,7 @@ public class DataSetFactory implements Serializable
     }
     else if ( instrument_type == InstrumentType.TOF_SCD )  // will be different
     {                                                      // when SCD properly
-      ds.addOperator( new GetSegmentInfo_op() );           // supported
+      ds.addOperator( new GetPixelInfo_op() );             // supported
       ds.addOperator( new DiffractometerTofToD() );
       ds.addOperator( new DiffractometerTofToQ() );
       ds.addOperator( new SCDQxyz() );
@@ -419,7 +422,7 @@ public class DataSetFactory implements Serializable
     }
     else if ( instrument_type == InstrumentType.TOF_SAD )  // will be different
     {                                                      // when SAD properly
-      ds.addOperator( new GetSegmentInfo_op() );           // supported
+      ds.addOperator( new GetPixelInfo_op() );             // supported
       ds.addOperator( new DiffractometerTofToD() );
       ds.addOperator( new DiffractometerTofToQ() );
       ds.addOperator( new DiffractometerQxyz() );
