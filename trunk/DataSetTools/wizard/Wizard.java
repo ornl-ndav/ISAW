@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.44  2003/06/27 22:05:47  bouzekc
+ * Fixed log spelling error.  Added missing javadocs.
+ *
  * Revision 1.43  2003/06/27 21:32:50  bouzekc
  * Now uses Form's addPropertyChangeListener() method to add
  * itself as a listener on parameters.  Reformatted javadocs
@@ -63,7 +66,7 @@
  * Reformatted for consistency.
  *
  * Revision 1.36  2003/06/26 16:20:12  bouzekc
- * Changed button names to be more expressived.  Now starts
+ * Changed button names to be more expressive.  Now starts
  * full screen.
  *
  * Revision 1.35  2003/06/24 22:33:54  bouzekc
@@ -609,7 +612,7 @@ public abstract class Wizard implements PropertyChangeListener {
     final String VALIDSTART = "<Valid>";
     final String VALIDEND   = "</Valid>";
 
-    String xml;
+    String xml             = s.toString(  );
     String paramName;
     String paramValue;
     String paramValidity;
@@ -626,8 +629,6 @@ public abstract class Wizard implements PropertyChangeListener {
     Form cur_form;
     IParameterGUI curParam;
     boolean ignoreChanges  = false;
-
-    xml                    = s.toString(  );
 
     //remove the newline characters
     st = new StringTokenizer( xml, "\n" );
@@ -803,10 +804,18 @@ public abstract class Wizard implements PropertyChangeListener {
     System.exit( 0 );
   }
 
+  /**
+   *  Accessor method to get the number of Forms.
+   *
+   *  @return     Number of Forms in this Wizard.
+   */
   public int getNumForms(  ) {
     return forms.size(  );
   }
 
+  /**
+   *  Makes the GUI for this Wizard.
+   */
   protected void makeGUI(  ) {
     GridBagConstraints gbc = new GridBagConstraints(  );
 
@@ -995,6 +1004,10 @@ public abstract class Wizard implements PropertyChangeListener {
     wizComponents[6]   = clear_button;
   }
 
+  /**
+   *  Shows the GUI for this Wizard by calling the outer Frame's
+   *  show() method.
+   */
   protected void showGUI(  ) {
     frame.show(  );
   }
