@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2001/08/10 19:52:16  dennis
+ *  Added test for data_sets[data_set_num] == null in
+ *  UpdateDataSetNow() method.
+ *
  *  Revision 1.12  2001/08/09 15:24:06  dennis
  *  Put debug prints in "if (debug_retriever)" blocks.
  *
@@ -292,7 +296,8 @@ public class LiveDataManager extends    Thread
    {                                             // check for change of DataSet
                                                  // and re-initialize if needed
 
-     if ( !temp_ds.getTitle().equals( data_sets[data_set_num].getTitle() ) )
+     if ( data_sets[data_set_num] == null   ||
+         !temp_ds.getTitle().equals( data_sets[data_set_num].getTitle() ) )
        SetUpLocalCopies();
      else
        data_sets[data_set_num].copy( temp_ds );  // copy notifies the observers
