@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/07/29 16:35:09  pfpeterson
+ *  Now redirects stderr from the process to the console as well.
+ *
  *  Revision 1.2  2002/07/29 16:00:07  pfpeterson
  *  Fixed two bugs:
  *   - Confirms that process was started before returning.
@@ -111,18 +114,27 @@ public class Exec extends    GenericSpecial {
         String command=(String)(getParameter(0).getValue());
         Process process=null;
         String output;
+        String error;
 
         try{
             process=Runtime.getRuntime().exec(command);
             InputStream in_stream  = process.getInputStream();
+            InputStream er_stream  = process.getErrorStream();
             InputStreamReader in_reader = new InputStreamReader(in_stream);
-            BufferedReader in=new BufferedReader(in_reader);
+            InputStreamReader er_reader = new InputStreamReader(er_stream);
+            BufferedReader in = new BufferedReader(in_reader);
+            BufferedReader er = new BufferedReader(er_reader);
             while(true){
                 output=in.readLine();
-                if( output==null )
+                error=er.readLine();
+                if( output==null && error==null )
                     break;
-                else
-                    System.out.println(output);
+                else{
+                    if(error!=null)
+                        System.err.println(error);
+                    if(output!=null)
+                        System.out.println(output);
+                }
             }
             process.waitFor();
         }catch(IOException e){
