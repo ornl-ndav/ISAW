@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2003/06/27 21:59:38  bouzekc
+ * No longer implements Serializable.
+ *
  * Revision 1.22  2003/06/27 21:31:16  bouzekc
  * addParameterPropertyChangeListener() changed to a private
  * method and renamed.  addPropertyChangeListener() now handles
@@ -176,8 +179,7 @@ import javax.swing.border.*;
  *  values obtained from previous Forms, set the HAS_CONSTANTS variable to
  *  true by using the appropriate constructor.
  */
-public abstract class Form extends Operator implements Serializable,
-  PropertyChanger {
+public abstract class Form extends Operator implements PropertyChanger {
   private static final String CONS_FRAME_HEAD = "CONSTANT PARAMETERS";
   private static final String VAR_FRAME_HEAD  = "USER SPECIFIED PARAMETERS";
   private static final String RES_FRAME_HEAD  = "RESULTS";
