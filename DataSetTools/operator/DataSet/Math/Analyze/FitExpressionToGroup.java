@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/02/04 19:59:38  dennis
+ * Copy the attributes so that the operators will still work.
+ *
  * Revision 1.4  2002/11/27 23:18:38  pfpeterson
  * standardized header
  *
@@ -319,6 +322,8 @@ public class  FitExpressionToGroup  extends    AnalyzeOp
     XScale x_scale = XScale.getInstance( xf ); 
     Data model = new FunctionModel( x_scale, model_fun, 1000000+group_id );
 
+    model.setAttributeList( data.getAttributeList() ); // copy the attributes
+                                                       // so the operators work
     new_ds.addData_entry( model );
     if ( make_new_ds )
       return new_ds;  
