@@ -1,4 +1,6 @@
-import QuickBoxes;
+package Command;
+import Command.*;
+//import QuickBoxes;
 import javax.swing.*;
 import java.lang.*;
 
