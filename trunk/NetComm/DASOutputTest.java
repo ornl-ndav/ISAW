@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2002/07/24 23:16:20  dennis
+ *  Default INSTRUMENT_COMPUTER is now loopback: 127.0.0.1
+ *
  *  Revision 1.11  2001/12/10 22:05:06  dennis
  *  Now will pad run numbers with leading zeros, to length 4 when
  *  forming the file name string.
@@ -94,9 +97,10 @@ import DataSetTools.retriever.*;
 public class DASOutputTest
 {
   public static final int    DEFAULT_DAS_UDP_PORT = 6080;
+  public static final String INSTRUMENT_COMPUTER  = "127.0.0.1";
 //public static final String INSTRUMENT_COMPUTER  = "dmikk.mscs.uwstout.edu";
 //public static final String INSTRUMENT_COMPUTER  = "mscs138.mscs.uwstout.edu";
-  public static final String INSTRUMENT_COMPUTER  = "mandrake.pns.anl.gov";
+//public static final String INSTRUMENT_COMPUTER  = "mandrake.pns.anl.gov";
 
   byte    buffer[]    = new byte[ 65536 ];
   String  file_name   = null;
