@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2001/07/23 18:34:07  dennis
+ *  Now gets default color scale from System.properties, if possible.
+ *
  *  Revision 1.9  2001/07/17 20:36:47  dennis
  *  Changed default Rebin state to true.
  *
@@ -67,6 +70,7 @@ package DataSetTools.viewer;
 import  java.io.*;
 import  DataSetTools.components.image.*;
 import  DataSetTools.dataset.*;
+import  DataSetTools.util.*;
 
 /**
  *  A ViewerState object preserves the state for a DataSetViewer so
@@ -98,7 +102,15 @@ public class ViewerState  implements Serializable
      */
     public ViewerState( )
     {
-      color_scale                = IndexColorMaker.HEATED_OBJECT_SCALE;
+      SharedData sd = new SharedData();
+      color_scale = System.getProperty( "ViewerColorScale" );
+
+      if ( color_scale == null )
+      {
+        System.out.println("Using Default Color Scale");
+        color_scale              = IndexColorMaker.HEATED_OBJECT_SCALE;
+      } 
+
       rebin                      = true;
       horizontal_scrolling       = false;
       horizontal_scroll_fraction = 0.5f;
