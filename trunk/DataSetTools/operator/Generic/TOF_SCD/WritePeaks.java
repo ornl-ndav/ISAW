@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2003/05/22 22:22:56  pfpeterson
+ * Fixed sequence number problem with second detector.
+ *
  * Revision 1.12  2003/01/31 21:09:45  pfpeterson
  * No longer assumes that the vector of peaks all came from the same run
  * and detector. Does assume that the peaks from the same run and detector
@@ -173,7 +176,8 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
     
     // determine the last sequence number in the file if we are appending
     if(append) seqnum_off=lastSeqNum(file);
-    
+    seqnum_off++;
+
     // general information
     int runNum=-1;
     int detNum=-1;
@@ -206,7 +210,7 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
         }
 
         // write the peak to the file
-        peak.seqnum(peak.seqnum()+seqnum_off);
+        peak.seqnum(i+seqnum_off);
         outStream.write(peak.toString()+"\n");
       }
 
