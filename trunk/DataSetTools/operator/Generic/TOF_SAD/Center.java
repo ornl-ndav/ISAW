@@ -30,6 +30,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/02/09 21:11:22  dennis
+ * Changed the title of this operator to "Center".  This matches
+ * the file name "Center.java" and the command name "Center".
+ * It also distinguishes it from the BeamCenter script(s) that
+ * load a sensitivity file AND a run file and then call the
+ * Center operator to calculate the beam center.
+ *
  * Revision 1.11  2004/06/11 17:03:59  dennis
  * Now references static method setDataEntriesInAllGrids() through the
  * class UniformGrid, rather than through an instance.
@@ -86,13 +93,15 @@ import java.util.*;
 */
 public class Center extends GenericTOF_SAD{
 
+  public static final String Title = "Center";
+
   float BS = 1.5f/100.0f;
   float XMAX = 3.5f/100.0f;//length in cm of square around center to use
   public static boolean useOldCode = true;
   private boolean debug = false;
  
   public Center(){
-    super( "Beam Center");
+    super( Title );
     setDefaultParameters();
   }
 
@@ -149,10 +158,10 @@ public class Center extends GenericTOF_SAD{
   *    Finds the center of the beam as follows:<BR>
   *    1. For each row, the weighted center is found, eliminating data near
   *       the center of the beamstop. Weights are the counts
-  *    2. The weighted average of the row centers is then taken using interpolation
-  *       of the counts close to the center for the weight.
-  *    3. This yields the X offset. In a similar manner the Y offset is obtained
-  *       by using the weighted Centers for each column
+  *    2. The weighted average of the row centers is then taken using 
+  *       interpolation of the counts close to the center for the weight.
+  *    3. This yields the X offset. In a similar manner the Y offset is
+  *       obtained by using the weighted Centers for each column
   */
   public Object getResult(){
      DataSet DS = ((DataSetPG)getParameter(0)).getDataSetValue();
