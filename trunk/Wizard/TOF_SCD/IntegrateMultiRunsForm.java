@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.22  2003/08/28 20:55:27  bouzekc
+ * Set histDS and Operator DataSet parameters to null when they are not used.
+ * This should avoid an out of memory error.
+ *
  * Revision 1.21  2003/07/14 16:34:15  bouzekc
  * Made integrated peaks file parameter's initial value empty.
  *
@@ -429,6 +433,7 @@ public class IntegrateMultiRunsForm extends Form {
       //load calibration data 
       loadSCD.setDataSet( histDS );
       obj = loadSCD.getResult(  );
+      loadSCD.setDataSet( null );
 
       if( obj instanceof ErrorString ) {
         return errorOut( "LoadSCDCalib failed: " + obj.toString(  ) );
@@ -451,6 +456,8 @@ public class IntegrateMultiRunsForm extends Form {
       integrate.getParameter( 7 )
                .setValue( new Boolean( append ) );
       obj = integrate.getResult(  );
+      integrate.getParameter( 0 )
+               .setValue( null );
 
       if( obj instanceof ErrorString ) {
         return errorOut( "Integrate failed: " + obj.toString(  ) );
@@ -465,6 +472,7 @@ public class IntegrateMultiRunsForm extends Form {
       oldPercent = newPercent;
       newPercent += increment;
       super.fireValueChangeEvent( ( int )oldPercent, ( int )newPercent );
+      histDS = null;
     }
 
     SharedData.addmsg( "--- IntegrateMultiRunsForm is done. ---" );
