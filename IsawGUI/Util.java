@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2003/03/07 21:53:43  pfpeterson
+ * openDoc(String) now uses a StringBuffer for putting the file together
+ * then adds it to a document.
+ *
  * Revision 1.17  2003/02/13 21:45:13  pfpeterson
  * Removed calls to deprecated function fixSeparator.
  *
@@ -244,56 +248,49 @@ public class Util
       }
 
    }
+
+  /**
+   * Loads a file into a Document. If an Exception is encountered this
+   * prints information to the StatusPane and returns null.
+   */
    public Document openDoc( String filename )
    {
-      FileReader fr;
-
-      if( filename == null )
-         return null;
-      try
-      {
-         File f = new File( filename );
-
-         try
-         {
-            fr = new FileReader( f );
+     if( filename==null || filename.length()<=0 ) return null;
+     
+     FileReader fr=null;
+     StringBuffer buffer=new StringBuffer();
+     try{
+       fr=new FileReader(filename);
+       int c=0;
+       while(true){
+         c=fr.read();
+         if(c==-1) break;
+         buffer.append((char)c);
+       }
+     }catch(FileNotFoundException e){
+       SharedData.addmsg("FileNotFoundException: "+filename);
+       return null;
+     }catch(IOException e){
+       SharedData.addmsg("Something went wrong while reading "+filename);
+       return null;
+     }finally{
+       if(fr!=null){
+         try{
+           fr.close();
+         }catch(IOException e){
+           // let it drop on the floor
          }
-         catch( FileNotFoundException s )
-         {
-            return null;
-         }
+       }
+     }
 
-         int c,
-            offset;
-         String line;
-         Document doc = new PlainDocument();
-
-         line = "";
-         offset = 0;
-         for( c = fr.read(); c != -1; )
-         {
-
-            line = line + new Character( ( char )c ).toString();
-            if( c < ' ' ) //assumes the new line character
-            {
-               doc.insertString( offset, line, null );
-               offset += line.length();
-               line = "";
-            }
-
-            c = fr.read();
-         }
-         //offset is doc.getLength(?)-1
-         if( line.length() > 0 )
-            doc.insertString( offset, line, null );
-         fr.close();
-         return doc;
-      }
-      catch( Exception s )
-      {
-         return null;
-      }
-
+     Document doc=new PlainDocument();
+     try{
+       doc.insertString(0,buffer.toString(),null);
+       return doc;
+     }catch(BadLocationException e){
+       SharedData.addmsg("BadLocationException while reading "+filename);
+       return null;
+     }
    }
 
 
