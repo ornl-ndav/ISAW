@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/06/17 17:00:13  pfpeterson
+ * Added back in the ability to specify the category of the script using
+ * the 'category' macro. The list should be comma delimited and should
+ * match the menus at each level.
+ *
  * Revision 1.2  2003/06/17 16:29:40  pfpeterson
  * Takes care of getCommand, getTitle, getDocumentation, and getCategoryList.
  * These are determined only once (Scripts are immutable) and only on demand.
@@ -49,10 +54,11 @@ import java.util.Hashtable;
 import javax.swing.text.Document;
 
 public class IssScript extends Script{
-  private static final String    COMMAND = "COMMAND";
-  private static final String    TITLE   = "TITLE";
-  private static final String    SCRIPTS = "Scripts";
-  private static       Hashtable HOMES   = null;
+  private static final String    CATEGORY = "CATEGORY";
+  private static final String    COMMAND  = "COMMAND";
+  private static final String    SCRIPTS  = "Scripts";
+  private static final String    TITLE    = "TITLE";
+  private static       Hashtable HOMES    = null;
 
   private String   documentation    = null;
   private String   command          = null;
@@ -89,14 +95,9 @@ public class IssScript extends Script{
       return this.title;
 
     // try getting from the text
-    String line=null;
-    for( int i=0 ; i<this.numLines() ; i++ ){
-      line=getLine(i).trim();
-      if(! line.startsWith("$") ) continue;
-      int index=line.toUpperCase().indexOf(TITLE);
-      if( index<=0 ) continue;
-      index=line.indexOf("=");
-      this.title=line.substring(index+1).trim();
+    String macro=this.getMacro(TITLE);
+    if(macro!=null){
+      this.title=macro;
       return this.title;
     }
 
@@ -113,6 +114,18 @@ public class IssScript extends Script{
     // return list if initialized
     if(this.categoryList!=null)
       return this.categoryList;
+
+    // try getting from the text
+    String macro=this.getMacro(CATEGORY);
+    if(macro!=null){
+      String[] array=StringUtil.split(macro,",");
+      if( array!=null && array.length>0){
+        this.categoryList=new String[array.length];
+        for( int i=0 ; i<array.length ; i++ )
+          this.categoryList[i]=array[i].trim();
+        return this.categoryList;
+      }
+    }
 
     // initialize the hashtable if necessary
     if(HOMES==null) initHomes();
@@ -171,14 +184,9 @@ public class IssScript extends Script{
       return this.command;
 
     // try getting the command from the text
-    String line=null;
-    for( int i=0 ; i<this.numLines() ; i++ ){
-      line=getLine(i).trim();
-      if(! line.startsWith("$") ) continue;
-      int index=line.toUpperCase().indexOf(COMMAND);
-      if( index<=0 ) continue;
-      index=line.indexOf("=");
-      this.command=line.substring(index+1).trim();
+    String macro=this.getMacro(COMMAND);
+    if(macro!=null){
+      this.command=macro;
       return this.command;
     }
 
@@ -286,6 +294,25 @@ public class IssScript extends Script{
     directory=FilenameUtil.setForwardSlash(directory);
     if(HOMES.get(directory)==null)
       HOMES.put(directory,name);
+  }
+
+  /**
+   * Looks for a line with the format "$ name = stuff" and returns the
+   * "stuff". If the lookup fails it returns null.
+   */
+  private String getMacro(String name){
+    // try getting the command from the text
+    String line=null;
+    for( int i=0 ; i<this.numLines() ; i++ ){
+      line=getLine(i).trim();
+      if(! line.startsWith("$") ) continue;
+      int index=line.toUpperCase().indexOf(name);
+      if( index<=0 ) continue;
+      index=line.indexOf("=");
+      return line.substring(index+1).trim();
+    }
+
+    return null;
   }
 
   /**
