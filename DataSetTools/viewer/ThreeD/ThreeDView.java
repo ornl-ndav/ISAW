@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.35  2004/05/03 16:25:20  dennis
+ * Removed unused local variables.
+ *
  * Revision 1.34  2004/03/15 06:10:56  dennis
  * Removed unused import statements.
  *
@@ -128,7 +131,6 @@ public class ThreeDView extends DataSetViewer
 {                         
   private final int LOG_TABLE_SIZE      = 60000;
   private final int NUM_POSITIVE_COLORS = 127;
-  private final int NUM_PSEUDO_COLORS   = 2 * NUM_POSITIVE_COLORS + 1;
   private final int ZERO_COLOR_INDEX    = NUM_POSITIVE_COLORS;
 
   private final String GROUP_MARKER_SMALL  = "Small";
@@ -712,8 +714,6 @@ private float draw_detectors()
 
   points[0] = new Vector3D();
   IThreeD_Object objects[];
-  IThreeD_Object detector_icon[];
-  IDataGrid      grid;
 
   for ( int i = 0; i < n_data; i++ )
   {
@@ -1103,7 +1103,6 @@ private class ViewMouseMotionAdapter extends MouseMotionAdapter
    public void mouseDragged( MouseEvent e )
    {
      // System.out.println("Mouse moved at: " + e.getPoint() );
-     Point pt = e.getPoint();
      int index = threeD_panel.pickID( e.getX(), e.getY(), 15 );
      if ( index != last_index )
      {
