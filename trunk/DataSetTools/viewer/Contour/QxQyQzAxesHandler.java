@@ -43,13 +43,14 @@ public class  QxQyQzAxesHandler implements IAxesHandler
      }
 
    public static float[] getQxQyQz( int Group, float Time)
-     {float[] q = getQunintVect( Group);
+     {float[] q =null;//=getQunitVect( Group);
       if( q == null) return null;
-      float Q = cnvrtToQ( Time);
+      float Q=0;
+      //float Q = cnvrtToQ( Time);
       if( Float.isNaN(Q)) return null;
-      q[0]=Q*q[0];
-      q[1]=Q*q[1];
-      q[2]=Q*q[2];
+      q[0]=(float)(Q*q[0]);
+      q[1]=(float)(Q*q[1]);
+      q[2]=(float)(Q*q[2]);
       return q;
       }
    public void setTransformation( float [][] Transf, String[] AxisName, String[] AxisUnits)
@@ -79,11 +80,12 @@ public class  QxQyQzAxesHandler implements IAxesHandler
       else
         {name="";
          if( cf[0] !=0)
-            name += cf[0]+"Qx+"
+            name += cf[0]+"Qx+";
          if(cf[1] !=0)
             name +=cf[1]+"Qy+";
          if(cf[2]!=0)
             name +=cf[2]+"Qz";
+         }
       if( name.charAt(name.length()-1)=='+')
         name = name.substring(0,name.length()-1);
       String units ="";
