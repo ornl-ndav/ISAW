@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/08/15 23:21:15  bouzekc
+ *  Removed init() method.  Added documentation to help make it clearer what
+ *  to do to create a ParameterGUI.
+ *
  *  Revision 1.11  2003/08/15 03:51:04  bouzekc
  *  Made init() final.  Added code to keep track of internal Vector of
  *  PropertyChangeListeners.  Should now properly add PropertyChangeListeners
@@ -85,7 +89,10 @@ import javax.swing.*;
 
 /**
  * This is a superclass to take care of many of the common details of
- * ParameterGUIs.
+ * ParameterGUIs.  DO NOT instantiate initGUI( Vector ) from the interface
+ * IParameterGUI in this class.  It is meant to be instantiated in the child
+ * class, and the child class should call super.initGUI() to create the full
+ * GUI.
  */
 public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   PropertyChangeListener, java.io.Serializable {
@@ -284,16 +291,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
-   * Initializes this ParameterGUI.  Calls init( Vector ) in the SUBCLASS with
-   * an argument of null.  When this is called, all of the internal
-   * PropertyChangeListeners will be added to the entrywidget. Usually this is
-   * called by a Wizard.
-   */
-  public final void init(  ) {
-    init( null );
-  }
-
-  /**
    * Called when this ParameterGUIs property changes.  Sets this ParameterGUI
    * invalid if it is listening to property changes; does nothing otherwise.
    *
@@ -358,9 +355,13 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   /**
    * Initializes the GUI for this ParameterGUI.  This calls addPCLtoWidget to
    * add any pre-existing PropertyChangeListeners to the (now) existing
-   * entrywidget.  This also sets initialized to true.
+   * entrywidget.  This also sets initialized to true.  Child classes MUST
+   * call  this unless they plan on building the entire GUI from scratch (this
+   * is not  recommended - if you have a complex entrywidget, such as
+   * BrowsePG's entrywidget, put it inside a JPanel.  Calling initGUI() will
+   * then create the entire GUI panel correctly).
    */
-  protected void initGUI(  ) {
+  protected final void initGUI(  ) {
     this.initialized = true;
 
     // create the label
