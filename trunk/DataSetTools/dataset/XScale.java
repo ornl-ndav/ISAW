@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/07/31 20:54:11  dennis
+ *  Added extra information to debug printout.
+ *
  *  Revision 1.3  2000/07/10 22:24:08  dennis
  *  July 10, 2000 version... many changes
  *
@@ -48,6 +51,9 @@ abstract public class XScale implements Serializable
     {
       System.out.println( "ERROR: num_x less than 1 in " +
                           "XScale constructor" );
+      System.out.println(" start_x = " + start_x +
+                         " end_x = "   + end_x   +
+                         " num_x = "   + num_x );
       num_x = 1;                                        // set default
     }
 
@@ -59,6 +65,9 @@ abstract public class XScale implements Serializable
       {                              
         System.out.println( "ERROR: start_x = end_x but num_x > 1 in "+
                             "XScale constructor... using default end_x" );
+        System.out.println(" start_x = " + start_x +
+                           " end_x = "   + end_x   +
+                           " num_x = "   + num_x );
         end_x = start_x + 1;
       }
 
