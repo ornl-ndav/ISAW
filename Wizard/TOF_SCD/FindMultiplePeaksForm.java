@@ -28,6 +28,12 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.34  2004/05/21 19:03:20  dennis
+ * Changed instrument name from SCD to SCD0.  This was needed to fix
+ * file name problems when SCD run numbers went from 9999 to 10000.
+ * The runfile names went from SCD09999.RUN to SCD010000.RUN, not
+ * SCD10000.RUN
+ *
  * Revision 1.33  2004/04/21 19:29:00  dennis
  * Made names for parameter indices protected instead of private,
  * so that they can be used by wizards that use this form.
@@ -180,7 +186,7 @@ public class FindMultiplePeaksForm extends Form {
 
   //~ Instance fields **********************************************************
 
-  protected final String SCDName      = "SCD";
+  protected final String SCDName = "SCD0";
   private LoadOneHistogramDS loadHist;
   private LoadMonitorDS loadMon;
   private IntegrateGroup integGrp;
