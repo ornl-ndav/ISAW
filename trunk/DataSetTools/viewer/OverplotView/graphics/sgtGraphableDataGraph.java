@@ -1,11 +1,36 @@
-package DataSetTools.viewer.OverplotView.graphics;
-
-/**
- * $Id$
+/*
+ * File: sgtGraphableDataGraph.java
  *
- * graphical output panel
+ * Copyright (C) 2001, Kevin Neff
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2002/11/27 23:25:22  pfpeterson
+ * standardized header
+ *
  * Revision 1.1  2002/07/18 22:06:56  dennis
  * Moved separate OverplotView hiearchy into DataSetTools/viewer
  * hierarchy.
@@ -13,34 +38,9 @@ package DataSetTools.viewer.OverplotView.graphics;
  * Revision 1.9  2001/12/21 17:54:27  dennis
  * -Implemented offsets for graphs (Ruth)
  *
- * Revision 1.8  2001/09/27 19:51:16  dennis
- * Added editing for labels, line styles, etc.
- *
- * Revision 1.7  2001/08/30 14:40:03  dennis
- * Added code to set the title for the line to
- * the line's title. This now is the group number. (Ruth)
- *
- * Revision 1.6  2001/08/15 18:43:59  rmikk
- * Eliminated a "redrawing..." output
- *
- * Revision 1.5  2001/06/29 15:06:55  neffk
- * the correct labels, units, and title appear on the graph.  also, the number
- * of spectra now correspond to the number of selections (fixed in previous
- * revision).
- *
- * Revision 1.4  2001/06/29 14:17:47  neffk
- * graph no longer has a stray line going from the origin to the end of the
- * spectra.  also, this class no longer extends JApplet.
- *
- * Revision 1.3  2001/06/28 22:08:46  neffk
- * GraphableData --> SGTData converter in complete.  it graphs all data, making
- * appropriate changes for tabulated functions or histogram data.
- *
- * Revision 1.2  2001/06/27 16:51:36  neffk
- * this class now implements the IGraphableDataGraph interface.
- *
  */
 
+package DataSetTools.viewer.OverplotView.graphics;
 
 import gov.noaa.pmel.sgt.swing.JPlotLayout;
 import gov.noaa.pmel.sgt.swing.JClassTree;
@@ -70,6 +70,9 @@ import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
 
+/**
+ * graphical output panel
+ */
 public class sgtGraphableDataGraph 
   implements IGraphableDataGraph
 { 

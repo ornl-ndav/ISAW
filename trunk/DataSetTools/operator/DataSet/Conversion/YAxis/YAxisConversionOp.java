@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,18 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/11/27 23:17:27  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.1  2002/02/22 21:01:28  pfpeterson
  *  Operator reorganization.
- *
- *  Revision 1.3  2001/04/26 19:12:09  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.2  2001/03/01 20:53:55  dennis
- *  Fixed naming errors in @see comments.
- *
- *  Revision 1.1  2000/11/10 23:10:34  dennis
- *  New abstract base class for operators.  Allows automatic
- *  generation of hierarchical menus using operator categories.
  *
  */
 

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.57  2002/11/27 23:23:16  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.56  2002/11/15 00:06:27  dennis
  *  RunfileRetriever now adds shared copies of the attributes:
  *      RUN_NUM
@@ -126,153 +128,6 @@
  *  from the source to the sample.  The calculated and nominal
  *  source to sample TOFs are also stored as attributes.
  *
- *  Revision 1.35  2001/10/17 18:33:45  dennis
- *  Now adds crate, slot and input attributes for each spectrum.
- *
- *  Revision 1.34  2001/10/08 18:30:21  dennis
- *  Added operator FocusIncidentSpectrum() to Monitor DataSet for
- *  Diffractometers.  This was accidentally removed.
- *
- *  Revision 1.33  2001/08/16 01:18:23  dennis
- *  Now sets the ID for the detector element using Segment.DetID() method.
- *
- *  Revision 1.32  2001/08/13 15:06:43  dennis
- *  Added MonitorTofToEnergy conversion operator for beam monitors.
- *
- *  Revision 1.31  2001/07/30 18:48:09  dennis
- *  Now adds DS_TYPE attribute to the DataSets.
- *
- *  Revision 1.30  2001/07/27 15:53:52  dennis
- *  Now also tries to get the instrument type from the file name, if
- *  the Runfile package returns type unknown.
- *
- *  Revision 1.29  2001/07/25 18:15:27  dennis
- *  Now trims the title from the runfile.
- *
- *  Revision 1.28  2001/07/10 20:24:12  dennis
- *  Now adds "Omega" attribute to each spectrum.
- *
- *  Revision 1.27  2001/07/10 19:36:24  dennis
- *  Now imports DataSetTools/instruments/DetectorInfo
- *
- *  Revision 1.26  2001/07/10 18:59:16  dennis
- *  First attempt at using the new detector "segment"
- *  methods from the IPNS/Runfile package.
- *
- *  Revision 1.25  2001/07/04 15:23:58  dennis
- *  Calculation of average heights and angles now uses the method
- *  arrayUtil.SignedAbsSum().
- *
- *  Revision 1.24  2001/06/28 14:09:25  dennis
- *  Now traps for height > final_path, which led to detector positions
- *  with NaN values.
- *
- *  Revision 1.23  2001/04/25 21:57:57  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.22  2001/03/01 20:48:02  dennis
- *  Now gets the instrument type using the method InstrumentType()
- *  from the IPNS.Runfile.Runfile class, rather than parsing the
- *  file name.
- *
- *  Revision 1.21  2001/02/22 21:00:46  dennis
- *  Improved error checking in getDataSet() method.
- *
- *  Revision 1.20  2001/01/31 14:23:48  dennis
- *  Now uses CVS version numbers.
- *
- *  Revision 1.19  2001/01/29 21:13:17  dennis
- *  Simplified logic for adding operators for
- *  DG Spectrometers and Pulse Height Spectra.
- *  Also, now uses CVS revision numbers.
- *
- *  Revision 1.17  2000/10/10 19:58:42  dennis
- *  Now gets pulse height spectrum as a special type of DataSet.
- *  Fixed bug that didn't correct runfile name upper/lower case
- *  properly.
- *
- *  Revision 1.15  2000/08/03 21:40:15  dennis
- *  Now calls FilenameUtil.fixCase()
- *
- *  Revision 1.14  2000/08/01 19:06:07  dennis
- *  Now sets sqrt(counts) errors on initial spectrum data
- *
- *  Revision 1.13  2000/07/31 20:49:05  dennis
- *  Now calculates effective positions weighted by solid angles ONLY for
- *  direct geometry spectrometers.  For all other instruments, just use
- *  Runfile routine for angle and calculate un-weighted average for
- *  the detector height and flight path length.
- *
- *  Revision 1.12  2000/07/28 18:42:57  dennis
- *  Added call to fixSeparator() for the file name.
- *
- *  Revision 1.11  2000/07/26 19:12:41  dennis
- *  Compute detector positions for direct geometry spectrometers based on the
- *  raw detector angles and heights, but effective flight path.
- *  Compute detector postions for all other instruments based on effecitve
- *  angles, heights and flight paths.
- *
- *  Revision 1.10  2000/07/25 16:37:31  dennis
- *  Added NUMBER_OF_PULSES attribute to each spectrum
- *
- *  Revision 1.9  2000/07/24 15:50:12  dennis
- *  Added MonitorPeakArea to monitor DataSet
- *
- *  Revision 1.8  2000/07/21 20:18:02  dennis
- *  Added tests for null Runfile object which occurs if the file is not opened
- *  successfully.
- *
- *  Revision 1.7  2000/07/18 19:54:28  dennis
- *  Added flexible routines for calculating average positions from either RAW
- *  or EFFECTIVE values and optionally weighting the values by the corresponding
- *  solid angles.
- *
- *  Revision 1.6  2000/07/17 20:54:19  dennis
- *  Temporarily added EnergyFromMonitorDS() operator to monitor DataSets
- *
- *  Revision 1.5  2000/07/13 14:23:43  dennis
- *  Changed TOTAL_COUNTS to TOTAL_COUNT to remove redundant attribute name
- *
- *  Revision 1.4  2000/07/11 21:18:35  dennis
- *  Added private method to show information about the detectors in a group
- *
- *  Revision 1.3  2000/07/10 22:49:46  dennis
- *  Now Uses CVS 
- *
- *  Revision 1.22  2000/06/14 14:55:42  dennis
- *  Added getFirstDataSet(type) to return the first monitor or first
- *  histogram DataSet in the runfile.
- *
- *  Revision 1.21  2000/06/14 13:57:43  dennis
- *  Changed to return histogram of raw counts rather than counts/microsecond
- *
- *  Revision 1.20  2000/06/14 13:56:13  dennis
- *  Added rudimentary support for IDGSpectrometer and Reflectometer
- *
- *  Revision 1.19  2000/06/01 18:41:08  dennis
- *  Changed separtor to "_" rather than blank in DataSet title.
- *  Added solid angle, delta 2 theta and efficiency factor.
- *
- *  Revision 1.18  2000/05/18 21:26:47  dennis
- *  Added the fully qualified file name as a DataSet attribute and
- *  added the time field type as a Data block attribute.
- *
- *  Revision 1.17  2000/05/12 21:39:39  dennis
- *  Now only creates Data blocks that share references to time field types,
- *  if possible
- *
- *  Revision 1.16  2000/05/11 16:19:12  dennis
- *  added RCS logging
- *
- *  Dennis Mikkelson, 3/23/2000  Added code to all catch{} blocks to print
- *                               info about the exception.
- *                               Fixed bug in getting the total counts...
- *                                 ( must pass group_id, NOT a detector id
- *                                    to Get1DSum( ) )
- *                               Added documentation for all routines
- * 
- *  Alok Chatterjee, Fall 1999.  Added number of pulses and total counts
- *                               information.
  */
 package DataSetTools.retriever;
 

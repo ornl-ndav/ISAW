@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *  
  *  $Log$
+ *  Revision 1.4  2002/11/27 23:21:16  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.3  2002/09/19 16:05:35  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -39,24 +41,6 @@
  *
  *  Revision 1.1  2002/02/22 20:57:57  pfpeterson
  *  Operator reorganization.
- *
- *  Revision 1.5  2001/08/13 23:33:16  dennis
- *  Now has separate error messages for bad user name and bad password.
- *  Uses RemoteDataRetriever.error_message() to generate string form
- *  of error message in some cases.
- *
- *  Revision 1.4  2001/08/10 19:54:11  dennis
- *  Changed to new default tcp server port.
- *
- *  Revision 1.3  2001/08/09 15:45:28  dennis
- *  Added user name and password parameters
- *
- *  Revision 1.2  2001/08/07 21:37:29  dennis
- *  Added support for ndsRetriver.
- *
- *  Revision 1.1  2001/08/07 15:58:25  dennis
- *  Operator for loading data from remote source such as a
- *  LiveDataServer, etc.
  *
  */
 

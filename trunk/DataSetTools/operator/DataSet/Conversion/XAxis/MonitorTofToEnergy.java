@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/11/27 23:17:04  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.4  2002/09/19 16:00:33  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -43,9 +45,6 @@
  *
  *  Revision 1.1  2002/02/22 21:00:54  pfpeterson
  *  Operator reorganization.
- *
- *  Revision 1.1  2001/08/13 15:05:08  dennis
- *  New X-Axis conversion operator for beam monitors.
  *
  */
 

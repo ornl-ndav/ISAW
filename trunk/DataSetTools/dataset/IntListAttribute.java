@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2002/11/27 23:14:07  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.13  2002/11/12 22:00:35  dennis
  *  Constructor now makes copy of array of values, to guarantee that
  *  the Attribute is immutable.
@@ -57,36 +59,6 @@
  *  Revision 1.10  2002/06/14 21:12:51  rmikk
  *  Implements IXmlIO interface
  *
- *  Revision 1.9  2001/10/17 18:36:23  dennis
- *  The int list is now forced to be in increasing order, with no duplicates.
- *
- *  Revision 1.8  2001/07/10 18:51:47  dennis
- *  Constructor now calls setValue() so that the value is set
- *  the same way both at construction time and later.
- *
- *  Revision 1.7  2001/04/25 19:03:57  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.6  2001/04/20 19:56:43  dennis
- *  Now guarantees that an IntListAttribute will keep the list of
- *  integer in increasing order.  Also, the combine() method now uses
- *  a "merge" operation to combine the lists more efficiently and keep them
- *  in order.
- *
- *  Revision 1.5  2000/09/11 23:02:57  dennis
- *  Now converts list of integers to compact string form n:m,i:j,...
- *
- *  Revision 1.4  2000/07/13 22:23:03  dennis
- *  Removed control-M characters
- *
- *  Revision 1.3  2000/07/10 22:24:02  dennis
- *  Now Using CVS 
- *
- *  Revision 1.5  2000/05/12 15:50:13  dennis
- *  removed DOS TEXT  ^M
- *
- *  Revision 1.4  2000/05/11 16:00:45  dennis
- *  Added RCS logging
  */
 
 package  DataSetTools.dataset;

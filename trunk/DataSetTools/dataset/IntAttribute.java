@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/11/27 23:14:06  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.9  2002/11/12 00:15:46  dennis
  *  Made immutable by:
  *  1. remove setValue() method
@@ -55,20 +57,6 @@
  *  Revision 1.6  2002/06/05 13:49:58  dennis
  *  Interface IXmlIO partially implemented.
  *
- *  Revision 1.5  2001/04/25 19:03:54  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.4  2000/07/26 14:52:25  dennis
- *  Now includes method to add() attributes.
- *
- *  Revision 1.3  2000/07/10 22:24:01  dennis
- *  Now Using CVS 
- *
- *  Revision 1.4  2000/05/12 15:50:13  dennis
- *  removed DOS TEXT  ^M
- *
- *  Revision 1.3  2000/05/11 16:00:45  dennis
- *  Added RCS logging
  */
 
 package  DataSetTools.dataset;

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,12 +30,8 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.2  2001/07/30 20:08:24  rmikk
- *  Fixed Return type on writeDataSets to void
- *
- *  Revision 1.1  2001/07/30 18:56:53  dennis
- *  Base class for objects that write DataSets to files.
- *
+ *  Revision 1.3  2002/11/27 23:26:45  pfpeterson
+ *  standardized header
  *
  */
 

@@ -20,8 +20,7 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/11/27 23:28:17  pfpeterson
+ * standardized header
+ *
  * Revision 1.4  2002/11/20 16:14:44  pfpeterson
  * reformating
  *
@@ -38,13 +40,6 @@
  * Added a set for the timeField field to put into the TimeField attribute.
  *    All NXdata are   merged.  To unmerge, extract with the TimefieldType
  *   attribute
- *
- * Revision 1.2  2001/07/24 20:06:14  rmikk
- * Added Field to the process command so their is access
- * to and from linked data
- *
- * Revision 1.1  2001/07/05 21:45:10  rmikk
- * New Nexus datasource IO handlers
  *
  */
 

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,72 +30,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2002/11/27 23:23:16  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.16  2002/04/18 21:29:05  dennis
  *  Added private method getValidDataSet(ds) that will return a clone
  *  of the EMPTY_DATA_SET if ds is null, or return ds otherwise.  This
  *  is used to ensure that even if the LiveDataRetriever returns a null
  *  for a DataSet, we only save valid DataSets.
- *
- *  Revision 1.15  2001/08/14 19:17:43  dennis
- *  Removed local error code definitions and now uses codes from
- *  RemoteDataRetriever
- *
- *  Revision 1.14  2001/08/14 15:11:14  dennis
- *  Now periodically gets the server status and sends it to the
- *  LiveDataMonitor.
- *
- *  Revision 1.13  2001/08/10 19:52:16  dennis
- *  Added test for data_sets[data_set_num] == null in
- *  UpdateDataSetNow() method.
- *
- *  Revision 1.12  2001/08/09 15:24:06  dennis
- *  Put debug prints in "if (debug_retriever)" blocks.
- *
- *  Revision 1.11  2001/08/08 14:01:40  dennis
- *  Improved handling of list of ActionListeners and sending messages
- *  to ActionListeners.
- *  First stage integration of new error messages.
- *
- *  Revision 1.10  2001/08/07 21:36:33  dennis
- *  Added error_flag and error codes.
- *
- *  Revision 1.9  2001/06/11 18:00:31  dennis
- *  Now calls Exit() and MakeConnection() on the retriever
- *  every time a data set is obtained to avoid a memory
- *  leak.
- *
- *  Revision 1.8  2001/06/08 22:05:14  dennis
- *  UpdateDataSetNow() now checks for an invalid data_set_num and
- *  refreshes the local state is the data_set_num is too large.
- *
- *  Revision 1.7  2001/06/07 16:45:09  dennis
- *  Now periodically checks for a change in the number of DataSets
- *  available and reinitializes its local data if this changes.
- *
- *  Revision 1.6  2001/06/06 21:22:59  dennis
- *  Now uses ActionEvents to notify listeners that the Runfile
- *  has been changed.
- *
- *  Revision 1.5  2001/04/25 21:57:47  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.4  2001/03/01 23:22:23  dennis
- *  Now uses a private method SetUpLocalCopies() to initialize its
- *  local copies of the DataSets and associated info.  This will make
- *  it easier to re-initialize these items when the DAS changes to
- *  a new run.
- *
- *  Revision 1.3  2001/02/20 23:02:50  dennis
- *  Added constants for MIN_DELAY and MAX_DELAY.  Also, made
- *  minor improvement to documentation.
- *
- *  Revision 1.2  2001/02/16 16:39:01  dennis
- *  Do 20 small sleeps, to allow a changed sleep time to
- *  take effect faster.  Added some @see comments.
- *
- *  Revision 1.1  2001/02/15 23:25:23  dennis
- *  Class to control periodic updates to live data sets
- *  by periodically getting new data from a LiveDataServer.
  *
  */
 package DataSetTools.retriever;

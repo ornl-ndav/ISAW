@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/11/27 23:15:15  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.3  2002/08/01 22:39:53  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -40,11 +42,6 @@
  *
  *  Revision 1.2  2002/06/14 21:22:55  rmikk
  *  Implements IXmlIO interface
- *
- *  Revision 1.1  2001/07/10 18:46:46  dennis
- *  Initial version of Class to hold information on individual
- *  detector positions, sizes, efficiency, etc.
- *
  *
  */
 package  DataSetTools.instruments;

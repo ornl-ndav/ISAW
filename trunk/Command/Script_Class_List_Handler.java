@@ -20,17 +20,20 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *
  * Modified:
  *
  * $Log$
+ * Revision 1.35  2002/11/27 23:12:10  pfpeterson
+ * standardized header
+ *
  * Revision 1.34  2002/10/21 12:51:54  rmikk
  * Uncommented out code that created a list of data set operators
  * Sorted the list of data set operators
@@ -96,75 +99,6 @@
  *
  * Revision 1.19  2001/12/07 20:40:30  pfpeterson
  * Corrected directory parser to not double load operators and scripts if isaw is installed in $HOME/ISAW. We still should account for multiply defined directories within the GROUP#_HOME listings.
- *
- * Revision 1.18  2001/11/12 21:27:19  dennis
- *  1. Eliminated a developmental test program.  The main program
- *     of this class can now be used to see the directories and the
- *     files that are considered in installing scripts and operators.
- *
- *  2. The user's home directory is now searched first, then the Group
- *     directories(see 3), and finally the ISAW_HOME directory.
- *
- *  3. Added GROUP1_HOME, GROUP2_HOME, etc. as other search paths for
- *     scripts and operators.
- *
- * Revision 1.17  2001/08/15 14:17:58  rmikk
- * This now returns the SAME java operator whenever the
- *    getOperator method is called (no clone is returned).
- *    This will allow the parameters to retain their values more
- *     often.  Scripts, so far, return a NEW operator with
- *    default parameter values each time.
- *
- * Revision 1.16  2001/08/10 20:46:12  rmikk
- * The LoadDebug variable is now public and static so it
- * can be set to true by any application to get the debug
- * outputs.
- * Made the main program a test for the Script and Class
- * loading.  "java Command.Script_Class_List_Hanlder" will
- * now show the files being considered and possible errors.
- *
- * Revision 1.15  2001/08/06 14:09:28  rmikk
- * Fixed a bug that cause filenames to have "//".
- * Added a boolean variable LoadDebug that, when true,
- *    displays directories and files being considered.  Some
- *    Error messages are displayed in these cases.
- *
- * Revision 1.14  2001/07/20 16:35:21  rmikk
- * Fixed the show method to show more
- *
- * Revision 1.13  2001/07/20 15:48:21  chatter
- * Checked Properties directories for tailing '/' ir '\'
- *
- * Revision 1.12  2001/07/20 13:59:47  rmikk
- * Replace \ by / so Scripts can be installed from Unix
- *
- * Revision 1.11  2001/06/27 18:38:33  rmikk
- * Add tests to make sure a directory is only loaded once
- *
- * Revision 1.10  2001/06/26 14:44:27  rmikk
- * Install scripts and java operators are now relative to
- * ISAW_HOME(Operators and Scripts subdirectories),
- *  USER_HOME, and user.home Directories
- *
- * Revision 1.9  2001/06/25 19:59:58  chatter
- * Added Last Parameter to JParametersDialog Constructor
- * in main program
- *
- * Revision 1.8  2001/06/05 16:50:35  rmikk
- * Changed props.dat to IsawProps.dat
- *
- * Revision 1.7  2001/06/05 16:38:08  rmikk
- * Fixed potential error in getNextPath to catch only
- * repeated paths not repeated subpaths
- *
- * Revision 1.6  2001/06/04 20:15:21  rmikk
- * Fixed Documentation
- *
- * Revision 1.5  2001/06/04 14:10:27  rmikk
- * Did not add Scripts that had errors with their construction.
- *
- * Revision 1.4  2001/06/01 21:14:13  rmikk
- * Added Documentation for javadocs etc.
  *
  */
 package Command;

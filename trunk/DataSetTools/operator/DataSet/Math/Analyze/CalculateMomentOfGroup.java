@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/11/27 23:18:38  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.4  2002/11/26 22:13:51  dennis
  *  Added getDocumentation() method and simple main program.(Mike Miller)
  *
@@ -43,62 +45,6 @@
  *  Revision 1.1  2002/02/22 21:02:26  pfpeterson
  *  Operator reorganization.
  *
- *  Revision 1.5  2001/05/31 20:18:55  rmikk
- *  Added javadocs for the getCommand method
- *
- *  Revision 1.4  2001/04/26 19:04:25  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.3  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
- *  Existing operators were modified to be derived from one of the new abstract
- *  classes.  The abstract base class hierarchy is now:
- *
- *   Operator
- *
- *    -GenericOperator
- *       --GenericLoad
- *       --GenericBatch
- *
- *    -DataSetOperator
- *      --DS_EditList
- *      --DS_Math
- *         ---ScalarOp
- *         ---DataSetOp
- *         ---AnalyzeOp
- *      --DS_Attribute
- *      --DS_Conversion
- *         ---XAxisConversionOp
- *         ---YAxisConversionOp
- *         ---XYAxesConversionOp
- *      --DS_Special
- *
- *     To allow for automatic generation of hierarchial menus, each new operator
- *  should fall into one of these categories, or a new category should be
- *  constructed within this hierarchy for the new operator.
- *
- *  Revision 1.2  2000/08/02 20:19:27  dennis
- *  Changed to use TrapMoment() for function data instead of just using
- *  HistogramMoment() for histogram data
- *
- *  Revision 1.1  2000/07/10 22:35:47  dennis
- *  Now Using CVS 
- *
- *  Revision 1.1  2000/06/09 16:12:01  dennis
- *  Initial revision
- *
- *  Revision 1.6  2000/05/16 15:36:34  dennis
- *  Fixed clone() method to also copy the parameter values from
- *  the current operator.
- *
- *  Revision 1.5  2000/05/11 16:41:28  dennis
- *  Added RCS logging
- *
- *  2000/06/09  Renamed CalculateMoment to
- *               CalculateMomentOfGroup
- *
- *  99/08/16    Added constructor to allow 
- *              calling operator directly
  */
 
 package DataSetTools.operator.DataSet.Math.Analyze;

@@ -20,8 +20,7 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,23 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2002/11/27 23:29:29  pfpeterson
+ * standardized header
+ *
  * Revision 1.5  2002/11/20 16:15:53  pfpeterson
  * reformating
- *
- * Revision 1.4  2001/08/17 19:02:19  rmikk
- * Added error handling to catch cases where the file
- * cannot be created. Did NOT let Nexus do this because
- * it hung the system
- *
- * Revision 1.3  2001/08/09 16:47:06  rmikk
- * Put a flush into the close to try to get files to be saved in
- * Unix systems.
- *
- * Revision 1.2  2001/07/30 20:13:40  rmikk
- * added an(empty) show() method
- *
- * Revision 1.1  2001/07/25 21:26:37  rmikk
- * Initial checkin
  *
  */
  

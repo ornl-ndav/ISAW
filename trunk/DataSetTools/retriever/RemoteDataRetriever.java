@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,32 +30,8 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.7  2001/08/14 19:16:30  dennis
- *  Changed words used for some error messages.
- *
- *  Revision 1.6  2001/08/14 15:12:38  dennis
- *  Added status messages for LiveDataServer status.
- *
- *  Revision 1.5  2001/08/13 23:29:59  dennis
- *  Now has separate error messages for bad user name and bad password.
- *  Added String form for error messages, and method error_message()
- *  to convert from error code to String form.
- *  Added implementation of a status() method.
- *
- *  Revision 1.4  2001/08/10 19:50:55  dennis
- *  Switched to new name for the default tcp server port.
- *
- *  Revision 1.3  2001/08/09 15:24:06  dennis
- *  Put debug prints in "if (debug_retriever)" blocks.
- *
- *  Revision 1.2  2001/08/07 21:34:00  dennis
- *  Added WRONG_SERVER_TYPE error code.
- *
- *  Revision 1.1  2001/08/03 21:39:36  dennis
- *  Base class for retrievers that get DataSets from a
- *  NetComm.DataServer.  Manages connections and communication
- *  with the server.
- *
+ *  Revision 1.8  2002/11/27 23:23:16  pfpeterson
+ *  standardized header
  *
  */
 package DataSetTools.retriever;

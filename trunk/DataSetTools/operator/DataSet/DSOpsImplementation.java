@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -35,6 +34,9 @@
  * corresponding operators.
  *
  *  $Log$
+ *  Revision 1.4  2002/11/27 23:16:27  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.3  2002/07/17 21:13:16  dennis
  *  Added implementation of operators that combine one Data
  *  block from a DataSet with all Data blocks in the
@@ -45,26 +47,6 @@
  *
  *  Revision 1.1  2002/02/22 20:59:42  pfpeterson
  *  Operator reorganization.
- *
- *  Revision 1.4  2001/08/16 19:14:23  dennis
- *  Added method AddDataBlocks to form a sum of Data blocks in a
- *  DataSet and to form an average DetectorPosition, weighted by
- *  the solid angles ( if present ).
- *
- *  Revision 1.3  2001/04/26 19:04:34  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.2  2000/07/21 19:33:33  dennis
- *  changed String comparisons from == to .equals()
- *
- *  Revision 1.1  2000/07/10 22:35:48  dennis
- *  Now Using CVS 
- *
- *  Revision 1.2  2000/06/15 16:24:59  dennis
- *  Added method DoDSScalarOps() to implement +,-,*,/ by scalars
- *
- *  Revision 1.1  2000/06/14 21:41:45  dennis
- *  Initial revision
  *
  */
 

@@ -17,11 +17,10 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Ruth Mikkelson <mikkelsond@uwstout.edu>
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,16 +30,14 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.2  2002/11/27 23:21:28  pfpeterson
+ * standardized header
+ *
  * Revision 1.1  2002/02/22 20:58:17  pfpeterson
  * Operator reorganization.
  *
  * Revision 1.3  2002/02/11 21:44:24  rmikk
  * Altered to reflect changes in table_view
- *
- * Revision 1.2  2001/08/09 21:51:30  rmikk
- * Added Documentation.
- * Included better prompts to indicate Selected Groups are
- *    by index not group ID
  *
  */
 package DataSetTools.operator.Generic.Save;

@@ -1,12 +1,4 @@
 /*
- * @(#)Util.java     0.7  00/05/31  Alok Chatterjee
- *
- * 0.7  00/05/31  A Utility class that provides different methods like load, 
- * 			delete(to be added later) etc.
- * 
- */
-
-/*
  * File:  Util.java 
  *             
  * Copyright (C) 2000, Alok Chatterjee
@@ -25,7 +17,11 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Alok Chatterjee at IPNS
+ * Contact : Alok Chatterjee <achatterjee@anl.gov>
+ *           Intense Pulsed Neutron Source Division
+ *           Argonne National Laboratory
+ *           9700 South Cass Avenue, Bldg 360
+ *           Argonne, IL 60439-4845, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -35,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2002/11/27 23:27:07  pfpeterson
+ * standardized header
+ *
  * Revision 1.14  2002/09/30 19:59:54  pfpeterson
  * Now allows gda extension for gsas powder files.
  *
