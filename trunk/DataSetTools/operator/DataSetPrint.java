@@ -1,8 +1,14 @@
 /*
- * @(#)print.java   0.1  00/08/02   Dongfeng Chen 
- *                                  Dennis Mikkelson
+ * @(#)DataSetPrint.java   0.1  00/08/02   Dongfeng Chen 
+ *                                         Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.5  2000/08/17 19:08:28  dennis
+ *  Modified 08/13 by Dongfeng.  Now prints output into JTable for viewing, copying
+ *  and pasting.  Changed the output format. All of the output types can be pasted
+ *  neatly.
+ *
+ *
  *  Revision 1.4  2000/08/08 21:12:52  dennis
  *  Now prints error values and uses tabs & number format to make the
  *  dislay neater.
@@ -22,8 +28,7 @@
 package DataSetTools.operator;
 
 import  java.io.*;
-//import java.text.DateFormat;
-import java.text.*;
+import  java.text.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
@@ -105,7 +110,7 @@ public class DataSetPrint extends    Operator
      parameter = new Parameter("Data block index", new Integer( 0) );
      addParameter( parameter );
      
-     parameter = new Parameter("Output Type (0=Print, 1=write or 2=textfield)", 
+     parameter = new Parameter("Output Type (0=Print, 1=write 2= textfield or 3=table)", 
                                 new Integer( 0) );
      addParameter( parameter );
      
@@ -150,8 +155,6 @@ public class DataSetPrint extends    Operator
     
     int              num_data = ds.getNum_entries();
 
-    
-    
      data = ds.getData_entry( index );        
   
      if ( data == null )
@@ -160,30 +163,43 @@ public class DataSetPrint extends    Operator
      x_vals           = data.getX_scale().getXs();
      y_vals  = data.getCopyOfY_values();
      
-     //if(err_vals  !=null)
      err_vals  = data.getErrors();
      
      int numofy= y_vals.length;
      DecimalFormat df=new DecimalFormat("####0.000");
      
+     float [][] tableArray = new float [numofy][4];
+        
+     String [] columnName =     {"Number", 
+                                "x_values",
+                                "y_values",
+                                "Err_values"
+                                          };
+     
+     
+     
      for ( int i = 0; i < numofy; i++ )
      {
-       result.append( i+"\t "+df.format(x_vals[i])+"\t "+df.format(y_vals[i])+"\t "+df.format(err_vals[i])+"\t \n");
+       result.append( i+"\t "+df.format(x_vals[i])+"\t "+df.format(y_vals[i])+"\t "+df.format(err_vals[i])+"\r\n");
+       tableArray[i][0]=i;
+       tableArray[i][1]=x_vals[i];
+       tableArray[i][2]=y_vals[i];
+       tableArray[i][3]=err_vals[i];       
      }
     
     String output = result.toString();
 
-   //0.Print to screen
+    //0.Print to screen
    if(OPtype==0)
    {
     System.out.print(output);
-    System.out.print("Pop up on screen /n");
+    System.out.print("... Pop up "+ ds.toString()+"_INDX_"+index+" on screen \n");
    }
 
     //1.write to a file 
     if(OPtype==1)
     try{
-        String filename = ".\\dataprint.prt";
+        String filename = ds.toString()+"_"+index+".prt";
         filename = StringUtil.fixSeparator( filename );
         File f = new File(filename);
         FileOutputStream op = new FileOutputStream(f);
@@ -191,20 +207,18 @@ public class DataSetPrint extends    Operator
         opw.write(output);
         opw.flush();
         opw.close();
-    System.out.print("Save to the file "+filename+"/n");
+    System.out.print("... Save  "+ ds.toString()+"_INDX_"+index+" to the file "+filename+"\n");
     }catch(Exception e){}
     
  
    //2.Jtextfield
-   //*
    if(OPtype==2)
 		try
 		{
-    		JFrameMessageCHOP JFMC=(new JFrameMessageCHOP("Test Field DataSet Output Window by Dongfeng Chen, Dennis Mikkelson", ds.toString()+" for index "+index , output));
-
+    		JFrameMessageCHOP JFMC=(new JFrameMessageCHOP("Window Output for "+ds.toString()+"_INDX_"+index, ds.toString()+" for index "+index , output));
     		JFMC.setVisible(true);
     		JFMC.setBounds(60, 60, 680, 680);
-       System.out.print("Pop up in text field /n");
+       System.out.print("... Pop up  "+ ds.toString()+"_INDX_"+index+" in text field \n");
 
 		}
 		catch (Throwable tt)
@@ -213,7 +227,20 @@ public class DataSetPrint extends    Operator
 			tt.printStackTrace();
 			System.exit(1);
 		}
-    //*/
+    
+   //3.Jtable
+   if(OPtype==3)
+   {
+        DataSetTools.operator.OutputTable frame 
+                  = new DataSetTools.operator.OutputTable( 
+                              tableArray,
+                              columnName,
+                              ds.toString()+"_INDX_"+index );
+        frame.pack();
+        frame.setVisible(true);
+        System.out.print("... Pop up "+ ds.toString()+"_INDX_"+index+" in Jtable \n");
+        
+   } 
 
     return new_ds;
   }  
@@ -228,4 +255,5 @@ public static void pause(int time)
 
 
 }
+
 
