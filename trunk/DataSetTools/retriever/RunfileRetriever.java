@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.72  2003/04/14 14:34:47  dennis
+ *  Now gets the size of detectors from the IPNS.Runfile.Runfile methods:
+ *  DetectorWidth(id), DetectorLength(id) and DetectorDepth(id)
+ *
  *  Revision 1.71  2003/03/20 22:48:13  dennis
  *  Calculate OMEGA using raw angle instead of focused angle.
  *
@@ -1354,9 +1358,10 @@ private float CalculateEIn()
          int n_cols = run_file.NumSegs2( id );     // NumSegs2 gives n_cols 
 
          int det_type = run_file.DetectorType( id );
-         float width  = DC5.WIDTH[ det_type ]/100;
-         float height = DC5.LENGTH[ det_type ]/100;
-         float depth  = DC5.DEPTH[ det_type ]/100;
+         float width  = run_file.DetectorWidth(id)/100;
+         float height = run_file.DetectorLength(id)/100;
+         float depth  = run_file.DetectorDepth(id)/100;
+
 
          data_grid = new UniformGrid( id, "m",
                                       det_cen, x_vec, y_vec,
