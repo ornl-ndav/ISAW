@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2003/05/29 15:24:49  pfpeterson
+ *  Removed getCategory() and made a concrete version of setDefaultParameters()
+ *  that throws an exception so jython works.
+ *
  *  Revision 1.21  2003/05/07 15:08:52  pfpeterson
  *  Changed 'getCommand()' to be a concrete method that takes returns
  *  the class name as the command. The constructor no longer creates a
@@ -189,19 +193,6 @@ abstract public class Operator implements Serializable
       return command;
   }
 
-  /* -------------------------- getCategory -------------------------------- */
-  /**
-   * Get the category of this operator
-   *
-   * @return  A String specifying the category of this operator.  This is
-   *          actually the category of the abstract base class from which
-   *          the current operator is directly derived.
-   */
-  public String getCategory()
-  {
-    return OPERATOR;
-  }
-
   /* ------------------------ getCategoryList ------------------------------ */
   /**
    * Get an array of strings listing the operator category names of base
@@ -340,9 +331,13 @@ abstract public class Operator implements Serializable
    *  Set the parameters to default values.  This function should be overridden
    *  in derived classes to produce a reasonable set of default parameter
    *  values.
+   *
+   * This method was changed from abstract to throw an exception so it
+   * can play nice with jython.
    */
-  abstract public void setDefaultParameters();
-
+  public void setDefaultParameters(){
+    throw new java.lang.IllegalStateException("subclass must implement setDefaultParameters()");
+  }
 
   /* ------------------------------ toString ------------------------------- */
   /**
