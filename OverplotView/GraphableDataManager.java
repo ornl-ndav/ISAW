@@ -10,6 +10,10 @@ package OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.8  2001/09/03 18:57:04  dennis
+ * Redraws whole graph on any update.  Previously the axes labels were
+ * not changed. (Ruth)
+ *
  * Revision 1.7  2001/08/30 14:41:03  dennis
  * Changed the title of a line to the Group_ID
  * not its index. (Ruth)
@@ -73,6 +77,7 @@ public class GraphableDataManager
 
   private Vector                graphable_data;
   private sgtGraphableDataGraph graph;
+   AttributeList attrs;
   private String Error;
 
   /**
@@ -81,6 +86,10 @@ public class GraphableDataManager
   public GraphableDataManager( DataSet data_set )
   {
     super(data_set);
+    inittt( data_set );
+  }
+  private void inittt( DataSet data_set )
+   {
     setLayout( new GridLayout( 1 , 1 ));
     Error =null;
     if( data_set == null)
@@ -106,7 +115,8 @@ public class GraphableDataManager
                                     data_set.getX_label()  );
     y_label = new StringAttribute(  IGraphableDataGraph.Y_LABEL,
                                     data_set.getY_label()  );
-    AttributeList attrs = new AttributeList();
+    
+    attrs = new AttributeList();
     attrs.addAttribute( title );
     attrs.addAttribute( subtitle1 );
     attrs.addAttribute( subtitle2 );
@@ -116,7 +126,7 @@ public class GraphableDataManager
     attrs.addAttribute( y_label );
     graph.setAttributeList( attrs );
 
-    redraw( IObserver.DATA_CHANGED );
+    redraw( );
 
     //modify the menu provided by DataSetViewer
     OptionMenuHandler option_menu_handler = new OptionMenuHandler();
@@ -135,9 +145,9 @@ public class GraphableDataManager
    * selection.
    */
   public void redraw( String reason ) 
-  {
+  {  inittt( getDataSet() );
     //System.out.println( "DataSetViewer> " + reason );
-    
+      /*
     if ( reason == IObserver.DESTROY )
     {
       graphable_data = null;
@@ -165,18 +175,30 @@ public class GraphableDataManager
        redraw();
     }
     else if( reason == IObserver.DATA_CHANGED )
-    {
+    { Attribute  x_label = new StringAttribute(  IGraphableDataGraph.X_LABEL,
+                                    getDataSet().getX_label()  );
+      attrs.removeAttribute(IGraphableDataGraph.X_LABEL);
+      attrs.addAttribute( x_label );
+      
+      graph.setAttributeList( attrs);
       redraw();
     }
     else if( reason == IObserver.ATTRIBUTE_CHANGED )
     {
+     redraw();
     }
     else if( reason == IObserver.FIELD_CHANGED )
-    {
+    {inittt( getDataSet());
+     redraw();
     }
     else if( reason == IObserver.HIDDEN_CHANGED )
     {
     }
+    else if( reason == DataSetViewer.NEW_DATA_SET )
+     {System.out.println("in NEW_DATA_SET");
+      inittt( getDataSet());
+      redraw();
+     } 
     else
       redraw();                         //default is to redraw the entire
                                         //viewer so that future expansions
@@ -186,6 +208,7 @@ public class GraphableDataManager
                                         //effecient ways to update the viewer,
                                         //please maintain this code to catch
                                         //to deal with the update appropriately.
+*/
   }
 
 
