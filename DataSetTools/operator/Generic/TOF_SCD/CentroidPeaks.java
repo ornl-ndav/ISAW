@@ -116,7 +116,7 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
     Vector  peaks    = (Vector) (getParameter(1).getValue());
     Vector  cpeaks   = new Vector();
 
-    float[] times=(data_set.getXRange()).getXs();
+    float[] times=data_set.getData_entry(0).getX_scale().getXs();
 
     Peak peak=new Peak();
     for( int i=0 ; i<peaks.size() ; i++ ){
@@ -155,55 +155,60 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
 	    det=((DetectorInfo[])detI.getValue())[0];
 	    x=det.getColumn();
 	    y=det.getRow();
+            intens=spectrum.getCopyOfY_values();
 	    if(       x==column-1 && y==row-1 ){
-		intens=spectrum.getCopyOfY_values();
-		surround[0][0][0]=intens[time-1];
-		surround[0][0][1]=intens[time  ];
-		surround[0][0][2]=intens[time+1];
+		surround[0][0][0]=getIntens(intens,time-1);
+		surround[0][0][1]=getIntens(intens,time  );
+		surround[0][0][2]=getIntens(intens,time+1);
 	    }else if( x==column-1 && y==row   ){
-		intens=spectrum.getCopyOfY_values();
-		surround[0][1][0]=intens[time-1];
-		surround[0][1][1]=intens[time  ];
-		surround[0][1][2]=intens[time+1];
+		surround[0][1][0]=getIntens(intens,time-1);
+		surround[0][1][1]=getIntens(intens,time  );
+		surround[0][1][2]=getIntens(intens,time+1);
 	    }else if( x==column-1 && y==row+1 ){
-		intens=spectrum.getCopyOfY_values();
-		surround[0][2][0]=intens[time-1];
-		surround[0][2][1]=intens[time  ];
-		surround[0][2][2]=intens[time+1];
+		surround[0][2][0]=getIntens(intens,time-1);
+		surround[0][2][1]=getIntens(intens,time  );
+		surround[0][2][2]=getIntens(intens,time+1);
 	    }else if( x==column   && y==row-1 ){
-		intens=spectrum.getCopyOfY_values();
-		surround[1][0][0]=intens[time-1];
-		surround[1][0][1]=intens[time  ];
-		surround[1][0][2]=intens[time+1];
+		surround[1][0][0]=getIntens(intens,time-1);
+		surround[1][0][1]=getIntens(intens,time  );
+		surround[1][0][2]=getIntens(intens,time+1);
 	    }else if( x==column   && y==row   ){
-		intens=spectrum.getCopyOfY_values();
-		surround[1][1][0]=intens[time-1];
-		surround[1][1][1]=intens[time  ];
-		surround[1][1][2]=intens[time+1];
+		surround[1][1][0]=getIntens(intens,time-1);
+		surround[1][1][1]=getIntens(intens,time  );
+		surround[1][1][2]=getIntens(intens,time+1);
 	    }else if( x==column   && y==row+1 ){
-		intens=spectrum.getCopyOfY_values();
-		surround[1][2][0]=intens[time-1];
-		surround[1][2][1]=intens[time  ];
-		surround[1][2][2]=intens[time+1];
+		surround[1][2][0]=getIntens(intens,time-1);
+		surround[1][2][1]=getIntens(intens,time  );
+		surround[1][2][2]=getIntens(intens,time+1);
 	    }else if( x==column+1 && y==row-1 ){
-		intens=spectrum.getCopyOfY_values();
-		surround[2][0][0]=intens[time-1];
-		surround[2][0][1]=intens[time  ];
-		surround[2][0][2]=intens[time+1];
+		surround[2][0][0]=getIntens(intens,time-1);
+		surround[2][0][1]=getIntens(intens,time  );
+		surround[2][0][2]=getIntens(intens,time+1);
 	    }else if( x==column+1 && y==row   ){
-		intens=spectrum.getCopyOfY_values();
-		surround[2][1][0]=intens[time-1];
-		surround[2][1][1]=intens[time  ];
-		surround[2][1][2]=intens[time+1];
+		surround[2][1][0]=getIntens(intens,time-1);
+		surround[2][1][1]=getIntens(intens,time  );
+		surround[2][1][2]=getIntens(intens,time+1);
 	    }else if( x==column+1 && y==row+1 ){
-		intens=spectrum.getCopyOfY_values();
-		surround[2][2][0]=intens[time-1];
-		surround[2][2][1]=intens[time  ];
-		surround[2][2][2]=intens[time+1];
+		surround[2][2][0]=getIntens(intens,time-1);
+		surround[2][2][1]=getIntens(intens,time  );
+		surround[2][2][2]=getIntens(intens,time+1);
 	    }
 	}
 
 	return surround;
+    }
+
+    /**
+     * Method to get the intensity of a given time channel that checks
+     * the array boundaries.
+     */
+    private float getIntens( float[] intensity, int time_bin ){
+        if(time_bin<0)
+            return 0f;
+        else if(time_bin>=intensity.length)
+            return 0f;
+        else
+            return intensity[time_bin];
     }
 
  /* ----------------------------- centroid ------------------------------- */ 
@@ -280,7 +285,7 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
 	String datfile="/IPNShome/pfpeterson/data/SCD/SCD06496.RUN";
 	DataSet rds = (new RunfileRetriever(datfile)).getDataSet(1);
 	
-	FindPeaks fo = new FindPeaks(rds,10,1);
+	FindPeaks fo = new FindPeaks(rds,10,1,false);
 	Vector peaked=(Vector)fo.getResult();
 	Peak peak=new Peak();
 	for( int i=0 ; i<peaked.size() ; i++ ){
