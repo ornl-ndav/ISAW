@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.50  2004/08/04 22:14:23  rmikk
+ *  DataSetViewers that implement IPreserveState can now support the Object State
+ *
  *  Revision 1.49  2004/05/10 22:46:53  dennis
  *  Test program now just instantiates a ViewManager to diplay
  *  calculated DataSet, rather than keeping a reference to it.
@@ -176,6 +179,7 @@ import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Components.OneD.*;
+import gov.anl.ipns.ViewTools.Components.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -216,6 +220,8 @@ public class ViewManager extends    JFrame
    private JCheckBoxMenuItem show_all_button;
    private JCheckBoxMenuItem link_viewers_button;
 
+   private ObjectState Ostate = new ObjectState();
+
    private static final String CLOSE_LABEL          = "Close Viewer";
    private static final String SAVE_NEW_DATA_SET    = "Save As New DataSet";
 
@@ -234,6 +240,8 @@ public class ViewManager extends    JFrame
    private static final String LINK_VIEWS           = "Link Views";
    private static final String NO_CONVERSION_OP     = "None";
    private static TableViewMenuComponents table_MenuComp   = null;
+
+   
     
    /**  
     *  Accepts a DataSet and view type and creates an instance of a 
@@ -359,6 +367,15 @@ public class ViewManager extends    JFrame
           viewType = IMAGE;
       else 
           viewType = view_type;
+      if( viewer instanceof IPreserveState){
+         ObjectState st = (ObjectState)Ostate.get(viewType);
+         if( st == null){
+             st = ((IPreserveState)viewer).getObjectState( true);
+             Ostate.insert( viewType, st);
+         }
+         ((IPreserveState)viewer).setObjectState( st);
+
+      }
       getContentPane().add(viewer);
       getContentPane().setVisible(true);
 
