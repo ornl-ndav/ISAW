@@ -3,8 +3,12 @@
  *
  *  Ported to Java from tof_vis_calc.c
  * 
- * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.3  2000/07/14 19:10:23  dennis
+ *  Added methods to convert between velocity and energy and between
+ *  velocity and wavelength.  Also added documentation to clarify the
+ *  units used for parameters.
+ *
  *  Revision 1.2  2000/07/10 22:25:15  dennis
  *  July 10, 2000 version... many changes
  *
@@ -12,12 +16,8 @@
  *  added some constants for Planck's constant and added VelocityOfEnergy()
  *  function.
  *
- *  Revision 1.4  2000/06/12 14:50:05  dennis
- *  *** empty log message ***
- *
  *  Revision 1.3  2000/05/11 16:08:13  dennis
  *  Added RCS logging
- *
  *
  */
 
@@ -345,14 +345,23 @@ public static final float  RADIANS_PER_DEGREE  = 0.01745332925f;
 
 
 /* --------------------------- Energy -------------------------------- */
-
+/**
+ *   Calculate the energy of a neutron based on the time it takes to travel
+ *   a specified distance.
+ *
+ *   @param path_len_m  The distance traveled in meters.
+ *   @param time_us     The time in microseconds for the neutron to travel 
+ *                      the distance.
+ *
+ *   @return The energy of the neutron in meV
+ */
 public static float Energy( float path_len_m, float time_us )
 {
   float   v;
   float   energy;
 
   if ( time_us <= 0.0f )                     /* NOT MEANINGFUL */
-    return( Float.MAX_VALUE );
+    return( Float.NaN );
 
   v = (path_len_m * 1000.0f)/ time_us;        /*   velocity in mm/us    */
   energy = meV_per_mm_per_us_2 * v * v; 
@@ -361,6 +370,16 @@ public static float Energy( float path_len_m, float time_us )
 
 
 /* ----------------------------- TOFofEnergy ---------------------------- */
+/**
+ *   Calculate the time it takes a neutron of a specified energy to travel
+ *   a specified distance.
+ *
+ *   @param path_len_m  The distance traveled in meters.
+ *   @param e_meV       The energy of the neutron in meV.
+ *
+ *   @return  The time in microseconds for the neutron to travel the distance.
+ */
+
 
 public static float  TOFofEnergy( float path_len_m, float e_meV )
 {
@@ -368,23 +387,100 @@ public static float  TOFofEnergy( float path_len_m, float e_meV )
 }
 
 
-/* ------------------------- VelocityOfEnergy ---------------------------- */
+/* ------------------------- VelocityFromEnergy ---------------------------- */
+/**
+ *   Calculate the velocity of a neutron based on it's energy.
+ *
+ *   @param e_meV       The energy of the neutron in meV.
+ *
+ *   @return The velocity of a neutron in meters per microsecond. 
+ */
 
-public static float VelocityOfEnergy( float e_meV )
+public static float VelocityFromEnergy( float e_meV )
 {
 
   if ( e_meV <= 0.0f )                     /* NOT MEANINGFUL */
-    return( Float.MAX_VALUE );
+    return( Float.NaN );
 
-  float   v = (float)Math.sqrt( e_meV / meV_per_mm_per_us_2 );
+  float   v_m_per_us = (float)Math.sqrt( e_meV / meV_per_mm_per_us_2 )/1000;
 
-  return( v );
+  return( v_m_per_us );
+}
+
+
+/* ------------------------- EnergyFromVelocity ---------------------------- */
+/**
+ *   Calculate the energy of a neutron based on it's velocity
+ *
+ *   @param v_m_per_us  The velocity of a neutron in meters per microsecond. 
+ *
+ *   @return The energy of the neutron in meV
+ */
+public static float EnergyFromVelocity( float v_m_per_us )
+
+{
+  if ( v_m_per_us <= 0.0f )                     /* NOT MEANINGFUL */
+    return( Float.NaN );
+
+  float   e_meV = v_m_per_us * v_m_per_us * 1000000 * meV_per_mm_per_us_2;
+
+  return( e_meV );
 }
 
 
 
+/* ------------------------ WavelengthFromVelocity ------------------------- */
+/**
+ *   Calculate the wavelength of a neutron based on it's velocity.
+ *
+ *   @param v_m_per_us  The velocity of a neutron in meters per microsecond.
+ *   
+ *   @return The wavelength of the neutron in Angstroms. 
+ */
+public static float WavelengthFromVelocity( float v_m_per_us )
+
+{
+  if ( v_m_per_us <= 0.0f )                     /* NOT MEANINGFUL */
+    return( Float.NaN );
+
+  float  wavelength_A = ANGST_PER_US_PER_M / v_m_per_us;
+
+  return( wavelength_A );
+}
+
+
+/* ------------------------ VelocityFromWavelength ------------------------- */
+/**
+ *   Calculate the velocity of a neutron based on it's wavelength.
+ *   
+ *   @param wavelength_A  The wavelength of the neutron in Angstroms. 
+ *   
+ *   @return The velocity of a neutron in meters per microsecond.
+ */
+
+public static float VelocityFromWavelength( float wavelength_A )
+{
+  if ( wavelength_A <= 0.0f )                     /* NOT MEANINGFUL */
+    return( Float.NaN );
+
+  float  v_m_per_us = ANGST_PER_US_PER_M / wavelength_A;
+
+  return( v_m_per_us );
+}
+
+
 
 /* ----------------------------- Wavelength -------------------------- */
+/**
+ *   Calculate the wavelength of a neutron based on a distance traveled 
+ *   and the time it took to travel that distance.
+ *
+ *   @param path_len_m  The distance traveled in meters.
+ *   @param time_us     The time in microseconds for the neutron to travel 
+ *                      the distance.
+ *   
+ *   @return The wavelength of the neutron in Angstroms.
+ */
 
 public static float Wavelength( float path_len_m, float time_us )
 {
@@ -396,6 +492,16 @@ public static float Wavelength( float path_len_m, float time_us )
 
 
 /* ---------------------------- TOFofWavelength ------------------------- */
+/**
+ *   Calculate the time it takes a neutron of a specified wavelength to travel
+ *   a specified distance.
+ *
+ *   @param path_len_m    The distance traveled in meters.
+ *   @param wavelength_A  The wavelength of the neutron in Angstroms. 
+ *
+ *   @return  The time in microseconds for the neutron to travel the distance.
+ */
+
 
 public static float TOFofWavelength( float path_len_m, float wavelength_A )
 {
@@ -404,7 +510,20 @@ public static float TOFofWavelength( float path_len_m, float wavelength_A )
 
 
 /* -------------------------------- DSpacing ----------------------------- */
-
+/**
+ *   Calculate a "D" value based on the scattering angle, total flight path 
+ *   length and time of flight for a neutron that was scattered by a sample.
+ *
+ *   @param angle_radians   The angle between the neutron beam and the line 
+ *                          from the sample to the detector, in radians.
+ *   @param path_len_m      The distance from the moderator to the detector
+ *                          in meters.
+ *   @param time_us         The time in microseconds for the neutron to travel 
+ *                          the distance from the moderator to the detector.
+ *   
+ *   @return The corresponding "D" value in Angstroms.
+ *
+ */
 public static float  DSpacing( float angle_radians, 
                                float path_len_m, 
                                float time_us )
@@ -420,7 +539,22 @@ public static float  DSpacing( float angle_radians,
 
 
 /* ---------------------------- TOFofDSpacing ---------------------------- */
-
+/**
+ *   Calculate the time-of-flight for a neutron based on the scattering angle, 
+ *   total flight path length and a "D" value for sample that scattered 
+ *   the neutron beam.
+ *
+ *   @param angle_radians   The angle between the neutron beam and the line 
+ *                          from the sample to the detector, in radians.
+ *   @param path_len_m      The distance from the moderator to the detector
+ *                          in meters.
+ *   @param d_A             The "D" value in Angstroms.
+ *                          the distance.
+ *   
+ *   @return The time in microseconds for the neutron to travel the distance 
+ *           from the moderator to the detector.
+ *
+ */
 public static float  TOFofDSpacing( float angle_radians, 
                                     float path_len_m, 
                                     float d_A          )
@@ -436,6 +570,20 @@ public static float  TOFofDSpacing( float angle_radians,
 
 
 /* --------------------------- DiffractometerQ --------------------------- */
+/**
+ *   Calculate a "Q" value based on the scattering angle, total flight path 
+ *   length and time of flight for a neutron that was scattered by a sample.
+ *
+ *   @param angle_radians   The angle between the neutron beam and the line
+ *                          from the sample to the detector, in radians.
+ *   @param path_len_m      The distance from the moderator to the detector
+ *                          in meters.
+ *   @param time_us         The time in microseconds for the neutron to travel
+ *                          the distance from the moderator to the detector.
+ *   
+ *   @return The magnitude of "Q" in inverse Angstroms.
+ *
+ */
 
 public static float  DiffractometerQ( float angle_radians, 
                                       float path_len_m, 
@@ -451,6 +599,20 @@ public static float  DiffractometerQ( float angle_radians,
 }
 
 /* ------------------------ TOFofDiffractometerQ -------------------------- */
+/**
+ *   Calculate the time of flight for a neutron based on the scattering angle, i
+ *   total flight path length and a "Q" value for a sample that scattered
+ *   the neutron beam.
+ *
+ *   @param angle_radians   The angle between the neutron beam and the line
+ *                          from the sample to the detector, in radians.
+ *   @param path_len_m      The distance from the moderator to the detector
+ *                          in meters.
+ *   @param Q_invA          Q in inverse Angstroms.
+ *  
+ *   @return The time in microseconds for the neutron to travel the distance
+ *           from the moderator to the detector.
+ */
 
 public static float  TOFofDiffractomerQ( float angle_radians, 
                                          float path_len_m, 
@@ -467,6 +629,20 @@ public static float  TOFofDiffractomerQ( float angle_radians,
 }
 
 /* --------------------------- SpectrometerQ ---------------------------- */
+/**
+ *   Calculate a "Q" value for a Spectrometer based on the initial energy,
+ *   final energy and scattering angle.
+ *
+ *   @param e_in_meV        The initial energy of a neutron before being  
+ *                          scattered by the sample.
+ *   @param e_out_meV       The final energy of a neutron after being  
+ *                          scattered by the sample.
+ *   @param angle_radians   The angle between the neutron beam and the line
+ *                          from the sample to the detector, in radians.
+ *
+ *   @return The magnitude of "Q" in inverse Angstroms.
+ *
+ */
 
 public static float SpectrometerQ( float e_in_meV, 
                                    float e_out_meV, 
