@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/10/31 23:22:31  dennis
+ * Extensive revision, includes:
+ *  1) readout of vector Qxyz, when a data point is pointed at
+ *  2) selection of "origin" and three other points to specify
+ *     basis vectors
+ *  3) computation of angles between basis vectors
+ *
  * Revision 1.3  2002/10/29 22:20:47  dennis
  * Now uses 3D ball objects (drawn as squares) to represent the
  * data points.  Also, the threshold for peaks in a time slice is
@@ -52,46 +59,291 @@ import DataSetTools.viewer.*;
 import DataSetTools.dataset.*;
 import DataSetTools.components.image.*;
 import DataSetTools.components.ThreeD.*;
+import DataSetTools.components.ui.*;
 import DataSetTools.math.*;
 import DataSetTools.instruments.*;
+import DataSetTools.components.containers.*;
 import DataSetTools.util.*;
 import java.util.*;
 import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.border.*;
 
 /** 
- *    This class reads through a sequence of SCD run files and constructs
+ *  This class reads through a sequence of SCD run files and constructs
  *  a basic view of the peaks in 3D "Q" space.
  */
 
 public class SCDRecipLat
 {
-  static String path = null;
-  static String run_nums = null;
-  static String threshold = "";
+  public static final String ORIGIN = " origin ";
+  public static final String A_STAR = " a* (+)";
+  public static final String B_STAR = " b* (*)";
+  public static final String C_STAR = " c* (X)";
 
-/* ------------------------------ draw_axes ----------------------------- */
+  String path = null;
+  String run_nums = null;
+  String threshold = "";
 
-private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
-{
-  IThreeD_Object objects[] = new IThreeD_Object[ 4 ];
-  Vector3D points[] = new Vector3D[2];
+  ThreeD_JPanel   vec_Q_space;
+  AltAzController controller;
+  Color           colors[];
+  JLabel          q_readout;
+  VectorReadout   origin_vec;
+  VectorReadout   a_star_vec;
+  VectorReadout   b_star_vec;
+  VectorReadout   c_star_vec;
 
-  points[0] = new Vector3D( 0, 0, 0 );                    // y_axis
-  points[1] = new Vector3D( 0, length, 0 );
-  objects[0] = new Polyline( points, Color.green );
+  JLabel          a_star_b_star;
+  JLabel          b_star_c_star;
+  JLabel          c_star_a_star;
+
+  /* ---------------------------- Constructor ----------------------------- */
+
+  public SCDRecipLat()
+  {
+    JFrame scene_f = new JFrame("Reciprocal Lattice Viewer");
+    JPanel q_panel = new JPanel();
+
+    vec_Q_space = new ThreeD_JPanel();
+    controller  = new AltAzController();
+    q_readout   = new JLabel("undefined");
+
+    origin_vec  = new VectorReadout( ORIGIN );
+    origin_vec.setVector( new Vector3D(0,0,0) );
+    a_star_vec  = new VectorReadout( A_STAR, "Select +" );
+    b_star_vec  = new VectorReadout( B_STAR, "Select *" );
+    c_star_vec  = new VectorReadout( C_STAR, "Select X" );
+
+    TitledBorder border = new TitledBorder(
+                             LineBorder.createBlackLineBorder(),"Qxyz");
+    border.setTitleFont( FontUtil.BORDER_FONT );
+    q_panel.setBorder( border );
+
+    q_readout.setFont( FontUtil.LABEL_FONT );
+    q_readout.setHorizontalAlignment( JTextField.CENTER );
+    q_readout.setBackground( Color.white );
+    q_readout.setForeground( Color.black );
+    q_panel.setBackground( Color.white );
+    q_panel.setLayout( new GridLayout(1,1) );
+    q_panel.add( q_readout );
+
+    Box control_panel = new Box( BoxLayout.Y_AXIS );
+    control_panel.add( controller );
+    control_panel.add( q_panel );
+    control_panel.add( origin_vec );
+    control_panel.add( a_star_vec );
+    control_panel.add( b_star_vec );
+    control_panel.add( c_star_vec );
+
+    JPanel angle_panel = new JPanel();
+    border = new TitledBorder( LineBorder.createBlackLineBorder(),"Angles");
+    border.setTitleFont( FontUtil.BORDER_FONT );
+    angle_panel.setBorder( border );
+    angle_panel.setBackground( Color.white );
+    angle_panel.setForeground( Color.black );
+    angle_panel.setLayout( new GridLayout(3,1) );
+    a_star_b_star = new JLabel("a*<->b* : undefined");
+    b_star_c_star = new JLabel("b*<->c* : undefined");
+    c_star_a_star = new JLabel("c*<->a* : undefined");
+    a_star_b_star.setFont( FontUtil.LABEL_FONT );
+    b_star_c_star.setFont( FontUtil.LABEL_FONT );
+    c_star_a_star.setFont( FontUtil.LABEL_FONT );
+    a_star_b_star.setHorizontalAlignment( JTextField.CENTER );
+    b_star_c_star.setHorizontalAlignment( JTextField.CENTER );
+    c_star_a_star.setHorizontalAlignment( JTextField.CENTER );
+    a_star_b_star.setForeground( Color.black );
+    b_star_c_star.setForeground( Color.black );
+    c_star_a_star.setForeground( Color.black );
+    angle_panel.add( a_star_b_star );
+    angle_panel.add( b_star_c_star );
+    angle_panel.add( c_star_a_star );
+    control_panel.add( angle_panel );
+
+    JPanel filler = new JPanel();
+    filler.setPreferredSize( new Dimension( 120, 2000 ) );
+    control_panel.add( filler );
+
+    SplitPaneWithState split_pane = 
+                  new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
+                                          vec_Q_space,
+                                          control_panel,
+                                          0.75f );
+
+    colors         = IndexColorMaker.getColorTable(
+                                IndexColorMaker.HEATED_OBJECT_SCALE, 128 );
+
+    scene_f.getContentPane().add( split_pane );
+
+    vec_Q_space.setBackground( new Color( 176, 196, 222 ) );
+    draw_axes(1, vec_Q_space );
+    scene_f.setSize(900,700);
+
+    controller.setDistanceRange( 0.1f, 500 );
+    controller.addControlledPanel( vec_Q_space );
+
+    scene_f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    scene_f.setVisible( true );
+
+    vec_Q_space.addMouseListener( new ViewMouseInputAdapter() );
+    vec_Q_space.addMouseMotionListener( new ViewMouseInputAdapter() );
+    ReadoutListener listener = new ReadoutListener();
+    origin_vec.addActionListener( listener );
+    a_star_vec.addActionListener( listener );
+    b_star_vec.addActionListener( listener );
+    c_star_vec.addActionListener( listener );
+    Redraw();
+  }
+ 
+
+  /* ---------------------------- Angle ---------------------------------- */
+  private String Angle( Vector3D v1, Vector3D v2 )
+  {
+    if ( v1 == null || v2 == null || v1.length() == 0 || v2.length() == 0 )
+      return "undefined";
+
+    float len_1 = v1.length();
+    float len_2 = v2.length();
+    double angle_rad = Math.acos( v1.dot(v2) / (len_1 * len_2) );
+    float angle = (float)(angle_rad * (180.0/Math.PI));
+
+    return Format.real( angle, 6, 2 );
+  }
+
+  /* ------------------------------ draw_axes ----------------------------- */
+
+  private  void draw_axes( float length, ThreeD_JPanel threeD_panel  )
+  {
+    IThreeD_Object objects[] = new IThreeD_Object[ 4 ];
+    Vector3D points[] = new Vector3D[2];
+
+    points[0] = new Vector3D( 0, 0, 0 );                    // y_axis
+    points[1] = new Vector3D( 0, length, 0 );
+    objects[0] = new Polyline( points, Color.green );
                                                           // z_axis
-  points[1] = new Vector3D( 0, 0, length );
-  objects[1] = new Polyline( points, Color.blue );
+    points[1] = new Vector3D( 0, 0, length );
+    objects[1] = new Polyline( points, Color.blue );
 
-  points[1] = new Vector3D( length, 0, 0 );               // +x-axis
-  objects[2] = new Polyline( points, Color.red );
+    points[1] = new Vector3D( length, 0, 0 );               // +x-axis
+    objects[2] = new Polyline( points, Color.red );
 
-  points[1] = new Vector3D( -length/3, 0, 0 );            // -x-axis
-  objects[3] = new Polyline( points, Color.red );
+    points[1] = new Vector3D( -length/3, 0, 0 );            // -x-axis
+    objects[3] = new Polyline( points, Color.red );
 
-  threeD_panel.setObjects( "AXES", objects );
-}
+    threeD_panel.setObjects( "AXES", objects );
+  }
+
+
+  /* ------------------------- MarkPoint --------------------------- */
+  private void MarkPoint( Vector3D vec, String name, int type )
+  {
+    IThreeD_Object objects[] = new IThreeD_Object[ 1 ];
+    Vector3D points[] = new Vector3D[1];
+
+    points[0] = vec;
+    Polymarker marker = new Polymarker( points, Color.yellow );
+    marker.setSize( 8 );
+    marker.setType( type );
+    objects[0] = marker;
+
+    vec_Q_space.setObjects( name, objects );
+  }
+
+  /* ------------------------- BasisVector --------------------------- */
+  private void BasisVector( Vector3D vec, String name, Color color )
+  {
+    final int N_SEGMENTS = 100;
+
+    IThreeD_Object objects[] = new IThreeD_Object[ N_SEGMENTS ];
+
+    Vector3D points[] = new Vector3D[2];
+    points[0] = new Vector3D();
+    points[1] = new Vector3D();
+
+    float length = vec.length();
+    float step = length/N_SEGMENTS;
+    Vector3D delta_v = new Vector3D( vec );
+    if ( length > 0 )
+      delta_v.multiply( step/length );
+      
+    Vector3D diff = new Vector3D();
+    Polyline line;
+
+    for ( int i = 0; i < N_SEGMENTS; i++ )
+    {
+      diff.set( delta_v );
+      diff.multiply( i );  
+      points[0].set( origin_vec.getVector() );
+      points[0].add( diff );
+            
+      diff.set( delta_v );
+      diff.multiply( i+1 );  
+      points[1].set( origin_vec.getVector() );
+      points[1].add( diff );
+            
+      line = new Polyline( points, color );
+      objects[i] = line;
+    }
+
+    vec_Q_space.setObjects( name, objects );
+  }
+
+
+  /* ------------------------- Redraw ------------------------------ */
+  private void Redraw()
+  {
+    Vector3D origin = origin_vec.getVector();
+    MarkPoint( origin, ORIGIN, Polymarker.BOX );
+
+    Vector3D a_star = a_star_vec.getVector();
+    if ( a_star == null )
+    {
+      vec_Q_space.removeObjects( A_STAR );
+      vec_Q_space.removeObjects( A_STAR+"LINE" );
+    }
+    else
+    {
+      BasisVector( a_star, A_STAR+"LINE", Color.yellow );
+      a_star.add( origin );
+      MarkPoint( a_star, A_STAR, Polymarker.PLUS );
+    }
+
+    Vector3D b_star = b_star_vec.getVector();
+    if ( b_star == null )
+    {
+      vec_Q_space.removeObjects( B_STAR );
+      vec_Q_space.removeObjects( B_STAR+"LINE" );
+    }
+    else
+    {
+      BasisVector( b_star, B_STAR+"LINE", Color.yellow );
+      b_star.add( origin );
+      MarkPoint( b_star, B_STAR, Polymarker.STAR );
+    }
+
+    Vector3D c_star = c_star_vec.getVector();
+    if ( c_star == null )
+    {
+      vec_Q_space.removeObjects( C_STAR );
+      vec_Q_space.removeObjects( C_STAR+"LINE" );
+    }
+    else
+    {
+      BasisVector( c_star, C_STAR+"LINE", Color.yellow );
+      c_star.add( origin );
+      MarkPoint( c_star, C_STAR, Polymarker.CROSS );
+    }
+
+    a_star_b_star.setText( "a*<->b* : " + 
+                        Angle( a_star_vec.getVector(), b_star_vec.getVector()));
+    b_star_c_star.setText( "b*<->c* : " + 
+                        Angle( b_star_vec.getVector(), c_star_vec.getVector()));
+    c_star_a_star.setText( "c*<->a* : " + 
+                        Angle( c_star_vec.getVector(), a_star_vec.getVector()));
+    vec_Q_space.repaint();
+  }
 
 
   /* ------------------------- parseArgs ----------------------------- */
@@ -103,7 +355,7 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
    *  @param args  Array of strings from the command line, containing
    *               command characters and arguments.
    */
-   public static void parseArgs( String args[] )
+   public void parseArgs( String args[] )
    {
      if ( args == null || args.length < 2        ||
           StringUtil.commandPresent("-h", args ) ||
@@ -131,7 +383,7 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
   /**
    *  Print list of supported commands.
    */
-   public static void showUsage()
+   public void showUsage()
    {
     System.out.println(
        "  -D<dir name>  specifies directory for data files (required)");
@@ -153,7 +405,7 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
  /*
   *  Find the average intensity at each time slice.
   */
-  public static float[] findAverages( DataSet ds )
+  public float[] findAverages( DataSet ds )
   {
     if ( ds == null || ds.getNum_entries() <= 0 )
       return null;
@@ -183,70 +435,14 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
   }
 
 
-
-  /* ------------------------- main -------------------------------- */
-
-  public static void main( String args[] )
+ /* ------------------------ makeGoniometerRotation ------------------------ */
+ /*
+  *  Make the cumulative rotation matrix to "unwind" the rotations by chi,
+  *  phi and omega, to put the data into one common reference frame for the
+  *  crystal.
+  */
+  public Tran3D makeGoniometerRotation( DataSet ds )
   {
-    float thresh_scale = 1.0f;
-
-    parseArgs( args );
-    if ( threshold.length() > 0 )
-      try
-      {
-        thresh_scale = (new Float(threshold)).floatValue();
-        thresh_scale = Math.abs( thresh_scale );   
-        if ( thresh_scale == 0 )
-        {
-          thresh_scale = 1;
-          System.out.println("threshold of 0 ignored, using default...");
-        }
-      }
-      catch ( Exception e )
-      {
-        System.out.println("Invalid threshold value, ignored");
-      }
-
-    int runs[] = IntList.ToArray( run_nums );
-    String file_names[] = new String[ runs.length ];
-    for ( int i = 0; i < runs.length; i++ )
-     file_names[i] = path + InstrumentType.formIPNSFileName("scd",runs[i]);
-
-    JFrame scene_f = new JFrame("Test for ThreeD_JPanel");
-    scene_f.setBounds(0,0,500,500);
-    ThreeD_JPanel vec_Q_space = new ThreeD_JPanel();
-    vec_Q_space.setBackground( new Color( 90, 90, 90 ) );
-    scene_f.getContentPane().add( vec_Q_space );
-    scene_f.setVisible( true );
-    scene_f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-    JFrame controller_f = new JFrame("Q_space Controller");
-    controller_f.setBounds(0,0,200,200);
-    AltAzController controller = new AltAzController();
-    controller_f.getContentPane().add( controller );
-    controller_f.setVisible( true );
-    controller_f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-    controller.setDistanceRange( 0.1f, 500 );
-    controller.addControlledPanel( vec_Q_space );
-
-    float times[];
-    float aves[];
-    float ys[];
-    IThreeD_Object objs[] = null;
-    Color colors[] = IndexColorMaker.getColorTable(
-                                IndexColorMaker.HEATED_OBJECT_SCALE, 128 );
-    Position3D q_pos;
-    Color c;
-
-    for ( int count = 0; count < file_names.length; count++ )
-    {
-      System.out.println("Loading file: " + file_names[count]);
-      RunfileRetriever rr = new RunfileRetriever( file_names[count] );
-      DataSet ds = rr.getDataSet( 1 );
-      if ( ds == null )
-        System.out.println("File not found: " + file_names[count]);
-      Data    d  = ds.getData_entry(0);
       float omega = ((Float)ds.getAttributeValue(Attribute.SAMPLE_OMEGA))
                          .floatValue();
       float phi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_PHI))
@@ -257,13 +453,11 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
       Tran3D omegaR = new Tran3D();
       Tran3D phiR   = new Tran3D();
       Tran3D chiR   = new Tran3D();
-      Tran3D one_eighty_z = new Tran3D();
       Tran3D combinedR = new Tran3D();
 
       Vector3D i_vec = new Vector3D( 1, 0, 0 );
       Vector3D k_vec = new Vector3D( 0, 0, 1 );
 
-      one_eighty_z.setRotation( 180, k_vec );
       phiR.setRotation( -phi, k_vec );
       chiR.setRotation( -chi, i_vec );
       omegaR.setRotation( +omega, k_vec );   // rotate by +45 deg, about z,
@@ -275,24 +469,45 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
       System.out.println("phi, chi, omega = " + phi +
                                          ", " + chi +
                                          ", " + omega );
+      return combinedR;
+  }
+
+
+  /* ------------------------- getPeaks ---------------------------- */
+  /*
+   *  Get an array of peaks from the dataset, based on the specified
+   *  threshold scale factor.
+   */
+  public IThreeD_Object[] getPeaks( DataSet ds, float thresh_scale )
+  {
+      Data  d;
+      float t;
+      float ys[];
+      float times[];
+      float cart_coords[];
+      Position3D q_pos;
+      Color c;
+      IThreeD_Object objs[] = null;
+      int   obj_index = 0;
+      Vector3D pts[] = new Vector3D[1];
+      pts[0]         = new Vector3D();
+      float aves[]   = findAverages( ds );
+
+      Tran3D combinedR = makeGoniometerRotation( ds );
+
       int n_data = ds.getNum_entries();
+      d = ds.getData_entry(0);
       int n_bins = d.getX_scale().getNum_x() - 1;
 
-      int n_objects   = n_data * n_bins;
-      objs            = new IThreeD_Object[n_objects];
-      Vector3D pts[]  = new Vector3D[1];
-      pts[0]          = new Vector3D();
-      float t;
-      float cart_coords[];
+      int n_objects = n_data * n_bins;
+      objs = new IThreeD_Object[n_objects];
 
-      int obj_index = 0;
-      aves = findAverages( ds );
       for ( int i = 0; i < n_data; i++ )
       {
         d = ds.getData_entry(i);
         DetectorPosition pos = (DetectorPosition)
                               d.getAttributeValue( Attribute.DETECTOR_POS );
-        float initial_path = 
+        float initial_path =
              ((Float)d.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
         times = d.getX_scale().getXs();
         ys    = d.getY_values();
@@ -312,21 +527,164 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
               color_index = 127;
             c = colors[ color_index ];
             objs[obj_index] = new Ball( pts[0], 0.02f, c );
+            objs[obj_index].setPickID( obj_index );
             obj_index++;
           }
         }
       }
       System.out.println("Number of points = " + obj_index );
+
       IThreeD_Object non_zero_objs[] = new IThreeD_Object[obj_index];
       for ( int i = 0; i < obj_index; i++ )
         non_zero_objs[i] = objs[i];
 
-      vec_Q_space.setObjects( file_names[count], non_zero_objs );
-      draw_axes(1, vec_Q_space );
-//    System.gc();
+      return non_zero_objs;
+  }
+
+  /* ------------------------- main -------------------------------- */
+
+  public static void main( String args[] )
+  {
+    SCDRecipLat viewer = new SCDRecipLat();
+
+    float thresh_scale = 1.0f;
+
+    viewer.parseArgs( args );
+    if ( viewer.threshold.length() > 0 )
+      try
+      {
+        thresh_scale = (new Float(viewer.threshold)).floatValue();
+        thresh_scale = Math.abs( thresh_scale );   
+        if ( thresh_scale == 0 )
+        {
+          thresh_scale = 1;
+          System.out.println("threshold of 0 ignored, using default...");
+        }
+      }
+      catch ( Exception e )
+      {
+        System.out.println("Invalid threshold value, ignored");
+      }
+
+    int runs[] = IntList.ToArray( viewer.run_nums );
+    String file_names[] = new String[ runs.length ];
+    for ( int i = 0; i < runs.length; i++ )
+     file_names[i] = viewer.path+InstrumentType.formIPNSFileName("scd",runs[i]);
+
+    RunfileRetriever rr;
+    DataSet ds;
+    for ( int count = 0; count < file_names.length; count++ )
+    {
+      System.out.println("Loading file: " + file_names[count]);
+      rr = new RunfileRetriever( file_names[count] );
+      ds = rr.getDataSet( 1 );
+      if ( ds == null )
+        System.out.println("File not found: " + file_names[count]);
+      else
+      {
+        IThreeD_Object non_zero_objs[] = viewer.getPeaks( ds, thresh_scale );
+        viewer.vec_Q_space.setObjects( file_names[count], non_zero_objs );
+      }
    }
      
     System.out.println("All files loaded");
   }
+
+
+/* ------------------------- ViewMouseInputAdapter ----------------------- */
+/**
+ *  Listen for mouse events
+ */
+private class ViewMouseInputAdapter extends MouseInputAdapter
+{
+   int last_index = IThreeD_Object.INVALID_PICK_ID;
+
+   public void mousePressed( MouseEvent e )
+   {
+     handle_event(e);
+   }
+
+   public void mouseDragged( MouseEvent e )
+   {
+     handle_event(e);
+   }
+
+   private void handle_event( MouseEvent e )
+   {
+     Point pt = e.getPoint();
+     int index = vec_Q_space.pickID( e.getX(), e.getY(), 5 );
+     if ( index != last_index )
+     {
+       last_index = index;
+       if ( index != IThreeD_Object.INVALID_PICK_ID )
+       {
+         IThreeD_Object obj = vec_Q_space.pickedObject();
+         float coords[] = obj.position().get();
+         String result = new String( Format.real( coords[0], 6, 3 ) );
+         result += ", " + Format.real( coords[1], 6, 3 );
+         result += ", " + Format.real( coords[2], 6, 3 );
+         q_readout.setText( result );
+       }
+       else
+         q_readout.setText( "undefined" );
+     }
+   }
+}
+
+
+/* ------------------------- ReadoutListener ----------------------- */
+/**
+ */
+private class ReadoutListener implements ActionListener 
+{
+   public void actionPerformed( ActionEvent e )
+   {
+     String        action  = e.getActionCommand();
+     VectorReadout readout = (VectorReadout)e.getSource();
+
+     if ( action.startsWith( "Select" ) )
+     {
+       IThreeD_Object obj = vec_Q_space.pickedObject();
+       if ( obj == null )
+       {
+         if ( readout.getTitle().equals(ORIGIN) )      // origin defaults to 
+           readout.setVector( new Vector3D(0,0,0) );   // (0,0,0)
+         else
+           readout.setVector( null );
+       }
+       else
+       {
+         if ( readout.getTitle().equals(ORIGIN) ) 
+           readout.setVector( obj.position() );        // just move the origin
+
+         else                                          // get vector relative
+         {                                             // to the origin
+           Vector3D vec = new Vector3D( obj.position() );
+           Vector3D start = new Vector3D( origin_vec.getVector() );
+           start.multiply( -1 );
+           vec.add( start ); 
+           readout.setVector( vec );
+         }
+       }  
+     }
+     else                         // must be a numeric scale factor so scale
+     {                            // the vector by the scale factor
+       float scale_factor = 1;
+       try
+       {
+         scale_factor = Float.valueOf(action).floatValue();
+         Vector3D vec = readout.getVector();
+         vec.multiply( scale_factor );
+         readout.setVector( vec );
+       }
+       catch ( Exception exception )
+       {                       // just use the default scale factor 
+       }
+     }
+
+     Redraw();
+   }
+}
+
 
 }
