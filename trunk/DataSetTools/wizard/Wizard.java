@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.45  2003/06/30 14:26:10  bouzekc
+ * Now uses the LookAndFeelManager class to set the Pluggable
+ * Look and Feel (PLAF) of the Wizard.  Sets the PLAF to Motif
+ * if running on a Linux machine due to space problems with
+ * low resolution screens.
+ *
  * Revision 1.44  2003/06/27 22:05:47  bouzekc
  * Fixed log spelling error.  Added missing javadocs.
  *
@@ -817,6 +823,8 @@ public abstract class Wizard implements PropertyChangeListener {
    *  Makes the GUI for this Wizard.
    */
   protected void makeGUI(  ) {
+    LookAndFeelManager.setLookAndFeel(  );
+
     GridBagConstraints gbc = new GridBagConstraints(  );
 
     gbc.fill        = GridBagConstraints.HORIZONTAL;
