@@ -2,6 +2,9 @@
  * @(#)MultiRunfileLoader.java     0.1  2000/06/13  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2000/07/13 14:26:22  dennis
+ *  First pass at adding monitor statistics to OpLog as files are loaded
+ *
  *  Revision 1.1  2000/07/10 22:36:11  dennis
  *  July 10, 2000 version... many changes
  *
@@ -19,6 +22,7 @@ package DataSetTools.operator;
 import java.util.Vector;
 import java.io.*;
 import DataSetTools.dataset.*;
+import DataSetTools.instruments.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.util.*;
@@ -93,6 +97,73 @@ public class MultiRunfileLoader extends    Operator
    }
 
 
+  /* ------------------------- MakeLogEntries --------------------------- */
+  /**
+   *
+   */
+   void MakeLogEntries( DataSet           ds, 
+                        String            run_names[],
+                        HistogramDataPeak mon_1[], 
+                        HistogramDataPeak mon_2[]  )
+   {
+      for ( int i = 0; i < mon_1.length; i++ )
+      {
+        mon_1[i].PrintPeakInfo( run_names[i]+" Monitor 1", IPeak.PEAK_ONLY);
+        mon_2[i].PrintPeakInfo( run_names[i]+" Monitor 2", IPeak.PEAK_ONLY);
+      }
+                                                   // Monitor #1 statistics
+      float area_1, 
+            centroid_1,
+            variance_1;
+
+      float position_1 = mon_1[0].getPosition();
+      float fwhm_1     = mon_1[0].getFWHM();
+
+      float a1 = position_1 - 5 * fwhm_1;
+      float b1 = position_1 + 5 * fwhm_1;
+
+                                                   // Monitor #2 statistics
+      float area_2,
+            centroid_2,
+            variance_2;
+
+      float position_2 = mon_2[0].getPosition();
+      float fwhm_2     = mon_2[0].getFWHM();
+
+      float a2 = position_2 - 5 * fwhm_2;
+      float b2 = position_2 + 5 * fwhm_2;
+                                                   // Now add the data from
+                                                   // from all the monitors to
+                                                   // the DataSet log
+      ds.addLog_entry("On interval [ " + a1 + ", " + b1 + " ]");
+      ds.addLog_entry("On interval [ " + a2 + ", " + b2 + " ]");
+      for ( int i = 0; i < mon_1.length; i++ )
+      {
+         mon_1[i].setEvaluationMode( IPeak.PEAK_PLUS_BACKGROUND );
+         area_1     = mon_1[i].Area( a1, b1);
+         centroid_1 = mon_1[i].Moment( a1, b1, 0, 1) / area_1;
+         variance_1 = mon_1[i].Moment( a1, b1, 2) / area_1;
+/*
+         variance_1 = mon_1[i].Moment( 
+              mon_1[i].getPosition() - 5 * mon_1[i].getFWHM(), 
+              mon_1[i].getPosition() + 5 * mon_1[i].getFWHM(), 2) / area_1;
+*/
+         mon_2[i].setEvaluationMode( IPeak.PEAK_PLUS_BACKGROUND );
+         area_2     = mon_2[i].Area( a2, b2);
+         centroid_2 = mon_2[i].Moment( a2, b2, 0, 1) / area_2;
+         variance_2 = mon_2[i].Moment( a2, b2, 2) / area_2;
+
+         ds.addLog_entry( run_names[i] + " " +
+                          area_1       + " " +
+                          centroid_1   + " " +
+                          variance_1   + "  " +
+                          area_2       + " " +
+                          centroid_2   + " " +
+                          variance_2 );
+      }  
+   }
+
+
   /* ----------------------------- getResult ---------------------------- */
   /**
    * Returns the object that is the result of applying this operation.  This
@@ -107,26 +178,43 @@ public class MultiRunfileLoader extends    Operator
    {
      Runfile          first_runfile,
                       current_runfile;
-
      RunfileRetriever rr;
      DataSet          datasets[] = new DataSet[2];
 
-     String    path       = (String)getParameter(0).getValue();
-     String    instrument = (String)getParameter(1).getValue();
-     int       runs[]     = (int[])getParameter(2).getValue();
+                                          // get the parameters specifying the
+                                          // runs         
+     String    path        = (String)getParameter(0).getValue();
+     String    instrument  = (String)getParameter(1).getValue();
+     int       runs[]      = (int[])getParameter(2).getValue();
+     String    file_name;
+     String    run_names[] = new String[ runs.length ];
+
+                                          // allocate and mark as un-used 
+                                          // space for monitor peaks from each
+                                          // DataSet.  Record the run names 
+     HistogramDataPeak mon_1[] = new HistogramDataPeak[ runs.length ]; 
+     HistogramDataPeak mon_2[] = new HistogramDataPeak[ runs.length ]; 
+     for ( int i = 0; i < mon_1.length; i++ )
+     {
+       mon_1[i] = null;
+       mon_2[i] = null;
+       run_names[i] = instrument + " " + runs[i];
+     }
+                                        // try to bring in the first run and
+                                        // record the monitor peaks if needed
      boolean   compare_monitor_pulses
                         = ((Boolean)getParameter(3).getValue()).booleanValue(); 
      float     centroid_1 = 0,
                variance_1 = 0;
      float     centroid;
 
-     String run_name = path+instrument+runs[0]+".run";
-     System.out.println( "Opening " + run_name );
+     file_name = path + InstrumentType.formIPNSFileName( instrument, runs[0] );
+     System.out.println( "Opening " + file_name );
 
      try
      {
-       first_runfile = new Runfile( run_name );
-       rr            = new RunfileRetriever( run_name );
+       first_runfile = new Runfile( file_name );
+       rr            = new RunfileRetriever( file_name );
 
                              // load the first run's monitors and histogram
        datasets[0] = rr.getFirstDataSet(Retriever.MONITOR_DATA_SET);
@@ -135,32 +223,35 @@ public class MultiRunfileLoader extends    Operator
 
        if ( datasets[0] == null || datasets[1] == null )
          return new ErrorString(
-                    "ERROR: no monitors or histogram in " + run_name);
+                    "ERROR: no monitors or histogram in " + file_name);
 
        if ( compare_monitor_pulses )  // record the centroid and variance of
                                       // the first monitor pulse from the first
                                       // runfile
        {
-         HistogramDataPeak peak_1 = new HistogramDataPeak( 
-                                             datasets[0].getData_entry(0) );
-         float position = peak_1.getPosition();
-         float fwhm     = peak_1.getFWHM();
+         mon_1[0] = new HistogramDataPeak( datasets[0].getData_entry(0) );
+         mon_2[0] = new HistogramDataPeak( datasets[0].getData_entry(1) );
+         float position = mon_1[0].getPosition();
+         float fwhm     = mon_1[0].getFWHM();
 
-         peak_1.setEvaluationMode( IPeak.PEAK_ONLY );
-         float area_1 = peak_1.Area( position-2.5f*fwhm, position+2.5f*fwhm); 
-         centroid_1 = peak_1.Moment( position-2.5f*fwhm, 
-                                     position+2.5f*fwhm, 0, 1) / area_1; 
-         variance_1 = peak_1.Moment( position-2.5f*fwhm, 
-                                     position+2.5f*fwhm, 2) / area_1; 
-         peak_1.PrintPeakInfo( "First Run, Monitor 1", IPeak.PEAK_ONLY );
+         mon_1[0].setEvaluationMode( IPeak.PEAK_ONLY );
+         float area_1 = mon_1[0].Area( position-2.5f*fwhm, position+2.5f*fwhm); 
+         centroid_1 = mon_1[0].Moment( position-2.5f*fwhm, 
+                                       position+2.5f*fwhm, 0, 1) / area_1; 
+         variance_1 = mon_1[0].Moment( position-2.5f*fwhm, 
+                                       position+2.5f*fwhm, 2) / area_1; 
+         mon_1[0].PrintPeakInfo( "First Run, Monitor 1", IPeak.PEAK_ONLY );
        } 
      }
      catch ( Exception e )
      {
        System.out.println("ERROR: exception accessing first runfile. " + e );
-       return new ErrorString("ERROR: Can not access file: " + run_name);
+       return new ErrorString("ERROR: Can not access file: " + file_name);
      }
 
+                                  // now bring in each later run, keep it if
+                                  // the monitor peaks agree and save the
+                                  // monitor peaks
      DataSet monitor_ds,
              hist_ds;
      String  current_name;
@@ -169,7 +260,8 @@ public class MultiRunfileLoader extends    Operator
 
      for ( int i = 1; i < runs.length; i++ )
      {      
-       current_name = path+instrument+runs[i]+".run";
+       current_name = path + InstrumentType.formIPNSFileName( instrument,
+                                                              runs[i] );
        System.out.println( "i="+i+"...Opening... " + current_name );
        try
        { 
@@ -186,17 +278,18 @@ public class MultiRunfileLoader extends    Operator
                                           // current runfile and compare to 
                                           // the values from the first runfile
            {
-             HistogramDataPeak peak = new HistogramDataPeak(
-                                                monitor_ds.getData_entry(0) );
-             float position = peak.getPosition();
-             float fwhm     = peak.getFWHM();
+             mon_1[i] = new HistogramDataPeak( monitor_ds.getData_entry(0) );
+             mon_2[i] = new HistogramDataPeak( monitor_ds.getData_entry(1) );
+             float position = mon_1[i].getPosition();
+             float fwhm     = mon_1[i].getFWHM();
 
-             peak.setEvaluationMode( IPeak.PEAK_ONLY );
-             float area = peak.Area( position-2.5f*fwhm, position+2.5f*fwhm);
-             centroid = peak.Moment( position-2.5f*fwhm, 
-                                     position+2.5f*fwhm, 0, 1) / area;
+             mon_1[i].setEvaluationMode( IPeak.PEAK_ONLY );
+             float area = mon_1[i].Area( position-2.5f*fwhm, 
+                                         position+2.5f*fwhm);
+             centroid = mon_1[i].Moment( position-2.5f*fwhm, 
+                                         position+2.5f*fwhm, 0, 1) / area;
 
-             peak.PrintPeakInfo( "Current Run, Monitor 1", IPeak.PEAK_ONLY );
+             mon_1[i].PrintPeakInfo("Current Run, Monitor 1",IPeak.PEAK_ONLY);
 
              
              if ( Math.abs( centroid - centroid_1 ) < Math.sqrt(variance_1) )
@@ -233,6 +326,9 @@ public class MultiRunfileLoader extends    Operator
        }
      }
      
+     if ( compare_monitor_pulses )
+       MakeLogEntries( datasets[1], run_names, mon_1, mon_2 );
+
      return datasets;
    }
 
@@ -244,7 +340,7 @@ public class MultiRunfileLoader extends    Operator
 
    public static void main(String[] args)
    {
-/*
+/*  Test case 1 ........................
       int runs[] = new int[3];
       runs[0] = 9898;
       runs[1] = 9899;
@@ -256,6 +352,7 @@ public class MultiRunfileLoader extends    Operator
                                        runs,
                                        true );
 */
+/*  Test case 2 ..........................
       int runs[] = new int[2];
       runs[0] = 2444;
       runs[1] = 2451;
@@ -265,6 +362,22 @@ public class MultiRunfileLoader extends    Operator
                                       "hrcs",
                                        runs,
                                        true );
+*/
+
+/*  Test case 3 .......................... 
+*/
+      int runs[] = new int[4];
+      runs[1] = 978;
+      runs[0] = 979;
+      runs[2] = 980;
+      runs[3] = 981;
+  
+      MultiRunfileLoader loader = new MultiRunfileLoader(
+                                      "/IPNShome/dennis/ARGONNE_DATA/",
+                                      "HRCS",
+                                       runs,
+                                       true );
+
 
       Object result = loader.getResult();
       if ( result instanceof DataSet[] )
@@ -289,6 +402,10 @@ public class MultiRunfileLoader extends    Operator
 
         System.out.println("Ratio A2/A1 = " + area[1]/area[0] );
 
+        System.out.println("Monitor Data Set Log...................."); 
+        datasets[0].getOp_log().Print();
+        System.out.println("Histogram Data Set Log...................."); 
+        datasets[1].getOp_log().Print();
       }
       else
         System.out.println( result.toString() );
