@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:26:19  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 21:04:09  pfpeterson
  *  Operator reorganization.
  *
@@ -168,7 +171,7 @@ import  DataSetTools.operator.DataSet.Math.Analyze.*;
   *
   *  </ul>
   *
-  *  @see DataSetOperator
+  *  @see DataSetTools.operator.DataSet.DataSetOperator
   *  @see Operator
   */
 

@@ -32,6 +32,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:26:24  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 21:04:14  pfpeterson
  *  Operator reorganization.
  *
@@ -91,9 +94,9 @@ import  DataSetTools.operator.DataSet.Math.Analyze.*;
   *  geometry spectrometer based on the result of applying the scattering 
   *  function operator.  
   *
-  *  @see SpectrometerScatteringFunction
+  *  @see ScatteringFunction
   *  @see DoubleDifferentialCrossection 
-  *  @see DataSetOperator
+  *  @see DataSetTools.operator.DataSet.DataSetOperator
   *  @see Operator
   */
 

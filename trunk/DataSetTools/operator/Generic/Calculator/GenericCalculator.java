@@ -39,10 +39,10 @@ import DataSetTools.operator.Generic.GenericOperator;
  *   Base class for generic operators that calculate information based
  *   on only a few parameters and do not depend on any DataSet.
  *
- * @see GenericTOF_DG_Spectrometer
- * @see GenericTOF_SCD
+ * @see DataSetTools.operator.Generic.TOF_DG_Spectrometer.GenericTOF_DG_Spectrometer
+ * @see DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD
  * @see GenericOperator
- * @see WriteNexus 
+ * @see DataSetTools.operator.Generic.Save.WriteNexus 
  *
  */
 

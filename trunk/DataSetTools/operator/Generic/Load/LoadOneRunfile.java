@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:27:49  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 20:57:56  pfpeterson
  *  Operator reorganization.
  *
@@ -93,7 +96,7 @@ import DataSetTools.operator.Parameter;
 /**
  * Operator to load all data sets from one IPNS runfile
  *
- * @see Operator
+ * @see DataSetTools.operator.Operator
  */
 
 public class LoadOneRunfile extends    GenericLoad 

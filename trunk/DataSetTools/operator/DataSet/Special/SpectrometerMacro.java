@@ -35,6 +35,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/05 19:26:06  pfpeterson
+ * Updated @see references in javadocs.
+ *
  * Revision 1.1  2002/02/22 21:03:45  pfpeterson
  * Operator reorganization.
  *
@@ -89,6 +92,7 @@ import  DataSetTools.util.*;
 import  DataSetTools.retriever.*;
 import  ChopTools.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.operator.DataSet.Conversion.XAxis.*;
 
 
 /**

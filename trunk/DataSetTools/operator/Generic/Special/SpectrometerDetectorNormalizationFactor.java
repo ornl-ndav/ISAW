@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:28:07  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 20:58:33  pfpeterson
  *  Operator reorganization.
  *
@@ -140,8 +143,8 @@ import  DataSetTools.operator.Parameter;
  *     this returns a message String.
  *   </ul>
  *
- *  @see DataSetOperator
- *  @see Operator
+ *  @see DataSetTools.operator.DataSet.DataSetOperator
+ *  @see DataSetTools.operator.Operator
  */
 
 public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial 

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:25:29  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 21:02:13  pfpeterson
  *  Operator reorganization.
  *
@@ -56,7 +59,7 @@ import DataSetTools.operator.DataSet.DataSetOperator;
  * on the Data blocks of one or more DataSets.
  *
  * @see DataSetOperator
- * @see ScalarOp 
+ * @see DataSetTools.operator.DataSet.Math.Scalar.ScalarOp 
  *
  */
 

@@ -31,6 +31,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:25:43  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 21:02:29  pfpeterson
  *  Operator reorganization.
  *
@@ -131,8 +134,8 @@ import  DataSetTools.operator.Parameter;
   * values for that angle are averaged to form the y-value that corresponds to
   * that angle in the new Data block.
   *
-  *  @see DataSetOperator
-  *  @see Operator
+  *  @see DataSetTools.operator.DataSet.DataSetOperator
+  *  @see DataSetTools.operator.Operator
   */
 
 public class DataSetCrossSection extends    AnalyzeOp 

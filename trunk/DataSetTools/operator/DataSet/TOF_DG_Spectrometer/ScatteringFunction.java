@@ -31,6 +31,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:26:23  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 21:04:13  pfpeterson
  *  Operator reorganization.
  *
@@ -114,8 +117,8 @@ import  DataSetTools.operator.Parameter;
   *  operator.  
   *
   *  @see DoubleDifferentialCrossection 
-  *  @see DataSetOperator
-  *  @see Operator
+  *  @see DataSetTools.operator.DataSet.DataSetOperator
+  *  @see DataSetTools.operator.Operator
   */
 
 public class ScatteringFunction extends    DS_TOF_DG_Spectrometer

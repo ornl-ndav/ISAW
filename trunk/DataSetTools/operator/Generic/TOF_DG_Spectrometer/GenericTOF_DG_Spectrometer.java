@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:28:17  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 20:58:51  pfpeterson
  *  Operator reorganization.
  *
@@ -50,7 +53,7 @@ import DataSetTools.operator.Generic.GenericOperator;
  * geometry spectrometers. 
  *
  * @see GenericOperator
- * @see WriteNexus 
+ * @see DataSetTools.operator.Generic.Save.WriteNexus 
  *
  */
 
