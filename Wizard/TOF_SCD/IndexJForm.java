@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.28  2003/11/11 20:36:43  bouzekc
+ * Modified to work with new Form.addParameter().
+ *
  * Revision 1.27  2003/11/05 02:20:30  bouzekc
  * Changed to work with new Wizard and Form design.
  *
@@ -245,12 +248,16 @@ public class IndexJForm extends Form implements PropertyChangeListener {
 
     RadioButtonPG rpg = new RadioButtonPG( 
         "Get Matrix File From: ", choices, false );
-    rpg.setValue( choices.get( 0 ) );
+
     addParameter( rpg );  //7
+    //have to do this because Operator clones the parameters
+    rpg = ( ( RadioButtonPG )getParameter( 7 ) );
+    rpg.addPropertyChangeListener( IParameter.VALUE, this );
+    rpg.setValue( choices.get( 0 ) );
+
     addParameter( new LoadFilePG( "Matrix File to Load", "", false ) );  //8
     addParameter( new IntArrayPG( "Restrict Runs", "", false ) );  //9
     setResultParam( new LoadFilePG( "JIndex Log", " ", false ) );  //10
-    rpg.addPropertyChangeListener( IParameter.VALUE, this );
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
