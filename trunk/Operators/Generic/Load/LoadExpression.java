@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/04/18 18:24:19  dennis
+ * Now checks for successful parsing of function.
+ * Changed the default function.
+ *
  * Revision 1.1  2002/04/17 21:49:34  dennis
  * Operator to Load DataSet using a mathematical expression.
  *
@@ -130,13 +134,13 @@ public class LoadExpression extends GenericLoad
   public void setDefaultParameters()
   {
     parameters = new Vector();
-    addParameter( new Parameter("Expression", "a*t*t+b*t*c") );
+    addParameter( new Parameter("Expression", "A0*exp(-k*t)*sin(freq*t)") );
     addParameter( new Parameter("Argument Name", "t") );
-    addParameter( new Parameter("Parameter Names", "a,b,c") );
-    addParameter( new Parameter("Parameter Values", "1,-2,1") );
-    addParameter( new Parameter("Domain min", new Float(-5) ) );
+    addParameter( new Parameter("Parameter Names", "A0, k, freq") );
+    addParameter( new Parameter("Parameter Values", "10,0.8,6.28") );
+    addParameter( new Parameter("Domain min", new Float(0) ) );
     addParameter( new Parameter("Domain max", new Float(5) ) );
-    addParameter( new Parameter("Number of samples", new Integer(500) ) );
+    addParameter( new Parameter("Number of samples", new Integer(1000) ) );
     addParameter( new Parameter("Histogram(or Function)", new Boolean(false) ));
   }
 
@@ -179,6 +183,9 @@ public class LoadExpression extends GenericLoad
 
     Expression f = new Expression( expression, var_name, 
                                    parameter_names, parameter_values ); 
+    if ( !f.isValid() )
+      return new ErrorString( "Expression invalid " + expression );
+
     f.setDomain( domain );
 
     Data d; 
