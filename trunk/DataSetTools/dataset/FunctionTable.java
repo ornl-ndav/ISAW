@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/07/23 15:06:50  dennis
+ *  clone() method now also copies the use_sqrt_errors flag.
+ *
  *  Revision 1.11  2003/07/09 14:53:48  dennis
  *  The method to get a y-value at a specified x-value no longer gets
  *  the full list of x-values and does a binary search.  It now uses
@@ -314,6 +317,9 @@ public class FunctionTable extends    TabulatedData
   public Object clone()
   {
     Data temp = new FunctionTable( x_scale, y_values, errors, group_id );
+
+                                      // copy the fields
+    temp.setSqrtErrors( isSqrtErrors() );
 
                                       // copy the list of attributes.
     AttributeList attr_list = getAttributeList();

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/07/23 15:06:51  dennis
+ *  clone() method now also copies the use_sqrt_errors flag.
+ *
  *  Revision 1.4  2002/11/27 23:14:07  pfpeterson
  *  standardized header
  *
@@ -275,6 +278,9 @@ public class EventData extends    Data
   public Object clone()
   {
     EventData temp = new EventData(x_scale, eventlist, errors, group_id);
+
+                                      // copy the fields
+    temp.setSqrtErrors( isSqrtErrors() );
 
                                       // copy the list of attributes.
     AttributeList attr_list = getAttributeList();
