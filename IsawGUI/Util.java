@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2004/01/24 23:09:39  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.24  2003/10/15 03:18:31  bouzekc
  * Fixed javadoc errors.
  *
@@ -91,9 +94,6 @@
  */
 package IsawGUI;
 
-
-import IPNS.Runfile.*;
-import IPNS.Runfile.Header.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import DataSetTools.retriever.*;
@@ -101,15 +101,11 @@ import DataSetTools.writer.*;
 import javax.swing.text.*;
 import java.io.*;
 import java.util.*;
-import java.awt.*;
-import javax.swing.filechooser.*;
 import javax.swing.table.*;
 import javax.swing.*;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.operator.*;
-import DataSetTools.operator.Generic.Load.*;
 import DataSetTools.operator.Generic.Save.*;
-import SDDS.java.SDDS.*;
 
 
 /**
@@ -392,7 +388,6 @@ public class Util
 
    public Vector listProperties()
    {
-      StringBuffer buf = new StringBuffer();
       String pName, pVal;
       Vector data = new Vector();
       Properties props = new Properties();

@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.21  2004/01/24 23:09:38  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.20  2003/10/15 03:18:32  bouzekc
  * Fixed javadoc errors.
  *
@@ -52,20 +55,15 @@
 package IsawGUI;
 
 import java.awt.*;
-import java.awt.Color.*;
 import DataSetTools.dataset.*;
-import DataSetTools.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.util.*;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.text.*;
 import javax.swing.tree.*;
-import javax.swing.JTree.*;
-import java.util.zip.*;
 import javax.swing.table.*;
 import java.util.*;
-import IPNS.Runfile.*;
 import javax.swing.border.*;
 import Command.*;
 import java.awt.event.*;

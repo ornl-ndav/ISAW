@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/01/24 23:09:39  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.6  2003/10/15 03:18:31  bouzekc
  * Fixed javadoc errors.
  *
@@ -45,7 +48,6 @@
 */
 package IsawGUI;
 import java.awt.event.*;
-import DataSetTools.viewer.Table.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.operator.*;
