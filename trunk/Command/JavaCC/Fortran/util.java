@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/08/02 20:06:02  rmikk
+ * The WRITE methods now go to the status pane
+ *
  * Revision 1.2  2004/07/30 14:49:46  rmikk
  * Removed unused imports
  *
@@ -48,6 +51,7 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 //import gov.anl.ipns.Util.Numeric.*;
 import DataSetTools.operator.*;
 import java.text.*;
+import DataSetTools.util.*;
 
 /**
  * This class contains compile and run-time utility methods used by Fcvrt.java
@@ -505,7 +509,7 @@ public static void main( String[] args){
   * @param S  The String to be read
   */
  public static void WRITESTRING( String S){
-     System.out.print(S);
+     addmsg(S);
  }
  
 
@@ -513,7 +517,9 @@ public static void main( String[] args){
   *  Implements the WRITELN FORTRAN CALL
   */
 public static void WRITELN(){
-  System.out.println("");
+  SharedData.addmsg( lineBuff);
+  lineBuff="";
+  
 }
 
 
@@ -530,9 +536,9 @@ public static void WRITEINT( int i, String format){
     width = -1;
   }
   if( width > 0)
-   System.out.print( gov.anl.ipns.Util.Numeric.Format.integer((double)i,width));
+     addmsg( gov.anl.ipns.Util.Numeric.Format.integer((double)i,width));
  else
-    System.out.print(""+i);
+    addmsg(""+i);
 
 }
 
@@ -553,17 +559,17 @@ public static void WRITEFLOAT( float i, String format){
   format = format.substring(1);
   int dot = format.indexOf('.');
   if( dot < 0)
-     System.out.print(i);
+     addmsg(""+i);
   int width = -1;
   int aftDec = -1;
   try{
     width = new Integer( format.substring(0,dot)).intValue();
     aftDec = new Integer( format.substring(dot+1)).intValue();
   }catch( Exception s){
-    System.out.print( ""+i);
+	addmsg( ""+i);
   }
   if( !exponential){
-    System.out.print(gov.anl.ipns.Util.Numeric.Format.real((double)i,width, aftDec));
+	addmsg(gov.anl.ipns.Util.Numeric.Format.real((double)i,width, aftDec));
     return;
   }
   char[] javaFormatString = new char[width];
@@ -572,7 +578,11 @@ public static void WRITEFLOAT( float i, String format){
   Arrays.fill( javaFormatString,1,width-4,'#');
   javaFormatString[ width-1-4-aftDec]='.';
   String S = (new DecimalFormat( new String( javaFormatString))).format((double)i);
-  System.out.print( gov.anl.ipns.Util.Numeric.Format.string( S,width,true));
+  addmsg( gov.anl.ipns.Util.Numeric.Format.string( S,width,true));
 
+}
+static String  lineBuff="";
+public static void addmsg( String S){
+  lineBuff += S;
 }
 }
