@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2001/05/29 15:08:24  dennis
+ *  Now uses initializeWorldCoords to reset both the local and
+ *  global transforms.
+ *
  *  Revision 1.8  2001/04/26 14:23:51  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -467,7 +471,7 @@ private void DrawGraphs( )
     CoordBounds graph_bounds = h_graph[i].getGlobalWorldCoords();
     graph_bounds.setBounds( x_min, graph_bounds.getY1(),
                             x_max, graph_bounds.getY2() );
-    h_graph[i].setGlobalWorldCoords( graph_bounds );
+    h_graph[i].initializeWorldCoords( graph_bounds );
 
     h_graph[i].addMouseMotionListener( new HGraphMouseMotionAdapter() );
     h_graph[i].addMouseListener( new HGraphMouseAdapter() );
