@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/12/12 15:23:11  rmikk
+ * Set the title of the DataSet
+ *
  * Revision 1.1  2003/11/23 23:43:57  rmikk
  * Initial Checkin
  *
@@ -92,7 +95,7 @@ public class ProcessOldNxEntry implements IProcessNxEntry {
      }
 
       NXentry_TOFNDGS Entry ;
-     
+      DS.setTitle( NxDataNode.getNodeName());
       Entry = new NXentry_TOFNDGS( NxEntryNode , DS ,NxDataNode) ;
       Entry.setNxData( new NxData_Gen() ) ;
       boolean res = Entry.processDS(  DS , NxDataNode ) ;
