@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.68  2004/02/07 19:39:23  rmikk
+ * Fixed an error that prevented changing from Jython scripts to Isaw Scripts
+ *
  * Revision 1.67  2004/01/08 19:40:01  bouzekc
  * Removed unused variables.
  *
@@ -943,24 +946,24 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
          }
          }
        */
-      else if( e.getSource(  )
+      else if( e.getSource(  ) 
                   .equals( Language ) ) {
         int indx = Language.getSelectedIndex(  );
-
-        if( ( indx == 0 ) && ( SP instanceof IScriptProcessor ) ) {
+       
+        if( ( indx == 0 ) && ( SP instanceof ScriptOperator ) ) {
           return;
         }
-
+        
         if( ( indx != 0 ) && !( SP instanceof IScriptProcessor ) ) {
           return;
         }
-
+        
         String Fname = "*.iss";
 
         if( indx != 0 ) {
           Fname = "*.py";
         }
-
+       
         IScriptProcessor sp = ScriptInterpretFetch.getScriptProcessor( 
             Fname, Commands.getDocument(  ) );
 
@@ -970,7 +973,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
           SharedData.addmsg( "Jython not found" );
         }
         SP = sp;
-
+        
         //SP.setIObserverList( IObslist );
         SP.setPropertyChangeList( PC );
         addDataSets( SP );
