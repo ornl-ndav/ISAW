@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.57  2003/07/09 21:28:45  bouzekc
+ * Now catches Throwable in the SwingWorker.
+ *
  * Revision 1.56  2003/07/09 20:42:43  bouzekc
  * Catches all exceptions thrown from exec_forms(), prints a
  * stack trace and shows an error dialog.
@@ -1731,7 +1734,7 @@ public abstract class Wizard implements PropertyChangeListener {
       try {
         //here is where the time intensive work is.
         exec_forms( formNum );
-      } catch( Exception e ) {
+      } catch( Throwable e ) {
         //crashed hard when executing an outside Operator, Form, or Script
         //try to salvage what we can
         JOptionPane.showMessageDialog( 
