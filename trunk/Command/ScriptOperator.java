@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.29  2003/10/10 01:56:58  bouzekc
+ * Removed CTRL-M characters.
+ *
  * Revision 1.28  2003/10/10 01:55:12  bouzekc
  * Merge of ScriptProcessor and ScriptOperator.
  *
