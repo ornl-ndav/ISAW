@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/11/29 17:18:50  rmikk
+ * Added a static reference to the JHelp variable.  This will make
+ *    the second invocation of the this help system very quick.
+ *
  * Revision 1.1  2002/12/08 22:07:31  dennis
  * Utility class to obtain jhelp component for new help system.
  * Allows fallback to old help system if jhall.jar not present. (Ruth)
@@ -51,8 +55,15 @@ import IsawHelp.HelpSystem.*;
 public  class Jhelp //throws ClassNotFoundException if help system class
                     //files are absent
     {
+      static JHelp jh= null;
+      static boolean started= false;
       public JComponent getHelpComponent()
        {
-         return new JHelp( new IsawOpHelpSet(false) );
+         if( !started){
+           started = true;
+           jh = new JHelp( new IsawOpHelpSet(false) );
+         }
+         return jh;
+           
        }
     }
