@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/06/11 17:03:59  dennis
+ * Now references static method setDataEntriesInAllGrids() through the
+ * class UniformGrid, rather than through an instance.
+ *
  * Revision 1.8  2004/03/15 19:33:54  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -248,8 +252,8 @@ public class ReadFlood extends GenericTOF_SAD{
         }
      }
      
-     gridEff.setDataEntriesInAllGrids( Efficiencies );
-     gridMask.setDataEntriesInAllGrids( Mask );
+     UniformGrid.setDataEntriesInAllGrids( Efficiencies );
+     UniformGrid.setDataEntriesInAllGrids( Mask );
      Grid_util.setEffectivePositions( Efficiencies, gridEff.ID());
      Grid_util.setEffectivePositions( Mask, gridMask.ID());
 
