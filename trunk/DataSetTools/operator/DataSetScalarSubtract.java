@@ -1,9 +1,39 @@
 /*
- * @(#)DataSetScalarSubtract.java   0.2  99/06/07   Dennis Mikkelson
- *                                       99/08/16   Added constructor to allow
- *                                                  calling operator directly
+ * File:  DataSetScalarSubtract.java 
  *             
+ * Copyright (C) 1999, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
+ * 
  *  $Log$
+ *  Revision 1.6  2001/04/26 19:07:32  dennis
+ *  Added copyright and GPL info at the start of the file.
+ *
  *  Revision 1.5  2000/11/10 22:41:34  dennis
  *     Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
@@ -33,7 +63,7 @@
  *  constructed within this hierarchy for the new operator.
  *
  *  Revision 1.4  2000/07/10 22:35:59  dennis
- *  July 10, 2000 version... many changes
+ *  Now Using CVS 
  *
  *  Revision 1.7  2000/06/15 16:26:14  dennis
  *  Added parameter make_new_ds to determine wheter or not a new DataSet
@@ -52,7 +82,8 @@
  *  Revision 1.4  2000/05/11 16:41:28  dennis
  *  Added RCS logging
  *
- *
+ *  99/08/16   Added constructor to allow
+ *             calling operator directly
  */
 
 package DataSetTools.operator;
@@ -163,7 +194,5 @@ public class DataSetScalarSubtract extends    ScalarOp
 
     return new_op;
   }
-
-
 
 }
