@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2002/12/11 22:17:35  pfpeterson
+ * Fixed formatting problem in TOF section of output file.
+ *
  * Revision 1.1  2002/12/09 18:26:59  pfpeterson
  * Added to CVS.
  *
@@ -554,7 +557,7 @@ public class WriteExp extends GenericTOF_SCD{
       if(col==0){
         sb.append(start_card+Format.real(row+1,3));
       }
-      sb.append(Format.real(xscale.getX(i),8));
+      sb.append(Format.real(xscale.getX(i),8,1));
       if(col==ncolPerRow-1){
         col=-1;
         row++;
