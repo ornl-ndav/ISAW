@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.34  2003/03/13 21:27:10  pfpeterson
+ * Fixed bug where we didn't skip comments while processing parameter lines.
+ *
  * Revision 1.33  2003/03/11 20:12:52  pfpeterson
  * Fixed bug with setting initial value of a parameter.
  *
@@ -768,8 +771,14 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     if( line==null || line.length()<=0 || line.indexOf("$")<0 )
       return false;
 
+    index=line.indexOf("#");
+    if(index==0){ // could be comment
+      index=line.indexOf("#$$");
+      if(index<0) // it is a comment
+        return true; // it dealt with things correctly
+    }
+
     // trim off the marker flag
-    index=line.indexOf("#$$");
     if(index<0)
       index=line.indexOf("$");
     if(Debug) System.out.println("start="+index);
