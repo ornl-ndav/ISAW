@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2002/02/26 15:27:10  rmikk
+ * Added a debug field.
+ * Added code for the TOFNDGS instrument definition
+ *
  * Revision 1.6  2001/09/20 17:36:44  dennis
  * Fixed @see javadoc comment
  *
@@ -82,7 +86,7 @@ public class ExtGetDS //extends Retriever
   Vector nEntries ,  
          nmonitors , 
          ndatasets ;
-
+  boolean debug=false;
 /**
 *@param node   the NxNode used to communicate with the underlying datasource
 *@param  filename  the filename
@@ -102,7 +106,7 @@ public class ExtGetDS //extends Retriever
  public int getType(  int data_set_num )
    {if( nEntries == null ) 
         setUpPointers() ;
-  
+    if( debug) System.out.println("in getType for "+data_set_num);
     int x , 
         p ;
     x = 0 ;
@@ -134,6 +138,7 @@ public DataSet getDataSet( int data_set_num )
         nhists ;
     x = 0 ;
     p = 0 ;
+    if(debug) System.out.println("in getDataSet "+data_set_num);
     nhists =0 ;
     nxentry = -1 ;
     monitor =  false ;
@@ -218,8 +223,9 @@ public DataSet getDataSet( int data_set_num )
        return DS ;
      }
     else
-     return null ;
-    
+     { DataSetTools.util.SharedData.status_pane.add( "ERROR:"+getErrorMessage()+" offset="+offset);
+      return DS; 
+      }
     }
 private AttributeList getGlobalAttributes()
    {AttributeList Res = new AttributeList() ;
@@ -273,7 +279,8 @@ private String getAnalysis( NxNode node)
        ndats ;
    nEntries = new Vector() ;
    nmonitors = new Vector() ;
-   ndatasets = new Vector() ;   
+   ndatasets = new Vector() ;  
+   nmon=ndats=0; 
    for( int i = 0 ; i < node.getNChildNodes() ; i++ )
      {NxNode nn = node.getChildNode( i ) ;
       if( nn.getNodeClass().equals( "NXentry" ) )
@@ -296,6 +303,7 @@ private String getAnalysis( NxNode node)
        ndatasets.addElement( new Integer( ndats ) ) ;
        }
      }
+    if(debug) System.out.println("nmonitors, ndatasets="+nmon+","+ndats);
    } 
 
 /** Returns any errormessage or "" if none
@@ -325,6 +333,7 @@ private String getAnalysis( NxNode node)
         }
      //System.out.println( "start Find analysis" ) ;
       NxNode child = node.getChildNode( "analysis" ) ;
+
       Object X ;
       if( child == null ) X = null ;
       else 
@@ -345,11 +354,18 @@ private String getAnalysis( NxNode node)
 	   //DS.setAttribute( new IntAttribute( Attribute.INST_TYPE ,
 	   //                  InstrumentType.TOF_DG_SPECTROMETER ) ) ;      
            }
-       else 
+       else if( S.equals( "TOFNGS"))
+          {Entry = new NXentry_TOFNDGS( node , DS ) ;
+           Entry.setNxData( new NXdata_Fields("time_of_flight","phi","data"  ) ) ;
+           Entry.monitorNames[0]="upstream";
+           Entry.monitorNames[1]="downstream";
+           }
+      
+       else
            {Entry = new NXentry_TOFNDGS( node , DS ) ;
             Entry.setNxData( new NxData_Gen(  ) ) ;
            }
-      
+       if(debug)System.out.println("Start Process NXEntry");
        res = Entry.processDS( DS , index ) ;
        if( Entry.getErrorMessage()!= "" )
 	   errormessage  += ";" + Entry.getErrorMessage() ;
