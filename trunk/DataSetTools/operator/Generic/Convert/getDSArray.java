@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/01/07 20:00:24  rmikk
+ * Made loop more efficient
+ *
  * Revision 1.1  2005/01/06 15:47:01  rmikk
  * Initial Checkin
  *
@@ -114,17 +117,22 @@ public class getDSArray implements Wrappable{
         
      int k=0;
      for( int i=0; i< nrows; i++)
-        for( int j = 0; j < ncols; j++)
-           for(int t=0; t < ntimes; t++ ){
-          Data D= grid.getData_entry(i+1,j+1); 
-          float V = D.getY_values()[t];
-          if( FortArray )
-             fdata[k++] = V;
-          else
-             data[i][j][t] = V;
+        for( int j = 0; j < ncols; j++){
+
+          Data D= grid.getData_entry(i+1,j+1);
+          if( D.getY_values().length != ntimes)
+            return new ErrorString("Not All Spectra have the same # of times"); 
+          float[] V = D.getY_values();
+          
+          for(int t=0; t < ntimes; t++ ){
+          
+             if( FortArray )// C array??
+                fdata[k++] = V[t];
+             else
+                data[i][j][t] = V[t];
           
            }
-           
+        }   
      if( data != null)
        return data;
      else return fdata;
