@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2003/08/30 19:47:12  bouzekc
+ * Now uses ArrayEntryJFrame.
+ *
  * Revision 1.30  2003/08/28 03:36:53  bouzekc
  * Made innerParameter private and added a method to set the parameter so that
  * the type can be set more accurately in the derived classes.
@@ -167,7 +170,7 @@
  */
 package DataSetTools.parameter;
 
-import DataSetTools.components.ParametersGUI.ArrayEntryJPanel;
+import DataSetTools.components.ParametersGUI.ArrayEntryJFrame;
 import DataSetTools.components.ParametersGUI.EntryWidget;
 
 import DataSetTools.util.PropertyChanger;
@@ -195,8 +198,7 @@ import javax.swing.*;
  * should go through this constructor
  */
 public abstract class VectorPG extends ParameterGUI
-  implements PropertyChangeListener, ActionListener, ParamUsesString,
-    PropertyChanger {
+  implements PropertyChangeListener, ActionListener, ParamUsesString {
   //~ Static fields/initializers ***********************************************
 
   public static final String DATA_CHANGED = "Data Changed";
@@ -204,8 +206,7 @@ public abstract class VectorPG extends ParameterGUI
   //~ Instance fields **********************************************************
 
   private ParameterGUI innerParam;
-  private PropertyChangeSupport pcs;
-  protected ArrayEntryJPanel GUI          = null;
+  private ArrayEntryJFrame GUI            = null;
   private JButton vectorButton            = null;
   private Vector listeners                = new Vector(  );
   private JDialog entryDialog;
@@ -226,8 +227,7 @@ public abstract class VectorPG extends ParameterGUI
    */
   public VectorPG( String name, Object val ) {
     super( name, val );
-    this.type   = TYPE;
-    pcs         = new PropertyChangeSupport( this );
+    this.type = TYPE;
   }
 
   /**
@@ -243,8 +243,7 @@ public abstract class VectorPG extends ParameterGUI
    */
   public VectorPG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-    this.type   = TYPE;
-    pcs         = new PropertyChangeSupport( this );
+    this.type = TYPE;
   }
 
   //~ Methods ******************************************************************
@@ -297,8 +296,6 @@ public abstract class VectorPG extends ParameterGUI
     return value;
   }
 
-  //*********** ActionListener methods *********************************
-
   /**
    * Called when the original button is pressed. It creates the JFrame that
    * stores the list box and editing buttons, etc.
@@ -306,24 +303,11 @@ public abstract class VectorPG extends ParameterGUI
   public void actionPerformed( ActionEvent evt ) {
     String command = evt.getActionCommand(  );
 
+    //only show the window if the parameter button was clicked.
     if( command.equals( innerParam.getName(  ) ) ) {
-      ;
+      GUI.setVisible( true );
     }
-
-    showEntryPanel(  );
   }
-
-  /**
-   * Adds an ActionListener to the Vector of ActionListeners held by this
-   * ParameterGUI.
-   *
-   * @param listener The ActionListener to add.
-   */
-  public void addActionListener( ActionListener listener ) {
-    listeners.addElement( listener );
-  }
-
-  //*********** PropertyChanger methods *********************************
 
   /**
    * Adds a property change listener to listen for new Vector values
@@ -334,7 +318,6 @@ public abstract class VectorPG extends ParameterGUI
     super.addPropertyChangeListener( listener );
 
     if( initialized ) {
-      pcs.addPropertyChangeListener( listener );
       GUI.addPropertyChangeListener( listener );
     }
   }
@@ -350,7 +333,6 @@ public abstract class VectorPG extends ParameterGUI
     super.addPropertyChangeListener( property, listener );
 
     if( initialized ) {
-      pcs.addPropertyChangeListener( property, listener );
       GUI.addPropertyChangeListener( property, listener );
     }
   }
@@ -361,12 +343,16 @@ public abstract class VectorPG extends ParameterGUI
    * @param V The Vector to use when initializing this VectorPG.
    */
   public void initGUI( Vector V ) {
+    if( this.initialized ) {
+      return;
+    }
+
     if( V != null ) {  // Usually is null so use the previous value
       setValue( V );
     }
 
-    GUI = new ArrayEntryJPanel( innerParam );
-    GUI.addPropertyChangeListener( this );
+    GUI = new ArrayEntryJFrame( innerParam );
+    GUI.addPropertyChangeListener( DATA_CHANGED, this );
     GUI.setValue( value );
     vectorButton   = new JButton( innerParam.getName(  ) );
     entrywidget    = new EntryWidget(  );
@@ -378,37 +364,15 @@ public abstract class VectorPG extends ParameterGUI
   }
 
   /**
-   * Fires ActionEvents to the ActionListeners in this ParameterGUIs Vector of
-   * ActionListeners.
+   * Listens for events from the internal ArrayEntryJFrame and sets the value
+   * if it has changed.
    */
-  public void notifyActionListeners( String command ) {
-    for( int i = 0; i < listeners.size(  ); i++ ) {
-      ( ( ActionListener )listeners.elementAt( i ) ).actionPerformed( 
-        new ActionEvent( this, ActionEvent.ACTION_PERFORMED, command ) );
+  public void propertyChange( PropertyChangeEvent pce ) {
+    if( pce.getPropertyName(  ) == DATA_CHANGED ) {
+      this.setValue( pce.getNewValue(  ) );
     }
-  }
 
-  /**
-   * Triggered when the "Done" button in the ArrayEntryJPanel is clicked.
-   */
-  public void propertyChange( PropertyChangeEvent evt ) {
-    if( evt.getPropertyName(  )
-             .equals( VectorPG.DATA_CHANGED ) ) {
-      value = ( GUI.getValues(  ) );
-      setValid( true );
-      pcs.firePropertyChange( evt );
-      entryFrame.setVisible( false );
-    }
-  }
-
-  /**
-   * Removes an ActionListener from the Vector of ActionListeners held by this
-   * ParameterGUI.
-   *
-   * @param listener The ActionListener to remove.
-   */
-  public void removeActionListener( ActionListener listener ) {
-    listeners.remove( listener );
+    super.propertyChange( pce );
   }
 
   /**
@@ -420,9 +384,35 @@ public abstract class VectorPG extends ParameterGUI
     super.removePropertyChangeListener( listener );
 
     if( initialized ) {
-      pcs.removePropertyChangeListener( listener );
       GUI.removePropertyChangeListener( listener );
     }
+  }
+
+  /**
+   * Method to set the inner ArrayEntryJFrame.
+   *
+   * @param frame The ArrayEntryJFrame to use.
+   */
+  protected void setEntryFrame( ArrayEntryJFrame frame ) {
+    this.GUI = frame;
+  }
+
+  /**
+   * Method to get the inner ArrayEntryJFrame.
+   *
+   * @return frame The internal ArrayEntryJFrame.
+   */
+  protected ArrayEntryJFrame getEntryFrame(  ) {
+    return GUI;
+  }
+
+  /**
+   * Accessor method for subclasses to get the inner ParameterGUI.
+   *
+   * @return The inner ParameterGUI.
+   */
+  protected final ParameterGUI getInnerParam(  ) {
+    return innerParam;
   }
 
   /**
@@ -432,71 +422,5 @@ public abstract class VectorPG extends ParameterGUI
   protected final void setParam( ParameterGUI param ) {
     innerParam   = param;
     this.type    = param.getType(  ) + " " + TYPE;
-  }
-
-  /**
-   * Creates the entry panel for this VectorPG.
-   */
-  protected void makeEntryPanel(  ) {
-    entryFrame = new JFrame( innerParam.getName(  ) + " List" );
-
-    entryFrame.setSize( 500, 300 );
-
-    //leave this commented code in here.  There is a strange flaw elsewhere
-    //that requires a JDialog, but at some point I would like to remove the
-    //modal/modeless operation choice. -7/1/2003 CMB
-    entryDialog = new JDialog( entryFrame, innerParam.getName(  ), true );
-    entryDialog.setSize( 500, 300 );
-
-    //entryFrame.setDefaultCloseOperation( WindowConstants.HIDE_ON_CLOSE );
-    entryDialog.setDefaultCloseOperation( WindowConstants.HIDE_ON_CLOSE );
-
-    entryFrame.addWindowListener( new VectorPGWindowListener(  ) );
-    entryDialog.addWindowListener( new VectorPGWindowListener(  ) );
-
-    //entryDialog.getContentPane(  ).setLayout( new GridLayout( 1, 1 ) );
-    //entryDialog.getContentPane(  ).add( GUI );
-    entryFrame.getContentPane(  )
-              .add( GUI );
-  }
-
-  /**
-   * Displays the JFrame with the list box containing the elements of the
-   * Vector.  If it is already being shown, this does nothing.
-   */
-  protected void showEntryPanel(  ) {
-    if( entryFrame == null ) {
-      this.makeEntryPanel(  );
-    }
-
-    if( !entryFrame.isShowing(  ) ) {
-      //there must be a way to show this without remaking the GUI -
-      //setVisible(true) does NOT work
-      this.makeEntryPanel(  );
-      entryFrame.setVisible( true );
-    } else {
-      return;
-    }
-  }
-
-  //~ Inner Classes ************************************************************
-
-  /**
-   * Triggers a property change event when the window is closed, and gives us
-   * the values from the GUI.
-   */
-  private class VectorPGWindowListener extends WindowAdapter {
-    //~ Methods ****************************************************************
-
-    /**
-     * Executes when a window is closed.
-     *
-     * @param e The window close event.
-     */
-    public void windowClosing( WindowEvent e ) {
-      propertyChange( 
-        new PropertyChangeEvent( 
-          this, VectorPG.DATA_CHANGED, value, GUI.getValues(  ) ) );
-    }
   }
 }
