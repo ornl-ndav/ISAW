@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2002/07/11 18:18:44  dennis
+ *  Added  serialVersionUID = 1L;
+ *
  *  Revision 1.27  2002/07/10 16:02:24  pfpeterson
  *  Added removeAttribute() methods.
  *
@@ -184,6 +187,9 @@ public class DataSet implements IAttributeList,
                                 IObservable,
                                 IXmlIO 
 {
+  // CHANGE IF THE SERIALIZATION IS INCOMPATIBLE WITH PREVIOUS VERSIONS
+  static final long serialVersionUID = 1L;
+
   private static long current_ds_tag = 0; // Each DataSet will be assigned a
                                           // unique, immutable tag when it is
                                           // created.
