@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2001/07/10 19:04:34  dennis
+ * First attempt at using the new detector "segment"
+ * information to draw individual detectors.
+ *
  * Revision 1.9  2001/07/03 21:26:36  dennis
  * Added brightness control.
  *
@@ -110,12 +114,12 @@ public class ThreeDView extends DataSetViewer
   private SplitPaneWithState       split_pane        = null;
   private byte                     color_index[][]   = null;
   private volatile Color           color_table[]     = null;
-  private IThreeD_Object           objects[]         = null;
   private float                    log_scale[]       = null;
   private DataSetXConversionsTable conv_table        = null;
 
   private final String        GROUPS          = "Groups";
-  private final String        AXES            = "AXES";
+  private final String        GROUP_PREFIX    = "";
+  private final String        AXES            = "Axes";
   private final String        DETECTORS       = "Detectors";
 
 /* --------------------------------------------------------------------------
@@ -240,8 +244,9 @@ private Vector3D group_location( int index )
 
 private void MakeThreeD_Scene()
 {
-  float radius = draw_groups();
+//  float radius = draw_groups();
 
+  float radius = draw_detectors();
   if ( radius <= 0 )
     radius = 1;
   
@@ -259,7 +264,7 @@ private void MakeThreeD_Scene()
 
 
 /* ------------------------------ set_colors ---------------------------- */
-
+/*
 private void set_colors( int frame )
 {
   if ( color_index == null || color_index[0] == null )   // invalid color_index
@@ -281,6 +286,28 @@ private void set_colors( int frame )
   threeD_panel.setColors( GROUPS, new_colors );
   threeD_panel.repaint( );
 }
+*/
+
+private void set_colors( int frame )
+{
+  if ( color_index == null || color_index[0] == null )   // invalid color_index
+    return;
+
+  if ( frame < 0 || frame >= color_index[0].length )     // invalid frame num
+    frame = 0;                                           // so just use 0
+
+  int   index;
+  for ( int i = 0; i < color_index.length; i++ )
+  {
+    index = color_index[i][frame];
+    if ( index < 0 )
+      index += 256;
+
+    threeD_panel.setColors( GROUP_PREFIX+i, color_table[index] );
+  }
+  threeD_panel.repaint( );
+}
+
 
 
 /* ----------------------------- MakeColorList --------------------------- */
@@ -400,31 +427,100 @@ private float draw_groups()
   Vector3D  points[] = new Vector3D[1];
   Vector3D  point;
   points[0] = new Vector3D();
-  objects   = new IThreeD_Object[ n_data ];
+  IThreeD_Object objects[];
 
   for ( int i = 0; i < n_data; i++ )
   {
     point = group_location( i );
     if ( point == null )
-      objects[i] = new ThreeD_Non_Object();
+    {
+      objects = new IThreeD_Object[1];
+      objects[0] = new ThreeD_Non_Object();
+    }
     else
     {
       radius = point.length();
       if ( radius > max_radius )
         max_radius = radius;
 
-      objects[i] = make_rectangle( point, 0.025f, 0.025f ); 
+      objects = make_detector( point, 0.025f, 0.025f, i ); 
 /*
       points[0]= point;
       objects[i] = new Polymarker( points, Color.red );
       ((Polymarker)(objects[i])).setType( Polymarker.STAR );
       ((Polymarker)(objects[i])).setSize( 2 );
 */
-      objects[i].setPickID( i );
+    }
+    threeD_panel.setObjects( GROUP_PREFIX+i, objects );
+  }
+
+//  threeD_panel.setObjects( GROUPS, objects );
+  return max_radius;
+}
+
+
+/* ------------------------------ draw_detectors -------------------------- */
+
+private float draw_detectors()
+{
+  DataSet ds     = getDataSet();
+  int     n_data = ds.getNum_entries();
+
+  if ( n_data <= 0 )
+  {
+    threeD_panel.removeObjects( DETECTORS );  // remove any existing detectors 
+    return 0;                                 // since they are now gone
+  }
+
+  float   max_radius = 0.01f;
+  float   radius;
+
+  Position3D position;
+  Vector3D  points[] = new Vector3D[1];
+  Vector3D  point;
+  points[0] = new Vector3D();
+  IThreeD_Object objects[];
+  IThreeD_Object detector_icon[];
+
+  for ( int i = 0; i < n_data; i++ )
+  {
+    Data d = ds.getData_entry(i);
+    DetectorInfo det_info[] = (DetectorInfo[])
+                          d.getAttributeValue( Attribute.DETECTOR_INFO_LIST );
+    if ( det_info != null )
+    {
+      objects = new IThreeD_Object[ 2*det_info.length ];
+      for ( int k = 0; k < det_info.length; k++ )
+      {
+        position= det_info[k].getPosition();
+
+        float coords[] = position.getCartesianCoords();
+        point = new Vector3D( coords[0], coords[1], coords[2] );
+
+        if ( point == null )
+        {
+          objects[2*k]   = new ThreeD_Non_Object();
+          objects[2*k+1] = new ThreeD_Non_Object();
+        }
+        else
+        {
+          radius = point.length();
+          if ( radius > max_radius )
+            max_radius = radius;
+
+          detector_icon = make_detector( point, 
+                                         det_info[k].getWidth()/100, 
+                                         det_info[k].getLength()/100,
+                                         i );
+          objects[2*k]   = detector_icon[0];
+          objects[2*k+1] = detector_icon[1];
+
+        }
+      }
+      threeD_panel.setObjects( GROUP_PREFIX+i, objects );
     }
   }
 
-  threeD_panel.setObjects( GROUPS, objects );
   return max_radius;
 }
 
@@ -433,7 +529,7 @@ private float draw_groups()
 
 private void draw_axes( float length  )
 {
-  objects = new IThreeD_Object[ 4 ];
+  IThreeD_Object objects[] = new IThreeD_Object[ 4 ];
   Vector3D points[] = new Vector3D[2];
 
   points[0] = new Vector3D( 0, 0, 0 );                    // y_axis
@@ -453,12 +549,25 @@ private void draw_axes( float length  )
 }
 
 
-/* ---------------------------- make_rectangle --------------------------- */
-
-private DataSetTools.components.ThreeD.Polygon make_rectangle( Vector3D point, 
-                                                               float    width, 
-                                                               float    length )
+/* ---------------------------- make_detector --------------------------- */
+/*
+ *  Draw a detector using one rectangular facet and one polyline. 
+ *  The line prevents the detector from disappearing when it would
+ *  be very narrow.
+ */
+private IThreeD_Object[] make_detector( Vector3D point,
+                                        float    width,
+                                        float    length,
+                                        int      pick_id )
 {
+  IThreeD_Object objects[] = new IThreeD_Object[2];
+  // #######
+  if ( width <= 0.001 )
+    width = 0.254f;
+
+  if ( length <= 0.001 )
+    length = 0.254f;
+
   Vector3D verts[] = new Vector3D[4];
 
   verts[0] = new Vector3D(  width/2,  length/2, 0 );
@@ -479,7 +588,11 @@ private DataSetTools.components.ThreeD.Polygon make_rectangle( Vector3D point,
 
   orient.apply_to( verts, verts );
 
-  return new DataSetTools.components.ThreeD.Polygon( verts, Color.red );
+  objects[0] = new DataSetTools.components.ThreeD.Polyline( verts, Color.red );
+  objects[1] = new DataSetTools.components.ThreeD.Polygon( verts, Color.red );
+
+  objects[1].setPickID( pick_id );
+  return objects;
 }
 
 
@@ -681,6 +794,7 @@ private class ViewMouseMotionAdapter extends MouseMotionAdapter
    }
 }
 
+
 /* -------------------------- OptionMenuHandler --------------------------- */
 /**
  *  Listen for Option menu selections and just print out the selected option.
@@ -722,6 +836,7 @@ private class LogScaleEventHandler implements ChangeListener,
   }
 }
 
+
 /* ---------------------------- FrameControlListener ----------------------- */
 /**
  *  Step to new frames based on commands from the AnimationController.
@@ -734,8 +849,6 @@ private class FrameControlListener implements ActionListener
     int    frame  = Integer.valueOf(action).intValue();
     set_colors( frame );
   }
-
 }
-
 
 }
