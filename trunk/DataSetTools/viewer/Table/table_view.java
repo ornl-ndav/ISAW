@@ -31,9 +31,10 @@
  * Modified:
  * 
  * $Log$
- * Revision 1.15  2002/01/17 23:16:13  dennis
- * Now closes file immediately after writing it.
- * Also changed label to "Selected indices".
+ * Revision 1.16  2002/02/11 21:41:55  rmikk
+ * Major Change to the previous version.  Now all fields,DataSet Attributes, and
+ * Data block[0] attributes are used.  The non-GUI interface is also changed and
+ * augmented to reflect the difference.
  *
  * Revision 1.14  2001/11/27 18:37:20  dennis
  *    1. If no indices are selected:
@@ -111,26 +112,8 @@ public class table_view extends JPanel implements ActionListener
                                                
   { 
 
-    String Fields[] = { "Title", "X_units", "Y_units", "X_label", "Y_label",
-                        "Initial_Path", "Run Number", "Pressure", "Temp",
-                        "Group ID", "detector x Pos", "detector y Pos",
-                        "detector z Pos",
-                        "detector r Pos", "detector rho Pos", 
-                        "detector theta Pos", "detector phi Pos", 
-			"Group Index", "Raw Angle", "Solid Angle",
-                        "x value", "y value", "error" };
- 
-    String args[] ={ DSFieldString.TITLE, DSFieldString.X_UNITS,
-                     DSFieldString.Y_UNITS, 
-                     DSFieldString.X_LABEL, DSFieldString.Y_LABEL,
-                     Attribute.INITIAL_PATH, Attribute.RUN_NUM, 
-                     Attribute.PRESSURE , Attribute.TEMPERATURE ,
-                     Attribute.GROUP_ID , "x" , "y" ,"z" ,
-                     "r" , "R" , "t" , "p" , 
-                     null ,Attribute.RAW_ANGLE , Attribute.SOLID_ANGLE ,
-                     "x" , "y"  , "e" }; 
-
-
+    
+// unsuccessful attempt to get arrows to replace Up, Down, Add, Remove in buttons
     protected static int right_arrow[] = {0,1,0,0,0,0,0,0,
                                           0,1,1,0,0,0,0,0,
                                           0,1,1,1,0,0,0,0,
@@ -158,12 +141,8 @@ public class table_view extends JPanel implements ActionListener
                                        0,0,0,1,1,0,0,0,
                                        0,0,0,1,0,0,0,0};
 
-   int nDSfields = 5;
-   int nDSattr = 4;   
-   int nDBattr = 11;                        
-   //JComboBox OutputMode; 
-   //JCheckBox Sequent;//paired or sequential
-   //JCheckBox UseAll;
+                  
+   
    boolean useAll = false;
    String filename = null;
    JButton  Add , 
@@ -178,9 +157,7 @@ public class table_view extends JPanel implements ActionListener
    
    JButton  selectEdit;
    JCheckBox selectAllEdit;
-   JRadioButton  DBSeqOpt, 
-                  DBPairedOpt;
-   ButtonGroup radios = new ButtonGroup();
+ 
 
    JLabel  SelectedIndecies;
    
@@ -190,15 +167,14 @@ public class table_view extends JPanel implements ActionListener
 
    DefaultListModel unselModel , 
                     selModel;    
-   int use[] ,
-       Nuse[];
+  //int use[] ,
+  //     Nuse[];
    DataSet DSS[];
    boolean DBSeq = false; // DB are paired 
-   boolean XYcol = false;
-   boolean DBcol = false;
+ 
    ExcelAdapter EA = null;
    IsawGUI.Util  util;
-   
+   JComboBox Order = null;
    JMenuItem JMi= null;
    JMenuItem JCp = null;
   /** Only Constructor without GUI components
@@ -216,13 +192,11 @@ public class table_view extends JPanel implements ActionListener
      }//call Showw with args to execute
 
    private void initt()
-    {//OutputMode = null; 
-     //Sequent = null;paired or sequential
-    // UseAll = null;
+    {
      Add = Remove = Up = Down = null;
      unsel = sel = null;
      unselModel = selModel = null;    
-     use = Nuse = null;
+     //use = Nuse = null;
      DSS = null;
      mode = 0;
      util = new IsawGUI.Util();
@@ -239,27 +213,8 @@ public class table_view extends JPanel implements ActionListener
         setLayout( new BorderLayout( ));
       initt();
       DSS = DS;
-     // System.out.println( "# data Sets="+ DS.length );
-      //setLayout( new BorderLayout() );
 
-//Top component
-      //JPanel JP = new JPanel();
-      //JP.setLayout( new GridLayout( 1 , 7 ));      
-      
-     // OK = new JButton( "OK" );
-      //OK.addActionListener( this );
-      //JP.add( new JLabel("Select:" , SwingConstants.RIGHT ));
-      //Sequent = new JCheckBox( "Dat.Bl Seq" , false );
-     // JP.add( Sequent );
-     // UseAll = new JCheckBox( "Use All DB" , false );
-     // JP.add( UseAll );
-     // String Outs[]={"Console" , "File" , "Table" };
-     // OutputMode = new JComboBox( Outs );
-     // JP.add ( new JLabel( "Output:" , SwingConstants.RIGHT ));
-     // JP.add( OutputMode );
-      //JP.add( OK );
-      //OK.setActionListener( new myActionListener( OK ));
-      //add( JP , BorderLayout.NORTH );
+
 
 // Bottom components
        JPanel JP = new JPanel();
@@ -274,12 +229,53 @@ public class table_view extends JPanel implements ActionListener
        unsel.setBorder( BorderFactory.createTitledBorder(
           BorderFactory.createEtchedBorder() , "Possible Fields" ));
        
-       Nuse = new int[ Fields.length + 1 ];
-       for( int i = 0 ; i < Fields.length ; i++ )
-          {unselModel.addElement( Fields[ i ] );
-           Nuse[ i ] = i;
+      
+      
+         unselModel.addElement( new FieldInfo("X values", new XYData("x")));
+         unselModel.addElement( new FieldInfo("Y values", new XYData("y")));
+         unselModel.addElement( new FieldInfo("Error values", new XYData("e")));
+         unselModel.addElement( new FieldInfo("XY index", new XYData(null)));
+         Data db = DSS[0].getData_entry( 0 );
+         for( int i = 0; i< db.getNum_attributes() ;i++)
+           { Attribute A = db.getAttribute( i );
+             Object Val = A.getValue();
+             if( (Val instanceof Number) ||(Val instanceof Color)||(Val instanceof String))
+                unselModel.addElement( new FieldInfo(A.getName(), new DBattr(A.getName())) );
+             else if( A instanceof DetPosAttribute)
+                { unselModel.addElement( new FieldInfo("DetPos x", new DSDetPos("DetPos x",
+                                    1,0  )) );
+                  unselModel.addElement( new FieldInfo("DetPos y", new DSDetPos("DetPos y",
+                                    1,1  )) );
+                  unselModel.addElement( new FieldInfo("DetPos z", new DSDetPos("DetPos z",
+                                    1,2  )) );
+                  unselModel.addElement( new FieldInfo("DetPos r", new DSDetPos("DetPos r",
+                                    2,0  )) );
+                  unselModel.addElement( new FieldInfo("DetPos theta", new DSDetPos("DetPos theta",
+                                    2,1  )));
+                  unselModel.addElement( new FieldInfo("DetPos rho", new DSDetPos("DetPos rho",
+                                    3,0  )));
+                  unselModel.addElement( new FieldInfo("DetPos phi", new DSDetPos("DetPos phi",
+                                    3,2  )));
+                  unselModel.addElement( new FieldInfo("Scat Ang", new DSDetPos("Scat Ang",
+                                    -1,-1  )));
+                 }
+           }
+       unselModel.addElement( new FieldInfo( "Group Index", new DBattr(null))); 
+       DSFieldString dsf = new DSFieldString ();
+       for( int i=0; i< dsf.num_strings(); i++)
+         { String S = dsf.getString( i );
+           unselModel.addElement( new FieldInfo(S, new DSfield(S)));
+                                 
+         }
+       for( int i=0; i<DSS[0].getNum_attributes();i++)
+         {Attribute A  = DSS[0].getAttribute( i );
+          Object Val = A.getValue();
+          if( Val !=null)
+             if( (Val instanceof Number) ||(Val instanceof Color)||(Val instanceof String))
+                unselModel.addElement( new FieldInfo(A.getName(), new DSattr(A.getName())) );
           }
-       Nuse[ Fields.length ] = -1;
+          
+       
        JPbl.add( new JScrollPane( unsel , 
           JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED ,
            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED ) ,
@@ -303,12 +299,13 @@ public class table_view extends JPanel implements ActionListener
        
        selModel = new DefaultListModel();
        sel = new JList( selModel ); 
-       use = new int[ Fields.length+ 1 ];
-        Arrays.fill( use , -1 );
+       //use = new int[ unselModel.getSize()+ 1 ];
+       // Arrays.fill( use , -1 );
        sel.setBorder( BorderFactory.createTitledBorder(
           BorderFactory.createEtchedBorder() , "Display Fields" ));
        JPbr.add( sel , BorderLayout.CENTER );
         JP2 = new JPanel( new GridLayout( 6 , 1 ));
+
       /* Image R_arrw = createImage(new MemoryImageSource(8, 8, 
                                   right_arrow, 0, 8));
        Image U_arrw = createImage(new MemoryImageSource(8, 8, 
@@ -346,27 +343,18 @@ public class table_view extends JPanel implements ActionListener
      
      
       
-       /* GG.add(Goto);
-       Goto.add( fileView);
-       Goto.add( tableView);
-       Goto.add( consoleView);
-       */
+      
        SelectedIndecies = new JLabel( );
        setSelectedGRoup_Display( IntList.ToString( DS[0].
                                  getSelectedIndices() ) );
 
-       selectEdit = new JButton( "Select indices" );
+       selectEdit = new JButton( "Select Group indices" );
        selectEdit.addActionListener( this );
        selectAllEdit = new JCheckBox( "Use All Groups" , false );
-       DBSeqOpt = new JRadioButton( "List Groups Sequentially" ,
-                                           true );
-       DBPairedOpt = new JRadioButton( "List Groups in Columns" ,
-                                               false); 
-       DBSeqOpt.addActionListener( this );
-       DBPairedOpt.addActionListener( this );
+      
+        
        selectAllEdit.addActionListener( this );    
-       radios.add( DBSeqOpt );
-       radios.add( DBPairedOpt );
+      
        // New Layout
            Box RightPanel = new Box( BoxLayout.Y_AXIS );
            RightPanel.add( new JLabel ("Controls", SwingConstants.CENTER ));
@@ -377,13 +365,27 @@ public class table_view extends JPanel implements ActionListener
            Selects.setBorder( BorderFactory.createEtchedBorder() );
            RightPanel.add( Selects );
 
-           JPanel Grouping = new JPanel( new GridLayout( 2, 1 ));
-           Grouping.add( DBSeqOpt);
-           Grouping.add( DBPairedOpt );
-           Grouping.setBorder( BorderFactory.createEtchedBorder() );
-           RightPanel.add( Grouping);
-        
-          // RightPanel.add( Box.createVerticalGlue() );
+         
+           Object[] X ={ new DescrCode("HGT,F","Gr,Time vs Field"),
+                         new DescrCode("HT,FG","Time vs Field,Gr")
+
+                        //,new DescrCode("HT,GF","Time vs Gr,Field")
+                        //,new DescrCode("HTG,F","Time,Gr vs Field")
+                        //,new DescrCode("HG,TF","Gr vs Time,Field")
+                         
+                         };
+             Order = new JComboBox(X  );
+             //Order.setEditable(true);
+             Order.setSelectedIndex(0);
+             
+                                            
+            JPanel JJ = new JPanel();
+            BoxLayout bl = new BoxLayout( JJ, BoxLayout.X_AXIS);
+            JJ.setLayout( bl);
+            JJ.add( new JLabel("Order"));
+            JJ.add (Order);
+            RightPanel.add(JJ);
+            RightPanel.add( Box.createVerticalGlue() );
  
            JPanel Output = new JPanel( new GridLayout( 3, 1));
            Output.add( fileView );
@@ -393,10 +395,7 @@ public class table_view extends JPanel implements ActionListener
            Output.setBorder( BorderFactory.createEtchedBorder() );
            RightPanel.add( Output );
 
-           //Spacing
-           //JP = new JPanel();
-           //JP.setPreferredSize( new Dimension( 20, 5000 ) );
-           //Output.add( JP );
+           
           
            RightPanel.add( Box.createVerticalGlue() );
          /*  RightPanel.setBorder( BorderFactory.createTitledBorder(
@@ -437,7 +436,7 @@ public class table_view extends JPanel implements ActionListener
 
            }
        else if( S.length() <1)
-          {Res += "NO SELECT GROUPS";
+          {Res = "NO SELECT GROUPS";
               SelectedIndecies.setForeground( Color.red);
 
            }
@@ -449,6 +448,7 @@ public class table_view extends JPanel implements ActionListener
       
 
      } 
+
  /**
 *  Restores the state of this system to the way it was the previous time
 * the ViewManager visited this module.<BR>
@@ -459,116 +459,64 @@ public class table_view extends JPanel implements ActionListener
    {
     int i =0;
     int j,k;
+  
     if( state == null )
        return;
     if( state.length() < 1)
        return;
     // used
     i = state.indexOf( ";");
-       int nused = (new Integer( state.substring( 0, i ))).intValue();
-       use = new int[nused+1];
-    for( k = 0; k < nused ; k++)
-      {   j = state.indexOf( ";", i+1);
-          use[k] = (new Integer( state.substring( i+1, j))).intValue();
-          i = j;
+       String nused ;
+     selModel.clear();
+    j=0;  
+    for( i = state.indexOf( ";"); i>=0 ;  )
+      {  nused =  state.substring( j, i );
+         j=i+1;
+         selModel.addElement( getFieldInfo( DSS[0],nused));
+         if(i+1<state.length())
+           i = state.indexOf( ";",i+1);
+         else i=-1;
        }
-    j=i;
-    use[nused ] = -1;
-    selModel.clear();
-    for( i = 0 ; i < nused ; i++)
-       selModel.addElement( Fields[ use [i ] ] );
-
-   //filename
-   k = state.indexOf( ";",j+1);
-   if( k == j+1)
-       filename = null;
-   else
-       filename = state.substring( j+1, k );
-   j = k;
-   //useAll
-   k = state.indexOf( ";",j+1);
-   if( k == j+1)
-     {useAll = false;
-      selectAllEdit.setSelected( false );
-     }
-   else
-     {useAll = true;
-      selectAllEdit.setSelected( true );
-     }
-   //Sequential data blocks
-   j = k;
-   DBSeq = false;
-   k = state.indexOf( ";", j+1);
-   if( k > j+1)
-     {DBSeq = true;
-      DBSeqOpt.setSelected( true );
-      DBPairedOpt.setSelected( false);
-     
-     }
-   else
-     {DBSeqOpt.setSelected( false );
-      DBPairedOpt.setSelected( true );
-     
-     }
-/*   j = k;
-   //mode?
-    k = state.indexOf( ";", j+1);
-  
-   mode = ( new Integer( state.substring(j+1,k))).intValue();
-   if( mode == 1)
-      fileView.setSelected( true );
-   else if( mode ==2)
-      tableView.setSelected( true );
-   else
-      consoleView.setSelected( true );
-*/   
-   
+    
+   for(  i = 0; i < StateListeners.size(); i++ )
+      (( StateListener)(StateListeners.elementAt( i ))).setState( state );
    }
   
   public void setState( )
    {String  S ="";
-   
+    if(selModel==null) return;
     int n=0;
-    for( int i=0; (i<use.length) && (use[i] >= 0) ; i++)
-       { S += use[i] +";";
+    for( int i=0; (i<selModel.size()); i++)
+       { if(selModel.elementAt(i)!=null)
+             S += selModel.elementAt(i).toString() +";";
          n++;
        }
-    S = n +";"+S;
-   
-    if( filename == null )
-      S += ";";
-    else 
-      S += filename +";";
-    
-    if( useAll)
-      S += "T;";
-    else
-      S +=";";
-   
-    if( DBSeq)
-      S +="T;";
-    else
-      S += ";";
-  
-   /*if( fileView.isSelected())
-     mode = 1;
-   else if( tableView.isSelected())
-     mode = 2;
-   else if( consoleView.isSelected())
-     mode = 0;
-   S += mode+";";
-   */
-   
-    for( int i = 0; i < StateListeners.size(); i++ )
+
+   for( int i = 0; i < StateListeners.size(); i++ )
       (( StateListener)(StateListeners.elementAt( i ))).setState( S );
    }
+
+
   Vector StateListeners = new Vector();
+  /** Add's listeners who can save State information
+  *
+  *@param  S  A state Listener 
+  *
+  */
   public void addStateListener( StateListener S)
    {StateListeners.addElement( S );
    }
+
+
+  /** Removes a listener for State changes
+  @param  S  A state Listener 
+  *
+  */
   public void removeStateListener( StateListener S )
    { StateListeners.remove( S );
    }
+
+
   /** Utility that removes the indx-th element of the list
   */
    public void remove( int indx , int listt[] )
@@ -586,7 +534,7 @@ public class table_view extends JPanel implements ActionListener
 
   /** Utility that inserts  value at position indx in list
   */
-   public void insertElementAt( int indx , int value , int list[] )
+ /*  public void insertElementAt( int indx , int value , int list[] )
      {if( indx < 0 ) 
         return;
       if( indx > list.length ) 
@@ -595,10 +543,10 @@ public class table_view extends JPanel implements ActionListener
          list[ i ] = list[ i - 1 ];
       list[ indx ] = value;
       }
-
+*/
    /**Utility that will add value to the end of list
    */
-   public void addElement( int value , int list[] )
+  /* public void addElement( int value , int list[] )
      {if( list == null ) 
         return;
       if( list.length == 0 ) 
@@ -616,38 +564,26 @@ public class table_view extends JPanel implements ActionListener
         return;
      }
 
-
-   /** Shows the selected list of Fields that are to be displayed
-   */
-   public void show()
-     {int i;
-      System.out.print( "unsel=" );
-        for( i = 0; ( i < Nuse.length ) && ( Nuse[ i ] >= 0 ) ; i++ )
-         System.out.print( Nuse[ i ]+ ":"+  Fields[ Nuse[ i ] ]+ " " );
-        System.out.println( "" );  
-
-      System.out.print( "sel=" );
-        for( i = 0 ; ( i < use.length ) && ( use[ i ] >= 0 ); i++ )
-         System.out.print( use[ i ]+ ":"+ Fields[ use[ i ] ]+ " " );
-        System.out.println( "" ); 
-    }
-
+*/
+  
+ 
 
    /** Handles the events associated with this JPanel components
+   *@param  e  the action event
+   *NOTE: This handles the click of the Up, Down, Add, Remove, Select Groups,
+   *       file View, Table View, and Console View Buttons
    */
    public void actionPerformed( ActionEvent e  )
    {if( e.getSource().equals( Add ))
      { int indx = unsel.getSelectedIndex();      
         if( indx < 0 ) 
            return;
-        String S = ( String )( unsel.getSelectedValue() );
-        int FieldIndx = Nuse[ indx ];
-        //unselModel.remove( indx );
-        // remove( indx , Nuse );
+        Object S = ( unsel.getSelectedValue() );
+        
         selModel.addElement( S );
-        addElement( FieldIndx , use );
-        if( indx+ 1 < unselModel.getSize() )
-           unsel.setSelectionInterval( indx+ 1, indx+ 1 );
+        //addElement( unsel.getSelectedIndex(), use );
+        if(indx+1 < unselModel.getSize())
+          unsel.setSelectionInterval( indx+1, indx+1);
         unsel.requestFocus();
         setState();
       }
@@ -655,14 +591,17 @@ public class table_view extends JPanel implements ActionListener
       { int indx = sel.getSelectedIndex();    
         if( indx < 0 ) 
            return;
-        String S = ( String )( sel.getSelectedValue() );
-        int FieldIndx = use[ indx ]; 
+        Object S = ( sel.getSelectedValue() );
+        
         selModel.remove( indx );
-        remove( indx, use );
-        //unselModel.addElement( S );
-        // addElement( FieldIndx, Nuse );
+        //remove( indx, use );
+      
         if( indx < selModel.getSize() )
           sel.setSelectionInterval( indx,indx );
+        else
+          {indx =selModel.getSize() -1;
+            sel.setSelectionInterval(indx,indx);
+          }
         sel.requestFocus();
         setState();
        }
@@ -670,12 +609,12 @@ public class table_view extends JPanel implements ActionListener
        {int indx = sel.getSelectedIndex();
         if( indx <= 0 ) 
            return;
-        String S = ( String )( sel.getSelectedValue() );
-        int FieldIndx = use[ indx ];
+        Object S = ( sel.getSelectedValue() );
+        //int Fieldindx= use[indx];
         selModel.remove( indx );
-        remove( indx, use );
+        //remove( indx, use );
         selModel.insertElementAt( S, indx - 1 );
-        insertElementAt( indx - 1, FieldIndx , use );
+        //insertElementAt( indx - 1, Fieldindx , use );
         if( ( indx >= 1 ) &&( indx - 1 < selModel.getSize() ))
             sel.setSelectionInterval( indx - 1, indx - 1 );
         sel.requestFocus();
@@ -687,12 +626,12 @@ public class table_view extends JPanel implements ActionListener
           return;
         if( indx+ 1 >= selModel.size() ) 
           return;
-        String S = ( String )( sel.getSelectedValue() );
-        int FieldIndx = use[ indx ];
+        Object S = ( sel.getSelectedValue() );
+        //int FieldIndx = use[ indx ];
         selModel.remove( indx );
-        remove( indx, use );
+        //remove( indx, use );
         selModel.insertElementAt( S, indx +  1 );
-        insertElementAt( indx +  1 , FieldIndx , use );
+        //insertElementAt( indx +  1 , FieldIndx , use );
         if( indx + 1  < selModel.getSize() )
          sel.setSelectionInterval( indx +  1 , indx + 1 );
         sel.requestFocus();
@@ -716,7 +655,7 @@ public class table_view extends JPanel implements ActionListener
       else if( e.getSource().equals( selectEdit ))
           { 
             DataSet DS = DSS[0];               
-            DataSetOperator op = DS.getOperator( "Set DataSet Field" );        
+           /* DataSetOperator op = DS.getOperator( "Set DataSet Field" );        
             if( op == null )
               {System.out.println( " No such operator " );
                return;
@@ -729,13 +668,14 @@ public class table_view extends JPanel implements ActionListener
        
             DSSettableFieldString argument = new DSSettableFieldString( 
                                       DSFieldString.SELECTED_GROUPS );         
-        
-            MOperator newOp =
-               new MOperator( op , 0 , ( Object )argument );
-        
+           */
+            SelectIndicesOp newOp =new SelectIndicesOp();
+            newOp.setDataSet(DS);
+               
+            
             JParametersDialog JP = new JParametersDialog( newOp , null ,
                                        null , null );
-            op.setDefaultParameters();
+            //op.setDefaultParameters();
             useAll = false;
            }
        else if( e.getSource().equals( fileView ))
@@ -748,16 +688,12 @@ public class table_view extends JPanel implements ActionListener
             if( retStatus == JFileChooser.APPROVE_OPTION )
                {File F = JFC.getSelectedFile();
                 filename = F.getPath().trim(); 
-                Showw();         
-                try
-                {
-                  f.close();
-                }
-                catch ( IOException exception )
-                {
-                  System.out.println("Exception closing file in table_view");
-                  System.out.println("Exception is " + exception );
-                }
+                Showw(); 
+                try{
+                  if( f!=null) f.close();
+                  f= null;        
+                   }
+                catch( IOException ee){}
                }
            setState();
           }
@@ -773,7 +709,7 @@ public class table_view extends JPanel implements ActionListener
         }
        else
         {  useAll = selectAllEdit.isSelected();
-          DBSeq = DBSeqOpt.isSelected();
+          //DBSeq = DBSeqOpt.isSelected();
          /* mode = 0;
           if( fileView.isSelected())
              mode = 1;
@@ -792,13 +728,15 @@ public class table_view extends JPanel implements ActionListener
   public void setDataSet( DataSet ds )
    {DSS[0] = ds;
    }
+
+
   /** Sets the filename where the File view will be written.
   */
   public void setFileName( String filename )
    { this.filename = filename;
    }
 
-
+  // Ouput directors
   FileOutputStream f = null;
   JFrame  JF;
   JTable JTb;
@@ -809,7 +747,7 @@ public class table_view extends JPanel implements ActionListener
   boolean startline = true;
   boolean columnHeader = false; //for table view feature
                                
-  private void initOutput( DataSet D )
+  private void initOutput( DataSet D, int[] Sel )
     { //mode = OutputMode.getSelectedIndex();
      startline = true;
      if( mode == 0 )
@@ -832,8 +770,8 @@ public class table_view extends JPanel implements ActionListener
             f = new FileOutputStream( fl );
           }
        catch( IOException u ){f = null;
-             System.out.println( "IOExon init="+ u+ ","+ 
-             D.toString()+ ".dat" );}
+             System.out.println( "file init="+ u+ ","+ 
+             filename );}
 
       }
     else
@@ -872,12 +810,18 @@ public class table_view extends JPanel implements ActionListener
        row = 0;
        col = 0;
        V = new Vector();
-       if( D.getNumSelected() > 0)
+       if((Sel!=null)||(useAll))
            JtabPane.setSelectedIndex( 0);
+       else if( Sel.length <=0)
+            JtabPane.setSelectedIndex( 0);
        else
            JtabPane.setSelectedIndex(1);
+       
      }
    }
+
+
+
   int row = 0;
   int col = 0;
   private void OutputField( Object res )
@@ -896,27 +840,34 @@ public class table_view extends JPanel implements ActionListener
      else if( mode == 1 )
       try
         {if( f != null )
-           if( startline )
-           f.write( S.getBytes() );
-        else
-           f.write( ("\t"+ S ).getBytes() );
+           {if( startline )
+              f.write( S.getBytes() );
+            else
+              f.write( ("\t"+ S ).getBytes() );
+           }
         }
      catch( IOException ss ){}
     
      else if( columnHeader)
-      DTM.addColumn( S );      
-     
-     else
+      {if( DTM.getColumnCount() <20)
+          DTM.addColumn( S );      
+      }
+     else if( V.size() < 19)
        V.addElement( S );
+     else if( V.size() ==20)
+        V.addElement("....");
 
      startline = false;
     }
+
+
+
   private void OutputEndField()
-   {
+   { 
     if( mode == 0 )
        System.out.println( "" );
     else if( mode == 1 )
-       try{if(  f != null );
+       try{if(  f != null )
             f.write( "\n".getBytes() );
           }
        catch( IOException sss ){}
@@ -939,13 +890,15 @@ public class table_view extends JPanel implements ActionListener
       }
     startline = true;
    }
+
+
  private void OutputClose()
   {
    if( mode == 0 )
     {}
    else if( mode == 1 )
     try{
-          f.close();
+          if( f!= null) f.close();
           f = null;
           filename = null;
        }
@@ -957,9 +910,9 @@ public class table_view extends JPanel implements ActionListener
  
   /** Converts an array of Fields in String form to an int array
   *   that is used in the Showw method
-  *@see   #Showw(DataSetTools.dataset.DataSet[], int[], boolean, boolean)
+  *   #Showw(DataSetTools.dataset.DataSet[], DefaultListModel, boolean, int[])
  */
-  public int[] Convertt( String fields[] )
+ /* private int[] Convertt( String fields[], String Fields[] )
      {int Res[];
      
       if( fields == null )
@@ -980,8 +933,10 @@ public class table_view extends JPanel implements ActionListener
      return Res;
      }
 
+ */
+
   boolean header = false;
-  private void MakeHeaderInfo( DataSet DSS[] , boolean UseAll )
+  private void MakeHeaderInfo( DataSet DSS[] , boolean UseAll, int[] SelInd )
     {String S;
      int i;
      header = true;
@@ -1002,8 +957,11 @@ public class table_view extends JPanel implements ActionListener
     OutputField( "#Selected Groups" ); OutputEndField();
     for( i = 0 ; i < DSS.length ; i++ )
      { String SS ="NO SELECTED INDICES";
-       if( DSS[i].getNumSelected()>0)
+      /* if( DSS[i].getNumSelected()>0)
               SS= nd.Showw( DSS[ i ].getSelectedIndices() );
+      */
+       if( SelInd != null) if( SelInd.length > 0)
+           SS= nd.Showw( SelInd);
         
        OutputField( "#     "+ DSS[ i ].toString()+ ":"+  SS);
                         
@@ -1025,7 +983,7 @@ public class table_view extends JPanel implements ActionListener
       }
     header = false;
     }
-
+ 
   /** Views the data for the data set.  All information has been setup from
   *   the GUI
   */
@@ -1039,10 +997,226 @@ public class table_view extends JPanel implements ActionListener
         else if( consoleView.isSelected())
            mode = 0;
         */
-        Showw( DSS, use, DBSeq, useAll );
+        Object O = Order.getSelectedItem();
+        
+        String order;
+        if( O instanceof String) 
+              order = (String)O;
+        else 
+           order=((DescrCode) O).getCode();
+        Showw( DSS, selModel, order, useAll, null );
       }
 
-  /** Views the data for the data set.  This is used for the non-GUI access
+
+/** Used to set up the ListModel argument in the Showw method. This argument must
+*   be a ListModel of FieldInfo.<P> 
+*   This method along with the Showw Method gives a non GUI based entry into this package<P>
+*
+*   The field must be "x", "y","e" ,"Group Index", or "XY index",or a data set or data block
+*   attribute name or a String in DSFieldString 
+*      fields x,y, error, group index, or index on the x or y values
+*
+*/
+public FieldInfo getFieldInfo( DataSet DS,String field)
+  {if( field.equals("X values"))
+       return new FieldInfo("X values", new XYData("x"));
+   if( field.equals("Y values"))
+       return new FieldInfo("Y values", new XYData("y"));
+   if( field.equals("Error values"))
+        return new FieldInfo("Error values", new XYData("e"));
+   if(field.equals("XY index"))
+       return new FieldInfo("XY index", new XYData(null));
+   if(field.indexOf("DetPos ")==0)
+     { int n1,n2;
+       String S =field.substring( 7).trim();
+       n1 = ";x;y;z;r;theta;rho;phi;Scat Angle;".indexOf(";"+field+";");
+       if( n1 < 0) return null;
+       if( n1 <6)
+          {n1=0; n2 = n1/2;}
+       else if( n1 <13)
+          {if(n1<7) n2=0; else n2=1;
+           n1=1;
+          }
+       else if( n1 <15)
+         {n1 = 2; n2= 0;}
+       else if( n1 < 19)
+         {n1 = 2; n2 = 3;}
+        else {n1=-1; n2=-1;}
+
+       return new FieldInfo( field, new DSDetPos(field, n1,n2));
+      }
+     if(field.equals("Group Index") )return  new FieldInfo( "Group Index", new DBattr(null)); 
+     DSFieldString dsf = new DSFieldString ();
+     for( int i=0; i< dsf.num_strings(); i++)
+         { String S = dsf.getString( i );
+           if( field.equals(S)) return ( new FieldInfo(S, new DSfield(S)));
+                                 
+         }
+  
+    Data db = DS.getData_entry( 0 );
+    for( int i = 0; i< db.getNum_attributes() ;i++)
+     { Attribute A = db.getAttribute( i );
+       Object Val = A.getValue();
+       if( (Val instanceof Number) ||(Val instanceof Color)||(Val instanceof String))
+         if( A.getName().equals(field)) return new FieldInfo(A.getName(), new DBattr(A.getName()));
+     }
+   return null;
+   }
+
+/** Will be the new Showw
+*The GENERAL entry point to the Table View.  The Mode must be set with constructor.
+*
+*@param   DSS[] the Array of data sets to be viewed. Only an array with one element has been tested
+*@param   selModel <ul> Stores the fields to be displayed. Use getFieldInfo to get proper
+*                        elements in the selModel<ul>
+*@see  #getFieldInfo(DataSet, String)
+*@param order  <ul> Indicates which index will be looped first, second, etc.  Eg.
+*           <BR> HGT,F : 1st rows Hist 0, then Hist 1. In Hist 0 group the first rows are Group 0, then 1
+*                        In the Group 0 rows the first rows are times,  The comma means the selected
+*                        Fields are listed across the colums<P>
+*                HT,GF : 1st rows are Hist 0, then 1.. In Hist i, the first rows are the first time, 
+*                   2nd time,etc. The 1st columns deal with Group 0, then Group 1... In the Group 0
+*                   columns Field 1 then selected Field2 are listed in that order.<P>
+*              In the future G may be replaced by  I and J for the row and column of area detectors.
+*            </ul>
+*@param  UseAll  A flag that when true uses all the data blocks without changing the selected data
+*                blocks.   
+*
+*@param SelIndecies  If not null, these indecies will be used in place of the selected indecies. THE
+*                     LIST MUST BE INCREASING.
+*/ 
+public void Showw1( DataSet DSS[], DefaultListModel selModel,  String  order, 
+                                boolean UseAll, int[] SelIndecies )
+  {
+   boolean has_Xcol=false;
+   boolean XYCol=false;boolean DBCol=false;
+   int comma =order.indexOf(",");
+   if( comma < 0) return;
+   if( comma >= order.length() -1) return;
+   if( selModel.getSize() <= 0)
+     {DataSetTools.util.SharedData.status_pane.add("No Items have Been Selected");
+      return;
+      }
+
+   //****If there are no fields that involve time, the size of the output is reducec
+   for( int i = 0 ; i < selModel.getSize() ; i++ )
+      { FieldInfo V =(FieldInfo)(selModel.getElementAt( i ));
+        if( V.getDataHandler() instanceof  XYData)
+            {XYCol=true;
+             if(V.toString().equals("X values")) has_Xcol = true;
+             }
+        else if( V.getDataHandler() instanceof DBattr)
+              DBCol = true;
+        else if( V.getDataHandler() instanceof DSDetPos)
+              DBCol = true;
+        
+      } 
+         
+    
+ 
+    //**** Set up Group List.  It is either selected Groups or the SelIndecies in the parameter
+    int Groups[];
+    Groups = null;
+    if( !useAll)
+      Groups = DSS[0].getSelectedIndices();
+    if( SelIndecies != null)
+      Groups= SelIndecies;
+    initOutput( DSS[ 0 ], Groups );
+    //*** Merge the xvals( times) to get correct correspondences
+    float xvals[];
+    xvals = null;
+    int k = order.indexOf("T");
+    int kG = order.indexOf("G");
+    int kI = order.indexOf("I");
+    int kJ = order.indexOf("J");
+    if( (k>comma) || (k<kG)|| (k<kI)||(k<kJ))
+       {xvals = null;//DSS[0].getData_entry(0).getX_scale().getXs();
+        for( int i =0; i<DSS[0].getNum_entries(); i++)
+           xvals = MergeXvals( i,DSS[0],xvals, useAll, Groups);
+       }
+
+
+   
+
+    //**** Set up the Permutation from the natural loop order "HGTF" 
+    int Permutations[];
+    Permutations = new int[4];
+    Permutations[0]= 0;
+    for( int i = 1;i < 4;i++)
+      {char c = "HGTF".charAt(i);
+       int k6 =order.indexOf(c);
+       if( k6 > comma) k6--;
+       
+       Permutations[k6] = i;
+      } 
+   
+  //*****Now get column headers going
+   Nextt Nexts[];
+   MakeHeaderInfo( DSS , UseAll , Groups);
+   header = false;
+   columnHeader = true;
+   boolean done = false;
+  
+  //****  First time the column headers are created. 2nd time the body of the table is created
+  while( ! done)
+   { 
+    Nexts = new Nextt[ order.length() -1];
+    Nexts[0]= new Nextt(0,0);
+    if( (kG < comma)&&columnHeader) 
+        Nexts[1] = new Nextt(0,0);
+    else
+    {
+     if( useAll &&(DBCol || XYCol))
+       Nexts[1] = new Nextt(0, DSS[0].getNum_entries()-1);
+    /* else if((SelIndecies==null)&&(DBCol ||XYCol) )
+       Nexts[1] = new Nextt(0, DSS[0].getNumSelected()-1); //Next_Gr(DSS[0] );
+     else if((SelIndecies!=null)&&(DBCol ||XYCol) )
+        Nexts[1] = new Nextt(0, SelIndecies.length);
+    */
+     else if( DBCol || XYCol) 
+        Nexts[1] = new Nextt(0, Groups.length-1);
+     else 
+        Nexts[1] = new Nextt(0,0);
+     }
+   
+   if( !XYCol)
+     Nexts[2] = new Nextt(0,0);
+   else if( columnHeader && (order.indexOf("T")<comma))
+     Nexts[2] = new Nextt(0,0);
+   else if( xvals != null)
+     Nexts[2] = new Nextt(0, xvals.length -1);
+   else
+     Nexts[2] = new Next_t( DSS, 0 , useAll);
+
+   Nexts[3] = new Nextt( 0, selModel.getSize()-1);
+
+   int i = "HGTF".indexOf(order.charAt(comma +1 ));
+   Nexts[i].setEndRecordMake( true);                  
+   
+   
+    
+    if( false)  //Debug info
+      {System.out.println("Perms="+Permutations[0]+","+Permutations[1]+","+Permutations[2]
+          +","+Permutations[3]);
+       
+       System.out.println("Nexts"); 
+       for(  i = 0; i<4;i++)
+         System.out.println("     "+i+":"+Nexts[i].min+","+Nexts[i].max+"::"+Nexts[i].getClass());
+      }
+    
+    opnGroup op = new opnGroup( DSS,Permutations, xvals, Groups,order);
+    MNestedForLoops lp = new MNestedForLoops(Nexts, op, Permutations);
+    lp.execute();
+    if( columnHeader) 
+     columnHeader = false;
+    else done = true;
+    }
+   
+
+   }
+
+
+  /** Deprecated Views the data for the data set.  This is used for the non-GUI access
  *    to this viewer
  *@param  DSS  The list of data sets to be table-viewed.
  *@param  used  The list of used fields
@@ -1053,70 +1227,83 @@ public class table_view extends JPanel implements ActionListener
  *@param UseAll  <UL>true if all data blocks are to be used, otherwise only the
  *               selected data blocks will be used</ul>
  */
-  public void Showw( DataSet DSS[], int used[],  boolean  DBSeq, 
-                                boolean UseAll )
-    {int ncols = 0;
-     int i = 0;     
-     while(( i < used.length ) &&  ( used[ i ] >= 0 ) )
-        {i++;
-         ncols++;
-        }
-     DataHandler DH[];
-     boolean has_Xcol;
+public void Showw( DataSet DSS[], DefaultListModel selModel,  String  order, 
+                                boolean UseAll, int[] SelIndecies )
+ // public void Showw1( DataSet DSS[], int used[],  boolean  DBSeq, 
+  //                              boolean UseAll )
+    {int ncols = selModel.size();
+    // int i = 0;     
+    // while(( i < used.length ) &&  ( used[ i ] >= 0 ) )
+     //   {i++;
+     //    ncols++;
+     //   }
+     
+     boolean has_Xcol,XYcol,DBcol;
      DBcol = XYcol = has_Xcol = false;
-     DH = new DataHandler[ ncols ];
-     for( i = 0 ; i < ncols ; i++ )
-      {if( used[ i ] < nDSfields )
-         DH[ i ] = new DSfield( args[ used[ i ] ] );
-       else if( used[ i ] < nDSfields+ nDSattr )
-         DH[ i ] = new DSattr( args[ used[ i ] ] );       
-       else if( used[ i ] < nDSfields+ nDSattr+nDBattr )
-        { DH[ i ] = new DBattr(args[ used[ i ] ] );
-          DBcol = true;
-        }
-       else
-         {
-           DH[ i ] = new XYData( args[ used[ i ] ] );
-           XYcol = true;
-           DBcol = true;
-           if( used[i] ==  nDSfields+ nDSattr+nDBattr)
-	       has_Xcol = true;
-         }
+     boolean DBSeq=true;
+     if(order !=null) if( order.indexOf(',')<3)DBSeq = false;
+     for(int i = 0 ; i < selModel.size() ; i++ )
+      { FieldInfo V =(FieldInfo)(selModel.getElementAt( i ));
+        if( V.getDataHandler() instanceof  XYData)
+            {XYcol=true;
+             if(V.toString().equals("X values")) has_Xcol = true;
+             }
+        else if( V.getDataHandler() instanceof DBattr)
+              DBcol = true;
+        else if( V.getDataHandler() instanceof DSDetPos)
+              DBcol = true;
       }          
-
-    initOutput( DSS[ 0 ] );
+     
+    
+   
+     if(SelIndecies == null)
+         if(!useAll) SelIndecies= DSS[0].getSelectedIndices() ;
+         else 
+           {SelIndecies = new int[DSS[0].getNum_entries()];
+            for(int k=0;k<DSS[0].getNum_entries();k++)SelIndecies[k]=k;
+            }
+     
+     if( SelIndecies == null) return;
+    initOutput( DSS[ 0 ] ,SelIndecies);
     columnHeader = false;
-    MakeHeaderInfo( DSS , UseAll );
+    MakeHeaderInfo( DSS , UseAll ,SelIndecies);
     header = false;
-    for(  i = 0 ; i < DSS.length ; i++ )
+    for(  int i = 0 ; i < DSS.length ; i++ )
     if( DBSeq )   
-      {DataSet DS = DSS[ i ]; 
+      {
+       DataSet DS = DSS[ i ]; 
        columnHeader = true;      
-       for( int ii = 0 ; ii < ncols ; ii++ )
-          OutputField( Fields[ used[ ii  ] ] );
+       for( int ii = 0 ; ii < selModel.size() ; ii++ )
+          OutputField( ((FieldInfo)(selModel.getElementAt( ii))).toString() );
        OutputEndField();
        columnHeader = false;
-       for( int j = 0 ; j < DS.getNum_entries() ; j++ )
-         if( UseAll || DS.getData_entry( j ).isSelected() )
-          {Data DB = DS.getData_entry( j );
+       for( int j = 0 ; j < SelIndecies.length ; j++ )
+        // if( UseAll || DS.getData_entry( j ).isSelected() )
+        if( SelIndecies[j] < DS.getNum_entries())
+          {Data DB = DS.getData_entry( SelIndecies[j] );
            float xx[ ];
            if( XYcol )
                xx = DB.getX_scale().getXs();
            else
                xx = new float[ 1 ];
+           
            for( int k = 0 ; k < xx.length ; k++ )
-             { for ( int l = 0 ; l < ncols ; l++ )                   
-                    OutputField( DH[ l ].getVal( DSS, i, j, k ) ); 
+             { for ( int l = 0 ; l < selModel.size() ; l++ )                   
+                   { OutputField( ((FieldInfo)(selModel.getElementAt(l))).
+                                       getDataHandler().getVal( DSS, i, SelIndecies[j], k ) );
+                 
+                    }
                OutputEndField();
              }             
           }
       }
     else //paired
-     {float xvals[]; 
+     {
+      float xvals[]; 
       xvals = null;     
       DataSet DS = DSS[ i ];
       if( XYcol )           
-            xvals = MergeXvals( 0, DS, null, UseAll );                   
+            xvals = MergeXvals( 0, DS, null, UseAll ,null);                   
       int n = 1;
       if( xvals != null )
          n = xvals.length;
@@ -1126,19 +1313,21 @@ public class table_view extends JPanel implements ActionListener
       columnHeader = true;
       if( has_Xcol)
 	   OutputField( "x");
-          
-      for( int j = 0 ; j < DS.getNum_entries() ; j++ )
-          {Data DB = DS.getData_entry( j );
-           if( UseAll || DB.isSelected() )
+      
+      for( int jj = 0 ; jj < SelIndecies.length ; jj++ )
+        if( SelIndecies[jj] < DS.getNum_entries())
+          { int j=SelIndecies[jj];
+            Data DB = DS.getData_entry( j );
+           //if( UseAll || DB.isSelected() )
             { count = 1;                     
-              for( int l = 0 ; l < ncols ; l++ )                
-                { 
+              for( int l = 0 ; l < selModel.size() ; l++ )                
+                { FieldInfo finfo = (FieldInfo)selModel.getElementAt( l) ;
                   if( ( count == 0 )||
-                          ( used[ l ]!= nDSfields+  nDSattr +  nDBattr ))  
+                          (! finfo.toString().equals("X values")) )  
                       OutputField( "Gr"+ DB.getGroup_ID()+ ":"+ 
-                                                      Fields[ used[ l ] ] );
+                                       finfo.toString() );
                                     
-                  if( used[ l ]== nDSfields+  nDSattr +  nDBattr ) 
+                  if( finfo.toString().equals("X values") ) 
                       count = 1;                                        
                    
                 }
@@ -1158,29 +1347,31 @@ public class table_view extends JPanel implements ActionListener
            
           
         
-        for( int j = 0 ; j < DS.getNum_entries() ; j++ )
-          {Data DB = DS.getData_entry( j );
-           if( UseAll ||  DB.isSelected() )
+        for( int jj = 0 ; jj < SelIndecies.length ; jj++ )
+          { int j= SelIndecies[jj];
+            Data DB = DS.getData_entry( j );
+           //if( UseAll ||  DB.isSelected() )
             { float xx[];
               xx = DB.getX_scale().getXs();             
              
               int k1  = contains( xx,  x );//should be true
               if( xvals == null )
-                    k1 = -1;
+                    k1 = 0;  //no xvals needed
               count = 1;
-              for( int l = 0 ; l < ncols ; l++ )
-                { if( k1 >= 0 )
+              for( int l = 0 ; l < selModel.size() ; l++ )
+                { FieldInfo finfo = (FieldInfo)(selModel.getElementAt(l) );
+                  if( k1 >= 0 )
                     {if(( count == 0 )||
-                          ( used[ l ]!= nDSfields+  nDSattr +  nDBattr ))  
-                       {OutputField( DH[ l ].getVal( DSS,  i, j , k1 ));   
+                          ( !finfo.toString().equals("X values") ))  
+                       {OutputField( finfo.getDataHandler().getVal( DSS,  i, j , k1 ));   
                        }
                     }
-                 else if( used[ l ]!= nDSfields+  nDSattr +  nDBattr )
+                 else if( !finfo.toString().equals("X values")  )
                     {OutputField( "  " );
                      
                     }
 
-                 if( used[ l ] == nDSfields+  nDSattr +  nDBattr ) 
+                 if( finfo.toString().equals("X values")  ) 
                    { count = 1;                                        
                    }
                 }//for l    
@@ -1191,22 +1382,29 @@ public class table_view extends JPanel implements ActionListener
         
 
 
-       }
+       }//for k
            
       }//end paired Data Blocks
 
     }
-  private float[] MergeXvals ( int db , DataSet DS , float xvals[]
-                               , boolean UseAll )
-    {if( db >= DS.getNum_entries() )
+
+  // Unions all x values in the selected group of data sets
+  private float[] MergeXvals ( int dbi , DataSet DS , float xvals[]
+                               , boolean UseAll, int[] SelIndices )
+    {if(SelIndices == null)
+         SelIndices = DS.getSelectedIndices() ;
+     if(SelIndices == null) return xvals;
+     if( dbi >= SelIndices.length )
         return xvals; 
+     if( dbi < 0) return xvals;
+     int db=SelIndices[dbi];
      if( xvals == null )       
        { Data DB = DS.getData_entry( db );
-         if( !DB.isSelected() )
-           return MergeXvals( db+1, DS, xvals, UseAll);
+         //if( !DB.isSelected() )
+          // return MergeXvals( dbi+1, DS, xvals, UseAll, SelIndices);
          XScale XX = DB.getX_scale();
                 
-         return MergeXvals( db + 1 , DS , XX.getXs() , UseAll );
+         return MergeXvals( dbi + 1 , DS , XX.getXs() , UseAll, SelIndices );
         }
      Data DB = DS.getData_entry( db );
      if( UseAll)
@@ -1214,7 +1412,7 @@ public class table_view extends JPanel implements ActionListener
      else if( DB.isSelected())
          {}
      else
-        return MergeXvals( db+ 1, DS , xvals , UseAll );
+        return MergeXvals( dbi+ 1, DS , xvals , UseAll, SelIndices );
     
      XScale XX = DB.getX_scale();
      
@@ -1263,11 +1461,14 @@ public class table_view extends JPanel implements ActionListener
         else
           {Res[ n ] = ( xvals[ i ]+ xlocvals[ j ] )/2.0f;i++;j++;n++;}
        }
-     return MergeXvals ( db+ 1 ,  DS , Res , UseAll );
+     return MergeXvals ( dbi+ 1 ,  DS , Res , UseAll,  SelIndices );
 
     }
 
 
+  /** Determins whether an x value is "in" a float array xx. By "in" it must be close enough
+  *   to an entry
+  */
   public int contains( float xx[],  float x )
     {float delta;
      if( xx == null ) 
@@ -1286,6 +1487,7 @@ public class table_view extends JPanel implements ActionListener
      return -1;
     }
 
+  // Interface for all data handlers
   class DataHandler
     {
      String arg;
@@ -1297,9 +1499,65 @@ public class table_view extends JPanel implements ActionListener
                            int XY_index )
         {return null;
         }
+     public String getArg(){ return arg;}
     }
 
+  // Class of entries in the sel and unsel listbox entries
+  class FieldInfo
+    {  String name;
+       DataHandler dh;
+       public FieldInfo( String name, DataHandler dh)
+         { this.name = name;
+           this.dh = dh;
+         }
+       public String toString()
+         {return name;}
+       DataHandler getDataHandler()
+          {return dh;}
 
+     }
+
+  // Data Handler for the Detector Position Attribute of a Data Block
+  class DSDetPos extends DataHandler
+    { int mode, pos;
+      public DSDetPos( String arg, int mode, int pos)
+          {super( arg);
+           this.mode = mode;
+           this.pos = pos;
+
+           }
+      public Object getVal( DataSet DSS[] , int DS_index , int DB_index, 
+                                    int XY_index )
+          {  
+
+              
+
+              GetDataAttribute SF = new GetDataAttribute( DSS[DS_index] , 
+                                              new Integer( DB_index  ),
+                                              new AttributeNameString( Attribute.DETECTOR_POS ));
+             Object O = SF.getResult();
+             if( O instanceof DetectorPosition)
+                 { float xx[];
+                   xx=null;
+                   if( mode == 1)
+                     xx = ((DetectorPosition)O).getCartesianCoords();
+                   else if( mode == 2)
+                     xx = ((DetectorPosition)O).getCylindricalCoords();
+                   else if(mode == 3)
+                     xx = ((DetectorPosition)O).getSphericalCoords();
+                   else if( mode == -1)
+                     return new Float(((DetectorPosition)O).getScatteringAngle());
+                   else return null;
+                   
+                   if( (xx == null) ||(pos < 0) ||(pos > 2)) return null;
+                       return new Float( xx[pos]);
+                  
+                  }
+             else return null;
+            }     
+     }
+
+  // Data Handler for Data Set Fields
   class DSfield extends DataHandler
      {public DSfield( String arg ){super( arg ) ;}
 
@@ -1322,6 +1580,7 @@ public class table_view extends JPanel implements ActionListener
    }// DSfield
 
 
+  // Data Handler for DataSet Attributes
   class DSattr extends DataHandler
      {public DSattr( String arg )
          {super( arg ) ;
@@ -1344,6 +1603,7 @@ public class table_view extends JPanel implements ActionListener
    }//DSattr
 
 
+  //Data Handler for Data Block Attributes
   class DBattr extends DataHandler //Detector position args do special
      {public DBattr( String arg )
           {super( arg ) ;
@@ -1395,7 +1655,7 @@ public class table_view extends JPanel implements ActionListener
         }    
    }
 
-
+  //Data Handler for XY data.
   class XYData extends DataHandler
     {public XYData( String arg )
         {super( arg ) ;
@@ -1403,28 +1663,23 @@ public class table_view extends JPanel implements ActionListener
  
       public Object getVal( DataSet DSS[], int DS_index,  int DB_index, 
                  int XY_index )
-         { if( DB_index == 1 && XY_index == 4907)
-              System.out.println("A");
+         { 
           if( arg == null ) 
              return new Integer( XY_index );
-           if( DB_index == 1 && XY_index == 4907)
-                            System.out.println("B");
+         
           if( ( DSS == null ) ||( DS_index < 0 )||( DB_index < 0 ) 
                          ||( XY_index < 0 )) 
              return null;
-          if( DB_index == 1 && XY_index == 4907)
-                            System.out.println("C");
+         
           if( DS_index >= DSS.length ) 
                 return null;
-          if( DB_index == 1 && XY_index == 4907)
-                            System.out.println("D");
+         
 
           DataSet DS = DSS[ DS_index ];
      
           if( DB_index >= DS.getNum_entries() ) 
              return null;
-          if( DB_index == 1 && XY_index == 4907)
-                            System.out.println("E"+arg);
+          
           Data DB = DS.getData_entry( DB_index );
           float Res[];
           if( arg.equals( "x" ))
@@ -1435,28 +1690,258 @@ public class table_view extends JPanel implements ActionListener
              Res = DB.getErrors();
           else 
              return null; 
-          if( DB_index == 1 && XY_index == 4907)
-                            System.out.println("F");
+         
           if( XY_index < 0 )
              return null;
-          if( DB_index == 1 && XY_index == 4907)
-                            System.out.println("G");
+         
           if( Res == null ) 
               return null;
-          if( DB_index == 1 && XY_index == 4907)
-                            System.out.println("H"+Res.length+","+
-                            DB.getX_scale().getXs().length   
-                                );
+        
           if( XY_index >= Res.length ) 
             return null;
-          if( DB_index == 1 && XY_index == 4907)
-                            System.out.println("I");
+          
           return  new Float( Res[ XY_index ] );
          }
 
    }
 
- 
+  // A specialized DataHandler for XY error data. Here XY index is an index into a fixed
+  // set of xvals.  It gets corresponding y vals, errors, etc.
+  class XYDataVal extends XYData  // index is index into xvals
+    {float xvals[], dx;
+      public XYDataVal( float xvals[], String arg)
+        { super( arg );
+          this.xvals = xvals;
+          dx = 0;
+          if( !(xvals == null))
+            if(xvals.length > 1)
+              {dx = xvals[1]-xvals[0];
+               for(int i =1; i+1 < xvals.length; i++)
+                 if( xvals[i+1]-xvals[i] <dx)
+                    dx = xvals[i+1]-xvals[i];
+               } 
+            
+        }
+      public Object getVal( DataSet DSS[], int DS_index,  int DB_index, 
+                 int XY_index )//XY_index is now index into xvals not ..
+        {//Find closest in DSS[DS_index].DataEntry[dB_index]
+         if( XY_index < 0)
+            return null;
+         if( xvals == null)
+            return null;
+         if( XY_index >=xvals.length)
+             return null;
+         float x = xvals[ XY_index];
+         int i = java.util.Arrays.binarySearch(xvals,x);
+         if( i>= xvals.length){i--;}
+         else if(i < 0) return null;
+         else if( java.lang.Math.abs(xvals[i] - x) <dx/8.0)  {}
+         else
+           { if( i > 0)
+                if( java.lang.Math.abs(x - xvals[i-1]) < dx/8.0) i = i-1;
+             else if( i+1 < xvals.length-1)
+               if(java.lang.Math.abs( xvals[i+1]-x) < dx/8.0 ) i=i+1;
+             else 
+               return null;
+            }
+         return super.getVal( DSS, DS_index, DB_index, i);
+         }
+      
+    }
+
+  //General Next Handler that increments from min to max
+  class Nextt implements INextHandler
+    { int min,max, current;
+      boolean make = false;
+     public Nextt(){}
+     public Nextt( int min, int max)
+       {this.min=min;
+        this.max = max;
+       }
+     public int next()
+       { current++;
+         //if( make)System.out.println("   in Nextt make is true");
+         if( current > max)
+           { if( make)
+                OutputEndField();
+             
+             return -1;
+            }
+         
+         return current;
+       }
+   
+     public int start()
+       { current = min;
+         return current;
+        }
+     public void setEndRecordMake( boolean make)
+        {this.make = make;
+        }
+      
+    }
+
+  // Next index in the SelectedIndex of Groups array
+  class Next_Gr extends Nextt // Next selected Group's index 
+   { DataSet DS ;
+     int SelInd[];
+     public Next_Gr( DataSet DS)
+      { this.DS = DS;
+        SelInd = DS.getSelectedIndices();
+        if( SelInd == null)
+          {min = -1;
+           max = -1;
+           }
+
+        min=0;
+        max = SelInd.length-1;
+       }
+     public int start()
+       { current = min;
+         if( current >=0)
+          if( SelInd != null)
+              if( current < SelInd.length)
+                return SelInd[current];
+         return -1;
+       }
+     public int next()
+       { int x = super.next();
+         //if( make) System.out.println("make="+make);
+         if( x >=0)
+           if( SelInd != null)
+             if( x < SelInd.length)
+               return SelInd[x];
+          return -1;
+         }
+
+    }
+
+  // Next Handler for times where time fields do not have to match in size for @ group
+  class Next_t extends Nextt // Next times. 
+                             // 
+    { DataSet DS;
+      boolean useAll;
+      int Group, ll[]; //Group is index into selected indices
+      public Next_t( DataSet DSS[], int DSindex, boolean useAll)
+         {this.DS = DSS[DSindex];
+          this.useAll = useAll;
+          ll = DS.getSelectedIndices();
+          Group = -1;
+          current = -1;
+          min = -1;
+          max = -1;
+          
+            
+         }
+      public int start() //assumes through on now start next group
+       { Group++;  //Group is the index into ll the list of selected indices
+         if(!useAll)
+           if(ll == null)
+              return -1;
+         if( !useAll)
+           if( Group >=ll.length)
+             return -1;
+         if( useAll &&( Group >= DS.getNum_entries()))
+            return -1;
+         if( Group < 0) return -1;
+         int sGroup = Group; //sGroup is index of the group in the data set
+         if( !useAll)
+            sGroup = ll[Group];
+         min=0;
+         max = DS.getData_entry(sGroup).getX_scale().getXs().length -1;
+       
+         current = 0;
+         return 0;
+            
+        }
+     }
+
+  // This is the operation done at the base of the n nested for loops
+  class opnGroup implements INtupleOperation
+   { int Perm[];
+     DataSet DSS[];
+     float xvals[]=null;
+     String order;
+     
+     int Groups[];
+
+     public opnGroup( DataSet DS[],int Permutation[], float xvals[], int Groups[],String order)
+      { Perm = null;
+        DSS=DS;
+        this.order = order;
+        this.xvals = xvals;
+         this.Groups=Groups;
+       }
+     public void execute( int ntuple[])
+      {if( ntuple == null) return;
+       if( ntuple.length !=4) return;
+       
+       int Field = ntuple[3];
+       int Hist = ntuple[0];
+       int Group = ntuple[1];
+       int time = ntuple[2];
+       int comma = order.indexOf(",");
+       if( comma < 0) 
+          {if( Field ==0)
+             if( Hist == 0);
+               if( Group ==0)
+                  if( time == 0)
+                     SharedData.status_pane.add("Wrong Order Descriptor");
+           return;
+           }
+      // System.out.println("opn Grp tuple="+Hist+","+Group+","+time+","+Field+","+columnHeader);
+       
+       FieldInfo FF = (FieldInfo)(selModel.getElementAt( Field));
+       DataHandler dh = FF.getDataHandler();
+      
+      // Eliminate Repeated xval columns
+       if( xvals != null)
+       if( FF.toString().equals( "X values"))
+          if( comma < order.length() -2) // more than one instance across columns
+           if( order.indexOf("T")< comma)// and rows are times
+            { int kk= "HGTF".indexOf(order.charAt(comma+1));
+              if( kk == 3) kk = "HGTF".indexOf(order.charAt( comma + 2));
+              //System.out.println("in elim cols, kk and ntuple[kk]="+kk+","+ntuple[kk]);
+              if( kk < 0) return;
+              
+              if( ntuple[kk] > 0) return;
+             }
+       
+      // Eliminate Repeated columns pertaining to Group 
+        if( order.indexOf("G")< comma)
+          if( FF.getDataHandler() instanceof DBattr)
+             if( comma < order.length() -2) // more than one instance across columns
+               { int kk= "HGTF".indexOf(order.charAt(comma+1));
+                 if( kk == 3) kk = "HGTF".indexOf(order.charAt( comma + 2));
+                //System.out.println("in elim cols, kk and ntuple[kk]="+kk+","+ntuple[kk]);
+                if( kk < 0) return;
+                if( ntuple[kk] > 0) return;
+               }
+       if( xvals != null)
+         if( dh instanceof XYData)
+            dh = new XYDataVal( xvals, dh.getArg());
+       if( columnHeader)
+         {String S = FF.toString();
+          
+          
+          if( (comma >= 0) && (order.indexOf("G")>comma))
+               S = "Gr"+Group+":"+S;
+           // xvals could be across columns too may have to add something for that
+           OutputField( S );
+          }
+       else
+         {int xGroup = Group;
+          if(Groups != null)xGroup = Groups[Group];
+           OutputField(dh.getVal( DSS,Hist,xGroup,time));
+          //System.out.println("   xxx"+dh.getVal( DSS,Hist,Group,time));
+          
+          }
+    
+      }
+    }
+
+  //Action Listener for the MenuItems to Select all and copy select
+ // in the JFrame containing the JTable
   public class MyActionListener implements ActionListener
     {
       public void actionPerformed( ActionEvent e )
@@ -1470,7 +1955,58 @@ public class table_view extends JPanel implements ActionListener
          }
         }
     }
- 
+
+ // Class of elements in the "order" JComboBox
+ class DescrCode
+   { String Code, Report;
+     public DescrCode( String Code, String Report)
+       {this.Code = Code;
+        this.Report = Report;
+       }
+     public String toString()
+        { return Report;
+        }
+     public String getCode()
+       {return Code;
+        }
+    }
+
+// Operator used to Select Indices 
+class SelectIndicesOp extends DataSetOperator
+  {
+      public SelectIndicesOp()
+        {super("Select Groups by Index");
+         setDefaultParameters();
+        }
+      public String getCommand()
+         {return "SelGrIndex";}
+      public void setDefaultParameters()
+        {  parameters= new Vector();
+           parameters.add( new Parameter("Enter indices,", new IntListString()));
+         }
+      public Object getResult()
+       { DataSet DS = getDataSet();
+         IntListString S =(IntListString)(getParameter(0).getValue());
+         int[] A; 
+         if( S== null) A = null; else  A= IntList.ToArray(S.toString());
+         int j=0;
+         for(int i=0;i<DS.getNum_entries();i++)
+           { DS.setSelectFlag(i,false);
+             if(A!=null) if(j <A.length)
+              if( A[j] == i)
+                 {DS.setSelectFlag(i,true);j++;
+                 }
+       
+             }
+        DS.notifyIObservers(IObserver.SELECTION_CHANGED );
+        return "Success";  
+
+       }
+      public Object clone()
+        {return null;
+        }
+   }
+
  /** Test program for this module.  Not functional
  *
  */
