@@ -47,7 +47,7 @@ import java.text.DecimalFormat;
  * A.J.Schultz's PEAKS program. This operator writes out the
  * information in a format specified by Art.
  */
-public class WritePeaks extends GenericTOF_SCD{
+public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
     private static final String TITLE       = "Write Peaks";
     private static final SharedData shared= new SharedData();
 
