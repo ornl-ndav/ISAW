@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.7  2002/12/09 23:40:04  pfpeterson
+ *  Now checks for an the class that the number of pulses attribute is stored as.
+ *
  *  Revision 1.6  2002/11/27 23:30:33  pfpeterson
  *  standardized header
  *
@@ -299,6 +302,7 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
     }
 
     num_data = ds.getNum_entries();
+    Object val=null;
     for ( int index = 0; index < num_data; index++ )
     {
       data = ds.getData_entry( index );
@@ -311,9 +315,14 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
       Float_val   = (Float)attr_list.getAttributeValue(Attribute.ENERGY_IN);
       energy_in   = Float_val.floatValue();
 
-      Int_val     = (Integer)
-                    attr_list.getAttributeValue(Attribute.NUMBER_OF_PULSES);
-      num_pulses  = Int_val.intValue();
+      val=attr_list.getAttributeValue(Attribute.NUMBER_OF_PULSES);
+      if( val instanceof Integer ){
+        num_pulses = ((Integer)val).intValue();
+      }else if(val instanceof Float ){
+        num_pulses = (int)(((Float)val).floatValue());
+      }else{
+        num_pulses=0;
+      }
 
 //   System.out.println("ID = " + data.getGroup_ID()+
 //                      " SA = " + Format.real( solid_angle, 12, 6 ));
