@@ -15,6 +15,9 @@
  * ---------------------------------------------------------------------------
  *
  *  $Log$
+ *  Revision 1.21  2001/02/22 21:00:46  dennis
+ *  Improved error checking in getDataSet() method.
+ *
  *  Revision 1.20  2001/01/31 14:23:48  dennis
  *  Now uses CVS version numbers.
  *
@@ -320,7 +323,7 @@ public class RunfileRetriever extends    Retriever
 //    System.out.println("======= getting dataset for >>>" + data_source_name );
     int instrument_type;
 
-    if ( data_set_num >= num_data_sets )
+    if ( data_set_num < 0 || data_set_num >= num_data_sets )
       return null;
 
     instrument_type = InstrumentType.getIPNSInstrumentType( data_source_name );
