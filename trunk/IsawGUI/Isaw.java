@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.53  2001/08/14 19:25:29  chatterjee
+ *  Fixed the LiveData for HRMECS.Does not throw up the FileDialog when Live Data for HRMECS is chosen
+ *
  *  Revision 1.52  2001/08/08 20:20:51  dennis
  *  Now reloads the properties file after editing/saving.
  *
@@ -258,7 +261,7 @@ public class Isaw
   private static final String LOAD_ISAW_DATA_MI  = "Load ISAW Data";
   private static final String SAVE_ISAW_DATA_MI  = "Save ISAW Data";
   private static final String GSAS_EXPORT_MI     = "Export GSAS File";
-  private static final String DB_IMPORT_MI       = "Import from Database";
+  private static final String DB_IMPORT_MI       = "Search Database";
   private static final String EXIT_MI            = "Exit";
 
   private static final String EDIT_M             = "Edit";
@@ -514,7 +517,7 @@ public class Isaw
     JMenuItem m_SEPD   = new JMenuItem( SEPD_MACRO_MI );
     JMenuItem m_CHEXS  = new JMenuItem( CHEXS_MACRO_MI );
  
- 
+    fMenu.add(dbload);
     fMenu.add(Runfile);
     fMenu.add(LiveData);
     fMenu.add(script_loader);
@@ -523,8 +526,8 @@ public class Isaw
     fMenu.add(fileSaveData);
     fMenu.add(fileSaveDataAs);
     fMenu.addSeparator();
-    fMenu.add(dbload);
-    fMenu.addSeparator();
+    
+   // fMenu.addSeparator();
     fMenu.add(fileExit);
  
     eMenu.add(removeSelectedNode);
@@ -1090,12 +1093,13 @@ public class Isaw
 
       if( s.equals(HRMECS_MACRO_MI) )
       { 
-        fd.show();
+     /* fd.show();
         File f = new File(  fd.getDirectory(), fd.getFile()  );
         String dir = fd.getDirectory();
         FileSeparator fs = new FileSeparator(dir);
         fs.setSize(700,700);
         fs.setVisible(true);
+      */
       }
 
       if( s.equals(HIPD_MACRO_MI) )  
