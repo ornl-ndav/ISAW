@@ -4,6 +4,9 @@
  *  Renamed from MultiRunfileLoader.java
  *  
  *  $Log$
+ *  Revision 1.3  2000/07/21 19:52:01  dennis
+ *  Now only do monitor pulse checking for direct geometry spectrometers
+ *
  *  Revision 1.2  2000/07/21 19:17:38  dennis
  *  Now includes a group mask parameter to mask off certain groups of detectors.
  *
@@ -134,10 +137,10 @@ public class SumRunfiles extends    Operator
   /**
    *
    */
-   private void MakeLogEntries( DataSet           ds, 
-                                String            run_names[],
-                                HistogramDataPeak mon_1[], 
-                                HistogramDataPeak mon_2[]  )
+   private void MakeSpectrometerLogEntries( DataSet           ds, 
+                                            String            run_names[],
+                                            HistogramDataPeak mon_1[], 
+                                            HistogramDataPeak mon_2[]  )
    {
                                                    // Monitor #1 statistics
       float area_1, 
@@ -221,6 +224,14 @@ public class SumRunfiles extends    Operator
      String    group_mask  = (String)getParameter(3).getValue();
      boolean   compare_monitor_pulses
                         = ((Boolean)getParameter(4).getValue()).booleanValue(); 
+
+                                         // only compare monitor pulses for
+                                         // direct geometry spectrometers, if
+                                         // desired
+
+     if ( InstrumentType.getIPNSInstrumentType( instrument ) != 
+          InstrumentType.TOF_DG_SPECTROMETER )
+       compare_monitor_pulses = false;
 
      int       runs[]       = IntList.ToArray( run_nums ); 
      int       masked_ids[] = IntList.ToArray( group_mask ); 
@@ -361,7 +372,7 @@ public class SumRunfiles extends    Operator
      }
      
      if ( compare_monitor_pulses )
-       MakeLogEntries( datasets[1], run_names, mon_1, mon_2 );
+       MakeSpectrometerLogEntries( datasets[1], run_names, mon_1, mon_2 );
 
      return datasets;
    }
