@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2001/08/02 21:08:08  rmikk
+ * Fixed up all Document files to take care of non \n characters
+ * to terminate lines
+ *
  * Revision 1.11  2001/08/02 20:54:01  rmikk
  * -Continuation of For, If, Else, Elseif, endif, endfor, and
  * on error(?) lines are now supported.
@@ -149,6 +153,7 @@ public class ScriptProcessor  extends GenericOperator
        PL = new PropertyChangeSupport((Object) this );   
       
         MacroDocument =new Util().openDoc( TextFileName);
+        CommandPane.fixUP( MacroDocument);
         setDefaultParameters();
         Title = TextFileName;
     
@@ -168,6 +173,7 @@ public class ScriptProcessor  extends GenericOperator
        ExecLine = new execOneLine() ;
        PL = new PropertyChangeSupport( (Object)this ); 
        MacroDocument = Doc ;
+       CommandPane.fixUP( MacroDocument );
        ExecLine.initt();
        ExecLine.resetError();
        seterror( -1,"");
