@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.10  2003/06/16 23:04:30  bouzekc
+ * Now set up to use the multithreaded progress bar in
+ * DataSetTools.components.ParametersGUI.
+ *
  * Revision 1.9  2003/06/11 23:04:05  bouzekc
  * No longer uses StringUtil.setFileSeparator as DataDirPG
  * now takes care of this.
@@ -230,6 +234,7 @@ public class FindMultiplePeaksForm extends Form
     SharedData.addmsg("Executing...\n");
     IParameterGUI param;
     int maxPeaks, minIntensity, SCDline;
+    float increment;
     Float monCount;
     String rawDir, outputDir, saveName, expName, calibFile, loadName;
     String runNum, expFile;
@@ -340,6 +345,10 @@ public class FindMultiplePeaksForm extends Form
     createFindPeaksOperators(calibFile, maxPeaks, minIntensity,
                              saveName, expFile, SCDline);
 
+
+    //set the increment amount
+    increment = (1.0f / runsArray.length) * 100.0f;
+
     for(int i = 0; i < runsArray.length; i++)
     {
       /*load the histogram and monitor for the current run. 
@@ -436,6 +445,11 @@ public class FindMultiplePeaksForm extends Form
         first = false;
         appendToFile = true;
       }
+
+      //fire a property change event off to any listeners
+      //again, these are incremental changes in order to fit in with the
+      //overall Wizard progress bar
+      super.fireValueChangeEvent(-1, (int)increment);
     }
   
     SharedData.addmsg("--- Done finding peaks. ---");
@@ -448,7 +462,6 @@ public class FindMultiplePeaksForm extends Form
     param.setValue(saveName);
     param.setValid(true);
 
-    //not really sure what to return
     return Boolean.TRUE;
   }
 
