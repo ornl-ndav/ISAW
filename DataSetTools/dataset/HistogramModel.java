@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/07/23 15:06:50  dennis
+ *  clone() method now also copies the use_sqrt_errors flag.
+ *
  *  Revision 1.6  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -216,6 +219,9 @@ public class HistogramModel extends    ModeledData
   {
     HistogramModel temp = new HistogramModel(x_scale, function, 
                                              errors, group_id);
+
+                                      // copy the fields
+    temp.setSqrtErrors( isSqrtErrors() );
 
                                       // copy the list of attributes.
     AttributeList attr_list = getAttributeList();
