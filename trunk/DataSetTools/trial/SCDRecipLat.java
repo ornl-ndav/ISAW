@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/03/27 22:12:10  dennis
+ * Added least squares fitting of plane in reciprocal lattice.
+ * (Initial attempt)
+ *
  * Revision 1.11  2003/02/18 20:19:53  dennis
  * Switched to use SampleOrientation attribute instead of separate
  * phi, chi and omega values.
@@ -657,6 +661,8 @@ public class SCDRecipLat
     base2.subtract( temp );
     base2.normalize();
 
+    fit_plane( origin, base1, base2 );
+
     float b1[] = base1.get();
     float b2[] = base2.get();
     float orig[] = origin.get();
@@ -697,6 +703,116 @@ public class SCDRecipLat
 
     return image;
   }
+
+
+  private void fit_plane( Vector3D origin, Vector3D base1, Vector3D base2 )
+  {
+    IThreeD_Object obj[] = vec_Q_space.getAllObjects();
+
+    if ( obj == null || obj.length <= 0 )
+      return;
+
+    Vector3D n = new Vector3D();
+    n.cross( base1, base2 );
+    n.normalize();
+
+    float c = n.dot( origin );
+    float n_dot_p;
+                                            // first get a new list of objects
+                                            // that are close to the plane
+    IThreeD_Object plane_pts[] = new IThreeD_Object[ obj.length ];
+    int n_used = 0;
+    for ( int i = 0; i < obj.length; i++ )
+    {
+      n_dot_p = n.dot( obj[i].position() );      
+      if ( Math.abs( n_dot_p - c ) < 0.3 )
+      {
+         plane_pts[ n_used ] = obj[ i ];
+         n_used++;
+      }
+    }
+    System.out.println("Original normal vector = " + n );
+    System.out.println("Original c = " + c );
+    System.out.println("number used = " + n_used );
+                                            // next find the least squares fit
+                                            // to the plane
+/*
+    double A[][]  = new double[n_used][4];
+    double b[]    = new double[n_used];
+    float  temp[] = new float[4];
+
+    for ( int i = 0; i < n_used; i++ )
+    {
+      temp = plane_pts[i].position().get();     // Note: this is (x,y,z,1)
+      for ( int j = 0; j < 4; j++ )
+        A[i][j] = temp[j];
+      b[i] = 0;
+    }
+
+    double Q[][] = LinearAlgebra.QR_factorization( A );
+    double residual = LinearAlgebra.QR_solve( A, Q, b );
+
+    for ( int i = 0; i < 3; i++ )
+      temp[i] = (float)b[i];
+    temp[3] = 1;
+    
+    n = new Vector3D( temp ); 
+    System.out.println("Best fit normal vector = " + n );
+    System.out.println("c = " + b[3] );
+    System.out.println("residual = " + residual );
+*/
+
+    double A[][]  = new double[n_used][3];
+    double b[]    = new double[n_used];
+    float  temp[] = new float[4];
+
+    for ( int i = 0; i < n_used; i++ )
+    {
+      temp = plane_pts[i].position().get();     // Note: this is (x,y,z,1)
+      for ( int j = 0; j < 3; j++ )
+        A[i][j] = temp[j];
+      b[i] = c;
+    }
+
+    double Q[][] = LinearAlgebra.QR_factorization( A );
+    double residual = LinearAlgebra.QR_solve( A, Q, b );
+
+    temp = new float[4];
+    for ( int i = 0; i < 3; i++ )
+      temp[i] = (float)b[i];
+    temp[3] = 1;
+  
+    n = new Vector3D( temp );
+    n.normalize();
+    System.out.println("Best fit normal vector = " + n );
+    System.out.println("residual = " + residual );
+
+    float c_ave = 0;
+    for ( int i = 0; i < n_used; i++ )
+      c_ave += n.dot( plane_pts[i].position() );
+
+    c_ave = c_ave/n_used;
+    System.out.println("Average c = " + c_ave );
+
+    Vector3D new_origin = new Vector3D(n);
+
+    new_origin.multiply(c_ave); 
+    origin.set( new_origin );
+
+    Vector3D new_base1 = new Vector3D(base1);
+    Vector3D temp_v = new Vector3D(n);
+    temp_v.multiply( n.dot(base1) );
+    new_base1.subtract( temp_v );
+    base1.set( new_base1 );
+
+    Vector3D new_base2 = new Vector3D(base2);
+    temp_v.set(n);
+    temp_v.multiply( n.dot(base2) );
+    new_base2.subtract( temp_v );
+    base2.set( new_base2 );
+  }
+
+
 
   /* ------------------------- main -------------------------------- */
 
