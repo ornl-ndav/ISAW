@@ -28,11 +28,16 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/06/18 20:34:23  pfpeterson
+ * Changed calls for NxNodeUtils.Showw(Object) to
+ * DataSetTools.util.StringUtil.toString(Object)
+ *
  * Revision 1.3  2002/11/27 23:29:29  pfpeterson
  * standardized header
  *
  */
 package NexIO.Write.NexApi;
+import DataSetTools.util.StringUtil;
 import java.util.*;
 import NexIO.Write.*;
 import java.lang.*;
@@ -226,8 +231,7 @@ public abstract class NexWriteUtil implements NxWriteNode {
     boolean showData = true;
     if( value != null ){
       if( showData ){
-	NexIO.NxNodeUtils nu = new NexIO.NxNodeUtils();
-        nu.Showw( value );
+        StringUtil.toString( value );
       }else{
         System.out.print( "Value Data Type = "+value.getClass()+ 
                           value.getClass().isArray() );

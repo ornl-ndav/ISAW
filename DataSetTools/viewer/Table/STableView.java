@@ -30,6 +30,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.12  2003/06/18 20:37:28  pfpeterson
+ * Changed calls for NxNodeUtils.Showw(Object) to
+ * DataSetTools.util.StringUtil.toString(Object)
+ *
  * Revision 1.11  2003/03/20 20:18:29  rmikk
  * Caught and handled an exception if value at a given
  *   row and column does not represent a legitimate number
@@ -555,7 +559,7 @@ public class STableView  extends DataSetViewer
                String SS = "NO SELECTED INDICES";
                int[] SelInd = ds.getSelectedIndices() ;
                if( SelInd != null ) if( SelInd.length > 0 )
-                  SS = (new NexIO.NxNodeUtils()).Showw( SelInd );
+                  SS = StringUtil.toString( SelInd );
 
                S.append( "#     ");
                S.append(ds.toString());
@@ -664,8 +668,8 @@ public class STableView  extends DataSetViewer
       {System.out.println("In select Action performed");
        int[] cols = jtb.getSelectedColumns();
        int[] rows = jtb.getSelectedRows();
-       System.out.println( "Rows="+ (new  NexIO.NxNodeUtils()).Showw( rows));
-       System.out.println( "cols="+ (new  NexIO.NxNodeUtils()).Showw( cols));
+       System.out.println( "Rows="+ StringUtil.toString( rows));
+       System.out.println( "cols="+ StringUtil.toString( cols));
 
        if( (cols == null) || ( rows == null))
          return;

@@ -30,6 +30,10 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.3  2003/06/18 20:35:35  pfpeterson
+  *  Changed calls for NxNodeUtils.Showw(Object) to
+  *  DataSetTools.util.StringUtil.toString(Object)
+  *
   *  Revision 1.2  2002/11/27 23:14:06  pfpeterson
   *  standardized header
   *
@@ -40,6 +44,7 @@
   */
   package DataSetTools.dataset;
 
+import DataSetTools.util.StringUtil;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
@@ -226,7 +231,7 @@ public class DataSetList  implements IXmlIO
             return xml_utils.setError( xml_utils.getErrorMessage());
           if( V.size()<2)
             return xml_utils.setError("Not enough attributes in "+Tag+
-                 (new NexIO.NxNodeUtils()).Showw(V));
+                                      StringUtil.toString(V));
           try
           {
             if( V.firstElement().equals("ID"))
