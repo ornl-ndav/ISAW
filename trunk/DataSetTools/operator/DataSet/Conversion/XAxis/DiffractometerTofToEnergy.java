@@ -30,6 +30,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.7  2004/01/24 19:10:46  bouzekc
+ *  Removed unused variables from main().  Removed unused imports.
+ *
  *  Revision 1.6  2002/12/17 19:18:40  dennis
  *  Added getDocumentation() method, simple main test program and
  *  Java docs for the getResult() method. (Chris Bouzek)
@@ -395,16 +398,16 @@ public class DiffractometerTofToEnergy extends    XAxisConversionOp
    */
   public static void main( String[] args )
   {
-    float min_1 = (float)0.5, max_1 = (float)1.0;
+    float min_1 = 0.5f, max_1 = 1.0f;
                                               //create the first test DataSet
     DataSet ds1 = DataSetFactory.getTestDataSet(); 
-    ViewManager viewer = new ViewManager(ds1, ViewManager.IMAGE);
+     new ViewManager(ds1, ViewManager.IMAGE);
 
     DiffractometerTofToEnergy op = 
                         new DiffractometerTofToEnergy(ds1, min_1, max_1, 100);
 
     DataSet new_ds = (DataSet)op.getResult();
-    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE);	
+    new ViewManager(new_ds, ViewManager.IMAGE);	
     System.out.println(op.getDocumentation());
   }
 }

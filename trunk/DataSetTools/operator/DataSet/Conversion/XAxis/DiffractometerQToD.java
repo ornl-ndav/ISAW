@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/01/24 19:10:46  bouzekc
+ * Removed unused variables from main().  Removed unused imports.
+ *
  * Revision 1.8  2003/12/15 01:51:44  bouzekc
  * Removed unused imports.
  *
@@ -337,29 +340,29 @@ public class DiffractometerQToD extends XAxisConversionOp{
      */
     public static void main( String[] args )
     {
-     float min_1 = (float)5.0;
-     float max_1 = (float)10.0;
-     float min_2 = (float)0.65;
-     float max_2 = (float)1.1;
+     float min_1 = 5.0f;
+     float max_1 = 10.0f;
+     float min_2 = 0.65f;
+     float max_2 = 1.1f;
      String file_name = "/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
                        //"D:\\ISAW\\SampleRuns\\GPPD12358.RUN";
 
      try
      {
        RunfileRetriever rr = new RunfileRetriever( file_name );
-     DataSet ds1 = rr.getDataSet(1);
+       DataSet ds1 = rr.getDataSet(1);
 
        //need to have units of Q-values first
        DiffractometerTofToQ tofq =
          new DiffractometerTofToQ(ds1, min_1, max_1, 6000);
 
        DataSet new_ds1 = (DataSet)tofq.getResult();
-       ViewManager viewer = new ViewManager(new_ds1, IViewManager.IMAGE);
+       new ViewManager(new_ds1, IViewManager.IMAGE);
 
        DiffractometerQToD op = 
                           new DiffractometerQToD(new_ds1, min_2, max_2, 1000);
        DataSet new_ds2 = (DataSet)op.getResult();
-       ViewManager new_viewer = new ViewManager(new_ds2, IViewManager.IMAGE);
+       new ViewManager(new_ds2, IViewManager.IMAGE);
      System.out.println(op.getDocumentation());
     }
     catch(Exception e)

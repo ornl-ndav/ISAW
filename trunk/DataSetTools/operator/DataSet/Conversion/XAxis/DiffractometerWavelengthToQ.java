@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/01/24 19:10:47  bouzekc
+ * Removed unused variables from main().  Removed unused imports.
+ *
  * Revision 1.7  2003/12/15 01:51:44  bouzekc
  * Removed unused imports.
  *
@@ -361,10 +364,10 @@ public class DiffractometerWavelengthToQ extends XAxisConversionOp{
      */
     public static void main( String[] args )
     {
-    float min_1 = (float)0.57;
-    float max_1 = (float)3.3;
-    float min_2 = (float)5.0;
-    float max_2 = (float)7.0;
+    float min_1 = 0.57f;
+    float max_1 = 3.3f;
+    float min_2 = 5.0f;
+    float max_2 = 7.0f;
     String file_name =
     "/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
     //"D:\\ISAW\\SampleRuns\\GPPD12358.RUN";
@@ -379,12 +382,12 @@ public class DiffractometerWavelengthToQ extends XAxisConversionOp{
          new DiffractometerTofToWavelength(ds1, min_1, max_1, 6000);
 
        DataSet new_ds1 = (DataSet)tofw.getResult();
-       ViewManager viewer = new ViewManager(new_ds1, IViewManager.IMAGE);
+       new ViewManager(new_ds1, IViewManager.IMAGE);
 
        DiffractometerWavelengthToQ op =
          new DiffractometerWavelengthToQ(new_ds1, min_2, max_2, 1000);
        DataSet new_ds2 = (DataSet)op.getResult();
-       ViewManager new_viewer = new ViewManager(new_ds2, IViewManager.IMAGE);
+       new ViewManager(new_ds2, IViewManager.IMAGE);
      System.out.println(op.getDocumentation());
     }
     catch(Exception e)
