@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.163  2003/10/31 18:16:50  dennis
+ *  Changed version to 1.6.0 alpha 2
+ *
  *  Revision 1.162  2003/10/30 17:15:02  dennis
  *  Removed "OLD Selected Graph View" that used SGT.
  *
@@ -632,7 +635,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.6.0 alpha 1";
+          version="1.6.0 alpha 2";
         else
           version=SharedData.VERSION;
 
