@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/08/05 15:02:40  dennis
+ *  Removed debug print.
+ *
  *  Revision 1.1  2003/07/15 21:50:40  dennis
  *  Initial version of utilities for working with DataSets and DataGrids.
  *  Contains static methods:
@@ -150,7 +153,6 @@ public class Grid_util
          id = grid.ID();
          if ( grid.num_rows() > 1 && grid.num_cols() > 1 )
          {
-           System.out.println("i = " + i + ", id = " + id );
            area_grids.put( new Integer( id ), new Integer( id ) );
                                                                // skip the
            i += grid.num_rows()*grid.num_cols() - 1;           // other pixels
