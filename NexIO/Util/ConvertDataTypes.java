@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/02/16 02:18:48  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.3  2003/12/12 17:29:19  rmikk
  * Fixed an error that assumed ALL strings end in (char)0
  *
@@ -44,7 +47,6 @@
 
 package NexIO.Util;
 import NexIO.*;
-import NexIO.State.*;
 import DataSetTools.math.*;
 import DataSetTools.dataset.*;
 import java.lang.reflect.*;

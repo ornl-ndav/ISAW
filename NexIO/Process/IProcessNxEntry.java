@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/02/16 02:17:22  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.2  2003/12/09 14:40:03  rmikk
  * Fixed javadoc warnings
  *
@@ -44,7 +47,6 @@
 
 package NexIO.Process;
 import NexIO.*;
-import NexIO.Util.*;
 import NexIO.State.*;
 import DataSetTools.dataset.*;
 

@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2004/02/16 02:16:23  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.3  2002/11/27 23:28:56  pfpeterson
  * standardized header
  *
@@ -35,7 +38,6 @@
 package NexIO.NDS;
 
 import NexIO.*;
-import java.lang.*;
 
 // for attributes
 public class ndsSvAttr implements Attr{

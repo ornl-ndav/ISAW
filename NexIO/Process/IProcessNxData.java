@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/02/16 02:17:22  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.1  2003/11/16 21:38:09  rmikk
  * Initial Checkin
  *
@@ -38,7 +41,6 @@
 
 package NexIO.Process;
 import NexIO.*;
-import NexIO.Util.*;
 import NexIO.State.*;
 import DataSetTools.dataset.*;
 
