@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/11/13 18:23:33  rmikk
+ * -Added Hook to get Wizard documentation
+ *
  * Revision 1.1  2003/11/11 20:47:48  rmikk
  * Initial Checkin
  *
@@ -129,7 +132,8 @@ public class ReduceWizard extends Wizard {
      this.addForm( new JyScriptForm( Path+"Reduce_Form3.py",new ArrayPG("Q bins",null )));
      
      this.addForm( new JyScriptForm( Path+"ReducePy.py",new StringPG("Result",null),consts ));
-    
+     
+     setHelpURL( "Reduce.html");
  
      super.linkFormParameters( fpi );
   }
