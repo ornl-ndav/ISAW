@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/05/01 19:35:15  pfpeterson
+ * Created a method to add found matrices into the index.
+ *
  * Revision 1.4  2003/05/01 16:38:02  pfpeterson
  * Changed some variable names to add to readability and added LOTS
  * of comments.
@@ -442,15 +445,6 @@ public class ScalarJ extends GenericTOF_SCD{
       return new ErrorString("Could not calculate scalars from "
                              +"lattice parameters");
 
-    // assign the scalars to what is used here
-/* REMOVE
-    r11=scalars[0]; // a dot a
-    r22=scalars[1]; // b dot b
-    r33=scalars[2]; // c dot c
-    r23=scalars[3]; // b dot c
-    r31=scalars[4]; // c dot a
-    r12=scalars[5]; // a dot b
-*/
     return null;
   }
 
@@ -701,16 +695,12 @@ public class ScalarJ extends GenericTOF_SCD{
     if( abs(scalars[3])<(3.*sig23) ){ // BdotC=0
       // AdotC=0 AND AdotB=0
       if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
-        k[i-1] = 1;
-        l[i-1] = 1;
-        i = i+1;
+        appendMatrix(1,1);
       }
       // AdotC=-AdotA/2 AND AdotB=-AdotA/2
       if( abs(scalars[4]+(0.5*scalars[0]))<(3.0*sqrt(sig31sq+0.25*sig11sq))
          && abs(scalars[5]+(0.5*scalars[0]))<(3.0*sqrt(sig12sq+0.25*sig11sq))){
-        k[i-1] = 3;
-        l[i-1] = 2;
-        i = i+1;
+        appendMatrix(3,2);
       }
     }
 
@@ -719,23 +709,17 @@ public class ScalarJ extends GenericTOF_SCD{
       // AdotC=BdotC AND AdotB=0
       if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
           && abs(scalars[5])<(3.*sig12) ){
-        k[i- 1] = 2;
-        l[i- 1] = 2;
-        i=i+1;
+        appendMatrix(2,2);
       }
       // AdotB=BdotC AND AdotC=0
       if( abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq))
           && abs(scalars[4])<(3.*sig31) ){
-        k[i-1] = 4;
-        l[i-1] = 2;
-        i = i+1;
+        appendMatrix(4,2);
       }
       // AdotC=BdotC AND AdotB=BdotC
       if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) 
           && abs(scalars[5]-(-scalars[3]))<(3.*sqrt(sig12sq+sig23sq)) ){
-        k[i-1] = 5;
-        l[i-1] = 2;
-        i = i+1;
+        appendMatrix(5,2);
       }
     }
 
@@ -743,34 +727,26 @@ public class ScalarJ extends GenericTOF_SCD{
     if( abs(scalars[3]-(-scalars[0]/3.))<(3.*sqrt(sig23sq+(sig11sq/9.)))
         && abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
         && abs(scalars[5]-scalars[3]) < (3.*sqrt(sig12sq+sig23sq)) ){
-      k[i-1] = 8;
-      l[i-1] = 4;
-      i = i+1;
+      appendMatrix(8,4);
     }
 
     // BdotC=(AdotA-AdotC)/2 AND AdotB=BdotC AND AdotC<0
     if( abs(scalars[3]-0.5*(-scalars[0]-scalars[4]))<3.*sqrt(sig23sq+0.25*sig11sq+0.25*sig31sq)
         && abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq))
         && scalars[4]<0. ){
-      k[i-1] = 10;
-      l[i-1] = 5;
-      i = i+1;
+      appendMatrix(10,5);
     }
 
     // BdotC=(AdotA-AdotB)/2 AND AdotC=BdotC AND AdotB<0
     if( abs(scalars[3]-0.5*(-scalars[0]-scalars[5]))<3.*sqrt(sig23sq+0.25*sig11sq+0.25*sig12sq)
         && abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) && scalars[5]<0.    ){
-      k[i-1] = 11;
-      l[i-1] = 5;
-      i = i+1;
+      appendMatrix(11,5);
     }
 
     // BdotC=AdotA-AdotC-AdotB AND AdotC<0 AND AdotB<0
     if( abs(scalars[3]-(-scalars[0]-scalars[4]-scalars[5]))<3.*sqrt(sig23sq+sig11sq+sig31sq+sig12sq)
         && scalars[4]<0. && scalars[5]<0.  ){
-      k[i-1] = 12;
-      l[i-1] = 6;
-      i = i+1;
+      appendMatrix(12,6);
     }
 
     // BdotC<0
@@ -778,37 +754,27 @@ public class ScalarJ extends GenericTOF_SCD{
       // AdotC=BdotC AND AdotB=-BdotC
       if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
           && abs(scalars[5]-(-scalars[3]))<(3.*sqrt(sig12sq+sig23sq))  ){
-        k[i-1] = 6;
-        l[i-1] = 3;
-        i = i+1;
+        appendMatrix(6,3);
       }
       // AdotC=BdotC AND AdotB=BdotC
       if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
           && abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq))  ){
-        k[i-1] = 7;
-        l[i-1] = 3;
-        i = i+1;
+        appendMatrix(7,3);
       }
       // AdotC=-(AdotA+BdotC)/2 AND AdotB=-(AdotA+BdotC)/2
       if( abs(scalars[4]-(0.5*(-scalars[0]-scalars[3])))<3.*sqrt(sig31sq+0.25*sig11sq+0.25*sig23sq)
           && abs(scalars[5]-(0.5*(-scalars[0]-scalars[3])))<3.*sqrt(sig12sq+0.25*sig11sq+0.25*sig23sq)){
-        k[i-1] = 9;
-        l[i-1] = 5;
-        i = i+1;
+        appendMatrix(9,5);
       }
       // AdotC=-(AdotA+BdotC+AdotB) && AdotB<0
       if( abs(scalars[4]-(-scalars[0]-scalars[3]-scalars[5]))<3.*sqrt(sig31sq+sig11sq+sig23sq+sig12sq)
           && scalars[5]<0. ){
-        k[i-1] = 13;
-        l[i-1] = 6;
-        i = i+1;
+        appendMatrix(13,6);
       }
       // AdotB=-(AdotA+BdotC+AdotC) AND AdotC<0
       if( abs(scalars[5]-(-scalars[0]-scalars[3]-scalars[4]))<3.*sqrt(sig12sq+sig11sq+sig23sq+sig31sq)
           && scalars[4]<0. ){
-        k[i-1] = 14;
-        l[i-1] = 6;
-        i = i+1;
+        appendMatrix(14,6);
       }
     }
   }  // ==================== end of mark01
@@ -844,35 +810,25 @@ public class ScalarJ extends GenericTOF_SCD{
     if( abs(scalars[3])<(3.*sig23)  ){
       // AdotC=0 AND AdotB=0
       if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
-        k[i-1] = 15;
-        l[i-1] = 7;
-        i = i+1;
+        appendMatrix(15,7);
       }
       // AdotB=AdotA/2 AND AdotC=0
       if( abs(scalars[5]-0.50*scalars[0])<3.*sqrt(sig12sq+0.25*sig11sq) 
           && abs(scalars[4])<(3.*sig31) ){
-        k[i-1] = 16;
-        l[i-1] = 8;
-        i = i+1;
+        appendMatrix(16,8);
       }
       // AdotB=AdotA/2 AND AdotC=0
       if( abs(scalars[5]-0.50*(-scalars[0]))<3.*sqrt(sig12sq+0.25*sig11sq)
           && abs(scalars[4])<(3.*sig31) ){
-        k[i-1] = 17;
-        l[i-1] = 8;
-        i = i+1;
+        appendMatrix(17,8);
       }
       // AdotC=0 AND AdotB>0
       if( abs(scalars[4])<(3.*sig31) && scalars[5]>0. ){
-        k[i-1] = 18;
-        l[i-1] = 9;
-        i = i+1;
+        appendMatrix(18,9);
       }
       // AdotC=0 and AdotB<0
       if( abs(scalars[4])<(3.*sig31) && scalars[5]<0. ){
-        k[i-1] = 19;
-        l[i-1] = 9;
-        i = i+1;
+        appendMatrix(19,9);
       }
     }
 
@@ -881,23 +837,17 @@ public class ScalarJ extends GenericTOF_SCD{
       // AdotC=BdotC AND AdotB=CdotC/2
       if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) 
           && abs(scalars[5]-(0.25*scalars[2]))<3.*sqrt(sig12sq+0.0625*sig33sq) ){
-        k[i-1] = 20;
-        l[i-1] = 5;
-        i = i+1;
+        appendMatrix(20,5);
       }
       // AdotC=BdotC AND AdotB>0
       if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
           && scalars[5]>0. ){
-        k[i-1] = 21;
-        l[i-1] = 6;
-        i = i+1;
+        appendMatrix(21,6);
       }
       // AdotC=BdotC AND AdotB<0
       if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
           && scalars[5]<0. ){
-        k[i-1] = 22;
-        l[i-1] = 6;
-        i = i+1;
+        appendMatrix(22,6);
       }
     }
 
@@ -905,9 +855,7 @@ public class ScalarJ extends GenericTOF_SCD{
     if( abs(scalars[3]+scalars[2]/3.)<3.*sqrt(sig23sq+sig33sq/9.)
         && abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
         && abs(scalars[5]-(-scalars[0]/2.+scalars[2]/6.))<3.*sqrt(sig12sq+sig11sq/4.+sig33sq/36.) ){
-      k[i-1] = 23;
-      l[i-1] = 3;
-      i = i+1;
+      appendMatrix(23,3);
     }
 
     // BdotC<0
@@ -916,15 +864,11 @@ public class ScalarJ extends GenericTOF_SCD{
       if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) ){
         // AdotB>0
         if( scalars[5]>0. ){
-          k[i-1] = 24;
-          l[i-1] = 10;
-          i = i+1;
+          appendMatrix(24,10);
         }
         // AdotB<0
         if( scalars[5]<0. ){
-          k[i-1] = 25;
-          l[i-1] = 10;
-          i = i+1;
+          appendMatrix(25,10);
         }
       }
     }
@@ -962,22 +906,16 @@ public class ScalarJ extends GenericTOF_SCD{
     if( abs(scalars[3])<(3.*sig23) ){
       // AdotC=0 AND AdotB=0
       if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
-        k[i-1] = 26;
-        l[i-1] = 7;
-        i = i+1;
+        appendMatrix(26,7);
       }
       // AdotC=-AdotA/2 AND AdotB=0
       if( abs(scalars[4]+scalars[0]/2.)<3.*sqrt(sig31sq+sig11sq/4.)
           && abs(scalars[5])<(3.*sig12) ){
-        k[i-1] = 27;
-        l[i-1] = 8;
-        i = i+1;
+        appendMatrix(27,8);
       }
       // AdotC<0 and AdotB=0
       if( scalars[4]<0 && abs(scalars[5])<(3.*sig12) ){
-        k[i-1] = 28;
-        l[i-1] = 9;
-        i = i+1;
+        appendMatrix(28,9);
       }
     }
 
@@ -986,23 +924,17 @@ public class ScalarJ extends GenericTOF_SCD{
       // AdotC=0 AND AdotB=AdotA/2
       if( abs(scalars[4])<(3.*sig31)
           && abs(scalars[5]-scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.) ){
-        k[i-1] = 29;
-        l[i-1] = 5;
-        i = i+1;
+        appendMatrix(29,5);
       }
       // AdotC=0 AND AdotB=-AdotA/2
       if( abs(scalars[4])<(3.*sig31)
           && abs(scalars[5]+scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.) ){
-        k[i-1] = 30;
-        l[i-1] = 5;
-        i = i+1;
+        appendMatrix(30,5);
       }
       // AdotC=BdotC AND AdotB=BdotC
       if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) 
           && abs(scalars[5]+scalars[3])<(3.*sqrt(sig12sq+sig23sq)) ){
-        k[i-1] = 33;
-        l[i-1] = 3;
-        i = i+1;
+        appendMatrix(33,3);
       }
     }
 
@@ -1011,30 +943,22 @@ public class ScalarJ extends GenericTOF_SCD{
       // AdotC=-AdotA-2*BdotC AND AdotB=BdotC
       if( abs(scalars[4]-(-scalars[0]-2.*scalars[3]))<3.*sqrt(sig31sq+sig11sq+4.*sig23sq)
           && abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq)) ){
-        k[i-1] = 34;
-        l[i-1] = 11;
-        i = i+1;
+        appendMatrix(34,11);
       }
       // AdotC=-(AdotA+BdotC+AdotB) AND AdotB<0
       if( abs(scalars[4]-(-scalars[0]-scalars[3]-scalars[5]))<3.*sqrt(sig31sq+sig11sq+sig23sq+sig12sq)
           && scalars[5]<0. ){
-        k[i-1] = 35;
-        l[i-1] = 10;
-        i = i+1;
+        appendMatrix(35,10);
       }
       // AdotC<0
       if( scalars[4]<0. ){
         // AdotB=-BdotC
         if( abs(scalars[5]-(-scalars[3]))<(3.*sqrt(sig12sq+sig23sq)) ){
-          k[i-1] = 31;
-          l[i-1] = 10;
-          i = i+1;
+          appendMatrix(31,10);
         }
         // AdotB=BdotC
         if( abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq)) ){
-          k[i-1] = 32;
-          l[i-1] = 10;
-          i = i+1;
+          appendMatrix(32,10);
         }
       }
     }
@@ -1073,62 +997,44 @@ public class ScalarJ extends GenericTOF_SCD{
     if( abs(scalars[3])<(3.*sig23) ){
       // AdotC=0 AND AdotB=0
       if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
-        k[i-1] = 36;
-        l[i-1] = 12;
-        i = i+1;
+        appendMatrix(36,12);
       }
       // AdotC=0 AND AdotB=AdotA/2
       if( abs(scalars[4])<(3.*sig31) 
           && abs(scalars[5]-0.5*scalars[0])<3.*sqrt(sig12sq+0.25*sig11sq) ){
-        k[i-1] = 37;
-        l[i-1] = 9;
-        i = i+1;
+        appendMatrix(37,9);
       }
       // AdotC=0 AND AdotB=-AdotA/2
       if( abs(scalars[4])<(3.*sig31)
           && abs(scalars[5]-0.50*(-scalars[0]))<3.*sqrt(sig12sq+0.25*sig11sq)){
-        k[i-1] = 38;
-        l[i-1] = 9;
-        i = i+1;
+        appendMatrix(38,9);
       }
       // AdotC=0 AND AdotB>0
       if( abs(scalars[4])<(3.*sig31) && scalars[5]>0. ){
-        k[i-1] = 39;
-        l[i-1] = 13;
-        i = i+1;
+        appendMatrix(39,13);
       }
       // AdotC=0 and AdotB<0
       if( abs(scalars[4])<(3.*sig31) && scalars[5]<0. ){
-        k[i-1] = 40;
-        l[i-1] = 13;
-        i = i+1;
+        appendMatrix(40,13);
       }
       // AdotC=-BdotB/2 AND AdotB=0
       if( abs(scalars[4]+scalars[2]/2.)<3.*sqrt(sig31sq+sig33sq/4.)
           && abs(scalars[5])<(3.*sig12) ){
-        k[i-1] = 41;
-        l[i-1] = 9;
-        i = i+1;
+        appendMatrix(41,9);
       }
       // AdotC<0 AND AdotB=0
       if( scalars[4]<0 && abs(scalars[5])<(3.*sig12) ){
-        k[i-1] = 42;
-        l[i-1] = 13;
-        i = i+1;
+        appendMatrix(42,13);
       }
       // AdotC=BdotC AND AdotB>0
       if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
           && scalars[5]>0. ){
-        k[i-1] = 43;
-        l[i-1] = 10;
-        i = i+1;
+        appendMatrix(43,10);
       }
       // AdotC=BdotC AND AdotB<0
       if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
           && scalars[5]<0. ){
-        k[i-1] = 44;
-        l[i-1] = 10;
-        i = i+1;
+        appendMatrix(44,10);
       }
     }
 
@@ -1136,16 +1042,12 @@ public class ScalarJ extends GenericTOF_SCD{
     if( abs(scalars[3]-(0.5*scalars[2]))<3.*sqrt(sig23sq+0.25*sig33sq) ){
       // AdotC=0 AND AdotB=0
       if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
-        k[i-1] = 45;
-        l[i-1] = 9;
-        i = i+1;
+        appendMatrix(45,9);
       }
       // AdotC=0 AND AdotB=-AdotA/2
       if( abs(scalars[4])<(3.*sig31)
           && abs(scalars[5]+scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4) ){
-        k[i-1] = 48;
-        l[i-1] = 6;
-        i = i+1;
+        appendMatrix(48,6);
       }
     }
 
@@ -1154,42 +1056,30 @@ public class ScalarJ extends GenericTOF_SCD{
       // AdotC=0 AND AdotB=AdotA/2
       if( abs(scalars[4])<(3.*sig31)
           && abs(scalars[5]-scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.) ){
-        k[i-1] = 47;
-        l[i-1] = 6;
-        i = i+1;
+        appendMatrix(47,6);
       }
       // AdotC=0 AND AdotB>0
       if( abs(scalars[4])<(3.*sig31) && scalars[5] > 0. ){
-        k[i-1] = 49;
-        l[i-1] = 10;
-        i = i+1;
+        appendMatrix(49,10);
       }
       // AdotC=0 AND AdotB<0
       if( abs(scalars[4])<(3.*sig31) && scalars[5]<0. ){
-        k[i-1] = 50;
-        l[i-1] = 10;
-        i = i+1;
+        appendMatrix(50,10);
       }
       // AdotC=BdotC AND AdotB=CtodC/4
       if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
           && abs(scalars[5]-(0.25*scalars[2]))<3.*sqrt(sig12sq+0.25*sig33sq) ){
-        k[i-1] = 53;
-        l[i-1] = 11;
-        i = i+1;
+        appendMatrix(53,11);
       }
       // AdotC=BdotC AND AdotB>0
       if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
           && scalars[5]>0. ){
-        k[i-1] = 54;
-        l[i-1] = 10;
-        i = i+1;
+        appendMatrix(54,10);
       }
       // AdotC<0 AND AdotB=-AdotC/2
       if( scalars[4]<0.
           && abs(scalars[5]-(-0.5*scalars[4]))<3.*sqrt(sig12sq+0.25*sig31sq) ){
-        k[i-1] = 55;
-        l[i-1] = 10;
-        i = i+1;
+        appendMatrix(55,10);
       }
     }
 
@@ -1197,61 +1087,45 @@ public class ScalarJ extends GenericTOF_SCD{
     if( abs(scalars[3]-(0.50*scalars[4]))<3.*sqrt(sig23sq+0.25*sig31sq)
         && scalars[4]<0.
         && abs(scalars[5]-0.5*scalars[0]) < 3.*sqrt(sig12sq+0.25*sig11sq) ){
-      k[i-1] = 56;
-      l[i-1] = 10;
-      i = i+1;
+      appendMatrix(56,10);
     }
 
     // BdotC=-BdotB-AdotC/2 AND AdotC<0 AND AdotB=-(AdotA+AdotC)/2
     if( abs(scalars[3]+(scalars[2]+scalars[4])/2.)<3.*sqrt(sig23sq+sig33sq/4.+sig31sq/4.) && scalars[4]<0.
         && abs(scalars[5]-(0.5*(-scalars[0]-scalars[4])))<3.*sqrt(sig12sq+sig11sq/4.+sig31sq/4.) ){
-      k[i-1] = 58;
-      l[i-1] = 10;
-      i = i+1;
+      appendMatrix(58,10);
     }
 
     // BdotC<0
     if( scalars[3]< 0. ){
       // AdotC=0 AND AdotB=0
       if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
-        k[i-1] = 46;
-        l[i-1] = 13;
-        i = i+1;
+        appendMatrix(46,13);
       }
       // AdotB=AdotA/2 AND AdotC=0
       if( abs(scalars[5]-scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.)
           && abs(scalars[4])<(3.*sig31) ){
-        k[i-1] = 51;
-        l[i-1] = 10;
-        i = i+1;
+        appendMatrix(51,10);
       }
       // AdotB=-AdotA/2 AND AdotC=0
       if( abs(scalars[5]+scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.)
           && abs(scalars[4])<(3.*sig31) ){
-        k[i-1] = 52;
-        l[i-1] = 10;
-        i = i+1;
+        appendMatrix(52,10);
       }
       // AdotC=-CdotC/2 AND AdotB=-BdotC/2
       if( abs(scalars[4]+0.5*scalars[2])<3.0*sqrt(sig31sq+sig33sq/4.)
           && abs(scalars[5]+0.5*scalars[3])<3.*sqrt(sig12sq+sig23sq/4.) ){
-        k[i-1] = 57;
-        l[i-1] = 10;
-        i = i+1;
+        appendMatrix(57,10);
       }
       // AdotC<0
       if( scalars[4]<0. ){
         // AdotB>0
         if( scalars[5]>0. ){
-          k[i-1] = 59;
-          l[i-1] = 14;
-          i = i+1;
+          appendMatrix(59,14);
         }
         // AdotB<0
         if( scalars[5]<0. ){
-          k[i-1] = 60;
-          l[i-1] = 14;
-          i = i+1;
+          appendMatrix(60,14);
         }
       }
     }
@@ -1313,6 +1187,16 @@ public class ScalarJ extends GenericTOF_SCD{
 
 
   }  // ==================== end of printResult
+
+  /**
+   * Put a new set of indices for a transformation matrix into the
+   * list
+   */
+  private void appendMatrix(int k, int l){
+    this.k[this.i-1]=k;
+    this.l[this.i-1]=l;
+    this.i=this.i+1;
+  }
 
   /**
    * Main method for testing purposes and running outside of ISAW.
