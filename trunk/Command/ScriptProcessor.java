@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2003/03/10 21:05:14  pfpeterson
+ * Split out code for parsing parameter definitions out into seperate
+ * method. Also changed parsing parameters to use StringBuffer rather
+ * than Document.
+ *
  * Revision 1.30  2003/03/10 19:26:24  pfpeterson
  * Provided a new constructor which takes a StringBuffer and simplified
  * all constructors.
@@ -115,7 +120,7 @@ import java.util.Vector;
  */
 public class ScriptProcessor  extends ScriptProcessorOperator 
                                implements  PropertyChangeListener, IObservable,
-                                            IObserver, IDataSetListHandler{
+                                                IObserver, IDataSetListHandler{
   
   Command.execOneLine ExecLine ; 
   
@@ -739,6 +744,243 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     return getNextMacroLine( Doc, prevLine++);
   }
 
+  /**
+   * This turns a string into a parameter that it adds to the list of
+   * parameters for the operator. This can also parse some 'MACRO'
+   * information such as setting the title or command name.
+   *
+   * @param line the String to be parsed
+   * @param linenum the line number that the string came from. This is
+   * used in the case when an error is encountered.
+   */
+  private boolean processMacroLine( String line, int linenum ){
+    String VarName, DataType, InitValue, Prompt;
+    int index=-1;
+    StringBuffer buffer=null;
+
+    if( Debug)
+      System.out.println("Line="+line);
+            
+    // confirm that there is something to work with
+    if( line==null || line.length()<=0 || line.indexOf("$")<0 )
+      return false;
+
+    // trim off the marker flag
+    index=line.indexOf("#$$");
+    if(index<0)
+      index=line.indexOf("$");
+    if(Debug) System.out.println("start="+index);
+    if(index<0)
+      return false;
+    buffer=new StringBuffer(line.substring(index+1).trim());
+
+    // get the variable name
+    VarName=StringUtil.getString(buffer);
+
+    // get the Data Type and initial value
+    DataType=StringUtil.getString(buffer);
+    index=DataType.indexOf("("); // check if there is in initial value
+    if(index>0){
+      InitValue=DataType.substring(index+1);
+      DataType=DataType.substring(0,index);
+      index=buffer.toString().indexOf(")");
+      if(index>0){
+        InitValue=InitValue+buffer.substring(0,index);
+        buffer.delete(0,index);
+        StringUtil.trim(buffer);
+      }else{
+        InitValue=InitValue.substring(0,InitValue.length()-1);
+      }
+    }else{
+      InitValue=null;
+    }
+    DataType = DataType.toUpperCase();
+
+    // get the prompt
+    Prompt=buffer.toString();
+    if(Debug)
+      System.out.println("in line ["+linenum+"] "+DataType+","+Prompt);
+            
+    // add name to list of variables
+    if( !DataType.equals( "=" ))
+      vnames.addElement( VarName );
+
+    // parse type and create a parameter
+    if( DataType.equals("=")){
+      VarName = VarName.toUpperCase();
+      if( VarName.equals("COMMAND")){
+        command = Prompt;
+      }else if(VarName.equals( "TITLE" )){
+        Title = Prompt ;
+      }else if( VarName.equals( "CATEGORY") )
+        CategoryList= Prompt ;
+    }else if( (DataType .equals( "INT") ) || ( DataType.equals( "INTEGER"))){
+      if( InitValue == null)
+        InitValue ="0";
+      try {
+        InitValue=InitValue.trim();
+        addParameter( new Parameter ( Prompt , 
+                                      new Integer(InitValue)) );
+      }catch( Exception s){
+         addParameter( new Parameter( Prompt, new Integer (0)) );
+      }
+    }else if ( DataType.equals( "FLOAT")){
+      if( InitValue == null)
+        InitValue ="0.0";
+      try {
+        InitValue=InitValue.trim();
+        addParameter( new Parameter( Prompt,
+                                     new Float(InitValue)) );
+      }catch( Exception s){
+        addParameter( new Parameter( Prompt , new Float (0.0)) );
+      }
+    }else if( DataType.equals( "STRING")){
+      if( InitValue == null)
+        InitValue ="";
+      addParameter( new Parameter ( Prompt , InitValue ) ) ;
+    }else if(DataType.equals("BOOLEAN")){
+      if( InitValue == null)
+        InitValue ="true";
+      try {
+        addParameter( new Parameter ( Prompt , 
+                                 new Boolean(InitValue.toLowerCase().trim())));
+      }catch( Exception s){
+        addParameter( new Parameter( Prompt, new Boolean (true)) );
+      }
+    }else if( DataType.equals("ARRAY")){
+      if( InitValue != null)
+        ExecLine.execute(InitValue , 0 , InitValue.length());
+      Vector V = new Vector();
+      if( InitValue != null )
+        if( ExecLine.getErrorCharPos() < 0){
+          if( ExecLine.getResult() instanceof Vector)
+            V = (Vector)(ExecLine.getResult());
+        }
+      addParameter( new Parameter( Prompt, V));
+    }else if( DataType.equals("DATADIRECTORYSTRING")){
+      String DirPath = null;
+      if(InitValue!=null && InitValue.length()>0){
+        DirPath=InitValue;
+      }else{
+        DirPath=System.getProperty("Data_Directory")+"\\";
+      }
+      if( DirPath != null )
+        DirPath = 
+          DataSetTools.util.StringUtil.setFileSeparator( DirPath);
+      else
+        DirPath = "";
+      addParameter( new Parameter( Prompt,
+                                   new DataDirectoryString(DirPath)));
+    }else if( DataType.equals("DSSETTABLEFIELDSTRING")){
+      if(InitValue == null)
+        addParameter( new Parameter( Prompt ,
+                                     new DSSettableFieldString() ));
+      else
+        addParameter( new Parameter( Prompt ,
+                               new DSSettableFieldString(InitValue.trim()) ) );
+    }else if( DataType.equals("LOADFILESTRING")){ 
+      String DirPath=null;
+      if(InitValue!=null && InitValue.length()>0){
+        DirPath=InitValue;
+      }else{
+        DirPath=System.getProperty("Data_Directory")+"\\";
+      }
+      if(DirPath!=null)
+        DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
+      else
+        DirPath="";
+      addParameter(new Parameter(Prompt,new LoadFileString(DirPath)));
+    }else if( DataType.equals("SAVEFILESTRING")){ 
+      String DirPath=null;
+      if(InitValue!=null && InitValue.length()>0){
+        DirPath=InitValue;
+      }else{
+        DirPath=System.getProperty("Data_Directory")+"\\";
+      }
+      if(DirPath!=null)
+        DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
+      else
+        DirPath="";
+      addParameter(new Parameter(Prompt,new SaveFileString(DirPath)));
+    }else if (DataType.equals( "DSFIELDSTRING")){
+      if( InitValue == null )
+        addParameter( new Parameter( Prompt,new DSFieldString() ));
+      else
+        addParameter( new Parameter( Prompt,
+                                     new DSFieldString(InitValue.trim()) ));
+    }else if( DataType.equals( "INSTRUMENTNAMESTRING")){
+      String XX=null;
+      if(InitValue!=null && InitValue.length()>0)
+        XX=InitValue;
+      else
+        XX = System.getProperty("Default_Instrument");
+      if( XX == null )
+        XX = "";
+      addParameter(  new Parameter( Prompt, XX ));
+    }else if( DataType.equals( "SERVERTYPESTRING")){
+      ServerTypeString STS = new ServerTypeString();
+                
+      addParameter( new Parameter( Prompt , STS ));
+                
+    }else if( DataType.equals("CHOICE")){
+      int nn = ExecLine.execute( InitValue, 0, InitValue.length()); 
+      Vector V= new Vector();
+      if( ExecLine.getErrorCharPos() <0)
+        if( ExecLine.getResult() instanceof Vector)
+          V = (Vector)(ExecLine.getResult());
+      String[] ss;
+      ss = new String[V.size()];
+      for( nn=0; nn< V.size(); nn++){
+        ss[nn] = (V.elementAt(nn)).toString();
+      }
+      StringChoiceList SL = new StringChoiceList(ss);
+      addParameter( new Parameter(Prompt, SL));
+    }else if ( DataType.equals( "DATASET") ){
+      DataSet dd = new DataSet("DataSet","");
+      if( InitValue != null){
+        ExecLine.execute( InitValue, 0, InitValue.length());
+        if( ExecLine.getErrorCharPos() < 0 )
+          if( ExecLine.getResult() instanceof DataSet )
+            dd = ( DataSet )( ExecLine.getResult() );
+      }
+      Parameter PP = new Parameter( Prompt , dd);
+      addParameter ( PP );
+    }else if ( DataType.equals( "SAMPLEDATASET") ){
+      SampleDataSet dd = new SampleDataSet();
+      if( InitValue != null){
+        ExecLine.execute( InitValue, 0, InitValue.length());
+                   
+        if( ExecLine.getErrorCharPos() < 0 )
+          if( ExecLine.getResult() instanceof SampleDataSet )
+            dd = ( SampleDataSet )( ExecLine.getResult() );
+      }
+ 
+      Parameter PP = new Parameter( Prompt , dd);
+      addParameter ( PP );
+    }else if ( DataType.equals( "MONITORDATASET") ){
+      MonitorDataSet dd = new MonitorDataSet();
+      if( InitValue != null){
+        ExecLine.execute( InitValue, 0, InitValue.length());
+        if( ExecLine.getErrorCharPos() < 0 )
+          if( ExecLine.getResult() instanceof MonitorDataSet )
+            dd = ( MonitorDataSet )( ExecLine.getResult() );
+      }
+      Parameter PP = new Parameter( Prompt , dd);
+      addParameter ( PP );
+    }else{
+      index=line.toUpperCase().indexOf(DataType);
+      seterror( index , "Data Type not supported " + DataType);
+      lerror = linenum;
+      return false; 
+    }
+      
+    if( Debug)
+      System.out.println("At bottom get def "+ perror+","+serror);
+
+
+    return true;
+  }
+
   private int nextLine( Document Doc, int line1 ){
     boolean done = false;
     int line = line1;  
@@ -915,17 +1157,12 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   }
     
   /**
-   *  Sets Default parameters for getResult or for the
-   *  JParametersGUI Dialog box<P>
-   *
-   *  INPUTS:  The variable doc stored in MacroDocument<BR>
-   *
-   *  OUPUTS:  The parameters are set
+   *  Sets Default parameters for getResult or for the JParametersGUI
+   *  Dialog box. This will parse the MacroDocument created in the
+   *  constructor.
    */
   public void setDefaultParameters(){
-    Element E;
-    String S, Line, VarName, InitValue;
-    int start, i;
+    String Line;
     Document doc = MacroDocument;
       
     if( Debug) 
@@ -935,253 +1172,46 @@ public class ScriptProcessor  extends ScriptProcessorOperator
        
     parameters= new Vector();
     vnames= new Vector();
-    E = doc.getDefaultRootElement();
-    start = 0;
-    int j , k;
-    if(Debug) System.out.println("Next line="+getNextMacroLine( doc,-1));
-    for( i=getNextMacroLine(doc,-1) ; i>=0 ; i=getNextMacroLine(doc,i)){
-      Line = getLine( doc , i);
-            
-      if( Debug)
-        System.out.println("Line="+Line);
-            
-      if(Line == null )
-        return;
-      if( Line.trim().indexOf("#$$")==0)
-        start = Line.indexOf("#$$")+3;
-      else 
-        start = Line.indexOf("$")+1;
-      if(Debug) System.out.println("start="+start);
-      if( start < 1)
-        return;
-      start = ExecLine.skipspaces(Line , 1 , start );
-      j = findQuote ( Line , 1 , start, " =\t" , "" );
-      if( (j >= 0) && ( j < Line.length() ))
-        VarName = Line.substring( start , j).trim();
-      else
-        VarName = null;
-          
-      // Now get the Data Type or =
-      start = j;
-      if( start >= Line.length()){
-        seterror( start , "Improper Parameter Format");
-        lerror = i;
-        return ;
+    StringBuffer buffer=null;
+    {
+      String text=null;
+      try{
+        text=doc.getText(0,doc.getLength());
+        buffer=new StringBuffer(text);
+        int index=text.lastIndexOf("$");
+        if(index<0){
+          buffer=null;
+        }else{
+          index=text.indexOf("\n",index);
+          if(index>0)
+            buffer.delete(index+1,buffer.length());
+        }
+      }catch(BadLocationException e){
+        // let it drop on the floor
       }
-      start = ExecLine.skipspaces(Line , 1, start );
-      j = findQuote( Line , 1, start, " (\t", "" );
-      if( start < Line.length())
-        if( Line.charAt( start) == '=')
-          j = start + 1;
-      String DT = Line.substring( start , j );//.toUpperCase();
-        
-      // Now get the initial value
-      InitValue = null;
-      if( DT.equals( "=" ) )
-        InitValue = null;
-      else if( j<Line.length() )
-        if( Line.charAt( j ) == '('){
-          start = j+1;
-          j = findQuote( Line, 1, start , ")", "()");
-          if( (j < 0 ) || ( j >= Line.length()) || ( j <= start) ){
-            seterror ( start, "Unmatched Parens" );
-            lerror = i;
-            return;
-          }
-          InitValue = Line.substring( start , j );
-                    
-          j++;
-        }
-         
-      // Now get Message
-      String Message;
-      j = ExecLine.skipspaces( Line , 1, j );
-            
-      if( j < Line.length() )
-        Message = Line.substring( j ).trim();
-      else
-        Message = "";
-            
-      if(Debug)
-        System.out.println("in line start end="+ start + ","
-                           +DT+","+Message);
-      DT = DT.toUpperCase();
-            
-            
-      if( !DT.equals( "=" ))
-        vnames.addElement( VarName );
-      if( DT.equals("=")){
-        VarName = VarName.toUpperCase();
-        if( VarName.equals("COMMAND")){
-          command = Message;
-        }else if(VarName.equals( "TITLE" )){
-          Title = Message ;
-        }else if( VarName.equals( "CATEGORY") )
-          CategoryList= Message ;
-      }else if( (DT .equals( "INT") ) || ( DT.equals( "INTEGER"))){
-        if( InitValue == null)
-          InitValue ="0";
-        try {
-          InitValue=InitValue.trim();
-          addParameter( new Parameter ( Message , 
-                                        new Integer(InitValue)) );
-        }catch( Exception s){
-          System.out.println("catch for Int, InitValue="+InitValue);
-          addParameter( new Parameter( Message, new Integer (0)) );
-        }
-      }else if ( DT.equals( "FLOAT")){
-        if( InitValue == null)
-          InitValue ="0.0";
-        try {
-          InitValue=InitValue.trim();
-          addParameter( new Parameter( Message,
-                                       new Float(InitValue)) );
-        }catch( Exception s){
-          addParameter( new Parameter( Message , new Float (0.0)) );
-        }
-      }else if( DT.equals( "STRING")){
-        if( InitValue == null)
-          InitValue ="";
-        addParameter( new Parameter ( Message , InitValue ) ) ;
-      }else if(DT.equals("BOOLEAN")){
-        if( InitValue == null)
-          InitValue ="true";
-        try {
-          addParameter( new Parameter ( Message , 
-                                new Boolean(InitValue.toLowerCase().trim())) );
-        }catch( Exception s){
-          addParameter( new Parameter( Message, new Boolean (true)) );
-        }
-      }else if( DT.equals("ARRAY")){
-        if( InitValue != null)
-          ExecLine.execute(InitValue , 0 , InitValue.length());
-        Vector V = new Vector();
-        if( InitValue != null )
-          if( ExecLine.getErrorCharPos() < 0){
-            if( ExecLine.getResult() instanceof Vector)
-              V = (Vector)(ExecLine.getResult());
-          }
-        addParameter( new Parameter( Message, V));
-      }else if( DT.equals("DataDirectoryString".toUpperCase())){
-        String DirPath = null;
-        if(InitValue!=null && InitValue.length()>0){
-          DirPath=InitValue;
-        }else{
-          DirPath=System.getProperty("Data_Directory")+"\\";
-        }
-        if( DirPath != null )
-          DirPath = 
-            DataSetTools.util.StringUtil.setFileSeparator( DirPath);
-        else
-          DirPath = "";
-        addParameter( new Parameter( Message,
-                                     new DataDirectoryString(DirPath)));
-      }else if( DT.equals("DSSettableFieldString".toUpperCase())){
-        if(InitValue == null)
-          addParameter( new Parameter( Message ,
-                                       new DSSettableFieldString() ));
-        else
-          addParameter( new Parameter( Message ,
-                               new DSSettableFieldString(InitValue.trim()) ) );
-      }else if( DT.equals("LoadFileString".toUpperCase())){ 
-        String DirPath=null;
-        if(InitValue!=null && InitValue.length()>0){
-          DirPath=InitValue;
-        }else{
-          DirPath=System.getProperty("Data_Directory")+"\\";
-        }
-        if(DirPath!=null)
-          DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
-        else
-          DirPath="";
-        addParameter(new Parameter(Message,new LoadFileString(DirPath)));
-      }else if( DT.equals("SaveFileString".toUpperCase())){ 
-        String DirPath=null;
-        if(InitValue!=null && InitValue.length()>0){
-          DirPath=InitValue;
-        }else{
-          DirPath=System.getProperty("Data_Directory")+"\\";
-        }
-        if(DirPath!=null)
-          DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
-        else
-          DirPath="";
-        addParameter(new Parameter(Message,new SaveFileString(DirPath)));
-      }else if (DT.equals( "DSFieldString".toUpperCase())){
-        if( InitValue == null )
-          addParameter( new Parameter( Message,new DSFieldString() ));
-        else
-          addParameter( new Parameter( Message,
-                                       new DSFieldString(InitValue.trim()) ));
-      }else if( DT.equals( "InstrumentNameString".toUpperCase())){
-        String XX=null;
-        if(InitValue!=null && InitValue.length()>0)
-          XX=InitValue;
-        else
-          XX = System.getProperty("Default_Instrument");
-        if( XX == null )
-          XX = "";
-        addParameter(  new Parameter( Message, XX ));
-      }else if( DT.equals( "SERVERTYPESTRING")){
-        ServerTypeString STS = new ServerTypeString();
-                
-        addParameter( new Parameter( Message , STS ));
-                
-      }else if( DT.equals("CHOICE")){
-        int nn = ExecLine.execute( InitValue, 0, InitValue.length()); 
-        Vector V= new Vector();
-        if( ExecLine.getErrorCharPos() <0)
-          if( ExecLine.getResult() instanceof Vector)
-            V = (Vector)(ExecLine.getResult());
-        String[] ss;
-        ss = new String[V.size()];
-        for( nn=0; nn< V.size(); nn++){
-          ss[nn] = (V.elementAt(nn)).toString();
-        }
-        StringChoiceList SL = new StringChoiceList(ss);
-        addParameter( new Parameter(Message, SL));
-      }else if ( DT.equals( "DataSet".toUpperCase()) ){
-        DataSet dd = new DataSet("DataSet","");
-        if( InitValue != null){
-          ExecLine.execute( InitValue, 0, InitValue.length());
-          if( ExecLine.getErrorCharPos() < 0 )
-            if( ExecLine.getResult() instanceof DataSet )
-              dd = ( DataSet )( ExecLine.getResult() );
-        }
-        Parameter PP = new Parameter( Message , dd);
-        addParameter ( PP );
-      }else if ( DT.equals( "SampleDataSet".toUpperCase()) ){
-        SampleDataSet dd = new SampleDataSet();
-        if( InitValue != null){
-          ExecLine.execute( InitValue, 0, InitValue.length());
-                   
-          if( ExecLine.getErrorCharPos() < 0 )
-            if( ExecLine.getResult() instanceof SampleDataSet )
-              dd = ( SampleDataSet )( ExecLine.getResult() );
-        }
- 
-        Parameter PP = new Parameter( Message , dd);
-        addParameter ( PP );
-      }else if ( DT.equals( "MonitorDataSet".toUpperCase()) ){
-        MonitorDataSet dd = new MonitorDataSet();
-        if( InitValue != null){
-          ExecLine.execute( InitValue, 0, InitValue.length());
-          System.out.println("InitValue="+InitValue);
-          if( ExecLine.getErrorCharPos() < 0 )
-            if( ExecLine.getResult() instanceof MonitorDataSet )
-              dd = ( MonitorDataSet )( ExecLine.getResult() );
-        }
-        Parameter PP = new Parameter( Message , dd);
-        addParameter ( PP );
-      }else{
-        seterror( start+12 , "Data Type not supported " + DT);
-        lerror = i;
-        return; 
+    }
+
+    if(buffer==null){
+      if(Debug) System.out.println("Next line="+getNextMacroLine( doc,-1));
+      for( int i=getNextMacroLine(doc,-1) ; i>=0 ; i=getNextMacroLine(doc,i)){
+        Line = getLine( doc , i);
+        processMacroLine(Line,i);
       }
-      
-      if( Debug)
-        System.out.println("At bottom get def "+ perror+","+serror);
-    }// For i=0 to count
+    }else{
+      int linenum=0;
+      int index=-1;
+      while(true){
+        index=buffer.toString().indexOf("\n");
+        if(index>=0){
+          Line=buffer.substring(0,index);
+          buffer.delete(0,index+1);
+          processMacroLine(Line,linenum);
+          linenum++;
+        }else{
+          break;
+        }
+      }
+    }
     ExecLine.resetError();
     seterror( -1,"");
     return ;
