@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2004/08/19 20:28:16  rmikk
+ * Eliminated some annoying prints with the experimental methods
+ *
  * Revision 1.5  2004/08/19 19:16:54  rmikk
  * All logging information is logged to the Global logging file in
  *   gov.anl.ipns.Util.Sys.SharedMessages
@@ -846,7 +849,7 @@ public class Integrate1 extends GenericTOF_SCD{
 
    
      // set up where the peak is located
-     System.out.println("in intPeakExp");
+     
      int cenX=(int)Math.round(peak.x());
      int cenY=(int)Math.round(peak.y());
      int cenZ=(int)Math.round(peak.z());
@@ -861,8 +864,7 @@ public class Integrate1 extends GenericTOF_SCD{
 
      // initialize variables for the slice integration
    
-     System.out.println(formatInt(cenX)+"  "+formatInt(cenY)
-                     +formatInt(getObs(ds,ids[cenX][cenY],cenZ),6));
+     
                 
      Vector V = opIntPt.Integrate(time, indx, null);
      
