@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/04/01 20:22:44  rmikk
+ * Added the NxNode of the first NXdata of a histogram or monitor as an argument to the constructor.  This NxNode is used as an argument in a NxData.processDS.
+ *
  * Revision 1.4  2002/02/26 15:40:42  rmikk
  * Added a debug field
  * Added a timeField field to put into the TimeField attribute.  All NXdata are
@@ -62,20 +65,22 @@ import java.text.* ;
  */
 public class NXentry_TOFNDGS implements NXentry
  { String errormessage ;
-   NxNode node ; DataSet DS ;
+   NxNode node ,NxData; DataSet DS ;
    NxData nd ;
    NxMonitor nm ;
    String monitorNames[];
-   boolean debug=false;
+   boolean debug= false;
    boolean unknown=true;
      /**
 *@param  node  the datasource node used to retrieve information
 *@param  DS    the DataSet( already existing ) to be built up
+*@param  NxData the node that is a NXmonitor or NXdata node
 */
- public NXentry_TOFNDGS( NxNode node, DataSet DS )
+ public NXentry_TOFNDGS( NxNode node, DataSet DS , NxNode NxData)
     {
      this.node = node ;
      this.DS = DS ;
+     this.NxData=NxData;  
      nd = new NXdata_Fields( "time_of_flight","phi","data" ) ;
      nm =  new NxMonitor() ;
      nm.setMonitorNum( 0 ) ;
@@ -107,10 +112,10 @@ public class NXentry_TOFNDGS implements NXentry
 *           tells which one is to be retrieved
 *<P>NOTE: The Monitors are retrieved and merged,  The Other NXdata are merged
 */  
-public boolean processDS( DataSet DS, int index )
+public boolean processDS( DataSet DS, NxNode NxData)
     {
     NxNode datanode ,instrNode;
-     
+    NxData_Gen util= new NxData_Gen();
     boolean monitorDS, HistDS ;
     monitorDS = false ;
     HistDS = false ;
@@ -121,16 +126,28 @@ public boolean processDS( DataSet DS, int index )
    else if( !(monitorNames[0].equals("monitor1"))) unknown=false;
 
     errormessage = "improper index" ;
-    if( index < 0 ) 
+    if( NxData == null ) 
       return false ;
     errormessage = "" ;
     
-   
+   boolean monitor=false;
+   if( NxData.getNodeClass().equals("NXmonitor"))
+        monitor=true;
+    String label=null;
+   if( !monitor)
+     { NxNode dat= NxData.getChildNode("data");
+       errormessage+=";No data in an NXdata";
+       if(dat == null) return false;
+       errormessage="";
+       label = util.cnvertoString( dat.getAttrValue("label"));
+       
+       }
 
-     boolean done = false ;
      int nchildren =  node.getNChildNodes() ;
-      instrNode = null;
-      if(debug)System.out.println("NXentry:find NXinstrument");
+     //Find Instrument  node
+      instrNode=null;
+      boolean done=false;
+     
       for( int i = 0; (i < nchildren)&&(!done); i++)
         {datanode =  node.getChildNode( i ) ;
          if( datanode == null )
@@ -147,7 +164,8 @@ public boolean processDS( DataSet DS, int index )
      int ndatasets = 0 ;
      
      done = false;
-     if(monitorNames[0]==null)
+     int timeFieldNum=0;
+   
     for( int i = 0 ; ( i<nchildren )&(!done) ; i++  )
       {datanode =  node.getChildNode( i ) ;
      
@@ -157,80 +175,41 @@ public boolean processDS( DataSet DS, int index )
            }
       
 
-       if( datanode.getNodeClass().equals( "NXmonitor" ) )
-        { if( ndatasets !=  index )
-	    {
-             ndatasets++  ; 
-             done =  true ; 
-            }
-          else
+       if( (datanode.getNodeClass().equals( "NXmonitor" )) )
+        { 
+          if(monitor)
           { if( !nm.processDS( datanode , DS) )
 	       {
-               monitorDS = true ;
+               
 	       int nn = nm.getMonitorNum() + 1 ;
                nm.setMonitorNum( nn ) ;
               
                }
-            else 
-                {
-                errormessage += ";" + nm.getErrorMessage() ;                 
-                return true ;
-                }  
+            
             }         
          
          }//if( NXmonitor node
-      }//for each node
-  // only one Monitor so break up
-  else
-  
-  for( int i = 0; i < monitorNames.length; i++)
-    {NxNode mon =node.getChildNode( monitorNames[i]);
-     if( mon != null)
-      {if( i== 0) 
-         {
-          ndatasets =1;
-         }
-       if( index == 0)
-         {monitorDS = true;
-          if( !nm.processDS( mon , DS) )
-	       {
-               monitorDS = true ;
-	       int nn = nm.getMonitorNum() + 1 ;
-               nm.setMonitorNum( i ) ;
-              
-               }
-            else 
-                {
-                errormessage += ";" + nm.getErrorMessage() ;                 
-                return true ;
-                }  
-          }
-        
-      }
-    }  
-     done =  false ;
-     HistDS = false;
-     int timeFieldNum=0;
-     
-     if( !monitorDS )
-     for( int i = 0 ; ( i < nchildren ) ; i++ )
-      {//System.out.print("i="+i+":");
-       datanode =  node.getChildNode( i ) ;      
-       if( datanode == null )
-           {
-            return false ;
-           }
-    
-       if( datanode.getNodeClass().equals( "NXdata" ) )
-        { 
-           if(debug)System.out.println("NXentry:ere process NXdata at node "+i);
-           nd.setTimeFieldType( timeFieldNum);
+       else if( (datanode.getNodeClass().equals("NXdata")) && !monitor)
+        { NxNode dat= datanode.getChildNode("data");
+          errormessage+=";No data in an NXdata";
+          
+             if(dat == null) return false;
+           errormessage="";
+           String S = util.cnvertoString( dat.getAttrValue("label"));
+           boolean process=false;
+           if( (S == null)&&(label == null)) 
+               if( datanode.getNodeName().equals(NxData.getNodeName()))
+                  process = true;
+           if( S != null) if( label !=null) if( S.equals(label)) process=true;
+           
+           if( process)
+           {if( S == null) done = true;
+           (nd).setTimeFieldType( timeFieldNum);
            timeFieldNum++;
            if( !nd.processDS( datanode, instrNode, DS ) )
               {ndatasets++ ;
                if(debug)System.out.println("NXentry:thru process data set at node "+ i);
-               HistDS = true ;
-               //done = true ;
+               
                }
             else
              {errormessage += ";"+nd.getErrorMessage() ;   
@@ -238,19 +217,21 @@ public boolean processDS( DataSet DS, int index )
 	     //return true ;
              }           
           
-         }//if( NXdata node
+            }//if process
+        
+           
+             
+           
+        }
       }//for each node
-    // System.out.println("END:"+errormessage);
-     if( !( monitorDS || HistDS ) )
-         {errormessage += ";No more DataSets"+index ;
-         return true ;
-         }
-    
+  // only one Monitor so break up
+
     NxNode X =  node.getChildNode( "run_number" ) ;
     
-    X =  node.getChildNode( "run_number" ) ;
+   
     if( X!= null )
       {  Object val =  X.getNodeValue() ;
+         
          int rn =  new NxData_Gen().cnvertoint( val ) ;
        
          DS.setAttribute( new IntAttribute( Attribute.RUN_NUM,  rn ) ); 
@@ -259,7 +240,7 @@ public boolean processDS( DataSet DS, int index )
    X =  node.getChildNode( "title" ) ;
     if( X!= null )
       {  Object val =  X.getNodeValue() ;
-         String rn1 =  new NxData_Gen().cnvertoString( val ) ;
+         String rn1 =  util.cnvertoString( val ) ;
        
          DS.setAttribute( new StringAttribute( Attribute.RUN_TITLE,  rn1 ) ); 
        
@@ -268,7 +249,7 @@ public boolean processDS( DataSet DS, int index )
       X =  node.getChildNode( "duration" ) ;
     if( X!= null )
       {  Object val =  X.getNodeValue() ;
-         Float ff =  new NxData_Gen().cnvertoFloat( val ) ;
+         Float ff =  util.cnvertoFloat( val ) ;
          if( ff != null)
            {
             DS.setAttribute( new FloatAttribute( Attribute.NUMBER_OF_PULSES,  
@@ -280,7 +261,7 @@ public boolean processDS( DataSet DS, int index )
     if( X!= null )
       {  Object val = X.getNodeValue() ;
           String rn1,
-                 rn = new NxData_Gen().cnvertoString( val ) ;
+                 rn =util.cnvertoString( val ) ;
           if( rn!= null )
 	      { Date D = nu.parse( rn);
                 if( D == null)
@@ -297,17 +278,7 @@ public boolean processDS( DataSet DS, int index )
                    rn = ""+C.get(Calendar.HOUR_OF_DAY)+":"+C.get(Calendar.MINUTE)+
                           ":"+C.get(Calendar.SECOND);
                   }
-		  /*try{
-                    Date DD = new SimpleDateFormat().parse( rn ) ;
-                    rn1 = ""+ DD.getMonth() + "/" + DD.getDay() + 
-                           "/" + DD.getYear() ;
-                    rn = "" + DD.getHours() + ":" + DD.getMinutes() + 
-                           ":" + DD.getSeconds() ;
-	           }
-                catch( ParseException s )
-                   {rn1 = rn ; rn = null ;
-                  }
-                 */
+	
                 DS.setAttribute( new StringAttribute( Attribute.END_DATE, 
                                                        rn1  ) ) ;
               if( rn!= null )
