@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/10/16 17:27:07  dennis
+ * Fixed javadocs to build cleanly with jdk 1.4.2, and
+ * clarified description of what is returned by getResult()
+ *
  * Revision 1.10  2003/03/10 06:10:37  dennis
  * Now checks that it has the required attributes before doing
  * the calculation and returns ErrorStrings if not.
@@ -211,7 +215,7 @@ public class SCDQxyz extends  XAxisInformationOp
     s.append("@param i The index of the Data block to use.\n");
     s.append("@param tof The time-of-flight at which Qx,Qy,Qz is to be ");
     s.append("obtained.\n");
-    s.append("@return Position3D of the calculated Q.\n");
+    s.append("@return The calculated Q vector as a Position3D object.\n");
     s.append("@error Returns null if the conversion from real-space to ");
     s.append("Q-values fails.  This will occur if the wavelength cannot be ");
     s.append("calculated, although anything which hinders the conversion to ");
@@ -223,7 +227,7 @@ public class SCDQxyz extends  XAxisInformationOp
   /**
    * Calculates the Q vector for the given time and spectrum. 
    *
-   * @returns Position3D of the calculated Q.
+   * @return  The calculated Q vector as a Position3D object.
    */
   public Object getResult(){
      DataSet ds = this.getDataSet();
