@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/08/15 03:57:37  bouzekc
+ *  Should now properly add PropertyChangeListeners before GUI is initialized.
+ *
  *  Revision 1.10  2003/07/29 08:06:17  bouzekc
  *  Now fires off propertyChangeEvents when the radio buttons are
  *  clicked.  Now implements PropertyChanger.  Fixed bug in
@@ -315,11 +318,14 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
    */
   public void addPropertyChangeListener( PropertyChangeListener pcl ) {
     pcs.addPropertyChangeListener( pcl );
+    addPCLToVector( pcl );
 
-    if( radioButtons != null ) {
-      for( int i = 0; i < radioButtons.size(  ); i++ ) {
-        ( ( JRadioButton )radioButtons.elementAt( i ) ).addPropertyChangeListener( 
-          pcl );
+    if( initialized ) {
+      if( radioButtons != null ) {
+        for( int i = 0; i < radioButtons.size(  ); i++ ) {
+          ( ( JRadioButton )radioButtons.elementAt( i ) ).addPropertyChangeListener( 
+            pcl );
+        }
       }
     }
   }
@@ -332,10 +338,14 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     String prop, PropertyChangeListener pcl ) {
     pcs.addPropertyChangeListener( prop, pcl );
 
-    if( radioButtons != null ) {
-      for( int i = 0; i < radioButtons.size(  ); i++ ) {
-        ( ( JRadioButton )radioButtons.elementAt( i ) ).addPropertyChangeListener( 
-          prop, pcl );
+    addPCLToVector( prop, pcl );
+
+    if( initialized ) {
+      if( radioButtons != null ) {
+        for( int i = 0; i < radioButtons.size(  ); i++ ) {
+          ( ( JRadioButton )radioButtons.elementAt( i ) ).addPropertyChangeListener( 
+            prop, pcl );
+        }
       }
     }
   }
@@ -369,7 +379,6 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
 
     this.setEnabled( this.getEnabled(  ) );
     super.initGUI(  );
-    this.initialized = true;
   }
 
   /**
@@ -427,11 +436,14 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
    */
   public void removePropertyChangeListener( PropertyChangeListener pcl ) {
     pcs.removePropertyChangeListener( pcl );
+    removePCLFromVector( pcl );
 
-    if( radioButtons != null ) {
-      for( int i = 0; i < radioButtons.size(  ); i++ ) {
-        ( ( JRadioButton )radioButtons.elementAt( i ) ).removePropertyChangeListener( 
-          pcl );
+    if( initialized ) {
+      if( radioButtons != null ) {
+        for( int i = 0; i < radioButtons.size(  ); i++ ) {
+          ( ( JRadioButton )radioButtons.elementAt( i ) ).removePropertyChangeListener( 
+            pcl );
+        }
       }
     }
   }
