@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.21  2003/07/09 21:02:45  bouzekc
+ * Added comments and rearranged methods according to access
+ * rights.
+ *
  * Revision 1.20  2003/07/09 19:58:48  bouzekc
  * Added check in for null range parameter.  Sets range from
  * 0 to Integer.MAX_VALUE if null.
@@ -134,14 +138,28 @@ import java.util.Vector;
  * symmetry. Originally written by R. Goyette.
  */
 public class LsqrsJ extends GenericTOF_SCD {
+  //~ Static fields/initializers ***********************************************
+
   private static final double SMALL    = 1.525878906E-5;
   private static final String identmat = "[[1,0,0][0,1,0][0,0,1]]";
+
+  //~ Constructors *************************************************************
 
   /**
    * Construct an operator with a default parameter list.
    */
   public LsqrsJ(  ) {
     super( "JLsqrs" );
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * Returns the command name to be used with script processor, in this case
+   * JLsqrs.
+   */
+  public String getCommand(  ) {
+    return "JLsqrs";
   }
 
   /**
@@ -239,19 +257,13 @@ public class LsqrsJ extends GenericTOF_SCD {
   }
 
   /**
-   * Returns the command name to be used with script processor, in
-   * this case JLsqrs.
-   */
-  public String getCommand(  ) {
-    return "JLsqrs";
-  }
-
-  /**
    * Uses the current values of the parameters to generate a result.
    */
   public Object getResult(  ) {
     // get the parameters
-    String peaksfile = getParameter( 0 ).getValue(  ).toString(  );
+    String peaksfile = getParameter( 0 )
+                         .getValue(  )
+                         .toString(  );
     int[] run_nums   = ( ( IntArrayPG )getParameter( 1 ) ).getArrayValue(  );
     int[] seq_nums   = ( ( IntArrayPG )getParameter( 2 ) ).getArrayValue(  );
     int threshold    = ( ( IntegerPG )getParameter( 5 ) ).getintValue(  );
@@ -260,15 +272,16 @@ public class LsqrsJ extends GenericTOF_SCD {
     int lowerLimit;
     int upperLimit;
 
-    if( keepRange != null ){
+    if( keepRange != null ) {
       lowerLimit   = keepRange[0];  //lower limit of range
 
       //upper limit of range
       upperLimit = keepRange[keepRange.length - 1];
     } else {  //shouldn't happen, but default to 0:MAX_VALUE
-      lowerLimit = 0;
-      upperLimit = Integer.MAX_VALUE;
+      lowerLimit   = 0;
+      upperLimit   = Integer.MAX_VALUE;
     }
+
     String logfile;
 
     {
@@ -285,7 +298,9 @@ public class LsqrsJ extends GenericTOF_SCD {
       }
     }
 
-    String matfile = getParameter( 4 ).getValue(  ).toString(  );
+    String matfile = getParameter( 4 )
+                       .getValue(  )
+                       .toString(  );
 
     matfile = FilenameUtil.setForwardSlash( matfile );
 
@@ -413,18 +428,18 @@ public class LsqrsJ extends GenericTOF_SCD {
     }
 
     // trim out edge peaks (defined by the "pixels to keep" parameter)
-      for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
-        peak = ( Peak )peaks.elementAt( i );
+    for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
+      peak = ( Peak )peaks.elementAt( i );
 
-        //see if the peak pixels are within the user defined array.  We are
-        //assuming a SQUARE detector, so we'll reject it if the x or y position
-        //is not within our range
-        if( 
-          ( peak.x(  ) > upperLimit ) || ( peak.x(  ) < lowerLimit ) ||
-            ( peak.y(  ) > upperLimit ) || ( peak.y(  ) < lowerLimit ) ) {
-          peaks.remove( i );
-        }
+      //see if the peak pixels are within the user defined array.  We are
+      //assuming a SQUARE detector, so we'll reject it if the x or y position
+      //is not within our range
+      if( 
+        ( peak.x(  ) > upperLimit ) || ( peak.x(  ) < lowerLimit ) ||
+          ( peak.y(  ) > upperLimit ) || ( peak.y(  ) < lowerLimit ) ) {
+        peaks.remove( i );
       }
+    }
 
     // can't refine nothing
     if( peaks.size(  ) == 0 ) {
@@ -503,7 +518,8 @@ public class LsqrsJ extends GenericTOF_SCD {
       String peakString;
 
       for( int i = 0; i < peaks.size(  ); i++ ) {
-        peakString = peaks.elementAt( i ).toString(  );
+        peakString = peaks.elementAt( i )
+                          .toString(  );
         logBuffer.append( 
           peakString.substring( 2, 11 ) + "   " +
           peakString.substring( 12, 17 ) + "   " +
@@ -636,219 +652,37 @@ public class LsqrsJ extends GenericTOF_SCD {
   }
 
   /**
-   *
+   * Main method for testing purposes and running outside of ISAW.
    */
-  private static String writeLog( String logfile, String log ) {
-    FileOutputStream fout = null;
+  public static void main( String[] args ) {
+    LsqrsJ lsqrs = new LsqrsJ(  );
 
-    try {
-      fout = new FileOutputStream( logfile );
-      fout.write( log.getBytes(  ) );
-      fout.flush(  );
-    } catch( IOException e ) {
-      return e.toString(  );
-    } finally {
-      if( fout != null ) {
-        try {
-          fout.close(  );
-        } catch( IOException e ) {
-          // let it drop on the floor
-        }
-      }
-    }
+    /* TEST VERSION
+       lsqrs.getParameter(0).setValue(System.getProperty("user.dir"));
+       lsqrs.getParameter(0).setValue("/IPNShome/pfpeterson/data/SCD");
+       lsqrs.getParameter(1).setValue("quartz");
+       lsqrs.getParameter(2).setValue("1:4"); // set histogram numbers
+       lsqrs.getParameter(3).setValue("1,3:5,15:20"); // set sequence numbers
+       lsqrs.getParameter(4).setValue("/IPNShome/pfpeterson/data/SCD/lookatme.mat");
+     */
+    /*
+       if(!lsqrs.readUser())
+         System.exit(-1);
+     */
+    Object obj = lsqrs.getResult(  );
 
-    return null;
-  }
-
-  /**
-   * This takes a String representing a 3x3 matrix and turns it into a
-   * float[3][3].
-   *
-   * @param text A String to be converted
-   *
-   * @return The matrix as a float[3][3]
-   */
-  private static float[][] stringTo2dArray( String text )
-    throws NumberFormatException {
-    // check that there is something to parse
-    if( ( text == null ) || ( text.length(  ) == 0 ) ) {
-      return null;
-    }
-
-    // now take up some memory
-    float[][] matrix = new float[3][3];
-    int index;
-    float temp;
-
-    // start with a StringBuffer b/c they are nicer to parse
-    StringBuffer sb = new StringBuffer( text );
-
-    sb.delete( 0, 2 );
-
-    try {
-      // repeat for each row
-      for( int i = 0; i < 3; i++ ) {
-        // parse the first two columns which are ended by ','
-        for( int j = 0; j < 2; j++ ) {
-          index = sb.toString(  ).indexOf( "," );
-
-          if( index > 0 ) {
-            temp = Float.parseFloat( sb.substring( 0, index ) );
-            sb.delete( 0, index + 1 );
-            matrix[i][j] = temp;
-          } else {
-            return null;
-          }
-        }
-
-        // the third column is ended by ']'
-        index = sb.toString(  ).indexOf( "]" );
-
-        if( index > 0 ) {
-          temp = Float.parseFloat( sb.substring( 0, index ) );
-          sb.delete( 0, index + 2 );
-          matrix[i][2] = temp;
-        } else {
-          return null;
-        }
-      }
-    } catch( NumberFormatException e ) {
-      // something went wrong so exit out
-      throw e;
-    }
-
-    // if it is the identity matrix then we should just return null
-    boolean isident = true;
-
-    for( int i = 0; i < 3; i++ ) {
-      if( isident ) {  // breakout if it is not the identity matrix
-
-        for( int j = 0; j < 3; j++ ) {
-          if( i == j ) {  // should be one
-
-            if( matrix[i][j] != 1f ) {
-              isident = false;
-
-              break;
-            }
-          } else {  // should be zero
-
-            if( matrix[i][j] != 0f ) {
-              isident = false;
-
-              break;
-            }
-          }
-        }
-      }
-    }
-
-    if( isident ) {
-      return null;
-    }
-
-    // return the result
-    return matrix;
-  }
-
-  /**
-   * This search tries to find the value in the provided
-   * <U>ORDERED</U> array. If the value does not appear in an index it
-   * returns -1.
-   */
-  private static int binsearch( int[] array, int value ) {
-    // check for impossibles
-    if( ( array == null ) || ( array.length <= 0 ) ) {
-      return -1;
-    }
-
-    if( value < array[0] ) {
-      return -1;
-    }
-
-    if( value > array[array.length - 1] ) {
-      return -1;
-    }
-
-    // set up indices
-    int first = 0;
-    int last  = array.length - 1;
-    int index = ( int )( ( last + first ) / 2 );
-
-    // do the search
-    while( first < last ) {
-      if( array[index] == value ) {
-        return index;
-      } else if( array[index] < value ) {
-        first = index + 1;
-      } else if( array[index] > value ) {
-        last = index - 1;
-      }
-
-      index = ( int )( ( last + first ) / 2 );
-    }
-
-    if( array[index] == value ) {  // check where it ended
-
-      return index;
-    } else {  // or return not found
-
-      return -1;
+    if( obj instanceof ErrorString ) {
+      System.out.println( obj );
+      System.exit( -1 );
+    } else {
+      System.out.println( "RESULT:" + obj );
+      System.exit( 0 );
     }
   }
 
   /**
-   * Print the orientation matrix and lattice parameters to the console.
-   */
-  private static void toConsole( double[][] UB, double[] abc, double[] sig_abc ) {
-    // print the UB matrix
-    if( UB == null ) {
-      return;
-    }
-
-    StringBuffer sb = new StringBuffer( ( 31 * 3 ) + ( 71 * 2 ) );
-
-    for( int i = 0; i < 3; i++ ) {
-      for( int j = 0; j < 3; j++ ) {
-        sb.append( Format.real( UB[j][i], 10, 6 ) );
-      }
-
-      sb.append( "\n" );
-    }
-
-    // print the lattice parameters
-    if( abc == null ) {
-      SharedData.addmsg( sb.toString(  ) );
-
-      return;
-    }
-
-    for( int i = 0; i < 7; i++ ) {
-      sb.append( Format.real( abc[i], 10, 3 ) );
-    }
-
-    sb.append( "\n" );
-
-    // print the uncertainties for lattice parameters
-    if( sig_abc == null ) {
-      SharedData.addmsg( sb.toString(  ) );
-
-      return;
-    }
-
-    for( int i = 0; i < 7; i++ ) {
-      sb.append( Format.real( sig_abc[i], 10, 3 ) );
-    }
-
-    sb.append( "\n" );
-
-    SharedData.addmsg( sb.toString(  ) );
-  }
-
-  /**
-   * Read in input from the user when not running as an operator. This
-   * is currently commented out code until the real implementation is
-   * done.
+   * Read in input from the user when not running as an operator. This is
+   * currently commented out code until the real implementation is done.
    */
 
   /*  private boolean readUser(){
@@ -1020,6 +854,73 @@ public class LsqrsJ extends GenericTOF_SCD {
   }
 
   /**
+   * This search tries to find the value in the provided <U>ORDERED</U> array.
+   * If the value does not appear in an index it returns -1.
+   */
+  private static int binsearch( int[] array, int value ) {
+    // check for impossibles
+    if( ( array == null ) || ( array.length <= 0 ) ) {
+      return -1;
+    }
+
+    if( value < array[0] ) {
+      return -1;
+    }
+
+    if( value > array[array.length - 1] ) {
+      return -1;
+    }
+
+    // set up indices
+    int first = 0;
+    int last  = array.length - 1;
+    int index = ( int )( ( last + first ) / 2 );
+
+    // do the search
+    while( first < last ) {
+      if( array[index] == value ) {
+        return index;
+      } else if( array[index] < value ) {
+        first = index + 1;
+      } else if( array[index] > value ) {
+        last = index - 1;
+      }
+
+      index = ( int )( ( last + first ) / 2 );
+    }
+
+    if( array[index] == value ) {  // check where it ended
+
+      return index;
+    } else {  // or return not found
+
+      return -1;
+    }
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param array DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  private static float[][] double2float( double[][] array ) {
+    return LinearAlgebra.double2float( array );
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param array DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  private static float[] double2float( double[] array ) {
+    return LinearAlgebra.double2float( ( double[] )array );
+  }
+
+  /**
    * Method to generate the hkl sums matrix
    */
   private static double[][] generateVC( Vector peaks ) {
@@ -1054,40 +955,169 @@ public class LsqrsJ extends GenericTOF_SCD {
     }
   }
 
-  private static float[][] double2float( double[][] array ) {
-    return LinearAlgebra.double2float( array );
-  }
+  /**
+   * This takes a String representing a 3x3 matrix and turns it into a
+   * float[3][3].
+   *
+   * @param text A String to be converted
+   *
+   * @return The matrix as a float[3][3]
+   */
+  private static float[][] stringTo2dArray( String text )
+    throws NumberFormatException {
+    // check that there is something to parse
+    if( ( text == null ) || ( text.length(  ) == 0 ) ) {
+      return null;
+    }
 
-  private static float[] double2float( double[] array ) {
-    return LinearAlgebra.double2float( ( double[] )array );
+    // now take up some memory
+    float[][] matrix = new float[3][3];
+    int index;
+    float temp;
+
+    // start with a StringBuffer b/c they are nicer to parse
+    StringBuffer sb = new StringBuffer( text );
+
+    sb.delete( 0, 2 );
+
+    try {
+      // repeat for each row
+      for( int i = 0; i < 3; i++ ) {
+        // parse the first two columns which are ended by ','
+        for( int j = 0; j < 2; j++ ) {
+          index = sb.toString(  )
+                    .indexOf( "," );
+
+          if( index > 0 ) {
+            temp = Float.parseFloat( sb.substring( 0, index ) );
+            sb.delete( 0, index + 1 );
+            matrix[i][j] = temp;
+          } else {
+            return null;
+          }
+        }
+
+        // the third column is ended by ']'
+        index = sb.toString(  )
+                  .indexOf( "]" );
+
+        if( index > 0 ) {
+          temp = Float.parseFloat( sb.substring( 0, index ) );
+          sb.delete( 0, index + 2 );
+          matrix[i][2] = temp;
+        } else {
+          return null;
+        }
+      }
+    } catch( NumberFormatException e ) {
+      // something went wrong so exit out
+      throw e;
+    }
+
+    // if it is the identity matrix then we should just return null
+    boolean isident = true;
+
+    for( int i = 0; i < 3; i++ ) {
+      if( isident ) {  // breakout if it is not the identity matrix
+
+        for( int j = 0; j < 3; j++ ) {
+          if( i == j ) {  // should be one
+
+            if( matrix[i][j] != 1f ) {
+              isident = false;
+
+              break;
+            }
+          } else {  // should be zero
+
+            if( matrix[i][j] != 0f ) {
+              isident = false;
+
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if( isident ) {
+      return null;
+    }
+
+    // return the result
+    return matrix;
   }
 
   /**
-   * Main method for testing purposes and running outside of ISAW.
+   * Print the orientation matrix and lattice parameters to the console.
    */
-  public static void main( String[] args ) {
-    LsqrsJ lsqrs = new LsqrsJ(  );
-
-    /* TEST VERSION
-       lsqrs.getParameter(0).setValue(System.getProperty("user.dir"));
-       lsqrs.getParameter(0).setValue("/IPNShome/pfpeterson/data/SCD");
-       lsqrs.getParameter(1).setValue("quartz");
-       lsqrs.getParameter(2).setValue("1:4"); // set histogram numbers
-       lsqrs.getParameter(3).setValue("1,3:5,15:20"); // set sequence numbers
-       lsqrs.getParameter(4).setValue("/IPNShome/pfpeterson/data/SCD/lookatme.mat");
-     */
-    /*
-       if(!lsqrs.readUser())
-         System.exit(-1);
-     */
-    Object obj = lsqrs.getResult(  );
-
-    if( obj instanceof ErrorString ) {
-      System.out.println( obj );
-      System.exit( -1 );
-    } else {
-      System.out.println( "RESULT:" + obj );
-      System.exit( 0 );
+  private static void toConsole( double[][] UB, double[] abc, double[] sig_abc ) {
+    // print the UB matrix
+    if( UB == null ) {
+      return;
     }
+
+    StringBuffer sb = new StringBuffer( ( 31 * 3 ) + ( 71 * 2 ) );
+
+    for( int i = 0; i < 3; i++ ) {
+      for( int j = 0; j < 3; j++ ) {
+        sb.append( Format.real( UB[j][i], 10, 6 ) );
+      }
+
+      sb.append( "\n" );
+    }
+
+    // print the lattice parameters
+    if( abc == null ) {
+      SharedData.addmsg( sb.toString(  ) );
+
+      return;
+    }
+
+    for( int i = 0; i < 7; i++ ) {
+      sb.append( Format.real( abc[i], 10, 3 ) );
+    }
+
+    sb.append( "\n" );
+
+    // print the uncertainties for lattice parameters
+    if( sig_abc == null ) {
+      SharedData.addmsg( sb.toString(  ) );
+
+      return;
+    }
+
+    for( int i = 0; i < 7; i++ ) {
+      sb.append( Format.real( sig_abc[i], 10, 3 ) );
+    }
+
+    sb.append( "\n" );
+
+    SharedData.addmsg( sb.toString(  ) );
+  }
+
+  /**
+   *
+   */
+  private static String writeLog( String logfile, String log ) {
+    FileOutputStream fout = null;
+
+    try {
+      fout = new FileOutputStream( logfile );
+      fout.write( log.getBytes(  ) );
+      fout.flush(  );
+    } catch( IOException e ) {
+      return e.toString(  );
+    } finally {
+      if( fout != null ) {
+        try {
+          fout.close(  );
+        } catch( IOException e ) {
+          // let it drop on the floor
+        }
+      }
+    }
+
+    return null;
   }
 }
