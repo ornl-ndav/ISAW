@@ -54,6 +54,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/02/19 19:35:08  pfpeterson
+ * Moderate reformatting. Includes changing for loops to start from 0
+ * rather than 1.
+ *
  * Revision 1.5  2003/02/18 19:33:50  dennis
  * Removed ^M characters.
  *
@@ -181,12 +185,12 @@ public class blind {
     if (input != 2 && ilog != 1)  {
       System.out.println("      #          X           Y          WL" );
       System.out.println("      #          X           Y          WL" );
-      for (j = 1; j <= lmt.val; j++) {
-        System.out.print((j) + " ");
-        for(k = 1; k <= 3; k++)
-          System.out.print(angle[(j)- 1+(k- 1)*xx.length] + " ");
-        System.out.print((xx[(j)- 1+ _xx_offset]) + " " 
-                         +(yy[(j)-1+ _yy_offset])+" "+(zz[(j)-1+ _zz_offset]));
+      for( j=0 ; j<lmt.val ; j++ ){
+        System.out.print(j+" ");
+        for( k=0; k<3 ; k++ )
+          System.out.print(angle[j+k*xx.length] + " ");
+        System.out.print(xx[j+_xx_offset]+" "+yy[j+ _yy_offset]+" "
+                         +zz[j+ _zz_offset]);
 
         System.out.println();
         // WRITE(16,*)J,(ANGLE(J,K),K=1,3),XX(J),YY(J),ZZ(J)
@@ -194,15 +198,15 @@ public class blind {
     } else {
       System.out.println(" "+"\n"+"    #  SEQ       XCM       YCM      WL" );
       System.out.println( "lmt seq.length="+lmt.val+","+seq.length);
-      for (j = 1; j <= lmt.val; j++) {
-        System.out.print((j) + " " + (seq[(j)-1+ _seq_offset]) + " ");
-        for(k = 1; k <= 3; k++)
-          System.out.print(angle[(j)- 1+(k- 1)*xx.length] + " ");
+      for( j=0 ; j<lmt.val ; j++ ){
+        System.out.print((j+1)+" "+(seq[j+_seq_offset])+" ");
+        for( k=0 ; k<3 ; k++ )
+          System.out.print(angle[j+k*xx.length]+" ");
 
         System.out.println();
-        System.out.print((j) + " " + (seq[(j)-1+  _seq_offset]) + " ");
-        for(k = 1; k <= 3; k++)
-          System.out.print(angle[(j)- 1+(k- 1)*xx.length] + " ");
+        System.out.print((j+1)+" "+(seq[j+ _seq_offset])+" ");
+        for( k=1 ; k<3 ; k++ )
+          System.out.print(angle[j+k*xx.length]+" ");
 
         System.out.println();
       }
@@ -240,10 +244,10 @@ public class blind {
     double [] a= new double[(3) * (3)];
     int [] l=new int[lmt.val+1];
     double [] w=new double[lmt.val+1];
-    for( i=0;i<lmt.val+1;i++)
-      {l[i]=0;
+    for( i=0 ; i<lmt.val ; i++ ){
+      l[i]=0;
       w[i]=1.0E9;
-      }
+    }
     /*File ff= new File( "x.out");
       OutputStream fout;
       try{
@@ -253,8 +257,10 @@ public class blind {
       {fout = System.out;
       }*/
     //Index sort of w, the magnitude of the the peaks, with index l 
-    for (i = 1; i <= lmt.val; i++) {
-      hm = xx[(i)- 1+ _xx_offset]*xx[(i)- 1+ _xx_offset]+yy[(i)- 1+ _yy_offset]*yy[(i)- 1+ _yy_offset]+zz[(i)- 1+ _zz_offset]*zz[(i)- 1+ _zz_offset];
+    for( i=1 ; i<=lmt.val ; i++ ){
+      hm = xx[i-1+_xx_offset]*xx[i-1+_xx_offset]
+        +yy[i-1+_yy_offset]*yy[i-1+_yy_offset]
+        +zz[i-1+_zz_offset]*zz[i-1+_zz_offset];
       if( hm >= 1.0E9)
         System.out.println("abid hm value  is very large");
       Goto = 0;
@@ -263,35 +269,34 @@ public class blind {
            fout.write(("hm="+hm+"\n").getBytes());
            }
            catch( Exception sss5){}*/
-      for (j = 1; (j <= lmt.val) &&(Goto ==0); j++) {
-        if ((hm < w[(j)- 1]) && (Goto == 0))  {
-    
-          for (idum = j; idum <= lmt.val; idum++) {
-            k = lmt.val+j-idum;
-            w[(k+1)- 1] = w[(k)- 1];
-            l[(k+1)- 1] = l[(k)- 1];
-          }              //  Close for() loop. 
+      for( j=1 ; (j<=lmt.val)&&(Goto==0) ; j++ ){
+        if( (hm<w[j-1]) && (Goto==0) ){
+          for( idum=j ; idum<=lmt.val ; idum++ ){
+            k=lmt.val+j-idum;
+            w[k] = w[k-1];
+            l[k] = l[k-1];
+          }
 
-          w[(j)- 1] = hm;
-          l[(j)- 1] = i;
+          w[j-1] = hm;
+          l[j-1] = i;
           Goto = 3;
           /*     try{
                  for( int ii=0; ii<lmt.val+1 ;ii++)fout.write((l[ii]+" ").getBytes());fout.write("\n".getBytes());
                  for( int ii=0; ii<lmt.val+1 ;ii++)fout.write((w[ii]+" ").getBytes());fout.write("\n".getBytes());
                  }
                  catch(Exception sss1){}*/
-        }              // Close if()
-      }              //  Close for() loop. 
-    }              //  Close for() loop. 
+        }
+      }
+    }
 
     /*try{
       fout.close();
       }
       catch(Exception ssss3){}*/
-    for (j = 1; j <= lmt.val; j++) { 
-      xa[(j)- 1] = xx[(l[(j)- 1])- 1+ _xx_offset];
-      ya[(j)- 1] = yy[(l[(j)- 1])- 1+ _yy_offset];
-      za[(j)- 1] = zz[(l[(j)- 1])- 1+ _zz_offset];
+    for( j=0 ; j<lmt.val ; j++ ){ 
+      xa[j] = xx[l[j]-1+_xx_offset];
+      ya[j] = yy[l[j]-1+_yy_offset];
+      za[j] = zz[l[j]-1+_zz_offset];
     }
     // 
     k = 3;
@@ -299,15 +304,15 @@ public class blind {
     //While the proposed basis vectors are coplanar
     while( Goto==6){
       Goto=0;
-      k = k+1;
+      k++;
    
       if (k > lmt.val)  {
         System.out.println(" ALL REFLECTIONS COPLANAR-PROGRAM TERMINATING");
         System.out.println(" ALL REFLECTIONS COPLANAR-PROGRAM TERMINATING");
         // 
-        for (i = 1; i <= 3; i++) {
-          System.out.println(" "+(xa[i-1])+"    "+(ya[i-1])+"    "+(za[i-1]));
-          System.out.println(" "+(xa[i-1])+"    "+(ya[i-1])+"    "+(za[i-1]));
+        for( i=0 ; i<3 ; i++ ){
+          System.out.println(" "+xa[i]+"    "+ya[i]+"    "+za[i]);
+          System.out.println(" "+xa[i]+"    "+ya[i]+"    "+za[i]);
           // 
           System.out.println(" D="+d);
           System.out.println(" D="+d);
@@ -316,10 +321,10 @@ public class blind {
           return;
         }
       }
-      for (i = 0; i < 3; i++) {
-        b[i + 0*3] = xa[i];
-        b[i + 1*3] = ya[i];
-        b[i + 2*3] = za[i];
+      for( i=0 ; i<3 ; i++ ){
+        b[i+0*3] = xa[i];
+        b[i+1*3] = ya[i];
+        b[i+2*3] = za[i];
       }              //  Close for() loop. 
 
       doubleW dA = new doubleW(d);
@@ -334,38 +339,38 @@ public class blind {
         if (Math.abs(xa[0]*ya[1]-xa[1]*ya[0]) >= 0.05 
             || Math.abs(xa[0]*za[1]-xa[1]*za[0]) >= 0.05 
             || Math.abs(ya[0]*za[1]-ya[1]*za[0]) >= 0.05)  {
-          hm = xa[(k)- 1];
-          xa[(k)- 1] = xa[(3)- 1];
-          xa[(3)- 1] = hm;
-          hm = ya[(k)- 1];
-          ya[(k)- 1] = ya[(3)- 1];
-          ya[(3)- 1] = hm;
-          hm = za[(k)- 1];
-          za[(k)- 1] = za[(3)- 1];
-          za[(3)- 1] = hm;
-          m = l[(k)- 1];
-          l[(k)- 1] = l[(3)- 1];
-          l[(3)- 1] = m;
+          hm = xa[k-1];
+          xa[k-1] = xa[2];
+          xa[2] = hm;
+          hm = ya[k-1];
+          ya[k-1] = ya[2];
+          ya[2] = hm;
+          hm = za[k-1];
+          za[k-1] = za[2];
+          za[2] = hm;
+          m = l[k-1];
+          l[k-1] = l[2];
+          l[2] = m;
           Goto = 6;
         } else  {
-          hm = xa[(k)- 1];
-          xa[(k)- 1] = xa[(2)- 1];
-          xa[(2)- 1] = xa[(3)- 1];
-          xa[(3)- 1] = hm;
+          hm = xa[k-1];
+          xa[k-1] = xa[1];
+          xa[1] = xa[2];
+          xa[2] = hm;
           hm = ya[(k)- 1];
-          ya[(k)- 1] = ya[(2)- 1];
-          ya[(2)- 1] = ya[(3)- 1];
-          ya[(3)- 1] = hm;
-          hm = za[(k)- 1];
-          za[(k)- 1] = za[(2)- 1];
-          za[(2)- 1] = za[(3)- 1];
-          za[(3)- 1] = hm;
-          m = l[(k)- 1];
-          l[(k)- 1] = l[(2)- 1];
-          l[(2)- 1] = m;
+          ya[k-1] = ya[1];
+          ya[1] = ya[2];
+          ya[2] = hm;
+          hm = za[k-1];
+          za[k-1] = za[1];
+          za[1] = za[2];
+          za[2] = hm;
+          m = l[k-1];
+          l[k-1] = l[1];
+          l[1] = m;
           Goto = 6;
-        }              //  Close else.
-      }              // Close if()
+        }
+      }
     }
 
     //Manipulate b so that B*transpose(B) about diagonal
@@ -375,9 +380,9 @@ public class blind {
       i = lmt.val+1-idum;
 
 
-      xx[(i+3)- 1+ _xx_offset] = xx[(i)- 1+ _xx_offset];
-      yy[(i+3)- 1+ _yy_offset] = yy[(i)- 1+ _yy_offset];
-      zz[(i+3)- 1+ _zz_offset] = zz[(i)- 1+ _zz_offset];
+      xx[i+2+_xx_offset] = xx[i-1+_xx_offset];
+      yy[i+2+_yy_offset] = yy[i-1+_yy_offset];
+      zz[i+2+_zz_offset] = zz[i-1+_zz_offset];
     }
 
     for( i=0 ; i<3 ; i++ ){
@@ -401,22 +406,22 @@ public class blind {
     int j=0,m=0,k=0,i=0,kk=0;
 
     while( 3==3){ // ADDed for goto 1 at bottom
-      for (j = 1; j <= 6; j++) {
-        v[(j)- 1+ _v_offset] = 0.0;
-      }              //  Close for() loop. 
+      for( j=0 ; j<6 ; j++ ){
+        v[j+_v_offset] = 0.0;
+      }
 
-      for (j = 1; j <= 3; j++) {
+      for( j=1 ; j<=3 ; j++ ){
         m = j+1;
         if (m > 3)  
           m = m-3;
 
         for( i=0 ; i<3 ; i++ ){
-          v[(j)- 1+ _v_offset] = v[(j)- 1+ _v_offset]+ab[(j)- 1+ i*3 + _ab_offset]*ab[(j)- 1+ i*3+ _ab_offset];
-          v[(j+3)- 1+ _v_offset] = v[(j+3)- 1+ _v_offset]+ab[(j)- 1+ i*3 + _ab_offset]*ab[(m)- 1+ i*3+ _ab_offset];
-        }              //  Close for() loop. 
-      }              //  Close for() loop. 
-
-      // 
+          v[j-1+_v_offset] = v[j-1+_v_offset]
+            +ab[j-1+i*3+_ab_offset]*ab[j-1+i*3+_ab_offset];
+          v[j+3-1+_v_offset] = v[j+3-1+_v_offset]
+            +ab[j-1+i*3+_ab_offset]*ab[m-1+i*3+_ab_offset];
+        }
+      }
 
       for (j = 1; j <= 3; j++) {
         m = j+1;
@@ -428,46 +433,43 @@ public class blind {
         } else {
           l[j-1+_l_offset]=(int)(v[j+2+_v_offset]/v[j-1+_v_offset]-0.498);
           l[j+2+_l_offset]=(int)(v[j+2+_v_offset]/v[m-1+_v_offset]-0.498);
-        }              //  Close else.
-      }              //  Close for() loop. 
+        }
+      }
 
-      // 
-      l[6 + _l_offset] = 0;
-      // 
+      l[6+_l_offset] = 0;
 
-      for (j = 1; j <= 6; j++) {
-        kk = l[j-1 + _l_offset];
+      for( j=0 ; j<6 ; j++) {
+        kk = l[j+_l_offset];
         if (kk < 0)  {
           kk = -kk;
-        }              // Close if()
+        }
         if ((kk) > l[6 + _l_offset])  {
           l[6 + _l_offset] = (kk);
-          k = j;
-        }              // Close if()
-      }              //  Close for() loop. 
+          k = j+1;
+        }
+      }
 
       // 
-      if (l[6 + _l_offset] == 0)  {
-        return;//Dummy.go_to("Aarr",999999);
+      if(l[6 + _l_offset] == 0)  {
+        return;
       }
-      if (k >= 4)  {
+      if( k>=4 ){
         for( j=0 ; j<3 ; j++ ){
           m = k-2;
           if (m > 3)  
             m = m-3;
           ab[(k-4)+j*3+_ab_offset]=
             ab[(k-4)+j*3+_ab_offset]-l[k-1+_l_offset]*ab[m-1+j*3+_ab_offset];
-        }              //  Close for() loop. 
-      } else {
+        }
+      }else{
         for( j=0 ; j<3 ; j++ ){
           m = k+1;
           if (m > 3)  
             m = m-3;
           ab[m-1+j*3+_ab_offset]=
             ab[m-1+j*3+_ab_offset]-l[k-1+_l_offset]*ab[k-1+j*3+_ab_offset];
-        }              //  Close for() loop. 
-
-      }              //  Close else.
+        }
+      }
     }
   }
 
@@ -653,9 +655,9 @@ public class blind {
       }
     }
 
-    ha = hh[0+(lmt- 1)*3];
-    hb = hh[1+(lmt- 1)*3];
-    hc = hh[2+(lmt- 1)*3];
+    ha = hh[0+(lmt-1)*3];
+    hb = hh[1+(lmt-1)*3];
+    hc = hh[2+(lmt-1)*3];
 
     while( 3==3){
       if (Goto == 0 || Goto == 2) 
@@ -686,7 +688,7 @@ public class blind {
             if (Goto == 0)  {
               l = idumb-1;
               s2 = l*hb;
-            }              // Close if()
+            }
             for (idumc = 1; idumc <= kk; idumc++) {
               trace=false;
               if(mm==1)if(iduma==2)if(idumb==2)if(idumc==1) trace=true;
@@ -715,8 +717,8 @@ public class blind {
 
                     Goto = 30;
                   } 
-                  else lb=LB.val;             // Close if()
-                }              // Close if()
+                  else lb=LB.val;
+                }
                 if (Goto == 0 || Goto == 20)  {
                   Goto = 0;
                   if (l == 0 && Goto == 0)  
@@ -732,8 +734,8 @@ public class blind {
                     la[(lmt)- 1] = lb;
 
                     Goto = 30;
-                  }              // Close if()
-                }              // Close if()
+                  }
+                }
 
                 if (Goto == 0 || Goto == 21)  {
                   Goto = 0;
@@ -751,9 +753,9 @@ public class blind {
                       la[lmt-1] = lb;
 
                       Goto = 30;
-                    }              // Close if()
-                  }              // Close if()
-                }              // Close if()
+                    }
+                  }
+                }
 
                 if (Goto == 0 || Goto == 17)  {
                   Goto = 0;
@@ -775,9 +777,8 @@ public class blind {
                     la[2] = -m;
                     n = 5;
                     la[lmt-1] = lb;
-
-                  }              // Close if()
-                }              // Close if()
+                  }
+                }
                 if (Goto == 0 || Goto == 30)  {
                   Goto = 0;
  
@@ -819,19 +820,17 @@ public class blind {
                   m1 = ll[0+0*3]*ll[1+1*3]-ll[0+1*3]*ll[1+0*3];
                   m2 = ll[0+0*3]*ll[1+2*3]-ll[0+2*3]*ll[1+0*3];
                   m3 = ll[0+1*3]*ll[1+2*3]-ll[0+2*3]*ll[1+1*3];
-                  if (kka-2 != 0)  {
+                  if( kka-2!=0 ){
                     Goto = 52;
-                  }              // Close if()
-                  else  {
+                  }else{
                     if (m1 != 0 || m2 != 0 || m3 != 0)  {
                       Goto = 19;
-                    }              // Close if()
-                    else  {
+                    }else{
                       kka = 1;
-                    }              //  Close else.
+                    }
                     Goto = 19;
-                  }              //  Close else.
-                }              // Close if()
+                  }
+                }
                 if (Goto == 0 || Goto == 52)  {
                   Goto = 0;
   
@@ -866,11 +865,11 @@ public class blind {
                 }
                 if (Goto == 803)  
                   Goto = 0;
-              }              //  Close for() loop. 
+              }
             }
           }
         }
-      }              //  Close for() loop. 
+      }
     }//while 3==3 gotot 2.go_to("Lcl",2);
   }
 
@@ -881,17 +880,15 @@ public class blind {
     int nj = 256;
     int EQU = 0;
 
-    if (s >= 0)  {
+    if( s>=0 )
       lb.val = (s+nj)/ni;
-    } else  {
+    else
       lb.val = (s-nj)/ni;
-    }
 
-    if (Math.abs(s-lb.val*ni) >= da)  {
+    if(Math.abs(s-lb.val*ni)>=da)
       EQU = 1;
-    } else  {
+    else
       EQU = 0;
-    }
 
     return EQU;
   }
@@ -967,19 +964,19 @@ public class blind {
 
 
 
-    for( i=1 ; i<=3 ; i++ ){
+    for( i=0 ; i<3 ; i++ ){
       j=1;
       boolean done=false;
 
       while(!done){
-        if(v[i-1]<w[j-1]){
+        if(v[i]<w[j-1]){
           for( idum=j;idum<=3;idum++){
             k=j+3-idum;
             w[k+1-1]=w[k-1];
             l[k+1-1]=l[k-1];
           }
-          w[j-1] = v[i-1];
-          l[j-1] = i;
+          w[j-1] = v[i];
+          l[j-1] = i+1;
           done=true;
         }else{
           j++;
@@ -994,12 +991,12 @@ public class blind {
                         l[5]+","+l[6]+","+a.length+","+ab.length);
     System.out.println("W="+w[0]+","+w[1]+","+w[2]+","+w[3]);
     for( i=0 ; i<3 ; i++ ){
-      a[2+i*3+ _a_offset] = ab[(l[0])- 1+i*3];
-      a[0+i*3+ _a_offset] = ab[(l[1])- 1+i*3];
-      a[1+i*3+ _a_offset] = ab[(l[2])- 1+i*3];
+      a[2+i*3+ _a_offset] = ab[l[0]-1+i*3];
+      a[0+i*3+ _a_offset] = ab[l[1]-1+i*3];
+      a[1+i*3+ _a_offset] = ab[l[2]-1+i*3];
     }
     System.out.println("aft 3, A=");
-    for( i=0;i<a.length;i++)
+    for( i=0 ; i<a.length ; i++)
       System.out.print(a[i]+",");
     System.out.println("");
 
@@ -1205,9 +1202,9 @@ public class blind {
 
     if( vol < 0) 
       System.out.println("Left handed system");
-    for(int i=1;i<=3;i++)
-      System.out.println( orgmat[i-4+3*1]+"  "+orgmat[i-4+3*2]+"  "
-                          +orgmat[i-4+3*3]);
+    for(int i=0 ; i<3 ; i++ )
+      System.out.println( orgmat[i-3+3*1]+"  "+orgmat[i-3+3*2]+"  "
+                          +orgmat[i-3+3*3]);
   }
    
 
@@ -1236,7 +1233,8 @@ public class blind {
 
         DataSet ds = DS[k];
         // ds.setAttribute( Attribute.SCD_CALIB_FILE,"C:\\Ipns\\Isaw2\\SampleRuns\\instprm.dat");
-        LoadSCDCalib lcab= new LoadSCDCalib( ds,"C:\\Ipns\\Isaw2\\SampleRuns\\instprm.dat",
+        LoadSCDCalib lcab= new LoadSCDCalib( ds,
+                                    "C:\\Ipns\\Isaw2\\SampleRuns\\instprm.dat",
                                              1,"0:7000");
         lcab.getResult(); 
         FindPeaks fp = new FindPeaks( ds,0, 15,1);
@@ -1356,4 +1354,4 @@ public class blind {
       System.out.print(b[i]+",");
     System.out.println("");
   }
-} // End class.
+}
