@@ -2,18 +2,40 @@
  * @(#)DataSetScalarDivide.java   0.2  99/06/07   Dennis Mikkelson
  *                                     99/08/16   Added constructor to allow
  *                                                calling operator directly
- *             
- * This operator divides all data objects in a data set by a scalar value.
+ *
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.4  2000/07/10 22:35:57  dennis
+ *  July 10, 2000 version... many changes
+ *
+ *  Revision 1.7  2000/06/15 16:26:14  dennis
+ *  Added parameter make_new_ds to determine wheter or not a new DataSet
+ *  is created.  Also changed getResult to call the static method:
+ *  DSOpsImplementation.DoDSScalarOp() so that the implementation could
+ *  be shared for +,-,*,/
+ *
+ *  Revision 1.6  2000/06/09 16:12:35  dennis
+ *  Added getCommand() method to return the abbreviated command string for
+ *  this operator
+ *
+ *  Revision 1.5  2000/05/16 15:36:34  dennis
+ *  Fixed clone() method to also copy the parameter values from
+ *  the current operator.
+ *
+ *  Revision 1.4  2000/05/11 16:41:28  dennis
+ *  Added RCS logging
+ *
  *
  */
 
 package DataSetTools.operator;
 
 import  java.io.*;
+import  java.util.Vector;
 import  DataSetTools.dataset.*;
 
 /**
-  *  Divide a data set by a constant scalar value 
+  * This operator divides all data objects in a data set by a scalar value.
   */
 
 public class DataSetScalarDivide extends    DataSetOperator 
@@ -31,9 +53,6 @@ public class DataSetScalarDivide extends    DataSetOperator
   public DataSetScalarDivide( )
   {
     super( "Divide by Scalar" );
-
-    Parameter parameter = new Parameter( "Divisor", new Float(1.0) );
-    addParameter( parameter );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -46,9 +65,12 @@ public class DataSetScalarDivide extends    DataSetOperator
    *  @param  ds          The DataSet to which the operation is applied
    *  @parm   value       The value to divide into to each point in each Data
    *                      block in ds
+   *  @param  make_new_ds Flag that determines whether a new DataSet is
+   *                      constructed, or the value is just divided into
+   *                      Data blocks of the DataSet.
    */
 
-  public DataSetScalarDivide( DataSet ds, float value )
+  public DataSetScalarDivide( DataSet ds, float value, boolean make_new_ds )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s)
@@ -56,45 +78,58 @@ public class DataSetScalarDivide extends    DataSetOperator
     Parameter parameter = getParameter( 0 );
     parameter.setValue( new Float( value) );
 
+    parameter = getParameter( 1 );
+    parameter.setValue( new Boolean( make_new_ds ) );
+
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
+  }
+
+  /* ---------------------------- getCommand ------------------------------- */
+  /**
+   * Returns the abbreviated command string for this operator.
+   */
+   public String getCommand()
+   {
+     return "Div";
+   }
+
+
+ /* -------------------------- setDefaultParmeters ------------------------- */
+ /**
+  *  Set the parameters to default values.
+  */
+  public void setDefaultParameters()
+  {
+    parameters = new Vector();  // must do this to clear any old parameters
+
+    Parameter parameter = new Parameter( "Divisor", new Float(1.0) );
+    addParameter( parameter );
+
+    parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
+    addParameter( parameter );
+  }
+
+
+
+/* -------------------------- getCategory -------------------------------- */
+  /**
+   * Get the category of this DataSet operator
+   *
+   * @return  Returns DataSetOperator.SCALAR
+   */
+  public int getCategory()
+  {
+    return SCALAR;
   }
 
 
   /* ---------------------------- getResult ------------------------------- */
 
-                                     // The concrete operation extracts the
-                                     // current value of the scale factor
-                                     // parameter and returns the result of 
-                                     // dividing by that scale factor.
   public Object getResult()
-  {                                  // get the scale factor parameter 
-    float scale = ( (Float)(getParameter(0).getValue()) ).floatValue();
-
-                                     // get the current data set
-    DataSet ds = this.getDataSet();
-                                     // construct a new data set with the same
-                                     // title, units, and operations as the
-                                     // current DataSet, ds
-    DataSet new_ds = ds.empty_clone(); 
-    new_ds.addLog_entry( "Divided by " + scale );
-
-    if ( scale != 0 )                // do the operation if possible
-    {                                // otherwise return empty data set 
-      int num_data = ds.getNum_entries();
-      Data data,
-           new_data;
-      for ( int i = 0; i < num_data; i++ )
-      {
-        data = ds.getData_entry( i );       // get reference to the data entry
-        new_data = data.divide( scale );    // divide by scale factor, assuming
-                                            // 0 error in the scale factor.
-        new_ds.addData_entry( new_data );      
-      }
-    }
-
-    return new_ds;
-  }  
+  {
+    return DSOpsImplementation.DoDSScalarOp( this );
+  }
 
 
   /* ------------------------------ clone ------------------------------- */
@@ -109,6 +144,7 @@ public class DataSetScalarDivide extends    DataSetOperator
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
+    new_op.CopyParametersFrom( this );
 
     return new_op;
   }

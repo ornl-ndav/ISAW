@@ -3,6 +3,7 @@
 package DataSetTools.operator;
 
 import  java.io.*;
+import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
@@ -14,11 +15,31 @@ public class SpectrometerPlotter extends    DataSetOperator
   public SpectrometerPlotter( )
   {
     super( "Data Plotter" );
+  }
+
+ /**
+  *  Set the parameters to default values.
+  */
+  public void setDefaultParameters()
+  {
+    parameters = new Vector();  // must do this to clear any old parameters
+
     Parameter parameter;
 
     parameter = new Parameter( "Data ID", new Integer(5) );
     addParameter( parameter );
   }
+
+
+  /* ---------------------------- getCommand ------------------------------- */
+  /**
+   * Returns the abbreviated command string for this operator.
+   */
+   public String getCommand()
+   {
+     return "SpecPlot";
+   }
+
 
   /* ---------------------------- getResult ------------------------------- */
 
@@ -44,6 +65,7 @@ public class SpectrometerPlotter extends    DataSetOperator
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
+    new_op.CopyParametersFrom( this );
 
     return new_op;
   }

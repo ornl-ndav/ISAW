@@ -3,11 +3,33 @@
  *                                     99/08/16   Added constructor to allow
  *                                                calling operator directly
  *             
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.5  2000/07/10 22:35:50  dennis
+ *  July 10, 2000 version... many changes
+ *
+ *  Revision 1.7  2000/06/09 16:12:35  dennis
+ *  Added getCommand() method to return the abbreviated command string for
+ *  this operator
+ *
+ *  Revision 1.6  2000/06/08 15:25:59  dennis
+ *  Changed type casting of attribute names from (SpecialString) to
+ *  (AttributeNameString).
+ *
+ *  Revision 1.5  2000/05/16 15:36:34  dennis
+ *  Fixed clone() method to also copy the parameter values from
+ *  the current operator.
+ *
+ *  Revision 1.4  2000/05/11 16:41:28  dennis
+ *  Added RCS logging
+ *
+ *
  */
 
 package DataSetTools.operator;
 
 import  java.io.*;
+import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.math.*;
@@ -47,18 +69,7 @@ public class DataSetCrossSection extends    DataSetOperator
   public DataSetCrossSection( )
   {
     super( "Integrated Cross Section" );
-
-    Parameter parameter = new Parameter("Left end point (a)", new Float(0));
-    addParameter( parameter );
-
-    parameter = new Parameter("Right end point (b)", new Float(0));
-    addParameter( parameter );
-
-    parameter = new Parameter(
-                          "Group Attribute to Order Crossection by",
-                           new AttributeNameString("Raw Detector Angle") );
-    addParameter( parameter );
-}
+  }
 
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -76,10 +87,10 @@ public class DataSetCrossSection extends    DataSetOperator
    *                      the integrated Data block values
    */
 
-  public DataSetCrossSection( DataSet             ds,
-                              float               a,
-                              float               b,
-                              AttributeNameString attr_name )
+  public DataSetCrossSection( DataSet  ds,
+                              float    a,
+                              float    b,
+                              String   attr_name )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -92,12 +103,42 @@ public class DataSetCrossSection extends    DataSetOperator
     parameter.setValue( new Float( b ) );
 
     parameter = getParameter( 2 );
-    parameter.setValue( attr_name );
+    parameter.setValue( new AttributeNameString(attr_name) );
 
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
   }
 
+
+  /* ---------------------------- getCommand ------------------------------- */
+  /**
+   * Returns the abbreviated command string for this operator.
+   */
+   public String getCommand()
+   {
+     return "CrossSect";
+   }
+
+
+ /* -------------------------- setDefaultParmeters ------------------------- */
+ /**
+  *  Set the parameters to default values.
+  */
+  public void setDefaultParameters()
+  {
+    parameters = new Vector();  // must do this to clear any old parameters
+
+    Parameter parameter = new Parameter("Left end point (a)", new Float(0));
+    addParameter( parameter );
+
+    parameter = new Parameter("Right end point (b)", new Float(0));
+    addParameter( parameter );
+
+    parameter = new Parameter(
+                          "Group Attribute to Order Crossection by",
+                           new AttributeNameString(Attribute.RAW_ANGLE) );
+    addParameter( parameter );
+  }
 
 
   /* ---------------------------- getResult ------------------------------- */
@@ -107,7 +148,8 @@ public class DataSetCrossSection extends    DataSetOperator
     float a = ( (Float)(getParameter(0).getValue()) ).floatValue();
     float b = ( (Float)(getParameter(1).getValue()) ).floatValue();
 
-    String attr_name = ((SpecialString)getParameter(2).getValue()).toString();
+    String attr_name = 
+                ((AttributeNameString)getParameter(2).getValue()).toString();
 
                                      // get the current data set
     DataSet ds = this.getDataSet();
@@ -226,6 +268,7 @@ public class DataSetCrossSection extends    DataSetOperator
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
+    new_op.CopyParametersFrom( this );
 
     return new_op;
   }
