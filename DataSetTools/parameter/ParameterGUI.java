@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/08/28 00:52:40  bouzekc
+ *  Fixed potential bug in setEnabled.
+ *
  *  Revision 1.16  2003/08/28 00:47:55  bouzekc
  *  Moved setEnabled() into this class because EntryWidget can recursively enable
  *  and disable its constituent components.
@@ -169,7 +172,10 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *        ParamterGUI or not.
    */
   public void setEnabled( boolean enable ) {
-    entrywidget.setEnabled( enable );
+    this.enabled=enable;
+    if( entrywidget != null ) {
+      entrywidget.setEnabled( enable );
+    }
   }
 
   /**
