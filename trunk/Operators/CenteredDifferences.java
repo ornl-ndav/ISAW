@@ -31,9 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/11/27 18:16:41  dennis
+ * Improved documentation.
+ * Use average of x[i+1] and x[i-1] for the x position of the
+ * centered difference value.
+ *
  * Revision 1.1  2001/11/21 21:27:34  dennis
  * Example of user-supplied add-on operator.
- *
  *
  */
 package Operators;
@@ -49,6 +53,17 @@ import java.util.*;
  *  This operator approximates the derivative of all Data blocks in the 
  *  DataSet using centered differences.  The operator returns a new DataSet
  *  containing the derived functions.
+ *
+ *    In order to be used from Isaw, this operator must be compiled and the
+ *  resulting class file must be placed in one of the directories that Isaw
+ *  looks at for operators, such as the ../Operators subdirectory of the
+ *  Isaw home directory.  For details on what directories are searched, see
+ *  the Operator-HOWTO file, or the Isaw user manual.<p>
+ *
+ *  NOTE: This operator can also be run as a separate program, since it
+ *  has a main program for testing purposes.  The main program merely loads
+ *  a DataSet, applies the operator and then shows both the original and
+ *  new DataSet.
  */
 public class CenteredDifferences extends GenericSpecial
 {
@@ -56,8 +71,8 @@ public class CenteredDifferences extends GenericSpecial
 
  /* ------------------------ Default constructor ------------------------- */ 
  /** 
-  *   Default constructor that is used when the parameters will be
-  *   set later
+  *  Creates operator with title "Centered Differences" and a  default list of
+  *  parameters.
   */  
   public CenteredDifferences()
   {
@@ -66,8 +81,9 @@ public class CenteredDifferences extends GenericSpecial
 
  /* ---------------------------- Constructor ----------------------------- */ 
  /** 
-  *  This form of the constructor specifies the parameters at construction 
-  *  time.  The getResult method is called to actually run the operator.
+  *  Creates operator with title "Centered Differences" and the specified list
+  *  of parameters.  The getResult method must still be used to execute
+  *  the operator.
   *
   *  @param  ds         DataSet to differentiate 
   */
@@ -151,7 +167,7 @@ public class CenteredDifferences extends GenericSpecial
       for ( int i = 1; i < y.length-1; i++ )
       {
         new_y[i-1] = (y[i+1] - y[i-1]) / (x[i+1] - x[i-1]);
-        new_x[i-1] =  x[i];
+        new_x[i-1] = (x[i+1] + x[i-1]) / 2;
       }
                                           // make a new Data block with the new
                                           // x and y values and same group ID
