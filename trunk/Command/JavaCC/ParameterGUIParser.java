@@ -9,6 +9,7 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
   //don't want to continually recreate this thing
   private static ParameterGUIParser myParser;
   private static boolean expandVectorIntoElements = true;
+  private static boolean standalone = false;
 
   /**
    * Method used to run the ParameterGUIParser for testing purposes.
@@ -18,6 +19,7 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
    * @throws ParseException If anything goes wrong during parsing
    */
   public static void main( String args[] ) throws ParseException {
+    standalone = true;
     myParser = new ParameterGUIParser( System.in );
     myParser.ExpansionList(  );
   }
@@ -33,10 +35,15 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
    * @throws ParseException If anything goes wrong during parsing
    */
   public static Vector parseText( String text ) throws ParseException {
+    standalone = false;
+    //need a semicolon on the end
+    if( text.indexOf( ";" ) < 0 ) {
+      text = text.trim(  ) + ";";
+    }
     if( myParser == null ) {
       myParser = new ParameterGUIParser( new StringReader( text )  );
     }
-    return myParser.Expansion(  );
+    return myParser.ExpansionList(  );
   }
 
 
@@ -85,10 +92,12 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
                         //[";", ",", "?", "*", "&"] ) >
   }
 
-  static final public void ExpansionList() throws ParseException {
-  Vector expandedList;
-    System.out.println( "Please type in an expression with or without " +
-      " brackets, (e.g. [5:8], [5,6,7], [\"john\"]. 5:10:2) or ^D to quit:\n" );
+  static final public Vector ExpansionList() throws ParseException {
+  Vector expandedList = null;
+    if( standalone ) {
+      System.out.println( "Please type in an expression with or without " +
+        " brackets, (e.g. [5:8], [5,6,7], [\"john\"]. 5:10:2) or ^D to quit:\n" );
+    }
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -109,12 +118,16 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
       jj_consume_token(16);
       //a semicolon ends the expansion
       //print the parsed expression
-      System.out.println( expandedList );
-      System.out.println(  );
-      System.out.println( "Please type in another expression in brackets or ^D to quit:" );
-      System.out.println(  );
+      if( standalone ) {
+        System.out.println( expandedList );
+        System.out.println(  );
+        System.out.println( "Please type in another expression in brackets or ^D to quit:" );
+        System.out.println(  );
+      }
     }
+    {if (true) return expandedList;}
     jj_consume_token(0);
+    throw new Error("Missing return statement in function");
   }
 
   static final public Vector Expansion() throws ParseException {
