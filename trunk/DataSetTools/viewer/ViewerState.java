@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2001/07/17 20:36:47  dennis
+ *  Changed default Rebin state to true.
+ *
  *  Revision 1.8  2001/06/08 21:58:41  dennis
  *  Now also requires the DataSet titles to match before
  *  restoring the Zoom region state.
@@ -96,7 +99,7 @@ public class ViewerState  implements Serializable
     public ViewerState( )
     {
       color_scale                = IndexColorMaker.HEATED_OBJECT_SCALE;
-      rebin                      = false;
+      rebin                      = true;
       horizontal_scrolling       = false;
       horizontal_scroll_fraction = 0.5f;
       pointed_at_index           = 0;
