@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/05/29 21:16:07  pfpeterson
+ *  Determines the location of ISAW_HOME through reflection.
+ *
  *  Revision 1.8  2002/04/10 15:39:20  pfpeterson
  *  Added System properties to control MW width and height. Also improved
  *  changing the divider positions in the SplitPanes and removed SplitPanes
@@ -191,46 +194,61 @@ public class DefaultProperties{
      * Find the location of ISAW.
      */
     private String getIsawHome(){
-        //System.out.println("in getIsawHome()");
-        String pathsep=System.getProperty("path.separator");
-        String classpath=System.getProperty("java.class.path");
-        String dir;
-        int index=classpath.indexOf(pathsep);
-        String $errmsg="WARNING: Could not find ISAW - "
-            +"Edit Properties File to point to correct ISAW_HOME";
+        String className=null;
+        String classFile=null;
+        boolean injar=false;
+        int index=0;
 
-        while( index>=0 ){
-            dir=classpath.substring(0,index);
-            dir=FilenameUtil.fixSeparator(dir);
-            //System.out.println("dir:"+dir);
-            classpath=classpath.substring(index+1,classpath.length());
-            if(dir.endsWith("Isaw.jar")){
-                System.out.println("Isaw found: "+dir);
-                index=dir.indexOf("Isaw.jar")-1;
-                if(index>0){
-                    dir=StringUtil.fixSeparator(dir);
-                    dir=dir.substring(0,dir.indexOf("Isaw.jar")-1);
-                    return this.resolveDir(dir);
-                }
-            }else{
-                String isawExec
-                    =separator+"IsawGUI"+separator+"Isaw.class";
-                File isIsaw=new File(dir+isawExec);
-                if(isIsaw.exists()){
-                    System.out.println("Isaw found: "+isIsaw);
-                    dir=StringUtil.fixSeparator(dir);
-                    return this.resolveDir(dir);
-                }
-            }
-            index=classpath.indexOf(pathsep);
-            if(index<0){
-                shared.status_pane.add($errmsg);                   
-                return "DEFAULT";
-            }
-        }
-        
-        shared.status_pane.add($errmsg);
-        return "DEFAULT";
+        className='/'+this.getClass().getName().replace('.','/')+".class";
+        classFile=this.getClass().getResource(className).toString();
+        if(classFile==null) return "DEFAULT";
+        injar=classFile.startsWith("jar:");
+        index=classFile.indexOf("file:");
+        classFile=classFile.substring(index+5,classFile.length());
+        index=classFile.indexOf(className);
+        classFile=classFile.substring(0,index);
+        return classFile;
+
+        /*//System.out.println("in getIsawHome()");
+          String pathsep=System.getProperty("path.separator");
+          String classpath=System.getProperty("java.class.path");
+          String dir;
+          index=classpath.indexOf(pathsep);
+          String $errmsg="WARNING: Could not find ISAW - "
+          +"Edit Properties File to point to correct ISAW_HOME";
+          
+          while( index>=0 ){
+          dir=classpath.substring(0,index);
+          dir=FilenameUtil.fixSeparator(dir);
+          //System.out.println("dir:"+dir);
+          classpath=classpath.substring(index+1,classpath.length());
+          if(dir.endsWith("Isaw.jar")){
+          System.out.println("Isaw found: "+dir);
+          index=dir.indexOf("Isaw.jar")-1;
+          if(index>0){
+          dir=StringUtil.fixSeparator(dir);
+          dir=dir.substring(0,dir.indexOf("Isaw.jar")-1);
+          return this.resolveDir(dir);
+          }
+          }else{
+          String isawExec
+          =separator+"IsawGUI"+separator+"Isaw.class";
+          File isIsaw=new File(dir+isawExec);
+          if(isIsaw.exists()){
+          System.out.println("Isaw found: "+isIsaw);
+          dir=StringUtil.fixSeparator(dir);
+          return this.resolveDir(dir);
+          }
+          }
+          index=classpath.indexOf(pathsep);
+          if(index<0){
+          shared.status_pane.add($errmsg);                   
+          return "DEFAULT";
+          } 
+          }
+          
+          shared.status_pane.add($errmsg);
+          return "DEFAULT";*/
     }
 
     /**
