@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2004/05/24 18:37:42  rmikk
+ *  Eliminated a clone in the CopyParametersfrom method because the
+ *    AddParametersMethod already clones the parameter
+ *
  *  Revision 1.34  2004/01/08 22:27:58  bouzekc
  *  Now uses java.lang.String.split() rather than StringUtil.split().
  *  Changed indexing scheme for removing first name from package hierarchy
@@ -306,7 +310,9 @@ abstract public class Operator implements Serializable
    {
        if(parameters==null)
          parameters=new Vector();
-       parameters.addElement( parameter.clone() );
+       IParameter newParameter = (IParameter)parameter.clone();
+       parameters.addElement( newParameter );
+      
    }
 
   /* ---------------------------- getNum_parameters ------------------------ */
@@ -423,12 +429,18 @@ abstract public class Operator implements Serializable
   {
     int      num_param = op.getNum_parameters();
 
-    if(parameters!=null)
-      parameters.removeAllElements();
-    else
+    if(parameters!=null){
+      while(parameters.size()>0){
+      	Object O=parameters.remove(0);
+      }
+      parameters = null;
+      
+      parameters = new Vector();
+      //parameters.removeAllElements();
+    }else
       parameters=new Vector();
     for ( int i = 0; i < num_param; i++ )
-      addParameter( (IParameter)op.getParameter(i).clone() );
+      addParameter( (IParameter)op.getParameter(i) );
   }
 
   /**
