@@ -31,6 +31,9 @@
  * Modified:
  *  
  *  $Log$
+ *  Revision 1.3  2002/07/29 18:56:34  dennis
+ *  Fixed bug in forming Log entry in case a DataSet was rejected.
+ *
  *  Revision 1.2  2002/03/05 19:27:50  pfpeterson
  *  Updated @see references in javadocs.
  *
@@ -216,8 +219,8 @@ public class SumRunfiles extends    GenericLoad
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return the command name to be used with script processor: in this case, SumFiles
-   *
+   * @return the command name to be used with script processor: 
+   *         in this case, SumFiles
    */
    public String getCommand()
    {
@@ -268,6 +271,8 @@ public class SumRunfiles extends    GenericLoad
   "   RUN     M1:AREA  CENTROID     STD    M2:AREA  CENTROID     STD   A2/A1");
       for ( int i = 0; i < mon_1.length; i++ )
       {
+        if ( mon_1[i] != null && mon_2[i] != null )
+        {
          mon_1[i].setEvaluationMode( IPeak.PEAK_ONLY );
          area_1     = mon_1[i].Area( a1, b1);
          centroid_1 = mon_1[i].Moment( a1, b1, 0, 1) / area_1;
@@ -287,6 +292,7 @@ public class SumRunfiles extends    GenericLoad
                           Format.real(centroid_2, 8, 2)   + "  " +
                           Format.real(std_2, 6, 2)        + "  " +
                           Format.real(ratio, 6, 3)   ); 
+        }
       }  
    }
 
