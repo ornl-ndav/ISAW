@@ -31,6 +31,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.7  2001/08/13 16:23:34  dennis
+ * Added constructor that takes a ViewerState parameter and
+ * separated initialization code in an init() method.
+ *
  * Revision 1.6  2001/08/13 16:07:48  rmikk
  * Used getDataSet before each Showw() in case the data
  * set changed
@@ -82,11 +86,28 @@ public class TabView extends DataSetViewer
     table_view tv;
     Boolean DBSeq;
 
-    /**
+
+  /**
+   *@param DS     the Data Set that is to be viewed
+   *@param state  holds the state information for the view 
+   */ 
+  public TabView( DataSet DS, ViewerState state )
+  {
+    super( DS, state );
+    init( DS );
+  }
+
+  /**
    *@param DS  the Data Set that is to be viewed
    */ 
    public TabView( DataSet DS )
-     { super( DS );
+   {
+      super( DS );
+      init( DS );
+   }
+
+   private void init( DataSet DS )
+   {
        setLayout( new GridLayout( 1,1 ));
        JMenuBar jmb = getMenuBar();
        int n = jmb.getMenuCount();
