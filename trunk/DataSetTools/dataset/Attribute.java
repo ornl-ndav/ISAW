@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2002/08/06 14:00:15  pfpeterson
+ *  Added constants for pressure and temperature data.
+ *
  *  Revision 1.26  2002/08/01 22:36:55  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -258,6 +261,8 @@ abstract public class Attribute implements Serializable,
   public static final String  MONITOR_DATA       = "Monitor Data";
   public static final String  SAMPLE_DATA        = "Sample Data";
   public static final String  PULSE_HEIGHT_DATA  = "Pulse Height";
+  public static final String  TEMPERATURE_DATA   = "Temperature Data";
+  public static final String  PRESSURE_DATA      = "Pressure Data";
 
   public static final String TOF_DIFFRACTOMETER_S        = "TOFNPD";
   public static final String TOF_SCD_S                   = "TOFNSCD";
