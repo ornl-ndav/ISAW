@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.8  2002/12/11 22:31:31  pfpeterson
+ *  Removed the '_2' from getCommand() and its javadocs.
+ *
  *  Revision 1.7  2002/12/09 23:40:04  pfpeterson
  *  Now checks for an the class that the number of pulses attribute is stored as.
  *
@@ -185,11 +188,11 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
   /* ---------------------------- getCommand ------------------------------- */
   /**
    * @return  the command name to be used with script processor: 
-   *          in this case, DSDODE_2
+   *          in this case, DSDODE
    */
    public String getCommand()
    {
-     return "DSDODE_2";
+     return "DSDODE";
    }
 
 
