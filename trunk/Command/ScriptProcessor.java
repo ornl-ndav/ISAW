@@ -1,78 +1,54 @@
-/* 6/4/2000:
-   a)Implemented GUI Interface to project
-       i)Improve: Titles should not dissapear when scrolling
-       ii) Save Button: Fix so the Dialog box says Save instead of Open
-       iii) Improve documntation initiated by the Help Button
-   b) Parser just started
-         Load a string constant and Display a Dataset Variable are all that
-         are implemented
+/*
+ * File:  ScriptProcessor.java 
+ *             
+ * Copyright (C) 2001, Ruth Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
+ *
+ * $Log$
+ * Revision 1.3  2001/06/01 21:14:13  rmikk
+ * Added Documentation for javadocs etc.
+ *
 
-   6/15/2000
-    c) For - End FOR and On Error-Else Error -End Error implemented
+5-20-2001   Ruth Mikkelson  Separated the Processor part from the
+                            GUI. See CommandPane.java for previous docs 
 
-    d) Rem and blank lines caught
-
-    e) Help button HTML documents passable.  Need to update for current version.
-
-    f) var[0] --> var0  and [I] can be inbetween brackets
-
-    g) The Batch facility has been implemented and tested
-
-    h)  send and get a data set have been implemented and tested
-
-    i) The save facility should use Dennis' save.(elim IObservers before th Object save
-   To Do
-
-    1) Load one Isaw Data set
-
-    2) plan and implement dataset.Title 
-
-  7/14/2000
-    1) If- else- elseif- endif implemented
-
-    2) GetDSAttr, GetDataAttr, GetField, and appropriate Sets have been 
-       implemented in the DataSetTools.operator.
-
- 7/28/00
-   1) Parameters and Macros with parameters have been implemented.
-      Interfaces so a GUI gets a value of the parameters is available.
-      Macros have not been implemented as an instruction yet.
-
-   2) This class contributes to the Isaw session log.   
-
-9-14-2000
-   -Fixed on error, end-error structure with nesting
-   -Fixed if-then error.  The "if" need not be in column 1
-   -Eliminated a debug print when not in debug mode
-   -if  and elseif statements use the new Boolean type
-
-10-1-2000
-   - Implemented starting character $ for parameters in addition to #$$
-
-12-1-2000
-   - Fixed IsawHelp search path
-   - Added support for the parameter data types 
-     DSFieldString, DSSettableFieldString in addition to the other supported data types
-     InstrumentNameString and DataDirectoryString
-
-2-2-2001
-   - For loops now use Arrays and can be variables.
-
-5-17-2001
-   - Converting CommandPane to an operator "successfully"
-   - JFrame returned in a function call
 
   
 */
 package Command; 
 
-//import IsawGUI.Isaw.*; 
 import IsawGUI.*; 
 import java.io.*; 
 import DataSetTools.retriever.*; 
 import DataSetTools.dataset.*; 
 import DataSetTools.util.*; 
-import DataSetTools.viewer.*; 
+//import DataSetTools.viewer.*; 
 import DataSetTools.components.ParametersGUI.*;
 
 import java.awt.*; 
@@ -83,15 +59,12 @@ import javax.swing.border.*;
 import DataSetTools.operator.*; 
 import java.beans.*; 
 import java.util.Vector;
-import Command.*;
+//import Command.*;
 
-/** Pane to enter and execute and handle commands
- *  A command can be executed immediately  or 
- *  A sequence of commands can all be executed.
- *      The Immediate commands are entered in the immediate window
- *      The sequence of commands are entered in the Editor window.
- *  The commands can act on Isaw Data Sets and will be extended to include
- *  most of the commands availabe in the GUI.
+/**
+ * Processes the script or one line of a script.  <BR>
+ * It has features to send back results that are displayable and also
+ * results that are data sets. 
  */
 public class ScriptProcessor  extends GenericOperator 
                           implements  
@@ -105,26 +78,23 @@ public class ScriptProcessor  extends GenericOperator
     
     Command.execOneLine ExecLine ; 
     
-    private int lerror ,                                //line number of error. 
+    private int lerror ,                        //line number of error. 
         perror ;                                //position on line of error
-    private String serror ;                             //error message
+    private String serror ;                     //error message
 
    
-    IObserverList OL ; 
-    PropertyChangeSupport PL;
-    Document logDocument = null;
+    private IObserverList OL ; 
+    private PropertyChangeSupport PL;
+    private Document logDocument = null;
 
-    boolean Debug = false;
+    private boolean Debug = false;
     Document MacroDocument = null;
 
-     Vector vnames= new Vector();
-     String command ="UNKNOWN";
-     String Title = "UNKNOWN";
-     String CategoryList="OPERATOR";
+     private Vector vnames= new Vector();
+     private String command ="UNKNOWN";
+     private String Title = "UNKNOWN";
+     private String CategoryList="OPERATOR";
 
-    /** Constructor with Visual Editor and no data sets from outside this program
-     *  This can be used with a stand alone editor
-     */
     
 
     
@@ -160,31 +130,16 @@ public class ScriptProcessor  extends GenericOperator
      */
     public ScriptProcessor ( Document Doc  )
       {super( "UNKNOWN");
-       OL = new IObserverList() ; 
-        
-       initialize();
-       
-
+       OL = new IObserverList() ;         
+       initialize();     
        ExecLine = new execOneLine() ;
-       
-
        PL = new PropertyChangeSupport( (Object)this ); 
-       
-
        MacroDocument = Doc ;
-       
        ExecLine.initt();
-       
-
        ExecLine.resetError();
-       
-
        seterror( -1,"");
-       
-
        lerror = -1;
-       setDefaultParameters(); 
-       
+       setDefaultParameters();  
       }
 /** 
   * Sets up the document that logs all operations
@@ -207,7 +162,7 @@ public class ScriptProcessor  extends GenericOperator
 
     /** Initializes the Visual Editor Elements
      *
-     */
+     */ 
     private void init()
     {
 
@@ -228,8 +183,10 @@ public class ScriptProcessor  extends GenericOperator
 
 
 
-    //Executes one line in a Document
-
+    /**Executes one line in a Document
+     * @param Doc   The document with the line in it
+     * @param line  The line in the document to be executed
+     */
     public  void execute1( Document  Doc  ,  
                            int       line )
 
@@ -237,57 +194,58 @@ public class ScriptProcessor  extends GenericOperator
      String S ; 
      //Element E ; 
        
-     if( Doc == null )return ; 
-  
-     if( line < 0 )return ; 
-           
-           S = getLine( Doc , line);
-           
-           
-          if( S == null )
-             {seterror( 0 , "Bad Line number");
-              lerror = line;
-              return;
-             }
-          int kk = ExecLine.execute( S , 0 , S.length() ) ; 
-          perror = ExecLine.getErrorCharPos() ; 
-	  if( perror >= 0 )
-	      {lerror = line ; 
-	      serror = ExecLine.getErrorMessage() ; 
+     if( Doc == null )return ;   
+     if( line < 0 )return ;    
+     S = getLine( Doc , line);          
+     if( S == null )
+        {seterror( 0 , "Bad Line number");
+         lerror = line;
+          return;
+        }
+     int kk = ExecLine.execute( S , 0 , S.length() ) ; 
+     perror = ExecLine.getErrorCharPos() ; 
+     if( perror >= 0 )
+	{lerror = line ; 
+	 serror = ExecLine.getErrorMessage() ; 
               
-	      }
-	  else if( kk < S.length() - 1 )
-                {lerror = line ;  
-                perror = kk ; 
-                serror = "Extra Characters at the end of command" ; 
-               } 
+	 }
+     else if( kk < S.length() - 1 )
+        {lerror = line ;  
+         perror = kk ; 
+         serror = "Extra Characters at the end of command" ; 
+        } 
 
     }
 
 
 
 
-    //Executes all Commands in a document
+    /** resets the error conditions and the variable space
+    *  NOTE: The data sets that were added from outside stay
+    */
     public void reset()
       {
         ExecLine.initt();
         ExecLine.resetError();
       }
+
+    /** executes all the lines of code in the document
+    *@param  Doc  The document that has the program in it
+    */
     public void execute( Document Doc )
       {int line ; 
        Element E ; 
-       if( Doc == null ) return ;        
-
-         if( MacroDocument == null)
-	     new IsawGUI.Util().appendDoc( logDocument , "#$ Start Program Run");
-         else
-              new IsawGUI.Util().appendDoc(logDocument , "#$ Start Macro Run");
+       if( Doc == null ) return ;      
+       if( MacroDocument == null)
+          new IsawGUI.Util().appendDoc( logDocument , "#$ Start Program Run");
+       else
+          new IsawGUI.Util().appendDoc(logDocument , "#$ Start Macro Run");
 
        E = Doc.getDefaultRootElement() ; 
-         for( line = 0 ; line < E.getElementCount(); line ++)
-           { String S = getLine( Doc , line);
-              new IsawGUI.Util().appendDoc(logDocument , S);
-            }
+       for( line = 0 ; line < E.getElementCount(); line ++)
+         { String S = getLine( Doc , line);
+           new IsawGUI.Util().appendDoc(logDocument , S);
+         }
        ExecLine.initt() ; 
       
 
@@ -312,7 +270,9 @@ public class ScriptProcessor  extends GenericOperator
       
          
     }
-   public void execute( Parameter Args[])
+
+  //deprecated??
+   private void execute( Parameter Args[])
     {int i;
      String S;
      //System.out.println("YYYYYYYYYYYYYYYYYYYYYY");
@@ -382,6 +342,7 @@ public class ScriptProcessor  extends GenericOperator
         lerror = k;
         
       }
+
    private int executeBlock ( Document Doc , int start ,  boolean exec ,int onerror )
      { int line ;
       
@@ -785,9 +746,11 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
       return j;
       
      } 
-  /*
-   *  Used for more free form placement of the parameter definitions
-   *  in a document
+  /**
+   *  Utility to get the Next Macro line( starts with $ or #$) in a document
+   *  @param Doc  The document containing the program
+   *  @param prevLine  the line number of the previous Macro line of -1 for first
+   *  @return  The line number of the next macro line or -1 if none
   */
    public int getNextMacroLine( Document Doc, int prevLine)
     { String Line;
@@ -805,6 +768,12 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
          }
       return getNextMacroLine( Doc, prevLine++);
     } 
+
+ /** Utility to return a given line from the Document
+ *@param Doc the document with the line
+ *@param start  the line number to be returned
+ *@return  The string representation of that line or null if there is none
+ */
    public String getLine( Document Doc, int start )
      {
       String var ;      
@@ -837,12 +806,14 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
       return S;
 
     }
-    public void seterror( int poserr , String ermess )
+
+    private void seterror( int poserr , String ermess )
       { perror = poserr ; 
         serror = ermess ; 
       }
       
-    
+ /** Utility to delete xcess spaces outside of quotes(") in a string S
+*/   
     public String delSpaces( String S)
       { boolean quote,
                 onespace; 
@@ -896,7 +867,7 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
  
 
 
-/*
+/* deprecated
 *  Determines if a document as parameters (#$$) ot ($). If so, a vector representation
 *  of the parameters is returned
 *@param   doc    A (Plain)Document that contains a script
@@ -907,7 +878,7 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
 *             <li> Next a parameterGUI  of the correct data type and Message
 *            </ul>
 */
- /* public Vector getDefaultParameters( Document doc )
+ /* private  Vector getDefaultParameterss( Document doc )
     { Element E;
       String S , 
              Line;
@@ -1065,7 +1036,7 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
     }
     
 */
-/**
+/**deprecated
   * A utility to get parameters for a macro AND execute the macro<P>
   * 
   * NOTE: To use this successfully<ul>
@@ -1100,14 +1071,14 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
    *            cp.getErrorCharPos()+ "," + cp.getErrorMessage() +","+cp.getErrorLine());
     </pre>
   */
-  /*public  Parameter[] GUIgetParameters()
+  /*private  Parameter[] GUIgetParameterss()
      { if(Debug)System.out.println("Start of GUIgetParameters");
        if( MacroDocument == null)
          {seterror( 1000, "Macro Does not Exist ");
           return  null;
          }
     if( Debug) System.out.println("Start GUI get Parameters");
-    Vector V1 = getDefaultParameters( MacroDocument );
+    Vector V1 = getDefaultParameterss( MacroDocument );
     if( Debug )System.out.println("after get defaults "+ perror+","+lerror+","+serror);
     if( perror >= 0)
        {return null; 
@@ -1189,7 +1160,7 @@ private int executeForBlock( Document Doc , int start , boolean execute, int one
 
   
     public String getVersion()
-    { return "7_6_00";
+    { return "6-01-2001";
     } 
 
 
@@ -1220,8 +1191,8 @@ public int getErrorLine()
   }
 
 /**
-*  Sets Default parameters for getResult or for the JParametersGUI Dialog box
-*  INPUTS:  The variable doc<BR>
+*  Sets Default parameters for getResult or for the JParametersGUI Dialog box<P>
+*  INPUTS:  The variable doc stored in MacroDocument<BR>
 *  OUPUTS:  The parameters are set
 */
 public void setDefaultParameters()
@@ -1432,12 +1403,29 @@ public void setDefaultParameters()
        return ;
    
    }
+/** 
+*  Gives the Command to use this script in the as a function in this ScriptProcessor.<BR> NOT USED  
+*
+* NOTE: ScriptOperators are used for functions in this scriptProcessor
+*@see #ScriptOperator
+*/
 public String getCommand()
   { return command;
   }
+/**
+*  Gives the Title of this program document. The Title appears in dialog boxes and menu items
+*
+*NOTE:  To set the Title have a line "$Title= title string" in the document
+*/
 public String getTitle()
   {return Title;
   }
+
+/** Executes the whole script then returns the result
+*@return  the result.  If there is an error the result is a subclass of ErrorString
+*@see #DataSetTools.util.ErrorString
+
+*/
 public Object getResult()
   { 
       int i;
@@ -1518,6 +1506,12 @@ public Object getResult()
       return null;
   }
 
+/**
+* Executes when a PropertyChangeEvent Occurs
+*
+*@param  e   The property change Event. 
+*NOTE: The only PropertyChangeEvent processed has a name "Display"
+*/
   public void propertyChange(PropertyChangeEvent e)
    {
      PL.firePropertyChange( e );
@@ -1536,13 +1530,21 @@ public void addPropertyChangeListener( PropertyChangeListener P)
    PL.addPropertyChangeListener(P);
   }
 
-
+/**
+* Executed when an IObservable notifies this IObserver
+*
+*@see #DataSetTools.util.IObserver
+*/ 
 public  void   update(  Object observed_obj ,  Object reason ) 
     {OL.notifyIObservers( this  ,  reason  ) ; 
     }
+/** Utility that returns all the data sets that have been added from outside sources
+*/
 public DataSet[] getDataSets()
    {return ExecLine.getGlobalDataset();
    } 
+
+
 private int findQuote(String S, int dir ,int start, String SrchChars,String brcpairs)
       {int i, j, j1;
        int brclevel;
