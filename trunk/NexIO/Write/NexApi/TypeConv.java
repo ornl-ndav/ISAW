@@ -28,12 +28,14 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2004/03/11 19:46:40  bouzekc
+ * Removed java.lang import as this is included by default.
+ *
  * Revision 1.3  2002/11/27 23:29:29  pfpeterson
  * standardized header
  *
  */
 package NexIO.Write.NexApi;
-import NexIO.*;
 import neutron.nexus.*;
 
 public class TypeConv{

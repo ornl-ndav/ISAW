@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/03/11 19:46:32  bouzekc
+ * Removed java.lang import as this is included by default.
+ *
  * Revision 1.10  2004/01/26 17:10:11  rmikk
  * Files are now written HDF5
  * The data is now compressed using the LZW compression
@@ -63,7 +66,6 @@ import NexIO.Write.*;
 import NexIO.*;
 import java.util.*;
 import java.lang.reflect.*;
-import java.lang.*;
 import java.io.*;
 
 /**

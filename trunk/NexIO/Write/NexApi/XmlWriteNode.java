@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2004/03/11 19:46:43  bouzekc
+ * Removed java.lang import as this is included by default.
+ *
  * Revision 1.4  2002/11/27 23:29:29  pfpeterson
  * standardized header
  *
@@ -35,12 +38,10 @@
 package NexIO.Write.NexApi;
 import NexIO.Write.*;
 import NexIO.*;
-import NexIO.Write.NexApi.*;
 import java.io.*;
 import java.util.*;
 import java.text.*;
 import java.lang.reflect.*;
-import java.lang.*;
 
 public class XmlWriteNode extends NexWriteUtil{
   static FileOutputStream fout;
