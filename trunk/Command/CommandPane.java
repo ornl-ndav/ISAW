@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2001/07/03 22:14:17  rmikk
+ * Added Code to eliminate the "UNKNOWN" description at
+ * the top of the JParametersDialog
+ *
  * Revision 1.24  2001/06/26 14:34:54  rmikk
  * Fixed Session Log reporting
  *
@@ -524,7 +528,10 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
         StatusLine.setText("");
         appendlog( logDoc, Commands.getDocument(), "CommandPane Run");
         if( CP.SP.getNum_parameters() > 0 )
-           {
+	    { if( SelectedFile !=null)
+                CP.SP.setTitle( SelectedFile.toString() );
+              else
+                CP.SP.setTitle( "CommandPane");
              DataSetTools.components.ParametersGUI.JParametersDialog pDialog = 
                      new DataSetTools.components.ParametersGUI.JParametersDialog(CP.SP, SP.getDataSets(), 
                      new PlainDocument(), null);
