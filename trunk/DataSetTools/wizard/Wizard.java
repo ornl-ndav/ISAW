@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.80  2003/09/16 21:06:34  bouzekc
+ * Fixed bug where "Reset All" button was not properly enabled/disabled
+ * and did not have any the Wizard as an ActionListener associated with it.
+ *
  * Revision 1.79  2003/09/15 22:27:16  bouzekc
  * Now traps errors that occur when the number of parameters in the .wsf file
  * don't match the number of parameters in the Form.
@@ -1034,7 +1038,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     wizButtons[BACK_IND]      = back_button;
     wizButtons[NEXT_IND]      = next_button;
     wizButtons[LAST_IND]      = last_button;
-    wizButtons[CLEAR_ALL_IND] = last_button;
+    wizButtons[CLEAR_ALL_IND] = clear_all_button;
 
     JPanel work_area          = new JPanel( new BorderLayout(  ) );
     JPanel controlsArea       = new JPanel( new BorderLayout(  ) );
