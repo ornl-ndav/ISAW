@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/12/10 22:03:22  dennis
+ * Added getDocumentation() method. (Tyler Stelzer)
+ *
  * Revision 1.3  2002/11/27 23:16:41  pfpeterson
  * standardized header
  *
@@ -132,7 +135,12 @@ public class SetDSDataAttributes extends    DS_Attribute
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**@return Sets a Data Attribute on all Data blocks in a DataSet and returns
+  *          \"Attribute Set\" if successful.  It may also return 
+  *          \"NO DATA BLOCKS\" if unsuccessful.
+  *           Otherwise it returns an error string
+  *          if there is an error in Attribute.Build()
+  */
   public Object getResult()
   { 
     DataSet ds = getDataSet();
@@ -176,6 +184,48 @@ public class SetDSDataAttributes extends    DS_Attribute
     new_op.CopyParametersFrom( this );
 
     return new_op;
+  }
+  
+  /* ------------------------------ getDocumentation ------------------- */
+  public String getDocumentation()
+  {
+     StringBuffer Res = new StringBuffer();
+     Res.append("@overview Sets an attribute value on ALL Data blocks in a");
+      Res.append(" DataSet");
+     
+     Res.append("@algorithm Check to make sure there are valid DataBlocks");
+      Res.append(" If there are, it sets the data attribute of all the");
+      Res.append(" data blocks in the dataSet.");
+     
+     Res.append("@param ds - The DataSet to which the operation is applied");
+     Res.append("@param   Attrib - The Attribute to be set.");
+     Res.append("@param  new_Value - The new value of the Attribute");
+     
+     Res.append("@return Sets a Data Attribute on all Data blocks in a ");
+      Res.append("DataSet and returns");
+      Res.append("\"Attribute Set\" if successful.  It may also return"); 
+      Res.append("\"NO DATA BLOCKS\" if unsuccessful.");
+      Res.append("Otherwise it returns an error string");
+      Res.append("if there is an error in Attribute.Build()");
+      
+     Res.append("@error null value object");
+     Res.append("@error null name object");
+     Res.append("@error can't build Attribute for");
+  
+     return Res.toString();
+  }
+  
+  /* ------------------------------ main ------------------------------- */
+  public static void main(String [] args)
+  {
+  	SetDSDataAttributes op = new SetDSDataAttributes();
+	String documentation = op.getDocumentation();
+	
+	System.out.println(documentation);
+	
+	//NOTE:  invalid default parameters
+	//getResult returns "null value object"
+	System.out.println(op.getResult().toString());
   }
 
 }

@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.5  2002/12/10 22:07:05  dennis
+ *  Added getDocumentation() method. (Tyler Stelzer)
+ *
  *  Revision 1.4  2002/11/27 23:17:40  pfpeterson
  *  standardized header
  *
@@ -147,7 +150,10 @@ public class DataSetSort  extends    DS_EditList
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+  *  @return Returns the String \"DataSet sorted\" or a new DataSet when
+  *          successful.  If not successful, an error string is returned.          
+  */
   public Object getResult()
   {                                  // get the parameters
 
@@ -200,6 +206,48 @@ public class DataSetSort  extends    DS_EditList
 
     return new_op;
   }
+  
+  /*---------------------------- getDocumentation ----------------------*/
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    
+    Res.append("@overview This operator sorts a DataSet based on an attribute");
+     Res.append(" of the Data entries.");
+     
+    Res.append("@algorithm Check whether to create a new DataSet or not.");
+     Res.append(" Sort the DataSet.  Return a string or a DataSet.");
+    
+    Res.append("@param ds - The DataSet to which the operation is applied");
+    Res.append("@param  attr_name - The name of that attribute to be used");
+     Res.append(" for the sort criterion");
+    Res.append("@param  increasing - Flag that indicates whether the sort");
+     Res.append(" should put the Data blocks in increasing or decreasing");
+     Res.append(" order based on the specified attribute");
+    Res.append("@param  make_new_ds - Flag that determines whether the sort");
+     Res.append(" creates a new DataSet and returns the new DataSet as a");
+     Res.append(" value, or just does the sort \"in place\" and just returns");
+     Res.append(" a message indicating the sort was done.");
+    
+    Res.append("@return Returns the String \"DataSet sorted\" or a new");
+     Res.append("DataSet when successful.  If not successful, an error");
+     Res.append(" string is returned.");
+    
+    Res.append("@error ERROR: Sort failed... no attribute: ");
 
+    return Res.toString();
+  }
+
+  public static void main(String [] args)
+  {
+  	DataSetSort op = new DataSetSort();
+	String documentation = op.getDocumentation();
+	
+	System.out.println(documentation);
+	
+	//NOTE:  invalid default parameters
+	//getResult returns "null value object"
+	System.out.println(op.getResult().toString());
+  }
 
 }
