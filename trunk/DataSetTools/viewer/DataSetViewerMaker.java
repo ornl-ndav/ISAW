@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/11/21 18:16:41  dennis
+ *  Added call to repaint() method in setDataSet(), so that the
+ *  axes are redrawn when the DataSet is changed.  This happens
+ *  when axis conversions are used from the ViewManager.
+ *
  *  Revision 1.7  2003/11/21 14:49:18  rmikk
  *  Implemented the DataSetViewer.setDataSet method
  *
@@ -134,6 +139,7 @@ public class DataSetViewerMaker  extends DataSetViewer
     {
       super.setDataSet(ds);
       viewArray.setDataSet(ds);
+      repaint();
     }
     
 
