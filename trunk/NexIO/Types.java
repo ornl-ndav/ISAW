@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/02/12 17:00:39  rmikk
+ * Fixed an error in data type corresponding to Long and Int
+ *
  * Revision 1.11  2004/12/23 18:54:41  rmikk
  * Added extra spacing between lines of code.
  *
@@ -265,10 +268,10 @@ public class Types{
        X = new double[ length];
        
      else if( type == Types.Int)
-       X = new short[ length];
+       X = new int[ length];
        
      else if( type ==Types.Long)
-       X = new int[ length];
+       X = new long[ length];
        
      else if( type == Types.Short)
        X = new byte[ length];
