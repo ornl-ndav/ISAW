@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/07/17 20:57:04  bouzekc
+ *  setValue(int) now works if the GUI has not been created.
+ *
  *  Revision 1.6  2003/07/17 20:37:04  bouzekc
  *  Now properly updates internal value.  The value can now be
  *  set by using the internal index.
@@ -208,21 +211,21 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
   }
 
   /**
-   * Utility to set the value of this RadioButtonPG to a particular index.  If
-   * the GUI has not been initialized, this does nothing.
+   * Utility to set the value of this RadioButtonPG to a particular index.
    *
    * @param index The index to set the value to.
    */
   public void setValue( int index ) {
-    if( !initialized ) {
-      return;
+    if( initialized ) {
+      JRadioButton selectedButton = ( ( JRadioButton )radioButtons.elementAt( 
+          index ) );
+
+      selectedButton.setSelected( true );
+      value = selectedButton.getText(  );
+    } else if( ( radioChoices != null ) && ( radioChoices.size(  ) > 0 ) ) {
+      value = radioChoices.elementAt( index )
+                          .toString(  );
     }
-
-    JRadioButton selectedButton = ( ( JRadioButton )radioButtons.elementAt( 
-        index ) );
-
-    selectedButton.setSelected( true );
-    value = selectedButton.getText(  );
   }
 
   /**
