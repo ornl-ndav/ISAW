@@ -1,4 +1,3 @@
-
 /* File: blind.java
  *  Produced by f2java.  f2java is part of the Fortran-
  *  -to-Java project at the University of Tennessee Netlib
@@ -54,6 +53,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/02/20 21:39:51  pfpeterson
+ * First pass at printing a log file.
+ *
  * Revision 1.6  2003/02/19 19:35:08  pfpeterson
  * Moderate reformatting. Includes changing for loops to start from 0
  * rather than 1.
@@ -76,19 +78,20 @@
  */
 
 package IPNSSrc;
-import java.lang.*;
+
+//import java.lang.*;
 //import org.netlib.util.*;
 import java.util.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import DataSetTools.operator.DataSet.Attribute.*;
+import java.text.DecimalFormat;
 import java.io.*;
-public class blind {
 
-  // 
-  // 
-  public static double[] u = null; //orientation matrix
+public class blind {
+  //orientation matrix
+  public static double[] u = null;
   //Cell Scalars
   public static double A2;
   public static double B2;
@@ -107,6 +110,8 @@ public class blind {
   public static double D5;
   public static double D6;
   public static String errormessage="";
+  private static double err_lim;
+
   /** Finds the basis of the smallest non coplanar in Qx,Qy,Qz peaks.
    *  The basis is manipulated so that B*Transpose(B) is "about" a diagonal
    */ 
@@ -202,12 +207,6 @@ public class blind {
         System.out.print((j+1)+" "+(seq[j+_seq_offset])+" ");
         for( k=0 ; k<3 ; k++ )
           System.out.print(angle[j+k*xx.length]+" ");
-
-        System.out.println();
-        System.out.print((j+1)+" "+(seq[j+ _seq_offset])+" ");
-        for( k=1 ; k<3 ; k++ )
-          System.out.print(angle[j+k*xx.length]+" ");
-
         System.out.println();
       }
     }              //  Close else.
@@ -624,6 +623,7 @@ public class blind {
         }              // Close if()
       }              // Close if()
     }//while Goto==1
+    err_lim=dd.val;
     System.out.println(" \n"+"******************" );
     System.out.println(" \n"  + " ERROR LIMIT="  + (dd.val) + " " );
     System.out.println(" \n"  + " REDUCED CELL" );
@@ -1207,7 +1207,76 @@ public class blind {
                           +orgmat[i-3+3*3]);
   }
    
+  /**
+   * Write out the log to the specified file.
+   */
+  public static boolean writeLog(String filename){
+    FileOutputStream fout=null;
+    StringBuffer sb=new StringBuffer(50*19);
 
+    // create the matrix file
+    sb.append("\n");
+    sb.append("  *******LAUE INDEXER*******\n");
+    sb.append("\n");
+    sb.append("    #  SEQ       XCM       YCM      WL\n");
+    sb.append(format(0,5,0)+format(0,5,0)+format(0,10,3)+format(0,10,3)
+              +format(0,10,4)+"\n");
+    /*for( int i=0 ; i<lmt.val ; i++ ){
+      System.out.println((i+1)+" "+seq[i+_seq_offset]+" ");
+      for( int j=0 ; j<3 ; j++)
+        System.out.print(angle[j+k*xx.length]+" ");
+      System.out.println();
+      }*/
+    sb.append("\n");
+    sb.append("******************\n");
+    sb.append("\n");
+    sb.append(" ERROR LIMIT="+format(err_lim,2)+"\n");
+    sb.append("\n");
+    sb.append(" REDUCED CELL\n");
+    sb.append("\n");
+    sb.append(" CELL VOLUME=  "+format(cellVol,1)+"\n");
+    sb.append("\n");
+    sb.append("*** CELL SCALARS ***\n");
+    sb.append("   "+format(0,6,2)+"  "+format(0,6,2)+"  "+format(0,6,2)+"\n");
+    sb.append("   "+format(0,6,2)+"  "+format(0,6,2)+"  "+format(0,6,2)+"\n");
+    sb.append("\n");
+    sb.append("A="+format(D1,8,3)+"   B="+format(D2,8,3)
+              +"   C="+format(D3,8,3)+"\n");
+    sb.append("ALPHA="+format(D4,7,2)+"   BETA="+format(D5,7,2)
+              +"   GAMMA="+format(D6,7,2)+"\n");
+    sb.append("\n");
+    sb.append("     #   SEQ     H     K     L\n");
+    sb.append(format(0,6,0)+format(0,6,0)+format(0,6,0)+format(0,6,0)
+              +format(0,6,0)+"\n");
+    sb.append("\n");
+    sb.append("ORIENTATION MATRIX\n");
+    for( int i=0 ; i<3 ; i++ ){
+      for( int j=0 ; j<3 ; j++ ){
+        sb.append(format(u[i+j*3],9,5)+"  ");
+      }
+      sb.append("\n");
+    }
+    
+
+    // write out the information
+    try{
+      fout=new FileOutputStream(filename);
+      fout.write(sb.toString().getBytes());
+      fout.flush();
+    }catch(IOException e){
+      return false;
+    }finally{
+      if(fout!=null){
+        try{
+          fout.close();
+        }catch(IOException e){
+          // let it drop on the floor
+        }
+      }
+    }
+
+    return true;
+  }
 
   /**
    * blind main program only using the run file
@@ -1353,5 +1422,27 @@ public class blind {
     for( int i=0 ; i<b.length ; i++ )
       System.out.print(b[i]+",");
     System.out.println("");
+  }
+
+  private static String format(double num,int dec){
+    DecimalFormat df=new DecimalFormat("0.00000");
+    df.setMinimumFractionDigits(dec);
+    df.setMaximumFractionDigits(dec);
+    if(num<0)
+      return df.format(num);
+    else
+      return " "+df.format(num);
+  }
+
+  private static String format(double num,int total, int dec){
+    DecimalFormat df=new DecimalFormat("0.00000");
+    df.setMinimumFractionDigits(dec);
+    df.setMaximumFractionDigits(dec);
+
+    StringBuffer sb=new StringBuffer(df.format(num));
+    while(sb.length()<total)
+      sb.insert(0," ");
+
+    return sb.toString();
   }
 }
