@@ -33,6 +33,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2002/10/07 14:51:36  rmikk
+ * Implemented and tested the cases where there are several
+ *    columns per group.
+ * Return an empty string in the cases there is no value
+ * The index column now reports the GROUP INDEX.  The
+ *    time index is always the same in a time slice. It can be
+ *    viewed two other places
+ *
  * Revision 1.5  2002/07/26 22:05:55  rmikk
  * Incorporated XScales to find y values and error values.
  * The XScales can now be set from outside.
@@ -57,6 +65,7 @@
  * Initial Checkin
  *
  */
+// To do -resample should be done one time
 package DataSetTools.viewer.Table;
 
 
@@ -350,12 +359,15 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    { 
      if( GroupIndx < 0 )
          return -1;
+     int n=1;
+     if( err) n++;
+     if(ind) n++;
      for( int r = 0; r < MaxRow; r++ )
          for( int c = 0; c < MaxCol; c++ )
             if( RC_to_Group[ r * MaxCol + c] == GroupIndx )
             { 
                if( c <= tMaxcol )
-                  return c - tMincol;
+                  return n*(c - tMincol);
             }
       return -1;
    }
@@ -370,9 +382,9 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       int Grp = getGroup( row, column );
 
       if( Grp < 0 )
-         return new Integer( 0 );
+         return "";
       if( Grp >= DS.getNum_entries() )
-         return new Integer( 0 );
+         return "";
       //XScale xscl =DS.getData_entry( Grp ).getX_scale();
      // float[] xvals = DS.getData_entry( Grp ).getX_scale().getXs();
 
@@ -407,18 +419,18 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       XScale xscl;
       xscl = db.getX_scale();
       int index = xscl.getI( Time );
-      if( xscl.getX( index) != Time)
-         
-        if( index > 0)
+      if( index > 0)
+        if( (xscl.getX( index)-Time) > xscl.getX( index-1)-Time )
           index = index -1;
-       
-
+     
+      if( java.lang.Math.abs( Time -xscl.getX(index))<= 1E-5*java.lang.Math.abs(Time))
+        return "";
       if( field == 0 )
          yvals = db.getY_values();
       else if( field == 1 && err )
          yvals = db.getErrors();
       else
-         return new Integer(index);
+         return new Integer(Grp);//returns group index instead of time index
        
 
       if( index < 0 )
