@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.33  2003/06/19 16:19:02  bouzekc
+ * Added javadoc tutorial on how to create the parameter table.
+ * Modified convertXMLToParameters to more accurately deal with
+ * parameter validation.  Added a method to automatically link the
+ * Wizard's Forms' parameters using a given parameter table.
+ *
  * Revision 1.32  2003/06/18 22:47:43  bouzekc
  * Fixed potential bug with validating File parameters from
  * a loaded .wsf file.
@@ -193,6 +199,61 @@ import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
  *  simple help system. Help messages should be set for each form
  *  that is used in a particular Wizard application, as well as for
  *  the Wizard itself.
+ *  
+ *  <u>HOW TO CREATE THE PARAMETER TABLE</u>
+ *  By Chris Bouzek
+ *
+ *  The parameter table is used to coordinate the Forms for this Wizard.
+ *
+ *  The referential links are arranged in a tabular format.
+ *  Suppose that we have a Wizard with three Forms:
+ * 
+ *  LoadMultiHistogramsForm, named lmhf
+ *  TimeFocusGroupForm, named tfgf
+ *  SaveAsGSASForm, named sagf
+ *
+ *  Suppose that the parameters on these forms are linked as follows:
+ *  lmhf parameter 5 = tfgf parameter 0
+ *  tfgf parameter 61 = sagf parameter 0
+ *  lmhf parameter 6 = sagf parameter 1
+ *  lmhf parameter 0 = sagf parameter 2
+ *  lmhf parameter 2 = sagf parameter 3
+ *
+ *  Now, if we consider a table with the rows set as the Form indices, the 
+ *  columns set as the parameter number indices, and the cells of the table as 
+ *  the actual parameter numbers to link, it would look like this:
+ * 
+ *    lmhf    tfgf    sagf
+ *  |----------------------|
+ *  |   5   |   0   | -1   |
+ *  |----------------------|
+ *  |  -1   |  61   |  0   |
+ *  |----------------------|
+ *  |   6   |  -1   |  1   |
+ *  |----------------------|
+ *  |   0   |  -1   |  2   |
+ *  |----------------------|
+ *  |   2   |  -1   |  3   |
+ *  |----------------------|
+ *
+ *  The indices are accessed in the following manner: [rowIndex][columnIndex]:
+ *  You must place the actual parameter number within the integer array.
+ *  For example, to set the link between LoadMultiHistogramForm's 5th 
+ *  parameter into TimeFocusGroupForm's 0th parameter, use the following:
+ *  (assuming fpi has already been declared as a two-dimensional integer 
+ *  array of sufficient size):
+ * 
+ *  fpi[0][0] = 5;
+ *  fpi[0][1] = 0;
+ *
+ *  Alternately, you may create the entire table  using Java's array 
+ *  initialization scheme, as shown:
+ * 
+ *   int fpi[][] = { {5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3} };
+ *
+ *   DON'T put a row of -1's in the parameter table.  There is no point to it, 
+ *   since you are supposed to be linking parameters, so linking no parameters 
+ *   at all makes no sense.
  *
  *  @see Form
  */
@@ -587,14 +648,22 @@ public abstract class Wizard implements PropertyChangeListener{
           else
             curParam.setValue(paramValue);
 
-          //get/set the parameter validity
+          //get/set the parameter validity.  We will get the value from the
+          //file first.  For some parameters, if it is valid, we will double 
+          //check to be sure that it is indeed valid.  If it is not, we set 
+          //it false.
+
+          validStartInd = xml.indexOf(VALIDSTART);
+          validEndInd = xml.indexOf(VALIDEND);
+          paramValidity = xml.substring(validStartInd + VALIDSTART.length(),
+                                      validEndInd);
+          curParam.setValid(new Boolean(paramValidity).booleanValue());
+
           if(curParam instanceof DataSetPG)
             curParam.setValid(false);  //DataSets not valid
           else if((curParam instanceof BrowsePG))
           { 
-            if(new File(curParam.getValue().toString()).exists())
-              curParam.setValid(true);
-            else
+            if(!(new File(curParam.getValue().toString()).exists()))
               curParam.setValid(false);
           }
           else if(curParam instanceof ArrayPG || curParam instanceof VectorPG)
@@ -602,8 +671,8 @@ public abstract class Wizard implements PropertyChangeListener{
             Vector v = (Vector)(curParam.getValue());
             if(v == null || v.isEmpty())
               curParam.setValid(false);
-           else{  //assume it is valid, then test that assumption
-              curParam.setValid(false);
+           else{  //Test the assumption
+              //curParam.setValid(true);
               for(int k = 0; k < v.size(); k++){
                 if( !(new File( v.elementAt(k).toString() ).exists()) ){
                   curParam.setValid(false);
@@ -613,14 +682,14 @@ public abstract class Wizard implements PropertyChangeListener{
             }
           }
 
-          else //some other form of simple PG that we can easily validate
+          /*else //some other form of simple PG that we can easily validate
           {
             validStartInd = xml.indexOf(VALIDSTART);
             validEndInd = xml.indexOf(VALIDEND);
             paramValidity = xml.substring(validStartInd + VALIDSTART.length(),
                                         validEndInd);
             curParam.setValid(new Boolean(paramValidity).booleanValue());
-          }
+          }*/
 
           //find the index of the ending for the parameter, e.g. </DataDir>
           typeEnd = "</" + ((IParameterGUI)curParam).getType() + ">";
@@ -1222,6 +1291,63 @@ public abstract class Wizard implements PropertyChangeListener{
            new ParameterViewer(iparam).showParameterViewer();
          index++;
        }  
+    }
+
+    /**
+     *  Method to handle linking of parameters using the paramIndex table.
+     *  Instructions for creating this table are at the top of the Wizard.
+     *  Note that the Forms must be added before this method will work.
+     *
+     *  @param  paramTable                The table of parameters to link
+     *                                    together.
+     */
+    public void linkFormParameters(int[][] paramTable){
+      //multiple for loops: probably somewhat slow, but it
+      //works and is relatively easy to understand
+      int numForms, numParamsToLink, nonNegFormIndex, nonNegParamIndex;
+      numForms = paramTable[0].length;  //the columns in paramTable
+      numParamsToLink = paramTable.length;  //the rows in paramTable
+
+      //find the first paramTable[row][col] != 0 parameter index
+
+      for(int rowIndex = 0; rowIndex < numParamsToLink; rowIndex++){
+        //find the first paramTable[row][col] >= 0 parameter index.  We have to 
+        //do this before going through and linking parameters.  Otherwise, we 
+        //might "lose" some.
+        nonNegParamIndex = nonNegFormIndex = -1;  //init for each iteration
+        for(int formIndex = 0; formIndex < numForms; formIndex++){
+          if(paramTable[rowIndex][formIndex] >= 0){
+            nonNegParamIndex = paramTable[rowIndex][formIndex];
+            nonNegFormIndex = formIndex;
+            break;
+          }
+        }
+        //The next bit of code handles something which should not happen:
+        //a row of negative numbers in the table.
+        if(nonNegParamIndex < 0)
+          continue;  //kick to the top of the loop
+        
+        for(int colIndex = 0; colIndex < numForms; colIndex++){
+          if(paramTable[rowIndex][colIndex] >= 0){  //don't try to link a -1
+            //although this is probably not a big deal, don't try to link the
+            //same parameter on a given single Form
+            if(nonNegFormIndex != colIndex){
+              System.out.print("Linking " + getForm(nonNegFormIndex) +": ");
+              System.out.print(nonNegParamIndex + ": ");
+              System.out.print(
+                getForm(nonNegFormIndex).getParameter(nonNegParamIndex).getName());
+              System.out.print(" with " + getForm(colIndex) +": ");
+              System.out.print(paramTable[rowIndex][colIndex] + ": ");
+              System.out.println(
+                getForm(nonNegFormIndex).getParameter(nonNegParamIndex).getName());
+
+              getForm(colIndex).setParameter( 
+                getForm(nonNegFormIndex).getParameter(nonNegParamIndex),
+                  paramTable[rowIndex][colIndex]);
+            }
+          }
+        }
+      }
     }
 
     
