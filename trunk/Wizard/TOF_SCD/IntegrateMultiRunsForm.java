@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.20  2003/07/14 15:35:09  bouzekc
+ * Made run numbers parameter non-constant in all cases.
+ *
  * Revision 1.19  2003/07/09 14:20:11  bouzekc
  * No longer has a specific default directory for the SCD
  * instprm.dat file.
@@ -256,7 +259,7 @@ public class IntegrateMultiRunsForm extends Form {
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
-        new int[]{ 0, 1, 2, 3, 5, 8 }, new int[]{ 4, 6, 7, 9 }, new int[]{ 10 } );
+        new int[]{ 0, 1, 3, 5, 8 }, new int[]{ 2, 4, 6, 7, 9 }, new int[]{ 10 } );
     } else {
       setParamTypes( 
         null, new int[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, new int[]{ 10 } );
