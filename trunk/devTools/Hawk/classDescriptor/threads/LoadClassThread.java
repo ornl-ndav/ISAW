@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:50:18  bouzekc
+ * Documented file using javadoc statements.
+ * Added field selectedProject which holds a reference to the Project object to
+ * add the Interface objects created to.
+ *
  * Revision 1.1  2004/02/07 05:10:27  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -45,35 +50,50 @@ import java.util.Vector;
 import devTools.Hawk.classDescriptor.gui.frame.CreateNewProjectGUI;
 import devTools.Hawk.classDescriptor.gui.frame.ProgressGUI;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
+import devTools.Hawk.classDescriptor.modeledObjects.Project;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class is used with the class CreateNewProjectGUI.  This class takes .class and .jar files 
+ * from the CreateNewProjectGUI object's JList and loads them to get information about the class 
+ * specified to make Interface objects.  This class loads these files in a separate thread so the gui 
+ * doesn't seem to freeze.
+ * @author Dominic Kramer
  */
 public class LoadClassThread extends Thread
 {
+	/**
+	 * The CreateNewProjectGUI object associated with this thread.
+	 */
 	protected CreateNewProjectGUI gui;
-	
+	/**
+	 * The window showing the progress of this thread.
+	 */
 	protected ProgressGUI progress;
+	protected Project selectedProject;
 	
-	public LoadClassThread(CreateNewProjectGUI GUI)
+	/**
+	 * This creates a new thread in which the .class and .jar files are loaded to make Interface 
+	 * objects.
+	 * @param GUI
+	 */
+	public LoadClassThread(Project pro, CreateNewProjectGUI GUI)
 	{
 		gui = GUI;
+		selectedProject = pro;
 		
 		progress = new ProgressGUI(0,gui.numberOfClassesToLoad(),"Loading the Classes");
 		progress.setVisible(true);
 		
 		System.out.println("#="+gui.numberOfClassesToLoad());
 	}
-	
+		
 	/**
-	 * This takes a filename from fileVector and convertes it into an Interface and
-	 * puts it in the Vector interfaceVec.
+	 * This takes a filename from fileVector from the CreateNewProjectGUI and convertes 
+	 * it into an Interface and puts it in the Vector interfaceVec.  This method is called when 
+	 * you call the start() method to start the thread.
 	 */
 	public void run()
-	{
+	{		
 		Vector fileVec = new Vector();
 		for (int i=0; i<gui.getModel().size(); i++)
 			fileVec.add((String)gui.getModel().get(i));
@@ -87,17 +107,16 @@ public class LoadClassThread extends Thread
 
 		if (gui.createNewProject())
 		{
-			if ( ((String)(gui.getProjectSelectorJPanel().getModel().elementAt(0))).equals("No projects listed") )
+			if ( gui.getProjectSelectorJPanel().noProjectsListed())
 			{
-				gui.getProjectSelectorJPanel().getProjectVec().remove(0);
 				gui.getProjectSelectorJPanel().getModel().remove(0);
 			}
-				
-			gui.getProjectSelectorJPanel().getProjectVec().add(gui.getCreatedProject());
-			gui.getProjectSelectorJPanel().getModel().addElement(gui.getCreatedProject().getProjectName());
+
+			gui.getProjectSelectorJPanel().getModel().addElement(gui.getCreatedProject());
+			gui.getProjectSelectorJPanel().setNoProjectsListed(false);
 		}
 		else
-			gui.getProjectSelectorJPanel().setSelectedProjectsName(gui.getCreatedProject().getProjectName());
+			selectedProject.setProjectName(gui.getCreatedProject().getProjectName());
 				
 		gui.disposeAndShowErrorBox();
 		if (!progress.isCancelled())
