@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/02/04 21:37:14  dennis
+ * Added getDocumentation() method. (Chris Bouzek)
+ *
  * Revision 1.5  2002/11/27 23:30:33  pfpeterson
  * standardized header
  *
@@ -138,6 +141,61 @@ public class FlightPathCorrection extends    GenericTOF_DG_Spectrometer
     addParameter( new Parameter( "Create new DataSet?", new Boolean(false) ) );
   }
 
+ /* ---------------------- getDocumentation --------------------------- */
+ /**
+ *  Returns the documentation for this method as a String.  The format
+ *  follows standard JavaDoc conventions.
+ */
+ public String getDocumentation()
+ {
+   StringBuffer s = new StringBuffer("");
+   s.append("@overview This operator does an energy dependent flight path ");
+   s.append("correction to a DataSet.\n");
+   s.append("@assumptions The input DataSet's X units must be time values.\n");
+   s.append("The DataSet must not be empty or null.\n");
+   s.append("The new incident energy must be valid.\n");
+   s.append("Furthermore, each data entry must have a detector position ");
+   s.append("associated with it.\n");
+   s.append("@algorithm First this operator gets the data entries and the ");
+   s.append("detector position associated with each entry.\n");
+   s.append("Then it finds the range of final velocities and creates a ");
+   s.append("table of final path lengths.\n");
+   s.append("Next it makes a table of fpcorr values for velocities from the ");
+   s.append("minimum velocity to the maximum velocity.\n");
+   s.append("Finally, for each spectrum, it modifies each time channel to ");
+   s.append("compensate for the flight path correction and adds an entry to ");
+   s.append("the DataSet's log indicating that an energy dependent flight ");
+   s.append("path correction was applied\n");
+   s.append("Note: The calculation of the flight path correction is done by ");
+   s.append("the static method ");
+   s.append("DataSetTools.math.tof_data_calc.getEfficiencyFactor that was ");
+   s.append("adapted from Chun Loong's FORTRAN data analysis codes.  In ");
+   s.append("principle, the flight path correction alters the effective ");
+   s.append("flight path for each time bin.  That is, the final velocity ");
+   s.append("for time t should be calculated as:\n\n");
+   s.append("v_final(t)=(d+fpcorr(t))/t\n\n");
+   s.append("This operator instead adjusts the value of the time bin ");
+   s.append("boundaries, t, using:\n\n");
+   s.append("t = t * d / (d + fpcorr(t))\n\n");
+   s.append("and so will give the same values for v_final:\n\n");
+   s.append("v_final(t) = d / ( t * d /(d + fpcorr(t)) )\n");
+   s.append("@param ds DataSet to do the flight path correction for.\n");
+   s.append("@param make_new_ds Flag that determines whether a new DataSet ");
+   s.append("is constructed, or the Data blocks of the original DataSet are ");
+   s.append("just altered.\n");
+   s.append("@return If make_new_ds is true, this returns a new DataSet ");
+   s.append("with adjusted time channels, otherwise it just returns the ");
+   s.append("same DataSet with adjusted time channels.\n");
+   s.append("@error Returns an error if the input DataSet is null.\n");
+   s.append("@error Returns an error if the input DataSet's X units are not ");
+   s.append("in time values\n");
+   s.append("@error Returns an error if the DataSet is empty.\n");
+   s.append("@error Returns an error if the new incident energy is invalid.\n");
+   s.append("@error Returns an error if any data entry does not have a ");
+   s.append("detector position associated with it.\n");
+   return s.toString();
+ }  
+  
  /* ----------------------------- getResult ------------------------------ */ 
  /** 
   * 
@@ -276,6 +334,11 @@ public class FlightPathCorrection extends    GenericTOF_DG_Spectrometer
                                                                // and call it
      FlightPathCorrection op = new FlightPathCorrection( ds, true );
      Object obj = op.getResult();
+     
+     /*--- added by Chris Bouzek ----*/
+     System.out.println("Documentation: " + op.getDocumentation());
+     /*------------------------------*/
+     
      if ( obj instanceof DataSet )                   // we got a DataSet back
      {                                               // so show it and original
        DataSet new_ds = (DataSet)obj;
