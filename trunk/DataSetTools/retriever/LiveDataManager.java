@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2001/08/09 15:24:06  dennis
+ *  Put debug prints in "if (debug_retriever)" blocks.
+ *
  *  Revision 1.11  2001/08/08 14:01:40  dennis
  *  Improved handling of list of ActionListeners and sending messages
  *  to ActionListeners.
@@ -119,6 +122,9 @@ public class LiveDataManager extends    Thread
                                                       // automatically updated
   private int               time_ms     = 3*MIN_DELAY*1000;
   private int               error_flag  = NO_CONNECTION; 
+
+  private String last_data_name = "NONE";
+
 
 /* ----------------------------- Constructor ----------------------------- */
 /**
@@ -357,11 +363,26 @@ public class LiveDataManager extends    Thread
                                                     // end sooner if time_ms
                                                     // is altered. 
 
-       if (  retriever.numDataSets() != data_sets.length ) 
+       int n_ds = retriever.numDataSets();
+       if (  n_ds != data_sets.length ) 
          SetUpLocalCopies();                               
 
+       else if ( n_ds != error_flag )
+       {
+         error_flag = n_ds;
+         send_message(  "Run 1: "+STATUS_CHANGED );
+       }
+
+       boolean new_runfile = false;
+       String name = retriever.getDataName();
+       if ( !name.equals( last_data_name ) )
+       {
+         last_data_name = name;
+         new_runfile = true; 
+       }
+
        for ( int i = 0; i < data_sets.length; i++ )
-         if ( !ignore[i] )
+         if ( !ignore[i] || new_runfile )
            UpdateDataSetNow( i );
      
      }
@@ -391,7 +412,7 @@ public class LiveDataManager extends    Thread
     if ( retriever == null )
     {
       error_flag = NO_CONNECTION;
-      send_message( STATUS_CHANGED );
+      send_message( "SetUpLocalCopies 1: "+ STATUS_CHANGED );
     }
 
     else
@@ -401,7 +422,7 @@ public class LiveDataManager extends    Thread
       if ( error_flag != num_ds )
       {
         error_flag = num_ds; 
-        send_message( STATUS_CHANGED );
+        send_message(  "SetUpLocalCopies 2: "+STATUS_CHANGED );
       }
 
       if ( num_ds < 0 )    
@@ -434,9 +455,11 @@ public class LiveDataManager extends    Thread
           data_sets[i] = retriever.getDataSet(i);
           ignore[i]    = true;
         }
+        send_message(  "SetUpLocalCopies 3: "+STATUS_CHANGED );
       }
 
-      else                                              // refresh our existing
+      else if ( num_ds > 0 )
+      {                                                 // refresh our existing 
         for ( int i = 0; i < num_ds; i++ )              // lists
         {
           ds_type[i]   = retriever.getType(i);
@@ -445,8 +468,8 @@ public class LiveDataManager extends    Thread
           data_sets[i].copy( temp_ds );                  // copy notifies any
                                                          // observers of the ds
         }
-
-      send_message( STATUS_CHANGED );
+        send_message(  "SetUpLocalCopies 4: "+STATUS_CHANGED );
+      }
     }
   }
 

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2001/08/09 15:24:06  dennis
+ *  Put debug prints in "if (debug_retriever)" blocks.
+ *
  *  Revision 1.2  2001/08/07 21:34:00  dennis
  *  Added WRONG_SERVER_TYPE error code.
  *
@@ -160,9 +163,12 @@ abstract public class RemoteDataRetriever extends    Retriever
     catch( Exception e )
     {
       tcp_io = null;
-      System.out.println( "RemoteDataRetriever CONNECTION TO " +
-                           remote_machine + " FAILED ON PORT " + port );
-      System.out.println( "Exception is " +  e );
+      if ( debug_retriever )
+      {
+        System.out.println( "RemoteDataRetriever CONNECTION TO " +
+                             remote_machine + " FAILED ON PORT " + port );
+        System.out.println( "Exception is " +  e );
+      }
       return false;
     }
   }
@@ -182,7 +188,8 @@ abstract public class RemoteDataRetriever extends    Retriever
       }
       catch ( Exception e )
       {
-        System.out.println( "Exception in RemoteDataRetriever.Exit():" + e );
+        if ( debug_retriever )
+          System.out.println( "Exception in RemoteDataRetriever.Exit():" + e );
       }
 
       tcp_io = null;
@@ -206,30 +213,41 @@ abstract public class RemoteDataRetriever extends    Retriever
  */
  synchronized protected Object getObjectFromServer( String command )
  {
-    System.out.println("getObjectFromServer called with " + command );
+    if ( debug_retriever )
+      System.out.println("getObjectFromServer called with " + command );
+
     if ( tcp_io == null )
       MakeConnection();
 
     if ( tcp_io == null )
     {
-      System.out.println("RemoteDataRetriever can't send command:" + command );
-      System.out.println("TCP Connection is null to " + data_source_name );
+      if ( debug_retriever )
+      {
+        System.out.println("RemoteDataRetriever can't send command:" + command);
+        System.out.println("TCP Connection is null to " + data_source_name );
+      }
       return null;
     }
 
-    System.out.println("RemoteDataRetriever sending command:" + command );
+    if ( debug_retriever )
+      System.out.println("RemoteDataRetriever sending command:" + command );
+
     boolean request_sent = false;
 
     try
     {
-      System.out.println( "Command sent: " + command );
+      if ( debug_retriever )
+        System.out.println( "Command sent: " + command );
       tcp_io.Send( command );
       request_sent = true;
     }
     catch ( Exception e )
     {
-      System.out.println("EXCEPTION in RemoteDataRetriever:" + e );
-      System.out.println("while sending command: " + command );
+      if ( debug_retriever )
+      {
+        System.out.println("EXCEPTION in RemoteDataRetriever:" + e );
+        System.out.println("while sending command: " + command );
+      }
       tcp_io = null;                               // the connection is gone
     }
 
@@ -239,9 +257,11 @@ abstract public class RemoteDataRetriever extends    Retriever
       {
         Object obj = null;
         obj = tcp_io.Receive();
-        System.out.println( "Got " + obj );
+        if ( debug_retriever )
+          System.out.println( "Got " + obj );
 
-        System.out.println("RemoteDataRetriever finished command:" + command );
+        if ( debug_retriever )
+          System.out.println("RemoteDataRetriever finished command:"+command );
         return obj;
       }
       catch ( Exception e )
@@ -251,7 +271,8 @@ abstract public class RemoteDataRetriever extends    Retriever
       }
     }
 
-    System.out.println("RemoteDataRetriever failed command:" + command );
+    if ( debug_retriever )
+      System.out.println("RemoteDataRetriever failed command:" + command );
     return null;
   }
 
@@ -268,7 +289,9 @@ abstract public class RemoteDataRetriever extends    Retriever
  */
   protected void finalize() throws IOException
   {
-     System.out.println("Retriever finalization");
+     if ( debug_retriever )
+       System.out.println("Retriever finalization");
+
      if ( isConnected() )
        Exit();
   }

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2001/08/09 15:24:06  dennis
+ *  Put debug prints in "if (debug_retriever)" blocks.
+ *
  *  Revision 1.2  2001/08/07 21:32:51  dennis
  *  Removed default non-blank password.
  *
@@ -81,17 +84,21 @@ public class RemoteFileRetriever extends    RemoteDataRetriever
       {
         ds_type = (int[]) obj;
 
-        System.out.print("Got array of ints = ");
-        for ( int i = 0; i < ds_type.length; i++ )
-          System.out.print(" " + i );
-        System.out.println();
+        if ( debug_retriever )
+        { 
+          System.out.print("Got array of ints = ");
+          for ( int i = 0; i < ds_type.length; i++ )
+            System.out.print(" " + i );
+          System.out.println();
+        }
 
         data_set = new DataSet[ ds_type.length ];
         for ( int i = 0; i < data_set.length; i++ )
           data_set[i] = null;
       }
       else
-        System.out.println("Didn't get int[]");
+        if ( debug_retriever )
+          System.out.println("Didn't get int[]");
     }
   }
 
