@@ -1,7 +1,7 @@
 /*
  * File:  LoadMultiHistogramsForm.java
  *
- * Copyright (C) 2003, Christopher Bouzek
+ * Copyright (C) 2003, Chris M. Bouzek
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,7 +22,10 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * This work was supported by the National Science Foundation.
+ *           Chris M. Bouzek <coldfusion78@yahoo.com>
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0218882.
  *
  *
  */
@@ -48,13 +51,27 @@ import java.util.Vector;
 public class LoadMultiHistogramsForm extends Form
                               implements Serializable
 {
+
+  protected static int RUN_NUMBER_WIDTH = 5;
+
   /**
    *  Construct a LoadMultiHistogramsForm.
    *  
    */
   public LoadMultiHistogramsForm()
   {
-      super("Open multiple histograms");
+    super("Open multiple histograms");
+    this.setDefaultParameters();
+  } 
+
+  /**
+   *  Subclass constructor.
+   *  
+   */
+  protected LoadMultiHistogramsForm(String title)
+  {
+    super(title);
+    this.setDefaultParameters();
   } 
 
   /**
@@ -185,7 +202,7 @@ public class LoadMultiHistogramsForm extends Form
     IParameterGUI param;
     ArrayPG histograms, monitors;
     int run_numbers[], h_num;
-    String run_dir, inst_name, file_name, g_mask;
+    String run_dir, inst_name, file_name, g_mask, run_num;
     Operator load, mon;
     Object result, obj, mon_res;
     DataSet result_ds;
@@ -271,7 +288,12 @@ public class LoadMultiHistogramsForm extends Form
 
     for( int i = 0; i < run_numbers.length; i++ )
     {
-      file_name = run_dir + inst_name + run_numbers[i] + ".RUN";
+      //don't want to remove the leading zeroes
+      run_num = DataSetTools
+                .util
+                .Format
+                .integerPadWithZero(run_numbers[i], RUN_NUMBER_WIDTH);
+      file_name = run_dir + inst_name + run_num + ".RUN";
       load = new LoadOneHistogramDS(file_name, h_num, g_mask);
       mon = new LoadMonitorDS(file_name);
       result = load.getResult();
