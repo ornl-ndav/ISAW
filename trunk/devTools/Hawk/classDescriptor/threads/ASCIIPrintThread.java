@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 20:40:49  kramer
+ * Added code that uses the new ASCII print manager in the
+ * devTools.Hawk.classDescriptor.tools.printing package.  However, this code
+ * is currently commented out.
+ *
  * Revision 1.3  2004/03/12 19:46:19  bouzekc
  * Changes since 03/10.
  *
@@ -221,3 +226,47 @@ public class ASCIIPrintThread extends Thread
 		super.run();
 	}
 }
+
+/*
+protected ASCIIPrintingManager printManager;
+protected Vector interfaceVec;
+	
+public ASCIIPrintThread(String filename, Vector intfVec, ProgressGUI gui) throws FileNotFoundException
+{
+	printManager = new ASCIIPrintingManager(filename,gui);
+	interfaceVec = intfVec;
+}
+	
+/**
+ * This method actually does the work of writing the data.  However, do not directly 
+ * call this method.  Instead call the method start() which will in turn call this method.
+ /
+public void run()
+{
+	try
+	{
+		printManager.printSectionHeader("Introduction",0);
+		printManager.println();
+		printManager.printIntroduction(2);
+		printManager.println();
+		printManager.printSectionHeader("Package List",0);
+		printManager.println();
+		printManager.printPackageList(interfaceVec,2);
+		printManager.println();
+		printManager.printSectionHeader("UML Diagrams Organized Alphabetically",0);
+		printManager.println();
+		printManager.printUMLListAlphabetically(interfaceVec, 2);
+		printManager.println();
+		printManager.printSectionHeader("Shortened Source Code Organized Alphabetically",0);
+		printManager.println();
+		printManager.printShortenedSourceListAlphabetically(interfaceVec,2);
+		printManager.println();
+		printManager.printEndHeader(0);
+		printManager.finalizePrinting();
+	}
+	catch (Throwable t)
+	{
+		SystemsManager.printStackTrace(t);
+	}
+}
+*/
