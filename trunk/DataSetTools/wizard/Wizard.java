@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.63  2003/07/16 18:53:48  bouzekc
+ * Now saves the wizard error file in the directory the user is
+ * currently in.
+ *
  * Revision 1.62  2003/07/16 18:11:48  bouzekc
  * Now opens up the Wizard save/load dialog in whatever
  * directory the user loads the Wizard in.
@@ -1811,7 +1815,7 @@ public abstract class Wizard implements PropertyChangeListener {
         JOptionPane.showMessageDialog( 
           null,
           "An error has occurred.  A copy of the error message has been\n" +
-          "printed to a file named \"wizard.err.\" in your ISAW_HOME\n" +
+          "printed to a file named \"wizard.err.\" in the current\n" +
           "directory.  Please save the Wizard and send both the Wizard\n" +
           "Save File and the wizard.err file to your developer.\n", "ERROR",
           JOptionPane.ERROR_MESSAGE );
@@ -1819,7 +1823,7 @@ public abstract class Wizard implements PropertyChangeListener {
         initFileChooser(  );  //reset the file chooser
 
         String errFile = StringUtil.setFileSeparator( 
-            fileChooser.getCurrentDirectory(  ) + "/wizard.err" );
+            SharedData.getProperty( "user.dir" ) + "/wizard.err" );
 
         Wizard.writeASCII( new File( errFile ), e.toString(  ) );
 
