@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/10/23 18:50:42  pfpeterson
+ *  Now supports a javax.swing.filechooser.FileFilter to be specified
+ *  for browsing options. Also fixed bug where it did not automatically
+ *  switch to the data directory if no value was specified.
+ *
  *  Revision 1.2  2002/09/19 16:07:21  pfpeterson
  *  Changed to work with new system where operators get IParameters in stead of Parameters. Now support clone method.
  *
@@ -41,11 +46,13 @@
 
 package DataSetTools.parameter;
 import javax.swing.*;
+import javax.swing.filechooser.*;
 import java.util.Vector;
 import java.lang.String;
 import java.beans.*;
 import java.io.File;
 import DataSetTools.components.ParametersGUI.*;
+import DataSetTools.util.SharedData;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -59,6 +66,7 @@ public class BrowsePG extends ParameterGUI{
 
     protected StringEntry innerEntry = null;
     protected JButton     browse     = null;
+    protected FileFilter  filter     = null;
 
     // ********** Constructors **********
     public BrowsePG(String name, Object value){
@@ -76,6 +84,10 @@ public class BrowsePG extends ParameterGUI{
         this.type=TYPE;
         this.initialized=false;
         this.ignore_prop_change=false;
+        if(this.value==null || value.toString().length()<=0){
+          String datadir=SharedData.getProperty("Data_Directory");
+          this.setValue(datadir);
+        }
     }
 
     // ********** IParameter requirements **********
@@ -138,7 +150,7 @@ public class BrowsePG extends ParameterGUI{
         innerEntry.addPropertyChangeListener(IParameter.VALUE, this);
         browse=new JButton("Browse");
         browse.addActionListener(new BrowseButtonListener(innerEntry,
-                                              BrowseButtonListener.DIR_ONLY));
+                                   BrowseButtonListener.DIR_ONLY,this.filter));
         entrywidget=new JPanel();
         entrywidget.add(innerEntry);
         entrywidget.add(browse);
@@ -164,6 +176,13 @@ public class BrowsePG extends ParameterGUI{
         if(this.browse!=null){
             this.browse.setVisible(enabled);
         }
+    }
+
+    /**
+     * Set the FileFilter to be used when the browse button is pressed
+     */
+    public void setFilter( FileFilter filefilter){
+        this.filter=filefilter;
     }
 
     static void main(String args[]){
@@ -206,6 +225,7 @@ public class BrowsePG extends ParameterGUI{
         BrowsePG bpg=new BrowsePG(this.name,this.value,this.valid);
         bpg.setDrawValid(this.getDrawValid());
         bpg.initialized=false;
+        bpg.filter=this.filter;
         return bpg;
     }
 }
