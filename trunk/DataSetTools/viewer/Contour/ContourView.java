@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.44  2004/05/14 15:04:55  rmikk
+ *  Removed unused variables
+ *
  *  Revision 1.43  2004/03/15 23:57:40  dennis
  *  Changed some instances to static methods to be through the
  *  class name instead of an instance.
@@ -1186,7 +1189,6 @@ public class ContourView extends DataSetViewer
       IAxisHandler Axis1, Axis2, Axis3;
       System.out.println("ds size x_units="+ds.getNum_entries()+ds.getX_units());
       Data D = ds.getData_entry( 960);
-      NexIO.NxNodeUtils nd= new NexIO.NxNodeUtils();
       //System.out.println("x="+nd.Showw( D.getX_scale().getXs()));
       //System.out.println("y="+nd.Showw( D.getY_values()));
       if( Choice1 == 0)
@@ -1213,7 +1215,6 @@ public class ContourView extends DataSetViewer
     for( int kk=0;kk<5;kk++)
       System.out.println( Axis1.getValue(0,kk)+","+Axis2.getValue(0,kk)+
               ","+Axis3.getValue(0,kk));
-    ViewerState vs = new ViewerState();
     
     ContourView cv = new ContourView( ds, null ,Axis1,Axis2,Axis3);
     jf.getContentPane().setLayout( new GridLayout(1,1));

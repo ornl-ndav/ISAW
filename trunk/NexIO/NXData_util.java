@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2004/05/14 15:03:27  rmikk
+ * Removed unused variables
+ *
  * Revision 1.24  2004/03/15 19:37:53  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -214,11 +217,10 @@ public class NXData_util{
       Res[0] = ( ( Long )X ).floatValue();
       return Res;
     }else{
-      String S = "";
       
-      S = X.getClass().toString();
-      if( X instanceof Object[] )
-        S = ( ( ( Object[] )X )[ 0 ] ).getClass().toString();
+     // S = X.getClass().toString();
+     // if( X instanceof Object[] )
+     //   S = ( ( ( Object[] )X )[ 0 ] ).getClass().toString();
       
       return null;
     }
@@ -335,17 +337,16 @@ public class NXData_util{
     float distance[]     = null;
     float theta[]        = null;
     float Raw_Angle[]    = null;
-    float efficiency;
-    float Delta_2Theta[] = null;
+   // float efficiency;
+    //float Delta_2Theta[] = null;
     float Total_Count[]  = null;
     float phi[]          = null;
     float slot[]         = null;
     float crate[]        = null;
     float input[]        = null;
-    int   Time_Field[]   = null;
     int   Group_ID[]     = null;
 
-    efficiency = -1;
+    //efficiency = -1;
     NxNode nx, ndis;
     if( detNode == null )
       return;
@@ -393,7 +394,6 @@ public class NXData_util{
 
     }
 
-    NxNodeUtils nut = new NxNodeUtils();
     
     nx = ( detNode.getChildNode( "solid_angle" ) );
     
@@ -436,9 +436,9 @@ public class NXData_util{
       X = nx.getNodeValue();
       Float ff = DD.cnvertoFloat( X ); //???????????
       
-      if( ff != null )
-        if( ff.floatValue() != Float.NaN )
-          efficiency = ff.floatValue();
+      //if( ff != null )
+       // if( ff.floatValue() != Float.NaN )
+      //    efficiency = ff.floatValue();
     }
 
     nx = detNode.getChildNode( "raw_angle" );
@@ -519,10 +519,8 @@ public class NXData_util{
           DB.setAttribute( new IntAttribute( Attribute.INPUT,
                                              (int)(input[index-start_index])));
 
-      float d, p, t, s,ra;
-      int   T; 
-
-      T = 0;
+      float d, p, t;
+  
       d = p = t = 0.0f;
       if( distance != null )if( index - start_index < distance.length )
         d = distance[ index - start_index ];
@@ -785,10 +783,7 @@ public class NXData_util{
      }
      xlength = nx;
      
-     int i;
      Data newData;
-     boolean done = false;
-     float yval = fdata[ 0 ];
      float yvals[];
 
      if( debug )

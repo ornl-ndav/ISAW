@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/05/14 15:03:52  rmikk
+ * Removed unused variables
+ *
  * Revision 1.9  2004/02/14 17:49:57  rmikk
  * duration is now in NXentry and has units of seconds
  *
@@ -82,7 +85,6 @@ public class NxWriteEntry{
    * Assumes that the NxMonitor and NxData node have already been set
    */
   public boolean processDS( NxWriteNode node, DataSet DS){
-    NxNodeUtils nu = new NxNodeUtils();
     NxData_Gen ne = new NxData_Gen();
     
     int ranks[],intval[];

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2004/05/14 15:03:27  rmikk
+ * Removed unused variables
+ *
  * Revision 1.20  2004/03/15 03:36:01  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -276,7 +279,6 @@ public class NxNodeUtils{
    * test array for parse dates
    */
   public static void main( String args[] ){
-    Object X;
     String[] ss = {"abc", "cde", "efg"};
     
     System.out.println( "String Arry=" + StringUtil.toString( ss ) );
@@ -321,7 +323,7 @@ public class NxNodeUtils{
   }
   
   private static int getNumericStart( String S){
-     int n=0;
+ 
      boolean decimalDone = false, expOn = false, leadSign=true;
 
      for( int i = 0; i< S.length(); i++){
@@ -381,7 +383,6 @@ public class NxNodeUtils{
 
 
   public static float AngleConversionFactor( String OldUnits ){ //base radians
-    boolean hasDegree = false;
     
     if( ";rad;radian;r;".indexOf( ";" + OldUnits + ";" ) >= 0 )
       return 1.0f;

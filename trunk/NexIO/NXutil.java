@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2004/05/14 15:03:26  rmikk
+ * Removed unused variables
+ *
  * Revision 1.2  2003/12/15 02:29:12  bouzekc
  * Removed unused imports.
  *
@@ -328,7 +331,6 @@ public class NXutil{
       Hashtable direc=null;
       Hashtable inner_direc=null;
       Enumeration keys=null;
-      Enumeration inner_keys=null;
 
 
       file=new CNexusFile(filename,CNexusFile.NXACC_READ);

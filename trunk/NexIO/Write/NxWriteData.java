@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/05/14 15:03:51  rmikk
+ * Removed unused variables
+ *
  * Revision 1.10  2004/03/15 03:36:02  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -118,9 +121,7 @@ public class NxWriteData{
   public boolean processDS( NxWriteNode nodeEntr ,  NxWriteNode nxInstr ,  
                             DataSet DS ,    boolean makelinks ){
 
-    int rank1[], intval[], i, j, kk;
-    char cc = 0;
-    NxWriteNode node;
+    int  i, j;
     errormessage = " Null inputs to Write Data";
     if( nodeEntr == null )
       return true;
@@ -131,16 +132,12 @@ public class NxWriteData{
     if( DS == null )
       return true;
     errormessage = "";
-  
-    int[] gridIDs =  getAreaGrids( DS);
     
     //----- process Gridded data  --------------------------
     int nNXdatas= processDSgrid( nodeEntr, nxInstr, DS, makelinks);
 
     //----------- process pixels as singleton's in one NXdata per XScale----------
-    float xvals[] = null;
-    float xvalsPrev[] = null;
-    float data[] = null;
+    
     int k = nNXdatas;
     for( j=0; j < DS.getNum_entries() ; j++){
       Data DBM = DS.getData_entry( j );
@@ -569,8 +566,8 @@ private float[] UnionF( float[] Array,float[] newElement){
             crate= new int[NDet],
             input = new int[NDet],
             id    = new int[NDet];
-      float [][][] TotCount = new float[NDet][grid1.num_rows()]
-                  [grid1.num_cols()];
+    //  float [][][] TotCount = new float[NDet][grid1.num_rows()]
+    //              [grid1.num_cols()];
       int det=0;
       float[] xvals = d.getX_scale().getXs();
       float[] row_cm = new float[ grid1.num_rows()];
@@ -779,8 +776,6 @@ private float[] UnionF( float[] Array,float[] newElement){
      float[][][] errs = new float[ grid.num_rows()][grid.num_cols()][(ny_s)];
      for( int row =  1; row <= grid.num_rows(); row++)
         for( int col = 1; col <= grid.num_cols(); col++){
-          int start = (row-1)*numCols*ny_s+col-1;
-          Data db = grid.getData_entry( row, col);
           float[] yvalues =grid.getData_entry( row, col).getY_values();
           System.arraycopy( yvalues, 0, data[ row-1][col-1],0,ny_s);
           yvalues = grid.getData_entry(row,col).getErrors();
