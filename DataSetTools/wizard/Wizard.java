@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.101  2004/01/09 22:27:43  bouzekc
+ * Modified to work with both IWizardFrontEnds and IGUIWizardFrontEnds.
+ *
  * Revision 1.100  2004/01/09 15:34:29  bouzekc
  * Will now handle a null argument to wizardLoader().
  *
@@ -691,8 +694,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    */
   public int getLastValidFormNum(  ) {
     for( int i = 0; i < this.getNumForms(  ); i++ ) {
-      if( !getForm( i )
-               .done(  ) ) {
+      if( !getForm( i ).done(  ) ) {
         return i - 1;
       }
     }
@@ -761,8 +763,15 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    */
   public void executeNoGUI( String saveFile ) {
     //load the data from the file
-    loadForms( new File( saveFile ) );
-    exec_forms( forms.size(  ) - 1 );
+    File savedFile = new File( saveFile );
+
+    if( savedFile.exists(  ) ) {
+      loadForms( new File( saveFile ) );
+      exec_forms( forms.size(  ) - 1 );
+    } else {
+      SharedData.addmsg( "No file named " + saveFile + " exists." );
+      System.exit( 1 );
+    }
   }
 
   /**
@@ -812,14 +821,15 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
               System.out.print( "Linking " + getForm( nonNegFormIndex ) + ": " );
               System.out.print( nonNegParamIndex + ": " );
               System.out.print( 
-                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex ).getName(  ) );
+                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex )
+                  .getName(  ) );
               System.out.print( " with " + getForm( colIndex ) + ": " );
               System.out.print( paramTable[rowIndex][colIndex] + ": " );
               System.out.println( 
-                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex ).getName(  ) );
+                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex )
+                  .getName(  ) );
             }
-            getForm( colIndex )
-              .setParameter( 
+            getForm( colIndex ).setParameter( 
               getForm( nonNegFormIndex ).getParameter( nonNegParamIndex ),
               paramTable[rowIndex][colIndex] );
           }
@@ -896,35 +906,34 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       "#2:\t\tRun without a GUI\t\t--nogui [WizardSaveFile]\n" +
       "#3:\t\tLoad with a template or \n" +
       "\t\tpreviously saved file\t\t[WizardSaveFile]\n";
-    frontEnd = new SwingWizardFrontEnd( this );
 
-    for( int i = 0; i < this.getNumForms(  ); i++ ) {
-      getForm( i )
-        .addPropertyChangeListener( frontEnd.getFormProgressIndicator(  ) );
-    }
-
+    //no arguments, so assume it is run normally
     if( ( argv == null ) || ( argv.length == 0 ) ) {
-      //set the projects directory for relevant parameters
-      this.setBrowsePGDirectory(  );
+      createGUIInterface(  );
       frontEnd.showForm( 0 );
     } else if( argv.length == 1 ) {
       if( argv[0].equals( "--help" ) || argv[0].equals( "-h" ) ) {
         System.out.println( helpMessage );
       } else if( argv[0].equals( "--remote" ) ) {
         IamRemote = true;
+      } else if( argv[0].equals( "--nogui" ) ) {
+        if( argv.length == 1 ) {
+          frontEnd = new ConsoleWizardFrontEnd( this );
+          this.setBrowsePGDirectory(  );
+          frontEnd.showForm( 0 );
+        } else if( argv.length == 2 ) {
+          this.executeNoGUI( argv[1] );
+        } else {
+          System.out.println( helpMessage );
+        }
       } else if( argv[0].startsWith( "-" ) ) {
         //tried to specify an option with no arguments
         System.out.println( helpMessage );
       } else {
-        //assume everything is OK
+        //assume we are loading a real File in graphical mode
         this.loadForms( new File( argv[0] ) );
+        createGUIInterface(  );
         frontEnd.showLastValidForm(  );
-      }
-    } else if( argv.length == 2 ) {
-      if( argv[0].equals( "--nogui" ) ) {
-        this.executeNoGUI( argv[1] );
-      } else {
-        System.out.println( helpMessage );
       }
     } else {
       //not usable input.  Print a help message.
@@ -991,7 +1000,10 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
       //only do something if the Form is not done
       if( !f.done(  ) ) {
-        frontEnd.setFormProgressParameters( 0, "Executing " + f );
+        if( frontEnd instanceof IGUIWizardFrontEnd ) {
+          ( ( IGUIWizardFrontEnd )frontEnd ).setFormProgressParameters( 
+            0, "Executing " + f );
+        }
 
         /*if( this.IamRemote ) {
            worked = f.getResultRemotely(  );
@@ -1010,10 +1022,16 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
           break;
         }
-        frontEnd.updateWizardProgress(  );
+
+        if( frontEnd instanceof IGUIWizardFrontEnd ) {
+          ( ( IGUIWizardFrontEnd )frontEnd ).updateWizardProgress(  );
+        }
       }
     }
-    frontEnd.updateWizardProgress(  );
+
+    if( frontEnd instanceof IGUIWizardFrontEnd ) {
+      ( ( IGUIWizardFrontEnd )frontEnd ).updateWizardProgress(  );
+    }
     invalidate( end + 1 );
   }
 
@@ -1031,11 +1049,13 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     }
 
     for( int i = invalidNum; i < forms.size(  ); i++ ) {
-      getForm( i )
-        .invalidate(  );
+      getForm( i ).invalidate(  );
     }
-    frontEnd.updateFormProgress(  );
-    frontEnd.updateWizardProgress(  );
+
+    if( frontEnd instanceof IGUIWizardFrontEnd ) {
+      ( ( IGUIWizardFrontEnd )frontEnd ).updateFormProgress(  );
+      ( ( IGUIWizardFrontEnd )frontEnd ).updateWizardProgress(  );
+    }
   }
 
   /**
@@ -1221,6 +1241,21 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   }
 
   /**
+   * Sets the internal front end as a graphical interface.
+   */
+  private void createGUIInterface(  ) {
+    frontEnd = new SwingWizardFrontEnd( this );
+
+    for( int i = 0; i < this.getNumForms(  ); i++ ) {
+      getForm( i ).addPropertyChangeListener( 
+        ( ( IGUIWizardFrontEnd )frontEnd ).getFormProgressIndicator(  ) );
+    }
+
+    //set the projects directory for relevant parameters
+    this.setBrowsePGDirectory(  );
+  }
+
+  /**
    * Loads Forms from a file.  It actually just loads the saved IParameterGUI
    * values into the Wizard's Forms' parameters.  This method also sets the
    * Wizard to ignore property changes while the Forms are being loaded.  This
@@ -1308,8 +1343,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
           s.append( "<Value>" );
           obj = ipg.getValue(  );
 
-          if( ( obj == null ) || ( obj.toString(  )
-                                        .length(  ) <= 0 ) ) {
+          if( ( obj == null ) || ( obj.toString(  ).length(  ) <= 0 ) ) {
             s.append( "emptyString" );
           } else {
             s.append( obj.toString(  ) );
