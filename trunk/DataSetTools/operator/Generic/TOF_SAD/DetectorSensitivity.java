@@ -28,10 +28,20 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/07/07 20:42:05  dennis
+ * Now returns an array with two DataSets.  The first DataSet stores
+ * the detector efficiencies and the second DataSet stores the mask
+ * indicating which pixels were used.  Following the conventions of
+ * the existing SAND data reduction, the efficiencies of pixels that
+ * are either too "hot" or "dead" are set to zero.  Consequently,
+ * the mask DataSet is redundant and may be removed from later versions.
+ * Also, this operator will be altered to return a Vector of DataSets,
+ * when the main Isaw program is modified to place DataSets from a
+ * vector of Objects in the tree.
+ *
  * Revision 1.1  2003/07/05 22:11:23  dennis
  * Calculate the efficiences of pixels in a detector, for SAD data
  * reduction.
- *
  *
  */
 package DataSetTools.operator.Generic.TOF_SAD;
@@ -68,6 +78,7 @@ public class DetectorSensitivity extends GenericTOF_SAD
     super( TITLE );
   }
   
+  /* ---------------------------- constructor ---------------------------- */ 
   /** 
    *  Creates operator with title "Area Detector Sensitivity" and the 
    *  specified list of parameters. The getResult method must still be 
@@ -105,7 +116,9 @@ public class DetectorSensitivity extends GenericTOF_SAD
   }
   
   /* ------------------------ getDocumentation ---------------------------- */
- 
+  /**
+   *  Get the documentation to be displayed by the help system.
+   */ 
   public String getDocumentation()
   {
     StringBuffer Res = new StringBuffer();
@@ -167,12 +180,12 @@ public class DetectorSensitivity extends GenericTOF_SAD
     float   dead_level = ((Float)(getParameter(1).getValue())).floatValue();
     float   hot_level  = ((Float)(getParameter(2).getValue())).floatValue();
 
+    //
+    // Find the DataGrid for this detector and make sure that we have a 
+    // segmented detector. 
+    //
     DataSet eff_ds = (DataSet)ds.clone();
-                                 // Find the DataGrid for this detector and
-                                 // and make sure that we have a segmented 
-                                 // detector. 
-    System.out.println("Clone made..." );
-    IDataGrid grid = null;
+    UniformGrid grid = null;
     Data d = null;
     PixelInfoList pil;
     Attribute attr;
@@ -187,7 +200,7 @@ public class DetectorSensitivity extends GenericTOF_SAD
      if ( attr != null && attr instanceof PixelInfoListAttribute )
      {
         pil  = (PixelInfoList)attr.getValue();
-        grid = pil.pixel(0).DataGrid();
+        grid = (UniformGrid)pil.pixel(0).DataGrid();
         if ( grid.num_rows() > 1 || grid.num_cols() > 1 )
           segmented_detector_found = true;
       }
@@ -196,21 +209,18 @@ public class DetectorSensitivity extends GenericTOF_SAD
 
       data_index++;
     }
-    System.out.println("Done Looking for grid..." );
 
     if ( !segmented_detector_found )
       return new ErrorString("Need and Area Detector or LPSD");
 
-    System.out.println("Found grid..." + grid );
-                                         // throw out any detectors that don't
-                                         // belong with this detector
+    //
+    // Throw out any Data blocks that don't belong with this detector
+    //
     if ( !grid.setData_entries( eff_ds ) )
-        return new ErrorString("Can't set Data grid entries"); 
+      return new ErrorString("Can't set Data grid entries"); 
 
     for ( int i = 0; i < eff_ds.getNum_entries(); i++ )
       eff_ds.getData_entry(i).setSelected( true );
-
-    System.out.println("UN-Selected all entries..." );
 
     for ( int row = 1; row <= grid.num_rows(); row++ )
       for ( int col = 1; col <= grid.num_cols(); col++ )
@@ -220,14 +230,34 @@ public class DetectorSensitivity extends GenericTOF_SAD
         else
           grid.getData_entry( row, col ).setSelected( false );
       }
-    System.out.println("Selected entries in grid..." );
 
     eff_ds.removeSelected( true );
-    System.out.println("Removed entries not in grid, left " +
-                        eff_ds.getNum_entries() );
 
-                                         // now rebin the Data down to one bin
-                                         // we assume there is only one x_scale
+    //
+    // Remove specialty operators and un-needed attributes.  Fix up the
+    // title, labels and units.
+    //
+    eff_ds.removeAllOperators();
+    DataSetFactory.addOperators( eff_ds );
+    for ( int row = 1; row <= grid.num_rows(); row++ )
+      for ( int col = 1; col <= grid.num_cols(); col++ )
+      {
+        d = grid.getData_entry( row, col );
+        AttributeList list = new AttributeList();
+        list.addAttribute( d.getAttribute( Attribute.DETECTOR_POS )); 
+        list.addAttribute( d.getAttribute( Attribute.PIXEL_INFO_LIST )); 
+        d.setAttributeList( list );
+      }
+    eff_ds.setTitle( eff_ds.getTitle() + " Detector Efficiency" );
+    eff_ds.setX_units("number");
+    eff_ds.setX_label("Detector");
+    eff_ds.setY_units("number");
+    eff_ds.setY_label("Relative Efficiency");
+  
+    //
+    // Now rebin the Data down to one bin.  We assume there is only one 
+    // x_scale for the Data blocks from this detector.
+    //
     XScale old_scale = eff_ds.getData_entry(0).getX_scale();
     XScale new_scale = new UniformXScale( old_scale.getStart_x(),
                                           old_scale.getEnd_x(),
@@ -237,8 +267,8 @@ public class DetectorSensitivity extends GenericTOF_SAD
 
     System.out.println("Resampled entries..." );
     
-    //
-    // First calculate the total counts and average counts for all pixels 
+    // 
+    // Next, calculate the total counts and average counts for all pixels 
     //
     double sum = 0;
     for ( int row = 1; row <= grid.num_rows(); row++ )
@@ -253,7 +283,7 @@ public class DetectorSensitivity extends GenericTOF_SAD
     System.out.println("AVERAGE COUNTS PER CELL = " + average );
 
     //
-    // Second, calculate the total counts and average counts only using pixels 
+    // Calculate the total counts and average counts only using pixels 
     // whose counts are within limits set from the dead_level and hot_level.
     // Mark a selected those Data blocks that were used.  Keep track of the
     // number of dead and hot pixels. 
@@ -296,7 +326,7 @@ public class DetectorSensitivity extends GenericTOF_SAD
     System.out.println("(AFTER ACCOUNTING FOR DEAD AND HOT CELLS)" );
 
     //
-    // Third, calculate the efficiencies and errors for the selected cells 
+    // Calculate the efficiencies and errors for the selected cells 
     // and set the others to zero.  Keep track of the min and max 
     // sensitivities.
     //
@@ -332,14 +362,58 @@ public class DetectorSensitivity extends GenericTOF_SAD
     System.out.println("MIN = " + min_sens ); 
     System.out.println("MAX = " + max_sens ); 
  
+    // 
+    // Now make the "Mask" DataSet
+    //
+    DataSetFactory ds_f = new DataSetFactory( "Pixel Mask",
+                                              "number",
+                                              "Mask",
+                                              "number",
+                                              "Mask Value"      );
+    DataSet    mask_ds = ds_f.getDataSet();
+    XScale     scale = new UniformXScale(0,0,1);
+    float      y[];
+    int        id;
+    Data       new_d;
+    IPixelInfo list[];
+    UniformGrid mask_grid = new UniformGrid( grid, false );
+    for ( short row = 1; row <= mask_grid.num_rows(); row++ )
+      for ( short col = 1; col <= mask_grid.num_cols(); col++ )
+      {
+        d = grid.getData_entry(row,col);               // efficiency Data
 
+        y = new float[1];
+        if ( d.isSelected() )
+          y[0] = 1;
+        else
+          y[0] = 0;
+  
+        id = d.getGroup_ID();
+        new_d = new FunctionTable( scale, y, id );
+
+        new_d.setAttribute( d.getAttribute( Attribute.DETECTOR_POS ));
+
+        list = new IPixelInfo[1];
+        list[0] = new DetectorPixelInfo( id, row, col, mask_grid );
+        pil = new PixelInfoList( list );
+        attr = new PixelInfoListAttribute( Attribute.PIXEL_INFO_LIST, pil );
+        new_d.setAttribute( attr );
+
+        mask_ds.addData_entry( new_d );
+      }
+
+    System.out.println("Grid = " + mask_grid );
+    System.out.println("Mask Grid = " + mask_grid );
+
+    if ( !mask_grid.setData_entries( mask_ds ) )
+      return new ErrorString("Can't set the Mask grid entries");
 /*    
     Vector result = new Vector(2);
     result.addElement( eff_ds );
 */ 
-   
-    DataSet result[] = new DataSet[1];
+    DataSet result[] = new DataSet[2];
     result[0] = eff_ds;
+    result[1] = mask_ds;
   
     return result;
   }
