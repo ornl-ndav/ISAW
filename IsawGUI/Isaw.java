@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.69  2002/01/08 21:26:52  rmikk
+ *  Fixed the File filter on a Save dialog box to exclude
+ *  Run files
+ *
  *  Revision 1.68  2001/12/20 20:32:36  chatterjee
  *  Added a view menuitem Log View that will show the ancillary log SDDS file
  *  in a table. This is using the package from APS.
@@ -1111,7 +1115,7 @@ public class Isaw
             fc.setMultiSelectionEnabled( false );
             fc.addChoosableFileFilter(  new NeutronDataFileFilter( true )  ); 
             fc.addChoosableFileFilter(  new NexIO.NexusfileFilter()  );
-            fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
+           // fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
 	    Dimension d = new Dimension(650,300);
 	    fc.setPreferredSize(d);
             
