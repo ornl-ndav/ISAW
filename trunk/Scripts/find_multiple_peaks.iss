@@ -36,7 +36,6 @@ for i in run_numbers
   Display "Loading "&filename
   Echo("Finding peaks in "&filename)
   nn=load(filename,"ds")
-  Display "nn="&nn
   dsnum = nn-1
   monct=IntegGrp(ds[0],1,0,50000)
   LoadSCDCalib(ds[dsnum],calibfile,-1,"")
