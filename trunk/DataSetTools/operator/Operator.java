@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2002/02/22 20:49:26  pfpeterson
+ *  Operator reorganization.
+ *
  *  Revision 1.12  2002/01/11 22:14:56  dennis
  *  Temporarilly added names for new Abstract base classs for
  *  Generic operators for various instruments.
@@ -255,7 +258,7 @@ abstract public class Operator implements Serializable
    *  Utility function to append an extra operator category onto an array of
    *  operators.
    */
-  String[] AppendCategory( String category, String[] partial_list )
+  protected String[] AppendCategory( String category, String[] partial_list )
   {
                           // get a new array with an extra space, copy the
                           // original array and append the new category

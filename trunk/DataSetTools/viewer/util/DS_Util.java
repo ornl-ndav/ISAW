@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/02/22 20:38:17  pfpeterson
+ *  Operator reorganization.
+ *
  *  Revision 1.6  2001/07/23 16:39:26  dennis
  *  Fixed error: no longer using "==" for String comparison.
  *
@@ -64,6 +67,7 @@ import java.awt.*;
 import java.awt.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.*;
 import DataSetTools.util.*;
 
 /**

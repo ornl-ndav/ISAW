@@ -1,5 +1,6 @@
 package DataSetTools.viewer.Table;
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.*;
 import DataSetTools.dataset.*;
 import java.util.*;
 public class MOperator extends DataSetOperator

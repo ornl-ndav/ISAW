@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/02/22 20:45:03  pfpeterson
+ * Operator reorganization.
+ *
  * Revision 1.1  2001/11/27 18:23:57  dennis
  * Initial version of sample operator.
  *
@@ -39,6 +42,8 @@
 package Operators;
 
 import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.Special.*;
+import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;

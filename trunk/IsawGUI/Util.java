@@ -22,6 +22,9 @@ import javax.swing.table.*;
 import javax.swing.*;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.Load.*;
+import DataSetTools.operator.Generic.Save.*;
+
 /**
  * Utility class for ISAW. 
  *

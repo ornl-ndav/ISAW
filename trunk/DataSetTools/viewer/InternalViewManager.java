@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2002/02/22 20:37:10  pfpeterson
+ *  Operator reorganization.
+ *
  *  Revision 1.16  2001/08/14 21:51:05  dennis
  *  The destroy() method now sends closing event instead of closing
  *  the view manager itself..  Added method free_resouces() to
@@ -69,6 +72,9 @@ package DataSetTools.viewer;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.*;
+import DataSetTools.operator.DataSet.DS_Math.DataSetOp.*;
+import DataSetTools.operator.DataSet.DS_EditList.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.viewer.util.*;

@@ -5,6 +5,9 @@
  * each selection appropriatly.
  *
  * $Log$
+ * Revision 1.18  2002/02/22 20:39:13  pfpeterson
+ * Operator reorganization.
+ *
  * Revision 1.17  2001/07/31 16:13:17  neffk
  * operates correctly on multiple DataSet objects.
  *
@@ -61,6 +64,7 @@ package IsawGUI;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.util.IObserver;
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.*;
 import DataSetTools.components.ParametersGUI.*;
 import java.awt.event.*;
 import javax.swing.*;
