@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/05/26 18:26:43  rmikk
+ * Eliminated Unused Variables
+ *
  * Revision 1.10  2004/03/15 19:33:49  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -125,13 +128,11 @@ public class JObjectParameterGUI extends    JParameterGUI
     public Parameter getParameter()
     {   
         int i;
-        String s = intText.getText();
         int dt = DataType.getSelectedIndex();
 
         if( dt < 0 )
             return parameter;
 
-        Object U[] =Array.getSelectedObjects();
 
         boolean Ar ;
 
