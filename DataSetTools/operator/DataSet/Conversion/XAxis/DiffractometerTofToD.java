@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.5  2002/07/08 20:46:03  pfpeterson
+ *  Now uses String constants in FontUtil.
+ *
  *  Revision 1.4  2002/07/02 17:06:50  pfpeterson
  *  Now uses string constants defined in IsawGUI.Isaw.
  *
@@ -126,7 +129,6 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
-import  IsawGUI.Isaw;
 
 /**
  * This operator converts a neutron time-of-flight DataSet to D-spacing.  The
@@ -214,15 +216,15 @@ public class DiffractometerTofToD extends    XAxisConversionOp
     Parameter parameter;
 
     if ( scale == null )
-      parameter = new Parameter( "Min d("+Isaw.Angstrom+")", new Float(0.0) );
+      parameter = new Parameter( "Min d("+FontUtil.ANGSTROM+")", new Float(0.0) );
     else
-      parameter = new Parameter( "Min d("+Isaw.Angstrom+")", new Float(scale.getStart_x()));  
+      parameter = new Parameter( "Min d("+FontUtil.ANGSTROM+")", new Float(scale.getStart_x()));  
     addParameter( parameter );
 
     if ( scale == null )
-      parameter = new Parameter( "Max d("+Isaw.Angstrom+")", new Float(4.0) );
+      parameter = new Parameter( "Max d("+FontUtil.ANGSTROM+")", new Float(4.0) );
     else
-      parameter = new Parameter( "Max d("+Isaw.Angstrom+")", new Float(scale.getEnd_x()));  
+      parameter = new Parameter( "Max d("+FontUtil.ANGSTROM+")", new Float(scale.getEnd_x()));  
     addParameter( parameter );
 
     parameter = new Parameter( Parameter.NUM_BINS, new Integer(2000) );
@@ -237,7 +239,7 @@ public class DiffractometerTofToD extends    XAxisConversionOp
    */
    public String new_X_label()
    {
-     return new String( "d-Spacing("+Isaw.Angstrom+")" );
+     return new String( "d-Spacing("+FontUtil.ANGSTROM+")" );
    }
 
 
