@@ -323,6 +323,8 @@ public class IntegrateMultiRunsForm extends Form
       loadName = rawDir + "/" + SCDName + runNum + ".RUN";
       loadName = StringUtil.setFileSeparator(loadName);
 
+      SharedData.addmsg("Loading " + loadName + ".");
+
       /*get the histogram from runfile retriever.
       histNum = some RunfileRetriever thing;*/
       histNum = 1;
@@ -338,8 +340,7 @@ public class IntegrateMultiRunsForm extends Form
       else
         return errorOut("LoadOneHistogramDS failed: " + obj.toString());
 
-      SharedData.addmsg("Integrating peaks for " + 
-                         histDS.toString());
+      SharedData.addmsg("Integrating peaks for " + loadName);
 
       //load the SCD calibration data
       obj = new LoadSCDCalib(histDS, calibFile,1,"").getResult();
@@ -350,7 +351,9 @@ public class IntegrateMultiRunsForm extends Form
         The "1" means that every peak will be written to the integrate.log file.*/
       matrixName = outputDir + "/ls" + expName + runNum + ".mat";
       matrixName = StringUtil.setFileSeparator(matrixName);
+
       SharedData.addmsg("Integrating run number " + runNum + ".");
+
       obj = new Integrate(histDS, integName, 
                          matrixName,
                          sliceRange, timeSliceDelta, 1,

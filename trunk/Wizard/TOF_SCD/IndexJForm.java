@@ -276,8 +276,7 @@ public class IndexJForm extends Form
 
     for(int i = 0; i < runsArray.length; i++)
     {
-      /*load the histogram and monitor for the current run. 
-        We don't want to remove the leading zeroes!*/
+      /*load the run numbers.  We don't want to remove the leading zeroes!*/
       runNum = DataSetTools
                .util
                .Format
@@ -287,6 +286,8 @@ public class IndexJForm extends Form
       matName = peaksDir + "/" + matrixFrom + runNum + ".mat";
       //make sure it is right for the system
       matName = StringUtil.setFileSeparator(matName);
+
+      SharedData.addmsg("IndexJ is updating " + peaksName + " with " + matName);
 
       //call IndexJ
       obj = new IndexJ(peaksName, matName, delta, update);
