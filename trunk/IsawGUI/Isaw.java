@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.218  2005/03/30 01:09:30  dennis
+ *  Now passes in the whole DataSet whose attributes are to
+ *  be displayed.  This modification was needed since the
+ *  redundant DataSet name attribute was removed.
+ *
  *  Revision 1.217  2005/03/06 23:36:42  dennis
  *  Changed version to 1.7.1
  *
@@ -1885,7 +1890,7 @@ public class Isaw
         
         jcui.showLog(ds);
 
-        jpui.showAttributes( ds.getAttributeList() );
+        jpui.showAttributes( ds );
 
                               //since the Operations menu is sensitive
                               //to tree selections, we have to look 
