@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2005/03/30 01:46:11  dennis
+ * Removed unneeded semicolon.
+ *
  * Revision 1.15  2005/01/11 14:42:41  rmikk
  * Eliminated unused variables
  *
@@ -140,7 +143,7 @@ public class PrintImage extends GenericSave{
 
 
   /**
-   *      Constructor for Java code
+   *   Constructor for Java code
    *   @param DS  The DataSet whose view is to be printed
    *   @param view_type The name of the view used by the ViewManager. This 
    *                    is the String that appears in Isaw's View Menu
@@ -152,11 +155,10 @@ public class PrintImage extends GenericSave{
    *                        location will be considered
    *   @param PrintOptions (not implemented yet).For options like Portrait, etc.
    */
-   public PrintImage( DataSet DS, String view_type,
-   int width, int height, String PrintName, 
-	  String PrintLocation, String PrintOptions, String orientation, int copies){
-   	  
-	  this();
+   public PrintImage( DataSet DS, String  view_type, int width, int height, 
+                      String PrintName, String PrintLocation, String PrintOptions, 
+                      String orientation, int copies){
+      this();
       parameters = new Vector();
       addParameter( new DataSetPG( "Select DataSet",DS));
 	  addParameter( new PrinterNamePG("select printer", null));
@@ -242,18 +244,14 @@ public class PrintImage extends GenericSave{
  	int copies;
  
   	public MyWindowListener(DataSetViewer DSV, String PrintName, 
-  														boolean orientation, int quality, int copies, JFrame jf)
-
-
+  				boolean orientation, int quality, int copies, JFrame jf)
   	{
-
 			this.DSV = DSV;
 			this.PrintName = PrintName;
 			this.jf = jf;
 			this.orientation = orientation;
 			this.quality = quality;
 			this.copies = copies;
-
   	}
 	
   public void windowOpened(WindowEvent winevt){
@@ -261,9 +259,8 @@ public class PrintImage extends GenericSave{
   }
  
 
-  	public void printResult(DataSetViewer DSV, String PrintLocation, String PrintName, 
-  										boolean orientation, int quality, int copies, JFrame jf){
-	
+  public void printResult( DataSetViewer DSV, String PrintLocation, String PrintName, 
+                           boolean orientation, int quality, int copies, JFrame jf){
 	
      DocFlavor myFormat = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
       Doc myDoc = null;
@@ -322,8 +319,11 @@ public class PrintImage extends GenericSave{
 	} catch (PrintException pe) {jf.dispose();
          /*return*/ new ErrorString( "Print Exception:"+ pe.toString());
         } 
-   }else{;//jf.dispose();
-       /*return*/ new ErrorString( " No Printers Found");
+   }
+   else
+   {
+      // jf.dispose();
+      // return new ErrorString(" No Printers Found");
    }
    jf.dispose();
   
