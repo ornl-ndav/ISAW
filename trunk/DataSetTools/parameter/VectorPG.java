@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2003/08/22 01:25:45  bouzekc
+ * Removed erroneous getEntryWidget() method.
+ *
  * Revision 1.24  2003/08/19 21:01:54  bouzekc
  * Removed old entrywidget reference from initGUI().
  *
@@ -226,13 +229,6 @@ public abstract class VectorPG extends ParameterGUI
   }
 
   /**
-   * @return The entrywidget associated with this ParameterGUI.
-   */
-  public JComponent getEntryWidget(  ) {
-    return vectorButton;
-  }
-
-  /**
    * Sets the value and displays these values in the associated JList.
    *
    * @param value The new value to set the VectorPG to.
@@ -347,7 +343,7 @@ public abstract class VectorPG extends ParameterGUI
    */
   public void initGUI( Vector V ) {
     if( V != null) // Usually is null so use the previous value
-         setValue ( V );
+      setValue ( V );
     GUI     = new ArrayEntryJPanel( param );
     GUI.addPropertyChangeListener( this );
     GUI.setValue( value );
