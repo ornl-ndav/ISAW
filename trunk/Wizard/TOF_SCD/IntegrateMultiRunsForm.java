@@ -28,6 +28,9 @@
  * number DMR-0218882.
  * 
  * $Log$
+ * Revision 1.38  2004/08/19 19:22:35  rmikk
+ * Now uses the Global logging facility to save the log information
+ *
  * Revision 1.37  2004/08/17 05:18:00  rmikk
  * Fixed an error in the parameters
  *
@@ -456,7 +459,10 @@ public class IntegrateMultiRunsForm extends Form {
     if( validCheck instanceof ErrorString ) {
       return validCheck;
     }
-
+    String logfile = integName;
+    int index=logfile.lastIndexOf("/");
+    logfile=logfile.substring(0,index)+"/integrate.log";
+    gov.anl.ipns.Util.Sys.SharedMessages.openLog( logfile);
     for( int i = 0; i < runsArray.length; i++ ) {
       IPNSName   = InstrumentType.formIPNSFileName( SCDName, runsArray[i] );
       loadName   = rawDir + IPNSName;
@@ -514,6 +520,7 @@ public class IntegrateMultiRunsForm extends Form {
     param.setValue( integName.toString(  ) );
     param.setValid( true );
 
+    gov.anl.ipns.Util.Sys.SharedMessages.closeLog( );
     //not really sure what to return
     return integName.toString(  );
   }
