@@ -12,6 +12,10 @@
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.8  2000/07/21 20:18:02  dennis
+ *  Added tests for null Runfile object which occurs if the file is not opened
+ *  successfully.
+ *
  *  Revision 1.7  2000/07/18 19:54:28  dennis
  *  Added flexible routines for calculating average positions from either RAW
  *  or EFFECTIVE values and optionally weighting the values by the corresponding
@@ -136,6 +140,7 @@ public class RunfileRetriever extends    Retriever
     }
     catch( Exception e ) 
     {
+      run_file = null;
       System.out.println("Exception in RunfileRetriever constructor");
       System.out.println("Exception is " +  e ); 
     }
@@ -150,6 +155,9 @@ public class RunfileRetriever extends    Retriever
  */  
   public int numDataSets()
   { 
+    if ( run_file == null )
+      return 0;
+ 
     return num_data_sets;
   }
 
@@ -169,6 +177,9 @@ public class RunfileRetriever extends    Retriever
  */ 
   public int getType( int data_set_num )
   {
+    if ( run_file == null )
+       return INVALID_DATA_SET;
+
     if ( data_set_num >= 0 && data_set_num < num_data_sets )
       return data_set_type[ data_set_num ];
     else
@@ -186,6 +197,9 @@ public class RunfileRetriever extends    Retriever
  */ 
   public int getHistogramNum( int data_set_num )
   {
+    if ( run_file == null )
+      return INVALID_DATA_SET;
+
     if ( data_set_num >= 0 && data_set_num < num_data_sets )
       return histogram[ data_set_num ];
     else
@@ -206,6 +220,9 @@ public class RunfileRetriever extends    Retriever
  */
  public DataSet getFirstDataSet( int type )
  {
+   if ( run_file == null )
+     return null;
+
    if ( type != Retriever.HISTOGRAM_DATA_SET  &&
         type != Retriever.MONITOR_DATA_SET  )
      return null;
@@ -228,6 +245,9 @@ public class RunfileRetriever extends    Retriever
  */
   public DataSet getDataSet( int data_set_num )
   {
+    if ( run_file == null )
+      return null;
+
 //    System.out.println("======= getting dataset for >>>" + data_source_name );
     int instrument_type;
 
@@ -269,6 +289,9 @@ public class RunfileRetriever extends    Retriever
     float             source_to_sample_tof;
     DataSet           data_set = null;
     String            title;
+
+    if ( run_file == null )
+      return null;
 
     histogram_num = histogram[ data_set_num ];  
 
