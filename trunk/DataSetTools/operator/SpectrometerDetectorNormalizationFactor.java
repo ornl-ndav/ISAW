@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/08/31 20:30:20  dennis
+ *  Now extends GenericSpecial operator, rather than DS_Special operator,
+ *  so that it is properly found as a GenericOperator.
+ *
  *  Revision 1.5  2001/06/01 21:18:00  rmikk
  *  Improved documentation for getCommand() method
  *
@@ -99,7 +103,7 @@ import  DataSetTools.util.*;
  * 
  */
 
-public class SpectrometerDetectorNormalizationFactor extends    DS_Special 
+public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial 
                                                      implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -141,7 +145,8 @@ public class SpectrometerDetectorNormalizationFactor extends    DS_Special
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, DetNormFac
+   * @return	the command name to be used with script processor: 
+   *            in this case, DetNormFac
    */
    public String getCommand()
    {
@@ -309,8 +314,7 @@ public class SpectrometerDetectorNormalizationFactor extends    DS_Special
   /* ------------------------------ clone ------------------------------- */
   /**
    * Get a copy of the current SpectrometerEvaluator Operator.  The list of
-   * parameters and the reference to the DataSet to which it applies are
-   * also copied.
+   * parameters is also copied.
    */
 
   public Object clone()
@@ -318,9 +322,6 @@ public class SpectrometerDetectorNormalizationFactor extends    DS_Special
     SpectrometerDetectorNormalizationFactor new_op = 
                          new SpectrometerDetectorNormalizationFactor( );
 
-                                                // copy the data set associated
-                                                // with this operator
-    new_op.setDataSet( this.getDataSet() );
     new_op.CopyParametersFrom( this );
 
     return new_op;
