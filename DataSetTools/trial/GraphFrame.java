@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/05/10 22:43:09  dennis
+ * Test program now just instantiates a Frame to diplay
+ * calculated result, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.2  2004/03/15 19:33:57  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -116,7 +122,7 @@ public class GraphFrame
       y[i] = (float)( Math.sin( i*Math.PI/180.0 ));
     } 
 
-    GraphFrame gf = new GraphFrame( x, y, "Sine Function" );    
+    new GraphFrame( x, y, "Sine Function" );    
   }
 
 }
