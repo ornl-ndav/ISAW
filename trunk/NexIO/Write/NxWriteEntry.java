@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/03/18 20:58:38  dennis
+ * Added initial support for TOF Diffractometers.
+ * Added support for more units.
+ *
  * Revision 1.2  2001/08/01 14:38:09  rmikk
  * Changed the DataSet INST_TYPE attribute to be tied
  * solely to NXentries analysis field
@@ -46,9 +50,11 @@ import java.util.*;
 import java.text.*;
 public class NxWriteEntry
 {String errormessage;
+ int instrType;
 
-    public NxWriteEntry()
+    public NxWriteEntry(int instrType)
       {errormessage = "";
+       this.instrType=instrType;
       }
 
    public String getErrorMessage()
@@ -157,10 +163,10 @@ public class NxWriteEntry
        }
       }
 */
-       X = DS.getAttributeValue( Attribute.INST_TYPE);
+       
     
-    if( X != null)
-      {int instr_type = ne.cnvertoint( X);
+   
+      {int instr_type = instrType;
        NexIO.Inst_Type it = new NexIO.Inst_Type();
      
        String analysis = it.getNexAnalysisName( instr_type);

@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/18 20:58:27  dennis
+ * Added initial support for TOF Diffractometers.
+ * Added support for more units.
+ *
  * Revision 1.1  2001/07/25 21:23:20  rmikk
  * Initial checkin
  *
@@ -49,8 +53,11 @@ public class NxWriteData
   String axis1Link = "axis1";
   String axis2Link = "axis2";
   String axis3Link = "axis3";
-    public NxWriteData()
+  int instrType;
+    public NxWriteData( int instrType)
       {errormessage = "";
+       this.instrType = instrType;
+       
       }
 
    /** Returns an error message or "" if none
@@ -96,14 +103,17 @@ public class NxWriteData
         endIndex;
     startIndex = endIndex = -1;
     kk = 0;
+    DS.Sort( Attribute.EFFICIENCY_FACTOR, true,DataSet.Q_SORT);
+    DS.Sort( Attribute.TIME_FIELD_TYPE,true,DataSet.Q_SORT);
     for(  i = 0 ; i < DS.getNum_entries() ; i++ )
      {
       Data DB = DS.getData_entry( i );
       XScale XX = DB.getX_scale();
+      int HistData = 0;
       xvals = XX.getXs();
        int ny_s = xvals.length;
       if( DB.getY_values().length < ny_s ) 
-         ny_s--;
+         HistData = 1;
       if( xvalsPrev == null )
          {startIndex = 0;
           xvalsPrev = xvals;
@@ -120,18 +130,35 @@ public class NxWriteData
          endIndex = i;
       else if( xvalsPrev[3*xvals.length/4] != xvals[3*xvals.length/4] )
          endIndex = i;  
+     // Check to see if the efficiency vector has changed
 
       if(( endIndex > 0 )||( i == DS.getNum_entries( )-1 ) )
         {
           if( endIndex <= 0 ) 
              endIndex = DS.getNum_entries();
           node = nodeEntr.newChildNode( "Data"+kk , "NXdata" );
-        
-          node.addLink( "axis1"+kk );
-          node.addLink( "axis2"+kk );
+          NxWriteNode nxdet = nxInstr.newChildNode("Detector"+kk,"NXdetector");
+         String nodeName=Inst_Type.AxisWriteHandler(1,kk,instrType,node,nxdet,DS,
+              startIndex , endIndex);
+         if( nodeName != null)
+            node.addLink( nodeName);
+         else System.out.println("UUUUUUUU axis 1 no link");
+         nodeName=Inst_Type.AxisWriteHandler(2,kk,instrType,node,nxdet,DS,
+              startIndex,endIndex);
+         
+         if( nodeName != null)
+            node.addLink( nodeName);
+         else System.out.println("UUUUUUUU axis 2 no link");
+         new NxWriteDetector(instrType).processDS( nxdet,DS,startIndex,endIndex);
+         nxdet.setLinkHandle( "NXdetector"+kk);
+         node.addLink( "NXdetector"+kk );
+         //node.addLink( "axis1"+kk );
+          //node.addLink( "axis2"+kk );
 /*  //Moved to NxDetector done 1st there
           NxWriteNode n1 = node.newChildNode( "time_of_flight" , "SDS" );
           String units , longname;
+
+        // time_of_flight  or axis = 1 
           units = DS.getX_units();
           longname = DS.getX_label();
           if( units != null )
@@ -158,20 +185,20 @@ public class NxWriteData
           n1.setLinkHandle( "axis1"+kk );
           if( n1.getErrorMessage() != "" )
             {errormessage = n1.getErrorMessage();
-             System.out.println( "NxData A"+errormessage );
+             //System.out.println( "NxData A"+errormessage );
              return true;
             }
         
    
          if( node.getErrorMessage() != "" )
            {errormessage = node.getErrorMessage();
-            System.out.println( "NxData B" );
+            //System.out.println( "NxData B" );
             return true;
            }
-      
+     //axis = 2    
          float phi[] ;
          phi = new float[ endIndex-startIndex];
-   
+        
         float coords[];
         DetectorPosition DP;
         for( j= startIndex ; j < endIndex ; j++ )
@@ -183,9 +210,9 @@ public class NxWriteData
              {
              coords = DP.getSphericalCoords();
             
-             coord = Types.convertToNexus( coord[0], coord[2], coord[1]);
+             coord = Types.convertToNexus( coords[0], coords[2], coords[1]);
           
-             phi[j-startIndex] = coords[1]; 
+             phi[j-startIndex] = coord[1]; 
              }
           }//for j = startIndex to endIndex
         
@@ -218,6 +245,7 @@ public class NxWriteData
          rank1[0] = phi.length;
          
          n2.setNodeValue( phi , Types.Float , rank1 );
+	 
          n2.setLinkHandle( "axis2"+kk );
          if( n2.getErrorMessage() != "" )
            {errormessage = n2.getErrorMessage();
@@ -235,7 +263,8 @@ public class NxWriteData
        {errormessage = " No Data Entries";
         return true;
        }
-    
+
+   // Now enter the Data Elements    
     Data DB1 = DS.getData_entry( startIndex );
         
     ny_s = DB1.getY_values().length;
@@ -261,6 +290,9 @@ public class NxWriteData
     intval = new int[1];
     intval[0] = 1;
     n3.addAttribute( "signal" , intval , Types.Int , rank1 );
+    n3.addAttribute( "units", (DS.getY_units()+(char)0).getBytes(), Types.Char, 
+        Inst_Type.makeRankArray(DS.getY_units().length()+1,-1,-1,-1,-1));
+    
 
     rank1 = new int[2];
     rank1[1] = ny_s;
@@ -272,9 +304,11 @@ public class NxWriteData
     else
          return true;
 
-   new NxWriteInstrument().addDetector( nxInstr ,"axis1"+kk , "axis2"+kk, 
-                                        startIndex , endIndex , DS );
-
+    // Add get the NxDetector to the NxInstrument
+   //new NxWriteInstrument().addDetector( nxInstr ,"axis1"+kk , "axis2"+kk, 
+   //                                    startIndex , endIndex , DS ,HistData);
+   
+         
    xvalsPrev = xvals;
    startIndex = i;
    endIndex = -1;
@@ -427,7 +461,7 @@ private float intlength( float xvals[] , int intnum , boolean histogram )
 
     }
 public static void main( String args[] )
-  {NxWriteData nw = new NxWriteData();
+  {NxWriteData nw = new NxWriteData(1);
    NxNodeUtils nd = new NxNodeUtils();
    IsawGUI.Util ut = new IsawGUI.Util();
    DataSet dss[];
