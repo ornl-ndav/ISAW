@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/07/31 16:10:28  dennis
+ * Implements IDataPointInfo to display data in a viewer's
+ * DataSetXConversionsTable.
+ *
  * Revision 1.2  2002/05/29 22:44:17  dennis
  * Added x and i parameters to the XInfo_label() method to allow changing the
  * label when the cursor is moved.
@@ -58,7 +62,8 @@ import  DataSetTools.operator.DataSet.Information.DS_Information;
   */
 
 abstract public class XAxisInformationOp extends    DS_Information
-                                         implements Serializable
+                                         implements IDataPointInfo,
+                                                    Serializable
 {
   public XAxisInformationOp( String title )
   {
@@ -98,31 +103,4 @@ abstract public class XAxisInformationOp extends    DS_Information
                                                       // list.
     return AppendCategory( X_AXIS_INFORMATION, partial_list );
   }
-
-
-  /* -------------------------- XInfo_label ---------------------------- */
-  /**
-   * Get string label for the xaxis information.
-   *
-   *  @param  x    the x-value for which the axis label is to be obtained.
-   *  @param  i    the index of the Data block that will be used for obtaining
-   *               the label.
-   *
-   *  @return  String describing the information provided by X_Info().
-   */
-  abstract public String XInfo_label( float x, int i );
-
-
-
-  /* ------------------------------ X_Info ----------------------------- */
-  /**
-   * Get the axis information at one point only.
-   *
-   *  @param  x    the x-value for which the axis information is to be obtained.
-   *  @param  i    the index of the Data block that will be used for obtaining
-   *               the information about the x axis.
-   *
-   *  @return  information for the x axis at the specified x.
-   */
-  abstract public String X_Info( float x, int i );
 }
