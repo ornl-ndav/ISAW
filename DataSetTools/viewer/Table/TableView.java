@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/07/30 14:29:08  rmikk
+ *  Eliminated unused Variables
+ *
  *  Revision 1.8  2004/03/15 03:29:02  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -171,7 +174,7 @@ public class TableView extends DataSetViewer
       DefaultListModel LM= tv.getListModel();
       int[] sel = new int[4];
       sel[0]=0; sel[1]=2; sel[2]=4; sel[3]=6;
-      table_view.Gen_TableModel tm= tv.getGenTableModel( DS[1],LM,"HT,FG",sel);
+      //table_view.Gen_TableModel tm= tv.getGenTableModel( DS[1],LM,"HT,FG",sel);
       /*JTable jtb = new JTable( tm);
       jtb.setAutoResizeMode( JTable.AUTO_RESIZE_OFF);
       jf.getContentPane().setLayout( new GridLayout(1,1));
