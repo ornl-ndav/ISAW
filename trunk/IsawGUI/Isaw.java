@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.72  2002/01/09 20:12:11  rmikk
+ *  -Fixed a compiler error.
+ *
  *  Revision 1.71  2002/01/09 19:33:43  rmikk
  *  -Incorporated a Status Pane.  It is static and has the name
  *    IsawStatusPane.  It can be used as follows:
@@ -844,7 +847,7 @@ public class Isaw
    */
   public void addModifiedDataSet( DataSet ds )
   {
-//    Isaw.IsawStatusPane( "Isaw: addModifiedDataSet(...)" );
+//    Isaw.IsawStatusPane.add( "Isaw: addModifiedDataSet(...)" );
 
     jdt.addToModifiedExperiment( ds );
 
@@ -1271,10 +1274,10 @@ public class Isaw
         Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(GLAD_MACRO_MI) ) 
-        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(GPPD_MACRO_MI) ) 
-        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(HRMECS_MACRO_MI) )
       { 
@@ -1288,31 +1291,31 @@ public class Isaw
       }
 
       if( s.equals(HIPD_MACRO_MI) )  
-        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(LRMECS_MACRO_MI) ) 
-        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(POSY1_MACRO_MI) ) 
-        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(POSY2_MACRO_MI) ) 
-        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(QENS_MACRO_MI) ) 
-        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SAD_MACRO_MI) ) 
-        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SAND_MACRO_MI) ) 
-        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SCD_MACRO_MI) ) 
-        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SEPD_MACRO_MI) ) 
-        Isaw.IsawStatusPane( "Instrument-specific macros/scripts are not implemented" );
+        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
 
  
 
@@ -1390,7 +1393,7 @@ public class Isaw
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
         else
-          Isaw.IsawStatusPane( "nothing is currently highlighted in the tree" );
+          Isaw.IsawStatusPane.add( "nothing is currently highlighted in the tree" );
       }
                  
                  
@@ -2102,7 +2105,7 @@ public class Isaw
 //      System.out.println( "reason (Isaw.java): " + (String)reason );
     }
     else
-      Isaw.IsawStatusPane( "unsupported type in Isaw.update()" );
+      Isaw.IsawStatusPane.add( "unsupported type in Isaw.update()" );
   }
  
  
@@ -2173,7 +2176,7 @@ public class Isaw
       for( int i=0;  i<filenames.length;  i++ )
         if(  isForced( filenames[i] )  )
         {
-          Isaw.IsawStatusPane(  "loading (forced): " + removeForce( filenames[i] )  );
+          Isaw.IsawStatusPane.add(  "loading (forced): " + removeForce( filenames[i] )  );
           files[i] = new File(  removeForce( filenames[i] )  );
         }
         else if(  filter.accept_filename( filenames[i] )  )
@@ -2182,7 +2185,7 @@ public class Isaw
           files[i] = new File( filenames[i] );
         }
         else
-          Isaw.IsawStatusPane(  "failed: " + filenames[i]  );
+          Isaw.IsawStatusPane.add(  "failed: " + filenames[i]  );
 
       load_files( files );
 
