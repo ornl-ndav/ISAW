@@ -15,6 +15,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
 import javax.swing.text.*; 
+import Command.*;
 /**
  * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
  * ChopTools and graph packages.
