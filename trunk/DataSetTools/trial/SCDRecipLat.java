@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/06/04 14:20:51  dennis
+ * This version is just a crude "test bed" for different methods
+ * of fitting a plane to points and includes an initial form of
+ * the FFT based code.
+ *
  * Revision 1.12  2003/03/27 22:12:10  dennis
  * Added least squares fitting of plane in reciprocal lattice.
  * (Initial attempt)
@@ -50,7 +55,6 @@
  * Revision 1.8  2003/01/08 17:45:30  dennis
  * Added option to show slice through Qxyz space.  This is currently just
  * a "proof of concept", and works only for "old" SCD data.
- *
  *
  * Revision 1.7  2002/11/27 23:23:30  pfpeterson
  * standardized header
@@ -100,6 +104,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
+import jnt.FFT.*;
 
 /** 
  *  This class reads through a sequence of SCD run files and constructs
@@ -108,6 +113,7 @@ import javax.swing.border.*;
 
 public class SCDRecipLat
 {
+  public static final String NORMAL_ATTRIBUTE = "Plane Normal";
   public static final String ORIGIN = " origin ";
   public static final String A_STAR = " a* (+)";
   public static final String B_STAR = " b* (*)";
@@ -116,7 +122,7 @@ public class SCDRecipLat
   public static final String A_B_SLICE = "a*<->b* Slice";
   public static final String B_C_SLICE = "b*<->c* Slice";
   public static final String C_A_SLICE = "c*<->a* Slice";
-  public static final int    SLICE_SIZE = 400;
+  public static final int    SLICE_SIZE = 700;
 
   ImageFrame a_b_frame = null;
   ImageFrame b_c_frame = null;
@@ -142,6 +148,7 @@ public class SCDRecipLat
   Vector          vec_q_transformer;
 
   int             global_obj_index = 0;  // needed to keep the pick ids distinct
+  String          file_names[];
 
   /* ---------------------------- Constructor ----------------------------- */
 
@@ -613,7 +620,7 @@ public class SCDRecipLat
             if ( color_index > 127 )
               color_index = 127;
             c = colors[ color_index ];
-            objs[obj_index] = new Ball( pts[0], 0.02f, c );
+            objs[obj_index] = new Ball( pts[0], 0.03f, c );
             objs[obj_index].setPickID( global_obj_index );
             obj_index++;
             global_obj_index++;
@@ -663,11 +670,14 @@ public class SCDRecipLat
 
     fit_plane( origin, base1, base2 );
 
+    base1.normalize();    
+    base2.normalize();    
+
     float b1[] = base1.get();
     float b2[] = base2.get();
     float orig[] = origin.get();
     Vector3D q = new Vector3D();
-    float step = size/(n_rows/2);
+    float step = (2*size)/n_rows;
     float d_row, d_col;
     float value;
     int   n_non_zero;
@@ -679,6 +689,7 @@ public class SCDRecipLat
       {
         d_row = (n_rows/2 - row)*step;        
         d_col = (col - n_rows/2)*step;        
+
         q.set( orig[0] + d_row * b2[0] + d_col * b1[0], 
                orig[1] + d_row * b2[1] + d_col * b1[1], 
                orig[2] + d_row * b2[2] + d_col * b1[2]  );
@@ -700,18 +711,49 @@ public class SCDRecipLat
          else
            image[row][col] = 0;
       }
-
     return image;
   }
 
 
+  /* ---------------------- get_data_objects ----------------------- */
+
+  private IThreeD_Object[] get_data_objects()
+  {
+    IThreeD_Object q_obj[][] = new IThreeD_Object[file_names.length][];
+
+    for ( int i = 0; i < file_names.length; i++ )
+    {
+      q_obj[i] = vec_Q_space.getObjects( file_names[i] );
+      System.out.println("i = " + i + ", list length = " + q_obj[i].length );
+    }
+
+    int total_length = 0;
+    for ( int i = 0; i < file_names.length; i++ )
+      total_length += q_obj[i].length;
+
+    System.out.println("total_length = " + total_length);
+    IThreeD_Object obj[] = new IThreeD_Object[total_length];
+    int start = 0;
+    for ( int i = 0; i < file_names.length; i++ )
+    {
+      System.out.println("i = " + i + ", length = " + q_obj[i].length );
+      System.arraycopy( q_obj[i], 0, obj, start, q_obj[i].length );
+      start += q_obj[i].length;
+    }
+    q_obj = null;
+
+    return obj;
+  } 
+
+
+  /* -------------------------- fit_plane --------------------------- */
+
   private void fit_plane( Vector3D origin, Vector3D base1, Vector3D base2 )
   {
-    IThreeD_Object obj[] = vec_Q_space.getAllObjects();
-
-    if ( obj == null || obj.length <= 0 )
-      return;
-
+                                         // first, get the positions of the
+                                         // data points.
+    IThreeD_Object obj[] = get_data_objects();
+    
     Vector3D n = new Vector3D();
     n.cross( base1, base2 );
     n.normalize();
@@ -731,73 +773,117 @@ public class SCDRecipLat
          n_used++;
       }
     }
+
+    Polymarker pts_used[] = new Polymarker[n_used];
+    for ( int i = 0; i < n_used; i++ )
+    {
+      Vector3D verts[] = new Vector3D[1];
+      verts[0] = new Vector3D( plane_pts[i].position().get() );
+      pts_used[i] = new Polymarker( verts, Color.green );
+      pts_used[i].setSize( 4 ); 
+      pts_used[i].setType( Polymarker.BOX ); 
+    }
+    vec_Q_space.setObjects( "LSQ_PTS", pts_used );
+
+
     System.out.println("Original normal vector = " + n );
     System.out.println("Original c = " + c );
     System.out.println("number used = " + n_used );
-                                            // next find the least squares fit
-                                            // to the plane
+
 /*
-    double A[][]  = new double[n_used][4];
-    double b[]    = new double[n_used];
-    float  temp[] = new float[4];
+    float points[][] = new float[n_used][3];
+    float normal[]   = new float[3];
+    float distance[] = new float[1];
 
     for ( int i = 0; i < n_used; i++ )
-    {
-      temp = plane_pts[i].position().get();     // Note: this is (x,y,z,1)
-      for ( int j = 0; j < 4; j++ )
-        A[i][j] = temp[j];
-      b[i] = 0;
-    }
-
-    double Q[][] = LinearAlgebra.QR_factorization( A );
-    double residual = LinearAlgebra.QR_solve( A, Q, b );
-
-    for ( int i = 0; i < 3; i++ )
-      temp[i] = (float)b[i];
-    temp[3] = 1;
-    
-    n = new Vector3D( temp ); 
-    System.out.println("Best fit normal vector = " + n );
-    System.out.println("c = " + b[3] );
-    System.out.println("residual = " + residual );
+      points[i] = plane_pts[i].position().get();
+   
+    double residual = fit_plane( points, normal, distance );
+    n = new Vector3D( normal );
+    c = distance[0];
 */
-
-    double A[][]  = new double[n_used][3];
-    double b[]    = new double[n_used];
-    float  temp[] = new float[4];
-
+    Vector3D points[] = new Vector3D[ n_used ];
     for ( int i = 0; i < n_used; i++ )
-    {
-      temp = plane_pts[i].position().get();     // Note: this is (x,y,z,1)
-      for ( int j = 0; j < 3; j++ )
-        A[i][j] = temp[j];
-      b[i] = c;
-    }
+      points[i] = plane_pts[i].position();
 
-    double Q[][] = LinearAlgebra.QR_factorization( A );
-    double residual = LinearAlgebra.QR_solve( A, Q, b );
+    float residual;
+    float time1,
+          time2,
+          time3,
+          time4;
+    ElapsedTime timer = new ElapsedTime();
+    timer.reset();
+ 
+    Plane3D test_plane1 = new Plane3D();
+    test_plane1.fit( points );             // test the first fitting method 
+    time1 = (float)timer.elapsed();
 
-    temp = new float[4];
-    for ( int i = 0; i < 3; i++ )
-      temp[i] = (float)b[i];
-    temp[3] = 1;
-  
-    n = new Vector3D( temp );
-    n.normalize();
-    System.out.println("Best fit normal vector = " + n );
+    timer.reset();
+    Plane3D test_plane2 = new Plane3D();
+    residual = test_plane2.fit( points );  // test the second fitting method
+    time2 = (float)timer.elapsed();
+
+    timer.reset();
+    Plane3D test_plane3 = new Plane3D();
+    test_plane3.fit( points );             // test the third fitting method 
+    time3 = (float)timer.elapsed();
+
+    timer.reset();
+    Plane3D test_plane4 = new Plane3D();
+    test_plane4.fit( points );             // test the fourth fitting method 
+    time4 = (float)timer.elapsed();
+
+    n = test_plane4.getNormal(); 
+    c = test_plane4.getDistance();
+
+    Vector3D n1 = test_plane1.getNormal();
+    Vector3D n2 = test_plane2.getNormal();
+    Vector3D n3 = test_plane3.getNormal();
+    Vector3D n4 = test_plane4.getNormal();
+
+    System.out.println("Dot products, and c values are.....");
+    System.out.println("n4 . n1 = " + n4.dot(n1) );
+    System.out.println("n4 . n2 = " + n4.dot(n2) );
+    System.out.println("n4 . n3 = " + n4.dot(n3) );
+    System.out.println("c1 = " + test_plane1.getDistance() );
+    System.out.println("c2 = " + test_plane2.getDistance() );
+    System.out.println("c3 = " + test_plane3.getDistance() );
+    System.out.println("c4 = " + test_plane4.getDistance() );
+    System.out.println("Time for fit 1 = " + time1 );
+    System.out.println("Time for fit 2 = " + time2 );
+    System.out.println("Time for fit 3 = " + time3 );
+    System.out.println("Time for fit 4 = " + time4 );
+
+    System.out.println("USING normal vector = " + n );
+    System.out.println("c = " + c );
     System.out.println("residual = " + residual );
 
-    float c_ave = 0;
-    for ( int i = 0; i < n_used; i++ )
-      c_ave += n.dot( plane_pts[i].position() );
+    System.out.println("Extracting postions.....");
+    Vector3D all_vectors[] = new Vector3D[ obj.length ];
+    for ( int i = 0; i < obj.length; i++ )
+      all_vectors[i] = obj[i].position();  
+    System.out.println("DONE Extracting postions.");
 
-    c_ave = c_ave/n_used;
-    System.out.println("Average c = " + c_ave );
+    System.out.println("Projecting points on test plane 4......");
+    DataSet ds = ProjectPoints( test_plane4, all_vectors );
+    ViewManager vm = new ViewManager( ds, IViewManager.IMAGE ); 
+    System.out.println("Done Projecting points on test plane 4.");
 
-    Vector3D new_origin = new Vector3D(n);
+//    ds = ProjectPointsRandomly( all_vectors );
+    System.out.println("Projecting points uniformly ......");
+    ds = ProjectPointsUniformly( all_vectors, 10 );
+    ds.addIObserver( new FFTListener() );
 
-    new_origin.multiply(c_ave); 
-    origin.set( new_origin );
+    System.out.println("Done Projecting points uniformly.");
+    vm = new ViewManager( ds, IViewManager.IMAGE ); 
+
+    ds = FFT( ds );
+    ds.addIObserver( new FFTListener() );
+    vm = new ViewManager( ds, IViewManager.IMAGE ); 
+                                                // calculate new origin and
+                                                // basis vectors for the plane
+    float old_c = origin.dot( n );
+    origin.multiply(c/old_c); 
 
     Vector3D new_base1 = new Vector3D(base1);
     Vector3D temp_v = new Vector3D(n);
@@ -810,8 +896,327 @@ public class SCDRecipLat
     temp_v.multiply( n.dot(base2) );
     new_base2.subtract( temp_v );
     base2.set( new_base2 );
+
+    System.out.println("Using Origin : " + origin );
+    System.out.println("Using base1  : " + base1 );
+    System.out.println("Using base2  : " + base2 );
+
+                                                 // draw the plane used
+    Polyline plane_used[] = new Polyline[1];
+    Vector3D verts[] = new Vector3D[4];
+    for ( int i = 0; i < 4; i++ )
+      verts[i] = new Vector3D(origin);
+
+    temp_v.set( base1 );
+    temp_v.multiply( 5 );
+    verts[1].add(temp_v);
+
+    temp_v.set( base2 );
+    temp_v.multiply( 5 );
+    verts[2].add(temp_v);
+    plane_used[0] = new Polyline( verts, Color.green );
+    vec_Q_space.setObjects( "LSQ_PLANE", plane_used );
   }
 
+
+  /* ------------------------- ProjectPoints ---------------------------- */
+
+  public DataSet ProjectPoints( Plane3D plane, Vector3D points[] )
+  {
+    float y[] = new float[400];
+    XScale scale = new UniformXScale( -20, 20, 400 );
+    float dist;
+    int   bin;
+    for ( int i = 0; i < points.length; i++ )
+    {
+      dist = plane.getDistance( points[i] );
+      bin = Math.round( dist * 10 ) + 200;
+      if ( bin >= 0 && bin < y.length )
+        y[bin]++; 
+    }
+    Data d = Data.getInstance( scale, y, 1 );
+    d.setAttribute( new Float1DAttribute( NORMAL_ATTRIBUTE, 
+                                          plane.getNormal().get() ));
+    DataSetFactory ds_factory = new DataSetFactory(
+                                       "Projection parallel to " + plane );
+    DataSet ds = ds_factory.getDataSet();
+    ds.addData_entry( d );
+    return ds;
+  }
+
+
+
+  public DataSet ProjectPointsRandomly( Vector3D points[] )
+  {
+    DataSetFactory ds_factory = new DataSetFactory(
+                                       "Projection parallel to planes" );
+    DataSet ds = ds_factory.getDataSet();
+    Vector3D normal;
+    float    components[] = new float[3];
+    for ( int count = 0; count < 500; count++ )
+    {
+      components[0] = (float)Math.random();
+      components[1] = (float)Math.random();
+      components[2] = (float)Math.random();
+      normal = new Vector3D( components );
+      normal.normalize();
+      Data d =  ProjectPoints(points, normal,count);
+      ds.addData_entry( d );
+    }
+    return ds;
+  }
+
+
+  public DataSet ProjectPointsUniformly( Vector3D points[], int n_steps )
+  {
+    DataSetFactory ds_factory = new DataSetFactory(
+                                       "Projection parallel to planes" );
+    DataSet ds = ds_factory.getDataSet();
+    Vector3D normal;
+    float    components[] = new float[3];
+    Vector3D normals[] = new Vector3D[ n_steps * n_steps * 10 ];
+    int n_used = 0;
+  
+    int  id = 1;
+    double phi_step = Math.PI / (2*n_steps);
+//    System.out.println( "phi_step = " + phi_step );
+    for ( double phi = 0; phi <= (1.000001)*Math.PI/2; phi += phi_step )
+    {
+      double r = Math.sin(phi);
+      int n_theta = (int)Math.round( 4 * r * n_steps );
+      double theta_step; 
+      if ( n_theta == 0 )                        // n = ( 0, 1, 0 );
+         theta_step = 7;                         // just use one vector
+      else
+         theta_step = 2*Math.PI/( n_theta );
+//      System.out.println( "theta_step = " + theta_step );
+      for ( double theta = 0;
+                   theta < 2*Math.PI - theta_step/2; 
+                   theta += theta_step )
+      {
+        components[0] = (float)(r*Math.cos(theta));
+        components[1] = (float)(Math.cos(phi));
+        components[2] = (float)(r*Math.sin(theta));
+        normal = new Vector3D( components );
+        normals[n_used] = normal;
+        n_used++;
+        Data d = ProjectPoints(points, normal, id);
+        ds.addData_entry( d );
+//        System.out.println( "id = " + id + " normal = " + normal );
+        id++;
+      }
+    }
+
+    Polymarker normals_used[] = new Polymarker[n_used];
+    for ( int i = 0; i < n_used; i++ )
+    {
+      Vector3D verts[] = new Vector3D[1];
+      verts[0] = normals[i];
+      normals_used[i] = new Polymarker( verts, Color.cyan );
+      normals_used[i].setSize( 4 );
+      normals_used[i].setType( Polymarker.BOX );
+    }
+    vec_Q_space.setObjects( "NORMALS", normals_used );
+
+    return ds;
+  }
+
+
+  public Data ProjectPoints( Vector3D points[], Vector3D normal, int id )
+  {
+    float dist;
+    int   bin;
+    float y[] = new float[512];
+    XScale scale = new UniformXScale( -20, 20, 513 );
+
+    Plane3D plane = new Plane3D();
+    plane.set( normal, 0 );
+    for ( int i = 0; i < points.length; i++ )
+    {
+      dist = plane.getDistance( points[i] );
+      bin = Math.round( dist * 20 ) + 256;
+      if ( bin >= 0 && bin < y.length )
+        y[bin]++;
+    }
+    Data d = Data.getInstance( scale, y, id );
+    d.setAttribute( new Float1DAttribute( NORMAL_ATTRIBUTE, normal.get() ));
+
+    return d;
+  }
+
+
+  public DataSet FFT( DataSet ds )
+  {
+    DataSetFactory ds_factory = new DataSetFactory(
+                                       "FFT of projections" );
+    DataSet fft_ds = ds_factory.getDataSet();
+    
+    XScale scale = new UniformXScale( 0, 511, 512 );
+    
+    float complex_data[] = new float[1024];
+    float re, 
+          im;
+    for ( int i = 0; i < ds.getNum_entries(); i++ )
+    {
+//      System.out.println("Doing transform of projection : " + i );
+      Data original_d = ds.getData_entry(i);
+      float y[] = original_d.getY_values();
+//      System.out.println("y.length = " + y.length );
+      float average = 0;
+      for ( int j = 0; j < 512; j++ )
+      {
+        average += y[j];
+        complex_data[2*j  ] = y[j];
+        complex_data[2*j+1] = 0;
+      }
+      average /= 512;
+      for ( int j = 0; j < 512; j++ )    // subtract off the "DC" term
+        complex_data[2*j] -= average;
+ 
+      ComplexFloatFFT fft = new ComplexFloatFFT_Radix2( 512 );
+      fft.transform( complex_data );
+      float magnitude[] = new float[512];
+      for ( int j = 0; j < 512; j++ )
+      {
+        re = complex_data[2*j];
+        im = complex_data[2*j+1];
+        magnitude[j] = (float)(Math.sqrt(re*re+im*im));
+      }
+      Data d = Data.getInstance( scale, magnitude, i+1 );
+//      System.out.println("adding data block " + i );
+      d.setAttribute( original_d.getAttribute( NORMAL_ATTRIBUTE ) );
+      fft_ds.addData_entry( d );
+    }
+
+    return fft_ds;
+  }
+
+
+
+  /*
+   *  Fit a plane to the specified points.  Return the residual error as 
+   *  the value of the function.  Set the unit normal to the plane in the 
+   *  first three components of array plane[4] and the distance of the plane
+   *  from the origin in plane[3].  That is, the best fit plane is given by 
+   *  the equation:
+   *
+   *    plane[0] x + plane[1] y + plane[2] z = plane[3] 
+   *
+   */
+  public static double fit_plane( float points[][], 
+                                  float normal[], 
+                                  float distance[] )
+  {
+    if ( points == null || normal == null || distance == null )
+    {
+      System.out.println("ERROR: null parameter in fit_plane()" );
+      System.out.println("points   = " + points );
+      System.out.println("normal   = " + normal );
+      System.out.println("distance = " + distance );
+      return Double.NaN;
+    }
+
+    int n_points = points.length;
+    if ( points.length < 3 )
+    {
+      System.out.println("ERROR: not enough points in fit_plane()" );
+      System.out.println("points.length = " + points.length );
+      return Double.NaN;
+    }
+
+    if ( normal.length < 3 || distance.length < 1 )
+    {
+      System.out.println("ERROR: not enough space for return values "+
+                         "in fit_plane()" );
+      System.out.println("normal.length = " + normal.length );
+      System.out.println("distance.length = " + distance.length );
+      return Double.NaN;
+    }
+
+    for ( int i = 0; i < points.length; i++ )
+      if ( points[i].length < 3 )
+      {
+        System.out.println("ERROR: points not three dimensional in " + 
+                           "fit_plane()" );
+        System.out.println("points[i].length = " + points[i].length );
+        return Double.NaN;
+      }
+
+    Vector3D v0 = new Vector3D( points[0] );
+    Vector3D v1 = new Vector3D( points[n_points/2] );
+    Vector3D v2 = new Vector3D( points[n_points-1] );
+
+    Vector3D e0 = new Vector3D(v1);
+    Vector3D e1 = new Vector3D(v2);
+
+    e0.subtract( v0 );                    // set edge vectors to be v1 - v0 and
+    e1.subtract( v1 );                    //                        v2 - v1
+
+    Vector3D n = new Vector3D();
+    n.cross( e1, e0 );
+    if ( n.length() == 0 )
+    {
+      System.out.println("ERROR: first three points are co-linear in "+
+                         "fit_plane()" );
+      return Double.NaN;
+    }
+                                             // find the max component of n
+    int max_index = 0;
+    for ( int i = 1; i < 3; i++ )
+     if ( Math.abs(n.get()[i]) > Math.abs(n.get()[max_index]) )
+       max_index = i;
+                                           // next find the least squares fit
+                                           // to the plane.  Subject to the
+                                           // constraint that n[max_index] == 1
+
+    double A[][] = new double[n_points][3];
+    double b[]   = new double[n_points];
+    int position;
+
+    for ( int i = 0; i < n_points; i++ )
+    {
+      position = 0;
+      for ( int j = 0; j < 3; j++ )
+        if ( j != max_index )
+        {
+          A[i][position] = points[i][j];
+          position++;
+        }
+      A[i][2] = 1;
+      b[i] = -points[i][max_index];
+    }
+
+    double Q[][] = LinearAlgebra.QR_factorization( A );
+    double residual = LinearAlgebra.QR_solve( A, Q, b );
+
+    float temp[] = new float[4];
+    temp[3] = 1;                                // now pull out the solution
+    temp[max_index] = 1;                        // with the specified component
+    position = 0;                               // equal to 1.
+    for ( int i = 0; i < 3; i++ )
+      if ( i != max_index )
+      {
+        temp[i] = (float)b[position];
+        position++;
+      }
+
+    n = new Vector3D( temp );
+    float c = -(float)b[2];
+
+    float length = n.length();                  // rescale n to be unit normal
+    n.multiply(1/length);
+    c = c / length;                             // and c to correspond
+                                                // to the new unit normal.
+    System.out.println("Best fit normal vector = " + n );
+    System.out.println("c = " + c );
+    System.out.println("residual = " + residual );
+
+    for ( int i = 0; i < 3; i++ )
+      normal[i] = n.get()[i];
+
+    distance[0] = c;
+    return residual;
+  }
 
 
   /* ------------------------- main -------------------------------- */
@@ -840,26 +1245,27 @@ public class SCDRecipLat
       }
 
     int runs[] = IntList.ToArray( viewer.run_nums );
-    String file_names[] = new String[ runs.length ];
+    viewer.file_names = new String[ runs.length ];
 
     for ( int i = 0; i < runs.length; i++ )
-     file_names[i] = viewer.path+InstrumentType.formIPNSFileName("scd",runs[i]);
+     viewer.file_names[i] 
+                 = viewer.path+InstrumentType.formIPNSFileName("scd",runs[i]);
 
     RunfileRetriever rr;
     DataSet ds;
     viewer.global_obj_index = 0;
-    for ( int count = 0; count < file_names.length; count++ )
+    for ( int count = 0; count < viewer.file_names.length; count++ )
     {
-      System.out.println("Loading file: " + file_names[count]);
-      rr = new RunfileRetriever( file_names[count] );
+      System.out.println("Loading file: " + viewer.file_names[count]);
+      rr = new RunfileRetriever( viewer.file_names[count] );
       ds = rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
       rr = null;
       if ( ds == null )
-        System.out.println("File not found: " + file_names[count]);
+        System.out.println("File not found: " + viewer.file_names[count]);
       else
       {
         IThreeD_Object non_zero_objs[] = viewer.getPeaks( ds, thresh_scale );
-        viewer.vec_Q_space.setObjects( file_names[count], non_zero_objs );
+        viewer.vec_Q_space.setObjects(viewer.file_names[count], non_zero_objs);
       }
       ds = null;
    }
@@ -953,6 +1359,36 @@ private class SliceButtonListener implements ActionListener
       else
         c_a_frame.setData( image );
     }
+  }
+}
+
+/* ------------------------ FFTListener ---------------------------- */
+/**
+ *  Listen to the FFT DataSet and record the ID & Normal information
+ *  from the "Pointed At" Data block.
+ */
+private class FFTListener implements IObserver
+{
+  public void update( Object observed_object, Object reason )
+  {
+    System.out.println("FFTListener observer called for reason " + reason );
+    System.out.println("DataSet = " + observed_object );
+    if ( reason instanceof String && observed_object instanceof DataSet )
+     if ( reason.equals( IObserver.POINTED_AT_CHANGED ) )
+     {
+       int index = ((DataSet)observed_object).getPointedAtIndex();
+       Data d = ((DataSet)observed_object).getData_entry(index);
+       Object value = d.getAttributeValue( NORMAL_ATTRIBUTE ); 
+       if ( value == null )
+         System.out.println( "ERROR: Missing normal " );
+
+       if ( value instanceof float[] )
+       {
+         Vector3D normal = new Vector3D( (float[])value );
+         System.out.println( normal );
+       } 
+     }
+    
   }
 }
 
