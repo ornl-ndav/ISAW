@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2002/02/25 17:35:51  pfpeterson
+ *  Added DETECTOR_CEN_HEIGHT string constant.
+ *
  *  Revision 1.18  2002/02/25 14:25:51  dennis
  *  Un-commented "constant" names for LABEL, SEGMENT_IDS, CRATE, SLOT, etc.
  *
@@ -159,6 +162,13 @@ abstract public class Attribute implements Serializable
   public static final String  CRATE             = "Crate";
   public static final String  SLOT              = "Slot";
   public static final String  INPUT             = "Input";
+
+  public static final String  DETECTOR_CEN_DISTANCE = 
+                                                  "Detector center distance";
+  public static final String  DETECTOR_CEN_ANGLE = 
+                                                  "Detector center angle";
+  public static final String  DETECTOR_CEN_HEIGHT = 
+                                                  "Detector center height";
 
   public static final String  INITIAL_PATH      = "Initial Path";
   public static final String  ENERGY_IN         = "Energy In";
