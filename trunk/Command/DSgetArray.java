@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2001/06/27 20:11:27  chatter
+ * Fixed so new DataSets are included when added
+ *
  * Revision 1.4  2001/06/26 14:39:36  rmikk
  * Changed DataSetListHandler to IDataSetListHandler
  *
@@ -54,11 +57,12 @@ import javax.swing.*;
  */
 public class DSgetArray implements IDataSetListHandler
 {DataSet DS[];
-
+ JTreeUI jtui;
 
  public DataSet[] getDataSets()
 
-   {return DS;}
+   { init();
+     return DS;}
 
 /**
 *@param jtui  the JTreeUI with the list of data sets
@@ -66,6 +70,10 @@ public class DSgetArray implements IDataSetListHandler
 
 */
 public DSgetArray( JTreeUI jtui)
+  {this.jtui = jtui;
+    DS = null;
+   }
+ private void init()
   { if( jtui == null)
      { DS = null;
        return;
