@@ -55,8 +55,8 @@ public class DataSetDemo1
     DataSet      monitor_ds,        // These DataSets will hold the sum
                  histogram_ds;      // of the data from runsfiles A & B 
 
-    String       run_A = "/usr/LOCAL/IPNS_Software/SampleRuns/gppd9898.run";
-    String       run_B = "/usr/LOCAL/IPNS_Software/SampleRuns/gppd9899.run";
+    String       run_A = "/usr/home/dennis/ARGONNE_DATA/gppd9898.run";
+    String       run_B = "/usr/home/dennis/ARGONNE_DATA/gppd9899.run";
 
 
     // Get the DataSets from the runfiles.  Show the monitors as scrolled 
