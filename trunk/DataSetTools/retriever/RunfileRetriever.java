@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.68  2003/03/10 22:20:41  dennis
+ *  Now supports some non-vertical orientation of LPSDs.  Specifically,
+ *  the rotation specified by DetRot2 in IPNS runfiles is now handled.
+ *
  *  Revision 1.67  2003/03/10 20:57:48  dennis
  *  Calculation of solid angle now uses segment length and width values
  *  from the IPNS package, rather than the whole detector length and
@@ -1267,9 +1271,10 @@ private float CalculateEIn()
          det_pos.setCylindricalCoords( det_dist, det_angle, det_height );
          Vector3D det_cen = new Vector3D( det_pos );
  
+         Vector3D y_vec;
                                          // assume y_vec in detector coords 
                                          // is vertical in lab coords
-         Vector3D y_vec   = new Vector3D( 0, 0, 1 );
+         y_vec = new Vector3D( 0, 0, 1 );
                                          // make the normal to the detector be
                                          // unit vector pointing from center
                                          // back to origin
@@ -1282,8 +1287,17 @@ private float CalculateEIn()
          x_vec.cross( y_vec, z_vec );
          x_vec.normalize();
 
-         int n_cols = run_file.NumSegs1( id );
-         int n_rows = run_file.NumSegs2( id );
+         if ( run_file.DetRot2( id ) != 0 )        // rotate whole detector
+         {
+           float angle = run_file.DetRot2( id );
+           Tran3D rot_mat = new Tran3D();
+           rot_mat.setRotation( angle, z_vec );
+           rot_mat.apply_to( x_vec, x_vec );
+           rot_mat.apply_to( y_vec, y_vec );
+         }
+
+         int n_cols = run_file.NumSegs2( id );     // NumSegs2 gives n_cols 
+         int n_rows = run_file.NumSegs1( id );     // NumSegs1 gives n_rows
 
          int det_type = run_file.DetectorType( id );
          float width  = DC5.WIDTH[ det_type ]/100;
@@ -1295,7 +1309,7 @@ private float CalculateEIn()
                                       width, height, depth,
                                       n_rows, n_cols );
 
-        //System.out.println("Built Uniform Grid for detector # " + data_grid );
+   //    System.out.println("Built Uniform Grid for detector # " + data_grid );
 
          det_data_grids.put( key, data_grid );
        }
