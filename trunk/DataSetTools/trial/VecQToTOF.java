@@ -30,6 +30,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2004/01/05 23:02:37  dennis
+ *    Simplified calculation of real space scattering direction corresponding
+ *  to a specified Q vector.  (Calculation now based on colision being
+ *  elastic, so k, k' and scattering direction vector form an isosceles
+ *  triangle.)
+ *    Also, IntensityAtQ( q_vec ) now returns -1 if the scattering vector
+ *  does not intersect the detector.
+ *
  *  Revision 1.10  2003/08/11 22:14:29  dennis
  *  Now shifts tof by calibrated t0 value.
  *
@@ -122,6 +130,8 @@ import DataSetTools.operator.DataSet.Math.Analyze.*;
 public class VecQToTOF
 {
   static final Vector3D unit_k = new Vector3D( 1, 0, 0 );
+ 
+  boolean debug = false;  
 
   IDataGrid grid;
 
@@ -255,7 +265,6 @@ public class VecQToTOF
     else
       t0 = 0;
 
-
 //    System.out.println("DataGrid is : " + grid );
 //    System.out.println("initial path: " + initial_path);
 
@@ -346,6 +355,8 @@ public class VecQToTOF
     goniometerRinv.apply_to( q_corner2, q_corner2 );
                                                      // finally get min_q_dot
     min_q_dot = Math.min( q_center.dot(q_corner1), q_center.dot(q_corner2) );
+
+    System.out.println("min_q_dot = " + min_q_dot );
   }   
 
 
@@ -463,45 +474,52 @@ public class VecQToTOF
   *  positions are assumed to be at the pixel centers, so the fractional
   *  row and column values range from 0.5 to n_rows+0.5 and from 
   *  0.5 to n_cols+0.5.  The time-of-flight is NOT restricted to valid values
-  *  for the currend Data.  If the q vector did not come from this detector 
+  *  for the current Data.  If the q vector did not come from this detector 
   *  this will return null.  
   */
   public float[] QtoRowColTOF( Vector3D q_vec )
   {
+    if ( debug )
+     {
+      System.out.println("**************************************************");
+      System.out.println("Using Grid #" + grid.ID() );
+    }
+
     float threshold = q_vec.dot( q_center );
     if ( threshold <= 0 )
       return null;
   
     float mag_q = q_vec.length();
+  
     threshold = threshold/mag_q;
     if ( threshold < min_q_dot )
       return null;
 
     Vector3D q1 = new Vector3D();
     goniometerR.apply_to( q_vec, q1 );
-    q1.normalize();
 
-//    System.out.println("q_vec = " + q_vec );
-//    System.out.println("q1 = " + q1 );
+    Vector3D minus_unit_k = new Vector3D( unit_k );
+    minus_unit_k.multiply(-1);
+    float cos_phi = q1.dot( minus_unit_k ) / mag_q; 
+    if ( cos_phi <= 0 )                              // not a valid solution
+      return null;
 
-    float q1_comp[] = q1.get();
-    float alpha = -2*q1_comp[0];
+    float alpha   = mag_q/(2*cos_phi);
 
-    if ( alpha <= 0 )             // no solution, since the direction of q1 
-      return null;                // would be reversed using alpha < 0 
+    if ( debug )
+    {
+      System.out.println("q_vec = " + q_vec );
+      System.out.println("q1 = " + q1 );
+    }
 
-    q1.multiply( alpha );
     Vector3D k_prime = new Vector3D( unit_k );
+    k_prime.multiply(alpha);
     k_prime.add( q1 );
-
-//    System.out.println("k_prime = " + k_prime );
 
     float t = det_center.dot(n)/k_prime.dot(n);
     if ( t <= 0 )                // no solution, since the beam missed the
       return null;               // detector plane
     
-//    System.out.println("t = " + t );
-
     Vector3D det_point = new Vector3D( k_prime );
     det_point.multiply( t );
     Vector3D pix_position = new Vector3D( det_point );
@@ -509,20 +527,22 @@ public class VecQToTOF
     det_point.subtract( det_center );
     float u_comp = det_point.dot( u );
     float v_comp = det_point.dot( v );
-//    System.out.println("u, v components = " + u_comp + ", " + v_comp );
-
+    if ( debug )
+    {
+      System.out.println("k_prime = " + k_prime );
+      System.out.println("t = " + t );
+      System.out.println("u, v components = " + u_comp + ", " + v_comp );
+    }
                                               // get "fractional" and integer
                                               // row and col values for this
                                               // pixel.
     float f_row = grid.row( u_comp, v_comp );
-//    System.out.println("f_row = " + f_row );
 
     int row = Math.round( f_row );
     if ( row < 1 || row > n_rows )
       return null;
 
     float f_col = grid.col( u_comp, v_comp );
-//    System.out.println("f_row = " + f_row );
 
     int col = Math.round( f_col ); 
     if ( col < 1 || col > n_cols )
@@ -531,6 +551,13 @@ public class VecQToTOF
     float final_path = pix_position.length();
     pix_position.normalize();
     float angle = (float)( Math.acos( pix_position.dot( unit_k ) ));
+
+    if ( debug )
+    {
+      System.out.println("f_row = " + f_row );
+      System.out.println("f_col = " + f_col );
+      System.out.println("Scattering angle = " + angle);
+    }
 
     float tof = tof_calc.TOFofDiffractometerQ( angle,
                                                initial_path+final_path,
@@ -553,19 +580,25 @@ public class VecQToTOF
  *  @param q_vec  The vector q for which the intensity is to be interpolated.
  *
  *  @return The interpolated intensity based on eight neighboring data 
- *  cells, or 0 if the the q_vector does not correspond to this DataGrid.
+ *  cells, or -1 if the the q_vector does not correspond to this DataGrid.
  */
 
   public float intensityAtQ( Vector3D q_vec )
   {
-//    System.out.println("row, col = " + row + ", " + col );
-
     float rc_tof[] = QtoRowColTOF( q_vec );
     if ( rc_tof == null )
-      return 0;
+      return -1;
 
     float f_row = rc_tof[0];
     float f_col = rc_tof[1];
+
+    float tof = rc_tof[2];
+
+    if ( debug )
+      System.out.println( "q = " + q_vec + 
+                          " r,c,tof = " + f_row +
+                          ", " + f_col +
+                          ", " + tof );
 
     int row = Math.round( f_row );
     int col = Math.round( f_col ); 
@@ -597,10 +630,10 @@ public class VecQToTOF
     }
                                        // ignore points without four neighbors 
     if ( first_row < 1 || last_row > n_rows )
-      return 0;                  
+      return -1;                  
                                 
     if ( first_col < 1 || last_col > n_cols )
-      return 0; 
+      return -1; 
 
 //    float tof = rc_tof[2];
     float mag_q = q_vec.length();
@@ -611,8 +644,7 @@ public class VecQToTOF
           last_mid;
     int   first_index,
           last_index;
-    float tof,
-          tof_frac;
+    float tof_frac;
     
     for ( int i = 0; i < 2; i++ )
       for ( int j = 0; j < 2; j++ )
@@ -624,7 +656,7 @@ public class VecQToTOF
       {
         System.out.println("ERROR: No Data block at row, col = " + row + 
                                                             ", " + col );
-        return 0;
+        return -1;
       }
    
       Vector3D pix_position = grid.position(row,col);
@@ -703,8 +735,8 @@ public class VecQToTOF
    System.out.println("Got Grid: " + transformer.getDataGrid() );
 
 //   Vector3D q_vec = new Vector3D( 0.8701965f, 6.3653164f, 0.8469445f );
-//   Vector3D q_vec = new Vector3D( -0.31071144f, 6.3506145f, 0.8738657f );
-   Vector3D q_vec = new Vector3D( -0.48379692f, 10.031614f, 4.6503353f );
+   Vector3D q_vec = new Vector3D( -0.31071144f, 6.3506145f, 0.8738657f );
+//   Vector3D q_vec = new Vector3D( -0.48379692f, 10.031614f, 4.6503353f );
    float rc_tof[] = transformer.QtoRowColTOF( q_vec );
 
  
