@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/06/14 14:24:49  pfpeterson
+ *  Uses appropriate default value if an empty or null string is
+ *  given to the constructor.
+ *
  *  Revision 1.1  2002/06/06 16:14:32  pfpeterson
  *  Added to CVS.
  *
@@ -47,36 +51,34 @@ import DataSetTools.util.*;
  */
 public class InstNamePG extends StringPG{
     private static String TYPE="InstName";
+    private static String propName="Default_Instrument";
+    private static final SharedData share=new SharedData();
 
     // ********** Constructors **********
     public InstNamePG(String name, Object value){
         super(name,value);
         this.type=TYPE;
+        if( value==null ){
+            this.setValue(share.isaw_props.get(propName));
+        }else{
+            String temp=this.getStringValue();
+            if(temp==null || temp.length()==0){
+                this.setValue(share.isaw_props.get(propName));
+            }
+        }
     }
     
     public InstNamePG(String name, Object value, boolean valid){
         super(name,value,valid);
         this.type=TYPE;
-    }
-
-    // ********** IParameterGUI requirements **********
-    /**
-     * Allows for initialization of the GUI after instantiation.
-     */
-    public void init(Vector init_values){
-        if(init_values!=null){
-            if(init_values.size()==1){
-                // the init_values is what to set as the value of the parameter
-                this.setValue(init_values.elementAt(0));
-            }else{
-                // something is not right, should throw an exception
+        if( value==null ){
+            this.setValue(share.isaw_props.get(propName));
+        }else{
+            String temp=this.getStringValue();
+            if(temp==null || temp.length()==0){
+                this.setValue(share.isaw_props.get(propName));
             }
         }
-        entrywidget=new StringEntry(this.getStringValue(),20);
-        entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
-        this.setEnabled(this.getEnabled());
-        this.packupGUI();
-        this.initialized=true;
     }
 
     static void main(String args[]){
