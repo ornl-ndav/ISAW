@@ -48,6 +48,12 @@
 
 10-1-2000
    - Implemented starting character $ for parameters in addition to #$$
+
+12-1-2000
+   - Fixed IsawHelp search path
+   - Added support for the parameter data types 
+     DSFieldString, DSSettableFieldString in addition to the other supported data types
+     InstrumentNameString and DataDirectoryString
 */
 package Command; 
 
@@ -418,15 +424,15 @@ public class CommandPane  extends JPanel
             }
           else
             {S = Args[i].getName().toString() + "=" ;
-             if( Args[i].getValue() instanceof String)
+             if( (Args[i].getValue() instanceof String) ||(Args[i].getValue() instanceof SpecialString))
                 S = S + '"' +  Args[i].getValue().toString()+ '"';
              else
-                S = S + Args[i].getValue().toString();
+                S = S + Args[i].getValue().toString();            
              ExecLine.resetError() ;
              int j = ExecLine.execute ( S , 0 , S.length());
              perror =ExecLine.getErrorCharPos() ;
              if( perror >= 0 )
-                serror = ExecLine.getErrorMessage()+" in Parameters" ;
+                serror = ExecLine.getErrorMessage()+" in Parameters " + S;
              if( perror >= 0)
                {lerror = i;
                 //return;  must reset dataset titles
@@ -550,7 +556,8 @@ public class CommandPane  extends JPanel
               }
 	      if(Debug)System.out.println( " Thru" +line) ; 
             line ++  ; 
-             
+              
+
 
 	   } ; 
        return line ; 
@@ -1027,7 +1034,7 @@ public class CommandPane  extends JPanel
          { i = Line.indexOf( '#');
            Line = Line.substring( i+1);
          }
-       V.add( Line );
+       V.addElement( Line );
        E = doc.getDefaultRootElement();
        start = 0;
        int j , k;
@@ -1049,7 +1056,7 @@ public class CommandPane  extends JPanel
           start = ExecLine.skipspaces(Line , 1 , start );
           j = findQuote ( Line , 1 , start, " " , "" );
           if( (j >= 0) && ( j < Line.length() ))
-            V.add(Line.substring( start , j).trim());
+            V.addElement(Line.substring( start , j).trim());
           start = j;
           if( start >= Line.length())
             {seterror( start , "Improper Parameter Format");
@@ -1071,41 +1078,68 @@ public class CommandPane  extends JPanel
             System.out.println("in line start end="+ start + ","+DT+","+Message);
           DT = DT.toUpperCase();
           if( (DT .equals( "INT") ) || ( DT.equals( "INTEGER")))
-             V.add( new JIntegerParameterGUI( new Parameter ( Message , new Integer (0)) ) );
+             V.addElement( new JIntegerParameterGUI
+                          ( new Parameter ( Message , new Integer (0)) ) );
           else if ( DT.equals( "FLOAT"))
-             V.add( new JFloatParameterGUI(  new Parameter ( Message , new Float (0.0)) ) ); 
+             V.addElement( new JFloatParameterGUI
+                          (  new Parameter ( Message , new Float (0.0)) ) ); 
           else if( DT.equals( "STRING"))
-             V.add( new JStringParameterGUI( new Parameter ( Message , "" ) ) );
+             V.addElement( new JStringParameterGUI
+                      ( new Parameter ( Message , "" ) ) );
           else if(DT.equals("BOOLEAN"))
-             V.add(new JBooleanParameterGUI( new Parameter ( Message, "") ) );
+             V.addElement(new JBooleanParameterGUI
+                           ( new Parameter ( Message, new Boolean(true)) ) );
           else if( DT.equals("DataDirectoryString".toUpperCase()))
              { String DirPath = System.getProperty("Data_Directory");
                if( DirPath != null )
                    DirPath = DataSetTools.util.StringUtil.fixSeparator( DirPath+"\\");
                else
                    DirPath = "";
-               V.add( new JStringParameterGUI( new Parameter( Message, DirPath)));
+               V.addElement( new JStringParameterGUI
+                              ( new Parameter( Message, DirPath)));
               }
+          else if( DT.equals("DSSettableFieldString".toUpperCase()))
+            { //V.addElement(new Parameter(Message, new DSSettableFieldString());
+                AttributeList A = new AttributeList();
+            // Attribute A1;
+	     DSSettableFieldString dsf1 = new DSSettableFieldString();
+             
+             for( k =0; k< dsf1.num_strings(); k++)
+		 {   
+                    A.addAttribute( new StringAttribute( dsf1.getString(k), "") );
+                }
+               
+              V.addElement( new JAttributeNameParameterGUI( new Parameter( Message ,new DSSettableFieldString() ) , A));
+             
+            }
           else if (DT.equals( "DSFieldString".toUpperCase()))
-            {String Fields[] = {"Title","X_label", "X_units", "PointedAtIndex","SelectFlagOn",
-                       "SelectFlagOff","SelectFlag","Y_label","Y_units", "MaxGroupID",
-                        "MaxXSteps","MostRecentlySelectedIndex", "NumSelected" , "XRange",
-                       "YRange"};
+            {  //V.addElement( new Parameter(Message , new DSFieldSTring());
+              //String Fields[] = {"Title","X_label", "X_units", "PointedAtIndex","SelectFlagOn",
+             //          "SelectFlagOff","SelectFlag","Y_label","Y_units", "MaxGroupID",
+              //          "MaxXSteps","MostRecentlySelectedIndex", "NumSelected" , "XRange",
+              //         "YRange"};
              AttributeList A = new AttributeList();
             // Attribute A1;
-	    
-             for( k =0; k< Fields.length; k++)
-		 {   
-                    A.addAttribute( new StringAttribute( Fields[k] , "") );
-              }
+	    DSFieldString dsf = new DSFieldString();
             
-             V.add( new JAttributeNameParameterGUI( new Parameter( Message ,"" ) , A));
+             
+             for( k =0; k< dsf.num_strings(); k++)
+		 {   
+
+                    A.addAttribute( new StringAttribute( dsf.getString(k), "") );
+                 }
+           
+             
+             
+             V.addElement( new JAttributeNameParameterGUI( new Parameter( Message ,new DSFieldString() ) , A));
+            
             }
           else if( DT.equals( "InstrumentNameString".toUpperCase()))
             {String XX = System.getProperty("Default_Instrument");
              if( XX == null )
                XX = "";
-             V.add( new JStringParameterGUI( new Parameter( Message, XX )));
+             V.addElement( new JStringParameterGUI
+                        ( new Parameter( Message, XX )));
             }
           else if ( DT.equals( "DataSet".toUpperCase()) )
            {
@@ -1114,7 +1148,7 @@ public class CommandPane  extends JPanel
             Parameter PP = new Parameter( Message , dd);
             if(Debug)System.out.println("Dat Set Param dd="+PP.getValue()+","+PP.getName());
             JlocDataSetParameterGUI JJ = new JlocDataSetParameterGUI( PP , DS);
-            V.add(JJ);
+            V.addElement(JJ);
             
             if(Debug)
               {System.out.print("DS"+JJ.getClass()+","); 
@@ -1187,15 +1221,15 @@ public class CommandPane  extends JPanel
     if( Debug )
        if( V1 != null )
          for( int i = 0 ; i < V1.size() ; i++)
-           System.out.println( "par i ="+V1.get(i));
+           System.out.println( "par i ="+V1.elementAt(i));
     if( V1 == null)
       return new Parameter[0];
     if( V1.size() <2)
       return new Parameter[0];
     Vector V = new Vector();
-    V.add( V1.get(0)); 
+    V.addElement( V1.elementAt(0)); 
     for( int i = 2; i < V1.size(); i+=2)
-     {V.add( V1.get( i ) );
+     {V.addElement( V1.elementAt( i ) );
      }
      Command.JScriptParameterDialog X = new Command.JScriptParameterDialog( V, ExecLine.getGlobalDataset() );
      if( Debug ) System.out.println( "After Dialog box");
@@ -1206,9 +1240,9 @@ public class CommandPane  extends JPanel
      Parameter P[] = new Parameter[ V.size() - 1] ;
      JParameterGUI JPP;
      for( int i = 1 ; i < V.size(); i++)
-       { JPP= (JParameterGUI)(V.get( i )) ;
+       { JPP= (JParameterGUI)(V.elementAt( i )) ;
          U = JPP.getParameter();
-         P[i-1]= new Parameter( (String)(V1.get(2*i -1 )) , U.getValue()) ;//new Parameter((String)( V1.get( i - 1 )), U.getValue());
+         P[i-1]= new Parameter( (String)(V1.elementAt(2*i -1 )) , U.getValue()) ;//new Parameter((String)( V1.get( i - 1 )), U.getValue());
        
        }
     
@@ -1330,14 +1364,14 @@ public class CommandPane  extends JPanel
            Object O = evt.getNewValue();     
            
            if(Debug)
-             System.out.println(" in Display Data Type ="+ O.getClass()+PL.hasListeners("Display"));
+             System.out.println(" in Display Data Type ="+ O.getClass());
+	                    // ","+PL.hasListeners("Display"));
              S = O.toString();
            if( StatusLine != null)
 	      new Util().appendDoc(StatusLine.getDocument(), S ) ; 
           else
 	      System.out.println( "Display is " + S ) ;
-            
-            PL.firePropertyChange("Display" , null , O );
+           PL.firePropertyChange("Display" , null , O );
           }
 
     }   
@@ -1452,51 +1486,78 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
          S = System.getProperty("Help_Directory");
 	 if( S!= null)
            { S = DataSetTools.util.StringUtil.fixSeparator( S);
+            // System.out.print("A");if(S!=null)System.out.println(S); else System.out.println("");
+
              S = S.trim();
              if( S.length() < 1) 
                 S = null;
              else if( "\\/".indexOf(S.charAt(S.length() - 1 ))< 0)
                 S = S + java.io.File.separator;
+             //System.out.println("A@="+ S + "Command/CommandPane.html");
+             if( new File( S + "Command/CommandPane.html").exists())
+               {}
+             else S = null;
+             // System.out.print("B");if(S!=null)System.out.println(S); else System.out.println("");
             } 
 
          if( S == null)
             { S= System.getProperty("user.dir").trim();
+               //System.out.print("C");
+
               if( S!=null) 
                 if( S.length() > 0 ) 
                  if(  "\\/".indexOf(S.charAt(S.length() - 1 ) ) < 0)
 	           S = S + java.io.File.separator;
               S = DataSetTools.util.StringUtil.fixSeparator( S);
+             // System.out.println(S);
 	      if( !new File( S + "IsawHelp/Command/CommandPane.html").exists()) 
                  S = null;
-             S = S +"IsawHelp"+java.io.File.separator;
+              else 
+                  S = S +"IsawHelp"+java.io.File.separator;
+             
+
             }
-       
+         //System.out.print("D");if(S!=null)System.out.println(S); else System.out.println("");
+
         if( S != null )
 	    S = S + "Command/CommandPane.html";
         else
 	    {String CP = System.getProperty("java.class.path").replace( '\\','/') ;
 	    int s, t ;
-            for( s = 0; (s < CP.length()) && (S == null); )
+              //System.out.println("E");
+
+            for( s = 0; (s < CP.length()) && (S == null); s++)
 	      {t = CP.indexOf( ";", s+1);
                if( t < 0) t = CP.length();
                S = CP.substring(s,t) .trim();
                if( S.length() > 0 ) if ( S.charAt( S.length() -1) != '/') S = S + "/";
+                //System.out.print("F");if(S!=null)System.out.println(S); else System.out.println("");
+
+
                if( new File( S + "IsawHelp/Command/CommandPane.html").exists())
                  S= S + "IsawHelp/Command/CommandPane.html";
                else S = null;     
            
                 }
               }
-         
+          //System.out.print("G");if(S!=null)System.out.println(S); else System.out.println("");
+
+
          if( S == null )S = "http://www.pns.anl.gov/isaw/IsawHelp/CommandPane.html";
          else S = "file:///" + S;
          //H.displayURL( S ) ;
           S= S.replace( '\\','/');
           System.out.println("Source is"+S); 
-          H = new HTMLPage( S ) ;
-          Dimension D = getToolkit().getScreenSize();
-          H.setSize((int)(.6* D.width) , (int)(.6*D.height) ); 
-          H.show();
+          try{
+            H = new HTMLPage( S ) ;
+            Dimension D = getToolkit().getScreenSize();
+             H.setSize((int)(.6* D.width) , (int)(.6*D.height) ); 
+              H.show();
+             }
+           catch(Exception s)
+             {if(StatusLine!=null) StatusLine.setText("CANNOT FIND HELP FILE");
+              else System.out.println("CANNOT FIND HELP FILE");
+             }
         
         }
     }// end actionperformed 
@@ -1695,7 +1756,7 @@ public static void  main( String args[] )
 	    //Instrument_Macro_Path = isawProp.getProperty("Instrument_Macro_Path");
 	    //User_Macro_Path = isawProp.getProperty("User_Macro_Path");
           System.setProperties(isawProp);  
-//        System.getProperties().list(System.out);
+    //    System.getProperties().list(System.out);
           input.close();
        }
        catch (IOException ex) {
