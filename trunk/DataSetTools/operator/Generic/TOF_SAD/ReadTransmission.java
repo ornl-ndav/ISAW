@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/10/22 20:16:03  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.2  2003/08/21 15:16:53  rmikk
  * Fixed error
  *
@@ -90,7 +93,7 @@ public class ReadTransmission extends GenericTOF_SAD{
    *     the data off of the file specified in the first parameter.  It
    *     creates a Transmission data set.    The Tranmission data set also has the errors 
    *     recorded.
-   *     @ return  the Transmission data set
+   *     @return  the Transmission data set
    *     
    */
    public Object getResult(){

@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/10/22 20:11:29  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.2  2003/08/19 20:59:36  rmikk
  * Eliminated leading "/" in the title of 1D reduce files
  *
@@ -281,8 +284,9 @@ public class Read3Col1D extends GenericTOF_SAD{
 
  }
  /**
- *  @param Args[0] name of a file storing information on a DataSet in 3 Col format 
- *  @param Args[1] filetype
+ *  Test program for this module.
+ *  Args[0] name of a file storing information on a DataSet in 3 Col format 
+ *  Args[1] filetype
  *  @return a data set will be displayed. It can be saved via the x vs Group y in the
  *     Selected Table View
  */

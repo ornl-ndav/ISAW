@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/10/22 20:07:22  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.4  2003/08/15 19:28:55  rmikk
  * Set the new parameter in the constructor
  *
@@ -68,7 +71,7 @@ public class PrintFlood  extends GenericTOF_SAD{
 
     /**
     *   Constructor
-    *   @ param   EfficiencyDS  The Efficiency Data Set
+    *   @param   EfficiencyDS  The Efficiency Data Set
     *                          the Mask are all the entries that are zero
     *   @param   Outfilename    The filename to print the information to
     *   @param   fileType      "Flood" or "Transmission"
