@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/06/16 19:05:34  pfpeterson
+ *  Removed old code and updated to work with new getCategoryList() code
+ *  in base operator class.
+ *
  *  Revision 1.3  2002/11/27 23:20:04  pfpeterson
  *  standardized header
  *
@@ -60,6 +64,7 @@ import DataSetTools.operator.DataSet.DataSetOperator;
 abstract public class DS_TOF_Reflectometer extends    DataSetOperator 
                                  implements Serializable
 {
+   private static String[] categoryList=null;
    protected DS_TOF_Reflectometer( String title )
    {
       super( title );
@@ -73,11 +78,12 @@ abstract public class DS_TOF_Reflectometer extends    DataSetOperator
    *          actually the category of the abstract base class from which
    *          the current operator is directly derived.
    */
+/* REMOVE
   public String getCategory()
   {
       return "TOF_Reflectometer";
   }
-
+*/
   /* ------------------------ getCategoryList ------------------------------ */
   /**
    * Get an array of strings listing the operator category names of base
@@ -93,11 +99,19 @@ abstract public class DS_TOF_Reflectometer extends    DataSetOperator
    */
   public String[] getCategoryList()
   {
+    if(categoryList==null)
+      categoryList=createCategoryList();
+
+    return categoryList;
+  }
+/* REMOVE
+  public String[] getCategoryList()
+  {
     String partial_list[] = super.getCategoryList();  // get list of ancestor
                                                       // categories and put 
                                                       // them in a new larger
                                                       // list.
     return AppendCategory( "TOF_Reflectometer", partial_list );
   }
-
+*/
 } 

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/06/16 19:02:17  pfpeterson
+ *  Removed old code and updated to work with new getCategoryList() code
+ *  in base operator class.
+ *
  *  Revision 1.3  2002/11/27 23:16:52  pfpeterson
  *  standardized header
  *
@@ -60,23 +64,11 @@ import DataSetTools.operator.DataSet.DataSetOperator;
 abstract public class DS_Conversion extends    DataSetOperator 
                                     implements Serializable
 {
+   private static String[] categoryList=null;
    protected DS_Conversion( String title )
    {
       super( title );
    } 
-
-  /* -------------------------- getCategory -------------------------------- */
-  /**
-   * Get the category of this operator
-   *
-   * @return  A String specifying the category of this operator.  This is
-   *          actually the category of the abstract base class from which
-   *          the current operator is directly derived.
-   */
-  public String getCategory()
-  {
-    return CONVERSION;
-  }
 
   /* ------------------------ getCategoryList ------------------------------ */
   /**
@@ -93,11 +85,9 @@ abstract public class DS_Conversion extends    DataSetOperator
    */
   public String[] getCategoryList()
   {
-    String partial_list[] = super.getCategoryList();  // get list of ancestor
-                                                      // categories and put 
-                                                      // them in a new larger
-                                                      // list.
-    return AppendCategory( CONVERSION, partial_list );
-  }
+    if(categoryList==null)
+      categoryList=createCategoryList();
 
+    return categoryList;
+  }
 } 

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/06/16 19:06:23  pfpeterson
+ *  Removed old code and updated to work with new getCategoryList() code
+ *  in base operator class.
+ *
  *  Revision 1.3  2002/11/27 23:20:52  pfpeterson
  *  standardized header
  *
@@ -59,23 +63,12 @@ abstract public class GenericBatch extends    GenericOperator
     implements Serializable, HiddenOperator
 {
 
+  private static String[] categoryList=null;
+
    protected GenericBatch( String title )
    {
       super( title );
    } 
-
-  /* -------------------------- getCategory -------------------------------- */
-  /**
-   * Get the category of this operator
-   *
-   * @return  A String specifying the category of this operator.  This is
-   *          actually the category of the abstract base class from which
-   *          the current operator is directly derived.
-   */
-  public String getCategory()
-  {
-    return BATCH;
-  }
 
   /* ------------------------ getCategoryList ------------------------------ */
   /**
@@ -92,11 +85,9 @@ abstract public class GenericBatch extends    GenericOperator
    */
   public String[] getCategoryList()
   {
-    String partial_list[] = super.getCategoryList();  // get list of ancestor
-                                                      // categories and put 
-                                                      // them in a new larger
-                                                      // list.
-    return AppendCategory( BATCH, partial_list );
-  }
+    if(categoryList==null)
+      categoryList=createCategoryList();
 
+    return categoryList;
+  }
 } 
