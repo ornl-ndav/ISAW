@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.20  2003/07/09 19:58:48  bouzekc
+ * Added check in for null range parameter.  Sets range from
+ * 0 to Integer.MAX_VALUE if null.
+ *
  * Revision 1.19  2003/07/08 22:49:40  bouzekc
  * Now returns the fully qualified name of the lsqrs.log file.
  *
@@ -253,10 +257,18 @@ public class LsqrsJ extends GenericTOF_SCD {
     int threshold    = ( ( IntegerPG )getParameter( 5 ) ).getintValue(  );
     int[] keepRange  = ( ( IntArrayPG )getParameter( 6 ) ).getArrayValue(  );
     float[][] matrix = null;
-    int lowerLimit   = keepRange[0];  //lower limit of range
+    int lowerLimit;
+    int upperLimit;
 
-    //upper limit of range
-    int upperLimit = keepRange[keepRange.length - 1];
+    if( keepRange != null ){
+      lowerLimit   = keepRange[0];  //lower limit of range
+
+      //upper limit of range
+      upperLimit = keepRange[keepRange.length - 1];
+    } else {  //shouldn't happen, but default to 0:MAX_VALUE
+      lowerLimit = 0;
+      upperLimit = Integer.MAX_VALUE;
+    }
     String logfile;
 
     {
@@ -401,7 +413,6 @@ public class LsqrsJ extends GenericTOF_SCD {
     }
 
     // trim out edge peaks (defined by the "pixels to keep" parameter)
-    if( threshold >= 0 ) {
       for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
         peak = ( Peak )peaks.elementAt( i );
 
@@ -414,7 +425,6 @@ public class LsqrsJ extends GenericTOF_SCD {
           peaks.remove( i );
         }
       }
-    }
 
     // can't refine nothing
     if( peaks.size(  ) == 0 ) {
