@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.12  2001/07/10 20:23:24  dennis
+ *  Added method to calculate Omega()
+ *
  *  Revision 1.11  2001/04/25 20:56:54  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -470,6 +473,18 @@ public static float SpectrometerQ( float e_in_meV,
       return( -1.0f );
     }
   return (float)( Math.sqrt( temp / 2.0721 ) );
+}
+
+
+/* ------------------------------- Omega -------------------------------- */
+/**
+ *  Calculates "Omega" defined as (two_theta/2 + 135) mod 180
+ */
+public static float Omega( float two_theta )
+{
+  float temp = (two_theta/2 + 135);
+  
+  return (temp % 180);
 }
 
 }
