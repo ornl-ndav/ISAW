@@ -32,6 +32,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/06/30 22:10:02  bouzekc
+ * Now uses ParameterViewer to show values of the elements in
+ * its list.  Now implements PropertyChangeListener rather than
+ * using an inner class.  Changed the edit button to be a value
+ * changing button, and updated the label to reflect this.
+ * Removed inner SetValueActionListener class.  Added method
+ * comments.
+ *
  * Revision 1.3  2003/06/30 21:09:22  bouzekc
  * Removed "Set Value" button and moved its functionality to
  * the "Add" button.  Changed private method newVal() to
@@ -49,6 +57,7 @@
 package DataSetTools.components.ParametersGUI;
 
 import DataSetTools.parameter.ParameterGUI;
+import DataSetTools.parameter.ParameterViewer;
 import DataSetTools.parameter.VectorPG;
 
 import DataSetTools.util.PropertyChanger;
@@ -76,12 +85,12 @@ import javax.swing.*;
  *  etc.  This class was extracted from VectorPG and redesigned.
  */
 public class ArrayEntryJPanel extends JPanel implements ActionListener,
-  PropertyChanger {
+  PropertyChanger, PropertyChangeListener {
   private final String UP_LABEL       = new String( "Move Item Up" );
   private final String DOWN_LABEL     = new String( "Move Item Down" );
   private final String DELETE_LABEL   = new String( "Delete Item" );
   private final String ADD_LABEL      = new String( "Add Item" );
-  private final String EDIT_LABEL     = new String( "Edit Item" );
+  private final String CHANGE_LABEL   = new String( "Change Value" );
   private final String DONE_LABEL     = new String( "Done" );
   private final String SHOW_LABEL     = new String( "Show Items" );
   private JList jlist;
@@ -90,8 +99,8 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
   private JButton Add;
   private JButton Up;
   private JButton Down;
-  private JButton Edit;
-  private JButton OK;
+  private JButton Change;
+  private JButton Done;
   private JButton Show;
   private PropertyChangeSupport pcs;
   private Vector oldVector;
@@ -127,25 +136,25 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     Down     = new JButton( DOWN_LABEL );
     Delete   = new JButton( DELETE_LABEL );
     Add      = new JButton( ADD_LABEL );
-    Edit     = new JButton( EDIT_LABEL );
-    OK       = new JButton( DONE_LABEL );
+    Change   = new JButton( CHANGE_LABEL );
+    Done     = new JButton( DONE_LABEL );
     Show     = new JButton( SHOW_LABEL );
     jp.add( Up );
     jp.add( Down );
     jp.add( Show );
     jp.add( Add );
     jp.add( Delete );
-    jp.add( Edit );
-    jp.add( OK );
+    jp.add( Change );
+    jp.add( Done );
     add( jp, BorderLayout.EAST );
 
     Up.addActionListener( this );
     Down.addActionListener( this );
     Show.addActionListener( this );
-    Add.addActionListener( new SetValueActionListener(  ) );
+    Add.addActionListener( this );
     Delete.addActionListener( this );
-    Edit.addActionListener( this );
-    OK.addActionListener( this );
+    Change.addActionListener( this );
+    Done.addActionListener( this );
 
     JPanel dataPanel = new JPanel( new BorderLayout(  ) );
 
@@ -162,8 +171,7 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     //if we happen to have a VectorPG as an element in our ArrayJPanel, we will
     //need to add the SetValueActionListener to it
     if( param instanceof VectorPG ) {
-      ( ( VectorPG )param ).addPropertyChangeListener( 
-        new SetValueActionListener(  ) );
+      ( ( VectorPG )param ).addPropertyChangeListener( this );
     }
 
     pcs = new PropertyChangeSupport( this );
@@ -233,30 +241,46 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
       move( -1 );
     } else if( actionButton == Down ) {
       move( +1 );
-    } else if( actionButton == Edit ) {
-      setInnerParameterValue( jlist.getSelectedIndex(  ) );
+    } else if( actionButton == Add ) {
+      //get the value from the data entry panel and add it
+      jlistModel.addElement( param.getValue(  ) );
+    } else if( actionButton == Change ) {
+      int pos = jlist.getSelectedIndex(  );
+
+      if( ( pos >= 0 ) && ( pos < jlistModel.getSize(  ) ) ) {
+        jlistModel.setElementAt( param.getValue(  ), pos );
+      }
     } else if( actionButton == Delete ) {
       int j = jlist.getSelectedIndex(  );
 
       position = -1;
 
       if( j < 0 ) {
+        //this should throw an exception at some point
         return;
       }
 
+      //found an element, so delete it
       jlistModel.removeElementAt( j );
 
-      if( j >= 0 ) {
-        if( j < jlistModel.getSize(  ) ) {
-          jlist.setSelectedIndex( j );
-        }
+      if( j < jlistModel.getSize(  ) ) {
+        jlist.setSelectedIndex( j );
       }
     } else if( actionButton == Show ) {
-      ( new JOptionPane(  ) ).showMessageDialog( 
-        null, StringUtil.toString( jlist.getSelectedValue(  ) ) );
-    } else if( actionButton == OK ) {
+      int index = jlist.getSelectedIndex(  );
+
+      if( index < 0 ) {
+        return;
+      }
+
+      this.setInnerParameterValue( index );
+
+      //display the parameter
+      new ParameterViewer( param ).showParameterViewer(  );
+    } else if( actionButton == Done ) {
       Vector newVector = getValues(  );
 
+      //let any property listeners know that the values have changed
       pcs.firePropertyChange( "DataChanged", oldVector, newVector );
       oldVector = newVector;
     }
@@ -317,23 +341,12 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     position = -1;
   }
 
-  //Listens for the change in value of the List in the J and redesignedFrame
-  private class SetValueActionListener implements ActionListener,
-    PropertyChangeListener {
-    //~ Methods ****************************************************************
-
-    public void propertyChange( PropertyChangeEvent evt ) {
-      actionPerformed( null );
-    }
-
-    public void actionPerformed( ActionEvent evt ) {
-      Object O = param.getValue(  );
-
-      if( ( position >= 0 ) && ( position < jlistModel.getSize(  ) ) ) {
-        jlistModel.setElementAt( O, position );
-      } else {
-        jlistModel.addElement( O );
-      }
-    }
+  /**
+   *  Needed for PropertyChangeListener implementation.
+   *
+   *  @param  evt   The PropertyChangeEvent to listen for.
+   */
+  public void propertyChange( PropertyChangeEvent evt ) {
+    actionPerformed( null );
   }
 }
