@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2002/07/23 18:22:44  dennis
+ *  Now passes "pointed at" x values between the DataSet
+ *  and the tempDataSet.
+ *
  *  Revision 1.23  2002/07/18 22:08:55  dennis
  *  Moved separate OverplotView hiearchy into DataSetTools/viewer
  *  hierarchy.
@@ -262,7 +266,8 @@ public class ViewManager extends    JFrame
       setBounds(0,0,600,425);
       makeTempDataSet( true );
       setView( view_type ); 
-      setVisible(true);
+      show();
+  //  setVisible(true);
       conversion_operator = null;
       System.gc();
    }
@@ -409,9 +414,10 @@ public class ViewManager extends    JFrame
          int index = dataSet.getPointedAtIndex();    // "pointed at" index if
          if ( index != DataSet.INVALID_INDEX )       //  valid and different 
            if ( new_index[ index ] != DataSet.INVALID_INDEX )
-             if ( new_index[ index ] != tempDataSet.getPointedAtIndex() )
+        //   if ( new_index[ index ] != tempDataSet.getPointedAtIndex() )
              {
                tempDataSet.setPointedAtIndex( new_index[ index ] );
+               tempDataSet.setPointedAtX( dataSet.getPointedAtX() );
                viewer.redraw( (String)reason );
              }  
        }
@@ -434,6 +440,7 @@ public class ViewManager extends    JFrame
        {
          int i = tempDataSet.getPointedAtIndex();
          dataSet.setPointedAtIndex( original_index[i] ); 
+         dataSet.setPointedAtX( tempDataSet.getPointedAtX() ); 
          dataSet.notifyIObservers( POINTED_AT_CHANGED );
        }
 
