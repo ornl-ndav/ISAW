@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2003/11/20 01:21:51  bouzekc
+ *  Made several methods final.
+ *
  *  Revision 1.31  2003/11/19 04:05:27  bouzekc
  *  Added accessor and mutator methods and made all fields private.  This class
  *  is now a JavaBean.  Added code to clone() to copy all PropertyChangeListeners.
@@ -435,7 +438,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *
    * @param pcl The property change listener to be added.
    */
-  public void addPropertyChangeListener( PropertyChangeListener pcl ) {
+  public final void addPropertyChangeListener( PropertyChangeListener pcl ) {
     propListeners.put( pcl, UNKNOWN_PROPERTY );
     getPropertyChangeSupport(  )
       .addPropertyChangeListener( pcl );
@@ -455,7 +458,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * @param prop The property to listen for.
    * @param pcl The property change listener to be added.
    */
-  public void addPropertyChangeListener( 
+  public final void addPropertyChangeListener( 
     String prop, PropertyChangeListener pcl ) {
     propListeners.put( pcl, prop );
     getPropertyChangeSupport(  )
@@ -519,7 +522,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *
    * @param ev The triggering PropertyChangeEvent.
    */
-  public void propertyChange( PropertyChangeEvent ev ) {
+  public final void propertyChange( PropertyChangeEvent ev ) {
     if( getIgnorePropertyChange(  ) ) {
       return;
     }
@@ -536,7 +539,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *
    * @param pcl The property change listener to be removed.
    */
-  public void removePropertyChangeListener( PropertyChangeListener pcl ) {
+  public final void removePropertyChangeListener( PropertyChangeListener pcl ) {
     propListeners.remove( pcl );
     getPropertyChangeSupport(  )
       .removePropertyChangeListener( pcl );
@@ -551,7 +554,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * @return A String representation of this ParameterGUI consisting of its
    *         type, name, valid, and validity.
    */
-  public String toString(  ) {
+  public final String toString(  ) {
     String rs = this.getType(  ) + ": \"" + this.getName(  ) + "\" " +
       this.getValue(  ) + " " + this.getValid(  );
 
@@ -678,7 +681,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   /**
    * Method to pack up everything in the frame.
    */
-  protected void packupGUI(  ) {
+  protected final void packupGUI(  ) {
     if( 
       ( this.getLabel(  ) != null ) && ( this.getEntryWidget(  ) != null ) &&
         ( this.validCheck != null ) ) {
@@ -706,7 +709,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * Shows the GUI.  If this inner GUI panel does not exist, this creates a
    * test JFrame.  Otherwise it does nothing.
    */
-  protected void showGUIPanel(  ) {
+  protected final void showGUIPanel(  ) {
     this.showGUIPanel( 0, 0 );
   }
 
@@ -717,7 +720,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * @param x X location of the JFrame.
    * @param y Y location of the JFrame.
    */
-  protected void showGUIPanel( int x, int y ) {
+  protected final void showGUIPanel( int x, int y ) {
     if( this.getGUIPanel(  ) != null ) {
       JFrame mw = new JFrame( "Test Display of " + this.getType(  ) );
       mw.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
