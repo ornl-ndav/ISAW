@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/02/26 17:20:03  rmikk
+ * Writes message to DataSetTools.util.SharedData.status_pane
+ *
  * Revision 1.5  2002/11/27 23:26:33  pfpeterson
  * standardized header
  *
@@ -246,7 +249,7 @@ public class Form implements Serializable, PropertyChangeListener{
    */
   public void save()
   {
-    Wizard.status_display.append(title + " State save() Not Implemented\n");
+    DataSetTools.util.SharedData.addmsg(title + " State save() Not Implemented\n");
   }
 
   /**
@@ -254,7 +257,7 @@ public class Form implements Serializable, PropertyChangeListener{
    */
   public boolean load()
   {
-    Wizard.status_display.append(title + " State load() Not Implemented\n");
+    DataSetTools.util.SharedData.addmsg(title + " State load() Not Implemented\n");
     return false;
   }
 
@@ -316,7 +319,7 @@ public class Form implements Serializable, PropertyChangeListener{
    */
   public boolean execute()
   {
-    Wizard.status_display.append(title + " execute() Not Implemented\n");
+    DataSetTools.util.SharedData.addmsg(title + " execute() Not Implemented\n");
     // completed = .....
     return false;
   }
