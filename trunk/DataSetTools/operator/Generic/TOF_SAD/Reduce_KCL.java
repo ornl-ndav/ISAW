@@ -30,6 +30,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2004/04/08 15:17:11  dennis
+ * Now uses "new" DataSetPGs consistently and calls clear() after getting the
+ * value from the DataSetPG, to avoid memory leaks.
+ * Replaced all parameters with new ParameterGUI's for consistency.
+ * Removed calls to System.gc() to improve performance.
+ * Renamed methods to Build2D_DS() and CalculateResults() to improve
+ * readability.
+ *
  * Revision 1.20  2004/03/19 20:28:16  dennis
  * Fixed output file name in 2D case, so it uses the
  * correct run number, not always 19990.
@@ -78,6 +86,8 @@ package DataSetTools.operator.Generic.TOF_SAD;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.*;
+
 
 import java.io.*;
 import java.util.Vector;
@@ -85,11 +95,9 @@ import java.util.*;
 
 import Command.*;
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
 import DataSetTools.math.*;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
 import DataSetTools.parameter.*;
-import DataSetTools.operator.Parameter;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 
@@ -117,12 +125,14 @@ import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 
 public class Reduce_KCL  extends GenericTOF_SAD{
 
+    private boolean debug = false; 
+
     public static int Nedge = 1;      //mask off edge detectors or those
     public static float Radmin = 1.5f / 100;//too close or too far from the origin
     public static float Radmax = 100.0f / 100;
     DataSet TransS, TransB, Eff, Sens;
     float[] qu;
-    DataSet[] RUNBds = new DataSet[2];
+    DataSet[]RUNBds = new DataSet[2];
     DataSet[]RUNCds = new DataSet[2];;
     DataSet[]RUNSds = new DataSet[2];
     boolean useTransB;
@@ -269,9 +279,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     *    @param TransB   The background Transmission data set
     *    @param  Eff     The Efficiency data set
     *    @param Sens     The sensitivity data set
-    *    @param qu       The q bins if 1d or qxmin,qxmax, qymin, qymax
+    *    @param quV      The q bins if 1d or qxmin,qxmax, qymin, qymax
     *    @param RUNSds0   the monitor  for the sample
-
     *    @param RUNSds1   the Histogram  for the sample
     *    @param RUNBds0  the  monitor for the Background
     *    @param RUNBds1  the  Histogramfor the Background
@@ -289,33 +298,32 @@ public class Reduce_KCL  extends GenericTOF_SAD{
  
 
     public Reduce_KCL(DataSet TransS, DataSet TransB, DataSet Eff, DataSet Sens,
-        Vector qu, DataSet RUNSds0, DataSet RUNSds1, DataSet RUNBds0, 
+        Vector quV, DataSet RUNSds0, DataSet RUNSds1, DataSet RUNBds0, 
         DataSet RUNBds1,DataSet RUNCds0,DataSet RUNCds1, float BETADN, 
         float SCALE, float THICK,
         float XOFF, float YOFF, int NQxBins, int NQyBins, boolean useTransB) {
         
         super( "Reduce");
         parameters = new Vector();
-        addParameter( new Parameter("", TransS));
-        addParameter( new Parameter("", TransB));
-        addParameter( new Parameter("", Eff));
-        addParameter( new Parameter("", Sens));
-        addParameter( new Parameter("", qu));
-        addParameter( new Parameter("", RUNSds0));
-        addParameter( new Parameter("", RUNSds1));
-        addParameter( new Parameter("", RUNBds0));
-        addParameter( new Parameter("", RUNBds1));
-        addParameter( new Parameter("", RUNCds0));
-        addParameter( new Parameter("", RUNCds1));
-        addParameter( new Parameter("", new Float(BETADN)));
-        addParameter( new Parameter("", new Float(SCALE)));
-        addParameter( new Parameter("", new Float(THICK)));
-        addParameter( new Parameter("", new Float(XOFF)));
-        addParameter( new Parameter("", new Float(YOFF)));
-        addParameter( new Parameter("", new Integer(NQxBins)));
-        addParameter( new Parameter("", new Integer(NQyBins)));
-        addParameter( new Parameter("", new Boolean( useTransB)));
-
+        addParameter( new DataSetPG("", TransS));
+        addParameter( new DataSetPG("", TransB));
+        addParameter( new DataSetPG("", Eff));
+        addParameter( new DataSetPG("", Sens));
+        addParameter( new QbinsPG  ("", quV));
+        addParameter( new MonitorDataSetPG("", RUNSds0));
+        addParameter( new SampleDataSetPG ("", RUNSds1));
+        addParameter( new MonitorDataSetPG("", RUNBds0));
+        addParameter( new SampleDataSetPG ("", RUNBds1));
+        addParameter( new MonitorDataSetPG("", RUNCds0));
+        addParameter( new SampleDataSetPG ("", RUNCds1));
+        addParameter( new FloatPG("", new Float(BETADN)));
+        addParameter( new FloatPG("", new Float(SCALE)));
+        addParameter( new FloatPG("", new Float(THICK)));
+        addParameter( new FloatPG("", new Float(XOFF)));
+        addParameter( new FloatPG("", new Float(YOFF)));
+        addParameter( new IntegerPG("", new Integer(NQxBins)));
+        addParameter( new IntegerPG("", new Integer(NQyBins)));
+        addParameter( new BooleanPG("", new Boolean( useTransB)));
       }
 
     public void setDefaultParameters(){
@@ -361,18 +369,46 @@ public class Reduce_KCL  extends GenericTOF_SAD{
      */
    
    public Object getResult(){
+
+      ElapsedTime timer = null;
+      if ( debug )
+      { 
+        timer = new ElapsedTime();
+        System.out.println("Start of getResult()");
+      }
+
         DataSet TransS=(DataSet)(getParameter(0).getValue());
+        ((DataSetPG)getParameter(0)).clear();
+
         DataSet TransB=(DataSet)(getParameter(1).getValue());
+        ((DataSetPG)getParameter(1)).clear();
+
         DataSet Eff=(DataSet)(getParameter(2).getValue());
+        ((DataSetPG)getParameter(2)).clear();
+
         DataSet Sens=(DataSet)(getParameter(3).getValue());
+        ((DataSetPG)getParameter(3)).clear();
         
         Vector Qu=(Vector)(getParameter(4).getValue());
+
         DataSet RUNSds0=(DataSet)(getParameter(5).getValue());
+        ((DataSetPG)getParameter(5)).clear();
+
         DataSet RUNSds1=(DataSet)(getParameter(6).getValue());
+        ((DataSetPG)getParameter(6)).clear();
+
         DataSet RUNBds0=(DataSet)(getParameter(7).getValue());
+        ((DataSetPG)getParameter(7)).clear();
+
         DataSet RUNBds1=(DataSet)(getParameter(8).getValue());
+        ((DataSetPG)getParameter(8)).clear();
+
         DataSet RUNCds0=(DataSet)(getParameter(9).getValue());
+        ((DataSetPG)getParameter(9)).clear();
+
         DataSet RUNCds1=(DataSet)(getParameter(10).getValue());
+        ((DataSetPG)getParameter(10)).clear();
+
         float BETADN=((Float)(getParameter(11).getValue())).floatValue();
         float SCALE=((Float)(getParameter(12).getValue())).floatValue();
         float THICK=((Float)(getParameter(13).getValue())).floatValue();
@@ -400,6 +436,12 @@ public class Reduce_KCL  extends GenericTOF_SAD{
           qu[i] = ((Number)Qu.elementAt(i)).floatValue();
         }
         
+        if ( debug )
+        {
+          System.out.println("Got parameters in, time used = " + timer.elapsed() );
+          timer.reset();
+        }
+
         if ((NQxBins < 1) || (NQyBins < 1))
             IF2D = 0;
         else
@@ -410,10 +452,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         this.TransB = TransB;
         this.Eff = Eff;
         this.Sens = Sens;
-        this.RUNSds = RUNSds;
-        this.RUNBds = RUNBds;
-        this.RUNCds = RUNCds;
-        this.qu = qu;
 
         MonitorInd = CalcTransmission.setMonitorInd( RUNSds0);
         MonitorID = new int[MonitorInd.length];
@@ -534,26 +572,39 @@ public class Reduce_KCL  extends GenericTOF_SAD{
           tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNCds[1].getData_entry(
                i),30f, BETADN);
          }
-       
+
         float[] tofs=RUNSds[1].getData_entry(NUMX * NUMY / 2).getX_scale().getXs();
         tofs = cnvertToWL(tofs, (XAxisConversionOp)RUNSds[1].
                  getOperator("Convert to WaveLength"),NUMX*NUMY/2);
 
+
         if( tofs[0] > tofs[1]) 
           Reverse(tofs);
+
+        if ( debug )
+        {
+          System.out.println("After cnvertToWL, time used = " + timer.elapsed() );
+          timer.reset();
+        }
 
         xscl = new VariableXScale( tofs);
         
         ConvertToWL( RUNSds[0],xscl);
         ConvertToWL( RUNSds[1],xscl);
-        System.gc();
+
         ConvertToWL( RUNBds[0],xscl);
         ConvertToWL( RUNBds[1],xscl);
-        System.gc();
+
         ConvertToWL( RUNCds[0],xscl);
         ConvertToWL( RUNCds[1],xscl);
-        System.gc();
       
+        if ( debug )
+        {
+          System.out.println("After ConvertToWL RUNSds[0]...RUNCds[1], time used = " + timer.elapsed() );
+          System.out.println("xscl has " + xscl.getNum_x() );
+          timer.reset();
+        }
+
         LAMBDA = xscl.getXs();
         this.SCALE = this.SCALE / THICK;
 
@@ -574,7 +625,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
             }
         } catch (IOException e) {
         }
-         return init();
+         return CalculateResults();
 
      } // end of getResult()
 
@@ -582,7 +633,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
      /**
       *    Had to do this so global variables were used in 2nd code
       */
-       public Object init(){
+       public Object CalculateResults(){
         AdjustGrid(RUNSds[1], XOFF, YOFF) ;
         AdjustGrid(RUNBds[1], XOFF, YOFF) ;
         UniformGrid SampGrid = SetUpGrid( RUNSds[1]);
@@ -605,7 +656,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 	    xscl = new VariableXScale(qu);
             
             DataSet SSampQ = SumQs( SampGrid, xscl, RUNSds[0], SensGrid, Eff);
-            DataSet SBackQ  = SumQs( BackGrid, xscl, RUNSds[0], SensGrid, Eff);
+            DataSet SBackQ = SumQs( BackGrid, xscl, RUNSds[0], SensGrid, Eff);
             DataSet SDifQ = (DataSet)((new DataSetSubtract( SSampQ,SBackQ,true)).getResult());
             DataSetFactory.addOperators( SSampQ);
             DataSetFactory.addOperators( SBackQ);
@@ -767,18 +818,20 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         eff = effErr= Mon=MonErr = null;
         Qxy= SampYvals= BackYvals= SampErrs= BackErrs= wlvals= null;
         Dback = Dsamp = null;
-        System.gc(); 
 
         Vector  V = new Vector();
-	Object O1=show( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, SQXQY,SERRXY,"s2d");
+	Object O1=Build2D_DS( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, SQXQY,SERRXY,"s2d");
         SQXQY = null;
         SERRXY = null;
-        System.gc();
-	Object O2=show( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, BQXQY,BERRXY,"b2d");
-        BQXQY= null;BERRXY= null;
-	Object O3=show( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, SBQXQY,SBERRXY,"sn2d");
-        SBQXQY= null;SBERRXY= null;
-        System.gc();
+
+	Object O2=Build2D_DS( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, BQXQY,BERRXY,"b2d");
+        BQXQY= null
+        ;BERRXY= null;
+
+	Object O3=Build2D_DS( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, SBQXQY,SBERRXY,"sn2d");
+        SBQXQY= null;
+        SBERRXY= null;
+
 	if( O1 instanceof ErrorString)
           return O1;
 	if( O2 instanceof ErrorString)
@@ -787,7 +840,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
           return O3;
     
         V.addElement( O1); V.addElement(O2); V.addElement( O3);
-        
         return V;
     }
 
@@ -809,11 +861,13 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         Grid_util.setEffectivePositions(ds, grid.ID());
     }
 
-    public  Object show( float Qxmin,    float Qymin, 
-                         float Dx,       float Dy, 
-                         int   Nx,       int   Ny,
-                         float[][] list, float[][] err, 
-                         String DataSetName) {
+
+
+    public  Object Build2D_DS( float Qxmin,    float Qymin, 
+                               float Dx,       float Dy, 
+                               int   Nx,       int   Ny,
+                               float[][] list, float[][] err, 
+                               String DataSetName) {
 
     DataSet DS = new DataSet(DataSetName ,new OperationLog(), "per Angstrom",
                              "", "Rel Counts", "Rel Counts");
@@ -864,53 +918,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     return DS;
     }
 
-    public static void main(String[] args) {
-
-        IsawGUI.Util util = new IsawGUI.Util();
-
-        DataSet[] RUNSds = null, RUNBds = null, RUNCds = null;
-        DataSet[] TransS = null, TransB = null, Eff = null, Sens = null;
-        float[] qu = new float[117];
-        String Path, Instrument;
-        float BETADN, SCALE;
-
-        BETADN = 0.0011f;
-        SCALE = 843000f;
-        //
-        qu[0] = 0.0035f;
-        for (int i = 1; i < 117; i++) {
-            qu[i] = qu[i - 1] * 1.05f;
-            //System.out.println("qu ....." +qu[i]);
-        }
-       
-        RUNSds = util.loadRunfile("C:\\Argonne\\sand\\wrchen03\\sand19990.run");
-        RUNBds = util.loadRunfile("C:\\Argonne\\sand\\wrchen03\\sand19935.run");
-        RUNCds = util.loadRunfile("C:\\Argonne\\sand\\wrchen03\\sand19936.run");
-        System.out.println("After loading runfiles, before loading isds");
-        try {
-            TransS = ScriptUtil.load("C:\\ISAW\\DataSetTools\\operator\\Generic\\TOF_SAD\\tr1999019934.isd");
-            TransB = ScriptUtil.load("C:\\ISAW\\DataSetTools\\operator\\Generic\\TOF_SAD\\tr1993519934.isd");
-            Eff = ScriptUtil.load("C:\\ISAW\\DataSetTools\\operator\\Generic\\TOF_SAD\\efr19452.isd");
-            Sens = ScriptUtil.load("C:\\ISAW\\SampleRuns\\sens19878.isd");
-        } catch (Exception sss) {
-            System.out.println("Error:" + sss);
-        }
-
-        System.out.println("Before calling Reduce_KCLxxxxxxxxxxxxxxxxxxxxxxxxxx");
-        Reduce_KCL Reduce_KCL = new Reduce_KCL(TransS[0], TransB[0], 
-                Eff[0], Sens[0],toVec(qu), RUNSds[0], RUNSds[1], 
-		RUNBds[0],RUNBds[1], RUNCds[0],RUNCds[1], BETADN, SCALE, .1f,
-                //     0f,0f);
-                .000725f, .006909f, -200, -200, true);
-        Object O = Reduce_KCL.getResult();
-//new float[]{-.5f,.5f,-.5f,.5f}
-        System.out.println("Finished O=" + O);
-        Vector V = (Vector) O;
-        ScriptUtil.display(((DataSet)(V.elementAt(0))).getAttributeValue(Attribute.RUN_NUM));
-        ScriptUtil.display(V.elementAt(0));
-        ScriptUtil.display(V.elementAt(1));
-        ScriptUtil.display(V.elementAt(2));
-    }
 
   private static Vector toVec( float[] list){
      if( list == null)
@@ -1049,9 +1056,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
          Cadmerr = D.getErrors();
          D = null;
          for( int i=0; i< sampy.length; i++){
-            err1= quoErr(sampy[i],samperr[i],SampMony[i],SampMonerr[i]);
-            
-            err2= quoErr(Cadmy[i],Cadmerr[i],CadmMony[i],CadmMonerr[i]);
+            err1 = quoErr(sampy[i],samperr[i],SampMony[i],SampMonerr[i]);
+            err2 = quoErr(Cadmy[i],Cadmerr[i],CadmMony[i],CadmMonerr[i]);
             err3 = SumDiffErr( err1,  err2);
            
             Num = sampy[i]/SampMony[i] -Cadmy[i]/CadmMony[i]; 
@@ -1062,9 +1068,9 @@ public class Reduce_KCL  extends GenericTOF_SAD{
             }else
                samperr[i] = err3;
             
-            samperr[i]= quoErr( sampy[i],samperr[i], sens*Effy[i],
-                     prodErr( sens, senserr, Effy[i], Efferr[i]));
-            sampy[i]= SCALE*sampy[i];
+            samperr[i] = quoErr( sampy[i],samperr[i], sens*Effy[i],
+                         prodErr( sens, senserr, Effy[i], Efferr[i]));
+            sampy[i] = SCALE*sampy[i];
             samperr[i] = samperr[i]*SCALE;
         }
        }//else sens ==0
@@ -1091,7 +1097,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         }
 
        return X;
-
   }
 
   //assumes in wave length
@@ -1107,15 +1112,16 @@ public class Reduce_KCL  extends GenericTOF_SAD{
                   Attribute.PIXEL_INFO_LIST));
       return Res;
   }
+
   /**
   *   Return a new set of yvalues that correspond to the old set of yvalues
   *   rebinned to the new XScale
-  *   @param  yvals  the old set of y values
-  *   @param  xvals  the x values corresponding to the old y values( assumes histogram)
-  *   @param  qu  the new XScale to be rebinned to
+  *   @param  yvals     the old set of y values
+  *   @param  xvals     the x values corresponding to the old y values( assumes histogram)
+  *   @param  qu_scale  the new XScale to be rebinned to
   */ 
-  public static float[] Rebin( float[] yvals,float[] xvals, XScale qu){
-    float[] xx= qu.getXs();
+  public static float[] Rebin( float[] yvals, float[] xvals, XScale qu_scale ){
+    float[] xx= qu_scale.getXs();
     float[] Res = new float[ xx.length-1];
     Arrays.fill( Res, 0.0f);
     int i, j,k;
@@ -1172,7 +1178,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
              
             float[] pos = dp.getCartesianCoords();
     
-
             float rad = pos[1] * pos[1] + pos[2] * pos[2];
             if ((rad < Radmin * Radmin) || (rad > Radmax * Radmax))
                 Z = true;
@@ -1229,5 +1234,57 @@ public class Reduce_KCL  extends GenericTOF_SAD{
    ds.setX_label("WaveLength");
    return ds;
  }
-}
 
+
+    /**
+     *   Main program for testing purposes
+     */
+    public static void main(String[] args) {
+
+        IsawGUI.Util util = new IsawGUI.Util();
+
+        DataSet[] RUNSds = null, RUNBds = null, RUNCds = null;
+        DataSet[] TransS = null, TransB = null, Eff = null, Sens = null;
+        float[] qu = new float[117];
+        String Path, Instrument;
+        float BETADN, SCALE;
+
+        BETADN = 0.0011f;
+        SCALE = 843000f;
+        //
+        qu[0] = 0.0035f;
+        for (int i = 1; i < 117; i++) {
+            qu[i] = qu[i - 1] * 1.05f;
+            //System.out.println("qu ....." +qu[i]);
+        }
+
+        RUNSds = util.loadRunfile("C:\\Argonne\\sand\\wrchen03\\sand19990.run");
+        RUNBds = util.loadRunfile("C:\\Argonne\\sand\\wrchen03\\sand19935.run");
+        RUNCds = util.loadRunfile("C:\\Argonne\\sand\\wrchen03\\sand19936.run");
+        System.out.println("After loading runfiles, before loading isds");
+        try {
+            TransS = ScriptUtil.load("C:\\ISAW\\DataSetTools\\operator\\Generic\\TOF_SAD\\tr1999019934.isd");
+            TransB = ScriptUtil.load("C:\\ISAW\\DataSetTools\\operator\\Generic\\TOF_SAD\\tr1993519934.isd");
+            Eff = ScriptUtil.load("C:\\ISAW\\DataSetTools\\operator\\Generic\\TOF_SAD\\efr19452.isd");
+            Sens = ScriptUtil.load("C:\\ISAW\\SampleRuns\\sens19878.isd");
+        } catch (Exception sss) {
+            System.out.println("Error:" + sss);
+        }
+
+        System.out.println("Before calling Reduce_KCLxxxxxxxxxxxxxxxxxxxxxxxxxx");
+        Reduce_KCL Reduce_KCL = new Reduce_KCL(TransS[0], TransB[0],
+                Eff[0], Sens[0],toVec(qu), RUNSds[0], RUNSds[1],
+                RUNBds[0],RUNBds[1], RUNCds[0],RUNCds[1], BETADN, SCALE, .1f,
+                //     0f,0f);
+                .000725f, .006909f, -200, -200, true);
+        Object O = Reduce_KCL.getResult();
+        //new float[]{-.5f,.5f,-.5f,.5f}
+        System.out.println("Finished O=" + O);
+        Vector V = (Vector) O;
+        ScriptUtil.display(((DataSet)(V.elementAt(0))).getAttributeValue(Attribute.RUN_NUM));
+        ScriptUtil.display(V.elementAt(0));
+        ScriptUtil.display(V.elementAt(1));
+        ScriptUtil.display(V.elementAt(2));
+    }
+
+}
