@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/09/03 14:53:05  bouzekc
+ * Modified to listen to the Enter key on each Component of a ParameterGUI.
+ * This is to facilitate easy entry with things like FloatArrayArrayPG.
+ *
  * Revision 1.2  2003/09/02 18:21:04  bouzekc
  * Added method to get at the inner panel with the data entry GUI components
  * on it.
@@ -171,9 +175,7 @@ public class ArrayEntryJFrame extends JFrame implements ActionListener,
                             .getComponents(  );
 
     for( int i = 0; i < temp.length; i++ ) {
-      if( temp[i] instanceof JTextComponent ) {
-        temp[i].addKeyListener( this );
-      }
+      temp[i].addKeyListener( this );
     }
 
     innerPanel.add( dataPanel, BorderLayout.NORTH );
@@ -311,6 +313,8 @@ public class ArrayEntryJFrame extends JFrame implements ActionListener,
       pcs.firePropertyChange( VectorPG.DATA_CHANGED, oldVector, newVector );
       oldVector = newVector;
       this.setVisible( false );
+    } else if( command.equals( param.getName(  ) ) ) {
+      this.setVisible( true );
     }
   }
 
@@ -395,13 +399,13 @@ public class ArrayEntryJFrame extends JFrame implements ActionListener,
   private void setInnerParameterValue( int pos ) {
     position = pos;
 
-    if( ( pos >= 0 ) && ( pos < jlistModel.getSize(  ) ) ) {
-      param.setValue( jlistModel.elementAt( pos ) );
-    }
+    if( !( param instanceof VectorPG ) ) {
+      if( ( pos >= 0 ) && ( pos < jlistModel.getSize(  ) ) ) {
+        param.setValue( jlistModel.elementAt( pos ) );
+      }
 
-    if( param instanceof VectorPG ) {
-      ( ( VectorPG )param ).actionPerformed( 
-        new ActionEvent( this, ActionEvent.ACTION_PERFORMED, "NEW" ) );
+      //( ( VectorPG )param ).actionPerformed( 
+      //new ActionEvent( this, ActionEvent.ACTION_PERFORMED, "NEW" ) );
     }
   }
 
