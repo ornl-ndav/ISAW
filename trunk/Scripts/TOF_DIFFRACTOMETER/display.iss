@@ -1,4 +1,4 @@
-#200Ashfia Huq August 2004
+# Ashfia Huq August 2004
 # Displays summed data as a function of D
 # Standard (Five banks, focused to 145,125,107,90,53.  +ve and -ve sides summed.
 # Focus_all_tth : The consecutive four banks (not 53) are focussed to 125 degrees
@@ -6,15 +6,14 @@
 # Kappa : Creates 8 banks of data with selected detectors
 # Pressure : Creates 1 bank of data with available detectors and focus to 100 degrees.
 # Choice is given to display dialog box.
+# CVS VERSION $Date$
+# Date: 2004/01/16 16:03:04 
 
-# Modify Date: $2005/02/17 23:11:31 $ : Ashfia Huq , 
-# ID's should remain the same (bad detectors are turned off using the 
-# discriminator levels)
+# Modify Date: 2005/1/18 16:03:04  : Ashfia Huq , ID's should remain the same (bad detectors are turned off using the discriminator levels)
 #Write 3 column format (FXYE for GSAS)
 #Resample bins(for constant binning) to start at 2000 micro sec and end at 32000 micro sec with dT = 5 micro sec.
 #For dT/T binning make sure to check box so that data is not resampled
 
-$Category=Macros, Instrument Type, TOF_NPD
 
 $Sort_d_by_Omega		Boolean(true)	Sort_d_by_Omega (Indiv detectors)
 $Standard        		Boolean(false)	Standard (5B, sum & T focus)
@@ -25,11 +24,11 @@ $Pressure             	Boolean(false)  	Pressure (1B with selected detectors)
 
 $Current			Boolean(true)	Is this a Current Run ?
 
-$run_numbers   		Array([23127])	Enter run numbers like [1,2:5]
-$path             	DataDirectoryString    	Path
-$path_archive		DataDirectoryString(C:/material/user-data)	path_archive
-$instrument       	InstrumentNameString   	Instrument
-$outputname			DataDirectoryString(C:/material/testisaw)  outputname    
+$run_numbers		Array([21378])          				Enter run numbers like [21378]
+$path                	DataDirectoryString    					Inputname
+$path_archive		DataDirectoryString(/IPNShome/gppduser/archive_data/)	path_archive
+$instrument          	InstrumentNameString    				Instrument
+$outputname			DataDirectoryString(/IPNShome/gppduser/aaaUSER_data/)  	outputname    
 
 $Create_GSAS		Boolean(false)        Create GSAS data?
 $dT_bin			Boolean(false)        dT/T binning ?
@@ -90,40 +89,38 @@ elseif Standard == true
 	send dss
        	  
 elseif Focus_all_tth == true
-  	id_val =["1:44,180:223,48:75,225:254,77:110,256:286,111:317","140:162,166:176"]
-	focus_val = [125,53]
-		if Prompt_detector_ID == true
-		InputBox( "Enter bank info for GPPD"&i, [ "Bank 1","Bank 2"], id_val, [temp[1]] )
+  	id_val =["1:44,180:223,48:75,225:254,77:110,256:286,111:139,289:317","140:162,166:176"]
+  	focus_val = [125,53]
+  		if Prompt_detector_ID == true
+		InputBox( "Enter bank info for GPPD"&i, [ "Bank 1","Bank 2], id_val, [temp[1]] )
 		endif
 	m_dsi = TimeFocusGID(temp[1],id_val[0],focus_val[0],1.5,true)
 
-	if dT_bin == false   
+	if dT_bin == false
 		uniform_dsi = Resample(m_dsi,2000,32000,6001,true)
 	else
-		uniform_dsi = m_dsi 
+		uniform_dsi = m_dsi
 	endif
 	m_dsa = SumAtt(uniform_dsi, "Effective Position",true, focus_val[0]-.000005,focus_val[0]+.000005)
-  
-		for j in [1:1]
-      		dsi = TimeFocusGID(temp[1],id_val[j],focus_val[j],1.5,true)
+   		for j in [1:1]
+      	dsi = TimeFocusGID(temp[1],id_val[j],focus_val[j],1.5,true)
 		if dT_bin == false
-		uniform_dsi = Resample(dsi,2000,32000,6001,true) 
+			uniform_dsi = Resample(dsi,2000,32000,6001,true)
 		else
-		uniform_dsi = m_dsi
+			uniform_dsi = dsi
 		endif
-	
-     		dsa = SumAtt(uniform_dsi, "Effective Position",true, focus_val[j]-.000005,focus_val[j]+.000005)
-      	m_dsa =Merge(m_dsa,dsa)  
-  		endfor
+      	dsa = SumAtt(uniform_dsi, "Effective Position",true, focus_val[j]-.000005,focus_val[j]+.000005)
+      	m_dsa =Merge(m_dsa,dsa)
+   		endfor 
 
 	if Create_GSAS == true
 	Save3ColGSAS(temp[0], m_dsa, outputname&i&".gsa",true)
 	endif
 
   	m_dsaT=ToD(m_dsa,0.15,5.3,6000)
-      dss=Sort(m_dsaT,"Group ID",true,true)
-	Display dss
-	send dss
+      	dss=Sort(m_dsaT,"Group ID",true,true)
+		Display dss
+		send dss
 		
 	
 elseif Miller == true
@@ -180,7 +177,7 @@ elseif Kappa == true
 	endif
 		
 	m_dsaT=ToD(m_dsa,0.15,3.3,6000)
-      dss=Sort(m_dsaT,"Omega",true,true)
+      dss=Sort(m_dsaT,"Group ID",true,true)
 	Display dss
 	send dss	
 	
