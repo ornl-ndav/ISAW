@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.144  2003/07/31 20:12:17  rmikk
+ *  Added a print before a printStack trace for the error message
+ *
  *  Revision 1.143  2003/07/31 19:26:47  rmikk
  *  Caught Throwable and printed the strack trace in this
  *  class
@@ -1764,6 +1767,7 @@ public class Isaw
           try{
             new Script_Class_List_Handler();
           }catch(Throwable e){
+           System.out.println(" Error:"+e.toString());
             e.printStackTrace();
           }finally{
             return null;
