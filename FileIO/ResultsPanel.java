@@ -57,6 +57,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/01/29 18:13:28  dennis
+ * Fixed javadoc error.
+ *
  * Revision 1.4  2004/01/24 22:56:24  bouzekc
  * Removed unused variables.
  *
@@ -107,16 +110,18 @@ public class ResultsPanel extends JPanel {
   int nfiles;
 /**
  * ResultsPanel constructor
- *@param pattern search pattern
- *@param directory top directory of search
- *@param boolean search sub-directories
- *@param boolean case blind compare
- *@param filter filter for files
+ *@param searchPattern search pattern
+ *@param searchDir     top directory of search
+ *@param subdirs       flag indicating whether or not to search sub-directories
+ *@param caseblind     flag indicating whether or not to do case-sensitive
+ *                     comparison.
+ *@param filter        filter for files
  */
-  public ResultsPanel(final String searchPattern,
-      final String searchDir, final boolean subdirs,
-      final boolean caseblind,
-      final FileFilter filter) {
+  public ResultsPanel( final String     searchPattern,
+                       final String     searchDir, 
+                       final boolean    subdirs,
+                       final boolean    caseblind,
+                       final FileFilter filter) {
     top = new File(searchDir);
 // Temporarily create files list in order to count
     path1 = top.getAbsolutePath();
@@ -192,9 +197,12 @@ public class ResultsPanel extends JPanel {
  * @param boolean first subdirectory?
  * @param filter FileFilter
  */  
-  private void addFile(String searchPattern,
-      final File file, boolean subdirs, boolean first,
-      FileFilter filter, boolean nocase)
+  private void addFile(String     searchPattern,
+                       final File file, 
+                       boolean    subdirs, 
+                       boolean    first,
+                       FileFilter filter, 
+                       boolean    nocase)
     {
     String fname = file.getName();
     if (fname.startsWith( "."))	//Ignore fdl files

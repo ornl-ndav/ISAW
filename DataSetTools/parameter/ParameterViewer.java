@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/01/29 18:14:02  dennis
+ * Fixed javadoc error.
+ *
  * Revision 1.12  2004/01/08 14:51:15  bouzekc
  * Changed visibility on tryToDisplayASCII() to public static.  Added public
  * static method to view a DataSet from a runfile.
@@ -177,8 +180,8 @@ public class ParameterViewer implements ActionListener {
   /**
    * Utility method to display DataSets.  Defaults to image view.
    *
-   * @param runfile The name of the Runfile to get the DataSet from.
-   * @param dsNum The DataSet number to display.
+   * @param runfileName The name of the Runfile to get the DataSet from.
+   * @param dsNum       The DataSet number to display.
    */
   public static void displayDataSet( String runfileName, int dsNum ) {
     new ViewManager( 
