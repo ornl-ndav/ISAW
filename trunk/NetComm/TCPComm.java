@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/02/24 20:35:30  dennis
+ *  Added message string STATUS="Status:"
+ *
  *  Revision 1.11  2003/02/21 18:37:15  dennis
  *  Now "automatically" sends and receives DataSets in compressed form.
  *
@@ -71,9 +74,12 @@ import DataSetTools.util.*;
  *
  *  @see  ThreadedTCPComm
  *  @see  DataSetTools.retriever.LiveDataRetriever 
+ *  @see  DataSetTools.retriever.FileDataRetriever 
  */
 public class TCPComm
 {
+  public static final String STATUS = "Status:";
+
   public static boolean        debug_tcp_comm = false;
 
   protected Socket             sock;
