@@ -30,6 +30,17 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.3  2002/11/12 18:13:37  dennis
+ *  Made immutable by:
+ *  1. remove setValue() method
+ *  2. add() & combine() methods now return a new Attribute
+ *
+ *  Also:
+ *  3. Since it is now immutable, clone() method is not needed and
+ *     was removed
+ *  4. Default constructor is now private, since the value can't
+ *     be set from outside of the class
+ *
  *  Revision 1.2  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -61,7 +72,7 @@ import   DataSetTools.gsastools.GsasCalib;
  * @see DataSetTools.dataset.DetPosAttribute
  */
 
-public class GsasCalibAttribute extends    Attribute
+public class GsasCalibAttribute extends   Attribute
 {
 
   // NOTE: any field that is static or transient is NOT serialized.
@@ -93,7 +104,7 @@ public class GsasCalibAttribute extends    Attribute
         this.value = value;
     }
 
-    public GsasCalibAttribute(){
+    private GsasCalibAttribute(){
         super("");
         this.value = new GsasCalib(0f,0f,0f);
     }
@@ -105,19 +116,6 @@ public class GsasCalibAttribute extends    Attribute
     public Object getValue( ){
         return value.clone();
     } 
-
-    /**
-     * Set the value for this position attribute using a generic
-     * object.  The actual class of the object must be a Position3D
-     * object.
-     */
-    public boolean setValue( Object obj ){
-        if( obj instanceof GsasCalib)
-            value=(GsasCalib)obj;
-        else
-            return false;
-        return true;
-    }   
 
     /**
      * Returns a copy the DetectorPosition object that is the value of this
@@ -209,45 +207,52 @@ public class GsasCalibAttribute extends    Attribute
     }
 
     /*
-     * Combine the value of this attribute with the value of the
-     * attribute passed as a parameter to obtain a new value for this
-     * attribute. This is done by replacing the old value with the new
-     * one.
+     * Average the values of dif_c, dif_a, and t_zero from the current Attribute
+     * with the values from the specified Attribute to obtain values for a 
+     * new Attribute.
      *
-     *  @param attr A GsasCalibAttribute to replace the current one.
+     *  @param attr An attribute whose values are to be averaged
+     *              with the values of the this attribute.
+     *
+     *  @return A new Attribute whose values are the average of the values of 
+     *          the current and specified Attribute.
      */
-    /*public void combine( Attribute attr ){
+      public Attribute combine( Attribute attr ){
       if ( !(attr instanceof GsasCalibAttribute) )       // can't combine
-      return;
+      return this;
+
+      float dif_c  = (value.dif_c() + 
+                      ((GsasCalibAttribute)attr).value.dif_c())/2;
+      float dif_a  = (value.dif_a() + 
+                      ((GsasCalibAttribute)attr).value.dif_a())/2;
+      float t_zero = (value.t_zero() + 
+                      ((GsasCalibAttribute)attr).value.t_zero())/2;
       
-      this.value=(GsasCalib)attr.getValue();
-      }*/
+      return new GsasCalibAttribute(name, new GsasCalib(dif_c, dif_a, t_zero));
+      }
     
     
     /*
-     * Add the specified position to this position to obtain an new
-     * position value for this attribute.
+     * Add the values of dif_c, dif_a, and t_zero from the current Attribute
+     * to the values from the specified Attribute to obtain values for a
+     * new Attribute. 
      *
-     *  @param attr An attribute whose position value is to be "added"
-     *              to the position value of the this attribute.
+     *  @param attr An attribute whose values are to be "added"
+     *              to the values of the this attribute.
      *
+     *  @return A new Attribute whose values are the sum of the values of 
+     *          the current and specified Attribute.
      */
-    /*public void add( Attribute attr ){
+      public Attribute add( Attribute attr ){
       if ( !(attr instanceof GsasCalibAttribute) )       // can't combine
-      return;
+      return this;
       
-      float xyz[] = new float[3];
-      float this_xyz[],
-      other_xyz[];
-      
-      this_xyz  = this.value.getCartesianCoords();
-      other_xyz = ((DetectorPosition)attr.getValue()).getCartesianCoords();
-      
-      for ( int i = 0; i < 3; i++ )
-      xyz[i] = this_xyz[i] + other_xyz[i];
-      
-      this.value.setCartesianCoords( xyz[0], xyz[1], xyz[2] );
-      }*/
+      float dif_c  = value.dif_c() + ((GsasCalibAttribute)attr).value.dif_c();
+      float dif_a  = value.dif_a() + ((GsasCalibAttribute)attr).value.dif_a();
+      float t_zero = value.t_zero() + ((GsasCalibAttribute)attr).value.t_zero();
+
+      return new GsasCalibAttribute(name, new GsasCalib(dif_c, dif_a, t_zero));
+      }
       
     
     /**
@@ -275,14 +280,6 @@ public class GsasCalibAttribute extends    Attribute
         return this.getName() + ": " + this.getStringValue();
     }
     
-    
-    /**
-     * Returns a copy of the current attribute
-     */
-    public Object clone(){
-        return new GsasCalibAttribute( this.getName(), this.value );
-    }
-
 /* -----------------------------------------------------------------------
  *
  *  PRIVATE METHODS
