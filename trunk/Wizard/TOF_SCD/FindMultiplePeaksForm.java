@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.27  2003/10/27 01:30:56  bouzekc
+ * Result parameter is now the last parameter.  This is to facilitate
+ * remote execution.
+ *
  * Revision 1.26  2003/10/26 19:17:36  bouzekc
  * Now returns the name of the file written rather than Boolean.TRUE when
  * getResult() executes successfully.
@@ -243,12 +247,13 @@ public class FindMultiplePeaksForm extends Form {
 
     addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );  //8
 
-    addParameter( new LoadFilePG( "Peaks File", " ", false ) );  //9
-
     addParameter( 
-      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );  //10
+      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );  //9
+
+    addParameter( new LoadFilePG( "Peaks File", " ", false ) );  //10
+
     setParamTypes( 
-      null, new int[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 10 }, new int[]{ 9 } );
+      null, new int[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, new int[]{ 10 } );
   }
 
   /**
@@ -380,7 +385,7 @@ public class FindMultiplePeaksForm extends Form {
                        .toString(  );
 
     //get the detector border range
-    keepRange = ( ( IntArrayPG )getParameter( 10 ) ).getArrayValue(  );
+    keepRange = ( ( IntArrayPG )getParameter( 9 ) ).getArrayValue(  );
 
     if( keepRange != null ) {
       lowerLimit   = keepRange[0];  //lower limit of range
@@ -557,7 +562,7 @@ public class FindMultiplePeaksForm extends Form {
     SharedData.addmsg( saveName );
 
     //set the peaks file name
-    param = ( IParameterGUI )super.getParameter( 9 );
+    param = ( IParameterGUI )super.getParameter( 10 );
     param.setValue( saveName );
     param.setValid( true );
 
