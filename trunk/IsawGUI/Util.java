@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.29  2005/01/15 01:30:28  rmikk
+ * Kept newere Parameter types as parameter for Write operators
+ *
  * Revision 1.28  2004/07/14 16:37:24  rmikk
  * Added .RAW extension so ISIS files can be retrieved
  *
@@ -253,9 +256,10 @@ public class Util
 
          return;
       }
-
-      X.setParameter( new Parameter( "filename", filename ), 2 );
-      X.setParameter( new Parameter( "dataset", ds ), 1 );
+       X.getParameter(2).setValue( filename );
+       X.getParameter(1).setValue( ds );
+      //X.setParameter( new Parameter( "filename", filename ), 2 );
+      //X.setParameter( new Parameter( "dataset", ds ), 1 );
 
        new JParametersDialog( X, lh,
             null, null );
