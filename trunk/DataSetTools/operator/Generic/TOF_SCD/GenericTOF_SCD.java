@@ -39,9 +39,9 @@ import DataSetTools.operator.Generic.GenericOperator;
  *   Base class for generic operators that work with time-of-flight
  *   single crystal diffractometers.
  *
- * @see GenericTOF_DG_Spectrometer
+ * @see DataSetTools.operator.Generic.TOF_DG_Spectrometer.GenericTOF_DG_Spectrometer
  * @see GenericOperator
- * @see WriteNexus 
+ * @see DataSetTools.operator.Generic.Save.WriteNexus 
  *
  */
 

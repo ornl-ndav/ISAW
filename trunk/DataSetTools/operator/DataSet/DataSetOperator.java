@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:25:01  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 20:59:43  pfpeterson
  *  Operator reorganization.
  *
@@ -102,7 +105,7 @@ import DataSetTools.operator.Operator;
  * carried out immediately by calling getResult().
  *
  * @see Operator
- * @see DataSetAdd
+ * @see DataSetTools.operator.DataSet.Math.DataSet.DataSetAdd
  */
 
 abstract public class DataSetOperator extends Operator implements Serializable
