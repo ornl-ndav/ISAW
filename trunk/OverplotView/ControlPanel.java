@@ -53,8 +53,8 @@ public class ControlPanel
                       "::Group #" + i_val.valueOf( id );
 
       OperationLog log = data_set.getOp_log();
-      log.addEntry( id_str + 
-                    " converted into a GraphableData Object" + newline );
+//      log.addEntry( id_str + 
+//                    " converted into a GraphableData Object" + newline );
 
       data[i] = new GraphableData(  id_str,
                                     d,
@@ -365,39 +365,27 @@ public class ControlPanel
     propertyListJP.setLayout(  new GridLayout( 1, 1 )  );
     propertyListJP.add( propertyListJSP );
 
+    //add all items that are currently selected (in selected list in
+    // 'Select' tab
+    for( int i=0;  i<graphDLM.size();  i++ )
+      propertyDLM.add(  i, graphDLM.get( i )  );
+
 
     //
-    // **[ COLOR LIST ]**  set up a list of colors
+    // **[ COLOR CHOOSER ]**  set up a list of colors
     //
-    colorDLM = new DefaultListModel();
+    chooserJCC = new JColorChooser( Color.black );
+    chooserJCC.setPreviewPanel(  new JPanel()  );
+    chooserJCC.getSelectionModel().addChangeListener( 
+      new ColorChooserChangeListener()  );
+    chooserJCC.setBorder(  
+      BorderFactory.createTitledBorder( "Choose Text Color" )  );
 
-    colorJL  = new JList( colorDLM );
-    colorJL.addListSelectionListener( new ColorListSelectionListener() );
-    colorJL.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
+    //Add the components to the demo frame
+    JPanel colorChooserJP = new JPanel();
+    colorChooserJP.setLayout(  new GridLayout( 1, 1 )  );
+    colorChooserJP.add( chooserJCC );
 
-    JScrollPane colorListJSP = new JScrollPane( colorJL );
-    colorListJSP.setVerticalScrollBarPolicy( 
-      JScrollPane.VERTICAL_SCROLLBAR_ALWAYS  );
-
-    //add colors to the array 'colors'
-    int colorCount = 3;
-    colors = new Color[ colorCount ];
-    colors[0] = Color.red;
-    colors[1] = Color.green;
-    colors[2] = Color.blue;
-
-    //add the (above) colors to 'colorJL', where each color and it's string
-    //representation have correspondint indices.
-//    for( int i=0;  i<colorCount;  i++ )
-//      colorDLM.addElement(  colors[i].toString()  );
-      colorDLM.addElement( "red" );
-      colorDLM.addElement( "green" );
-      colorDLM.addElement( "blue" );
-
-    //layout list of selected data
-    JPanel colorListJP = new JPanel();
-    colorListJP.setLayout(  new GridLayout( 1, 1 )  );
-    colorListJP.add( colorListJSP );
 
 
     //
@@ -461,7 +449,8 @@ public class ControlPanel
     JPanel listJP = new JPanel();
     listJP.setLayout(  new GridLayout( 1, 3 )  );
     listJP.add( propertyListJSP );
-    listJP.add( colorListJP );
+//    listJP.add( colorListJP );
+    listJP.add( colorChooserJP );
     listJP.add( markerListJP );
 
     JPanel viewableAreaJP = new JPanel();
@@ -524,6 +513,10 @@ public class ControlPanel
     public void actionPerformed( ActionEvent e ) 
     {
       removeFromGraphList( graph_selections );
+      if(  graphDLM.size() > 0  )
+        removeJB.setEnabled( true );
+      else
+        removeJB.setEnabled( false );
     }
   }
 
@@ -657,9 +650,32 @@ public class ControlPanel
 
 
 
+/*------------------------=[ color chooser listener ]=------------------------*/
+
+  /**
+   * listens to the color selection devide on 'Graph' tab
+   *
+   */
+  class ColorChooserChangeListener 
+    implements ChangeListener
+  {
+    public void stateChanged(ChangeEvent e) 
+    {
+      Color newColor = chooserJCC.getColor();
+      if(  property_selections != null  )
+      {
+        for( int i=0;  i<property_selections.length;  i++ )
+        {
+          GraphableData d = (GraphableData)manager.get(property_selections[i]);
+          d.setColor(  new sgtEntityColor( newColor )  );
+        }
+      }
+    }
+  }
+
+
 
 /*--------------------------=[ list listensers ]=-----------------------------*/
-
 
   /**
    * listens to list of potentially graphable data
@@ -719,14 +735,22 @@ public class ControlPanel
         int selectedIndex = graphJL.getSelectionModel().getMaxSelectionIndex();
         String key = (String)graphDLM.get( selectedIndex );
         GraphableData value = (GraphableData)manager.get( key );
-        System.out.println(  "value: " + value.toString()  );
-        System.out.println(  "group id: " + value.getData().getGroup_ID()  );
         data_set.setPointedAtIndex(  value.getData().getGroup_ID()  );
         data_set.notifyIObservers(  IObserver.POINTED_AT_CHANGED );
       }
 
       //adjust controls
-      removeJB.setEnabled( true );
+      if(  graphDLM.size() > 0  )
+      {
+        removeJB.setEnabled( true );
+        removeJB.paint(  removeJB.getGraphics()  );
+      }
+      else
+      {
+        removeJB.setEnabled( false );
+        removeJB.paint(  removeJB.getGraphics()  );
+      }
+
       addJB.setEnabled( false );
       graphJB.setEnabled( true );
     }
@@ -753,37 +777,7 @@ public class ControlPanel
 
       //adjust
       //  controls....
-      colorJL.getSelectionModel().clearSelection();
       markerJL.getSelectionModel().clearSelection();
-    }
-  }
-
-
-  /**
-   * listens to the list of colors
-   *
-   */
-  class ColorListSelectionListener 
-    implements ListSelectionListener 
-  {
-    public void valueChanged( ListSelectionEvent e ) 
-    {
-      JList list = (JList)e.getSource();
-
-      //get selections
-      int selection = list.getSelectedIndex();
-      //System.out.println( "color selection: " + selection );
-
-      //adjust data values to reflect changes in the selected color
-      if(  property_selections != null  &&  selection >= 0 )
-      {
-        for( int i=0;  i<property_selections.length;  i++ )
-        {
-          GraphableData d = (GraphableData)manager.get(property_selections[i]);
-          d.setColor(  new sgtEntityColor( colors[selection] )  ); 
-          //System.out.println(  "setting color for " + d.toString()  );
-        }
-      }
     }
   }
 
@@ -902,6 +896,7 @@ public class ControlPanel
     if( !graphDLM.contains( d.getID() )  )
     {
       d.setSelected( true );
+      d.setSelectionOrder(  manager.getNextOrder()  );
       manager.add( d );
       graphDLM.addElement(  d.getID()  );
     }
@@ -938,6 +933,7 @@ public class ControlPanel
       if( !graphDLM.contains( d.getID() )  )
       {
         d.setSelected( true );
+        d.setSelectionOrder(  manager.getNextOrder()  );
         manager.add( d );
         graphDLM.addElement(  d.getID()  );
       }
@@ -979,7 +975,9 @@ public class ControlPanel
   public void addToPropertyList( String[] selections )
   {
     for( int i=0;  i<selections.length;  i++ )
-      if(  !propertyDLM.contains( selections[i] )  )
+      if(  propertyDLM == null  )
+        return;
+      else if(  !propertyDLM.contains( selections[i] )  )
         propertyDLM.addElement( selections[i] );
   }
 
@@ -1036,6 +1034,7 @@ public class ControlPanel
   private final String newline = "\n";
   private final String nl = "\n";
 
+  private int selectionOrder = 0;
   private DataSet data_set = null;
   private TextRangeUI xrange, yrange; 
   private GraphableDataManager manager = null;
@@ -1053,7 +1052,7 @@ public class ControlPanel
 
   //used in 'Graph' tab
   private DefaultListModel propertyDLM, colorDLM, markerDLM; 
-  private JList propertyJL, colorJL, markerJL;
+  private JList propertyJL, markerJL;
 
   //listen to x and y rangeUIs
   private xrangeActionListener xrangeListener;
@@ -1069,6 +1068,7 @@ public class ControlPanel
   private int[] markers;
 
   private JButton graphTabApplyJB;
+  private JColorChooser chooserJCC;
 }
 
 
