@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2004/08/11 15:02:53  dennis
+ *  Removed unneeded debug print.
+ *
  *  Revision 1.21  2004/07/14 16:48:22  dennis
  *  Modified the method intensityAtQ() to work for DataSets containing
  *  functions as well as histograms.
@@ -388,8 +391,6 @@ public class VecQToTOF
     goniometerRinv.apply_to( q_corner2, q_corner2 );
                                                      // finally get min_q_dot
     min_q_dot = Math.min( q_center.dot(q_corner1), q_center.dot(q_corner2) );
-
-    System.out.println("min_q_dot = " + min_q_dot );
   }   
 
 
