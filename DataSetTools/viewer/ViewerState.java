@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2004/06/15 20:58:14  robertsonj
+ *  Took out debugging system.out statements
+ *
  *  Revision 1.33  2004/06/15 20:57:03  robertsonj
  *  Changed the setViewerState method so you may or maynot have spaces
  *  when using the viewerStates in a script
@@ -537,10 +540,9 @@ public class ViewerState  implements Serializable
 	   	for(int i = 0; i <seperatedStates.length; i++)
 	   	{
 	   		tempString = seperatedStates[i].trim();
-	   		System.out.println("The string we have now at i = " + i + "is" + tempString);
-	   		System.out.print("SeperatedStates[i] = " + seperatedStates[i]);
+	   	
 	   		if(tempString.startsWith("ColorScale")){
-	   			System.out.println(tempString.lastIndexOf(" "));
+	   		
 	   			set_String("ColorScale", tempString.substring(tempString.lastIndexOf(" ")+1));
 	   		}else if(tempString.startsWith("RebinFlag")){
 	   			if(tempString.endsWith("ue")){
@@ -591,7 +593,7 @@ public class ViewerState  implements Serializable
 	   		}else if(tempString.startsWith("TABLE_TS_NXSTEPS")){
 	   			set_int("TABLE_TS_NXSTEPS", Integer.parseInt(tempString.substring(17)));
 	   		}
-	   		System.out.println("i = "+i);
+	   		
 	   	}
 	return this;
    	}
