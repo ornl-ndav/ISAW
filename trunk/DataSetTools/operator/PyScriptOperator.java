@@ -27,6 +27,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.4  2003/11/20 01:45:56  bouzekc
+ * Made all methods final.
+ *
  * Revision 1.3  2003/10/20 22:08:58  bouzekc
  * Fixed javadoc errors.
  *
@@ -148,7 +151,7 @@ public class PyScriptOperator extends GenericOperator
    * @return String array of the category list. If this script does not truly
    *         define an Operator, this returns super.getCategoryList().
    */
-  public String[] getCategoryList(  ) {
+  public final String[] getCategoryList(  ) {
     if( !IAmOperator ) {
       return super.getCategoryList(  );
     }
@@ -169,7 +172,7 @@ public class PyScriptOperator extends GenericOperator
    * @return Command for using this Operator in Scripts. If this script does
    *         not truly define an Operator, this returns super.getCommand(  ).
    */
-  public String getCommand(  ) {
+  public final String getCommand(  ) {
     if( !IAmOperator ) {
       return super.getCommand(  );
     }
@@ -188,7 +191,7 @@ public class PyScriptOperator extends GenericOperator
    * @return A new DataSet array containing references to the DataSets in the
    *         internal  DataSet array.
    */
-  public DataSet[] getDataSets(  ) {
+  public final DataSet[] getDataSets(  ) {
     int numDsets = Dsets.size(  );
     DataSet[] DS;
     DS = new DataSet[numDsets];
@@ -206,7 +209,7 @@ public class PyScriptOperator extends GenericOperator
    * internal interpreter is null.  This method also calls reset(  ). If this
    * script does not truly define an Operator, this does nothing.
    */
-  public void setDefaultParameters(  ) {
+  public final void setDefaultParameters(  ) {
     if( !IAmOperator ) {
       //not an Operator, so not much to set here
       return;
@@ -237,7 +240,7 @@ public class PyScriptOperator extends GenericOperator
    *
    * @param inDoc The Document to interpret.
    */
-  public void setDocument( Document inDoc ) {
+  public final void setDocument( Document inDoc ) {
     script = new PyScript( inDoc );
     initOperator(  );
   }
@@ -249,7 +252,7 @@ public class PyScriptOperator extends GenericOperator
    * @return Javadoc-style documentation for this operator. If this script does
    *         not truly define an Operator, this returns the default docs.
    */
-  public String getDocumentation(  ) {
+  public final String getDocumentation(  ) {
     if( !IAmOperator ) {
       return super.getDocumentation(  );
     }
@@ -268,7 +271,7 @@ public class PyScriptOperator extends GenericOperator
    * @return The position of the character in the script that generated an
    *         error.
    */
-  public int getErrorCharPos(  ) {
+  public final int getErrorCharPos(  ) {
     if( errormessage == null ) {
       return -1;
     }
@@ -285,7 +288,7 @@ public class PyScriptOperator extends GenericOperator
    *
    * @return The line number in the script that generated an error.
    */
-  public int getErrorLine(  ) {
+  public final int getErrorLine(  ) {
     if( errormessage == null ) {
       return -1;
     }
@@ -298,7 +301,7 @@ public class PyScriptOperator extends GenericOperator
    *
    * @return The error message created from the script error.
    */
-  public String getErrorMessage(  ) {
+  public final String getErrorMessage(  ) {
     return errormessage;
   }
 
@@ -308,14 +311,14 @@ public class PyScriptOperator extends GenericOperator
    *
    * @param IOlist The IObserver list to set.
    */
-  public void setIObserverList( IObserverList IOlist ) {
+  public final void setIObserverList( IObserverList IOlist ) {
     obss = IOlist;
   }
 
   /**
    * Not implemented yet.
    */
-  public void setLogDoc( Document doc ) {}
+  public final void setLogDoc( Document doc ) {}
 
   /**
    * Accessor method for getting the number of parameters that this
@@ -325,7 +328,7 @@ public class PyScriptOperator extends GenericOperator
    * @return The number of parameters of this PyScriptOperator. If this script
    *         does not truly define an Operator, this returns 0.
    */
-  public int getNum_parameters(  ) {
+  public final int getNum_parameters(  ) {
     if( !IAmOperator ) {
       return 0;
     }
@@ -348,7 +351,7 @@ public class PyScriptOperator extends GenericOperator
    * @return Whether or not the parameter was successfully set. If this script
    *         does not truly define an Operator, this returns false.
    */
-  public boolean setParameter( IParameter param, int index ) {
+  public final boolean setParameter( IParameter param, int index ) {
     if( !IAmOperator ) {
       return false;
     }
@@ -374,7 +377,7 @@ public class PyScriptOperator extends GenericOperator
    * @return The given IParameter. If this script does not truly define an
    *         Operator, this returns null.
    */
-  public IParameter getParameter( int index ) {
+  public final IParameter getParameter( int index ) {
     if( !IAmOperator ) {
       return null;
     }
@@ -393,7 +396,7 @@ public class PyScriptOperator extends GenericOperator
    *
    * @param PcSupp The PropertyChangeSupport to set the list to.
    */
-  public void setPropertyChangeList( PropertyChangeSupport PcSupp ) {
+  public final void setPropertyChangeList( PropertyChangeSupport PcSupp ) {
     PS = PcSupp;
   }
 
@@ -419,7 +422,7 @@ public class PyScriptOperator extends GenericOperator
    *
    * @return Result of executing the Script.
    */
-  public Object getResult(  ) {
+  public final Object getResult(  ) {
     if( !IAmOperator ) {
       //we must be working with a document that does not have a class
       //definition, so we'll try to just execute the document text
@@ -477,7 +480,7 @@ public class PyScriptOperator extends GenericOperator
    * so until an Operator exists which can handle a title, this cannot be
    * used.
    */
-  public void setTitle( String title ) {}
+  public final void setTitle( String title ) {}
 
   /**
    * Testbed.
@@ -561,7 +564,7 @@ public class PyScriptOperator extends GenericOperator
    * @return The "short" name for the inner script. If this script does not
    *         truly define an Operator, this returns super.getTitle().
    */
-  public String getTitle(  ) {
+  public final String getTitle(  ) {
     if( !IAmOperator ) {
       return super.getTitle(  );
     }
@@ -579,7 +582,7 @@ public class PyScriptOperator extends GenericOperator
    *
    * @return Formatted Python version number.
    */
-  public String getVersion(  ) {
+  public final String getVersion(  ) {
     return "V1-PYth v" + PySystemState.version;
   }
 
@@ -592,7 +595,7 @@ public class PyScriptOperator extends GenericOperator
    * @param op The operator object whose parameter list is to be  copied to the
    *        current operator.
    */
-  public void CopyParametersFrom( Operator op ) {
+  public final void CopyParametersFrom( Operator op ) {
     if( !IAmOperator ) {
       return;
     }
@@ -607,7 +610,7 @@ public class PyScriptOperator extends GenericOperator
    *
    * @param dss The DataSet to add.
    */
-  public void addDataSet( DataSet dss ) {
+  public final void addDataSet( DataSet dss ) {
     dss.addIObserver( this );
     Dsets.addElement( dss );
     interp.set( "ISAWDS" + dss.getTag(  ), dss );
@@ -618,7 +621,7 @@ public class PyScriptOperator extends GenericOperator
    *
    * @param iobs The IObserver to add.
    */
-  public void addIObserver( IObserver iobs ) {
+  public final void addIObserver( IObserver iobs ) {
     obss.addIObserver( iobs );
   }
 
@@ -627,7 +630,7 @@ public class PyScriptOperator extends GenericOperator
    *
    * @param pcl The PropertyChangeListener to add.
    */
-  public void addPropertyChangeListener( PropertyChangeListener pcl ) {
+  public final void addPropertyChangeListener( PropertyChangeListener pcl ) {
     PS.addPropertyChangeListener( pcl );
   }
 
@@ -637,7 +640,7 @@ public class PyScriptOperator extends GenericOperator
    * @param propName The name of the property.
    * @param pcl The PropertyChangeListener to add.
    */
-  public void addPropertyChangeListener( 
+  public final void addPropertyChangeListener( 
     String propName, PropertyChangeListener pcl ) {
     PS.addPropertyChangeListener( propName, pcl );
   }
@@ -650,7 +653,7 @@ public class PyScriptOperator extends GenericOperator
    *
    * @return A clone of this Operator.
    */
-  public Object clone(  ) {
+  public final Object clone(  ) {
     DataSet[] newDS         = this.getDataSets(  );
     PyScriptOperator newPSO = new PyScriptOperator( this );
 
@@ -667,14 +670,14 @@ public class PyScriptOperator extends GenericOperator
    *
    * @param iobs The IObserver to remove.
    */
-  public void deleteIObserver( IObserver iobs ) {
+  public final void deleteIObserver( IObserver iobs ) {
     obss.deleteIObserver( iobs );
   }
 
   /**
    * Removes all IObservers.
    */
-  public void deleteIObservers(  ) {
+  public final void deleteIObservers(  ) {
     obss.deleteIObservers(  );
   }
 
@@ -684,7 +687,7 @@ public class PyScriptOperator extends GenericOperator
    * @param Doc The document to execute one line of.
    * @param line The line to execute.
    */
-  public void execute1( Document Doc, int line ) {
+  public final void execute1( Document Doc, int line ) {
     String codeLine = ScriptOperator.getLine( Doc, line );
     resetError(  );
 
@@ -707,7 +710,7 @@ public class PyScriptOperator extends GenericOperator
    *
    * @param pyInterp The PythonInterpreter to use to execute the statements.
    */
-  public static void initImports( PythonInterpreter pyInterp ) {
+  public final static void initImports( PythonInterpreter pyInterp ) {
     String scriptsDir = SharedData.getProperty( "ISAW_HOME" );
 
     if( scriptsDir == null ) {
@@ -723,7 +726,7 @@ public class PyScriptOperator extends GenericOperator
    * @param e The property change Event.  NOTE: The only PropertyChangeEvent
    *        processed has a name "Display"
    */
-  public void propertyChange( PropertyChangeEvent e ) {
+  public final void propertyChange( PropertyChangeEvent e ) {
     if( PS == null ) {
       return;  // no one to notify
     }
@@ -735,7 +738,7 @@ public class PyScriptOperator extends GenericOperator
    *
    * @param pcl The PropertyChangeListener to remove.
    */
-  public void removePropertyChangeListener( PropertyChangeListener pcl ) {
+  public final void removePropertyChangeListener( PropertyChangeListener pcl ) {
     PS.removePropertyChangeListener( pcl );
   }
 
@@ -744,7 +747,7 @@ public class PyScriptOperator extends GenericOperator
    * also re-added.  This also calls the interpreter's exec method on the
    * script if the script exists.
    */
-  public void reset(  ) throws InstantiationError {
+  public final void reset(  ) throws InstantiationError {
     if( interp == null ) {
       //initialize the system state
       initInterpreter(  );
@@ -775,7 +778,7 @@ public class PyScriptOperator extends GenericOperator
   /**
    * Resets the internal errormessage.
    */
-  public void resetError(  ) {
+  public final void resetError(  ) {
     errormessage = null;
   }
 
@@ -787,7 +790,7 @@ public class PyScriptOperator extends GenericOperator
    * @param observed_obj Ignored.
    * @param reason One of the DataSetTools.util.IObserver reasons.
    */
-  public void update( Object observed_obj, Object reason ) {
+  public final void update( Object observed_obj, Object reason ) {
     if( observed_obj instanceof DataSet ) {
       if( reason instanceof String ) {
         if( IObserver.DESTROY.equals( reason ) ) {
@@ -803,7 +806,7 @@ public class PyScriptOperator extends GenericOperator
    *
    * @param param The IParameter to add.
    */
-  protected void addParameter( IParameter param ) {
+  protected final void addParameter( IParameter param ) {
     if( !IAmOperator ) {
       return;
     }
@@ -821,7 +824,7 @@ public class PyScriptOperator extends GenericOperator
    * @return String array of the category list. If this script does not truly
    *         define an Operator, this returns super.createCategoryList().
    */
-  protected String[] createCategoryList(  ) {
+  protected final String[] createCategoryList(  ) {
     if( !IAmOperator ) {
       return super.createCategoryList(  );
     }
@@ -839,7 +842,7 @@ public class PyScriptOperator extends GenericOperator
    * more than once unless absolutely necessary, as it calls
    * PythonInterpreter.initialize().
    */
-  private void initInterpreter(  ) {
+  private final void initInterpreter(  ) {
     // get preProperties, postProperties, and systemProperties
     Properties postProps = new Properties(  );
     Properties sysProps  = System.getProperties(  );
@@ -865,7 +868,7 @@ public class PyScriptOperator extends GenericOperator
    * reset the interpreter variables and call setDefaultParameters if the
    * script defines an operator.
    */
-  private void initOperator(  ) {
+  private final void initOperator(  ) {
     if( script.isValid(  ) ) {
       IAmOperator = true;
     } else {
@@ -881,7 +884,7 @@ public class PyScriptOperator extends GenericOperator
   /**
    * Creates a new Python interpreter and executes default_imports.py.
    */
-  private void resetInterpreter(  ) {
+  private final void resetInterpreter(  ) {
     // instantiate AFTER initialize
     interp = new PythonInterpreter(  );
 
@@ -894,7 +897,7 @@ public class PyScriptOperator extends GenericOperator
    * interpreter to hold on to.  The variables will be initialized if they do
    * not exist.
    */
-  private void resetVariables(  ) {
+  private final void resetVariables(  ) {
     if( Dsets == null ) {
       Dsets = new Vector(  );
     }
