@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.184  2004/02/04 18:22:46  dennis
+ *  Changed version to 1.6.1 beta 1
+ *
  *  Revision 1.183  2004/01/29 00:03:25  dennis
  *  Added HKL_SliceView
  *
@@ -684,7 +687,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.6.1 alpha 3";
+          version="1.6.1 beta 1";
         else
           version=SharedData.VERSION;
 
