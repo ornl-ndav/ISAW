@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/11/27 18:39:07  dennis
+ *  Set Editable to false. Only members of the list can be selected.(Ruth)
+ *
  *  Revision 1.4  2001/08/16 01:03:46  rmikk
  *  Set the Selected member of the Combobox to be the
  *  parameters value .toString() so that it is a string
@@ -69,7 +72,7 @@ public class JIStringListParameterGUI extends JParameterGUI
     { 
        super(parameter);
        combobox = new JComboBox();
-       combobox.setEditable(true);
+       combobox.setEditable(false);
        JLabel label = new JLabel("  "+parameter.getName());
        //label.setPreferredSize(new Dimension(150,25));
 
