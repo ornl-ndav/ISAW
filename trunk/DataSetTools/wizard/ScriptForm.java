@@ -107,7 +107,6 @@ public class ScriptForm extends OperatorForm implements Serializable {
     this( filename );
     setParamClass( type );
 
-    //after calling that, we need to call setDefaultParameters()
     result_param.setName( name );
     setDefaultParameters(  );
   }
@@ -134,11 +133,9 @@ public class ScriptForm extends OperatorForm implements Serializable {
   public ScriptForm( String filename, String type, String name, int[] indices ) {
     this( filename );
     setParamClass( type );
-
-    //after calling that, we need to call setDefaultParameters()
     result_param.setName( name );
     HAS_CONSTANTS = true;
-    this.setConstantParamIndices( indices );
+    setConstantParamIndices( indices );
     setDefaultParameters(  );
   }
 
