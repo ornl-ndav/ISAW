@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2002/07/08 15:40:45  pfpeterson
+ *  New replaceData_entry_with_id() method to deal with group ids.
+ *
  *  Revision 1.25  2002/06/19 20:53:43  rmikk
  *  Added a Default Constructor
  *
@@ -995,6 +998,37 @@ public class DataSet implements IAttributeList,
     }
     else
       return false;
+  }
+
+
+  /**
+   * Replaces the Data object at the spcecified position in the list of Data 
+   * objects with the specified Data entry.  If the specified datablock does 
+   * not exist, this method adds it new.
+   *
+   * @param  entry    The Data object to be inserted in the list of Data
+   *                  objects in this DataSet.
+   *
+   * @param  group_id The position where the Data object is to be replaced.
+   *
+   * @return  Returns true if sucessful.
+   */
+  public boolean replaceData_entry_with_id( Data entry, int group_id )
+  {
+      int id=-1;
+      for( int i=0 ; i<this.getNum_entries() ; i++ ){
+          if(group_id==this.getData_entry(i).getGroup_ID()){
+              id=i;
+              i=this.getNum_entries();
+          }
+      }
+      if(id==-1){
+          this.addData_entry(entry);
+      }else{
+          this.replaceData_entry(entry,id);
+      }
+
+      return true;
   }
 
 
