@@ -1,3 +1,4 @@
+
 /*
  * File:  Script_Class_List_Handler.java 
  *             
@@ -31,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2001/07/20 13:59:47  rmikk
+ * Replace \ by / so Scripts can be installed from Unix
+ *
  * Revision 1.11  2001/06/27 18:38:33  rmikk
  * Add tests to make sure a directory is only loaded once
  *
@@ -107,26 +111,31 @@ public class Script_Class_List_Handler  implements OperatorHandler
         first = false;     
         String ScrPaths = System.getProperty( "ISAW_HOME" );
         if( ScrPaths != null )
-           {processPaths(ScrPaths+"\\Operators") ;
-            processPaths(ScrPaths+"\\Scripts") ;
+           {processPaths(ScrPaths+"/Operators") ;
+            processPaths(ScrPaths+"/Scripts") ;
            }
         String ScrPaths1 = System.getProperty( "GROUP_HOME" );
        
         if( ScrPaths1 != null )
 	    if(!ScrPaths1.equals(ScrPaths))
-           {processPaths(ScrPaths1+"\\Operators") ;
-            processPaths(ScrPaths1+"\\Scripts") ;
+           {processPaths(ScrPaths1+"/Operators") ;
+            processPaths(ScrPaths1+"/Scripts") ;
            }
         String ScrPaths2 = System.getProperty( "user.home" );
         if( ScrPaths2 != null )
-         {String X =ScrPaths2+java.io.File.pathSeparator+"ISAW";
+	 if( ScrPaths2.length() > 0)
+         {ScrPaths2 =ScrPaths2.replace('\\','/');
+          if( ScrPaths2.charAt(ScrPaths2.length()-1) != '/' )
+             ScrPaths2 = ScrPaths2+'/';
+          String X =ScrPaths2+java.io.File.pathSeparator+"ISAW";
           if(ScrPaths2 != null)
-            if( ScrPaths2.charAt(ScrPaths2.length()-1)== java.io.File.pathSeparatorChar)
+            if( ScrPaths2.charAt(ScrPaths2.length()-1)== 
+                      java.io.File.pathSeparatorChar)
                X = ScrPaths2+"ISAW"+ java.io.File.pathSeparator;
           if(!(X).equals(ScrPaths))
           if( !X.equals(ScrPaths1))
-           {processPaths(ScrPaths2+"\\ISAW\\Operators") ;
-            processPaths(ScrPaths2+"\\ISAW\\Scripts") ;
+           {processPaths(ScrPaths2+"/ISAW/Operators") ;
+            processPaths(ScrPaths2+"/ISAW/Scripts") ;
            }
          }
 
