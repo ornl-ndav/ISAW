@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2001/08/17 18:59:51  rmikk
+ *  Added more error checking if files cannot be created
+ *
  *  Revision 1.1  2001/07/30 20:09:22  rmikk
  *  Original checkin
  *
@@ -86,6 +89,12 @@ public class XmlWriter extends Writer
     { if( ds == null)
 	return ;
       XmlWriteNode nwr = new XmlWriteNode( data_destination_name );
+      if( nwr.getErrorMessage() != null)
+	  if(! nwr.getErrorMessage().equals(""))
+            { System.out.println("Could not Create File");
+            
+              return;
+            } 
       NxWriter Writer = new NxWriter( (NxWriteNode)nwr  );
       DataSet Hist[], Monit[];
       Hist = new DataSet[1];
