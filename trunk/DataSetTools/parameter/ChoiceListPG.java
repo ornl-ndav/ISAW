@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2004/03/11 06:55:39  bouzekc
+ *  Removed warning in constructor about non-String; addItem() and addItems()
+ *  now call a toString() on the Object they are adding.  This ensures that
+ *  only Strings are added to the ChoiceListPG.
+ *
  *  Revision 1.17  2004/03/11 06:11:51  bouzekc
  *  Added javadocs.
  *
@@ -90,8 +95,6 @@
  */
 package DataSetTools.parameter;
 
-import DataSetTools.util.SharedData;
-
 import java.util.Vector;
 
 
@@ -130,12 +133,6 @@ public class ChoiceListPG extends ChooserPG {
   public ChoiceListPG( String name, Object value, boolean valid ) {
     super( name, value, valid );
     this.setType( TYPE );
-
-    if( value != null ) {
-      if( !( value instanceof String ) ) {
-        SharedData.addmsg( "WARN: Non-String" + " in ChoiceListPG constructor" );
-      }
-    }
   }
 
   //~ Methods ******************************************************************
@@ -146,7 +143,7 @@ public class ChoiceListPG extends ChooserPG {
    */
   public void addItem( Object val ) {
     if( val instanceof String ) {
-      super.addItem( val );
+      super.addItem( val.toString(  ) );
     }
   }
 
@@ -162,7 +159,7 @@ public class ChoiceListPG extends ChooserPG {
       obj = values.elementAt( i );
 
       if( obj != null ) {
-        this.addItem( obj );
+        this.addItem( obj.toString(  ) );
       }
     }
   }
