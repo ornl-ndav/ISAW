@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2002/12/08 22:12:38  dennis
+ *  Added help button for new help system. (Ruth)
+ *
  *  Revision 1.31  2002/11/27 23:12:35  pfpeterson
  *  standardized header
  *
@@ -104,6 +107,7 @@ import java.io.*;
 import DataSetTools.util.*;
 import javax.swing.text.*;
 import java.lang.reflect.Array;
+import javax.swing.text.html.*;
 
 public class JParametersDialog implements Serializable,
                                IObservable
@@ -114,6 +118,7 @@ public class JParametersDialog implements Serializable,
     Document sessionLog;  
     Vector vparamGUI = new Vector();
     JDialog opDialog;
+    int Width = 0;
     Object Result = null;
     JLabel resultsLabel = new JLabel("    Result");
     ApplyButtonHandler APH;
@@ -153,7 +158,7 @@ public class JParametersDialog implements Serializable,
         int Size = 0 ;
         int Size1 = 0;
         String SS ="Operation "+op.getCommand();
-        int Width = 0;
+        Width = 0;
         if(op instanceof DataSetOperator)
             SS = SS +" on "+((DataSetOperator)op).getDataSet();
 	//#
@@ -454,12 +459,17 @@ public class JParametersDialog implements Serializable,
                
         JButton apply = new JButton("Apply");
         JButton exit = new JButton("Exit");
-                  
+        JButton help  = new JButton( "Help" );
+          
         buttonpanel.add(apply);
         apply.addActionListener( APH );
                  
         buttonpanel.add(exit);
         exit.addActionListener(new ExitButtonHandler());
+
+        buttonpanel.add( help );
+        help.addActionListener( new HelpButtonListener() );
+
         Size1 = buttonpanel.getPreferredSize().height;
         
         if( Size1 < 0)
@@ -686,4 +696,23 @@ public class JParametersDialog implements Serializable,
       opDialog.dispose();     
     } 
   }
+
+  public class HelpButtonListener implements ActionListener
+    {
+
+    public void actionPerformed(ActionEvent ev) 
+    {
+       JFrame jf = new JFrame( "operator "+op.getCommand());
+       JEditorPane jedPane = new JEditorPane();
+       jedPane.setEditorKit( new HTMLEditorKit() );
+       jedPane.setText( 
+             DataSetTools.util.SharedData.HTMLPageMaker.createHTML( op ));
+       jf.getContentPane().add( new JScrollPane(jedPane));
+       if( Width == 0 )
+         Width = 600;
+       jf.setSize( (int)(.8*Width) , (int)(1.5*Width));
+       jf.show();
+       
+    } 
+    }
 }
