@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2002/12/04 14:53:22  pfpeterson
+ *  Added string constants for the start date and start time.
+ *
  *  Revision 1.31  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -159,6 +162,8 @@ abstract public class Attribute implements Serializable,
   public static final String  RUN_NUM           = "Run Number";
   public static final String  END_DATE          = "End Date";
   public static final String  END_TIME          = "End Time";
+  public static final String  START_DATE        = "Start Date";
+  public static final String  START_TIME        = "Start Time";
   public static final String  UPDATE_TIME       = "Update Time";
 
   public static final String  DETECTOR_POS      = "Effective Position";
