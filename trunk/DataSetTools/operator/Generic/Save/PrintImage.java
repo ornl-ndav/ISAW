@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2005/01/10 15:18:18  dennis
+ * Added getCategoryList method to put operator in new position in
+ * menus.
+ *
  * Revision 1.13  2004/08/13 03:29:26  millermi
  * - Fixed javadoc errors.
  *
@@ -37,7 +41,8 @@
  * Changed the help file to reflect the changes in the viewer state class
  *
  * Revision 1.12  2004/06/21 10:57:31 robertsonj
- * Changed the help file to reflect the change in the viewer state name value pairs.
+ * Changed the help file to reflect the change in the viewer state name 
+ * value pairs.
  * 
  * Revision 1.11  2004/06/15 19:24:05  robertsonj
  * Print image now allows the user to select some printer option as well as
@@ -52,21 +57,12 @@
  * the code from compiling.  Made minor improvements in format.
  *
  * Revision 1.8  2004/06/01 15:55:11  robertsonj
- * *** empty log message ***
+ * added Functionality: Added viewerStates so you can change the appearance 
+ * of the printed file.
  *
  * Revision 1.7  2004/05/27 19:18:22  robertsonj
- * *** empty log message ***
- *
- *Rivision 1.8 2004/06/14 robertson
- *added Functionality: Added viewerStates so you can change the apperence of the printed file
- *
- * Rivision 1.7 2004/05/27 robertson
-<<<<<<< PrintImage.java
- * added functionality: Print in landscape, pick printer from list, print x number ofcopies, choose print quality.
-=======
  * added functionality: Print in landscape, pick printer from list, 
- * print x copies, choose print quality.
->>>>>>> 1.9
+ * print x number ofcopies, choose print quality.
  * 
  * Revision 1.6  2004/05/04 19:03:50  dennis
  * Now clears DataSetPG after getting value, to avoid memory leak.
@@ -91,6 +87,8 @@
  */
 
 package DataSetTools.operator.Generic.Save;
+
+import DataSetTools.operator.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.parameter.*;
@@ -120,9 +118,23 @@ public class PrintImage extends GenericSave{
      super("Print Image");
      setDefaultParameters();
    }
-
    
-  
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.FILE_PRINT;
+  }
+
 
   /**
    *      Constructor for Java code

@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2005/01/10 15:18:17  dennis
+ *  Added getCategoryList method to put operator in new position in
+ *  menus.
+ *
  *  Revision 1.7  2004/03/15 03:28:35  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -72,8 +76,6 @@
  *
  *  Revision 1.1  2002/07/26 22:45:32  pfpeterson
  *  Added to CVS.
- *
- *
  */
 
 package DataSetTools.operator.Generic.Special;
@@ -100,7 +102,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 
-import DataSetTools.operator.Parameter;
+import DataSetTools.operator.*;
 
 /* ------------------------- class ViewASCII ------------------------------- */
 /**
@@ -162,6 +164,23 @@ public class ViewASCII extends    GenericSpecial
         parameters=new Vector();
         addParameter( new Parameter("View ASCII File",new LoadFileString("")));
     }
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.UTILS_SYSTEM;
+  }
+
 
     /* ------------------------------ getCommand --------------------------- */
     /**
