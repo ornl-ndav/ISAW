@@ -1,6 +1,6 @@
 /*
- * File:  TofToChannel.java 
- *             
+ * File:  TofToChannel.java
+ *
  * Copyright (C) 2000, Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/01/09 17:15:04  dennis
+ * Added getDocumentation(), main test program and java docs on getResult()
+ * (Chris Bouzek)
+ *
  * Revision 1.4  2002/11/27 23:17:04  pfpeterson
  * standardized header
  *
@@ -53,15 +57,17 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.retriever.*;
 
 /**
  * This operator converts neutron time-of-flight DataSet to channel.  The
  * DataSet must contain spectra with an attribute giving the detector position.
  * In addition, it is assumed that the XScale for the spectra represents the
- * time-of-flight from the sample to the detector. 
+ * time-of-flight from the sample to the detector.
  */
 
-public class TofToChannel extends  XAxisConversionOp 
+public class TofToChannel extends  XAxisConversionOp
                                    implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -73,7 +79,7 @@ public class TofToChannel extends  XAxisConversionOp
    * to apply the operator to the DataSet this operator was added to.
    */
 
-  public TofToChannel( ) 
+  public TofToChannel( )
   {
     super( "Convert to Channel" );
   }
@@ -89,9 +95,9 @@ public class TofToChannel extends  XAxisConversionOp
    *  @param  max_chan    The maximum channel number to be binned
    *  @param  n_bins      The number of "bins" to be used between min_chan and
    *                      max_chan.  That is, the data values between the
-   *                      min and max channels will be rebinned into the 
-   *                      specified number of bins.  If num_bins <= 0, the data 
-   *                      will not be rebinned, but only data values between 
+   *                      min and max channels will be rebinned into the
+   *                      specified number of bins.  If num_bins <= 0, the data
+   *                      will not be rebinned, but only data values between
    *                      the specified min and max channels will be kept.
    */
 
@@ -104,13 +110,13 @@ public class TofToChannel extends  XAxisConversionOp
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    IParameter parameter = getParameter(0); 
+    IParameter parameter = getParameter(0);
     parameter.setValue( new Float(min_chan) );
-    
-    parameter = getParameter(1); 
+
+    parameter = getParameter(1);
     parameter.setValue( new Float(max_chan) );
-    
-    parameter = getParameter(2); 
+
+    parameter = getParameter(2);
     parameter.setValue( new Integer(n_bins) );
 
     setDataSet( ds );               // record reference to the DataSet that
@@ -128,7 +134,7 @@ public class TofToChannel extends  XAxisConversionOp
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -222,8 +228,48 @@ public class TofToChannel extends  XAxisConversionOp
     return channel;
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator converts the X-axis units on a ");
+    s.append("DataSet from neutron time-of-flight to channel numbers.\n");
+    s.append("@assumptions The DataSet must contain spectra with an ");
+    s.append("attribute giving the detector position.  In addition, it ");
+    s.append("is assumed that the XScale for the spectra represents the ");
+ 		s.append("time-of-flight from the sample to the detector. \n");
+    s.append("@algorithm Creates a new DataSet which has the same title ");
+    s.append("as the input DataSet, the same y-values as the input DataSet, ");
+    s.append("and whose X-axis units have been converted to channel ");
+    s.append("numbers.  The new DataSet also has a message appended to its ");
+    s.append("log indicating that a conversion to channel numbers on ");
+    s.append("the X-axis was done.\n");
+    s.append("@param ds The DataSet to which the operation is applied.\n");
+    s.append("@param min_chan The minimum channel number to be binned.\n");
+    s.append("@param max_chan The maximum channel number to be binned.\n");
+    s.append("@param n_bins The number of \"bins\" to be used between ");
+    s.append("min_chan and max_chan.  That is, the data values between the ");
+    s.append("min and max channels will be rebinned into the specified ");
+    s.append("number of bins.  If num_bins <= 0, the data will not be ");
+    s.append("rebinned, but only data values between the specified min ");
+    s.append("and max channels will be kept.\n");
+    s.append("@return A new DataSet which is the result of converting the ");
+    s.append("input DataSet's X-axis units to channel numbers.\n");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+  	*  Converts the input DataSet to a DataSet which is identical except that
+  	*  the new DataSet's X-axis units have been converted to channel numbers.
+  	*
+		*	 @return DataSet whose X-axis units have been converted to channel
+		*  numbers.
+		*/
 
   public Object getResult()
   {
@@ -231,7 +277,7 @@ public class TofToChannel extends  XAxisConversionOp
     DataSet ds = this.getDataSet();
                                      // construct a new data set with the same
                                      // title, but new units, and operations.
-    DataSetFactory factory = new DataSetFactory( 
+    DataSetFactory factory = new DataSetFactory(
                                      ds.getTitle(),
                                      "Channel",
                                      "Number",
@@ -239,10 +285,10 @@ public class TofToChannel extends  XAxisConversionOp
                                      "Scattering Intensity" );
 
     // #### must take care of the operation log... this starts with it empty
-    DataSet new_ds = factory.getDataSet(); 
+    DataSet new_ds = factory.getDataSet();
     new_ds.removeOperator( new TofToChannel() );  // remove redundant operator
                                                   // that would convert channel
-                                                  // to channel 
+                                                  // to channel
     new_ds.copyOp_log( ds );
     new_ds.addLog_entry( "Converted to Channel Number" );
 
@@ -265,17 +311,17 @@ public class TofToChannel extends  XAxisConversionOp
     }
 
     UniformXScale new_channel_scale;                 // create a new common
-                                                     // channel scale, if 
+                                                     // channel scale, if
                                                      // specified by parameters
     if ( num_chan <= 1.0 || min_chan >= max_chan )
       new_channel_scale = null;                      // no valid scale set
     else
-      new_channel_scale = new UniformXScale( min_chan, 
-                                             max_chan, 
+      new_channel_scale = new UniformXScale( min_chan,
+                                             max_chan,
                                              num_chan );
 
-                                            // now proceed with the operation 
-                                            // on each data block in DataSet 
+                                            // now proceed with the operation
+                                            // on each data block in DataSet
     Data             data,
                      new_data;
     float            y_vals[];               // y_values from one spectrum
@@ -292,32 +338,32 @@ public class TofToChannel extends  XAxisConversionOp
 
       y_vals = data.getY_values();
       errors = data.getErrors();
-      channel_scale = new UniformXScale( 0,  
-                                         y_vals.length,  
+      channel_scale = new UniformXScale( 0,
+                                         y_vals.length,
                                          y_vals.length + 1 );
 
-                                                 // create new data block with 
-                                                 // time-channel XScale and 
+                                                 // create new data block with
+                                                 // time-channel XScale and
                                                  // the original y_vals.
-      new_data = Data.getInstance( channel_scale, 
-                                   y_vals, 
-                                   errors, 
+      new_data = Data.getInstance( channel_scale,
+                                   y_vals,
+                                   errors,
                                    data.getGroup_ID() );
-      new_data.setAttributeList( attr_list );  
+      new_data.setAttributeList( attr_list );
 
                                                  // resample if a valid
       if ( new_channel_scale != null )           // scale was specified
           new_data.resample( new_channel_scale, IData.SMOOTH_NONE );
 
-      new_ds.addData_entry( new_data );      
+      new_ds.addData_entry( new_data );
     }
 
     return new_ds;
-  }  
+  }
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current TofToChannel Operator.  The list 
+   * Get a copy of the current TofToChannel Operator.  The list
    * of parameters and the reference to the DataSet to which it applies are
    * also copied.
    */
@@ -330,6 +376,33 @@ public class TofToChannel extends  XAxisConversionOp
     new_op.CopyParametersFrom( this );
 
     return new_op;
+  }
+
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+		float min_1 = (float)0.0, max_1 = (float)4000;
+		String file_name =
+		"/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
+		//"D:\\ISAW\\SampleRuns\\GPPD12358.RUN";
+
+		try
+		{
+			RunfileRetriever rr = new RunfileRetriever( file_name );
+			DataSet ds1 = rr.getDataSet(1);
+    	ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+    	TofToChannel op = new TofToChannel(ds1, min_1, max_1, 4000);
+    	DataSet new_ds = (DataSet)op.getResult();
+    	ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+			System.out.println(op.getDocumentation());
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
   }
 
 }
