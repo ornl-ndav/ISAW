@@ -36,6 +36,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2002/10/07 15:01:24  rmikk
+ *  Introduced a constructor that used an IAxesHandler
+ *
  *  Revision 1.17  2002/09/25 14:00:19  rmikk
  *  Defined state variable Contour.Intensity to eliminate error
  *    messages
@@ -178,11 +181,14 @@ public class ContourView extends DataSetViewer
    JSlider intensity = null;
    JPanel intensitHolder = null;
    int PrevGroup;
-
+   protected IAxesHandler Transf;
   public ContourView( DataSet ds, ViewerState state1 )
      { this( ds, state1, null,null,null);
       }
-
+  public ContourView( DataSet ds, ViewerState state, IAxesHandler Transf)
+     {this( ds, state,Transf.getAxis(0), Transf.getAxis(1), Transf.getAxis(2);
+      this.Transf = Transf;
+      }
   public ContourView( DataSet ds, ViewerState state1 ,IAxisHandler axis1,
                          IAxisHandler axis2, IAxisHandler axis3)
     {
@@ -192,6 +198,7 @@ public class ContourView extends DataSetViewer
      this.axis2 = axis2;
      this.axis3 = axis3;
      data_set = ds;
+     Transf = null;
      state = state1;
      if( !validDataSet() )
        {
