@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.1  2004/05/12 14:01:20  dennis
+ * Moved LoadASCII operator from Operators to
+ * Operators/Generic/Load directory.
+ *
  * Revision 1.10  2004/05/10 20:42:27  dennis
  * Test program now just instantiates a ViewManager to diplay
  * calculated DataSet, rather than keeping a reference to it.
@@ -63,7 +67,7 @@
  * Added operator title to constructor java docs.
  *
  */
-package Operators;
+package Operators.Generic.Load;
 
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Load.*;
