@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/10/07 18:38:51  bouzekc
+ *  Removed declaration of "implements ParamUsesString" as the
+ *  StringEntryPG superclass now declares it.
+ *
  *  Revision 1.7  2003/08/15 23:50:04  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -65,7 +69,7 @@ import DataSetTools.util.*;
 /**
  * This is class is to deal with float parameters.
  */
-public class FuncStringPG extends StringPG implements ParamUsesString{
+public class FuncStringPG extends StringPG {
     private static final String TYPE="FuncString";
 
     // ********** Constructors **********
@@ -107,15 +111,5 @@ public class FuncStringPG extends StringPG implements ParamUsesString{
         fpg.setDrawValid(true);
         fpg.initGUI(null);
         fpg.showGUIPanel();
-    }
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        FuncStringPG pg=new FuncStringPG(this.name,this.value,this.valid);
-        pg.setDrawValid(this.getDrawValid());
-        pg.initialized=false;
-        return pg;
     }
 }
