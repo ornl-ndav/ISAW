@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/03/19 15:01:30  pfpeterson
+ * Also registers property change events from the parameters with
+ * the wizard as well. (Chris Bouzek)
+ *
  * Revision 1.7  2003/02/26 21:45:20  pfpeterson
  * Changed setCompleted(false) to invalidate() and removed the completed
  * variable b/c it's value isn't reliable.
@@ -175,6 +179,9 @@ public class Form implements Serializable, PropertyChangeListener{
                   if(param instanceof PropertyChanger){
                       ((PropertyChanger)param)
                           .addPropertyChangeListener(IParameter.VALUE,this);
+                      //the wizard needs to listen for property changes as well
+                      ((PropertyChanger)param)
+                          .addPropertyChangeListener(IParameter.VALUE,wizard);
                   }
               }
           }
@@ -190,6 +197,8 @@ public class Form implements Serializable, PropertyChangeListener{
                   if(param instanceof PropertyChanger){
                       ((PropertyChanger)param)
                           .addPropertyChangeListener(IParameter.VALUE,this);
+                      ((PropertyChanger)param)
+                          .addPropertyChangeListener(IParameter.VALUE,wizard);
                   }
               }
           }
