@@ -57,5 +57,5 @@ public class PrintableDocumentConstants
 	public static final String UML_SHORTENED_SOURCE_GROUPED_BY_PACKAGE = "uml_shortened_source_grouped_by_package";
 	
 	/** Private because this class has only static members and methods. */
-	private PrintableDocumentConstants(){};
+	private PrintableDocumentConstants(){}
 }

@@ -60,7 +60,7 @@ public abstract class AbstractShortenedPreferencesManager extends AbstractColorf
 	protected boolean shortenOtherBoxSavedState;
 	
 	/** This forces sub-classes to use the other constructor. */
-	private AbstractShortenedPreferencesManager() {};
+	private AbstractShortenedPreferencesManager() {}
 	
 	/**
 	 * This constructor defines the properties for whether or not to shorten java and non-java words by default.  The Properties 

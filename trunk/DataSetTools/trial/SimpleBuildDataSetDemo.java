@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2005/01/10 15:55:07  dennis
+ * Removed empty statement.
+ *
  * Revision 1.8  2004/05/10 20:42:24  dennis
  * Test program now just instantiates a ViewManager to diplay
  * calculated DataSet, rather than keeping a reference to it.
@@ -86,7 +89,7 @@ public class SimpleBuildDataSetDemo
                                   "time",
                                   "milli-seconds",
                                   "signal level",
-                                  "volts" );;
+                                  "volts" );
 
     Data    data;                               // data block that will hold 
                                                 // info on one signal 

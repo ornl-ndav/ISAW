@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2005/01/10 15:55:04  dennis
+ * Removed empty statement.
+ *
  * Revision 1.17  2004/05/11 18:23:55  bouzekc
  * Added/updated javadocs and reformatted for consistency.
  *
@@ -152,7 +155,6 @@ public class QbinsPG extends VectorPG {
 
     StringBuffer ttext = new StringBuffer(  );
 
-    ;
     ttext.append( "  Enter ,startQ ,end Q, Nsteps, and dQ or dQ/Q spacings\n" );
     ttext.append( 
       "If Nsteps <=0, startQ will just be added. Use this to enter\n" );

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2005/01/10 15:55:10  dennis
+ * Removed empty statement.
+ *
  * Revision 1.21  2004/07/16 18:58:37  rmikk
  * Created a new grid whose entries correspond to the given Data Set, not
  *   to the cloned data set
@@ -671,7 +674,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
     try{
        choice = (new Integer( (String)DetChoices.cbox.getSelectedItem())).
                  intValue();
-    }catch( Exception ss){};
+    }catch( Exception ss){}
     if( choice != DetNum){
       DetNum = choice;
       grid = (UniformGrid)Grid_util.getAreaGrid( DS, DetNum);

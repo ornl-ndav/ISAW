@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2005/01/10 15:55:03  dennis
+ * Removed empty statement.
+ *
  * Revision 1.18  2004/04/16 20:27:23  millermi
  * - No longer implements IVirtualArrayList1D. The method
  *   convertToVirtualArray() converts a DataSet to an array
@@ -79,7 +82,6 @@ import DataSetTools.dataset.*;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.OneD.*;
 
-import java.awt.event.*;
 import java.util.*;
 
 /**
@@ -96,7 +98,6 @@ public class DataSetData
   */
   private DataSetData()
   {
-    ;
   }
     
  /**

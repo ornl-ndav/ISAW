@@ -117,7 +117,6 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
       case FLOATING_POINT:
       case EMPTY_ARRAY:
       case 23:
-        ;
         break;
       default:
         jj_la1[0] = jj_gen;
@@ -141,7 +140,7 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
 
   static final public Vector Expansion() throws ParseException {
   Vector tempArray = new Vector(  );
-  Object element, listElem;
+  Object element; //listElem;
     element = toArray();
     if( element instanceof Collection && expandVectorIntoElements ) {
         //when we get a Vector back (such as as for an int expansion) add the
@@ -155,7 +154,6 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case WHITESPACE:
       case 22:
-        ;
         break;
       default:
         jj_la1[1] = jj_gen;
@@ -168,7 +166,6 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
         while (true) {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case WHITESPACE:
-            ;
             break;
           default:
             jj_la1[2] = jj_gen;
@@ -183,7 +180,6 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
           jj_consume_token(WHITESPACE);
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case WHITESPACE:
-            ;
             break;
           default:
             jj_la1[3] = jj_gen;
@@ -197,7 +193,6 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
           while (true) {
             switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
             case WHITESPACE:
-              ;
               break;
             default:
               jj_la1[4] = jj_gen;
@@ -208,7 +203,6 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
           break;
         default:
           jj_la1[5] = jj_gen;
-          ;
         }
         break;
       default:

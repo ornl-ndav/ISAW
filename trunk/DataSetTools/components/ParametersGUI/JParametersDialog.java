@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.62  2005/01/10 15:55:03  dennis
+ *  Removed empty statement.
+ *
  *  Revision 1.61  2004/05/26 18:34:25  rmikk
  *  Cleaned up the DataSetPG's on Exit using the clear button
  *  Added this.finalize to eliminate a warning
@@ -972,7 +975,7 @@ public class JParametersDialog implements Serializable,
       jf.getContentPane().add( scroll );
       jf.setSize( (int)(screenwidth/2), (int)(3*screenheight/4) );
        WindowShower windShow = new WindowShower( jf);
-        EventQueue.invokeLater( windShow);;       
+        EventQueue.invokeLater( windShow);       
       //jf.show();
     } 
   }

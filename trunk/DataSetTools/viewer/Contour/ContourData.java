@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2005/01/10 15:55:08  dennis
+ *  Removed empty statement.
+ *
  *  Revision 1.31  2004/07/16 18:52:55  rmikk
  *  Created a new grid whose entries correspond to the given Data Set, not
  *    to the cloned data set
@@ -865,7 +868,7 @@ public class ContourData
     try{
        choice = (new Integer( (String)DetChoices.cbox.getSelectedItem())).
                  intValue();
-    }catch( Exception ss){};
+    }catch( Exception ss){}
     if( choice != DetNum){
       int oldDetNum = DetNum;
       state.set_int( ViewerState.CONTOUR_DETNUM, choice);

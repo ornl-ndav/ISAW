@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2005/01/10 15:55:10  dennis
+ * Removed empty statement.
+ *
  * Revision 1.17  2004/06/18 19:31:26  rmikk
  * Eliminated an unused variable BC
  *
@@ -343,7 +346,7 @@ class HTMLPage extends JFrame
           if( !start)
             S.append( "</ul>");
           else S.append("<P>");
-          start = false;;
+          start = false;
           j = JDocString.indexOf(' ',i);
           if( j < 0)
             j = JDocString.length();

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2005/01/10 15:55:08  dennis
+ * Removed empty statement.
+ *
  * Revision 1.7  2004/09/15 22:03:51  millermi
  * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
  *   Adding a second log required the boolean parameter to be changed
@@ -119,7 +122,6 @@ public class dummyIVirtualArray2D implements IVirtualArray2D{
    * This method will assign a title to the data. 
    */
    public void setTitle( String title ){
-    ;
    }
   
   /*

@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.48  2005/01/10 15:55:09  dennis
+ *  Removed empty statement.
+ *
  *  Revision 1.47  2004/06/25 14:47:28  rmikk
  *  Interpreted the value of ControlPanelWidth as a percent(not a decimal)
  *
@@ -1268,7 +1271,7 @@ public class ContourView extends DataSetViewer
                if( i < 0 ) 
                  i=0;
                else if( i >= times.length )
-                  i = times.length -1;;
+                  i = times.length -1;
               
                SimpleGrid newData1 = ( SimpleGrid )( cd.getSGTData( times[i] ) );
               
