@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.57  2001/08/21 21:31:41  chatterjee
+ *  Added separate file filters for .run and .nxs/hdf files
+ *
  *  Revision 1.56  2001/08/16 18:53:02  chatterjee
  *  Checking in merged version
  *
@@ -1034,7 +1037,9 @@ public class Isaw
             String title = new String( "Please choose the File to save" );
             fc.setCurrentDirectory(  new File( System.getProperty("user.home") )  );
             fc.setMultiSelectionEnabled( false );
-            fc.setFileFilter(  new NeutronDataFileFilter( true )  ); 
+            fc.addChoosableFileFilter(  new NeutronDataFileFilter( true )  ); 
+            fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
+            fc.addChoosableFileFilter(  new IPNS.Runfile.NexusfileFilter()  );
             if(  (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION ) ) 
                 return;
              
@@ -1864,6 +1869,8 @@ public class Isaw
       fc.setCurrentDirectory(  new File( data_dir )  );
       fc.setMultiSelectionEnabled( true );
       fc.setFileFilter(  new NeutronDataFileFilter()  ); 
+      fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
+      fc.addChoosableFileFilter(  new IPNS.Runfile.NexusfileFilter()  );
       if(  fc.showDialog(frame,null) == JFileChooser.APPROVE_OPTION  ) 
       {
         setCursor(  Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR )  );
