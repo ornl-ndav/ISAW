@@ -22,7 +22,7 @@ $ DataFileName   LoadFileString("C:\new_das_runs\sand20290.run")    Enter Data R
 $ SaveFileName      SaveFileString("C:\test_output\T2028320287.cf")    Dat file to save Transm results
 $ NeutronDelay      Float( .0011)     Neutron Delay Fraction
 $ polyfitIndx1      Integer( 11)      First time channel for poly fit, or -1 if no fit
-$ polyfitIndx2      Integer( 68)      Last time channel for poly fit, or -1 if no fit
+$ polyfitIndx2      Integer( 70)      Last time channel for poly fit, or -1 if no fit
 $ polyDegree        Integer( 3)      The Degree of the fit polynomial
 $ sqrtWeight        Boolean( true)    Use 1/sqrt(y) for weightin
 
@@ -38,9 +38,10 @@ if useCadmiumRun == true
 else
    DS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
 endif
-#send DS
+send DS
 PrintFlood( DS,SaveFileName, "Transmission")
 Display "Finished"
+
 
 
 
