@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2003/06/10 20:23:23  pfpeterson
+ * Removed debug statements.
+ *
  * Revision 1.12  2003/05/20 18:39:11  pfpeterson
  * Major rewrite to allow for a second detector. This was done by shifting
  * the code into a oop framework where the histograms and detectors are
@@ -294,7 +297,8 @@ public class WriteExp extends GenericTOF_SCD{
         while(!tfr.eof() && tfr.read_line().startsWith("HST") && num_hist<100){
           tfr.unread();
           hist=new ExpHistogram(tfr);
-          System.out.println("hist"+hist.getRunNumber()+" "+hist.getDetNumber());
+          if(DEBUG) System.out.println("hist"+hist.getRunNumber()+" "
+                                       +hist.getDetNumber());
           addElement(hist,histograms);
           num_hist++;
         }
@@ -302,7 +306,7 @@ public class WriteExp extends GenericTOF_SCD{
         if(!tfr.eof()){
           StringBuffer sb=new StringBuffer(81);
           line=tfr.read_line();
-          System.out.print("try:"+line);
+          if(DEBUG) System.out.print("try:"+line);
           while(line.indexOf("INST  ")>=0 && ! tfr.eof()){
             sb.append(line+"\n");
             line=tfr.read_line();
@@ -324,9 +328,11 @@ public class WriteExp extends GenericTOF_SCD{
 
     // set the first run number
     int first_run=((ExpHistogram)histograms.elementAt(0)).getRunNumber();
-    System.out.println(">"+exp_title+"<");
-    System.out.println(">"+first_run+"<");
-    System.out.println(">"+user+"<");
+    if(DEBUG){
+      System.out.println(">"+exp_title+"<");
+      System.out.println(">"+first_run+"<");
+      System.out.println(">"+user+"<");
+    }
 
     // ==================== start writting the file
     OutputStreamWriter out;
