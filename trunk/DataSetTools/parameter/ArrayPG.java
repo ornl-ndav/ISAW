@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/06/27 18:52:53  bouzekc
+ *  Now uses a simple string parsing routine rather than
+ *  execOneLine to parse the array in stringToArray().
+ *
  *  Revision 1.11  2003/06/27 16:35:26  bouzekc
  *  Reformatted for consistency.
  *
@@ -80,6 +84,7 @@ import DataSetTools.components.ParametersGUI.HashEntry;
 
 import DataSetTools.dataset.DataSet;
 
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.*;
@@ -440,24 +445,24 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       return null;
     }
 
-    Command.execOneLine execLine = new Command.execOneLine(  );
-    int r                        = execLine.execute( S, 0, S.length(  ) );
+    String temp     = S;
+    Vector elements = new Vector(  );
 
-    if( execLine.getErrorCharPos(  ) >= 0 ) {
-      return new Vector(  );
+    //pull out the brackets
+    temp   = temp.replace( '[', ' ' );
+    temp   = temp.replace( ']', ' ' );
+
+    //pull out the quotes
+    temp = temp.replace( '"', ' ' );
+
+    StringTokenizer st = new StringTokenizer( temp, "," );
+
+    while( st.hasMoreTokens(  ) ) {
+      //trim out the white space
+      elements.add( st.nextToken(  ).trim(  ) );
     }
 
-    Object O = execLine.getResult(  );
-
-    if( O == null ) {
-      return new Vector(  );
-    }
-
-    if( !( O instanceof Vector ) ) {
-      return new Vector(  );
-    }
-
-    return ( Vector )O;
+    return elements;
   }
 
   public static String ArraytoString( Vector V ) {
