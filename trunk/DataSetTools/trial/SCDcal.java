@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/08/01 13:29:55  dennis
+ *  Reordered quartz lattice parameters to match order in peaks
+ *  file produced by "Blind".  Altered which parameters are actually
+ *  used in the optimization.
+ *
  *  Revision 1.7  2003/07/31 14:15:58  dennis
  *  Switched to use a vector of PeakData objects, rather than
  *  parallel arrays of values.
@@ -612,13 +617,13 @@ public class SCDcal   extends    OneVarParameterizedFunction
      // Lattice Parameters for Quartz
       double lattice_params[] = new double[6];
       lattice_params[0] = 4.9138;
-      lattice_params[1] = 4.9138;
-      lattice_params[2] = 5.4051;
+      lattice_params[2] = 4.9138;
+      lattice_params[1] = 5.4051;
       lattice_params[3] = 90;
-      lattice_params[4] = 90;
-      lattice_params[5] = 120;
+      lattice_params[5] = 90;
+      lattice_params[4] = 120;
 
-      Vector peaks = PeakData.ReadPeaks( args[0] ); // load the vector of peaks
+      Vector peaks = PeakData.ReadPeakData( args[0] ); // load the vector of peaks
 
       PeakData peak = (PeakData)peaks.elementAt(0);
       double l1 = peak.l1; 
@@ -697,7 +702,12 @@ public class SCDcal   extends    OneVarParameterizedFunction
         is_used[i] = true;
                               // Insert code at this point to mark some params.
                               // First turn off any params shared by all dets.
-      is_used[ A_INDEX ] = false;
+   // is_used[ L1_INDEX ] = false;
+   // is_used[ T0_INDEX ] = false;
+      is_used[ A_INDEX  ] = false;
+   // is_used[ SX_INDEX ] = false;
+   // is_used[ SY_INDEX ] = false;
+   // is_used[ SZ_INDEX ] = false;
                               // then turn off some params for all detectors.
       for ( int i = 0; i < det_count; i++ )   
       {
@@ -705,6 +715,9 @@ public class SCDcal   extends    OneVarParameterizedFunction
         is_used[ index + DET_D_INDEX      ] = false;
     //  is_used[ index + DET_WIDTH_INDEX  ] = false;
     //  is_used[ index + DET_HEIGHT_INDEX ] = false;
+        is_used[ index + DET_PHI_INDEX    ] = false;
+        is_used[ index + DET_CHI_INDEX    ] = false;
+        is_used[ index + DET_OMEGA_INDEX  ] = false;
       }
                               // now count the number that were used
       int n_used = 0;
@@ -745,7 +758,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
                                            // build the data fitter and display 
                                            // the results.
       MarquardtArrayFitter fitter = 
-      new MarquardtArrayFitter(error_f, x_index, z_vals, sigmas, 1.0e-16, 200);
+      new MarquardtArrayFitter(error_f, x_index, z_vals, sigmas, 1.0e-16, 2000);
 
       System.out.println( fitter.getResultsString() );
 
