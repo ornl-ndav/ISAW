@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/07/31 14:15:58  dennis
+ *  Switched to use a vector of PeakData objects, rather than
+ *  parallel arrays of values.
+ *
  *  Revision 1.6  2003/07/29 22:34:21  dennis
  *  Made row[] and col[] values for peaks double instead of integer,
  *  in preparation to work with centroided peaks.
@@ -131,20 +135,13 @@ public class SCDcal   extends    OneVarParameterizedFunction
    *  are numbered in a sequence and the point's index in the sequence is 
    *  used as the one variable.
    */
-   public SCDcal( 
-                  int                 run[],         
-                  int                 det_id[],
-                  Hashtable           grids,
-                  SampleOrientation_d orientation[],
-                  double              hkl[][],
-                  double              tof[], 
-                  double              row[], 
-                  double              col[],
-                  double              params[], 
-                  String              param_names[],
-                  int                 n_used,
-                  boolean             is_used[],
-                  double              lattice_params[] )
+   public SCDcal( Vector    peaks_vector,
+                  Hashtable grids,
+                  double    params[], 
+                  String    param_names[],
+                  int       n_used,
+                  boolean   is_used[],
+                  double    lattice_params[] )
    {
                                    // we only want to use some of the possible
                                    // parameter, but the super constructor must
@@ -186,20 +183,32 @@ public class SCDcal   extends    OneVarParameterizedFunction
      all_parameters = params;
      all_parameter_names = param_names;
 
-     n_peaks = run.length;
-     this.run = copy( run );
-     this.id =  copy( det_id );
+     n_peaks = peaks_vector.size();
+     run = new int[n_peaks];
+     id =  new int[n_peaks];
+     hkl = new double[n_peaks][3];
+     row = new double[n_peaks];
+     col = new double[n_peaks];      
+     tof = new double[n_peaks];
+     for ( int i = 0; i < n_peaks; i++ )
+     {
+       PeakData peak = (PeakData)peaks_vector.elementAt(i);
+       run[i]    = peak.run_num;
+       id [i]    = peak.grid.ID();
+       hkl[i][0] = Math.round(peak.h);
+       hkl[i][1] = Math.round(peak.k);
+       hkl[i][2] = Math.round(peak.l);
+       row[i]    = peak.row;
+       col[i]    = peak.col;
+       tof[i]    = peak.tof;
+     }
      this.grids = grids;
-     this.hkl = copy( hkl );
-     this.tof = copy( tof );
-     this.row = copy( row );
-     this.col = copy( col );       // to be really thorough, we should probably
-                                   // also copy the grids Hashtable and the
-                                   // orientation array, however, the order of
-                                   // the values in the grids hashtable is
-                                   // critical, and the copy may disturb it.
+                                   // to be really thorough, we should probably
+                                   // also copy the grids Hashtable however, 
+                                   // the order of the values in the grids
+                                   // hashtable is critical, and the copy 
+                                   // may disturb it.
 
-     // Lattice Parameters for Quartz
      B_theoretical = lattice_calc.A_matrix( lattice_params );     
      System.out.println("Material Matrix = " );
      LinearAlgebra.print( B_theoretical );
@@ -222,18 +231,19 @@ public class SCDcal   extends    OneVarParameterizedFunction
      gon_rotation         = new Hashtable();
      for ( int i = 0; i < run.length; i++ )
      {
+       PeakData peak = (PeakData)peaks_vector.elementAt(i); 
        Integer key = new Integer( run[i] );
        Object  val = gon_rotation_inverse.get( key );
        if ( val == null )
        { 
-         Tran3D_d tran = orientation[i].getGoniometerRotationInverse();
+         Tran3D_d tran = peak.orientation.getGoniometerRotationInverse();
          double rotation[][] = new double[3][3];
          for ( int k = 0; k < 3; k++ )
            for ( int j = 0; j < 3; j++ )
              rotation[k][j] = tran.get()[k][j]; 
          gon_rotation_inverse.put( key, rotation );
 
-         tran = orientation[i].getGoniometerRotation();
+         tran = peak.orientation.getGoniometerRotation();
          rotation = new double[3][3];
          for ( int k = 0; k < 3; k++ )
            for ( int j = 0; j < 3; j++ )
@@ -253,6 +263,16 @@ public class SCDcal   extends    OneVarParameterizedFunction
      setParameters(parameters);   // This may seem circular, but it forces the
                                   // local version to set up initial values
                                   // for qxyz_theoretical, observed, UB, etd.
+
+     /*
+     for ( int i = 0; i < n_peaks; i++ )
+     {
+       System.out.println(""+i);
+       LinearAlgebra.print( hkl[i] );
+       LinearAlgebra.print( qxyz_observed[i] );
+       LinearAlgebra.print( qxyz_theoretical[i] );
+     }
+     */
    }
 
   /**
@@ -598,116 +618,21 @@ public class SCDcal   extends    OneVarParameterizedFunction
       lattice_params[4] = 90;
       lattice_params[5] = 120;
 
+      Vector peaks = PeakData.ReadPeaks( args[0] ); // load the vector of peaks
 
-      final int N_ROWS      = 100;       // Detector parameters, used for 
-      final int N_COLS      = 100;       // setting up DataGrids must come
-      final double DET_SIZE = 0.15;      // from somewhere.
-      final double L1       = 9.378;
+      PeakData peak = (PeakData)peaks.elementAt(0);
+      double l1 = peak.l1; 
 
-      boolean det_info_read = false;
-      int    n_peaks = 0;
-      int    line_type;
-      int    run[]    = null;
-      int    det[]    = null;
-      double det_a;
-      double det_d;
-      double chi;
-      double phi;
-      double omega;
-      double hkl[][]  = null;
-      double tof[]    = null;
-      double row[]    = null; 
-      double col[]    = null;
-      double counts[] = null;
-      SampleOrientation_d orientation[]  = null;
-      DetectorPosition_d  det_position[] = null;
       Hashtable grids = new Hashtable();
-      try
+      for ( int i = 0; i < peaks.size(); i++ )
       {
-        TextFileReader tfr = new TextFileReader( args[0] );
-        n_peaks = tfr.read_int();
-        run    = new int[n_peaks];
-        det    = new int[n_peaks];
-        hkl    = new double[n_peaks][3];
-        tof    = new double[n_peaks];
-        row    = new double[n_peaks];
-        col    = new double[n_peaks];
-        counts = new double[n_peaks];
-        orientation  = new SampleOrientation_d[n_peaks];
-        det_position = new DetectorPosition_d[n_peaks];
-
-        for ( int i = 0; i < n_peaks; i++ )
+        UniformGrid_d grid = ((PeakData)peaks.elementAt(i)).grid;  
+        Integer key = new Integer( grid.ID() );
+        if ( grids.get(key) == null )            // new detector, so add it
         {
-          line_type = tfr.read_int();
-          if ( line_type == 0 )      // READ HEADER INFO
-          {
-            tfr.read_line();         // end of line 0
-
-            line_type = tfr.read_int();
-            run[i]   = tfr.read_int();
-            det[i]   = tfr.read_int(); 
-            det_a = tfr.read_double();
-            tfr.read_double();        // IGNORE ANGLE 2
-            det_d = tfr.read_double();
-            det_position[i] = new DetectorPosition_d();
-            det_position[i].setSphericalCoords( det_d, 
-                                                det_a * Math.PI/180,
-                                                0.0 ); 
-            chi   = tfr.read_double();
-            phi   = tfr.read_double();
-            omega = tfr.read_double();
-            orientation[i] = new IPNS_SCD_SampleOrientation_d((float)phi, 
-                                                            (float)chi, 
-                                                            (float)omega);
-            tfr.read_line();          // end of line 1
-
-            line_type = tfr.read_int();
-            tfr.read_line();          // end of line 2A
-
-            line_type = tfr.read_int();
-            det_info_read = true;
-            Integer key = new Integer( det[i] );
-            if ( grids.get(key) == null )            // new detector, so add it
-            {
-              Vector3D_d center = new Vector3D_d( 
-                                       det_d *  Math.cos(det_a * Math.PI/180),
-                                       det_d *  Math.sin(det_a * Math.PI/180),
-                                       0  );
-              Vector3D_d y_vec = new Vector3D_d( 0, 0, 1 ); 
-              Vector3D_d x_vec = new Vector3D_d(); 
-              x_vec.cross( center, y_vec );
-              x_vec.normalize();
-              UniformGrid_d grid = new UniformGrid_d
-                                   ( det[i], "m", 
-                                     center, x_vec, y_vec, 
-                                     DET_SIZE, DET_SIZE, 0.001, 
-                                     N_ROWS, N_COLS );
-              grids.put( key, grid );
-              System.out.println("grid = " + grid );
-            }
-          }
-          if ( !det_info_read )
-          {
-            run[i]   = run[i-1];
-            det[i]   = det[i-1];
-            det_position[i] = det_position[i-1];
-            orientation[i]  = orientation[i-1];
-          }
-          tfr.read_int();             // IGNORE SEQN
-          hkl[i][0] = Math.round(tfr.read_double()); 
-          hkl[i][1] = Math.round(tfr.read_double()); 
-          hkl[i][2] = Math.round(tfr.read_double()); 
-          col[i]    = tfr.read_double();
-          row[i]    = tfr.read_double();
-          tof[i]    = tfr.read_double();
-          counts[i] = tfr.read_double();
-          tfr.read_line();            // end of line 3
-          det_info_read = false; 
+          grids.put( key, grid );
+          System.out.println("grid = " + grid );
         }
-      }
-      catch ( IOException e )
-      {
-        System.out.println(e);
       }
                                                    // set up the list of 
                                                    // parameters and names
@@ -724,7 +649,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
       parameter_names[ SZ_INDEX ]  = "SZ";
 
       double parameters[] = new double[n_params];
-      parameters[ L1_INDEX ]  = L1;
+      parameters[ L1_INDEX ]  = l1;
       parameters[ T0_INDEX ]  = 0.0;
       parameters[ A_INDEX  ]  = 1.0;
       parameters[ SX_INDEX ]  = 0.0;
@@ -772,7 +697,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
         is_used[i] = true;
                               // Insert code at this point to mark some params.
                               // First turn off any params shared by all dets.
-    //  is_used[ A_INDEX ] = false;
+      is_used[ A_INDEX ] = false;
                               // then turn off some params for all detectors.
       for ( int i = 0; i < det_count; i++ )   
       {
@@ -788,44 +713,39 @@ public class SCDcal   extends    OneVarParameterizedFunction
           n_used++;
                                                      // build the one variable
                                                      // function
-      SCDcal error_f = new SCDcal( run, 
-                                   det,
+      SCDcal error_f = new SCDcal( peaks, 
                                    grids,
-                                   orientation,
-                                   hkl,
-                                   tof, row, col,
                                    parameters, parameter_names,
                                    n_used, is_used,
                                    lattice_params ); 
 
-                                                     // build the array of 
-                                                     // function values with  
-                                                     // noise and "fake" sigmas
-      double z_vals[] = new double[ n_peaks ]; 
-      double sigmas[] = new double[ n_peaks ]; 
-      double x_index[] = new double[ n_peaks ];
-      for ( int i = 0; i < n_peaks; i++ )
+      for ( int i = 0; i < parameters.length; i++ )
+      {
+        if ( is_used[i] )
+          System.out.print("  ");
+        else
+          System.out.print("* ");
+        System.out.println( parameter_names[i] +" = " + parameters[i] ); 
+      }
+      System.out.println("Before fit... params are");
+      error_f.ShowProgress();
+                                                // build the arrays of x values
+                                                // target function values 
+                                                // (z_vals) and "fake"
+      double z_vals[] = new double[ peaks.size() ]; 
+      double sigmas[] = new double[ peaks.size() ]; 
+      double x_index[] = new double[ peaks.size() ];
+      for ( int i = 0; i < peaks.size(); i++ )
       {
         z_vals[i] = 0;
 //      sigmas[i] = Math.sqrt( counts[i] );
         sigmas[i] = 1.0;
         x_index[i]  = i;
       }
-/*
-      double vals[]   = error_f.getValues( x_index );
-      System.out.println("error_f evaluated at all points = ");
-      LinearAlgebra.print( vals );
-      for ( int k = 0; k < parameters.length; k++ )
-      {
-        System.out.println("Derivatives with respect to " + parameter_names[k]);
-        double derivs[] = error_f.get_dFdai(x_index,k);
-        LinearAlgebra.print( derivs );
-      }
-*/
                                            // build the data fitter and display 
                                            // the results.
       MarquardtArrayFitter fitter = 
-      new MarquardtArrayFitter(error_f, x_index, z_vals, sigmas, 1.0e-16, 100);
+      new MarquardtArrayFitter(error_f, x_index, z_vals, sigmas, 1.0e-16, 200);
 
       System.out.println( fitter.getResultsString() );
 
