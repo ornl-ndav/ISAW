@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/01/21 17:58:09  bouzekc
+ * main() now only creates a ParameterClassList and does not allocate
+ * storage for it.
+ *
  * Revision 1.10  2003/12/14 19:18:06  bouzekc
  * Removed unused import statements.
  *
@@ -361,7 +365,7 @@ public class ParameterClassList{
    */
   public static void main(String[] args){
     DEBUG = true;
-    ParameterClassList PL=new ParameterClassList();
+    new ParameterClassList();
     System.exit(0);
   }
 }
