@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2002/11/12 22:00:35  dennis
+ *  Constructor now makes copy of array of values, to guarantee that
+ *  the Attribute is immutable.
+ *
  *  Revision 1.12  2002/11/12 00:47:20  dennis
  *  Made immutable by:
  *  1. remove setValue() method
@@ -131,7 +135,9 @@ public class IntListAttribute extends Attribute
   public IntListAttribute( String name, int values[] )
   {
     super( name );
-    this.values = values; 
+                                             // make copy of the array
+    this.values = new int[ values.length ];
+    System.arraycopy( values, 0, this.values, 0, values.length ); 
   }
 
   private IntListAttribute( )
