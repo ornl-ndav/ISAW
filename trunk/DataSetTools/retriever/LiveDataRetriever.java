@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2001/08/08 14:03:47  dennis
+ *  Now returns null if the requested DataSet does not exist
+ *  (to be consistent with other retrievers).
+ *
  *  Revision 1.13  2001/08/07 21:35:33  dennis
  *  Now sends commands and returns error codes that are consistent
  *  with the RemoteFileRetriever.
@@ -221,7 +225,7 @@ public class LiveDataRetriever extends    RemoteDataRetriever
       return ds;
     }
 
-    return (DataSet)(DataSet.EMPTY_DATA_SET.clone());
+    return null;
   }
 
 
