@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 20:57:43  kramer
+ * *** empty log message ***
+ *
  * Revision 1.3  2004/03/12 19:46:20  bouzekc
  * Changes since 03/10.
  *
@@ -231,7 +234,6 @@ public class SearchUtilities
 		for (int i=0; i<vec.size(); i++)
 		{
 			String str = (String)(vec.elementAt(i));
-			System.out.println("in recreateVector(Vector), str="+str);
 			newVec.add(new VectorStringElement(str,i));
 		}
 		return newVec;
@@ -257,7 +259,7 @@ public class SearchUtilities
 		{
 			answer = checkVectorSearchOptions(panel.getCharPanel(), attD.getAttribute_char_vector());
 		}
-			
+
 		return answer;
 	}
 
@@ -282,7 +284,7 @@ public class SearchUtilities
 				if (answer)
 					answer = checkVectorSearchOptions(panel.getParametersPanel(), constD.getConst_parameter_vector());
 		}
-			
+					
 		return answer;
 	}
 	
@@ -332,7 +334,7 @@ public class SearchUtilities
 			answer = true;
 		else
 			answer = false;
-		
+			
 		if (answer)
 		{
 			Vector panelsVector = new Vector();
@@ -348,7 +350,7 @@ public class SearchUtilities
 				if (answer)
 				{
 					answer = checkVectorSearchOptions(panel.getCharPanel(), intfD.getInterface_char_vector());
-						
+					
 						if (answer)
 							answer = checkVectorSearchOptions(panel.getImplementsPanel(), intfD.getInterface_implements_vector());
 				}
