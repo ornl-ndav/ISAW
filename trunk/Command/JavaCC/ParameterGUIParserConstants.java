@@ -10,13 +10,18 @@ public interface ParameterGUIParserConstants {
   int CHARACTER = 6;
   int RESERVED_CHAR = 7;
   int VAR_RESERVED_CHAR = 8;
-  int EXPANSION_DELIMITER = 9;
-  int VARIABLE_COMP = 10;
-  int VARIABLE = 11;
-  int STRING = 12;
-  int COLON_PAIR = 13;
-  int STEPPED_COLON_PAIR = 14;
-  int FLOATING_POINT = 15;
+  int VARIABLE_COMP = 9;
+  int VARIABLE = 10;
+  int WINDOWS_PATH = 11;
+  int UNIX_PATH = 12;
+  int DIGICHAR = 13;
+  int WIN_PATH_END = 14;
+  int UNIX_PATH_END = 15;
+  int STRING = 16;
+  int COLON_PAIR = 17;
+  int STEPPED_COLON_PAIR = 18;
+  int FLOATING_POINT = 19;
+  int EMPTY_ARRAY = 20;
 
   int DEFAULT = 0;
 
@@ -30,13 +35,18 @@ public interface ParameterGUIParserConstants {
     "<CHARACTER>",
     "<RESERVED_CHAR>",
     "<VAR_RESERVED_CHAR>",
-    "\":\"",
     "<VARIABLE_COMP>",
     "<VARIABLE>",
+    "<WINDOWS_PATH>",
+    "<UNIX_PATH>",
+    "<DIGICHAR>",
+    "<WIN_PATH_END>",
+    "<UNIX_PATH_END>",
     "<STRING>",
     "<COLON_PAIR>",
     "<STEPPED_COLON_PAIR>",
     "<FLOATING_POINT>",
+    "<EMPTY_ARRAY>",
     "\";\"",
     "\",\"",
     "\"[\"",

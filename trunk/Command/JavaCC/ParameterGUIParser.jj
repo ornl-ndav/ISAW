@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/08/16 01:36:28  bouzekc
+ * Now handles *NIX and Windows paths more correctly.
+ *
  * Revision 1.4  2003/08/06 18:40:25  bouzekc
  * Changed so that integer expansions entered in quotes are treated as Strings.
  *
@@ -139,7 +142,6 @@ public class ParameterGUIParser {
       }
     }
     return intExpansion;
-                        //[";", ",", "?", "*", "&"] ) >
   }
 }
 
@@ -176,24 +178,43 @@ TOKEN : {
 }
 
 TOKEN : {
-  < #EXPANSION_DELIMITER: ":" >
-}
-
-TOKEN : {
   < #VARIABLE_COMP:  <CHARACTER> | <DIGIT> | <VAR_RESERVED_CHAR> >
 }
 
 TOKEN : {
-  < VARIABLE : ( ( ( <CHARACTER> )+ ( <VARIABLE_COMP> )*               ) | 
-                 ( ( <DIGIT> )+ ( <VARIABLE_COMP> )+                   ) |
-                 ( ( <CHARACTER> <EXPANSION_DELIMITER> 
-                     ( <DIGIT> | <CHARACTER> | <VAR_RESERVED_CHAR>)+ ) ) )+ > 
+  < VARIABLE : ( ( ( <CHARACTER> )+ ( <VARIABLE_COMP> )* ) | 
+                 ( ( <DIGIT>     )+ ( <VARIABLE_COMP> )+ ) ) >
 }
 
 TOKEN : {
-  < STRING: "\"" ( <DIGIT> | <CHARACTER> | <RESERVED_CHAR> |
+    < WINDOWS_PATH : ( ( "\"" )*
+                     ( <CHARACTER> ":\\\\" ( <WIN_PATH_END> )* ) ( "\"" )* ) >
+}
+
+TOKEN : {
+    < UNIX_PATH : ( ( "\"" )*  ( ( <UNIX_PATH_END> )+ ) ( "\"" )* ) >
+}
+
+TOKEN : {
+  < #DIGICHAR : <DIGIT> | <CHARACTER> >
+}
+
+TOKEN : {
+  < #WIN_PATH_END : ( "\\" )? ( ( ( <DIGICHAR> )* ) | 
+                         ( ( <DIGICHAR> )+ ( "." )? ( <DIGICHAR> )* ) ) 
+                    ( "\\" )? >
+}
+
+TOKEN : {
+  < #UNIX_PATH_END : "/" ( ( ( <DIGICHAR> )* ) | 
+                         ( ( <DIGICHAR> )+ ( "." )? ( <DIGICHAR> )* ) ) 
+                    ( "/" )? >
+}
+
+TOKEN : {
+  < STRING: ( "\"" )+ ( <DIGIT> | <CHARACTER> | <RESERVED_CHAR> |
                    <VAR_RESERVED_CHAR> | <WHITESPACE> | <FLOATING_POINT> |
-                   <EXPANSION_DELIMITER> )* "\"" >
+                   ":" )* ( "\"" )+ >
 }
 
 TOKEN : {
@@ -207,6 +228,10 @@ TOKEN : {
   < FLOATING_POINT: ( <DIGIT> )+ ( ( "." )? ( ( <UNSIGNED_DIGIT> )* ) | 
                                  ( "." ( <UNSIGNED_DIGIT> )+ ) ) 
                                  ( ["e", "E"] ( <DIGIT>)+ )? >
+}
+
+TOKEN : {
+  < EMPTY_ARRAY: "[" ( <WHITESPACE> )* "]" >
 }
 
 Vector ExpansionList(  ) : {
@@ -341,5 +366,37 @@ Object toArray(  ) : {
                                  expansion.length(  ) ) );
 
     return expandIntList( first, last, step );
+  }
+
+|
+  //someone did not add anything to the array, so return an empty String
+  t = <EMPTY_ARRAY> {
+    return "";
+  }
+
+|
+  //windows path.  
+  t = <WINDOWS_PATH> {
+    /*if( !t.image.startsWith( "\"" ) ) {
+      t.image = t.image.substring( 1, t.image.length(  ) );
+    }
+    if( !t.image.endsWith( "\"" ) ) {
+      t.image = t.image.substring( 0, t.image.length(  ) - 1);
+    }*/
+
+    return t.image;
+  }
+
+|
+  //unix path.  
+  t = <UNIX_PATH> {
+    /*if( !t.image.startsWith( "\"" ) ) {
+      t.image = t.image.substring( 1, t.image.length(  ) );
+    }
+    if( !t.image.endsWith( "\"" ) ) {
+      t.image = t.image.substring( 0, t.image.length(  ) - 1);
+    }*/
+
+    return t.image;
   }
 }
