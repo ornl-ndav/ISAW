@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2003/12/15 17:28:16  bouzekc
+ *  Uncommented and fixed main method.
+ *
  *  Revision 1.36  2003/12/15 02:51:31  bouzekc
  *  Changed call to execOneLine's Vect_to_String to call upon the class name
  *  rather than an instance, as the method is static.  Removed creation of
@@ -174,6 +177,7 @@ import Command.JavaCC.*;
 import Command.execOneLine;
 
 import DataSetTools.components.ParametersGUI.EntryWidget;
+
 import DataSetTools.dataset.DataSet;
 
 import java.awt.*;
@@ -283,8 +287,8 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     }
 
     if( getInitialized(  ) ) {
-      val = ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).getText(  );
-      val = StringtoArray( val.toString(  ) );
+      val   = ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).getText(  );
+      val   = StringtoArray( val.toString(  ) );
     }
 
     return val;
@@ -311,7 +315,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       return "[]";
     }
 
-    String res                   = execOneLine.Vect_to_String( V );
+    String res = execOneLine.Vect_to_String( V );
 
     return res;
   }
@@ -414,6 +418,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     if( getValue(  ) == null ) {
       return;
     }
+
     ( ( Vector )getValue(  ) ).clear(  );
 
     if( getInitialized(  ) ) {
@@ -435,14 +440,14 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     if( init_values != null ) {
       setValue( init_values );
     }
+
     setEntryWidget( 
       new EntryWidget( 
         new JTextField( ArraytoString( ( Vector )getValue(  ) ) ) ) );
 
     //we'll set a really small preferred size and let the Layout Manager take
     //over at that point
-    getEntryWidget(  )
-      .setPreferredSize( new Dimension( 2, 2 ) );
+    getEntryWidget(  ).setPreferredSize( new Dimension( 2, 2 ) );
     super.initGUI(  );
   }
 
@@ -463,6 +468,60 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     initGUI( init_vec );
   }
 
+  /*
+   * Main method for testing purposes.
+   */
+  public static void main( String[] args ) {
+    ArrayPG fpg;
+    int y       = 0;
+    int dy      = 70;
+    Vector vals = new Vector(  );
+
+    vals.add( "C:\\\\Windows\\System" );
+    vals.add( "C:\\\\Windows\\System\\My Documents" );
+    vals.add( "/home/myhome/atIPNS" );
+    vals.add( "some/more\\random@garbage!totry2" );
+    vals.add( "10:15" );
+    fpg = new ArrayPG( "a", vals, true );
+    System.out.println( "Before calling init, the ArrayPG is " );
+    System.out.println( fpg );
+    fpg.initGUI( vals );
+    System.out.print( fpg.getValue(  ) + "\n" );
+    fpg.showGUIPanel( 0, y );
+    y += dy;
+    vals.add( new StringBuffer( "tim" ) );
+    fpg = new ArrayPG( "b", vals );
+    System.out.println( fpg );
+    fpg.setEnabled( false );
+    fpg.initGUI( new Vector(  ) );
+    fpg.showGUIPanel( 0, y );
+    y += dy;
+    vals = new Vector(  );
+
+    for( int i = 1; i <= 20; i++ ) {
+      vals.add( new Integer( i ) );
+    }
+
+    fpg = new ArrayPG( "c", vals, false );
+    System.out.println( fpg );
+    fpg.setEnabled( false );
+    fpg.initGUI( new Vector(  ) );
+    fpg.showGUIPanel( 0, y );
+    y += dy;
+    vals = new Vector(  );
+
+    for( float f = 1f; f < 100; f *= 2 ) {
+      vals.add( new Float( f ) );
+    }
+
+    fpg = new ArrayPG( "d", vals, true );
+    System.out.println( fpg );
+    fpg.setDrawValid( true );
+    fpg.initGUI( vals );
+    fpg.showGUIPanel( 0, y );
+    y += dy;
+  }
+
   /**
    * Remove an item based on its key.
    *
@@ -470,6 +529,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    */
   public void removeItem( Object val ) {
     int index = ( ( Vector )getValue(  ) ).indexOf( val );
+
     removeItem( index );
 
     if( getInitialized(  ) ) {
@@ -514,55 +574,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     }
   }
 
-  /*
-   * Main method for testing purposes.
-   */
-  /*public static void main( String[] args ) {
-     ArrayPG fpg;
-     int y  = 0;
-     int dy = 70;
-     Vector vals = new Vector(  );
-     vals.add( "C:\\\\Windows\\System" );
-     vals.add( "C:\\\\Windows\\System\\My Documents" );
-     vals.add( "/home/myhome/atIPNS" );
-     vals.add( "some/more\\random@garbage!totry2" );
-     vals.add( "10:15" );
-     fpg = new ArrayPG( "a", vals, true );
-     System.out.println( "Before calling init, the ArrayPG is " );
-     System.out.println( fpg );
-     fpg.initGUI( vals );
-     System.out.print( fpg.getValue(  ) + "\n" );
-     fpg.showGUIPanel( 0, y );
-        y += dy;
-        vals.add( new StringBuffer( "tim" ) );
-        fpg = new ArrayPG( "b", vals );
-        System.out.println( fpg );
-        fpg.setEnabled( false );
-        fpg.initGUI( null  );
-        fpg.showGUIPanel( 0, y );
-        y += dy;
-        vals = new Vector(  );
-        for( int i = 1; i <= 20; i++ ) {
-          vals.add( new Integer( i ) );
-        }
-        fpg = new ArrayPG( "c", vals, false );
-        System.out.println( fpg );
-        fpg.setEnabled( false );
-        fpg.initGUI( null );
-        fpg.showGUIPanel( 0, y );
-        y += dy;
-        vals = new Vector(  );
-        for( float f = 1f; f < 100; f *= 2 ) {
-          vals.add( new Float( f ) );
-        }
-        fpg = new ArrayPG( "d", vals, true );
-        System.out.println( fpg );
-        fpg.setDrawValid( true );
-        fpg.initGUI( vals );
-        fpg.showGUIPanel( 0, y );
-        y += dy;
-     }*/
-
   /**
    * Determines how many elements are of the same class.
    *
@@ -580,9 +591,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     }
 
     int same     = 1;
-    String first = vals.elementAt( start )
-                       .getClass(  )
-                       .getName(  );
+    String first = vals.elementAt( start ).getClass(  ).getName(  );
 
     for( int i = 1; i < vals.size(  ); i++ ) {
       if( first.equals( vals.elementAt( i ).getClass(  ).getName(  ) ) ) {
@@ -604,8 +613,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    */
   private String shortName( Object obj ) {
     // get the name of the class
-    String res = obj.getClass(  )
-                    .getName(  );
+    String res = obj.getClass(  ).getName(  );
 
     // determine what to trim off
     int start = res.lastIndexOf( "." );
@@ -650,6 +658,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
         if( start < numElements ) {
           result.append( ", " );
         }
+
         index = 0;
       }
 
