@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2004/03/13 23:43:24  bouzekc
+ * Added a check for legacy forms that do not have a "result" parameter.
+ *
  * Revision 1.13  2004/02/23 17:55:29  bouzekc
  * Changed method signatures to be consistent with modified IGUIWizardFrontEnd
  * interface.
@@ -149,6 +152,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     } else {
       frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
     }
+
     form_panel        = new JPanel(  );
     form_label        = new JLabel( " ", SwingConstants.CENTER );
     formProgress      = new JProgressBar(  );
@@ -184,6 +188,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     if( result == JFileChooser.CANCEL_OPTION ) {
       return null;
     }
+
     save_file = fileChooser.getSelectedFile(  );
 
     if( saving ) {
@@ -198,6 +203,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     if( saving && save_file.exists(  ) ) {
       int choice;
       StringBuffer s = new StringBuffer(  );
+
       s.append( "You are about to overwrite " );
       s.append( save_file.toString(  ) );
       s.append( ".\n  If this is OK, press " );
@@ -227,8 +233,8 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   }
 
   /**
-   * Utility method to set the Form progress bar indeterminate state
-   * to indeterminate.  updateFormProgress() will change it back.
+   * Utility method to set the Form progress bar indeterminate state to
+   * indeterminate.  updateFormProgress() will change it back.
    */
   public final void setFormProgressIndeterminate(  ) {
     formProgress.setString( "Executing " + wiz.getCurrentForm(  ) );
@@ -236,8 +242,8 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   }
 
   /**
-   * Utility method to set the Wizard progress bar indeterminate state
-   * to indeterminate.  updateWizProgress() will change it back.
+   * Utility method to set the Wizard progress bar indeterminate state to
+   * indeterminate.  updateWizProgress() will change it back.
    */
   public final void setWizardProgressIndeterminate(  ) {
     wizProgress.setString( "Executing " + wiz.getTitle(  ) );
@@ -293,6 +299,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     int day               = cal.get( Calendar.DAY_OF_MONTH );
     String time           = String.valueOf( month ) + "_" +
       String.valueOf( day );
+
     errFile               = errFile + time + ".err";
     message.append( "\nPlease see the " );
     message.append( errFile );
@@ -303,6 +310,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
       frame, message.toString(  ), "ERROR", JOptionPane.ERROR_MESSAGE );
 
     String saveFile = StringUtil.setFileSeparator( errDir + "/" + errFile );
+
     TextWriter.writeStackTrace( saveFile, e );
   }
 
@@ -317,6 +325,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    */
   public final void showForm( int index ) {
     boolean ignore = wiz.getIgnorePropertyChanges(  );
+
     wiz.setIgnorePropertyChanges( true );
 
     if( !frame.isShowing(  ) ) {
@@ -336,6 +345,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     if( f != null ) {
       f.setVisible( false );
     }
+
     form_panel.removeAll(  );
     f = wiz.getForm( index );  // show the specified form
     form_panel.add( f.getPanel(  ) );
@@ -349,6 +359,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     } else {
       form_label.setText( "Form " + ( index + 1 ) + ": " + f.getTitle(  ) );
     }
+
     updateFormProgress(  );
     updateWizardProgress(  );
     populateViewMenu(  );
@@ -376,6 +387,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    */
   public final void updateFormProgress(  ) {
     Form f = wiz.getCurrentForm(  );
+
     formProgress.setIndeterminate( false );
 
     if( f != null ) {
@@ -398,7 +410,9 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    */
   public final void updateWizardProgress(  ) {
     wizProgress.setIndeterminate( false );
+
     int lastDone = wiz.getLastValidFormNum(  ) + 1;
+
     wizProgress.setValue( lastDone );
     wizProgress.setString( 
       "Wizard Progress: " + ( lastDone ) + " of " + wiz.getNumForms(  ) +
@@ -419,6 +433,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     boolean done;
     int index;
     int num_params;
+
     f            = wiz.getCurrentForm(  );
     done         = false;
     index        = 0;
@@ -435,6 +450,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
       if( done ) {
         new ParameterViewer( iparam ).showParameterViewer(  );
       }
+
       index++;
     }
   }
@@ -475,6 +491,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    */
   final void launchProjectChooser(  ) {
     JFileChooser projChooser = new JFileChooser(  );
+
     projChooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
 
     if( wiz.getProjectsDirectory(  ) != null ) {
@@ -499,6 +516,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     Form f;
     IParameterGUI iparam;
     Object val;
+
     f = wiz.getCurrentForm(  );
 
     if( f != null ) {
@@ -507,8 +525,14 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
       //go through the parameter list.  We also want to look at the result
       //parameter
       for( int i = 0; i < ( f.getNum_parameters(  ) + 1 ); i++ ) {
-        iparam   = ( IParameterGUI )f.getParameter( i );
-        val      = iparam.getValue(  );
+        iparam = ( IParameterGUI )f.getParameter( i );
+
+        //this is for the legacy Forms that do not have "result" parameters
+        if( iparam == null ) {
+          return;
+        }
+
+        val = iparam.getValue(  );
 
         /*semi-sophisticated attempt at being able to view
            DataSets, Vectors of items, and files.  Things like
@@ -546,6 +570,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
 
     if( f != null ) {
       String html = form_htmlizer.createHTML( f );
+
       displayHelpMessage( wiz.getTitle(  ), html );
     }
   }
@@ -592,6 +617,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     } else {
       width = ( int )( Toolkit.getDefaultToolkit(  ).getScreenSize(  ).getWidth(  ) * 0.45f );
     }
+
     frame.setBounds( 0, 0, width, height );
   }
 
@@ -604,12 +630,14 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   private void displayHelpMessage( String tempTitle, String html ) {
     JFrame help_frame     = new JFrame( tempTitle );
     Dimension screen_size = Toolkit.getDefaultToolkit(  ).getScreenSize(  );
+
     help_frame.setSize( 
       new Dimension( 
         ( int )( screen_size.getWidth(  ) / 2 ),
         ( int )( screen_size.getHeight(  ) / 2 ) ) );
 
     JEditorPane htmlDisplay = new JEditorPane( "text/html", html );
+
     htmlDisplay.setEditable( false );
     help_frame.getContentPane(  ).add( new JScrollPane( htmlDisplay ) );
     help_frame.show(  );
@@ -627,6 +655,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   private void displayURL( String tempTitle, URL url ) {
     JFrame help_frame     = new JFrame( tempTitle );
     Dimension screen_size = Toolkit.getDefaultToolkit(  ).getScreenSize(  );
+
     help_frame.setSize( 
       new Dimension( 
         ( int )( screen_size.getWidth(  ) / 2 ),
@@ -639,6 +668,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     } catch( IOException ioe ) {
       htmlDisplay = new JEditorPane(  );
     }
+
     htmlDisplay.setEditable( false );
     help_frame.getContentPane(  ).add( new JScrollPane( htmlDisplay ) );
     help_frame.show(  );
@@ -687,6 +717,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     JButton exec_button       = new JButton( EXEC_COMMAND );
     JButton clear_button      = new JButton( CLEAR_COMMAND );
     JButton clear_all_button  = new JButton( CLEAR_ALL_COMMAND );
+
     wizButtons[EXEC_ALL_IND]  = exec_all_button;
     wizButtons[EXEC_IND]      = exec_button;
     wizButtons[CLEAR_IND]     = clear_button;
@@ -700,6 +731,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     JPanel controlsArea       = new JPanel( new BorderLayout(  ) );
     JPanel navControlsBox     = new JPanel( new GridLayout(  ) );
     JMenuBar menu_bar         = new JMenuBar(  );
+
     initProgressBars(  );
     frame.setJMenuBar( menu_bar );
     frame.addWindowListener( new CloseWizardWindow(  ) );
@@ -751,6 +783,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     // add the status to the panel
     if( wiz.getStandalone(  ) ) {
       JPanel statusPanel = SharedData.getStatusPane(  );
+
       statusBox.add( statusPanel );
 
       //status pane will grow very large if we let it
@@ -761,6 +794,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     for( int k = 0; k < wizButtons.length; k++ ) {
       wizButtons[k].addActionListener( command_handler );
     }
+
     enableNavButtons( true, 0 );
     wizProgress.setMaximum( wiz.getNumForms(  ) );
     wizProgress.setString( 
@@ -780,6 +814,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     JMenu file_menu       = new JMenu( "File" );
     JMenu project_menu    = new JMenu( "Project Directory" );
     JMenu help_menu       = new JMenu( "Help" );
+
     view_menu             = new JMenu( VIEW_MENU );
 
     JMenuItem wizard_help = new JMenuItem( WIZARD_HELP_COMMAND );
@@ -788,6 +823,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     JMenuItem save_wizard = new JMenuItem( SAVE_WIZARD_COMMAND );
     JMenuItem load_wizard = new JMenuItem( LOAD_WIZARD_COMMAND );
     JMenuItem exit_item   = new JMenuItem( EXIT_COMMAND );
+
     help_menu.add( wizard_help );
     help_menu.add( form_help );
     file_menu.addSeparator(  );
@@ -1012,6 +1048,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
         //crashed hard when executing an outside Operator, Form, or Script
         //try to salvage what we can
         StringBuffer message = new StringBuffer(  );
+
         message.append( "An error has occurred during execution.  Please\n" );
         message.append( "save the Wizard and send both the Wizard Save\n" );
         message.append( "File and the wizard.err file to your developer.\n" );
