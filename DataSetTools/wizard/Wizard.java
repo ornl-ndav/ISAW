@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2003/06/10 14:20:25  bouzekc
+ * Fixed bug where the View menu was not updated when the
+ * First or Last button was clicked.
+ *
  * Revision 1.23  2003/06/09 14:51:23  bouzekc
  * Added code to handle ErrorStrings as well as a Boolean
  * "false" for Form invalidation.
@@ -1054,6 +1058,7 @@ public abstract class Wizard implements PropertyChangeListener{
             if ( command.equals( FIRST_COMMAND) ){
                 form_num=0;
                 showForm(form_num);
+                populateViewMenu();
             }else if ( command.equals( BACK_COMMAND ) ){
                 if ( form_num-1 >= 0 ){
                     form_num--;
@@ -1073,6 +1078,7 @@ public abstract class Wizard implements PropertyChangeListener{
             }else if ( command.equals( LAST_COMMAND ) ){
                 form_num=forms.size()-1;
                 showForm(form_num);
+                populateViewMenu();
             }else if ( command.equals( CLEAR_COMMAND ) ){
                 invalidate(0);
             }else if ( command.equals( EXEC_ALL_COMMAND) ){
