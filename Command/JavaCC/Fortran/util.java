@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/10/09 14:05:16  rmikk
+ * Added a Write(unitNum, S) in a case where it was omitted
+ *
  * Revision 1.4  2004/08/19 12:24:06  rmikk
  * Added Write to file via unit numbers for FORTRAN code.  The new routines
  *    include all the WRITE routines with unit number is added as the
@@ -696,6 +699,7 @@ public static void WRITEFLOAT( int unitNum, float i, String format){
   }
   if( !exponential){
   S  +=(gov.anl.ipns.Util.Numeric.Format.real((double)i,width, aftDec));
+    Write(unitNum,S);
     return;
   }
   char[] javaFormatString = new char[width];
