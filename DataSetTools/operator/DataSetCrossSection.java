@@ -1,5 +1,7 @@
 /*
- * @(#)DataSetCrossSection.java   0.1  99/08/03   Dennis Mikkelson
+ * @(#)DataSetCrossSection.java   0.2  99/08/03   Dennis Mikkelson
+ *                                     99/08/16   Added constructor to allow
+ *                                                calling operator directly
  *             
  * This operator calculates the integral over a specified interval for each
  * Data block in a DataSet and forms a new DataSet with one entry: a Data
@@ -7,7 +9,11 @@
  * integral for the original Data block.  The new Data block will have an
  * X-Scale taken from an attribute of one of the original Data blocks.  The
  * integral values will be ordered according to increasing attribute value.
- *
+ * If several Data blocks have the same value of the attribute, their integral 
+ * values are averaged.  For example, if the "Raw Detector Angle" attribute 
+ * is used and several Data blocks have the same angle value, the integral
+ * values for that angle are averaged to form the y-value that corresponds to 
+ * that angle in the new Data block.
  */
 
 package DataSetTools.operator;
@@ -26,10 +32,14 @@ public class DataSetCrossSection extends    DataSetOperator
                                  implements Serializable
 {
   /* --------------------------- CONSTRUCTOR ------------------------------ */
+  /**
+   * Construct an operator with a default parameter list.  If this
+   * constructor is used, the operator must be subsequently added to the
+   * list of operators of a particular DataSet.  Also, meaningful values for
+   * the parameters should be set ( using a GUI ) before calling getResult()
+   * to apply the operator to the DataSet this operator was added to.
+   */
 
-                                     // The constructor calls the super
-                                     // class constructor, then sets up the
-                                     // list of parameters.
   public DataSetCrossSection( )
   {
     super( "Integrated Cross Section" );
@@ -45,6 +55,45 @@ public class DataSetCrossSection extends    DataSetOperator
                            new AttributeNameString("Raw Detector Angle") );
     addParameter( parameter );
 }
+
+
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct an operator for a specified DataSet and with the specified
+   *  parameter values so that the operation can be invoked immediately 
+   *  by calling getResult().
+   *
+   *  @param  ds          The DataSet to which the operation is applied
+   *  @param  a           The left hand endpoint of the interval [a, b] over
+   *                      which each Data block is integrated
+   *  @param  b           The righ hand endpoint of the interval [a, b] over
+   *                      which each Data block is integrated
+   *  @param  attr_name   The name of that attribute to be used for ordering
+   *                      the integrated Data block values
+   */
+
+  public DataSetCrossSection( DataSet             ds,
+                              float               a,
+                              float               b,
+                              AttributeNameString attr_name )
+  {
+    this();                         // do the default constructor, then set
+                                    // the parameter value(s) by altering a
+                                    // reference to each of the parameters
+
+    Parameter parameter = getParameter( 0 );
+    parameter.setValue( new Float( a ) );
+
+    parameter = getParameter( 1 );
+    parameter.setValue( new Float( b ) );
+
+    parameter = getParameter( 2 );
+    parameter.setValue( attr_name );
+
+    setDataSet( ds );               // record reference to the DataSet that
+                                    // this operator should operate on
+  }
+
 
 
   /* ---------------------------- getResult ------------------------------- */

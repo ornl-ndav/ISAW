@@ -1,11 +1,14 @@
 /*
- * @(#)DiffractometerTofToWavelength.java   0.1  99/06/17   Dennis Mikkelson
+ * @(#)DiffractometerTofToWavelength.java   0.2  99/06/17   Dennis Mikkelson
+ *
+ *                                 99/08/16   Added constructor to allow
+ *                                            calling operator directly
+ *
  *             
- * This operator converts a neutron time-of-flight DataSet to wavelength.  The
- * DataSet must contain spectra with attributes giving the detector position
- * and source to sample distance ( the initial flight path ). In addition, 
- * it is assumed that the XScale for the spectra represents the time-of-flight 
- * from the source to the detector.
+ * This operator converts a neutron time-of-flight DataSet for a Diffractometer, * to wavelength.  The DataSet must contain spectra with attributes giving the 
+ * detector position and source to sample distance ( the initial flight path ).
+ * In addition, it is assumed that the XScale for the spectra represents the 
+ * time-of-flight from the SOURCE to the detector.
  */
 
 package DataSetTools.operator;
@@ -22,11 +25,15 @@ import  DataSetTools.util.*;
 public class DiffractometerTofToWavelength extends    DataSetOperator 
                                            implements Serializable
 {
-  /* --------------------------- CONSTRUCTOR ------------------------------ */
+  /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
+  /**
+   * Construct an operator with a default parameter list.  If this
+   * constructor is used, the operator must be subsequently added to the
+   * list of operators of a particular DataSet.  Also, meaningful values for
+   * the parameters should be set ( using a GUI ) before calling getResult()
+   * to apply the operator to the DataSet this operator was added to.
+   */
 
-                                     // The constructor calls the super
-                                     // class constructor, then sets up the
-                                     // list of parameters.
   public DiffractometerTofToWavelength( )
   {
     super( "Convert to Wavelength" );
@@ -35,20 +42,52 @@ public class DiffractometerTofToWavelength extends    DataSetOperator
     parameter = new Parameter( "Min Wavelength(A)", new Float(0.0) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Max Wavelength(A)", new Float(10.0) );
+    parameter = new Parameter( "Max Wavelength(A)", new Float(5.0) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Number of Bins ", new Float(200.0) );
+    parameter = new Parameter( "Number of Bins ", new Integer( 1000 ) );
     addParameter( parameter );
+  }
+
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct an operator for a specified DataSet and with the specified
+   *  parameter values so that the operation can be invoked immediately
+   *  by calling getResult().
+   *
+   *  @param  ds          The DataSet to which the operation is applied
+   *  @param  min_wl      The minimum wavelength value to be binned
+   *  @param  max_wl      The maximum wavelength value to be binned
+   *  @param  num_wl      The number of "bins" to be used between min_wl and
+   *                      max_wl
+   */
+
+  public DiffractometerTofToWavelength( DataSet     ds,
+                                        float       min_wl,
+                                        float       max_wl,
+                                        int         num_wl )
+  {
+    this();                         // do the default constructor, then set
+                                    // the parameter value(s) by altering a
+                                    // reference to each of the parameters
+
+    Parameter parameter = getParameter( 0 );
+    parameter.setValue( new Float( min_wl ) );
+
+    parameter = getParameter( 1 );
+    parameter.setValue( new Float( max_wl ) );
+
+    parameter = getParameter( 2 );
+    parameter.setValue( new Integer( num_wl ) );
+
+    setDataSet( ds );               // record reference to the DataSet that
+                                    // this operator should operate on
   }
 
 
   /* ---------------------------- getResult ------------------------------- */
 
-                                     // The concrete operation extracts the
-                                     // current value of the scalar to add 
-                                     // and returns the result of adding it
-                                     // to each point in each data block.
+
   public Object getResult()
   {
                                      // get the current data set
@@ -66,7 +105,7 @@ public class DiffractometerTofToWavelength extends    DataSetOperator
     // #### must take care of the operation log... this starts with it empty
     DataSet new_ds = factory.getDataSet(); 
     new_ds.copyOp_log( ds );
-    //new_ds.addLog_entry( "Converted to Wavelength" );
+    new_ds.addLog_entry( "Converted to Wavelength" );
 
     // copy the attributes of the original data set
     new_ds.getAttributeList().addAttributes( ds.getAttributeList() );
@@ -74,7 +113,7 @@ public class DiffractometerTofToWavelength extends    DataSetOperator
                                      // get the wavelength scale parameters 
     float min_wl = ( (Float)(getParameter(0).getValue()) ).floatValue();
     float max_wl = ( (Float)(getParameter(1).getValue()) ).floatValue();
-    int   num_wl = ( (Float)(getParameter(2).getValue()) ).intValue() + 1;
+    int   num_wl = ( (Integer)(getParameter(2).getValue()) ).intValue() + 1;
 
                                      // validate wavelength bounds
     if ( min_wl > max_wl )             // swap bounds to be in proper order
@@ -89,7 +128,7 @@ public class DiffractometerTofToWavelength extends    DataSetOperator
       new_wl_scale = null;
     else
       new_wl_scale = new UniformXScale( min_wl, max_wl, num_wl );  
-new_ds.addLog_entry( "Converted to Wavelength in the range" +" "+ min_wl +" "+ "to" +" "+ max_wl);
+
                                             // now proceed with the operation 
                                             // on each data block in DataSet 
     Data             data,
@@ -120,9 +159,9 @@ new_ds.addLog_entry( "Converted to Wavelength in the range" +" "+ min_wl +" "+ "
                          attr_list.getAttributeValue(Attribute.INITIAL_PATH);
 
       if( position != null && initial_path_obj != null)
-                                                       // has needed attributes 
-      {                                                // so convert it to E
-                                       // calculate wavelengths at bin boundaries
+                                           // has needed attributes 
+      {                                    // so convert it to wavelength 
+                                      // calculate wavelengths at bin boundaries
         initial_path     = initial_path_obj.floatValue();
         spherical_coords = position.getSphericalCoords();
         total_length     = initial_path + spherical_coords[0];
@@ -145,6 +184,7 @@ new_ds.addLog_entry( "Converted to Wavelength in the range" +" "+ min_wl +" "+ "
           new_data.ReBin( new_wl_scale );       // specified
 
         new_ds.addData_entry( new_data );      
+        new_ds.setAttributeList( attr_list ); // copy the attributes
       }
     }
 

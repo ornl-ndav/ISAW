@@ -1,5 +1,7 @@
 /*
- * @(#)DataSetScalarSubtract.java   0.1  99/06/07   Dennis Mikkelson
+ * @(#)DataSetScalarSubtract.java   0.2  99/06/07   Dennis Mikkelson
+ *                                       99/08/16   Added constructor to allow
+ *                                                  calling operator directly
  *             
  * This operator subtracts a constant from the values of all data objects in a 
  * data set.
@@ -18,11 +20,15 @@ import  DataSetTools.dataset.*;
 public class DataSetScalarSubtract extends    DataSetOperator 
                                    implements Serializable
 {
-  /* --------------------------- CONSTRUCTOR ------------------------------ */
+  /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
+  /**
+   * Construct an operator with a default parameter list.  If this
+   * constructor is used, the operator must be subsequently added to the
+   * list of operators of a particular DataSet.  Also, meaningful values for
+   * the parameters should be set ( using a GUI ) before calling getResult()
+   * to apply the operator to the DataSet this operator was added to.
+   */
 
-                                     // The constructor calls the super
-                                     // class constructor, then sets up the
-                                     // list of parameters.
   public DataSetScalarSubtract( )
   {
     super( "Subtract a Scalar" );
@@ -30,6 +36,30 @@ public class DataSetScalarSubtract extends    DataSetOperator
     Parameter parameter = new Parameter( "Scalar to Subtract", new Float(0.0) );
     addParameter( parameter );
   }
+
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct an operator for a specified DataSet and with the specified
+   *  parameter values so that the operation can be invoked immediately
+   *  by calling getResult().
+   *
+   *  @param  ds          The DataSet to which the operation is applied
+   *  @parm   value       The value to subtract from each point in each Data
+   *                      block in ds
+   */
+
+  public DataSetScalarSubtract( DataSet ds, float value )
+  {
+    this();                         // do the default constructor, then set
+                                    // the parameter value(s)
+
+    Parameter parameter = getParameter( 0 );
+    parameter.setValue( new Float( value) );
+
+    setDataSet( ds );               // record reference to the DataSet that
+                                    // this operator should operate on
+  }
+
 
 
   /* ---------------------------- getResult ------------------------------- */
@@ -51,7 +81,8 @@ public class DataSetScalarSubtract extends    DataSetOperator
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
-    DataSet new_ds = (DataSet)ds.empty_clone(); 
+    DataSet new_ds = ds.empty_clone(); 
+
     if ( new_ds == null )
       System.out.println( "ERROR: In Subtract, new data set is NULL" );
     new_ds.addLog_entry( "Subtracted " + shift );
