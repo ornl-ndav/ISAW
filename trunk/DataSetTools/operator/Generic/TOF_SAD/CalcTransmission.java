@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/07/24 18:48:42  rmikk
+ * Fixed an array out of bounds error
+ *
  * Revision 1.4  2003/07/23 15:03:41  rmikk
  * Set the errors after the clone to square root errors if the
  *   error array is null
@@ -88,7 +91,7 @@ public class CalcTransmission extends GenericTOF_SAD {
   *    @param  polyfitIndx2  the last channed to be fit(in rebinned llambda).the first
   *                         channel is channel 0. This last channel is included.
   *    @param  degree      degree of the polynomial to fit or -1 if no fitting is desired
-  *    @param  weight      use 1/|y| values for weights instead of 1.
+  *    @param  weight      use 1/sqrt|y| values for weights instead of 1.
   */
 
   public CalcTransmission( MonitorDataSet Sample, MonitorDataSet Empty, MonitorDataSet Cadmium,
@@ -107,7 +110,7 @@ public class CalcTransmission extends GenericTOF_SAD {
      addParameter( new IntegerPG( "Polyfit indx 2", polyfitIndx2) );
      addParameter( new IntegerPG( "Polynomial degree 1", degree) );
 
-     addParameter( new BooleanPG("Use 1/y weights", weight));
+     addParameter( new BooleanPG("Use 1/sqrty weights", weight));
 
 
 
@@ -346,8 +349,8 @@ public class CalcTransmission extends GenericTOF_SAD {
     int N = tr.getData_entry(0).getX_scale().getNum_x();
     if(polyfitIndx1 < 0)
       polyfitIndx1 = 0;
-    if( polyfitIndx2 >= N)
-       polyfitIndx2 = N-1;
+    if( polyfitIndx2 >= N -1)
+       polyfitIndx2 = N-2;
     if( polyfitIndx1 >= polyfitIndx2)
       return tr;
     int groupID = tr.getData_entry(0).getGroup_ID();
@@ -449,7 +452,7 @@ public class CalcTransmission extends GenericTOF_SAD {
       Res.append( "included.");
       Res.append( "@param  degree -  degree of the polynomial to fit or -1 if ");
       Res.append( "no fitting is desired");
-      Res.append( "@param  weight  - use 1/|y| values for weights instead of 1.");
+      Res.append( "@param  weight  - use 1/sqrt|y| values for weights instead of 1.");
       Res.append( "@return  a Data Set of transmission ratios converted to llamda");
       Res.append( " and rebinned to match the corresponding sample histogram. ");
 
