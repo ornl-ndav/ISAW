@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/12/14 22:16:58  dennis
+ * Removed commented out code that called Dongfeng's "graph" based plotter.
+ * (Now uses SGT based plotting.)
+ *
  * Revision 1.1  2001/08/16 19:25:29  dennis
  * Renamed version, derived from DongFengs SpectromterPlotter.  This
  * now pops up a viewer, and allows multiple selections.
@@ -117,12 +121,6 @@ public class PlotterOp extends    DataSetOperator
   public Object getResult()
   {
                                      // get the current data set
-     /*DataSetTools.dataset.DataSet ds = this.getDataSet();
-     int   det_ID = ( (Integer)(getParameter(0).getValue()) ).intValue() ;
-     
-    ChopTools.chop_dataDrawer.drawgraphDataEntry(ds, det_ID);
-    return null;
-    */
     //Will use Kevin's Selected Graph View\
     DataSet ds = getDataSet( );
     if( ds == null)
