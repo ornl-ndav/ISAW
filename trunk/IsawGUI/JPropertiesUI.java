@@ -29,6 +29,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2003/12/09 23:19:15  dennis
+ * The publicly accessible showAttributes() method now resets the
+ * reference to the last Data whose attributes were shown.  This
+ * fixes the problem that pointing to a Data block, then a DataSet
+ * then the same Data block in the tree, did not redisplay the
+ * attributes of the Data block.
+ *
  * Revision 1.13  2003/08/06 19:35:07  dennis
  * When new attributes are to be displayed, this now empties
  * the current table, then adds the new rows of info, instead
@@ -119,7 +126,10 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
 
 
   /**
-   * draws the table of Attribute objects to be shown.
+   *  Displays the specified list of Attributes in the properties panel.
+   *  
+   *  @param attr_list  The list of attributes to be displayed.
+   *  
    */
   public void showAttributes( AttributeList attr_list )
   {
@@ -140,13 +150,22 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
     }
 
     ExcelAdapter myAd = new ExcelAdapter(table);
+
+    data_shown = null;  // Reset the data_shown variable.  If this is called
+                        // from outside this class, to display some arbitrary
+                        // attribute list, we won't have a valid reference to
+                        // the data block displayed, so reset it.  If called
+                        // from inside this class, to display a Data block,
+                        // the caller should record a reference to the Data
+                        // block, in data_shown, so that redundant calls to
+                        // show the same Data attributes don't waste time.
   }
 
 
   /**
    *  Update the JPropertiesUI due to a change in the DataSet.  This method
    *  should be called by the DataSet's notification method, when the DataSet
-   *  is changed.
+   *  is changed. 
    *
    *  @param  observed  If all is well, this will be a reference to the 
    *                    DataSet that is being managed.
@@ -169,7 +188,9 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
       DataSet ds = (DataSet)observed;
 
       if( reason_str.equals(DESTROY) )
-        data_shown = null;
+      {
+        showAttributes(new AttributeList());
+      }
 
       else if( reason_str.equals(SELECTION_CHANGED) )
       {
@@ -179,7 +200,9 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
           Data d = ds.getData_entry(index);
           if( d.isMostRecentlySelected() )
             showAttributes(d.getAttributeList());
-          data_shown = d;
+          data_shown = d;                         // keep track of what was
+                                                  // shown, so we don't show
+                                                  // it twice
         }                             
       }
 
@@ -191,20 +214,20 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
           Data d = ds.getData_entry( index );
           if ( d != data_shown )
             showAttributes(  d.getAttributeList()  );
-          data_shown = d;
+          data_shown = d;                        // keep track of what was
+                                                 // shown, so we don't show
+                                                 // it twice
         }
       }
 
       else if( reason_str.equals(DATA_DELETED) )
       {
         showAttributes(new AttributeList());
-        data_shown = null;
       }
 
       else
       {
         showAttributes(ds.getAttributeList());
-        data_shown = null;
       }
  
       return; 
