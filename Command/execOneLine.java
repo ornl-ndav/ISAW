@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.43  2003/03/21 17:23:36  rmikk
+ * Added code to reduce memory needs for sequences of
+ *   arrays with large DataSets
+ *
  * Revision 1.42  2003/03/07 19:47:30  rmikk
  * Returns an error when assigning an illegal object to a variable
  *
@@ -632,14 +636,15 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         
         dss = Load( filename , varname);
         
-        
+        int length = dss.length;
+        dss = null;
         if( perror >= 0 )
             perror = start;
         
         if( dss == null )
             Result = new Integer( 0);
         else
-            Result = new Integer( dss.length );
+            Result = new Integer( length );
         return j;
         
      
@@ -735,6 +740,9 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             }
         }else{ // (Ext.equals("RUN")or hdf or)
             try{
+                if( varname != null)
+                  Assign(varname, new Nulll());
+                perror = -1;
                 dss = util.loadRunfile( filename );
             }catch( Exception s){
                 dss = null;
