@@ -4,6 +4,9 @@
  *  Renamed from MultiRunfileLoader.java
  *  
  *  $Log$
+ *  Revision 1.2  2000/07/21 19:17:38  dennis
+ *  Now includes a group mask parameter to mask off certain groups of detectors.
+ *
  *  Revision 1.1  2000/07/21 14:52:57  dennis
  *  Copied from MultiRunfileLoader.java and changed to use String form for
  *  the list of run numbers
@@ -56,7 +59,8 @@ public class SumRunfiles extends    Operator
    *  @param  path        The directory path to the data directory 
    *  @param  instrument  The name of the instrument, as used in the prefix
    *                      for the file name.
-   *  @param  run_numbers The list of run numbers to be loaded
+   *  @param  run_numbers A list of run numbers to be loaded
+   *  @param  group_mask  A list of group IDs that should be omitted
    *
    *  @param  compare_monitor_pulses
    *                      Flag that determines wheter or not monitor pulses
@@ -68,6 +72,7 @@ public class SumRunfiles extends    Operator
    public SumRunfiles(  String   path, 
                         String   instrument, 
                         String   runs,
+                        String   group_mask,
                         boolean  compare_monitor_pulses  )
    {
       super( "Sum Multiple Runfiles" );
@@ -81,7 +86,10 @@ public class SumRunfiles extends    Operator
       parameter = getParameter(2);
       parameter.setValue( runs );
 
-      parameter = getParameter( 3 );
+      parameter = getParameter(3);
+      parameter.setValue( group_mask );
+
+      parameter = getParameter( 4 );
       parameter.setValue( new Boolean( compare_monitor_pulses ) );
    } 
 
@@ -101,6 +109,9 @@ public class SumRunfiles extends    Operator
     addParameter( parameter );
 
     parameter = new Parameter("List of run numbers", new String("") );
+    addParameter( parameter );
+
+    parameter = new Parameter("Group IDs to omit", new String("") );
     addParameter( parameter );
 
     parameter = new Parameter("Compare monitor pulses?",new Boolean(false));
@@ -123,10 +134,10 @@ public class SumRunfiles extends    Operator
   /**
    *
    */
-   void MakeLogEntries( DataSet           ds, 
-                        String            run_names[],
-                        HistogramDataPeak mon_1[], 
-                        HistogramDataPeak mon_2[]  )
+   private void MakeLogEntries( DataSet           ds, 
+                                String            run_names[],
+                                HistogramDataPeak mon_1[], 
+                                HistogramDataPeak mon_2[]  )
    {
                                                    // Monitor #1 statistics
       float area_1, 
@@ -207,9 +218,14 @@ public class SumRunfiles extends    Operator
      String    path        = (String)getParameter(0).getValue();
      String    instrument  = (String)getParameter(1).getValue();
      String    run_nums    = (String)getParameter(2).getValue();
-     int       runs[]      = IntList.ToArray( run_nums ); 
+     String    group_mask  = (String)getParameter(3).getValue();
+     boolean   compare_monitor_pulses
+                        = ((Boolean)getParameter(4).getValue()).booleanValue(); 
+
+     int       runs[]       = IntList.ToArray( run_nums ); 
+     int       masked_ids[] = IntList.ToArray( group_mask ); 
      String    file_name;
-     String    run_names[] = new String[ runs.length ];
+     String    run_names[]  = new String[ runs.length ];
 
                                           // allocate and mark as un-used 
                                           // space for monitor peaks from each
@@ -224,8 +240,6 @@ public class SumRunfiles extends    Operator
      }
                                         // try to bring in the first run and
                                         // record the monitor peaks if needed
-     boolean   compare_monitor_pulses
-                        = ((Boolean)getParameter(3).getValue()).booleanValue(); 
      float     centroid_1 = 0,
                variance_1 = 0;
      float     centroid;
@@ -242,6 +256,9 @@ public class SumRunfiles extends    Operator
        datasets[0] = rr.getFirstDataSet(Retriever.MONITOR_DATA_SET);
        datasets[1] = rr.getFirstDataSet(Retriever.HISTOGRAM_DATA_SET);
        rr = null;
+     
+       for ( int k = 0; k < masked_ids.length; k++ )
+         datasets[1].removeData_entry_with_id( masked_ids[k] );
 
        if ( datasets[0] == null || datasets[1] == null )
          return new ErrorString(
@@ -323,6 +340,9 @@ public class SumRunfiles extends    Operator
              hist_ds    = rr.getFirstDataSet(Retriever.HISTOGRAM_DATA_SET);
              rr = null;
 
+             for ( int k = 0; k < masked_ids.length; k++ )
+               hist_ds.removeData_entry_with_id( masked_ids[k] );
+
              adder = new DataSetAdd( datasets[0], monitor_ds, false ); 
              adder.getResult();
              adder = new DataSetAdd( datasets[1], hist_ds, false );
@@ -356,28 +376,34 @@ public class SumRunfiles extends    Operator
    {
 /*  Test case 1 ........................
       String runs = "9898,9899,6100";
+      String mask = "";
       SumRunfiles loader = new SumRunfiles( 
                                       "/IPNShome/dennis/ARGONNE_DATA/",
                                       "gppd",
                                        runs,
+                                       mask,
                                        true );
 */
 /*  Test case 2 ..........................
 */
       String runs = "2444";
+      String mask = "20:30,40:50";
       SumRunfiles loader = new SumRunfiles(
                                       "/IPNShome/dennis/ARGONNE_DATA/",
                                       "hrcs",
                                        runs,
+                                       mask,
                                        true );
 
 
 /*  Test case 3 .......................... 
       String runs = "979,980,981";
+      String mask = "";
       SumRunfiles loader = new SumRunfiles( 
                                       "/IPNShome/dennis/ARGONNE_DATA/",
                                       "HRCS",
                                        runs,
+                                       mask,
                                        true );
 */
 
