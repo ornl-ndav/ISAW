@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.24  2003/10/04 20:36:20  bouzekc
+ * Made "Restrict Runs" non-editable when "From LsqrsJ" is selected.  This
+ * corrects a previous oversight.
+ *
  * Revision 1.23  2003/09/16 22:50:58  bouzekc
  * Modified slightly to work with the upgraded RadioButtonPG.
  *
@@ -486,8 +490,10 @@ public class IndexJForm extends Form implements PropertyChangeListener {
     Object newVal = pce.getNewValue(  );
     if( newVal == FROM_FILE ) {
       ( ( IParameterGUI )getParameter( 8 ) ).setEnabled( true );
+      ( ( IParameterGUI )getParameter( 9 ) ).setEnabled( true );
     } else if( newVal == FROM_LSQRS ) {
-      ( ( IParameterGUI )getParameter( 8 ) ).setEnabled( false );
+      ( ( IParameterGUI )getParameter( 8 ) ).setEnabled( true );
+      ( ( IParameterGUI )getParameter( 9 ) ).setEnabled( false );
     }
   }
 
