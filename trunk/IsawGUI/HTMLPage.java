@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2004/06/18 19:31:26  rmikk
+ * Eliminated an unused variable BC
+ *
  * Revision 1.16  2004/03/15 23:57:00  dennis
  * Changed some references to static methods to be through
  * the class name, instead of an instance.
@@ -154,7 +157,7 @@ class HTMLPage extends JFrame
 
                      if( U.getFile ().indexOf ( "XX$netscape" ) >= 0 )
                      {
-                        BrowserControl BC = new BrowserControl();
+                       // BrowserControl BC = new BrowserControl();
                         String Fname = U.getFile ();
 
                         Fname = Fname.replace ( '\\', '/' );
