@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.42  2004/05/01 00:41:20  bouzekc
+ *  clear() now sets a new Vector all the time.  Calling Vector.clear() did
+ *  not work with ISAW DataSets.
+ *
  *  Revision 1.41  2004/03/12 21:13:48  bouzekc
  *  Added clear() method.
  *
@@ -551,11 +555,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * and clears the display.
    */
   public void clear(  ) {
-    if( getValue(  ) == null ) {
-      setValue( new Vector(  ) );
-    } else {
-      ( ( Vector )getValue(  ) ).clear(  );
-    }
+    setValue( new Vector(  ) );
   }
 
   /**
