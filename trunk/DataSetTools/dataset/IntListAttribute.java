@@ -1,0 +1,180 @@
+/*
+ * @(#)IntListAttribute.java       1.0 99/06/09  Dennis Mikkelson
+ *
+ */
+
+package  DataSetTools.dataset;
+
+/**
+ * The concrete class for an attribute whose value is a list of integers.  
+ *
+ * @see DataSetTools.dataset.Data
+ * @see DataSetTools.dataset.Attribute
+ * @see DataSetTools.dataset.StringAttribute
+ * @see DataSetTools.dataset.FloatAttribute
+ * @see DataSetTools.dataset.DoubleAttribute
+ * @see DataSetTools.dataset.DetPosAttribute
+ *
+ * @version 1.0  
+ */
+
+public class IntListAttribute extends Attribute
+{
+  private int[] values;
+
+  /**
+   * Constructs an IntegerAttribute object using the specified name and value.
+   */
+  public IntListAttribute( String name, int values[] )
+  {
+    super( name );
+
+    this.values = new int[ values.length ];
+    System.arraycopy( values, 0, this.values, 0, values.length );
+  }
+
+
+  /**
+   * Returns the list of int value of this attribute, as a generic object.
+   */
+  public Object getValue( )
+  {
+    int new_array[] = new int[ values.length ];
+    System.arraycopy( values, 0, new_array, 0, values.length );
+
+    return( new_array );
+  } 
+
+  /**
+   * Set the value for the int attribute using a generic object.  The actual
+   * class of the object must be an Int.
+   */
+  public boolean setValue( Object obj )
+  {
+    if ( obj instanceof int[] )
+    {
+      int length  = ((int[])obj).length;
+      this.values = new int[ length ];
+      System.arraycopy( (int[])obj, 0, this.values, 0, length );
+    }
+    else
+      return false;
+
+    return true;
+  }   
+
+  /**
+   * Returns the int list value of this attribute as an int.
+   */
+   public int[] getIntegerValue( )
+   {
+     int new_array[] = new int[ values.length ];
+     System.arraycopy( values, 0, new_array, 0, values.length );
+
+     return( new_array );
+   }
+
+  /**
+   * Set the value for the integer list attribute using an integer list.
+   */
+  public void setIntValue( int values[] )
+  {
+    this.values = new int[ values.length ];
+    System.arraycopy( values, 0, this.values, 0, values.length );
+  }
+
+  /**
+   * Combine the value of this attribute with the value of the attribute
+   * passed as a parameter to obtain a new value for this attribute.  The
+   * new value is the result of merging the two lists of integers.
+   *
+   *  @param   attr   An attribute whose value is to be "combined" with the 
+   *                  value of the this attribute.
+   *
+   */
+  public void combine( Attribute attr )
+  {
+    if ( !(attr instanceof IntListAttribute) )         // can't do it so don't 
+      return;                                          
+       
+    IntListAttribute other_attr = (IntListAttribute)attr; 
+
+    boolean  found;
+    int      i;
+    int      temp[] = new int [ values.length + other_attr.values.length ];
+ 
+    int num_used = values.length;       
+                                                  // start with the integers 
+    for ( i = 0; i < values.length; i++ )         // from this attribute's list
+      temp[i] = values[i];
+
+                                                  // append any integers from
+                                                  // the new list that are not
+                                                  // in the original list 
+    for ( int k = 0; k < other_attr.values.length; k++ )
+    {                                             
+      found = false;                             
+      i = 0;
+      while ( !found && i < values.length )
+        if (  other_attr.values[k] == values[i] )
+          found = true;
+        else
+          i++;
+      if ( !found )                               // append and count this
+      {                                           // new integer
+        temp[ num_used ] = other_attr.values[k];
+        num_used++;
+      }       
+    }    
+                                                  // now copy the values into
+    values = new int[ num_used ];                 // a new array for this
+    for ( i = 0; i < values.length; i++ )         // attribute
+      values[i] = temp[i];
+  }
+
+
+  /**
+   * Get a numeric value to be used for sorting based on this attribute.
+   */
+   public double getNumericValue()
+   {                                   // use first entry as "numeric value"
+     if ( values.length > 0 )          // if there is one.
+       return values[0];
+     else
+       return Double.MAX_VALUE;
+   }
+
+  /**
+   * Returns a string representation of the float value of this attribute
+   */
+  public String getStringValue()
+  {
+    int    length = values.length;
+    String string = "";
+
+    for ( int i = 0; i < length; i++ )
+      if ( i == length-1 )
+        string = string + Integer.toString( values[i] ); // no comma after last
+      else
+        string = string + Integer.toString( values[i] ) + ",";
+    
+    return string;
+  }
+
+  /**
+   * Returns a string representation of the (name,value) pair for this
+   * attribute
+   */
+  public String toString()
+  {
+     return this.getName() + ": " + this.getStringValue();
+  }
+
+  /**
+   * Returns a copy of the current attribute
+   */
+  public Object clone()
+  {
+    return new IntListAttribute( this.getName(), values );
+  }
+}
