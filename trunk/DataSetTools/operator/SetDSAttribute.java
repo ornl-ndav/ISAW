@@ -33,7 +33,7 @@ public class SetDSAttribute extends    DataSetOperator
 
   public SetDSAttribute( )
   {
-    super( "Set Data Set Attribute" );
+    super( "Set DataSet Attribute" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
