@@ -4,6 +4,12 @@
  * Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.4  2001/03/01 23:22:23  dennis
+ *  Now uses a private method SetUpLocalCopies() to initialize its
+ *  local copies of the DataSets and associated info.  This will make
+ *  it easier to re-initialize these items when the DAS changes to
+ *  a new run.
+ *
  *  Revision 1.3  2001/02/20 23:02:50  dennis
  *  Added constants for MIN_DELAY and MAX_DELAY.  Also, made
  *  minor improvement to documentation.
@@ -45,6 +51,7 @@ public class LiveDataManager extends    Thread
 
   private LiveDataRetriever retriever   = null;
   private DataSet           data_sets[] = new DataSet[0];
+  private int               ds_type[]   = new int[0];
   private boolean           ignore[]    = new boolean[0];
                                                       // flags to mark which
                                                       // data sets won't be
@@ -62,17 +69,7 @@ public class LiveDataManager extends    Thread
   public LiveDataManager(String data_source_name) 
   {
     retriever = new LiveDataRetriever( data_source_name );
-    if ( retriever != null )
-    {
-      data_sets = new DataSet[ retriever.numDataSets() ];
-      ignore    = new boolean[ retriever.numDataSets() ];
-
-      for ( int i = 0; i < data_sets.length; i++ )
-      {
-        data_sets[i] = retriever.getDataSet(i);
-        ignore[i]    = false;
-      }
-    }
+    SetUpLocalCopies();
     this.start();
   }
 
@@ -96,10 +93,10 @@ public class LiveDataManager extends    Thread
 
   public int getType( int data_set_num )
   {
-    if ( retriever != null )
-      return retriever.getType( data_set_num );
+    if ( data_set_num >= 0 && data_set_num < data_sets.length )
+      return ds_type[ data_set_num ];
     else
-      return 0;
+      return Retriever.INVALID_DATA_SET;
   }
 
 
@@ -172,6 +169,7 @@ public class LiveDataManager extends    Thread
 
    if ( temp_ds != null )
      data_sets[data_set_num].copy( temp_ds );    // copy notifies the observers
+                                                 // of the DataSets 
  }
 
 
@@ -199,6 +197,39 @@ public class LiveDataManager extends    Thread
      }
    }
  }
+
+
+/* -------------------------------------------------------------------------
+ *
+ *  PRIVATE METHODS
+ *
+ */
+
+/**
+ *  Construct a LiveDataManager to get data from a LiveDataServer running
+ *  on a specified instrument computer.
+ *
+ *  @param data_source_name  The host name for the instrument computer.  It
+ *                           is assumed that a LiveDataServer is running on
+ *                           that computer on the required port.
+ */
+  private void SetUpLocalCopies()
+  {
+    if ( retriever != null )
+    {
+      int num_ds = retriever.numDataSets();
+      data_sets = new DataSet[ num_ds ];
+      ds_type   = new int    [ num_ds ];
+      ignore    = new boolean[ num_ds ];
+
+      for ( int i = 0; i < data_sets.length; i++ )
+      {
+        ds_type[i]   = retriever.getType(i);
+        data_sets[i] = retriever.getDataSet(i);
+        ignore[i]    = false;
+      }
+    }
+  }
 
 
 
