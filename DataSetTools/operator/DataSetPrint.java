@@ -3,6 +3,9 @@
  *                                  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.3  2000/08/03 22:10:23  dennis
+ *  Now uses tabs as separators
+ *
  *  Revision 1.2  2000/08/03 21:49:13  dennis
  *  Moved JFrameMessageCHOP to DataSetTools/components/ui
  *
@@ -152,7 +155,7 @@ public class DataSetPrint extends    Operator
      int numofy= y_vals.length;
      for ( int i = 0; i < numofy; i++ )
      {
-       result.append( i+"  "+x_vals[i]+" "+y_vals[i]+" \n");
+       result.append( i+"\t "+x_vals[i]+"\t "+y_vals[i]+"\t \n");
      }
     
     String output = result.toString();
