@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.37  2002/06/03 13:54:53  rmikk
+ * Eliminated the clearing of the status pane when the Run
+ *   or Clear button is pressed
+ * Adjusted a few indents
+ *
  * Revision 1.36  2002/02/22 20:33:36  pfpeterson
  * Operator Reorganization.
  *
@@ -234,28 +239,25 @@ public class CommandPane extends JPanel  implements PropertyChangeListener ,
     public ScriptProcessorOperator  SP;
     boolean Debug = false;
     PropertyChangeSupport PC;
-/**
-*  Creates the JPanel for editing and executing scripts
-*/
-public CommandPane()
+ /**
+ *  Creates the JPanel for editing and executing scripts
+ */
+ public CommandPane()
     { 
       initt();
-      SP = new ScriptProcessor(  Commands.getDocument());
-      //SP.addPropertyChangeListener( StatusLine );
+      SP = new ScriptProcessor(  Commands.getDocument());     
       PC = new PropertyChangeSupport( this );
-      //PC.addPropertyChangeListener( StatusLine );
-      //SP.addPropertyChangeListener( this );
-     }
+          }
 
-/**
-*  Set the Document that logs operations
-*
-*@param   doc  the Document that will receive log information
-*
-*NOTE: In the future the log document may be executable to redo
-*      a session
-*/
-public void setLogDoc(Document doc)
+ /**
+ *  Set the Document that logs operations
+ *
+ *@param   doc  the Document that will receive log information
+ *
+ *NOTE: In the future the log document may be executable to redo
+ *      a session
+ */
+ public void setLogDoc(Document doc)
    { logDoc = doc;
      SP.setLogDoc( doc );
    }
@@ -358,17 +360,17 @@ public void setLogDoc(Document doc)
         Save.addActionListener( Sav );
 
    }
-/**
-*  This routine can be used by Isaw to run a macro with parameters.
-*  It creates a GUI that lets users enter values for the parameters in the
-*  macro<P>
-*
-*@param    fname    The name of the file that stores the Macro
-*@param    X        An Obsever who will receive the data sets that are "Sent" with the SEND command and that
-*                   are the result of the script fname
-*@param   DSS[]     A list of data sets that can be selected as values for Data Set Parameters.
-*
-*/
+ /**
+ *  This routine can be used by Isaw to run a macro with parameters.
+ *  It creates a GUI that lets users enter values for the parameters in the
+ *  macro<P>
+ *
+ *@param    fname    The name of the file that stores the Macro
+ *@param    X        An Obsever who will receive the data sets that are "Sent" with the SEND command and that
+ *                   are the result of the script fname
+ *@param   DSS[]     A list of data sets that can be selected as values for Data Set Parameters.
+ *
+ */
  public void getExecScript( String fname ,IObserver X , IDataSetListHandler ds_src,
       Document  DocLog, StatusPane sp)
   {    int i;
@@ -398,14 +400,15 @@ public void setLogDoc(Document doc)
   public void addDataSet( DataSet dss )   
     {  SP.addDataSet( dss );
      }
-/**
-*  Receives a PropertyChange Event. 
-*@param evt  the PropertyChangeEvent.
-*Note: The only event that is serviced is the one with the property name "Display".<BR>
-*<ul> The new value will be displayed in the Status line </ul>
-*/ 
+
+ /**
+ *  Receives a PropertyChange Event. 
+ *@param evt  the PropertyChangeEvent.
+ *Note: The only event that is serviced is the one with the property name "Display".<BR>
+ *<ul> The new value will be displayed in the Status line </ul>
+ */ 
 public void propertyChange( PropertyChangeEvent evt )
-     {/*if(Debug)
+      {/*if(Debug)
 	System.out.println("IN PROPERTY CHANGEXXXXXX");
       if( evt.getPropertyName().equals( "Display" ) )    
 	  {String S;
@@ -435,15 +438,15 @@ public void propertyChange( PropertyChangeEvent evt )
    {SP.addIObserver( iobs );
    }
                 
-public void  deleteIObserver(IObserver iobs) 
+ public void  deleteIObserver(IObserver iobs) 
     {  SP.deleteIObserver( iobs );
    }
                
-public void  deleteIObservers() 
+ public void  deleteIObservers() 
     { SP.deleteIObservers();
     }
                 
-public void appendlog(  Document logDoc, Document appendDoc, String Message)
+ public void appendlog(  Document logDoc, Document appendDoc, String Message)
   {if( appendDoc == null) 
       return;
    if( logDoc == null)
@@ -463,7 +466,8 @@ public void appendlog(  Document logDoc, Document appendDoc, String Message)
        {System.out.println("Error in appendlog="+s); }
 
   }
-private class MyKeyListener  extends KeyAdapter 
+
+ private class MyKeyListener  extends KeyAdapter 
                              implements KeyListener
   { CommandPane CP;
     int line =0;
@@ -500,16 +504,13 @@ private class MyKeyListener  extends KeyAdapter
              
 	          
 	          CP.SP.resetError() ; 
-                 // if( StatusLine != null )
-                    // StatusLine.setText( "" ) ; 
-                    new IsawGUI.Util().appendDoc(CP.logDoc,"#$ Start Immediate Run");
-                   new IsawGUI.Util().appendDoc(CP.logDoc,ScriptProcessor.getLine(CP.Immediate.getDocument(), line));
+                  new IsawGUI.Util().appendDoc(CP.logDoc,"#$ Start Immediate Run");
+                  new IsawGUI.Util().appendDoc(CP.logDoc,ScriptProcessor.getLine(CP.Immediate.getDocument(), line));
 	          CP.SP.execute1( Immediate.getDocument() , line ) ;
-                   new IsawGUI.Util().appendDoc(CP.logDoc,"#$ End Immediate Run"); 
+                  new IsawGUI.Util().appendDoc(CP.logDoc,"#$ End Immediate Run"); 
                   if( CP.SP.getErrorCharPos() >= 0 )
-                    {//if( StatusLine != null )
-                      // new Util().appendDoc(CP.StatusLine.getDocument(), 
-                       CP.PC.firePropertyChange("Display", null,"Status: Error " + 
+                    {
+                      CP.PC.firePropertyChange("Display", null,"Status: Error " + 
                             CP.SP.getErrorMessage() + 
                            " on line " + line + " character" +CP.SP.getErrorCharPos() ) ; 
 		     int p;
@@ -535,10 +536,11 @@ private class MyKeyListener  extends KeyAdapter
     
     }
   }//End MyKeyListener
-/** Attempts to fix differences in CR-LF handling of systems
-*@param Doc  the Plain document with the errant characters
-*/
-public static void fixUP( Document Doc )
+
+ /** Attempts to fix differences in CR-LF handling of systems
+ *@param Doc  the Plain document with the errant characters
+ */
+ public static void fixUP( Document Doc )
  {String S;
   try{
      S = Doc.getText( 0 , Doc.getLength() );
@@ -587,11 +589,11 @@ public static void fixUP( Document Doc )
   
  }
 
-//*****************SECTION:MAIN********************
-/**
-* Test program for this unit- no args are used
-*/
-public static void  main( String args[] )
+ //*****************SECTION:MAIN********************
+ /**
+ * Test program for this unit- no args are used
+ */
+ public static void  main( String args[] )
     { 
     java.util.Properties isawProp;
      isawProp = new java.util.Properties(System.getProperties());
@@ -671,7 +673,7 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
         
         CP.SP.setDefaultParameters();
         if( CP.SP.getErrorCharPos() >= 0)
-          {//new Util().appendDoc( CP.StatusLine.getDocument(), 
+          {
              CP.PC.firePropertyChange( "Display", null,"setDefault Error "+
                                  CP.SP.getErrorMessage()+" at position "+
                                     CP.SP.getErrorCharPos()+" on line "+CP.SP.getErrorLine()); 
@@ -679,8 +681,8 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
            return;
           }
         
-        //StatusLine.setText("");
-        CP.PC.firePropertyChange("Clear", null,null);
+       
+        //CP.PC.firePropertyChange("Clear", null,null);
         appendlog( logDoc, Commands.getDocument(), "CommandPane Run");
         if( CP.SP.getNum_parameters() > 0 )
 	    { if( SelectedFile !=null)
@@ -705,11 +707,10 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
                }
    
      else if( e.getSource().equals( CP.Clear ))
-      {if( CP.SP == null ) return;
-    
+      {if( CP.SP == null ) 
+          return;
        CP.SP.reset();
-       //CP.StatusLine.setText("");
-        CP.PC.firePropertyChange("Clear", null,null);
+       //CP.PC.firePropertyChange("Clear", null,null);
       
       }
     else if( e.getSource().equals( CP.Save ) || e.getSource().equals( CP.Open ))
