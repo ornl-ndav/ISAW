@@ -30,6 +30,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.4  2004/01/06 15:56:50  rmikk
+# Empty DataSet now found
+#
 # Revision 1.3  2004/01/05 17:52:10  rmikk
 # Jython class now subclass of GenericOperator
 #
@@ -42,6 +45,7 @@
 #
 # 
 from DataSetTools.operator.Generic.TOF_SAD import *
+from DataSetTools.dataset.DataSet  import EMPTY_DATA_SET
 from DataSetTools.operator import *
 from Wizard.TOF_SAD import *
 from java.util import Vector
@@ -94,7 +98,7 @@ class Reduce_Form1(GenericOperator):
         D = EfficiencyDataSet.getData_entry(0)
         xsc = D.getX_scale()
         n=xsc.getNum_x()
-        
+       
         if useBackGroundTransmission: 
            BackGroundTransmissionDataSet =ReadTransmission(BackGroundTransmissionFilename,n).getResult()
            if isinstance( BackGroundTransmissionDataSet, ErrorString):
@@ -102,7 +106,7 @@ class Reduce_Form1(GenericOperator):
            else:
               pass
         else:
-           BackGroundTransmissionDataSet = DataSet.EMPTY_DATA_SET
+           BackGroundTransmissionDataSet = EMPTY_DATA_SET
         V = Vector()
         V.addElement( SensitivityDataSets.elementAt(0))
         V.addElement( EfficiencyDataSet)
