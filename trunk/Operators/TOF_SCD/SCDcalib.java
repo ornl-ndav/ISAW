@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/07/26 21:52:54  dennis
+ *  Changed to refer to PeakData_d (renamed from PeakData).
+ *
  *  Revision 1.9  2004/04/15 15:09:16  dennis
  *  Added methods WriteAllParams() and ReadParams() to write and
  *  read the state of all possible instrument parameters.  This
@@ -766,20 +769,20 @@ public class SCDcalib extends GenericTOF_SCD
     for ( int i = 0; i < 6; i++ )
       lattice_params[i] = lat_params[i];
                                                     // load the vector of peaks
-    Vector peaks = PeakData.ReadPeaks( peaksfile, runfile ); 
+    Vector peaks = PeakData_d.ReadPeaks( peaksfile, runfile ); 
 
     if ( peaks == null || peaks.size() <= 0 )
     {
       return new ErrorString("Failed to read " + peaksfile + " or " + runfile);
     }
 
-    PeakData peak = (PeakData)peaks.elementAt(0);
+    PeakData_d peak = (PeakData_d)peaks.elementAt(0);
     double l1 = peak.l1;
 
     Hashtable grids = new Hashtable();
     for ( int i = 0; i < peaks.size(); i++ )
     {
-      UniformGrid_d grid = ((PeakData)peaks.elementAt(i)).grid;
+      UniformGrid_d grid = ((PeakData_d)peaks.elementAt(i)).grid;
       Integer key = new Integer( grid.ID() );
       if ( grids.get(key) == null )            // new detector, so add it
       {
