@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/03 23:22:28  dennis
+ * Implemented option to select slice in HKL but display it in Q.
+ *
  * Revision 1.3  2004/03/03 16:05:33  dennis
  * Added table of conversions (not active yet).
  * Placed slice selector, image controls, and table of conversions
@@ -114,7 +117,6 @@ public class HKL_SliceView extends DataSetViewer
   private Q_SliceExtractor  extractor = null;
   private Tran3D   orientation_matrix = null;
   
-  private boolean hkl_mode = true;
   private boolean valid_ds = false; 
 
   private boolean debug = false;
@@ -180,7 +182,8 @@ public class HKL_SliceView extends DataSetViewer
     tabbed_pane.setFont( FontUtil.LABEL_FONT );
     tabbed_pane.addTab( "View", ivc_controls );
     tabbed_pane.addTab( "Slice", slice_selector );
-    tabbed_pane.addTab( "Conv", table_panel );
+    tabbed_pane.addTab( "Conversions", table_panel );
+    tabbed_pane.setSelectedIndex(1);
     control_panel.add( tabbed_pane, BorderLayout.CENTER ); 
     control_panel.add( common_controls, BorderLayout.NORTH );
 
@@ -246,34 +249,12 @@ public class HKL_SliceView extends DataSetViewer
       image_container.add( ivc.getDisplayPanel() );
     }
 
-    float slice[][] = extractSlice();
-
-    System.out.println("Recalculated slice....." );
-    if ( slice != null )
-    {
-      IVirtualArray2D va2D = new VirtualArray2D( slice );
-      setAxesAndTitle( va2D );
+    IVirtualArray2D va2D = extractSlice();
+    if ( va2D != null )
       ivc.dataChanged( va2D );
-    }
     else
       System.out.println("ERROR: null slice in HKL_SliceView.java");
-
-    if ( debug )
-    {      
-      System.out.println("IN redraw");
-      System.out.println("Array Size = " +slice.length+ " X "+slice[0].length);
-      float min = slice[0][0];
-      float max = slice[0][0];
-      for ( int row = 0; row < slice.length; row++ )
-        for ( int col = 0; col < slice[0].length; col++ )
-          if ( slice[row][col] < max )
-            max = slice[row][col];
-          else if ( slice[row][col] > min )
-            min = slice[row][col];
-      System.out.println("min, max = " + min + ", " + max );
-    }
   }
-
 
   /* ---------------------------- setDataSet ----------------------------- */
   
@@ -291,15 +272,15 @@ public class HKL_SliceView extends DataSetViewer
     valid_ds = isValid_SCD_DataSet();
     orientation_matrix = getOrientationMatrix();
 
-    if ( orientation_matrix == null )         // ##### in the long run this
+    if ( orientation_matrix == null )
     {
-      slice_selector.setMode( SliceSelectorUI.QXYZ_MODE ); 
-      hkl_mode = false;                       // should just disable/enable
+      slice_selector.setSliceMode( SliceSelectorUI.QXYZ_MODE, false ); 
+      slice_selector.setDisplayMode( SliceSelectorUI.QXYZ_MODE, false ); 
     }
-    else                                      // selection of HKL mode
+    else 
     {
-      slice_selector.setMode( SliceSelectorUI.HKL_MODE ); 
-      hkl_mode = true;
+      slice_selector.setSliceMode( SliceSelectorUI.HKL_MODE, true ); 
+      slice_selector.setDisplayMode( SliceSelectorUI.HKL_MODE, true ); 
     }
 
     DataSet ds_list[] = new DataSet[1];
@@ -381,7 +362,7 @@ public class HKL_SliceView extends DataSetViewer
     float width  = slice_selector.getSliceWidth();
     float height = slice_selector.getSliceHeight();
 
-    if ( hkl_mode && orientation_matrix != null )
+    if ( slice_selector.getDisplayMode() == SliceSelectorUI.HKL_MODE )
     {
       setHKL_Title( origin, normal, va2D );
       setHKL_Axis( AxisInfo.X_AXIS, -width/2.0f, width/2.0f, origin, u, va2D );
@@ -409,7 +390,7 @@ public class HKL_SliceView extends DataSetViewer
                                IVirtualArray2D  va2D )
   {
      String units;
-     if ( hkl_mode )
+     if ( slice_selector.getDisplayMode() == SliceSelectorUI.HKL_MODE )
        units = "HKL units";
      else
        units = "Inverse Angstroms";
@@ -420,8 +401,6 @@ public class HKL_SliceView extends DataSetViewer
                                 "," + Format.real( vector.get()[2], 5 ) + ")",
                        units,
                        true );
-     System.out.println("setGeneralAxis : " + va2D.getAxisInfo( 0 ) );
-     System.out.println("setGeneralAxis : " + va2D.getAxisInfo( 1 ) );
   } 
 
 
@@ -464,9 +443,6 @@ public class HKL_SliceView extends DataSetViewer
       va2D.setAxisInfo( axis_num, min, max, "", title, true );
     else 
       setGeneralAxis( axis_num, min, max, vector, va2D );
-
-     System.out.println("setHKLAxis : " + va2D.getAxisInfo( 0 ) );
-     System.out.println("setHKLAxis : " + va2D.getAxisInfo( 1 ) );
   }
 
 
@@ -544,85 +520,146 @@ public class HKL_SliceView extends DataSetViewer
       return new Tran3D( matrix ); 
    }
 
-  /* --------------------------- oddNumRows ------------------------------ */
+
+  /* --------------------------- oddNumSteps ------------------------------ */
   /*
-   *  Calculate an odd number of rows that covers the requested height 
-   *  using approximately the requested step size.  The result is clamped
-   *  to be between MIN_STEPS and MAX_STEPS; 
-   */
-  private int oddNumRows()
-  {
-    float step_size = slice_selector.getStepSize();
-    float height    = slice_selector.getSliceHeight();
-
-    float float_rows = height / step_size; 
-
-    if ( float_rows > MAX_STEPS )
-      float_rows = MAX_STEPS;
-
-    if ( float_rows < MIN_STEPS )
-      float_rows = MIN_STEPS; 
-
-    int odd_rows = 2 * (int)(float_rows/2) + 1;
-
-    return odd_rows;
-  }
-
-
-  /* --------------------------- oddNumCols ------------------------------ */
-  /*
-   *  Calculate an odd number of columns that covers the requested width 
+   *  Calculate an odd number of steps that covers the requested distance 
    *  using approximately the requested step size.  The result is clamped
    *  to be between MIN_STEPS and MAX_STEPS;
    */
-  private int oddNumCols()
+  private int oddNumSteps( float distance, float step_size )
   {
-    float step_size = slice_selector.getStepSize();
-    float width     = slice_selector.getSliceWidth();
+    if ( step_size == 0 )                  // fix the parameters, if needed
+      step_size = 1;
 
-    float float_cols = width / step_size;
+    if ( step_size < 0 )
+      step_size = -step_size;
 
-    if ( float_cols > MAX_STEPS )
-      float_cols = MAX_STEPS;
+    if ( distance < 0 )
+      distance = -distance;
 
-    if ( float_cols < MIN_STEPS )
-      float_cols = MIN_STEPS;
+    float float_steps = distance / step_size;
 
-    int odd_cols = 2 * (int)(float_cols/2) + 1;
+    if ( float_steps > MAX_STEPS )
+      float_steps = MAX_STEPS;
 
-    return odd_cols;
+    if ( float_steps < MIN_STEPS )
+      float_steps = MIN_STEPS;
+
+    int odd_steps = 2 * (int)(float_steps/2) + 1;
+
+    return odd_steps;
   }
+
 
 
   /* ------------------------- extractSlice -------------------------- */
   /*
-   *  Actually get the slice with the appropriate center, width, height
-   *  and thicknes.
+   *  Get a slice in the appropriate space, determined by the slice selector.
    *
    */
-  private float[][] extractSlice()
+  private VirtualArray2D extractSlice()
   {
-    int n_rows = ( oddNumRows() - 1 ) / 2;
-    int n_cols = ( oddNumCols() - 1 ) / 2;
+    VirtualArray2D va2D = null;
+
+    float width     = slice_selector.getSliceWidth();
+    float height    = slice_selector.getSliceHeight();
+    float thickness = slice_selector.getSliceThickness();
+    float step      = slice_selector.getStepSize();
     SlicePlane3D plane = slice_selector.getPlane();
+
+    float slice[][] = null;
+
+    if ( slice_selector.getDisplayMode() == SliceSelectorUI.HKL_MODE )
+    {                                           
+                                                    // Display in HKL space
+      slice = extractHKL_Slice( plane, width, height, thickness, step );
+      va2D = new VirtualArray2D( slice );
+      setAxesAndTitle( va2D );
+    }
+    else                                            // Display in Qxyz space
+    {
+      if ( slice_selector.getSliceMode() == SliceSelectorUI.HKL_MODE )
+      {
+        SlicePlane3D new_plane = MapPlaneToQ( plane );
+        float scale = ScaleFactor( plane );
+
+        System.out.println("scale = " + scale );
+        width     *= scale;
+        height    *= scale;
+        thickness *= scale;
+        step      *= scale;
+        plane      = new_plane;
+
+        slice = extractQ_Slice( plane, width, height, thickness, step );
+      }
+      else
+        slice = extractQ_Slice( plane, width, height, thickness, step );
+
+      va2D = new VirtualArray2D( slice );
+      setGeneralTitle( plane.getOrigin(), plane.getNormal(), va2D );
+      setGeneralAxis( AxisInfo.X_AXIS, 
+                      -width/2.0f, width/2.0f, plane.getU(), va2D );
+      setGeneralAxis( AxisInfo.Y_AXIS, 
+                      -height/2.0f, height/2.0f, plane.getV(), va2D );
+    }
+ 
+    if ( slice == null )
+      return null;
+
+    return va2D;
+  }
+
+
+  /* ----------------------- extractHKL_Slice -------------------------- */
+  /*
+   *  Actually get the slice in the appropriate plane in HKL space with 
+   *  the required width, height, thickness and resolution.
+   *
+   */
+  private float[][] extractHKL_Slice( SlicePlane3D plane, 
+                                      float        width, 
+                                      float        height,
+                                      float        thickness,
+                                      float        step  )
+  {
     Vector3D origin = plane.getOrigin();
     Vector3D u      = plane.getU();
     Vector3D v      = plane.getV();
-    u.multiply( slice_selector.getSliceWidth()/2 );
-    v.multiply( slice_selector.getSliceHeight()/2 );
-
-    float slice[][];
-    if ( orientation_matrix != null )
-      slice = extractor.HKL_Slice( orientation_matrix,
-                                   origin, u, v,
-                                   n_cols, n_rows );
-    else
-      slice = extractor.Q_Slice( origin, u, v, n_cols, n_rows );
- 
-    return slice;
+    u.multiply( width/2 );
+    v.multiply( height/2 );
+    int n_rows = (oddNumSteps( height, step ) - 1) / 2;
+    int n_cols = (oddNumSteps( width,  step ) - 1) / 2;
+    return extractor.HKL_Slice( orientation_matrix, 
+                                origin, u, v, 
+                                n_cols, n_rows );
   }
 
- 
+
+
+  /* ----------------------- extractQ_Slice -------------------------- */
+  /*
+   *  Actually get the slice in the appropriate plane in Q space with 
+   *  the required width, height, thickness and resolution.
+   *
+   */
+  private float[][] extractQ_Slice( SlicePlane3D plane,
+                                    float        width,
+                                    float        height,
+                                    float        thickness,
+                                    float        step  )
+  {
+    Vector3D origin = plane.getOrigin();
+    Vector3D u      = plane.getU();
+    Vector3D v      = plane.getV();
+    u.multiply( width/2 );
+    v.multiply( height/2 );
+    int n_rows = (oddNumSteps( height, step ) - 1) / 2;
+    int n_cols = (oddNumSteps( width,  step ) - 1) / 2;
+    return extractor.Q_Slice( origin, u, v, n_cols, n_rows );
+  }
+
+
   /* -------------------------- setCurrentPoint ------------------------- */
   /*
    * This method will set the current world coord point, displayed by the
@@ -632,6 +669,57 @@ public class HKL_SliceView extends DataSetViewer
   {
     cursor_output.setValue( 0, current_pt.x );
     cursor_output.setValue( 1, current_pt.y );
+  }
+
+
+  /* --------------------- ChangeSliceSelectionMode ----------------------- */
+  /*
+   * Convert the current plane specifications to the new mode and set
+   * the new plane into the selector.
+   */
+  private void ChangeSliceSelectionMode()
+  {
+    System.out.println("SHOULD NOW CHANGE SLICE SELECTION MODE");
+  }
+
+
+  /* ----------------------- MapPlaneToQ -------------------------------- */
+  /*
+   *  Map the specified plane from HKL to Q, as nearly as possible.
+   */
+  private SlicePlane3D MapPlaneToQ( SlicePlane3D plane )
+  {
+    Vector3D origin = new Vector3D( plane.getOrigin() );
+    Vector3D u      = new Vector3D( plane.getU() );
+    Vector3D v      = new Vector3D( plane.getV() );
+
+    System.out.println("plane = " + plane );
+    System.out.println("mat   = " + orientation_matrix );
+    
+    orientation_matrix.apply_to( origin, origin );
+    orientation_matrix.apply_to( u, u );
+    orientation_matrix.apply_to( v, v );
+
+    System.out.println("new plane = " + new SlicePlane3D( origin, u, v ) );
+    return new SlicePlane3D( origin, u, v );
+  }
+
+
+  /* ------------------------- ScaleFactor ----------------------------- */
+  /*
+   *  Calculate the scale factor to use when converting from HKL to Q, for
+   *  a particular slice plane.  The scale factor is taken to be the ratio
+   *  of the lengths of "u" in the original plane in HKL to the length of
+   *  A*u in Q, where A is the "orientation matrix".
+   */
+  private float ScaleFactor( SlicePlane3D plane )
+  {
+    Vector3D u     = new Vector3D( plane.getU() ); 
+    Vector3D new_u = new Vector3D();
+
+    orientation_matrix.apply_to( u, new_u );
+
+    return new_u.length()/u.length();
   }
 
 
@@ -649,8 +737,12 @@ public class HKL_SliceView extends DataSetViewer
   {
     public void actionPerformed( ActionEvent e )
     {
-      System.out.println( "Slice changed ....................... ");
-      redraw( "Slice Changed" );
+      String message = e.getActionCommand();
+      System.out.println( "Command = " + message );
+      if ( message.equals( ISlicePlaneSelector.SLICE_MODE_CHANGED ) )
+        ChangeSliceSelectionMode();
+      else
+        redraw( "Slice Changed" );
     }
   }
 
