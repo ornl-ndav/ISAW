@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2001/08/16 19:19:03  dennis
+ *  add(Data) method now handles more attributes as special cases.
+ *  subtract(Data), multiply(Data) and divide(Data) now just uses
+ *  the current object's attributes.
+ *
  *  Revision 1.17  2001/08/16 02:56:53  dennis
  *  The add() method now also adds the solid angle values.
  *
@@ -1308,6 +1313,30 @@ public float getY_value( float x_value )
     * will propagate to the new Data object.  If the two Data objects cannot
     * be added (as determined by method "compatible") this method returns null.
     * Also see the documentation for the method "compatible".
+    * The attributes for the resulting Data object are a combination of the 
+    * attributes of the current Data object and the specified Data object d.
+    *
+    * The combination is treated differently, depending on whether or not
+    * the two data blocks have the same group ID and on what the attribute is.
+    * Specifically the treatment of some of the most important attributes is
+    * as follows:
+    *
+    * Same Group ID:
+    *   TOTAL_COUNT       summed 
+    *   NUMBER_OF_PULSES  summed 
+    *   SOLID_ANGLE       averaged
+    *   RAW_ANGLE         averaged
+    *   DELTA_TWO_THETA   averaged
+    *   DETECTOR_POS      averaged
+    *   DETECTOR_POS      average, weighted by SOLID_ANGLES if present 
+    *
+    * Different Group ID:
+    *   TOTAL_COUNT       summed 
+    *   NUMBER_OF_PULSES  averaged 
+    *   SOLID_ANGLE       summed 
+    *   RAW_ANGLE         keep raw angle of current Data object 
+    *   DELTA_TWO_THETA   max of current value or difference of RAW_ANGLEs 
+    *   DETECTOR_POS      average, weighted by SOLID_ANGLES if present 
     *
     * @param   d   The Data object to be added to the current data object
     *
@@ -1315,7 +1344,6 @@ public float getY_value( float x_value )
 
   public Data add( Data d )
   {
-
     if ( ! this.compatible( d ) )       
     {
       d = (Data)d.clone();                  // make a clone and resample it
@@ -1335,17 +1363,78 @@ public float getY_value( float x_value )
       temp.errors = null;
                                          // now take care of attributes... most
                                          // will use the default combine method
-                                         // but some must really be added
+                                         // but some be treated differently 
+    Attribute attr, 
+              attr1,
+              attr2;
     temp.CombineAttributeList( d );
-    temp.attr_list.add( Attribute.NUMBER_OF_PULSES,
-                        this.getAttributeList(),  
-                        d.getAttributeList()    );
     temp.attr_list.add( Attribute.TOTAL_COUNT,
                         this.getAttributeList(),  
                         d.getAttributeList()    );
-    temp.attr_list.add( Attribute.SOLID_ANGLE,
-                        this.getAttributeList(),  
-                        d.getAttributeList()    );
+
+    // do weighted sum of DetectorPosition, weighted by solid angle.
+    attr1 = this.attr_list.getAttribute(Attribute.DETECTOR_POS);
+    attr2 = d.attr_list.getAttribute(Attribute.DETECTOR_POS);
+    if ( attr1 != null && attr2 != null )
+    {
+      DetectorPosition points[] = new DetectorPosition[2];
+      points[0] = (DetectorPosition)attr1.getValue();
+      points[1] = (DetectorPosition)attr2.getValue();
+      attr1 = this.attr_list.getAttribute(Attribute.SOLID_ANGLE);
+      attr2 = d.attr_list.getAttribute(Attribute.SOLID_ANGLE);
+      if ( attr1 != null && attr2 != null )
+      {
+        float weights[] = new float[2];
+        weights[0] = (float)attr1.getNumericValue();
+        weights[1] = (float)attr2.getNumericValue();
+        DetectorPosition ave_pos =
+                  DetectorPosition.getAveragePosition( points, weights );
+        attr = new DetPosAttribute( Attribute.DETECTOR_POS, ave_pos );
+        temp.attr_list.setAttribute(attr);
+      }
+    }
+                                         // special cases for adding same 
+                                         // groups from different runs, or
+                                         // different groups ( same run? )
+    if ( this.group_id == d.group_id )               
+      temp.attr_list.add( Attribute.NUMBER_OF_PULSES,
+                          this.getAttributeList(),  
+                          d.getAttributeList()    );
+    else
+    {
+      temp.attr_list.add( Attribute.SOLID_ANGLE,
+                          this.getAttributeList(),  
+                          d.getAttributeList()    );
+
+                                           // keep raw angle of first Data block
+      attr = this.attr_list.getAttribute(Attribute.RAW_ANGLE);
+      if ( attr != null )
+        temp.attr_list.setAttribute( attr );
+                                                    // approximate maximum for
+                                                    // delta two theta
+      attr1 = this.attr_list.getAttribute(Attribute.RAW_ANGLE);
+      attr2 = d.attr_list.getAttribute(Attribute.RAW_ANGLE);
+      if ( attr1 != null && attr2 != null )
+      {
+        float new_delta = (float)Math.abs( attr1.getNumericValue() - 
+                                           attr2.getNumericValue() );
+        attr = this.attr_list.getAttribute(Attribute.DELTA_2THETA);
+        if ( attr != null )
+        {
+          float delta = (float)attr.getNumericValue(); 
+          attr = new FloatAttribute( Attribute.DELTA_2THETA,
+                                     Math.max( delta, new_delta ) );
+          temp.attr_list.setAttribute(attr);
+        }
+        else
+        {
+          attr = new FloatAttribute( Attribute.DELTA_2THETA,
+                                     Math.max( new_delta, new_delta ) );
+          temp.attr_list.setAttribute(attr);
+        }
+      }
+    }
+
     return temp; 
   }
 
@@ -1355,7 +1444,8 @@ public float getY_value( float x_value )
     * current and the specified Data object d have error arrays, the errors
     * will propagate to the new Data object.  If the two Data objects cannot
     * be subtracted (as determined by method "compatible") this method 
-    * returns null.
+    * returns null.  The attributes for the resulting Data object are the 
+    * same as the attributes of the current Data object.
     * Also see the documentation for the method "compatible".
     *
     * @param   d   The Data object to be subtracted from the current data 
@@ -1382,7 +1472,7 @@ public float getY_value( float x_value )
     else
       temp.errors = null;
 
-    temp.CombineAttributeList( d );
+//    temp.CombineAttributeList( d );
     return temp; 
   }
 
@@ -1392,7 +1482,8 @@ public float getY_value( float x_value )
     * current and the specified Data object d have error arrays, the errors
     * will propagate to the new Data object.  If the two Data objects cannot
     * be multiplied (as determined by method "compatible") this method 
-    * returns null.
+    * returns null.  The attributes for the resulting Data object are the
+    * same as the attributes of the current Data object.
     * Also see the documentation for the method "compatible".
     *
     * @param   d   The Data object to be multiplied times the current data
@@ -1419,7 +1510,7 @@ public float getY_value( float x_value )
     else
       temp.errors = null;
 
-    temp.CombineAttributeList( d );
+//    temp.CombineAttributeList( d );
     return temp; 
   }
 
@@ -1429,7 +1520,8 @@ public float getY_value( float x_value )
     * current and the specified Data object d have error arrays, the errors
     * will propagate to the new Data object.  If the two Data objects cannot
     * be divided (as determined by method "compatible") this method
-    * returns null.
+    * returns null.  The attributes for the resulting Data object are the
+    * same as the attributes of the current Data object.
     * Also see the documentation for the method "compatible".
     *
     * @param   d   The Data object to be divided into the current data
@@ -1459,7 +1551,7 @@ public float getY_value( float x_value )
     else
       temp.errors = null;
 
-    temp.CombineAttributeList( d );
+//    temp.CombineAttributeList( d );
     return temp;
   }
 
