@@ -1,9 +1,14 @@
 /*
  * @(#)LiveDataRetriever.java      
  *
- * Programmer: Dennis Mikkelson
+ * Programmers: Dennis Mikkelson,
+ *              Alok Chatterjee
  *
  *  $Log$
+ *  Revision 1.5  2001/02/15 23:23:01  dennis
+ *  Added finalize() method and made Exit() private.
+ *  Now finalize() calls Exit().
+ *
  *  Revision 1.4  2001/02/09 14:19:06  dennis
  *  Changed CURRENT_TIME attribute to UPDATE_TIME.
  *
@@ -28,7 +33,8 @@ import java.net.*;
 import NetComm.*;
 
 /**
- *  This class opens an IPNS Runfile and extracts DataSets corresponding to
+ *  This class opens a TCP connection to a LiveDataServer object running
+ *  on a remote machine and extracts the DataSets corresponding to
  *  monitors and sample histograms.
  */
 public class LiveDataRetriever extends    Retriever 
@@ -42,11 +48,12 @@ public class LiveDataRetriever extends    Retriever
   TCPComm tcp_io = null;
 
 /**
- *  Construct a LiveDataRetriever for a specific instrument computer.
+ *  Construct a LiveDataRetriever to get data from a LiveDataServer running
+ *  a specified instrument computer.
  *
  *  @param data_source_name  The host name for the instrument computer.  It
  *                           is assumed that a LiveDataServer is running on
- *                           that computer on the desired port. 
+ *                           that computer on the required port. 
  */
   public LiveDataRetriever(String data_source_name) 
   {
@@ -129,10 +136,12 @@ public class LiveDataRetriever extends    Retriever
     {
       try
       { 
-        Object obj = tcp_io.Receive();
+        Object obj = null;
+        obj = tcp_io.Receive();
         System.out.println( "Got " + obj );
 
-        DataSet ds = (DataSet)obj;
+        DataSet ds = null;
+        ds = (DataSet)obj;
         return ds;
       }
       catch ( Exception e )
@@ -148,7 +157,7 @@ public class LiveDataRetriever extends    Retriever
  *  Break the connection with the LiveDataServer. 
  *
  */
-  public void Exit()
+  private void Exit()
   {
     try
     {
@@ -158,6 +167,16 @@ public class LiveDataRetriever extends    Retriever
     {
       System.out.println( "Exception in LiveDataRetriever.Exit():" + e );
     }
+  }
+
+/**
+ *  Finalize method to make sure that the TCP connection is closed if this
+ *  LiveDataRetriever object is no longer being used.
+ */
+  protected void finalize() throws IOException
+  {
+     System.out.println("Retriever finalization");
+     Exit();
   }
 
 
@@ -174,13 +193,13 @@ public class LiveDataRetriever extends    Retriever
     System.out.println("====================================================");
     LiveDataRetriever retriever = new LiveDataRetriever( server_name );
 
-    DataSet          monitor_ds = retriever.getDataSet(0);
-    ViewManager monitor_vm   = new ViewManager( monitor_ds, IViewManager.IMAGE);
+    DataSet     monitor_ds = retriever.getDataSet(0);
+    ViewManager monitor_vm = new ViewManager( monitor_ds, IViewManager.IMAGE);
 
-    DataSet          hist_ds    = retriever.getDataSet(1);
-    ViewManager histogram_vm = new ViewManager( hist_ds, IViewManager.IMAGE );
+    DataSet     hist_ds = retriever.getDataSet(1);
+    ViewManager hist_vm = new ViewManager( hist_ds, IViewManager.IMAGE );
 
-    retriever.Exit();
+//    retriever.Exit();
 
   // to verify that the time attribute has been set, uncomment this loop
 /*  for ( int i = 0; i < hist_ds.getNum_entries(); i++ )
