@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/04/01 20:59:00  dennis
+ *  Added log file PrintStream to constructor.  Modified methods
+ *  ShowProgress() and ShowOldCalibrationInfo() to print to log file.
+ *  Made some improvements to form of messages printed.
+ *
  *  Revision 1.11  2004/03/15 06:10:54  dennis
  *  Removed unused import statements.
  *
@@ -116,6 +121,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
   public static final int DET_CHI_INDEX    = 6;
   public static final int DET_OMEGA_INDEX  = 7;
 
+  private PrintStream log_file = null;
+
   private int    n_peaks;
   private int    run[]; 
   private int    id[];
@@ -152,19 +159,21 @@ public class SCDcal   extends    OneVarParameterizedFunction
    *  are numbered in a sequence and the point's index in the sequence is 
    *  used as the one variable.
    */
-   public SCDcal( Vector    peaks_vector,
-                  Hashtable grids,
-                  double    params[], 
-                  String    param_names[],
-                  int       n_used,
-                  boolean   is_used[],
-                  double    lattice_params[] )
+   public SCDcal( Vector      peaks_vector,
+                  Hashtable   grids,
+                  double      params[], 
+                  String      param_names[],
+                  int         n_used,
+                  boolean     is_used[],
+                  double      lattice_params[],
+                  PrintStream log_file )
    {
                                    // we only want to use some of the possible
                                    // parameter, but the super constructor must
                                    // be called first, so we have to pass in
                                    // empty arrays and then change the values
      super( "SCDcal", new double[n_used], new String[n_used] );
+     this.log_file = log_file;
 
      int used_index = 0;                        // set up copies of the 
      for ( int i = 0; i < params.length; i++ )  // sub lists that are actually
@@ -383,8 +392,11 @@ public class SCDcal   extends    OneVarParameterizedFunction
     find_qxyz_theoretical();
 
     eval_count++;
-    if ( eval_count % 1000 == 0 )
-     ShowProgress();
+    if ( eval_count % 500 == 0 )
+    {
+      ShowProgress( System.out );
+      ShowProgress( log_file );
+    }
   } 
 
   /**
@@ -509,25 +521,48 @@ public class SCDcal   extends    OneVarParameterizedFunction
     return M;
   }
 
+
   /**
    *  Show the progress of the calibration calculation by printing the
    *  observed lattice parameters, standard deviation in the current 
    *  function values (i.e. differences between Q theoretical and
    *  Q observed) and the current parameter estimates.
    */
-  public void ShowProgress( )
-  {                                    // first show observed cell parameters
+  public void ShowProgress()
+  {
+    ShowProgress( System.out );
+  }
+ 
+
+  /**
+   *  Show the progress of the calibration calculation by printing the
+   *  observed lattice parameters, standard deviation in the current 
+   *  function values (i.e. differences between Q theoretical and
+   *  Q observed) and the current parameter estimates.
+   */
+  public void ShowProgress( PrintStream out )
+  {                           
+    if ( out == null )
+      return;
+
+    out.println();
+    out.println("==================================================");
+    out.println( "Number of evaluations = " + eval_count );
+
+                                       // first show observed cell parameters
                                        // for current stage of calibration
     double my_B[][] = copy ( B_observed );
-    System.out.println( ""+eval_count/1000 );
     for ( int k = 0; k < 3; k++ )
       for ( int j = 0; j < 3; j++ )
         my_B[k][j] /= (2*Math.PI);
 
     double cell_params[] = lattice_calc.LatticeParamsOfUB( my_B );
-    System.out.println("==================================================");
-    System.out.println("Observed cell parameters now are.... "); 
-    LinearAlgebra.print( cell_params );
+    out.println("Observed cell parameters now are.... "); 
+    for ( int i = 0; i < 3; i++ )
+      out.print( " " + Format.real( cell_params[i], 10, 6 ) );
+    for ( int i = 3; i < 6; i++ )
+      out.print( " " + Format.real( cell_params[i], 10, 5 ) );
+    out.println( " " + Format.real( cell_params[6], 10, 5 ) );
                                       
                                        // then show the standard deviation of
                                        // the error in q, from all zeros
@@ -542,47 +577,62 @@ public class SCDcal   extends    OneVarParameterizedFunction
 
     s_dev = Math.sqrt( s_dev/vals.length );
 
-    System.out.println();
-    System.out.println("1 standard dev error distance in Q = " + s_dev );
+    out.println();
+    out.println("One standard dev error distance in Q = " + s_dev );
 
                                        // finally, dump out the current
                                        // parameter estimates
     int det_count = 0;
-    System.out.println();
-    System.out.println("Instrument & Sample parameters: " );
+    out.println();
+    out.println("Instrument & Sample parameters: " );
     for ( int i = 0; i < all_parameters.length; i ++ )
     {
       if ( (i - DET_BASE_INDEX) % N_DET_PARAMS == 0 )
       {
-        System.out.println();
-        System.out.println();
-        System.out.println("Parameters for Detector " + det_count );
+        out.println();
+        out.println();
+        out.println("Parameters for Detector " + det_count );
         det_count++;
       }
       if ( used_p_index[i] >= 0 )
-        System.out.print( " " + Format.real(all_parameters[i], 12, 5 ) );
+        out.print( " " + Format.real(all_parameters[i], 12, 8 ) );
     }
-    System.out.println();
+    out.println();
+  }
+
+  
+  /**
+   *  For each detector, show only those calibration values that are currently
+   *  used in the SCD software, in the form that they are used as of 7/29/2003.
+   *  Other parameters are ont displayed.
+   */
+  public void ShowOldCalibrationInfo()
+  {
+     ShowOldCalibrationInfo( System.out );
   }
 
 
   /**
-   *  For each detector, show the calibration values that are currently
-   *  used in the SCD software, 7/29/2003.
+   *  For each detector, show only those calibration values that are currently
+   *  used in the SCD software, in the form that they are used as of 7/29/2003.
+   *  Other parameters are ont displayed.
    */
-  public void ShowOldCalibrationInfo()
+  public void ShowOldCalibrationInfo( PrintStream out )
   {
+    out.println();
+    out.println("===========================================================");
+    out.println("BASIC Calibrated Values " );
     int det_count = 0;
     Enumeration e = grids.elements();
     while ( e.hasMoreElements())
     {
       UniformGrid_d grid = (UniformGrid_d)e.nextElement();
-      System.out.println();
-      System.out.println("USING DETECTOR: " + grid.ID());
-      System.out.println();
+      out.println();
+      out.println("DETECTOR: " + grid.ID());
+      out.println();
 
-      System.out.print( Format.real( 100 * all_parameters[L1_INDEX], 9, 3 ) );
-      System.out.print( Format.real( all_parameters[T0_INDEX], 8, 3 ) );
+      out.print( Format.real( 100 * all_parameters[L1_INDEX], 9, 3 ) );
+      out.print( Format.real( all_parameters[T0_INDEX], 8, 3 ) );
 
       int index = DET_BASE_INDEX + det_count * N_DET_PARAMS;
                                                        // width and height are
@@ -601,20 +651,23 @@ public class SCDcal   extends    OneVarParameterizedFunction
       double yLower = 100 * all_parameters[index + DET_Y_OFF_INDEX]
                       - y2cm * grid.num_rows() / 2.0;
 
+      out.print( Format.real( x2cm, 11, 6 ) );
+      out.print( Format.real( y2cm, 11, 6 ) );
+      out.print( Format.real( xLeft,  11, 6 ) );
+      out.print( Format.real( yLower, 11, 6 ) );
+      out.println();
+/*    
       double phi   = all_parameters[ index + DET_PHI_INDEX ];
       double chi   = all_parameters[ index + DET_CHI_INDEX ];
       double omega = all_parameters[ index + DET_OMEGA_INDEX ];
-      det_count++;
 
-      System.out.print( Format.real( x2cm, 11, 6 ) );
-      System.out.print( Format.real( y2cm, 11, 6 ) );
-      System.out.print( Format.real( xLeft,  11, 6 ) );
-      System.out.print( Format.real( yLower, 11, 6 ) );
-      System.out.println();
-      System.out.print( Format.real( phi, 11, 6 ) );
-      System.out.print( Format.real( chi, 11, 6 ) );
-      System.out.print( Format.real( omega, 11, 6 ) );
-      System.out.println();
+      out.print("Detector phi, chi, omega = " );
+      out.print( Format.real( phi, 11, 6 ) );
+      out.print( Format.real( chi, 11, 6 ) );
+      out.print( Format.real( omega, 11, 6 ) );
+      out.println();
+*/
+      det_count++;
     }
   }
 
@@ -634,9 +687,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
       lattice_params[3] = 90;
       lattice_params[5] = 90;
       lattice_params[4] = 120;
-
-      Vector peaks = PeakData.ReadPeakData( args[0] ); // load the vector of peaks
-
+                                                    // load the vector of peaks
+      Vector peaks = PeakData.ReadPeakData( args[0] ); 
       PeakData peak = (PeakData)peaks.elementAt(0);
       double l1 = peak.l1; 
 
@@ -740,9 +792,12 @@ public class SCDcal   extends    OneVarParameterizedFunction
                                                      // function
       SCDcal error_f = new SCDcal( peaks, 
                                    grids,
-                                   parameters, parameter_names,
-                                   n_used, is_used,
-                                   lattice_params ); 
+                                   parameters, 
+                                   parameter_names,
+                                   n_used, 
+                                   is_used,
+                                   lattice_params,
+                                   null ); 
 
       for ( int i = 0; i < parameters.length; i++ )
       {
@@ -753,7 +808,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
         System.out.println( parameter_names[i] +" = " + parameters[i] ); 
       }
       System.out.println("Before fit... params are");
-      error_f.ShowProgress();
+      error_f.ShowProgress( System.out );
+      error_f.ShowProgress( error_f.log_file );
                                                 // build the arrays of x values
                                                 // target function values 
                                                 // (z_vals) and "fake"
@@ -793,7 +849,8 @@ public class SCDcal   extends    OneVarParameterizedFunction
       LinearAlgebra.print( UB );
 
       System.out.println();
-      error_f.ShowProgress();
+      error_f.ShowProgress( System.out );
+      error_f.ShowProgress( error_f.log_file );
 
       error_f.ShowOldCalibrationInfo();
     }
