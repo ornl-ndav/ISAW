@@ -49,6 +49,9 @@ public class JDataViewUI extends JDesktopPane implements Serializable
   ViewManager         view_manager   = null;
   InternalViewManager i_view_manager = null;
 
+  private static final String INTERNAL_FRAME = "Create view in Internal Frame";
+  private static final String EXTERNAL_FRAME = "Create view in External Frame";
+
   /**
     * Create a new JDataViewUI and sets the border.
     *   
@@ -80,7 +83,7 @@ public class JDataViewUI extends JDesktopPane implements Serializable
     */
   public void ShowDataSet(DataSet ds, String frame, String view_type )
   {
-    if (frame == "Internal Frame")
+    if( frame == INTERNAL_FRAME )
     {
       i_view_manager = new InternalViewManager( ds, view_type );
 	i_view_manager.setResizable(true);
@@ -91,7 +94,7 @@ public class JDataViewUI extends JDesktopPane implements Serializable
       add( i_view_manager );
       i_view_manager.toFront();
     }		
-    else if (frame == "External Frame")
+    else if( frame == EXTERNAL_FRAME )
      view_manager = new ViewManager( ds, view_type );
   }
 
