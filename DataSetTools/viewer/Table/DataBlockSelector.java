@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2004/10/09 14:10:51  rmikk
+ * Added some bounds checking code to eliminate run time errors
+ *
  * Revision 1.15  2004/09/15 22:03:52  millermi
  * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
  *   Adding a second log required the boolean parameter to be changed
@@ -952,7 +955,8 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
 
     class SortActionListener implements ActionListener {
         public void actionPerformed(ActionEvent evt) {
-    
+            if( selectedColumn < 0) return;
+            if (selectedColumn >= tbArray.getNumColumns()) return ;
             Arrays.sort(GroupSort, new comparre());
             fireActionEvent("DataChanged");
         }
