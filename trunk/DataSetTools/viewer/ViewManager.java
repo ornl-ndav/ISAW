@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.51  2004/08/24 18:52:18  rmikk
+ *  Caught errors on viewer initialization and returned null
+ *
  *  Revision 1.50  2004/08/04 22:14:23  rmikk
  *  DataSetViewers that implement IPreserveState can now support the Object State
  *
@@ -405,40 +408,48 @@ public class ViewManager extends    JFrame
                                                String view_type,
                                                ViewerState state){
       DataSetViewer viewer = null;
-      
-      if ( view_type.equals( IMAGE ))
-        viewer = new ImageView( tempDataSet, state );
-      else if ( view_type.equals( SCROLLED_GRAPHS ))
-        viewer = new GraphView( tempDataSet, state );
-      else if ( view_type.equals( THREE_D ))
-        viewer = new ThreeDView( tempDataSet, state );
-      else if ( view_type.equals( HKL_SLICE ) )
-        viewer = new HKL_SliceView( tempDataSet, state );
-      else if ( view_type.equals( SELECTED_GRAPHS ))             // Brent's 
-      {
-        VirtualArrayList1D varray = DataSetData.convertToVirtualArray(
+      try{
+        if ( view_type.equals( IMAGE ))
+          viewer = new ImageView( tempDataSet, state );
+        else if ( view_type.equals( SCROLLED_GRAPHS ))
+          viewer = new GraphView( tempDataSet, state );
+        else if ( view_type.equals( THREE_D ))
+          viewer = new ThreeDView( tempDataSet, state );
+        else if ( view_type.equals( HKL_SLICE ) )
+          viewer = new HKL_SliceView( tempDataSet, state );
+        else if ( view_type.equals( SELECTED_GRAPHS ))             // Brent's 
+        {       
+          VirtualArrayList1D varray = DataSetData.convertToVirtualArray(
 	                                                         tempDataSet );
-        FunctionViewComponent viewComp = new FunctionViewComponent(varray);
-        viewer = new DataSetViewerMaker(tempDataSet, state, varray, viewComp);
-      }
-      else if ( view_type.equals( TABLE)) //TABLE ) )
-         viewer = new TabView( tempDataSet, state ); 
-      else if ( view_type.equals( CONTOUR ) )
-        viewer = new ContourView( tempDataSet, state ); 
-      else
-      { 
-        if( table_MenuComp == null)
-           table_MenuComp= new TableViewMenuComponents();
-        viewer = table_MenuComp.getDataSetViewer(view_type, tempDataSet, state);
-        if( viewer == null)
-        {
-           System.out.println( "ERROR: Unsupported view type in ViewManager:" );
-           System.out.println( "      " + view_type );
-           System.out.println( "using " + IMAGE + " by default" );
-           viewer = new ImageView( tempDataSet, state );
-           
+          FunctionViewComponent viewComp = new FunctionViewComponent(varray);
+          viewer = new DataSetViewerMaker(tempDataSet, state, varray, viewComp);
+       
         }
+        else if ( view_type.equals( TABLE)) //TABLE ) )
+           viewer = new TabView( tempDataSet, state ); 
+        else if ( view_type.equals( CONTOUR ) )
+          viewer = new ContourView( tempDataSet, state ); 
+        else
+        { 
+          if( table_MenuComp == null)
+             table_MenuComp= new TableViewMenuComponents();
+          viewer = table_MenuComp.getDataSetViewer(view_type, tempDataSet, state);
+          if( viewer == null)
+          {
+             System.out.println( "ERROR: Unsupported view type in ViewManager:" );
+             System.out.println( "      " + view_type );
+             System.out.println( "using " + IMAGE + " by default" );
+             viewer = new ImageView( tempDataSet, state );
+           
+          }
+        }
+      }catch(Throwable ss){
+         System.out.println( "ERROR: Creating View:" +ss);
+         System.out.println( "      " + view_type );
+         System.out.println( "using " + IMAGE + " by default" );
+         viewer = new ImageView( tempDataSet, state );
       }
+
       return viewer;
    }
 
