@@ -2,6 +2,10 @@
  *  File:  DiffractometerTofToQ.java 
  *             
  *  $Log$
+ *  Revision 1.5  2002/07/02 17:07:25  pfpeterson
+ *  Now uses string constants defined in IsawGUI.Isaw and adds
+ *  operator for Q->Wavelength.
+ *
  *  Revision 1.4  2002/06/19 21:59:49  pfpeterson
  *  Modified to add the new conversion operators once Operation
  *  is completed.
@@ -102,6 +106,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  IsawGUI.Isaw;
 
 /**
  * This operator converts a neutron time-of-flight DataSet to "Q".  The
@@ -187,15 +192,15 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
     Parameter parameter;
 
     if ( scale == null )
-      parameter = new Parameter( "Min Q(inv A)", new Float(0.0) );
+      parameter = new Parameter( "Min Q("+Isaw.InvAngstrom+")", new Float(0.0) );
     else
-      parameter = new Parameter( "Min Q(inv A)", new Float(scale.getStart_x()));
+      parameter = new Parameter( "Min Q("+Isaw.InvAngstrom+")", new Float(scale.getStart_x()));
     addParameter( parameter );
 
     if ( scale == null )
-      parameter = new Parameter( "Max Q(inv A)", new Float(20.0) );
+      parameter = new Parameter( "Max Q("+Isaw.InvAngstrom+")", new Float(20.0) );
     else
-      parameter = new Parameter( "Max Q(inv A)", new Float(scale.getEnd_x()));
+      parameter = new Parameter( "Max Q("+Isaw.InvAngstrom+")", new Float(scale.getEnd_x()));
 
     addParameter( parameter );
 
@@ -212,7 +217,7 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
    */
    public String new_X_label()
    {
-     return new String( "Q(Inv(A))" );
+     return new String( "Q("+Isaw.InvAngstrom+")" );
    }
 
 
@@ -382,6 +387,7 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
       }
     }
     new_ds.addOperator(new DiffractometerQToD());
+    new_ds.addOperator(new DiffractometerQToWavelength());
 
     return new_ds;
   }  
