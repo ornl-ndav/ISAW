@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/06/14 15:55:41  pfpeterson
+ *  Added default values for getProperty(String) for Isaw_Width,
+ *  Isaw_Height, Tree_Width, and Status_Height.
+ *
  *  Revision 1.4  2002/06/14 14:25:45  pfpeterson
  *  The start of a central location for getting system properties
  *  with appropriate default values.
@@ -51,7 +55,7 @@ package DataSetTools.util;
 
 import java.util.*;
 import java.io.*;
-
+import IsawGUI.DefaultProperties;
 
 /**
  *  Constructing an object of this class will load the system properties
@@ -90,22 +94,20 @@ public class PropertiesLoader implements java.io.Serializable
  *  to high and the user may have edited the properties file since it
  *  was last read.
  */
-  public void reload()
-  {
+  public void reload(){
     String full_name = System.getProperty( "user.home" ) + "/" + f_name;
-    try
-    {
+    try{
       FileInputStream input = new FileInputStream( full_name );
       Properties new_props = new Properties( System.getProperties() );
       new_props.load( input );
       System.setProperties( new_props );
       input.close();
       loaded_ok = true;
-    }
-    catch ( IOException e )
-    {
+    }catch ( IOException e ){
       System.out.println("Properties file: " + f_name + " NOT FOUND" );
-      loaded_ok = false;
+      DefaultProperties dp=new DefaultProperties();
+      dp.write();
+      loaded_ok = true;
       return;
     }  
   }
@@ -116,6 +118,18 @@ public class PropertiesLoader implements java.io.Serializable
      */
     public String get(String prop){
         String def=null;
+        if( prop.equals("Isaw_Width") ){
+            def="0.8";
+        }else if( prop.equals("Isaw_Height") ){
+            def="0.4";
+        }else if( prop.equals("Tree_Width") ){
+            def="0.2";
+        }else if( prop.equals("Status_Height") ){
+            def="0.2";
+        }
+        /*if(def!=null){  // testing information
+          System.out.println(prop+" gets default "+def);
+          } */
 
         return this.get(prop,def);
     }
@@ -133,7 +147,6 @@ public class PropertiesLoader implements java.io.Serializable
         }else{
             rs=System.getProperty(prop,def);
         }
-        System.out.println("get("+prop+", "+def+")="+rs);
         return rs;
     }
 
