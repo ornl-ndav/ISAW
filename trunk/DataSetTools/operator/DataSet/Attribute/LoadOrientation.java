@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/02/13 17:05:20  pfpeterson
+ *  Removed diagnostic print statement.
+ *
  *  Revision 1.8  2003/02/12 22:54:03  pfpeterson
  *  Reads in the cell volume (again) if reading a matrix file.
  *
@@ -299,7 +302,6 @@ public class LoadOrientation extends    DS_Attribute {
         int index=iparm.lastIndexOf("/");
         if(index>=0)iparm=iparm.substring(index+1,iparm.length());
         ds.setAttribute(new StringAttribute(Attribute.ORIENT_FILE,iparm));
-        System.out.print("VOL="+vol);
         if(vol!=0f)
           ds.setAttribute(new FloatAttribute(Attribute.CELL_VOLUME,vol));
         ds.setAttribute(new Float1DAttribute(Attribute.LATTICE_PARAM,lat));
