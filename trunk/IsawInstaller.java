@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.6  2002/03/26 16:42:12  pfpeterson
+ * Changed batch file to be an apple script.
+ *
  * Revision 1.5  2002/03/25 23:46:52  pfpeterson
  * Changed exiting information dialog. Location of java no longer
  * needed for mac clients.
@@ -125,8 +128,8 @@ public class IsawInstaller extends JFrame
 	
 	// find the name of archive
 	zse.jarFileName=
-	    "/IPNShome/pfpeterson/zipper/ISAW-111-beta-install.jar";
-	    //zse.getJarFileName();
+	    //"/IPNShome/pfpeterson/zipper/ISAW-111-beta-install.jar";
+	    zse.getJarFileName();
 	
 	// set up the GUI
 	zse.init();
@@ -308,7 +311,7 @@ public class IsawInstaller extends JFrame
         }else if(operating_system.equals(SUN_ID)){
             filename=filename+"Isaw_exec.sh";
         }else if(operating_system.equals(MAC_ID)){
-	    filename=filename+"Isaw_exec.bat";
+	    filename=filename+"Isaw_exec.sh";
 	}else{
 	    return null;
 	}
@@ -510,9 +513,17 @@ public class IsawInstaller extends JFrame
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
 		+" IsawGUI.Isaw"+newline;
         }else if(operating_system.equals(MAC_ID)){
-	    content="cd "+isaw_home+newline
-                +"java -mx128000000 -cp Isaw.jar:sgt_v2.jar:IPNS.jar"
-		+":jnexus.jar:sdds.jar:.  IsawGUI.Isaw"+newline;
+            content="tell application \"Terminal\""+newline
+                +"      do script with command \"java -mx128000000 -cp "
+                +isaw_home+"/Isaw.jar:"
+                +isaw_home+"/sgt_v2.jar:"
+                +isaw_home+"/IPNS.jar:"
+                +isaw_home+"/jnexus.jar:"
+                +isaw_home+"/sdds.jar:. IsawGUI.Isaw\""+newline
+                +"end tell"+newline;
+	    /* content="cd "+isaw_home+newline
+               +"java -mx128000000 -cp Isaw.jar:sgt_v2.jar:IPNS.jar"
+               +":jnexus.jar:sdds.jar:.  IsawGUI.Isaw"+newline; */
 	}else{
 	    System.err.println("Unknown operating system: "+operating_system);
 	    return;
@@ -888,8 +899,6 @@ public class IsawInstaller extends JFrame
         if(batch.getText().equals(NO_BATCH)){
             msg=msg+"java IsawGUI.Isaw";
         }else{
-            if(operating_system.equals(MAC_ID))
-                msg=msg+"source ";
             msg=msg+batch.getText();
         }
         msg=msg+"\n\n";
