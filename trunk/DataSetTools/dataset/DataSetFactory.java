@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2001/08/16 19:36:19  dennis
+ *  Added Ruth's PlotterOp instead of Dongfengs SpectrometerPlotter.
+ *
  *  Revision 1.16  2001/08/16 19:20:05  dennis
  *  Removed DongFeng's SpectrometerPlotter.
  *
@@ -277,7 +280,7 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new GetField() );
     new_ds.addOperator( new SetField() );
 
-//    new_ds.addOperator( new SpectrometerPlotter() );
+    new_ds.addOperator( new PlotterOp() );
     return new_ds;
   }
 
