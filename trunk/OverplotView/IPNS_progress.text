@@ -81,8 +81,8 @@ day 167>
 
 
 day 171>
--TODO: 171-0: Make the graph larger, i.e. the full width of the view panel.
--TODO: 171-1: Use the selected property of the DataSet to determine which 
+-TODO: 171-0: *Make the graph larger, i.e. the full width of the view panel.
+-TODO: 171-1: *Use the selected property of the DataSet to determine which 
                 spectra to display.
 -TODO: 171-2: *When a spectrum is selected or deselected from the selected graph
                 view, set or clear the selected attribute in the dataset.
@@ -101,7 +101,9 @@ day 171>
     (and not dragged)?
     A: the answer to this question may be tied to the fact that 
          SelectedGraphView does *not* inform the ViewManager of changes in 
-         selection.
+         selection.  
+    A: (day 202) this is, in fact, the case.  it was fixed by SelectedGraph
+         calling the update method of its DataSet
 
 
 
@@ -123,6 +125,8 @@ day 173>
 
 day 174>
 -Q: editable attributes in ISAW?
+    A: it turns out that the PointedAt table is editable, but the changes
+         have no effect, so there's no reason to change it or worry about it.
 -Q: more meaningful name for modified datasets?  currently they are given the
     name of the first dataset selected (before choosing the operator to
     apply)
@@ -184,7 +188,7 @@ day 175>
                 just an excercise in scaling the graph.
 -175-0: mostly works... when only two spectra are graphed, the offsets work
           all right.  when a third is added, everything goes to hell.  
--TODO: 175-1: add line types, markers, and such to graph
+-TODO: 175-1: *add line types, markers, and such to graph
 -TODO: 175-2: add legend/key
 -TODO: 175-3: error bars
 
@@ -199,10 +203,11 @@ day 178>
                 applied to the data.
 -DONE: 178-0: files modified:
                 SelectedGraphView.java v1.13
--TODO: 178-1: display attributes of the currently PointedAt data block in the
-                'graph' tab
+-TODO: 178-1: *display attributes of the currently PointedAt data block in the
+                'graph' tab in the PointedAt table in the lower left hand
+                corner of ISAW
 -TODO: 178-2: implement a 'select by attribute' concept
--TODO: 178-3: add the appropriate newlines in the graph properties pane, 
+-TODO: 178-3: !add the appropriate newlines in the graph properties pane, 
                 specifically, where the log data is displayed.
 -175-1: make line and symbols selection work per spectra (as opposed to a
           global selector).
@@ -262,14 +267,14 @@ day 182>
           needs to be added to isawLineProfileLayout.  this will allow
           isawProfileLayout to take advantage of the color and marker
           information that GraphableData objects contain.
--TODO: 182-0: don't allow multiple copies of data in the 'Graph' tab
+-TODO: 182-0: *don't allow multiple copies of data in the 'Graph' tab
 -DONE: 182-0:
 -175-1: changed GraphableData class, isawLineProfileLayout class, Marker 
           interface, EntityColor interface, sgtMarker class, and 
           sgtEntityColor class to make color part of GraphableData, and to
           make isawLineProfileLayout get this data from it's parameters, as
           opposed to mod'ing through an internal list.
--TODO: 182-1: make graph and data appear on screen.  this problem may be 
+-TODO: 182-1: *make graph and data appear on screen.  this problem may be 
                 related to getting data to the graph.
 
 
@@ -284,6 +289,7 @@ day 183>
 -DONE: 171-3: although the spectra are not graphed immediatly, they are
                 'selected' and placed in the 'to be graphed' list.  the user
                 must press the graph him-/her- self.
+-DONE: 182-1:
 
 
 day 184> 
@@ -303,12 +309,13 @@ day 185>
 
 
 day 187>
--TODO: 187-0: graph selected spectra in the order that they are sorted in (also
+-TODO: 187-0: *graph selected spectra in the order that they are sorted in (also
                 the order that they appear in the list of (unselected) spectra.
 -TODO: 187-1: make legend/key lables editable (in a way that changes in all
                 views of the dataset.  this will probably be implemented at
                 the DataSet level (as a UserTitle field)
 -TIME: 16:00 on day 187 -- c cvs meeting w/ hammonds & mikkelson
+-DONE: 178-1: called the update of dataset
 
 
 
@@ -330,7 +337,8 @@ day 189>
                 
 day 192>    
 -DONE: 174-3: ControlPanel.java 1.2  
-TODO: 192-0: take a look at the nexus stuff and get back to worlton about it
+-TODO: 192-0: *take a look at the nexus stuff and get back to worlton about it
+-DONE: 192-0: vetoed by mikkelson
 
 
 day 193>
@@ -345,9 +353,51 @@ day 193>
 
 
 day 194>
--TODO: 194-0: remove text-based range selection devices. (worlton)
--
+-TODO: 194-0: remove text-based range selection devices from 'window'
+                tab. (worlton)
+-DONE: 194-0: 
+
+
+day 200>
+-171-0: coming along...  the graph resizes when the window is dragged, but 
+          remains the incorrect size when split panes are used to resize window
+-looked into xml for ISAW's ascii export feature
+
+
+day 201>
+-worked on DTD and example data file for xml export feature
+-wednesday meeting... urinated afterwards, lunch
+-conflict with roommate.  filed report with protective services.  roommate was 
+   moved out by frank vivio.
+-TODO: 201-0: *unbreaking graphics that were damaged when migrating to isawGraph
+   from isawLineProfileLayout
+-TODO: 201-1: remove log message the is added when each Data is converted to 
+                GraphableData.
+-DONE: 201-1:
+
+
+day 202>
+-DONE: 171-0: finally done
+-TODO: 202-0: give iwasGraph zoom ability
+-DONE: 201-0:
+-DONE: 202-0: 
+-DONE: 187-0:
+-174-6: not implemented yet... probably won't be.
+-178-2: ha ha ha ha
+-178-3: much of the log message has been removed @see 201-1
+
+
+day 209>
+-back from medical leave (poison ivy) a few days early
+-TODO: 209-0: use a color chooser in place of a list
+-TODO: 209-1: implement some neater method for choosing marker types
+-TODO: 209-2: fix viewer so that it resizes without errors when there's 1
+                spectra being viewed.
 
 
 
+
+
+day ??>
+-DONE: 171-1: i don't remember when i did this.  before day 202-2000.
 
