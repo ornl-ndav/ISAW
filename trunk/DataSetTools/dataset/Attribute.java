@@ -31,6 +31,17 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2002/11/12 00:20:18  dennis
+ *  Made immutable by:
+ *  1. remove setValue() method
+ *  2. add() & combine() methods now return a new Attribute
+ *
+ *  Also:
+ *  3. Since it is now immutable, clone() method is not needed and
+ *     was removed
+ *  4. Default constructor is now private, since the value can't
+ *     be set from outside of the class
+ *
  *  Revision 1.29  2002/09/25 16:49:17  pfpeterson
  *  Added string constants for SCD calibration information.
  *
@@ -383,16 +394,6 @@ abstract public class Attribute implements Serializable,
 
 
   /**
-   * Set the value for the attribute using a generic object.  The actual
-   * class of the object must be appropriate to the concrete attribute class
-   * used.
-   *
-   * @return false if the object is of the wrong class.
-   */
-  abstract public boolean setValue( Object obj );
-
-
-  /**
    * Combine the value of this attribute with the value of the attribute
    * passed as a parameter to obtain a new value for this attribute.  Any 
    * non-trivial behavior will be specified in derived classes.  For example,
@@ -403,10 +404,11 @@ abstract public class Attribute implements Serializable,
    *                  value of the this attribute.
    *                  
    */
-  public void combine( Attribute attr )
+  public Attribute combine( Attribute attr )
   {
      // by default, no operation is done... the value of the combined attribute
      // is just the current value
+     return this;
   }
 
 
@@ -420,11 +422,11 @@ abstract public class Attribute implements Serializable,
    *                  value of the this attribute.
    *
    */
-  public void add( Attribute attr )
+  public Attribute add( Attribute attr )
   {
     // by default, add will be the same as combine, unless this is overridden
     // in derived classes.
-    combine(attr);
+    return combine(attr);
   }
 
 
@@ -455,14 +457,6 @@ abstract public class Attribute implements Serializable,
    * @return String form of attribute name, value.
    */
   abstract public String toString();
-
-
-  /**
-   * Returns a copy of the current attribute
-   *
-   * @return a generic object that is a clone of the current object;
-   */
-  abstract public Object clone();
 
 
   /**
