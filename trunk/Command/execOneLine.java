@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.34  2002/06/12 18:45:58  rmikk
+ * Added code to consider tabs like spaces
+ *
  * Revision 1.33  2002/02/22 20:33:47  pfpeterson
  * Operator Reorganization.
  *
@@ -442,10 +445,10 @@ public void addDataSet(DataSet dss, String vname)
        i = skipspaces( S , 1 , start );
        if( i > end) i = end;
       
-       j = findfirst( S , 1 , i , " (+-*=;:'/^+,[]<>&)\",","" );
+       j = findfirst( S , 1 , i , " \t(+-*=;:'/^+,[]<>&)\",","" );
        if( j > end) j = end;
        if( (i >= 0) && (i < S.length() ) && (i < end) )
-	 if(" (+-*=<>;:'/^+,[]&)\"," .indexOf( S.charAt( i ) ) >= 0 )
+	 if(" \t(+-*=<>;:'/^+,[]&)\"," .indexOf( S.charAt( i ) ) >= 0 )
 	   j = i ;
      
        
@@ -1338,7 +1341,7 @@ public void addDataSet(DataSet dss, String vname)
             }
           if( (skipspaces(S,1,j)>=end)||(skipspaces(S,1,j)>=S.length()) )
             { seterror(j,ER_MissingArgument+"U1"); return j;}
-          if(" (+-".indexOf(S.charAt(j))>=0){}
+          if(" \t(+-".indexOf(S.charAt(j))>=0){}
           else
              {seterror(j,ER_IllegalCharacter+"U2");
               return j;
@@ -1396,7 +1399,7 @@ public void addDataSet(DataSet dss, String vname)
           {seterror(start + 3, ER_MissingArgument+"V"); 
            return start+3;
           }
-        if( " (".indexOf(S.charAt(start+3))>=0)
+        if( " \t(".indexOf(S.charAt(start+3))>=0)
           { j=execNonAndOrExpr(S, start+3,end);
              if(Debug)System.out.println("in NOT case"+perror+","+Result);
 
@@ -1667,7 +1670,7 @@ public void addDataSet(DataSet dss, String vname)
         } 
      
 
-      j = findfirst( S , 1 , i , "+-*<>(=&^/):[]{},\" " , "" );
+      j = findfirst( S , 1 , i , "\t+-*<>(=&^/):[]{},\" " , "" );
       if( j > end) j = end;
       j1 = skipspaces( S , 1 , j );
       if( j1 > end) j1 = end;
