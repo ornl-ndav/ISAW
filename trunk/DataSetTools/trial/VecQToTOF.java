@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/06/03 16:33:02  dennis
+ *  Separated calculation of interpolated intensity from calculation of
+ *  corresponding detector position info.  Added methods:
+ *  QtoRowColTOF()
+ *  QtoRowColChan()
+ *  QtoXcmYcmWl()
+ *
  *  Revision 1.5  2003/05/25 20:09:06  dennis
  *  1. The method to calculate the intensity at a point now interpolates
  *     using the values at the centers of eight neighboring bins.
@@ -113,12 +120,14 @@ public class VecQToTOF
                         // detector.
 
   /** 
-   *  Construct a VecQToTOF conversion object, from the specified DataGrid.
+   *  Construct a VecQToTOF conversion object, from the first area detector
+   *  DataGrid found in the specified DataSet.
    *  The DataGrid must have had it's Data block references set, and the
    *  Data blocks must be in terms of time-of-flight.  It must also have
    *  a SampleOrientation defined and the initial flight path defined.
-   *  Currently this assumes that beyond a few monitors, the DataSet contains
-   *  the data from ONE area detector.
+   *
+   *  @param  ds   The DataSet from which the first area detector's DataGrid
+   *               is used.
    */
   VecQToTOF( DataSet ds )
   {
@@ -129,7 +138,6 @@ public class VecQToTOF
     }
 
     String units = ds.getX_units();
-    System.out.println("UNITS = " + units );
     if ( !units.equalsIgnoreCase( "Time(us)" ) )
     {
       System.out.println("ERROR: need time-of-flight DataSet in VecQToTOF" );
@@ -175,13 +183,14 @@ public class VecQToTOF
         return;
       }
 
-//    System.out.println("DataGrid is : " + grid );
-
     attr = d.getAttribute( Attribute.INITIAL_PATH );
     if ( attr != null )
       initial_path = (float)(attr.getNumericValue());
     else
       return;
+
+//    System.out.println("DataGrid is : " + grid );
+//    System.out.println("initial path: " + initial_path);
 
     n_rows = grid.num_rows();
     n_cols = grid.num_cols();
@@ -269,19 +278,95 @@ public class VecQToTOF
   }   
 
 
- /* -------------------------- intensityAtQ ------------------------------- */
+ /* -------------------------- QtoXcmYcmWl ------------------------------- */
  /**
+  *  Transform from vector Q to Xcm, Ycm, wavelength.
   *
+  *  @param   q_vec   The q vector to be mapped back to the detector
+  *
+  *  @return  An array containing the Xcm, Ycm and wavelength 
+  *  values corresponding to this q_vector.  If the q vector did not come 
+  *  from this detector this will return null.
   */
-  public float intensityAtQ( Vector3D q_vec )
+  public float[] QtoXcmYcmWl( Vector3D q_vec )
+  {
+    float result[] = QtoRowColTOF( q_vec );
+    if ( result == null )
+      return null;
+
+    float row = result[0];
+    float col = result[1];
+    float tof = result[2];
+ 
+    result[0] = grid.x( row, col );
+    result[1] = grid.y( row, col );
+
+    float final_path = grid.position( row, col ).length();
+    result[2] = tof_calc.Wavelength( initial_path + final_path, tof );
+
+    return result;
+  }
+
+
+ /* -------------------------- QtoRowColChan ------------------------------- */
+ /**
+  *  Transform from vector Q to fractional row, column, channel.
+  *
+  *  @param   q_vec   The q vector to be mapped back to the detector
+  *
+  *  @return  An array containing the fractional row, column and channel 
+  *  values corresponding to this q_vector.  Integer row and column numbers
+  *  are assumed to range from 1 to n_rows and 1 to n_cols.  The pixel
+  *  positions are assumed to be at the pixel centers, so the fractional
+  *  row and column values range from 0.5 to n_rows+0.5 and from
+  *  0.5 to n_cols+0.5.  The channel number returned is the channel number
+  *  in the Data block for the pixel containing the fractional pixel position.
+  *  If the q vector did not come from this detector, or if the Data blocks
+  *  have not been set for this Data grid, this will return null.
+  */
+  public float[] QtoRowColChan( Vector3D q_vec )
+  {
+    float result[] = QtoRowColTOF( q_vec );
+    if ( !same_xscale )
+    {
+      int row = Math.round( result[0] );
+      int col = Math.round( result[1] );
+      Data d = grid.getData_entry( row, col );
+      x_vals = d.getX_scale().getXs();
+    }
+
+    float tof = result[2];
+    result[2] = arrayUtil.get_index_of( tof, x_vals );
+
+    return result;
+  }
+
+
+ /* -------------------------- QtoRowColTOF ------------------------------- */
+ /**
+  *  Transform from vector Q to fractional row, column, time-of-flight.
+  *
+  *  @param   q_vec   The q vector to be mapped back to the detector
+  *
+  *  @return  An array containing the fractional row, column and time-of-flight
+  *  values corresponding to this q_vector.  Integer row and column numbers
+  *  are assumed to range from 1 to n_rows and 1 to n_cols.  The pixel 
+  *  positions are assumed to be at the pixel centers, so the fractional
+  *  row and column values range from 0.5 to n_rows+0.5 and from 
+  *  0.5 to n_cols+0.5.  The time-of-flight is NOT restricted to valid values
+  *  for the currend Data.  If the q vector did not come from this detector 
+  *  this will return null. 
+  */
+  public float[] QtoRowColTOF( Vector3D q_vec )
   {
     float threshold = q_vec.dot( q_center );
     if ( threshold <= 0 )
-      return 0;
+      return null;
   
-    threshold = threshold/q_vec.length();
+    float mag_q = q_vec.length();
+    threshold = threshold/mag_q;
     if ( threshold < min_q_dot )
-      return 0;
+      return null;
 
     Vector3D q1 = new Vector3D();
     goniometerRinv.apply_to( q_vec, q1 );
@@ -294,7 +379,7 @@ public class VecQToTOF
     float alpha = -2*q1_comp[0];
 
     if ( alpha <= 0 )             // no solution, since the direction of q1 
-      return 0;                   // would be reversed using alpha < 0 
+      return null;                // would be reversed using alpha < 0 
 
     q1.multiply( alpha );
     Vector3D k_prime = new Vector3D( unit_k );
@@ -304,12 +389,13 @@ public class VecQToTOF
 
     float t = det_center.dot(n)/k_prime.dot(n);
     if ( t <= 0 )                // no solution, since the beam missed the
-      return 0;                  // detector plane
+      return null;               // detector plane
     
 //    System.out.println("t = " + t );
 
     Vector3D det_point = new Vector3D( k_prime );
     det_point.multiply( t );
+    Vector3D pix_position = new Vector3D( det_point );
 
     det_point.subtract( det_center );
     float u_comp = det_point.dot( u );
@@ -320,10 +406,56 @@ public class VecQToTOF
                                               // row and col values for this
                                               // pixel.
     float f_row = grid.row( u_comp, v_comp );
+    int row = Math.round( f_row );
+    if ( row < 1 || row > n_rows )
+      return null;
+
     float f_col = grid.col( u_comp, v_comp );
+    int col = Math.round( f_col ); 
+    if ( col < 1 || col > n_cols )
+      return null;
+
+    float final_path = pix_position.length();
+    pix_position.normalize();
+    float angle = (float)( Math.acos( pix_position.dot( unit_k ) ));
+
+    float tof = tof_calc.TOFofDiffractometerQ( angle,
+                                               initial_path+final_path,
+                                               mag_q );
+    float result[] = new float[3];
+    result[0] = f_row;
+    result[1] = f_col;
+    result[2] = tof;
+    return result;
+}
+
+/* -------------------------- intensityAtQ ------------------------------ */
+/**
+ *  Calculate the interpolated intensity based on a specified q vector.  
+ *  The DataGrid given to the constructor must have had it's Data block
+ *  references set at construction time, in order for this to work.  If
+ *  The specified q vector does not come from this DataGrid, this returns
+ *  0.
+ *
+ *  @param q_vec  The vector q for which the intensity is to be interpolated.
+ *
+ *  @return The interpolated intensity based on eight neighboring data 
+ *  cells, or 0 if the the q_vector does not correspond to this DataGrid.
+ */
+
+  public float intensityAtQ( Vector3D q_vec )
+  {
+//    System.out.println("row, col = " + row + ", " + col );
+
+    float rc_tof[] = QtoRowColTOF( q_vec );
+    if ( rc_tof == null )
+      return 0;
+
+    float f_row = rc_tof[0];
+    float f_col = rc_tof[1];
+
     int row = Math.round( f_row );
     int col = Math.round( f_col ); 
-//    System.out.println("row, col = " + row + ", " + col );
 
     int first_row,                     // find adjacent rows and cols
         last_row;
@@ -357,7 +489,9 @@ public class VecQToTOF
     if ( first_col < 1 || last_col > n_cols )
       return 0; 
 
+    float tof = rc_tof[2];
     float mag_q = q_vec.length();
+
                                              // interpolate intensity at four
     float val[][] = new float[2][2];         // neighboring pixels    
     float first_mid,
@@ -380,13 +514,13 @@ public class VecQToTOF
       }
    
       Vector3D pix_position = grid.position(row,col);
-      float final_path = pix_position.length();
+      float    final_path = pix_position.length();
       pix_position.normalize();
-      float angle = (float)( Math.acos( pix_position.dot( unit_k ) ));
+      float    angle = (float)( Math.acos( pix_position.dot( unit_k ) ));
  
-      float tof = tof_calc.TOFofDiffractometerQ( angle, 
-                                                 initial_path+final_path, 
-                                                 mag_q );
+      tof = tof_calc.TOFofDiffractometerQ( angle, 
+                                           initial_path+final_path, 
+                                           mag_q );
       if ( !same_xscale )
         x_vals = d.getX_scale().getXs();
 
@@ -423,7 +557,6 @@ public class VecQToTOF
     float intensity_0 = (1 - row_frac) * val[0][0] + row_frac * val[1][0] ;
     float intensity_1 = (1 - row_frac) * val[0][1] + row_frac * val[1][1] ;
     float intensity = (1 - col_frac) * intensity_0 + col_frac * intensity_1;
-   
 
 //    float y[] = d.getY_values();
 //    float x[] = d.getX_scale().getXs();
