@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/02/03 21:49:07  dennis
+ * Added getDocumentationMethod() and java docs for getResult().
+ * (Joshua Olson)
+ *
  * Revision 1.6  2002/11/27 23:21:28  pfpeterson
  * standardized header
  *
@@ -63,12 +67,12 @@ import DataSetTools.parameter.*;
 import DataSetTools.writer.*;
 import DataSetTools.gsastools.*;
 import java.util.*;
-
+ 
 /**
- * This is an operator shell around the Save gsas File menu option in
- * ISAW.  The Title in Menu's that refers to this is <B>Save As
- * gsas</b>. The Command in Scripts used to refer to this operation is
- * <B>SaveGSAS</b>.
+ * This is an operator shell around a GsasWriter object and is invoked by 
+ * the Save gsas File menu option in ISAW.  The Title in Menu's that refers 
+ * to this is <B>Save As gsas</b>. The Command in Scripts used to refer to 
+ * this operation is <B>SaveGSAS</b>.
  */
 public class WriteGSAS extends GenericSave{
   public WriteGSAS(){
@@ -77,8 +81,11 @@ public class WriteGSAS extends GenericSave{
   }
 
   /** 
+   * @param MS A monitor data set
    * @param DS The data set that is to be saved in gsas format
-   * @param filename the name of the file where the data will be saved
+   * @param filename The name of the file where the data will be saved
+   * @param em Whether to export the monitor.
+   * @param sn Whether to sequentially number the banks.
    */
   public WriteGSAS( DataSet MS, DataSet DS, String filename, Boolean em,
                     Boolean sn ){
@@ -108,6 +115,36 @@ public class WriteGSAS extends GenericSave{
    */ 
   public String getCommand(){
     return "SaveGSAS";
+  }
+
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */                                                                 				         
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");                                                 
+    s.append("@overview This is an operator shell around a GsasWriter ");
+    s.append("object and is invoked by the Save gsas File menu option in ");
+    s.append("ISAW. \n This operator writes a DataSet to a file in GSAS ");
+    s.append("format. ");
+    s.append("@assumptions The given data set DS is not empty. \n");    
+    s.append("The specified filename either does not exist, ");
+    s.append("or it is acceptable to overwrite it.\n");                                                                 
+    s.append("@algorithm This operator simply saves a data set in GSAS ");
+    s.append("format.  An object of type GsasWriter is created, and it ");
+    s.append("is used to call the writeDataSets method.");
+    s.append("@param MS A monitor data set");
+    s.append("@param DS The data set that is to be saved in GSAS format");
+    s.append("@param filename The name of the file where the data ");
+    s.append("will be saved");
+    s.append("@param em Indicates whether or not to write the monitor ");
+    s.append("data to the file.");
+    s.append("@param sn Indicates whether or not to sequentially number ");
+    s.append("the banks.");    
+    s.append("@return Always returns the string 'Success'. ");
+    return s.toString();
   }
 
   /** 
