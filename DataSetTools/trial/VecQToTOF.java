@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/02/28 21:23:07  dennis
+ *  Made constructors public so this class can be used by more classes.
+ *  Further simplified calculation of transform from Q to Row, Col, TOF.
+ *
  *  Revision 1.13  2004/01/24 23:42:31  dennis
  *  Changed a few variable names to improve readability.
  *
@@ -175,7 +179,7 @@ public class VecQToTOF
    *  @param  ds   The DataSet from which the first area detector's DataGrid
    *               is used.
    */
-  VecQToTOF( DataSet ds )
+  public VecQToTOF( DataSet ds )
   {
     this( ds, 1 );
   }
@@ -196,7 +200,7 @@ public class VecQToTOF
    *                   the first, second, third, etc. area detector from the
    *                   DataSet is used.
    */
-  VecQToTOF( DataSet ds, int det_num )
+  public VecQToTOF( DataSet ds, int det_num )
   {
     if ( ds == null )
       throw new InstantiationError(
@@ -505,24 +509,36 @@ public class VecQToTOF
     Vector3D q_lab = new Vector3D();                 // q in lab coordinates
     goniometerR.apply_to( q_vec, q_lab );
 
-    Vector3D minus_unit_k = new Vector3D( unit_k );
-    minus_unit_k.multiply(-1);
-    float cos_phi = q_lab.dot( minus_unit_k ) / mag_q; 
-    if ( cos_phi <= 0 )                              // not a valid solution
-      return null;
-
-    float alpha   = mag_q/(2*cos_phi);
-
     if ( debug )
     {
       System.out.println("q_vec = " + q_vec );
       System.out.println("q_lab = " + q_lab );
     }
 
-    Vector3D k_prime = new Vector3D( unit_k );
-    k_prime.multiply(alpha);
-    k_prime.add( q_lab );
+    // The following simple calculation of k' from q is easily derived from 
+    // the vector equation: q = k'-k.  First, we assume that the 
+    // magnitudes of k and k' are equal, and that k is in the direction of
+    // the positive x axis.  It follows that the x component of q must be 
+    // negative for a valid solution to exist.  Rearranging the equation,
+    // we have k' = q + k.  Since k is in the positive x direction, k' matches
+    // q except for a change in the x component of q.  The vector diagram
+    // for q = k'-k forms an isoceles triangle, with two of the angles 
+    // being theta.  Drop a perpendicular from the vertex between k & k'
+    // to center of the side q.  Then clearly, ||k|| = ||q||/(2 cos(theta)).
+    // Also, cos(theta) = (q dot (-k)) /(||q|| ||k||), and since k is a multiple
+    // of the unit vector i in the x direction, this simplifies to 
+    // cos(theta) = -qx / ||q||.  Replacing cos(theta) by this expression 
+    // in the equation giving ||k|| in terms of ||q|| and simplifying yields
+    // ||k|| = - ||q||^2/(2 qx).  Since k' = q + k and k is in the positive
+    // x direction, we just need to add ||k|| to the x component of q to get k'
+    //
+    float q[] = q_lab.get();
+    if ( q[0] >= 0 )          // no solution, since q is in the wrong direction
+      return null;
 
+    float mag_k = -(mag_q * mag_q) / (2*q[0]);
+    Vector3D k_prime = new Vector3D( q[0] + mag_k, q[1], q[2] );
+    
     float t = det_center.dot(n)/k_prime.dot(n);
     if ( t <= 0 )                // no solution, since the beam missed the
       return null;               // detector plane
