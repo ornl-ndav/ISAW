@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2003/08/19 18:49:56  rmikk
+ * Arrays retain their initial values.
+ * An empty vector is returned instead of null
+ *
  * Revision 1.22  2003/08/16 02:09:54  bouzekc
  * Now properly adds PropertyChangeListeners which exist before the GUI is
  * created.
@@ -270,6 +274,8 @@ public abstract class VectorPG extends ParameterGUI
    * Gets the value of the Vector
    */
   public Object getValue(  ) {
+    if( value == null)  //The iss scripting system does not like null
+      return new Vector();//parameters yet
     return value;
   }
 
@@ -337,10 +343,11 @@ public abstract class VectorPG extends ParameterGUI
    * @param V The Vector to use when initializing this VectorPG.
    */
   public void initGUI( Vector V ) {
-    value   = ( V );
+    if( V != null) // Usually is null so use the previous value
+         setValue ( V );
     GUI     = new ArrayEntryJPanel( param );
     GUI.addPropertyChangeListener( this );
-    entrywidget = vectorButton;
+    entrywidget = vectorButton;    //vectorButton is null here??????
     GUI.setValue( value );
     vectorButton   = new JButton( param.getName(  ) );
     entrywidget    = new JPanel( new GridLayout(  ) );
