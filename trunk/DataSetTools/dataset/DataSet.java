@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2002/07/23 18:11:14  dennis
+ *  Added fields: pointed_at_x, selected_interval
+ *  Added methods: set/getSelectedInterval(), set/getPointedAtX()
+ *  and adjusted copy() and empty_clone() to preserve the
+ *  fields.
+ *
  *  Revision 1.29  2002/07/15 19:43:48  dennis
  *  1. Added convenience method setData_label(name) that calls
  *     setLabel(name) for each Data block in the DataSet.
@@ -233,8 +239,10 @@ public class DataSet implements IAttributeList,
 
   private long          ds_tag;
   private int           pointed_at_index;
-  private String        last_sort_attribute = "";
-  private boolean       xmlStandAlone = true; //XMLread
+  private float          pointed_at_x;
+  private ClosedInterval selected_interval;
+  private String         last_sort_attribute = "";
+  private boolean        xmlStandAlone = true; //XMLread
 
   /**
    * Constructs an empty data set with the specified title, initial log
@@ -271,6 +279,9 @@ public class DataSet implements IAttributeList,
     this.operators        = new Vector();
     this.observers        = new IObserverList();
     this.pointed_at_index = INVALID_INDEX;
+    this.pointed_at_x     = Float.NaN;
+    this.selected_interval = new ClosedInterval( Float.NEGATIVE_INFINITY,
+                                                 Float.POSITIVE_INFINITY );
     this.ds_tag           = current_ds_tag++;   // record tag and advance to 
                                                 // the next tag value. 
     setTitle( title );
@@ -610,6 +621,32 @@ public class DataSet implements IAttributeList,
 
 
   /**
+   *  Set the selected interval for this DataSet.
+   *
+   *  @param  interval  The ClosedInterval to record as the selected interval
+   *                    for this DataSet.
+   */
+  public void setSelectedInterval( ClosedInterval interval  )
+  {
+    selected_interval = interval;
+  }
+
+
+  /**
+   *  Get the selected interval for this DataSet.
+   *
+   *  @return  The ClosedInterval recorded as the selected interval
+   *           for this DataSet.  This will be the interval from
+   *           [-infinity,infinity] if a more restricted interval is not
+   *           specified.
+   */
+  public ClosedInterval getSelectedInterval()
+  {
+    return selected_interval;
+  }
+
+
+  /**
    *  Hide all selected Data objects, or all the un-selected Data objects in the
    *  DataSet.
    *
@@ -845,6 +882,32 @@ public class DataSet implements IAttributeList,
       pointed_at_index = INVALID_INDEX;
     
     return pointed_at_index;
+  }
+
+
+  /**
+   *  Specify the "x" value that is to be considered "pointed at"
+   *  temporarily by the user.
+   *
+   *  @param  x    The "x" value to record as "pointed at".  
+   */
+  public void setPointedAtX( float x )
+  {
+    pointed_at_x = x;
+  }
+
+  /**
+   *  Get the "x" value that is to be considered "pointed at"
+   *  temporarily by the user.
+   *
+   *  @return  The "x" value to record as "pointed at".  If this has NOT been
+   *           set to a valid value, it will return Float.NaN.  The value
+   *           returned may be greater than or less than any x-value in the
+   *           domain of the DataSet. 
+   */
+  public float getPointedAtX( )
+  {
+    return pointed_at_x;
   }
 
 
@@ -1633,6 +1696,8 @@ public class DataSet implements IAttributeList,
 
                                          // Note: we are NOT copying the ds_tag
     this.pointed_at_index    = ds.pointed_at_index;
+    this.pointed_at_x        = ds.pointed_at_x;
+    this.selected_interval   = ds.selected_interval;
     this.last_sort_attribute = ds.last_sort_attribute;
 
     this.setAttributeList( ds.getAttributeList() );
@@ -1712,6 +1777,8 @@ public class DataSet implements IAttributeList,
     new_ds.setAttributeList( attr_list );
 
     new_ds.pointed_at_index    = pointed_at_index;
+    this.pointed_at_x          = pointed_at_x;
+    this.selected_interval     = selected_interval;
     new_ds.last_sort_attribute = last_sort_attribute;
 
     return new_ds;
