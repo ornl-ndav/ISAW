@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/05/20 20:57:43  pfpeterson
+ * Fixed imports.
+ *
  * Revision 1.6  2003/05/20 20:49:58  dennis
  * Now constructs a new parameters vector in setDefaultParameters.
  * (Ruth Mikkelson)
@@ -56,6 +59,7 @@
 package Wizard;
 
 import java.io.*;
+import java.util.Vector;
 import DataSetTools.wizard.*;
 import DataSetTools.parameter.*;
 import DataSetTools.util.ErrorString;
