@@ -199,7 +199,7 @@ public class CommandPane  extends JPanel
         //System.setProperty("DataDirectory" , "C:\\Ruth\\ISAW\\SampleRuns\\");
          //System.setProperty("DefaultInstrument" , "hrcs");
      
-       FilePath = System.getProperty("Scriptpath");
+       FilePath = System.getProperty("Script_Path");
         if( Debug )System.out.println( "FilePath is "+FilePath);
        
             FilePath = DataSetTools.util.StringUtil.fixSeparator(FilePath);
@@ -262,7 +262,7 @@ public class CommandPane  extends JPanel
            Immediate.addKeyListener( new MyKeyListener(this)) ;        
 	 
            JSplitPane JPS = new JSplitPane(JSplitPane.VERTICAL_SPLIT) ; 
-           JPS.setResizeWeight( .8);
+           //JPS.setResizeWeight( .8);
            JScrollPane X =  new JScrollPane( Commands ) ; 
            X.setBorder( new TitledBorder( "Prgm Editor" ) ) ; 
           
@@ -398,6 +398,7 @@ public class CommandPane  extends JPanel
      
      Vector vnames = new Vector();
      if( Args != null)
+     ExecLine.initt();
      for( i = 0 ; i < Args.length ; i++)
        {  if( Args[i].getValue() instanceof DataSet)
             { DataSet ds = (DataSet)(Args[i].getValue());
@@ -423,12 +424,16 @@ public class CommandPane  extends JPanel
             }
 
        }
+    
      int k = executeBlock( MacroDocument ,2 ,true ) ;
   
      for(i = 0 ; i < (vnames.size()/2) ; i++)
       {DataSet ds =(DataSet)(vnames.get( 2*i + 1));
        ds.setTitle( vnames.get( 2*i ).toString() );
       }
+    seterror( ExecLine.getErrorCharPos(), ExecLine.getErrorMessage());
+    if( (perror >= 0) && (lerror <  0 ))
+        lerror = k;
     }
    private int executeBlock ( Document Doc , int start ,  boolean exec )
      { int line ; 
@@ -436,7 +441,8 @@ public class CommandPane  extends JPanel
       if( Doc == null)
          { seterror (0 , "No Document");
            if( Debug)System.out.println("NO DOCUMENT");
-            return -1;
+           lerror = 0;
+            return 0 ;
          }
        Element  E = Doc.getDefaultRootElement(),
 	        F ;                 
@@ -1253,6 +1259,10 @@ public class CommandPane  extends JPanel
        int j , k;
        for( i = 0 ; i< E.getElementCount(); i++)
          {Line = getLine( MacroDocument , 2+i);
+         if( Debug)
+            System.out.print("Line="+Line);
+          if(Line == null )
+            return V;
           start = Line.indexOf("#$$")+3;
           if( start < 3)
             return V;
@@ -1278,21 +1288,22 @@ public class CommandPane  extends JPanel
             Message = "";
           if(Debug)
             System.out.println("in line start end="+ start + ","+DT+","+Message);
-          if( (DT .equals( "Int") ) || ( DT.equals( "INTEGER")))
+          DT = DT.toUpperCase();
+          if( (DT .equals( "INT") ) || ( DT.equals( "INTEGER")))
              V.add( new JIntegerParameterGUI( new Parameter ( Message , new Integer (0)) ) );
-          else if ( DT.equals( "Float"))
+          else if ( DT.equals( "FLOAT"))
              V.add( new JFloatParameterGUI(  new Parameter ( Message , new Float (0.0)) ) ); 
-          else if( DT.equals( "String"))
+          else if( DT.equals( "STRING"))
              V.add( new JStringParameterGUI( new Parameter ( Message , "" ) ) );
-          else if( DT.equals("DataDirectoryString"))
-             { String DirPath = System.getProperty("DataDirectory");
+          else if( DT.equals("DataDirectoryString".toUpperCase()))
+             { String DirPath = System.getProperty("Data_Directory");
                if( DirPath != null )
                    DirPath = DataSetTools.util.StringUtil.fixSeparator( DirPath+"\\");
                else
                    DirPath = "";
                V.add( new JStringParameterGUI( new Parameter( Message, DirPath)));
               }
-          else if (DT.equals( "DSFieldString"))
+          else if (DT.equals( "DSFieldString".toUpperCase()))
             {String Fields[] = {"Title","X_label", "X_units", "PointedAtIndex","SelectFlagOn",
                        "SelectFlagOff","SelectFlag","Y_label","Y_units", "MaxGroupID",
                         "MaxXSteps","MostRecentlySelectedIndex", "NumSelected" , "XRange",
@@ -1307,20 +1318,20 @@ public class CommandPane  extends JPanel
             
              V.add( new JAttributeNameParameterGUI( new Parameter( Message ,"" ) , A));
             }
-          else if( DT.equals( "InstrumentNameString"))
-            {String XX = System.getProperty("DefaultInstrument");
+          else if( DT.equals( "InstrumentNameString".toUpperCase()))
+            {String XX = System.getProperty("Default_Instrument");
              if( XX == null )
                XX = "";
              V.add( new JStringParameterGUI( new Parameter( Message, XX )));
             }
-          else if ( DT.equals( "DataSet") )
+          else if ( DT.equals( "DataSet".toUpperCase()) )
            {System.out.println( "Argument is a data set");
 	   DataSet DS[] = ExecLine.getGlobalDataset();
-            DataSet dd = new DataSet("DataSet=", null);
+            DataSet dd = new DataSet("DataSet=","");
             Parameter PP = new Parameter( Message , dd);
             JlocDataSetParameterGUI JJ = new JlocDataSetParameterGUI( PP , DS);
             V.add(JJ);
-           
+            
             if(Debug)
               {System.out.print("DS"+JJ.getClass()+","); 
                System.out.print( JJ.getParameter()+",");
@@ -1504,9 +1515,9 @@ public class CommandPane  extends JPanel
          for( int i = 0 ; i < V1.size() ; i++)
            System.out.println( "par i ="+V1.get(i));
     if( V1 == null)
-      return null;
-    if( V1.size() <1)
-      return null;
+      return new Parameter[0];
+    if( V1.size() <2)
+      return new Parameter[0];
     Vector V = new Vector();
     V.add( V1.get(0)); 
     for( int i = 2; i < V1.size(); i+=2)
@@ -1686,17 +1697,24 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
   {public void actionPerformed( ActionEvent e )
     {Document doc ; 
      if( e.getSource().equals( Run ) ) 
-       {//MacroDocument = Commands.getDocument();
-        //Parameter P[] = GUIgetParameters();
-        //MacroDocument = null;
-        
-        doc = Commands.getDocument() ; 	
+       {doc = Commands.getDocument() ;
+        MacroDocument = doc;
+        Parameter P[] = GUIgetParameters();
+        if( P == null ) 
+          return;
         StatusLine.setText( "" ) ; 
         perror = -1 ; 
         ExecLine.resetError() ; 
-        execute( doc ) ; 
-	
-       if( perror >= 0 )
+        ExecLine.initt();
+       
+        if( P.length > 0 )
+          { execute( P ) ;
+          }
+        else
+         {  execute( doc ) ; 
+          }
+	MacroDocument = null;
+        if( perror >= 0 )
           {  new Util().appendDoc(StatusLine.getDocument(), "Status: Error " +  serror + " on line " + lerror + " character" + perror ) ; 
              Element E = doc.getDefaultRootElement();
              if( lerror >= E.getElementCount()) 
@@ -1970,22 +1988,41 @@ private int findQuote(String S, int dir ,int start, String SrchChars,String brcp
 //*****************SECTION:MAIN********************
 public static void  main( String args[] )
     { 
+    java.util.Properties isawProp;
+     isawProp = new java.util.Properties(System.getProperties());
+   String path = System.getProperty("user.home")+"\\";
+       path = StringUtil.fixSeparator(path);
+       try {
+	    FileInputStream input = new FileInputStream(path + "props.dat" );
+          isawProp.load( input );
+	   // Script_Path = isawProp.getProperty("Script_Path");
+         // Data_Directory = isawProp.getProperty("Data_Directory");
+          //Default_Instrument = isawProp.getProperty("Default_Instrument");
+	    //Instrument_Macro_Path = isawProp.getProperty("Instrument_Macro_Path");
+	    //User_Macro_Path = isawProp.getProperty("User_Macro_Path");
+          System.setProperties(isawProp);  
+          System.getProperties().list(System.out);
+          input.close();
+       }
+       catch (IOException ex) {
+          System.out.println("Properties file could not be loaded due to error :" +ex);
+       }
+      JFrame F ;  
+      CommandPane P; 
+      F = new JFrame( "Test" ); 
+     
 
-  JFrame F ;  CommandPane P ; 
-    F = new JFrame( "Test" ) ; 
-    
-
- P = new CommandPane() ; 
- Dimension D = P.getToolkit().getScreenSize();
-    F.setSize((int)(.8* D.width) , (int)(.8*D.height) ) ; 
-   F.show() ;  
-    F.getContentPane().add( P ) ; 
+     P = new CommandPane(); 
+     Dimension D = P.getToolkit().getScreenSize();
+     F.setSize((int)(.6* D.width) , (int)(.7*D.height) ); 
+     F.show() ;  
+     F.getContentPane().add( P ); 
    
-     F.validate() ; 
+     F.validate(); 
      
      
      
-    char c ; 
+     
 
     }
 
