@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/04/08 15:18:09  dennis
+ * Now uses "new" DataSetPGs consistently and calls clear() after getting the
+ * value from the DataSetPG, to avoid memory leaks.
+ * Replaced all parameters with new ParameterGUI's for consistency.
+ *
  * Revision 1.6  2004/03/15 19:33:54  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -91,12 +96,11 @@ public class Print3Col1D extends GenericTOF_SAD{
                float DelayedNeutron){
       this();
       parameters = new Vector();
-      parameters.add(  new DataSetPG( "DataSet",DS));
+      parameters.add( new DataSetPG( "DataSet",DS));
       parameters.add( new SaveFilePG( "Save File", filename));
       parameters.add( new ChoiceListPG("File Type", fileType));
       parameters.add( new FloatPG("Delayed Neutron Fraction",
                         new Float(DelayedNeutron)));
-
    }
   
    /**
@@ -104,11 +108,11 @@ public class Print3Col1D extends GenericTOF_SAD{
    */
    public void setDefaultParameters(){
       parameters = new Vector();
-      parameters.add(  new DataSetPG( "DataSet",null));
+      parameters.add( new DataSetPG( "DataSet",null));
       parameters.add( new SaveFilePG( "Save File", null));
       ChoiceListPG list= new ChoiceListPG("File Type", Print3Col1D.EFFICIENCY);
       list.addItem( Print3Col1D.REDUCE);
-       parameters.add( list);
+      parameters.add( list);
       parameters.add( new FloatPG("Delayed Neutron Fraction",new Float(.0011)));
    }
 
@@ -119,7 +123,9 @@ public class Print3Col1D extends GenericTOF_SAD{
    */
    public Object getResult(){
      DataSet DS = (DataSet)(getParameter(0).getValue());
-     String filename =   getParameter(1).getValue().toString();
+     ((DataSetPG)getParameter(0)).clear();
+
+     String filename = getParameter(1).getValue().toString();
      String fileType = getParameter(2).getValue().toString().trim();
 
      float DelayNeutron = ((Float)(getParameter(3).getValue())).floatValue();
@@ -160,7 +166,6 @@ public class Print3Col1D extends GenericTOF_SAD{
         V.addElement( N);
         Format = "I5";
         
-        
      }else{
          V.addElement( "'B'  0.0  0.0");
          Format = "S13";
@@ -173,8 +178,7 @@ public class Print3Col1D extends GenericTOF_SAD{
 
   private ErrorString WriteTailer( String filename, DataSet DS, String fileType,
                   float DelayNeutron){
-    int[] RunNums = (int[])(DS.getData_entry(0).getAttributeValue(Attribute.RUN_NUM))
-;
+    int[] RunNums = (int[])(DS.getData_entry(0).getAttributeValue(Attribute.RUN_NUM));
     Vector V = new Vector();
     Object Res=null;
     String Format= null;
@@ -211,8 +215,8 @@ public class Print3Col1D extends GenericTOF_SAD{
     if( Res instanceof ErrorString)
       return (ErrorString)Res;
     return null;
-
   }
+
   private String setFormat( String fileType){
      if( fileType.equals( Print3Col1D.EFFICIENCY)){
         return "F11.5,F15.5,F15.5,/";
@@ -220,7 +224,8 @@ public class Print3Col1D extends GenericTOF_SAD{
        return "F10.5,E18.5,E18.5,/";
      }
   }
-  float FindMax( float[]list){
+
+  private float FindMax( float[]list){
     if( list == null)
       return Float.NaN;
     if( list.length <1)
@@ -261,9 +266,9 @@ public class Print3Col1D extends GenericTOF_SAD{
     Res.append("@error -  Error Messages from the underlying write routines");
   
     return Res.toString();
-
-
  }
+
+
  /**
  *  Test program for this module
  *  Args[0] name of a file storing a desired DataSet
@@ -291,8 +296,6 @@ public class Print3Col1D extends GenericTOF_SAD{
    }
    System.out.println( "Operator Result="+
      (new Print3Col1D(  DS[0],"xxx.dat", fileType, DelayNeutron)).getResult());
-
  }//main
 
 }
-

@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/04/08 15:18:09  dennis
+ * Now uses "new" DataSetPGs consistently and calls clear() after getting the
+ * value from the DataSetPG, to avoid memory leaks.
+ * Replaced all parameters with new ParameterGUI's for consistency.
+ *
  * Revision 1.5  2004/03/15 06:10:50  dennis
  * Removed unused import statements.
  *
@@ -103,6 +108,8 @@ public class Print4Col2D1Chan extends GenericTOF_SAD{
    */
    public Object getResult(){
       DataSet DS = (DataSet)(getParameter(0).getValue());
+      ((DataSetPG)getParameter(0)).clear();
+
       String filename = getParameter(1).getValue().toString();
 
       PixelInfoList ipxlist = (PixelInfoList)
@@ -145,12 +152,12 @@ public class Print4Col2D1Chan extends GenericTOF_SAD{
               buff.setLength(0);
            }
         }
-      fout.write( buff.toString().getBytes());
-      
+       fout.write( buff.toString().getBytes());
        fout.close();
       }catch( Exception sss){}
       return null;
     }
+
    /**
    *    Shows how to invoke this from the command line.  This message is
    *    displayed when an improper number of arguments are given on the
@@ -204,7 +211,6 @@ public class Print4Col2D1Chan extends GenericTOF_SAD{
     Res.append("@error -  Other java.io errors in file writing/closing");
   
     return Res.toString();
-
-
   }
+
 }//class Print4Col2D1Chan
