@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/01/24 23:21:15  bouzekc
+ * Removed instance of BrowserControl and called displayURL() in a static way.
+ *
  * Revision 1.2  2003/02/19 17:17:38  rmikk
  * Changed file:/// to file:// so applet is found under linux
  *
@@ -75,8 +78,7 @@ public class SiteHelp  extends JMenuItem
          if( S.startsWith("file:///"))
             S = "file://"+S.substring(8);
          
-         BrowserControl bc = new BrowserControl();
-         bc.displayURL( S);
+         BrowserControl.displayURL( S);
         }
      }
 
