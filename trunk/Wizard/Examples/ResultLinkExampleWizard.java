@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/06/26 18:18:44  bouzekc
+ * Reformatted and removed some extraneous imports.
+ *
  * Revision 1.1  2003/06/26 18:06:02  bouzekc
  * Added to CVS.
  *
@@ -42,9 +45,9 @@ import DataSetTools.parameter.IParameterGUI;
 
 import DataSetTools.wizard.*;
 
-import java.util.Vector;
-
 import Operators.TOF_SCD.*;
+
+import java.util.Vector;
 
 
 /**
@@ -74,14 +77,17 @@ public class ResultLinkExampleWizard extends Wizard {
   public ResultLinkExampleWizard( boolean standalone ) {
     super( "Example Wizard for linking OperatorForm Parameters", standalone );
     this.createAllForms(  );
-    StringBuffer s = new StringBuffer();
-    s.append("This class has a main program that constructs a Wizard to show\n");
-    s.append("how OperatorForms can have their result parameters linked\n");
-    s.append("together.  As of 06/25/2003, it is not especially useful\n");
-    s.append("for actual data reduction work, although if you just wanted\n");
-    s.append("to run BlindJ and LsqrsJ, you could.  It does, however,\n");
-    s.append("need a peaks file to work with.\n");
-    this.setHelpMessage(s.toString());
+
+    StringBuffer s = new StringBuffer(  );
+
+    s.append( 
+      "This class has a main program that constructs a Wizard to show\n" );
+    s.append( "how OperatorForms can have their result parameters linked\n" );
+    s.append( "together.  As of 06/25/2003, it is not especially useful\n" );
+    s.append( "for actual data reduction work, although if you just wanted\n" );
+    s.append( "to run BlindJ and LsqrsJ, you could.  It does, however,\n" );
+    s.append( "need a peaks file to work with.\n" );
+    this.setHelpMessage( s.toString(  ) );
   }
 
   /**
@@ -92,13 +98,15 @@ public class ResultLinkExampleWizard extends Wizard {
     //here is where we link all of our parameters.  Parameter 3 of BlindJ is
     //the matrix file, as is parameter 4 of LsqrsJ.  In addition, the peaks
     //file that they both need is parameter 0 for both Operators.
-    int[][] fpi = {{ 0,0 },
-                   { 3, 4}};
+    int[][] fpi = {
+      { 0, 0 },
+      { 3, 4 }
+    };
 
     //BlindJ puts out a matrix file.  We will link it to LsqrsJ's matrix file
     //parameter
-    OperatorForm blind = new OperatorForm( new BlindJ()  );
-    OperatorForm lsqrs = new OperatorForm( new LsqrsJ()  );
+    OperatorForm blind = new OperatorForm( new BlindJ(  ) );
+    OperatorForm lsqrs = new OperatorForm( new LsqrsJ(  ) );
 
     this.addForm( blind );
     this.addForm( lsqrs );
@@ -110,7 +118,7 @@ public class ResultLinkExampleWizard extends Wizard {
     //parameters.  Note that anytime we link parameters they share:
     //1. Names
     //2. Types
-    blind.getParameter(3).setName(lsqrs.getParameter(4).getName());
+    blind.getParameter( 3 ).setName( lsqrs.getParameter( 4 ).getName(  ) );
 
     //use Form's method to actually link the parameters
     super.linkFormParameters( fpi );
