@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2003/06/26 22:23:20  bouzekc
+ * Added code to reject peaks based on peak intensity
+ * threshold and detector geometry.
+ *
  * Revision 1.14  2003/06/26 17:01:57  bouzekc
  * Changed "Channels to keep" to "Pixel Rows and Columns to
  * Keep".  Added a "NOT IMPLEMENTED" to parameter names for
@@ -130,35 +134,34 @@ public class LsqrsJ extends GenericTOF_SCD {
 
     lfpg.setFilter( new PeaksFilter(  ) );
 
-    //1
+    //0
     addParameter( lfpg );
 
-    //2
+    //1
     addParameter( 
       new IntArrayPG( "Restrict Run Numbers (blank for all)", null ) );
 
-    //3
+    //2
     addParameter( 
       new IntArrayPG( "Restrict Sequence Numbers (blank for all)", null ) );
 
-    //4
+    //3
     addParameter( new StringPG( "Transform Matrix", identmat ) );
 
     SaveFilePG sfpg = new SaveFilePG( "Matrix file to write to", null );
 
     sfpg.setFilter( new MatrixFilter(  ) );
 
-    //5
+    //4
     addParameter( sfpg );
+
+    //5
+    addParameter( 
+      new IntegerPG( "Minimum Peak Intensity Threshold", 0, false ) );
 
     //6
     addParameter( 
-      new IntegerPG( "Minimum Peak Threshold: NOT IMPLEMENTED", 0, false ) );
-
-    //7
-    addParameter( 
-      new IntArrayPG( 
-        "Pixel Rows and Columns to Keep: NOT IMPLEMENTED", "1:100", false ) );
+      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );
   }
 
   /**
@@ -197,6 +200,9 @@ public class LsqrsJ extends GenericTOF_SCD {
     sb.append( "@param restrictSeq The sequence numbers to restrict. " );
     sb.append( "@param xFormMat The transformation matrix to use. " );
     sb.append( "@param matFile The matrix to write to. " );
+    sb.append( "@param minThresh The minimum peak intensity threshold to " );
+    sb.append( "use." );
+    sb.append( "@param keepPixels The detector pixel range to keep." );
 
     // return
     sb.append( "@return If successful, returns the name of the matrix file " );
@@ -227,7 +233,14 @@ public class LsqrsJ extends GenericTOF_SCD {
     String peaksfile = getParameter( 0 ).getValue(  ).toString(  );
     int[] run_nums   = ( ( IntArrayPG )getParameter( 1 ) ).getArrayValue(  );
     int[] seq_nums   = ( ( IntArrayPG )getParameter( 2 ) ).getArrayValue(  );
+    int threshold    = ( ( IntegerPG )getParameter( 5 ) ).getintValue(  );
+    int[] keepRange  = ( ( IntArrayPG )getParameter( 6 ) ).getArrayValue(  );
     float[][] matrix = null;
+
+    int lowerLimit = keepRange[0];  //lower limit of range
+
+    //upper limit of range
+    int upperLimit = keepRange[keepRange.length - 1];
 
     {
       IParameter iparm = getParameter( 3 );
@@ -355,6 +368,34 @@ public class LsqrsJ extends GenericTOF_SCD {
         peak = ( Peak )peaks.elementAt( i );
 
         if( binsearch( run_nums, peak.nrun(  ) ) == -1 ) {
+          peaks.remove( i );
+        }
+      }
+    }
+
+    // trim out small peaks (defined by the threshold parameter)
+    //
+    if( threshold >= 0 ) {
+      for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
+        peak = ( Peak )peaks.elementAt( i );
+
+        if( peak.ipkobs(  ) < threshold ) {
+          peaks.remove( i );
+        }
+      }
+    }
+
+    // trim out edge peaks (defined by the "pixels to keep" parameter)
+    if( threshold >= 0 ) {
+      for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
+        peak = ( Peak )peaks.elementAt( i );
+
+        //see if the peak pixels are within the user defined array.  We are
+        //assuming a SQUARE detector, so we'll reject it if the x or y position
+        //is not within our range
+        if( 
+          ( peak.x(  ) > upperLimit ) || ( peak.x(  ) < lowerLimit ) ||
+            ( peak.y(  ) > upperLimit ) || ( peak.y(  ) < lowerLimit ) ) {
           peaks.remove( i );
         }
       }
