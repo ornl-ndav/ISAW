@@ -29,6 +29,11 @@
  *
  *
  * $Log$
+ * Revision 1.32  2003/11/11 20:44:30  bouzekc
+ * Fixed bug that resulted from the transition to a specific result parameter.
+ * The parameters should now be able to have listeners added and values
+ * changed programmatically.
+ *
  * Revision 1.31  2003/11/05 02:10:31  bouzekc
  * Removed references to result_param, as it is now a protected Form instance
  * variable.  Removed dependence on ParameterClassList.  Changed constructor
@@ -226,6 +231,7 @@ public class OperatorForm extends Form implements HiddenOperator {
 
     //acquire the number of internal operator parameters
     int numOpParams;
+
     numOpParams = form_op.getNum_parameters(  );
 
     //set the variable parameters length and indices
@@ -285,18 +291,12 @@ public class OperatorForm extends Form implements HiddenOperator {
       }
     }
 
-    //reference all of the internal Operator parameters to this Operator's
-    //parameters and add the result parameter
-    clearParametersVector(  );
-
-    for( int pNum = 0; pNum < numOpParams; pNum++ ) {
-      addParameter( form_op.getParameter( pNum ) );
-    }
-
     //draw all of the internal Operator parameters and our result parameter
     for( int i = 0; i < getNum_parameters(  ); i++ ) {
       ( ( IParameterGUI )this.getParameter( i ) ).setDrawValid( true );
     }
+
+    result_param.setDrawValid( true );
 
     /*set the parameter types so we can build the GUI
        the result parameter is one after the last variable parameter
@@ -317,6 +317,55 @@ public class OperatorForm extends Form implements HiddenOperator {
       return form_op.getDocumentation(  );
     } else {
       return Operator.DEFAULT_DOCS;
+    }
+  }
+
+  /**
+   * @return The number of parameters that the internal Operator has.
+   */
+  public int getNum_parameters(  ) {
+    if( form_op != null ) {
+      return form_op.getNum_parameters(  );
+    } else {
+      return 0;
+    }
+  }
+
+  /**
+   * Sets the specified parameter for the internal Operator.
+   *
+   * @param param The new parameter.  This must be of the same type as the old
+   *        one.
+   * @param index The index of the parameter to set.
+   *
+   * @return true if the "set" was successful, false otherwise.
+   */
+  public boolean setParameter( IParameter param, int index ) {
+    if( form_op != null ) {
+      return form_op.setParameter( param, index );
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Accessor method for the specified parameter.   Note that specifying one
+   * more than the number of parameters will give the result parameter.  This
+   * is a fail-safe.
+   *
+   * @param index The index of the parameter to retrieve.
+   *
+   * @return The specified IParameter.
+   */
+  public IParameter getParameter( int index ) {
+    if( form_op == null ) {
+      return null;
+    }
+
+    if( index >= form_op.getNum_parameters(  ) ) {
+      return result_param;
+    } else {
+      return form_op.getParameter( index );
     }
   }
 
@@ -346,8 +395,7 @@ public class OperatorForm extends Form implements HiddenOperator {
     //set the value for the internal Operator's parameters to the values that
     //we currently have for this OperatorForm.
     for( int pNum = 0; pNum < getNum_parameters(  ); pNum++ ) {
-      form_op.getParameter( pNum )
-             .setValue( getParameter( pNum ).getValue(  ) );
+      form_op.getParameter( pNum ).setValue( getParameter( pNum ).getValue(  ) );
     }
 
     Object result = form_op.getResult(  );
@@ -358,6 +406,7 @@ public class OperatorForm extends Form implements HiddenOperator {
 
       return errorOut( result.toString(  ) );
     }
+
     result_param.setValue( result );
     result_param.validateSelf(  );
 
