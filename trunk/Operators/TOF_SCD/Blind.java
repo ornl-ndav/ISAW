@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/10/23 19:05:51  pfpeterson
+ *  Changed to use IParameterGUI.
+ *
  *  Revision 1.6  2002/10/14 16:49:46  pfpeterson
  *  Added some more comments, made ErrorStrings slightly more useful,
  *  and hardwired that the output file will be 'blind.mat'.
@@ -62,6 +65,7 @@ import  java.util.Vector;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.Generic.TOF_SCD.*;
+import  DataSetTools.parameter.*;
 
 /**
  * This operator is intended to run A.J. Schultz's "blind"
@@ -88,8 +92,8 @@ public class Blind extends    GenericTOF_SCD {
         this();
         
         parameters=new Vector();
-        addParameter(new Parameter("Peaks File",file));
-        addParameter(new Parameter("Sequence Numbers",seq_nums));
+        getParameter(0).setValue(file.toString());
+        getParameter(1).setValue(seq_nums.toString());
     }
 
     
@@ -102,8 +106,10 @@ public class Blind extends    GenericTOF_SCD {
                                     // parameters
 
         parameters=new Vector();
-        addParameter( new Parameter("Peaks File",new LoadFileString("")) );
-        addParameter( new Parameter("Sequence Numbers",new IntListString("")) );
+        LoadFilePG lfpg=new LoadFilePG("Peaks File",null);
+        lfpg.setFilter(new PeaksFilter());
+        addParameter(lfpg);
+        addParameter( new IntArrayPG("Sequence Numbers",null));
     }
     
     /* --------------------------- getCommand ------------------------------ */
