@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/04/27 21:51:38  dennis
+ * The Efficiency, sample and background transmission DataSets
+ * are now interpolated to cover the needed range of wavelengths.
+ *
  * Revision 1.1  2004/04/27 15:27:29  dennis
  * Initial version of Reduce_LPSD, adapted from Reduce_KCL.
  *
@@ -216,6 +220,16 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
         float qu[] = new float[ Qu.size() ];
         for( int i = 0; i < Qu.size(); i++)
           qu[i] = ((Number)Qu.elementAt(i)).floatValue();
+
+        System.out.println("TransS info: ------------------------------------ ");
+        System.out.println(" XScale = " + TransS.getData_entry(0).getX_scale() );
+        System.out.println(" Ngroup = " + TransS.getNum_entries() );
+        System.out.println("TransB info: ------------------------------------ ");
+        System.out.println(" XScale = " + TransB.getData_entry(0).getX_scale() );
+        System.out.println(" Ngroup = " + TransB.getNum_entries() );
+        System.out.println("Eff info: ------------------------------------ ");
+        System.out.println(" XScale = " + Eff.getData_entry(0).getX_scale() );
+        System.out.println(" Ngroup = " + Eff.getNum_entries() );
         
         int MonitorInd[] = CalcTransmission.setMonitorInd( RUNSds0 );
 
@@ -265,7 +279,8 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
           arrayUtil.Reverse(tofs);
 
         XScale xscl = new VariableXScale( tofs );
-        
+        System.out.println(" ReBinning to XScale " + xscl );
+
         SAD_Util.ConvertToWL( RUNSds[0], xscl, true );   // monitor
         SAD_Util.ConvertToWL( RUNSds[1], xscl, false );  // sample
 
@@ -277,6 +292,10 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
       
         int sensIndex[] = SAD_Util.BuildIndexOfID_Table( Sens );
         int cadIndex[]  = SAD_Util.BuildIndexOfID_Table( RUNCds[1] );
+
+        Eff    = SAD_Util.InterpolateDataSet( Eff,    xscl );
+        TransS = SAD_Util.InterpolateDataSet( TransS, xscl );
+        TransB = SAD_Util.InterpolateDataSet( TransB, xscl );
 
         SAD_Util.CalcRatios( RUNSds, RUNCds, cadIndex, TransS, true, 
                              Eff, Sens, sensIndex, MonitorInd, SCALE );
@@ -321,7 +340,7 @@ public class Reduce_LPSD  extends GenericTOF_SAD{
 
         return V;
     }
-     
+
 
   /* ----------------------------- Main ---------------------------------- */
     /**
