@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/05/28 18:58:20  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.4  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -86,13 +89,13 @@ public class RemoteMenuHandler implements ActionListener
          boolean done=false;
          int i=1;
           while( !done)
-	    { ServerName = System.getProperty( serverBase+ "FileServer"+
+	    { ServerName = SharedData.getProperty( serverBase+ "FileServer"+
                                   i+"_Name");
               
 	      if( ServerName == null )
                  done = true;
               else if( Action.equals( ServerName ))
-                { ServerPath = System.getProperty(
+                { ServerPath = SharedData.getProperty(
                      serverBase + "FileServer"+i+"_Path");
                   if( ServerPath == null)
                      done = true;
@@ -109,7 +112,7 @@ public class RemoteMenuHandler implements ActionListener
                    if( k >= 0)
                     ServerPath= ServerPath.substring( 0, k );
                   
-                   String userName = System.getProperty( "user.name" );
+                   String userName = SharedData.getProperty( "user.name" );
                    Operator op = new LoadRemoteData( ServerPath, port,
                          userName,"IPNS","",
                        new ServerTypeString(ServerType ));

@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/05/28 18:58:20  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.6  2003/01/27 14:58:38  rmikk
  * Changed so that only the http: protocol changes the "m"
  *    in the extension to %06D
@@ -44,7 +47,10 @@
  */
 
 package IsawGUI;
+
+import DataSetTools.util.SharedData;
 import java.io.*;
+
 public class BrowserControl
 {
   public static final boolean DEBUG=false;
@@ -134,7 +140,7 @@ or
      */
     public static boolean isWindowsPlatform()
     {
-        String os = System.getProperty("os.name");
+        String os = SharedData.getProperty("os.name");
 
         if ( os != null && os.startsWith(WIN_ID))
             return true;
