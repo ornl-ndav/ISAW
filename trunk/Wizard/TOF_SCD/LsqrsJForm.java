@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.16  2003/06/26 22:25:25  bouzekc
+ * Added code to deal with the threshold and pixel range
+ * parameters and send them to LsqrsJ.
+ *
  * Revision 1.15  2003/06/26 16:43:28  bouzekc
  * Now always uses identity matrix for calculations, per
  * A.J.Schultz's request.
@@ -187,20 +191,19 @@ public class LsqrsJForm extends Form {
     //4
     addParameter( new ArrayPG( "Matrix Files", new Vector(  ), false ) );
 
-    //---------------------------------
-    //parameters below are unused until LsqrsJ can use them.
-    //---------------------------------
     //5
-    addParameter( new IntegerPG( "Minimum Peak Threshold", 0, false ) );
+    addParameter( 
+      new IntegerPG( "Minimum Peak Intensity Threshold", 0, false ) );
 
     //6
     addParameter( 
-      new IntArrayPG( "Pixel Rows and Columns to Keep", "1:100", false ) );
+      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );
 
     if( HAS_CONSTANTS ) {
-      setParamTypes( new int[]{ 0, 1, 2 }, new int[]{ 3 }, new int[]{ 4 } );
+      setParamTypes( 
+        new int[]{ 0, 1, 2 }, new int[]{ 3, 5, 6 }, new int[]{ 4 } );
     } else {  //standalone or first time form
-      setParamTypes( null, new int[]{ 0, 1, 2, 3 }, new int[]{ 4 } );
+      setParamTypes( null, new int[]{ 0, 1, 2, 3, 5, 6 }, new int[]{ 4 } );
     }
   }
 
@@ -244,10 +247,9 @@ public class LsqrsJForm extends Form {
     s.append( "@param expName The experiment name.\n" );
     s.append( "@param restrictSeq The sequence numbers to restrict.\n" );
     s.append( "@param matrixFiles The Vector of LsqrsJ output matrix files.\n" );
-    s.append( "@param minThresh The minimum peak threshold to use - NOT " );
-    s.append( "IMPLEMENTED YET.\n" );
-    s.append( "@param keepChannels The channel range to keep - NOT " );
-    s.append( "IMPLEMENTED YET.\n" );
+    s.append( "@param minThresh The minimum peak intensity threshold to " );
+    s.append( "use.\n" );
+    s.append( "@param keepPixels The detector pixel range to keep.\n" );
     s.append( "@return A Boolean indicating success or failure of the Form's " );
     s.append( "execution.\n" );
     s.append( "@error Invalid peaks path.\n" );
@@ -282,10 +284,12 @@ public class LsqrsJForm extends Form {
     String restrictSeq;
     String matFileName;
     String expName;
+    String range;
     String peaksName;
     Vector matNamesVec  = new Vector( 20, 4 );
     Object obj;
     int[] runsArray;
+    Integer threshold;
     LsqrsJ leastSquares;
 
     //gets the run numbers
@@ -305,6 +309,14 @@ public class LsqrsJForm extends Form {
     param         = ( IParameterGUI )getParameter( 3 );
     restrictSeq   = param.getValue(  ).toString(  );
 
+    //get the peak intensity threshold
+    param       = ( IParameterGUI )getParameter( 5 );
+    threshold   = ( Integer )( param.getValue(  ) );
+
+    //get the detector border range - leave in string form for LsqrsJ
+    param   = ( IParameterGUI )getParameter( 6 );
+    range   = ( ( IntArrayPG )param ).getStringValue(  );
+
     //peaks file
     peaksName   = peaksDir + expName + ".peaks";
 
@@ -313,6 +325,8 @@ public class LsqrsJForm extends Form {
     leastSquares.getParameter( 0 ).setValue( peaksName );
     leastSquares.getParameter( 2 ).setValue( restrictSeq );
     leastSquares.getParameter( 3 ).setValue( identmat );
+    leastSquares.getParameter( 5 ).setValue( threshold );
+    leastSquares.getParameter( 6 ).setValue( range );
 
     //validate the parameters and init the progress bar variables
     Object superRes = super.getResult(  );
