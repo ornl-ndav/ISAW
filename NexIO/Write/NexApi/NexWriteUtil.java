@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2004/03/11 19:46:35  bouzekc
+ * Removed java.lang import as this is included by default.
+ *
  * Revision 1.6  2003/11/24 14:22:14  rmikk
  * Implemented the setNodeName and getNodeName methods
  *
@@ -46,7 +49,6 @@ package NexIO.Write.NexApi;
 import DataSetTools.util.StringUtil;
 import java.util.*;
 import NexIO.Write.*;
-import java.lang.*;
 import java.lang.reflect.*;
 
 public abstract class NexWriteUtil implements NxWriteNode {
