@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.52  2002/10/03 15:50:51  dennis
+ *  Replace call to Data.setSqrtErrors() to Data.setSqrtErrors(true)
+ *
  *  Revision 1.51  2002/08/05 14:35:10  hammonds
  *  Commented out code that rotates SCDs detector angle to -90 degrees.
  *
@@ -793,7 +796,7 @@ private float CalculateEIn()
           if ( raw_spectrum.length >= 1 )
           {
             spectrum = Data.getInstance( x_scale, raw_spectrum, group_id );
-            spectrum.setSqrtErrors();
+            spectrum.setSqrtErrors( true );
 
             // Add the relevant attributes ----------------------------------
             AddSpectrumAttributes( run_file,
