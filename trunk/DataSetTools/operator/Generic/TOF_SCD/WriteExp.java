@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2003/06/10 21:10:38  bouzekc
+ * Fixed getDocumentation() error (one too many @params).
+ *
  * Revision 1.13  2003/06/10 20:23:23  pfpeterson
  * Removed debug statements.
  *
@@ -167,8 +170,6 @@ public class WriteExp extends GenericTOF_SCD{
     sb.append("@param The DataSet containing the monitor spectrum and "
               +"information about it.\n");
     sb.append("@param The name of the file to write to (with path).\n");
-    sb.append("@param The name of the calibration file (assumes first "
-              +"line).\n");
     sb.append("@param The group ID of the upstream monitor.\n");
     sb.append("@param Whether not to append to an existing file. If the file "
               +"does not exist it will create it.\n");
