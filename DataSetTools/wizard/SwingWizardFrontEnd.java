@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/01/08 15:01:33  bouzekc
+ * Added code for arbitrary file (text or runfile) viewing.
+ *
  * Revision 1.4  2004/01/06 23:18:28  bouzekc
  * Changed access method for the internal Wizard variable so that it
  * was more direct.
@@ -51,18 +54,9 @@ package DataSetTools.wizard;
 
 import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
 
-import DataSetTools.parameter.ArrayPG;
-import DataSetTools.parameter.DataSetPG;
-import DataSetTools.parameter.IParameterGUI;
-import DataSetTools.parameter.LoadFilePG;
-import DataSetTools.parameter.ParameterViewer;
-import DataSetTools.parameter.SaveFilePG;
-import DataSetTools.parameter.StringPG;
-import DataSetTools.parameter.VectorPG;
+import DataSetTools.parameter.*;
 
-import DataSetTools.util.SharedData;
-import DataSetTools.util.StringUtil;
-import DataSetTools.util.TextWriter;
+import DataSetTools.util.*;
 
 import DataSetTools.wizard.util.WizardFileFilter;
 
@@ -70,14 +64,8 @@ import ExtTools.SwingWorker;
 
 import IsawHelp.HelpSystem.HTMLizer;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.*;
+import java.awt.event.*;
 
 import java.beans.PropertyChangeListener;
 
@@ -89,21 +77,7 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import javax.swing.AbstractButton;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JEditorPane;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 
 
 /**
@@ -113,6 +87,11 @@ import javax.swing.SwingConstants;
  * package level access only.
  */
 class SwingWizardFrontEnd implements IWizardFrontEnd {
+  //~ Static fields/initializers ***********************************************
+
+  public static final String VIEW_DS    = "View DataSet";
+  public static final String VIEW_ASCII = "View Text File";
+
   //~ Instance fields **********************************************************
 
   private JFrame frame;
@@ -203,8 +182,7 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
     }
 
     //somehow we got a bad file
-    if( ( save_file == null ) || save_file.getName(  )
-                                            .equals( "" ) ) {
+    if( ( save_file == null ) || save_file.getName(  ).equals( "" ) ) {
       JOptionPane.showMessageDialog( 
         frame, "Please enter a valid file name", "ERROR",
         JOptionPane.ERROR_MESSAGE );
@@ -357,10 +335,10 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
 
     if( f != null ) {
       if( f.done(  ) ) {
-        formProgress.setString( f + " Done" );
+        formProgress.setString( f.getTitle(  ) + " Done" );
         formProgress.setValue( FORM_PROGRESS );
       } else {
-        formProgress.setString( f + " Progress" );
+        formProgress.setString( f.getTitle(  ) + " Progress" );
         formProgress.setValue( 0 );
       }
     } else {
@@ -407,8 +385,7 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
     if( num != null ) {
       height = Integer.parseInt( num );
     } else {
-      height = ( int )( Toolkit.getDefaultToolkit(  )
-                               .getScreenSize(  )
+      height = ( int )( Toolkit.getDefaultToolkit(  ).getScreenSize(  )
                                .getHeight(  ) * 0.75f );
     }
 
@@ -418,9 +395,7 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
     if( num != null ) {
       width = Integer.parseInt( num );
     } else {
-      width = ( int )( Toolkit.getDefaultToolkit(  )
-                              .getScreenSize(  )
-                              .getWidth(  ) * 0.45f );
+      width = ( int )( Toolkit.getDefaultToolkit(  ).getScreenSize(  ).getWidth(  ) * 0.45f );
     }
     frame.setBounds( 0, 0, width, height );
   }
@@ -433,8 +408,7 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
    */
   private void displayHelpMessage( String tempTitle, String html ) {
     JFrame help_frame     = new JFrame( tempTitle );
-    Dimension screen_size = Toolkit.getDefaultToolkit(  )
-                                   .getScreenSize(  );
+    Dimension screen_size = Toolkit.getDefaultToolkit(  ).getScreenSize(  );
     help_frame.setSize( 
       new Dimension( 
         ( int )( screen_size.getWidth(  ) / 2 ),
@@ -442,8 +416,7 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
 
     JEditorPane htmlDisplay = new JEditorPane( "text/html", html );
     htmlDisplay.setEditable( false );
-    help_frame.getContentPane(  )
-              .add( new JScrollPane( htmlDisplay ) );
+    help_frame.getContentPane(  ).add( new JScrollPane( htmlDisplay ) );
     help_frame.show(  );
   }
 
@@ -492,8 +465,7 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
    */
   private void displayURL( String tempTitle, URL url ) {
     JFrame help_frame     = new JFrame( tempTitle );
-    Dimension screen_size = Toolkit.getDefaultToolkit(  )
-                                   .getScreenSize(  );
+    Dimension screen_size = Toolkit.getDefaultToolkit(  ).getScreenSize(  );
     help_frame.setSize( 
       new Dimension( 
         ( int )( screen_size.getWidth(  ) / 2 ),
@@ -507,8 +479,7 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
       htmlDisplay = new JEditorPane(  );
     }
     htmlDisplay.setEditable( false );
-    help_frame.getContentPane(  )
-              .add( new JScrollPane( htmlDisplay ) );
+    help_frame.getContentPane(  ).add( new JScrollPane( htmlDisplay ) );
     help_frame.show(  );
   }
 
@@ -622,8 +593,7 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
     initProgressBars(  );
     frame.setJMenuBar( menu_bar );
     frame.addWindowListener( new CloseWizardWindow(  ) );
-    frame.getContentPane(  )
-         .add( work_area );
+    frame.getContentPane(  ).add( work_area );
     setInitialSize(  );
 
     JMenu[] menuList = makeMenu(  );
@@ -761,14 +731,23 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
           ( iparam instanceof DataSetPG ) || ( iparam instanceof ArrayPG ) ||
             ( iparam instanceof LoadFilePG ) || ( iparam instanceof SaveFilePG ) ||
             ( iparam instanceof StringPG &&
-            ( val.toString(  )
-                   .indexOf( '.' ) > 0 ) ) || iparam instanceof VectorPG ) {
+            ( val.toString(  ).indexOf( '.' ) > 0 ) ) ||
+            iparam instanceof VectorPG ) {
           jmi = new JMenuItem( iparam.getName(  ) );
           view_menu.add( jmi );
           jmi.addActionListener( command_handler );
         }
       }
     }
+
+    //arbitrary file viewing
+    view_menu.addSeparator(  );
+    jmi = new JMenuItem( VIEW_DS );
+    view_menu.add( jmi );
+    jmi.addActionListener( command_handler );
+    jmi = new JMenuItem( VIEW_ASCII );
+    view_menu.add( jmi );
+    jmi.addActionListener( command_handler );
   }
 
   /**
@@ -907,9 +886,39 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
         launchProjectChooser(  );
       } else if( command == EXIT_COMMAND ) {
         close(  );
+      } else if( ( command == VIEW_ASCII ) || ( command == VIEW_DS ) ) {
+        displayFileBrowser( command );
       } else {
         //parameter selection command
         displayParameterViewer( command );
+      }
+    }
+
+    /**
+     * Method to bring up a file browser for viewing arbitrary files.
+     *
+     * @param type The type of file to display, VIEW_DS (DataSet) or VIEW_ASCII
+     *        (text).
+     */
+    private void displayFileBrowser( String type ) {
+      JFileChooser fChooser = new JFileChooser( 
+          wizard.getProjectsDirectory(  ) );
+      int result            = fChooser.showOpenDialog( 
+          new JFrame( type + "..." ) );
+
+      if( result != JFileChooser.CANCEL_OPTION ) {
+        String fileName = fChooser.getSelectedFile(  ).toString(  );
+
+        if( type == VIEW_ASCII ) {
+          ParameterViewer.tryToDisplayASCII( fileName );
+        } else if( type == VIEW_DS ) {
+          String sNum = JOptionPane.showInputDialog( "What DataSet Number?" );
+
+          if( sNum != null ) {
+            //get the DataSet out of the file and display it
+            ParameterViewer.displayDataSet( fileName, Integer.parseInt( sNum ) );
+          }
+        }
       }
     }
   }
@@ -922,13 +931,15 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
   private class WizardWorker extends SwingWorker {
     //~ Instance fields ********************************************************
 
-    private int formNum = 0;
+    private int formNum   = 0;
     private Wizard wizard;
-    
+
+    //~ Constructors ***********************************************************
+
     /**
      * Constructor to allow direct linking of the enclosing class's Wizard
      * variable.
-     * 
+     *
      * @param wiz The enclosing class's Wizard.
      */
     public WizardWorker( Wizard wiz ) {
