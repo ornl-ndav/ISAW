@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/24 20:10:04  rmikk
+ * Added a lot of attributes
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
@@ -39,6 +42,7 @@ package NexIO;
 import DataSetTools.dataset.*;
 import NexIO.*;
 import DataSetTools.math.*;
+import java.lang.reflect.*;
 /** This Class processes the NxMonitor Entries of a Nexus datasource
  */
 public class NxMonitor 
@@ -143,8 +147,11 @@ public class NxMonitor
 	  {String S = nds.cnvertoString( val );
 	  if( S != null )
 	      DS.setY_units( S );
-          }  
-      NxNode ndist = node.getChildNode( "distance" );
+          } 
+       NXData_util.setOtherAttributes( node  ,D , 0 ) ;
+/*     NxNode ndist = node.getChildNode( "distance" );
+       float phi, theta;
+       
       if( ndist == null )
         return false;
       Object A = ndist.getNodeValue(  );
@@ -154,6 +161,27 @@ public class NxMonitor
       dist = nd.Arrayfloatconvert( A );
       if( dist == null )
           return false;
+      A = ndist.getAttrValue( "phi");
+      phi = ( float )java.lang.Math.PI;
+      if( A != null) if( A instanceof float[])
+        if( Array.getLength( A) == 1)
+        phi = ((float[]) A)[0];
+
+      theta = 0;
+      A = ndist.getAttrValue( "theta");
+      theta = ( float )java.lang.Math.PI;
+      if( A != null) if( A instanceof float[])
+        if( Array.getLength( A) == 1)
+        theta = ((float[]) A)[0];
+
+     float coords[];
+     coords = Types.convertFromNexus( dist[0], phi, theta );
+     DetectorPosition DP = new DetectorPosition();
+     DP.setSphericalCoords( coords[0], coords[2], coords[1]);
+     D.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS , 
+                                       DP) );
+*/
+  /*
       Position3D p = new Position3D();
       float phi;
       if( monitor_num == 0 ) 
@@ -163,7 +191,18 @@ public class NxMonitor
       p.setSphericalCoords( dist[ 0 ] ,  0.0f ,  phi );
       D.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS , 
                                        new DetectorPosition( p  ) ) );
+  */
 
+      //group_id
+/*      A = ndata.getAttrValue( "group_id");
+      if( A != null )
+        if( A instanceof int[] )
+         if( Array.getLength( A) == 1)
+	  {int group_id = ( (int[])A)[0];
+           D.setGroup_ID( group_id);
+           System.out.println("Set Monitor ="+group_id);
+          }
+*/
     return false;
    }
 
