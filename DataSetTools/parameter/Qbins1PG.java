@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/12/16 00:06:00  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.3  2003/11/19 04:13:22  bouzekc
  * Is now a JavaBean.
  *
@@ -44,20 +47,21 @@
  */
 package DataSetTools.parameter;
 
-import DataSetTools.components.ParametersGUI.*;
+import java.awt.GridLayout;
+import java.util.Vector;
 
-import DataSetTools.util.*;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.SwingConstants;
 
-import java.awt.*;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.lang.*;
-
-import java.util.*;
-
-import javax.swing.*;
+import DataSetTools.components.ParametersGUI.EntryWidget;
+import DataSetTools.components.ParametersGUI.StringEntry;
+import DataSetTools.util.FloatFilter;
+import DataSetTools.util.IntegerFilter;
 
 
 /**
