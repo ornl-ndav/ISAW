@@ -31,13 +31,13 @@ public class SplashWindowFrame extends JFrame {
 		(screenDim.height - frameDim.height) / 2);
 
        MediaTracker mt = new MediaTracker(this);
-       String ipath = System.getProperty("user.dir")+"\\";
+        //System.out.println("Isaw_Home is = "+System.getProperty("ISAW_HOME"));
+       String ipath = System.getProperty("ISAW_HOME");
        ipath = StringUtil.fixSeparator(ipath);
        ipath = ipath.replace('\\','/');
 
 
-       splashIm = Toolkit.getDefaultToolkit(
-           ).getImage(ipath+"images/Isaw.gif");
+       splashIm = Toolkit.getDefaultToolkit().getImage(ipath+"/images/Isaw.gif");
        mt.addImage(splashIm,0);
        try {
           mt.waitForID(0);
