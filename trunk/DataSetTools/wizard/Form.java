@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2003/06/27 21:31:16  bouzekc
+ * addParameterPropertyChangeListener() changed to a private
+ * method and renamed.  addPropertyChangeListener() now handles
+ * all external propertyChangeListener adding.
+ *
  * Revision 1.21  2003/06/24 22:36:52  bouzekc
  * Removed unused variables.
  *
@@ -173,21 +178,17 @@ import javax.swing.border.*;
  */
 public abstract class Form extends Operator implements Serializable,
   PropertyChanger {
-  //~ Static fields/initializers ***********************************************
-
   private static final String CONS_FRAME_HEAD = "CONSTANT PARAMETERS";
   private static final String VAR_FRAME_HEAD  = "USER SPECIFIED PARAMETERS";
   private static final String RES_FRAME_HEAD  = "RESULTS";
+  public static final String PERCENT_DONE     = "Percent Form Done";
   public static final String[] PARAM_NAMES    = { CONS_FRAME_HEAD, VAR_FRAME_HEAD, RES_FRAME_HEAD };
   public static final int CONST_PARAM         = 0;
   public static final int VAR_PARAM           = 1;
   public static final int RESULT_PARAM        = 2;
-
-  //~ Instance fields **********************************************************
-
-  private final boolean DEBUG = false;
+  private final boolean DEBUG                 = false;
   protected JPanel panel;  // panel that the Wizard will draw
-  private int[][] param_ref   = null;
+  private int[][] param_ref                   = null;
 
   //used for standalone or first Forms.  Default is standalone.
   protected boolean HAS_CONSTANTS          = false;
@@ -201,8 +202,6 @@ public abstract class Form extends Operator implements Serializable,
 
   //used for the progress bars
   protected float increment;
-
-  //~ Constructors *************************************************************
 
   /**
    *  Construct a form with the given title to work with
@@ -231,8 +230,6 @@ public abstract class Form extends Operator implements Serializable,
     this( title );
     this.HAS_CONSTANTS = hasConstantParams;
   }
-
-  //~ Methods ******************************************************************
 
   /* ---------------------------- addParameter ---------------------------- */
 
@@ -338,7 +335,7 @@ public abstract class Form extends Operator implements Serializable,
    * setParamTypes}.
    */
   protected final void enableParameters(  ) {
-    boolean enable      = false;
+    boolean enable = false;
 
     for( int i = 0; i < param_ref.length; i++ ) {
       if( ( param_ref[i] != null ) && ( param_ref[i].length > 0 ) ) {
@@ -526,33 +523,6 @@ public abstract class Form extends Operator implements Serializable,
   }
 
   /**
-   *  Method to add PropertyChangeListeners to the Form's list
-   *  of parameters.
-   */
-  public void addParameterPropertyChangeListener( PropertyChangeListener w ) {
-    IParameterGUI param;
-
-    if( this.getNum_parameters(  ) <= 0 ) {
-      return;
-    }
-
-    int[] var_indices = this.getParamType( VAR_PARAM );
-
-    if( ( var_indices == null ) || ( var_indices.length <= 0 ) ) {
-      return;
-    }
-
-    for( int i = 0; i < var_indices.length; i++ ) {
-      param = ( IParameterGUI )this.getParameter( var_indices[i] );
-
-      if( param instanceof PropertyChanger ) {
-        ( ( PropertyChanger )param ).addPropertyChangeListener( 
-          IParameter.VALUE, w );
-      }
-    }
-  }
-
-  /**
    *  Convenience method for subclassed Forms to return an
    *  "invalid" message to the Wizard, and output an appropriate
    *  error message to the user.
@@ -607,7 +577,6 @@ public abstract class Form extends Operator implements Serializable,
     //for progress bars
     newPercent = oldPercent = increment = 0;
 
-    //not created yet
     return this.validateParameterGUIs(  );
   }
 
@@ -714,9 +683,12 @@ public abstract class Form extends Operator implements Serializable,
    */
   public void addPropertyChangeListener( 
     String property, PropertyChangeListener pcl ) {
+    //this one is for the Form progress messages
     if( propBind != null ) {
       propBind.addPropertyChangeListener( property, pcl );
     }
+
+    this.addListenerToParameters( pcl );
   }
 
   /**
@@ -724,9 +696,12 @@ public abstract class Form extends Operator implements Serializable,
    *  PropertyChangeSupport propBind variable.
    */
   public void addPropertyChangeListener( PropertyChangeListener pcl ) {
+    //this one is for the Form progress messages
     if( propBind != null ) {
       propBind.addPropertyChangeListener( pcl );
     }
+
+    this.addListenerToParameters( pcl );
   }
 
   /**
@@ -746,6 +721,38 @@ public abstract class Form extends Operator implements Serializable,
     if( ( propBind != null ) && ( oldValue != newValue ) ) {
       propBind.firePropertyChange( 
         PropChangeProgressBar.VALUE, oldValue, newValue );
+    }
+  }
+
+  /**
+   *  Utility method to add a property change listener to the parameters.
+   *
+   *  @param  listener          The PropertyChangeListener to add.
+   *
+   */
+  private void addListenerToParameters( PropertyChangeListener listener ) {
+    //add the listener to the parameter.  No parameters?  Don't listen to them 
+    //then.
+    if( this.getNum_parameters(  ) <= 0 ) {
+      return;
+    }
+
+    //add the listener to the Form's parameters-only listen to the variable
+    //ones.
+    IParameterGUI param;
+    int[] var_indices = this.getParamType( VAR_PARAM );
+
+    if( ( var_indices == null ) || ( var_indices.length <= 0 ) ) {
+      return;
+    }
+
+    for( int i = 0; i < var_indices.length; i++ ) {
+      param = ( IParameterGUI )this.getParameter( var_indices[i] );
+
+      if( param instanceof PropertyChanger ) {
+        ( ( PropertyChanger )param ).addPropertyChangeListener( 
+          IParameter.VALUE, listener );
+      }
     }
   }
 }
