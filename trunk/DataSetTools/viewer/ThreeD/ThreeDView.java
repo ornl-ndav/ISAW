@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2001/05/29 15:06:47  dennis
+ * Now shows colored markers with colors corresponding to TOF
+ *
  * Revision 1.2  2001/05/23 17:26:14  dennis
  * Now uses a ViewController to change the observer's
  * viewing position.
@@ -38,8 +41,6 @@
  * Revision 1.1  2001/05/09 21:32:00  dennis
  * Viewer to display 3D view of Data block positions, if they have and
  * attribute that is of type Position3D.
- *
- *
  *
  */
 
@@ -52,6 +53,7 @@ import DataSetTools.viewer.*;
 import DataSetTools.math.*;
 import DataSetTools.components.containers.*;
 import DataSetTools.components.ThreeD.*;
+import DataSetTools.components.ui.*;
 import DataSetTools.retriever.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -73,10 +75,19 @@ import javax.swing.event.*;
 
 public class ThreeDView extends DataSetViewer
 {                         
+  private final int LOG_TABLE_SIZE      = 60000;
+  private final int NUM_POSITIVE_COLORS = 127;
+  private final int NUM_PSEUDO_COLORS   = 2 * NUM_POSITIVE_COLORS + 1;
+  private final int ZERO_COLOR_INDEX    = NUM_POSITIVE_COLORS;
+
   private ThreeD_JPanel       threeD_panel  = null; 
-  private JPanel              control_panel = null; 
+  private Box                 control_panel = null; 
   private AltAzController     view_control  = null;
-  private SplitPaneWithState  split_pane = null;
+  private AnimationController frame_control = null;
+  private SplitPaneWithState  split_pane  = null;
+  private Color               colors[][]  = null;
+  private IThreeD_Object      objects[]   = null;
+  private float               log_scale[] = null;
 
 /* --------------------------------------------------------------------------
  *
@@ -91,6 +102,8 @@ public ThreeDView( DataSet data_set, ViewerState state )
                            // object in the parent class and then
                            // sets up the menu bar with items handled by the
                            // parent class.
+
+  setLogScale( 50 );
   init();
                                         // Add an item to the Option menu and
                                         // add a listener for the option menu
@@ -154,6 +167,13 @@ public void setDataSet( DataSet ds )
 }
 
 
+/* -------------------------------------------------------------------------
+ *
+ *  PRIVATE METHODS
+ *
+ */
+
+
 private Vector3D detector_position( int index )
 {
   DataSet ds = getDataSet();
@@ -185,10 +205,10 @@ private void MakeThreeD_Scene()
   float   max_radius = 0;
   float   radius = 0.01f;
 
-  IThreeD_Object objects[] = new IThreeD_Object[ n_data + 3 ];
-  Vector3D       points[]  = new Vector3D[1];
-  Vector3D       point;
+  Vector3D  points[]  = new Vector3D[1];
+  Vector3D  point;
   points[0] = new Vector3D();
+  objects   = new IThreeD_Object[ n_data + 3 ];
 
   for ( int i = 0; i < n_data; i++ )
   {
@@ -203,9 +223,9 @@ private void MakeThreeD_Scene()
         max_radius = radius;
  
       points[0]= point;
-      objects[i] = new Polymarker( points, Color.black ); 
+      objects[i] = new Polymarker( points, Color.red ); 
       objects[i].setPickID( i );
-      ((Polymarker)(objects[i])).setType( Polymarker.CROSS );
+      ((Polymarker)(objects[i])).setType( Polymarker.STAR );
       ((Polymarker)(objects[i])).setSize( 2 );
     }
   }
@@ -219,16 +239,138 @@ private void MakeThreeD_Scene()
   {
     radius = max_radius;
     add_axes( objects, radius/5 );
-    view_control.setViewAngle( 50 );
+    view_control.setViewAngle( 40 );
     view_control.setAltitudeAngle( 30 );
     view_control.setAzimuthAngle( 0 );
-    view_control.setDistanceRange( 0.5f*radius, 10*radius );
-    view_control.setDistance( 2.5f*radius );
+    view_control.setDistanceRange( 0.5f*radius, 5*radius );
+    view_control.setDistance( 4f*radius );
     threeD_panel.setObjects( objects );
-    view_control.apply();
+    view_control.apply( true );
   }
 
+  MakeColorList();
+  set_colors( 50 );
 }
+
+
+private void set_colors( int frame )
+{
+  Color new_colors[] = new Color[ colors.length ];
+  for ( int i = 0; i < colors.length; i++ )
+    new_colors[i] = colors[i][frame];
+
+  threeD_panel.setColors( new_colors );
+  threeD_panel.repaint(0 );
+}
+
+
+private void MakeColorList()
+{
+  System.out.println("Start MakeColorList");
+
+  DataSet ds = getDataSet();
+  float   y_vals[][];
+
+  int  num_rows = ds.getNum_entries();
+  if ( num_rows == 0 ) 
+    return;
+
+  UniformXScale x_scale = ds.getXRange();
+  float x_min    = x_scale.getStart_x();
+  float x_max    = x_scale.getEnd_x();
+//  int   num_cols = x_scale.getNum_x();
+  int   num_cols = 500;
+  x_scale = new UniformXScale( x_min, x_max, num_cols );
+
+  frame_control.setFrame_values( x_scale.getXs() );
+
+  if ( num_cols == 0 )
+    return;
+  
+  colors = new Color[num_rows][num_cols];
+
+  y_vals = new float[num_rows][];
+  Data  data_block;
+  Data  rebinned_data_block;
+  for ( int i = 0; i < num_rows; i++ )
+  {
+    data_block = ds.getData_entry(i);
+    rebinned_data_block = (Data)data_block.clone();
+
+/*
+    if ( !rebinned_data_block.isFunction() )           // need to treat it as
+      rebinned_data_block.ConvertToFunction( false );  // intensity for image
+                                                       // display when starting
+                                                       // with widely different
+                                                       // sizes of x-bins
+*/
+    rebinned_data_block.ResampleUniformly( x_scale );
+    y_vals[i] = rebinned_data_block.getY_values();
+  }
+
+  float max_data = Float.NEGATIVE_INFINITY;
+  float min_data = Float.POSITIVE_INFINITY;
+  float val;
+  for ( int i = 0; i < y_vals.length; i++ )
+   for ( int j = 0; j < y_vals[0].length; j++ )
+   {
+     val = y_vals[i][j];
+     if ( val > max_data )
+       max_data = y_vals[i][j];
+     if ( val < min_data )
+       min_data = y_vals[i][j]; 
+   } 
+
+  float max_abs = 0;
+  if ( Math.abs( max_data ) > Math.abs( min_data ) )
+    max_abs = Math.abs( max_data );
+  else
+    max_abs = Math.abs( min_data );
+
+  float scale_factor;
+  if ( max_abs > 0 )
+    scale_factor = (LOG_TABLE_SIZE - 1) / max_abs;
+  else
+    scale_factor = 0;
+
+  Color color_table[] =IndexColorMaker.getDualColorTable(
+                                         IndexColorMaker.HEATED_OBJECT_SCALE_2,
+                                         NUM_POSITIVE_COLORS );
+  int index;
+  for ( int i = 0; i < y_vals.length; i++ )
+   for ( int j = 0; j < y_vals[0].length; j++ )
+    {
+      val = y_vals[i][j] * scale_factor;
+      if ( val >= 0 )
+        index = (int)( ZERO_COLOR_INDEX + log_scale[(int)val] );
+      else
+        index = (int)( ZERO_COLOR_INDEX - log_scale[(int)(-val)] );
+
+      colors[i][j] = color_table[index];
+    }
+  System.out.println("End MakeColorList");
+}
+
+
+/* ----------------------------- setLogScale -------------------------- */
+
+  private void setLogScale( double s )
+  {
+    if ( s > 100 )                                // clamp s to [0,100]
+      s = 100;
+    if ( s < 0 )
+      s = 0;
+
+    s = Math.exp(20 * s / 100.0) + 0.1; // map [0,100] exponentially to get
+                                        // scale change that appears more linear
+    double scale = NUM_POSITIVE_COLORS / Math.log(s);
+
+    log_scale = new float[LOG_TABLE_SIZE];
+
+    for ( int i = 0; i < LOG_TABLE_SIZE; i++ )
+      log_scale[i] = (byte)
+                     (scale * Math.log(1.0+((s-1.0)*i)/LOG_TABLE_SIZE));
+  }
 
 
 private void add_axes( IThreeD_Object objects[], float length  )
@@ -320,13 +462,23 @@ private void init()
     removeAll();
   }
   threeD_panel  = new ThreeD_JPanel();
-  threeD_panel.setBackground( Color.white );
+  threeD_panel.setBackground( new Color( 100, 100, 100 ) );
+
+  control_panel = new Box( BoxLayout.Y_AXIS );
 
   view_control  = new AltAzController();
   view_control.addControlledPanel( threeD_panel );
-  control_panel = new JPanel();
-  control_panel.setLayout( new GridLayout( 1,1 ) );
   control_panel.add( view_control );
+
+  frame_control = new AnimationController();
+  frame_control.setBorderTitle( getDataSet().getX_label() );
+  frame_control.setTextLabel( getDataSet().getX_units() );
+  control_panel.add( frame_control );
+
+  JPanel filler = new JPanel();
+  filler.setPreferredSize( new Dimension( 120, 2000 ) );
+  control_panel.add( filler );
+
  
                                         // make a titled border around the
                                         // whole viewer, using an appropriate
@@ -359,19 +511,10 @@ private void init()
   graph_container.setLayout( new GridLayout(1,1) );
   graph_container.add( threeD_panel );
   
-
-
-                                        // make a titled border around the
-                                        // control area
-  border = new TitledBorder( LineBorder.createBlackLineBorder(), "Controls" );
-  border.setTitleFont( FontUtil.BORDER_FONT );
-  control_panel.setBorder( border );
-
   split_pane = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
                                        graph_container,
                                        control_panel,
                                        0.7f );
-
 
                                         // Add the control area and graph
                                         // container to the main viewer
@@ -382,7 +525,7 @@ private void init()
   redraw( NEW_DATA_SET );
 
   threeD_panel.addMouseMotionListener( new ViewMouseMotionAdapter() );
-  threeD_panel.addComponentListener( new ViewComponentAdapter() );
+  frame_control.addActionListener( new FrameControlListener() );
 }
 
 
@@ -418,17 +561,6 @@ class ViewMouseMotionAdapter extends MouseMotionAdapter
    }
 }
 
-/**
- *  Listen for resize events on the and just print out the new size to
- *  to demonstrate how to handle such events.
- */
-class ViewComponentAdapter extends ComponentAdapter
-{
-  public void componentResized( ComponentEvent c )
-  {
-//    System.out.println("View Area resized: " + c.getComponent().getSize() );
-  }
-}
 
 /**
  *  Listen for Option menu selections and just print out the selected option.
@@ -442,5 +574,17 @@ private class OptionMenuHandler implements ActionListener
     System.out.println("The user selected : " + action );
   }
 }
+
+private class FrameControlListener implements ActionListener
+{
+  public void actionPerformed( ActionEvent e )
+  {
+    String action = e.getActionCommand();
+    int    frame  = Integer.valueOf(action).intValue();
+    set_colors( frame );
+  }
+
+}
+
 
 }
