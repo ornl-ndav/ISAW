@@ -1,13 +1,13 @@
-# 
+#Ashfia Huq August 2004 
 # Script to load and merge a specified Bank in a set of run files.   
-# Standard (Five banks, focused to 145,125,107,90,60.  +ve and -ve sides summed.
-# Focus_all_tth : The consecutive four banks (not 60) are focussed to 125 degrees
+# Standard (Five banks, focused to 145,125,107,90,53.  +ve and -ve sides summed.
+# Focus_all_tth : The consecutive four banks (not 53) are focussed to 125 degrees
 # Miller : All other detectors turned off except 90 degree bank.
 # Kappa : 8 banks of data with selected detectors
 # Pressure : 1 bank of data with available detectors and focus to 100 degrees.
 # $Date$
 
-$Category=Operator, Instrument Type, TOF_NPD
+# Modify $Date$ : Ashfia Huq , ID's should remain the same (bad detectors are turned off using the discriminator levels
 
 $Standard	Boolean(true)          (1) Standard (5B, sum & T focus)
 $Focus_all_tth	Boolean(false)         (2) Focus_all_2Thet (4B focus to 125)		
@@ -15,11 +15,11 @@ $Miller		Boolean(false)         (3) Miller (Only 90 deg detectors)
 $Kappa		Boolean(false)         (4) Kappa (8B, sum and T focus) 
 $Pressure	Boolean(false)         (5) Pressure (1B, selected detectors)
 
-$Current		Boolean(true)		Is this a Current Run ?
+$Current	Boolean(true)		Is this a Current Run ?
 
 $ run_numbers		Array([22127:22131])	Enter run numbers like [22127,22127:22131]
 $ path			DataDirectoryString    	Path
-$path_archive		DataDirectoryString(/IPNShome/gppduser/archive_data/)	path_archive
+$ path_archive		DataDirectoryString(/IPNShome/gppduser/archive_data/)	path_archive
 $ instrument		InstrumentNameString   	Instrument
 $ Message			String			Please check one Bank at a time
 	$Bank_1		Boolean(true)		Bank_1 (1)145(2)125(3)90(4)144(5)100
@@ -56,7 +56,7 @@ endif
 if Standard == true
 
 	if Bank_1 == true      
-		id_val =["1:30,32:44,180:223"]
+		id_val =["1:44,180:223"]
       		focus_val = [145]
 		lowAng = 134
         	highAng = 156 
@@ -68,28 +68,28 @@ if Standard == true
         	highAng = 132
 	
   	elseif Bank_3 == true
-		id_val =["77:91,93:110,256:287"]
+		id_val =["77:110,256:286"]
       		focus_val = [107]
 		lowAng = 99
         	highAng = 114
 	
 	elseif Bank_4 == true
-		id_val =["111:139,289:305,307:317"]
+		id_val =["111:139,289:317"]
       		focus_val = [90]
 		lowAng = 83
         	highAng = 96
 	
 	elseif Bank_5 == true
-		id_val =["140:169"]
-      		focus_val = [60]
-		lowAng = 52
+		id_val =["140:162,166:176"]
+      		focus_val = [53]
+		lowAng = 44
         	highAng = 62
         endif 	
  
   elseif Kappa == true
 
 	if Bank_1 == true      
-		id_val = ["15:30,32:34"]
+		id_val = ["15:34"]
       		focus_val = [144]
 		lowAng = 139
         	highAng = 149 
@@ -101,19 +101,19 @@ if Standard == true
         	highAng = -139
 
   	elseif Bank_3 == true
-		id_val =["48:59,61:67"]
+		id_val =["48:67"]
       		focus_val = [126]
 		lowAng = 121
         	highAng = 131
 
 	elseif Bank_4 == true
-		id_val =["227:234,236:246"]
+		id_val =["227:246"]
       		focus_val = [126]
 		lowAng = -131
         	highAng = -121
 
 	elseif Bank_5 == true
-		id_val =["82:91,93:101"]
+		id_val =["82:101"]
       		focus_val = [108]
 		lowAng = 103
         	highAng =113
@@ -131,7 +131,7 @@ if Standard == true
         	highAng = 95
 
 	elseif Bank_8 == true
-		id_val =["293:305,307:312"]
+		id_val =["293:312"]
       		focus_val = [90]
 		lowAng = -95
         	highAng = -85
@@ -139,27 +139,27 @@ if Standard == true
   
    elseif Focus_all_tth == true
 	if Bank_1 == true      
-   		id_val =["1:30,32:44,48:75,77:91,93:139,180:223,225:254,256:287,289:305,307:317"]
+  	id_val =["1:44,180:223,48:75,225:254,77:110,256:286,111:317"]
 		focus_val = [125]
 		lowAng = 83
         	highAng = 156 
 
 	elseif Bank_2 == true
-		id_val =["140:169"]
-      		focus_val = [60]
+		id_val =["140:162,166:176"]
+      		focus_val = [53]
 		lowAng = 52
         	highAng = 62
         endif 	
 
 
    elseif Miller == true
-   		id_val =["1:60"]
+  	id_val =["2:60"]
   		focus_val = [90]
 		lowAng = 83
         	highAng = 96
 
    elseif Pressure == true
-   		id_val =["69:75,77:91,93:110,111:139,244:254,256:287,289:305,307:316"]
+ 	id_val =["69:110,111:139,244:287,289:316"]
   		focus_val = [100]
 		lowAng = 134
         	highAng = 156 
@@ -195,7 +195,6 @@ endfor
 
 SetDataLabel(merged_ds,"Run Number","")
 Display merged_ds
-d_ds=ToD(merged_ds,.2,3.0,2000)
+d_ds=ToD(merged_ds,.2,5.4,6000)
 SetDataLabel(d_ds,"Run Number","")
 Send d_DS
-
