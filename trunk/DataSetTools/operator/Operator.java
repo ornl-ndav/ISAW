@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2005/01/10 15:05:39  dennis
+ *  Added string lists for menu categories for FILE: LOAD, SAVE, PRINT
+ *  and UTILS: CALCULATORS, CONVERSIONS, EXAMPLES, DATA_SET and SYSTEM.
+ *
  *  Revision 1.37  2005/01/07 17:26:41  rmikk
  *  Added the fields that were possible return values for getCategoryList
  *     method that were in IWrappedWithCategoryList.
@@ -161,25 +165,48 @@ abstract public class Operator implements Serializable
                                  // generate menus.
    public static final String  OPERATOR                 = "Operator";
   /**
-     *   String arrays that are usable return value of the getCategoryList
-     *   method.
-     */
-    public static final String[] TOF_NSAS= {"operator","Instrument Type",
-                                                    "TOF_NSAS"};
+   *  String arrays that return useful values for the getCategoryList
+   *  method of derived classes of operators.
+   */
+   public static final String[] TOF_NSAS= {"operator","Instrument Type",
+                                                   "TOF_NSAS"};
                                      
-    public static final String[] TOF_NSCD={"operator","Instrument Type",
-                                                      "TOF_NSCD"};
+   public static final String[] TOF_NSCD = {"operator","Instrument Type",
+                                                       "TOF_NSCD"};
                                                      
-    public static final String[] TOF_NPD={"operator","Instrument Type",
+   public static final String[] TOF_NPD = {"operator","Instrument Type",
                                                       "TOF_NPD"};
                                                      
-    public static final String[] TOF_NDGS={"operator","Instrument Type",
-                                                         "TOF_NDGS"};
+   public static final String[] TOF_NDGS = {"operator","Instrument Type",
+                                                       "TOF_NDGS"};
                                                         
-    public static final String[] TOF_NGLAD={"operator","Instrument Type",
+   public static final String[] TOF_NGLAD = {"operator","Instrument Type",
                                                         "TOF_NGLAD"};
    
+   public static final String[] FILE_LOAD = {"operator","File",
+                                                        "Load"};
+   
+   public static final String[] FILE_SAVE = {"operator","File",
+                                                        "Save"};
 
+   public static final String[] FILE_PRINT = {"operator","File",
+                                                         "Print"};
+
+   public static final String[] UTILS_CALCULATORS = {"operator","Utils",
+                                                          "Calculators"};
+   
+   public static final String[] UTILS_CONVERSIONS = {"operator","Utils",
+                                                                "Convert"};
+   
+   public static final String[] UTILS_EXAMPLES = {"operator","Utils",
+                                                             "Examples"};
+   
+   public static final String[] UTILS_DATA_SET = {"operator","Utils",
+                                                             "DataSet"};
+   
+   public static final String[] UTILS_SYSTEM = {"operator","Utils",
+                                                           "System"};
+   
    private static String[] categoryList=null;
 
    public static final String DEFAULT_DOCS =  "This is the placeholder "
