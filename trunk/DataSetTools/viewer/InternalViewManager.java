@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2002/07/19 14:59:29  pfpeterson
+ *  Switched the OverplotView import statement to point at the new
+ *  location.
+ *
  *  Revision 1.22  2002/07/17 19:30:33  rmikk
  *  Changed the view menu options order
  *
@@ -99,7 +103,7 @@ import DataSetTools.viewer.Image.*;
 import DataSetTools.viewer.ThreeD.*;
 import DataSetTools.viewer.Table.*;
 import DataSetTools.viewer.Contour.*;
-import OverplotView.*;                      // import this for Kevin's viewer
+import DataSetTools.viewer.OverplotView.*;
 import DataSetTools.viewer.ViewerTemplate.*;
 import java.awt.*;
 import java.awt.event.*;
