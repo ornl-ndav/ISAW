@@ -31,6 +31,20 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2002/12/06 20:07:00  dennis
+ * -No longer creates a file when createHTML() is called.
+ * -Puts bullet points in the Parameter and Error lists.
+ * -Puts the data type of the parameter in the parameter
+ *  list, both for operators that have documentation and
+ *  those that have only the default documentation.
+ * -Put the title of the operator in one of the blue
+ *  heading tables.
+ * -Only the class name and command are listed under the
+ *  top heading table.
+ * -Put the parameter value (i.e. String) and name (i.e.
+ *  "Sample Composition") in the Command: part of the
+ *  documentation. (Chris Bouzek)
+ *
  * Revision 1.5  2002/12/02 19:56:16  pfpeterson
  * Fixed bug where wasn't appropriately using the IsawHelp directory.
  *
@@ -67,6 +81,8 @@ import Command.Script_Class_List_Handler;
 import DataSetTools.operator.Generic.Batch.*;
 import DataSetTools.operator.*;
 import DataSetTools.util.*;
+import DataSetTools.operator.DataSet.*;
+import DataSetTools.parameter.IParameter;
 
 /**
  * This class takes a String input from an Operator's getDocumentation() 
@@ -233,6 +249,61 @@ public class HTMLizer
 	return op_vector;
     }//createOperatorVector()
 
+    /* ----------------------------- getParameterInfoList ------------------------- */
+    /**
+     *  Gets the parameter class names of an Operator.  If the Operator is an
+     *  instance of a DataSetOperator, the first element will
+     *  be the String "DataSet".  The class names are trimmed to base names
+     *	and are indexed according to the order they go into the Operator's
+     *	constructor
+     *  @param Operator for which you wish to retrieve the parameter
+     *	list
+     *  @return Vector which contains Strings representing the class
+     *	names of the parameters
+     */
+    private Vector[] getParameterInfoList(Operator op)
+    {
+    	String class_s, name_s;
+	Vector v[];
+	final int info = 2;
+	int num_params;
+	Object ob;
+	
+	v = new Vector[info];
+	
+	for( int i = 0; i < info; i++ )
+	    v[i] = new Vector(10, 2);
+	    
+	num_params = op.getNum_parameters();
+    
+    	//get parameter list; differentiate between DataSetOperators
+	//and generic operators			
+	if( op instanceof DataSetOperator )
+	{
+	    v[0].addElement("DataSet");
+	    v[1].addElement("DataSet for Operator");
+    	}
+	    	  
+	for( int i = 0; i < num_params; i++ )
+	{
+	    //for some reason, EchoObject and maybe others
+	    //return "null" when getValue() is called.
+	    //this takes care of it temporarily, although this 
+	    //should be researched
+	    ob = op.getParameter(i).getValue();
+	    
+	    if( ob == null )
+	    	class_s = "";
+	    else
+	    	class_s = ob.getClass().toString();
+		
+	    name_s = op.getParameter(i).getName().toString();
+	    v[0].addElement(this.trimClassName(class_s));
+	    v[1].addElement(name_s);
+    	}
+	
+	return v;
+    }
 
 
     /* ----------------------------- createHTML ------------------------- */
@@ -244,14 +315,21 @@ public class HTMLizer
      */
     public String createHTML(Operator op)
     {
-	StringBuffer html = new StringBuffer(); 
-	String class_name = op.getClass().toString();
-	String title = op.getTitle();
-	StringTokenizer st = new StringTokenizer( class_name, ".");
+	StringBuffer html; 
+	String class_name, title, docs;
+	Vector v[];
+	int num_params;
+	
+	html = new StringBuffer(); 
+	class_name = op.getClass().toString();
+	title = op.getTitle();
+	v = this.getParameterInfoList(op);
+	docs = op.getDocumentation();
+	num_params = v[0].size();
 
-	//trim the class name down
-	while( st.hasMoreTokens() )
-	    class_name = st.nextToken(".");
+	//remove the "class" from class_name
+	class_name = class_name.substring(class_name.indexOf(" ") + 1, 
+					  class_name.length());
 
 	html.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Frameset//EN\"");
 	html.append("\"http://www.w3.org/TR/REC-html40/frameset.dtd\">\n");
@@ -266,35 +344,52 @@ public class HTMLizer
 	html.append("<body BGCOLOR=#FFFFFF>\n");
 
 	html.append("<!-- ======== START OF OPERATOR DATA ======== -->\n");
-	html.append("<h2><hr><br>\n");
 
-	html.append("Operator Title: ");
-	html.append(title + "<br><br>\n");
-	html.append("Operator Class: ");
+	html.append("<table BORDER=\"1\" CELLPADDING=\"3\" CELLSPACING=\"0\" WIDTH=\"100%\">\n");
+	html.append("<tr BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\n");
+	html.append("<td COLSPAN=1 ALIGN=CENTER><font SIZE=\"+3\">\n");
+	html.append("<b>");
+	html.append(title);
+	html.append("</b></font></td>\n");
+	html.append("</tr>\n");
+	html.append("</table>\n\n");
+
+	html.append("<b>Class:</b> ");
 	html.append(class_name);
-	html.append("</h2>\n");
+	html.append("<br>\n");
 	
-	html.append("Command: ");
+	html.append("<b>Command:</b> ");
 	html.append(op.getCommand());
-	html.append(" <br>");
-	html.append("Class path: ");
-	html.append(op.getClass().toString());
-	html.append(" <br>");
-
-	html.append("<p><hr><p>\n");
+	
+	html.append("(");
+	
+	
+	for( int i = 0; i < num_params; i++ )
+	{
+	    html.append(v[0].elementAt(i) + " ");
+	    html.append(v[1].elementAt(i));
+	    
+	    if( i == (num_params - 1) )
+	    	html.append(")\n");
+	    else
+	    	html.append(", ");
+	}
+	    	
+	html.append(" <br><br>\n");
 
 	//get the actual documentation
-	html.append( convertToHTML( op.getDocumentation() ) );
+	
+	// check that there is something to work with
+        if( docs == null || docs.length() == 0 || docs.equals(Operator.DEFAULT_DOCS) )
+	    html.append(createDefaultDocs(v));  
+        else
+	    html.append( convertToHTML( op.getDocumentation(), v) );
 
 	html.append("<!-- ========= END OF OPERATOR DATA ========= -->");
 	html.append("</body>\n");
 	html.append("</html>");
 
-	//try to write the file and print a message if operation failed
-	if ( !writeFile(class_name, html.toString()) )
-	    System.out.println("\nFailed to write to file");
-
-	return html.toString();
+        return html.toString();
       
     }//createHTML()
 
@@ -323,6 +418,48 @@ public class HTMLizer
         return false;
       }
     }
+    
+    /* --------------------------- createDefaultDocs() -------------------------- */
+    /**
+     *  Creates the default documentation for an operator in the event that the
+     *  documentation has not yet been written
+     *  @param Vector consisting of the Strings representing parameter names 
+     *  for an operator
+     *  @return String which consists of operator name and title
+     */
+    private String createDefaultDocs(Vector[] v)
+    {
+    	StringBuffer s = new StringBuffer();
+	s.append("\n<!-- ========= ");
+	s.append("Parameters");
+	s.append(" detail ======== -->\n\n");
+
+	s.append("<table BORDER=\"1\" CELLPADDING=\"3\" CELLSPACING=\"0\" WIDTH=\"100%\">\n");
+	s.append("<tr BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\n");
+	s.append("<td COLSPAN=1><font SIZE=\"+2\">\n");
+	s.append("<b>Parameters");
+	s.append("</b></font></td>\n");
+	s.append("</tr>\n");
+	s.append("</table>\n\n");
+	s.append("<ul>\n");
+	
+	if( v[0] != null )
+	{
+	    for( int i = 0; i < v[0].size(); i++ )
+	    {
+	    	s.append("<li><b>" + v[0].elementAt(i));
+	    	s.append("</b> " + v[1].elementAt(i));
+	    	s.append(" </li>\n");
+	    }
+	
+	    s.append("</ul>\n");
+	
+	    return s.toString();
+	}
+	else
+	    return "";
+    }
+    	
 
     /* --------------------------- convertToHTML() -------------------------- */
     /**
@@ -331,12 +468,8 @@ public class HTMLizer
      *  be found for this method, its primary use is for the JavaHelp System.
      *  @param The String to convert to HTML
      */
-    private String convertToHTML(String m)
+    private String convertToHTML(String m, Vector[] v)
     {
-        // check that there is something to work with
-        if( m==null || m.length()==0 || m.equals(Operator.DEFAULT_DOCS) )
-          return "Documentation not written";
-
 	//eliminate "garbage" information
 	m = m.substring(m.indexOf('@'));
 
@@ -345,7 +478,8 @@ public class HTMLizer
 	int space = m.indexOf(' ');
 	int newline = m.indexOf("\n");
 	String header_name, table_title = "";
-	int found_param = 0, found_error = 0;
+	int param_count = 0, error_count = 0;
+	boolean found_param = false, found_error = false;
 
 	//check for valid index information
 	if( space < 0 )
@@ -365,7 +499,8 @@ public class HTMLizer
 		table_title = "Assumptions";
 	    else if( header_name.equals("@param") )
 	    {
-		found_param += 1;
+		param_count += 1;
+		found_param = true;
 		table_title = "Parameters";
 	    }
 	    else if( header_name.equals("@algorithm") )
@@ -374,14 +509,22 @@ public class HTMLizer
 		table_title = "Returns";
 	    else if( header_name.equals("@error") )
 	    {
-		found_error += 1;
+		error_count += 1;
+		found_error = true;
 		table_title = "Errors";
 	    }
 	
-	    if( (header_name.equals("@param") && found_param > 1)
-		|| (header_name.equals("@error") && found_error > 1) )
+	    if( ( found_param && param_count > 1 )
+		|| ( found_error && error_count > 1) )
 	    {
-		s.append("<ul>");
+		s.append("<li>");
+		
+		if( found_param )
+		{
+		    s.append("<b>");
+		    s.append(v[0].elementAt(param_count - 1).toString());
+		    s.append("</b> ");
+	    	}
 	    }
 	    else
 	    {
@@ -398,9 +541,19 @@ public class HTMLizer
 		s.append("</tr>\n");
 		s.append("</table>\n\n");
 
-		if( (header_name.equals("@param") && found_param <= 1 )
-		    || (header_name.equals("@error") && found_error <= 1) )
-		    s.append("<ul>");
+		if( ( found_param && param_count <= 1 )
+		    || ( found_error && error_count <= 1) )
+		{
+		    //start the unordered list
+		    s.append("<ul><li>");
+		    
+		    if( found_param )
+		    {
+		    	s.append("<b>");
+		    	s.append(v[0].elementAt(param_count - 1).toString());
+		    	s.append("</b> ");
+	    	    }
+		}		 
 	    }
 
 	    //update the header index-for the loop and for the next conditional
@@ -436,10 +589,17 @@ public class HTMLizer
 		space = m.length();
 
 	    s.append("<p>");
-	    if( header_name.equals("@param") && found_param >=  1 
-		|| (header_name.equals("@error") && found_error >= 1) )
+	    if( ( found_param && param_count >=  1 )
+		|| ( found_error && error_count >= 1) )
 	    {
-	      s.append("</ul>");
+	      s.append("</li>\n");
+	    }
+	    
+	    //close the unordered list
+	    if( found_param && param_count >= v[0].size() )
+	    {
+	    	s.append("</ul>\n"); 
+		found_param = false;
 	    }
 	}
 
