@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/04/23 21:00:08  pfpeterson
+ *  Now implement the HiddenOperator interface.
+ *
  *  Revision 1.1  2002/02/22 20:57:20  pfpeterson
  *  Operator reorganization.
  *
@@ -46,6 +49,7 @@
 package DataSetTools.operator.Generic.Batch;
 
 import java.io.*;
+import DataSetTools.operator.HiddenOperator;
 import DataSetTools.operator.Generic.GenericOperator;
 
 /**
@@ -57,7 +61,7 @@ import DataSetTools.operator.Generic.GenericOperator;
  */
 
 abstract public class GenericBatch extends    GenericOperator 
-                                   implements Serializable
+    implements Serializable, HiddenOperator
 {
 
    protected GenericBatch( String title )
