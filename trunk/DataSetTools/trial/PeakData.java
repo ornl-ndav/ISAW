@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/08/01 13:30:51  dennis
+ * Now uses files from both new detectors in test code in main.
+ *
  * Revision 1.5  2003/07/31 22:46:49  dennis
  * Added method  ReadPeaks( peaks_file_name, run_file_name ) to build
  * a vector of PeakData objects from an "ordinary" SCD peaks file
@@ -503,8 +506,8 @@ public class PeakData
     System.out.println("Test writing to " + new_peakdata_name );
     WritePeakData( peaks, new_peakdata_name );
 
-    String peaks_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ/quartz.peaks";
-    String run_name   = "/usr/local/ARGONNE_DATA/SCD_QUARTZ/scd06496.run";
+    String peaks_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/quartz.peaks";
+    String run_name   = "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/scd08336.run";
     System.out.println("Test loading " + peaks_name + " and " + run_name );
     peaks = ReadPeaks( peaks_name, run_name );
  
