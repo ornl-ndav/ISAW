@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2002/10/03 15:34:33  dennis
+ *  readObject() method now handles the case where the instrument type
+ *  attribute is NOT an int array.  If it is a single integer, it is
+ *  changed to an array with one entry.
+ *
  *  Revision 1.33  2002/09/12 19:55:54  dennis
  *  Now always uses java's sort.  This fixes a stack overflow problem when
  *  sorting large arrays with equal values, that came up when sorting SCD
@@ -199,6 +204,7 @@ import java.lang.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
 import DataSetTools.util.*;
+import DataSetTools.instruments.*;
 
 /**
  * The concrete root class for a set of Data objects.  A DataSet object
@@ -2045,14 +2051,28 @@ public class DataSet implements IAttributeList,
                                          // try to reconstruct operator list
                                          // using first instrument type, if 
                                          // all needed attributes are present
-    int inst_types[] = (int[])attr_list.getAttributeValue(Attribute.INST_TYPE);
-    String ds_type   = (String)attr_list.getAttributeValue(Attribute.DS_TYPE); 
-    if ( inst_types != null && ds_type != null && inst_types.length > 0 )
+    Object types_obj = attr_list.getAttributeValue(Attribute.INST_TYPE);
+    if ( types_obj != null )
     {
-      if ( ds_type.equals( Attribute.SAMPLE_DATA ) )
-        DataSetFactory.addOperators( this, inst_types[0] );
-      else if ( ds_type.equals( Attribute.MONITOR_DATA ) )
-        DataSetFactory.addMonitorOperators( this, inst_types[0] );
+      int inst_type = InstrumentType.UNKNOWN;
+      if ( types_obj instanceof Integer )               // change to an array
+      {
+        inst_type  = ((Integer)types_obj).intValue();
+        int list[] = new int[1];
+        list[0]    = inst_type;
+        setAttribute( new IntListAttribute( Attribute.INST_TYPE, list ) );
+      } 
+      else if ( types_obj instanceof int[] && ((int[])types_obj).length > 0 )
+        inst_type = ((int[])types_obj)[0]; 
+
+      String ds_type = (String)attr_list.getAttributeValue(Attribute.DS_TYPE); 
+      if ( ds_type != null )
+      {
+        if ( ds_type.equals( Attribute.SAMPLE_DATA ) )
+          DataSetFactory.addOperators( this, inst_type );
+        else if ( ds_type.equals( Attribute.MONITOR_DATA ) )
+          DataSetFactory.addMonitorOperators( this, inst_type );
+      }
     }
   }
 }
