@@ -41,11 +41,13 @@ public interface FortranParserConstants {
   int ELSE_COND = 35;
   int START_MULTI_IF = 36;
   int END_IF = 37;
-  int VAR_ASSIGN = 38;
-  int F_VAR = 39;
-  int FORTRAN_VARIABLE = 40;
-  int FORTRAN_CHAR_1 = 41;
-  int FORTRAN_CHAR_2 = 42;
+  int FORTRAN_DO_START = 38;
+  int FORTRAN_END_DO = 39;
+  int VAR_ASSIGN = 40;
+  int F_VAR = 41;
+  int FORTRAN_VARIABLE = 42;
+  int FORTRAN_CHAR_1 = 43;
+  int FORTRAN_CHAR_2 = 44;
 
   int DEFAULT = 0;
 
@@ -88,6 +90,8 @@ public interface FortranParserConstants {
     "<ELSE_COND>",
     "<START_MULTI_IF>",
     "<END_IF>",
+    "<FORTRAN_DO_START>",
+    "<FORTRAN_END_DO>",
     "<VAR_ASSIGN>",
     "<F_VAR>",
     "<FORTRAN_VARIABLE>",
