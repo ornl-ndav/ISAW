@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/08/06 22:15:52  rmikk
+ *  Expanded to take care of the Special Strings that were not
+ *  IStringLists
+ *
  *  Revision 1.4  2001/08/06 20:16:59  rmikk
  *  Adjusted this to take care of the IntListString parameter
  *
@@ -56,8 +60,9 @@ public class JStringParameterGUI extends JParameterGUI implements Serializable
     { 
        super(parameter);
        String value;
+       
+           value = parameter.getValue().toString();
       
-           value = ((String)parameter.getValue()).toString();
      
        JLabel label = new JLabel(parameter.getName());
        label.setPreferredSize(new Dimension(170,25));
@@ -77,14 +82,27 @@ public class JStringParameterGUI extends JParameterGUI implements Serializable
 
 
     public Parameter getParameter()
-    {
-        String s = stringText.getText();
-        String value = new String(s);
-        
-        parameter.setValue(value);
+    {  String s = stringText.getText();
+       if( parameter.getValue() instanceof String)
+          {          
+           String value = new String(s);        
+           parameter.setValue(value);
+          
+           return parameter;
+          } 
+
+        Class C = parameter.getValue().getClass();
+        try{
+           SpecialString X = (SpecialString)(C.newInstance());
+           X.setString ( s );
+           parameter.setValue(X );
+           if( ! X.getClass().equals( C ))
+	       System.out.println("Class Mismatch in JIStringListParameter" );
+          
+           }
+        catch( Exception e )
+         {}
         return parameter;
-        
-       
     }
 }
 
