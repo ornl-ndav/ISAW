@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.39  2004/01/30 02:07:45  bouzekc
+ *  setValue() now takes primitive array types (e.g. int[], float[]), although
+ *  at this point it only allows one-dimensional arrays.
+ *
  *  Revision 1.38  2004/01/21 18:00:40  bouzekc
  *  Removed three unused private methods.
  *
@@ -186,6 +190,7 @@ import DataSetTools.dataset.DataSet;
 import java.awt.*;
 
 import java.util.Vector;
+import java.lang.reflect.*;
 
 import javax.swing.*;
 
@@ -259,6 +264,11 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       vecVal = ( Vector )val;
     } else if( val instanceof String ) {
       vecVal = StringtoArray( ( String )val );
+    } else if( val.getClass().isArray() ) {
+      vecVal = new Vector(  );
+      for( int i = 0; i < Array.getLength( val ); i++ ) {
+        vecVal.add( Array.get( val, i ) ); 
+      }
     } else {
       return;
     }
