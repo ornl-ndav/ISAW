@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.10  2003/06/16 14:52:28  bouzekc
+ * Changed the matrix file load parameter to a LoadFilePG.
+ *
  * Revision 1.9  2003/06/11 23:04:06  bouzekc
  * No longer uses StringUtil.setFileSeparator as DataDirPG
  * now takes care of this.
@@ -161,7 +164,7 @@ public class IndexJForm extends Form
     //7
     addParameter(new BooleanPG("Specify a Matrix File?", false));
     //8
-    addParameter(new SaveFilePG("Matrix File to Load", ""));
+    addParameter(new LoadFilePG("Matrix File to Load", ""));
     //9
     addParameter(new IntArrayPG("Restrict Runs", ""));
     //10
