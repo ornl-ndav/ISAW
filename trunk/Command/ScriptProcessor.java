@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.39  2003/03/25 22:03:15  pfpeterson
+ * Fixed a bug where spaces removed from part of the initial value.
+ *
  * Revision 1.38  2003/03/21 19:29:11  rmikk
  * Reset This modules error variables, too, in resetErrors
  *
@@ -826,14 +829,17 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     VarName=StringUtil.getString(buffer);
 
     // get the Data Type and initial value
+    int num_space=buffer.length();
     DataType=StringUtil.getString(buffer);
     index=DataType.indexOf("("); // check if there is in initial value
     if(index>0){
+      num_space=num_space-buffer.length()-DataType.length();
       InitValue=DataType.substring(index+1);
       DataType=DataType.substring(0,index);
       index=buffer.toString().indexOf(")");
       if(index>0){
-        InitValue=InitValue+buffer.substring(0,index);
+        InitValue=InitValue+Format.string("",num_space)
+                                                    +buffer.substring(0,index);
         buffer.delete(0,index+1);
         StringUtil.trim(buffer);
       }else{
