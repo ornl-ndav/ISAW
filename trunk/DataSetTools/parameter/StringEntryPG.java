@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2004/05/11 18:23:56  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.24  2004/03/15 03:28:41  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -112,7 +115,6 @@ package DataSetTools.parameter;
 
 import DataSetTools.components.ParametersGUI.*;
 
-
 import gov.anl.ipns.Util.StringFilter.StringFilterer;
 
 import java.beans.*;
@@ -140,8 +142,6 @@ public abstract class StringEntryPG extends ParameterGUI
   protected StringFilterer FILTER = null;
 
   //~ Constructors *************************************************************
-
-  // ********** Constructors **********
 
   /**
    * Creates a StringEntryPG with the specified name and value.  Does NOT draw
@@ -188,9 +188,9 @@ public abstract class StringEntryPG extends ParameterGUI
   public Object getValue(  ) {
     Object value = super.getValue(  );
 
-    if( this.getInitialized() ) {
-      value = ( ( JTextField )( getEntryWidget().getComponent( 0 ) ) ).getText(  );
-    } 
+    if( this.getInitialized(  ) ) {
+      value = ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).getText(  );
+    }
 
     return value;
   }
@@ -207,6 +207,7 @@ public abstract class StringEntryPG extends ParameterGUI
           new Class[]{ String.class, Object.class } );
       StringEntryPG pg      = ( StringEntryPG )construct.newInstance( 
           new Object[]{ null, null } );
+
       pg.setName( new String( this.getName(  ) ) );
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
@@ -218,20 +219,19 @@ public abstract class StringEntryPG extends ParameterGUI
         pg.FILTER = newFilter;
       }
 
-      if( this.getInitialized() ) {
+      if( this.getInitialized(  ) ) {
         pg.initGUI( null );
         pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
       }
 
       if( getPropListeners(  ) != null ) {
-        java.util.Enumeration e = getPropListeners(  ).keys(  );
+        java.util.Enumeration e    = getPropListeners(  ).keys(  );
         PropertyChangeListener pcl = null;
-        String propertyName = null;
+        String propertyName        = null;
 
         while( e.hasMoreElements(  ) ) {
           pcl            = ( PropertyChangeListener )e.nextElement(  );
           propertyName   = ( String )getPropListeners(  ).get( pcl );
-
           pg.addPropertyChangeListener( propertyName, pcl );
         }
       }
@@ -254,7 +254,7 @@ public abstract class StringEntryPG extends ParameterGUI
    * @param init_values The initial values to use.
    */
   public void initGUI( Vector init_values ) {
-    if( this.getInitialized() ) {
+    if( this.getInitialized(  ) ) {
       return;  // don't initialize more than once
     }
 
@@ -268,12 +268,14 @@ public abstract class StringEntryPG extends ParameterGUI
     }
 
     if( getValue(  ) != null ) {
-      setEntryWidget( new EntryWidget( 
+      setEntryWidget( 
+        new EntryWidget( 
           new StringEntry( getValue(  ).toString(  ), DEF_COLS, FILTER ) ) );
     } else {
-      setEntryWidget( new EntryWidget( 
-            new StringEntry( "", DEF_COLS, FILTER ) ) );
+      setEntryWidget( 
+        new EntryWidget( new StringEntry( "", DEF_COLS, FILTER ) ) );
     }
+
     super.initGUI(  );
   }
 
@@ -299,21 +301,22 @@ public abstract class StringEntryPG extends ParameterGUI
    * @param value The new value.
    */
   protected void setEntryValue( Object value ) {
-    if( this.getInitialized() ) {
+    if( this.getInitialized(  ) ) {
       if( value == null ) {
-        ( ( JTextField )( getEntryWidget().getComponent( 0 ) ) ).setText( "" );
+        ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).setText( "" );
       } else {
         if( value instanceof String ) {
-          ( ( JTextField )( getEntryWidget().getComponent( 0 ) ) ).setText( 
+          ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).setText( 
             ( String )value );
         } else {
-          ( ( JTextField )( getEntryWidget().getComponent( 0 ) ) ).setText( 
+          ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).setText( 
             value.toString(  ) );
         }
       }
     } else {
       return;
     }
+
     this.setValid( true );
   }
 }

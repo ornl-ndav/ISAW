@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2004/05/11 18:23:48  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.22  2004/03/15 03:28:40  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -197,6 +200,8 @@ public class FloatPG extends StringEntryPG {
   /**
    * Overrides the default version of setValue to properly deal with floats.
    * This will be 0.0 if no other valid value is set.
+   *
+   * @param val The new Float value.
    */
   public void setValue( Object val ) {
     Float floatval = null;
@@ -255,7 +260,7 @@ public class FloatPG extends StringEntryPG {
   }
 
   /**
-   * Convenience method to get the proper type value right away.
+   * Quick accessor method.
    */
   public float getfloatValue(  ) {
     return ( ( Float )this.getValue(  ) ).floatValue(  );
@@ -263,11 +268,12 @@ public class FloatPG extends StringEntryPG {
 
   /**
    * Convenience method to set the proper type value right away.
+   *
+   * @param The new float value.
    */
   public void setfloatValue( float value ) {
     this.setValue( new Float( value ) );
   }
-
   /*
    * Testbed.
    */

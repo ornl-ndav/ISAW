@@ -1,5 +1,5 @@
 /*
- * File:  PulseHeightDataSetPG.java 
+ * File:  PulseHeightDataSetPG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/05/11 18:23:54  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.12  2003/12/15 02:29:13  bouzekc
  *  Removed unused imports.
  *
@@ -71,154 +74,172 @@
  *
  *
  */
-
 package DataSetTools.parameter;
 
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.DataSet;
+
 import DataSetTools.util.SharedData;
 
+
 /**
- * This is a superclass to take care of many of the common details of
- * Array Parameter GUIs.
+ * Class to deal with Pulse Height DataSets.
  */
-public class PulseHeightDataSetPG extends DataSetPG{
-    // static variables
-    private   static String TYPE     = "PulseHeightDataSet";
-    protected static int    DEF_COLS = DataSetPG.DEF_COLS;
+public class PulseHeightDataSetPG extends DataSetPG {
+  //~ Static fields/initializers ***********************************************
 
-    // ********** Constructors **********
-    public PulseHeightDataSetPG(String name, Object value){
-        super(name,value);
-        this.setType(TYPE);
-        if(value!=null && !isPulseHeightDataSet(value)){
-                SharedData.addmsg("WARN: Non-"+getType()
-                                  +" in PulseHeightDataSetPG constructor");
-        }
+  private static String TYPE    = "PulseHeightDataSet";
+  protected static int DEF_COLS = DataSetPG.DEF_COLS;
+
+  //~ Constructors *************************************************************
+
+  /**
+   * Creates a new PulseHeightDataSetPG object.
+   *
+   * @param name The name of this PulseHeightDataSetPG.
+   * @param value The value of this PulseHeightDataSetPG.
+   */
+  public PulseHeightDataSetPG( String name, Object value ) {
+    super( name, value );
+    this.setType( TYPE );
+
+    if( ( value != null ) && !isPulseHeightDataSet( value ) ) {
+      SharedData.addmsg( 
+        "WARN: Non-" + getType(  ) + " in PulseHeightDataSetPG constructor" );
     }
+  }
 
-    public PulseHeightDataSetPG(String name, Object value, boolean valid){
-        super(name,value,valid);
-        this.setType(TYPE);
-        if(!isPulseHeightDataSet(value)){
-                SharedData.addmsg("WARN: Non-"+getType()
-                                  +" in PulseHeightDataSetPG constructor");
-        }
+  /**
+   * Creates a new PulseHeightDataSetPG object.
+   *
+   * @param name The name of this PulseHeightDataSetPG.
+   * @param value The value of this PulseHeightDataSetPG.
+   * @param valid True if this PulseHeightDataSetPG should be considered
+   *        initially valid.
+   */
+  public PulseHeightDataSetPG( String name, Object value, boolean valid ) {
+    super( name, value, valid );
+    this.setType( TYPE );
+
+    if( !isPulseHeightDataSet( value ) ) {
+      SharedData.addmsg( 
+        "WARN: Non-" + getType(  ) + " in PulseHeightDataSetPG constructor" );
     }
+  }
 
-    // ********** Methods to deal with the hash **********
+  //~ Methods ******************************************************************
 
-    /**
-     * Add a single DataSet to the vector of choices. This calls the
-     * superclass's method once it confirms the value to be added is a
-     * DataSet.
-     */
-    public void addItem( Object val){
-        if(isPulseHeightDataSet(val)){
-             super.addItem(val);
-        }
+  /**
+   * Add a single DataSet to the vector of choices. This calls the superclass's
+   * method once it confirms the value to be added is a DataSet.
+   *
+   * @param val The DataSet to add.
+   */
+  public void addItem( Object val ) {
+    if( isPulseHeightDataSet( val ) ) {
+      super.addItem( val );
     }
+  }
 
-    /**
-     * Validates this PulseHeightDataSetPG.  A valid PulseHeightDataSetPG is one that
-     * passes DataSetPG's validateSelf() checks and also the more stringent
-     * requirement that the value be a pulse height DataSet.
-     */
-    public void validateSelf(  ) {
-      super.validateSelf(  );
+  /**
+   * Validates this PulseHeightDataSetPG.  A valid PulseHeightDataSetPG is one
+   * that passes DataSetPG's validateSelf() checks and also the more stringent
+   * requirement that the value be a pulse height DataSet.
+   */
+  public void validateSelf(  ) {
+    super.validateSelf(  );
 
-      //if it passed the superclasses checks, run it through ours
-      if( getValid(  ) ) {
-        setValid( isPulseHeightDataSet( getValue(  ) ) );
+    //if it passed the superclasses checks, run it through ours
+    if( getValid(  ) ) {
+      setValid( isPulseHeightDataSet( getValue(  ) ) );
+    }
+  }
+
+  /**
+   * Checks that the given object is a DataSet with a SAMPLE_DATA as its
+   * DS_TYPE Attribute.
+   *
+   * @param ds The Object to check against the above criteria.
+   *
+   * @return true if it is a DataSet.
+   */
+  private static boolean isPulseHeightDataSet( Object ds ) {
+    if( ds instanceof DataSet ) {
+      String type = ( String )( ( DataSet )ds ).getAttributeValue( 
+          Attribute.DS_TYPE );
+
+      if( ( type == null ) || type.equals( Attribute.PULSE_HEIGHT_DATA ) ) {
+        return true;
       }
     }
 
-    /**
-     * Checks that the given object is a DataSet with a SAMPLE_DATA as
-     * its DS_TYPE Attribute.
-     */
-    private static boolean isPulseHeightDataSet( Object ds ){
-        if(ds instanceof DataSet){
-            String type = (String)
-                ((DataSet)ds).getAttributeValue(Attribute.DS_TYPE);
-            if(type==null || type.equals(Attribute.PULSE_HEIGHT_DATA)){
-                return true;
-            }
-        }
-        return false;
-    }
+    return false;
+  }
 
-    /*
-     * Main method for testing purposes.
-     */
-    /*public static void main(String args[]){
-        PulseHeightDataSetPG fpg;
-        int y=0, dy=70;
-
-        // set up what files to read data from
-        String runfile=null;
-        String nexusfile=null;
-        if(args.length>0){
-            for( int i=0 ; i<args.length ; i++ ){
-                if(args[i].indexOf("nx")>0){
-                    nexusfile=args[i];
-                }else if(args[i].indexOf(".run")>0){
-                    runfile=args[i];
-                }else if(args[i].indexOf(".RUN")>0){
-                    runfile=args[i];
-                }
-                    
-            }
-        }
-        if(runfile==null){
-            runfile="/IPNShome/pfpeterson/data/CsC60/SEPD18805.RUN";
-        }
-        if(nexusfile==null){
-            nexusfile="/IPNShome/pfpeterson/data/nexus/nexus_all.nxs";
-        }
-
-        // read in the data into the arrays
-        RunfileRetriever rr = new RunfileRetriever(runfile);
-        NexusRetriever   nr = new NexusRetriever(nexusfile);
-        DataSet[] ds=new DataSet[rr.numDataSets()+nr.numDataSets()];
-        if(rr!=null){
-            for( int i=0 ; i<rr.numDataSets() ; i++ ){
-                ds[i]=rr.getDataSet(i);
-            }
-        }
-        if(nr!=null){
-            for( int i=0 ; i<nr.numDataSets() ; i++ ){
-                ds[i+rr.numDataSets()]=nr.getDataSet(i);
-            }
-        }
-
-        // now actually test things
-        fpg=new PulseHeightDataSetPG("a",ds[0]);
-        System.out.println(fpg);
-        fpg.initGUI(ds);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new PulseHeightDataSetPG("b",ds[0]);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(ds);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new PulseHeightDataSetPG("c",ds[0],false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(ds);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new PulseHeightDataSetPG("d",ds[0],true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.initGUI(ds);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-    }*/
-
+  /*
+   * Main method for testing purposes.
+   */
+  /*public static void main(String args[]){
+     PulseHeightDataSetPG fpg;
+     int y=0, dy=70;
+     // set up what files to read data from
+     String runfile=null;
+     String nexusfile=null;
+     if(args.length>0){
+         for( int i=0 ; i<args.length ; i++ ){
+             if(args[i].indexOf("nx")>0){
+                 nexusfile=args[i];
+             }else if(args[i].indexOf(".run")>0){
+                 runfile=args[i];
+             }else if(args[i].indexOf(".RUN")>0){
+                 runfile=args[i];
+             }
+  
+         }
+     }
+     if(runfile==null){
+         runfile="/IPNShome/pfpeterson/data/CsC60/SEPD18805.RUN";
+     }
+     if(nexusfile==null){
+         nexusfile="/IPNShome/pfpeterson/data/nexus/nexus_all.nxs";
+     }
+     // read in the data into the arrays
+     RunfileRetriever rr = new RunfileRetriever(runfile);
+     NexusRetriever   nr = new NexusRetriever(nexusfile);
+     DataSet[] ds=new DataSet[rr.numDataSets()+nr.numDataSets()];
+     if(rr!=null){
+         for( int i=0 ; i<rr.numDataSets() ; i++ ){
+             ds[i]=rr.getDataSet(i);
+         }
+     }
+     if(nr!=null){
+         for( int i=0 ; i<nr.numDataSets() ; i++ ){
+             ds[i+rr.numDataSets()]=nr.getDataSet(i);
+         }
+     }
+     // now actually test things
+     fpg=new PulseHeightDataSetPG("a",ds[0]);
+     System.out.println(fpg);
+     fpg.initGUI(ds);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     fpg=new PulseHeightDataSetPG("b",ds[0]);
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(ds);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     fpg=new PulseHeightDataSetPG("c",ds[0],false);
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(ds);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     fpg=new PulseHeightDataSetPG("d",ds[0],true);
+     System.out.println(fpg);
+     fpg.setDrawValid(true);
+     fpg.initGUI(ds);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     }*/
 }

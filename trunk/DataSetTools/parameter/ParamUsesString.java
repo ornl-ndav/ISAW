@@ -1,5 +1,5 @@
 /*
- * File:  ParamUsesString.java 
+ * File:  ParamUsesString.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,28 +31,34 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/05/11 18:23:54  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.1  2003/06/06 18:50:13  pfpeterson
  *  Added to CVS.
  *
  */
-
 package DataSetTools.parameter;
 
 /**
- * This is an interface to be implemented by all parameters that can
- * get and set String values. In principle all IParamterGUIs will
- * implement this, but there are no gaurantees.
+ * This is an interface to be implemented by all parameters that can get and
+ * set String values. In principle all IParameterGUIs should implement this,
+ * but there are no gaurantees.
  */
-public interface ParamUsesString{
-  /**
-   * This creates a string representation of the value held by the
-   * parameter.
-   */
-  String getStringValue();
+public interface ParamUsesString {
+  //~ Methods ******************************************************************
 
   /**
-   * Set the value from a String which will be turned into the correct
-   * type.
+   * Set the value from a String which will be turned into the correct type.
+   *
+   * @param value The new String value.
    */
-  void setStringValue(String value);
+  void setStringValue( String value );
+
+  /**
+   * This creates a string representation of the value held by the parameter.
+   *
+   * @return The String value.
+   */
+  String getStringValue(  );
 }

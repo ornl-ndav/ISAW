@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2004/05/11 18:23:50  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.19  2004/03/15 03:28:40  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -185,6 +188,8 @@ public class IntegerPG extends StringEntryPG {
   /**
    * Overrides the default behavior. If passed null this sets the value to
    * Integer.MIN_VALUE.
+   *
+   * @param val The new Integer value to use.
    */
   public void setValue( Object val ) {
     Integer intval = null;
@@ -216,7 +221,7 @@ public class IntegerPG extends StringEntryPG {
   }
 
   /**
-   * Override the default method.
+   * @return The Integer value for this IntegerPG.
    */
   public Object getValue(  ) {
     Object val        = super.getValue(  );
@@ -248,7 +253,7 @@ public class IntegerPG extends StringEntryPG {
   }
 
   /**
-   * Returns a primitive integer version of the value.
+   * @return A primitive integer version of the value.
    */
   public int getintValue(  ) {
     return ( ( Integer )this.getValue(  ) ).intValue(  );
@@ -256,10 +261,13 @@ public class IntegerPG extends StringEntryPG {
 
   /**
    * Convenience method to allow for passing a primitive int.
+   *
+   * @param value The new int value.
    */
   public void setintValue( int value ) {
     this.setValue( new Integer( value ) );
   }
+
   /*
    * Testbed.
    */

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2004/05/11 18:23:48  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.18  2004/05/09 17:48:53  bouzekc
  *  Added commments, recoded main(), reformatted.
  *
@@ -102,8 +105,7 @@ import gov.anl.ipns.Util.Messaging.IObserver;
 
 
 /**
- * This is a superclass to take care of many of the common details of Array
- * Parameter GUIs.
+ * Class to deal with lists of DataSets.
  */
 public class DataSetPG extends ChooserPG implements IObserver {
   //~ Static fields/initializers ***********************************************
@@ -157,10 +159,9 @@ public class DataSetPG extends ChooserPG implements IObserver {
   //~ Methods ******************************************************************
 
   /**
-   * Returns the value of the parameter. While this is a generic object
-   * specific parameters will return appropriate objects. There can also be a
-   * 'fast access' method which returns a specific object (such as String or
-   * DataSet) without casting.
+   * Quick accessor method.
+   *
+   * @return The DataSet value (i.e. the currently selected DataSet).
    */
   public DataSet getDataSetValue(  ) {
     Object value = this.getValue(  );
@@ -173,7 +174,10 @@ public class DataSetPG extends ChooserPG implements IObserver {
   }
 
   /**
-   * Calls the parent method with DataSet.EMPTY_DATA_SET if value is null.
+   * Mutator method for the value.
+   *
+   * @param val The new DataSet value.  If this is null, it is set to
+   *        DataSet.EMPTY_DATA_SET.
    */
   public void setValue( Object value ) {
     if( value == null ) {
@@ -190,6 +194,8 @@ public class DataSetPG extends ChooserPG implements IObserver {
   /**
    * Add a single DataSet to the vector of choices. This calls the superclass's
    * method once it confirms the value to be added is a DataSet.
+   *
+   * @param val The DataSet to add.
    */
   public void addItem( Object val ) {
     if( val == null ) {
@@ -241,7 +247,6 @@ public class DataSetPG extends ChooserPG implements IObserver {
         }
       }
     }
-
     /*
        y+=dy;
        fpg=new DataSetPG("b",ds[0]);

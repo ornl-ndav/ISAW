@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2004/05/11 18:23:47  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.18  2004/03/11 06:55:39  bouzekc
  *  Removed warning in constructor about non-String; addItem() and addItems()
  *  now call a toString() on the Object they are adding.  This ensures that
@@ -140,6 +143,8 @@ public class ChoiceListPG extends ChooserPG {
   /**
    * Add a single DataSet to the vector of choices. This calls the superclass's
    * method once it confirms the value to be added is a DataSet.
+   *
+   * @param val The item to add.
    */
   public void addItem( Object val ) {
     if( val instanceof String ) {

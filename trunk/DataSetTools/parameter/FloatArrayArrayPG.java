@@ -1,6 +1,6 @@
 /*
- * File:  FloatArrayArrayPG.java 
- *             
+ * File:  FloatArrayArrayPG.java
+ *
  * Copyright (C) 2003, Ruth Mikkelson
  *
  * This program is free software; you can redistribute it and/or
@@ -23,7 +23,7 @@
  *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
- * of Argonne National Laboratory, Argonne, IL 60439-4845, USA and by 
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA and by
  * the National Science Foundation under grant number DMR-0218882.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/05/11 18:23:48  bouzekc
+ * Added/updated javadocs and reformatted for consistency.
+ *
  * Revision 1.12  2003/12/16 00:05:59  bouzekc
  * Removed unused imports.
  *
@@ -75,47 +78,63 @@
  */
 package DataSetTools.parameter;
 
-
 /**
-*   This ParameterGUI allows for users to enter a Vector whose elements are Vectors
-*   of Float values
-*/
-public class FloatArrayArrayPG extends VectorPG{
+ * Subclass of VectorPG to deal with two-dimensional float arrays.
+ */
+public class FloatArrayArrayPG extends VectorPG {
+  //~ Constructors *************************************************************
 
-  public FloatArrayArrayPG( String name, Object val){ 
+  /**
+   * Creates a new FloatArrayArrayPG object.
+   *
+   * @param name The name of this FloatArrayArrayPG.
+   * @param val The initial value of this FloatArrayArrayPG.
+   */
+  public FloatArrayArrayPG( String name, Object val ) {
     super( name, val );
-    setParam( new FloatArrayPG("Enter Float Array", null) );
+    setParam( new FloatArrayPG( "Enter Float Array", null ) );
   }
 
+  /**
+   * Creates a new FloatArrayArrayPG object.
+   *
+   * @param name The name of this FloatArrayArrayPG.
+   * @param val The initial value of this FloatArrayArrayPG.
+   * @param valid True if this FloatArrayArrayPG should initially be considered
+   *        valid.
+   */
   public FloatArrayArrayPG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-    setParam( new FloatArrayPG("Enter Float Array", null) );
+    setParam( new FloatArrayPG( "Enter Float Array", null ) );
   }
+
+  //~ Methods ******************************************************************
 
   /*
    * Testbed
    */
   /*public static void main( String args[] ){
-    JFrame jf = new JFrame("Test");
-    jf.getContentPane().setLayout( new GridLayout( 1,2));
-    FloatArrayArrayPG IaPg = new FloatArrayArrayPG( "Enter FloatArray list", null);
-    IaPg.initGUI(null);
-    jf.getContentPane().add(IaPg.getGUIPanel());
-    JButton  jb = new JButton("Result");
-    jf.getContentPane().add(jb);
-    jb.addActionListener( new PGActionListener( IaPg));
-    jf.setSize( 600,100);
-    jf.invalidate();
-    jf.show();
-  } */
+     JFrame jf = new JFrame("Test");
+     jf.getContentPane().setLayout( new GridLayout( 1,2));
+     FloatArrayArrayPG IaPg = new FloatArrayArrayPG( "Enter FloatArray list", null);
+     IaPg.initGUI(null);
+     jf.getContentPane().add(IaPg.getGUIPanel());
+     JButton  jb = new JButton("Result");
+     jf.getContentPane().add(jb);
+     jb.addActionListener( new PGActionListener( IaPg));
+     jf.setSize( 600,100);
+     jf.invalidate();
+     jf.show();
+     } */
 
   /**
-   * Validates this FloatArrayArrayPG.  A FloatArrayArrayPG is considered 
-   * valid if it contains a FloatArrayPG with all Float elements.
+   * Validates this FloatArrayArrayPG.  A FloatArrayArrayPG is considered valid
+   * if it contains a FloatArrayPG with all Float elements.
    */
   public void validateSelf(  ) {
     FloatArrayPG fpg = ( FloatArrayPG )getParam(  );
-    fpg.validateElements( new Float( 0.0f  ).getClass(  ) );
+
+    fpg.validateElements( new Float( 0.0f ).getClass(  ) );
     setValid( fpg.getValid(  ) );
   }
 }

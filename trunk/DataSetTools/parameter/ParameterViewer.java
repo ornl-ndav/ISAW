@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2004/05/11 18:23:54  bouzekc
+ * Added/updated javadocs and reformatted for consistency.
+ *
  * Revision 1.14  2004/03/15 03:28:40  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -186,7 +189,7 @@ public class ParameterViewer implements ActionListener {
    * Utility method to display DataSets.  Defaults to image view.
    *
    * @param runfileName The name of the Runfile to get the DataSet from.
-   * @param dsNum       The DataSet number to display.
+   * @param dsNum The DataSet number to display.
    */
   public static void displayDataSet( String runfileName, int dsNum ) {
     new ViewManager( 
@@ -234,6 +237,7 @@ public class ParameterViewer implements ActionListener {
             //display a list so the user can choose the DataSet to view
             //basic setup for selection list
             int num_items = v.size(  );
+
             item_names   = new String[num_items];
             items        = new Vector( num_items );
 
@@ -242,6 +246,7 @@ public class ParameterViewer implements ActionListener {
               item_names[i]   = obj.toString(  );
               items.add( obj );
             }
+
             this.makeSelectionList(  );
           }
         }
@@ -264,6 +269,7 @@ public class ParameterViewer implements ActionListener {
   public static void tryToDisplayASCII( String s ) {
     String tempName;
     String fileName;
+
     s = s.replace( '\"', ' ' ).trim(  );
 
     //try to see if it is a File or a String
@@ -322,13 +328,15 @@ public class ParameterViewer implements ActionListener {
   }
 
   /**
-   * Sets the JFrame's opening size.
+   * Sets the JFrame's opening size.  This does a default of 30% of both width
+   * and height.
    */
   private void setInitialSize(  ) {
     int screenheight = ( int )( Toolkit.getDefaultToolkit(  ).getScreenSize(  )
                                        .getHeight(  ) * 0.30f );
     int screenwidth  = ( int )( Toolkit.getDefaultToolkit(  ).getScreenSize(  )
                                        .getWidth(  ) * 0.30f );
+
     holder.setBounds( 0, 0, screenwidth, screenheight );
   }
 

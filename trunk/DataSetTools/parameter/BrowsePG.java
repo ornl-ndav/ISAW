@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2004/05/11 18:23:47  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.35  2004/04/01 01:28:27  bouzekc
  *  Fixed javadoc comments.
  *
@@ -235,7 +238,10 @@ public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
   //~ Methods ******************************************************************
 
   /**
-   * Set the FileFilter to be used when the browse button is pressed
+   * Set the FileFilter to be used when the browse button is pressed.  This
+   * will add the filter if it is not found.
+   *
+   * @param filefilter The FileFilter to use.
    */
   public void setFilter( FileFilter filefilter ) {
     boolean found = false;
@@ -273,6 +279,8 @@ public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
 
   /**
    * Sets the value of the parameter.
+   *
+   * @param val The new value.
    */
   public void setValue( Object val ) {
     String svalue = "";
@@ -296,10 +304,9 @@ public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
   }
 
   /**
-   * Returns the value of the parameter. While this is a generic object
-   * specific parameters will return appropriate objects. There can also be a
-   * 'fast access' method which returns a specific object (such as String or
-   * DataSet) without casting.
+   * Accessor method for the value.
+   *
+   * @return The value (file/directory name) of this BrowsePG.
    */
   public Object getValue(  ) {
     String val = super.getValue(  ).toString(  );
@@ -313,6 +320,8 @@ public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
 
   /**
    * Adds a FileFilter.
+   *
+   * @param filefilter The FileFilter to add.
    */
   public void addFilter( FileFilter filefilter ) {
     filter_vector.add( filefilter );
@@ -375,6 +384,8 @@ public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
 
   /**
    * Allows for initialization of the GUI after instantiation.
+   *
+   * @param init_values The initial values to use.
    */
   public void initGUI( Vector init_values ) {
     if( this.getInitialized(  ) ) {

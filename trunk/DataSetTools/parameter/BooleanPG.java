@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2004/05/11 18:23:46  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.20  2004/03/12 21:13:48  bouzekc
  *  Added clear() method.
  *
@@ -165,6 +168,8 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
   /**
    * Sets the value by parsing the String using {@link
    * java.lang.Boolean#Boolean(String) Boolean}
+   *
+   * @param val The new value to use.
    */
   public void setStringValue( String val ) {
     Boolean BooVal = new Boolean( val.trim(  ) );
@@ -173,7 +178,9 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
   }
 
   /**
-   * Returns "TRUE" or "FALSE".
+   * Accessor method for the string value.
+   *
+   * @return "TRUE" or "FALSE".
    */
   public String getStringValue(  ) {
     return this.getValue(  ).toString(  ).toUpperCase(  );
@@ -182,6 +189,8 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
   /**
    * Overrides the default version of setValue to properly deal with booleans.
    * For integers, zero is false, everything else is true.
+   *
+   * @param val The new value.
    */
   public void setValue( Object val ) {
     Boolean booval = null;
@@ -222,7 +231,9 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
   }
 
   /**
-   * Override the default method.
+   * Accessor method for the value.
+   *
+   * @return A Boolean true or false.
    */
   public Object getValue(  ) {
     Object val = super.getValue(  );
@@ -243,6 +254,8 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
 
   /**
    * Convenience method to get the proper type value right away.
+   *
+   * @return true or false
    */
   public boolean getbooleanValue(  ) {
     return ( ( Boolean )this.getValue(  ) ).booleanValue(  );
@@ -250,6 +263,8 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
 
   /**
    * Allows for initialization of the GUI after instantiation.
+   *
+   * @param init_values The values to use for initialization.
    */
   public void initGUI( Vector init_values ) {
     if( this.getInitialized(  ) ) {
@@ -307,6 +322,8 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
 
   /**
    * Convenience method to set the proper type value right away.
+   *
+   * @param value The new value to use.
    */
   public void setbooleanValue( boolean value ) {
     this.setValue( new Boolean( value ) );

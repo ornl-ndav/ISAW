@@ -1,5 +1,5 @@
 /*
- * File:  SaveFilePG.java 
+ * File:  SaveFilePG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/05/11 18:23:55  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.13  2003/12/15 02:29:13  bouzekc
  *  Removed unused imports.
  *
@@ -78,108 +81,120 @@
  *
  *
  */
-
 package DataSetTools.parameter;
-import java.io.File;
 
 import DataSetTools.components.ParametersGUI.BrowseButtonListener;
 
+import java.io.File;
+
+
 /**
- * This is a particular case of the BrowsePG used for loading a single
- * file. The value is a string.
+ * This is a particular case of the BrowsePG used for saving a single file. The
+ * value is a string.
  */
-public class SaveFilePG extends BrowsePG{
-    private static String TYPE     = "SaveFile";
+public class SaveFilePG extends BrowsePG {
+  //~ Static fields/initializers ***********************************************
 
-    // ********** Constructors **********
-    public SaveFilePG(String name, Object value){
-        this(name,value,false);
-        this.setDrawValid(false);
-    }
-    
-    public SaveFilePG(String name, Object value, boolean valid){
-        super(name,value,valid);
-        this.setType(TYPE);
-        super.choosertype = BrowseButtonListener.SAVE_FILE;
-    }
+  private static String TYPE = "SaveFile";
 
-    /*
-     * Testbed.
-     */
-    /*public static void main(String args[]){
-        SaveFilePG fpg;
-        //y position and delta y, so that multiple windows can 
-        //be displayed without too much overlap
-        int y=0, dy=70;
-        
-        String defString="/IPNShome/bouzekc/IsawProps.dat";
+  //~ Constructors *************************************************************
 
-        fpg=new SaveFilePG("Enabled, not valid, no filters",defString);
-        System.out.println(fpg);
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-        
-        //disabled browse button GUI
-        fpg=new SaveFilePG("Disabled, not valid, no filters",defString);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
+  /**
+   * Creates a new SaveFilePG object.
+   *
+   * @param name The name of this SaveFilePG.
+   * @param value The value of this SaveFilePG.
+   */
+  public SaveFilePG( String name, Object value ) {
+    this( name, value, false );
+    this.setDrawValid( false );
+  }
 
-        fpg=new SaveFilePG("Disabled, not valid, no filters",defString,false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
+  /**
+   * Creates a new SaveFilePG object.
+   *
+   * @param name The name of this SaveFilePG.
+   * @param value The value of this SaveFilePG.
+   * @param valid True if this SaveFilePG should be considered initially valid.
+   */
+  public SaveFilePG( String name, Object value, boolean valid ) {
+    super( name, value, valid );
+    this.setType( TYPE );
+    super.choosertype = BrowseButtonListener.SAVE_FILE;
+  }
 
-        fpg=new SaveFilePG("Valid, enabled, no filters",defString,true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
+  //~ Methods ******************************************************************
 
-        fpg=new SaveFilePG("Enabled, not valid, multiple filters",defString);
-        System.out.println(fpg);
-        //add some FileFilters
-        fpg.addFilter(new ExpFilter());
-        fpg.addFilter(new IntegrateFilter());
-        fpg.addFilter(new MatrixFilter());
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
+  /*
+   * Testbed.
+   */
+  /*public static void main(String args[]){
+     SaveFilePG fpg;
+     //y position and delta y, so that multiple windows can
+     //be displayed without too much overlap
+     int y=0, dy=70;
+  
+     String defString="/IPNShome/bouzekc/IsawProps.dat";
+     fpg=new SaveFilePG("Enabled, not valid, no filters",defString);
+     System.out.println(fpg);
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+  
+     //disabled browse button GUI
+     fpg=new SaveFilePG("Disabled, not valid, no filters",defString);
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     fpg=new SaveFilePG("Disabled, not valid, no filters",defString,false);
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     fpg=new SaveFilePG("Valid, enabled, no filters",defString,true);
+     System.out.println(fpg);
+     fpg.setDrawValid(true);
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     fpg=new SaveFilePG("Enabled, not valid, multiple filters",defString);
+     System.out.println(fpg);
+     //add some FileFilters
+     fpg.addFilter(new ExpFilter());
+     fpg.addFilter(new IntegrateFilter());
+     fpg.addFilter(new MatrixFilter());
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     fpg=new SaveFilePG("Enabled, not valid, one filter",defString);
+     System.out.println(fpg);
+     //add some FileFilters
+     fpg.addFilter(new IntegrateFilter());
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     }*/
 
-        fpg=new SaveFilePG("Enabled, not valid, one filter",defString);
-        System.out.println(fpg);
-        //add some FileFilters
-        fpg.addFilter(new IntegrateFilter());
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-    }*/
+  /**
+   * Validates this SaveFilePG.  A SaveFilePG is considered valid if getValue()
+   * returns a non-null String and the String references  a non-directory
+   * writeable File, regardless of whether that File actually exists.
+   */
+  public void validateSelf(  ) {
+    Object val = getValue(  );
 
-    /**
-     * Validates this SaveFilePG.  A SaveFilePG is considered valid if
-     * getValue() returns a non-null String and the String references 
-     * a non-directory writeable File, regardless of whether that File actually
-     * exists.
-     */
-    public void validateSelf(  ) {
-      Object val = getValue(  );
-      
-      if( val != null ) {
-      
-        File file = new File( val.toString(  ) );
-        
-        if( !file.isDirectory(  ) ) {
-          setValid( true );
-        } else {
-          setValid( false );
-        }
+    if( val != null ) {
+      File file = new File( val.toString(  ) );
+
+      if( !file.isDirectory(  ) ) {
+        setValid( true );
       } else {
         setValid( false );
       }
+    } else {
+      setValid( false );
     }
+  }
 }

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/05/11 18:23:50  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.9  2004/03/12 21:13:49  bouzekc
  *  Added clear() method.
  *
@@ -72,48 +75,56 @@ public interface IParameterGUI extends IParameter {
 
   /**
    * Specify if the valid checkbox will be drawn.
+   *
+   * @param draw True if the checkbox should be drawn.
    */
   void setDrawValid( boolean draw );
 
   /**
    * Determine if the 'valid' checkbox will be drawn.
+   *
+   * @return True if the checkbox will be drawn.
    */
   boolean getDrawValid(  );
 
   /**
-   * Set the enabled state of the EntryWidget. This produces a more pleasant
-   * effect that the default setEnabled of the widget.
+   * Set the enabled state of the EntryWidget.
+   *
+   * @param enable Whether to enable this IParameterGUI.
    */
   void setEnabled( boolean enable );
 
   /**
-   * Determine if the entry widget is enabled.
+   * Determine if the EntryWidget is enabled.
+   *
+   * @return true if the EntryWidget is disable.
    */
   boolean getEnabled(  );
 
   /**
-   * Method for producing an alternative layout of the GUI.
+   * @return The EntryWidget for this IParameterGUI.
    */
   DataSetTools.components.ParametersGUI.EntryWidget getEntryWidget(  );
 
   /**
-   * Method for obtaining the default layout of the GUI.
+   * @return The GUI JPanel for this IParameterGUI.
    */
   javax.swing.JPanel getGUIPanel(  );
 
   /**
-   * Method for producing an alternative layout of the GUI.
+   * @return The JLabel for this IParameterGUI.
    */
   javax.swing.JLabel getLabel(  );
 
   /**
    * Set the valid state of the parameter.
+   *
+   * @param valid True if this IParameterGUI should be considered valid.
    */
   void setValid( boolean valid );
 
   /**
-   * Returns whether or not the parameter is valid. Currently used only by
-   * wizards.
+   * @return whether or not the parameter is valid.
    */
   boolean getValid(  );
 
@@ -125,6 +136,8 @@ public interface IParameterGUI extends IParameter {
 
   /**
    * Allows for initialization of the GUI after instantiation.
+   *
+   * @param init_values The new values to use.
    */
   void initGUI( java.util.Vector init_values );
 

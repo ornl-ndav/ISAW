@@ -1,6 +1,6 @@
 /*
- * File:  QbinsPG.java 
- *             
+ * File:  QbinsPG.java
+ *
  * Copyright (C) 2003, Ruth Mikkelson
  *
  * This program is free software; you can redistribute it and/or
@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2004/05/11 18:23:55  bouzekc
+ * Added/updated javadocs and reformatted for consistency.
+ *
  * Revision 1.16  2003/12/16 00:06:00  bouzekc
  * Removed unused imports.
  *
@@ -92,82 +95,115 @@
  * Initial Checkin
  *
  */
-
-
 package DataSetTools.parameter;
+
+import DataSetTools.util.PGActionListener;
+
 import java.awt.GridLayout;
+
 import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
-import DataSetTools.util.PGActionListener;
 
 /**
-*    This ParameterGUI was designed specifically for entering a large
-*    list of Q bin boundaries with either constant Q widths or constant
-*    ratios. This ParameterGUI allows for concatenating several of these
-*    lists
-*/
-public class QbinsPG  extends VectorPG{
+ * This ParameterGUI was designed specifically for entering a large list of Q
+ * bin boundaries with either constant Q widths or constant ratios. This
+ * ParameterGUI allows for concatenating several of these lists
+ */
+public class QbinsPG extends VectorPG {
+  //~ Constructors *************************************************************
 
+  /**
+   * Creates a new QbinsPG object.
+   *
+   * @param Prompt The name of this QbinsPG.
+   * @param val The value of this QbinsPG.
+   */
+  public QbinsPG( String Prompt, Object val ) {
+    super( Prompt, val );
+    setParam( new Qbins1PG( "Set Q bins or Qx,Qy min/max", null ) );
+    this.setType( "Qbins" );
+  }
 
-   public QbinsPG( String Prompt, Object val){ 
-     super( Prompt, val );
-     setParam( new Qbins1PG( "Set Q bins or Qx,Qy min/max", null ) );
-     this.setType( "Qbins" );
-   }
+  /**
+   * Creates a new QbinsPG object.
+   *
+   * @param Prompt The name of this QbinsPG.
+   * @param val The value of this QbinsPG.
+   * @param valid true if this QbinsPG should be considered initially valid.
+   */
+  public QbinsPG( String Prompt, Object val, boolean valid ) {
+    super( Prompt, val, valid );
+    setParam( new Qbins1PG( "Set Q bins or Qx,Qy min/max", null ) );
+    this.setType( "Qbins" );
+  }
 
-   public QbinsPG( String Prompt, Object val, boolean valid ) {
-     super( Prompt, val, valid );
-     setParam( new Qbins1PG( "Set Q bins or Qx,Qy min/max", null ) );
-     this.setType( "Qbins" );
-   }
+  //~ Methods ******************************************************************
 
-   public void initGUI( Vector vals ) {
-     super.initGUI( vals );
-     StringBuffer ttext = new StringBuffer(  );;
-     ttext.append( "  Enter ,startQ ,end Q, Nsteps, and dQ or dQ/Q spacings\n" );
-     ttext.append( "If Nsteps <=0, startQ will just be added. Use this to enter\n" );
-     ttext.append( "  Qx min, Qx max, Qy min, then Qy max for Anisotropic analysis\n" );
-     ttext.append( "\n  Then press Add to add to the lower list box\n" );
-     ttext.append( "      This can be repeated to concatenate lists\n" );
-     ttext.append( "\n Press DONE in lower list box to record the list showing\n\n" );
-     ttext.append( "   The other buttons in the bottom can be used for editting" );
-     getEntryFrame(  ).setHelpMessage( ttext.toString(  ) );
-   }
+  /**
+   * Calls VectorPG's initGUI() then sets the help message.
+   *
+   * @param vals The values to use for initialization.
+   */
+  public void initGUI( Vector vals ) {
+    super.initGUI( vals );
 
-   /**
-    * Validates this QbinsPG.  A QbinsPG is considered valid if its internal
-    * Qbins1PG parameter is valid.
-    */
-   public void validateSelf(  ) {
-     Qbins1PG qb1pg = ( Qbins1PG )getParam(  );
-     if( qb1pg != null ) {
-       qb1pg.validateSelf(  );
+    StringBuffer ttext = new StringBuffer(  );
 
-       setValid( qb1pg.getValid(  ) );
-     } else {
-       setValid( false );
-     }
-   }
+    ;
+    ttext.append( "  Enter ,startQ ,end Q, Nsteps, and dQ or dQ/Q spacings\n" );
+    ttext.append( 
+      "If Nsteps <=0, startQ will just be added. Use this to enter\n" );
+    ttext.append( 
+      "  Qx min, Qx max, Qy min, then Qy max for Anisotropic analysis\n" );
+    ttext.append( "\n  Then press Add to add to the lower list box\n" );
+    ttext.append( "      This can be repeated to concatenate lists\n" );
+    ttext.append( 
+      "\n Press DONE in lower list box to record the list showing\n\n" );
+    ttext.append( 
+      "   The other buttons in the bottom can be used for editting" );
+    getEntryFrame(  ).setHelpMessage( ttext.toString(  ) );
+  }
 
   /**
    * Testbed.
    */
-  public static void main( String args[] ) {
-    JFrame jf = new JFrame("Test");
-    jf.getContentPane().setLayout( new GridLayout( 1,2));
-    QbinsPG qbpg = new QbinsPG( "Test Qbins", null, true );
-    qbpg.initGUI( null );
-    jf.getContentPane().add(qbpg.getGUIPanel());
-    JButton  jb = new JButton("Result");
-    jf.getContentPane().add(jb);
-    jb.addActionListener( new PGActionListener( qbpg));
-    jf.setSize( 500,100);
-    jf.invalidate();
-    jf.show();
-  }
-    
+  public static void main( String[] args ) {
+    JFrame jf = new JFrame( "Test" );
 
-}//QbinsPG
+    jf.getContentPane(  ).setLayout( new GridLayout( 1, 2 ) );
+
+    QbinsPG qbpg = new QbinsPG( "Test Qbins", null, true );
+
+    qbpg.initGUI( null );
+    jf.getContentPane(  ).add( qbpg.getGUIPanel(  ) );
+
+    JButton jb = new JButton( "Result" );
+
+    jf.getContentPane(  ).add( jb );
+    jb.addActionListener( new PGActionListener( qbpg ) );
+    jf.setSize( 500, 100 );
+    jf.invalidate(  );
+    jf.show(  );
+  }
+
+  /**
+   * Validates this QbinsPG.  A QbinsPG is considered valid if its internal
+   * Qbins1PG parameter is valid.
+   */
+  public void validateSelf(  ) {
+    Qbins1PG qb1pg = ( Qbins1PG )getParam(  );
+
+    if( qb1pg != null ) {
+      qb1pg.validateSelf(  );
+      setValid( qb1pg.getValid(  ) );
+    } else {
+      setValid( false );
+    }
+  }
+}
+
+
+//QbinsPG

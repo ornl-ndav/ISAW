@@ -1,5 +1,5 @@
 /*
- * File:  HashPG.java 
+ * File:  HashPG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2004/05/11 18:23:49  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.17  2003/11/25 03:02:32  bouzekc
  *  Now only tries to clone the Label if it has been initialized.
  *
@@ -87,237 +90,296 @@
  *
  *
  */
-
 package DataSetTools.parameter;
 
-import java.util.Vector;
-import DataSetTools.components.ParametersGUI.HashEntry;
 import DataSetTools.components.ParametersGUI.EntryWidget;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import DataSetTools.components.ParametersGUI.HashEntry;
+
 import java.beans.PropertyChangeListener;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import java.util.Vector;
+
+
 /**
- * This is a superclass to take care of many of the common details of
- * Hash Parameter GUIs.
+ * This is a superclass to take care of many of the common details of Hash
+ * Parameter GUIs.  It actually uses parallel key/value vectors.
  */
-abstract public class HashPG extends ParameterGUI{
-    // static variables
-    private   static String TYPE     = "Hash";
-    protected static int    DEF_COLS = 20;
+public abstract class HashPG extends ParameterGUI {
+  //~ Static fields/initializers ***********************************************
 
-    // instance variables
-    private   Vector keys;
-    private   Vector vals;
+  private static String TYPE    = "Hash";
+  protected static int DEF_COLS = 20;
 
-    // ********** Constructors **********
-    public HashPG(String name, Object val){
-        super( name, val );
-        addItem( val.toString(  ), val );
-        setValue( val );
-    }
+  //~ Instance fields **********************************************************
 
-    public HashPG(String name, Object val, boolean valid){
-        super( name, val, valid );
-        addItem( val.toString(  ), val );
-        setValue( val );
-    }
+  private Vector keys;
+  private Vector vals;
 
-    public HashPG(String name, Object val, String key){
-        super(name,val);
-        this.setType(TYPE);
-        addItem( key, val );
-        setValue( val );
-    }
+  //~ Constructors *************************************************************
 
-    public HashPG(String name, Object val, boolean valid, String key){
-        super( name, val, valid );
-        this.setType(TYPE);
-        addItem(key,val);
-        setValue( val );
-    }
+  /**
+   * Creates a new HashPG object.
+   *
+   * @param name The name of this HashPG.
+   * @param val The value of this HashPG.
+   */
+  public HashPG( String name, Object val ) {
+    super( name, val );
+    addItem( val.toString(  ), val );
+    setValue( val );
+  }
 
-    // ********** Methods to deal with the hash **********
+  /**
+   * Creates a new HashPG object.
+   *
+   * @param name The name of this HashPG.
+   * @param val The value of this HashPG.
+   * @param valid True if this HashPG should be considered initially valid.
+   */
+  public HashPG( String name, Object val, boolean valid ) {
+    super( name, val, valid );
+    addItem( val.toString(  ), val );
+    setValue( val );
+  }
 
-    /**
-     * Add a single item to the hash.
-     */
-    public void addItem( String key, Object val){
-        if( (this.keys==null) || (this.vals==null) ){
-            this.keys=new Vector();
-            this.vals=new Vector();
-        }
-        int index=this.keys.indexOf(key);
-        if(index<0){              // do not already have the key
-            this.keys.add(key);        // so add it
-            this.vals.add(val);
-        }else{                    // clobber the last version
-            this.vals.set(index,val);
-        }
-    }
+  /**
+   * Creates a new HashPG object.
+   *
+   * @param name The name of this HashPG.
+   * @param val The value of this HashPG.
+   * @param key The key to use for the value.
+   */
+  public HashPG( String name, Object val, String key ) {
+    super( name, val );
+    this.setType( TYPE );
+    addItem( key, val );
+    setValue( val );
+  }
 
-    /**
-     * Add a set of items to the hash at once.
-     */
-    public void addItems( Vector keys, Vector vals){
-        if( keys.size()!=vals.size() ) return;
-        for( int i=0 ; i<keys.size() ; i++ ){
-            addItem((String)keys.elementAt(i),vals.elementAt(i)); 
-        }
-    }
+  /**
+   * Creates a new HashPG object.
+   *
+   * @param name The name of this HashPG.
+   * @param val The value of this HashPG.
+   * @param valid True if this HashPG should be considered initially valid.
+   * @param key The key to use for the value.
+   */
+  public HashPG( String name, Object val, boolean valid, String key ) {
+    super( name, val, valid );
+    this.setType( TYPE );
+    addItem( key, val );
+    setValue( val );
+  }
 
-    /** 
-     * Clones this HashPG.  Overridden to preserve the hash values.
-     */
-    public Object clone(  ) {
-      try {
-        Class klass           = this.getClass(  );
-        Constructor construct = klass.getConstructor( 
-            new Class[]{ String.class, Object.class } );
-        HashPG pg             = ( HashPG )construct.newInstance( 
-            new Object[]{ null, null } );
-        pg.setName( new String( this.getName(  ) ) );
-        pg.setValue( this.getValue(  ) );
-        pg.setDrawValid( this.getDrawValid(  ) );
-        pg.setValid( this.getValid(  ) );
+  //~ Methods ******************************************************************
 
-        if( keys != null && vals != null && keys.size(  ) > 0 && 
-            vals.size(  ) > 0 ) {
-          pg.keys = ( Vector )keys.clone(  );
-        }
+  /**
+   * Sets the value of the parameter.
+   *
+   * @param val The new value.
+   */
+  public void setValue( Object val ) {
+    Object selVal = null;
 
-        if( this.getInitialized() ) {
-          pg.initGUI( null );
-          pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
-        }
+    if( this.getInitialized(  ) && ( val != null ) ) {
+      selVal = getValue( val.toString(  ) );
 
-        if( getPropListeners(  ) != null ) {
-          java.util.Enumeration e = getPropListeners(  ).keys(  );
-          PropertyChangeListener pcl = null;
-          String propertyName = null;
-
-          while( e.hasMoreElements(  ) ) {
-            pcl            = ( PropertyChangeListener )e.nextElement(  );
-            propertyName   = ( String )getPropListeners(  ).get( pcl );
-
-            pg.addPropertyChangeListener( propertyName, pcl );
-          }
-        }
-
-        return pg;
-      } catch( InstantiationException e ) {
-        throw new InstantiationError( e.getMessage(  ) );
-      } catch( IllegalAccessException e ) {
-        throw new IllegalAccessError( e.getMessage(  ) );
-      } catch( NoSuchMethodException e ) {
-        throw new NoSuchMethodError( e.getMessage(  ) );
-      } catch( InvocationTargetException e ) {
-        throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
+      if( selVal != null ) {
+        ( ( HashEntry )( getEntryWidget(  ).getComponent( 0 ) ) ).setSelectedItem( 
+          selVal );
       }
     }
 
+    super.setValue( selVal );
+  }
 
-    /**
-     * Remove an item from the hash based on its key.
-     */
-    public void removeItem( String key ){
-        int index=keys.indexOf(key);
-        if(index>=0){
-            keys.remove(index);
-            vals.remove(index);
-        }
+  /**
+   * @return The value of this HashPG.
+   */
+  public Object getValue(  ) {
+    Object val = super.getValue(  );
+
+    //update if we have a GUI
+    if( this.getInitialized(  ) ) {
+      val = ( ( HashEntry )( getEntryWidget(  ).getComponent( 0 ) ) ).getSelectedItem(  )
+              .toString(  );
     }
 
-    /**
-     * Private method for resolving the actual value of a given key.
-     */
-    private Object getValue(String key){
-        int index=keys.indexOf(key);
-        if(index>=0){
-            return vals.elementAt(index);
-        }else{
-            return null;
-        }
+    //index and return the value
+    return this.getValue( ( String )val );
+  }
+
+  /**
+   * Add a single item to the hash.
+   *
+   * @param key The key to use for the value.
+   * @param val The new value.
+   */
+  public void addItem( String key, Object val ) {
+    if( ( this.keys == null ) || ( this.vals == null ) ) {
+      this.keys   = new Vector(  );
+      this.vals   = new Vector(  );
     }
 
-    // ********** IParameter requirements **********
+    int index = this.keys.indexOf( key );
 
-    /**
-     * Returns the value of the parameter. While this is a generic
-     * object specific parameters will return appropriate
-     * objects. There can also be a 'fast access' method which returns
-     * a specific object (such as String or DataSet) without casting.
-     */
-    public Object getValue(){
-        Object val=super.getValue();
+    if( index < 0 ) {  // do not already have the key
+      this.keys.add( key );  // so add it
+      this.vals.add( val );
+    } else {  // clobber the last version
+      this.vals.set( index, val );
+    }
+  }
 
-        //update if we have a GUI
-        if(this.getInitialized()){
-            val=((HashEntry)(getEntryWidget().getComponent(0))).getSelectedItem().toString();
-        }
-
-        //index and return the value
-        return this.getValue((String)val);
+  /**
+   * Add a set of items to the hash at once.
+   *
+   * @param keys The keys to use for the values.
+   * @param vals The values to add.
+   */
+  public void addItems( Vector keys, Vector vals ) {
+    if( keys.size(  ) != vals.size(  ) ) {
+      return;
     }
 
-    /**
-     * Sets the value of the parameter.
-     */
-    public void setValue(Object val){
-        Object selVal = null;
-        if(this.getInitialized() && val!=null){
-                selVal = getValue(val.toString());
-                if(selVal != null){
-                    ((HashEntry)(getEntryWidget().getComponent(0)))
-                        .setSelectedItem(selVal);
-                }
-        }
+    for( int i = 0; i < keys.size(  ); i++ ) {
+      addItem( ( String )keys.elementAt( i ), vals.elementAt( i ) );
+    }
+  }
 
-        super.setValue( selVal );
+  /**
+   * Clones this HashPG.  Overridden to preserve the hash values.
+   */
+  public Object clone(  ) {
+    try {
+      Class klass           = this.getClass(  );
+      Constructor construct = klass.getConstructor( 
+          new Class[]{ String.class, Object.class } );
+      HashPG pg             = ( HashPG )construct.newInstance( 
+          new Object[]{ null, null } );
+
+      pg.setName( new String( this.getName(  ) ) );
+      pg.setValue( this.getValue(  ) );
+      pg.setDrawValid( this.getDrawValid(  ) );
+      pg.setValid( this.getValid(  ) );
+
+      if( 
+        ( keys != null ) && ( vals != null ) && ( keys.size(  ) > 0 ) &&
+          ( vals.size(  ) > 0 ) ) {
+        pg.keys = ( Vector )keys.clone(  );
+      }
+
+      if( this.getInitialized(  ) ) {
+        pg.initGUI( null );
+        pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
+      }
+
+      if( getPropListeners(  ) != null ) {
+        java.util.Enumeration e    = getPropListeners(  ).keys(  );
+        PropertyChangeListener pcl = null;
+        String propertyName        = null;
+
+        while( e.hasMoreElements(  ) ) {
+          pcl            = ( PropertyChangeListener )e.nextElement(  );
+          propertyName   = ( String )getPropListeners(  ).get( pcl );
+          pg.addPropertyChangeListener( propertyName, pcl );
+        }
+      }
+
+      return pg;
+    } catch( InstantiationException e ) {
+      throw new InstantiationError( e.getMessage(  ) );
+    } catch( IllegalAccessException e ) {
+      throw new IllegalAccessError( e.getMessage(  ) );
+    } catch( NoSuchMethodException e ) {
+      throw new NoSuchMethodError( e.getMessage(  ) );
+    } catch( InvocationTargetException e ) {
+      throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
+    }
+  }
+
+  /**
+   * Allows for initialization of the GUI after instantiation.
+   *
+   * @param init_values The initial values to use.
+   */
+  public void initGUI( Vector init_values ) {
+    if( this.getInitialized(  ) ) {
+      return;  // don't initialize more than once
     }
 
-    // ********** IParameterGUI requirements **********
-    /**
-     * Allows for initialization of the GUI after instantiation.
-     */
-    public void initGUI(Vector init_values){
-        if(this.getInitialized()) return; // don't initialize more than once
-        if(init_values!=null){
-            if(init_values.size()==1){
-                // the init_values is what to set as the value of the parameter
-                this.setValue(init_values.elementAt(0));
-            }else if(init_values.size()==2){
-                Vector keys=(Vector)init_values.elementAt(0);
-                Vector vals=(Vector)init_values.elementAt(0);
-                if(keys.size()==vals.size()){
-                    for( int i=0 ; i<keys.size() ; i++ ){
-                        if(keys.elementAt(i)instanceof String){
-                            this.addItem((String)keys.elementAt(i),
-                                         vals.elementAt(i));
-                        }
-                    }
-                }
-            }else{
-                // something is not right, should throw an exception
+    if( init_values != null ) {
+      if( init_values.size(  ) == 1 ) {
+        // the init_values is what to set as the value of the parameter
+        this.setValue( init_values.elementAt( 0 ) );
+      } else if( init_values.size(  ) == 2 ) {
+        Vector keys = ( Vector )init_values.elementAt( 0 );
+        Vector vals = ( Vector )init_values.elementAt( 0 );
+
+        if( keys.size(  ) == vals.size(  ) ) {
+          for( int i = 0; i < keys.size(  ); i++ ) {
+            if( keys.elementAt( i ) instanceof String ) {
+              this.addItem( ( String )keys.elementAt( i ), vals.elementAt( i ) );
             }
+          }
         }
-
-        // set up the combobox
-        setEntryWidget(new EntryWidget(new HashEntry(keys)));
-        super.initGUI();
+      } else {
+        // something is not right, should throw an exception
+      }
     }
 
-    /**
-     * An easier method for adding the hash of keys and values.
-     */
-    public void initGUI(Vector keys, Vector vals){
-        if(keys.size()==vals.size()){
-            Vector init_vals=new Vector();
-            init_vals.addElement(keys);
-            init_vals.addElement(vals);
-            this.initGUI(init_vals);
-        }else{
-            this.initGUI(null);
-        }
+    // set up the combobox
+    setEntryWidget( new EntryWidget( new HashEntry( keys ) ) );
+    super.initGUI(  );
+  }
+
+  /**
+   * An easier method for adding the hash of keys and values.
+   *
+   * @param keys The keys for the values.
+   * @param vals The values to use.
+   */
+  public void initGUI( Vector keys, Vector vals ) {
+    if( keys.size(  ) == vals.size(  ) ) {
+      Vector init_vals = new Vector(  );
+
+      init_vals.addElement( keys );
+      init_vals.addElement( vals );
+      this.initGUI( init_vals );
+    } else {
+      this.initGUI( null );
     }
+  }
+
+  /**
+   * Remove an item from the hash based on its key.
+   *
+   * @param key The key for the item to remove.
+   */
+  public void removeItem( String key ) {
+    int index = keys.indexOf( key );
+
+    if( index >= 0 ) {
+      keys.remove( index );
+      vals.remove( index );
+    }
+  }
+
+  /**
+   * Private method for resolving the actual value of a given key.
+   *
+   * @param key The key to retrieve the value for.
+   */
+  private Object getValue( String key ) {
+    int index = keys.indexOf( key );
+
+    if( index >= 0 ) {
+      return vals.elementAt( index );
+    } else {
+      return null;
+    }
+  }
 }

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2004/05/11 18:23:49  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.18  2004/03/15 03:28:40  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -176,7 +179,8 @@ public class IntArrayPG extends StringEntryPG {
   }
 
   /**
-   * Used to clear out the PG.  This sets the internal value to an empty String.
+   * Used to clear out the PG.  This sets the internal value to an empty
+   * String.
    */
   public void clear(  ) {
     setStringValue( "" );

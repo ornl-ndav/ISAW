@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/05/11 18:23:57  bouzekc
+ * Added/updated javadocs and reformatted for consistency.
+ *
  * Revision 1.1  2003/09/09 00:31:56  bouzekc
  * Added to CVS.
  *
@@ -64,8 +67,7 @@ class XScalePGHelper {
       return new Vector(  );
     }
 
-    Vector temp = new Vector( 50, 10 );
-
+    Vector temp   = new Vector( 50, 10 );
     float[] elems = scale.getXs(  );
 
     for( int i = 0; i < elems.length; i++ ) {

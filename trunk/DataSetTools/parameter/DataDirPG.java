@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2004/05/11 18:23:48  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.19  2004/03/12 20:10:28  bouzekc
  *  Added javadoc comments.
  *
@@ -110,8 +113,8 @@ import java.lang.String;
 
 
 /**
- * This is a particular case of the BrowsePG used for loading a single file.
- * The value is a string.
+ * This is a particular case of the BrowsePG used for browsing directories. The
+ * value is a string.
  */
 public class DataDirPG extends BrowsePG {
   //~ Static fields/initializers ***********************************************
@@ -165,10 +168,9 @@ public class DataDirPG extends BrowsePG {
   //~ Methods ******************************************************************
 
   /**
-   * Returns the value of the parameter. While this is a generic object
-   * specific parameters will return appropriate objects. There can also be a
-   * 'fast access' method which returns a specific object (such as String or
-   * DataSet) without casting.
+   * Accessor method for the value.
+   *
+   * @return The value (directory name) of this DataDirPG.
    */
   public Object getValue(  ) {
     String str = FilenameUtil.setForwardSlash( super.getValue(  ).toString(  ) );

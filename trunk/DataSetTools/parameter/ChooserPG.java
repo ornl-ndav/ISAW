@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.35  2004/05/11 18:23:47  bouzekc
+ *  Added/updated javadocs and reformatted for consistency.
+ *
  *  Revision 1.34  2004/05/09 18:33:47  bouzekc
  *  Now checks to be sure that if the GUI has been initialized, the values
  *  in it are removed when clear() is called.
@@ -204,6 +207,10 @@ public abstract class ChooserPG extends ParameterGUI {
   //~ Methods ******************************************************************
 
   /**
+   * Accessor method for the index of an item.
+   *
+   * @param val The value to retrieve the index for.
+   *
    * @return The index of an item.  If the internal list does not exist, this
    *         returns -1.  If the item is not found, this will return a
    *         negative number.
@@ -264,6 +271,8 @@ public abstract class ChooserPG extends ParameterGUI {
   /**
    * Returns the value of the selected item if this ParameterGUI has been
    * getInitialized().  Otherwise, it returns the internal value.
+   *
+   * @return The value of this ChooserPG.
    */
   public Object getValue(  ) {
     Object val = super.getValue(  );
@@ -321,11 +330,11 @@ public abstract class ChooserPG extends ParameterGUI {
   public void clear(  ) {
     if( vals != null ) {
       vals.clear(  );
-      
+
       if( getInitialized(  ) ) {
         ( ( HashEntry )( getEntryWidget(  ).getComponent( 0 ) ) ).removeAllItems(  );
       }
-      
+
       setValue( null );
     }
   }
