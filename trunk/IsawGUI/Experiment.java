@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/12/16 00:00:49  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.7  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -36,13 +39,14 @@
 
 package IsawGUI;
 
-import DataSetTools.dataset.DataSet;
-import DataSetTools.util.IObserver;
 import java.util.Enumeration;
 import java.util.Vector;
-import javax.swing.tree.TreeNode;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+
+import DataSetTools.dataset.DataSet;
 
 /**
  * encapsulates a related collection of DataSet objects.  this class is 

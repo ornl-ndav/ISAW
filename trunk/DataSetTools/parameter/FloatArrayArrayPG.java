@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/12/16 00:05:59  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.11  2003/10/11 19:19:16  bouzekc
  * Removed clone() as the superclass now implements it using reflection.
  *
@@ -72,10 +75,6 @@
  */
 package DataSetTools.parameter;
 
-import DataSetTools.util.StringUtil;
-import javax.swing.*;
-import java.awt.*;
-import DataSetTools.util.PGActionListener;
 
 /**
 *   This ParameterGUI allows for users to enter a Vector whose elements are Vectors

@@ -1,5 +1,8 @@
 /*
  * $Log$
+ * Revision 1.3  2003/12/15 23:52:13  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.2  2003/10/17 03:09:48  bouzekc
  * Fixed javadoc errors.  Added log tag.
  *
@@ -10,7 +13,6 @@ import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import java.text.FieldPosition;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.StreamTokenizer;

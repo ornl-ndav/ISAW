@@ -30,6 +30,9 @@
  *
  *
  * $Log$
+ * Revision 1.15  2003/12/16 00:00:49  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.14  2003/03/28 19:24:47  pfpeterson
  * Removed a debug statement.
  *
@@ -43,18 +46,11 @@
 
 package IsawGUI;
 
-import DataSetTools.components.ui.OperatorMenu;
-import DataSetTools.components.ui.ViewMenu;
-import DataSetTools.dataset.Data;
-import DataSetTools.dataset.DataSet;
-import DataSetTools.operator.Operator;
-import DataSetTools.util.IObserver;
-import DataSetTools.viewer.ViewManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Vector;
+
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -63,7 +59,14 @@ import javax.swing.JSeparator;
 import javax.swing.text.Document;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
+
+import DataSetTools.components.ui.OperatorMenu;
+import DataSetTools.components.ui.ViewMenu;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.operator.Operator;
+import DataSetTools.util.IObserver;
+import DataSetTools.viewer.ViewManager;
 
 
 /**
