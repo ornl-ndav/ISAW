@@ -29,6 +29,11 @@
 # number DMR-0218882.
 #
 # $Log$
+# Revision 1.2  2004/05/07 18:24:59  dennis
+# Now extends GenericTOF_SCD so it appears in the TOF_SCD
+# submenu.  Changed Title to "Integrate Multiple Runs 2",
+# so suffix 2 now appears in menu item.
+#
 # Revision 1.1  2004/01/16 16:03:04  dennis
 # Added previously existing scripts to the new
 # subdirectories.
@@ -39,8 +44,6 @@
 # Revision 1.1  2003/07/08 23:43:19  bouzekc
 # Added to CVS.
 #
-#
-
 # Script to integrate peaks in multiple SCD files. 
 # $Date$
 #
@@ -54,7 +57,7 @@
 #  - There is a "lsxxxx.mat" file for each xxxx run.
 
 
-class integrate_multiple_runs2( GenericOperator ):
+class integrate_multiple_runs2( GenericTOF_SCD ):
     def setDefaultParameters( self ):
         self.super__clearParametersVector()
         self.addParameter( DataDirPG( "Raw Data Path", None ) )
@@ -115,7 +118,7 @@ class integrate_multiple_runs2( GenericOperator ):
                 first = 0
                 append = Boolean( 1 )
 
-        echo = EchoObject( "--- integrate_multiple_runs is done ---") # Echo
+        echo = EchoObject( "--- integrate_multiple_runs_2 is done ---") # Echo
         echo.getResult()
         # show the integrate file
         viewASCII = ViewASCII( out_path + expname + ".integrate") # ViewASCII
@@ -127,4 +130,4 @@ class integrate_multiple_runs2( GenericOperator ):
 
     # Constructor
     def __init__( self ):
-        Operator.__init__( self, "Integrate Multiple Runs" )
+        Operator.__init__( self, "Integrate Multiple Runs 2" )
