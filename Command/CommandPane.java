@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.62  2003/10/10 01:05:04  bouzekc
+ * Another attempt at removing CTRL-M characters.
+ *
  * Revision 1.61  2003/10/10 01:03:14  bouzekc
  * Removed Windows CTRL-M characters.
  *
@@ -521,7 +524,6 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
    */
   public void removePropertyChangeListener( PropertyChangeListener listener ) {
     PC.removePropertyChangeListener( listener );
-
     //SP.removePropertyChangeListener( listener);
   }
 
@@ -780,7 +782,8 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
               CP.Immediate.setCaretPosition( p );
             }
           }
-            //if perror>=0
+
+          //if perror>=0
           line = E.getElementCount(  ) - 1;
 
           if( line >= 0 ) {
@@ -798,11 +801,13 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
             System.out.println( "XXCVB" );
           }
         }
-          //if immediate window
+
+        //if immediate window
       }
     }
   }
-    //End MyKeyListener
+
+  //End MyKeyListener
 
   /**
    * DOCUMENT ME!
@@ -901,7 +906,6 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
           return;
         }
         CP.SP.reset(  );
-
         //CP.PC.firePropertyChange("Clear", null,null);
       }
       /*else if( e.getSource().equals( CP.Save )
@@ -1080,7 +1084,8 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
         }
       }
     }
-      // end actionperformed 
+
+    // end actionperformed 
 
     /**
      * DOCUMENT ME!
@@ -1097,5 +1102,6 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
       }
     }
   }
-    //End mouseAdapter 
+
+  //End mouseAdapter 
 }
