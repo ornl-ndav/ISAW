@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/01/30 21:06:36  pfpeterson
+ * Really is an object now. Added more error checking and methods to
+ * calculate between pixel, real-space, and hkl (both directions).
+ * Also some formatting changes (sorry).
+ *
  * Revision 1.7  2002/11/27 23:22:20  pfpeterson
  * standardized header
  *
@@ -37,6 +42,8 @@ package DataSetTools.operator.Generic.TOF_SCD;
 
 import java.io.*;
 import java.text.DecimalFormat;
+import DataSetTools.math.*;
+import DataSetTools.dataset.*;
 
 /**
  * Methods for getting information about atoms dependent on the
@@ -45,35 +52,39 @@ import java.text.DecimalFormat;
 
 public class Peak{
   // instance variables
-  private int     seqnum   = 0;
-  private int     h        = 0;
-  private int     k        = 0;
-  private int     l        = 0;
-  private float   x        = Float.NaN;
-  private float   y        = Float.NaN;
-  private float   z        = Float.NaN;
-  private float   xcm      = 0f;
-  private float   ycm      = 0f;
-  private float   t        = 0f;
-  private float   wl       = 0f;
-  private int     ipkobs   = 0;
-  private float   inti     = 0f;
-  private float   sigi     = 0f;
-  private int     reflag   = 0;
-  private int     nrun     = 0;
-  private int     detnum   = 0;
-  private float   nearedge = 0;
-  private float   detA     = 0f;
-  private float   detA2    = 0f;
-  private float   detD     = 0f;
-  private float   chi      = 0f;
-  private float   phi      = 0f;
-  private float   omega    = 0f;
-  private float   monct    = 0f;
-  private float[] calib    = null;
-  private float   L1       = 0f;
-  private float   T0       = 0f;
-  private float   T1       = 0f;
+  private int       seqnum   = 0;
+  private float     h        = 0;
+  private float     k        = 0;
+  private float     l        = 0;
+  private float     x        = Float.NaN;
+  private float     y        = Float.NaN;
+  private float     z        = Float.NaN;
+  private float     xcm      = 0f;
+  private float     ycm      = 0f;
+  private float     t        = 0f;
+  private float     wl       = 0f;
+  private int       ipkobs   = 0;
+  private float     inti     = 0f;
+  private float     sigi     = 0f;
+  private int       reflag   = 0;
+  private int       nrun     = 0;
+  private int       detnum   = 0;
+  private float     nearedge = 0;
+  private float     detA     = 0f;
+  private float     detA2    = 0f;
+  private float     detD     = 0f;
+  private float     chi      = 0f;
+  private float     phi      = 0f;
+  private float     omega    = 0f;
+  private float     monct    = 0f;
+  private float[]   calib    = null;
+  private float[][] UB       = null;
+  private float[][] invUB    = null;
+  private float[][] ROT      = {{1f,0f,0f},{0f,1f,0f},{0f,0f,1f}};
+  private float     L1       = 0f;
+  private float     T0       = 0f;
+  private float     T1       = 0f;
+  private XScale    xscale   = null;
   
   /* --------------------Constructor Methods-------------------- */
   /**
@@ -124,30 +135,36 @@ public class Peak{
   /**
    * Mutator method for index
    */
-  public void sethkl( int H, int K, int L){
+  public void sethkl( float H, float K, float L){
     this.h=H;
     this.k=K;
     this.l=L;
+    if(invUB!=null){
+      this.hkl_to_real();
+      if(calib!=null){
+        this.real_to_pixel();
+      }
+    }
   }
   
   /**
    *  Accessor method for h
    */
-  public int h(){
+  public float h(){
     return this.h;
   }
   
   /**
    *  Accessor method for k
    */
-  public int k(){
+  public float k(){
     return this.k;
   }
   
   /**
    *  Accessor method for l
    */
-  public int l(){
+  public float l(){
     return this.l;
   }
   
@@ -166,15 +183,35 @@ public class Peak{
     this.y=Y;
     this.z=Z;
     
-    this.update_real();
+    if(calib!=null){
+      this.pixel_to_real();
+      if(UB!=null){
+        this.real_to_hkl();
+      }
+    }
   }
   
+  /**
+   * Accessor method for setting what times the peak lies
+   * between. Something must be done to pixel_to_real to recreate
+   * this.
+   */
   public void times(float t0, float t1){
     this.T0=t0;
     this.T1=t1;
-    update_real();
+
+    if(calib!=null){
+      this.pixel_to_real();
+      if(UB!=null){
+        this.real_to_hkl();
+      }
+    }
   }
   
+  public void time( XScale time){
+    this.xscale=time;
+  }
+
   /**
    *  Accessor method for the pixel row.
    */
@@ -190,14 +227,14 @@ public class Peak{
   }
   
   /**
-   *  Accessor method for the horizontal position.
+   *  Accessor method for the horizontal position which is returned in cm.
    */
   public float xcm(){
     return this.xcm;
   }
   
   /**
-   *  Accessor method for the vertical position.
+   *  Accessor method for the vertical position which is returned in cm.
    */
   public float ycm(){
     return this.ycm;
@@ -323,10 +360,16 @@ public class Peak{
   }
   
   /**
-   *  Mutator method for the pixel distance from edge.
+   *  Mutator method for the pixel distance from edge. If there is
+   *  anything wrong with any of the pixel values this is set to -1.
    */
   public float nearedge(int MINX, int MAXX,int MINY, int MAXY,
                         int MINZ, int MAXZ){
+    if( this.x==-1 || this.y==-1 || this.z==-1 ){
+      this.nearedge=-1;
+      return this.nearedge;
+    }
+
     float dx=Math.abs((float)MINX-this.x);
     float dy=Math.abs((float)MINY-this.y);
     float dz=Math.abs((float)MINY-this.z);
@@ -353,48 +396,65 @@ public class Peak{
   }
   
   /**
-   *  Accessor method for the detector angle
+   *  Accessor method for the detector angle in degrees
    */
   public float detA(){
     return this.detA;
   }
 
   /**
-   *  Mutator method for the detector angle
+   *  Mutator method for the detector angle in degrees
    */
   public float detA(float DETA){
     this.detA=DETA;
+    if(this.calib!=null){
+      this.pixel_to_real();
+      if(this.UB!=null){
+        this.real_to_hkl();
+      }
+    }
     return this.detA();
   }
   
   /**
-   *  Accessor method for the second detector angle
+   *  Accessor method for the second detector angle in degrees
    */
   public float detA2(){
     return this.detA2;
   }
 
   /**
-   *  Mutator method for the second detector angle
+   *  Mutator method for the second detector angle given in degrees
    */
   public float detA2(float DETA){
     this.detA2=DETA;
+    if(this.calib!=null){
+      this.pixel_to_real();
+      if(this.UB!=null){
+        this.real_to_hkl();
+      }
+    }
     return this.detA2();
   }
   
   /**
-   *  Accessor method for the detector distance
+   *  Accessor method for the detector distance which is given in cm.
    */
   public float detD(){
     return this.detD;
   }
 
   /**
-   *  Mutator method for the detector distance
+   *  Mutator method for the detector distance which is given in cm.
    */
   public float detD(float DETD){
     this.detD=DETD;
-    this.update_real();
+    if(this.calib!=null){
+      this.pixel_to_real();
+      if(this.UB!=null){
+        this.real_to_hkl();
+      }
+    }
     return this.detD();
   }
   
@@ -410,7 +470,12 @@ public class Peak{
    */
   public void L1(float path){
     this.L1=path;
-    this.update_real();
+    if(this.calib!=null){
+      this.pixel_to_real();
+      if(this.UB!=null){
+        this.real_to_hkl();
+      }
+    }
   }
   
   /**
@@ -435,16 +500,28 @@ public class Peak{
   }
   
   /**
-   *  Mutator method for the sample orientation
+   *  Mutator method for the sample orientation. This will
+   *  automatically update the values of hkl.
    */
   public void sample_orient(float CHI, float PHI, float OMEGA){
     this.chi=CHI;
     this.phi=PHI;
     this.omega=OMEGA;
+
+    // create a new rotation matrix if needed
+    if(this.ROT!=null) this.ROT=makeROT(this.chi,this.phi,this.omega);
+
+    // update the inverse of the rotated UB matrix
+    if(this.UB!=null){
+      this.invUB=
+        LinearAlgebra.getInverse(LinearAlgebra.mult(this.ROT,this.UB));
+      this.real_to_hkl();
+    }
   }
   
   /**
-   * Mutator method for the calibration
+   * Mutator method for the calibration. This will automatically
+   * update the values of xcm, ycm, wl, and hkl.
    */
   public void calib(float[] CALIB){
     if(CALIB==null){
@@ -456,91 +533,327 @@ public class Peak{
       this.calib[i]=CALIB[i];
     }
     
-    this.update_real();
+    this.pixel_to_real();
+    if(this.UB!=null){
+      this.real_to_hkl();
+    }
   }
   
+  /**
+   * Accessor method for the orientation matrix
+   */
+  public float[][] UB(){
+    return this.UB;
+  }
+
+  /**
+   * Mutator method method for the orientation matrix. This will
+   * automatically update the values of hkl.
+   */
+  public void UB(float[][] ub){
+    // check that the value we want to set to is valid
+    if(ub==null) return;
+    if(! LinearAlgebra.isSquare(ub)) return;
+    if(ub.length!=3) return;
+
+    // create a new matrix if necessary
+    if(this.UB==null) this.UB=new float[3][3];
+
+    // copy the values into the local version
+    for( int i=0 ; i<3 ; i++ ){
+      for( int j=0 ; j<3 ; j++ ){
+        this.UB[i][j]=ub[i][j];
+      }
+    }
+
+    // find the inverse
+    if(this.ROT!=null){
+      this.invUB=
+        LinearAlgebra.getInverse(LinearAlgebra.mult(this.ROT,this.UB));
+    }else{
+      this.invUB=LinearAlgebra.getInverse(this.UB);
+    }
+
+    // update hkl
+    this.real_to_hkl();
+  }
+
   /* --------------------- private methods --------------------- */
   /**
    * Method to allow easier update of real space calculation
    */
-  private void update_real(){
+  private void pixel_to_real(){
     if(calib==null) return;
     
     if(calib.length==5){ // this is the old method
-      this.xcm(calib[1],calib[3]);
-      this.ycm(calib[2],calib[4]);
+      this.xcm=calib[1]*(this.x()-0.5f)+calib[3];
+      this.ycm=calib[2]*(this.y()-0.5f)+calib[4];
     }else{               // don't know what to do with other calibrations
       return;
     }
     
     if(this.L1>0f){
-      this.wl(this.L1*100f,calib[0]);
+      //double h=(1E6*6.62606876E-34); // in kg*cm*A/us
+      //double m=1.67492716E-27; // in kg
+      double hom=0.3955974; // h/m in cm*A/us
+      float l1=this.L1*100F;
+      float l2=this.detD(); // in cm
+      
+      // find the time
+      float deltaT=0f;
+      if(this.xscale!=null){
+        int Tslice=(int)this.z;
+        if(Tslice<this.xscale.getNum_x()-1){
+          deltaT=this.xscale.getX(Tslice+1)-this.xscale.getX(Tslice);
+        }else{
+          deltaT=this.xscale.getX(Tslice)-this.xscale.getX(Tslice-1);
+        }
+      }else{
+        deltaT=this.T1-this.T0;
+      }
+      float remain=(this.z+1f)%1f;
+      float time=0f;
+      if(this.xscale!=null)
+        time=this.xscale.getX((int)this.z)+remain*deltaT;
+      else
+        time=this.T0+remain*deltaT;
+      
+      // shift the time to by the calibrated offset
+      time=calib[0]+time;
+      
+      // if any of the values are not properly defined set the wl to zero
+      if( l1==0f || l2==0f || this.xcm()==0f || this.ycm()==0f || time==0
+          || Float.isNaN(l1) || Float.isNaN(l2) || Float.isNaN(this.xcm())
+          || Float.isNaN(this.ycm()) || Float.isNaN(time) ){
+        this.wl=0f;
+        return;
+      }
+      
+      // calculate the corrected path length
+      double ld=l2*l2+this.xcm*this.xcm+this.ycm*this.ycm;
+      float l=l1+(float)Math.sqrt(ld);
+    
+      //System.out.print("T="+time+"  L="+l+"  ");
+      this.wl=(float)(hom*time/l);
+      //System.out.println("WL="+this.wl);
     }else{
       System.out.println("L1=0");
+      return;
     }
   }
   
-  /**
-   * Mutator method for the horizontal position.
-   */
-  private float xcm( float ax, float bx){
-    this.xcm=ax*(this.x()-0.5f)+bx;
-    return this.xcm;
+  private void real_to_pixel(){
+    if(calib==null) return;
+
+    if(calib.length==5){ // this is the old method
+      this.x=0.5f+(this.xcm-calib[3])/calib[1];
+      this.y=0.5f+(this.ycm-calib[4])/calib[2];
+    }else{               // don't know what to do with other calibrations
+      return;
+    }
+
+    if(this.L1>0f){
+      double hom  = 0.3955974; // h/m in cm*A/us
+      float l1    = this.L1*100F;
+      float l2    = this.detD(); // in cm
+      
+      // if any of the values are not properly defined set the z to zero
+      if( l1==0f || l2==0f || this.xcm()==0f || this.ycm()==0f ){
+        this.z=0f;
+        return;
+      }
+      
+      // calculate the corrected path length
+      double ld=l2*l2+this.xcm*this.xcm+this.ycm*this.ycm;
+      float l=l1+(float)Math.sqrt(ld);
+    
+      // calculate time from wavelength
+      float time=(float)((this.wl*l/hom)-calib[0]);
+
+      // calculate time boundaries around this
+      //System.out.println("XSCALE="+this.xscale);
+      this.z=getZofTime(time,this.xscale);
+      this.T0=(int)this.z;
+      this.T1=this.T0+1f;
+      //System.out.println("TIME["+this.T0+"]="+xscale.getX((int)this.T0));
+      if(xscale!=null && this.z!=-1f ){
+        this.T0=xscale.getX((int)this.T0);
+        this.T1=xscale.getX((int)this.T1);
+        // now fill in z
+        this.z=this.z+(time-this.T0)/(this.T1-this.T0);
+      }else{
+        this.T0=0f;
+        this.T1=0f;
+        this.z=-1;
+      }
+    }else{
+      System.out.println("L1=0");
+      return;
+    }
   }
-  
-  /**
-   *  Mutator method for the vertical position.
-   */
-  private float ycm(float ay, float by){
-    this.ycm=ay*(this.y()-0.5f)+by;
-    return 	this.ycm;
+
+  private void real_to_hkl(){
+    // get the Q-vector/2pi
+    float[] Qvec=getQ();
+    if(Qvec==null) return;
+
+    // zero out the three indices
+    this.h=0f;
+    this.k=0f;
+    this.l=0f;
+
+    // calculate hkl
+    for( int i=0 ; i<3 ; i++ ){
+      this.h=this.h+invUB[0][i]*Qvec[i];
+      this.k=this.k+invUB[1][i]*Qvec[i];
+      this.l=this.l+invUB[2][i]*Qvec[i];
+    }
   }
-  
-  /**
-   *  Mutator method for the wavelength.
-   */
-  private float wl(float l1, float t_offset){ //, float T0, float T1){
-    double h=(1E6*6.62606876E-34); // in kg*cm*A/us
-    double m=1.67492716E-27; // in kg
-    double hom=0.3955974; // h/m in cm*A/us
-    float l2=this.detD(); // in cm
-    //System.out.print("("+this.ipkobs()+")"+this.t());
-    //System.out.print(wl+"("+l1+","+l2+","+t0+")=");
-    
-    // find the time
-    float deltaT=this.T1-this.T0;
-    float remain=(this.z+1f)%1f;
-    float time=this.T0+remain*deltaT;
-    
-    // shift the time to by the calibrated offset
-    time=t_offset+time;
-    //this.t=this.t()+t_offset;
-    //System.out.println("->"+this.t());
-    
-    // if any of the values are not properly defined set the wl to
-    // zero
-    if( l1==0f || l2==0f || this.xcm()==0f 
-        || this.ycm()==0f || time==0 ){
+
+  private void hkl_to_real(){
+    float[] pos   = new float[3];
+    double  small = 1.0E-06;
+
+    // get the orientation matrix with the euler angles dealt with
+    float[][] UBR=LinearAlgebra.mult(this.ROT,this.UB);
+
+    // remove sample orientation and UB matrix
+    pos[0]=UBR[0][0]*h+UBR[0][1]*k+UBR[0][2]*l;
+    pos[1]=UBR[1][0]*h+UBR[1][1]*k+UBR[1][2]*l;
+    pos[2]=UBR[2][0]*h+UBR[2][1]*k+UBR[2][2]*l;
+
+    // If pos[0] = 0.0, then sin(theta), theta and two-theta are all zero,
+    // in which case return WL=0.0.
+    if (Math.abs(pos[0]) < small)  {
+      this.xcm=0f;
+      this.ycm=0f;
       this.wl=0f;
-      return this.wl;
+      return;
     }
-    
-    // calculate the corrected path length
-    double ld=Math.pow((double)l2,2.0)
-      +Math.pow((double)this.xcm(),2.0)
-      +Math.pow((double)this.ycm(),2.0);
-    float l=l1+(float)Math.sqrt(ld);
-    /*float l=(float)Math.pow((double)l2,2.0)
-      +(float)Math.pow((double)this.xcm(),2.0)
-      +(float)Math.pow((double)this.ycm(),2.0);
-      l=l1+(float)Math.sqrt((double)l);*/
-    
-    //System.out.println("("+(l-l1)+"):"+(h*(this.t())/(m*l)));
-    //return this.wl((float)(h*this.t()/(m*l)));
-    this.wl=(float)(hom*time/l);
-    return this.wl;
+
+    // calculate wavelength of incident neutron                          
+    //   HH is the square of the magnitude of the diffraction vector.
+    //   WL = 2 d sin(theta)
+    //      = (2 / d*) sin(theta)
+    //      = (2 / sqrt(HH)) * (XD / sqrt(HH))
+    //      = 2.0 * XD / HH
+    // 
+    float hh = pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2];
+    this.wl  = -2f*pos[0]/hh; // added a minus sign for now
+    //System.out.println("HKLTOREAL("+hh+")"+pos[0]+","+pos[1]+","+pos[2]);
+
+    // check that the wavelength is non-zero
+    if(Math.abs(this.wl)<small){
+      this.xcm=0f;
+      this.ycm=0f;
+      this.wl=0f;
+      return;
+    }
+
+    // Calculate XCM and YCM detector coordinates. First translate
+    // the origin from the reciprocal lattice origin to the center of
+    // the sphere of reflaction.
+    double xdp = pos[0]+(1f/this.wl);
+    double ydp = 0.;
+    double zdp = 0.;
+
+    // rotate to a detector angle of zero                                
+    double ang = this.detA*Math.PI/180.;
+    double xt = xdp;
+    double yt = pos[1];
+    xdp = xt*Math.cos(ang)+yt*Math.sin(ang);
+    ydp = -xt*Math.sin(ang)+yt*Math.cos(ang);
+    zdp = pos[2];
+
+    // calculate XCM and YCM                                             
+    this.xcm = (float)(-(ydp/xdp)*this.detD);
+    this.ycm = (float)((zdp/xdp)*this.detD);
   }
-  
+
+  /**
+   * Get the value of Z given a time and xscale
+   */
+  private static float getZofTime(float time, XScale xscale){
+    //System.out.println("00:"+time);
+    if( time==0f || xscale==null ) return -1;
+
+    //System.out.println("01:"+xscale);
+
+    if(time<xscale.getStart_x() || time>xscale.getEnd_x() )
+      return -1;
+    //System.out.println("02");
+    for( int i=1 ; i<xscale.getNum_x() ; i++ ){
+      if( time>=xscale.getX(i-1) && time<=xscale.getX(i) )
+        return (float)(i-1);
+    }
+
+    //System.out.println("03");
+    return -1;
+  }
+
+  /**
+   * Despite its name this actually calculates 1/d (Qvec/2PI).
+   */
+  private float[] getQ(){
+    float[] Qvec   = new float[3];
+    float[] pos    = new float[3];
+    float[] post_d = new float[3];
+    float[] post_a = new float[3];
+    float[] post_l = new float[3];
+    
+    // convert to 1/d
+    double r=Math.sqrt(this.xcm*this.xcm+this.ycm*this.ycm
+                       +this.detD*this.detD);
+    if(Double.isNaN(r) || Float.isNaN(this.wl)) return null;
+    if(r==0. || this.wl==0f) return null;
+    post_d[0]=(float)(-1.*this.detD/(r*this.wl));
+    post_d[1]=(float)(this.xcm/(r*this.wl));
+    post_d[2]=(float)(this.ycm/(r*this.wl));
+    
+    // rotate the detector to where it actually is
+    float deta = -this.detA;                     // Dennis, 10/1/2002
+    double cosa=Math.cos(-deta*Math.PI/180.);
+    double sina=Math.sin(-deta*Math.PI/180.);
+    post_a[0]=(float)(    post_d[0]*cosa+post_d[1]*sina);
+    post_a[1]=(float)(-1.*post_d[0]*sina+post_d[1]*cosa);
+    post_a[2]=post_d[2];
+      
+    // translate the origin
+    post_l[0]=post_a[0]-(float)(1./this.wl);      // Dennis, 10/1/2002
+    post_l[1]=post_a[1];
+    post_l[2]=post_a[2];
+
+    return post_l;
+  }
+
+  /**
+   * This generates the rotation matrix to go from hkl to real (sample
+   * to lab).
+   *
+   * @param chi angle in degrees
+   * @param phi angle in degrees
+   * @param omega angle in degrees
+   */
+  private static float[][] makeROT(float chi, float phi, float omega){
+    float[][] ROT={{1f,0f,0f},
+                   {0f,1f,0f},
+                   {0f,0f,1f}};
+
+    // calculate the rotation
+    Tran3D tran3d=null;
+    tran3d=tof_calc.makeEulerRotation(phi,chi,-omega);
+    float[][] tranrot=tran3d.get();
+
+    //copy the rotation matrix into the return matrix (just the important bits)
+    for( int i=0 ; i<3 ; i++ ){
+      for( int j=0 ; j<3 ; j++ ){
+        ROT[i][j]=tranrot[i][j];
+      }
+    }
+
+    return ROT;
+  }
+
   /* --------------------- clone method --------------------- */
   /**
    *  Produce a copy of the object.
@@ -559,6 +872,7 @@ public class Peak{
     peak.detD(this.detD());
     peak.L1=this.L1;
     peak.T0=this.T0;
+    peak.xscale=this.xscale; // passing a reference
     peak.T1=this.T1;
     peak.monct(this.monct());
     peak.sample_orient(this.chi(),this.phi(),this.omega());
@@ -627,6 +941,18 @@ public class Peak{
     return rs;
   }
   
+  /**
+   * Format a float by padding on the left.
+   */
+  static private String format(float number, int length){
+    String rs=format(Math.round(number),length);
+    while(rs.length()<length){
+      rs=" "+rs;
+    }
+    return rs;
+  }
+  
+
   /**
    * Format a string by padding on the left.
    */
