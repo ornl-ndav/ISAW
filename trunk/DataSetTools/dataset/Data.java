@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2002/09/11 23:26:06  dennis
+ *     The toString() method now returns the String obtained from the
+ *  getLabel() method if it is a non-degenerate String.  It returns
+ *  "Group ID" + group_id, if getLabel() otherwise.
+ *     The "Label" attribute is no longer set.  The getLabel() method
+ *  should be used instead of the Label attribute.
+ *
  *  Revision 1.31  2002/09/11 22:51:40  dennis
  *     The group_id field is now set from the Attribute, if either form
  *  of setAttribute() is called with the attribute name "Group ID" or if
@@ -221,9 +228,6 @@ public abstract class Data implements IData,
     setGroup_ID( group_id );
     selected = 0;
     hide     = false;
-    StringAttribute attr = new StringAttribute( Attribute.LABEL, 
-                                                "Group " + group_id );
-    attr_list.setAttribute( attr );
   }
 
   /**
@@ -1226,12 +1230,12 @@ public abstract class Data implements IData,
    */
   public String toString()
   {
-    Attribute attr = getAttribute( Attribute.LABEL );
+    String result = getLabel();
 
-    if ( attr != null )
-      return "Label " + attr;
+    if ( result == null || result.length() == 0 )
+      return Attribute.GROUP_ID + group_id;
     else
-      return "Group ID " + group_id;
+      return result;
   }
 
 
