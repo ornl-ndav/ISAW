@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/12/08 20:54:31  rmikk
+ * Changed saving the NeXus NXentry.title field to the Attribute.RUN_TITLE  instead
+ *  of to Attribute.TITLE.
+ *
  * Revision 1.2  2003/11/23 23:45:01  rmikk
  * Now implements the interface IProcessNxEntry
  *
@@ -151,7 +155,7 @@ public class ProcessNxEntry  implements IProcessNxEntry{
 
      //------------------ Title DataSet Attribute?? -----------------
      ConvertDataTypes.addAttribute( DS,
-         ConvertDataTypes.CreateStringAttribute( Attribute.TITLE,
+         ConvertDataTypes.CreateStringAttribute( Attribute.RUN_TITLE,
                NexUtils.getStringFieldValue( NxEntryNode, "title")));
    
     //---------------- Number of pulses DataSet attribute ------------------
@@ -160,6 +164,8 @@ public class ProcessNxEntry  implements IProcessNxEntry{
        if(! X.isNaN())
         DS.setAttribute( new FloatAttribute( Attribute.NUMBER_OF_PULSES,
                                              X.floatValue()*30.f ) );
+
+     //---------------- End time and date -----------------------
 
     //--------------Attributes from other NXentry children -----------
       for( int i = 0; i < NxEntryNode.getNChildNodes(); i++ ){
