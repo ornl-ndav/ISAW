@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.16  2004/05/04 19:04:35  dennis
+ * Now clears DataSetPG after using value, to avoid memory leak.
+ *
  * Revision 1.15  2004/04/19 14:00:27  rmikk
  * String parameter values are retained
  * MediaList parameters were added
@@ -333,6 +336,9 @@ public class JavaWrapperOperator extends GenericOperator {
       //method.
       for( int i = 0; i < parameters.size(  ); i++ ) {
         values[i] = ( ( ParameterGUI )parameters.get( i ) ).getValue(  );
+        if ( parameters.get(i) instanceof DataSetPG )
+          ((DataSetPG)parameters.get( i )).clear();   // clear DataSetPG to 
+                                                      // avoid memory leak !
       }
 
       for( int k = 0; k < fieldParams.length; k++ ) {
