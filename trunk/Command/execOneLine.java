@@ -230,16 +230,20 @@ public class execOneLine implements IObservable ,
             return 0; 
           if( S.length() <= 0 )
             return 0;
+          if( end <= 0 ) 
+	      return 0;
           if( start >= end )
             return S.length();
-          if( start >= S.length() )
+          if( (start >= S.length()) || ( start >= end) )
             return start;
       
        i = skipspaces( S , 1 , start );
+       if( i > end) i = end;
        
-       j = findfirst( S , 1 , i , " (+-*=;:'/^+,[]&)\",","" );
+       j = findfirst( S , 1 , i , " (+-*=;:'/^+,[]<>&)\",","" );
+       if( j > end) j = end;
        if( (i >= 0) && (i < S.length() ) && (i < end) )
-	 if(" (+-*=;:'/^+,[]&)\"," .indexOf( S.charAt( i ) ) >= 0 )
+	 if(" (+-*=<>;:'/^+,[]&)\"," .indexOf( S.charAt( i ) ) >= 0 )
 	   j = i ;
 
         
@@ -249,7 +253,7 @@ public class execOneLine implements IObservable ,
             {return i;
             }
       j1 = skipspaces( S , 1 , j );
-      
+      if( j1 > end) j1 = end;
       if( j <= i ) 
          {C = S.substring( i, i + 1 ); 
           j1 = j; 
@@ -257,14 +261,15 @@ public class execOneLine implements IObservable ,
       else 
          C = S.substring( i , j ).trim();
      
-      if ( (j1 >= 0) && (j1 < S.length()))
+      if ( (j1 >= 0) && (j1 < S.length()) && ( j1 < end))
         if(  S.charAt( j1 ) == '[' )                // Check for []
 	  {C = C +  brackSub( S , j1 , end );
 	  if(Debug)
 	      System.out.println("aft brack sub C,err=" + C + perror);
 	   if(perror >=0) return j1;
 	   j = finddQuote( S , j1 + 1 , "]" , "[]()");
-           if( (j < 0)  || ( j >= S.length()))
+           if( j > end) j = end;
+           if( (j < 0)  || ( (j >= S.length()) || ( j >= end)))
 	     { seterror( j1 , ER_MissingBracket+j+"A");
 	       return j1;
 	     }
@@ -274,6 +279,7 @@ public class execOneLine implements IObservable ,
 	     }
            j = j + 1;
            j1 = skipspaces( S , 1 , j);
+           if( j1 > end) j1 = end;
            
           }
       if( C.charAt(0) != '\"' )
@@ -338,6 +344,7 @@ public class execOneLine implements IObservable ,
                 return j;
                }
           j = skipspaces( S , 1 , j + 1 );
+          if( j > end ) j = end;
                 if( Debug )
                   System.out.println( "in (j=" + j + " , " + i );
              if( j >= end )
@@ -348,7 +355,7 @@ public class execOneLine implements IObservable ,
             return j; 
           if( S.charAt(j) == ':' ) 
 	      return j;
-          if( "+-*^/&".indexOf(S.charAt(j)) >= 0 )
+          if( "+-*^/<>&".indexOf(S.charAt(j)) >= 0 )
             return execArithm( S , j , end );
 
           if( ",):]".indexOf(S.charAt(j)) >= 0 )
@@ -369,7 +376,7 @@ public class execOneLine implements IObservable ,
          }
        // Start to /* new stuff
        else 
-	 { if((j1<S.length())&&(j1>=0))
+	 { if((j1<S.length())&&(j1>=0)&&(j1 < end))
              if( S.charAt(j1) == '=' )
 		 {//System.out.println("C"); 
 		 if( start != 0)  
@@ -402,14 +409,14 @@ public class execOneLine implements IObservable ,
                 if( Debug )
                   System.out.println( "Aft operate R1,Result=" + R1 + "," + Result );
 	  j = skipspaces( S , 1 , j );
-
-	  if( (j < 0) ||  (j >= S.length()) )
+          if( j > end) j = end;
+	  if( (j < 0) ||  (j >= S.length())|| ( j >= end) )
 	       return j;
 
 	  if( "),:]".indexOf( S.charAt( j ) ) >= 0 )
             return j;
 
-	  if( "+-*^/&".indexOf( S.charAt( j )) >= 0 )
+	  if( "+-*^/<>&".indexOf( S.charAt( j )) >= 0 )
             return execArithm( S , j , end );
 
 	     seterror( j , ER_IllegalCharacter );
@@ -432,11 +439,11 @@ public class execOneLine implements IObservable ,
           if( j >= S.length() )
             return j;        
           if( j >= end )
-            return j;	
+            return end;	
           if( S.charAt(j) == ')' )
             return j;   
         
-          if( "+-^//&*".indexOf(S.charAt(j)) >= 0 )
+          if( "+-^//&<>*".indexOf(S.charAt(j)) >= 0 )
              return execArithm(S , j , end);               
 	  if( ",):]".indexOf(S.charAt(j)) >= 0 )
             return j;
@@ -462,7 +469,7 @@ public class execOneLine implements IObservable ,
            
          if(( j >= end) ||  (j >= S.length()) )
            return j;
-        // if( "+-//&*".indexOf( S.charAt(j) ) >= 0 )
+        // if( "+-//&*<>".indexOf( S.charAt(j) ) >= 0 )
            return execArithm( S ,j , end );
          if(",)]:".indexOf( S.charAt( j )) >= 0 )
            return j;
@@ -487,11 +494,11 @@ public class execOneLine implements IObservable ,
           if( Debug )
             System.out.println( "Aft operate R1,Result=" + R1 + "," + Result );
 	  j = skipspaces( S , 1 , j );
-	  if( (j < 0) ||  (j >= S.length()) )
+	  if( (j < 0) ||  (j >= S.length())||( j >= end) )
 	    return j;
 	  if( "),]:".indexOf( S.charAt( j ) ) >= 0 )
             return j;
-	  if( "+-^//&*".indexOf( S.charAt( j )) >= 0 )
+	  if( "+-^//&*<>".indexOf( S.charAt( j )) >= 0 )
             return execArithm( S , j , end );
 	  seterror( j , ER_IllegalCharacter );
 	  return j;
@@ -514,10 +521,10 @@ public class execOneLine implements IObservable ,
 	    if( perror >= 0 )
 	      return perror;
             j = skipspaces( S , 1 , j );
-	    if(( j >= S.length()) ||  (j < 0) )
+	    if(( j >= S.length()) ||  (j < 0) || ( j >= end) )
 	       return j;
 	    if( "),]:".indexOf( S.charAt( j ) ) >=0 )return j;
-	    if( "+-^//&*".indexOf( S.charAt( j ) ) >= 0 )
+	    if( "+-^//&*<>".indexOf( S.charAt( j ) ) >= 0 )
 	      return execArithm(S,j,end);
 
             seterror( j , "Improper symbol");
@@ -555,7 +562,7 @@ public class execOneLine implements IObservable ,
 	     j = j1;
              if( Debug )
                System.out.println("S4" + j1 + "," + j);
-             if( "+-/&*".indexOf( S.charAt( j )) >= 0 )
+             if( "+-/&*<>".indexOf( S.charAt( j )) >= 0 )
                return execArithm( S , j , end );
              if(",)]:".indexOf( S.charAt( j )) >= 0 )
                return j;
@@ -632,7 +639,7 @@ public class execOneLine implements IObservable ,
        String varname=null;
              if(Debug)
 	         System.out.println("ere get varname j= "+j+","+S.length());
-       if( j<S.length())
+       if( (j<S.length()) && ( j < end ))
          if(j>=0)
 	   if ( S.charAt( j ) == ',')
 	       {       if(Debug)
@@ -655,6 +662,7 @@ public class execOneLine implements IObservable ,
 	        return j;
                }
           j = skipspaces( S , 1 , j + 1 );
+         if( j > end) j = end;
 
           } 
       
@@ -790,6 +798,7 @@ public class execOneLine implements IObservable ,
 
    
       i = skipspaces(S,1,start);
+      if( i > end) i = end;
       if( Debug )
         System.out.print("Disp A ,i" + i);
 
@@ -858,12 +867,12 @@ public class execOneLine implements IObservable ,
 
     private int  execSave( String S , int start, int end )
       { 
-	  if( ( start < 0) || (start >= S.length()  ) )
+	  if( ( start < 0) || (start >= S.length()  ) || ( start >= end) )
 	     {seterror(S.length(),"internal Errory");
 	      return S.length();
 	     }
           int j=skipspaces( S, 1 , start );
-          if( (j<0) || ( j >= S.length() ) )
+          if( (j<0) || ( j >= S.length() )|| ( j >= end) )
 	    { seterror( j ,  ER_MissingArgument);
 	      return j;
             }
@@ -990,11 +999,11 @@ public class execOneLine implements IObservable ,
 	      {seterror( S.length() + 5 , "internal error" + start );
 	       return S.length() + 5;
 	      }
-            if( start >= S.length() )
+            if( (start >= S.length()) || (start >= end) )
               {seterror( S.length() + 5 , "internal error" + start );
 	       return S.length() + 5;
 	      }
-            if( "+-*/&^".indexOf( S.charAt( start ) ) < 0 )
+            if( "+-*/&^<>".indexOf( S.charAt( start ) ) < 0 )
               {seterror( start , "internal error" + start );
 	       return S.length() + 5;
 	      }
@@ -1010,9 +1019,9 @@ public class execOneLine implements IObservable ,
              
          R1 = Result;
          i = skipspaces( S , 1 , j );
-
+         if( i > end) i = end;
          done = false;
-         if( (i > end) ||  (i >= S.length()) ||  (i < 0) )
+         if( (i >= end) ||  (i >= S.length()) ||  (i < 0) )
            done = true;
          else if( "),]:".indexOf( S.charAt( i ) ) >= 0 )
 	   done = true;
@@ -1031,7 +1040,7 @@ public class execOneLine implements IObservable ,
 
            i = j;
            done = false;
-           if( ( i > end ) ||  ( i >= S.length() ) ||  ( i < 0 ) )
+           if( ( i >= end ) ||  ( i >= S.length() ) ||  ( i < 0 ) )
              done = true;
            else if( "),]:".indexOf( S.charAt( i ) ) >= 0 )
 	     done = true;
@@ -1049,7 +1058,7 @@ public class execOneLine implements IObservable ,
         boolean done;
        
         int i = skipspaces( S , 1 , start );
-          if( ( i < 0 ) ||  ( i >= S.length() ) )
+          if( ( i < 0 ) ||  ( i >= S.length() ) || ( i >= end) )
             {seterror( start , ER_MissingArgument +"A");
              return start;
             }
@@ -1065,7 +1074,7 @@ public class execOneLine implements IObservable ,
                perror = start;
              return perror;
             }  
-        if( (j >= S.length()) )
+        if( (j >= S.length()) || ( j >= end ) )
           {
            operateArith( R1 , Result , S.charAt( i ) );
            if( perror >= S.length() )
@@ -1077,7 +1086,7 @@ public class execOneLine implements IObservable ,
               seterror( i + 1 , "internal Error3" );
                return i;
              }
-        if( "),+-:]".indexOf( S.charAt( j  )) >= 0 )
+        if( "),+-:]<>".indexOf( S.charAt( j  )) >= 0 )
           {          
             operateArith( R1 , Result , S.charAt( i ) );
                if( perror >= S.length() )
@@ -1124,7 +1133,7 @@ public class execOneLine implements IObservable ,
         i = skipspaces( S , 1 , j );
         if( ( i >= end ) ||  ( i >= S.length() ) ||  ( i < 0 ) ) 
           done = true;
-        else if( "+-&),:]".indexOf( S.charAt( i ) ) >= 0 )
+        else if( "+-&),:]<>".indexOf( S.charAt( i ) ) >= 0 )
 	  done = true;
         else if( "*/".indexOf( S.charAt( j ) ) < 0 )
 	  {seterror( j , ER_IllegalCharacter );
@@ -1144,9 +1153,9 @@ public class execOneLine implements IObservable ,
            j1;
        String R1;
        if(Debug)
-	   System.out.print("Exec1Fact st"+start);
+	   System.out.print("Exec1Fact st"+start+","+end);
        i = skipspaces( S , 1 , start );
-          if( i >= S.length() )
+          if( (i >= S.length()) || ( i >= end ) )
 	    {seterror( i , ER_MissingArgument +"B");
 	     return i;
 	    }
@@ -1164,8 +1173,14 @@ public class execOneLine implements IObservable ,
              }
 	 
 	  j = i + S1.length() + 2;
+
           if(Debug)
 	     System.out.println("aft getStr"+S1+","+i+","+j);
+          if( (j > end) || ( j > S.length()))
+             { perror = j;
+               serror = ER_MisMatchQuote ;
+               return j;
+             }
           Result = S1; 
 	  if(perror < 0)	  
 	     return skipspaces( S , 1 , j );		  
@@ -1199,7 +1214,7 @@ public class execOneLine implements IObservable ,
         {      if( Debug )
                  System.out.println("in LParen,i=" + i);
           j = execute( S , i + 1 , end );
-	  if( ( j < 0 ) ||  ( j >= S.length() ) )
+	  if( ( j < 0 ) ||  ( j >= S.length() ) || ( j >= end ) )
 	    {seterror( i , ER_MisMatchParens );
 	     return i;
 	    } 
@@ -1211,15 +1226,17 @@ public class execOneLine implements IObservable ,
         } 
      
 
-      j = findfirst( S , 1 , i , "+-*(=&^/):[]{},\" " , "" );
+      j = findfirst( S , 1 , i , "+-*<>(=&^/):[]{},\" " , "" );
+      if( j > end) j = end;
       j1 = skipspaces( S , 1 , j );
-      
+      if( j1 > end) j1 = end;
     
-         if( ( j < 0 ) ||  ( j > S.length() ) ||  ( j1 > S.length() ) )
+         if( ( j < 0 ) ||  ( j > S.length() ) ||  ( j1 > S.length() )
+               || ( j > end) || ( j1 > end) )
            {seterror( S.length() + 3 , "internalerrorp" );
             return S.length() + 3;	
            } 
-         else if( j< S.length())
+         else if( (j< S.length()) && ( j < end))
 	   if(S.charAt(j) == '\"')
 	     { seterror( j , ER_IllegalCharacter);
 	       return j;
@@ -1229,13 +1246,14 @@ public class execOneLine implements IObservable ,
       String C;
       C = S.substring( i , j );
       
-      if ( (j1 >= 0) && (j1 < S.length()))
+      if ( (j1 >= 0) && (j1 < S.length()) && ( j1 < end ) )
          if(  S.charAt( j1 ) == '[' )                // Check for []
 	  {C = C +  brackSub( S , j1 , end );
 	  
 	   if(perror >=0) return j1;
 	   j = finddQuote( S , j1 + 1 , "]" , "[]()");
-           if( (j < 0)  || ( j >= S.length()))
+           if( j> end) j = end;
+           if( (j < 0)  || ( (j >= S.length())||(j >= end)))
 	     { seterror( j1 , ER_MissingBracket+j+"C");
 	       return j1;
 	     }
@@ -1251,7 +1269,7 @@ public class execOneLine implements IObservable ,
  
     
 
-      if( j1 < S.length() )
+      if( (j1 < S.length()) && ( j1 < end ) )
         if( S.charAt( j1 ) == '(' )//function
           {
            return execOperation( C , S , j , end );
@@ -1263,7 +1281,7 @@ public class execOneLine implements IObservable ,
       boolean valgot = false ;
       try{
 	  Result = new Integer( C );
-          if( j < S.length()) 
+          if( (j < S.length()) && ( j < end )) 
 	    {if( S.charAt(j) != '^')return j;
              valgot = true; 
             }
@@ -1275,7 +1293,7 @@ public class execOneLine implements IObservable ,
       if(!valgot)
       try{
           Result = new Float( C );
-          if( j < S.length()) 
+          if( (j < S.length()) && ( j < end )) 
 	    {if( S.charAt(j) != '^')return j;
              valgot = true; 
             }
@@ -1290,7 +1308,7 @@ public class execOneLine implements IObservable ,
         Result = getVal ( C);
         if( perror >= 0)
 	   perror = i;
-        if( j < S.length()) 
+        if( (j < S.length()) && ( j < end )) 
 	    {if( S.charAt(j) != '^')return j;
 	    valgot = true;
             }
@@ -1298,7 +1316,7 @@ public class execOneLine implements IObservable ,
         }
 
        if( (perror < 0))
-	 if( j < S.length())
+	 if( (j < S.length()) && ( j < end ))
            if( S.charAt(j) == '^' ) 
 	       {Object R3= Result;
                 j = execOneFactor( S , j+1 , end );
@@ -1361,7 +1379,7 @@ public class execOneLine implements IObservable ,
        R1 = Result;
        boolean done = (i < 0) ||  (i >= S.length()) ||  (i >= end);
        if( !done )
-	 if( "+-),:]".indexOf( S.charAt( i ) ) >= 0 )
+	 if( "+-)<>,:]".indexOf( S.charAt( i ) ) >= 0 )
            done = true;
        while( !done )
          { 
@@ -1375,7 +1393,7 @@ public class execOneLine implements IObservable ,
 	   i = j;
 	   done = (i  < 0) ||  (i >= S.length()) ||  (i > end);
            if( !done )
-	     if( "+-),:]".indexOf( S.charAt( i ) ) >= 0 )
+	     if( "+-)<>,:]".indexOf( S.charAt( i ) ) >= 0 )
                done = true;
 	   R1 = Result;
          }
@@ -1389,7 +1407,7 @@ public class execOneLine implements IObservable ,
  *NOTE: The data types will converted if possible and the appropriate add, 
  *      subtract,... will be used
  */
-    private void operateArith( Object R1 , Object R2 , char c )
+    public void operateArith( Object R1 , Object R2 , char c )
       {
 	if( Debug )
           System.out.println("in Op ARith o=" + c);
@@ -1401,7 +1419,7 @@ public class execOneLine implements IObservable ,
           {operateArithDS( R1 , R2 , c );
 	   return;
 	  }
-	if( "+-/*^".indexOf( c ) >= 0 )
+	if( "+-/*<>^".indexOf( c ) >= 0 )
           { 
             if( R1 instanceof String )
               {
@@ -1638,7 +1656,7 @@ public class execOneLine implements IObservable ,
 //Command is the operation(DS or Attrib or...)
 //start is the position of the (
     private  int execOperation( String Command , String S ,  int start , int end )
-      {if( ( start < 0 ) ||  ( start >= S.length() ) )
+      {if( ( start < 0 ) ||  ( start >= S.length() ) || ( start >= end ) )
 	 {seterror( S.length() + 2 , "internal errorp" );
 	 return start;
 	 }
@@ -1656,7 +1674,7 @@ public class execOneLine implements IObservable ,
          if( perror >= 0 )
            return perror;
          Args.add( Result );
-         if( j >= S.length() )
+         if( ( j >= S.length() ) || ( j >= end ) )
 	   {seterror( j , ER_MisMatchParens );
 	    return j;
 	   }
