@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/05/06 17:30:19  rmikk
+ * Added a setTime Method to the interface
+ *
  * Revision 1.4  2004/01/24 22:02:38  bouzekc
  * Removed unused imports.
  *
@@ -84,4 +87,6 @@ public interface IArrayMaker_DataSet extends IArrayMaker{
                                          float PointedAtTime);
   
   public void SelectRegion( ISelectedRegion region);
+  
+  public void setTime( float time);
 }
