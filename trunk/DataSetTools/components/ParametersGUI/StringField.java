@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/01/23 15:45:42  bouzekc
+ *  Added javadoc comments.
+ *
  *  Revision 1.5  2004/01/23 15:33:49  bouzekc
  *  Reformatted for clarity.
  *
@@ -60,8 +63,6 @@ import java.awt.Toolkit;
 
 import java.beans.*;
 
-import java.util.Locale;
-
 import javax.swing.*;
 import javax.swing.text.*;
 
@@ -69,13 +70,12 @@ import javax.swing.text.*;
 /**
  * This class is intended to be used as a replacement for JTextField whan a
  * integer value is to be entered. The major difference is an overridden
- * insertString method which beeps when something that isn't found in an
- * integer is entered.
+ * insertString method which beeps and does not allow entry when something
+ * that isn't found in the type (e.g. integer for IntegerField)  is entered.
  */
-public class StringField extends JTextField {
+public abstract class StringField extends JTextField {
   //~ Instance fields **********************************************************
 
-  private transient Toolkit toolkit;
   private PropertyChangeSupport propBind = new PropertyChangeSupport( this );
 
   //~ Constructors *************************************************************
@@ -83,6 +83,8 @@ public class StringField extends JTextField {
   /**
    * Constructs an StringField with the appropriate number of columns and the
    * default value of zero.
+   * 
+   * @param columns The number of columns.
    */
   public StringField( int columns ) {
     this( "", columns );
@@ -91,19 +93,21 @@ public class StringField extends JTextField {
   /**
    * Constructs an StringField with a specified default value and number of
    * columns.
+   * 
+   * @param value The default value.
+   * @param columns The number of columns.
    */
   public StringField( String value, int columns ) {
     super( value, columns );
-    toolkit = Toolkit.getDefaultToolkit(  );
   }
 
   //~ Methods ******************************************************************
 
   /**
-   * DOCUMENT ME!
+   * Adds a PropertyChangeListener.
    *
-   * @param prop DOCUMENT ME!
-   * @param pcl DOCUMENT ME!
+   * @param prop The property to listen to.
+   * @param pcl The PropertyChangeListener to add.
    */
   public void addPropertyChangeListener( 
     String prop, PropertyChangeListener pcl ) {
@@ -115,9 +119,9 @@ public class StringField extends JTextField {
   }
 
   /**
-   * DOCUMENT ME!
+   * Adds a PropertyChangeListener.
    *
-   * @param pcl DOCUMENT ME!
+   * @param pcl The PropertyChangeListener to add.
    */
   public void addPropertyChangeListener( PropertyChangeListener pcl ) {
     super.addPropertyChangeListener( pcl );
@@ -128,9 +132,9 @@ public class StringField extends JTextField {
   }
 
   /**
-   * DOCUMENT ME!
+   * Removes a PropertyChangeListener.
    *
-   * @param pcl DOCUMENT ME!
+   * @param pcl The PropertyChangeListener to remove.
    */
   public void removePropertyChangeListener( PropertyChangeListener pcl ) {
     super.removePropertyChangeListener( pcl );
@@ -141,17 +145,21 @@ public class StringField extends JTextField {
   }
 
   /**
+   * Internal method to confirm that the text can be added.  This should be
+   * overridden by subclasses.
+   *
+   * @param offset The offset to use for inserting.
+   * @param insertString The String to insert.
+   * @param currentString The String that currently exists in the StringField
+   */
+  protected abstract boolean isOkay( 
+    int offset, String insertString, String currentString );
+
+  /**
    * A hook to override the insertString method.
    */
   protected Document createDefaultModel(  ) {
     return new StringDocument( this );
-  }
-
-  /**
-   * Internal method to confirm that the text can be added.
-   */
-  private boolean isOkay( int offs, String inString, String curString ) {
-    return true;
   }
 
   //~ Inner Classes ************************************************************
@@ -169,7 +177,7 @@ public class StringField extends JTextField {
     /**
      * Creates a new StringDocument object.
      *
-     * @param T DOCUMENT ME!
+     * @param T The StringField to use.
      */
     public StringDocument( StringField T ) {
       super(  );
@@ -180,30 +188,37 @@ public class StringField extends JTextField {
 
     /**
      * Overrides the default insertString method. Insert if okay, beep if not.
+     * 
+     * @param offset The starting offset >= 0.
+     * @param insertString The String to insert.
+     * @param attributeSet The attributes for the inserted content.
      */
-    public void insertString( int offs, String str, AttributeSet a )
+    public void insertString( int offset, String insertString, AttributeSet contentsAttributes )
       throws BadLocationException {
       String oldText = textBox.getText(  );
 
-      if( textBox.isOkay( offs, str, textBox.getText(  ) ) ) {
-        super.insertString( offs, str, a );
+      if( textBox.isOkay( offset, insertString, textBox.getText(  ) ) ) {
+        super.insertString( offset, insertString, contentsAttributes );
 
         if( propBind != null ) {
           propBind.firePropertyChange( 
             IParameter.VALUE, oldText, textBox.getText(  ) );
         }
       } else {
-        toolkit.beep(  );
+        Toolkit.getDefaultToolkit(  ).beep(  );
       }
     }
 
     /**
      * Overrides the default remove method.
+     * 
+     * @param offset The starting offset >= 0.
+     * @param length The number of characters to remove >= 0.
      */
-    public void remove( int offs, int len ) throws BadLocationException {
+    public void remove( int offset, int length ) throws BadLocationException {
       String oldText = textBox.getText(  );
 
-      super.remove( offs, len );
+      super.remove( offset, length );
 
       //System.out.println("value:"+oldText+"->"+textBox.getText());
       if( propBind != null ) {
