@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/18 20:23:52  dennis
+ * Switched to use SampleOrientation attribute instead of separate
+ * phi, chi and omega values.
+ *
  * Revision 1.3  2002/11/27 23:31:01  pfpeterson
  * standardized header
  *
@@ -190,34 +194,15 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
     if ( ds == null )
       return new ErrorString("File not found: " + file_names[count]);
     Data    d  = ds.getData_entry(0);
-    float omega = ((Float)ds.getAttributeValue(Attribute.SAMPLE_OMEGA))
-                         .floatValue();
-    float phi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_PHI))
-                         .floatValue();
-    float chi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_CHI))
-                         .floatValue();
 
-    Tran3D omegaR = new Tran3D();
-    Tran3D phiR   = new Tran3D();
-    Tran3D chiR   = new Tran3D();
-    Tran3D one_eighty_z = new Tran3D();
-    Tran3D combinedR = new Tran3D();
+    SampleOrientation orientation =
+        (SampleOrientation)d.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
 
-    Vector3D i_vec = new Vector3D( 1, 0, 0 );
-    Vector3D k_vec = new Vector3D( 0, 0, 1 );
+    Tran3D combinedR = orientation.getGoniometerRotationInverse();
 
-    one_eighty_z.setRotation( 180, k_vec );
-    phiR.setRotation( -phi, k_vec );
-    chiR.setRotation( -chi, i_vec );
-    omegaR.setRotation( +omega, k_vec );   // rotate by +45 deg, about z,
-                                           // (using right hand rule)
-    combinedR.setIdentity();
-    combinedR.multiply_by( phiR );
-    combinedR.multiply_by( chiR );
-    combinedR.multiply_by( omegaR );
-    System.out.println("phi, chi, omega = " + phi +
-                                       ", " + chi +
-                                       ", " + omega );
+    System.out.println("phi, chi, omega = " + orientation.getPhi() +
+                                       ", " + orientation.getChi() +
+                                       ", " + orientation.getOmega() );
     int n_data = ds.getNum_entries();
     int n_bins = d.getX_scale().getNum_x() - 1;
 

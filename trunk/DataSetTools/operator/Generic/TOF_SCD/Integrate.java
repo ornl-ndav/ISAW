@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/02/18 20:21:01  dennis
+ * Switched to use SampleOrientation attribute instead of separate
+ * phi, chi and omega values.
+ *
  * Revision 1.5  2003/02/13 17:04:33  pfpeterson
  * Added proper logic for summing of slice integrations.
  *
@@ -264,17 +268,15 @@ public class Integrate extends GenericTOF_SCD{
     // get the sample orientation
     float chi=0f, phi=0f, omega=0f;
     {
-      Object orient_val=null;
-      orient_val=data.getAttributeValue(Attribute.SAMPLE_CHI);
-      if(orient_val!=null && orient_val instanceof Float)
-        chi=((Float)orient_val).floatValue();
-      orient_val=data.getAttributeValue(Attribute.SAMPLE_PHI);
-      if(orient_val!=null && orient_val instanceof Float)
-        phi=((Float)orient_val).floatValue();
-      orient_val=data.getAttributeValue(Attribute.SAMPLE_OMEGA);
-      if(orient_val!=null && orient_val instanceof Float)
-        omega=((Float)orient_val).floatValue();
-      orient_val=null;
+      SampleOrientation orientation =
+        (SampleOrientation)data.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
+      if ( orientation != null )
+      {
+        phi   = orientation.getPhi();
+        chi   = orientation.getChi();
+        omega = orientation.getOmega();
+      }
+      orientation = null;
     }
 
     // get the orientation matrix

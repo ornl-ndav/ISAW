@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2003/02/18 20:21:00  dennis
+ * Switched to use SampleOrientation attribute instead of separate
+ * phi, chi and omega values.
+ *
  * Revision 1.15  2003/02/12 21:48:42  dennis
  * Changed to use PixelInfoList instead of SegmentInfoList.
  *
@@ -191,9 +195,12 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     float detD  = Util.detector_distance(data_set,detA);
 
     // sample orientation
-    float chi   = ((Float)data_set.getAttributeValue(Attribute.SAMPLE_CHI)).floatValue();
-    float phi   = ((Float)data_set.getAttributeValue(Attribute.SAMPLE_PHI)).floatValue();
-    float omega = ((Float)data_set.getAttributeValue(Attribute.SAMPLE_OMEGA)).floatValue();
+    SampleOrientation orientation =
+    (SampleOrientation)data_set.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
+
+    float chi   = orientation.getChi();
+    float phi   = orientation.getPhi();
+    float omega = orientation.getOmega();
 
     // determine the minimum and maximum row and columns
     outer: for( int i=0 ; i<ids.length ; i++ ){
