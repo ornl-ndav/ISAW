@@ -33,6 +33,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.40  2003/03/10 05:58:33  dennis
+ *  Server now clones the Data blocks when changing the
+ *  attribute lists, if they Data blocks were not already
+ *  cloned for rebinning.
+ *
  *  Revision 1.39  2003/03/07 22:44:38  dennis
  *  Now supports GET_DS_X_RANGE command.
  *  Improved handling of rebinning.
@@ -817,7 +822,13 @@ public class LiveDataServer extends    DataSetServer
      for ( int i = 0; i < new_ds.getNum_entries(); i++ )
      {
        AttributeList empty_list = new AttributeList();
-       Data d = ds.getData_entry(i);
+       Data d = new_ds.getData_entry(i);
+       if ( !must_rebin )                     // we didn't clone it, so we must
+       {                                      // clone now or we wreck our
+         d = (Data)d.clone();                 // master list of attributes
+         new_ds.replaceData_entry( d, i );  
+       }
+
        d.setAttributeList( empty_list );
      }
 
@@ -825,7 +836,12 @@ public class LiveDataServer extends    DataSetServer
      for ( int i = 0; i < new_ds.getNum_entries(); i++ )
      {
        String    name;
-       Data d = ds.getData_entry(i);
+       Data d = new_ds.getData_entry(i);
+       if ( !must_rebin )                     // we didn't clone it, so we must
+       {                                      // clone now or we wreck our
+         d = (Data)d.clone();                 // master list of attributes
+         new_ds.replaceData_entry( d, i ); 
+       }
        for ( int j = d.getNum_attributes()-1; j >= 0; j-- ) // go through each 
        {                                                    // attribute list
           name = d.getAttribute(j).getName();               // once
@@ -833,7 +849,6 @@ public class LiveDataServer extends    DataSetServer
                name.equals( Attribute.SLOT  )      ||
                name.equals( Attribute.INPUT )      ||
                name.equals( Attribute.NOMINAL_ENERGY_IN )            ||
-               name.equals( Attribute.NOMINAL_SOURCE_TO_SAMPLE_TOF ) ||
                name.equals( Attribute.EFFICIENCY_FACTOR )            )
              d.removeAttribute(j);
        }
