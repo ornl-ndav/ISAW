@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2002/11/07 16:33:04  pfpeterson
+ *  Closes viewer when message is recieved from the DataSet.
+ *
  *  Revision 1.29  2002/10/16 19:22:15  dennis
  *  Added option to "link/unlink" views.  If the view is not linked to
  *  other views, the POINTED_AT_CHANGED messages are not passed out
@@ -430,6 +433,8 @@ public class ViewManager extends    JFrame
      if ( observed == dataSet )             // message about original dataSet
      {
        if ( r_string.equals( DESTROY ))
+         destroy();
+       else if ( r_string.equals( CLOSE_VIEWERS ))
          destroy();
 
        else if (  r_string.equals( DATA_DELETED )   ||
