@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2003/03/10 19:14:57  pfpeterson
+ * Moved code that reads a text file into a StringBuffer to be its
+ * own method.
+ *
  * Revision 1.18  2003/03/07 21:53:43  pfpeterson
  * openDoc(String) now uses a StringBuffer for putting the file together
  * then adds it to a document.
@@ -255,6 +259,26 @@ public class Util
    */
    public Document openDoc( String filename )
    {
+     StringBuffer buffer=readTextFile(filename);
+     if(buffer==null || buffer.length()<=0)
+       return null;
+
+     Document doc=new PlainDocument();
+     try{
+       doc.insertString(0,buffer.toString(),null);
+       return doc;
+     }catch(BadLocationException e){
+       SharedData.addmsg("BadLocationException while reading "+filename);
+       return null;
+     }
+   }
+
+  /**
+   * Load an ascii file into a StringBuffer. If an Exception is
+   * encountered this prints information to the StatusPane and returns
+   * null.
+   */
+   public static StringBuffer readTextFile(String filename){
      if( filename==null || filename.length()<=0 ) return null;
      
      FileReader fr=null;
@@ -283,16 +307,8 @@ public class Util
        }
      }
 
-     Document doc=new PlainDocument();
-     try{
-       doc.insertString(0,buffer.toString(),null);
-       return doc;
-     }catch(BadLocationException e){
-       SharedData.addmsg("BadLocationException while reading "+filename);
-       return null;
-     }
+     return buffer;
    }
-
 
    public void appendDoc( Document doc, String S )
    {
