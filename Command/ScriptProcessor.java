@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.37  2003/03/17 20:17:57  pfpeterson
+ * Fixed a problem with macro lines. This is done by (internally)
+ * inserting a space on either side of a '=' sign so the parsing
+ * happens as expected.
+ *
  * Revision 1.36  2003/03/14 16:55:07  pfpeterson
  * No longer creates list of IObservers or a PropertyChangeSupport
  * unless caller registers a need.
@@ -802,6 +807,13 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       index=line.indexOf("$");
       if(index<0) return false; // something wrong
       buffer=new StringBuffer(line.substring(index+1).trim());
+    }
+
+    // insert extra spaces if there is an '=' sign
+    index=buffer.toString().indexOf("=");
+    if( index>0 ){
+      buffer.insert(index+1," ");
+      buffer.insert(index," ");
     }
 
     // get the variable name
