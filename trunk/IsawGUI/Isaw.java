@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/06/08 14:55:49  dennis
+ *  Removed unused try{} catch{} block.
+ *
  *  Revision 1.15  2001/06/08 14:08:49  chatter
  *  Added code to create a new IsawProps.dat file in the user home directory if one is not already present
  *
@@ -980,13 +983,6 @@ public String getDescription(){
             
                 if(s=="Exit")
                 {
-	  try
-		{
-		//	Runtime.getRuntime().exec("C:\\Winnt\\Notepad.exe");
-
-		}
-	     catch(Exception e){};
-
                     System.exit(0);
                 }
 
