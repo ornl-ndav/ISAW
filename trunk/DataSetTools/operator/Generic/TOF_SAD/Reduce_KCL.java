@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2004/04/21 15:48:44  chatterjee
+ * Fixed 2D case binning out-of-bounds error
+ *
  * Revision 1.22  2004/04/21 14:27:24  chatterjee
  * Added a new parameter beam_stop dimension (bs_dim).
  * Scripts calling Reduce_KCL will need to provide this number in cms.
@@ -793,7 +796,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
               Nx=-1; Ny=-1;
               Nx = (int)java.lang.Math.floor(DNx);
               Ny = (int) java.lang.Math.floor(DNy);
-	      if( Nx >=0)if(Ny>=0)if(Qx <Qxmax)if(Qy<Qymax){
+	      if( Nx >=0)if(Ny>=0)if(Qx <Qxmax)if(Qy<Qymax)if(Nx<DIVx)if(Ny<DIVy){
                 float W =sens*eff[k]*Mon[k];
                 WTQXQY[Nx][Ny] = WTQXQY[Nx][Ny] + //weightYvals[k];
                           W;       
