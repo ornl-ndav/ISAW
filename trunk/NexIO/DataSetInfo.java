@@ -18,5 +18,4 @@ package NexIO;
        this.endGroupID = EndGroupID ;
        this.label = label;
     }
-
-  }//DataSetInfo
+}//DataSetInfo
