@@ -2,6 +2,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.4  2001/07/23 13:58:55  neffk
+ * added getExperiments() and improved some comments.
+ *
  * Revision 1.3  2001/07/20 16:42:16  neffk
  * improved delete mechanism--now Data and DataSet objects can be
  * deleted from the tree.  added selectNodesWithPaths(), worked
@@ -226,6 +229,19 @@ public class JDataTree
 
 
   /**
+   * saves us the trouble of writing this mess every time we
+   * need to do something to the Modified root node.  also allows
+   * us some flexibility in changing the structure of the tree...
+   */ 
+  protected DefaultMutableTreeNode getModifiedRoot()
+  {
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode)tree.getModel().getRoot();
+    
+    return (DefaultMutableTreeNode)root.getChildAt( 0 );
+  }
+
+
+  /**
    * delete all selected nodes
    */
   public void deleteSelectedNodes()
@@ -238,11 +254,10 @@ public class JDataTree
 
 
   /**
-   * delete nodes
+   * delete the nodes to which 'tps' leads
    */
   public void deleteNodesWithPaths( TreePath[] tps )
   {
-
     if( tps.length > 1 )
       for( int i=0;  i<tps.length-1;  i++ )
         deleteNode( tps[i], false );
@@ -344,15 +359,33 @@ public class JDataTree
 
 
   /**
-   * clear all selections
+   * clear all selected Experiment, DataSet, and Data objects.
    */
   public void clearSelections()
   {
+
+
+
+                            //notify all DataSet objects,
+                            //just in case.  this could
+                            //be done more efficiently by
+                            //only updating DataSet objects
+                            //where there were selections.
+    DataSet[] dss = getDataSets();
+    for( int i=0;  i<dss.length;  i++ )
+    {
+      dss[i].clearSelections();
+      dss[i].notifyIObservers( IObserver.SELECTION_CHANGED );
+    }
+
     tree.getSelectionModel().clearSelection();
-    //TODO: notify DataSet objects
   }
 
 
+
+  /**
+   * selects the nodes that the elements of 'tps' lead to.
+   */ 
   public void selectNodesWithPaths( TreePath[] tps )
   {
     for( int i=0;  i<tps.length;  i++ )
@@ -360,14 +393,24 @@ public class JDataTree
   }
 
 
+  /**
+   * selects a specific node.  the node can be of any data type
+   * allowed in the tree (Experiment, DataSetMutableTreeNode, and
+   * DataMutableTreeNode).  this method does NOT clear all
+   * other selections; all previous selections are persistent.
+   */ 
   public void selectNode( MutableTreeNode node )
   {
     if( node instanceof Experiment )
     {
+      Experiment exp = (Experiment)node;
+      exp.setSelected( true );
     }
 
     if( node instanceof DataSetMutableTreeNode )
     {
+      DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)node;
+      ds_node.setSelected( true );
     }
 
     if( node instanceof DataMutableTreeNode )
@@ -381,6 +424,7 @@ public class JDataTree
       ds.notifyIObservers( IObserver.SELECTION_CHANGED );
     }
   }
+
 
   /**
    * examines the type of change made to 'observed' and
@@ -539,6 +583,29 @@ public class JDataTree
   }
 
 
+  /**
+   * get a list of all of the Experiments in the tree.
+   */ 
+  public Experiment[] getExperiments()
+  {
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode)tree.getModel().getRoot();
+    int total_exp_count = root.getChildCount() + getModifiedRoot().getChildCount();
+
+    int e_count = 0;
+    Experiment[] exps = new Experiment[ total_exp_count ];
+    for( int i=0;  i<root.getChildCount();  i++ ) 
+      exps[ e_count++ ] = (Experiment)root.getChildAt(i);  //this should be safe as
+                                                           //long as no one changes
+                                                           //the structure of the tree.
+                                                           //see class documentation
+                                                           //for details.
+
+    for( int i=0;  i<getModifiedRoot().getChildCount();  i++ )
+      exps[ e_count++ ] = (Experiment)getModifiedRoot().getChildAt(i);
+   
+    return exps;
+  }
+
 
 /*-------------------------=[ IDataSetListHandler ]=--------------------------*/
 
@@ -582,7 +649,6 @@ public class JDataTree
 
     return ds_nodes_array;
   }
-
 
 
 
