@@ -80,7 +80,7 @@ public class CommandPane  extends JPanel
     JTextArea  Commands , 
                Immediate ; 
 
-    JLabel    StatusLine ; 
+    JTextField    StatusLine ; 
   
     Command.execOneLine ExecLine ; 
     
@@ -94,7 +94,7 @@ public class CommandPane  extends JPanel
     String FilePath = null  ;                   // for macro storage and retrieval
     Document logDocument = null;
 
-    private boolean Debug = true;
+    private boolean Debug = false;
     private Document MacroDocument = null;
 
     /** Constructor with Visual Editor and no data sets from outside this program
@@ -294,7 +294,7 @@ public class CommandPane  extends JPanel
         add( JPS , BorderLayout.CENTER ) ; 
 
 	   
-         StatusLine = new JLabel( "         " ) ; 
+         StatusLine = new JTextField( "         " ) ; 
          StatusLine.setBackground( Color.white);
 	 StatusLine.setBorder( new TitledBorder( "Status" ));
         
@@ -377,8 +377,18 @@ public class CommandPane  extends JPanel
     private void execute( Document Doc )
       {int line ; 
        Element E ; 
-       if( Doc == null ) return ; 
+       if( Doc == null ) return ;        
+
+         if( MacroDocument == null)
+	     new IsawGUI.Util().appendDoc( logDocument , "#$ Start Program Run");
+         else
+              new IsawGUI.Util().appendDoc(logDocument , "#$ Start Macro Run");
+
        E = Doc.getDefaultRootElement() ; 
+         for( line = 0 ; line < E.getElementCount(); line ++)
+           { String S = getLine( Doc , line);
+              new IsawGUI.Util().appendDoc(logDocument , S);
+            }
        ExecLine.initt() ; 
        perror = -1 ; 
        line = executeBlock( Doc , 0 ,  true  ) ; 
@@ -388,7 +398,10 @@ public class CommandPane  extends JPanel
                lerror = line;
               }
       
-         
+          if( MacroDocument == null)
+	      new IsawGUI.Util().appendDoc( logDocument , "#$ End Program Run");
+         else
+              new IsawGUI.Util().appendDoc(logDocument , "#$ End Macro Run");        
       
          
     }
@@ -1371,7 +1384,7 @@ public class CommandPane  extends JPanel
             Parameter PP = new Parameter( Message , dd);
             JlocDataSetParameterGUI JJ = new JlocDataSetParameterGUI( PP , DS);
             V.add(JJ);
-            System.out.println("Through data set argument" + JJ);
+           
             if(Debug)
               {System.out.print("DS"+JJ.getClass()+","); 
                System.out.print( JJ.getParameter()+",");
@@ -1389,7 +1402,7 @@ public class CommandPane  extends JPanel
       
        }// For i=0 to count
      
-     Command.JScriptParameterDialog X = new Command.JScriptParameterDialog( V, ExecLine.getGlobalDataset() );
+     X = new Command.JScriptParameterDialog( V, ExecLine.getGlobalDataset() );
      if( Debug ) System.out.println( "After Dialog box");
      V = X.getResult();
      if( V == null)
@@ -1407,7 +1420,15 @@ public class CommandPane  extends JPanel
 
          
    } 
-
+  private  Command.JScriptParameterDialog X = null;
+   public void SendMessageToScript( String Message)
+    {if( MacroDocument == null )
+       return;
+     if( X== null )
+       return;
+     X.setMessage( Message);
+    }
+ 
  public Object getExecScript( String fname ,IObserver X , DataSet DDS[])
   {    int i;
        String S;
@@ -1451,20 +1472,24 @@ public class CommandPane  extends JPanel
        
          Document doc; 
          File  f = new File( fname);
+
          System.out.println( "The filename is "  + fname ) ;                        
+         int x=0;
 	 try{  
                   FileReader fr = new FileReader( f ) ; 
                   int c , offset ; 
+                  x=1;
 	          String line ; 
                   //doc = Commands.getDocument() ; 
                  
                   //doc.remove( 0 , doc.getLength() ) ; 
 		  doc = new PlainDocument();
                   line = "" ; offset = 0 ; 
+                  x=2;
                   for( c = fr.read() ; c != -1 ;   )
 	              { line = line + new Character( ( char )c ).toString() ; 
                         if( c < 32 ) //assumes the new line character
-			    {
+			    {x=x+1;
                            doc.insertString( offset , line , null ) ; 
 		           offset+=line.length() ; 
                            line = "" ; 
@@ -1473,25 +1498,29 @@ public class CommandPane  extends JPanel
 			
                          c = fr.read() ; 
                        }
+		  x=10000;
 		  if( line.length() > 0 )doc.insertString( offset , line , null ) ; 
                   fr.close() ; 
                  // Commands.setCaretPosition(0);
 	           }
 	        catch( IOException s )
-                   {if( StatusLine != null )StatusLine.setText( "Status: unsuccessful" ) ;
-                    else System.out.println("Unsuccessful"); 
+		    {//if( StatusLine != null )StatusLine.setText( "Status: unsuccessful" ) ;
+			// else 
+                         System.out.println("UnsuccessfulA" + x+","+s); 
                     serror = "unsuccessful";
                     perror = 0;
                     return null;
                    }
                  catch( javax.swing.text.BadLocationException s )
-		     {if( StatusLine != null )StatusLine.setText( "Status: unsuccessful" ) ;
-                    else System.out.println("Unsuccessful"); 
+		     {//if( StatusLine != null )StatusLine.setText( "Status: unsuccessful" ) ;
+			 // else 
+                           System.out.println("UnsuccessfulB"); 
                     serror = "unsuccessful";
                     perror = 0;
                     return null;
                      }
-          
+      
+         
 	 CommandPane cp = new CommandPane( doc , X);
          if( DDS != null )
            for( i = 0; i < DDS.length ; i++)
@@ -1499,8 +1528,13 @@ public class CommandPane  extends JPanel
          cp.GUIgetParameters();
          seterror( cp.getErrorCharPos(), cp.getErrorMessage());
          lerror = cp.getErrorLine();
+         if( Debug)
+	     System.out.println("End getExec err&result are"+perror+","+lerror+","+serror+","+cp.getResult());
          if( perror < 0 ) 
-            return cp.getResult();
+           {  
+               return cp.getResult();
+           }
+        
          return serror;
         
 
@@ -1550,7 +1584,7 @@ public class CommandPane  extends JPanel
              S = O.toString();
            if( StatusLine != null)
 	      StatusLine.setText( S ) ; 
-          // else
+          else
 	      System.out.println( "Display is " + S ) ;
             
             PL.firePropertyChange("Display" , null , O );
@@ -1716,7 +1750,7 @@ private class MyKeyListener  extends KeyAdapter
        }
     public void keyTyped( KeyEvent e )
     { if( Debug )System.out.println("In keyEvent");
-      if('x' == e.getKeyChar()  )
+      if('x' == 'y')//e.getKeyChar()  )
       { 
         System.out.println( 
               CP.getExecScript( "C:\\Ruth\\ISAW\\Scripts\\MacDS.txt", 
@@ -1767,7 +1801,11 @@ private class MyKeyListener  extends KeyAdapter
 	          ExecLine.resetError() ; 
                   if( StatusLine != null )
                      StatusLine.setText( "Status" ) ; 
-	          execute1( Immediate.getDocument() , line ) ;  
+                    new IsawGUI.Util().appendDoc(logDocument,"#$ Start Immediate Run");
+                   new IsawGUI.Util().appendDoc(logDocument,getLine(Immediate.getDocument(), line));
+	          execute1( Immediate.getDocument() , line ) ;
+                  
+                   new IsawGUI.Util().appendDoc(logDocument,"#$ End Immediate Run"); 
                   if( perror >= 0 )
                     {if( StatusLine != null )
                         StatusLine.setText( "Status: Error " + serror + 
