@@ -1,19 +1,12 @@
 # Put parameters here: 
 # $Date$
 #
-#$$  path   DataDirectoryString       Path?
-#$$  instrument  InstrumentNameString     Instrument?
-#$$  background_runs   String    background runs
-#$$  sample_runs   string           sample runs
-#$$  mask     String                       mask
-#$$  atoms   float                        atoms*10^-24
-#
-#path = "C:\Ruth\ISAW\SampleRuns\"
-#instrument = "hrcs"
-#background_runs ="2444"
-#sample_runs = "2447,2451"
-#mask=""
-#atoms = 2.5
+$  path   DataDirectoryString       Path?
+$  instrument  InstrumentNameString(hrcs)     Instrument?
+$  background_runs   String(2444)    background runs
+$  sample_runs   string(2447,2451)           sample runs
+$  mask     String                       mask
+$  atoms   float(2.5)                        atoms*10^-24
 
 #
 # Do multiple file load of sample and background runs
@@ -51,12 +44,5 @@ difference_ds = sample[1]-background[1]
 #
 #  Calculate and display the double differential crossection
 #
-double_diff_cross_ds = DSDODE( difference_ds, sample_mon_1_area, atoms, true )
+double_diff_cross_ds = DSDODE( difference_ds, difference_ds, false, sample_mon_1_area, atoms, true )
 send double_diff_cross_ds
-
-
-
-
-
-
-
