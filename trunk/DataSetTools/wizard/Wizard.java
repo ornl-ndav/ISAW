@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.60  2003/07/14 20:56:09  bouzekc
+ * Moved the initialization of fileChooser and the saving
+ * of the files to private methods.  Made the exception
+ * handling in the inner SwingWorker class more friendly.
+ *
  * Revision 1.59  2003/07/14 15:33:39  bouzekc
  * Fixed minor bugs with setting of progress bar values.
  *
@@ -436,6 +441,7 @@ public abstract class Wizard implements PropertyChangeListener {
   private File save_file;
   private JComponent[] wizComponents;
   private boolean ignorePropChanges;
+  private WizardFileFilter wizFilter;
 
   //~ Constructors *************************************************************
 
@@ -467,6 +473,7 @@ public abstract class Wizard implements PropertyChangeListener {
     wizProgress       = new JProgressBar(  );
     command_handler   = new CommandHandler( this );
     save_frame        = new JFrame( "Save Form as..." );
+    wizFilter         = new WizardFileFilter(  );
   }
 
   //~ Methods ******************************************************************
@@ -839,6 +846,35 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
+   * Utility to write to an ASCII file using a FileWriter.  Handles the
+   * possible exceptions in a generic manner.
+   *
+   * @param file2Write The File to write to.
+   * @param text2Write The String to write to the file.
+   */
+  public static void writeASCII( File file2Write, String text2Write ) {
+    FileWriter fw = null;
+
+    try {
+      fw = new FileWriter( file2Write );
+      fw.write( text2Write );
+    } catch( IOException e ) {
+      e.printStackTrace(  );
+      JOptionPane.showMessageDialog( 
+        null, "Error saving file: " + file2Write.toString(  ), "ERROR",
+        JOptionPane.ERROR_MESSAGE );
+    } finally {
+      if( fw != null ) {
+        try {
+          fw.close(  );
+        } catch( IOException e ) {
+          //let it drop on the floor
+        }
+      }
+    }
+  }
+
+  /**
    * Execute all forms up to the number specified.
    *
    * @param end The number of the last Form to be executed.
@@ -1115,17 +1151,10 @@ public abstract class Wizard implements PropertyChangeListener {
    */
   private File getFile( boolean saving ) {
     int result;
-    WizardFileFilter wizFilter = new WizardFileFilter(  );
     String save_file_abs_path;
 
     if( fileChooser == null ) {
-      fileChooser = new JFileChooser(  );
-      fileChooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
-      fileChooser.setFileFilter( wizFilter );
-
-      //start out in the ISAW_HOME directory
-      fileChooser.setCurrentDirectory( 
-        new File( SharedData.getProperty( "ISAW_HOME" ) ) );
+      initFileChooser(  );
     }
 
     //try to remember the previous value the user entered
@@ -1430,6 +1459,20 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
+   * Utility for initializing the fileChooser so that both the getFile and the
+   * Exception handler in the SwingWorker class can call it.
+   */
+  private void initFileChooser(  ) {
+    fileChooser = new JFileChooser(  );
+    fileChooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
+    fileChooser.setFileFilter( wizFilter );
+
+    //start out in the ISAW_HOME directory
+    fileChooser.setCurrentDirectory( 
+      new File( SharedData.getProperty( "ISAW_HOME" ) ) );
+  }
+
+  /**
    * Loads Forms from a file.  It actually just loads the saved IParameterGUI
    * values into the Wizard's Forms' parameters.
    *
@@ -1518,73 +1561,54 @@ public abstract class Wizard implements PropertyChangeListener {
     StringBuffer s = new StringBuffer(  );
     Form f;
 
-    //String temp;
     Object obj;
     IParameterGUI ipg;
-    FileWriter fw  = null;
 
-    try {
-      fw = new FileWriter( file );
+    for( int i = 0; i < forms.size(  ); i++ ) {
+      s.append( "<Form number=" );
+      s.append( i );
+      s.append( ">\n" );
 
-      for( int i = 0; i < forms.size(  ); i++ ) {
-        s.append( "<Form number=" );
-        s.append( i );
+      f = ( Form )forms.elementAt( i );
+
+      for( int j = 0; j < f.getNum_parameters(  ); j++ ) {
+        ipg = ( IParameterGUI )f.getParameter( j );
+        s.append( "<" );
+        s.append( ipg.getType(  ) );
         s.append( ">\n" );
+        s.append( "<Name>" );
+        s.append( ipg.getName(  ) );
+        s.append( "</Name>\n" );
+        s.append( "<Value>" );
 
-        f = ( Form )forms.elementAt( i );
-
-        for( int j = 0; j < f.getNum_parameters(  ); j++ ) {
-          ipg = ( IParameterGUI )f.getParameter( j );
-          s.append( "<" );
-          s.append( ipg.getType(  ) );
-          s.append( ">\n" );
-          s.append( "<Name>" );
-          s.append( ipg.getName(  ) );
-          s.append( "</Name>\n" );
-          s.append( "<Value>" );
-
-          if( ipg != null ) {  //parameter is not null
-            obj = ipg.getValue(  );
-          } else {  //parameter is null, so set value to null
-            obj = null;
-          }
-
-          if( ( obj == null ) || ( obj.toString(  )
-                                        .length(  ) <= 0 ) ) {
-            s.append( "emptyString" );
-          } else {
-            s.append( obj.toString(  ) );
-            s.append( "" );
-          }
-
-          s.append( "</Value>\n" );
-          s.append( "<Valid>" );
-          s.append( ipg.getValid(  ) );
-          s.append( "</Valid>\n" );
-          s.append( "</" );
-          s.append( ipg.getType(  ) );
-          s.append( ">\n" );
+        if( ipg != null ) {  //parameter is not null
+          obj = ipg.getValue(  );
+        } else {  //parameter is null, so set value to null
+          obj = null;
         }
 
-        s.append( "</Form>\n" );
+        if( ( obj == null ) || ( obj.toString(  )
+                                      .length(  ) <= 0 ) ) {
+          s.append( "emptyString" );
+        } else {
+          s.append( obj.toString(  ) );
+          s.append( "" );
+        }
+
+        s.append( "</Value>\n" );
+        s.append( "<Valid>" );
+        s.append( ipg.getValid(  ) );
+        s.append( "</Valid>\n" );
+        s.append( "</" );
+        s.append( ipg.getType(  ) );
+        s.append( ">\n" );
       }
 
-      fw.write( s.toString(  ) );
-    } catch( IOException e ) {
-      e.printStackTrace(  );
-      JOptionPane.showMessageDialog( 
-        save_frame, "Error saving file.  Please rerun the wizard and try again.",
-        "ERROR", JOptionPane.ERROR_MESSAGE );
-    } finally {
-      if( fw != null ) {
-        try {
-          fw.close(  );
-          modified = false;
-        } catch( IOException e ) {
-          //let it drop on the floor
-        }
-      }
+      s.append( "</Form>\n" );
     }
+
+    Wizard.writeASCII( file, s.toString(  ) );
+    modified = false;
   }
 
   //~ Inner Classes ************************************************************
@@ -1742,10 +1766,18 @@ public abstract class Wizard implements PropertyChangeListener {
         //try to salvage what we can
         JOptionPane.showMessageDialog( 
           null,
-          "Unknown failure occurred.  " +
-          "Please save your data then restart " + "the Wizard.", "ERROR",
+          "An error has occurred.  A copy of the error message has been\n" +
+          "printed to a file named \"wizard.err.\" in your ISAW_HOME\n" +
+          "directory.  Please save the Wizard and send both the Wizard\n" +
+          "Save File and the wizard.err file to your developer.\n", "ERROR",
           JOptionPane.ERROR_MESSAGE );
-        e.printStackTrace(  );
+
+        initFileChooser(  );  //reset the file chooser
+
+        String errFile = StringUtil.setFileSeparator( 
+            fileChooser.getCurrentDirectory(  ) + "/wizard.err" );
+
+        Wizard.writeASCII( new File( errFile ), e.toString(  ) );
 
         message = "Failure";
 
