@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.14  2004/08/23 21:12:16  rmikk
+ *  Eliminated a null pointer exception in Instrument Table view
+ *
  *  Revision 1.13  2004/08/04 22:18:23  rmikk
  *  Started to implement IAxisAddible
  *  Fixed the ViewMenuItems to include a path
@@ -111,11 +114,14 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
        {state = new ViewerState();
         
         }
-     XAxis = Array.getAxisInfo( 0);
-     YAxis = Array.getAxisInfo( 1);
+     
+    
      this.Array=Array;
      if( Array == null)
         this.Array = new dummyIVirtualArray2D();
+     XAxis = this.Array.getAxisInfo( 0);
+     YAxis = this.Array.getAxisInfo( 1);
+     Array = this.Array;
      table_model = new IntTableModel( this.Array );
      jtb = null;
      SetUpNewJtb();
