@@ -30,6 +30,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.4  2004/01/05 23:31:04  rmikk
+# Last form returns the resultant data sets so they can be viewed in viewers
+#
 # Revision 1.3  2004/01/05 17:52:10  rmikk
 # Jython class now subclass of GenericOperator
 #
@@ -98,8 +101,8 @@ class ReducePy(GenericOperator):
              R = Print4Col2D1Chan(V[i], filename).getResult()
              if isinstance( R, ErrorString):
                  return R
-        ScriptUtil.display( V[0])
-        return "Success"
+       
+        return V
 
     def getDocumentation(self):
         S = "@overview This Form is part of the Reduce Wizard. The actual analysis is done "
