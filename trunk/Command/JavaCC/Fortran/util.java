@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/08/19 12:24:06  rmikk
+ * Added Write to file via unit numbers for FORTRAN code.  The new routines
+ *    include all the WRITE routines with unit number is added as the
+ *    first parameter , WRITEOPEN and WRITECLOSE
+ *
  * Revision 1.3  2004/08/02 20:06:02  rmikk
  * The WRITE methods now go to the status pane
  *
@@ -52,7 +57,8 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 import DataSetTools.operator.*;
 import java.text.*;
 import DataSetTools.util.*;
-
+import java.io.*;
+import gov.anl.ipns.Util.Sys.SharedMessages;
 /**
  * This class contains compile and run-time utility methods used by Fcvrt.java
  *   and the resulting Java code.
@@ -61,7 +67,11 @@ import DataSetTools.util.*;
  *
  */
 public class util{
-
+  // Saves the file handles for the various unit numbers except unit 0 and 6
+  //unit 0 is log
+  //unit 6 is System.out
+   private static FileOutputStream[] outUnits = new FileOutputStream[12];
+   
    /**
     * Returns -1 if the argument is negative, otherwise +1 is returned
     * @param f  The argument whose sign is to be determined
@@ -263,7 +273,78 @@ public class util{
      return V;
   }
 
-
+ /**
+  *  Returns the FileOutputStream associated with unitNum.
+  * Make sure you close it with the close in this class
+  * @param unitNum   unitNum whose FileOutputStream is returned
+  * @return          The FileOutputStream associated with this unitNum
+  * NOTE:  unitNum 6 is the outputStream.
+  */
+ public OutputStream getOutputStream( int unitNum){
+   if( unitNum <1) 
+     return null;
+   else if( unitNum > 11)
+     return null;
+   else if( unitNum ==6)
+     return System.out;
+   else 
+     return outUnits[unitNum];
+ }
+ 
+ /**
+  *   Opens the file that will be associated with writing to the given unit
+  *  number
+  * @param unitNum   The unit number associated with output file, Filename
+  * @param Filename  The name of the output file associated with unitNum 
+  * @param GOTOerr   For Fortran. The Goto label if an error occurs
+  * @param GOTOnoFile  For Fortran, The Goto label if there is no file
+  * @return 0 if no error otherwise the value of GOTOerr or GOTOnoFile
+  */
+ public int WRITEOPEN(int unitNum, String Filename, int GOTOerr, int GOTOnoFile){
+    if( (unitNum <0) ||(unitNum >11))
+       return GOTOerr;
+    try{
+      if( outUnits[unitNum] != null)
+         outUnits[unitNum].close();
+      if( unitNum ==0)
+           SharedMessages.openLog( Filename);
+      else if( unitNum ==6){}
+      else 
+          outUnits[unitNum] = new FileOutputStream(Filename);
+      return 0;
+    }catch(Exception ss){
+        outUnits[unitNum] = null;
+        return GOTOnoFile;
+    }
+    
+ }
+ 
+ /**
+  * Closes the file associated with unitNum
+  * @param unitNum  The unit Number
+  * @param GOTOerr  For Fortran.  The Goto label if an error occurs
+  * @return  Either 0 if there is no error or GOTOerr
+  */
+ public int WRITECLOSE( int unitNum, int GOTOerr){
+    if( unitNum <0)
+        return GOTOerr;
+    if( unitNum >= 11)
+        return GOTOerr;
+    if( unitNum ==0)
+       SharedMessages.closeLog();
+    else if( unitNum == 6){}
+    else try{
+        outUnits[unitNum].close();
+        outUnits[unitNum] = null;
+        return 0;
+       
+    }catch( Exception ss){
+       outUnits[unitNum] = null;
+       return GOTOerr;
+    }  
+    return 0;    
+ }
+ 
  private static String getLocalRoutine( String name){
     if( name.indexOf("MOD")>=0)
        return "util.Mod";
@@ -503,23 +584,76 @@ public static void main( String[] args){
   }
   
 }
-
+/**
+  *  Implements the WRITESTRING FORTRAN CALL
+  * @param unitNum   The unit number of the associated file
+  * @param S  The String to be read
+  * NOTE: If there is no file or output associated with the unitNum no
+  * data will be written
+  */
+ public static void WRITESTRING(int unitNum, String S){
+     Write( unitNum,S);
+ }
  /**
   *  Implements the WRITESTRING FORTRAN CALL
   * @param S  The String to be read
   */
  public static void WRITESTRING( String S){
-     addmsg(S);
+     WRITESTRING(6,S);
  }
  
 
  /**
   *  Implements the WRITELN FORTRAN CALL
+  * @param unitNum   The unit number of the associated file
+  */
+public static void WRITELN(int unitNum){
+  if( (unitNum <0)||(unitNum>11))
+     return;
+  if( unitNum ==6){
+    SharedData.addmsg( lineBuff);
+    lineBuff="";
+  }else if( unitNum ==0)
+     SharedMessages.LOGaddmsg("\n");
+   else if( outUnits[unitNum] == null)
+      return;
+   else try{
+        outUnits[unitNum].write("\n".getBytes());
+   }catch(Exception ss){}
+      
+  
+}
+
+ /**
+  *  Implements the WRITELN FORTRAN CALL
   */
 public static void WRITELN(){
-  SharedData.addmsg( lineBuff);
-  lineBuff="";
+  WRITELN( 6);
   
+  
+}
+
+
+/**
+ *  Implements the WRITEINT FORTRAN CALL
+ * @param unitNum   The unit number of the associated file
+ * @param i  The int value to be written out
+ * @param format  the FORTRAN-LIKE format for writing this integer
+ */
+public static void WRITEINT( int unitNum,int i, String format){
+  int width=-1;
+  try{
+     width = new Integer(format.trim().substring(1)).intValue();
+  }catch( Exception s){
+    width = -1;
+  }
+  String S ="";
+  if( width > 0)
+     S=( gov.anl.ipns.Util.Numeric.Format.integer((double)i,width));
+ else
+   S= (""+i);
+  Write(unitNum,S);
+
 }
 
 
@@ -529,27 +663,18 @@ public static void WRITELN(){
  * @param format  the FORTRAN-LIKE format for writing this integer
  */
 public static void WRITEINT( int i, String format){
-  int width=-1;
-  try{
-     width = new Integer(format.trim().substring(1)).intValue();
-  }catch( Exception s){
-    width = -1;
-  }
-  if( width > 0)
-     addmsg( gov.anl.ipns.Util.Numeric.Format.integer((double)i,width));
- else
-    addmsg(""+i);
+  WRITEINT( 6, i, format );
 
 }
 
 
-
 /**
  *  Implements the WRITEFLOAT FORTRAN CALL
+ * @param unitNum   The unit number of the associated file
  * @param i  The float value to be written out
  * @param format  the FORTRAN-LIKE format for writing this integer
  */
-public static void WRITEFLOAT( float i, String format){
+public static void WRITEFLOAT( int unitNum, float i, String format){
   format = format.trim();
   boolean exponential= false;
   if( format == null)
@@ -562,14 +687,15 @@ public static void WRITEFLOAT( float i, String format){
      addmsg(""+i);
   int width = -1;
   int aftDec = -1;
+  String S="";
   try{
     width = new Integer( format.substring(0,dot)).intValue();
     aftDec = new Integer( format.substring(dot+1)).intValue();
   }catch( Exception s){
-	addmsg( ""+i);
+      S+=( ""+i);
   }
   if( !exponential){
-	addmsg(gov.anl.ipns.Util.Numeric.Format.real((double)i,width, aftDec));
+  S  +=(gov.anl.ipns.Util.Numeric.Format.real((double)i,width, aftDec));
     return;
   }
   char[] javaFormatString = new char[width];
@@ -577,12 +703,44 @@ public static void WRITEFLOAT( float i, String format){
   javaFormatString[0]= '-';
   Arrays.fill( javaFormatString,1,width-4,'#');
   javaFormatString[ width-1-4-aftDec]='.';
-  String S = (new DecimalFormat( new String( javaFormatString))).format((double)i);
-  addmsg( gov.anl.ipns.Util.Numeric.Format.string( S,width,true));
-
+  String S1 = (new DecimalFormat( new String( javaFormatString))).format((double)i);
+  S +=( gov.anl.ipns.Util.Numeric.Format.string( S1,width,true));
+  Write(unitNum,S);
 }
+
+/**
+ *  Implements the WRITEFLOAT FORTRAN CALL
+ * @param i  The float value to be written out
+ * @param format  the FORTRAN-LIKE format for writing this integer
+ */
+public static void WRITEFLOAT( float i, String format){
+    WRITEFLOAT(6,i,format);
+}
+
+
+// Utility to send S to the correct output handler
+public static void Write( int unitNum, String S){
+  if( unitNum < 0)
+     return;
+  else if( unitNum >11)
+     return;
+  else if( unitNum ==0)
+     SharedMessages.LOGaddmsg( S);
+  else if( unitNum ==6)
+     addmsg( S);
+  else if(outUnits[unitNum] == null )
+     return;
+  else try{
+     outUnits[unitNum].write(S.getBytes()); 
+  } catch( Exception ss){
+      return;
+  }
+}
+
+// SharedData.addmsg except that it buffers a line to a return
+//  WRITELN calls the SharedData.addmsg 
 static String  lineBuff="";
-public static void addmsg( String S){
+private static void addmsg( String S){
   lineBuff += S;
 }
 }
