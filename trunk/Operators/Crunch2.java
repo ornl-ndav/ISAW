@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2004/05/07 15:51:41  dennis
+ * Made log messages consistent for Crunch.java Crunch2.java
+ * OmitNullData.java.  Make appropriate log entry whether or
+ * not Data blocks were actually deleted.
+ *
  * Revision 1.8  2004/05/06 22:22:06  dennis
  * Changed Title to Crunch2 to match the command name and
  * file name for this operator.
@@ -65,6 +70,7 @@ import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.dataset.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Messaging.*;
 
 import java.util.*;
 
@@ -72,7 +78,8 @@ import java.util.*;
  *  This operator removes detectors from a data set so it has the same
  *  group ids as the second parameter.
  */
-public class Crunch2 extends GenericSpecial{
+public class Crunch2 extends GenericSpecial
+{
   private static final String  TITLE = "Crunch2";
   private static final boolean DEBUG = false;
   
@@ -81,7 +88,8 @@ public class Crunch2 extends GenericSpecial{
    * Creates operator with title "Operator Template" and a default
    * list of parameters.
    */  
-  public Crunch2(){
+  public Crunch2()
+  {
     super( TITLE );
   }
     
@@ -95,7 +103,8 @@ public class Crunch2 extends GenericSpecial{
    * @param tds DataSet to use a template for removing groups.
    * @param new_ds Whether to make a new DataSet
    */
-  public Crunch2( DataSet ds, DataSet tds, boolean new_ds ){
+  public Crunch2( DataSet ds, DataSet tds, boolean new_ds )
+  {
     this(); 
     
     getParameter(0).setValue(ds);
@@ -110,14 +119,16 @@ public class Crunch2 extends GenericSpecial{
    * @return "Crunch2", the command used to invoke this operator in
    * Scripts
    */
-  public String getCommand(){
+  public String getCommand()
+  {
     return TITLE;
   }
     
   /**
    *
    */
-  public String getDocumentation(){
+  public String getDocumentation()
+  {
     StringBuffer sb=new StringBuffer(100);
 
     sb.append("@overview This operator removes detectors from a data set so "
@@ -137,7 +148,8 @@ public class Crunch2 extends GenericSpecial{
    * Sets default values for the parameters.  This must match the data
    * types of the parameters.
    */
-  public void setDefaultParameters(){
+  public void setDefaultParameters()
+  {
     parameters = new Vector();
     addParameter(new Parameter("DataSet to Crunch", DataSet.EMPTY_DATA_SET ));
     addParameter(new Parameter("Template DataSet",  DataSet.EMPTY_DATA_SET ));
@@ -153,11 +165,14 @@ public class Crunch2 extends GenericSpecial{
    * containing the the original DataSet minus the groups missing in
    * the template DataSet.
    */
-  public Object getResult(){
+  public Object getResult()
+  {
     DataSet ds        = (DataSet)(getParameter(0).getValue());
     DataSet tds       = (DataSet)(getParameter(1).getValue());
     boolean mk_new_ds = ((Boolean)getParameter(2).getValue()).booleanValue();
     DataSet new_ds    = null;
+
+    Vector removed_ids = new Vector();    // keep track of the ones removed
 
     if( ds==null )
       return new ErrorString( "DataSet is null in Crunch" );
@@ -167,11 +182,10 @@ public class Crunch2 extends GenericSpecial{
       return new ErrorString( "DataSet and Template must be different" );
 
     // initialize new_ds
-    if(mk_new_ds){
+    if(mk_new_ds)
       new_ds=(DataSet)ds.clone();
-    }else{
+    else
       new_ds=ds;
-    }
 
     // get a new DataBlock which will be instatiated several times
     Data data  = null;
@@ -179,36 +193,63 @@ public class Crunch2 extends GenericSpecial{
     int  gid   = 0;
 
     // remove the proper DataSets
-    for( int i=0 ; i<ds.getNum_entries() ; i++ ){
+    for( int i=0 ; i<ds.getNum_entries() ; i++ )
+    {
       data=new_ds.getData_entry(i);
       if(data==null) continue;
       
       gid=data.getGroup_ID();
       tdata=tds.getData_entry_with_id(gid);
-      if(tdata==null){
+      if(tdata==null)
+      {
+        removed_ids.add( new Integer(gid) );
         new_ds.removeData_entry_with_id(gid);
         i--;
       }
     }
 
     // in debug mode compare the list of Data kept
-    if(DEBUG){
+    if(DEBUG)
+    {
       int[] list=new int[new_ds.getNum_entries()];
 
-      for( int i=0 ; i<list.length ; i++ ){
+      for( int i=0 ; i<list.length ; i++ )
+      {
         list[i]=new_ds.getData_entry(i).getGroup_ID();
       }
       System.out.println("new="+IntList.ToString(list));
 
       list=new int[tds.getNum_entries()];
-      for( int i=0 ; i<list.length ; i++ ){
+      for( int i=0 ; i<list.length ; i++ )
+      {
         list[i]=tds.getData_entry(i).getGroup_ID();
       }
       System.out.println("old="+IntList.ToString(list));
     }
 
     // add some information to the log
-    new_ds.addLog_entry("Applied Crunch( "+ds+", "+tds+" )");
+    int final_list[] = null;
+    if( removed_ids.size() > 0 )
+    {
+      final_list = new int[ removed_ids.size() ];
+      for ( int i=0; i < removed_ids.size(); i++ )
+        final_list[i] = ((Integer)removed_ids.elementAt(i)).intValue();
+
+      Arrays.sort(final_list);
+
+      new_ds.addLog_entry("Applied Crunch2( " + ds +
+                          ", " + tds + 
+                          ", " + mk_new_ds +
+                          " ), removed Data blocks : " +
+                          IntList.ToString(final_list) );
+      if ( !mk_new_ds )
+        ds.notifyIObservers( IObserver.DATA_DELETED );
+    }
+    else
+      new_ds.addLog_entry("Applied Crunch2( " + ds + 
+                          ", " + tds + 
+                          ", " + mk_new_ds +
+                          " ), and removed NO Data blocks." );
 
     // return the right stuff
     return new_ds;
@@ -218,7 +259,8 @@ public class Crunch2 extends GenericSpecial{
   /** 
    * Creates a clone of this operator.
    */
-  public Object clone(){ 
+  public Object clone()
+  { 
     Operator op = new Crunch2();
     op.CopyParametersFrom( this );
     return op;
@@ -229,7 +271,8 @@ public class Crunch2 extends GenericSpecial{
    * Test program to verify that this will complile and run ok.  
    *
    */
-  public static void main( String args[] ){
+  public static void main( String args[] )
+  {
     System.out.println("Crunch2 compiled and ran");
   }
 }
