@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/11/23 23:51:31  rmikk
+ * Eliminated some debugging prints
+ * DataSets are not saved as Grids unless there is more than 1 row
+ *   or more than 1 column
+ *
  * Revision 1.1  2003/11/16 21:48:02  rmikk
  * Initial Checkin
  *
@@ -200,7 +205,6 @@ public class NexUtils implements INexUtils{
      }
      nDataDims = dataState.dimensions.length;
      nDistDims = distDimensions.length;
-     System.out.println(" data/dist dims="+ nDataDims+","+nDistDims);
      if( (nDistDims +3 < nDataDims) ||( nDistDims +1 > nDataDims))
         return setErrorMessage("Dimensions of the data and positions are out of line");
      ncols = 1;
@@ -215,13 +219,12 @@ public class NexUtils implements INexUtils{
         nrows = dataState.dimensions[ nDistDims  ];
      
      ngrids = (DS.getNum_entries() -startDSindex)/nrows/ncols;
-     System.out.println("ngrids,nrows,ncols="+ngrids+","+nrows+","+ncols);
      int row = 1, col= 1, grid =0;
      UniformGrid Grid = null;
      Tran3D Matrix ;
      for( int i = startDSindex; i < DS.getNum_entries(); i++){
         Data db = DS.getData_entry( i);
-        if( (row ==1) && ( col ==1)){  //set up new grid
+        if( (row ==1) && ( col ==1)&&((nrows>1) ||(ncols > 1))){  //set up new grid
            if( Grid != null){
               Grid.setData_entries( DS);
            }
@@ -236,15 +239,21 @@ public class NexUtils implements INexUtils{
                   x_dir, y_dir, Aval(width,grid), 
                   Aval(height,grid), Aval(depth,grid),nrows, ncols);
         }
-        DetectorPixelInfo detPix = new DetectorPixelInfo(startGridNum+grid,
+        if( Grid != null){
+          DetectorPixelInfo detPix = new DetectorPixelInfo(startGridNum+grid,
                                           (short)row,(short)col, Grid);
-        DetectorPixelInfo[] piList = new DetectorPixelInfo[1];
-        piList[0] = detPix;
-        db.setAttribute(  
+          DetectorPixelInfo[] piList = new DetectorPixelInfo[1];
+          piList[0] = detPix;
+          db.setAttribute(  
                new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST, 
                         new PixelInfoList(piList)));
-        db.setAttribute( new DetPosAttribute(Attribute.DETECTOR_POS,
+           db.setAttribute( new DetPosAttribute(Attribute.DETECTOR_POS,
                      new DetectorPosition(Grid.position(row,col) )  ));
+        }else 
+          ConvertDataTypes.addAttribute( db, ConvertDataTypes.CreateDetPosAttribute(
+                Attribute.DETECTOR_POS, ConvertDataTypes.convertToIsaw( distance[grid],
+                    polar[grid], azimuth[grid])));
+          
         col++;
         if( col > ncols){
            col = 1;
@@ -452,7 +461,6 @@ public class NexUtils implements INexUtils{
         startGroupID++;
      }  
      
-     System.out.println( "   setUpNxData J");
      return false;
    }
 
