@@ -82,7 +82,7 @@ public class GetDataAttribute extends    DataSetOperator
    */
    public String getCommand()
    {
-     return "GetDataAttr";
+     return "GetAttr";
    }
 
 
