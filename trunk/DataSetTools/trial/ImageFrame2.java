@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/08/13 02:53:23  millermi
+ * - Removed controls for Selection Overlay and Color scale
+ * - Controls now contained in a Box instead of a JPanel.
+ *
  * Revision 1.1  2003/08/07 15:58:58  dennis
  * - Further implementation of basic structure provided in
  *   ImageFrame.java.
@@ -55,12 +59,14 @@
 package DataSetTools.trial;
 
 import javax.swing.*;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import DataSetTools.components.View.TwoD.ImageViewComponent;
 import DataSetTools.components.View.*;
 import DataSetTools.components.View.Menu.ViewMenuItem;
+import DataSetTools.components.View.ViewControls.*;
 import DataSetTools.components.image.*;
 import DataSetTools.components.containers.SplitPaneWithState;
 
@@ -177,11 +183,22 @@ public class ImageFrame2 extends JFrame
     ivc = new ImageViewComponent( data );
     ivc.setColorControlSouth(true);
     ivc.addActionListener( new ImageListener() );
-    JPanel controls = new JPanel();
-    controls.setLayout( new BoxLayout( controls, BoxLayout.Y_AXIS) );
+    Box controls = new Box(BoxLayout.Y_AXIS);
     JComponent[] ctrl = ivc.getSharedControls();
+    int ctrlcounter = 0;
     for( int i = 0; i < ctrl.length; i++ )
-      controls.add(ctrl[i]);
+    {
+      if( !(ctrl[i] instanceof ControlCheckbox) &&
+          !(ctrl[i] instanceof ControlColorScale) )
+      {
+        controls.add(ctrl[i]);
+	ctrlcounter++;
+      }
+    }
+    System.out.println(ctrlcounter);
+    JPanel spacer = new JPanel();
+    spacer.setPreferredSize(new Dimension(0,((10-ctrlcounter)*40) ) );
+    controls.add(spacer);
     pane = new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
                                   ivc.getDisplayPanel(),
 			          controls, .75f );
@@ -229,6 +246,7 @@ public class ImageFrame2 extends JFrame
     va2D.setTitle("ImageFrame Test");
     ImageFrame2 im_frame = new ImageFrame2( va2D );
     // test setData() 10 times
+    /*
     for( int x = 0; x < 20; x++ )
     {
       for ( int i = 0; i < 500; i++ )
@@ -237,7 +255,7 @@ public class ImageFrame2 extends JFrame
       va2D = new VirtualArray2D( test_array );
       im_frame.setData(va2D);
     }
-    /*
+    
     ImageFrame2 im_frame2 = new ImageFrame2( test_array,
                                              new AxisInfo2D( 0f, 10000f,"TestX",
 			                                    "TestUnits", true ),
