@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:20:29  bouzekc
+ * Documented file using javadoc statements.
+ * Added the createNewProject() method which allows the same code to be used in the AddInterfaceGUI and CreateNewInterfaceGUI
+ *   classes because they refer to this method on whether or not to make a new project or just add interfaces to a previous
+ *   project.
+ *
  * Revision 1.1  2004/02/07 05:08:49  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -48,19 +54,35 @@ import devTools.Hawk.classDescriptor.gui.panel.ProjectSelectorJPanel;
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This is basically a modified version of a CreateNewProjectGUI.  This class sets the inheireted boolean value "createNewProject" to false.  Thus, instead of 
+ * making a new project from a Vector of Interface objects, the Vector of Interface objects are added to the Vector of Interface objects of the 
+ * original Project "pro" (which is supplied in the constructor).  Also, the title is changed to "Add Interfaces to "Project name" " and the text field holding the 
+ * project's name, has pro's name set as the text.
+ * @author Dominic Kramer
  */
 public class AddInterfaceGUI extends CreateNewProjectGUI implements ActionListener, ListSelectionListener
 {
+	/**
+	 * Constructor used to create a new AddInterfaceGUI.
+	 * @param psjp The ProjectSelectorJPanel from which the Project was selected from.
+	 * @param GUI This gui is used to display any problems that are encountered while trying to make the project.
+	 * @param pro The Project object to which the Interface objects should be added to.
+	 */
 	public AddInterfaceGUI(ProjectSelectorJPanel psjp, UnableToLoadClassGUI GUI, Project pro)
 	{
 		super(psjp,GUI);
-		createNewProject = false;
 		createdProject = pro;
 		nameField.setText(pro.getProjectName());
 		setTitle("Add Interfaces to "+pro.getProjectName());
+	}
+	
+	/**
+	 * Returns the flag that describes if the class should make a new project.  This method 
+	 * always returns false.
+	 * @return True if a new project should be created and false otherwise.
+	 */
+	public boolean createNewProject()
+	{
+		return false;
 	}
 }
