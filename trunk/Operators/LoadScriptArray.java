@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/01/30 02:19:38  bouzekc
+ *  Removed unused imports and variables.
+ *
  *  Revision 1.4  2003/04/22 21:51:41  hammonds
  *  Fixed problem with CastClassExeption due to inconsistant use of Parameter vs iParameter(LoadFilePG) Class.
  *
@@ -199,7 +202,7 @@ public class LoadScriptArray extends GenericBatch implements Serializable
 			  StringUtil.getString( in_line, pIndex );
 			tempString = new String( sVal + " " + restOf );
 			sVal = tempString.trim();
-			String paren = StringUtil.getString( in_line);
+			StringUtil.getString( in_line);
 		      }
 		    }
 		    data_out[i].add( sVal );

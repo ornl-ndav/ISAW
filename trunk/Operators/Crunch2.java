@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2004/01/30 02:19:38  bouzekc
+ * Removed unused imports and variables.
+ *
  * Revision 1.3  2003/12/15 01:45:31  bouzekc
  * Removed unused imports.
  *
@@ -146,14 +149,6 @@ public class Crunch2 extends GenericSpecial{
       return new ErrorString( "Template DataSet is null in Crunch" );
     if( ds==tds)
       return new ErrorString( "DataSet and Template must be different" );
-
-    // initialize new data set to be the same as the old
-    String       title = ds.getTitle();
-    OperationLog oplog = ds.getOp_log();
-    String     x_units = ds.getX_units();
-    String     x_label = ds.getX_label();
-    String     y_units = ds.getY_units();
-    String     y_label = ds.getY_label();
 
     // initialize new_ds
     if(mk_new_ds){

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/01/30 02:19:39  bouzekc
+ * Removed unused imports and variables.
+ *
  * Revision 1.5  2003/02/03 18:52:38  dennis
  * Added getDocumentation() operator. (Joshua Olson)
  *
@@ -235,14 +238,14 @@ public class Ysquared extends GenericSpecial
                                                  // the operator changes the
                                                  // original.
     DataSet     new_ds = (DataSet)ds.clone();
-    ViewManager vm1 = new ViewManager( new_ds, IViewManager.IMAGE );
+    new ViewManager( new_ds, IViewManager.IMAGE );
 
                                                  // make and run the operator
                                                  // to alter the original ds
                                                  // and display it after it's 
     Operator op  = new Ysquared( ds );           // altered
     Object   obj = op.getResult();
-    ViewManager vm2 = new ViewManager( ds, IViewManager.IMAGE );
+    new ViewManager( ds, IViewManager.IMAGE );
                                                  // display any message string
                                                  // that might be returned
     System.out.println("Operator returned: " + obj );
