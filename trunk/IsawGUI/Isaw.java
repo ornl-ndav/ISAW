@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2001/06/12 22:51:14  chatter
+ *  Fixed code that sets up new IsawProps.dat file
+ *
  *  Revision 1.17  2001/06/08 23:20:24  chatter
  *  Made Isaw an IObserver of LiveDataMonitor
  *
@@ -172,114 +175,148 @@ public class Isaw extends JFrame implements Serializable, IObserver
           System.out.println("Creating a new Properties file called IsawProps in the directory " +System.getProperty("user.home"));
           
           String npath = System.getProperty("user.home")+"\\";
+          String ipath = System.getProperty("user.dir")+"\\";
           npath = StringUtil.fixSeparator(npath);
           npath = npath.replace('\\','/');
-          File f= new File(npath + "IsawProps.dat");
+
+          ipath = StringUtil.fixSeparator(ipath);
+          ipath = ipath.replace('\\','/');
+
+          File f= new File( npath + "IsawProps.dat" );
 
           try{
                FileOutputStream op= new FileOutputStream(f);
                OutputStreamWriter opw = new OutputStreamWriter(op);
                opw.write("#This is a properties file");
                opw.write("\n");
-               opw.write("Help_Directory="+npath+"IsawHelp/");
-               System.setProperty("Help_Directory",  npath+"IsawHelp/");
+               opw.write("Help_Directory="+ipath+"IsawHelp/");
+               System.setProperty("Help_Directory",  ipath+"IsawHelp/");
                opw.write("\n");
-               opw.write("Script_Path="+npath+"Scripts/");
-               System.setProperty("Script_Path",npath+"Scripts/");
+               opw.write("Script_Path="+ipath+"Scripts/");
+               System.setProperty("Script_Path",ipath+"Scripts/");
                opw.write("\n");
-               opw.write("Data_Directory="+npath+"SampleRuns/");
-                System.setProperty("Data_Directory",npath+"SampleRuns/");
+               opw.write("Data_Directory="+ipath+"SampleRuns/");
+                System.setProperty("Data_Directory",ipath+"SampleRuns/");
                opw.write("\n");
                opw.write("Default_Instrument=HRCS");
                System.setProperty("Default_Instrument","HRCS");
                opw.write("\n");
-               opw.write("Instrument_Macro_Path="+npath);
-               System.setProperty("Instrument_Macro_Path",npath);
+               opw.write("Instrument_Macro_Path="+ipath);
+               System.setProperty("Instrument_Macro_Path",ipath);
                opw.write("\n");
-               opw.write("User_Macro_Path="+npath);
-               System.setProperty("User_Macro_Path",npath);
+               opw.write("User_Macro_Path="+ipath);
+               System.setProperty("User_Macro_Path",ipath);
                opw.write("\n");
 
-               opw.write("Image_Path="+npath);
+               opw.write("Image_Path="+ipath);
+               System.setProperty("Image_Path",ipath);
 
                opw.write("\n");
                opw.write("Inst1_Name=HRMECS");
                opw.write("\n"); 
                opw.write("Inst1_Path=zeus.pns.anl.gov");
+               System.setProperty("Inst1_Name", "HRMECS");
+               System.setProperty("Inst1_Path", "zeus.pns.anl.gov");
                opw.write("\n");  
 
                opw.write("Inst2_Name=LRMECS");
                opw.write("\n");  
                opw.write("Inst2_Path=webproject-4.pns.anl.gov");
+               System.setProperty("Inst2_Name", "LRMECS");
+               System.setProperty("Inst2_Path", "webproject-4.pns.anl.gov");
                opw.write("\n");  
 
                opw.write("Inst3_Name=GPPD");
                opw.write("\n");  
                opw.write("Inst3_Path=gppd-pc.pns.anl.gov");
+               System.setProperty("Inst3_Name", "GPPD");
+               System.setProperty("Inst3_Path", "gppd-pc.pns.anl.gov");
                opw.write("\n");  
 
                opw.write("Inst4_Name=SEPD");
                opw.write("\n");  
-               opw.write("Inst4_Path=webproject-4.pns.anl.gov");
+               opw.write("Inst4_Path=dmikk.mscs.uwstout.edu");
+               System.setProperty("Inst4_Name", "SEPD");
+               System.setProperty("Inst4_Path", "dmikk.mscs.uwstout.edu");
                opw.write("\n");
 
                opw.write("Inst5_Name=SAD");
                opw.write("\n");
                opw.write("Inst5_Path=webproject-4.pns.anl.gov");
+               System.setProperty("Inst5_Name", "SAD");
+               System.setProperty("Inst5_Path", "webproject-4.pns.anl.gov");
                opw.write("\n");    
   
                opw.write("Inst6_Name=SAND");
                opw.write("\n");      
                opw.write("Inst6_Path=webproject-4.pns.anl.gov");
+               System.setProperty("Inst6_Name", "SAND");
+               System.setProperty("Inst6_Path", "webproject-4.pns.anl.gov");
                opw.write("\n");
       
                opw.write("Inst7_Name=SCD");
                opw.write("\n");      
                opw.write("Inst7_Path=webproject-4.pns.anl.gov");
+               System.setProperty("Inst7_Name", "SCD");
+               System.setProperty("Inst7_Path", "webproject-4.pns.anl.gov");
                opw.write("\n");  
     
                opw.write("Inst8_Name=GLAD");
                opw.write("\n");      
                opw.write("Inst8_Path=webproject-4.pns.anl.gov");
+               System.setProperty("Inst8_Name", "GLAD");
+               System.setProperty("Inst8_Path", "webproject-4.pns.anl.gov");
                opw.write("\n"); 
      
                opw.write("Inst9_Name=HIPD");
                opw.write("\n"); 
                opw.write("Inst9_Path=webproject-4.pns.anl.gov");
+               System.setProperty("Inst9_Name", "HIPD");
+               System.setProperty("Inst9_Path", "webproject-4.pns.anl.gov");
                opw.write("\n");
 
                opw.write("Inst10_Name=POSY1");
                opw.write("\n");      
                opw.write("Inst10_Path=webproject-4.pns.anl.gov");
+               System.setProperty("Inst10_Name", "POSY1");
+               System.setProperty("Inst10_Path", "webproject-4.pns.anl.gov");
                opw.write("\n");  
     
                opw.write("Inst11_Name=POSY2");
                opw.write("\n");  
                opw.write("Inst11_Path=webproject-4.pns.anl.gov");
+               System.setProperty("Inst11_Name", "POSY2");
+               System.setProperty("Inst11_Path", "webproject-4.pns.anl.gov");
                opw.write("\n");  
                
                opw.write("Inst12_Name=QENS");
                opw.write("\n");                 
                opw.write("Inst12_Path=webproject-4.pns.anl.gov");
+               System.setProperty("Inst12_Name", "QENS");
+               System.setProperty("Inst12_Path", "webproject-4.pns.anl.gov");
                opw.write("\n");  
                
                opw.write("Inst13_Name=CHEXS");
                opw.write("\n");                 
                opw.write("Inst13_Path=webproject-4.pns.anl.gov");
+               System.setProperty("Inst13_Name", "CHEXS");
+               System.setProperty("Inst13_Path", "webproject-4.pns.anl.gov");
                opw.write("\n"); 
 
-               opw.write("neutron.nexus.JNEXUSLIB=C:\\\\ISAW\\\\jnexus.dll  ");
+               opw.write("neutron.nexus.JNEXUSLIB="+ipath+"jnexus.dll");
+          String sss = "neutron.nexus.JNEXUSLIB"+ ipath+"jnexus.dll";
+               System.setProperty("neutron.nexus.JNEXUSLIB",ipath+"jnexus.dll");
                opw.write("\n"); 
               
                                              
                opw.flush();
-               opw.close();
+               opw.close(); 
              } catch(Exception d){}
         }
 
 
          setupMenuBar();
-	 util = new Util(); 
+	   util = new Util(); 
 
      
        Vector mm = util.listProperties();
@@ -405,19 +442,19 @@ public class Isaw extends JFrame implements Serializable, IObserver
         JMenuItem iFrame_sg = new JMenuItem("Scrolled Graph Internal Frame");
         JMenuItem eFrame_sg = new JMenuItem("Scrolled Graph External Frame");
         
-        JMenuItem HRMECS = new JMenuItem("HRMECS");
-        JMenuItem LRMECS = new JMenuItem("LRMECS");
-        JMenuItem HIPD = new JMenuItem("HIPD");
-        JMenuItem SAD = new JMenuItem("SAD");
-        JMenuItem SCD = new JMenuItem("SCD");
-        JMenuItem SAND = new JMenuItem("SAND");
-        JMenuItem POSY1 = new JMenuItem("POSY1");
-        JMenuItem POSY2 = new JMenuItem("POSY2");
-        JMenuItem GLAD = new JMenuItem("GLAD");
-        JMenuItem QENS = new JMenuItem("QENS");
-        JMenuItem GPPD = new JMenuItem("GPPD");
-        JMenuItem SEPD = new JMenuItem("SEPD");
-        JMenuItem CHEXS = new JMenuItem("CHEXS");
+        JMenuItem HRMECS = new JMenuItem("HRMECS Link");
+        JMenuItem LRMECS = new JMenuItem("LRMECS Link");
+        JMenuItem HIPD = new JMenuItem("HIPD Link");
+        JMenuItem SAD = new JMenuItem("SAD Link");
+        JMenuItem SCD = new JMenuItem("SCD Link");
+        JMenuItem SAND = new JMenuItem("SAND Link");
+        JMenuItem POSY1 = new JMenuItem("POSY1 Link");
+        JMenuItem POSY2 = new JMenuItem("POSY2 Link");
+        JMenuItem GLAD = new JMenuItem("GLAD Link");
+        JMenuItem QENS = new JMenuItem("QENS Link");
+        JMenuItem GPPD = new JMenuItem("GPPD Link");
+        JMenuItem SEPD = new JMenuItem("SEPD Link");
+        JMenuItem CHEXS = new JMenuItem("CHEXS Link");
         
         JMenuItem m_HRMECS = new JMenuItem("HRMECS ");
         JMenuItem m_LRMECS = new JMenuItem("LRMECS ");
@@ -976,7 +1013,8 @@ public String getDescription(){
 
    private class MenuItemHandler implements ActionListener 
    {
-        FileDialog fd = new FileDialog(new Frame(), "Choose the Folder/File to open", 				FileDialog.LOAD);
+        FileDialog fd = new FileDialog(new Frame(), "Choose the Folder/File to open", 				
+                                        FileDialog.LOAD);
         final JFileChooser fc = new JFileChooser();
         BrowserControl bc =  new BrowserControl();
         public void actionPerformed(ActionEvent ev) 
@@ -1154,7 +1192,7 @@ public String getDescription(){
 
 
                      
-                     if(s == "HRMECS")
+                     if(s == "HRMECS Link")
                       {  
                         //String url = "http://www.pns.anl.gov/HRMECS/Layout_98.html";
 String url = "http://www.pns.anl.gov/HRMECS/";
@@ -1165,7 +1203,7 @@ String url = "http://www.pns.anl.gov/HRMECS/";
 
                         
                       }
-                      if(s == "LRMECS")
+                      if(s == "LRMECS Link")
                       { 
                         //String url = "http://www.pns.anl.gov/lrmecs/lrmecs.html";
 String url = "http://www.pns.anl.gov/LRMECS/";
@@ -1173,7 +1211,7 @@ String url = "http://www.pns.anl.gov/LRMECS/";
                         bc.displayURL(url);
                       }
                       
-                      if(s == "HIPD")  
+                      if(s == "HIPD Link")  
                       { 
                         //String url = "http://www.pns.anl.gov/highpd.htm";
                  String url = "http://www.pns.anl.gov/hipd/";
@@ -1181,14 +1219,14 @@ String url = "http://www.pns.anl.gov/LRMECS/";
                         bc.displayURL(url); 
                       }
        
-                      if(s == "QENS")
+                      if(s == "QENS Link")
                       {
                         //String url = "http://www.pns.anl.gov/qens/qens.html";
 String url = "http://www.pns.anl.gov/qens/";
                         bc.displayURL(url);
                       }
                       
-                      if(s == "POSY1")
+                      if(s == "POSY1 Link")
                       {
                         //String url = "http://www.pns.anl.gov/posy/posy.html";
 String url = "http://www.pns.anl.gov/POSY/";
@@ -1196,14 +1234,14 @@ String url = "http://www.pns.anl.gov/POSY/";
                         bc.displayURL(url);
                       }
                       
-                      if(s == "POSY2")
+                      if(s == "POSY2 Link")
                       {
                        // String url = "http://www.pns.anl.gov/posy2/posy2.htm";
 String url = "http://www.pns.anl.gov/POSY2/";
                         bc.displayURL(url);
                       }
                       
-                      if(s == "SCD")
+                      if(s == "SCD Link")
                       {
                        // String url = "http://www.pns.anl.gov/scd.html";
 String url = "http://www.pns.anl.gov/SCD/";
@@ -1211,7 +1249,7 @@ String url = "http://www.pns.anl.gov/SCD/";
                         bc.displayURL(url);
                       }
                       
-                      if(s == "SAND")
+                      if(s == "SAND Link")
                       { 
                         //String url = "http://www.pns.anl.gov/sand.html";
 String url = "http://www.pns.anl.gov/SAND/";
@@ -1219,7 +1257,7 @@ String url = "http://www.pns.anl.gov/SAND/";
                         bc.displayURL(url);
                       }
                       
-                      if(s == "SAD")
+                      if(s == "SAD Link")
                       {  
                         //String url = "http://www.pns.anl.gov/sad/sad_front.html";
 String url = "http://www.pns.anl.gov/SAD/";
@@ -1227,7 +1265,7 @@ String url = "http://www.pns.anl.gov/SAD/";
                         bc.displayURL(url);
                       }
                       
-                      if(s == "SEPD")
+                      if(s == "SEPD Link")
                       { 
                         //String url = "http://www.pns.anl.gov/sepd_yel.htm";
 String url = "http://www.pns.anl.gov/SEPD/";
@@ -1235,7 +1273,7 @@ String url = "http://www.pns.anl.gov/SEPD/";
                         bc.displayURL(url);
                       }
                       
-                      if(s == "GPPD")
+                      if(s == "GPPD Link")
                       {  
                         //String url = "http://www.pns.anl.gov/gppd/index.htm";
 String url = "http://www.pns.anl.gov/GPPD/";
@@ -1243,14 +1281,14 @@ String url = "http://www.pns.anl.gov/GPPD/";
                         bc.displayURL(url);
                       }
                       
-                      if(s == "GLAD")
+                      if(s == "GLAD Link")
                       {  
                        // String url = "http://www.pns.anl.gov/glad/glad.html";
 String url = "http://www.pns.anl.gov/GLAD/";
                         bc.displayURL(url);
                       }
                       
-                      if(s == "CHEXS")
+                      if(s == "CHEXS Link")
                       { 
                        // String url = "http://www.pns.anl.gov/chex.htm";
 String url = "http://www.pns.anl.gov/CHEX/";
@@ -1357,7 +1395,7 @@ String url = "http://www.pns.anl.gov/CHEX/";
 
    // menuitem for macro loader below
 
-			if(s == System.getProperty("Inst1_Name"))
+			if(s == System.getProperty( "Inst1_Name" ))
                     { 
    				String instrument_computer = System.getProperty("Inst1_Path");
 				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer);
@@ -1450,74 +1488,7 @@ String url = "http://www.pns.anl.gov/CHEX/";
                         objPanel.addIObserver(my_Isaw);  
                           String live_name = System.getProperty("Inst11_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);
-
-                        
-                  try
-                    {
-
-                       // fd.show();
-                       // File f = new File(fd.getDirectory(), fd.getFile());
-                       {
-                      
-                       // String filename =f.toString();
-                       // String ff = fd.getFile();
-                       // System.out.println("The ffis "  + ff);
-                       // System.out.println("The filename is "  + filename);
-
-
-				int state = fc.showOpenDialog(null);
-				File f = fc.getSelectedFile();
-                        String filename =f.toString();
-				String fname = f.getName();
-                        
-                        System.out.println("The filename is "  + filename);
-
-                       
-                        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                        RunfileRetriever r = new RunfileRetriever(filename);
-                        
-                        int numberOfDataSets = r.numDataSets();
-                        DataSetOperator op1,op2;
-                        DataSet new_ds1, new_ds2;
-                        String attr_name = new String(Attribute.RAW_ANGLE);
-                        DataSet[] dss = new DataSet[numberOfDataSets];
-
-                        for (int i = 0; i< numberOfDataSets; i++)
-                            dss[i] = r.getDataSet(i);
-                            System.out.println("Tree is : " +jtui.getTree()); 
-                        op1 = new DiffractometerTofToD(dss[1],0, 4,2000 );
-                        new_ds1 = (DataSet)op1.getResult();
-
-                        op2 = new DataSetMultiSort(new_ds1, attr_name, false,
-                                                    true, attr_name, true, false,attr_name, true, false, true);
-                        new_ds2 = (DataSet)op2.getResult();
-                        addDataSet(new_ds2);
-				
-					jdvui.ShowDataSet(new_ds2,"Internal Frame",IViewManager.IMAGE);
-
-                        //    addDataSets(dss, fname);
-                       setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                        }
-                    } 
-                    catch (Exception e){System.out.println("Choose a input file");}
-
-
-//			      DefaultMutableTreeNode mtn = jtui.getSelectedNode();
- /*                     DataSet ds = (DataSet)mtn.getUserObject();
-                        System.out.println("Inside GPPd macro loader");
-                        DataSetOperator op1,op2;
-                        DataSet new_ds1, new_ds2;
-                        String attr_name = new String(Attribute.RAW_ANGLE);
-                        op1 = new DiffractometerTofToD(ds,0, 5,1000 );
-                        new_ds1 = (DataSet)op1.getResult();
-
-                        op2 = new DataSetMultiSort(new_ds1, attr_name, false,
-                                                    true, attr_name, true, false,attr_name, true, false, true);
-                        new_ds2 = (DataSet)op2.getResult();
-                        addDataSet(new_ds2);
-*/
-
-                      }
                    if(s == System.getProperty("Inst12_Name"))
                       {  
                         String instrument_computer = System.getProperty("Inst12_Path");
@@ -1558,8 +1529,7 @@ String url = "http://www.pns.anl.gov/CHEX/";
                     DefaultMutableTreeNode mtn = jtui.getSelectedNode();
                     DataSet ds = (DataSet)mtn.getUserObject();
                     System.out.println("inside gsaag" +ds);
-                   //gsas_filemaker(ds, "F:\\GPPD10628.RUN;10" );
-                      gsas_filemaker gg=new gsas_filemaker(ds, filename);
+                    gsas_filemaker gg=new gsas_filemaker(ds, filename);
                        }
 
                  }
