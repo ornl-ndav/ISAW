@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/07/10 15:25:33  bouzekc
+ *  Now handles colons (:) within Strings.
+ *
  *  Revision 1.15  2003/07/09 16:53:47  bouzekc
  *  Added all missing javadocs.  init() now actually sets the
  *  value that is passed in as the ArrayPG's value.
@@ -281,8 +284,11 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     //now, the array may come in in a "bad" format...i.e. [String1, String2],
     //rather than ["String1","String2"] which is what execOneLine expects.  So,
     //we'll parse the String into a Vector
-    String temp     = S;
-    Vector elements = new Vector(  );
+    String temp          = S;
+    String expansion;
+    Vector elements      = new Vector(  );
+    Vector expanded;
+    execOneLine execLine = new execOneLine(  );
 
     //pull out the brackets
     temp   = temp.replace( '[', ' ' );
@@ -291,6 +297,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     //pull out the quotes
     temp = temp.replace( '"', ' ' );
 
+    //extract the elements
     StringTokenizer st = new StringTokenizer( temp, "," );
 
     while( st.hasMoreTokens(  ) ) {
@@ -298,19 +305,53 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       elements.add( st.nextToken(  ).trim(  ) );
     }
 
+    //expand on a:b...if this is here, it will be an element in the Vector.
+    //Backwards traverse so we can remove a:b elements and parse them
+    for( int k = elements.size(  ) - 1; k >= 0; k-- ) {
+      //ignore bad types...we will assume that they wanted a String
+      expansion = elements.elementAt( k )
+                          .toString(  );
+
+      if( expansion.indexOf( ":" ) > 0 ) {
+        //yank it out
+        elements.remove( k );
+
+        //assuming this is an integer expansion, and execOneLine needs "[]"
+        expansion = "[" + expansion + "]";
+
+        //add the Collection (i.e. new Vector)
+        elements.addAll( k, parseLine( execLine, expansion ) );
+      }
+    }
+
     //now return it to the correct String format
     S = ArrayPG.ArraytoString( elements );
 
     //now we can send it to execOneLine
-    execOneLine execLine = new execOneLine(  );
-    int r                = execLine.execute( S, 0, S.length(  ) );
+    return parseLine( execLine, S );
+  }
 
-    if( execLine.getErrorCharPos(  ) >= 0 ) {
+  /**
+   * Utility to return Vectors parsed from Strings using execOneLine.  This is
+   * a convenience to handle the errors that execOneLine can return by hiding
+   * them behind an empty Vector.
+   *
+   * @param executor The execOneLine Object to return things from.
+   * @param line The line to execute.
+   *
+   * @return The result from execOneLine.  If an error is hit, it returns an
+   *         empty Vector.
+   */
+  public static Vector parseLine( execOneLine executor, String line ) {
+    //execute the line
+    executor.execute( line, 0, line.length(  ) );
+
+    if( executor.getErrorCharPos(  ) >= 0 ) {
       return new Vector(  );
     }
 
     //parse the string and try to get a result
-    Object result = execLine.getResult(  );
+    Object result = executor.getResult(  );
 
     //no dice...either no result, or we got a result, but it was not useful 
     //to us.
