@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/09/09 22:59:07  bouzekc
+ *  Added a method to self-validate the IParameterGUIs.
+ *
  *  Revision 1.6  2003/08/22 20:12:05  bouzekc
  *  Modified to work with EntryWidget.
  *
@@ -104,4 +107,11 @@ public interface IParameterGUI extends IParameter{
      * Set the valid state of the parameter.
      */
     void   setValid(boolean valid);
+
+    /**
+     * Used to let a parameter validate itself.  This is helpful for any
+     * instance where the "valid" checkbox is drawn, as it removes the need to
+     * individually validate ParameterGUIs.
+     */
+    void validateSelf(  );
 }
