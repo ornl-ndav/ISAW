@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.171  2003/12/11 18:25:49  dennis
+ *    Now uses the WindowShower utility class to display the ISAW main window
+ *  from the Swing event handling thread, instead of showing it directly.
+ *  This fixes an intermittent problem where Isaw would "hang" while
+ *  loading on Linux, using j2sdk 1.4.2_02.
+ *
  *  Revision 1.170  2003/12/08 23:31:30  dennis
  *  Changed version to 1.6.0 alpha 6
  *
@@ -1787,20 +1793,25 @@ public class Isaw
       SharedData.isaw_props.reload();
       // show the splashscreen
       SplashWindowFrame sp = new SplashWindowFrame();
-      Thread splash_thread = new Thread(sp);
-      splash_thread.start();
-      splash_thread = null;
       sp = null;
-    
+
       System.out.println("Loading "+getVersion(true));
  
       JFrame Isaw = new Isaw( args );
       Isaw.pack();
       //Isaw.setBounds(x,y,window_width,window_height);
       ((Isaw)Isaw).setBounds();
-      Isaw.show();
       Isaw.validate();
-      //SharedData.status_pane.add("Hi There");
+
+//    Isaw.show();     // replace call to show(), with later use of the 
+                       // WindowShower, so that the frame is only actually
+                       // displayed by the event thread, after it is completely
+                       // built.  Based on "Core Java Technologies Tech Tips", 
+                       // December 8, 2003
+      Runnable window_shower = new WindowShower( Isaw );
+      EventQueue.invokeLater( window_shower );
+      window_shower = null;
+
       Isaw.addWindowListener( new WindowAdapter(){
              public void windowClosing( WindowEvent ev ){
                   //System.out.println("windowClosing:"+ev.toString());
@@ -1813,7 +1824,8 @@ public class Isaw
       ss.printStackTrace();
     }
   }
- 
+
+
   /**
    * since this object is an IObserver, this method is called to
    * make changes as per notification.
