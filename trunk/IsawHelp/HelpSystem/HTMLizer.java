@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/12/02 19:56:16  pfpeterson
+ * Fixed bug where wasn't appropriately using the IsawHelp directory.
+ *
  * Revision 1.4  2002/12/02 17:26:16  pfpeterson
  * Made the html file creation *slightly* more robust. Also checks for empty/default
  * documentation and returns more appropriate message.
@@ -96,14 +99,14 @@ public class HTMLizer
             PropertiesLoader loader = new PropertiesLoader("IsawProps.dat");
             String isaw_help = SharedData.getProperty("Help_Directory");
             if ( isaw_help != null )
-              help_dir = isaw_help + "HelpSystem/html";
+              help_dir = isaw_help + "/HelpSystem/html";
             else
             {
               isaw_help = SharedData.getProperty("ISAW_HOME");
               if ( isaw_help != null )
-                help_dir = isaw_help + "IsawHelp/HelpSystem/html";
+                help_dir = isaw_help + "/IsawHelp/HelpSystem/html";
               else
-                help_dir = "HelpSystem/html";
+                help_dir = "/HelpSystem/html";
             }
 	    // SharedData.addmsg("Writing files to " + help_dir);
 	}//try
@@ -111,6 +114,7 @@ public class HTMLizer
 	{
 	    e.printStackTrace();
 	}//catch
+        help_dir=FilenameUtil.fixSeparator(help_dir);
     }//constructor()
 
     /* ------------------------- createAllHelpFiles ---------------------------- */
