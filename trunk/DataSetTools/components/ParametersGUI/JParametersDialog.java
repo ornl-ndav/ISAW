@@ -267,10 +267,14 @@ public class JParametersDialog implements Serializable,
              for(int i = 0; i < op.getNum_parameters(); i++)
              {
                 pGUI = (JParameterGUI)vparamGUI.elementAt( i );
-                op.setParameter( pGUI.getParameter(), i) ;
-                s = s + pGUI.getParameter().getValue();
-                if (i < op.getNum_parameters() - 1)
-                  s = s + ", ";
+                if( pGUI.getParameter() != null)
+		    if(pGUI.getParameter().getValue() !=null)
+                  {                  
+                    op.setParameter( pGUI.getParameter(), i) ;
+                    s = s + pGUI.getParameter().getValue();
+                    if (i < op.getNum_parameters() - 1)
+                      s = s + ", ";
+                  }
              
              }
              //util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
