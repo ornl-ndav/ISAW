@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2004/09/06 20:34:02  dennis
+ * Added option to write the list of bins that are above the currently
+ * selected threshold, in the form of a "modified" peaks file with each
+ * bin listed separately.
+ *
  * Revision 1.14  2004/09/06 18:22:27  dennis
  * Now writes the transpose of the orientation matrix, following the
  * convention for the SCD at IPNS.
@@ -363,10 +368,12 @@ public class GL_RecipPlaneView
     plane_controls.add( k_plane_ui );
     plane_controls.add( l_plane_ui );
 
-    JButton write_file = new JButton("Write Orientation Matrix");
+    JButton write_matrix_file = new JButton("Write Orientation Matrix");
+    JButton write_peaks_file = new JButton("Write Peak Data File");
     JPanel button_panel = new JPanel();
-    button_panel.setLayout( new GridLayout(1,1) );
-    button_panel.add( write_file );
+    button_panel.setLayout( new GridLayout(2,1) );
+    button_panel.add( write_matrix_file );
+    button_panel.add( write_peaks_file );
     plane_controls.add( button_panel );
     tabbed_pane.addTab( "Planes", plane_controls );
     tabbed_pane.setSelectedIndex(0);
@@ -422,7 +429,8 @@ public class GL_RecipPlaneView
     k_plane_ui.addActionListener( plane_listener );    
     l_plane_ui.addActionListener( plane_listener );    
 
-    write_file.addActionListener( new WriteFileListener() );
+    write_matrix_file.addActionListener( new WriteMatrixFileListener() );
+    write_peaks_file.addActionListener( new WritePeaksFileListener() );
 
     vec_q_transformer = new Vector();
     data_sets = new Vector();
@@ -2725,11 +2733,95 @@ public void WriteMatrixFile( String filename )
 }
 
 
+/* ------------------------ WritePeakDataFile ---------------------------- */
+/**
+ *  Write the best fit orientation matrix and lattice parameters to the 
+ *  specified file and to the status pane.
+ */
+public void WritePeakDataFile( String filename )
+{
+  assignHKLs();
+                                                          //copy peaks to array
+  Object peak_data_array[] = new Object[ all_peaks.size() ];
+  for ( int i = 0; i < peak_data_array.length; i++ )
+    peak_data_array[i] = all_peaks.elementAt(i);
+                                                          // sort on l, k, h
+  Arrays.sort( peak_data_array, new CompareHKL(2) ); 
+  Arrays.sort( peak_data_array, new CompareHKL(1) ); 
+  Arrays.sort( peak_data_array, new CompareHKL(0) ); 
+
+  Vector sorted_peaks = new Vector( all_peaks.size() );   // copy to new vector
+  for ( int i = 0; i < peak_data_array.length; i++ )      // so we can print
+    sorted_peaks.add( peak_data_array[i] );
+
+  PeakData.WritePeakData( sorted_peaks, filename );
+}
+
+
 /* --------------------------------------------------------------------------
  *
  *  PRIVATE CLASSES
  *
  */
+
+/* ----------------------------- CompareH ----------------------------- */
+/**
+ *  Comparator to compare the assigned h, k or l index values of two 
+ *  PeakData objects.  Which of the indices is compared is determined by
+ *  the index_code passed to the constructor.
+ */
+private class CompareHKL implements Comparator
+{
+  int index_code;
+  /* 
+   *  Use index_code = 0 to compare h, index_code = 1 to compare k and
+   *  index_code 2 to compare l.
+   */
+  public CompareHKL( int index_code )
+  {
+    this.index_code = index_code;
+  }
+ 
+  public int compare( Object o1, Object o2 )
+  {
+    if ( o1 == o2 )
+      return 0;
+    if ( ! (o1 instanceof PeakData) )
+      return 0; 
+    if ( ! (o2 instanceof PeakData) )
+      return 0;
+ 
+    float v1;
+    float v2;
+    if ( index_code == 0 )
+    {
+      v1 = ((PeakData)o1).h;
+      v2 = ((PeakData)o2).h;
+    }
+    else if ( index_code == 1 )
+    {
+      v1 = ((PeakData)o1).k;
+      v2 = ((PeakData)o2).k;
+    }
+    else
+    {
+      v1 = ((PeakData)o1).l;
+      v2 = ((PeakData)o2).l;
+    }
+
+    v1 = Math.round(v1);
+    v2 = Math.round(v2);
+
+    if ( v1 > v2 )
+      return 1;
+    else if ( v1 < v2 )
+      return -1;
+    else 
+      return 0;
+  }
+}
+
+
 
 
 /* ------------------------- ViewMouseInputAdapter ----------------------- */
@@ -2884,12 +2976,12 @@ private class CalcFFTButtonHandler implements ActionListener
 }
 
 
-/* --------------------------- WriteFileListener ------------------------ */
+/* ----------------------- WriteMatrixFileListener ------------------------ */
 /*
  *  Write the orientation matrix and lattice parameters to a file and to
  *  the StatusPane.
  */
-private class WriteFileListener implements ActionListener
+private class WriteMatrixFileListener implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
   {
@@ -2900,6 +2992,26 @@ private class WriteFileListener implements ActionListener
 
     System.out.println("Wrote to " + chooser.getSelectedFile().toString() );
 
+    return;
+  }
+}
+
+
+/* ----------------------- WritePeaksFileListener ------------------------ */
+/*
+ *  Write the list of peak data objects to a file.
+ */
+private class WritePeaksFileListener implements ActionListener
+{
+  public void actionPerformed( ActionEvent e )
+  {
+    JFileChooser chooser = new JFileChooser();
+    int returnVal = chooser.showOpenDialog( scene_f );
+    if(returnVal == JFileChooser.APPROVE_OPTION)
+      WritePeakDataFile( chooser.getSelectedFile().toString() );
+
+    System.out.println("Wrote Peak Data to " + 
+                        chooser.getSelectedFile().toString() );
     return;
   }
 }
