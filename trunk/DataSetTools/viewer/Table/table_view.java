@@ -29,8 +29,14 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * 
+* 
  * $Log$
+ * Revision 1.4  2001/08/13 14:39:36  rmikk
+ * The header and the table in the table view is now in
+ *    tabbed panes.
+ * The JTable column headings in the table part are now the
+ *   column headings from the table.
+ *
  * Revision 1.3  2001/08/09 21:50:42  rmikk
  * Added Documentation.
  * Added new Fields- Group Index, Raw Angle, Solid Angle
@@ -98,7 +104,7 @@ public class table_view extends JPanel implements ActionListener
    boolean XYcol = false;
    boolean DBcol = false;
    ExcelAdapter EA = null;
-  
+   IsawGUI.Util  util;
    
   /** Only Constructor without GUI components
   *@param  outputMedia  <ol>The views can be sent to
@@ -124,6 +130,7 @@ public class table_view extends JPanel implements ActionListener
      use = Nuse = null;
      DSS = null;
      mode = 0;
+     util = new IsawGUI.Util();
    
     }
    
@@ -133,7 +140,8 @@ public class table_view extends JPanel implements ActionListener
    *               is only one data set in this list
    */     
    public table_view( DataSet DS[] )
-    {
+      { setLayout( new GridLayout( 1,1));
+       initt();
       DSS = DS;
      // System.out.println( "# data Sets="+ DS.length );
       //setLayout( new BorderLayout() );
@@ -359,11 +367,13 @@ public class table_view extends JPanel implements ActionListener
   FileOutputStream f = null;
   JFrame  JF;
   JTable JTb;
+  JTextArea HeaderInfoPane;
   DefaultTableModel DTM;
   Vector V = new Vector();
   int mode= 0;
   boolean startline = true;
-  
+  boolean columnHeader = false; //for table view feature
+                               
   private void initOutput( DataSet D )
     { //mode = OutputMode.getSelectedIndex();
      startline = true;
@@ -401,12 +411,23 @@ public class table_view extends JPanel implements ActionListener
        JMB.add( JM );
        JF.setJMenuBar( JMB );
        JMi.addActionListener( new MyActionListener() );
+       // Tabbed pane
+       JTabbedPane JtabPane = new JTabbedPane();
+       // Table Pane
        DTM = new DefaultTableModel();
        JTb = new JTable( DTM );
         EA = new ExcelAdapter( JTb );
-       JF.getContentPane().add( new JScrollPane( JTb ,
+       // The HeaderInfo Pane
+       HeaderInfoPane = new JTextArea (20, 50 );
+       // Glue together
+       JF.getContentPane().add( JtabPane );
+       JtabPane.add( "Table",new JScrollPane( JTb ,
                                  JScrollPane.VERTICAL_SCROLLBAR_ALWAYS ,
                                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED  ));
+       JtabPane.add( "Header", new JScrollPane( HeaderInfoPane ,
+                                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS ,
+                               JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED  ));
+    
        JF.setSize( 400, 400 );
        JF.show();
        JF.validate();
@@ -421,9 +442,9 @@ public class table_view extends JPanel implements ActionListener
     {
      String S;
      if( res != null )
-          S = new NexIO.NxNodeUtils().Showw( res ) ;
+         S = new NexIO.NxNodeUtils().Showw( res ) ;
      else
-          S = "";
+         S = "";
      //System.out.print( "Output field mode="+ mode );
      if( mode == 0 )
        if( startline )
@@ -439,7 +460,10 @@ public class table_view extends JPanel implements ActionListener
            f.write( ("\t"+ S ).getBytes() );
         }
      catch( IOException ss ){}
-     else 
+    
+     else if( columnHeader)
+      DTM.addColumn( S );
+     else
        V.addElement( S );
 
      startline = false;
@@ -453,7 +477,14 @@ public class table_view extends JPanel implements ActionListener
             f.write( "\n".getBytes() );
           }
        catch( IOException sss ){}
-    else
+    else if( header)
+      {String S="";
+       for( int i = 0; i <V.size(); i++)
+          S = S +(String)(V.elementAt( i));
+       V = new Vector();
+       util.appendDoc( HeaderInfoPane.getDocument(), S );
+      }
+    else if( !columnHeader )  
      {
       for( int i = DTM.getColumnCount() ; i < V.size() ; i++ )
           DTM.addColumn( new Integer( i ) );
@@ -481,9 +512,8 @@ public class table_view extends JPanel implements ActionListener
  
   /** Converts an array of Fields in String form to an int array
   *   that is used in the Showw method
-  *@see   #Showw(DataSetTools.dataset.DataSet DSS[], int used[],  
-                   boolean  DBSeq, boolean UseAll )
-  */
+  *@see   #Showw(DataSetTools.dataset.DataSet[], int[], boolean, boolean)
+ */
   public int[] Convertt( String fields[] )
      {int Res[];
      
@@ -505,10 +535,11 @@ public class table_view extends JPanel implements ActionListener
      return Res;
      }
 
-
+  boolean header = false;
   private void MakeHeaderInfo( DataSet DSS[] , boolean UseAll )
     {String S;
      int i;
+     header = true;
      NexIO.NxNodeUtils nd = new NexIO.NxNodeUtils();
      // 1st line data set name( s )
      S = "#Data Set";
@@ -518,7 +549,7 @@ public class table_view extends JPanel implements ActionListener
      for( i = 0 ; i < DSS.length ; i++ )
         {S = S + DSS[ i ].toString();
          if( i+ 1 < DSS.length )
-           S = S +";";
+           S = S +" ; ";
         }
      OutputField( S );
      OutputEndField();
@@ -539,10 +570,11 @@ public class table_view extends JPanel implements ActionListener
        for( int j = 0 ; j < oplog.numEntries() ; j++ )
          { S += oplog.getEntryAt( j );
            if( j+ 1 < oplog.numEntries() )
-              S += ";";
+              S += "\n             ";
          }
        OutputField( S ); OutputEndField();
       }
+    header = false;
     }
 
   /** Views the data for the data set.  All information has been setup from
@@ -558,10 +590,12 @@ public class table_view extends JPanel implements ActionListener
  *    to this viewer
  *@param  DSS  The list of data sets to be table-viewed.
  *@param  used  The list of used fields
- *@param  DBSeq true if the Data Blocks are viewed sequentially( one above the
- *              other. If false, the Data blocks are Viewed left to right
- *@param UseAll  true if all data blocks are to be used, otherwise only the
- *               selected data blocks will be used
+ *@param  DBSeq  <OL><LI>true if the Data Blocks are viewed sequentially
+ *                    ( one above the
+ *              other. <LI>If false, the Data blocks are Viewed left to right
+                </ol>
+ *@param UseAll  <UL>true if all data blocks are to be used, otherwise only the
+ *               selected data blocks will be used</ul>
  */
   public void Showw( DataSet DSS[], int used[],  boolean  DBSeq, 
                                 boolean UseAll )
@@ -597,13 +631,17 @@ public class table_view extends JPanel implements ActionListener
         }
 */
     initOutput( DSS[ 0 ] );
+    columnHeader = false;
     MakeHeaderInfo( DSS , UseAll );
+    header = false;
     for(  i = 0 ; i < DSS.length ; i++ )
     if( DBSeq )   
-      {DataSet DS = DSS[ i ];       
+      {DataSet DS = DSS[ i ]; 
+       columnHeader = true;      
        for( int ii = 0 ; ii < ncols ; ii++ )
           OutputField( Fields[ used[ ii  ] ] );
        OutputEndField();
+       columnHeader = false;
        for( int j = 0 ; j < DS.getNum_entries() ; j++ )
          if( UseAll || DS.getData_entry( j ).isSelected() )
           {Data DB = DS.getData_entry( j );
@@ -631,6 +669,7 @@ public class table_view extends JPanel implements ActionListener
       if( n <= 0 )
          n = 1;
        int count =  0;   
+       columnHeader = true;
        for( int j = 0 ; j < DS.getNum_entries() ; j++ )
           {Data DB = DS.getData_entry( j );
            if( UseAll || DB.isSelected() )
@@ -649,6 +688,7 @@ public class table_view extends JPanel implements ActionListener
              }//if DB.isSelected                        
             }
        OutputEndField();
+       columnHeader = false;
       for( int k = 0 ; k < n ; k++ ) //xvals
        {float x = Float.NaN;
         if( xvals != null )           
