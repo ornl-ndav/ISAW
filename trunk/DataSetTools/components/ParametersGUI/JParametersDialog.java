@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2001/08/07 21:00:25  rmikk
+ *  Changed opDialog's layout to a Box layout.  Fine tuned
+ *  colors and centering.
+ *
  *  Revision 1.10  2001/08/06 22:15:21  rmikk
  *  Fixed IStringList and SpecialString parameter values to
  *  return those values
@@ -103,19 +107,35 @@ public class JParametersDialog implements Serializable,
         this.sessionLog = sessionLog;    
         this.io = io;
         opDialog = new JDialog( new JFrame(), op.getTitle(),true);
-      
-        opDialog.setSize(570,450);
+        int Size = 0 ;
+        int Size1 = 0;
         String SS ="Operation "+op.getTitle();
-
+        int Width = 0;
         if(op instanceof DataSetOperator)
             SS = SS +" on tree node "+((DataSetOperator)op).getDataSet();
-        opDialog.getContentPane().add(new JLabel(SS));
+	//#
+        
+        Box BB = new Box( BoxLayout.Y_AXIS);
+        JLabel Header = new JLabel(SS ,SwingConstants.CENTER);
+        Header.setForeground( Color.black);
+        JPanel HeaderPanel = new JPanel();
+        HeaderPanel.add( BB.createGlue());
+        HeaderPanel.add( Header );
+        HeaderPanel.add( BB.createGlue() );
+        BB.add( HeaderPanel );
+        Size1 = new JLabel( SS ).getPreferredSize().height;
+      
+        if( Size1 < 0)
+	    Size += 10;
+        else
+           Size += Size1;     
         APH = new ApplyButtonHandler();
-         if( io != null) 
+        if( io != null) 
               addIObserver(io);
         
         //Center the opdialog frame 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Width = screenSize.width;
         Dimension size = opDialog.getSize();
         screenSize.height = screenSize.height/2;
         screenSize.width = screenSize.width/2;
@@ -123,28 +143,31 @@ public class JParametersDialog implements Serializable,
         size.width = size.width/2;
         int y = screenSize.height - size.height;
         int x = screenSize.width - size.width;
+        //opDialog.setSize(570,450);
         opDialog.setLocation(x, y);
 
         int num_param = op.getNum_parameters();
        
-        opDialog.getContentPane().setLayout(new GridLayout(num_param+5,1));
+	// opDialog.getContentPane().setLayout(new GridLayout(num_param+5,1));
+        
         Parameter param;
         JParameterGUI paramGUI;
        
         op.setDefaultParameters();
-      
+       
         for (int i = 0; i<num_param; i++)
         {  
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
-            
+           Size1=-1;
            param = op.getParameter(i);            
-
+          
             if(  param.getValue() instanceof String  &&
                                op instanceof IntervalSelectionOp  )
             {
               DataSet ds = ((DS_Attribute)op).getDataSet();
               AttributeList attrs = ds.getData_entry(0).getAttributeList();
               paramGUI = new JIntervalParameterGUI( param, attrs );
+              
             }
 
            else if(param.getValue() == null)
@@ -245,30 +268,60 @@ public class JParametersDialog implements Serializable,
            System.out.println("Unsupported Parameter in JParamatersDialog");
                 return ;
         }
-               
+        Size1 = paramGUI.getGUISegment().getPreferredSize().height;
+        
+        if( Size1 < 0)
+	    Size += 10;
+        else
+           Size += Size1;     
                 
         //Add other kinds of parameter types here.
             
-        opDialog.getContentPane().add(paramGUI.getGUISegment());
+	    //# opDialog.getContentPane().add(paramGUI.getGUISegment());
+        BB.add(paramGUI.getGUISegment());
         vparamGUI.addElement(paramGUI);
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
             
         }
-            
-        opDialog.getContentPane().add(resultsLabel);
-
-        JPanel buttonpanel = new JPanel();
+        JPanel Filler = new JPanel();
+        Filler.setPreferredSize( new Dimension(120,2000));
+        BB.add( Filler ); 
+        JPanel resultsPanel = new JPanel(new GridLayout( 1, 1 ) );
+        resultsLabel.setForeground( Color.black);            
+        resultsPanel.add( resultsLabel );
+              
+        BB.add(resultsPanel );
+        Size1 = resultsLabel.getPreferredSize().height;
+       
+        if( Size1 < 0)
+	    Size += 10;
+        else
+           Size += Size1;    
+        JPanel buttonpanel = new JPanel( );
         buttonpanel.setLayout(new FlowLayout());
                
         JButton apply = new JButton("Apply");
         JButton exit = new JButton("Exit");
-               
+                  
         buttonpanel.add(apply);
         apply.addActionListener( APH );
                  
         buttonpanel.add(exit);
         exit.addActionListener(new ExitButtonHandler());
-        opDialog.getContentPane().add(buttonpanel);
+        Size1 = buttonpanel.getPreferredSize().height;
+        
+        if( Size1 < 0)
+	    Size += 10;
+        else
+           Size += Size1;    
+       
+        BB.add(buttonpanel);
+        opDialog.getContentPane().add( BB);
+        //#
+       
+        Size += (num_param +5)*8;
+        
+        opDialog.setSize((int)(.4* Width) , new Float(Size +.8).intValue());
         opDialog.validate();
                  
         opDialog.setVisible(true);
