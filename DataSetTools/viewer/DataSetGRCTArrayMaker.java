@@ -35,6 +35,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/07/29 15:40:39  rmikk
+ * Fixed some javadoc errors
+ * Fixed an off by one error
+ *
  * Revision 1.6  2004/07/29 13:50:30  rmikk
  * Improved the results of the pointed At performance
  * redraw from an external event implemented
@@ -993,7 +997,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
      * accounted for. If the array passed in exceeds the bounds of the array, 
      * get values for array elements and ignore extra values.
      *
-     *  @param  row   the row number being altered
+     *  @param  row_number   the row number being altered
      *  @param  from  the column number of first element to be altered
      *  @param  to    the column number of the last element to be altered
      *  @return If row, from, and to are valid, an array of floats containing
@@ -1041,7 +1045,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
      * accounted for. If the array passed in exceeds the bounds of the array, 
      * get values for array elements and ignore extra values.
      *
-     *  @param  column  column number of desired column
+     *  @param  column_number  column number of desired column
      *  @param  from    the row number of first element to be altered
      *  @param  to      the row number of the last element to be altered
      *  @return If column, from, and to are valid, an array of floats 
@@ -1144,10 +1148,10 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
      * at first row and ending at the last row. The horizontal dimensions 
      * are determined by the first column and last column. 
      *
-     *  @param  row_start  first row of the region
-     *  @param  row_stop	last row of the region
-     *  @param  col_start  first column of the region
-     *  @param  col_stop	last column of the region
+     *  @param  first_row  first row of the region
+     *  @param  last_row	last row of the region
+     *  @param  first_column  first column of the region
+     *  @param  last_column	last column of the region
      *  @return If a portion of the array is specified, a 2-D array copy of 
      *	     this portion will be returned. 
      *	     If all of the array is specified, a reference to the actual array
@@ -1351,7 +1355,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
     /**
      * Get detailed information about this axis.
      *
-     *  @param  axis The integer code for the axis, starting at 0.
+     *  @param  axiscode The integer code for the axis, starting at 0.
      *  @return The axis info for the axis specified.
      *  @see    gov.anl.ipns.ViewTools.Components.AxisInfo
      */
@@ -1709,7 +1713,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         public GridHandler( int startIndx, int endIndx, int Nslices ) {
 
             this.startIndx = Math.max( startIndx, 0 );
-            this.endIndx = Math.min( endIndx, DataSets.length );
+            this.endIndx = Math.min( endIndx, GridNums.length  ); 
             if ( this.startIndx > this.endIndx ) {
 
                 int x = this.startIndx;
@@ -1746,9 +1750,9 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         public float getMin( int i ) {
 
             if ( Nslices <= 0 )
-                return (int) Math.min( i + startIndx, endIndx );
+                return (int) Math.min( i + startIndx, endIndx-1 );
 
-            return (int) Math.min( i * D + startIndx, endIndx );
+            return (int) Math.min( i * D + startIndx, endIndx-1 );
 
         }
    
@@ -1763,9 +1767,9 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         public float getMax( int i ) {
 
             if ( Nslices <= 0 )
-                return (int) Math.min( i + 1 + startIndx, endIndx +1 );
+                return (int) Math.min( i + 1 + startIndx, endIndx  );
 
-            return (int) Math.min( i * D + 1 + startIndx, endIndx +1 );
+            return (int) Math.min( i * D + 1 + startIndx, endIndx  );
 
         }
   
