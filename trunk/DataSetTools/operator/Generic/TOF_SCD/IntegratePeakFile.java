@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2004/03/31 18:29:37  dennis
+ * Added parameter to allow user to specify peaks file to integrate.
+ *
  * Revision 1.1  2004/03/30 23:35:24  dennis
  * This was derived from Integrate.java by removing the code that
  * generated hkl's and replacing it by code to read peaks from a
@@ -184,6 +187,7 @@ package DataSetTools.operator.Generic.TOF_SCD;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
+import Operators.TOF_SCD.*;
 import DataSetTools.parameter.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.instruments.*;
@@ -255,6 +259,9 @@ public class IntegratePeakFile extends GenericTOF_SCD{
     // parameter 4 keeps its default value
     // parameter 5 keeps its default value
     // parameter 6 keeps its default value
+    // parameter 7 keeps its default value
+    // parameter 8 keeps its default value
+    // parameter 9 keeps its default value
   }
 
   /** 
@@ -265,7 +272,10 @@ public class IntegratePeakFile extends GenericTOF_SCD{
    * pass in IParameterGUIs.
    *
    * @param ds          DataSet to integrate
-   * @param integfile   The "integrate file" for the analysis.
+   * @param peakfile    The "peaks file" containing the list of 
+   *                    peaks to integrae.
+   * @param integfile   The "integrate file" to which the integrated
+   *                    intensities are written.
    * @param slicerange  The time slice range.
    * @param slicedelta  The amount to increase slicesize by.
    * @param lognum      The peak multiples to log - i.e. 3 logs
@@ -279,6 +289,7 @@ public class IntegratePeakFile extends GenericTOF_SCD{
    *                    position
    */
   public IntegratePeakFile( DataSet ds, 
+                            String  peakfile, 
                             String  integfile, 
                             String  slicerange, 
                             int     slicedelta, 
@@ -290,14 +301,15 @@ public class IntegratePeakFile extends GenericTOF_SCD{
   {
     this(ds); 
 
-    getParameter(1).setValue(integfile);
-    getParameter(2).setValue(slicerange);
-    getParameter(3).setValue(new Integer(slicedelta));
-    getParameter(4).setValue(new Integer(lognum));
-    getParameter(5).setValue(new Boolean(append));
-    getParameter(6).setValue(new Boolean(use_shoebox));
-    getParameter(7).setValue(box_x_range);
-    getParameter(8).setValue(box_y_range);
+    getParameter(1).setValue(peakfile);
+    getParameter(2).setValue(integfile);
+    getParameter(3).setValue(slicerange);
+    getParameter(4).setValue(new Integer(slicedelta));
+    getParameter(5).setValue(new Integer(lognum));
+    getParameter(6).setValue(new Boolean(append));
+    getParameter(7).setValue(new Boolean(use_shoebox));
+    getParameter(8).setValue(box_x_range);
+    getParameter(9).setValue(box_y_range);
   }
 
   /* --------------------------- getCommand ------------------------------- */ 
@@ -323,29 +335,34 @@ public class IntegratePeakFile extends GenericTOF_SCD{
     addParameter( new DataSetPG("Data Set", null, false ) );
 
     // parameter(1)
+    LoadFilePG lfpg=new LoadFilePG("Peaks File to Integrate",null);
+    lfpg.setFilter(new PeaksFilter());
+    addParameter(lfpg);
+
+    // parameter(2)
     SaveFilePG sfpg=new SaveFilePG("Integrate File",null);
     sfpg.setFilter(new IntegrateFilter());
     addParameter(sfpg);
 
-    // parameter(2)
+    // parameter(3)
     addParameter(new IntArrayPG("Time Slice Range","-1:3"));
 
-    // parameter(3)
+    // parameter(4)
     addParameter(new IntegerPG("Increase Slice Size by",0));
 
-    // parameter(4)
+    // parameter(5)
     addParameter(new IntegerPG("Log Every nth Peak",3));
 
-    // parameter(5)
+    // parameter(6)
     addParameter(new BooleanPG("Append",false));
 
-    // parameter(6)
+    // parameter(7)
     addParameter(new BooleanPG("Use Shoe Box (NOT max I/sigI)",false));
 
-    // parameter(7)
+    // parameter(8)
     addParameter(new IntArrayPG("Box Delta x (col) Range","-2:2"));
 
-    // parameter(8)
+    // parameter(9)
     addParameter(new IntArrayPG("Box Delta y (row) Range","-2:2"));
   }
   
@@ -375,9 +392,8 @@ public class IntegratePeakFile extends GenericTOF_SCD{
     sb.append("peaks file.\n");
     // parameters
     sb.append("@param ds DataSet to integrate.\n");
+    sb.append("@param peakfile The file containing the peaks to integrate.\n");
     sb.append("@param intfile The integrate file to write to.\n");
-    sb.append("@param centerType The centering type to use (e.g. primitive, ");
-    sb.append("a-centered, b-centered, etc.).\n");
     sb.append("@param timeSlice The time slice range to use.\n");
     sb.append("@param sliceDelta The incremental amount to increase the ");
     sb.append("slice size by.\n");
@@ -412,6 +428,7 @@ public class IntegratePeakFile extends GenericTOF_SCD{
    */
   public Object getResult(){
     Object val=null; // used for dealing with parameters
+    String peaksfile=null;
     String integfile=null;
     DataSet ds;
     this.logBuffer=new StringBuffer();
@@ -427,8 +444,20 @@ public class IntegratePeakFile extends GenericTOF_SCD{
       return new ErrorString("Value of first parameter must be a dataset");
     }
 
-    // then the integrate file
+    // then the peaks file
     val=getParameter(1).getValue();
+    if(val!=null){
+      peaksfile=val.toString();
+      if(peaksfile.length()<=0)
+        return new ErrorString("Invalid peaksfile");
+      peaksfile=FilenameUtil.setForwardSlash(peaksfile);
+    }else{
+      return new ErrorString("peaksfile filename is null");
+    }
+
+
+    // then the integrate file
+    val=getParameter(2).getValue();
     if(val!=null){
       integfile=val.toString();
       if(integfile.length()<=0)
@@ -440,7 +469,7 @@ public class IntegratePeakFile extends GenericTOF_SCD{
 
     // then the time slice range
     {
-      int[] myZrange=((IntArrayPG)getParameter(2)).getArrayValue();
+      int[] myZrange=((IntArrayPG)getParameter(3)).getArrayValue();
       if(myZrange!=null && myZrange.length>=2){
         timeZrange[0]=myZrange[0];
         timeZrange[1]=myZrange[myZrange.length-1];
@@ -450,20 +479,20 @@ public class IntegratePeakFile extends GenericTOF_SCD{
     }
 
     // then how much to increase the integration size
-    incrSlice=((IntegerPG)getParameter(3)).getintValue();
+    incrSlice=((IntegerPG)getParameter(4)).getintValue();
 
     // then how often to log a peak
-    listNthPeak=((IntegerPG)getParameter(4)).getintValue();
+    listNthPeak=((IntegerPG)getParameter(5)).getintValue();
 
     // then whether to append
-    boolean append=((BooleanPG)getParameter(5)).getbooleanValue();
+    boolean append=((BooleanPG)getParameter(6)).getbooleanValue();
 
     // then whether to just use a "shoebox" instead of maximizing I/sigI
-    boolean use_shoebox=((BooleanPG)getParameter(6)).getbooleanValue();
+    boolean use_shoebox=((BooleanPG)getParameter(7)).getbooleanValue();
 
     // then the x range
     {
-      int[] myXrange=((IntArrayPG)getParameter(7)).getArrayValue();
+      int[] myXrange=((IntArrayPG)getParameter(8)).getArrayValue();
       if(myXrange!=null && myXrange.length>=2){
         colXrange[0]=myXrange[0];
         colXrange[1]=myXrange[myXrange.length-1];
@@ -474,7 +503,7 @@ public class IntegratePeakFile extends GenericTOF_SCD{
 
     // then the y range
     {
-      int[] myYrange=((IntArrayPG)getParameter(8)).getArrayValue();
+      int[] myYrange=((IntArrayPG)getParameter(9)).getArrayValue();
       if(myYrange!=null && myYrange.length>=2){
         rowYrange[0]=myYrange[0];
         rowYrange[1]=myYrange[myYrange.length-1];
@@ -520,10 +549,11 @@ public class IntegratePeakFile extends GenericTOF_SCD{
     // add the parameter values to the logBuffer
     logBuffer.append("---------- PARAMETERS\n");
     logBuffer.append(getParameter(0).getName()+" = "+ds.toString()+"\n");
-    logBuffer.append(getParameter(1).getName()+" = "+integfile+"\n");
-    logBuffer.append(getParameter(2).getName()+" = "+timeZrange[0]+" to "
+    logBuffer.append(getParameter(1).getName()+" = "+peaksfile+"\n");
+    logBuffer.append(getParameter(2).getName()+" = "+integfile+"\n");
+    logBuffer.append(getParameter(3).getName()+" = "+timeZrange[0]+" to "
                      +timeZrange[1]+"\n");
-    logBuffer.append(getParameter(3).getName()+" = "+incrSlice+"\n");
+    logBuffer.append(getParameter(4).getName()+" = "+incrSlice+"\n");
     logBuffer.append("Adjust center to nearest point with dX="+dX+" dY="+dY
                      +" dZ="+dZ+"\n");
 
@@ -564,7 +594,12 @@ public class IntegratePeakFile extends GenericTOF_SCD{
     for( int i=0 ; i<det_number.length ; i++ ){
       if(DEBUG) System.out.println("integrating "+det_number[i]);
       innerPeaks=new Vector();
-      error=integrateDetector(ds,innerPeaks, nrun, det_number[i], use_shoebox);
+      error=integrateDetector(ds, 
+                              peaksfile, 
+                              innerPeaks, 
+                              nrun, 
+                              det_number[i], 
+                              use_shoebox);
       if(DEBUG) System.out.println("ERR="+error);
       if(error!=null) return error;
       if(DEBUG) System.out.println("integrated "+innerPeaks.size()+" peaks");
@@ -590,6 +625,7 @@ public class IntegratePeakFile extends GenericTOF_SCD{
 // ========== start of detector dependence
 
   private ErrorString integrateDetector(DataSet     ds, 
+                                        String      peaksfile,
                                         Vector      peaks, 
                                         int         nrun,
                                         int         detnum,
@@ -646,8 +682,7 @@ public class IntegratePeakFile extends GenericTOF_SCD{
     Peak peak=null;
     int seqnum=1;
 
-    String filename = "/home/dennis/SCD_PEAK_INTEGRATE/quartz.peaks";
-    Operator read_peaks = new ReadPeaks( filename );
+    Operator read_peaks = new ReadPeaks( peaksfile );
 
     Object result = read_peaks.getResult();
     if ( result instanceof ErrorString )
