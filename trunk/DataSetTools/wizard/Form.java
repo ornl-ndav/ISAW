@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.45  2003/11/05 02:11:34  bouzekc
+ * Added check for a null result parameter in setResultParam.
+ *
  * Revision 1.44  2003/11/05 02:03:32  bouzekc
  * Made the result parameter an instance variable, separate from the
  * parameter list.  This removes a dependency on ParameterClassList as
@@ -416,7 +419,10 @@ public abstract class Form extends Operator implements PropertyChanger {
    */
   public void setResultParam( IParameterGUI resultPG ) {
     result_param = resultPG;
-    result_param.setDrawValid( true );
+
+    if( result_param != null ) {
+      result_param.setDrawValid( true );
+    }
   }
 
   /**
