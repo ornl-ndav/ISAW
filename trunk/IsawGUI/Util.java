@@ -35,6 +35,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2002/05/02 19:14:57  pfpeterson
+ * Changed the SDDS import statement.
+ *
  * Revision 1.10  2002/05/02 15:55:07  rmikk
  * Eliminated a few segments of dead code
  * Sent it through a Prettifier code
@@ -61,7 +64,7 @@ import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Load.*;
 import DataSetTools.operator.Generic.Save.*;
-import SDDS.*;
+import SDDS.java.SDDS.*;
 
 
 /**
