@@ -38,6 +38,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2003/05/05 17:50:18  dennis
+ *  Made JPlotLayout rpl_ an instance variable, rather than a static
+ *  class variable.  This fixes a problem when multiple contour views
+ *  were used simultaneously.
+ *
  *  Revision 1.25  2003/05/02 19:20:40  dennis
  *  Now uses ClosedInterval.niceGrid() method to calculate values to
  *  use for contour levels.
@@ -51,8 +56,9 @@
  *  standardized header
  *
  *  Revision 1.22  2002/11/25 13:51:07  rmikk
- *  The panel containing the SGT ContourPlot now is a CoordJPanel with all the cursor controls.
- *  Expanding the split pane with the ContourPlot now works.
+ *  The panel containing the SGT ContourPlot now is a CoordJPanel with all 
+ *  the cursor controls.  Expanding the split pane with the ContourPlot 
+ *  now works.
  *
  *  Revision 1.21  2002/10/18 19:05:34  rmikk
  *  Fixed the notify system to be more robust
@@ -88,7 +94,8 @@
  *  Revision 1.13  2002/08/21 15:42:36  rmikk
  *  -If pointedAtX is NaN(undefined) defaults to 0th frame
  *  - Title of Contour Plot is now the title of the data set
- *  - Contour levels now "rounded" to last two or one differing digits base 10. There should be approximately 10 contour levels.
+ *  - Contour levels now "rounded" to last two or one differing digits 
+ *    base 10. There should be approximately 10 contour levels.
  *
  *  Revision 1.12  2002/08/02 19:34:48  rmikk
  *  main program Converts to Q with 100 bins
@@ -173,7 +180,7 @@ import DataSetTools.components.image.*;
  */
 public class ContourView extends DataSetViewer
 {
-   static JPlotLayout rpl_ = null;
+   JPlotLayout rpl_ = null;
    private GridAttribute gridAttr_ = null;
   // JButton edit_;
    boolean rpldrawn  = false;
