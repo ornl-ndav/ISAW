@@ -20,17 +20,21 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI 54751, USA
+ *           Menomonie, WI. 54751
+ *           USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- *
  * Modified:
  *
  * $Log$
+ * Revision 1.43  2002/12/02 15:41:20  rmikk
+ * The Command Pane's help button now uses the JHelp system if it is present
+ *   otherwise the other system is used
+ *
  * Revision 1.42  2002/11/27 23:12:10  pfpeterson
  * standardized header
  *
@@ -102,7 +106,7 @@ import DataSetTools.operator.Generic.*;
 import java.beans.*; 
 import java.util.Vector;
 import Command.*;
-
+import javax.help.*;
 /**
  * Pane to enter, execute and handle commands
  *  A command can be executed immediately  or 
@@ -181,9 +185,16 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
         Save = new JButton( "Save Script" ) ; 
         Help = new JButton( "Help" ) ; 
         Clear = new JButton("Clear");
-        Run.addActionListener( new MyMouseListener(this ) ) ; 
-        Help.addActionListener( new MyMouseListener( this ) ) ; 
-        Clear.addActionListener( new MyMouseListener( this ) ) ; 
+        Jhelp jh = null;
+        try {
+             jh = new Jhelp();
+            }
+        catch( Throwable sss)
+           {jh = null;
+           }
+        Run.addActionListener( new MyMouseListener(this , jh ) ) ; 
+        Help.addActionListener( new MyMouseListener( this , jh) ) ; 
+        Clear.addActionListener( new MyMouseListener( this , jh) ) ; 
         
         setLayout( new BorderLayout() ) ; 
         JP = new JPanel() ; 
@@ -520,8 +531,10 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
     private  class MyMouseListener extends MouseAdapter
                                        implements ActionListener, Serializable{
         CommandPane CP;
-        public MyMouseListener (CommandPane cp ){
+        Jhelp jh;
+        public MyMouseListener (CommandPane cp,  Jhelp jh){
             CP = cp;
+            this.jh = jh;
         }
 
         public void actionPerformed( ActionEvent e ){
@@ -610,6 +623,23 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
               }
             */     
             else if( e.getSource().equals( Help ) ){
+                Dimension D = getToolkit().getScreenSize();
+                   
+                if( jh != null){
+                     //HelpSet hs = new IsawHelp.HelpSystem.IsawOpHelpSet( false);
+                     //JHelp jh = new JHelp( hs);
+                     JFrame jf = new JFrame( "ISAW HELP");
+                     jf.setSize( (int)(.6*D.width), (int)(.6*D.height));
+                     jf.getContentPane().add( jh.getHelpComponent());
+                     jf.show();
+                     jf.validate();
+                     return;
+
+                     }
+                //catch( Throwable undef)
+                 //  {
+
+                 //  }
                 //BrowserControl H = new BrowserControl() ; 
                 HTMLPage H;
                 String S;
@@ -675,7 +705,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
                 
                 try{
                     H = new HTMLPage( S ) ;
-                    Dimension D = getToolkit().getScreenSize();
+                  
                     H.setSize((int)(.6* D.width) , (int)(.6*D.height) ); 
                     H.show();
                 }catch(Exception s){
@@ -684,4 +714,14 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
             }
         }// end actionperformed 
     }//End mouseAdapter 
+
+   class Jhelp 
+    {
+      JComponent getHelpComponent()
+       {HelpSet hs = new IsawHelp.HelpSystem.IsawOpHelpSet( false);
+        JHelp jh = new JHelp( hs);
+         return jh;
+        }
+
+     }
 }
