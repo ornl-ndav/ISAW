@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2003/06/03 21:27:51  pfpeterson
+ *  Fixed circular logic by restoring old method.
+ *
  *  Revision 1.19  2003/05/28 18:58:20  pfpeterson
  *  Changed System.getProperty to SharedData.getProperty
  *
@@ -126,7 +129,7 @@ public class DefaultProperties{
      * working version of ISAW to base the directory information on.
      */
     public DefaultProperties(){
-        String temp=SharedData.getProperty("user.home");
+        String temp=System.getProperty("user.home");
         if(temp!=null){
             UserHome=FilenameUtil.setForwardSlash(temp);
         }
