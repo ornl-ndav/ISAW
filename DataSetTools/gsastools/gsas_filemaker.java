@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2002/06/10 22:28:29  pfpeterson
+ *  Now uses StringBuffer to speed up the writing and formating.
+ *
  *  Revision 1.16  2002/05/24 14:42:40  pfpeterson
  *  Modified to use new monitor finding routines.
  *
@@ -386,6 +389,7 @@ public class gsas_filemaker
      */
     private void printCONSThead( int banknum, int nchan){
 	int nrec=0;
+        StringBuffer sb=new StringBuffer(80);
 	if(type=="STD"){
 	    nrec=(int)((float)nchan/10.0+0.9);
 	}else if(type=="ESD"){
@@ -394,17 +398,18 @@ public class gsas_filemaker
 	    // the data does not have error of a supported type
 	    return;
 	}
+        sb.append("BANK   ").append(format(banknum,6)).append("    ")
+            .append(format(nchan,6)).append("     ")
+            .append(format(nrec,6)).append(formatc(bintype,8))
+            .append(format(bCoef1,14)).append("     ")
+            .append(format(bCoef2,10)).append("  ");
+        if(type.equals("STD")){
+            sb.append("       ");
+        }else{
+            sb.append(type).append("    ");
+        }
 	try{
-	    outStream.write("BANK   "+format(banknum,6)+"    "
-			    +format(nchan,6)+"     "
-			    +format(nrec,6)+formatc(bintype,8)
-			    +format(bCoef1,14)+"     "
-			    +format(bCoef2,10)+"  ");
-            if(type.equals("STD")){
-                outStream.write("       \n");
-            }else{
-                outStream.write(type+"    \n");
-            }
+            outStream.write(sb+"\n");
 	}catch(Exception d){}
     }
 
@@ -422,16 +427,18 @@ public class gsas_filemaker
      * format.
      */
     private void printSTDdata( float[] y ){
+        StringBuffer sb=new StringBuffer(80);
 	try{
 	    for(int j=0; j<y.length; j+=10){
 		for(int l=j+0; l<j+10; l++){
 		    if(l>=y.length){
-			outStream.write("        ");
+                        sb.append("        ");
 		    }else{
-			outStream.write("  "+format((int)y[l],6));
+			sb.append("  ").append(format((int)y[l],6));
 		    }
 		}
-		outStream.write("\n");
+		outStream.write(sb+"\n");
+                sb.delete(0,sb.length());
 	    }
 	} catch(Exception d){}
     }
@@ -452,16 +459,18 @@ public class gsas_filemaker
      * format.
      */
     private void printESDdata( float[] y , float[] dy ){
+        StringBuffer sb=new StringBuffer(80);
 	try{
 	    for(int j=0; j<y.length; j+=5){
 		for(int l=j+0; l<j+5; l++){
 		    if(l>=y.length){
-			outStream.write("        ");
+			sb.append("        ");
 		    }else{
-			outStream.write("  "+format((int)y[l],6)+"  "+format((int)dy[l],6));
+			sb.append("  "+format((int)y[l],6)+"  "+format((int)dy[l],6));
 		    }
 		}
-		outStream.write("\n");
+		outStream.write(sb+"\n");
+                sb.delete(0,sb.length());
 	    }
 	} catch(Exception d){}
     }
@@ -470,36 +479,50 @@ public class gsas_filemaker
      * Format a string so it is padded with spaces on either side.
      */
     static private String formatc(String stuff, int length){
-	String rs=stuff;
+	StringBuffer rs=new StringBuffer(length);
+        rs.append(stuff);
 	while(rs.length()<length){
-	    rs=rs+" ";
+	    rs.append(" ");
 	    if(rs.length()<length){
-		rs=" "+rs;
+		rs.insert(0," ");
 	    }
 	}
-	return rs;
+	return rs.toString();
     }
 
     /**
      * Format a string by padding on the right.
      */
     static private String format(String stuff, int length){
-	String rs=stuff;
-	while(rs.length()<length){
-	    rs=rs+" ";
-	}
-	return rs;
+        StringBuffer sb=new StringBuffer(length);
+        sb.append(stuff);
+        return format(sb,length);
+    }
+
+    /**
+     * Format a string buffer by padding on the right.
+     */
+    static private String format(StringBuffer stuff, int length){
+        while(stuff.length()<length){
+            stuff.append(" ");
+        }
+        return stuff.toString();
+    }
+
+    static private String formatl(StringBuffer stuff, int length){
+        while(stuff.length()<length){
+            stuff.insert(0," ");
+        }
+        return stuff.toString();
     }
 
     /**
      * Format an integer by padding on the left.
      */
     static private String format(int number, int length){
-	String rs=new Integer(number).toString();
-	while(rs.length()<length){
-	    rs=" "+rs;
-	}
-	return rs;
+	StringBuffer rs=new StringBuffer(length);
+        rs.append(number);
+        return formatl(rs,length);
     }
 
     /**
@@ -507,14 +530,10 @@ public class gsas_filemaker
      * digits past the decimal.
      */
     static private String format(float number, int length){
-	DecimalFormat df=new DecimalFormat("#####0.0000000");
-	String rs=new String(df.format(number));
-
-	while(rs.length()<length){
-	    rs=" "+rs;
-	}
-	
-	return rs;
+    	DecimalFormat df=new DecimalFormat("#####0.0000000");
+	StringBuffer rs=new StringBuffer(length);
+        rs.append(df.format(number));
+        return formatl(rs,length);
     }
 
     /**
@@ -577,8 +596,9 @@ public class gsas_filemaker
  	try{
 	    
 	    // write the tile of the run into the file
-	    String S = (String)
-		data.getAttributeList().getAttributeValue(Attribute.RUN_TITLE);
+            StringBuffer S=new StringBuffer(80);
+            S.append((String)
+               data.getAttributeList().getAttributeValue(Attribute.RUN_TITLE));
 	    outStream.write( format(S,80) +"\n");
 	    
 	} catch(Exception d){}
@@ -592,9 +612,10 @@ public class gsas_filemaker
         String S=System.getProperty("IParmFile");
         //System.out.println("IParm: "+S);
         if(S!=null){
-            S="Instrument parameter "+S;
+            StringBuffer sb=new StringBuffer(80);
+            sb.append("Instrument parameter ").append(S);
             try{
-                outStream.write( format(S,80)+"\n");
+                outStream.write( format(sb,80)+"\n");
             }catch(Exception e){}
         }
     }
@@ -603,10 +624,12 @@ public class gsas_filemaker
      * Write the total monitor count on the second line of the file
      */
     private void printMonitorCount( ){
+        StringBuffer sb=new StringBuffer(80);
 	try{
 	    float monCount=this.getMonitorCount();
 	    if(monCount>0.0f){
-		outStream.write ("MONITOR: "+monCount+"\n");
+                sb.append("MONITOR: ").append(monCount);
+		outStream.write (format(sb,80)+"\n");
 	    }
 	} catch(Exception d){}
     }
