@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/07/18 21:30:52  dennis
+ *  Corrected spelling of "NOT DRAWN".  Also, now trims the
+ *  String returned by System.getProperty().
+ *
  *  Revision 1.8  2002/07/15 14:40:20  rmikk
  *  The Contour.Style property's initial value can now come
  *    from the IsawProps.dat.  Also the default initial value is
@@ -156,9 +160,9 @@ public class PropertiesLoader implements java.io.Serializable
         }else if( prop.equals(ViewerState.V_DISTANCE) ){
             def="-1";
         }else if( prop.equals(ViewerState.V_DETECTORS) ){
-            def="NOT_DRAWN";
+            def="NOT DRAWN";
         }else if( prop.equals(ViewerState.V_GROUPS) ){
-            def="NOT_DRAWN";
+            def="NOT DRAWN";
         }else if( prop.equals(ViewerState.BRIGHTNESS) ){
             def="40";
         }else if( prop.equals(ViewerState.AUTO_SCALE) ){
@@ -192,6 +196,8 @@ public class PropertiesLoader implements java.io.Serializable
         }else{
             rs=System.getProperty(prop,def);
         }
+        if ( rs != null )
+          rs = rs.trim();
         return rs;
     }
 
