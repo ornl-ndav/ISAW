@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/03/14 16:45:39  pfpeterson
+ * Removed some debugging messages.
+ *
  * Revision 1.1  2003/03/14 15:18:27  pfpeterson
  * Added to CVS.
  *
@@ -179,9 +182,6 @@ public class Script extends Object{
       for( int i=0 ; i<=linecount ; i++ )
         this.linenum[i]=-1;
     }
-    for(int i=0 ; i<=linecount ; i++ )
-      System.out.print("line["+i+"]="+linenum[i]+" ");
-    System.out.println();
   }
 
   // ============================== MAIN METHOD FOR TESTING ONLY
