@@ -5,6 +5,9 @@
  * the selected Data blocks and adds the new summed Data block.
  *
  * $Log$
+ * Revision 1.2  2000/11/07 15:41:59  dennis
+ * Replaced "Data blocks" with "Groups" in operator title.
+ *
  * Revision 1.1  2000/07/10 22:36:25  dennis
  * July 10, 2000 version... many changes
  *
@@ -55,7 +58,7 @@ public class SumCurrentlySelected  extends    DataSetOperator
 
   public SumCurrentlySelected( )
   {
-    super( "Sum currently selected Data blocks" );
+    super( "Sum currently selected Groups" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
