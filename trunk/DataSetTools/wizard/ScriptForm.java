@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2003/07/09 22:25:12  bouzekc
+ * Now implicitly uses OperatorForm's getTitle() to set the
+ * Form title.
+ *
  * Revision 1.12  2003/07/07 20:34:32  bouzekc
  * Now implicitly sets HAS_CONSTANTS by way of
  * setConstantParamIndices().  Now takes Script name command
@@ -82,13 +86,7 @@ public class ScriptForm extends OperatorForm {
    * @param filename The Script file name to use.
    */
   public ScriptForm( String filename ) {
-    //must have super() call be the first, but we want only the Script
-    //filename, so we'll trim off the rest.  I could have used File's getName()
-    //method, but I did not want to create a File Object.
-    super( 
-      filename.substring( 
-        ( FilenameUtil.setForwardSlash( filename ) ).lastIndexOf( '/' ) + 1,
-        filename.length(  ) ) );
+    super(  );
     form_op = new ScriptOperator( filename );
     setDefaultParameters(  );
   }
