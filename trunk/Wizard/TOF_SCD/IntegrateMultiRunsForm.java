@@ -28,6 +28,9 @@
  * number DMR-0218882.
  * 
  * $Log$
+ * Revision 1.41  2005/03/06 03:13:09  dennis
+ * Fixed error in parameter name in javadoc comment.
+ *
  * Revision 1.40  2005/03/06 00:31:49  dennis
  * Added d_min as a parameter to this wizard form.
  *
@@ -235,7 +238,7 @@ public class IntegrateMultiRunsForm extends Form {
    * @param calibfile SCD calibration file.
    * @param time_slice_range The time-slice range
    * @param increase_amt Amount to increase slice size by.
-   * @param min_d  The minimum d-spacing for peaks that are
+   * @param d_min  The minimum d-spacing for peaks that are
    *               integrated.
    * @param line2use SCD calibration file line to use.
    * @param append Append to file (yes/no).
@@ -342,24 +345,25 @@ public class IntegrateMultiRunsForm extends Form {
     s.append( "+ experiment name + run number + .mat\" in the same " );
     s.append( "directory as the peaks file\n." );
     s.append( 
-      "@algorithm This Form first gets all the user input parameters, " );
+           "@algorithm This Form first gets all the user input parameters, " );
     s.append( "then for each runfile, it loads the first histogram, the SCD " );
     s.append( "calibration data, and calls Integrate.\n" );
     s.append( "@param rawpath The raw data path.\n" );
     s.append( 
-      "@param outpath The output data path for the *.integrate file.\n" );
+           "@param outpath The output data path for the *.integrate file.\n" );
     s.append( "@param runnums The run numbers to load.\n" );
     s.append( "@param expname The experiment name (i.e. \"quartz\").\n" );
     s.append( "@param ctype Number for the centering type.\n" );
     s.append( "@param calibfile SCD calibration file.\n" );
     s.append( "@param time_slice_range The time-slice range.\n" );
     s.append( "@param increase_amt Amount to increase slice size by.\n" );
-    s.append( "@param min_d Minimum d-spacing to include\n");
+    s.append( "@param d_min  Minimum d-spacing to include\n");
     s.append( "@param line2use SCD calibration file line to use.\n" );
     s.append( "@param append True/false indicating whether to append to the " );
     s.append( ".integrate file.\n" );
-    s.append( "@param  Intgrate method, MaxItoSigI-old or new, TOFINT, or Experimental");
-    s.append( "@return A Boolean indicating success or failure of the Form's " );
+    s.append( "@param  Intgrate method, MaxItoSigI-old or new, TOFINT, "); 
+    s.append( "or Experimental" );
+    s.append( "@return A Boolean indicating success or failure of the Form's ");
     s.append( "execution.\n" );
     s.append( "@error Invalid raw data path.\n" );
     s.append( "@error Invalid peaks file path.\n" );
