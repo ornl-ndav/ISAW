@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/07/17 20:31:39  dennis
+ *  Fixed form of comment
+ *
  *  Revision 1.1  2002/02/22 21:02:55  pfpeterson
  *  Operator reorganization.
  *
@@ -41,7 +44,7 @@
  *  Added copyright and GPL info at the start of the file.
  *
  *  Revision 1.4  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
+ *    Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
  *  classes.  The abstract base class hierarchy is now:
  *
@@ -161,7 +164,8 @@ public class DataSetDivide extends  DataSetOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processors: in this case Div
+   * @return	the command name to be used with script processors: 
+   *            in this case Div
    */
    public String getCommand()
    {
