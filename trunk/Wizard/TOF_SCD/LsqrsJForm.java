@@ -28,6 +28,11 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.5  2003/06/10 20:31:41  bouzekc
+ * Moved creation of lsqrsJ out of the for loop to avoid
+ * excessive Object creation.  Now also outputs an overall
+ * orientation matrix for the entire set of runs.
+ *
  * Revision 1.4  2003/06/09 21:56:05  bouzekc
  * Updated documentation.
  * Added constructor to set HAS_CONSTANTS to reduce
@@ -283,6 +288,13 @@ public class LsqrsJForm extends Form
     peaksName = StringUtil.setFileSeparator(
                   peaksDir + "/" + expName + ".peaks");
 
+
+   //call LsqrsJ - this is the same every time, so keep it out of the loop
+   leastSquares = new LsqrsJ();
+   leastSquares.getParameter(0).setValue(peaksName);
+   leastSquares.getParameter(2).setValue(restrictSeq);
+   leastSquares.getParameter(3).setValue(xFormMat);
+
     for(int i = 0; i < runsArray.length; i++)
     {
       /*Get the run number. We don't want to remove the leading zeroes!*/
@@ -297,12 +309,7 @@ public class LsqrsJForm extends Form
 
       SharedData.addmsg("LsqrsJ is creating " + matFileName + " for " + peaksName);
 
-      //call LsqrsJ
-      leastSquares = new LsqrsJ();
-      leastSquares.getParameter(0).setValue(peaksName);
       leastSquares.getParameter(1).setValue(runNum);
-      leastSquares.getParameter(2).setValue(restrictSeq);
-      leastSquares.getParameter(3).setValue(xFormMat);
       leastSquares.getParameter(4).setValue(matFileName);
 
       obj = leastSquares.getResult();
@@ -310,6 +317,17 @@ public class LsqrsJForm extends Form
       if(obj instanceof ErrorString)
         return errorOut("LsqrsJ failed: " + obj.toString());
     }
+
+    //now put out an orientation matrix for all of the runs.
+    matFileName = StringUtil.setFileSeparator(
+                    peaksDir + "/ls" + expName + ".mat");
+    matNamesVec.add(matFileName);
+    leastSquares.getParameter(1).setValue("");
+    leastSquares.getParameter(4).setValue(matFileName);
+    obj = leastSquares.getResult();
+
+    if(obj instanceof ErrorString)
+      return errorOut("LsqrsJ failed: " + obj.toString());
   
     SharedData.addmsg("--- LsqrsJForm finished. ---");
 
