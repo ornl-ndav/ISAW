@@ -551,9 +551,9 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
       calc.addActionListener( new IntegrateListener() );
       JMi.addActionListener( new MyJTableListener( jtb, table_model, EA ) );
       JCp.addActionListener( new MyJTableListener( jtb, table_model, EA ) );
-      Res[0] = new ViewMenuItem("Edit.SpreadSheet",JMi);
-      Res[1] = new ViewMenuItem("Edit.SpreadSheet",JCp);
-      Res[2] = new ViewMenuItem("Edit.SpreadSheet",calc);
+      Res[0] = new ViewMenuItem(JMi);
+      Res[1] = new ViewMenuItem(JCp);
+      Res[2] = new ViewMenuItem(calc);
      
      }
      // if(  JMenuName.equals(  "Select"))
@@ -562,7 +562,7 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
         JMenuItem Sel1 = new JMenuItem( "Rectangle");
         Sel1.addActionListener( new SelectActionListener());
         
-        Res[3] = new ViewMenuItem("Options.Select.Rectangle", Sel1);
+        Res[3] = new ViewMenuItem( Sel1);
         return Res;
       }
    
@@ -697,6 +697,13 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
           new ActionEvent(this,ActionEvent.ACTION_PERFORMED,command));
 
    }
+
+   public ISelectedRegion IgetSelectedRegion(){
+     
+     SelectedRegion2D reg = new SelectedRegion2D(  jtb.getSelectedRows(),
+                  jtb.getSelectedColumns()); 
+     return reg;
+   }
    public ISelectedData IgetPointedAt(){
      return new SelectedData2D( jtb.getSelectedRow(), jtb.getSelectedColumn());
    }
@@ -726,6 +733,8 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
   public Object getValueAt(int row, int column){
     try{
       Float F = new Float( Array.getDataValue( row, column));
+      if( F.isNaN())
+         return "";
       if( Format == null)
         return F;
       return Formatt( F , Format.charAt(0), FormatFilter.getWidth(Format),
