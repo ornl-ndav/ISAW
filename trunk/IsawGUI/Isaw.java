@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.76  2002/01/25 19:26:57  pfpeterson
+ *  scriptFilter is now a public class. This allows for the filter to be used in
+ *  the CommandPane.
+ *
  *  Revision 1.75  2002/01/14 20:30:28  pfpeterson
  *  Modified to use writer interface for GSAS files.
  *  Removed menu item for explicit GSAS export. Done through 'Save As' now.
@@ -1040,7 +1044,7 @@ public class Isaw
              
       if( s.equals(LOAD_SCRIPT_MI) )
       {
-        String SS;
+	//String SS;
         if( filename == null)
               filename = System.getProperty( "Script_Path" );
         if( filename == null )
@@ -1061,7 +1065,7 @@ public class Isaw
           {
             File f = fc.getSelectedFile();
             filename =f.toString();
-            fname = f.getName();
+            //fname = f.getName();
                         
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                           
@@ -1070,7 +1074,7 @@ public class Isaw
           else return;
         } 
         catch( Exception e )
-        {  SharedData.status_pane.add("Chooce an input file");
+        {  SharedData.status_pane.add("Choose an input file");
           //System.out.println( "Choose a input file" );
           return;
         }
@@ -1087,7 +1091,7 @@ public class Isaw
   /**
    * what does this do?  your guess is a good as mine.
    */
-  class scriptFilter extends javax.swing.filechooser.FileFilter
+  public class scriptFilter extends javax.swing.filechooser.FileFilter
   {
     public boolean accept(File f) 
     {
