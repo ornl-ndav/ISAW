@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.23  2004/06/29 16:48:33  kramer
+ * Modified the update method.  Now when spectra are removed from a DataSet (for
+ * example through a viewer) the corresponding nodes are removed from the tree.
+ *
  * Revision 1.22  2004/03/15 03:31:25  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -634,6 +638,8 @@ public class JDataTree
       {
         if(  ds_node != null  )  //karma++
         {
+          ds_node.removeFromParent();
+          getMyModel().reload();
           Experiment parent = (Experiment)ds_node.getParent();
           parent.setUserObject( ds );
         }
