@@ -31,11 +31,14 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.12  2003/10/08 22:39:09  dennis
- *  Reverting to previous version, that was in ISAW 1.5.1 beta 8.
- *  The most recent checkin (10/07/03) also removed the clone() method
- *  and was not consistent with the version in CVS.  ISAW crashed on
- *  startup with null pointer exception.
+ *  Revision 1.13  2003/10/11 19:24:33  bouzekc
+ *  Removed declaration of "ParamUsesString" as the superclass declares it
+ *  already.  Removed clone() definition as the superclass implements it
+ *  using reflection.
+ *
+ *  Revision 1.11  2003/10/07 18:38:51  bouzekc
+ *  Removed declaration of "implements ParamUsesString" as the
+ *  StringEntryPG superclass now declares it.
  *
  *  Revision 1.10  2003/09/13 23:29:47  bouzekc
  *  Moved calls from setValid(true) to validateSelf().
@@ -81,7 +84,7 @@ import DataSetTools.util.*;
  * This is class is to deal with Integer Arrays. Its value is stored
  * as a String.
  */
-public class IntArrayPG extends StringEntryPG implements ParamUsesString{
+public class IntArrayPG extends StringEntryPG {
     private static final String TYPE="IntArray";
 
     // ********** Constructors **********
@@ -102,7 +105,6 @@ public class IntArrayPG extends StringEntryPG implements ParamUsesString{
         super.setEntryValue(value);
       else
         this.value=value;
-      validateSelf();
     }
 
     public int[] getArrayValue(){
@@ -151,14 +153,4 @@ public class IntArrayPG extends StringEntryPG implements ParamUsesString{
         fpg.initGUI(null);
         fpg.showGUIPanel();
     }*/
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        IntArrayPG pg=new IntArrayPG(this.name,this.value,this.valid);
-        pg.setDrawValid(this.getDrawValid());
-        pg.initialized=false;
-        return pg;
-    }
 }
