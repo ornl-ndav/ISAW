@@ -32,10 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2003/06/04 14:13:21  bouzekc
+ * Improved the parameter checking for the <View> menu.
+ *
  * Revision 1.20  2003/06/02 21:57:35  bouzekc
- * Added call to setDefaultParameters() in the constructor
- * so that no NullPointerExceptions get generated.
- * Added code to validate parameters in getResult().
  *
  * Revision 1.19  2003/05/08 15:10:30  pfpeterson
  * Added a FileFilter to the save and load dialogs. (Chris Bouzek)
@@ -971,12 +971,14 @@ public abstract class Wizard implements PropertyChangeListener{
         if( iparam.getValid() )
         {
           val = iparam.getValue();
-          //no need to show the values that a user can easily see
-          //such as a JTextField entry.  Uncomment the next line
-          //if you want to view things other than DataSets
-          if( val instanceof DataSet || 
-              val instanceof Vector  ||
-              val instanceof String)
+          /*semi-sophisticated attempt at being able to view
+          DataSets, Vectors of items, and files.  Things like 
+          Strings and ints, which are easily viewable on the
+          Form, should not be sent to the ParameterViewer. */
+          if( (iparam instanceof DataSetPG)  ||
+              (iparam instanceof ArrayPG)    ||
+              (iparam instanceof LoadFilePG) ||
+              (iparam instanceof SaveFilePG) )
           {
             jmi = new JMenuItem(iparam.getName());
             view_menu.add(jmi);
