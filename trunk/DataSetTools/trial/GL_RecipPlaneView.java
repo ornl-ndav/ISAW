@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2004/09/06 18:22:27  dennis
+ * Now writes the transpose of the orientation matrix, following the
+ * convention for the SCD at IPNS.
+ *
  * Revision 1.13  2004/08/11 21:32:07  dennis
  * Placed controls in tabbed pane to save screen space.
  * Write now writes the orientation matrix to a file as well as to screen.
@@ -1975,6 +1979,7 @@ public class GL_RecipPlaneView
     a.normalize();
     b.normalize();
     c.normalize();
+
     for ( int i = 0; i < all_peaks.size(); i++ )
     {
        PeakData pd = (PeakData)all_peaks.elementAt(i);
@@ -2691,8 +2696,8 @@ public void WriteMatrixFile( String filename )
   StringBuffer sb = new StringBuffer();
   for ( int i = 0; i < 3; i++ )
   {
-    for ( int j = 0; j < 3; j++ )
-      sb.append( Format.real( M[i][j], 10, 6 ) );
+    for ( int j = 0; j < 3; j++ )                    // Write the TRANSPOSE of
+      sb.append( Format.real( M[j][i], 10, 6 ) );    // the orientation matrix
     sb.append( "\n" );
   }
 
