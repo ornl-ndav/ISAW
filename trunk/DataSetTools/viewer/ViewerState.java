@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2003/10/28 15:50:12  rmikk
+ *  Added new State Strings for the Table Views
+ *
  *  Revision 1.23  2003/10/15 03:56:40  bouzekc
  *  Fixed javadoc errors.
  *
@@ -102,6 +105,13 @@ public class ViewerState  implements Serializable
   public static final String BRIGHTNESS        = "Brightness";
   public static final String AUTO_SCALE        = "Auto-Scale";
   public static final String TABLE_DATA        = "table_view Data";
+  public static final String TIMEVSGROUPTABLE          = "Time vs Group Set";
+  public static final String TIMEVSGROUPTABLE_SHOWALL     = "Time vs Group Show All";
+    
+  public static final String TIMEVSGROUPTABLE_SHOWERR = "Show Errors(Table time vs Group)";
+  
+  public static final String TIMEVSGROUPTABLE_SHOWIND  = "Show Indicies(Table time vs Group)";
+ 
    /** CONTOUR_STYLE(really "Contour.Style") is an int whose values can be
    *          AREA_FILL(1), AREA_FILL_CONTOUR(4) ,CONTOUR(2) ,RASTER(0), 
    *          or RASTER_CONTOUR(3) 
@@ -112,7 +122,18 @@ public class ViewerState  implements Serializable
   */
   public static final String CONTOUR_DATA      =  "Contour.Data";
 
-  public static final String TABLE_TS          ="Time Slice Table";
+  public static final String TABLE_TS          ="Time Slice Table Data Set";
+  public static final String TABLE_TS_ERR          ="TableTS_ShowError";
+  public static final String TABLE_TS_IND          ="TableTS_ShowIndex";
+  public static final String TABLE_TS_ROWMIN          ="TableTS_MinRow";
+  public static final String TABLE_TS_ROWMAX          ="TableTS_MaxnRow";
+  public static final String TABLE_TS_COLMIN          ="TableTS_MinCol";
+  public static final String TABLE_TS_COLMAX          ="TableTS_MaxRow";
+  public static final String TABLE_TS_TIMEMIN          ="TABLE_TS_MIN_TIME";
+  public static final String TABLE_TS_TIMEMAX          ="TABLE_TS_MAX_TIME";
+  public static final String TABLE_TS_NSTEPS          ="TABLE_TS_NXSTEPS";
+  public static final String TABLE_TS_CHAN          ="TableTS_TimeInd";
+  public static final String TABLE_TS_DETNUM          ="TableTS_Detector Num";
 
   private Hashtable     state = null;
   private int           pointed_at_index;
@@ -183,7 +204,25 @@ public class ViewerState  implements Serializable
       state.put(CONTOUR_STYLE, contour_style );
 
       state.put( TABLE_TS, "");
-     state.put( CONTOUR_DATA, new Boolean(false));
+      state.put( TABLE_TS_ERR , new Boolean( false)); 
+      state.put( TABLE_TS_IND , new Boolean( false));
+      state.put( TABLE_TS_ROWMIN , new Integer( -1));
+      state.put( TABLE_TS_ROWMAX , new Integer( -1));
+      state.put( TABLE_TS_COLMIN , new Integer( -1));
+      state.put( TABLE_TS_COLMAX, new Integer( -1));
+      state.put( TABLE_TS_TIMEMIN, new Float(0f));   
+      state.put( TABLE_TS_TIMEMAX, new Float(0f)); 
+      state.put( TABLE_TS_NSTEPS , new Integer( -1));
+      state.put( TABLE_TS_CHAN, new Integer( -1));
+      state.put( TABLE_TS_DETNUM , new Integer( -1));
+
+      state.put( CONTOUR_DATA, new Boolean(false));
+
+      state.put(TIMEVSGROUPTABLE, new Boolean( false));
+      state.put(TIMEVSGROUPTABLE_SHOWALL , new Boolean( false));
+
+      state.put( ViewerState.TIMEVSGROUPTABLE_SHOWERR, new Boolean(false));  
+      state.put( ViewerState.TIMEVSGROUPTABLE_SHOWIND, new Boolean(false));
 
       zoom_region                = new CoordBounds( 0, 1000, 0, 1000 );
       ds_x_label = "";
