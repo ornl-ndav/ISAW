@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2003/11/05 02:12:16  bouzekc
+ * Changed constructor interfaces to reflect OperatorForm and Form changes.
+ *
  * Revision 1.14  2003/07/09 23:15:57  bouzekc
  * Constructor now attempts to find the given filename. If not
  * found, it looks in the Script_Path directory.  Removed default
@@ -65,6 +68,8 @@ package DataSetTools.wizard;
 
 import Command.ScriptOperator;
 
+import DataSetTools.parameter.IParameterGUI;
+
 import DataSetTools.util.*;
 
 import java.io.File;
@@ -96,44 +101,35 @@ public class ScriptForm extends OperatorForm {
       //to remove extra slashes.
       filename = StringUtil.setFileSeparator( scriptsDir + filename );
     }
-
     form_op = new ScriptOperator( filename );
     setDefaultParameters(  );
   }
 
   /**
    * Construct a ScriptForm with the given Script file name and result
-   * parameter type.
+   * parameter.
    *
    * @param filename The Script file name to use
-   * @param type The IParameterGUI type of the result parameter.  e.g. for a
-   *        LoadFilePG, use "LoadFile"
-   * @param name The name of the result parameter. e.g. "log file"
+   * @param resultPG The IParameterGUI to use for the result.
    */
-  public ScriptForm( String filename, String type, String name ) {
+  public ScriptForm( String filename, IParameterGUI resultPG ) {
     this( filename );
-    setParamClass( type );
-
-    result_param.setName( name );
+    setResultParam( resultPG );
     setDefaultParameters(  );
   }
 
   /**
    * Construct a ScriptForm with the given Script file name and result
-   * parameter type. This constructor allows setting of the constant
-   * parameters.
+   * parameter. This constructor allows setting of the constant parameters.
    *
    * @param filename The Script file name to use for this form
-   * @param type The IParameterGUI type of the result parameter.  e.g. for a
-   *        LoadFilePG, use "LoadFile"
-   * @param name The name of the result parameter. e.g. "log file"
+   * @param resultPG The IParameterGUI to use for the result.
    * @param indices The array of indices that represent constant parameters for
    *        this Form.
    */
-  public ScriptForm( String filename, String type, String name, int[] indices ) {
+  public ScriptForm( String filename, IParameterGUI resultPG, int[] indices ) {
     this( filename );
-    setParamClass( type );
-    result_param.setName( name );
+    setResultParam( resultPG );
     setConstantParamIndices( indices );
     setDefaultParameters(  );
   }
@@ -145,7 +141,6 @@ public class ScriptForm extends OperatorForm {
    */
   public static void main( String[] args ) {
     ScriptForm form = new ScriptForm( args[0] );
-
     System.out.println( "The Script title is " + form.getTitle(  ) );
   }
 }
