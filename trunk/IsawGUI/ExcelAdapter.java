@@ -1,35 +1,14 @@
 /*
  * File: ExcelAdapter.java
  *
- * Copyright (C) 2001, Dennis Mikkelson
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
- *
- * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
- *           Department of Mathematics, Statistics and Computer Science
- *           University of Wisconsin-Stout
- *           Menomonie, WI 54751, USA
- *
- * This work was supported by the Intense Pulsed Neutron Source Division
- * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
- *
- * For further information, see <http://www.pns.anl.gov/ISAW/>
+ * This file is from Java World, Java Tip 77.
+ * See: http://www.javaworld.com/javaworld/javatips/jw-javatip77.html
  *
  * $Log$
- * Revision 1.3  2002/11/27 23:27:07  pfpeterson
- * standardized header
+ * Revision 1.4  2004/05/28 14:10:28  dennis
+ * File header cites original Java World article.
+ * Minor fixes to file format.
+ *
  *
  */
 package IsawGUI;
@@ -72,10 +51,10 @@ public ExcelAdapter(JTable myJTable)
       // Identifying the Paste KeyStroke user can modify this
       //to copy on some other Key combination.
 
-jTable1.registerKeyboardAction(this,"Copy",copy,JComponent.WHEN_FOCUSED);
+      jTable1.registerKeyboardAction(this,"Copy",copy,JComponent.WHEN_FOCUSED);
 
 
-jTable1.registerKeyboardAction(this,"Paste",paste,JComponent.WHEN_FOCUSED);
+      jTable1.registerKeyboardAction(this,"Paste",paste,JComponent.WHEN_FOCUSED);
 
       system = Toolkit.getDefaultToolkit().getSystemClipboard();
    }
@@ -83,9 +62,9 @@ jTable1.registerKeyboardAction(this,"Paste",paste,JComponent.WHEN_FOCUSED);
    /**
     * Public Accessor methods for the Table on which this adapter acts.
     */
-public JTable getJTable() {return jTable1;}
+  public JTable getJTable() {return jTable1;}
 
-public void setJTable(JTable jTable1) {this.jTable1=jTable1;}
+  public void setJTable(JTable jTable1) {this.jTable1=jTable1;}
 
    /**
     * This method is activated on the Keystrokes we are listening to
@@ -96,7 +75,7 @@ public void setJTable(JTable jTable1) {this.jTable1=jTable1;}
     * Paste is done by aligning the upper left corner of the selection with the
     * 1st element in the current selection of the JTable.
     */
-public void actionPerformed(ActionEvent e)
+  public void actionPerformed(ActionEvent e)
    {
       if (e.getActionCommand().compareTo("Copy")==0)
       {
@@ -110,15 +89,13 @@ public void actionPerformed(ActionEvent e)
          int[] colsselected=jTable1.getSelectedColumns();
 
          if (!((numrows-1==rowsselected[rowsselected.length-1]-rowsselected[0] &&
-                numrows==rowsselected.length) &&
-
-(numcols-1==colsselected[colsselected.length-1]-colsselected[0] &&
+                numrows==rowsselected.length)                                  &&
+               (numcols-1==colsselected[colsselected.length-1]-colsselected[0] &&
                 numcols==colsselected.length)))
          {
             JOptionPane.showMessageDialog(null, "Invalid Copy Selection",
                                           "Invalid Copy Selection",
                                           JOptionPane.ERROR_MESSAGE);
-
             return;
          }
 
@@ -126,8 +103,7 @@ public void actionPerformed(ActionEvent e)
          {
             for (int j=0;j<numcols;j++)
             {
-
-sbf.append(jTable1.getValueAt(rowsselected[i],colsselected[j]));
+               sbf.append(jTable1.getValueAt(rowsselected[i],colsselected[j]));
                if (j<numcols-1) sbf.append("\t");
             }
             sbf.append("\n");
