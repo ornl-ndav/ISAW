@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/01/11 14:41:20  rmikk
+ * Eliminated an unused variable
+ *
  * Revision 1.11  2004/05/29 16:36:01  rmikk
  * Fixed error from last commit
  *
@@ -248,11 +251,11 @@ class MyActionListener implements ActionListener{
         DSS = ScriptUtil.load( filename );
         filename = filename.replace( '\\' , '/' );
         int l = filename.lastIndexOf( '/' );
-        String filename1=filename;
+       /* String filename1=filename;
         
         if( l >= 0 ) 
            filename1 = filename.substring( l + 1 );
-      
+      */
         //tree.addExperiment( DSS , filename1 );
 
         if( IOBs != null )
