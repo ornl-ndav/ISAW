@@ -29,6 +29,9 @@
 # number DMR-0218882.
 #
 # $Log$
+# Revision 1.2  2003/09/22 22:03:09  bouzekc
+# Added call to clearParametersVector().
+#
 # Revision 1.1  2003/07/08 23:43:19  bouzekc
 # Added to CVS.
 #
@@ -49,6 +52,7 @@
 
 class integrate_multiple_runs2( GenericOperator ):
     def setDefaultParameters( self ):
+        self.super__clearParametersVector()
         self.addParameter( DataDirPG( "Raw Data Path", None ) )
         self.addParameter( DataDirPG( "Output Data Path", None ) )
         self.addParameter( ArrayPG( "Run Numbers", None ) )
