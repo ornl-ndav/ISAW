@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/09/30 15:20:49  pfpeterson
+ *  Update clone method to return an object of this class.
+ *
  *  Revision 1.3  2002/06/14 15:56:41  pfpeterson
  *  Use the ShareData.getProperty() method to get default
  *  instrument name.
@@ -111,5 +114,12 @@ public class InstNamePG extends StringPG{
         fpg.init();
         fpg.showGUIPanel();
 
+    }
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+        return (InstNamePG)super.clone();
     }
 }

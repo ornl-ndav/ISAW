@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/30 15:20:50  pfpeterson
+ *  Update clone method to return an object of this class.
+ *
  *  Revision 1.1  2002/06/06 16:14:33  pfpeterson
  *  Added to CVS.
  *
@@ -106,5 +109,12 @@ public class IntArrayPG extends StringPG{
         fpg.init();
         fpg.showGUIPanel();
 
+    }
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+        return (IntArrayPG)super.clone();
     }
 }
