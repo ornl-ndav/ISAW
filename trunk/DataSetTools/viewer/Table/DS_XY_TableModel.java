@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/07/02 16:38:51  rmikk
+ * Fixed an error that occurs when showing indicies
+ *
  * Revision 1.8  2003/03/03 16:58:52  pfpeterson
  * Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -106,6 +109,7 @@ public class DS_XY_TableModel extends TableViewModel
        this.DS = DS;
        float[] u = null;
        this.includeErrors = includeErrors;
+       this.includeIndex = includeIndex;
        if( DS != null )
          { xvals = table_view.MergeXvals( 0, DS, u, false, Groups ); 
            if( xvals.length > 1 ) 
