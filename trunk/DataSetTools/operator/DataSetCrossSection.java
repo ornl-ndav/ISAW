@@ -5,6 +5,9 @@
  *             
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.7  2000/11/07 16:00:28  dennis
+ *  Fixed y-label and y-units to work properly for both histograms and functions.
+ *
  *  Revision 1.6  2000/08/02 20:18:27  dennis
  *  Changed to use TrapIntegrate() for function data instead of just using
  *  IntegrateHistogram for histogram data
@@ -158,6 +161,9 @@ public class DataSetCrossSection extends    DataSetOperator
                                      // get the current data set
     DataSet ds = this.getDataSet();
     int num_data = ds.getNum_entries();
+    Data data;
+    float x_vals[] = null;
+    float y_vals[] = null;
 
     if ( num_data == 0 )
       {
@@ -182,9 +188,6 @@ public class DataSetCrossSection extends    DataSetOperator
     else
        new_ds.setX_units( attr_name );
 
-    new_ds.setY_label( "Integrated " + ds.getY_label() );
-    new_ds.setY_units( ds.getY_units()+"*"+ds.getX_units() );
-
                                      // clone the DataSet and sort the clone
                                      // based on the specified attribute.
     ds = (DataSet)ds.clone();
@@ -202,16 +205,19 @@ public class DataSetCrossSection extends    DataSetOperator
 
                                             // do the integration for each Data 
                                             // block and get the attribute val
-    Data data;
+    boolean has_histograms = false;
     for ( int i = 0; i < num_data; i++ )
     {
       data = ds.getData_entry( i );        // get reference to the data entry
-      float x_vals[] = data.getX_scale().getXs();
-      float y_vals[] = data.getY_values();
+      x_vals = data.getX_scale().getXs();
+      y_vals = data.getY_values();
 
       if ( x_vals.length == y_vals.length + 1 )  // histogram
+      {
         integral_val[i] = NumericalAnalysis.IntegrateHistogram( x_vals, y_vals, 
                                                                 a,      b );
+        has_histograms = true;
+      }
       else                                       // tabulated function
         integral_val[i] = NumericalAnalysis.TrapIntegrate( x_vals, y_vals,
                                                                 a,      b );
@@ -261,6 +267,19 @@ public class DataSetCrossSection extends    DataSetOperator
     Data new_data = new Data( x_scale, y, 0 );
 
     new_ds.addData_entry( new_data );      
+                                            // set the labels and units based
+                                            // on whether or not we have
+                                            // histograms
+    if ( has_histograms ) 
+    {
+      new_ds.setY_label( "Summed " + ds.getY_label() );
+      new_ds.setY_units( ds.getY_units() );
+    }
+    else
+    {
+      new_ds.setY_label( "Integrated " + ds.getY_label() );
+      new_ds.setY_units( ds.getY_units()+"*"+ds.getX_units() );
+    }
 
     return new_ds;
   }  
