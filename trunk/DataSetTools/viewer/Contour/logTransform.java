@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/08/23 13:48:58  rmikk
+ *  -Eliminated reporting a 0 delta value for  requested ranges
+ *
  *  Revision 1.4  2002/08/01 22:12:39  rmikk
  *  Changed the transform algorithm so the readout is
  *    lighter longer
@@ -126,7 +129,7 @@ public class logTransform  implements Transform
    /** Gets the physical range
    */
    public Range2D getRangeP()
-    {return new Range2D( pstart, pend, 0.0);
+    {return new Range2D( pstart, pend);
      }
 
    /** Sets the user range
@@ -150,7 +153,7 @@ public class logTransform  implements Transform
    /** Gets the physical range
    */
    public Range2D getRangeU()
-    {return new Range2D( ustart,uend,0.0);
+    {return new Range2D( ustart,uend);
      }
 
   /** Translate user value to its physical value<P>
