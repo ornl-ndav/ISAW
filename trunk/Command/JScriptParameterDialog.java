@@ -38,6 +38,7 @@ public class JScriptParameterDialog implements Serializable
     Vector V;
     Vector vparamGUI = new Vector();
     JDialog opDialog;
+    JLabel Mess;
     
     public Vector getResult()
     { return V;
@@ -65,17 +66,16 @@ public class JScriptParameterDialog implements Serializable
 
  
 	    int num_param = V.size() - 1 ;
-        opDialog.getContentPane().setLayout(new GridLayout(num_param+4,1));
+        opDialog.getContentPane().setLayout(new GridLayout(num_param+5,1));
         Parameter param;
         JParameterGUI paramGUI;
-        
+        op.setDefaultParameters();
         for (int i = 0; i<num_param; i++)
         {  
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
             
             param =((JParameterGUI)( V.get(i+1))).getParameter();
-	    // System.out.println("ISAW i and param class ="+ i+","+ param.getValue().getClass() +","+
-            //        param.getName());
+	  
             if (param.getValue() instanceof Float)
                 paramGUI = new JFloatParameterGUI(param);
             else if(param.getValue() instanceof Integer)
@@ -112,10 +112,14 @@ public class JScriptParameterDialog implements Serializable
                  buttonpanel.add(exit);
                  exit.addActionListener(new ExitButtonHandler());
                  opDialog.getContentPane().add(buttonpanel);
+                 Mess = new JLabel("   ");
+                 opDialog.getContentPane().add(Mess);
                  opDialog.setVisible(true);
       }
        
-  
+     public void setMessage( String S)
+       { Mess.setText(S);
+      }
     
       public class ApplyButtonHandler implements ActionListener
       {
@@ -133,7 +137,8 @@ public class JScriptParameterDialog implements Serializable
              opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
              //Object result = op.getResult();
              opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-	     opDialog.dispose();
+               opDialog.dispose();     
+	   
 	 }
            
       }
