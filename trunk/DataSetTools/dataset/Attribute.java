@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2002/06/05 20:26:35  dennis
+ *  Now implements the IXmlIO interface using "stubs" that just return false
+ *  for the read and write methods.  These MUST be overidden in derived classes.
+ *  Also, now includes a maximum label length that is used when concatenating
+ *  label attributes.
+ *
  *  Revision 1.22  2002/06/05 13:47:14  dennis
  *  Made "name" a protected field rather than private, since the name
  *  will have to be read/written to XML files by subclasses.
@@ -136,13 +142,13 @@ import  DataSetTools.math.*;
  * @see DataSetTools.dataset.DoubleAttribute
  * @see DataSetTools.dataset.DetPosAttribute
  *
- * @version 1.0  
  */
 
 
-abstract public class Attribute implements Serializable
+abstract public class Attribute implements Serializable, 
+                                           IXmlIO
 {
-
+  public static final int     MAX_LABEL_LENGTH  = 80; 
   // Suggested names for attributes for neutron scattering data sets:
 
   public static final String  TITLE             = "DataSet Name";
@@ -189,7 +195,6 @@ abstract public class Attribute implements Serializable
   public static final String  SOURCE_TO_SAMPLE_TOF = 
                                                   "Source to Sample TOF";
 
-
   public static final String  SAMPLE_CHI        = "Sample Chi";
   public static final String  SAMPLE_PHI        = "Sample Phi";
   public static final String  SAMPLE_OMEGA      = "Sample Omega";
@@ -228,6 +233,8 @@ abstract public class Attribute implements Serializable
   /**
    *  Since Attribute is an abstract class, this constructor is never called
    *  directly.
+   *
+   *  @param name  The name to give to this attribute.
    */
 
   protected Attribute( String name )
@@ -241,6 +248,12 @@ abstract public class Attribute implements Serializable
    * second_attribute.  The meaning of "greater", "equal" and "less" will 
    * depend on the specific concrete attributes.  The attribute parameter
    * "second_attribute" should have the same class as the current attribute.
+   *
+   * @param second_attribute  The second attribute whose value is compared to
+   *                          the current attribute value.
+   *
+   * @return 1,0, or -1 based on comparing the value of the current attribute
+   *         with the value of the second attribute.
    * The return value is:
    *         +1       if the current value is greater than the second value
    *          0       if the current value is equal to the second value
@@ -273,12 +286,16 @@ abstract public class Attribute implements Serializable
 
   /**
    * Returns the name of the attribute 
+   *
+   * @return A reference to the String containing the attribute name. 
    */
   public String getName() { return name; }
 
 
   /**
    * Set the name for the attribute
+   *
+   * @param  name  The new name to use for this attribute. 
    */
   public void setName( String name )
   {
@@ -288,6 +305,8 @@ abstract public class Attribute implements Serializable
 
   /**
    * Returns the value of the attribute, as a generic object
+   *
+   * @return the value of this attribute as a generic object.
    */
   abstract public Object getValue(); 
 
@@ -296,6 +315,8 @@ abstract public class Attribute implements Serializable
    * Set the value for the attribute using a generic object.  The actual
    * class of the object must be appropriate to the concrete attribute class
    * used.
+   *
+   * @return false if the object is of the wrong class.
    */
   abstract public boolean setValue( Object obj );
 
@@ -317,6 +338,7 @@ abstract public class Attribute implements Serializable
      // is just the current value
   }
 
+
   /**
    * Add the value of the specified attribute to the value of this
    * attribute obtain a new value for this attribute.  The default behavior
@@ -335,9 +357,11 @@ abstract public class Attribute implements Serializable
   }
 
 
-
   /**
    * Get a numeric value to be used for sorting based on this attribute.
+   *
+   * @return Double.MAX_VALUE, unless this method is overridden in the
+   *         concrete derived class.
    */
   public double getNumericValue()
   {
@@ -347,19 +371,25 @@ abstract public class Attribute implements Serializable
 
   /**
    * Returns a string representation of the value for this attribute
+   *
+   * @return String form of attribute value only.
    */
   abstract public String getStringValue();
 
 
   /**
    * Returns a string representation of the (name,value) pair for this
-   * attribute
+   * attribute.
+   *
+   * @return String form of attribute name, value.
    */
   abstract public String toString();
 
 
   /**
    * Returns a copy of the current attribute
+   *
+   * @return a generic object that is a clone of the current object;
    */
   abstract public Object clone();
 
@@ -429,5 +459,35 @@ abstract public class Attribute implements Serializable
    
     return A;
   }
+
+  /**
+   *  Write the state of this object out to the specified stream in XML format.
+   *
+   *  @param  stream   The stream to write to.
+   *  @param  mode     Flag indicating whether or not to write the value in
+   *                   base 64 encoding.
+   *
+   *  @return false, derived classes must override this to actually be written
+   *          to the stream. 
+   */
+  public boolean XMLwrite( OutputStream stream, int mode )
+  {
+    return false;
+  }
+
+
+  /**
+   *  Read the state of this object from the specified stream in XML format.
+   *
+   *  @param  stream   The stream to read from.
+   *
+   *  @return false, derived classes must override this to actually be written
+   *          to the stream. 
+   */
+  public boolean XMLread( InputStream stream )
+  {
+    return false;
+  }
+
 
 }
