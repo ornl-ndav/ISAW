@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/11/09 22:32:11  rmikk
+ * Can now select Groups in a rectangle in this table view
+ *
  * Revision 1.5  2003/11/06 21:26:43  rmikk
  * Added a method for handling selected rows and columns.
  *   Not implemented yet
@@ -619,8 +622,29 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
 
     if( region instanceof SelectedRegion2D){
        SelectedRegion2D Region = (SelectedRegion2D) region;
-       
-
+       int[] cols = Region.cols;
+       int[] rows = Region.rows;
+       if( (cols == null) || ( rows == null))
+         return;
+       if( (cols.length < 1) ||(rows.length < 1))
+         return;
+       float minTime = -1, maxTime = -1;
+       DS.clearSelections();
+       for( int i=0; i< cols.length; i++)
+        for( int j=0; j < rows.length; j++)
+         { int Group = getGroup( rows[j], cols[i] ) ;
+           if( Group >= 0 )
+            if( Group < DS.getNum_entries())
+             DS.getData_entry( Group ).setSelected( true);
+           float time = getTime( rows[j], cols[i]);
+           if( (i == 0) &&( j== 0))
+             minTime = maxTime = time;
+           else if( time < minTime)
+             minTime = time;
+           else if( time > maxTime)
+             maxTime = time;
+         }
+       DS.setSelectedInterval(new ClosedInterval(minTime , maxTime ));
 
     }
   }
