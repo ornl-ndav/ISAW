@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.132  2003/05/20 20:59:33  pfpeterson
+ *  Changed default version number.
+ *
  *  Revision 1.131  2003/05/09 21:43:25  pfpeterson
  *  Added option '-t' to show timing information during load process.
  *
@@ -535,7 +538,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.5.1 alpha 1";
+          version="1.5.1 alpha 2";
         else
           version=SharedData.VERSION;
 
