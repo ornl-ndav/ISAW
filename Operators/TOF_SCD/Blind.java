@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/10/02 21:59:30  pfpeterson
+ *  Fixed bug where it wouldn't try to execute on windows machines.
+ *
  *  Revision 1.3  2002/09/30 20:17:41  pfpeterson
  *  Added support for windows executable.
  *
@@ -121,7 +124,7 @@ public class Blind extends    GenericTOF_SCD {
         String fail      = "FAILED";
 
         // first check if the OS is acceptable
-        if(! SysUtil.isOSokay() )
+        if(! SysUtil.isOSokay(SysUtil.LINUX_WINDOWS) )
             return new ErrorString(fail+": must be using linux system");
 
         // then confirm the peaks file exists
