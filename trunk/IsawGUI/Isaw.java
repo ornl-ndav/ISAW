@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.77  2002/01/25 19:37:17  pfpeterson
+ *  scriptFilter is no longer embedded in Isaw.java. It is now in the IsawGUI directory.
+ *
  *  Revision 1.76  2002/01/25 19:26:57  pfpeterson
  *  scriptFilter is now a public class. This allows for the filter to be used in
  *  the CommandPane.
@@ -1091,39 +1094,39 @@ public class Isaw
   /**
    * what does this do?  your guess is a good as mine.
    */
-  public class scriptFilter extends javax.swing.filechooser.FileFilter
-  {
-    public boolean accept(File f) 
-    {
-      boolean accept = f.isDirectory();
-      if(!accept)
-      {
-        String suffix = getSuffix(f);
-        if (suffix != null) accept = suffix.equals("iss");
-      }
-      return accept;
-    }
+  /* public class scriptFilter extends javax.swing.filechooser.FileFilter
+     {
+     public boolean accept(File f) 
+     {
+     boolean accept = f.isDirectory();
+     if(!accept)
+     {
+     String suffix = getSuffix(f);
+     if (suffix != null) accept = suffix.equals("iss");
+     }
+     return accept;
+     } */
 
     /**
      * gets the description of what files this filter shows
      */ 
-    public String getDescription()
-    {
-      return "Script Files(*.iss)";
-    }
+    /* public String getDescription()
+       {
+       return "Script Files(*.iss)";
+       } */
  
     /**
      * returns a file extension
      */
-    public String getSuffix(File f) 
-    {
-      String s = f.getPath(), suffix = null;
-      int i = s.lastIndexOf('.');
-      if (i>0 && i<s.length() -1)
-      suffix = s.substring(i+1).toLowerCase();
-      return suffix;
+    /* public String getSuffix(File f) 
+       {
+       String s = f.getPath(), suffix = null;
+       int i = s.lastIndexOf('.');
+       if (i>0 && i<s.length() -1)
+       suffix = s.substring(i+1).toLowerCase();
+       return suffix;
     }
-  }
+    }*/
    
 
   /*
