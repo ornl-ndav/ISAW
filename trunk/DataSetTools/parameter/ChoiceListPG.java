@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/06/03 22:00:28  rmikk
+ *  Checked for a null initial value before reporting the
+ *     incorrect data type warning
+ *
  *  Revision 1.7  2003/06/02 22:09:27  bouzekc
  *  Modified clone() to work with a Vector of FileFilters.
  *
@@ -83,6 +87,7 @@ public class ChoiceListPG extends ChooserPG{
     public ChoiceListPG(String name, Object value, boolean valid){
         super(name,value,valid);
         this.type=TYPE;
+        if( value != null)
         if(!(value instanceof String))
             SharedData.addmsg("WARN: Non-String"
                               +" in ChoiceListPG constructor");
