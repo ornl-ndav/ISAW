@@ -33,24 +33,29 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/01/31 23:52:59  dennis
+ * Added getCategoryList() method to explicitly place the operator
+ * in Macros->Utils->System.
+ *
  * Revision 1.1  2005/01/06 15:45:49  rmikk
  * Initial Checkin
  * This is an operator that will pop up simple help pages.  It can be called
- *    from scripts
+ * from scripts
  *
  */
 
-
 package DataSetTools.operator.Generic.Load;
+
 import DataSetTools.parameter.*;
 import DataSetTools.util.*;
+import DataSetTools.operator.*;
 import javax.swing.*;
 import Command.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
  
  /**
-  *  This class is an operator that will display a simple html help page with no 
-  *  navigation ability.
+  * This class is an operator that will display a simple html help page with no 
+  * navigation ability.
   * 
   * @author mikkelsonr
   * 
@@ -60,12 +65,12 @@ public class ShowDoc extends GenericLoad{
   
    /**
     *  Constructor
-    *
     */
    public ShowDoc(){
-     
+
      super("Show Documentation");
      setDefaultParameters();
+
    }
    
    
@@ -74,22 +79,40 @@ public class ShowDoc extends GenericLoad{
     * @param filename  The name of the html file
     */
    public ShowDoc( String filename){
-     
+
       this();
       getParameter(0).setValue( new String( filename));
-     
+
    }
    
+
    /**
     *  Sets the default parameters for this operator
     */
    public void setDefaultParameters(){
-     
+
       this.clearParametersVector();
       addParameter( new LoadFilePG("Enter Filename", ""));
-     
+
    }
   
+
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.UTILS_SYSTEM;
+  }
+
+
   /**
    *   Displays the help page
    */
@@ -101,26 +124,29 @@ public class ShowDoc extends GenericLoad{
     String S ="400"; 
     jf.setSize( SharedData.getintProperty("Isaw_Width", S)/2,
          SharedData.getintProperty("Isaw_Height", S )  );
+
     try{
-      
        jf.getContentPane().add( new JScrollPane(
               new JEditorPane( "text/html",(new Script(filename)).toString())));
        jf.show();
     }catch(Exception ss){
        return new ErrorString( ss);
     }
-      
    
     return "Success";
     }
+
     
   public String getDocumentation(){
+
     StringBuffer s= new StringBuffer( "");
-    s.append("@overview  This class is an operator that will display a simple "); 
- 
+
+    s.append("@overview This class is an operator that will display a simple ");
+
     s.append("html help page with no navigation ability. ");
    
-    s.append("@assumptions The file is a legitimate html file viewable by Java's html\n");
+    s.append("@assumptions The file is a legitimate html file viewable by ");
+    s.append("Java's html\n");
     s.append("JEditor Pane viewer");
    
     s.append("@param filename  The name of the file to view\n");
@@ -129,5 +155,5 @@ public class ShowDoc extends GenericLoad{
     return s.toString();
 
   }
-  }
- 
+
+ }
