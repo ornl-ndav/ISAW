@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2003/03/18 14:42:44  dennis
+ *  Added option for popping up an additional ViewManager to the
+ *  view menu of an existing ViewManager
+ *
  *  Revision 1.33  2003/03/04 20:25:35  dennis
  *  Title on window is now set properly if the contents of the DataSet
  *  are changed to a different run.
@@ -139,6 +143,7 @@ public class ViewManager extends    JFrame
 
    private   ViewManager     view_manager = null;
    private   DataSetViewer   viewer = null;
+   private   String          viewType = IMAGE;
    private   ViewerState     state = null;
    private   DataSet         dataSet;
    private   DataSet         tempDataSet;
@@ -271,6 +276,7 @@ public class ViewManager extends    JFrame
          state = viewer.getState();
 
       viewer = null;
+      viewType = view_type;
       if ( view_type.equals( IMAGE ))
         viewer = new ImageView( tempDataSet, state );
       else if ( view_type.equals( SCROLLED_GRAPHS ))
@@ -295,6 +301,7 @@ public class ViewManager extends    JFrame
            System.out.println( "      " + view_type );
            System.out.println( "using " + IMAGE + " by default" );
            viewer = new ImageView( tempDataSet, state );
+           viewType = IMAGE;
         }
       }
       getContentPane().add(viewer);
@@ -658,12 +665,15 @@ private void BuildEditMenu()
 }
 
 private void BuildViewMenu()
-{
-                                                // set up view menu items
+{                                                   // set up view menu items
   ViewMenuHandler view_menu_handler = new ViewMenuHandler();
   JMenu view_menu = viewer.getMenuBar().getMenu(DataSetViewer.VIEW_MENU_ID);
 
-  JMenuItem button = new JMenuItem( IMAGE );
+  JMenuItem button = new JMenuItem( ADDITIONAL_VIEW );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
+
+  button = new JMenuItem( IMAGE );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
@@ -697,7 +707,8 @@ private void BuildViewMenu()
 }
 
  public void BuildTableMenu( JMenu Tables)
-  { int n= TableViewMenuComponents.getNMenuItems();
+  { 
+    int n= TableViewMenuComponents.getNMenuItems();
     ViewMenuHandler view_menu_handler = new ViewMenuHandler();
      if( table_MenuComp == null)
         table_MenuComp = new TableViewMenuComponents();
@@ -957,7 +968,12 @@ private float solve( float new_x ) // find what x in the original DataSet maps
     public void actionPerformed( ActionEvent e )
     {
       String action = e.getActionCommand();
-      setView( action ); 
+      if ( action.equals( ADDITIONAL_VIEW ) )
+      {
+        ViewManager vm = new ViewManager( dataSet, viewType );
+      }
+      else
+        setView( action ); 
     }
   }
 
