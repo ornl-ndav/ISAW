@@ -8,12 +8,12 @@
 #@param Yoff- the intial guess for the Yoffset in cm
 #@return the Vector returned by the Center operator
 
-$ DSfilename   LoadFileString("C:/new_das_runs/sand20284.run")   Enter DataSet Name
-$ SensFilename LoadFileString("C:/test_output/sens20337.dat")  Enter Sensitivity FileName
-$StartTimeChan  Integer(11)  Enter Starting TimeChannel
-$EndTimeChan  Integer(68)   Enter EndTimeChannel
-$Xoff     Float(0)    Enter Xoff estimate
-$Yoff    Float(0)   Enter Yoff Estimate
+$ DSfilename    LoadFileString("C:/new_das_runs/sand20284.run") Enter DataSet Name
+$ SensFilename  LoadFileString("C:/test_output/sens20337.dat")  Enter Sensitivity FileName
+$ StartTimeChan Integer(11)  Enter Starting TimeChannel
+$ EndTimeChan   Integer(68)  Enter EndTimeChannel
+$ Xoff          Float(0)     Enter Xoff estimate
+$ Yoff          Float(0)     Enter Yoff Estimate
 
 n=load(DSfilename, "DS")
 
