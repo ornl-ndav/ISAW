@@ -32,6 +32,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/10/24 18:36:33  dennis
+ *  Fixed indexing error in calculating the experimentally determined
+ *  "fudge factor".  Also, now uses two different cases.  If the
+ *  DataSet has tabulated function values X0...Xn, Y0...Yn, the calculation
+ *  is the same as the original FORTRAN codes.  If the DataSet has
+ *  histogram values: X0...Xn, Y0...Yn-1, the "x" values used are the
+ *  bin center values.
+ *
  *  Revision 1.7  2001/10/05 17:53:36  dennis
  *  Added a parameter giving the angle between the normal to the sample
  *  slab and the beam direction.
@@ -292,24 +300,52 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
        //                  "  " + EINTEG + "  " + DUM + " " + numofe);
        // System.out.print("spherical_coords =" + spherical_coords[0] + 
        //                  " " + spherical_coords[1]+ " "+spherical_coords[2]);
-        
-        loope:for ( int i = 0; i < (numofe-1); i++ )
-        {
-            if (e_vals[i+1]<DUM || e_vals[i+1]>EINTEG) continue loope;
-            float EF=EI - e_vals[i+1];
-            float LAMF = (float)Math.sqrt(ELAM/EF);
-            float EF1 =0;
-            //if (i>=numofe) EF1 = EI-e_vals[i];
-            //else if (i<numofe) 
-            EF1 = EI-e_vals[i+2];
-            float LAMF1 = (float)Math.sqrt(ELAM/EF1);
-            float DLAMF = LAMF1-LAMF;
-            float HLAMF = 0.5f*DLAMF;
-            float DEfudge =(float)( ELAM*(Math.pow((LAMF-HLAMF), -2.0f) -
-                                          Math.pow((LAMF+HLAMF), -2.0f)));
-            sum += DEfudge*y_vals[i+1]/1000;
-           // System.out.print(e_vals[i]+" "+sum+"\n");
-        }
+     
+        if ( data.isFunction() )
+          for ( int i = 0; i < numofe; i++ )
+          {
+            if (e_vals[i] >= -EINTEG && e_vals[i] <= EINTEG)
+            {
+              float EF = EI - e_vals[i];
+              float LAMF = (float)Math.sqrt(ELAM/EF);
+              float EF1 = 0;
+              if (i >= numofe-1) 
+                EF1 = EI-e_vals[i-1];
+              else 
+                EF1 = EI-e_vals[i+1];
+              float LAMF1 = (float)Math.sqrt(ELAM/EF1);
+              float DLAMF = LAMF1-LAMF;
+              float HLAMF = 0.5f*DLAMF;
+              float DEfudge =(float)( ELAM*(Math.pow((LAMF-HLAMF), -2.0f) -
+                                            Math.pow((LAMF+HLAMF), -2.0f)));
+              sum += DEfudge*y_vals[i]/1000;
+            }
+          }
+
+        else                                   // use bin centers for histogram
+          for ( int i = 0; i < numofe-1; i++ )
+          {
+            float e_ave = (e_vals[i] + e_vals[i+1])/2;
+            if (e_ave >= -EINTEG && e_ave <= EINTEG)
+            {
+              float EF = EI - e_ave;
+              float LAMF = (float)Math.sqrt(ELAM/EF);
+              float EF1 = 0;
+              float e_ave_1 = 0;
+              if (i >= numofe-2) 
+                e_ave_1 = (e_vals[i-1] + e_vals[i])/2;
+              else                
+                e_ave_1 = (e_vals[i+1] + e_vals[i+2])/2;
+              EF1 = EI - e_ave_1;
+              float LAMF1 = (float)Math.sqrt(ELAM/EF1);
+              float DLAMF = LAMF1-LAMF;
+              float HLAMF = 0.5f*DLAMF;
+              float DEfudge =(float)( ELAM*(Math.pow((LAMF-HLAMF), -2.0f) -
+                                            Math.pow((LAMF+HLAMF), -2.0f)));
+              sum += DEfudge*y_vals[i]/1000;
+            }
+          }
+
 
         float XMS = SLABMS(180.0f*spherical_coords[1] /
                     (float)Math.PI, energy_in, THETS );
