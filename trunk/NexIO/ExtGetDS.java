@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/17 13:52:50  rmikk
+ * Added Changes to get more fields
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
@@ -48,7 +51,7 @@ import DataSetTools.retriever.* ;
 import DataSetTools.viewer.* ;
 import IPNS.Runfile.* ;
 import java.util.* ;
-
+import java.lang.reflect.*;
 /**  Class that retrieves DataSets from sources that NxNode interface
 * <ol>
 *<li> Satisfy the NxNode interface
@@ -156,9 +159,26 @@ public DataSet getDataSet( int data_set_num )
    NxNode nd = node.getChildNode( 
                     ( String )( nEntries.elementAt( nxentry ) ) ) ;
    AttributeList AL = getGlobalAttributes() ;
+  System.out.println("****Instrument type ****");
+   String Analysis = getAnalysis( nd );
+   System.out.print("Analysis="+Analysis+":");
+   Inst_Type it = new Inst_Type();
+   int instrType = it.getIsawInstrNum( Analysis );
+    System.out.print("inst1Type ="+instrType+"::");
+   if( (Analysis == null) ||(Analysis ==""))
+     {Object OO = nd.getAttrValue( "isaw_instr_type");
+      System.out.print("inside"+ OO+"::");
+     if(OO != null) if( OO instanceof int[])
+     if( Array.getLength( OO) > 0)
+       { instrType = ((int[])OO)[0];
+        
+       }
+     }
+    System.out.println("END instr type ="+instrType);
    DataSetFactory DSF = new DataSetFactory( "" ) ;
-   DataSet DS = DSF.getDataSet() ;
+   DataSet DS = DSF.getTofDataSet(instrType) ;   
    DS.setAttributeList( AL ) ;
+   DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType));
    if( !ProcessNxentryNode( nd ,  DS ,  offset ) )
      {String S = "M" ;
       if( getType( data_set_num ) == ( Retriever.HISTOGRAM_DATA_SET ) )
@@ -184,15 +204,27 @@ public DataSet getDataSet( int data_set_num )
     }
 private AttributeList getGlobalAttributes()
    {AttributeList Res = new AttributeList() ;
-    Object X = node.getAttrValue( "file_name" ) ;
-    NxData_Gen ndd = new NxData_Gen() ;
-    if( X != null )
-       {String S = ndd.cnvertoString( X ) ;
-        Res.addAttribute( new StringAttribute(  Attribute.RUN_TITLE , S ) ) ;
+   //Object X = node.getAttrValue( "file_name" ) ;
+   // NxData_Gen ndd = new NxData_Gen() ;
+   // if( X != null )
+     {//String S = ndd.cnvertoString( X ) ;
+        Res.addAttribute( new StringAttribute(  Attribute.FILE_NAME , filename ) ) ;
        }
     return Res ;
+    
    }
-
+private String getAnalysis( NxNode node)
+  {if( node == null) return "";
+   if( !node.getNodeClass().equals("NXentry"))
+      return "";
+   NxNode n1 = node.getChildNode( "analysis");
+   if( n1 == null) return "";
+   Object O = n1.getNodeValue();
+   NxData_Gen ng = new NxData_Gen();
+   String S = ng.cnvertoString( O);
+   if( S == null) return "";
+   else return S;
+  } 
 /** returns the number of datasets in this file
 */
  public int numDataSets( )
@@ -281,7 +313,8 @@ private AttributeList getGlobalAttributes()
            S = new String( ( byte[] )X ) ;
        else
              S = "" ;
-      
+     
+ 
        if( S.equals( "TOFNDGS" ) )
            {Entry = new NXentry_TOFNDGS( node , DS ) ;
             DS.setAttribute( new IntAttribute( Attribute.INST_TYPE ,
@@ -415,3 +448,4 @@ public static void main( String args[] )
  }//end main
 
 }
+
