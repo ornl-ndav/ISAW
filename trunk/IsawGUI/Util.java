@@ -35,6 +35,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2002/08/06 21:31:24  pfpeterson
+ * Now calls GsasRetriever as well.
+ *
  * Revision 1.12  2002/06/18 19:49:42  rmikk
  * -Eliminated extra returns and prettified the code.
  * -Added code to read and write xmi, xmn and zip files
@@ -115,6 +118,11 @@ public class Util
          dss[0] = DataSet_IO.LoadDataSet( filename );
 
          return dss;
+      }
+      else if( filename.toUpperCase().endsWith( ".GSA" ) 
+               || filename.toUpperCase().endsWith( ".GDA" ) )
+      {
+          r=new GsasRetriever(filename);
       }
       else if( filename.toUpperCase().endsWith( ".SDDS" ) )
       {
