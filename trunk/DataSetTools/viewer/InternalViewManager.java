@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2001/06/07 21:17:56  dennis
+ *  Added calls to System.gc() where major changes are made
+ *  to a view.
+ *
  *  Revision 1.6  2001/05/30 22:14:12  dennis
  *  Enabled Kevin's viewer
  *
@@ -189,6 +193,7 @@ public class InternalViewManager extends    JInternalFrame
       setView( view_type ); 
       setVisible(true);
       conversion_operator = null;
+      System.gc();
    }
 
    /**
@@ -204,6 +209,7 @@ public class InternalViewManager extends    JInternalFrame
      ds.addIObserver( this );
 
      viewer.setDataSet( tempDataSet ); 
+     System.gc();
    }
 
    /**
@@ -259,6 +265,7 @@ public class InternalViewManager extends    JInternalFrame
       BuildViewMenu();
       BuildConversionsMenu();
       BuildOptionMenu();
+      System.gc();
    }
 
   /**
@@ -271,6 +278,7 @@ public class InternalViewManager extends    JInternalFrame
      tempDataSet.deleteIObserver( view_manager );
      viewer = null;
      dispose(); 
+     System.gc();
    }
 
    /**
@@ -306,6 +314,7 @@ public class InternalViewManager extends    JInternalFrame
        {
          makeTempDataSet( false );
          viewer.setDataSet( tempDataSet );
+         System.gc();
        }
        else if ( (String)reason == POINTED_AT_CHANGED   )
        {                                             // tell the viewer the new
