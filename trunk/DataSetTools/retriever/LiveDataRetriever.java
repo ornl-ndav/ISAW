@@ -32,6 +32,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2001/10/17 18:35:21  dennis
+ *  Now recalculates the Total Count attribute for each spectrum, as the
+ *  DataSet is received, since the attributes were originally read from the
+ *  runfile, with Total Count = 0.
+ *
  *  Revision 1.18  2001/09/21 19:13:24  dennis
  *  The LiveDataServer now adds a log message giving the time to the
  *  DataSet.  The code to add the time log message was removed from
@@ -254,6 +259,16 @@ public class LiveDataRetriever extends    RemoteDataRetriever
     if ( obj != null && obj instanceof DataSet )
     {
       DataSet ds = (DataSet)obj;
+                                          // fix the total counts attributes
+      for ( int i = 0; i < ds.getNum_entries(); i++ )
+      {
+        Data d = ds.getData_entry(i);
+        float y[] = d.getY_values();
+        float total = 0;
+        for ( int j = 0; j < y.length; j++ )
+          total+= y[j];
+        d.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, total ) ); 
+      }
       return ds;
     }
 
