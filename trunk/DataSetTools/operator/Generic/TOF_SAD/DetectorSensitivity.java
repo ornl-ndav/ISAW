@@ -28,6 +28,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/09/08 19:10:17  dennis
+ * Made naming consistent... the relative pixel sensitivity is no longer
+ * referred to as detector efficiency in variable names, comments, DataSet
+ * names or javadocs..
+ *
  * Revision 1.5  2003/07/31 16:04:53  dennis
  * Added log entries for the efficiency and mask DataSets.
  * Removed unneeded clone method.
@@ -72,8 +77,8 @@ import java.util.*;
 
 /** 
  * This operator calculates the sensitivity (with errors) and corresponding
- * mask for a single area detector or LPSD.  It implements the concepts from
- * the FORTRAN program:
+ * mask for the pixels of a single area detector or LPSD.  It implements 
+ * the concepts from the FORTRAN program:
  *   
  *   areadetsens_v3
  *
@@ -149,7 +154,7 @@ public class DetectorSensitivity extends GenericTOF_SAD
     Res.append("are omitted from ");
     Res.append("the later calculations.  The average of the total counts ");
     Res.append("for the remaining pixels are calculated.  The relative ");
-    Res.append("efficiency of a pixel is then calculated as the counts in");
+    Res.append("sensitivity of a pixel is then calculated as the counts in");
     Res.append("the pixel divided by the average counts of the good pixels.");
         
     Res.append("@param ds - DataSet with the flood pattern Data.");
@@ -159,7 +164,7 @@ public class DetectorSensitivity extends GenericTOF_SAD
     Res.append(" will be discarded as 'hot', i.e. noisy.");
     
     Res.append("@return Returns a vector of two DataSets.  The first ");
-    Res.append("DataSet contains the detector efficiency values, with ");
+    Res.append("DataSet contains the pixel sensitivity values, with ");
     Res.append("their errors.  The second DataSet contains the mask values. ");
     
     return Res.toString();
@@ -182,10 +187,10 @@ public class DetectorSensitivity extends GenericTOF_SAD
   
   /* ----------------------------- getResult ------------------------------ */ 
   /** 
-   *  Calculate the detector sensitivity using the current parameters.
+   *  Calculate the detector pixels' sensitivity using the current parameters.
    *
    *  @return If successful, this operator returns a vector with two DataSets.
-   *  The first DataSet contains the detector efficiency values, with
+   *  The first DataSet contains the pixel sensitivity values, with
    *  their errors.  The second DataSet contains the mask values.
    */
   public Object getResult()
@@ -198,9 +203,9 @@ public class DetectorSensitivity extends GenericTOF_SAD
     // Find the DataGrid for this detector and make sure that we have a 
     // segmented detector. 
     //
-    DataSet eff_ds = (DataSet)ds.clone();
+    DataSet sens_ds = (DataSet)ds.clone();
 
-    int grid_ids[] = Grid_util.getAreaGridIDs( eff_ds );
+    int grid_ids[] = Grid_util.getAreaGridIDs( sens_ds );
 
     if ( grid_ids.length < 1 )
       return new ErrorString( "No Area Detectors in DataSet" );
@@ -209,16 +214,16 @@ public class DetectorSensitivity extends GenericTOF_SAD
       return new ErrorString("Too many Area Detectors in DataSet: " +
                               IntList.ToString( grid_ids )          );
 
-    UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid(eff_ds, grid_ids[0]);
+    UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid(sens_ds, grid_ids[0]);
 
     //
     // Throw out any Data blocks that don't belong with this detector
     //
-    if ( !grid.setData_entries( eff_ds ) )
+    if ( !grid.setData_entries( sens_ds ) )
       return new ErrorString("Can't set Data grid entries"); 
 
-    for ( int i = 0; i < eff_ds.getNum_entries(); i++ )
-      eff_ds.getData_entry(i).setSelected( true );
+    for ( int i = 0; i < sens_ds.getNum_entries(); i++ )
+      sens_ds.getData_entry(i).setSelected( true );
 
     for ( int row = 1; row <= grid.num_rows(); row++ )
       for ( int col = 1; col <= grid.num_cols(); col++ )
@@ -229,15 +234,15 @@ public class DetectorSensitivity extends GenericTOF_SAD
           grid.getData_entry( row, col ).setSelected( false );
       }
 
-    eff_ds.removeSelected( true );
+    sens_ds.removeSelected( true );
 
     //
     // Remove specialty operators and un-needed attributes.  Fix up the
     // title, labels and units.
     //
     Data d = null;
-    eff_ds.removeAllOperators();
-    DataSetFactory.addOperators( eff_ds );
+    sens_ds.removeAllOperators();
+    DataSetFactory.addOperators( sens_ds );
     for ( int row = 1; row <= grid.num_rows(); row++ )
       for ( int col = 1; col <= grid.num_cols(); col++ )
       {
@@ -247,21 +252,21 @@ public class DetectorSensitivity extends GenericTOF_SAD
         list.addAttribute( d.getAttribute( Attribute.PIXEL_INFO_LIST )); 
         d.setAttributeList( list );
       }
-    eff_ds.addLog_entry("Set Pixel values to relative sensitivity of pixel");
-    eff_ds.setTitle( eff_ds.getTitle() + " Detector Efficiency" );
-    eff_ds.setY_units("Efficiency");
-    eff_ds.setY_label("Detector Relative Efficiency");
+    sens_ds.addLog_entry("Set Pixel values to relative sensitivity of pixel");
+    sens_ds.setTitle( sens_ds.getTitle() + "Pixel Sensitivity" );
+    sens_ds.setY_units("Sensitivity");
+    sens_ds.setY_label("Pixel Relative Sensitivity");
   
     //
     // Now rebin the Data down to one bin.  We assume there is only one 
     // x_scale for the Data blocks from this detector.
     //
-    XScale old_scale = eff_ds.getData_entry(0).getX_scale();
+    XScale old_scale = sens_ds.getData_entry(0).getX_scale();
     XScale new_scale = new UniformXScale( old_scale.getStart_x(),
                                           old_scale.getEnd_x(),
                                           2 );
-    for ( int i = 0; i < eff_ds.getNum_entries(); i++ )
-      eff_ds.getData_entry(i).resample( new_scale, IData.SMOOTH_NONE );
+    for ( int i = 0; i < sens_ds.getNum_entries(); i++ )
+      sens_ds.getData_entry(i).resample( new_scale, IData.SMOOTH_NONE );
 
     // 
     // Next, calculate the total counts and average counts for all pixels 
@@ -405,14 +410,14 @@ public class DetectorSensitivity extends GenericTOF_SAD
     if ( !mask_grid.setData_entries( mask_ds ) )
       return new ErrorString("Can't set the Mask grid entries");
 
-    eff_ds.addOperator( new GetPixelInfo_op() );
+    sens_ds.addOperator( new GetPixelInfo_op() );
     mask_ds.addOperator( new GetPixelInfo_op() );
 
-    eff_ds.clearSelections();
+    sens_ds.clearSelections();
     mask_ds.clearSelections();
     
     Vector result = new Vector(2);
-    result.addElement( eff_ds );
+    result.addElement( sens_ds );
     result.addElement( mask_ds );
 
     return result;
