@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/06/05 14:35:09  dennis
+ * Added method to set a new image and change the title on the frame.
+ *
  * Revision 1.2  2003/01/08 20:11:37  dennis
  * Now shows blank frame and writes error message if a null image is
  * specified.
@@ -60,7 +63,7 @@ public class ImageFrame extends JFrame
     setTitle(title);
     setBounds(0,0,500,500);
     panel = new ImageJPanel();
-    panel.changeLogScale(35, true);
+    panel.changeLogScale(25, true);
     setData( values );
     getContentPane().add(panel);
     setVisible(true);
@@ -79,6 +82,23 @@ public class ImageFrame extends JFrame
      
     show();
   }
+
+
+  public void setData( float values[][], String title )
+  {
+    setTitle( title );
+    if ( values == null )
+    {
+      float empty_array[][] = new float[1][1];
+      panel.setData( empty_array, true );
+      System.out.println("No Image Plane Defined...!!");
+    }
+    else
+      panel.setData( values, true );
+
+    show();
+  }
+
 
   public static void main( String args[] )
   {
