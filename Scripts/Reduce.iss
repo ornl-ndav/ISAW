@@ -45,7 +45,7 @@ $ NeutronDelay   Float( .0011)      Delayed Neutron Fraction
 
 $ useEmptyCell      Boolean( true)    For transmission: Is background different from empty camera?
 
-#$ qu   Qbins     Enter Q
+$ qu   Qbins     Enter Q
 #qu=[-.5,.5,-.5,.5]
 $ useDefault        Boolean( true)    Use Default Q's (0.0035, 1.04; 117)? Constant dQ/Q
 $EffFile         String("20270") Enter Efficiency Ratio file number
@@ -84,7 +84,11 @@ TransSFile = Output_Path&"T"&TransSFile&CameraFile&".cf"
 PrintFlood( DSS,TransSFile, "Transmission")
 Echo("Sample/Camera Transmission done ")
 #========== Calculation of transmission for cell/camera ====================
-
+load Input_Path&inst&SampleFile&ext,"RUNSds"
+Echo("Loading Sample Scattering "&RUNSds)
+GroupID =GetAttr(RUNSds[1],0,"Group ID")
+n = NumBins( RUNSds[1],GroupID,0,200000)
+Display "numBins="&n
  if useCadmiumRun == true
 DSC = CalcTransmission( Cell[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
 else
@@ -92,14 +96,13 @@ DSC = CalcTransmission( Cell[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, po
 endif
 TransBFile = Output_Path&"T"&BackGroundTFile&CameraFile&".cf"
 PrintFlood( DSC,TransBFile, "Transmission")
-TransB = ReadTransmission( TransBFile, 70)
+TransB = ReadTransmission( TransBFile, n)
 send DSC
 
 Echo("Cell/Camera Transmission done ")
 Display "Finished Transmission runs"
 #------------------------- Code for Reduce -----------------------
-load Input_Path&inst&SampleFile&ext,"RUNSds"
-Echo("Loading Sample Scattering "&RUNSds)
+
 load Input_Path&inst&BackgroundFile&ext,"RUNBds"
 Echo("Loading Background Scattering "&RUNBds)
 load Input_Path&inst&CadmiumFile&ext,"RUNCds"
@@ -111,13 +114,18 @@ Eff =Read3Col1D( EFR,"Efficiency")
 Echo("Reading Efficiency Ratio file "&EFR)
 Sens =ReadFlood(sensitivity, 128,128)
 Echo("Reading Sensitivity file "&sensitivity)
-TransS = ReadTransmission( TransSFile, 70) 
+TransS = ReadTransmission( TransSFile, n) 
  
 #Zero( Eff,0,0,9)
 
 if useDefault == true
  qu[0] = 0.0035f
 for i in [1:117]
+     qu[i] = qu[i - 1] * 1.02f
+endfor
+
+
+for i in [118:157]
      qu[i] = qu[i - 1] * 1.05f
 endfor
 endif
@@ -125,11 +133,8 @@ endif
 
 Res=Reduce_KCL(TransS,TransB,Eff,Sens[0],qu,RUNSds[0],RUNSds[1],RUNBds[0],RUNBds[1],RUNCds[0],RUNCds[1],NeutronDelay,Scale,thick,Xoff,Yoff,NQxBins,NQybins,useEmptyCell)
 
-
-Display Res[0], "NEW Selected Graph View"
-Display Res[1], "NEW Selected Graph View"
-SelectGroups( Res[2], "Group ID",0.0,0.0,"Between Max and Min", "Set Select")
-Display Res[2], "NEW Selected Graph View"
+SelectGroups( Res[2], "Group ID",0.0,0.0,"Between Max and Min", "Set Selected")
+Display Res[2], "Selected Graph View"
 for i in [0:2]
   if  NQxBins < 0
   send Res[i]
@@ -144,3 +149,4 @@ Echo (Output_Path&GetField(Res[1], "Title") )
 Echo (Output_Path&GetField(Res[2], "Title") )
 Display "Finished Reduce"
 #ExitDialog()
+
