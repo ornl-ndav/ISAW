@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2003/09/04 15:01:38  rmikk
+ *  2nd Detector now works
+ *
  *  Revision 1.33  2003/08/28 15:03:27  rmikk
  *  Added code to incorporate Several Area Detectors
  *
@@ -223,6 +226,7 @@ public class ContourView extends DataSetViewer
    JScrollPane dctScroll = null;
    XScaleChooserUI Xscl = null;
    JPanel  XsclHolder = null;
+   JPanel cdControlHolder = null;
    boolean acChange,XsclChange,XConvChange;
    //JButton print_;
    ContourData cd;
@@ -459,16 +463,38 @@ public class ContourView extends DataSetViewer
 
 
   }//MyMouseLotionListener
+  JPanel NewBoxLayoutJPanel(){
+      JPanel cdControlHolder = new JPanel();
+     
+     BoxLayout blay = new BoxLayout( cdControlHolder, BoxLayout.Y_AXIS );
+
+     cdControlHolder.setLayout( blay );
+     return cdControlHolder; 
+
+  }
+  boolean addControls( ContourData cd, JPanel cdControlHolder){
+     JComponent[] controls = cd.getControls();
+     if( controls == null) return false;
+     if( controls.length < 1) return false;
+     for( int i = 0; i <  controls.length; i++){
+       cdControlHolder.add( controls[i]);
+     }
+     return true;
+
+  }
   // main splitpane with state, 
   public void setLayout(JPanel jpEast)
     {jpEast.add( ac );
      jpEast.add(XsclHolder);
      jpEast.add(intensityHolder);
-     JComponent[] controls = cd.getControls();
-     for( int i = 0; i <  controls.length; i++){
-       jpEast.add( controls[i]);
-     }
-     cd.addDataChangeListener( new DataChangeListener());
+     if( cdControlHolder == null)
+       cdControlHolder = NewBoxLayoutJPanel();
+     else
+       cdControlHolder.removeAll();
+     
+      addControls(  cd, cdControlHolder);
+     jpEast.add(cdControlHolder);
+     //cd.addDataChangeListener( new DataChangeListener());
      addControl( jpEast);
      jpEast.add( ConvTableHolder );
      jpEast.add( Box.createHorizontalGlue() );
@@ -477,7 +503,16 @@ public class ContourView extends DataSetViewer
 
    class DataChangeListener implements ActionListener{
       public void actionPerformed( ActionEvent evt){
-         setDataSet( data_set);      
+      if( cd == null) return;
+      if( times == null) return;
+      if( sliderTime_index < 0)
+        sliderTime_index =0;
+      if( times.length < 1) return;
+      
+      SimpleGrid newData1 = ( SimpleGrid )( cd.getSGTData( times[sliderTime_index] ) );
+
+      ( ( SimpleGrid )newData ).setZArray( newData1.getZArray() );
+      rpl_.draw();
 
      }
    }
@@ -630,6 +665,11 @@ public class ContourView extends DataSetViewer
          axis3 = Transf.getAxis( 2);
          cd = new ContourData( ds, axis1, axis2, axis3);
         }
+      cd.addDataChangeListener( new DataChangeListener());
+    if( cdControlHolder == null)
+      cdControlHolder = NewBoxLayoutJPanel();
+    else cdControlHolder.removeAll();
+    addControls( cd, cdControlHolder);
     if( XsclHolder == null)
         {
           XsclHolder = new JPanel( new GridLayout( 1,1 ));
@@ -769,7 +809,8 @@ public class ContourView extends DataSetViewer
             state = new ViewerState();
          state.set_String( ViewerState.COLOR_SCALE, evt.getActionCommand() );
          acChange= XsclChange = XConvChange = false;
-         setData( data_set, state.get_int("Contour.Style"));
+        
+         setData(getDataSet(),state.get_int("Contour.Style"));
          rpl_.draw();
       }
    }
@@ -1178,6 +1219,7 @@ public class ContourView extends DataSetViewer
             try
             {  
                int i = new Integer( event.getActionCommand() ).intValue();
+              
                //if( sliderTime_index == i)
                //  return;
               
