@@ -32,6 +32,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.90  2003/10/18 21:17:16  bouzekc
+ * Removed "About" command in help menu.  Changed save dialog message to
+ * "Save As".  Moved the setHelpMessage that took a File to setHelpURL that
+ * takes a String representing a String to be treated as a URL.  Removed
+ * the AS_NEEDED specs for the scrollbars.  Removed unneeded minutes and
+ * seconds retrieval for the error file name.  Made the display of
+ * help messages uneditable.  Wrote method to display HTML URLs.  Changed
+ * showHelpMessage to showWizardHelpMessage and removed its parameters.
+ *
  * Revision 1.89  2003/10/15 05:41:27  bouzekc
  * Fixed directory relationship bug with new setHelpMessage().
  *
@@ -428,6 +437,8 @@ import java.beans.*;
 
 import java.io.*;
 
+import java.net.URL;
+
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.StringTokenizer;
@@ -521,7 +532,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   private static final String CLEAR_ALL_COMMAND   = "Reset All";
   private static final String EXEC_ALL_COMMAND    = "Do All";
   private static final String EXEC_COMMAND        = "Do";
-  private static final String HELP_ABOUT_COMMAND  = "About";
   private static final String WIZARD_HELP_COMMAND = "on Wizard";
   private static final String FORM_HELP_COMMAND   = "on Current Form";
   private static final String SAVE_WIZARD_COMMAND = "Save Wizard State";
@@ -565,6 +575,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   private boolean ignorePropChanges;
   private transient WizardFileFilter wizFilter;
   private String projectsDirectory;
+  private URL wizardHelpURL                            = null;
 
   //~ Constructors *************************************************************
 
@@ -595,30 +606,12 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     formProgress      = new PropChangeProgressBar(  );
     wizProgress       = new JProgressBar(  );
     command_handler   = new CommandHandler( this );
-    save_frame        = new JFrame( "Save Form as..." );
+    save_frame        = new JFrame( "Save As..." );
     wizFilter         = new WizardFileFilter(  );
     tryToLoadProjectsDir(  );
   }
 
   //~ Methods ******************************************************************
-
-  /**
-   * Set the message that will be displayed when the user chooses the help
-   * about option.
-   *
-   * @param about_message String giving the message to use for the "Help About"
-   *        option.
-   */
-  public void setAboutMessage( String about_message ) {
-    this.about_message = about_message;
-  }
-
-  /**
-   * @return the String giving the help about message for this wizard.
-   */
-  public String getAboutMessage(  ) {
-    return about_message;
-  }
 
   /**
    * @return The currently displayed form.
@@ -660,43 +653,35 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   }
 
   /**
-   * Set the help message that will be displayed when the user requests help
-   * with this wizard.
-   *
-   * @param helpFile File containing the help message.
-   */
-  public void setHelpMessage( File helpFile ) {
-    StringBuffer s     = new StringBuffer(  );
-    TextFileReader tfr = null;
-    String fileName    = helpFile.toString(  );
-    fileName           = FilenameUtil.setForwardSlash( fileName );
-
-    try {
-      tfr = new TextFileReader( fileName );
-
-      while( !tfr.eof(  ) ) {
-        s.append( tfr.read_line(  ) );
-        s.append( "\n" );
-      }
-      tfr.close(  );
-      this.help_message = s.toString(  );
-    } catch( IOException ioe ) {
-      try {
-        if( tfr != null ) {
-          tfr.close(  );
-        }
-      } catch( IOException ioe2 ) {
-        //drop it on the floor
-      }
-      SharedData.addmsg( "File " + fileName + " could not be read." );
-    }
-  }
-
-  /**
    * @return the String giving the help message for this wizard.
    */
   public String getHelpMessage(  ) {
     return help_message;
+  }
+
+  /**
+   * Set the help message that will be displayed when the user requests help
+   * with this wizard.  If this is not a fully qualified URL (i.e. one that
+   * starts with http:// and contains a full path) then the assumption is that
+   * helpURL is the name of a file residing in the IsawHelp/wizard directory
+   * on the local machine.
+   *
+   * @param helpURL String denoting the URL to load.
+   */
+  public void setHelpURL( String helpURL ) {
+    try {
+      if( helpURL.startsWith( "http://" ) ) {
+        wizardHelpURL = new URL( helpURL );
+      } else {
+        //check for the file in the help directory
+        helpURL         = SharedData.getProperty( "Help_Directory" ) +
+          "/wizard/" + helpURL;
+        helpURL         = FilenameUtil.setForwardSlash( helpURL );
+        wizardHelpURL   = new URL( "file", "localhost", helpURL );
+      }
+    } catch( java.net.MalformedURLException mue ) {
+      //drop it on the floor
+    }
   }
 
   /**
@@ -897,9 +882,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   }
 
   /**
-   * Method to depopulate part of the view list if the parameters change.  If
-   * ignorePropChanges is set true, as it is when the Wizard is loading Forms,
-   * the viewMenu is the only thing that changes.
+   * Invalidates the current Form and all later Forms when a parameter is
+   * clicked.
    *
    * @param ev The property change event that was triggered.
    */
@@ -1116,9 +1100,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       menu_bar.add( menuList[j] );
     }
 
-    JScrollPane form_scrollpane = new JScrollPane( 
-        form_panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
+    JScrollPane form_scrollpane = new JScrollPane( form_panel );
 
     // add the title to the work area
     work_area.add( form_label, BorderLayout.NORTH );
@@ -1439,7 +1421,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   /**
    * Utility to display a JOptionPane with an error message when a file is not
    * loaded successfully.  Also writes the error to loadwizard.err in the
-   * error directory (given by getErrorDirectory()).
+   * error directory (given by getErrorDirectory()).  The naming convention
+   * for the file is errFileMonthDay.err.
    *
    * @param e The Throwable generated when the attempt was made to load the WSF
    *        file.
@@ -1453,8 +1436,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     GregorianCalendar cal = new GregorianCalendar(  );
     int month             = cal.get( Calendar.MONTH );
     int day               = cal.get( Calendar.DAY_OF_MONTH );
-    int minute            = cal.get( Calendar.MINUTE );
-    int second            = cal.get( Calendar.SECOND );
     String time           = String.valueOf( month ) + "_" +
       String.valueOf( day );
     errFile               = errFile + time + ".err";
@@ -1484,8 +1465,11 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       new Dimension( 
         ( int )( screen_size.getWidth(  ) / 2 ),
         ( int )( screen_size.getHeight(  ) / 2 ) ) );
+
+    JEditorPane htmlDisplay = new JEditorPane( "text/html", html );
+    htmlDisplay.setEditable( false );
     help_frame.getContentPane(  )
-              .add( new JScrollPane( new JEditorPane( "text/html", html ) ) );
+              .add( new JScrollPane( htmlDisplay ) );
     help_frame.show(  );
   }
 
@@ -1519,6 +1503,37 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       }
       index++;
     }
+  }
+
+  /**
+   * Utility to display an HTML formatted help message.  If an error occurs
+   * while reading the URL a blank JFrame is displayed, otherwise a JFrame
+   * with the HTML content at the URL is displayed.  URLs were used because
+   * JEditorPanes can't handle relative links without a document base.
+   *
+   * @param tempTitle The title to use.
+   * @param url The URL that contains the HTML page.
+   */
+  private void displayURL( String tempTitle, URL url ) {
+    JFrame help_frame     = new JFrame( tempTitle );
+    Dimension screen_size = Toolkit.getDefaultToolkit(  )
+                                   .getScreenSize(  );
+    help_frame.setSize( 
+      new Dimension( 
+        ( int )( screen_size.getWidth(  ) / 2 ),
+        ( int )( screen_size.getHeight(  ) / 2 ) ) );
+
+    JEditorPane htmlDisplay = null;
+
+    try {
+      htmlDisplay = new JEditorPane( url );
+    } catch( IOException ioe ) {
+      htmlDisplay = new JEditorPane(  );
+    }
+    htmlDisplay.setEditable( false );
+    help_frame.getContentPane(  )
+              .add( new JScrollPane( htmlDisplay ) );
+    help_frame.show(  );
   }
 
   /**
@@ -1669,15 +1684,12 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     JMenu help_menu       = new JMenu( "Help" );
     view_menu             = new JMenu( VIEW_MENU );
 
-    JMenuItem help_about  = new JMenuItem( HELP_ABOUT_COMMAND );
     JMenuItem wizard_help = new JMenuItem( WIZARD_HELP_COMMAND );
     JMenuItem form_help   = new JMenuItem( FORM_HELP_COMMAND );
     JMenuItem setDir      = new JMenuItem( SET_PROJECT_DIR );
     JMenuItem save_wizard = new JMenuItem( SAVE_WIZARD_COMMAND );
     JMenuItem load_wizard = new JMenuItem( LOAD_WIZARD_COMMAND );
     JMenuItem exit_item   = new JMenuItem( EXIT_COMMAND );
-    help_menu.add( help_about );
-    help_menu.addSeparator(  );
     help_menu.add( wizard_help );
     help_menu.add( form_help );
     file_menu.addSeparator(  );
@@ -1692,7 +1704,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     menuList[1]   = view_menu;
     menuList[2]   = project_menu;
     menuList[3]   = help_menu;
-    help_about.addActionListener( command_handler );
     wizard_help.addActionListener( command_handler );
     form_help.addActionListener( command_handler );
     exit_item.addActionListener( command_handler );
@@ -1750,17 +1761,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   }
 
   /**
-   * Show the specified String in the help frame.  This is for the wizard help
-   * message
-   *
-   * @param str The message to display in a dialog.
-   * @param title The title of the dialog.
-   */
-  private void showHelpMessage( String str, String title ) {
-    displayHelpMessage( title, str );
-  }
-
-  /**
    * Shows the last valid Form.
    */
   private void showLastValidForm(  ) {
@@ -1770,6 +1770,20 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       showForm( 0 );
     } else {
       showForm( lastValidNum );
+    }
+  }
+
+  /**
+   * Show the specified String in the help frame.  This is for the wizard help
+   * message
+   */
+  private void showWizardHelpMessage(  ) {
+    String wTitle = "Help: " + this.title;
+
+    if( wizardHelpURL != null ) {
+      displayURL( wTitle, wizardHelpURL );
+    } else {
+      displayHelpMessage( wTitle, help_message );
     }
   }
 
@@ -1992,10 +2006,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
         worker = new WizardWorker(  );
         worker.setFormNumber( form_num );
         worker.start(  );
-      } else if( command.equals( HELP_ABOUT_COMMAND ) ) {
-        showHelpMessage( about_message, "About: " + wizard.title );
       } else if( command.equals( WIZARD_HELP_COMMAND ) ) {
-        showHelpMessage( help_message, "Help: " + wizard.title );
+        showWizardHelpMessage(  );
       } else if( command.equals( FORM_HELP_COMMAND ) ) {
         Form f = getCurrentForm(  );
 
