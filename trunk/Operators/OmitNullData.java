@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2004/03/24 18:34:01  dennis
+ * Converted to Unix text format.
+ *
  * Revision 1.1  2004/03/24 18:24:14  dennis
  * Initial commit of OmitNullData operator, adapted from
  * "Crunch" operator.  (T. Worlton)
