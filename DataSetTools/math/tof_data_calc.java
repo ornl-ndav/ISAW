@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/01/15 20:54:25  dennis
+ *  Changed to use SegmentInfo, SegInfoListAttribute, etc.
+ *
  *  Revision 1.16  2002/11/27 23:15:47  pfpeterson
  *  standardized header
  *
@@ -221,13 +224,13 @@ public static Data NewEnergyInData( TabulatedData  data,
   DetectorPosition position = (DetectorPosition)
                      data.getAttribute(Attribute.DETECTOR_POS).getValue();
 
-  DetectorInfo det_info[] =(DetectorInfo[])
-                     data.getAttribute(Attribute.DETECTOR_INFO_LIST).getValue();
+  SegmentInfo seg_info[] =(SegmentInfo[])
+                     data.getAttribute(Attribute.SEGMENT_INFO_LIST).getValue();
  
   if ( Float_e   == null || 
        Float_l   == null || 
        position  == null ||
-       det_info  == null )
+       seg_info  == null )
   {
     System.out.println("ERROR: missing attribute in " +
                               "tof_data_calc.SetNewEnergyIn");
@@ -236,9 +239,9 @@ public static Data NewEnergyInData( TabulatedData  data,
 
   float focused_L2 = position.getDistance();
   float physical_L2 = 0;                        // use average of physical dists
-  for ( int i = 0; i < det_info.length; i++ )
-    physical_L2 += det_info[i].getPosition().getDistance();  
-  physical_L2 /= det_info.length; 
+  for ( int i = 0; i < seg_info.length; i++ )
+    physical_L2 += seg_info[i].getPosition().getDistance();  
+  physical_L2 /= seg_info.length; 
      
   float old_e_in     = Float_e.floatValue();
   float initial_path = Float_l.floatValue();

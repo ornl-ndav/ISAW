@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2003/01/15 20:54:25  dennis
+ *  Changed to use SegmentInfo, SegInfoListAttribute, etc.
+ *
  *  Revision 1.33  2002/12/20 20:24:59  pfpeterson
  *  Added a new static String for user name.
  *
@@ -222,8 +225,8 @@ abstract public class Attribute implements Serializable,
   public static final String SCD_CALIB          = "SCD Calibration";
   public static final String SCD_CALIB_FILE     = "SCD Calibration File";
 
-  public static final String  DETECTOR_INFO_LIST = "Det Info List";
-  public static final String  DETECTOR_INFO      = "Det Info";
+  public static final String  SEGMENT_INFO_LIST = "Seg Info List";
+  public static final String  SEGMENT_INFO      = "Seg Info";
 
   public static final String  DS_TYPE            = "Data Set Type";
 

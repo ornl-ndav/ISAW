@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.30  2003/01/15 20:54:30  dennis
+ * Changed to use SegmentInfo, SegInfoListAttribute, etc.
+ *
  * Revision 1.29  2002/11/27 23:25:37  pfpeterson
  * standardized header
  *
@@ -2726,14 +2729,14 @@ public class table_view extends JPanel implements ActionListener
          {
             Data DB = DS.getData_entry( Groups[ i ] );
 
-            DetInfoListAttribute dla =
-               ( DetInfoListAttribute )DB.getAttribute( Attribute.DETECTOR_INFO_LIST );
-            DataSetTools.instruments.DetectorInfo da = null;
+            SegInfoListAttribute dla = ( SegInfoListAttribute )
+                                 DB.getAttribute( Attribute.SEGMENT_INFO_LIST );
+            DataSetTools.instruments.SegmentInfo da = null;
 
             if( dla != null )
             {
-               DataSetTools.instruments.DetectorInfo[] Dla =
-                  ( DataSetTools.instruments.DetectorInfo[] )( dla.getValue() );
+               DataSetTools.instruments.SegmentInfo[] Dla =
+                  ( DataSetTools.instruments.SegmentInfo[] )( dla.getValue() );
 
                if( Dla != null )
                   if( Dla.length > 0 )
@@ -2741,11 +2744,11 @@ public class table_view extends JPanel implements ActionListener
             }
             if( da == null )
             {
-               DetInfoAttribute dia =
-                  ( DetInfoAttribute )( DB.getAttribute( Attribute.DETECTOR_INFO ) );
+               SegInfoAttribute sia = ( SegInfoAttribute )
+                                 ( DB.getAttribute( Attribute.SEGMENT_INFO ) );
 
-               if( dia != null )
-                  da = dia.getDetectorInfo();
+               if( sia != null )
+                  da = sia.getSegmentInfo();
             }
 
             if( da == null )
@@ -3608,9 +3611,9 @@ public class table_view extends JPanel implements ActionListener
 
             if( DB == null )
                hasRC = false;
-            else if( DB.getAttribute( Attribute.DETECTOR_INFO_LIST ) != null )
+            else if( DB.getAttribute( Attribute.SEGMENT_INFO_LIST ) != null )
                hasRC = true;
-            else if( DB.getAttribute( Attribute.DETECTOR_INFO ) != null )
+            else if( DB.getAttribute( Attribute.SEGMENT_INFO ) != null )
                hasRC = true;
             else
                hasRC = false;
