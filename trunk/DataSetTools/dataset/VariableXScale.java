@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/07/09 14:57:15  dennis
+ *  Updated java docs for getI() method.
+ *
  *  Revision 1.10  2003/02/24 13:33:54  dennis
  *  Added method restrict() to restrict an XScale to the intersection
  *  of the XScale and a ClosedInterval.
@@ -157,7 +160,8 @@ public class VariableXScale extends XScale implements Serializable
 
 
   /**
-   *  Get the position of the specified x-value in this XScale.
+   *  Get the position (or index of the LUB) of the specified x-value in 
+   *  this XScale.
    *
    *  @param  x_value   The x value to find in the "list" of x values 
    *                    represented by this x scale.
@@ -168,6 +172,8 @@ public class VariableXScale extends XScale implements Serializable
    *          the index of the first x that is greater than or equal to the
    *          specified x.  If the specified x value is above the end of
    *          the x scale, the number of points in the x scale is returned.
+   *          This is the index of the Least Upper Bound (chosen from the
+   *          list of values in the XScale) for the specified x_value.
    */
   public int getI( float x_value )
   {
@@ -177,7 +183,6 @@ public class VariableXScale extends XScale implements Serializable
 
     return position;
   }
-
 
 
   /**
