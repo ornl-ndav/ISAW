@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2002/02/25 14:25:51  dennis
+ *  Un-commented "constant" names for LABEL, SEGMENT_IDS, CRATE, SLOT, etc.
+ *
  *  Revision 1.17  2002/02/04 22:59:41  dennis
  *  Temporarily added strings for Sample Chi, Phi and Omega for SCD.
  *  These are currently commented out.
@@ -130,7 +133,7 @@ abstract public class Attribute implements Serializable
   // Suggested names for attributes for neutron scattering data sets:
 
   public static final String  TITLE             = "DataSet Name";
-//public static final String  LABEL             = "Label";
+  public static final String  LABEL             = "Label";
   public static final String  DS_TAG            = "DataSet Tag";
 
   public static final String  INST_NAME         = "Instrument Name";
@@ -150,26 +153,26 @@ abstract public class Attribute implements Serializable
   public static final String  DELTA_2THETA      = "\u0394"+"2"+"\u03b8";
   public static final String  EFFICIENCY_FACTOR = "Efficiency";
   public static final String  DETECTOR_IDS      = "Detector IDs";
-//public static final String  SEGMENT_IDS       = "Segment IDs";
+  public static final String  SEGMENT_IDS       = "Segment IDs";
   public static final String  GROUP_ID          = "Group ID";
   public static final String  TIME_FIELD_TYPE   = "Time Field Type";
-//public static final String  CRATE             = "Crate";
-//public static final String  SLOT              = "Slot";
-//public static final String  INPUT             = "Input";
+  public static final String  CRATE             = "Crate";
+  public static final String  SLOT              = "Slot";
+  public static final String  INPUT             = "Input";
 
   public static final String  INITIAL_PATH      = "Initial Path";
   public static final String  ENERGY_IN         = "Energy In";
   public static final String  NOMINAL_ENERGY_IN = "Nominal Energy In";
   public static final String  ENERGY_OUT        = "Energy Out";
-//public static final String  NOMINAL_SOURCE_TO_SAMPLE_TOF = 
-//                                               "Nominal Source to Sample TOF";
-//public static final String  SOURCE_TO_SAMPLE_TOF = 
-//                                                "Source to Sample TOF";
+  public static final String  NOMINAL_SOURCE_TO_SAMPLE_TOF = 
+                                                 "Nominal Source to Sample TOF";
+  public static final String  SOURCE_TO_SAMPLE_TOF = 
+                                                  "Source to Sample TOF";
 
 
-//public static final String  SAMPLE_CHI        = "Sample Chi";
-//public static final String  SAMPLE_PHI        = "Sample Phi";
-//public static final String  SAMPLE_Omega      = "Sample Omega";
+  public static final String  SAMPLE_CHI        = "Sample Chi";
+  public static final String  SAMPLE_PHI        = "Sample Phi";
+  public static final String  SAMPLE_OMEGA      = "Sample Omega";
   public static final String  SAMPLE_NAME       = "Sample Name";
   public static final String  TEMPERATURE       = "Temperature";
   public static final String  PRESSURE          = "Pressure";
@@ -190,10 +193,8 @@ abstract public class Attribute implements Serializable
   public static final String  MONITOR_DATA       = "Monitor Data";
   public static final String  SAMPLE_DATA        = "Sample Data";
   public static final String  PULSE_HEIGHT_DATA  = "Pulse Height";
-
  
   private String name;
-
 
   /**
    *  Since Attribute is an abstract class, this constructor is never called
