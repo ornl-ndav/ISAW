@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2003/12/15 00:39:48  rmikk
+ *  Can now view the selected groups. The unselected groups are black(0)
+ *
  *  Revision 1.20  2003/11/23 19:50:47  rmikk
  *  Eliminated null pointer exception when DataSets without grids are used
  *
@@ -122,6 +125,7 @@ import DataSetTools.instruments.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
 import java.awt.event.*;
+import DataSetTools.viewer.*;
 import DataSetTools.components.View.ViewControls.*;
 /**
  * Provides a mechanism for selecting and viewing portions of an Area Detector
@@ -154,6 +158,8 @@ public class ContourData
    UniformGrid grid;
    Data[][]Groups = null;
    int num_rows = -1, num_cols = -1;
+   boolean showAllGroups = true;
+   ViewerState state;
    //*****************************************************************************************
    //						Constructors
    //*****************************************************************************************
@@ -173,13 +179,15 @@ public class ContourData
      //SetUpDetNums();
    
     }
-  public ContourData( DataSet data_set )
+  public ContourData( DataSet data_set , ViewerState state)
    {
+      this.state = state;
       ds = data_set;
       dsSave = data_set;
       maxvalue = 0;
       minvalue = 9999999;
-      
+      if( state != null)
+        showAllGroups = state.get_boolean( ViewerState.CONTOUR_SHOWALL);
       //Load area detector data
       //Build a vector holding the row and column entries
       maxrows = -1;
@@ -245,11 +253,13 @@ public class ContourData
          for( row = 1; row <= num_rows; row++ )
          {
             Data db = Groups[row][col];
-            if( db != null)
+            if( db == null)
+               values[w] = 0.0;
+            else if( !showAllGroups && !db.isSelected())
+               values[w] = 0.0f;
+            else
               values[w] = db.getY_value( X,0);
-            else{
-              values[w] = 0.0;
-            }
+           
 
             w = w + 1;
          }
@@ -743,25 +753,39 @@ public class ContourData
 
   LabelCombobox  DetChoices = null;
   public JComponent[] getControls(){
+    int n=1;
     if( DetNums == null)
-      return new JComponent[0];
-    if( DetNums.length <2)
-      return new JComponent[0];
-    if( DetChoices == null){
+      {}
+    else if( DetNums.length < 2)
+      {}
+    else if( mode == 0)n++;
+    JComponent[] Res = new JComponent[n];
+    if( DetChoices == null) if( DetNums != null) if(DetNums.length >=2){
       String[] choices = new String[ DetNums.length];
       for( int i =0; i< choices.length; i++)
         choices[i] = ""+DetNums[i];
       DetChoices = new LabelCombobox("Detectors", choices);
       DetChoices.cbox.addActionListener( new DetectorActionListener());
+      Res[n-1] = DetChoices;
     }
+    if( mode != 0) return null;
+    JCheckBox ShowAll = new JCheckBox( "Show All Groups");
+    ShowAll.addActionListener( new ShowAllActionListener());
+    if( state == null)
+      state = new ViewerState();
     
-    JComponent[] Res = new JComponent[1];
-    Res[0] = DetChoices;
+    ShowAll.setSelected( state.get_boolean( ViewerState.CONTOUR_SHOWALL));
+    Res[0] = new JPanel( new GridLayout(1,1));
+    Res[0].add( ShowAll);
+    
+    
     return Res;
   }
+
+
   ActionListener DataChangeListener = null;
   public void addDataChangeListener( ActionListener listener){
-    DataChangeListener = listener;
+     DataChangeListener = listener;
   }
   class DetectorActionListener implements ActionListener{
     public void actionPerformed( ActionEvent evt){
@@ -787,5 +811,17 @@ public class ContourData
 
   }//class DetectorActionListener
   
+ class ShowAllActionListener implements ActionListener{
+
+    public void actionPerformed( ActionEvent evt){
+     
+      showAllGroups = ((JCheckBox)evt.getSource()).isSelected();
+      DataChangeListener.actionPerformed( new ActionEvent(this,
+          ActionEvent.ACTION_PERFORMED,"DataChange"));
+      
+      state.set_boolean( ViewerState.CONTOUR_SHOWALL, showAllGroups);
+    }
+
+ }
 
 }
