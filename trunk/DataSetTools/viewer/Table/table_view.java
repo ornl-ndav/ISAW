@@ -32,23 +32,24 @@ public class table_view extends JPanel implements ActionListener
                      null,Attribute.RAW_ANGLE, Attribute.SOLID_ANGLE,
                      "x", "y" , "e" }; 
 
-    int nDSfields = 5;
-    int nDSattr =4;   
-    int nDBattr = 11;                        
-    //JComboBox OutputMode; 
-    //JCheckBox Sequent;//paired or sequential
-    //JCheckBox UseAll;
-     boolean useAll = false;
-    String filename = null;
-    JButton  Add, Remove, Up, Down;
-    JList   unsel, sel;
-    DefaultListModel unselModel, selModel;    
-    int use[], Nuse[];
-    DataSet DSS[];
-    boolean DBSeq = false; // DB are paired 
-    boolean XYcol = false;
-    boolean DBcol = false;
-    ExcelAdapter EA=null;
+   int nDSfields = 5;
+   int nDSattr =4;   
+   int nDBattr = 11;                        
+   //JComboBox OutputMode; 
+   //JCheckBox Sequent;//paired or sequential
+   //JCheckBox UseAll;
+   boolean useAll = false;
+   String filename = null;
+   JButton  Add, Remove, Up, Down;
+   JList   unsel, sel;
+   DefaultListModel unselModel, selModel;    
+   int use[], Nuse[];
+   DataSet DSS[];
+   boolean DBSeq = false; // DB are paired 
+   boolean XYcol = false;
+   boolean DBcol = false;
+   ExcelAdapter EA=null;
+  
    public table_view( int outputMedia) //entry for non-GUI use
      { initt();
        mode = outputMedia;
@@ -262,6 +263,10 @@ public class table_view extends JPanel implements ActionListener
        }
      */
      }
+
+  public void setFileName( String filename)
+   { this.filename = filename;
+   }
   FileOutputStream f = null;
   JFrame  JF;
   JTable JTb;
@@ -276,10 +281,18 @@ public class table_view extends JPanel implements ActionListener
      if( mode == 0)
        {}
      else if( mode == 1)
-      {String S = D.toString()+".dat";
-                         //DSS[ JCBNuse.getSelectedIndex()]+".dat";
-       int k = S.indexOf(":");
-       if( k >=0) S = S.substring(k+1);
+      {
+       String S;
+       if( filename == null )
+          {   
+            S = D.toString()+".dat";
+            int k = S.indexOf(":");
+            if( k >=0) 
+               S = S.substring(k+1);
+           }
+       else
+             S = filename;                        
+      
        File fl = new File(S );
        try{ 
             f = new FileOutputStream( fl );
@@ -349,7 +362,7 @@ public class table_view extends JPanel implements ActionListener
     if( mode == 0)
        System.out.println("");
     else if(mode ==1)
-       try{
+       try{if( f != null );
             f.write("\n".getBytes());
           }
        catch( IOException sss){}
@@ -371,6 +384,7 @@ public class table_view extends JPanel implements ActionListener
     try{
           f.close();
           f = null;
+          filename = null;
        }
     catch(IOException ss){}
    else
@@ -389,12 +403,11 @@ public class table_view extends JPanel implements ActionListener
       Res[ fields.length ] = -1;     
      
       for( int i = 0; i < fields.length ; i++)
-       { Res [ i ] = -1;         
-         for( int j = 0; (j< Fields.length)&&( Res[ i ] < 0) ; j++ )
-             { 
-               if( Fields[j].equals(fields[i]))
-                   Res[i] = j;
-             }
+       { Res [ i ] = -1;    
+        
+         for( int j = 0; (j< Fields.length)&&( Res[ i ] < 0) ; j++ )                       if( Fields[j].equals(fields[i]))
+              Res[i] = j;
+               
          if( Res[i] < 0)
            return null;
        }
