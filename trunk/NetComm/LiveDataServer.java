@@ -9,6 +9,11 @@
  *               John Hammonds
  *
  *  $Log$
+ *  Revision 1.8  2001/03/02 17:07:14  dennis
+ *  Added TestAndSetAccessFlag method that may in the future be used
+ *  to prevent access to the DataSets while the runfile is being
+ *  changed.
+ *
  *  Revision 1.7  2001/02/22 20:56:48  dennis
  *    Now handles all of the DataSets from a runfile.  It no longer assumes
  *  that DataSet 0 is the monitor DataSet and that there is only one
@@ -78,7 +83,13 @@ public class LiveDataServer implements IUDPUser,
 
   public  static final int MAGIC_NUMBER       = 483719513;
   public  static final int SERVER_PORT_NUMBER = 6088;
+
   private static final int DELAY_COUNT        = 300;
+
+  private static final int START_READ_ACCESS  = 0;
+  private static final int STOP_READ_ACCESS   = 1;
+  private static final int START_WRITE_ACCESS = 2;
+  private static final int STOP_WRITE_ACCESS  = 3;
 
   private  int     delay_counter   = 0;             // only issue DATA_CHANGED
                                                     // messages when we have
@@ -88,6 +99,12 @@ public class LiveDataServer implements IUDPUser,
   private  String  file_name       = null;
   private  String  instrument_name = null;
   private  int     run_number      = -1;
+
+  private  int read_count = 0;             // This is used to avoid switching 
+                                           // to a new runfile at the
+                                           // same time that data from the 
+                                           // current run is being transmitted.
+                                           // See: TestAndSetReadCount()
 
   DataSet data_set[] = new DataSet[0];              // current DataSets
   int     ds_type[]  = new int[0];                  // current DataSet types
@@ -250,13 +267,12 @@ public class LiveDataServer implements IUDPUser,
       System.out.println("Received request " + command );
       try
       {
-        DataSet ds = null;
-
         if (  command.equalsIgnoreCase( COMMAND_GET_NUM_DS ) )
         {
           System.out.println("Processing GET NUM DS " + command );
           tcp_io.Send( new Integer( data_set.length ) );
         }
+
         else if ( command.startsWith( COMMAND_GET_DS_TYPE ) )
         {
           System.out.println("Processing GET DS TYPE " + command );
@@ -267,13 +283,14 @@ public class LiveDataServer implements IUDPUser,
           else
             tcp_io.Send( new Integer( Retriever.INVALID_DATA_SET ) );
         }
+
         else if ( command.startsWith( COMMAND_GET_DS ) )
         {
           System.out.println("Processing GET DS " + command );
           int index = extractIntParameter( command );
           if ( index >= 0 && index < ds_type.length )   //valid DataSet index
           {
-            ds = (DataSet)(data_set[ index ].clone());
+            DataSet ds = (DataSet)(data_set[ index ].clone());
             if ( ds != null )     // must remove observers before sending
             {
               System.out.println("Trying to send " + ds );
@@ -293,6 +310,75 @@ public class LiveDataServer implements IUDPUser,
         System.out.println("Error: LiveDataServer command: " + command);
         System.out.println("Error: couldn't send data "+e );
       }  
+    }
+  }
+
+
+ /*-------------------------------------------------------------------------
+  *
+  *  PRIVATE METHODS
+  *
+  * 
+  */
+
+  synchronized private boolean TestAndSetAccessFlag( int access ) 
+  {
+    if ( access == START_READ_ACCESS )           // we want to start reading 
+    {
+      if ( read_count < 0 )
+        return false;                            // blocked
+      else
+      {
+        read_count++;                            // ok, count another reader
+        return true;
+      }
+    }
+
+    else if ( access == STOP_READ_ACCESS )       // we want to stop reading  
+    {
+      if ( read_count <= 0 )
+      {
+        System.out.println("ERROR: stoping read in TestAndSetAccessFlag, " +
+                           "but read_count <= 0: read_count =" + read_count );
+        return false;
+      } 
+      else
+      {
+        read_count--;                             // ok, count one less reader
+        return true;
+      }
+    }
+
+    else if ( access == START_WRITE_ACCESS )      // we want to start writing   
+    {
+      if ( read_count > 0 )
+        return false;                             // blocked
+      else
+      {
+        read_count = -1000;                       // ok, lock out any readers
+        return true;
+      }
+    }
+
+    else if ( access == STOP_WRITE_ACCESS )
+    {
+      if ( read_count >= 0 )
+      {
+        System.out.println("ERROR: stoping write in TestAndSetAccessFlag, " + 
+                           "but read_count >= 0 read_count =" + read_count );
+        return false;
+      } 
+      else
+      {
+        read_count = 0;                            // ok, allow readers now
+        return true;
+      }
+    }
+
+    else
+    {
+      System.out.println("ERROR: Invalid command in TestAndSetAccessFlag");
+      return false;
     }
   }
 
