@@ -31,6 +31,12 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.21  2002/04/18 21:12:45  rmikk
+ * Reverted back to the previous mode for selecting the ordering in the table.
+ * Two new options have been added
+ *   1.Time,Row vs col: For area detectors
+ *   2.Advanced: Brings up a dialog box to set up the orderings several ways
+ *
  * Revision 1.20  2002/04/12 20:46:04  rmikk
  * - Changed the table view to use a subclass of a tableModel.
  *   The advantages are
@@ -206,8 +212,8 @@ public class table_view extends JPanel implements ActionListener
  
   ExcelAdapter EA = null;
   IsawGUI.Util  util;
-  //JComboBox Order = null;
-  JButton Order = null;
+  JComboBox Order = null;
+  //JButton Order = null;
   JMenuItem JMi = null;
   JMenuItem JCp = null;
   /** Only Constructor without GUI components
@@ -408,20 +414,28 @@ public class table_view extends JPanel implements ActionListener
         RightPanel.add( Selects );
 
          
-        Object[] X ={ new DescrCode( "HGT,F" , "Gr,Time vs Field" ) , 
-                      new DescrCode( "HT,FG" , "Time vs Field,Gr" )
+        Object[] X ={ new DescrCode( "HGT,F" , "Gr,Time vs Field" )  
+                      //,new DescrCode( "HT,FG" , "Time vs Field,Gr" )
 
                      , new DescrCode( "HT,GF" , "Time vs Gr,Field" )
-                     , new DescrCode( "HTG,F" , "Time,Gr vs Field" )
-                     , new DescrCode( "HG,TF" , "Gr vs Time,Field" )
+                     //, new DescrCode( "HTG,F" , "Time,Gr vs Field" )
+                     //, new DescrCode( "HG,TF" , "Gr vs Time,Field" )
+                       , new DescrCode( "HTI,JF" , "Time,Row vs col" )
+                       ,"Advanced"
                          
                     };
-        Order = new JButton( "List order" );//new JComboBox( X  );
-        Order.addActionListener( this );
+        Order = new JComboBox( X  );
+        Order.addActionListener( new MyItemListener( DS ) );
+	//Order.addActionListener( new MyActionListener() );
+         Order.setSelectedIndex(0);
         //Order.setEditable( true );
-        //Order.setSelectedIndex( 0 );
+        JPanel JJ = new JPanel();
+        BoxLayout bl = new BoxLayout( JJ, BoxLayout.X_AXIS);
+        JJ.setLayout( bl);
+        JJ.add( new JLabel("Order"));
+        JJ.add (Order);
            
-        RightPanel.add( Order );
+        RightPanel.add( JJ );
         RightPanel.add( Box.createVerticalGlue() );
  
         JPanel Output = new JPanel( new GridLayout( 3 , 1 ) );
@@ -662,7 +676,7 @@ public class table_view extends JPanel implements ActionListener
        }
      else if( e.getSource().equals( Order) )
        { 
-        Data DB = DSS[ 0 ].getData_entry(0 );
+        /*Data DB = DSS[ 0 ].getData_entry(0 );
         boolean hasRC = false;
         if( DB.getAttribute(Attribute.DETECTOR_INFO_LIST ) != null )
            hasRC = true;
@@ -671,6 +685,7 @@ public class table_view extends JPanel implements ActionListener
         OrderSelector OS = new OrderSelector( hasRC , Worder );
         OS.setSize( 400 , 300 );
         OS.show();
+        */
        }
      else
        {useAll = selectAllEdit.isSelected();
@@ -1484,10 +1499,10 @@ public class table_view extends JPanel implements ActionListener
            xvals = XX.getXs();    
             
           }
-        else
+        else if( DS.getData_entry(db) != null )
           {
            Data DB = DS.getData_entry( db );
-  
+            
            XScale XX = DB.getX_scale();
       
            float xlocvals[];
@@ -1852,6 +1867,10 @@ public class table_view extends JPanel implements ActionListener
         if( XY_index >= xvals.length )
            return null;
         float x = xvals[  XY_index ];
+        
+        if( arg == null)
+           return new Integer( XY_index );
+
         if( arg.equals( "x" ) ) 
            return new Float( x );
         DataSet DS = DSS[  DS_index ];
@@ -2123,6 +2142,7 @@ public class table_view extends JPanel implements ActionListener
   // in the JFrame containing the JTable
   public class MyActionListener implements ActionListener
     {
+      
      public void actionPerformed( ActionEvent e )
        {JMenuItem targ = ( JMenuItem ) e.getSource();
         if( targ.equals( JMi ) )
@@ -2132,6 +2152,9 @@ public class table_view extends JPanel implements ActionListener
         else if( targ.equals( JCp ) )
           {EA.actionPerformed( new ActionEvent( JTb , 0 , "Copy" ) );
           }
+	else if( targ.equals( Order ) )
+	   {
+	   } 
        }
     }
 
@@ -2608,25 +2631,17 @@ public class table_view extends JPanel implements ActionListener
            return "";
         int[] item = new int[ 4 + offset ];//Current HGTF or HIJTF
         Arrays.fill( item , 0 , 4 + offset , - 1 );
-        //System.out.println( "ROW COLUMN=" + row + "," + column );
-        // System.out.println( "------- setRow=" + row + "-----------" );
+  
         int r = SetRow( row + 1 , order , 0 , item );
-        // System.out.println( "------- setCol=" + column + "," + r + "--------" );
-        //System.out.println("after set row,items and rows left "+item[1]+","+item[2]+","+item[3]+","+r);
+
         if( r != 0 ) 
            return "";
         r = SetRow( column + 1 , order , commapos + 1 ,item );
-        // System.out.println( "Final Item=" + item[ 0 ] + "," + item[ 1 ] + "," + item[ 2 ] + "," + 
-        //           item[ 3 ] +  "," + r );
-        // System.out.println( "--------END RC=" + row + "," + column + "--------" );
+
         int Field = item[ offset + 3 ];
         DataSet[] DSS = new DataSet[ 1 ];
         DSS[ 0 ] = DS;
-      /*  if(  row < 3 )
-            if( column < 3 )
-             System.out.println( "RC,items=" + row + "," + column + "," + item[ 0 ] + ","
-                 + item[ 1 ]+ "," + item[ 2 ] + "," + item[ 3 ] );
-      */
+
         if( Field < 0 ) 
           {
            return "";
@@ -3169,7 +3184,41 @@ public class table_view extends JPanel implements ActionListener
        }//Nrows
 
     }//Gen_TableModel
+  class MyItemListener implements ActionListener
+    {boolean hasRC;
 
+     public MyItemListener( DataSet DS[] )
+       {if( DS == null)
+           hasRC = false;
+        else if( DS.length < 1 )
+           hasRC = false;
+        else
+          {DataSet D = DS[0];
+           Data DB = D.getData_entry( 0 );
+           if( DB == null )
+              hasRC = false;
+           else if( DB.getAttribute( Attribute.DETECTOR_INFO_LIST ) != null )
+              hasRC = true;
+           else if( DB.getAttribute( Attribute.DETECTOR_INFO ) != null )
+              hasRC = true;
+           else 
+              hasRC = false;
+            
+          }  
+       }
+
+     public void actionPerformed( ActionEvent e)
+       {Object O = Order.getSelectedItem();
+        if( O instanceof String ) 
+          {OrderSelector OS = new OrderSelector( hasRC , Worder );
+           OS.setSize( 400 , 300 );
+           OS.show();
+          }
+        else 
+           Worder.value =( ( DescrCode ) O ).getCode();
+      
+        }
+    }
 
   class WString
     {String value = null;
@@ -3455,18 +3504,21 @@ public class table_view extends JPanel implements ActionListener
           {Component C = e.getComponent();
            if( C.getWidth() <= 0 )
               return;
-
-           //Find Font Size;
-           int Nchars = 12 + 1 + 6 + 1;
-           int dpi = JF.getToolkit().getScreenResolution();
            int tot_dots = C.getWidth();
-
+           //Find Font Size;
+           int Nchars = 44;
+          /* int dpi = JF.getToolkit().getScreenResolution();
            int dots_per_char = tot_dots / Nchars ;
            float inches_per_char = (float)dots_per_char / (float)dpi ;
            int font_size = ( int )(inches_per_char *72.0f  +.5 ) ;
-          
-           if( font_size > 24 )
-              font_size = 24;
+          */
+           //Try again 
+           FontMetrics FM = JF.getGraphics().getFontMetrics( new Font( "Courier" , Font.PLAIN ,
+                                                12 ) ) ;
+           int charWidth = FM.charWidth( 'A' );
+           int font_size =(int)(.5 + 12 * tot_dots / (( float )( charWidth * Nchars ) ) );
+           if( font_size > 18 )
+              font_size = 18;
            else if( font_size < 5 )
               font_size = 5;
 
