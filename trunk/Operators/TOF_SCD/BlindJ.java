@@ -27,6 +27,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/07/17 21:45:28  bouzekc
+ * Removed initial values for peak sequence numbers.
+ *
  * Revision 1.11  2003/07/08 22:46:51  bouzekc
  * Now returns the fully qualified name of the blind.log file.
  *
@@ -188,7 +191,7 @@ public class BlindJ extends  GenericTOF_SCD {
     addParameter(peaksfilepg);
 
     addParameter( new IntArrayPG("Peak sequence numbers",
-                                 "20:32,40,42") );
+                                 "") );
 
     SaveFilePG matfilepg=new SaveFilePG("Matrix file","" );
     matfilepg.setFilter(new MatrixFilter());
