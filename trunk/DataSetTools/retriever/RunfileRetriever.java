@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.55  2002/10/24 15:38:16  dennis
+ *  Now calculates the total count rather than calling Runfile.Get1DSum().
+ *  This avoids re-reading the spectrum from the file a second time for the
+ *  purpose of calculating the total counts and saves 35% of the time it takes
+ *  to load an SCD file.
+ *
  *  Revision 1.54  2002/10/12 22:41:25  hammonds
  *  Fix import path to get DC5.
  *
@@ -1042,8 +1048,8 @@ private float CalculateEIn()
       final_path = getAverageFlightPath(group_segments, histogram_num, false);
     }
 
-    //    if ( instrument_type == InstrumentType.TOF_SCD )   // ###### temporary fix
-    //      angle -= (float)Math.PI;                         // for SCD since runfile
+   //if ( instrument_type == InstrumentType.TOF_SCD )  // ###### temporary fix
+   //      angle -= (float)Math.PI;                    // for SCD since runfile
                                                        // rotates detector to
                                                        // plus 90 degrees.
                                                        // 1 of 2 places this is
@@ -1137,8 +1143,8 @@ private float CalculateEIn()
       else
         rho  = (float)Math.sqrt(seg_path * seg_path - seg_height * seg_height);
 
-      //      if ( instrument_type == InstrumentType.TOF_SCD ) // ###### temporary fix
-      //        seg_angle -= (float)Math.PI;                   // for SCD since runfile
+     //if ( instrument_type == InstrumentType.TOF_SCD )// ###### temporary fix
+     //  seg_angle -= (float)Math.PI;                  // for SCD since runfile
                                                        // rotates detector to
                                                        // plus 90 degrees.
                                                        // 2 of 2 places this is
@@ -1203,9 +1209,13 @@ private float CalculateEIn()
 
     // Total Counts  ........
     try{
-    float_attr = new FloatAttribute( Attribute.TOTAL_COUNT, 
-                               (float)run_file.Get1DSum( group_id ));
-    attr_list.setAttribute( float_attr );
+      float total = 0;
+      float counts[] = spectrum.getY_values();
+      if ( counts != null )
+        for ( int i = 0; i < counts.length; i++ )
+          total += counts[i]; 
+      float_attr = new FloatAttribute( Attribute.TOTAL_COUNT, total );
+      attr_list.setAttribute( float_attr );
     }
     catch(Exception e)
     {
@@ -1719,7 +1729,10 @@ private float CalculateEIn()
 
   public static void main(String[] args)
   {
-    System.out.println("No test program"); 
+    System.out.println("Start test program"); 
+    RunfileRetriever rr = new RunfileRetriever( "/usr/local/ARGONNE_DATA/SCD_QUARTZ/SCD06496.RUN" );
+    DataSet ds = rr.getDataSet(1);
+    System.out.println("End test program"); 
   }
 
 }
