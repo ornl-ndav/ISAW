@@ -52,7 +52,7 @@ import java.io.*;
  * compares them to adjacent columns. The difference is due to how
  * ISAW stores the dataset.
  */
-public class RealSpacePeaks extends GenericTOF_SCD{
+public class RealSpacePeaks extends GenericTOF_SCD implements HiddenOperator{
     private static final String     TITLE  = "Real Space Peaks";
     private static final SharedData shared = new SharedData();
     private static       float      ax     = 0f;
