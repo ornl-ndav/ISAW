@@ -38,6 +38,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.40  2003/12/15 20:09:14  rmikk
+ *  Replaced code to redraw everything(including the controls) to just redrawing
+ *    the image when only the data has changed.
+ *
  *  Revision 1.39  2003/12/15 18:27:20  rmikk
  *  Removed execution of code that caused a null pointer exception
  *  Redraw now redraws with the last Contour Style
@@ -485,11 +489,18 @@ public class ContourView extends DataSetViewer
      /* SimpleGrid newData1 = ( SimpleGrid )( cd.getSGTData( times[sliderTime_index] ) );
 
       ( ( SimpleGrid )newData ).setZArray( newData1.getZArray() );
-     */
+     ------------------
       setData( getDataSet(), state.get_int(ViewerState.CONTOUR_STYLE));
          
       rpl_.draw();
-
+     */
+       rpl_Holder.remove( rpl_);
+         rpl_ = makeGraph( times[sliderTime_index], state);
+         rpl_Holder.add( rpl_);
+         rpl_.addMouseListener( cursors );
+         
+         rpl_Holder.validate();
+         rpl_.draw();
      }
    }
    public  void addControl( JPanel jpanel)
