@@ -31,6 +31,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/06/15 19:24:53  robertsonj
+ * Save image now allows you to input a state that you would like 
+ * the viewer to be saved in.
+ *
+ * 
+ * Revision 1.6 2004/06/14 robertson
+ * Now has options to choose the viewer  state you would like to save
+ * 
  * Revision 1.5  2004/05/04 19:03:50  dennis
  * Now clears DataSetPG after getting value, to avoid memory leak.
  *
@@ -89,12 +97,13 @@ public class SaveImage  extends GenericSave{
   *   @param  width   The width of the picture in pixels. If negative, 500 will be used
   *   @param  height  The height of the picture in pixels.If negative, 500 will be used
   */
-  public SaveImage( DataSet DS, String ViewName, String filename,int width, int height){
+  public SaveImage( DataSet DS, String ViewName, String filename, String state, int width, int height){
     this();
     parameters = new Vector();
     addParameter( new DataSetPG("Enter Data Set", DS));
     addParameter( new StringPG("Name of View", ViewName));
     addParameter( new SaveFilePG("Name of file to save", filename));
+    addParameter( new StringPG("State Info", state));
     addParameter( new IntegerPG("Enter Width",new Integer(width)));
     addParameter( new IntegerPG("Enter Width",new Integer(height)));
     
@@ -105,6 +114,7 @@ public class SaveImage  extends GenericSave{
     addParameter( new DataSetPG("Enter Data Set", null));
     addParameter( new StringPG("Name of View", "Image View"));
     addParameter( new SaveFilePG("Name of file to save", null));
+    addParameter( new StringPG("State Info", null));
     addParameter( new IntegerPG("Enter Width",new Integer(500)));
     addParameter( new IntegerPG("Enter Width",new Integer(500)));
   }
@@ -120,10 +130,12 @@ public class SaveImage  extends GenericSave{
      
     String view = getParameter(1).getValue().toString();
     String SaveFileName = getParameter(2).getValue().toString();
-    int width = ((IntegerPG)getParameter(3)).getintValue();
+    String stateInfo = getParameter(3).toString();
+    System.out.println(stateInfo);
+    int width = ((IntegerPG)getParameter(4)).getintValue();
 
 
-    int height = ((IntegerPG)getParameter(4)).getintValue();
+    int height = ((IntegerPG)getParameter(5)).getintValue();
 
     int i = SaveFileName.lastIndexOf('.');
     if( i<= 0)
@@ -137,7 +149,15 @@ public class SaveImage  extends GenericSave{
     if( width <=0) width = 500;
     if( height <= 0) height = 500;
     bimg= new BufferedImage(width, height,BufferedImage.TYPE_INT_RGB );
-    DataSetViewer DSV = ViewManager.getDataSetView( ds, view, null);
+    DataSetViewer DSV;
+    if(stateInfo.equals(null)){
+		DSV = ViewManager.getDataSetView( ds, view, null);
+    }else{
+    	ViewerState myState = new ViewerState();
+    	ViewerState newState = myState.setViewerState(stateInfo);
+    	DSV = ViewManager.getDataSetView(ds, view, newState);
+    }
+    
     JFrame jf1 = new JFrame();
     jf1.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     jf1.setSize( width, height);   
@@ -183,10 +203,63 @@ public class SaveImage  extends GenericSave{
     s.append("@param ViewName- the name of the view to use.  This MUST be a string that appears");
     s.append(" as one of the menu items or submenu items under the View menu option");
     s.append(" in the IsawGUI.Isaw main window");
+    s.append("@param stateInfo- uses the ViewerState class.  This string must be of the form");
+    s.append(" Name Value,Name Value,.....,Name Value.  Where the name and values must be part of the ");
+    s.append(" ViewState class.  The values are below");
     s.append("@param filename-  the name of the file for saving the image. The extension converted to");
     s.append(" lowercase determines the format of the save.  So far only jpg works");
     s.append("@param  width-  The width of the picture in pixels. If negative, 500 will be used");
     s.append("@param  height-  The height of the picture in pixels.If negative, 500 will be used");
+	s.append("<P><P> Some DataSetViewer States are<table bofder=1>");
+	s.append("<tr><td>ColorScale</td> <td>Most Views</td><td> String ");
+	s.append("like Heat1,Rainbow</td>");
+	s.append("</tr><tr><td>RebinFlag</td><td>Image View</td><td> Boolean</td>");
+	s.append("</tr><tr><td>HScrollFlag</td> <td>Image View</td><td>??</td>");
+	s.append("</tr><tr><td>HScrollPosition</td><td>Image View </td><td>float 0 to 1</td>");
+	s.append(" </tr><tr><td>VScrollPosition</td> <td>Image View </td><td>???</td>");
+	s.append("</tr><tr><td>PointedAtIndex</td> <td> Most Views</td>" );
+	s.append("  <td> Positive Integer<#of spectra</td>");
+	s.append("</tr><tr><td>PointedAtX</td>td> Most Views</td> ");
+	s.append("<td> float corresponding to x values</td>" );
+	s.append("</tr><tr><td>Brightness</td> <td>Image and 3D views</td><td>int from 0 ");
+	s.append("to 1000</td>");
+	s.append("</tr><tr><td>ViewAzimuthAngle</td> <td>ThreeD</td><td>angle in degrees</td>");
+	s.append("</tr><tr><td>ViewAltitudeAngle</td> <td>ThreeD</td><td>angle in degrees</td>");
+	s.append(" </tr><tr><td>ViewDistance</td><td>ThreeD</td><td>dist in meters</td>");
+	s.append("</tr><tr><td>ViewGroups</td> <td>ThreeD</td><td>String(see 3Dmenu) </td>");
+	s.append(" </tr><tr><td>ViewDetectors</td> <td>ThreeD</td><td>String(see menu ");
+	s.append(" in 3D for choices)</td> ");
+	s.append("</tr><tr><td>Auto-Scale</td><td>Image</td><td>float 0 to 100</td>");
+	s.append("</tr><tr><td>table_view Data</td> <td>TableView(time slice</td>");
+	s.append(" <td>String OK if set</td>");
+	s.append("<td>String:Contains \"Err\"or \"index\"if they are to be shown</td>");
+	s.append("</tr><tr><td>Contour.Style</td> </td>Contour View<td></td>");
+	s.append("<td> 1 for AREA_FILL, 4 for AREA_FILL_CONTOUR ,2 for CONTOUR ,");
+	s.append("0 for RASTER,  3 for RASTER_CONTOUR </td>");
+	s.append("</tr><tr><td>ContourTimeMin</td> <td>Contour</td> <td>float min time</td>");
+	s.append("</tr><tr><td>Time Slice Table</td> </td><td></td> <td></td>");
+	s.append("</tr><tr><td>ContourTimeMax</td> <td>Contour</td> <td>float max time</td>");
+	s.append("</tr><tr><td>ContourTimeStep</td> <td>Contour</td> <td>");
+	s.append("int for Xscale chooser number of time steps</td>");
+	s.append("</tr><tr><td>Contour.Intensity</td><td>Controu</td>");
+	s.append("<td> int 0 to 100, intensity</td>");
+	s.append("</tr><tr><td>TableTS_TimeInd</td><td>TimeSlice Table View</td>");
+	s.append(" <td>int:Pointed at time channel or slice channel</td>");
+	s.append("</tr><tr><td>TableTS_MinRow</td><td>TimeSlice Table View</td>");
+	s.append("<td> int:Min row to include(1 to #rows)</td>");
+	s.append("</tr><tr><td>TableTS_MaxRow</td><td>TimeSlice Table View</td>");
+	s.append(" <td> int:Max row to include(1 to #rows)</td>");
+	s.append("</tr><tr><td>TableTS_MinCol</td><td>TimeSlice Table View</td>");
+	s.append(" <td> int:Min col to include(1 to #rows)</td>");
+	s.append("</tr><tr><td>TableTS_MaxCol</td><td>TimeSlice Table View</td>");
+	s.append("<td> int:Max col to include(1 to #rows)</td>");
+	s.append("</tr><tr><td>TABLE_TS_MIN_TIME</td><td>TimeSlice Table View</td>");
+	s.append("<td>float: min time to include</td>");
+	s.append("</tr><tr><td>TABLE_TS_MAX_TIME</td><td>TimeSlice Table View</td>");
+	s.append(" <td>float: max time to include</td>");
+	s.append("</tr><tr><td>TABLE_TS_NXSTEPS</td><td>TimeSlice Table View</td>");
+	s.append("<td>float: # of time steps for Xsclae</td>");
+	s.append(" </tr></table>");
     s.append("@return the string 'Success' or an Error Condition below");
     s.append( "@error  extension on save file name is improper");
     s.append( "@error   no appropriate writer is found for the extension");
