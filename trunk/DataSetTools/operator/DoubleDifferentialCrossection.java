@@ -2,6 +2,9 @@
  * @(#)DoubleDifferentialCrossection.java   0.1  2000/07/25   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.2  2000/07/24 21:14:06  dennis
+ *  Initial version, partially implemented
+ *
  *  Revision 1.1  2000/07/24 16:05:17  dennis
  *  Operator to calculate the Double Differential Crossection for a Spectrometer.
  *
@@ -49,7 +52,6 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
    *
    *  @param  ds               The sample DataSet for which the double 
    *                           differential crossection is to be calculated 
-   *  @parm   background_ds    The background DataSet.
    *  @param  atoms            The number of "scattering units" in the sample
    *                           exposed to the beam times 10 ** -24.
    *  @param  make_new_ds Flag that determines whether a new DataSet is
@@ -65,10 +67,10 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 1 );
+    Parameter parameter = getParameter( 0 );
     parameter.setValue( new Float(atoms) );
 
-    parameter = getParameter( 2 );
+    parameter = getParameter( 1 );
     parameter.setValue( new Boolean( make_new_ds ) );
 
     setDataSet( ds );               // record reference to the DataSet that
@@ -106,7 +108,54 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
 
   public Object getResult()
   {       
-    return "NOT IMPLEMENTED YET";
+                                                   // get the current data set
+    DataSet ds  = getDataSet();
+                                                    // get the parameters
+    float   atoms      = ((Float)(getParameter(0).getValue()) ).floatValue();
+    boolean make_new_ds=((Boolean)getParameter(1).getValue()).booleanValue();
+
+    if ( atoms <= 0 )
+      return new ErrorString("ERROR: Number of atoms must be greater than 0");
+
+    DataSet new_ds = null;
+    if ( make_new_ds )
+      new_ds = ds.empty_clone();
+    else
+      new_ds = ds;
+
+    new_ds.addLog_entry( "Calculated Double Differential Cross-section" );
+
+    AttributeList attr_list;
+    Float Float_val;
+    float solid_angle,
+          scale_factor;
+    int   num_data = ds.getNum_entries();
+    Data  data,
+         new_data;
+    for ( int i = 0; i < num_data; i++ )
+    {
+      data = ds.getData_entry( i );
+                                               // get the needed attributes
+      attr_list = data.getAttributeList();
+      Float_val = (Float)attr_list.getAttributeValue(Attribute.SOLID_ANGLE);
+      solid_angle = Float_val.floatValue();
+
+      scale_factor = 1.0f / (solid_angle * atoms);
+      new_data = data.multiply( scale_factor );
+
+      if ( make_new_ds )
+        new_ds.addData_entry( new_data );
+      else
+        new_ds.replaceData_entry( new_data, i );
+    }
+
+    if ( make_new_ds )
+      return new_ds;
+    else
+    {
+      ds.notifyIObservers( IObserver.DATA_CHANGED );
+      return new String( "Calculated Double Differential Cross-section" );
+    }
   }  
 
   /* ------------------------------ clone ------------------------------- */
