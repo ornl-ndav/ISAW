@@ -1,6 +1,20 @@
+/*
+ * @(#) Rubberband.java  
+ *
+ * ---------------------------------------------------------------------------   *  $Log$
+ * ---------------------------------------------------------------------------   *  Revision 1.2  2000/07/10 22:11:52  dennis
+ * ---------------------------------------------------------------------------   *  7/10/2000 version, many changes and improvements
+ * ---------------------------------------------------------------------------   *
+ * ---------------------------------------------------------------------------   *  Revision 1.5  2000/05/11 16:53:19  dennis
+ * ---------------------------------------------------------------------------   *  Added RCS logging
+ * ---------------------------------------------------------------------------   *
+ *
+ */
+
 package DataSetTools.components.image;
 
 import java.awt.*;
+import java.io.*;
 import javax.swing.*;
 
 /** 
@@ -21,6 +35,11 @@ import javax.swing.*;
  * need not concern themselves with anything but drawing the 
  * last and next geometric shapes.<p>
  *
+ * Modified 2/28/2000 by Dennis Mikkelson
+ *          Added method move( increment ) to allow the cursor to be easily 
+ *          moved by a specific amount in each direction ( say using arrow i
+ *          keys )
+ *
  * Modified 6/2/98 by Dennis Mikkelson
  *          Added "active" flag that is set true at the start of a 
  *          rubberband operation and set false at the end of the
@@ -34,12 +53,10 @@ import javax.swing.*;
  *
  * @version 1.00, 12/27/95
  * @author  David Geary
- * @see     RubberbandLine
  * @see     RubberbandRectangle
- * @see     RubberbandEllipse
- * @see     gjt.test.RubberbandTest
  */
-abstract public class Rubberband {
+abstract public class Rubberband implements Serializable
+{
     protected Point anchor    = new Point(0,0); 
     protected Point stretched = new Point(0,0);
     protected Point last      = new Point(0,0); 
@@ -51,6 +68,9 @@ abstract public class Rubberband {
 
     abstract public void drawLast(Graphics g);
     abstract public void drawNext(Graphics g);
+    private  Color  color = Color.gray;
+
+
 
     public Rubberband(JPanel component) {
         this.component = component;
@@ -72,6 +92,7 @@ abstract public class Rubberband {
         stretched.y = last.y = anchor.y;
       }
     }
+
     public boolean stretch(Point p) {
         if ( !active )                  // don't do stretching if we haven't
           return( false );              // started yet. D.M.
@@ -83,7 +104,7 @@ abstract public class Rubberband {
 
         Graphics g = component.getGraphics();
         if(g != null) {
-            g.setXORMode(component.getBackground());
+            g.setXORMode( color );
 
             if(firstStretch == true) 
               firstStretch = false;
@@ -94,6 +115,20 @@ abstract public class Rubberband {
         }
         return ( true );                // stretch OK, D.M.
     }
+
+    public boolean move ( Point increment )    // 2/28/2000 D.M.
+    {
+      if ( !active )                  // don't do the move if we haven't
+        return( false );              // started yet. D.M.
+
+      Point temp = new Point(0,0);
+
+      temp.x = stretched.x + increment.x;
+      temp.y = stretched.y + increment.y;
+      
+      return( stretch(temp) );
+    }
+
     public boolean end(Point p) {
       if ( !active )                    // ignore ending request if rubberband 
         return ( false );               // not active. 
@@ -107,7 +142,8 @@ abstract public class Rubberband {
         {                               // we've already drawn something
           Graphics g = component.getGraphics();
           if(g != null) {
-              g.setXORMode(component.getBackground());
+//            g.setXORMode(component.getBackground());
+              g.setXORMode( color );
               drawLast(g);
           }
         }
@@ -115,6 +151,7 @@ abstract public class Rubberband {
         return ( true );
       }
     }
+
     public Rectangle bounds() {
       return new Rectangle(stretched.x < anchor.x ? 
                            stretched.x : anchor.x,
