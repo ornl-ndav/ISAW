@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.26  2004/01/14 19:20:23  bouzekc
+ *  Added several more checks for null values to head potential bugs off.
+ *
  *  Revision 1.25  2004/01/14 19:00:11  bouzekc
  *  Formatted code in preparation for bug hunting.
  *
@@ -159,9 +162,9 @@ public abstract class ChooserPG extends ParameterGUI {
   /**
    * Creates a new ChooserPG object.
    *
-   * @param name DOCUMENT ME!
-   * @param val DOCUMENT ME!
-   * @param valid DOCUMENT ME!
+   * @param name The name of this ChooserPG.
+   * @param val The value of this ChooserPG.
+   * @param valid If this ChooserPG should be considered initially valid.
    */
   public ChooserPG( String name, Object val, boolean valid ) {
     super( name, val, valid );
@@ -172,16 +175,22 @@ public abstract class ChooserPG extends ParameterGUI {
   //~ Methods ******************************************************************
 
   /**
-   * Get the index of an item.
+   * @return The index of an item.  If the internal list does not exist, this
+   *         returns -1.  If the item is not found, this will return a
+   *         negative number.
    */
   public int getIndex( Object val ) {
+    if( vals == null ) {
+      return -1;
+    }
+
     return vals.indexOf( val );
   }
 
   /**
    * Sets the value of the parameter.  This will add an item to the list if it
    * is not in there already.  This will simply return if the new value is
-   * null
+   * null.
    *
    * @param val The new value to be set.
    */
@@ -191,6 +200,7 @@ public abstract class ChooserPG extends ParameterGUI {
         vals = new Vector(  );
       }
 
+      //item is not in the list, so add it
       if( vals.indexOf( val ) < 0 ) {
         addItem( val );
       }
@@ -205,8 +215,6 @@ public abstract class ChooserPG extends ParameterGUI {
       super.setValue( val );
     }
   }
-
-  // ********** IParameter requirements **********
 
   /**
    * Returns the value of the selected item if this ParameterGUI has been
@@ -225,28 +233,34 @@ public abstract class ChooserPG extends ParameterGUI {
   // ********** Methods to deal with the hash **********
 
   /**
-   * Add a single item to the vector of choices.
+   * Add a single item to the vector of choices.  If the new value is null,
+   * this does nothing.
+   *
+   * @param val The item to add.
    */
   public void addItem( Object val ) {
-    if( this.vals == null ) {
-      this.vals = new Vector(  );  // initialize if necessary
-    }
+    if( val != null ) {
+      if( vals == null ) {
+        // initialize if necessary
+        vals = new Vector(  );
+      }
 
-    if( val == null ) {
-      return;  // don't add null to the vector
-    }
+      //add it if it is not in the list
+      if( vals.indexOf( val ) < 0 ) {
+        vals.add( val );
 
-    if( this.vals.indexOf( val ) < 0 ) {
-      this.vals.add( val );
-
-      if( getInitialized(  ) ) {
-        ( ( HashEntry )( getEntryWidget(  ).getComponent( 0 ) ) ).addItem( val );
+        if( getInitialized(  ) ) {
+          ( ( HashEntry )( getEntryWidget(  ).getComponent( 0 ) ) ).addItem( 
+            val );
+        }
       }
     }
   }
 
   /**
    * Add a set of items to the vector of choices at once.
+   *
+   * @param values The Vector of values to add.
    */
   public void addItems( Vector values ) {
     for( int i = 0; i < values.size(  ); i++ ) {
@@ -310,20 +324,23 @@ public abstract class ChooserPG extends ParameterGUI {
 
   /**
    * Allows for initialization of the GUI after instantiation.
+   *
+   * @param init_values The new values to add to the currently existing ones.
    */
   public void initGUI( Vector init_values ) {
     if( this.getInitialized(  ) ) {
       return;
     }
-    addItem( getValue(  ) );
 
+    //make sure that the superclass value is in the list
+    Object initVal = getValue(  );
+
+    if( ( initVal != null ) && ( initVal != DataSet.EMPTY_DATA_SET ) ) {
+      this.addItem( initVal );
+    }
+
+    //add the initial values to the list if possible
     if( ( init_values != null ) && ( init_values.size(  ) > 0 ) ) {
-      Object initVal = getValue(  );
-
-      if( ( initVal != null ) && ( initVal != DataSet.EMPTY_DATA_SET ) ) {
-        this.addItem( initVal );
-      }
-
       if( init_values.size(  ) == 1 ) {
         this.setValue( init_values.elementAt( 0 ) );
       } else {
@@ -349,26 +366,38 @@ public abstract class ChooserPG extends ParameterGUI {
   }
 
   /**
-   * Since this is an array parameter, better allow an array to initialize the
-   * GUI.
+   * Allows initialization using an array.
+   *
+   * @param init_values The array of Objects to add to the list of values.
    */
   public void initGUI( Object[] init_values ) {
-    Vector init_vec = new Vector(  );
+    Vector init_vec;
 
-    for( int i = 0; i < init_values.length; i++ ) {
-      init_vec.add( init_values[i] );
+    if( init_values != null ) {
+      init_vec = new Vector( init_values.length );
+
+      for( int i = 0; i < init_values.length; i++ ) {
+        init_vec.add( init_values[i] );
+      }
+    } else {
+      init_vec = new Vector( 1, 1 );
     }
     initGUI( init_vec );
   }
 
   /**
-   * Remove an item from the hash based on its key.
+   * Remove an item from the internal list.  If the item to remove is null,
+   * this does nothing.
+   *
+   * @param val The item to remove.
    */
   public void removeItem( Object val ) {
-    int index = vals.indexOf( val );
+    if( ( val != null ) && ( vals != null ) ) {
+      int index = vals.indexOf( val );
 
-    if( index >= 0 ) {
-      vals.remove( index );
+      if( index >= 0 ) {
+        vals.remove( index );
+      }
     }
   }
 
