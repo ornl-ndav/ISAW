@@ -31,6 +31,15 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2002/06/14 20:58:41  dennis
+ *  Fixed bug with XRange not updating graphs.
+ *  Improved performance by:
+ *  1.UpdateHGraphRange() now only sets the autoY_bounds
+ *    if it is not already set.
+ *  2.Added method DrawWithNewXRange() that just adjusts
+ *    the graphs if a redraw request is received with the
+ *    the reason that the XRange changed.
+ *
  *  Revision 1.20  2002/05/30 22:57:29  chatterjee
  *  Added print feature
  *
@@ -194,7 +203,6 @@ public GraphView( DataSet data_set, ViewerState state )
   DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( jmb, this);
   init();
   DrawGraphs();
-  UpdateHGraphRange();
 }
 
 /* -----------------------------------------------------------------------
@@ -223,11 +231,11 @@ public void redraw( String reason )
   else if ( reason.equals( IObserver.POINTED_AT_CHANGED ))
     DrawPointedAtGraph();
 
+  else if ( reason.equals( XScaleChooserUI.X_RANGE_CHANGED ) )
+    DrawWithNewXRange();
+
   else
-  {
     DrawGraphs();
-    UpdateHGraphRange();
-  }
 }
 
 
@@ -503,47 +511,72 @@ private void SetRebin( boolean state )
 
 private void DrawGraphs( )
 {
-  if ( h_graph != null )   // get rid of old graphs
+  if ( h_graph != null )               // get rid of old graphs, if necessary
   {  
-    for ( int i = 0; i < h_graph.length; i++ )
-      h_graph[i] = null;
-    h_graph = null;
-    viewport.removeAll();
-    viewport.setVisible(false);
+    if ( getDataSet().getNum_entries() != h_graph.length )
+    {
+      for ( int i = 0; i < h_graph.length; i++ )
+        h_graph[i] = null;
+      h_graph = null;
+      viewport.removeAll();
+      viewport.setVisible(false);
+    }
   }
 
   int  num_data_blocks = getDataSet().getNum_entries();
-  was_selected = new boolean[ num_data_blocks ];
-  h_graph      = new GraphJPanel[ num_data_blocks ];
+  
+  if ( h_graph == null )               // allocate new graphs, if needed
+  {
+    was_selected = new boolean[ num_data_blocks ];
+    h_graph      = new GraphJPanel[ num_data_blocks ];
+    viewport.setLayout( new GridLayout(num_data_blocks, 1) );
+    SetHorizontalScrolling( getState().get_boolean( ViewerState.H_SCROLL ) );
 
-  viewport.setLayout( new GridLayout(num_data_blocks, 1) );
+    SelectionKeyAdapter key_adapter = new SelectionKeyAdapter();
+    for ( int i = 0; i < num_data_blocks; i++ )
+    {
+      h_graph[i] = new GraphJPanel();
+      h_graph[i].addKeyListener( key_adapter ); 
+      h_graph[i].addMouseMotionListener( new HGraphMouseMotionAdapter() );
+      h_graph[i].addMouseListener( new HGraphMouseAdapter() );
 
-  SetHorizontalScrolling( getState().get_boolean( ViewerState.H_SCROLL ) );
+      JPanel border_panel =new JPanel();
+      TitledBorder border =new TitledBorder(LineBorder.createBlackLineBorder());
+      border.setTitleFont( FontUtil.BORDER_FONT );
+      border_panel.setBorder( border );
 
-  SelectionKeyAdapter key_adapter = new SelectionKeyAdapter();
+      border_panel.setLayout( new GridLayout( 1, 1) );
+      border_panel.add( h_graph[i] );
+      viewport.add( border_panel );
+    }
+  }
 
   for ( int i = 0; i < num_data_blocks; i++ )
-  {
-    h_graph[i] = new GraphJPanel();
-
-    h_graph[i].addKeyListener( key_adapter ); 
-    h_graph[i].addMouseMotionListener( new HGraphMouseMotionAdapter() );
-    h_graph[i].addMouseListener( new HGraphMouseAdapter() );
-
-    JPanel border_panel = new JPanel();
-    TitledBorder border = new TitledBorder( LineBorder.createBlackLineBorder());
-    border.setTitleFont( FontUtil.BORDER_FONT );
-    border_panel.setBorder( border );
-
-    border_panel.setLayout( new GridLayout( 1, 1) );
-    border_panel.add( h_graph[i] );
-    viewport.add( border_panel );
-
     DrawSpecifiedGraph( i );
-  }
+
+  UpdateHGraphRange();
 
   viewport.setVisible(true);
 }
+
+/* --------------------------- DrawWithNewXRange ------------------------ */
+
+private void DrawWithNewXRange()
+{
+  if ( h_graph == null )
+    return;
+
+  XScale x_scale = getXConversionScale();
+  float  x_min  = x_scale.getStart_x();
+  float x_max  = x_scale.getEnd_x();
+  for ( int i = 0; i < h_graph.length; i++ )
+  {
+    h_graph[i].setX_bounds( x_min, x_max );
+    h_graph[i].repaint();
+  }
+}
+
+
 
 /* -------------------------- DrawSelectedGraphs ------------------------- */
 
@@ -629,18 +662,14 @@ private void DrawSpecifiedGraph( int index )
     y = data_block.getY_values();
   }
 
-  h_graph[index].setData( x, y, 0, true );
+  h_graph[index].setData( x, y, 0, false );
 
-  XScale x_scale = data_block.getX_scale();
+  XScale x_scale = getXConversionScale();
   float  x_min  = x_scale.getStart_x();
   float x_max  = x_scale.getEnd_x();
-  CoordBounds graph_bounds = h_graph[index].getGlobalWorldCoords();
-  graph_bounds.setBounds( x_min, graph_bounds.getY1(),
-                          x_max, graph_bounds.getY2() );
-  h_graph[index].initializeWorldCoords( graph_bounds );
+  h_graph[index].setX_bounds( x_min, x_max );
 
   border.setTitle( border_label );
-  border_panel.repaint();
 }
 
 
@@ -679,7 +708,8 @@ private void UpdateHGraphRange()
   if ( value == 0 )                                     // ranges
   {
     for ( int i = 0; i < getDataSet().getNum_entries(); i++ )
-      h_graph[i].autoY_bounds();
+      if ( !h_graph[i].is_autoY_bounds() )
+        h_graph[i].autoY_bounds();
 
     TitledBorder border = new TitledBorder(
                                 LineBorder.createBlackLineBorder(),
