@@ -27,6 +27,8 @@ endif
 
 DS = DetSens( SensData[1], DeadDetectorLevel, HotDetectorLevel)
 PrintFlood( DS[0],SaveFileName, "Flood")
-
+send DS[0]
+display DS[0], "Contour View"
 return "Success"
+
 

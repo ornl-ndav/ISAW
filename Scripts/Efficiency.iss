@@ -16,8 +16,8 @@
 $ CadmiumFileName     LoadFileString("C:/new_das_runs/sand20270.run") Cadmium with BS removed Filename
 $ SensitivityFileName LoadFileString("C:/test_output/sens20337.dat")   Sensitivity Dat File
 $ SaveFileName        SaveFileString("C:/test_output/EFR20270.dat")   Save Dat file to 
-$ XOFF                Float(0.15)                               Enter Xoffset of beam in cm
-$ YOFF                Float(0.62)                               Enter Yoffset of beam in cm
+$ XOFF                Float(0.073)                               Enter Xoffset of beam in cm
+$ YOFF                Float(0.682)                               Enter Yoffset of beam in cm
 $ Radius              Float( 5.0)                              Radius to use
 $ DelayNeutron        Float( .0011)                            Delayed Neutron Fraction
 
@@ -37,4 +37,8 @@ Print3Col1D( DS[1],SaveFileName, "Efficiency",DelayNeutron)
 
 Display "Finished"
 
+SelectGroups( DS[1], "Group ID",0.5,1.5,"Between Max and Min", "Set Selected")
+Display DS[1], "Selected Graph View"
+send DS[1]
+return "Success"
 
