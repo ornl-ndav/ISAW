@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/04/26 13:17:15  rmikk
+ *  null constructor is now public
+ *  Added documentation
+ *  Used new xml_utils Attr read designed for the immutable Attributes
+ *
  *  Revision 1.12  2004/03/15 03:28:08  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -68,6 +73,7 @@
 
 package  DataSetTools.dataset;
 import gov.anl.ipns.Util.File.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import   java.io.*;
 
@@ -83,9 +89,9 @@ import   java.io.*;
  *
  * @version 1.0  
  */
-
+import java.util.*;
 public class IntAttribute extends    Attribute
-                          implements IXmlIO
+                         
 {
   // NOTE: any field that is static or transient is NOT serialized.
   //
@@ -123,10 +129,22 @@ public class IntAttribute extends    Attribute
     return xml_utils.AttribXMLwrite( stream, mode, this);
   }
 
-  public boolean XMLread( InputStream stream )
-  {
-    return xml_utils.AttribXMLread(stream, this);
-  }
+
+   /**
+     * This method reads information from the InputStream and assigns the 
+     * information to the appropriate fields of this IntAttribute.
+     * It is assumed that the leading tag has been read
+     */
+   public boolean XMLread( InputStream stream )
+   {
+    Object Res= xml_utils.AttribXMLread(stream, new IntAttribute());
+    if( Res instanceof ErrorString)
+      return false;
+    value =((Float) (((Vector)Res).lastElement())).intValue();
+    name =((String) (((Vector)Res).firstElement())).toString();
+    return true;// ((Attribute)(new IntAttribute(name,value)));
+ }
+  
 
   public boolean XMLwrite1( OutputStream stream, int mode )
   {
@@ -214,7 +232,7 @@ public class IntAttribute extends    Attribute
       return true;
   }
 
-  private IntAttribute()
+  public IntAttribute()
   {
     super("");
     this.value=0;
