@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.48  2004/07/16 18:30:17  dennis
+ *  Fixed improper comparison with Float.NaN
+ *
  *  Revision 1.47  2004/03/19 17:18:44  dennis
  *  Removed unused variables
  *
@@ -276,11 +279,11 @@ public void redraw( String reason )
         float x     = getDataSet().getPointedAtX();
         pt.y = index;
         pt.y = pt.y * ( n_data - 1 )/ n_data + 0.5f;
-        if ( x != Float.NaN )
+        if ( !Float.isNaN(x)  )
           pt.x = x;
 
         SyncVImageScrollBar();
-        if ( index != DataSet.INVALID_INDEX && x != Float.NaN )
+        if ( index != DataSet.INVALID_INDEX && !Float.isNaN(x) )
         {
           XScale new_scale = getXConversionScale();
           image_table.showConversions( x, index, new_scale );
