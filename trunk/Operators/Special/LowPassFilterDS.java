@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.1  2004/05/07 17:57:01  dennis
+ * Moved operators that extend GenericSpecial from Operators
+ * to Operators/Special
+ *
  * Revision 1.1  2004/03/29 17:58:00  dennis
  * Initial version of operator to perform Low-Pass Fourier Filtering
  * using a Butterworth filter.  The version does the filtering
@@ -38,7 +42,7 @@
  * in a different package.
  *
  */
-package Operators;
+package Operators.Special;
 
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Special.*;
