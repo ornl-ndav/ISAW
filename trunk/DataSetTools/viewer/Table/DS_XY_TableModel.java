@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/10/15 03:43:12  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.12  2003/08/08 22:14:59  rmikk
  * Fixed a logical error
  *
@@ -505,8 +508,9 @@ public class DS_XY_TableModel extends TableViewModel
 
 
 
-    /** Test program.  Have a run filename as the argument
-    *@param  the filename to test
+    /** 
+     * Test program.  Uses a run filename as the argument
+    *@param  args The filename to test
     */
    public static void main( String args[] )
       {
