@@ -5,6 +5,15 @@ package IsawGUI;
  *
  *
  * $Log$
+ * Revision 1.9  2001/07/25 16:06:30  neffk
+ * changed some of the constructors so that this class could keep track
+ * of an observer.  this observer is the object that is notified when
+ * an operation generates a new DataSet object.  this was changed to
+ * facilitate Isaw being updated when new DataSet objects are created
+ * so that Isaw could update the tree, the properties window, the
+ * command pane, and any other dependancies that might be introduced
+ * int he future.
+ *
  * Revision 1.8  2001/07/23 14:05:26  neffk
  * continued to replace low-level JTree modifcations with methods
  * in JDataTree.  clearing selections and deleting nodes are now internal
@@ -45,7 +54,9 @@ package IsawGUI;
 
 
 import DataSetTools.components.ui.OperatorMenu;
+import DataSetTools.components.ui.ViewMenu;
 import DataSetTools.dataset.Data;
+import DataSetTools.viewer.ViewManager;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.util.IObserver;
 import DataSetTools.operator.Operator;
@@ -78,21 +89,34 @@ public class JDataTreeRingmaster
   final String MENU_DELETE    = "Delete";
 
 
-  JDataTree tree;                
-  Document sessionLog = null;    //need this because of some 
-                                 //unpleasant coupling of the tree,
-                                 //the command pane, and various other stuff...
+                    //the container of all of the data that this
+                    //object uses.
+  JDataTree tree;           
+
+                    //when operations are invoked that generate a 
+                    //new DataSet object, this is the object that
+                    //will be updated via the IObserver.update(...)
+                    //mechanism by passing the DataSet object as 
+                    //the 'reason'.
+  IObserver new_ds_observer;
+
+  Document sessionLog = null;
 
 
-  JDataTreeRingmaster( JDataTree tree )
+  JDataTreeRingmaster( JDataTree tree, 
+                       IObserver new_ds_observer )
   {
     this.tree = tree;
+    this.new_ds_observer = new_ds_observer;
   }
 
 
-  JDataTreeRingmaster( JDataTree tree, Document log )
+  JDataTreeRingmaster( JDataTree tree, 
+                       IObserver new_ds_observer,
+                       Document log )
   {
     this.tree = tree;
+    this.new_ds_observer = new_ds_observer;
     sessionLog = log;
   }
 
@@ -125,7 +149,10 @@ public class JDataTreeRingmaster
                                               //for single DataSet object
                                               //selections
     else if(  node instanceof DataSetMutableTreeNode  &&  tps.length == 1  )
+    {
+      System.out.println( "single DataSet object menu coming right up!" );
       SingleDataSetPopupMenu( tps, e );
+    }
 
                                                //generates a popup menu
                                                //for multiple Data object
@@ -171,8 +198,7 @@ public class JDataTreeRingmaster
                   //anything that's appropriate to do for all DataSet objects
                   //for now, we'll just grab the first selection and use the
                   //menu for single DataSet object selections.
-      //MultipleDataSetPopupMenu( tps, e );
-      SingleDataSetPopupMenu( tps, e );
+      MultipleDataSetPopupMenu( tps, e );
     }
 
 
@@ -339,9 +365,18 @@ public class JDataTreeRingmaster
     dss[0] = ds;
     JMenu ops_popup_menu = new JMenu( "Operations" );
     OperatorMenu om = new OperatorMenu();
-    JOperationsMenuHandler popup_listener = new JOperationsMenuHandler( dss, tree, false );
+    JOperationsMenuHandler popup_listener = new JOperationsMenuHandler( dss, 
+                                                                        false, 
+                                                                        tree, 
+                                                                        new_ds_observer,
+                                                                        sessionLog );
     om.build( ops_popup_menu, ds_ops, popup_listener );
     ops_popup_menu.setPopupMenuVisible( true );
+
+    JMenu view_popup_menu = new JMenu( "View" );
+    ViewMenu view_menu_maker = new ViewMenu();
+    view_menu_maker.build( view_popup_menu, dss );  //use default listener
+    view_popup_menu.setPopupMenuVisible( true );
 
     class singleDataSetMenuItemListener implements ActionListener
     {
@@ -371,11 +406,17 @@ public class JDataTreeRingmaster
     JMenuItem delete_item = new JMenuItem( MENU_DELETE );
               //delete_item.setMnemonic( KeyEvent.VK_X );
               delete_item.addActionListener( item_listener );
+    JMenuItem dummy_item = new JMenuItem( "dummy item" );
     JPopupMenu popup_menu = new JPopupMenu( "SingleDataSetPopupMenu" );
                popup_menu.add( delete_item );
                popup_menu.add( select_item );
                popup_menu.add( ops_popup_menu );
+               popup_menu.add( view_popup_menu );
+               popup_menu.add( dummy_item );
                popup_menu.show(  e.getComponent(), e.getX(), e.getY()  );
+//               System.out.println( "testing" );
+//               popup_menu.show(  e.getComponent(), e.getX()+10, e.getY()  );
+//               System.out.println( "testing again" );
   }
 
 
@@ -399,6 +440,7 @@ public class JDataTreeRingmaster
                                //of the TreePath objects have been filtered
                                //and that they are all DataSetMutableTreeNodes.
                                //karma--
+    //TODO: use select w/ paths and getselected to do this (in JDataTree)
     DataSet[] dss = new DataSet[ tps.length ];
     for( int i=0;  i<tps.length;  i++ )
       dss[i] = (DataSet)(  ( (DataSetMutableTreeNode)tps[i].getLastPathComponent() ).getUserObject()  );
@@ -406,9 +448,31 @@ public class JDataTreeRingmaster
                                //create the actual menu
     JMenu ops_popup_menu = new JMenu( "Operations" );
     OperatorMenu om = new OperatorMenu();
-    JOperationsMenuHandler popup_listener = new JOperationsMenuHandler( dss, tree, true );
+    JOperationsMenuHandler popup_listener = new JOperationsMenuHandler( dss,
+                                                                        true,
+                                                                        tree, 
+                                                                        new_ds_observer,
+                                                                        sessionLog );
     om.build( ops_popup_menu, ds_ops, popup_listener );
     ops_popup_menu.setPopupMenuVisible( true );
+
+
+    class ViewMenuListener implements ActionListener
+    { 
+      public void actionPerformed( ActionEvent vml_e )
+      { 
+//        System.out.println( "ViewMenu option selected" );
+        System.out.println(  vml_e.toString()  );
+      }
+    }
+
+
+                                   //create a view sub-menu
+    JMenu view_popup_menu = new JMenu( "View" );
+    ViewMenu view_menu_maker = new ViewMenu();
+//    view_menu_maker.build( view_popup_menu, dss );  //use default listener
+    view_menu_maker.build( view_popup_menu, dss, new ViewMenuListener() );
+    view_popup_menu.setPopupMenuVisible( true );
 
     class MultipleDataSetMenuItemListener implements ActionListener
     {
@@ -422,6 +486,8 @@ public class JDataTreeRingmaster
 
       public void actionPerformed( ActionEvent item_e )
       {
+        System.out.println( "MultipleDataSetMenuItemListener" );
+
         if(  item_e.getActionCommand() == MENU_SELECT  )
           tree.selectNodesWithPaths( tps );
 
@@ -442,6 +508,7 @@ public class JDataTreeRingmaster
                popup_menu.add( delete_item );
                popup_menu.add( select_item );
                popup_menu.add( ops_popup_menu );
+               popup_menu.add( view_popup_menu );
                popup_menu.show(  e.getComponent(), e.getX(), e.getY()  );
   }
 
@@ -503,8 +570,17 @@ public class JDataTreeRingmaster
 
     if(  node instanceof DataMutableTreeNode  )
     {
+      System.out.println( "pointAtNode(...)" );
+
       DataMutableTreeNode d_node = (DataMutableTreeNode)node;
+
+      if( tree == null )
+        System.out.println( "null tree" );
+
       DataSet ds = tree.getDataSet( d_node );
+
+//      System.out.println(  "index: " + ds.getIndex_of_data( d_node.getUserObject() )  );
+
       ds.setPointedAtIndex(  ds.getIndex_of_data( d_node.getUserObject() )  );
       ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
     }
