@@ -36,6 +36,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2002/08/21 15:42:36  rmikk
+ *  -If pointedAtX is NaN(undefined) defaults to 0th frame
+ *  - Title of Contour Plot is now the title of the data set
+ *  - Contour levels now "rounded" to last two or one differing digits base 10. There should be approximately 10 contour levels.
+ *
  *  Revision 1.12  2002/08/02 19:34:48  rmikk
  *  main program Converts to Q with 100 bins
  *
@@ -91,7 +96,7 @@ import java.awt.*;
 import java.awt.print.*;
 import java.awt.event.*;
 import javax.swing.*;
-
+import java.util.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import DataSetTools.viewer.util.*;
@@ -142,7 +147,7 @@ public class ContourView extends DataSetViewer
    //JFrame frame;
    float[] times;
    int ncolors = 200;
-   int nlevels = 16;
+   public int nlevels = 10;
    ViewerState state = null;  
    JLabel time_label = new JLabel( "" );
    // Use the correct one ---------------
@@ -154,10 +159,12 @@ public class ContourView extends DataSetViewer
    JSlider intensity = null;
    JPanel intensitHolder = null;
    int PrevGroup;
-   public ContourView( DataSet ds, ViewerState state1 )
+
+  public ContourView( DataSet ds, ViewerState state1 )
      { this( ds, state1, null,null,null);
       }
-   public ContourView( DataSet ds, ViewerState state1 ,IAxisHandler axis1,
+
+  public ContourView( DataSet ds, ViewerState state1 ,IAxisHandler axis1,
                          IAxisHandler axis2, IAxisHandler axis3)
    {
 
@@ -312,7 +319,7 @@ public class ContourView extends DataSetViewer
       add( main);
       setLayout( new GridLayout( 1,1));
       validate();
-
+     
    }
   // main splitpane with state, 
   public void setLayout(JPanel jpEast)
@@ -326,7 +333,7 @@ public class ContourView extends DataSetViewer
    //Change the name of doLayou when changing this
    //Cannot get the column 2 items to draw correctly.
    JPanel acHolder, intensityHolder;
-   public void setLayout2( JPanel jpEast)
+  public void setLayout2( JPanel jpEast)
      { //main = new JPanel();
        main.setLayout( null);
        acHolder = new MyJPanel(  ac ,Color.blue);//new JPanel( new GridLayout( 1,1));//
@@ -386,7 +393,7 @@ public class ContourView extends DataSetViewer
 
 
 
-   private void setData( DataSet ds, int GridContourAttribute )
+  private void setData( DataSet ds, int GridContourAttribute )
    {  
       if( axis1 == null)
          cd = new ContourData( ds );
@@ -397,11 +404,15 @@ public class ContourView extends DataSetViewer
      
       if( (ac != null) && (acChange  ||  XsclChange) )
         { ac.setFrame_values( times );
-          if( ds.getPointedAtX() <0)
-              ac.setFrameValue( 0.0f);
+          if( Float.isNaN( ds.getPointedAtX()))
+              {ac.setFrameNumber( 0);
+               
+              }
           else
               ac.setFrameValue( ds.getPointedAtX());
           sliderTime_index = ac.getFrameNumber();
+          
+          
         }
       if( ConvTableHolder == null )
          ConvTableHolder = new JPanel( new GridLayout( 1, 1 ) );
@@ -412,6 +423,9 @@ public class ContourView extends DataSetViewer
       if( XConvChange )
          {
           dct = new DataSetXConversionsTable( getDataSet() );
+          dct.showConversions(getDataSet().getPointedAtX(), 
+                              getDataSet().getPointedAtIndex());
+          
           dctScroll = new JScrollPane( dct.getTable() );
           ConvTableHolder.add( dctScroll );
           }
@@ -437,7 +451,7 @@ public class ContourView extends DataSetViewer
    /** GridContourAttribute is GridAttribute.RASTER_CONTOUR or GridAttribute.CONTOUR, etc
     *  only creates rpl_ the JPlotLayout
     */
-   private void init( DataSet ds, int GridContourAttribute )
+  private void init( DataSet ds, int GridContourAttribute )
    {
 
       /*
@@ -500,11 +514,12 @@ public class ContourView extends DataSetViewer
            //main.setLeftComponent( rpl_ );
            validate();
           }
+      
 
    }
 
 
-   public void setDataSet( DataSet ds )
+  public void setDataSet( DataSet ds )
    {
       super.setDataSet( ds );
       data_set = ds;
@@ -514,9 +529,9 @@ public class ContourView extends DataSetViewer
       rpl_.draw();
    }
 
-   class ColorActionListener implements ActionListener
-   {
-      public void actionPerformed( ActionEvent evt )
+  class ColorActionListener implements ActionListener
+    {
+     public void actionPerformed( ActionEvent evt )
       {
          if( rpl_ == null )
             return;
@@ -532,46 +547,48 @@ public class ContourView extends DataSetViewer
          rpl_.draw();
       }
    }
-   class MyContStyleListener implements ActionListener
-   {
-      public void actionPerformed( ActionEvent evt)
-      {acChange= XsclChange = XConvChange = false;
+
+  class MyContStyleListener implements ActionListener
+    {
+     public void actionPerformed( ActionEvent evt)
+       {acChange= XsclChange = XConvChange = false;
       
-      if( evt.getActionCommand().equals("AREA_FILL"))
-         state.set_int("Contour.Style",GridAttribute.AREA_FILL );
-      else if( evt.getActionCommand().equals("AREA_FILL_CONTOUR"))
-         state.set_int("Contour.Style",GridAttribute.AREA_FILL_CONTOUR );
-      else if( evt.getActionCommand().equals("RASTER_CONTOUR"))
-         state.set_int("Contour.Style",GridAttribute.RASTER_CONTOUR );
-      else if( evt.getActionCommand().equals("CONTOUR"))
-         state.set_int("Contour.Style",GridAttribute.CONTOUR );
-      else if( evt.getActionCommand().equals("RASTER"))
-         state.set_int("Contour.Style",GridAttribute.RASTER );
-      setData( data_set , state.get_int("Contour.Style"));
-      rpl_.draw();
-      }
-   }
-   JPanel makeButtonPanel()
-   {
-      JPanel button = new JPanel();
+        if( evt.getActionCommand().equals("AREA_FILL"))
+           state.set_int("Contour.Style",GridAttribute.AREA_FILL );
+        else if( evt.getActionCommand().equals("AREA_FILL_CONTOUR"))
+           state.set_int("Contour.Style",GridAttribute.AREA_FILL_CONTOUR );
+        else if( evt.getActionCommand().equals("RASTER_CONTOUR"))
+           state.set_int("Contour.Style",GridAttribute.RASTER_CONTOUR );
+        else if( evt.getActionCommand().equals("CONTOUR"))
+           state.set_int("Contour.Style",GridAttribute.CONTOUR );
+        else if( evt.getActionCommand().equals("RASTER"))
+           state.set_int("Contour.Style",GridAttribute.RASTER );
+        setData( data_set , state.get_int("Contour.Style"));
+        rpl_.draw();
+       }
+    }
 
-      button.setLayout( new FlowLayout() );
-      //tree_ = new JButton("Tree View");
-      MyAction myAction = new MyAction();
+  JPanel makeButtonPanel()
+    {
+     JPanel button = new JPanel();
 
-      tree_.addActionListener( myAction );
-      button.add( tree_ );
-      edit_ = new JButton( "Edit GridAttribute" );
-      edit_.addActionListener( myAction );
-      button.add( edit_ );
-      tree_.addActionListener( myAction );
-      print_ = new JButton( "Print Contour" );
-      print_.addActionListener( myAction );
-      button.add( print_ );
-      return button;
-   }
+     button.setLayout( new FlowLayout() );
+     //tree_ = new JButton("Tree View");
+     MyAction myAction = new MyAction();
 
-   void edit_actionPerformed( java.awt.event.ActionEvent e )
+     tree_.addActionListener( myAction );
+     button.add( tree_ );
+     edit_ = new JButton( "Edit GridAttribute" );
+     edit_.addActionListener( myAction );
+     button.add( edit_ );
+     tree_.addActionListener( myAction );
+     print_ = new JButton( "Print Contour" );
+     print_.addActionListener( myAction );
+     button.add( print_ );
+     return button;
+    }
+
+  void edit_actionPerformed( java.awt.event.ActionEvent e )
    {
 
       /*
@@ -588,7 +605,7 @@ public class ContourView extends DataSetViewer
    }
 
 
-   void tree_actionPerformed( java.awt.event.ActionEvent e )
+  void tree_actionPerformed( java.awt.event.ActionEvent e )
    {
 
       /*
@@ -602,7 +619,7 @@ public class ContourView extends DataSetViewer
    }
 
 
-   void slider_changePerformed( javax.swing.event.ChangeEvent event )
+  void slider_changePerformed( javax.swing.event.ChangeEvent event )
    {
 
       /*
@@ -630,8 +647,255 @@ public class ContourView extends DataSetViewer
        */
    }
 
+  private String getMainTitle()
+    {DataSet ds = getDataSet();
+     return ds.getTitle();
 
-   public JPlotLayout makeGraph( float time, ViewerState state )
+    }
+  private int getLeadDigPos( double val)
+    {if( val == 0)
+        return 0;
+     if( val < 0)
+        val = -val;
+     int r = (int)( java.lang.Math.log(val)/java.lang.Math.log(10));
+     return r;
+       
+    }
+
+  public static double getPow10( int power)
+    {return java.lang.Math.pow( 10.0, 0.0+power);
+     }
+  private int digVal( double v, int digit)
+    {float MACHINE_EPSILON = 1.1920929E-7f;
+     if( v==0)
+        return 0;
+     if( v<0)
+        v = -v;
+     int Ldigit = getLeadDigPos( v);
+     if( digit > Ldigit)
+        return 0;
+     double pow10 = getPow10( digit-1);
+     double rerror =1 - getPow10(6+Ldigit-digit);
+     double v1 = (int)(v/pow10);
+     if( v/pow10 -v1 > rerror) 
+        v1=v1+1;
+     v1 = v -pow10*v1;
+     double v2 = (int)(v1*10.0/pow10);
+     rerror =1 - getPow10(6+Ldigit-digit-1);
+     if( v1*10.0/pow10 -v2 > rerror)
+        v2 = v2+1;
+     return (int)v2;
+         
+    }
+  // takes abs value, converts to string. Makes sure there is a decimal point.
+  // Attempts to deal with trailing 9's and 0's  and leading 0's
+  public static String fixUp( double v)
+    {v = java.lang.Math.abs(v);
+     String Res = new Double( v).toString().trim();
+     if( Res.indexOf('.') < 0)
+        Res +='.';
+     int pdot = Res.indexOf('.');
+     while( (Res.length() >8) && (Res.length()>= pdot)) //too long
+       {Res = Res.substring( 0, Res.length()-1);
+       }
+     if( Res.length() > 8)
+       {char[] cc= new char[Res.length()-1-7];
+        Arrays.fill(cc, '0');
+        Res = Res.substring(0,8)+new String(cc) +".";
+       }
+     while( Res.charAt(0) =='0')
+        Res = Res.substring(1);
+     while( Res.charAt(Res.length()-1) == '0')
+        Res = Res.substring(0, Res.length() -1);
+
+       // now check for trailing 9's
+     int Nnines=0;
+     for( int i = Res.length()-1; Res.charAt(i) =='9'; i--)
+        Nnines++;
+     if( Nnines ==0)
+        return Res;
+     if( Res.length() < 8)
+        return Res;
+     Res = Res.substring( 0,Res.length() - Nnines);
+
+     if( Res.charAt(Res.length()-1) !='.')
+        return Res.substring( 0, Res.length()-1) + 
+               (char)((int)Res.charAt( Res.length()-1)+1);
+     String SRes=".";
+     for( int i=Res.length()-2; i >=0; i--)
+        if( Res.charAt(i) !='9')
+           return Res.substring(0,i)+(char)((int)Res.charAt(i) +1) + SRes;
+        else
+           SRes = '0'+SRes;
+     return "1"+SRes;
+
+      }
+
+
+  public static double[] clevelsFrom( ClosedInterval YRange)
+    {double start =(double) YRange.getStart_x();
+     double end = (double)YRange.getEnd_x();
+     int sgns=1;
+     int sgne=1;
+     if( start < 0) 
+        sgns=-1;
+     if( end < 0) 
+        sgne = -1;
+     String Sstart = fixUp( start);
+     String Send = fixUp( end);
+     int pDotStart = Sstart.indexOf('.');
+     int pDotEnd = Send.indexOf('.');
+     // Get digits to line up and have equal length
+     char[] cc;
+     if( pDotStart < pDotEnd)
+       {cc= new char[pDotEnd-pDotStart];
+        Arrays.fill(cc,'0');
+        Sstart = new String( cc )+Sstart;
+       }
+     else if( pDotEnd < pDotStart)
+       {cc= new char[pDotStart-pDotEnd];
+        Arrays.fill(cc,'0');
+        Send = new String( cc )+Send;
+       }
+
+     if( Sstart.length() < Send.length())
+       {cc= new char[Send.length()-Sstart.length()];
+        Arrays.fill(cc,'0');
+        Sstart +=new String( cc );
+       }
+     else if( Send.length() < Sstart.length())
+       {cc= new char[Sstart.length()- Send.length()];
+        Arrays.fill(cc,'0');
+        Send += new String(cc);
+       }
+     //Find the number of leading base 10 digits that match
+     int nmatch = 0;
+     boolean done= false;
+     for( int i=0; (i<Sstart.length())&&(i < Send.length())&& !done; i++)
+        if( Sstart.charAt(i) == Send.charAt(i))
+           nmatch++;
+        else
+           done = true;
+      //
+     char cStart,cEnd;
+     double[] Res = null;
+     if( nmatch == Sstart.length())
+        if( sgns*sgne > 0)
+          {Res = new double[1];
+           Res[0] = start;
+           return Res;
+          }
+        else
+          {if( Sstart.charAt(0) == '.')
+              nmatch = 1; // include decimal point
+           else
+               nmatch =0;
+           if( Sstart.length() <= nmatch)
+             {Sstart +='0';
+              Send +='0';
+             }
+            
+           cStart = Sstart.charAt(nmatch);
+           if(cStart == '.')
+              nmatch++;
+           if( Sstart.length() <= nmatch)
+             {Sstart +='0';
+              Send +='0';
+             }
+           cStart = Sstart.charAt(nmatch);
+           cEnd =Send.charAt( nmatch);
+           
+          }
+     else // not all digits match
+       {cStart = Sstart.charAt(nmatch);
+        cEnd = Send.charAt( nmatch);
+          
+       }
+         
+     int ncontours = (int)cEnd-(int)'0' - (int)(sgne*sgns)*((int)cStart-(int)'0');
+     if( ncontours < 0) 
+        ncontours = -ncontours;
+     if(sgns <0) 
+        ncontours++;
+     if( ncontours > 7)
+       {Res = new double[ ncontours + 1];
+        int pdot = Sstart.indexOf('.');
+        double delta = getPow10(pdot - nmatch -1);
+        String SstartB= Sstart.substring(0, nmatch + 1);
+          
+        for( int j=nmatch+1;j<Sstart.length();j++)
+           if( Sstart.charAt(j)=='.')
+              SstartB +='.';
+           else
+              SstartB +='0';
+        double ss= sgns*new Double( SstartB).doubleValue();
+        if( sgns < 0)
+           ss -=delta;
+            
+        for( int j=0; j < ncontours + 1 ;j++)
+          {Res[j]= ss+j*delta;
+          } 
+        return Res;
+       }
+     else //use 2 digits
+       {char cStart2,cEnd2;
+        while( Sstart.length() <= nmatch+1)
+          {Sstart +='0';
+           Send +='0';
+          }   
+        int kk = 0;
+        if( Sstart.charAt(nmatch + 1 + kk) =='.') 
+           kk++;
+        if( kk>=Sstart.length())
+          {Sstart += '0';
+           Send   += '0';
+          }
+        cStart2= Sstart.charAt( nmatch+1+kk);
+        cEnd2 =Send.charAt( nmatch+1 +kk);
+        ncontours = 10*((int)cEnd -(int)'0')+(int)cEnd2-(int)'0' -
+                      (int)(sgns*sgne)*(10*((int)cStart-(int)'0')+(int)cStart2-(int)'0');
+        if( ncontours < 0) 
+           ncontours = -ncontours;
+          
+        //if( ncontours >10)
+          {int step = ncontours/10;
+           if( step <2) 
+              step = 1;
+           else if( step < 4) 
+              step =2;
+           else 
+              step = 5;
+           int pdot = Sstart.indexOf('.');
+           double delta = step*getPow10(pdot-nmatch-2);
+           ncontours =(int)( ncontours/(float)step +.3)+1;
+           Res = new double[ncontours ];
+           String SstartB=  Sstart.substring(0, nmatch+kk+1);
+           int ichar = (int)cStart2-(int)'0';
+           ichar = step * (int)( ichar/(float)step +.45)+(int)'0';
+           if(pdot == SstartB.length())
+             {SstartB+='.';
+              kk++;
+             }
+           SstartB +=(char)ichar;
+           for( int j=nmatch+kk+2; j<Sstart.length();j++)
+              if( Sstart.charAt(j)=='.')
+                 SstartB +='.';
+              else
+                 SstartB +='0';
+           double jStart = sgns*new Double( SstartB).doubleValue();
+           if(sgns < 0)
+              jStart -= delta;
+           for( int j=0; j< ncontours ; j++)
+              Res[j]= jStart+j*delta;
+           return Res;
+          }    
+       }
+     //System.out.println("XHere");    
+     //return Res;
+    }
+
+
+  public JPlotLayout makeGraph( float time, ViewerState state )
    {
 
       /*
@@ -664,11 +928,13 @@ public class ContourView extends DataSetViewer
       //To use a variable scale determined at each time increment use the first
       //Range2D declaration, otherwise, use the second one.
       ClosedInterval cli = getDataSet().getYRange();
+      double[] Aclev = clevelsFrom( cli);
+      nlevels = Aclev.length;
       Range2D datar = new Range2D( cli.getStart_x(), cli.getEnd_x(),
-            ( cli.getEnd_x() - cli.getStart_x() ) / nlevels );
+           ( cli.getEnd_x() - cli.getStart_x() ) / nlevels );
 
       //Range2D datar = new Range2D( -20f, 45f, 5f );
-      clevels = ContourLevels.getDefault( datar );
+      clevels = ContourLevels.getDefault(Aclev );
       gridAttr_ = new GridAttribute( clevels );
 
       /*
@@ -687,8 +953,9 @@ public class ContourView extends DataSetViewer
 
       /*
        * Change the layout's three title lines.
+       
        */
-      rpl.setTitles( "Raster Contour Graph", "", "" );
+      rpl.setTitles( getMainTitle() , "", "" );
 
       /*
        * Resize the graph  and place in the "Center" of the frame.
@@ -699,6 +966,7 @@ public class ContourView extends DataSetViewer
        * size. Set the size of the key in physical units and place
        * the key pane at the "South" of the frame.
        */
+     
       //rpl.setKeyLayerSizeP(new Dimension2D(6.0, 1.02));
       // rpl.setKeyBoundsP(new Rectangle2D.Double(0.01, 1.01, 5.98, 1.0));
 
@@ -706,7 +974,7 @@ public class ContourView extends DataSetViewer
    }
 
 
-   IndexedColorMap createColorMap( Range2D datar, ViewerState state, ContourLevels clevels )
+  IndexedColorMap createColorMap( Range2D datar, ViewerState state, ContourLevels clevels )
    {
       
       String ColorMap = IndexColorMaker.HEATED_OBJECT_SCALE;
@@ -735,7 +1003,7 @@ public class ContourView extends DataSetViewer
    }
   
    // For testing purposes only
-   public static void main1( String[] args )
+  public static void main2( String[] args )
    {
       ViewerState CONTOUR = new ViewerState();
 
@@ -747,11 +1015,27 @@ public class ContourView extends DataSetViewer
       //ContourView contour_view = new ContourView(data_set[1], CONTOUR);
 
    }
+
+  public static void main3( String[] args)
+     { 
+      float min=0f,max=223f;
+      if( args != null)
+        {if( args.length>0)
+          min = new Float( args[0]).floatValue();
+         if( args.length > 1)
+          max = new Float( args[1]).floatValue();
+        }
+      System.out.println(
+      (new NexIO.NxNodeUtils()).Showw(    
+      ContourView.clevelsFrom(new ClosedInterval( min, max)))
+                         );
+
+     }
    /** Standalone to get Contour views of Qx,Qy,Qz
    * @param  args[0]  The filename with the data set
    * @param  args[1]  OPTIONAL, the histogram to view
    */
-   public static void main( String[] args)
+  public static void main( String[] args)
    { if( args == null)
        {System.out.println( " Please specify the filename with the data");
         System.exit(0);
@@ -871,7 +1155,7 @@ public class ContourView extends DataSetViewer
 
 
     } 
-   class MyAction implements java.awt.event.ActionListener
+  class MyAction implements java.awt.event.ActionListener
    {
       public void actionPerformed( java.awt.event.ActionEvent event )
       {
@@ -921,7 +1205,7 @@ public class ContourView extends DataSetViewer
    }
 
 
-   class MyChange implements javax.swing.event.ChangeListener
+  class MyChange implements javax.swing.event.ChangeListener
    {
       public void stateChanged( javax.swing.event.ChangeEvent event )
       { 
@@ -945,7 +1229,7 @@ public class ContourView extends DataSetViewer
     * a separate JPane to append the keyPane to the plot on the
     * same page.
     */
-   void print_actionPerformed( java.awt.event.ActionEvent event )
+  void print_actionPerformed( java.awt.event.ActionEvent event )
    {
       Color saveColor;
 
@@ -977,8 +1261,10 @@ public class ContourView extends DataSetViewer
       }
    }
 
-   public int getPointedAtXindex()
+  public int getPointedAtXindex()
      {float X = getDataSet().getPointedAtX();
+      if( Float.isNaN(X))
+         return 0;
       int index = java.util.Arrays.binarySearch( times, X);
       if( index < 0)
          index =-index-1;
@@ -992,7 +1278,7 @@ public class ContourView extends DataSetViewer
         return index -1;
        
       }
-   public void redraw( String reason )
+  public void redraw( String reason )
    { 
       if( reason == IObserver.DESTROY )
       {
@@ -1063,7 +1349,7 @@ public class ContourView extends DataSetViewer
 
    }
 
-   class MyComponentListener extends ComponentAdapter
+  class MyComponentListener extends ComponentAdapter
    {
       public void componentResized( ComponentEvent e )
       { 
@@ -1100,7 +1386,7 @@ public class ContourView extends DataSetViewer
    }
 
 
-   class MyMouseListener extends MouseAdapter
+  class MyMouseListener extends MouseAdapter
    {
       public void mouseClicked( MouseEvent e )
       { //JPlotLayout jp = (JPlotLayout)(e.getSource());
@@ -1141,7 +1427,7 @@ public class ContourView extends DataSetViewer
       }
 
    }
- class MyXSCaleActionListener implements ActionListener
+  class MyXSCaleActionListener implements ActionListener
    {
     public void actionPerformed( ActionEvent evt)
      {
@@ -1161,7 +1447,7 @@ public class ContourView extends DataSetViewer
       rpl_.draw();
       }
     }
- class MyJPanel extends JPanel
+  class MyJPanel extends JPanel
    {JComponent comp;
     Color colr;
     public MyJPanel( JComponent jc, Color C)
