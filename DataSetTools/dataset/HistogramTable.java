@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/07/17 20:35:06  dennis
+ *  Now traps invalid index in getY_value()
+ *
  *  Revision 1.6  2002/06/19 22:39:06  dennis
  *  Minor cleanup of format and added some docs for XML IO.
  *
@@ -254,7 +257,10 @@ public class HistogramTable extends    TabulatedData
     float x_vals[] = x_scale.getXs();
     int index = arrayUtil.get_index_of( x_value, x_vals );
 
-    return y_values[index]; 
+    if ( index < 0 || index >= y_values.length )
+      return 0.0f;
+    else
+      return y_values[index]; 
   }
 
 
