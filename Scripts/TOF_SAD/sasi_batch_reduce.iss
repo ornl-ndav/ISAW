@@ -22,41 +22,37 @@ Input_Path ="c:/sasi/"
 Output_Path ="c:/sasi/"
 
 # Sample thickness in cm:
-ThickA = [0.1]
+ThickA = [0.1,0.1]
 
 
 # Sample Scattering runs:
-SampleFileA = "0042"
+SampleFileA = ["0042","0042"]
 
 
 # Background scattering runs:
-BackGroundFileA = "0023" 
+BackGroundFileA = ["0023","0023"] 
 
 #Transmission run for sample/camera
- TSC = "T00420018"
+ TSC = ["T00420018", "T00420018"]
 
 #Transmission run for buffer/camera
- TBC = "T00230018"
-
-
-
-
+ TBC = ["T00230018","T00230018"]
 
 
 # Cadmium scattering runs:
-CadmiumFileA = "0022" 
+CadmiumFileA = ["0022","0022"] 
 
 # Use Cadmium runs in transmission calculations (true/false)?
 useCadmiumRunA = [true,true,true,true,true,true,true,true,true] 
 
 # Camera transmission runs
-CameraTFileA = "0018" 
+CameraTFileA = ["0018","0018"] 
 
 # Sensitivity .dat files (use Sensitivity.iss script to produce them)
-SensFileA = "0012"
+SensFileA = ["0012","0012"]
 
 # Efficiency .dat files (use Efficiency.iss sccript to produce them)
-EffFileA = "0016"
+EffFileA = ["0016","0016"]
 
 
 
@@ -107,19 +103,19 @@ for i in [0: number_of_runs-1]
 
 Thick = ThickA[i]
 #TransSFile = TransSFileA[i] 
-SampleFile = SampleFileA
+SampleFile = SampleFileA[i]
 
 #BackGroundTFile = BackGroundTFileA[i]
-BackGroundFile = BackGroundFileA
+BackGroundFile = BackGroundFileA[i]
 
 #CadmiumTFile = CadmiumTFileA[i]
-CadmiumFile = CadmiumFileA
+CadmiumFile = CadmiumFileA[i]
 useCadmiumRun = useCadmiumRunA[i]
 
-CameraFile = CameraTFileA
+CameraFile = CameraTFileA[i]
 #EmptyCellFile = EmptyCellFileA
-EffFile = EffFileA
-SensFile = SensFileA 
+EffFile = EffFileA[i]
+SensFile = SensFileA[i] 
 
 #================= End of Parameters ======================================
 load Input_Path&inst&SampleFile&ext,"RUNSds"
@@ -136,8 +132,8 @@ Echo("Reading Efficiency Ratio file "&EFR)
 Sens =ReadFlood(sensitivity, 256,256)
 Echo("Reading Sensitivity file "&sensitivity)
 
-TransS = ReadTransmission( Output_Path&TSC&".cf", 60) 
-TransB = ReadTransmission( Output_Path&TBC&".cf", 60) 
+TransS = ReadTransmission( Output_Path&TSC[i]&".cf", 60) 
+TransB = ReadTransmission( Output_Path&TBC[i]&".cf", 60) 
 
  
 #Zero( Eff,0,0,9)
@@ -151,25 +147,24 @@ Res=Reduce_KCL(TransS,TransB,Eff,Sens[0],qu,RUNSds[0],RUNSds[1],RUNBds[0],RUNBds
 #Display Res[1], "NEW Selected Graph View"
 #SelectGroups( Res[2], "Group ID",0.0,0.0,"Between Max and Min", "Set Select")
 #Display Res[2], "NEW Selected Graph View"
-for i in [0:2]
+for j in [0:2]
   if  NQxBins < 0
   send Res[2]
-     Print3Col1D(Res[i], Output_Path&GetField(Res[i], "Title")&".dat","Reduce Results", NeutronDelay)
+     Print3Col1D(Res[j], Output_Path&GetField(Res[j], "Title")&".dat","Reduce Results", NeutronDelay)
   else
-    Print4Col2D1Chan( Res[i], Output_Path&GetField(Res[i], "Title")&".dat")
+    Print4Col2D1Chan( Res[j], Output_Path&GetField(Res[j], "Title")&".dat")
   endif
 endfor
-if do_2D == true
-    ss = SWV(Output_Path&GetField(Res[2], "Title")&".dat")
-  endif
-
 Echo("Finished REDUCE and written files: "  )
 Echo (Output_Path&GetField(Res[0], "Title") )
 Echo (Output_Path&GetField(Res[1], "Title") )
 Echo (Output_Path&GetField(Res[2], "Title") )
 #Display "Finished Reduce"
 #ExitDialog()
-
+Res=null
+RunSDS = null
+RUNCds = null
+RunBDS = null
 endfor
 
 Display "Finished"
