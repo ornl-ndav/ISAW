@@ -1,6 +1,5 @@
-
 Isaw Operators HOW TO
-Nov. 21, 2001
+Nov. 27, 2001
 Dennis Mikkelson
 
 -----------------------------------------------------------------------------
@@ -10,10 +9,11 @@ INTRODUCTION
 to implement special capabilities that are not in the basic Isaw system.
 A user-supplied operator can be used from the Isaw GUI and from scripts,
 provided it has been compiled and is in a directory where it can be found
-by Isaw and run.  The Isaw application does NOT have to be recompiled to
-use the new operator. Also, the parameter values required by the operator 
-can be obtained from the Isaw pop up dialog box, so that the person writing 
-the operator doesn't have to do any of the GUI coding themselves.  
+by Isaw and Java, so that it can be executed.  The main Isaw application does 
+NOT have to be recompiled to use the new operator.  Also, the parameter 
+values required by the operator can be obtained from the Isaw pop up dialog 
+box, so that the person writing the operator doesn't have to do any of the 
+GUI coding themselves.  
 
   The ability of the operator to interact with Isaw scripts, dialog boxes
 etc. comes at a small price.  Specifically, an operator must include code
@@ -36,7 +36,7 @@ HelloOperator.java
 =============================================================================
 package ISAW.Operators;             // The "package" for this operator. To run,
                                     // this operator must be in a directory 
-                                    // named "ISAW.Operators" and the parent 
+                                    // named "ISAW/Operators" and the parent 
                                     // directory must be on the java CLASSPATH
 import DataSetTools.operator.*;
 import java.util.*;
@@ -105,7 +105,10 @@ public class HelloOperator extends GenericOperator
 
 OPERATOR STRUCTURE
 
-  The HelloOperator demonstrates the basic operator structure.  
+  The HelloOperator demonstrates the basic operator structure.  The basic
+role of each of the methods of the HelloOperator is described in the following
+paragraphs.  More detailed information on the role and use of the parameters
+is given later in the section on operator paramters.
 
   First, there will typically be two constructors.  The first constructor 
 is the default constructor with no parameters.  This constructor will be 
@@ -217,17 +220,18 @@ IsawProps.dat might look like:
      ISAW_HOME=/usr/local/IPNSjava/
 
 If these lines are present in the IsawProps.dat file, the scripting system 
-will look for operator class files in four locations, in the order shown:
+will look for operator class files in four directories (and sub-directories
+of those directories), in the order shown:
 
      /home/user_name/ISAW/Operators           ( user's home directory )
      /usr/share/IsawOps/Operators
      /usr/local/HRCS_OPS/Operators
      /usr/local/IPNSjava/Operators            ( Isaw "home" directory )
 
-In all cases the new operators being added to the system will be in a 
-directory called Operators.  Some care will be needed to avoid package name
-conflicts.  In the above example, there will be no name conflicts if the
-CLASSPATH includes directories:
+In all cases the new operators being added to the system will be someplace
+in the directory tree under a directory called Operators.  Some care will be 
+needed to avoid package name conflicts.  In the above example, there will 
+be no name conflicts if the CLASSPATH includes directories:
 
      /home/user_name
      /usr/share
@@ -283,17 +287,19 @@ main program, a script, or some other java application.  At that time the
 operator will be executed using the current values of its parameters.
 In order for the ISAW dialog box to generate appropriate data entry lines, 
 and for the scripting system to check the data types of the parameters, the
-operator must be able to provide the names and data types of its parameters. 
+operator must be able to provide prompts and data types for its parameters. 
 This is done using the class DataSetTools.operator.Parameter.  
 
   The Parameter class bundles together two pieces of information, the name 
 for the parameter and a Java Object that holds the value for the parameter.  
-The class of the value Object determines the data type of that parameter.
-The data types currently supported by the scripting language and dialog box
-include Float, Integer, Boolean, String, DataSet, int[] and StringLists.
-When writing an operator, the names and default values must be provided 
-for all of the parameters.  This information must be provided in the form
-of a Vector of parameters constructed in the method setDefaultParameters().
+The name of the parameter provides the prompt string that appears for that
+parameter in the dialog box.  The class of the value Object determines the 
+data type of that parameter.  The data types currently supported by the 
+scripting language and dialog box include Float, Integer, Boolean, String, 
+DataSet, int[] and StringLists.  When writing an operator, the names and 
+default values must be provided for all of the parameters.  This information 
+must be provided in the form of a Vector of parameters constructed in the 
+method setDefaultParameters().
 
   The setDefaultParameters() method is called from the constructor for the
 base class Operator.  If the operator is to be called from other java 
@@ -319,7 +325,9 @@ DETAILS AND EXAMPLES
   In order to write operators that work with DataSets, some knowledge of
 the structure and attributes of DataSets is needed.  It will probably be
 helpful to look over the information on DataSets in the DataSet_Build_HOWTO
-or the ISAW user manual before proceeding.  
+or the ISAW user manual before proceeding.  The java docs for the DataSet,
+Attribute and Parameter classes in the docs directory of the ISAW distribution
+directory should also be helpful. 
 
   The basic concept is quite simple and will be quickly summarized here.
 A DataSet consists of a list of Data blocks.  Each Data block has a list of 
@@ -340,24 +348,187 @@ meta-data is stored in extensible lists of attributes.  Each Data block
 has it's own list of attributes and the DataSet has a whole has a list
 of attributes.
 
------------------------------------------------------------------------------
+  The following example operators illustrate some of the techniques involved 
+in operators that create and process DataSets.  The examples and the ideas 
+that they illustrate are:
 
-Accessing data values...
-  y-values ( array )
-  x-values ( XScale object )
-Return error strings...
-Log messages
-Eg. 1, Make a DataSet from ASCII file. ("LoadASCII.java")
+  LoadASCII                  -> load a simple ASCII data file into a DataSet
+  Ysquared                   -> access and alter the values in a DataSet
+  CenteredDifferences        -> create a new DataSet from an existing DataSet
+  IntegratedIntensityVsAngle -> access detector position attributes and use
+                                of multiple parameters
+  OperatorTemplate           -> DataSet, int, float, boolean and String
+                                paramters.  May be modified to produce 
+                                a useful operator.
 
-Subtleties: references, cloning
-Eg. 2, use references to modify values in place  ( "Ysquared.java" 
-                                                    replace y by y^2 )
-Eg. 3, create a new DataSet from an existing one ( "CenteredDifferences" )
+EXAMPLE: LoadASCII.java
 
-Operator parameters...
-Accessing attributes...
-Eg. 4, make new DS using detector position attributes ( "PeakVsAngle" 
-                   integrated peak intensity as function of scattering angle )
+  As a first example of a useful operator, consider the operator 
+LoadASCII.java.  This operator loads one histogram from an ASCII file with
+a very simple format.  The source code, LoadASCII.java, and an example
+data file, LoadASCII.dat, should be in the Operators subdirectory of
+the latest ISAW distribution.  
 
-The OperatorTemplate
-Eg. 5.
+  The LoadASCII operator takes only one parameter, the fully qualified 
+file name of the ASCII data file that should be loaded.  The ASCII file must 
+contain six initial lines giving the title, units and labels for the x and 
+y axes, and the number of histogram bins.  The rest of the file has two 
+columns of data.  The first column has the x-values for the bin boundaries 
+and the second column has the histogram values.  The column of x-values 
+must have one more entry than the column of histogram values.  Except for 
+the getResult() method, the structure of LoadASCII.java is just like the 
+structure of HelloOperator.java.  The getResult() method first gets the 
+current value of the file_name parameter, then reads the data from the 
+file into local variables and arrays.  It would be easy to modify this 
+operator to load data that just consists of x,y pairs rather than a 
+histogram.  It would only be necessary to create the array x[] to be of 
+the same size as the array y[] and remove the line that reads the last 
+bin boundary.
+
+  The data is read from the file using a utility class TextFileReader
+in ../ISAW/DataSetTools/util.  This class makes it simple to read a sequence 
+of numeric, char or String values from a text file.  It also supports 
+putting back the last item that was read, whether it was a single character, 
+or a numeric or string value, so it should be convenient to use when reading 
+more complicated ASCII data file formats.  In this case, only the read_line() 
+and read_float() methods are needed.  The file is opened by the TextFileReader
+constructor.  If an error is encountered while reading the file, an 
+exception is generated and the operator will return an error message.
+
+  If the data is successfully read, the getResult() method constructs an
+empty DataSet using a DataSet factory, puts the data into a Data block and 
+adds the Data block to the DataSet.  The DataSet is constructed using a
+DataSetFactory, rather than just a DataSet constructor since the DataSetFactory
+adds certain basic operators to the DataSet.  Also, a String indicating
+that the data was loaded from the specified file is added to the DataSet's
+log.
+
+  The operator has it's own main program that can be used to test it.  The 
+operator's main program just loads the data from the file LoadASCII.dat
+and them pops up a viewer to display the data.  It can be tested by running 
+the operator from within the directory containing the sample data file,
+LoadASCII.dat.  Specifically, if the current directory contains LoadASCII.dat,
+and the LoadASCII.java file has been compiled, it should work to give the
+command: 
+         java Operators.LoadASCII
+
+
+EXAMPLE: Ysquared.java
+
+  The Ysquared operator provides a very simple example of accessing and
+altering the y-values stored in a DataSet.  The operator takes only one
+parameter, a DataSet.  The getResult() method steps across each Data block
+in the DataSet.  For each Data block, a reference to the array of y-values 
+of the Data block is obtained.  Using that reference to the array of y-values,
+the y-values are then altered by squaring each one. 
+
+  The main test program for this operator first loads an IPNS runfile, clones
+it and displays it.  The DataSet must be cloned, since the Ysquared operator
+alters the DataSet it is given.  The main test program then constructs and
+applies a Ysquared operator to the original DataSet and displays the result.
+In order to use this main test program, it will be necessary to edit the
+String giving the run_name so that it points to an actual file that can be
+read.  If the operator is used from within ISAW, the DataSet can be any
+DataSet that has been loaded into ISAW.
+
+
+EXAMPLE: CenteredDifferences.java
+
+  The CenteredDifferences operator creates a new DataSet containing approximate
+numerical derivatives of a specified DataSet.  The numerical derivatives are 
+calculated using the centered difference approximation: 
+(Yi+1 - Yi-1)/(Xi+1 - Xi-1).  The new DataSet has the same x units and
+label as the original DataSet, but has y units and label indicating that
+it is the derivative of the original DataSet.
+
+  As was the case with the Ysquared operator, the main test program loads an
+IPNS runfile and will have to be altered to point to a file on your system.
+
+  
+EXAMPLE: IntegratedIntensityVsAngle.java
+ 
+  The IntegratedIntensityVsAngle operator is somewhat more involved than 
+the previous examples.  In this example, we calculate the total number of 
+counts over an interval [a,b] and record the integrated intensity as a function 
+of the scattering angle 2*theta.
+
+  Several additional techniques are illustrated by this example.  First, 
+the operator has three parameters, a DataSet and two floats, a, b,
+giving the interval over which the histogram is integrated.  Since the floats
+are stored internally in java "Float" objects, a little bit of effort is
+needed to get the values from the list of parameters.  Unfortunately, the
+simple numeric type float is very different from the class Float in Java and
+so it is necessary to do some work to get at the numeric value that we want.
+The expression on the right hand side of the equation:
+
+   float a = ((Float)(getParameter(1).getValue())).floatValue(); 
+
+gets parameter #1 from the operator, then gets the "value" object for that
+parameter.  The "value" object in this case is a "Float" object, so the
+object is type cast to type Float.  Finally, we want the numeric float value
+from this Float object, so we use the floatValue() method of class Float to
+get the value that we will calculate with. 
+
+  After getting the parameters, the getResult() method checks that the 
+DataSet and interval are valid and returns an ErrorString if they are not
+valid.  Next, a new DataSet is obtained and the log and attributes from the 
+original DataSet are copied to the new DataSet.  A new log entry indicating
+the new calculation is also added to the log.
+
+  Since the XScales for DataSet must be increasing sequences, the original
+DataSet is sorted in increasing order based on the detector position attribute.
+The sort is carried out using a DataSetSort operator.  
+
+  The core calculation consists of processing each histogram of the DataSet
+to obtain the total counts on the interval [a,b] and to obtain the 
+scattering angle, 2*theta, for that detector.  Since the user specified 
+interval [a,b] may not be aligned with the bin boundaries, the endpoints may
+split a histogram bin.  These technicalities are taken care of by the utility
+NumericalAnalysis.IntegrateHistogram().  The detector position is assumed
+to be an attribute of the Data block, and the example code demonstrates
+how to obtain it.  A DetectorPosition object records a position in three
+dimensions and has methods that return the coordinates of the position using
+cartesian, cylindrical or spherical coordinates.  The origin is at the sample
+and the x-axis is assumed to be in the beam direction.  The positive y-axis 
+is assumed to be pointed upward.  In this example, a convenience method of
+the DetectorPosition class, getScatteringAngle(), is used to calculate the
+angle between the scattered beam and the positive x axis.
+
+  When the integrated intensity and scattering angle for each detector have
+been calculated and stored in arrays, one more technicality must be dealt
+with.  It is likely that more than one detector will have the same 
+scattering angle.  The later part of the getResult() method checks for such
+duplicates and replaces values corresponding to several detectors at the
+same scattering angle with one value ( the average ) at that scattering
+angle. 
+
+  Finally, the area and angle arrays with duplicates removed are placed in a
+Data block, in the new DataSet and the new DataSet is returned.
+
+
+EXAMPLE: OperatorTemplate.java 
+
+  The OperatorTemplate file includes examples of parameters of types DataSet,
+int, float, boolean and String.  The getResult() method returns a String
+indicating that the operator was called and what the parameter values were.
+This "template" may provide useful starting point for building a new 
+operator as follows:
+
+1. Rename the OperatorTemplate.java file to the name of the new operator.  
+2. Edit the new file to change the class name, constructor names, title, 
+   command name and clone method so that they are appropriate for the new 
+   operator.  Also, change the operator name in the main test program.
+3. Compile the renamed template, and make sure that it still runs along 
+   and can be accessed from ISAW and Scripts, as needed.
+4. Adjust the list of parameters as required in both the constructor and
+   in the setDefaultParameters() method.  
+5. Add the code for the new operator to the getResult() method.  Modify
+   the main test program to do some basic tests of the operator, if possible. 
+6. Rewrite the documentation to match the new operator.
+
+This process may be simplified somewhat by using the OperatorBuilder utility.
+The OperatorBuilder gets the required information and places it in a new
+java file, in the proper format.  It basically creates a custom 
+OperatorTemplate, and is more convienient and less error prone to use
+than modifying the OperatorTemplate by hand.
+
