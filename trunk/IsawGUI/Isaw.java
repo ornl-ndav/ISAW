@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.94  2002/04/22 19:19:17  pfpeterson
+ *  Improved the JSplitPane usage in the main window. Now the
+ *  system properties for the divider locations are updated
+ *  only when the divider itself is dragged.
+ *
  *  Revision 1.93  2002/04/12 20:52:05  pfpeterson
  *  Removed the listeners that pay attention to the split_pane dividers.
  *
@@ -384,6 +389,7 @@ import java.util.zip.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.JTree.*;
+import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicRootPaneUI;
 import javax.swing.plaf.metal.MetalLookAndFeel.*;
 import javax.swing.text.*;
@@ -554,6 +560,8 @@ public class Isaw
     cp.addIObserver( this );
     cp.setLogDoc(sessionLog);
 
+    WindowResizeListener wrl=new WindowResizeListener(this);
+
     jpui = new JPropertiesUI();
     jpui.setPreferredSize( new Dimension(200, 200) );
     //jpui.setPreferredSize( new Dimension(400, 200) );
@@ -567,12 +575,7 @@ public class Isaw
 
     MouseListener ml = new MouseListener();
     KeyListener kl = new KeyListener(); 
-    this.addComponentListener( new ComponentAdapter(){
-        public void componentResized(ComponentEvent ev){
-            mw_resized(ev.getComponent().getWidth(),
-                       ev.getComponent().getHeight());
-        }
-    });
+    this.addComponentListener(wrl);
     jdt = new JDataTree( ml, kl);
     ml.init();
     kl.init();
@@ -611,81 +614,19 @@ public class Isaw
 
     upper_sp= new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
                                       jdt, jcui, 0.2f);
-    /*upper_sp.addPropertyChangeListener(new PropertyChangeListener(){
-       public void propertyChange(PropertyChangeEvent ev){
-         if(initialized && 
-            JSplitPane.DIVIDER_LOCATION_PROPERTY.equals(ev.getPropertyName())
-            &&((Integer)ev.getNewValue()).intValue()>0){
-
-             float tol=.01f;
-             float tree=
-                 Float.parseFloat(System.getProperty("Tree_Width",".2"));
-             int newDiv=((Integer)(ev.getNewValue())).intValue();
-             int paneWidth=((JSplitPane)(ev.getSource())).getWidth();
-             float newPercent=Float.parseFloat(
-                            Format.real((double)newDiv/(double)paneWidth,3,2));
-             float treePercent=tree;
-
-             //System.out.print("(d:"+newDiv+" p:"+paneWidth
-             //+" %:"+newPercent+") "+tree+" -> ");
-             if(tree>1f){
-                 tol=.02f;
-                 treePercent=Float.parseFloat(
-                        Format.real((double)tree/(double)paneWidth,3,2));
-             }
-
-             if(Math.abs(treePercent-newPercent)>tol){
-                 if(tol>.01f){
-                     tree=newDiv;
-                 }else{
-                     tree=newPercent;
-                 }
-             }
-             System.setProperty("Tree_Width",Float.toString(tree));
-             //System.out.println(tree+" ");
-         }
-       }
-       }); */
-
+    Component sp_comp[]=upper_sp.getComponents();
+    for( int i=0 ; i<sp_comp.length ; i++ ){
+        if(sp_comp[i] instanceof BasicSplitPaneDivider)
+            sp_comp[i].addMouseListener(wrl);
+    }
+    
     main_sp= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT,
                                      upper_sp, StatusPanel, 1f-0.2f );
-    /*main_sp.addPropertyChangeListener(new PropertyChangeListener(){
-      public void propertyChange(PropertyChangeEvent ev){
-         if(initialized && 
-            JSplitPane.DIVIDER_LOCATION_PROPERTY.equals(ev.getPropertyName())
-            &&((Integer)ev.getNewValue()).intValue()>0){
-             
-             float tol=.01f;
-             float status=
-                 Float.parseFloat(System.getProperty("Status_Height",".2"));
-             int newDiv=((Integer)(ev.getNewValue())).intValue();
-             int paneHeight=((JSplitPane)(ev.getSource())).getHeight();
-             float newPercent=Float.parseFloat(
-                      Format.real(1.0-(double)newDiv/(double)paneHeight,3,2));
-             float statusPercent=status;
-                
-             if(newPercent<=0f) return;
-
-             //System.out.print("(d:"+newDiv+" p:"+paneHeight
-             //+" %:"+newPercent+") "+status+" -> ");
-             if(status>1f){
-                 tol=.02f;
-                 statusPercent=Float.parseFloat(
-                        Format.real((double)status/(double)paneHeight,3,2));
-             }
-             
-             if(Math.abs(statusPercent-newPercent)>tol){
-                 if(tol>.01f){
-                     status=paneHeight-newDiv;
-                 }else{
-                     status=newPercent;
-                 }
-             }
-             System.setProperty("Status_Height",Float.toString(status));
-             //System.out.println(status+" ");
-         }
-      }
-      }); */
+    sp_comp=main_sp.getComponents();
+    for( int i=0 ; i<sp_comp.length ; i++ ){
+        if(sp_comp[i] instanceof BasicSplitPaneDivider)
+            sp_comp[i].addMouseListener(wrl);
+    }
 
     upper_sp.setOneTouchExpandable(true);
     Container con = getContentPane();
@@ -1964,23 +1905,26 @@ public class Isaw
         if(!initialized) return;
         
         // Set the tree width
-        double tree_width=
+        double tree_widthD=
             Double.parseDouble(System.getProperty("Tree_Width","0.2"));
-        if(tree_width>1.0){
-            upper_sp.setDividerLocation((int)tree_width);
-        }else{
-            upper_sp.setDividerLocation(tree_width);
+        int tree_width=(int)tree_widthD;
+        if(tree_width<=1.0){
+            tree_width=(int)(tree_widthD*(double)upper_sp.getWidth());
         }
+        upper_sp.setDividerLocation(tree_width);
         
         // Set the status height. Remember that the divider location
         // is relative from the top of the pane.
-        double status_height=
+        double status_heightD=
             Double.parseDouble(System.getProperty("Status_Height","0.2"));
+        int status_height=(int)status_heightD;
         if(status_height>1.0){
-            main_sp.setDividerLocation(main_sp.getHeight()-(int)status_height);
+            status_height=main_sp.getHeight()-status_height;
         }else{
-            main_sp.setDividerLocation(1.0-status_height);
+            status_height=(int)((1.0-status_height)
+                                *(double)main_sp.getHeight());
         }
+        main_sp.setDividerLocation(status_height);
     }
 
   /*
@@ -2409,9 +2353,9 @@ public class Isaw
     }
   }
 
-/**
-   * listens to the events generated by the JDataTree's JTree
-   */ 
+    /**
+     * listens to the events generated by the JDataTree's JTree
+     */ 
   class KeyListener extends KeyAdapter
   {
     private JDataTreeRingmaster ringmaster = null;
@@ -2440,5 +2384,125 @@ public class Isaw
       }
     }
   }
+
+    /**
+     * Listens for property change events in the main window and
+     * splitpanes
+     */
+    class WindowResizeListener implements MouseInputListener, 
+                                          ComponentListener {
+        Isaw isaw;
+
+        public WindowResizeListener(Isaw mine){
+            this.isaw=mine;
+        }
+        // ComponentListener interface
+        public void componentHidden(ComponentEvent ev){
+        }
+        public void componentShown(ComponentEvent ev){
+        }
+        public void componentMoved(ComponentEvent ev){
+        }
+        public void componentResized(ComponentEvent ev){
+            String param=ev.paramString();
+            if(ev.getComponent().equals(isaw)){
+                if(isaw.isVisible()){
+                    param=this.getDimension(param);
+                    mw_resized(this.getWidth(param),this.getHeight(param));
+                }
+            }
+        }
+
+        // MouseInputListener interface
+        public void mouseClicked(MouseEvent ev){
+        }
+        public void mouseEntered(MouseEvent ev){
+        }
+        public void mouseExited(MouseEvent ev){
+        }
+        public void mousePressed(MouseEvent ev){
+        }
+        public void mouseReleased(MouseEvent ev){
+            JSplitPane sp=(JSplitPane)
+                ((BasicSplitPaneDivider)ev.getSource()).getParent();
+            int orientation=sp.getOrientation();
+            int position=sp.getDividerLocation();
+
+            if(orientation==JSplitPane.VERTICAL_SPLIT)
+                setNewVal("Status_Height",sp.getHeight(),position);
+            else if(orientation==JSplitPane.HORIZONTAL_SPLIT)
+                setNewVal("Tree_Width",   sp.getWidth(), position);
+        }
+        public void mouseDragged(MouseEvent ev){
+        }
+        public void mouseMoved(MouseEvent ev){
+        }
+
+        // internal methods to make things easier
+        String setNewVal(String property, int pane_size, int div_pos){
+            if(div_pos>pane_size) return "div>pane "+div_pos+">"+pane_size;
+
+            float tol=.01f;
+            float pane_sizeF=(float)pane_size;
+            float div_posF=(float)div_pos;
+            float prop=Float.parseFloat(System.getProperty(property,".2"));
+            float newPercent=div_posF/pane_sizeF;
+            float oldPercent=prop;
+
+            if(prop>1f){
+                tol=.02f;
+                oldPercent=prop/pane_sizeF;
+            }
+
+            if(oldPercent>1f) return "bad oldPercent "+oldPercent;
+            if(newPercent>1f) return "bad newPercent "+newPercent;
+
+            if(Math.abs(oldPercent-newPercent)>tol){
+                if(property.equals("Status_Height")){
+                    div_posF=pane_sizeF-div_posF;
+                    newPercent=1f-newPercent;
+                }
+                if(tol>.01f){
+                    prop=div_posF;
+                }else{
+                    prop=newPercent;
+                    prop=Float.parseFloat(Format.real((double)prop,3,2));
+                }
+                System.setProperty(property,(Float.toString(prop)));
+                return Float.toString(prop);
+            }else{
+                return "";
+            }
+
+        }
+
+        String getDimension(String param){
+            int index=param.indexOf(",");
+            if(index>0)
+                param=param.substring(index+1,param.length()-1);
+            index=param.indexOf(" ");
+            if(index>0)
+                param=param.substring(index+1,param.length());
+
+            return param;
+        }
+        int getWidth(String param){
+            int index=param.indexOf("x");
+            if(index>0)
+                return Integer.parseInt(param.substring(0,index));
+            else
+                return -1;
+
+        }
+        int getHeight(String param){
+            int index=param.indexOf("x");
+            if(index>0){
+                index++;
+                return Integer.parseInt(param.substring(index,param.length()));
+            }else
+                return -1;
+
+        }
+    }
 }
 
