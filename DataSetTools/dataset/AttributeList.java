@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2002/11/12 22:03:12  dennis
+ *  Made clone() method more efficient by creating the Vector of
+ *  Attributes to be of the correct size.
+ *
  *  Revision 1.13  2002/11/12 02:10:32  dennis
  *  No longer clones attributes.  Since attributes are immutable, just use
  *  the same reference to the attribute.
@@ -585,15 +589,18 @@ public class AttributeList implements Serializable,
   }
 
   /**
-   * Return a new Data object containing a copy of the x_scale, y_values
-   * errors, id and attributes from the current Data object.
+   * Return a new AttributeList containing references to the same Attributes
+   * as the current list.
    */
   public Object clone()
   {
     AttributeList  temp = new AttributeList( );
 
-    for ( int i = 0; i < this.getNum_attributes(); i++ )
-      temp.addAttribute( this.getAttribute(i) );
+    int num_attributes = attributes.size();
+    temp.attributes = new Vector( num_attributes );
+
+    for ( int i = 0; i < num_attributes; i++ )
+      temp.attributes.add( attributes.elementAt(i) );
 
     return temp;
   }
