@@ -3,6 +3,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.3  2001/08/02 19:15:31  neffk
+ * added *.isd, ISAW's binary data format, to the filter.
+ *
  * Revision 1.2  2001/07/23 20:36:04  neffk
  * added a method to filter filenames using a String parameter instead
  * of a File object.
@@ -24,9 +27,10 @@ public class NeutronDataFileFilter
   extends FileFilter
 {
 
-  public final static String HDF     = "hdf";
-  public final static String NEXUS   = "nxs";
-  public final static String RUNFILE = "run";
+  public final static String HDF         = "hdf";
+  public final static String NEXUS       = "nxs";
+  public final static String RUNFILE     = "run";
+  public final static String ISAW_NATIVE = "isd";
 
 
   public NeutronDataFileFilter()
@@ -61,9 +65,10 @@ public class NeutronDataFileFilter
     if( 
       extension != null  &&
       (
-        extension.equals( HDF     ) ||
-        extension.equals( NEXUS   ) ||
-        extension.equals( RUNFILE )  
+        extension.equals( HDF         ) ||
+        extension.equals( NEXUS       ) ||
+        extension.equals( RUNFILE     ) ||
+        extension.equals( ISAW_NATIVE ) 
       )
     )
       return true;
@@ -79,9 +84,10 @@ public class NeutronDataFileFilter
   public String getDescription()
   {
     return new String( 
-      "Neutron Data Files (*." + HDF     + ", " +
-                          "*." + NEXUS   + ", " +
-                          "*." + RUNFILE + ")"  );
+      "Neutron Data Files (*." + HDF         + ", " +
+                          "*." + NEXUS       + ", " +
+                          "*." + RUNFILE     + ", " +
+                          "*." + ISAW_NATIVE + ")"  );
   }
 
 
