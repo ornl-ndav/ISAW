@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.35  2003/06/24 22:33:54  bouzekc
+ * Removed unused variables.  Removed unused closeFile
+ * method.
+ *
  * Revision 1.34  2003/06/20 16:28:18  bouzekc
  * Now allows ignoring of parameter property changes, which is
  * needed for loading saved files.  Added methods to set and
@@ -283,8 +287,6 @@ public abstract class Wizard implements PropertyChangeListener{
     private static final String HELP_ABOUT_COMMAND  = "About";
     private static final String WIZARD_HELP_COMMAND = "on Wizard";
     private static final String FORM_HELP_COMMAND   = "on Current Form";
-    private static final String SAVE_FORM_COMMAND   = "Save Current Form";
-    private static final String LOAD_FORM_COMMAND   = "Load Current Form";
     private static final String SAVE_WIZARD_COMMAND = "Save Wizard";
     private static final String LOAD_WIZARD_COMMAND = "Load Wizard";
     private static final String VIEW_MENU           = "View";
@@ -318,8 +320,6 @@ public abstract class Wizard implements PropertyChangeListener{
     private boolean                modified;
     private JFrame                 save_frame;
     private JFileChooser           fileChooser;
-    private ObjectOutputStream     output;
-    private ObjectInputStream      input;
     private File                   save_file;
     private JComponent[]           wizComponents;
     private boolean                ignorePropChanges;
@@ -419,26 +419,6 @@ public abstract class Wizard implements PropertyChangeListener{
     }
 
     /**
-     *  Closes a file.
-     */
-    private void closeFile(Object stream){
-      try{
-        if(stream instanceof ObjectInputStream)
-          ((ObjectInputStream)stream).close();
-        else if (stream instanceof ObjectOutputStream)
-          ((ObjectOutputStream)stream).close();
-        save_frame.dispose();
-      }
-      catch(Exception e){
-        JOptionPane.showMessageDialog(save_frame,
-          "Could not close the file.",
-          "ERROR",
-          JOptionPane.ERROR_MESSAGE);
-        save_frame.dispose();
-      }
-    }
-
-    /**
      *
      *  Write the Forms to a file, using the conc_forms Vector.
      *  The only things actually written are the Form's 
@@ -451,7 +431,7 @@ public abstract class Wizard implements PropertyChangeListener{
     private void writeForms(Vector conc_forms, File file){
       StringBuffer s = new StringBuffer();
       Form f;
-      String temp;
+      //String temp;
       Object obj;
       IParameterGUI ipg;
       FileWriter fw = null;
@@ -678,9 +658,7 @@ public abstract class Wizard implements PropertyChangeListener{
      *  Load the state of the wizard from a file
      */
     public boolean load(){
-      Vector loadedforms;
       File f;
-      Form temp;
       f = getFile(false);
 
       if( f == null ) return false;
@@ -1453,7 +1431,6 @@ public abstract class Wizard implements PropertyChangeListener{
        */
       private void enableFormParams(boolean enable){
         Form f = getCurrentForm();
-        IParameterGUI ipg;
 
         int[] var_indices = f.getVarParamIndices();
 
