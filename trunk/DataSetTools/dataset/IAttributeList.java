@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.8  2003/02/10 13:28:36  dennis
+ *  getAttributeList() now returns a reference to the attribute list,
+ *  not a clone.
+ *
  *  Revision 1.7  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -54,7 +58,7 @@ public interface IAttributeList
 {
 
   /**
-   *  Get a copy of the whole list of attributes for an object.
+   *  Get a reference to the whole list of attributes for an object.
    */
   public AttributeList getAttributeList();
 
