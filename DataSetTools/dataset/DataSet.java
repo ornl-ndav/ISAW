@@ -10,6 +10,12 @@
  *                 blocks. 
  *
  *  $Log$
+ *  Revision 1.8  2000/10/03 21:37:34  dennis
+ *  Modified to add a unique integer "tag" to each DataSet as it is created.
+ *  Added routine to get the "tag".
+ *  Changed vector.clear() to vector.removeAllElements() for compatibility
+ *  with 1.1.8 version of Java.
+ *
  *  Revision 1.7  2000/08/01 01:33:21  dennis
  *  Changed clone() to display an error message if a null Data block is
  *  found while cloning
@@ -81,13 +87,27 @@ public class DataSet implements IAttributeList,
                                 Serializable,
                                 IObservable
 {
+  private static long current_ds_tag = 0; // Each DataSet will be assigned a
+                                          // unique, immutable tag when it is
+                                          // created.
+
   public static final int INVALID_GROUP_ID = -1;
   public static final int INVALID_INDEX    = -1;
+
+                                          // Some operators need a default 
+                                          // DataSet to hold in a parameter.
+                                          // To avoid always constructing new
+                                          // DataSets for this purpose, we
+                                          // provide one constant empty DataSet
+  public static final DataSet EMPTY_DATA_SET 
+                      = new DataSet( "EMPTY_DATA_SET","Constant Empty DataSet");
+
 
   private String        title;      // NOTE: we force a DataSet to have a title
                                     // and also keep the same title as an
                                     // attribute.  The title can only be 
                                     // changed using the setTitle() method.
+  private long          ds_tag;
   private int           pointed_at_index;
   private String        x_units;
   private String        x_label;
@@ -134,7 +154,8 @@ public class DataSet implements IAttributeList,
     this.operators        = new Vector();
     this.observers        = new IObserverList();
     this.pointed_at_index = INVALID_INDEX;
-
+    this.ds_tag           = current_ds_tag++;   // record tag and advance to 
+                                                // the next tag value. 
     setTitle( title );
   }
 
@@ -267,8 +288,18 @@ public class DataSet implements IAttributeList,
 
   /**
    * Returns the title of the data set 
+   *
+   * @return  The DataSet title.
    */
   public String getTitle() { return title; }
+
+
+  /**
+   * Returns a numeric tag that is unique to this data set within a program.
+   * 
+   * @return  The numeric tag assigned when the DataSet was constructed 
+   */
+  public long getTag() { return ds_tag; }
 
 
   /**
@@ -371,16 +402,16 @@ public class DataSet implements IAttributeList,
    */
   public int getMostRecentlySelectedIndex( )
   {
-    int  index   = INVALID_INDEX;
-    long max_tag =  0;
-    Data d       = null;
+    int  index       = INVALID_INDEX;
+    long max_sel_tag =  0;
+    Data d           = null;
 
     for ( int i = 0; i < data.size(); i++ )
     {
       d = (Data)data.elementAt(i);
-      if ( d.getSelectionTagValue() > max_tag )
+      if ( d.getSelectionTagValue() > max_sel_tag )
       {
-        max_tag = d.getSelectionTagValue();
+        max_sel_tag = d.getSelectionTagValue();
         index = i;
       }
     }
@@ -846,7 +877,7 @@ public class DataSet implements IAttributeList,
    */
   public void removeAll_data_entries(  )
   {
-     data.clear();
+     data.removeAllElements();
   }
 
 
@@ -1257,9 +1288,10 @@ public class DataSet implements IAttributeList,
 
   /**
    *  Copy the contents of another DataSet into the current DataSet.  This 
-   *  performs a complete "deep copy" EXCEPT for the list of observers.  The
-   *  list of observers is unchanged and the observers of this DataSet are
-   *  notified that the data was changed.
+   *  performs a complete "deep copy" EXCEPT for the list of observers and the
+   *  DataSet tag.  The list of observers is unchanged and the observers of 
+   *  this DataSet are notified that the data was changed.  The numeric DataSet
+   *  tag of this DataSet is also unchanged.
    *
    *  @param  ds   The DataSet whose contents are to copied into this DataSet.
    */
@@ -1359,14 +1391,7 @@ public class DataSet implements IAttributeList,
    */
   public String toString()
   {
-    Attribute attr = attr_list.getAttribute(Attribute.DS_TAG);
-    
-    if (attr != null)
-    {String tag = attr.getStringValue();
-    return tag+":"+title;
-    }
-    else 
-    return title;
+     return ""+ds_tag+":"+title;
   }
 
   /**
