@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2004/03/06 21:56:04  dennis
+ * Fixed format of log message.
+ *
  * Revision 1.8  2004/01/24 22:22:25  bouzekc
  * Removed unused imports and local variables.
  *
@@ -40,18 +43,13 @@
  * Revision 1.6  2003/01/09 21:10:03  rmikk
  * Fixed the matrix corresponding to the three directions.
  *
- * CV: ----------------------------------------------------------------------
- * .
- * .
- * .er Log.  Lines beginning with `CVS:' are removed automatically
- *
  * Revision 1.5  2003/01/07 23:04:08  rmikk
  * Fixed an error with the orientation file name
  *
  * Revision 1.4  2003/01/07 16:08:47  rmikk
- * The main program now has file browse buttons.  If there is an orientation file
- * for the given data set, it can now be loaded.  This means that the hkl values
- * will show for the selected points.
+ * The main program now has file browse buttons.  If there is an orientation 
+ * file for the given data set, it can now be loaded.  This means that the 
+ * hkl values will show for the selected points.
  *
  * Revision 1.3  2002/11/27 23:24:30  pfpeterson
  * standardized header
