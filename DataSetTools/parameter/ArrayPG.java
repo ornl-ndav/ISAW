@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.40  2004/01/31 23:26:24  bouzekc
+ *  Now handles multidimensional arrays sent in to setValue() and
+ *  initGUI().  Fixed initGUI() so that it doesn't discard the previously
+ *  set values if an empty Vector is sent in as the parameter.
+ *
  *  Revision 1.39  2004/01/30 02:07:45  bouzekc
  *  setValue() now takes primitive array types (e.g. int[], float[]), although
  *  at this point it only allows one-dimensional arrays.
@@ -189,8 +194,9 @@ import DataSetTools.dataset.DataSet;
 
 import java.awt.*;
 
-import java.util.Vector;
 import java.lang.reflect.*;
+
+import java.util.Vector;
 
 import javax.swing.*;
 
@@ -264,11 +270,8 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       vecVal = ( Vector )val;
     } else if( val instanceof String ) {
       vecVal = StringtoArray( ( String )val );
-    } else if( val.getClass().isArray() ) {
-      vecVal = new Vector(  );
-      for( int i = 0; i < Array.getLength( val ); i++ ) {
-        vecVal.add( Array.get( val, i ) ); 
-      }
+    } else if( val.getClass(  ).isArray(  ) ) {
+      vecVal = unwrapArray( val );
     } else {
       return;
     }
@@ -431,7 +434,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     if( getValue(  ) == null ) {
       return;
     }
-
     ( ( Vector )getValue(  ) ).clear(  );
 
     if( getInitialized(  ) ) {
@@ -450,10 +452,13 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       return;  // don't initialize more than once
     }
 
-    if( init_values != null ) {
+    //i.e. if it is not null AND it is not an empty Vector, then reset the values.
+    if( 
+      ( init_values != null ) &&
+        ( init_values instanceof Vector &&
+        ( ( ( Vector )init_values ).size(  ) > 0 ) ) ) {
       setValue( init_values );
     }
-
     setEntryWidget( 
       new EntryWidget( 
         new JTextField( ArraytoString( ( Vector )getValue(  ) ) ) ) );
@@ -489,7 +494,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     int y       = 0;
     int dy      = 70;
     Vector vals = new Vector(  );
-
     vals.add( "C:\\\\Windows\\System" );
     vals.add( "C:\\\\Windows\\System\\My Documents" );
     vals.add( "/home/myhome/atIPNS" );
@@ -514,7 +518,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     for( int i = 1; i <= 20; i++ ) {
       vals.add( new Integer( i ) );
     }
-
     fpg = new ArrayPG( "c", vals, false );
     System.out.println( fpg );
     fpg.setEnabled( false );
@@ -526,11 +529,26 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     for( float f = 1f; f < 100; f *= 2 ) {
       vals.add( new Float( f ) );
     }
-
     fpg = new ArrayPG( "d", vals, true );
     System.out.println( fpg );
     fpg.setDrawValid( true );
     fpg.initGUI( vals );
+    fpg.showGUIPanel( 0, y );
+    y += dy;
+
+    int[][][] array = new int[3][3][3];
+
+    for( int i = 0; i < 3; i++ ) {
+      for( int j = 0; j < 3; j++ ) {
+        for( int k = 0; k < 3; k++ ) {
+          array[i][j][k] = k;
+        }
+      }
+    }
+    fpg = new ArrayPG( "e", array, true );
+    System.out.println( fpg );
+    fpg.setDrawValid( true );
+    fpg.initGUI( new Vector(  ) );
     fpg.showGUIPanel( 0, y );
     y += dy;
   }
@@ -542,7 +560,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    */
   public void removeItem( Object val ) {
     int index = ( ( Vector )getValue(  ) ).indexOf( val );
-
     removeItem( index );
 
     if( getInitialized(  ) ) {
@@ -585,5 +602,31 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     } else {
       setValid( false );
     }
+  }
+
+  /**
+   * Recursively unwraps the given Object which must be an array (e.g. int[]).
+   *
+   * @param array The array to unwrap.
+   *
+   * @return A Vector consisting of the unwrapped array.  If it is a
+   *         multidimensional array, then the Vector's elements will
+   *         themselves be Vectors.
+   */
+  private Vector unwrapArray( Object array ) {
+    Vector vecVal  = new Vector(  );
+    Object element = null;
+
+    for( int i = 0; i < Array.getLength( array ); i++ ) {
+      element = Array.get( array, i );
+
+      if( element.getClass(  ).isArray(  ) ) {
+        vecVal.add( unwrapArray( element ) );
+      } else {
+        vecVal.add( element );
+      }
+    }
+
+    return vecVal;
   }
 }
