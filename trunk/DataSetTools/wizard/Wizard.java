@@ -1,7 +1,7 @@
 /*
  * File:  Wizard.java
  *
- * Copyright (C) 2002, Dennis Mikkelson
+ * Copyright (C) 2002, Dennis Mikkelson, 2003 Chris Bouzek
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,18 +18,23 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Chris Bouzek <coldfusion78@yahoo.com>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
- * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA and by 
+ * the National Science Foundation under grant number DMR-0218882.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2003/05/08 15:10:30  pfpeterson
+ * Added a FileFilter to the save and load dialogs. (Chris Bouzek)
+ *
  * Revision 1.18  2003/04/29 14:08:37  pfpeterson
  * Generate help page for Form from HTMLizer. (Chris Bouzek)
  *
@@ -119,6 +124,7 @@ import java.beans.*;
 import java.io.*;
 import DataSetTools.dataset.DataSet;
 import IsawHelp.HelpSystem.HTMLizer;
+import DataSetTools.wizard.util.*;
 
 /**
  *  The Wizard class provides the top level control for a sequence of
@@ -226,9 +232,14 @@ public abstract class Wizard implements PropertyChangeListener{
     private File getFile(boolean saving)
     {
       int result;
-      JFileChooser fileChooser = new JFileChooser();
-      fileChooser.setFileSelectionMode(
-        JFileChooser.FILES_ONLY);
+      String save_file_abs_path;
+      if(fileChooser == null)
+      {
+        fileChooser = new JFileChooser();
+        fileChooser.setFileSelectionMode(
+          JFileChooser.FILES_ONLY);
+        fileChooser.setFileFilter(new WizardFileFilter());
+      }
 
       if((save_file !=null) && !save_file.toString().equals(""))
         fileChooser.setSelectedFile(save_file);
@@ -241,24 +252,34 @@ public abstract class Wizard implements PropertyChangeListener{
       if( result == JFileChooser.CANCEL_OPTION )
         return null;
 
-      File opened_file = fileChooser.getSelectedFile();
-      save_file = opened_file;
+      save_file = fileChooser.getSelectedFile();
 
-      if(saving && opened_file.exists())
+      if(saving)
+      {
+        save_file_abs_path = save_file.toString();
+        save_file_abs_path = FileExtension.appendExtension(save_file_abs_path, 
+                           fileChooser.getFileFilter());
+        save_file = new File(save_file_abs_path);
+      }
+
+      if(saving && save_file.exists())
       {
         String temp;
         StringBuffer s = new StringBuffer();
         s.append("You are about to overwrite ");
-        s.append(opened_file.toString());
+        s.append(save_file.toString());
         s.append(".\n  If this is OK, press ");
         s.append("<Enter> or click the <OK> button.\n  Otherwise, please ");
         s.append("enter a new name or click <Cancel>.");
         temp = JOptionPane.showInputDialog(s.toString());
         if(temp != null && !temp.equals(""))
-          opened_file = new File(fileChooser.getCurrentDirectory() + "/" + temp);
+        {
+          temp = FileExtension.appendExtension(temp, fileChooser.getFileFilter());
+          save_file = new File(fileChooser.getCurrentDirectory() + "/" + temp);
+        }
       }
 
-      if( opened_file== null || opened_file.getName().equals(""))
+      if( save_file== null || save_file.getName().equals(""))
       {
         JOptionPane.showMessageDialog(save_frame,
           "Please enter a valid file name",
@@ -267,12 +288,12 @@ public abstract class Wizard implements PropertyChangeListener{
         return null;
       }
       else
-        return opened_file;
+        return save_file;
     }
 
     /**
-    *  Closes a file.
-    */
+     *  Closes a file.
+     */
     private void closeFile(Object stream)
     {
       try
