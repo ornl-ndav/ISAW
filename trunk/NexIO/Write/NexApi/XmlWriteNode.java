@@ -105,7 +105,7 @@ public class XmlWriteNode extends NexWriteUtil
 	{
           S = "<"+classname+" ID =\""+nodename+"\" ";
         }
-    
+        
         S +="\n";
         for( int i = 0; i< attributes.size(); i++)
           {Vector V =(Vector)( attributes.elementAt( i ));
@@ -199,7 +199,10 @@ public class XmlWriteNode extends NexWriteUtil
           else if( type == Types.Short)
             S += Array.getShort( Value , i )+" ";
           else if( type == Types.Char )
-            S += (char)(Array.getByte( Value , i ));
+            {char c= (char)(Array.getByte( Value , i ));
+             if( c ==(char)0){}
+             else S+=c;
+             }
           else if( type == Types.Long)
             S += Array.getLong( Value , i )+" ";
           else if( type == Types.Float)
@@ -217,7 +220,7 @@ public class XmlWriteNode extends NexWriteUtil
     System.arraycopy( rank ,1, rank1 ,0, rank1.length );
     for( i=0; i < rank[0] ; i++)
       {Object U = Array.get( Value ,i);
-       S += Stringify( U, type, rank1 );
+       S += Stringify( U, type, rank1 )+" ";
       }
    return S;   
     }
