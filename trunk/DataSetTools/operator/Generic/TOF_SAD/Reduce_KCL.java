@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.34  2005/02/09 20:16:47  dennis
+ * Changed title of operator for Menu system to "Reduce_KCL"
+ * to match the command name and to distinguish it from the
+ * "Reduce" script which loads a lot of files and then calls
+ * the Reduce_KCL operator.
+ *
  * Revision 1.33  2005/02/08 21:28:45  dennis
  * Removed excessive tabs from getDocumentation method.
  *
@@ -144,7 +150,9 @@ import DataSetTools.operator.DataSet.Math.DataSet.*;
 
 public class Reduce_KCL  extends GenericTOF_SAD{
 
-    public static final int DEFAULT_NEDGE = 1;  // mask off edge detectors 
+   public static final String Title = "Reduce_KCL";
+
+   public static final int DEFAULT_NEDGE = 1;  // mask off edge detectors 
 
    /* ---------------------------- Constructor  -------------------------- */
    /**
@@ -152,7 +160,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     */
     public Reduce_KCL()
     {
-      super("Reduce");
+      super( Title );
     }
 
    /* ---------------------------- Constructor  -------------------------- */
@@ -203,7 +211,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
                       int upStreamMonID ) 
      {
         
-        super( "Reduce");
+        super( Title );
         parameters = new Vector();
         addParameter( new DataSetPG("Sample Transmission DS", TransS));
         addParameter( new DataSetPG("Background Transmission DS", TransB));
