@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.9  2003/08/28 02:32:36  bouzekc
+ * Modified to work with new VectorPG.
+ *
  * Revision 1.8  2003/08/15 23:50:05  bouzekc
  * Modified to work with new IParameterGUI and ParameterGUI
  * classes.  Commented out testbed main().
@@ -48,9 +51,14 @@ import DataSetTools.util.PGActionListener;
 
 public class LoadFileArrayPG extends VectorPG{
 
-  public LoadFileArrayPG( String Prompt, Object value){ 
-    super( new LoadFilePG("Enter LoadFile",null),"Select LoadFile List");
-    setValue( value);
+  public LoadFileArrayPG( String name, Object val){ 
+    super( name, val );
+    innerParam =  new LoadFilePG("Enter File to Load", null);
+  }
+
+  public LoadFileArrayPG( String name, Object val, boolean valid ) {
+    super( name, val, valid );
+    innerParam =  new LoadFilePG("Enter File to Load", null);
   }
 
   /*
@@ -68,7 +76,7 @@ public class LoadFileArrayPG extends VectorPG{
     jf.setSize( 500,100);
     jf.invalidate();
     jf.show();
-  }*/      
+  }*/
   public Object clone(){
     LoadFilePG faap = new LoadFilePG( getName(), getValue());
     return (Object)faap;

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/08/28 02:32:36  bouzekc
+ * Modified to work with new VectorPG.
+ *
  * Revision 1.8  2003/08/15 23:50:05  bouzekc
  * Modified to work with new IParameterGUI and ParameterGUI
  * classes.  Commented out testbed main().
@@ -62,9 +65,14 @@ import DataSetTools.util.PGActionListener;
 
 public class IntegerArrayPG extends VectorPG{
 
-  public IntegerArrayPG( String Prompt, Object value){ 
-    super( new IntegerPG("Enter Integer",0),"Enter Integer List");
-    setValue( value);
+  public IntegerArrayPG( String name, Object val){ 
+    super( name, val );
+    innerParam =  new IntegerPG("Enter Integer", 0);
+  }
+
+  public IntegerArrayPG( String name, Object val, boolean valid ) {
+    super( name, val, valid );
+    innerParam = new IntegerPG("Enter Integer", 0);
   }
 
   public Object clone(){
@@ -87,5 +95,5 @@ public class IntegerArrayPG extends VectorPG{
     jf.setSize( 500,100);
     jf.invalidate();
     jf.show();
-  } */     
+  }*/
 }

@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.8  2003/08/28 02:32:36  bouzekc
+ * Modified to work with new VectorPG.
+ *
  * Revision 1.7  2003/08/15 23:50:04  bouzekc
  * Modified to work with new IParameterGUI and ParameterGUI
  * classes.  Commented out testbed main().
@@ -48,9 +51,14 @@ import DataSetTools.util.PGActionListener;
 
 public class FloatArrayPG extends VectorPG{
 
-  public FloatArrayPG( String Prompt, Object value){ 
-    super( new FloatPG("Enter Float",0.0f),"Enter Float List");
-    setValue( value);
+  public FloatArrayPG( String name, Object val){ 
+    super( name, val );
+    innerParam =  new FloatPG("Enter Float", 0.0f);
+  }
+
+  public FloatArrayPG( String name, Object val, boolean valid ) {
+    super( name, val, valid );
+    innerParam = new FloatPG("Enter Float", 0.0f);
   }
 
   /*
@@ -68,7 +76,7 @@ public class FloatArrayPG extends VectorPG{
     jf.setSize( 500,100);
     jf.invalidate();
     jf.show();
-  }*/    
+  }*/
   public Object clone(){
     FloatArrayPG faap = new FloatArrayPG( getName(), getValue());
     return (Object)faap;
