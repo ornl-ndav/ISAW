@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/03/19 17:20:48  dennis
+ * Removed unused variable(s)
+ *
  * Revision 1.9  2004/03/15 06:10:47  dennis
  * Removed unused import statements.
  *
@@ -288,7 +291,7 @@ public class TrueAngle extends    YAxisConversionOp
                      rebinned_data;
     AttributeList    attr_list;
     DetectorPosition position = null;
-    float            scattering_angle;
+//  float            scattering_angle;
     Float            delta_theta_obj = null;
     float            delta_theta;
     Float            raw_angle_obj = null;
@@ -328,7 +331,7 @@ public class TrueAngle extends    YAxisConversionOp
         return message;
       }
 
-      scattering_angle = position.getScatteringAngle() * (float)(180.0/Math.PI);
+//    scattering_angle = position.getScatteringAngle() * (float)(180.0/Math.PI);
       delta_theta = delta_theta_obj.floatValue();
       raw_angle = raw_angle_obj.floatValue();
 

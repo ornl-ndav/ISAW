@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/03/19 17:22:05  dennis
+ *  Removed unused variable(s)
+ *
  *  Revision 1.5  2004/03/15 06:10:51  dennis
  *  Removed unused import statements.
  *
@@ -244,7 +247,6 @@ public class IdeasRetriever extends Retriever{
   private float ReadValue( TextFileReader tfr ) throws IOException
   {
      String value_name = tfr.read_String();
-     String line       = tfr.read_String();
      float  value      = tfr.read_float();
      tfr.read_line();
      System.out.println( value_name + " = " + value );
@@ -320,12 +322,11 @@ public class IdeasRetriever extends Retriever{
       return null;
 
     float slice[][] = new float[n_rows][n_cols];
-    float junk;
 
     for ( int row = 0; row < n_rows; row++ )
     {
        for ( int i = 0; i < 8; i++ )              // skip over the axis info
-         junk = tfr.read_float();
+         tfr.read_float();
 
        for ( int col = 0; col < n_cols; col++ )
          slice[row][col] = tfr.read_float();

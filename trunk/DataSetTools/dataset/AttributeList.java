@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2004/03/19 17:22:05  dennis
+ *  Removed unused variable(s)
+ *
  *  Revision 1.19  2004/03/15 03:28:04  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -232,8 +235,6 @@ public class AttributeList implements Serializable,
    */
   public void addAttributes( AttributeList new_list )
   {
-    AttributeList current_list;
-
     Attribute attribute;
     for ( int i = 0; i < new_list.getNum_attributes(); i++ )
     {
@@ -249,9 +250,7 @@ public class AttributeList implements Serializable,
    */
   public void setAttributes( AttributeList new_list )
   {
-    AttributeList current_list;
-
-    Attribute attribute;
+     Attribute attribute;
     for ( int i = 0; i < new_list.getNum_attributes(); i++ )
     {
       attribute = new_list.getAttribute(i);

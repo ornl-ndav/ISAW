@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/03/19 17:22:05  dennis
+ *  Removed unused variable(s)
+ *
  *  Revision 1.3  2004/03/15 06:10:38  dennis
  *  Removed unused import statements.
  *
@@ -118,8 +121,6 @@ public class PixelInfoListAttribute extends Attribute
   {
     if ( !(attr instanceof PixelInfoListAttribute) )    // can't do it so don't 
       return this;                                          
-       
-    PixelInfoListAttribute other_attr = (PixelInfoListAttribute)attr; 
 
     PixelInfoList list       = (PixelInfoList)value;
     PixelInfoList other_list = (PixelInfoList)(attr.getValue()); 
@@ -225,7 +226,7 @@ public class PixelInfoListAttribute extends Attribute
 
     short row;                                  // show info on one pixel
     short col;
-    DetectorPixelInfo test_pixel;
+
     IPixelInfo list[] = new IPixelInfo[4];
     for ( row = 0; row < 2; row++ )
       for ( col = 0; col < 2; col++ )

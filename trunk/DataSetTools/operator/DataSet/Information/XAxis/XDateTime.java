@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/03/19 17:20:49  dennis
+ * Removed unused variable(s)
+ *
  * Revision 1.8  2004/03/15 06:10:48  dennis
  * Removed unused import statements.
  *
@@ -258,8 +261,6 @@ public class XDateTime extends  XAxisInformationOp
    */
   public Object getResult()
   {
-                                     // get the current data set
-    DataSet ds = this.getDataSet();
     int   i    = ( (Integer)(getParameter(0).getValue()) ).intValue();
     float time = ( (Float)(getParameter(1).getValue()) ).floatValue();
 

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/03/19 17:20:50  dennis
+ *  Removed unused variable(s)
+ *
  *  Revision 1.7  2004/03/15 06:10:50  dennis
  *  Removed unused import statements.
  *
@@ -167,8 +170,6 @@ public class DataSetPrint extends    GenericOperator
     float   y_vals[];              
     float   x_vals[];              
     float   err_vals[] = null;              
-    
-    int     num_data = ds.getNum_entries();
 
     data = ds.getData_entry( index );        
   

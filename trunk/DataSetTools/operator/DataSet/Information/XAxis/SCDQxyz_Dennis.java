@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/03/19 17:20:49  dennis
+ * Removed unused variable(s)
+ *
  * Revision 1.8  2004/03/15 06:10:48  dennis
  * Removed unused import statements.
  *
@@ -244,8 +247,6 @@ public class SCDQxyz_Dennis extends  XAxisInformationOp
        return new ErrorString("Missing DETECTOR POSITION attribute");
 
      Vector3D pt    = new Vector3D();
-     Vector3D i_vec = new Vector3D( 1, 0, 0 );
-     Vector3D k_vec = new Vector3D( 0, 0, 1 );
     
      Float initial_path_F = (Float)d.getAttributeValue(Attribute.INITIAL_PATH);
      if ( initial_path_F == null )

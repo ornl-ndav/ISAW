@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2004/03/19 17:20:49  dennis
+ * Removed unused variable(s)
+ *
  * Revision 1.14  2004/03/15 03:28:29  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -259,8 +262,6 @@ public class SCDQxyz extends  XAxisInformationOp
        return new ErrorString("Missing DETECTOR POSITION attribute");
 
      Vector3D pt    = new Vector3D();
-     Vector3D i_vec = new Vector3D( 1, 0, 0 );
-     Vector3D k_vec = new Vector3D( 0, 0, 1 );
     
      Float initial_path_F = (Float)d.getAttributeValue(Attribute.INITIAL_PATH);
      if ( initial_path_F == null )

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/03/19 17:22:05  dennis
+ *  Removed unused variable(s)
+ *
  *  Revision 1.13  2004/03/15 06:10:39  dennis
  *  Removed unused import statements.
  *
@@ -309,6 +312,7 @@ public class VariableXScale extends XScale implements Serializable
    */
   public static void main( String args[] )
   {
+    /*
     float  vals[]   =  {  10.0f, 10.4f, 10.8f, 11.2f, 11.6f, 12.0f };
     XScale scale    = new VariableXScale( vals );
 
@@ -359,6 +363,7 @@ public class VariableXScale extends XScale implements Serializable
     System.out.println("Position of 10   " + extended.getI( 10.0f ) ); 
     System.out.println("Position of 12.5 " + extended.getI( 12.5f ) ); 
     System.out.println("Position of 130  " + extended.getI( 130.0f ) ); 
+    */
   }
 
 /* -----------------------------------------------------------------------
