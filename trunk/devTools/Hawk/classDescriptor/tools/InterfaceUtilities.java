@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:47:47  bouzekc
+ * Documented file using javadoc statements.
+ * Removed method isASectionKeyword(String).
+ * Modified the method alphabatizeVector() to use the toString method to
+ * alphabatize the Vector of object supplied.
+ *
  * Revision 1.1  2004/02/07 05:10:46  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -47,6 +53,8 @@ import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 /**
 * This class contains extra methods that can be used in Interface.java, InterfaceDefn.java, Attribute.java, ConstructorDefn.java,
 * MethodDefn.java.  Thus each of these methods are static methods in this class to allow them to be easily used in other java files.
+* 
+* @author Dominic Kramer
 */
 public class InterfaceUtilities
 {
@@ -112,63 +120,7 @@ public class InterfaceUtilities
 		
 		return temp;
 	}
-	
-	/**
-	* Returns true if word is exactly equal to _INTERFACE_:, _ATTRIBUTE_:, _CONSTRUCTOR_:, or _METHOD_: and returns false otherwise.
-	* @param word The String to test
-	* @return Either true or false
-	*/
-	public static boolean isASectionKeyword(String word)
-	{
-		boolean answer = false;
-		
-		if (word.equals("_INTERFACE_:"))
-		{
-			answer = true;
-		}
-		else
-		{
-			if (word.equals("_ATTRIBUTE_:"))
-			{
-				answer = true;
-			}
-			else
-			{
-				if (word.equals("_CONSTRUCTOR_:"))
-				{
-					answer = true;
-				}
-				else
-				{
-					if (word.equals("_METHOD_:"))
-					{
-						answer = true;
-					}
-					else
-					{
-						if (word.equals("_SOURCE_FILENAME_:"))
-						{
-							answer = true;
-						}
-						else
-						{
-							if (word.equals("_JAVADOCS_FILENAME_:"))
-							{
-								answer = true;
-							}
-							else
-							{
-								answer = false;
-							}
-						}
-					}
-				}
-			}
-		}
-		
-		return answer;
-	}
-	
+
 	/**
 	* Gets the UML (Universal Modeling Language) symbol associated with a java keyword.  For example, the UML symbol for "public" is 
 	* "+".
@@ -221,13 +173,16 @@ public class InterfaceUtilities
 	}
 	
 	/**
-	* This takes in a Vector of Interface objects and organizes the Interface objects
-	* in Lexicographic order based on each interface's name.  
+	* This takes in a Vector of objects and organizes the objects
+	* in Lexicographic order based on the String returned from the toString() method.  
 	* Lexicographic order is similar to alphabetical order except A, B, C, D, ...., Z 
 	* comes before a, b, c, d, ...., z.  Note that the vec is passed into the method 
 	* by reference.  Therefore, when the program leaves the method the elements are 
 	* still ordered correctly.
-	* @param vec The Vector of Interface objects
+	* @param vec1 The Vector of objects.
+	 * @param shortJava If this is true, then if a string is a java name it will be shortened.  
+	 * For example, java.lang.String will be shortened to String.
+	 * @param shortOther If this is true, then if a string is a non-java name it will be shortened.  
 	*/
 	public static void alphabatizeVector(Vector vec1, boolean shortJava, boolean shortOther)
 	{
@@ -235,27 +190,31 @@ public class InterfaceUtilities
 		int smallIndex = 0;
 		int pass = 0;
 		int j = 0;
-		Interface temp = new Interface();
+		Object temp = new Object();
+		String string1 = "";
+		String string2 = "";
 					
 		for (pass = 0; pass < n-1; pass++)
 		{
 			smallIndex = pass;
-				
 			for (j = pass+1; j<n; j++)
 			{
-					
-				if ( (((((Interface)(vec1.elementAt(j))).getPgmDefn()).getInterface_name(shortJava, shortOther)).compareTo( ((((Interface)(vec1.elementAt(smallIndex))).getPgmDefn()).getInterface_name(shortJava, shortOther)) )) < 0 )
+				string1 = getAbbreviatedName(vec1.elementAt(j).toString(), shortJava, shortOther);
+				string2= getAbbreviatedName(vec1.elementAt(smallIndex).toString(), shortJava,  shortOther);
+				
+				if ( (string1).compareTo(string2) < 0 )
 					smallIndex = j;
 					
 				if (smallIndex != pass)
 				{
-					temp = (Interface)(vec1.elementAt(pass));
-					vec1.setElementAt((Interface)(vec1.elementAt(smallIndex)), pass);
+					temp = vec1.elementAt(pass);
+					vec1.setElementAt(vec1.elementAt(smallIndex), pass);
 					vec1.setElementAt(temp, smallIndex);
 				}
 			}
 		}
 	}
+	
 	
 	/**
 	 * Returns Vector containing all of the package names that the Interfaces in the Vector vec
@@ -276,31 +235,8 @@ public class InterfaceUtilities
 		}
 		
 		//now to alphabatize the vector (technically it is Lexicographic ordering)
-		int n = packageVec.size();
-		int smallIndex = 0;
-		int pass = 0;
-		int j = 0;
-		String temp = "";
-	
-		for (pass = 0; pass < n-1; pass++)
-		{
-			smallIndex = pass;
-		
-			for (j = pass+1; j<n; j++)
-			{
-			
-				if ( ((String)packageVec.elementAt(j)).compareTo((String)packageVec.elementAt(smallIndex)) < 0 )
-					smallIndex = j;
-			
-				if (smallIndex != pass)
-				{
-					temp = (String)(packageVec.elementAt(pass));
-					packageVec.setElementAt((String)(packageVec.elementAt(smallIndex)), pass);
-					packageVec.setElementAt(temp, smallIndex);
-				}
-			}
-		}
-				
+		alphabatizeVector(packageVec,false,false);
+						
 		return packageVec;
 	}
 	
@@ -341,9 +277,7 @@ public class InterfaceUtilities
 		int pass = 0;
 		int j = 0;
 		Vector temp = new Vector();
-		
-		long time1 = System.currentTimeMillis();
-			
+					
 		for (pass = 0; pass < n-1; pass++)
 		{
 			smallIndex = pass;
@@ -365,10 +299,7 @@ public class InterfaceUtilities
 		
 		for (int i=0; i<answer.size(); i++)
 			alphabatizeVector( (Vector)answer.elementAt(i), classShortJava, classShortOther);
-		
-		long time2 = System.currentTimeMillis();
-		System.out.println("It took "+(time2-time1)+" milliseconds to sort the Vector of Vector of Interfaces");
-		
+				
 		return answer;
 	}
 	
@@ -377,7 +308,7 @@ public class InterfaceUtilities
 	 *  This method returns the location in the Vector vec which contains the Vector of Interfaces which are
 	 *  all from package str.  
 	 * @param str The package name
-	 * @param vec The Vector of Vectors from the method getVectorOfVectorOfInterfaces(Vector, boolean, boolean)
+	 * @param vec The Vector of Vectors of Interface objects from the method getVectorOfVectorOfInterfaces(Vector, boolean, boolean)
 	 * @return The location in vec where the Interfaces are from the package named str.  Returns -1 if the
 	 * location was not found.
 	 */
@@ -425,6 +356,13 @@ public class InterfaceUtilities
 		return answer;
 	}
 	
+	/**
+	 * This method always shortens the String supplied to the method.  This method is used by 
+	 * the method getAbbreviatedName(String, boolean, boolean).  For example, if the String is 
+	 * of the form "string1"."string2"."string3"."string4", the shortened version is "string4".
+	 * @param name The String to shorten.
+	 * @return The shortened version of the String.
+	 */
 	public static String getAbbreviatedName(String name)
 	{
 		StringTokenizer tokenizer = new StringTokenizer(name,".");
@@ -435,7 +373,18 @@ public class InterfaceUtilities
 		}
 		return token;
 	}
-	
+
+	/**
+	 * This method shortens the String supplied to the method depending on the boolean parameters 
+	 * supplied.  This method is used by all of the classes in the package 
+	 * devTools.Hawk.classDescriptor.modeledObjects to shorten Strings.  For example, if the String 
+	 * is of the form "string1"."string2"."string3"."string4", the shortened version is "string4".
+	 * @param name The String to shorten.
+	 * @param shortJava If this is true, then the String supplied will be shortened if it is a java name.  For 
+	 * example, java.lang.String will be shortened to String.
+	 * @param shortOther If this is true, then the String supplied will be shortened if it is a non-java name.
+	 * @return The shortened version of the String.
+	 */	
 	public static String getAbbreviatedName(String name, boolean shortJava, boolean shortOther)
 	{
 		String answer = name;
