@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/11/21 22:40:47  dennis
+ * Added getDocumentation() method, documentation on getResult() and
+ * simple main program to test getDocumentation(). (Chris Bouzek)
+ *
  * Revision 1.2  2002/09/19 16:00:10  pfpeterson
  * Now uses IParameters rather than Parameters.
  *
@@ -123,7 +127,7 @@ public class SetField extends    DS_Attribute
    *  by calling getResult().
    *
    *  @param  ds          The DataSet to which the operation is applied
-   *  @parm   Fieldname   The Field to be set.
+   *  @param   Fieldname   The Field to be set.
    *  @param  new_Value   The new value of the Attribute
    */
 
@@ -155,7 +159,7 @@ public class SetField extends    DS_Attribute
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -171,8 +175,42 @@ public class SetField extends    DS_Attribute
     addParameter( parameter );
   }
 
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator sets a particular field of a DataSet ");
+    s.append("to a user specified value.");
+    s.append("@assumptions The field is a valid one for the current ");
+    s.append("DataSet, and the new value for the attribute is valid.");
+    s.append("@algorithm Determines what field to change based on ");
+    s.append("the user specifed field parameter.  Changes the field ");
+    s.append("value(s) to the user specifed value.");
+    s.append("@param The DataSet to which the operation is applied.");
+    s.append("@param The Field to be set.");
+    s.append("@param The new value of the Attribute.");
+    s.append("@return A String telling the user that the field is set ");
+    s.append("if the operation was successful.  Note that the DataSet is");
+    s.append("modifed, and appropriate messages are added to the log file.");
+    s.append("@error Returns an error if the user specified field is ");
+    s.append("not found.");
+    s.append("@error Returns an error if the field data type does not ");
+    s.append("match the one specified by the user.");
+    s.append("@error Returns an error if the user specified field ");
+    s.append("contains a null value.");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+   *  Determines what field to change based on the user specifed field 
+   *  parameter.  Changes the field value(s) to the user specifed value.
+   *  @return A String notifying the user that the field has been set.
+   */
 
   public Object getResult()
     { 
@@ -279,4 +317,14 @@ public class SetField extends    DS_Attribute
     return new_op;
   }
 
+    /* --------------------------------- main() ------------------------ */
+    /**  
+     *  Main method for testing purposes.
+     */
+    public static void main(String args[])
+    {
+	SetField sf = new SetField();
+	System.out.println("The documentation for this operator is: ");
+	System.out.println(sf.getDocumentation());
+    }	
 }
