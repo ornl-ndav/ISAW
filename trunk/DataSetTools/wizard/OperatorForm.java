@@ -55,6 +55,7 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
   protected Operator form_op;
   protected IParameterGUI result_param;
   private static ParameterClassList PL = null;
+  private int[] constIndices;
 
   /**
    *  Construct an OperatorForm with the given title.  
@@ -106,6 +107,36 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
     this.setParamClass(type);
     result_param.setName(name);
   }
+  
+  /**
+   *  Construct an OperatorForm with the given Operator and
+   *  result parameter type.
+   *  This allows the use of that Operator for the getResult()
+   *  method.  
+   *
+   *  @param  op              The Operator to use for this form
+   *
+   *  @param  type            The IParameterGUI type of the result 
+   *                          parameter.  e.g. for a LoadFilePG, 
+   *                          use "LoadFile" 
+   *
+   *  @param  name            The name of the result parameter.
+   *                          e.g. "log file"
+   *  
+   *  @param indices          The array of indices that represent constant
+   *                          parameters for this Form.
+   *
+   *
+   */
+  public OperatorForm( Operator op, String type, String name, int[] indices)
+  {
+    this(op);
+    this.setParamClass(type);
+    result_param.setName(name);
+    super.HAS_CONSTANTS = true;
+    this.constIndices = indices;
+    this.setDefaultParameters();
+  }
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
@@ -134,17 +165,15 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
      //Operator failed - exit out
      if(result instanceof ErrorString){
        this.result_param.setValue(null);
-       /*SharedData.addmsg("ERROR: " + result);
-       return Boolean.FALSE;*/
-       return errorOut("ERROR: " + result);
+       return errorOut(result.toString());
      }
      
      this.result_param.setValue(result);
        
      if(result != null)
-       SharedData.addmsg("Success!\n" + result.toString());
+       SharedData.addmsg("Success! " + result.toString());
      else
-       SharedData.addmsg("Success!\n");
+       SharedData.addmsg("Success!");
 
      //validate the parameters...if we got this far, assume
      //that our parameters were OK.
@@ -157,10 +186,13 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
   /**
    *  Set the parameters to default values using the form_op Operator.
    */
-   public void setDefaultParameters()
-   {
+   public void setDefaultParameters(){
      // can't do anything without an operator
      if(form_op==null) return;
+
+     Vector temp = null;  //may need temporary index storage
+
+     //form_op.setDefaultParameters();
 
      // set the result parameter
      result_param=new StringPG("Result",null,false);
@@ -168,32 +200,68 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
      //set the variable parameters length and indices
      int num_params, var_indices[];
      num_params = form_op.getNum_parameters();
-     var_indices = new int[num_params];   
+
+     boolean isConstant = false;
+
+     if(HAS_CONSTANTS)
+       var_indices = new int[num_params - constIndices.length];
+     else
+       var_indices = new int[num_params];   
 
      // initialize the variable indices and tell parameters to show valid
      for(int i = 0; i < num_params; i++){
-       var_indices[i] = i; // create index
-       ((IParameterGUI)this.getParameter(i)).setDrawValid(true);
+       if(HAS_CONSTANTS){
+         if(temp == null)
+           temp = new Vector(var_indices.length, 2);
+         isConstant = false;
+         for(int j = 0; j < constIndices.length; j++){
+           if(i == constIndices[j]){  //found a constant parameter index
+             isConstant = true;
+             break;
+           }
+         }
+         if(!isConstant)//non-constant parameter
+           temp.add(new Integer(i));
+       }
      }
+
+     if(HAS_CONSTANTS){
+       //create an Integer array and copy it over to the variable indices
+       Object[] tempIndices = temp.toArray();
+       for(int i = 0; i < var_indices.length; i++)
+         var_indices[i] = ((Integer)tempIndices[i]).intValue();
+     }
+       
+
+     else  //no constant parameters
+       for(int i = 0; i < num_params; i++)
+         var_indices[i] = i;
+
+
+
+     //set the parameters to be drawn
+     for(int i = 0; i < num_params; i++)
+       ((IParameterGUI)this.getParameter(i)).setDrawValid(true);
 
      /*set the parameter types so we can build the GUI
        the result parameter is one after the last variable parameter
        and so we'll set it to num_params.*/
-     super.setParamTypes(null, var_indices, new int[]{num_params});
+     if(HAS_CONSTANTS)
+       super.setParamTypes(constIndices, var_indices, new int[]{num_params});
+     else
+       super.setParamTypes(null, var_indices, new int[]{num_params});
    }
 
-   /* ---------------------------- addParameter ---------------------------- */
-   /**
-    * Add the specified parameter to the list of parameters for this Form.  
-    * This method will typically be called by the constructor for the
-    * derived class.
-    *
-    *  @param   parameter   The new IParameteterGUI to be added to this Form.
-    */
-   protected void addParameter( IParameterGUI parameter )
-   {
-       //form_op.addParameter(parameter);
-   }
+  /**
+   *  Method to allow OperatorForms to set their constant parameters indices.
+   *
+   *  @param  indices     Array of integers indicating which parameters should 
+   *                      be constant.
+   */
+  public void setConstantParamIndices(int[] indices){
+    super.HAS_CONSTANTS = true;
+    this.constIndices = indices;
+  }
 
   /* ---------------------------- getNum_parameters ------------------------ */
   /**
