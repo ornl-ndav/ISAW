@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.80  2002/02/18 21:57:52  pfpeterson
+ *  Fixed nexus and windows problem.
+ *  Made a "Save and Exit" option on the "Edit Properties" text editor.
+ *
  *  Revision 1.79  2002/02/15 20:30:37  pfpeterson
  *  Fixed the file filter in the "Save As" JFileChooser.
  *
@@ -1802,16 +1806,20 @@ public class Isaw
 
     JMenuBar mb = new JMenuBar();
     JMenu fi = new JMenu( FILE_M );
-    JMenuItem op1 = new JMenuItem("Save IsawProps");
+    JMenuItem op1 = new JMenuItem("Save");
     fi.add(op1);
     mb.add(fi);
-    JMenuItem op2 = new JMenuItem("Quit");
+    JMenuItem op2 = new JMenuItem("Save and Exit");
     fi.add(op2);
+    mb.add(fi);
+    JMenuItem op3 = new JMenuItem("Exit");
+    fi.add(op3);
     mb.add(fi);
 
     kp.setJMenuBar(mb);  
     op1.addActionListener(new propsHandler());
     op2.addActionListener(new propsHandler());
+    op3.addActionListener(new propsHandler());
     kp.setTitle("IsawProperties Panel (editable)");
     JScrollPane Z = new JScrollPane(propsText);
     kp.getContentPane().add(Z);
@@ -1842,14 +1850,16 @@ public class Isaw
       String filename = path + "IsawProps.dat" ;
                       
       Document doc = propsText.getDocument() ; 
-      if( s.equals("Save IsawProps") )
-      { 
+      if( s.equals("Save") ){ 
         (new Util()).saveDoc( doc , filename );        
         SharedData.isaw_props.reload();
         SharedData.status_pane.add( "IsawProps saved successfully") ;     
-      }
-      else if( s.equals("Quit") )
-      { 
+      }else if( s.equals("Save and Exit") ){
+        (new Util()).saveDoc( doc , filename );        
+        SharedData.isaw_props.reload();
+        SharedData.status_pane.add( "IsawProps saved successfully") ;     
+	kp.dispose();
+      }else if( s.equals("Quit") ){ 
         kp.dispose();
       }
       else
@@ -1999,12 +2009,12 @@ public class Isaw
         System.setProperty("Auto-Scale", "0.0");
         opw.write("\n"); 
 
-        if ( windows )
-        {
-          opw.write("neutron.nexus.JNEXUSLIB=C:/ISAW/jnexus.dll");
-          System.setProperty("neutron.nexus.JNEXUSLIB", "C:/ISAW/jnexus.dll");
-          opw.write("\n");   
-        }
+      /* This causes more problems with nexus than it fixes
+	 if ( windows ){
+	 opw.write("neutron.nexus.JNEXUSLIB="+ipath+"lib/jnexus.dll");
+	 System.setProperty("neutron.nexus.JNEXUSLIB",ipath+"lib/jnexus.dll");
+	 opw.write("\n");   
+	 } */
 
 
 /* 
