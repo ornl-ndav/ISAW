@@ -30,8 +30,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/10/27 14:54:30  rmikk
+ *  Added the printing capability to this DataSetViewer
+ *
  *  Revision 1.4  2003/08/08 15:48:24  dennis
- *  Added GPL copyright information and $Log$ to record CVS
+ *  Added GPL copyright information and $Log$
+ *  Added GPL copyright information and Revision 1.5  2003/10/27 14:54:30  rmikk
+ *  Added GPL copyright information and Added the printing capability to this DataSetViewer
+ *  Added GPL copyright information and to record CVS
  *  login messages.
  *
  */
@@ -91,7 +97,8 @@ public class DataSetViewerMaker  extends DataSetViewer
       if( CompPcontrols != null)
         for( int i=0; i< CompPcontrols.length; i++)
           East.add( CompPcontrols[i]);  
-
+      
+      PrintComponentActionListener.setUpMenuItem( getMenuBar(), this);
       East.add( Box.createRigidArea(new Dimension(30,500)) );    
       viewArray.addActionListener( new ArrayActionListener());
       viewComp.addActionListener( new CompActionListener());
