@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2001/08/09 15:43:35  dennis
+ *  Added command GET_NAME.
+ *
  *  Revision 1.2  2001/08/07 21:27:25  dennis
  *    Removed command to get DS_TYPE and get NUM_DS... now only uses
  *  get DS_TYPES, for the whole list of types.  This is simpler,
@@ -70,6 +73,7 @@ public class DataSetServer extends TCPServer
 {
   public static final String COMMAND_GET_DS      = "COMMAMD:GET_DATA_SET ";
   public static final String COMMAND_GET_DS_TYPES= "COMMAND:GET_DS_TYPES ";
+  public static final String COMMAND_GET_NAME    = "COMMAND:GET_NAME ";
 
   protected  Vector  directory_names = null;
 
@@ -161,8 +165,6 @@ public class DataSetServer extends TCPServer
       return null;
  
     String temp = full_name.toUpperCase();
-    System.out.println("get_retriever, file_name = " + file_name );
-    System.out.println("get_retriever, full_name = " + full_name );
     if ( temp.endsWith( "RUN" ) )
       retriever = new RunfileRetriever( full_name );
 
