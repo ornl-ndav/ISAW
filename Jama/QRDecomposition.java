@@ -1,3 +1,9 @@
+/*
+ * $Log$
+ * Revision 1.2  2003/10/17 03:11:38  bouzekc
+ * Fixed javadoc errors.  Added Log tag.
+ *
+ */
 package Jama;
 import Jama.util.*;
 
@@ -41,8 +47,8 @@ public class QRDecomposition implements java.io.Serializable {
  * ------------------------ */
 
    /** QR Decomposition, computed by Householder reflections.
+   This is a structure to access R and the Householder vectors and compute Q.
    @param A    Rectangular matrix
-   @return     Structure to access R and the Householder vectors and compute Q.
    */
 
    public QRDecomposition (Matrix A) {
@@ -173,8 +179,8 @@ public class QRDecomposition implements java.io.Serializable {
    /** Least squares solution of A*X = B
    @param B    A Matrix with as many rows as A and any number of columns.
    @return     X that minimizes the two norm of Q*R*X-B.
-   @exception  IllegalArgumentException  Matrix row dimensions must agree.
-   @exception  RuntimeException  Matrix is rank deficient.
+   @throws     IllegalArgumentException  Matrix row dimensions must agree.
+   @throws     RuntimeException  Matrix is rank deficient.
    */
 
    public Matrix solve (Matrix B) {
