@@ -1,7 +1,8 @@
 # 
 # Script to run reduce.iss in batch mode
-# 03/22/04
+# $Date$ 
 #
+$Category=Operator, Instrument Type, TOF_NSAS
 
 $ number_of_runs         Integer(1)                Enter number of runs
 
