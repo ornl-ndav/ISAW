@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.42  2003/03/07 19:47:30  rmikk
+ * Returns an error when assigning an illegal object to a variable
+ *
  * Revision 1.41  2003/02/24 13:29:16  rmikk
  * Eliminated an error.
  *
@@ -3353,6 +3356,11 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
              
              return;
         }
+      else{
+        seterror(1000, "DataType Not supported for assignment operation");
+          
+         }
+        
     }//end Assign
 
     private void Delete( String vname, Hashtable DS){
