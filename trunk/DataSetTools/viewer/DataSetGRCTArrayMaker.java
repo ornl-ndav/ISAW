@@ -35,6 +35,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/07/29 13:50:30  rmikk
+ * Improved the results of the pointed At performance
+ * redraw from an external event implemented
+ * AxisInfo updated to reflect real axis information
+ * The layout of the dimension chooser was changed
+ *
  * Revision 1.5  2004/07/28 18:20:57  rmikk
  * Incorporated Object state
  * Now does pointed At
@@ -75,7 +81,7 @@ import gov.anl.ipns.Util.Sys.*;
 import DataSetTools.viewer.Table.*;
 import gov.anl.ipns.ViewTools.Components.Transparency.*;
 import gov.anl.ipns.Util.Numeric.*;
-
+import gov.anl.ipns.Util.Messaging.*;
 
 /**
  *  This class is an array producer for Gridded data sets.  Row, column, time
@@ -701,6 +707,50 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         return -1;
 
     }
+    private float getTime( float row, float col){
+      int fx = (int)(row+.5f);
+      int fy = (int)(col+.5f);
+      float time;
+      if(Permutation[0]==0 )
+        time = (Handler[0].getMax(fx)+Handler[0].getMin(fx))/2;
+      else if( Permutation[1] ==0)
+        time =(Handler[0].getMax(fy)+Handler[0].getMin(fy))/2;
+      else
+         time = (pixel_min[0]+pixel_max[0])/2;
+      return time;
+    }
+    private int getDataBlockIndex( float rowDispl, float colDispl){
+      int fx = (int)(rowDispl+.5f);
+      int fy = (int)(colDispl+.5f);
+      int row, col;//row on detector and column on detector
+          if(Permutation[0] ==1)
+             row = (int)(Handler[1].getMax(fy-1)+Handler[1].getMin(fy-1))/2;
+          else if( Permutation[1] ==1)
+              row =(int)((Handler[1].getMax(fx-1)+Handler[1].getMin(fx-1))/2);
+          else
+             row =(int)(pixel_min[1]+pixel_max[1])/2;
+         if( check(row,1, MaxRows)) return -1;
+     
+         if(Permutation[0] ==2)
+            col = (int)(Handler[2].getMax(fy-1)+Handler[2].getMin(fy-1))/2;
+         else if( Permutation[1] ==2)
+            col =(int)((Handler[2].getMax(fx-1)+Handler[2].getMin(fx-1))/2);
+         else
+            col =(int)(pixel_min[2]+pixel_max[2])/2;
+         if( check(col,1, MaxCols)) return -1;
+         int GridNum;
+         if(Permutation[0] ==3)
+            GridNum = (int)(Handler[3].getMax(fy)+Handler[3].getMin(fy))/2;
+         else if( Permutation[1] ==3)
+            GridNum =(int)((Handler[3].getMax(fx)+Handler[3].getMin(fx))/2);
+         else
+            GridNum =(int)(pixel_min[3]+pixel_max[3])/2;
+         if( check(GridNum,0, Grids.length-1)) return -1;
+     
+         Data D=Grids[GridNum].getData_entry(row,col); 
+         int DSindx=DataSets[0].getIndex_of_data(D);
+         return DSindx;
+    }
 
    /**
     * Sets the XConversion table.Assumes only one data set currently
@@ -710,49 +760,24 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
       float time;
       if( Grids == null)
          return;
-      int fx = (int)(fpt.x+.5f);
-      int fy = (int)(fpt.y+.5f);
-      if(Permutation[0]==0 )
-        time = (Handler[0].getMax(fx)+Handler[0].getMin(fx))/2;
-      else if( Permutation[1] ==0)
-        time =(Handler[0].getMax(fy)+Handler[0].getMin(fy))/2;
-      else
-         time = (pixel_min[0]+pixel_max[0])/2;
+      time = getTime( fpt.y, fpt.x);
       //NOTE: getMax and getMin for row and column handlers expect the first row
       //     to start at 0 not 1
       //    The ImageViewComponent starts where XAxisInfo says it starts.
-      int row, col;
-      if(Permutation[0] ==1)
-         row = (int)(Handler[1].getMax(fx-1)+Handler[1].getMin(fx-1))/2;
-      else if( Permutation[1] ==1)
-          row =(int)((Handler[1].getMax(fy-1)+Handler[1].getMin(fy-1))/2);
-      else
-         row =(int)(pixel_min[1]+pixel_max[1])/2;
-     if( check(row,1, MaxRows)) return;
-     
-     if(Permutation[0] ==2)
-        col = (int)(Handler[2].getMax(fx-1)+Handler[2].getMin(fx-1))/2;
-     else if( Permutation[1] ==2)
-        col =(int)((Handler[2].getMax(fy-1)+Handler[2].getMin(fy-1))/2);
-     else
-        col =(int)(pixel_min[2]+pixel_max[2])/2;
-     if( check(col,1, MaxCols)) return;
-     int GridNum;
-     if(Permutation[0] ==3)
-        GridNum = (int)(Handler[3].getMax(fx)+Handler[3].getMin(fx))/2;
-     else if( Permutation[1] ==3)
-        GridNum =(int)((Handler[3].getMax(fy)+Handler[3].getMin(fy))/2);
-     else
-        GridNum =(int)(pixel_min[3]+pixel_max[3])/2;
-     if( check(GridNum,0, Grids.length-1)) return;
-     
-     Data D=Grids[GridNum].getData_entry(row,col); 
-      
+     int DSindx = getDataBlockIndex(fpt.y, fpt.x);
+     if( DSindx < 0) 
+       return;
+     Data D = DataSets[0].getData_entry(DSindx);
+     if( D == null)
+       return;
      if( getInt((Integer)state.get("NtimeChan"),0)==0)//time is an index convert to time
          time = D.getX_scale().getX((int)(time-.01));
          
-     int DSindx=DataSets[0].getIndex_of_data(D);
+    
      this.DSConversions.showConversions( time, DSindx);
+     DataSets[0].setPointedAtIndex( DSindx);
+     DataSets[0].setPointedAtX( time);
+     DataSets[0].notifyIObservers( IObserver.POINTED_AT_CHANGED );
    }
    
    // Returns true if does not match
@@ -763,11 +788,108 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         return true;
       return false;
    }
-   //Gets pointed At from the DataSet
-   public void redrawNewSelect( ){
-     
+   private Vector GetPixelInfoOp( DataSet DS, int dbIndx){
+     Vector V;
+         Object O = (new DataSetTools.operator.DataSet.Attribute.GetPixelInfo_op(DS, dbIndx))
+             .getResult();
+         if(!(O instanceof Vector))
+             return null;
+         V =(Vector)O;
+         return V;
    }
-
+   //Gets pointed At from the DataSet
+   public floatPoint2D redrawNewSelect( String reason ){
+      if( reason == IObserver.POINTED_AT_CHANGED){
+        int DSindx = DataSets[0].getPointedAtIndex();
+        float time = DataSets[0].getPointedAtX();
+        this.DSConversions.showConversions( time, DSindx);
+        Vector V = GetPixelInfoOp( DataSets[0], DSindx);
+        if( (V == null) ||(V.size()<3))
+          return null;
+        int GridIndx = Arrays.binarySearch(GridNums, 
+                     ((Integer)V.elementAt(2)).intValue());
+        if( GridIndx < 0)
+          return null;
+        int rowDet = ((Integer)V.elementAt(0)).intValue();
+        int colDet =   ((Integer)V.elementAt(1)).intValue();
+        Setind( 1,rowDet);
+        Setind( 2, colDet);
+        Setind( 3, GridIndx);
+        int timeChan=-1;
+        if( state.get("NtimeChan").equals( new Integer(0))){
+          timeChan = DataSets[0].getData_entry(DSindx).getX_scale().getI(time);
+          Setind(0,timeChan);
+        }else{
+          SetindF(0, time);
+        }
+        notifyListeners( IArrayMaker.DATA_CHANGED );
+        return getDisplayRowCol( rowDet,colDet,GridIndx, time, timeChan);
+      }//if PointedAtChanged
+      return null;
+   }
+   
+   private floatPoint2D getDisplayRowCol( int rowDet, int colDet, int GridIndx
+         ,float time,int timechan){
+     int[] Displayrowcol = new int[2];
+     Arrays.fill(Displayrowcol, -1);
+     for(int i =0; i<2;i++)
+     if(Permutation[i] ==0)
+       if( state.get("NtimeChan").equals(new Integer(0)))
+         Displayrowcol[i] = indexOf(0,timechan);
+       else
+         Displayrowcol[i] = indexOf(0, time);
+     else if( Permutation[0]==1){
+        Displayrowcol[i] =indexOf( 1,rowDet);
+     }else if( Permutation[0]==2){
+       Displayrowcol[i] =indexOf( 2,colDet);
+     }else if( Permutation[0]==3){
+       Displayrowcol[i] =indexOf( 3,GridIndx);
+     }else 
+       return null;
+     if( Displayrowcol[0]<0)
+         return null;
+     if( Displayrowcol[1]<0)
+          return null;
+     return new floatPoint2D(Displayrowcol[0], Displayrowcol[1]);
+         
+    
+       
+    }
+   private int indexOf(int dim, float val){
+     int Nsteps = Handler[dim].getNSteps();
+     float first = Handler[dim].getMin(0);
+     float last = Handler[dim].getMax(Nsteps-1);
+     if( val < first) return -1;
+     if( val > last) return -1;
+     return (int)((val-first)/(last-first)*Nsteps); 
+   }
+   //Sets the indices and Animation Control frame for
+   // Dimensions not in display 
+   private void Setind( int dim, int val){
+     int indx = -1;
+     if( Permutation[0] == dim)
+        return ;
+     if( Permutation[1] == dim)
+        return;
+    
+    indx =indexOf( dim, (float)val);
+    pixel_min[dim] = Handler[dim].getMin(indx);
+    pixel_max[dim] = Handler[dim].getMax(indx);
+    if(ACS[dim]!= null)
+       ACS[dim].setFrameNumber( indx);
+    
+   }
+   private void SetindF( int dim, float val){
+      int indx = -1;
+      if( Permutation[0] == dim)
+         return;
+      if( Permutation[1] == dim)
+         return;
+     
+     indx =indexOf(dim,val); 
+     pixel_min[dim] = Handler[dim].getMin(indx);
+     pixel_max[dim] = Handler[dim].getMax(indx);
+    }
     /**
      *    Returns the time corresponding to the given Selected Data
      *    @param  Info  Should be a SelectedData2D Object
@@ -1255,15 +1377,19 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
     private AxisInfo getAxisInfo( int dim, boolean b ) {
 
         int f = dim;
-
+        int sgn = 1;
+        if(b)
+          sgn = -1;
 
         if ( dim == 0 ){//time
             float Mintimex = ((Float) state.get("MinTimex")).floatValue();
             float Maxtimex =((Float) state.get("MaxTimex")).floatValue();
+           
             if(b){
                float x = Mintimex;
                Mintimex = Maxtimex;
                Maxtimex=x;
+             
             }
             float nchan = ((Integer)state.get("NtimeChan")).intValue()-1;
             if ( (Xscales[ 0 ] .getXScale() != null) &&(nchan >0) )
@@ -1271,7 +1397,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                                        DataSets[ 0 ].getX_label(), 
                                          DataSets[ 0 ] .getX_units(), true );
             else
-                 return new AxisInfo( Mintimex, Maxtimex, 
+                 return new AxisInfo( Mintimex-sgn*.5f, Maxtimex+sgn*.5f, 
                                                         "Channel", "", true );     
 
 
@@ -1282,8 +1408,8 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
               end = start;
               start = "EndRow";
             }
-            return new AxisInfo( (float)getInt((Integer)state.get(start),MaxRows), 
-                                 (float)getInt((Integer)state.get(end),1), 
+            return new AxisInfo( (float)getInt((Integer)state.get(start),MaxRows) -sgn*.5f, 
+                                 (float)getInt((Integer)state.get(end),1) +sgn*.5f, 
                                                       "Row", "", true );
 
         }else if ( f == 2 ){//col
@@ -1293,8 +1419,8 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
              end = start;
              start = "EndCol";
            }
-            return new AxisInfo( (float)getInt((Integer)state.get(start),MaxRows), 
-                                 (float)getInt((Integer)state.get(end),1), 
+            return new AxisInfo( (float)getInt((Integer)state.get(start),MaxRows)-sgn*.5f, 
+                                 (float)getInt((Integer)state.get(end),1)+sgn*.5f, 
                                                        "Col", "", true );
 
         }else if ( f == 3 ){//grid
@@ -1304,8 +1430,8 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             end = start;
             start = "MaxGridindx";
          }
-            return new AxisInfo( (float)getInt((Integer)state.get(start),GridNums.length-1), 
-                                 (float)getInt((Integer)state.get(end),0), 
+            return new AxisInfo( (float)getInt((Integer)state.get(start),GridNums.length-1)-sgn*.5f, 
+                                 (float)getInt((Integer)state.get(end),0)+sgn*.5f, 
                                                        "Grid", "", true );
 
         }else if ( f == 4 ){//row
@@ -1315,8 +1441,8 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
              end = start;
              start = "MaxDSindx";
           }
-          return new AxisInfo( (float)getInt((Integer)state.get(start),DataSets.length-1), 
-                                 (float)getInt((Integer)state.get(end),0), 
+          return new AxisInfo( (float)getInt((Integer)state.get(start),DataSets.length-1)-sgn*.5f, 
+                                 (float)getInt((Integer)state.get(end),0)+sgn*.5f, 
                                                         "DataSet", "", true );
 
         }else
@@ -2774,7 +2900,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
          */
         public MyJPanel( int NstepDims, int[] Permutation) {
 
-            super( new GridLayout( 1, 3 ) );
+            super( new BorderLayout() );
             this.NstepDims = NstepDims;
             this.Permutation = Permutation;
             ListElement[] S = new ListElement[ NstepDims ] ;
@@ -2795,15 +2921,16 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                     "Vert axis"
                 ) 
             );
-
-            add( Coord1 );
-            add( Coord2 );
+            JPanel jjp = new JPanel( new GridLayout(1,2));
+            jjp.add( Coord1 );
+            jjp.add( Coord2 );
+            add( jjp, BorderLayout.CENTER);
             Coord1.setSelectedIndex(Permutation[0]);
             Coord2.setSelectedIndex(Permutation[1]);
             JButton but = new JButton( "Submit" );
 
             but.addActionListener( new SubmitButtonListener( this ) );
-            add( but );
+            add( but, BorderLayout.SOUTH );
 
         }
 
