@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.4  2002/12/03 22:10:53  dennis
+ *  Added getDocumentation() method and java docs for getResult().
+ *  (Shannon Hintzman)
+ *
  *  Revision 1.3  2002/11/27 23:20:52  pfpeterson
  *  standardized header
  *
@@ -82,10 +86,31 @@ public class EchoObject extends    GenericBatch
     parameter.setValue( ob );
   }
 
+  /*----------------------------getDocumentation-----------------------------*/
+  
+   public String getDocumentation()
+   {
+   	StringBuffer Res = new StringBuffer();
+	
+	Res.append("@overview This operator prints the result of calling an ");
+	Res.append("object's toString() method on the standard output.");
+		
+	Res.append("@algorithm Calls the toString() method of an object.");
+	
+	Res.append("@param ob - The object to print.");
+	
+	Res.append("@return Returns a String that is the result of calling ");
+	Res.append("the object's toString() method.");
+	
+	return Res.toString();
+   
+   }
+
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, Echo
+   * @return	the command name to be used with script processor: 
+   * in this case, Echo
    */
    public String getCommand()
    {
@@ -93,7 +118,7 @@ public class EchoObject extends    GenericBatch
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------ */
  /**
   *  Set the object to an default Object.
   */
@@ -106,12 +131,15 @@ public class EchoObject extends    GenericBatch
      addParameter( parameter );
   }
 
-
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+  *  @return Returns a String.  The String is the result that comes from 
+  *  calling the object's toString() method.
+  **/
+  
   public Object getResult()
   {
-    Object ob     = getParameter(0).getValue();
+    Object ob = getParameter(0).getValue();
 
     String result = ob.toString();
 
@@ -132,6 +160,11 @@ public class EchoObject extends    GenericBatch
     System.out.println( "Categories are: " );
     for ( int i = 0; i < list.length; i++ )
       System.out.println( list[i] );
+      
+    System.out.println(op.getDocumentation());
+    
+    //System.out.println(op.getResult());
+    //Calling the getResult() method creates a NullPointerException
   }
 
 }
