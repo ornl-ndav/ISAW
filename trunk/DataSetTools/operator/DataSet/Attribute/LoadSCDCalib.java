@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/02/12 15:30:55  pfpeterson
+ * Moved various debug statements into if(DEBUG) conditionals.
+ *
  * Revision 1.4  2003/02/11 23:05:03  pfpeterson
  * Added ability to read calibration from an experiment file.
  *
@@ -63,6 +66,7 @@ import java.io.*;
  */
 public class LoadSCDCalib extends DS_Attribute{
     private static final String     TITLE  = "Load SCD Calibration";
+    private static final boolean    DEBUG  = false;
 
     private int     detNum = 0;
     private float   detA   = 0f;
@@ -92,7 +96,7 @@ public class LoadSCDCalib extends DS_Attribute{
      *  @param calib_file Calibration file to use
      */
     public LoadSCDCalib( DataSet ds, String calib_file, int linenum,
-                                                                 String groups){
+                                                                String groups){
 	this(); 
 	parameters = new Vector();
         addParameter( new Parameter("Calibration File",
@@ -273,8 +277,10 @@ public class LoadSCDCalib extends DS_Attribute{
         return new ErrorString("Error reading calibration: "+e.getMessage());
       }
 
-      for( int i=0 ; i<9 ; i++ )
-        System.out.println(i+":"+calib[i]);
+      if(DEBUG){
+        for( int i=0 ; i<9 ; i++ )
+          System.out.println(i+":"+calib[i]);
+      }
 
       if(calib!=null){
         Object[] res={calib,descr};
