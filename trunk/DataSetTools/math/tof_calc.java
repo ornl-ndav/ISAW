@@ -4,6 +4,9 @@
  *  Ported to Java from tof_vis_calc.c
  * 
  *  $Log$
+ *  Revision 1.4  2000/07/17 19:07:29  dennis
+ *  Added methods to convert between energy and wavelength
+ *
  *  Revision 1.3  2000/07/14 19:10:23  dennis
  *  Added methods to convert between velocity and energy and between
  *  velocity and wavelength.  Also added documentation to clarify the
@@ -425,6 +428,49 @@ public static float EnergyFromVelocity( float v_m_per_us )
   float   e_meV = v_m_per_us * v_m_per_us * 1000000 * meV_per_mm_per_us_2;
 
   return( e_meV );
+}
+
+
+/* ------------------------ EnergyFromWavelength --------------------------- */
+/**
+ *  Calculate the energy of a neutron based on it's wavelength 
+ *
+ *   @param wavelength_A  The wavelength of the neutron in Angstroms. 
+ *
+ *   @return The energy of the neutron in meV
+ */
+public static float EnergyFromWavelength( float wavelength_A )
+{
+
+  if ( wavelength_A <= 0.0f )                     /* NOT MEANINGFUL */
+    return( Float.NaN );
+
+  float  v_m_per_us = ANGST_PER_US_PER_M / wavelength_A;
+  float  e_meV      = v_m_per_us * v_m_per_us * 1000000 * meV_per_mm_per_us_2;
+
+  return( e_meV );
+}
+
+
+
+/* ------------------------ WavelengthFromEnergy --------------------------- */
+/**
+ *  Calculate the wavelength of a neutron based on it's energy
+ *
+ *   @param e_meV       The energy of the neutron in meV.
+ *
+ *   @return The wavelength of the neutron in Angstroms. 
+ */
+public static float WavelengthFromEnergy( float e_meV )
+{
+
+  if ( e_meV <= 0.0f )                     /* NOT MEANINGFUL */
+    return( Float.NaN );
+
+  float   v_m_per_us = (float)Math.sqrt( e_meV / meV_per_mm_per_us_2 )/1000;
+  float   wavelength_A = ANGST_PER_US_PER_M / v_m_per_us;
+
+  return( wavelength_A );
 }
 
 
