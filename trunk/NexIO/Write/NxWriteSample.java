@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/18 20:58:56  dennis
+ * Added initial support for TOF Diffractometers.
+ * Added support for more units.
+ *
  * Revision 1.1  2001/07/25 21:23:20  rmikk
  * Initial checkin
  *
@@ -46,7 +50,7 @@ import DataSetTools.dataset.*;
 public class NxWriteSample
 {String errormessage;
 
-    public NxWriteSample()
+    public NxWriteSample(int instrType)
       {
         errormessage = "";
       }

@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/18 20:58:09  dennis
+ * Added initial support for TOF Diffractometers.
+ * Added support for more units.
+ *
  * Revision 1.1  2001/07/25 21:23:20  rmikk
  * Initial checkin
  *
@@ -45,7 +49,7 @@ import NexIO.*;
 public class NxWriteBeam
 { String errormessage;
 
-  public NxWriteBeam()
+  public NxWriteBeam(int instrType)
     {
       errormessage = "";
     }
@@ -98,6 +102,8 @@ public class NxWriteBeam
         n1.setNodeValue( ff, Types.Float, rank ); 
         if( n1.getErrorMessage() != "" );
           errormessage += ":"+n1.getErrorMessage();
+        n1.addAttribute("units",("meV"+(char)0).getBytes(),Types.Char,
+           Inst_Type.makeRankArray(4,-1,-1,-1,-1));
        }  
      } 
 // duration 
@@ -113,6 +119,8 @@ public class NxWriteBeam
         n1.setNodeValue( ff , Types.Float , rank ); 
         if( n1.getErrorMessage() != "" );
           errormessage += ":" + n1.getErrorMessage();
+                n1.addAttribute("units",("msec"+(char)0).getBytes(),Types.Char,
+           Inst_Type.makeRankArray(5,-1,-1,-1,-1));
        }  
      } 
    return false;

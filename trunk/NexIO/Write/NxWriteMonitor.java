@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/18 20:58:51  dennis
+ * Added initial support for TOF Diffractometers.
+ * Added support for more units.
+ *
  * Revision 1.1  2001/07/25 21:23:20  rmikk
  * Initial checkin
  *
@@ -46,10 +50,12 @@ import NexIO.*;
 public class NxWriteMonitor
 {   String errormessage;
     NxNodeUtils nu;
+    int instrType;
 
-    public NxWriteMonitor()
+    public NxWriteMonitor( int instrType)
       {errormessage = "";
        nu = new NxNodeUtils();
+       this.instrType=instrType;
       }
 
     /**Returns an errormessage or "" if none
@@ -65,7 +71,9 @@ public class NxWriteMonitor
    *@param DS    the data set with the information to be saved
    *@param datablock the index of the Data block monitor
    */
-   public boolean processDS(  NxWriteNode node , DataSet DS , int datablock )
+   
+
+  public boolean processDS(  NxWriteNode node , DataSet DS , int datablock )
     {int ndatablocks , 
          rank1[] , 
          intval[];
@@ -86,51 +94,55 @@ public class NxWriteMonitor
      errormessage = "";
      int i = datablock;
       
-     NxWriteNode n1 = node.newChildNode( "time_of_flight" , "SDS" );
+     /*NxWriteNode n1 = node.newChildNode( "time_of_flight" , "SDS" );
      String units , 
             longname;
      units = DS.getX_units();
      longname = DS.getX_label();
      if( units != null )
        {rank1[ 0 ]= units.length() + 1;
-        n1.addAttribute( "units" , ( units + 0 ).getBytes() , 
+        n1.addAttribute( "units" , ( units + (char)0 ).getBytes() , 
                                      Types.Char , rank1 );
        }
      if( longname != null )
        {rank1[ 0 ]= longname.length() + 1;
-        n1.addAttribute( "long_name" , ( longname + 0 ).getBytes() , 
+        n1.addAttribute( "long_name" , ( longname + (char)0 ).getBytes() , 
                                      Types.Char , rank1 );
-       } 
-     rank1[ 0 ]= 1;
+       }
+     */
+     NxWriteNode n1 = Inst_Type.makeXvalnode( DS,datablock,datablock+1, node);
+     n1.addAttribute( "axis",Inst_Type.makeRankArray(1,-1,-1,-1,-1), Types.Int,
+             Inst_Type.makeRankArray(1,-1,-1,-1,-1));
+     /*rank1[ 0 ]= 1;
      intval[ 0 ]= 1;
      n1.addAttribute( "axis" , intval , Types.Int , rank1 ); 
-
+     
      Data DB = DS.getData_entry( i );
      XScale X = DB.getX_scale(); 
      float[] xvals ;
      xvals = X.getXs();
      rank1[ 0 ] = xvals.length;
      n1.setNodeValue( xvals , Types.Float , rank1 );
-     
+     */
      /*X = DB.getX_scale(); 
      xvals = new float[ 0 ];
      xvals = X.getXs();
      rank1[ 0 ] = xvals.length;
      n1.setNodeValue( xvals , Types.Float , rank1 );
    */
-
+ 
      NxWriteNode n2 = node.newChildNode( "data" , "SDS" );
-     units = DS.getY_units();
-     longname = DS.getY_label();
+     String units = DS.getY_units();
+     String longname = DS.getY_label();
      if( units != null )
        {rank1[ 0 ] = units.length( ) + 1;
-        n2.addAttribute( "units" , ( units + 0 ).getBytes() , 
+        n2.addAttribute( "units" , ( units + (char)0 ).getBytes() , 
                                 Types.Char , rank1 );
        }
      if( longname != null )
        {
         byte LN[];
-        LN = ( longname + 0 ).getBytes();
+        LN = ( longname + (char)0 ).getBytes();
         rank1[ 0 ] = LN.length;       
         n2.addAttribute( "long_name" , LN , Types.Char , rank1 );
        } 
@@ -139,13 +151,24 @@ public class NxWriteMonitor
       intval = new int[ 1 ];
       intval[ 0 ] = 1;
       n2.addAttribute( "signal" , intval , Types.Int , rank1 ); 
-      xvals = new float[ 0 ];
-      xvals = DB.getY_values();
+      float[] xvals = new float[ 0 ];
+      xvals = DS.getData_entry(datablock).getY_values();
       rank1[ 0 ] = xvals.length;
       
       n2.setNodeValue( xvals , Types.Float , rank1 );
-      NxWriteDetector.SetUpIsawAttributes( node , datablock, datablock+1,
-             DS);
+
+   //range[2]
+      
+      XScale uxs = DS.getData_entry(datablock).getX_scale();
+      new NxWriteDetector(instrType).processDS( node ,DS, datablock, datablock+1);
+      float[] range = new float[2];
+      range[0]= uxs.getStart_x();
+      range[1] = uxs.getEnd_x();
+      NxWriteNode nrange = node.newChildNode("range","SDS");
+      nrange.setNodeValue( range, Types.Float, Inst_Type.makeRankArray(2,-1,-1,-1,-1));
+      nrange.addAttribute("units", (DS.getX_units()+(char)0  ).getBytes(), Types.Char,
+            Inst_Type.makeRankArray( DS.getX_units().length()+1,-1,-1,-1,-1));
+
           
       return false;
   //Common code with NxDetector
