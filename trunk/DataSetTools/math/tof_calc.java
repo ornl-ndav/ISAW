@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.16  2002/07/10 15:57:44  pfpeterson
+ *  Added gsas tof->d and tof->Q calculations.
+ *
  *  Revision 1.15  2002/07/02 19:09:24  pfpeterson
  *  Added a method to do Q->wavelength calculations.
  *
@@ -371,6 +374,29 @@ public static float  DSpacing( float angle_radians,
   return (float)( wavelength / (2.0 * Math.sin( theta_radians ) ) ); 
 }
 
+/**
+ * Calculate a "D" value based on the empirical relation used by gsas.
+ *
+ * @param  dif_c  The geometrical portion of the conversion.
+ * @param  dif_a  The quadratic portion of the conversion.
+ * @param  t_zero The constant offset.
+ *
+ * @return The magnitude of "D" in Angstroms.
+ */
+public static float DSpacing( float dif_c, float dif_a,
+                              float t_zero, float time_us ){
+    // shouldn't solve quadratic if unnecessary
+    if(dif_a==0) return (time_us-t_zero)/dif_c;
+
+    // imaginary numbers if t_zero>time_us
+    if(t_zero>time_us)return Float.NaN;
+
+    // otherwise do the calculation (only positive root has meaning)
+    double num=-1.*dif_c+Math.sqrt(dif_c*dif_c+4.*dif_a*(time_us-t_zero));
+    double den=2.*(double)dif_a;
+    return (float)(num/den);
+}
+
 
 /* --------------------- DSpacingofDiffractometerQ ----------------------- */
 /**
@@ -463,6 +489,29 @@ public static float  DiffractometerQ( float angle_radians,
   theta_radians = Math.abs( angle_radians / 2.0f );
 
   return (float)( 4.0 * Math.PI * Math.sin( theta_radians ) / wavelength );
+}
+
+/**
+ * Calculate a "Q" value based on the empirical relation used by gsas.
+ *
+ * @param  dif_c  The geometrical portion of the conversion.
+ * @param  dif_a  The quadratic portion of the conversion.
+ * @param  t_zero The constant offset.
+ *
+ * @return The magnitude of "Q" in inverse Angstroms.
+ */
+public static float DiffractometerQ( float dif_c, float dif_a,
+                                     float t_zero, float time_us){
+    // shouldn't solve quadratic if unnecessary
+    if(dif_a==0) return 2f*(float)Math.PI*dif_c/(time_us-t_zero);
+
+    // imaginary numbers if t_zero>time_us
+    if(t_zero>time_us)return Float.NaN;
+
+    // otherwise do the calculation (only positive root has meaning)
+    double num=Math.PI*4.*(double)dif_a;
+    double den=-1.*dif_c+Math.sqrt(dif_c*dif_c+4.*dif_a*(time_us-t_zero));
+    return (float)(num/den);
 }
 
 /* -------------------- DiffractometerQofWavelength ---------------------- */
