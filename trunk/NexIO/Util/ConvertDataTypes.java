@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/03/06 19:10:17  rmikk
+ * Convert to float Array now attempts to convert Vectors to float Arrays
+ *
  * Revision 1.4  2004/02/16 02:18:48  bouzekc
  * Removed unused imports.
  *
@@ -50,6 +53,8 @@ import NexIO.*;
 import DataSetTools.math.*;
 import DataSetTools.dataset.*;
 import java.lang.reflect.*;
+import java.util.*;
+
 /**
 *    This class contains methods to convert Objects to a specified
 *    data type(including dates), Change units for data, convert Nexus axis 
@@ -84,6 +89,10 @@ public class ConvertDataTypes{
            float[] Res = new float[1];
            Res[0] = (new Float( (String)O)).floatValue(); 
            return Res;
+        }else if( O instanceof Vector){
+            return floatArrayValue( ((Vector)O).toArray());
+
+        
   
         }
      }catch( Exception S){}
