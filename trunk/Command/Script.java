@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/03/21 17:27:35  pfpeterson
+ * Now adds a "
+ * " at the end of the script if it isn't already there.
+ *
  * Revision 1.3  2003/03/21 15:27:02  pfpeterson
  * No longer throws NullPointerException when working with null script.
  *
@@ -73,6 +77,7 @@ public class Script extends Object{
   public Script(StringBuffer script){
     this();
     this.script=script.toString();
+    this.fix_script();
   }
 
   public Script(Document doc){
@@ -80,6 +85,7 @@ public class Script extends Object{
     if( doc==null || doc.getLength()==0 ) return;
     try{
       this.script=doc.getText(0,doc.getLength());
+      this.fix_script();
     }catch(BadLocationException e){
       // let it drop on the floor
     }
@@ -122,6 +128,7 @@ public class Script extends Object{
       return false;
 
     this.script=buffer.toString();
+    this.fix_script();
     this.init_linenum(true);
     return true;
   }
@@ -158,6 +165,16 @@ public class Script extends Object{
   }
 
   // ============================== PRIVATE UTILITY METHODS
+  /**
+   * This method just appends a "\n" at the end of the script if it
+   * isn't already there.
+   */
+  private void fix_script(){
+    if(! this.script.endsWith("\n") ){
+      this.script=this.script+"\n";
+    }
+  }
+
   /**
    * This method creates the linenum array and initializes its
    * elements to -1. If the parameter is set to true then it will
