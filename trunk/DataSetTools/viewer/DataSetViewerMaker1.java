@@ -30,13 +30,18 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2004/05/06 17:32:05  rmikk
+ *  Eliminated bad log messages.
+ *  Set the time in the ArrayMaker when the pointed at message occurs
+ *
  *  Revision 1.10  2004/03/15 19:33:58  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
  *
  *  Revision 1.9  2004/03/15 03:28:58  dennis
  *  Moved view components, math and utils to new source tree
- *  gov.anl.ipns.*
+ *  gov.anl.ipns.
+ *
  *
  *  Revision 1.8  2004/03/10 23:40:57  millermi
  *  - Changed IViewComponent interface, no longer
@@ -69,50 +74,8 @@
  *
  *  Initial Checkin
  *
- *  Revision 1.4  2003/08/08 15:48:24  dennis
- *  Added GPL copyright information and $Log$
- *  Added GPL copyright information and Revision 1.10  2004/03/15 19:33:58  dennis
- *  Added GPL copyright information and Removed unused imports after factoring out view components,
- *  Added GPL copyright information and math and utilities.
- *  Added GPL copyright information and
- *  Added GPL copyright information and Revision 1.9  2004/03/15 03:28:58  dennis
- *  Added GPL copyright information and Moved view components, math and utils to new source tree
- *  Added GPL copyright information and gov.anl.ipns.*
- *  Added GPL copyright information and
- *  Added GPL copyright information and Revision 1.8  2004/03/10 23:40:57  millermi
- *  Added GPL copyright information and - Changed IViewComponent interface, no longer
- *  Added GPL copyright information and   distinguish between private and shared controls/
- *  Added GPL copyright information and   menu items.
- *  Added GPL copyright information and - Combined private and shared controls/menu items.
- *  Added GPL copyright information and
- *  Added GPL copyright information and Revision 1.7  2004/01/24 22:02:38  bouzekc
- *  Added GPL copyright information and Removed unused imports.
- *  Added GPL copyright information and
- *  Added GPL copyright information and Revision 1.6  2003/12/11 22:09:20  rmikk
- *  Added GPL copyright information and Added a kill command to remove orphaned windows
- *  Added GPL copyright information and
- *  Added GPL copyright information and Revision 1.5  2003/12/11 19:28:19  rmikk
- *  Added GPL copyright information and Made a public field, ImagePortion, for the portion of the
- *  Added GPL copyright information and   split pane given to the View.
- *  Added GPL copyright information and
- *  Added GPL copyright information and Revision 1.4  2003/12/04 20:45:29  rmikk
- *  Added GPL copyright information and Added some input checking
- *  Added GPL copyright information and
- *  Added GPL copyright information and Revision 1.3  2003/11/06 21:27:26  rmikk
- *  Added GPL copyright information and Now can handle selected Regions for specifying
- *  Added GPL copyright information and   data sets and time ranges to be selected
- *  Added GPL copyright information and
- *  Added GPL copyright information and Revision 1.2  2003/11/06 19:56:18  rmikk
- *  Added GPL copyright information and Changed the proportion on the split pane so the control
- *  Added GPL copyright information and   panel takes less area
- *  Added GPL copyright information and
- *  Added GPL copyright information and Revision 1.1  2003/10/27 15:09:43  rmikk
- *  Added GPL copyright information and
- *  Added GPL copyright information and Initial Checkin
- *  Added GPL copyright information and to record CVS
- *  login messages.
  *
- */
+ */ 
 
 package DataSetTools.viewer;
 
@@ -318,9 +281,11 @@ public class DataSetViewerMaker1  extends DataSetViewer
        { 
         int Group = ds.getPointedAtIndex();
         float time = ds.getPointedAtX();
-        if( !eliminate( Group,time, InternalPointedAts))
+        if( !eliminate( Group,time, InternalPointedAts)){
+           viewArray.setTime( time);
            ((DataSetViewerMethods)viewComp).setPointedAt( 
                       viewArray.getSelectedData( Group,time));
+        }
         Conversions.showConversions( time, Group);                          
             
        };
