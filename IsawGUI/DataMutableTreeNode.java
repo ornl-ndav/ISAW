@@ -3,6 +3,12 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.3  2001/07/20 16:30:31  neffk
+ * fixed some fairly obvious errors, added a few comments, and changed
+ * children() to return an implementor of Enumeration instead of null.
+ * the change was intended to effect some other error messages... but
+ * it pains my heart to delete coded that works, so i didn't delete it.
+ *
  * Revision 1.2  2001/07/18 16:30:36  neffk
  * 0) removed dependancy on DefaultMutableTreeNode.
  * 1) removed DataMutableTreeNode( Data, MutableTreeNode )
@@ -55,7 +61,7 @@ public class DataMutableTreeNode
 
   public Enumeration children()
   {
-    return null;
+    return new emptyEnumeration();
   }
 
 
@@ -69,7 +75,7 @@ public class DataMutableTreeNode
 
 
   /**
-   * returns the child TreeNode at index childIndex.
+   * this node never has any children.
    */
   public TreeNode getChildAt( int childIndex )
   {
@@ -96,13 +102,11 @@ public class DataMutableTreeNode
 
 
   /**
-   * the object is never a leaf.  although it may be empty at times, it is
-   * intended as a container for Data objects, which are always children
-   * of this container.
+   * this node is always a leaf
    */
   public boolean isLeaf()
   {
-    return false;
+    return true;
   }
 
 
@@ -136,9 +140,13 @@ public class DataMutableTreeNode
 
   public void removeFromParent()
   {
+    parent.remove( this );
   }
 
 
+  /**
+   * set the reference to the parent of this node.
+   */ 
   public void setParent( MutableTreeNode node )
   {
     parent = node;
@@ -161,7 +169,26 @@ public class DataMutableTreeNode
   {
     return data;
   }
-}
 
+
+/*------------------------------=[ TreeNode ]=--------------------------------*/
+
+  final class emptyEnumeration implements Enumeration
+  {
+    public emptyEnumeration()
+    {
+    }
+  
+    public boolean hasMoreElements()
+    {
+      return false; 
+    }
+
+    public Object nextElement()
+    {
+      return new Object();
+    }
+  }
+}
 
 
