@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2001/06/04 18:11:41  dennis
+ *  All drawing now goes through DrawSpecifiedGraph().
+ *  Added option to rebin data for graph.
+ *
  *  Revision 1.9  2001/05/29 15:08:24  dennis
  *  Now uses initializeWorldCoords to reset both the local and
  *  global transforms.
@@ -108,6 +112,7 @@ public class GraphView extends    DataSetViewer
                        implements Serializable
 { 
   private static final String HORIZONTAL_SCROLL = "Horizontal Scroll";
+  private static final String DO_REBIN          = "Rebin Data";
 
                                                     // Image and border
   SplitPaneWithState   main_split_pane = null;
@@ -301,6 +306,11 @@ private void AddOptionsToMenu()
   cb_button.setState( getState().getHorizontal_scrolling() );
   cb_button.addActionListener( option_menu_handler );
   option_menu.add( cb_button );
+
+  cb_button = new JCheckBoxMenuItem( DO_REBIN );
+  cb_button.setState( getState().getRebin() );
+  cb_button.addActionListener( option_menu_handler );
+  option_menu.add( cb_button );
 }
 
 
@@ -418,6 +428,13 @@ private void SetHorizontalScrolling( boolean state )
 }
 
 
+/* ----------------------------- SetRebin ------------------------------- */
+private void SetRebin( boolean state )
+{
+  getState().setRebin( state );
+  DrawGraphs();
+}
+
 
 /* ---------------------------- DrawGraphs ----------------------------- */
 
@@ -433,82 +450,34 @@ private void DrawGraphs( )
   }
 
   int  num_data_blocks = getDataSet().getNum_entries();
-
-  h_graph      = new GraphJPanel[ num_data_blocks ];
   was_selected = new boolean[ num_data_blocks ];
+  h_graph      = new GraphJPanel[ num_data_blocks ];
 
   viewport.setLayout( new GridLayout(num_data_blocks, 1) );
-  viewport.setPreferredSize( new Dimension(viewport_preferred_width, 
-                                           100*num_data_blocks ) );
+
+  SetHorizontalScrolling( getState().getHorizontal_scrolling() );
 
   SelectionKeyAdapter key_adapter = new SelectionKeyAdapter();
 
-  float x_min = x_range_ui.getMin();
-  float x_max = x_range_ui.getMax();
-  int num_cols = (int)n_bins_ui.getValue();
-  UniformXScale x_scale = new UniformXScale( x_min, x_max, num_cols );
-
   for ( int i = 0; i < num_data_blocks; i++ )
   {
-    Data data_block = getDataSet().getData_entry( i );;       // don't rebin, or
-//    Data temp_data_block = getDataSet().getData_entry( i ); // rebin the Data 
-//    Data data_block = (Data)temp_data_block.clone();
-//    data_block.ResampleUniformly( x_scale );
-
-    float x[] = data_block.getX_scale().getXs();
-    float y[] = data_block.getY_values();
-
     h_graph[i] = new GraphJPanel();
-    if ( data_block.isSelected() )
-      h_graph[i].setColor( Color.blue, 0, false );
-    else 
-      h_graph[i].setColor( Color.black, 0, false );
-
-    h_graph[i].setData( x, y, 0, false );
 
     h_graph[i].addKeyListener( key_adapter ); 
-
-    CoordBounds graph_bounds = h_graph[i].getGlobalWorldCoords();
-    graph_bounds.setBounds( x_min, graph_bounds.getY1(),
-                            x_max, graph_bounds.getY2() );
-    h_graph[i].initializeWorldCoords( graph_bounds );
-
     h_graph[i].addMouseMotionListener( new HGraphMouseMotionAdapter() );
     h_graph[i].addMouseListener( new HGraphMouseAdapter() );
 
-    String border_label = data_block.toString();
-    if ( data_block.isSelected() )
-      border_label += " (Selected)";
-
-    String update_time = (String)
-                         (data_block.getAttributeValue(Attribute.UPDATE_TIME));
-    if ( update_time != null )
-      border_label = border_label + ", " + update_time;
-
     JPanel border_panel = new JPanel();
-    TitledBorder border = new TitledBorder( LineBorder.createBlackLineBorder(),
-                      border_label );
+    TitledBorder border = new TitledBorder( LineBorder.createBlackLineBorder());
     border.setTitleFont( FontUtil.BORDER_FONT );
-    if ( data_block.isSelected() )
-    {
-      border.setTitleColor( Color.blue );
-      was_selected[i] = true;
-    }
-    else
-    { 
-      border.setTitleColor( Color.black );
-      was_selected[i] = false;
-    }
-
     border_panel.setBorder( border );
 
     border_panel.setLayout( new GridLayout( 1, 1) );
     border_panel.add( h_graph[i] );
     viewport.add( border_panel );
-  }
 
-  if ( getState().getHorizontal_scrolling() )
-    SetHorizontalScrolling( true );
+    DrawSpecifiedGraph( i );
+  }
 
   viewport.setVisible(true);
 //  viewport.repaint();           // is this needed?
@@ -568,17 +537,26 @@ private void DrawSpecifiedGraph( int index )
   float x_min = x_range_ui.getMin();
   float x_max = x_range_ui.getMax();
   int num_cols = (int)n_bins_ui.getValue();
-  UniformXScale x_scale = new UniformXScale( x_min, x_max, num_cols );
  
-  Data data_block = getDataSet().getData_entry( index );   // don't rebin or
-                                                           // rebin the Data
-//  Data temp_data_block = getDataSet().getData_entry( index );
-//  Data data_block = (Data)temp_data_block.clone();
-//  data_block.ResampleUniformly( x_scale );
+  Data data_block;
+  if ( getState().getRebin() )
+  {
+    Data temp_data_block = getDataSet().getData_entry( index );
+    data_block = (Data)temp_data_block.clone();
+    UniformXScale x_scale = new UniformXScale( x_min, x_max, num_cols );
+    data_block.ResampleUniformly( x_scale );
+  }
+  else
+    data_block = getDataSet().getData_entry( index ); 
 
   JPanel border_panel = (JPanel)h_graph[ index ].getParent();
   TitledBorder border = (TitledBorder)border_panel.getBorder();
   String border_label = data_block.toString();
+
+  String update_time = (String)
+                       (data_block.getAttributeValue(Attribute.UPDATE_TIME));
+  if ( update_time != null )
+    border_label = border_label + ", " + update_time;
 
   if ( data_block.isSelected() )
   {
@@ -597,6 +575,11 @@ private void DrawSpecifiedGraph( int index )
   float x[] = data_block.getX_scale().getXs();
   float y[] = data_block.getY_values();
   h_graph[index].setData( x, y, 0, true );
+
+  CoordBounds graph_bounds = h_graph[index].getGlobalWorldCoords();
+  graph_bounds.setBounds( x_min, graph_bounds.getY1(),
+                          x_max, graph_bounds.getY2() );
+  h_graph[index].initializeWorldCoords( graph_bounds );
 
   border.setTitle( border_label );
   border_panel.repaint();
@@ -734,6 +717,11 @@ private class HGraphMouseAdapter extends    MouseAdapter
        {
          boolean state = ((JCheckBoxMenuItem)e.getSource()).getState();
          SetHorizontalScrolling( state );
+       }
+       else if ( action == DO_REBIN )
+       {
+         boolean state = ((JCheckBoxMenuItem)e.getSource()).getState();
+         SetRebin( state );
        }
     }
   }
