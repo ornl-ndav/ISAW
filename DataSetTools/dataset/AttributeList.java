@@ -30,7 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2004/06/22 15:33:45  rmikk
+ *  Added documentation for setGridId method and associated variable
+ *  Improved error reporting
+ *
  *  Revision 1.24  2004/06/04 23:11:43  kramer
+ *
  *  Added Javadoc comments to the methods that get attribute values.
  *
  *  Revision 1.23  2004/05/25 20:15:51  kramer
@@ -133,7 +138,11 @@ public class AttributeList implements Serializable,
                                              // COMPATIBILITY PROBLEMS
   private Vector attributes;
 
-
+  /**
+   *  A Hashtable of the gridID's and their grid that have already been set 
+   * up while reading through the Datablocks in an XML file
+   */
+  transient Hashtable gridIDs = null;
   /**
    * Constructs an initial empty list of Attributes.
    */
@@ -536,7 +545,9 @@ public class AttributeList implements Serializable,
         { xml_utils.setError("No class DataSetTools.dataset."+Tag 
                    +" err="+s.getClass()+s.getMessage());
                 
-          xml_utils.skipBlock(stream);
+          if( xml_utils.skipBlock(stream)== null)
+             return xml_utils.setError(
+              "Improper nesting of Attribute tags in xml file: "+Tag);
         }
             
         Tag= xml_utils.getTag( stream);
@@ -562,7 +573,11 @@ public class AttributeList implements Serializable,
     }
      
   }
-  Hashtable gridIDs = null;
+  /**
+    * Gives access to the Hashtable of grid's that have already been set up
+    * as the DataSet reads through the Datablocks described in an XML file
+    * @param gridIds  The Hashtable of gridID's with their associated grid
+    */
   public void setGridIDs( Hashtable gridIDs){
   	this.gridIDs = gridIDs;
   }
@@ -581,13 +596,18 @@ public class AttributeList implements Serializable,
     {
       stream.write(("<AttributeList size= \""+attributes.size()+
                     "\">\n").getBytes());
+
+
       for(int i=0 ;i<attributes.size(); i++)
-      { Attribute A =(Attribute)(attributes.elementAt(i));
+      { 
+
+
+       Attribute A =(Attribute)(attributes.elementAt(i));
          
-        if(!A.XMLwrite(stream,mode))
-          return false;
-              
-        stream.write("\n".getBytes());
+        if(A.XMLwrite(stream,mode))
+           stream.write("\n".getBytes());
+        else
+           DataSetTools.util.SharedData.addmsg("Attribute "+A.getName()+" is not saved");
       }
       stream.write("</AttributeList>\n".getBytes());
       
