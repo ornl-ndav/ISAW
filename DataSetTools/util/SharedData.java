@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/07/12 18:21:23  pfpeterson
+ *  Added convenience methods to releave the duty of casting from
+ *  the caller.
+ *
  *  Revision 1.8  2002/06/14 15:54:10  pfpeterson
  *  Added some convenience methods for getting system properties
  *  and adding a message to the status bar.
@@ -105,17 +109,132 @@ public class SharedData implements java.io.Serializable
         status_pane.add(value);
     }
 
+
+    /* -------------------- properties methods -------------------- */
     /**
-     * Convenience method to speed up getting system properties.
+     * Convenience method to consolidate getting system properties.
      */
     public static String getProperty(String prop){
         return isaw_props.get(prop);
     }
 
     /**
-     * Convenience method to speed up getting system properties.
+     * Convenience method to consolidate getting system properties.
      */
     public static String getProperty(String prop, String def){
         return isaw_props.get(prop,def);
     }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static boolean getbooleanProperty(String prop){
+        return getBooleanProperty(prop).booleanValue();
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static boolean getbooleanProperty(String prop, String def){
+        return getBooleanProperty(prop,def).booleanValue();
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static Boolean getBooleanProperty(String prop){
+       return isaw_props.getBoolean(prop);
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static Boolean getBooleanProperty(String prop, String def){
+        return isaw_props.getBoolean(prop,def);
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static double getdoubleProperty(String prop){
+        return getDoubleProperty(prop).doubleValue();
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static double getdoubleProperty(String prop, String def){
+        return getDoubleProperty(prop,def).doubleValue();
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static Double getDoubleProperty(String prop){
+       return isaw_props.getDouble(prop);
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static Double getDoubleProperty(String prop, String def){
+        return isaw_props.getDouble(prop,def);
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static int getintProperty(String prop){
+        return getIntegerProperty(prop).intValue();
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static int getintProperty(String prop, String def){
+        return getIntegerProperty(prop,def).intValue();
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static Integer getIntegerProperty(String prop){
+        return isaw_props.getInteger(prop);
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static Integer getIntegerProperty(String prop, String def){
+        return isaw_props.getInteger(prop,def);
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static float getfloatProperty(String prop){
+        return getFloatProperty(prop).floatValue();
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static float getfloatProperty(String prop, String def){
+        return getFloatProperty(prop,def).floatValue();
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static Float getFloatProperty(String prop){
+        return isaw_props.getFloat(prop);
+    }
+
+    /**
+     * Convenience method to consolidate getting system properties.
+     */
+    public static Float getFloatProperty(String prop, String def){
+        return isaw_props.getFloat(prop,def);
+    }
+
 }
