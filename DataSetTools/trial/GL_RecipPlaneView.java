@@ -31,6 +31,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/08/11 05:22:46  dennis
+ * Put some debug prints in  if (debug) statements.
+ * The calculated integer hkl values now more nearly cover the
+ * full range covered by the detector.
+ * Added mechanism for user to selectively filter peaks to be on
+ * planes of constant h, constant k and or constant l.
+ * Also, user may now specify the d-spacing corresponding to a
+ * family of planes.
+ *
  * Revision 1.11  2004/08/10 01:45:03  dennis
  * Added controls to separately turn iso-surfaces, detector coverage
  * regions and hkl marks on/off.  Added separate threshold control for
@@ -97,131 +106,6 @@
  * Revision 1.1  2004/07/14 16:53:43  dennis
  * Initial port of SCD reciprocal space view & selection tool to
  * OpenGL based 3D tools.
- *
- * Revision 1.23  2004/05/10 20:42:24  dennis
- * Test program now just instantiates a ViewManager to diplay
- * calculated DataSet, rather than keeping a reference to it.
- * This removes an Eclipse warning about a local variable that is
- * not read.
- *
- * Revision 1.22  2004/05/03 16:29:54  dennis
- * Removed two unused local variables.
- * Removed method: makeGoniometerRotationInverse() that was moved
- * to another class.
- * Removed used of DETECTOR_CEN_ANGLE & DETECTOR_CEN_DISTANCE since
- * the calculations now use data grids.
- *
- * Revision 1.21  2004/04/20 17:44:35  dennis
- * Now uses EventQueue.invokeLater with a "WindowShower" to
- * show the main window, instead of doing it directly.
- *
- * Revision 1.20  2004/03/15 06:10:53  dennis
- * Removed unused import statements.
- *
- * Revision 1.19  2004/03/15 03:28:44  dennis
- * Moved view components, math and utils to new source tree
- * gov.anl.ipns.*
- *
- * Revision 1.18  2004/03/03 23:13:16  dennis
- * Added experimental method to calculate threshold levels in terms of
- * the median value on time slices.  Not currently used.
- *
- * Revision 1.17  2004/01/05 23:33:10  dennis
- * Now checks if value returned by VecQToTOF.intensityAtQ() is >= 0
- * since now -1 is returned instead of 0, to indicate that the Q vector
- * does not correspond to the detector.
- *
- * Revision 1.16  2003/12/18 22:44:21  millermi
- * - This file was involved in generalizing AxisInfo2D to
- *   AxisInfo. This change was made so that the AxisInfo
- *   class can be used for more than just 2D axes.
- *
- * Revision 1.15  2003/12/08 16:22:09  dennis
- * Explicitly set axis units to (currently) uncalibrated values to work
- * around "bug" in ImageFrame2 that breaks the zoom capability, if
- * axes are not specified.
- *
- * Revision 1.14  2003/08/21 19:15:14  dennis
- * After refining the normal vector in FilterFFTds(), the frequency
- * attribute is now recalculated based on the least-squares approx
- * for the planar spacing, rather than the peak finding algorithm
- * using the fft.
- * The maximum and initial distance between the viewer and the origin
- * is now set to 5000 rather than 500 to more nearly give an
- * orthographic projection.
- *
- * Revision 1.13  2003/08/11 22:53:30  dennis
- * Now sets effective positions from grid, after adjusting
- * the grid.
- *
- * Revision 1.12  2003/08/11 22:15:18  dennis
- * First version that uses calibration information.
- *
- * Revision 1.11  2003/07/31 22:43:43  dennis
- * Changed call to WritePeakData to match new method name.
- *
- * Revision 1.10  2003/07/30 22:04:04  dennis
- * Modified to work with the current PeakData object.
- *
- * Revision 1.9  2003/07/29 16:18:05  dennis
- * Now writes L1 and complete information on detector (num rows, cols,
- * height, width, up_vector and base_vector) to peaks file.
- *
- * Revision 1.8  2003/07/28 21:59:02  dennis
- * Added option '-B' to ignore border pixels.  Removed debug print
- * of qxyz vs hkl values, since they can be written to a file
- * (similar to peaks file).
- *
- * Revision 1.7  2003/07/16 22:24:42  dennis
- * Changed output file format to be more like the "peaks" file
- * format.  Now writes the detector position and chi, phi, omega
- * values in the same form as "peaks" file.
- *
- * Revision 1.6  2003/07/14 13:33:20  dennis
- * Added option to print a file listing bins above the specified
- * threshold.  One line is written for each such bin, specifying:
- * run, det_id, h, k, l, row, col, tof, counts, qx, qy, qz for use
- * in Dennis' calibration program.  This is similar to the peaks
- * file, except:
- * 1.Bins forming a peak have not been combined
- * 2.TOF at the bin center is included, rather than wavelength,
- *   since the wavelength depends upon the instrument parameters.
- * 3.(Qx,Qy,Qz), calculated from nominal instrument parameters
- *   are included, for comparison & debugging purposes.
- *
- * Revision 1.5  2003/07/09 21:23:05  dennis
- * Prints file name as it's loading.
- * Builds up FFT DataSet, initially using stricter threshold
- * on the errors, gradually allowing larger errors until at least
- * 10 directions are found.
- *
- * Revision 1.4  2003/06/05 21:43:44  dennis
- * Added option to print lattice parameters.
- * Copy normal from FFT DataSet no longer attempts to further
- * refine the normal.
- *
- * Revision 1.3  2003/06/05 14:42:31  dennis
- * Now allows user to select planes of constant h, k or l either using
- * the FFT DataSet, or by selecting peaks interactively.  Also shows slices
- * of constant h, k or l through the reciprocal lattice, where the value
- * of h, k or l is specified by the user.
- *
- * Revision 1.2  2003/06/04 14:09:46  dennis
- * Now supports multiple runs with more than one area detector.
- * The code that filters the FFTs now checks for normal vectors
- * equaling the negatives of previously found normal vectors
- * and for a d-spacing of 0.
- * Added methods:
- *   ExtractPeaks()
- *   makeVecQTransformers()
- * Removed currently unused methods:
- *   findAverages()
- *   getDataGrid()
- *
- * Revision 1.1  2003/06/03 16:49:14  dennis
- * Initial version of application to calculate orientation matrix and
- * plane slices through reciprocal space.
- *
  */
 
 package DataSetTools.trial;
@@ -288,6 +172,7 @@ public class GL_RecipPlaneView
   private final int DIMENSION = 3;       // set to 4 to allow affine transform
                                          // set to 3 to just use rotation and
                                          // scaling.
+  private float INDEX_TOLERANCE = 0.1f;
   private float SLICE_SIZE_IN_Q = 20;
   private int   FFT_DATA_LENGTH = 512;
   private int   SLIDER_DEF      = 60;
@@ -356,6 +241,7 @@ public class GL_RecipPlaneView
   private DataSet         all_fft_ds;
   private DataSet         filtered_fft_ds;
 
+  private boolean         debug = false;
 
   /* ---------------------------- Constructor ----------------------------- */
 
@@ -434,6 +320,7 @@ public class GL_RecipPlaneView
 
     show_iso_surface.addActionListener( new IsoSurfaceListener() );
     show_coverage.addActionListener( new DetectorCoverageListener() );
+    show_integer_hkl.addActionListener( new IntegerHKLListener() );
   
     checkbox_panel.add( show_iso_surface );
     checkbox_panel.add( show_coverage );
@@ -627,16 +514,21 @@ public class GL_RecipPlaneView
       float ycenter = ylower + height / 2;
       Vector3D center = grid.position();
 
-      System.out.println("ORGINAL CENTER IS: " + center );
-      System.out.println("Shift in X is : " + xcenter );
-      System.out.println("Shift in Y is : " + ycenter );
+      if ( debug )
+      {
+        System.out.println("ORGINAL CENTER IS: " + center );
+        System.out.println("Shift in X is : " + xcenter );
+        System.out.println("Shift in Y is : " + ycenter );
+      }
 
       base.multiply( xcenter );
       up.multiply( ycenter );
       center.add( base );
       center.add( up );
       grid.setCenter( center );
-      System.out.println("NEW CENTER IS: " + center );
+
+      if ( debug )
+        System.out.println("NEW CENTER IS: " + center );
       
       Attribute T0_attribute = new FloatAttribute( Attribute.T0_SHIFT, cal[3] );
       Attribute l1_attribute = new FloatAttribute( Attribute.INITIAL_PATH, 
@@ -648,8 +540,11 @@ public class GL_RecipPlaneView
           grid.getData_entry( row, col ).setAttribute( T0_attribute );
         }
 
-      System.out.println ("GRID IS " );
-      System.out.println ("" + grid );
+      if ( debug )
+      {
+        System.out.println ("GRID IS " );
+        System.out.println ("" + grid );
+      }
                                                // Finally, adjust the 
                                                // effective detector pixel
                                                // positions     
@@ -740,9 +635,7 @@ public class GL_RecipPlaneView
 
   public void initialize( boolean extract_peaks )
   {
-    System.out.println("Making transformers.....");
     makeVecQTransformers();
-    System.out.println("DONE");
 
     if ( orientation_matrix == null )
       draw_Q_axes( 15, vec_Q_space );
@@ -760,26 +653,28 @@ public class GL_RecipPlaneView
 
   public void CalculateFFTs()
   {
-    System.out.println("Getting array of points for peaks....");
-    all_vectors = get_data_points();
-    System.out.println("DONE");
+    if ( debug )
+      System.out.println("Projecting points...");
 
-    System.out.println("Making QR factorization....");
-    makeQR_factors();
-    System.out.println("DONE");
-
-    System.out.println("Projecting points...");
     projection_ds = ProjectPointsUniformly( all_vectors, 15 );
-    System.out.println("DONE");
+
+    if ( debug )
+      System.out.println("DONE");
 //  vm = new ViewManager( projection_ds, IViewManager.IMAGE );
 
-    System.out.println("Doing FFT on all projections....");
+    if ( debug )
+      System.out.println("Doing FFT on all projections....");
+
     all_fft_ds = FFT( projection_ds );
     all_fft_ds.addIObserver( new FFTListener() );
-    System.out.println("DONE");
+
+    if ( debug )
+      System.out.println("DONE");
 //  vm = new ViewManager( all_fft_ds, IViewManager.IMAGE );
 
-    System.out.println("Filtering FFTs of all projections....");
+    if ( debug )
+      System.out.println("Filtering FFTs of all projections....");
+
     float threshold = 0.5f * LSQ_THRESHOLD;
     boolean done = false;
     while (threshold < 4 * LSQ_THRESHOLD && !done )
@@ -788,15 +683,19 @@ public class GL_RecipPlaneView
       if ( filtered_fft_ds.getNum_entries() < 10 )
       {
         threshold *= 1.4142135f;
-        System.out.println("WARNING: recalculating FFT since too few found");
-        System.out.println("new threshold = " + threshold );
+        if ( debug )
+        {
+          System.out.println("WARNING: recalculating FFT since too few found");
+          System.out.println("new threshold = " + threshold );
+        }
       }
       else
         done = true;
     }
 
     filtered_fft_ds.addIObserver( new FFTListener() );
-    System.out.println("DONE");
+    if ( debug )
+      System.out.println("DONE");
     new ViewManager( filtered_fft_ds, IViewManager.IMAGE );
   }
 
@@ -909,6 +808,7 @@ public class GL_RecipPlaneView
 
     int max_row = grid.num_rows();
     int max_col = grid.num_cols();
+                                                   // Find Q at corner points
     Vector3D corner_1_1   = grid.position( 1, 1 );
     Vector3D corner_mr_1  = grid.position( max_row, 1 );
     Vector3D corner_1_mc  = grid.position( 1, max_col );
@@ -924,10 +824,23 @@ public class GL_RecipPlaneView
     corners[6] = getQ( combinedR, corner_1_mc,  t_max + t0, initial_path ); 
     corners[7] = getQ( combinedR, corner_mr_mc, t_max + t0, initial_path ); 
 
-    System.out.println( "ORIENTATION MATRIX\n" +  orientation_matrix );
-    System.out.println("CORNER POINTS IN Q .....");
-    for ( int i = 0; i < corners.length; i++ )
-      System.out.println("Corner Q =  " + corners[i] );
+                                             // Find Q at center & edge centers 
+    Vector3D center = grid.position( max_row/2, max_col/2 );
+    Vector3D edge1  = grid.position( 1,         max_col/2 );
+    Vector3D edge2  = grid.position( max_row,   max_col/2 );
+    Vector3D edge3  = grid.position( max_row/2, 1         );
+    Vector3D edge4  = grid.position( max_row/2, max_col   );
+    Vector3D other_points[] = new Vector3D[10];
+    other_points[0] = getQ( combinedR, center, t_min + t0, initial_path );
+    other_points[1] = getQ( combinedR, edge1,  t_min + t0, initial_path );
+    other_points[2] = getQ( combinedR, edge2,  t_min + t0, initial_path );
+    other_points[3] = getQ( combinedR, edge3,  t_min + t0, initial_path );
+    other_points[4] = getQ( combinedR, edge4,  t_min + t0, initial_path );
+    other_points[5] = getQ( combinedR, center, t_max + t0, initial_path );
+    other_points[6] = getQ( combinedR, edge1,  t_max + t0, initial_path );
+    other_points[7] = getQ( combinedR, edge2,  t_max + t0, initial_path );
+    other_points[8] = getQ( combinedR, edge3,  t_max + t0, initial_path );
+    other_points[9] = getQ( combinedR, edge4,  t_max + t0, initial_path );
 
     Tran3D inverse = new Tran3D( orientation_matrix );
     if ( !inverse.invert() )
@@ -935,50 +848,48 @@ public class GL_RecipPlaneView
       System.out.println("COULDN'T INVERT THE ORIENTATION MATRIX");
       return null;
     }
-    System.out.println( "INVERSE ORIENTATION MATRIX\n" +  inverse );
 
-    for ( int i = 0; i < corners.length; i++ )         // map Q back to hkl
+    for ( int i = 0; i < corners.length; i++ )      // map corner Qs back to hkl
       inverse.apply_to( corners[i], corners[i] );
 
-    System.out.println("CORNER POINTS IN HKL .....");
-    for ( int i = 0; i < corners.length; i++ )
-      System.out.println("Corner HKL =  " + corners[i] );
-
-    float min[] = corners[0].getCopy();
+    float min[] = corners[0].getCopy();             // find min & max at corners
     float max[] = corners[0].getCopy();
-    for ( int i = 1; i < 8; i++ )
+    for ( int i = 1; i < corners.length; i++ )
     {
       float pt[] = corners[i].get();
       for ( int k = 0; k < 3; k++ )
       {
         if ( pt[k] < min[k] )
-        {
           min[k] = pt[k];
-          System.out.println("ASSIGNING " +i+ ", " +k+ ", min[k] " + min[k]);
-        }
         else if ( pt[k] > max[k] )
-        {
           max[k] = pt[k];
-          System.out.println("ASSIGNING " +i+ ", " +k+ ", max[k] " + max[k]);
-        }
       }
-      System.out.println("PT  = " + pt[0]  + ", " + pt[1]  + ", " +  pt[2] );
-      System.out.println("min = " + min[0] + ", " + min[1] + ", " + min[2] );
-      System.out.println("max = " + max[0] + ", " + max[1] + ", " + max[2] );
     }
-  
+
+    for ( int i = 0; i < other_points.length; i++ )  // map other Qs back to hkl
+      inverse.apply_to( other_points[i], other_points[i] );
+
+    for ( int i = 0; i < other_points.length; i++ )
+    {
+      float pt[] = other_points[i].get();
+      for ( int k = 0; k < 3; k++ )
+      {
+        if ( pt[k] < min[k] )
+          min[k] = pt[k];
+        else if ( pt[k] > max[k] )
+          max[k] = pt[k];
+      }
+    }
+
     Vector3D result[] = new Vector3D[2];
     result[0] = new Vector3D( min );
     result[1] = new Vector3D( max );
-
-    System.out.println("MIN HKL = " + result[0] ); 
-    System.out.println("MAX HKL = " + result[1] ); 
 
     return result;
   }
 
 
-/* -------------------------- Generate hkl markers ---------------------- */
+/* ---------------------------- getHKL_Marks --------------------------- */
 
   private GL_Shape[] getHKL_Marks( int index )
   {
@@ -1009,6 +920,9 @@ public class GL_RecipPlaneView
     Vector k_line_list = new Vector(10000);
     Vector l_line_list = new Vector(10000);
     VecQToTOF transformer = (VecQToTOF)vec_q_transformer.elementAt(index);
+    IDataGrid grid = transformer.getDataGrid();
+    Data d = grid.getData_entry(1,1);
+    float x_vals[] = d.getX_values();
     float min[] = hkl_min_max[0].get();
     float max[] = hkl_min_max[1].get();
     float rctof[];
@@ -1020,7 +934,9 @@ public class GL_RecipPlaneView
            point.set( h, k, l ); 
            orientation_matrix.apply_to( point, point );
            rctof = transformer.QtoRowColTOF( point );    // check if in data
-           if ( rctof != null )
+           if ( rctof != null           && 
+                rctof[2] >= x_vals[0]   &&
+                rctof[2] <= x_vals[ x_vals.length - 1 ] )
            {
              start = new Vector3D( point );
              start.subtract( h_step );
@@ -1089,15 +1005,23 @@ public class GL_RecipPlaneView
 
   private void ExtractPeaks()
   {
-     System.out.println("Applying threshold to extract peaks....");
-     all_peaks = new Vector();
-     for ( int i = 0; i < vec_q_transformer.size(); i++ )
-     {
-       GL_Shape non_zero_objs[] = getPeaks( i, peak_threshold );
-       vec_Q_space.setObjects( PEAK_OBJECTS+i, non_zero_objs);
-       System.out.println("Found peaks : " + non_zero_objs.length );
-     }
-     System.out.println("DONE");
+    if ( debug )
+      System.out.println("Applying threshold to extract peaks....");
+
+    all_peaks = new Vector();
+    for ( int i = 0; i < vec_q_transformer.size(); i++ )
+    {
+      GL_Shape non_zero_objs[] = getPeaks( i, peak_threshold );
+      vec_Q_space.setObjects( PEAK_OBJECTS+i, non_zero_objs);
+      System.out.println("Found peaks : " + non_zero_objs.length );
+    }
+
+                                       // initialize the list of all q vectors
+                                       // and the QR factorization
+    all_vectors = get_data_points();
+    makeQR_factors();
+
+    System.out.println("DONE");
   }
 
  
@@ -1114,14 +1038,18 @@ public class GL_RecipPlaneView
           for ( int i = 1; i < 3; i++ )
           {
             VecQToTOF transformer = new VecQToTOF( ds, i );
-            System.out.println("Found Data Grid...................... " );
-            System.out.println( transformer.getDataGrid() );
+            if ( debug )
+            {
+              System.out.println("Found Data Grid...................... " );
+              System.out.println( transformer.getDataGrid() );
+            }
             vec_q_transformer.add( transformer );
           }
         }
         catch (InstantiationError e )
         {
-          System.out.println( e );
+          if ( debug )
+            System.out.println( e );
         }
      }
   }
@@ -1185,7 +1113,8 @@ public class GL_RecipPlaneView
       if ( edge_pix > grid.num_rows() / 3 )   // can't discard more than 1/3
         edge_pix = grid.num_rows() / 3;       // of the rows and columns
 
-      System.out.println("Discarding " + edge_pix + " edge rows and columns");
+      if ( debug )
+        System.out.println("Discarding " + edge_pix + " edge rows and columns");
 
 //    float base_levels[] = getBaseLevels( grid, 10 );
       for ( int row = 1+edge_pix; row <= grid.num_rows()-edge_pix; row++ )
@@ -1856,7 +1785,6 @@ public class GL_RecipPlaneView
   /* ---------------------------- FFT -------------------------------- */
   private DataSet FFT( DataSet ds )
   {
-//  DataSetFactory ds_factory = new DataSetFactory( "FFT of projections" );
     DataSetFactory ds_factory = 
            new DataSetFactory( "FFT of projections", 
                                 "Bin", "Magnitude",
@@ -2399,9 +2327,7 @@ public class GL_RecipPlaneView
    */
   private boolean keep_peak( Vector3D peak )
   {
-    float TOLERANCE = 0.1f;
-
-
+/*
     if ( orientation_matrix != null )      // use orientation matrix to filter
     {
       Vector3D temp = new Vector3D( peak );
@@ -2410,30 +2336,59 @@ public class GL_RecipPlaneView
       float peak_dot_h = temp.get()[0];
       float peak_h = (float)Math.round(peak_dot_h);
 
-      if ( Math.abs( peak_dot_h - peak_h ) < TOLERANCE )
+      if ( Math.abs( peak_dot_h - peak_h ) < INDEX_TOLERANCE )
         return true;
       else
         return false;
     }
+*/
+                                       // filter to constant h, k or l planes
+    if ( h_plane_ui.filter_on() )
+      if ( !on_plane_family( h_plane_ui, peak ) )
+        return false; 
 
-    float h_vals[] = h_plane_ui.get_normal();
-                                             // use normal vector to filter
-    if ( h_vals != null && h_vals[0] != 0 && h_vals[1] != 0 && h_vals[1] != 0 )
-    {
-      Vector3D a = new Vector3D( h_vals );
-      a.multiply( h_plane_ui.get_d_spacing() );
-      float mag_a = (float)(2*Math.PI/a.length());
-      a.normalize();
-      float h = peak.dot(a)/mag_a;
-      float h_int = (float)Math.round( h );
-      if ( Math.abs( h - h_int ) < TOLERANCE )
-        return true;
-      else
-        return false;
-    }
+    if ( k_plane_ui.filter_on() )
+      if ( !on_plane_family( k_plane_ui, peak ) )
+        return false; 
+
+    if ( l_plane_ui.filter_on() )
+      if ( !on_plane_family( l_plane_ui, peak ) )
+        return false; 
 
     return true;      // no reason to reject the peak.
   }
+
+ /* ------------------------- on_plane_family -------------------- */
+ /*
+  *  Check whether or not the specified peak lies on the family of
+  *  planes in reciprocal space corresponding to the normal direction
+  *  and d-spacing recorded in the plane UI.
+  */
+  private boolean on_plane_family( LatticePlaneUI plane_ui, Vector3D peak )
+  {
+    float normal[] = plane_ui.get_normal();
+                                             // use normal vector to filter
+    if ( normal != null && 
+        (normal[0] != 0 || normal[1] != 0 || normal[2] != 0) )
+    {
+      float d = plane_ui.get_d_spacing();
+      if ( d <= 0 )
+        return true;   // keep the peak if there is not a valid d-spacing
+
+      Vector3D normal_vec = new Vector3D( normal );
+      float q_spacing = (float)( 2*Math.PI/plane_ui.get_d_spacing() );
+
+      float f_miller_index = peak.dot(normal_vec)/q_spacing;
+      float miller_index   = (float)Math.round( f_miller_index );
+
+      if ( Math.abs( f_miller_index - miller_index ) < INDEX_TOLERANCE )
+        return true;      
+      else
+        return false;
+    }
+
+    return true;   // keep the peak if no valid normal was set
+  } 
 
 
   /* -------------------------- draw_HKL_axes --------------------------- */
@@ -2728,6 +2683,21 @@ private class DetectorCoverageListener implements ActionListener
 }
 
 
+/* ---------------------- IntegerHKLListener ------------------- */
+
+private class IntegerHKLListener implements ActionListener
+{
+  public void actionPerformed( ActionEvent e )
+  {
+    JCheckBox checkbox = (JCheckBox)e.getSource();
+    scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    ShowHKL_Marks( checkbox.isSelected() );
+    vec_Q_space.Draw();
+    scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+  }
+}
+
+
 /* ---------------------- IsoSurfaceListener ------------------- */
   
 private class IsoSurfaceListener implements ActionListener
@@ -2802,7 +2772,9 @@ private class CalcFFTButtonHandler implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
   {
+    scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     CalculateFFTs();
+    scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
   }
 }
 
@@ -2838,7 +2810,13 @@ private class WriteFileListener implements ActionListener
     }
 
     double std_dev = LinearAlgebra.BestFitMatrix( M, hkl, q );
-    std_dev = std_dev / k;
+    if ( Double.isNaN( std_dev ) )
+    {
+      System.out.println("Singular matrix when doing best fit...can't solve");
+      return;
+    }
+
+    std_dev = std_dev / Math.sqrt(k);     // #####
     System.out.println("Standard deviation for fit = " + std_dev );
 
     for ( int i = 0; i < 3; i++ )
@@ -2949,7 +2927,6 @@ private class PlaneListener implements ActionListener
    public void actionPerformed( ActionEvent e )
    {
      String         action  = e.getActionCommand();
-     System.out.println("Action command is : " + action );
 
      if ( action.equals(LatticePlaneUI.USER_SET) )
      {
@@ -2968,19 +2945,18 @@ private class PlaneListener implements ActionListener
        normal.normalize();
        System.out.println("USER NORMAL = " + normal );
 
-       float[] value = refinePlane( normal );
-
+       float d_spacing = plane_ui.get_d_spacing();
+       float value[] = null;
+       if ( d_spacing > 0 )                          // if d is set, use it
+       {
+         float q_spacing = (float)( 2*Math.PI / d_spacing );
+         value = refinePlane( normal, q_spacing ); 
+       }
+       else
+         value = refinePlane( normal );             // else get estimate then
+                                                    // refine it
        float sigma = value[DIMENSION];
-       float d_spacing = value[DIMENSION+1];
-
-       normal.set(value);
-       float length = normal.length();
-
-       for ( int i = 0; i < 3; i++ )
-        value[i] /= length;
-
-       if ( DIMENSION == 3 )
-         value[DIMENSION] = 0;
+       d_spacing = value[DIMENSION+1];
 
        plane_ui.set_normal( value );
        plane_ui.set_d_sigma( d_spacing, sigma );
@@ -2988,6 +2964,9 @@ private class PlaneListener implements ActionListener
 
      else if ( action.equals( LatticePlaneUI.FFT_SET) )
      {
+       if ( filtered_fft_ds == null )
+         return;
+
        LatticePlaneUI plane_ui = (LatticePlaneUI)e.getSource();
        int index = filtered_fft_ds.getPointedAtIndex();
        if ( index < 0 )
@@ -3007,6 +2986,15 @@ private class PlaneListener implements ActionListener
 
        plane_ui.set_normal( value );      
        plane_ui.set_d_sigma( d_spacing, sigma );
+     }
+
+     else if ( action.equals( LatticePlaneUI.FILTER_OFF )  || 
+               action.equals( LatticePlaneUI.FILTER_ON )   )
+     {
+        scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        ExtractPeaks();
+        vec_Q_space.Draw();
+        scene_f.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
      }
 
      else                              // must be request to extract slice 
@@ -3099,7 +3087,6 @@ private class FFTListener implements IObserver
     if ( reason instanceof String && observed_object instanceof DataSet )
      if ( reason.equals( IObserver.POINTED_AT_CHANGED ) )
      {
-       System.out.println("---------------------------------------------");
        int index = ((DataSet)observed_object).getPointedAtIndex();
        Data d = ((DataSet)observed_object).getData_entry(index);
        Object value = d.getAttributeValue( NORMAL_ATTRIBUTE );
@@ -3148,7 +3135,6 @@ private class FFTListener implements IObserver
 //             System.out.println();
            Vector3D new_normal = new Vector3D( values );
            new_normal.normalize();
-           System.out.println("Normalized new_normal = " + new_normal );
 
 //           attr = d.getAttribute( LSQ_ERROR_ATTRIBUTE );
 //           if ( attr != null )
