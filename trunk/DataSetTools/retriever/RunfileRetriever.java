@@ -1,12 +1,22 @@
 /*
- * @(#)RunfileRetriever.java 
+ * @(#)RunfileRetriever.java     1.1  2000/03/23  Dennis Mikkelson
  *
- * Programmer:  Dennis Mikkelson
+ * Modified:  
+ *    Alok Chatterjee, Fall 1999.  Added number of pulses and total counts
+ *                                 information.
+ *    Dennis Mikkelson, 3/23/2000  Added code to all catch{} blocks to print 
+ *                                 info about the exception.
+ *                                 Fixed bug in getting the total counts...
+ *                                   ( must pass group_id, NOT a detector id
+ *                                      to Get1DSum( ) )
+ *                                 Added documentation for all routines
+ * ---------------------------------------------------------------------------
  *
  *  $Log$
- *  Revision 1.18  2000/12/13 00:12:56  dennis
- *  Added operator FocusIncidentSpectrum() to Monitor DataSet for
- *  Diffractometers.
+ *  Revision 1.19  2001/01/29 21:13:17  dennis
+ *  Simplified logic for adding operators for
+ *  DG Spectrometers and Pulse Height Spectra.
+ *  Also, now uses CVS revision numbers.
  *
  *  Revision 1.17  2000/10/10 19:58:42  dennis
  *  Now gets pulse height spectrum as a special type of DataSet.
@@ -59,7 +69,7 @@
  *  Added private method to show information about the detectors in a group
  *
  *  Revision 1.3  2000/07/10 22:49:46  dennis
- *  July 10, 2000 version...many changes, Now using CVS
+ *  July 10, 2000 version...many changes
  *
  *  Revision 1.22  2000/06/14 14:55:42  dennis
  *  Added getFirstDataSet(type) to return the first monitor or first
@@ -86,15 +96,7 @@
  *  Revision 1.16  2000/05/11 16:19:12  dennis
  *  added RCS logging
  *
- * Modified:
- *    Alok Chatterjee, Fall 1999.  Added number of pulses and total counts
- *                                 information.
- *    Dennis Mikkelson, 3/23/2000  Added code to all catch{} blocks to print
- *                                 info about the exception.
- *                                 Fixed bug in getting the total counts...
- *                                   ( must pass group_id, NOT a detector id
- *                                      to Get1DSum( ) )
- *                                 Added documentation for all routines
+ *
  */
 package DataSetTools.retriever;
 
@@ -391,15 +393,10 @@ public class RunfileRetriever extends    Retriever
 
                                             // Adjust the empty DataSet based
                                             // on the current situation 
-     if ( is_monitor )
-     { 
-       if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
-       {
-         data_set.addOperator( new EnergyFromMonitorDS() );
-         data_set.addOperator( new MonitorPeakArea() );
-       }
-       else if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
-         data_set.addOperator( new FocusIncidentSpectrum() );
+     if ( is_monitor && instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
+     {
+       data_set.addOperator( new EnergyFromMonitorDS() );
+       data_set.addOperator( new MonitorPeakArea() );
      }
      else if ( is_pulse_height )
      {
