@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/06/12 21:54:22  bouzekc
+ *  Fixed class cast problem in setValue().  Changed non-class
+ *  "value" variables to "val" to avoid confusion.
+ *
  *  Revision 1.8  2003/06/10 14:40:42  rmikk
  *  Now implements ParamUsesString
  *  ArraytoString and StringtoArray are now public static
@@ -83,15 +87,15 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString{
     protected Vector value=null;
 
     // ********** Constructors **********
-    public ArrayPG(String name, Object value){
-        this(name,value,false);
+    public ArrayPG(String name, Object val){
+        this(name,val,false);
         this.setDrawValid(false);
         this.type=TYPE;
     }
 
-    public ArrayPG(String name, Object value, boolean valid){
+    public ArrayPG(String name, Object val, boolean valid){
         this.setName(name);
-        this.setValue(value);
+        this.setValue(val);
         this.setEnabled(true);
         this.setValid(valid);
         this.setDrawValid(true);
@@ -110,7 +114,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString{
         if(val==null) return; // don't add null to the vector
         if(this.value.indexOf(val)<0) this.value.add(val); // add if unique
         if(this.initialized)
-          ((JTextField)this.entrywidget).setText(this.ArraytoString((Vector)value));
+          ((JTextField)this.entrywidget).setText(this.ArraytoString(value));
     }
 
     /**
@@ -152,8 +156,8 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString{
     }
 
 
-    public void setStringValue(java.lang.String value){
-       setValue( value);
+    public void setStringValue(java.lang.String val){
+       setValue( val);
     }
 
     // ********** IParameter requirements **********
@@ -166,14 +170,14 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString{
      */
     public Object getValue(){
        // return this.value;
-        Object value=null;
+        Object val=null;
         if(this.initialized){
             String StringValue=((JTextField)this.entrywidget).getText();
-            value = StringtoArray( StringValue);
+            val = StringtoArray( StringValue);
         }else{
-            value=this.value;
+            val=this.value;
         }
-        return value;
+        return val;
  
     }
     
@@ -184,18 +188,18 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString{
     /**
      * Sets the value of the parameter.
      */
-    public void setValue(Object value){
-      if(value==null)
-        this.value=null;
-      else if(value instanceof Vector)
-        this.value=(Vector)value;
-      else if( value instanceof String)
-        this.value = StringtoArray( (String)value);
+    public void setValue(Object val){
+      if(val==null)
+        value=null;
+      else if(val instanceof Vector)
+        value=(Vector)val;
+      else if( val instanceof String)
+        value = StringtoArray( (String)val);
       else 
         return;
 
       if(this.initialized)
-        ((JTextField)(this.entrywidget)).setText(this.ArraytoString((Vector)value));
+        ((JTextField)(this.entrywidget)).setText(this.ArraytoString(value));
 
       this.setValid(true);
     }
@@ -207,7 +211,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString{
     public void init(Vector init_values){
         if(this.initialized) return; // don't initialize more than once
 
-        this.entrywidget= new JTextField(this.ArraytoString((Vector)value));
+        this.entrywidget= new JTextField(this.ArraytoString(value));
         super.initGUI();
     }
 
@@ -370,7 +374,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString{
 
      if( !(O instanceof Vector))
        return new Vector();
-
+  
      return (Vector) O;
    }
 
