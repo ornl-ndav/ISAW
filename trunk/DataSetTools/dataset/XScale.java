@@ -32,6 +32,10 @@
  *
  *
  *  $Log$
+ *  Revision 1.10  2002/07/10 20:06:41  dennis
+ *  Added getInstance() method to get uniform or variable XScale, as
+ *  appropriate, from an array of x values.
+ *
  *  Revision 1.9  2002/07/10 15:59:29  pfpeterson
  *  Added inRange() method.
  *
@@ -118,6 +122,38 @@ abstract public class XScale implements Serializable
     this.start_x = start_x;
     this.end_x   = end_x;
     this.num_x   = num_x;
+  }
+
+  /**
+   *  Returns an XScale with the specified x values.  If the x values are
+   *  uniformly spaced, a UniformXScale is returned, otherwize a
+   *  VariableXScale is returned.
+   *
+   *  @param  x     The array of x values used to generate the XScale
+   *
+   *  @return   If the entries in x[] are evenly spaced, return a UniformXScale
+   *            corresponding to those x values, otherwise return a 
+   *            VariableXScale.  If the array x[] is empty or null, this 
+   *            returns null.
+   */
+  public static XScale getInstance( float x[] )
+  {
+    if ( x == null || x.length == 0 )
+      return null;
+    else if ( x.length > 2 )
+    {                             // check for non-degenerate UniformXScale
+      float dx = x[1] - x[0];
+      for ( int i = 2; i < x.length; i++ )
+        if ( x[i] - x[i-1] != dx )
+        {
+          System.out.println("Variable XScale in XScale.getInstance()" );
+          return new VariableXScale( x );
+        }
+    }
+                                // if not Variable, or too short, it's Uniform  
+    float min = Math.min( x[0], x[ x.length-1 ] );
+    float max = Math.max( x[0], x[ x.length-1 ] );
+    return new UniformXScale( min, max, x.length );
   }
 
   /**
