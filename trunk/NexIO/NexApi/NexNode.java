@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2002/02/26 15:49:08  rmikk
+ * Add the getDimension routine
+ * Added a debug field
+ *
  * Revision 1.5  2001/08/15 18:30:41  rmikk
  * Returns an ERror bad file message
  *
@@ -68,6 +72,7 @@ public class NexNode implements NxNode
    Hashtable typeToString;
    Hashtable LinkInfo;
    static int NameInt = 0;
+   boolean debug= false;
 /**
 *@param filename  the nexus filename
 */
@@ -241,7 +246,10 @@ public class NexNode implements NxNode
       if(!open())
          return null;
         int n=getNChildNodes();
-      
+        if( NodeName == null)
+          {errormessage="Null child not allowed in "+NodeName;
+           return null;
+          }
         String keyValue = (String)(dirinfo.get(NodeName));
         if( keyValue == null)
           {errormessage= "No Such Child "+NodeName;
@@ -371,6 +379,35 @@ public class NexNode implements NxNode
       errormessage = "Improper Link value";
       return false;
       }
+   /** Gets the dimesions of the Node's value
+   *@return an array whose length is the number of dimensions and whose entries
+   *                 represent the length in that dimension
+   */
+   public int[] getDimension()
+    {
+     if(!open())
+           return null;
+     if(!(getNodeClass().equals("SDS"))) return null;
+     
+         int iDim[], args[];
+           iDim = new int[7];
+           args = new int[2];
+     try
+	     { //NF.opendata(getNodeName());
+            NF.getinfo(iDim,args);
+            int[] res= new int[args[0]];
+            for(int i=0;i<args[0];i++)
+               res[i]=iDim[i];
+            return res;
+             }
+     catch( NexusException s)
+              {errormessage= s.getMessage();
+              
+              
+               return null;
+              }
+         
+     }
 /** Returns the value(data-not attribute) of this node.<P>
 * <OL>Note:<LI> mulitdimensioned arrays are linearlized.
 *  <LI> Unsigned data types are "fixed" by copying to the
@@ -389,6 +426,7 @@ public class NexNode implements NxNode
          
          try
 	     { //NF.opendata(getNodeName());
+            if(debug) System.out.println("----NxApNode: start----");
             NF.getinfo(iDim,args);
            // System.out.println("length,type,dims="+args[0]+","+args[1]+","+
             //                        iDim[0]+","+iDim[1]);
@@ -403,10 +441,11 @@ public class NexNode implements NxNode
                 return null;
            
             NF.getdata(array);
-           
+            if(debug) System.out.println("-----NxApNode: end get-----");
             //NF.closedata();
            
             Object array1 = linearlizeArray( array,args[0],iDim,args[1]);
+             if(debug) System.out.println("-----NxApNode:Aft linearize-------");
             if(array1 == null) return null;
             NxNodeUtils ND= new NxNodeUtils();
            
@@ -955,9 +994,9 @@ public class NexNode implements NxNode
          NN=Node2;
        else if( c == '6')
          {Object X = NN.getNodeValue();
-          if( NN!=null)
-	    { System.out.println("Class&Val="+X.getClass().toString()+","+
-                       new NxNodeUtils().Showw(X));
+          if( (NN!=null)&&(X != null))
+	    { System.out.println("Class&Val="+X.getClass());
+              System.out.println(       new NxNodeUtils().Showw(X));
             }
           else
              System.out.println("Check error message please");  
