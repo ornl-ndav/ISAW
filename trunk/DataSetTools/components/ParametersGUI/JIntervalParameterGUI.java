@@ -3,6 +3,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.2  2001/07/25 17:39:08  neffk
+ * fixed method getParameter() by removing some errors introduced from
+ * copying a different operator.
+ *
  * Revision 1.1  2001/07/11 16:25:08  neffk
  * encapsulates an Attribute name JComboBox and a JTextField.  this GUI
  * object is provided specifically for input of intervals.
@@ -62,9 +66,11 @@ public class JIntervalParameterGUI
   }
 
 
+  /**
+   * get the value that the user entered.
+   */
   public Parameter getParameter()
   {
-    Class C = parameter.getValue().getClass();
     try
     {
       String str = (String)( combobox.getSelectedItem() );
