@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.55  2003/06/26 14:37:34  bouzekc
+ * Now makes only one call to String.toUpperCase() in
+ * execute().
+ *
  * Revision 1.54  2003/06/26 14:28:26  bouzekc
  * Commented out several empty if() blocks.
  *
@@ -414,7 +418,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   private int executeBlock( Script script, int start, boolean exec,
                             int onerror ){
     int line ;
-    String S ; 
+    String S,upperCase; 
         
 
     if( script == null){
@@ -437,31 +441,33 @@ public class ScriptProcessor  extends ScriptProcessorOperator
           else i = -1 ; 
         }
       }
-           
-      if( S == null ){
-        if( Debug )
+      
+      S = S.trim();
+      upperCase = S.toUpperCase();
+      
+      if( S == null && Debug ){
           System.out.println(" S is null " );
-      /*}else if( S.trim() == null){
-      }else if( S.trim().indexOf( "#") == 0 ){
-      }else if( S.trim().indexOf("$" ) == 0){*/
-      }else if( S.toUpperCase().trim().indexOf( "ELSE ERROR" ) == 0 ){
+      /*}else if( S == null){
+      }else if( S.indexOf( "#") == 0 ){
+      }else if( S.indexOf("$" ) == 0){*/
+      }else if( upperCase.indexOf( "ELSE ERROR" ) == 0 ){
         return line ; 
-      }else if( S.toUpperCase().trim().indexOf( "END ERROR" ) == 0 ){
+      }else if( upperCase.indexOf( "END ERROR" ) == 0 ){
         return line ; 
-      }else if( S.toUpperCase().trim().indexOf( "ON ERROR" ) == 0 ){
+      }else if( upperCase.indexOf( "ON ERROR" ) == 0 ){
         line = executeErrorBlock( script , line , exec ) ;               
       /*}else if( onerror > 0 ){*/
-      }else if( S.toUpperCase().trim().indexOf( "FOR " ) == 0 ){
+      }else if( upperCase.indexOf( "FOR " ) == 0 ){
         line = executeForBlock ( script , line , exec ,onerror ) ; 
-      }else if( S.toUpperCase().trim().indexOf( "ENDFOR" ) == 0 ){
+      }else if( upperCase.indexOf( "ENDFOR" ) == 0 ){
         return line ; 
-      }else if( S.toUpperCase().trim().indexOf("IF ") == 0){
+      }else if( upperCase.indexOf("IF ") == 0){
         line = executeIfStruct( script, line, exec , onerror );
-      }else if( S.toUpperCase().trim().equals("ELSE")){
+      }else if( upperCase.equals("ELSE")){
         return line;
-      }else if( S.toUpperCase().trim().indexOf("ELSEIF") == 0){
+      }else if( upperCase.indexOf("ELSEIF") == 0){
         return line;
-      }else if( S.toUpperCase().trim().equals("ENDIF")){
+      }else if( upperCase.equals("ENDIF")){
         return line;
       /*}else if( S.trim().length() <= 0 ){*/
       }else if( exec ){
