@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2002/09/20 16:47:51  dennis
+ * Now uses IParameter rather than Parameter
+ *
  * Revision 1.9  2002/06/11 21:37:57  rmikk
  * Used StringBuffer to optimize and speed up creating
  *   HTML pages
@@ -68,6 +71,7 @@ import java.io.IOException;
 import java.net.*;
 import Command.*;
 import DataSetTools.operator.*;
+import DataSetTools.parameter.*;
 
 
 /** Creates a pop up window that can display rudimentary HTML pages or pages that are
@@ -202,7 +206,7 @@ class HTMLPage extends JFrame
       for( int i = 0; i < n; i++ )
       {
          Object XX = SH.getOperatorParameter ( k, i );
-         Parameter P = O.getParameter ( i );
+         IParameter P = O.getParameter ( i );
          String Prompt = P.getName ();
 
          if( XX == null )
