@@ -28,6 +28,11 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.33  2004/02/25 00:45:46  bouzekc
+ * Calls clear() from ChooserPG to eliminate references to the DataSet
+ * inside the loop.  This should eliminate the memory leak, as
+ * DataSets are no longer being consecutively added to the list.
+ *
  * Revision 1.32  2004/02/11 04:10:55  bouzekc
  * Uses the new Wizard classes that have indeterminate progress bars.
  *
@@ -462,7 +467,7 @@ public class IntegrateMultiRunsForm extends Form {
       integrate.getParameter( 0 ).setValue( histDS );
       integrate.getParameter( 2 ).setValue( matrixName );
       obj = integrate.getResult(  );
-      integrate.getParameter( 0 ).setValue( null );
+      ( ( DataSetPG )integrate.getParameter( 0 ) ).clear(  );
 
       if( obj instanceof ErrorString ) {
         return errorOut( "Integrate failed: " + obj.toString(  ) );
