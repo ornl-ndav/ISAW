@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2005/03/23 01:38:20  dennis
+ *  Removed unused imports and one unused variable.
+ *
  *  Revision 1.4  2005/01/10 15:55:06  dennis
  *  Removed empty statement.
  *
@@ -58,9 +61,7 @@ import DataSetTools.instruments.InstrumentType;
 import DataSetTools.instruments.*;
 import DataSetTools.viewer.*;
 import ISIS.Rawfile.*;
-import DataSetTools.math.*;
 import DataSetTools.util.*;
-import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.Sys.*;
 
@@ -442,7 +443,6 @@ public class IsisRetriever extends    Retriever
     boolean           is_pulse_height = false;
     int               first_id, last_id;
     float[]           bin_boundaries = null;
-    float             source_to_sample_tof;
     DataSet           data_set = null;
     String            title;
     String            ds_type;
