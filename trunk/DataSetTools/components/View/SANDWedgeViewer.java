@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.37  2004/06/01 21:56:41  millermi
+ * - Switched the label and unit values.
+ * - Relabeled the integration control.
+ * - Initialize the center of the selection to (0,0).
+ *
  * Revision 1.36  2004/05/11 02:01:53  millermi
  * - Changed integrate label from "Integrate by:" to "Integrate with:".
  *
@@ -273,6 +278,7 @@ import java.util.Vector;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.BorderLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -1094,8 +1100,8 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     }
     else
     {
-      data_set.setX_units("Angle" );
-      data_set.setX_label("Degrees" );
+      data_set.setX_units("Degrees" );
+      data_set.setX_label("Angle" );
     }
     
     float start_x = 0;
@@ -1871,29 +1877,31 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       super( BoxLayout.Y_AXIS );
       this_editor = this;
       
-      JLabel label = new JLabel("Integrate");
-      JLabel label2 = new JLabel("with:");
       ButtonGroup integrate_group = new ButtonGroup();
       ring_option = new JRadioButton("Rings");
       ring_option.addActionListener( new IntegrateOption() );
-      angle_option = new JRadioButton("Angle");
+      angle_option = new JRadioButton("Radial Lines");
       angle_option.addActionListener( new IntegrateOption() );
       integrate_group.add(ring_option);
       integrate_group.add(angle_option);
       integrate_group.setSelected(ring_option.getModel(),true);
-      JPanel labels = new JPanel( new GridLayout(2,1) );
-      labels.add(label);
-      labels.add(label2);
-      JPanel radios = new JPanel( new GridLayout(2,1) );
-      radios.add(ring_option);
-      radios.add(angle_option);
-      JPanel integrate_control = new JPanel( new GridLayout(1,2) );
-      integrate_control.add(labels);
+      JPanel radios = new JPanel( new BorderLayout() );
+      radios.add(ring_option, BorderLayout.NORTH);
+      radios.add(angle_option, BorderLayout.SOUTH);
+      JPanel integrate_control = new JPanel( new GridLayout(1,1) );
       integrate_control.add(radios);
+      TitledBorder radio_border = 
+    		     new TitledBorder(LineBorder.createBlackLineBorder(),
+        			      "Sum Along:");
+      radio_border.setTitleFont( FontUtil.BORDER_FONT ); 
+      integrate_control.setBorder(radio_border);
+      
       this_editor.add(integrate_control);
             
       radiofec.setLabelWidth(9);
       radiofec.setFieldWidth(6);
+      radiofec.setValue(0,0);
+      radiofec.setValue(1,0);
       radiofec.addRadioChoice(SelectionJPanel.ELLIPSE,ellipselabels);
       radiofec.addRadioChoice(SelectionJPanel.WEDGE,wedgelabels);
       radiofec.addRadioChoice(SelectionJPanel.DOUBLE_WEDGE,
@@ -1916,6 +1924,9 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     protected void selectionChanged()
     {
       radiofec.clearAllValues();
+      // Initialize the center to (0,0)
+      radiofec.setValue(0,0);
+      radiofec.setValue(1,0);
       buildComboBox();
       this_editor.validate();
       this_editor.repaint();
@@ -1981,7 +1992,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   	{
   	  integrate_by_ring = true;
   	}
-  	else if( message.equals("Angle") )
+  	else if( message.equals("Radial Lines") )
   	{
   	  integrate_by_ring = false;
   	}
