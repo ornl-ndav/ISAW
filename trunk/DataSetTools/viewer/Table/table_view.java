@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.37  2003/12/11 19:31:37  rmikk
+ * Fixed the getFieldInfo so it retrieves the correct Field
+ *
  * Revision 1.36  2003/10/15 03:38:07  bouzekc
  * Fixed javadoc errors.
  *
@@ -1027,7 +1030,7 @@ public class table_view extends JPanel implements ActionListener
     *      fields x,y, error, group index, or index on the x or y values
     *
     */
-   public FieldInfo getFieldInfo( DataSet DS, String field )
+   public  FieldInfo getFieldInfo( DataSet DS, String field )
    { 
       if( field.equals( "X values" ) )
          return new FieldInfo( "X values", new XYData( "x" ) );
@@ -1038,45 +1041,44 @@ public class table_view extends JPanel implements ActionListener
       if( field.equals( "XY index" ) )
          return new FieldInfo( "XY index", new XYData( null ) );
       if( ( field.indexOf( "DetPos " ) == 0 ) || ( field.equals( "Scat Ang" ) ) )
-      {
+      {  
          int n1,
             n2;
          String S = field;
 
          if( field.indexOf( "DetPos " ) == 0 )
             S = field.substring( 7 ).trim();
-         n1 = ";x;y;z;r;theta;rho;phi;Scat Ang;".indexOf( ";" + field + ";" );
+         n1 = ";x;y;z;r;theta;rho;phi;Scat Ang;".indexOf( ";" + S + ";" );
          if( n1 < 0 ) 
             return null;
-         if( n1 < 6 )
+         if( n1 < 6 )//cartesian
          {
-            n1 = 0;
+            
             n2 = n1 / 2;
+            n1 = 1;
          }
-         else if( n1 < 13 )
+         else if( n1 < 14 )//cylind
          {
-            if( n1 < 7 )
+            if( n1 < 8 )
                n2 = 0;
             else
                n2 = 1;
-            n1 = 1;
-         }
-         else if( n1 < 15 )
-         {
             n1 = 2;
-            n2 = 0;
          }
-         else if( n1 < 19 )
+         else if( n1 < 22 )//polar
          {
-            n1 = 2;
-            n2 = 3;
+            if( n1<18)
+              n2 = 0;
+            else
+              n2 = 2;
+            n1 = 3;
          }
+        
          else
          {
             n1 = -1;
             n2 = -1;
          }
-
          return new FieldInfo( field, new DSDetPos( field, n1, n2 ) );
       }
       if( field.equals( "Group Index" ) )
