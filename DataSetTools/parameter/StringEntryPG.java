@@ -1,5 +1,5 @@
 /*
- * File:  StringEntryPG.java 
+ * File:  StringEntryPG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/06/30 15:58:33  bouzekc
+ *  Reformatted for consistency.
+ *
  *  Revision 1.4  2003/06/18 22:48:38  bouzekc
  *  Added method to return StringFilterer associated with the
  *  entrywidget.
@@ -45,38 +48,44 @@
  *  Added to CVS.
  *
  */
-
 package DataSetTools.parameter;
-import javax.swing.*;
-import java.util.Vector;
-import java.lang.String;
-import java.beans.*;
+
 import DataSetTools.components.ParametersGUI.*;
+
 import DataSetTools.util.StringFilterer;
+
+import java.beans.*;
+
+import java.lang.String;
+
+import java.util.Vector;
+
+import javax.swing.*;
+
 
 /**
  * This is a superclass to take care of many of the common details of
  * StringEntryPGs.
  */
-abstract public class StringEntryPG extends ParameterGUI{
-  protected static final int            DEF_COLS = 20;
-  protected              StringFilterer FILTER   = null;
+public abstract class StringEntryPG extends ParameterGUI {
+  protected static final int DEF_COLS = 20;
+  protected StringFilterer FILTER     = null;
 
   // ********** Constructors **********
-  public StringEntryPG(String name, Object value){
-    this(name,value,false);
-    this.setDrawValid(false);
+  public StringEntryPG( String name, Object value ) {
+    this( name, value, false );
+    this.setDrawValid( false );
   }
 
-  public StringEntryPG(String name, Object value, boolean valid){
-    this.setName(name);
-    this.setValue(value);
-    this.setEnabled(true);
-    this.setValid(valid);
-    this.setDrawValid(true);
-    this.type="UNKNOWN";
-    this.initialized=false;
-    this.ignore_prop_change=false;
+  public StringEntryPG( String name, Object value, boolean valid ) {
+    this.setName( name );
+    this.setValue( value );
+    this.setEnabled( true );
+    this.setValid( valid );
+    this.setDrawValid( true );
+    this.type                 = "UNKNOWN";
+    this.initialized          = false;
+    this.ignore_prop_change   = false;
   }
 
   // ********** IParameter requirements **********
@@ -87,34 +96,37 @@ abstract public class StringEntryPG extends ParameterGUI{
    * objects. There can also be a 'fast access' method which returns
    * a specific object (such as String or DataSet) without casting.
    */
-  public Object getValue(){
-    Object value=null;
-    if(this.initialized){
-      value=((JTextField)this.entrywidget).getText();
-    }else{
-      value=this.value;
+  public Object getValue(  ) {
+    Object value = null;
+
+    if( this.initialized ) {
+      value = ( ( JTextField )this.entrywidget ).getText(  );
+    } else {
+      value = this.value;
     }
+
     return value;
   }
 
   /**
    * Sets the value of the parameter.
    */
-  protected void setEntryValue(Object value){
-    if(this.initialized){
-      if(value==null){
-        ((JTextField)this.entrywidget).setText("");
-      }else{
-        if(value instanceof String){
-          ((JTextField)this.entrywidget).setText((String)value);
-        }else{
-          ((JTextField)this.entrywidget).setText(value.toString());
+  protected void setEntryValue( Object value ) {
+    if( this.initialized ) {
+      if( value == null ) {
+        ( ( JTextField )this.entrywidget ).setText( "" );
+      } else {
+        if( value instanceof String ) {
+          ( ( JTextField )this.entrywidget ).setText( ( String )value );
+        } else {
+          ( ( JTextField )this.entrywidget ).setText( value.toString(  ) );
         }
       }
-    }else{
+    } else {
       return;
     }
-    this.setValid(true);
+
+    this.setValid( true );
   }
 
   /**
@@ -124,44 +136,49 @@ abstract public class StringEntryPG extends ParameterGUI{
    *  @return                    The StringFilterer (interface implemented by
    *                             StringFilter) that this PG uses.
    */
-  public StringFilterer getStringFilter()
-  {
-    return ((StringEntry)this.entrywidget).getStringFilter();
+  public StringFilterer getStringFilter(  ) {
+    return ( ( StringEntry )this.entrywidget ).getStringFilter(  );
   }
 
   // ********** IParameterGUI requirements **********
+
   /**
    * Allows for initialization of the GUI after instantiation.
    */
-  public void init(Vector init_values){
-    if(this.initialized) return; // don't initialize more than once
-    if(init_values!=null){
-      if(init_values.size()==1){
+  public void init( Vector init_values ) {
+    if( this.initialized ) {
+      return;  // don't initialize more than once
+    }
+
+    if( init_values != null ) {
+      if( init_values.size(  ) == 1 ) {
         // the init_values is what to set as the value of the parameter
-        this.setValue(init_values.elementAt(0));
-      }else{
+        this.setValue( init_values.elementAt( 0 ) );
+      } else {
         // something is not right, should throw an exception
       }
     }
 
-    if(this.value != null)
-      entrywidget=new StringEntry(this.value.toString(),DEF_COLS,FILTER);
-    else
-      entrywidget = new StringEntry("", DEF_COLS, FILTER);
+    if( this.value != null ) {
+      entrywidget = new StringEntry( this.value.toString(  ), DEF_COLS, FILTER );
+    } else {
+      entrywidget = new StringEntry( "", DEF_COLS, FILTER );
+    }
 
-    entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
-    this.setEnabled(this.getEnabled());
-    super.initGUI();
+    entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
+    this.setEnabled( this.getEnabled(  ) );
+    super.initGUI(  );
   }
 
   /**
    * Set the enabled state of the EntryWidget. This produces a more
    * pleasant effect than the default setEnabled of the widget.
    */
-  public void setEnabled(boolean enabled){
-    this.enabled=enabled;
-    if(this.getEntryWidget()!=null){
-      ((JTextField)this.entrywidget).setEditable(enabled);
+  public void setEnabled( boolean enabled ) {
+    this.enabled = enabled;
+
+    if( this.getEntryWidget(  ) != null ) {
+      ( ( JTextField )this.entrywidget ).setEditable( enabled );
     }
   }
 }
