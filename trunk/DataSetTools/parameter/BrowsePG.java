@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/05/30 15:00:46  bouzekc
+ *  Fixed bug where the entrywidget components overlapped
+ *  when resizing.
+ *
  *  Revision 1.7  2003/05/29 21:36:56  bouzekc
  *  Now allows multiple FileFilters to be used.  As a
  *  result, a Vector of FileFilters has replaced the
@@ -182,15 +186,19 @@ public class BrowsePG extends ParameterGUI{
         }
         browse.addActionListener(browselistener);
         entrywidget=new JPanel();
-        entrywidget.add(innerEntry);
-        entrywidget.add(browse);
+        //a Box is needed so that when the entrywidget is resized
+        //smaller, the components will not overlap
+        Box widgetbox = new Box(BoxLayout.X_AXIS);
+        widgetbox.add(innerEntry);
+        widgetbox.add(browse);
+        entrywidget.add(widgetbox);
         this.setEnabled(this.getEnabled());
         super.initGUI();
     }
 
     /**
      * Set the enabled state of the EntryWidget. This produces a more
-     * pleasant effect that the default setEnabled of the widget.
+     * pleasant effect than the default setEnabled of the widget.
      */
     public void setEnabled(boolean enabled){
         this.enabled=enabled;
