@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.1  2004/05/07 17:57:02  dennis
+ * Moved operators that extend GenericSpecial from Operators
+ * to Operators/Special
+ *
  * Revision 1.5  2004/05/07 14:55:05  dennis
  * Cleaned up some formatting problems.
  *
@@ -54,7 +58,7 @@
  * Added operator title to constructor java docs.
  *
  */
-package Operators;
+package Operators.Special;
 
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Special.*;

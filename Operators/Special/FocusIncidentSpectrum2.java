@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.1  2004/05/07 17:57:00  dennis
+ * Moved operators that extend GenericSpecial from Operators
+ * to Operators/Special
+ *
  * Revision 1.9  2004/03/15 03:36:58  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -58,10 +62,9 @@
  * Revision 1.1  2002/07/03 19:29:31  pfpeterson
  * Added to CVS.
  *
- *
  */
 
-package Operators;
+package Operators.Special;
 
 import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;

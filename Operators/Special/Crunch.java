@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.1  2004/05/07 17:56:59  dennis
+ * Moved operators that extend GenericSpecial from Operators
+ * to Operators/Special
+ *
  * Revision 1.14  2004/05/07 15:51:41  dennis
  * Made log messages consistent for Crunch.java Crunch2.java
  * OmitNullData.java.  Make appropriate log entry whether or
@@ -65,7 +69,7 @@
  * standardized header
  *
  */
-package Operators;
+package Operators.Special;
 
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Special.*;

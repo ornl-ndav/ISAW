@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.1  2004/05/07 17:57:03  dennis
+ * Moved operators that extend GenericSpecial from Operators
+ * to Operators/Special
+ *
  * Revision 1.11  2004/03/19 17:10:54  dennis
  * Removed unused variables
  *
@@ -59,7 +63,7 @@
  * Added operator title to constructor java docs.
  *
  */
-package Operators;
+package Operators.Special;
 
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Special.*;
