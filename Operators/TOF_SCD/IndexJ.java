@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/02/18 22:59:00  pfpeterson
+ * Updated calls to deprecated method fixSparator.
+ *
  * Revision 1.5  2003/02/13 20:34:24  pfpeterson
  * Added debug messages, made updating peaks file an option, and added
  * writing information out to a log file, index.log.
@@ -162,7 +165,7 @@ public class IndexJ extends    GenericTOF_SCD {
     // get the peaks file name from the script and test it out
     peaksfile=getParameter(0).getValue().toString();
     if(peaksfile!=null && peaksfile.length()>0){
-      peaksfile=FilenameUtil.fixSeparator(peaksfile);
+      peaksfile=FilenameUtil.setForwardSlash(peaksfile);
       file=new File(peaksfile);
       if( !file.exists() )
         return new ErrorString("file does not exist: "+peaksfile);
@@ -175,7 +178,7 @@ public class IndexJ extends    GenericTOF_SCD {
     // get the matrix filename
     matrixfile=getParameter(1).getValue().toString();
     if(matrixfile!=null && matrixfile.length()>0){
-      matrixfile=FilenameUtil.fixSeparator(matrixfile);
+      matrixfile=FilenameUtil.setForwardSlash(matrixfile);
       file=new File(matrixfile);
       if( !file.exists() )
         return new ErrorString("file does not exist: "+matrixfile);
@@ -271,7 +274,7 @@ public class IndexJ extends    GenericTOF_SCD {
       if(DEBUG){
         out=new OutputStreamWriter(System.out);
       }else{
-        String logfile=FilenameUtil.fixSeparator(peaksfile);
+        String logfile=FilenameUtil.setForwardSlash(peaksfile);
         index=logfile.lastIndexOf("/");
         if(index>=0){
           logfile=logfile.substring(0,index+1)+"index.log";
