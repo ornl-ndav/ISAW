@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.10  2002/12/17 19:18:40  dennis
+ *  Added getDocumentation() method, simple main test program and
+ *  Java docs for the getResult() method. (Chris Bouzek)
+ *
  *  Revision 1.9  2002/11/27 23:17:04  pfpeterson
  *  standardized header
  *
@@ -70,6 +74,7 @@ import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
 import  DataSetTools.gsastools.GsasCalib;
+import  DataSetTools.viewer.*;
 
 /**
  * This operator converts a neutron time-of-flight DataSet to D-spacing.  The
@@ -135,7 +140,8 @@ public class DiffractometerTofToD extends    XAxisConversionOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, ToD
+   * @return  the command name to be used with script processor: i
+   *          in this case, ToD
    */
    public String getCommand()
    {
@@ -144,7 +150,7 @@ public class DiffractometerTofToD extends    XAxisConversionOp
 
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -157,15 +163,17 @@ public class DiffractometerTofToD extends    XAxisConversionOp
     Parameter parameter;
 
     if ( scale == null )
-      parameter = new Parameter( "Min d("+FontUtil.ANGSTROM+")", new Float(0.0) );
+      parameter = new Parameter("Min d("+FontUtil.ANGSTROM+")", new Float(0.0));
     else
-      parameter = new Parameter( "Min d("+FontUtil.ANGSTROM+")", new Float(scale.getStart_x()));  
+      parameter = new Parameter("Min d("+FontUtil.ANGSTROM+")", 
+                                 new Float(scale.getStart_x()));  
     addParameter( parameter );
 
     if ( scale == null )
-      parameter = new Parameter( "Max d("+FontUtil.ANGSTROM+")", new Float(4.0) );
+      parameter = new Parameter("Max d("+FontUtil.ANGSTROM+")", new Float(4.0));
     else
-      parameter = new Parameter( "Max d("+FontUtil.ANGSTROM+")", new Float(scale.getEnd_x()));  
+      parameter = new Parameter("Max d("+FontUtil.ANGSTROM+")", 
+                                 new Float(scale.getEnd_x()));  
     addParameter( parameter );
 
     parameter = new Parameter( Parameter.NUM_BINS, new Integer(2000) );
@@ -236,10 +244,45 @@ public class DiffractometerTofToD extends    XAxisConversionOp
     }
   }
 
-
+  /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator converts the X-axis units on a DataSet ");
+    s.append("from neutron time-of-flight to D-spacing.");
+    s.append("@assumptions The DataSet must contain spectra with ");
+    s.append("attributes giving the detector position and source to sample ");
+    s.append("distance ( the initial flight path ). In addition, it is ");
+    s.append("assumed that the XScale for the spectra represents the ");
+    s.append("time-of-flight from the source to the detector.");
+    s.append("@algorithm Creates a new DataSet which has the same title ");
+    s.append("as the input DataSet, the same y-values as the input DataSet, ");
+    s.append("and whose X-axis units have been converted to D-spacing. ");
+    s.append("The new DataSet also has a new DiffractometerDToQ operator ");
+    s.append("added to its ");
+    s.append("operator list, and a message appended to its log indicating ");
+    s.append("that a conversion to units of D-spacing on the X-axis was done.");
+    s.append("@param ds The DataSet to which the operation is applied.");
+    s.append("@param min_D The minimum D value to be binned.");
+    s.append("@param max_D The maximum D value to be binned.");
+    s.append("@param num_D The number of \"bins\" to be used between ");
+    s.append("min_D and max_D.");
+    s.append("@return A new DataSet which is the result of converting the ");
+    s.append("input DataSet's X-axis units to D-spacing.");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+   *  Converts the input DataSet to a DataSet which is identical except that
+   *  the new DataSet's X-axis units have been converted to D-Spacing.
+   *  
+   *  @return DataSet whose X-axis units have been converted to D-Spacing.
+   */
   public Object getResult()
   {
                                      // get the current data set
@@ -299,7 +342,7 @@ public class DiffractometerTofToD extends    XAxisConversionOp
     float            spherical_coords[];
     int              num_data = ds.getNum_entries();
     AttributeList    attr_list;
-
+	
     for ( int j = 0; j < num_data; j++ )
     {
       data = ds.getData_entry( j );        // get reference to the data entry
@@ -370,7 +413,7 @@ public class DiffractometerTofToD extends    XAxisConversionOp
    */
   public Object clone()
   {
-    DiffractometerTofToD new_op    = new DiffractometerTofToD( );
+    DiffractometerTofToD new_op = new DiffractometerTofToD( );
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
@@ -386,13 +429,17 @@ public class DiffractometerTofToD extends    XAxisConversionOp
    */
   public static void main( String[] args )
   {
-    DiffractometerTofToD op = new DiffractometerTofToD();
+    float min_1 = (float)0.5, max_1 = (float)1.0;
 
-    String list[] = op.getCategoryList();
-    System.out.println( "Categories are: " );
-    for ( int i = 0; i < list.length; i++ )
-      System.out.println( list[i] );
+                                                //create the first test DataSet
+    DataSet ds1 = DataSetFactory.getTestDataSet(); 
+    ViewManager viewer = new ViewManager(ds1, ViewManager.IMAGE);
 
+    DiffractometerTofToD op = new DiffractometerTofToD(ds1, min_1, max_1, 100);
+    DataSet new_ds = (DataSet)op.getResult();
+    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE);	
+
+    System.out.println(op.getDocumentation());
   }
 
 }
