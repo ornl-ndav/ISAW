@@ -30,6 +30,17 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/10/07 15:00:37  rmikk
+ *  Will now keep better information on a cell.  The last group
+ *    and its corresponding x value that added non zero intensities
+ *    to a cell are saved.
+ *  Fixed the case for one column so that the Contour View can
+ *    be used to display 1 row "Arrays".
+ *  Fixed an error that occurs in the altermative( not row/
+ *     col) display.  The row value and column value are now
+ *    calculated and recorded for each of the x values in a
+ *     range.
+ *
  *  Revision 1.9  2002/08/30 15:29:46  rmikk
  *    -If there is no  DetInfoListAttribute or if two groups have the same row or column,
  *      a phi,theta vs time countour plot is shown
@@ -174,8 +185,11 @@ public class ContourData
       //as indecies.
       //note: the zeroth row and column will be empty
       groups = new int[maxrows + 1][maxcols + 1];
+    
       for( int i = 0; i < maxrows + 1; i++ )
-         Arrays.fill( groups[i], -1 );
+         {Arrays.fill( groups[i], -1 );
+        
+         }
       for( int i = 0; i < ( w ); i++ )
       { if( groups[ k[i][0] ][ k[i][1] ] >0)
            {ThetPhiData( ds,  new thetaAxisHandler( ds),new phiAxisHandler( ds),
@@ -315,7 +329,7 @@ public class ContourData
          return 0;
       return numX-1;
      }
-  int[] Groupss;
+  int[] Groupss, Inds;
   double[] values;
   boolean bg=false;
   public SGTData getSGTDataSpecial( float X )
@@ -329,46 +343,60 @@ public class ContourData
     values = new double[ nrowws*ncolls];
     Arrays.fill( values, 0.0f);
     Groupss = new int[nrowws*ncolls];
+    Inds = new int[nrowws*ncolls];
     Arrays.fill( Groupss, -1);
+    Arrays.fill( Inds, -1);
+    int Trow=(int)( nrowws*(-4-minAx2)/(maxAx2-minAx2) );
+    int Tcol =(int)( ncolls*(-4-minAx1)/(maxAx1-minAx1) );
+    //System.out.println("-------------------------------");
+    float SS=0;
     for( int i=0;i< ds.getNum_entries(); i++)
       {float index1 = Axis3.getXindex( i, X);
        float index2 =  Axis3.getXindex( i, X - (maxAx3 - minAx3)/ntimes);
-       
+      
        //if(i==0)System.out.println("gr,indx1,indx2="+i+","+index1+","+index2+","+
        //          maxAx3+","+minAx3);
-      /* if( index1*index2 <= 0)
-         if(index1 < 0)
-           if( index2 < ntimes/2)
-             index1 =0;
 
-         else
-           if( index1 < ntimes/2)
-             index2 =0;
-      */
        index1 = fixIndex( index1,index2, i);
-       index2 = fixIndex( index2, index1, i);      
+       index2 = fixIndex( index2, index1, i);
+
+
+       if( index2 <0) 
+            index2 = 0;  
+       if( index1 > index2)
+         { float x = index1;
+           index2 = index1;
+           index1 = x;
+          } 
+       Data D =ds.getData_entry(i); 
+       float[] yy =D.getY_values();
+       
        if( (index1 >= 0) && (index2 >=0))
-         {if( index2 <0) 
-            index2 = 0;
-          int indx = (int)(( index1 + index2)/2);
+         for( int indx =(int)index1; indx <=(int)index2;indx++)
+         {
+          //int indx = (int)(( index1 + index2)/2);
           float ax1= Axis1.getValue( i,indx);
           float ax2 = Axis2.getValue( i,indx);
           int row ;
-          if( maxAx2==minAx2) row=0;
-          else row= (int)( nrowws*(ax2-minAx2)/(maxAx2-minAx2) );
+          if( maxAx2==minAx2) 
+            row=0;
+          else 
+            row= (int)( nrowws*(ax2-minAx2)/(maxAx2-minAx2) );
           int col;
-          if( maxAx1 == minAx1) col = 0;
-          else col =(int)( ncolls*(ax1-minAx1)/(maxAx1-minAx1) );
+          if( maxAx1 == minAx1) 
+              col = 0;
+          else 
+              col =(int)( ncolls*(ax1-minAx1)/(maxAx1-minAx1) );
           if(3==2)
            System.out.println("i,ax1,ax2,row,col,index1,index2="+i+","+
               ax1+","+ax2+","+row+","+col+","+index1+","+index2);
-
+         
           if( row >= nrowws) row = nrowws-1;
           if( col >= ncolls) col = ncolls -1;
           if( row < 0) row =0;
           if( col < 0) col = 0;
           //System.out.println("  ax1,ax2,row,col="+ax1+","+ax2+","+row+","+col);
-          Data D =ds.getData_entry(i);
+          
           //if( ax1 >=-7.1) if( ax1<-7) 
             //if(ax2 >-8.1) if( ax2<-8)
             if( 2==3)
@@ -381,32 +409,30 @@ public class ContourData
           double y = 0,y1 = 0, y2 = 0;
          
           if( indx >=0)
-           if( indx < D.getX_scale().getNum_x())
-            {//if( D.isHistogram() && indx >0) indx--;
-            // y = D.getX_scale().getX(indx);
-               float[] yy =D.getY_values(); 
-               /*y1 =  yy[indx];
-               if( indx +1 < yy.length)
-                 y2 = yy[indx + 1];
-               else
-              */
-             
-              y = CalcY(yy, index1,index2);
-              
-             
+           if( indx < yy.length)// D.getX_scale().getNum_x())
+            {
+              y = yy[indx];//CalcY(yy, index1,index2);
             }
+         
          bg=false;
-         if( y != 0)
+         if( (y != 0) &&(index1 !=index2))
            { //if(values[col*nrowws+row]>0)
               // System.out.println("Dup "+row+","+col);
+            double yx=y;
+            if( indx ==(int)index1)
+              y =y - ( index1-(int)index1)*yx;
+            if( indx == (int)index2)
+              y= y - (1-index2+(int)index2)*yx;
             values[ col*nrowws+row ]+=y;
             Groupss[ col*nrowws+row ] = i;
-              //System.out.println("index1,ind2,i="+index1+","+index2+","+i+","+y
-              //     +","+ax1+","+ax2+","+row+","+col);
-           // if( (i==257)||(i==345))
-           //System.out.print("XX i,y,indx="+indx);
-           //System.out.println("("+ax1+","+ax2+","+i+","+y);
+            Inds[ col*nrowws+row ] = indx;
+            if(3==2)if( Trow==row)if(Tcol==col)
+              { SS+=y;
+               System.out.println("Gr,indx,y="+i+","+indx+","+index1+","+","+index2+","+y+","+SS);
+              }
+               
             }
+       
       }//if indx >=0
       }
      /* System.out.println("Time ="+X);
@@ -417,6 +443,7 @@ public class ContourData
          }
       System.out.println("___________________");
       */
+    
       SimpleGrid sl;
       xMeta = new SGTMetaData( Axis1.getAxisName(), Axis1.getAxisUnits() );
       yMeta = new SGTMetaData( Axis2.getAxisName(), Axis2.getAxisUnits() );
@@ -427,9 +454,7 @@ public class ContourData
       sl.setZMetaData( zMeta );
      
       data_ = sl;
-      //System.out.println("len ax1,ax2,vals="+axis1.length+","+axis2.length+","
-      //       +values.length);
-      //System.out.println("V list="+(new NexIO.NxNodeUtils()).Showw( values));
+      //System.out.println("v of special="+values[Tcol*nrowws+Trow]);
       return data_;
     }
  
@@ -442,7 +467,7 @@ public class ContourData
       mult *= (float)java.lang.Math.max(1.0, ds.getNum_entries()/(float)(nrowws*ncolls));
       return new ClosedInterval( Yrange.getStart_x()*mult,
                                  Yrange.getEnd_x()*mult);
- 
+
       }
    /*
     * Get the range of time vales for the area detector data
@@ -482,7 +507,7 @@ public class ContourData
    { if( mode == 0)
         return lastTime;
       //Needs to be the time in the data set.
-     int Group = getGroupIndex( row, col);
+     /*int Group = getGroupIndex( row, col);
      if( Group < 0)
        return Float.NaN;
      float time1 = Axis3.getXindex( Group, lastTime);
@@ -495,7 +520,28 @@ public class ContourData
      //         Ttime+","+lastTime +","+time2);
             
      return Ttime;
-      
+     */
+    float R;
+    if( maxAx2 ==minAx2) R = 0;
+    else R = (int)((row-minAx2)/(maxAx2-minAx2)*nrowws);
+    float C ;
+    if( maxAx1 == minAx1)C = 0;
+    else C=(int) ((col -minAx1)/(maxAx1-minAx1)*ncolls);
+ 
+
+   if( R<-.5) return Float.NaN;
+   if( C<-.5) return Float.NaN;
+   if( R >nrowws+.5) return Float.NaN;
+   if( C >ncolls+.5) return Float.NaN;
+   int r = (int) (R +.5 );
+   int c = (int) (C + .5);
+   
+   int G =Groupss[ c*nrowws+r];
+   int indx = Inds[c*nrowws+r]; 
+   if( G == -1)
+     return Float.NaN;
+   Data D = ds.getData_entry( G);  
+   return D.getX_scale().getX(indx);
    }
 
    public void setXScale( XScale xscale)
@@ -555,11 +601,7 @@ public class ContourData
            if( maxAx1 == minAx1)C = 0;
            else C=(int) ((col -minAx1)/(maxAx1-minAx1)*ncolls);
  
-          // System.out.println("mode 1 "+r+","+c+","+nrowws+","+ncolls);
-          // System.out.println("Range row(Ax2)="+minAx2+","+row+","+maxAx2+","+
-           //      (row-minAx2)+","+(maxAx2-minAx2)+","+((row-minAx2)/(maxAx2-minAx2)));
-          // System.out.println( ((row-minAx2)/(maxAx2-minAx2)*nrowws)+","+r);
-          // System.out.println("get GR,RC="+R+","+C);
+
            if( R<-.5) return -1;
            if( C<-.5) return -1;
            if( R >nrowws+.5) return -1;
