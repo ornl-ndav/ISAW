@@ -5,6 +5,9 @@
  *                               2000/06/09  Renamed from just Integrate
  *             
  * $Log$
+ * Revision 1.5  2000/12/07 22:39:34  dennis
+ * Trivial simplification.
+ *
  * Revision 1.4  2000/11/10 22:41:34  dennis
  *    Introduced additional abstract classes to better categorize the operators.
  * Existing operators were modified to be derived from one of the new abstract
@@ -184,20 +187,18 @@ public class  IntegrateGroup  extends    AnalyzeOp
       System.out.println( message );
       return message;
     }
-    else
-    {
-      float x_vals[] = data.getX_scale().getXs();
-      float y_vals[] = data.getY_values();
 
-      float result;
+    float x_vals[] = data.getX_scale().getXs();
+    float y_vals[] = data.getY_values();
 
-      if ( x_vals.length == y_vals.length + 1 )  // histogram
-        result = NumericalAnalysis.IntegrateHistogram( x_vals, y_vals, a, b );
-      else                                       // tabulated function
-        result = NumericalAnalysis.TrapIntegrate( x_vals, y_vals, a, b );
+    float result;
 
-      return new Float( result );  
-    }
+    if ( x_vals.length == y_vals.length + 1 )  // histogram
+      result = NumericalAnalysis.IntegrateHistogram( x_vals, y_vals, a, b );
+    else                                       // tabulated function
+      result = NumericalAnalysis.TrapIntegrate( x_vals, y_vals, a, b );
+
+    return new Float( result );  
   }  
 
   /* ------------------------------ clone ------------------------------- */
