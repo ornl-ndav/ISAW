@@ -3,6 +3,11 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.6  2001/07/31 16:05:19  neffk
+ * added the extinguish() method, which helps reclaim memory by removing
+ * all referenced in this node and all children.  also formatted a few lines
+ * to come closer to attaining righteousness.
+ *
  * Revision 1.5  2001/07/25 19:16:07  neffk
  * added functionality to 'setUserObject()' to add single DataSet
  * objects in hopes that it would generate the appropriate redraw
@@ -88,12 +93,30 @@ public class Experiment
   public void remove( DataSet ds )
   {
     for( int i=0;  i<dataset_nodes.size();  i++ )
-      if(  ( (DataSetMutableTreeNode)dataset_nodes.get(i) ).getUserObject().equals( ds )  )
+    {
+      DataSetMutableTreeNode node = null;
+      node = (DataSetMutableTreeNode)dataset_nodes.get(i);
+      if(  node.getUserObject().equals( ds )  )
       {
-        DataSetMutableTreeNode node = (DataSetMutableTreeNode)dataset_nodes.get(i);
+        node = (DataSetMutableTreeNode)dataset_nodes.get(i);
         node.removeFromParent();
         dataset_nodes.remove( node );
       }
+    }
+  }
+
+
+  /**
+   * attempts to make all references null so we can reclaim the
+   * memory that this obj is using.
+   */ 
+  public void extinguish()
+  {
+    name = null;
+    setParent( null );
+
+    for( int i=0;  i<dataset_nodes.size();  i++ )
+      ( (DataSetMutableTreeNode)dataset_nodes.get(i) ).extinguish();
   }
 
 
