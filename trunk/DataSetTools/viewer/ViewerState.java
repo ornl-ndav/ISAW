@@ -1,14 +1,18 @@
 /*
- * @(#)ViewerState.java   1.0  2000/10/12 Dennis Mikkelson
+ * @(#)ViewerState.java
+ *
+ *  Programmer: Dennis Mikkelson
  *
  *    Class to preserve state information for DataSetViewers.  This will allow
  *  switching between viewers without losing all of the preferences that were
  *  set in a particular viewer.
  *
  *  $Log$
+ *  Revision 1.2  2001/01/29 21:26:50  dennis
+ *  Now uses CVS version numbers.
+ *
  *  Revision 1.1  2000/12/07 23:02:19  dennis
  *  Class to hold and transfer viewer options between various viewers.
- *
  *
  */
 
