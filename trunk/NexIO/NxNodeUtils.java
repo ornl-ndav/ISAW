@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2001/07/24 20:11:12  rmikk
+ * Eliminated a debug print
+ *
  * Revision 1.2  2001/07/17 15:05:19  rmikk
  * Updated Show for arbitrary dim arrays and for large
  *    arrays(truncated after 100 entries)
@@ -100,7 +103,7 @@ public class NxNodeUtils
               try{
                  Result = fmt.parse( DateString );
                  if( Result != null )
-                  {System.out.println("format="+pattern);
+		     {//System.out.println("format="+pattern);
                    return Result;
                   }
                  }
