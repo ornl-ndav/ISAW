@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.69  2003/08/14 20:13:20  bouzekc
+ * Now uses a TextFileReader when loading Forms.
+ *
  * Revision 1.68  2003/08/14 18:59:14  bouzekc
  * Moved some object creation out of a loop.
  *
@@ -1441,22 +1444,21 @@ public abstract class Wizard implements PropertyChangeListener {
    */
   private void loadForms( File file ) {
     char ca;
-    StringBuffer s = new StringBuffer(  );
-    int good       = -1;
-    FileReader fr  = null;
+    StringBuffer s     = new StringBuffer(  );
+    int good           = -1;
+    TextFileReader tfr = null;
 
     try {
       //set the property change checking for the Wizard to false, otherwise it
       //messes up our loading of valid result parameters
       this.setIgnorePropertyChanges( true );
-      fr   = new FileReader( file );
 
-      good = fr.read(  );
+      //read in the text..TextFileReader uses a BufferedReader, so its
+      //performance should be good
+      tfr = new TextFileReader( new FileReader( file ) );
 
-      while( good >= 0 ) {
-        ca = ( char )good;
-        s.append( ca );
-        good = fr.read(  );
+      while( !tfr.eof(  ) ) {
+        s.append( tfr.read_line(  ) );
       }
 
       //now convert the xml to usable data
@@ -1478,9 +1480,9 @@ public abstract class Wizard implements PropertyChangeListener {
       //property changes
       this.setIgnorePropertyChanges( false );
 
-      if( fr != null ) {
+      if( tfr != null ) {
         try {
-          fr.close(  );
+          tfr.close(  );
           modified = false;
         } catch( IOException e ) {
           //let it drop on the floor
