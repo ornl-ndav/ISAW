@@ -5,6 +5,9 @@
  *                                   2000/06/09  Renamed from SelectData
  *             
  * $Log$
+ * Revision 1.2  2000/08/03 15:46:19  dennis
+ * Fixed spelling error in comment
+ *
  * Revision 1.1  2000/07/10 22:36:08  dennis
  * July 10, 2000 version... many changes
  *
@@ -80,7 +83,7 @@ public class ExtractByAttribute extends    DataSetOperator
    *  @param  min         The lower bound for the selection criteria.  The
    *                      selected Data blocks satisfy:
    *                          min <= attribute value <= max
-   *  @parm   max         The upper bound for the selection criteria.
+   *  @param  max         The upper bound for the selection criteria.
    */
 
   public ExtractByAttribute( DataSet  ds,
