@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2001/08/09 15:24:06  dennis
+ *  Put debug prints in "if (debug_retriever)" blocks.
+ *
  *  Revision 1.14  2001/08/08 14:03:47  dennis
  *  Now returns null if the requested DataSet does not exist
  *  (to be consistent with other retrievers).
@@ -139,7 +142,7 @@ public class LiveDataRetriever extends    RemoteDataRetriever
  *  The monitors are placed into one DataSet.  Any sample histograms are 
  *  placed into separate DataSets.  
  *   
- *  @return the number of distinct DataSets in this runfile.
+ *  @return the number of distinct DataSets on this LiveDataServer.
  */  
   public int numDataSets()
   {
@@ -201,12 +204,35 @@ public class LiveDataRetriever extends    RemoteDataRetriever
   }
 
 
+/* ---------------------------- getDataName ----------------------------- */
+/**
+ *  Get the name of current data on the LiveDataServer.
+ *
+ *  @return String containing the name of the Data.
+ */
+  public String getDataName()
+  {
+              // include file_name for compatibilty with RemoteFileRetriever
+
+    Object obj = getObjectFromServer( DataSetServer.COMMAND_GET_DATA_NAME +
+                                      file_name );
+
+    if ( obj != null && obj instanceof String )
+    {
+      String name = (String)obj;
+      return name;
+    }
+
+    return new String("NONE");
+  }
+
+
 /* ---------------------------- getDataSet ----------------------------- */
 /**
- *  Get the specified DataSet from this runfile.
+ *  Get the specified DataSet from the LiveDataServer.
  * 
- *  @param  data_set_num  The number of the DataSet in this runfile 
- *                        that is to be read from the runfile.  data_set_num
+ *  @param  data_set_num  The number of the DataSet on the LiveDataServer 
+ *                        that is to be obtained.  data_set_num
  *                        must be between 0 and numDataSets()-1
  *
  *  @return the requested DataSet.
@@ -242,7 +268,6 @@ public class LiveDataRetriever extends    RemoteDataRetriever
  */
   protected void finalize() throws IOException
   {
-     System.out.println("Retriever finalization");
      Exit();
   }
 
