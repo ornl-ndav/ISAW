@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.22  2004/05/11 00:06:19  rmikk
+ * .eq. is now replaced by ==
+ *
  * Revision 1.21  2004/01/30 00:40:33  bouzekc
  * Fixed declarations of arrays.  Now the correct number of brackets are
  * placed on the variable name.
@@ -1038,7 +1041,8 @@ String convertFortranTokens(  ) : {
     return t.image.replaceAll( ".lt.", "<" )
                           .replaceAll( ".gt.", ">" )
                           .replaceAll( ".ge.", ">=")
-                          .replaceAll( ".le.", "<=");
+                          .replaceAll( ".le.", "<=")
+                          .replaceAll(".eq.","==");
   }
 |
   t = <ELSE_COND> {
@@ -1051,6 +1055,7 @@ String convertFortranTokens(  ) : {
                           .replaceAll( ".gt.", ">" )
                           .replaceAll( ".ge.", ">=")
                           .replaceAll( ".le.", "<=")
+                          .replaceAll(".eq.","==");
                           .replaceAll( "elseif", "}else if" )
                           .replaceAll( "then", "{");
   }
