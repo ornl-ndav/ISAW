@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/09/15 18:05:03  dennis
+ * Changed defaults for End Q, Num Steps, and state of dq/q radio
+ * button.  (For Alok)
+ *
  * Revision 1.9  2003/09/15 17:28:45  bouzekc
  * Fixed bug in validateSelf().  Clarified ambiguous references in Qbins1PG.
  *
@@ -176,10 +180,11 @@ public class QbinsPG  extends VectorPG{
         this.entrywidget = new EntryWidget(  );
         this.entrywidget.setLayout(new GridLayout( 2,3));
         start = new StringEntry(".0035",7,new FloatFilter());
-        end = new StringEntry("4.0",7,new FloatFilter());
-        steps = new StringEntry("-1", 5,new IntegerFilter());
+        end = new StringEntry("1.04",7,new FloatFilter());
+        steps = new StringEntry("117", 5,new IntegerFilter());
         dQ = new JRadioButton( "dQ");
         JRadioButton dQQ = new JRadioButton("dQ/Q");
+        dQQ.setSelected(true);
         ButtonGroup Group = new ButtonGroup();
         Group.add( dQ); Group.add( dQQ);
         dQ.setSelected( true );
