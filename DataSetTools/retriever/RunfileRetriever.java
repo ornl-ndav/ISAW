@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.46  2002/07/10 20:07:42  dennis
+ *  Now uses XScale.getInstance() to get a uniform XScale if possible.
+ *
  *  Revision 1.45  2002/06/28 20:49:46  dennis
  *  Now adds MonitorTofToWavelength operator
  *
@@ -687,7 +690,7 @@ private float CalculateEIn()
                for ( int i = 0; i < bin_boundaries.length; i++ )
                  bin_boundaries[i] -= source_to_sample_tof;
            }
-           x_scale = new VariableXScale( bin_boundaries );
+           x_scale = XScale.getInstance( bin_boundaries );
         }
 
         if ( num_times > 1 )
