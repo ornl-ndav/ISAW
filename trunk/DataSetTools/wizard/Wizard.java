@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2003/06/10 21:53:43  bouzekc
+ * Modified populateViewMenu to show LoadFilePGs and
+ * SaveFilePGs rather than BrowseFilePGs (no sense showing
+ * a directory).
+ *
  * Revision 1.24  2003/06/10 14:20:25  bouzekc
  * Fixed bug where the View menu was not updated when the
  * First or Last button was clicked.
@@ -990,9 +995,8 @@ public abstract class Wizard implements PropertyChangeListener{
           Form, should not be sent to the ParameterViewer. */
           if( (iparam instanceof DataSetPG)  ||
               (iparam instanceof ArrayPG)    ||
-              /*(iparam instanceof LoadFilePG) ||
-              (iparam instanceof SaveFilePG) ||*/
-              (iparam instanceof BrowsePG) )
+              (iparam instanceof LoadFilePG) ||
+              (iparam instanceof SaveFilePG)  )
           {
             jmi = new JMenuItem(iparam.getName());
             view_menu.add(jmi);
