@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2001/08/06 14:09:28  rmikk
+ * Fixed a bug that cause filenames to have "//".
+ * Added a boolean variable LoadDebug that, when true,
+ *    displays directories and files being considered.  Some
+ *    Error messages are displayed in these cases.
+ *
  * Revision 1.14  2001/07/20 16:35:21  rmikk
  * Fixed the show method to show more
  *
@@ -99,13 +105,24 @@ public class Script_Class_List_Handler  implements OperatorHandler
      private static int Command_Compare =257;
      private static int File_Compare = 322;
      private static boolean first = true;
+     private static boolean LoadDebug = false;
 /** The System property Script_Path is an input to this
 */
      public Script_Class_List_Handler()
        {inittt();
         }
    
-
+     private void toggleDebug()
+       {try{
+           if( System.in.available()>0)
+            { char c = (char)(System.in.read());
+              if( c=='k')
+                 LoadDebug = !LoadDebug;
+              System.out.print("K="+c);
+            }
+           }
+        catch( IOException s){}
+       }
      private void inittt()
       {  if( !first)
            return;
@@ -114,18 +131,22 @@ public class Script_Class_List_Handler  implements OperatorHandler
             if( op instanceof GenericOperator)
                  add( op );
           }
-        first = false;     
+        first = false;  
+        toggleDebug(); 
         String ScrPaths = System.getProperty( "ISAW_HOME" );
         if( ScrPaths != null )
           if(ScrPaths.length()>0)
            {ScrPaths=ScrPaths.replace('\\','/');
             if( ScrPaths.charAt(ScrPaths.length()-1) =='/')
                 ScrPaths=ScrPaths.substring(0, ScrPaths.length()-1);
+           
             processPaths(ScrPaths+"/Operators") ;
             processPaths(ScrPaths+"/Scripts") ;
            }
-        String ScrPaths1 = System.getProperty( "GROUP_HOME" );
        
+       
+        String ScrPaths1 = System.getProperty( "GROUP_HOME" );
+        toggleDebug(); 
         if( ScrPaths1 != null )
 	    if(!ScrPaths1.equals(ScrPaths))
            {ScrPaths1=ScrPaths1.replace('\\','/');
@@ -135,29 +156,32 @@ public class Script_Class_List_Handler  implements OperatorHandler
             processPaths(ScrPaths1+"/Operators") ;
             processPaths(ScrPaths1+"/Scripts") ;
            }
+         toggleDebug(); 
         String ScrPaths2 = System.getProperty( "user.home" );
         if( ScrPaths2 != null )
 	 if( ScrPaths2.length() > 0)
          {ScrPaths2 =ScrPaths2.replace('\\','/');
-          
+          ScrPaths2= ScrPaths2.trim();
           if( ScrPaths2.charAt(ScrPaths2.length()-1) != '/' )
              ScrPaths2 = ScrPaths2+'/';
-          String X =ScrPaths2+java.io.File.pathSeparator+"ISAW";
-          if(ScrPaths2 != null)
-            if( ScrPaths2.charAt(ScrPaths2.length()-1)== 
-                      java.io.File.pathSeparatorChar)
-               X = ScrPaths2+"ISAW"+ java.io.File.pathSeparator;
-          if(!(X).equals(ScrPaths))
+          String X =ScrPaths2+"ISAW";
+         
+         // if(ScrPaths2 != null)
+         //   if( ScrPaths2.charAt(ScrPaths2.length()-1)== 
+        //              java.io.File.pathSeparatorChar)
+        //       X = ScrPaths2+"ISAW"+ java.io.File.pathSeparator;
+          if(! X.equals(ScrPaths))
           if( !X.equals(ScrPaths1))
-           {processPaths(ScrPaths2+"/ISAW/Operators") ;
-            processPaths(ScrPaths2+"/ISAW/Scripts") ;
+           {processPaths(ScrPaths2+"ISAW/Operators") ;
+            processPaths(ScrPaths2+"ISAW/Scripts") ;
            }
          }
 
       }
       private void processPaths( String ScrPaths) 
         {ScrPaths.trim();
-        
+        if( LoadDebug)
+         System.out.println("----PATH="+ScrPaths);
         ScrPaths=ScrPaths.replace(java.io.File.pathSeparatorChar,';'); 
         if( ScrPaths.lastIndexOf(';') != ';')
              ScrPaths = ScrPaths+";";
@@ -313,20 +337,34 @@ private  void add( String filename , Vector opList)
   {int i;
    
    if(filename == null )
-      return;
+      { 
+        return;
+      }
+   if( LoadDebug)
+        System.out.print( "Processing "+filename+":");
    i = filename.lastIndexOf('.');
    if( i< 0 )
-     return;
+     { 
+       return;
+     }
     String Extension = filename.substring( i + 1 );
     if( Extension.equalsIgnoreCase("iss"))
-      {ScriptOperator X = new ScriptOperator( filename );
+      {
+       ScriptOperator X = new ScriptOperator( filename );
        if(X.getErrorMessage().length()<=0) 
-          add( X );
+          {add( X );
+           if( LoadDebug )
+             System.out.println( "OK" );
+          }
+       else if( LoadDebug )
+          System.out.println( "NO "+X.getErrorMessage() );
       }
     else
       { Operator X = getClassInst( filename );
         if( X != null )
-           add( X );
+           {add( X );
+            
+           }
        }
    }
 /** Utility that tries to create an GenericOperator for a .class filename
@@ -338,22 +376,33 @@ public  Operator getClassInst( String filename )
    {String path;
    if( filename == null )
        return null;
+   
     filename = filename.replace('\\' , '/' );
     String pathlist = System.getProperty("java.class.path");
     pathlist=pathlist.replace('\\','/');
     pathlist=pathlist.replace(java.io.File.pathSeparatorChar,';');
     int i = filename.lastIndexOf('/' );
-         if( i < 0 )
-       return null;
+    if( i < 0 )
+       {if( LoadDebug)
+           System.out.println( "No directory divider");
+            return null;
+       }
     String CPath = filename.substring( 0 , i ).trim();
     String classname = filename.substring( i + 1 , filename.length()-6); 
     
     String CPathFix=CPath;
     
     if( CPath == null )
-      return null;
+      {if( LoadDebug )
+            System.out.println("No Name");
+         
+       return null;
+      }
     if( CPath.length() <= 0 )
-        return null;
+        {if( LoadDebug )
+            System.out.println("No Name");
+         return null;
+        }
     
     for( path = getNextPath( pathlist, null ) ; path != null;
          path = getNextPath( pathlist, path ))
@@ -373,18 +422,21 @@ public  Operator getClassInst( String filename )
             {CPathFix = CPath.substring( Path1.length()+1);
              CPathFix =CPathFix.replace('/','.');
              CPath=CPathFix+"."+classname;
-                        
+                     
              try{
                 Class C = Class.forName( CPath );
                 Object XX = C.newInstance();
                 if( XX instanceof GenericOperator)
-                  { 
+                  { if( LoadDebug)
+                     System.out.println("OK");
                     return (Operator)XX;
                   }            
-                
+                if( LoadDebug)
+                   System.out.println("NO: Not Generic OP");
                 }
              catch(Exception s)
-                {
+                {if( LoadDebug )
+                   System.out.println("NO-"+s);
                 }
 
             }
