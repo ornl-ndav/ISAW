@@ -2,6 +2,10 @@
  * @(#)DataSetFactory.java     0.1  99/06/07  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.8  2000/10/03 21:34:02  dennis
+ *  Modified this factory to handle different types of time-of-flight
+ *  instruments.
+ *
  *  Revision 1.7  2000/08/03 15:49:36  dennis
  *  Added ResampleDataSet() and ConvertHistogramToFunction() operators
  *
@@ -39,6 +43,7 @@ package  DataSetTools.dataset;
 
 import java.io.*;
 import DataSetTools.operator.*;
+import DataSetTools.instruments.*;
 
 /**
  * The concrete root class for "Factory" objects that produce properly 
@@ -95,7 +100,9 @@ public class DataSetFactory implements Serializable
    */
   public DataSetFactory( String title )
   {
-    this( title, "X UNITS", "X LABEL", "Y UNITS", "Y LABEL" );
+    this( title,
+         "Time(us)", "Time-of-flight",
+         "Counts", "Scattering Intensity" );
   }
 
   /**
@@ -156,6 +163,9 @@ public class DataSetFactory implements Serializable
    * info determined by the parameters stored in the DataSetFactory.  The new 
    * DataSet also contains a list of operators suitable for use with any 
    * DataSet.
+   *
+   * @return An empty DataSet with operators appropriate for a generic 
+   *         DataSet.
    */
   public DataSet getDataSet()
   {
@@ -208,4 +218,86 @@ public class DataSetFactory implements Serializable
     return new_ds;
   }
 
+  /**
+   * Get a new empty data set with the title, units, label, ID and initial log
+   * info determined by the parameters stored in the DataSetFactory.  The new
+   * DataSet also contains a list of operators suitable for use a time of 
+   * flight DataSet for instruments of the specified type.
+   *
+   * @param  instrument_type  Code for the type of instrument for which
+   *                          the DataSet is to be constructed.  The codes
+   *                          are in DataSetTools/instrument/InstrumentType.java
+   *                          InstrumentType.TOF_DIFFRACTOMETER
+   *                          InstrumentType.TOF_SCD
+   *                          InstrumentType.TOF_SAD
+   *                          InstrumentType.TOF_DG_SPECTROMETER
+   *                          InstrumentType.TOF_IDG_SPECTROMETER
+   *                          InstrumentType.TOF_REFLECTROMETER
+   *
+   * @return An empty DataSet with operators appropriate to a time-of-flight
+   *         DataSet for the specified instrument type. 
+   */
+  public DataSet getTofDataSet( int instrument_type )
+  {
+    DataSet new_ds = getDataSet();   // Get a DataSet with generic operators
+                                     // then add any special purpose operators
+
+    if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
+    {
+      new_ds.addOperator( new DiffractometerTofToD() );
+      new_ds.addOperator( new DiffractometerTofToQ() );
+      new_ds.addOperator( new DiffractometerTofToEnergy() );
+      new_ds.addOperator( new DiffractometerTofToWavelength() );
+      new_ds.addOperator( new TofToChannel() );
+      new_ds.addOperator( new TrueAngle() );
+    }
+    else if ( instrument_type == InstrumentType.TOF_SCD )  // will be different
+    {                                                      // when SCD properly
+      new_ds.addOperator( new DiffractometerTofToD() );    // supported
+      new_ds.addOperator( new DiffractometerTofToQ() );
+      new_ds.addOperator( new DiffractometerTofToEnergy() );
+      new_ds.addOperator( new DiffractometerTofToWavelength() );
+      new_ds.addOperator( new TofToChannel() );
+      new_ds.addOperator( new TrueAngle() );
+    }
+    else if ( instrument_type == InstrumentType.TOF_SAD )  // will be different
+    {                                                      // when SAD properly
+      new_ds.addOperator( new DiffractometerTofToD() );    // supported
+      new_ds.addOperator( new DiffractometerTofToQ() );
+      new_ds.addOperator( new DiffractometerTofToEnergy() );
+      new_ds.addOperator( new DiffractometerTofToWavelength() );
+      new_ds.addOperator( new TofToChannel() );
+      new_ds.addOperator( new TrueAngle() );
+    }
+    else if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
+    {
+      new_ds.addOperator( new SpectrometerPlotter() );
+      new_ds.addOperator( new SpectrometerEvaluator() );
+      new_ds.addOperator( new SpectrometerNormalizer());
+      new_ds.addOperator( new SpectrometerMacro() );
+      new_ds.addOperator( new SpectrometerTofToEnergyLoss() );
+      new_ds.addOperator( new SpectrometerTofToEnergy() );
+      new_ds.addOperator( new SpectrometerTofToWavelength() );
+      new_ds.addOperator( new DoubleDifferentialCrossection() );
+//      new_ds.addOperator( new SpectrometerTofToQ() );
+      new_ds.addOperator( new SpectrometerTofToQE() );
+      new_ds.addOperator( new TofToChannel() );
+      new_ds.addOperator( new TrueAngle() );
+    }
+    else if ( instrument_type == InstrumentType.TOF_IDG_SPECTROMETER )
+    {                                                    // will be different
+      new_ds.addOperator( new TofToChannel() );          // when IDG_S properly
+      new_ds.addOperator( new TrueAngle() );             // supported  
+    }
+    else if ( instrument_type == InstrumentType.TOF_REFLECTROMETER )
+    {                                                    // will be different
+      new_ds.addOperator( new TofToChannel() );          // when REFLT properly
+      new_ds.addOperator( new TrueAngle() );             // supported  
+    }
+    else
+      System.out.println(
+                 "WARNING: Unsupported instrument type in DataSetFactory" );
+
+    return new_ds;
+  }
 }
