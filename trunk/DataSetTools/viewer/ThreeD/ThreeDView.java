@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2001/07/25 18:11:50  dennis
+ * Now uses new "generic" methods to get/set state information
+ * in the ViewerState object.  Also saves 3D view state info
+ * in the ViewerState object.
+ *
  * Revision 1.16  2001/07/23 16:31:34  dennis
  * Fixed error: no longer using "==" for String comparison.
  *
@@ -141,7 +146,6 @@ public class ThreeDView extends DataSetViewer
   private final String DETECTOR_MARKER = "Marker";
   private final String DETECTOR_NONE   = "NOT DRAWN";
 
-  private int    group_marker_size  = SMALL_MARKER_SIZE;
   private String group_draw_mode    = GROUP_MARKER_SMALL;
   private String detector_draw_mode = DETECTOR_NONE;
 
@@ -179,8 +183,12 @@ public ThreeDView( DataSet data_set, ViewerState state )
                            // sets up the menu bar with items handled by the
                            // parent class.
 
-  color_table = IndexColorMaker.getDualColorTable( getState().getColor_scale(),
-                                                   NUM_POSITIVE_COLORS );
+  color_table = IndexColorMaker.getDualColorTable( 
+                          getState().get_String( ViewerState.COLOR_SCALE ),
+                          NUM_POSITIVE_COLORS );
+
+  group_draw_mode    = getState().get_String( ViewerState.V_GROUPS );
+  detector_draw_mode = getState().get_String( ViewerState.V_DETECTORS );
 
   setLogScale( 50 );
 
@@ -309,28 +317,28 @@ private void AddOptionsToMenu()
   GroupDrawMenuHandler group_draw_handler = new GroupDrawMenuHandler();
   ButtonGroup button_group = new ButtonGroup();
   JRadioButtonMenuItem r_button = new JRadioButtonMenuItem( GROUP_MARKER_SMALL);
-  if ( group_draw_mode.equals( GROUP_MARKER_SMALL ))
+  if ( group_draw_mode.equalsIgnoreCase( GROUP_MARKER_SMALL ))
     r_button.setSelected(true);
   r_button.addActionListener( group_draw_handler );
   group_menu.add( r_button );
   button_group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( GROUP_MARKER_MEDIUM );
-  if ( group_draw_mode.equals( GROUP_MARKER_MEDIUM ))
+  if ( group_draw_mode.equalsIgnoreCase( GROUP_MARKER_MEDIUM ))
     r_button.setSelected(true);
   r_button.addActionListener( group_draw_handler );
   group_menu.add( r_button );
   button_group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( GROUP_MARKER_LARGE );
-  if ( group_draw_mode.equals( GROUP_MARKER_LARGE ))
+  if ( group_draw_mode.equalsIgnoreCase( GROUP_MARKER_LARGE ))
     r_button.setSelected(true);
   r_button.addActionListener( group_draw_handler );
   group_menu.add( r_button );
   button_group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( GROUP_MARKER_NONE );
-  if ( group_draw_mode.equals( GROUP_MARKER_NONE ))
+  if ( group_draw_mode.equalsIgnoreCase( GROUP_MARKER_NONE ))
     r_button.setSelected(true);
   r_button.addActionListener( group_draw_handler );
   group_menu.add( r_button );
@@ -343,28 +351,28 @@ private void AddOptionsToMenu()
   DetectorDrawMenuHandler detector_draw_handler = new DetectorDrawMenuHandler();
   button_group = new ButtonGroup();
   r_button = new JRadioButtonMenuItem( DETECTOR_FILLED );
-  if ( detector_draw_mode.equals( DETECTOR_FILLED ))
+  if ( detector_draw_mode.equalsIgnoreCase( DETECTOR_FILLED ))
     r_button.setSelected(true);
   r_button.addActionListener( detector_draw_handler );
   detector_menu.add( r_button );
   button_group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( DETECTOR_HOLLOW );
-  if ( detector_draw_mode.equals( DETECTOR_HOLLOW ))
+  if ( detector_draw_mode.equalsIgnoreCase( DETECTOR_HOLLOW ))
     r_button.setSelected(true);
   r_button.addActionListener( detector_draw_handler );
   detector_menu.add( r_button );
   button_group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( DETECTOR_MARKER );
-  if ( detector_draw_mode.equals( DETECTOR_MARKER ))
+  if ( detector_draw_mode.equalsIgnoreCase( DETECTOR_MARKER ))
     r_button.setSelected(true);
   r_button.addActionListener( detector_draw_handler );
   detector_menu.add( r_button );
   button_group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( DETECTOR_NONE );
-  if ( detector_draw_mode.equals( DETECTOR_NONE ))
+  if ( detector_draw_mode.equalsIgnoreCase( DETECTOR_NONE ))
     r_button.setSelected(true);
   r_button.addActionListener( detector_draw_handler );
   detector_menu.add( r_button );
@@ -403,21 +411,39 @@ private void MakeThreeD_Scene()
   float group_radius = 0;
   float detector_radius = 0;
 
-  if ( !group_draw_mode.equals( GROUP_MARKER_NONE ))
+  if ( !group_draw_mode.equalsIgnoreCase( GROUP_MARKER_NONE ))
     group_radius = draw_groups();
 
-  if ( !detector_draw_mode.equals( DETECTOR_NONE ))
+  if ( !detector_draw_mode.equalsIgnoreCase( DETECTOR_NONE ))
     detector_radius = draw_detectors();
 
-  float radius = Math.max( group_radius, detector_radius );
-  if ( radius <= 0.01 )
-    radius = 1;
+  float radius = Math.max( group_radius, detector_radius );  
+  if ( radius <= 0 )                                      // need valid radius 
+  {
+    for ( int i = 0; i < getDataSet().getNum_entries(); i++ )
+    {
+      Vector3D point = group_location( i );
+      if ( point != null )
+      {
+        float temp = point.length();
+        if ( temp > radius )
+          radius = temp;
+      }
+    }
+  }
+  if ( radius <= 0 )
+    radius = 10;
   
-  view_control.setViewAngle( 40 );
-  view_control.setAltitudeAngle( 20 );
-  view_control.setAzimuthAngle( 45 );
+  float altitude = getState().get_float( ViewerState.V_ALTITUDE );
+  float azimuth  = getState().get_float( ViewerState.V_AZIMUTH );
+  float distance = getState().get_float( ViewerState.V_DISTANCE );
+  if ( distance <= 0 )
+    distance = 3f*radius;
+  view_control.setViewAngle( 45 );
+  view_control.setAltitudeAngle( altitude );
+  view_control.setAzimuthAngle( azimuth );
   view_control.setDistanceRange( 0.5f*radius, 5*radius );
-  view_control.setDistance( 3f*radius );
+  view_control.setDistance( distance );
   view_control.apply( true );
 
   draw_axes( radius/5 );
@@ -445,10 +471,10 @@ private void set_colors( int frame )
     if ( index < 0 )
       index += 256;
 
-    if ( !group_draw_mode.equals( GROUP_MARKER_NONE ))
+    if ( !group_draw_mode.equalsIgnoreCase( GROUP_MARKER_NONE ))
       threeD_panel.setColors( GROUP_PREFIX+i, color_table[index] );
 
-    if ( !detector_draw_mode.equals( DETECTOR_NONE ))
+    if ( !detector_draw_mode.equalsIgnoreCase( DETECTOR_NONE ))
       threeD_panel.setColors( DETECTOR_PREFIX+i, color_table[index] );
   }
 
@@ -582,6 +608,14 @@ private float draw_groups()
   Vector3D  point;
   points[0] = new Vector3D();
 
+  int marker_size = SMALL_MARKER_SIZE;
+  if ( group_draw_mode.equalsIgnoreCase( GROUP_MARKER_SMALL ) )
+    marker_size = SMALL_MARKER_SIZE;
+  else if ( group_draw_mode.equalsIgnoreCase( GROUP_MARKER_MEDIUM ) )
+    marker_size = MEDIUM_MARKER_SIZE;
+  else if ( group_draw_mode.equalsIgnoreCase( GROUP_MARKER_LARGE ) )
+    marker_size = LARGE_MARKER_SIZE;
+
   for ( int i = 0; i < n_data; i++ )
   {
     point = group_location( i );
@@ -595,7 +629,7 @@ private float draw_groups()
       points[0]= point;
       objects[0] = new Polymarker( points, Color.red );
       ((Polymarker)(objects[0])).setType( Polymarker.STAR );
-      ((Polymarker)(objects[0])).setSize( group_marker_size );
+      ((Polymarker)(objects[0])).setSize( marker_size );
       objects[0].setPickID( i );
       threeD_panel.setObjects( GROUP_PREFIX+i, objects );
     }
@@ -781,7 +815,7 @@ private IThreeD_Object make_detector( Vector3D point,
 {
   IThreeD_Object detector;
 
-  if ( detector_draw_mode.equals( DETECTOR_MARKER ))
+  if ( detector_draw_mode.equalsIgnoreCase( DETECTOR_MARKER ))
   {
     Vector3D verts[] = new Vector3D[1];
     verts[0] = point;
@@ -814,7 +848,7 @@ private IThreeD_Object make_detector( Vector3D point,
 
     DataSetTools.components.ThreeD.Polygon object = 
        new DataSetTools.components.ThreeD.Polygon( verts, Color.red );
-    if ( detector_draw_mode.equals( DETECTOR_HOLLOW ))
+    if ( detector_draw_mode.equalsIgnoreCase( DETECTOR_HOLLOW ))
       object.setType( DataSetTools.components.ThreeD.Polygon.HOLLOW );
 
     detector = object;
@@ -912,7 +946,8 @@ private void init()
   control_panel.add( x_scale_ui );
 
   color_scale_image = new ColorScaleImage();
-  color_scale_image.setNamedColorModel( getState().getColor_scale(), false );
+  color_scale_image.setNamedColorModel( 
+                     getState().get_String( ViewerState.COLOR_SCALE), true );
   control_panel.add( color_scale_image );
 
   log_scale_slider.setPreferredSize( new Dimension(120,50) );
@@ -930,6 +965,7 @@ private void init()
   control_panel.add( log_scale_slider );
 
   view_control = new AltAzController();
+  view_control.addActionListener( new AltAzControlListener() );
   view_control.addControlledPanel( threeD_panel );
   control_panel.add( view_control );
 
@@ -1051,7 +1087,7 @@ private class OptionMenuHandler implements ActionListener
                                                      NUM_POSITIVE_COLORS );
     set_colors( frame_control.getFrameNumber() );
     color_scale_image.setNamedColorModel( action, true );
-    getState().setColor_scale( action );
+    getState().set_String( ViewerState.COLOR_SCALE, action );
   }
 }
 
@@ -1108,15 +1144,9 @@ private class FrameControlListener implements ActionListener
         JRadioButtonMenuItem button = (JRadioButtonMenuItem)e.getSource();
         button.setSelected(true);
         group_draw_mode = action;
+        getState().set_String( ViewerState.V_GROUPS, group_draw_mode );
 
-        if ( action.equals( GROUP_MARKER_SMALL ) )
-          group_marker_size = SMALL_MARKER_SIZE;
-        else if ( action.equals( GROUP_MARKER_MEDIUM ) )
-          group_marker_size = MEDIUM_MARKER_SIZE;
-        else if ( action.equals( GROUP_MARKER_LARGE ) )
-          group_marker_size = LARGE_MARKER_SIZE;
-
-        if ( action.equals( GROUP_MARKER_NONE ) )
+        if ( action.equalsIgnoreCase( GROUP_MARKER_NONE ) )
           remove_groups();
         else
           draw_groups();
@@ -1141,8 +1171,9 @@ private class FrameControlListener implements ActionListener
         JRadioButtonMenuItem button = (JRadioButtonMenuItem)e.getSource();
         button.setSelected(true);
         detector_draw_mode = action;
+        getState().set_String( ViewerState.V_DETECTORS, detector_draw_mode );
 
-        if ( action.equals( DETECTOR_NONE ) )
+        if ( action.equalsIgnoreCase( DETECTOR_NONE ) )
           remove_detectors();
         else
           draw_detectors();
@@ -1163,5 +1194,25 @@ private class FrameControlListener implements ActionListener
        getDataSet().notifyIObservers( action );
      }
   }
+
+
+/* ------------------------ AltAzControlListener ------------------------- */
+
+  private class AltAzControlListener implements ActionListener,
+                                                Serializable
+  {
+     public void actionPerformed(ActionEvent e)
+     {                                             // just update the values
+                                                   // in the state object
+       float altitude = view_control.getAltitudeAngle(); 
+       float azimuth  = view_control.getAzimuthAngle(); 
+       float distance = view_control.getDistance(); 
+
+       getState().set_float( ViewerState.V_AZIMUTH,  azimuth );
+       getState().set_float( ViewerState.V_ALTITUDE, altitude );
+       getState().set_float( ViewerState.V_DISTANCE, distance );
+     }
+  }
+
 
 }
