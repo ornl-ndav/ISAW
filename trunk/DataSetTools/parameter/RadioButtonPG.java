@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2003/10/17 02:25:12  bouzekc
+ *  Fixed javadoc errors.
+ *
  *  Revision 1.22  2003/10/11 19:04:24  bouzekc
  *  Now implements clone() using reflection.
  *
@@ -143,9 +146,10 @@ import javax.swing.*;
 
 
 /**
- * This is class is to deal with radio-button style (i.e. only one valid
- * choice) parameters.  It contains an inner Vector of JRadioButtons, as well
- * as a logical ButtonGroup to link them together.
+ * Class is to deal with radio-button style parameters.  These are similar to
+ * regular JRadioButtons (i.e. only one valid choice). It contains an inner
+ * Vector of JRadioButtons, as well as a logical ButtonGroup to link them
+ * together.
  */
 public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
   //~ Static fields/initializers ***********************************************
@@ -169,10 +173,10 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
   /**
    * Creates a new RadioButtonPG object without a drawn "valid" checkbox and an
    * initial state of valid = false.  Note that any value sent in will be
-   * coerced to a String.
+   * coerced to a String and added to the list of choices.
    *
    * @param name The name of this ParameterGUI
-   * @param Object val
+   * @param val The new value to give this RadioButtonPG.
    */
   public RadioButtonPG( String name, Object val ) {
     super( name, val );
@@ -183,7 +187,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
 
   /**
    * Creates a new RadioButtonPG object.  Note that any value sent in will be
-   * coerced to a String.
+   * coerced to a String and added to the list of choices.
    *
    * @param PGname The name of this parameterGUI.
    * @param val Either the Vector of (String) values that this RadioButtonPG

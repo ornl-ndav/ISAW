@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2003/10/17 02:22:11  bouzekc
+ *  Fixed javadoc errors.
+ *
  *  Revision 1.28  2003/10/11 18:54:56  bouzekc
  *  Implemented clone() using reflection.
  *
@@ -329,7 +332,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   /**
    * Set the name of the parameter.
    *
-   * @param The new name.
+   * @param name The new name.
    */
   public final void setName( String name ) {
     this.name = name;
@@ -362,7 +365,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   /**
    * Set the valid state of the parameter.
    *
-   * @param boolean indicating whether or not this ParameterGUI should be
+   * @param valid boolean indicating whether or not this ParameterGUI should be
    *        considered valid.
    */
   public final void setValid( boolean valid ) {
