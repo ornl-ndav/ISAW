@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/05/25 12:29:28  rmikk
+ * Removed unused variables
+ *
  * Revision 1.5  2004/03/15 06:10:52  dennis
  * Removed unused import statements.
  *
@@ -143,8 +146,8 @@ public class CalibSCD extends OneVarParameterizedFunction
        Object X1 = readPksOp.getResult();
        if( ( X1 == null ) || ( X1 instanceof ErrorString ) || !( X1 instanceof Vector ) )
          {PeaksFileName = null;
-           String S = "";
-           if( X1 != null ) S = ( (ErrorString)X1 ).toString();
+           //String S = "";
+           //if( X1 != null ) S = ( (ErrorString)X1 ).toString();
            SharedData.addmsg( "Improper PeaksFile:" + X1 );
            return;
              }              
@@ -329,7 +332,7 @@ public class CalibSCD extends OneVarParameterizedFunction
                    double R1 =(double)( get_xcm( pk )* get_xcm( pk ) + get_ycm( pk )* get_ycm( pk )+
                                      pk.detD()* pk.detD() );
                    R1 = java.lang.Math.sqrt( R1 );
-                   double L = ( getL1()  +  java.lang.Math.sqrt( R1 ) );
+                  // double L = ( getL1()  +  java.lang.Math.sqrt( R1 ) );
               
                    double mult = java.lang.Math.PI/180;
             
@@ -345,7 +348,7 @@ public class CalibSCD extends OneVarParameterizedFunction
                    yd = yd/R1;
                    zd = zd/R1;
              
-                   double[] DD = new double[2];                   
+                   //double[] DD = new double[2];                   
                    angle = -pk.omega()/180.0* Math.PI;
              
                    double CA = Math.cos( angle );
@@ -630,7 +633,7 @@ public class CalibSCD extends OneVarParameterizedFunction
            return 0.0;
        if( peak >= npeaks )
            return 0.0;
-       double [] q_est = new double[3];
+       //double [] q_est = new double[3];
        String S = "";
        for( int i = 0 ; i < 3 ; i++ )
           {
@@ -669,7 +672,7 @@ public class CalibSCD extends OneVarParameterizedFunction
    }
 
    private double getL1(){
-      double x = paramValues[5];
+     // double x = paramValues[5];
       return paramValues[5];//calib[3]/100;
    }
 
@@ -805,7 +808,7 @@ public class CalibSCD extends OneVarParameterizedFunction
               }
            catch( Exception ss )
               {System.out.println("Starting Marquardt");
-               int nn = F.numParameters();
+               //int nn = F.numParameters();
                
                double[] x = new double[F.npeaks];
                double[] y = new double[F.npeaks];
