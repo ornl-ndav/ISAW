@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/07/09 18:25:32  rmikk
+ *  Now takes control of the value and allows null values
+ *
  *  Revision 1.3  2004/06/17 15:33:02  rmikk
  *  Fixed the GPL
  *
@@ -76,6 +79,7 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
   private static String TYPE    = "RealArray";
   protected static int DEF_COLS = 20;
   private Class valClass = null;
+  Object value = null;
   //~ Constructors *************************************************************
 
   /**
@@ -86,13 +90,14 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
    */
   public RealArrayPG( String name, Object val ) {
     super( name, val );
-
+    setType( TYPE );
+    valClass = null;
     if( val == null)
-      throw new IllegalArgumentException("Initial value cannot be null");
+      return;//throw new IllegalArgumentException("Initial value cannot be null");
     if( !isMultiArray( val))
       throw new IllegalArgumentException("Initial value must be"+
            " mult dim array of numbers or Strings");
-    setType( TYPE );
+    value = val;
     valClass = val.getClass();
   }
 
@@ -106,12 +111,15 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
   public RealArrayPG( String name, Object val, boolean valid ) 
                  throws  IllegalArgumentException{
     super( name, val, valid );
+
+    setType( TYPE );
     if( val == null)
       throw new IllegalArgumentException("Initial value cannot be null");
     if( !isMultiArray( val))
       throw new IllegalArgumentException("Initial value must be"+
            " mult dim array of numbers or Strings");
-    setType( TYPE );
+
+    valClass = val.getClass();
   }
 
   //~ Methods ******************************************************************
@@ -144,10 +152,15 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
    
     Object val1 = val;
     if( val == null)
-      val1 = getValue();
-       
-    if( val1 == null)//initial set up called from ParameterGUI
-      return;
+      return;//
+    
+    if( value == null)
+      if(RealArrayPG.isMultiArray(val)){
+         value = val; 
+         valClass = value.getClass();
+         return;
+      }  
+  
     try{
       if( val1 instanceof Vector ) {
         val1 = JavaWrapperOperator.cvrt(val1.getClass(),val);
@@ -176,7 +189,7 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
     }
 
     //always update internal value
-    super.setValue( val1 );
+    value =( val1 );
   }
 
   /**
@@ -188,7 +201,7 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
    */
   public Object getValue(  ) {
     //Vector of DataSets
-    Object val = super.getValue(  );
+    Object val = value;
 
    
     if( getInitialized(  ) ) {
@@ -197,11 +210,13 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
      
       Object val2 = null;
       try{
-     
-        val2 = JavaWrapperOperator.cvrt(val.getClass(), val1);
+        if( val != null)
+           val2 = JavaWrapperOperator.cvrt(val.getClass(), val1);
+        else
+           val2 = val1;
         if( val2 != null){
         
-          super.setValue( val2);
+          value = val2;
           val = val2;
         }else{ //Set the text in the GUI to represent the value
           val2 = null;
@@ -218,14 +233,13 @@ public class RealArrayPG extends ParameterGUI implements ParamUsesString {
            val = val2;
         else 
            val2 = null;
-      if(val2 == null){
+      /*if(val2 == null  && val != null){
     
         String Res = gov.anl.ipns.Util.Sys.StringUtil.toString(val);
         ( ( JTextField )( getEntryWidget(  ).getComponent( 0 ) ) ).setText( 
                            Res );
-      }        
+      } */       
     }
-   
     return val;
   }
 
