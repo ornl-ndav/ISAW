@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2005/01/10 15:30:44  dennis
+ *  Removed empty statement.
+ *
  *  Revision 1.10  2004/03/15 03:28:23  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -192,7 +195,7 @@ public class LoadGsasCalib extends    DS_Attribute {
             float l_one  = 0f;
             float l_two  = 0f;
             float bragg  = 0f;
-            float tilt   = 0f;;
+            float tilt   = 0f;
             String line;
             while(!fr.eof()){
                 fr.skip_blanks();

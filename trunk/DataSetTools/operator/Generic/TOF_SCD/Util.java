@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.20  2005/01/10 15:30:45  dennis
+ * Removed empty statement.
+ *
  * Revision 1.19  2004/06/16 19:56:21  pfpeterson
  * Fixed bug that appears in createIdMap when not using a square (in pixels)
  * detector. This was discovered using by Gayle Green using an SNS detector
@@ -350,7 +353,7 @@ public class Util{
       data=ds.getData_entry(id);
       dataDetID=detectorID(data);
       if(dataDetID!=detID) continue;
-      attr = data.getAttribute(Attribute.PIXEL_INFO_LIST);;
+      attr = data.getAttribute(Attribute.PIXEL_INFO_LIST);
       if( attr!=null && attr instanceof PixelInfoListAttribute ){
         pil = (PixelInfoList)attr.getValue();
         row = (int)pil.row();
