@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/05/07 16:15:24  rmikk
+ * Eliminated a run-time class cast exception
+ *
  * Revision 1.6  2003/05/02 22:31:54  pfpeterson
  * Migrated to IParameterGUI.
  *
@@ -188,7 +191,7 @@ public class ViewQxQyQz extends GenericTOF_SCD
   */
   public Object getResult()
   { DataSet ds = (DataSet)(getParameter(0).getValue());
-    String choice = ((StringChoiceList)(getParameter(1).getValue())).toString();
+    String choice = (getParameter(1).getValue()).toString();
      JFrame jf = new JFrame( "Contour View:"+ ds.toString());
 
      jf.setSize( 400,600);
