@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/06/10 21:57:30  bouzekc
+ * Now allows viewing of arrays of ASCII files using the
+ * multiple view menu.  Split off code for viewing ASCII
+ * files into a private method.
+ *
  * Revision 1.3  2003/06/03 22:57:34  bouzekc
  * Changed ASCII file viewing to accept nearly all ASCII
  * files.
@@ -109,59 +114,40 @@ public class ParameterViewer implements ActionListener
       else if( obj instanceof Vector )
       {    
         v = (Vector)obj;
-        if( v.size() == 1 )
+
+        if(!v.isEmpty())
         {
           obj = v.elementAt(0);
-          if( obj instanceof DataSet )
-            new ViewManager((DataSet)obj,IViewManager.IMAGE);
-        }  
-        else
-        {
-          //display a list so the user can choose the DataSet to view
-          //basic setup for selection list
-          int num_items = v.size();
-          item_names = new String[num_items]; 
-          items = new Vector(num_items);  
-
-          for( int i = 0; i < num_items; i++ )
+          if( v.size() == 1 )
           {
-            obj = v.elementAt(i);
-            item_names[i] = obj.toString();
-            items.add(obj);
-          }
+            if( obj instanceof DataSet )
+              new ViewManager((DataSet)obj,IViewManager.IMAGE);
+            else if(obj instanceof String)
+              tryToDisplayASCII((String)obj);
+          }  
+          else
+          {
+            //display a list so the user can choose the DataSet to view
+            //basic setup for selection list
+            int num_items = v.size();
+            item_names = new String[num_items]; 
+            items = new Vector(num_items);  
+
+            for( int i = 0; i < num_items; i++ )
+            {
+              obj = v.elementAt(i);
+              item_names[i] = obj.toString();
+              items.add(obj);
+            }
            
-          this.makeSelectionList();
+            this.makeSelectionList();
+          }
         }
         
       }
-      else if(obj instanceof String)
-      {
-        String fileName = (String)obj, tempName;
-        //try to determine if it is a viewable file
+      else if(obj instanceof String)  //see if it is a file
+        tryToDisplayASCII((String)obj);
 
-        //is this a file we can read?
-        if(fileName.indexOf('.') > 0)
-        {
-          tempName = fileName.toLowerCase();
-          
-          //ASCII files
-          //we don't want any windoze executables, or 
-          //any big ISAW data files
-          if( !( (tempName.indexOf(".sdds") >= 0)  || 
-                 (tempName.indexOf(".exe" ) >= 0)  ||
-                 (tempName.indexOf(".hdf" ) >= 0)  ||
-                 (tempName.indexOf(".run" ) >= 0)  ||
-                 (tempName.indexOf(".nxs" ) >= 0) )
-             )
-          {
-            //look at the peaks file
-            obj = new ViewASCII(fileName).getResult();  
-            if(obj instanceof ErrorString)
-              SharedData.addmsg(obj.toString());
-          }
-
-        }  
-      }
       else
       {
         //handle some other IParameterGUI types
@@ -170,6 +156,40 @@ public class ParameterViewer implements ActionListener
 
     }
   }
+
+  /**
+   *  Utility method to determine if a String points to a viewable
+   *  ASCII file.  It simply drops the String (i.e. does not display
+   *  it) if it is not a file.
+   */
+ private void tryToDisplayASCII(String fileName)
+ {
+   String tempName;
+   Object obj;
+   //try to determine if it is a viewable file
+
+   //is this a file we can read?
+   if(fileName.indexOf('.') > 0)
+   {
+     tempName = fileName.toLowerCase();
+          
+     //ASCII files
+     //we don't want any windoze executables, or 
+     //any big ISAW data files
+     if( !( (tempName.indexOf(".sdds") >= 0)  || 
+            (tempName.indexOf(".exe" ) >= 0)  ||
+            (tempName.indexOf(".hdf" ) >= 0)  ||
+            (tempName.indexOf(".run" ) >= 0)  ||
+            (tempName.indexOf(".nxs" ) >= 0) )
+       )
+     {
+       //look at the peaks file
+       obj = new ViewASCII(fileName).getResult();  
+       if(obj instanceof ErrorString)
+         SharedData.addmsg(obj.toString());
+     }
+   } 
+ }
    
   /**
    *  Note that this relies mainly on what is in the String
@@ -225,6 +245,8 @@ public class ParameterViewer implements ActionListener
         //DataSet?
         if( obj instanceof DataSet )
           new ViewManager((DataSet)obj,IViewManager.IMAGE);
+        else if(obj instanceof String)
+          tryToDisplayASCII((String)obj);
       }
     }  
   }
