@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.44  2003/06/17 21:40:32  pfpeterson
+ * Now is thread-safe. This was done by making init() static.
+ *
  * Revision 1.43  2003/06/13 15:00:18  pfpeterson
  * Now adds jython operators to the GenericOperator or DataSetOperator
  * list, whichever is appropriate.
@@ -189,105 +192,16 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * "installed"
      */
     public Script_Class_List_Handler(){
-        inittt();
+        init();
     }
     
-  public String[] getPathArray(String PathList){
+  static public String[] getPathArray(String PathList){
     if(PathList==null || PathList.length()<0) return null;
 
     // prepare the PathList
     PathList=PathList.trim();
-    if(PathList.lastIndexOf(';')!=PathList.length()-1)
-      PathList=PathList+";";
-
-    // create a vector to hold this
-    Vector pathVec=new Vector();
-    int start,stop;
-    String tempString;
-    start=0;
-    stop=PathList.indexOf(';',start+1);
-    while(stop>0){
-      // get the path element
-      tempString=PathList.substring(start,stop);
-      // only add unique elements
-      if(pathVec.indexOf(tempString)<0) pathVec.add(tempString);
-      // get new indices
-      start=stop+1;
-      stop=PathList.indexOf(';',start+1);
-    }
-
-    // pack up and return
-    if(pathVec.size()<=0) return null;
-    String[] pathArray=new String[pathVec.size()];
-    for( int i=0 ; i<pathArray.length ; i++ )
-      pathArray[i]=(String)pathVec.elementAt(i);
-    return pathArray;
+    return StringUtil.split(PathList,";");
   }
-
-    /**
-     * Extracts the Next Path in a semicolon delimited list of paths
-     * This method can be used to extract next Entry from any
-     * delimited list.
-     *
-     * Repeats will NOT be extracted twice. Empty Paths will be
-     * ignored
-     *
-     * @param  PathList A semicolon delimited list of String entities
-     * @param  PrevPath Must be null or one entity in the list
-     *         (w.o. semicolons )
-     * @return The next entity in the PathList or null if therre is none.
-     */
-    public  String getNextPath( String PathList , String PrevPath ){
-        if(PathList == null ) return null;
-        
-        int i=0;
-        int j=0;
-
-        // prepare the PrevPath
-        if( PrevPath != null && PrevPath.length() <= 0)
-                PrevPath = null;
-        
-        // prepare the PathList
-        PathList=PathList.trim();
-        if( PathList.lastIndexOf( ';') != PathList.length()-1)
-            PathList = PathList+ ";";
-
-        // locate PrevPath in PathList
-        if( PrevPath != null ){
-          int prevPathLength=PrevPath.length();
-          PrevPath=PrevPath+";";
-          i=PathList.indexOf(PrevPath);
-          if(i>=0){
-            j=PathList.lastIndexOf(PrevPath,i+prevPathLength);
-            if(j>=0) i=j;
-            i = i + prevPathLength +1;
-            if( i >= PathList.length()) return null;
-          }else{
-            i=0;
-          }
-        }
-        
-        j = PathList.indexOf(';', i );
-        
-        if( j < 0 )
-            return null;
-       
-        String Res = PathList.substring( i , j );
-        // Prepare for several occurrences of the same path
-        // Only the last occurrence of a path comes through
-        String X=";";
-        if( i == 0)
-            X ="";
-        while( PathList.indexOf( X+Res+ ";" , j ) > 0 ){
-            i = j + 1 ;
-            j = PathList.indexOf( ';' , i  );
-            if( j < 0 )
-                return null;
-            Res = PathList.substring( i , j );
-            X = ";";
-        }
-        return Res;
-    }
 
     /**
      * Shows the master list
@@ -338,18 +252,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return (GenericOperator)getClassInst(filename,true);
     }
 
-    /** 
-     * Utility that tries to create an Operator for a .class
-     * filename
-     *
-     * @param filename The name of the class file.
-     * @param isgeneric Whether the class should be a GenericOperator
-     * (true) or DataSetOperator false)
-     *
-     * @return An instance of an Operator that subclasses the Generic
-     * operator <P> or null if it cannot create this class.
-     */
-    public  Operator getClassInst( String filename, boolean isgeneric ){
+    static private Operator myGetClassInst(String filename, boolean isgeneric){
         String path;
         if( filename == null ){
             System.out.println("No Name");
@@ -483,7 +386,21 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             }
             return XX; // whatever it is return it
         }
-        
+    }
+
+    /** 
+     * Utility that tries to create an Operator for a .class
+     * filename
+     *
+     * @param filename The name of the class file.
+     * @param isgeneric Whether the class should be a GenericOperator
+     * (true) or DataSetOperator false)
+     *
+     * @return An instance of an Operator that subclasses the Generic
+     * operator <P> or null if it cannot create this class.
+     */
+    public  Operator getClassInst( String filename, boolean isgeneric ){
+        return myGetClassInst(filename,isgeneric);
     }
 
     /**
@@ -624,7 +541,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return getOperator( i );
     }
 
-    private void toggleDebug(){
+    static private void toggleDebug(){
         try{
             if( System.in.available()>0){
                 char c = (char)(System.in.read());
@@ -640,7 +557,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     /** 
      * Method for finding operators and scripts.
      */
-    private synchronized void inittt(){  
+    static private synchronized void init(){  
         if( !first) return;
         processIsaw();
         /*for( int i = 0 ; i < GenericOperatorList.getNum_operators(); i++){
@@ -719,19 +636,21 @@ public class Script_Class_List_Handler  implements OperatorHandler{
        java.util.Arrays.sort( dsOpListI, new CommandCompare( dsOpListI));
         
         toggleDebug(); 
-    }  // end of inittt()
+    }  // end of init()
 
-    /** This class is a comparator for two operators with respect of their command name
-    *
-    */
-    class CommandCompare implements Comparator{
+    /**
+     * This class is a comparator for two operators with respect of
+     * their command name
+     */
+    static class CommandCompare implements Comparator{
        DataSetOperator[] dslist;
        public CommandCompare( DataSetOperator[] dslist){
           this.dslist= dslist;
        }
        
-       /** Compares two DataSetOperators according to their command name
-       */  
+       /**
+        * Compares two DataSetOperators according to their command name
+        */  
        public int compare(Object o1, Object o2){
          if( o1 == null)
           if( o2 == null)
@@ -761,7 +680,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * "dir/Scripts" if they exist. The directory specified by the
      * String can be a list seperator by File.pathSeparator.
      */
-    private Vector addDir(String dir, Vector include){
+    static private Vector addDir(String dir, Vector include){
         String path=new String(dir+File.pathSeparator);
         int last=path.indexOf(File.pathSeparator);
         
@@ -792,7 +711,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return include;
     }
 
-    private String standardizeDir( String dir ){
+  static private String standardizeDir( String dir ){
         // remove whitespace from the name
         dir.trim();
         // add a '/' at the end (setForwardSlash will remove redundancies)
@@ -803,7 +722,11 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return dir;
     }
 
-    private boolean isJar( String file ){
+    /**
+     * This checks that the given file exists and is a jar file. If
+     * any of these criteria are not fulfilled then false is returned.
+     */
+    static private boolean isJar( String file ){
         // the filename must be at least a certain length long
         if(file.length()<=MIN_DIR_NAME__LENGTH) return false;
         if(file.endsWith("/")){      // chop off the trailing '/'
@@ -818,7 +741,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return f.isFile();
     }
 
-    private boolean existDir( String dir ){
+    static private boolean existDir( String dir ){
         // the directory must be at least a certain length long
         if(dir.length()<=MIN_DIR_NAME__LENGTH)return false;
         // check if the directory exists
@@ -826,14 +749,16 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return Dir.isDirectory();
     }
 
-    private void processIsaw(){
+    static private void processIsaw(){
         String  className  = null;
         String  classFile  = null;
         boolean injar      = false;
         Vector  classnames = new Vector();
 
-        className='/'+this.getClass().getName().replace('.','/')+".class";
-        classFile=this.getClass().getResource(className).toString();
+        className='/'+Script_Class_List_Handler.class.getName()
+                                                    .replace('.','/')+".class";
+        classFile=Script_Class_List_Handler.class.getResource(className)
+                                                                   .toString();
         if( (classFile!=null) && (classFile.startsWith("jar:")) ) injar=true;
         // the start is to remove the jar or file
         // the end is to remove the classname
@@ -867,7 +792,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     /**
      * Method to populate the vector of DataSetOperators.
      */
-    private void processDataSetOperators(String dir, boolean inJar){
+    static private void processDataSetOperators(String dir, boolean inJar){
         if(LoadDebug) System.out.println("-----DSPATH="+dir);
         if(inJar){
             ZipFile zf=null;
@@ -901,7 +826,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                                          +dsOpList.size());
     }
 
-    private void processPaths( String ScrPaths){
+    static private void processPaths( String ScrPaths){
         ScrPaths.trim();
         if( LoadDebug) System.out.println("----PATH="+ScrPaths);
 
@@ -909,13 +834,12 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         if( ScrPaths.lastIndexOf(';') != ';')
             ScrPaths = ScrPaths+";";
         
-        
-        for( String Path = getNextPath( ScrPaths , null );
-                          Path != null; Path = getNextPath( ScrPaths , Path ) ){
-            if(isJar(Path)){
-                ProcessJar(Path, opList);
+        String[] paths=StringUtil.split(ScrPaths,";");
+        for(int i=0 ; i<paths.length ; i++ ){
+            if(isJar(paths[i])){
+                ProcessJar(paths[i],opList);
             }else{
-                File Dir = new File( Path) ;
+                File Dir=new File(paths[i]);
                 if( Dir.isDirectory() ){
                     ProcessDirectory( Dir ,opList);
                 }else{
@@ -927,7 +851,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return;
     }
 
-    private void ProcessJar( String jarname, Vector opList ){
+    static private void ProcessJar( String jarname, Vector opList ){
         ZipFile zf=null;
         try{
             zf=new ZipFile(jarname);
@@ -954,7 +878,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         }
     }
 
-    private  void ProcessDirectory( File Dir, Vector opList ){
+    static private  void ProcessDirectory( File Dir, Vector opList ){
         File F[];
         F = new File[0];
         F = Dir.listFiles();
@@ -968,11 +892,11 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         }
     }
 
-    private  void ProcessFile( File file , Vector opList){
+    static private  void ProcessFile( File file , Vector opList){
         add( file.toString() , opList);
     }
 
-    private  boolean isFileExtension( File F){
+    static private  boolean isFileExtension( File F){
         String nm = F.getName();
         if(nm == null )
             return false;
@@ -989,7 +913,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         }
     }
     
-    private  void add( String filename , Vector opList){
+    static private  void add( String filename , Vector opList){
         int i;
         
         // only deal with real filenames
@@ -1063,7 +987,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
           }
         }else if(Extension.equalsIgnoreCase("class")){ // it is a class
             boolean isgeneric=!(opList==dsOpList);
-            Operator X = getClassInst( filename, isgeneric);
+            Operator X = myGetClassInst( filename, isgeneric);
             if( X != null ){
                 if(LoadDebug) System.out.println( "OK" );
                 if(isgeneric){  // add in the normal way
@@ -1079,7 +1003,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         }
     }
 
-    private  void add( Operator op){
+    static private  void add( Operator op){
         opList.addElement( op );
         
         insert( opList , SortOnCommand );
@@ -1089,7 +1013,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     /**
      * insert before 
      */
-    private  void insert( int n_toInsert, int pos_insert , Vector rankList  ){
+    static private  void insert( int n_toInsert, int pos_insert ,
+                                                            Vector rankList  ){
         if((pos_insert < 0) ||(pos_insert >=rankList.size()))
             pos_insert = rankList.size();
         rankList.add( pos_insert, new Integer( n_toInsert ) );
@@ -1103,7 +1028,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         */
     }
 
-    private  void insert( Vector opList, Vector rankList ){
+    static private  void insert( Vector opList, Vector rankList ){
         if( opList.size()<= 0)
             return;
         
@@ -1126,7 +1051,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * @return the first index in the appropriate rank list that is
      * more than or = to op
      */
-    private  int find( String textt, int mode ){
+    static private  int find( String textt, int mode ){
         int mid, first, last;
         boolean done = false;
         boolean less;
@@ -1205,7 +1130,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * @throws InstatiationException
      * @throws IllegalAccessException
      */
-    private Operator getOperatorInst( String classname ) throws
+    static private Operator getOperatorInst( String classname ) throws
         ClassNotFoundException, InstantiationException, IllegalAccessException{
         // make sure we have something to get
         if(classname==null) return null;
@@ -1254,7 +1179,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * @throws InstatiationException
      * @throws IllegalAccessException
      */
-    private GenericOperator getGenOperator( String classname ) throws
+    static private GenericOperator getGenOperator( String classname ) throws
         ClassNotFoundException, InstantiationException, IllegalAccessException{
         Operator op=getOperatorInst(classname);
         if(op instanceof GenericOperator)
@@ -1276,7 +1201,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * @throws InstatiationException
      * @throws IllegalAccessException
      */
-    private DataSetOperator getDSOperator( String classname ) throws
+    static private DataSetOperator getDSOperator( String classname ) throws
         ClassNotFoundException, InstantiationException, IllegalAccessException{
         Operator op=getOperatorInst(classname);
         if(op instanceof DataSetOperator)
@@ -1311,7 +1236,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return S;
     }
 
-    private  boolean ScompareLess( String s1, String s2){
+    static private  boolean ScompareLess( String s1, String s2){
         if( s1 == null ) return ( s2!=null );
 
 	if(s1.compareTo(s2)<0)  //$$$ had <=
@@ -1332,7 +1257,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                            +"-------------------------------");
         System.out.println("=====Number of Generic operators: "
                            +BB.getNum_operators());
-        BB.show(257);
+        //BB.show(257); UNCOMMENT
        
         
         System.exit( 0 );
