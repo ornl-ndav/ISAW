@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.40  2003/03/25 22:50:10  pfpeterson
+ * Fixed bug where initial parameter value contained no spaces.
+ *
  * Revision 1.39  2003/03/25 22:03:15  pfpeterson
  * Fixed a bug where spaces removed from part of the initial value.
  *
@@ -836,14 +839,19 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       num_space=num_space-buffer.length()-DataType.length();
       InitValue=DataType.substring(index+1);
       DataType=DataType.substring(0,index);
-      index=buffer.toString().indexOf(")");
-      if(index>0){
-        InitValue=InitValue+Format.string("",num_space)
-                                                    +buffer.substring(0,index);
-        buffer.delete(0,index+1);
-        StringUtil.trim(buffer);
-      }else{
-        InitValue=InitValue.substring(0,InitValue.length()-1);
+      index=InitValue.indexOf(")");
+      if(index>0){ // the init value is complete so trim off the ')'
+        InitValue=InitValue.substring(0,index);
+      }else{  // look in the buffer for the rest of the init value
+        index=buffer.toString().indexOf(")");
+        if(index>0){
+          InitValue=InitValue+Format.string("",num_space)
+            +buffer.substring(0,index);
+          buffer.delete(0,index+1);
+          StringUtil.trim(buffer);
+        }else{
+          InitValue=InitValue.substring(0,InitValue.length()-1);
+        }
       }
     }else{
       InitValue=null;
@@ -851,7 +859,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     DataType = DataType.toUpperCase();
 
     // get the prompt
-    Prompt=buffer.toString();
+    Prompt=buffer.toString().trim();
     if(Debug)
       System.out.println("in line ["+linenum+"] "+DataType+","+Prompt);
             
