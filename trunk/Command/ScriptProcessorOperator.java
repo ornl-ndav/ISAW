@@ -28,6 +28,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/01/02 20:44:25  rmikk
+ * Interface now requires two new methods:
+ *    setIObserverList and setPropertyChangeList
+ *
  * Revision 1.4  2002/11/27 23:12:10  pfpeterson
  * standardized header
  *
@@ -39,7 +43,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ParametersGUI.*;
 import java.beans.PropertyChangeListener;
-
+import java.beans.*;
 public abstract class ScriptProcessorOperator extends GenericOperator
                                implements IScriptProcessor, IDataSetListHandler{
     
@@ -104,5 +108,10 @@ public abstract class ScriptProcessorOperator extends GenericOperator
     public abstract void addPropertyChangeListener(PropertyChangeListener P);
    
     public abstract DataSet[] getDataSets();
+
+    public abstract void setIObserverList( IObserverList IOlist);
+   
+    public abstract void setPropertyChangeList( PropertyChangeSupport PcSupp);  
+
 
 }
