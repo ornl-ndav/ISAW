@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2001/07/31 22:16:26  rmikk
+ * Used Dennis' DataSet.util Shared Data to load the Isaw
+ * Props.dat file
+ *
  * Revision 1.11  2001/07/20 21:23:31  rmikk
  * Fixed Main program so a script and or class file(?) can
  * be executed as follows:
@@ -452,7 +456,8 @@ public Object getResult()
 /** Allows running of Scripts without Isaw and/or the CommandPane
 */
 public static void main( String args [] )
-  {
+     {   DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
+     
       /*java.util.Properties isawProp;
    isawProp = new java.util.Properties(System.getProperties());
    String path = System.getProperty("user.home")+"\\";
@@ -494,6 +499,7 @@ public static void main( String args [] )
      if( SO.getErrorMessage() != null )
   if( SO.getErrorMessage().length() > 0)
     System.out.println("An Error occurred "+SO.getErrorMessage());
+  System.exit( 0 );
    }
  }
 
