@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/03/14 20:23:45  dennis
+ * Put in package DataSetTools.trial
+ *
  * Revision 1.2  2003/06/04 14:18:19  dennis
  * Added test of least-squares errors, timing comparison
  * between current implementation and implementation
@@ -40,6 +43,8 @@
  * LinearAlgebra.BestFitMatrix(M,q,r) method.
  *
  */
+package  DataSetTools.trial;
+ 
 import java.io.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;

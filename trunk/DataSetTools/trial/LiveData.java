@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/03/14 20:23:46  dennis
+ * Put in package DataSetTools.trial
+ *
  * Revision 1.4  2002/11/27 23:23:30  pfpeterson
  * standardized header
  *
@@ -37,6 +40,7 @@
  * Modified import statements due to operator reorganization.
  *
  */
+package DataSetTools.trial;
 
 import javax.swing.*;
 

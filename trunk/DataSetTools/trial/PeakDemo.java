@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/14 20:23:46  dennis
+ * Put in package DataSetTools.trial
+ *
  * Revision 1.5  2002/11/27 23:23:30  pfpeterson
  * standardized header
  *
@@ -40,6 +43,7 @@
  * Added code to find max value.
  *
  */
+package DataSetTools.trial;
 
 import javax.swing.*;
 
