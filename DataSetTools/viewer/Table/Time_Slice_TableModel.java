@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2005/03/14 19:26:50  serumb
+ * Now uses call to get the combo box instead of public variable.
+ *
  * Revision 1.22  2005/01/10 15:55:10  dennis
  * Removed empty statement.
  *
@@ -627,7 +630,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       for( int i =0; i< choices.length; i++)
         choices[i] = ""+DetNums[i];
       DetChoices = new LabelCombobox("Detectors", choices);
-      DetChoices.cbox.addActionListener( new DetectorActionListener());
+      DetChoices.getCBox().addActionListener( new DetectorActionListener());
     }
     
     JComponent[] Res = new JComponent[1];
@@ -672,7 +675,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
     public void actionPerformed( ActionEvent evt){
     int choice= DetNum;
     try{
-       choice = (new Integer( (String)DetChoices.cbox.getSelectedItem())).
+       choice = (new Integer( (String)DetChoices.getCBox().getSelectedItem())).
                  intValue();
     }catch( Exception ss){}
     if( choice != DetNum){
