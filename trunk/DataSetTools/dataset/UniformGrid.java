@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.9  2003/08/04 15:54:28  dennis
+ *  Added small test of shifting the full grid, to the main test
+ *  program.
+ *
  *  Revision 1.8  2003/07/07 20:32:27  dennis
  *  Added copy constructor, to create a new UniformGrid from
  *  an exisiting one.  The copy constructor has an additional
@@ -1035,6 +1039,9 @@ public class UniformGrid implements IDataGrid
                                         center, x_vector, y_vector,
                                         width, height, depth,
                                         n_rows, n_cols );
+
+    for ( int count = 0; count < 2; count++ )
+    {
    
     System.out.print( test.toString() );          // show basic grid info
  
@@ -1064,6 +1071,16 @@ public class UniformGrid implements IDataGrid
       System.out.println("height(row,col)   = " + test.height(row,col) );
       System.out.println("SolidAngle(row,col)  = " + test.SolidAngle(row,col));
       System.out.println("Delta2Theta(row,col) = " + test.Delta2Theta(row,col));
+    }
+
+      if ( count == 0 )
+      {
+        System.out.println("NOW SHIFTING GRID BY 1,2,3");
+        Vector3D shift = new Vector3D( 1, 2, 3 );
+        center = test.position();
+        center.add( shift );
+        test.setCenter( center ); 
+      }
     }
   }
 
