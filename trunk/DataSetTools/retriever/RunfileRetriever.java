@@ -12,6 +12,12 @@
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.11  2000/07/26 19:12:41  dennis
+ *  Compute detector positions for direct geometry spectrometers based on the
+ *  raw detector angles and heights, but effective flight path.
+ *  Compute detector postions for all other instruments based on effecitve
+ *  angles, heights and flight paths.
+ *
  *  Revision 1.10  2000/07/25 16:37:31  dennis
  *  Added NUMBER_OF_PULSES attribute to each spectrum
  *
@@ -560,21 +566,46 @@ public class RunfileRetriever extends    Retriever
     // Detector position ..........
     //
     // For now, form weighted average of raw detector angles and heights,
-    // but use the effective (not raw) flight path length
+    // but use the effective (not raw) flight path length, for 
+    // DG_SPECTROMETERS
+
     float solid_angles[] = GrpSolidAngles( group_id );
-    angle      = getAverageAngle( group_members, 
-                                  histogram_num, 
-                                  solid_angles,
-                                  true  );   
-    angle      *= (float)(Math.PI / 180.0);
+    if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
+    {
+      angle      = getAverageAngle( group_members, 
+                                    histogram_num, 
+                                    solid_angles,
+                                    true  );   
+      angle      *= (float)(Math.PI / 180.0);
+  
+      height     = getAverageHeight( group_members, solid_angles, true );
 
-    height     = getAverageHeight( group_members, solid_angles, true );
+      final_path = getAverageFlightPath( group_members, 
+                                         histogram_num, 
+                                         solid_angles,
+                                         false );
+      }
 
-    final_path = getAverageFlightPath( group_members, 
-                                       histogram_num, 
-                                       solid_angles,
-                                       false );
-    float r    = (float)Math.sqrt( final_path * final_path - height * height );
+    // Form weighted average of effective detector angles, heights and
+    // flight path lengths, for all other instruments. 
+    else
+    {
+      angle      = getAverageAngle( group_members,
+                                    histogram_num,
+                                    solid_angles,
+                                    false );
+      angle      *= (float)(Math.PI / 180.0);
+  
+      height     = getAverageHeight( group_members, solid_angles, false );
+
+      final_path = getAverageFlightPath( group_members,
+                                         histogram_num,
+                                         solid_angles,
+                                         false ); 
+      }
+
+
+    float r  = (float)Math.sqrt( final_path * final_path - height * height );
     position.setCylindricalCoords( r, angle, height );
 
     // Show effective position
