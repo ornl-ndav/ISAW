@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2001/08/14 19:44:47  dennis
+ *  Removed IntervalSelectionOp since it was not working correctly.
+ *
  *  Revision 1.12  2001/07/11 19:09:26  neffk
  *  updated to automatically add the IntervalSelectionOp operator to
  *  all newly constructed DataSet objects.
@@ -255,7 +258,7 @@ public class DataSetFactory implements Serializable
 
     new_ds.addOperator( new TofToChannel() );     // convert to channel for any
                                                   // DataSet
-    new_ds.addOperator( new IntervalSelectionOp() );
+//    new_ds.addOperator( new IntervalSelectionOp() );
     new_ds.addOperator( new GetDataAttribute() );
     new_ds.addOperator( new SetDataAttribute() );
     new_ds.addOperator( new GetDSAttribute() );
