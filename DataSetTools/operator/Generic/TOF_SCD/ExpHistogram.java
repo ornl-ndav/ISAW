@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/12/15 01:56:37  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.2  2003/08/05 21:34:39  dennis
  * Commented out debug print.
  *
@@ -42,7 +45,6 @@ package DataSetTools.operator.Generic.TOF_SCD;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
-import DataSetTools.dataset.IDataGrid;
 import DataSetTools.dataset.XScale;
 import DataSetTools.instruments.SampleOrientation;
 import DataSetTools.math.tof_calc;
