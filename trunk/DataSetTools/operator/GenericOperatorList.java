@@ -26,7 +26,8 @@ public class GenericOperatorList implements Serializable
   static private final String names[] = { "SumFiles",
                                           "OneFile",
                                           "Mon",
-                                          "OneHist"  };
+                                          "OneHist",
+                                          "FF"       };
 
 
   /* ---------------------------- getNum_operators ------------------------- */
@@ -104,6 +105,9 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals( "OneHist" ) )
       return new LoadOneHistogramDS();
+
+    else if ( op_name.equals( "FF" ) )
+      return new SpectrometerFudgeFactor();
 
      return null;
   }
