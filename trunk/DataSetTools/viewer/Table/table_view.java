@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.43  2004/06/18 19:18:05  rmikk
+ * Eliminated a lor of unused variables
+ *
  * Revision 1.42  2004/04/19 14:02:37  rmikk
  * Added # signs at the start of the log information of a DataSet that
  *   is being saved
@@ -512,8 +515,8 @@ public class table_view extends JPanel implements ActionListener
    public void restoreState( String state )
    { 
       int i = 0;
-      int j,
-          k;
+      int j;
+          //k;
 
       if( state == null )
          return;
@@ -640,7 +643,7 @@ public class table_view extends JPanel implements ActionListener
 
          if( indx < 0 )
             return;
-         Object S = ( sel.getSelectedValue() );
+         //Object S = ( sel.getSelectedValue() );
 
          selModel.remove( indx );
 
@@ -698,7 +701,8 @@ public class table_view extends JPanel implements ActionListener
 
          newOp.setDataSet( DS );
 
-         JParametersDialog JP = new JParametersDialog( newOp, null,
+         //JParametersDialog JP =
+          new JParametersDialog( newOp, null,
                null, null );
 
          useAll = false;
@@ -1211,7 +1215,7 @@ public class table_view extends JPanel implements ActionListener
          return;
       }
       this.selModel = selModel;
-      boolean has_Xcol = false;
+     // boolean has_Xcol = false;
       boolean XYCol = false;
       boolean DBCol = false;
       int comma = order.indexOf( "," );
@@ -1235,7 +1239,7 @@ public class table_view extends JPanel implements ActionListener
          {
             XYCol = true;
             if( V.toString().equals( "X values" ) )
-               has_Xcol = true;
+                 {}//has_Xcol = true;
          }
          else if( V.getDataHandler() instanceof DBattr )
             DBCol = true;
@@ -1459,13 +1463,14 @@ public class table_view extends JPanel implements ActionListener
    public void Showw1( DataSet DSS[], DefaultListModel selModel, String order,
       boolean UseAll, int[] SelIndecies )
    {
-      int ncols = selModel.size();
+      //int ncols = selModel.size();
 
       boolean has_Xcol,
-              XYcol,
-              DBcol;
+              XYcol;
+              //DBcol;
 
-      DBcol = XYcol = has_Xcol = false;
+     //DBcol =
+       XYcol = has_Xcol = false;
       boolean DBSeq = true;
 
       if( order != null ) if( order.indexOf( ',' ) < 3 )
@@ -1481,9 +1486,9 @@ public class table_view extends JPanel implements ActionListener
                has_Xcol = true;
          }
          else if( V.getDataHandler() instanceof DBattr )
-            DBcol = true;
+            {}//DBcol = true;
          else if( V.getDataHandler() instanceof DSDetPos )
-            DBcol = true;
+            {}//DBcol = true;
       }
 
       if( SelIndecies == null )
@@ -2142,7 +2147,7 @@ public class table_view extends JPanel implements ActionListener
 
          Data DB = DS.getData_entry( DB_index );
          XScale xscl = DB.getX_scale();
-         float Res[];
+         //float Res[];
 
          //Res = DB.getX_scale().getXs();
          int i = xscl.getI( x );//java.util.Arrays.binarySearch(Res, x);
@@ -2582,7 +2587,7 @@ public class table_view extends JPanel implements ActionListener
     */
    public static void main( String args[] )
    {
-      JFrame JF = new JFrame( "Test" );
+      //JFrame JF= new JFrame( "Test" );
       String HGTF = "HGT,F";
 
       if( args != null )
@@ -2660,7 +2665,7 @@ public class table_view extends JPanel implements ActionListener
       JTable jtbl = new JTable( gtm );
 
       jtbl.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
-      IsawGUI.ExcelAdapter ex = new IsawGUI.ExcelAdapter( jtbl );
+      //IsawGUI.ExcelAdapter ex = new IsawGUI.ExcelAdapter( jtbl );
 
       JF1.getContentPane().add( new JScrollPane( jtbl ) );
 
@@ -2884,7 +2889,7 @@ public class table_view extends JPanel implements ActionListener
          int[] item = new int[ offset + 4 ];
 
          Arrays.fill( item, 0, offset + 4, -1 );
-         int r = Nrows( 0, order, item );
+         //int r = Nrows( 0, order, item );
 
          ncols = Nrows( commapos + 1, order, item );
         
@@ -2906,7 +2911,7 @@ public class table_view extends JPanel implements ActionListener
        */
       public String getColumnName( int col )
       { 
-         int col1 = col;
+        // int col1 = col;
 
          if( col < 0 )
             return "";
@@ -2932,7 +2937,7 @@ public class table_view extends JPanel implements ActionListener
          else
          {
             System.out.println( "In case XXXXXX" );
-            String S = getColumnName( ( Sv.size() + 1 ) * SvColSize );
+            //String S = getColumnName( ( Sv.size() + 1 ) * SvColSize );
            
             return getColumnName( col );
          }
@@ -2959,7 +2964,7 @@ public class table_view extends JPanel implements ActionListener
          for( int i = commapos + 1; i < order.length(); i++ )
          {
             char c = order.charAt( i );
-            int k = HGTF.indexOf( c );
+            //int k = HGTF.indexOf( c );
 
             if( c == 'G' )
             {
@@ -3395,10 +3400,10 @@ public class table_view extends JPanel implements ActionListener
             if( commapos + 2 < order.length() )
                d = order.charAt( commapos + 2 );
             else d = 0;
-         int kk = -1;
+         //int kk = -1;
 
          if( d > 0 )
-            kk = HGTF.indexOf( d );
+           {}// kk = HGTF.indexOf( d );
 
          int N,
             k;
@@ -3477,7 +3482,7 @@ public class table_view extends JPanel implements ActionListener
 
          if( commapos > order.length() - 3 )
             return false;
-         char c = order.charAt( ordindex );
+        // char c = order.charAt( ordindex );
 
          int Field = item[  offset + 3 ];
 
@@ -3853,7 +3858,7 @@ public class table_view extends JPanel implements ActionListener
          if( pane == n )
             OK.setVisible( true );
          LM.removeAllElements();
-         int commapos = order.indexOf( ',' );
+         //int commapos = order.indexOf( ',' );
          int g,
             i,
             j,
