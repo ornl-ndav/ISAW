@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.2  2000/11/10 22:49:19  dennis
+ *  Changed to use new Operator hierarchy.
+ *
  *  Revision 1.1  2000/07/10 23:04:18  dennis
  *  July 10, 2000 version... many changes
  *
@@ -56,7 +59,7 @@ public final class DS_Util implements Serializable
     for ( int i = 0; i < n_ops; i++ )
     {
       op = ds.getOperator(i);
-      if ( op.getCategory() == DataSetOperator.X_AXIS_CONVERSION )
+      if ( op.getCategory() == Operator.X_AXIS_CONVERSION )
       {
         n_params = op.getNum_parameters();
         for ( int j = 0; j < n_params; j++ )
@@ -97,7 +100,7 @@ public final class DS_Util implements Serializable
     for ( int i = 0; i < n_ops; i++ )
     {
       op = ds.getOperator(i);
-      if ( op.getCategory() == DataSetOperator.X_AXIS_CONVERSION )
+      if ( op.getCategory() == Operator.X_AXIS_CONVERSION )
       {
         n_params = op.getNum_parameters();
         for ( int j = 0; j < n_params; j++ )
