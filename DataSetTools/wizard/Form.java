@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.40  2003/09/11 21:20:54  bouzekc
+ * Removed getResult() definition, changed validateParameterGUIs() to
+ * validateSelf() to better reflect what it does.
+ *
  * Revision 1.39  2003/09/11 20:09:58  bouzekc
  * Removed dead code from validateParameterGUIs.
  *
@@ -354,20 +358,6 @@ public abstract class Form extends Operator implements PropertyChanger {
     }
 
     return panel;
-  }
-
-  /**
-   * Overridden to some functionality for child Forms.
-   *
-   * @return The result of validateParameterGUIs(), which is either
-   *         Boolean.TRUE or an ErrorString, depending on the whether the
-   *         parameters successfully validated or not, respectively.
-   */
-  public Object getResult(  ) {
-    //for progress bars
-    newPercent = oldPercent = increment = 0;
-
-    return this.validateParameterGUIs(  );
   }
 
   /**
@@ -718,7 +708,8 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   * Convenience method for checking variable parameters.  Although it can be
+   * Validates this Form by calling validate(  ) on each ParameterGUI.<br><br>.
+   * It also resets the progress bars.  Although it can be
    * overwritten to provide a more customized approach to validating
    * parameters, this should not usually be necessary, as the recommended
    * approach is to retrieve all parameters, validate them using this method,
@@ -730,7 +721,10 @@ public abstract class Form extends Operator implements PropertyChanger {
    * @return Either Boolean.TRUE or an ErrorString, depending on the whether
    *         the parameters successfully validated or not, respectively.
    */
-  protected Object validateParameterGUIs(  ) {
+  protected Object validateSelf(  ) {
+    //for progress bars
+    newPercent = oldPercent = increment = 0;
+
     IParameterGUI ipg;
     Object obj;
 
