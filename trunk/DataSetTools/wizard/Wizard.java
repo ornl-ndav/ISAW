@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.73  2003/09/10 04:05:11  bouzekc
+ * Added comments to linkFormParameters().
+ *
  * Revision 1.72  2003/09/10 00:36:47  bouzekc
  * Refactored to move duplicate functionality outside of class.  Now relies
  * on the ParameterGUIs themselves for validation purposes.
@@ -745,6 +748,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
         continue;  //kick to the top of the loop
       }
 
+      //now that we have a "link" to a parameter, link it to all the other
+      //parameters in the different Forms
       for( int colIndex = 0; colIndex < numForms; colIndex++ ) {
         if( paramTable[rowIndex][colIndex] >= 0 ) {  //don't try to link a -1
 
