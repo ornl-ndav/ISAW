@@ -31,6 +31,18 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/06/04 14:09:46  dennis
+ * Now supports multiple runs with more than one area detector.
+ * The code that filters the FFTs now checks for normal vectors
+ * equaling the negatives of previously found normal vectors
+ * and for a d-spacing of 0.
+ * Added methods:
+ *   ExtractPeaks()
+ *   makeVecQTransformers()
+ * Removed currently unused methods:
+ *   findAverages()
+ *   getDataGrid()
+ *
  * Revision 1.1  2003/06/03 16:49:14  dennis
  * Initial version of application to calculate orientation matrix and
  * plane slices through reciprocal space.
@@ -66,7 +78,7 @@ public class RecipPlaneView
   public static final String LSQ_ERROR_ATTRIBUTE = "LSQ errors";
   public static final String D_SPACING_ATTRIBUTE = "d-Spacing";
   public static final String Q_SPACING_ATTRIBUTE = "Q-Spacing";
-
+  public static final String PEAK_OBJECTS        = "Peaks_";
   public static final String ORIGIN = " origin ";
   public static final String VEC_1  = " (+)";
   public static final String VEC_2  = " (*)";
@@ -254,7 +266,7 @@ public class RecipPlaneView
 
       ds = null;
     }
-    System.out.println("DONE");
+    System.out.println("DONE loading DataSets : " + data_sets.size() );
   }
 
 
@@ -262,19 +274,12 @@ public class RecipPlaneView
 
   public void initialize( boolean extract_peaks )
   {
-    DataSet ds = null;
+    System.out.println("Making transformers.....");
+    makeVecQTransformers();
+    System.out.println("DONE");
 
     if ( extract_peaks )
-    {
-      System.out.println("Applying threshold to extract peaks....");
-      for ( int i = 0; i < data_sets.size(); i++ )
-      {
-        ds = (DataSet)data_sets.elementAt(i);
-        IThreeD_Object non_zero_objs[] = getPeaks(i,thresh_scale);
-        vec_Q_space.setObjects(file_names[i], non_zero_objs);
-      }
-      System.out.println("DONE");
-    }
+      ExtractPeaks();
 
     System.out.println("Getting array of points for peaks....");
     all_vectors = get_data_points();
@@ -309,42 +314,19 @@ public class RecipPlaneView
  *
  */
 
- /* ------------------------- findAverages ---------------------- */
- /**
-  *  Find the average intensity at each time slice.
-  *
-  *  @param  ds    The DataSet to be averaged.
-  *
-  *  @return An array with an entry for each time bin.  The value is the
-  *          average across all spectra of the values in that time bin.
-  */
-  private float[] findAverages( DataSet ds )
+
+/* ------------------------ ExtractPeaks --------------------------- */
+
+  private void ExtractPeaks()
   {
-    if ( ds == null || ds.getNum_entries() <= 0 )
-      return null;
-                                       // find out how many times there are
-    Data d = ds.getData_entry(0);
-    float y[] = d.getY_values();
-    float sums[] = new float[ y.length ];
-
-    for ( int i = 0; i < y.length; i++ )        // zero out the counters
-      sums[i] = 0;
-
-                                                // now total the values at all
-                                                // times
-    for ( int index = 0; index < ds.getNum_entries(); index++ )
-    {
-      d = ds.getData_entry(index);
-      y = d.getY_values();
-      for ( int i = 0; i < sums.length; i++ )
-        sums[i] += y[i];
-    }
-
-    int n_pixels = ds.getNum_entries();
-    for ( int i = 0; i < sums.length; i++ )
-      sums[i] /= n_pixels;
-
-    return sums;
+     System.out.println("Applying threshold to extract peaks....");
+     for ( int i = 0; i < vec_q_transformer.size(); i++ )
+     {
+       IThreeD_Object non_zero_objs[] = getPeaks(i,thresh_scale);
+       vec_Q_space.setObjects( PEAK_OBJECTS+i, non_zero_objs);
+       System.out.println("Found peaks : " + non_zero_objs.length );
+     }
+     System.out.println("DONE");
   }
 
 
@@ -363,73 +345,44 @@ public class RecipPlaneView
   }
 
 
-  /* ---------------------------- getDataGrid --------------------------- */
-  
-  private IDataGrid getDataGrid( DataSet ds )
+  /* ---------------------- makeVecQTransformers --------------------- */
+
+  private void makeVecQTransformers()
   {
-    UniformGrid grid = null;
-    boolean area_detector_found = false;
-    int data_index = 1;
-    Data d;
-    PixelInfoList pil;
-    Attribute attr;
-    int n_data = ds.getNum_entries();
-    while ( !area_detector_found && data_index < n_data )
-    {
-      d = ds.getData_entry( data_index );
-      attr = d.getAttribute( Attribute.PIXEL_INFO_LIST );
-      if ( attr != null && attr instanceof PixelInfoListAttribute )
-      {
-        pil  = (PixelInfoList)attr.getValue();
-        grid = (UniformGrid)pil.pixel(0).DataGrid();
-        if ( grid.num_rows() > 1 && grid.num_cols() > 1 )
-          area_detector_found = true;
-      }
-      else
-      {
-        System.out.println(
-             "ERROR: need PixelInfoList attribute in getDataGrid()");
-        return null;
-      }
-      data_index++;
-    }
-
-    if ( !grid.isData_entered() )
-      if ( !grid.setData_entries( ds ) )
-      {
-        System.out.println("ERROR: Can't set Data grid entries in VecQToTOF");
-        return null;
-      }
-
-    // ********************* calibrate grid
-    boolean old_scd_calib = false;
-    if (old_scd_calib)
-    {
-      System.out.println("##### WARNING ##### calibrating grid for OLD RUNS ");
-      grid.setCenter( new Vector3D( .0029108f, -.32f, .01191f) );
-      grid.setOrientation( new Vector3D(-1,0,0), 
-                           new Vector3D( 0,0,1) );
-      grid.setWidth(.2504836f);
-      grid.setHeight(.261053f);
-    }
-
-    return grid;
+     vec_q_transformer = new Vector();
+     for ( int index = 0; index < data_sets.size(); index++ )
+     { 
+        DataSet ds = (DataSet)data_sets.elementAt(index);
+        try
+        {
+          for ( int i = 1; i < 3; i++ )
+          {
+            VecQToTOF transformer = new VecQToTOF( ds, i );
+            System.out.println("Found Data Grid...................... " );
+            System.out.println( transformer.getDataGrid() );
+            vec_q_transformer.add( transformer );
+          }
+        }
+        catch (Exception e )
+        {
+          System.out.println( e );
+        }
+     }
   }
 
   /* ------------------------- getPeaks ---------------------------- */
   /*
-   *  Get an array of peaks from the dataset, based on the specified
+   *  Get an array of peaks from the specified grid, based on the specified
    *  threshold scale factor.
    *
-   *  @param index         The index of the DataSet in the list of DataSets
-   *  @param thresh_scale  The relative scale factor used to calculate
-   *                       the threshold.  
-   *  @return an array os ThreeD_Objects representing the points above the
+   *  @param index         The index of the DataGrid in the list. 
+   *  @param thresh_scale  The absolute threshold in counts.
+   *
+   *  @return an array of ThreeD_Objects representing the points above the
    *                      threshold.
    */
   private IThreeD_Object[] getPeaks( int index, float thresh_scale )
   {
-
       Data  d;
       float t;
       float ys[];
@@ -441,58 +394,49 @@ public class RecipPlaneView
       Vector3D pts[] = new Vector3D[1];
       pts[0]         = new Vector3D();
 
-      DataSet ds     = (DataSet)data_sets.elementAt(index);
-      Tran3D combinedR = makeGoniometerRotationInverse( ds );
-
-      int n_data = ds.getNum_entries();
-      d = ds.getData_entry(0);
-      int n_bins = d.getX_scale().getNum_x() - 1;
-
-      int n_objects = n_data * n_bins;
-      objs = new IThreeD_Object[n_objects];
       int obj_index = 0;
+      VecQToTOF transformer = (VecQToTOF)vec_q_transformer.elementAt(index);
+      IDataGrid grid = transformer.getDataGrid();
+      d = grid.getData_entry(1,1);
+      int n_bins = d.getX_scale().getNum_x() - 1;
+      int n_objects = grid.num_rows() * grid.num_cols() * n_bins;
+      objs = new IThreeD_Object[n_objects];
 
-      IDataGrid grid = getDataGrid( ds );
-      vec_q_transformer.add( new VecQToTOF(ds ) );
+      Tran3D combinedR = transformer.getGoniometerRotationInverse();
 
-//      for ( int i = 0; i < n_data; i++ )
       for ( int row = 1; row <= grid.num_rows(); row++ )
         for ( int col = 1; col <= grid.num_cols(); col++ )
         {
           d = grid.getData_entry(row,col);
           Vector3D pos_vec = grid.position(row,col);
           DetectorPosition pos = new DetectorPosition( pos_vec );
-//        d = ds.getData_entry(i);
-//        DetectorPosition pos = (DetectorPosition)
-//                              d.getAttributeValue( Attribute.DETECTOR_POS );
         
-        float initial_path =
+          float initial_path =
              ((Float)d.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
-        times = d.getX_scale().getXs();
-        ys    = d.getY_values();
-        for ( int j = 0; j < ys.length; j++ )
-        {
-          if ( ys[j] > thresh_scale )
+          times = d.getX_scale().getXs();
+          ys    = d.getY_values();
+          for ( int j = 0; j < ys.length; j++ )
           {
-            t = (times[j] + times[j+1]) / 2;
-            q_pos = tof_calc.DiffractometerVecQ(pos,initial_path,t);
+            if ( ys[j] > thresh_scale )
+            {
+              t = (times[j] + times[j+1]) / 2;
+              q_pos = tof_calc.DiffractometerVecQ(pos,initial_path,t);
 
-            cart_coords = q_pos.getCartesianCoords();
-            pts[0].set( cart_coords[0], cart_coords[1], cart_coords[2] );
-            combinedR.apply_to( pts[0], pts[0] );
+              cart_coords = q_pos.getCartesianCoords();
+              pts[0].set( cart_coords[0], cart_coords[1], cart_coords[2] );
+              combinedR.apply_to( pts[0], pts[0] );
 
-            int color_index = (int)(ys[j]*30/thresh_scale);
-            if ( color_index > 127 )
-              color_index = 127;
-            c = colors[ color_index ];
-            objs[obj_index] = new Ball( pts[0], 0.03f, c );
-            objs[obj_index].setPickID( global_obj_index );
-            obj_index++;
-            global_obj_index++;
+              int color_index = (int)(ys[j]*30/thresh_scale);
+              if ( color_index > 127 )
+                color_index = 127;
+              c = colors[ color_index ];
+              objs[obj_index] = new Ball( pts[0], 0.03f, c );
+              objs[obj_index].setPickID( global_obj_index );
+              obj_index++;
+              global_obj_index++;
+            }
           }
         }
-      }
-
       IThreeD_Object non_zero_objs[] = new IThreeD_Object[obj_index];
       for ( int i = 0; i < obj_index; i++ )
         non_zero_objs[i] = objs[i];
@@ -505,25 +449,25 @@ public class RecipPlaneView
 
   private IThreeD_Object[] get_data_objects()
   {
-    IThreeD_Object q_obj[][] = new IThreeD_Object[file_names.length][];
+    IThreeD_Object q_obj[][] = new IThreeD_Object[vec_q_transformer.size()][];
 
-    for ( int i = 0; i < file_names.length; i++ )
+    for ( int i = 0; i < vec_q_transformer.size(); i++ )
     {
-      q_obj[i] = vec_Q_space.getObjects( file_names[i] );
-//      System.out.println("i = " + i + ", list length = " + q_obj[i].length );
+      q_obj[i] = vec_Q_space.getObjects( PEAK_OBJECTS+i );
+      System.out.println("i = " + i + ", list length = " + q_obj[i].length );
     }
 
     int total_length = 0;
-    for ( int i = 0; i < file_names.length; i++ )
+    for ( int i = 0; i < vec_q_transformer.size(); i++ )
       if ( q_obj[i] != null )
         total_length += q_obj[i].length;
 
     IThreeD_Object obj[] = new IThreeD_Object[total_length];
     int start = 0;
-    for ( int i = 0; i < file_names.length; i++ )
+    for ( int i = 0; i < vec_q_transformer.size(); i++ )
       if ( q_obj[i] != null )
       {
-//        System.out.println("i = " + i + ", length = " + q_obj[i].length );
+        System.out.println("i = " + i + ", length = " + q_obj[i].length );
         System.arraycopy( q_obj[i], 0, obj, start, q_obj[i].length );
         start += q_obj[i].length;
       }
@@ -812,7 +756,6 @@ public class RecipPlaneView
   {
     DataSet new_ds = fft_ds.empty_clone();
     new_ds.setTitle("Filtered FFT DataSet");
-    Vector3D points[] = get_data_points();
     Vector   normals = new Vector();
 
     int      n_data = fft_ds.getNum_entries();
@@ -849,6 +792,9 @@ public class RecipPlaneView
       {
         values     = refinePlane( normal, q_spacing );
         new_normal.set(values);
+        if ( new_normal.length() <= 0 )
+          System.out.println("************ Warning, 0 length normal ********");
+
         q_spacing  = 1/new_normal.length();
         new_normal.normalize();
         if ( Math.abs(normal.dot(new_normal)) > 0.99999)
@@ -869,7 +815,7 @@ public class RecipPlaneView
       else
         err = values[DIMENSION];
 
-      if ( err < LSQ_THRESHOLD )
+      if ( err < LSQ_THRESHOLD && d_spacing > 0 )
       { 
         new_normal.normalize();
 
@@ -886,6 +832,14 @@ public class RecipPlaneView
           for ( int k = 0; k < 3; k++ )
             if ( Math.abs( old_vals[k] - new_vals[k] ) > 0.000001f )
               duplicate = false;
+
+          if ( !duplicate )            // try negative value
+          {
+            duplicate = true;
+            for ( int k = 0; k < 3; k++ )
+              if ( Math.abs( old_vals[k] + new_vals[k] ) > 0.000001f )
+                duplicate = false;
+          }
           j++;
         }
         if ( !duplicate )
@@ -1174,15 +1128,7 @@ private class ThresholdScaleEventHandler implements ChangeListener
 
       thresh_scale = value;
 
-      System.out.println("Applying threshold to extract peaks....");
-      DataSet ds;
-      for ( int i = 0; i < data_sets.size(); i++ )
-      {
-        ds = (DataSet)data_sets.elementAt(i);
-        IThreeD_Object non_zero_objs[] = getPeaks(i,thresh_scale);
-        vec_Q_space.setObjects(file_names[i], non_zero_objs);
-      }
-      System.out.println("DONE");
+      ExtractPeaks();
 
       Redraw();
     }
