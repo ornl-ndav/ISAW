@@ -35,7 +35,7 @@
 # @param DoMerge -data merging switch;
 
 #???@return  null or an ErrorString.   The result will be written to a file
-$Category=Operator, Instrument Type, TOF_NGLAD
+$Category=Macros, Instrument Type, TOF_NGLAD
 
 #================= Parameters ======================================
 

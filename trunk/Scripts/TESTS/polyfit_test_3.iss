@@ -8,7 +8,7 @@
 #
 # $Date$
 
-$Category = Operator, Utils, Tests
+$Category = Macros, Utils, Tests
 
 $ filename LoadFileString Runfile
 

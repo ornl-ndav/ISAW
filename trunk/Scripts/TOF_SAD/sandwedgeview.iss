@@ -3,7 +3,7 @@
 #
 # $Date$
 
-$Category=Operator, Instrument Type, TOF_NSAS
+$Category=Macros, Instrument Type, TOF_NSAS
 
 
 #@param    dataFileName   The path and name of the reduced 2D file(sn2d25.dat)

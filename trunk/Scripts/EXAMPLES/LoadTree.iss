@@ -9,7 +9,7 @@
 #
 #  $Date$
 
-$Category = Operator, Utils, Examples
+$Category = Macros, Utils, Examples
 
 $  path        DataDirectoryString   PathName
 $  instrument  String(GLAD)          Instrument

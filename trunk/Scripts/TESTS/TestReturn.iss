@@ -1,6 +1,6 @@
 # $Date$
 
-$Category = Operator, Utils, Tests
+$Category = Macros, Utils, Tests
 
 $x    Integer(5)   x=
 

@@ -1,6 +1,6 @@
 # $Date$
 
-$Category=Operator, Instrument Type, TOF_NDGS
+$Category=Macros, Instrument Type, TOF_NDGS
 
 $ path DataDirectoryString Path
 
