@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.152  2003/08/28 18:52:38  dennis
+ *  Added support for loading .csd files (concatenated files from
+ *  Ideas MC simulations).
+ *
  *  Revision 1.151  2003/08/15 20:10:42  dennis
  *  Set version number to 1.5.1 beta 2
  *
@@ -1875,6 +1879,8 @@ public class Isaw
             load_filter=new IPNS.Runfile.RunfileFilter();
           else if(ext.equals("gsas") || ext.equals("gsa") || ext.equals("gda"))
             load_filter=new DataSetTools.gsastools.GsasFileFilter();
+          else if(ext.equals("csd"))
+            load_filter=new DataSetTools.retriever.IdeasFileFilter();
         }
       }
 
@@ -1893,6 +1899,8 @@ public class Isaw
           fc.addChoosableFileFilter( new NexIO.NexusfileFilter()  );
       if(!(load_filter instanceof IPNS.Runfile.RunfileFilter))
           fc.addChoosableFileFilter( new IPNS.Runfile.RunfileFilter()  );
+      if(!(load_filter instanceof DataSetTools.retriever.IdeasFileFilter))
+          fc.addChoosableFileFilter( new DataSetTools.retriever.IdeasFileFilter()  );
       Dimension d = new Dimension(650,300);
       fc.setPreferredSize(d);
       if (load_filter!=null) fc.setFileFilter(load_filter);
