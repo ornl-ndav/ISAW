@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/05/15 17:37:48  pfpeterson
+ * Trimed off extra whitespace from result string.
+ *
  * Revision 1.7  2003/05/08 19:52:50  pfpeterson
  * Added check that the calibration file is a regular file.
  *
@@ -185,7 +188,7 @@ public class LoadSCDCalib extends DS_Attribute{
             }
         }
 
-        return "Using '"+this.descr+"'";
+        return "Using '"+this.descr.trim()+"'";
     }
     
     /** 
