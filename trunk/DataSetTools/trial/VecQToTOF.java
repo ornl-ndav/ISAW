@@ -22,7 +22,8 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * This work was supported by the Intense Pulsed Neutron Source Division
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0218882, and by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
@@ -30,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/01/07 15:04:39  dennis
+ *  Fixed copyright information.
+ *
  *  Revision 1.11  2004/01/05 23:02:37  dennis
  *    Simplified calculation of real space scattering direction corresponding
  *  to a specified Q vector.  (Calculation now based on colision being
