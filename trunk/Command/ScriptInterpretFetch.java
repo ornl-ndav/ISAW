@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/06/11 21:13:29  pfpeterson
+ * More explicit about what is caught when trying to get the python
+ * interpreter.
+ *
  * Revision 1.1  2003/01/02 20:48:05  rmikk
  * Initial Checkin for the class with one method that returns the
  *    appropriate ScriptProcessor.  NOTE all reference to Jython
@@ -67,17 +71,14 @@ public class ScriptInterpretFetch
       if( !filename.toUpperCase().endsWith( ".PY" ))
          return null;
     
-      try{
+      try
+        {
           return new pyScriptProcessor( doc ); 
-
-
-          }
-       catch( Throwable ss)
-         {
-            return null;
-
-
-         }
+        }
+      catch( NoClassDefFoundError ss)
+        {
+          return null;
+        }
 
      }
 
