@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/07/30 14:28:00  rmikk
+ * Eliminated unused Variables
+ *
  * Revision 1.2  2004/07/30 14:11:07  rmikk
  * Fixed javadoc error
  *
@@ -782,7 +785,7 @@ public class Peak_new extends Peak{
     pos[2]=UBR[2][0]*h+UBR[2][1]*k+UBR[2][2]*l;
    
    
-    double Q = Math.sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
+    //double Q = Math.sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
     Vector3D VQ = new Vector3D(pos);
     VQ.multiply((float)(2*Math.PI)) ;
     //pos[0] -= (float)(Q*Q/2/pos[0]);//direction of pixel

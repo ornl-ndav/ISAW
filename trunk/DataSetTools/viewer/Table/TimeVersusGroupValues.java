@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2004/07/30 14:28:39  rmikk
+ * Eliminated unused Variables
+ *
  * Revision 1.14  2004/05/29 16:42:02  rmikk
  * Eliminated a debug print
  *
@@ -453,7 +456,7 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
    */   
   public int getNumColumns()
     {
-     int V = getColumnCount();
+     //int V = getColumnCount();
      return getColumnCount() ;
      
     }
