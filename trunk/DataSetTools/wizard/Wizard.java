@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.65  2003/07/28 15:34:22  dennis
+ * Now prints a stack trace when an error is encountered.  The stack
+ * trace is essential for debugging.  It should eventually be included
+ * in the information written to the wizard.err file, using the method
+ * printStackTrace( PrintWriter ).
+ *
  * Revision 1.64  2003/07/18 14:38:01  bouzekc
  * No longer uses GridBagLayout.
  *
@@ -1807,6 +1813,7 @@ public abstract class Wizard implements PropertyChangeListener {
             SharedData.getProperty( "user.dir" ) + "/wizard.err" );
 
         Wizard.writeASCII( new File( errFile ), e.toString(  ) );
+        e.printStackTrace();
 
         message = "Failure";
 
