@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/03/05 20:44:06  pfpeterson
+ * Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  * Revision 1.9  2002/11/27 23:28:17  pfpeterson
  * standardized header
  *
@@ -178,7 +181,7 @@ public class Inst_Type{
         Attribute A = D.getAttribute( Attribute.DETECTOR_POS );
           
         if( A == null ){
-          SharedData.status_pane.add( "No Detector position attribute" );
+          SharedData.addmsg( "No Detector position attribute" );
           return null;
         }
         phi[i - beginIndex] =
@@ -255,7 +258,7 @@ public class Inst_Type{
         Attribute A = D.getAttribute( Attribute.DETECTOR_POS );
         
         if( A == null ){
-          SharedData.status_pane.add( "No Detector position attribute" );
+          SharedData.addmsg( "No Detector position attribute" );
           return null;
         }
         phi[i - beginIndex] =
@@ -285,7 +288,7 @@ public class Inst_Type{
         Attribute A = D.getAttribute( Attribute.GROUP_ID );
         
         if( A == null ){
-          SharedData.status_pane.add( "No GROUP_ID attribute" );
+          SharedData.addmsg( "No GROUP_ID attribute" );
           id[i - beginIndex] = -1;;
         }else if( A instanceof IntAttribute )
           id[i - beginIndex] = ( ( IntAttribute )A ).getIntegerValue();
