@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/18 23:02:21  pfpeterson
+ * Added debug statements and better ErrorString. Also modified read to end of
+ * file to stop at first blank line.
+ *
  * Revision 1.3  2002/12/20 17:53:08  dennis
  * Added getDocumentation() method. (Chris Bouzek)
  *
@@ -58,6 +62,7 @@ import java.io.*;
 
 public class LoadASCII extends GenericLoad{
   private static final String TITLE = "Load N-column ASCII file";
+  private static final boolean DEBUG=false;
 
     /** 
      * Creates operator with title "Load N-column ASCII file" and a
@@ -173,8 +178,8 @@ public class LoadASCII extends GenericLoad{
         int     ycol     = ((Integer)getParameter(4).getValue()).intValue();
         int     dycol    = ((Integer)getParameter(5).getValue()).intValue();
 
-        //System.out.println(filename+" "+num_head+" "+num_data+
-        //                   " ("+xcol+","+ycol+","+dycol+")");
+        if(DEBUG) System.out.println(filename+" "+num_head+" "+num_data
+                                     +" ("+xcol+","+ycol+","+dycol+")");
         
         File file=new File(filename);
         if(! file.exists() )
@@ -203,13 +208,14 @@ public class LoadASCII extends GenericLoad{
         StringBuffer sb;
         float tempf;
         TextFileReader tfr=null;
+        int line_num=num_head;
         try{
             tfr = new TextFileReader( filename );
             
             // skip the header lines
             for( int i=0 ; i<num_head ; i++ ){
                 line=tfr.read_line();
-                System.out.println("head"+i+": "+line);
+                if(DEBUG) System.out.println("head"+i+":"+line);
             }
 
             
@@ -232,7 +238,13 @@ public class LoadASCII extends GenericLoad{
             }else{  // read in until end of file
                 while(! tfr.eof()){
                     line=tfr.read_line();
+                    line_num++;
+                    if(DEBUG) System.out.println(line_num+":"+line);
+                    if(line==null)
+                      break;
                     sb=new StringBuffer(line.trim());
+                    if(sb.length()<=0)
+                      break;
                     for( int j=0 ; j<maxcol ; j++ ){
                         tempf=StringUtil.getFloat(sb);
                         if(j+1==xcol){
@@ -253,7 +265,10 @@ public class LoadASCII extends GenericLoad{
                 // let it drop on the floor
             }
             return new ErrorString( e.toString() );
-        } 
+        }catch( NumberFormatException e){
+          return new ErrorString("NumberFormatException at line "+line_num
+                                 +": "+e.getMessage());
+        }
 
         // don't forget to close the file
         if(tfr!=null) try{
