@@ -54,6 +54,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/02/18 19:33:50  dennis
+ * Removed ^M characters.
+ *
  * Revision 1.4  2003/02/10 18:58:42  pfpeterson
  * Uses the new version of tstvol.
  *
