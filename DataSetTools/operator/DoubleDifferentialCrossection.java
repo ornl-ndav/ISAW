@@ -2,6 +2,9 @@
  * @(#)DoubleDifferentialCrossection.java   0.1  2000/07/25   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.11  2000/10/03 21:29:36  dennis
+ *  Renamed FudgeFactor to DetectorNormalizationFactor.
+ *
  *  Revision 1.10  2000/09/11 23:05:01  dennis
  *  Added fudge factor parameter and boolean to control it.
  *
@@ -85,11 +88,11 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
    *
    *  @param  ds               The sample DataSet for which the double 
    *                           differential crossection is to be calculated 
-   *  @param  ff_ds            DataSet containing "fudge factors" calculated
-   *                           from a vanadium run.
+   *  @param  ff_ds            DataSet containing detector normalization
+   *                           factors calculated from a vanadium run.
    *  @param  use_ff_ds        Boolean flag indicating whether ff_ds contains
-   *                           "fudge factors" to use, or to just use ff==1
-   *                           in the calculation.
+   *                           normalization factors to use, or to just use
+   *                           "1" for normalization in the calculation.
    *  @param  peak_area        The area of the peak in monitor 1.
    *  @param  atoms            The number of "scattering units" in the sample
    *                           exposed to the beam times 10 ** -24.
@@ -145,8 +148,9 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter( "Fudge factor DataSet",
-                              new DataSet("FF_DataSet", "Empty DataSet") );
+    Parameter parameter = new Parameter( 
+                                     "Detector Normalization Factors DataSet",
+                                      DataSet.EMPTY_DATA_SET );
     addParameter( parameter );
 
     parameter = new Parameter( "use FF_DataSet?", new Boolean(false) );
@@ -179,8 +183,8 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
     if ( atoms <= 0 )
       return new ErrorString("ERROR: Number of atoms must be greater than 0");
 
-                            // if we are using fudge factors, get the ff values
-                            // check that there are the correct number of them
+                     // if we are using normalization factors, get the ff values
+                     // check that there are the correct number of them
     float ff_vals[] = null; 
     if ( use_ff_ds )
     {
@@ -338,6 +342,7 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
     }
 
     new_ds.addOperator( new SpectrometerScatteringFunction() );
+
     if ( make_new_ds )
       return new_ds;
     else
