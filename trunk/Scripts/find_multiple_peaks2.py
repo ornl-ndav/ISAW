@@ -30,6 +30,9 @@
 # Modified:
 #
 # $Log$
+# Revision 1.3  2003/09/22 22:03:09  bouzekc
+# Added call to clearParametersVector().
+#
 # Revision 1.2  2003/07/14 20:37:41  bouzekc
 # Added parameters and code to trim out border pixels.  Now
 # returns the name of the peaks file.
@@ -40,6 +43,7 @@
 # 
 class find_multiple_peaks2(GenericOperator):
     def setDefaultParameters(self):
+        self.super__clearParametersVector()
         self.addParameter(DataDirPG("Raw Data Path",None))
         self.addParameter(DataDirPG("Output Data Path",None))
         self.addParameter(IntArrayPG("Run Numbers",None))
