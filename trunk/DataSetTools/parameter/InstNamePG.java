@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/06/14 15:56:41  pfpeterson
+ *  Use the ShareData.getProperty() method to get default
+ *  instrument name.
+ *
  *  Revision 1.2  2002/06/14 14:24:49  pfpeterson
  *  Uses appropriate default value if an empty or null string is
  *  given to the constructor.
@@ -63,7 +67,7 @@ public class InstNamePG extends StringPG{
         }else{
             String temp=this.getStringValue();
             if(temp==null || temp.length()==0){
-                this.setValue(share.isaw_props.get(propName));
+                this.setValue(share.getProperty(propName));
             }
         }
     }
@@ -76,7 +80,7 @@ public class InstNamePG extends StringPG{
         }else{
             String temp=this.getStringValue();
             if(temp==null || temp.length()==0){
-                this.setValue(share.isaw_props.get(propName));
+                this.setValue(share.getProperty(propName));
             }
         }
     }
