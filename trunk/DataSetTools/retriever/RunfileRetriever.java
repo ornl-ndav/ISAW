@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.54  2002/10/12 22:41:25  hammonds
+ *  Fix import path to get DC5.
+ *
  *  Revision 1.53  2002/10/12 03:42:33  hammonds
  *  changed location for getting LENGTH&WIDTH for detector elements from IPNS.Runfile.Runfile to IPNS.Calib.DC5.
  *
@@ -260,7 +263,7 @@ import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.instruments.InstrumentType;
 import DataSetTools.instruments.DetectorInfo;
 import IPNS.Runfile.*;
-import IPNS.DC5.*;
+import IPNS.Calib.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
 import java.util.*;
