@@ -27,6 +27,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.3  2003/10/20 22:08:58  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.2  2003/10/10 02:02:05  bouzekc
  * Merged with pyScriptProcessor.
  *
@@ -622,7 +625,7 @@ public class PyScriptOperator extends GenericOperator
   /**
    * Adds the given property change listener.
    *
-   * @param The PropertyChangeListener to add.
+   * @param pcl The PropertyChangeListener to add.
    */
   public void addPropertyChangeListener( PropertyChangeListener pcl ) {
     PS.addPropertyChangeListener( pcl );
@@ -632,7 +635,7 @@ public class PyScriptOperator extends GenericOperator
    * Adds the given property change listener.
    *
    * @param propName The name of the property.
-   * @param P The PropertyChangeListener to add.
+   * @param pcl The PropertyChangeListener to add.
    */
   public void addPropertyChangeListener( 
     String propName, PropertyChangeListener pcl ) {
@@ -730,7 +733,7 @@ public class PyScriptOperator extends GenericOperator
   /**
    * Removes the given property change listener.
    *
-   * @param The PropertyChangeListener to remove.
+   * @param pcl The PropertyChangeListener to remove.
    */
   public void removePropertyChangeListener( PropertyChangeListener pcl ) {
     PS.removePropertyChangeListener( pcl );
