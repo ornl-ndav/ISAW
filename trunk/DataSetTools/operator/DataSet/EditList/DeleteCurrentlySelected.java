@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.5  2004/01/24 19:30:52  bouzekc
+ *  Removed unused variables in testbed main().
+ *
  *  Revision 1.4  2002/12/03 17:33:51  dennis
  *  Added getDocumentation() method, simple main() test program and
  *  added java docs to getResult().  (Chris Bouzek)
@@ -260,11 +263,11 @@ public class DeleteCurrentlySelected  extends    DS_EditList
   public static void main( String[] args )
   {
     DataSet ds1 = DataSetFactory.getTestDataSet();
-    ViewManager viewer1 = new ViewManager(ds1, ViewManager.IMAGE);
+    new ViewManager(ds1, ViewManager.IMAGE);
     
     Operator op = new DeleteCurrentlySelected(ds1, false, true);
     DataSet new_ds = (DataSet)op.getResult();
-    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE);
+    new ViewManager(new_ds, ViewManager.IMAGE);
     
     String documentation = op.getDocumentation();
     System.out.println("\n\nDocumentation:\n" + documentation);

@@ -34,6 +34,9 @@
  * units match for the two DataSets being merged.
  *
  *  $Log$
+ *  Revision 1.5  2004/01/24 19:30:52  bouzekc
+ *  Removed unused variables in testbed main().
+ *
  *  Revision 1.4  2002/12/03 17:33:51  dennis
  *  Added getDocumentation() method, simple main() test program and
  *  added java docs to getResult().  (Chris Bouzek)
@@ -233,12 +236,12 @@ public class DataSetMerge extends    DS_EditList
   {
     DataSet ds1 = DataSetFactory.getTestDataSet();
     DataSet ds2 = DataSetFactory.getTestDataSet();
-    ViewManager viewer1 = new ViewManager(ds1, ViewManager.IMAGE);
-    ViewManager viewer2 = new ViewManager(ds2, ViewManager.IMAGE);
+    new ViewManager(ds1, ViewManager.IMAGE);
+    new ViewManager(ds2, ViewManager.IMAGE);
     
     Operator op = new DataSetMerge(ds1, ds2);
     DataSet new_ds = (DataSet)op.getResult();
-    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE);
+    new ViewManager(new_ds, ViewManager.IMAGE);
     
     String documentation = op.getDocumentation();
     System.out.println(documentation);
