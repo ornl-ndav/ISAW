@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.16  2003/09/15 18:15:25  dennis
+ *  Moved addItem() call from constructors to initGUI(). (Ruth)
+ *
  *  Revision 1.15  2003/09/13 23:29:46  bouzekc
  *  Moved calls from setValid(true) to validateSelf().
  *
@@ -104,14 +107,14 @@ abstract public class ChooserPG extends ParameterGUI{
   // ********** Constructors **********
   public ChooserPG(String name, Object val){
     super(name, val);
-    this.addItem(val);
+    //this.addItem(val);
     setValue(val);
     this.type=TYPE;
   }
 
   public ChooserPG(String name, Object val, boolean valid){
     super(name, val, valid);
-    this.addItem(val);
+    //this.addItem(val);
     setValue(val);
     this.type=TYPE;
   }
@@ -191,6 +194,7 @@ abstract public class ChooserPG extends ParameterGUI{
    */
   public void initGUI(Vector init_values){
     if(this.initialized) return;
+    addItem(getValue());
     if(init_values!=null && init_values.size()>0){
       this.vals=new Vector();
       if(this.value!=null && this.value!=DataSet.EMPTY_DATA_SET)
