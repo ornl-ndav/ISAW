@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.8  2001/06/01 21:18:00  rmikk
+ *  Improved documentation for getCommand() method
+ *
  *  Revision 1.7  2001/04/26 19:07:45  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -158,7 +161,7 @@ public class DataSetSort  extends    DS_EditList
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * Returns the abbreviated command string for this operator.
+   * @return	the command name to be used with script processor: in this case, Sort
    */
    public String getCommand()
    {
