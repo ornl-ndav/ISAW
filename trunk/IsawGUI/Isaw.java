@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.95  2002/04/22 20:08:50  pfpeterson
+ *  Now File->Load->Local remembers the last FileFilter used.
+ *
  *  Revision 1.94  2002/04/22 19:19:17  pfpeterson
  *  Improved the JSplitPane usage in the main window. Now the
  *  system properties for the divider locations are updated
@@ -2105,7 +2108,8 @@ public class Isaw
   }
  
  
- String data_dir = null;
+ String                             data_dir   = null;
+ javax.swing.filechooser.FileFilter load_filter = null;
   /**
    * loads runfiles interactivly or in batch.  please use this function to
    * load runfiles, not one of the lower level functions.  the low-level
@@ -2140,11 +2144,12 @@ public class Isaw
       fc.setCurrentDirectory(  new File( data_dir )  );
       fc.setMultiSelectionEnabled( true );
       fc.setFileFilter(  new NeutronDataFileFilter()  ); 
-      fc.addChoosableFileFilter(  new NexIO.NexusfileFilter()  );
-	fc.addChoosableFileFilter(  new DataSetTools.retriever.SDDSFileFilter()  );
-      fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
+      fc.addChoosableFileFilter( new NexIO.NexusfileFilter()  );
+      fc.addChoosableFileFilter( new DataSetTools.retriever.SDDSFileFilter() );
+      fc.addChoosableFileFilter( new IPNS.Runfile.RunfileFilter()  );
       Dimension d = new Dimension(650,300);
       fc.setPreferredSize(d);
+      if (load_filter!=null) fc.setFileFilter(load_filter);
       if(  fc.showDialog(frame,null) == JFileChooser.APPROVE_OPTION  ) 
       {
         setCursor(  Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR )  );
@@ -2153,6 +2158,7 @@ public class Isaw
       
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         data_dir = fc.getSelectedFile().toString();
+        load_filter = fc.getFileFilter();
       }
     }
 
