@@ -29,6 +29,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2002/09/23 14:11:35  rmikk
+ *  Added support for ExitClass produced by the ExitDialog
+ *    operator and initial support( unsuccessful) for the new
+ *    Parameters.
+ *
  *  Revision 1.26  2002/09/19 15:59:18  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -137,6 +142,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.parameter.*;
+import DataSetTools.operator.Generic.Batch.*;
 import Command.*;
 import java.awt.event.*;
 import java.awt.*;
@@ -244,145 +250,162 @@ public class JParametersDialog implements Serializable,
         {  
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
            Size1=-1;
-           iparam = op.getParameter(i);            
-           if(iparam instanceof Parameter){
-               param=(Parameter)iparam;
-           }else{
-               param=null;
-           }
-            
-            if(  param.getValue() instanceof String  &&
-                               op instanceof IntervalSelectionOp  )
-            {
-              DataSet ds = ((DS_Attribute)op).getDataSet();
-              AttributeList attrs = ds.getData_entry(0).getAttributeList();
-              paramGUI = new JIntervalParameterGUI( param, attrs );
-              
-            }
+           iparam = op.getParameter(i);
+           if( iparam instanceof ParameterGUI)
+             {if( iparam instanceof DataSetPG)
+                ((DataSetPG)iparam).init((Object[])(ds_src.getDataSets()));
+              JComponent pp= ((ParameterGUI)iparam).getEntryWidget();
+              if( pp == null)
+                {System.out.println("GUIPanel null");
+                 return;
+                }
+              else System.out.println("GUI panel is not null");
+              BB.add(pp);
+              vparamGUI.addElement( null );
 
-           else if(param.getValue() == null)
-             {paramGUI = new JObjectParameterGUI(param);
-	      ObjectParameters.addElement( new Integer( i ));
-             }
-           else if (param.getValue() instanceof Float)
-             paramGUI = new JFloatParameterGUI(param);
-           else if(param.getValue() instanceof Integer)
-             paramGUI = new JIntegerParameterGUI(param);
-           else if(param.getValue() instanceof Boolean)
-              paramGUI = new JBooleanParameterGUI(param);
-           else if(param.getValue() instanceof String)
-             paramGUI = new JStringParameterGUI(param);
-           else if(param.getValue() instanceof IntListString)
-             { //param.setValue( param.getValue().toString());
-               paramGUI = new JStringParameterGUI(param);
-             }
-           else if(param.getValue() instanceof Vector)
-             paramGUI = new JArrayParameterGUI(param);
-           else if((param.getValue() instanceof AttributeNameString) &&
+              Size1 = pp.getPreferredSize().height;
+        
+              if( Size1 < 0)
+	        Size += 10;
+              else
+                Size += Size1;     
+             }            
+           else if(iparam instanceof Parameter){
+              param=(Parameter)iparam;
+          
+            
+              if(  param.getValue() instanceof String  &&
+                               op instanceof IntervalSelectionOp  )
+                {
+                 DataSet ds = ((DS_Attribute)op).getDataSet();
+                 AttributeList attrs = ds.getData_entry(0).getAttributeList();
+                 paramGUI = new JIntervalParameterGUI( param, attrs );
+              
+                }
+
+              else if(param.getValue() == null)
+               {paramGUI = new JObjectParameterGUI(param);
+	        ObjectParameters.addElement( new Integer( i ));
+               }
+              else if (param.getValue() instanceof Float)
+                 paramGUI = new JFloatParameterGUI(param);
+              else if(param.getValue() instanceof Integer)
+                 paramGUI = new JIntegerParameterGUI(param);
+              else if(param.getValue() instanceof Boolean)
+                 paramGUI = new JBooleanParameterGUI(param);
+              else if(param.getValue() instanceof String)
+                paramGUI = new JStringParameterGUI(param);
+              else if(param.getValue() instanceof IntListString)
+                { //param.setValue( param.getValue().toString());
+                 paramGUI = new JStringParameterGUI(param);
+                }
+              else if(param.getValue() instanceof Vector)
+                 paramGUI = new JArrayParameterGUI(param);
+              else if((param.getValue() instanceof AttributeNameString) &&
                    (op instanceof DataSetOperator))
-           {
-             DataSet ds =((DataSetOperator)op).getDataSet();
-             AttributeList attr_list; 
+                {
+                 DataSet ds =((DataSetOperator)op).getDataSet();
+                 AttributeList attr_list; 
                              // if the operator is a DataSet 
                              // operator, get the list from the
                              // DataSet, otherwise get it from the
                              // data block.
-             if ( op.getTitle().indexOf( "DataSet" ) >= 0 )
-               attr_list = ds.getAttributeList();
+                 if ( op.getTitle().indexOf( "DataSet" ) >= 0 )
+                     attr_list = ds.getAttributeList();
 
-	      else
-             {
-               Data data = ds.getData_entry(0);
-               if ( data != null )
-                 attr_list = data.getAttributeList();
-               else
-                 attr_list = new AttributeList();
-             }
-             //System.out.println("Num attributes="+
-              //      attr_list.getNum_attributes());
-             paramGUI = new JAttributeNameParameterGUI(param, attr_list);
-           }
+	         else
+                   {
+                    Data data = ds.getData_entry(0);
+                    if ( data != null )
+                       attr_list = data.getAttributeList();
+                    else
+                       attr_list = new AttributeList();
+                   }
+                 //System.out.println("Num attributes="+
+                 //      attr_list.getNum_attributes());
+                 paramGUI = new JAttributeNameParameterGUI(param, attr_list);
+                }
 
 
                 //TODO: fix this so ds_src.getDataSets() is called every time
                 //      an operation is done (e.g. the 'Apply' button is pressed)
 
-           else if((param.getValue() instanceof SampleDataSet)  ){
-               DataSet ds[]=ds_src.getDataSets();
-               int num_sample=0;
-               int num_ds=Array.getLength(ds);
+              else if((param.getValue() instanceof SampleDataSet)  ){
+                 DataSet ds[]=ds_src.getDataSets();
+                 int num_sample=0;
+                 int num_ds=Array.getLength(ds);
 
-               for( int count=num_ds-1 ; count>=0 ; count-- ){
-                   String type = (String)
+                 for( int count=num_ds-1 ; count>=0 ; count-- ){
+                    String type = (String)
                        ds[count].getAttributeValue(Attribute.DS_TYPE);
                    /* System.out.println("DataSet: "+ds[count].toString()
                       +" "+type); */
-                   if(type.equals(Attribute.SAMPLE_DATA)){
+                    if(type.equals(Attribute.SAMPLE_DATA)){
                        num_sample++;
+                       }
                    }
-               }
 
-               DataSet just_sample[]=new DataSet[num_sample];
-               int countt=0;
-               for( int count=num_ds-1 ; count>=0 ; count-- ){
-                   String type = (String)
+                 DataSet just_sample[]=new DataSet[num_sample];
+                 int countt=0;
+                 for( int count=num_ds-1 ; count>=0 ; count-- ){
+                    String type = (String)
                        ds[count].getAttributeValue(Attribute.DS_TYPE);
-                   if(type.equals(Attribute.SAMPLE_DATA)){
+                    if(type.equals(Attribute.SAMPLE_DATA)){
                        just_sample[countt]=ds[count];
                        countt++;
+                       }
                    }
-               }
 
-               paramGUI = new JDataSetParameterGUI(  param,  just_sample );
-           }
-           else if((param.getValue() instanceof MonitorDataSet)  ){
-               DataSet ds[]=ds_src.getDataSets();
-               int num_mon=0;
-               int num_ds=Array.getLength(ds);
+                 paramGUI = new JDataSetParameterGUI(  param,  just_sample );
+                }
+              else if((param.getValue() instanceof MonitorDataSet)  ){
+                 DataSet ds[]=ds_src.getDataSets();
+                 int num_mon=0;
+                 int num_ds=Array.getLength(ds);
 
-               for( int count=num_ds-1 ; count>=0 ; count-- ){
+                 for( int count=num_ds-1 ; count>=0 ; count-- ){
                    String type = (String)
                        ds[count].getAttributeValue(Attribute.DS_TYPE);
                    if(type.equals(Attribute.MONITOR_DATA)){
                        num_mon++;
+                      }
                    }
-               }
 
-               DataSet just_mon[]=new DataSet[num_mon];
-               int countt=0;
-               for( int count=num_ds-1 ; count>=0 ; count-- ){
+                 DataSet just_mon[]=new DataSet[num_mon];
+                 int countt=0;
+                 for( int count=num_ds-1 ; count>=0 ; count-- ){
                    String type = (String)
                        ds[count].getAttributeValue(Attribute.DS_TYPE);
                    if(type.equals(Attribute.MONITOR_DATA)){
                        just_mon[countt]=ds[count];
                        countt++;
+                      }
                    }
-               }
 
-               paramGUI = new JDataSetParameterGUI(  param,  just_mon );
-           }
-           else if((param.getValue() instanceof DataSet)  ){
-               paramGUI = new JDataSetParameterGUI(  param, 
+                 paramGUI = new JDataSetParameterGUI(  param,  just_mon );
+                }
+              else if((param.getValue() instanceof DataSet)  ){
+                 paramGUI = new JDataSetParameterGUI(  param, 
                                                      ds_src.getDataSets()  );
-           }
-           else if( param.getValue() instanceof DataDirectoryString )
-           { 
-            String DirPath = System.getProperty("Data_Directory");
-            if( DirPath != null )
-              DirPath = DataSetTools.util.StringUtil.
+                 }
+              else if( param.getValue() instanceof DataDirectoryString )
+                { 
+                 String DirPath = System.getProperty("Data_Directory");
+                 if( DirPath != null )
+                    DirPath = DataSetTools.util.StringUtil.
                                  fixSeparator(DirPath+"\\");
-            else
-              DirPath = "";
+                 else
+                    DirPath = "";
 
-            param.setValue( new DataDirectoryString(DirPath) );
-            paramGUI = new JOneFileChooserParameterGUI( param ) ;
-          }
+                param.setValue( new DataDirectoryString(DirPath) );
+                paramGUI = new JOneFileChooserParameterGUI( param ) ;
+                }
 
 
        
-        else if (param.getValue() instanceof IStringList )
-         paramGUI = 
-              new JIStringListParameterGUI( param ,
+               else if (param.getValue() instanceof IStringList )
+                 paramGUI = 
+                       new JIStringListParameterGUI( param ,
                                          (IStringList)(param.getValue()));
 /*        {
           AttributeList A = new AttributeList();
@@ -399,62 +422,62 @@ public class JParametersDialog implements Serializable,
         }
 */
 
-        else if( param.getValue() instanceof InstrumentNameString)
-        {
-          String XX = System.getProperty("DefaultInstrument");
+              else if( param.getValue() instanceof InstrumentNameString)
+                {
+                 String XX = System.getProperty("DefaultInstrument");
 
-          if( XX == null )
-               XX = "";
+                 if( XX == null )
+                    XX = "";
 
-          param.setValue(new InstrumentNameString( XX ));
-          paramGUI= new JStringParameterGUI( param);
-        }
-        else if( param.getValue() instanceof LoadFileString){
-            String FileName=System.getProperty("Data_Directory");
-            if(FileName!=null){
-                FileName
-                    =DataSetTools.util.StringUtil.fixSeparator(FileName+"\\");
-            }else{
-                FileName="";
-            }
+                 param.setValue(new InstrumentNameString( XX ));
+                 paramGUI= new JStringParameterGUI( param);
+                }
+              else if( param.getValue() instanceof LoadFileString){
+                 String FileName=System.getProperty("Data_Directory");
+                 if(FileName!=null){
+                    FileName
+                       =DataSetTools.util.StringUtil.fixSeparator(FileName+"\\");
+                 }else{
+                    FileName="";
+                   }
 
-            param.setValue( new LoadFileString(FileName) );
-            paramGUI=new JLoadFileParameterGUI(param);
-        }
-        else if( param.getValue() instanceof SaveFileString){
-            String FileName=System.getProperty("Data_Directory");
-            if(FileName!=null){
-                FileName
-                    =DataSetTools.util.StringUtil.fixSeparator(FileName+"\\");
-            }else{
-                FileName="";
-            }
+                 param.setValue( new LoadFileString(FileName) );
+                 paramGUI=new JLoadFileParameterGUI(param);
+                }
+              else if( param.getValue() instanceof SaveFileString){
+                 String FileName=System.getProperty("Data_Directory");
+                 if(FileName!=null){
+                    FileName
+                       =DataSetTools.util.StringUtil.fixSeparator(FileName+"\\");
+                 }else{
+                    FileName="";
+                 }
 
-            param.setValue( new SaveFileString(FileName) );
-            paramGUI=new JSaveFileParameterGUI(param);
-        }
+                 param.setValue( new SaveFileString(FileName) );
+                 paramGUI=new JSaveFileParameterGUI(param);
+                }
      
-        else 
-        {  if( stat_pane != null)
-           stat_pane.add("Unsupported Parameter in JParamatersDialog");
-                return ;
-        }
-        Size1 = paramGUI.getGUISegment().getPreferredSize().height;
+              else 
+                {if( stat_pane != null)
+                  stat_pane.add("Unsupported Parameter in JParamatersDialog");
+                 return ;
+                }
+              Size1 = paramGUI.getGUISegment().getPreferredSize().height;
         
-        if( Size1 < 0)
-	    Size += 10;
-        else
-           Size += Size1;     
+             if( Size1 < 0)
+	       Size += 10;
+             else
+               Size += Size1;     
                 
-        //Add other kinds of parameter types here.
+             //Add other kinds of parameter types here.
             
 	    //# opDialog.getContentPane().add(paramGUI.getGUISegment());
-        BB.add(paramGUI.getGUISegment());
-        vparamGUI.addElement(paramGUI);
-        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+              BB.add(paramGUI.getGUISegment());
+              vparamGUI.addElement(paramGUI);
+             //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
             
-        }
-
+             }
+          }//for i < nparameters
         JPanel Filler = new JPanel();
         Filler.setPreferredSize( new Dimension(120,2000));
         BB.add( Filler ); 
@@ -620,7 +643,10 @@ public class JParametersDialog implements Serializable,
           op.setParameter( new Parameter( ParName , null ) , k );
         }
 //#####      opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-      if (result == null)
+      if( result instanceof ExitClass)
+      { opDialog.dispose();  
+      }
+      else if (result == null)
       {
          
             
