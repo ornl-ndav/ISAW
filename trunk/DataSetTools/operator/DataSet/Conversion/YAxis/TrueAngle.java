@@ -1,5 +1,5 @@
 /*
- * File:  TrueAngle.java 
+ * File:  TrueAngle.java
  *
  * Copyright (C) 2000, Dennis Mikkelson
  *
@@ -28,8 +28,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
- * 
+ *
  * $Log$
+ * Revision 1.5  2003/01/14 19:23:57  dennis
+ * Added getDocumentation(), basic main test program and javadocs
+ * on getResult(). (Chris Bouzek)
+ *
  * Revision 1.4  2002/11/27 23:17:27  pfpeterson
  * standardized header
  *
@@ -53,14 +57,16 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.retriever.*;
 
 /**
-  *  Resample  a DataSet containing spectra from detectors at a variety
-  *  of different angles to a set of spectra at a uniform set of angles. 
-  *  The Data blocks will first be rebinned into x-bins with the same 
-  *  bin boundaries.  Next, for each x-bin, the data values from all 
+  *  Resample a DataSet containing spectra from detectors at a variety
+  *  of different angles to a set of spectra at a uniform set of angles.
+  *  The Data blocks will first be rebinned into x-bins with the same
+  *  bin boundaries.  Next, for each x-bin, the data values from all
   *  detectors at that x-bin, will be merged into a set of equal angle bins,
-  *  using the estimated angular coverage of each detector.  This will 
+  *  using the estimated angular coverage of each detector.  This will
   *  produce a two-dimensional set of values which will be cut into rows
   *  to produce a new DataSet.
   *
@@ -68,7 +74,7 @@ import  DataSetTools.parameter.*;
   *
   */
 
-public class TrueAngle extends    YAxisConversionOp 
+public class TrueAngle extends    YAxisConversionOp
                        implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -80,7 +86,7 @@ public class TrueAngle extends    YAxisConversionOp
    * to apply the operator to the DataSet this operator was added to.
    */
 
-  public TrueAngle( ) 
+  public TrueAngle( )
   {
     super( "Convert to True Angle DataSet" );
   }
@@ -93,7 +99,7 @@ public class TrueAngle extends    YAxisConversionOp
    *
    *  @param  ds          The DataSet to which the operation is applied
    *  @param  min_angle   The minimum angle to include
-   *  @param  max_angle   The maximum angle to include 
+   *  @param  max_angle   The maximum angle to include
    *  @param  n_bins      The number of "bins" to be used between min_angle and
    *                      max_angle.
    */
@@ -109,10 +115,10 @@ public class TrueAngle extends    YAxisConversionOp
 
     IParameter parameter = getParameter(0);
     parameter.setValue( new Float(min_angle) );
-    
-    parameter = getParameter(1); 
+
+    parameter = getParameter(1);
     parameter.setValue( new Float(max_angle) );
-    
+
     parameter = getParameter(2);
     parameter.setValue( new Integer(n_bins) );
 
@@ -123,7 +129,8 @@ public class TrueAngle extends    YAxisConversionOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return the command name to be used with script processor: in this case, ToYAngle
+   * @return the command name to be used with script processor: 
+   *         in this case, ToYAngle
    */
    public String getCommand()
    {
@@ -132,7 +139,7 @@ public class TrueAngle extends    YAxisConversionOp
 
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -150,9 +157,55 @@ public class TrueAngle extends    YAxisConversionOp
     addParameter( parameter );
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator resamples a DataSet containing ");
+    s.append("spectra from detectors at a variety of different angles ");
+    s.append("and creates a DataSet with a set of spectra at a ");
+    s.append("uniform set of angles.\n");
+    s.append("@assumptions The DataSet must contain spectra with ");
+    s.append("attributes giving the detector position, delta_2theta, and ");
+    s.append("raw angle.\n");
+    s.append("@algorithm The Data blocks will first be rebinned into ");
+    s.append("x-bins with the same bin boundaries.  Next, for each x-bin, ");
+    s.append("the data values from all detectors at that x-bin will be ");
+    s.append("merged into a set of equal angle bins, using the estimated ");
+    s.append("angular coverage of each detector.  This will produce a ");
+    s.append("two-dimensional set of values which will be cut into rows ");
+    s.append("to produce a new DataSet.\n");
+    s.append("The new DataSet also has a message appended to its log ");
+    s.append("indicating that a conversion to true angle on the Y-axis ");
+    s.append("was done.\n");
+    s.append("@param ds The DataSet to which the operation is applied.\n");
+    s.append("@param min_angle The minimum angle to include.\n");
+    s.append("@param max_angle The maximum angle to include.\n");
+    s.append("@param n_bins The number of \"bins\" to be used between ");
+    s.append("min_angle and max_angle.");
+    s.append("@return A new DataSet which is the result of converting the ");
+    s.append("input DataSet's Y-axis units to true angle.\n");
+    s.append("@error Returns an error if no valid angle range is specified.\n");
+    s.append("@error Returns an error if no detector position attribute is ");
+    s.append("present.\n");
+    s.append("@error Returns an error if no delta_2theta attribute is ");
+    s.append("present.\n");
+    s.append("@error Returns an error if no raw angle attribute is ");
+    s.append("present.\n");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+   *  Converts the input DataSet to a DataSet which is identical except that
+   *  the new DataSet's Y-axis units have been converted to true angle.
+   *
+   *  @return DataSet whose Y-axis units have been converted to true angle.
+   */
   public Object getResult()
   {
                                      // get the current data set
@@ -179,11 +232,11 @@ public class TrueAngle extends    YAxisConversionOp
       max_angle  = temp;
     }
 
-    if ( n_bins <= 0 )                               // calculate the default 
+    if ( n_bins <= 0 )                               // calculate the default
       n_bins = (int)(max_angle - min_angle);         // number of angle bins.
 
     UniformXScale angle_scale = null;
-    if ( n_bins <= 0 || min_angle >= max_angle )   // no valid range specified 
+    if ( n_bins <= 0 || min_angle >= max_angle )   // no valid range specified
     {
       ErrorString message = new ErrorString(
                       "ERROR: no valid angle range in TrueAngle operator");
@@ -192,10 +245,10 @@ public class TrueAngle extends    YAxisConversionOp
     else
      angle_scale = new UniformXScale( min_angle, max_angle, n_bins + 1 );
 
-                                                // get common XScale for Data 
-    int num_cols = ds.getMaxXSteps();       
+                                                // get common XScale for Data
+    int num_cols = ds.getMaxXSteps();
     UniformXScale x_scale = ds.getXRange();
-    x_scale = new UniformXScale( x_scale.getStart_x(), 
+    x_scale = new UniformXScale( x_scale.getStart_x(),
                                  x_scale.getEnd_x(),
                                  num_cols + 1 );
 
@@ -203,16 +256,16 @@ public class TrueAngle extends    YAxisConversionOp
                                                 // spectra in one 2D array
                                                 // also, record min & max angle
                                                 // values corresponding to the
-                                                // spectra.  The 2D array will 
+                                                // spectra.  The 2D array will
                                                 // be resampled to form the
                                                 // true angle image "in place"
-                                                // so it must be large enough.  
+                                                // so it must be large enough.
     int num_data = ds.getNum_entries();
     float y_vals[][];
     if ( num_data > n_bins )
-      y_vals = new float[num_data][] ; 
+      y_vals = new float[num_data][] ;
     else
-      y_vals = new float[n_bins][] ; 
+      y_vals = new float[n_bins][] ;
 
     float min_ang[]  = new float[num_data];
     float max_ang[]  = new float[num_data];
@@ -220,7 +273,7 @@ public class TrueAngle extends    YAxisConversionOp
                      rebinned_data;
     AttributeList    attr_list;
     DetectorPosition position = null;
-    float            scattering_angle; 
+    float            scattering_angle;
     Float            delta_theta_obj = null;
     float            delta_theta;
     Float            raw_angle_obj = null;
@@ -241,7 +294,7 @@ public class TrueAngle extends    YAxisConversionOp
                     "ERROR: no DETECTOR_POS attribute in TrueAngle operator");
         return message;
       }
-     
+
       delta_theta_obj = (Float)
                         attr_list.getAttributeValue( Attribute.DELTA_2THETA );
       if ( delta_theta_obj == null )
@@ -264,11 +317,11 @@ public class TrueAngle extends    YAxisConversionOp
       delta_theta = delta_theta_obj.floatValue();
       raw_angle = raw_angle_obj.floatValue();
 
-//      min_ang[i] = scattering_angle - delta_theta/2; 
-//      max_ang[i] = scattering_angle + delta_theta/2; 
-      min_ang[i] = raw_angle - delta_theta/2; 
-      max_ang[i] = raw_angle + delta_theta/2; 
-    }    
+//      min_ang[i] = scattering_angle - delta_theta/2;
+//      max_ang[i] = scattering_angle + delta_theta/2;
+      min_ang[i] = raw_angle - delta_theta/2;
+      max_ang[i] = raw_angle + delta_theta/2;
+    }
 
     for ( int i = num_data; i < n_bins; i++ )
       y_vals[i] = new float[num_cols];
@@ -279,21 +332,21 @@ public class TrueAngle extends    YAxisConversionOp
     for ( int row = 0; row < n_bins; row++ )
       zero_array[row] = 0.0f;
 
-    for ( int col = 0; col < y_vals[0].length; col++ )    
+    for ( int col = 0; col < y_vals[0].length; col++ )
     {
       System.arraycopy( zero_array, 0, resampled_col, 0, n_bins );
       for ( int row = 0; row < num_data; row++ )
         Sample.ResampleBin( min_ang[row], max_ang[row], y_vals[row][col],
-                              min_angle, max_angle,  resampled_col );  
+                              min_angle, max_angle,  resampled_col );
 
       for ( int row = 0; row < n_bins; row++ )
-        y_vals[row][col] = resampled_col[row];        
+        y_vals[row][col] = resampled_col[row];
     }
 
     Data new_data;
     boolean all_zero;
     int col;
-    UniformXScale two_point_xscale = new UniformXScale( x_scale.getStart_x(), 
+    UniformXScale two_point_xscale = new UniformXScale( x_scale.getStart_x(),
                                                         x_scale.getEnd_x(),
                                                         2 );
     float one_point_y[] = new float[1];
@@ -307,7 +360,7 @@ public class TrueAngle extends    YAxisConversionOp
         if ( y_vals[row][col] != 0 )
           all_zero = false;
         col++;
-      }  
+      }
 
       if ( all_zero )
         new_data = Data.getInstance( two_point_xscale, one_point_y, row+1 );
@@ -315,19 +368,19 @@ public class TrueAngle extends    YAxisConversionOp
         new_data = Data.getInstance( x_scale, y_vals[row], row+1 );
 
       raw_angle = row * (max_angle - min_angle) / n_bins + min_angle;
-      Attribute angle_attr = new FloatAttribute( Attribute.RAW_ANGLE, 
+      Attribute angle_attr = new FloatAttribute( Attribute.RAW_ANGLE,
                                                  raw_angle );
-      new_data.setAttribute( angle_attr ); 
+      new_data.setAttribute( angle_attr );
 
-      new_ds.addData_entry( new_data );      
+      new_ds.addData_entry( new_data );
     }
 
     return new_ds;
-  }  
+  }
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current TrueAngle Operator.  The list 
+   * Get a copy of the current TrueAngle Operator.  The list
    * of parameters and the reference to the DataSet to which it applies are
    * also copied.
    */
@@ -349,12 +402,28 @@ public class TrueAngle extends    YAxisConversionOp
    */
   public static void main( String[] args )
   {
-    TrueAngle op = new TrueAngle();
+    float min_A, max_A;
+    int num_A;
 
-    String list[] = op.getCategoryList();
-    System.out.println( "Categories are: " );
-    for ( int i = 0; i < list.length; i++ )
-      System.out.println( list[i] );
-  }
+    min_A = (float)0.0;
+    max_A = (float)180.0;
+    num_A = 500;
+    String file_name = "/home/groups/SCD_PROJECT/SampleRuns/hrcs2447.run ";
+                       //"D:\\ISAW\\SampleRuns\\hrcs2447.run";
+    try
+    {
+       RunfileRetriever rr = new RunfileRetriever( file_name );
+       DataSet ds1 = rr.getDataSet(1);
+       ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+       TrueAngle op = new TrueAngle(ds1, min_A, max_A, num_A);
+       DataSet new_ds = (DataSet)op.getResult();
+       ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+       System.out.println(op.getDocumentation());
+    }
+    catch(Exception e)
+    {
+       e.printStackTrace();
+    }
+  } 
 
 }
