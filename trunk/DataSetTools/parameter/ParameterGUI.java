@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2004/01/08 14:49:51  bouzekc
+ *  Removed unused local method variable.
+ *
  *  Revision 1.37  2003/11/25 03:02:32  bouzekc
  *  Now only tries to clone the Label if it has been initialized.
  *
@@ -753,7 +756,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * added to the entrywidget.
    */
   private void addPCLtoWidget(  ) {
-    String temp;
     PropertyChangeListener pcl;
     String propertyName;
 
