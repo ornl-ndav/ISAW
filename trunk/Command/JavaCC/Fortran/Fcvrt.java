@@ -35,8 +35,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.3  2004/06/18 18:30:20  rmikk
- * Updated  result from JavaCC on FortJ2.jj
+ * Revision 1.4  2004/06/22 15:42:09  rmikk
+ * Result of update Fort2j.jj
  *
  */
 
@@ -66,7 +66,7 @@ public class Fcvrt implements FcvrtConstants {
     *  Program that invokes this translator.
     * @param  args[0]  the filename of a file that contains a [sequence of]
     *                  subroutine[s] or function[s]
-    * @ return nothing but each subroutine and function will be translated
+    * @return nothing but each subroutine and function will be translated
     *          to a different java file. The filename corresponds to the 
     *          subroutine or function name.
     */
@@ -600,12 +600,12 @@ Token t;
     case RETURN:
     case IDENTIFIER:
     case THEN:
+    case TRUE:
+    case FALSE:
     case EXP:
     case WRITE:
     case READ:
     case WHILE:
-    case TRUE:
-    case FALSE:
       s = PossVarName();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LPAREN:
@@ -695,12 +695,12 @@ Token t;
     case RETURN:
     case IDENTIFIER:
     case THEN:
+    case TRUE:
+    case FALSE:
     case EXP:
     case WRITE:
     case READ:
     case WHILE:
-    case TRUE:
-    case FALSE:
       s1 = PossVarName();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case SUBROUTINE:
@@ -720,12 +720,12 @@ Token t;
       case RETURN:
       case IDENTIFIER:
       case THEN:
+      case TRUE:
+      case FALSE:
       case EXP:
       case WRITE:
       case READ:
       case WHILE:
-      case TRUE:
-      case FALSE:
         s2 = PossVarName();
         break;
       default:
@@ -839,12 +839,12 @@ Token t;
     case RETURN:
     case IDENTIFIER:
     case THEN:
+    case TRUE:
+    case FALSE:
     case EXP:
     case WRITE:
     case READ:
     case WHILE:
-    case TRUE:
-    case FALSE:
       s1 = PossVarName();
       label_3:
       while (true) {
@@ -1163,12 +1163,12 @@ Token t;
     case RETURN:
     case IDENTIFIER:
     case THEN:
+    case TRUE:
+    case FALSE:
     case EXP:
     case WRITE:
     case READ:
     case WHILE:
-    case TRUE:
-    case FALSE:
       s = PossVarName();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LPAREN:
@@ -1477,6 +1477,8 @@ void RestOfParamList():{
       case INTNUM:
       case LPAREN:
       case DOT:
+      case TRUE:
+      case FALSE:
       case PLUS:
       case MINUS:
       case STRING:
@@ -1484,8 +1486,6 @@ void RestOfParamList():{
       case WRITE:
       case READ:
       case WHILE:
-      case TRUE:
-      case FALSE:
         s = NonAndOrExpression();
         label_4:
         while (true) {
@@ -1689,6 +1689,38 @@ void RestOfParamList():{
 
          else
            {if (true) return "";}
+    } else if (jj_2_3(2)) {
+      jj_consume_token(LOGDOT);
+      jj_consume_token(TRUE);
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case DOT:
+        jj_consume_token(DOT);
+        break;
+      case LOGDOT:
+        jj_consume_token(LOGDOT);
+        break;
+      default:
+        jj_la1[47] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+         {if (true) return "true";}
+    } else if (jj_2_4(2)) {
+      jj_consume_token(LOGDOT);
+      jj_consume_token(FALSE);
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case DOT:
+        jj_consume_token(DOT);
+        break;
+      case LOGDOT:
+        jj_consume_token(LOGDOT);
+        break;
+      default:
+        jj_la1[48] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+         {if (true) return "false";}
     } else {
      {if (true) return "";}
     }
@@ -1712,14 +1744,14 @@ void RestOfParamList():{
         t = jj_consume_token(MINUS);
         break;
       default:
-        jj_la1[47] = jj_gen;
+        jj_la1[49] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
       s2 = AlgExpression();
       break;
     default:
-      jj_la1[48] = jj_gen;
+      jj_la1[50] = jj_gen;
       ;
     }
        if( t== null)
@@ -1748,7 +1780,7 @@ void RestOfParamList():{
         ;
         break;
       default:
-        jj_la1[49] = jj_gen;
+        jj_la1[51] = jj_gen;
         break label_5;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1759,7 +1791,7 @@ void RestOfParamList():{
         t = jj_consume_token(DIVISION);
         break;
       default:
-        jj_la1[50] = jj_gen;
+        jj_la1[52] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1797,13 +1829,13 @@ void RestOfParamList():{
         t3 = jj_consume_token(PLUS);
         break;
       default:
-        jj_la1[51] = jj_gen;
+        jj_la1[53] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
       break;
     default:
-      jj_la1[52] = jj_gen;
+      jj_la1[54] = jj_gen;
       ;
     }
     s = OneFactor();
@@ -1814,7 +1846,7 @@ void RestOfParamList():{
         ;
         break;
       default:
-        jj_la1[53] = jj_gen;
+        jj_la1[55] = jj_gen;
         break label_6;
       }
       jj_consume_token(POWER);
@@ -1829,13 +1861,13 @@ void RestOfParamList():{
           t1 = jj_consume_token(MINUS);
           break;
         default:
-          jj_la1[54] = jj_gen;
+          jj_la1[56] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
         break;
       default:
-        jj_la1[55] = jj_gen;
+        jj_la1[57] = jj_gen;
         ;
       }
       s3 = OneFactor();
@@ -1880,19 +1912,19 @@ void RestOfParamList():{
     case RETURN:
     case IDENTIFIER:
     case THEN:
+    case TRUE:
+    case FALSE:
     case EXP:
     case WRITE:
     case READ:
     case WHILE:
-    case TRUE:
-    case FALSE:
       s = PossVarName();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LPAREN:
         params = ExpressionList();
         break;
       default:
-        jj_la1[56] = jj_gen;
+        jj_la1[58] = jj_gen;
         ;
       }
        if( !checkVariable( s.toUpperCase(),-1))
@@ -1968,7 +2000,7 @@ void RestOfParamList():{
        {if (true) return "("+s+")";}
       break;
     default:
-      jj_la1[57] = jj_gen;
+      jj_la1[59] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1992,12 +2024,12 @@ void RestOfParamList():{
           t2 = jj_consume_token(INTNUM);
           break;
         default:
-          jj_la1[58] = jj_gen;
+          jj_la1[60] = jj_gen;
           ;
         }
         break;
       default:
-        jj_la1[59] = jj_gen;
+        jj_la1[61] = jj_gen;
         ;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -2005,7 +2037,7 @@ void RestOfParamList():{
         s = ExponentialExpression();
         break;
       default:
-        jj_la1[60] = jj_gen;
+        jj_la1[62] = jj_gen;
         ;
       }
        if(t2 == null)
@@ -2026,13 +2058,13 @@ void RestOfParamList():{
         s = ExponentialExpression();
         break;
       default:
-        jj_la1[61] = jj_gen;
+        jj_la1[63] = jj_gen;
         ;
       }
         {if (true) return "."+t1.image+s;}
       break;
     default:
-      jj_la1[62] = jj_gen;
+      jj_la1[64] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2056,13 +2088,13 @@ void RestOfParamList():{
         t1 = jj_consume_token(MINUS);
         break;
       default:
-        jj_la1[63] = jj_gen;
+        jj_la1[65] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
       break;
     default:
-      jj_la1[64] = jj_gen;
+      jj_la1[66] = jj_gen;
       ;
     }
     t = jj_consume_token(INTNUM);
@@ -2102,7 +2134,7 @@ void RestOfParamList():{
       jj_consume_token(POWER);
       break;
     default:
-      jj_la1[65] = jj_gen;
+      jj_la1[67] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2256,7 +2288,7 @@ void RestOfParamList():{
       jj_consume_token(LOGDOT);
       break;
     default:
-      jj_la1[66] = jj_gen;
+      jj_la1[68] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2358,7 +2390,7 @@ void RestOfParamList():{
                                                           {if (true) return "RETURN";}
       break;
     default:
-      jj_la1[67] = jj_gen;
+      jj_la1[69] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2395,6 +2427,8 @@ void RestOfParamList():{
     case LPAREN:
     case LOGDOT:
     case DOT:
+    case TRUE:
+    case FALSE:
     case PLUS:
     case MINUS:
     case STRING:
@@ -2402,8 +2436,6 @@ void RestOfParamList():{
     case WRITE:
     case READ:
     case WHILE:
-    case TRUE:
-    case FALSE:
       s = Expression("");
       label_7:
       while (true) {
@@ -2412,7 +2444,7 @@ void RestOfParamList():{
           ;
           break;
         default:
-          jj_la1[68] = jj_gen;
+          jj_la1[70] = jj_gen;
           break label_7;
         }
         jj_consume_token(COMMA);
@@ -2424,7 +2456,7 @@ void RestOfParamList():{
       }
       break;
     default:
-      jj_la1[69] = jj_gen;
+      jj_la1[71] = jj_gen;
       ;
     }
     jj_consume_token(RPAREN);
@@ -2463,6 +2495,8 @@ void RestOfParamList():{
     case LPAREN:
     case LOGDOT:
     case DOT:
+    case TRUE:
+    case FALSE:
     case PLUS:
     case MINUS:
     case PROD:
@@ -2471,8 +2505,6 @@ void RestOfParamList():{
     case WRITE:
     case READ:
     case WHILE:
-    case TRUE:
-    case FALSE:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case SUBROUTINE:
       case FUNCTION:
@@ -2495,6 +2527,8 @@ void RestOfParamList():{
       case LPAREN:
       case LOGDOT:
       case DOT:
+      case TRUE:
+      case FALSE:
       case PLUS:
       case MINUS:
       case STRING:
@@ -2502,15 +2536,13 @@ void RestOfParamList():{
       case WRITE:
       case READ:
       case WHILE:
-      case TRUE:
-      case FALSE:
         s = Expression("");
         break;
       case PROD:
         jj_consume_token(PROD);
         break;
       default:
-        jj_la1[70] = jj_gen;
+        jj_la1[72] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -2525,7 +2557,7 @@ void RestOfParamList():{
           ;
           break;
         default:
-          jj_la1[71] = jj_gen;
+          jj_la1[73] = jj_gen;
           break label_8;
         }
         jj_consume_token(COMMA);
@@ -2551,6 +2583,8 @@ void RestOfParamList():{
         case LPAREN:
         case LOGDOT:
         case DOT:
+        case TRUE:
+        case FALSE:
         case PLUS:
         case MINUS:
         case STRING:
@@ -2558,15 +2592,13 @@ void RestOfParamList():{
         case WRITE:
         case READ:
         case WHILE:
-        case TRUE:
-        case FALSE:
           s = Expression("");
           break;
         case PROD:
           jj_consume_token(PROD);
           break;
         default:
-          jj_la1[72] = jj_gen;
+          jj_la1[74] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -2577,7 +2609,7 @@ void RestOfParamList():{
       }
       break;
     default:
-      jj_la1[73] = jj_gen;
+      jj_la1[75] = jj_gen;
       ;
     }
     jj_consume_token(RPAREN);
@@ -2609,6 +2641,26 @@ void RestOfParamList():{
     finally { jj_save(1, xla); }
   }
 
+  final private boolean jj_2_3(int xla) {
+    jj_la = xla; jj_lastpos = jj_scanpos = token;
+    try { return !jj_3_3(); }
+    catch(LookaheadSuccess ls) { return true; }
+    finally { jj_save(2, xla); }
+  }
+
+  final private boolean jj_2_4(int xla) {
+    jj_la = xla; jj_lastpos = jj_scanpos = token;
+    try { return !jj_3_4(); }
+    catch(LookaheadSuccess ls) { return true; }
+    finally { jj_save(3, xla); }
+  }
+
+  final private boolean jj_3_3() {
+    if (jj_scan_token(LOGDOT)) return true;
+    if (jj_scan_token(TRUE)) return true;
+    return false;
+  }
+
   final private boolean jj_3_2() {
     if (jj_scan_token(LOGDOT)) return true;
     Token xsp;
@@ -2632,6 +2684,12 @@ void RestOfParamList():{
     return false;
   }
 
+  final private boolean jj_3_4() {
+    if (jj_scan_token(LOGDOT)) return true;
+    if (jj_scan_token(FALSE)) return true;
+    return false;
+  }
+
   final private boolean jj_3_1() {
     if (jj_scan_token(LOGDOT)) return true;
     if (jj_scan_token(NOT)) return true;
@@ -2646,7 +2704,7 @@ void RestOfParamList():{
   public boolean lookingAhead = false;
   private boolean jj_semLA;
   private int jj_gen;
-  final private int[] jj_la1 = new int[74];
+  final private int[] jj_la1 = new int[76];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -2654,12 +2712,12 @@ void RestOfParamList():{
       jj_la1_1();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x3ffffe,0x3ffffe,0x4000000,0x4000000,0x4000000,0x3ffff4,0x4000000,0x4000000,0x576fff0,0x4000000,0x136fff0,0x4000000,0x800000,0x4000000,0x576fff0,0x4000000,0x800000,0x576fff0,0x4000000,0x4400004,0x17ffff4,0x4000000,0x4400004,0x4000000,0x6400000,0x800000,0x4400000,0x4000000,0x4000000,0x576fff0,0x4000000,0x4400004,0x5,0x4000000,0x4408005,0x50000000,0x10000000,0x80000000,0x50000000,0x50000000,0x10000000,0x4736fff0,0x80000000,0x50000000,0x10000000,0x0,0x50000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x4000000,0x4736fff0,0x2000000,0x40000000,0x0,0x0,0x42000000,0x0,0x0,0x8800004,0xffeaffff,0x136fff0,0x800000,0x5736fff0,0x5736fff0,0x800000,0x5736fff0,0x5736fff0,};
+      jj_la1_0 = new int[] {0x3ffffe,0x3ffffe,0x4000000,0x4000000,0x4000000,0x3ffff4,0x4000000,0x4000000,0x576fff0,0x4000000,0x136fff0,0x4000000,0x800000,0x4000000,0x576fff0,0x4000000,0x800000,0x576fff0,0x4000000,0x4400004,0x17ffff4,0x4000000,0x4400004,0x4000000,0x6400000,0x800000,0x4400000,0x4000000,0x4000000,0x576fff0,0x4000000,0x4400004,0x5,0x4000000,0x4408005,0x50000000,0x10000000,0x80000000,0x50000000,0x50000000,0x10000000,0x4736fff0,0x80000000,0x50000000,0x10000000,0x0,0x50000000,0x50000000,0x50000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x4000000,0x4736fff0,0x2000000,0x40000000,0x0,0x0,0x42000000,0x0,0x0,0x8800004,0xffeaffff,0x136fff0,0x800000,0x5736fff0,0x5736fff0,0x800000,0x5736fff0,0x5736fff0,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3e2000,0x0,0x3e2000,0x0,0x0,0x0,0x3e2000,0x0,0x0,0x3e2000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3e2000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x3e3180,0x1,0x0,0x0,0x7e,0x0,0x180,0x180,0x600,0x600,0x180,0x180,0x800,0x180,0x180,0x0,0x3e3000,0x0,0x0,0x2000,0x2000,0x0,0x180,0x180,0xf80,0x7ffff,0x3e2000,0x0,0x3e3180,0x3e3380,0x0,0x3e3380,0x3e3380,};
+      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x388180,0x0,0x388180,0x0,0x0,0x0,0x388180,0x0,0x0,0x388180,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x388180,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x38c780,0x1,0x0,0x0,0x7e,0x0,0x0,0x0,0x600,0x600,0x1800,0x1800,0x600,0x600,0x2000,0x600,0x600,0x0,0x38c180,0x0,0x0,0x8000,0x8000,0x0,0x600,0x600,0x3e00,0x1ffe7f,0x388180,0x0,0x38c780,0x38cf80,0x0,0x38cf80,0x38cf80,};
    }
-  final private JJCalls[] jj_2_rtns = new JJCalls[2];
+  final private JJCalls[] jj_2_rtns = new JJCalls[4];
   private boolean jj_rescan = false;
   private int jj_gc = 0;
 
@@ -2669,7 +2727,7 @@ void RestOfParamList():{
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 74; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 76; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2678,7 +2736,7 @@ void RestOfParamList():{
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 74; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 76; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2797,7 +2855,7 @@ void RestOfParamList():{
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 74; i++) {
+    for (int i = 0; i < 76; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -2834,7 +2892,7 @@ void RestOfParamList():{
 
   final private void jj_rescan_token() {
     jj_rescan = true;
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 4; i++) {
       JJCalls p = jj_2_rtns[i];
       do {
         if (p.gen > jj_gen) {
@@ -2842,6 +2900,8 @@ void RestOfParamList():{
           switch (i) {
             case 0: jj_3_1(); break;
             case 1: jj_3_2(); break;
+            case 2: jj_3_3(); break;
+            case 3: jj_3_4(); break;
           }
         }
         p = p.next;
