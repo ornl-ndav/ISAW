@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2001/11/09 18:20:51  dennis
+ *  1. Made changes so that the ScriptProcessor implements
+ *     ScriptProcessorOperator
+ *  2. In getResult, Parameters are directly assigned to variables
+ *     using the execOneLine.Assign routine
+ *  3. getLine, getNextMacroLine were changed to static methods
+ *
  * Revision 1.13  2001/08/10 20:44:00  rmikk
  * Added a ServerTypeString for supported data types for
  * parameters in scripts
@@ -106,7 +113,7 @@ import java.util.Vector;
  * It has features to send back results that are displayable and also
  * results that are data sets. 
  */
-public class ScriptProcessor  extends GenericOperator 
+public class ScriptProcessor  extends ScriptProcessorOperator 
                           implements  
 				      PropertyChangeListener , 
                                       IObservable ,  IObserver,
@@ -217,6 +224,9 @@ public class ScriptProcessor  extends GenericOperator
 	
 	
     }
+   public void setDocument( Document doc)
+     {MacroDocument = doc;
+     }
 
     /**
      *adds a data set to the permanent workspace of the programs
@@ -266,16 +276,21 @@ public class ScriptProcessor  extends GenericOperator
 
     }
 
+  /** Resets error condition so program can continue executing one line
+  */
+   public void resetError()
+     {ExecLine.resetError();
+      }
 
-
-
-    /** resets the error conditions and the variable space
+    /** resets the error conditions and the variable space and clears displays
     *  NOTE: The data sets that were added from outside stay
     */
     public void reset()
       {
         ExecLine.initt();
         ExecLine.resetError();
+        ExecLine.removeDisplays();
+
       }
 
     /** executes all the lines of code in the document
@@ -842,7 +857,7 @@ private int executeForBlock( Document Doc , int start , boolean execute,
    *  @param prevLine  the line number of the previous Macro line of -1 for first
    *  @return  The line number of the next macro line or -1 if none
   */
-   public int getNextMacroLine( Document Doc, int prevLine)
+   public static int getNextMacroLine( Document Doc, int prevLine)
     { String Line;
       prevLine++;
       if( prevLine < 0 ) 
@@ -853,7 +868,7 @@ private int executeForBlock( Document Doc , int start , boolean execute,
       if( Line.trim().indexOf("#$$") == 0)
          return prevLine;
       if( Line.trim().indexOf("$") == 0)
-         {if(Debug)System.out.println("get $ Macro line #"+prevLine);
+         {//if(Debug)System.out.println("get $ Macro line #"+prevLine);
            return prevLine;
          }
       return getNextMacroLine( Doc, prevLine++);
@@ -884,13 +899,13 @@ private int nextLine( Document Doc, int line1 )
  *@param start  the line number to be returned
  *@return  The string representation of that line or null if there is none
  */
-public String getLine( Document Doc, int start )
+public static String getLine( Document Doc, int start )
    { return getLine( Doc, start, true );
    }
 
 // Same as getLine above if Contined is true.  It can be used when
 // keeping track of line numbers.
-   private String getLine( Document Doc, int start, boolean Continued )
+   private static String getLine( Document Doc, int start, boolean Continued )
      {
       String var ;      
       int i , j , k ; 
@@ -912,7 +927,7 @@ public String getLine( Document Doc, int start )
         S = Doc.getText( F.getStartOffset() , F.getEndOffset()  -  F.getStartOffset() ) ; 
          }
       catch( BadLocationException s )
-	{seterror ( 0 , "Internal Errorc" ) ; 
+	{//seterror ( 0 , "Internal Errorc" ) ; 
 	 return null ; 
 	}
      
@@ -1597,7 +1612,8 @@ public Object getResult()
             {Vector V = (Vector)( getParameter(i).getValue());
               ExecLine.Assign((String)(vnames.elementAt(i)) , V );
             }
-          else
+
+          else if( 3==4)
             {S =  (String)vnames.elementAt(i)+ "=" ;
              if( (getParameter( i ).getValue() instanceof String) ||
                     (getParameter( i ).getValue() instanceof SpecialString))
@@ -1616,6 +1632,12 @@ public Object getResult()
                 //return;  must reset dataset titles
                }
             }
+        else if( getParameter(i).getValue() instanceof SpecialString)
+          ExecLine.Assign((String)(vnames.elementAt(i)), getParameter(i).getValue().toString());
+
+        else
+         { ExecLine.Assign((String)(vnames.elementAt(i)), getParameter(i).getValue());
+          }
 
        }// for i=0 to Num_parameters
       int k =lerror; 
@@ -1658,8 +1680,8 @@ public Object getResult()
    if( ExecLine != null )
       if( (ExecLine.getErrorCharPos() >= 0) && !ReturnStatement)
            
-        {System.out.println("HERE"+ReturnStatement+" "+
-                 ExecLine.getErrorCharPos());
+        {//System.out.println("HERE"+ReturnStatement+" "+
+                 //ExecLine.getErrorCharPos());
            return new ErrorString( ExecLine.getErrorMessage() +" on line "+
                  lerror+ "at position "
                          +ExecLine.getErrorCharPos() );
