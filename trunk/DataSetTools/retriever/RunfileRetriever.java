@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2001/06/28 14:09:25  dennis
+ *  Now traps for height > final_path, which led to detector positions
+ *  with NaN values.
+ *
  *  Revision 1.23  2001/04/25 21:57:57  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -714,7 +718,18 @@ public class RunfileRetriever extends    Retriever
     //                                     false ); 
     // }
 
-    float r  = (float)Math.sqrt( final_path * final_path - height * height );
+    float r = 0;                                      // patch for error with
+    if ( final_path * final_path < height * height )  // group 294 in some files
+    {
+      System.out.println("ERROR: in RunfileRetriever final_path < height");
+      System.out.println("       for group ID = " + group_id );
+      System.out.println("       final_path   = " + final_path );
+      System.out.println("       height       = " + height );
+      System.out.println("       Now using r = final_path as default.");
+      r = final_path;
+    }
+    else
+      r  = (float)Math.sqrt( final_path * final_path - height * height );
     position.setCylindricalCoords( r, angle, height );
 
     // Show effective position
