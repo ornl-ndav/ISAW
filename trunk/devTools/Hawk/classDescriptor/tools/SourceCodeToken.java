@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/05/26 21:00:06  kramer
+ * Modified how information is internally stored in a token.
+ *
  * Revision 1.4  2004/03/12 19:46:20  bouzekc
  * Changes since 03/10.
  *
@@ -56,6 +59,10 @@ import java.util.Vector;
 public class SourceCodeToken
 {
 	/**
+	 * An integer used to signify that the token's type is unknown.
+	 */
+	public static final int UNKNOWN = -1;
+	/**
 	 * An integer used to signify that the token represents source code.
 	 */
 	public static final int SOURCE_CODE = 0;
@@ -78,50 +85,79 @@ public class SourceCodeToken
 	 * A Vector of Strings, each of which is one line from the string that the token is 
 	 * supposed to represent.  Thus it is easy to get an arbitrary line from the string.
 	 */
-	protected Vector strVec;
+//	protected Vector strVec;
 	/**
-	 * This is the line number of the first String in the Vector strVec.
+	 * The buffer which holds the String's contents.
+	 */
+	protected StringBuffer buffer;
+	/**
+	 * This token probably came from a much larger StringBuffer (holding the contents of a string).  
+	 * This field is the line number of the first line from the buffer where this token starts.
 	 */
 	protected int firstLineNumber;
+	/**
+	 * This token probably came from a much larger StringBuffer (holding the contents of a string).  
+	 * This field contains the index of the character from the larger buffer from which this token starts.
+	 */
+	protected long firstIndex;
 	/**
 	 * Used to describe the tokens type (either SOURCE_CODE, JAVADOCS, 
 	 * SLASH_STAR_COMMENT, or SLASH_SLASH_COMMENT).
 	 */
 	protected int type;
-	
+	/**
+	 * This Vector contains the indices where a new line character occurs.
+	 */
+	private Vector lineNumberVec;
+
 	/**
 	 * Create a new SourceCodeToken
-	 * @param s The Vector of Strings, each of which is a line from the string 
-	 * that the token is supposed to represent.
+	 * @param str The String that this token encapsulates.
 	 * @param initialLineNumber The line number for the first String in the vector s.
 	 * @param typeNumber This token's type (either SOURCE_CODE, JAVADOCS, 
 	 * SLASH_STAR_COMMENT, or SLASH_SLASH_COMMENT).
 	 */
-	public SourceCodeToken(Vector s, int initialLineNumber, int typeNumber)
+	public SourceCodeToken(String str, long initialIndex, int initialLineNumber, int typeNumber)
 	{
-		strVec = s;
+		firstIndex = initialIndex;
 		firstLineNumber = initialLineNumber;
 		type = typeNumber;
-	}
-		
-	/**
-	 * Get the Vector of Strings associated with this token.
-	 * @return The Vector of Strings associated with this token.
-	 */
-	public Vector getStringVec()
-	{
-		return strVec;
+		buffer = new StringBuffer(str);
+		int lastOccurance = 0;
+		int previousOccurance = 0;
+		lineNumberVec = new Vector();
+			while (lastOccurance<buffer.length() && lastOccurance>=previousOccurance)
+			{
+				previousOccurance = lastOccurance;
+				lastOccurance = buffer.indexOf(System.getProperty("line.separator"),lastOccurance+1);
+				lineNumberVec.add(new Integer(lastOccurance));
+			}
 	}
 	
 	/**
-	 * Get the String from strVec at the index i without a new line character at 
-	 * the end of the string..
-	 * @param i The index.
-	 * @return The String at the index i.
+	 * This method gets the line number for the line that contains the character at index 'index'.
+	 * @param index The character in the StringBuffer 'buffer' used.
+	 * @return The corresponding line number.
 	 */
-	public String getStringAt(int i)
+	public int getLineNumberAtIndex(int index)
 	{
-		return (String)strVec.elementAt(i);
+		int lineNum = 0;
+		int i = 0;
+		while (index>((Integer)lineNumberVec.elementAt(i)).intValue())
+		{
+			lineNum++;
+			i++;
+		}
+		return lineNum;
+	}
+	
+	/**
+	 * Get the index of the first character in this token from the larger 
+	 * StringBuffer that this token is a subset of.
+	 */
+	public long getFirstIndex()
+	{
+		return firstIndex;
 	}
 	
 	/**
@@ -131,10 +167,7 @@ public class SourceCodeToken
 	 */
 	public String toString()
 	{
-		String result = "";
-		for (int i=0; i<strVec.size(); i++)
-			result += (String)strVec.elementAt(i)+"\n";
-		return result;
+		return buffer.toString();
 	}
 	
 	/**
@@ -146,26 +179,7 @@ public class SourceCodeToken
 	{
 		return type;
 	}
-	
-	/**
-	 * Gets the line number for the String at the ith index of the Vector strVec.
-	 * @param i The index of the String in question from the Vector strVec.
-	 * @return The String's corresponding line number.
-	 */
-	public int getLineNumberAt(int i)
-	{
-		return (firstLineNumber+i);
-	}
-	
-	/**
-	 * Get the line number for the last String in the Vector strVec.
-	 * @return The last line number.
-	 */
-	public int getLastLineNumber()
-	{
-		return (firstLineNumber+strVec.size()-1);
-	}
-	
+
 	/**
 	 * True if the token represents source code.
 	 * @return True or false.
