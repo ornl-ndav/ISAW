@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.65  2003/10/28 19:55:42  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.64  2003/10/20 16:25:05  rmikk
  * Fixed javadoc errors
  *
@@ -249,8 +252,9 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
    * @param fname The name of the file that stores the Macro
    * @param X An Obsever who will receive the data sets that are "Sent" with
    *        the SEND command and that are the result of the script fname
-   * @param DSS A list of data sets that can be selected as values for Data
+   * @param ds_src A list of data sets that can be selected as values for Data
    *        Set Parameters.
+   * @param   DocLog the Document that stores log information
    */
   public void getExecScript( 
     String fname, IObserver X, IDataSetListHandler ds_src, Document DocLog ) {
