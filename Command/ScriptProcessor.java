@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2003/03/11 15:33:40  pfpeterson
+ * Does not use a Document until getResult(). setDefaultParameters()
+ * now uses a StringBuffer.
+ *
  * Revision 1.31  2003/03/10 21:05:14  pfpeterson
  * Split out code for parsing parameter definitions out into seperate
  * method. Also changed parsing parameters to use StringBuffer rather
@@ -133,6 +137,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   private Document logDocument = null;
   
   private boolean Debug = false;
+  private StringBuffer macroBuffer=null;
   private Document MacroDocument = null;
   private Vector vnames= new Vector();
   private String command ="UNKNOWN";
@@ -161,21 +166,14 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    */
   public ScriptProcessor ( String TextFileName ){
     this();
-    MacroDocument =new Util().openDoc( TextFileName);
-    CommandPane.fixUP( MacroDocument);
+    macroBuffer=Util.readTextFile(TextFileName);
     setDefaultParameters();
     Title = TextFileName;
   }
   
   public ScriptProcessor( StringBuffer buffer ){
     this();
-    MacroDocument=new PlainDocument();
-    try{
-      MacroDocument.insertString(0,buffer.toString(),null);
-    }catch(BadLocationException e){
-      // let it drop on the floor
-    }
-    CommandPane.fixUP(MacroDocument);
+    macroBuffer=buffer;
     setDefaultParameters();
   }
 
@@ -187,8 +185,8 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    */
   public ScriptProcessor ( Document Doc  ){
     this();
-    MacroDocument = Doc ;
-    CommandPane.fixUP( MacroDocument );
+    if( Doc==null || Doc.getLength()==0 ) return;
+    this.setDocument(Doc);
     setDefaultParameters(); 
   }
   
@@ -238,6 +236,8 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   
   public void setDocument( Document doc){
     MacroDocument = doc;
+    CommandPane.fixUP(MacroDocument);
+    macroBuffer=null;
   }
   
   /**
@@ -1158,58 +1158,70 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     
   /**
    *  Sets Default parameters for getResult or for the JParametersGUI
-   *  Dialog box. This will parse the MacroDocument created in the
+   *  Dialog box. This will parse the macroBuffer created in the
    *  constructor.
    */
   public void setDefaultParameters(){
     String Line;
-    Document doc = MacroDocument;
       
     if( Debug) 
       System.out.println("Start get Def par"+ perror);
-    if( MacroDocument == null) 
-      return ;
-       
-    parameters= new Vector();
-    vnames= new Vector();
-    StringBuffer buffer=null;
-    {
-      String text=null;
+
+    // create the text to get parameters from
+    String text=null;
+    if(macroBuffer!=null){
+      text=macroBuffer.toString();
+    }else{
+      if( MacroDocument == null) 
+        return;
       try{
-        text=doc.getText(0,doc.getLength());
-        buffer=new StringBuffer(text);
-        int index=text.lastIndexOf("$");
-        if(index<0){
-          buffer=null;
-        }else{
-          index=text.indexOf("\n",index);
-          if(index>0)
-            buffer.delete(index+1,buffer.length());
-        }
+        text=MacroDocument.getText(0,MacroDocument.getLength());
       }catch(BadLocationException e){
         // let it drop on the floor
       }
     }
 
-    if(buffer==null){
-      if(Debug) System.out.println("Next line="+getNextMacroLine( doc,-1));
-      for( int i=getNextMacroLine(doc,-1) ; i>=0 ; i=getNextMacroLine(doc,i)){
-        Line = getLine( doc , i);
-        processMacroLine(Line,i);
-      }
+    // check that string isn't empty
+    if( text==null || text.length()<=0 )
+      return;
+       
+    // remove everything after the last suspected parameter and create
+    // a StringBuffer
+    StringBuffer buffer=null;
+    int index=text.lastIndexOf("$");
+    if(index<0){
+      buffer=null;
     }else{
-      int linenum=0;
-      int index=-1;
-      while(true){
-        index=buffer.toString().indexOf("\n");
-        if(index>=0){
-          Line=buffer.substring(0,index);
-          buffer.delete(0,index+1);
-          processMacroLine(Line,linenum);
-          linenum++;
-        }else{
-          break;
-        }
+      index=text.indexOf("\n",index);
+      if(index>0)
+        buffer=new StringBuffer(text.substring(0,index+1));
+    }
+
+    // must have a non-empty buffer
+    if( buffer==null || buffer.length()<=0 )
+      return;
+
+    // initialize the list of variables and parameters
+    parameters= new Vector();
+    vnames= new Vector();
+
+    // parse the parameters
+    int linenum=0;
+    index=-1;
+    while(true){
+      index=buffer.toString().indexOf("\n");
+      if(index>=0){
+        Line=buffer.substring(0,index);
+        buffer.delete(0,index+1);
+        processMacroLine(Line,linenum);
+        linenum++;
+      }else if(buffer.length()>0){
+        Line=buffer.toString();
+        buffer.delete(0,buffer.length());
+        processMacroLine(Line,linenum);
+        linenum++;
+      }else{
+        break;
       }
     }
     ExecLine.resetError();
@@ -1298,6 +1310,19 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     }// for i=0 to Num_parameters
 
     int k =lerror; 
+    if(MacroDocument==null){
+      if(macroBuffer==null){
+        return new ErrorString("NO SCRIPT FOUND");
+      }else{
+        Document doc=new PlainDocument();
+        try{
+          doc.insertString(0,macroBuffer.toString(),null);
+        }catch(BadLocationException e){
+          // let it drop on the floor
+        }
+        this.setDocument(doc);
+      }
+    }
     k = executeBlock( MacroDocument ,0 ,true ,0) ;
          
     if( getErrorMessage().equals(execOneLine.WN_Return))
