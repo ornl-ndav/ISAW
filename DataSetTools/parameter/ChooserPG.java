@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.20  2003/11/23 02:12:17  bouzekc
+ *  Now properly clones the label.
+ *
  *  Revision 1.19  2003/11/19 04:06:53  bouzekc
  *  This class is now a JavaBean.  Added code to clone() to copy all
  *  PropertyChangeListeners.
@@ -262,6 +265,7 @@ abstract public class ChooserPG extends ParameterGUI{
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
       pg.setValid( this.getValid(  ) );
+      pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
 
       if((this.vals) == null)
         pg.vals = null;
