@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 20:48:27  kramer
+ * Gave the manager the ability to be able to "remember" how it associated the
+ * files.
+ *
  * Revision 1.3  2004/03/12 19:46:19  bouzekc
  * Changes since 03/10.
  *
@@ -69,9 +73,9 @@ public class FileAssociationManager
 	public static final int JAVADOCS = 2;
 	
 	/**
-	 * A Vector of Interface objects
+	 * A Vector of LoggedInterface objects
 	 */
-	private Vector intFVector;
+	private Vector loggedIntFVector;
 	/**
 	 * The type of file that this manager is supposed to work with.  Either JAVASOURCE or 
 	 * JAVADOCS.
@@ -81,12 +85,15 @@ public class FileAssociationManager
 	/**
 	 * Create a FileAssociationManager to associate the files to the Vector of Interface objects 
 	 * supplied.
-	 * @param vec The Vector of Interface bojects to associate the files to.
+	 * @param vec The Vector of Interface ojects to associate the files to.
 	 * @param type The type of files to associate (either JAVASOURCE or JAVADOCS).
 	 */
 	public FileAssociationManager(Vector vec, int type)
 	{
-		intFVector = vec;
+		loggedIntFVector = new Vector();
+		for (int i=0; i<vec.size(); i++)
+			loggedIntFVector.add(new LoggedInterface((Interface)vec.elementAt(i)));
+		
 		fileType = type;
 	}
 	
@@ -98,8 +105,11 @@ public class FileAssociationManager
 	 */
 	public FileAssociationManager(Project pro, int type)
 	{
-		intFVector = pro.getInterfaceVec();
 		fileType = type;
+		Vector vec = pro.getInterfaceVec();
+		loggedIntFVector = new Vector(vec.size());
+		for (int i=0; i<vec.size(); i++)
+			loggedIntFVector.add(new LoggedInterface((Interface)vec.elementAt(i)));
 	}
 	
 	/**
@@ -109,10 +119,25 @@ public class FileAssociationManager
 	 */
 	public FileAssociationManager(Interface intF, int type)
 	{
-		Vector tempVector = new Vector();
-		tempVector.add(intF);
-		intFVector = tempVector;
 		fileType = type;
+		loggedIntFVector = new Vector(1);
+		loggedIntFVector.add(new LoggedInterface(intF));
+	}
+	
+	/**
+	 * Get the Vector of LoggedInterface objects used when associating files.
+	 */
+	public Vector getLoggedInterfaceVector()
+	{
+		return loggedIntFVector;
+	}
+
+	/**
+	 * Set the Vector of LoggedInterface objects used when associating files.
+	 */
+	public void setLoggedInterfaceVector(Vector vec)
+	{
+		loggedIntFVector = vec;
 	}
 	
 	/**
@@ -147,8 +172,10 @@ public class FileAssociationManager
 	}
 	
 	/**
-	 * This takes a filename for a .class file and gets the shortened name for a class.  For instance if the filename 
-	 * is /home/person/package1/package2/demoGUI.class this class will return demoGUI.
+	 * This takes a filename for a file and gets the shortened name for a class.  For instance if the filename 
+	 * is /home/person/package1/package2/demoGUI.java or /home/person/package1/package2/demoGUI.html 
+	 * this class will return demoGUI (Depending if the FileAssociationManager object used to call this method 
+	 * is set to handle java source or HTML files).
 	 * @param fileName The filename to use.
 	 * @return The shortened name for the class specified by the filename supplied.
 	 */
@@ -184,8 +211,16 @@ public class FileAssociationManager
 	 * @param shortClassName The shortened classname of the class or interface to associate the file 
 	 * with.
 	 */
-	public void associateFile(String fileName, String shortClassName)
+	public void associateFiles(Vector dirsToSearch)
 	{
+		Vector filenameVec = new Vector();
+		for (int i=0; i<dirsToSearch.size(); i++)
+			processDirectoryOrFile((String)dirsToSearch.elementAt(i),filenameVec);
+			
+		for (int i=0; i<loggedIntFVector.size(); i++)
+			associateFileWithInterface((LoggedInterface)loggedIntFVector.elementAt(i),filenameVec);
+		
+		/*
 		Interface currentInterface = new Interface();
 		boolean found = false;
 		int i=0;
@@ -202,9 +237,104 @@ public class FileAssociationManager
 			}
 			i++;
 		}
+		*/
 	}
 	
 	/**
+	 * Determines if the object calling this method is supposed to deal with javadocs files 
+	 * or java source files.  Then depending on which one the manager is dealing with, the 
+	 * Interface's current stored value for the file is returned.
+	 * @param intf The Interface in question.
+	 * @return The Interface's javadocs or java source filename.
+	 */
+	public String getAppropriateFilename(Interface intf)
+	{
+		String name = "";
+		if (fileType == JAVADOCS)
+			name = intf.getJavadocsFileName();
+		else if (fileType == JAVASOURCE)
+			name = intf.getSourceFileName();
+			
+		return name;
+	}
+	
+	/**
+	 * This method searches through the Vector of filenames given for the correct file to associate with 
+	 * the Interface object, intf.
+	 * @param loggedIntf The LoggedInterface to use to keep track of how the file is associated.
+	 * @param fileNameVec The Vector of Strings each of which is the filename.
+	 */
+	private void associateFileWithInterface(LoggedInterface loggedIntf, Vector fileNameVec)
+	{
+		boolean found = false;
+		int i=0;
+		String shortFileName = "";
+		String shortenedClassName = loggedIntf.getInterface().getPgmDefn().getEnclosingClassName(true,true);
+		while (i<fileNameVec.size() && !found)
+		{
+			shortFileName = getShortenedClassName((String)fileNameVec.elementAt(i));
+			if (shortFileName.equals(shortenedClassName))
+			{
+				found = true;
+				loggedIntf.setModified(true);
+				if (fileType == FileAssociationManager.JAVADOCS)	
+					loggedIntf.getInterface().setJavadocsFileName((String)fileNameVec.elementAt(i));
+				else if (fileType == FileAssociationManager.JAVASOURCE)
+					loggedIntf.getInterface().setSourceFileName((String)fileNameVec.elementAt(i));
+					
+				if (loggedIntf.getInterface().getPgmDefn().isInner())
+				{
+					String type = loggedIntf.getInterface().getPgmDefn().getInterface_type();
+					loggedIntf.setLog("This is an inner "+type+".  The file for "+shortenedClassName+" (its enclosing "+type+") was therefore used.");
+				}
+				else
+					loggedIntf.setLog("Used file "+fileNameVec.elementAt(i));
+			}
+			i++;
+		}
+	}
+	
+	/**
+	 * Sets the modified flag for all of the LoggedInterface objects from the Vector loggedIntFVector to false.
+	 */
+	public void resetModificationFlags()
+	{
+		for (int i=0; i<loggedIntFVector.size(); i++)
+			((LoggedInterface)loggedIntFVector.elementAt(i)).setModified(false);
+	}
+	
+	private void reorganizeVector()
+	{
+		//a Vector of all of the LoggedInterface objects from loggedIntFVector that are outer classes or interfaces
+		Vector outerVec = new Vector();
+		//a Vector of all of the LoggedInterface objects from loggedIntFVector that are inner classes or interfaces
+		Vector innerVec = new Vector();
+		
+		Interface currentIntf = new Interface();
+		
+		for (int i=0; i<loggedIntFVector.size(); i++)
+		{
+			currentIntf = ((LoggedInterface)loggedIntFVector.elementAt(i)).getInterface();
+			if (currentIntf.getPgmDefn().isInner())
+				innerVec.add(currentIntf);
+			else
+				outerVec.add(currentIntf);
+		}
+		
+		InterfaceUtilities.alphabatizeVector(innerVec,false,false);
+		InterfaceUtilities.alphabatizeVector(outerVec,false,false);
+		
+		Vector tempVec = new Vector(innerVec.size()+outerVec.size());
+		for (int i=0; i<outerVec.size(); i++)
+			tempVec.add(outerVec.elementAt(i));
+		
+		for (int i=0; i<innerVec.size(); i++)
+			tempVec.add(innerVec.elementAt(i));
+			
+		loggedIntFVector = tempVec;
+	}
+	
+	/*
 	 * If the filename supplied to this method is a file, this method associates the file to the correct 
 	 * interface by seeing if any Interface object has the same shortened name as the shortened name 
 	 * from the file (see getShortenedClassName(String str)).  If the filename corresponds to a directory 
@@ -212,7 +342,7 @@ public class FileAssociationManager
 	 * the method associateFile(String fileName, String shortClassName) to associate the files.
 	 * @param Dir The filename of the file or directory to process.
 	 */
-	public void ProcessDirectoryOrFile(String Dir)
+	public void processDirectoryOrFile(String Dir, Vector filenameVec)
 	{
 			File dirFile = new File(Dir);
 			 File[] F;
@@ -229,14 +359,72 @@ public class FileAssociationManager
 			 for( int i  =  0;  i  <  F.length;  i++)
 			 {
 				 if( F[i].isDirectory())
-				 {
-					 ProcessDirectoryOrFile( F[i].getAbsolutePath());
-				}
+					 processDirectoryOrFile( F[i].getAbsolutePath(), filenameVec);
 				else if ( F[i].isFile() && isFileType(F[i].getAbsolutePath()) )
-				{
-					String className = getShortenedClassName(F[i].getPath());
-					associateFile(F[i].getAbsolutePath(), className);
-				}
+					filenameVec.add(F[i].getAbsolutePath());
+			}
+		}
+		
+		public class LoggedInterface
+		{
+			private boolean modified;
+			private String log;
+			private Interface intf;
+			
+			public LoggedInterface()
+			{
+				intf = new Interface();
+				log = "";
+				modified = false;
+			}
+			
+			public LoggedInterface(Interface intF)
+			{
+				intf = intF;
+				log = "";
+				modified = false;
+			}
+			
+			public LoggedInterface(Interface intF, String message, boolean mod)
+			{
+				intf = intF;
+				log = message;
+				modified = mod;
+			}
+			
+			public void setInterface(Interface intF)
+			{
+				intf = intF;
+			}
+			
+			public Interface getInterface()
+			{
+				return intf;
+			}
+			
+			public void setModified(boolean bol)
+			{
+				modified = bol;
+			}
+			
+			public boolean isModified()
+			{
+				return modified;
+			}
+			
+			public String getLog()
+			{
+				return log;
+			}
+			
+			public void setLog(String message)
+			{
+				log = message;
+			}
+			
+			public String toString()
+			{
+				return intf.getPgmDefn().getInterface_name();
 			}
 		}
 }
