@@ -32,6 +32,13 @@
  *
  *
  *  $Log$
+ *  Revision 1.13  2002/07/19 19:30:27  dennis
+ *  getInstance() method now returns a uniform XScale if all
+ *  specified points are within single precision tolerance of
+ *  the points of a uniform XScale.  This is less effiecient,
+ *  but returns a uniform XScale in more cases than the
+ *  previous version.
+ *
  *  Revision 1.12  2002/07/17 22:18:33  pfpeterson
  *  Defined the equals method that all objects should have.
  *
@@ -144,19 +151,27 @@ abstract public class XScale implements Serializable
    */
   public static XScale getInstance( float x[] )
   {
+    float MACHINE_EPSILON = 1.1920929E-7f;
+
     if ( x == null || x.length == 0 )
       return null;
     else if ( x.length > 2 )
     {                             // check for non-degenerate UniformXScale
-      float dx = x[1] - x[0];
-      for ( int i = 2; i < x.length; i++ )
-        if ( x[i] - x[i-1] != dx )
-          return new VariableXScale( x );
+      XScale uniform_scale = new UniformXScale( x[0], x[x.length-1], x.length );
+      float uniform_x[] = uniform_scale.getXs();
+                                               // if relative error > EPSILON
+      for ( int i = 0; i < x.length; i++ )     // use the Variable XScale
+        if ( x[i] != 0 )
+        {
+          if ( Math.abs((uniform_x[i] - x[i]) / x[i]) > MACHINE_EPSILON )
+            return new VariableXScale( x );
+        }
+        else if ( uniform_x[i] != 0 )
+          if (Math.abs((uniform_x[i] - x[i]) / uniform_x[i]) > MACHINE_EPSILON)
+            return new VariableXScale( x );
     }
-                                // if not Variable, or too short, it's Uniform  
-    float min = Math.min( x[0], x[ x.length-1 ] );
-    float max = Math.max( x[0], x[ x.length-1 ] );
-    return new UniformXScale( min, max, x.length );
+                             // if not Variable && not too short, it's Uniform  
+    return new UniformXScale( x[0], x[x.length-1], x.length );
   }
 
   /**
