@@ -4,6 +4,9 @@
  * ---------------------------------------------------------------------------
  *
  *  $Log$
+ *  Revision 1.2  2000/07/13 22:19:58  dennis
+ *  Added constructor that also specifies the extent factor
+ *
  *  Revision 1.1  2000/07/10 22:48:58  dennis
  *  New classes to deal with peaks/peak fitting
  *
@@ -42,7 +45,7 @@ public class HistogramDataPeak implements IPeak,
   protected int    right_HM_index;  // right points where the data > half max 
   protected int    left_HM_index;
 
-  protected float  extent_factor = 15; 
+  protected float  extent_factor; 
                                // when data points are calculated, they will 
                                // be zero outside of an interval of length
                                // extent * fwhm centered at the peak position. 
@@ -54,14 +57,26 @@ public class HistogramDataPeak implements IPeak,
 
   protected int    eval_mode = PEAK_ONLY;
 
+  private final int MIN_NUM_CHANNELS = 22;  // min number of channels needed
+                                            // for this kind of peak, needed
+                                            // to fit linear background
+
+
   /**
-   *  Construct a new HistogramDataPeak object from the specified Data block.
+   *  Construct a new HistogramDataPeak object from the specified Data block
+   *  and extent factor.
    *
-   *  @param  data  The data block containing the peak.
+   *  @param  data           The data block containing the peak.
+   *  @param  ext_factor     The extent factor to use for this peak.  The peak
+   *                         will be zero outside of an interval of length
+   *                         extent_factor times the FWHM of the peak centered
+   *                         at the peak position.
    *  @see IPeak
    */
-  public  HistogramDataPeak( Data  data )
-   {
+  public  HistogramDataPeak( Data  data, double ext_factor )
+  {
+     this.extent_factor = (float)ext_factor;
+
      if ( data == null )
      {
        System.out.println("ERROR null data in HistogramPeakData" );
@@ -69,7 +84,7 @@ public class HistogramDataPeak implements IPeak,
      }
 
      x_vals        = data.getX_scale().getXs();
-     if ( x_vals == null || x_vals.length < 23 )
+     if ( x_vals == null || x_vals.length < MIN_NUM_CHANNELS+1 )
      {
        System.out.println( 
                  "ERROR: too few x values in Data block in HistogramPeakData"); 
@@ -78,7 +93,7 @@ public class HistogramDataPeak implements IPeak,
      }
 
      float temp[]  = data.getY_values();
-     if ( temp == null || temp.length < 22 )
+     if ( temp == null || temp.length < MIN_NUM_CHANNELS )
      {
        System.out.println( 
                  "ERROR: too few y values in Data block in HistogramPeakData");
@@ -87,7 +102,7 @@ public class HistogramDataPeak implements IPeak,
      y_vals = new float[temp.length];
      System.arraycopy( temp, 0, y_vals, 0, temp.length );
 
-     if ( y_vals.length < 1 || x_vals.length != y_vals.length + 1 )
+     if ( x_vals.length != y_vals.length + 1 )
      {
        System.out.println("ERROR: invalid Data lengths in HistogramPeakData "+
                           "constructor" );
@@ -130,6 +145,21 @@ public class HistogramDataPeak implements IPeak,
 
      calculate_linear_background( extent_factor/2 );
    }
+
+
+  /** 
+   *  Construct a new HistogramDataPeak object from the specified Data block
+   *  using a default extent factor of 5.
+   *  
+   *  @param  data  The data block containing the peak.
+   *  @see IPeak
+   */
+  public  HistogramDataPeak( Data  data )
+  {
+    this( data, 5 );
+  }
+
+
 
   /**
    *  Return the integer code for the peak shape for this peak.
