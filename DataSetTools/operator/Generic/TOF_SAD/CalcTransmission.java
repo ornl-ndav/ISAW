@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/04/19 15:43:39  dennis
+ * Now forms a new DataSet with only one spectrum from the area detector
+ * and converts that small DataSet to wavelength to get a wavelength
+ * scale.
+ *
  * Revision 1.12  2004/04/08 15:18:08  dennis
  * Now uses "new" DataSetPGs consistently and calls clear() after getting the
  * value from the DataSetPG, to avoid memory leaks.
@@ -89,6 +94,7 @@ import DataSetTools.util.*;
 import DataSetTools.parameter.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.EditList.*;
+import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 
 /**
 *     This class creates a transmission data set in llambda and rebinned
@@ -284,34 +290,33 @@ public class CalcTransmission extends GenericTOF_SAD {
       }
   
  
-  // Resample the monitor's time channels to agree with the SampleDS's XScale
-    //----------Convert SampleDs's to wavelengt---------------------
-     opSample =   SampleDs.getOperator( "Convert to Wavelength");
-     if( opSample != null){
-        opSample.setDefaultParameters();
-        opSample.getParameter(0).setValue(new Float( -1.0f));
-        opSample.getParameter(1).setValue(new Float( -1.0f));
-        opSample.getParameter(2).setValue( new Integer(0));
-        Result = opSample.getResult();
-        if( (Result  instanceof ErrorString)  )
-           return Result ;
-        if( Result  == null)
-           return new ErrorString( "Could not Convert Sample to Llamda");
-        SampleDs = (DataSet) Result;
-        SampleDs.setTitle("SampleDs-lambda and scaled");
-      }
-
+  // Resample the monitor's time channels to agree with the SampleDs's XScale
+    //----------Convert SampleDs's to wavelength ---------------------
+     DataSet OneSampleDs = SampleDs.empty_clone();     
+     int index = SampleDs.getNum_entries();
+     Data data_block = SampleDs.getData_entry( index/2 );
+     data_block = (Data)data_block.clone();
+     OneSampleDs.addData_entry( data_block );
+     Operator to_wl = new DiffractometerTofToWavelength( OneSampleDs, -1, -1, 0 );
+     Result = to_wl.getResult();
+     if( (Result  instanceof ErrorString)  )
+       return Result ;
+     if( Result  == null)
+       return new ErrorString( "Could not Convert Sample to Llamda");
+     SampleDs = (DataSet) Result;
+     SampleDs.setTitle("SampleDs-lambda and scaled");  
+ 
      //----------- resample Monitors----------------
-      int n = SampleDs.getNum_entries();
-      XScale xscl = SampleDs.getData_entry(n/2).getX_scale();
-      Sample.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE );
-      Empty.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE);
-      if( Cadmium != null)
-         Cadmium.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE);
-      Sample.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
-      Empty.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
-      if( Cadmium != null)
-         Cadmium.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
+     XScale xscl = SampleDs.getData_entry(0).getX_scale();
+
+     Sample.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE );
+     Empty.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE);
+     if( Cadmium != null)
+        Cadmium.getData_entry(Monitor0).resample(xscl,IData.SMOOTH_NONE);
+     Sample.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
+     Empty.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
+     if( Cadmium != null)
+        Cadmium.getData_entry(Monitor1).resample(xscl,IData.SMOOTH_NONE);
       
      ReportToLog1( Sample,Monitor0,Monitor1);
      ReportToLog2( Sample,Monitor0,Monitor1);
@@ -504,7 +509,7 @@ public class CalcTransmission extends GenericTOF_SAD {
       Res.append( "@param Sample -  The monitor data set for the sample run");
       Res.append( "@param Empty -  The monitor data set for the Empty run");
       Res.append( "@param Cadmium - The monitor data set for the Cadmium run");
-      Res.append( " @param SampleDS - The Histogram data set for the sample run");
+      Res.append( "@param SampleDS - The Histogram data set for the sample run");
       Res.append( "@param useCadmium - true if cadmium run is to be used");
       Res.append( "@param Neutron_Delay -The delay factor or 0 if no delay is");
       Res.append( "needed.");
