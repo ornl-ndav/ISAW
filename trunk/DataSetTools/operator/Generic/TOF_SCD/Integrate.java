@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/03/25 22:36:34  pfpeterson
+ * Corrected a spelling error.
+ *
  * Revision 1.10  2003/03/20 22:05:51  pfpeterson
  * Added logfile to operator and added a couple of minor features.
  *
@@ -498,7 +501,7 @@ public class Integrate extends GenericTOF_SCD{
    */
   private void init_choices(){
     choices=new Vector();
-    choices.add("primative");               // 0 
+    choices.add("primitive");               // 0 
     choices.add("a centered");              // 1
     choices.add("b centered");              // 2
     choices.add("c centered");              // 3
@@ -967,14 +970,14 @@ public class Integrate extends GenericTOF_SCD{
    * Checks the allowed indices of hkl given the centering type.
    *
    * @param type the type of centering operation. Acceptable values
-   * are primative (1), a-centered (2), b-centered (3), c-centered
+   * are primitive (1), a-centered (2), b-centered (3), c-centered
    * (4), [f]ace-centered (5), [i] body-centered (6), or
    * [r]hombohedral-centered (7)
    *
    * @return true if the hkl is allowed false otherwise
    */
   private boolean checkCenter(int h, int k, int l, int type){
-    if(type==0){       // primative
+    if(type==0){       // primitive
       return true;
     }else if(type==1){ // a-centered
       int kl=(int)Math.abs(k+l);
