@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/02/03 07:22:08  kramer
+ * Now when the processDS(....) method is invoked on a NxWriteLog object,
+ * (new DataSet()) is passed to the method instead of 'null' (for the
+ * DataSet parameter).
+ *
  * Revision 1.11  2004/12/23 19:15:19  rmikk
  * Changed the "sec" unit to second
  * Eliminated unused code
@@ -227,7 +232,7 @@ public class NxWriteEntry{
       
     NxWriteLog writelog1 = new NxWriteLog( 6);
     NxWriteNode logNode = node.newChildNode( "log_6","NXlog");
-    if( writelog1.processDS( logNode, null, 6))
+    if( writelog1.processDS( logNode, new DataSet(), 6))
         errormessage += writelog1.getErrorMessage();
 
 

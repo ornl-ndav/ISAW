@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2005/02/03 07:22:09  kramer
+ * Now when the processDS(....) method is invoked on a NxWriteLog object,
+ * (new DataSet()) is passed to the method instead of 'null' (for the
+ * DataSet parameter).
+ *
  * Revision 1.6  2004/12/23 19:17:19  rmikk
  * Now writes out the sample_orientation
  *
@@ -99,7 +104,7 @@ public class NxWriteSample{
     }
     NxWriteNode NxLognode = NxSampNode.newChildNode("Log_7","NXlog");
     NxWriteLog writelog = new NxWriteLog( 5);
-    writelog.processDS( NxLognode, null, 7);
+    writelog.processDS( NxLognode, new DataSet(), 7);
 
     
     NxWriteBeam writeBeam = new NxWriteBeam(instrType);
