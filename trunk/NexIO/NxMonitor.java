@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/11/24 00:05:51  rmikk
+ * Made error messages include the work NXmonitor
+ * Added the error fields to the monitor
+ *
  * Revision 1.6  2002/11/27 23:28:17  pfpeterson
  * standardized header
  *
@@ -50,7 +54,7 @@ import DataSetTools.dataset.*;
 import NexIO.*;
 import DataSetTools.math.*;
 import java.lang.reflect.*;
-
+import NexIO.Util.*;
 /** 
  * This Class processes the NxMonitor Entries of a Nexus datasource
  */
@@ -77,7 +81,10 @@ public class NxMonitor{
   public int getMonitorNum(){
     return monitor_num;
   }
-
+  private boolean setErrorMessage( String error){
+     errormessage = error;
+     return true;
+  }
   /**
    * Fills out an existing DataSet with information from the NXmonitor
    * section of a Nexus datasource
@@ -89,16 +96,18 @@ public class NxMonitor{
    * @return error status: true if there is an error otherwise false
    */
   public boolean processDS( NxNode node ,  DataSet DS ){
-    errormessage = "null inputs";
+    errormessage = "null inputs in NxMonitor" ;
     if( node == null ) 
       return true;
     if( DS == null )
       return true;
     NxNode ntof , 
-      ndata;
+            ndata;
     ntof = node.getChildNode( "time_of_flight" );
     ndata = node.getChildNode( "data" );
-    if( ( ntof == null ) ||( ndata == null ) )
+    NxNode errors = node.getChildNode("errors");
+    errormessage ="";
+    /*if( ( ntof == null ) ||( ndata == null ) )
       for( int i = 0; i < node.getNChildNodes() ; i++ ){
         NxNode mm = node.getChildNode( i );
         if( ntof == null )
@@ -114,17 +123,20 @@ public class NxMonitor{
               ndata = mm;
           }           
       }
+    */ //make new plug in if monitors have different names
     if( ( ntof == null )||( ndata == null ) ){
-      errormessage = "Cannot find the Monitor data here";
+      errormessage = "Cannot find the Monitor data here in NxMonitor";
       return true;
     }
    
     Object X1 = ndata.getNodeValue();
     Object X2 = ntof.getNodeValue();
+    float[] errs = null;
+    if( errors != null) errs = ConvertDataTypes.floatArrayValue( errors.getNodeValue());
     if( X1 == null ) 
-      return true;
+      return setErrorMessage( "no values for data node in NxMonitor");
     if( X2 == null ) 
-      return true;
+      return setErrorMessage( "no values in time of flight node in NxMonitor");
     NXData_util nd = new NXData_util();
     NxData_Gen nds = new NxData_Gen();
     float yvals[];
@@ -132,8 +144,13 @@ public class NxMonitor{
     float xvals[];
     xvals = nd.Arrayfloatconvert( X2 );
     if( ( xvals == null ) ||(  yvals==null ) ) 
-      return true;
-    Data D = Data.getInstance(new VariableXScale(xvals),yvals, monitor_num+1);
+      return setErrorMessage( "Cannot convert data to float array in NxMonitor");
+    
+    Data D;
+    if( errs == null)
+      D = Data.getInstance(new VariableXScale(xvals),yvals, monitor_num+1);
+    else
+      D = Data.getInstance( new VariableXScale(xvals),yvals, errs, monitor_num+1);
 
     DS.addData_entry( D );
     int index=DS.getNum_entries()-1;
