@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2002/12/11 17:25:20  pfpeterson
+ *  Now scales image used in splash screen to the size of the splash screen.
+ *
  *  Revision 1.12  2002/11/27 23:27:07  pfpeterson
  *  standardized header
  *
@@ -51,6 +54,8 @@ public class SplashWindowFrame extends    JFrame
 {
   SplashWindow sw;
   Image splashIm;
+  private static final int width  = 475;
+  private static final int height = 360;
 
   SplashWindowFrame() 
   {
@@ -67,6 +72,7 @@ public class SplashWindowFrame extends    JFrame
     ipath = StringUtil.fixSeparator(ipath);
     ipath = ipath.replace('\\','/');
     splashIm = Toolkit.getDefaultToolkit().getImage(ipath+"/images/Isaw.gif");
+    splashIm=splashIm.getScaledInstance(width,height,Image.SCALE_FAST);
 
     MediaTracker mt = new MediaTracker(this);
     mt.addImage(splashIm,0);
@@ -104,7 +110,7 @@ public class SplashWindowFrame extends    JFrame
     {
       super(parent);
       this.splashIm = splashIm;
-      this.setSize(475,360);
+      this.setSize(width,height);
 
       /* Center the window */
       Dimension screenDim = 
