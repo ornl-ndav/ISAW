@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/10/02 15:38:17  rmikk
+ * Fixed an error when the background transmission run is
+ *    being used.
+ *
  * Revision 1.13  2003/10/02 14:40:52  rmikk
  * Eliminated? an array out of bounds error
  *
@@ -277,6 +281,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     *    @param  YOFF    The Yoffset of beam from center in meters
     *    @param NQxBins  The number of Qx bins if 2D,otherwise use a neg number
     *    @param NQyBins  The number of Qx bins if 2D,otherwise use a neg number 
+    *    @param useTransB  Use the background Transmission run
    */
  
 
@@ -1047,7 +1052,8 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
             if( useTransmission){
               samperr[i] = quoErr( sampy[i], err3,Transmy[i],Transmerr[i]);
                sampy[i] =sampy[i]/Transmy[i];
-            }
+            }else
+               samperr[i] = err3;
             
             samperr[i]= quoErr( sampy[i],samperr[i], sens*Effy[i],
                      prodErr( sens, senserr, Effy[i], Efferr[i]));
