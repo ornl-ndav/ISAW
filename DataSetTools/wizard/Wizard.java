@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/02/26 17:20:43  rmikk
+ * Now uses DataSetTools.util.SharedData.status_pane
+ *
  * Revision 1.7  2003/02/24 20:47:29  pfpeterson
  * Added a debug flag and made exec_forms smarter. Now properly invalidates
  * and sets progress bar on failure.
@@ -128,7 +131,7 @@ public class Wizard implements Serializable{
     private boolean standalone   = true;
     
     // the status pane
-    public static TextArea status_display = new TextArea();
+    //public static TextArea status_display = new TextArea();
 
     // debugging
     private static final boolean DEBUG=false;
@@ -164,7 +167,7 @@ public class Wizard implements Serializable{
      * @param standalone If is running by itself
      */
     public Wizard( String title, boolean standalone){
-        status_display = new TextArea();
+        //status_display = new TextArea();
         this.title  = title;
         master_list = new Hashtable();
         forms       = new Vector();
@@ -309,9 +312,10 @@ public class Wizard implements Serializable{
             
 
         // add the status to the panel
-        gbc.fill=GridBagConstraints.HORIZONTAL;
+        gbc.fill=GridBagConstraints.BOTH;
         gbc.anchor=GridBagConstraints.WEST;
-        work_area.add( status_display,gbc );
+        if( standalone)
+        work_area.add( DataSetTools.util.SharedData.status_pane, gbc);//status_display,gbc );
         
         CommandHandler command_handler = new CommandHandler(this);
         save_form      .addActionListener( command_handler );
@@ -360,7 +364,7 @@ public class Wizard implements Serializable{
     public IParameterGUI getParameter( String name ){
         Object obj = master_list.get( name );
         if ( obj == null || !(obj instanceof IParameterGUI )){
-            status_display.append("name not found in Wizard.getParameter()"
+            DataSetTools.util.SharedData.addmsg("name not found in Wizard.getParameter()"
                                   +name+"\n");
             return null;
         }else{
@@ -423,7 +427,7 @@ public class Wizard implements Serializable{
         }
 
         if ( index < 0 || index > forms.size()-1 ){  // invalid index
-            status_display.append("Error: invalid form number in Wizard.show()"
+            DataSetTools.util.SharedData.addmsg("Error: invalid form number in Wizard.show()"
                                   + index + "\n");
             return;
         }
@@ -477,7 +481,7 @@ public class Wizard implements Serializable{
      *  Save the state of the wizard then exit the wizard application.
      */
     public void close(){
-        status_display.append("close(): Not Fully Implemented\n");
+        DataSetTools.util.SharedData.addmsg("close(): Not Fully Implemented\n");
         save();
         frame.dispose();
         if(standalone) System.exit(0); // this should only be done if this is
@@ -489,14 +493,14 @@ public class Wizard implements Serializable{
      *  Save the state of the wizard to a file
      */
     public void save(){
-        status_display.append("Wizard State save() Not Implemented\n");
+        DataSetTools.util.SharedData.addmsg("Wizard State save() Not Implemented\n");
     }
 
     /**
      *  Load the state of the wizard from a file
      */ 
     public boolean load(){
-        status_display.append("Wizard State load() Not Implemented\n");
+        DataSetTools.util.SharedData.addmsg("Wizard State load() Not Implemented\n");
         return false;
     }
     
@@ -618,14 +622,14 @@ public class Wizard implements Serializable{
                     form_num--;
                     show(form_num);
                 }else{
-                    status_display.append( "FORM 0 SHOWN, CAN'T STEP BACK\n" );
+                    DataSetTools.util.SharedData.addmsg( "FORM 0 SHOWN, CAN'T STEP BACK\n" );
                 }
             }else if ( command.equals( NEXT_COMMAND ) ){
                 if ( form_num+1 < forms.size() ){
                     form_num++;
                     show(form_num);
                 }else{
-                    status_display.append( "NO MORE FORMS, CAN'T ADVANCE\n" );
+                    DataSetTools.util.SharedData.addmsg( "NO MORE FORMS, CAN'T ADVANCE\n" );
                 }
             }else if ( command.equals( LAST_COMMAND ) ){
                 form_num=forms.size()-1;
