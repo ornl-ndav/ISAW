@@ -4,35 +4,37 @@ package Command.JavaCC.Fortran;
 public interface FortranParserConstants {
 
   int EOF = 0;
-  int DIGIT = 3;
-  int UNSIGNED_DIGIT = 4;
+  int UNSIGNED_DIGIT = 3;
+  int DIGIT = 4;
   int WHITESPACE = 5;
-  int CHARACTER = 6;
-  int RESERVED_CHAR = 7;
-  int VAR_RESERVED_CHAR = 8;
-  int VARIABLE_COMP = 9;
-  int VARIABLE = 10;
-  int ARRAY_VARIABLE = 11;
-  int DIGICHAR = 12;
-  int STRING = 13;
-  int FLOATING_POINT = 14;
-  int EMPTY_ARRAY = 15;
-  int INT_IDENT = 16;
-  int FLOAT_IDENT = 17;
-  int MULTI_VARIABLE = 18;
-  int CHAR_VARIABLE = 19;
-  int MATH_VAR = 20;
-  int FORTRAN_ABS = 21;
-  int FORTRAN_SQRT = 22;
-  int FORTRAN_FLOAT_FUN = 23;
-  int FORTRAN_INT_FUN = 24;
-  int FORTRAN_MOD_FUN = 25;
-  int FORTRAN_INT = 26;
-  int FORTRAN_REAL = 27;
-  int FORTRAN_DOUBLE = 28;
-  int FORTRAN_LOGICAL = 29;
-  int FORTRAN_CHAR_1 = 30;
-  int FORTRAN_CHAR_2 = 31;
+  int ONE_PLUS_WS = 6;
+  int OPT_WS = 7;
+  int CHARACTER = 8;
+  int RESERVED_CHAR = 9;
+  int VAR_RESERVED_CHAR = 10;
+  int VARIABLE_COMP = 11;
+  int VARIABLE = 12;
+  int ARRAY_VARIABLE = 13;
+  int DIGICHAR = 14;
+  int STRING = 15;
+  int FLOATING_POINT = 16;
+  int EMPTY_ARRAY = 17;
+  int INT_IDENT = 18;
+  int FLOAT_IDENT = 19;
+  int MULTI_VARIABLE = 20;
+  int CHAR_VARIABLE = 21;
+  int MATH_VAR = 22;
+  int FORTRAN_ABS = 23;
+  int FORTRAN_SQRT = 24;
+  int FORTRAN_FLOAT_FUN = 25;
+  int FORTRAN_INT_FUN = 26;
+  int FORTRAN_MOD_FUN = 27;
+  int FORTRAN_INT = 28;
+  int FORTRAN_REAL = 29;
+  int FORTRAN_DOUBLE = 30;
+  int FORTRAN_LOGICAL = 31;
+  int FORTRAN_CHAR_1 = 32;
+  int FORTRAN_CHAR_2 = 33;
 
   int DEFAULT = 0;
 
@@ -40,9 +42,11 @@ public interface FortranParserConstants {
     "<EOF>",
     "\"\\n\"",
     "\"\\r\"",
-    "<DIGIT>",
     "<UNSIGNED_DIGIT>",
+    "<DIGIT>",
     "<WHITESPACE>",
+    "<ONE_PLUS_WS>",
+    "<OPT_WS>",
     "<CHARACTER>",
     "<RESERVED_CHAR>",
     "<VAR_RESERVED_CHAR>",

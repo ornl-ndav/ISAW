@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2004/01/14 00:07:26  bouzekc
+ * Added code to handle MOD.  Reorganized whitespace tokens.
+ *
  * Revision 1.2  2004/01/07 15:54:54  bouzekc
  * Added abs(), sqrt(), float(), and int() function recognition.
  *
@@ -148,16 +151,25 @@ SKIP : {
 }
 
 TOKEN : {
-  < DIGIT: ( "+" | "-" )? ( ["0"-"9"] )+ >
-}
-
-TOKEN : {
   < #UNSIGNED_DIGIT: ( ["0"-"9"] )+ >
 }
 
 TOKEN : {
-  < WHITESPACE: (" " | "\t" )+ >
+  < DIGIT: ( "+" | "-" )? <UNSIGNED_DIGIT> >
 }
+
+TOKEN : {
+  < WHITESPACE: (" " | "\t" ) >
+}
+
+TOKEN : {
+  < #ONE_PLUS_WS: ( <WHITESPACE> )+ >
+}
+
+TOKEN : {
+  < #OPT_WS: ( <WHITESPACE> )* >
+}
+
 
 TOKEN : {
   < #CHARACTER: ( ["a"-"z"] | ["A"-"Z"] | "_" | "-" )+ >
@@ -207,7 +219,7 @@ TOKEN : {
       <CHARACTER> | 
       <RESERVED_CHAR> |
       <VAR_RESERVED_CHAR> | 
-      <WHITESPACE> | 
+      <ONE_PLUS_WS> | 
       <FLOATING_POINT> |
       ":" 
     )* ( "\"" )+ 
@@ -232,14 +244,14 @@ TOKEN : {
 }
 
 TOKEN : {
-  < #EMPTY_ARRAY: "[" ( <WHITESPACE> )* "]" >
+  < #EMPTY_ARRAY: "[" <OPT_WS> "]" >
 }
 
 //Fortran tokens.  Recall that in Fortran, untyped variables starting with
 //an I, J, K, L, M, or N are considered integers, while untyped variables
 //starting with any other letter are considered reals.
 TOKEN: {
-  < #INT_IDENT: ( "i" | "j" | "k" | "l" | "m" | "n" | "I" | "J" | "K" | "L" "M" | "N" ) >
+  < #INT_IDENT: ( "i" | "j" | "k" | "l" | "m" | "n" | "I" | "J" | "K" | "L" | "M" | "N" ) >
 }
 
 TOKEN: {
@@ -271,54 +283,60 @@ TOKEN: {
 
 TOKEN: {
   < FORTRAN_ABS: (
-    ( "abs(" | "iabs(" ) ( <WHITESPACE> )* ( <MATH_VAR> )+ 
-    ( <WHITESPACE> )* ")"
+    ( "abs(" | "iabs(" ) <OPT_WS> ( <MATH_VAR> )+ 
+    <OPT_WS> ")"
   ) >
 }
 
 TOKEN: {
   < FORTRAN_SQRT: (
-    "sqrt(" ( <WHITESPACE> )* ( <MATH_VAR> )+ 
-    ( <WHITESPACE> )* ")"
+    "sqrt(" <OPT_WS> ( <MATH_VAR> )+ 
+    <OPT_WS> ")"
   ) >
 }
 
 TOKEN: {
   < FORTRAN_FLOAT_FUN: (
-    ( "float(" | "real(" ) ( <WHITESPACE> )* ( <DIGICHAR> )+ 
-    ( <WHITESPACE> )* ")"
+    ( "float(" | "real(" ) <OPT_WS> ( <DIGICHAR> )+ 
+    <OPT_WS> ")"
   ) >
 }
 
 TOKEN: {
   < FORTRAN_INT_FUN: (
-    "int(" ( <WHITESPACE> )* ( <MATH_VAR> )+
-    ( <WHITESPACE> )* ")"
+    "int(" <OPT_WS> ( <MATH_VAR> )+
+    <OPT_WS> ")"
   ) >
 }
 
+//mod function
 TOKEN: {
   < FORTRAN_MOD_FUN: (
-    "mod(" ( <WHITESPACE> )* ( <DIGICHAR> )+
-    ( <WHITESPACE> )* ")"
+    "mod(" <OPT_WS> ( <DIGICHAR> )+
+    <OPT_WS> "," <OPT_WS>
+    ( <DIGICHAR> )+
+    <OPT_WS> ")"
   ) >
 }
 
 //integer variable
 TOKEN : {
   < FORTRAN_INT: ( 
-    ( "integer " | <INT_IDENT> ) <MULTI_VARIABLE> ( 
-      ( <WHITESPACE> )* "," ( <WHITESPACE> )* 
-      <MULTI_VARIABLE> 
+    ( "integer" <ONE_PLUS_WS> | <INT_IDENT> ) <MULTI_VARIABLE> ( 
+      <OPT_WS> "," <OPT_WS> 
+      <MULTI_VARIABLE> ( 
+        <OPT_WS> "=" <OPT_WS> ( <DIGIT> )+
+      )? 
     )* 
+    <OPT_WS>
   ) >
 }
 
 //floating point variable
 TOKEN : {
   < FORTRAN_REAL: ( 
-    ( "real " | <FLOAT_IDENT> ) <MULTI_VARIABLE> ( 
-      ( <WHITESPACE> )* "," ( <WHITESPACE> )* 
+    ( "real" <ONE_PLUS_WS> | <FLOAT_IDENT> ) <MULTI_VARIABLE> ( 
+      <OPT_WS> "," <OPT_WS> 
       <MULTI_VARIABLE> 
     )* 
   ) >
@@ -327,28 +345,18 @@ TOKEN : {
 //double-precision floating point variable
 TOKEN : {
   < FORTRAN_DOUBLE: ( 
-    "double " <MULTI_VARIABLE> ( 
-      ( <WHITESPACE> )* "," ( <WHITESPACE> )* 
+    "double" <ONE_PLUS_WS> <MULTI_VARIABLE> ( 
+      <OPT_WS> "," <OPT_WS> 
       <MULTI_VARIABLE> 
     )* 
   ) >
 }
 
-//complex number variable.  We don't have the capability to handle
-//this yet, so we'll leave it out
-/*TOKEN : {
-  < FORTRAN_COMPLEX: ( 
-    "complex " <VARIABLE> ( 
-      ( <WHITESPACE> )* "," ( <WHITESPACE> )* <VARIABLE> 
-    )* 
-  ) >
-}*/
-
 //boolean (i.e. logical) variable
 TOKEN : {
   < FORTRAN_LOGICAL: ( 
-    "logical " <MULTI_VARIABLE> ( 
-      ( <WHITESPACE> )* "," ( <WHITESPACE> )* 
+    "logical" <ONE_PLUS_WS> <MULTI_VARIABLE> ( 
+      <OPT_WS> "," <OPT_WS> 
       <MULTI_VARIABLE> 
     )* 
   ) >
@@ -357,8 +365,8 @@ TOKEN : {
 //character variable where each char array length is specified directly
 TOKEN : {
   < FORTRAN_CHAR_1: ( 
-    "character " <CHAR_VARIABLE> ( 
-      ( <WHITESPACE> )* "," ( <WHITESPACE> )* <CHAR_VARIABLE> 
+    "character" <ONE_PLUS_WS> <CHAR_VARIABLE> ( 
+      <OPT_WS> "," <OPT_WS> <CHAR_VARIABLE> 
     )* 
   ) >
 }
@@ -367,10 +375,10 @@ TOKEN : {
 //array declaration
 TOKEN: {
   < FORTRAN_CHAR_2: ( 
-    "character" ( <WHITESPACE> )* "*" ( <UNSIGNED_DIGIT> )+ 
-    <WHITESPACE> <VARIABLE> ( 
-      ( <WHITESPACE> )* "," 
-      ( <WHITESPACE> )* <VARIABLE> )* 
+    "character" <ONE_PLUS_WS> "*" ( <UNSIGNED_DIGIT> )+ 
+    <ONE_PLUS_WS> <VARIABLE> ( 
+      <OPT_WS> "," 
+      <OPT_WS> <VARIABLE> )* 
     ) >
 }
 
@@ -431,7 +439,9 @@ String convertFortranToJava(  ) : {
   )*
 
   {
-    return fCode.toString(  ).trim(  );
+    //convert single spaces to one space, then trim it and append the
+    //Java line closer semicolon.  This may fail for Strings-we will see...
+    return fCode.toString(  ).replaceAll( "\\s+", " " ).trim(  ) + ";";
   }
 }
 
@@ -474,32 +484,33 @@ String convertFortranTokens(  ) : {
 |
   t = <FORTRAN_MOD_FUN> {
     s = t.image;
-    s = s.replaceAll( "\"mod\" | \\) | \\(", "" );
-    s = s.replaceAll( ",", "%" );
-    return s + ";";
+    System.out.println( "Found MOD");
+    s = s.replaceAll( "mod", "" ).replaceAll( "\\)", "" ).replaceAll( "\\(", "" );
+    s = s.replaceAll( ",", " % " );
+    return s;
   }
 |
   //matched an integer
   t = <FORTRAN_INT> {
-    t.image = ( t.image.replaceAll( "integer", "" ) + ";" ).trim(  );
+    t.image = t.image.replaceAll( "integer", "" );
     return convertToJavaStyle( t.image, "int" );
   }
 |
   //matched a floating point
   t = <FORTRAN_REAL> {
-    t.image = ( t.image.replaceAll( "real", "" ) + ";" ).trim(  );
+    t.image = t.image.replaceAll( "real", "" );
     return convertToJavaStyle( t.image, "float" );
   }
 |
   //matched a double-precision floating point
   t = <FORTRAN_DOUBLE> {
-    t.image = ( t.image.replaceAll( "double precision", "" ) + ";" ).trim(  );
+    t.image = t.image.replaceAll( "double precision", "" );
     return convertToJavaStyle( t.image, "double" );
   }
 |
   //matched a boolean
   t = <FORTRAN_LOGICAL> {
-    t.image = ( t.image.replaceAll( "logical", "" ) + ";" ).trim(  );
+    t.image = t.image.replaceAll( "logical", "" );
     return convertToJavaStyle( t.image, "boolean" );
   }
 |
@@ -527,8 +538,6 @@ String convertFortranTokens(  ) : {
         buffer.append( "," );
       }
     }
-    
-    buffer.append( ";" );
     
     return buffer.toString();
   }
@@ -558,8 +567,6 @@ String convertFortranTokens(  ) : {
         buffer.append( "," );
       }
     }
-    
-    buffer.append( ";" );
     
     return buffer.toString();
   }
