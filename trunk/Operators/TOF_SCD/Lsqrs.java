@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/02/26 20:11:25  pfpeterson
+ * Updated error message and javadoc to mention lsqrs (not index).
+ *
  * Revision 1.3  2003/02/18 22:59:00  pfpeterson
  * Updated calls to deprecated method fixSparator.
  *
@@ -65,10 +68,10 @@ public class Lsqrs extends    GenericTOF_SCD {
   }
   
   /**
-   *  Construct operator to execute index.
+   *  Construct operator to execute lsqrs
    *
-   *  @param file The name of the peaks file to index. This name is
-   *  used to generate the experiment name used by index.
+   *  @param file The name of the peaks file to lsqrs. This name is
+   *  used to generate the experiment name used by lsqrs.
    *  @param matrix The transformation matrix to turn this into the
    *  desired symmetry group.
    */
@@ -165,7 +168,7 @@ public class Lsqrs extends    GenericTOF_SCD {
     
     // exit out early if no index executable found
     if(command==null)
-      return new ErrorString("could not find index executable");
+      return new ErrorString("could not find lsqrs executable");
       
 
     // get the transformation matrix
