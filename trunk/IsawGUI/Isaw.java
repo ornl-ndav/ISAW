@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.174  2003/12/15 20:32:14  dennis
+ *  Changed version to 1.6.0 alpha 8
+ *
  *  Revision 1.173  2003/12/14 18:27:49  rmikk
  *  The Isaw.update method nows deals with arrays of DataSets. It adds these to
  *    the ISAW system with all the listeners attached
@@ -639,7 +642,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.6.0 alpha 7";
+          version="1.6.0 alpha 8";
         else
           version=SharedData.VERSION;
 
