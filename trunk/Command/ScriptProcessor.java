@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.59  2003/08/19 18:56:39  rmikk
+ * Eliminated quotes for the initial values given in scripts
+ *
  * Revision 1.58  2003/07/07 21:49:43  rmikk
  * -Rearranged Methods into sections.
  * -Added a lot of documentation
@@ -571,6 +574,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
         perror =i;
         lerror = i;
         return new ErrorString( serror );
+        
       }else if( getParameter( i ).getValue() instanceof DataSet){
         DataSet ds = (DataSet)(getParameter( i ).getValue());        
         ExecLine.addParameterDataSet( ds , (String)vnames.elementAt(i));
@@ -1254,6 +1258,21 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     return getNextMacroLine( Doc, prevLine++);
   }
 
+  private String EliminateQuotes( String S){
+     if( S == null)
+       return null;
+     String S1 = new String( S.trim());
+     if( S1 == null)
+       return null;
+     if( S1.length() < 2)
+       return S;
+     if( S1.charAt(0) !='\"')
+       return S;
+     if( S1.charAt(S1.length()-1) !='\"')
+       return S;
+     return S1.substring(1,S1.length()-1);
+  }
+
   /**
    * This turns a string into a parameter that it adds to the list of
    * parameters for the operator. This can also parse some 'MACRO'
@@ -1374,7 +1393,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     }else if( DataType.equals( "STRING")){
       if( InitValue == null)
         InitValue ="";
-      addParameter( new StringPG ( Prompt , InitValue ) ) ;
+      addParameter( new StringPG ( Prompt , EliminateQuotes(InitValue) ) ) ;
     }else if(DataType.equals("BOOLEAN")){
       if( InitValue == null)
         InitValue ="true";
@@ -1389,7 +1408,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     }else if( DataType.equals("DATADIRECTORYSTRING")){
      
       addParameter( new DataDirPG( Prompt, null));
-                                 //  new DataDirectoryString(DirPath)));
+                                 //  new DataDirectoryString(EliminateQuotes(DirPath))));
     }else if( DataType.equals("DSSETTABLEFIELDSTRING")){
       
       DSSettableFieldString dsf = new DSSettableFieldString();
@@ -1399,10 +1418,10 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       addParameter( choice);
     }else if( DataType.equals("LOADFILESTRING")){ 
      
-      addParameter(new LoadFilePG(Prompt, InitValue));
+      addParameter(new LoadFilePG(Prompt, EliminateQuotes(InitValue)));
     }else if( DataType.equals("SAVEFILESTRING")){ 
      
-      addParameter(new SaveFilePG(Prompt,InitValue));
+      addParameter(new SaveFilePG(Prompt,EliminateQuotes(InitValue)));
     }else if( DataType.equals( "INTLIST" )){
        if(InitValue != null)
          addParameter( new IntArrayPG( Prompt, InitValue.trim() ));
@@ -1414,12 +1433,12 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       if( InitValue == null )
         addParameter( new Parameter( Prompt,new DSFieldString() ));
       else
-        addParameter( new SaveFilePG( Prompt, InitValue ));
+        addParameter( new SaveFilePG( Prompt, EliminateQuotes(InitValue) ));
                                      //new DSFieldString(InitValue.trim()) ));
     }else if( DataType.equals( "INSTRUMENTNAMESTRING")){
       String Instrument_Name = null;
       if(InitValue != null && InitValue.length() > 0)
-        Instrument_Name = InitValue;
+        Instrument_Name = EliminateQuotes(InitValue);
       else
         Instrument_Name = SharedData.getProperty("Default_Instrument");
       if( Instrument_Name == null )
@@ -1427,7 +1446,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       addParameter(  new InstNamePG( Prompt, Instrument_Name ));
     }else if( DataType.equals( "SERVERTYPESTRING")){
       ServerTypeString STS = new ServerTypeString();
-      ChoiceListPG clpg = new ChoiceListPG( Prompt, InitValue);
+      ChoiceListPG clpg = new ChoiceListPG( Prompt, EliminateQuotes(InitValue));
       for( int i=0; i< STS.num_strings(); i++)
          clpg.addItem( STS.getString(i));
                
@@ -1456,10 +1475,11 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       addParameter ( new MonitorDataSetPG( Prompt, null) );
     }else{
       IParameter param = param_types.getInstance( DataType_C);
-      if( param != null)
+      if( param != null)//Need to do something with ChooserPG's
+                        // InitValues should be addItem quantities BUT DataSetPG
         try{
              param.setName( Prompt);
-             param.setValue( InitValue);
+             param.setValue( EliminateQuotes(EliminateQuotes(InitValue)));
              addParameter( param );
              return true;
             }
