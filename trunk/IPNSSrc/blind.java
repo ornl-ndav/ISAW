@@ -53,6 +53,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/06/26 14:02:55  dennis
+ * Trapped array index out of bounds problem in line 985,
+ * when producing log file.  This is not a permanent fix
+ * to the array index problem, but temporarily allows blind
+ * to be used without crashing on some sequences of peaks.
+ *
  * Revision 1.14  2003/06/20 16:04:55  dennis
  * Increased size of array jh[] to fix array index out of bounds
  * problem when certain peaks were used.
@@ -979,10 +985,17 @@ public class blind {
     // print the peak indices
     logBuffer.append("      #   SEQ     H     K     L\n");
     for(int  i=0;i<SEQ.length; i++){
-      logBuffer.append(" "+format(i+1,6,0)+format(SEQ[i],6,0)
+      if ( (i+3)*3+2 < JH.length )
+        logBuffer.append(" "+format(i+1,6,0)+format(SEQ[i],6,0)
                        +format(JH[(i+3)*3+0],6,0)+format(JH[(i+3)*3+1],6,0)
                        +format(JH[(i+3)*3+2],6,0)+"\n");
-
+      else
+      {
+        System.out.println("ERROR: Index out of bounds for seq[i] = " + SEQ[i]);
+        System.out.println("i = " + i + ", 
+                            JH.length = " + JH.length + ", 
+                            SEQ.length = " + SEQ.length );
+      } 
     }
     logBuffer.append("\n");
     System.out.print(logBuffer.substring(start));
