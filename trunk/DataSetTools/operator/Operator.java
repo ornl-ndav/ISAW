@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2003/05/07 15:08:52  pfpeterson
+ *  Changed 'getCommand()' to be a concrete method that takes returns
+ *  the class name as the command. The constructor no longer creates a
+ *  new vector for the parameters, since most subclasses do this already.
+ *  Other functions that work with the parameters altered to accomodate
+ *  this change.
+ *
  *  Revision 1.20  2002/12/02 17:27:26  pfpeterson
  *  Moved the default documentation into a 'public static final String' so it can be
  *  checked against by outside classes.
@@ -139,7 +146,7 @@ abstract public class Operator implements Serializable
    protected Operator( String title )
    {
       this.title = title;
-      parameters = new Vector();
+      parameters = null;
       setDefaultParameters();
    } 
 
@@ -173,8 +180,14 @@ abstract public class Operator implements Serializable
    * @return	the command name to be used with script processor
    *
    */
-   abstract public String getCommand();
-
+  public String getCommand(){
+    String command=this.getClass().getName();
+    int index=command.lastIndexOf(".");
+    if(index>=0)
+      return command.substring(index+1);
+    else
+      return command;
+  }
 
   /* -------------------------- getCategory -------------------------------- */
   /**
@@ -240,6 +253,8 @@ abstract public class Operator implements Serializable
     */
    protected void addParameter( IParameter parameter )
    {
+       if(parameters==null)
+         parameters=new Vector();
        parameters.addElement( parameter.clone() );
    }
 
@@ -251,7 +266,10 @@ abstract public class Operator implements Serializable
    */
   public int getNum_parameters()
   {
-    return( parameters.size() );
+    if(parameters==null)
+      return 0;
+    else
+      return( parameters.size() );
   }
 
 
@@ -271,7 +289,9 @@ abstract public class Operator implements Serializable
    */
   public IParameter getParameter( int index )
   {
-    if ( index >= 0 && index < parameters.size() )
+    if(parameters==null)
+      return null;
+    else if ( index >= 0 && index < parameters.size() )
       return( (IParameter)parameters.elementAt( index ) );
     else
       return null;
@@ -298,7 +318,7 @@ abstract public class Operator implements Serializable
    */
   public boolean setParameter( IParameter parameter, int index )
   { 
-    if ( index < 0 || index >= parameters.size() )
+    if ( index < 0 || parameters==null || index >= parameters.size() )
       return false;
                                              // NOTE: object parameters are
                                              //       represented using null
@@ -348,7 +368,10 @@ abstract public class Operator implements Serializable
   {
     int      num_param = op.getNum_parameters();
 
-    parameters.removeAllElements();
+    if(parameters!=null)
+      parameters.removeAllElements();
+    else
+      parameters=new Vector();
     for ( int i = 0; i < num_param; i++ )
       addParameter( (IParameter)op.getParameter(i).clone() );
   }
