@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.35  2002/01/10 15:38:33  rmikk
+ * Now uses the Global StatusPane
+ *     ( DataSetTools.util.SharedData.status_pane)
+ *
  * Revision 1.34  2002/01/09 19:28:54  rmikk
  * -Extracted the StatusPane from CommandPane
  * -The status pane is now constructed and added in the
@@ -361,7 +365,8 @@ public void setLogDoc(Document doc)
 *@param   DSS[]     A list of data sets that can be selected as values for Data Set Parameters.
 *
 */
- public void getExecScript( String fname ,IObserver X , IDataSetListHandler ds_src, Document  DocLog)
+ public void getExecScript( String fname ,IObserver X , IDataSetListHandler ds_src,
+      Document  DocLog, StatusPane sp)
   {    int i;
        String S;
        Object RES;
@@ -377,7 +382,8 @@ public void setLogDoc(Document doc)
           }
         new IsawGUI.Util().appendDoc(logDoc,"#$ Script File Execute "+fname);
         DataSetTools.components.ParametersGUI.JParametersDialog pDialog = 
-                new DataSetTools.components.ParametersGUI.JParametersDialog(cp, ds_src, logDoc ,X);
+                new DataSetTools.components.ParametersGUI.JParametersDialog
+                 (cp, ds_src, logDoc ,X, false, sp);
    }
 
 /**
@@ -604,27 +610,27 @@ public static void  main( String args[] )
        }
       JFrame F ;  
     CommandPane P;
-     StatusPane    StatusLine ;  
+     //StatusPane    StatusLine ;  
       F = new JFrame( "Command Pane" ); 
 
      P = new CommandPane(); 
      Dimension D = P.getToolkit().getScreenSize();
      F.setSize((int)(.6* D.width) , (int)(.7*D.height) ); 
      F.show() ;  
-      StatusLine = new StatusPane( 3 , 50 ) ; 
+      //StatusLine = new StatusPane( 3 , 50 ) ; 
 	 // StatusLine.setBackground( Color.white);
-         JScrollPane X = new JScrollPane( StatusLine);
+         JScrollPane X = new JScrollPane( SharedData.status_pane);
          X.setBorder(new TitledBorder( "Status" ));
          JPanelwithToolBar YY = new JPanelwithToolBar("Save", "Clear",
-                           new SaveDocToFileListener( StatusLine.getDocument(), null),
-                           new ClearDocListener( StatusLine.getDocument()),
+                           new SaveDocToFileListener( SharedData.status_pane.getDocument(), null),
+                           new ClearDocListener( SharedData.status_pane.getDocument()),
                            X,BorderLayout.EAST);
-	 //StatusLine.setBorder( new TitledBorder( "Status" ));
-         StatusLine.setEditable( true);
+	 //SharedData.status_pane.setBorder( new TitledBorder( "Status" ));
+         SharedData.status_pane.setEditable( true);
          SplitPaneWithState Center= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT ,
                       P,  YY,.80f);
      F.getContentPane().add( Center ); 
-     P.addPropertyChangeListener( StatusLine);
+     P.addPropertyChangeListener( SharedData.status_pane);
    
      F.validate(); 
   }
