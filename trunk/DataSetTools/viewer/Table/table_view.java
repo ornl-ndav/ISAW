@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.39  2004/02/10 05:38:17  bouzekc
+ * Now the added column name list has scrollbars (as needed).
+ *
  * Revision 1.38  2004/02/07 00:56:38  bouzekc
  * Fixed bug that caused an Exception if the column name was less than
  * 4 characters.
@@ -356,10 +359,16 @@ public class table_view extends JPanel implements ActionListener
 
       selModel = new DefaultListModel();
       sel = new JList( selModel );
+      
+      //add the "Display Fields" bordered panel with scroll bars
+      JPbr.add( new JScrollPane( sel,
+          JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+          JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED ),
+         BorderLayout.CENTER );
 
       sel.setBorder( BorderFactory.createTitledBorder(
             BorderFactory.createEtchedBorder(), "Display Fields" ) );
-      JPbr.add( sel, BorderLayout.CENTER );
+
       JP2 = new JPanel( new GridLayout( 6, 1 ) );
 
       Up = new JButton( "Up" );
