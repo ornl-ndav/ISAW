@@ -28,6 +28,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/07/28 14:15:43  rmikk
+ * Changed Prompt and initial value for Neutron Delay input
+ * Used the DataSetTools.parameter parameters for input
+ *
  * Revision 1.4  2003/07/22 18:18:39  dennis
  * Added java docs to getResult() and added getDocumentation method.
  * Now returns the spdxxxxx.dat and efrxxxxx.dat DataSets as the
@@ -58,7 +62,7 @@ import DataSetTools.retriever.*;
 import DataSetTools.math.*;
 import java.util.*;
 import java.util.*;
-
+import DataSetTools.parameter.*;
 /** 
  * This operator calculates the efficiency (with errors) between the first
  * monitor and the area detector for SAND.  It implements the concepts from
@@ -126,7 +130,7 @@ public class EfficiencyRatio extends GenericTOF_SAD
     addParameter( new Parameter("X(cm) offset of beam", new Float(x_center)));
     addParameter( new Parameter("Y(cm) offset of beam", new Float(y_center)));
     addParameter( new Parameter("Radius to use", new Float(radius)));
-    addParameter( new Parameter("Delayed Neutron Percent", 
+    addParameter( new Parameter("Delayed Neutron Fraction", 
                                  new Float(dn_fraction)) );
   }
 
@@ -146,7 +150,7 @@ public class EfficiencyRatio extends GenericTOF_SAD
 
   /* ------------------------ getDocumentation ---------------------------- */
   /**
-   *  Get the documentation to be displayed by the help system.
+   *  Get the documentation to be displayed by the help system. 
    */
   public String getDocumentation()
   {
@@ -181,7 +185,7 @@ public class EfficiencyRatio extends GenericTOF_SAD
     Res.append(" center from the center of the detector, in centimeters.");
     Res.append("@param radius - The radius of the circle to use, around the");
     Res.append(" beam center, for calculating the efficiency ratio.");
-    Res.append("@param dn_fraction - he fraction of the neutrons that are");
+    Res.append("@param dn_fraction - the fraction of the neutrons that are");
     Res.append(" delayed neutrons and are subtracted from the count.");
     Res.append("@return A vector of four DataSets are returned.");
     Res.append(" The first DataSet is the sum of the specified spectra");
@@ -213,16 +217,16 @@ public class EfficiencyRatio extends GenericTOF_SAD
   public void setDefaultParameters()
   {
     parameters = new Vector();
-    addParameter( new Parameter("Cadmium Mask Histogram", 
+    addParameter( new SampleDataSetPG("Cadmium Mask Histogram", 
                                  DataSet.EMPTY_DATA_SET) );
-    addParameter( new Parameter("Cadmium Mask Monitor", 
+    addParameter( new MonitorDataSetPG("Cadmium Mask Monitor", 
                                  DataSet.EMPTY_DATA_SET) );
-    addParameter( new Parameter("Detector Efficiencies", 
+    addParameter( new DataSetPG("Detector Efficiencies", 
                                  DataSet.EMPTY_DATA_SET) );
-    addParameter( new Parameter("X(cm) offset of beam", new Float(0)) );
-    addParameter( new Parameter("Y(cm) offset of beam", new Float(0)) );
-    addParameter( new Parameter("Radius(cm) to use", new Float(5)) );
-    addParameter( new Parameter("Delayed Neutron Percent", new Float(0.11)) );
+    addParameter( new FloatPG("X(cm) offset of beam", new Float(0)) );
+    addParameter( new FloatPG("Y(cm) offset of beam", new Float(0)) );
+    addParameter( new FloatPG("Radius(cm) to use", new Float(5)) );
+    addParameter( new FloatPG("Delayed Neutron Fraction", new Float(0.0011)) );
   }
 
   
