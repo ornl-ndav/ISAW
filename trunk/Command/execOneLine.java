@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.68  2004/01/08 20:07:06  bouzekc
+ * In co-operation with Ruth, removed unused variables and made two
+ * unused private utility methods public static methods.
+ *
  * Revision 1.67  2003/12/14 19:18:09  bouzekc
  * Removed unused import statements.
  *
@@ -225,10 +229,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     public static final String ER_ArrayIndex_Out_Of_bounds
                                                   = "Array index out of Bounds";
     public static final String WN_Return          = "Return Statement executed";
-
-    private static final String OP_Arithm            = "+-*/^";
-    private static final String Ops                  = OP_Arithm+"&:";
-    private static final String EndExpr              = ",)]<>=";
     
     private Document logDocument       = null;
     private static final boolean Debug = false;
@@ -289,13 +289,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     
 
    //************************** Constructors **********************************
-    /**  Constructor -was used for debugging purposes. Not used
-    *
-    */
-    public execOneLine( int i)
-      { 
-        this();
-       }
 
     /** Initializes all variables
      *  
@@ -540,9 +533,12 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         Enumeration D = ds.elements();//.toArray();
         DataSet DD[] ;
 
-        Vector VV= new Vector();
         int i;
-        for( i=0; D.hasMoreElements(); i++){Object X=D.nextElement();}
+        
+        //count the elements
+        for( i=0; D.hasMoreElements(); i++){
+          D.nextElement();
+        }
         
         DD = new DataSet[i];
         D= ds.elements();
@@ -763,7 +759,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
 
                     if( perror >= 0) 
                         perror = kk;
-                    int cc;
 
                     Result = null;                //The result of an assignment 
                                                   //statement is null
@@ -799,8 +794,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
   
      */
     private int execLoad( String S , int start, int end ){
-        String  C,
-            filename,
+        String  filename,
             varname;
         DataSet dss[];
         int     i,
@@ -1363,7 +1357,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * or the end of the string S.
      */
     private int execExpr(String S, int start, int end){
-        int i,i1;
+        int i;
         int j;
         Object Res1;
         boolean done;
@@ -1627,9 +1621,9 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * combining them.
      */
     private   int execArithm(String S, int start, int end){
-        int i,i1;
+        int i;
         int j;
-        Object R1,R2;
+        Object R1;
         boolean done;
         Result = null;
         if(Debug)
@@ -1810,7 +1804,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         int i,
             j,
             j1;
-        String R1;
+
         if(Debug)
             System.out.print("Exec1Fact st"+start+","+end);
         i = skipspaces( S , 1 , start );
@@ -2703,7 +2697,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             seterror (1000 , execOneLine.ER_NoSuchOperator);
             return;
         }
-        int i;
 
        // ------------------ Execute the operation ------------------------
  
@@ -2856,10 +2849,9 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     *   @return  The Global variable Result will contain the result
     */
     private void DoDataSetOperation( Vector Args , String Command ){
-        int i,k;
+        int i;
         Operator op;
         DataSet DS;
-        Object Arg2;
         boolean fit;
         if( !( Args.elementAt(0)instanceof DataSet ) ){
             seterror( 1000 , ER_NoSuchOperator  );
@@ -2960,7 +2952,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         if( Debug )
             System.out.println("Got to Here after arg");
         
-        int i1,k1,i2,k2;
+        int i2;
         
         if(Debug){
             System.out.print("Args = " + Args.size());
@@ -2986,12 +2978,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
 
 
     //************SECTION:UTILITIES EXEC and Variable Handling ***************
- 
-   private boolean isDataSetOP( String C ){
-        return false;
-    }
-
-
 
     /**
      * Returns the Result of the last expression
@@ -3028,7 +3014,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         
         if(V == null)
             return null;
-        int n = ((Integer)V.lastElement()).intValue();
         
         if(k < 0){
             seterror(1000, "Internal Error getValArry");
@@ -3170,7 +3155,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             return ;
         }   
         if(Debug) System.out.println("Args="+Vect_to_String(V)); 
-        int n = ((Integer)V.lastElement()).intValue();  
       
         if(k<0){
             seterror(1000, "Internal Error getValArry");
@@ -3255,7 +3239,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
            }
         if(vname.indexOf('[')>=0)
             nam = vname.substring(0,vname.indexOf('[')   ).toUpperCase();
-        Object X = getVal( nam );
+        getVal( nam );
         if( (perror >= 0) && ( serror.equals( ER_NoSuchVariable))){
             perror = -1;
             serror = "";
@@ -3479,11 +3463,9 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * eliminates trailing non printing characters
      */
     private String Trimm( String S ){
-        String res;
         if( S == null )
             return S;
         int i;
-        res = S;
         i = S.length()-1;
         if( i < 0 )
             return S;
@@ -3608,7 +3590,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * occurs or the end of the string ( dir > 0 ) or -1( dir < 0 )
      */
     public int skipspaces( String S, int dir, int start){
-        int  i,j; 
+        int  i; 
         char c;
         
         i = start;
@@ -3644,9 +3626,9 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      *  @return the position of the found character or the end of the string
      */
 
-    private int finddQuote( String S, int start, String SrchChars,
+    public static int finddQuote( String S, int start, String SrchChars,
                             String brcpairs ){
-        int i, j, j1;
+        int i, j;
         int brclevel;
         boolean quote;
         
@@ -3812,7 +3794,12 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     }
 
   
-    private void Delete( String vname, Hashtable DS){
+  /**
+   * Removes name from a Hashtable if the name is not null.
+   * @param vname  Name to remove. 
+   * @param DS The Hashtable to remove.
+   */
+    public static void Delete( String vname, Hashtable DS){
         if(vname == null) return;
         DS.remove(vname.toUpperCase().trim()); 
     }
