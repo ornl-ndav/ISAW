@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.15  2003/06/26 16:43:28  bouzekc
+ * Now always uses identity matrix for calculations, per
+ * A.J.Schultz's request.
+ *
  * Revision 1.14  2003/06/25 21:30:39  bouzekc
  * Now contains (saveable) parameter hooks and documentation
  * for minimum peak threshold and channels to keep.
@@ -181,30 +185,22 @@ public class LsqrsJForm extends Form {
         "Restrict Peaks Sequence Numbers (blank for all)", null, false ) );
 
     //4
-    addParameter( 
-      new BooleanPG( "Use Identity Matrix for Iteration?", false, false ) );
-
-    //5
-    addParameter( new StringPG( "Transform Matrix", identmat, false ) );
-
-    //6 - parameter added solely so user can view scalar file and is optional.
-    //As such, it is ALWAYS valid
-    addParameter( new LoadFilePG( "Scalar Log", null, true ) );
-
-    //7
     addParameter( new ArrayPG( "Matrix Files", new Vector(  ), false ) );
 
-    //8
+    //---------------------------------
+    //parameters below are unused until LsqrsJ can use them.
+    //---------------------------------
+    //5
     addParameter( new IntegerPG( "Minimum Peak Threshold", 0, false ) );
 
-    //9
-    addParameter( new IntArrayPG( "Channels to Keep", "1:100", false ) );
+    //6
+    addParameter( 
+      new IntArrayPG( "Pixel Rows and Columns to Keep", "1:100", false ) );
 
     if( HAS_CONSTANTS ) {
-      setParamTypes( 
-        new int[]{ 0, 1, 2 }, new int[]{ 3, 4, 5, 6 }, new int[]{ 7 } );
+      setParamTypes( new int[]{ 0, 1, 2 }, new int[]{ 3 }, new int[]{ 4 } );
     } else {  //standalone or first time form
-      setParamTypes( null, new int[]{ 0, 1, 2, 3, 4, 5, 6 }, new int[]{ 7 } );
+      setParamTypes( null, new int[]{ 0, 1, 2, 3 }, new int[]{ 4 } );
     }
   }
 
@@ -247,19 +243,13 @@ public class LsqrsJForm extends Form {
     s.append( "@param peaksPath The path where the peaks file is.\n" );
     s.append( "@param expName The experiment name.\n" );
     s.append( "@param restrictSeq The sequence numbers to restrict.\n" );
-    s.append( "@param useIdentity Whether or not LsqrsJ should use the  " );
-    s.append( "identity matrix (i.e. if this is set to true, then the " );
-    s.append( "transformation matrix is always the identity matrix.\n" );
-    s.append( "@param transform The transformation matrix to apply.\n" );
-    s.append( "@param scalarLog The scalar log file.  Unused by LsqrsJ, it " );
-    s.append( "is included for convenience.\n" );
     s.append( "@param matrixFiles The Vector of LsqrsJ output matrix files.\n" );
-    s.append( "@return A Boolean indicating success or failure of the Form's " );
-    s.append( "execution.\n" );
     s.append( "@param minThresh The minimum peak threshold to use - NOT " );
     s.append( "IMPLEMENTED YET.\n" );
     s.append( "@param keepChannels The channel range to keep - NOT " );
     s.append( "IMPLEMENTED YET.\n" );
+    s.append( "@return A Boolean indicating success or failure of the Form's " );
+    s.append( "execution.\n" );
     s.append( "@error Invalid peaks path.\n" );
     s.append( "@error Invalid experiment name.\n" );
     s.append( "@error Invalid transformation matrix.\n" );
@@ -289,7 +279,6 @@ public class LsqrsJForm extends Form {
     IParameterGUI param;
     String runNum;
     String peaksDir;
-    String xFormMat;
     String restrictSeq;
     String matFileName;
     String expName;
@@ -316,25 +305,6 @@ public class LsqrsJForm extends Form {
     param         = ( IParameterGUI )getParameter( 3 );
     restrictSeq   = param.getValue(  ).toString(  );
 
-    //get "use identity" value - this is a class value, and is actually
-    //retrieved using setIdentityParameter below
-    setIdentityParameter(  );
-
-    /*get transformation matrix - only set to identity if
-       not first time through.  Otherwise, use user input
-       value.*/
-    param      = ( IParameterGUI )getParameter( 5 );
-    xFormMat   = param.getValue(  ).toString(  );
-
-    if( useIdentity ) {
-      xFormMat = identmat;
-    }
-
-    //the scalar log file - ALWAYS valid.  The Form will now skip checking this
-    //parameter.
-    param = ( IParameterGUI )getParameter( 6 );
-    param.setValid( true );
-
     //peaks file
     peaksName   = peaksDir + expName + ".peaks";
 
@@ -342,7 +312,7 @@ public class LsqrsJForm extends Form {
     leastSquares = new LsqrsJ(  );
     leastSquares.getParameter( 0 ).setValue( peaksName );
     leastSquares.getParameter( 2 ).setValue( restrictSeq );
-    leastSquares.getParameter( 3 ).setValue( xFormMat );
+    leastSquares.getParameter( 3 ).setValue( identmat );
 
     //validate the parameters and init the progress bar variables
     Object superRes = super.getResult(  );
@@ -392,7 +362,7 @@ public class LsqrsJForm extends Form {
     }
 
     //set the matrix file name vector parameter
-    param = ( IParameterGUI )getParameter( 7 );
+    param = ( IParameterGUI )getParameter( 4 );
     param.setValue( matNamesVec );
     param.setValid( true );
 
@@ -400,55 +370,9 @@ public class LsqrsJForm extends Form {
 
     //these are here only until the minimum peaks threshold and channel
     //limiting code is put in
-    ( ( IParameterGUI )super.getParameter( 8 ) ).setValid( true );
-    ( ( IParameterGUI )super.getParameter( 9 ) ).setValid( true );
+    ( ( IParameterGUI )super.getParameter( 5 ) ).setValid( true );
+    ( ( IParameterGUI )super.getParameter( 6 ) ).setValid( true );
 
     return new Boolean( true );
-  }
-
-  /**
-   *  Overridden so that the identity matrix can be used on any iterations
-   *  of Lsqrs.
-   */
-  protected void makeGUI(  ) {
-    IParameterGUI param;
-
-    //the scalar log file - ALWAYS valid
-    param = ( IParameterGUI )getParameter( 6 );
-    param.setValid( true );
-
-    if( useIdentCheckBox == null ) {
-      setIdentityParameter(  );
-    }
-
-    //after the first time through, we don't want to change the
-    //identity matrix
-    if( !useIdentity ) {
-      useIdentCheckBox.setValue( Boolean.FALSE );
-
-      //alternate so that the user won't accidentally apply the matrix twice.
-      //This will not interfere with getResult(), since it gets the checkbox
-      //value anyways
-      useIdentity = true;
-    } else {
-      useIdentCheckBox.setValue( Boolean.TRUE );
-
-      //reset the matrix to identity
-      ( ( IParameterGUI )getParameter( 5 ) ).setValue( identmat );
-    }
-
-    super.makeGUI(  );  //now make the GUI
-  }
-
-  /**
-   *  Gets the true/false value from the identity check box on the GUI
-   *  and sets the useIdentity variable to that value.
-   */
-  private void setIdentityParameter(  ) {
-    if( useIdentCheckBox == null ) {
-      useIdentCheckBox = ( BooleanPG )super.getParameter( 4 );
-    }
-
-    useIdentity = useIdentCheckBox.getbooleanValue(  );
   }
 }
