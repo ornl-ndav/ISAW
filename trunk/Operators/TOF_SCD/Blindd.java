@@ -27,6 +27,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/02/14 21:19:26  dennis
+ * Changed javadocs on getCommand() to the new command name.
+ *
  * Revision 1.3  2003/02/14 21:14:52  pfpeterson
  * Set indent level to two and split lines longer than 80 characters.
  *
@@ -36,9 +39,6 @@
  *
  * Revision 1.1  2003/02/10 13:32:45  rmikk
  * Initial Checkin for the Java Blind
- *
- * 
- *
  */
 package Operators.TOF_SCD;
 
@@ -89,9 +89,9 @@ public class Blindd extends  GenericTOF_SCD {
     
   /* --------------------------- getCommand ------------------------------- */ 
   /** 
-   * Returns Blindd, the name of this operator to use in scripts
+   * Returns JBlind, the name of this operator to use in scripts
    * 
-   * @return  "Blindd", the command used to invoke this operator in Scripts
+   * @return  "JBlind", the command used to invoke this operator in Scripts
    */
   public String getCommand(){
     return "JBlind";
