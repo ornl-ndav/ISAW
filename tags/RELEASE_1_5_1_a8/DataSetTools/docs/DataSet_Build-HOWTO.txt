@@ -1,0 +1,467 @@
+
+                  Suggestions on building DataSets
+                          Sept. 20, 2000
+                         Dennis Mikkelson
+
+-----------------------------------------------------------------------------
+INTRODUCTION:
+-----------------------------------------------------------------------------
+ 
+  A DataSet object, as used by ISAW, is a container object that contains
+zero or more Data objects.  Each Data object represents a tabulated 
+function or histogram using a collection of "y" values and corresponding 
+"x" values.  Both the containing DataSet and each Data object that it 
+contains also hold several types of auxiliary information.  Some of the 
+auxiliary information is in the form of a fixed set of data fields in the 
+objects, some is in an extensible list of "attributes" maintained by each
+object.  Since various operations can be performed on a DataSet and
+the DataSet includes an extensible list of operators that can operate on
+the DataSet. Finally, the DataSet keeps a "log" of the operations that 
+have been applied to the DataSet.
+
+  There are five major steps that are typically followed when building a 
+DataSet:
+         1. Construct the empty DataSet complete with appropriate operators.
+         2. Add "attributes" to the DataSet.
+         3. Construct a Data block to add to the DataSet.
+         4. Add "attributes" to the Data block.
+         5. Add the Data block to the DataSet. 
+
+These steps would usually be done in the order listed, with the last three
+being repeated for each Data block that is added to the DataSet.
+
+-----------------------------------------------------------------------------
+STEP TO CREATE A DATA SET:
+-----------------------------------------------------------------------------
+
+1. Construct the empty DataSet. 
+
+  This is very easy for a time-of-flight DataSet.  There is a DataSetFactory
+that can be used to build the empty DataSet and add the needed operators to
+the DataSet.  For a time-of-flight DataSet this is used as shown below.  The 
+"title" parameter that is passed to the constructor of the DataSetFactory
+will specify what title will be used for subsequent DataSets produced by the
+factory. 
+
+   DataSetFactory ds_factory = new DataSetFactory( title );
+   DataSet        ds         = ds_factory.getTofDataSet( instrument_type );
+
+The instrument_type is an integer code for the type of instrument. This
+is used by the DataSetFactory to determine which operators should be added.
+The values for the integer codes are defined in the file:
+
+   .../DataSetTools/instruments/InstrumentType.java
+
+and currently include:
+
+      InstrumentType.TOF_DIFFRACTOMETER
+      InstrumentType.TOF_SCD
+      InstrumentType.TOF_SAD
+      InstrumentType.TOF_DG_SPECTROMETER
+      InstrumentType.TOF_IDG_SPECTROMETER
+      InstrumentType.TOF_REFLECTROMETER
+
+At this time DataSetFactory provides a larger set of operations for the types
+TOF_DIFFRACTOMETER and TOF_DG_SPECTROMETER.  Support, by way of special
+operators for the other instrument types is still being developed.  In all
+cases, very basic operations such as add, subtract, multiply and divide by
+DataSets and scalars are included. 
+
+  If you are constructing a "generic" DataSet with axis labels and units other
+than those for a time-of-flight instrument, you can use a different constructor
+for the DataSetFactory such as:
+
+  DataSetFactory factory = new DataSetFactory( title,
+                                              "Angstroms",
+                                              "d-Spacing",
+                                              "Counts",
+                                              "Scattering Intensity" );
+  DataSet ds = factory.getDataSet();
+
+In this case, the factory will produce DataSets with the given title, axis
+units and labels.  The method "getDataSet" will only add the generic operators
+to the DataSet, not the operators specific to time-of-flight DataSets.
+
+
+2. Add "attributes" to the DataSet. 
+
+  Attributes can be added to DataSets and Data blocks at any time.  It's
+probably best to add the attributes you'll need in an organized manner at the
+time that you are constructing the DataSet.  Attributes are name, value pairs
+where the value can be things like an integer, float, array of integers,
+character string, etc.  Attributes are classes that are derived from the
+abstract base class defined in .../DataSetTools/dataset/Attribute.java.  This
+file also contains a list of the names that we have been using for the 
+attributes.  The names are given by "constant" strings.  Since each attribute
+is stored in it's own object, it is usually necessary to create the 
+attribute objects as they are added to the DataSet (or Data block).
+
+  If a few individual attributes are being added to the DataSet (or Data block)
+they can be added using the setAttribute( attribute ) method.  For example,
+assuming that the original data file name is to be stored as an attribute of 
+the DataSet, you could write:
+
+    ds.setAttribute( new StringAttribute( Attribute.FILE_NAME, file_name ) );
+
+to set an attribute for the file name in DataSet "ds".  This assumes that 
+the variable file_name is a string containing the file name.  This will 
+construct a new StringAttribute object with the name of the attribute 
+given by the constant Attribute.FILE_NAME = "File" and the value of the 
+attribute given by the file_name string.  Other attributes are treated 
+similarly.
+
+    ds.setAttribute( new IntAttribute(Attribute.NUMBER_OF_PULSES, num_pulses));
+
+The attribute can also be constructed separately and then set in the DataSet
+like:
+
+    int_attr = new IntAttribute( Attribute.NUMBER_OF_PULSES, num_pulses );
+    ds.setAttribute( int_attr );
+
+Finally, there are also routines to get and set the entire list of attributes 
+at once, but the routines to get and set individual attributes are actually
+more efficient to use in most cases.  
+
+
+3. Construct a Data object.
+
+  The three most crucial pieces of information held in each Data object are
+the list of y-values, an XScale object specifying the corresponding x-values
+and a unique integer ID.  These three pieces of information are needed by
+the constructor for a Data object.  The y-values are just an array of type
+float[] and the ID is just an integer value.  However, the XScale is an object
+that either contains the x-values, or contains enough information to calculate
+uniformly spaced x-values.
+
+  The x-values are stored in an XScale object for space efficiency.  That is,
+in many cases the x-values associated with a Data block are evenly spaced.  In
+that case, they can be easily calculated as needed based on the first point,
+the last point and the number of points.  Since we may have thousands of 
+spectra with thousands of y-values in each, it would be a serious waste of 
+space to store corresponding evenly spaced x-values in such cases.  In this
+case, the x-values can be stored in a UniformXScale object, derived from an
+XScale object.  For example, a uniform XScale object with 101 points evenly
+spaced on the interval [0,10] can be constructed as:
+
+    XScale x_scale = new UniformXScale( 0, 10, 101 );
+
+  If the x-values are not evenly spaced, a VariableXScale object can be used
+to explicitly store all of the x-values.  Specifically, if an array of floats
+named "x-vals" contained the x-values we could create a  VariableXScale object
+as follows:
+
+   XScale x_scale = new VariableXScale( x-vals );
+
+  In either case, software using the x_scale can get at information such as the
+min, max, number of points and the actual x-values using the methods of the
+base class XScale.  For a time-of-flight Data object, the operators assume
+that the times are specified in microseconds. 
+
+  It also should be noted, that Data objects are used to store either 
+histogram data, or tabulated function data.  These two cases are distinguished
+based on the relationship between the number of x-values and the number of
+y-values.  Specifically, for a tabulated function Data object, the number of
+x-values will be the same as the number of y-values.  In this case, the 
+y-values give the value of a function at the corresponding x-value.  On the
+other hand, for a histogram, the Data object records the x-values at the 
+boundaries of the histogram bins.  The y-values are considered to be the
+y-values at the bin centers.  Thus for histogram data, the number of x-values
+is one more than the number of y-values.  The number x-values is restricted 
+by the Data object constructor to be either the number of y-values, or the 
+number of y-values plus one.  
+
+  An example of building a simple Data block for the function y = (x/10)^2
+on the interval [0,49], with ID = 1 is given below:
+
+  float  y_values[] = new float[50];
+  XScale x_scale    = new UniformXScale( 0, 49, 50 ); 
+  for ( int i = 0; i < 50; i++ )
+    y_values[i] = (i/10.0) * (i/10.0)
+
+  Data data = new Data( x_scale, y_values, 1 );
+
+  
+4. Add attributes to Data object.
+
+  Both DataSet objects and the Data objects that they contain implement the
+IAttributeList interface.  As a result, attributes are added to Data objects
+in exactly the same way as they are added to DataSets.  For example, if data
+is a Data object, we could add an attribute specifying that the initial energy
+was 120.0 as follows:
+
+   data.setAttribute( new FloatAttribute( Attribute.ENERGY_IN, 120.0f ) );
+
+
+5. Add the Data object to the DataSet.
+
+  Once a Data object has been constructed, and its attributes set, it should 
+be added to a DataSet.  For example, to add a Data object "data" to a DataSet
+"ds" just do:
+
+   ds.addData_entry( data );
+
+
+-----------------------------------------------------------------------------
+ATTRIBUTES NEEDED IN A DATA SET and DATA object:
+-----------------------------------------------------------------------------
+
+  Although the above discussion describes how to construct a Data block and
+DataSet, more information is needed to construct a DataSet to hold 
+time-of-flight data in a way that will allow useful operations to be 
+done on the Data.  In particular, most of the "interesting" operators 
+for neutron scattering rely on specific attributes of the DataSet and 
+Data objects.  The attributes that are currently used by various operators 
+include:
+
+        Attribute.DETECTOR_POS         <- object
+        Attribute.INITIAL_PATH         <- float
+        Attribute.ENERGY_IN            <- float
+
+        Attribute.NUMBER_OF_PULSES     <- int
+        Attribute.SOLID_ANGLE          <- float
+
+        Attribute.DELTA_2THETA         <- float
+        Attribute.RAW_ANGLE            <- float
+
+  To allow for comparing and scaling DataSets, some measure of the number of
+neutrons that hit the sample is needed.  For use in scripts, this should
+probably be the number of pulses, at least that is what has been used for
+GPPD.  If the number of pulses is not directly available, it could possibly
+be approximated based on a start time and end time.  At any rate, it would
+be useful to have the number of pulses stored as a DataSet attribute for 
+any instrument.
+
+  The attributes listed above are primarily used as attributes of each Data
+object.  The attributes are listed in decreasing order of importance.  
+Interpreting the time-of-flight data almost always requires the effective 
+detector position.  The convention used in the DataSetTools package is that 
+the effective detector position gives the position of the detector from the 
+center of the sample.  Since there are different ways of specifying this 
+position, a class was constructed to hold the position information and 
+provide some extra information as needed.  A "Position3D" object contains 
+a 3D position, specified in any of the usual coordinate systems, Cartesian, 
+cylindrical or spherical.  There are methods to get and set the position 
+in any of these coordinate systems, as well as some additional convenience 
+routines. 
+
+  The convention for the instruments at IPNS is that the coordinate system 
+has it's origin at the sample position, the x-axis points in the direction the
+incident beam is traveling, the y-axis is horizontal, perpendicular to the
+incident beam and z-axis is perpendicular to the earth's surface.  This is
+also the convention followed by the DataSetTools package.  Unfortunately, 
+that coordinate system is somewhat inconvenient for describing the scattering 
+angle (the angle between the positive x-axis and the vector from the sample
+to the detector).  Since the operators frequently need to use the scattering 
+angle a class "DetectorPosition" was derived from the Position3D class.  The
+DetectorPosition class adds a method to get the scattering angle, and so it
+should be used to represent the position of the detector relative to the 
+sample.  An example of code to set a detector position attribute corresponding
+to a detector that is at an angle of 50 degrees, 0.1 meter above the xy plane,
+and above a horizontal circle of radius 4.0 meters centered at the sample
+is shown below:
+
+      DetectorPosition position = new DetectorPosition();
+      float angle      = 50.0f * (float)(Math.PI / 180.0);
+      float final_path = 4.0f;
+      float height     = 0.1f;
+      position.setCylindricalCoords( final_path, angle, height );
+      data.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS,
+                                              position ) );
+
+Lengths are assumed to be in meters, and angles are stored in radians.  If
+the detector position is easier to specify in Cartesian coordinates, (x, y, z),
+the method position.setCartesianCoords( x, y, z) can be used instead.
+
+  The initial path attribute is needed for the diffractometer instruments.
+The initial flight path is the source to sample distance in meters.  If
+this can be obtained, as say the float variable "length", it is easily 
+added to the Data block as:
+
+    data.setAttribute( new FloatAttribute( Attribute.INITIAL_PATH, length ) ); 
+
+  The operators to process data from direct geometry spectrometers require the
+initial energy of the neutrons incident on the sample.  The initial energy
+is assumed to be in meV.  It is often necessary to calibrate this value, 
+but at least some initial approximation will be needed by these operators.
+The more advanced operators for direct geometry spectrometers will require 
+the number of pulses to stored with each Data block, in addition to being
+stored with the DataSet as a whole.  Finally, these operators need the 
+solid angle subtended by the detector group, measured in steradians.
+
+  The operator to produce a display of S(Q,E) for spectrometers will need
+an approximate value for the interval of scattering angles covered by each 
+detector.  That is, each detector has non-zero dimensions.  Consequently,
+even though the detector might be nominally at say 50 degrees, it actually
+covers some interval, say 49.95 to 50.05 degrees.  Some approximation to
+the range of angles covered should be stored in a DELTA_2THETA attribute.
+This value is assumed to be stored in degrees.
+
+  The operator to produce a "TrueAngle" display of a DataSet requires the
+DELTA_2THETA attribute, as well as the RAW_ANGLE.  The RAW_ANGLE is the 
+actual physical scattering angle for the detector, without regard to 
+time-focusing.  ( Time focusing may adjust the raw angle to a different
+effective angle. )  A DETECTOR_POS attribute is assumed to hold the 
+effective 3D position of the detector, while a RAW_ANGLE attribute is 
+assumed to hold the physical, unfocused scattering angle.
+
+-----------------------------------------------------------------------------
+A DATA RETRIEVER:
+-----------------------------------------------------------------------------
+
+   In order to easily work with different sources of data, such as IPNS
+runfiles, Nexus files, data acquisition hardware, etc. the system was
+designed to access data through subclasses of the abstract class
+.../DataSetTools/retriever/Retriever.java.  Currently the only derived class
+is a RunfileRetriever that accesses IPNS runfiles.  New data sources should
+be supported by making a new class derived from the Retriever class, since in
+that way, all data sources can be used in the same way.  The Retriever class
+is quite simple:
+
+  The constructor accepts a string giving the name of the data source.  For
+a data file, this would most likely be the file name, and the file would 
+most likely be opened in the constructor.
+
+  The Retriever class then provides three methods, a method to get the number
+of DataSets available from the source, a method to get the type of each
+available DataSet ( MONITOR_DATA_SET or HISTOGRAM_DATA_SET ) and a method to
+get a specific DataSet from the source.  For the special case of the IPNS
+runfile retriever this gets used as simply as:
+
+  RunfileRetriever rr    = new RunfileRetriever( "gppd9898.run" ); 
+  DataSet A_monitor_ds   = rr.getDataSet( 0 );
+  DataSet A_histogram_ds = rr.getDataSet( 1 );
+
+where we've used the simplifying assumption that the "zeroth" DataSet is always
+the monitor DataSet and the "first" always the first histogram DataSet.  These
+simplifying assumptions make it unnecessary to find out the number of DataSets
+and find out their types before reading.
+
+  As other types of files or data sources are supported, the Retriever
+class may need to expand slightly.  However it is best to keep this 
+class as simple as possible, since any new functionality introduced
+in the Retriever will have to be supported by ALL types of retrievers.
+
+-----------------------------------------------------------------------------
+AN EXAMPLE:
+-----------------------------------------------------------------------------
+ 
+  A simple program to demonstrate building a DataSet is in the file:
+
+.../DataSetTools/trial/BuildDataSetDemo.java
+
+in the latest version of DataSetTools.  It can be compiled from within the
+directory containing it using:
+
+  javac  BuildDataSetDemo.java
+
+and then can be run using
+
+  java BuildDataSetDemo
+
+Assuming that all PATH and CLASSPATH values have been set properly.  The code
+for the demo is listed below:
+----------------------------------------------------------------------------
+
+/*
+ *  @(#)  BuildDataSetDemo.java    1.0  2000/9/19    Dennis Mikkelson
+ *
+ */
+import DataSetTools.dataset.*;
+import DataSetTools.viewer.*;
+import DataSetTools.math.*;
+
+/**
+  *  This class provides a basic demo of how to construct a DataSet.
+  */
+public class BuildDataSetDemo
+{
+
+  /**
+   *  This method builds a simple DataSet with a collection of 10 sine waves.
+   *
+   *  @return  A sample DataSet with 10 sine waves.
+   */
+  public DataSet BuildDataSet()
+  {
+   //
+   // 1. Use a "factory" to construct a DataSet with operators ---------------
+   //
+    DataSetFactory factory = new DataSetFactory( "Collection of Sine Waves",
+                                                 "time",
+                                                 "milli-seconds",
+                                                 "signal level",
+                                                 "volts" );
+    DataSet new_ds = factory.getDataSet();
+
+    //
+    // 2. Add attributes, as needed to the DataSet ---------------------------
+    //
+    new_ds.setAttribute( new StringAttribute( Attribute.FILE_NAME,
+                                             "BuildDataSetDemo.java" ) );
+    new_ds.setAttribute( new IntAttribute(Attribute.NUMBER_OF_PULSES, 10000) );
+
+    //
+    // Now, repeatedly construct and add Data blocks to the DataSet
+    //
+    Data          data;         // data block that will hold info on one signal
+    float[]       y_values;     // array to hold the y-values for that signal
+    XScale        x_scale;      // "time channels" for the signal
+
+    for ( int id = 1; id < 10; id++ )            // for each id
+    {
+       //
+      // 3. Construct a Data object
+      //
+      x_scale = new UniformXScale( 1, 5, 50 );   // build list of time channels
+
+      y_values = new float[50];                  // build list of counts
+      for ( int channel = 0; channel < 50; channel++ )
+        y_values[ channel ] = 100*(float)Math.sin( id * channel / 10.0 );
+
+      data = new Data( x_scale, y_values, id );
+
+      //
+      // 4. Add attributes as needed to the Data block
+      //
+                                                // "simple" energy in attribute
+      data.setAttribute( new FloatAttribute( Attribute.ENERGY_IN, 120.0f ) );
+
+                                               // more complicated, position
+                                               // attribute has a position
+                                               // object as it's value
+      DetectorPosition position = new DetectorPosition();
+      float angle      = 50.0f * (float)(Math.PI / 180.0);
+      float final_path = 4.0f;
+      float height     = 0.1f;
+      position.setCylindricalCoords( final_path, angle, height );
+      data.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS,
+                                              position ) );
+
+      //
+      // 5. Add the Data object to the DataSet
+      //
+      new_ds.addData_entry( data );
+    }
+
+    return new_ds;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   *  The main program method for this object
+   */
+  public static void main(String args[])
+  {
+    BuildDataSetDemo demo_prog = new BuildDataSetDemo();// create the class
+
+    DataSet test_ds = demo_prog.BuildDataSet();         // call the method to
+                                                        // construct a DataSet
+
+                                                        // create a viewer for
+                                                        // the DataSet
+    ViewManager view_manager = new ViewManager( test_ds, IViewManager.IMAGE );
+  }
+}
+
+
+
