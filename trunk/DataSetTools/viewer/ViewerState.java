@@ -8,6 +8,10 @@
  *  set in a particular viewer.
  *
  *  $Log$
+ *  Revision 1.5  2001/03/02 17:03:30  dennis
+ *  Now checks whether the current DataSet uses the same axis units and
+ *  labels before returning the zoom region.
+ *
  *  Revision 1.4  2001/03/01 23:14:10  dennis
  *  Now allows saving one zoom region for an ImageView.
  *
@@ -26,6 +30,7 @@ package DataSetTools.viewer;
 
 import  java.io.*;
 import  DataSetTools.components.image.*;
+import  DataSetTools.dataset.*;
 
 /**
  *  A ViewerState object preserves the state for a DataSetViewer so
@@ -42,8 +47,13 @@ public class ViewerState  implements Serializable
   private boolean       horizontal_scrolling;
   private float         horizontal_scroll_fraction;
   private int           pointed_at_index;
-  private CoordBounds   zoom_region;
- 
+
+  private CoordBounds   zoom_region;                // the image zoom region
+  private String        ds_x_label;                 // should only be restored
+  private String        ds_y_label;                 // if the DataSet has the
+  private String        ds_x_units;                 // same units and labels
+  private String        ds_y_units; 
+
     /** 
      * Constructs a ViewerState object with default values for the
      * various state fields.  
@@ -55,6 +65,8 @@ public class ViewerState  implements Serializable
       horizontal_scroll_fraction = 0.5f;
       pointed_at_index           = 0;
       zoom_region                = new CoordBounds( 0, 1000, 0, 1000 );
+      ds_x_label = "";
+      ds_y_label = "";
     }
 
    /**
@@ -150,21 +162,47 @@ public class ViewerState  implements Serializable
    /**
     *  Get the last zoom region that was saved.
     *
-    *  @return  The last saved zoom region.
+    *  @param  ds     The current DataSet being viewed.  The zoom region should
+    *                 only be restored provided the new DataSet given to the
+    *                 viewer is using the same units and axis labels.  The
+    *                 axis labels and units of this DataSet are compared to 
+    *                 those of the old DataSet that was passed to the 
+    *                 setZoomRegion() method. 
+    *
+    *  @return  The last saved zoom region, provided the current DataSet has
+    *           the same axis labels as the previous DataSet for which the
+    *           zoom region was saved.  If the labels don't match, this 
+    *           method returns null.
     */
-   public CoordBounds getZoomRegion()
+   public CoordBounds getZoomRegion( DataSet ds )
    {
-     return zoom_region;
+     if ( ds_x_label.equalsIgnoreCase( ds.getX_label() )   &&
+          ds_y_label.equalsIgnoreCase( ds.getY_label() )   &&
+          ds_x_units.equalsIgnoreCase( ds.getX_units() )   &&
+          ds_y_units.equalsIgnoreCase( ds.getY_units() )    )        
+       return zoom_region;
+     else
+       return null;
    }
 
    /**
     *  Save the specified zoom region.
     *
     *  @param  bounds Zoom region to be saved.
+    *  @param  ds     The current DataSet being viewed.  The zoom region should
+    *                 only be restored provided the new DataSet given to the
+    *                 viewer is using the same units and axis labels.  The
+    *                 axis labels and units of this DataSet are saved and 
+    *                 compared to those of the current DataSet by the 
+    *                 getZoomRegion() method. 
     */
-   public void setZoomRegion( CoordBounds zoom_region )
+   public void setZoomRegion( CoordBounds zoom_region, DataSet ds )
    {
       this.zoom_region = (CoordBounds)(zoom_region.clone());
+      ds_x_label = ds.getX_label();
+      ds_y_label = ds.getY_label();
+      ds_x_units = ds.getX_units();
+      ds_y_units = ds.getY_units();
    }
 
 }
