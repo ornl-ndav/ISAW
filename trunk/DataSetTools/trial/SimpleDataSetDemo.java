@@ -32,13 +32,12 @@ public static void main(String args[])
   DataSet      A_histogram_ds;  
 //  String       run_A = "/usr/home/dennis/ARGONNE_DATA/glad0816.run";
 //  String       run_A = "/usr/home/dennis/ARGONNE_DATA/GLAD4811.RUN";
-//  String       run_A = "/usr/home/dennis/ARGONNE_DATA/hrcs2848.run";
 //  String       run_A = "/usr/home/dennis/ARGONNE_DATA/gppd9902.run";
+//  String       run_A = "/usr/home/dennis/ARGONNE_DATA/hrcs2848.run";
 //  String       run_A = "/IPNShome/dennis/ARGONNE_DATA/hrcs2445.run";
 //  String       run_A = "/IPNShome/dennis/ARGONNE_DATA/hrcs2444.run";
-  String       run_A = "/IPNShome/dennis/ARGONNE_DATA/hrcs2451.run";
-
-
+//  String       run_A = "/IPNShome/dennis/ARGONNE_DATA/hrcs2451.run";
+  String       run_A = "/usr/home/dennis/ARGONNE_DATA/hrcs2936.run";
 
   // Get the DataSet from the runfile and show it.
 
