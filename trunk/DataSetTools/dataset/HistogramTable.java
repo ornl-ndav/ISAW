@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/06/19 22:39:06  dennis
+ *  Minor cleanup of format and added some docs for XML IO.
+ *
  *  Revision 1.5  2002/06/14 21:00:28  rmikk
  *  Implements IXmlIO interface
  *
@@ -102,11 +105,21 @@ public class HistogramTable extends    TabulatedData
     init( y_values );  
   }
 
+
+  /**
+   * Constructs a Data object with the specified X scale.  The Y values are 
+   * all zero, and the errors are null, and the group id's are -1. This 
+   * constructor is only needed for the XMLread to read a Data Object. 
+   *
+   * @param   x_scale   the list of x values for this data object
+   *
+   * @see TabulatedData#XMLread( java.io.InputStream )
+   */
   public HistogramTable( XScale x_scale)
-   {
+  {
     super( x_scale, new float[x_scale.getNum_x()-1], -1);
-   
-   }
+  }
+
 
   /**
    * Constructs a Data object by specifying an "X" scale, 
@@ -217,43 +230,42 @@ public class HistogramTable extends    TabulatedData
   }
 
 
+  /**
+   *  Get an approximate y value corresponding to the specified x_value in this 
+   *  Data block. If the x_value is outside of the interval of x values
+   *  for the Data, this returns 0.  In other cases, the approximation used is
+   *  controlled by the smooth_flag.  #### smooth_flag not implemented yet.
+   *
+   *  @param  x_value      the x value for which the corresponding y value is to
+   *                       be interpolated
+   *
+   *  @param  smooth_flag  Currently, for a HistogramTable, the smooth_flag has
+   *                       no effect.  The count within the bin containing the
+   *                       the specified x is returned.  #####
+   *
+   *  @return approximate y value at the specified x value
+   */
+  public float getY_value( float x_value, int smooth_flag )
+  {
+    if ( x_value < x_scale.getStart_x() || 
+         x_value > x_scale.getEnd_x()    )
+      return 0.0f;
 
-/**
- *  Get an approximate y value corresponding to the specified x_value in this 
- *  Data block. If the x_value is outside of the interval of x values
- *  for the Data, this returns 0.  In other cases, the approximation used is
- *  controlled by the smooth_flag.  #### smooth_flag not implemented yet.
- *
- *  @param  x_value      the x value for which the corresponding y value is to
- *                       be interpolated
- *
- *  @param  smooth_flag  Currently, for a HistogramTable, the smooth_flag has
- *                       no effect.  The count within the bin containing the
- *                       the specified x is returned.  #####
- *
- *  @return approximate y value at the specified x value
- */
-public float getY_value( float x_value, int smooth_flag )
-{
-  if ( x_value < x_scale.getStart_x() || 
-       x_value > x_scale.getEnd_x()    )
-    return 0.0f;
+    float x_vals[] = x_scale.getXs();
+    int index = arrayUtil.get_index_of( x_value, x_vals );
 
-  float x_vals[] = x_scale.getXs();
-  int index = arrayUtil.get_index_of( x_value, x_vals );
-
-  return y_values[index]; 
-}
+    return y_values[index]; 
+  }
 
 
   /**
-    * Determine whether or not the current Data block has HISTOGRAM data.
-    * HISTOGRAM data records bin boundaries and a number of counts in each
-    * bin, so the number of x-values is one more than the number of y-values.
-    *
-    * @return  true if the number of x-values is one more than the number
-    *          of y-values.
-    */
+   * Determine whether or not the current Data block has HISTOGRAM data.
+   * HISTOGRAM data records bin boundaries and a number of counts in each
+   * bin, so the number of x-values is one more than the number of y-values.
+   *
+   * @return  true if the number of x-values is one more than the number
+   *          of y-values.
+   */
   public boolean isHistogram()
   {
     return true;
