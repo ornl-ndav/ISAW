@@ -51,8 +51,11 @@ public class GroupingForm extends    Form
    *  just calls the super class constructor and builds an
    *  appropriate help message for the form.
    *
-   *  @param  constants The vector of arrays of DataSets to be grouped
-   *  @param  operands  The list of names of parameters to be added.
+   *  @param  constants The list of names of parameters to be grouped.
+   *  @param  operands  The list of names of parameters to use for the
+   *                    grouping.
+   *  @param  result    The list of names of parameters which have been
+   *                    grouped.
    *  @param  w         The wizard controlling this form.
    */
   public GroupingForm( String constants[], String operands[], String results[], Wizard w )
@@ -65,20 +68,21 @@ public class GroupingForm extends    Form
   }
 
   /**
-   *  This overrides the execute() method of the super class and provides
-   *  the code that actually does the calculation.
+   *  Groups the Vector of DataSet arrays and loads them
+   *  into a new Vector of DataSet arrays (in an ArrayPG).
    *
-   *  @return
+   *  @return true if all of the parameters are valid and all Datasets
+   *  can be grouped; false if any significant error occurs
    */
   public boolean execute()
   {
     SharedData.addmsg("Executing...\n");
     ArrayPG tfa, ga;
-    Vector runfiles;
+    Vector tf_ds_vec;
     Operator grp;
     Object obj, result;
-    DataSet time_focused[], grouped[];
-    int num_runs, num_datasets;
+    DataSet time_focused, grouped;
+    int num_ds;
     String group_string;
     int new_id;
     IParameterGUI param;
@@ -86,7 +90,7 @@ public class GroupingForm extends    Form
 
     //get the Time Focused results
     tfa = (ArrayPG)wizard.getParameter("TimeFocusResults");
-    runfiles = (Vector)tfa.getValue();
+    tf_ds_vec = (Vector)tfa.getValue();
 
     //get the user input parameters
     param = wizard.getParameter("GroupStr");
@@ -114,59 +118,56 @@ public class GroupingForm extends    Form
     ga.clearValue();
 
     //make sure list exists
-    if( runfiles != null )
+    if( tf_ds_vec != null )
     {
-      //get the runfiles array size
-      num_runs = runfiles.size();
+      //get the tf_ds_vec array size
+      num_ds = tf_ds_vec.size();
       //go through the array, getting each runfile's DataSets
-      for( int i = 0; i < num_runs; i++ )
+      for( int i = 0; i < num_ds; i++ )
       {
-        obj = runfiles.elementAt(i);
-        if( obj instanceof DataSet[] )
+        obj = tf_ds_vec.elementAt(i);
+        if( obj instanceof DataSet )
         {
-          time_focused = (DataSet[])obj;
-          num_datasets = time_focused.length;
-
-          //the grouped DataSets will be the same in number
-          //so create the time_focused_array at that size
-          grouped = new DataSet[num_datasets];
+          time_focused = (DataSet)obj;
 
           //group the DataSets
-          for( int j = 0; j < num_datasets; j++ )
+
+          if( time_focused != DataSet.EMPTY_DATA_SET )
           {
-            ds = time_focused[j];
+            grp = new Grouping(time_focused, group_string, new_id);
+            obj = grp.getResult();
+          }
+          else
+          {
+            SharedData.addmsg(
+              "Encountered empty DataSet: " + time_focused);
+            return false;
+          }
 
-            if( ds != DataSet.EMPTY_DATA_SET )
-            {
-              grp = new Grouping(time_focused[j], group_string, new_id);
-              obj = grp.getResult();
-            }
+          //make sure we are working with DataSets
+          //Grouping will always return a DataSet unless it
+          //hits an error (as of 02/17/2003)
+          if( obj instanceof DataSet )
+          {
+            grouped = (DataSet)obj;
+            SharedData.addmsg(time_focused + " grouped.\n");
+          }
+          else
+          {
+            if( obj instanceof ErrorString )
+              SharedData.addmsg(obj.toString() + "\n");
             else
-            {
-              SharedData.addmsg("Encountered empty DataSet: "+j);
-              return false;
-            }
-
-            //make sure we are working with DataSets
-            //Grouping will always return a DataSet unless it
-            //hits an error (as of 02/17/2003)
-            if( obj instanceof DataSet )
-            {
-              grouped[j] = (DataSet)obj;
-              SharedData.addmsg(time_focused[j] + " grouped.\n");
-            }
-            else
-            {
-              if( obj instanceof ErrorString )
-                SharedData.addmsg(obj.toString() + "\n");
-              else
-                SharedData.addmsg("Could not focus DataSet: "
-                                  +time_focused[j]+"\n");
-              return false;
-            }
+              SharedData.addmsg("Could not focus DataSet: "
+                                + time_focused + "\n");
+            return false;
           }
           //add the time focused DataSet array to time focused results
           ga.addItem(time_focused);
+        }
+        else //something went wrong in previous form
+        {
+          SharedData.addmsg("Encountered non-DataSet.\n");
+          return false;
         }
       }
       ga.setValid(true);
