@@ -1,5 +1,5 @@
 /*
- * File:  SumByAttribute.java 
+ * File:  SumByAttribute.java
  *
  * Copyright (C) 1999, Dennis Mikkelson
  *
@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/01/09 17:55:46  dennis
+ *  Added '\n' to docs from getDocumentation(). (Chris Bouzek)
+ *
  *  Revision 1.5  2002/12/06 14:40:55  dennis
  *  getDocumentation() now includes name of parameter. (Chris Bouzek)
  *
@@ -63,12 +66,12 @@ import  DataSetTools.operator.*;
 import DataSetTools.retriever.*;
 
 /**
-  *  Sum Data blocks specified by an attribute to form a new DataSet 
-  *  with one Data block.  The new data set is formed by summing 
+  *  Sum Data blocks specified by an attribute to form a new DataSet
+  *  with one Data block.  The new data set is formed by summing
   *  selected Data blocks with a specified attribute in a specified range.
   */
 
-public class SumByAttribute extends    DataSetOp 
+public class SumByAttribute extends    DataSetOp
                                        implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -103,7 +106,7 @@ public class SumByAttribute extends    DataSetOp
    *  @param   max         The upper bound for the selection criteria.
    */
 
-  public SumByAttribute( DataSet   ds, 
+  public SumByAttribute( DataSet   ds,
                          String    attr_name,
                          boolean   keep,
                          float     min,
@@ -131,7 +134,7 @@ public class SumByAttribute extends    DataSetOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return  the command name to be used with script processor: 
+   * @return  the command name to be used with script processor:
    *          in this case, SumAtt
    */
    public String getCommand()
@@ -142,12 +145,12 @@ public class SumByAttribute extends    DataSetOp
 
  /* -------------------------- setDefaultParameters ------------------------- */
  /**
-  *  Set the parameters to default values.  
+  *  Set the parameters to default values.
   */
   public void setDefaultParameters()
   {
     parameters = new Vector();  // must do this to clear any old parameters
-     
+
     Parameter parameter = new Parameter("Attribute to use for Selection",
                                new AttributeNameString(Attribute.RAW_ANGLE) );
     addParameter( parameter );
@@ -164,54 +167,54 @@ public class SumByAttribute extends    DataSetOp
   }
 
   /* ---------------------- getDocumentation --------------------------- */
-  /** 
-   *  Returns the documentation for this method as a String.  The format 
-   *  follows standard JavaDoc conventions.  
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
    */
   public String getDocumentation()
   {
     StringBuffer s = new StringBuffer("");
     s.append("@overview This operator sums a selection of data blocks in a DataSet ");
     s.append("according to selection criteria, which are a user specified attribute ");
-    s.append("and a lower and upper range for the attribute.");
+    s.append("and a lower and upper range for the attribute.\n");
     s.append("@assumptions The attribute is one that can be used to sum the ");
     s.append("data blocks given.  The number of data blocks which meet the ");
     s.append("selection criteria (i.e. within the range given for the attribute ");
-    s.append(" is greater than zero.");
-    s.append("@algorithm Constructs a new empty DataSet with the same title. ");
+    s.append(" is greater than zero.\n");
+    s.append("@algorithm Constructs a new empty DataSet with the same title, ");
     s.append("units, and operations as the current DataSet.  Sums the data ");
     s.append("blocks in the current DataSet according to the attribute, and ");
-    s.append("uses the sum to fill the new DataSet.");
-    s.append("@param ds The DataSet for the operation.");
+    s.append("uses the sum to fill the new DataSet.\n");
+    s.append("@param ds The DataSet for the operation.\n");
     s.append("@param attr_name The name of the attribute to use for the selection ");
-    s.append("criteria.");
+    s.append("criteria.\n");
     s.append("@param keep A value of true if you want the data blocks which meet the ");
     s.append("selection criteria to be included in the sum, or false if ");
-    s.append("you do not.");
-    s.append("@param min The lower bound of the selection criteria.");
-    s.append("@param max The upper bound of the selection criteria.");
+    s.append("you do not.\n");
+    s.append("@param min The lower bound of the selection criteria.\n");
+    s.append("@param max The upper bound of the selection criteria.\n");
     s.append("@return A DataSet with one data block which consists of the summed ");
-    s.append("values which met the selection criteria.");
+    s.append("values which met the selection criteria.\n");
     s.append("@error Returns an error message if no selected data blocks meet the ");
-    s.append("selection criteria.");
+    s.append("selection criteria.\n");
     return s.toString();
   }
 
   /* ---------------------------- getResult ------------------------------- */
   /**
-   * Constructs a new empty DataSet with the same title. units, and operations 
-   * as the current DataSet.  Sums the data blocks in the current DataSet 
+   * Constructs a new empty DataSet with the same title. units, and operations
+   * as the current DataSet.  Sums the data blocks in the current DataSet
    * according to the attribute, and uses the sum to fill the new DataSet.
    *
-   * @return A DataSet with the selected data blocks summed and put into 
+   * @return A DataSet with the selected data blocks summed and put into
    * one data block.
    */
 
   public Object getResult()
   {
-                                  // get the parameters specified by the user 
+                                  // get the parameters specified by the user
 
-    String attr_name = 
+    String attr_name =
            ((AttributeNameString)getParameter(0).getValue()).toString();
     boolean keep     = ((Boolean)getParameter(1).getValue()).booleanValue();
 
@@ -223,12 +226,12 @@ public class SumByAttribute extends    DataSetOp
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
-    DataSet new_ds = ds.empty_clone(); 
+    DataSet new_ds = ds.empty_clone();
     if ( keep )
-      new_ds.addLog_entry( "summed groups with " + attr_name + 
+      new_ds.addLog_entry( "summed groups with " + attr_name +
                            " in [" + min + ", " + max + "]" );
     else
-      new_ds.addLog_entry( "summed groups except those with " + attr_name + 
+      new_ds.addLog_entry( "summed groups except those with " + attr_name +
                            " in [" + min + ", " + max + "]" );
 
                                             // do the operation
@@ -242,16 +245,16 @@ public class SumByAttribute extends    DataSetOp
                                            // keep or reject it based on the
                                            // attribute value.
       attr = data.getAttribute( attr_name );
-      float val = (float)attr.getNumericValue(); 
+      float val = (float)attr.getNumericValue();
       if (attr_name.equals( Attribute.DETECTOR_POS ))     // convert to degrees
         val *= (float) 180.0/Math.PI;
 
       if ( keep && min <= val && val <= max  ||
-          !keep && (min > val || val > max)   ) 
+          !keep && (min > val || val > max)   )
       {
         new_data = (Data)data.clone();
-        new_ds.addData_entry( new_data );      
-      } 
+        new_ds.addData_entry( new_data );
+      }
     }
 
     if ( new_ds.getNum_entries() <= 0 )
@@ -268,12 +271,12 @@ public class SumByAttribute extends    DataSetOp
     else
       return result;
 
-  }  
+  }
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current SumByAttribute Operator.  The list of 
-   * parameters and the reference to the DataSet to which it applies are 
+   * Get a copy of the current SumByAttribute Operator.  The list of
+   * parameters and the reference to the DataSet to which it applies are
    * also copied.
    */
   public Object clone()
