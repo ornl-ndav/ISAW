@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/11/26 17:10:19  pfpeterson
+ * Small changes for stability and uses a SaveFilePG for selecting the filename.
+ *
  * Revision 1.4  2002/11/26 16:52:42  pfpeterson
  * reformating
  *
@@ -70,6 +73,7 @@ package DataSetTools.operator.Generic.Save;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
+import DataSetTools.parameter.*;
 import DataSetTools.writer.*;
 import DataSetTools.gsastools.*;
 import java.util.*;
@@ -92,20 +96,22 @@ public class WriteGSAS extends GenericSave{
    */
   public WriteGSAS( DataSet MS, DataSet DS, String filename, Boolean em,
                     Boolean sn ){
-    super( "Save as GSAS File" );
-    parameters = new Vector();
-    addParameter( new Parameter("Monitor" , MS ));
-    addParameter( new Parameter("Data Set" , DS ));
-    addParameter( new Parameter("Output File", filename ));
-    addParameter( new Parameter("Export Monitor", em));
-    addParameter( new Parameter("Sequential Bank Numbering", sn));
+    this();
+    getParameter(0).setValue(MS);
+    getParameter(1).setValue(DS);
+    getParameter(2).setValue(filename);
+    getParameter(3).setValue(em);
+    getParameter(4).setValue(sn);
   }
 
   public void setDefaultParameters(){
     parameters = new Vector();
     addParameter( new Parameter("Monitor" , new DataSet("","") ));
     addParameter( new Parameter("Data Set" , new DataSet("","") ));
-    addParameter( new Parameter("Output File", "filename"));
+    //addParameter( new SaveFilePG("Output File", "filename"));
+    SaveFilePG sfpg=new SaveFilePG("Output File",null);
+    sfpg.setFilter(new GsasFileFilter());
+    addParameter( sfpg );
     addParameter( new Parameter("Export Monitor", Boolean.TRUE));
     addParameter( new Parameter("Sequential Bank Numbering", Boolean.FALSE));
   }  
@@ -127,7 +133,7 @@ public class WriteGSAS extends GenericSave{
   public Object getResult(){
     DataSet MS       =(DataSet)( getParameter(0).getValue());
     DataSet DS       =(DataSet)( getParameter(1).getValue());
-    String  filename =(String) ( getParameter(2).getValue());
+    String  filename =getParameter(2).getValue().toString();
     boolean em       =((Boolean)(getParameter(3).getValue())).booleanValue();
     boolean sn       =((Boolean)(getParameter(4).getValue())).booleanValue();
 
