@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/11/21 22:33:48  dennis
+ * Added getDocumentation() method and documentation on getResult().
+ * (Chris Bouzek)
+ *
  * Revision 1.2  2002/09/19 16:02:22  pfpeterson
  * Now uses IParameters rather than Parameters.
  *
@@ -111,11 +115,13 @@ import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
+import  DataSetTools.retriever.*;
+import  DataSetTools.viewer.*;
 
 /**
   *  Replace Data blocks with the sum of the Data blocks.  Data blocks that 
   *  are marked as selected, or, alternatively, that are not marked 
-  *  as selected, are summed and replaced depending on the paramters. 
+  *  as selected, are summed and replaced depending on the parameters. 
   */
 
 public class SumCurrentlySelected  extends    DataSetOp 
@@ -187,7 +193,7 @@ public class SumCurrentlySelected  extends    DataSetOp
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -203,8 +209,46 @@ public class SumCurrentlySelected  extends    DataSetOp
     addParameter( parameter );
   }
 
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   *  @return A String which details the Operator.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator sums a selection of data blocks in a DataSet.");
+    s.append("@assumptions The number of data blocks selected is greater than zero.");
+    s.append("@algorithm Constructs a new empty DataSet with the same title. ");
+    s.append("units, and operations as the current DataSet.  Sums the data ");
+    s.append("blocks in the current DataSet which meet the given parameters.");
+    s.append("@param The DataSet for the operation.");
+    s.append("@param Flag that determines whether the selected or un-selected Data ");
+    s.append("blocks are summed.  If status==true, the selected blocks are summed.  ");
+    s.append("If status==false, the un-selected blocks are summed.");
+    s.append("@param Flag that determines whether removing the Data blocks makes a ");
+    s.append("new DataSet and returns the new DataSet as a value, or just sums and ");
+    s.append("removes the Data blocks from the current DataSet and returns a  ");
+    s.append("message indicating that the sum operation was done.");
+    s.append("@return A new DataSet which is the result of summing the selected data ");
+    s.append("blocks, or the old DataSet which has had the selected data blocks ");
+    s.append("replaced by the sum of the data blocks.");
+    s.append("@error Returns an error message if no selected data blocks meet the selection ");
+    s.append("criteria.");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+   *  Replace Data blocks with the sum of the Data blocks.  Data blocks that 
+   *  are marked as selected, or, alternatively, that are not marked 
+   *  as selected, are summed and replaced depending on the parameters. 
+   *
+   *  @return A new DataSet which is the result of summing the selected data
+   *  blocks, or the old DataSet which has had the selected data blocks
+   *  replaced by the sum of the data blocks.  
+   */
 
   public Object getResult()
   {                                  // get the parameters
@@ -286,6 +330,18 @@ public class SumCurrentlySelected  extends    DataSetOp
 
     return new_op;
   }
+
+ /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+      SumCurrentlySelected scs = new SumCurrentlySelected();
+      String s = scs.getDocumentation();
+      System.out.println(s);
+  }
+
 
 
 }

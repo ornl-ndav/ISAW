@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/11/21 22:33:48  dennis
+ *  Added getDocumentation() method and documentation on getResult().
+ *  (Chris Bouzek)
+ *
  *  Revision 1.2  2002/09/19 16:02:21  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -125,6 +129,9 @@ import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.operator.*;
+import DataSetTools.retriever.*;
 
 /**
   *  Sum Data blocks specified by an attribute to form a new DataSet 
@@ -164,7 +171,7 @@ public class SumByAttribute extends    DataSetOp
    *  @param  min         The lower bound for the selection criteria.  The
    *                      selected Data blocks satisfy:
    *                          min <= attribute value <= max
-   *  @parm   max         The upper bound for the selection criteria.
+   *  @param   max         The upper bound for the selection criteria.
    */
 
   public SumByAttribute( DataSet   ds, 
@@ -204,7 +211,7 @@ public class SumByAttribute extends    DataSetOp
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.  
   */
@@ -227,8 +234,48 @@ public class SumByAttribute extends    DataSetOp
     addParameter( parameter );
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator sums a selection of data blocks in a DataSet ");
+    s.append("according to selection criteria, which are a user specified attribute ");
+    s.append("and a lower and upper range for the attribute.");
+    s.append("@assumptions The attribute is one that can be used to sum the ");
+    s.append("data blocks given.  The number of data blocks which meet the ");
+    s.append("selection criteria (i.e. within the range given for the attribute ");
+    s.append(" is greater than zero.");
+    s.append("@algorithm Constructs a new empty DataSet with the same title. ");
+    s.append("units, and operations as the current DataSet.  Sums the data ");
+    s.append("blocks in the current DataSet according to the attribute, and ");
+    s.append("uses the sum to fill the new DataSet.");
+    s.append("@param The DataSet for the operation.");
+    s.append("@param The name of the attribute to use for the selection criteria.");
+    s.append("@param A value of true if you want the data blocks which meet the ");
+    s.append("selection criteria to be included in the sum, or false if ");
+    s.append("you do not.");
+    s.append("@param The lower bound of the selection criteria.");
+    s.append("@param The upper bound of the selection criteria.");
+    s.append("@return A DataSet with one data block which consists of the summed ");
+    s.append("values which met the selection criteria.");
+    s.append("@error Returns an error message if no selected data blocks meet the selection ");
+    s.append("criteria.");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+   * Constructs a new empty DataSet with the same title. units, and operations 
+   * as the current DataSet.  Sums the data blocks in the current DataSet 
+   * according to the attribute, and uses the sum to fill the new DataSet.
+   *
+   * @return A DataSet with the selected data blocks summed and put into 
+   * one data block.
+   */
 
   public Object getResult()
   {
@@ -316,13 +363,9 @@ public class SumByAttribute extends    DataSetOp
    */
   public static void main( String[] args )
   {
-    SumByAttribute op = new SumByAttribute();
-
-    String list[] = op.getCategoryList();
-    System.out.println( "Categories are: " );
-    for ( int i = 0; i < list.length; i++ )
-      System.out.println( list[i] );
-
+      SumByAttribute sba = new SumByAttribute();
+      String s = sba.getDocumentation();
+      System.out.println(s);
   }
 
 }
