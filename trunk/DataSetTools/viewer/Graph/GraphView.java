@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2002/07/12 18:40:21  dennis
+ *  Now traps for invalid (null) XScale from the x_scale_ui
+ *  and uses the result from getXRange() for the DataSet as
+ *  the default.
+ *
  *  Revision 1.21  2002/06/14 20:58:41  dennis
  *  Fixed bug with XRange not updating graphs.
  *  Improved performance by:
@@ -267,12 +272,17 @@ public void setDataSet( DataSet ds )
   *  conversions.
   *
   *  @return  The current values from the number of bins control and the
-  *           x range control form the Xscale that is returned.
+  *           x range control form the Xscale that is returned, if no valid
+  *           XScale is present, the XScale returned by the DataSet's
+  *           getXRange() method is used..
   *
   */
  public XScale getXConversionScale()
   {
     XScale x_scale = x_scale_ui.getXScale();
+    if ( x_scale == null )                       // if no valid one specified
+      x_scale = getDataSet().getXRange();        // use default
+
     return x_scale;
   }
 
@@ -567,7 +577,8 @@ private void DrawWithNewXRange()
     return;
 
   XScale x_scale = getXConversionScale();
-  float  x_min  = x_scale.getStart_x();
+
+  float x_min  = x_scale.getStart_x();
   float x_max  = x_scale.getEnd_x();
   for ( int i = 0; i < h_graph.length; i++ )
   {
