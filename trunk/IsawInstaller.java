@@ -32,6 +32,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.20  2004/04/15 16:01:46  dennis
+ * Changed to run Isaw in "server mode" which takes a bit
+ * longer to start but is supposed to run more efficiently.
+ *
  * Revision 1.19  2004/03/17 22:58:48  dennis
  * Added gov.jar to list of jar files on classpath.  This was needed
  * due to splitting the view, math and utilities from ISAW into the
@@ -586,14 +590,14 @@ public class IsawInstaller extends JFrame
 		+"rem --"+newline
 		+"cd "+isaw_home+newline
 		+"path %PATH%;./lib"+newline
-		+"java -mx128m -cp \""+fixSeparator(isaw_home)
+		+"java -mx128m -server -cp \""+fixSeparator(isaw_home)
                 +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;"
                 +"jhall.jar;.\" IsawGUI.Isaw"+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
-		+newline
+		+ newline
 		+"rem --"+newline
-		+"rem java -cp sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;."
+		+"rem java -cp -mx128m -server sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;."
 		+" IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(LIN_ID)){
 	    content="#!/bin/sh"+newline
@@ -601,7 +605,7 @@ public class IsawInstaller extends JFrame
 		+"JAVA="+java_home+newline
 		+"export LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
-		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:"+
+		+"$JAVA -mx128m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
 		+":$ISAW/jhall.jar IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(SUN_ID)){
@@ -610,12 +614,12 @@ public class IsawInstaller extends JFrame
 		+"JAVA="+java_home+newline
 		+"LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
-		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:"+
+		+"$JAVA -mx128m -server -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
 		+":$ISAW/jhall.jar IsawGUI.Isaw"+newline;
         }else if(operating_system.equals(MAC_ID)){
             content="tell application \"Terminal\""+newline
-                +"      do script with command \"java -mx128m -cp "
+                +"      do script with command \"java -mx128m -server -cp "
                 +isaw_home+":"
                 +isaw_home+"/Isaw.jar:"
                 +isaw_home+"/sgt_v2.jar:"
