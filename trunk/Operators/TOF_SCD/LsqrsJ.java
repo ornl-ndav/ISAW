@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/05/20 20:27:03  pfpeterson
+ * Added parameter for transformation matrix.
+ *
  * Revision 1.5  2003/05/06 18:18:25  pfpeterson
  * Removed dependence on experiment file.
  *
@@ -70,8 +73,9 @@ import java.util.Vector;
  * symmetry. Originally written by R. Goyette.
  */
 public class LsqrsJ extends GenericTOF_SCD{
-  private static final boolean DEBUG = false;
-  private static final double  SMALL = 1.525878906E-5;
+  private static final boolean DEBUG    = false;
+  private static final double  SMALL    = 1.525878906E-5;
+  private static final String  identmat = "[[1,0,0][0,1,0][0,0,1]]";
 
   /**
    * Construct an operator with a default parameter list.
@@ -91,6 +95,7 @@ public class LsqrsJ extends GenericTOF_SCD{
     addParameter(lfpg);
     addParameter(new IntArrayPG("Restrict Run Numbers (blank for all)",null));
     addParameter(new IntArrayPG("Restrict Sequence Numbers (blank for all)",null));
+    addParameter(new StringPG("Tramsform Matrix",identmat));
     SaveFilePG sfpg=new SaveFilePG("Matrix file to write to",null);
     sfpg.setFilter(new MatrixFilter());
     addParameter(sfpg);
@@ -130,7 +135,20 @@ public class LsqrsJ extends GenericTOF_SCD{
     String peaksfile=getParameter(0).getValue().toString();
     int[] run_nums=((IntArrayPG)getParameter(1)).getArrayValue();
     int[] seq_nums=((IntArrayPG)getParameter(2)).getArrayValue();
-    String matfile=getParameter(3).getValue().toString();
+    float[][] matrix=null;
+    {
+      IParameter iparm=getParameter(3);
+      if(iparm.getValue()==null){
+        matrix=null;
+      }else{
+        try{
+          matrix=stringTo2dArray(iparm.getValue().toString());
+        }catch(NumberFormatException e){
+          return new ErrorString("Improper format in matrix");
+        }
+      }
+    }
+    String matfile=getParameter(4).getValue().toString();
 
     // confirm the parameters
     {
@@ -218,6 +236,23 @@ public class LsqrsJ extends GenericTOF_SCD{
     System.out.println("HKL="+arrayToString(hkl));
     System.out.println("Q="+arrayToString(q));
 */
+
+    // apply the transformation matrix
+    if(matrix!=null){
+      float[] myhkl=new float[3];
+      for(int i=0 ; i<hkl.length ; i++ ){
+        // zero out the temp values
+        for( int j=0 ; j<3 ; j++ )
+          myhkl[j]=0f;
+        // multiply by the transformation matrix
+        for( int j=0 ; j<3 ; j++ )
+          for( int k=0 ; k<3 ; k++ )
+            myhkl[k]=myhkl[k]+matrix[k][j]*(float)hkl[i][j];
+        // copy back the temp values
+        for( int j=0 ; j<3 ; j++ )
+          hkl[i][j]=Math.round(myhkl[j]);
+      }
+    }
 
     // calculate ub
     double[][] UB=new double[3][3];
@@ -307,59 +342,79 @@ public class LsqrsJ extends GenericTOF_SCD{
   }
 
   /**
-   * Uses the experiment file to convert histogram numbers into run
-   * numbers
+   * This takes a String representing a 3x3 matrix and turns it into a
+   * float[3][3].
+   *
+   * @param text A String to be converted
+   *
+   * @return The matrix as a float[3][3]
    */
-/* REMOVE
-  private static int[] histToRun(int[] hist_nums,String expfile){
-    TextFileReader tfr=null;
-    int[] runs=new int[hist_nums.length];
-    String[] match=new String[hist_nums.length];
+  private static float[][] stringTo2dArray(String text) 
+                                                  throws NumberFormatException{
+    // check that there is something to parse
+    if(text==null || text.length()==0) return null;
 
-    // generate the tags we are looking for in the file
-    for( int i=0 ; i<hist_nums.length ; i++ )
-      match[i]="HST"+Format.real(hist_nums[i],3)+"RUN#";
-
-    int array_index=0;
-    int match_length=match[0].length();
+    // now take up some memory
+    float[][] matrix=new float[3][3];
+    int index;
+    float temp;
+    
+    // start with a StringBuffer b/c they are nicer to parse
+    StringBuffer sb=new StringBuffer(text);
+    sb.delete(0,2);
     try{
-      tfr=new TextFileReader(expfile);
-      String line=null;
-      // go through the whole file or the whole array of histogram numbers
-      while(!tfr.eof() && array_index<match.length){
-        // read a line
-        line=tfr.read_line();
-        if(! (line.indexOf(match[array_index])==0) )
-          continue; // go to next iteration
-
-        // shorten the line to just the run number
-        line=line.substring(match_length,match_length+20).trim();
-
-        // turn the run number into an int
-        runs[array_index]=Integer.parseInt(line);
-
-        // increase the index
-        array_index++;
+      // repeat for each row
+      for( int i=0 ; i<3 ; i++ ){
+        // parse the first two columns which are ended by ','
+        for( int j=0 ; j<2 ; j++ ){
+          index=sb.toString().indexOf(",");
+          if(index>0){
+            temp=Float.parseFloat(sb.substring(0,index));
+            sb.delete(0,index+1);
+            matrix[i][j]=temp;
+          }else{
+            return null;
+          }
+        }
+        // the third column is ended by ']'
+        index=sb.toString().indexOf("]");
+        if(index>0){
+          temp=Float.parseFloat(sb.substring(0,index));
+          sb.delete(0,index+2);
+          matrix[i][2]=temp;
+        }else{
+          return null;
+        }
       }
-    }catch(IOException e){
-      runs=null;
     }catch(NumberFormatException e){
-      SharedData.addmsg("Encountered NumberFormatException while parsing "
-                        +"experiment file - setting run numbers to null");
-      runs=null;
-    }finally{
-      if(tfr!=null){
-        try{
-          tfr.close();
-        }catch(IOException e){
-          // let it drop on the floor
+      // something went wrong so exit out
+      throw e;
+    }
+
+    // if it is the identity matrix then we should just return null
+    boolean isident=true;
+    for( int i=0 ; i<3 ; i++ ){
+      if(isident){ // breakout if it is not the identity matrix
+        for( int j=0 ; j<3 ; j++ ){
+          if(i==j){ // should be one
+            if(matrix[i][j]!=1f){
+              isident=false;
+              break;
+            }
+          }else{    // should be zero
+            if(matrix[i][j]!=0f){
+              isident=false;
+              break;
+            }
+          }
         }
       }
     }
+    if(isident) return null;
 
-    return runs;
+    // return the result
+    return matrix;
   }
-*/
 
   /**
    * This search tries to find the value in the provided
