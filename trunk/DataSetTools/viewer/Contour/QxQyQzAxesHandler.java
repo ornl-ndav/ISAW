@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2004/08/24 18:49:41  rmikk
+ * Fixed the calculation of QxQyQz so that it does not require an orientation matrix
+ *
  * Revision 1.16  2004/03/15 03:29:00  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -174,7 +177,15 @@ public class  QxQyQzAxesHandler implements IAxesHandler
 
        float initial_path =
              ((Float)D.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
-
+       SampleOrientation samporient = D.getSampleOrientation();
+       if( samporient == null){
+          samporient = new IPNS_SCD_SampleOrientation(0f,0f,0f);
+          ds.setAttribute( new SampleOrientationAttribute(
+                     Attribute.SAMPLE_ORIENTATION, samporient));
+          D.setAttribute( new SampleOrientationAttribute(
+                Attribute.SAMPLE_ORIENTATION, samporient));
+         
+       }
        Object O = (new SCDQxyz(ds,GroupIndex,time)).getResult();
        Position3D q_pos = null;
        if( O instanceof Position3D)
