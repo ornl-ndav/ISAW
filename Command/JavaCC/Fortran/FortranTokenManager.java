@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/06/18 18:31:22  rmikk
+ * Now produces tokens for correctly for .  GT, etc.
+ *
  * Revision 1.2  2004/06/04 22:01:34  rmikk
  * Added documentation  and GPL
  *
@@ -129,7 +132,8 @@ public class FortranTokenManager implements TokenManager,
     else if( c=='.'){
        SavLineNum=lineNum;
        savColNum= column;
-       SavChar=getNextChar();
+       for(SavChar=getNextChar(); SavChar == ' '; SavChar=getNextChar())
+         {}
        if( (SavChar<=32)||("+-*/.),".indexOf(SavChar)>=0)||
          Character.isDigit(SavChar))
            return TToken(DOT,".");
