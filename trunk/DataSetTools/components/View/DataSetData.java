@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2004/04/16 20:27:23  millermi
+ * - No longer implements IVirtualArrayList1D. The method
+ *   convertToVirtualArray() converts a DataSet to an array
+ *   to be displayed by view components.
+ *
  * Revision 1.17  2004/03/15 03:27:26  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -72,6 +77,7 @@
 package DataSetTools.components.View;
 import DataSetTools.dataset.*;
 import gov.anl.ipns.ViewTools.Components.*;
+import gov.anl.ipns.ViewTools.Components.OneD.*;
 
 import java.awt.event.*;
 import java.util.*;
@@ -82,371 +88,58 @@ import java.util.*;
  * so that the information is able to be viewed through the 
  * function view component.
  */ 
-public class DataSetData implements IVirtualArrayList1D
-  {
-     private DataSet ds;
-     private AxisInfo x_info;
-     private AxisInfo y_info;
-   
-   int[]  selectedInd ;
-   float maxy;
-   float minx;
-   float maxx;
-   float miny;
-   
-  /**
-   * Constructor that takes in a data set and sets the selected 
-   * indexes.
-   */
-   public DataSetData( DataSet DS)
-     {
-       ds = DS;
-      
-       selectedInd = ds.getSelectedIndices();
-       minx=maxx=miny=maxy= Float.NaN;
-       
-       x_info = new AxisInfo(0, 1, AxisInfo.NO_LABEL, AxisInfo.NO_UNITS, true);
-       y_info = new AxisInfo(0, 1, AxisInfo.NO_LABEL, AxisInfo.NO_UNITS, true);
-  
-     }
-
-   /**
-     *  Change the DataSet being viewed to the specified DataSet.  Derived
-     *  classes should override this and take what additional steps are 
-     *  needed to change the specific viewer to the deal with the new DataSet.
-     *
-     *  @param  ds  The new DataSet to be viewed
-     */
-    public void setDataSet( DataSet ds )
-    { 
-       this.ds = ds;
-       selectedInd = ds.getSelectedIndices();
-       minx=maxx=miny=maxy= Float.NaN;
-       notifyAllListeners("DataChanged");
-    }
-    
-  /**
-   * Gets the information to set up the Axis.
-   */ 
-   public AxisInfo getAxisInfo( int axis)
-     {
-      
-      if( axis == AxisInfo.X_AXIS )
-         return  x_info; 
-      else
-         return  y_info;
-     }
-
- /**
-  * Sets the attributes of the data array within a AxisInfo wrapper.
-  * This method will take in an integer to determine which axis
-  * info is being altered.
-  *
-  *  @param  axiscode
-  *  @param  min
-  *  @param  max
-  *  @param  label
-  *  @param  units
-  *  @param  islinear
+public class DataSetData
+{
+  private static VirtualArrayList1D vlist;
+ /*
+  * Constructor that prevents users from making an instance of DataSetData
   */
-  public void setAxisInfo( int axiscode, float min, float max,
-                           String label, String units, boolean islinear)
+  private DataSetData()
   {
-    if(axiscode == AxisInfo.X_AXIS)
-      x_info = new AxisInfo(min,max,label,units, islinear);
-    else if(axiscode == AxisInfo.Y_AXIS)
-      y_info = new AxisInfo(min,max,label,units, islinear);
+    ;
   }
-
-
-  /**
-   * Functions to find the min and max, x and y values for the graph.
-   */
-   private float findminX()
-     { 
-       if( !Float.isNaN(minx))
-          return minx;
-       
-        float [] xvals;
-        minx = 0;
-        maxx = 1;
-        xvals = getXValues(0);
-        if (xvals != null)
-        {
- 	 minx =  xvals[0];
-         maxx =  xvals[0];
-        } 
-	for (int line=0; line < getNumlines(); line++)
-        {xvals = getXValues(line);
-           for (int i=1; i < getNumPoints(line); i++)
-	   {
-	      if (xvals[i] < minx)
-	   	minx = xvals[i];
-	      if (xvals[i] > maxx)
-		maxx = xvals[i];
-	   }
-         }
-        return minx;
-     }
-
-  private float findmaxX()
+    
+ /**
+  * Constructor that takes in a data set and sets the selected 
+  * indexes.
+  */
+  public static VirtualArrayList1D convertToVirtualArray( DataSet ds )
+  {
+    DataArray1D temp;
+    Vector data_array = new Vector();
+    Data tempdata;
+    String title;
+    boolean pointedAt = false;
+    AxisInfo xInfo;
+    AxisInfo yInfo;
+    int pointed_at_index = 0;
+    
+    for( int i = 0; i < ds.getNum_entries(); i++ )
     {
-     findminX();
-     return maxx;
-    }
-   private float findminY()
-     {
-       if( !Float.isNaN(miny))
-          return miny;
-
-	float [] yvals;
-        miny = 0;
-        maxy = 1;
-
-	yvals = getYValues(0);
-        if( yvals != null)
-        {
-          miny =  yvals[0];
-          maxy =  yvals[0];
-        }
-	for (int line=0; line < getNumlines(); line++)
-	{ yvals = getYValues(line);
-           for (int i=1; i < yvals.length; i++)
-	   {
-	      if (yvals[i] < miny)
-	   	miny = yvals[i];
-	      if (yvals[i] > maxy)
-		maxy = yvals[i];
-	   }
-	}
-        return miny;
-     }
-
- 
-  private float findmaxY()
-    {
-     findminY();
-     return maxy;
-    }
-
-     
-   public String getTitle()
-     {
-       return ds.getTitle();
+      if( ds.getPointedAtIndex() == i )
+      {
+        pointedAt = true;
+	pointed_at_index = i;
       }
-
-  public void setTitle( String title )
-     {
-         
-     }
- /**
-  *  Gets the x values of a selected line given the selected index.
-  *
-  *  @param line_number    The index of the selected graph.
-  *
-  *  @return x             The array of x values.
-  */ 
-  public float[] getXValues( int line_number )
-    {     
-      if( line_number < 0)
-        return null;
-      if( line_number >= getNumlines())
-        return null;
-
-      float[] x = ds.getData_entry( selectedInd[line_number]).getX_scale().
-                  getXs();
-      return x;
-
+      else
+        pointedAt = false;
+      tempdata = ds.getData_entry(i);
+      title = Integer.toString(tempdata.getGroup_ID());
+      temp = new DataArray1D( tempdata.getX_values(), tempdata.getY_values(),
+                              tempdata.getErrors(), title,
+			      tempdata.isSelected(), pointedAt );
+      data_array.add( temp );
     }
-
- /**
-  * this method is required by the interface.
-  */
-  public void setXYValues( float[] x_values, 
-                           float[] y_values,
-                           float[] errors,
-                           int     group_id,
-                           int     line_number )
-    {
-      System.out.println("DataSetData.setXYValues() is just a stub");
-    }
-
-
- /**
-   *  Gets the y values of a selected line given the selected index.
-   *
-   *  @param line_number  The index of the selected graph.
-   *
-   *  @return y           The array of y values.
-   */
-  public float[] getYValues( int line_number )
-    {
-      if( line_number < 0)
-        return null;
-      if( line_number >= getNumlines())
-        return null;
-
-      float[] y = ds.getData_entry( selectedInd[line_number]).getY_values();
-      return y;
-    }
-
- /**
-  * gets the x values of a graph in the data set given the index.
-  */
-  public float[] getXVals_ofIndex(int index)
-  {
-     if( index < 0)
-        return null;
-     if( index >= getNumGraphs())
-        return null;
-     return ds.getData_entry(index).getX_values();
+    vlist = new VirtualArrayList1D(data_array);
+    vlist.setTitle( ds.getTitle() );
+    xInfo = vlist.getAxisInfo(AxisInfo.X_AXIS);
+    yInfo = vlist.getAxisInfo(AxisInfo.Y_AXIS);
+    vlist.setAxisInfo(AxisInfo.X_AXIS, xInfo.getMin(), xInfo.getMax(),
+                      ds.getX_label(),ds.getX_units(),
+		      AxisInfo.LINEAR ); 
+    vlist.setAxisInfo(AxisInfo.Y_AXIS, yInfo.getMin(), yInfo.getMax(),
+                      ds.getY_label(),ds.getY_units(),
+		      AxisInfo.LINEAR ); 
+    return vlist;
   }
- 
- /**
-  * gets the y values of a graph in the data set given the index.
-  */
-  public float[] getYVals_ofIndex(int index)
-  {
-     if( index < 0)
-        return null;
-     if( index >= getNumGraphs())
-        return null;
-     return ds.getData_entry(index).getY_values();
-  }
-    
- /**
-  * gets the error values of a graph that is selected given
-  * the selected index.
-  */ 
-  public float [] getErrorValues( int line_number )
-  {
-     if( line_number < 0)
-        return null;
-     if( line_number >= getNumlines())
-        return null;
-     return ds.getData_entry( selectedInd[line_number]).getErrors( );
-  }
-  
- /**
-  *  gets the error values of a graph from the data set given the index.
-  */
-  public float[] getErrorVals_ofIndex(int index)
-  {
-     if( index < 0)
-        return null;
-     if( index >= getNumGraphs())
-        return null;
-     return ds.getData_entry( index ).getErrors( );
-  }
-
- /**
-  * gets the id of the selected graph given the selected index.
-  */
-  public int getGroupID( int line_number )
-  {
-     if( line_number < 0)
-        return 0;
-     if( line_number >= getNumlines())
-        return 0;
-     return ds.getData_entry( selectedInd[line_number]).getGroup_ID( );
-  }
-
- /**
-  * gets the index of the pointed at graph from the data set.
-  */
-  public int getPointedAtGraph()
-  {
-     return ds.getPointedAtIndex();
-  }
-
- /**
-  * returns an array of indexes for the selected graphs.
-  */
-  public int[] getSelectedGraphs()
-  {
-     return selectedInd;
-  }
-
- /**
-  * checks to see if a graph with a given index in the data set is selected.
-  */
-  public boolean isSelected(int index) 
-  {
-     return ds.isSelected(index);
-  }
-  
- /** 
-  * returns the number of graphs in the data set.
-  */
-  public int getNumGraphs()
-  {
-     return ds.getNum_entries();
-  }
-
- /**
-  * this method is required by the interface.
-  */
-  public void setAllValues( float value )
-  { 
-    System.out.println("DataSetData.setAllValues() is just a stub");
-  }
-
- /** Returns the number of x values in the line line_number
- */
-  public int getNumPoints( int line_number)
-  {
-    if( line_number < 0)
-         return 0;
-    if( line_number >= getNumlines())
-        return 0;
-    return ds.getData_entry( selectedInd[ line_number]).getX_scale().getNum_x();
-
-  }
-  
- /**
-  * gets the number of selected graphs.
-  */
-  public int getNumlines()
-    { 
-      if( selectedInd == null)
-         return 0;
-      return selectedInd.length;
-    }
-  
-  /**
-   * Gets the dimension of the Virtual array.
-   */
-  public int getDimension(){
-    return 1;
-  }
-
-  /**
-   * Methods for adding, removing, and notifing actionlisteners.
-   */ 
-   Vector ActListeners = new Vector();
-   public void addActionListener( ActionListener listener)
-    {
-       if( ActListeners.indexOf( listener) ==-1)
-         ActListeners.addElement( listener);
-    }
-   public void removeActionListener( ActionListener listener)
-    {
-       ActListeners.remove( listener);
-    }
-   public void removeAllActionListeners()
-    {
-       ActListeners.clear();
-    }
-    private void notifyAllListeners( String evtCommand){
-       ActionEvent evt = new ActionEvent(this,
-               ActionEvent.ACTION_PERFORMED, evtCommand);
-
-       for( int i=0; i< ActListeners.size(); i++)
-          ((ActionListener)ActListeners.elementAt(i)).
-                actionPerformed( evt);
-         
-
-      
-    }
-
-  }
+}
