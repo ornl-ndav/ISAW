@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/06/06 19:07:23  rmikk
+ *  Added Brent's viewer to the TableMenu list
+ *
  *  Revision 1.11  2003/05/19 15:22:15  rmikk
  *  -Added ContourView:Qxyz slices option to the Table
  *      view menu
@@ -77,6 +80,9 @@ import java.awt.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.viewer.Contour.*;
+import DataSetTools.components.View.*;
+import DataSetTools.components.View.OneD.*;
+
 /** Can be used to set Menu components and retrieve their corresponding
 *   operations
 */
@@ -108,7 +114,7 @@ public class TableViewMenuComponents
   /** Returns the number of menu items
   */
   public static int getNMenuItems()
-    { return 7;
+    { return 8;
     }
 
   /** Returns the menu Name associated with the menu items
@@ -130,6 +136,8 @@ public class TableViewMenuComponents
          return "Contour:Qy,Qz vs Qx";
       if( i == 6 )
          return "Contour:Qxyz slices";
+      if( i==7)
+         return "Brent";
       else return null;
     }
 
@@ -189,6 +197,12 @@ public class TableViewMenuComponents
 
       if( view_type.indexOf("Contour:Qxyz slices") == 0)
          return new TQxQyQz( DS, state);
+
+      if( view_type.indexOf("Brent") == 0)
+         { DataSetData dsd = new DataSetData( DS );
+           FunctionViewComponent viewComp = new FunctionViewComponent( dsd);
+           return new DataSetViewerMaker(DS, state, dsd, viewComp);
+         }
     return null;
 
    }
