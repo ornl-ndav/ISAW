@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/10/10 02:30:01  bouzekc
+ * Updated javadocs.
+ *
  * Revision 1.9  2003/06/24 16:39:42  dennis
  * Made the static final String "UNKNOWN" public instead of
  * protected, so that users of this class can use it.
@@ -171,7 +174,8 @@ public class Script extends Object{
   }
 
   /**
-   * get a particular line from the script
+   * Get a particular line from the script.  Note that this is a ZERO-BASED
+   * index, i.e. if you want to get line 1, call this with an argument of zero.
    */
   public String getLine(int line){
     // just return if there is an empty script
