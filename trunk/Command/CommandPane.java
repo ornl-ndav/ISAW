@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2001/07/18 16:23:00  neffk
+ * changed the DataSet[] parameter of getExecScropt(...) to
+ * IDataSetListHandler so that CommandPane could have a dynamic list
+ * of DataSet objects.
+ *
  * Revision 1.26  2001/07/11 20:53:22  rmikk
  * Change the Prgm on the Command Pane buttons to the
  * word "Script"
@@ -295,7 +300,7 @@ public void setLogDoc(Document doc)
 *@param   DSS[]     A list of data sets that can be selected as values for Data Set Parameters.
 *
 */
- public void getExecScript( String fname ,IObserver X , DataSet DSS[], Document  DocLog)
+ public void getExecScript( String fname ,IObserver X , IDataSetListHandler ds_src, Document  DocLog)
   {    int i;
        String S;
        Object RES;
@@ -311,7 +316,7 @@ public void setLogDoc(Document doc)
           }
         new IsawGUI.Util().appendDoc(logDoc,"#$ Script File Execute "+fname);
         DataSetTools.components.ParametersGUI.JParametersDialog pDialog = 
-                new DataSetTools.components.ParametersGUI.JParametersDialog(cp, DSS, logDoc ,X);
+                new DataSetTools.components.ParametersGUI.JParametersDialog(cp, ds_src, logDoc ,X);
    }
 
 /**
@@ -537,7 +542,7 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
               else
                 CP.SP.setTitle( "CommandPane");
              DataSetTools.components.ParametersGUI.JParametersDialog pDialog = 
-                     new DataSetTools.components.ParametersGUI.JParametersDialog(CP.SP, SP.getDataSets(), 
+                     new DataSetTools.components.ParametersGUI.JParametersDialog(CP.SP, SP, 
                      new PlainDocument(), null);
              
            }
