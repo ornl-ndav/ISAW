@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/01/09 20:40:15  dennis
+ * Small documentation fix. (Chris Bouzek)
+ *
  * Revision 1.6  2003/01/09 16:47:36  dennis
  * Added getDocumentation(), main test program and java docs on getResult()
  * (Chris Bouzek)
@@ -66,7 +69,7 @@ import  DataSetTools.viewer.*;
 import  DataSetTools.retriever.*;
 
 /**
- * This operator converts a wavelength DataSet for a Diffractometer,
+ * This operator converts a Q DataSet for a Diffractometer,
  * to D. The DataSet must contain spectra with attributes giving the
  * detector position.
  */
