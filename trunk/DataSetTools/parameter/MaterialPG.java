@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/06/06 18:51:47  pfpeterson
+ *  Removed unneeded code due to new abstract grandparent.
+ *
  *  Revision 1.6  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -61,38 +64,20 @@ import DataSetTools.util.*;
 /**
  * This is class is to deal with float parameters.
  */
-public class MaterialPG extends StringPG{
-    private static String TYPE="Material";
+public class MaterialPG extends StringPG implements ParamUsesString{
+    private static final String TYPE="Material";
 
     // ********** Constructors **********
     public MaterialPG(String name, Object value){
         super(name,value);
+        FILTER=new MaterialFilter();
         this.type=TYPE;
     }
     
     public MaterialPG(String name, Object value, boolean valid){
         super(name,value,valid);
+        FILTER=new MaterialFilter();
         this.type=TYPE;
-    }
-
-    // ********** IParameterGUI requirements **********
-    /**
-     * Allows for initialization of the GUI after instantiation.
-     */
-    public void init(Vector init_values){
-        if(init_values!=null){
-            if(init_values.size()==1){
-                // the init_values is what to set as the value of the parameter
-                this.setValue(init_values.elementAt(0));
-            }else{
-                // something is not right, should throw an exception
-            }
-        }
-        entrywidget=new StringEntry(this.getStringValue(),20,
-                                    new MaterialFilter());
-        entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
-        this.setEnabled(this.getEnabled());
-        super.initGUI();
     }
 
     static void main(String args[]){
