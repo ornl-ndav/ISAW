@@ -4,6 +4,12 @@
  *  Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.13  2001/03/30 19:25:58  dennis
+ *  Now sets the state Zoom region to the current local world coordinates,
+ *  after setting the current local world coordinates, since the Zoom region
+ *  may have been altered ( by clipping it to the global world coordinate
+ *  region ).
+ *
  *  Revision 1.12  2001/03/02 17:04:45  dennis
  *  Now only restores the zoom region if the DataSet is using the
  *  same units and labels as the previous DataSet.
@@ -256,7 +262,14 @@ public void setDataSet( DataSet ds )
                                                         // region if it's valid 
   CoordBounds zoom_region = getState().getZoomRegion( ds );
   if ( zoom_region != null )
+  {
     image_Jpanel.setLocalWorldCoords( zoom_region );
+                                                        // if setting the zoom
+                                                        // region altered it,
+                                                        // save the new region
+    getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(),
+                              getDataSet()  );
+  }
 
   DrawDefaultDataBlock();
   setVisible(true);
@@ -272,10 +285,10 @@ public void setDataSet( DataSet ds )
 
 public void doLayout()
 {
-
+/*
   if ( main_split_pane != null )
     main_split_pane.my_setDividerLocation( 0.7f );
-
+*/
 /* With both calls to setDividerLocation, the viewer "flickers" as it
    is moved in an internal frame.  
   if ( left_split_pane != null )
