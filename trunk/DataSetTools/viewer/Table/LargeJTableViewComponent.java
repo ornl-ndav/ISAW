@@ -509,31 +509,17 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
        if( (cols.length < 1) ||(rows.length < 1))
          return;
        notifyActionListeners( IViewComponent.SELECTED_CHANGED);
-       /* // move to IVirtualArray
-       float minTime = -1, maxTime = -1;
-       ds.clearSelections();
-       for( int i=0; i< cols.length; i++)
-        for( int j=0; j < rows.length; j++)
-         { int Group = table_model.getGroup( rows[j], cols[i] ) ;
-           if( Group >= 0 )
-            if( Group < ds.getNum_entries())
-             ds.getData_entry( Group ).setSelected( true);
-           float time = table_model.getTime( rows[j], cols[i]);
-           if( (i == 0) &&( j== 0))
-             minTime = maxTime = time;
-           else if( time < minTime)
-             minTime = time;
-           else if( time > maxTime)
-             maxTime = time;
-         }
-       ds.setSelectedInterval(new ClosedInterval(minTime , maxTime ));
-      */
 
      }
     }//class SelectActionListener
 
   //------------------ IViewComponent Methods ----------------
- 
+  /**
+    *  Returns the list of Shared ViewMenuItems. Currently items to Select All,
+    *  Copy Selected, Integrate Selected regions, and Select menu items are
+    *  returned.  The Select menu item should set the corresponding data sets and
+    *  and times as selected.
+    */
    public ViewMenuItem[] getSharedMenuItems(){
        ViewMenuItem[] Res;
        
@@ -545,6 +531,7 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
       //JMenu jSprSht= new JMenu( "SpreadSheet");
      
       JMi = new JMenuItem( "Select All" );
+     
       JCp = new JMenuItem( "Copy Sel" );
       JMenuItem calc= new JMenuItem( "Integrate");
       
@@ -554,6 +541,10 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
       Res[0] = new ViewMenuItem(JMi);
       Res[1] = new ViewMenuItem(JCp);
       Res[2] = new ViewMenuItem(calc);
+      JMi.setToolTipText("Select All entries in the table");
+      JCp.setToolTipText("Copy the selected items in the table to the Clipboard");
+      calc.setToolTipText("Integrate selected region minus background"+
+            "(the boundary cells)"); 
      
      }
      // if(  JMenuName.equals(  "Select"))
@@ -561,7 +552,7 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
      
         JMenuItem Sel1 = new JMenuItem( "Rectangle");
         Sel1.addActionListener( new SelectActionListener());
-        
+        Sel1.setToolTipText("Selects in application items highlighted in table");
         Res[3] = new ViewMenuItem( Sel1);
         return Res;
       }
@@ -609,14 +600,15 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
    }
 
    /**
-   * Retrieve the jpanel that this component constructs.  
+   * Retrieve the jpanel that this component constructs. 
    */
    public JPanel getDisplayPanel(){
      return this;
    }
   
   /**
-   * Return controls needed by the component.
+   * Return controls needed by the component. Currently only a Format
+   * Control is returned.
    */ 
    public JComponent[] getSharedControls(){
      JComponent[] Res = new JComponent[1];
@@ -626,13 +618,15 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
      JPanel JP = new JPanel( new GridLayout( 1,2));
      JP.add( new JLabel("Format"));
      JP.add( StEnt);
+     StEnt.setToolTipText("Fortran Formats like F5.3,I4,E8.2");
      Res[0] = JP;
      return Res;
      
    }
 
   /**
-   * To be continued...
+   * Returns the Private Controls.  Currently no controls are returned by
+   * this method.
    */   
    public JComponent[] getPrivateControls(){
      return new JComponent[0];
@@ -641,7 +635,8 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
  
    
   /**
-   * To be continued...
+   * Returns the list of private menu items. Currently no ViewMenuItems
+   * are returned.
    */
    public ViewMenuItem[] getPrivateMenuItems( ){
      return new ViewMenuItem[0];
