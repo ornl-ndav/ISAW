@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2003/02/19 16:50:25  pfpeterson
+ * Now passes the default value to the parameter that is created for
+ * DataDirectoryString, LoadFileString, SaveFileString, and
+ * InstrumentNameString.
+ *
  * Revision 1.25  2003/01/02 20:43:21  rmikk
  * Added methods to add a whole IObserverList and Property
  *   change support.
@@ -1033,12 +1038,17 @@ public class ScriptProcessor  extends ScriptProcessorOperator
                     }
                 addParameter( new Parameter( Message, V));
             }else if( DT.equals("DataDirectoryString".toUpperCase())){
-                String DirPath = System.getProperty("Data_Directory");
+                String DirPath = null;
+                if(InitValue!=null && InitValue.length()>0){
+                  DirPath=InitValue;
+                }else{
+                  DirPath=System.getProperty("Data_Directory")+"\\";
+                }
                 if( DirPath != null )
-                    DirPath = 
-                       DataSetTools.util.StringUtil.fixSeparator( DirPath+"\\");
+                  DirPath = 
+                    DataSetTools.util.StringUtil.setFileSeparator( DirPath);
                 else
-                    DirPath = "";
+                  DirPath = "";
                 addParameter( new Parameter( Message,
                                             new DataDirectoryString(DirPath)));
             }else if( DT.equals("DSSettableFieldString".toUpperCase())){
@@ -1049,20 +1059,29 @@ public class ScriptProcessor  extends ScriptProcessorOperator
                     addParameter( new Parameter( Message ,
                                 new DSSettableFieldString(InitValue.trim()) ) );
             }else if( DT.equals("LoadFileString".toUpperCase())){ 
-                String DirPath=System.getProperty("Data_Directory");
-                if(DirPath!=null)
-                    DirPath = 
-                        DataSetTools.util.StringUtil.fixSeparator(DirPath+"\\");
-                else
-                    DirPath="";
-               addParameter(new Parameter(Message,new LoadFileString(DirPath)));
+              String DirPath=null;
+              if(InitValue!=null && InitValue.length()>0){
+                DirPath=InitValue;
+              }else{
+                DirPath=System.getProperty("Data_Directory")+"\\";
+              }
+              if(DirPath!=null)
+                DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
+              else
+                DirPath="";
+              addParameter(new Parameter(Message,new LoadFileString(DirPath)));
             }else if( DT.equals("SaveFileString".toUpperCase())){ 
-              String DirPath=System.getProperty("Data_Directory");
-               if(DirPath!=null)
-                DirPath=DataSetTools.util.StringUtil.fixSeparator(DirPath+"\\");
-               else
-                   DirPath="";
-               addParameter(new Parameter(Message,new SaveFileString(DirPath)));
+              String DirPath=null;
+              if(InitValue!=null && InitValue.length()>0){
+                DirPath=InitValue;
+              }else{
+                DirPath=System.getProperty("Data_Directory")+"\\";
+              }
+              if(DirPath!=null)
+                DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
+              else
+                DirPath="";
+              addParameter(new Parameter(Message,new SaveFileString(DirPath)));
             }else if (DT.equals( "DSFieldString".toUpperCase())){
                 if( InitValue == null )
                     addParameter( new Parameter( Message,new DSFieldString() ));
@@ -1070,10 +1089,14 @@ public class ScriptProcessor  extends ScriptProcessorOperator
                     addParameter( new Parameter( Message,
                                          new DSFieldString(InitValue.trim()) ));
             }else if( DT.equals( "InstrumentNameString".toUpperCase())){
-                String XX = System.getProperty("Default_Instrument");
-                if( XX == null )
-                    XX = "";
-                addParameter(  new Parameter( Message, XX ));
+              String XX=null;
+              if(InitValue!=null && InitValue.length()>0)
+                XX=InitValue;
+              else
+                XX = System.getProperty("Default_Instrument");
+              if( XX == null )
+                XX = "";
+              addParameter(  new Parameter( Message, XX ));
             }else if( DT.equals( "SERVERTYPESTRING")){
                 ServerTypeString STS = new ServerTypeString();
                 
