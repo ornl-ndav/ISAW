@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.40  2003/12/12 18:11:34  dennis
+ *  Now uses the WindowShower utility class to display the ViewManager
+ *  from the Swing event handling thread, instead of showing it directly.
+ *
  *  Revision 1.39  2003/10/30 17:23:17  dennis
  *  Removed import of DataSetTools.viewer.OverplotView
  *
@@ -250,8 +254,12 @@ public class ViewManager extends    JFrame
       makeTempDataSet( true );
       this.state = state;
       setView( view_type ); 
-      show();
-  //  setVisible(true);
+                                            // actually show the viewer from
+                                            // the Swing event handling thread
+      WindowShower window_shower = new WindowShower( this );
+      EventQueue.invokeLater( window_shower );
+      window_shower = null;
+      
       conversion_operator = null;
       System.gc();
    }
