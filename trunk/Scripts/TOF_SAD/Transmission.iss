@@ -14,12 +14,12 @@
 # @return  null or an ErrorString.   The result will be written to a file
 
 
-$ SampleFileName    LoadFileString("C:\new_das_runs\sand20283.run")   Enter Sample run
-$ EmptyFileName     LoadFileString("C:\new_das_runs\sand20287.run")    Enter Empty run
+$ SampleFileName    LoadFileString("/IPNShome/sand/data/sand20283.run")    Enter Sample run
+$ EmptyFileName     LoadFileString("/IPNShome/sand/data/sand20287.run")    Enter Empty run
 $ useCadmiumRun     Boolean( true)    Use CadmiumRun?
-$ CadmiumFileName   LoadFileString("C:\new_das_runs\sand20291.run")    Enter Cadmium Run
-$ DataFileName   LoadFileString("C:\new_das_runs\sand20290.run")    Enter Data Run
-$ SaveFileName      SaveFileString("C:\test_output\T2028320287.cf")    Dat file to save Transm results
+$ CadmiumFileName   LoadFileString("/IPNShome/sand/data/sand20291.run")        Enter Cadmium Run
+$ DataFileName   LoadFileString("/IPNShome/sand/data/sand20290.run")           Enter Data Run
+$ SaveFileName      SaveFileString("/IPNShome/sand/GeorgeUser/T2028320287.cf") Dat file to save Transm results
 $ NeutronDelay      Float( .0011)     Neutron Delay Fraction
 $ polyfitIndx1      Integer( 11)      First time channel for poly fit, or -1 if no fit
 $ polyfitIndx2      Integer( 70)      Last time channel for poly fit, or -1 if no fit
@@ -29,19 +29,24 @@ $ sqrtWeight        Boolean( true)    Use 1/sqrt(y) for weightin
 $ Title = Calculate Transmission
 $ Command = Transmission
 $ Category = Operator, Generic, TOF_SAD, Scripts
+
 load SampleFileName, "Samp"
 load EmptyFileName, "Empty"
 load DataFileName, "Data"
+
 if useCadmiumRun == true
   load CadmiumFileName, "Cadm"
   DS = CalcTransmission( Samp[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+
 else
    DS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
 endif
+
 send DS
+
 PrintFlood( DS,SaveFileName, "Transmission")
+Table(DS, true, "File", SaveFileName&".dat", "0:1", "HGT,F" , false)
+
 Display "Finished"
-
-
-
+Return "Finished"
 
