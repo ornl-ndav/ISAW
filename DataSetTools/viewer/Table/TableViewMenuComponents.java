@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/07/25 21:00:06  rmikk
+ *  The Specialized TimeSlice Table view no longer needs
+ *     selected Groups
+ *
  *  Revision 1.4  2002/07/24 19:59:25  rmikk
  *  Changed the choice time,row, vs col to call the specialized
  *     viewer-TimeSliceView
@@ -123,7 +127,8 @@ public class TableViewMenuComponents
  */
  public DataSetViewer getDataSetViewer( String view_type, DataSet DS, ViewerState state)
    {
-    
+     if(view_type.indexOf("x,Row vs Col y")==0)
+       return (DataSetViewer)(new TimeSliceView( DS, null));
     if( DS.getSelectedIndices().length<1)
        {DataSetTools.util.SharedData.addmsg("No data sets selected");
         return null;
@@ -132,8 +137,7 @@ public class TableViewMenuComponents
       return new TableView( DS, state,"HGT,F");//tv.getGenTableModel( DS,LM,"HGT,F",DS.getSelectedIndices() ));
     if( view_type.indexOf("x vs Group y")==0)
        return new TableView( DS, state,"HT,GF");//tv.getGenTableModel( DS,LM,"HT,FG",DS.getSelectedIndices() ));
-    if(view_type.indexOf("x,Row vs Col y")==0)
-       return (DataSetViewer)(new TimeSliceView( DS, null));
+   
        //return new TableView( DS, state,"HTI,JF");//tv.getGenTableModel( DS,LM,"HTI,JF",DS.getSelectedIndices() ));
     
     return null;
