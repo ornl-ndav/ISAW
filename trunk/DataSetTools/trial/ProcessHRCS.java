@@ -87,6 +87,8 @@ public class ProcessHRCS
 
       float atoms = 1.0f;
       op = new DoubleDifferentialCrossection( difference_ds, 
+                                              new DataSet("dummy","Empty"),
+                                              false,
                                               sample_mon_1_area, 
                                               atoms, 
                                               true    );
