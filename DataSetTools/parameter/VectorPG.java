@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.42  2003/11/20 01:45:19  bouzekc
+ * Removed addPropertyChangeListener(), removePropertyChangeListener() methods.
+ * All requests for these should go through ParameterGUI.  Made getEntryFrame()
+ * public so that external Listeners can be added to the internal
+ * ArrayJEntryFrame.
+ *
  * Revision 1.41  2003/11/19 04:06:54  bouzekc
  * This class is now a JavaBean.  Added code to clone() to copy all
  * PropertyChangeListeners.
@@ -237,8 +243,8 @@ public abstract class VectorPG extends ParameterGUI
   //~ Instance fields **********************************************************
 
   private ParameterGUI innerParam;
-  private ArrayEntryJFrame GUI = null;
-  private JButton vectorButton = null;
+  private ArrayEntryJFrame entryFrame = null;
+  private JButton vectorButton        = null;
 
   //~ Constructors *************************************************************
 
@@ -272,6 +278,15 @@ public abstract class VectorPG extends ParameterGUI
   }
 
   //~ Methods ******************************************************************
+
+  /**
+   * Method to get the inner ArrayEntryJFrame.
+   *
+   * @return frame The internal ArrayEntryJFrame.
+   */
+  public ArrayEntryJFrame getEntryFrame(  ) {
+    return entryFrame;
+  }
 
   /**
    * Sets the value and displays these values in the associated JList.
@@ -308,8 +323,8 @@ public abstract class VectorPG extends ParameterGUI
     }
     super.setValue( vecVal );
 
-    if( GUI != null ) {
-      GUI.setValue( vecVal );
+    if( entryFrame != null ) {
+      entryFrame.setValue( vecVal );
     }
   }
 
@@ -319,8 +334,8 @@ public abstract class VectorPG extends ParameterGUI
   public Object getValue(  ) {
     Object val = super.getValue(  );
 
-    if( GUI != null ) {
-      val = GUI.getValues(  );
+    if( entryFrame != null ) {
+      val = entryFrame.getValues(  );
     }
 
     if( val == null ) {
@@ -328,34 +343,6 @@ public abstract class VectorPG extends ParameterGUI
     }
 
     return val;
-  }
-
-  /**
-   * Adds a property change listener to listen for new Vector values
-   *
-   * @param listener The listener to add.
-   */
-  public void addPropertyChangeListener( PropertyChangeListener listener ) {
-    super.addPropertyChangeListener( listener );
-
-    if( getInitialized(  ) ) {
-      GUI.addPropertyChangeListener( listener );
-    }
-  }
-
-  /**
-   * Adds a property change listener to listen for new Vector values
-   *
-   * @param property The property to listen for.
-   * @param listener The listener to add.
-   */
-  public void addPropertyChangeListener( 
-    String property, PropertyChangeListener listener ) {
-    super.addPropertyChangeListener( property, listener );
-
-    if( getInitialized(  ) ) {
-      GUI.addPropertyChangeListener( property, listener );
-    }
   }
 
   /**
@@ -387,14 +374,15 @@ public abstract class VectorPG extends ParameterGUI
       }
 
       if( getPropListeners(  ) != null ) {
-        java.util.Enumeration e = getPropListeners(  ).keys(  );
+        java.util.Enumeration e    = getPropListeners(  )
+                                       .keys(  );
         PropertyChangeListener pcl = null;
-        String propertyName = null;
+        String propertyName        = null;
 
         while( e.hasMoreElements(  ) ) {
           pcl            = ( PropertyChangeListener )e.nextElement(  );
-          propertyName   = ( String )getPropListeners(  ).get( pcl );
-
+          propertyName   = ( String )getPropListeners(  )
+                                       .get( pcl );
           pg.addPropertyChangeListener( propertyName, pcl );
         }
       }
@@ -429,14 +417,14 @@ public abstract class VectorPG extends ParameterGUI
     if( V != null ) {  // Usually is null so use the previous value
       setValue( V );
     }
-    GUI = new ArrayEntryJFrame( innerParam );
-    GUI.addPropertyChangeListener( DATA_CHANGED, this );
-    GUI.setValue( getValue(  ) );
+    entryFrame = new ArrayEntryJFrame( innerParam );
+    entryFrame.addPropertyChangeListener( DATA_CHANGED, this );
+    entryFrame.setValue( getValue(  ) );
     vectorButton = new JButton( innerParam.getName(  ) );
     setEntryWidget( new EntryWidget(  ) );
     getEntryWidget(  )
       .add( vectorButton );
-    vectorButton.addActionListener( GUI );
+    vectorButton.addActionListener( entryFrame );
     super.initGUI(  );
   }
 
@@ -452,34 +440,12 @@ public abstract class VectorPG extends ParameterGUI
   }
 
   /**
-   * Removes a property change listener.
-   *
-   * @param listener The listener to remove
-   */
-  public void removePropertyChangeListener( PropertyChangeListener listener ) {
-    super.removePropertyChangeListener( listener );
-
-    if( getInitialized(  ) ) {
-      GUI.removePropertyChangeListener( listener );
-    }
-  }
-
-  /**
    * Method to set the inner ArrayEntryJFrame.
    *
    * @param frame The ArrayEntryJFrame to use.
    */
   protected void setEntryFrame( ArrayEntryJFrame frame ) {
-    this.GUI = frame;
-  }
-
-  /**
-   * Method to get the inner ArrayEntryJFrame.
-   *
-   * @return frame The internal ArrayEntryJFrame.
-   */
-  protected ArrayEntryJFrame getEntryFrame(  ) {
-    return GUI;
+    this.entryFrame = frame;
   }
 
   /**
