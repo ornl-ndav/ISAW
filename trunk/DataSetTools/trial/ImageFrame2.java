@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/12/18 22:44:21  millermi
+ * - This file was involved in generalizing AxisInfo2D to
+ *   AxisInfo. This change was made so that the AxisInfo
+ *   class can be used for more than just 2D axes.
+ *
  * Revision 1.6  2003/08/29 23:07:31  millermi
  * - setData() now will setVisible(true) if the ImageFrame2
  *   is not visible.
@@ -85,7 +90,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import DataSetTools.components.View.TwoD.ImageViewComponent;
-import DataSetTools.components.View.AxisInfo2D;
+import DataSetTools.components.View.AxisInfo;
 import DataSetTools.components.View.IVirtualArray2D;
 import DataSetTools.components.View.VirtualArray2D;
 import DataSetTools.components.View.Menu.ViewMenuItem;
@@ -132,13 +137,13 @@ public class ImageFrame2 extends JFrame
   *  @param  title
   */  
   public ImageFrame2( float[][] array, 
-                      AxisInfo2D xinfo,
-		      AxisInfo2D yinfo,
+                      AxisInfo xinfo,
+		      AxisInfo yinfo,
 		      String title )
   {
     VirtualArray2D temp = new VirtualArray2D( array );
-    temp.setAxisInfoVA( AxisInfo2D.XAXIS, xinfo.copy() );
-    temp.setAxisInfoVA( AxisInfo2D.YAXIS, yinfo.copy() );
+    temp.setAxisInfo( AxisInfo.X_AXIS, xinfo.copy() );
+    temp.setAxisInfo( AxisInfo.Y_AXIS, yinfo.copy() );
     temp.setTitle(title);
     
     data = new VirtualArray2D(1,1);
@@ -210,7 +215,6 @@ public class ImageFrame2 extends JFrame
     setTitle( data.getTitle() );
     ivc = new ImageViewComponent( data );
     ivc.setColorControlSouth(true);
-    ivc.addActionListener( new ImageListener() );
     Box controls = new Box(BoxLayout.Y_AXIS);
     JComponent[] ctrl = ivc.getSharedControls();
     for( int i = 0; i < ctrl.length; i++ )
@@ -239,19 +243,6 @@ public class ImageFrame2 extends JFrame
       }	
     }   
   }
-  
- /*
-  * This class is required to update the axes when the divider is moved. 
-  * Without it, the image is one frame behind.
-  */
-  private class ImageListener implements ActionListener
-  {
-    public void actionPerformed( ActionEvent ae )
-    {
-      if( ae.getActionCommand().equals(ImageViewComponent.COMPONENT_RESIZED) )
-        repaint();
-    }
-  }
 
  /*
   * Testing purposes only
@@ -263,9 +254,9 @@ public class ImageFrame2 extends JFrame
       for ( int j = 0; j < 500; j++ )
         test_array[i][j] = i + j;
     VirtualArray2D va2D = new VirtualArray2D( test_array );
-    va2D.setAxisInfoVA( AxisInfo2D.XAXIS, 0f, 10000f, 
+    va2D.setAxisInfo( AxisInfo.X_AXIS, 0f, 10000f, 
     		        "TestX","TestUnits", true );
-    va2D.setAxisInfoVA( AxisInfo2D.YAXIS, 0f, 1500f, 
+    va2D.setAxisInfo( AxisInfo.Y_AXIS, 0f, 1500f, 
     			"TestY","TestYUnits", false );
     va2D.setTitle("ImageFrame Test");
     ImageFrame2 im_frame = new ImageFrame2( va2D );
@@ -281,9 +272,9 @@ public class ImageFrame2 extends JFrame
     }
     
     ImageFrame2 im_frame2 = new ImageFrame2( test_array,
-                                             new AxisInfo2D( 0f, 10000f,"TestX",
+                                             new AxisInfo( 0f, 10000f,"TestX",
 			                                    "TestUnits", true ),
-                                             new AxisInfo2D( 0f, 1500f,"TestY",
+                                             new AxisInfo( 0f, 1500f,"TestY",
 			                                   "TestYUnits", true ),
 					     "ImageFrame Alternate Test" );
     im_frame2.setData( test_array );*/

@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/12/18 22:46:06  millermi
+ * - This file was involved in generalizing AxisInfo2D to
+ *   AxisInfo. This change was made so that the AxisInfo
+ *   class can be used for more than just 2D axes.
+ *
  * Revision 1.8  2003/12/15 00:35:06  rmikk
  * Now notifies observers of the data set when the selected groups are changed
  *
@@ -158,33 +163,45 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
   }
 
   /**
-   * Returns the attributes of the data array in a AxisInfo2D wrapper.
-   * This method will take in a boolean value to determine for which axis
-   * info is being retrieved for.    true = X axis, false = Y axis.
+   * Gets the attributes of the data array within a AxisInfo wrapper.
+   * This method will take in an integer to determine which axis
+   * info is being returned.
+   *
+   *  @param  axis Use AxisInfo integer codes.
    */
-  public AxisInfo2D getAxisInfoVA( boolean isX )
+  public AxisInfo getAxisInfo( int axis )
    {
      return null;
    }
    
 
   /**
-   * Sets the attributes of the data array within a AxisInfo2D wrapper.
-   * This method will take in a boolean value to determine for which axis
-   * info is being altered.          true = X axis, false = Y axis.
+   * Sets the attributes of the data array within a AxisInfo wrapper.
+   * This method will take in an integer to determine which axis
+   * info is being altered.
+   *
+   *  @param  axis Use AxisInfo integer codes.
+   *  @param  min Minimum value for this axis.
+   *  @param  max Maximum value for this axis.
+   *  @param  label label associated with the axis.
+   *  @param  units units associated with the values for this axis.
+   *  @param  islinear Is axis linear (true) or logarithmic (false)
    */
-  public void setAxisInfoVA( boolean isX, float min, float max,
-                              String label, String units, boolean islinear )
+  public void setAxisInfo( int axis, float min, float max,
+                           String label, String units, boolean islinear )
     {
     }
 
 
   /**
-   * Sets the attributes of the data array within a AxisInfo2D wrapper.
-   * This method will take in a boolean value to determine for which axis
-   * info is being altered.          true = X axis, false = Y axis.
+   * Sets the attributes of the data array within a AxisInfo wrapper.
+   * This method will take in an integer to determine which axis
+   * info is being altered.
+   *
+   *  @param  axis Use AxisInfo integer codes.
+   *  @param  info Info for this axis.
    */
-  public void setAxisInfoVA( boolean isX, AxisInfo2D info )
+  public void setAxisInfo( int axis, AxisInfo info )
     {
     }
    

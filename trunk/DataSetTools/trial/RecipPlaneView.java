@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2003/12/18 22:44:21  millermi
+ * - This file was involved in generalizing AxisInfo2D to
+ *   AxisInfo. This change was made so that the AxisInfo
+ *   class can be used for more than just 2D axes.
+ *
  * Revision 1.15  2003/12/08 16:22:09  dennis
  * Explicitly set axis units to (currently) uncalibrated values to work
  * around "bug" in ImageFrame2 that breaks the zoom capability, if
@@ -1875,9 +1880,9 @@ private class PlaneListener implements ActionListener
        float image[][] = make_slice( origin, normal, base, up );
        VirtualArray2D va2d = new VirtualArray2D( image );
 // ##### patch
-    va2d.setAxisInfoVA( AxisInfo2D.XAXIS, -10.0f, 10.0f,
+    va2d.setAxisInfo( AxisInfo.X_AXIS, -10.0f, 10.0f,
                         "X","Uncalibrated Units", true );
-    va2d.setAxisInfoVA( AxisInfo2D.YAXIS, -10.0f, 10.0f,
+    va2d.setAxisInfo( AxisInfo.Y_AXIS, -10.0f, 10.0f,
                         "Y","Uncalibrated Units", false );
 
        va2d.setTitle( title );
