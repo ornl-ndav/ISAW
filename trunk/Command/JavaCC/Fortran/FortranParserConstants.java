@@ -5,79 +5,63 @@ public interface FortranParserConstants {
 
   int EOF = 0;
   int LINE_END = 1;
-  int WHITESPACE = 2;
-  int ONE_PLUS_WS = 3;
-  int OPT_WS = 4;
-  int LPAREN = 5;
-  int RPAREN = 6;
-  int UNSIGNED_DIGIT = 7;
-  int DIGIT = 8;
-  int CHARACTER = 9;
-  int RESERVED_CHAR = 10;
-  int VAR_RESERVED_CHAR = 11;
-  int DIGICHAR = 12;
-  int VARIABLE = 13;
-  int ARRAY_VARIABLE = 14;
-  int STRING_COMP = 15;
-  int STRING = 16;
-  int FLOATING_POINT = 17;
-  int BOOL_CONST = 18;
-  int FORTRAN_COMMENT = 19;
-  int INT_IDENT = 20;
-  int FLOAT_IDENT = 21;
-  int EQ = 22;
-  int CHAR_VARIABLE = 23;
-  int MATH_INT_VAR = 24;
-  int MATH_FLOAT_VAR = 25;
-  int MATH_VAR = 26;
-  int FORTRAN_ABS = 27;
-  int FORTRAN_SQRT = 28;
-  int FORTRAN_SIN = 29;
-  int FORTRAN_ASIN = 30;
-  int FORTRAN_COS = 31;
-  int FORTRAN_ACOS = 32;
-  int FORTRAN_TAN = 33;
-  int FORTRAN_ATAN = 34;
-  int FORTRAN_LOG = 35;
-  int FORTRAN_EXP = 36;
-  int FORTRAN_FLOAT_FUN = 37;
-  int FORTRAN_TRUNC_FUN = 38;
-  int FORTRAN_MOD_FUN = 39;
-  int FORTRAN_FLOOR_FUN = 40;
-  int FORTRAN_FRACTION_FUN = 41;
-  int OPERATOR = 42;
-  int OPERAND = 43;
-  int SIMPLE_EXPRESSION = 44;
-  int NESTED_EXPRESSION = 45;
-  int FORTRAN_EXPRESSION = 46;
-  int SINGLE_IF = 47;
-  int START_MULTI_IF = 48;
-  int END_IF = 49;
-  int VAR_ASSIGN = 50;
-  int FORTRAN_INT = 51;
-  int FORTRAN_REAL = 52;
-  int FORTRAN_DOUBLE = 53;
-  int FORTRAN_LOGICAL = 54;
-  int FORTRAN_CHAR_1 = 55;
-  int FORTRAN_CHAR_2 = 56;
+  int WS = 2;
+  int EMPTY_LINE = 3;
+  int UNSIGNED_DIGIT = 4;
+  int DIGIT = 5;
+  int CHARACTER = 6;
+  int RESERVED_CHAR = 7;
+  int VAR_RESERVED_CHAR = 8;
+  int VARIABLE = 9;
+  int OPERAND = 10;
+  int ARRAY_VARIABLE = 11;
+  int STRING_COMP = 12;
+  int STRING = 13;
+  int FLOATING_POINT = 14;
+  int BOOL_CONST = 15;
+  int FORTRAN_COMMENT = 16;
+  int INT_IDENT = 17;
+  int FLOAT_IDENT = 18;
+  int CHAR_VARIABLE = 19;
+  int MATH_INT_VAR = 20;
+  int MATH_FLOAT_VAR = 21;
+  int SIMPLE_MATH_COMP = 22;
+  int FORTRAN_MATH_FUN = 23;
+  int FORTRAN_ABS = 24;
+  int FORTRAN_FLOAT_FUN = 25;
+  int FORTRAN_TRUNC_FUN = 26;
+  int FORTRAN_MOD_FUN = 27;
+  int FORTRAN_FRACTION_FUN = 28;
+  int OPERATOR = 29;
+  int SIMPLE_EXPRESSION = 30;
+  int NESTED_EXPRESSION = 31;
+  int FORTRAN_EXPRESSION = 32;
+  int COND_OPS = 33;
+  int COND_START = 34;
+  int SINGLE_IF = 35;
+  int ELSE_COND = 36;
+  int START_MULTI_IF = 37;
+  int END_IF = 38;
+  int VAR_ASSIGN = 39;
+  int F_VAR = 40;
+  int FORTRAN_VARIABLE = 41;
+  int FORTRAN_CHAR_1 = 42;
+  int FORTRAN_CHAR_2 = 43;
 
   int DEFAULT = 0;
 
   String[] tokenImage = {
     "<EOF>",
     "<LINE_END>",
-    "<WHITESPACE>",
-    "<ONE_PLUS_WS>",
-    "<OPT_WS>",
-    "<LPAREN>",
-    "<RPAREN>",
+    "<WS>",
+    "<EMPTY_LINE>",
     "<UNSIGNED_DIGIT>",
     "<DIGIT>",
     "<CHARACTER>",
     "<RESERVED_CHAR>",
     "<VAR_RESERVED_CHAR>",
-    "<DIGICHAR>",
     "<VARIABLE>",
+    "<OPERAND>",
     "<ARRAY_VARIABLE>",
     "<STRING_COMP>",
     "<STRING>",
@@ -86,39 +70,29 @@ public interface FortranParserConstants {
     "<FORTRAN_COMMENT>",
     "<INT_IDENT>",
     "<FLOAT_IDENT>",
-    "<EQ>",
     "<CHAR_VARIABLE>",
     "<MATH_INT_VAR>",
     "<MATH_FLOAT_VAR>",
-    "<MATH_VAR>",
+    "<SIMPLE_MATH_COMP>",
+    "<FORTRAN_MATH_FUN>",
     "<FORTRAN_ABS>",
-    "<FORTRAN_SQRT>",
-    "<FORTRAN_SIN>",
-    "<FORTRAN_ASIN>",
-    "<FORTRAN_COS>",
-    "<FORTRAN_ACOS>",
-    "<FORTRAN_TAN>",
-    "<FORTRAN_ATAN>",
-    "<FORTRAN_LOG>",
-    "<FORTRAN_EXP>",
     "<FORTRAN_FLOAT_FUN>",
     "<FORTRAN_TRUNC_FUN>",
     "<FORTRAN_MOD_FUN>",
-    "<FORTRAN_FLOOR_FUN>",
     "<FORTRAN_FRACTION_FUN>",
     "<OPERATOR>",
-    "<OPERAND>",
     "<SIMPLE_EXPRESSION>",
     "<NESTED_EXPRESSION>",
     "<FORTRAN_EXPRESSION>",
+    "<COND_OPS>",
+    "<COND_START>",
     "<SINGLE_IF>",
+    "<ELSE_COND>",
     "<START_MULTI_IF>",
     "<END_IF>",
     "<VAR_ASSIGN>",
-    "<FORTRAN_INT>",
-    "<FORTRAN_REAL>",
-    "<FORTRAN_DOUBLE>",
-    "<FORTRAN_LOGICAL>",
+    "<F_VAR>",
+    "<FORTRAN_VARIABLE>",
     "<FORTRAN_CHAR_1>",
     "<FORTRAN_CHAR_2>",
   };
