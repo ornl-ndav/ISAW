@@ -32,6 +32,15 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/06/07 16:39:30  dennis
+ *  Now supports reconnection to the LiveDataServer, in case
+ *  the connection to the server is lost, or could not be
+ *  made when the retriever was constructed.  Added method
+ *  isConnected() to report on the status of the connection.
+ *  If the connection is lost, this will automatically try
+ *  to reconnect whenever some information is requested
+ *  from the server.
+ *
  *  Revision 1.7  2001/04/25 21:57:49  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -80,6 +89,7 @@ public class LiveDataRetriever extends    Retriever
 
   TCPComm tcp_io = null;
 
+/* ----------------------------- Constructor ----------------------------- */
 /**
  *  Construct a LiveDataRetriever to get data from a LiveDataServer running
  *  a specified instrument computer.
@@ -92,19 +102,11 @@ public class LiveDataRetriever extends    Retriever
   {
     super(data_source_name);
 
-    try
-    {
-      Socket sock = new Socket( data_source_name, 
-                                LiveDataServer.SERVER_PORT_NUMBER );
-      tcp_io      = new TCPComm( sock, TIMEOUT_MS );
-    }
-    catch( Exception e ) 
-    {
-      System.out.println("Exception in LiveDataRetriever constructor");
-      System.out.println("Exception is " +  e ); 
-    }
+    MakeConnection();
   }
 
+
+/* ----------------------------- numDataSets ---------------------------- */
 /**
  *  Get the number of distinct DataSets from this LiveDataServer. 
  *  The monitors are placed into one DataSet.  Any sample histograms are 
@@ -127,10 +129,16 @@ public class LiveDataRetriever extends    Retriever
                                                 // DataSets are available
   }
 
+/* ------------------------------ getType ------------------------------- */
 /**
  * Get the type of the specified data set from the current data source.
  * The type is an integer flag that indicates whether the data set contains
  * monitor data or data from other detectors.
+ *
+ * @param  data_set_num   Specifies which DataSet's type is requested.
+ *
+ * @return The type of the specified DataSet, or the flag 
+ *         Retriever.INVALID_DATA_SET
  */
 
   public int getType( int data_set_num )
@@ -149,6 +157,7 @@ public class LiveDataRetriever extends    Retriever
   }
 
 
+/* ---------------------------- getDataSet ----------------------------- */
 /**
  *  Get the specified DataSet from this runfile.
  * 
@@ -160,9 +169,6 @@ public class LiveDataRetriever extends    Retriever
  */
   public DataSet getDataSet( int data_set_num )
   {
-    System.out.println( "For ds #" + data_set_num + " type = " + 
-                         getType( data_set_num ) );
-
     Object obj = getObjectFromServer( 
                            LiveDataServer.COMMAND_GET_DS + data_set_num );
     if ( obj != null && obj instanceof DataSet )
@@ -171,28 +177,94 @@ public class LiveDataRetriever extends    Retriever
     return (DataSet)(DataSet.EMPTY_DATA_SET.clone());
   }
 
+
+/* ---------------------------- isConnected ----------------------------- */
 /**
- *  Break the connection with the LiveDataServer. 
+ *  Check to see if the connection to the remote server has been made and
+ *  is still operating;
+ *
+ *  @return Returns true if the connection to the remote server is still
+ *          operating.
+ */
+  public boolean isConnected()
+  {
+    if ( tcp_io == null )
+      return false;
+    
+    return true;
+  }
+
+/* -------------------------------------------------------------------------
+ *
+ *  PRIVATE METHODS
  *
  */
-  private void Exit()
+
+/* --------------------------- MakeConnection ---------------------------- */
+/**
+ *  Connect with the remote live data server.
+ */
+  private boolean MakeConnection()
   {
     try
     {
-      tcp_io.Send( new TCPCommExitClass() );
+      Socket sock = new Socket( data_source_name,
+                                LiveDataServer.SERVER_PORT_NUMBER );
+      tcp_io      = new TCPComm( sock, TIMEOUT_MS );
+      return true;
     }
-    catch ( Exception e )
+    catch( Exception e )
     {
-      System.out.println( "Exception in LiveDataRetriever.Exit():" + e );
+      tcp_io = null;
+      System.out.println( "LiveDataRetriever CONNECTION TO " +
+                           data_source_name + " FAILED" );
+      System.out.println( "Exception is " +  e );
+      return false;
     }
   }
 
 
+/* -------------------------------- Exit --------------------------------- */
 /**
+ *  Break the connection with the LiveDataServer. 
+ */
+  private void Exit()
+  {
+    if ( tcp_io != null )
+      try
+      {
+        tcp_io.Send( new TCPCommExitClass() );
+      }
+      catch ( Exception e )
+      {
+        System.out.println( "Exception in LiveDataRetriever.Exit():" + e );
+      }
+  }
+
+
+/* ------------------------- getObjectFromServer ------------------------- */
+/**
+ *  Send command to server and get it's response as an object.
+ *
+ *  @param command   The command string to send to the server.  Appropriate
+ *                   commands are give as strings in LiveDataServer.java
+ *
+ *  @return The object that was requested from the server, or null if the
+ *          the server was not running, or could not provide the requested
+ *          object.
  *
  */
- private Object getObjectFromServer( String command )
+ synchronized private Object getObjectFromServer( String command )
  {
+    if ( tcp_io == null )
+      MakeConnection();
+
+    if ( tcp_io == null )
+    {
+      System.out.println("LiveDataRetriever can't send command:" + command );
+      return null;
+    }
+
     System.out.println("LiveDataRetriever sending command:" + command );
     boolean request_sent = false;
 
@@ -206,6 +278,7 @@ public class LiveDataRetriever extends    Retriever
     {
       System.out.println("EXCEPTION in LiveDataRetriever:" + e );
       System.out.println("while sending command: " + command );
+      tcp_io = null;                               // the connection is gone
     }
 
     if ( request_sent )
@@ -230,7 +303,13 @@ public class LiveDataRetriever extends    Retriever
     return null;
   }
 
+/* ------------------------------------------------------------------------
+ *
+ *  PROTECTED METHODS
+ *
+ */
 
+/* ------------------------------ finalize ---------------------------- */
 /**
  *  Finalize method to make sure that the TCP connection is closed if this
  *  LiveDataRetriever object is no longer being used.
@@ -241,6 +320,12 @@ public class LiveDataRetriever extends    Retriever
      Exit();
   }
 
+
+/* ------------------------------------------------------------------------
+ *
+ *  MAIN PROGRAM FOR TESTING PURPOSES ONLY 
+ *
+ */
 
 /* -------------------------------- main --------------------------------- */
 
