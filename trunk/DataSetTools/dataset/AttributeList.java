@@ -30,7 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2004/06/04 23:11:43  kramer
+ *  Added Javadoc comments to the methods that get attribute values.
+ *
  *  Revision 1.23  2004/05/25 20:15:51  kramer
+ *
  *  Added methods that get attribute values.
  *
  *  Revision 1.22  2004/05/10 22:46:08  dennis
@@ -627,356 +631,640 @@ public class AttributeList implements Serializable,
   /*----------------------------------------------------------------------
    * These methods are used to obtain attributes
    */
+   /**
+    * Get the value of the attribute specified by <code>Attribute.TITLE</code> 
+    * or null if it can't be determined.
+    */
    public String getAttributeTitle()
    {
 	 return resolveStringAttribute(Attribute.TITLE);
    }
-
+	
+   /**
+    * Get the value of the attribute specified by <code>Attribute.LABEL</code>
+    * or null if it can't be determined.
+    */
    public String getAttributeLabel()
    {
 	 return resolveStringAttribute(Attribute.LABEL);
    }
-
+   
+   /**
+    * Get the value of the attribute specified by <code>Attribute.DS_TAG</code>
+    * or -1 if it can't be determined.
+    */
    public int getDS_TAG()
    {
 	 return resolveIntAttribute(Attribute.DS_TAG);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.USER</code>
+    * or null if it can't be determined.
+    */
    public String getUser()
    {
 	 return resolveStringAttribute(Attribute.USER);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.INST_NAME</code>
+    * or null if it can't be determined.
+    */
    public String getInstrumentName()
    {
 	 return resolveStringAttribute(Attribute.INST_NAME);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.INST_TYPE</code>
+    * or -1 if it can't be determined.
+    */
    public int getInstrumentType()
    {
 	 return resolveIntAttribute(Attribute.INST_TYPE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.FILE_NAME</code>
+    * or null if it can't be determined.
+    */
    public String getFileName()
    {
 	 return resolveStringAttribute(Attribute.FILE_NAME);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.RUN_TITLE</code>
+    * or null if it can't be determined.
+    */
    public String getRunTitle()
    {
 	 return resolveStringAttribute(Attribute.RUN_TITLE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.RUN_NUM</code>
+    * or null if it can't be determined.
+    */
    public int[] getRunNumber()
    {
 	 return resolveIntArrayAttribute(Attribute.RUN_NUM);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.END_DATE</code>
+    * or null if it can't be determined.
+    */
    public String getEndDate()
    {
 	 return resolveStringAttribute(Attribute.END_DATE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.END_TIME</code>
+    * or null if it can't be determined.
+    */
    public String getEndTime()
    {
 	 return resolveStringAttribute(Attribute.END_TIME);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.START_DATE</code>
+    * or null if it can't be determined.
+    */
    public String getStartDate()
    {
 	 return resolveStringAttribute(Attribute.START_DATE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.START_TIME</code>
+    * or null if it can't be determined.
+    */
    public String getStartTime()
    {
 	 return resolveStringAttribute(Attribute.START_TIME);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.UPDATE_TIME</code>
+    * or null if it can't be determined.
+    */
    public String getUpdateTime()
    {
 	 return resolveStringAttribute(Attribute.UPDATE_TIME);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.DETECTOR_POS</code>
+    * or null if it can't be determined.
+    */
    public DetectorPosition getDetectorPosition()
    {
 	 return resolveDetectorPositionAttribute(Attribute.DETECTOR_POS);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.RAW_ANGLE</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getRawAngle()
    {
 	 return resolveFloatAttribute(Attribute.RAW_ANGLE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.RAW_DISTANCE</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getRawDistance()
    {
 	 return resolveFloatAttribute(Attribute.RAW_DISTANCE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.SOLID_ANGLE</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getSolidAngle()
    {
 	 return resolveFloatAttribute(Attribute.SOLID_ANGLE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.OMEGA</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getOmega()
    {
 	 return resolveFloatAttribute(Attribute.OMEGA);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.DELATA_2THETA</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getDelta2Theta()
    {
 	 return resolveFloatAttribute(Attribute.DELTA_2THETA);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.EFFICIENCY_FACTOR</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getEfficiencyFactor()
    {
 	 return resolveFloatAttribute(Attribute.EFFICIENCY_FACTOR);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.DETECTOR_IDS</code>
+    * or null if it can't be determined.
+    */
    public int[] getDetectorIDs()
    {
 	 return resolveIntArrayAttribute(Attribute.DETECTOR_IDS);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.SEGMENT_IDS</code>
+    * or null if it can't be determined.
+    */
    public int[] getSegmentIDs()
    {
 	 return resolveIntArrayAttribute(Attribute.SEGMENT_IDS);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.GROUP_ID</code>
+    * or -1 if it can't be determined.
+    */
    public int getGroupID()
    {
 	 return resolveIntAttribute(Attribute.GROUP_ID);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.TIME_FIELD_TYPE</code>
+    * or -1 if it can't be determined.
+    */
    public int getTimeFieldType()
    {
 	 return resolveIntAttribute(Attribute.TIME_FIELD_TYPE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.CRATE</code>
+    * or null if it can't be determined.
+    */
    public int[] getCrate()
    {
 	 return resolveIntArrayAttribute(Attribute.CRATE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.SLOT</code>
+    * or null if it can't be determined.
+    */
    public int[] getSlot()
    {
 	 return resolveIntArrayAttribute(Attribute.SLOT);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.INPUT</code>
+    * or null if it can't be determined.
+    */
    public int[] getInput()
    {
 	 return resolveIntArrayAttribute(Attribute.INPUT);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.DETECTOR_CEN_DISTANCE</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getDetectorCENDistance()
    {
 	 return resolveFloatAttribute(Attribute.DETECTOR_CEN_DISTANCE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.DETECTOR_CEN_ANGLE</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getDetectorCENAngle()
    {
 	 return resolveFloatAttribute(Attribute.DETECTOR_CEN_ANGLE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.DETECTOR_CEN_HEIGHT</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getDetectorCENHeight()
    {
 	 return resolveFloatAttribute(Attribute.DETECTOR_CEN_HEIGHT);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.DETECTOR_DATA_GRID</code>
+    * or null if it can't be determined.
+    */
    public IDataGrid getDetectorDataGrid()
    {
 	 return resolveDataGridAttribute(Attribute.DETECTOR_DATA_GRID);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.INITIAL_PATH</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getInitialPath()
    {
 	 return resolveFloatAttribute(Attribute.INITIAL_PATH);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.ENERGY_IN</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getEnergyIn()
    {
 	 return resolveFloatAttribute(Attribute.ENERGY_IN);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.NOMINAL_ENERGY_IN</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getNominalEnergyIn()
    {
 	 return resolveFloatAttribute(Attribute.NOMINAL_ENERGY_IN);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.ENERGY_OUT</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getEnergyOut()
    {
 	 return resolveFloatAttribute(Attribute.ENERGY_OUT);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.NOMINAL_SOURCE_TO_SAMPLE_TOF</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getNominalSourceToSampleTOF()
    {
 	 return resolveFloatAttribute(Attribute.NOMINAL_SOURCE_TO_SAMPLE_TOF);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.SOURCE_TO_SAMPLE_TOF</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getSourceToSampleTOF()
    {
 	 return resolveFloatAttribute(Attribute.SOURCE_TO_SAMPLE_TOF);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.T0_SHIFT</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getT0Shift()
    {
 	 return resolveFloatAttribute(Attribute.T0_SHIFT);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.SAMPLE_CHI</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getSampleChi()
    {
 	 return resolveFloatAttribute(Attribute.SAMPLE_CHI);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.SAMPLE_PHI</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getSamplePhi()
    {
 	 return resolveFloatAttribute(Attribute.SAMPLE_PHI);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.SAMPLE_OMEGA</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getSampleOmega()
    {
 	 return resolveFloatAttribute(Attribute.SAMPLE_OMEGA);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.SAMPLE_ORIENTATION</code>
+    * or null if it can't be determined.
+    */
    public SampleOrientation getSampleOrientation()
    {
 	 return resolveSampleOrientationAttribute(Attribute.SAMPLE_ORIENTATION);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.SAMPLE_NAME</code>
+    * or null if it can't be determined.
+    */
    public String getSampleName()
    {
 	 return resolveStringAttribute(Attribute.SAMPLE_NAME);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.TEMPERATURE</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getTemperature()
    {
 	 return resolveFloatAttribute(Attribute.TEMPERATURE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.PRESSURE</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getPressure()
    {
 	 return resolveFloatAttribute(Attribute.PRESSURE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.MAGNETIC_FIELD</code>
+    * or null if it can't be determined.
+    */
    public float[] getMagneticField()
    {
 	 return resolveFloatArrayAttribute(Attribute.MAGNETIC_FIELD);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.NUMBER_OF_PULSES</code>
+    * or -1 if it can't be determined.
+    */
    public int getNumberOfPulses()
    {
 	 return resolveIntAttribute(Attribute.NUMBER_OF_PULSES);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.TOTAL_COUNT</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getTotalCount()
    {
 	 return resolveFloatAttribute(Attribute.TOTAL_COUNT);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.Q_VALUE</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getQValue()
    {
 	 return resolveFloatAttribute(Attribute.Q_VALUE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.GSAS_CALIB</code>
+    * or null if it can't be determined.
+    */
    public GsasCalib getGSASCalib()
    {
 	 return resolveGsasCalibAttribute(Attribute.GSAS_CALIB);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.GSAS_IPARM</code>
+    * or null if it can't be determined.
+    */
    public String getGSASIParm()
    {
 	 return resolveStringAttribute(Attribute.GSAS_IPARM);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.LATTICE_PARAM</code>
+    * or null if it can't be determined.
+    */
    public float[] getLatticeParam()
    {
 	 return resolveFloatArrayAttribute(Attribute.LATTICE_PARAM);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.ORIENT_MATRIX</code>
+    * or null if it can't be determined.
+    */
    public String getOrientMatrix()
    {
 	 return resolveStringAttribute(Attribute.ORIENT_MATRIX);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.ORIENT_FILE</code>
+    * or null if it can't be determined.
+    */
    public String getOrientFile()
    {
 	 return resolveStringAttribute(Attribute.ORIENT_FILE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.CELL_VOLUME</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getCellVolume()
    {
 	 return resolveFloatAttribute(Attribute.CELL_VOLUME);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.SCD_CALIB</code>
+    * or null if it can't be determined.
+    */
    public String getSCDCalid()
    {
 	 return resolveStringAttribute(Attribute.SCD_CALIB);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.SCD_CALIB_FILE</code>
+    * or null if it can't be determined.
+    */
    public String getSCDCalibFile()
    {
 	 return resolveStringAttribute(Attribute.SCD_CALIB_FILE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.PIXEL_INFO_LIST</code>
+    * or null if it can't be determined.
+    */
    public PixelInfoList getPixelInfoList()
    {
 	 return resolvePixelInfoListAttribute(Attribute.PIXEL_INFO_LIST);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.DS_TYPE</code>
+    * or null if it can't be determined.
+    */
    public String getDSType()
    {
 	 return resolveStringAttribute(Attribute.DS_TYPE);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.TIME_OFFSET</code>
+    * or <code>Float.NaN</code> if it can't be determined.
+    */
    public float getTimeOffset()
    {
 	 return resolveFloatAttribute(Attribute.TIME_OFFSET);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.START_TIME_SEC</code>
+    * or -1 if it can't be determined.
+    */
    public int getStartTimeSec()
    {
 	 return resolveIntAttribute(Attribute.START_TIME_SEC);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.TIME_OF_DAY</code>
+    * or null if it can't be determined.
+    */
    public String getTimeOfDay()
    {
 	 return resolveStringAttribute(Attribute.TIME_OF_DAY);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.DAY_OF_MONTH</code>
+    * or null if it can't be determined.
+    */
    public String getDayOfMonth()
    {
 	 return resolveStringAttribute(Attribute.DAY_OF_MONTH);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.UNKNOWN</code>
+    * or null if it can't be determined.
+    */
    public String getUnknown()
    {
 	 return resolveStringAttribute(Attribute.UNKNOWN);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.INVALID_DATA_SET</code>
+    * or null if it can't be determined.
+    */
    public String getInvalidDataSet()
    {
 	 return resolveStringAttribute(Attribute.INVALID_DATA_SET);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.MONITOR_DATA</code>
+    * or null if it can't be determined.
+    */
    public String getMonitorData()
    {
 	 return resolveStringAttribute(Attribute.MONITOR_DATA);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.SAMPLE_DATA</code>
+    * or null if it can't be determined.
+    */
    public String getSampleData()
    {
 	 return resolveStringAttribute(Attribute.SAMPLE_DATA);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.PULSE_HEIGHT_DATA</code>
+    * or null if it can't be determined.
+    */
    public String getPulseHeightData()
    {
 	 return resolveStringAttribute(Attribute.PULSE_HEIGHT_DATA);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.TEMPERATURE_DATA</code>
+    * or null if it can't be determined.
+    */
    public String getTemperatureData()
    {
 	 return resolveStringAttribute(Attribute.TEMPERATURE_DATA);
    }
 
+   /**
+    * Get the value of the attribute specified by <code>Attribute.PRESSURE_DATA</code>
+    * or null if it can't be determined.
+    */
    public String getPressureData()
    {
 	 return resolveStringAttribute(Attribute.PRESSURE_DATA);
@@ -1012,6 +1300,15 @@ public class AttributeList implements Serializable,
    * These are helper methods for obtaining attributes.  These methods
    * do the actual work.
    */
+   
+   /**
+   * Looks for the attribute with the name <code>name</code> from the list 
+   * of attributes.  If the attribute is not in the list or a String object 
+   * cannot be aquired from it, <code>null</code> is returned.
+   * @param name The name of the attribute to search for.
+   * @return The String object aquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be aquired.
+   */
    private String resolveStringAttribute(String name)
    {
 	 Object val = getAttributeValue(name);
@@ -1021,6 +1318,14 @@ public class AttributeList implements Serializable,
 	   return null;
    }
 
+   /**
+   * Looks for the attribute with the name <code>name</code> from the list 
+   * of attributes.  If the attribute is not in the list or a float value 
+   * cannot be aquired from it, <code>Float.NaN</code> is returned.
+   * @param name The name of the attribute to search for.
+   * @return The float value aquired from the attribute with the specified 
+   * name or <code>Float.NaN</code> if it can't be aquired.
+   */
    private float resolveFloatAttribute(String name)
    {
 	 Object val = getAttributeValue(name);
@@ -1030,6 +1335,14 @@ public class AttributeList implements Serializable,
 	   return Float.NaN;
    }
 
+   /**
+   * Looks for the attribute with the name <code>name</code> from the list 
+   * of attributes.  If the attribute is not in the list or a float array 
+   * cannot be aquired from it, <code>null</code> is returned.
+   * @param name The name of the attribute to search for.
+   * @return The float array aquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be aquired.
+   */
    private float[] resolveFloatArrayAttribute(String name)
    {
 	 Object val = getAttributeValue(name);
@@ -1039,6 +1352,14 @@ public class AttributeList implements Serializable,
 	   return null;
    }
 
+   /**
+   * Looks for the attribute with the name <code>name</code> from the list 
+   * of attributes.  If the attribute is not in the list or an integer value 
+   * cannot be aquired from it, -1 is returned.
+   * @param name The name of the attribute to search for.
+   * @return The integer value aquired from the attribute with the specified 
+   * name or -1 if it can't be aquired.
+   */
    private int resolveIntAttribute(String name)
    {
 	 Object val = getAttributeValue(name);
@@ -1048,6 +1369,14 @@ public class AttributeList implements Serializable,
 	   return -1;
    }
 
+   /**
+   * Looks for the attribute with the name <code>name</code> from the list 
+   * of attributes.  If the attribute is not in the list or an integer array 
+   * cannot be aquired from it, <code>null</code> is returned.
+   * @param name The name of the attribute to search for.
+   * @return The integer array aquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be aquired.
+   */
    private int[] resolveIntArrayAttribute(String name)
    {
 	 Object val = getAttributeValue(name);
@@ -1057,6 +1386,14 @@ public class AttributeList implements Serializable,
 	   return null;
    }
 
+   /**
+   * Looks for the attribute with the name <code>name</code> from the list 
+   * of attributes.  If the attribute is not in the list or a DetectorPosition object 
+   * cannot be aquired from it, <code>null</code> is returned.
+   * @param name The name of the attribute to search for.
+   * @return The DetectorPosition object aquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be aquired.
+   */
    private DetectorPosition resolveDetectorPositionAttribute(String name)
    {
 	 Object val = getAttributeValue(name);
@@ -1066,6 +1403,14 @@ public class AttributeList implements Serializable,
 	   return null;
    }
 
+   /**
+   * Looks for the attribute with the name <code>name</code> from the list 
+   * of attributes.  If the attribute is not in the list or a IDataGrid object 
+   * cannot be aquired from it, <code>null</code> is returned.
+   * @param name The name of the attribute to search for.
+   * @return The IDataGrid object aquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be aquired.
+   */
    private IDataGrid resolveDataGridAttribute(String name)
    {
 	 Object val = getAttributeValue(name);
@@ -1075,6 +1420,14 @@ public class AttributeList implements Serializable,
 	   return null;
    }
 
+   /**
+   * Looks for the attribute with the name <code>name</code> from the list 
+   * of attributes.  If the attribute is not in the list or a GsasCalib object 
+   * cannot be aquired from it, <code>null</code> is returned.
+   * @param name The name of the attribute to search for.
+   * @return The GsasCalib object aquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be aquired.
+   */
    private GsasCalib resolveGsasCalibAttribute(String name)
    {
 	 Object val = getAttributeValue(name);
@@ -1084,6 +1437,14 @@ public class AttributeList implements Serializable,
 	   return null;
    }
 
+   /**
+   * Looks for the attribute with the name <code>name</code> from the list 
+   * of attributes.  If the attribute is not in the list or a SampleOrientation object 
+   * cannot be aquired from it, <code>null</code> is returned.
+   * @param name The name of the attribute to search for.
+   * @return The SampleOrientation object aquired from the attribute with the specified 
+   * name or <code>null</code> if it can't be aquired.
+   */
    private SampleOrientation resolveSampleOrientationAttribute(String name)
    {
 	 Object val = getAttributeValue(name);
@@ -1093,6 +1454,14 @@ public class AttributeList implements Serializable,
 	   return null;
    }   
    
+   /**
+    * Looks for the attribute with the name <code>name</code> from the list 
+    * of attributes.  If the attribute is not in the list or a PixelInfoList object 
+    * cannot be aquired from it, <code>null</code> is returned.
+    * @param name The name of the attribute to search for.
+    * @return The PixelInfoList object aquired from the attribute with the specified 
+    * name or <code>null</code> if it can't be aquired.
+    */
    private PixelInfoList resolvePixelInfoListAttribute(String name)
    {
 	  Object val = getAttributeValue(name);
