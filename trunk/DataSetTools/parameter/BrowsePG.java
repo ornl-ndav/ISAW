@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/06/02 20:15:41  bouzekc
+ *  setFilter() now adds the given FileFilter if it does not
+ *  yet exist in the FileFilter Vector.
+ *
+ *  Fixed ClassCastException in setValue().
+ *
  *  Revision 1.8  2003/05/30 15:00:46  bouzekc
  *  Fixed bug where the entrywidget components overlapped
  *  when resizing.
@@ -157,7 +163,15 @@ public class BrowsePG extends ParameterGUI{
                 }
             }
         }else{
-            this.value=value;
+            if(value==null){
+              this.value = null;
+            }else{
+                if(value instanceof String){
+                  this.value = value;
+                }else{
+                  this.value = value.toString();
+                }
+             }    
         }
         this.setValid(true);
     }
@@ -229,7 +243,10 @@ public class BrowsePG extends ParameterGUI{
       }
 
       if(!found)
-        defaultindex = -1;
+      {
+        this.addFilter(filefilter);
+        defaultindex = filter_vector.size() - 1;
+      }
     }
 
     /**
