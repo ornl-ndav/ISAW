@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.28  2003/08/28 02:31:22  bouzekc
+ * Now makes use of ParameterGUI's constructors.  Removed setEnabled() and
+ * getType() methods.  Changed instance variable param to innerParam and
+ * made it protected.
+ *
  * Revision 1.27  2003/08/26 18:26:34  bouzekc
  * Made the internal ArrayEntryJPanel protected so that subclasses can use
  * it.  Removed layout setup for entrywidget.
@@ -191,48 +196,51 @@ public abstract class VectorPG extends ParameterGUI
 
   //~ Instance fields **********************************************************
 
-  private String typeName;
-  private ParameterGUI param;
+  protected ParameterGUI innerParam;
   private PropertyChangeSupport pcs;
-  protected ArrayEntryJPanel GUI;
-  private JButton vectorButton;
+  protected ArrayEntryJPanel GUI          = null;
+  private JButton vectorButton            = null;
   private Vector listeners                = new Vector(  );
   private JDialog entryDialog;
   private JFrame entryFrame;
+  private final String TYPE               = "Array";
 
   //~ Constructors *************************************************************
 
   /**
    * Constructor
    *
-   * @param param A ParameterGUI that determines the data type of the elements
-   *        of the resultant Vector.
-   * @param Prompt the prompt string that appears on the  GUI( a button) and
-   *        the resultant JFrame when the button is pressed The ParameterGUI
-   *        is just a button in a JPanel.  When the button is pressed a more
+   * @param name the prompt string that appears on the  GUI( a button) and the
+   *        resultant JFrame when the button is pressed The ParameterGUI is
+   *        just a button in a JPanel.  When the button is pressed a more
    *        complicated JFrame is created with the list box and editing
    *        buttons.
+   * @param val The initial value to set this VectorPG to.
    */
-  public VectorPG( ParameterGUI param, String Prompt ) {
-    super(  );
-    typeName     = param.getType(  ) + "Array";
-    this.param   = param;
-    setName( Prompt );
-    pcs            = new PropertyChangeSupport( this );
-    GUI            = null;
-    vectorButton   = null;
+  public VectorPG( String name, Object val ) {
+    super( name, val );
+    this.type   = TYPE;
+    pcs         = new PropertyChangeSupport( this );
+  }
+
+  /**
+   * Constructor
+   *
+   * @param name the prompt string that appears on the  GUI( a button) and the
+   *        resultant JFrame when the button is pressed The ParameterGUI is
+   *        just a button in a JPanel.  When the button is pressed a more
+   *        complicated JFrame is created with the list box and editing
+   *        buttons.
+   * @param val The initial value to set this VectorPG to.
+   * @param valid Whether this VectorPG should be valid or not (initially).
+   */
+  public VectorPG( String name, Object val, boolean valid ) {
+    super( name, val, valid );
+    this.type   = TYPE;
+    pcs         = new PropertyChangeSupport( this );
   }
 
   //~ Methods ******************************************************************
-
-  /**
-   * Accessor method to set the enable state of this parameter.
-   *
-   * @param enable Whether to set the parameter enabled or not.
-   */
-  public void setEnabled( boolean enable ) {
-    enabled = enable;
-  }
 
   /**
    * Sets the value and displays these values in the associated JList.
@@ -243,17 +251,13 @@ public abstract class VectorPG extends ParameterGUI
     this.value = ArrayPG.StringtoArray( value );
   }
 
-  //*********** ParamUsesString methods *********************************
+  /**
+   * Accessor method for the String value of this VectorPG.
+   *
+   * @return This VectorPG's String value.
+   */
   public String getStringValue(  ) {
     return ArrayPG.ArraytoString( ( Vector )value );
-  }
-
-  /**
-   * The type name is the param's type name with the letters "Array" affixed to
-   * the end
-   */
-  public String getType(  ) {
-    return typeName;
   }
 
   /**
@@ -279,9 +283,8 @@ public abstract class VectorPG extends ParameterGUI
    * Gets the value of the Vector
    */
   public Object getValue(  ) {
-    if( value == null ) {  //The iss scripting system does not like null
-
-      return new Vector(  );  //parameters yet
+    if( value == null ) {
+      return new Vector(  );
     }
 
     return value;
@@ -296,7 +299,7 @@ public abstract class VectorPG extends ParameterGUI
   public void actionPerformed( ActionEvent evt ) {
     String command = evt.getActionCommand(  );
 
-    if( command.equals( param.getName(  ) ) ) {
+    if( command.equals( innerParam.getName(  ) ) ) {
       ;
     }
 
@@ -355,14 +358,13 @@ public abstract class VectorPG extends ParameterGUI
       setValue( V );
     }
 
-    GUI = new ArrayEntryJPanel( param );
+    GUI = new ArrayEntryJPanel( innerParam );
     GUI.addPropertyChangeListener( this );
     GUI.setValue( value );
-    vectorButton   = new JButton( param.getName(  ) );
+    vectorButton   = new JButton( innerParam.getName(  ) );
     entrywidget    = new EntryWidget(  );
 
     entrywidget.add( vectorButton );
-    entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
     vectorButton.addActionListener( this );
 
     super.initGUI(  );
@@ -420,14 +422,14 @@ public abstract class VectorPG extends ParameterGUI
    * Creates the entry panel for this VectorPG.
    */
   protected void makeEntryPanel(  ) {
-    entryFrame = new JFrame( param.getName(  ) + " List" );
+    entryFrame = new JFrame( innerParam.getName(  ) + " List" );
 
     entryFrame.setSize( 500, 300 );
 
     //leave this commented code in here.  There is a strange flaw elsewhere
     //that requires a JDialog, but at some point I would like to remove the
     //modal/modeless operation choice. -7/1/2003 CMB
-    entryDialog = new JDialog( entryFrame, param.getName(  ), true );
+    entryDialog = new JDialog( entryFrame, innerParam.getName(  ), true );
     entryDialog.setSize( 500, 300 );
 
     //entryFrame.setDefaultCloseOperation( WindowConstants.HIDE_ON_CLOSE );
