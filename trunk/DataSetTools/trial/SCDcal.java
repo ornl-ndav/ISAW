@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/07/26 21:47:10  dennis
+ *  Changed name of PeakData to PeakData_d since PeakData_d uses
+ *  double precision.
+ *
  *  Revision 1.16  2004/05/03 16:27:02  dennis
  *  Removed unused local variables and two private methods that are
  *  no longer used.
@@ -247,7 +251,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
      tof = new double[n_peaks];
      for ( int i = 0; i < n_peaks; i++ )
      {
-       PeakData peak = (PeakData)peaks_vector.elementAt(i);
+       PeakData_d peak = (PeakData_d)peaks_vector.elementAt(i);
        run[i]    = peak.run_num;
        id [i]    = peak.grid.ID();
        hkl[i][0] = Math.round(peak.h);
@@ -286,7 +290,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
      gon_rotation         = new Hashtable();
      for ( int i = 0; i < run.length; i++ )
      {
-       PeakData peak = (PeakData)peaks_vector.elementAt(i); 
+       PeakData_d peak = (PeakData_d)peaks_vector.elementAt(i); 
        Integer key = new Integer( run[i] );
        Object  val = gon_rotation_inverse.get( key );
        if ( val == null )
@@ -617,7 +621,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
      float positions[][] = new float[n_peaks][3];
      for ( int i = 0; i < n_peaks; i++ )
      {
-       PeakData peak = (PeakData)peaks_vector.elementAt(i);
+       PeakData_d peak = (PeakData_d)peaks_vector.elementAt(i);
        if ( det_id != id[i] )
          positions[i] = null;
        else
@@ -650,7 +654,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
      float positions[][] = new float[n_peaks][3];
      for ( int i = 0; i < n_peaks; i++ )
      {
-       PeakData peak = (PeakData)peaks_vector.elementAt(i);
+       PeakData_d peak = (PeakData_d)peaks_vector.elementAt(i);
        if ( det_id != id[i] )
          positions[i] = null;
        else
@@ -856,14 +860,14 @@ public class SCDcal   extends    OneVarParameterizedFunction
       lattice_params[5] = 90;
       lattice_params[4] = 120;
                                                     // load the vector of peaks
-      Vector peaks = PeakData.ReadPeakData( args[0] ); 
-      PeakData peak = (PeakData)peaks.elementAt(0);
+      Vector peaks = PeakData_d.ReadPeakData( args[0] ); 
+      PeakData_d peak = (PeakData_d)peaks.elementAt(0);
       double l1 = peak.l1; 
 
       Hashtable grids = new Hashtable();
       for ( int i = 0; i < peaks.size(); i++ )
       {
-        UniformGrid_d grid = ((PeakData)peaks.elementAt(i)).grid;  
+        UniformGrid_d grid = ((PeakData_d)peaks.elementAt(i)).grid;  
         Integer key = new Integer( grid.ID() );
         if ( grids.get(key) == null )            // new detector, so add it
         {

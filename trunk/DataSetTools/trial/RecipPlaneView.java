@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2004/07/26 21:47:10  dennis
+ * Changed name of PeakData to PeakData_d since PeakData_d uses
+ * double precision.
+ *
  * Revision 1.23  2004/05/10 20:42:24  dennis
  * Test program now just instantiates a ViewManager to diplay
  * calculated DataSet, rather than keeping a reference to it.
@@ -728,7 +732,7 @@ public class RecipPlaneView
               objs[obj_index].setPickID( global_obj_index );
               obj_index++;
               global_obj_index++;
-              PeakData pd = new PeakData();
+              PeakData_d pd = new PeakData_d();
               pd.run_num = runs[run_num_index];
               pd.orientation = new IPNS_SCD_SampleOrientation_d(
                                                       orientation.getPhi(), 
@@ -1734,7 +1738,7 @@ private class WriteFileListener implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
   {
-    PeakData.WritePeakData( all_peaks, "fft_peaks.dat" );
+    PeakData_d.WritePeakData( all_peaks, "fft_peaks.dat" );
   }
 }
 
@@ -1775,7 +1779,7 @@ private class LatticeParameterListener implements ActionListener
     c.normalize();
     for ( int i = 0; i < all_peaks.size(); i++ )
     {
-       PeakData pd = (PeakData)all_peaks.elementAt(i);
+       PeakData_d pd = (PeakData_d)all_peaks.elementAt(i);
        q = new Vector3D( (float)pd.qx, (float)pd.qy, (float)pd.qz );
        float h = q.dot(a)/mag_a;
        float k = q.dot(b)/mag_b;
