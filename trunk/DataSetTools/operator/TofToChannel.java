@@ -172,9 +172,16 @@ public class TofToChannel extends  XAxisConversionOp
     if ( num_x < 2 || x < min_x || x > max_x )
       return Float.NaN;
 
-    channel = (x - min_x) / (max_x - min_x) * num_x;
-    channel = (int)( channel );
-   
+    if ( scale instanceof UniformXScale )               // linear interpolation
+    {
+      channel = (x - min_x) / (max_x - min_x) * num_x;
+      channel = (int)( channel );
+    }
+    else                                                // use binary search
+    {
+      float y_vals[] = scale.getXs();
+      channel = arrayUtil.get_index_of( x, y_vals );
+    }
     return channel;
   }
 
@@ -196,6 +203,9 @@ public class TofToChannel extends  XAxisConversionOp
 
     // #### must take care of the operation log... this starts with it empty
     DataSet new_ds = factory.getDataSet(); 
+    new_ds.removeOperator( new TofToChannel() );  // remove redundant operator
+                                                  // that would convert channel
+                                                  // to channel 
     new_ds.copyOp_log( ds );
     new_ds.addLog_entry( "Converted to Channel Number" );
 
@@ -217,13 +227,11 @@ public class TofToChannel extends  XAxisConversionOp
       max_chan = temp;
     }
 
-    UniformXScale new_channel_scale;
-    if ( num_chan <= 0 )                             // calculate the default
-      num_chan = (int)(max_chan-min_chan+1);         // number of channels.
-
-
-    if ( num_chan <= 1.0 || min_chan >= max_chan )   // no valid scale set
-      new_channel_scale = null;
+    UniformXScale new_channel_scale;                 // create a new common
+                                                     // channel scale, if 
+                                                     // specified by parameters
+    if ( num_chan <= 1.0 || min_chan >= max_chan )
+      new_channel_scale = null;                      // no valid scale set
     else
       new_channel_scale = new UniformXScale( min_chan, 
                                              max_chan, 
