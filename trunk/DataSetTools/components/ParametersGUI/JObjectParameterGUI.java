@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2001/08/16 14:34:57  rmikk
+ * Supports the data type IntListString
+ *
  * Revision 1.4  2001/08/07 20:59:38  rmikk
  * Changed segments layout to a 3 by 2 grid and included
  * a beveled border
@@ -51,7 +54,7 @@ import javax.swing.border.*;
 import java.io.*;
 import java.awt.event.*;
 import Command.*;
-
+import DataSetTools.util.*;
 
 public class JObjectParameterGUI extends    JParameterGUI 
                                  implements Serializable, 
@@ -88,7 +91,8 @@ public class JObjectParameterGUI extends    JParameterGUI
        DataType.addItem("Integer");
        DataType.addItem("Float");
        DataType.addItem("String");
-
+       DataType.addItem("IntListString");
+       
        DataType.setEditable(false);
        segment.add(DataType);
 
@@ -121,7 +125,7 @@ public class JObjectParameterGUI extends    JParameterGUI
 
         boolean Ar ;
 
-        if( U== null)
+        if( !Array.isSelected() )//U== null)
           Ar = false;
 
         else 
@@ -139,19 +143,21 @@ public class JObjectParameterGUI extends    JParameterGUI
                i =intText.getText().indexOf(",", i + 1);
              }
 
-             Object X[];
+             Object X = null;
 
              if( dt == 0)
-               X = new Integer[c+1];
+               X = new int[c+1];
 
              else if( dt == 1)
-               X = new Float[c+1];
+               X = new float[c+1];
 
              else if( dt == 2)
                X = new String[c+1];
 
+             else if( dt == 3)
+               X = new IntListString[c+1];
              else
-               X = null;
+                return parameter;
 
              int st = 0;
              String S = intText.getText() ;
@@ -165,11 +171,17 @@ public class JObjectParameterGUI extends    JParameterGUI
                  en = S.length(); 
 
                if( dt == 0)
-                 X[i] = new Integer( S.substring(st, en));
+                 ((int[])X)[i] = (new Integer( S.substring(st, en))).
+                                    intValue();
                else if( dt == 1)
-                 X[i] = new Float( S.substring(st, en));
+                ((float[]) X)[i] = (new Float( S.substring(st, en))).
+                                           floatValue();
                else if( dt == 2)
-                 X[i] = new String( S.substring(st, en));
+                 ((String[])X)[i] = new String( S.substring(st, en));
+
+               else if( dt ==3)
+		 ((IntListString[])X)[i] = new IntListString(
+                                                S.substring( st, en));
 
                st = en + 1;
              } 
@@ -186,6 +198,9 @@ public class JObjectParameterGUI extends    JParameterGUI
 
          else if( dt == 2)
            parameter.setValue( intText.getText());
+ 
+         else if( dt == 3)
+           parameter.setValue( new IntListString( intText.getText())); 
       }
 
        catch( NumberFormatException z)
