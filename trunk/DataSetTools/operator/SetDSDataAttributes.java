@@ -98,42 +98,31 @@ public class SetDSDataAttributes extends    DS_Attribute
   /* ---------------------------- getResult ------------------------------- */
 
   public Object getResult()
-    { Attribute A;
-      DataSet ds = getDataSet();
-      String S = ((AttributeNameString)(getParameter(0).getValue())).toString();
-      Object O = getParameter(1).getValue();
+  { 
+    DataSet ds = getDataSet();
 
-      if ( O == null )
-        return new ErrorString(" null value");
-      
-      if( O instanceof Integer) 
- 	 A = new IntAttribute(S, ((Integer)O).intValue());
-      else if( O instanceof Float)
-         A = new FloatAttribute( S , ((Float)O).floatValue());
-      else if( O instanceof String)
-         A = new StringAttribute(S , (String) O);
-      else if( O instanceof AttributeNameString)
-         A = new StringAttribute( S , ((AttributeNameString) O).toString());
-      else if( O instanceof int[] )
-         A = new IntListAttribute( S , (int[])O );
-      else
- 	 return new ErrorString(" new Value improper Data Type");
+    String S = ((AttributeNameString)(getParameter(0).getValue())).toString();
+    Object O = getParameter(1).getValue();
 
-      for ( int i = 0; i < ds.getNum_entries(); i++ )
-      {
-        Data d = ds.getData_entry( i );
-        if( d != null) 
-         d.setAttribute( A);
-      }
-      if (ds.getNum_entries() > 0 )
-      {
-        ds.addLog_entry( "Operation " + "SetDataAttribute "+ S +
-                         " on ALL Data blocks to " + O );
+    Object A = Attribute.Build( S, O );
+    
+    if ( A instanceof ErrorString )
+      return A;
 
-        return "Attribute Set";
-      }
-      else
-        return "NO DATA BLOCKS";     
+    for ( int i = 0; i < ds.getNum_entries(); i++ )
+    {
+      Data d = ds.getData_entry( i );
+      if( d != null) 
+       d.setAttribute( (Attribute)A );
+    }
+
+    if (ds.getNum_entries() > 0 )
+    {
+      ds.addLog_entry("SetDataAttribute for "+ds+" on ALL Data blocks to: "+ A);
+      return "Attribute Set";
+    }
+    else
+      return "NO DATA BLOCKS";     
   }  
 
   /* ------------------------------ clone ------------------------------- */
