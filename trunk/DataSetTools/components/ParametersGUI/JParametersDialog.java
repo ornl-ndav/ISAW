@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.39  2003/05/22 21:41:08  pfpeterson
+ *  System.getProperty(String) changed to SharedData.getProperty(String)
+ *  to insure that the properties file is loaded before call.
+ *
  *  Revision 1.38  2003/04/11 21:58:48  pfpeterson
  *  Now deals with RuntimeException being thrown by Operator.getResult()
  *  and implemented a "Halt" button.
@@ -377,7 +381,7 @@ public class JParametersDialog implements Serializable,
                 { 
                   String DirPath=param.getValue().toString();
                   if(DirPath==null || DirPath.length()<=0){
-                    DirPath = System.getProperty("Data_Directory");
+                    DirPath = SharedData.getProperty("Data_Directory");
                     if( DirPath != null )
                       DirPath = StringUtil.setFileSeparator(DirPath+"\\");
                     else
@@ -413,7 +417,7 @@ public class JParametersDialog implements Serializable,
                 {
                  String XX = param.getValue().toString();
                  if(XX==null || XX.length()<=0)
-                   System.getProperty("DefaultInstrument");
+                   SharedData.getProperty("DefaultInstrument");
 
                  if( XX == null )
                    XX = "";
@@ -424,7 +428,7 @@ public class JParametersDialog implements Serializable,
               else if( param.getValue() instanceof LoadFileString){
                 String FileName=param.getValue().toString();
                 if(FileName==null || FileName.length()<=0)
-                  FileName=System.getProperty("Data_Directory")+"\\";
+                  FileName=SharedData.getProperty("Data_Directory")+"\\";
                 if(FileName!=null && FileName.length()>0)
                   FileName=StringUtil.setFileSeparator(FileName);
                 else
@@ -436,7 +440,7 @@ public class JParametersDialog implements Serializable,
               else if( param.getValue() instanceof SaveFileString){
                  String FileName=param.getValue().toString();
                  if(FileName==null || FileName.length()<=0)
-                   FileName=System.getProperty("Data_Directory")+"\\";
+                   FileName=SharedData.getProperty("Data_Directory")+"\\";
                  if(FileName!=null && FileName.length()>0)
                    FileName=StringUtil.setFileSeparator(FileName);
                  else
