@@ -29,7 +29,15 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.29  2004/07/30 16:09:20  kramer
+ * Now when the user has a node representing a DataSet closed, opens a viewer
+ * for that DataSet, and selects a spectrum, the DataSet's node in the tree
+ * doesn't get unselected.
+ * Note:  Here, selected refers to the JTree's definition of selection, not the
+ * concept of selecting a Data block in a DataSet.
+ *
  * Revision 1.28  2004/07/14 21:57:53  kramer
+ *
  * Now if the user has the tree collapsed and points at a spectrum in a viewer,
  * the tree doesn't expand.  However, if it is already expanded it doesn't get
  * collapsed either.  Also, if the user opens a viewer for a histogram and its
@@ -806,23 +814,14 @@ public class JDataTree
    */
   private void addNodeToSelection(TreePath path, boolean showNode)
   {
-     if (path != null)
+     if (path != null && showNode)
      {
         tree.clearSelection();
-        if (showNode)
-        {
-           //this tells the tree to expand to 
-           //make the node visible
-           tree.setExpandsSelectedPaths(true);
-           tree.scrollPathToVisible(path);
-        }
-        else
-        {
-           //this method tells the tree not to expand (if it is 
-           //collapsed) to make the node visible.
-           tree.setExpandsSelectedPaths(false);  
-        }
-        tree.addSelectionPath(path);
+        //this tells the tree to expand to 
+        //make the node visible
+        tree.setExpandsSelectedPaths(true);
+        tree.scrollPathToVisible(path);
+        tree.addSelectionPath(path);           
      }
   }
 
