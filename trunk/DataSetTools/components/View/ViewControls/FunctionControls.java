@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2004/03/12 22:36:50  serumb
+ * Now uses IVirtualArrayList1D.
+ *
  * Revision 1.26  2004/03/12 19:20:26  serumb
  * Use setAxisInfo method when the log axis changes.
  *
@@ -123,7 +126,7 @@ package DataSetTools.components.View.ViewControls;
 
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.components.ui.*;
-import DataSetTools.components.View.*;  // IVirtualArray1D
+import DataSetTools.components.View.*;  // IVirtualArrayList1D
 import DataSetTools.components.View.OneD.*;
 import DataSetTools.components.View.Transparency.*;  //Axis Overlays
 import DataSetTools.components.View.ViewControls.*;
@@ -158,7 +161,7 @@ import javax.swing.border.*;
   public class FunctionControls
   {
 
-  private IVirtualArray1D Varray1D;
+  private IVirtualArrayList1D Varray1D;
   private FunctionViewComponent fvc;
   private GraphJPanel gjp;
   private JPanel big_picture = new JPanel();
@@ -253,7 +256,7 @@ import javax.swing.border.*;
   /**
    *  Constructor that builds the controls in an existing frame.
    */ 
-  public FunctionControls( IVirtualArray1D varr, 
+  public FunctionControls( IVirtualArrayList1D varr, 
                            GraphJPanel graph_j_panel,
                            JPanel display_panel, 
                            FunctionViewComponent FVC,
@@ -276,7 +279,7 @@ import javax.swing.border.*;
   /**
    *  Constructor that builds the controls in a new frame.
    */ 
-  public FunctionControls( IVirtualArray1D varr, 
+  public FunctionControls( IVirtualArrayList1D varr, 
                            GraphJPanel graph_j_panel,
                            JPanel display_panel, 
                            FunctionViewComponent FVC) {
@@ -1169,7 +1172,7 @@ import javax.swing.border.*;
     }
     FunctionViewComponent fvc = new FunctionViewComponent( ArrayHandler );
 
-    IVirtualArray1D Varray1D = fvc.getArray(); 
+    IVirtualArrayList1D Varray1D = fvc.getArray(); 
     GraphJPanel graph_panel = new GraphJPanel();
     JPanel main_panel = new JPanel();
     
