@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2001/08/01 15:53:46  dennis
+ *  Added save NeXus file operator.
+ *
  *  Revision 1.13  2001/04/26 19:09:34  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -75,6 +78,7 @@ public class GenericOperatorList implements Serializable
                                           "OneHist",
                                           "DetNormFac",
                                           "PrintDS",
+                                          "SaveNX",
                                           "Pause",
                                           "Echo"    };
 
@@ -167,6 +171,9 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals( "PrintDS" ) )
       return new DataSetPrint();
+
+    else if ( op_name.equals( "SaveNX" ) )
+      return new WriteNexus();
 
     else if ( op_name.equals( "Pause" ) )
       return new pause();
