@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2003/06/17 18:16:31  pfpeterson
+ * Does not add Operators whose category list is [HiddenOperator]
+ * (case insensitive).
+ *
  * Revision 1.26  2003/06/02 22:31:35  rmikk
  * -Eliminated adding IObservers to an operator.  This is
  *  done in the JParametersDialog
@@ -140,6 +144,11 @@ public class opMenu extends JMenu{
                                                 // at each level, if we don't
                                                 // find the current category,
                                                 // add it.  
+            if(categories.length==1
+                         && categories[0].equalsIgnoreCase("HIDDENOPERATOR") ){
+              continue; // don't do anything
+            }
+
             JMenu current_menu = this;          // current_menu pointer steps  
                                                 // down the tree of menus
             if( categories == null){
