@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/06/04 14:08:54  rmikk
+ * Fixed error in SetDefaultParameters to allow space after
+ * the = in the "parameter"  Title=
+ *
  * Revision 1.3  2001/06/01 21:14:13  rmikk
  * Added Documentation for javadocs etc.
  *
@@ -1216,7 +1220,8 @@ public void setDefaultParameters()
        start = 0;
        int j , k;
        if(Debug) System.out.println("Next line="+getNextMacroLine( doc,-1));
-       for( i = getNextMacroLine( doc,-1) ; i>= 0; i = getNextMacroLine( doc , i))
+       for( i = getNextMacroLine( doc,-1) ; i>= 0; 
+                     i = getNextMacroLine( doc , i))
          {Line = getLine( doc , i);
          
          if( Debug)
@@ -1226,7 +1231,8 @@ public void setDefaultParameters()
             return;
           if( Line.trim().indexOf("#$$")==0)
              start = Line.indexOf("#$$")+3;
-          else start = Line.indexOf("$")+1;
+          else 
+              start = Line.indexOf("$")+1;
           if(Debug) System.out.println("start="+start);
           if( start < 1)
             return;
@@ -1246,7 +1252,9 @@ public void setDefaultParameters()
             }
           start = ExecLine.skipspaces(Line , 1, start );
           j = findQuote( Line , 1, start, " (", "" );
-       
+          if( start < Line.length())
+	    if( Line.charAt( start) == '=')
+                j = start + 1;
           String DT = Line.substring( start , j );//.toUpperCase();
           
        // Now get the initial value
