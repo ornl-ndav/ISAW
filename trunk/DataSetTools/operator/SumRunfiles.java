@@ -4,6 +4,9 @@
  *  Renamed from MultiRunfileLoader.java
  *  
  *  $Log$
+ *  Revision 1.6  2000/11/07 15:40:02  dennis
+ *  Fixed print statements to print DataSet not Data Set.
+ *
  *  Revision 1.5  2000/08/03 21:42:10  dennis
  *  Now calls FilenameUtil.fixCase() to check for case errors in basic
  *  filename
@@ -509,9 +512,9 @@ public class SumRunfiles extends    Operator
         System.out.println("Ratio A2/A1 = " + area[1]/area[0] );
         System.out.println("----------------------------------");
 
-        System.out.println("Monitor Data Set Log...................."); 
+        System.out.println("Monitor DataSet Log...................."); 
         datasets[0].getOp_log().Print();
-        System.out.println("Histogram Data Set Log...................."); 
+        System.out.println("Histogram DataSet Log...................."); 
         datasets[1].getOp_log().Print();
       }
       else
