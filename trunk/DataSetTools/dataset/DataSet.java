@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2002/06/17 22:44:24  rmikk
+ *  Add a method to set the standalone varible when writing
+ *
  *  Revision 1.22  2002/06/14 20:49:07  rmikk
  *  Implements the IXmlIO interface
  *
@@ -1561,6 +1564,10 @@ public class DataSet implements IAttributeList,
     return new_ds;
   }
 
+  public void setStandAlone( boolean standalone)
+    {
+      xmlStandAlone = standalone;
+    }
 
   /**
   * Implements the IXmlIO interface.  This routine "writes" the
