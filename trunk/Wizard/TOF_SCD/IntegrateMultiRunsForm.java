@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.8  2003/06/11 22:45:19  bouzekc
+ * Moved calls to setFileSeparator() out of the loop.
+ *
  * Revision 1.7  2003/06/10 19:55:27  bouzekc
  * Moved Operator creation into a private method to avoid
  * excessive Object recreation.
@@ -250,13 +253,15 @@ public class IntegrateMultiRunsForm extends Form
     //get raw data directory
     //should be no need to check this for validity
     param = (IParameterGUI)super.getParameter( 0 );
-    rawDir = param.getValue().toString() + "/";
+    rawDir = StringUtil.setFileSeparator(
+               param.getValue().toString() + "/");
     param.setValid(true);
 
     //get output directory
     //should be no need to check this for validity
     param = (IParameterGUI)getParameter( 1 );
-    outputDir = param.getValue().toString() + "/";
+    outputDir = StringUtil.setFileSeparator(
+                  param.getValue().toString() + "/");
     param.setValid(true);
 
     //gets the run numbers
@@ -350,8 +355,7 @@ public class IntegrateMultiRunsForm extends Form
     append = ((BooleanPG)param).getbooleanValue();
 
     //the name for the saved *.integrate file
-    integName = outputDir + "/" + expName + ".integrate";
-    integName = StringUtil.setFileSeparator(integName);
+    integName = outputDir + expName + ".integrate";
 
     //first time through the file
     first = true;
@@ -370,8 +374,7 @@ public class IntegrateMultiRunsForm extends Form
                .Format
                .integerPadWithZero(runsArray[i], RUN_NUMBER_WIDTH);
 
-      loadName = StringUtil.setFileSeparator(
-                   rawDir + "/" + SCDName + runNum + ".RUN");
+      loadName = rawDir + SCDName + runNum + ".RUN";
 
       SharedData.addmsg("Loading " + loadName + ".");
 
@@ -396,8 +399,7 @@ public class IntegrateMultiRunsForm extends Form
 
       /*Gets matrix file "lsxxxx.mat" for each run
         The "1" means that every peak will be written to the integrate.log file.*/
-      matrixName = StringUtil.setFileSeparator(
-                     outputDir + "/ls" + expName + runNum + ".mat");
+      matrixName = outputDir + "ls" + expName + runNum + ".mat";
 
       SharedData.addmsg("Integrating run number " + runNum + ".");
       
@@ -405,10 +407,6 @@ public class IntegrateMultiRunsForm extends Form
       integrate.getParameter(2).setValue(matrixName);
       integrate.getParameter(7).setValue(new Boolean(append));
       obj = integrate.getResult();
-      /*obj = new Integrate(histDS, integName, 
-                         matrixName,
-                         sliceRange, timeSliceDelta, 1,
-                         append).getResult();*/
       if(obj instanceof ErrorString)
         return errorOut("Integrate failed: " + obj.toString());
 
@@ -489,6 +487,7 @@ public class IntegrateMultiRunsForm extends Form
     integrate.getParameter(4).setValue(sliceRange);
     integrate.getParameter(5).setValue(new Integer(timeSliceDelta));
     integrate.getParameter(6).setValue(new Integer(1));
+    integrate.getParameter(7).setValue(new Boolean(append));
 
     //LoadSCDCalib
 
