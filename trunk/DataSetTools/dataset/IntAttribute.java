@@ -1,5 +1,5 @@
 /*
- * File:  IntAttribute.javan
+ * File:  IntAttribute.java
  *
  * Copyright (C) 1999, Dennis Mikkelson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/06/14 21:12:31  rmikk
+ *  Implements IXmlIO interface
+ *
  *  Revision 1.6  2002/06/05 13:49:58  dennis
  *  Interface IXmlIO partially implemented.
  *
@@ -72,6 +75,7 @@ public class IntAttribute extends    Attribute
   private int value;
 
   /**
+
    *  Write the state of this object out to the specified stream in XML format.
    *
    *  @param  stream   The stream to write to.
@@ -81,6 +85,13 @@ public class IntAttribute extends    Attribute
    *  @return true if the write was successful, false otherwise.
    */
   public boolean XMLwrite( OutputStream stream, int mode )
+    {return xml_utils.AttribXMLwrite( stream, mode, this);
+
+     }
+  public boolean XMLread( InputStream stream )
+    {return xml_utils.AttribXMLread(stream, this);
+    }
+  public boolean XMLwrite1( OutputStream stream, int mode )
   {
     try
     { 
@@ -105,11 +116,77 @@ public class IntAttribute extends    Attribute
    *
    *  @return true if the read was successful, false otherwise.
    */
-  public boolean XMLread( InputStream stream )
-  {
-     return false;
+ 
+  public boolean XMLread1( InputStream stream )
+  { boolean done=false;
+    String fd="";
+    String key=  xml_utils.getTag( stream );
+    if( key.trim().equals("/IntAttribute"))
+      {xml_utils.skipAttributes( stream );
+       done = true;
+       if(fd.equals("nv"))
+         return true;
+       else
+          return false;
+       }
+    while(!done)
+     {
+      if( !xml_utils.skipAttributes( stream ) )
+       {DataSetTools.util.SharedData.status_pane.add(
+        xml_utils.getErrorMessage());
+        return false;
+        }
+      String v= xml_utils.getValue( stream);
+      if( v== null)
+        {DataSetTools.util.SharedData.status_pane.add(
+                xml_utils.getErrorMessage());
+         return false;
+        }
+      if( key.equals( "name"))
+       {if( fd.indexOf('n')>=0)
+          return false;
+        name=v;
+        fd="n"+fd;
+        }
+      else if( key.equals("value"))
+       try{if(fd.indexOf('v')>=0)
+             return false;
+          fd=fd+"v";
+          value = (new Integer( v)).intValue();
+          }
+       catch( Exception s)
+          { DataSetTools.util.SharedData.status_pane.add(
+              "Error"+s.getMessage()); 
+             return false;
+           
+           }
+       key=  xml_utils.getTag( stream );
+       if( key == null)
+         {DataSetTools.util.SharedData.status_pane.add(
+                    xml_utils.getErrorMessage());
+          return false;
+          }
+       if( key.trim().equals("/IntAttribute"))
+        {xml_utils.skipAttributes( stream );
+         done = true;
+         if(fd.equals("nv"))
+           return true;
+         else
+          {DataSetTools.util.SharedData.status_pane.add(
+              "Did not Set both field in IntAttribute");
+           return false;
+          }
+       }
+      }
+      return true;
+      
+       
   }
 
+  public IntAttribute()
+    {super("");
+     this.value=0;
+    }
   /**
    * Constructs an IntAttribute object using the specified name and value.
    */

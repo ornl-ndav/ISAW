@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/06/14 21:13:19  rmikk
+ *  Implements IXmlIO interface
+ *
  *  Revision 1.5  2002/06/05 20:28:56  dennis
  *  Now the combine() method will not form LABEL attributes longer than
  *  a specified MAX length.
@@ -53,7 +56,7 @@
  */
 
 package  DataSetTools.dataset;
-
+import java.io.*;
 /**
  * The concrete class for an attribute whose value is a string.  
  *
@@ -77,7 +80,11 @@ public class StringAttribute extends Attribute
     this.value = value;
   }
 
-
+ public StringAttribute()
+  {
+    super( "" );
+    this.value = "";
+  }
   /**
    * Returns the String value of this attribute as a generic object. 
    */
@@ -126,6 +133,13 @@ public class StringAttribute extends Attribute
      }
   }
 
+  public boolean XMLwrite( OutputStream stream, int mode )
+    {return xml_utils.AttribXMLwrite( stream, mode, this);
+
+     }
+  public boolean XMLread( InputStream stream )
+    {return xml_utils.AttribXMLread(stream, this);
+    }
 
   /**
    * Returns the String value of this attribute as a String.

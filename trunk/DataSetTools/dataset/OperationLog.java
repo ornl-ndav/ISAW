@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/06/14 21:13:10  rmikk
+ *  Implements IXmlIO interface
+ *
  *  Revision 1.5  2001/04/25 19:04:00  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -57,7 +60,7 @@ import java.io.*;
  *  Log of operations performed on a DataSet.
  */
 
-public class OperationLog implements Serializable
+public class OperationLog implements Serializable, IXmlIO
 {
   private Vector log;
 
@@ -111,7 +114,71 @@ public class OperationLog implements Serializable
      for ( int i = 0; i < this.log.size(); i++ )
        System.out.println( (String)this.log.elementAt( i ));
    }
+
+
+  /**
+  * Implements the IXmlIO interface to let the OperationLog write itself
+  *
+  * @param stream  the OutputStream to which the data is written in xml format
+  * @param mode  either IXmlIO.BASE64 to write spectra in Base63 or
+  *               IXmlIO.NORMAL to write it in ASCII
+  *
+  * @return  true if successful otherwise false
+  */
+  public boolean XMLwrite( OutputStream stream, int mode)
+  { StringBuffer sb = new StringBuffer( 600);
+    sb.append("<OperationLog   size=\""+log.size()+"\" >\n");
+    for( int i=0; i< log.size(); i++)
+    { sb.append("<data>");
+      sb.append((String)(log.elementAt(i)));
+      sb.append("</data>\n");
+    }
+    sb.append("</OperationLog>\n");
+    try
+    {
+      stream.write( sb.toString().getBytes());
+      return true;
+    }
+    catch(Exception s)
+    { return xml_utils.setError("OpLog Exception="+s.getClass()+":"+
+                s.getMessage());
+    }
+  }
  
+  /**
+  * Implements the IXmlIO interface to let the OperationLog "read" itself
+  *
+  * @param stream  the InputStream from which the data in xml format is read
+  * 
+  *
+  * @return  true if successful otherwise false
+  */
+  public boolean XMLread( InputStream stream )
+  { String Tag;
+    boolean done=false;
+    log = new Vector();
+    while( !done)
+    {
+      Tag = xml_utils.getTag( stream);
+      if( Tag == null)
+        return xml_utils.setError( xml_utils.getErrorMessage());
+      if(!xml_utils.skipAttributes( stream ))
+        return xml_utils.setError( xml_utils.getErrorMessage());
+      if( Tag.equals("/OperationLog"))
+        done=true;
+      else if(!Tag.equals("data"))
+        return xml_utils.setError( "Improper tag name in OpLog");
+      else
+      { String val =xml_utils.getValue( stream );
+        if( val == null)
+          return xml_utils.setError( xml_utils.getErrorMessage());
+        log.addElement( val);
+      }
+    }
+    return true;
+  }
+
+
   /**
    *  Convert the log to a String consisting of the first characters of
    *  the log entries.

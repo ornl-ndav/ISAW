@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/06/14 21:12:51  rmikk
+ *  Implements IXmlIO interface
+ *
  *  Revision 1.9  2001/10/17 18:36:23  dennis
  *  The int list is now forced to be in increasing order, with no duplicates.
  *
@@ -66,7 +69,7 @@
 package  DataSetTools.dataset;
 
 import DataSetTools.util.*;
-
+import java.io.*;
 /**
  * The concrete class for an attribute whose value is a list of integers.  
  *
@@ -94,6 +97,12 @@ public class IntListAttribute extends Attribute
     setValue( values );
   }
 
+public IntListAttribute( )
+  {
+    super( "" );
+
+    setValue( new int[0] );
+  }
 
   /**
    * Returns the list of int values of this attribute, as a generic object.
@@ -112,8 +121,14 @@ public class IntListAttribute extends Attribute
    * put in order and duplicates will be removed. 
    */
   public boolean setValue( Object obj )
-  {
-    if ( obj instanceof int[] )
+  { if( obj instanceof String)
+      { this.values = IntList.ToArray( (String) obj );
+        if( this.values == null)
+          return false;
+        if( this.values.length < 1)
+          return false;
+       }
+    else if ( obj instanceof int[] )
       this.values = arrayUtil.make_increasing( (int[])obj );
     else
       return false;
@@ -140,6 +155,14 @@ public class IntListAttribute extends Attribute
     this.values = new int[ values.length ];
     System.arraycopy( values, 0, this.values, 0, values.length );
   }
+
+public boolean XMLwrite( OutputStream stream, int mode )
+    {return xml_utils.AttribXMLwrite( stream, mode, this);
+
+     }
+  public boolean XMLread( InputStream stream )
+    {return xml_utils.AttribXMLread(stream, this);
+    }
 
   /**
    * Combine the value of this attribute with the value of the attribute
