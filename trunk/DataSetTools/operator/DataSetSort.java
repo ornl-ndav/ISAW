@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.9  2001/06/04 20:02:52  dennis
+ *  Modified to use Quick Sort on DataSet, when possible.
+ *
  *  Revision 1.8  2001/06/01 21:18:00  rmikk
  *  Improved documentation for getCommand() method
  *
@@ -206,7 +209,7 @@ public class DataSetSort  extends    DS_EditList
       new_ds = (DataSet)ds.clone();
 
 
-    if ( new_ds.Sort(attr_name, increasing) )
+    if ( new_ds.Sort(attr_name, increasing, DataSet.Q_SORT) )
     {                                          // if sort worked ok, return
                                                // new_ds, or message string
       new_ds.addLog_entry( "Sorted by " + attr_name );
