@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.178  2004/01/06 20:49:46  dennis
+ *  Changed version to 1.6.1 alpha 2
+ *
  *  Revision 1.177  2003/12/30 14:27:55  rmikk
  *  Fixed showing the DataSet Tag twice
  *  Hopefully, files that have no data sets will not be added to the
@@ -655,7 +658,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.6.1 alpha 1";
+          version="1.6.1 alpha 2";
         else
           version=SharedData.VERSION;
 
