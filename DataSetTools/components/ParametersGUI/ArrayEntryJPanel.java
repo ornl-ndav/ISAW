@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/06/30 22:28:11  bouzekc
+ * Changed "Show Items" to "Show Item"
+ *
  * Revision 1.5  2003/06/30 22:22:53  bouzekc
  * Now implements KeyListener and listens for <Enter> key
  * presses in the data entry text field.
@@ -93,7 +96,7 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
   private final String ADD_LABEL      = new String( "Add Item" );
   private final String CHANGE_LABEL   = new String( "Change Value" );
   private final String DONE_LABEL     = new String( "Done" );
-  private final String SHOW_LABEL     = new String( "Show Items" );
+  private final String SHOW_LABEL     = new String( "Show Item" );
   private JList jlist;
   private DefaultListModel jlistModel;
   private JButton Delete;
