@@ -31,9 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/11/27 18:21:19  dennis
+ * Improved documentation and added operator title to constructor java docs.
+ *
  * Revision 1.1  2001/11/21 21:27:44  dennis
  * Example of user-supplied add-on operator.
- *
  *
  */
 package Operators;
@@ -48,18 +50,9 @@ import DataSetTools.peak.*;
 import java.util.*;
 
 /** 
- *  This operator provides a "template" for writing operator "plug-ins" for 
- *  Isaw.  To make a custom operator for use with ISAW, rename this file, then
- *  modify the class name, and title to an appropriate name, such as 
- *  MyOperator.java for the file and MyOperator for the class. Place the 
- *  new file in the Operators subdirectory of the Isaw home directory, or of
- *  your home directory.  Next, modify the parameters, command name and 
- *  the calculation performed as needed.  This template includes a main 
- *  program that can be used to test the operator separately.  You should also
- *  modify the main program appropriately, to separately test your operator.
- *  The operator must be compiled before Isaw is started, so that Isaw can 
- *  load the class file.  PLEASE ALSO REPLACE THE TEMPLATE COMMENTS WITH 
- *  COMMENTS APPROPRIATE FOR YOUR OPERATOR.
+ *  This operator produces a DataSet with one entry, a Data block giving the
+ *  integrated intensity of a peak over a specified interval, as a tabulated
+ *  function of the scattering angle 2*theta.
  */
 public class PeakVsAngle extends GenericSpecial
 {
@@ -67,8 +60,8 @@ public class PeakVsAngle extends GenericSpecial
 
  /* ------------------------ Default constructor ------------------------- */ 
  /** 
-  *   Default constructor that is used when the parameters will be
-  *   set later
+  *  Creates operator with title "Peak Vs Angle" and a  default list of
+  *  parameters.
   */  
   public PeakVsAngle()
   {
@@ -78,7 +71,11 @@ public class PeakVsAngle extends GenericSpecial
  /* ---------------------------- Constructor ----------------------------- */ 
  /** 
   *  Construct a PeakVsAngle operator that integrates the peak values over
-  *  the interval [a,b].
+  *  the interval [a,b].    
+  *  Creates operator with title "Peak Vs Angle" and the specified list
+  *  of parameters.  The getResult method must still be used to execute
+  *  the operator.
+
   *
   *  @param  ds     DataSet for which the integrated peak intensity vs group 
   *                 angle will be calculated. 
@@ -125,9 +122,11 @@ public class PeakVsAngle extends GenericSpecial
  /** 
   *  Executes this operator using the values of the current parameters.
   *
-  *  @return  If successful, this template just returns a String indicating
-  *           what the paramters were, and that the operator executed.  The
-  *           code that does the work of the operator goes here. 
+  *  @return  If successful, this operator produces a DataSet containing
+  *  the integrated intensity of a peak over the specified interval [a,b].
+  *  If the original DataSet is null, or the interval is invalid, or some
+  *  Data block of the original DataSet does not have a detector position
+  *  attribute, an error message is returned.
   */
   public Object getResult()
   {
