@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2001/07/02 16:41:40  dennis
+ *  Added methods:
+ *    getAttribute( index )
+ *    getAttribute( name )
+ *
  *  Revision 1.14  2001/04/25 19:03:32  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -579,10 +584,35 @@ public float getY_value( float x_value )
 
 
   /**
+   * Get the attribute at the specified index from the list of
+   * attributes. If the index is invalid, this returns null.
+   *
+   * @param  index  The position of the attribute in the list of attributes.
+   */
+  public Attribute getAttribute( int index )
+  {
+    return attr_list.getAttribute( index );
+  }
+
+
+  /**
+   * Get the attribute with the specified name from the list of
+   * attributes.  If the named attribute is not in the list, this
+   * returns null.
+   *
+   * @param  name  The name of the attribute value to get.
+   */
+  public Attribute getAttribute( String name )
+  {
+    return attr_list.getAttribute( name );
+  }
+
+
+  /**
    * Get the value of the attribute at the specified index from the list of
    * attributes. If the index is invalid, this returns null.
    *
-   * @param  name  The name of the attribute value to get.
+   * @param  index  The position of the attribute in the list of attributes.
    */
   public Object  getAttributeValue( int index )
   {
@@ -600,7 +630,6 @@ public float getY_value( float x_value )
   {
     return attr_list.getAttributeValue( name );
   }
-
 
 
   /**
