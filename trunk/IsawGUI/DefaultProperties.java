@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2002/06/12 19:08:59  pfpeterson
+ *  Fixed a problem with the name of the jar file appearing in the
+ *  properties. Also (small optimization) changed the default
+ *  string to be built using a string buffer.
+ *
  *  Revision 1.10  2002/05/29 21:39:17  pfpeterson
  *  Apply fixSeparator to ISAW_HOME directory and remove the
  *  leading '/' if it contains a ':'.
@@ -212,6 +217,10 @@ public class DefaultProperties{
         index=classFile.indexOf(className);
         classFile=classFile.substring(0,index);
         classFile=FilenameUtil.fixSeparator(classFile);
+        if(injar){
+            index=classFile.lastIndexOf("/");
+            if(index>=0) classFile=classFile.substring(0,index);
+        }
         if(classFile.indexOf(":")>0 && classFile.startsWith("/")){
             classFile=classFile.substring(1,classFile.length());
         }
@@ -236,83 +245,88 @@ public class DefaultProperties{
      * Build the default string for the properties file
      */
     private String defaultString(){
-        String rs;
+        StringBuffer rs=new StringBuffer();
+        String defstr="";
+        String eol=newline;
 
-        rs=  "#"+newline
-            +"# This is your ISAW properties file ... "+newline
-            +"# THE DIRECTORIES ON YOUR SYSTEM MUST"+newline
-            +"#   MATCH THOSE LISTED IN THIS FILE"+newline
-            +"#"+newline
-            +"# The '#' symbol denotes a commented line"+newline
-            +"#"+newline
-            +newline
-            +"#"+newline
-            +"# Directory Options";
+        rs.append("#").append(eol)
+            .append("# This is your ISAW properties file ... ").append(eol)
+            .append("# THE DIRECTORIES ON YOUR SYSTEM MUST").append(eol)
+            .append("#   MATCH THOSE LISTED IN THIS FILE").append(eol)
+            .append("#").append(eol)
+            .append("# The '#' symbol denotes a commented line").append(eol)
+            .append("#").append(eol)
+            .append(eol)
+            .append("#").append(eol)
+            .append("# Directory Options");
         if(IsawHome.equals("DEFAULT")){
-            rs=rs+" - replace the word DEFAULT with"+newline
-                 +"# the location of the ISAW home directory";
+            rs.append(" - replace the word DEFAULT with").append(eol)
+                .append("# the location of the ISAW home directory");
         }
-        rs=rs+newline+"#"+newline
-            +"ISAW_HOME="+IsawHome+newline
-            +"#GROUP_HOME="+UserHome+separator+"ipns"+newline;
+        rs.append(eol).append("#").append(eol)
+            .append("ISAW_HOME=").append(IsawHome).append(eol)
+            .append("#GROUP_HOME=").append(UserHome).append(separator)
+            .append("ipns").append(eol);
         if(IsawHome.equals("DEFAULT")){
-            rs=rs+"#Help_Directory="+IsawHome+separator+"IsawHelp"+newline
-                +"#Script_Path="+IsawHome+separator+"Scripts"+newline
-                +"#Docs_Directory="+IsawHome+separator+"docs"+separator
-                +"html"+newline
-                +"#Data_Directory="+IsawHome+separator+"SampleRuns"+newline
-                +"#Instrument_Macro_Path="+IsawHome+newline
-                +"#User_Macro_Path="+IsawHome+newline
-                +newline;
-        }else{
-            rs=rs+"Help_Directory="+IsawHome+separator+"IsawHelp"+newline
-                +"Script_Path="+IsawHome+separator+"Scripts"+newline
-                +"Docs_Directory="+IsawHome+separator+"docs"+separator
-                +"html"+newline
-                +"Data_Directory="+IsawHome+separator+"SampleRuns"+newline
-                +"Instrument_Macro_Path="+IsawHome+newline
-                +"User_Macro_Path="+IsawHome+newline
-                +newline;
+            defstr="#";
         }
-        rs=rs+"#"+newline
-            +"# Live Data Server Options"+newline
-            +"#"+newline
-            +"Inst1_Name=HRMECS"+newline
-            +"Inst1_Path=zeus.pns.anl.gov;6088"+newline
-            +newline
-            +"#"+newline
-            +"# Remote Data Server Options"+newline
-            +"#"+newline
-            +"IsawFileServer1_Name=IPNS(zeus)"+newline
-            +"IsawFileServer1_Path=zeus.pns.anl.gov;6089"+newline
-            +"IsawFileServer2_Name=Test(dmikk-Isaw)"+newline
-            +"IsawFileServer2_Path=dmikk.mscs.uwstout.edu;6089"+newline
-            +"NDSFileServer1_Name=Test(dmikk-NDS)"+newline
-            +"NDSFileServer1_Path=dmikk.mscs.uwstout.edu;6008"+newline
-            +newline
-            +"#"+newline
-            +"# Screen Size in percentage (<=1) or pixels (>1)"+newline
-            +"#"+newline
-            +"Isaw_Width=0.8"+newline
-            +"Isaw_Height=0.4"+newline
-            +"Tree_Width=0.2"+newline
-            +"Status_Height=0.2"+newline
-            +newline
-            +"#"+newline
-            +"# Viewer Options"+newline
-            +"#"+newline
-            +"Default_Instrument=HRCS"+newline
-            +"ColorScale=Optimal"+newline
-            +"#RebinFlag=false"+newline
-            +"#HScrollFlag=false"+newline
-            +"#ViewAltitudeAngle=20.0"+newline
-            +"#ViewAzimuthAngle=45.0"+newline
-            +"#ViewDistance=4.5"+newline
-            +"#ViewGroups=Medium"+newline
-            +"#ViewDetectors=SOLID"+newline
-            +"#Brightness=40"+newline
-            +"#Auto-Scale=0.0"+newline
-            ;
+        rs.append(defstr).append("Help_Directory=").append(IsawHome)
+            .append(separator).append("IsawHelp").append(eol)
+            .append(defstr).append("Script_Path=").append(IsawHome)
+            .append(separator).append("Scripts").append(eol)
+            .append(defstr).append("Docs_Directory=").append(IsawHome)
+            .append(separator).append("docs").append(separator)
+            .append("html").append(eol)
+            .append(defstr).append("Data_Directory=").append(IsawHome)
+            .append(separator).append("SampleRuns").append(eol)
+            .append(defstr).append("Instrument_Macro_Path=").append(IsawHome)
+            .append(eol)
+            .append(defstr).append("User_Macro_Path=").append(IsawHome)
+            .append(eol)
+            .append(eol)
+            .append("#").append(eol)
+            .append("# Live Data Server Options").append(eol)
+            .append("#").append(eol)
+            .append("Inst1_Name=HRMECS").append(eol)
+            .append("Inst1_Path=zeus.pns.anl.gov;6088").append(eol)
+            .append("Inst2_Name=QUIP").append(eol)
+            .append("Inst2_Path=vulcan.pns.anl.gov;6088").append(eol)
+            .append(eol)
+            .append("#").append(eol)
+            .append("# Remote Data Server Options").append(eol)
+            .append("#").append(eol)
+            .append("IsawFileServer1_Name=IPNS(zeus)").append(eol)
+            .append("IsawFileServer1_Path=zeus.pns.anl.gov;6089").append(eol)
+            .append("IsawFileServer2_Name=Test(dmikk-Isaw)").append(eol)
+            .append("IsawFileServer2_Path=dmikk.mscs.uwstout.edu;6089")
+            .append(eol)
+            .append("NDSFileServer1_Name=Test(dmikk-NDS)").append(eol)
+            .append("NDSFileServer1_Path=dmikk.mscs.uwstout.edu;6008")
+            .append(eol)
+            .append(eol)
+            .append("#").append(eol)
+            .append("# Screen Size in percentage (<=1) or pixels (>1)")
+            .append(eol)
+            .append("#").append(eol)
+            .append("Isaw_Width=0.8").append(eol)
+            .append("Isaw_Height=0.4").append(eol)
+            .append("Tree_Width=0.2").append(eol)
+            .append("Status_Height=0.2").append(eol)
+            .append(eol)
+            .append("#").append(eol)
+            .append("# Viewer Options").append(eol)
+            .append("#").append(eol)
+            .append("Default_Instrument=HRCS").append(eol)
+            .append("ColorScale=Optimal").append(eol)
+            .append("#RebinFlag=false").append(eol)
+            .append("#HScrollFlag=false").append(eol)
+            .append("#ViewAltitudeAngle=20.0").append(eol)
+            .append("#ViewAzimuthAngle=45.0").append(eol)
+            .append("#ViewDistance=4.5").append(eol)
+            .append("#ViewGroups=Medium").append(eol)
+            .append("#ViewDetectors=SOLID").append(eol)
+            .append("#Brightness=40").append(eol)
+            .append("#Auto-Scale=0.0").append(eol);
 
       /* This causes more problems with nexus than it fixes. These
          lines are taken from the original code that was inside Isaw.java.
@@ -322,7 +336,7 @@ public class DefaultProperties{
 	 opw.write("\n");   
 	 } */
 
-        return rs;
+        return rs.toString();
     }
 
     /** **************************************************************
