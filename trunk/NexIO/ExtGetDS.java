@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2003/12/08 23:04:58  rmikk
+ * Reads in data for Attribute.USER attribute
+ *
  * Revision 1.17  2003/12/08 20:48:28  rmikk
  * Added code to retrieve instrumentType, DataSet Type,Run title, title, Number of
  *     pulses, End date, end time, etc
@@ -212,7 +215,7 @@ public class ExtGetDS{
       DataSetFactory DSF = new DataSetFactory( "" ) ;
       DS = DSF.getTofDataSet(instrType) ; 
       DS.setAttributeList( AL ) ;
-      DataSetFactory.addOperators( DS,instrType );
+      //DataSetFactory.addOperators( DS,instrType );
       DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType)); 
       DS.setAttribute( new StringAttribute( Attribute.DS_TYPE,Attribute.SAMPLE_DATA));
      
@@ -326,10 +329,13 @@ public class ExtGetDS{
     AttributeList Res = new AttributeList() ;
    
     Res.addAttribute( new StringAttribute(  Attribute.FILE_NAME , filename ) ) ;
-    Attribute A = NexIO.Util.ConvertDataTypes.
-                    CreateStringAttribute(Attribute.USER, node.getAttrValue( "user"));
-    if( A != null)
-      Res.setAttribute(A);
+    NxNode userNode = EntryNode.getChildNode("user");
+    
+    String user= null;
+    if( userNode != null)
+          user = NexIO.Util.ConvertDataTypes.StringValue( userNode.getNodeValue( ));
+    if( user != null)
+      Res.setAttribute(new StringAttribute(Attribute.USER, user));
     
     
     NxNode ET = EntryNode.getChildNode("end_time");
