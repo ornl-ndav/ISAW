@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/02/05 17:17:14  dennis
+ * Added getDocumentation() method. (Joshua Olson)
+ *
  * Revision 1.5  2002/11/27 23:29:54  pfpeterson
  * standardized header
  *
@@ -139,6 +142,69 @@ public class LoadASCII extends GenericLoad
     parameters = new Vector();
     addParameter( new Parameter("Filename", "C:/") );
   }
+  
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */                                                                                    
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");                                                 
+    s.append("@overview  This operator provides an example of an operator ");
+    s.append("that reads data for one histogram from an ASCII text file ");
+    s.append("and stores the data in a DataSet.  The data format that is ");
+    s.append("read is basically just (x, y) pairs in columns with some ");
+    s.append("preliminary information lines.");
+    s.append("\n\n Specifically, the file format is as follows: \n\n ");
+    s.append("#1. Five lines of text listing a title, units and labels in ");
+    s.append("the following order:\n"); 
+    s.append(" a) Data Set Title \n");
+    s.append(" b) Units for the x-axis \n");
+    s.append(" c) Label for the x-axis \n");
+    s.append(" d) Units for the y-axis \n");
+    s.append(" e) Label for the y-axis \n");
+    s.append("Note:  In order for the data set created ");
+    s.append("by this operator to be merged with another data set, the ");
+    s.append("units for the x and y axes MUST BE THE SAME as for the ");
+    s.append("other DataSet.\n\n");
+    s.append("#2. One line containing the number of bins in this histogram\n");
+    s.append("\n#3. The list of (x, y) values.  The list should alternate, ");
+    s.append("starting with one x value on a line, then one y value on its ");
+    s.append("own line, then an x value, etc.  So it looks like this: \n");
+    s.append("(x value)\n(y value)\n(x value)\n (etc.) \n\n There must be ");
+    s.append("one more x value than y value.  To load data for a 'tabulated ");
+    s.append("function' instead of for a histogram, change the size of the ");
+    s.append("array of x values to be equal to the size of the array of y ");
+    s.append("values, and remove the line that reads in the last bin boundary.");                                                                        //     
+    s.append("@assumptions The given file 'file_name' is an ASCII text file, ");
+    s.append("and is EXACTLY formatted as discussed in the 'Overview' section.");                                                                       //                                                              
+    s.append("@algorithm The file 'user_name' is opened and the title, x ");
+    s.append("units, x label, y units, and y label (all of these are String ");
+    s.append("objects) are obtained from the file. \n\n The operator obtains ");
+    s.append("all the x and y values (all of these are floats) from the file.");  
+    s.append("\n\nInstead of just creating a DataSet (to put the x and y ");
+    s.append("values into), an object of type DataSetFactory is used to ");
+    s.append("create a DataSet.  Using the title, x units, x label, y units, ");
+    s.append("and y label from 'file_name', DataSetFactory establishes the ");
+    s.append("title, x units, etc. for the DataSet.  (An object of type ");
+    s.append("DataSetFactory has the capability of producing multiple empty ");
+    s.append("DataSets, all  having the same title, x units, etc.)  The ");
+    s.append("purpose of using an object of type DataSetFactory in this ");
+    s.append("case is to give the DataSet a set of operators. \n\n");  
+    s.append("The x and y values are now added to an object of type Data ");
+    s.append("called 'd', and 'd' is added to the DataSet. \n\n"); 
+    s.append("If no errors have thus far been generated, then the file was ");
+    s.append("loaded successfully.  A log entry indicating this is added to");
+    s.append(" the DataSet, and the DataSet is returned.");
+    s.append("@param file_name The fully qualified ASCII file name");
+    s.append("@return If successful, this returns a new DataSet with the ");
+    s.append("histogram that was read from the data file. \n");
+    s.append("If unsuccessful, an error string is returned.");
+    s.append("@error If execution of the operator generates any exception, ");
+    s.append("an error string is returned.");
+    return s.toString();
+  }  
 
  /* ------------------------------ getResult ------------------------------- */
  /** 
