@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/03/20 22:01:05  pfpeterson
+ * First implementation of equals(Object). However, method will sometimes
+ * return an incorrect true b/c not *all* of the instance variables are
+ * checked, just many of the important ones.
+ *
  * Revision 1.10  2003/01/31 22:54:00  pfpeterson
  * Added a new method which allows updating the value of hkl without then
  * recalculating the real-space and pixel representations. This is useful
@@ -925,6 +930,46 @@ public class Peak{
     return peak;
   }
   
+  /* --------------------- equals method --------------------- */
+  /**
+   * Returns true if the Object is a Peak, with the same hkl, real
+   * space representation, pixel representation, and intensities.
+   */
+  public boolean equals(Object obj){
+    if(obj==null) return false; // one of the general rules according to java
+    if(!(obj instanceof Peak)) return false; // object must be a peak
+
+    Peak other=null;
+    try{ // convert for convenience
+      other=(Peak)obj;
+    }catch(ClassCastException e){
+      return false;
+    }
+    if(other==null) return false; // something went wrong in casting
+
+    // check peak index
+    if(this.h != other.h) return false;
+    if(this.k != other.k) return false;
+    if(this.l != other.l) return false;
+
+    // check real space
+    if(this.xcm != other.xcm) return false;
+    if(this.ycm != other.ycm) return false;
+    if(this.wl  != other.wl ) return false;
+
+    // check pixel space
+    if(this.x != other.x) return false;
+    if(this.y != other.y) return false;
+    if(this.z != other.z) return false;
+
+    // check intensities
+    if(this.ipkobs != other.ipkobs) return false;
+    if(this.inti   != other.inti  ) return false;
+    if(this.sigi   != other.sigi  ) return false;
+
+    return true;
+  }
+
   /* ------------------- toString method -------------------- */
   /**
    *  Format the toString method to be the full version of how it
