@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/05/29 22:44:17  dennis
+ * Added x and i parameters to the XInfo_label() method to allow changing the
+ * label when the cursor is moved.
+ *
  * Revision 1.1  2002/04/08 15:39:04  dennis
  * Base class for operators that provide information about the
  * X Axis
@@ -100,9 +104,13 @@ abstract public class XAxisInformationOp extends    DS_Information
   /**
    * Get string label for the xaxis information.
    *
+   *  @param  x    the x-value for which the axis label is to be obtained.
+   *  @param  i    the index of the Data block that will be used for obtaining
+   *               the label.
+   *
    *  @return  String describing the information provided by X_Info().
    */
-  abstract public String XInfo_label();
+  abstract public String XInfo_label( float x, int i );
 
 
 
