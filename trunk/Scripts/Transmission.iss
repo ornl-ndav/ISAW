@@ -14,11 +14,12 @@
 # @return  null or an ErrorString.   The result will be written to a file
 
 
-$ SampleFileName    LoadFileString("C:\ISAW\SampleRuns\ins\sand20266.run")   Enter Sample run
-$ EmptyFileName     LoadFileString("C:\ISAW\SampleRuns\ins\sand20275.run")    Enter Empty run
-$ useCadmiumRun     Boolean( false)    Use CadmiumRun?
-$ CadmiumFileName   LoadFileString("C:\ISAW\SampleRuns\ins\sand20281.run")    Enter Cadmium Run
-$ SaveFileName      SaveFileString("C:\ISAW\SampleRuns\T1999019934.d2t")    Dat file to save Transm results
+$ SampleFileName    LoadFileString("C:\new_das_runs\sand20283.run")   Enter Sample run
+$ EmptyFileName     LoadFileString("C:\new_das_runs\sand20287.run")    Enter Empty run
+$ useCadmiumRun     Boolean( true)    Use CadmiumRun?
+$ CadmiumFileName   LoadFileString("C:\new_das_runs\sand20291.run")    Enter Cadmium Run
+$ DataFileName   LoadFileString("C:\new_das_runs\sand20290.run")    Enter Data Run
+$ SaveFileName      SaveFileString("C:\test_output\T2028320287.cf")    Dat file to save Transm results
 $ NeutronDelay      Float( .0011)     Neutron Delay Fraction
 $ polyfitIndx1      Integer( 11)      First time channel for poly fit, or -1 if no fit
 $ polyfitIndx2      Integer( 68)      Last time channel for poly fit, or -1 if no fit
@@ -30,12 +31,14 @@ $ Command = Transmission
 $ Category = Operator, Generic, TOF_SAD, Scripts
 load SampleFileName, "Samp"
 load EmptyFileName, "Empty"
+load DataFileName, "Data"
 if useCadmiumRun == true
   load CadmiumFileName, "Cadm"
-  DS = CalcTransmission( Samp[0],Empty[0],Cadm[0],Samp[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+  DS = CalcTransmission( Samp[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
 else
-   DS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Samp[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+   DS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
 endif
+#send DS
 PrintFlood( DS,SaveFileName, "Transmission")
 Display "Finished"
 
