@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/07/26 20:52:23  rmikk
+ * Changed Test program
+ *
  * Revision 1.3  2001/07/26 13:52:52  rmikk
  * Removed Dependence on NDS package
  *
@@ -950,7 +953,8 @@ public class NexNode implements NxNode
        else if( c == '6')
          {Object X = NN.getNodeValue();
           if( NN!=null)
-            { System.out.println("Val="+new NxNodeUtils().Showw(X));
+	    { System.out.println("Class&Val="+X.getClass().toString()+","+
+                       new NxNodeUtils().Showw(X));
             }
           else
              System.out.println("Check error message please");  
