@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/07/09 14:53:48  dennis
+ *  The method to get a y-value at a specified x-value no longer gets
+ *  the full list of x-values and does a binary search.  It now uses
+ *  the XScale methods getI_GLB(x) and getX(i).
+ *
  *  Revision 1.10  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -263,8 +268,9 @@ public class FunctionTable extends    TabulatedData
          x_value > x_scale.getEnd_x()    )
       return 0;
 
-    float x_vals[] = x_scale.getXs();
-    int index = arrayUtil.get_index_of( x_value, x_vals );
+    int index = x_scale.getI_GLB( x_value );
+    if ( index < 0 )
+      return 0;
 
     if ( smooth_flag == IData.SMOOTH_NONE )
       return y_values[index];
@@ -272,8 +278,8 @@ public class FunctionTable extends    TabulatedData
     if ( index == y_values.length - 1 )               // last value, so can't
       return y_values[ y_values.length - 1 ];         // interpolate.
   
-    float x1 = x_vals[index];  
-    float x2 = x_vals[index+1];
+    float x1 = x_scale.getX( index );  
+    float x2 = x_scale.getX( index+1 );
 
     if ( x1 == x2 )        
       return y_values[index];                          // duplicate x values
