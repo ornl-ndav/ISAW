@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2003/12/15 00:37:39  rmikk
+ *  Added a state for the Contour View to remember the new button, ShowAll in contour view
+ *
  *  Revision 1.25  2003/10/28 16:19:10  rmikk
  *  Fixed some spelliing errors in state names
  *
@@ -124,7 +127,7 @@ public class ViewerState  implements Serializable
   /**if false data has not been set
   */
   public static final String CONTOUR_DATA      =  "Contour.Data";
-
+  public static final String CONTOUR_SHOWALL   ="Show All Groups";
   public static final String TABLE_TS          ="Time Slice Table Data Set";
   public static final String TABLE_TS_ERR          ="TableTS_ShowError";
   public static final String TABLE_TS_IND          ="TableTS_ShowIndex";
@@ -205,6 +208,8 @@ public class ViewerState  implements Serializable
       state.put( TABLE_DATA, "");
       Integer contour_style=SharedData.getIntegerProperty(CONTOUR_STYLE) ;
       state.put(CONTOUR_STYLE, contour_style );
+
+      state.put(CONTOUR_SHOWALL, new Boolean(true));
 
       state.put( TABLE_TS, "");
       state.put( TABLE_TS_ERR , new Boolean( false)); 
