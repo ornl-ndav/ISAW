@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2001/06/04 20:02:50  dennis
+ *  Modified to use Quick Sort on DataSet, when possible.
+ *
  *  Revision 1.8  2001/06/01 21:18:00  rmikk
  *  Improved documentation for getCommand() method
  *
@@ -290,10 +293,17 @@ public class DataSetMultiSort  extends    DS_EditList
                                    // now try to sort on each of the attributes
                                    // requested.  If the sort succeeds, add a 
                                    // a log entry, else exit with an error
+ 
+    int     sort_type = DataSet.Q_SORT;  // we can use Q_SORT the first sort 
+                                         // but since it is not a stable sort,
+                                         // the later sorts must be BUBBLE sort
     if ( use_it_3 )
     {
-      if ( new_ds.Sort(attr_name_3, increasing_3) )
+      if ( new_ds.Sort( attr_name_3, increasing_3, sort_type ) )
+      {
+        sort_type = DataSet.BUBBLE_SORT;
         new_ds.addLog_entry( "Sorted by " + attr_name_3 );
+      }
       else
       {
         ErrorString message = new ErrorString(
@@ -304,8 +314,11 @@ public class DataSetMultiSort  extends    DS_EditList
 
     if ( use_it_2 )
     {
-      if ( new_ds.Sort(attr_name_2, increasing_2) )
+      if ( new_ds.Sort( attr_name_2, increasing_2, sort_type ) )
+      {
+        sort_type = DataSet.BUBBLE_SORT;
         new_ds.addLog_entry( "Sorted by " + attr_name_2 );
+      }
       else
       {
         ErrorString message = new ErrorString(
@@ -316,7 +329,7 @@ public class DataSetMultiSort  extends    DS_EditList
 
     if ( use_it_1 )
     {
-      if ( new_ds.Sort(attr_name_1, increasing_1) )
+      if ( new_ds.Sort( attr_name_1, increasing_1, sort_type ) )
         new_ds.addLog_entry( "Sorted by " + attr_name_1 );
       else
       { 
