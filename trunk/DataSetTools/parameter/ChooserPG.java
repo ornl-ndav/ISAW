@@ -30,6 +30,10 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.27  2004/01/14 19:26:59  bouzekc
+ *  Now checks the Vector of values in addItems() to be sure it is not null.
+ *  initGUI() now directly calls addItems().
+ *
  *  Revision 1.26  2004/01/14 19:20:23  bouzekc
  *  Added several more checks for null values to head potential bugs off.
  *
@@ -258,13 +262,17 @@ public abstract class ChooserPG extends ParameterGUI {
   }
 
   /**
-   * Add a set of items to the vector of choices at once.
+   * Add a set of items to the vector of choices at once.  This also sets the
+   * value of this ChooserPG to the first item in the list of values.  If the
+   * parameter is null, this does  nothing.
    *
    * @param values The Vector of values to add.
    */
   public void addItems( Vector values ) {
-    for( int i = 0; i < values.size(  ); i++ ) {
-      addItem( values.elementAt( i ) );
+    if( values != null ) {
+      for( int i = 0; i < values.size(  ); i++ ) {
+        addItem( values.elementAt( i ) );
+      }
     }
   }
 
@@ -339,18 +347,9 @@ public abstract class ChooserPG extends ParameterGUI {
       this.addItem( initVal );
     }
 
-    //add the initial values to the list if possible
-    if( ( init_values != null ) && ( init_values.size(  ) > 0 ) ) {
-      if( init_values.size(  ) == 1 ) {
-        this.setValue( init_values.elementAt( 0 ) );
-      } else {
-        for( int i = 0; i < init_values.size(  ); i++ ) {
-          this.addItem( init_values.elementAt( i ) );
-        }
-      }
-    } else {
-      // something is not right, should throw an exception
-    }
+    //addItems will check to see if the Vector is null and set the 
+    //value to the first element
+    addItem( init_values );
 
     // set up the combobox
     setEntryWidget( new EntryWidget( new HashEntry( this.vals ) ) );
