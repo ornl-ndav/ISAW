@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2005/03/23 02:03:12  dennis
+ * Removed unused variables.
+ *
  * Revision 1.5  2004/01/24 23:09:37  bouzekc
  * Removed unused imports.
  *
@@ -51,8 +54,6 @@ public class FileSeparator extends JFrame implements ListSelectionListener
 {
     
 	private Vector vrunfiles;
-	private Vector vsamplefiles;
-	private Vector vbackgroundfiles;
 	private DefaultListModel listModelA;  
 	private DefaultListModel listModelB;  
 	private DefaultListModel listModelC;  
@@ -92,18 +93,12 @@ public class FileSeparator extends JFrame implements ListSelectionListener
 	    chkGroupingButton = new JButton();
 	    removeNoisyDetButton = new JButton();
 	    
-	   
-        
         vrunfiles = new Vector();
-        vsamplefiles = new Vector();
-        vbackgroundfiles = new Vector();
-        
         
         String[] fileList = new File(dir).list();//dir listing
      
         for(int i = 0; i<fileList.length; i++)
         {
-           
             vrunfiles.addElement( fileList[i]);
            // if( fileList[i].toString().endsWith(".RUN")||fileList[i].toString().endsWith(".run"))
             if( fileList[i].toString().endsWith(".RUN")||fileList[i].toString().endsWith(".run")||fileList[i].toString().endsWith("RUN;1"))
