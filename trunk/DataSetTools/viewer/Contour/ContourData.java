@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2003/12/15 18:24:07  rmikk
+ *  Used the new viewer states to retain the detector number.
+ *
  *  Revision 1.21  2003/12/15 00:39:48  rmikk
  *  Can now view the selected groups. The unselected groups are black(0)
  *
@@ -182,12 +185,16 @@ public class ContourData
   public ContourData( DataSet data_set , ViewerState state)
    {
       this.state = state;
+     
       ds = data_set;
       dsSave = data_set;
       maxvalue = 0;
       minvalue = 9999999;
-      if( state != null)
+      if( state != null){
         showAllGroups = state.get_boolean( ViewerState.CONTOUR_SHOWALL);
+        DetNum = state.get_int( ViewerState.CONTOUR_DETNUM);
+      }else
+        this.state = new ViewerState();
       //Load area detector data
       //Build a vector holding the row and column entries
       maxrows = -1;
@@ -728,9 +735,16 @@ public class ContourData
 
    public void SetUpDetNums(){
       DetNums = Grid_util.getAreaGridIDs( ds);
+      DetNum = state.get_int( ViewerState.CONTOUR_DETNUM);
+      int f = FindIndex( DetNums, DetNum);
+      if( f < 0) DetNum = -1;
       if( DetNums != null)
         if( DetNums.length >0){
-          DetNum = DetNums[0];
+          
+          if(DetNum < 0)
+               DetNum = DetNums[0];
+          else
+              state.set_int( ViewerState.CONTOUR_DETNUM, DetNum);
           grid = (UniformGrid)(Grid_util.getAreaGrid( ds, DetNum));
           grid.setDataEntriesInAllGrids(ds);
           SetUpGroups();
@@ -760,13 +774,20 @@ public class ContourData
       {}
     else if( mode == 0)n++;
     JComponent[] Res = new JComponent[n];
-    if( DetChoices == null) if( DetNums != null) if(DetNums.length >=2){
+    if( DetNums != null) if(DetNums.length >=2){
       String[] choices = new String[ DetNums.length];
       for( int i =0; i< choices.length; i++)
         choices[i] = ""+DetNums[i];
       DetChoices = new LabelCombobox("Detectors", choices);
       DetChoices.cbox.addActionListener( new DetectorActionListener());
-      Res[n-1] = DetChoices;
+      DetNum = state.get_int( ViewerState.CONTOUR_DETNUM);
+      int find = FindIndex(DetNums, DetNum);
+      if( find < 0)
+        DetNum = DetNums[0];
+      else
+         DetChoices.setSelected( find);
+      
+      
     }
     if( mode != 0) return null;
     JCheckBox ShowAll = new JCheckBox( "Show All Groups");
@@ -777,7 +798,8 @@ public class ContourData
     ShowAll.setSelected( state.get_boolean( ViewerState.CONTOUR_SHOWALL));
     Res[0] = new JPanel( new GridLayout(1,1));
     Res[0].add( ShowAll);
-    
+    if( n > 1)
+      Res[n-1] = DetChoices;
     
     return Res;
   }
@@ -796,10 +818,12 @@ public class ContourData
     }catch( Exception ss){};
     if( choice != DetNum){
       int oldDetNum = DetNum;
+      state.set_int( ViewerState.CONTOUR_DETNUM, choice);
       DetNum = choice;
       grid = (UniformGrid)Grid_util.getAreaGrid( ds, DetNum);
       if( grid == null){
          DetNum = oldDetNum;
+         state.set_int( ViewerState.CONTOUR_DETNUM, DetNum);
          return;
       }
       grid.setDataEntriesInAllGrids(ds);
@@ -823,5 +847,10 @@ public class ContourData
     }
 
  }
-
+ private int FindIndex( int[] list, int elt){
+   if( list == null) return -1;
+   for( int i=0; i< list.length; i++)
+      if( list[i]==elt) return i;
+   return -1;
+ }
 }
