@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/08/17 23:03:44  bouzekc
+ * Fixed off by one error in isValid() when reporting what line a script
+ * error is on.
+ *
  * Revision 1.6  2003/07/14 20:59:11  bouzekc
  * Removed a println() which printed out an error message if
  * a class definition was not found at the top of a python
@@ -122,7 +126,7 @@ public class PyScript extends Script{
       }          
       if(DEBUG) System.out.println(">>"+line+"<<");
       DataSetTools.util.SharedData.addmsg( 
-        "Script syntax error on line " + i + ".");
+        "Script syntax error on line " + ( i + 1 ) + ".");
       valid=new Boolean(false);
       return valid.booleanValue();
     }
