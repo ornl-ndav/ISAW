@@ -12,6 +12,9 @@ package OverplotView.components.containers;
  *
  * changelog
  *  $Log$
+ *  Revision 1.6  2000/07/27 16:36:08  neffk
+ *  implemented GraphableDataManager as an extension of a Hashtable
+ *
  *  Revision 1.5  2000/07/12 21:52:23  neffk
  *  changed constructor so that it works even when no data is passed in
  *
@@ -81,7 +84,6 @@ public class GraphableDataManager
     color_list[1] = new DataColor( Color.green );
     color_list[2] = new DataColor( Color.blue );
     color_list[3] = new DataColor( Color.black );
-//    setColors( color_list );
   }
 
 
@@ -102,37 +104,43 @@ public class GraphableDataManager
     calculateRanges();
     graph.clear();
 
-    GraphableData data = null;
+
+    //retrieve data
+    GraphableData[] data = new GraphableData[ size() ];
     Collection listGDV = values();  //get GraphableData objects
     Object it = listGDV.iterator();
 
     int count = 0;
     while(  ((Iterator)it).hasNext()  )
-    {
-//      System.out.println( "adding..." );
-   
-      data = (GraphableData)((Iterator)it).next();
-      //System.out.println(  data.toString()  );
-      data.setOffset( new Integer(count).floatValue() * abs_offset );
-      RedrawInstruction instruction = new RedrawInstruction(
-           false,
-           true,
-           xrange,
-           yrange,
-           data  );
+      data[ count++ ] = (GraphableData)((Iterator)it).next();
 
-      graph.redraw( instruction );
-      count++;
-    }
+    //add data to graph
+    for( int i=0;  i<data.length;  i++ )
+      for( int j=0;  j<data.length; j++ )
+      {
+        if(  data[j] == null  )
+        {
+          System.out.println( "null data block" );
+        }
+        else if(  data[j].getSelectionOrder() == i  )
+        {
+          data[j].setOffset( new Integer(count).floatValue() * abs_offset );
+          RedrawInstruction instruction = new RedrawInstruction( false,
+                                                                 true,
+                                                                 xrange,
+                                                                 yrange,
+                                                                 data[j]  );
+          graph.redraw( instruction );
+          count++;
+        }
+      }
 
     //redraw graph
-//    System.out.println( "drawing..." );
-    RedrawInstruction instruction = new RedrawInstruction(
-         true,
-         false,
-         xrange,
-         yrange,
-         null );
+    RedrawInstruction instruction = new RedrawInstruction( true,
+                                                           false,
+                                                           xrange,
+                                                           yrange,  
+                                                           null );
     graph.redraw( instruction );
   }
 
@@ -247,9 +255,9 @@ public class GraphableDataManager
     //if there's nothing in this container to manage
     if( size() == 0 ) 
     {
-      xrange = new floatPoint2D( 0, 0 );
-      yrange = new floatPoint2D( 0, 0 );
-      //return;
+      xrange = new floatPoint2D( 0, 1 );
+      yrange = new floatPoint2D( 0, 1 );
+      return;
     }
 
     //otherwise...
@@ -427,6 +435,14 @@ public class GraphableDataManager
   }
 
 
+
+  /**
+   *
+   */
+  public int getNextOrder()
+  {
+    return size();
+  }
 
 }
 
