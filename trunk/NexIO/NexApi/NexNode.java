@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2002/04/01 21:36:39  rmikk
+ * Used the CNexusFile to load large Nexus files faster
+ * Added one more character to Strings to get last letter
+ *
  * Revision 1.6  2002/02/26 15:49:08  rmikk
  * Add the getDimension routine
  * Added a debug field
@@ -63,7 +67,7 @@ import java.lang.reflect.*;
 * nexus file
 */
 public class NexNode implements NxNode
-  {NexusFile NF;
+  {CNexusFile NF;
    Hashtable dirinfo, attrlist;
    Vector Nodelistinfo;
    Vector currentOpenNode;
@@ -80,7 +84,7 @@ public class NexNode implements NxNode
       {errormessage="";
        this.filename = filename;
        try{
-        NF = new NexusFile( filename, NexusFile.NXACC_READ);
+        NF = new CNexusFile( filename, NexusFile.NXACC_READ);
          }
        catch( NexusException s)
 	 {errormessage= NxNodeUtils.ER_BADFILE;//s.getMessage();
@@ -114,7 +118,7 @@ public class NexNode implements NxNode
 	   typeToString.put(new Integer(NexusFile.NX_UINT8),"byte");
        }
    private NexNode(Vector Nodelist, Vector openNode,String filename, 
-                    NexusFile NF , Hashtable LinkInfo )
+                    CNexusFile NF , Hashtable LinkInfo )
      { errormessage="";
        dirinfo=null;
        attrlist= null;
@@ -435,24 +439,39 @@ public class NexNode implements NxNode
                  return null;
                 }
             
-            Object array=CreateMultiArray(0,args[0],iDim,args[1]);
+            // **Object array=CreateMultiArray(0,args[0],iDim,args[1]);
+            int TotLength = 1;
            
-            if(array == null) 
-                return null;
+            if((args[0]<1) ||(iDim == null))
+                TotLength = 0;
+            else
+               for(int i =0; i< args[0];i++)
+                  TotLength = TotLength*iDim[i];
+            
+            
+
+           //** if(array == null) 
+           //**     return null;
            
-            NF.getdata(array);
-            if(debug) System.out.println("-----NxApNode: end get-----");
+            //**NF.getdata(array);
+             Object O = NF.getData( args[1], TotLength);
+            
+            
+              
+         /* **  if(debug) System.out.println("-----NxApNode: end get-----");
             //NF.closedata();
-           
-            Object array1 = linearlizeArray( array,args[0],iDim,args[1]);
-             if(debug) System.out.println("-----NxApNode:Aft linearize-------");
-            if(array1 == null) return null;
+            int[] dd= new int[1];
+            dd[0]=TotalLength;
+            //Object array1 = linearlizeArray( O,args[0],dd,args[1]);
+            // if(debug) System.out.println("-----NxApNode:Aft linearize-------");
+            //if(array1 == null) return null;
+          */
             NxNodeUtils ND= new NxNodeUtils();
            
-            int l=1;
-            for(int i=0;i<args[0];i++) l=l*iDim[i];
-            array=ND.fixUnsignedArray( array1, args[1], 
-                          l);
+            //**int l=1;
+            //**for(int i=0;i<args[0];i++) l=l*iDim[i];
+            Object array=ND.fixUnsignedArray(O, args[1], 
+                          TotLength);
             
             return array;
           }
@@ -690,7 +709,9 @@ public class NexNode implements NxNode
            return (Attr)(new AttrImp( key, keyVal)); 
        
        AttributeEntry AE =(AttributeEntry) keyVal;
-       Object X = getData( key, AE.type, AE.length);
+       int L=AE.length;
+       if(AE.type==NexusFile.NX_CHAR) L++;
+       Object X = getData( key, AE.type, L);
        
        if( X == null)
          {return null; 
@@ -753,7 +774,9 @@ public class NexNode implements NxNode
        // System.out.println("Attname type,lngth="+AttrName+AE.type+","+AE.length);
        // if( AE.type ==  NexusFile.NX_CHAR)
           //  return (Object)(AE.toString());
-        Object X = getData(AttrName, AE.type, AE.length);
+	int L=AE.length;
+	 if( AE.type == NexusFile.NX_CHAR) L++;
+        Object X = getData(AttrName, AE.type, L);
         
            
 	/*if( AE.type == NexusFile.NX_FLOAT32)
