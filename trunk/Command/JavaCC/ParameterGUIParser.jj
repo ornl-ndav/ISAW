@@ -30,6 +30,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2004/01/08 21:10:16  bouzekc
+ * Now more forgiving than before with path separators for file systems.
+ * Allows multiple forward or back slashes for Windows, and multiple
+ * forward slashes for *NIX.
+ *
  * Revision 1.9  2003/11/11 19:41:33  bouzekc
  * Now returns a new Vector when the parser finds an empty set of brackets.
  * The previous behaviour was to return a new Vector with one element: an
@@ -206,7 +211,7 @@ TOKEN : {
 
 TOKEN : {
     < WINDOWS_PATH : ( ( "\"" )*
-                     ( <CHARACTER> ":\\\\" ( <WIN_PATH_END> )* ) ( "\"" )* ) >
+                     ( <CHARACTER> ":" ( "\\"| "/" )+ ( <WIN_PATH_END> )* ) ( "\"" )* ) >
 }
 
 TOKEN : {
@@ -218,16 +223,16 @@ TOKEN : {
 }
 
 TOKEN : {
-  < #WIN_PATH_END : ( "\\" )? ( ( ( <DIGICHAR> )* ) | 
+  < #WIN_PATH_END : ( ( ( <DIGICHAR> )* ) | 
                          ( ( <DIGICHAR> )+ ( " " )* ( "." )? 
                            ( <DIGICHAR> )* ( " " )* ) ) 
-                    ( "\\" )? >
+                    ( "\\" | "/" )* >
 }
 
 TOKEN : {
-  < #UNIX_PATH_END : "/" ( ( ( <DIGICHAR> )* ) | 
+  < #UNIX_PATH_END : ( "/" )+ ( ( ( <DIGICHAR> )* ) | 
                          ( ( <DIGICHAR> )+ ( "." )? ( <DIGICHAR> )* ) ) 
-                    ( "/" )? >
+                    ( "/" )* >
 }
 
 TOKEN : {
