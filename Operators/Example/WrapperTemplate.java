@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.1  2004/05/07 17:49:00  dennis
+ * Moved WrapperTemplate from Operators to Operators/Example
+ *
  * Revision 1.4  2004/03/01 18:32:48  dennis
  * Fixed acknowlegement in documentation.
  *
@@ -53,7 +56,7 @@
  * This will allow you to have your Operator show up in the correct ISAW menu
  * (in this case, under Generic -> Special.
  */
-package Operators;
+package Operators.Example;
 
 import DataSetTools.operator.*;
 
