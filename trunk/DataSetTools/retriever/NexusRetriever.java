@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/03/09 17:55:56  rmikk
+ * Fixed javadoc error(I hope)
+ *
  * Revision 1.11  2003/12/15 00:52:50  rmikk
  * Implements the hasInformation interface so more information on the datasets
  * in a file can be returned before retrieving the whole data set
@@ -137,7 +140,7 @@ public class NexusRetriever extends Retriever implements hasInformation
      *         the second is the data set type( monitor,sample) and the
      *         third is the string description of a range of default GroupID'x
      *         for this data set.
-     * @see #getType()
+     * @see #getType(int )
      */
    public String[] getDataSetInfo( int data_set_num){
       return ext.getDataSetInfo( data_set_num);
