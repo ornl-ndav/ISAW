@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/01/23 19:25:10  dennis
+ *  Added getDocumentation() method and javadocs on getResult().
+ *  (Chris Bouzek)
+ *
  *  Revision 1.2  2002/11/27 23:21:43  pfpeterson
  *  standardized header
  *
@@ -51,7 +55,7 @@ import  DataSetTools.operator.Parameter;
 import  DataSetTools.retriever.RunfileRetriever;
 
 /**
- * This operator determines what the group ID of the opstream monitor
+ * This operator determines what the group ID of the downstream monitor
  * is for a given monitor dataset.
  */
 
@@ -68,7 +72,7 @@ public class DownstreamMonitorID extends    GenericSpecial {
     /**
      *  Construct operator to determine the downstream monitor group id.
      *
-     *  @param  mds     The monitor data set.
+     *  @param  ds     The monitor data set.
      */
     
     public DownstreamMonitorID( DataSet ds ){
@@ -79,7 +83,7 @@ public class DownstreamMonitorID extends    GenericSpecial {
     }
 
     
-    /* ------------------------- setDefaultParmeters ----------------------- */
+    /* ------------------------- setDefaultParameters ----------------------- */
     /**
      *  Set the parameters to default values.
      */
@@ -93,17 +97,46 @@ public class DownstreamMonitorID extends    GenericSpecial {
     
     /* --------------------------- getCommand ------------------------------ */
     /**
-     * @return	the command name to be used with script processor.
+     * @return	the command name to be used with script processor, DnMonitorID
      */
     public String getCommand(){
         return "DnMonitorID";
     }
-    
+
+    /* ---------------------- getDocumentation --------------------------- */
+    /**
+     *  Returns the documentation for this method as a String.  The format
+     *  follows standard JavaDoc conventions.
+     */
+    public String getDocumentation()
+    {
+      StringBuffer s = new StringBuffer("");
+      s.append("@overview This operator determines what the group ID of ");
+      s.append("the histogram of the downstream monitor is for a given ");
+      s.append("monitor dataset.\n");
+      s.append("@assumptions At least one downstream monitor exists in ");
+      s.append("the monitor DataSet.\n");
+      s.append("@algorithm Searches through the specified DataSet ds for ");
+      s.append("the histogram of the downstream monitor with the highest ");
+      s.append("total count.\n");
+      s.append("It then determines the group ID for that data entry.\n");
+      s.append("@param ds The monitor DataSet to be used for the ");
+      s.append("operator.\n");
+      s.append("@return Integer representing the group ID of the histogram ");
+      s.append("of the downstream monitor with the largest total count ");
+      s.append("attribute.\n");
+      s.append("@error Returns -1 if no downstream monitor is found.\n");
+      return s.toString();
+    }
+
     /* --------------------------- getResult ------------------------------- */
     /*
-     * This returns the group id of the detector with the largest
-     * TOTAL_COUNT attribute. If no downstream monitor is found it will
-     * return -1.
+     * Searches through the specified DataSet for the downstream monitor 
+     * data entry with the highest total count.
+     *
+     * @return Integer Object representing the Group ID of the histogram of the 
+     * downstream monitor with the largest TOTAL_COUNT attribute. If no 
+     * downstream monitor is found it will return -1.
      */
     public Object getResult(){
         DataSet mon      = (DataSet)(getParameter(0).getValue());
@@ -144,6 +177,10 @@ public class DownstreamMonitorID extends    GenericSpecial {
         return new_op;
     }
 
+    /* ------------------------------ main ------------------------------- */
+    /**
+     * Main method for testing purposes.
+     */
     public static void main(String[] args){
         if(args.length==1){
             String filename=args[0];
@@ -154,8 +191,15 @@ public class DownstreamMonitorID extends    GenericSpecial {
             DownstreamMonitorID op=new DownstreamMonitorID(mds);
             System.out.println("For "+filename+" monitor GID= "
                                +op.getResult());
+	    /* ----------- added by Chris Bouzek ------------ */
+            System.out.println("Documentation: " + op.getResult());
+	    
         }else{
+	    DownstreamMonitorID op=new DownstreamMonitorID();
             System.out.println("USAGE: DownstreamMonitorID <filename>");
+	    /* ----------- added by Chris Bouzek ------------ */
+            System.out.println("Documentation: " + op.getDocumentation());	    
         }
+
     }
 }
