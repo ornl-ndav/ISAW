@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2001/11/19 19:04:09  dennis
+ * Now uses a new constructor for JParametersDialog, that makes the
+ * dialog box modal.  If there is an error when the dialog box is
+ * exited, the cursor will be on the line with the error.
+ *
  * Revision 1.31  2001/11/12 21:20:06  dennis
  *  1. Eliminated a Debug print that appears when using the
  *     immediate pane.
@@ -621,8 +626,7 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
               else
                 CP.SP.setTitle( "CommandPane");
               JParametersDialog pDialog =   new JParametersDialog((GenericOperator)(CP.SP), SP, 
-                                               new PlainDocument(), null);
-             
+                                               new PlainDocument(), null, true);
            }
         else
            CP.SP.getResult();
@@ -632,8 +636,7 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
                                 CP.SP.getErrorMessage()+" at position "+
                                 CP.SP.getErrorCharPos()+" on line "+CP.SP.getErrorLine()); 
            CP.SP.setDocument( null);
-           CP.setErrorCursor( Commands, SP.getErrorLine(), SP.getErrorCharPos()); 
-
+           CP.setErrorCursor( Commands, SP.getErrorLine(), SP.getErrorCharPos());
            return;
           }
                }
