@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2001/08/16 20:32:16  rmikk
+ *  Fixed a javadoc misspelling
+ *
  *  Revision 1.1  2001/07/30 19:53:43  dennis
  *  Base class for Generic Save operators.
  *
@@ -45,7 +48,7 @@ import java.io.*;
  *   Base class for generic operators that are responsible for writing DataSets
  *
  * @see GenericOperator
- * @see WriteNeXus 
+ * @see WriteNexus 
  *
  */
 
