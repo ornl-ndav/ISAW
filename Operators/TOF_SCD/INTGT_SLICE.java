@@ -83,9 +83,6 @@ public class INTGT_SLICE implements Wrappable,HiddenOperator{
       ITOSIGI[(int)(((1))-1)]=(float)((IHKL[(int)(((1))-1)]/SIGI[(int)(((1))-1)]
         ));
       return null;
-
-    return null;
-
   }
   public String getCommand(){
     return "INTGT_SLICE";}

@@ -216,8 +216,6 @@ public class INTGT implements Wrappable,HiddenOperator{
     REFLAG=(float)((100));
     return null;
 
-    return null;
-
   }
   public String getCommand(){
     return "INTGT";}
