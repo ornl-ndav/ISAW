@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2001/08/07 15:59:15  dennis
+ *  Added LoadRemoteData operator.
+ *
  *  Revision 1.14  2001/08/01 15:53:46  dennis
  *  Added save NeXus file operator.
  *
@@ -73,6 +76,7 @@ public class GenericOperatorList implements Serializable
 {
 
   static private final String names[] = { "SumFiles",
+                                          "LoadRemote",
                                           "OneFile",
                                           "Mon",
                                           "OneHist",
@@ -156,6 +160,9 @@ public class GenericOperatorList implements Serializable
 
     if ( op_name.equals( "SumFiles") )
       return new SumRunfiles();
+
+    else if ( op_name.equals( "LoadRemote" ) )
+      return new LoadRemoteData();
 
     else if ( op_name.equals( "OneFile" ) )
       return new LoadOneRunfile();
