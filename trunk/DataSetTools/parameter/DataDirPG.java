@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/08/14 18:43:20  bouzekc
+ *  Modified getValue() to put a trailing slash on when one does not exist.
+ *
  *  Revision 1.12  2003/07/15 22:56:13  bouzekc
  *  getValue() now uses forward slashes rather than system
  *  dependent slashes.
@@ -132,10 +135,13 @@ public class DataDirPG extends BrowsePG{
     public Object getValue()
     {
       String str;
-
+      
       str = FilenameUtil.setForwardSlash(
-            super.getValue().toString() + "/");
-
+            super.getValue().toString());
+      if( !str.endsWith("/") ){
+        str += "/";
+      }
+      
       return str;
     }
 
