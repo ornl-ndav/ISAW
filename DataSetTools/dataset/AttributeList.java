@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2001/07/23 18:40:24  dennis
+ *  Fixed error: no longer using "==" for String comparison.
+ *
  *  Revision 1.8  2001/04/25 19:03:29  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -379,18 +382,18 @@ public class AttributeList implements Serializable
 
         else                              // combine them and append the result 
         {  
-          if ( attr_name == Attribute.RUN_TITLE )
+          if ( attr_name.equals( Attribute.RUN_TITLE ))
             new_list.addAttribute( this_attr ); 
               // keep the run title from the first attribute list, it would
               // be too long if concatenated
 
-          else if ( attr_name == Attribute.END_TIME )
+          else if ( attr_name.equals( Attribute.END_TIME ))
             ; // omit the End Time, it doesn't make sense to average it
 
-          else if ( attr_name == Attribute.END_DATE )
+          else if ( attr_name.equals( Attribute.END_DATE ))
             ; // omit the End Date, it doesn't make sense to average it
 
-          else if ( attr_name == Attribute.GROUP_ID )
+          else if ( attr_name.equals( Attribute.GROUP_ID ))
             new_list.addAttribute( this_attr );
               // keep the Group ID from the first attribute list
 
