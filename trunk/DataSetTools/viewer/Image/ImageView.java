@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2002/07/12 18:39:19  dennis
+ *  Now traps for invalid (null) XScale from the x_scale_ui
+ *  and uses the result from getXRange() for the DataSet as
+ *  the default.
+ *
  *  Revision 1.31  2002/06/19 22:34:45  dennis
  *  Fixed problem for DataSets that contain mixtures of
  *  histograms and functions. Now separate XScales are used
@@ -397,12 +402,16 @@ public void setDataSet( DataSet ds )
   *  conversions.
   *
   *  @return  The current values from the number of bins control and the
-  *           x range control form the Xscale that is returned.
-  *
+  *           x range control form the Xscale that is returned, if no valid
+  *           XScale is present, the XScale returned by the DataSet's
+  *           getXRange() method is used..
   */
  public XScale getXConversionScale()
   {
     XScale x_scale = x_scale_ui.getXScale();
+    if ( x_scale == null )                          // if none specified
+      x_scale = getDataSet().getXRange();           // use default
+
     return x_scale;
   }
 
