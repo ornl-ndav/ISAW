@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/12/08 17:27:19  rmikk
+ * Finished connecting Instrument type number to instrument type name
+ *
  * Revision 1.11  2003/11/23 23:58:17  rmikk
  * Updated the Instrument type conversions to all supported instruments
  *   in the nexus community.
@@ -105,11 +108,15 @@ public class Inst_Type{
   public Inst_Type(){
     if( HT == null ){
       HT = new Hashtable();
-      HT.put( "MonoNXPD", new Integer( 0 ) );
+      /*HT.put( "MonoNXPD", new Integer( 0 ) );
       HT.put( "UNKNOWN", new Integer( 1 ) );
       HT.put( "TOFNDGS", new Integer( 2 ) );
       HT.put( "TOFNIGS", new Integer( 3 ) );
       HT.put( "TOFNPD", new Integer( 4 ) );
+     */
+     for( int i = 0; i< NxNames.length; i++){
+        HT.put( NxNames[i], new Integer( Isaw_inst_types[i]));
+     }
     }
   }
 
