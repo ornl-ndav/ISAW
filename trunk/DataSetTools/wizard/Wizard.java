@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/02/24 20:47:29  pfpeterson
+ * Added a debug flag and made exec_forms smarter. Now properly invalidates
+ * and sets progress bar on failure.
+ *
  * Revision 1.6  2003/02/11 15:09:38  dennis
  * Bugfix...CommandHandler constructor can't be private.
  * (Chris Bouzek)
@@ -125,6 +129,9 @@ public class Wizard implements Serializable{
     
     // the status pane
     public static TextArea status_display = new TextArea();
+
+    // debugging
+    private static final boolean DEBUG=false;
 
     // instance variables
     private JFrame       frame;
@@ -568,21 +575,26 @@ public class Wizard implements Serializable{
      * Execute all forms up to the number specified.
      */
     protected void exec_forms(int end){
-        Form f = getCurrentForm();
-        // execute the previous forms
-        for( int i=0 ; i<=end ; i++ ){
-            progress.setValue(i);
-            f=getForm(i);
-            if(!f.done()){ 
-                //invalidate(i);
-                f.setCompleted(f.execute());
-                if(!f.done()) break;
-            }
-            progress.setValue(i+1);
+      Form f = getCurrentForm();
+      // execute the previous forms
+      for( int i=0 ; i<=end ; i++ ){
+        progress.setValue(i);
+        f=getForm(i);
+        if(!f.done()){ 
+          if(DEBUG) System.out.println("EXECUTING "+i);
+          //invalidate(i);
+          boolean worked=f.execute();
+          f.setCompleted(worked);
+          if(!worked || !f.done()){
+            end=i-1;
+            break;
+          }
         }
+        progress.setValue(end+1);
+      }
         
-        // invalidate subsequent forms
-        invalidate(end+1);
+      // invalidate subsequent forms
+      invalidate(end+1);
     }
 
     /* ---------------- Internal Event Handler Classes --------------------- */
