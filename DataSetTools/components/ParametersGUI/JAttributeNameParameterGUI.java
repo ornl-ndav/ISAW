@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/08/16 15:33:05  rmikk
+ *  Fixed Layout to conform with the other ParameterGUI's
+ *  Fixed the Selected item in the combo box to the .toString value of the parameter
+ *
  *  Revision 1.5  2001/08/15 02:07:49  rmikk
  *  Set a selected item in the combo box corresponding to
  *  the value of the parameter
@@ -64,7 +68,7 @@ public class JAttributeNameParameterGUI extends JParameterGUI
        super(parameter);
        combobox = new JComboBox();
        combobox.setEditable(true);
-       JLabel label = new JLabel(parameter.getName());
+       JLabel label = new JLabel("  "+parameter.getName());
        //label.setPreferredSize(new Dimension(150,25));
 
        for(int i = 0; i<attr_list.getNum_attributes(); i++)
@@ -72,9 +76,9 @@ public class JAttributeNameParameterGUI extends JParameterGUI
           Attribute attr = attr_list.getAttribute(i);
           combobox.addItem(attr.getName());
        }
-       combobox.setSelectedItem( parameter.getValue() );
+       combobox.setSelectedItem( parameter.getValue().toString() );
        segment = new JPanel();
-       segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5)); 
+       segment.setLayout(new GridLayout( 1,2)); 
        
        segment.add(label);
        segment.add(combobox);
