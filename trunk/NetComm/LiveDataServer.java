@@ -34,6 +34,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2001/08/14 15:08:02  dennis
+ *  Added support for status.
+ *
  *  Revision 1.19  2001/08/14 01:27:43  dennis
  *  Added missing "return".  One return is needed after each tcpio.Send().
  *
@@ -149,7 +152,8 @@ public class LiveDataServer extends    DataSetServer
   public  static final int DEFAULT_DAS_UDP_PORT = 6080;
 
   private static final int DELAY_COUNT        = 300;
-
+  private static final int OLD_THRESHOLD      = 10000;  // ms until we call the
+                                                        // data old;
   private static final int START_READ_ACCESS  = 0;
   private static final int STOP_READ_ACCESS   = 1;
   private static final int START_WRITE_ACCESS = 2;
@@ -159,6 +163,10 @@ public class LiveDataServer extends    DataSetServer
                                                     // messages when we have
                                                     // processed a specified
                                                     // number of pulses
+
+  private  String  status           = RemoteDataRetriever.NO_DATA_SETS_STRING;
+  private  long    last_time_ms     = 0;
+  private  String  last_time        = "";
   private  String  instrument_name  = null;
   private  int     run_number       = -1;
   private  int     current_udp_port = DEFAULT_DAS_UDP_PORT;
@@ -177,6 +185,8 @@ public class LiveDataServer extends    DataSetServer
      super();
      setServerName( "LiveDataServer" );
      setLogFilename( "LiveDataServerLog.txt" );
+     last_time_ms = System.currentTimeMillis();
+     last_time    = DateUtil.default_string();
    }
 
   /* -------------------------- setUDPport --------------------------- */
@@ -329,6 +339,10 @@ public class LiveDataServer extends    DataSetServer
    */
   public void ProcessData( byte buffer[], int length )
   { 
+    last_time_ms = System.currentTimeMillis();
+    last_time = DateUtil.default_string(); 
+    status    = RemoteDataRetriever.DATA_LIVE_STRING + last_time;
+
     String new_instrument_name;
     int    new_run_number;
                                                // make sure the buffer is long
@@ -361,6 +375,12 @@ public class LiveDataServer extends    DataSetServer
                                               // unpack the new run number
     new_run_number = ByteConvert.toInt( buffer, start );
     start += 4;
+
+    if ( new_run_number <= 0 )                // DAS going away, keep old data
+    {
+      status = RemoteDataRetriever.DAS_OFFLINE_STRING + last_time;
+      return;
+    }
 
     if ( new_run_number != run_number      ||
          instrument_name == null           ||
@@ -457,6 +477,23 @@ public class LiveDataServer extends    DataSetServer
 
         return;
       }
+
+      else if ( command.startsWith( COMMAND_GET_STATUS ) )
+      {
+         if ( status.startsWith( RemoteDataRetriever.DAS_OFFLINE_STRING ) )
+         {
+           tcp_io.Send( status );
+           return;
+         }
+
+         long time_ms = System.currentTimeMillis();
+         if ( time_ms - last_time_ms > OLD_THRESHOLD )
+           tcp_io.Send( RemoteDataRetriever.DATA_OLD_STRING + last_time );
+         else
+           tcp_io.Send( status );
+
+         return;
+      }
    
       else
       {
@@ -533,9 +570,8 @@ public class LiveDataServer extends    DataSetServer
     for (int i = first_channel; i <= last_channel; i++)
       y[i] = spec_buffer[ i-first_channel ];
                                                       // set the time attribute 
-    Date date = new Date( System.currentTimeMillis() );
     Attribute attrib = new StringAttribute( Attribute.UPDATE_TIME, 
-                                            date.toString()         );
+                                            DateUtil.default_string()  );
     d.setAttribute( attrib );
 
     return true;
@@ -555,8 +591,8 @@ public class LiveDataServer extends    DataSetServer
          StringUtil.commandPresent( "-h", args )  )
       System.exit(1);
 
-    Date date = new Date( System.currentTimeMillis() );
-    System.out.println("Starting " + server.getServerName() + " on " + date );
+    System.out.println("Starting " + server.getServerName() + " on " + 
+                        DateUtil.default_string()  );
     System.out.println("Log File " + server.getLogFilename() );
     System.out.println("Using DataDirectories ");
     server.showDataDirectories();
