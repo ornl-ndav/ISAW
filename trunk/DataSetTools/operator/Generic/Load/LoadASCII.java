@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/01/24 19:48:25  bouzekc
+ * Removed unused local variable.
+ *
  * Revision 1.5  2003/12/15 02:17:30  bouzekc
  * Removed unused imports.
  *
@@ -200,7 +203,6 @@ public class LoadASCII extends GenericLoad{
         if(! file.canRead() )
             return new ErrorString(filename+" cannot be read");
 
-        String title   = filename;
         String x_units = "unknown";
         String x_label = "unknown";
         String y_units = "unknown";
