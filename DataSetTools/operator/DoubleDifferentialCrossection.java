@@ -31,6 +31,11 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.15  2001/09/27 19:19:29  dennis
+ *  Improved Documentation.
+ *  Return ErrorString if we don't have a histogram.
+ *  Removed unused variable.
+ *
  *  Revision 1.14  2001/06/01 21:18:00  rmikk
  *  Improved documentation for getCommand() method
  *
@@ -38,7 +43,9 @@
  *  Added copyright and GPL info at the start of the file.
  *
  *  Revision 1.12  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
+ *     Introduced additional abstract classes to better categorize the 
+ *     operators.
+ *
  *  Existing operators were modified to be derived from one of the new abstract
  *  classes.  The abstract base class hierarchy is now:
  *
@@ -120,6 +127,39 @@ import  DataSetTools.math.*;
   *  Compute the double differential crossection for a time-of-flight 
   *  spectrometer DataSet based on a sample with background subtracted,
   *  the area of the peak in monitor 1 and the number of atoms in the sample.
+  *  The initial DataSet must be a time-of-flight histogram.
+  *
+  *  <p><b>Title:</b> Double Differential Crossection 
+  * 
+  *  <p><b>Command:</b> DSDODE
+  *
+  *  <p><b>Usage:</b><ul> 
+  *    When used in a script, the parameters are as described in the 
+  *    documentation for the constructor, as listed below.
+  *  </ul>
+  * 
+  *  <p><b>Returns:</b><ul>
+  *     If a new DataSet was requested, this returns a new DataSet
+  *     containing the Double Differential Crossection.  If an 
+  *     error occurs, or a new DataSet was not requested, this returns
+  *     a message String.
+  *   </ul>
+  *
+  *  <p><b>Algorithm:</b><ul>
+  *
+  *     DSDODE = sig*ff/(sangle*atoms*def*eff*flux*tsec)
+  *
+  *  <p>sig = the sample minus background "signal"
+  *  <p>ff = the detector normalization factors 
+  *  <p>sangle = the solid angle for a group 
+  *  <p>atoms = the number of "scattering units" in the sample exposed to 
+  *             the beam times 10 ** -24. 
+  *  <p>def = Scattered energy increment, 2*E*delta_tof/tof
+  *  <p>eff = Detector efficiency factor as a function of tof 
+  *  <p>flux = flux at sample, calculated from monitor 1.
+  *  <p>tsec = time of sample run, number of T0 pulses / 30.
+  *
+  *  </ul>
   *
   *  @see DataSetOperator
   *  @see Operator
@@ -130,11 +170,12 @@ public class DoubleDifferentialCrossection extends    DS_Special
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
-   * Construct an operator with a default parameter list.  If this
-   * constructor is used, the operator must be subsequently added to the
-   * list of operators of a particular DataSet.  Also, meaningful values for
-   * the parameters should be set ( using a GUI ) before calling getResult()
-   * to apply the operator to the DataSet this operator was added to.
+   * Construct an operator to calculate the Double Differential Crossection
+   * using a default parameter list.  If this constructor is used, the 
+   * operator must be subsequently added to the list of operators of a 
+   * particular DataSet.  Also, meaningful values for the parameters should 
+   * be set ( using a GUI ) before calling getResult() to apply the operator 
+   * to the DataSet this operator was added to.
    */
 
   public DoubleDifferentialCrossection( )
@@ -145,7 +186,7 @@ public class DoubleDifferentialCrossection extends    DS_Special
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
    *  Construct an operator to calculate the Double Differential Crossection
-   *  for a spectrometer DataSet.  It is assumed that the background DataSet
+   *  for a spectrometer TOF DataSet.  It is assumed that the background DataSet
    *  has already been normalized and subtracted from the sample DataSet.
    *
    *  @param  ds               The sample DataSet for which the double 
@@ -194,7 +235,8 @@ public class DoubleDifferentialCrossection extends    DS_Special
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, DSDODE
+   * @return  the command name to be used with script processor: 
+              in this case, DSDODE
    */
    public String getCommand()
    {
@@ -279,7 +321,6 @@ public class DoubleDifferentialCrossection extends    DS_Special
     float spherical_coords[];
 
     float x_vals[],
-          new_x_vals[],
           new_y_vals[],
           new_errors[],
           corr[],
@@ -357,18 +398,19 @@ public class DoubleDifferentialCrossection extends    DS_Special
       int num_y  = data.getY_values().length;
 
       if ( num_y >= x_vals.length )
+      {
         System.out.println("ERROR: need histogram in DSDODE calculation");
+        return new ErrorString( "Need histogram in DSDODE calculation" );
+      }
       else
       {
         new_y_vals = new float[ num_y ]; 
-        new_x_vals = new float[ num_y ]; 
         new_errors = new float[ num_y ]; 
                                        
         for ( int i = 0; i < num_y; i++ )
         {
           tof           = (x_vals[i]+x_vals[i+1])/2;
           delta_tof     = x_vals[i+1] - x_vals[i];
-          new_x_vals[i] = tof;
           new_errors[i] = 0;              // for now assume correction factor is
                                           // accurate.
 
