@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2005/01/25 20:43:49  rmikk
+ * getNChildNodes returns 0 if the node class is SDS.
+ *
  * Revision 1.19  2005/01/14 23:35:52  rmikk
  * Fixed an "undocumented" restriction on blobs.  The size of the fastest 
  *   growing dimensions must be equal to the max size of this dimension
@@ -239,9 +242,12 @@ public class NexNode implements NxNode{
    */
   public int getNChildNodes(){
       errormessage = "";
+      
       if( NF == null) return 0;
       if( !open() )
         return -1;
+      if( getNodeClass().equalsIgnoreCase("SDS"))
+        return 0;
       if( dirinfo == null )
         try{
           dirinfo = NF.groupdir();
