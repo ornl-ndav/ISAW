@@ -28,8 +28,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- * Modified:
+ * Modified:	
  *
+ * $Log$
+ * Revision 1.4  2002/10/29 16:00:23  dennis
+ * Added getDocumentation method, and $Log:$ tag. (Mike Miller)
  *
  *
  */
@@ -74,6 +77,29 @@ public class ActivatePrompt extends GenericCalculator
       addParameter( new Parameter("Sample Composition", new String(sample) ) );
   }
 
+ /* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns description/attributes of ActivatePrompt
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator calculates and returns the ");
+    Res.append("prompt activity (nCi/g) for a given sample\n");
+    Res.append("@algorithm Given a sample of type Material ");
+    Res.append("the prompt activity will be calculated\n");
+    Res.append("@param String sample\n");
+    Res.append("@return the String containing the numerical value ");
+    Res.append("of the prompt activity followed by units (nCi/g)\n"); 
+    Res.append("@error sample string is null, no set\n");
+    Res.append("@error sample not valid\n");
+    
+    return Res.toString();
+    
+  }
+
+
  /* ---------------------------- getCommand ------------------------------- */ 
  /** 
   * Get the name of this operator to use in scripts
@@ -85,7 +111,7 @@ public class ActivatePrompt extends GenericCalculator
   {
     return "ActivatePrompt";
   }
-
+  
  /* ------------------------ setDefaultParameters ------------------------- */ 
  /** 
   * Sets default values for the parameters. During testing the
@@ -161,7 +187,7 @@ public class ActivatePrompt extends GenericCalculator
      System.out.println("Test of ActivatePrompt starting...");
      String material=null;
 
-     // Test the operator by constructing and running it, specifyinge
+     // Test the operator by constructing and running it, specifying
      // values for all of the parameters.
      material="Ge";
      ActivatePrompt op = new ActivatePrompt( material );
@@ -169,7 +195,7 @@ public class ActivatePrompt extends GenericCalculator
      System.out.println("Using "+material+", the operator returned: ");
      System.out.println( output );
 
-     // Test the operator by constructing and running it, specifyinge
+     // Test the operator by constructing and running it, specifying
      // values for all of the parameters.
      material="Si,Ge";
      op = new ActivatePrompt( material );
@@ -177,13 +203,16 @@ public class ActivatePrompt extends GenericCalculator
      System.out.println("Using "+material+", the operator returned: ");
      System.out.println( output );
 
-     // Test the operator by constructing and running it, specifyinge
+     // Test the operator by constructing and running it, specifying
      // values for all of the parameters.
      material="Y,Ba_2,Cu_3,O_7";
      op = new ActivatePrompt( material );
      output = (String)op.getResult();
      System.out.println("Using "+material+", the operator returned: ");
      System.out.println( output );
+
+     // Will dump raw help information about the ActivatePrompt class to screen
+     System.out.println( op.getDocumentation() );
 
      // Test the operator by constructing and running it, this time with the
      // default constructor.
