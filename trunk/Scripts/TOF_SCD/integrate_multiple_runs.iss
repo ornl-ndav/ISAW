@@ -20,6 +20,7 @@ $ centering           String(primitive)      Centering type
 $ time_slice_range    String(-1:3)           Time-slice range
 $ increase            Integer(1)             Increase slice size by
 
+$ CATEGORY = operator,Instrument Type, TOF_NSCD
 inst = "SCD"
 Display "Instrument = "&inst
 #Display "Calibration File ="&calibfile
