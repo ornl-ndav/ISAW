@@ -1,6 +1,6 @@
 /*
- * File:  IntegerArrayPG.java 
- *             
+ * File:  IntegerArrayPG.java
+ *
  * Copyright (C) 2003, Ruth Mikkelson
  *
  * This program is free software; you can redistribute it and/or
@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2004/05/11 18:23:50  bouzekc
+ * Added/updated javadocs and reformatted for consistency.
+ *
  * Revision 1.13  2003/12/16 00:06:00  bouzekc
  * Removed unused imports.
  *
@@ -70,42 +73,60 @@
  */
 package DataSetTools.parameter;
 
+/**
+ * Subclass of VectorPG to deal with one-dimensional int arrays.
+ */
+public class IntegerArrayPG extends VectorPG {
+  //~ Constructors *************************************************************
 
-public class IntegerArrayPG extends VectorPG{
-
-  public IntegerArrayPG( String name, Object val){ 
+  /**
+   * Creates a new IntegerArrayPG object.
+   *
+   * @param name The name of this IntegerArrayPG.
+   * @param val The value of this IntegerArrayPG.
+   */
+  public IntegerArrayPG( String name, Object val ) {
     super( name, val );
-    setParam( new IntegerPG("Enter Integer", 0) );
+    setParam( new IntegerPG( "Enter Integer", 0 ) );
   }
 
+  /**
+   * Creates a new IntegerArrayPG object.
+   *
+   * @param name The name of this IntegerArrayPG.
+   * @param val The value of this IntegerArrayPG.
+   * @param valid True if this IntegerArrayPG should be considered initially
+   *        valid.
+   */
   public IntegerArrayPG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-    setParam( new IntegerPG("Enter Integer", 0) );
+    setParam( new IntegerPG( "Enter Integer", 0 ) );
   }
+
+  //~ Methods ******************************************************************
 
   /*
    * Testbed.
    */
   /*public static void main( String args[] ){
-    JFrame jf = new JFrame("Test");
-    jf.getContentPane().setLayout( new GridLayout( 1,2));
-    IntegerArrayPG IaPg = new IntegerArrayPG( "Enter Int list", null);
-    IaPg.initGUI(null);
-    jf.getContentPane().add(IaPg.getGUIPanel());
-    JButton  jb = new JButton("Result");
-    jf.getContentPane().add(jb);
-    jb.addActionListener( new PGActionListener( IaPg));
-    jf.setSize( 500,100);
-    jf.invalidate();
-    jf.show();
-  }*/
+     JFrame jf = new JFrame("Test");
+     jf.getContentPane().setLayout( new GridLayout( 1,2));
+     IntegerArrayPG IaPg = new IntegerArrayPG( "Enter Int list", null);
+     IaPg.initGUI(null);
+     jf.getContentPane().add(IaPg.getGUIPanel());
+     JButton  jb = new JButton("Result");
+     jf.getContentPane().add(jb);
+     jb.addActionListener( new PGActionListener( IaPg));
+     jf.setSize( 500,100);
+     jf.invalidate();
+     jf.show();
+     }*/
 
   /**
-   * Validates this IntegerArrayPG.  An IntegerArrayPG is considered valid if 
+   * Validates this IntegerArrayPG.  An IntegerArrayPG is considered valid if
    * it contains all Integer elements.
    */
   public void validateSelf(  ) {
     validateElements( new Integer( 0 ).getClass(  ) );
   }
-
 }

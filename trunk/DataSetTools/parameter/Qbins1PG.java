@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/05/11 18:23:54  bouzekc
+ * Added/updated javadocs and reformatted for consistency.
+ *
  * Revision 1.8  2004/03/15 03:28:41  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -62,7 +65,6 @@ package DataSetTools.parameter;
 
 import DataSetTools.components.ParametersGUI.EntryWidget;
 import DataSetTools.components.ParametersGUI.StringEntry;
-
 
 import gov.anl.ipns.Util.StringFilter.FloatFilter;
 import gov.anl.ipns.Util.StringFilter.IntegerFilter;
@@ -258,15 +260,17 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
 
   //~ Inner Classes ************************************************************
 
-  //Utility to add a prompt to the left of text boxes, etc.
+  /**
+   * Utility class to add a prompt to the left of text boxes, etc.
+   */
   private class Comb extends JPanel {
     //~ Constructors ***********************************************************
 
     /**
      * Creates a new Comb object.
      *
-     * @param Prompt DOCUMENT ME!
-     * @param Comp DOCUMENT ME!
+     * @param Prompt The prompt to use.
+     * @param Comp The component to insert.
      */
     public Comb( String Prompt, JComponent Comp ) {
       super( new GridLayout( 1, 2 ) );
@@ -274,9 +278,4 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
       add( Comp );
     }
   }
-
-  //Comb
 }
-
-
-//Qbins1

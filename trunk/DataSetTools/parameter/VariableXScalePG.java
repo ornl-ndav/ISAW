@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/05/11 18:23:57  bouzekc
+ * Added/updated javadocs and reformatted for consistency.
+ *
  * Revision 1.6  2003/12/15 02:44:08  bouzekc
  * Removed unused imports.
  *
@@ -54,11 +57,12 @@
  */
 package DataSetTools.parameter;
 
-import java.util.Vector;
-
 import DataSetTools.components.ParametersGUI.ArrayEntryJFrame;
+
 import DataSetTools.dataset.VariableXScale;
 import DataSetTools.dataset.XScale;
+
+import java.util.Vector;
 
 
 /**
@@ -150,8 +154,10 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
           allFloats = false;
         }
       }
+
       scale = new VariableXScale( elems );
     }
+
     super.setValue( scale );
 
     if( GUI != null ) {
@@ -249,6 +255,7 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
           greater = false;
         }
       }
+
       setValid( greater );
     } else {
       setValid( false );
