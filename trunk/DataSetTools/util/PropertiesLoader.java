@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/07/12 15:31:56  pfpeterson
+ *  Add default value for ColorScale property.
+ *
  *  Revision 1.5  2002/06/14 15:55:41  pfpeterson
  *  Added default values for getProperty(String) for Isaw_Width,
  *  Isaw_Height, Tree_Width, and Status_Height.
@@ -126,6 +129,9 @@ public class PropertiesLoader implements java.io.Serializable
             def="0.2";
         }else if( prop.equals("Status_Height") ){
             def="0.2";
+        }else if( prop.equals(DataSetTools.viewer.ViewerState.COLOR_SCALE ) ){
+            def=
+             DataSetTools.components.image.IndexColorMaker.HEATED_OBJECT_SCALE;
         }
         /*if(def!=null){  // testing information
           System.out.println(prop+" gets default "+def);
