@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2004/07/14 16:51:20  dennis
+ *  Temporarily added some restritions to the ID ranges to avoid problems
+ *  with missing time regimes, etc.
+ *
  *  Revision 1.2  2004/07/08 16:05:33  dennis
  *  Removed some "workarounds" since underlying ISIS Rawfile class has
  *  been fixed.  Specifically, LeaveOpen() no longer hangs the system,
@@ -310,7 +314,8 @@ public class IsisRetriever extends    Retriever
     if ( data_set_num < 0 || data_set_num >= num_data_sets )
       return null;
 
-    int ids[] = getAvailableIDs( data_set_num );
+//  int ids[] = getAvailableIDs( data_set_num );
+    int ids[] = IntList.ToArray( "2:45057" );
 
     return getDataSet( data_set_num, instrument_type, ids );
   }
@@ -500,7 +505,9 @@ public class IsisRetriever extends    Retriever
          if ( tf_type != last_tf_type )      // only get the times if it's a
                                              // new time field type
          {
-           System.out.println("group id, tft, hist = " + group_id + ", " + tf_type + ", " + histogram_num );
+           System.out.println("group id, tft, hist = " + group_id + 
+                              ", " + tf_type + 
+                              ", " + histogram_num );
            bin_boundaries = raw_file.TimeChannelBoundaries(group_id);
            num_times      = bin_boundaries.length;
            System.out.println("num_times = " + num_times );
@@ -871,17 +878,20 @@ public class IsisRetriever extends    Retriever
       System.out.println("Available IDs : " +  
                           IntList.ToString( rr.getAvailableIDs(i) ) );  
     }
-
+/*
    DataSet mon_ds = rr.getDataSet(0);
    System.out.println("Number in Monitor DataSet = " + mon_ds.getNum_entries());
    new ViewManager( mon_ds, IViewManager.IMAGE );
+*/
 
- int ids[] = IntList.ToArray( "2:28672" );
-//   int ids[] = IntList.ToArray( "2:45056" );   // #####
+   int ids[] = IntList.ToArray( "2:28672" );
+//   int ids[] = IntList.ToArray( "2:45057" );   // #####
+
    DataSet hist_ds = rr.getDataSet( 1, ids );  // #####
 //   DataSet hist_ds = rr.getDataSet( 1 );
+//   DataSet hist_ds = rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
 
-   System.out.println("Number in Histogram DataSet = "+mon_ds.getNum_entries());
+   System.out.println("Number in Histogram DataSet: "+hist_ds.getNum_entries());
    new ViewManager( hist_ds, IViewManager.IMAGE );
 
    System.out.println("Done with main");
