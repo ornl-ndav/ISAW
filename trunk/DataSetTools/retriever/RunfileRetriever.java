@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.58  2002/12/20 20:25:51  pfpeterson
+ *  Added user name to AttributeList of DataSet.
+ *
  *  Revision 1.57  2002/11/27 23:23:16  pfpeterson
  *  standardized header
  *
@@ -793,6 +796,10 @@ private float CalculateEIn()
     // SCD sample orientation, Sample Chi, Sample Phi, Sample Omega
     if ( instrument_type == InstrumentType.TOF_SCD )
         AddSCD_SamplePosition( attr_list );
+
+    // User Name
+    str_attr = new StringAttribute( Attribute.USER, run_file.UserName() );
+    attr_list.setAttribute( str_attr );
 
     ds.setAttributeList( attr_list );
   }
