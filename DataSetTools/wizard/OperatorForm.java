@@ -27,6 +27,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *
+ * $Log$
+ * Revision 1.10  2003/06/27 22:23:06  bouzekc
+ * Added log header and class javadoc comments.
+ *
  */
 
 package DataSetTools.wizard;
@@ -48,7 +53,8 @@ import Command.ParameterClassList;
   * The OperatorForm class is an extension of Form designed to work 
   * with an Operator Object.  Although a Form is an Operator, 
   * by creating an OperatorForm, it becomes easier to implement
-  * many of the methods.
+  * many of the methods.  In addition, an OperatorForm has the advantage of
+  * automated parameter linking, so it can "return" more than one value.
  */
 
 public class OperatorForm extends Form implements Serializable, HiddenOperator{
