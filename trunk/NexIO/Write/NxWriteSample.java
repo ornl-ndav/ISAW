@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/11/20 16:15:43  pfpeterson
+ * reformating
+ *
  * Revision 1.2  2002/03/18 20:58:56  dennis
  * Added initial support for TOF Diffractometers.
  * Added support for more units.
@@ -43,33 +46,34 @@
 package NexIO.Write;
 import DataSetTools.dataset.*;
 
-/** Class responsible for saving NXsample information from data sets to a 
- * nexus file.<P>
- *NOT USED YET
+/**
+ * Class responsible for saving NXsample information from data sets to
+ * a nexus file.<P>
+ *
+ * NOT USED YET
  */
-public class NxWriteSample
-{String errormessage;
+public class NxWriteSample{
+  String errormessage;
 
-    public NxWriteSample(int instrType)
-      {
-        errormessage = "";
-      }
+  public NxWriteSample(int instrType){
+    errormessage = "";
+  }
 
-   /** Returns an errormessage or "" if none
+  /**
+   * Returns an errormessage or "" if none
    */
-   public String getErrorMessage()
-    {
-        return errormessage;
-    }
+  public String getErrorMessage(){
+    return errormessage;
+  }
 
-   /** Writes the NXsample information from a data set to a Nexus file
-   *@param node  a NXsample node
-   *@param  DS   the data set with the information to be written
-  */
-   public boolean processDS( NxWriteNode node , DataSet DS)
-    {
-      errormessage = "";
-      return false;
-    }
-
+  /**
+   * Writes the NXsample information from a data set to a Nexus file
+   *
+   * @param node a NXsample node
+   * @param DS the data set with the information to be written
+   */
+  public boolean processDS( NxWriteNode node , DataSet DS){
+    errormessage = "";
+    return false;
+  }
 }

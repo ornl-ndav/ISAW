@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/11/20 16:14:52  pfpeterson
+ * reformating
+ *
  * Revision 1.2  2002/03/18 21:10:14  dennis
  * Now uses atan2(,) to find angles
  *
@@ -44,124 +47,136 @@ package NexIO;
 
 import DataSetTools.math.*;
 import java.lang.*;
-/** Contains equates for this modules data types
-*  All others should map into these
-*/
-public class Types
-{
-    public static int Int =325;
-    public static int UInt =326;
-    public static int Byte =400;
-    public static int UByte =401;
-    public static int Char =410;
-    public static int Short =512;
-    public static int UShort =513;
-    public static int Long =600;
-    public static int Float =620;
-    public static int Double =626;
 
-/**  Converts from IPNS coordinates( z vert, x along beam, y back) to
-*   Nexus format ( z beam, y up and x back).  
-*@param  rho  the total distance to the detector
-*@param  phi  Angle from IPNS's z axis. Not scattering angle
-*@param  theta  the angle from x-axis(beam axis)in the horizontal plane.
-*@ return the rho, phi, theta values in Nexus
-*/
-    public static float[] convertToNexus( float rho, float phi, float theta)
-    { float r =(float)( rho* Math.sin( phi ));
-      float z =(float)( rho* Math.cos( phi ));
-      float x = (float)(r * Math.cos( theta ));
-      float y = (float)(r * Math.sin( theta ));
-     //System.out.println("Cartes="+x+","+y+","+z+","+r+","+phi+","+theta);
-     float x1,y1,z1,r1;
-     x1=  y;
-     y1 = z;
-     z1 = x;
-     //System.out.println("Cartes="+x1+","+y1+","+z1);
-     rho = (float)Math.sqrt( x1*x1+y1*y1+z1*z1);
-     r = (float) Math.sqrt( x1*x1 + y1*y1);
-     if( rho != 0)
-         phi = (float)Math.acos( z1/rho);
-     else
-         phi = 0.0f;
-     r1 = (float)Math.sqrt( x1*x1+y1*y1);
-     
-         theta = (float)Math.atan2( y1, x1);
-     
-     float coords[];
-   
-     coords = new float[3];
-     coords[0] = rho;
-     coords[1] = phi;
-     
-           coords[2] = theta;
-     
-     return coords;
+/**
+ * Contains equates for this modules data types. All others should map
+ * into these
+ */
+public class Types{
+  public static int Int =325;
+  public static int UInt =326;
+  public static int Byte =400;
+  public static int UByte =401;
+  public static int Char =410;
+  public static int Short =512;
+  public static int UShort =513;
+  public static int Long =600;
+  public static int Float =620;
+  public static int Double =626;
 
-    }
- /**  Converts from  Nexus format ( z beam, y up and x back)  
-*  to IPNS coordinates( z vert, x along beam, y back) 
-*@param  rho  the total distance to the detector
-*@param  phi  Angle from Nexus's z axis(the beam). Scattering angle(?)
-*@param  theta  angle from x-axis in plane perpendicular to beam
-*@ return the rho, phi, theta values in Nexus
-*/  
-  public static float[] convertFromNexus( float rho, float phi, float theta)
-   { float r =(float)( rho*Math.sin( phi ));
-      float z = (float)(rho* Math.cos( phi ));
-      float x =(float)( r * Math.cos( theta ));
-      float y =(float)( r * Math.sin( theta ));
-   //System.out.println("Cartes="+x+","+y+","+z+","+phi+","+theta+","+r);
-      //  System.out.print("Start end r,p,t="+rho+","+phi+","+theta);
-     float x1,y1,z1,r1;
-     x1= z;
-     y1 = x;
-     z1 = y;
-     //System.out.println("Cartes="+x1+","+y1+","+z1);
-     rho =(float) Math.sqrt( x1*x1+y1*y1+z1*z1);
-     r = (float) Math.sqrt( x1*x1+y1*y1);
-     if( rho != 0)
-         phi =(float) Math.acos( z1/rho);
-     else
-         phi = 0.0f;
-     r1 = (float)Math.sqrt( x1*x1+y1*y1);
-     
-         theta =(float) Math.atan2(y1, x1);
-     
-     float coords[];
-     coords = new float[3];
-     coords[0] = rho;
-     coords[1] = phi;
-     
-       coords[2] = theta;
-     
-    // System.out.println("::"+rho+","+phi+","+theta);
+  /**
+   * Converts from IPNS coordinates( z vert, x along beam, y back) to
+   * Nexus format ( z beam, y up and x back).
+   *
+   * @param rho the total distance to the detector
+   * @param phi Angle from IPNS's z axis. Not scattering angle
+   * @param theta the angle from x-axis(beam axis)in the horizontal
+   * plane.
+   *
+   * @return the rho, phi, theta values in Nexus
+   */
+  public static float[] convertToNexus( float rho, float phi, float theta){
+    float r =(float)( rho* Math.sin( phi ));
+    float z =(float)( rho* Math.cos( phi ));
+    float x = (float)(r * Math.cos( theta ));
+    float y = (float)(r * Math.sin( theta ));
+    //System.out.println("Cartes="+x+","+y+","+z+","+r+","+phi+","+theta);
+    float x1,y1,z1,r1;
+    x1=  y;
+    y1 = z;
+    z1 = x;
+    //System.out.println("Cartes="+x1+","+y1+","+z1);
+    rho = (float)Math.sqrt( x1*x1+y1*y1+z1*z1);
+    r = (float) Math.sqrt( x1*x1 + y1*y1);
+    if( rho != 0)
+      phi = (float)Math.acos( z1/rho);
+    else
+      phi = 0.0f;
+    r1 = (float)Math.sqrt( x1*x1+y1*y1);
+    
+    theta = (float)Math.atan2( y1, x1);
+    
+    float coords[];
+    
+    coords = new float[3];
+    coords[0] = rho;
+    coords[1] = phi;
+    
+    coords[2] = theta;
+    
     return coords;
-    }
-  
-/** Test program for the convert to and from Nexus routines
-*@param  args[0]  pho
-*@param args[1]  phi
-*@param args[2]  theta
-*@param args[3]  optional if absent From Nexus otherwise to Nexus
-*@returns  coords[]  the rho,phi, theta in the other system
-*/
-public static void main( String args[])
-  { float r ,t ,p, coords[];
-    r = new Float( args[0]).floatValue();
-   p = new Float(args[1]).floatValue();
-   t = new Float(args[2]).floatValue();
-   
-   if( args.length>3)
-     coords = convertToNexus( r ,p, t);
-   else 
-     coords= convertFromNexus( r , p, t);
-   if( args.length > 3)
-     System.out.print( "Nexus coords=");
-   else
-     System.out.print(" IPNS coords=");
-   System.out.println(coords[0]+","+coords[1]+","+coords[2]);
-  System.exit(0); 
+    
   }
 
+  /**
+   * Converts from Nexus format ( z beam, y up and x back) to IPNS
+   * coordinates( z vert, x along beam, y back)
+   *
+   * @param rho the total distance to the detector
+   * @param phi Angle from Nexus's z axis(the beam). Scattering
+   * angle(?)
+   * @param theta angle from x-axis in plane perpendicular to beam
+   *
+   * @return the rho, phi, theta values in Nexus
+   */  
+  public static float[] convertFromNexus( float rho, float phi, float theta){
+    float r =(float)( rho*Math.sin( phi ));
+    float z = (float)(rho* Math.cos( phi ));
+    float x =(float)( r * Math.cos( theta ));
+    float y =(float)( r * Math.sin( theta ));
+    //System.out.println("Cartes="+x+","+y+","+z+","+phi+","+theta+","+r);
+    //  System.out.print("Start end r,p,t="+rho+","+phi+","+theta);
+    float x1,y1,z1,r1;
+    x1= z;
+    y1 = x;
+    z1 = y;
+    //System.out.println("Cartes="+x1+","+y1+","+z1);
+    rho =(float) Math.sqrt( x1*x1+y1*y1+z1*z1);
+    r = (float) Math.sqrt( x1*x1+y1*y1);
+    if( rho != 0)
+      phi =(float) Math.acos( z1/rho);
+    else
+      phi = 0.0f;
+    r1 = (float)Math.sqrt( x1*x1+y1*y1);
+    
+    theta =(float) Math.atan2(y1, x1);
+    
+    float coords[];
+    coords = new float[3];
+    coords[0] = rho;
+    coords[1] = phi;
+    
+    coords[2] = theta;
+    
+    // System.out.println("::"+rho+","+phi+","+theta);
+    return coords;
+  }
+  
+  /**
+   * Test program for the convert to and from Nexus routines
+   *
+   * @param args[0] pho
+   * @param args[1] phi
+   * @param args[2] theta
+   * @param args[3] optional if absent From Nexus otherwise to Nexus
+   *
+   * @returns coords[] the rho,phi, theta in the other system
+   */
+  public static void main( String args[]){
+    float r ,t ,p, coords[];
+    r = new Float( args[0]).floatValue();
+    p = new Float(args[1]).floatValue();
+    t = new Float(args[2]).floatValue();
+   
+    if( args.length>3)
+      coords = convertToNexus( r ,p, t);
+    else 
+      coords= convertFromNexus( r , p, t);
+    if( args.length > 3)
+      System.out.print( "Nexus coords=");
+    else
+      System.out.print(" IPNS coords=");
+    System.out.println(coords[0]+","+coords[1]+","+coords[2]);
+    System.exit(0); 
+  }
 }

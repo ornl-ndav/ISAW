@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/11/20 16:14:35  pfpeterson
+ * reformating
+ *
  * Revision 1.2  2002/06/19 15:01:47  rmikk
  * Added GPL and initial documentation
  * Eliminated extra dos returns
@@ -46,100 +49,90 @@ import ncsa.hdf.hdflib.HDFException;
 import ncsa.hdf.hdflib.HDFConstants;
 
 /** 
-*  This class extends the NexusFile class to getData that is
-*  multidimensional as a linear string. <P>
-*  This saves an immense amount of time for retrieving this type of
-* data
-*/
-public class CNexusFile extends NexusFile
-{
+ * This class extends the NexusFile class to getData that is
+ * multidimensional as a linear string. <P> This saves an immense
+ * amount of time for retrieving this type of data
+ */
+public class CNexusFile extends NexusFile{
 
-   /** Constructor that just calls the super constructor
-   */
-   public CNexusFile( String filename, int access )
-      throws NexusException
-   {
-      super( filename, access );
-   }
+   /**
+    *Constructor that just calls the super constructor
+    */
+  public CNexusFile( String filename, int access ) throws NexusException{
+    super( filename, access );
+  }
 
-   /** The new getData that gets multidimensional data as a linear array
+  /** 
+   * The new getData that gets multidimensional data as a linear array
+   *
    * @param  NxType  the type of data
    * @param  length   the length of the array
    * @return  the "linear" array of values
    */
-   public Object getData( int NxType, int length )
-      throws NexusException
-   {
-      byte bdata[];
+  public Object getData( int NxType, int length ) throws NexusException{
+    byte bdata[];
 
-      if( handle < 0 ) 
-         throw new NexusException( "NAPI-ERROR: File not open" );
+    if( handle < 0 ) 
+      throw new NexusException( "NAPI-ERROR: File not open" );
 
-      try
-      {
-         int L = -1;
-
-         if( NxType == NexusFile.NX_FLOAT32 )
-            L = 4;
-         else if( NxType == NexusFile.NX_CHAR ) 
-           L = 1;
-         else if( NxType == NexusFile.NX_FLOAT64 )
-           L = 8;
-
-         else if( NxType == NexusFile.NX_INT16 )
-            L = 4;
-         else if( NxType == NexusFile.NX_INT32 )
-            L = 8;
-         else if( NxType == NexusFile.NX_INT8 )
-           L = 2;
-         else if( NxType == NexusFile.NX_UINT16 )
-           L = 4;
-         else if( NxType == NexusFile.NX_UINT32 )
-           L = 8;
-         else if( NxType == NexusFile.NX_UINT8 )
-            L = 2;
-
-         else 
-           throw new NexusException( "NAPI-ERROR: Improper Data Type" );
-
-         bdata = new byte[L * length];
-         //HDFArray ha = new HDFArray(array);
-         //bdata = ha.emptyBytes();
-
-         nxgetdata( handle, bdata );
-
-         //array = ha.arrayify(bdata);
-
-         if( NxType == NexusFile.NX_FLOAT32 )
-            return ncsa.hdf.hdflib.HDFNativeData.byteToFloat( bdata );
-
-         else if( NxType == NexusFile.NX_FLOAT64 )
-            return ncsa.hdf.hdflib.HDFNativeData.byteToDouble( bdata );
-         else if( ( NxType == NexusFile.NX_INT16 ) || ( NxType == NexusFile.NX_UINT16 ) )
-            return ncsa.hdf.hdflib.HDFNativeData.byteToShort( bdata );
-         else if( ( NxType == NexusFile.NX_INT32 ) || ( NxType == NexusFile.NX_UINT32 ) )
-            return ncsa.hdf.hdflib.HDFNativeData.byteToInt( bdata );
-         else if( ( NxType == NexusFile.NX_INT8 ) || ( NxType == NexusFile.NX_UINT8 ) )
-            return bdata;
-
-         if( ( NxType == NexusFile.NX_INT32 ) ||
-             ( NxType == NexusFile.NX_UINT32 ) )
-            return ncsa.hdf.hdflib.HDFNativeData.byteToInt( bdata );
-         if( NxType == NexusFile.NX_CHAR )
-         {
-            char[] cdata = new char[bdata.length];
-
-            for( int i = 0; i < bdata.length; i++ )
-               cdata[i] = ( char )bdata[i];
-            return cdata;
-         }
-
-      }
-      catch( Exception he )
-      {
-         throw new NexusException( he.getMessage() );
+    try{
+      int L = -1;
+      
+      if( NxType == NexusFile.NX_FLOAT32 )
+        L = 4;
+      else if( NxType == NexusFile.NX_CHAR ) 
+        L = 1;
+      else if( NxType == NexusFile.NX_FLOAT64 )
+        L = 8;
+      else if( NxType == NexusFile.NX_INT16 )
+        L = 4;
+      else if( NxType == NexusFile.NX_INT32 )
+        L = 8;
+      else if( NxType == NexusFile.NX_INT8 )
+        L = 2;
+      else if( NxType == NexusFile.NX_UINT16 )
+        L = 4;
+      else if( NxType == NexusFile.NX_UINT32 )
+        L = 8;
+      else if( NxType == NexusFile.NX_UINT8 )
+        L = 2;
+      else 
+        throw new NexusException( "NAPI-ERROR: Improper Data Type" );
+      
+      bdata = new byte[L * length];
+      //HDFArray ha = new HDFArray(array);
+      //bdata = ha.emptyBytes();
+      
+      nxgetdata( handle, bdata );
+      
+      //array = ha.arrayify(bdata);
+      
+      if( NxType == NexusFile.NX_FLOAT32 )
+        return ncsa.hdf.hdflib.HDFNativeData.byteToFloat( bdata );
+      else if( NxType == NexusFile.NX_FLOAT64 )
+        return ncsa.hdf.hdflib.HDFNativeData.byteToDouble( bdata );
+      else if( ( NxType == NexusFile.NX_INT16 ) || ( NxType == NexusFile.NX_UINT16 ) )
+        return ncsa.hdf.hdflib.HDFNativeData.byteToShort( bdata );
+      else if( ( NxType == NexusFile.NX_INT32 ) || ( NxType == NexusFile.NX_UINT32 ) )
+        return ncsa.hdf.hdflib.HDFNativeData.byteToInt( bdata );
+      else if( ( NxType == NexusFile.NX_INT8 ) || ( NxType == NexusFile.NX_UINT8 ) )
+        return bdata;
+      
+      if( ( NxType == NexusFile.NX_INT32 ) ||
+          ( NxType == NexusFile.NX_UINT32 ) )
+        return ncsa.hdf.hdflib.HDFNativeData.byteToInt( bdata );
+      if( NxType == NexusFile.NX_CHAR ){
+        char[] cdata = new char[bdata.length];
+        
+        for( int i = 0; i < bdata.length; i++ )
+          cdata[i] = ( char )bdata[i];
+        return cdata;
       }
 
-      return null;
-   }
+    }catch( Exception he ){
+      throw new NexusException( he.getMessage() );
+    }
+
+    return null;
+  }
 }

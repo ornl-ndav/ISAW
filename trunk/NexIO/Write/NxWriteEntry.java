@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/11/20 16:15:39  pfpeterson
+ * reformating
+ *
  * Revision 1.4  2002/04/01 20:53:38  rmikk
  * Fixed a logical error
  *
@@ -46,195 +49,176 @@
  * Initial checkin
  *
  */
+
 package NexIO.Write;
+
 import NexIO.*;
 import DataSetTools.dataset.*;
 import java.util.*;
 import java.text.*;
-public class NxWriteEntry
-{String errormessage;
- int instrType;
 
-    public NxWriteEntry(int instrType)
-      {errormessage = "";
-       this.instrType=instrType;
-      }
+public class NxWriteEntry{
+  String errormessage;
+  int instrType;
 
-   public String getErrorMessage()
-    {
-     return errormessage;
-    }
+  public NxWriteEntry(int instrType){
+    errormessage = "";
+    this.instrType=instrType;
+  }
+
+  public String getErrorMessage(){
+    return errormessage;
+  }
 
 
-    /** Assumes that the NxMonitor and NxData node have already been set
-   *
+  /**
+   * Assumes that the NxMonitor and NxData node have already been set
    */
-   public boolean processDS( NxWriteNode node, DataSet DS)
-    {NxNodeUtils nu = new NxNodeUtils();
-     NxData_Gen ne = new NxData_Gen();
-     
-     int ranks[],intval[];
-     char cc = 0;
-     errormessage = "Null or improper inputs to NxEntry processor";
-     if( node == null)
-        return true;
-     
-     if( DS == null) 
-        return true;
-     
-     errormessage =  "";
-     NxWriteNode n1 ;
-     Object X = DS.getAttributeValue( Attribute.RUN_NUM);
+  public boolean processDS( NxWriteNode node, DataSet DS){
+    NxNodeUtils nu = new NxNodeUtils();
+    NxData_Gen ne = new NxData_Gen();
     
-     if( X instanceof int[])
-      {int u[]; u = (int[])X;
-       if( u.length > 0)
-         {intval = new int[1];
-          ranks = new int[1];
-          ranks[0] = 1;
-          intval[0] = u[0];
+    int ranks[],intval[];
+    char cc = 0;
+    errormessage = "Null or improper inputs to NxEntry processor";
+    if( node == null)
+      return true;
+     
+    if( DS == null) 
+      return true;
+     
+    errormessage =  "";
+    NxWriteNode n1 ;
+    Object X = DS.getAttributeValue( Attribute.RUN_NUM);
+    
+    if( X instanceof int[]){
+      int u[]; u = (int[])X;
+      if( u.length > 0){
+        intval = new int[1];
+        ranks = new int[1];
+        ranks[0] = 1;
+        intval[0] = u[0];
          
-          n1 = node.newChildNode("run_number","SDS");
-          n1.setNodeValue( intval ,Types.Int, ranks);
-          if( n1.getErrorMessage() != "")
-              errormessage += ";"+n1.getErrorMessage();
-         }
-       }
+        n1 = node.newChildNode("run_number","SDS");
+        n1.setNodeValue( intval ,Types.Int, ranks);
+        if( n1.getErrorMessage() != "")
+          errormessage += ";"+n1.getErrorMessage();
+      }
+    }
     
-     X = DS.getAttributeValue( Attribute.END_DATE);
-     Object X1 = DS.getAttributeValue( Attribute.END_TIME);
+    X = DS.getAttributeValue( Attribute.END_DATE);
+    Object X1 = DS.getAttributeValue( Attribute.END_TIME);
    
-     String SDate = "";
-     String STime = "";
-     if( X != null)
+    String SDate = "";
+    String STime = "";
+    if( X != null)
       if( X instanceof Date)
-        try
-          {
-           SDate = new SimpleDateFormat("yyyy-MM-dd").format(X);
-          }
-        catch(Exception s)
-          {
-           SDate = X.toString();
-           } 
-    else
-       SDate = ne.cnvertoString( X);
+        try{
+          SDate = new SimpleDateFormat("yyyy-MM-dd").format(X);
+        }catch(Exception s){
+          SDate = X.toString();
+        } 
+      else
+        SDate = ne.cnvertoString( X);
 
     if( X1 != null)
       if( X1 instanceof Date)
-       try
-         {
-           STime = new SimpleDateFormat("hh:mm:ss").format(X1);
-          }
-       catch(Exception s){STime = X1.toString();} 
-    else
-       STime = ne.cnvertoString( X1);
+        try{
+          STime = new SimpleDateFormat("hh:mm:ss").format(X1);
+        }catch(Exception s){
+          STime = X1.toString();
+        }
+      else
+        STime = ne.cnvertoString( X1);
    
     SDate = SDate+" "+STime;
    
-    if( SDate.length() > 1)
-      {n1 = node.newChildNode( "end_time", "SDS");
-       ranks = new int[1];
-       ranks[0] = SDate.length()+1;
-       n1.setNodeValue((SDate+cc).getBytes(), Types.Char, ranks);
-       if( n1.getErrorMessage()  != "")
-          errormessage += ";"+errormessage;     
-      }
+    if( SDate.length() > 1){
+      n1 = node.newChildNode( "end_time", "SDS");
+      ranks = new int[1];
+      ranks[0] = SDate.length()+1;
+      n1.setNodeValue((SDate+cc).getBytes(), Types.Char, ranks);
+      if( n1.getErrorMessage()  != "")
+        errormessage += ";"+errormessage;     
+    }
     
-     X = DS.getAttributeValue( Attribute.RUN_TITLE);     
-     if( X != null)
-      {String instr_name = ne.cnvertoString( X);       
-       if( instr_name != null)
-        { n1 = node.newChildNode( "title","SDS");         
-          ranks = new int[1];
-          ranks[0] = instr_name.length() +1;
-          n1.setNodeValue( (instr_name+cc).getBytes(), Types.Char, ranks); 
-          if( n1.getErrorMessage() != "")
-            errormessage += ";"+errormessage;         
-        }
+    X = DS.getAttributeValue( Attribute.RUN_TITLE);     
+    if( X != null){
+      String instr_name = ne.cnvertoString( X);       
+      if( instr_name != null){
+        n1 = node.newChildNode( "title","SDS");         
+        ranks = new int[1];
+        ranks[0] = instr_name.length() +1;
+        n1.setNodeValue( (instr_name+cc).getBytes(), Types.Char, ranks); 
+        if( n1.getErrorMessage() != "")
+          errormessage += ";"+errormessage;         
       }
+    }
     
 /* 
-     X = DS.getAttributeValue( Attribute.INST_NAME);
-     NxWriteNode NxInstr = node.newChildNode( "Instrument","NXinstrument");
-     if( X != null)
-      {String instr_name = ne.cnvertoString( X);
-      if( instr_name != null)
-        {
-         n1 = NxInstr.newChildNode( "name", "SDS");
-          ranks = new int[1];
-          ranks[0] = instr_name.length() +1;
-          n1.setNodeValue( (instr_name+cc).getBytes(), Types.Char, ranks); 
-          if( n1.getErrorMessage() != "")
-            errormessage += ";"+errormessage;         
-       }
-      }
+   X = DS.getAttributeValue( Attribute.INST_NAME);
+   NxWriteNode NxInstr = node.newChildNode( "Instrument","NXinstrument");
+   if( X != null)
+   {String instr_name = ne.cnvertoString( X);
+   if( instr_name != null)
+   {
+   n1 = NxInstr.newChildNode( "name", "SDS");
+   ranks = new int[1];
+   ranks[0] = instr_name.length() +1;
+   n1.setNodeValue( (instr_name+cc).getBytes(), Types.Char, ranks); 
+   if( n1.getErrorMessage() != "")
+   errormessage += ";"+errormessage;         
+   }
+   }
 */
-       
+    int instr_type = instrType;
+    NexIO.Inst_Type it = new NexIO.Inst_Type();
     
-   
-      {int instr_type = instrType;
-       NexIO.Inst_Type it = new NexIO.Inst_Type();
-     
-       String analysis = it.getNexAnalysisName( instr_type);
-       n1 = node.newChildNode( "analysis", "SDS");
-       System.out.println("analysis name and instr type="+analysis+","+instr_type);
-       ranks = new int[1];
-       ranks[0] = 1;
-       intval = new int[1];
-       intval[0] = instr_type;
+    String analysis = it.getNexAnalysisName( instr_type);
+    n1 = node.newChildNode( "analysis", "SDS");
+    System.out.println("analysis name and instr type="+analysis+","
+                       +instr_type);
+    ranks = new int[1];
+    ranks[0] = 1;
+    intval = new int[1];
+    intval[0] = instr_type;
       
-       if( (analysis == null))
-         {
-           n1.addAttribute("isaw_instr_type", intval, Types.Int, ranks);
+    if( (analysis == null)){
+      n1.addAttribute("isaw_instr_type", intval, Types.Int, ranks);
+      
+      analysis ="";
+    }else if( analysis.length() <= 0){
+      n1.addAttribute("isaw_instr_type", intval, Types.Int, ranks);
+      analysis = "";
+    }else{
+      ranks = new int[1];
+      ranks[0] = analysis.length()+1;
           
-           analysis ="";
-          }
-       else if( analysis.length() <= 0)
-          {n1.addAttribute("isaw_instr_type", intval, Types.Int, ranks);
-	 
-          analysis = "";
-          }
-       
-        else{
-        
-          ranks = new int[1];
-          ranks[0] = analysis.length()+1;
-          
-          
-          n1.setNodeValue( (analysis+cc).getBytes(), Types.Char, ranks); 
-          if( n1.getErrorMessage() != "")
-            errormessage += ";"+errormessage;         
-          }
-      }
-
-
+      n1.setNodeValue( (analysis+cc).getBytes(), Types.Char, ranks); 
+      if( n1.getErrorMessage() != "")
+        errormessage += ";"+errormessage;         
+    }
 
     X = DS.getAttributeValue( Attribute.SAMPLE_NAME);
-    if( X !=  null)
-     {String Samp_name = ne.cnvertoString( X);
-      if( Samp_name != null)
-       {NxWriteNode Instrnode = node.newChildNode( "sample", "NXsample");
+    if( X !=  null){
+      String Samp_name = ne.cnvertoString( X);
+      if( Samp_name != null){
+        NxWriteNode Instrnode = node.newChildNode( "sample", "NXsample");
         n1 = Instrnode.newChildNode( "name", "SDS");
         ranks = new int[1];
         ranks[0] = Samp_name.length()+1;
         n1.setNodeValue( (Samp_name+cc).getBytes(),Types.Char,ranks);
-       }
-     }
+      }
+    }
 /*
-    n1 = NxInstr.newChildNode("detector", "NXdetector");
-    NxWriteDetector ndet = new NxWriteDetector();
-    if( ndet.processDS( n1 , DS ))
-      errormessage += ";"+ndet.getErrorMessage();
-    return false;
-    //Monitors and NxData already taken care of
-    //add attributes/fields run_number, and end_time and end_date
+  n1 = NxInstr.newChildNode("detector", "NXdetector");
+  NxWriteDetector ndet = new NxWriteDetector();
+  if( ndet.processDS( n1 , DS ))
+  errormessage += ";"+ndet.getErrorMessage();
+  return false;
+  //Monitors and NxData already taken care of
+  //add attributes/fields run_number, and end_time and end_date
 */
     return false;
-    }
-
+  }
 }
-
-
-
-
-
