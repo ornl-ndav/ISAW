@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2004/02/18 22:30:43  dennis
+ * Added methods to get/set the name of the Experiment.
+ *
  * Revision 1.8  2003/12/16 00:00:49  bouzekc
  * Removed unused imports.
  *
@@ -125,6 +128,30 @@ public class Experiment
 
     for( int i=0;  i<dataset_nodes.size();  i++ )
       ( (DataSetMutableTreeNode)dataset_nodes.get(i) ).extinguish();
+  }
+
+
+  /**
+   *  sets the name of this experiment to the specified name
+   *
+   *  @param  new_name  The new name for this experiment.
+   *
+   */
+  public void setName( String new_name )
+  {
+    name = new_name;
+  }
+
+
+  /**
+   *  gets the name of this experiment 
+   *
+   *  @return  The name for this experiment.
+   *
+   */
+  public String getName()
+  {
+    return name;
   }
 
 
