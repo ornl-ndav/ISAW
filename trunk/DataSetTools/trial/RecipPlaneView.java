@@ -31,6 +31,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/08/21 19:15:14  dennis
+ * After refining the normal vector in FilterFFTds(), the frequency
+ * attribute is now recalculated based on the least-squares approx
+ * for the planar spacing, rather than the peak finding algorithm
+ * using the fft.
+ * The maximum and initial distance between the viewer and the origin
+ * is now set to 5000 rather than 500 to more nearly give an
+ * orthographic projection.
+ *
  * Revision 1.13  2003/08/11 22:53:30  dennis
  * Now sets effective positions from grid, after adjusting
  * the grid.
@@ -209,7 +218,7 @@ public class RecipPlaneView
     JPanel q_panel = new JPanel();
 
     vec_Q_space = new ThreeD_JPanel();
-    controller  = new AltAzController( 45, 45, 2, 500, 500 );
+    controller  = new AltAzController( 45, 45, 2, 5000, 5000 );
 
     threshold_slider = new JSlider(SLIDER_MIN,SLIDER_MAX,SLIDER_DEF);
     threshold_slider.setMajorTickSpacing(20);
@@ -1221,7 +1230,11 @@ public class RecipPlaneView
                     new FloatAttribute( D_SPACING_ATTRIBUTE, d_spacing ) );
           fft_d.setAttribute( 
                     new FloatAttribute( LSQ_ERROR_ATTRIBUTE, sigma ) );
-
+                                       // now reset the frequency attribute
+                                       // based on refined normal & q values
+          float max_chan = 2 * SLICE_SIZE_IN_Q / q_spacing;
+          fft_d.setAttribute( 
+                    new FloatAttribute( FREQUENCY_ATTRIBUTE, max_chan ) );
           new_ds.addData_entry( fft_d );
         }
       }
