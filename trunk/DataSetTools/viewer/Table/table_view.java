@@ -31,6 +31,10 @@
  * Modified:
 * 
  * $Log$
+ * Revision 1.11  2001/08/30 14:35:58  dennis
+ * Added a "Copy Selected" JMenuItem to the Select Menu
+ * in the table's menu bar. (Ruth)
+ *
  * Revision 1.10  2001/08/17 21:17:21  rmikk
  * Fixed major errors in views when groups are paired.
  *
@@ -174,6 +178,8 @@ public class table_view extends JPanel implements ActionListener
    ExcelAdapter EA = null;
    IsawGUI.Util  util;
    
+   JMenuItem JMi= null;
+   JMenuItem JCp = null;
   /** Only Constructor without GUI components
   *@param  outputMedia  <ol>The views can be sent to
    *  <li> 0-Console
@@ -788,12 +794,15 @@ public class table_view extends JPanel implements ActionListener
      { JF = new JFrame( D.toString() );
         
        JMenu JM = new JMenu( "Select" );
-       JMenuItem JMi = new JMenuItem( "All" );
+       JMi = new JMenuItem( "All" );
+       JCp = new JMenuItem("Copy Sel");
        JM.add( JMi );
+       JM.add( JCp);
        JMenuBar JMB= new JMenuBar();
        JMB.add( JM );
        JF.setJMenuBar( JMB );
        JMi.addActionListener( new MyActionListener() );
+       JCp.addActionListener( new MyActionListener());
        // Tabbed pane
        JTabbedPane JtabPane = new JTabbedPane();
        // Table Pane
@@ -1395,8 +1404,14 @@ public class table_view extends JPanel implements ActionListener
   public class MyActionListener implements ActionListener
     {
       public void actionPerformed( ActionEvent e )
-        {JTb.setRowSelectionInterval( 0 , DTM.getRowCount() - 1 );
-         JTb.setColumnSelectionInterval( 0 , DTM.getColumnCount() - 1 );
+        {JMenuItem targ = (JMenuItem) e.getSource();
+	if( targ.equals( JMi))
+         {JTb.setRowSelectionInterval( 0 , DTM.getRowCount() - 1 );
+          JTb.setColumnSelectionInterval( 0 , DTM.getColumnCount() - 1 );
+         }
+        else if( targ.equals( JCp))
+         {EA.actionPerformed( new ActionEvent( JTb, 0,"Copy"));
+         }
         }
     }
  
