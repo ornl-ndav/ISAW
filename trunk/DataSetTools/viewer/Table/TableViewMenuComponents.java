@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2004/08/24 18:51:32  rmikk
+ *  Reorder menu options
+ *  Caught errors on viewer initialization and returned null
+ *
  *  Revision 1.23  2004/07/29 14:33:13  rmikk
  *  Changed Proffen View to Slice Viewer
  *
@@ -169,15 +173,15 @@ public class TableViewMenuComponents
       if( i == 2 )
          return "Counts(x,y)";
       if( i == 3)
-         return "Contour:Qx,Qy vs Qz";
-      if( i == 4)
          return "Slice Viewer";
+      if( i==4)
+         return TOMS_VIEW;
+      if( i == 6)
+         return "Contour:Qx,Qy vs Qz";
       if( i == 5)
          return "Contour:Qy,Qz vs Qx";
-      if( i == 6 )
+      if( i == 7 )
          return "Contour:Qxyz slices";
-      if( i==7)
-         return TOMS_VIEW;
       else return null;
     }
 
@@ -204,14 +208,16 @@ public class TableViewMenuComponents
  * Name associated with the Menu items
  */
  public DataSetViewer getDataSetViewer( String view_type, DataSet DS, ViewerState state)
-   {                      
+   { try{                    
      if(view_type.indexOf("Counts(x,y)")==0)
        try{
+          
            return new DataSetViewerMaker1(DS, state,
                    new RowColTimeVirtualArray( DS, 
                                 DS.getData_entry(0).getX_scale().getStart_x(),
                                false, false, state),
-                   new LargeJTableViewComponent(state, new dummyIVirtualArray2D()));  
+                   new LargeJTableViewComponent(state, new dummyIVirtualArray2D()));
+                   
        }catch( Exception ss){
           DataSetTools.util.SharedData.addmsg( "Cannot create Counts(x,y) :"+ss);
           ss.printStackTrace();
@@ -219,9 +225,11 @@ public class TableViewMenuComponents
        }
 
     if( view_type == TOMS_VIEW){
-         DataSetViewerMaker1 dsv=new DataSetViewerMaker1(DS,state, new DataBlockSelector( DS,null),
+        DataSetViewerMaker1 dsv=new DataSetViewerMaker1(DS,state, new DataBlockSelector( DS,null),
                      new LargeJTableViewComponent(null,
                 null));
+        
+         
          dsv.ImagePortion = .90f;
          return dsv;
     }
@@ -258,10 +266,13 @@ public class TableViewMenuComponents
       if( view_type.indexOf("Contour:Qx,Qz vs Qy")==0)
 	return new ContourView( DS, state, Qax.getQxAxis(), Qax.getQzAxis(), Qax.getQyAxis());
       if( view_type.indexOf("Contour:Qy,Qz vs Qx")==0)
-	return new ContourView( DS, state, Qax.getQyAxis(), Qax.getQzAxis(), Qax.getQxAxis());
+	   return new ContourView( DS, state, Qax.getQyAxis(), Qax.getQzAxis(), Qax.getQxAxis());
 
       if( view_type.indexOf("Contour:Qxyz slices") == 0)
          return new TQxQyQz( DS, state);
+   }catch(Throwable ss){
+      DataSetTools.util.SharedData.addmsg( "Cannot create Viewer");
+   }
     return null;
 
    }
