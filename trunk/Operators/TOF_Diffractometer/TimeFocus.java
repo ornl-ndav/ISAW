@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/07/08 15:44:34  pfpeterson
+ * Now uses tof_data_calc for the calculation.
+ *
  * Revision 1.1  2002/05/31 19:26:21  dennis
  * Basic time focusing for diffractometers.
  *
@@ -169,34 +172,26 @@ public class TimeFocus extends GenericTOF_Diffractometer
     else
       new_ds = ds;
 
-    new_ds.addLog_entry("Focused groups " + group_str + 
+    new_ds.addLog_entry("Time Focused groups " + group_str + 
                         " to angle " + angle_deg +
                         " with L2 " + final_L_m );
 
-    Data             d, 
-                     new_d;
-    float            x_vals[];
+    Data             d, new_d;
     float            y_vals[];
     float            errors[];
     int              id;
     int              index;
     DetectorPosition pos;
     float            new_theta = (float)(angle_deg * Math.PI / 360);
-    float            theta;
-    float            r;
+    float            r, theta, initial_path; 
     Float            initial_path_obj;
-    float            initial_path; 
-    float            scale_factor;
     XScale           x_scale; 
-    AttributeList    attr_list;
-    for ( int i = 0; i < new_ds.getNum_entries(); i++ )
-    {
+    for ( int i = 0; i < new_ds.getNum_entries(); i++ ){
       d = new_ds.getData_entry( i );     
   
       id    = d.getGroup_ID();
       index = arrayUtil.get_index_of( id, ids, 0, ids.length-1 );
-      if ( index > 0 || ids.length == 0 )              // focus
-      {
+      if ( index > 0 || ids.length == 0 ){              // focus
         pos = (DetectorPosition)d.getAttributeValue( Attribute.DETECTOR_POS );
         if ( pos == null )
           return new ErrorString("NO DetectorPosition for group " +
@@ -211,35 +206,24 @@ public class TimeFocus extends GenericTOF_Diffractometer
 
         r     = pos.getDistance();
         theta = pos.getScatteringAngle() / 2;
-        scale_factor = 1;
+
+        x_scale=tof_data_calc.DiffractometerFocus(d.getX_scale(),
+                                            r+initial_path,theta,
+                                            final_L_m+initial_path,new_theta);
+        y_vals  = d.getY_values();
+        errors  = d.getErrors();
+        new_d = Data.getInstance( x_scale, y_vals, errors, id );
+        new_d.setAttributeList( d.getAttributeList() );
+        
+        pos = new DetectorPosition();
         if ( final_L_m > 0 )
-          scale_factor = (final_L_m + initial_path)/(r + initial_path);
-
-        if ( angle_deg > 0 )
-          scale_factor *= Math.sin( new_theta ) / Math.sin( theta ); 
-
-        if ( scale_factor != 1 )
-        {
-          x_vals = d.getX_scale().getXs();
-          for ( int j = 0; j < x_vals.length; j++ )
-            x_vals[j] *= scale_factor;
-
-          x_scale = new VariableXScale( x_vals );
-          y_vals  = d.getY_values();
-          errors  = d.getErrors();
-          new_d = Data.getInstance( x_scale, y_vals, errors, id );
-          new_d.setAttributeList( d.getAttributeList() );
-
-          pos = new DetectorPosition();
-          if ( final_L_m > 0 )
             r = final_L_m;
-          if ( angle_deg > 0 )
+        if ( angle_deg > 0 )
             theta = new_theta;
-          pos.setSphericalCoords( r, theta*2, (float)(Math.PI/2.0) );
-
-          new_d.setAttribute(new DetPosAttribute( Attribute.DETECTOR_POS, pos));
-          new_ds.replaceData_entry( new_d, i );
-        }
+        pos.setSphericalCoords( r, theta*2, (float)(Math.PI/2.0) );
+        
+        new_d.setAttribute(new DetPosAttribute( Attribute.DETECTOR_POS, pos));
+        new_ds.replaceData_entry( new_d, i );
       }
     }
       
