@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.44  2005/03/28 22:47:40  dennis
+ *  Removed TITLE attribute, since the DataSet already has a
+ *  field for the title.
+ *
  *  Revision 1.43  2004/06/15 15:42:43  dennis
  *    Now prevents users from adding Data blocks, observers, attributes, etc. to
  *  the EMPTY_DATA_SET singleton.  Enforces the immutability of the
@@ -952,9 +956,6 @@ public class DataSet implements IAttributeList,
     }
 
     this.title = title; 
-
-    StringAttribute title_attr = new StringAttribute( Attribute.TITLE, title );
-    attr_list.setAttribute( title_attr, 0 );
   }
 
 
@@ -2225,17 +2226,6 @@ public class DataSet implements IAttributeList,
      return ""+ds_tag+":"+title;
   }
   
-  
- /**
-  *  Invokes the method 
-  *    {@link AttributeList#getAttributeTitle() getAttributeTitle()} from 
-  *    {@link AttributeList AttributeList}
-  *  on the field attr_list.
-  */
-  public String getAttributeTitle()
-  {
-    return attr_list.getAttributeTitle();
-  }
 
 
  /**

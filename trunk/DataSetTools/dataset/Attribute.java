@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.45  2005/03/28 22:47:37  dennis
+ *  Removed TITLE attribute, since the DataSet already has a
+ *  field for the title.
+ *
  *  Revision 1.44  2005/01/31 23:48:27  dennis
  *  Added attributes ENERGY and ENERGY_TRANSFER, for use with ToQE operator.
  *
@@ -215,14 +219,6 @@ abstract public class Attribute implements Serializable,
    */    
   public static final int  FULL_ATTRIBUTES     = 2; 
 
-
-  // Suggested names for attributes for neutron scattering data sets:
-  /**
-   * TITLE = "DataSet Name" is the name of a String Attribute giving the Title
-   * for this DataSet.
-   */
-  public static final String  TITLE             = "DataSet Name";
-  
   /**
    * LABEL = "Label" is the name of a String Attribute giving the Label
    * for this DataSet.

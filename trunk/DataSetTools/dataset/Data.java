@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.43  2005/03/28 22:47:39  dennis
+ *  Removed TITLE attribute, since the DataSet already has a
+ *  field for the title.
+ *
  *  Revision 1.42  2005/02/07 22:30:55  dennis
  *  Added protected method copyFields( Data d ) that copies data
  *  members from Data object d to the current Data object.  This
@@ -1446,14 +1450,6 @@ public abstract class Data implements IData,
   
   }
   
-  /**
-  *  Invokes the method {@link AttributeList#getAttributeTitle() getAttributeTitle()} from {@link AttributeList AttributeList}
-  *  on the field attr_list.
-  */
-  public String getAttributeTitle()
-  {
-    return attr_list.getAttributeTitle();
-  }
 
   /**
   *  Invokes the method {@link AttributeList#getAttributeLabel() getAttributeLabel()} from {@link AttributeList AttributeList}
