@@ -6,7 +6,7 @@ import DataSetTools.operator.*;
 import Command.JavaCC.Fortran.*;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
-  
+
 public class INTGT_SLICE implements Wrappable,HiddenOperator{
 
   public int[][][] JHIST=new int[0][0][0];
