@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/10 17:54:22  dennis
+ * Added method getCalculators() that returns the list of VecQToTOF
+ * objects used to calculale that tranformations between Q and
+ * points in a time of flight data set for a detector.
+ *
  * Revision 1.5  2004/02/26 22:58:13  dennis
  * Added javadocs.
  *
@@ -127,6 +132,24 @@ public class Q_SliceExtractor
       }
    }
   }
+
+
+  /* ------------------------ getCalculators ---------------------------- */
+  /**
+   *  Get the vector containing the list of references to the VecQToTOF objects 
+   *  used to calculate the mapping from hkl or Q back to points on a 
+   *  detector.  There is one VecQToTOF object for each detector in each 
+   *  DataSet used to build this  Q_SliceExtractor.  
+   *  NOTE: Since this returns the Vector of references to the VecQToTOF 
+   *  objects used internally by this class, it must be used carefully.  
+   *
+   *  @return a reference to the list of VecQToTOF objects used to calculate 
+   *          the mapping from hkl or Q back to points on a detector.
+   */
+  public Vector getCalculators()
+  {
+    return calculators;
+  } 
 
 
   /* --------------------------- HKL_Slice ------------------------------- */
