@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/08/14 20:26:48  dennis
+ * Changed title and command
+ *
  * Revision 1.1  2001/08/14 19:58:52  dennis
  * Renamed from gsas.java
  *
@@ -53,7 +56,7 @@ public class WriteGSAS extends GenericSave
 {
 
    public WriteGSAS()
-     {super( "Save As gsas " );
+     {super( "Save as GSAS " );
       setDefaultParameters();
      }
 
@@ -62,7 +65,7 @@ public class WriteGSAS extends GenericSave
     *@param filename the name of the file where the data will be saved
     */
    public WriteGSAS( DataSet DS, String filename )
-     { super( "Save As gsas " );
+     { super( "Save as GSAS File" );
       parameters = new Vector();
       addParameter( new Parameter("DS=" , DS ));
       addParameter( new Parameter("filename=", filename ));
@@ -79,7 +82,7 @@ public class WriteGSAS extends GenericSave
   * operation
   */ 
    public String getCommand()
-    {return "gsasOut";
+    {return "SaveGSAS";
     }
 
    /** executes the gsas command, saving the data to the file in gsas form.
@@ -94,7 +97,7 @@ public class WriteGSAS extends GenericSave
 /** Creates a clone of this operator.
 */
 public Object clone()
-  {gsas W = new gsas();
+  {WriteGSAS W = new WriteGSAS();
    W.CopyParametersFrom( this );
     return W;
   }
