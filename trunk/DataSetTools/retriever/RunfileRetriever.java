@@ -12,6 +12,9 @@
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.15  2000/08/03 21:40:15  dennis
+ *  Now calls FilenameUtil.fixCase()
+ *
  *  Revision 1.14  2000/08/01 19:06:07  dennis
  *  Now sets sqrt(counts) errors on initial spectrum data
  *
@@ -124,11 +127,19 @@ public class RunfileRetriever extends    Retriever
     int       num_histograms;
     boolean   has_monitors;
     boolean   has_detectors;
-    String    file_name;
+    String    file_name     = StringUtil.fixSeparator( data_source_name );
+
+    String temp_file_name = FilenameUtil.fixCase( file_name );
+    if ( temp_file_name == null )
+    {
+      System.out.println("ERROR: file " + file_name + 
+                          " not found in RunfileRetriever");
+      run_file = null;
+      return;
+    }
 
     try
     {
-      file_name        = StringUtil.fixSeparator( data_source_name );
       run_file         = new Runfile( file_name );
       num_histograms   = run_file.NumOfHistograms();
       data_set_type    = new int[ 2 * num_histograms ];
