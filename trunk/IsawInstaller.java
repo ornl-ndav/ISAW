@@ -32,6 +32,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.23  2004/06/08 01:26:35  dennis
+ * Fixed syntax error in batch file to run Isaw on Windows.
+ *
  * Revision 1.22  2004/06/04 22:46:25  dennis
  * Added jogl.jar and native libraries for jogl.
  *
@@ -601,14 +604,14 @@ public class IsawInstaller extends JFrame
 		+"cd "+isaw_home+newline
 		+"path %PATH%;./lib"+newline
 		+"java -mx128m -cp \""+fixSeparator(isaw_home)
-                +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;jogl.jar"
+                +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;jogl.jar;"
                 +"jhall.jar;.\" IsawGUI.Isaw"+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
 		+ newline
 		+"rem --"+newline
-		+"rem java -mx128m -cp sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;jogl.jar"
-		+" IsawGUI.Isaw"+newline;
+		+"rem java -mx128m -cp Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;jogl.jar;"
+		+"jhall.jar;.\" IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(LIN_ID)){
 	    content="#!/bin/sh"+newline
 		+"ISAW="+isaw_home+newline
