@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2004/01/24 22:41:14  bouzekc
+ * Removed/commented out unused imports/variables.
+ *
  * Revision 1.15  2003/11/06 19:58:00  rmikk
  * Changed the getGroups method to return the GroupIndex
  *    with respect to the whole DataSet
@@ -86,14 +89,10 @@
  *
 */
 package DataSetTools.viewer.Table;
+
 import java.awt.event.*;
-import javax.swing.text.*;
-
-
 import javax.swing.*;
-import javax.swing.table.*;
 import DataSetTools.dataset.*;
-import java.awt.event.*;
 import java.util.*;
 import java.io.*;
 
@@ -406,9 +405,7 @@ public class DS_XY_TableModel extends TableViewModel
                    float x = xvals[ i ];
               
                    for( int j = 0; j < getColumnCount(); j++ )
-                      {
-                       float v = x;
-               
+                      {               
                        String V = "";
                        if( j == 0 )
                            V += x;

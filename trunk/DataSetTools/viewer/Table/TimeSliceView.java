@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.8  2004/01/24 22:41:15  bouzekc
+ * Removed/commented out unused imports/variables.
+ *
  * Revision 1.7  2003/09/05 21:46:06  rmikk
  * Implemented support for more than one detector
  *
@@ -63,7 +66,6 @@ package DataSetTools.viewer.Table;
 
 
 import javax.swing.*;
-import javax.swing.table.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.components.ui.*;

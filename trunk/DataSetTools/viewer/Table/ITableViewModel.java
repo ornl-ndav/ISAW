@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.3  2004/01/24 22:41:15  bouzekc
+ * Removed/commented out unused imports/variables.
+ *
  * Revision 1.2  2002/11/27 23:25:37  pfpeterson
  * standardized header
  *
@@ -38,7 +41,6 @@
  *
  */
 package DataSetTools.viewer.Table;
-import javax.swing.table.*;
 
 
 /** Interface for TableModels that translate between a JTable row and column and

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/01/24 22:41:15  bouzekc
+ *  Removed/commented out unused imports/variables.
+ *
  *  Revision 1.6  2003/06/18 20:37:28  pfpeterson
  *  Changed calls for NxNodeUtils.Showw(Object) to
  *  DataSetTools.util.StringUtil.toString(Object)
@@ -153,7 +156,8 @@ public class TableView extends DataSetViewer
      }
 
    public static void main( String args[] )
-     {JFrame jf = new JFrame( "Test");
+     {
+      //JFrame jf = new JFrame( "Test");
       DataSet[] DS = (new IsawGUI.Util()).loadRunfile( args[0]);
       String state="X values;Y values;";
       table_view tv = new table_view(0);

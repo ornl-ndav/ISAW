@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2004/01/24 22:41:15  bouzekc
+ *  Removed/commented out unused imports/variables.
+ *
  *  Revision 1.19  2003/12/30 13:42:49  rmikk
  *  Changed the names for the three interactive table views.
  *
@@ -106,8 +109,6 @@ import java.awt.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.viewer.Contour.*;
-import DataSetTools.components.View.*;
-import DataSetTools.components.View.OneD.*;
 
 /** Can be used to set Menu components and retrieve their corresponding
 *   operations
