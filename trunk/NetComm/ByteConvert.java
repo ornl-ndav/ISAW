@@ -6,6 +6,11 @@
  *  Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2001/04/20 20:25:11  dennis
+ *  Rewrote the conversions using low level logical operations
+ *  "<<", "&" and "|".  It will now work correctly for negative
+ *  integers as well as for positive integers.
+ *
  *  Revision 1.1  2001/01/30 23:27:12  dennis
  *  Initial version, network communications for ISAW.
  *
@@ -57,16 +62,13 @@ public final class ByteConvert
     }
 
     int value = 0;
-    int j     = 0;
 
-    while ( j < 4 )
-    {
-      if ( buffer[ start + j ] >= 0 )
-        value = value * 256 + (int)buffer[ start + j ];
-      else
-        value = value * 256 + (256 + (int)buffer[ start + j ]);
-      j++;
-    } 
+    for ( int j = 0; j < 4; j++ ) 
+      value = ( value << 8 ) | ( (int)buffer[ start + j ] & 255 );
+
+      // In Java, bytes are "signed bytes" so they are sign extended when they
+      // are converted to type int.  We must mask off the leading 1's that 
+      // the jvm quitely adds.
 
     return value; 
   } 
@@ -99,8 +101,8 @@ public final class ByteConvert
 
     for ( int j = 3; j >= 0; j-- )
     {
-      buffer[ start + j ] = (byte)(value % 256);
-      value = value / 256;
+      buffer[ start + j ] = (byte)(value & 255);
+      value = value >> 8;
     }
 
     return start+4;                       // can be used to step along buffer
@@ -109,15 +111,29 @@ public final class ByteConvert
 
   public static void main( String args[] )
   {
-    byte buffer[] = new byte[16];
+    int  test_ints[] = {  123456789,  234567891,  345678912,  456789123,
+                         -123456789, -234567891, -345678912, -456789123,
+                                  1,        256,      65536,   16777216,
+                                255,      65280,   16711680,  -16777216,  
+                                 -1 };
 
-    ByteConvert.toBytes( buffer,  0, 123456789 );
-    ByteConvert.toBytes( buffer,  4, 234567891 );
-    ByteConvert.toBytes( buffer,  8, 345678912 );
-    ByteConvert.toBytes( buffer, 12, 456789123 );
-        
-    for ( int i = 0; i < 4; i++ )
-      System.out.println( " "+toInt( buffer, 4*i ));
+    byte buffer[] = new byte[ 4 * test_ints.length ];
+
+    for ( int i = 0; i < test_ints.length; i++ )           // pack test ints
+      ByteConvert.toBytes( buffer,  4*i,  test_ints[i] );  // into buffer
+
+    boolean error = false;
+    for ( int i = 0; i < test_ints.length; i++ )
+      if ( toInt( buffer, 4*i ) != test_ints[i] )          // unpack buffer and
+      {                                                    // compare to 
+                                                           // test ints
+        error = true;
+        System.out.print("Conversion failed: " );
+        System.out.println( " "+toInt( buffer, 4*i ) + " != " + test_ints[i] );
+      }
+ 
+    if ( !error )
+      System.out.println("Conversion worked OK for all test cases!" );
   }
 
 } 
