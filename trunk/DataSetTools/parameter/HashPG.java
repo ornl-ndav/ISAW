@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/09/13 23:16:40  bouzekc
+ *  Removed calls to setEnabled in initGUI(Vector), since ParameterGUI.init()
+ *  already calls this.
+ *
  *  Revision 1.10  2003/08/28 02:28:11  bouzekc
  *  Removed setEnabled() method.
  *
@@ -232,7 +236,6 @@ abstract public class HashPG extends ParameterGUI{
 
         // set up the combobox
         entrywidget=new EntryWidget(new HashEntry(keys));
-        this.entrywidget.setEnabled(this.enabled);
         this.entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
         super.initGUI();
     }

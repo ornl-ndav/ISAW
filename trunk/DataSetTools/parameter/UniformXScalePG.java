@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/09/13 23:16:40  bouzekc
+ * Removed calls to setEnabled in initGUI(Vector), since ParameterGUI.init()
+ * already calls this.
+ *
  * Revision 1.3  2003/09/09 23:33:17  bouzekc
  * Added definition of type to the constructors.
  *
@@ -316,7 +320,6 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
 
     entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
     createButton.addActionListener( new UniformXScalePGListener(  ) );
-    setEnabled( getEnabled(  ) );
     super.initGUI(  );
   }
 
