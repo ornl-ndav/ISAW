@@ -31,7 +31,14 @@
  * Modified:
  *
  * $Log$
- * Revision 1.32  2001/11/19 19:04:09  dennis
+ * Revision 1.33  2001/12/21 17:50:20  dennis
+ * 1: Almost completely separated out the status pane.
+ * 2: Included a Save and Clear option on this status pane
+ *    for demonstration only.
+ * 3: The open and save buttons now use the new actionlisteners:
+ *    OpenFileToDocListener and SaveDocToFileListener
+ *
+ * Revision 1.32  2001/11/19 19:04:09  Ruth
  * Now uses a new constructor for JParametersDialog, that makes the
  * dialog box modal.  If there is an error when the dialog box is
  * exited, the cursor will be on the line with the error.
@@ -205,13 +212,14 @@ public class CommandPane extends JPanel  implements PropertyChangeListener ,
     JTextArea  Commands , 
                Immediate ; 
 
-    JTextArea    StatusLine ; 
+    StatusPane    StatusLine ; 
 
     String FilePath = null  ;             // for macro storage and retrieval
     File SelectedFile = null;
     Document logDoc=null;
     public ScriptProcessorOperator  SP;
     boolean Debug = false;
+    PropertyChangeSupport PC;
 /**
 *  Creates the JPanel for editing and executing scripts
 */
@@ -219,7 +227,10 @@ public CommandPane()
     { 
       initt();
       SP = new ScriptProcessor(  Commands.getDocument());
-      SP.addPropertyChangeListener( this );
+      SP.addPropertyChangeListener( StatusLine );
+      PC = new PropertyChangeSupport( this );
+      PC.addPropertyChangeListener( StatusLine );
+      //SP.addPropertyChangeListener( this );
      }
 
 /**
@@ -234,7 +245,20 @@ public void setLogDoc(Document doc)
    { logDoc = doc;
      SP.setLogDoc( doc );
    }
-
+ /** Adds property change Listener.  So far the only events sent have the
+ *  Display and Clear property for the Status Pane
+ */
+ public void addPropertyChangeListener(PropertyChangeListener listener)
+   { PC.addPropertyChangeListener( listener );
+     SP.addPropertyChangeListener( listener);
+    }
+/** Adds property change Listener.  So far the only events sent have the
+ *  Display and Clear property for the Status Pane
+ */
+ public void removePropertyChangeListener(PropertyChangeListener listener)
+   {PC.removePropertyChangeListener( listener );
+     //SP.removePropertyChangeListener( listener);
+   }
  private void initt()
    {    JPanel JP;   
         Rectangle R = getBounds() ; 
@@ -247,8 +271,9 @@ public void setLogDoc(Document doc)
         Help = new JButton( "Help" ) ; 
         Clear = new JButton("Clear");
         Run.addActionListener( new MyMouseListener(this ) ) ; 
-        Open.addActionListener( new MyMouseListener( this ) ) ; 
-        Save.addActionListener(new MyMouseListener( this ) ) ; 
+        
+        //Open.addActionListener( new MyMouseListener( this ) ) ; 
+        //Save.addActionListener(new MyMouseListener( this ) ) ; 
         Help.addActionListener( new MyMouseListener( this ) ) ; 
         Clear.addActionListener( new MyMouseListener( this ) ) ; 
 
@@ -292,18 +317,22 @@ public void setLogDoc(Document doc)
             X = null;
           
 	  
-         StatusLine = new JTextArea( 3 , 50 ) ; 
+         StatusLine = new StatusPane( 3 , 50 ) ; 
 	 // StatusLine.setBackground( Color.white);
          X = new JScrollPane( StatusLine);
          X.setBorder(new TitledBorder( "Status" ));
+         JPanelwithToolBar YY = new JPanelwithToolBar("Save", "Clear",
+                           new SaveDocToFileListener( StatusLine.getDocument(), null),
+                           new ClearDocListener( StatusLine.getDocument()),
+                           X);
 	 //StatusLine.setBorder( new TitledBorder( "Status" ));
          StatusLine.setEditable( false );
          SplitPaneWithState Center= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT ,
-                      JPS,  X,.80f);
+                      JPS,  YY,.80f);
   
         add(Center, BorderLayout.CENTER);         
 	 //add( X , BorderLayout.SOUTH ) ; 
-         
+ 
      try{        
        FilePath = System.getProperty("Script_Path");  
        FilePath = DataSetTools.util.StringUtil.fixSeparator(FilePath);   
@@ -315,7 +344,14 @@ public void setLogDoc(Document doc)
        if( Debug ) 
           System.out.println(" System properties could not be set");
       }
-
+        OpenFileToDocListener Opn = new OpenFileToDocListener( Commands.getDocument(),
+                FilePath);
+        SaveDocToFileListener Sav = new SaveDocToFileListener( Commands.getDocument(),
+                FilePath, Opn,"filename");
+        Opn.addPropertyChangeListener( Sav);
+                           
+        Open.addActionListener( Opn);
+        Save.addActionListener( Sav );
 
    }
 /**
@@ -363,7 +399,7 @@ public void setLogDoc(Document doc)
 *<ul> The new value will be displayed in the Status line </ul>
 */ 
 public void propertyChange( PropertyChangeEvent evt )
-     {if(Debug)
+     {/*if(Debug)
 	System.out.println("IN PROPERTY CHANGEXXXXXX");
       if( evt.getPropertyName().equals( "Display" ) )    
 	  {String S;
@@ -373,12 +409,15 @@ public void propertyChange( PropertyChangeEvent evt )
              System.out.println(" in Display Data Type ="+ O.getClass());
 	                    // ","+PL.hasListeners("Display"));
 	    S = O.toString();
-           if( StatusLine != null)
-	      new Util().appendDoc(StatusLine.getDocument(), S ) ; 
-          else
-	      System.out.println( "Display is " + S ) ;
+          // if( StatusLine != null)
+	   //   new Util().appendDoc(StatusLine.getDocument(), S ) ; 
+          //else
+	  //    System.out.println( "Display is " + S ) ;
+           PC.firePropertyChange( "Display", null, S);
+         
            
           }
+      */ 
 
     }
 /**
@@ -462,8 +501,10 @@ private class MyKeyListener  extends KeyAdapter
 	          CP.SP.execute1( Immediate.getDocument() , line ) ;
                    new IsawGUI.Util().appendDoc(CP.logDoc,"#$ End Immediate Run"); 
                   if( CP.SP.getErrorCharPos() >= 0 )
-                    {if( StatusLine != null )
-                        new Util().appendDoc(CP.StatusLine.getDocument(), "Status: Error " + CP.SP.getErrorMessage() + 
+                    {//if( StatusLine != null )
+                      // new Util().appendDoc(CP.StatusLine.getDocument(), 
+                       CP.PC.firePropertyChange("Display", null,"Status: Error " + 
+                            CP.SP.getErrorMessage() + 
                            " on line " + line + " character" +CP.SP.getErrorCharPos() ) ; 
 		     int p;
                      Element Eline = null;
@@ -610,15 +651,16 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
         
         CP.SP.setDefaultParameters();
         if( CP.SP.getErrorCharPos() >= 0)
-          {new Util().appendDoc( CP.StatusLine.getDocument(), "setDefault Error "+
+          {//new Util().appendDoc( CP.StatusLine.getDocument(), 
+             CP.PC.firePropertyChange( "Display", null,"setDefault Error "+
                                  CP.SP.getErrorMessage()+" at position "+
                                     CP.SP.getErrorCharPos()+" on line "+CP.SP.getErrorLine()); 
            CP.SP.setDocument (null);
            return;
           }
         
-        StatusLine.setText("");
-
+        //StatusLine.setText("");
+        CP.PC.firePropertyChange("Clear", null,null);
         appendlog( logDoc, Commands.getDocument(), "CommandPane Run");
         if( CP.SP.getNum_parameters() > 0 )
 	    { if( SelectedFile !=null)
@@ -632,7 +674,8 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
            CP.SP.getResult();
         
         if( CP.SP.getErrorCharPos() >= 0)
-          {new Util().appendDoc( StatusLine.getDocument(), "Error "+
+          {//new Util().appendDoc( StatusLine.getDocument(), 
+            CP.PC.firePropertyChange("Display", null,"Error "+
                                 CP.SP.getErrorMessage()+" at position "+
                                 CP.SP.getErrorCharPos()+" on line "+CP.SP.getErrorLine()); 
            CP.SP.setDocument( null);
@@ -645,7 +688,8 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
       {if( CP.SP == null ) return;
     
        CP.SP.reset();
-       CP.StatusLine.setText("");
+       //CP.StatusLine.setText("");
+        CP.PC.firePropertyChange("Clear", null,null);
       
       }
     else if( e.getSource().equals( CP.Save ) || e.getSource().equals( CP.Open ))
@@ -774,10 +818,10 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
              H.show();
              }
            catch(Exception s)
-             {if(CP.StatusLine!=null) 
-                  CP.StatusLine.setText("CANNOT FIND HELP FILE");
-              else 
-                   System.out.println("CANNOT FIND HELP FILE");
+             {//if(CP.StatusLine!=null) 
+                 CP.PC.firePropertyChange("Display" , null, "CANNOT FIND HELP FILE");
+             //else 
+              //     System.out.println("CANNOT FIND HELP FILE");
              }
         
         }
