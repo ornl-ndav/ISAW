@@ -38,7 +38,7 @@ import DataSetTools.operator.Generic.Load.LoadOneRunfile;
 import DataSetTools.operator.Operator;
 
 /**
- *  This class defines a form for time focusing spectra in 
+ *  This class defines a form for time focusing spectra in
  *  a DataSet under the control of a Wizard.
  */
 public class CreateMultiFilesForm extends    Form
@@ -46,12 +46,12 @@ public class CreateMultiFilesForm extends    Form
 {
   /**
    *  Construct an CreateMultiFilesForm to open the files listed in
-   *  operands[] and store it in result[].  This constructor basically 
-   *  just calls the super class constructor and builds an appropriate 
+   *  operands[] and store it in result[].  This constructor basically
+   *  just calls the super class constructor and builds an appropriate
    *  help message for the form.
    *
    *  @param  operands  The list of names of parameters to be added.
-   *  @param  w         The wizard controlling this form. 
+   *  @param  w         The wizard controlling this form.
    */
   public CreateMultiFilesForm( String operands[], String result[], Wizard w )
   {
@@ -66,45 +66,69 @@ public class CreateMultiFilesForm extends    Form
    *  This overrides the execute() method of the super class and provides
    *  the code that actually does the calculation.
    *
-   *  @return 
+   *  @return
    */
   public boolean execute()
   {
-	   SharedData.addmsg("Executing...\n");
-	   IParameterGUI param;
-	   ArrayPG apg;
-	   int run_numbers[];
-	   String run_dir, inst_name, file_name;
-	   Operator op;
-	   Object result;
-	   DataSet[] result_sets;
-	  
-	   //gets the run numbers
-    param = (IntArrayPG)wizard.getParameter( "RunNumbers" );
-    run_numbers = IntList.ToArray(param.getValue().toString());
-    param.setValid(true);
-    
+    SharedData.addmsg("Executing...\n");
+    IParameterGUI param;
+    ArrayPG apg;
+    int run_numbers[];
+    String run_dir, inst_name, file_name;
+    Operator op;
+    Object result, obj;
+    DataSet[] result_sets = new DataSet[0];
+
+    //gets the run numbers
+    param = wizard.getParameter( "RunNumbers" );
+    obj = param.getValue();
+    if( obj != null && obj.toString().length() != 0 )
+    {
+        run_numbers = IntList.ToArray(obj.toString());
+        param.setValid(true);
+    }
+    else
+    {
+       param.setValid(false);
+       SharedData.addmsg(
+         "ERROR: you must enter one or more valid run numbers.\n");
+       return false;
+    }
+
     //get directory
+    //should be no need to check this for validity
     param = wizard.getParameter( "DataDir" );
     run_dir = param.getValue().toString() + "/";
     param.setValid(true);
-    
+
     //get instrument name
     param = wizard.getParameter( "InstName" );
-    inst_name = param.getValue().toString(); 
-    param.setValid(true);
-    
+    obj = param.getValue();
+    if( obj != null && obj.toString().length() != 0 )
+    {
+        inst_name = obj.toString();
+        //what instrument names should this check for?
+        param.setValid(true);
+    }
+    else
+    {
+       param.setValid(false);
+       SharedData.addmsg(
+         "ERROR: you must enter one or more valid run numbers.\n");
+       return false;
+    }
+
     //create full runfile array
     apg = (ArrayPG)wizard.getParameter( "RunList" );
     //clear it out when the form is re-run
     apg.clearValue();
-    
+
     for( int i = 0; i < run_numbers.length; i++ )
     {
       file_name = run_dir + inst_name + run_numbers[i] + ".RUN";
       op = new LoadOneRunfile(file_name, "0");
       result = op.getResult();
-      
+
       if( result instanceof DataSet[] )
       {
         //add the runfile
@@ -124,10 +148,10 @@ public class CreateMultiFilesForm extends    Form
       }
 
     }//for
-    
+
     SharedData.addmsg("Finished loading DataSets from runfiles.\n\n");
-	   
+
     return true;
-  } 
-  
+  }
+
 }//class

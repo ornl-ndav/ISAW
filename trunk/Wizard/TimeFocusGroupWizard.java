@@ -55,9 +55,9 @@ public class TimeFocusGroupWizard
   public static void main( String args[] )
   {
                                                       // build the wizard and
-                                                      // specify the help 
+                                                      // specify the help
                                                       // messages.
-    Wizard w = new Wizard( "Time Focus and Group Wizard" ); 
+    Wizard w = new Wizard( "Time Focus and Group Wizard" );
     SharedData.addmsg("TimeFocusGroupWizard Main\n");
     StringBuffer s = new StringBuffer();
     s.append("This wizard will let you do time focusing and grouping on ");
@@ -69,64 +69,64 @@ public class TimeFocusGroupWizard
                                                       // define the entries in
                                                       // in the master list
     //for CreateMultiFilesForm
-    w.setParameter( "RunNumbers", 
-                    new IntArrayPG( "Enter run numbers", 
+    w.setParameter( "RunNumbers",
+                    new IntArrayPG( "Enter run numbers",
                     new String("12358"), false));
-    w.setParameter( "DataDir", 
+    w.setParameter( "DataDir",
                     new DataDirPG( "Enter directory",new String(""), false));
-    w.setParameter( "InstName", 
+    w.setParameter( "InstName",
                     new InstNamePG( "Enter instrument name",
                     new InstrumentNameString("GPPD"), false));
-                    
-    //for TimeFocusForm 
-    w.setParameter( "RunList", 
+
+    //for TimeFocusForm
+    w.setParameter( "RunList",
                     new ArrayPG( "Run List", new Vector(), false));
-    w.setParameter( "TimeFocusResults", 
-                    new ArrayPG( "Time Focus Results", new Vector(), false));               
-    w.setParameter("FocusIDs", 
+    w.setParameter( "TimeFocusResults",
+                    new ArrayPG( "Time Focus Results", new Vector(), false));
+    w.setParameter("FocusIDs",
                    new StringPG("List of IDs to focus", new String(""), false));
-    w.setParameter("NewAngle", 
+    w.setParameter("NewAngle",
                    new FloatPG("New angle in degrees", new Float(30.0f), false));
-    w.setParameter("NewFPath", 
+    w.setParameter("NewFPath",
                    new FloatPG("New final path (m)", new Float(4.0f), false));
-    w.setParameter("MakeNewds", 
+    w.setParameter("MakeNewds",
                    new BooleanPG("Make new DataSet?", new Boolean(true), false));
 
-    //for GroupingForm               
-    w.setParameter("GroupStr", 
-                   new StringPG("List of group IDs of the spectra", 
-                   new String("1"), false));
-    w.setParameter("NewGroupID", 
-                   new IntegerPG("Group ID of the new datablock", 
+    //for GroupingForm
+    w.setParameter("GroupStr",
+                   new StringPG("List of group IDs of the spectra",
+                   new String("1:50"), false));
+    w.setParameter("NewGroupID",
+                   new IntegerPG("Group ID of the new datablock",
                    new Integer(1), false));
-    w.setParameter( "GroupingResults", 
-                    new ArrayPG( "Grouping Results", new Vector(), false));                    
+    w.setParameter( "GroupingResults",
+                    new ArrayPG( "Grouping Results", new Vector(), false));
                                                     // Specify the parameters
                                                     // used by the forms and
                                                     // add the forms to the
                                                     // Wizard
-                                                    
-    //open files form                                                    
+
+    //open files form
     String edit_parms[] = {"RunNumbers", "DataDir", "InstName"};
     String result_parms[] = {"RunList"};
     Form form0 = new CreateMultiFilesForm(  edit_parms, result_parms, w );
     w.add( form0 );
-    
+
     //time focus form
     String const_parms1[] = {"RunList"};
     String edit_parms1[] = {"FocusIDs", "NewAngle", "NewFPath", "MakeNewds"};
     String result_parms1[] = {"TimeFocusResults"};
     Form form1 = new TimeFocusForm(  const_parms1, edit_parms1, result_parms1, w );
-    w.add( form1 );        
-    
+    w.add( form1 );
+
     //grouping form
     String const_parms2[] = {"TimeFocusResults"};
     String edit_parms2[] = {"GroupStr", "NewGroupID"};
     String result_parms2[] = {"GroupingResults"};
     Form form2 = new GroupingForm(  const_parms2, edit_parms2, result_parms2, w );
-    w.add( form2 );        
+    w.add( form2 );
 
     w.show(0);
   }
-  
+
 }
