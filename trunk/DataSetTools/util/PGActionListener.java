@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.2  2003/06/23 16:27:02  bouzekc
+ * Added javadoc class description.
+ *
  * Revision 1.1  2003/06/23 14:45:04  bouzekc
  * Added to CVS.
  *
@@ -43,6 +46,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
 
+/**
+ *
+ *  Class designed for ParameterGUIs which need internal ActionListeners.  
+ */
 public class PGActionListener implements ActionListener{
   VectorPG vpf;
   public PGActionListener( VectorPG vpg){
