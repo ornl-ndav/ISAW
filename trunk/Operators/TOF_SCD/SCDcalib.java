@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/04/01 21:02:47  dennis
+ *  Opens default log file, SCDcalib.log, in current directory
+ *  and calls methods on the error function being minimized to
+ *  write information on the progress of the computation, as
+ *  well as the final results to the log file.
+ *
  *  Revision 1.5  2004/03/31 21:35:40  dennis
  *  Added check for empty list of peaks (with hkl's) read from file.
  *
@@ -60,9 +66,10 @@ import DataSetTools.dataset.*;
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Functions.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.*;
 
 import java.util.*;
-
+import java.io.*;
 import IPNS.Runfile.*;
 
 
@@ -388,6 +395,7 @@ public class SCDcalib extends GenericTOF_SCD
   {
     String peaksfile = getParameter(0).getValue().toString();
     String runfile   = getParameter(1).getValue().toString();
+    String logname   = "SCDcalib.log";
 
     float  lat_params[] = new float[6];
     for ( int i = 0; i < 6; i++ )
@@ -407,6 +415,17 @@ public class SCDcalib extends GenericTOF_SCD
     boolean use_dist  = ((Boolean)(getParameter(18).getValue())).booleanValue();
     boolean use_rot   = ((Boolean)(getParameter(19).getValue())).booleanValue();
 
+    PrintStream log_print = null;
+    try
+    {
+      File log_file          = new File( logname );
+      OutputStream log_os    = new FileOutputStream( log_file );
+      log_print = new PrintStream( log_os );
+    }
+    catch ( Exception e )
+    {
+      SharedMessages.addmsg("WARNING: Couldn't open log file: " + logname );
+    }
 
     double lattice_params[] = new double[6];
     for ( int i = 0; i < 6; i++ )
@@ -541,9 +560,12 @@ public class SCDcalib extends GenericTOF_SCD
                                                      // function
     SCDcal error_f = new SCDcal( peaks,
                                  grids,
-                                 parameters, parameter_names,
-                                 n_used, is_used,
-                                 lattice_params );
+                                 parameters, 
+                                 parameter_names,
+                                 n_used, 
+                                 is_used,
+                                 lattice_params,
+                                 log_print );
 
     for ( int i = 0; i < parameters.length; i++ )
     {
@@ -554,7 +576,9 @@ public class SCDcalib extends GenericTOF_SCD
       System.out.println( parameter_names[i] +" = " + parameters[i] );
     }
     System.out.println("Before fit... params are");
-    error_f.ShowProgress();
+    log_print.println("Before fit... params are");
+    error_f.ShowProgress( System.out );
+    error_f.ShowProgress( log_print  );
                                                 // build the arrays of x values
                                                 // target function values
                                                 // (z_vals) and "fake"
@@ -576,13 +600,22 @@ public class SCDcalib extends GenericTOF_SCD
                                  x_index, z_vals, sigmas, 
                                  tolerance, max_steps);
 
+    log_print.println( "==================================================");
+    log_print.println( "RESULT OF FIT:");
+    log_print.println( fitter.getResultsString() );
+    log_print.println( "==================================================");
+    System.out.println( "==================================================");
+    System.out.println( "RESULT OF FIT:");
     System.out.println( fitter.getResultsString() );
-    System.out.println();
+    System.out.println( "==================================================");
+
     System.out.println("RESULTS -----------------------------------------");
     System.out.println("observed U matrix:");
     LinearAlgebra.print( error_f.U_observed );
+
     System.out.println("observed B matrix:");
     LinearAlgebra.print( error_f.B_observed );
+
     System.out.println("observed UB matrix:");
     double UB[][] = LinearAlgebra.mult( error_f.U_observed, error_f.B_observed);
     LinearAlgebra.print( UB );
@@ -595,9 +628,11 @@ public class SCDcalib extends GenericTOF_SCD
     LinearAlgebra.print( UB );
 
     System.out.println();
-    error_f.ShowProgress();
+    error_f.ShowProgress( System.out );
+    error_f.ShowProgress( log_print  );
 
-    error_f.ShowOldCalibrationInfo();
+    error_f.ShowOldCalibrationInfo( System.out );
+    error_f.ShowOldCalibrationInfo( log_print  );
 
     float results[] = new float[ parameters.length ];
     for ( int i = 0; i < parameters.length; i++ )
@@ -607,6 +642,7 @@ public class SCDcalib extends GenericTOF_SCD
     result_vector.addElement( results );
     result_vector.addElement( parameter_names );
 
+    log_print.close();
     return result_vector;
   }
 
