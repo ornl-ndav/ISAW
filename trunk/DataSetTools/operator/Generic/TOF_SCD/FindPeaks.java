@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2003/02/12 21:48:42  dennis
+ * Changed to use PixelInfoList instead of SegmentInfoList.
+ *
  * Revision 1.14  2003/02/06 16:02:57  dennis
  * Added getDocumentation() method. (Shannon Hintzman)
  *
@@ -164,8 +167,8 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     //System.out.println("==================================");
     Data data=data_set.getData_entry(0);
     int numData=data_set.getNum_entries();
-    SegInfoListAttribute segI;
-    SegmentInfo seg=null;
+    PixelInfoListAttribute segI;
+    IPixelInfo seg=null;
     int det_number=0;
 
     run_number=((int[])data_set.getAttributeValue(Attribute.RUN_NUM))[0];
@@ -212,12 +215,13 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
 
     // the detector number
     if(seg!=null){
-      det_number=seg.getDet_num();
+      det_number=seg.DataGrid().ID();
     }else{
-      segI=(SegInfoListAttribute)data_set.getData_entry(ids[minColumn][minRow])
-        .getAttribute(Attribute.SEGMENT_INFO_LIST);
-      seg=((SegmentInfo[])segI.getValue())[0];
-      det_number=seg.getDet_num();
+      segI=(PixelInfoListAttribute)
+           data_set.getData_entry(ids[minColumn][minRow])
+           .getAttribute(Attribute.PIXEL_INFO_LIST);
+      seg=((PixelInfoList)segI.getValue()).pixel(0);
+      det_number=seg.DataGrid().ID();
     }
 
     SharedData.addmsg("Columns("+minColumn+"<"+maxColumn

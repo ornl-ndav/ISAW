@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/02/12 21:48:47  dennis
+ * Changed to use PixelInfoList instead of SegmentInfoList.
+ *
  * Revision 1.3  2003/02/12 15:29:56  pfpeterson
  * Various improvements to user interface including autimatically loading
  * the oirentation matrix and calibration from experiment file if not
@@ -320,18 +323,14 @@ public class Integrate extends GenericTOF_SCD{
     // get the detector number
     int detnum=0;
     {
-      Object detnumO=null;
-      detnumO=data.getAttributeValue(Attribute.SEGMENT_INFO);
-      if(detnumO==null)
-        detnumO=data.getAttributeValue(Attribute.SEGMENT_INFO_LIST);
-      if(detnumO!=null){
-        if(detnumO instanceof SegmentInfo[]){
-          detnumO=((SegmentInfo[])detnumO)[0];
-        }
-        if(detnumO instanceof SegmentInfo){
-          detnum=((SegmentInfo)detnumO).getDet_num();
-        }
+      Attribute attr = ds.getData_entry(0).getAttribute(
+                                              Attribute.PIXEL_INFO_LIST );
+      if( attr != null && (attr instanceof PixelInfoListAttribute) )
+      {
+        PixelInfoList  pil  = (PixelInfoList)attr.getValue();
+        detnum = pil.pixel(0).DataGrid().ID();
       }
+
     }
     if(detnum==0)
       return new ErrorString("detector number not found");
