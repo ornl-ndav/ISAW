@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/06/05 13:49:58  dennis
+ *  Interface IXmlIO partially implemented.
+ *
  *  Revision 1.5  2001/04/25 19:03:54  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -48,6 +51,7 @@
  */
 
 package  DataSetTools.dataset;
+import   java.io.*;
 
 /**
  * The concrete class for an attribute whose value is an int.  
@@ -62,9 +66,49 @@ package  DataSetTools.dataset;
  * @version 1.0  
  */
 
-public class IntAttribute extends Attribute
+public class IntAttribute extends    Attribute
+                          implements IXmlIO 
 {
   private int value;
+
+  /**
+   *  Write the state of this object out to the specified stream in XML format.
+   *
+   *  @param  stream   The stream to write to.
+   *  @param  mode     Flag indicating whether or not to write the value in
+   *                   base 64 encoding.
+   *
+   *  @return true if the write was successful, false otherwise.
+   */
+  public boolean XMLwrite( OutputStream stream, int mode )
+  {
+    try
+    { 
+      String output = "<IntAttribute>\n";
+      output += "<name>"  + name  +"</name>\n";
+      output += "<value>" + value +"</value>\n";
+      output += "</IntAttribute>\n";
+      stream.write( output.getBytes() );
+    }
+    catch ( IOException e )
+    {
+      return false; 
+    } 
+    return true;
+  }
+
+
+  /**
+   *  Read the state of this object from the specified stream in XML format.
+   *
+   *  @param  stream   The stream to read from.
+   *
+   *  @return true if the read was successful, false otherwise.
+   */
+  public boolean XMLread( InputStream stream )
+  {
+     return false;
+  }
 
   /**
    * Constructs an IntAttribute object using the specified name and value.
