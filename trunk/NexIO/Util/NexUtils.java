@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/12/18 15:20:00  rmikk
+ * Replaces some (String) by ConvertDataType.StringValue
+ *   to reduce ClassCastExceptions
+ *
  * Revision 1.2  2003/11/23 23:51:31  rmikk
  * Eliminated some debugging prints
  * DataSets are not saved as Grids unless there is more than 1 row
@@ -115,20 +119,24 @@ public class NexUtils implements INexUtils{
      dd =NxDetector.getChildNode("height");
      if( dd != null){ 
         height  =ConvertDataTypes.floatArrayValue(dd.getNodeValue());
-        ConvertDataTypes.UnitsAdjust(height, (String)dd.getAttrValue("units"),"m",
+        ConvertDataTypes.UnitsAdjust(height, ConvertDataTypes.StringValue(
+                    dd.getAttrValue("units")),"m",
         1.0f,0.0f); 
      }
      dd =NxDetector.getChildNode("depth");
      if( dd != null){ 
         depth  =ConvertDataTypes.floatArrayValue(dd.getNodeValue());
-        ConvertDataTypes.UnitsAdjust(depth, (String)dd.getAttrValue("units"),"m",
+        ConvertDataTypes.UnitsAdjust(depth, ConvertDataTypes.StringValue(
+                dd.getAttrValue("units")),"m",
         1.0f,0.0f); 
      }
      dd =NxDetector.getChildNode("orientation");
      
      if( dd != null){ 
         orientation  =ConvertDataTypes.floatArrayValue(dd.getNodeValue());
-        ConvertDataTypes.UnitsAdjust(orientation,(String)dd.getAttrValue("units"),"rad",
+        
+        ConvertDataTypes.UnitsAdjust(orientation,ConvertDataTypes.StringValue(
+                   dd.getAttrValue("units")),"rad",
         1.0f,0.0f); 
         
      }
@@ -249,11 +257,16 @@ public class NexUtils implements INexUtils{
                         new PixelInfoList(piList)));
            db.setAttribute( new DetPosAttribute(Attribute.DETECTOR_POS,
                      new DetectorPosition(Grid.position(row,col) )  ));
-        }else 
+        }else {
+          if( 3 == 2)System.out.print("DetPos ere aft= ["+distance[grid]+","+
+               polar[grid]+","+azimuth[grid]+"--"+
+               StringUtil.toString(ConvertDataTypes.convertToIsaw( distance[grid],
+                    polar[grid], azimuth[grid]).getSphericalCoords()));
           ConvertDataTypes.addAttribute( db, ConvertDataTypes.CreateDetPosAttribute(
                 Attribute.DETECTOR_POS, ConvertDataTypes.convertToIsaw( distance[grid],
                     polar[grid], azimuth[grid])));
-          
+           
+          }
         col++;
         if( col > ncols){
            col = 1;
