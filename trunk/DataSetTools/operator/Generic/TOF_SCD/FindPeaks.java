@@ -51,10 +51,8 @@ import java.text.DecimalFormat;
  */
 public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     private static final String     TITLE                 = "Find Peaks";
-    private static final int        time_notice_frequency = 20;
-    private static final SharedData shared                = new SharedData();
     private              int        run_number            = -1;
-
+    private static       int        first_seq_num         = 1;
 
  /* ------------------------ Default constructor ------------------------- */ 
  /**
@@ -75,12 +73,16 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   *  @param  data_set    DataSet to find peak in
   *  @param  min_count   Minimum number of counts peak must have
   */
-    public FindPeaks( DataSet data_set, int maxNumPeaks, int min_count){
+    public FindPeaks( DataSet data_set, int maxNumPeaks, int min_count,
+                                                         boolean stat_seq_num){
 	this(); 
 	parameters = new Vector();
     addParameter( new Parameter("Histogram", data_set) );
-    addParameter( new Parameter("Maximum Number of Peaks", new Integer(maxNumPeaks)));
+    addParameter( new Parameter("Maximum Number of Peaks",
+                                new Integer(maxNumPeaks)));
     addParameter( new Parameter("Minimum Counts", new Integer(min_count) ) );
+    addParameter( new Parameter("Static Sequence Number",
+                                new Boolean(stat_seq_num)));
   }
 
  /* ---------------------------- getCommand ------------------------------- */ 
@@ -106,6 +108,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     addParameter( new Parameter("Data Set", DataSet.EMPTY_DATA_SET ) );
     addParameter( new Parameter("Maximum Number of Peaks", new Integer(1000)));
     addParameter( new Parameter("Minimum Counts", new Integer(0) ) );
+    addParameter( new Parameter("Static Sequence Number", Boolean.FALSE));
   }
 
  /* ----------------------------- getResult ------------------------------ */ 
@@ -117,9 +120,13 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   */
   public Object getResult()
   {
-    DataSet data_set    =  (DataSet)(getParameter(0).getValue());
-    int     maxNumPeaks = ((Integer)(getParameter(1).getValue())).intValue();
-    int     min_count   = ((Integer)(getParameter(2).getValue())).intValue();
+    DataSet data_set     =  (DataSet)(getParameter(0).getValue());
+    int     maxNumPeaks  = ((Integer)(getParameter(1).getValue())).intValue();
+    int     min_count    = ((Integer)(getParameter(2).getValue())).intValue();
+    boolean stat_seq_num = ((Boolean)(getParameter(3).getValue())).booleanValue();
+
+    // reset the first sequence number if specified
+    if(!stat_seq_num) first_seq_num=1;
 
     //System.out.print("====================================");
     //System.out.println("==================================");
@@ -152,11 +159,12 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     int minTime=0;
     int maxTime=(data.getCopyOfY_values()).length;
 
-    float[] times=(data_set.getXRange()).getXs();
+    float[] times=data.getX_scale().getXs();
 
     // position of detector center
-    float detA = detector_angle(data_set);
-    float detD = detector_distance(data_set,detA);
+    float detA  = detector_angle(data_set);
+    float detA2 = 0f;
+    float detD  = detector_distance(data_set,detA);
     // sample orientation
     //float chi   = ((Float)data_set.getAttributeValue("Sample Chi")).floatValue(); 
     //float phi   = ((Float)data_set.getAttributeValue("Sample Phi")).floatValue();
@@ -176,13 +184,13 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
 	(data_set.getAttribute(Attribute.INST_NAME)).getValue();
     if(instName.equals("SCD")){
 	if(maxRow==87){
-	    shared.status_pane.add("Instrument is SCD, reseting"
+	    SharedData.addmsg("Instrument is SCD, reseting"
 				   +" maxRow from 87 to 85");
 	    maxRow=85;
 	}
     } 
 
-    shared.status_pane.add("Columns("+minColumn+"<"+maxColumn
+    SharedData.addmsg("Columns("+minColumn+"<"+maxColumn
 			   +") Rows("+minRow+"<"+maxRow
 			   +") TimeIndices("+minTime+"<"+maxTime+")");
 
@@ -325,6 +333,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
 				  minTime,   maxTime);
 		    peak.t(times[k]);
 		    peak.detA(detA);
+                    peak.detA2(detA2);
 		    peak.detD(detD);
 		    peak.chi(chi);
 		    peak.phi(phi);
@@ -337,21 +346,21 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
 	    } // end of loop over timeslice
 	}     // end of loop over row
     }         // end of loop over column
-    shared.status_pane.add("Found "+peaks.size()+" peaks (maximum number "+
+    SharedData.addmsg("Found "+peaks.size()+" peaks (maximum number "+
 			   maxNumPeaks+")");
 
-    shared.status_pane.add("Sorting peaks");
+    SharedData.addmsg("Sorting peaks");
     peaks=sort(peaks,maxNumPeaks);
 
     if(peaks.size()>maxNumPeaks){
 	for( int i=peaks.size()-1 ; i>=maxNumPeaks ; i-- ){
 	    peaks.remove(i);
 	}
-	shared.status_pane.add("Keeping "+peaks.size()+" peaks");
+	SharedData.addmsg("Keeping "+peaks.size()+" peaks");
     }
 
     peaks=sortT(peaks);
-
+    first_seq_num+=peaks.size();
     return peaks;
   }
 
@@ -373,7 +382,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
 	    for( int i=0 ; i<peaks.size() ; i++ ){
 		if(((Peak)peaks.elementAt(i)).ipkobs()==maxPeak){
 		    peak=(Peak)peaks.elementAt(i);
-		    peak.seqnum(sortPeaks.size()+1);
+		    peak.seqnum(first_seq_num+sortPeaks.size());
 		    sortPeaks.add(peak.clone());
 		    peaks.remove(i);
 		    break;
@@ -383,7 +392,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
 	}
 
 	if(origPeaksSize>maxNumPeaks){
-	    shared.status_pane.add("Keeping largest "+sortPeaks.size()
+	    SharedData.addmsg("Keeping largest "+sortPeaks.size()
 				   +" peaks");
 	}
 
@@ -401,7 +410,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
 	    for( int i=0 ; i<peaks.size() ; i++ ){
 		if(((Peak)peaks.elementAt(i)).z()==minT){
 		    peak=(Peak)peaks.elementAt(i);
-		    peak.seqnum(sortPeaks.size()+1);
+		    peak.seqnum(first_seq_num+sortPeaks.size());
 		    sortPeaks.add(peak.clone());
 		    peaks.remove(i);
 		    break;
@@ -411,7 +420,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
 	}
 
 	/* if(origPeaksSize>maxNumPeaks){
-	   shared.status_pane.add("Keeping largest "+sortPeaks.size()
+	   SharedData.addmsg("Keeping largest "+sortPeaks.size()
 	   +" peaks");
 	   } */
 
@@ -472,6 +481,13 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
         //System.out.println("->"+angle);
 
 	return angle;
+    }
+
+ /**
+  * Find the detector angle by averaging over pixel angles.
+  */
+    static private float detector_angle2(DataSet ds){
+        return 0f;
     }
 
  /**
@@ -542,7 +558,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
 	//op.getResult();
 
 	//System.out.println("Findpeaks("+datfile+",100,0)");
-	op = new FindPeaks( rds, 10, 1 );
+	op = new FindPeaks( rds, 10, 20, false );
 	Vector peaked=(Vector)op.getResult();
 	
 	//System.out.println(((int[])rds.getAttributeValue(Attribute.RUN_NUM))[0]);
@@ -552,5 +568,6 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
 	    peak=(Peak)peaked.elementAt(i);
 	    System.out.println(peak);
 	}
+        System.exit(0);
     }
 }
