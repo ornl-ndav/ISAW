@@ -28,6 +28,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/01/30 02:19:39  bouzekc
+ *  Removed unused imports and variables.
+ *
  *  Revision 1.3  2003/03/05 23:03:14  hammonds
  *  Add DataDirectoryString, LoadFileString, SaveFileString
  *
@@ -47,8 +50,6 @@ import  DataSetTools.operator.Operator;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Generic.Batch.*;
 import  DataSetTools.parameter.StringPG;
-import  Command.execOneLine;
-
 
 /**
  *   This class is intended to provide support for prompting users for input on 
@@ -190,7 +191,6 @@ public class TextPrompt extends GenericBatch implements Serializable
 	int[] ilist = IntList.ToArray(part);
 	if ( ilist.length > 0 ) {
 	  Integer[] olist = new Integer[ilist.length];
-	  Vector oArray = new Vector();
 	  for (int ii = 0; ii < ilist.length;ii++){
 	    olist[ii] = new Integer(ilist[ii]);
 	    ov.add(olist[ii]);

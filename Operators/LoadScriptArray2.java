@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/01/30 02:19:38  bouzekc
+ *  Removed unused imports and variables.
+ *
  *  Revision 1.5  2003/10/14 21:52:38  dennis
  *  Fixed javadoc problem so that it builds cleanly on jdk 1.4.2.
  *  Fixed javadocs for getCommand().
@@ -58,7 +61,7 @@ import  java.util.*;
 import  DataSetTools.operator.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Generic.Batch.*;
-import  IPNS.Runfile.*;
+
 /**
  *   This class supports reading of Strings, floats, ints etc. from an
  *   ordinary text file.  In addition to methods to read each of the 
@@ -118,7 +121,6 @@ public class LoadScriptArray2 extends GenericBatch implements Serializable
   public Object getResult() {
     String  file_name = getParameter(0).getValue().toString();
     TextFileReader f = null;
-    String line;
     Vector data_out = new Vector();
     Vector data_out_V = new Vector();
    
@@ -175,7 +177,7 @@ public class LoadScriptArray2 extends GenericBatch implements Serializable
 			StringUtil.getString( in_line, pIndex );
 		      tempString = new String( sVal + " " + restOf );
 		      sVal = tempString.trim();
-		      String paren = StringUtil.getString( in_line);
+		      StringUtil.getString( in_line);
 		    } 
 		  }  // End look for text inside quote
 		  data_out.add( sVal );
