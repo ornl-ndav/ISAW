@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2005/01/10 15:53:33  dennis
+ *  Removed empty if statements.
+ *
  *  Revision 1.26  2004/08/13 03:30:45  millermi
  *  - Fixed javadoc errors.
  *  - Reduced size of lines exceeding 80 characters.
@@ -451,11 +454,11 @@ public class AttributeList implements Serializable,
               // keep the run title from the first attribute list, it would
               // be too long if concatenated
 
-          else if ( attr_name.equals( Attribute.END_TIME ))
-            ; // omit the End Time, it doesn't make sense to average it
+ //         else if ( attr_name.equals( Attribute.END_TIME ))
+ //           ; // omit the End Time, it doesn't make sense to average it
 
-          else if ( attr_name.equals( Attribute.END_DATE ))
-            ; // omit the End Date, it doesn't make sense to average it
+ //         else if ( attr_name.equals( Attribute.END_DATE ))
+ //           ; // omit the End Date, it doesn't make sense to average it
 
           else if ( attr_name.equals( Attribute.GROUP_ID ))
             new_list.addAttribute( this_attr );
