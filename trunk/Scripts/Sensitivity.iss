@@ -9,8 +9,8 @@
 #@param    DeadDetectorLevel  The level that indicates a detector is "dead"
 
 
-$runFileName       LoadFileString("C:/Argonne/sand/wrchen03/ins/sand19878.run")  Enter Run file with info
-$SaveFileName      SaveFileString("C:/ISAW/SampleRuns/sens19878A.dat") Enter file to save to
+$runFileName       LoadFileString("C:/new_das_runs\sand20337.run")  Enter Run file with info
+$SaveFileName      SaveFileString("C:/test_output/sens20337.dat") Enter file to save to
 $HotDetectorLevel  Float(1.4)                     Enter the level indicating a hot detector
 $DeadDetectorLevel Float( .6)                   Enter the level indicating a dead detector
 
