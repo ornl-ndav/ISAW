@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/02/28 14:50:10  dennis
+ *  Added getDocumentation() method. (Tyler Stelzer)
+ *
  *  Revision 1.3  2002/11/27 23:20:43  pfpeterson
  *  standardized header
  *
@@ -272,11 +275,35 @@ public class DataSetPrint extends    GenericOperator
   }  
 
 
-public static void pause(int time)
-{ 
-  System.out.print("Pause for "+time/1000 +" second! ");
-  try{Thread.sleep(time);}catch(Exception e){}
-}
+  public static void pause(int time)
+  { 
+    System.out.print("Pause for "+time/1000 +" second! ");
+    try{Thread.sleep(time);}catch(Exception e){}
+  }
+
+  
+  public String getDocumentation()
+  {
+    StringBuffer res = new StringBuffer("");
+    
+    res.append("@overview This operator converts Print data information.");
+    
+    res.append("@algorithm Check to make sure there is valid data.  Output");
+     res.append(" information to the designated output location.  Return");
+     res.append(" a string stating that it printed to a location.");
+    
+    res.append("@param  ds  The DataSet to which the operation is applied.");
+    res.append("@param  index  The data block number.");
+    res.append("@param  outputtype  Where to write the data to.");
+    
+    res.append("@return This returns a string \"Printed < dataSet >, index");
+     res.append(" < index > to < location >\". Otherwise it returns an");
+     res.append(" error string if it is not successful.");
+    
+    res.append("@error ERROR: In PrintDS, No Data block # "); 
+    
+    return res.toString();
+  }
 
 
 }
