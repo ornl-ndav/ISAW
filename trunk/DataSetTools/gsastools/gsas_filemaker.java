@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2005/03/09 22:59:58  dennis
+ *  Added carriage return and line feed to the original
+ *  80 column GSAS output files. (Alok Chatterjee)
+ *
  *  Revision 1.29  2004/03/15 06:10:39  dennis
  *  Removed unused import statements.
  *
@@ -328,7 +332,7 @@ public class gsas_filemaker
         StringBuffer sb=new StringBuffer(80);
         try{
             sb.append(GsasUtil.getBankHead(banknum,info));
-            outStream.write(Format.string(sb,80,false)+"\n");
+            outStream.write(Format.string(sb,80,false)+"\r"+"\n");
         }catch(IOException e){
             SharedData.addmsg("Could not write "+bintype+" bank header: "
                               +e.getMessage());
@@ -344,13 +348,13 @@ public class gsas_filemaker
         int colcount=0;
         for( int i=0 ; i<y.length ; i++ ){
             if(colcount>=80){
-                sb.append("\n");
+                sb.append("\r"+"\n");
                 colcount=0;
             }
             sb.append("  ").append(Format.integer(y[i],6));
             colcount+=8;
         }
-        sb.append(Format.string("\n",81-colcount));
+        sb.append(Format.string("\r"+"\n",81-colcount));
 	try{
             outStream.write(sb.toString());
 	}catch(IOException e){
@@ -367,15 +371,15 @@ public class gsas_filemaker
         int colcount=0;
         for( int i=0 ; i<y.length ; i++ ){
             if(colcount>=80){
-                sb.append("\n");
+                sb.append("\r"+"\n");
                 colcount=0;
             }
             sb.append(Format.real(y[i],8)+Format.real(dy[i],8));
             //sb.append(" "+Format.real(y[i],7)+" "+Format.real(dy[i],7));
             colcount+=16;
         }
-        if(! sb.toString().endsWith("\n") )
-          sb.append("\n");
+        if(! sb.toString().endsWith("\r"+"\n") )
+          sb.append("\r"+"\n");
 	try{
             outStream.write(sb.toString());
 	} catch(Exception d){}
@@ -391,7 +395,7 @@ public class gsas_filemaker
 	try{
 	// write the bank information header
 	outStream.write(Format.string("#             "+REF_ANGLE+"  "
-                                      +TOT_LENGTH,80,false)+"\n");
+                                      +TOT_LENGTH,80,false)+"\r"+"\n");
 	Data dd=null;
 	if(mon!=null && export_monitor){
 	    dd = mon.getData_entry(monNum);
@@ -434,7 +438,7 @@ public class gsas_filemaker
 	    outStream.write ("#"+BANK+" " +Format.integer(banknum,4)+"  "
                              +Format.real(ref_angle,12,7)+"  "
 			     +Format.real(total_length,5,7)
-                             +Format.string(" ",44)+"\n");
+                             +Format.string(" ",44)+"\r"+"\n");
 	}catch(Exception e){}
     }
 
@@ -448,7 +452,7 @@ public class gsas_filemaker
             StringBuffer sb=new StringBuffer(81);
             sb.append((String)
                data.getAttributeList().getAttributeValue(Attribute.RUN_TITLE));
-	    outStream.write( Format.string(sb,80,false) +"\n");
+	    outStream.write( Format.string(sb,80,false) +"\r"+"\n");
 	    
 	} catch(Exception d){}
 	
@@ -465,7 +469,7 @@ public class gsas_filemaker
             StringBuffer sb=new StringBuffer(80);
             sb.append(IPARM).append(S);
             try{
-                outStream.write( Format.string(sb,80,false)+"\n");
+                outStream.write( Format.string(sb,80,false)+"\r"+"\n");
             }catch(Exception e){}
         }
     }
@@ -479,7 +483,7 @@ public class gsas_filemaker
 	    float monCount=this.getMonitorCount();
 	    if(monCount>0.0f){
                 sb.append(MONITOR+": ").append(monCount);
-		outStream.write (Format.string(sb,80,false)+"\n");
+		outStream.write (Format.string(sb,80,false)+"\r"+"\n");
 	    }
 	} catch(Exception d){}
     }
