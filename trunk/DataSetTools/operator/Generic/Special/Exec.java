@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2005/01/10 15:18:17  dennis
+ *  Added getCategoryList method to put operator in new position in
+ *  menus.
+ *
  *  Revision 1.9  2004/01/24 19:58:59  bouzekc
  *  Removed/commented out unused variables/imports.
  *
@@ -60,8 +64,6 @@
  *
  *  Revision 1.1  2002/07/26 22:45:32  pfpeterson
  *  Added to CVS.
- *
- *   
  */
 
 package DataSetTools.operator.Generic.Special;
@@ -70,7 +72,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Vector;
 
-import DataSetTools.operator.Parameter;
+import DataSetTools.operator.*;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.SysUtil;
 
@@ -82,6 +84,7 @@ import DataSetTools.util.SysUtil;
  * ISAW WILL HANG.
  */
 public class Exec extends    GenericSpecial {
+
     /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
     /**
      * Construct an operator with a default parameter list.
@@ -116,6 +119,24 @@ public class Exec extends    GenericSpecial {
         parameters=new Vector();
         addParameter( new Parameter("Command",""));
     }
+
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.UTILS_SYSTEM;
+  }
+
     
     /* --------------------------- getCommand ------------------------------ */
     /**

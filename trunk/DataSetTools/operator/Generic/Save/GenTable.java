@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2005/01/10 15:18:18  dennis
+ * Added getCategoryList method to put operator in new position in
+ * menus.
+ *
  * Revision 1.2  2004/07/30 14:52:39  rmikk
  * Removed unused imports
  *
@@ -37,7 +41,6 @@
  * Initial Checkin
  * Wrapper around the advanced Table View
  *
- 
  */
 
 package DataSetTools.operator.Generic.Save;
@@ -50,14 +53,13 @@ import javax.swing.*;
 import java.util.*;
 import  gov.anl.ipns.Util.Numeric.*;
 import DataSetTools.dataset.*;
+
 /**
  * This operator is a wrapper around the advanced table view. 
  *
  */
 
-
-public class GenTable implements Wrappable {
- 
+public class GenTable implements Wrappable, IWrappableWithCategoryList {
    
   public DataSet DS =  DataSet.EMPTY_DATA_SET;
   public Vector Fields= new Vector();  //List of Field names that appear in
@@ -67,6 +69,23 @@ public class GenTable implements Wrappable {
   public String order=new String("HGT,F");
   public IntListString SelGroups = new IntListString();
   
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.FILE_SAVE;
+  }
+
 
   /**  
     *  Returns "Table" , the name used to invoke this operator in scripts"
@@ -80,7 +99,6 @@ public class GenTable implements Wrappable {
    */
   public String getDocumentation(  ) {
    
-
     StringBuffer s = new StringBuffer(  );
     
     s.append("@overview This operator is a wrapper around the advanced table ");
