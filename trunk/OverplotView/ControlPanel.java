@@ -134,12 +134,14 @@ public class ControlPanel
     JScrollPane paneJS1 = new JScrollPane( listJL1 );
     paneJS1.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
 
-    //create listener and attach list to it
-    listJL.addListSelectionListener( 
-      new SelectListSelectionListener() );
+    //create a listener for selection events and attach it to list
+    listJL.addListSelectionListener(  new SelectListSelectionListener()  );
+    listJL1.addListSelectionListener(  new GraphedListSelectionListener()  );
 
-    listJL1.addListSelectionListener( 
-      new GraphedListSelectionListener() );
+    //create a listener for double-click events and attach it to the list
+    listJL.addMouseListener(  new DoubleClickSelectionListener()  );
+    listJL1.addMouseListener(  new DoubleClickDeselectionListener()  );
+
    
     String addS = "Add";
     addJB = new JButton( addS );
@@ -783,6 +785,42 @@ public class ControlPanel
       }
     }
   }
+
+
+
+  /**
+   * listens for mouse events that effect the data list in 'Select' tab
+   *
+   */
+  class DoubleClickSelectionListener
+    extends MouseAdapter
+  {
+    public void mouseClicked( MouseEvent e )
+    {
+      int count = e.getClickCount();
+      if( count == 2 )
+        addToGraphList( data_selections );
+    }
+  }
+
+
+  /**
+   * listens for mouse events that affect the list of selected data in 'Select'
+   * tab.
+   *
+   */
+  class DoubleClickDeselectionListener
+    extends MouseAdapter
+  {
+    public void mouseClicked( MouseEvent e )
+    {
+      int count = e.getClickCount();
+      if( count == 2 )
+        removeFromGraphList( graph_selections );
+    }
+  }
+
+
 
 
 
