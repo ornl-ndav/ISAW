@@ -31,6 +31,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.19  2002/02/27 16:47:50  rmikk
+ * Fixed MergeXvals. It is also now a public static utility method
+ *
  * Revision 1.18  2002/02/22 20:37:52  pfpeterson
  * Operator reorganization.
  *
@@ -1402,15 +1405,27 @@ public void Showw( DataSet DSS[], DefaultListModel selModel,  String  order,
 
     }
 
-  // Unions all x values in the selected group of data sets
-  private float[] MergeXvals ( int dbi , DataSet DS , float xvals[]
+  /** Creates a float[] with "all" the xvalues in groups of the SelIndices 
+  * Parameter UseAll does NOT work
+  *@param  dbi    data block, this is recursive so start at 0. It will do all
+  *@param  DS    the data set
+   *@param xvals  Result so far for the dbi's less than this dbi
+   *@param      SelIndices The index of the groups to have their xvalues merged.
+   *@result  The set of merged xvalues or null
+   *NOTE: Two xvalues are the same at a given point if they are within 1/20th of the
+   * average length of an interval.
+  */
+
+  public static float[] MergeXvals ( int dbi , DataSet DS , float xvals[]
                                , boolean UseAll, int[] SelIndices )
     { if(SelIndices == null)
          SelIndices = DS.getSelectedIndices() ;
-     else if(SelIndices == null) 
-         if(!useAll)return xvals;
+     if(SelIndices == null) 
+         if(!UseAll)return xvals;
      if( UseAll &&(dbi> DS.getNum_entries()))
          return xvals;  
+     else if( UseAll)
+          {}
      else if( dbi >= SelIndices.length )
         return xvals; 
      if( dbi < 0) return xvals;
@@ -1426,13 +1441,13 @@ public void Showw( DataSet DSS[], DefaultListModel selModel,  String  order,
          return MergeXvals( dbi + 1 , DS , XX.getXs() , UseAll, SelIndices );
         }
      Data DB = DS.getData_entry( db );
-     if( UseAll)
+   /*  if( UseAll)
          {}
      else if( DB.isSelected())
          {}
      else
         return MergeXvals( dbi+ 1, DS , xvals , UseAll, SelIndices );
-    
+    */
      XScale XX = DB.getX_scale();
      
      float xlocvals[];
