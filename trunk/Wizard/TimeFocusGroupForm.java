@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2004/02/11 04:10:02  bouzekc
+ * Uses the new wizard classes with the indeterminate progress bars.
+ *
  * Revision 1.14  2003/09/11 21:21:41  bouzekc
  * Updated to work with new Form class.
  *
@@ -288,9 +291,6 @@ public class TimeFocusGroupForm extends Form implements Serializable {
       //get the hist_ds_vec array size
       num_ds   = hist_ds_vec.size(  );
 
-      //set the increment amount
-      increment = ( 1.0f / num_ds ) * 100.0f;
-
       //go through the array, getting each runfile's hist_ds
       for( int i = 0; i < num_ds; i++ ) {
         obj = hist_ds_vec.elementAt( i );
@@ -373,11 +373,6 @@ public class TimeFocusGroupForm extends Form implements Serializable {
 
           return errorOut( "Encountered non-DataSet." );
         }
-
-        //fire a property change event off to any listeners
-        oldPercent = newPercent;
-        newPercent += increment;
-        super.fireValueChangeEvent( ( int )oldPercent, ( int )newPercent );
       }
 
       //for( num_ds )
