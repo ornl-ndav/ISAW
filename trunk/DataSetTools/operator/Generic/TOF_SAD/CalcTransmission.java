@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/01/24 20:05:18  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.9  2003/09/08 22:19:08  rmikk
  * Made the method to find monitor ID's for upstream and
  *    downstream monitors public and static
@@ -70,8 +73,6 @@ import DataSetTools.dataset.*;
 import java.util.*;
 import DataSetTools.math.*;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
-import DataSetTools.operator.DataSet.Math.Analyze.*;
-import DataSetTools.operator.DataSet.*;
 import DataSetTools.util.*;
 import DataSetTools.parameter.*;
 import DataSetTools.operator.*;
@@ -580,7 +581,6 @@ public class CalcTransmission extends GenericTOF_SAD {
   }
 
   private double getTotCount( Data Db){
-    double Res;
    return ((Float) (Db.getAttribute( Attribute.TOTAL_COUNT).getValue())).doubleValue();
   }
   private void ReportToLog3(DataSet Sample,DataSet Empty, DataSet Cadmium,

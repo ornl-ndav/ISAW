@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2004/01/24 20:05:19  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.6  2003/09/08 19:10:17  dennis
  * Made naming consistent... the relative pixel sensitivity is no longer
  * referred to as detector efficiency in variable names, comments, DataSet
@@ -67,12 +70,8 @@ package DataSetTools.operator.Generic.TOF_SAD;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
-import DataSetTools.operator.DataSet.*;
 import DataSetTools.operator.DataSet.Attribute.*;
-import DataSetTools.instruments.*;
 import DataSetTools.util.*;
-import DataSetTools.retriever.*;
-import java.util.*;
 import java.util.*;
 
 /** 
