@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/10/15 02:37:51  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.4  2003/06/18 20:34:23  pfpeterson
  * Changed calls for NxNodeUtils.Showw(Object) to
  * DataSetTools.util.StringUtil.toString(Object)
@@ -178,7 +181,7 @@ public abstract class NexWriteUtil implements NxWriteNode {
    * @param AttrName the name of this attribute
    * @param AttrValue the value of this attribute
    * @param type the type in NexIO.Types.java for this attribute
-   * @param rank the length of rank is the number of dimensions and
+   * @param ranks the length of rank is the number of dimensions and
    * rank[i] is size of the array for dimension i.
    *
    * @see NexIO.Types#Int Type names
