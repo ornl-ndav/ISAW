@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.121  2002/12/10 20:39:27  pfpeterson
+ *  More gracefully errors when JavaHelp is not present.
+ *
  *  Revision 1.120  2002/12/08 22:34:35  dennis
  *  The Help->Command option now brings up the new help system. (Ruth)
  *
@@ -1490,13 +1493,18 @@ public class Isaw
             jf.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height));
             jf.show();
             return;
-           }
-        catch( Exception sss){}
-	String S=DataSetTools.util.FilenameUtil.helpDir("Command/CommandPane.html");
-	//S="http://www.pns.anl.gov/ISAW/ISAW%20Tutorial_files/v3_document.htm";
+        }catch( Exception sss){
+          // let it drop on the floor
+        }catch( NoClassDefFoundError e){
+          // let it drop on the floor
+        }
+	String S=
+          DataSetTools.util.FilenameUtil.helpDir("Command/CommandPane.html");
+
 	HTMLPage H = new HTMLPage( S ) ;
         if(! H.isValid()) return;
 	Dimension D = getToolkit().getScreenSize();
+
 	// make the help window pop up centered and 60% of screen size
 	H.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height) ); 
 	H.setLocation((int)(.2*4*D.height/3), (int)(.2*D.height) );
