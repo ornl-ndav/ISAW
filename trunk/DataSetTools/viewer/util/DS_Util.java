@@ -31,6 +31,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/07/15 19:35:56  dennis
+ *  getData_ID_String() Now uses Data getLabel() method to form part
+ *  of the ID String.  The ID String now consists of:
+ *  1. the ID.
+ *  2. the time stamp if set
+ *  3. the label from Data.getLabel() if set
+ *  4. the word (Selected) if it's selected.
+ *
  *  Revision 1.7  2002/02/22 20:38:17  pfpeterson
  *  Operator reorganization.
  *
@@ -187,11 +195,10 @@ public final class DS_Util implements Serializable
     if ( time != null )
       s += ", " + time;
 
-    String sort_name = ds.getLastSortAttribute();
-    Attribute attr = data.getAttribute( sort_name );
-    if ( attr != null )
-      s += ", " + attr.toString();
-
+    String label = data.getLabel();
+    if ( label != null && ! label.startsWith(Attribute.GROUP_ID) )
+      s += ", " + label;
+   
     if ( data.isSelected() )
       s += " (Selected)";
 
