@@ -30,6 +30,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2003/03/07 22:51:15  dennis
+ *  Added methods to GET_DS_ID_RANGE and GET_DS_X_RANGE
+ *  Added method to stop the thread "cleanly" by setting a
+ *  flag that causes the run method to eventually terminate.
+ *  Added method to remove all ActionListeners.
+ *  Added methods to get/updateDataSets that take a command
+ *  object as a parameter.
+ *
  *  Revision 1.18  2003/03/04 20:37:40  dennis
  *  Now keeps less state information and goes to the server
  *  for simple requests.
@@ -91,6 +99,8 @@ public class LiveDataManager extends    Thread
   private int               error_flag  = RemoteDataRetriever.NOT_CONNECTED;
 
   private String last_data_name = "NONE";
+
+  private boolean keep_running  = true;
 
 
 /* ----------------------------- Constructor ----------------------------- */
@@ -171,7 +181,6 @@ public class LiveDataManager extends    Thread
     }
     else 
       return null;
-
   }
 
 
@@ -181,6 +190,18 @@ public class LiveDataManager extends    Thread
  *  data source.
  *
  *  @param  data_set_num  The number of the DataSet to be returned.
+ *  @param  group_ids     String listing the required group IDs. 
+ *  @param  min_x         The start of the interval of x values for which
+ *                        the data is needed.
+ *  @param  max_x         The end of the interval of x values for which
+ *                        the data is needed.
+ *  @param  rebin_factor  Integer giving the number of adjacent bins that
+ *                        should be combined.
+ *  @param  attr_mode     Integer code for number of attributes requested,
+ *                        one of:
+ *                           Attribute.NO_ATTRIBUTES 
+ *                           Attribute.ANALYSIS_ATTRIBUTES 
+ *                           Attribute.FULL_ATTRIBUTES 
  *
  *  @return the requested DataSet.
  */
@@ -191,8 +212,52 @@ public class LiveDataManager extends    Thread
                              int    rebin_factor,
                              int    attr_mode      )
   {
-    return getDataSet( data_set_num );
+    CommandObject command = RemoteDataRetriever.getDataSet(
+                                        "",
+                                        data_set_num,
+                                        group_ids,
+                                        min_x, 
+                                        max_x,
+                                        rebin_factor,
+                                        attr_mode  );
+
+    return (DataSet) retriever.getObjectFromServer( command );
   }
+
+/* ------------------------------ getDataSet ----------------------------- */
+/**
+ *  Get the specified portion of the specified DataSet from the current
+ *  data source.
+ *
+ *  @param  command  The GetDataCommand object specifying the portion of the
+ *                   DataSet to get.
+ *
+ *  @return the requested DataSet.
+ */
+  public DataSet getDataSet( GetDataCommand command )
+  {
+    int ds_num = command.getDataSetNumber();
+
+    if ( ds_num < 0 )
+      return null;
+
+    if ( ds_num >= data_sets.length  &&
+         ds_num <  numDataSets() )
+      SetUpLocalCopies();
+
+    if ( ds_num >= 0 && ds_num < data_sets.length )      // valid ds_num, so
+    {                                                    // work with copy
+      if ( data_sets[ ds_num ] == null ||
+          !data_sets[ ds_num ].getTitle().equals(getDataSetName(ds_num) ) )
+      {
+        UpdateDataSetNow( command );                     // bad local copy
+      }
+      return data_sets[ds_num];   
+    }
+    else
+      return null;
+  }
+
 
 
 /* ---------------------------- getDataSetName ----------------------------- */
@@ -209,6 +274,80 @@ public class LiveDataManager extends    Thread
     return retriever.getDataSetName( data_set_num );
   }
 
+
+/* ---------------------------- getDataSetIDRange ------------------------- */
+/**
+ *  Get the range of IDs of the specified DataSet from the current data source.
+ *
+ *  @param  data_set_num  The number of the DataSet whose ID range is
+ *                        to be returned.
+ *
+ *  @return  String containing the range of IDs of the specified DataSet.
+ */
+  public String getDataSetIDRange( int data_set_num )
+  {
+    CommandObject command = 
+                     RemoteDataRetriever.getDS_ID_Range( "", data_set_num );
+
+    String range = (String)retriever.getObjectFromServer( command );
+    
+    if ( range != null )
+      return range;
+    else
+      return "";
+  }
+
+
+/* ---------------------------- getDataSetXRange ------------------------- */
+/**
+ *  Get the range of X-value of the specified DataSet from the current
+ *  data source.
+ *
+ *  @param  data_set_num  The number of the DataSet whose X range is
+ *                        to be returned.
+ *
+ *  @return  ClosedInterval with the range of Xs of the specified DataSet.
+ */
+  public ClosedInterval getDataSetXRange( int data_set_num )
+  {
+    CommandObject command =
+                     RemoteDataRetriever.getDS_X_Range( "", data_set_num );
+
+    Object obj = retriever.getObjectFromServer( command );
+
+    if ( obj != null && obj instanceof ClosedInterval )
+      return (ClosedInterval)obj;
+    else 
+      return new ClosedInterval(0,0);
+  }
+
+
+/* --------------------------- getDefaultCommand -------------------------- */
+/**
+ *  Get a GetDataCommand object configured with the full list of available
+ *  IDs and complete XRange for getting the full DataSet from server.
+ *
+ *  @param  data_set_num  The number of the DataSet whose X range is
+ *                        to be returned.
+ *
+ *  @return a GetDataCommand object with values suitable for getting the 
+ *          full DataSet with Analysis attributes.
+ */
+
+  public GetDataCommand getDefaultCommand( int ds_num )
+  {
+    String ds_name   = getDataSetName( ds_num );
+    String id_string = getDataSetIDRange( ds_num );
+    ClosedInterval x_range = getDataSetXRange( ds_num );
+
+    return RemoteDataRetriever.getDataSet( ds_name,
+                                           ds_num,
+                                           id_string,
+                                           x_range.getStart_x(),
+                                           x_range.getEnd_x(),
+                                           1,
+                                           Attribute.ANALYSIS_ATTRIBUTES );
+  }
 
 /* --------------------------- setUpdateInterval -------------------------- */
 /**
@@ -330,6 +469,47 @@ public class LiveDataManager extends    Thread
    getting_ds = -1;                                      // reset the flag
  }
 
+
+/* ---------------------------- UpdateDataSetNow -------------------------- */
+/**
+ *  Request an immediate update of the specified DataSet using the specified
+ *  command to get the desired part of the DataSet.
+ *
+ *  @param  command  The command specifying the number and portion of the 
+ *                   DataSet that is to be updated immediately.
+ */
+ synchronized public void UpdateDataSetNow( GetDataCommand command )
+ {
+   
+   int data_set_num = command.getDataSetNumber();
+   if ( data_set_num < 0 )
+     return;
+
+   if ( data_set_num > data_sets.length - 1 )
+     SetUpLocalCopies();
+
+   getting_ds = data_set_num; // if a thread starts to get a  DataSet, set flag
+                              // so the run() method doesn't queue up another
+                              // request for a DataSet.
+
+   DataSet temp_ds = (DataSet)retriever.getObjectFromServer( command );
+
+   if ( temp_ds == data_sets[data_set_num] )
+     System.out.println("ERROR!!!! same data set" );
+
+   if ( temp_ds != null )
+   {
+     if ( data_sets[data_set_num] == null )             // save new DataSet
+       data_sets[data_set_num] = temp_ds;
+     else                                               // or copy to current DS
+       data_sets[data_set_num].shallowCopy( temp_ds );  // copy notifies the
+                                                        // DataSet's observers
+   }
+
+   getting_ds = -1;                                      // reset the flag
+ }
+
+
  /* ------------------------ addActionListener -------------------------- */
  /**
   *  Add an ActionListener for this LiveDataManager.  Whenever a DataSet with
@@ -346,6 +526,16 @@ public class LiveDataManager extends    Thread
         return;
 
     listeners.add( listener );
+  }
+
+
+ /* --------------------- removeAllActionListeners ------------------------ */
+ /**
+  *  Remove all ActionListeners from this LiveDataManager. 
+  */
+  public void removeAllActionListeners()
+  {
+    listeners.removeAllElements();
   }
 
 
@@ -377,6 +567,17 @@ public class LiveDataManager extends    Thread
  }
 
 
+/* --------------------------- stop_eventually --------------------------- */
+/**
+ *  Set the keep_running flag to false so that at the next loop through
+ *  the "infinite" loop in the run method, the run method will exit.
+ */
+ public void stop_eventually()
+ {
+   keep_running = false;
+ }
+
+
 /* -------------------------------- run --------------------------------- */
 /**
  *  The run method for this LiveDataManager.  This will sleep and 
@@ -384,7 +585,7 @@ public class LiveDataManager extends    Thread
  */
  public void run()
  {
-   while ( true )
+   while ( keep_running )
    {
      try
      {
