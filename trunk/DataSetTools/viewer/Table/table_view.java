@@ -31,6 +31,12 @@
  * Modified:
 * 
  * $Log$
+ * Revision 1.6  2001/08/14 01:59:00  rmikk
+ * Improved layout.
+ * Added line indicating the selected indicies.
+ * Added the state feature to save and restore state when
+ *    traversing several views
+ *
  * Revision 1.5  2001/08/13 16:08:47  rmikk
  * Added method setDataSet
  *
@@ -59,6 +65,7 @@ import DataSetTools.util.*;
 import java.io.*;
 import javax.swing.table.*;
 import IsawGUI.*;
+import DataSetTools.components.ParametersGUI.*;
 
 /** A form of the table view that is run without any GUI
  */
@@ -96,8 +103,24 @@ public class table_view extends JPanel implements ActionListener
             Remove ,
             Up , 
             Down;
+ 
+   JRadioButtonMenuItem  fileView,  
+                         tableView, 
+                         consoleView;
+  
+   ButtonGroup  GotoRadioButtons = new ButtonGroup();
+   JMenuItem  selectEdit;
+   JCheckBoxMenuItem selectAllEdit;
+   JRadioButtonMenuItem  DBSeqOpt, 
+                  DBPairedOpt;
+   ButtonGroup radios = new ButtonGroup();
+
+   JLabel  SelectedIndecies;
+   JButton GO;
+    
    JList   unsel ,
            sel;
+
    DefaultListModel unselModel , 
                     selModel;    
    int use[] ,
@@ -143,8 +166,9 @@ public class table_view extends JPanel implements ActionListener
    *               is only one data set in this list
    */     
    public table_view( DataSet DS[] )
-      { setLayout( new GridLayout( 1,1));
-       initt();
+      { //setLayout( new GridLayout( 1,1));
+        setLayout( new BorderLayout( ));
+      initt();
       DSS = DS;
      // System.out.println( "# data Sets="+ DS.length );
       //setLayout( new BorderLayout() );
@@ -224,9 +248,177 @@ public class table_view extends JPanel implements ActionListener
        JP.add(JPbr );
        Up.addActionListener( this );
        Down.addActionListener( this );
-       add( JP );       
-     }
+       add( JP ,BorderLayout.CENTER );       
 
+       // Bottom status panel
+      
+       fileView = new JRadioButtonMenuItem( "Save to File" ,false);
+       tableView = new JRadioButtonMenuItem( "Table",false );
+       consoleView = new JRadioButtonMenuItem( "Console" ,true);   
+       fileView.addActionListener( this );  
+       consoleView.addActionListener( this );  
+       tableView.addActionListener( this );    
+       GotoRadioButtons.add( fileView );
+       GotoRadioButtons.add( tableView );       
+       GotoRadioButtons.add ( consoleView);
+       GO = new JButton( "Display");
+       GO.addActionListener( this );
+       JMenu Goto= new JMenu( "   To:   ");
+       JMenuBar GG = new JMenuBar();
+        GG.add(Goto);
+       Goto.add( fileView);
+       Goto.add( tableView);
+       Goto.add( consoleView);
+
+       SelectedIndecies = new JLabel( "Selected Indices="+IntList.ToString(
+                                     DS[0].getSelectedIndices() )+"     ");
+
+       selectEdit = new JMenuItem( "Select Group indicies" );
+       selectAllEdit = new JCheckBoxMenuItem( "Select All Groups" , false );
+       DBSeqOpt = new JRadioButtonMenuItem( "List Groups Sequentially" ,
+                                           true );
+       DBPairedOpt = new JRadioButtonMenuItem( "List Groups in Columns" ,
+                                               false); 
+       DBSeqOpt.addActionListener( this );
+       DBPairedOpt.addActionListener( this );
+       selectAllEdit.addActionListener( this );    
+       radios.add( DBSeqOpt );
+       radios.add( DBPairedOpt );
+       JMenu Options = new JMenu( "  Options   ");
+       Options.add( selectEdit );
+       Options.add( selectAllEdit );
+       Options.add( new JSeparator() );
+       Options.add( DBSeqOpt);
+       Options.add( DBPairedOpt );
+       GG.add( Options );
+       selectEdit.addActionListener( this );
+       Box BottomPanel = new Box( BoxLayout.X_AXIS );
+       BottomPanel.add( SelectedIndecies);
+       BottomPanel.add( GG);
+       //BottomPanel.add( Options );
+       BottomPanel.add( Box.createHorizontalGlue());
+       BottomPanel.add( GO);
+       add(BottomPanel, BorderLayout.SOUTH );
+     }
+ /**
+*  Restores the state of this system to the way it was the previous time
+* the ViewManager visited this module.<BR>
+* The used indicies, filename, output choice, useAll and Data Block sequential
+* fields are all saved as one String
+*/
+  public void restoreState( String state )
+   {
+    int i =0;
+    int j,k;
+    if( state == null )
+       return;
+    if( state.length() < 1)
+       return;
+    // used
+    i = state.indexOf( ";");
+       int nused = (new Integer( state.substring( 0, i ))).intValue();
+       use = new int[nused+1];
+    for( k = 0; k < nused ; k++)
+      {   j = state.indexOf( ";", i+1);
+          use[k] = (new Integer( state.substring( i+1, j))).intValue();
+          i = j;
+       }
+    j=i;
+    use[nused ] = -1;
+    selModel.clear();
+    for( i = 0 ; i < nused ; i++)
+       selModel.addElement( Fields[ use [i ] ] );
+
+   //filename
+   k = state.indexOf( ";",j+1);
+   if( k == j+1)
+       filename = null;
+   else
+       filename = state.substring( j+1, k );
+   j = k;
+   //useAll
+   k = state.indexOf( ";",j+1);
+   if( k == j+1)
+     {useAll = false;
+      selectAllEdit.setSelected( false );
+     }
+   else
+     {useAll = true;
+      selectAllEdit.setSelected( true );
+     }
+   //Sequential data blocks
+   j = k;
+   DBSeq = false;
+   k = state.indexOf( ";", j+1);
+   if( k > j+1)
+     {DBSeq = true;
+      DBSeqOpt.setSelected( true );
+      DBPairedOpt.setSelected( false);
+     
+     }
+   else
+     {DBSeqOpt.setSelected( false );
+      DBPairedOpt.setSelected( true );
+     
+     }
+   j = k;
+   //mode?
+    k = state.indexOf( ";", j+1);
+  
+   mode = ( new Integer( state.substring(j+1,k))).intValue();
+   if( mode == 1)
+      fileView.setSelected( true );
+   else if( mode ==2)
+      tableView.setSelected( true );
+   else
+      consoleView.setSelected( true );
+   
+   
+   }
+  
+  public void setState( )
+   {String  S ="";
+   
+    int n=0;
+    for( int i=0; (i<use.length) && (use[i] >= 0) ; i++)
+       { S += use[i] +";";
+         n++;
+       }
+    S = n +";"+S;
+   
+    if( filename == null )
+      S += ";";
+    else 
+      S += filename +";";
+    
+    if( useAll)
+      S += "T;";
+    else
+      S +=";";
+   
+    if( DBSeq)
+      S +="T;";
+    else
+      S += ";";
+  
+   if( fileView.isSelected())
+     mode = 1;
+   else if( tableView.isSelected())
+     mode = 2;
+   else if( consoleView.isSelected())
+     mode = 0;
+   S += mode+";";
+   
+    for( int i = 0; i < StateListeners.size(); i++ )
+      (( StateListener)(StateListeners.elementAt( i ))).setState( S );
+   }
+  Vector StateListeners = new Vector();
+  public void addStateListener( StateListener S)
+   {StateListeners.addElement( S );
+   }
+  public void removeStateListener( StateListener S )
+   { StateListeners.remove( S );
+   }
   /** Utility that removes the indx-th element of the list
   */
    public void remove( int indx , int listt[] )
@@ -307,6 +499,7 @@ public class table_view extends JPanel implements ActionListener
         if( indx+ 1 < unselModel.getSize() )
            unsel.setSelectionInterval( indx+ 1, indx+ 1 );
         unsel.requestFocus();
+        setState();
       }
      else if( e.getSource().equals( Remove  ) )
       { int indx = sel.getSelectedIndex();    
@@ -321,6 +514,7 @@ public class table_view extends JPanel implements ActionListener
         if( indx < selModel.getSize() )
           sel.setSelectionInterval( indx,indx );
         sel.requestFocus();
+        setState();
        }
       else if( e.getSource().equals( Up ) )
        {int indx = sel.getSelectedIndex();
@@ -335,6 +529,7 @@ public class table_view extends JPanel implements ActionListener
         if( ( indx >= 1 ) &&( indx - 1 < selModel.getSize() ))
             sel.setSelectionInterval( indx - 1, indx - 1 );
         sel.requestFocus();
+        setState();
        }
       else if( e.getSource().equals( Down ))
        {int indx = sel.getSelectedIndex();
@@ -351,13 +546,72 @@ public class table_view extends JPanel implements ActionListener
         if( indx + 1  < selModel.getSize() )
          sel.setSelectionInterval( indx +  1 , indx + 1 );
         sel.requestFocus();
+        setState();
        }
-     /*  else if( e.getSource().equals( OK ) )
+      else if( e.getSource().equals( GO ) )
        { //System.out.println( "Sequential?"+ Sequent.isSelected() );
-          mode = OutputMode.getSelectedIndex();
-          Showw( DSS, use , Sequent.isSelected(), UseAll.isSelected() );
+          //mode = OutputMode.getSelectedIndex();
+          useAll = selectAllEdit.isSelected();
+          DBSeq = DBSeqOpt.isSelected();
+          mode = 0;
+          if( fileView.isSelected())
+             mode = 1;
+          else if( tableView.isSelected())
+             mode = 2;
+          else if( consoleView.isSelected())
+           mode = 0;
+          Showw( DSS, use , DBSeq, useAll );
        }
-     */
+      else if( e.getSource().equals( selectEdit ))
+          { 
+            DataSet DS = DSS[0];               
+            DataSetOperator op = DS.getOperator( "Set DataSet Field" );        
+            if( op == null )
+              {System.out.println( " No such operator " );
+               return;
+               }
+            op.setDefaultParameters();
+            IntListString IString = new IntListString( "1,3:5" );        
+            Parameter PP = new Parameter( "Group Indicies=" , IString );        
+            op.setParameter( PP , 1 );        
+       
+            DSSettableFieldString argument = new DSSettableFieldString( 
+                                      DSFieldString.SELECTED_GROUPS );         
+        
+            MOperator newOp =
+               new MOperator( op , 0 , ( Object )argument );
+        
+            JParametersDialog JP = new JParametersDialog( newOp , null ,
+                                       null , null );
+            useAll = false;
+           }
+       else if( e.getSource().equals( fileView ))
+          { mode = 1;
+            setState();
+	    JFileChooser JFC = new JFileChooser( 
+                            System.getProperty( "user.dir" ));
+            JFC.setDialogType( JFileChooser.SAVE_DIALOG );
+            int retStatus = JFC.showSaveDialog( null );
+            if( retStatus == JFileChooser.APPROVE_OPTION )
+               {File F = JFC.getSelectedFile();
+                filename = F.getPath().trim();          
+               }
+           setState();
+          }
+       else
+        {  useAll = selectAllEdit.isSelected();
+          DBSeq = DBSeqOpt.isSelected();
+          mode = 0;
+          if( fileView.isSelected())
+             mode = 1;
+          else if( tableView.isSelected())
+             mode = 2;
+          else if( consoleView.isSelected())
+           mode = 0;
+         
+          setState();
+        }
+    
      }
   /** Sets the data set in case it has changed
   */
@@ -589,7 +843,14 @@ public class table_view extends JPanel implements ActionListener
   */
   public void Showw()
       { //useAll = UseAll.isSelected();
-       
+        mode = 0;
+        if( fileView.isSelected())
+           mode = 1;
+        else if( tableView.isSelected())
+           mode = 2;
+        else if( consoleView.isSelected())
+           mode = 0;
+        
         Showw( DSS, use, DBSeq, useAll );
       }
 
