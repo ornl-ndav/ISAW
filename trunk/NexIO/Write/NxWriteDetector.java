@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/11/24 14:02:28  rmikk
+ * Fixed error
+ * Added a NXlog entry to this class for testing purposes
+ *
  * Revision 1.6  2003/10/15 02:52:58  bouzekc
  * Fixed javadoc errors.
  *
@@ -324,6 +328,7 @@ public class NxWriteDetector{
                           Inst_Type.makeRankArray( phi.length,-1,-1,-1,-1));
          nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char,
                          Inst_Type.makeRankArray(8,-1,-1,-1,-1));
+      
     }
       
     if( !monitor)
@@ -383,6 +388,11 @@ public class NxWriteDetector{
       //nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char,
       //Inst_Type.makeRankArray(8,-1,-1,-1,-1));
     }
+
+    NxWriteNode NxLognode = node.newChildNode("Log_1","NXlog");
+    NxWriteLog writelog = new NxWriteLog( 5);
+    writelog.processDS( NxLognode, null, 1);
+ 
   }
   //obsolete
   private static void SetUpIsawAttributes1(NxWriteNode nxData_Monitor, 
@@ -867,7 +877,8 @@ public class NxWriteDetector{
        intval = new int[ 1 ];
        intval[ 0 ] = 1;
        n1.addAttribute( "axis" , intval , Types.Int , rank1 ); 
- 
+       bytes[] nodename = (node.getNodeName()+(char)0).getBytes();
+       n1.addAttribute( "link", nodename, Types.Char, nodename.length);
        rank1 = new int[ 1 ];     
        rank1[ 0 ] = xvals.length;
        n1.setNodeValue( xvals  , Types.Float , rank1 );
@@ -926,7 +937,11 @@ public class NxWriteDetector{
     intval = new int[ 1 ];
     intval[ 0 ] = 2;
     n2.addAttribute( "axis" , intval , Types.Int , rank1 ); 
-        
+    
+    byte[] nodename = (node.getNodeName()+(char)0).getBytes();
+    rank1 = new int[1];
+    rank1[0] = nodename.length;
+    n2.addAttribute( "link", nodename, Types.Char, rank1);   
     rank1 = new int[ 1 ];
     rank1[ 0 ] = phi.length;
          
