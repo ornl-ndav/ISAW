@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/10/15 02:15:42  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.7  2003/05/07 16:15:24  rmikk
  * Eliminated a run-time class cast exception
  *
@@ -98,8 +101,8 @@ public class ViewQxQyQz extends GenericTOF_SCD
    *  Construct an operator for with the specified parameter values so
    *  that the operation can be invoked immediately by calling getResult().
    *
-   *  @param  path        The directory path to the data directory
-   *  @param  run_numbers A list of run numbers to be loaded
+   *  @param  ds        The DataSet to view
+   *  @param  choice    The viewing choice.
    */
    public ViewQxQyQz(  DataSet ds,
                        String choice)
@@ -237,8 +240,8 @@ public class ViewQxQyQz extends GenericTOF_SCD
 
  /* --------------------------------- clone -------------------------------- */
  /** 
-  *  Creates a clone of this operator.  ( Operators need a clone method, so 
-  *  that Isaw can make copies of them when needed. )
+  *  Creates a clone of this operator.  Operators need a clone method, so 
+  *  that Isaw can make copies of them when needed.
   */
   public Object clone()
   { 
