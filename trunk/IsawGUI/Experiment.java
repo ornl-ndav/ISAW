@@ -3,6 +3,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.3  2001/07/23 13:52:18  neffk
+ * added a select flag, removed update().
+ *
  * Revision 1.2  2001/07/20 16:39:23  neffk
  * fixed removeFromNode(), added some comments.
  *
@@ -32,8 +35,8 @@ public class Experiment
 
   private MutableTreeNode parent         = null;
   private Vector          dataset_nodes  = null;
-  private Vector          dataset_select = null;
   private String          name           = null;
+  private boolean         selected       = false;
 
 
   public Experiment( DataSet[] dss, String name )
@@ -42,45 +45,27 @@ public class Experiment
     setUserObject( dss );
   }
 
-
-  public String toString()
-  {
-    return name;
-  }
-
  
   /**
-   * returns whether or not DataSet 'index' is selected.
+   * get the selected status of this object.
    */
-  public boolean getSelected( int index )
+  public boolean isSelected( int index )
   {
-    return ( (Boolean)dataset_select.get(index) ).booleanValue();
+    return selected;
   }
 
-
-  public void setSelected( int index, boolean selected )
-  {
-    dataset_select.set(  index, new Boolean( selected )  );
-  }
-
-
-  public void clearSelections()
-  {
-    for( int i=0;  i<dataset_select.size();  i++ )
-      dataset_select.set(  i, new Boolean( false )  );
-  }
-
-
-  public void update( String msg )
-  {
-    if( msg == IObserver.DATA_REORDERED )
-    {
-      System.out.println( "reordering" );
-    }
-  }
 
   /**
-   * removes a DataSet from this container
+   * sets or clears this object's selected status.
+   */ 
+  public void setSelected( boolean selected )
+  {
+    this.selected = selected;
+  }
+
+
+  /**
+   * removes a DataSet from this container.
    */
   public void remove( DataSet ds )
   {
@@ -92,6 +77,17 @@ public class Experiment
         dataset_nodes.remove( node );
       }
   }
+
+
+  /**
+   * returns a string representation of this object.  this method
+   * is primarily used to get a title for this node.
+   */ 
+  public String toString()
+  {
+    return name;
+  }
+
 
 /*------------------------------=[ TreeNode ]=--------------------------------*/
 
@@ -156,44 +152,29 @@ public class Experiment
 
 
   /**
-   * insert a new DataSet into the Experiment container.  this operation
-   * clears all previous selections.
+   * insert a new DataSet into the Experiment container.
    */
   public void insert( MutableTreeNode child, int index )
   {
     dataset_nodes.insertElementAt( child, index );
-    dataset_select.insertElementAt(  new Boolean( false ), index  );
-
-                  //clear previous selections
-    clearSelections();
   }
 
 
   /**
-   * remove a DataSet object from the Experiment container.  this
-   * operation clears all previous selections.
+   * remove a DataSet object from the Experiment container. 
    */
   public void remove( int index )
   {
     dataset_nodes.remove( index );
-    dataset_select.remove( index );
-
-                  //clear previous selections
-    clearSelections();
   }
 
 
   /**
-   * remove a DataSet object from the Experiment container.  this
-   * operation clears all previous selections.
+   * remove a DataSet object from the Experiment container.
    */
   public void remove( MutableTreeNode node )
   {
     dataset_nodes.remove( node );
-    dataset_select.remove( 0 );  //any node will do
-
-                  //clear previous selections
-    clearSelections();
   }
 
 
@@ -236,7 +217,6 @@ public class Experiment
     {
       DataSet[] dss = (DataSet[])obj;
       dataset_nodes = new Vector();
-      dataset_select = new Vector();
     
       for( int i=0;  i<dss.length;  i++ )
       {
@@ -244,7 +224,6 @@ public class Experiment
         node.setParent( this );
 
         dataset_nodes.addElement( node );
-        dataset_select.addElement(  new Boolean( false )  );
       }
     }
 
