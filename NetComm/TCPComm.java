@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/03/24 20:40:25  pfpeterson
+ *  Fixed a javadoc tag to refer to proper class.
+ *
  *  Revision 1.13  2003/02/24 21:09:14  dennis
  *  Moved STATUS string from TCPComm to TCPServer
  *
@@ -77,7 +80,7 @@ import DataSetTools.util.*;
  *
  *  @see  ThreadedTCPComm
  *  @see  DataSetTools.retriever.LiveDataRetriever 
- *  @see  DataSetTools.retriever.FileDataRetriever 
+ *  @see  DataSetTools.retriever.RemoteFileRetriever
  */
 public class TCPComm
 {
