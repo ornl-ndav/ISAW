@@ -10,6 +10,9 @@ package OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.14  2002/05/30 22:58:00  chatterjee
+ * Added print feature
+ *
  * Revision 1.13  2001/12/21 18:22:18  dennis
  * Doubled the y-shift amount.
  * Removed debug print of selection messages.
@@ -112,6 +115,12 @@ public class GraphableDataManager
     jm.add( jmi);
     jmi.addActionListener(new OptionMenuHandler()  );
     inittt( data_set );
+
+
+  JMenuBar jmb= getMenuBar();
+  DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( jmb, this);
+
+
   }
   private void inittt( DataSet data_set )
    {

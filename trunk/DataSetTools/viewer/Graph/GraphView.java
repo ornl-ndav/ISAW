@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2002/05/30 22:57:29  chatterjee
+ *  Added print feature
+ *
  *  Revision 1.19  2002/03/13 16:12:18  dennis
  *  Converted to new abstract Data class.
  *
@@ -187,7 +190,8 @@ public GraphView( DataSet data_set, ViewerState state )
 
   if ( !validDataSet() )
     return;
-
+  JMenuBar jmb= getMenuBar();
+  DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( jmb, this);
   init();
   DrawGraphs();
   UpdateHGraphRange();
