@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2003/06/11 21:23:49  pfpeterson
+ *  Added functionality to getCommand to work better with Jython operators.
+ *
  *  Revision 1.22  2003/05/29 15:24:49  pfpeterson
  *  Removed getCategory() and made a concrete version of setDefaultParameters()
  *  that throws an exception so jython works.
@@ -185,12 +188,23 @@ abstract public class Operator implements Serializable
    *
    */
   public String getCommand(){
+    // tear of the package name
     String command=this.getClass().getName();
     int index=command.lastIndexOf(".");
     if(index>=0)
-      return command.substring(index+1);
-    else
-      return command;
+      command=command.substring(index+1);
+
+    // if there is dollars in the name then we should take what is in
+    // between them (this is necessary for python)
+    index=command.indexOf("$");
+    if(index>=0){
+      int end=command.indexOf("$",index+1);
+      if(end<=index) end=command.length();
+      command=command.substring(index+1,end);
+    }
+
+    // return the result
+    return command;
   }
 
   /* ------------------------ getCategoryList ------------------------------ */
