@@ -5,6 +5,12 @@
  * each selection appropriatly.
  *
  * $Log$
+ * Revision 1.11  2001/07/11 15:51:03  neffk
+ * added a bool flag to allow operator to be applied on multiple
+ * DataSet objects.  also, fixed a bug in the list of DataSet objects
+ * displayed for the user to chose from for applying operators to
+ * individual DataSet objects.
+ *
  * Revision 1.10  2001/07/09 22:18:38  chatter
  * Corrected the code for minor problems
  *
@@ -35,10 +41,9 @@ public class JOperationsMenuHandler
              Serializable
 {
   private DataSet[] dss;
-  DataSet dss0;
   private JTreeUI treeUI;
   Document sessionLog;
-  boolean array;
+  boolean use_array;
 
   /**
    * constructs this object with the appropriate links to ISAW's tree and
@@ -52,59 +57,67 @@ public class JOperationsMenuHandler
     treeUI = treeUI_;
     dss = (new DSgetArray( treeUI )).getDataSets(); 
     sessionLog = sessionLog_;
-    dss0 = ds_;
-   array = false;
+    use_array = false;
   }
 
-  
+
   /**
    * constructs this object with the appropriate links to ISAW's tree and
    * session log.  the array of DataSet objects allows the JParametersDialog
    * to offer only selected DataSet objects as additional parameters.
+   *
+   * @param dss_       the DataSet object or objects on which to operate.  
+   *                   by default, only the first element is used.  to override
+   *                   this behavior, set use_selected_dss.  this capability is
+   *                   provided so that the programmer can apply operators to
+   *                   more than one DataSet object at a time.
+   * @param treeUI_    reference to a JTreeUI as a container of DataSet objects.
+   *                   this parameter is used to get a list of all of the 
+   *                   DataSet objects that can be operated upon.  this is
+   *                   distinct from the multiple DataSet capability that the
+   *                   above parameter provides.
+   * @param use_array_ overrides default behavior of using only the first
+   *                   element in dss_.
    */
   public JOperationsMenuHandler( DataSet[] dss_, 
-                                 JTreeUI treeUI_ )
+                                 JTreeUI treeUI_,
+                                 boolean use_array_ )
   {
     dss = dss_;
     treeUI = treeUI_;
     sessionLog = null;
-    dss0 = dss_[0]; 
-    array= true;
+    use_array = use_array_;
   }
 
 
   /** 
-   * handles all of the menu selection events.  when there are multiple
-   * DataSet objects selected,
+   * handles all of the menu selection events.  
    */     
   public void actionPerformed( ActionEvent e ) 
   {
     String s = e.getActionCommand();
 
-//    System.out.println( "actionCommand: " + s );
-    for( int i=0;  i<dss0.getNum_operators();  i++ )
+    for( int i=0;  i<dss[0].getNum_operators();  i++ )
     {
-//      System.out.println(  "title: " + dss[0].getOperator(i).getTitle()  );
-      if(   s.equalsIgnoreCase(  dss0.getOperator(i).getTitle()  )   )
+      if( !use_array  )
       {
- 
-    /*   { DSgetArray DSA = new DSgetArray( treeUI );  //DataSet objects to be
-        //DataSet Dss[];                              //shown as additional args
-        dss = DSA.getDataSets();                    //in JParameterDialog
-       }
-       JParametersDialog pDialog = new JParametersDialog( op,
-                                                           Dss, 
-                                                           sessionLog,
-                                                           treeUI );
-        */
-        DataSetOperator op = dss0.getOperator(i);
-         if(!array)
-             dss = (new DSgetArray( treeUI )).getDataSets(); 
+        if(   s.equalsIgnoreCase(  dss[0].getOperator(i).getTitle()  )   )
+        {
+          DSgetArray DSA = new DSgetArray( treeUI );  //DataSet objects to be
+          DataSet[] all_dss;                          //shown as additional args
+          all_dss = DSA.getDataSets();                //in JParameterDialog
 
-        JParametersDialog pDialog = new JParametersDialog( op,
-                                                           dss,
-                                                           sessionLog,
-                                                           treeUI );
+          DataSetOperator op = dss[0].getOperator(i);
+          JParametersDialog pDialog = new JParametersDialog( op,
+                                                             all_dss, 
+                                                             sessionLog,
+                                                             treeUI );
+        }
+      }
+      else
+      {
+        System.out.println( 
+          "JOperationsMenuHandler.actionPerformed(): not implemented" );
       }
     }
   }
