@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/07/10 18:15:28  bouzekc
+ *  Added missing constructor documentation.
+ *
  *  Revision 1.16  2003/07/10 15:25:33  bouzekc
  *  Now handles colons (:) within Strings.
  *
@@ -131,8 +134,8 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
   /**
    * Creates a new ArrayPG object.
    *
-   * @param name DOCUMENT ME!
-   * @param val DOCUMENT ME!
+   * @param name Name of this ArrayPG.
+   * @param val Value of this ArrayPG.
    */
   public ArrayPG( String name, Object val ) {
     this( name, val, false );
