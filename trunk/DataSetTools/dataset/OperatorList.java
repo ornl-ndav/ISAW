@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2004/01/22 02:19:05  bouzekc
+ *  Removed unused imports and local variables.
+ *
  *  Revision 1.2  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -39,7 +42,6 @@
  *
  */
   package DataSetTools.dataset;
-  import DataSetTools.dataset.*;
   import java.io.*;
   import DataSetTools.operator.DataSet.*;
 
