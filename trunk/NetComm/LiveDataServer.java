@@ -8,6 +8,9 @@
  *               Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2001/01/31 14:21:27  dennis
+ *  Fixed error in javadoc comment.
+ *
  *  Revision 1.1  2001/01/30 23:27:24  dennis
  *  Initial version, network communications for ISAW.
  *
@@ -27,7 +30,7 @@ import DataSetTools.util.*;
  *  forms a DataSet and sends the DataSet as an Object via TCP to client 
  *  programs.
  *
- *  @see DataSetTools.LiveDataRetriever
+ *  @see DataSetTools.retriever.LiveDataRetriever
  *  @see IUDPUser
  *  @see UDPReceive
  *  @see ITCPUser
