@@ -31,11 +31,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/09/27 13:29:12  rmikk
+ * Added 2 new parameters, Xdim and Ydim, and a variable useOldCode
+ *
+ *
  * Revision 1.2  2003/09/26 15:39:10  rmikk
  * Fixed Negative Xoff set problem
  * Used zero for the weights on row and column centers
  *    that are near the centeer
- *
+
  */
 
 package DataSetTools.operator.Generic.TOF_SAD;
@@ -54,6 +58,8 @@ public class Center extends GenericTOF_SAD{
 
   float BS = 1.5f/100.0f;
   float XMAX = 3.5f/100.0f;//length in cm of square around center to use
+  public static boolean useOldCode = false;
+ 
   public Center(){
     super( "Beam Center");
     setDefaultParameters();
@@ -69,7 +75,7 @@ public class Center extends GenericTOF_SAD{
   *    @param  Yoff   Initial guess for the Y offset of the beam from Center
   */
   public Center( DataSet DS, DataSet SensDS, int StartTimeChannel,
-        int EndTimeChannel, float Xoff, float Yoff){
+        int EndTimeChannel, float Xoff, float Yoff, float Xdim, float Ydim){
      this();
      parameters = new Vector();
      addParameter( new DataSetPG( "Data Set", DS));
@@ -82,6 +88,10 @@ public class Center extends GenericTOF_SAD{
              new Float( Xoff)));
      addParameter( new FloatPG("Guess for Y offset(cm) of beam",
              new Float( Yoff)));
+     addParameter( new FloatPG("X dimension of detector",
+             new Float( Xdim)));
+     addParameter( new FloatPG(" dimension of detector",
+             new Float( Ydim)));
   }
 
  public void setDefaultParameters(){
@@ -96,6 +106,10 @@ public class Center extends GenericTOF_SAD{
              new Float( 0.0f)));
      addParameter( new FloatPG("Guess for Y offset(cm) of beam",
              new Float( 0.0f)));
+     addParameter( new FloatPG("X dimension of detector",
+             new Float( -1f)));
+     addParameter( new FloatPG(" dimension of detector",
+             new Float( -1f)));
 
 
  }
@@ -113,8 +127,10 @@ public class Center extends GenericTOF_SAD{
      DataSet SensDS = ((DataSetPG)getParameter(1)).getDataSetValue();
      int StartTimeChan = ((IntegerPG)getParameter(2)).getintValue();
      int EndTimeChan = ((IntegerPG)getParameter(3)).getintValue();
-     float Xoff = -((FloatPG)getParameter(4)).getfloatValue()/100.0f;
+     float Xoff = ((FloatPG)getParameter(4)).getfloatValue()/100.0f;
      float Yoff = ((FloatPG)getParameter(5)).getfloatValue()/100.0f;
+     float Xdim = ((FloatPG)getParameter(6)).getfloatValue()/100.0f;
+     float Ydim = ((FloatPG)getParameter(7)).getfloatValue()/100.0f;
 
      //------------- Set up Grids ---------------------------------
      int[] GridIDs = Grid_util.getAreaGridIDs( DS);
@@ -152,10 +168,17 @@ public class Center extends GenericTOF_SAD{
     float[] Rowcm = new float[ DSGrid.num_rows()],
             Colcm = new float[DSGrid.num_cols()];
     for( int i = 0; i< DSGrid.num_rows(); i++)
-        Rowcm[i] = DSGrid.y( i+1.0f, 2.0f);
+        if( Ydim <= -1)
+          Rowcm[i] = DSGrid.y( i+1.0f, 2.0f);
+        else
+          Rowcm[i] = -Ydim/2 + Ydim/DSGrid.num_rows()*( i+.5f);
 
     for( int j = 0; j< DSGrid.num_cols(); j++)
-        Colcm[j] = DSGrid.x(  2.0f,j+1.0f);
+        if( Xdim <= 0)
+          Colcm[j] = DSGrid.x(  2.0f,j+1.0f);
+        else
+          Colcm[j] = -Xdim/2 + Xdim/DSGrid.num_cols()*( j+.5f);
+
     float[] RowCenters = new float[ DSGrid.num_rows()];
     float[] ColCenters = new float[ DSGrid.num_cols()];
     float[] RowCentWts = new float[ DSGrid.num_rows()];
@@ -305,7 +328,11 @@ public class Center extends GenericTOF_SAD{
          v1 =0;
        float Delta = (v2-v1)/
                  (Colcm[IPrim+1-1] -Colcm[IPrim -1-1]);
-       float S =v1 +Delta*(RowCenters[j-1]+Xoff -Colcm[IPrim-1]);
+       float S;
+       if( !useOldCode)
+           S =v1 +Delta*(RowCenters[j-1]+Xoff -Colcm[IPrim-1]);
+       else
+           S = v1+Delta*(RowCenters[j-1]+Xoff -RowCenters[IPrim-1]);
        //ERROR??                                              RowCenters here  
        SUYB += S*RowCenters[j-1];
        SUY += S;  
