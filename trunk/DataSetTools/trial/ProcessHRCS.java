@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2002/12/11 22:27:01  pfpeterson
+ * Commented out section that uses DoubleDifferentialCrossSection.
+ *
  * Revision 1.5  2002/11/27 23:23:30  pfpeterson
  * standardized header
  *
@@ -131,15 +134,17 @@ public class ProcessHRCS
 //      viewmanager = new ViewManager( difference_ds, IViewManager.IMAGE );
 
       float atoms = 1.0f;
-      op = new DoubleDifferentialCrossection( difference_ds, 
-                                              new DataSet("dummy","Empty"),
-                                              false,
-                                              sample_mon_1_area, 
-                                              atoms, 
-                                              true    );
+      /* Commented out b/c the Operator was removed from ISAW
+        op = new DoubleDifferentialCrossection( difference_ds, 
+        new DataSet("dummy","Empty"),
+        false,
+        sample_mon_1_area, 
+        atoms, 
+        true    );
 
-      DataSet double_diff_cross_ds = (DataSet)op.getResult();
-      viewmanager = new ViewManager(double_diff_cross_ds, IViewManager.IMAGE);
+        DataSet double_diff_cross_ds = (DataSet)op.getResult();
+        viewmanager =new ViewManager(double_diff_cross_ds, IViewManager.IMAGE);
+      */
 
       float wave_len = tof_calc.WavelengthFromEnergy(energy);
       float wave_num = (float)(2*Math.PI/wave_len);
