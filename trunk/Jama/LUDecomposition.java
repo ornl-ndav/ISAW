@@ -1,3 +1,9 @@
+/*
+ * $Log$
+ * Revision 1.2  2003/10/17 03:02:03  bouzekc
+ * Fixed javadoc errors.  Added Log tag.
+ *
+ */
 package Jama;
 
    /** LU Decomposition.
@@ -41,8 +47,8 @@ public class LUDecomposition implements java.io.Serializable {
  * ------------------------ */
 
    /** LU Decomposition
+   This is a structure to access L, U and piv.
    @param  A   Rectangular matrix
-   @return     Structure to access L, U and piv.
    */
 
    public LUDecomposition (Matrix A) {
@@ -253,7 +259,7 @@ public class LUDecomposition implements java.io.Serializable {
 
    /** Determinant
    @return     det(A)
-   @exception  IllegalArgumentException  Matrix must be square
+   @throws  IllegalArgumentException  Matrix must be square
    */
 
    public double det () {
@@ -270,8 +276,8 @@ public class LUDecomposition implements java.io.Serializable {
    /** Solve A*X = B
    @param  B   A Matrix with as many rows as A and any number of columns.
    @return     X so that L*U*X = B(piv,:)
-   @exception  IllegalArgumentException Matrix row dimensions must agree.
-   @exception  RuntimeException  Matrix is singular.
+   @throws  IllegalArgumentException Matrix row dimensions must agree.
+   @throws  RuntimeException  Matrix is singular.
    */
 
    public Matrix solve (Matrix B) {
