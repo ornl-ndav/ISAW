@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/02/27 18:01:46  pfpeterson
+ * Fixed bug when values are changed on forms, enlarged the status_pane,
+ * and added some more debug statements.
+ *
  * Revision 1.9  2003/02/26 21:43:47  pfpeterson
  * Changed reference to Form.setCompleted(false) to From.invalidate().
  *
@@ -74,8 +78,6 @@
  * Revision 1.1  2002/02/27 17:27:52  dennis
  * Wizard class for controlling a sequence of "Forms" that
  * determine a calculation
- *
- *
  */
 
 package DataSetTools.wizard;
@@ -317,9 +319,10 @@ public class Wizard implements Serializable{
         // add the status to the panel
         gbc.fill=GridBagConstraints.BOTH;
         gbc.anchor=GridBagConstraints.WEST;
+        gbc.weighty=5.0;
         if( standalone)
-        work_area.add( DataSetTools.util.SharedData.status_pane, gbc);//status_display,gbc );
-        
+          work_area.add(SharedData.status_pane, gbc);
+
         CommandHandler command_handler = new CommandHandler(this);
         save_form      .addActionListener( command_handler );
         load_form      .addActionListener( command_handler );
@@ -565,7 +568,8 @@ public class Wizard implements Serializable{
         for( int i=start ; i<forms.size() ; i++ ){
           getForm(i).invalidate();
         }
-        progress.setValue(start);
+        if(progress.getValue()>start)
+          progress.setValue(start);
     }
 
     /**
@@ -588,11 +592,12 @@ public class Wizard implements Serializable{
         progress.setValue(i);
         f=getForm(i);
         if(!f.done()){ 
-          if(DEBUG) System.out.println("EXECUTING "+i);
+          if(DEBUG) System.out.print("EXECUTING "+i);
           //invalidate(i);
           boolean worked=f.execute();
-          if(!worked) f.invalidate();
+          if(DEBUG) System.out.println("  W="+worked+" D="+f.done());
           if(!worked || !f.done()){
+            if(DEBUG) System.out.println("BREAKING "+i);
             end=i-1;
             break;
           }
