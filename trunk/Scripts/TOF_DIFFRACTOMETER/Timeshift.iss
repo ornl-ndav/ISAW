@@ -5,6 +5,8 @@
 # User can either display or write a gsas file or do both.
 # $Date$
 
+$Category=Operator, Instrument Type, TOF_NPD
+
 $Current Boolean(true)	Is this a Current Run ?
 
 $ run_numbers         Array([21638])         Enter run numbers like [1,2:5]

@@ -8,6 +8,8 @@
 # Choice is given to display dialog box.
 # $Date$
 
+$Category=Operator, Instrument Type, TOF_NPD
+
 $Sort_d_by_Omega	Boolean(true)	Sort_d_by_Omega (Indiv detectors)
 $Standard        	Boolean(false)	Standard (5B, sum & T focus)
 $Focus_all_tth	    	Boolean(false)  Focus_all_2Theta (4B focus to 125)	

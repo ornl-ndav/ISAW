@@ -7,11 +7,13 @@
 # Pressure : 1 bank of data with available detectors and focus to 100 degrees.
 # $Date$
 
-$Standard		Boolean(true)          (1) Standard (5B, sum & T focus)
+$Category=Operator, Instrument Type, TOF_NPD
+
+$Standard	Boolean(true)          (1) Standard (5B, sum & T focus)
 $Focus_all_tth	Boolean(false)         (2) Focus_all_2Thet (4B focus to 125)		
 $Miller		Boolean(false)         (3) Miller (Only 90 deg detectors) 
 $Kappa		Boolean(false)         (4) Kappa (8B, sum and T focus) 
-$Pressure		Boolean(false)         (5) Pressure (1B, selected detectors)
+$Pressure	Boolean(false)         (5) Pressure (1B, selected detectors)
 
 $Current		Boolean(true)		Is this a Current Run ?
 

@@ -5,6 +5,8 @@
 # data type and prompt string.  A dialog box will prompt the user for values
 # for these parameters
 
+$Category=Operator, Instrument Type, TOF_NPD
+
 $ instrument          InstrumentNameString   Filename prefix
 $ run_numbers         Array                  list numbers like [1,2:5]
 #$ lowAng              Float                  Low angle for merging
