@@ -8,7 +8,7 @@ import DataSetTools.util.*;
 import DataSetTools.components.ParametersGUI.*;
 import java.util.*;
 import Command.*;
-
+import java.io.*;
 public class TabView extends DataSetViewer
 {  JMenu View, Edit,Options;
    JMenuItem  fileView, tableView, consoleView;
@@ -101,6 +101,14 @@ public class TabView extends DataSetViewer
      {
       if( e.getSource().equals(fileView))
 	{tv.mode = 1;
+	 JFileChooser JFC = new JFileChooser( 
+                            System.getProperty( "user.dir"));
+         JFC.setDialogType( JFileChooser.SAVE_DIALOG );
+         int retStatus = JFC.showSaveDialog( null );
+         if( retStatus == JFileChooser.APPROVE_OPTION )
+            {File F = JFC.getSelectedFile();
+             tv.filename = F.getPath().trim();          
+             }
          tv.Showw();
         }
       else if( e.getSource().equals(tableView))
