@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/01/05 23:25:06  rmikk
+ * Changed the Data Set name to Sensitivity
+ *
  * Revision 1.4  2003/10/22 20:13:48  rmikk
  * Fixed javadoc errors
  *
@@ -161,8 +164,8 @@ public class ReadFlood extends GenericTOF_SAD{
         float[] mask= (float[])(V.lastElement());
     
    //---------------------- NOW make the Data Sets------------------------
-
-     DataSet Efficiencies = new DataSet("Efficiencies", new OperationLog(),
+     
+     DataSet Efficiencies = new DataSet("Sensitivity"+RunNum(filename), new OperationLog(),
           "Time(us)","Time", "Av Counts","Av Counts");
      
      DataSet Mask = new DataSet("Mask", new OperationLog(), "Time(us)", "Time",
@@ -263,4 +266,15 @@ public class ReadFlood extends GenericTOF_SAD{
       Res.append(" values are written I10");
       return Res.toString();
    }
+  private String RunNum( String filename){
+
+    if( filename == null) return "";
+    int j = filename.lastIndexOf(".");
+    if( j < 0) j = filename.length();
+    String S ="";
+    for( int i= j-1; i >0; i--)
+      if( !Character.isDigit( filename.charAt(i)))
+         return S;
+    return S;
+  }
 }//ReadFlood
