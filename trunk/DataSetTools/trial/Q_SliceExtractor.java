@@ -32,6 +32,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/01/24 23:41:15  dennis
+ * Methods that extract slice planes and line cuts now
+ * make copies of their parameters, so that the parameters
+ * are not altered.
+ * Fixed an error in the axis range specified.
+ * Added code to main test program to calculate and
+ * sum a series of slices, in an attempt to provide an
+ * efficient volume rendering algorithm.
+ *
  * Revision 1.2  2004/01/07 15:02:57  dennis
  * Added methods to allow extracting 1 & 2 dimensional slices, using
  * HKL values.  Refined main test program to produce these slices
@@ -103,6 +112,9 @@ public class Q_SliceExtractor
                              Vector3D end_point,
                              int      n_steps  )
   {
+    start_point = new Vector3D( start_point );
+    end_point   = new Vector3D( end_point );
+
     orientation_matrix.apply_to( start_point, start_point );
     orientation_matrix.apply_to( end_point,   end_point );
 
@@ -113,6 +125,9 @@ public class Q_SliceExtractor
                            Vector3D end_point,
                            int      n_steps  )
   {
+    start_point = new Vector3D( start_point );
+    end_point   = new Vector3D( end_point );
+
     if ( n_steps < 2 )
       n_steps = 2;
 
@@ -161,6 +176,10 @@ public class Q_SliceExtractor
                                int      n_u_steps,
                                int      n_v_steps )
   {
+    origin = new Vector3D( origin );
+    u      = new Vector3D( u );
+    v      = new Vector3D( v );
+
     orientation_matrix.apply_to( origin, origin );
     orientation_matrix.apply_to( u, u );
     orientation_matrix.apply_to( v, v );
@@ -175,7 +194,11 @@ public class Q_SliceExtractor
                              int      n_u_steps, 
                              int      n_v_steps )
   {
-    System.out.println("Start of make_slice......");
+//  System.out.println("Start of make_slice......");
+    origin = new Vector3D( origin );
+    u      = new Vector3D( u );
+    v      = new Vector3D( v );
+
     if( origin == null || u == null || v == null )
       return null;
 
@@ -195,10 +218,11 @@ public class Q_SliceExtractor
 
     float b1[] = base1.get();
     float b2[] = base2.get();
+/*
     System.out.println("Origin = " + origin );
     System.out.println("base1  = " + base1 );
     System.out.println("base2  = " + base2 );
-
+*/
     float orig[] = origin.get();
     Vector3D q = new Vector3D();
 
@@ -238,7 +262,7 @@ public class Q_SliceExtractor
         else
           image[row + n_v_steps][col + n_u_steps] = 0;
       }
-    System.out.println("DONE");
+//  System.out.println("DONE");
     return image;
   }
 
@@ -319,7 +343,7 @@ public class Q_SliceExtractor
                                      origin, u, v, 500, 500 );
 
      float slice_array[] = slicer.HKL_Slice( orientation_matrix, 
-                                             start, end, 300);
+                                             start, end, 500);
 
      Vector3D test_vec = new Vector3D( -9, 7, 3 );
      System.out.println("+++++Test Vector in HKL  = " + test_vec );
@@ -341,7 +365,7 @@ public class Q_SliceExtractor
      if ( hkl_cut.equals( CONST_K ) )
      {  
        va2D.setTitle( "K = 4" );
-       va2D.setAxisInfo( AxisInfo.X_AXIS, 1f, 7f,
+       va2D.setAxisInfo( AxisInfo.X_AXIS, -7f, -1f,
                         "H","(Index)", true );
        va2D.setAxisInfo( AxisInfo.Y_AXIS, 1f, 7f,
                         "L","(Index)", true );
@@ -349,13 +373,50 @@ public class Q_SliceExtractor
      if ( hkl_cut.equals( CONST_L ) )
      {
        va2D.setTitle( "L = 4" );
-       va2D.setAxisInfo( AxisInfo.X_AXIS, 1f, 7f,
+       va2D.setAxisInfo( AxisInfo.X_AXIS, -7f, -1f,
                         "H","(Index)", true );
        va2D.setAxisInfo( AxisInfo.Y_AXIS, 1f, 7f,
                         "K","(Index)", true );
      }
 
      ImageFrame2 frame = new ImageFrame2( va2D );
+
+     origin = new Vector3D( -5, 3.85f, 5 );
+     u      = new Vector3D( .15f, 0, 0 );
+     v      = new Vector3D(  0, 0, 0.15f );
+     Vector3D delta_k = new Vector3D( 0, 0.01f, 0 );
+     float vol_array[][] = new float[51][51];
+/*
+     for ( int row = 0; row < 51; row++ )
+       for ( int col = 0; col < 51; col++ )
+         vol_array[row][col] = 0;
+*/
+     for ( int slice = -15; slice <= 15; slice+=1 )
+     {
+       origin.add( delta_k );
+       System.out.println("Slice = " + slice + " origin = " + origin );
+       if ( slice == -15 )
+         vol_array = slicer.HKL_Slice( orientation_matrix, 
+                                       origin, u, v, 25, 25 );
+       else
+       {
+         image_array = slicer.HKL_Slice( orientation_matrix, 
+                                         origin, u, v, 25, 25 );
+         for ( int row = 0; row < 51; row++ )
+           for ( int col = 0; col < 51; col++ )
+           {
+//             vol_array[row][col] *= 0.95f;
+             vol_array[row][col] += image_array[row][col];
+           }
+       } 
+     }
+     va2D = new VirtualArray2D( vol_array );
+     va2D.setTitle( "K = 4" );
+     va2D.setAxisInfo( AxisInfo.X_AXIS, -5.15f, -4.85f,
+                      "H","(Index)", true );
+     va2D.setAxisInfo( AxisInfo.Y_AXIS, 4.85f, 5.15f,
+                      "L","(Index)", true );
+     frame = new ImageFrame2( va2D );
   }
 
 }
