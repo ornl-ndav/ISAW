@@ -40,9 +40,10 @@ public class ViewerTemplate extends DataSetViewer
 
 /* ------------------------------------------------------------------------ */
 
-public ViewerTemplate( DataSet data_set ) 
+public ViewerTemplate( DataSet data_set, ViewerState state ) 
 {
-  super(data_set);         // Records the data_set in the parent class and
+  super(data_set, state);  // Records the data_set and current ViewerState
+                           // object in the parent class and then
                            // sets up the menu bar with items handled by the
                            // parent class.
   init();
@@ -146,7 +147,7 @@ public static void main(String[] args)
                                                     // the data set
   }
 
-  ViewerTemplate view = new ViewerTemplate( data_set );
+  ViewerTemplate view = new ViewerTemplate( data_set, null );
   JFrame f = new JFrame("Test for ViewerTemplate");
   f.setBounds(0,0,600,400);
   f.setJMenuBar( view.getMenuBar() );
