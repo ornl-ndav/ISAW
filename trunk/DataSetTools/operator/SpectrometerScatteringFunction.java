@@ -31,6 +31,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.11  2001/12/21 17:31:17  dennis
+ *  Minor fix to documentation.
+ *
  *  Revision 1.10  2001/06/01 21:18:00  rmikk
  *  Improved documentation for getCommand() method
  *
@@ -139,7 +142,7 @@ public class SpectrometerScatteringFunction extends    DS_Special
    *
    *  @param  crossection      The scattering crossection of the sample
    *
-   *  @param  make_new_ds Flag that determines whether a new DataSet is
+   *  @param  make_new_ds      Flag that determines whether a new DataSet is
    *                           constructed, or the Data blocks of the original 
    *                           DataSet are just altered.
    */
@@ -163,7 +166,8 @@ public class SpectrometerScatteringFunction extends    DS_Special
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return the command name to be used with script processor: in this case, ScatFun
+   * @return the command name to be used with script processor: 
+   * in this case, ScatFun
    */
    public String getCommand()
    {
