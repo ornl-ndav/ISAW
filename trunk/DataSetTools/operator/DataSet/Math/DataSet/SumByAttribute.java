@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/01/24 19:38:30  bouzekc
+ *  Removed unused variables from main() and removed unused imports.
+ *
  *  Revision 1.6  2003/01/09 17:55:46  dennis
  *  Added '\n' to docs from getDocumentation(). (Chris Bouzek)
  *
@@ -56,14 +59,10 @@ package DataSetTools.operator.DataSet.Math.DataSet;
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
-import  DataSetTools.viewer.*;
-import  DataSetTools.operator.*;
-import DataSetTools.retriever.*;
 
 /**
   *  Sum Data blocks specified by an attribute to form a new DataSet

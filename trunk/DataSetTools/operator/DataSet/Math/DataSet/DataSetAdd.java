@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/01/24 19:38:29  bouzekc
+ *  Removed unused variables from main() and removed unused imports.
+ *
  *  Revision 1.6  2003/10/16 00:11:00  dennis
  *  Fixed javadocs to build cleanly with jdk 1.4.2
  *
@@ -56,7 +59,6 @@ package DataSetTools.operator.DataSet.Math.DataSet;
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
-import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
@@ -233,11 +235,11 @@ public class DataSetAdd extends    DataSetOp
   {
     DataSet ds1 = DataSetFactory.getTestDataSet();
     DataSet ds2 = DataSetFactory.getTestDataSet();
-    ViewManager viewer = new ViewManager(ds1, ViewManager.IMAGE);
+    new ViewManager(ds1, ViewManager.IMAGE);
     
     Operator op = new DataSetAdd(ds1, ds2, true);
     DataSet new_ds = (DataSet)op.getResult();
-    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE);
+    new ViewManager(new_ds, ViewManager.IMAGE);
     
     String document = op.getDocumentation();
     System.out.println(document);

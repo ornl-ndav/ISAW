@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/01/24 19:38:30  bouzekc
+ *  Removed unused variables from main() and removed unused imports.
+ *
  *  Revision 1.7  2003/10/16 00:11:00  dennis
  *  Fixed javadocs to build cleanly with jdk 1.4.2
  *
@@ -225,10 +228,10 @@ public class DataSetSubtract extends  DataSetOp
   {
     DataSet ds1 = DataSetFactory.getTestDataSet(); //create the first test DataSet
     DataSet ds2 = DataSetFactory.getTestDataSet(); //create the second test DataSet
-    ViewManager viewer = new ViewManager(ds1, ViewManager.IMAGE);
+    new ViewManager(ds1, ViewManager.IMAGE);
     Operator op = new DataSetSubtract( ds1, ds2, true );
     DataSet new_ds = (DataSet)op.getResult();
-    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE);
+    new ViewManager(new_ds, ViewManager.IMAGE);
   }//main()
 
 }//DataSetSubtract
