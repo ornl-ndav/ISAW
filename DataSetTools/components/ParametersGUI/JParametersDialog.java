@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.54  2004/01/05 23:21:32  rmikk
+ *  Fixed and error in removing data sets after the parameterGUI is done.
+ *
  *  Revision 1.53  2003/11/23 19:53:42  rmikk
  *  Reported Throwable error messages on the status pane too. They are
  *  usually too long.
@@ -894,7 +897,7 @@ public class JParametersDialog implements Serializable,
         IParameter iparam = op.getParameter(i);
         if( (iparam instanceof DataSetPG) && (DSSS != null))
            for( int j = 0; j < DSSS.length; j++)
-              ((DataSetPG)iparam).removeItem( DSSS[i]);
+              ((DataSetPG)iparam).removeItem( DSSS[j]);
 
       }
      
