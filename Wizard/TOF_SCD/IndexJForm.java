@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.19  2003/07/29 08:11:16  bouzekc
+ * Now uses RadioButtonPG for its matrix file choices.
+ *
  * Revision 1.18  2003/07/16 19:48:17  bouzekc
  * Now appends to log when using the series of matrix files
  * to index peaks.
@@ -107,6 +110,8 @@ import DataSetTools.wizard.*;
 
 import Operators.TOF_SCD.*;
 
+import java.awt.event.*;
+
 import java.io.File;
 
 import java.util.Vector;
@@ -119,14 +124,17 @@ import java.util.Vector;
  * entire peaks file. Other than that, it functions in a similar manner to
  * IndexJ.
  */
-public class IndexJForm extends Form {
+public class IndexJForm extends Form implements ActionListener {
   //~ Static fields/initializers ***********************************************
 
   protected static int RUN_NUMBER_WIDTH = 5;
+  public static final String FROM_FILE  = "From a File";
+  public static final String FROM_LSQRS = "From LsqrsJ";
 
   //~ Instance fields **********************************************************
 
   private IndexJ indexJOp;
+  private Vector choices = null;
 
   //~ Constructors *************************************************************
 
@@ -195,6 +203,10 @@ public class IndexJForm extends Form {
    * Attempts to set reasonable default parameters for this form.
    */
   public void setDefaultParameters(  ) {
+    if( choices == null ) {
+      initChoices(  );
+    }
+
     parameters = new Vector(  );
 
     addParameter( new IntArrayPG( "Run Numbers", null, false ) );  //0
@@ -211,13 +223,16 @@ public class IndexJForm extends Form {
 
     addParameter( new BooleanPG( "Update Peaks File", true, false ) );  //6
 
-    addParameter( new BooleanPG( "Specify a Matrix File?", false, false ) );  //7
+    addParameter( 
+      new RadioButtonPG( "Get Matrix File From: ", choices, false ) );  //7
 
     addParameter( new LoadFilePG( "Matrix File to Load", "", false ) );  //8
 
     addParameter( new IntArrayPG( "Restrict Runs", "", false ) );  //9
 
     addParameter( new LoadFilePG( "JIndex Log", " ", false ) );  //10
+
+    ( ( RadioButtonPG )getParameter( 7 ) ).addActionListener( this );
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
@@ -294,12 +309,12 @@ public class IndexJForm extends Form {
     String runNum;
     String matName;
     String restrictRuns;
-    Object obj         = null;
+    String matToUse;
+    Object obj      = null;
     float delta_h;
     float delta_k;
     float delta_l;
     boolean update;
-    boolean useSpecMat;
     int[] runsArray;
 
     //gets the run numbers
@@ -333,8 +348,8 @@ public class IndexJForm extends Form {
     update   = ( ( BooleanPG )param ).getbooleanValue(  );
 
     //get the "use matrix" boolean value
-    param        = ( IParameterGUI )super.getParameter( 7 );
-    useSpecMat   = ( ( BooleanPG )param ).getbooleanValue(  );
+    param      = ( IParameterGUI )super.getParameter( 7 );
+    matToUse   = ( ( RadioButtonPG )param ).getStringValue(  );
 
     //#8 the matrix name will be validated later - setting it valid here
     //skips the Form's parameter checking for this parameter
@@ -372,7 +387,7 @@ public class IndexJForm extends Form {
             .setValue( new Boolean( false ) );
 
     //user wants to use a specified matrix file
-    if( useSpecMat ) {
+    if( matToUse.equals( FROM_FILE ) ) {
       //get the matrix name make sure the matrix file exists
       param     = ( IParameterGUI )super.getParameter( 8 );
       matName   = ( String )param.getValue(  )
@@ -468,6 +483,22 @@ public class IndexJForm extends Form {
   }
 
   /**
+   * Required for ActionListener implementation.  This disables/enables the
+   * LoadFilePG for the matrix file depending on the RadioButtonPG's state.
+   *
+   * @param ae The triggering ActionEvent.
+   */
+  public void actionPerformed( ActionEvent ae ) {
+    if( ae.getActionCommand(  )
+            .equals( FROM_FILE ) ) {
+      ( ( IParameterGUI )getParameter( 8 ) ).setEnabled( true );
+    } else if( ae.getActionCommand(  )
+                   .equals( FROM_LSQRS ) ) {
+      ( ( IParameterGUI )getParameter( 8 ) ).setEnabled( false );
+    }
+  }
+
+  /**
    * Utility method to ease "code eye."
    *
    * @param runNumber The RUN_NUMBER_WIDTH size number to pad with leading
@@ -478,5 +509,14 @@ public class IndexJForm extends Form {
   private String formatRunNum( int runNumber ) {
     return DataSetTools.util.Format.integerPadWithZero( 
       runNumber, RUN_NUMBER_WIDTH );
+  }
+
+  /**
+   * Initializes the radio button choices.
+   */
+  private void initChoices(  ) {
+    choices = new Vector( 2, 2 );
+    choices.add( FROM_FILE );
+    choices.add( FROM_LSQRS );
   }
 }
