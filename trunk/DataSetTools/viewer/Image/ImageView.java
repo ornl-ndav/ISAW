@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2001/08/16 01:20:27  dennis
+ *  Now sends POINTED AT CHANGED messages when the mouse moves
+ *  over the SAME Data block, if there is only one Data block.
+ *
  *  Revision 1.26  2001/07/27 15:58:25  dennis
  *  Removed debug print.
  *
@@ -1137,7 +1141,8 @@ private Point ProcessImageMouseEvent( MouseEvent e,
 
   if ( row != last_image_row )
   {
-    if ( getDataSet().getPointedAtIndex() != row )  // only change if needed
+    if ( getDataSet().getPointedAtIndex() != row  ||
+         getDataSet().getNum_entries() == 1        )  // only change if needed
     { 
       getDataSet().setPointedAtIndex( row );
       getState().set_int( ViewerState.POINTED_AT_INDEX, row );
