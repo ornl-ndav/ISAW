@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/02/06 21:32:13  dennis
+ * Added getDocumentation() method. (Josh Olson)
+ *
  * Revision 1.4  2002/11/27 23:30:18  pfpeterson
  * standardized header
  *
@@ -68,7 +71,7 @@ public class LoadExpression extends GenericLoad
 
  /* ------------------------- DefaultConstructor -------------------------- */
  /** 
-  *  Creates operator with title "Load Expression" and a  default list of
+  *  Creates operator with title "Load Expression" and a default list of
   *  parameters.
   */  
   public LoadExpression()
@@ -148,6 +151,76 @@ public class LoadExpression extends GenericLoad
     addParameter( new Parameter("Number of samples", new Integer(1000) ) );
     addParameter( new Parameter("Histogram(or Function)", new Boolean(false) ));
   }
+  
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */                                                                                    
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");                                                 
+    s.append("@overview This operator constructs a DataSet with a Data ");
+    s.append("block given by an expression. ");                                                                   
+    s.append("@assumptions The entries of 'par_values' are completely ");
+    s.append("numeric. \n");
+    s.append("'expression', 'var_name', 'par_names', and 'par_values' can ");
+    s.append("be used to make a valid function object.\n");
+    s.append("'x_max' is greater than 'x_min', and 'n_steps' indicates the ");
+    s.append("number of evaluation points (or bins) inbetween them.\n");
+    s.append("For every parameter in 'par_names', there is a corresponding ");
+    s.append("value in 'par_values'.");                       		                                                                                                              
+    s.append("@algorithm The parameter names from 'par_names' are stored.  ");
+    s.append("Their corresponding initial values are stored as Doubles.  The ");
+    s.append("operator checks each value to make sure it was successfully ");
+    s.append("created as a double (a reason why it wouldn't is if the values ");
+    s.append("contained alphabetic characters).  If it was not, then an error");
+    s.append(" string is returned and execution of the operator terminates.");
+    s.append("  Otherwise the operator continues. \n\n");
+    s.append("A variable called 'x_scale'  is determined by using 'x_min' to");
+    s.append(" indicate where the x values start, 'x_max' indicates where ");
+    s.append("the x values end, and 'n_steps' idicates the number of ");
+    s.append("evaluation points (or bins) inbetween them.  A variable called");
+    s.append(" 'domain' is set to be the interval [x_min, x_max]. \n\n");
+    s.append("An variable called 'f' is declared.  This is a a new function ");
+    s.append("object made from 'expression', and it uses 'var_name', the ");
+    s.append("parameter names, and their values.  If this object is not ");
+    s.append("valid, then an error string is returned and execution of the ");
+    s.append("operator terminates.  Otherwise the operator continues. \n\n ");
+    s.append("The domain of 'f' is set to be equal to 'domain'.  If ");
+    s.append("'is_histogram' is true, then a histogram Data block is ");
+    s.append("constructed.  Otherwise a function Data block is constructed.");
+    s.append("\n\n");
+    s.append("The DataSet is now created, and the histogram or function Data");
+    s.append(" block is added to it.  An entry is added to the DataSet's ");
+    s.append("log indicating that the data was generated from 'expression', ");
+    s.append("and the DataSet is now returned. ");       
+    s.append("@param expression The expression that specifies the Data");
+    s.append("@param var_name The independent variable name for this ");
+    s.append("expression");
+    s.append("@param par_names The delimited list of parameter names for this");
+    s.append(" expression.  Valid delimiters include  , ; : \\t \\n \\r \\f. ");
+    s.append(" The parameter names must be un-broken strings of alpha-numeric");
+    s.append(" characters, or underscores.");
+    s.append("@param par_values String containing initial values for the ");
+    s.append("parameters. (must be numeric)");
+    s.append("@param x_min Minimum argument value");
+    s.append("@param x_max Maximum argument value");
+    s.append("@param n_steps Number of evaluation points or bins");
+    s.append("@param is_histogram Indicates whether to construct a ");
+    s.append("histogram or a function Data block.");
+    s.append("@return If successful, this returns a new DataSet with the ");
+    s.append("data given the expression. \n");
+    s.append("If unsuccessful, then an error string is returned, as ");
+    s.append("discussed in the 'Errors' section.");
+    s.append("@error Returns an error string if any of the intitial values ");
+    s.append("in the String 'par_value' cannot be converted to a Double.  ");
+    s.append("(This occurs if a value contains a non-numeric character, ");
+    s.append("ie. '#8F43' cannot be converted to a double.) ");
+    s.append("@error Returns an error string if the function object 'f' ");
+    s.append("is not valid.");
+    return s.toString();
+  }    
 
  /* ------------------------------ getResult ------------------------------- */
  /** 
@@ -172,7 +245,7 @@ public class LoadExpression extends GenericLoad
                                                           " ,;:\t\n\r\f"); 
     String par_val_strings[] = StringUtil.extract_tokens( par_values, 
                                                           " ,;:\t\n\r\f"); 
-    double parameter_values[] = new double[par_val_strings.length];
+    double parameter_values[] = new double[par_val_strings.length];  
     try
     {
       for ( int i = 0; i < parameter_values.length; i++ )
@@ -182,14 +255,13 @@ public class LoadExpression extends GenericLoad
     {
       return new ErrorString( "Bad Number in " + par_values ); 
     }
-
     XScale x_scale = new UniformXScale( x_min, x_max, n_steps );
-    ClosedInterval domain = new ClosedInterval( x_min, x_max );
+    ClosedInterval domain = new ClosedInterval( x_min, x_max );  
 
     Expression f = new Expression( expression, var_name, 
                                    parameter_names, parameter_values ); 
     if ( !f.isValid() )
-      return new ErrorString( "Expression invalid " + expression );
+      return new ErrorString( "Expression invalid " + expression );  
 
     f.setDomain( domain );
 
