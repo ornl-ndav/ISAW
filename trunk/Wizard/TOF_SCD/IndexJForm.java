@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.30  2004/02/11 04:10:55  bouzekc
+ * Uses the new Wizard classes that have indeterminate progress bars.
+ *
  * Revision 1.29  2003/12/15 02:17:29  bouzekc
  * Removed unused imports.
  *
@@ -447,7 +450,6 @@ public class IndexJForm extends Form implements PropertyChangeListener {
       if( obj instanceof ErrorString ) {
         return errorOut( "IndexJ failed: " + obj.toString(  ) );
       }
-      super.fireValueChangeEvent( 0, 100 );
     } else {
       //try to find the matrix files.  If the lsqrs matrix files exist, 
       //this is their format:
@@ -460,9 +462,6 @@ public class IndexJForm extends Form implements PropertyChangeListener {
           "ERROR: No least squares matrix files exist.  " +
           "Please specify a matrix file." );
       }
-
-      //set the increment amount
-      increment = ( 1.0f / runsArray.length ) * 100.0f;
 
       boolean appendToLog = false;
 
@@ -491,10 +490,6 @@ public class IndexJForm extends Form implements PropertyChangeListener {
           return errorOut( "IndexJ failed: " + obj.toString(  ) );
         }
 
-        //fire a property change event off to any listeners
-        oldPercent = newPercent;
-        newPercent += increment;
-        super.fireValueChangeEvent( ( int )oldPercent, ( int )newPercent );
         appendToLog = true;  //save the previously logged run data
       }
     }

@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.28  2004/02/11 04:10:56  bouzekc
+ * Uses the new Wizard classes that have indeterminate progress bars.
+ *
  * Revision 1.27  2004/01/08 23:28:44  bouzekc
  * Removed unused imports and collapsed DataSetTools.parameter import.
  *
@@ -359,9 +362,6 @@ public class LsqrsJForm extends Form {
       return validCheck;
     }
 
-    //set the increment amount
-    increment = ( 1.0f / runsArray.length ) * 100.0f;
-
     for( int i = 0; i < runsArray.length; i++ ) {
       runNum        = DataSetTools.util.Format.integerPadWithZero( 
           runsArray[i], RUN_NUMBER_WIDTH );
@@ -378,11 +378,6 @@ public class LsqrsJForm extends Form {
       if( obj instanceof ErrorString ) {
         return errorOut( "LsqrsJ failed: " + obj.toString(  ) );
       }
-
-      //fire a property change event off to any listeners
-      oldPercent = newPercent;
-      newPercent += increment;
-      super.fireValueChangeEvent( ( int )oldPercent, ( int )newPercent );
     }
 
     //now put out an orientation matrix for all of the runs.

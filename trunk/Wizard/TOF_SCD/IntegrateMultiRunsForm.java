@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.32  2004/02/11 04:10:55  bouzekc
+ * Uses the new Wizard classes that have indeterminate progress bars.
+ *
  * Revision 1.31  2004/01/09 00:17:08  bouzekc
  * Reformatted and removed unused imports.
  *
@@ -423,9 +426,6 @@ public class IntegrateMultiRunsForm extends Form {
       return validCheck;
     }
 
-    //set the increment amount
-    increment = ( 1.0f / runsArray.length ) * 100.0f;
-
     for( int i = 0; i < runsArray.length; i++ ) {
       IPNSName   = InstrumentType.formIPNSFileName( SCDName, runsArray[i] );
       loadName   = rawDir + IPNSName;
@@ -473,10 +473,6 @@ public class IntegrateMultiRunsForm extends Form {
         append   = true;  //start appending to the file
       }
 
-      //fire a property change event off to any listeners
-      oldPercent = newPercent;
-      newPercent += increment;
-      super.fireValueChangeEvent( ( int )oldPercent, ( int )newPercent );
       histDS = null;
     }
     SharedData.addmsg( "--- IntegrateMultiRunsForm is done. ---" );
