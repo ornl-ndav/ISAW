@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2003/03/06 22:53:05  pfpeterson
+ * Sets a boolean in Script_Class_List_Handler so scripts are not
+ * reloaded when asked for during its operation. Also code cleanup
+ * and some reformatting (sorry).
+ *
  * Revision 1.23  2003/02/21 19:35:44  pfpeterson
  * Changed calls to fixSeparator appropriate (not deprecated) method.
  *
@@ -78,7 +83,7 @@ public class opMenu extends JMenu{
     MActionListener ML;
     IDataSetListHandler DS;
     IObserver iobs;
-    StatusPane statPane;
+
     /**
      * @param op Gets the list of operators to be placed in this menu
      * @param DS Gets the list of Data Sets that can be used for
@@ -89,24 +94,21 @@ public class opMenu extends JMenu{
      * @see DataSetTools.components.ParametersGUI.IDataSetListHandler 
      * @see DataSetTools.util.IObserver
      */
-    public opMenu(OperatorHandler op , IDataSetListHandler DS, Document logdoc, 
+    public opMenu(OperatorHandler op , IDataSetListHandler DS, Document logdoc,
                                                               IObserver iobs){
-        super("Operations");
-        initt( op, DS, logdoc, iobs, 1,null);
+        this(op,DS,logdoc,iobs,1);
     }
 
     public opMenu(OperatorHandler op , IDataSetListHandler DS, 
                                   Document logdoc , IObserver iobs , int start){
         super("Operations");
-        initt( op, DS, logdoc, iobs, start,null);
+        this.op=op;
+        this.DS=DS;
+        this.iobs=iobs;
+        this.initt( logdoc, start);
     }
 
-    private  void initt(OperatorHandler op, IDataSetListHandler DS, 
-                 Document logdoc, IObserver iobs, int start, StatusPane stPane){
-        statPane=stPane;
-        this.op = op;
-        this.DS = DS;
-        this.iobs = iobs;
+    private  void initt(Document logdoc, int start){
         int cat_index;
         int comp_index;                       // index of submenu components
         int num_components;                   // number of submenu components
@@ -117,11 +119,16 @@ public class opMenu extends JMenu{
                                                   // correct submenu
         found = false;  
         
+        Operator myOperator=null;
+        if( op instanceof Script_Class_List_Handler)
+          ((Script_Class_List_Handler)op).reload_scripts=false;
         for ( int i = 0; i < op.getNum_operators(); i++ ){
-                                                // the list starts two entries, 
-                                                // "Operator", "DataSetOperator"
-                                                // that we ignore.
-            categories = op.getOperator(i).getCategoryList();
+                                               // the list starts two entries, 
+                                               // "Operator", "DataSetOperator"
+                                               // that we ignore.
+          myOperator=op.getOperator(i);
+          if( !( myOperator instanceof HiddenOperator) ){
+            categories = myOperator.getCategoryList();
                                                 // step down the category tree,
                                                 // at each level, if we don't
                                                 // find the current category,
@@ -129,69 +136,61 @@ public class opMenu extends JMenu{
             JMenu current_menu = this;          // current_menu pointer steps  
                                                 // down the tree of menus
             if( categories == null){
-                categories = new String[1];
-                categories[0]=Operator.OPERATOR; 
+              categories = new String[1];
+              categories[0]=Operator.OPERATOR; 
             }
             found = true;
-            if( !(op.getOperator(i) instanceof HiddenOperator) ){
-                for ( cat_index = start; 
-                       (cat_index < categories.length) &&(found); cat_index++ ){
-                    num_components = current_menu.getMenuComponentCount();
-                    found = false;
-                    comp_index = 0;
-                    while ( comp_index < num_components && !found ){
-                        comp = (JMenuItem)(current_menu.getItem( comp_index) );
-                        if(comp instanceof JMenu)
-                            if ( comp.getText().equalsIgnoreCase(
-                                                      categories[cat_index] ) ){
-                                found = true;
-                                current_menu = (JMenu)((JMenuItem)comp);
-                            }
-                        // we found the category, advance the current
-                        // menu pointer
-                        comp_index++;
-                    }
-                    if ( !found ){ // if we don't find it, add it
-                        JMenu new_menu = new JMenu( categories[cat_index] );
-                        if( new_menu == null){
-                            System.out.println("Could not create a JMenu"
-                                               +cat_index+","
-                                               +categories.length);
-                            found = false;             
-                        }else{
-                            new_menu.setDelay(200);
-                            current_menu.add( new_menu );
-                            current_menu = new_menu; // advance the
-                                                     // current menu
-                                                     // pointer
-                            found = true;
-                        }
-                    }
+            for( cat_index=start ; (cat_index < categories.length)&&(found) ; cat_index++ ){
+              num_components = current_menu.getMenuComponentCount();
+              found = false;
+              comp_index = 0;
+              while ( comp_index < num_components && !found ){
+                comp = (JMenuItem)(current_menu.getItem( comp_index) );
+                if(comp instanceof JMenu)
+                  if ( comp.getText().equalsIgnoreCase(categories[cat_index])){
+                    found = true;
+                    current_menu = (JMenu)comp;
+                  }
+                // we found the category, advance the current menu pointer
+                comp_index++;
+              }
+              if ( !found ){ // if we don't find it, add it
+                JMenu new_menu = new JMenu( categories[cat_index] );
+                if( new_menu == null){
+                  System.out.println("Could not create a JMenu"
+                                     +cat_index+","+categories.length);
+                  found = false;             
+                }else{
+                  current_menu.add( new_menu );
+                  current_menu = new_menu; // advance the
+                                           // current menu
+                                           // pointer
+                  found = true;
                 }
-                                             // after stepping through the meun
-                                             // tree, add the new operator title
-                if( found){
-                    String Title=op.getOperator(i).getTitle();
-                    if( Title.equals("UNKNOWN"))
-                        Title = op.getOperator(i).getCommand();
-                    MJMenuItem item = new MJMenuItem( Title,i );
-                    if( item == null){
-                        System.out.println("Could not create a JMenuItem");
-                    }else{
-                        item.addActionListener( ML );
-                        current_menu.add( item );
-                    }
-                }
-            }//if op.getOperator( i) not instanceof Generic Batch
+              }
+            }
+                                            // after stepping through the meun
+                                            // tree, add the new operator title
+            if( found){
+              String Title=myOperator.getTitle();
+              if( Title.equals("UNKNOWN"))
+                Title = myOperator.getCommand();
+              MJMenuItem item = new MJMenuItem( Title,i );
+              if( item == null){
+                System.out.println("Could not create a JMenuItem");
+              }else{
+                item.addActionListener( ML );
+                current_menu.add( item );
+              }
+            }
+          }
         }
+        if( op instanceof Script_Class_List_Handler)
+          ((Script_Class_List_Handler)op).reload_scripts=true;
     }//constructor
 
     public void setOpMenuLabel( String newText){
         setText( newText );
-    }
-
-    public void addStatusPane( StatusPane stPane){
-        statPane= stPane;
     }
     
     private class MActionListener implements ActionListener{
@@ -230,27 +229,8 @@ public class opMenu extends JMenu{
                 if( opn instanceof IObservable)
                     if( iobs != null)
                         ((IObservable)opn).addIObserver( iobs );
-                /*if( opn instanceof IusesStatusPane)
-                  if( statPane !=null)
-                  ((IusesStatusPane)opn).addStatusPane( statPane);
-                  else if(opn instanceof java.beans.Customizer)
-                  if( statPane != null)
-                  ((java.beans.Customizer)opn)
-                  .addPropertyChangeListener( statPane);
-                */
-                JParametersDialog JP = new JParametersDialog(  opn, 
-                                                               DS, 
-                                                               logdoc, 
-                                                               iobs,false,
-                                                               statPane  );
-                /*if(opn instanceof java.beans.Customizer)
-                  if( statPane != null)
-                  ((java.beans.Customizer)opn)
-                  .removePropertyChangeListener( statPane);
-                  //done in JParametersDialog
-                  if( opn instanceof IusesStatusPane)
-                  ((IusesStatusPane)opn).addStatusPane( null);
-                */
+                JParametersDialog JP = new JParametersDialog( opn, DS, logdoc, 
+                                                              iobs,false);
                 if( opn instanceof IObservable)
                     if( iobs != null)
                         ((IObservable)opn).deleteIObserver( iobs );
@@ -280,13 +260,7 @@ public class opMenu extends JMenu{
         try {
 	    FileInputStream input = new FileInputStream(path+"IsawProps.dat");
             isawProp.load( input );
-            // Script_Path = isawProp.getProperty("Script_Path");
-            // Data_Directory = isawProp.getProperty("Data_Directory");
-            //Default_Instrument = isawProp.getProperty("Default_Instrument");
-	    //Instrument_Macro_Path = isawProp.getProperty("Instrument_Macro_Path");
-	    //User_Macro_Path = isawProp.getProperty("User_Macro_Path");
             System.setProperties(isawProp);  
-            //    System.getProperties().list(System.out);
             input.close();
         }catch (IOException ex){
             System.out.println("Properties file could not be loaded due "+
