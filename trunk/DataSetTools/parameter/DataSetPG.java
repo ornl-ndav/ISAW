@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/10/07 15:27:36  pfpeterson
+ *  Another attempt to fix the clone() bug.
+ *
  *  Revision 1.2  2002/09/30 15:20:46  pfpeterson
  *  Update clone method to return an object of this class.
  *
@@ -152,6 +155,9 @@ public class DataSetPG extends ArrayPG{
      * Definition of the clone method.
      */
     public Object clone(){
-        return (DataSetPG)super.clone();
+        DataSetPG pg=new DataSetPG(this.name,this.value,this.valid);
+        pg.setDrawValid(this.getDrawValid());
+        pg.initialized=false;
+        return pg;
     }
 }

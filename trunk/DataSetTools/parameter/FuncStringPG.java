@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/10/07 15:27:38  pfpeterson
+ *  Another attempt to fix the clone() bug.
+ *
  *  Revision 1.2  2002/09/30 15:20:48  pfpeterson
  *  Update clone method to return an object of this class.
  *
@@ -114,6 +117,9 @@ public class FuncStringPG extends StringPG{
      * Definition of the clone method.
      */
     public Object clone(){
-        return (FuncStringPG)super.clone();
+        FuncStringPG pg=new FuncStringPG(this.name,this.value,this.valid);
+        pg.setDrawValid(this.getDrawValid());
+        pg.initialized=false;
+        return pg;
     }
 }
