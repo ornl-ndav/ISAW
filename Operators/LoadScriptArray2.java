@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/04/22 21:53:31  hammonds
+ *  Efficiency change so that a new vector is not created every time a new Constructor is called.
+ *
  *  Revision 1.3  2003/03/03 20:13:05  hammonds
  *  Documentation cleanup.
  *
@@ -82,8 +85,7 @@ public class LoadScriptArray2 extends GenericBatch implements Serializable
   public LoadScriptArray2( String file_name )
   {  
     this();
-    parameters = new Vector();
-    addParameter(new Parameter("Filename", file_name) );
+    getParameter(0).setValue(file_name);
   }
 
 
