@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.54  2003/05/16 15:21:27  pfpeterson
+ * Removed a redundant call to setDefaultParameters() immediately after
+ * an operator is instantiated (it is done in the constructor).
+ *
  * Revision 1.53  2003/04/21 19:21:34  pfpeterson
  * Sets the filename on the script editor border when saving a file.
  *
@@ -655,7 +659,6 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
                  CP.SP.reset();
                  CP.SP.resetError();
                  
-                 CP.SP.setDefaultParameters();
                  if( CP.SP.getErrorCharPos() >= 0){
                      CP.PC.firePropertyChange( "Display", null,
                                                "setDefault Error "
