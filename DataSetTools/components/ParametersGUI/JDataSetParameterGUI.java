@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/08/07 20:57:13  rmikk
+ *  Eliminated setPreferred Size and changed segments layout
+ *  to a Grid Layout
+ *
  *  Revision 1.3  2001/06/26 18:37:28  dennis
  *  Added Copyright and GPL license.
  *  Removed un-needed imports and improved
@@ -55,8 +59,8 @@ public class JDataSetParameterGUI extends JParameterGUI
        super(parameter);
        
        combobox = new JComboBox();
-       JLabel label = new JLabel(parameter.getName());
-       label.setPreferredSize(new Dimension(150,25));
+       JLabel label = new JLabel("  "+parameter.getName());
+       //label.setPreferredSize(new Dimension(150,25));
 
        DS = new_ds;
        if( DS == null)
@@ -67,7 +71,7 @@ public class JDataSetParameterGUI extends JParameterGUI
          combobox.addItem( DS[i]);
        }
        segment = new JPanel();
-       segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5)); 
+       segment.setLayout(new GridLayout( 1, 2 )); 
       
        segment.add(label);
        segment.add(combobox);
