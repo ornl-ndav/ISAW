@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/04/24 18:57:56  pfpeterson
+ *  Various small bug fixes. (Chris Bouzek)
+ *
  *  Revision 1.4  2003/04/02 15:02:46  pfpeterson
  *  Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
  *
@@ -39,8 +42,8 @@
  *
  *  Revision 1.2  2003/03/13 19:04:14  dennis
  *  Added $Log$
- *  Added Revision 1.4  2003/04/02 15:02:46  pfpeterson
- *  Added Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
+ *  Added Revision 1.5  2003/04/24 18:57:56  pfpeterson
+ *  Added Various small bug fixes. (Chris Bouzek)
  *  Added
  *  Added Revision 1.3  2003/03/19 15:07:04  pfpeterson
  *  Added Added the monitor DataSets as an explicit parameter and now creates
@@ -77,7 +80,6 @@ public class SaveAsGSASForm extends    Form
   public SaveAsGSASForm()
   {
     super("Save as GSAS");
-    this.setDefaultParameters();
   }
 
   /**
@@ -139,6 +141,7 @@ public class SaveAsGSASForm extends    Form
    */
   public void setDefaultParameters()
   {
+    parameters = new Vector();
     addParameter(new ArrayPG("Time focused histograms", new Vector(), false));
     addParameter(new ArrayPG("Monitor DataSets", new Vector(), false));
     addParameter(new IntArrayPG( "Run Numbers", "12358", false));
