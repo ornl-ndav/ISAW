@@ -31,6 +31,17 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/11/12 00:15:46  dennis
+ *  Made immutable by:
+ *  1. remove setValue() method
+ *  2. add() & combine() methods now return a new Attribute
+ *
+ *  Also:
+ *  3. Since it is now immutable, clone() method is not needed and
+ *     was removed
+ *  4. Default constructor is now private, since the value can't
+ *     be set from outside of the class
+ *
  *  Revision 1.8  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -111,12 +122,15 @@ public class IntAttribute extends    Attribute
    *  @return true if the write was successful, false otherwise.
    */
   public boolean XMLwrite( OutputStream stream, int mode )
-    {return xml_utils.AttribXMLwrite( stream, mode, this);
+  {
+    return xml_utils.AttribXMLwrite( stream, mode, this);
+  }
 
-     }
   public boolean XMLread( InputStream stream )
-    {return xml_utils.AttribXMLread(stream, this);
-    }
+  {
+    return xml_utils.AttribXMLread(stream, this);
+  }
+
   public boolean XMLwrite1( OutputStream stream, int mode )
   {
     try
@@ -205,14 +219,14 @@ public class IntAttribute extends    Attribute
        }
       }
       return true;
-      
-       
   }
 
-  public IntAttribute()
-    {super("");
-     this.value=0;
-    }
+  private IntAttribute()
+  {
+    super("");
+    this.value=0;
+  }
+
   /**
    * Constructs an IntAttribute object using the specified name and value.
    */
@@ -231,23 +245,6 @@ public class IntAttribute extends    Attribute
     return( new Integer(value) );
   } 
 
-  /**
-   * Set the value for the int attribute using a generic object.  The actual
-   * class of the object must be an Int.
-   */
-  public boolean setValue( Object obj )
-  {
-    if ( obj instanceof Double )
-      value = ((Double)obj).intValue();
-    else if ( obj instanceof Float )
-      value = ((Float)obj).intValue();
-    else if ( obj instanceof Integer )
-      value = ((Integer)obj).intValue();
-    else
-      return false;
-
-    return true;
-  }   
 
   /**
    * Returns the int value of this attribute as an int.
@@ -258,38 +255,40 @@ public class IntAttribute extends    Attribute
    }
 
   /**
-   * Set the value for the int attribute using an int.
-   */
-  public void setIntValue( int value )
-  {
-    this.value = value;
-  }
-
-  /**
    * Combine the value of this attribute with the value of the attribute
-   * passed as a parameter to obtain a new value for this attribute.  The
-   * new value is just the average of the values of the two attributes.
+   * passed as a parameter to obtain a new Attribute.  The value of the 
+   * new Attribute is the average of the values of the two attributes.
    *
    *  @param   attr   An attribute whose value is to be "combined" with the 
    *                  value of the this attribute.
    *
+   *  @return A new IntAttribute whose value is the average of the value
+   *          of the current attribute and the numeric value of the
+   *          specified attribute, attr.
    */
-  public void combine( Attribute attr )
+  public Attribute combine( Attribute attr )
   {
-     this.value = (int)( this.value + attr.getNumericValue() ) / 2;
+     return new IntAttribute( name,
+                             (this.value + (int)attr.getNumericValue())/2);
   }
 
   /**
    * Add the value of the specified attribute to the value of this
-   * attribute obtain a new value for this attribute.  
+   * attribute obtain a Attribute.  
    *
    *  @param   attr   An attribute whose value is to be "added" to the
    *                  value of the this attribute.
    *
+   *  @return A new IntAttribute whose value is the sum of the value
+   *          of the current attribute and the numeric value of the
+   *          specified attribute, attr.
+   *
    */
-  public void add( Attribute attr )
+  public Attribute add( Attribute attr )
   {
-     this.value = (int)( this.value + attr.getNumericValue() );
+    return new IntAttribute( name,
+                            (this.value + (int)attr.getNumericValue()) );
+
   }
 
 
@@ -316,14 +315,6 @@ public class IntAttribute extends    Attribute
   public String toString()
   {
      return this.getName() + ": " + this.getStringValue();
-  }
-
-  /**
-   * Returns a copy of the current attribute
-   */
-  public Object clone()
-  {
-    return new IntAttribute( this.getName(), value );
   }
 
 /* -----------------------------------------------------------------------

@@ -31,6 +31,17 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.4  2002/11/12 00:25:13  dennis
+ *  Made immutable by:
+ *  1. remove setValue() method
+ *  2. add() & combine() methods now return a new Attribute
+ *
+ *  Also:
+ *  3. Since it is now immutable, clone() method is not needed and
+ *     was removed
+ *  4. Default constructor is now private, since the value can't
+ *     be set from outside of the class
+ *
  *  Revision 1.3  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -112,21 +123,6 @@ public class DetInfoAttribute extends    Attribute
 
 
   /**
-   * Set the value for this detector info attribute using a generic object.
-   * The actual class of the object must be a DetectorInfo object.
-   */
-  public boolean setValue( Object obj )
-  {
-    if ( obj instanceof DetectorInfo )
-      value = new DetectorInfo( (DetectorInfo)obj );
-    else
-      return false;
-
-    return true;
-  }   
-
-
-  /**
    * Returns a copy the DetectorInfo object that is the value of this
    * attribute.
    */
@@ -134,25 +130,6 @@ public class DetInfoAttribute extends    Attribute
    {
      return new DetectorInfo( value );
    }
-
-
-  /**
-   *  NOP... can't combine two DetInfoAttributes
-   */
-  public void combine( Attribute attr )
-  {
-    // Can't combine DetInfoAttributes, so just leave it unchanged.
-  }
-
-
-  /**
-   * NOP... can't add two DetInfoAttributes.
-   */
-  public void add( Attribute attr )
-  {
-    // Can't add DetInfoAttributes, so just leave it unchanged.
-  }
-
 
   /**
    * Get a numeric value to be used for sorting based on this attribute.
@@ -179,15 +156,6 @@ public class DetInfoAttribute extends    Attribute
   public String toString()
   {
      return this.getName() + ": " + this.getStringValue();
-  }
-
-
-  /**
-   * Returns a copy of the current attribute
-   */
-  public Object clone()
-  {
-    return new DetInfoAttribute( this.getName(), value );
   }
 
 /* -----------------------------------------------------------------------
