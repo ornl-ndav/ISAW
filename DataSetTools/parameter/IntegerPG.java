@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/06/12 18:58:28  bouzekc
+ *  Fixed bug with setting value.
+ *
  *  Revision 1.7  2003/06/06 18:50:59  pfpeterson
  *  Now extends StringEntryPG and implements ParamUsesString.
  *
@@ -144,6 +147,7 @@ public class IntegerPG extends StringEntryPG implements ParamUsesString{
         intval=new Integer(Math.round((int)((Double)value).doubleValue()));
       }else if(value instanceof String){
         this.setStringValue((String)value);
+        return;
       }else{
         throw new ClassCastException("Could not coerce "
                                +value.getClass().getName()+" into an Integer");
