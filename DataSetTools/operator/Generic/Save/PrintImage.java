@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/06/21 16:07:23  robertsonj
+ * Changed the help file to reflect the changes in the viewer state class
+ *
+ * Revision 1.12  2004/06/21 10:57:31 robertsonj
+ * Changed the help file to reflect the change in the viewer state name value pairs.
+ * 
  * Revision 1.11  2004/06/15 19:24:05  robertsonj
  * Print image now allows the user to select some printer option as well as
  * State of the view that they would like to print
@@ -198,7 +204,7 @@ public class PrintImage extends GenericSave{
      	DSV = ViewManager.getDataSetView(DS,ViewName, changedState);
      }
      
-     DSV.setSize(width-5, height-5);
+     DSV.setSize(width, height);
      JFrame jf = new JFrame();
      jf.setSize(width, height);
      jf.getContentPane().setLayout( new GridLayout(1,1));
@@ -389,35 +395,35 @@ public class PrintImage extends GenericSave{
     s.append("</tr><tr><td>ViewGroups</td> <td>ThreeD</td><td>String(see 3Dmenu) </td>");
     s.append(" </tr><tr><td>ViewDetectors</td> <td>ThreeD</td><td>String(see menu ");
     s.append(" in 3D for choices)</td> ");
-    s.append("</tr><tr><td>Auto-Scale</td><td>Image</td><td>float 0 to 100</td>");
-    s.append("</tr><tr><td>table_view Data</td> <td>TableView(time slice</td>");
+    s.append("</tr><tr><td>AutoScale</td><td>Image</td><td>float 0 to 100</td>");
+    s.append("</tr><tr><td>tableview Data</td> <td>TableView(time slice</td>");
     s.append(" <td>String OK if set</td>");
     s.append("<td>String:Contains \"Err\"or \"index\"if they are to be shown</td>");
-    s.append("</tr><tr><td>Contour.Style</td> </td>Contour View<td></td>");
+    s.append("</tr><tr><td>ContourStyle</td> </td>Contour View<td></td>");
     s.append("<td> 1 for AREA_FILL, 4 for AREA_FILL_CONTOUR ,2 for CONTOUR ,");
     s.append("0 for RASTER,  3 for RASTER_CONTOUR </td>");
     s.append("</tr><tr><td>ContourTimeMin</td> <td>Contour</td> <td>float min time</td>");
-    s.append("</tr><tr><td>Time Slice Table</td> </td><td></td> <td></td>");
+    s.append("</tr><tr><td>TimeSliceTable</td> </td><td></td> <td></td>");
     s.append("</tr><tr><td>ContourTimeMax</td> <td>Contour</td> <td>float max time</td>");
     s.append("</tr><tr><td>ContourTimeStep</td> <td>Contour</td> <td>");
     s.append("int for Xscale chooser number of time steps</td>");
-    s.append("</tr><tr><td>Contour.Intensity</td><td>Controu</td>");
+    s.append("</tr><tr><td>ContourIntensity</td><td>Controu</td>");
     s.append("<td> int 0 to 100, intensity</td>");
-    s.append("</tr><tr><td>TableTS_TimeInd</td><td>TimeSlice Table View</td>");
+    s.append("</tr><tr><td>TableTimeSliceTimeInd</td><td>TimeSlice Table View</td>");
     s.append(" <td>int:Pointed at time channel or slice channel</td>");
-    s.append("</tr><tr><td>TableTS_MinRow</td><td>TimeSlice Table View</td>");
+    s.append("</tr><tr><td>TableTimeSliceMinRow</td><td>TimeSlice Table View</td>");
     s.append("<td> int:Min row to include(1 to #rows)</td>");
-    s.append("</tr><tr><td>TableTS_MaxRow</td><td>TimeSlice Table View</td>");
+    s.append("</tr><tr><td>TableTimeSliceMaxRow</td><td>TimeSlice Table View</td>");
     s.append(" <td> int:Max row to include(1 to #rows)</td>");
-    s.append("</tr><tr><td>TableTS_MinCol</td><td>TimeSlice Table View</td>");
+    s.append("</tr><tr><td>TableTimeSliceMinCol</td><td>TimeSlice Table View</td>");
     s.append(" <td> int:Min col to include(1 to #rows)</td>");
-    s.append("</tr><tr><td>TableTS_MaxCol</td><td>TimeSlice Table View</td>");
+    s.append("</tr><tr><td>TableTimeSliceMaxCol</td><td>TimeSlice Table View</td>");
     s.append("<td> int:Max col to include(1 to #rows)</td>");
-    s.append("</tr><tr><td>TABLE_TS_MIN_TIME</td><td>TimeSlice Table View</td>");
+    s.append("</tr><tr><td>TableTimeSliceMinTime</td><td>TimeSlice Table View</td>");
     s.append("<td>float: min time to include</td>");
-    s.append("</tr><tr><td>TABLE_TS_MAX_TIME</td><td>TimeSlice Table View</td>");
+    s.append("</tr><tr><td>TableTimeSliceMaxTime</td><td>TimeSlice Table View</td>");
     s.append(" <td>float: max time to include</td>");
-    s.append("</tr><tr><td>TABLE_TS_NXSTEPS</td><td>TimeSlice Table View</td>");
+    s.append("</tr><tr><td>TableTimeSliceNxSteps</td><td>TimeSlice Table View</td>");
     s.append("<td>float: # of time steps for Xsclae</td>");
     s.append(" </tr></table>");
     s.append("@error  Errors are returned from the underlying print service");
