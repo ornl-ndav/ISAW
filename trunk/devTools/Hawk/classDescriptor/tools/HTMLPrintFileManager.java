@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 20:55:14  kramer
+ * Implemented the method
+ *   public void printShortenedSource(Interface intf,
+ *                                    boolean shortJava,
+ *                                    boolean shortOther)
+ *
  * Revision 1.3  2004/03/12 19:46:20  bouzekc
  * Changes since 03/10.
  *
@@ -44,6 +50,7 @@
 package devTools.Hawk.classDescriptor.tools;
 
 import java.io.FileNotFoundException;
+import java.util.StringTokenizer;
 
 import devTools.Hawk.classDescriptor.modeledObjects.AttributeDefn;
 import devTools.Hawk.classDescriptor.modeledObjects.ConstructorDefn;
@@ -113,7 +120,7 @@ public class HTMLPrintFileManager extends PrintManager
 			
 			writeBytes("  </tbody>\n</table>\n");
 		}
-		catch (Exception e)
+		catch (Throwable e)
 		{
 			SystemsManager.printStackTrace(e);
 		}
@@ -182,5 +189,15 @@ public class HTMLPrintFileManager extends PrintManager
 	 */
 	public void printShortenedSource(Interface intf, boolean shortJava, boolean shortOther)
 	{
+		try
+		{
+			StringTokenizer tokenizer = new StringTokenizer(intf.getShortenedSourceCode("  ",shortJava, shortOther),"\n");
+			while (tokenizer.hasMoreTokens())
+				writeBytes("  "+tokenizer.nextToken()+"<br>\n");
+		}
+		catch (Throwable e)
+		{
+			SystemsManager.printStackTrace(e);
+		}
 	}
 }
