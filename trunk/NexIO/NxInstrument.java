@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/04/01 20:27:12  rmikk
+ * Got rid of Debug prints.
+ * Several error messages now go to the status pane
+ *
  * Revision 1.3  2002/02/26 15:44:46  rmikk
  * This module can now be used to load in Monitor data that has been inadvertently labeled NXdata. It does not have two axes
  *
@@ -65,7 +69,7 @@ public class NxInstrument
 
  public NxNode matchNode( NxNode instrNode, String ax1Link, String ax2Link)
   {NxData_Gen ng = new NxData_Gen();
-  //System.out.print("in match");
+ 
    int ax1,ax2;
    NxNode nDef= null;
    ax1=ax2=0;  //undefined-0; true-1;false-(-1)
@@ -79,10 +83,10 @@ public class NxInstrument
      return null;
   
    errormessage = "";
-   //System.out.print( "n instr children="+instrNode.getNChildNodes());
+  
    for( int i = 0; i< instrNode.getNChildNodes(); i++)
     {NxNode nx = instrNode.getChildNode( i );
-   // System.out.print("inst child"+i+nx.getNodeName()+"::");
+   
      if( nx == null)
       errormessage +=";improper Instr Child"+i;
      else if( nx.getNodeClass().equals("NXdetector"))
@@ -90,16 +94,16 @@ public class NxInstrument
         for( int j = 0; (j < nx.getNChildNodes()) &&(ax1 >=0)
                             &&(ax2 >= 0); j++)
            {NxNode n1 = nx.getChildNode( j );
-            //System.out.print("Det Child"+n1.getNodeName()+"::");
+            
             if( n1 == null)
                errormessage +="improper Det Child"+j;
             else
               {Object X = n1.getAttrValue( "axis");
                if( X != null)
                  {int axnum =ng.cnvertoint(X);
-                 // System.out.print("X"+i+","+axnum);
+                 
                   if( ng.getErrorMessage()!="")
-                      System.out.println("ERROR ="+
+                      DataSetTools.util.SharedData.status_pane.add("ERROR ="+
                                ng.getErrorMessage());
                   if( ng.getErrorMessage() == "")
                    {if(axnum == 1)
@@ -118,15 +122,15 @@ public class NxInstrument
                   }//if X!=null
                }//else n1 ==null
             }//for j
-           //System.out.print("Y"+ax1+","+ax2);
+           
            if( (ax1 >0) &&(ax2) > 0)
                  return nx;
            if( (ax2Link==null)&&(ax1> 0))
                  return nx;
-           if( nDef == null) nDef= nx;
+          // if( nDef == null) nDef= nx;
            }//else if child a detector node
        }//for i
-    return nDef;
+    return null;//nDef;
     }//matchNode
 
    
