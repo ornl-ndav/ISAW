@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/08/16 01:41:03  bouzekc
+ * Is now more aggressive when determining if a File exists in
+ * tryToDisplayASCII().
+ *
  * Revision 1.9  2003/08/14 23:40:59  bouzekc
  * Now sets the size of the JFrame "list" to 30% of the screen size and width.
  *
@@ -272,6 +276,7 @@ public class ParameterViewer implements ActionListener {
   private void tryToDisplayASCII( String s ) {
     String tempName;
     String fileName;
+    s = s.replace( '\"', ' ' ).trim(  );
 
     //try to see if it is a File or a String
     File tempFile = new File( s );
