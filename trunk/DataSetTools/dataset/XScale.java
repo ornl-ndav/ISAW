@@ -32,6 +32,9 @@
  *
  *
  *  $Log$
+ *  Revision 1.12  2002/07/17 22:18:33  pfpeterson
+ *  Defined the equals method that all objects should have.
+ *
  *  Revision 1.11  2002/07/10 20:21:12  dennis
  *  Removed debug print.
  *
@@ -242,6 +245,59 @@ abstract public class XScale implements Serializable
    */
   abstract public Object clone();
 
+  /**
+   * Compare this XScale to another one. Unless the two scales are
+   * genuinely the same object the method returns true
+   * quickly. Otherwise the method is written to speed up returning
+   * false.
+   */
+  public boolean equals( Object other_scale ){
+      //set the tolerance for comparisons
+      float  tol   = 0f;
+      // get a real XScale ready for later convenience
+      XScale other = null;
+
+      // return false if another object is not specified
+      if(other_scale==null)return false;
+
+      // make sure we are comparing to an XScale
+      if(other_scale instanceof XScale)
+          other=(XScale)other_scale;
+      else
+          return false;
+      
+      // if they are the same object return true
+      if(this==other_scale)return true;
+
+      // if have different start values can't be same
+      if(Math.abs(this.getStart_x()-other.getStart_x())>tol)return false;
+
+      // if have different end values can't be same
+      if(Math.abs(this.getEnd_x()-other.getEnd_x())>tol)return false;
+
+      // if have different number of values can't be same
+      if(Math.abs(this.getNum_x()-other.getNum_x())>tol)return false;
+
+      // if they are both UniformXScale they are already the same
+      if((this instanceof UniformXScale)&&(other instanceof UniformXScale))
+          return true;
+
+      // now just brute force it
+      float[] this_x=this.getXs();
+      float[] other_x=other.getXs();
+      try{
+          for( int i=0 ; i<this_x.length ; i++ ){
+              // all x's must be equal or return false
+              if(!(this_x[i]==other_x[i]))return false;
+          }
+      }catch(ArrayIndexOutOfBoundsException e){
+          // if we hit this exception they cannot be the same thing
+          return false; 
+      }
+
+      // we've passed all the tests, they must be the same
+      return true;
+  }
 
   /**
    *  Print the range and number of X values in this x scale
