@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/07/16 18:54:42  bouzekc
+ *  innerPanel now uses GridLayout to ensure that the widgets
+ *  are a usable size.
+ *
  *  Revision 1.12  2003/06/12 23:36:14  bouzekc
  *  Added methods for implementing PropertyChanger since the
  *  actual widget is the innerEntry and the listeners need to
@@ -89,6 +93,7 @@ import java.util.Vector;
 import java.lang.String;
 import java.beans.*;
 import java.io.File;
+import java.awt.*;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.util.SharedData;
 import DataSetTools.operator.Generic.TOF_SCD.*;
@@ -216,9 +221,10 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString,
           browselistener.setFileFilter(defaultindex);
         }
         browse.addActionListener(browselistener);
-        entrywidget=new JPanel();
+        entrywidget=new JPanel(new GridLayout());
         //a Box is needed so that when the entrywidget is resized
         //smaller, the components will not overlap
+
         Box widgetbox = new Box(BoxLayout.X_AXIS);
         widgetbox.add(innerEntry);
         widgetbox.add(browse);
