@@ -29,6 +29,9 @@
 
  *
  * $Log$
+ * Revision 1.3  2004/01/22 02:39:54  bouzekc
+ * Removed/commented out unused imports/variables.
+ *
  * Revision 1.2  2003/10/20 16:33:07  rmikk
  * Fixed javadoc errors
  *
@@ -39,9 +42,7 @@
 
 package DataSetTools.operator.DataSet.Attribute;
 
-import DataSetTools.util.Interval;
 import DataSetTools.dataset.Attribute;
-import DataSetTools.dataset.StringAttribute;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.util.*;

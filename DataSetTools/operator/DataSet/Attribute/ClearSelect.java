@@ -29,6 +29,9 @@
 
  *
  * $Log$
+ * Revision 1.2  2004/01/22 02:39:54  bouzekc
+ * Removed/commented out unused imports/variables.
+ *
  * Revision 1.1  2003/07/05 18:09:45  rmikk
  * Initial Checkin
  *
@@ -36,20 +39,12 @@
 
 package DataSetTools.operator.DataSet.Attribute;
 
-import DataSetTools.util.Interval;
-import DataSetTools.dataset.Attribute;
-import DataSetTools.dataset.StringAttribute;
-import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
-import DataSetTools.util.*;
 import java.io.Serializable;
 import java.lang.String;
 import java.lang.Object;
 import java.util.Vector;
-import DataSetTools.parameter.*;
-import DataSetTools.operator.Parameter;
-import Command.*;
-import DataSetTools.components.ParametersGUI.*;
+
 /**
  * selects Data objects in a single DataSet object based on an attribute
  * name and range of float values for that attribute.
