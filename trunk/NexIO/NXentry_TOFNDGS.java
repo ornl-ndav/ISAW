@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2002/07/29 18:51:32  rmikk
+ * Initial path now appears in all data blocks if it is in the
+ *   data set.
+ *
  * Revision 1.6  2002/06/19 15:05:52  rmikk
  * Trimmed a string so that the run title no longer has a null
  * character at the end.
@@ -387,11 +391,13 @@ public class NXentry_TOFNDGS implements NXentry
       }
 
       float initial_path = -1;
-
+      boolean  initialPathSet = false;
       {
          X1 = DS.getAttributeValue( Attribute.INITIAL_PATH );
          if( X1 != null ) if( X1 instanceof Number )
-               initial_path = ( ( Number )X1 ).floatValue();
+              { initial_path = ( ( Number )X1 ).floatValue();
+                 initialPathSet = true  ;
+               }
 
       }
 
@@ -404,7 +410,7 @@ public class NXentry_TOFNDGS implements NXentry
          if( npulses >= 0 )
             DB.setAttribute( new IntAttribute(
                   Attribute.NUMBER_OF_PULSES, npulses ) );
-         if( initial_path >= 0 )
+         if( initialPathSet)
             DB.setAttribute( new FloatAttribute(
                   Attribute.INITIAL_PATH, initial_path ) );
       }
