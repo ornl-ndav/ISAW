@@ -29,6 +29,9 @@
 
  *
  * $Log$
+ * Revision 1.6  2003/10/16 00:34:42  dennis
+ * Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  * Revision 1.5  2002/11/27 23:23:49  pfpeterson
  * standardized header
  *
@@ -216,13 +219,13 @@ public class Interval
 
 
   /**
-   * change the endpoints of this Interval object.  this method is
-   * provided as a convenience so that one need not be constantly newing up
+   * Change the endpoints of this Interval object.  This method is
+   * provided as a convenience so that one need not be constantly moving up
    * Intervals in iterative methods.
    *
-   *   @param e1 an Attribute whos value represents one of the bounds of
+   *   @param e1 an Attribute whose value represents one of the bounds of
    *             of the interval
-   *   @param b2 an Attribute whos value represents the other bound of
+   *   @param e2 an Attribute whose value represents the other bound of
    *             of the interval
    */
   public void set( Endpoint e1, Endpoint e2 )
@@ -238,7 +241,6 @@ public class Interval
       low =  e2;
       high = e1;
     }
-    
                       //are the names the same?  assign lexigraphically
     else if(  e1.getAttr().getName().equals( e2.getAttr().getName() )  )
     {
