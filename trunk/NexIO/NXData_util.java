@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2003/11/24 00:01:08  rmikk
+ * Improved the test program in main
+ *
  * Revision 1.19  2003/10/22 20:38:36  rmikk
  * Fixed javadoc errors
  *
@@ -96,8 +99,9 @@ package NexIO;
 import DataSetTools.dataset.*;
 import DataSetTools.util.StringUtil;
 import DataSetTools.viewer.*;
-import DataSetTools.math.*;
-//import NdsSvNode;
+import DataSetTools.math.*; 
+import DataSetTools.util.*;
+;
 
 /**
  * A utility package used by many NxData implementers
@@ -845,7 +849,7 @@ public class NXData_util{
   }
 
   /**
-   * Converts Isaw's Detector Position to Nexus's coordinates
+   * Converts  Detector Position to spherical coordinates 
    * @param  DP  An ISAW DetectorPosition
    * @return  The Nexus name for that position?
    */
@@ -951,5 +955,22 @@ public class NXData_util{
       //  { ViewManager view_manager = new ViewManager(  DS ,  DataSetTools.viewer.IViewManager.IMAGE );
       
       //     }
-      */}
+      */
+      float[] xx = new float[3];
+      for( int i = 0; i < 3; i++){
+         xx[i] = (new Float( args[i])).floatValue();
+
+      }
+      if( args.length <= 3)
+         System.out.println( StringUtil.toString((new NXData_util()).
+                        convertToIsaw( xx[0],xx[1],xx[2]).getSphericalCoords()));
+      else{
+         DetectorPosition dp = new DetectorPosition();
+         dp.setSphericalCoords( xx[0],xx[2],xx[1]);
+         System.out.println("xyx="+ StringUtil.toString(dp.getCartesianCoords()));
+         System.out.println( StringUtil.toString( (new NXData_util()).converToNex
+               (dp)));
+       }
+
+     }
 }
