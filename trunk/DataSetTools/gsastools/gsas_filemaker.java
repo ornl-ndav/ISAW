@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2003/04/25 15:42:54  pfpeterson
+ *  Fixed bug where bank header and bank did not match.
+ *
  *  Revision 1.24  2003/04/17 19:51:30  pfpeterson
  *  Fixed bug where EOL was not placed at the end of an ESD data when
  *  the data filled the last row.
@@ -196,13 +199,15 @@ public class gsas_filemaker
 	this.printMonitorCount();
 	this.printBankInfo();
 
+        // construct bank header information
         XInfo[] tempinfolist=new XInfo[this.data.getNum_entries()];
         XInfo tempinfo=null;
-        int[] infonum=new int[this.data.getNum_entries()];
+        int[] infonum=new int[this.data.getMaxGroupID()+1]; // indexed on GID
         int infocount=-1;
         int timemap_count=0;
-        for( int i=0 ; i<this.data.getNum_entries() ; i++ ){
-            Data d=this.data.getData_entry(i);
+        for( int i=0 ; i<=data.getMaxGroupID() ; i++ ){
+            Data d=this.data.getData_entry_with_id(i);
+            if(d==null) continue;
             tempinfo=new XInfo(d.getX_scale(),this.data.getX_units(),
                                GsasUtil.getType(d));
             if(tempinfo.setTimeMapNum(timemap_count)){
@@ -219,10 +224,13 @@ public class gsas_filemaker
             }
             infonum[i]=infocount;
         }
+
+        // copy information from the temporary array
         XInfo[] info=new XInfo[infocount+1];
         for( int i=0 ; i<infocount+1 ; i++ ){
             info[i]=tempinfolist[i];
         }
+        // print all of the time maps from the array of XInfo
         printTimeMap(info);
 
         //System.out.println("(GF)NUMBERING: "+seq_numbers);
@@ -234,7 +242,7 @@ public class gsas_filemaker
 	for(int i=1; i<=data.getMaxGroupID() ; i++){
             Data dd=data.getData_entry_with_id(i);
             if(dd!=null){
-                printBank(count,dd,info[infonum[infocount]]);
+                printBank(count,dd,info[infonum[i]]);
                 count++;
                 infocount++;
             }else if(!seq_numbers){
