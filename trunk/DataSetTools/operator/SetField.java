@@ -1,7 +1,13 @@
 /*
  * @(#)SetField.java   00-07-12  Ruth Mikkelson
  *             
- * This operator sets a DataSet Attribute
+ * This operator sets a DataSet field 
+ *
+ * $Log$
+ * Revision 1.3  2000/11/07 15:46:50  dennis
+ * Major rewrite... Only allows setting things that are resonable to set, and
+ * properly supports setting selections.
+ *
  *
  */
 
@@ -20,7 +26,7 @@ import  DataSetTools.util.*;
   */
 
 public class SetField extends    DataSetOperator 
-                                   implements Serializable
+                                 implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
@@ -33,7 +39,7 @@ public class SetField extends    DataSetOperator
 
   public SetField( )
   {
-    super( "Set Field" );
+    super( "Set DataSet Field" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -43,13 +49,13 @@ public class SetField extends    DataSetOperator
    *  by calling getResult().
    *
    *  @param  ds          The DataSet to which the operation is applied
-   *  @parm   Fieldname   The Attribute to be set.
+   *  @parm   Fieldname   The Field to be set.
    *  @param  new_Value   The new value of the Attribute
    */
 
-  public SetField( DataSet              ds,
-                   AttributeNameString  Fieldname,
-                   Object               new_Value )
+  public SetField( DataSet                ds,
+                   DSSettableFieldString  Fieldname,
+                   Object                 new_Value )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -83,7 +89,8 @@ public class SetField extends    DataSetOperator
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter( "Field?", new AttributeNameString(""));
+    Parameter parameter = new Parameter( "Field?", 
+                                          new DSSettableFieldString("Title"));
     addParameter( parameter ); 
     
     parameter = new Parameter( " New Value?", null );
@@ -94,39 +101,88 @@ public class SetField extends    DataSetOperator
   /* ---------------------------- getResult ------------------------------- */
 
   public Object getResult()
-    { Attribute A;
-      DataSet ds = getDataSet();
-      String S = ((AttributeNameString)(getParameter(0).getValue())).toString();
-      Object O = getParameter(1).getValue();
+    { 
+     DataSet ds      = getDataSet();
+     String  ds_name = ds.toString();
 
-      if ( O == null )
-        return new ErrorString(" null value");
+     String S =((DSSettableFieldString)(getParameter(0).getValue())).toString();
+     Object O = getParameter(1).getValue();
+
+     if ( O == null )
+       return new ErrorString(" null value");
 
       try
       {
-      if( S.equals("Title"))
-        {ds.setTitle(O.toString());
-        }
-      else if( S.equals("X_label"))
-        {ds.setX_label(O.toString());
-        }
-      else if( S.equals("X_units")) 
+      if( S.equals( DSFieldString.TITLE ))
+      {
+        ds.setTitle(O.toString());
+        ds.notifyIObservers( IObserver.FIELD_CHANGED );
+      }  
+      else if( S.equals(DSFieldString.X_LABEL))
+      {
+        ds.setX_label(O.toString());
+        ds.notifyIObservers( IObserver.FIELD_CHANGED );
+      }  
+      else if( S.equals(DSFieldString.X_UNITS)) 
+      {
          ds.setX_units(O.toString());     
-      else if( S.equals("PointedAtIndex"))
-         ds.setPointedAtIndex(((Integer)O).intValue());
-      else if( S.equals("SelectFlagOn"))
-         ds.setSelectFlag((((Integer)O).intValue()), true);
-      else if( S.equals("SelectFlagOff"))
-         ds.setSelectFlag((((Integer)O).intValue()), false);
-      else if( S.equals("Y_label"))
+         ds.notifyIObservers( IObserver.FIELD_CHANGED );
+      }
+      else if( S.equals(DSFieldString.Y_LABEL))
+      {
          ds.setY_label(O.toString());
-      else if( S.equals("Y_units"))
+         ds.notifyIObservers( IObserver.FIELD_CHANGED );
+      }
+      else if( S.equals(DSFieldString.Y_UNITS))
+      {
          ds.setY_units(O.toString());
-    
+         ds.notifyIObservers( IObserver.FIELD_CHANGED );
+      }
+      else if( S.equals(DSFieldString.POINTED_AT_INDEX))
+      {
+         ds.setPointedAtIndex(((Integer)O).intValue());
+         ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+      }
+      else if( S.equals(DSFieldString.POINTED_AT_ID))
+      {  int      num_data = ds.getNum_entries();
+         int      i        = 0;
+         int      id       = ((Integer)O).intValue();
+         boolean  found    = false;
+         while ( !found && i < num_data )
+         {
+           if (ds.getData_entry(i).getGroup_ID() == id ) 
+           { 
+             found = true;
+             ds.setPointedAtIndex(i);
+             ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+           }
+           i++;
+         }
+      }
+      else if( S.equals(DSFieldString.SELECTED_GROUPS) )
+      {
+        int list[] = IntList.ToArray( O.toString() );
+        int id, 
+            index;
+
+        ds.clearSelections();
+        if ( list.length > 0 ) 
+        for ( int i = 0; i < ds.getNum_entries(); i++ )
+        {
+          id = ds.getData_entry(i).getGroup_ID();
+          index = arrayUtil.get_index_of( id, list, 0, list.length-1 ); 
+                                                        // set the select flag
+                                                        // if the group ID is
+          if ( index >= 0 )                             // in the list 
+            ds.setSelectFlag( i, true );
+        }
+        ds.notifyIObservers( IObserver.SELECTION_CHANGED );
+      }
       else
-        return new ErrorString("Improper Field name");     
-      ds.addLog_entry( "Operation " + "SetField "+ S +" on " +ds +
-              " to " + O);
+        return new ErrorString("Can not set field " + S );     
+
+      ds.addLog_entry( "Operation " + "SetField "+ S +" on " +ds_name +
+              " to " + O.toString() );
       return "Field Set"; 
      }
 
