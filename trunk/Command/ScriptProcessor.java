@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.44  2003/06/02 22:47:55  pfpeterson
+ * processMacroLine now properly returns true when there is not an
+ * error in ALL cases.
+ *
  * Revision 1.43  2003/06/02 14:29:36  rmikk
  * -Checked for and handled errors occurring in the
  *     parameter lines.
@@ -812,11 +816,11 @@ public class ScriptProcessor  extends ScriptProcessorOperator
             
     // confirm that there is something to work with
     if( line==null || line.length()<=0 || line.indexOf("$")<0 )
-      return false;
+      return true;
     {
       String checker=line.trim();
       if( (checker.indexOf("$")!=0) && (checker.indexOf("#$$")!=0) )
-        return false;
+        return true;
     }
 
     index=line.indexOf("#");
