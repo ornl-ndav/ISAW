@@ -30,6 +30,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2004/01/14 01:30:28  bouzekc
+ * Fixed bug in second type of character variable declaration handling.
+ * All variables that are used outside of enclosing tokens are now able to
+ * handle leading and trailing whitespace by themselves, so the check for
+ * leading whitespace was removed from the main parsing code.  Fixed the
+ * conversion of real() and int() to the correct Java "versions."
+ *
  * Revision 1.3  2004/01/14 00:07:26  bouzekc
  * Added code to handle MOD.  Reorganized whitespace tokens.
  *
@@ -146,8 +153,30 @@ public class FortranParser {
      
 PARSER_END( FortranParser )
 
+//~----------------------------------------------------------------------------
+// A NOTE TO MAINTAINERS OF THIS CODE:
+//
+// ALL TOKENS THAT YOU ARE PROCESSING IN THE PRODUCTIONS
+// SHOULD HAVE THE <OPT_WS> BEFORE AND AFTER THEIR
+// DECLARATIONS, UNLESS THEY ARE MEANT SPECIFICALLY TO BE
+// USED DIRECTLY BEFORE OR AFTER ANOTHER TOKEN.  IF THIS
+// RULE IS NOT FOLLOWED, THE PARSER WILL NOT ALWAYS
+// WORK CORRECTLY, AS IT DOES NOT EXPLICITLY LOOK FOR
+// WHITESPACE WHEN PROCESSING A LINE.
+//
+// -CHRIS BOUZEK
+//~----------------------------------------------------------------------------   
+
 SKIP : {
   "\n" | "\r"
+}
+
+TOKEN : {
+  < #ONE_PLUS_WS: ( <WHITESPACE> )+ >
+}
+
+TOKEN : {
+  < #OPT_WS: ( <WHITESPACE> )* >
 }
 
 TOKEN : {
@@ -159,17 +188,8 @@ TOKEN : {
 }
 
 TOKEN : {
-  < WHITESPACE: (" " | "\t" ) >
+  < #WHITESPACE: (" " | "\t" ) >
 }
-
-TOKEN : {
-  < #ONE_PLUS_WS: ( <WHITESPACE> )+ >
-}
-
-TOKEN : {
-  < #OPT_WS: ( <WHITESPACE> )* >
-}
-
 
 TOKEN : {
   < #CHARACTER: ( ["a"-"z"] | ["A"-"Z"] | "_" | "-" )+ >
@@ -194,15 +214,17 @@ TOKEN : {
 
 TOKEN : {
   < #VARIABLE : ( 
-    ( 
+    ( <OPT_WS>
       ( <CHARACTER> )+ ( <VARIABLE_COMP> )* 
-    ) 
+    ) <OPT_WS>
   ) >
 }
 
 TOKEN: {
   < #ARRAY_VARIABLE: (
-    <VARIABLE> "(" <UNSIGNED_DIGIT> ")"
+    <OPT_WS>
+    <VARIABLE> "(" <OPT_WS> <UNSIGNED_DIGIT> <OPT_WS> ")"
+    <OPT_WS>
   ) >
 }
 
@@ -214,20 +236,24 @@ TOKEN : {
 
 TOKEN : {
   < STRING: (
-    ( "\"" )+ ( 
+    <OPT_WS>
+    ( "\"" ) ( 
       <DIGIT> | 
       <CHARACTER> | 
       <RESERVED_CHAR> |
       <VAR_RESERVED_CHAR> | 
       <ONE_PLUS_WS> | 
       <FLOATING_POINT> |
-      ":" 
-    )* ( "\"" )+ 
+      ":" |
+      "''" 
+    )* ( "\"" )
+    <OPT_WS> 
   ) >
 }
 
 TOKEN : {
   < FLOATING_POINT: (
+    <OPT_WS>
     ( 
       ( 
         ( <DIGIT> )+ ( "." )? ( <UNSIGNED_DIGIT> )* 
@@ -239,12 +265,13 @@ TOKEN : {
     ) 
     ( 
       ["e", "E"] ( <DIGIT>)+ 
-    )? 
+    )?
+    <OPT_WS> 
   ) >
 }
 
 TOKEN : {
-  < #EMPTY_ARRAY: "[" <OPT_WS> "]" >
+  < #EMPTY_ARRAY: <OPT_WS> "[" <OPT_WS> "]" <OPT_WS> >
 }
 
 //Fortran tokens.  Recall that in Fortran, untyped variables starting with
@@ -262,7 +289,9 @@ TOKEN: {
 //arrays and scalars in the same line
 TOKEN: {
   < #MULTI_VARIABLE: (
-    <VARIABLE> | <ARRAY_VARIABLE> 
+    <OPT_WS> ( 
+      <VARIABLE> | <ARRAY_VARIABLE> 
+    ) <OPT_WS> 
   ) >
 }
 
@@ -271,60 +300,97 @@ TOKEN: {
 //array of length 6
 TOKEN: {
   < #CHAR_VARIABLE: ( 
-    <VARIABLE> " *" ( <UNSIGNED_DIGIT> )+ 
+    <OPT_WS>
+    <VARIABLE> " *" ( <UNSIGNED_DIGIT> )+
+    <OPT_WS> 
   ) >
 }
 
+//this token allows integers or variables.  It is meant for use in the
+//math functions
+TOKEN: {
+  < #MATH_INT_VAR: (
+    <OPT_WS> (
+      ( <DIGIT> )+ | <VARIABLE>
+    )
+    <OPT_WS>
+  ) >
+}
+
+//This token is meant for math functions that will only accept
+//a floating point
+TOKEN: {
+  <#MATH_FLOAT_VAR: (
+    <OPT_WS> (
+      <FLOATING_POINT> | <VARIABLE>
+     ) 
+    <OPT_WS>
+  ) >
+}
+
+//this is sort of a "catch-all" to allow using floating points, integers,
+//or variables in a Fortran math expression.  It allows a single floating
+//point number or a single integer or a single "variable"
 TOKEN: {
   <#MATH_VAR: (
-    <FLOATING_POINT> | <DIGICHAR>
+    <OPT_WS> (
+      <MATH_FLOAT_VAR> | <MATH_INT_VAR>
+     ) 
+    <OPT_WS>
   ) >
 }
 
+//absolute function
 TOKEN: {
   < FORTRAN_ABS: (
-    ( "abs(" | "iabs(" ) <OPT_WS> ( <MATH_VAR> )+ 
-    <OPT_WS> ")"
+    <OPT_WS>
+    ( "abs(" | "iabs(" ) <MATH_VAR> ")"
+    <OPT_WS>
   ) >
 }
 
+//square root function
 TOKEN: {
   < FORTRAN_SQRT: (
-    "sqrt(" <OPT_WS> ( <MATH_VAR> )+ 
-    <OPT_WS> ")"
+    <OPT_WS>
+    "sqrt(" <MATH_FLOAT_VAR> ")"
+    <OPT_WS>
   ) >
 }
 
+//Handles the Fortran real() function.
 TOKEN: {
   < FORTRAN_FLOAT_FUN: (
-    ( "float(" | "real(" ) <OPT_WS> ( <DIGICHAR> )+ 
-    <OPT_WS> ")"
+    <OPT_WS>
+    ( "float(" | "real(" ) <MATH_INT_VAR> ")"
+    <OPT_WS>
   ) >
 }
 
+//converts a floating point to an integer by truncating
 TOKEN: {
-  < FORTRAN_INT_FUN: (
-    "int(" <OPT_WS> ( <MATH_VAR> )+
-    <OPT_WS> ")"
+  < FORTRAN_TRUNC_FUN: (
+    <OPT_WS>
+    "int(" <MATH_FLOAT_VAR> ")"
+    <OPT_WS>
   ) >
 }
 
 //mod function
 TOKEN: {
   < FORTRAN_MOD_FUN: (
-    "mod(" <OPT_WS> ( <DIGICHAR> )+
-    <OPT_WS> "," <OPT_WS>
-    ( <DIGICHAR> )+
-    <OPT_WS> ")"
+    <OPT_WS>
+    "mod(" <MATH_INT_VAR> "," <MATH_FLOAT_VAR> ")"
+    <OPT_WS>
   ) >
 }
 
 //integer variable
 TOKEN : {
   < FORTRAN_INT: ( 
-    ( "integer" <ONE_PLUS_WS> | <INT_IDENT> ) <MULTI_VARIABLE> ( 
-      <OPT_WS> "," <OPT_WS> 
-      <MULTI_VARIABLE> ( 
+    <OPT_WS>
+    ( "integer " | <INT_IDENT> ) <MULTI_VARIABLE> ( 
+      "," <MULTI_VARIABLE> ( 
         <OPT_WS> "=" <OPT_WS> ( <DIGIT> )+
       )? 
     )* 
@@ -334,51 +400,57 @@ TOKEN : {
 
 //floating point variable
 TOKEN : {
-  < FORTRAN_REAL: ( 
-    ( "real" <ONE_PLUS_WS> | <FLOAT_IDENT> ) <MULTI_VARIABLE> ( 
-      <OPT_WS> "," <OPT_WS> 
-      <MULTI_VARIABLE> 
-    )* 
+  < FORTRAN_REAL: (
+    <OPT_WS> 
+    ( "real " | <FLOAT_IDENT> ) <MULTI_VARIABLE> ( 
+      "," <MULTI_VARIABLE> 
+    )*
+    <OPT_WS> 
   ) >
 }
 
 //double-precision floating point variable
 TOKEN : {
-  < FORTRAN_DOUBLE: ( 
-    "double" <ONE_PLUS_WS> <MULTI_VARIABLE> ( 
-      <OPT_WS> "," <OPT_WS> 
-      <MULTI_VARIABLE> 
-    )* 
+  < FORTRAN_DOUBLE: (
+    <OPT_WS> 
+    "double precision" <MULTI_VARIABLE> ( 
+      "," <MULTI_VARIABLE> 
+    )*
+    <OPT_WS> 
   ) >
 }
 
 //boolean (i.e. logical) variable
 TOKEN : {
-  < FORTRAN_LOGICAL: ( 
-    "logical" <ONE_PLUS_WS> <MULTI_VARIABLE> ( 
-      <OPT_WS> "," <OPT_WS> 
-      <MULTI_VARIABLE> 
-    )* 
+  < FORTRAN_LOGICAL: (
+    <OPT_WS> 
+    "logical " <MULTI_VARIABLE> ( 
+      "," <MULTI_VARIABLE> 
+    )*
+    <OPT_WS> 
   ) >
 }
 
 //character variable where each char array length is specified directly
 TOKEN : {
-  < FORTRAN_CHAR_1: ( 
-    "character" <ONE_PLUS_WS> <CHAR_VARIABLE> ( 
-      <OPT_WS> "," <OPT_WS> <CHAR_VARIABLE> 
-    )* 
+  < FORTRAN_CHAR_1: (
+    <OPT_WS> 
+    "character " <CHAR_VARIABLE> ( 
+      "," <CHAR_VARIABLE> 
+    )*
+    <OPT_WS> 
   ) >
 }
 
 //character variable where the length is specified at the beginning of the 
 //array declaration
 TOKEN: {
-  < FORTRAN_CHAR_2: ( 
+  < FORTRAN_CHAR_2: (
+    <OPT_WS> 
     "character" <ONE_PLUS_WS> "*" ( <UNSIGNED_DIGIT> )+ 
     <ONE_PLUS_WS> <VARIABLE> ( 
-      <OPT_WS> "," 
-      <OPT_WS> <VARIABLE> )* 
+      "," <VARIABLE> )*
+    <OPT_WS> 
     ) >
 }
 
@@ -432,7 +504,10 @@ String convertFortranToJava(  ) : {
     fCode.append( fToken );
     fCode.append( " " );
   }*/
-  ( ( ( <WHITESPACE> )* ) fToken = convertFortranTokens(  ) {
+  //the WHITESPACE stuff here should be unnecessary-all the tokens should 
+  //have the OPT_WS before and after, so that they are able to have 
+  //arbitrary whitespace
+  ( /*( ( <WHITESPACE> )* )*/ fToken = convertFortranTokens(  ) {
     fCode.append( fToken );
     fCode.append( " " );
   }
@@ -471,23 +546,35 @@ String convertFortranTokens(  ) : {
   }
 | 
   t = <FORTRAN_FLOAT_FUN> {
-    if( t.image.indexOf( "float" ) >= 0 ) {
-      return t.image.replaceAll( "float", "rint" );
+    s = t.image;
+    if( s.indexOf( "float" ) >= 0 ) {
+      s = s.replaceAll( "float", "" );
     } else {
-      return t.image.replaceAll( "real", "rint" );
+      s = s.replaceAll( "real", "" );
     }
+    
+    s = "Float.parseFloat" + s;
+    
+    return s;
   }
 |
-  t = <FORTRAN_INT_FUN> {
-    return t.image.replaceAll( "int", "round" );
+  t = <FORTRAN_TRUNC_FUN> {
+    s = t.image.replaceAll( "int", "" );
+    
+    s = "new Float" + s + ".intValue()";
   }
 |
   t = <FORTRAN_MOD_FUN> {
     s = t.image;
-    System.out.println( "Found MOD");
     s = s.replaceAll( "mod", "" ).replaceAll( "\\)", "" ).replaceAll( "\\(", "" );
     s = s.replaceAll( ",", " % " );
     return s;
+  }
+|
+  //matched a double-precision floating point
+  t = <FORTRAN_DOUBLE> {
+    t.image = t.image.replaceAll( "double precision", "" );
+    return convertToJavaStyle( t.image, "double" );
   }
 |
   //matched an integer
@@ -500,12 +587,6 @@ String convertFortranTokens(  ) : {
   t = <FORTRAN_REAL> {
     t.image = t.image.replaceAll( "real", "" );
     return convertToJavaStyle( t.image, "float" );
-  }
-|
-  //matched a double-precision floating point
-  t = <FORTRAN_DOUBLE> {
-    t.image = t.image.replaceAll( "double precision", "" );
-    return convertToJavaStyle( t.image, "double" );
   }
 |
   //matched a boolean
@@ -527,15 +608,21 @@ String convertFortranTokens(  ) : {
     //comma delimited list of name, number pairs at this point
     tokenList = s.split( "\\s+|\\s*,\\s*" );
     
-    for( int i = 0; i < tokenList.length; i = i + 2 ) {
-      System.out.println( "TOKEN " + tokenList[i] );
-      buffer.append( tokenList[i] );
-      buffer.append( " = new char[" );
-      buffer.append( tokenList[i].replaceAll( "\\*", "" ) );
-      buffer.append( "]" );
-      
-      if( i < tokenList.length - 2 ) {
-        buffer.append( "," );
+    for( int i = 0; i < tokenList.length; i++ ) {
+      if( ( i % 2 )  == 0 ) {
+        //we found a variable name, so append it and the array declaration
+        buffer.append( tokenList[i] );
+        buffer.append( " = new char[" );
+      } else {
+        //we found the array dimension, so append that
+        buffer.append( tokenList[i].replaceAll( "\\*", "" ) );
+        buffer.append( "]" );
+        
+        //if we haven't reached the end of our token list, append a 
+        //comma
+        if( i < tokenList.length - 2 ) {
+                buffer.append( "," );
+        }
       }
     }
     
@@ -583,6 +670,7 @@ String convertFortranTokens(  ) : {
 |
   //matched a String
   t = <STRING> {
-    return t.image;
+    //replace Fortran's double single quotes with a backslash quote
+    return t.image.replaceAll( "''", "\\\\\"");
   }
 }

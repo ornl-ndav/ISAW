@@ -4,11 +4,11 @@ package Command.JavaCC.Fortran;
 public interface FortranParserConstants {
 
   int EOF = 0;
-  int UNSIGNED_DIGIT = 3;
-  int DIGIT = 4;
-  int WHITESPACE = 5;
-  int ONE_PLUS_WS = 6;
-  int OPT_WS = 7;
+  int ONE_PLUS_WS = 3;
+  int OPT_WS = 4;
+  int UNSIGNED_DIGIT = 5;
+  int DIGIT = 6;
+  int WHITESPACE = 7;
   int CHARACTER = 8;
   int RESERVED_CHAR = 9;
   int VAR_RESERVED_CHAR = 10;
@@ -23,18 +23,20 @@ public interface FortranParserConstants {
   int FLOAT_IDENT = 19;
   int MULTI_VARIABLE = 20;
   int CHAR_VARIABLE = 21;
-  int MATH_VAR = 22;
-  int FORTRAN_ABS = 23;
-  int FORTRAN_SQRT = 24;
-  int FORTRAN_FLOAT_FUN = 25;
-  int FORTRAN_INT_FUN = 26;
-  int FORTRAN_MOD_FUN = 27;
-  int FORTRAN_INT = 28;
-  int FORTRAN_REAL = 29;
-  int FORTRAN_DOUBLE = 30;
-  int FORTRAN_LOGICAL = 31;
-  int FORTRAN_CHAR_1 = 32;
-  int FORTRAN_CHAR_2 = 33;
+  int MATH_INT_VAR = 22;
+  int MATH_FLOAT_VAR = 23;
+  int MATH_VAR = 24;
+  int FORTRAN_ABS = 25;
+  int FORTRAN_SQRT = 26;
+  int FORTRAN_FLOAT_FUN = 27;
+  int FORTRAN_TRUNC_FUN = 28;
+  int FORTRAN_MOD_FUN = 29;
+  int FORTRAN_INT = 30;
+  int FORTRAN_REAL = 31;
+  int FORTRAN_DOUBLE = 32;
+  int FORTRAN_LOGICAL = 33;
+  int FORTRAN_CHAR_1 = 34;
+  int FORTRAN_CHAR_2 = 35;
 
   int DEFAULT = 0;
 
@@ -42,11 +44,11 @@ public interface FortranParserConstants {
     "<EOF>",
     "\"\\n\"",
     "\"\\r\"",
+    "<ONE_PLUS_WS>",
+    "<OPT_WS>",
     "<UNSIGNED_DIGIT>",
     "<DIGIT>",
     "<WHITESPACE>",
-    "<ONE_PLUS_WS>",
-    "<OPT_WS>",
     "<CHARACTER>",
     "<RESERVED_CHAR>",
     "<VAR_RESERVED_CHAR>",
@@ -61,11 +63,13 @@ public interface FortranParserConstants {
     "<FLOAT_IDENT>",
     "<MULTI_VARIABLE>",
     "<CHAR_VARIABLE>",
+    "<MATH_INT_VAR>",
+    "<MATH_FLOAT_VAR>",
     "<MATH_VAR>",
     "<FORTRAN_ABS>",
     "<FORTRAN_SQRT>",
     "<FORTRAN_FLOAT_FUN>",
-    "<FORTRAN_INT_FUN>",
+    "<FORTRAN_TRUNC_FUN>",
     "<FORTRAN_MOD_FUN>",
     "<FORTRAN_INT>",
     "<FORTRAN_REAL>",
