@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.42  2003/05/28 18:53:46  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.41  2003/04/21 19:09:43  pfpeterson
  * Reimplemented that '$' or '#$$' must be the first bit of non-whitespace
  * in a line.
@@ -934,7 +937,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       if(InitValue!=null && InitValue.length()>0){
         DirPath=InitValue;
       }else{
-        DirPath=System.getProperty("Data_Directory")+"\\";
+        DirPath=SharedData.getProperty("Data_Directory")+"\\";
       }
       if( DirPath != null )
         DirPath = 
@@ -955,7 +958,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       if(InitValue!=null && InitValue.length()>0){
         DirPath=InitValue;
       }else{
-        DirPath=System.getProperty("Data_Directory")+"\\";
+        DirPath=SharedData.getProperty("Data_Directory")+"\\";
       }
       if(DirPath!=null)
         DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
@@ -967,7 +970,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       if(InitValue!=null && InitValue.length()>0){
         DirPath=InitValue;
       }else{
-        DirPath=System.getProperty("Data_Directory")+"\\";
+        DirPath=SharedData.getProperty("Data_Directory")+"\\";
       }
       if(DirPath!=null)
         DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
@@ -985,7 +988,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       if(InitValue!=null && InitValue.length()>0)
         XX=InitValue;
       else
-        XX = System.getProperty("Default_Instrument");
+        XX = SharedData.getProperty("Default_Instrument");
       if( XX == null )
         XX = "";
       addParameter(  new Parameter( Prompt, XX ));
