@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/07/14 20:59:11  bouzekc
+ * Removed a println() which printed out an error message if
+ * a class definition was not found at the top of a python
+ * file.
+ *
  * Revision 1.5  2003/07/07 19:44:26  bouzekc
  * Added error message outputs for syntax errors and missing
  * "class" name.
@@ -123,10 +128,11 @@ public class PyScript extends Script{
     }
     line=null;
 
-    if( !hasClass ){
+    //this adds too much console stuff when ISAW starts up.
+    /*if( !hasClass ){
       DataSetTools.util.SharedData.addmsg( 
       "No class name specified:\n" );
-    }
+    }*/
     valid=new Boolean(hasClass);
     return valid.booleanValue();
   }
