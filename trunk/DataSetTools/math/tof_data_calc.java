@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2003/04/17 20:34:16  pfpeterson
+ *  Changed DiffractometerFocus to use XScale.getInstance so the returned
+ *  type is correct. Also included check against machine epsilon so nothing
+ *  is done to the XScale if it is below float precision.
+ *
  *  Revision 1.20  2003/04/17 19:48:00  pfpeterson
  *  DiffractometerFocus returns supplied XScale if no focusing is done.
  *
@@ -96,6 +101,8 @@ import DataSetTools.instruments.*;
  */
 public final class tof_data_calc
 {
+
+private static final float MACHINE_EPSILON = 1.1920929E-7f;
 
 public static final float  HIGH_E_EXTENT = 2.0f;
 public static final float  LOW_E_EXTENT  = 3.0f;
@@ -492,16 +499,18 @@ public static XScale DiffractometerFocus(XScale scale,
     float x_vals[]=scale.getXs();
 
     float scalar=1f;
-    if(focus_path_length>0){
+    if(Math.abs(path_length-focus_path_length)>MACHINE_EPSILON){
+      if(focus_path_length>0)
         scalar*=focus_path_length/path_length;
     }
-    scalar*=Math.sin(focus_theta_rad)/Math.sin(theta_rad);
+    if(Math.abs(theta_rad-focus_theta_rad)>MACHINE_EPSILON)
+      scalar*=Math.sin(focus_theta_rad)/Math.sin(theta_rad);
 
-    if(scalar!=1.f){
+    if(Math.abs(scalar-1.)>MACHINE_EPSILON){
         for( int i=0 ; i<x_vals.length ; i++ ){
             x_vals[i]*=scalar;
         }
-        new_scale=new VariableXScale(x_vals);
+        new_scale=XScale.getInstance(x_vals);
         return new_scale;
     }else{
       return scale;
