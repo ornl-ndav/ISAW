@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/06/18 23:09:46  bouzekc
+ *  Parameter error checking now handled by superclass Form.
+ *
  *  Revision 1.8  2003/06/18 19:54:58  bouzekc
  *  Now pads run numbers less than 5 digits with zeroes.
  *  Uses errorOut() to indicate parameter errors.  More robust
@@ -62,6 +65,9 @@
  *
  *  Revision 1.2  2003/03/13 19:04:14  dennis
  *  Added $Log$
+ *  Added Revision 1.9  2003/06/18 23:09:46  bouzekc
+ *  Added Parameter error checking now handled by superclass Form.
+ *  Added
  *  Added Revision 1.8  2003/06/18 19:54:58  bouzekc
  *  Added Now pads run numbers less than 5 digits with zeroes.
  *  Added Uses errorOut() to indicate parameter errors.  More robust
@@ -280,23 +286,18 @@ public class SaveAsGSASForm extends    Form
     param = (IParameterGUI)super.getParameter(4);
     gsas_dir = StringUtil.setFileSeparator(
                  param.getValue().toString() + "/");
-    if(new File(gsas_dir).exists())
-      param.setValid(true);
-    else
-      return errorOut(param,
-          "You must enter a valid GSAS file directory.");
 
     param = (IParameterGUI)super.getParameter(5);
-    //this one doesn't need to be checked for validity
-    param.setValid(true);
     export_mon = ((BooleanPG)param).getbooleanValue();
 
     param = (IParameterGUI)super.getParameter(6);
-    //this one doesn't need to be checked for validity
-    param.setValid(true);
     seq_num = ((BooleanPG)param).getbooleanValue();
 
-    super.getResult();
+    Object superRes = super.getResult();
+
+    //had an error, so return
+    if(superRes instanceof ErrorString)  
+      return superRes;
 
     //set the increment amount
     increment = (1.0f / grouped.size()) * 100.0f;

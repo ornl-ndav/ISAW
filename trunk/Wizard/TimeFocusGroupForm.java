@@ -30,6 +30,9 @@
  * Modified: 
  *
  * $Log$
+ * Revision 1.8  2003/06/18 23:09:47  bouzekc
+ * Parameter error checking now handled by superclass Form.
+ *
  * Revision 1.7  2003/06/18 19:55:27  bouzekc
  * Uses errorOut() to indicate parameter errors.  More robust
  * parameter error checking.  Now fires off property change
@@ -58,6 +61,9 @@
  *
  * Revision 1.5  2003/03/13 19:00:52  dennis
  * Added $Log$
+ * Added Revision 1.8  2003/06/18 23:09:47  bouzekc
+ * Added Parameter error checking now handled by superclass Form.
+ * Added
  * Added Revision 1.7  2003/06/18 19:55:27  bouzekc
  * Added Uses errorOut() to indicate parameter errors.  More robust
  * Added parameter error checking.  Now fires off property change
@@ -329,7 +335,11 @@ public class TimeFocusGroupForm extends    Form
     
     edit_len = super.getParamType(Form.VAR_PARAM).length;
 
-    super.getResult();
+    Object superRes = super.getResult();
+
+    //had an error, so return
+    if(superRes instanceof ErrorString)  
+      return superRes;
 
     //make sure list exists
     if( hist_ds_vec != null )
