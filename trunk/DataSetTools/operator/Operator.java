@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/07/30 19:52:29  dennis
+ *  Added GENERIC SAVE category.
+ *
  *  Revision 1.7  2001/06/01 21:18:00  rmikk
  *  Improved documentation for getCommand() method
  *
@@ -121,6 +124,7 @@ abstract public class Operator implements Serializable
    public static final String  OPERATOR                 = "Operator";
    public static final String    GENERIC                = "Generic";
    public static final String      LOAD                 = "Load";
+   public static final String      SAVE                 = "Save";
    public static final String      BATCH                = "Batch";
    public static final String    DATA_SET_OPERATOR      = "DataSet Operator";
    public static final String      EDIT_LIST            = "Edit List";
