@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.72  2004/03/17 20:25:08  dennis
+ * Fixed @see tag that was broken when view components, math and
+ * util were moved to gov package.
+ *
  * Revision 1.71  2004/03/15 19:34:46  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -1339,7 +1343,7 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
      *
      * @param   ds    The data set that is to be sent
      * Not implemented yet. 
-     * @see  DataSetTools.util.IObserverList#addIObserver(DataSetTools.util.IObserver) addIObserver  
+     * @see  gov.anl.ipns.Util.Messaging.IObserverList#addIObserver(gov.anl.ipns.Util.Messaging.IObserver) addIObserver  
      *
      */
     public void Send( DataSet ds){

@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/17 20:24:12  dennis
+ * Fixed @see tag that was broken when view components, math and
+ * util were moved to gov package.
+ *
  * Revision 1.3  2004/03/15 19:38:22  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -57,7 +61,7 @@ public class GenericFileFilter extends RobustFileFilter{
     *  Constructor
     *  @param  Extension the filename extension that will yield a positive accept
     *  @param  Description  A Description for this extension
-    *  @see   DataSetTools.util.RobustFileFilter
+    *  @see    gov.anl.ipns.Util.File.RobustFileFilter
     */
    public GenericFileFilter(String Extension, String Description){
       super();
