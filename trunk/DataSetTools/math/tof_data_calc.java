@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2003/02/12 21:46:45  dennis
+ *  Changed NewEnergyInData() method to use RAW_DISTANCE attribute
+ *  instead of calculating it as the average of the Segment distances.
+ *
  *  Revision 1.17  2003/01/15 20:54:25  dennis
  *  Changed to use SegmentInfo, SegInfoListAttribute, etc.
  *
@@ -201,9 +205,9 @@ public static final float  MONITOR_PEAK_EXTENT_FACTOR = 1.0f;
  *  Adjust the time bin boundaries for a direct geometry neutron time-of-flight
  *  spectrometer to values that correspond to a different incident energy.
  *  The data is assumed to be already time focussed to an effective secondary
- *  flight path, L2_focused, given by the "Effective Position" attribute.  The
+ *  flight path, L2_focused, given by the DETECTOR_POSITION attribute.  The
  *  physical secondary flight path, L2, is assumed to be given by the 
- *  "Det Info List" attribute.  If either of these attributes are not present,
+ *  RAW_DISTANCE attribute.  If either of these attributes are not present,
  *  a warning message is printed and the original Data block is returned.
  *
  *  @param  data      Data block containing the original focused spectrum to be 
@@ -219,29 +223,25 @@ public static final float  MONITOR_PEAK_EXTENT_FACTOR = 1.0f;
 public static Data NewEnergyInData( TabulatedData  data, 
                                     float          new_e_in )
 {
-  Float Float_e = (Float)data.getAttribute(Attribute.ENERGY_IN).getValue();
-  Float Float_l = (Float)data.getAttribute(Attribute.INITIAL_PATH).getValue();
+  Float Float_e  = (Float)data.getAttribute(Attribute.ENERGY_IN).getValue();
+  Float Float_l  = (Float)data.getAttribute(Attribute.INITIAL_PATH).getValue();
+  Float Float_pl = (Float)data.getAttribute(Attribute.RAW_DISTANCE).getValue();
   DetectorPosition position = (DetectorPosition)
                      data.getAttribute(Attribute.DETECTOR_POS).getValue();
 
-  SegmentInfo seg_info[] =(SegmentInfo[])
-                     data.getAttribute(Attribute.SEGMENT_INFO_LIST).getValue();
  
   if ( Float_e   == null || 
        Float_l   == null || 
-       position  == null ||
-       seg_info  == null )
+       Float_pl  == null || 
+       position  == null  )
   {
     System.out.println("ERROR: missing attribute in " +
                               "tof_data_calc.SetNewEnergyIn");
     return data;
   }
 
-  float focused_L2 = position.getDistance();
-  float physical_L2 = 0;                        // use average of physical dists
-  for ( int i = 0; i < seg_info.length; i++ )
-    physical_L2 += seg_info[i].getPosition().getDistance();  
-  physical_L2 /= seg_info.length; 
+  float focused_L2  = position.getDistance();
+  float physical_L2 = Float_pl.floatValue();    // use average of physical dists
      
   float old_e_in     = Float_e.floatValue();
   float initial_path = Float_l.floatValue();
