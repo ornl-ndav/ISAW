@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.17  2003/07/02 16:26:46  bouzekc
+ * Returned const_indices to private status.
+ *
  * Revision 1.16  2003/07/02 16:21:02  bouzekc
  * Made const_indices and setParamClass protected so
  * ScriptForm can use them.
@@ -89,7 +92,7 @@ public class OperatorForm extends Form implements HiddenOperator {
   private static ParameterClassList PL = null;
   protected Operator form_op;
   protected IParameterGUI result_param;
-  protected int[] constIndices;
+  private int[] constIndices;
 
   /**
    *  Construct an OperatorForm with the title "Operator Form".
