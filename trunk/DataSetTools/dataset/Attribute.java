@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2003/02/18 18:58:26  dennis
+ *  Added SAMPLE_ORIENTATION attribute name.
+ *
  *  Revision 1.37  2003/02/12 20:05:14  dennis
  *  Removed SEGMENT_INFO and SEGMENT_INFO_LIST.
  *  Added RAW_DISTANCE for TOF_DG_SPECTROMETERs.
@@ -219,6 +222,7 @@ abstract public class Attribute implements Serializable,
   public static final String  SAMPLE_CHI        = "Sample Chi";
   public static final String  SAMPLE_PHI        = "Sample Phi";
   public static final String  SAMPLE_OMEGA      = "Sample Omega";
+  public static final String  SAMPLE_ORIENTATION = "Sample Orientation";
   public static final String  SAMPLE_NAME       = "Sample Name";
   public static final String  TEMPERATURE       = "Temperature";
   public static final String  PRESSURE          = "Pressure";
