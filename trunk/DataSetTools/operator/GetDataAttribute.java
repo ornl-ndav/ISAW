@@ -4,6 +4,9 @@
  * This operator gets an Attribute from a Data block in a DataSet
  *
  *  $Log$
+ *  Revision 1.4  2000/11/17 23:44:29  dennis
+ *  Minor documentation fix.
+ *
  *  Revision 1.3  2000/11/10 22:41:34  dennis
  *     Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
@@ -95,7 +98,6 @@ public class GetDataAttribute extends    DS_Attribute
     parameter= getParameter( 1 );
     parameter.setValue( Attrib);   
 
-    
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
   }
@@ -130,28 +132,32 @@ public class GetDataAttribute extends    DS_Attribute
   /* ---------------------------- getResult ------------------------------- */
 
   public Object getResult()
-    { Attribute A;
+  { 
+     Attribute A;
      DataSet ds = getDataSet();
+
      int index = ((Integer) (getParameter(0).getValue())).intValue();
-     String S = ((AttributeNameString)(getParameter(1).getValue())).toString();
-     Data D = ds.getData_entry(index);
-     if( D == null) return new ErrorString(" Improper index ");
+     String S  = ((AttributeNameString)(getParameter(1).getValue())).toString();
+
+     Data D    = ds.getData_entry(index);
+     if( D == null) 
+       return new ErrorString(" Improper index ");
      
      Object O = D.getAttributeValue( S );
      if ( O == null)
-	 return new ErrorString(" Attribute "+ S + " is not in the List" );
+       return new ErrorString(" Attribute "+ S + " is not in the List" );
+
      return O;
   }  
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current GetDataAttribute Operator.  The list of parameters 
-   * and the reference to the DataSet to which it applies is copied.
+   * Get a copy of the current GetDataAttribute Operator.  The list of 
+   * parameters and the reference to the DataSet to which it applies is copied.
    */
   public Object clone()
   {
-    
-   GetDataAttribute new_op    = new GetDataAttribute( );
+    GetDataAttribute new_op    = new GetDataAttribute( );
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
