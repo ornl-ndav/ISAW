@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.29  2004/03/11 06:09:50  bouzekc
+ *  Added an extra check on addItems to be sure the Vector is nonempty.
+ *
  *  Revision 1.28  2004/02/25 00:42:14  bouzekc
  *  Added a clear() method that clears the internal Vector and sets the
  *  value to null (very useful for large items).
@@ -149,18 +152,21 @@ import java.util.Vector;
 public abstract class ChooserPG extends ParameterGUI {
   //~ Static fields/initializers ***********************************************
 
-  // static variables
   private static String TYPE    = "Chooser";
   protected static int DEF_COLS = 20;
 
   //~ Instance fields **********************************************************
 
-  // instance variables
   protected Vector vals = null;
 
   //~ Constructors *************************************************************
 
-  // ********** Constructors **********
+  /**
+   * Creates a new ChooserPG object.
+   *
+   * @param name DOCUMENT ME!
+   * @param val DOCUMENT ME!
+   */
   public ChooserPG( String name, Object val ) {
     super( name, val );
     setValue( val );
@@ -238,8 +244,6 @@ public abstract class ChooserPG extends ParameterGUI {
     return val;
   }
 
-  // ********** Methods to deal with the hash **********
-
   /**
    * Add a single item to the vector of choices.  If the new value is null,
    * this does nothing.
@@ -273,7 +277,7 @@ public abstract class ChooserPG extends ParameterGUI {
    * @param values The Vector of values to add.
    */
   public void addItems( Vector values ) {
-    if( values != null ) {
+    if( ( values != null ) && ( values.size(  ) > 0 ) ) {
       for( int i = 0; i < values.size(  ); i++ ) {
         addItem( values.elementAt( i ) );
       }
@@ -301,6 +305,7 @@ public abstract class ChooserPG extends ParameterGUI {
           new Class[]{ String.class, Object.class } );
       ChooserPG pg          = ( ChooserPG )construct.newInstance( 
           new Object[]{ null, null } );
+
       pg.setName( new String( this.getName(  ) ) );
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
@@ -342,8 +347,6 @@ public abstract class ChooserPG extends ParameterGUI {
     }
   }
 
-  // ********** IParameterGUI requirements **********
-
   /**
    * Allows for initialization of the GUI after instantiation.
    *
@@ -371,6 +374,7 @@ public abstract class ChooserPG extends ParameterGUI {
 
     //ignore prop changes because we are about to change the value
     boolean ignore = getIgnorePropertyChange(  );
+
     setIgnorePropertyChange( true );
 
     //GUI won't properly update without this
@@ -395,6 +399,7 @@ public abstract class ChooserPG extends ParameterGUI {
     } else {
       init_vec = new Vector( 1, 1 );
     }
+
     initGUI( init_vec );
   }
 
