@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2002/09/30 18:41:11  rmikk
+ *  Fixed a null pointer exception error
+ *
  *  Revision 1.28  2002/09/25 13:59:17  rmikk
  *  Added a call to init methods for DataSetPG's and non
  *    ArrayPG's so that the GUI is initialized
@@ -616,6 +619,7 @@ public class JParametersDialog implements Serializable,
       for(int i = 0; i < op.getNum_parameters(); i++)
       {
         pGUI = (JParameterGUI)vparamGUI.elementAt( i );
+        if( pGUI != null)
         if(  pGUI.getParameter() != null  &&  
              pGUI.getParameter().getValue() != null  )
         {                  
