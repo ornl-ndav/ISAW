@@ -47,7 +47,6 @@ public class JDataViewUI extends JDesktopPane implements Serializable
   Toolkit toolkit;
   JInternalFrame sel_frame;
   ViewManager         view_manager   = null;
-  InternalViewManager i_view_manager = null;
 
   public static final String INTERNAL_FRAME = "Create view in Internal Frame";
   public static final String EXTERNAL_FRAME = "Create view in External Frame";
@@ -85,17 +84,10 @@ public class JDataViewUI extends JDesktopPane implements Serializable
   {
     if( frame == INTERNAL_FRAME )
     {
-      i_view_manager = new InternalViewManager( ds, view_type );
-	i_view_manager.setResizable(true);
-	i_view_manager.setIconifiable(true);
-    	i_view_manager.setMaximizable(true);    
-	i_view_manager.setClosable(true);
-
-      add( i_view_manager );
-      i_view_manager.toFront();
-    }		
-    else if( frame == EXTERNAL_FRAME )
-     view_manager = new ViewManager( ds, view_type );
+      System.out.println("ERROR: Internal Frames no longer supported");
+      System.out.println("   ... using External JFrame" );
+    }
+    view_manager = new ViewManager( ds, view_type );
   }
 
 
