@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.25  2005/03/02 22:55:21  dennis
+ * Removed unused private field t.
+ * Fixed "typo" in nearedge() method that compared channel number
+ * with min y-value on detector instead of with min channel number.
+ *
  * Revision 1.24  2004/03/15 03:28:39  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -139,7 +144,6 @@ public class Peak{
   private float     z        = Float.NaN;
   private float     xcm      = 0f;
   private float     ycm      = 0f;
-  private float     t        = 0f;
   private float     wl       = 0f;
   private int       ipkobs   = 0;
   private float     inti     = 0f;
@@ -478,7 +482,7 @@ public class Peak{
 
     float dx=Math.abs((float)MINX-this.x);
     float dy=Math.abs((float)MINY-this.y);
-    float dz=Math.abs((float)MINY-this.z);
+    float dz=Math.abs((float)MINZ-this.z);
     float min=1000.0f;
     
     if(dx>Math.abs((float)MAXX-this.x)){
@@ -1003,7 +1007,6 @@ public class Peak{
     peak.sigi(sigi);
     peak.reflag(reflag);
     peak.nearedge=this.nearedge();
-    peak.t=this.t;
     peak.detA(this.detA());
     peak.detA2(this.detA2());
     peak.detD(this.detD());
