@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/02/14 17:49:57  rmikk
+ * duration is now in NXentry and has units of seconds
+ *
  * Revision 1.8  2003/12/08 20:57:49  rmikk
  * Moved the writing of duration from NXbeam to NXentry
  *
@@ -188,7 +191,7 @@ public class NxWriteEntry{
 
    
     
-    // duration 
+    //--------------------- duration ---------------------------
     Object O = DS.getAttributeValue( Attribute.NUMBER_OF_PULSES );
     if( O != null ){
       if( O instanceof Number ){
@@ -201,12 +204,18 @@ public class NxWriteEntry{
         n1.setNodeValue( ff , Types.Float , rank ); 
         if( n1.getErrorMessage() != "" );
         errormessage += ":" + n1.getErrorMessage();
-        n1.addAttribute("units",("msec"+(char)0).getBytes(),Types.Char,
-                        Inst_Type.makeRankArray(5,-1,-1,-1,-1));
+        n1.addAttribute("units",("sec"+(char)0).getBytes(),Types.Char,
+                        Inst_Type.makeRankArray(4,-1,-1,-1,-1));
       }  
     }
-
-     
+   //---------------------user--------------------
+   String user = (String)DS.getAttributeValue( Attribute.USER); 
+   if( user != null){
+      n1 = node.newChildNode( "user" ,"SDS" );
+      n1.setNodeValue( (user+(char)0).getBytes() , Types.Char , 
+         Inst_Type.makeRankArray(user.length()+1,-1,-1,-1,-1)); 
+   }
+      
     //Moved to NXsample
     
     /*X = DS.getAttributeValue( Attribute.SAMPLE_NAME);
@@ -221,7 +230,8 @@ public class NxWriteEntry{
         NxWriteLog writelog = new NxWriteLog( 7);
         Instrnode.show();
         NxWriteNode logNode = Instrnode.newChildNode( "log_7","NXlog");
-        if( writelog.processDS( logNode, null, 7))
+     0
+...............   if( writelog.processDS( logNode, null, 7))
          errormessage += writelog.getErrorMessage();
 
         NxWriteBeam writeBeam = new NxWriteBeam(instr_type);
