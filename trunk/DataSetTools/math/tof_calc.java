@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.24  2003/07/22 19:19:25  dennis
+ *  Removed un-needed constant.
+ *
  *  Revision 1.23  2003/07/22 15:09:58  dennis
  *  Made all physical constants double precison.  Now calculates h/mn
  *  (approximately 3.9560) in terms of 'h' and the mass of the
@@ -118,7 +121,6 @@ public static final double  ANGST_PER_US_PER_MM = H_ES/MN_KG;  // 3.956058;
 
 public static final double  ANGST_PER_US_PER_M  = ANGST_PER_US_PER_MM/1000;
                                                               //  3.956058e-3;
-//public static final float  RADIANS_PER_DEGREE  = 0.01745332925;
  
   /**
    * Don't let anyone instantiate this class.
