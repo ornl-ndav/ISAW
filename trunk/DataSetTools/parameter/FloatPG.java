@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/06/06 18:50:59  pfpeterson
+ *  Now extends StringEntryPG and implements ParamUsesString.
+ *
  *  Revision 1.6  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -64,17 +67,19 @@ import DataSetTools.util.*;
 /**
  * This is class is to deal with float parameters.
  */
-public class FloatPG extends StringPG{
-    private static String TYPE="Float";
+public class FloatPG extends StringEntryPG implements ParamUsesString{
+    protected static final String         TYPE   = "Float";
 
     // ********** Constructors **********
     public FloatPG(String name, Object value){
         super(name,value);
+        this.FILTER=new FloatFilter();
         this.type=TYPE;
     }
     
     public FloatPG(String name, Object value, boolean valid){
         super(name,value,valid);
+        this.FILTER=new FloatFilter();
         this.type=TYPE;
     }
     
@@ -89,16 +94,16 @@ public class FloatPG extends StringPG{
     /**
      * Override the default method.
      */
-    public Object getValue(){
+    public Object getValue() throws NumberFormatException{
         Object val=super.getValue();
-        if(val instanceof String){
-            return new Float((String)val);
-        }else if(val instanceof Float){
-            return (Float)val;
-        }else{
-            return null;
-            // throw an exception
-        }
+
+        if(val instanceof Float)
+          return val;
+        else if(val instanceof String)
+          return new Float((String)val);
+        else
+          throw new ClassCastException("Could not coerce "
+                                    +val.getClass().getName()+" into a Float");
     }
 
     /**
@@ -113,16 +118,29 @@ public class FloatPG extends StringPG{
      * floats.
      */
     public void setValue(Object value){
-        super.setValue(value);
-        if(!this.initialized){
-            if(value instanceof Float){
-                this.value=value;
-            }else if(value instanceof String){
-                this.value=new Float((String)value);
-            }else{
-                // should throw an exception
-            }
-        }
+      Float floatval=null;
+
+      if(value==null){
+        floatval=new Float(Float.NaN);
+      }else if(value instanceof Float){
+        floatval=(Float)value;
+      }else if(value instanceof Double){
+        floatval=new Float(((Double)value).doubleValue());
+      }else if(value instanceof Integer){
+        floatval=new Float(((Integer)value).intValue());
+      }else if(value instanceof String){
+        this.setStringValue((String)value);
+      }else{
+        throw new ClassCastException("Could not coerce "
+                                  +value.getClass().getName()+" into a Float");
+      }
+
+      if(this.initialized){
+        super.setEntryValue(value);
+      }else{
+        this.value=value;
+      }
+      this.setValid(true);
     }
 
     /**
@@ -132,26 +150,24 @@ public class FloatPG extends StringPG{
         this.setValue(new Float(value));
     }
     
-    // ********** IParameterGUI requirements **********
-    /**
-     * Allows for initialization of the GUI after instantiation.
-     */
-    public void init(Vector init_values){
-        if(init_values!=null){
-            if(init_values.size()==1){
-                // the init_values is what to set as the value of the parameter
-                this.setValue(init_values.elementAt(0));
-            }else{
-                // something is not right, should throw an exception
-            }
-        }
-        entrywidget=new StringEntry(this.getStringValue(),20,
-                                    new FloatFilter());
-        entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
-        this.setEnabled(this.getEnabled());
-        super.initGUI();
+    // ********** ParamUsesString requirements **********
+    public String getStringValue(){
+      Object val=this.getValue();
+
+      if(val instanceof String)
+        return (String)val;
+      else
+        return val.toString();
     }
 
+    public void setStringValue(String val) throws NumberFormatException{
+      if(initialized)
+        super.setEntryValue(val);
+      else
+        this.setValue(new Float(val.trim()));
+    }
+
+    // ********** IParameterGUI requirements **********
     static void main(String args[]){
         FloatPG fpg;
 

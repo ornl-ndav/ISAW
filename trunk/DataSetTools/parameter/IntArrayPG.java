@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/06/06 18:53:37  pfpeterson
+ *  Now extends StringEntryPG and implements ParamUsesString.
+ *
  *  Revision 1.7  2003/04/14 20:57:14  pfpeterson
  *  Added method to get value as int[].
  *
@@ -65,51 +68,44 @@ import DataSetTools.util.*;
  * This is class is to deal with Integer Arrays. Its value is stored
  * as a String.
  */
-public class IntArrayPG extends StringPG{
-    private static String TYPE="IntArray";
+public class IntArrayPG extends StringEntryPG implements ParamUsesString{
+    private static final String TYPE="IntArray";
 
     // ********** Constructors **********
     public IntArrayPG(String name, Object value){
         super(name,value);
         this.type=TYPE;
+        FILTER=new IntArrayFilter();
     }
     
     public IntArrayPG(String name, Object value, boolean valid){
         super(name,value,valid);
         this.type=TYPE;
+        FILTER=new IntArrayFilter();
     }
 
     public void setValue(Object value){
-      super.setValue(value);
-      if(value==null) this.value="";
+      if(this.initialized)
+        super.setEntryValue(value);
+      else
+        this.value=value;
     }
 
     public int[] getArrayValue(){
-      String svalue=super.getStringValue();
+      String svalue=(String)getValue();
       if(svalue==null || svalue.length()<=0)
         return null;
       else
         return IntList.ToArray(svalue);
     }
 
-    // ********** IParameterGUI requirements **********
-    /**
-     * Allows for initialization of the GUI after instantiation.
-     */
-    public void init(Vector init_values){
-        if(init_values!=null){
-            if(init_values.size()==1){
-                // the init_values is what to set as the value of the parameter
-                this.setValue(init_values.elementAt(0));
-            }else{
-                // something is not right, should throw an exception
-            }
-        }
-        entrywidget=new StringEntry(this.getStringValue(),20,
-                                    new IntArrayFilter());
-        entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
-        this.setEnabled(this.getEnabled());
-        super.initGUI();
+    // ********** ParamUsesString requirements **********
+    public String getStringValue(){
+      return (String)this.getValue();
+    }
+
+    public void setStringValue(String val){
+      this.setValue(val);
     }
 
     static void main(String args[]){

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/06/06 18:50:59  pfpeterson
+ *  Now extends StringEntryPG and implements ParamUsesString.
+ *
  *  Revision 1.6  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -63,114 +66,62 @@ import DataSetTools.components.ParametersGUI.*;
  * This is a superclass to take care of many of the common details of
  * StringPGs.
  */
-public class StringPG extends ParameterGUI{
-    private   static String TYPE     = "String";
-    protected static int    DEF_COLS = 20;
+public class StringPG extends StringEntryPG implements ParamUsesString{
+    private   static final String TYPE     = "String";
 
     // ********** Constructors **********
     public StringPG(String name, Object value){
-        this(name,value,false);
-        this.setDrawValid(false);
+        super(name,value);
         this.type=TYPE;
     }
 
     public StringPG(String name, Object value, boolean valid){
-        this.setName(name);
-        this.setValue(value);
-        this.setEnabled(true);
-        this.setValid(valid);
-        this.setDrawValid(true);
+        super(name,value,valid);
         this.type=TYPE;
-        this.initialized=false;
-        this.ignore_prop_change=false;
     }
 
     // ********** IParameter requirements **********
-
-    /**
-     * Returns the value of the parameter. While this is a generic
-     * object specific parameters will return appropriate
-     * objects. There can also be a 'fast access' method which returns
-     * a specific object (such as String or DataSet) without casting.
-     */
-    public Object getValue(){
-        Object value=null;
-        if(this.initialized){
-            value=((JTextField)this.entrywidget).getText();
-        }else{
-            value=this.value;
-        }
-        return value;
-    }
-
-    public String getStringValue(){
-        Object ob=this.getValue();
-        if(ob==null){
-            return null;
-        }else{
-            return this.getValue().toString();
-        }
-    }
-
     /**
      * Sets the value of the parameter.
      */
     public void setValue(Object value){
-        if(this.initialized){
-            if(value==null){
-                ((JTextField)this.entrywidget).setText("");
-            }else{
-                if(value instanceof String){
-                    ((JTextField)this.entrywidget).setText((String)value);
-                }else{
-                    ((JTextField)this.entrywidget).setText(value.toString());
-                }
-            }
-        }else{
-            this.value=value;
-        }
-        this.setValid(true);
+      String svalue=null;
+        
+      if(value==null)
+        svalue=null;
+      else if(value instanceof String)
+        svalue=(String)value;
+      else
+        svalue=value.toString();
+
+      if(this.initialized)
+        super.setEntryValue(svalue);
+      else
+        this.value=svalue;
+      this.setValid(true);
     }
 
-    /**
-     * Returns the string used in scripts to denote the particular
-     * parameter.
-     */
-    /*public String getType(){
-      return this.type;
-      }*/
-    
-    // ********** IParameterGUI requirements **********
-    /**
-     * Allows for initialization of the GUI after instantiation.
-     */
-    public void init(Vector init_values){
-        if(this.initialized) return; // don't initialize more than once
-        if(init_values!=null){
-            if(init_values.size()==1){
-                // the init_values is what to set as the value of the parameter
-                this.setValue(init_values.elementAt(0));
-            }else{
-                // something is not right, should throw an exception
-            }
-        }
-        //entrywidget=new StringField((String)this.getValue(),20);
-        entrywidget=new StringEntry(this.getStringValue(),DEF_COLS);
-        entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
-        this.setEnabled(this.getEnabled());
-        super.initGUI();
+    // ********** ParamUsesString requirements **********
+    public String getStringValue(){
+        Object ob=this.getValue();
+
+        String svalue=null;
+
+        if(ob==null)
+            svalue=null;
+        else if(ob instanceof String)
+            svalue=(String)ob;
+        else
+            svalue=ob.toString();
+
+        if(svalue==null || svalue.length()<=0)
+          return null;
+        else
+          return svalue;
     }
 
-    /**
-     * Set the enabled state of the EntryWidget. This produces a more
-     * pleasant effect that the default setEnabled of the widget.
-     */
-    public void setEnabled(boolean enabled){
-        this.enabled=enabled;
-        if(this.getEntryWidget()!=null){
-            ((JTextField)this.entrywidget).setEditable(enabled);
-        }
-        // need to add stuff for actually enabling
+    public void setStringValue(String val){
+      this.setValue(val);
     }
 
     static void main(String args[]){
