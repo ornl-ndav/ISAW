@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/06/06 18:54:39  pfpeterson
+ *  Implements ParamUsesString.
+ *
  *  Revision 1.2  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -53,8 +56,9 @@ import javax.swing.*;
 /**
  * This is class is to deal with boolean parameters.
  */
-public class BooleanPG extends ParameterGUI implements ActionListener{
-  private static String TYPE="Boolean";
+public class BooleanPG extends ParameterGUI 
+                                    implements ActionListener, ParamUsesString{
+  private static final String TYPE="Boolean";
 
   // ********** Constructors **********
   public BooleanPG(String name, Object value){
@@ -109,19 +113,26 @@ public class BooleanPG extends ParameterGUI implements ActionListener{
    * booleans.
    */
   public void setValue(Object value){
+    Boolean booval=null;
+    
+    if(value==null){
+      booval=Boolean.FALSE;
+    }else if(value instanceof Boolean){
+      booval=(Boolean)value;
+    }else if(value instanceof String){
+      this.setStringValue((String)value);
+    }else{
+      throw new ClassCastException("Could not coerce "
+                                +value.getClass().getName()+" into a Boolean");
+    }
+
     if(this.initialized){
-      if(value instanceof Boolean){
-        boolean newval=((Boolean)value).booleanValue();
+        boolean newval=booval.booleanValue();
         boolean oldval=((JCheckBox)this.entrywidget).isSelected();
         if(newval!=oldval)
           ((JCheckBox)this.entrywidget).doClick(); //setSelected(newval);
-      }
     }else{
-      if(value instanceof Boolean){
-        this.value=value;
-      }else{
-        // should throw an exception
-      }
+      this.value=booval;
     }
   }
 
@@ -132,6 +143,23 @@ public class BooleanPG extends ParameterGUI implements ActionListener{
     this.setValue(new Boolean(value));
   }
     
+  // ********** ParamUsesString requirements **********
+  /**
+   * Returns "TRUE" or "FALSE".
+   */
+  public String getStringValue(){
+    return this.getValue().toString().toUpperCase();
+  }
+
+  /**
+   * Sets the value by parsing the String using {@link
+   * java.lang.Boolean#Boolean(String) Boolean}
+   */
+  public void setStringValue(String val){
+    Boolean BooVal=new Boolean(val.trim());
+    this.setValue(BooVal);
+  }
+
   // ********** IParameterGUI requirements **********
   /**
    * Allows for initialization of the GUI after instantiation.
