@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.41  2003/04/21 19:09:43  pfpeterson
+ * Reimplemented that '$' or '#$$' must be the first bit of non-whitespace
+ * in a line.
+ *
  * Revision 1.40  2003/03/25 22:50:10  pfpeterson
  * Fixed bug where initial parameter value contained no spaces.
  *
@@ -802,6 +806,11 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     // confirm that there is something to work with
     if( line==null || line.length()<=0 || line.indexOf("$")<0 )
       return false;
+    {
+      String checker=line.trim();
+      if( (checker.indexOf("$")!=0) && (checker.indexOf("#$$")!=0) )
+        return false;
+    }
 
     index=line.indexOf("#");
     if(index==0){ // could be comment
@@ -834,6 +843,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     // get the Data Type and initial value
     int num_space=buffer.length();
     DataType=StringUtil.getString(buffer);
+    if(DataType==null) return false; // REMOVE???
     index=DataType.indexOf("("); // check if there is in initial value
     if(index>0){
       num_space=num_space-buffer.length()-DataType.length();
