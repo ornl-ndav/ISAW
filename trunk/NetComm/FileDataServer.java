@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/02/21 13:17:35  dennis
+ *  Removed un-needed clone() operations before sending empty data set.
+ *  Calls Reset() before sending the array of DataSet types.
+ *
  *  Revision 1.3  2002/11/27 23:27:59  pfpeterson
  *  standardized header
  *
@@ -100,6 +104,7 @@ public class FileDataServer extends DataSetServer
             int types[] = new int[ n_ds ];
             for ( int i = 0; i < n_ds; i++ )
               types[i] = r.getType(i);
+            tcp_io.Reset();
             tcp_io.Send( types );
             r = null; 
             System.gc();
@@ -118,7 +123,7 @@ public class FileDataServer extends DataSetServer
           String file_name = argument.substring( 0, space ).trim();
           Retriever r = get_retriever( file_name );
           if ( r == null )
-            tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
+            tcp_io.Send( DataSet.EMPTY_DATA_SET );
           else 
           { 
             DataSet ds = r.getDataSet( index );
@@ -132,7 +137,7 @@ public class FileDataServer extends DataSetServer
               data_name = ds.getTitle();
             }
             else                                       
-              tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
+              tcp_io.Send( DataSet.EMPTY_DATA_SET );
             r = null; 
             System.gc();
           }
