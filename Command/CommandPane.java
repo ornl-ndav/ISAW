@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2001/11/12 21:20:06  dennis
+ *  1. Eliminated a Debug print that appears when using the
+ *     immediate pane.
+ *
  * Revision 1.30  2001/11/09 18:25:29  dennis
  *   1. Made Changes to use arbitrary SciptProcessorOperator's like Jython
  *   2. The statusLine is now resizable
@@ -451,7 +455,6 @@ private class MyKeyListener  extends KeyAdapter
                     new IsawGUI.Util().appendDoc(CP.logDoc,"#$ Start Immediate Run");
                    new IsawGUI.Util().appendDoc(CP.logDoc,ScriptProcessor.getLine(CP.Immediate.getDocument(), line));
 	          CP.SP.execute1( Immediate.getDocument() , line ) ;
-                  System.out.println("ERR Pos="+CP.SP.getErrorCharPos());
                    new IsawGUI.Util().appendDoc(CP.logDoc,"#$ End Immediate Run"); 
                   if( CP.SP.getErrorCharPos() >= 0 )
                     {if( StatusLine != null )
