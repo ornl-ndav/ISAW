@@ -1,10 +1,36 @@
 /*
  * @(#)GetDataAttribute.java   00-07-12  Ruth Mikkelson
  *             
- * This operator sets a DataSet Attribute
+ * This operator gets an Attribute from a Data block in a DataSet
  *
- * ---------------------------------------------------------------------------
- *  
+ *  $Log$
+ *  Revision 1.3  2000/11/10 22:41:34  dennis
+ *     Introduced additional abstract classes to better categorize the operators.
+ *  Existing operators were modified to be derived from one of the new abstract
+ *  classes.  The abstract base class hierarchy is now:
+ *
+ *   Operator
+ *
+ *    -GenericOperator
+ *       --GenericLoad
+ *       --GenericBatch
+ *
+ *    -DataSetOperator
+ *      --DS_EditList
+ *      --DS_Math
+ *         ---ScalarOp
+ *         ---DataSetOp
+ *         ---AnalyzeOp
+ *      --DS_Attribute
+ *      --DS_Conversion
+ *         ---XAxisConversionOp
+ *         ---YAxisConversionOp
+ *         ---XYAxesConversionOp
+ *      --DS_Special
+ *
+ *     To allow for automatic generation of hierarchial menus, each new operator
+ *  should fall into one of these categories, or a new category should be
+ *  constructed within this hierarchy for the new operator.
  *
  *
  */
@@ -17,14 +43,13 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 
 /**
-  *  Allows the user to set attributes
+  *  Allows the user to get attributes from the Data blocks in a DataSet
   *
-  *  @see DataSetOperator
-  *  @see Operator
+  *  @see DS_Attribute 
   */
 
-public class GetDataAttribute extends    DataSetOperator 
-                                   implements Serializable
+public class GetDataAttribute extends    DS_Attribute 
+                              implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
@@ -47,24 +72,24 @@ public class GetDataAttribute extends    DataSetOperator
    *  parameter values so that the operation can be invoked immediately 
    *  by calling getResult().
    *
-   *  @param  ds          The DataSet to which the operation is applied
-   *  @param  index       The index of the data block whose attribute is to be set
+   *  @param  ds          The DataSet to which the operation is applied.
+   *  @param  index       The index of the data block whose attribute is to 
+   *                      be set.
    *  @parm   Attrib      The Attribute to be set.
    * 
    */
 
   public GetDataAttribute  ( DataSet               ds,
                              Integer               index,  
-                              AttributeNameString  Attrib
+                             AttributeNameString   Attrib
                            )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
-
     Parameter parameter ;
 
-   parameter = getParameter( 0 );
+    parameter = getParameter( 0 );
     parameter.setValue( index);
 
     parameter= getParameter( 1 );
@@ -100,12 +125,7 @@ public class GetDataAttribute extends    DataSetOperator
 
     parameter = new Parameter( "Attribute?", new AttributeNameString("") );
     addParameter( parameter );
-   
-   
-    
-    
   }
-
 
   /* ---------------------------- getResult ------------------------------- */
 
@@ -121,8 +141,6 @@ public class GetDataAttribute extends    DataSetOperator
      if ( O == null)
 	 return new ErrorString(" Attribute "+ S + " is not in the List" );
      return O;
-     
-    
   }  
 
   /* ------------------------------ clone ------------------------------- */

@@ -16,7 +16,7 @@ import  java.util.*;
  * 
  */
 
-public class pause extends  Operator 
+public class pause extends  GenericBatch 
                             implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */

@@ -8,6 +8,37 @@
  *
  * This operator removes Data blocks that seem to come from defective detectors
  * in a Chopper Spectrometer such as HRMCS & LRMCS at IPNS. 
+ * 
+ *  $Log$
+ *  Revision 1.6  2000/11/10 22:41:34  dennis
+ *     Introduced additional abstract classes to better categorize the operators.
+ *  Existing operators were modified to be derived from one of the new abstract
+ *  classes.  The abstract base class hierarchy is now:
+ *
+ *   Operator
+ *
+ *    -GenericOperator
+ *       --GenericLoad
+ *       --GenericBatch
+ *
+ *    -DataSetOperator
+ *      --DS_EditList
+ *      --DS_Math
+ *         ---ScalarOp
+ *         ---DataSetOp
+ *         ---AnalyzeOp
+ *      --DS_Attribute
+ *      --DS_Conversion
+ *         ---XAxisConversionOp
+ *         ---YAxisConversionOp
+ *         ---XYAxesConversionOp
+ *      --DS_Special
+ *
+ *     To allow for automatic generation of hierarchial menus, each new operator
+ *  should fall into one of these categories, or a new category should be
+ *  constructed within this hierarchy for the new operator.
+ *
+ *
  */
 
 package  DataSetTools.operator;
@@ -21,8 +52,8 @@ import  DataSetTools.retriever.*;
 import  ChopTools.*;
 
 
-public class SpectrometerEvaluator extends    DataSetOperator 
-                                  implements Serializable
+public class SpectrometerEvaluator extends    DS_Special 
+                                   implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
@@ -148,7 +179,7 @@ public class SpectrometerEvaluator extends    DataSetOperator
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current SpectrometerEvaluato Operator.  The list of
+   * Get a copy of the current SpectrometerEvaluator Operator.  The list of
    * parameters and the reference to the DataSet to which it applies are
    * also copied.
    */

@@ -2,6 +2,34 @@
  * @(#)DeleteByAttribute.java   0.1  2000/06/06   Dennis Mikkelson
  *             
  * $Log$
+ * Revision 1.3  2000/11/10 22:41:34  dennis
+ *    Introduced additional abstract classes to better categorize the operators.
+ * Existing operators were modified to be derived from one of the new abstract
+ * classes.  The abstract base class hierarchy is now:
+ *
+ *  Operator
+ *
+ *   -GenericOperator
+ *      --GenericLoad
+ *      --GenericBatch
+ *
+ *   -DataSetOperator
+ *     --DS_EditList
+ *     --DS_Math
+ *        ---ScalarOp
+ *        ---DataSetOp
+ *        ---AnalyzeOp
+ *     --DS_Attribute
+ *     --DS_Conversion
+ *        ---XAxisConversionOp
+ *        ---YAxisConversionOp
+ *        ---XYAxesConversionOp
+ *     --DS_Special
+ *
+ *    To allow for automatic generation of hierarchial menus, each new operator
+ * should fall into one of these categories, or a new category should be
+ * constructed within this hierarchy for the new operator.
+ *
  * Revision 1.2  2000/11/07 15:54:16  dennis
  * Replaced "Data blocks" with "Groups" in operator title.
  *
@@ -31,7 +59,7 @@ import  DataSetTools.util.*;
   * modify the current DataSet.
   */
 
-public class DeleteByAttribute extends    DataSetOperator 
+public class DeleteByAttribute extends    DS_EditList 
                                implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */

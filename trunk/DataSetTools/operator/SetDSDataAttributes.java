@@ -1,5 +1,5 @@
 /*
- * @(#)SetDSDataAttribute.java   00-07-17  Dennis Mikkelson
+ * @(#)SetDSDataAttributes.java   00-07-17  Dennis Mikkelson
  *                                 ( modified from SetDataAttribute.java)
  *             
  * This operator sets a Data Attribute on ALL Data blocks of a DataSet
@@ -17,11 +17,10 @@ import  DataSetTools.util.*;
 /**
   *  Sets an attribute value on all Data blocks in a DataSet 
   *
-  *  @see DataSetOperator
-  *  @see Operator
+  *  @see DS_Attribute
   */
 
-public class SetDSDataAttributes extends    DataSetOperator 
+public class SetDSDataAttributes extends    DS_Attribute
                                             implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */

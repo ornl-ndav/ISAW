@@ -7,9 +7,37 @@
  * both DataSets into a new DataSet.  This will only be done if the X and Y
  * units match for the two DataSets being merged.
  *
- * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.7  2000/11/10 22:41:34  dennis
+ *     Introduced additional abstract classes to better categorize the operators.
+ *  Existing operators were modified to be derived from one of the new abstract
+ *  classes.  The abstract base class hierarchy is now:
+ *
+ *   Operator
+ *
+ *    -GenericOperator
+ *       --GenericLoad
+ *       --GenericBatch
+ *
+ *    -DataSetOperator
+ *      --DS_EditList
+ *      --DS_Math
+ *         ---ScalarOp
+ *         ---DataSetOp
+ *         ---AnalyzeOp
+ *      --DS_Attribute
+ *      --DS_Conversion
+ *         ---XAxisConversionOp
+ *         ---YAxisConversionOp
+ *         ---XYAxesConversionOp
+ *      --DS_Special
+ *
+ *     To allow for automatic generation of hierarchial menus, each new operator
+ *  should fall into one of these categories, or a new category should be
+ *  constructed within this hierarchy for the new operator.
+ *
  *  Revision 1.6  2000/10/03 22:13:10  dennis
+ *
  *  Now uses the constant empty DataSet, DataSet.EMPTY_DATA_SET,
  *   as a place holder for the DataSet parameter.
  *
@@ -47,7 +75,7 @@ import  DataSetTools.dataset.*;
   * the new DataSet will have N+M Data blocks.
   */
 
-public class DataSetMerge extends    DataSetOperator 
+public class DataSetMerge extends    DS_EditList 
                                      implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -173,6 +201,20 @@ public class DataSetMerge extends    DataSetOperator
     new_op.CopyParametersFrom( this );
 
     return new_op;
+  }
+
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    DataSetMerge op = new DataSetMerge();
+
+    String list[] = op.getCategoryList();
+    System.out.println( "Categories are: " );
+    for ( int i = 0; i < list.length; i++ )
+      System.out.println( list[i] );
   }
 
 }
