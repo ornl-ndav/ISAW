@@ -6,6 +6,7 @@ import  DataSetTools.math.*;
 import  ChopTools.*;
 import  java.awt.*;
 
+
 /**
  * Tools and methods to Calibrate, Evaluate, Normalize Chopper 
  * Spectrometer Data. Some of those method can also be used for
@@ -362,15 +363,14 @@ public class chop_MacroTools
         DataSetTools.dataset.DataSet new_ds = (DataSetTools.dataset.DataSet)ds.clone();
 
         int  num_data =new_ds.getNum_entries();
-   
-       
+
         Data   groupd=null ;
 
         double[][] dataArray=new double[num_data][];
         double [] sg=null;
         for(int i=0;i<num_data; i++)
         {
-             groupd = new_ds.getData_entry( i );        // get reference to the data entry
+             groupd = new_ds.getData_entry(i);        // get reference to the data entry
              if (groupd!=null)
              {
                     System.out.println(" find it : "+ i+" entry" );
@@ -413,21 +413,23 @@ public class chop_MacroTools
   {
 
         GraphFrame graphFrame = new GraphFrame("Chop Graph");
-		
+        graphFrame.setSize(600, 600);
+		System.out.println("Before graph : ");
 		graph.G2Dint graph = new graph.G2Dint();
 		
-		
+		System.out.println("Past graph : ");
 		
 		graphFrame.add(graph);
         
 		graph.setDataBackground(Color.white);
         graph.setGraphBackground(Color.white);
-        graph.setBounds(0,0,500,500);
+        graph.setBounds(0,0,600,600);
         graph.DataSet dataSet = null;
         graph.Axis xaxis = graph.createXAxis();
         graph.Axis yaxis = graph.createYAxis();
        
-
+      
+        
         
         System.out.println(" The dataArray.length is "+ dataArray.length );
         System.out.println(" The dataArray[0].length is "+ dataArray[0].length );
@@ -451,15 +453,16 @@ public class chop_MacroTools
        // xaxis.attachDataSet(dataSet);
        System.out.println("The labels are : "+new_ds.getX_label());
         xaxis.setTitleText(new_ds.getX_label()+" "+"("+new_ds.getX_units()+")");
+        
         xaxis.setTitleColor(Color.black);
         xaxis.setTitleFont(new Font("TimesRoman", Font.ITALIC,25));
         xaxis.setLabelFont(new Font("TimesRoman", Font.PLAIN,20));
         xaxis.setLabelColor(Color.black);
+   
         //create and configure yaxis
        // Axis yaxis = graph.createYAxis();
        // yaxis.attachDataSet(dataSet);
-        yaxis.setTitleText(new_ds.getY_label());
-        yaxis.setTitleText(new_ds.getY_label()+" "+"("+new_ds.getY_units()+")");
+        yaxis.setTitleText(new_ds.getY_label()+ " "+"("+new_ds.getY_units()+")");
         yaxis.setTitleColor(Color.black);
         yaxis.setTitleFont(new Font("TimesRoman", Font.ITALIC, 25));
         yaxis.setLabelFont(new Font("TimesRoman", Font.PLAIN, 20));
