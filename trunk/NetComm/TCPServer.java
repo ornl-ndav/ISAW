@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/08/13 23:37:32  dennis
+ *  Added code for basic handling of get status command.
+ *
  *  Revision 1.4  2001/08/10 19:36:16  dennis
  *  Added methods to parse command line arguments and show usage.
  *  Also added methods to get/set the TCP port, get the server and
@@ -56,6 +59,7 @@ package NetComm;
 
 import java.io.*;
 import java.util.*;
+import DataSetTools.retriever.*;
 import DataSetTools.util.*;
 
 /**
@@ -73,6 +77,7 @@ import DataSetTools.util.*;
 
 public class TCPServer implements ITCPUser
 {
+  public static final String COMMAND_GET_STATUS   = "COMMAND:GET_STATUS ";
   public static final String COMMAND_PASSWORD_IS  = "COMMAND:PASSWORD_IS ";
   public static final String COMMAND_USER_IS      = "COMMAND:USER_IS ";
   public static final String COMMAND_GET_DATA_NAME= "COMMAND:GET_DATA_NAME ";
@@ -273,7 +278,17 @@ public class TCPServer implements ITCPUser
    {  
       try
       {
-        tcp_io.Send( ANSWER_NOT_OK );      // no operation was carried out
+        if ( command.startsWith( COMMAND_GET_STATUS) )
+        {
+          if ( !user_ok )
+            tcp_io.Send( RemoteDataRetriever.BAD_USER_NAME_STRING );
+          else if ( !password_ok )
+            tcp_io.Send( RemoteDataRetriever.BAD_PASSWORD_STRING );
+          else 
+            tcp_io.Send( RemoteDataRetriever.SERVER_OK_STRING );
+        } 
+        else 
+          tcp_io.Send( ANSWER_NOT_OK );      // no operation was carried out
       }
       catch ( Exception e )
       {
