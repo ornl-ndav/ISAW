@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.22  2004/03/15 03:31:25  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.21  2004/02/18 22:33:41  dennis
  * Changed the behavior of the addExperiment() methods.
  * Previously, if an experiment name was already in the tree,
@@ -65,6 +69,8 @@
  
 package IsawGUI;
 
+import gov.anl.ipns.Util.Messaging.IObserver;
+
 import java.awt.GridLayout;
 import java.awt.event.*;
 import java.io.Serializable;
@@ -77,7 +83,6 @@ import javax.swing.tree.*;
 
 import DataSetTools.components.ParametersGUI.IDataSetListHandler;
 import DataSetTools.dataset.*;
-import DataSetTools.util.IObserver;
 
 /**
  * wraps a JTree object.  the result is a simpler interface that's

@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/03/15 03:30:14  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.9  2003/07/17 18:54:44  rmikk
  * Fixed the Group Homes to allow semicolons
  *
@@ -73,7 +77,8 @@ package Command;
 
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.StringUtil;
+import gov.anl.ipns.Util.Sys.StringUtil;
+
 import java.util.Hashtable;
 import javax.swing.text.Document;
 

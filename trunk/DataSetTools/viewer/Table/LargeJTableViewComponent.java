@@ -34,6 +34,13 @@
 
 package DataSetTools.viewer.Table;
 import DataSetTools.dataset.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.StringFilter.*;
+import gov.anl.ipns.ViewTools.Components.*;
+import gov.anl.ipns.ViewTools.Components.Menu.*;
+import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
+import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControlMaker;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -44,8 +51,6 @@ import javax.swing.table.*;
 import java.util.*;
 import DataSetTools.components.View.Menu.*;
 import DataSetTools.components.View.*;
-import DataSetTools.components.View.ViewControls.ViewControl;
-import DataSetTools.components.View.ViewControls.ViewControlMaker;
 import java.beans.*;
 import DataSetTools.components.ParametersGUI.*;
 

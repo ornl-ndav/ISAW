@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2004/03/15 03:28:32  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.3  2003/02/07 13:50:01  dennis
  * Added getDocumentation() method. (Mike Miller)
  *
@@ -38,6 +42,9 @@
  *
  */
 package DataSetTools.operator.Generic.Batch;
+
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.util.*;
 import DataSetTools.operator.*;

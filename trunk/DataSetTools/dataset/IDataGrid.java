@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.4  2004/03/15 03:28:07  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.3  2003/05/24 21:09:14  dennis
  *  Added methods setData_entries(ds), getData_entry(row,col), and
  *  isData_entered() to allow DataGrids to keep a list of references
@@ -44,6 +48,8 @@
  */
 
 package  DataSetTools.dataset;
+
+import gov.anl.ipns.MathTools.Geometry.*;
 
 import java.io.*;
 import DataSetTools.math.*;

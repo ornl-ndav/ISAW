@@ -34,6 +34,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/03/15 03:37:00  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.2  2004/01/30 02:24:37  bouzekc
  * Removed unused variables and imports.
  *
@@ -49,6 +53,9 @@ import DataSetTools.components.View.*;
 import DataSetTools.components.View.TwoD.*;
 import DataSetTools.parameter.*;
 import DataSetTools.operator.Generic.Load.*;
+import gov.anl.ipns.ViewTools.Components.*;
+import gov.anl.ipns.ViewTools.Components.TwoD.*;
+
 import java.util.*;
 
 /**

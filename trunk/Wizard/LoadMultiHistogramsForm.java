@@ -29,6 +29,10 @@
  *
  *
  * $Log$
+ * Revision 1.13  2004/03/15 03:37:40  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.12  2004/03/13 23:36:18  bouzekc
  * Changed clearValue() to clear().
  *
@@ -63,6 +67,10 @@ import DataSetTools.parameter.*;
 import DataSetTools.util.*;
 
 import DataSetTools.wizard.*;
+
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.*;
 
 import java.io.*;
 

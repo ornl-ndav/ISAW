@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/03/15 03:36:59  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.8  2004/02/04 03:17:42  hammonds
  * Generalize by adding  max_chn.
  * Add IntAttributes for Upper & Lower Discriminator to allow extraction to file.
@@ -57,6 +61,8 @@ import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.util.*;
 import DataSetTools.peak.*;
+import gov.anl.ipns.Util.Numeric.*;
+
 import java.util.*;
 
 /** 

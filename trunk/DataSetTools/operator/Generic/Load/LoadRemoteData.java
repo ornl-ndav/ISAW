@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/03/15 03:28:33  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.6  2003/05/28 20:58:08  pfpeterson
  *  Changed System.getProperty to SharedData.getProperty
  *
@@ -51,6 +55,8 @@
  */
 
 package DataSetTools.operator.Generic.Load;
+
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.io.*;
 import java.util.*;

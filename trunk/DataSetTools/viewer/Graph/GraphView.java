@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2004/03/15 03:29:00  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.24  2002/11/27 23:24:43  pfpeterson
  *  standardized header
  *
@@ -63,6 +67,11 @@ import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import DataSetTools.viewer.*;
 import DataSetTools.viewer.util.*;
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.ViewTools.Panels.Graph.*;
+import gov.anl.ipns.ViewTools.UI.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -130,7 +139,7 @@ public GraphView( DataSet data_set, ViewerState state )
   if ( !validDataSet() )
     return;
   JMenuBar jmb= getMenuBar();
-  DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( jmb, this);
+  gov.anl.ipns.Util.Sys.PrintComponentActionListener.setUpMenuItem( jmb, this);
   init();
   DrawGraphs();
 }

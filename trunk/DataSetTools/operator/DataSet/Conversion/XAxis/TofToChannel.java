@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 03:28:28  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.6  2004/01/24 19:10:47  bouzekc
  * Removed unused variables from main().  Removed unused imports.
  *
@@ -52,6 +56,8 @@
  */
 
 package DataSetTools.operator.DataSet.Conversion.XAxis;
+
+import gov.anl.ipns.Util.Numeric.*;
 
 import  java.io.*;
 import  java.util.Vector;

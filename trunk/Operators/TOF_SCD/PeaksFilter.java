@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/03/15 03:37:03  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.3  2003/06/13 22:02:47  bouzekc
  *  Now extends RobustFileFilter to take care of common
  *  functionality.
@@ -45,7 +49,7 @@
 
 package Operators.TOF_SCD;
 
-import DataSetTools.util.RobustFileFilter;
+import gov.anl.ipns.Util.File.RobustFileFilter;
 
 /**
  * FileFilter for peaks files.

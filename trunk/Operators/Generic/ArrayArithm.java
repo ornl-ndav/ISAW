@@ -31,6 +31,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2004/03/15 03:36:59  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.3  2004/03/10 17:59:46  rmikk
  * Fixed an error when dealing with multidimensioned arrays
  * Removed a StringChoiceList parameter and replaced it by a String parameter
@@ -49,6 +53,9 @@ package Operators.Generic;
 
 import DataSetTools.operator.*;
 import DataSetTools.util.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.*;
+
 import java.lang.Class.*;
 import java.lang.reflect.*;
 import java.util.*;

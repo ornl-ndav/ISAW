@@ -32,6 +32,10 @@
  * This operator gets a DataSet Attribute
  *
  *  $Log$
+ *  Revision 1.5  2004/03/15 03:28:22  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.4  2003/02/07 13:46:37  dennis
  *  Added getDocumentation() method. (Mike Miller)
  *
@@ -47,6 +51,8 @@
  */
 
 package DataSetTools.operator.DataSet.Attribute;
+
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  java.util.Vector;

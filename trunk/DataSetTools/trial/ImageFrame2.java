@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/03/15 03:28:43  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.8  2004/03/10 23:39:25  millermi
  * - Changed IViewComponent interface, no longer
  *   distinguish between private and shared controls/
@@ -90,18 +94,19 @@
 
 package DataSetTools.trial;
 
+import gov.anl.ipns.ViewTools.Components.AxisInfo;
+import gov.anl.ipns.ViewTools.Components.IVirtualArray2D;
+import gov.anl.ipns.ViewTools.Components.VirtualArray2D;
+import gov.anl.ipns.ViewTools.Components.Menu.ViewMenuItem;
+import gov.anl.ipns.ViewTools.Components.TwoD.ImageViewComponent;
+import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
+import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
+
 import javax.swing.*;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import DataSetTools.components.View.TwoD.ImageViewComponent;
-import DataSetTools.components.View.AxisInfo;
-import DataSetTools.components.View.IVirtualArray2D;
-import DataSetTools.components.View.VirtualArray2D;
-import DataSetTools.components.View.Menu.ViewMenuItem;
-import DataSetTools.components.View.ViewControls.ViewControl;
-import DataSetTools.components.containers.SplitPaneWithState;
 
 /**
  * Simple class to display an image, specified by an IVirtualArray2D or a 

@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.24  2004/03/15 03:28:39  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.23  2004/03/01 06:06:29  dennis
  * Added additional error checking in the hkl_to_real() method.
  * 1. The peak is marked as invalid (wavelength = 0), if in lab
@@ -111,11 +115,12 @@
  */
 package DataSetTools.operator.Generic.TOF_SCD;
 
+import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.MathTools.Geometry.Tran3D;
+
 import java.text.DecimalFormat;
 
 import DataSetTools.dataset.XScale;
-import DataSetTools.math.LinearAlgebra;
-import DataSetTools.math.Tran3D;
 import DataSetTools.math.tof_calc;
 
 /**

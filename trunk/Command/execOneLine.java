@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.70  2004/03/15 03:30:16  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.69  2004/01/29 18:17:29  dennis
  * Fixed javadoc error.
  *
@@ -172,6 +176,9 @@
  *
 */
 package Command;
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+
 import java.io.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
@@ -203,7 +210,7 @@ import DataSetTools.parameter.*;
  *  The execute method above is the START of the whole process.
  *  A Global variabel Result holds the result so far as the line is being executed
  */ 
-public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
+public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObservable ,
                                            PropertyChangeListener ,Customizer {
     public static final String ER_NoSuchFile         = "File not Found";
     public static final String ER_NoSuchVariable     = "Variable not Found";

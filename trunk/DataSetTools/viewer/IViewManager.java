@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/03/15 03:28:58  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.13  2004/01/29 00:02:57  dennis
  *  Added HKL_SliceView
  *
@@ -60,6 +64,7 @@
 
 package DataSetTools.viewer;
 
+import gov.anl.ipns.Util.Messaging.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 

@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/03/15 03:28:23  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.9  2004/01/22 02:39:54  bouzekc
  *  Removed/commented out unused imports/variables.
  *
@@ -64,6 +68,12 @@
 
 package DataSetTools.operator.DataSet.Attribute;
 
+import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+import gov.anl.ipns.MathTools.Geometry.Position3D;
+import gov.anl.ipns.Util.File.TextFileReader;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
@@ -76,13 +86,8 @@ import DataSetTools.dataset.FloatAttribute;
 import DataSetTools.dataset.GsasCalibAttribute;
 import DataSetTools.dataset.StringAttribute;
 import DataSetTools.gsastools.GsasCalib;
-import DataSetTools.math.DetectorPosition;
-import DataSetTools.math.Position3D;
 import DataSetTools.operator.Parameter;
-import DataSetTools.util.ErrorString;
 import DataSetTools.util.FilenameUtil;
-import DataSetTools.util.LoadFileString;
-import DataSetTools.util.TextFileReader;
 
 /**
  * This operator loads the time-of-flight to d-space conversion

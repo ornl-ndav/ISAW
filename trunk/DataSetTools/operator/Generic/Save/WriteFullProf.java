@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/03/15 03:28:34  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.4  2003/12/15 02:33:25  bouzekc
  * Removed unused imports.
  *
@@ -48,6 +52,9 @@
 
 package DataSetTools.operator.Generic.Save;
 
+import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+import gov.anl.ipns.Util.Numeric.Format;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -60,11 +67,9 @@ import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.gsastools.GsasUtil;
 import DataSetTools.gsastools.XInfo;
-import DataSetTools.math.DetectorPosition;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.retriever.RunfileRetriever;
-import DataSetTools.util.Format;
 import DataSetTools.util.SharedData;
 
 /** This is an operator to export files in the FullProf format.

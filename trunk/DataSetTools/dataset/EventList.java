@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/03/15 03:28:06  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.3  2002/11/27 23:14:07  pfpeterson
  *  standardized header
  *
@@ -43,7 +47,7 @@
 
 package  DataSetTools.dataset;
 
-import DataSetTools.dataset.*;
+import gov.anl.ipns.Util.Numeric.*;
 import DataSetTools.util.*;
 
 public class EventList implements IEventList

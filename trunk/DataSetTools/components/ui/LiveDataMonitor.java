@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2004/03/15 03:27:59  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.27  2003/03/10 06:08:43  dennis
  *  Now disposes of the old PartialDS_Selectors and resets the
  *  partial DataSet command to get the full DataSet, when the
@@ -79,6 +83,9 @@
  */
 
 package DataSetTools.components.ui;
+
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.ViewTools.UI.*;
 
 import java.awt.*;
 import java.awt.event.*;

@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.33  2004/03/15 03:29:03  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.32  2003/12/15 20:19:58  dennis
  * Removed unused imports.
  *
@@ -99,6 +103,12 @@ import DataSetTools.components.containers.*;
 import DataSetTools.components.ThreeD.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.retriever.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.ViewTools.Panels.Image.*;
+import gov.anl.ipns.ViewTools.Panels.ThreeD.*;
+import gov.anl.ipns.ViewTools.UI.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -191,7 +201,7 @@ public ThreeDView( DataSet data_set, ViewerState state )
   if ( !validDataSet() )
     return;
   JMenuBar jmb= getMenuBar();
-  DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( jmb, this);
+  gov.anl.ipns.Util.Sys.PrintComponentActionListener.setUpMenuItem( jmb, this);
   init();
 
   AddOptionsToMenu();
@@ -891,10 +901,10 @@ private IThreeD_Object make_detector( Vector3D point,
     orient.setOrientation( base, up, point );
     orient.apply_to( verts, verts );
 
-    DataSetTools.components.ThreeD.Polygon object = 
-       new DataSetTools.components.ThreeD.Polygon( verts, Color.red );
+    gov.anl.ipns.ViewTools.Panels.ThreeD.Polygon object = 
+       new gov.anl.ipns.ViewTools.Panels.ThreeD.Polygon( verts, Color.red );
     if ( detector_draw_mode.equalsIgnoreCase( DETECTOR_HOLLOW ))
-      object.setType( DataSetTools.components.ThreeD.Polygon.HOLLOW );
+      object.setType( gov.anl.ipns.ViewTools.Panels.ThreeD.Polygon.HOLLOW );
 
     detector = object;
   }

@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.22  2004/03/15 03:28:38  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.21  2004/03/01 06:12:03  dennis
  * Fixed documentation of parameters to constructor.
  *
@@ -70,6 +74,8 @@
  */
 package DataSetTools.operator.Generic.TOF_SCD;
 
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+
 import java.util.Vector;
 
 import DataSetTools.dataset.Attribute;
@@ -82,7 +88,6 @@ import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.DataSet.Attribute.LoadSCDCalib;
 import DataSetTools.retriever.RunfileRetriever;
-import DataSetTools.util.ErrorString;
 import DataSetTools.util.SharedData;
 
 /** 

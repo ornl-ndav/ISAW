@@ -28,6 +28,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2004/03/15 03:27:58  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.1  2003/03/06 22:04:08  dennis
  * JPanel for entering a list of integers.
  *
@@ -37,6 +41,9 @@
  */
 
 package DataSetTools.components.ui;
+
+import gov.anl.ipns.Util.StringFilter.*;
+import gov.anl.ipns.ViewTools.UI.*;
 
 import java.awt.*;
 import java.awt.image.*;

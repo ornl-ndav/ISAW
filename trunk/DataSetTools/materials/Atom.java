@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2004/03/15 03:28:16  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.6  2003/02/04 16:05:03  pfpeterson
  * Throws an InstantiationError if cannot find element in the database.
  * Also fixed bug with finding the incoherent cross section.
@@ -43,8 +47,10 @@
  */
 package DataSetTools.materials;
 
+import gov.anl.ipns.Util.File.*;
+import gov.anl.ipns.Util.Sys.*;
+
 import java.io.*;
-import DataSetTools.util.TextFileReader;
 import DataSetTools.util.*;
 
 /**

@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/15 03:28:42  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.5  2004/01/26 17:08:10  rmikk
  * Files that do not exist are no longer added to the menu
  * Repeated filenames with different cases are no longer added
@@ -53,6 +57,8 @@
  */
 
 package DataSetTools.retriever;
+import gov.anl.ipns.Util.Messaging.*;
+
 import java.util.prefs.*;
 import Command.*;
 import DataSetTools.util.*;

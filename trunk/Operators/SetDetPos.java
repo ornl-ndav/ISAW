@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/15 03:36:58  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.3  2003/02/07 16:27:43  dennis
  * Added getDocumentation() method. (Joshua Olson)
  *
@@ -177,7 +181,7 @@ public class SetDetPos extends GenericSpecial
     float   float_val2 = ((Float)  (getParameter(3).getValue())).floatValue();
     float   float_val3 = ((Float)  (getParameter(4).getValue())).floatValue();
 
-    DataSetTools.math.DetectorPosition detpos = new DataSetTools.math.DetectorPosition(  );
+    gov.anl.ipns.MathTools.Geometry.DetectorPosition detpos = new gov.anl.ipns.MathTools.Geometry.DetectorPosition(  );
      detpos.setCylindricalCoords(float_val1, float_val2, float_val3); 
     Attribute attr = new DetPosAttribute( Attribute.DETECTOR_POS, detpos);
     ds.getData_entry( group_index ).setAttribute(attr);

@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2004/03/15 03:28:39  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.5  2004/01/24 20:31:16  bouzekc
  * Removed/commented out unused variables/imports.
  *
@@ -48,8 +52,8 @@
  */
 package DataSetTools.operator.Generic.TOF_SCD;
 
+import gov.anl.ipns.MathTools.LinearAlgebra;
 import DataSetTools.dataset.XScale;
-import DataSetTools.math.LinearAlgebra;
 
 /**
  * Factory class for building Peaks.

@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/15 03:28:41  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.7  2004/03/12 21:13:49  bouzekc
  * Added clear() method.
  *
@@ -59,8 +63,9 @@ package DataSetTools.parameter;
 import DataSetTools.components.ParametersGUI.EntryWidget;
 import DataSetTools.components.ParametersGUI.StringEntry;
 
-import DataSetTools.util.FloatFilter;
-import DataSetTools.util.IntegerFilter;
+
+import gov.anl.ipns.Util.StringFilter.FloatFilter;
+import gov.anl.ipns.Util.StringFilter.IntegerFilter;
 
 import java.awt.GridLayout;
 

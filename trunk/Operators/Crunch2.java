@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2004/03/15 03:36:58  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.4  2004/01/30 02:19:38  bouzekc
  * Removed unused imports and variables.
  *
@@ -50,6 +54,9 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+
 import java.util.*;
 
 /** 

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/03/15 03:28:09  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.12  2003/07/09 14:57:14  dennis
  *  Updated java docs for getI() method.
  *
@@ -64,6 +68,8 @@
  */
 
 package DataSetTools.dataset;
+
+import gov.anl.ipns.Util.Numeric.*;
 
 import java.io.*;
 import DataSetTools.util.*;

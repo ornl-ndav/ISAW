@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/15 03:28:29  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.5  2003/10/16 00:03:44  dennis
  * Fixed javadocs to build cleanly with jdk 1.4.2
  *
@@ -48,6 +52,9 @@
  */
 
 package DataSetTools.operator.DataSet.EditList;
+
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  java.util.Vector;

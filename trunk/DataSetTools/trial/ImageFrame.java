@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/15 03:28:43  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.3  2003/06/05 14:35:09  dennis
  * Added method to set a new image and change the title on the frame.
  *
@@ -44,6 +48,7 @@
 
 package DataSetTools.trial;
 
+import gov.anl.ipns.ViewTools.Panels.Image.*;
 import DataSetTools.components.image.*;
 import javax.swing.*;
 

@@ -30,11 +30,17 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/03/15 03:35:22  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.1  2003/10/21 21:20:29  dennis
  *  Base class for clients that communicate with TCPServers.
  *
  */
 package NetComm;
+
+import gov.anl.ipns.Util.Sys.*;
 
 import java.io.*;
 import java.util.*;

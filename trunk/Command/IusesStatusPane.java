@@ -31,6 +31,10 @@
  * Modified:  
  *  
  * $Log$
+ * Revision 1.4  2004/03/15 03:30:14  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.3  2002/11/27 23:12:10  pfpeterson
  * standardized header
  *
@@ -42,6 +46,9 @@
  * 
 */
 package Command;
+
+import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.Util.Sys.*;
 
 /**
  * Implementers of this interface can accept a StatusPane to which

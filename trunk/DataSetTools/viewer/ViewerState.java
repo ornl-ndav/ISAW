@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2004/03/15 03:28:59  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.27  2003/12/15 18:22:53  rmikk
  *  Added several more Contour view states
  *
@@ -79,6 +83,8 @@
  */
 
 package DataSetTools.viewer;
+
+import gov.anl.ipns.ViewTools.Panels.Transforms.*;
 
 import  java.io.*;
 import  java.util.*;

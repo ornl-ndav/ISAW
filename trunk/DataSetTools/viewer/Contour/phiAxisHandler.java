@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/03/15 03:29:00  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.3  2003/10/15 03:43:13  bouzekc
  *  Fixed javadoc errors.
  *
@@ -46,6 +50,7 @@
 
 
 package DataSetTools.viewer.Contour;
+import gov.anl.ipns.MathTools.Geometry.*;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
 

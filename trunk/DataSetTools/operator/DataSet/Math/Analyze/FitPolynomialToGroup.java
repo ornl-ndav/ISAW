@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 03:28:30  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.6  2003/07/22 22:16:40  dennis
  * Adapted call to CurveFit.polynomial to new form, with boolean
  * parameter to choose statistical weighting.
@@ -53,6 +57,10 @@
  */
 
 package DataSetTools.operator.DataSet.Math.Analyze;
+
+import gov.anl.ipns.MathTools.Functions.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  java.util.Vector;

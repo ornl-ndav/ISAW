@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/03/15 03:37:01  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.11  2003/02/17 18:59:06  dennis
  *  Added getDocumentation() method and main test program. (Chris Bouzek)
  *
@@ -59,6 +63,9 @@
  */
 
 package Operators.TOF_DG_Spectrometer;
+
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Messaging.*;
 
 import  java.io.*;
 import  java.util.Vector;

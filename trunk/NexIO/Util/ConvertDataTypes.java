@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/15 03:36:02  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.5  2004/03/06 19:10:17  rmikk
  * Convert to float Array now attempts to convert Vectors to float Arrays
  *
@@ -52,6 +56,8 @@ package NexIO.Util;
 import NexIO.*;
 import DataSetTools.math.*;
 import DataSetTools.dataset.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+
 import java.lang.reflect.*;
 import java.util.*;
 

@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2004/03/15 03:28:40  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.13  2004/01/29 18:14:02  dennis
  * Fixed javadoc error.
  *
@@ -87,12 +91,13 @@ import DataSetTools.operator.Generic.Special.ViewASCII;
 
 import DataSetTools.retriever.RunfileRetriever;
 
-import DataSetTools.util.ErrorString;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.TextWriter;
 
 import DataSetTools.viewer.IViewManager;
 import DataSetTools.viewer.ViewManager;
+
+import gov.anl.ipns.Util.File.TextWriter;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
 import java.awt.BorderLayout;
 import java.awt.Container;

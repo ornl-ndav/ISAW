@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2004/03/15 03:35:22  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.10  2004/03/01 18:45:22  dennis
  *  Now sends: RemoteDataRetriever.BAD_FILE_NAME in case the requested
  *  file does not exist.
@@ -61,6 +65,8 @@
  *
  */
 package NetComm;
+
+import gov.anl.ipns.Util.Sys.*;
 
 import java.io.*;
 import java.util.*;

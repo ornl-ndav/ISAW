@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.5  2004/03/15 03:27:59  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.4  2003/03/14 20:48:27  dennis
  *  Clarified options on the rebin combo box.
  *
@@ -50,6 +54,9 @@
  */
 
 package DataSetTools.components.ui;
+
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.ViewTools.UI.*;
 
 import javax.swing.*;
 import javax.swing.border.*;

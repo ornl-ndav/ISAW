@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2004/03/15 03:36:01  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.19  2004/02/16 02:15:55  bouzekc
  * Removed unused import statements.
  *
@@ -78,8 +82,9 @@
  */
 package NexIO;
 
-import DataSetTools.util.StringUtil;
 import neutron.nexus.*;
+import gov.anl.ipns.Util.Sys.StringUtil;
+
 import java.io.*;
 import java.text.*;
 import java.util.*;

@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2004/03/15 03:28:23  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.15  2004/03/02 17:17:02  dennis
  * Moved some prints into   if (DEBUG)  statement.
  *
@@ -80,6 +84,14 @@
  */
 package DataSetTools.operator.DataSet.Attribute;
 
+import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.MathTools.Geometry.Vector3D;
+import gov.anl.ipns.Util.File.TextFileReader;
+import gov.anl.ipns.Util.Numeric.IntList;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.SpecialStrings.IntListString;
+import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -98,14 +110,7 @@ import DataSetTools.dataset.UniformGrid;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.parameter.IntegerPG;
-import DataSetTools.util.ErrorString;
-import DataSetTools.util.IntList;
-import DataSetTools.util.IntListString;
-import DataSetTools.util.LoadFileString;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.TextFileReader;
-import DataSetTools.math.LinearAlgebra;
-import DataSetTools.math.Vector3D;
 
 
 /** 

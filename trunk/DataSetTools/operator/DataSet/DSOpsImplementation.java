@@ -34,6 +34,10 @@
  * corresponding operators.
  *
  *  $Log$
+ *  Revision 1.5  2004/03/15 03:28:22  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.4  2002/11/27 23:16:27  pfpeterson
  *  standardized header
  *
@@ -51,6 +55,10 @@
  */
 
 package DataSetTools.operator.DataSet;
+
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  java.util.Vector;

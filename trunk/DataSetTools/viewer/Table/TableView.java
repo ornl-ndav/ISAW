@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/03/15 03:29:02  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.7  2004/01/24 22:41:15  bouzekc
  *  Removed/commented out unused imports/variables.
  *
@@ -53,10 +57,11 @@
  */
 package DataSetTools.viewer.Table;
 
+import gov.anl.ipns.Util.Sys.StringUtil;
+
 import javax.swing.*;
 import DataSetTools.viewer.*;
 import DataSetTools.dataset.*;
-import DataSetTools.util.StringUtil;
 import java.awt.*;
 import IsawGUI.*;
 import java.awt.event.*;

@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/03/15 03:27:22  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.6  2004/01/22 01:41:28  bouzekc
  *  Removed unused variables and unused imports.
  *
@@ -54,6 +58,8 @@
  */
 package DataSetTools.components.ParametersGUI;
 
+import gov.anl.ipns.Util.SpecialStrings.SaveFileString;
+
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -69,7 +75,6 @@ import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 
 import DataSetTools.operator.Parameter;
-import DataSetTools.util.SaveFileString;
 
 /**
  * This class is intended to be used for selecting a filename for

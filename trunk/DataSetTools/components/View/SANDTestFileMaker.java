@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/03/15 03:27:28  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.2  2004/01/24 02:24:02  millermi
  * - Added path separater "/" to filepath if path did not end
  *   with "/".
@@ -51,8 +55,8 @@
  */
 package DataSetTools.components.View;
 
+import gov.anl.ipns.Util.File.TextWriter;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.TextWriter;
 import DataSetTools.dataset.UniformXScale;
 
 public class SANDTestFileMaker

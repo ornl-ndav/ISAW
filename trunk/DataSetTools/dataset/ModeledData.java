@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/03/15 03:28:08  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.6  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -57,6 +61,8 @@
  */
 
 package  DataSetTools.dataset;
+
+import gov.anl.ipns.MathTools.Functions.*;
 
 import java.io.*;
 import DataSetTools.math.*;

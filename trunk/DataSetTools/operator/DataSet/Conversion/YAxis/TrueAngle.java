@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/15 03:28:28  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.7  2004/01/24 19:42:43  bouzekc
  * Uncommented two local variable assignments.
  *
@@ -55,6 +59,10 @@
  */
 
 package DataSetTools.operator.DataSet.Conversion.YAxis;
+
+import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  java.util.Vector;

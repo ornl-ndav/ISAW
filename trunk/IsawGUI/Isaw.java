@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.188  2004/03/15 03:31:24  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.187  2004/03/11 21:00:12  rmikk
  *  Loading of Recent files now reports this to the session log
  *
@@ -484,6 +488,10 @@ import DataSetTools.util.*;
 import DataSetTools.viewer.*;
 import DataSetTools.viewer.Table.*;
 import IPNS.Runfile.*;
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.Sys.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.*;

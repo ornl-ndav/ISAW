@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/03/15 03:28:09  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.9  2004/01/22 02:19:05  bouzekc
  *  Removed unused imports and local variables.
  *
@@ -64,7 +68,8 @@
 
 
 package DataSetTools.dataset;
-import DataSetTools.util.StringUtil;
+import  gov.anl.ipns.Util.Sys.*;
+
 import java.io.*;
 import java.util.*;
 

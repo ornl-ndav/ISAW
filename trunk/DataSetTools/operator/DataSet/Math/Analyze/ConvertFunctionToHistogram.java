@@ -31,6 +31,10 @@
  * Modified:
  *             
  * $Log$
+ * Revision 1.6  2004/03/15 03:28:30  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.5  2002/12/03 20:59:24  dennis
  * Added getDocumentation() and simple main() program for testing.
  * (Shannon Hintzman)
@@ -50,6 +54,8 @@
  */
 
 package DataSetTools.operator.DataSet.Math.Analyze;
+
+import gov.anl.ipns.Util.Messaging.*;
 
 import  java.io.*;
 import  java.util.Vector;

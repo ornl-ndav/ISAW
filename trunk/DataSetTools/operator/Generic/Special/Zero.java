@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/15 03:28:35  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.3  2004/01/24 21:48:04  dennis
  * Add GPL and old log information
  *
@@ -48,6 +52,8 @@ package DataSetTools.operator.Generic.Special;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import DataSetTools.parameter.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+
 import java.util.*;
 
 public class Zero extends GenericSpecial{

@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.3  2004/03/15 03:28:09  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.2  2003/07/31 22:42:31  dennis
  *  Added a constructor to make a double precision UniformGrid_d
  *  from a single precison UniformGrid.
@@ -40,6 +44,8 @@
  */
 
 package  DataSetTools.dataset;
+
+import gov.anl.ipns.MathTools.Geometry.*;
 
 import java.io.*;
 import DataSetTools.math.*;

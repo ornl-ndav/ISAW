@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/03/15 03:28:35  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.6  2003/12/15 02:33:26  bouzekc
  *  Removed unused imports.
  *
@@ -74,6 +78,9 @@
 
 package DataSetTools.operator.Generic.Special;
 
+import gov.anl.ipns.Util.File.TextFileReader;
+import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
+
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
@@ -94,8 +101,6 @@ import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 
 import DataSetTools.operator.Parameter;
-import DataSetTools.util.LoadFileString;
-import DataSetTools.util.TextFileReader;
 
 /* ------------------------- class ViewASCII ------------------------------- */
 /**
@@ -242,7 +247,7 @@ public class ViewASCII extends    GenericSpecial
             JMenuItem reloadMenu=new JMenuItem(RELOAD);
             JMenuItem closeMenu=new JMenuItem(CLOSE);
             menuBar.add(fileMenu);
-            DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem(
+            gov.anl.ipns.Util.Sys.PrintComponentActionListener.setUpMenuItem(
                                                                   menuBar, mw);
             fileMenu.add(reloadMenu);
             fileMenu.add(closeMenu);

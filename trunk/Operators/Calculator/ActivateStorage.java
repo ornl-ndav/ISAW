@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/03/15 03:36:59  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.6  2003/12/15 01:39:13  bouzekc
  *  Removed unused imports.
  *
@@ -42,6 +46,10 @@
  *
  *  Revision 1.3  2002/10/29 16:02:24  dennis
  *  Added getDocumentation method, and $Log$
+ *  Added getDocumentation method, and Revision 1.7  2004/03/15 03:36:59  dennis
+ *  Added getDocumentation method, and Moved view components, math and utils to new source tree
+ *  Added getDocumentation method, and gov.anl.ipns.*
+ *  Added getDocumentation method, and
  *  Added getDocumentation method, and Revision 1.6  2003/12/15 01:39:13  bouzekc
  *  Added getDocumentation method, and Removed unused imports.
  *  Added getDocumentation method, and
@@ -59,7 +67,8 @@ package Operators.Calculator;
 import DataSetTools.materials.*;
 import DataSetTools.operator.Generic.Calculator.*;
 import DataSetTools.parameter.*;
-import DataSetTools.util.ErrorString;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+
 import java.text.DecimalFormat;
 import java.util.*;
 

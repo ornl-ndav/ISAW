@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/03/15 03:37:40  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.16  2004/02/11 04:10:01  bouzekc
  *  Uses the new wizard classes with the indeterminate progress bars.
  *
@@ -95,6 +99,10 @@
  */
 package Wizard;
 
+import gov.anl.ipns.Util.Numeric.IntList;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.Sys.StringUtil;
+
 import java.io.Serializable;
 import java.util.Vector;
 
@@ -107,10 +115,7 @@ import DataSetTools.parameter.DataDirPG;
 import DataSetTools.parameter.IParameterGUI;
 import DataSetTools.parameter.InstNamePG;
 import DataSetTools.parameter.IntArrayPG;
-import DataSetTools.util.ErrorString;
-import DataSetTools.util.IntList;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.StringUtil;
 import DataSetTools.wizard.Form;
 
 
@@ -304,7 +309,7 @@ public class SaveAsGSASForm extends Form implements Serializable {
       group_ds   = ( DataSet )grouped.elementAt( i );
       mds        = ( DataSet )monitors.elementAt( i );
 
-      runNum   = DataSetTools.util.Format.integerPadWithZero( 
+      runNum   = gov.anl.ipns.Util.Numeric.Format.integerPadWithZero( 
           run_numbers[i], 5 );
 
       //save the GSAS file

@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/03/15 03:28:14  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.5  2003/04/25 15:42:10  pfpeterson
  *  Removed a debug print.
  *
@@ -50,8 +54,8 @@
  */
 package DataSetTools.gsastools;
 
+import gov.anl.ipns.Util.Numeric.Format;
 import DataSetTools.dataset.*;
-import DataSetTools.util.Format;
 import DataSetTools.util.SharedData;
 
 /**

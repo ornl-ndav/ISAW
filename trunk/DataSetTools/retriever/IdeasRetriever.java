@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/03/15 03:28:42  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.3  2003/10/17 02:49:45  bouzekc
  *  Fixed javadoc errors and updated javadocs.
  *
@@ -50,6 +54,10 @@
  */
 
 package DataSetTools.retriever;
+
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.File.*;
+import gov.anl.ipns.Util.Numeric.*;
 
 import java.io.*;
 import java.util.Vector;

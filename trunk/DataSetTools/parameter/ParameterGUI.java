@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.40  2004/03/15 03:28:40  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.39  2004/03/12 21:13:49  bouzekc
  *  Added clear() method.
  *
@@ -176,7 +180,8 @@ package DataSetTools.parameter;
 
 import DataSetTools.components.ParametersGUI.*;
 
-import DataSetTools.util.PropertyChanger;
+
+import gov.anl.ipns.Util.Messaging.PropertyChanger;
 
 import java.awt.*;
 

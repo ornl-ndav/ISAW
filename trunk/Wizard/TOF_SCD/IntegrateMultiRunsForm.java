@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.34  2004/03/15 03:37:40  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.33  2004/02/25 00:45:46  bouzekc
  * Calls clear() from ChooserPG to eliminate references to the DataSet
  * inside the loop.  This should eliminate the memory leak, as
@@ -151,11 +155,12 @@ import DataSetTools.operator.Generic.TOF_SCD.Integrate;
 
 import DataSetTools.parameter.*;
 
-import DataSetTools.util.ErrorString;
-import DataSetTools.util.IntList;
 import DataSetTools.util.SharedData;
 
 import DataSetTools.wizard.Form;
+
+import gov.anl.ipns.Util.Numeric.IntList;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
 import java.util.Vector;
 

@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/15 03:28:29  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.5  2004/01/24 19:33:43  bouzekc
  * Removed unused variables in main().
  *
@@ -51,6 +55,8 @@
  */
 
 package DataSetTools.operator.DataSet.Information.XAxis;
+
+import gov.anl.ipns.MathTools.Geometry.*;
 
 import  java.io.*;
 import  java.util.*;

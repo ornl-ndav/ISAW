@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/03/15 03:36:03  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.11  2004/03/11 19:46:32  bouzekc
  * Removed java.lang import as this is included by default.
  *
@@ -60,10 +64,11 @@
  
 
 package NexIO.Write.NexApi;
-import DataSetTools.util.StringUtil;
 import neutron.nexus.*;
 import NexIO.Write.*;
 import NexIO.*;
+import gov.anl.ipns.Util.Sys.StringUtil;
+
 import java.util.*;
 import java.lang.reflect.*;
 import java.io.*;

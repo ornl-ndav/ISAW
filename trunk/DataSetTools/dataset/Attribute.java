@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.42  2004/03/15 03:28:04  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.41  2003/11/20 18:28:11  rmikk
  *  Added Documentation to Attribute Strings
  *
@@ -140,6 +144,11 @@
  */
 
 package  DataSetTools.dataset;
+
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.File.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  DataSetTools.util.*;

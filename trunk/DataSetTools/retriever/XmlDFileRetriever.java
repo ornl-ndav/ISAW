@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/03/15 03:28:43  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.4  2003/03/03 16:54:29  pfpeterson
  *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -44,6 +48,8 @@
  *
  */
 package DataSetTools.retriever;
+import gov.anl.ipns.Util.File.IXmlIO;
+
 import java.io.*;
 import DataSetTools.dataset.*;
 import java.util.*;

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/03/15 03:28:41  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.9  2003/10/16 00:18:55  dennis
  *  Fixed javadocs to build cleanly with jdk 1.4.2
  *
@@ -48,10 +52,13 @@
 
 package  DataSetTools.peak;
 
+import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.Util.Numeric.*;
+
 import java.io.*;
 import DataSetTools.math.*;
 import DataSetTools.dataset.*;
-import DataSetTools.util.*; 
+import DataSetTools.util.*;
 
 
 /**

@@ -29,6 +29,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.9  2004/03/15 03:27:21  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.8  2003/11/29 06:37:31  bouzekc
  * Removed two unused imports.
  *
@@ -64,7 +68,8 @@ package DataSetTools.components.ParametersGUI;
 
 import DataSetTools.parameter.IParameter;
 
-import DataSetTools.util.PropertyChanger;
+
+import gov.anl.ipns.Util.Messaging.PropertyChanger;
 
 import java.awt.Component;
 import java.awt.Container;

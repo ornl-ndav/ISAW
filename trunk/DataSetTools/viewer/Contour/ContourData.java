@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2004/03/15 03:28:59  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.25  2004/01/24 22:24:16  bouzekc
  *  Removed unused imports.
  *
@@ -129,6 +133,9 @@
 package DataSetTools.viewer.Contour;
 
 import javax.swing.*;
+
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.ViewTools.Components.ViewControls.*;
 import gov.noaa.pmel.sgt.dm.*;
 import java.awt.*;
 import java.util.*;

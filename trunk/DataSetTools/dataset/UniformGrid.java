@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.10  2004/03/15 03:28:09  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.9  2003/08/04 15:54:28  dennis
  *  Added small test of shifting the full grid, to the main test
  *  program.
@@ -73,6 +77,8 @@
  */
 
 package  DataSetTools.dataset;
+
+import gov.anl.ipns.MathTools.Geometry.*;
 
 import java.io.*;
 import DataSetTools.math.*;

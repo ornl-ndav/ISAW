@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2004/03/15 03:28:33  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.1  2003/02/12 20:15:06  pfpeterson
  * Added to CVS.
  *
@@ -37,8 +41,9 @@ package DataSetTools.operator.Generic.Batch;
 
 import Command.Script_Class_List_Handler;
 import DataSetTools.operator.*;
-import DataSetTools.util.ErrorString;
 import DataSetTools.util.SharedData;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+
 import java.awt.Toolkit;
 import java.awt.Dimension;
 import java.util.*;

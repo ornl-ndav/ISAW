@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2004/03/15 03:37:40  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.16  2004/03/13 23:36:18  bouzekc
  * Changed clearValue() to clear().
  *
@@ -105,6 +109,9 @@ import DataSetTools.util.*;
 import DataSetTools.wizard.Form;
 
 import Operators.TOF_Diffractometer.*;
+
+import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.ViewTools.UI.*;
 
 import java.awt.*;
 

@@ -30,12 +30,18 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/03/15 03:29:04  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.3  2002/11/27 23:26:11  pfpeterson
  *  standardized header
  *
  */
 
 package DataSetTools.viewer.util;
+
+import gov.anl.ipns.Util.Messaging.*;
 
 import java.io.*;
 import java.awt.*;

@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/03/15 03:28:44  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.9  2003/08/04 15:51:14  dennis
  *  Temporarily made U_observed[][], B_observed[][] and B_theoretical[][]
  *  public, for use by the SCDcalib operator that is in another package.
@@ -70,6 +74,11 @@
  */
 
 package  DataSetTools.trial;
+
+import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.MathTools.Functions.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Numeric.*;
 
 import java.io.*;
 import java.util.*;

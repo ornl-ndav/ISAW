@@ -29,6 +29,10 @@
  *
  *
  * $Log$
+ * Revision 1.37  2004/03/15 03:29:04  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.36  2003/12/15 02:29:12  bouzekc
  * Removed unused imports.
  *
@@ -129,6 +133,8 @@
  */
 package DataSetTools.wizard;
 
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+
 import java.util.Vector;
 
 import DataSetTools.operator.HiddenOperator;
@@ -136,7 +142,6 @@ import DataSetTools.operator.Operator;
 import DataSetTools.parameter.IParameter;
 import DataSetTools.parameter.IParameterGUI;
 import DataSetTools.parameter.StringPG;
-import DataSetTools.util.ErrorString;
 import DataSetTools.util.SharedData;
 
 

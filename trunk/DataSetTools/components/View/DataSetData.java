@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2004/03/15 03:27:26  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.16  2004/03/12 22:34:32  serumb
  * Now uses IVirtualArrayList1D.
  *
@@ -67,6 +71,8 @@
 
 package DataSetTools.components.View;
 import DataSetTools.dataset.*;
+import gov.anl.ipns.ViewTools.Components.*;
+
 import java.awt.event.*;
 import java.util.*;
 
