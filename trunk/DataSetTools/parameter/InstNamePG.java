@@ -31,9 +31,11 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.11  2003/10/07 18:38:52  bouzekc
- *  Removed declaration of "implements ParamUsesString" as the
- *  StringEntryPG superclass now declares it.
+ *  Revision 1.12  2003/10/08 22:39:09  dennis
+ *  Reverting to previous version, that was in ISAW 1.5.1 beta 8.
+ *  The most recent checkin (10/07/03) also removed the clone() method
+ *  and was not consistent with the version in CVS.  ISAW crashed on
+ *  startup with null pointer exception.
  *
  *  Revision 1.10  2003/09/09 23:06:28  bouzekc
  *  Implemented validateSelf().
@@ -80,7 +82,7 @@ import DataSetTools.util.*;
 /**
  * This is class is to deal with float parameters.
  */
-public class InstNamePG extends StringPG {
+public class InstNamePG extends StringPG implements ParamUsesString{
     private static final String TYPE     = "InstName";
     private static       String propName = "Default_Instrument";
 
@@ -141,6 +143,16 @@ public class InstNamePG extends StringPG {
         fpg.initGUI(null);
         fpg.showGUIPanel();
     }*/
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+        InstNamePG pg=new InstNamePG(this.name,this.value,this.valid);
+        pg.setDrawValid(this.getDrawValid());
+        pg.initialized=false;
+        return pg;
+    }
 
     /**
      * Validates this InstNamePG.  An InstNamePG is valid if and only if
