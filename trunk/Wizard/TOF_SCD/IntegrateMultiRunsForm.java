@@ -28,6 +28,9 @@
  * number DMR-0218882.
  * 
  * $Log$
+ * Revision 1.39  2005/01/10 15:47:32  dennis
+ * Removed unused imports.
+ *
  * Revision 1.38  2004/08/19 19:22:35  rmikk
  * Now uses the Global logging facility to save the log information
  *
@@ -167,7 +170,6 @@ import DataSetTools.instruments.InstrumentType;
 import DataSetTools.operator.DataSet.Attribute.LoadSCDCalib;
 
 import DataSetTools.operator.Generic.Load.LoadOneHistogramDS;
-import DataSetTools.operator.Generic.TOF_SCD.Integrate;
 
 import DataSetTools.parameter.*;
 

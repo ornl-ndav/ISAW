@@ -33,6 +33,9 @@
  *  organized according to the categories of the operators.
  *
  *  $Log$
+ *  Revision 1.10  2005/01/10 15:47:33  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.9  2005/01/04 22:20:22  rmikk
  *  Added ToolTips to these menu items
  *
@@ -61,7 +64,7 @@ import java.awt.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
 import DataSetTools.operator.*;
-import DataSetTools.operator.Generic.*;
+import DataSetTools.operator.Generic.Save.*;
 import DataSetTools.operator.Generic.Load.*;
 import DataSetTools.operator.Generic.Batch.*;
 
