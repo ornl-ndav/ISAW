@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/07/16 22:24:42  dennis
+ * Changed output file format to be more like the "peaks" file
+ * format.  Now writes the detector position and chi, phi, omega
+ * values in the same form as "peaks" file.
+ *
  * Revision 1.6  2003/07/14 13:33:20  dennis
  * Added option to print a file listing bins above the specified
  * threshold.  One line is written for each such bin, specifying:
@@ -465,6 +470,14 @@ public class RecipPlaneView
       VecQToTOF transformer = (VecQToTOF)vec_q_transformer.elementAt(index);
       IDataGrid grid = transformer.getDataGrid();
       d = grid.getData_entry(1,1);
+      SampleOrientation orientation = 
+           (SampleOrientation)d.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
+      float initial_path = (float)
+            d.getAttribute(Attribute.INITIAL_PATH).getNumericValue();
+      float det_a = (float)
+            d.getAttribute(Attribute.DETECTOR_CEN_ANGLE).getNumericValue();
+      float det_d = (float)
+            d.getAttribute(Attribute.DETECTOR_CEN_DISTANCE).getNumericValue();
       int n_bins = d.getX_scale().getNum_x() - 1;
       int n_objects = grid.num_rows() * grid.num_cols() * n_bins;
       objs = new IThreeD_Object[n_objects];
@@ -477,9 +490,6 @@ public class RecipPlaneView
           d = grid.getData_entry(row,col);
           Vector3D pos_vec = grid.position(row,col);
           DetectorPosition pos = new DetectorPosition( pos_vec );
-        
-          float initial_path =
-             ((Float)d.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
           times = d.getX_scale().getXs();
           ys    = d.getY_values();
           for ( int j = 0; j < ys.length; j++ )
@@ -503,6 +513,11 @@ public class RecipPlaneView
               global_obj_index++;
               PeakData pd = new PeakData();
               pd.run_num = runs[run_num_index];
+              pd.phi   = orientation.getPhi();
+              pd.chi   = orientation.getChi();
+              pd.omega = orientation.getOmega();
+              pd.det_a = det_a;
+              pd.det_d = det_d;
               pd.tof = t;
               pd.row = row;
               pd.col = col;
@@ -1421,22 +1436,45 @@ private class WriteFileListener implements ActionListener
       FileWriter out_file = new FileWriter( "fft_peaks.dat" );
       PrintWriter writer  = new PrintWriter( out_file );
       writer.println(""+all_peaks.size() );
-      for ( int i = 0; i < all_peaks.size(); i++ )
+
+      int last_run = -1;
+      int last_id  = -1;
+      int i        = 0;
+      while (i < all_peaks.size() )
       {
         PeakData pd = (PeakData)all_peaks.elementAt(i);
-        writer.print( Format.integer( pd.run_num, 6 ) );
-        writer.print( Format.integer( pd.det_id, 4 ) );
+        if ( pd.run_num != last_run || pd.det_id != last_id )
+        {
+          writer.println("0 NRUN DETNUM DETA DETA2 DETD CHI PHI OMEGA MONCNT");
+          writer.print  ("1 ");
+          writer.print( Format.integer( pd.run_num, 6 ) );
+          writer.print( Format.integer( pd.det_id, 4 ) );
+          writer.print( Format.real(pd.det_a, 8, 2 ));
+          writer.print( Format.real(pd.det_a2, 8, 2 ));
+          writer.print( Format.real(pd.det_d, 8, 2 ));
+          writer.print( Format.real(pd.chi, 8, 2 ));
+          writer.print( Format.real(pd.phi, 8, 2 ));
+          writer.print( Format.real(pd.omega, 8, 2 ));
+          writer.print( Format.real(pd.moncnt, 8, 2 ));
+          writer.println();
+          writer.println("2  SEQN  H  K  L  COL  ROW  TOF  IPK  QX  QY  QZ");
+          last_run = pd.run_num;
+          last_id  = pd.det_id;
+        }
+        writer.print("3 ");                               // line type 3, data
+        writer.print( Format.integer( i, 6 ) );
         writer.print( Format.real(pd.h, 7, 2 ));
         writer.print( Format.real(pd.k, 7, 2 ));
         writer.print( Format.real(pd.l, 7, 2 ));
-        writer.print( Format.integer( pd.row, 4 ) );
         writer.print( Format.integer( pd.col, 4 ) );
+        writer.print( Format.integer( pd.row, 4 ) );
         writer.print( Format.real( pd.tof, 12, 2 ) );
         writer.print( Format.real( pd.counts, 8, 1 ) );
         writer.print( Format.real( pd.qx, 7, 2 ) );
         writer.print( Format.real( pd.qy, 7, 2 ) );
         writer.print( Format.real( pd.qz, 7, 2 ) );
         writer.println();
+        i++;
       }
       out_file.close();
     }
@@ -1770,6 +1808,10 @@ private class FFTListener implements IObserver
   {
     int   run_num = 0;
     int   det_id  = 0;
+    float det_a   = 0,
+          det_a2   =0;
+    float det_d;
+    float moncnt = 0;
     float h   = 0, 
           k   = 0, 
           l   = 0;
@@ -1779,6 +1821,9 @@ private class FFTListener implements IObserver
     float qx  = 0,
           qy  = 0,
           qz  = 0;
+    float chi = 0,
+          phi = 0,
+          omega = 0;
     float counts;
   }
 
