@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2001/07/23 16:31:34  dennis
+ * Fixed error: no longer using "==" for String comparison.
+ *
  * Revision 1.15  2001/07/20 16:54:39  dennis
  * Now uses an XScaleChooserUI to let the user specify new
  * x_scales.  Also uses method Data.getY_values( x_scale )
@@ -306,28 +309,28 @@ private void AddOptionsToMenu()
   GroupDrawMenuHandler group_draw_handler = new GroupDrawMenuHandler();
   ButtonGroup button_group = new ButtonGroup();
   JRadioButtonMenuItem r_button = new JRadioButtonMenuItem( GROUP_MARKER_SMALL);
-  if ( group_draw_mode == GROUP_MARKER_SMALL )
+  if ( group_draw_mode.equals( GROUP_MARKER_SMALL ))
     r_button.setSelected(true);
   r_button.addActionListener( group_draw_handler );
   group_menu.add( r_button );
   button_group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( GROUP_MARKER_MEDIUM );
-  if ( group_draw_mode == GROUP_MARKER_MEDIUM )
+  if ( group_draw_mode.equals( GROUP_MARKER_MEDIUM ))
     r_button.setSelected(true);
   r_button.addActionListener( group_draw_handler );
   group_menu.add( r_button );
   button_group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( GROUP_MARKER_LARGE );
-  if ( group_draw_mode == GROUP_MARKER_LARGE )
+  if ( group_draw_mode.equals( GROUP_MARKER_LARGE ))
     r_button.setSelected(true);
   r_button.addActionListener( group_draw_handler );
   group_menu.add( r_button );
   button_group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( GROUP_MARKER_NONE );
-  if ( group_draw_mode == GROUP_MARKER_NONE )
+  if ( group_draw_mode.equals( GROUP_MARKER_NONE ))
     r_button.setSelected(true);
   r_button.addActionListener( group_draw_handler );
   group_menu.add( r_button );
@@ -340,28 +343,28 @@ private void AddOptionsToMenu()
   DetectorDrawMenuHandler detector_draw_handler = new DetectorDrawMenuHandler();
   button_group = new ButtonGroup();
   r_button = new JRadioButtonMenuItem( DETECTOR_FILLED );
-  if ( detector_draw_mode == DETECTOR_FILLED )
+  if ( detector_draw_mode.equals( DETECTOR_FILLED ))
     r_button.setSelected(true);
   r_button.addActionListener( detector_draw_handler );
   detector_menu.add( r_button );
   button_group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( DETECTOR_HOLLOW );
-  if ( detector_draw_mode == DETECTOR_HOLLOW )
+  if ( detector_draw_mode.equals( DETECTOR_HOLLOW ))
     r_button.setSelected(true);
   r_button.addActionListener( detector_draw_handler );
   detector_menu.add( r_button );
   button_group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( DETECTOR_MARKER );
-  if ( detector_draw_mode == DETECTOR_MARKER )
+  if ( detector_draw_mode.equals( DETECTOR_MARKER ))
     r_button.setSelected(true);
   r_button.addActionListener( detector_draw_handler );
   detector_menu.add( r_button );
   button_group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( DETECTOR_NONE );
-  if ( detector_draw_mode == DETECTOR_NONE )
+  if ( detector_draw_mode.equals( DETECTOR_NONE ))
     r_button.setSelected(true);
   r_button.addActionListener( detector_draw_handler );
   detector_menu.add( r_button );
@@ -400,10 +403,10 @@ private void MakeThreeD_Scene()
   float group_radius = 0;
   float detector_radius = 0;
 
-  if ( group_draw_mode != GROUP_MARKER_NONE )
+  if ( !group_draw_mode.equals( GROUP_MARKER_NONE ))
     group_radius = draw_groups();
 
-  if ( detector_draw_mode != DETECTOR_NONE )
+  if ( !detector_draw_mode.equals( DETECTOR_NONE ))
     detector_radius = draw_detectors();
 
   float radius = Math.max( group_radius, detector_radius );
@@ -442,10 +445,10 @@ private void set_colors( int frame )
     if ( index < 0 )
       index += 256;
 
-    if ( group_draw_mode != GROUP_MARKER_NONE )
+    if ( !group_draw_mode.equals( GROUP_MARKER_NONE ))
       threeD_panel.setColors( GROUP_PREFIX+i, color_table[index] );
 
-    if ( detector_draw_mode != DETECTOR_NONE )
+    if ( !detector_draw_mode.equals( DETECTOR_NONE ))
       threeD_panel.setColors( DETECTOR_PREFIX+i, color_table[index] );
   }
 
@@ -778,7 +781,7 @@ private IThreeD_Object make_detector( Vector3D point,
 {
   IThreeD_Object detector;
 
-  if ( detector_draw_mode == DETECTOR_MARKER )
+  if ( detector_draw_mode.equals( DETECTOR_MARKER ))
   {
     Vector3D verts[] = new Vector3D[1];
     verts[0] = point;
@@ -811,7 +814,7 @@ private IThreeD_Object make_detector( Vector3D point,
 
     DataSetTools.components.ThreeD.Polygon object = 
        new DataSetTools.components.ThreeD.Polygon( verts, Color.red );
-    if ( detector_draw_mode == DETECTOR_HOLLOW )
+    if ( detector_draw_mode.equals( DETECTOR_HOLLOW ))
       object.setType( DataSetTools.components.ThreeD.Polygon.HOLLOW );
 
     detector = object;
