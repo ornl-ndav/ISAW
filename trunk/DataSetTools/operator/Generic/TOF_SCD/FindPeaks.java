@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.23  2004/04/21 19:06:49  dennis
+ * Added the min and max time channel to use as parameters
+ * to FindPeaks.
+ *
  * Revision 1.22  2004/03/15 03:28:38  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -101,8 +105,8 @@ import DataSetTools.util.SharedData;
 public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   private static final String     TITLE                 = "Find Peaks";
   private              int        run_number            = -1;
-  private              int     maxNumPeaks              = 0;
-  private              int     min_count                = 0;
+  private              int        maxNumPeaks           = 0;
+  private              int        min_count             = 0;
   
   /* ------------------------ Default constructor ------------------------- */ 
   /**
@@ -122,9 +126,15 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
    *  @param  moncount    Integrated monitor count
    *  @param  maxNumPeaks The maximum number of peaks to keep
    *  @param  min_count   Minimum number of counts peak must have
+   *  @param  minTimeChan First time channel number to use
+   *  @param  maxTimeChan Last time channel number to use
    */
-  public FindPeaks( DataSet data_set, float moncount, int maxNumPeaks,
-                    int min_count){
+  public FindPeaks( DataSet data_set, 
+                    float   moncount, 
+                    int     maxNumPeaks,
+                    int     min_count,
+                    int     minTimeChan,
+                    int     maxTimeChan ) {
     this(); 
     parameters = new Vector();
     addParameter( new Parameter("Histogram", data_set) );
@@ -132,6 +142,10 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     addParameter( new Parameter("Maximum Number of Peaks",
                                 new Integer(maxNumPeaks)));
     addParameter( new Parameter("Minimum Counts", new Integer(min_count) ) );
+    addParameter( new Parameter("Minimum Time Channel", 
+                                 new Integer(minTimeChan) ) );
+    addParameter( new Parameter("Maximum Time Channel", 
+                                 new Integer(maxTimeChan) ) );
   }
   
   /* --------------------------- getCommand ------------------------------- */ 
@@ -161,6 +175,8 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     Res.append("@param moncount - Integrated Monitor");
     Res.append("@param maxNumPeaks - Maximum Number of Peaks");
     Res.append("@param min_count - Minimum number of counts peak must have.");
+    Res.append("@param minTimeChan - First time channel number to use.");
+    Res.append("@param maxTimeChan - Last time channel number to use.");
     
     Res.append("@return Returns a vector of Peak objects.");
     
@@ -179,6 +195,8 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     addParameter( new Parameter("Integrated Monitor", new Float(0f)) );
     addParameter( new Parameter("Maximum Number of Peaks", new Integer(1000)));
     addParameter( new Parameter("Minimum Counts", new Integer(0) ) );
+    addParameter( new Parameter("Minimum Time Channel", new Integer(0) ) );
+    addParameter( new Parameter("Maximum Time Channel", new Integer(10000) ));
   }
   
   /* ----------------------------- getResult ------------------------------ */ 
@@ -189,10 +207,12 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
    *  objects.
    */
   public Object getResult(){
-    DataSet data_set     =  (DataSet)(getParameter(0).getValue());
-    float   moncount     =  ((Float)(getParameter(1).getValue())).floatValue();
-    this.maxNumPeaks     = ((Integer)(getParameter(2).getValue())).intValue();
-    this.min_count       = ((Integer)(getParameter(3).getValue())).intValue();
+    DataSet data_set  =  (DataSet)(getParameter(0).getValue());
+    float   moncount  =  ((Float)(getParameter(1).getValue())).floatValue();
+    this.maxNumPeaks  = ((Integer)(getParameter(2).getValue())).intValue();
+    this.min_count    = ((Integer)(getParameter(3).getValue())).intValue();
+    int minTimeChan   = ((Integer)(getParameter(4).getValue())).intValue();
+    int maxTimeChan   = ((Integer)(getParameter(5).getValue())).intValue();
     
     //System.out.print("====================================");
     //System.out.println("==================================");
@@ -237,7 +257,11 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     pkfac.monct(moncount);
     pkfac.L1(init_path);
     for( int i=0 ; i<det_number.length ; i++ ){
-      Vector innerPeakList=findPeaks(pkfac,data_set,det_number[i]);
+      Vector innerPeakList=findPeaks( pkfac,
+                                      data_set,
+                                      det_number[i],
+                                      minTimeChan,
+                                      maxTimeChan );
 
       if(innerPeakList!=null && innerPeakList.size()>0)
         peaks.addAll(innerPeakList);
@@ -260,7 +284,11 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
    * This does the real work of finding a bunch of peaks for a given
    * detector number.
    */
-  private Vector findPeaks(PeakFactory pkfac,DataSet data_set,int detNum){
+  private Vector findPeaks( PeakFactory pkfac,
+                            DataSet     data_set,
+                            int         detNum,
+                            int         minTimeChan,
+                            int         maxTimeChan ){
     pkfac.detnum(detNum);
 
     // create an array of for indexing into the data
@@ -270,8 +298,6 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     int maxColumn=0;
     int minRow=1000;
     int maxRow=0;
-    int minTime=0;
-    int maxTime=1000;
 
     // position of detector center
     float detA  = Util.detector_angle(data_set,detNum);
@@ -296,12 +322,11 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
       }
     }
     data=data_set.getData_entry(ids[minColumn][minRow]);
-    maxTime=(data.getCopyOfY_values()).length;
-
+    maxTimeChan= Math.min( maxTimeChan, (data.getY_values()).length );
 
     SharedData.addmsg("Columns("+minColumn+"<"+maxColumn
                       +") Rows("+minRow+"<"+maxRow
-                      +") TimeIndices("+minTime+"<"+maxTime+")");
+                      +") TimeIndices("+minTimeChan+"<"+maxTimeChan+")");
     
     float[] Dpp=null, Dtp=null, Dnp=null,
             Dpt=null, Dtt=null, Dnt=null,
@@ -333,7 +358,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
         Dnp=data_set.getData_entry(ids[i-1][j+1]).getCopyOfY_values();
         Dnt=data_set.getData_entry(ids[i+0][j+1]).getCopyOfY_values();
         Dnn=data_set.getData_entry(ids[i+1][j+1]).getCopyOfY_values();
-        for( int k=minTime+1 ; k<maxTime-1 ; k++ ){ // loop over timeslice
+        for( int k=minTimeChan+1 ; k<maxTimeChan-1 ; k++ ){ // loop over times
           float I=Dtt[k];
           if(I>min_count){
             if(I<Dpp[k-1]) continue;
@@ -375,7 +400,9 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
             peak=pkfac.getPixelInstance(i,j,k,0,0);
             peak.seqnum(peakNum);
             peak.ipkobs((int)Math.round(I));
-            peak.nearedge(minColumn,maxColumn,minRow,maxRow,minTime,maxTime);
+            peak.nearedge( minColumn,   maxColumn,
+                           minRow,      maxRow,
+                           minTimeChan, maxTimeChan);
             if(peak.nearedge()<3)
               peak.reflag(2);
             else
@@ -518,7 +545,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     //op.getResult();
     
     //System.out.println("Findpeaks("+datfile+",100,0)");
-    op = new FindPeaks( rds, monct, 10, 20 );
+    op = new FindPeaks( rds, monct, 10, 20, 0, 10000 );
     Vector peaked=(Vector)op.getResult();
     
     //System.out.println(((int[])rds.getAttributeValue(Attribute.RUN_NUM))[0]);
