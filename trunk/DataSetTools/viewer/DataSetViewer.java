@@ -7,8 +7,8 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
- *  Revision 1.2  2000/07/07 21:56:09  dennis
- *  Total replacement for a very old checkin
+ *  Revision 1.3  2000/07/10 22:58:58  dennis
+ *  July 10, 2000 version... many changes
  *
  *  Revision 1.15  2000/06/12 19:58:19  dennis
  *  Now implements Serializable
