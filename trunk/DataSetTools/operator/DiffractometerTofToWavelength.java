@@ -9,6 +9,10 @@
  *                                            XAxisConversionOperator
  *
  * $Log$
+ * Revision 1.5  2000/08/02 01:39:06  dennis
+ * Changed to use Data.ResampleUniformly() so that the operation can be
+ * applied to functions as well as to histograms.
+ *
  * Revision 1.4  2000/07/10 22:36:07  dennis
  * July 10, 2000 version... many changes
  *
@@ -237,7 +241,7 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOperator
       max_wl = temp;
     }
 
-    XScale new_wl_scale;
+    UniformXScale new_wl_scale;
     if ( num_wl <= 1.0 || min_wl >= max_wl )       // no valid scale set
       new_wl_scale = null;
     else
@@ -294,8 +298,8 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOperator
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 
-        if ( new_wl_scale != null )             // rebin if a valid scale was
-          new_data.ReBin( new_wl_scale );       // specified
+        if ( new_wl_scale != null )                   // resample if a valid
+          new_data.ResampleUniformly( new_wl_scale ); // scale was specified
 
         new_ds.addData_entry( new_data );      
       }
