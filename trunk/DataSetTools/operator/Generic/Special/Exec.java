@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/01/23 19:28:54  dennis
+ *  Added getDocumentation() method and java docs on getResult().
+ *  (Chris Bouzek)
+ *
  *  Revision 1.6  2002/11/27 23:21:43  pfpeterson
  *  standardized header
  *
@@ -65,8 +69,8 @@ import  DataSetTools.operator.Parameter;
 import  DataSetTools.retriever.RunfileRetriever;
 
 /**
- * This operator makes system calls. It does grab the process' STDOUT
- * stream and prints it to screen, otherwise it blindly calls the
+ * This operator makes system calls. It does grab the process's STDOUT
+ * stream and prints it to the screen, otherwise it blindly calls the
  * method and returns the result (an integer). The method called is
  * assumed to be run without interaction. If it requires interaction
  * ISAW WILL HANG.
@@ -95,7 +99,7 @@ public class Exec extends    GenericSpecial {
     }
 
     
-    /* ------------------------- setDefaultParmeters ----------------------- */
+    /* ------------------------- setDefaultParameters ----------------------- */
     /**
      *  Set the parameters to default values.
      */
@@ -114,12 +118,40 @@ public class Exec extends    GenericSpecial {
     public String getCommand(){
         return "Exec";
     }
-    
+
+    /* ---------------------- getDocumentation --------------------------- */
+    /**
+     *  Returns the documentation for this method as a String.  The format
+     *  follows standard JavaDoc conventions.
+     */
+    public String getDocumentation()
+    {
+      StringBuffer s = new StringBuffer("");
+      s.append("@overview This operator makes system calls.\n"); 
+      s.append("@assumptions The command called is assumed to be run without ");
+      s.append("interaction.\n");
+      s.append("@algorithm This operator calls the specified command.  It ");
+      s.append("also grabs the process's STDOUT stream (if available) and ");
+      s.append("prints it to the screen.\n");
+      s.append("@param command  The command to be executed.\n");
+      s.append("@return Integer object which represents the exit value of the ");
+      s.append("command.\n");
+      s.append("@error If the command called requires interaction, ISAW will ");
+      s.append("hang.\n");
+      s.append("@error Returns an error if the process is interrupted.\n");
+      s.append("@error Returns an error message if any input/output errors ");
+      s.append("occur.\n");
+      s.append("@error Returns an error message if the process could not be ");
+      s.append("started.\n");
+      return s.toString();
+    }
+
     /* --------------------------- getResult ------------------------------- */
-    /*
-     * This returns the group id of the detector with the largest
-     * TOTAL_COUNT attribute. If no upstream monitor is found it will
-     * return -1.
+    /*  Grabs the process's STDOUT stream and prints it to the screen.  If no 
+     *  STDOUT stream is available, it blindly calls the method associated 
+     *  with the process.
+     *  @return Integer object which represents the exit value of the 
+     *  command.
      */
     public Object getResult(){
         String command=(String)(getParameter(0).getValue());
@@ -171,6 +203,10 @@ public class Exec extends    GenericSpecial {
         return new_op;
     }
 
+    /* ------------------------------ main ------------------------------- */
+    /**
+     * Main method for testing purposes.
+     */
     public static void main(String[] args){
         String command="echo hi there";
         if(args.length==1) command=args[0];
@@ -181,5 +217,8 @@ public class Exec extends    GenericSpecial {
         System.out.println("RESULT: "+op.getResult());
         op=new Exec("ls");
         System.out.println("RESULT: "+op.getResult());
+	
+        /* ----------- added by Chris Bouzek ------------ */
+        System.out.println("Documentation: " + op.getDocumentation());
     }
 }
