@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.42  2002/03/18 21:16:56  dennis
+ *  If the calculated incident energy is invalid, just use the nominal
+ *  incident energy.
+ *
  *  Revision 1.41  2002/03/13 16:14:44  dennis
  *  Converted to new abstract Data class.
  *
@@ -510,7 +514,17 @@ private float CalculateEIn()
   }
 
   float e_in = tof_data_calc.EnergyFromMonitorData( d[0], d[1] );
-  return e_in;
+
+                                                       // use values from file
+                                                       // if calculated value
+                                                       // is invalid
+  if ( Float.isNaN(e_in) || Float.isInfinite(e_in) || e_in <= 0 ) 
+  {
+    System.out.println("ERROR:Invalid calculated EnergyIn in RunfileRetriever");
+    return (float)run_file.EnergyIn(); 
+  }
+  else
+    return e_in;
 }
 
 
