@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2004/06/21 16:05:24  robertsonj
+ *  made the naming of the viewer state strings more consistant
+ *
+ *  Revision 1.35  2004/06/21 10:57:31 robertsonj
+ * 	Made a the names of the name value pairs consistent
+ * 
  *  Revision 1.34  2004/06/15 20:58:14  robertsonj
  *  Took out debugging system.out statements
  *
@@ -140,39 +146,39 @@ public class ViewerState  implements Serializable
   public static final String V_GROUPS          = "ViewGroups";
   public static final String V_DETECTORS       = "ViewDetectors";
   public static final String BRIGHTNESS        = "Brightness";
-  public static final String AUTO_SCALE        = "Auto-Scale";
-  public static final String TABLE_DATA        = "table_view Data";
-  public static final String TIMEVSGROUPTABLE          = "Time vs Group Set";
-  public static final String TIMEVSGROUPTABLE_SHOWALL     = "Time vs Group Show All";
+  public static final String AUTO_SCALE        = "AutoScale";
+  public static final String TABLE_DATA        = "tableViewData";
+  public static final String TIMEVSGROUPTABLE          = "TimeVsGroupSet";
+  public static final String TIMEVSGROUPTABLE_SHOWALL     = "TimeVsGroupShowAll";
     
-  public static final String TIMEVSGROUPTABLE_SHOWERR = "Show Errors(Table time vs Group)";
+  public static final String TIMEVSGROUPTABLE_SHOWERR = "ShowErrors";//(TableTimeVsGroup);
   
-  public static final String TIMEVSGROUPTABLE_SHOWIND  = "Show Indicies(Table time vs Group)";
+  public static final String TIMEVSGROUPTABLE_SHOWIND  = "ShowIndicies";//(Table time vs Group);
  
    /** CONTOUR_STYLE(really "Contour.Style") is an int whose values can be
    *          AREA_FILL(1), AREA_FILL_CONTOUR(4) ,CONTOUR(2) ,RASTER(0), 
    *          or RASTER_CONTOUR(3) 
    */
-  public static final String CONTOUR_STYLE     =  "Contour.Style";
+  public static final String CONTOUR_STYLE     =  "ContourStyle";
 
   /**if false data has not been set
   */
-  public static final String CONTOUR_DATA      =  "Contour.Data";
-  public static final String CONTOUR_SHOWALL   ="Show All Groups";
-  public static final String CONTOUR_DETNUM   ="Detector Number";
-  public static final String CONTOUR_COLOR_SCALE   ="Contour Color Scale";
-  public static final String TABLE_TS          ="Time Slice Table Data Set";
-  public static final String TABLE_TS_ERR          ="TableTS_ShowError";
-  public static final String TABLE_TS_IND          ="TableTS_ShowIndex";
-  public static final String TABLE_TS_ROWMIN          ="TableTS_MinRow";
-  public static final String TABLE_TS_ROWMAX          ="TableTS_MaxRow";
-  public static final String TABLE_TS_COLMIN          ="TableTS_MinCol";
-  public static final String TABLE_TS_COLMAX          ="TableTS_MaxCol";
-  public static final String TABLE_TS_TIMEMIN          ="TABLE_TS_MIN_TIME";
-  public static final String TABLE_TS_TIMEMAX          ="TABLE_TS_MAX_TIME";
-  public static final String TABLE_TS_NSTEPS          ="TABLE_TS_NXSTEPS";
-  public static final String TABLE_TS_CHAN          ="TableTS_TimeInd";
-  public static final String TABLE_TS_DETNUM          ="TableTS_Detector Num";
+  public static final String CONTOUR_DATA      =  "ContourData";
+  public static final String CONTOUR_SHOWALL   ="ShowAllGroups";
+  public static final String CONTOUR_DETNUM   ="DetectorNumber";
+  public static final String CONTOUR_COLOR_SCALE   ="ContourColorScale";
+  public static final String TABLE_TS          ="TimeSliceTableDataSet";
+  public static final String TABLE_TS_ERR          ="TableTimeSliceShowError";
+  public static final String TABLE_TS_IND          ="TableTimeSliceShowIndex";
+  public static final String TABLE_TS_ROWMIN          ="TableTimeSliceMinRow";
+  public static final String TABLE_TS_ROWMAX          ="TableTimeSliceMaxRow";
+  public static final String TABLE_TS_COLMIN          ="TableTimeSliceMinCol";
+  public static final String TABLE_TS_COLMAX          ="TableTimeSliceMaxCol";
+  public static final String TABLE_TS_TIMEMIN          ="TableTimeSliceMinTime";
+  public static final String TABLE_TS_TIMEMAX          ="TableTimeSliceMaxTime";
+  public static final String TABLE_TS_NSTEPS          ="TableTimeSliceNxSteps";
+  public static final String TABLE_TS_CHAN          ="TableTimeSliceTimeInd";
+  public static final String TABLE_TS_DETNUM          ="TableTimeSliceDetectorNum";
 
   private Hashtable     state = null;
 
@@ -551,6 +557,8 @@ public class ViewerState  implements Serializable
 	   			{set_boolean("RebinFlag", false);
 	   			}
 	   		}else if(tempString.startsWith("Brightness")){
+	   			System.out.println("tempString = " + tempString);
+	   			System.out.println("tempString.substrin(11) = " + tempString.substring(11).trim());
 	   			set_int("Brightness", Integer.parseInt(tempString.substring(11).trim()));
 	   		}else if(tempString.startsWith("HScrollPosition")){
 	   			set_float("HScrollPosition", Float.parseFloat(tempString.substring(16).trim()));
@@ -566,32 +574,34 @@ public class ViewerState  implements Serializable
 	   			set_String("ViewGroups", tempString.substring(11));
 	   		}else if(tempString.startsWith("ViewDetectors")){
 	   			set_String("ViewDetectors", tempString.substring(14));
-	   		}else if(tempString.startsWith("Auto-Scale")){
-	   			set_float("Auto-Scale", Float.parseFloat(tempString.substring(11).trim()));
-	   		}else if(tempString.startsWith("table_view Data")){
-	   			set_String("table_view Data", tempString.substring(16));
-	   		}else if(tempString.startsWith("Contour.Style")){
-	   			set_int("Contour.Style", Integer.parseInt(tempString.substring(14).trim()));
+	   		}else if(tempString.startsWith("AutoScale")){
+	   			System.out.println("tempString = " + tempString);
+	   			System.out.println("tempString.substring(10) = " + tempString.substring(10).trim() );
+	   			set_float("AutoScale", Float.parseFloat(tempString.substring(10).trim()));
+	   		}else if(tempString.startsWith("TableViewData")){
+	   			set_String("TableViewData", tempString.substring(14));
+	   		}else if(tempString.startsWith("ContourStyle")){
+	   			set_int("ContourStyle", Integer.parseInt(tempString.substring(13).trim()));
 	   		}else if(tempString.startsWith("ContourTimeMin")){
 				set_float("ContourTimeMin", Float.parseFloat(tempString.substring(15).trim()));	
-	   		}else if(tempString.startsWith("Time Slice Table Data Set")){
-	   			set_String("Time Slice Table Data Set", tempString.substring(26));
-	   		}else if(tempString.startsWith("TableTS_TimeInd")){
-	   			set_int("TableTS_TimeInd", Integer.parseInt(tempString.substring(15).trim()));
-	   		}else if(tempString.startsWith("TableTS_MinRow")){
-	   			set_int("TableTS_MinRow", Integer.parseInt(tempString.substring(15).trim()));
-	   		}else if(tempString.startsWith("TableTS_MaxRow")){
-	   			set_int("TableTS_MaxRow", Integer.parseInt(tempString.substring(15).trim()));
-	   		}else if(tempString.startsWith("TableTS_MinCol")){
-	   			set_int("TableTS_MinCol", Integer.parseInt(tempString.substring(15).trim()));
-	   		}else if(tempString.startsWith("TableTS_MaxCol")){
-	   			set_int("TableTS_MaxCol", Integer.parseInt(tempString.substring(15).trim()));	
-	   		}else if(tempString.startsWith("TABLE_TS_MIN_TIME")){
-	   			set_float("TABLE_TS_MIN_TIME", Float.parseFloat(tempString.substring(18)));
-	   		}else if(tempString.startsWith("TABLE_TS_MAX_TIME")){
-	   			set_float("TABLE_TS_MAX_TIME", Float.parseFloat(tempString.substring(18)));
-	   		}else if(tempString.startsWith("TABLE_TS_NXSTEPS")){
-	   			set_int("TABLE_TS_NXSTEPS", Integer.parseInt(tempString.substring(17)));
+	   		}else if(tempString.startsWith("TimeSliceTableDataSet")){
+	   			set_String("TimeSliceTableDataSet", tempString.substring(22));
+	   		}else if(tempString.startsWith("TableTimeSliceTimeInd")){
+	   			set_int("TableTimeSliceTimeInd", Integer.parseInt(tempString.substring(22).trim()));
+	   		}else if(tempString.startsWith("TableTimeSliceMinRow")){
+	   			set_int("TableTimeSliceMinRow", Integer.parseInt(tempString.substring(21).trim()));
+	   		}else if(tempString.startsWith("TableTimeSliceMaxRow")){
+	   			set_int("TableTimeSliceMaxRow", Integer.parseInt(tempString.substring(21).trim()));
+	   		}else if(tempString.startsWith("TableTimeSliceMinCol")){
+	   			set_int("TableTimeSliceMinCol", Integer.parseInt(tempString.substring(21).trim()));
+	   		}else if(tempString.startsWith("TableTimeSliceMaxCol")){
+	   			set_int("TableTimeSliceMaxCol", Integer.parseInt(tempString.substring(21).trim()));	
+	   		}else if(tempString.startsWith("TableTimeSliceMinTime")){
+	   			set_float("TableTimeSliceMinTime", Float.parseFloat(tempString.substring(22)));
+	   		}else if(tempString.startsWith("TableTimeSliceMaxTime")){
+	   			set_float("TableTimeSliceMaxTime", Float.parseFloat(tempString.substring(22)));
+	   		}else if(tempString.startsWith("TableTimeSliceNxSteps")){
+	   			set_int("TableTimeSliceNxSteps", Integer.parseInt(tempString.substring(22)));
 	   		}
 	   		
 	   	}
