@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2001/08/14 19:17:43  dennis
+ *  Removed local error code definitions and now uses codes from
+ *  RemoteDataRetriever
+ *
  *  Revision 1.14  2001/08/14 15:11:14  dennis
  *  Now periodically gets the server status and sends it to the
  *  LiveDataMonitor.
@@ -113,9 +117,6 @@ import DataSetTools.util.*;
 public class LiveDataManager extends    Thread 
                              implements Serializable
 {
-  public static final int    NO_DATA_MANAGER = -10;
-  public static final int    NO_CONNECTION   = -11;
-
   public static final int    MIN_DELAY   = 10;       // minimum delay in seconds
   public static final int    MAX_DELAY   = 600;      // maximum delay in seconds
   public static final String DATA_CHANGED   = "Data Changed ";
@@ -129,7 +130,7 @@ public class LiveDataManager extends    Thread
                                                       // data sets won't be
                                                       // automatically updated
   private int               time_ms     = 3*MIN_DELAY*1000;
-  private int               error_flag  = NO_CONNECTION; 
+  private int               error_flag  = RemoteDataRetriever.NOT_CONNECTED;
 
   private String last_data_name = "NONE";
 
@@ -421,7 +422,7 @@ public class LiveDataManager extends    Thread
   {
     if ( retriever == null )
     {
-      error_flag = NO_CONNECTION;
+      error_flag = RemoteDataRetriever.NOT_CONNECTED;
       send_message( DATA_CHANGED + "SetUpLocalCopies 1: " );
     }
 
