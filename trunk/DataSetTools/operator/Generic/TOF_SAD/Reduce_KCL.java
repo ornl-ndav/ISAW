@@ -57,7 +57,7 @@ import java.io.*;
  * @version 1.0
  */
 
-public class Reduce_KCL {
+public class Reduce_KCL  extends GenericTOF_SAD{
 
     public static int Nedge = 1;      //mask off edge detectors or those
     public static float Radmin = 1.5f / 100;//too close or too far from the origin
@@ -253,6 +253,9 @@ public class Reduce_KCL {
     int RUNC, RUNB, RUNS;
     float XOFF, YOFF;
 
+    public Reduce_KCL(){
+      super("Reduce");
+    }
     /**
     *    Constructor for Reduce_KCL.
     *    @param TransS   The sample Transmission data set
@@ -260,10 +263,13 @@ public class Reduce_KCL {
     *    @param  Eff     The Efficiency data set
     *    @param Sens     The sensitivity data set
     *    @param qu       The q bins if 1d or qxmin,qxmax, qymin, qymax
-    *    @param RUNSds   the monitor([0]) and Histogram([1]) for the sample
-    *    @param RUNBds  the monitor([0]) and Histogram([1]) for the Background
-    *    @param RUCBds  null or the monitor([0]) and Histogram([1]) for the 
-    *                     Cadmium run
+    *    @param RUNSds0   the monitor  for the sample
+
+    *    @param RUNSds1   the Histogram  for the sample
+    *    @param RUNBds0  the  monitor for the Background
+    *    @param RUNBds1  the  Histogramfor the Background
+    *    @param RUCBds0  null or the monitor for the  Cadmium run
+    *    @param RUCBds1  null or the  Histogram for the  Cadmium run
     *    @param BETADN  The delayed neutron fraction
     *    @param SCALE   The scale factor to be applied to all data
     *    @param  THICK  The sample thickness in m
@@ -275,17 +281,106 @@ public class Reduce_KCL {
  
 
     public Reduce_KCL(DataSet TransS, DataSet TransB, DataSet Eff, DataSet Sens,
-        float[] qu, DataSet[] RUNSds, DataSet[] RUNBds, 
-        DataSet[] RUNCds, float BETADN, float SCALE, float THICK,
+        Vector qu, DataSet RUNSds0, DataSet RUNSds1, DataSet RUNBds0, 
+        DataSet RUNBds1,DataSet RUNCds0,DataSet RUNCds1, float BETADN, 
+        float SCALE, float THICK,
         float XOFF, float YOFF, int NQxBins, int NQyBins) {
-        Object Result;
+        
+        super( "Reduce");
+        parameters = new Vector();
+        addParameter( new Parameter("", TransS));
+        addParameter( new Parameter("", TransB));
+        addParameter( new Parameter("", Eff));
+        addParameter( new Parameter("", Sens));
+        addParameter( new Parameter("", qu));
+        addParameter( new Parameter("", RUNSds0));
+        addParameter( new Parameter("", RUNSds1));
+        addParameter( new Parameter("", RUNBds0));
+        addParameter( new Parameter("", RUNBds1));
+        addParameter( new Parameter("", RUNCds0));
+        addParameter( new Parameter("", RUNCds1));
+        addParameter( new Parameter("", new Float(BETADN)));
+        addParameter( new Parameter("", new Float(SCALE)));
+        addParameter( new Parameter("", new Float(THICK)));
+        addParameter( new Parameter("", new Float(XOFF)));
+        addParameter( new Parameter("", new Float(YOFF)));
+        addParameter( new Parameter("", new Integer(NQxBins)));
+        addParameter( new Parameter("", new Integer(NQyBins)));
+      }
 
+    public void setDefaultParameters(){
+
+       parameters = new Vector();
+         addParameter( new DataSetPG("Sample Transmission DS", null));
+        addParameter( new DataSetPG("Background Transmission DS", null));
+        addParameter( new DataSetPG("Efficiency Data Set", null));
+        addParameter( new DataSetPG("Sensitivity Data Set", null));
+        addParameter( new QbinsPG("Enter Q bins", null));
+        addParameter( new MonitorDataSetPG("Sample Monitor DS", null));
+        addParameter( new SampleDataSetPG("Sample Histogram", null));
+        addParameter( new MonitorDataSetPG("Background Monitor DS", null));
+        addParameter( new SampleDataSetPG("Background Histogram", null));
+        addParameter( new MonitorDataSetPG("Cadmium Monitor DS", 
+                           DataSet.EMPTY_DATA_SET));
+        addParameter( new SampleDataSetPG("Cadmium Histogram", 
+                           DataSet.EMPTY_DATA_SET));
+        addParameter( new FloatPG("Neutron Delay Fraction", new Float(.0011f)));
+        addParameter( new FloatPG("Scale Factor",null));
+        addParameter( new FloatPG("Thickness in m", null));
+        addParameter( new FloatPG("X offset of beam in m", new Float(0)));
+        addParameter( new FloatPG("Y offset of beam in m", new Float(0)));
+        addParameter( new IntegerPG("# Qx bins", new Integer(-1)));
+        addParameter( new Parameter("#Qy bins", new Integer(-1)));
+
+    }
+  /* ---------------------------- getResult ------------------------------- */
+    
+    /**  Executes the operator using the parameters that were set up
+     *@return  "Success" if there were no errors otherwise  the ErrorString
+     *             "No Data Set Selected" is returned.<P>
+     *
+     *NOTE: A SelectedGraph View will also pop up
+     */
+   
+   public Object getResult(){
+        DataSet TransS=(DataSet)(getParameter(0).getValue());
+        DataSet TransB=(DataSet)(getParameter(1).getValue());
+        DataSet Eff=(DataSet)(getParameter(2).getValue());
+        DataSet Sens=(DataSet)(getParameter(3).getValue());
+        
+        Vector Qu=(Vector)(getParameter(4).getValue());
+        DataSet RUNSds0=(DataSet)(getParameter(5).getValue());
+        DataSet RUNSds1=(DataSet)(getParameter(6).getValue());
+        DataSet RUNBds0=(DataSet)(getParameter(7).getValue());
+        DataSet RUNBds1=(DataSet)(getParameter(8).getValue());
+        DataSet RUNCds0=(DataSet)(getParameter(9).getValue());
+        DataSet RUNCds1=(DataSet)(getParameter(10).getValue());
+        float BETADN=((Float)(getParameter(11).getValue())).floatValue();
+        float SCALE=((Float)(getParameter(12).getValue())).floatValue();
+        float THICK=((Float)(getParameter(13).getValue())).floatValue();
+        float XOFF=((Float)(getParameter(14).getValue())).floatValue();
+        float YOFF=((Float)(getParameter(15).getValue())).floatValue();
+        int NQxBins=((Integer)(getParameter(16).getValue())).intValue();
+         int NQyBins=((Integer)(getParameter(17).getValue())).intValue();
         this.SCALE = SCALE;
         this.XOFF = XOFF;
         this.YOFF = YOFF;
         REDUCEOUT = "S.OUT";
         DIVx = NQxBins;
         DIVy = NQyBins;
+        RUNSds[0]= RUNSds0;
+        RUNSds[1]= RUNSds1;
+        RUNBds[0]= RUNBds0;
+        RUNBds[1]= RUNBds1;
+        if( RUNCds0 != null){
+          RUNCds[0]= RUNCds0;
+          RUNCds[1]= RUNCds1;
+         }
+        qu = new float[ Qu.size()];
+        for( int i=0; i<Qu.size(); i++){
+          qu[i] = ((Float)Qu.elementAt(i)).floatValue();
+        }
+
         if ((NQxBins < 1) || (NQyBins < 1))
             IF2D = 0;
         else
@@ -558,18 +653,12 @@ public class Reduce_KCL {
 
         } catch (IOException e) {
         }
-
-    }
-
-    /* ---------------------------- getResult ------------------------------- */
-    
-    /**  Executes the operator using the parameters that were set up
-     *@return  "Success" if there were no errors otherwise  the ErrorString
-     *             "No Data Set Selected" is returned.<P>
-     *
-     *NOTE: A SelectedGraph View will also pop up
-     */
-    public Object getResult() { 
+         return init();
+       }
+      /**
+      *    Had to do this so global variables were used in 2nd code
+      */
+       public Object init(){
 
         //----------------- Divide by Monitor ------------------------
         Object Res = (new DataSetDivide_1(RUNSds[1], RUNSds[0], 1, true)).getResult();
@@ -1217,6 +1306,7 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
         RUNSds = util.loadRunfile("C:\\Argonne\\sand\\wrchen03\\sand19990.run");
         RUNBds = util.loadRunfile("C:\\Argonne\\sand\\wrchen03\\sand19935.run");
         RUNCds = util.loadRunfile("C:\\Argonne\\sand\\wrchen03\\sand19936.run");
+        System.out.println("After loading runfiles, before loading isds");
         try {
             TransS = ScriptUtil.load("C:\\ISAW\\DataSetTools\\operator\\Generic\\TOF_SAD\\tr1999019934.isd");
             TransB = ScriptUtil.load("C:\\ISAW\\DataSetTools\\operator\\Generic\\TOF_SAD\\tr1993519934.isd");
@@ -1225,11 +1315,13 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
         } catch (Exception sss) {
             System.out.println("Error:" + sss);
         }
+
+        System.out.println("Before calling Reduce_KCL");
         Reduce_KCL Reduce_KCL = new Reduce_KCL(TransS[0], TransB[0], 
-                Eff[0], Sens[0],new float[]{-.5f,.5f,-.5f,.5f}, RUNSds, 
-		RUNBds, RUNCds, BETADN, SCALE, .1f,
+                Eff[0], Sens[0],toVec(qu), RUNSds[0], RUNSds[1], 
+		RUNBds[0],RUNBds[1], RUNCds[0],RUNCds[1], BETADN, SCALE, .1f,
                 //     0f,0f);
-                .000725f, .006909f, 200, 200);
+                .000725f, .006909f, -200, -200);
         Object O = Reduce_KCL.getResult();
 //new float[]{-.5f,.5f,-.5f,.5f}
         System.out.println("Finished O=" + O);
@@ -1240,5 +1332,13 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
         ScriptUtil.display(V.elementAt(2));
 
     }
+  private static Vector toVec( float[] list){
+     if( list == null)
+       return new Vector();
+     Vector Res = new Vector();
+     for( int i = 0; i< list.length; i++)
+         Res.addElement( new Float( list[i]));
+     return Res;
+  }
 }
 
