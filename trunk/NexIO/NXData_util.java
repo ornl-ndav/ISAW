@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2001/07/26 14:56:26  rmikk
+ * Fixed utility to NOT change group_id's from defaults
+ * unless information is in the nexus file
+ *
  * Revision 1.4  2001/07/26 13:52:42  rmikk
  * Removed Dependence on NDS package
  *
@@ -258,7 +262,7 @@ public static void setOtherAttributes( NxNode detNode ,Data newData, int index)
         if( X instanceof float[])
             Raw_Angle =(float[])X;
 
-        newData.setGroup_ID( index );
+        //newData.setGroup_ID( index );
         if( Group_ID != null)
            if( index < Group_ID.length)
                 newData.setGroup_ID( Group_ID[index] );
