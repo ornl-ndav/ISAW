@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/03/03 16:58:52  pfpeterson
+ *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  *  Revision 1.4  2002/11/27 23:25:37  pfpeterson
  *  standardized header
  *
@@ -248,7 +251,7 @@ public class TableView extends DataSetViewer
               }
             catch( Exception ss )
               {
-               DataSetTools.util.SharedData.status_pane.add( "Cannot Save " + 
+               DataSetTools.util.SharedData.addmsg( "Cannot Save " + 
                          ss.getClass()+":"+ss );
               }
         
