@@ -31,8 +31,8 @@
   * Modified:
   *
   *  $Log$
-  *  Revision 1.20  2001/06/19 19:20:06  chatter
-  *  The ISAW window size is now set to 80% of the screen size in which it is running
+  *  Revision 1.21  2001/06/19 19:28:19  chatter
+  *  Commented out some System.out.printlns
   *
   *  Revision 1.19  2001/06/14 14:54:01  chatter
   *  Removed Images_Directory and the jnexus.dll path from IsawProps.dat
@@ -2322,9 +2322,9 @@
  		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
       	int window_height = (screenSize.height)*8/10;
             int window_width = (screenSize.width)*8/10;        
- 		System.out.println("Window height is   " +window_height);
-            System.out.println("Window width is   " +window_width);
-           System.out.println("Screen size is   " +screenSize);
+ 		//System.out.println("Window height is   " +window_height);
+            //System.out.println("Window width is   " +window_width);
+          // System.out.println("Screen size is   " +screenSize);
         	System.out.println("Loading ISAW version 1.1");
          	JFrame Isaw = new Isaw();
          	Isaw.pack();
