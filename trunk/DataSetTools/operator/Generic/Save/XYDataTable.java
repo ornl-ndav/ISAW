@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.3  2003/02/03 18:29:38  dennis
+ * Added getDocumentation() method. (Joshua Olson)
+ *
  * Revision 1.2  2002/11/27 23:21:28  pfpeterson
  * standardized header
  *
@@ -51,7 +54,7 @@ import java.util.*;
 import DataSetTools.util.*;
 import  javax.swing.*;
 
-/** This class creates a operator the produces a table of x vs y vs errors.
+/** This class creates a operator that produces a table of x vs y vs errors.
  *  The table can be sent to the console, table, or file<P>
  * The Title is <B>Table x, y, error</b>. This represents this operator on
  *     menu items.<BR>
@@ -70,7 +73,7 @@ public class XYDataTable  extends GenericSave
     *@param showErrors  A third column of errors will be viewed
     *@param outputMedia  The output can be Console, File, or Table
     *@param filename   The file where the File View sends the "view"
-    *@param SelectedGroups The INDECIES of the groups to be viewed
+    *@param SelectedGroups The INDICIES of the groups to be viewed
     */    
     public XYDataTable( DataSet DS, boolean showErrors , MediaList outputMedia,
                 DataDirectoryString filename, IntListString SelectedGroups )
@@ -96,6 +99,50 @@ public class XYDataTable  extends GenericSave
         addParameter( new Parameter("Selected Group indices", 
                                     new IntListString("1,3:8")));
     }
+    
+ /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This class creates an operator that produces a ");
+    s.append("table of x vs y vs errors.");
+    
+    s.append("@assumptions There exist both x and y values.");
+    s.append("\n The specified filename either does not exist, or it is ");
+    s.append("acceptable to overwrite it.\n");
+                                                                              //
+    s.append("@algorithm The MediaList variable called 'outputMedia' ");
+    s.append("determines what type the output will be (either Console, ");
+    s.append("File, or Table).  Then the program makes sure that both x ");
+    s.append("and y values exist.  If either does not, then errors are ");
+    s.append("generated, and information is given about these errors.  ");
+    s.append("Otherwise the program then creates the table. ");
+    
+           
+    
+    s.append("@param DS The data set that is to be viewed as a table");  
+    s.append("@param showErrors Determines whether or not a third column ");
+    s.append("of errors will be viewed");  
+    s.append("@param outputMedia The output can be Console, File, or Table");  
+    s.append("@param filename The file where the File View sends the 'view'");  
+    s.append("@param SelectedGroups The INDICIES of the groups to be viewed");  
+    
+    s.append("@return The string 'Finished' is returned when there are ");
+    s.append("no errors.  Otherwise error message(s) will be returned.  ");
+    s.append("(These error messages are discussed in the 'Errors' section.)");
+    
+    s.append("@error Returns an error if there are no x values and/or ");
+    s.append("y values.");
+    s.append("@error Also returns an error if the boolean showErrors is ");
+    s.append("true, but there are no errors to show.");
+
+    return s.toString();
+  }    
+    
 
    /** Returns <B>Table</b>, the name used to refer to this operator in Scripts
    */ 
