@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/08/15 22:37:19  chatterjee
+ * Added session log to the current constructor
+ * Fixed port number error, Caught illegal server path
+ *
  * Revision 1.1  2001/08/15 02:12:39  rmikk
  * Initial Checkin
  *
@@ -41,19 +45,20 @@ import DataSetTools.viewer.Table.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.operator.*;
-
+import javax.swing.text.*;
 /** This class is the ActionListener for the menu item that invokes the
 *  LoadRemoteData operator.  This operator gets datasets from remote
 *  sources.
 */
 public class RemoteMenuHandler implements ActionListener
 { IObserver iobs;
-  
+  Document sessionLog;
   /** 
   *@param iobs  the observer who will receive the resultant data sets
   */
-  public RemoteMenuHandler( IObserver iobs)
+  public RemoteMenuHandler( IObserver iobs , Document sessionLog)
     { this.iobs = iobs;
+      this.sessionLog = sessionLog;
     }
 
   /** This method is invoked when a menu item corresponding to the 
@@ -90,21 +95,23 @@ public class RemoteMenuHandler implements ActionListener
               else if( Action.equals( ServerName ))
                 { ServerPath = System.getProperty(
                      serverBase + "FileServer"+i+"_Path");
-                  
-                  int k = ServerPath.lastIndexOf(";");
-                  int port = defaultPort;
-                  if( k >= 0)
+                  if( ServerPath == null)
+                     done = true;
+                  else
+                  {int k = ServerPath.lastIndexOf(";");
+                                      int port = defaultPort;
+                   if( k >= 0)
                    try{
-                     port = (new Integer( ServerPath.substring( k))).
+                      port = (new Integer( ServerPath.substring( k + 1 ))).
                             intValue();
                      }
                    catch( Exception u){port = defaultPort;}
                  
-                 if( k >= 0)
+                   if( k >= 0)
                     ServerPath= ServerPath.substring( 0, k );
                   
-                 String userName = System.getProperty( "user.name" );
-                 Operator op = new LoadRemoteData( ServerPath, port,
+                   String userName = System.getProperty( "user.name" );
+                   Operator op = new LoadRemoteData( ServerPath, port,
                          userName,"IPNS","",
                        new ServerTypeString(ServerType ));
 		 /* MnDSOperator op1 = new MnDSOperator( op, 0, ServerPath);
@@ -116,8 +123,9 @@ public class RemoteMenuHandler implements ActionListener
                            ServerTypeString.ISAW_FILE_SERVER ));
 		 */
                  JParametersDialog JP = new JParametersDialog( op,
-                      null, null, iobs);
+                      null, sessionLog, iobs);
                   return true;
+                }
                 }
               else i++;
 
@@ -131,7 +139,7 @@ public class RemoteMenuHandler implements ActionListener
 public static void main( String args[])
  {System.setProperty("NDSFileServer1_Name","dmikk");
   System.setProperty("NDSFileServer1_Path","dmikk.mscs.uwstout.edu");
-  RemoteMenuHandler Rh = new RemoteMenuHandler( null );
+  RemoteMenuHandler Rh = new RemoteMenuHandler( null, null );
   Rh.actionPerformed( new ActionEvent( new Integer(5),5,"dmikk"));
 
  }
