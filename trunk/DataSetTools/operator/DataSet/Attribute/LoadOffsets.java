@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/11/12 00:07:28  dennis
+ *  No longer uses setValue() method of Attributes, since Attributes are
+ *  now immutable.
+ *
  *  Revision 1.1  2002/04/02 23:02:00  pfpeterson
  *  Added to CVS.
  *
@@ -144,8 +148,9 @@ public class LoadOffsets extends    DS_Attribute {
                 
                 data=ds.getData_entry_with_id(group_id);
                 if(data!=null){
-                    attr.setFloatValue(time_offset);
-                    data.setAttribute((Attribute)attr.clone());
+                    attr = new FloatAttribute(Attribute.TIME_OFFSET, 
+                                              time_offset);
+                    data.setAttribute(attr);
                     //System.out.print(" "+attr);
                 }
                 //System.out.println("");
