@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/03/04 20:31:02  pfpeterson
+ *  Default properties file comments out more lines if ISAW is not found
+ *  in the classpath.
+ *
  *  Revision 1.1  2002/02/25 23:31:50  pfpeterson
  *  Extracted the writing of default properties file from Isaw.java and
  *  set new values to be more reasonable.
@@ -166,29 +170,41 @@ public class DefaultProperties{
      * Find the location of ISAW.
      */
     private String getIsawHome(){
+        //System.out.println("in getIsawHome()");
         String pathsep=System.getProperty("path.separator");
         String classpath=System.getProperty("java.class.path");
         String dir;
         int index=classpath.indexOf(pathsep);
         while( index>=0 ){
             dir=classpath.substring(0,index);
+            //System.out.println("dir:"+dir);
             classpath=classpath.substring(index+1,classpath.length());
             if(dir.endsWith("Isaw.jar")){
-                //System.out.println("Isaw found in "+dir);
-                return dir.substring(0,dir.indexOf("Isaw.jar")-1);
+                System.out.println("Isaw found: "+dir);
+                index=dir.indexOf("Isaw.jar")-1;
+                if(index>0){
+                    return dir.substring(0,dir.indexOf("Isaw.jar")-1);
+                }
             }else{
                 String isawExec
                     =File.separator+"IsawGUI"+File.separator+"Isaw.class";
                 File isIsaw=new File(dir+isawExec);
                 if(isIsaw.exists()){
-                    //System.out.println("Isaw found in "+isIsaw);
+                    System.out.println("Isaw found: "+isIsaw);
                     return dir;
                 }
             }
             index=classpath.indexOf(pathsep);
+            if(index<0){
+                System.err.println("WARNING: Could not find ISAW "
+                                   +"- Edit Properties File");
+                return "DEFAULT";
+            }
         }
-
-        return null;
+        
+        System.err.println("WARNING: Could not find ISAW "
+                           +"- Edit Properties File");
+        return "DEFAULT";
     }
 
     /**
@@ -208,18 +224,31 @@ public class DefaultProperties{
             +"#"+newline
             +"# Directory Options"+newline
             +"#"+newline
-            +"ISAW_HOME="+IsawHome+newline
-            +"#GROUP_HOME="+UserHome+separator+"ipns"+newline
-            +"Help_Directory="+IsawHome+separator+"IsawHelp"+newline
-            +"Script_Path="+IsawHome+separator+"Scripts"+newline
-            +"Docs_Directory="+IsawHome+separator+"docs"+separator
-                                +"html"+newline
-            +"Data_Directory="+IsawHome+separator+"SampleRuns"+newline
-            +"Log_Directory="+IsawHome+separator+"SampleRuns"+newline
-            +"Instrument_Macro_Path="+IsawHome+newline
-            +"User_Macro_Path="+IsawHome+newline
-            +newline
-            +"#"+newline
+            +"ISAW_HOME="+IsawHome+newline;
+        if(IsawHome.equals("DEFAULT")){
+            rs=rs+"#GROUP_HOME="+UserHome+separator+"ipns"+newline
+                +"#Help_Directory="+IsawHome+separator+"IsawHelp"+newline
+                +"#Script_Path="+IsawHome+separator+"Scripts"+newline
+                +"#Docs_Directory="+IsawHome+separator+"docs"+separator
+                +"html"+newline
+                +"#Data_Directory="+IsawHome+separator+"SampleRuns"+newline
+                +"#Log_Directory="+IsawHome+separator+"SampleRuns"+newline
+                +"#Instrument_Macro_Path="+IsawHome+newline
+                +"#User_Macro_Path="+IsawHome+newline
+                +newline;
+        }else{
+            rs=rs+"#GROUP_HOME="+UserHome+separator+"ipns"+newline
+                +"Help_Directory="+IsawHome+separator+"IsawHelp"+newline
+                +"Script_Path="+IsawHome+separator+"Scripts"+newline
+                +"Docs_Directory="+IsawHome+separator+"docs"+separator
+                +"html"+newline
+                +"Data_Directory="+IsawHome+separator+"SampleRuns"+newline
+                +"Log_Directory="+IsawHome+separator+"SampleRuns"+newline
+                +"Instrument_Macro_Path="+IsawHome+newline
+                +"User_Macro_Path="+IsawHome+newline
+                +newline;
+        }
+        rs=rs+"#"+newline
             +"# Live Data Server Options"+newline
             +"#"+newline
             +"Inst1_Name=HRMECS"+newline
