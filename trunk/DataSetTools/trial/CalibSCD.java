@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/07/22 15:21:59  dennis
+ * Replaced local value for h/mn as about (.395..) with "standard"
+ * value from tof_calc.
+ *
  * Revision 1.1  2003/07/21 22:09:57  rmikk
  * Initial checkin
  *
@@ -49,6 +53,8 @@ import java.io.*;
 
 public class CalibSCD extends OneVarParameterizedFunction
   {
+                                             // more accurate than .3955974
+   public static final double H_OVER_MN = tof_calc.ANGST_PER_US_PER_MM / 10;  
    
    String PeaksFileName , CalibFileName;
    int[] Seq;
@@ -176,7 +182,7 @@ public class CalibSCD extends OneVarParameterizedFunction
                    double L = getL1()* 100.0 +  Math.sqrt( get_xcm( pk )* get_xcm( pk )+
                                get_ycm( pk )* get_ycm( pk ) + pk.detD()* pk.detD() );
                  
-                   times[k] = ( L* pk.wl( )/.3955974 - getTzero( ));
+                   times[k] = ( L* pk.wl( )/H_OVER_MN - getTzero( ));
                    k++;
                   }
           }
@@ -677,7 +683,7 @@ public class CalibSCD extends OneVarParameterizedFunction
        double L = getL1()* 100.0 +  Math.sqrt( get_xcm( pk )* get_xcm( pk ) + get_ycm( pk )* get_ycm( pk ) + 
                               pk.detD()* pk.detD());
      
-       return  (times[k] + getTzero() )* .3955974/L;
+       return  (times[k] + getTzero() )* H_OVER_MN/L;
    }     
  
 
