@@ -31,9 +31,9 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.58  2001/08/23 15:06:17  chatterjee
- *  Relocated a "return" statement that was causing the
- *  loading of the files to stop after the first file was loaded into ISAW.
+ *  Revision 1.59  2001/08/23 15:22:37  chatterjee
+ *  Increased the JFileChooser size to 550,300 to better accomodate the filter options.
+ *  Reordered the appearance of the filters.
  *
  *  Revision 1.57  2001/08/21 21:31:41  chatterjee
  *  Added separate file filters for .run and .nxs/hdf files
@@ -1961,7 +1961,9 @@ public class Isaw
       fc.setFileFilter(  new NeutronDataFileFilter()  ); 
       fc.addChoosableFileFilter(  new NexIO.NexusfileFilter()  );
       fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
-      
+      Dimension d = new Dimension(550,300);
+      fc.setPreferredSize(d);
+      System.out.println("The filechooser size is" +fc.getPreferredSize());
       if(  fc.showDialog(frame,null) == JFileChooser.APPROVE_OPTION  ) 
       {
         setCursor(  Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR )  );
