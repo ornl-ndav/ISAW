@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2002/12/16 21:24:10  pfpeterson
+ * Added a parameter to specify the calibration file and added the 'WLNUM' to
+ * the output.
+ *
  * Revision 1.2  2002/12/11 22:17:35  pfpeterson
  * Fixed formatting problem in TOF section of output file.
  *
@@ -96,15 +100,16 @@ public class WriteExp extends GenericTOF_SCD{
    * @param monid Upstream monitor group id
    * @param append Whether or not to overwrite the file (if it exists)
    */
-  public WriteExp( DataSet ds, DataSet mon, String filename, int monid,
-                   boolean append){
+  public WriteExp( DataSet ds, DataSet mon, String filename, String calibfile,
+                   int monid, boolean append){
 
     this(); 
     getParameter(0).setValue(ds);
     getParameter(1).setValue(mon);
     getParameter(2).setValue(filename);
-    getParameter(3).setValue(new Integer(monid));
-    getParameter(4).setValue(new Boolean(append));
+    getParameter(3).setValue(calibfile);
+    getParameter(4).setValue(new Integer(monid));
+    getParameter(5).setValue(new Boolean(append));
   }
   
   /* --------------------------- getCommand ------------------------------- */ 
@@ -140,6 +145,8 @@ public class WriteExp extends GenericTOF_SCD{
     sb.append("@param The DataSet containing the monitor spectrum and "
               +"information about it.\n");
     sb.append("@param The name of the file to write to (with path).\n");
+    sb.append("@param The name of the calibration file (assumes first "
+              +"line).\n");
     sb.append("@param The group ID of the upstream monitor.\n");
     sb.append("@param Whether not to append to an existing file. If the file "
               +"does not exist it will create it.\n");
@@ -159,8 +166,10 @@ public class WriteExp extends GenericTOF_SCD{
   public void setDefaultParameters(){
     parameters = new Vector();
     addParameter( new Parameter("Data Set", new SampleDataSet() ) );
+    //addParameter( new Parameter("Data Set", DataSet.EMPTY_DATA_SET) );
     addParameter( new Parameter("Monitor", new MonitorDataSet() ) );
     addParameter( new Parameter("Filename", new SaveFileString("")));
+    addParameter( new Parameter("Calibration File", new LoadFileString("")));
     addParameter( new Parameter("Upstream Monitor ID", new Integer(1 )) );
     addParameter( new Parameter("Append",   Boolean.FALSE));
   }
@@ -176,9 +185,22 @@ public class WriteExp extends GenericTOF_SCD{
     // get the parameters
     this.ds  = (DataSet)(getParameter(0).getValue());
     this.mon = (DataSet)(getParameter(1).getValue());
-    String  filename = getParameter(2).getValue().toString();
-    int     monid    = ((Integer)getParameter(3).getValue()).intValue();
-    boolean append   = ((Boolean)(getParameter(4).getValue())).booleanValue();
+    String  filename  = getParameter(2).getValue().toString();
+    String  calibfile = getParameter(3).getValue().toString();
+    int     monid     = ((Integer)getParameter(4).getValue()).intValue();
+    boolean append    = ((Boolean)(getParameter(5).getValue())).booleanValue();
+
+    // read in the calibration if not in append mode
+    if(!append){
+      Operator DSop=null;
+      try{
+        DSop=new DataSetTools.operator.DataSet.Attribute.LoadSCDCalib(this.ds,
+                                                             calibfile,1,null);
+      }catch(NoClassDefFoundError e){ // just warn the user
+        System.out.println("WARN: unable to find LoadSCDCalib");
+      }
+      if(DSop!=null) System.out.println(DSop.getResult());
+    }
 
     // determine what run number we are dealing with
     run_num=getIntValue(ds,Attribute.RUN_NUM);
@@ -206,6 +228,13 @@ public class WriteExp extends GenericTOF_SCD{
       getCrystSymmAndOrient(ds);
     if(instinfo==null)
       getInstrument(monid);
+
+    // remove the old version of the file (we have already read in the
+    // existing information
+    if(append){
+      File file=new File(filename);
+      if(file.exists()) file.delete();
+    }
 
     // start writting the file
     OutputStreamWriter out;
@@ -598,6 +627,7 @@ public class WriteExp extends GenericTOF_SCD{
     String       end_line   = Format.string("\n",59);
     Object       value      = null;
     String       tempS      = null;
+    Data         tempD      = null;
     float        tempF      = 0f;
     int          tempI      = 0;
     float        sumtot     = getTotalCount(ds);
@@ -639,7 +669,12 @@ public class WriteExp extends GenericTOF_SCD{
       tempS=null;
     sb.append(start_card+"ENDTIM"+Format.string(tempS,68,false)+"\n");
     // number of channels in monitor spectrum
-    tempI=mon.getData_entry_with_id(monid).getX_scale().getNum_x();
+    tempD=mon.getData_entry_with_id(monid);
+    if(tempD!=null){
+      tempI=tempD.getX_scale().getNum_x();
+    }else{
+      tempI=0;
+    }
     sb.append(start_card+"MNNUM "+Format.real(tempI,10)+end_line);
     // integrated monitor counts
     value=
@@ -700,6 +735,8 @@ public class WriteExp extends GenericTOF_SCD{
     // minimum wavelength
     tempF=tof_calc.Wavelength(detd+l1,tmin);
     sb.append(start_card+"WLMIN "+Format.real(tempF,10,3)+end_line);
+    // the number of time channels
+    sb.append(start_card+"WLNUM"+Format.real(xscale.getNum_x()-1,11)+end_line);
     // the number of columns
     sb.append(start_card+"XNUM  "+Format.real(ncol,10)+end_line);
     // the number of rows
@@ -915,12 +952,12 @@ public class WriteExp extends GenericTOF_SCD{
     DataSet rds         = rr.getDataSet(1);
     Operator op         = null;
 
-    op=new LoadSCDCalib(rds,datadir+"instprm.dat",2,null);
-    System.out.println("LoadSCDCalib:"+op.getResult());
+    //op=new LoadSCDCalib(rds,datadir+"instprm.dat",2,null);
+    //System.out.println("LoadSCDCalib:"+op.getResult());
     op=new LoadOrientation(rds,new LoadFileString(datadir+"blind.mat"));
     System.out.println("LoadOrientation:"+op.getResult());
     
-    op = new WriteExp( rds,mds,datadir+"test.x", 1, true );
+    op = new WriteExp( rds,mds,datadir+"test.x",datadir+"instprm.dat",1,false );
     System.out.println("RESULT: "+op.getResult());
     
     System.exit(0);
