@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/06/04 23:44:16  kramer
+ * Fixed some Javadoc errors.
+ *
  * Revision 1.3  2004/03/12 19:46:18  bouzekc
  * Changes since 03/10.
  *
@@ -332,10 +335,8 @@ public class Project
 	}
 	
 	/**
-	 * Prints the data about the Project pro.  This method is used by the method 
-	 * writeJDFFile(Project pro, String fileName).  If you want to write the data 
-	 * use the method writeJDFFile(Project pro, String fileName).
-	 * @param pro The Project to use.
+	 * Invokes a new JDFFileWriterThread.  The writer is set not 
+	 * to append data to the end of the file.
 	 */
 	private void printInterfacesAndName()
 	{

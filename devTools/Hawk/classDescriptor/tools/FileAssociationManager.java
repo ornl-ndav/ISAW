@@ -32,7 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/06/04 23:42:12  kramer
+ * Fixed some Javadoc errors.
+ *
  * Revision 1.4  2004/05/26 20:48:27  kramer
+ *
  * Gave the manager the ability to be able to "remember" how it associated the
  * files.
  *
@@ -204,12 +208,11 @@ public class FileAssociationManager
 	}
 	
 	/**
-	 * This method associates the file "fileName" to the Interface object (if it exists) whose shortened name 
-	 * is "shortClassName".  The method looks for a match from the Interface objects in 
-	 * the Vector intFVector.
-	 * @param fileName The filename to associate.
-	 * @param shortClassName The shortened classname of the class or interface to associate the file 
-	 * with.
+	 * Gets all of the files that are to be used (for example java or html pages) from the Vector 
+	 * of files and/or directores supplied.  Then, this method associates all of the Interfaces with 
+	 * the files found by calling the method 
+	 * <code>associateFileWithInterface(LoggedInterface,Vector)</code>.
+	 * @param dirsToSearch A Vector of String objects.  Each represents a file or directory.
 	 */
 	public void associateFiles(Vector dirsToSearch)
 	{

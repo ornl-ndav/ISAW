@@ -106,11 +106,7 @@ public class ShortenedSourceJPanel extends JPanel implements ActionListener, Mou
 	/**
 	 * Create a new ShortenedSourceGUI.
 	 * @param INTF The Interface object whose data is written.
-	 * @param title The title of the window.
-	 * @param shortJava True if you want a name to be shortened if it is a java name.  For 
-	 * example, java.lang.String would be shortened to String.
-	 * @param shortOther True if you want a name to be shortened if it is a non-java name.
-	 * @param cont The container on which this panel is added.
+	 * @param frm The frame that this panel can control (ie dispose).
 	 */
 	public ShortenedSourceJPanel(Interface INTF, ExternallyControlledFrame frm)
 	{
@@ -211,8 +207,7 @@ public class ShortenedSourceJPanel extends JPanel implements ActionListener, Mou
 	}
 	
 	/**
-	 * This takes an Interface object and adds information to the window in a format similar to the 
-	 * following:
+	 * Writes information in the GUI in a format similar to the following:
 	 * <br> package a.b.c.d
 	 * <br>
 	 * <br>public class classA extends JFrame implements ActionListener
@@ -229,10 +224,6 @@ public class ShortenedSourceJPanel extends JPanel implements ActionListener, Mou
 	 * <br> }
 	 * <br> with Attribute, Constructor, and Method colored black and bold.  Also, keywords are 
 	 * colored.
-	 * @param intF The Interface object whose data is to be written.
-	 * @param shortJava True if you want a name to be shortened if it is a java name.  For 
-	 * example, java.lang.String would be shortened to String.
-	 * @param shortOther True if you want a name to be shortened if it is a non-java name.
 	 */
 	public void fillInTextArea()
 	{

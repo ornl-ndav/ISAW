@@ -32,7 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/06/04 23:40:09  kramer
+ * Fixed some Javadoc errors.
+ *
  * Revision 1.2  2004/05/26 20:06:06  kramer
+ *
  * Added forward, back, refresh, home, etc. buttons to the gui.
  * Also added a field to type the URL to visit.
  * Also added a hyperlink listener.
@@ -131,8 +135,7 @@ public class JavadocsJPanel extends JPanel implements ActionListener, MouseNotif
 	/**
 	 * Create a new JavadocsGUI.
 	 * @param INT The Interface whose javadocs file is to be displayed.
-	 * @param title The title of the window.
-	 * @param desk The HawkDesktop that this window is on.
+	 * @param conFrame The frame that this panel is going to control (ie dispose).
 	 */
 	public JavadocsJPanel(Interface INT,ExternallyControlledFrame conFrame)
 	{
