@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2004/07/29 13:36:42  rmikk
+ * Fixed the names for the keys of some more of the ViewerState variables
+ *
  * Revision 1.14  2004/06/04 15:10:59  rmikk
  * Eliminated a few unused variables
  * Added code so LargeJTable repositions itself to the pointedAt point.
@@ -142,8 +145,8 @@ public class RowColTimeVirtualArray extends
   *  <tr> <td>TABLE_TS_NXSTEPS</td><td>Positive Integer. # of time steps</td></tr>
   *  <tr> <td>TABLE_TS_MAX_TIME</td><td>Float, max TOF or Xvalue</td></tr>
   *  <tr> <td>TABLE_TS_MIN_TIME</td><td>Float, min TOF or Xvalue</td></tr>
-  *  <tr> <td>TableTS_MaxCol</td><td>Integer-last col to look at</td></tr>
-  *  <tr> <td>TableTS_MinCol</td><td>Integer-first col to look at</td></tr>
+  *  <tr> <td>TableTimeSliceMaxCol</td><td>Integer-last col to look at</td></tr>
+  *  <tr> <td>TableTimeSliceMinCol</td><td>Integer-first col to look at</td></tr>
   *  <tr> <td>TableTS_MaxRow</td><td>Integer-last row to look at</td></tr>
   *  <tr> <td>TableTS_MinRow</td><td>Integer-first row to look at</td></tr>
   *  <tr> <td>TableTS_Detector Num</td><td>-1 or DetectorNumber to view</td></tr>
@@ -435,14 +438,14 @@ public class RowColTimeVirtualArray extends
      JRowColPanel = new JPanel( new GridLayout(2,1));
     
      TextRangeUI  tr=  new  TextRangeUI ("Row Range",
-                                          0.0f+state.get_int("TableTS_MinRow"),
-                                          0.0f+state.get_int("TableTS_MaxRow"));
+                                          0.0f+state.get_int(ViewerState.TABLE_TS_ROWMIN),
+                                          0.0f+state.get_int(ViewerState.TABLE_TS_ROWMAX));
                         
      
      tr.addActionListener( new MyRangeActionListener(1));
      Res[0] = tr;
-     tr= new TextRangeUI ("Col Range", 0.0f+state.get_int("TableTS_MinCol"),
-                                       0.0f+state.get_int("TableTS_MaxCol"));
+     tr= new TextRangeUI ("Col Range", 0.0f+state.get_int(ViewerState.TABLE_TS_COLMIN),
+                                       0.0f+state.get_int(ViewerState.TABLE_TS_COLMAX));
                         
      
      tr.addActionListener( new MyRangeActionListener(2));
@@ -456,9 +459,9 @@ public class RowColTimeVirtualArray extends
    
      
      XScl= new XScaleChooserUI("XScale", DS.getX_units(),
-                             state.get_float("TABLE_TS_MIN_TIME"),
-                             state.get_float("TABLE_TS_MAX_TIME"),
-                             state.get_int("TABLE_TS_NXSTEPS"));
+                             state.get_float(ViewerState.TABLE_TS_TIMEMIN),
+                             state.get_float(ViewerState.TABLE_TS_TIMEMAX),
+                             state.get_int(ViewerState.TABLE_TS_NSTEPS));
      
      Res[2+jcomps.length] = XScl;
      x_scale = XScl.getXScale();
@@ -474,7 +477,7 @@ public class RowColTimeVirtualArray extends
      acontrol.setFrame_values( xvals1);
      acontrol.setBorderTitle("X vals");
      acontrol.setTextLabel(" X("+DS.getX_units()+")");
-     TimeIndex = state.get_int( "TableTS_TimeInd");
+     TimeIndex = state.get_int( ViewerState.TABLE_TS_CHAN);
      if( TimeIndex < 0)
         TimeIndex = 0;
      else if( TimeIndex >= xvals1.length)
@@ -866,8 +869,8 @@ public class RowColTimeVirtualArray extends
        n=0;
      else if( D instanceof FunctionModel)
        n=0;
-     int first = Arrays.binarySearch( new_xvals, state.get_float("TABLE_TS_MIN_TIME"));
-     int end =Arrays.binarySearch( new_xvals, state.get_float("TABLE_TS_MAX_TIME"));
+     int first = Arrays.binarySearch( new_xvals, state.get_float(ViewerState.TABLE_TS_TIMEMIN));
+     int end =Arrays.binarySearch( new_xvals, state.get_float(ViewerState.TABLE_TS_TIMEMAX));
      if( first < 0) 
         first = -first-1;
      if( end < 0) 
@@ -1001,7 +1004,7 @@ public class RowColTimeVirtualArray extends
    {
      StringBuffer S = new StringBuffer( 3000);
      float saveTime = Time;
-     int saveChan = TimeIndex;
+     //int saveChan = TimeIndex;
      
      float MaxTime = state.get_float(ViewerState.TABLE_TS_TIMEMAX);
      float MinTime = state.get_float(ViewerState.TABLE_TS_TIMEMIN);
@@ -1070,11 +1073,11 @@ public class RowColTimeVirtualArray extends
         state.set_int( ViewerState.TABLE_TS_COLMIN , 1);
         state.set_int( ViewerState.TABLE_TS_ROWMAX , getRowCount());
         state.set_int( ViewerState.TABLE_TS_COLMAX , getColumnCount()); 
-        state.set_int( "TableTS_TimeInd" , getPointedAtXindex( ));
+        state.set_int( ViewerState.TABLE_TS_CHAN , getPointedAtXindex( ));
         XScale xscl1 = DS.getData_entry(0).getX_scale();
-        state.set_float("TABLE_TS_MIN_TIME", xscl1.getStart_x());
-        state.set_float("TABLE_TS_MAX_TIME" ,xscl1.getEnd_x());
-        state.set_int("TABLE_TS_NXSTEPS" , 0);
+        state.set_float(ViewerState.TABLE_TS_TIMEMIN, xscl1.getStart_x());
+        state.set_float(ViewerState.TABLE_TS_TIMEMAX ,xscl1.getEnd_x());
+        state.set_int(ViewerState.TABLE_TS_NSTEPS , 0);
         state.set_boolean(ViewerState.TABLE_TS_ERR,false);  
         state.set_boolean(ViewerState.TABLE_TS_IND ,false); 
      
@@ -1089,15 +1092,15 @@ public class RowColTimeVirtualArray extends
      
      setErrInd(state.get_boolean( ViewerState.TABLE_TS_ERR),
                 state.get_boolean( ViewerState.TABLE_TS_IND));
-     setRowRange(state.get_int("TableTS_MinRow"),
-                 state.get_int("TableTS_MaxRow"));
-     setColRange(state.get_int("TableTS_MinCol"),
-                 state.get_int("TableTS_MaxCol"));
-     setTimeRange(state.get_float("TABLE_TS_MIN_TIME"),
-                 state.get_float("TABLE_TS_MAX_TIME"));
+     setRowRange(state.get_int(ViewerState.TABLE_TS_ROWMIN),
+                 state.get_int(ViewerState.TABLE_TS_ROWMAX));
+     setColRange(state.get_int(ViewerState.TABLE_TS_COLMIN),
+                 state.get_int(ViewerState.TABLE_TS_COLMAX));
+     setTimeRange(state.get_float(ViewerState.TABLE_TS_TIMEMIN),
+                 state.get_float(ViewerState.TABLE_TS_TIMEMAX));
      
      
-     TimeIndex = state.get_int( "TableTS_TimeInd");
+     TimeIndex = state.get_int( ViewerState.TABLE_TS_CHAN);
      if( TimeIndex < 0)
         TimeIndex = 0;
      else if( TimeIndex >= x_scale.getNum_x())
@@ -1170,11 +1173,11 @@ public class RowColTimeVirtualArray extends
         else
            acontrol.setFrameValue(  X );
         SetTime( acontrol.getFrameValue());
-        state.set_int( "TableTS_TimeInd" , getPointedAtXindex( ));
-        state.set_float("TABLE_TS_MIN_TIME", xvals1[0]);
-        state.set_float("TABLE_TS_MAX_TIME" ,xvals1[ xvals1.length - 1 ]);
+        state.set_int( ViewerState.TABLE_TS_CHAN , getPointedAtXindex( ));
+        state.set_float(ViewerState.TABLE_TS_TIMEMIN, xvals1[0]);
+        state.set_float(ViewerState.TABLE_TS_TIMEMAX ,xvals1[ xvals1.length - 1 ]);
      
-        state.set_int("TABLE_TS_NXSTEPS" , x_scale.getNum_x());
+        state.set_int(ViewerState.TABLE_TS_NSTEPS , x_scale.getNum_x());
    
         notifyActionListeners( IArrayMaker.DATA_CHANGED);
        }
@@ -1194,12 +1197,12 @@ public class RowColTimeVirtualArray extends
         if( acontrol == null)
            return;
         //only notify if different
-        int FrameNumber = state.get_int("TableTS_TimeInd");
+        int FrameNumber = state.get_int(ViewerState.TABLE_TS_CHAN);
         
         if( FrameNumber == acontrol.getFrameNumber())
            return;
            
-        state.set_int( "TableTS_TimeInd", acontrol.getFrameNumber());
+        state.set_int( ViewerState.TABLE_TS_CHAN, acontrol.getFrameNumber());
          
         SetTime( xvals1[acontrol.getFrameNumber()]);
         
