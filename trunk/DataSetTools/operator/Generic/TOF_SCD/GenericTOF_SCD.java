@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2005/01/10 15:14:07  dennis
+ * Updated java docs for getCategoryList method.
+ *
  * Revision 1.5  2005/01/07 17:52:53  dennis
  * Now sets category list based on instrument type String from Operator
  * base class.
@@ -69,16 +72,13 @@ abstract public class GenericTOF_SCD extends    GenericOperator
 
   /* ------------------------ getCategoryList ------------------------------ */
   /**
-   * Get an array of strings listing the operator category names of base
-   * classes for this operator.  The first entry in the array is the string:
+   * Get a list of strings giving the categories to be used when placing
+   * the operator in menus.  The first entry in the array must be the string:
    *
    *      Operator.OPERATOR
    *
-   * The last entry is the category of the last abstract base class that is
-   * is a base class for the current operator.
-   * 
-   * @return  A list of Strings specifying the category names of the abstract
-   * base classes from which this operator is derived.
+   * @return  An array of Strings specifying the category names to use 
+   *          for this operator. 
    */
   public String[] getCategoryList()
   {
