@@ -49,8 +49,8 @@ public class JDataViewUI extends JDesktopPane implements Serializable
   ViewManager         view_manager   = null;
   InternalViewManager i_view_manager = null;
 
-  private static final String INTERNAL_FRAME = "Create view in Internal Frame";
-  private static final String EXTERNAL_FRAME = "Create view in External Frame";
+  public static final String INTERNAL_FRAME = "Create view in Internal Frame";
+  public static final String EXTERNAL_FRAME = "Create view in External Frame";
 
   /**
     * Create a new JDataViewUI and sets the border.
