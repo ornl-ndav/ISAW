@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2005/01/31 23:50:15  dennis
+ * Transposed the image produced, so that now each row (i.e. Data block)
+ * corresponds to a cut with contant energy, instead of with constant Q,
+ * as was previously done.
+ *
  * Revision 1.9  2004/04/29 21:15:42  dennis
  * Now works if the DataSet has been converted to Energy or Energy Loss,
  * as well as for time-of-flight DataSets.
@@ -66,6 +71,7 @@ package DataSetTools.operator.DataSet.Conversion.XYAxis;
 
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.ViewTools.UI.*;
 
 import  java.io.*;
 import  java.util.Vector;
@@ -296,7 +302,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
       return message;
     }
     else
-     E_scale = new UniformXScale( min_E, max_E, n_E_bins );
+     E_scale = new UniformXScale( min_E, max_E, n_E_bins+1 );
 
                                         // validate Q bounds
     if ( min_Q > max_Q )                // swap bounds to be in proper order
@@ -309,12 +315,15 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     if ( n_Q_bins <= 0 )                // calculate a default
       n_Q_bins = 100;                   // number of E bins.
 
+    UniformXScale Q_scale = null;
     if ( min_Q >= max_Q )               // no valid range specified, so err out
     {
       ErrorString message = new ErrorString(
                       "ERROR: no valid Q range in QE operator");
       return message;
     }
+    else
+      Q_scale = new UniformXScale( min_Q, max_Q, n_Q_bins+1 );
 
 
     // Now, map the counts from each time channel in each spectrum to a
@@ -449,17 +458,26 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
           QE_vals[q_index][e_index] = (old_QE_val * count + y_val)/( count + 1);
           n_QE_vals[q_index][e_index] = count + 1;
         }
-
       }
-
     }
 
+                                           // this version uses cuts at constant E
+   DataSetFactory factory = new DataSetFactory(
+                                     ds.getTitle(),
+                                     "Q(Inv("+FontUtil.ANGSTROM+"))",
+                                     "Q",
+                                     "Counts",
+                                     "Scattering Intensity" );
+
+
+/*                                         // this version uses cuts at constant Q
    DataSetFactory factory = new DataSetFactory(
                                      ds.getTitle(),
                                      "meV",
                                      "FinalEnergy",
                                      "Counts",
                                      "Scattering Intensity" );
+*/
 
     // #### must take care of the operation log... this starts with it empty
     DataSet new_ds = factory.getDataSet();
@@ -470,8 +488,30 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     new_ds.setAttributeList( ds.getAttributeList() );
 
     Data new_data;
-    for ( int row = 0; row < n_Q_bins; row++ )
-    {
+                                                  // This version creates DataSet 
+                                                  // using cuts at constant E.
+    for ( int col = 0; col < n_E_bins; col++ )    // make data entries from columns
+    {                                             // i.e. using constant E values
+
+      float const_e_slice[] = new float[ n_Q_bins ];
+      for ( int row = 0; row < n_Q_bins; row++ )
+        const_e_slice[row] = QE_vals[row][col];
+
+      new_data = Data.getInstance( Q_scale, const_e_slice, col+1 );
+
+      e_val = col * (max_E - min_E) / n_E_bins + min_E;
+      Attribute e_attr = new FloatAttribute( Attribute.ENERGY, e_val );  
+      new_data.setAttribute( e_attr );
+      new_data.setLabel( Attribute.ENERGY );
+
+      new_ds.addData_entry( new_data );
+    }
+  
+/* 
+                                                  // This version creates DataSet 
+                                                  // using cuts at constant Q.
+    for ( int row = 0; row < n_Q_bins; row++ )    // make data entries from rows
+    {                                             // i.e. using constant Q values
       new_data = Data.getInstance( E_scale, QE_vals[row], row+1 );
 
       q_val = row * (max_Q - min_Q) / n_Q_bins + min_Q;
@@ -480,7 +520,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
 
       new_ds.addData_entry( new_data );
     }
-
+*/
     return new_ds;
   }
 
