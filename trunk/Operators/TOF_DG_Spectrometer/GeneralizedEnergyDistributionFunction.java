@@ -31,6 +31,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.7  2003/02/17 19:10:28  dennis
+ *  Added getDocumentation() method. (Chris Bouzek)
+ *
  *  Revision 1.6  2002/12/11 22:31:31  pfpeterson
  *  Removed the '_2' from getCommand() and its javadocs.
  *
@@ -100,9 +103,9 @@ public class GeneralizedEnergyDistributionFunction
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
-   *  Construct an operator to calculate the Scattering Function
-   *  for a spectrometer DataSet.  It is assumed that the 
-   *  DoubleDifferentialCrossection operator has already been applied.
+   *  Construct an operator to calculate the Generalized Energy Distribution
+   *  Function for a spectrometer DataSet.  It is assumed that the 
+   *  ScatteringFunction operator has already been applied.
    *
    *  @param  ds               The sample DataSet for which the scattering 
    *                           function is to be calculated 
@@ -151,7 +154,7 @@ public class GeneralizedEnergyDistributionFunction
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -175,8 +178,62 @@ public class GeneralizedEnergyDistributionFunction
     addParameter( parameter );
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+   public String getDocumentation()
+   {
+     StringBuffer s = new StringBuffer("");
+     s.append("@overview This operator computes the generalized energy ");
+     s.append("distribution function for a direct geometry spectrometer ");
+     s.append("based on the result of applying the scattering function ");
+     s.append("operator.\n");
+     s.append("@assumptions It is assumed that the ScatteringFunction ");
+     s.append("operator has been applied.\n");
+     s.append("@algorithm For each data entry in the DataSet, this operator ");
+     s.append("first uses the initial energy and the data's x-values to ");
+     s.append("calculate the final energy.\n");
+     s.append("Then it uses tof_calc's SpectrometerQ method to calculate a ");
+     s.append("Q value.\n");
+     s.append("Next it uses the conversion factor XKCON, the sample temperature, ");
+     s.append("the Debye Waller coefficient, and the sample mass to calculate ");
+     s.append("conversion values.\n");
+     s.append("These conversion values, along with conversion error data based on ");
+     s.append("the data's y-values, are used by Data's getInstance ");
+     s.append("method to calculate conversion data.\n");
+     s.append("Finally it multiplies the spectrum by the conversion data ");
+     s.append("and appends a log to the DataSet indicating that a generalized ");
+     s.append("energy distribution function was performed and this message: ");
+     s.append("\"exp(-e_transf/kt) clamped to exp(10) for e_transf<0.\" ");
+     s.append("is also added.\n");
+     s.append("@param ds The sample DataSet for which the generalized energy ");
+     s.append("distribution function is to be calculated.\n");
+     s.append("@param temperature The sample temperature.\n");
+     s.append("@param xmass The sample mass (amu).\n");
+     s.append("@param alpha The Debye Waller coefficient.\n");
+     s.append("@param make_new_ds Flag that determines whether a new ");
+     s.append("DataSet is constructed, or the Data blocks of the original ");
+     s.append("DataSet are just altered.\n");
+     s.append("@return If make_new_ds is true, returns the new DataSet to ");
+     s.append("which the generalized energy distribution function has been ");
+     s.append("applied.  Otherwise, it returns a String indicating that the ");
+     s.append("generalized energy distribution function was applied.\n");
+     s.append("@error An error message is returned if temperature and xmass ");
+     s.append("are not be greater than 0.\n");
+     return s.toString();
+    }
 
   /* ---------------------------- getResult ------------------------------- */
+  /** 
+    * Computes the generalized energy distribution function.
+    *
+    * @return If make_new_ds is true, returns the new DataSet to which the 
+    * generalized energy distribution function has been applied.  
+    * Otherwise, it returns a String indicating that the generalized energy  
+    * distribution function was applied.
+    */
 
   public Object getResult()
   {       
@@ -270,9 +327,7 @@ public class GeneralizedEnergyDistributionFunction
           conversion_vals[i] =xmass * e_transf / (2.0539802f * Q * Q ) *
                               (float)( Math.exp(alpha * Q * Q)) * 
                               ( 1 - (float)Math.exp(10) );
-
-
-/*                
+/*
         if(i == 200 )
         System.out.println("conversion_vals[i]="+ conversion_vals[i]+"\n"+
                            "energy_transfer="+ e_transf+"\n"+
@@ -284,9 +339,8 @@ public class GeneralizedEnergyDistributionFunction
                            "XKCON=" + XKCON+"\n"+
                            "xkt=" + xkt+"\n"+
                            "ebykt=" + ebykt+"\n" );
-*/                       
+*/
       }
-
       conversion_data = Data.getInstance( data.getX_scale(),
                                           conversion_vals,
                                           conversion_errors,
@@ -303,7 +357,8 @@ public class GeneralizedEnergyDistributionFunction
     else
     {
       ds.notifyIObservers( IObserver.DATA_CHANGED );
-      return new String( "Calculated Scattering Function" );
+      return new String( 
+        "Calculated Generalized Energy Distribution Function" );
     }
   }  
 
@@ -325,7 +380,60 @@ public class GeneralizedEnergyDistributionFunction
   */
   public static void main( String args[] )
   {
-    System.out.println( "GeneralizedEnergyDistributionFunction" );
+    System.out.println("Test of GeneralizedEnergyDistributionFunction" );
+   
+    String    run_name = "/home/groups/SCD_PROJECT/SampleRuns/hrcs2447.run";
+    //String    run_name = "d:\\SCD_PROJECT\\SampleRuns\\hrcs2447.run";
+    Retriever rr       = new RunfileRetriever( run_name );
+    DataSet   ds       = rr.getDataSet(1);
+
+    Operator op = new DoubleDifferentialCrossection( ds, null, false,
+                                                     10000, 1, true );
+
+    Object ddif_ds = op.getResult();
+    if ( ddif_ds == null )
+      System.out.println("Error in calculating DSDODE... returned null");
+    else
+    {
+      System.out.println("DSDODE returned:" + ddif_ds );
+      if ( ddif_ds instanceof DataSet )
+      {
+        ViewManager vm1 = new ViewManager((DataSet)ddif_ds,IViewManager.IMAGE);
+      }
+    }
+
+   op = new ScatteringFunction( (DataSet)ddif_ds, 1, true );
+   Object scat_ds = op.getResult();
+   if ( scat_ds == null )
+      System.out.println("Error in calculating SCAT... returned null");
+    else
+    {
+      System.out.println("SCAT returned:" + scat_ds );
+      if ( scat_ds instanceof DataSet )
+      {
+        ViewManager vm3 = new ViewManager((DataSet)scat_ds,IViewManager.IMAGE);
+      }
+    }
+    
+   //ignoring Debye-Waller effects for test, so enter 1.0 for DW parameter
+   //1 gram of sample = 6.022 x 10^23 amu 
+   op = new GeneralizedEnergyDistributionFunction(
+     (DataSet)scat_ds, 10.0f, 6.02E23f, 1.0f, true );
+   Object gen_dis_ds = op.getResult();
+   if ( gen_dis_ds == null )
+      System.out.println("Error in calculating GFUN... returned null");
+    else
+    {
+      System.out.println("GFUN returned:" + gen_dis_ds );
+      if ( gen_dis_ds instanceof DataSet )
+      {
+        ViewManager vm4 = new ViewManager((DataSet)gen_dis_ds,IViewManager.IMAGE);
+      }
+    }
+    
+    System.out.println("Documentation: " + op.getDocumentation());
+
+    System.out.println("End of test of GeneralizedEnergyDistributionFunction");
   }
 
 }
