@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  *
+ * $Log$
+ * Revision 1.8  2003/07/03 15:13:15  bouzekc
+ * Added log header.
+ *
  */
 package Wizard;
 
