@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2004/02/20 16:44:33  rmikk
+ * Added an import so it would compile
+ *
  * Revision 1.14  2004/01/24 22:22:25  bouzekc
  * Removed unused imports and local variables.
  *
@@ -51,6 +54,7 @@ package DataSetTools.viewer.Contour;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
 import DataSetTools.operator.DataSet.Information.XAxis.*;
+import DataSetTools.instruments.*;
 
 public class  QxQyQzAxesHandler implements IAxesHandler
   { DataSet ds;
@@ -70,7 +74,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
      { ds = DS;
        x_units = ds.getX_units();
        x_label= ds.getX_label();
-      /*SampleOrientation orientation =
+       SampleOrientation orientation =
         (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
      
       if( orientation != null )
@@ -84,7 +88,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
          ck=Math.cos(-chi);
          sk=Math.sin(-chi);
         }
-       */
+      
       }
    public QxQyQzAxesHandler( DataSet ds, float[][]Transf, String[]AxisName,
                               String[] AxisUnits)
@@ -166,10 +170,17 @@ public class  QxQyQzAxesHandler implements IAxesHandler
        float initial_path =
              ((Float)D.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
 
-       Position3D q_pos = tof_calc.DiffractometerVecQ(pos, initial_path, time);
+       Object O = (new SCDQxyz(ds,GroupIndex,time)).getResult();
+       Position3D q_pos = null;
+       if( O instanceof Position3D)
+          q_pos=(Position3D)O;
+       else return null;
 
        Q = q_pos.getCartesianCoords();
-
+       
+       scatteringAngle = pos.getScatteringAngle();
+       pathLength = initial_path +pos.getDistance();
+      
        //Object Qw = op.getResult();
        if( Q == null)
           {System.out.println( "AQw is null for "+GroupIndex);
@@ -184,7 +195,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
          {System.out.println( "Qw !float[]");
           return null;
          }
-       */
+       
        FloatAttribute Fat = (FloatAttribute)(D.getAttribute( Attribute.INITIAL_PATH ));
          DetPosAttribute DPa = (DetPosAttribute)D.getAttribute(Attribute.DETECTOR_POS);
       
@@ -193,7 +204,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
       DetectorPosition DP = DPa.getDetectorPosition();
        scatteringAngle = DP.getScatteringAngle();
       pathLength = Fat.getFloatValue() +DP.getDistance();
-       /*if( Qw == null) 
+       if( Qw == null) 
          return null;
        System.out.println( "Qw class="+Qw.getClass()+","+
             (Qw instanceof Position3D));
@@ -206,13 +217,16 @@ public class  QxQyQzAxesHandler implements IAxesHandler
          return Q;
        */
        float L = (float)java.lang.Math.sqrt( Q[0]*Q[0]+ Q[1]*Q[1]+Q[2]*Q[2]);
+       
        if( L !=0)
          {
          Q[0]=Q[0]/L;
          Q[1]=Q[1]/L;
          Q[2]=Q[2]/L;
          }
+      
        this.GroupIndex = GroupIndex;
+     
      
       /*if( D == null)
         return null;
