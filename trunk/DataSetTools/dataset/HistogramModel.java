@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2005/02/07 22:32:34  dennis
+ *  clone() method now calls copyFields(this) to makes sure that
+ *  all fields of the base class Data are properly copied.
+ *
  *  Revision 1.10  2004/05/10 20:42:20  dennis
  *  Test program now just instantiates a ViewManager to diplay
  *  calculated DataSet, rather than keeping a reference to it.
@@ -234,14 +238,8 @@ public class HistogramModel extends    ModeledData
     HistogramModel temp = new HistogramModel(x_scale, function, 
                                              errors, group_id);
 
-                                      // copy the fields
-    temp.setSqrtErrors( isSqrtErrors() );
-
-                                      // copy the list of attributes.
-    AttributeList attr_list = getAttributeList();
-    temp.setAttributeList( attr_list );
-    temp.selected = selected;
-    temp.hide     = hide;
+    temp.setAttributeList( getAttributeList() );    // copy the attributes
+    temp.copyFields( this );                        // and fields
 
     return temp;
   }
