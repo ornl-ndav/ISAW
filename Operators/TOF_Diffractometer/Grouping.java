@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/01/30 02:26:34  bouzekc
+ * Removed unused variables and imports.
+ *
  * Revision 1.11  2003/12/15 02:06:09  bouzekc
  * Removed unused imports.
  *
@@ -329,8 +332,8 @@ public class Grouping extends GenericTOF_Diffractometer{
               if ( result instanceof DataSet ){      // we got a DataSet back
                                                 // so show it and original
                   DataSet new_ds = (DataSet)result;
-                  ViewManager vm1 =new ViewManager( ds,    IViewManager.IMAGE );
-                  ViewManager vm2 =new ViewManager( new_ds, IViewManager.IMAGE);
+                  new ViewManager( ds,    IViewManager.IMAGE );
+                  new ViewManager( new_ds, IViewManager.IMAGE);
               }else{
                   System.out.println( "Operator returned " + result );
               }
