@@ -7,17 +7,35 @@ package OverplotView;
  * OverplotView.
  *
  * $Log$
+ * Revision 1.2  2001/06/28 22:06:24  neffk
+ * added setAttributeList( AttributeList l ) to the interface so that the
+ * graph can store things like units, labels, and the title--things that are
+ * global for all data on the graph.
+ *
  * Revision 1.1  2001/06/27 18:32:35  neffk
  * changed the name of the interface to start w/ I.
  *
  */
 
+
+import DataSetTools.dataset.AttributeList;
 import java.util.Vector;
 import javax.swing.JComponent;
 import OverplotView.GraphableData;
 
+
 public interface IGraphableDataGraph
 {
+  public static final String TITLE      = "Graph Title";
+  public final static String TITLE_SUB1 = "First Graph Subtitle";
+  public final static String TITLE_SUB2 = "Second Graph Subtitle";
+
+  public final static String X_UNITS    = "X-Axis Units";
+  public final static String Y_UNITS    = "Y-Axis Units";
+
+  public final static String X_LABEL    = "X-Axis Label";
+  public final static String Y_LABEL    = "Y-Axis Label";
+
 
   /**
    * converts from GraphableData (the internal format for this viewer)
@@ -33,9 +51,16 @@ public interface IGraphableDataGraph
 
  
   /**
-   * draws all current data on the graphics display
+   * draws all current data on the graphics object, whatever it
+   * might be.  
    */
   public JComponent redraw();
+
+
+  /**
+   * s
+   */
+  public void setAttributeList( AttributeList l );
 }  
 
 
