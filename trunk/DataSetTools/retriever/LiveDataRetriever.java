@@ -4,6 +4,9 @@
  * Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.4  2001/02/09 14:19:06  dennis
+ *  Changed CURRENT_TIME attribute to UPDATE_TIME.
+ *
  *  Revision 1.3  2001/02/02 20:53:51  dennis
  *  Added loop to display the CURRENT_TIME attribute for testing.
  *
@@ -179,12 +182,12 @@ public class LiveDataRetriever extends    Retriever
 
     retriever.Exit();
 
-/*  // to verify that the time attribute has been set, uncomment this loop
-    for ( int i = 0; i < hist_ds.getNum_entries(); i++ )
+  // to verify that the time attribute has been set, uncomment this loop
+/*  for ( int i = 0; i < hist_ds.getNum_entries(); i++ )
     {
       Data d = hist_ds.getData_entry(i);
       System.out.println( "For entry " + i + " Time = " + 
-                        (String)(d.getAttributeValue(Attribute.CURRENT_TIME)));
+                        (String)(d.getAttributeValue(Attribute.UPDATE_TIME)));
      }
 */
     
