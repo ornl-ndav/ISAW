@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2001/06/29 19:12:02  rmikk
+ * Eliminated a "check nop" system output
+ *
  * Revision 1.20  2001/06/25 19:07:03  rmikk
  * Fixed error witj a:b+c to allow expressions after the :
  *
@@ -2307,7 +2310,7 @@ private Operator getSHOp( Vector Args, String Command)
        boolean fit =true;
        Object Arg2;
        if( op == null)
-         { System.out.println("Check no op");
+	   {//System.out.println("Check no op");
            return false;
           }
        if( Args == null )
@@ -2316,7 +2319,8 @@ private Operator getSHOp( Vector Args, String Command)
          else
            return true;
        if(Debug)
-         System.out.println("Check sizes = "+ Args.size() +","+ op.getNum_parameters());
+         System.out.println("Check sizes = "+ Args.size() +","
+                  + op.getNum_parameters());
        if( op.getNum_parameters() !=  Args.size() -start )
          return false;
        fit = true;
@@ -2335,7 +2339,8 @@ private Operator getSHOp( Vector Args, String Command)
                }
                 
 	    else if( ( Arg2 instanceof String ) && 
-                          ( op.getParameter(k).getValue() instanceof SpecialString ) )
+                          ( op.getParameter(k).getValue() instanceof 
+                              SpecialString ) )
 	      {if(Debug)System.out.print("D");
 	      }
                  
