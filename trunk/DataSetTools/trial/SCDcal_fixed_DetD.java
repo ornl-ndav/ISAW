@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/07/28 22:21:48  dennis
+ *  Added method show_parameter to simplify printing results.
+ *
  *  Revision 1.2  2003/07/18 16:43:51  dennis
  *  Now supports multiple area detectors as well as multiple runs.
  *  The L1, TO and the area detector's width, height and shift in it's
@@ -365,8 +368,25 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
         s_dev += vals[i] * vals[i];
       s_dev = Math.sqrt( s_dev/vals.length );
       System.out.println("1 standard dev error distance in Q = " + s_dev );
+
+      for ( int i = 0; i < parameters.length; i ++ )
+        System.out.print( " " + Format.real(parameters[i], 12, 5 ) );
+      System.out.println();
     }
     eval_count++;
+  }
+
+
+  static private void show_parameter( String name, 
+                                      double value, 
+                                      double sig1, 
+                                      double sig2 )
+  {
+    System.out.print( Format.string(name,17)  );
+    System.out.print( Format.real(value,17,9) + " +- " );
+    System.out.print( Format.real(sig1, 17,9) + " +- " );
+    System.out.print( Format.real(sig2, 17,9) );
+    System.out.println();
   }
 
  /* -------------------------------------------------------------------------
@@ -568,9 +588,7 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
       coefs = error_f.getParameters();
       names = error_f.getParameterNames();
       for ( int i = 0; i < error_f.numParameters(); i++ )
-        System.out.println(names[i] + " = " + coefs[i] +
-                           " +- " + p_sigmas[i] +
-                           " +- " + p_sigmas_2[i] );
+        show_parameter( names[i], coefs[i], p_sigmas[i], p_sigmas_2[i] );
 
       System.out.println();
       System.out.println("RESULTS -----------------------------------------"); 
