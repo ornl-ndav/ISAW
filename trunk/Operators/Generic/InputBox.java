@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/09/27 13:19:07  rmikk
+ * Made the dialog box non-modal with a sleep until new values are set
+ * at the end.
+ *
  * Revision 1.2  2003/01/07 16:04:48  rmikk
  * Input Box now disappears after pressing the Apply button
  *
@@ -53,7 +57,7 @@ import DataSetTools.util.*;
 */
 public class InputBox  extends GenericBatch
  {Vector Prompts,InitValues,DataSetList;
-
+  boolean Done;
  
   /**
   *   Constructor
@@ -154,18 +158,26 @@ public class InputBox  extends GenericBatch
       Prompts = (Vector)( getParameter( 1 ).getValue() );
       InitValues = (Vector)( getParameter( 2 ).getValue() );
       DataSetList = (Vector)( getParameter( 3 ).getValue() );
-
+      Done = false;
       if( ( Prompts == null ) || ( InitValues == null ))
         return new ErrorString( "null prompts or values");
 
       if( Prompts.size() != InitValues.size() )
          return new ErrorString(" Prompt size differs from InitValues size" );
 
-      ArgOperator A = new ArgOperator( Title, Prompts , InitValues );
+      ArgOperator A = new ArgOperator( Title, Prompts , InitValues, this );
       JParametersDialog JP = new JParametersDialog(
                        A,
                        new VectDataSetHandler( DataSetList ),
-                       null, null, true);
+                       null, null, false);
+      while( !Done)
+           try{
+            Thread.sleep(250);
+           }
+           catch(InterruptedException e)
+             { 
+                Done = true;
+              }
       return new DataSetTools.operator.Generic.Batch.ExitClass(); 
  
       
@@ -228,13 +240,13 @@ class ArgOperator extends GenericBatch
  {
   String Title;
   Vector Prompts,InitValues;
-
-  public ArgOperator( String Title, Vector Prompts, Vector InitValues)
+  InputBox mainn;
+  public ArgOperator( String Title, Vector Prompts, Vector InitValues, InputBox mainn)
     {super( Title );
      this.Prompts = Prompts;
      this.InitValues = InitValues;
      setDefaultParameters();
-     
+     this.mainn = mainn;
      }
 
    public void setDefaultParameters()
@@ -253,11 +265,11 @@ class ArgOperator extends GenericBatch
 
   public Object getResult()
     {
-
      for( int i=0; i < super.parameters.size(); i++)
        InitValues.setElementAt( super.getParameter(i).getValue(), i);
+     mainn.Done = true;
      return new DataSetTools.operator.Generic.Batch.ExitClass() ;
-     }
+    }
 
  }//ArgOperator Class
 
