@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/01/08 21:50:09  dennis
+ *  Now calculated detector center, height, width & number of pixels from
+ *  two corner pixels, assuming a square detector and that the spectra are
+ *  ordered starting from the lower left hand corner.  This should work for
+ *  both the old and new detectors on SCD.
+ *
  *  Revision 1.1  2003/01/08 17:41:59  dennis
  *  This class handles the mapping from a vector Q value back to the
  *  time-of-flight data for SCD.  This initial version only works for "old"
@@ -82,11 +88,30 @@ public class VecQToTOF
 
   VecQToTOF( DataSet ds )
   {
-    n_rows = 85;
-    n_cols = 85;
-    det_width  = .25f;
-    det_height = .25f;
-    det_center = new Vector3D( 0, -.32f, 0 );
+                                                   // assume square detector
+                                                   // with spectra in order
+                                                   // from lower left to upper
+                                                   // right;
+    n_rows = (int)Math.round( Math.sqrt(ds.getNum_entries()) );
+    n_cols = n_rows;       
+    System.out.println("n_rows,cols = " + n_cols );
+
+    Vector3D corner1 = getPosition( ds.getData_entry(0) );    
+    Vector3D corner2 = getPosition( ds.getData_entry( ds.getNum_entries()-1) );
+    Vector3D temp = new Vector3D( corner1 );
+    temp.subtract( corner2 );
+    float diag = temp.length();
+    
+    det_width  = (float)(diag/Math.sqrt( 2.0 ));
+    det_height = det_width;
+    System.out.println("det_width, height = " + det_width );
+
+    det_center = new Vector3D( corner1 );   // find "center" as average of
+    det_center.multiply( 0.5f );            // two opposite corners
+    temp.set( corner2 );
+    temp.multiply( 0.5f );
+    det_center.add( temp );
+
     u = new Vector3D( -1, 0, 0 );
     v = new Vector3D(  0, 0, 1 );
     n = new Vector3D(  0, 1, 0 );
@@ -197,8 +222,9 @@ public class VecQToTOF
     float v_comp = det_point.dot( v );
 //  System.out.println("u, v components = " + u_comp + ", " + v_comp );
 
-    int row = (int)(84.99 *( 0.5 + v_comp/det_height ));  // NOTE: the rounding
-    int col = (int)(84.99 *( 0.5 + u_comp/det_width ));   // MUST be checked!!!!
+                                  // NOTE: the rounding MUST be checked !!!!!
+    int row = (int)Math.floor((n_cols-1)*(0.5 + v_comp/det_height));
+    int col = (int)Math.floor((n_rows-1)*(0.5 + u_comp/det_width)); 
 //  System.out.println("row, col = " + row + ", " + col );
  
     if ( row < 0 || row >= n_rows-1 )
@@ -226,6 +252,20 @@ public class VecQToTOF
     return intensity;
   }
 
+
+ /* -------------------------- getPosition ------------------------------ */
+ /*
+  *  Get the segment position as a Vector3D object
+  */
+  private Vector3D getPosition( Data d )
+  {
+    DetectorPosition pos = (DetectorPosition)
+                              d.getAttributeValue( Attribute.DETECTOR_POS );
+    Vector3D vector = new Vector3D();
+    float    coords[] = pos.getCartesianCoords();
+    vector.set( coords[0], coords[1], coords[2] );
+    return vector;
+  }
 
  /* ------------------------ makeGoniometerRotation ------------------------ */
  /*
