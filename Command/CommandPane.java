@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.47  2003/02/11 16:56:42  pfpeterson
+ * No longer allows 'jython' option if Jython cannot be used.
+ *
  * Revision 1.46  2003/01/07 16:06:43  rmikk
  * Fixed error so choice of Jython interpreter is not allowed if the Jython system is absent
  *
@@ -196,17 +199,30 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
     private void initt(){
         JPanel JP;   
         Rectangle R = getBounds() ; 
-      
+        String ISAWscript="ISAW Script";
+
         Run = new JButton( "Run Script" ) ; 
         Open = new JButton( "Open Script" ) ; 
         Save = new JButton( "Save Script" ) ; 
         Help = new JButton( "Help" ) ; 
         Clear = new JButton("Clear");
         String[] LanguageChoices = new String[2];
-        LanguageChoices[0]="ISAW Script";
-        LanguageChoices[1]="Jython Script";
-        Language = new JComboBox( LanguageChoices );
-        Language.setSelectedIndex( 0 );
+        LanguageChoices[0]=ISAWscript;
+        {
+          ScriptProcessorOperator sp=ScriptInterpretFetch
+                                           .getScriptProcessor("mine.py",null);
+          if(sp==null){
+            LanguageChoices=new String[1];
+            LanguageChoices[0]=ISAWscript;
+          }else{
+            LanguageChoices[1]="Jython Script";
+          }
+          sp=null;
+        }
+        if(LanguageChoices.length>1){
+          Language = new JComboBox( LanguageChoices );
+          Language.setSelectedIndex( 0 );
+        }
         Jhelp jh = null;
         try {
              jh = new Jhelp();
@@ -217,7 +233,8 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
         Run.addActionListener( new MyMouseListener(this , jh ) ) ; 
         Help.addActionListener( new MyMouseListener( this , jh) ) ; 
         Clear.addActionListener( new MyMouseListener( this , jh) ) ; 
-        Language.addActionListener( new MyMouseListener( this , jh) ) ; 
+        if(LanguageChoices.length>1)
+          Language.addActionListener( new MyMouseListener( this , jh) ) ; 
         setLayout( new BorderLayout() ) ; 
         JP = new JPanel() ; 
         JP.setLayout( new GridLayout( 1 , 6 ) ) ; 
@@ -228,7 +245,10 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
         
         JP.add( Save ) ; 
         JP.add( Clear );
-        JP.add( Language );
+        if(LanguageChoices.length>1)
+          JP.add( Language );
+        else 
+          JP.add( new JLabel(ISAWscript,JLabel.CENTER));
         JP.add( Help ) ; 
         
         add( JP , BorderLayout.NORTH ) ; 
@@ -701,6 +721,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
               if( sp == null)
                  {sp = new ScriptProcessor( Commands.getDocument() );
                   indx = 0;
+                  SharedData.addmsg("Jython not found");
                  }
               SP = sp;
               SP.setIObserverList( IObslist );
