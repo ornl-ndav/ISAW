@@ -31,8 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.192  2004/03/17 20:56:23  dennis
+ *  Changed version to 1.7.0 alpha 1
+ *
  *  Revision 1.191  2004/03/17 20:53:49  dennis
- *  Changed version to 1.6.1 alpha 1
+ *  Changed version to 1.7.0 alpha 1
  *
  *  Revision 1.190  2004/03/15 23:57:00  dennis
  *  Changed some references to static methods to be through
