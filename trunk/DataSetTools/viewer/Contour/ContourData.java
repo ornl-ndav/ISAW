@@ -27,6 +27,12 @@
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
+ * Modified:
+ *
+ *  $Log$
+ *  Revision 1.2  2002/07/12 21:12:54  rmikk
+ *  Included documentation to automatically record log messages
+ *
  */
 package DataSetTools.viewer.Contour;
 
