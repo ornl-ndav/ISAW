@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2003/06/27 18:05:34  bouzekc
+ * Fixed indenting errors.
+ *
  * Revision 1.17  2003/06/27 18:02:50  bouzekc
  * Now returns an ErrorString when the matrix file is not
  * specified.  Also returns an ErrorString rather than the
@@ -285,13 +288,12 @@ public class LsqrsJ extends GenericTOF_SCD {
         file = new File( matfile );
 
         if( file.isDirectory(  ) ) {
-          matfile   = null;
+          matfile = null;
         }
       }
 
       if( matfile == null ) {
-        return new ErrorString( 
-          "Matrix file has not been specified" );
+        return new ErrorString( "Matrix file has not been specified" );
       }
 
       file = null;
@@ -608,12 +610,11 @@ public class LsqrsJ extends GenericTOF_SCD {
 
     // update the matrix file
     ErrorString error = Util.writeMatrix( 
-      matfile, double2float( UB ), double2float( abc ),
-      double2float( sig_abc ) );
+        matfile, double2float( UB ), double2float( abc ),
+        double2float( sig_abc ) );
 
     if( error != null ) {
-      return new ErrorString(
-        "LsqrsJ failed to update matrix file: " + error);
+      return new ErrorString( "LsqrsJ failed to update matrix file: " + error );
     } else {
       SharedData.addmsg( "Wrote file: " + matfile );
 
