@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2002/07/12 15:35:42  pfpeterson
+ *  Uses SharedData.getProperty() instead of System.getProperty().
+ *
  *  Revision 1.14  2002/06/17 20:30:51  dennis
  *  ZoomRegion now only preserved if the number of spectra is the same
  *  (in addition to having the same title, axis labels and units).
@@ -139,8 +142,7 @@ public class ViewerState  implements Serializable
       SharedData sd = new SharedData();            
       SharedData.isaw_props.reload();
                                                        // color scale ......
-      String scale_name = getProperty( COLOR_SCALE, 
-                                       IndexColorMaker.HEATED_OBJECT_SCALE );
+      String scale_name = getProperty( COLOR_SCALE ); 
       state.put( COLOR_SCALE, scale_name );
 
                                                        // rebin ......
@@ -427,9 +429,28 @@ public class ViewerState  implements Serializable
   *  @return  The trimmed property string, if the named property was set,
   *           or null if the named property was not set.
   */
+  private String getProperty( String name )
+  {
+    String property = SharedData.getProperty( name );
+    if ( property != null )
+    {
+      property = property.trim();
+      if ( property.length() < 1 )
+        property = null;
+    }
+    return property;
+  }
+
+ /**
+  *  Get the String value of a system property with no leading or trailing 
+  *  blanks.
+  *
+  *  @return  The trimmed property string, if the named property was set,
+  *           or null if the named property was not set.
+  */
   private String getProperty( String name, String default_string )
   {
-    String property = System.getProperty( name, default_string );
+    String property = SharedData.getProperty( name, default_string );
     if ( property != null )
     {
       property = property.trim();
