@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2002/07/24 23:21:55  dennis
+ *  Now updates X-Conversions table when POINTED_AT_CHANGED
+ *  message is received.
+ *
  *  Revision 1.33  2002/07/23 18:21:02  dennis
  *  Now sends/processes POINTED_AT_CHANGED messages when the
  *  pointed at "X" value is changed as well as when the
@@ -350,7 +354,7 @@ public void redraw( String reason )
   }
   else if ( reason.equals( IObserver.POINTED_AT_CHANGED ))
   {
-    if ( image_Jpanel.isDoingBox() )
+    if ( image_Jpanel.isDoingBox() )    // don't interrupt the zoom in process
       return;
 
     DrawSelectedHGraphs(); 
@@ -373,7 +377,11 @@ public void redraw( String reason )
         pt.x = x;
 
       if ( !image_sent_pointed_at )
+      {
         SyncVImageScrollBar();
+        if ( index != DataSet.INVALID_INDEX && x != Float.NaN )
+          image_table.showConversions( x, index );
+      }
       else
         image_sent_pointed_at = false;   // only skip one POINTED_AT message
 
