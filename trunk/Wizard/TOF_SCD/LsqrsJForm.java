@@ -277,6 +277,8 @@ public class LsqrsJForm extends Form
       matFileName = StringUtil.setFileSeparator(matFileName);
       matNamesVec.add(matFileName);
 
+      SharedData.addmsg("LsqrsJ is creating " + matFileName + " for " + peaksName);
+
       //call LsqrsJ
       leastSquares = new LsqrsJ();
       leastSquares.getParameter(0).setValue(peaksName);
