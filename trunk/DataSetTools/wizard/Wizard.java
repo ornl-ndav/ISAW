@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.72  2003/09/10 00:36:47  bouzekc
+ * Refactored to move duplicate functionality outside of class.  Now relies
+ * on the ParameterGUIs themselves for validation purposes.
+ *
  * Revision 1.71  2003/08/27 23:10:41  bouzekc
  * Now implements Serializable.  Added code to set a projects directory using
  * a config file in the user's home directory.  Renamed private method
@@ -1312,43 +1316,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
             validStartInd + VALIDSTART.length(  ), validEndInd );
         curParam.setValid( new Boolean( paramValidity ).booleanValue(  ) );
 
-        trimmer = curParam.getValue(  );
-
-        if( curParam instanceof DataSetPG ) {
-          curParam.setValid( false );  //DataSets not valid
-        } else if( ( curParam instanceof BrowsePG ) ) {
-          //if the value for the BrowsePG was bad (as can happen all too easily
-          //with Scripts) or the file is not found, set it invalid
-          if( 
-            
-            //try every trick we can to see if the File exists
-            ( trimmer == null ) ||
-              !( new File( trimmer.toString(  ).replace( '\"', ' ' ).trim(  ) ).exists(  ) ) ) {
-            curParam.setValid( false );
-          }
-        } else if( curParam instanceof ArrayPG || curParam instanceof VectorPG ) {
-          if( trimmer == null ) {
-            curParam.setValid( false );
-          } else {
-            Vector v = ( Vector )trimmer;
-
-            if( ( v == null ) || v.isEmpty(  ) ) {
-              curParam.setValid( false );
-            } else {  //Test the assumption
-
-              for( int k = 0; k < v.size(  ); k++ ) {
-                trimmer = v.elementAt( k );
-
-                if( 
-                  !( new File( 
-                      trimmer.toString(  ).replace( '\"', ' ' ).trim(  ) ).exists(  ) ) ) {
-                  curParam.setValid( false );
-
-                  break;
-                }
-              }
-            }
-          }
+        if( !curParam.getValid(  ) ) {
+          curParam.validateSelf(  );
         }
 
         //find the index of the ending for the parameter, e.g. </DataDir>
@@ -1619,7 +1588,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
           ( iparam instanceof LoadFilePG ) || ( iparam instanceof SaveFilePG ) ||
           ( iparam instanceof StringPG &&
           ( val.toString(  )
-                 .indexOf( '.' ) > 0 ) ) ) {
+                 .indexOf( '.' ) > 0 ) ) || iparam instanceof VectorPG ) {
         jmi = new JMenuItem( iparam.getName(  ) );
         view_menu.add( jmi );
         jmi.addActionListener( command_handler );
