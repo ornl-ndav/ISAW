@@ -42,6 +42,7 @@ import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ParametersGUI.*;
+import Command.ParameterClassList;
 
 /**
   * The OperatorForm class is an extension of Form designed to work 
@@ -53,6 +54,7 @@ import DataSetTools.components.ParametersGUI.*;
 public class OperatorForm extends Form implements Serializable, HiddenOperator{
   protected Operator form_op;
   protected IParameterGUI result_param;
+  private static ParameterClassList PL = null;
 
   /**
    *  Construct an OperatorForm with the given title.  
@@ -68,11 +70,11 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
   } 
 
   /**
-   *  Construct an OperatorForm with the given title and Operator.
+   *  Construct an OperatorForm with the given Operator.
    *  This allows the use of that Operator for the getResult()
    *  method.  
    *
-   *  @param  title           The title to show on this form
+   *  @param  op             The Operator to use for this form
    *
    */
   public OperatorForm( Operator op)
@@ -80,6 +82,29 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
     super(op.getTitle());
     form_op = op;
     this.setDefaultParameters();
+  }
+
+  /**
+   *  Construct an OperatorForm with the given Operator and
+   *  result parameter type.
+   *  This allows the use of that Operator for the getResult()
+   *  method.  
+   *
+   *  @param  op              The Operator to use for this form
+   *
+   *  @param  type            The IParameterGUI type of the result 
+   *                          parameter.  e.g. for a LoadFilePG, 
+   *                          use "LoadFile" 
+   *
+   *  @param  name            The name of the result parameter.
+   *                          e.g. "log file"
+   *
+   */
+  public OperatorForm( Operator op, String type, String name)
+  {
+    this(op);
+    this.setParamClass(type);
+    result_param.setName(name);
   }
 
   /* ---------------------------- getCommand ------------------------------- */
@@ -106,25 +131,20 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
    {
      Object result=form_op.getResult();
      
+     //Operator failed - exit out
      if(result instanceof ErrorString){
        this.result_param.setValue(null);
-       SharedData.addmsg("ERROR: " + result);
-       return Boolean.FALSE;
+       /*SharedData.addmsg("ERROR: " + result);
+       return Boolean.FALSE;*/
+       return errorOut("ERROR: " + result);
      }
      
-     /*if we have a String result and it has a '.' in it, it is probably
-       a file.*/
-     if(result instanceof String && 
-        ( ((String)result).indexOf('.') ) >= 0){
-       String indexedString = (String)result;
+     this.result_param.setValue(result);
        
-       //assume that we have a loadable/viewable file name
-       result_param = new LoadFilePG("Result", indexedString, true);
-     }
-     else  //something else we can't handle as a file
-       this.result_param.setValue(result);
-       
-     SharedData.addmsg("Success!\n" + result.toString());
+     if(result != null)
+       SharedData.addmsg("Success!\n" + result.toString());
+     else
+       SharedData.addmsg("Success!\n");
 
      //validate the parameters...if we got this far, assume
      //that our parameters were OK.
@@ -156,7 +176,9 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
        ((IParameterGUI)this.getParameter(i)).setDrawValid(true);
      }
 
-     //set the parameter types so we can build the GUI
+     /*set the parameter types so we can build the GUI
+       the result parameter is one after the last variable parameter
+       and so we'll set it to num_params.*/
      super.setParamTypes(null, var_indices, new int[]{num_params});
    }
 
@@ -168,7 +190,7 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
     *
     *  @param   parameter   The new IParameteterGUI to be added to this Form.
     */
-   protected void addParameter( IParameter parameter )
+   protected void addParameter( IParameterGUI parameter )
    {
        //form_op.addParameter(parameter);
    }
@@ -243,7 +265,24 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
       }
     }
   } 
+
+  /**
+   *  Used to set the class type of the result parameter by
+   *  passing in the type (as determined by getType()) of the
+   *  IParameterGUI.
+   */
+  private void setParamClass(String type)
+  {
+    try
+    {
+      if(PL == null)
+        PL = new ParameterClassList();
+      result_param = (IParameterGUI)(PL.getInstance(type));
+    }
+    catch(ClassCastException cce)
+    {
+      SharedData.addmsg(
+        "ERROR: You must pass an IParameterGUI (not a IParameter)to a Form.");
+    }
+  }
 }
-
-
-
