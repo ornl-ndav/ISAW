@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/07/30 13:28:01  dennis
+ * Now calls viewer.SetThresholdScale before finding peaks.  This
+ * fixes a problem with handling files with a large number of counts.
+ * Previously too many peaks would be found in such data sets.
+ *
  * Revision 1.9  2004/07/28 16:50:29  dennis
  * Major rewrite using the GL_RecipPlaneView to display the
  * reciprocal lattice.  Also fixed getDocumentation().
@@ -137,9 +142,9 @@ public class SCDReciprocalLattice implements Wrappable
                                Calibration_File.toString(),
                                Orientation_Matrix.toString() );
 
+    viewer.SetThresholdScale( Threshold_Level );
     viewer.loadFiles();
     viewer.initialize( true );
-    viewer.SetThresholdScale( Threshold_Level );
     viewer.ShowContours( Show_Contours, Contour_Level );
     viewer.ShowBoundaries( Show_Regions );
     viewer.ShowHKL_Marks( Show_HKL_Marks );
