@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/09/11 19:51:44  bouzekc
+ *  Fixed bug where validateSelf() would not work correctly if the file to
+ *  save did not exist.
+ *
  *  Revision 1.9  2003/09/09 23:06:30  bouzekc
  *  Implemented validateSelf().
  *
@@ -175,7 +179,7 @@ public class SaveFilePG extends BrowsePG{
       
         File file = new File( val.toString(  ) );
         
-        if( !( file.isDirectory(  ) ) && file.canWrite(  ) ) {
+        if( !file.isDirectory(  ) ) {
           setValid( true );
         } else {
           setValid( false );
