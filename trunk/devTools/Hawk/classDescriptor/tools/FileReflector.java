@@ -32,7 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/07/26 14:44:28  kramer
+ * Now all of the '/' characters in a class name are replaced with '.'
+ * characters before the class with the corresponding name is loaded.
+ *
  * Revision 1.5  2004/06/04 23:31:03  kramer
+ *
  * Fixed some Javadoc errors.
  *
  * Revision 1.4  2004/03/15 20:30:15  dennis
@@ -401,6 +406,10 @@ public class FileReflector
 						String correctName = errorPart2.trim();
 //						URL parentDir2 = new URL(parentDir);			
 //						URLClassLoader loader2 = new URLClassLoader(urlArr);
+						
+						//now to replace '/' characters with '.' characters
+						correctName = fixName(correctName);
+						
 						foundClass = loader.loadClass(correctName);
 					}
 					
@@ -428,6 +437,7 @@ public class FileReflector
 		}
 		catch(NoSuchElementException e)
 		{
+			SystemsManager.printStackTrace(e);
 		}
 		catch(Throwable e)
 		{
@@ -436,6 +446,26 @@ public class FileReflector
 		
 		return foundIntF;
 	}
+	
+	/**
+	 * Takes a name of the form 'a/b/c/d' and 
+	 * returns a.b.c.d
+	 */
+	private String fixName(String name)
+	{
+		StringBuffer buffer = new StringBuffer();
+		char currentChar = ' ';
+		for (int i=0; i<name.length(); i++)
+		{
+			currentChar = name.charAt(i);
+			if (currentChar == '/')
+				buffer.append('.');
+			else
+				buffer.append(currentChar);
+		}
+		return buffer.toString();
+	}
+	
 		/**
 		 * This returns an array of URLs used to load the file filename.  The array contains all of the files
 		 * from the CLASSPATH.  If filename is a jarfile it is added to the array.  If filename is a class file
