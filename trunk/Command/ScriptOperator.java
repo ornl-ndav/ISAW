@@ -31,6 +31,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2001/11/09 18:23:20  dennis
+ *   1. Eliminated the System.exit(0) when the JParametersDialog is
+ *      needed for parameters. Used a Window Listener to exit when
+ *      the Dialog box is closed.
+ *   2. Eliminated an error that occurred when a file had no directory
+ *      in its name.  The directory was assumed to be the user.dir,
+ *      the directory where the program was launched.
+ *
  * Revision 1.13  2001/08/02 15:52:01  chatter
  * Changed message in the log entry for running this as a batch file
  *
@@ -78,6 +86,7 @@ package Command;
 import javax.swing.text.*;
 //import Command.*;
 import java.lang.*;
+import java.awt.event.*;
 import DataSetTools.operator.*;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.util.*;
@@ -138,7 +147,9 @@ public class ScriptOperator extends GenericOperator
            i = -1;
         command = F.substring( i + 1, j );
        
-        F = F.substring( 0, i );
+        if( i >= 0) F = F.substring( 0, i );
+        else F = System.getProperty("user.dir");
+
         if( F.charAt(F.length()-1)!='/')
           F = F + "/";
     //adjust F;
@@ -489,9 +500,13 @@ public static void main( String args [] )
    { System.out.println("Error ="+args[0]+"--"+SO.getErrorMessage());
      System.exit( 0 );
    }
+  boolean dialogbox=false;
   if( SO.getNum_parameters() > 0)
    {
     JParametersDialog JP = new JParametersDialog( SO , null, null, null  );
+    myWindowListener  ml = new myWindowListener();
+    JP.addWindowListener( ml );
+    dialogbox=true;
    }
   else
    {Object XX = SO.getResult();
@@ -502,7 +517,13 @@ public static void main( String args [] )
      if( SO.getErrorMessage() != null )
   if( SO.getErrorMessage().length() > 0)
     System.out.println("An Error occurred "+SO.getErrorMessage());
-  System.exit( 0 );
+  if(!dialogbox)System.exit( 0 );
    }
  }
+class myWindowListener  extends WindowAdapter
+  {
+     public void windowClosed(WindowEvent e)
+      {System.exit(0);
+       }
+   }
 
