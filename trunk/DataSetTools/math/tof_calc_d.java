@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.7  2004/02/26 22:16:30  dennis
+ *  Added methods Q_of_K_prime() and K_prime_of_Q() to calculate
+ *  corresponding k' and q vectors.
+ *
  *  Revision 1.6  2004/02/26 21:10:37  dennis
  *  Added method DiffractometerVecQ() that takes and returns
  *  vector objects for the detector position and Q vector.
@@ -565,6 +569,74 @@ public static Vector3D_d DiffractometerVecQ( Vector3D_d  det_pos,
 }
 
 
+/* ----------------------------- K_prime_of_Q ---------------------------- */
+/**
+ *  Calculate the scattering vector k' corresponding to a specified
+ *  vector q.  This method uses a simple calculation of k' from q using an
+ *  algorithm derived from the vector equation: q = k'-k.  First, we assume 
+ *  that the magnitudes of k and k' are equal, and that k is in the direction 
+ *  of the positive x axis.  It follows that the x component of q must be 
+ *  negative for a valid solution to exist.  Rearranging the equation,
+ *  we have k' = q + k.  Since k is in the positive x direction, k' matches
+ *  q except for a change in the x component of q.  The vector diagram
+ *  for q = k'-k forms an isoceles triangle, with two of the angles 
+ *  being theta.  Drop a perpendicular from the vertex between k & k'
+ *  to center of the side q.  Then clearly, ||k|| = ||q||/(2 cos(theta)).
+ *  Also, cos(theta) = (q dot (-k)) /(||q|| ||k||), and since k is a multiple
+ *  of the unit vector i in the x direction, this simplifies to 
+ *  cos(theta) = -qx / ||q||.  Replacing cos(theta) by this expression 
+ *  in the equation giving ||k|| in terms of ||q|| and simplifying yields
+ *  ||k|| = - ||q||^2/(2 qx).  Since k' = q + k and k is in the positive
+ *  x direction, we just need to add ||k|| to the x component of q to get k'
+ *
+ *  @param q_lab  The q vector in laboratory coordinates, with qx negative.
+ *
+ *  @return the corresponding scattering vector k', or null if qx is greater
+ *          than or equal to zero and there is no solution.
+ */
+
+public static Vector3D_d K_prime_of_Q( Vector3D_d q_lab )
+{
+  double q[] = q_lab.get();  // get reference to components of q_lab
+
+  if ( q[0] >= 0 )          // no solution, since q is in the wrong direction
+    return null;
+                            // calculate k' = q + k using the alogrithm 
+                            // described above
+
+  double mag_q_squared = q[0]*q[0] + q[1]*q[1] + q[2]*q[2];
+
+  double mag_k = -(mag_q_squared) / (2*q[0]);
+
+  Vector3D_d k_prime = new Vector3D_d( q[0]+mag_k, q[1], q[2] );
+
+  return k_prime;
+}
+
+
+/* ------------------------------- Q_of_K_prime ------------------------- */
+/**
+ *  Calculate the q vector corresponding to a particular scattering
+ *  vector k', assuming the incident beam is in the direction of the
+ *  positive x axis.
+ *
+ *  @param k_prime The scattering vector in laboratory coordinates
+ *
+ *  @return the q vector for the given scattering vector.
+ */
+
+public static Vector3D_d Q_of_K_prime( Vector3D_d k_prime )
+{
+  double mag_k = k_prime.length();
+
+  double kp[] = k_prime.get();      // reference to components of k_prime
+
+  Vector3D_d q_lab = new Vector3D_d( kp[0] - mag_k, kp[1], kp[2] );
+
+  return q_lab;
+}
+
+
 
 /* ------------------------- DiffractometerQ --------------------------- */
 /**
@@ -1010,10 +1082,14 @@ public static void main( String args[] )
   System.out.println( "ANGST_PER_US_PER_M  " + ANGST_PER_US_PER_M  );
 
   // Check calculation of vec Q for different detector positions 
-  System.out.println("NEW DOUBLE PRECISION TOF_CALC"); 
+  System.out.println("NEW DOUBLE PRECISION TOF_CALC");
   det_pos = new DetectorPosition_d();
   Position3D_d q_pos;
-  float l1 = 9.378f;
+  Vector3D_d   q_vec,
+               new_q_vec,
+               kprime_vec,
+               det_vec;
+  double l1 = 9.378;
   int counter = 0;
   for ( int det_x = -3; det_x < 3; det_x += 2 )
     for ( int det_y = -3; det_y < 3; det_y += 2 )
@@ -1026,7 +1102,19 @@ public static void main( String args[] )
     q_pos = DiffractometerVecQ( det_pos, l1, time );
     double q[] = q_pos.getCartesianCoords();
     System.out.println(" q_pos = " + q[0] + ", " + q[1] + ", " + q[2] );
+
+    q_vec = new Vector3D_d( q );
+    kprime_vec = K_prime_of_Q( q_vec );
+    new_q_vec  = Q_of_K_prime( kprime_vec );
+    System.out.println("NEW Q = " + new_q_vec );
+
+    det_vec = new Vector3D_d( det_pos );
+    det_vec.normalize();
+    kprime_vec.normalize();
+    System.out.println("normalized kprime_vec   = " + kprime_vec );
+    System.out.println("normalized detector_vec = " + det_vec );
   }
+
 
 }
 
