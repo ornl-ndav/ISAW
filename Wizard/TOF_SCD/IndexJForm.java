@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.18  2003/07/16 19:48:17  bouzekc
+ * Now appends to log when using the series of matrix files
+ * to index peaks.
+ *
  * Revision 1.17  2003/07/14 16:33:39  bouzekc
  * Made log file parameter's initial value empty.
  *
@@ -337,9 +341,9 @@ public class IndexJForm extends Form {
     ( ( IParameterGUI )getParameter( 8 ) ).setValid( true );
 
     //#9 the restrict runs value will be validated later
-    ( ( IParameterGUI )getParameter( 8 ) ).setValid( true );
+    ( ( IParameterGUI )getParameter( 9 ) ).setValid( true );
 
-    //peaks file name - make sure it is right for the system
+    //peaks file name
     peaksName = peaksDir + expName + ".peaks";
 
     //validate the parameters and init the progress bar variables
@@ -362,6 +366,10 @@ public class IndexJForm extends Form {
             .setValue( new Float( delta_l ) );
     indexJOp.getParameter( 6 )
             .setValue( new Boolean( update ) );
+
+    //don't append to the log file when running initially
+    indexJOp.getParameter( 7 )
+            .setValue( new Boolean( false ) );
 
     //user wants to use a specified matrix file
     if( useSpecMat ) {
@@ -412,7 +420,12 @@ public class IndexJForm extends Form {
       //set the increment amount
       increment = ( 1.0f / runsArray.length ) * 100.0f;
 
+      boolean appendToLog = false;
+
       for( int i = 0; i < runsArray.length; i++ ) {
+        indexJOp.getParameter( 7 )
+                .setValue( new Boolean( appendToLog ) );
+
         //load the run numbers.  We don't want to remove the leading zeroes!
         runNum   = formatRunNum( runsArray[i] );
 
@@ -440,6 +453,7 @@ public class IndexJForm extends Form {
         oldPercent = newPercent;
         newPercent += increment;
         super.fireValueChangeEvent( ( int )oldPercent, ( int )newPercent );
+        appendToLog = true;  //save the previously logged run data
       }
     }
 
