@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.22  2003/06/03 15:02:21  pfpeterson
+ * Catches an ArrayIndexOutOfBounds exception in IntegratePeak.
+ *
  * Revision 1.21  2003/05/20 19:19:44  pfpeterson
  * Added append parameter.
  *
@@ -794,49 +797,53 @@ public class Integrate extends GenericTOF_SCD{
     cenY=(int)Math.round(peak.y());
 
     // integrate the time slices after the peak
-    for( int k=indexZcen+1 ; k<zrange.length ; k++ ){
-      maxP=getObs(ds,ids[cenX][cenY],zrange[k]);
-      if(zrange[k]<=maxZrange){
-        // determine the local maximum
-        for( int i=cenX-1 ; i<=cenX+1 ; i++ ){
-          for( int j=cenY-1 ; j<=cenY+1 ; j++ ){
-            if( i==(int)Math.round(peak.x()) && j==(int)Math.round(peak.y()))
-              continue;
-            if(getObs(ds,ids[i][j],zrange[k])>maxP){
-              maxP=getObs(ds,ids[i][j],zrange[k]);
-              cenX=i;
-              cenY=j;
+    try{
+      for( int k=indexZcen+1 ; k<zrange.length ; k++ ){
+        maxP=getObs(ds,ids[cenX][cenY],zrange[k]);
+        if(zrange[k]<=maxZrange){
+          // determine the local maximum
+          for( int i=cenX-1 ; i<=cenX+1 ; i++ ){
+            for( int j=cenY-1 ; j<=cenY+1 ; j++ ){
+              if( i==(int)Math.round(peak.x()) && j==(int)Math.round(peak.y()))
+                continue;
+              if(getObs(ds,ids[i][j],zrange[k])>maxP){
+                maxP=getObs(ds,ids[i][j],zrange[k]);
+                cenX=i;
+                cenY=j;
+              }
             }
           }
         }
-      }
-      // clear the log
-      innerLog.delete(0,innerLog.length());
-      innerLog.append(formatInt(cenX)+"  "+formatInt(cenY)+formatInt(maxP,6));
-      if(zrange[k]>maxZrange){
+        // clear the log
+        innerLog.delete(0,innerLog.length());
+        innerLog.append(formatInt(cenX)+"  "+formatInt(cenY)+formatInt(maxP,6));
+        if(zrange[k]>maxZrange){
+          integSliceLogs[k]=innerLog.toString();
+          continue;
+        }
+        tempIsigI
+          =integratePeakSlice(ds,ids,cenX,cenY,zrange[k],increaseSlice,innerLog);
         integSliceLogs[k]=innerLog.toString();
-        continue;
-      }
-      tempIsigI
-        =integratePeakSlice(ds,ids,cenX,cenY,zrange[k],increaseSlice,innerLog);
-      integSliceLogs[k]=innerLog.toString();
-      // update the list of integrals if intensity is positive
-      if(tempIsigI[0]!=0f){
-        IsigI[k][0]=tempIsigI[0];
-        IsigI[k][1]=tempIsigI[1];
-      }        
-      if( tempIsigI[0]<=0f ){ // shrink what is calculated
-        maxZrange=zrange[k]-1;
-        continue;
-      }
+        // update the list of integrals if intensity is positive
+        if(tempIsigI[0]!=0f){
+          IsigI[k][0]=tempIsigI[0];
+          IsigI[k][1]=tempIsigI[1];
+        }        
+        if( tempIsigI[0]<=0f ){ // shrink what is calculated
+          maxZrange=zrange[k]-1;
+          continue;
+        }
 
-      // shrink what is calculated if the slice would not be added
-                // this is not fully correct since Itot and dItot aren't
-                // changing when a slice should be added
-      if(! compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
-        maxZrange=zrange[k]-1;
-        continue;
+        // shrink what is calculated if the slice would not be added
+        // this is not fully correct since Itot and dItot aren't
+        // changing when a slice should be added
+        if(! compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
+          maxZrange=zrange[k]-1;
+          continue;
+        }
       }
+    }catch(ArrayIndexOutOfBoundsException e){
+      // let it drop on the floor
     }
 
     // determine the range to bother trying to sum over
@@ -1329,7 +1336,8 @@ public class Integrate extends GenericTOF_SCD{
    * Determine the observed intensity of the peak at its (rounded)
    * pixel position.
    */
-  private void getObs(Peak peak, DataSet ds, int[][] ids){
+  private void getObs(Peak peak, DataSet ds, int[][] ids)
+                                         throws ArrayIndexOutOfBoundsException{
     if( ds==null || peak==null ) return;
     int id=ids[(int)Math.round(peak.x())][(int)Math.round(peak.y())];
     int z=(int)Math.round(peak.z());
