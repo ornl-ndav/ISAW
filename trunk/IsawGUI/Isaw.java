@@ -31,6 +31,11 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.42  2001/07/25 19:18:52  neffk
+  *  updated to reflect changes in JDataTree and Experiment.  these
+  *  changes fix the problem of only showing the first new DataSet object
+  *  in the 'Modified' node of the tree.
+  *
   *  Revision 1.41  2001/07/25 16:12:22  neffk
   *  added the mouse listener (for the tree) as an inner class so that
   *  it has access to Isaw.this.  the change was made so that Isaw can
@@ -603,7 +608,6 @@ public class Isaw
     {
       cp.addDataSet( dss[i] );
       dss[i].addIObserver( this );
-      dss[i].addIObserver( jdt );
       dss[i].addIObserver( jpui );
       dss[i].addIObserver( jcui );
     }
@@ -615,11 +619,12 @@ public class Isaw
    */
   public void addModifiedDataSet( DataSet ds )
   {
+//    System.out.println( "Isaw: addModifiedDataSet(...)" );
+
     jdt.addToModifiedExperiment( ds );
 
     cp.addDataSet( ds );
     ds.addIObserver( this );
-    ds.addIObserver( jdt );
     ds.addIObserver( jcui );
     ds.addIObserver( jcui );
   }
