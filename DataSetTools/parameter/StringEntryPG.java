@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/06/30 16:00:44  bouzekc
+ *  Now returns the StringFilterer FILTER associated with this
+ *  class, rather than the entrywidget's filter.  This is to
+ *  aid in using the StringFilterer in noGUI situations.
+ *
  *  Revision 1.5  2003/06/30 15:58:33  bouzekc
  *  Reformatted for consistency.
  *
@@ -137,7 +142,7 @@ public abstract class StringEntryPG extends ParameterGUI {
    *                             StringFilter) that this PG uses.
    */
   public StringFilterer getStringFilter(  ) {
-    return ( ( StringEntry )this.entrywidget ).getStringFilter(  );
+    return FILTER;
   }
 
   // ********** IParameterGUI requirements **********
