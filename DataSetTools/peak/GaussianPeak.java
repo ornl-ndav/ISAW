@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2001/08/15 21:42:49  dennis
+ *  Added checks for areas == 0 before dividing
+ *
  *  Revision 1.2  2001/04/25 21:32:13  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -134,8 +137,11 @@ public class GaussianPeak extends    ModelPeak
                                                        start_x, end_x );
     float moment_1 = NumericalAnalysis.HistogramMoment( x_vals, y_vals,
                                                         start_x, end_x, 0, 1 );
-    position = moment_1/area;
 
+    if ( area == 0 )                        // can't do it
+      return false;
+
+    position = moment_1/area;
                                             // set the standard deviation 
                                             // based on the second moment
     float moment_2 = NumericalAnalysis.HistogramMoment( x_vals, y_vals,
@@ -148,7 +154,11 @@ public class GaussianPeak extends    ModelPeak
     setAmplitude( 1 );
     float peak_area = Area( position-fwhm/2, position+fwhm/2 );
     float data_area = NumericalAnalysis.IntegrateHistogram( x_vals, y_vals,
-                                     position-fwhm/2, position+fwhm/2 );
+                                        position-fwhm/2, position+fwhm/2 );
+
+    if ( peak_area == 0 )                   // can't do it
+      return false;
+
     setAmplitude( data_area/peak_area );
     return true;
   }
