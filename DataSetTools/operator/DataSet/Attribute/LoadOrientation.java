@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/02/12 15:30:55  pfpeterson
+ *  Moved various debug statements into if(DEBUG) conditionals.
+ *
  *  Revision 1.6  2003/02/11 21:02:23  pfpeterson
  *  Now reads orientation matrix and lattice parameters from '.x' files
  *  as well as '.mat' files.
@@ -354,20 +357,16 @@ public class LoadOrientation extends    DS_Attribute {
           while( !tfr.eof() && i<2 ){
             start=tfr.read_String();
             if(start.equals("CRS1")){ // candidate
-              System.out.println("00:"+start);
               start=tfr.read_String();
               if(start.equals("ABC")){ // lengths
-                System.out.println("01:"+start);
                 for( int j=0 ; j<3 ; j++ )
                   lat[j]=tfr.read_float();
                 i++;
               }else if(start.equals("ANGLES")){ // angles
-                System.out.println("02:"+start);
                 for( int j=3 ; j<6 ; j++ )
                   lat[j]=tfr.read_float();
                 i++;
               }else{
-                System.out.println("03:"+start);
                 tfr.read_line();
               }
             }else{
@@ -385,9 +384,11 @@ public class LoadOrientation extends    DS_Attribute {
         return new ErrorString("Error while reading matrix: "+e.getMessage());
       }
 
-      for( int i=0 ; i<6 ; i++ )
-        System.out.print(lat[i]+", ");
-      System.out.println("");
+      if(DEBUG){
+        for( int i=0 ; i<6 ; i++ )
+          System.out.print(lat[i]+", ");
+        System.out.println("");
+      }
 
       return lat;
     }
