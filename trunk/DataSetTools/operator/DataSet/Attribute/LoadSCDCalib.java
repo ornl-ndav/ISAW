@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/03/14 17:28:57  pfpeterson
+ * Changed errors into warnings when calibration file is not found or
+ * not readable. Warnings are printed to the StatusPane and returned.
+ *
  * Revision 1.5  2003/02/12 15:30:55  pfpeterson
  * Moved various debug statements into if(DEBUG) conditionals.
  *
@@ -144,9 +148,14 @@ public class LoadSCDCalib extends DS_Attribute{
 
         File file=new File(calibfile);
         if(! file.exists() ){
-            return new ErrorString("FAILURE: file does not exist");
+          String warn_msg="WARNING(LoadSCDCalib): file does not exist "
+            +calibfile;
+          SharedData.addmsg(warn_msg);
+          return(warn_msg);
         }else if(! file.canRead() ){
-            return new ErrorString("FAILURE: cannot read file");
+          String warn_msg="WARNING(LoadSCDCalib): cannot read file "+calibfile;
+          SharedData.addmsg(warn_msg);
+          return warn_msg;
         }
         file=null;
 
