@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.117  2002/10/24 19:37:29  pfpeterson
+ *  Uses new feature in HTMLPage to know not to display a help window
+ *  because something went wrong with finding the file.
+ *
  *  Revision 1.116  2002/10/24 18:45:45  pfpeterson
  *  No longer imports ChopTools.
  *
@@ -1745,6 +1749,7 @@ public class Isaw
       {
         String S=DataSetTools.util.FilenameUtil.helpDir("About.html");
 	HTMLPage H = new HTMLPage( S ) ;
+        if(! H.isValid()) return;
 	Dimension D = getToolkit().getScreenSize();
 	// make the help window pop up centered and 60% of screen size
 	H.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height) ); 
@@ -1763,6 +1768,7 @@ public class Isaw
       {
         String S=DataSetTools.util.FilenameUtil.helpDir("Help.html");
 	HTMLPage H = new HTMLPage( S ) ;
+        if(! H.isValid()) return;
 	Dimension D = getToolkit().getScreenSize();
 	// make the help window pop up centered and 60% of screen size
 	H.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height) ); 
@@ -1782,6 +1788,7 @@ public class Isaw
 	String S=DataSetTools.util.FilenameUtil.helpDir("Command/CommandPane.html");
 	//S="http://www.pns.anl.gov/ISAW/ISAW%20Tutorial_files/v3_document.htm";
 	HTMLPage H = new HTMLPage( S ) ;
+        if(! H.isValid()) return;
 	Dimension D = getToolkit().getScreenSize();
 	// make the help window pop up centered and 60% of screen size
 	H.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height) ); 
@@ -2149,6 +2156,7 @@ public class Isaw
             System.exit(0);
         }else if("-v".equals(args[i])){
             Script_Class_List_Handler.LoadDebug=true;
+            SharedData.DEBUG=true;
         }
     }
 
