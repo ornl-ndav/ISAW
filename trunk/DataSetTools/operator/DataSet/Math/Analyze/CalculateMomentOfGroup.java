@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/11/26 22:13:51  dennis
+ *  Added getDocumentation() method and simple main program.(Mike Miller)
+ *
  *  Revision 1.3  2002/09/19 16:01:51  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -154,7 +157,7 @@ public class  CalculateMomentOfGroup  extends    AnalyzeOp
    *                      which the moment is to be calculated.
    *                      from the data set.
    *  @param  center      The center point for the moment calculation.
-   *  @parm   moment      The moment to be calculated.
+   *  @param  moment      The moment to be calculated.
    */
 
   public CalculateMomentOfGroup( DataSet  ds,
@@ -185,6 +188,35 @@ public class  CalculateMomentOfGroup  extends    AnalyzeOp
 
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
+  }
+
+/* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns a string of the description/attributes of CalculateMomentOfGroup
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator calculates a specified ");
+    Res.append("moment (1st,2nd,ect.) for a given dataset, group, \n");
+    Res.append("and interval.\n");
+    Res.append("@algorithm Given a data set, a specified data block ID, ");
+    Res.append("and the interval of integration, an integration of the ");
+    Res.append("group will occur. The specified moment will be \n");
+    Res.append("calculated about the center.\n");
+    Res.append("@param ds\n");
+    Res.append("@param group_id\n");
+    Res.append("@param a\n");
+    Res.append("@param b\n");
+    Res.append("@param center\n");
+    Res.append("@param moment\n");
+    Res.append("@return a float value containing the moment ");
+    Res.append("of the data block\n"); 
+    Res.append("@error Invalid group ID\n");    
+    
+    return Res.toString();
+    
   }
 
   /* ---------------------------- getCommand ------------------------------- */
@@ -286,5 +318,26 @@ public class  CalculateMomentOfGroup  extends    AnalyzeOp
     return new_op;
   }
 
+/* ------------------------------- main --------------------------------- */ 
+ /** 
+  * Test program to verify that this will compile and run ok.  
+  *
+  */
+  
+  public static void main( String args[] )
+  {
+
+     System.out.println("Test of CalculateMomentOfGroup starting...");
+     DataSet ds = DataSetFactory.getTestDataSet();
+     
+     CalculateMomentOfGroup testgroup = 
+       			new CalculateMomentOfGroup(ds, 1, 0, 10, 4, 1);   
+     System.out.println("Moment calculated: " + testgroup.getResult() );
+    
+     System.out.println("Test of CalculateMomentOfGroup done.");
+     
+  }
 
 }
+
+
