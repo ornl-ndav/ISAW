@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/07/17 19:32:57  bouzekc
+ * Fixed a bug where if getInstance() returned null, the
+ * construction of this class failed.
+ *
  * Revision 1.4  2003/06/10 14:38:21  pfpeterson
  * Added an exit at the end of main.
  *
@@ -305,6 +309,10 @@ public class ParameterClassList{
 
     // get the instance
     IParameter param=getInstance(klass,DEBUG);
+
+    if( param == null ){
+      return;
+    }
 
     // get the type which will be the key in the hashtable
     String type=param.getType();
