@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2003/04/21 16:13:38  pfpeterson
+ *  Added SCD Live Data information, privatized load(String), and removed unused code.
+ *
  *  Revision 1.17  2003/03/05 20:21:14  pfpeterson
  *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -112,8 +115,8 @@ public class DefaultProperties{
     private String IsawProps;
     private Properties isawProp;
 
-    private static String separator        = "/";
-    private static String newline          = "\n";
+    private static final String separator        = "/";
+    private static final String newline          = "\n";
 
     /** **************************************************************
      * Constructor that does all of the work for you. Will find a
@@ -131,37 +134,6 @@ public class DefaultProperties{
             IsawHome=UserHome+separator+"ISAW";
         }
         //System.out.println(UserHome+","+IsawHome);
-        IsawProps=defaultString();
-    }
-    
-    /**
-     * Constructor that takes the Properties object to setup.
-     */
-    public DefaultProperties( Properties ISAWPROP ){
-        this();
-        isawProp=ISAWPROP;
-    }
-
-    /**
-     * Constructor which assumes that ISAW is installed in the users
-     * home directory.
-     */
-    public DefaultProperties( String USERHOME ){
-        this();
-        UserHome=FilenameUtil.setForwardSlash(USERHOME);
-        IsawHome=USERHOME+separator+"ISAW";
-        System.out.println(UserHome+","+IsawHome);
-        IsawProps=defaultString();
-    }
-
-    /**
-     * Constructor that allows all information to be specified by the
-     * calling program.
-     */
-    public DefaultProperties( String USERHOME, String ISAWHOME){
-        this(USERHOME);
-        IsawHome=FilenameUtil.setForwardSlash(ISAWHOME);
-        System.out.println(UserHome+","+IsawHome);
         IsawProps=defaultString();
     }
  
@@ -187,15 +159,6 @@ public class DefaultProperties{
             //System.out.println("isawProp was null");
             isawProp=new Properties(System.getProperties());
         }
-        return load();
-    }
-
-    /**
-     * Public method for loading a Properties file. Filename is
-     * constructed using UserHome.
-     */
-    public boolean load(){
-        String propsFile=UserHome+"/IsawProps.dat";
         return load(propsFile);
     }
 
@@ -203,7 +166,7 @@ public class DefaultProperties{
      * Public method for loading a Properties file. With caller
      * defined filename.
      */
-    public boolean load(String propsFile){
+    private boolean load(String propsFile){
         try{
             FileInputStream fis = new FileInputStream(propsFile);
             isawProp.load(fis);
@@ -215,7 +178,6 @@ public class DefaultProperties{
         }
         return true;
     }
-
 
     /** **************************************************************
      * Find the location of ISAW.
@@ -307,8 +269,10 @@ public class DefaultProperties{
             .append("#").append(eol)
             .append("Inst1_Name=HRMECS").append(eol)
             .append("Inst1_Path=hrmecs.pns.anl.gov;6088").append(eol)
-            .append("Inst2_Name=QUIP").append(eol)
-            .append("Inst2_Path=vulcan.pns.anl.gov;6088").append(eol)
+            .append("Inst2_Name=SCD").append(eol)
+            .append("Inst2_Path=scd2.pns.anl.gov;6088").append(eol)
+            .append("Inst3_Name=QUIP").append(eol)
+            .append("Inst3_Path=vulcan.pns.anl.gov;6088").append(eol)
             .append(eol)
             .append("#").append(eol)
             .append("# Remote Data Server Options").append(eol)
@@ -365,241 +329,5 @@ public class DefaultProperties{
             = new DefaultProperties();
         //System.out.println(newguy.defaultString());
         newguy.write();
-    }
-    
-
-   /**
-    * entry point for the ISAW application.
-    */
-    public static void oldmain( String[] args ){
-        Properties isawProp = new Properties(System.getProperties());
-        String path = System.getProperty("user.home")+"\\";
-        path = FilenameUtil.setForwardSlash(path);
-        //boolean windows = isWindowsPlatform();
-        
-        try{
-            FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
-            isawProp.load( input );
-            System.setProperties(isawProp);  
-            input.close();
-        }catch( IOException ex ){
-            System.out.println(
-                               "Properties file could not be loaded due to error :" +ex );
-            
-            System.out.println(
-                               "Creating a new Properties file called IsawProps in the directory " +
-                               System.getProperty("user.home") );
-            
-            String npath = System.getProperty("user.home")+"\\";
-            String ipath = System.getProperty("user.dir")+"\\";
-            npath = FilenameUtil.setForwardSlash(npath);
-            npath = npath.replace('\\','/');
-            
-            ipath = FilenameUtil.setForwardSlash(ipath);
-            ipath = ipath.replace('\\','/');
-            
-            File f= new File( npath + "IsawProps.dat" );
-            
-            try{
-                FileOutputStream op= new FileOutputStream(f);
-                OutputStreamWriter opw = new OutputStreamWriter(op);
-                opw.write("#This is a properties file");
-                opw.write("\n");
-                opw.write("Help_Directory="+ipath+"IsawHelp/");
-                System.setProperty("Help_Directory",  ipath+"IsawHelp/");
-                opw.write("\n");
-                opw.write("Script_Path="+ipath+"Scripts/");
-                System.setProperty("Script_Path",ipath+"Scripts/");
-                opw.write("\n");
-                opw.write("Data_Directory="+ipath+"SampleRuns/");
-                System.setProperty("Data_Directory",ipath+"SampleRuns/");
-                opw.write("\n");
-                opw.write("Default_Instrument=HRCS");
-                System.setProperty("Default_Instrument","HRCS");
-                opw.write("\n");
-                opw.write("Instrument_Macro_Path="+ipath);
-                System.setProperty("Instrument_Macro_Path",ipath);
-                opw.write("\n");
-                opw.write("User_Macro_Path="+ipath);
-                System.setProperty("User_Macro_Path",ipath);
-                opw.write("\n");
-                
-                opw.write("ISAW_HOME="+ipath);
-                System.setProperty("ISAW_HOME",ipath);
-                
-                opw.write("\n");
-                opw.write("Inst1_Name=HRMECS");
-                opw.write("\n"); 
-                opw.write("Inst1_Path=zeus.pns.anl.gov;6088");
-                System.setProperty("Inst1_Name", "HRMECS");
-                System.setProperty("Inst1_Path", "zeus.pns.anl.gov;6088");
-                opw.write("\n");  
-                
-                opw.write("Inst2_Name=GPPD");
-                opw.write("\n"); 
-                opw.write("Inst2_Path=gppd-pc.pns.anl.gov;6088");
-                System.setProperty("Inst2_Name", "GPPD");
-                System.setProperty("Inst2_Path", "gppd-pc.pns.anl.gov;6088");
-                opw.write("\n");  
-                
-                opw.write("IsawFileServer1_Name=IPNS(zeus)");
-                opw.write("\n"); 
-                opw.write("IsawFileServer1_Path=zeus.pns.anl.gov;6089");
-                System.setProperty("IsawFileServer1_Name", "IPNS");
-                System.setProperty("IsawFileServer1_Path", "zeus.pns.anl.gov;6089");
-                opw.write("\n");
-                
-                opw.write("IsawFileServer2_Name=Test(dmikk-Isaw)");
-                opw.write("\n"); 
-                opw.write("IsawFileServer2_Path=dmikk.mscs.uwstout.edu;6091");
-                System.setProperty("IsawFileServer2_Name", "Test");
-                System.setProperty("IsawFileServer2_Path", "dmikk.mscs.uwstout.edu;6091");
-                opw.write("\n");
-                
-                opw.write("NDSFileServer1_Name=Test(dmikk-NDS)");
-                opw.write("\n"); 
-                opw.write("NDSFileServer1_Path=dmikk.mscs.uwstout.edu;6008");
-                System.setProperty("NDSFileServer1_Name", "Test");
-                System.setProperty("NDSFileServer1_Path", "dmikk.mscs.uwstout.edu;6008");
-                opw.write("\n");
-                
-                opw.write("ColorScale=Heat 2");
-                System.setProperty("ColorScale", "Heat 2");
-                opw.write("\n");  
-                
-                opw.write("RebinFlag=false");
-                System.setProperty("RebinFlag", "false");
-                opw.write("\n"); 
-                
-                opw.write("HScrollFlag=false");
-                System.setProperty("HScrollFlag", "false");
-                opw.write("\n"); 
-                
-                opw.write("ViewAltitudeAngle=1.0");
-                System.setProperty("ViewAltitudeAngle", "1.0");
-                opw.write("\n"); 
-                
-                opw.write("ViewAzimuthAngle=180");
-                System.setProperty("ViewAzimuthAngle", "180");
-                opw.write("\n"); 
-                
-                opw.write("ViewDistance=0.9");
-                System.setProperty("ViewDistance", "0.9");
-                opw.write("\n"); 
-                
-                opw.write("ViewGroups=NOT DRAWN");
-                System.setProperty("ViewGroups", "NOT DRAWN");
-                opw.write("\n"); 
-                
-                opw.write("ViewDetectors=SOLID");
-                System.setProperty("ViewDetectors", "SOLID");
-                opw.write("\n"); 
-                
-                opw.write("Brightness=40");
-                System.setProperty("Brightness", "40");
-                opw.write("\n"); 
-                
-                opw.write("Auto-Scale=0.0");
-                System.setProperty("Auto-Scale", "0.0");
-                opw.write("\n"); 
-                
-      /* This causes more problems with nexus than it fixes
-	 if ( windows ){
-	 opw.write("neutron.nexus.JNEXUSLIB="+ipath+"lib/jnexus.dll");
-	 System.setProperty("neutron.nexus.JNEXUSLIB",ipath+"lib/jnexus.dll");
-	 opw.write("\n");   
-	 } */
-
-
-/* 
-        opw.write("Inst2_Name=LRMECS");
-        opw.write("\n");  
-        opw.write("Inst2_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst2_Name", "LRMECS");
-p        System.setProperty("Inst2_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");  
- 
-        opw.write("Inst3_Name=GPPD");
-        opw.write("\n");  
-        opw.write("Inst3_Path=gppd-pc.pns.anl.gov");
-        System.setProperty("Inst3_Name", "GPPD");
-        System.setProperty("Inst3_Path", "gppd-pc.pns.anl.gov");
-        opw.write("\n");  
- 
-        opw.write("Inst4_Name=SEPD");
-        opw.write("\n");  
-        opw.write("Inst4_Path=dmikk.mscs.uwstout.edu");
-        System.setProperty("Inst4_Name", "SEPD");
-        System.setProperty("Inst4_Path", "dmikk.mscs.uwstout.edu");
-        opw.write("\n");
- 
-        opw.write("Inst5_Name=SAD");
-        opw.write("\n");
-        opw.write("Inst5_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst5_Name", "SAD");
-        System.setProperty("Inst5_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");    
-   
-        opw.write("Inst6_Name=SAND");
-        opw.write("\n");      
-        opw.write("Inst6_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst6_Name", "SAND");
-        System.setProperty("Inst6_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");
-       
-        opw.write("Inst7_Name=SCD");
-        opw.write("\n");      
-        opw.write("Inst7_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst7_Name", "SCD");
-        System.setProperty("Inst7_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");  
-     
-        opw.write("Inst8_Name=GLAD");
-        opw.write("\n");      
-        opw.write("Inst8_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst8_Name", "GLAD");
-        System.setProperty("Inst8_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n"); 
-      
-        opw.write("Inst9_Name=HIPD");
-        opw.write("\n"); 
-        opw.write("Inst9_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst9_Name", "HIPD");
-        System.setProperty("Inst9_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");
- 
-        opw.write("Inst10_Name=POSY1");
-        opw.write("\n");      
-        opw.write("Inst10_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst10_Name", "POSY1");
-        System.setProperty("Inst10_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");  
-     
-        opw.write("Inst11_Name=POSY2");
-        opw.write("\n");  
-        opw.write("Inst11_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst11_Name", "POSY2");
-        System.setProperty("Inst11_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");  
-                
-        opw.write("Inst12_Name=QENS");
-        opw.write("\n");                 
-        opw.write("Inst12_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst12_Name", "QENS");
-        System.setProperty("Inst12_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n");  
-                
-        opw.write("Inst13_Name=CHEXS");
-        opw.write("\n");                 
-        opw.write("Inst13_Path=webproject-4.pns.anl.gov");
-        System.setProperty("Inst13_Name", "CHEXS");
-        System.setProperty("Inst13_Path", "webproject-4.pns.anl.gov");
-        opw.write("\n"); 
-*/                    
-                opw.flush();
-                opw.close(); 
-            }catch( Exception d ){
-            }
-        }
     }
 }
