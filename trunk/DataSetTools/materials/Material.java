@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/02/04 16:03:47  pfpeterson
+ * Throws an InstantiationError if not all atoms can be created.
+ *
  * Revision 1.2  2002/11/27 23:15:35  pfpeterson
  * standardized header
  *
@@ -83,7 +86,10 @@ public class Material{
 	    Atom tempAtom=new Atom((String)Satoms.elementAt(i));
 	    if(tempAtom.element()!=null){
 		this.atoms.add(tempAtom);
-	    }
+	    }else{
+              throw new InstantiationError("Could not find information for \""
+                                           +Satoms.elementAt(i)+"\"");
+            }
 	}
 	
     }
