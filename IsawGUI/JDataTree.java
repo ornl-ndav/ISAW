@@ -2,8 +2,16 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.11  2001/07/31 19:55:01  neffk
+ * made significant improvements, including a better way to add data
+ * into the tree as Experiments or modified data.  added many new
+ * methods, a new data model, a fix for the memory leak.  corrected
+ * deleteNode(...)'s behavior so that JDataTree objects can have
+ * references to other leaves that behave properly (e.g. when one is
+ * deleted, the references are not).
+ *
  * Revision 1.10  2001/07/26 19:55:24  neffk
- * deletes nodes properly, ance again.  this bug's symptoms were an infinite loop
+ * deletes nodes properly, once again.  this bug's symptoms were an infinite loop
  * when DataSet objects were deleted from the tree as well as a problem
  * with the 'Operator' menu staying current.
  *
@@ -138,7 +146,7 @@ public class JDataTree
 {
   private JTree tree;
 
-  private static final String MODIFIED_NODE_TITLE = "Modified";
+  public static final String MODIFIED_NODE_TITLE = "Modified";
 
   /**
    * the main container for various forms of data in the ISAW application.
@@ -155,21 +163,19 @@ public class JDataTree
                                       //Experiments objects, DataSets
                                       //objects, and Data objects 
                                       //will be shown in.
-    tree = new JTree(   new DefaultTreeModel(  new DefaultMutableTreeNode( "Session" )  )   );
+//    tree = new JTree(   new DefaultTreeModel(  new DefaultMutableTreeNode( "Session" )  )   );
+    tree = new JTree(   new JDataTreeModel(  new DefaultMutableTreeNode( "Session" )  )   );
     tree.setShowsRootHandles( true );
     tree.putClientProperty("JTree.lineStyle", "Angled");
     tree.addMouseListener( ml );
-
-//    getMyModel().insertNodeInto(  new DefaultMutableTreeNode( MODIFIED_NODE_TITLE ),
-//                                  (DefaultMutableTreeNode)getMyModel().getRoot(),
-//                                  0  );
 
     getMyModel().insertNodeInto(  new Experiment( MODIFIED_NODE_TITLE ),
                                   (DefaultMutableTreeNode)getMyModel().getRoot(),
                                   0  );
 
-    setLayout(new GridLayout(1,1));
-    setBorder(new CompoundBorder(new EmptyBorder(4,4,4,4), new EtchedBorder (EtchedBorder.RAISED)));
+    setLayout(  new GridLayout(1,1)  );
+    setBorder(  new CompoundBorder( new EmptyBorder(4,4,4,4), 
+                                    new EtchedBorder(EtchedBorder.RAISED) )  );
 
     JScrollPane pane = new JScrollPane( tree );
     add( pane );
@@ -180,7 +186,7 @@ public class JDataTree
 
 
   /**
-   * 
+   * gets the first selected node.
    */ 
   public MutableTreeNode getSelectedNode()
   {
@@ -212,6 +218,9 @@ public class JDataTree
   }
 
 
+  /**
+   * get the number of selections.
+   */
   public int getSelectionCount()
   {
     return tree.getSelectionCount();
@@ -221,10 +230,10 @@ public class JDataTree
   /**
    * create and add a new Experiment object to the tree.
    */
-  public void addExperiment( DataSet[] dss, String name )
+  public boolean addExperiment( DataSet[] dss, String name )
   {
     Experiment e = new Experiment( dss, name );
-    addExperiment( e );
+    return addExperiment( e );
   }
 
 
@@ -232,8 +241,15 @@ public class JDataTree
    * add a new Experiment container to the tree.  the new Experiment object
    * is added to the bottom of the tree.
    */
-  public void addExperiment( Experiment e )
+  public boolean addExperiment( Experiment e )
   {
+                              //we don't want to be creating duplicate
+                              //names, so enforce their uniqueness
+    Experiment[] exps = getExperiments();
+    for( int i=0;  i<exps.length;  i++ )
+      if(   exps[i].toString().equals(  e.toString()  )   )
+        return false;
+
     for( int i=0;  i<e.getChildCount();  i++ )
       e.getUserObject(i).addIObserver( this );
 
@@ -242,6 +258,49 @@ public class JDataTree
                                   (MutableTreeNode)tree.getModel().getRoot(), 
                                   child_count  );
     tree.expandRow( 0 );      //make sure root node is expanded
+    return true;
+  }
+
+
+  /**
+   * add 'ds' to the experiment denoted by 'exp_name'
+   */
+  public void addToExperiment( DataSet ds, String exp_name )
+  {
+    Experiment[] exps = getExperiments();
+    for( int i=0;  i< exps.length;  i++ )
+    {
+      System.out.println(  exps[i].toString() + " " + exp_name  );
+
+      if(  exps[i].toString().equals( exp_name )  )
+        addToExperiment( ds, exps[i] );
+    }
+  }
+
+
+  /**
+   * add 'ds' to Experiment object 'exp'
+   */ 
+  public void addToExperiment( DataSet ds, Experiment exp )
+  {
+    DataSetMutableTreeNode ds_node = new DataSetMutableTreeNode( ds );
+    int index = exp.getChildCount();
+
+                            //make sure we're not adding
+                            //a DataSet object to this
+                            //Experiment that's already here
+    DataSet[] dss = getDataSets( exp );
+    for( int i=0;  i<dss.length;  i++ )
+    {
+      if( dss[i] == ds )
+      {
+        System.out.println( "found it" );
+        return;
+      }
+    }
+
+    exp.insert( ds_node, index );
+    getMyModel().reload( exp );
   }
 
 
@@ -305,9 +364,9 @@ public class JDataTree
    * DefaultTreeModel.  this function just saves us from
    * some nasty casting syntax.
    */ 
-  protected DefaultTreeModel getMyModel()
+  protected JDataTreeModel getMyModel()
   {
-    return (DefaultTreeModel)tree.getModel();
+    return (JDataTreeModel)tree.getModel();
   }
 
 
@@ -337,7 +396,8 @@ public class JDataTree
 
 
   /**
-   * delete the nodes to which 'tps' leads
+   * delete the nodes to which 'tps' leads.  this method automatically updates
+   * IObservers of Data and DataSet objects.
    */
   public void deleteNodesWithPaths( TreePath[] tps )
   {
@@ -345,9 +405,8 @@ public class JDataTree
       for( int i=0;  i<tps.length-1;  i++ )
         deleteNode( tps[i], false );
 
-                                        //this call takes care 
-                                        //of notification if we
-                                        //deleted Data objects
+                                        //this call takes care of
+                                        //observer notification
     deleteNode(  tps[ tps.length-1 ], true  );
   }
 
@@ -359,6 +418,8 @@ public class JDataTree
    * of IObserver implementers because it could potentially be quite 
    * "expensive" to do so if many items are deleted.  the responsibility
    * is left to the caller.
+   *
+
    *
    *   @param obj     the object to be removed from the tree, or the
    *                  MutableTreeNode to be removed from the tree, or
@@ -396,25 +457,44 @@ public class JDataTree
       if(  exp.toString().equals( MODIFIED_NODE_TITLE )  )
         return;
       else
+      {
         getMyModel().removeNodeFromParent( node );
+        getMyModel().extinguishNode( node );
+      }
     }
 
+    /* for DataSet objects, care must be taken that the object
+     * in question is not referenced elsewhere in the tree.  if so, only
+     * node 'obj' is removed.  annoyingly, all viewers of that DataSet
+     * will be destroyed, even those viewing the reference.  the purpose 
+     * of references is to ease the load on the hardware... glad runs
+     * are huge, scd files are right around 30M and growing, and the
+     * other instruments will tax the system more and more as their
+     * detector counts go up.  so, if people want deep copies of 
+     * DataSet objects, they have to do it explicitly.   
+     */ 
     else if( node instanceof DataSetMutableTreeNode )
     {
-      getMyModel().removeNodeFromParent( node );
+      System.out.println( "destroyed a DataSet object" );
 
       if( notify )
       {
         ds = ( (DataSetMutableTreeNode)node ).getUserObject();
+        ds.deleteIObserver( this );
         ds.notifyIObservers( IObserver.DESTROY );
+        ds.addIObserver( this );
       }
+
+      getMyModel().removeNodeFromParent( node );
+      getMyModel().extinguishNode( node );
 
       return;
     }
 
     else if( node instanceof DataMutableTreeNode )
     {
-      getMyModel().removeNodeFromParent( node );
+//      getMyModel().removeNodeFromParent( node );
+      getMyModel().extinguishNode( node );
 
       DataMutableTreeNode data_node = (DataMutableTreeNode)node;
       int group_id = data_node.getUserObject().getGroup_ID();
@@ -531,15 +611,17 @@ public class JDataTree
     {
       DataSet ds = (DataSet)observed;
 
-      DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)getNodeOfObject( observed );
-
                        //if update has been called from this object
                        //after a deletion, doing it again will be a problem. 
+      DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)getNodeOfObject( observed );
       if( ds_node == null )
         return;
 
       if( (String)reason == DESTROY )
+      {
+        System.out.println(  "deleting: " + ( (DataSet)observed ).toString()  );
         deleteNode(  observed, true  );
+      }
 
       else if( (String)reason == DATA_REORDERED )
       {
@@ -566,7 +648,6 @@ public class JDataTree
 
       else if ( (String)reason == POINTED_AT_CHANGED )
       {
-        System.out.println( "pointed_at changed in JDataTree" );
       }
 
                                        //TODO: should redraw the entire tree
@@ -633,7 +714,6 @@ public class JDataTree
    */
   public DataSet[] getDataSets() 
   {
-
     Vector dss = new Vector();
 
     DefaultMutableTreeNode root = (DefaultMutableTreeNode)tree.getModel().getRoot();
@@ -644,41 +724,76 @@ public class JDataTree
     for( int i=0;  i<dss.size();  i++ )
       dss_array[i] = (DataSet)dss.get(i);
 
-    System.out.println( "size: " + dss_array.length );
+    return dss_array;
+  }
+
+
+  /**
+   * get all of the DataSet object that belong to an Experiment
+   */ 
+  public DataSet[] getDataSets( Experiment exp )
+  {
+    Vector dss = new Vector();
+    dss = searchFromNode( exp );
+
+                                       //pack them up in an array & return
+    DataSet[] dss_array = new DataSet[ dss.size() ];
+    for( int i=0;  i<dss.size();  i++ )
+      dss_array[i] = (DataSet)dss.get(i);
 
     return dss_array;
   }
 
 
-  private Vector searchFromNode( DefaultMutableTreeNode root )
+
+  private Vector searchFromNode( MutableTreeNode root )
   {
+
+    Vector ds_nodes = new Vector();
+    if( root instanceof DefaultMutableTreeNode )
+    {
                                     //iterativly examine each Experiment object,
                                     //searching for DataSet objects.
-    Vector ds_nodes = new Vector();
-    int exp_count = root.getChildCount();
-    for(  int exp_index=0;  exp_index<exp_count;  exp_index++ )
-    {
-      if(  root.getChildAt( exp_index ) instanceof Experiment  )  //karma++
+      int exp_count = root.getChildCount();
+      for(  int exp_index=0;  exp_index<exp_count;  exp_index++ )
       {
-        Experiment exp = (Experiment)root.getChildAt( exp_index );
-
-        int ds_count = exp.getChildCount();
-        for(  int ds_index=0;  ds_index<ds_count;  ds_index++ )  //karma++
-          if( exp.getChildAt( ds_index ) instanceof DataSetMutableTreeNode  )
-          {
-            DataSetMutableTreeNode dsmtn = (DataSetMutableTreeNode)exp.getChildAt( ds_index );
-            DataSet ds = (DataSet)dsmtn.getUserObject();
-            ds_nodes.addElement( ds );
-          }
-          else
-            System.out.println( "non-DataSet object found on second level" );
+        if(  root.getChildAt( exp_index ) instanceof Experiment  )  //karma++
+        {
+          Experiment exp = (Experiment)root.getChildAt( exp_index );
+ 
+          int ds_count = exp.getChildCount();
+          for(  int ds_index=0;  ds_index<ds_count;  ds_index++ )  //karma++
+            if( exp.getChildAt( ds_index ) instanceof DataSetMutableTreeNode  )
+            {
+              DataSetMutableTreeNode dsmtn = (DataSetMutableTreeNode)exp.getChildAt( ds_index );
+              DataSet ds = (DataSet)dsmtn.getUserObject();
+              ds_nodes.addElement( ds );
+            }
+            else
+              System.out.println( "non-DataSet object found on second level" );
+        }
+        else
+          System.out.println( "non-Experiment object found on first level" );
       }
-      else
-        System.out.println( "non-Experiment object found on first level" );
     }
+    else if( root instanceof Experiment )
+    {
+      Experiment exp = (Experiment)root;
+
+      int ds_count = exp.getChildCount();
+      for(  int ds_index=0;  ds_index<ds_count;  ds_index++ )  //karma++
+        if( exp.getChildAt( ds_index ) instanceof DataSetMutableTreeNode  )
+        {
+          DataSetMutableTreeNode dsmtn = (DataSetMutableTreeNode)exp.getChildAt( ds_index );
+          DataSet ds = (DataSet)dsmtn.getUserObject();
+          ds_nodes.addElement( ds );
+        }
+        else
+          System.out.println( "non-DataSet object found on second level" );
+    }
+
     return ds_nodes;
   }
-
 
 
 }
