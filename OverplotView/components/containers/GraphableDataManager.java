@@ -12,8 +12,8 @@ package OverplotView.components.containers;
  *
  * changelog
  *  $Log$
- *  Revision 1.4  2000/07/12 14:58:39  neffk
- *  added a makefile for generating documentation
+ *  Revision 1.5  2000/07/12 21:52:23  neffk
+ *  changed constructor so that it works even when no data is passed in
  *
  *  Revision 1.3  2000/07/06 20:11:19  neffk
  *  added these files, just to make sure, since they had a ? in front of them
@@ -53,7 +53,7 @@ public class GraphableDataManager
   //state information for associated SelectedGraph
   private float percent_offset;
   private floatPoint2D xrange, yrange;  //in world coordinates
-  private TextRangeUI xrangeTRUI, yrangeTRUI;
+  //private TextRangeUI xrangeTRUI, yrangeTRUI;
 
   private float abs_offset;
 
@@ -216,11 +216,12 @@ public class GraphableDataManager
    * purposes.
    *
    */
+/*
   public void setXRangeUI( TextRangeUI x )
   {
     xrangeTRUI = x;
   }
-
+*/
 
 
   /**
@@ -228,11 +229,12 @@ public class GraphableDataManager
    * purposes.
    *
    */
+/*
   public void setYRangeUI( TextRangeUI y )
   {
     yrangeTRUI = y;
   }
-
+*/
 
 
   /**
@@ -247,24 +249,35 @@ public class GraphableDataManager
     {
       xrange = new floatPoint2D( 0, 0 );
       yrange = new floatPoint2D( 0, 0 );
-      return;
+      //return;
     }
 
     //otherwise...
+    int count = 0;
     GraphableData data = null;
     Collection listGDV = values();  //get GraphableData objects
     Object it = listGDV.iterator();
-    data = (GraphableData)((Iterator)it).next(); 
+    if(  ((Iterator)it).hasNext()  )
+    {
+      data = (GraphableData)((Iterator)it).next(); 
 
-    //initialize xrange and yrange
-    xrange.x = data.getXRange().getStart_x();
-    xrange.y = data.getXRange().getEnd_x();
-    yrange.x = data.getYRange().getStart_x();
-    yrange.y = data.getYRange().getEnd_x();
+      //initialize xrange and yrange
+      xrange.x = data.getXRange().getStart_x();
+      xrange.y = data.getXRange().getEnd_x();
+      yrange.x = data.getYRange().getStart_x();
+      yrange.y = data.getYRange().getEnd_x();
+
+      count = 1;
+    }
+    else
+    {
+      xrange.x = 0.0f;
+      xrange.y = 1.0f;
+      yrange.x = 0.0f;
+      yrange.y = 1.0f;
+    }
 
     //look for ranges more extreme if there's more than one data block
-    int count = 1;
-    
     while(  ((Iterator)it).hasNext()  )
     {
       data = (GraphableData)((Iterator)it).next(); 
@@ -289,10 +302,10 @@ public class GraphableDataManager
     //find how tall the graph will be when additive constant is applied to data
     yrange.y = yrange.y + (  ( size() - 1 ) * abs_offset  );
 
-    xrangeTRUI.setMax( xrange.y );
-    xrangeTRUI.setMin( xrange.x );
-    yrangeTRUI.setMax( yrange.y );
-    yrangeTRUI.setMin( yrange.x );
+    //xrangeTRUI.setMax( xrange.y );
+    //xrangeTRUI.setMin( xrange.x );
+    //yrangeTRUI.setMax( yrange.y );
+    //yrangeTRUI.setMin( yrange.x );
   }
 
 
