@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.15  2003/06/20 16:32:20  bouzekc
+ * Removed space from the "Peaks File " parameter name.
+ *
  * Revision 1.14  2003/06/18 23:34:23  bouzekc
  * Parameter error checking now handled by superclass Form.
  *
@@ -178,7 +181,7 @@ public class FindMultiplePeaksForm extends Form
     addParameter(new LoadFilePG( "SCD Calibration File", 
                                  "/IPNShome/scd/instprm.dat", false));
     //9
-    addParameter(new LoadFilePG( "Peaks File ", null, false));
+    addParameter(new LoadFilePG( "Peaks File", null, false));
     setParamTypes(null,new int[]{0,1,2,3,4,5,6,7,8}, new int[]{9});
   }
 
