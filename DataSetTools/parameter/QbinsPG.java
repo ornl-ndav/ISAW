@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/09/15 17:28:45  bouzekc
+ * Fixed bug in validateSelf().  Clarified ambiguous references in Qbins1PG.
+ *
  * Revision 1.8  2003/09/13 22:18:22  bouzekc
  * Moved class Comb and class Qbins1PG inside of QbinsPG.  This was to correct
  * an earlier move outside of the class.
@@ -122,9 +125,13 @@ public class QbinsPG  extends VectorPG{
     */
    public void validateSelf(  ) {
      Qbins1PG qb1pg = ( Qbins1PG )getParam(  );
-     qb1pg.validateSelf(  );
+     if( qb1pg != null ) {
+       qb1pg.validateSelf(  );
 
-     setValid( qb1pg.getValid(  ) );
+       setValid( qb1pg.getValid(  ) );
+     } else {
+       setValid( false );
+     }
    }
 
   /**
@@ -166,8 +173,8 @@ public class QbinsPG  extends VectorPG{
      }
 
      public void initGUI( Vector V){
-        entrywidget = new EntryWidget(  );
-        entrywidget.setLayout(new GridLayout( 2,3));
+        this.entrywidget = new EntryWidget(  );
+        this.entrywidget.setLayout(new GridLayout( 2,3));
         start = new StringEntry(".0035",7,new FloatFilter());
         end = new StringEntry("4.0",7,new FloatFilter());
         steps = new StringEntry("-1", 5,new IntegerFilter());
@@ -179,23 +186,23 @@ public class QbinsPG  extends VectorPG{
         JPanel jp = new JPanel( new GridLayout( 1,2));
         jp.add( dQ); jp.add( dQQ);
 
-        entrywidget.add( new Comb("Start Q",start));
-        entrywidget.add( new Comb("N Steps",steps));
-        entrywidget.add( new Comb("End Q",end));
-        entrywidget.add( new Comb("Constant",jp));
-        entrywidget.validate();
+        this.entrywidget.add( new Comb("Start Q",start));
+        this.entrywidget.add( new Comb("N Steps",steps));
+        this.entrywidget.add( new Comb("End Q",end));
+        this.entrywidget.add( new Comb("Constant",jp));
+        this.entrywidget.validate();
         super.initGUI();
      }
 
     public void setValue( Object V){
        if( V instanceof Vector ) {
-         value = V;
+         this.value = V;
        } else {
          Vector temp = new Vector(  );
          if( V != null ) {
            temp.addElement( V );
          }
-         value = temp;
+         this.value = temp;
        }
     }
    
@@ -249,9 +256,9 @@ public class QbinsPG  extends VectorPG{
       if( val != null && val instanceof Vector ) {
         Vector elems = ( Vector )val;
 
-        setValid( elems.size(  ) > 0 );
+        this.setValid( elems.size(  ) > 0 );
       } else {
-        setValid( false );
+        this.setValid( false );
       }
     }
   }//Qbins1
