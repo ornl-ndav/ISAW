@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.45  2003/01/02 20:42:13  rmikk
+ * Now supports the python interpreter in addition to ISAW's Script interpreter
+ *    1) Adds a Combo box to choose interpreter
+ *    2) .py extensions use the Jython interpreter while .iss use the old interpreter
+ *    3) Keeps track of all IObservers and all data sets that are added externally
+ *
  * Revision 1.44  2002/12/08 22:09:05  dennis
  * Now uses new Jhelp class. (Ruth)
  *
@@ -120,13 +126,14 @@ import javax.help.*;
  *  most of the commands available in the GUI.
  */
 public class CommandPane extends JPanel  implements PropertyChangeListener, 
-                                                                  IObservable {
+                                                    IObservable ,
+                                                    IObserver{
     JButton Run ,  
         Open , 
         Save , 
         Help , 
         Clear ; 
-
+    JComboBox  Language;
     JTextArea  Commands , 
         Immediate ; 
 
@@ -138,12 +145,16 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
     public ScriptProcessorOperator  SP;
     boolean Debug = false;
     PropertyChangeSupport PC;
+    IObserverList IObslist;
+    Vector DSList;
+
     
     /**
      * Creates the JPanel for editing and executing scripts
      */
     public CommandPane(){
         PC = new PropertyChangeSupport( this );
+        IObslist = new IObserverList();
         initt();
         SP = new ScriptProcessor(  Commands.getDocument());     
     }
@@ -188,6 +199,11 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
         Save = new JButton( "Save Script" ) ; 
         Help = new JButton( "Help" ) ; 
         Clear = new JButton("Clear");
+        String[] LanguageChoices = new String[2];
+        LanguageChoices[0]="ISAW Script";
+        LanguageChoices[1]="Jython Script";
+        Language = new JComboBox( LanguageChoices );
+        Language.setSelectedIndex( 0 );
         Jhelp jh = null;
         try {
              jh = new Jhelp();
@@ -198,18 +214,18 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
         Run.addActionListener( new MyMouseListener(this , jh ) ) ; 
         Help.addActionListener( new MyMouseListener( this , jh) ) ; 
         Clear.addActionListener( new MyMouseListener( this , jh) ) ; 
-        
+        Language.addActionListener( new MyMouseListener( this , jh) ) ; 
         setLayout( new BorderLayout() ) ; 
         JP = new JPanel() ; 
-        JP.setLayout( new GridLayout( 1 , 5 ) ) ; 
+        JP.setLayout( new GridLayout( 1 , 6 ) ) ; 
         
         JP.add( Run ) ; 
-        JP.add( new JLabel( "       " ) ) ; 
-        
+     
         JP.add( Open ) ; 
         
         JP.add( Save ) ; 
         JP.add( Clear );
+        JP.add( Language );
         JP.add( Help ) ; 
         
         add( JP , BorderLayout.NORTH ) ; 
@@ -254,9 +270,11 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
         Opn.addPropertyChangeListener( Sav);
         Opn.addPropertyChangeListener( this );   
         this.addPropertyChangeListener(Sav);
-
+        Opn.addPropertyChangeListener( this ) ; 
         Open.addActionListener( Opn);
         Save.addActionListener( Sav );
+
+        DSList = new Vector();
         
     }
 
@@ -302,8 +320,15 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
      */ 
     public void addDataSet( DataSet dss ){
         SP.addDataSet( dss );
+        DSList.addElement( dss);
+        dss.addIObserver( this );
     }
     
+    private void addDataSets( ScriptProcessorOperator X){
+      for( int i = 0; i< DSList.size(); i++)
+        X.addDataSet( (DataSet)(DSList.elementAt(i) ) );
+    }
+      
     /**
      * Receives a PropertyChange Event. 
      *
@@ -321,6 +346,22 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
             if(Debug) System.out.println("CP:"+filename);
             CommandSP.setBorder(new TitledBorder( "Prgm Editor:"+filename ));
             PC.firePropertyChange("filename", null, filename);
+       
+            ScriptProcessorOperator sp = ScriptInterpretFetch.
+                                            getScriptProcessor( filename, Commands.getDocument() );
+           
+            
+            if( sp == null)
+               sp = new ScriptProcessor( Commands.getDocument() );
+            sp.addPropertyChangeListener( this );
+            SP = sp;  
+            SP.setIObserverList( IObslist );
+            SP.setPropertyChangeList( PC );           
+            addDataSets( SP );
+            if( SP instanceof ScriptProcessor)
+              Language.setSelectedIndex( 0 );
+            else
+              Language.setSelectedIndex( 1 );
         }
     }
 
@@ -333,15 +374,32 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
      */   
     public void addIObserver(IObserver iobs){
         SP.addIObserver( iobs );
+        IObslist.addIObserver( iobs );
+     
     }
     
     public void  deleteIObserver(IObserver iobs){
         SP.deleteIObserver( iobs );
+        IObslist.deleteIObserver(iobs);
     }
     
     public void  deleteIObservers(){
         SP.deleteIObservers();
+        IObslist.deleteIObservers();
     }
+
+    public void update(Object observed_obj, Object reason){
+     if( observed_obj instanceof DataSet)
+       if( reason instanceof String)
+         if( IObserver.DESTROY.equals( reason ))
+           {DataSet ds = (DataSet)observed_obj;
+            ds.deleteIObserver( this);
+          
+            while( DSList.removeElement( ds)){}
+           }
+
+    }
+
     
     public void appendlog( Document logDoc, Document appendDoc, String Message){
         if( appendDoc == null) 
@@ -625,6 +683,27 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
               } 
               }
             */     
+            else if( e.getSource().equals( Language )){
+              int indx = Language.getSelectedIndex();
+              if( (indx == 0) && (SP instanceof ScriptProcessor))
+                 return;
+              if( (indx !=0) && !(SP instanceof ScriptProcessor))
+                 return;
+              String Fname ="*.iss";
+             
+              if( indx !=0) 
+                Fname = "*.py";
+              ScriptProcessorOperator sp = ScriptInterpretFetch.
+                             getScriptProcessor( Fname, Commands.getDocument() );
+              if( sp == null)
+                 sp = new ScriptProcessor( Commands.getDocument() );
+              SP = sp;
+              SP.setIObserverList( IObslist );
+              SP.setPropertyChangeList( PC );     
+              addDataSets( SP );
+              Language.setSelectedIndex( indx);
+            }
+           
             else if( e.getSource().equals( Help ) ){
                 Dimension D = getToolkit().getScreenSize();
                    
