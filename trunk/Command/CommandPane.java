@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.73  2005/03/08 02:33:39  dennis
+ * Changed title on Clear button from "Clear" to "Reset"
+ *
  * Revision 1.72  2004/05/14 04:12:27  bouzekc
  * Fixed bug that switched the index back to "Isaw Script" when a Jython
  * script with an error is parsed.
@@ -619,7 +622,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
     Open                     = new JButton( "Open Script" );
     Save                     = new JButton( "Save Script" );
     Help                     = new JButton( "Help" );
-    Clear                    = new JButton( "Clear" );
+    Clear                    = new JButton( "Reset" );
 
     String[] LanguageChoices = new String[2];
     LanguageChoices[0]       = ISAWscript;
