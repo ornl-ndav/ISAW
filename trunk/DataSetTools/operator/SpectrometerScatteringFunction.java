@@ -2,6 +2,12 @@
  * @(#)SpectrometerScatteringFunction.java   0.1  2000/07/26   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.7  2000/10/03 22:09:55  dennis
+ *  Now adds the operators:
+ *    SpectrometerFrequencyDistributionFunction
+ *    SpectrometerImaginaryGeneralizedSusceptibility
+ *    SpectrometerSymmetrizedScatteringFunction
+ *
  *  Revision 1.6  2000/08/09 17:09:35  dennis
  *  Removed extra clone of each Data block that was no longer needed since
  *  the CLSmooth operation is no longer done as part of this operator.
@@ -244,6 +250,11 @@ public class SpectrometerScatteringFunction extends    DataSetOperator
     }
 
     new_ds.addOperator(new SpectrometerGeneralizedEnergyDistributionFunction());
+    new_ds.addOperator( new SpectrometerFrequencyDistributionFunction() );
+    new_ds.addOperator(
+            new SpectrometerImaginaryGeneralizedSusceptibility() );
+    new_ds.addOperator( new SpectrometerSymmetrizedScatteringFunction() );
+
 
     if ( make_new_ds )
       return new_ds;
