@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2003/11/23 20:00:48  rmikk
+ * The main program now executes all Jython scripts not just those that
+ *   are written in the special format for operators.
+ *
  * Revision 1.30  2003/11/22 20:39:29  rmikk
  * The main program now executes Jython operators as well as Isaw Scripts
  *
@@ -1651,8 +1655,21 @@ public class ScriptOperator  extends  GenericOperator
         try{
           SO = IsawLite.fromScript( args[ 0 ] );
         }catch(InstantiationError e){
-          System.out.println("ERROR:"+e.getMessage());
-          System.exit(-1);
+          if( args[0].toUpperCase().trim().endsWith(".PY")){
+             try
+              {
+                SO= new PyScriptOperator( args[0] ); 
+              }
+              catch( Throwable ss)
+              {
+                System.out.println("ERROR:"+e.getMessage());
+                System.exit(-1);
+               }
+
+          }else{
+            System.out.println("ERROR:"+e.getMessage());
+            System.exit(-1);
+          }
         }
         if( !(SO instanceof IScriptProcessor)){
            System.out.println("Impropert type of Script");
@@ -1665,7 +1682,7 @@ public class ScriptOperator  extends  GenericOperator
         }
         boolean dialogbox=false;
         if( SO.getNum_parameters() > 0){
-            JParametersDialog JP = new JParametersDialog(SO, null, null, null );
+            JParametersDialog JP = new JParametersDialog(SO, null, null, null ,true);
             JP.addWindowListener( new WindowAdapter(){
                 public void windowClosed(WindowEvent e){
                   System.exit(0);
