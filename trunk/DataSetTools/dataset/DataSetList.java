@@ -1,7 +1,7 @@
- /*
-  * File:  OperatorList.java
-  *
-  * Copyright (C) 2002, Ruth Mikkelson
+/*
+ * File:  DataSetList.java
+ *
+ * Copyright (C) 2002, Ruth Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,40 +26,44 @@
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
-  *
-  * Modified:
-  *
-  *  $Log$
-  *  Revision 1.8  2004/06/22 15:35:00  rmikk
-  *  Added documentation for setGridId method and associated variable
-  *
-  *  Revision 1.7  2004/04/26 13:07:46  rmikk
-  *  Passes on the Hashtable with already created Grids for this DataSet to
-  *    subclasses(Data) that uses it
-  *
-  *  Revision 1.6  2004/03/15 03:28:05  dennis
-  *  Moved view components, math and utils to new source tree
-  *  gov.anl.ipns.*
-  *
-  *  Revision 1.5  2004/01/22 02:19:05  bouzekc
-  *  Removed unused imports and local variables.
-  *
-  *  Revision 1.4  2003/10/15 23:50:12  dennis
-  *  Fixed javadocs to build cleanly with jdk 1.4.2
-  *
-  *  Revision 1.3  2003/06/18 20:35:35  pfpeterson
-  *  Changed calls for NxNodeUtils.Showw(Object) to
-  *  DataSetTools.util.StringUtil.toString(Object)
-  *
-  *  Revision 1.2  2002/11/27 23:14:06  pfpeterson
-  *  standardized header
-  *
-  *  Revision 1.1  2002/06/14 21:15:06  rmikk
-  *  Implements IXmlIO interface. Used to handle the list
-  *  Data Lists
-  *
-  */
-  package DataSetTools.dataset;
+ *
+ * Modified:
+ *
+ *  $Log$
+ *  Revision 1.9  2004/06/25 16:56:05  dennis
+ *  Fixed file name in documentation.
+ *
+ *  Revision 1.8  2004/06/22 15:35:00  rmikk
+ *  Added documentation for setGridId method and associated variable
+ *
+ *  Revision 1.7  2004/04/26 13:07:46  rmikk
+ *  Passes on the Hashtable with already created Grids for this DataSet to
+ *    subclasses(Data) that uses it
+ *
+ *  Revision 1.6  2004/03/15 03:28:05  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
+ *  Revision 1.5  2004/01/22 02:19:05  bouzekc
+ *  Removed unused imports and local variables.
+ *
+ *  Revision 1.4  2003/10/15 23:50:12  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
+ *  Revision 1.3  2003/06/18 20:35:35  pfpeterson
+ *  Changed calls for NxNodeUtils.Showw(Object) to
+ *  DataSetTools.util.StringUtil.toString(Object)
+ *
+ *  Revision 1.2  2002/11/27 23:14:06  pfpeterson
+ *  standardized header
+ *
+ *  Revision 1.1  2002/06/14 21:15:06  rmikk
+ *  Implements IXmlIO interface. Used to handle the list
+ *  Data Lists
+ *
+ */
+
+package DataSetTools.dataset;
 
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.Sys.StringUtil;
