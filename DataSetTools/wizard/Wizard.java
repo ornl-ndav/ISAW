@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2003/06/02 21:57:35  bouzekc
+ * Added call to setDefaultParameters() in the constructor
+ * so that no NullPointerExceptions get generated.
+ * Added code to validate parameters in getResult().
+ *
  * Revision 1.19  2003/05/08 15:10:30  pfpeterson
  * Added a FileFilter to the save and load dialogs. (Chris Bouzek)
  *
@@ -969,7 +974,9 @@ public abstract class Wizard implements PropertyChangeListener{
           //no need to show the values that a user can easily see
           //such as a JTextField entry.  Uncomment the next line
           //if you want to view things other than DataSets
-          if( val instanceof DataSet || val instanceof Vector)
+          if( val instanceof DataSet || 
+              val instanceof Vector  ||
+              val instanceof String)
           {
             jmi = new JMenuItem(iparam.getName());
             view_menu.add(jmi);
