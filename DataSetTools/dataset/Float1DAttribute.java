@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/01/22 02:19:05  bouzekc
+ *  Removed unused imports and local variables.
+ *
  *  Revision 1.6  2003/12/15 01:56:37  bouzekc
  *  Removed unused imports.
  *
@@ -240,7 +243,6 @@ public class Float1DAttribute extends Attribute{
         Vector       attr        = null;
         int          nVal        = 0;
         Integer      tempI       = null;
-        Float        tempF       = null;
         float[]      read_value  = null;
         StringBuffer float_array = null;
 
