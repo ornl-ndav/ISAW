@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/08/06 18:30:25  bouzekc
+ * Fixed bug where multiple calls to parseText() would not actually parse the
+ * input.
+ *
  * Revision 1.2  2003/08/06 17:10:36  bouzekc
  * Fixed bug where a call to parseText crashed the parsing.
  *
@@ -81,8 +85,12 @@ public class ParameterGUIParser {
     }
     if( myParser == null ) {
       myParser = new ParameterGUIParser( new StringReader( text )  );
+    } else {
+      myParser.ReInit( new StringReader( text )  );
     }
+    //Vector tempy = myParser.ExpansionList(  );
     return myParser.ExpansionList(  );
+    //return tempy;
   }
      
 
@@ -305,9 +313,10 @@ Object toArray(  ) : {
 |
   //matched a colon pair (e.g. 5:8)
   t = <COLON_PAIR> {
-    //yank off the quotes
-    expansion = t.image.substring( 1, t.image.length(  ) - 1 );
+    //remove any quotes that exist
+    expansion = t.image.replace( '\"', ' ' ).trim(  );
     index = expansion.indexOf( ":" );
+    first = Integer.parseInt( expansion.substring( 0, index ) );
     first = Integer.parseInt( expansion.substring( 0, index ) );
     last = Integer.parseInt( expansion.substring( index + 1,
                              expansion.length(  ) ) );
@@ -320,8 +329,8 @@ Object toArray(  ) : {
 |  
   //matched a stepped colon pair(e.g. 10:35:2)
   t = <STEPPED_COLON_PAIR> {
-    //yank off the quotes
-    expansion = t.image.substring( 1, t.image.length(  ) - 1 );
+    //remove any quotes that exist
+    expansion = t.image.replace( '\"', ' ' ).trim(  );
     index = expansion.indexOf( ":" );
     first = Integer.parseInt( expansion.substring( 0, index ) );
     //trim out the first colon to find the step size

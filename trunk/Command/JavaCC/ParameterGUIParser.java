@@ -42,8 +42,12 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
     }
     if( myParser == null ) {
       myParser = new ParameterGUIParser( new StringReader( text )  );
+    } else {
+      myParser.ReInit( new StringReader( text )  );
     }
+    //Vector tempy = myParser.ExpansionList(  );
     return myParser.ExpansionList(  );
+    //return tempy;
   }
 
 
@@ -268,9 +272,10 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
     case COLON_PAIR:
       //matched a colon pair (e.g. 5:8)
         t = jj_consume_token(COLON_PAIR);
-    //yank off the quotes
-    expansion = t.image.substring( 1, t.image.length(  ) - 1 );
+    //remove any quotes that exist
+    expansion = t.image.replace( '\"', ' ' ).trim(  );
     index = expansion.indexOf( ":" );
+    first = Integer.parseInt( expansion.substring( 0, index ) );
     first = Integer.parseInt( expansion.substring( 0, index ) );
     last = Integer.parseInt( expansion.substring( index + 1,
                              expansion.length(  ) ) );
@@ -283,8 +288,8 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
     case STEPPED_COLON_PAIR:
       //matched a stepped colon pair(e.g. 10:35:2)
         t = jj_consume_token(STEPPED_COLON_PAIR);
-    //yank off the quotes
-    expansion = t.image.substring( 1, t.image.length(  ) - 1 );
+    //remove any quotes that exist
+    expansion = t.image.replace( '\"', ' ' ).trim(  );
     index = expansion.indexOf( ":" );
     first = Integer.parseInt( expansion.substring( 0, index ) );
     //trim out the first colon to find the step size
