@@ -5,11 +5,12 @@
 # Miller : All other detectors turned off except 90 degree bank.
 # Kappa : 8 banks of data with selected detectors
 # Pressure : 1 bank of data with available detectors and focus to 100 degrees.
+#
+# CVS VERSION $Date$
+#
+# Date: 2004/01/16 16:03:04 
 
-# Modify $Date$ : Ashfia Huq , ID's should remain 
-# the same (bad detectors are turned off using the discriminator levels
-
-$Category=Macros, Instrument Type, TOF_NPD
+# Modify Date: 2005/1/18 16:03:04 : Ashfia Huq , ID's should remain the same (bad detectors are turned off using the discriminator levels
 
 $Standard	Boolean(true)          (1) Standard (5B, sum & T focus)
 $Focus_all_tth	Boolean(false)         (2) Focus_all_2Thet (4B focus to 125)		
@@ -19,10 +20,10 @@ $Pressure	Boolean(false)         (5) Pressure (1B, selected detectors)
 
 $Current	Boolean(true)		Is this a Current Run ?
 
-$ run_numbers		Array([22127:22131])	Enter run numbers like [22127,22127:22131]
-$ path			DataDirectoryString    	Path
-$ path_archive		DataDirectoryString(/IPNShome/gppduser/archive_data/)	path_archive
-$ instrument		InstrumentNameString   	Instrument
+$run_numbers		Array([21378])          				Enter run numbers like [21378]
+$path                	DataDirectoryString    					Inputname
+$path_archive		DataDirectoryString(/IPNShome/gppduser/archive_data/)	path_archive
+$instrument          	InstrumentNameString    				Instrument
 $ Message			String			Please check one Bank at a time
 	$Bank_1		Boolean(true)		Bank_1 (1)145(2)125(3)90(4)144(5)100
 	$Bank_2		Boolean(false)		Bank_2 (1)125(2)60(4)144
