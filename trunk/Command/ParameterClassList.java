@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/12/14 19:18:06  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.9  2003/11/20 19:41:09  rmikk
  * Uses FilenameUtil.URLSpacetoSpace to eliminate the %20
  * in resource names from jar files
@@ -70,7 +73,6 @@
 package Command;
 
 import DataSetTools.parameter.IParameter;
-import DataSetTools.parameter.ParameterGUI;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.FilenameUtil;
 import java.io.File;

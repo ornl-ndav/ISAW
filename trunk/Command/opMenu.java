@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.28  2003/12/14 19:18:10  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.27  2003/06/17 18:16:31  pfpeterson
  * Does not add Operators whose category list is [HiddenOperator]
  * (case insensitive).
@@ -82,8 +85,6 @@ import DataSetTools.util.*;
 import java.awt.event.*; 
 import javax.swing.text.*;
 import DataSetTools.operator.*;
-import DataSetTools.operator.Generic.*;
-import DataSetTools.operator.Generic.Batch.*;
 import java.io.*;
 
 /**

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/12/14 19:18:06  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.5  2002/11/27 23:12:10  pfpeterson
  * standardized header
  *
@@ -39,7 +42,6 @@
  *
  */
 package Command;
-import javax.swing.*;
 import java.awt.*;
 import javax.swing.text.*;
 
