@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.10  2004/05/06 17:34:04  rmikk
+ *  
+ *  Added an argument to the Selected2D constructor
+ *
  *  Revision 1.9  2004/03/19 20:30:04  millermi
  *  - Added special LOG characters so log messages will now be
  *    recorded in the file.
@@ -713,7 +717,8 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent,
      return reg;
    }
    public ISelectedData IgetPointedAt(){
-     return new SelectedData2D( jtb.getSelectedRow(), jtb.getSelectedColumn());
+     return new SelectedData2D( jtb.getSelectedRow(), jtb.getSelectedColumn(),
+          Float.NaN);
    }
 //--------------- End IViewComponent Methods ------------------------------
  class IntTableModel  extends AbstractTableModel {//implements ITableModel NO
