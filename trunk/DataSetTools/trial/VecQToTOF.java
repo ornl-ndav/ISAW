@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/01/24 23:42:31  dennis
+ *  Changed a few variable names to improve readability.
+ *
  *  Revision 1.12  2004/01/07 15:04:39  dennis
  *  Fixed copyright information.
  *
@@ -499,12 +502,12 @@ public class VecQToTOF
     if ( threshold < min_q_dot )
       return null;
 
-    Vector3D q1 = new Vector3D();
-    goniometerR.apply_to( q_vec, q1 );
+    Vector3D q_lab = new Vector3D();                 // q in lab coordinates
+    goniometerR.apply_to( q_vec, q_lab );
 
     Vector3D minus_unit_k = new Vector3D( unit_k );
     minus_unit_k.multiply(-1);
-    float cos_phi = q1.dot( minus_unit_k ) / mag_q; 
+    float cos_phi = q_lab.dot( minus_unit_k ) / mag_q; 
     if ( cos_phi <= 0 )                              // not a valid solution
       return null;
 
@@ -513,12 +516,12 @@ public class VecQToTOF
     if ( debug )
     {
       System.out.println("q_vec = " + q_vec );
-      System.out.println("q1 = " + q1 );
+      System.out.println("q_lab = " + q_lab );
     }
 
     Vector3D k_prime = new Vector3D( unit_k );
     k_prime.multiply(alpha);
-    k_prime.add( q1 );
+    k_prime.add( q_lab );
 
     float t = det_center.dot(n)/k_prime.dot(n);
     if ( t <= 0 )                // no solution, since the beam missed the
