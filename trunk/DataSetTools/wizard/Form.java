@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/05/16 15:30:48  pfpeterson
+ * Removed a redundant call to setDefaultParameters() immediately after
+ * super(String).
+ *
  * Revision 1.10  2003/04/24 18:55:32  pfpeterson
  * Added functionality to save Wizards plus code cleanup. (Chris Bouzek)
  *
@@ -142,7 +146,6 @@ public abstract class Form extends Operator implements Serializable{
     super(title);
     panel = null;
     this.param_ref=null;
-    setDefaultParameters();
   } 
 
   /* ---------------------------- addParameter ---------------------------- */
