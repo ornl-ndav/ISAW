@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2004/03/30 03:21:02  millermi
+ * - Added flexible file reading, now size of array and other
+ *   attributes can be specified within the data file being read.
+ *   The attributes must have form:
+ *   # AttributeName: Attribute
+ *
  * Revision 1.31  2004/03/15 19:33:49  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -498,25 +504,118 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   public void loadData( String filename )
   {
     datafile = filename;
+    // this assumes the data is from a 200x200 array.
     int NUM_ROWS = 200;
     int NUM_COLS = 200;
-    float[][] array     = new float[NUM_ROWS][NUM_COLS];
-    float[][] err_array = new float[NUM_ROWS][NUM_COLS];
+    float[][] array = null;
+    float[][] err_array = null;
     float qxmin = 0;
     float qymin = 0;
     float qxmax = 0;
     float qymax = 0;
+    // these are default values, taylored toward SAND data
+    String xlabel = "Qx";
+    String xunit  = "(Inverse Angstroms)";
+    String ylabel = "Qy";
+    String yunit  = "(Inverse Angstroms)";
+    String zlabel = "";
+    String zunit  = "Intensity";
     // try to open the file
     try
     {
-      int row = NUM_ROWS - 1;
-      int col = 0;
       // file arranged in 4 columns: Qx, Qy, Value, Error
       // Since we only care about the min and max of Qx, Qy, only the first
       // and last values in those columns are saved. The Value and Error columns
       // are each stored in a separate 2-D array.
       TextFileReader reader = new TextFileReader( filename );
-      // read in first line, this will set the Qx/Qy min and read in
+      String header_line = removeLeadingSpaces(reader.read_line());
+      String key = "";
+      String info = null;
+      int colon_index = -1;
+      // while a line starts with #, treat it as special information.
+      while( header_line.startsWith("#") )
+      {
+        //System.out.println("Line: " + header_line + "***" + 
+        //                 header_line.startsWith("#") );
+	// remove # character from substring
+	header_line = header_line.substring(1);
+	// remove any spaces
+	header_line = removeLeadingSpaces(header_line);
+	colon_index = header_line.indexOf(":");
+	// require that a colon precedes the info
+	if( colon_index >= 0 )
+	{
+	  info = header_line.substring(colon_index + 1);
+	  // remove any leading spaces
+	  info = removeLeadingSpaces(info);
+	  // trim the header_line to just the first 6 characters
+	  header_line = header_line.substring(0,colon_index).toLowerCase();
+	  // Find and set the corresponding information
+	  // the number of rows and columns should be specified
+	  if( header_line.indexOf("row") >= 0 )
+	  {
+	    NUM_ROWS = (new Integer(info)).intValue();
+	  }
+	  else if( header_line.indexOf("column") >= 0 )
+	  {
+	    NUM_COLS = (new Integer(info)).intValue();
+	  }
+	  // X LABEL
+	  else if( header_line.indexOf("x la") >= 0 ||
+	      header_line.indexOf("xlab") >= 0 )
+	  {
+	    xlabel = info;
+	  }
+	  // X UNITS
+	  else if( header_line.indexOf("x un") >= 0 ||
+	      header_line.indexOf("xuni") >= 0 )
+	  {
+	    xunit = info;
+	  }
+	  // Y LABEL
+	  else if( header_line.indexOf("y la") >= 0 ||
+	      header_line.indexOf("ylab") >= 0 )
+	  {
+	    ylabel = info;
+	  }
+	  // Y UNITS
+	  else if( header_line.indexOf("y un") >= 0 ||
+	      header_line.indexOf("yuni") >= 0 )
+	  {
+	    yunit = info;
+	  }
+	  // Z LABEL
+	  else if( header_line.indexOf("z la") >= 0 ||
+	      header_line.indexOf("zlab") >= 0 )
+	  {
+	    zlabel = info;
+	  }
+	  // Z UNITS
+	  else if( header_line.indexOf("z un") >= 0 ||
+	      header_line.indexOf("zuni") >= 0 )
+	  {
+	    zunit = info;
+	  }
+	}
+        // read the next line to see if it is also header info, making sure
+	// the line does not start with spaces
+	header_line = removeLeadingSpaces(reader.read_line());
+      }
+      // get rid of any empty lines between the metadata and the data.
+      while( header_line.equals("") )
+        header_line = removeLeadingSpaces(reader.read_line());
+      // No # sign, then data was read in. Replace it and read again later.
+      // If last line did not contain any useful data, do not replace it.
+      if( !(header_line.equals("") || header_line == null) )
+        reader.unread();
+      
+      //System.out.println("Num Rows/Columns: " + NUM_ROWS + "/" + NUM_COLS);
+      // set sizes of the array
+      array     = new float[NUM_ROWS][NUM_COLS];
+      err_array = new float[NUM_ROWS][NUM_COLS];
+      int row = NUM_ROWS - 1;
+      int col = 0;
+      // read in first line of data, this will set the Qx/Qy min and read in
       // the first value.
       StringTokenizer datarow = new StringTokenizer(reader.read_line());
       qxmin = (new Float( datarow.nextToken() )).floatValue();
@@ -549,7 +648,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	// increment rows so data is read in by column
         else
           row--;
-	// if file is larger than 200x200, artificially throw the EOF exception
+	// if file is too large for array, artificially throw the EOF exception
         if( col == NUM_COLS )
 	  throw new IOException("End of file");
       } // end while
@@ -567,14 +666,16 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 				       array.length-0.001f );
         VirtualArray2D va2D = new VirtualArray2D( array, err_array );
         va2D.setAxisInfo( AxisInfo.X_AXIS, qxmin, qxmax, 
-    		            "Qx","(Inverse Angstroms)", true );
+    		            xlabel, xunit, true );
         va2D.setAxisInfo( AxisInfo.Y_AXIS, qymin, qymax, 
-    			    "Qy","(Inverse Angstroms)", true );
+    			    ylabel, yunit, true );
         // since datamin/max are gotten from the image,
 	// the min/max are dummy values.
 	va2D.setAxisInfo( AxisInfo.Z_AXIS, 0, 1, 
-    			    "","Intensity", true );
-        va2D.setTitle("SAND Wedge Viewer");
+    			    zlabel, zunit, true );
+        int separator_index = filename.lastIndexOf(
+        	                    System.getProperty("file.separator") );
+	va2D.setTitle(filename.substring(separator_index + 1));
 	setData( va2D );
       }
       // no file to be read, display file not found on empty jpanel.
@@ -588,6 +689,17 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
         repaint();
       }
     }
+  }
+  
+ /*
+  * Helper method for the loadData() method. This method will remove all
+  * leading spaces from the String passed in.
+  */
+  private String removeLeadingSpaces( String string )
+  {
+    while( string.indexOf(" ") == 0 )
+      string = string.substring(1);
+    return string;
   }
   
  /**
