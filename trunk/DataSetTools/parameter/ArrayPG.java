@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2003/09/16 19:57:12  bouzekc
+ *  Removed the protected variable "value" which interfered with the superclass
+ *  constructor and methods.  Modified existing methods to cast "value" to a
+ *  Vector.
+ *
  *  Revision 1.30  2003/09/15 22:51:08  bouzekc
  *  Fixed commenting problem which prevented compilation.
  *
@@ -172,10 +177,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
   private static String TYPE    = "Array";
   protected static int DEF_COLS = 20;
 
-  //~ Instance fields **********************************************************
-
-  protected Vector value = null;
-
   //~ Constructors *************************************************************
 
   /**
@@ -218,7 +219,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @return The String value associated with this ArrayPG.
    */
   public String getStringValue(  ) {
-    return ArraytoString( value );
+    return ArraytoString( ( Vector )value );
   }
 
   /**
@@ -228,7 +229,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    */
   public void setValue( Object val ) {
     if( val == null ) {
-      value = null;
+      value = new Vector(  );
     } else if( val instanceof Vector ) {
       value = ( Vector )val;
     } else if( val instanceof String ) {
@@ -239,7 +240,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
 
     if( initialized ) {
       ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
-        ArraytoString( value ) );
+        ArraytoString( ( Vector )value ) );
     }
 
     validateSelf(  );
@@ -253,8 +254,8 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
   public Object getValue(  ) {
     //Vector of DataSets
     if( 
-      ( value != null ) && ( value.size(  ) > 0 ) &&
-        ( value.elementAt( 0 ) instanceof DataSet ) ) {
+      ( value != null ) && ( ( ( Vector ) value  ).size(  ) > 0 ) &&
+        ( ( ( Vector )value ).elementAt( 0 ) instanceof DataSet ) ) {
       return value;
     }
 
@@ -365,13 +366,13 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       return;  // don't add null to the vector
     }
 
-    if( value.indexOf( val ) < 0 ) {
-      value.add( val );  // add if unique
+    if( ( ( Vector )value ).indexOf( val ) < 0 ) {
+      ( ( Vector )value ).add( val );  // add if unique
     }
 
     if( initialized ) {
       ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
-        ArraytoString( value ) );
+        ArraytoString( ( Vector )value ) );
     }
   }
 
@@ -394,7 +395,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       return;
     }
 
-    value.clear(  );
+    ( ( Vector )value ).clear(  );
 
     if( initialized ) {
       ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
@@ -427,7 +428,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       setValue( init_values );
     }
 
-    entrywidget = new EntryWidget( new JTextField( ArraytoString( value ) ) );
+    entrywidget = new EntryWidget( new JTextField( ArraytoString( ( Vector )value ) ) );
 
     //we'll set a really small preferred size and let the Layout Manager take
     //over at that point
@@ -459,7 +460,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @param val The key of the item to remove.
    */
   public void removeItem( Object val ) {
-    int index = value.indexOf( val );
+    int index = ( ( Vector )value ).indexOf( val );
 
     removeItem( index );
   }
@@ -470,8 +471,8 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @param index The index of the item to remove.
    */
   public void removeItem( int index ) {
-    if( ( index >= 0 ) && ( index < value.size(  ) ) ) {
-      value.remove( index );
+    if( ( index >= 0 ) && ( index < ( ( Vector )value ).size(  ) ) ) {
+      ( ( Vector )value ).remove( index );
     }
   }
 
@@ -611,19 +612,19 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @return The String label.
    */
   private String stringVersion(  ) {
-    if( ( value == null ) || ( value.size(  ) <= 0 ) ) {
+    if( ( value == null ) || ( ( ( Vector )value ).size(  ) <= 0 ) ) {
       return "";
     } else {
       StringBuffer result = new StringBuffer(  );
-      int numElements     = value.size(  );
+      int numElements     = ( ( Vector )value ).size(  );
       int start           = 0;
       int index           = 0;
 
       while( start < numElements ) {
-        index = checkSame( value, start );
+        index = checkSame( ( Vector )value , start );
         result.append( 
-          shortName( value.elementAt( ( index + start ) - 1 ) ) + "[" + index +
-          "]" );
+          shortName( ( ( Vector )value ).elementAt( ( index + start ) - 1 ) ) + 
+          "[" + index + "]" );
         start = start + index;
 
         if( start < numElements ) {
