@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/09/15 18:12:46  dennis
+ *  Added check for this.vals != null in clone() method. (Ruth)
+ *
  *  Revision 1.8  2003/09/09 23:06:29  bouzekc
  *  Implemented validateSelf().
  *
@@ -219,6 +222,10 @@ public class MonitorDataSetPG extends DataSetPG{
     public Object clone(){
         MonitorDataSetPG pg=
             new MonitorDataSetPG(this.name,this.value,this.valid);
+       if( this.vals != null)
+          pg.vals=(Vector)this.vals.clone();
+        else 
+          this.vals = null;
         pg.vals=(Vector)this.vals.clone();
         pg.setDrawValid(this.getDrawValid());
         pg.initialized=false;
