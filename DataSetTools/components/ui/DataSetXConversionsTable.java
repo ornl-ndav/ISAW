@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2004/07/16 18:57:07  dennis
+ * Fixed improper comparison with Float.NaN
+ *
  * Revision 1.14  2004/03/15 06:10:34  dennis
  * Removed unused import statements.
  *
@@ -167,7 +170,7 @@ public class DataSetXConversionsTable  implements Serializable
  
   public void showConversions( float x, float y, int index )
   {
-    if ( ds == null || x == Float.NaN )
+    if ( ds == null || Float.isNaN(x) )
       x_specified = false;
 
     else if ( index < 0 || index >= ds.getNum_entries() )
@@ -208,7 +211,7 @@ public class DataSetXConversionsTable  implements Serializable
     boolean success = false;
 
     if ( ds   != null             &&
-          x   != Float.NaN        && 
+         !Float.isNaN( x )        && 
          index >= 0               && 
          index < ds.getNum_entries() )
     {                                       // try to calculate a rebinned y
@@ -221,7 +224,7 @@ public class DataSetXConversionsTable  implements Serializable
       float glb = new_x_scale.getX( glb_i );
       float lub = new_x_scale.getX( lub_i );
 
-      if ( glb != Float.NaN && lub != Float.NaN && glb < lub )      
+      if ( !Float.isNaN( glb ) && !Float.isNaN( lub ) && glb < lub )      
       {
         new_x_scale = new UniformXScale( glb, lub, 2 );
         float y[];
@@ -254,7 +257,7 @@ public class DataSetXConversionsTable  implements Serializable
    */
   public void showConversions( float x, int index )
   {
-    if ( ds == null || x == Float.NaN )
+    if ( ds == null || Float.isNaN( x ) )
       x_specified = false;
 
     else if ( index < 0 || index >= ds.getNum_entries() )
