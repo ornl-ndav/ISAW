@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/10/17 02:39:25  bouzekc
+ *  Fixed javadoc errors and updated javadocs.
+ *
  *  Revision 1.7  2003/08/27 22:32:46  dennis
  *  Fixed java docs.
  *
@@ -104,11 +107,9 @@ public class GsasRetriever extends Retriever{
 
     /* ------------------------ Constructor -------------------------- */
     /**
-     * Construct the retriever for the specified source name.
+     * Construct the reriever for the specified file name.
      *
-     * @param data_source_name   This identifies the data source.  For file
-     *                           data retrievers, this should be the fully 
-     *                           qualified file name
+     * @param filename   Fully qualified filename of the data source.
      */
     public GsasRetriever( String filename ){
         super(filename);
@@ -183,7 +184,7 @@ public class GsasRetriever extends Retriever{
      * current data source.
      *
      *  @return The number of distinct DataSets available.  This function
-     *          may return values < 0 as an error code if there are no
+     *          may return values, such as 0 as an error code if there are no
      *          DataSets available.
      */
     public int numDataSets(){
@@ -238,6 +239,8 @@ public class GsasRetriever extends Retriever{
     /**
      * This constructs an XScale from the time_map read in and adds it
      * to the timemaps vector at the mapnum position.
+     *
+     * @return false if the XScale is null, true otherwise.
      */
     private boolean readTimeMap(TextFileReader reader, String header){
         // convert the header into a StringBuffer for parsing
@@ -336,7 +339,13 @@ public class GsasRetriever extends Retriever{
     }
 
     /**
-     * Method to read in a single bank.
+     * Method to read in a single bank and write it to a datablock.
+     *
+     * @param reader The TextFileReader that should be reading the bank.
+     * @param data The Vector to add datablocks to.
+     * @param data_xunit The Vector to add datablock X-axis units to.
+     *
+     * @return false if any error occurs.
      */
     private boolean readBank(TextFileReader reader, Vector data,
                              Vector data_xunit){
@@ -422,6 +431,11 @@ public class GsasRetriever extends Retriever{
 
     /**
      * Method to initialize the two datasets (monitor and sample).
+     *
+     * @param data The Vector of datablocks to load.
+     * @param xunits The Vector of X-axis units to load.
+     *
+     * @return false if any error occurs.
      */
     private boolean initDataSets(Vector data, Vector xunits){
         DataSetFactory ds_factory=null;
@@ -563,7 +577,14 @@ public class GsasRetriever extends Retriever{
     }
 
     /**
-     * Centralize what the label is for a given unit
+     * Centralize what the label is for a given unit.
+     *
+     * @param units The unit to use for centralizing.
+     *
+     * @return "Scattering Intensity" if units = "Counts"; 
+     *         "Time-of-flight" if units = "Time(us)"; 
+     *         "Q" if units = "Inverse Angstroms"; 
+     *         "d-spacing" if units = "Angstroms"
      */
     private static String getLabel(String units){
         if(units.equals("Counts"))
