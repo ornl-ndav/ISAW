@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2003/02/21 13:14:56  dennis
+ *  Calls Reset() method before sending a DataSet, to avoid having to
+ *  clone the DataSet first.
+ *
  *  Revision 1.28  2002/11/30 22:18:52  dennis
  *  Now keeps a list of references to all Data blocks indexed by the
  *  segment id.  This allows immediately updating the correct Data block
@@ -408,6 +412,7 @@ public class LiveDataServer extends    DataSetServer
         int types[] = new int[ ds_type.length ];
         for ( int i = 0; i < types.length; i++ )
           types[i] = ds_type[i];
+        tcp_io.Reset();
         tcp_io.Send( types );
         return;
       }
@@ -420,21 +425,22 @@ public class LiveDataServer extends    DataSetServer
         {                                             // so get a copy of a
                                                       // snapshot of the ds
           DataSet source_ds = data_set[ index ];
-          DataSet ds        = (DataSet)(source_ds.clone());
+//        DataSet ds        = (DataSet)(source_ds.clone());
 
-          if ( ds != null )                           // remove observers
+          if ( source_ds != null )                    // remove observers
           {                                           // before sending
             Date date = new Date( System.currentTimeMillis() );
-            ds.addLog_entry( "Live Data as of: " + date );
-            ds.deleteIObservers(); 
-            tcp_io.Send( ds  );
+            source_ds.addLog_entry( "Live Data as of: " + date );
+            source_ds.deleteIObservers(); 
+            tcp_io.Reset();
+            tcp_io.Send( source_ds  );
           }
           else                                       
-            tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
+            tcp_io.Send( DataSet.EMPTY_DATA_SET );
         }
 
         else                                          
-          tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
+          tcp_io.Send( DataSet.EMPTY_DATA_SET );
 
         return;
       }
@@ -443,17 +449,20 @@ public class LiveDataServer extends    DataSetServer
       {
          if ( status.startsWith( RemoteDataRetriever.DAS_OFFLINE_STRING ) )
          {
+           tcp_io.Reset();
            tcp_io.Send( status );
            return;
          }
 
          if ( status.startsWith( RemoteDataRetriever.NO_DATA_SETS_STRING ) )
          {
+           tcp_io.Reset();
            tcp_io.Send( status + DateUtil.default_string() );
            return;
          }
 
          long time_ms = System.currentTimeMillis();
+         tcp_io.Reset();
          if ( time_ms - last_time_ms > OLD_THRESHOLD )
            tcp_io.Send( RemoteDataRetriever.DATA_OLD_STRING + last_time );
          else
