@@ -31,6 +31,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2004/03/10 17:59:46  rmikk
+ * Fixed an error when dealing with multidimensioned arrays
+ * Removed a StringChoiceList parameter and replaced it by a String parameter
+ *
  * Revision 1.2  2004/03/09 17:57:17  rmikk
  * Fixed Javadoc errors
  *
@@ -63,7 +67,7 @@ public class ArrayArithm implements Wrappable, HiddenOperator {
 
    public Vector Argument1 = new Vector();
    public Vector Argument2 = new Vector();
-   public StringChoiceList Operation = new StringChoiceList(Choices);
+   public String Operation = "Add";//new StringChoiceList(Choices);
 
    private OpType  op = null; //
   
@@ -115,7 +119,7 @@ public class ArrayArithm implements Wrappable, HiddenOperator {
     */
 
    public Object calculate(Vector Argument1, Vector Argument2, 
-                                                          StringChoiceList op) {
+                                                          String op) {
 
       this.Argument1 = Argument1;
       this.Argument2 = Argument2;
@@ -292,7 +296,8 @@ public class ArrayArithm implements Wrappable, HiddenOperator {
 
          }
          else if (Array.get(Xnum, 0).getClass().isArray()) { 
-
+            Object Res=Array.newInstance( Xnum.getClass().getComponentType(), 
+                        Array.getLength(Xnum));
             for (int i = 0; i < Array.getLength(Xnum); i++) {
        
                if (!Array.get(Xden, i).getClass().isArray())
@@ -306,10 +311,10 @@ public class ArrayArithm implements Wrappable, HiddenOperator {
                if (O instanceof ErrorString)
                   return O;
 
-               Num.setElementAt(((Vector) O).firstElement(), i);
+               Array.set(Res,i,((Vector)O).firstElement());
             }
 
-            return Num;
+            return setVect(Res);
          }
       }
       else if (Argument1.firstElement() instanceof Integer) { //Double
@@ -389,13 +394,13 @@ public class ArrayArithm implements Wrappable, HiddenOperator {
     *  Test program for this module
     */
    public static void main(String args[]) {
-      float[] a = {3, 5, 7, 9};
-      float[] b = {1, 2, 3, 4};
+      float[][] a = {{1,2,3,4},{3, 5, 7, 9}};
+      float[][] b = {{6,8,9,1},{1, 2, 3, 4}};
       ArrayArithm D = new ArrayArithm();
       String[] S = new String[1];
 
       S[0] = args[0];
-      D.Operation = new StringChoiceList(S);
+      D.Operation = args[0].trim();
    
       D.Argument1 = new Vector();
       D.Argument2 = new Vector();
