@@ -20,6 +20,8 @@ import java.awt.*;
 import javax.swing.filechooser.*;
 import javax.swing.table.*;
 import javax.swing.*;
+import DataSetTools.components.ParametersGUI.*;
+import DataSetTools.operator.*;
 /**
  * Utility class for ISAW. 
  *
@@ -50,20 +52,64 @@ public class Util
            filename.endsWith( "hdf" )  ||
            filename.endsWith( "HDF" )  )
         r = new NexusRetriever( filename );
+      else if( filename.toUpperCase().endsWith(".ISD"))
+       { DataSet dss[];
+         dss = new DataSet[1];
+         
+         dss[0] = DataSet_IO.LoadDataSet( filename );
+        
+         return dss;
+        }
       else
         r = new RunfileRetriever( filename );
 
       int numberOfDataSets = r.numDataSets();
       DataSet[] dss = new DataSet[numberOfDataSets];
+      if(numberOfDataSets >= 0)
+      {
       for (int i = 0; i< numberOfDataSets; i++)
            dss[i] = r.getDataSet(i);
-
+      }
       r = null;
       System.gc();
       return dss;
   }
 
+ public void Save( String filename, DataSet ds, IDataSetListHandler lh)
+   { 
+     Operator X = null;
+     if ( filename.endsWith( "nxs" )  ||
+           filename.endsWith( "NXS" )  ||
+           filename.endsWith( "hdf" )  ||
+           filename.endsWith( "HDF" )  )
+     {  X = new WriteNexus();
+      }
+    else if( filename.toUpperCase().endsWith(".XML"))
+      { X = new WriteNexus();
+       }
+    else if( filename.toUpperCase().endsWith(".ISD"))
+        {DataSet_IO.SaveDataSet(  ds, filename  ) ;
+         
+         return;  
+        }
+     
+   X.setParameter( new Parameter("filename",filename ), 2);
+   
+   JParametersDialog JP = new JParametersDialog( X , lh,
+          null,null);
 
+
+   }
+ class ArrayDSHandler implements IDataSetListHandler
+    {  DataSet DS[];
+      public ArrayDSHandler( DataSet DS[])
+        { this.DS = DS;
+        }
+   public DataSet[] getDataSets()
+       {return DS;
+       }
+
+    }
  public Document openDoc(String filename)
  {
 	FileReader fr; 
