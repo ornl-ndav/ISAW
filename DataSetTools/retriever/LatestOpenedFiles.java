@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/05/21 13:49:53  rmikk
+ * Used IsawProp's NsavedFiles,if present, in all positions of this code
+ *
  * Revision 1.8  2004/05/18 13:53:00  rmikk
  * Now supports the NSavedFiles(int) and ShortSavedFilename(true/false) in
  *   the IsawProps.
@@ -208,7 +211,8 @@ public class LatestOpenedFiles{
   // Returns true if the current FileName is already in pref's 
   private static boolean isInPrefs( String FileName , Preferences pref ){
 
-     for( int i = 0 ; i< NSavedFiles ; i++ )
+    int nSavedFiles = SharedData.getintProperty( "NSavedFiles",""+NSavedFiles);
+     for( int i = 0 ; i< nSavedFiles ; i++ )
 
         if( pref.get( "File" + i , NO_SUCH_FILE ).equalsIgnoreCase( FileName ) )
            return true;
