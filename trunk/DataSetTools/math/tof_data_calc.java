@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/05/02 19:04:12  pfpeterson
+ *  Only integrate one sigma to calculate the first moment.
+ *
  *  Revision 1.9  2002/04/04 19:17:20  dennis
  *  Removed some debug print statements.
  *
@@ -67,7 +70,7 @@ import DataSetTools.util.*;
 public final class tof_data_calc
 {
 
-public static final float  MONITOR_PEAK_EXTENT_FACTOR = 8.5f;
+public static final float  MONITOR_PEAK_EXTENT_FACTOR = 1.0f;
                                   // determines interval over which the 
                                   // monitor peaks are evaluated
  
@@ -120,7 +123,7 @@ public static final float  MONITOR_PEAK_EXTENT_FACTOR = 8.5f;
 
      float energy = tof_calc.Energy( x[1]-x[0], centroid[1]-centroid[0] );
 
-     System.out.println("Energy = " + energy);
+     System.out.println("Energy = " + energy +" meV");
      return energy;
   }
 
