@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2004/07/29 14:02:12  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.1  2004/07/14 16:28:19  rmikk
  * Initial Checkin
  * ScalarJ with orientation matrix input and Transformation output
@@ -187,7 +190,7 @@ public class ScalarJ_base extends GenericTOF_SCD{
   /**
    * Constructs a fully configured scalar operator
    *
-   * @param matname the name of the blind.log, .matrix, or .x file
+   * @param UB the name of the blind.log, .matrix, or .x file
    * @param delta error parameter for finding higher symmetry
    * @param choice number for the type of search to do
    */
