@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:59:14  bouzekc
+ * Documented file using javadoc statements.
+ * Added methods getVectorOfInterfaceObjectsFromFile(), getProjectNameFromFile(),
+ * printInterfacesAndName(), writeNativeHawkFileWithoutPrompting(), and
+ * writeNativeHawkFile().
+ *
  * Revision 1.1  2004/02/07 05:10:06  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -41,86 +47,168 @@
 package devTools.Hawk.classDescriptor.modeledObjects;
 
 import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UTFDataFormatException;
 import java.util.Vector;
 
+import javax.swing.JOptionPane;
+
+import devTools.Hawk.classDescriptor.gui.frame.FileAlreadyExistsGUI;
+import devTools.Hawk.classDescriptor.threads.JDFFileReaderThread;
+import devTools.Hawk.classDescriptor.threads.JDFFileWriterThread;
 import devTools.Hawk.classDescriptor.tools.SystemsManager;
 import devTools.Hawk.classDescriptor.tools.dataFileUtilities;
 
+/**
+ * This class is used to describe a project.  A project is basically a collection of classes and/or interfaces.
+ * @author Dominic Kramer
+ *
+ */
 public class Project
 {
+	/** This is the object used to handle saving the project or opening the project from a file. */
 	private dataFileUtilities data;
+	/** The Vector of Interface objects each of which represents a class or interface in this project. */
 	private Vector interfaceVec; //this is a vector of Interface objects that currently have
-				     //been selected by the user.  The one at the end of the 
-				     //vector is the most recent one selected.
+				                              //been selected by the user.  The one at the end of the 
+				                              //vector is the most recent one selected.
+	/** The project's name. */
 	private String projectName; //the project's name
-	private int currentInterface;  //this int represents the element in the Vector interfaceVec
+
+//	private int currentInterface;  //this int represents the element in the Vector interfaceVec
 				     //that the user is currently looking at
 	
+	/** Default constructor. */
 	public Project()
 	{
-		try
-		{
 			data = new dataFileUtilities();
+			data.setAlreadySaved(false);
 			//interfaceVec = data.getVectorOfInterfaceObjects();
 			interfaceVec = new Vector();
 			projectName = "project";
-			currentInterface = 0;
-		}
-		catch(FileNotFoundException e)
-		{
-			System.out.println("A FileNotFoundException was thrown in Project() in Project.java");
-		}
 	}
 	
+	/**
+	 * Create a Project object given the paramters.  The constructor considers the project as not being 
+	 * already saved.
+	 * @param Data The dataFileUtilities object which is used for opening and saving the project to a file.
+	 * @param Str The projec'ts name.
+	 */
 	public Project(dataFileUtilities Data, String Str)
 	{
 		data = Data;
-		interfaceVec = data.getVectorOfInterfaceObjects();
+		interfaceVec = Project.getVectorOfInterfaceObjectsFromFile(data.getFileName());
+		data.setAlreadySaved(true);
 		projectName = Str;
-		currentInterface = 0;
+//		currentInterface = 0;
 	}
 	
-	public Project(String Str1, String name, boolean append) throws FileNotFoundException
+	/**
+	 * Creates a project from a native Hawk file.
+	 * @param Str1 The full filename of the native Hawk file.
+	 * @param append True if data is to be appened to this file or not if data is written to the file.
+	 * @throws FileNotFoundException
+	 */
+	public Project(String Str1, boolean append)
 	{
 		data = new dataFileUtilities(Str1, append);
-		interfaceVec = data.getVectorOfInterfaceObjects();
-		projectName = name;
-		currentInterface = 0;
+		data.setAlreadySaved(true);
+		projectName = "";
+		try
+		{
+			projectName = Project.getProjectNameFromFile(Str1);
+			interfaceVec = Project.getVectorOfInterfaceObjectsFromFile(Str1);
+		}
+		catch (UTFDataFormatException e)
+		{
+			JOptionPane opPane = new JOptionPane();
+			JOptionPane.showMessageDialog(opPane,"The file "+Str1+" could not be read because its data has been corrupted.\n" +
+				"Make sure it is a "+SystemsManager.getHawkFileExtensionWithoutPeriod()+" file written by Hawk and not just " +
+					"a file that ends in "+SystemsManager.getHawkFileExtensionWithoutPeriod()+"."
+				,"File Not Found"
+				,JOptionPane.ERROR_MESSAGE);
+				if (projectName.equals(""))
+					projectName = "Name could not be resolved";
+		}
+		catch (EOFException e)
+		{
+			JOptionPane opPane = new JOptionPane();
+			JOptionPane.showMessageDialog(opPane,"The file "+Str1+" could not be read because its data has been corrupted.\n" +
+				"Make sure it is a "+SystemsManager.getHawkFileExtensionWithoutPeriod()+" file written by Hawk and not just " +
+					"a file that ends in "+SystemsManager.getHawkFileExtensionWithoutPeriod()+"."
+				,"File Not Found"
+				,JOptionPane.ERROR_MESSAGE);
+			if (projectName.equals(""))
+				projectName = "Name could not be resolved";
+		}
+		catch(IOException e)
+		{
+			System.out.println("IOException thrown in getProjectNameFromFile(String) in Project.java");
+			SystemsManager.printStackTrace(e);
+		}
 	}
 	
+	/**
+	 * Returns the project's name.  If a project is added to a JTree, the JTree will use this method to determine 
+	 * the string to place on the node in the tree.
+	 * @return The project's name.
+	 */
 	public String toString()
 	{
 		return projectName;
 	}
 	
+	/**
+	 * Get the dataFileUtilities object associated with this project object.
+	 * @return The dataFileUtilities object associated with this project object.
+	 */
 	public dataFileUtilities getData()
 	{
 		return data;
 	}
 	
+	/**
+	 * Set the dataFileUtilities object associated with this object.
+	 * @param data2 The new dataFileUtilities object to associate with this 
+	 * project object.
+	 */
 	public void setData(dataFileUtilities data2)
 	{
 		data = data2;
 	}
 	
+	/**
+	 * Get the Interface objects associated with this project object.
+	 * @return A Vector of Interface objects.
+	 */
 	public Vector getInterfaceVec()
 	{
 		return interfaceVec;
 	}	
 	
+	/**
+	 * Set the Interface objects associated with this project object.
+	 * @param vec A Vector of Interface objects.
+	 */
 	public void setInterfaceVec(Vector vec)
 	{
 		interfaceVec = vec;
 	}
 	
+	/**
+	 * Adds the supplied Interface object to the Vector of Interface objects this 
+	 * project holds.
+	 * @param intF The Interface object to add.
+	 */
 	public void addInterfaceToInterfaceVec(Interface intF)
 	{
-		interfaceVec.add(intF.Clone());
+		interfaceVec.add(intF.getClone());
 	}
-	
+/*	
 	public int getCurrentInterface()
 	{
 		return currentInterface;
@@ -130,42 +218,26 @@ public class Project
 	{
 		currentInterface = num;
 	}
-	
+*/
+	/**
+	 * Get the project's name.
+	 * @return The project's name.
+	 */
 	public String getProjectName()
 	{
 		return projectName;
 	}
-
-	/**
-	* Returns the Project's name from a .jdf file
-	* @param str The .jdf filename
-	* @return The project's name represented by the .jdf file
-	*/
-	public static String getProjectName(String str)
-	{
-		String answer = "";
-		try
-		{
-			DataInputStream reader = new DataInputStream(new FileInputStream(str));
-			answer = reader.readUTF();
-			reader.close();
-		}
-		catch(IOException e)
-		{
-			System.out.println("IOException thrown in getNames() in dataFileUtilities.java");
-			SystemsManager.printStackTrace(e);
-		}
-			
-		return answer;
-	}
 	
+	/**
+	 * Set the projec'ts name.
+	 * @param nm The project's new name.
+	 */
 	public void setProjectName(String nm)
 	{
 		projectName = nm;
 	}
-
-
-	/**
+	
+	/*
 	 * This creates a new Project object from a vector of full filenames.
 	 * @param vec A vector of filenames either corresponding to a directory,
 	 * .class file, or .jar file.  The filenames are full filenames.
@@ -218,5 +290,100 @@ public class Project
 			//String tempFile = SystemsManager.getClassDescriptorHomeDirectory()+System.getProperty("file.separator")+"temporary"+System.getProperty("file.separator")+projectName;
 			//dataFileUtilities.writeJDFAndCorrespondingFiles(resultPro, tempFile);
 		return resultPro;
-	}	
+	}
+	
+	/**
+	 * This is used to save a project to a file and as the name implies, this
+	 * method writes the native Hawk file.  This method prompts the user 
+	 * if he/she wants to overwrite the file, append to the file, or cancel saving 
+	 * the project it the file the user selects to save to already exists.
+	 */
+	public void writeNativeHawkFile()
+	{
+		String jdfFILE = getData().getFileName();
+		if (!jdfFILE.endsWith(SystemsManager.getHawkFileExtension()))
+			jdfFILE = jdfFILE + SystemsManager.getHawkFileExtension();
+		
+		String result = "";
+		if ((new File(jdfFILE)).exists())
+			result = (new FileAlreadyExistsGUI()).showQuestionDialog(jdfFILE);
+		boolean append = true;
+		if (result.equals("Append"))
+			append = true;
+		else if (result.equals("Overwrite"))
+			append = false;
+		
+		if (!result.equals("Cancel"))
+		{
+				dataFileUtilities data = new dataFileUtilities(jdfFILE, append);
+				setData(data);
+				printInterfacesAndName();
+				data.setAlreadySaved(true);
+		}
+	}
+	
+	/**
+	 * This is used to save a project to a file and as the name implies, this
+	 * method writes the native Hawk file.  This method automatically 
+	 * overwrites the file the user selects with the new project data.  It 
+	 * is intended to be used when the user selects "save" from a menu.
+	 */
+	public void writeNativeHawkFileWithoutPrompting()
+	{
+		printInterfacesAndName();
+		getData().setAlreadySaved(true);
+	}
+	
+	/**
+	 * Prints the data about the Project pro.  This method is used by the method 
+	 * writeJDFFile(Project pro, String fileName).  If you want to write the data 
+	 * use the method writeJDFFile(Project pro, String fileName).
+	 * @param pro The Project to use.
+	 */
+	private void printInterfacesAndName()
+	{
+		dataFileUtilities data = getData();
+		data.setAppend(false);
+		JDFFileWriterThread thread = new JDFFileWriterThread(this,data);
+		thread.start();
+	}
+	
+	/**
+	* Returns the Project's name from a Hawk native file specified from the string fileName.
+	* @return The project's name represented by the hawk native file.
+	*/
+	public static String getProjectNameFromFile(String fileName) throws UTFDataFormatException, IOException
+	{
+		String answer = "";
+		try
+		{
+			DataInputStream reader = new DataInputStream(new FileInputStream(fileName));
+			answer = reader.readUTF();
+			reader.close();
+		}
+		catch (FileNotFoundException e)
+		{
+			JOptionPane opPane = new JOptionPane();
+			JOptionPane.showMessageDialog(opPane,"The file "+fileName+" does not exist."
+				,"File Not Found"
+				,JOptionPane.ERROR_MESSAGE);
+		}
+			
+		return answer;
+	}
+	
+	/**
+	 * This returns a Vector of Interface objects made from the data from the 
+	 * native Hawk file specified by the field fileName.
+	 * @return A Vector of Interface objects.
+	 */
+	public static Vector getVectorOfInterfaceObjectsFromFile(String filename)
+	{
+		Vector vec = new Vector();
+		
+		JDFFileReaderThread thread = new JDFFileReaderThread(filename,vec);
+		thread.start();
+		
+		return vec;
+	}
 }
