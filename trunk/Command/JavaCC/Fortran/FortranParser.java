@@ -114,8 +114,7 @@ public class FortranParser implements FortranParserConstants {
     if( s.indexOf( "(" ) > 0 ) {
       //split based on parentheses    
       String tokenListParen[] = s.split( "\\(|\\)" );
-      //now go through the tokens, determining if an element is an array
-      String[] temp;
+      int bracketCount = 0;
 
       //note that the odd numbered tokens represent the number of array
       //element(s).  For these, we need to replace commas with "][".
@@ -126,11 +125,26 @@ public class FortranParser implements FortranParserConstants {
           buffer.append( tokenListParen[i].replaceAll( "\\s*,\\s*", "][" ) );
         } else {
 
+        //look ahead to see the dimensionality of the array
+        if( i + 1 < tokenListParen.length ) {
+          bracketCount = tokenListParen[i + 1].split( "," ).length;
+        } else {
+          bracketCount = 0;
+        }
+
           if( i != 0 ) {
             buffer.append( "]" );
           }
 
+          //attach the variable name
           buffer.append( tokenListParen[i] );
+
+          //append the right number of bracket pairs for the array
+          for( int k = 0; k < bracketCount; k++ ) {
+            buffer.append( "[]" );
+          }
+
+          //and the new array declaration
           buffer.append( " = new " );
           buffer.append( type );
 
@@ -140,7 +154,13 @@ public class FortranParser implements FortranParserConstants {
         }
       }
 
-      buffer.append( "]" );
+      //for even numbers of tokens, we will have had something like this:
+      //real r(3),r(4) or real r, r(3); for odd numbers of tokens, we will have 
+      //had something like this: real r(3),r or real r, r(3), r.  
+      //Add the bracket on if there was an even number 
+      if( ( tokenListParen.length % 2 )  == 0 ) {
+        buffer.append( "]" );
+      }
     } else {
       //just return what we had after initial replacements
       buffer.append( s );
@@ -637,7 +657,7 @@ public class FortranParser implements FortranParserConstants {
       if( ( i % 2 )  == 0 ) {
         //we found a variable name, so append it and the array declaration
         buffer.append( tokenList[i] );
-        buffer.append( " = new char[" );
+        buffer.append( "[] = new char[" );
       } else {
         //we found the array dimension, so append that
         buffer.append( tokenList[i].replaceAll( "\\*", "" ) );
@@ -671,7 +691,7 @@ public class FortranParser implements FortranParserConstants {
 
     for( int i = 1; i < tokenList.length; i++ ) {
       buffer.append( tokenList[i] );
-      buffer.append( " = new char[" );
+      buffer.append( "[] = new char[" );
       //first element is array length
       buffer.append( length );
       buffer.append( "]" );
