@@ -33,6 +33,9 @@
  * Programmer:  Dennis Mikkelson
  *             
  * $Log$
+ * Revision 1.2  2002/03/13 16:19:17  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.1  2002/02/22 21:03:42  pfpeterson
  * Operator reorganization.
  *
@@ -229,8 +232,9 @@ public class  FocusIncidentSpectrum  extends   DS_Special
     boolean is_histogram = monitor_data.isHistogram();
     if ( !is_histogram )
     {
-      monitor_data = (Data)monitor_data.clone();
-      monitor_data.ConvertToHistogram( false );
+      monitor_data = new HistogramTable( monitor_data, 
+                                         false, 
+                                         monitor_data.getGroup_ID() );
     }
 
     XScale new_x_scale = new UniformXScale( t_min, t_max, num_bins+1 );

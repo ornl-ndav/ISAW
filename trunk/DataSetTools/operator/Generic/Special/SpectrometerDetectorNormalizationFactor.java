@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/03/13 16:19:24  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.2  2002/03/05 19:28:07  pfpeterson
  *  Updated @see references in javadocs.
  *
@@ -308,7 +311,7 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
        // System.out.print("spherical_coords =" + spherical_coords[0] + 
        //                  " " + spherical_coords[1]+ " "+spherical_coords[2]);
      
-        if ( data.isFunction() )
+        if ( !data.isHistogram() )
           for ( int i = 0; i < numofe; i++ )
           {
             if (e_vals[i] >= -EINTEG && e_vals[i] <= EINTEG)
@@ -378,9 +381,9 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
         UniformXScale ff_scale = null;
         ff_scale = new UniformXScale(0, num_data-1,num_data);
         
-        ff_exp_data = new Data( ff_scale, exp_FF, 1000 ); 
-        ff_cal_data = new Data( ff_scale, cal_FF, 1001 ); 
-        ff_FF_data = new Data( ff_scale, fudge_FF, 1002 ); 
+        ff_exp_data = Data.getInstance( ff_scale, exp_FF, 1000 ); 
+        ff_cal_data = Data.getInstance( ff_scale, cal_FF, 1001 ); 
+        ff_FF_data  = Data.getInstance( ff_scale, fudge_FF, 1002 ); 
         
         new_ds.addData_entry( ff_exp_data );
         new_ds.addData_entry( ff_cal_data );      

@@ -32,9 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/13 16:14:46  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.1  2002/03/12 20:41:38  chatterjee
- * Retriever for SDDS files. Need to instantiate this class with the sdds file name
- * to load it into ISAW.
+ * Retriever for SDDS files. Need to instantiate this class with the sdds 
+ * file name to load it into ISAW.
  *
  *
 */
@@ -152,7 +155,7 @@ public class SDDSRetriever extends Retriever
  	 while ( j < cols && (col_units[j] != null && y_units != null &&
                        col_units[j].equalsIgnoreCase( y_units )) )  
  	{
-  	   Data d  = new Data( new VariableXScale(x), y[j], j );
+  	   Data d  = Data.getInstance( new VariableXScale(x), y[j], j );
     	   d.setAttribute( new StringAttribute(columnNames[j], col_units[j]));
 
     	   for ( i=0; i < numberOfParameters; i++ )

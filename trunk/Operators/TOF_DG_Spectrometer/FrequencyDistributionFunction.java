@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/03/13 16:26:26  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.5  2002/02/22 20:42:54  pfpeterson
  *  Operator reorganization.
  *
@@ -259,10 +262,10 @@ public class FrequencyDistributionFunction
            //*/                
       }
 
-      conversion_data = new Data( data.getX_scale(),
-                                  new_y_vals,
-                                  new_errors,
-                                  data.getGroup_ID() );
+      conversion_data = Data.getInstance( data.getX_scale(),
+                                          new_y_vals,
+                                          new_errors,
+                                          data.getGroup_ID() );
     
       //now multiply the spectrum by the conversion_data;
       new_data = data.multiply( conversion_data );

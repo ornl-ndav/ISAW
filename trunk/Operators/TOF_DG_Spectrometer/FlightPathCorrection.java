@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/03/13 16:26:26  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.2  2002/02/22 20:43:49  pfpeterson
  * Operator reorganization.
  *
@@ -231,7 +234,7 @@ public class FlightPathCorrection extends    GenericTOF_DG_Spectrometer
                                           // values and attributes.
       float y[] = d.getY_values();
       XScale x_scale = new VariableXScale( x );
-      Data new_d = new Data( x_scale, y, d.getGroup_ID() );
+      Data new_d = Data.getInstance( x_scale, y, d.getGroup_ID() );
       new_d.setAttributeList( d.getAttributeList() );
       new_d.setSqrtErrors();
       new_ds.replaceData_entry( new_d, i );   

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/03/13 16:13:41  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.3  2002/02/28 19:57:47  dennis
  * Modified import statements due to operator reorganization.
  *
@@ -66,10 +69,10 @@ public class TestIntegHist
 
     Data monitor = monitor_ds.getData_entry_with_id( 4 );
 
-    monitor.print( 0, 10 );
-    monitor.print( 20, 30 );
+    //monitor.print( 0, 10 );
+    //monitor.print( 20, 30 );
 
-    monitor.print( 1120, 1130 );
+    //monitor.print( 1120, 1130 );
 
     float y[] = monitor.getY_values();
 

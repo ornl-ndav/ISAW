@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2002/03/13 16:11:36  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.27  2001/08/16 01:20:27  dennis
  *  Now sends POINTED AT CHANGED messages when the mouse moves
  *  over the SAME Data block, if there is only one Data block.
@@ -412,7 +415,8 @@ public static void main(String[] args)
     for ( int channel = 0; channel < 50; channel++ )
       y_values[ channel ] = (float)Math.sin( id * channel / 10.0 );
 
-    spectrum = new Data( x_scale, y_values, id );   // put it into a "Data"
+    spectrum = new FunctionTable( x_scale, y_values, id );  
+                                                    // put it into a "Data"
                                                     // object and then add
     data_set.addData_entry( spectrum );             // that data object to
                                                     // the data set
@@ -622,7 +626,7 @@ private void MakeImage( boolean redraw_flag )
   for ( int i = 0; i < num_rows; i++ )
   {
     data_block = getDataSet().getData_entry(i);
-    image_data[i] = data_block.getY_values( x_scale );
+    image_data[i] = data_block.getY_values( x_scale, IData.SMOOTH_NONE );
   }
                               // set the log scale and image data, but don't
                               // remake the image yet. It's done when the
@@ -1027,7 +1031,7 @@ private void DrawHGraph( int index, int graph_num, boolean pointed_at )
   {
     XScale x_scale = getXConversionScale();
     x = x_scale.getXs();
-    y = data_block.getY_values( x_scale );
+    y = data_block.getY_values( x_scale, IData.SMOOTH_NONE );
   }
   else
   {

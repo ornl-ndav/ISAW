@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/03/13 16:15:25  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.3  2001/04/25 21:32:25  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -337,7 +340,7 @@ abstract public class ModelPeak implements IPeak,
     for ( int i = 0; i < x_vals.length; i++ )
       y_vals[i] = (float)getValue( x_vals[i] );
 
-    return new Data( interval, y_vals, 1 );
+    return Data.getInstance( interval, y_vals, 1 );
   }
 
 

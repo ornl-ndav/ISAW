@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/03/13 16:24:23  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.2  2001/07/24 20:10:04  rmikk
  * Added a lot of attributes
  *
@@ -121,7 +124,9 @@ public class NxMonitor
     xvals = nd.Arrayfloatconvert( X2 );
     if( ( xvals == null ) ||(  yvals==null ) ) 
        return true;
-    Data D = new Data( new VariableXScale( xvals ) , yvals , monitor_num+1 );
+    Data D = Data.getInstance( new VariableXScale( xvals ) , 
+                               yvals, 
+                               monitor_num+1 );
     
     DS.addData_entry( D );
     Object val = ntof.getAttrValue( "long_name" );

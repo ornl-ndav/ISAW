@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2002/03/13 16:12:18  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.18  2001/08/16 01:19:59  dennis
  *  Now sends POINTED AT CHANGED messages when the mouse moves
  *  over the SAME Data block, if there is only one Data block.
@@ -286,7 +289,8 @@ public static void main(String[] args)
     for ( int channel = 0; channel < 50; channel++ )
       y_values[ channel ] = (float)Math.sin( id * channel / 10.0 );
 
-    spectrum = new Data( x_scale, y_values, id );   // put it into a "Data"
+    spectrum = Data.getInstance( x_scale, y_values, id );   
+                                                    // put it into a "Data"
                                                     // object and then add
     data_set.addData_entry( spectrum );             // that data object to
                                                     // the data set
@@ -613,7 +617,7 @@ private void DrawSpecifiedGraph( int index )
   {
     XScale x_scale = getXConversionScale();
     x = x_scale.getXs();
-    y = data_block.getY_values( x_scale );
+    y = data_block.getY_values( x_scale, IData.SMOOTH_LINEAR );
   }
   else
   {

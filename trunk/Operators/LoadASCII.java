@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/03/13 16:26:25  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.3  2002/02/22 20:45:04  pfpeterson
  * Operator reorganization.
  *
@@ -178,7 +181,7 @@ public class LoadASCII extends GenericLoad
             new DataSetFactory( "Sample", x_units, x_label, y_units, y_label );
       ds = ds_factory.getDataSet();
       
-      Data    d  = new Data( new VariableXScale(x), y, 1 );
+      Data d = Data.getInstance( new VariableXScale(x), y, 1 );
       ds.addData_entry( d );
     }
     catch ( Exception E )

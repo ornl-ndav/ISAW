@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/03/13 16:19:17  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.1  2002/02/22 21:02:32  pfpeterson
  *  Operator reorganization.
  *
@@ -41,7 +44,7 @@
  *  Added copyright and GPL info at the start of the file.
  *
  *  Revision 1.4  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
+ *   Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
  *  classes.  The abstract base class hierarchy is now:
  *
@@ -251,11 +254,11 @@ public class ResampleDataSet extends AnalyzeOp
       if ( make_new_ds )
       {
         new_data = (Data)data.clone();
-        new_data.ResampleUniformly( new_x_scale );
+        new_data.resample( new_x_scale, IData.SMOOTH_NONE );
         new_ds.addData_entry( new_data );
       }
       else
-        data.ResampleUniformly( new_x_scale );
+        data.resample( new_x_scale, IData.SMOOTH_NONE );
     }
 
     if ( make_new_ds )
