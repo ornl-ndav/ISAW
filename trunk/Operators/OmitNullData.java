@@ -29,6 +29,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2004/05/07 04:14:10  dennis
+ * Now prints the group IDs of data blocks that are omitted, if
+ * DEBUG is true.
+ * If a new DataSet is not created, it now notifies observers of
+ * the original DataSet, if Data blocks are deleted.
+ * Now uses a Vector to keep track of omitted group IDs.
+ *
  * Revision 1.3  2004/04/28 21:11:29  dennis
  * Now also omits detectors at origin. (Bad position info)
  * When DEBUG is on this now prints the reason the group was
@@ -55,11 +62,14 @@ import java.util.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Messaging.*;
+
 
 /** 
  *  This operator removes null Data blocks from a DataSet.
  */
-public class OmitNullData extends GenericSpecial{
+  public class OmitNullData extends GenericSpecial
+  {
 
     public static final String NULL_DATA_BLOCK = "Null Data Block";
     public static final String LOW_COUNT       = "Low Count";
@@ -67,11 +77,10 @@ public class OmitNullData extends GenericSpecial{
 
     private static final String  TITLE = "OmitNullData";
     private static final boolean DEBUG = true;
-    private static final int BUFFER_SIZE_INCREMENT = 100;
 
     /* ------------------------ Default constructor ------------------------ */ 
     /**
-     *  Creates operator with title "Operator Template" and a default
+     *  Creates operator with title "OmitNullData" and a default
      *  list of parameters.
      */  
     public OmitNullData()
@@ -88,10 +97,11 @@ public class OmitNullData extends GenericSpecial{
      *  @param  ds          Sample DataSet to remove dead detectors from.
      *  @param  new_ds      Whether to make a new DataSet.
      */
-    public OmitNullData( DataSet ds, boolean new_ds ){
-	this(); 
-	parameters = new Vector();
-	addParameter( new Parameter("DataSet parameter", ds) );
+    public OmitNullData( DataSet ds, boolean new_ds )
+    {
+      this(); 
+      parameters = new Vector();
+      addParameter( new Parameter("DataSet parameter", ds) );
       addParameter( new Parameter("Make new DataSet", new Boolean(new_ds)));
     }
     
@@ -99,10 +109,12 @@ public class OmitNullData extends GenericSpecial{
     /** 
      * Get the name of this operator to use in scripts
      * 
-     * @return  "OmitNullData", the command used to invoke this operator in Scripts
+     * @return  "OmitNullData", the command used to invoke this operator 
+     *           in Scripts
      */
-    public String getCommand(){
-	return "OmitNullData";
+    public String getCommand()
+    {
+      return TITLE;
     }
     
     /* ---------------------- setDefaultParameters ------------------------- */ 
@@ -110,9 +122,10 @@ public class OmitNullData extends GenericSpecial{
      * Sets default values for the parameters.  This must match the
      * data types of the parameters.
      */
-    public void setDefaultParameters(){
-	parameters = new Vector();
-	addParameter(new Parameter("DataSet parameter",DataSet.EMPTY_DATA_SET ));
+    public void setDefaultParameters()
+    {
+      parameters = new Vector();
+      addParameter(new Parameter("DataSet parameter",DataSet.EMPTY_DATA_SET ));
       addParameter(new Parameter("Make new DataSet", new Boolean(false)));
     }
 
@@ -124,17 +137,19 @@ public class OmitNullData extends GenericSpecial{
     public String getDocumentation()
     {
       StringBuffer s = new StringBuffer("");
-      s.append("@overview This operator removes null Data blocks from a DataSet ");
+      s.append("@overview This operator removes null Data blocks from ");
+      s.append("a DataSet ");
       s.append("@assumptions The specified DataSet ds is not null.\n");
       s.append("@algorithm This operator removes Data blocks with zero total ");
       s.append("counts from the specified DataSet. It also appends a log ");
-      s.append("message indicating that the OmitNullData operator was applied ");
-      s.append("to the DataSet.\n");
+      s.append("message indicating that the OmitNullData operator was ");
+      s.append("applied to the DataSet.\n");
       s.append("@param ds Sample DataSet to remove null data from.\n");
       s.append("@param new_ds Whether to make a new DataSet.\n");
-      s.append("@return new_ds DataSet containing the original DataSet minus the ");
-      s.append("Data block(s) with zero total counts.\n");
-      s.append("@error Returns an error if the specified DataSet ds is null.\n");
+      s.append("@return new_ds DataSet containing the original DataSet minus ");
+      s.append("the Data block(s) with zero total counts.\n");
+      s.append("@error Returns an error if the specified DataSet ds ");
+      s.append("is null.\n");
       return s.toString();
     }
     
@@ -145,109 +160,109 @@ public class OmitNullData extends GenericSpecial{
      *  @return DataSet containing the the original DataSet minus the dead 
      *  detectors (if successful).
      */
-    public Object getResult(){
-	DataSet ds        = (DataSet)(getParameter(0).getValue());
-	boolean mk_new_ds = ((Boolean)(getParameter(1).getValue())).booleanValue();
+    public Object getResult()
+    {
+      DataSet ds        = (DataSet)(getParameter(0).getValue());
+      boolean mk_new_ds =((Boolean)(getParameter(1).getValue())).booleanValue();
 
-	if( ds==null )
-	    return new ErrorString( "DataSet is null in OmitNullData" );
+      if( ds==null )
+        return new ErrorString( "DataSet is null in OmitNullData" );
 
-	// initialize new data set to be the same as the old
-	DataSet new_ds = null;
-        int     dead_ones[];
-        int     ndead= 0 ;
+      // initialize new data set to be the same as the old
+      DataSet new_ds = null;
 
-        // initialize new_ds
-        if(mk_new_ds){
-            new_ds=(DataSet)ds.clone();
-        }else{
-            new_ds=ds;
+      // initialize new_ds
+      if(mk_new_ds)
+        new_ds=(DataSet)ds.clone();
+      else
+        new_ds=ds;
+
+      // Remove Data blocks with zero total count
+      Vector dead_ones = new Vector();
+      int min_count = 0;
+
+      String    err_string = null;
+      int       n_data = ds.getNum_entries();
+      Attribute attr;
+      for( int i = n_data-1; i >= 0; i-- )   // go through list backwards so
+      {                                      // we can easily remove bad ones
+        err_string = null;
+        Data det = new_ds.getData_entry(i);
+
+        if( det == null )
+          err_string = NULL_DATA_BLOCK;
+
+        if ( err_string == null )
+        { 
+          attr = det.getAttribute(Attribute.TOTAL_COUNT);
+          if ( attr != null )
+          {
+            Float count = (Float)attr.getValue();
+            if( count.floatValue() <= min_count )
+              err_string = LOW_COUNT; 
+          } 
         }
 
-	// Remove Data blocks with zero total count
-        dead_ones = new int[BUFFER_SIZE_INCREMENT];
-        int min_count = 0;
-
-        String    err_string = null;
-        int       n_data = ds.getNum_entries();
-        Attribute attr;
-	for( int i = n_data-1; i >= 0; i-- )   // go through list backwards so
-        {                                      // we can easily remove bad ones
-          err_string = null;
-          Data det = new_ds.getData_entry(i);
-
-          if( det == null )
-            err_string = NULL_DATA_BLOCK;
-
-          if ( err_string == null )
-          { 
-            attr = det.getAttribute(Attribute.TOTAL_COUNT);
-            if ( attr != null )
-            {
-              Float count = (Float)attr.getValue();
-              if( count.floatValue() <= min_count )
-                err_string = LOW_COUNT; 
-            } 
-          }
-
-          if ( err_string == null )
+        if ( err_string == null )
+        {
+          attr = det.getAttribute(Attribute.DETECTOR_POS);
+          if ( attr != null && attr.getValue() instanceof DetectorPosition )
           {
-            attr = det.getAttribute(Attribute.DETECTOR_POS);
-            if ( attr != null && attr.getValue() instanceof DetectorPosition )
-            {
-              DetectorPosition pos = (DetectorPosition)attr.getValue();
-              float sphere_coords[] = pos.getSphericalCoords();
-              if ( sphere_coords[0] <= 0 )
-                err_string = DETECTOR_AT_ORIGIN;
-            }  
-          }
+            DetectorPosition pos = (DetectorPosition)attr.getValue();
+            float sphere_coords[] = pos.getSphericalCoords();
+            if ( sphere_coords[0] <= 0 )
+              err_string = DETECTOR_AT_ORIGIN;
+          }  
+        }
       
-          if ( err_string != null )
-          {
-            new_ds.removeData_entry(i);
-            dead_ones = AppendToList ( i, dead_ones, ndead );
-            ndead++;
-            if ( DEBUG )
-              System.out.println("Removed Data " + i + ": " + err_string );
-	  }
-	}
-      int final_list[] = new int[ ndead ];
-      for ( int i=0; i < ndead; i++ )
-        final_list[i] = dead_ones[i];
-      
-      if( DEBUG ) {
-        System.out.println( 
-           "Null Data Blocks = " + IntList.ToString(final_list) );
-       }
-	
-	if(ndead > 0) {
-	new_ds.addLog_entry("Removed null data from ( " + ds + ", data blocks "
-                            + IntList.ToString(final_list) + " )" );}
-	return new_ds;
-    }
-
-    /* ----------------------------- AppendToList --------------------- */
-    private static int[] AppendToList( int new_int, int list[], int inext ) {
-      int new_list[];
-      if ( inext >= list.length ) {
-        new_list = new int[ list.length + BUFFER_SIZE_INCREMENT ];
-        for ( int i = 0; i < list.length; i++ )
-          new_list[i] = list[i];
+        if ( err_string != null )
+        {
+          int id = det.getGroup_ID();
+          new_ds.removeData_entry(i);
+          dead_ones.add( new Integer(id) );
+          if ( DEBUG )
+            System.out.println("Removed Group " + id + ": " + err_string );
+         }
       }
-      else
-        new_list = list;
-      new_list [inext] = new_int;
-      return new_list;
+ 
+      int final_list[] = null;
+      if( dead_ones.size() > 0 )
+      {
+        final_list = new int[ dead_ones.size() ];
+        for ( int i=0; i < dead_ones.size(); i++ )
+          final_list[i] = ((Integer)dead_ones.elementAt(i)).intValue();
+
+        Arrays.sort(final_list);
+      
+        new_ds.addLog_entry("Removed null data from ( " + ds + ", data blocks "
+                            + IntList.ToString(final_list) + " )" );
+
+        if ( !mk_new_ds )
+          ds.notifyIObservers( IObserver.DATA_DELETED );
+      }
+
+      if( DEBUG )
+      {
+        if ( final_list == null )
+          System.out.println("NO DATA BLOCKS REMOVED");
+        else
+          System.out.println(
+           "Removed Groups: " + IntList.ToString(final_list) );
+      }
+
+      return new_ds;
     }
-   
+
+
     /* ------------------------------ clone -------------------------------- */ 
     /** 
      *  Creates a clone of this operator.
      */
-    public Object clone(){ 
-	Operator op = new OmitNullData();
-	op.CopyParametersFrom( this );
-	return op;
+    public Object clone()
+    { 
+      Operator op = new OmitNullData();
+      op.CopyParametersFrom( this );
+      return op;
     }
     
 
@@ -256,27 +271,29 @@ public class OmitNullData extends GenericSpecial{
      * Test program to verify that this will compile and run ok.  
      *
      */
-    public static void main( String args[] ){
-	System.out.println("Test of OmitNullData starting...");
+    public static void main( String args[] )
+    {
+      System.out.println("Test of OmitNullData starting...");
 	
-	String filename="/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
-	RunfileRetriever rr = new RunfileRetriever( filename );
-	DataSet ds = rr.getDataSet(1);
+      String filename="/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
+      RunfileRetriever rr = new RunfileRetriever( filename );
+      DataSet ds = rr.getDataSet(1);
 
-	OmitNullData op = new OmitNullData( ds, true );
-	Object obj = op.getResult();
-	if(obj instanceof DataSet ){
-	    DataSet new_ds=(DataSet)obj;
-	    ViewManager vm1 = new ViewManager(     ds, IViewManager.IMAGE );
-	    ViewManager vm2 = new ViewManager( new_ds, IViewManager.IMAGE );
-	}else{
-	    System.out.println( "Operator returned: " + obj );
-	}
+      OmitNullData op = new OmitNullData( ds, true );
+      Object obj = op.getResult();
+      if(obj instanceof DataSet )
+      {
+        DataSet new_ds=(DataSet)obj;
+        ViewManager vm1 = new ViewManager(     ds, IViewManager.IMAGE );
+        ViewManager vm2 = new ViewManager( new_ds, IViewManager.IMAGE );
+      }
+      else
+        System.out.println( "Operator returned: " + obj );
 	
-	/*-- added by Chris Bouzek --*/
-	System.out.println("Documentation: " + op.getDocumentation());
-	/*---------------------------*/
+      /*-- added by Chris Bouzek --*/
+      System.out.println("Documentation: " + op.getDocumentation());
+      /*---------------------------*/
 	
-	System.out.println("Test of OmitNullData done.");
+      System.out.println("Test of OmitNullData done.");
     }
 }
