@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2003/02/24 13:39:19  dennis
+ *  Switched to use CommandObject instead of compound command Strings.
+ *
  *  Revision 1.30  2003/02/22 23:12:46  dennis
  *  Now only recalculates the compressed version of the DataSet when
  *  the DataSet is requested, in case either 1 minute has elapsed, or
@@ -312,7 +315,7 @@ public class LiveDataServer extends    DataSetServer
     System.out.println("ERROR: Invalid runfile: " + file_name );
     data_set = new DataSet[0];
     ds_type  = new int[0];
-    data_name = "NONE";
+    data_name = "DEFAULT_DATA_NAME";
 
     rr = null;
   }
@@ -416,38 +419,53 @@ public class LiveDataServer extends    DataSetServer
     }
   }
 
- /* --------------------------- ProcessCommand --------------------------- */
- /**
-  *  Method to process commands from a TCP client.  Derived classes should
-  *  override this method with methods that process the command properly
-  *  and return an appropriate object through the tcp_io object.
-  *
-  *  @param  command    The command string sent by the client.
-  *
-  *  @param  tcp_io     The TCP communications object to which the response
-  *                     must be sent.
-  */
-  synchronized public void ProcessCommand( String          command,
-                                           ThreadedTCPComm tcp_io   )
+  
+  /* -------------------------- ProcessCommand -------------------------- */
+  /**
+   *  Method to process commands from a TCP client.  
+   *
+   *  @param  command    The command object sent by the client.
+   *
+   *  @param  tcp_io     The TCP communications object to which the response
+   *                     must be sent.
+   *
+   *  @return True if the command was processed and no further action is 
+   *          needed. Returns false if the command was not handled, and
+   *          so some response must still be sent back to the client.
+   */
+  synchronized public boolean ProcessCommand( CommandObject   command,
+                                              ThreadedTCPComm tcp_io   )
   {
     if ( debug_server )
       System.out.println("Received request " + command );
 
     try
     {
-      if (  command.startsWith( COMMAND_GET_DS_TYPES ) )
+      if (  command.getCommand() == CommandObject.GET_DS_TYPES )
       {
         int types[] = new int[ ds_type.length ];
         for ( int i = 0; i < types.length; i++ )
           types[i] = ds_type[i];
         tcp_io.Reset();                              // must reset since we
         tcp_io.Send( types );                        // changed the contents
-        return;
+        return true;
       }
 
-      else if ( command.startsWith( COMMAND_GET_DS ) )
+      else if ( command.getCommand() == CommandObject.GET_DS_NAME )
       {
-        int index = extractIntParameter( command );
+        int index = ((GetDataCommand)command).getDataSetNumber();
+
+        if ( index >= 0 && index < ds_type.length )   // valid DataSet index
+          tcp_io.Send( data_set[index].getTitle() );
+        else
+          tcp_io.Send( "DEFAULT_DATA_NAME" ); 
+ 
+        return true;
+      }
+
+      else if ( command.getCommand() == CommandObject.GET_DS )
+      {
+        int index = ((GetDataCommand)command).getDataSetNumber();
 
         if ( index >= 0 && index < ds_type.length )   // valid DataSet index
         {                    
@@ -458,11 +476,25 @@ public class LiveDataServer extends    DataSetServer
             Date date = new Date( System.currentTimeMillis() );
             source_ds.addLog_entry( "Live Data as of: " + date );
             source_ds.deleteIObservers(); 
-            CompressedDataSet comp_ds = getCompressedDS(index);
+            CompressedDataSet comp_ds;
 
-            if ( new_comp_ds )                        // don't reset if we are
-              tcp_io.Reset();                         // just sending the same
+            float min_tof = ((GetDataCommand)command).getMin_x();
+            float max_tof = ((GetDataCommand)command).getMax_x();
+            int   rebin   = ((GetDataCommand)command).getRebin_factor();
+            String id_str = ((GetDataCommand)command).getGroup_ids();
+            if ( ( min_tof <  max_tof  &&  min_tof > 0 )     || 
+                   rebin   != 1                              ||
+                   !id_str.equals(CommandObject.ALL_IDS)     ) 
+            {
+              comp_ds = getSubsetDS( index, id_str, min_tof, max_tof, rebin );
+            }
+            else                                      // send full DataSet
+            {
+              comp_ds = getCompressedDS(index);
+              if ( new_comp_ds )                      // don't reset if we are
+                tcp_io.Reset();                       // just sending the same
                                                       // compressed ds object
+            }
             tcp_io.Send( comp_ds );
           }
           else                                       
@@ -472,21 +504,21 @@ public class LiveDataServer extends    DataSetServer
         else                                          
           tcp_io.Send( DataSet.EMPTY_DATA_SET );
 
-        return;
+        return true;
       }
 
-      else if ( command.startsWith( COMMAND_GET_STATUS ) )
+      else if ( command.getCommand() == CommandObject.GET_STATUS )
       {
          if ( status.startsWith( RemoteDataRetriever.DAS_OFFLINE_STRING ) )
          {
            tcp_io.Send( status );
-           return;
+           return true;
          }
 
          if ( status.startsWith( RemoteDataRetriever.NO_DATA_SETS_STRING ) )
          {
            tcp_io.Send( status + DateUtil.default_string() );
-           return;
+           return true;
          }
 
          long time_ms = System.currentTimeMillis();
@@ -495,20 +527,21 @@ public class LiveDataServer extends    DataSetServer
          else
            tcp_io.Send( status );
 
-         return;
+         return true;
       }
    
       else
       {
         if ( debug_server )
           System.out.println("CALLING super.ProcessCommand() for " + command );
-        super.ProcessCommand( command, tcp_io );
+        return false;
       }
     }
     catch ( Exception e )
     {
       System.out.println("Error: LiveDataServer command: " + command);
       System.out.println("Error: couldn't send data "+e );
+      return false;
     }  
   }
 
@@ -623,6 +656,63 @@ public class LiveDataServer extends    DataSetServer
     return comp_ds[index];
   }
 
+  private CompressedDataSet getSubsetDS( int    index, 
+                                         String id_str, 
+                                         float  min_tof, 
+                                         float  max_tof, 
+                                         int    rebin )
+  {
+    DataSet ds =  data_set[index];
+    
+    if ( ds == null || ds.getNum_entries() == 0 )
+      return new CompressedDataSet( DataSet.EMPTY_DATA_SET );
+ 
+    DataSet new_ds = ds.empty_clone();
+    int ids[] = new int[0];
+    if( !id_str.equals( CommandObject.ALL_IDS ) )
+      ids = IntList.ToArray( id_str );
+    else
+    {
+      int first_id = ds.getData_entry(0).getGroup_ID();
+      int last_id  = ds.getData_entry( ds.getNum_entries()-1 ).getGroup_ID();
+      ids = new int[ last_id - first_id + 1 ];
+      for ( int i = 0; i < ids.length; i++ )
+        ids[i] = first_id + i;
+    }
+
+    boolean must_rebin = false;
+    XScale  x_scale = ds.getData_entry(0).getX_scale();
+    if ( min_tof < max_tof && min_tof > 0 )
+    { 
+      must_rebin = true;
+      x_scale = x_scale.restrict( new ClosedInterval(min_tof,max_tof) );
+    }
+
+    if ( rebin > 1 && rebin <= x_scale.getNum_x() )
+    {
+      must_rebin = true;
+      float bins[] = x_scale.getXs();
+      float new_bins[] = new float[ bins.length/rebin ];
+      for ( int i = 0; i < new_bins.length; i++ )
+        new_bins[i] = bins[i*rebin];
+      x_scale = new VariableXScale( new_bins );
+    }
+
+    for ( int i = 0; i < ids.length; i++ )
+      if ( ids[i] >= 0 && ids[i] < ds_index.length )
+        if ( ds_index[ids[i]] == index )                // ids[i] is in ds
+        {
+          Data d = data_list[ids[i]];
+          if ( must_rebin )
+          {
+            d = (Data)d.clone();
+            d.resample( x_scale, Data.SMOOTH_NONE );
+          }
+          new_ds.addData_entry( d );
+        }
+
+    return new CompressedDataSet( new_ds );
+  }
 
   /* ------------------------------ main --------------------------------- */
 
