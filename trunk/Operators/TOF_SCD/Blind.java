@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/30 14:45:50  pfpeterson
+ *  Changed the unsuccesful returns to be ErrorString and the
+ *  successful return to be the name of the saved matrix file.
+ *
  *  Revision 1.1  2002/09/17 22:31:55  pfpeterson
  *  Added to CVS.
  *
@@ -114,11 +118,12 @@ public class Blind extends    GenericTOF_SCD {
         String fail      = "FAILED";
 
         // first check if the OS is acceptable
-        if(! SysUtil.isOSokay() ) return fail+": must be using linux system";
+        if(! SysUtil.isOSokay() )
+            return new ErrorString(fail+": must be using linux system");
 
         // then confirm the peaks file exists
         if(! SysUtil.fileExists(peaksfile) )
-            return fail+": peaks file does not exist";
+            return new ErrorString(fail+": peaks file does not exist");
 
         // find out the file directory
         index=peaksfile.lastIndexOf("/");
@@ -132,7 +137,7 @@ public class Blind extends    GenericTOF_SCD {
         // confirm that the directory is writable
         File dirF=new File(direc);
         if(! dirF.canWrite() )
-            return fail+": cannot write to specified directory";
+           return new ErrorString(fail+": cannot write to specified directory");
 
         // strip the end off of the peaks filename
         index=peaksfile.lastIndexOf(".peaks");
@@ -150,7 +155,8 @@ public class Blind extends    GenericTOF_SCD {
         String command=this.getFullBlindName();
 
         // exit out early if no blind executable found
-        if(command==null) return fail+": could not find blind executable";
+        if(command==null)
+            return new ErrorString(fail+": could not find blind executable");
 
         try{
             process=SysUtil.startProcess(command,direc);
@@ -204,7 +210,7 @@ public class Blind extends    GenericTOF_SCD {
                 }
                 System.out.println(output);
                 
-                return fail;
+                return new ErrorString(fail);
             }
 
             // save to a matrix file
@@ -230,12 +236,12 @@ public class Blind extends    GenericTOF_SCD {
         }finally{
             if(process!=null){
                 if(process.exitValue()!=0){
-                    return fail+"("+process.exitValue()+")";
+                    return new ErrorString(fail+"("+process.exitValue()+")");
                 }else{
-                    return "success";
+                    return direc+'/'+matfile;
                 }
             }else{
-                return fail;
+                return new ErrorString(fail);
             }
         }
     }  
