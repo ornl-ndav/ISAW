@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/10/20 16:33:51  rmikk
+ *  Fixed javadoc errors
+ *
  *  Revision 1.5  2002/12/06 14:58:24  dennis
  *  Fixed spelling error in java doc tag. (Chris Bouzek)
  *
@@ -93,7 +96,6 @@ public class SetDataAttribute extends    DS_Attribute
    *  @parm   Attrib      The Attribute to be set.
    *  @param  new_Value   The new value of the Attribute
    */
-
   public SetDataAttribute  ( DataSet              ds,
                              Integer              index,  
                              AttributeNameString  Attrib,
