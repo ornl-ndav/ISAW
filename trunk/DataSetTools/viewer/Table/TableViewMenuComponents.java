@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/05/12 16:05:00  rmikk
+ *  Included the Contour Qx,Qy,Qz, Contour Qx,Qz,Qy, etc
+ *     as interactive views( Unfortunately only as submenus
+ *    of the Selected Table View).  These are experimental.
+ *
  *  Revision 1.9  2002/11/27 23:25:37  pfpeterson
  *  standardized header
  *
@@ -67,6 +72,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
+import DataSetTools.viewer.Contour.*;
 /** Can be used to set Menu components and retrieve their corresponding
 *   operations
 */
@@ -98,7 +104,7 @@ public class TableViewMenuComponents
   /** Returns the number of menu items
   */
   public static int getNMenuItems()
-    { return 3;
+    { return 6;
     }
 
   /** Returns the menu Name associated with the menu items
@@ -112,6 +118,12 @@ public class TableViewMenuComponents
          return "x vs Group y";
       if( i == 2 )
          return "x,Row vs Col y";
+      if( i == 3)
+         return "Contour:Qx,Qy vs Qz";
+      if( i == 4)
+         return "Contour:Qx,Qz vs Qy";
+      if( i == 5)
+         return "Contour:Qy,Qz vs Qx";
       else return null;
     }
 
@@ -160,7 +172,14 @@ public class TableViewMenuComponents
        //return new TableView( DS, state,"HT,GF");//tv.getGenTableModel( DS,LM,"HT,FG",DS.getSelectedIndices() ));
    
        //return new TableView( DS, state,"HTI,JF");//tv.getGenTableModel( DS,LM,"HTI,JF",DS.getSelectedIndices() ));
-    
+     QxQyQzAxesHandler Qax = new QxQyQzAxesHandler(DS);
+
+       if( view_type.indexOf("Contour:Qx,Qy vs Qz")==0)
+         return new ContourView( DS, state, Qax.getQxAxis(), Qax.getQyAxis(), Qax.getQzAxis());
+      if( view_type.indexOf("Contour:Qx,Qz vs Qy")==0)
+	return new ContourView( DS, state, Qax.getQxAxis(), Qax.getQzAxis(), Qax.getQyAxis());
+      if( view_type.indexOf("Contour:Qy,Qz vs Qx")==0)
+	return new ContourView( DS, state, Qax.getQyAxis(), Qax.getQzAxis(), Qax.getQxAxis());
     return null;
 
    }
