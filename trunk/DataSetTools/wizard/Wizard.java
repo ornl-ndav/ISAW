@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.93  2003/11/05 02:15:18  bouzekc
+ * Updated to work with new Form design.  No external interface changes.
+ *
  * Revision 1.92  2003/10/23 02:43:24  bouzekc
  * Added hooks and a check box for remote execution.  Refactored global
  * variables into method variables where possible.  Updated javadocs for
@@ -1039,6 +1042,10 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
         if( this.isRemote ) {
           worked = f.getResultRemotely(  );
+
+          for( int j = 0; j < f.getNum_parameters(  ); j++ ) {
+            ( ( IParameterGUI )f.getParameter( j ) ).setValid( true );
+          }
         } else {
           worked = f.getResult(  );
         }
@@ -1500,7 +1507,9 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     f            = this.getCurrentForm(  );
     done         = false;
     index        = 0;
-    num_params   = f.getNum_parameters(  );
+
+    //get the parameters, remembering to get the result parameter
+    num_params   = f.getNum_parameters(  ) + 1;
 
     while( !done && ( index < num_params ) ) {
       iparam   = ( IParameterGUI )f.getParameter( index );
@@ -1738,7 +1747,9 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     if( f != null ) {
       view_menu.removeAll(  );
 
-      for( int i = 0; i < f.getNum_parameters(  ); i++ ) {
+      //go through the parameter list.  We also want to look at the result
+      //parameter
+      for( int i = 0; i < ( f.getNum_parameters(  ) + 1 ); i++ ) {
         iparam   = ( IParameterGUI )f.getParameter( i );
         val      = iparam.getValue(  );
 
