@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.14  2004/05/01 00:42:05  bouzekc
+ * Now uses a result parameter in keeping with general Form contract.
+ *
  * Revision 1.13  2004/03/15 03:37:40  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -154,7 +157,7 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
     addParameter( new InstNamePG( "Instrument Name", "GPPD", false ) );
     addParameter( new IntegerPG( "Histogram number", 1, false ) );
     addParameter( new IntArrayPG( "Group IDs to omit", "", false ) );
-    addParameter( new ArrayPG( "Histogram List", new Vector(  ), false ) );
+    setResultParam( new ArrayPG( "Histogram List", new Vector(  ), false ) );
     addParameter( new ArrayPG( "Monitor Run List", new Vector(  ), false ) );
     setParamTypes( null, new int[]{ 0, 1, 2, 3, 4 }, new int[]{ 5, 6 } );
   }

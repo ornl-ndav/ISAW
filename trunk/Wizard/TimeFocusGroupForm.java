@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2004/05/01 00:42:05  bouzekc
+ * Now uses a result parameter in keeping with general Form contract.
+ *
  * Revision 1.17  2004/03/15 03:37:40  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -208,7 +211,7 @@ public class TimeFocusGroupForm extends Form implements Serializable {
       addParameter( new FloatPG( "New Path", new Float( 1.0f ), false ) );
     }
 
-    addParameter( 
+    setResultParam( 
       new ArrayPG( "Time focused histograms", new Vector(  ), false ) );
 
     int[] editable_params = new int[NUM_BANKS * 3];
