@@ -32,6 +32,10 @@
  *
  *
  *  $Log$
+ *  Revision 1.15  2002/11/12 19:46:25  dennis
+ *  Removed clone() method... since XScales are immutable, there is
+ *  no need to clone() them.  Made start_x, end_x and num_x protected.
+ *
  *  Revision 1.14  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -119,9 +123,9 @@ abstract public class XScale implements Serializable
                                              // REMOVING FIELDS, IF
                                              // readObject() CAN FIX ANY
                                              // COMPATIBILITY PROBLEMS
-  float  start_x = 0;
-  float  end_x   = 1;
-  int    num_x   = 2;
+  protected float  start_x = 0;
+  protected float  end_x   = 1;
+  protected int    num_x   = 2;
 
   /**
    * Constructs an XScale object by specifying the starting x, ending x and
@@ -165,7 +169,7 @@ abstract public class XScale implements Serializable
 
   /**
    *  Returns an XScale with the specified x values.  If the x values are
-   *  uniformly spaced, a UniformXScale is returned, otherwize a
+   *  uniformly spaced, a UniformXScale is returned, otherwise a
    *  VariableXScale is returned.
    *
    *  @param  x     The array of x values used to generate the XScale
@@ -278,13 +282,6 @@ abstract public class XScale implements Serializable
    */
    abstract public XScale extend( XScale other_scale );
 
-
-
-  /**
-   * Creates a new instance of one of the concrete objects derived from
-   * the XScale object with the same data as the original object.
-   */
-  abstract public Object clone();
 
   /**
    * Compare this XScale to another one. Unless the two scales are
