@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/05/09 18:17:18  bouzekc
+ *  Reformatted and added comments.
+ *
  *  Revision 1.5  2004/03/15 19:33:48  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -54,104 +57,152 @@
  *
  *
  */
- 
 package DataSetTools.components.ParametersGUI;
+
+import DataSetTools.parameter.*;
 
 import gov.anl.ipns.Util.Messaging.*;
 
-import javax.swing.*; 
 import java.awt.event.*;
-import java.util.Vector;
+
 import java.beans.*;
-import DataSetTools.parameter.*;
+
+import java.util.Vector;
+
+import javax.swing.*;
+
 
 /**
- * This class is intended to be used as a replacement for JTextField
- * whan a integer value is to be entered. The major difference is an
- * overridden insertString method which beeps when something that
- * isn't found in an integer is entered.
+ * This class is intended to be used as a replacement for JTextField whan a
+ * integer value is to be entered. The major difference is an overridden
+ * insertString method which beeps when something that isn't found in an
+ * integer is entered.
  */
-public class HashEntry extends JComboBox implements PropertyChanger{
-    private static boolean DEBUG=false;
+public class HashEntry extends JComboBox implements PropertyChanger {
+  //~ Static fields/initializers ***********************************************
 
-    private PropertyChangeSupport propBind=new PropertyChangeSupport(this);
-    private Object lastSelected;
+  private static boolean DEBUG = false;
 
-    /**
-     * Constructs a HashEntry with the choices specified.
-     */
-    public HashEntry(Vector v){
-        super();
-        if(v==null)return;
-        for( int i=0 ; i<v.size() ; i++ ){
-            this.addItem(v.get(i));
+  //~ Instance fields **********************************************************
+
+  private PropertyChangeSupport propBind = new PropertyChangeSupport( this );
+  private Object lastSelected;
+
+  //~ Constructors *************************************************************
+
+  /**
+   * Constructs a HashEntry with the choices specified.
+   */
+  public HashEntry( Vector v ) {
+    super(  );
+
+    if( v == null ) {
+      return;
+    }
+
+    for( int i = 0; i < v.size(  ); i++ ) {
+      this.addItem( v.get( i ) );
+    }
+
+    this.lastSelected = this.getSelectedItem(  );
+    this.addActionListener( 
+      new ActionListener(  ) {
+        public void actionPerformed( ActionEvent e ) {
+          HashEntry cb       = ( HashEntry )e.getSource(  );
+          Object newSelected = cb.getSelectedItem(  );
+
+          if( !cb.lastSelected.equals( newSelected ) ) {
+            cb.fireValueChange( cb.lastSelected, newSelected );
+            cb.lastSelected = newSelected;
+          }
         }
-        this.lastSelected=this.getSelectedItem();
-        this.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    HashEntry cb = (HashEntry)e.getSource();
-                    Object newSelected=cb.getSelectedItem();
-                    if(!cb.lastSelected.equals(newSelected)){
-                        cb.fireValueChange(cb.lastSelected,newSelected);
-                        cb.lastSelected=newSelected;
-                    }
-                }
-            });
-    }
+      } );
+  }
 
-    /**
-     * Constructs a HashEntry with the choices specified.
-     */
-    public HashEntry(Object selected, Vector v){
-        this(v);
-        this.setSelectedItem(selected);
-    }
+  /**
+   * Constructs a HashEntry with the choices specified.
+   */
+  public HashEntry( Object selected, Vector v ) {
+    this( v );
+    this.setSelectedItem( selected );
+  }
 
-    /*public void setEnabled(boolean enabled){
-      super.setEnabled(enabled);
-      }*/
+  //~ Methods ******************************************************************
 
-    /**
-     * This method overrides the default version in the
-     * superclass. The version checks that the item to be added is not
-     * a duplicate first.
-     */
-    public void addItem(Object item){
-        // check that we aren't double adding an item
-        for( int i=0 ; i<this.getItemCount() ; i++ ){
-            if(item.equals(this.getItemAt(i))){
-                if(DEBUG)System.out.println("WARNING: trying to add "+item
-                                            +" again");
-                return;
-            }
+  /*public void setEnabled(boolean enabled){
+     super.setEnabled(enabled);
+     }*/
+
+  /**
+   * This method overrides the default version in the superclass. The version
+   * checks that the item to be added is not a duplicate first.
+   */
+  public void addItem( Object item ) {
+    // check that we aren't double adding an item
+    for( int i = 0; i < this.getItemCount(  ); i++ ) {
+      if( item.equals( this.getItemAt( i ) ) ) {
+        if( DEBUG ) {
+          System.out.println( "WARNING: trying to add " + item + " again" );
         }
-        // must be unique, add it
-        super.addItem(item);
+
+        return;
+      }
     }
 
-    /**
-     * This takes care of firing the property change event out to all
-     * that might be listening.
-     */
-    private void fireValueChange(Object oldValue, Object newValue){
-        if(propBind!=null && newValue!=null && !oldValue.equals(newValue)){
-            this.propBind.firePropertyChange(IParameter.VALUE,
-                                             oldValue,newValue);
-        }
-    }
+    // must be unique, add it
+    super.addItem( item );
+  }
 
-    // ********** Methods for the PropertyChanger interface
-    public void addPropertyChangeListener(String prop,
-                                          PropertyChangeListener pcl){
-        super.addPropertyChangeListener(prop,pcl);
-        if(propBind!=null) propBind.addPropertyChangeListener(prop,pcl);
+  /**
+   * Adds a PropertyChangeListener.
+   *
+   * @param prop The property to listen for.
+   * @param pcl The PropertyChangeListener.
+   */
+  public void addPropertyChangeListener( 
+    String prop, PropertyChangeListener pcl ) {
+    super.addPropertyChangeListener( prop, pcl );
+
+    if( propBind != null ) {
+      propBind.addPropertyChangeListener( prop, pcl );
     }
-    public void addPropertyChangeListener(PropertyChangeListener pcl){
-        super.addPropertyChangeListener(pcl);
-        if(propBind!=null) propBind.addPropertyChangeListener(pcl);
+  }
+
+  /**
+   * Adds a PropertyChangeListener.
+   *
+   * @param pcl The PropertyChangeListener to add.
+   */
+  public void addPropertyChangeListener( PropertyChangeListener pcl ) {
+    super.addPropertyChangeListener( pcl );
+
+    if( propBind != null ) {
+      propBind.addPropertyChangeListener( pcl );
     }
-    public void removePropertyChangeListener(PropertyChangeListener pcl){
-        super.removePropertyChangeListener(pcl);
-        if(propBind!=null) propBind.removePropertyChangeListener(pcl);
+  }
+
+  /**
+   * Removes a PropertyChangeListener.
+   *
+   * @param pcl The PropertyChangeListener to remove.
+   */
+  public void removePropertyChangeListener( PropertyChangeListener pcl ) {
+    super.removePropertyChangeListener( pcl );
+
+    if( propBind != null ) {
+      propBind.removePropertyChangeListener( pcl );
     }
+  }
+
+  /**
+   * This takes care of firing the property change event out to all that might
+   * be listening.
+   */
+  private void fireValueChange( Object oldValue, Object newValue ) {
+    if( 
+      ( propBind != null ) && ( newValue != null ) &&
+        !oldValue.equals( newValue ) ) {
+      this.propBind.firePropertyChange( IParameter.VALUE, oldValue, newValue );
+    }
+  }
 }
