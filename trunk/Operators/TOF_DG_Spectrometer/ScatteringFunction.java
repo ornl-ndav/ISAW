@@ -31,6 +31,10 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.4  2002/07/10 20:13:20  dennis
+ *  Removed unused code for energy dependent flight path correction, since this
+ *  is now done in the FlightPathCorrection operator.
+ *
  *  Revision 1.3  2002/04/19 19:40:43  dennis
  *  Fixed "broken" @see javadoc comments.
  *
@@ -250,9 +254,7 @@ public class ScatteringFunction extends GenericTOF_DG_Spectrometer
           new_y_vals[],
           new_errors[],
           final_energy,
-          energy_loss,
-          eff,
-          fpcorr;
+          energy_loss;
     float energy_in,
           velocity_in,
           velocity_final,
@@ -262,20 +264,6 @@ public class ScatteringFunction extends GenericTOF_DG_Spectrometer
     Data  data,
           conversion_data,
           new_data;
-                                          // make table of fpcorr
-                                          // values and interpolate to get
-                                          // faster calculation
-    float speed_arr[]  = new float[1001];
-    float fpcorr_arr[] = new float[1001];
-    float result[];
-    float final_speed;
-    for ( int i = 0; i <= 1000; i++ )
-    {
-      final_speed = i * 0.00002f;
-      result      = tof_data_calc.getEfficiencyFactor( final_speed, 1 );
-      speed_arr[i]  = final_speed;
-      fpcorr_arr[i] = result[1];
-    }
 
     num_data = ds.getNum_entries();
     for ( int index = 0; index < num_data; index++ )
