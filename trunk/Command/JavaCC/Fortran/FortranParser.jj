@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2004/01/15 23:02:38  bouzekc
+ * Merged several tokens together due to excessive generated code size
+ * (non-compileable).  Clarified if statements.
+ *
  * Revision 1.13  2004/01/15 00:44:38  bouzekc
  * Now handles single and multi line if statements.  Now more sophisticated
  * when determining whether to append a semicolon to the end of a line.
@@ -95,6 +99,15 @@ public class FortranParser {
   private static FortranParser myParser;
   private static boolean appendSemiColon = false;
   private static boolean standalone = false;
+  private static final String LOGICAL = "logical";
+  private static final String BOOLEAN = "boolean";
+  private static final String REAL = "real";
+  private static final String FLOAT = "float";
+  private static final String F_DOUBLE = "double precision";
+  private static final String J_DOUBLE = "double";
+  private static final String F_INT = "integer";
+  private static final String J_INT = "int";
+  
   
   /**
    * Method used to run the FortranParser for testing purposes.
@@ -143,21 +156,41 @@ public class FortranParser {
    * Method to convert fromFortran style array and variable 
    * declaration to Java style array and variable declaration.
    * If no array declarations exist, this essentially just converts from
-   * Fortran type declaration to Java type declaration.
+   * Fortran type declaration to Java type declaration.  This method 
+   * "knows" how to convert from, say, a Fortran double to a Java
+   * double
    * 
    * @param s The String to convert Fortran arrays from.
-   * @param type The type (e.g. int) of the array.
    * 
    * @return The String representing the passed in String converted
-   *                 to Java style arrays.
+   *                 to Java style array or scalar declarations.
    */
   private static String convertToJavaStyle( 
-    String s, String type ) { 
+    String s ) { 
+    String type = null;
+    
+    s = s.replaceAll( ".true.", "true" ).replaceAll( ".false.", "false" );
+    
+    if( s.indexOf( LOGICAL ) >= 0 ) {
+      type = BOOLEAN;
+      s = s.replaceAll( LOGICAL, "");
+    } else if( s.indexOf( F_DOUBLE ) >= 0 ) {
+      type = J_DOUBLE;
+      s = s.replaceAll( F_DOUBLE, "");
+    } else if( ( ( s.indexOf( F_INT ) >= 0 ) ||
+                    ( s.startsWith( "i | j | k | l | m | n ") ) ) ) {
+      type = J_INT;
+      s = s.replaceAll( F_INT, "");
+    } else {
+      type = FLOAT;
+      s = s.replaceAll( REAL, "");
+    }
+      
     StringBuffer buffer = new StringBuffer( type );
     buffer.append( " " );
     //make sure these get a semicolon
     appendSemiColon = true;
-    
+    s = s.trim(  );
     //the parentheses should NOT be right at the beginning of the declaration
     if( s.indexOf( "(" ) > 0 ) {    
       String tokenList[] = s.split( "," );
@@ -192,12 +225,17 @@ public class FortranParser {
   }
   
   /**
-   * Simply replaces any occurrences of opName in s with Math.opName.
+   * Finds the first word in the String and prepends a "Math." onto it.
+   * The assumption with this is that the argument to the function is 
+   * the correct one (i.e. float).
+   * 
+   * @param s The String that is to be converted.
    * 
    * @return The converted String.
    */
-  private static String convertMath( String s, String opName ){
-    return s.replaceAll( opName, "Math." + opName );
+  private static String convertFPMath( String s ){
+    //int letterIndex = s.indexOf( "^")
+    return "Math." + s.trim(  );
   }
   
 }
@@ -226,31 +264,14 @@ TOKEN : {
 
 //whitespace: space or tab
 TOKEN : {
-  < #WHITESPACE: (" " | "\t" ) >
+  < WS: (" " | "\t" ) >
 }
 
-//at least one whitespace character
-TOKEN : {
-  < ONE_PLUS_WS: ( <WHITESPACE> )+ >
-}
-
-//one or more whitespace characters
-TOKEN : {
-  < #OPT_WS: ( <WHITESPACE> )* >
-}
-
-//left parentheses, surrounded by optional whitespace
+//empty line
 TOKEN: {
-  <#LPAREN: (
-    <OPT_WS> "(" <OPT_WS>
-  ) >
-}
-
-//right parentheses, surrounded by optional whitespace
-TOKEN: {
-  <#RPAREN: (
-    <OPT_WS> ")" <OPT_WS>
-  ) >
+  <EMPTY_LINE: ( 
+    ( <WS> )+
+   )>
 }
 
 //represents a single digit unsigned integer
@@ -260,7 +281,7 @@ TOKEN : {
 
 //represents a single digit integer with an optional +/-
 TOKEN : {
-  < DIGIT: ( "+" | "-" )? <UNSIGNED_DIGIT> >
+  < #DIGIT: ( "+" | "-" )? <UNSIGNED_DIGIT> >
 }
 
 //represents the characters a-z, A-Z, _, or -
@@ -280,21 +301,18 @@ TOKEN : {
   < #VAR_RESERVED_CHAR: ["|", "\\", "/"] >
 }
 
-//single unsigned digit or character
+//represents a variable, which is composed of a leading character 
+//followed by any number of characters or unsigned digits
 TOKEN : {
-  < #DIGICHAR : ( 
-    <UNSIGNED_DIGIT> | <CHARACTER>
+  < #VARIABLE : ( 
+      ( <CHARACTER> )+ ( <UNSIGNED_DIGIT> | <CHARACTER> )* 
   ) >
 }
 
-//represents a variable, which is composed of a leading character 
-//followed by any number of characters or unsigned digits, all 
-//"bracketed" by optional whitespace
-TOKEN : {
-  < #VARIABLE : ( 
-    ( <OPT_WS>
-      ( <CHARACTER> )+ ( <DIGICHAR> )* 
-    ) <OPT_WS>
+//operands for math operators
+TOKEN: {
+  < #OPERAND: (
+      <VARIABLE> | ( <DIGIT> )+ | <FLOATING_POINT>
   ) >
 }
 
@@ -302,9 +320,8 @@ TOKEN : {
 //parentheses, all "bracketed" by optional whitespace
 TOKEN: {
   < #ARRAY_VARIABLE: (
-    <OPT_WS>
-    <VARIABLE> <LPAREN> ( <UNSIGNED_DIGIT> )+ <RPAREN>
-    <OPT_WS>
+    <VARIABLE> ( <WS> )* "(" ( <WS> )* 
+    ( <UNSIGNED_DIGIT> )+ ( <WS> )* ")" ( <WS> )*
   ) >
 }
 
@@ -312,12 +329,12 @@ TOKEN: {
 //as well
 TOKEN: {
   < #STRING_COMP: (
-      <DIGICHAR> | 
+      <CHARACTER> | 
       <RESERVED_CHAR> |
       <VAR_RESERVED_CHAR> | 
-      <ONE_PLUS_WS> | 
+      ( <WS> )+ | 
       <FLOATING_POINT> |
-      <DIGIT> |
+      ( <DIGIT> )+ |
       ":" |
       "''"  
   ) >
@@ -329,31 +346,20 @@ TOKEN: {
 //all "bracketed" by optional whitespace
 TOKEN : {
   < STRING: (
-    <OPT_WS>
+    ( <WS> )*
     ( "\"" ) ( 
       <STRING_COMP>
     )* ( "\"" )
-    <OPT_WS> 
+    ( <WS> )* 
   ) >
 }
 
 //floating point number "bracketed" by optional whitespace
 TOKEN : {
-  < FLOATING_POINT: (
-    <OPT_WS>
-    ( 
-      ( 
-        ( <DIGIT> )+ ( "." )? ( <UNSIGNED_DIGIT> )* 
-      ) 
-      | 
-      ( 
-        "." ( <UNSIGNED_DIGIT> )+ 
-      ) 
-    ) 
-    ( 
-      ["e", "E"] ( <DIGIT>)+ 
-    )?
-    <OPT_WS> 
+  < #FLOATING_POINT: (
+    ( ( ( <DIGIT> )+ ( "." )? ( <UNSIGNED_DIGIT> )* ) | 
+      ( "." ( <UNSIGNED_DIGIT> )+ ) ) 
+    ( ["e", "E"] ( <DIGIT>)+ )?
   ) >
 }
 
@@ -367,10 +373,8 @@ TOKEN : {
 
 //handles the Fortran logical (i.e. boolean) constants
 TOKEN: {
-  < #BOOL_CONST: (
-    <OPT_WS> ( 
+  < #BOOL_CONST: ( 
       ".TRUE." | ".FALSE." | ".true." | ".false."
-    ) <OPT_WS> 
   ) >
 }
 
@@ -378,7 +382,7 @@ TOKEN: {
 //Fortran style
 TOKEN: {
   < FORTRAN_COMMENT: (
-    ( "C " | "c " ) <OPT_WS> ( <STRING_COMP> )* <OPT_WS>
+    ( "C " | "c " ) ( <WS> )* ( <STRING_COMP> )* ( <WS> )*
   ) >
 } 
 
@@ -397,19 +401,12 @@ TOKEN: {
   < #FLOAT_IDENT: ( ["a"-"h"] | ["o"-"z"] | ["A"-"H"] | ["O"-"Z"] ) >
 }
 
-//basically an equals sign with optional whitespace on either side
-TOKEN: {
-  < EQ: <OPT_WS> "=" <OPT_WS> >
-}
-
 //Fortran has a non-C like way of declaring character arrays so we
 //need to watch out for variables like "character *6 charA" (character
 //array of length 6.  This token handles those.
 TOKEN: {
   < #CHAR_VARIABLE: ( 
-    <OPT_WS>
-    <VARIABLE> " *" ( <UNSIGNED_DIGIT> )+
-    <OPT_WS> 
+    <VARIABLE> ( <WS> )+ "*" ( <UNSIGNED_DIGIT> )+
   ) >
 }
 
@@ -417,10 +414,7 @@ TOKEN: {
 //math functions
 TOKEN: {
   < #MATH_INT_VAR: (
-    <OPT_WS> (
       ( <DIGIT> )+ | <VARIABLE>
-    )
-    <OPT_WS>
   ) >
 }
 
@@ -428,22 +422,7 @@ TOKEN: {
 //a floating point or variables
 TOKEN: {
   <#MATH_FLOAT_VAR: (
-    <OPT_WS> (
       <FLOATING_POINT> | <VARIABLE>
-     ) 
-    <OPT_WS>
-  ) >
-}
-
-//this is sort of a "catch-all" to allow using floating points, integers,
-//or variables in a Fortran math expression.  It allows a single floating
-//point number or a single integer or a single "variable"
-TOKEN: {
-  <#MATH_VAR: (
-    <OPT_WS> (
-      <MATH_FLOAT_VAR> | <MATH_INT_VAR>
-     ) 
-    <OPT_WS>
   ) >
 }
 
@@ -451,123 +430,70 @@ TOKEN: {
 //FORTRAN MATH ROUTINES
 //~----------------------------------------------------------------------------
 
+//the simple math functions: sqrt, sin, asin, cos, acos, tan, atan
+//log, exp, floor.  Simple because we only need prepend a "Math."
+//to make it a Java function and they only accept floating point arguments
+TOKEN :{
+  <#SIMPLE_MATH_COMP: (
+    "sqrt" | "tan" | "atan" | "sin" | "asin" | "cos" | "acos" | 
+    "log" | "exp" | "floor"
+  ) >
+}
+
+//generic math function.  The assumption with this is that the argument
+//to the function is the correct one (i.e. float).
+TOKEN: {
+  < FORTRAN_MATH_FUN: (
+    ( <WS> )*
+    <SIMPLE_MATH_COMP>
+    ( <WS> )* "(" ( <WS> )* <MATH_FLOAT_VAR> 
+    ( <WS> )* ")" ( <WS> )*
+  ) >
+}
+
 //absolute function
 TOKEN: {
   < FORTRAN_ABS: (
-    <OPT_WS>
-    ( "abs" | "iabs" ) <LPAREN> <MATH_VAR> <RPAREN>
-  ) >
-}
-
-//square root function
-TOKEN: {
-  < FORTRAN_SQRT: (
-    <OPT_WS>
-    "sqrt" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
-  ) >
-}
-
-//sine function
-TOKEN: {
-  < FORTRAN_SIN: (
-    <OPT_WS>
-    "sin" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
-  ) >
-}
-
-//arcsine function
-TOKEN: {
-  < FORTRAN_ASIN: (
-    <OPT_WS>
-    "asin" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
-  ) >
-}
-
-//cosine function
-TOKEN: {
-  < FORTRAN_COS: (
-    <OPT_WS>
-    "cos" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
-  ) >
-}
-
-//arccosine function
-TOKEN: {
-  < FORTRAN_ACOS: (
-    <OPT_WS>
-    "acos" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
-  ) >
-}
-
-//tangent function
-TOKEN: {
-  < FORTRAN_TAN: (
-    <OPT_WS>
-    "tan" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
-  ) >
-}
-
-//arctangent function
-TOKEN: {
-  < FORTRAN_ATAN: (
-    <OPT_WS>
-    "atan" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
-  ) >
-}
-
-//log function
-TOKEN: {
-  < FORTRAN_LOG: (
-    <OPT_WS>
-    "log" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
-  ) >
-}
-
-//Euler's (exp) function
-TOKEN: {
-  < FORTRAN_EXP: (
-    <OPT_WS>
-    "exp" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
+    ( <WS> )*
+    ( "abs" | "iabs" ) ( <WS> )* "(" ( <WS> )* <OPERAND> 
+    ( <WS> )* ")" ( <WS> )*
   ) >
 }
 
 //Handles the Fortran real() function.
 TOKEN: {
   < FORTRAN_FLOAT_FUN: (
-    <OPT_WS>
-    ( "float" | "real" ) <LPAREN> <MATH_INT_VAR> <RPAREN>
+    ( <WS> )*
+    ( "float" | "real" ) ( <WS> )* "(" ( <WS> )* <MATH_INT_VAR> 
+    ( <WS> )* ")" ( <WS> )*
   ) >
 }
 
 //converts a floating point to an integer by truncating
 TOKEN: {
   < FORTRAN_TRUNC_FUN: (
-    <OPT_WS>
-    "int" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
+    ( <WS> )*
+    "int" ( <WS> )* "(" ( <WS> )* <MATH_FLOAT_VAR> 
+    ( <WS> )* ")" ( <WS> )*
   ) >
 }
 
 //mod function
 TOKEN: {
   < FORTRAN_MOD_FUN: (
-    <OPT_WS>
-    "mod" <LPAREN> <MATH_INT_VAR> "," <MATH_FLOAT_VAR> <RPAREN>
-  ) >
-}
-
-//floor() function
-TOKEN: {
-  < FORTRAN_FLOOR_FUN: (
-    <OPT_WS>
-    "floor" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
+    ( <WS> )*
+    "mod" ( <WS> )* "(" ( <WS> )* <MATH_INT_VAR> ( <WS> )*
+    "," ( <WS> )* <MATH_FLOAT_VAR> 
+    ( <WS> )* ")" ( <WS> )*
   ) >
 }
 
 //fraction() function-I used the Java IEEERemainder for this one
 TOKEN: {
   < FORTRAN_FRACTION_FUN: (
-    <OPT_WS>
-    "fraction" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
+    ( <WS> )*
+    "fraction" ( <WS> )* "(" ( <WS> )* <MATH_FLOAT_VAR>
+    ( <WS> )* ")" ( <WS> )*
   ) >
 }
 
@@ -582,18 +508,7 @@ TOKEN: {
 //math operators
 TOKEN: {
   < #OPERATOR: (
-    <OPT_WS> (
       "+"| "-"| "*"| "/"
-    ) <OPT_WS> 
-  ) >
-}
-
-//operands for math operators
-TOKEN: {
-  < #OPERAND: (
-    <OPT_WS> (
-      <VARIABLE> | <DIGIT> | <FLOATING_POINT>
-    ) <OPT_WS>
   ) >
 }
     
@@ -601,32 +516,35 @@ TOKEN: {
 //and one operator, surrounded (optionally) by parentheses
 TOKEN: {
   < #SIMPLE_EXPRESSION: (
-    ( <LPAREN> )?
-    <OPERAND> ( <OPERATOR> <OPERAND> )+
-    ( <RPAREN> )?
+    ( "(" ( <WS> )* )? 
+    <OPERAND> ( ( <WS> )* <OPERATOR> ( <WS> )* <OPERAND> )+
+    ( ( <WS> )* ")" )? 
   ) >
 }
 
 TOKEN: {
   <#NESTED_EXPRESSION: (
-    ( <LPAREN> )? ( <OPERAND> <OPERATOR> <LPAREN> )*
-    <SIMPLE_EXPRESSION>
-    ( <RPAREN> <OPERATOR> <OPERAND> )* ( <RPAREN> )?
+    ( "(" ( <WS> )* )? 
+    ( <OPERAND> ( <WS> )* <OPERATOR> ( <WS> )* "(" ( <WS> )* )*
+    <SIMPLE_EXPRESSION> 
+    ( ( <WS> )* ")" ( <WS> )* <OPERATOR> ( <WS> )* <OPERAND> )* 
+    ( ( <WS> )* ")" )?
   ) >
 }
 
 //the full set of expressions
 TOKEN: {
   <FORTRAN_EXPRESSION: (
-    ( ( <VARIABLE> <EQ> ) | <LPAREN> )?
+    ( <WS> )*
+    ( "(" ( <WS> )* )?
     ( 
       ( <SIMPLE_EXPRESSION> | <NESTED_EXPRESSION> )
-      ( <OPERATOR> 
+      ( ( <WS> )* <OPERATOR> ( <WS> )* 
         ( <SIMPLE_EXPRESSION> | <NESTED_EXPRESSION> ) 
       )* 
     )
-    ( <RPAREN> )?
-    <OPT_WS>
+    ( ( <WS> )* ")" )?
+    ( <WS> )*
   ) >
 }
 
@@ -634,28 +552,51 @@ TOKEN: {
 // FORTRAN CONDITIONALS
 //~----------------------------------------------------------------------------
 
+//the conditional operators (less than, greater than, etc)
+TOKEN: {
+  < #COND_OPS: (
+    ".lt." | ".gt." | ".ge." | ".le."
+  ) >
+}
+
+//the start of an if, else, or elseif statement
+TOKEN: {
+  < #COND_START: (
+    "if" | "elseif"
+  ) >
+}
+  
 //one line if statement
 TOKEN: {
   < SINGLE_IF: (
-    <OPT_WS>
-    "if" <LPAREN> <OPERAND> ( ".lt." | ".gt." ) <OPERAND> <RPAREN>
+    ( <WS> )*
+    <COND_START> ( <WS> )* "(" ( <WS> )* <OPERAND> ( <WS> )* 
+    <COND_OPS> ( <WS> )* <OPERAND> ( <WS> )* ")" ( <WS> )*
+  ) >
+}
+
+//the else statement, which is unique in that it does not have a 
+//condition that it is checking.  We just have to recognize and return
+TOKEN: {
+  < ELSE_COND: (
+    ( <WS> )* "else" ( <WS> )*
   ) >
 }
 
 //start of multi line if statement
 TOKEN: {
   < START_MULTI_IF: (
-    <OPT_WS>
-    "if" <LPAREN> <OPERAND> ( ".lt." | ".gt." ) 
-    <OPERAND> <RPAREN> "then" 
-    <OPT_WS>
+    ( <WS> )*
+    <COND_START> ( <WS> )* "(" ( <WS> )* <OPERAND> ( <WS> )* 
+    <COND_OPS> ( <WS> )* <OPERAND> ( <WS> )* ")" ( <WS> )* "then" 
+    ( <WS> )*
   ) >
 }
 
 //end of multi-line if statement
 TOKEN: {
   < END_IF: (
-    <OPT_WS> "endif" <OPT_WS> 
+    ( <WS> )* "endif" ( <WS> )*
    ) >
 }
 
@@ -664,7 +605,9 @@ TOKEN: {
 //~----------------------------------------------------------------------------
 TOKEN: {
   <VAR_ASSIGN: (
-    <VARIABLE> <EQ> <OPERAND>
+    ( <WS> )*
+    <VARIABLE> ( <WS> )* "=" ( <WS> )* 
+    ( <OPERAND> | <FORTRAN_EXPRESSION> )
   ) >
 }
 
@@ -672,74 +615,46 @@ TOKEN: {
 //FORTRAN VARIABLE TYPES
 //~----------------------------------------------------------------------------
 
-//integer variable
-TOKEN : {
-  < FORTRAN_INT: ( 
-    <OPT_WS>
-    ( "integer " | <INT_IDENT> ) 
-    ( 
-      <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <DIGIT> )+ )? ) 
-    ) 
-    (  
-      "," ( <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <DIGIT> )+ )? ) )  
-    )* 
-    <OPT_WS>
+//types of basic (non-character) Fortran variables
+TOKEN: {
+  <#F_VAR: (
+  ( "integer " | <INT_IDENT> ) |
+  ( "real " | <FLOAT_IDENT> ) |
+  "double precision " |
+  "logical "
   ) >
 }
 
-//floating point variable
-TOKEN : {
-  < FORTRAN_REAL: (
-    <OPT_WS> 
-    ( "real " | <FLOAT_IDENT> )
-    ( 
-      <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <FLOATING_POINT> )+ )? ) 
-    ) 
-    (  
-      "," ( <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <FLOATING_POINT> )+ )? ) )  
-    )*
-    <OPT_WS> 
-  ) >
-}
 
-//double-precision floating point variable
+//Generic Fortran variable
 TOKEN : {
-  < FORTRAN_DOUBLE: (
-    <OPT_WS> 
-    "double precision" 
+  < FORTRAN_VARIABLE: ( 
+    ( <WS> )*
+    <F_VAR> ( <WS> )* 
     ( 
-      <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <FLOATING_POINT> )+ )? ) 
-    ) 
+      <ARRAY_VARIABLE> | ( <VARIABLE> ( 
+          ( <WS> )* "=" ( <WS> )* ( <OPERAND> | <BOOL_CONST> ) 
+        )? 
+      ) 
+    ) ( <WS> )* 
     (  
-      "," ( <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <FLOATING_POINT> )+ )? ) )  
+      "," ( <WS> )* 
+      (
+        <ARRAY_VARIABLE> | ( <VARIABLE> ( 
+            ( <WS> )* "=" ( <WS> )* ( <OPERAND> | <BOOL_CONST> ) 
+          )? 
+        ) 
+      ) ( <WS> )*  
     )* 
-    <OPT_WS> 
-  ) >
-}
-
-//boolean (i.e. logical) variable
-TOKEN : {
-  < FORTRAN_LOGICAL: (
-    <OPT_WS> 
-    "logical " 
-    ( 
-      <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <BOOL_CONST> )+ )? ) 
-    ) 
-    (  
-      "," ( <ARRAY_VARIABLE> | ( <VARIABLE> ( <EQ> ( <BOOL_CONST> )+ )? ) )  
-    )* 
-    <OPT_WS> 
   ) >
 }
 
 //character variable where each char array length is specified directly
 TOKEN : {
   < FORTRAN_CHAR_1: (
-    <OPT_WS> 
-    "character " <CHAR_VARIABLE> ( 
-      "," <CHAR_VARIABLE> 
-    )*
-    <OPT_WS> 
+    ( <WS> )* 
+    "character " ( <WS> )* <CHAR_VARIABLE> ( <WS> )* 
+    ( "," ( <WS> )* <CHAR_VARIABLE> ( <WS> )* )*
   ) >
 }
 
@@ -747,11 +662,10 @@ TOKEN : {
 //array declaration
 TOKEN: {
   < FORTRAN_CHAR_2: (
-    <OPT_WS> 
-    "character" <ONE_PLUS_WS> "*" ( <UNSIGNED_DIGIT> )+ 
-    <ONE_PLUS_WS> <VARIABLE> ( 
-      "," <VARIABLE> )*
-    <OPT_WS> 
+    ( <WS> )*
+    "character " ( <WS> )* "*" ( <UNSIGNED_DIGIT> )+ 
+    ( <WS> )+ <VARIABLE> ( <WS> )* 
+    ( "," ( <WS> )* <VARIABLE> ( <WS> )* )*
     ) >
 }
 
@@ -860,13 +774,23 @@ String convertFortranTokens(  ) : {
   //single line if
   t = <SINGLE_IF> {
     appendSemiColon = true;
-    return t.image.replaceAll( ".lt.", "<" ).replaceAll( ".gt.", ">" );
+    return t.image.replaceAll( ".lt.", "<" )
+                          .replaceAll( ".gt.", ">" )
+                          .replaceAll( ".ge.", ">=")
+                          .replaceAll( ".le.", "<=");
+  }
+|
+  t = <ELSE_COND> {
+    return t.image.replaceAll( "else", "}else{");
   }
 |
   //start of multi line if
   t = <START_MULTI_IF> {
     return t.image.replaceAll( ".lt.", "<" )
                           .replaceAll( ".gt.", ">" )
+                          .replaceAll( ".ge.", ">=")
+                          .replaceAll( ".le.", "<=")
+                          .replaceAll( "elseif", "}else if" )
                           .replaceAll( "then", "{");
   }
 |
@@ -879,62 +803,17 @@ String convertFortranTokens(  ) : {
   t = <FORTRAN_ABS> {
     s = t.image;
     if( s.indexOf( "iabs" ) >= 0 ) {
-      s.replaceAll( "iabs", "Math.abs" );
+      s = s.replaceAll( "iabs", "Math.abs" );
     } else {
-      s.replaceAll( "abs", "Math.abs" );
+      s = s.replaceAll( "abs", "Math.abs" );
     }
     
     return s;
   }
 |
-  //square root function
-  t = <FORTRAN_SQRT> {
-    return convertMath( t.image, "sqrt" );
-  }
-|
-  //sine function
-  t = <FORTRAN_SIN> {
-    return convertMath( t.image, "sin" );
-  }
-|
-  //arcsine function
-  t = <FORTRAN_ASIN> {
-    return convertMath( t.image, "asin" );
-  }
-|
-  //cosine function
-  t = <FORTRAN_COS> {
-    return convertMath( t.image, "cos" );
-  }
-|
-  //arccosine function
-  t = <FORTRAN_ACOS> {
-    return convertMath( t.image, "acos" );
-  }
-|
-  //tangent function
-  t = <FORTRAN_TAN> {
-    return convertMath( t.image, "tan" );
-  }
-|
-  //tangent function
-  t = <FORTRAN_ATAN> {
-    return convertMath( t.image, "atan" );
-  }
-|
-  //log function
-  t = <FORTRAN_LOG> {
-    return convertMath( t.image, "log" );
-  }
-|
-  //exp function
-  t = <FORTRAN_EXP> {
-    return convertMath( t.image, "exp" );
-  }
-|
-  //floor function
-  t = <FORTRAN_FLOOR_FUN> {
-    return convertMath( t.image, "floor" );
+  //generic simple floating point math functions
+  t = <FORTRAN_MATH_FUN> {
+    return convertFPMath( t.image );
   }
 |
   //fraction function
@@ -975,35 +854,14 @@ String convertFortranTokens(  ) : {
   //matched the mod() function
   t = <FORTRAN_MOD_FUN> {
     s = t.image;
-    s = s.replaceAll( "mod", "" ).replaceAll( "\\)", "" ).replaceAll( "\\(", "" );
-    s = s.replaceAll( ",", " % " );
+    s = s.replaceAll( "mod", "" ).replaceAll( "\\)", "" )
+                                               .replaceAll( "\\(", "" )
+                                               .replaceAll( ",", " % " );
     return s;
   }
 |
-  //matched a double-precision floating point
-  t = <FORTRAN_DOUBLE> {
-    t.image = t.image.replaceAll( "double precision", "" );
-    return convertToJavaStyle( t.image, "double" );
-  }
-|
-  //matched an integer
-  t = <FORTRAN_INT> {
-    t.image = t.image.replaceAll( "integer", "" );
-    return convertToJavaStyle( t.image, "int" );
-  }
-|
-  //matched a floating point
-  t = <FORTRAN_REAL> {
-    t.image = t.image.replaceAll( "real", "" );
-    return convertToJavaStyle( t.image, "float" );
-  }
-|
-  //matched a boolean
-  t = <FORTRAN_LOGICAL> {
-    t.image = t.image.replaceAll( "logical", "" )
-                              .replaceAll( ".true.", "true" )
-                              .replaceAll( ".false.", "false" );
-    return convertToJavaStyle( t.image, "boolean" );
+  t = <FORTRAN_VARIABLE>{
+    return convertToJavaStyle( t.image );
   }
 |
   //matched a character or character array where each variable is
@@ -1071,16 +929,6 @@ String convertFortranTokens(  ) : {
     return buffer.toString();
   }
 |
-  //matched a digit
-  t = <DIGIT> {
-    return t.image;
-  }
-|
-  //matched a float
-  t = <FLOATING_POINT> {
-    return t.image;
-  }
-|
   //matched a String
   t = <STRING> {
     //replace Fortran's double single quotes with a backslash quote
@@ -1088,7 +936,7 @@ String convertFortranTokens(  ) : {
   }
 |
   //found an empty line, so spit it back
-  t = <ONE_PLUS_WS> {
+  t = <EMPTY_LINE> {
     return t.image;
   }
 }
