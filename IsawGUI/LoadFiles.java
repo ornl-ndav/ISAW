@@ -15,6 +15,7 @@ import java.util.zip.*;
 import java.lang.*;
 import java.io.File.*;
 import javax.swing.*;
+//import javax.swing.preview.*;
 import javax.swing.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
@@ -45,15 +46,19 @@ public class LoadFiles extends JFrame
     private Vector theResults;
     private Vector loadedElements;
     private JTreeUI treeUI;
-    private FileDialog fd;
     private String dir;
-    public LoadFiles(JTreeUI treeUI) {
+    
+    public LoadFiles(JTreeUI treeUI, String dir) {
         super("File Loader");
          this.treeUI = treeUI;
+         this.dir= dir;
+         
         listModelA = new DefaultListModel();
         listModelB = new DefaultListModel();
+        
+        
        
-        fd = new FileDialog(new Frame(), "Choose Folder", FileDialog.LOAD);
+       /* fd = new FileDialog(new Frame(), "Choose Folder", FileDialog.LOAD);
         if (dir!=null)
         fd.setDirectory(dir);
         //fd.setDirectory("H:\\UPLOAD\\Data");
@@ -62,6 +67,15 @@ public class LoadFiles extends JFrame
         loadedElements = new Vector();
         File f = new File(fd.getDirectory(), fd.getFile());
         dir = fd.getDirectory();
+        */
+        
+        ///
+       
+        theResults = new Vector();
+        loadedElements = new Vector();
+   
+        
+        ///
         
         String[] fileList = new File(dir).list();//dir listing
      
@@ -125,7 +139,7 @@ public class LoadFiles extends JFrame
         
         JLabel2.setText("Files to Load ");
 		getContentPane().add(JLabel1);
-		JLabel2.setBounds(332,4,142,28);
+		JLabel2.setBounds(332,4,146,28);
 		
 		
 		getContentPane().add(listScrollPaneA);
@@ -144,12 +158,13 @@ public class LoadFiles extends JFrame
 		removeButton.setBounds(216,140,100,24);
 		
 		getContentPane().add(nextButton);
-		nextButton.setBounds(332,236,77,24);
+		nextButton.setBounds(332,236,78,24);
 		
 		getContentPane().add(cancelButton);
-		cancelButton.setBounds(410,236,80,24); 
-         
+		cancelButton.setBounds(412,236,80,24); 
     }
+    
+    
 
     class RemoveListener implements ActionListener {
         public void actionPerformed(ActionEvent e) 
@@ -158,6 +173,7 @@ public class LoadFiles extends JFrame
             try{
                     if(listB.getSelectedIndex()!= -1)
                     {
+                        int index = listB.getSelectedIndex();
                     Object[] rightSelected = listB.getSelectedValues();
                     int[] rightSelectedIndices= listB.getSelectedIndices();
                     String[] value = new String[rightSelectedIndices.length];
@@ -167,7 +183,10 @@ public class LoadFiles extends JFrame
                     for (int i = 0; i<rightSelectedIndices.length; ++i)
                     {
                         listModelB.removeElementAt(rightSelectedIndices[i] -i);
-                        listB.setSelectedIndex(i);
+                        if (index == listModelB.getSize())
+                        index--;
+                        //otherwise select same index
+                        listB.setSelectedIndex(index);
                     }
                     for(int i = 0; i<rightSelectedIndices.length; i++)
                     {
@@ -193,6 +212,7 @@ public class LoadFiles extends JFrame
 
     try{
         if(listA.getSelectedIndices()!= null){
+            int index = listA.getSelectedIndex();
             Object[] leftSelected = listA.getSelectedValues();
             String[] value = new String[leftSelected.length];
            
@@ -201,10 +221,14 @@ public class LoadFiles extends JFrame
              DefaultListModel listModelA = (DefaultListModel)listA.getModel();
              for (int i = 0; i<leftSelectedIndices.length; ++i)
              {
-             listModelA.removeElementAt(leftSelectedIndices[i] -i);
+                listModelA.removeElementAt(leftSelectedIndices[i] -i);
+                if (index == listModelA.getSize())
+                index--;
+                //otherwise select same index
+               listA.setSelectedIndex(index);
             
-             listA.setSelectedIndex(i);
              }
+            
               for(int i = 0; i<leftSelected.length; i++)
             {
                value[i] = leftSelected[i].toString();
@@ -224,7 +248,7 @@ public class LoadFiles extends JFrame
             int size = listB.getModel().getSize();
             String[] file_name = new String[size];
             
-            file_name[0] =fd.getDirectory()+listB.getModel().getElementAt(0).toString();
+            file_name[0] =dir+listB.getModel().getElementAt(0).toString();
             System.out.println("name of the file or type is" +file_name[0]);
             
            /* if(file_name[0].endsWith("zip"))
@@ -251,13 +275,14 @@ public class LoadFiles extends JFrame
                 }
                 catch(Exception ex ){System.out.println("the exception in zip is "+ex);}
             } 
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+           
         */
+         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             for (int i =0; i<size; i++)
             {
-             
-            file_name[i] =fd.getDirectory()+listB.getModel().getElementAt(i).toString();
-            System.out.println("Print the files in listB  " +file_name[i]);
+            file_name[i] =dir  +listB.getModel().getElementAt(i).toString();
+            //System.out.println("Print the dir name " +dir);
+            //System.out.println("Print the files in listB  " +file_name[i]);
              RunfileRetriever r = new RunfileRetriever( file_name[i] );
              int numberOfDataSets = r.numDataSets();
                          DataSet[] dss = new DataSet[numberOfDataSets];

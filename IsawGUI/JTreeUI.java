@@ -15,8 +15,6 @@ import javax.swing.plaf.basic.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
-//import java.awt.dnd.*;
-import java.awt.datatransfer.*;
 import java.io.*;
 import DataSetTools.*;
 import DataSetTools.retriever.*;
@@ -26,6 +24,10 @@ import DataSetTools.viewer.*;
 import IPNS.Runfile.*;
 import DataSetTools.operator.*;
 import DataSetTools.instruments.*;
+import java.awt.datatransfer.*;
+//import java.awt.dnd.*;
+//import java.awt.datatransfer.*;
+
 
 /**
  * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
@@ -34,15 +36,34 @@ import DataSetTools.instruments.*;
  * @version 1.0  
  */
 
-public class JTreeUI extends JPanel implements Serializable
+public class JTreeUI extends JPanel implements Serializable // ,DragGestureListener,
+                                              //  DragSourceListener
 {
-
+    protected JPopupMenu m_popup;
+    protected Action m_action;
+    
     private JTree tree;
     private DefaultMutableTreeNode root;
     private int ds_tag;
     DefaultTreeModel model;
     public  JTreeUI() 
-    {  
+    { 
+            /*DragSource dragSource = DragSource.getDefaultDragSource();
+
+		    dragSource.createDefaultDragGestureRecognizer(
+					this, // component where drag originates
+					DnDConstants.ACTION_COPY_OR_MOVE, // actions
+					this); // drag gesture recognizer
+			*/		
+	
+           
+		//	m_popup = new JPopupMenu();
+         //   Action a1 = new AbstractAction("Delete") { 
+          //  public void actionPerformed(ActionEvent e) {
+          //      tree.repaint();}
+          //      };
+        //    m_popup.add(a1);
+             
             ds_tag = 0;
             setLayout(new GridLayout(1,1));
             root = new DefaultMutableTreeNode("Session");
@@ -54,7 +75,14 @@ public class JTreeUI extends JPanel implements Serializable
             model.insertNodeInto(level1, root, 0);
             tree = new JTree(model);
             tree.setShowsRootHandles(true);
+            
+           // tree.add(m_popup);
+           // tree.addMouseListener(new PopupTrigger());
+            
             tree.putClientProperty("JTree.LineStyle", "Horizontal");
+           // tree.setLayout(new BorderLayout());
+           // tree.setBorder(
+			//BorderFactory.createTitledBorder(""));
             JScrollPane pane = new JScrollPane(tree);
             add(pane);
 
@@ -68,6 +96,21 @@ public class JTreeUI extends JPanel implements Serializable
  
     }// End of Constructor
     
+ 
+  /*      public void dragGestureRecognized(DragGestureEvent e) {
+		        // drag anything ...
+		        e.startDrag(DragSource.DefaultCopyDrop, // cursor
+			        new StringSelection(getFilename()), // transferable
+			        this);  // drag source listener
+	        }
+	        public void dragDropEnd(DragSourceDropEvent e) {}
+	        public void dragEnter(DragSourceDragEvent e) {}
+	        public void dragExit(DragSourceEvent e) {}
+	        public void dragOver(DragSourceDragEvent e) {}
+	        public void dropActionChanged(DragSourceDragEvent e) {}
+
+         */
+ 
  
         
       public DefaultMutableTreeNode getSelectedNode()
@@ -189,8 +232,23 @@ public class JTreeUI extends JPanel implements Serializable
         ds_tag++;
         return ds_tag;
        }
+       
+       
+   /*  class PopupTrigger extends MouseAdapter 
+     {
+        public void mouseReleased(MouseEvent e) 
+        {
+            if (e.isPopupTrigger()) 
+            {
+                int x = e.getX();
+                int y = e.getY();
+                TreePath path = tree.getPathForLocation(x, y);
+                m_popup.show(tree, x, y);
+
+            }
+        }
+    }
      
-     
-     
+     */
      
  }

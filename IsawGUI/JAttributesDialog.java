@@ -1,10 +1,10 @@
 /*
- * @(#)Isaw.java     1.0  99/09/02  Alok Chatterjee
+ * @(#)JAttributesDialog.java     1.0  99/09/02  Alok Chatterjee
  *
  * 1.0  99/09/02  Added the comments and made this a part of package IsawGUI
- *
+ * 
  */
-
+ 
 package IsawGUI;
 
 import javax.swing.*;
@@ -17,6 +17,13 @@ import java.io.*;
 import javax.swing.JDialog.*;
 import java.util.zip.*;
 import java.io.Serializable.* ;
+
+/**
+ * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
+ * ChopTools and graph packages.
+ *
+ * @version 1.0  
+ */
 
 public class JAttributesDialog implements Serializable
 {
@@ -33,7 +40,7 @@ public class JAttributesDialog implements Serializable
     {
         this.attr_list = attr_list;
         opDialog = new JDialog(new JFrame(), nam ,true);
-        opDialog.setSize(620,380);
+        opDialog.setSize(620,400);
         opDialog.getContentPane().add(new JLabel(nam +" to be performed on Selected Node"));
        
         //Center the opdialog frame 
@@ -116,7 +123,8 @@ public class JAttributesDialog implements Serializable
                attr_list.setAttribute(attr);
                
              }
-
+             
+            resultsLabel.setText("Result: Operation completed");
          }
       } 
     

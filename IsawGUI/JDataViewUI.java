@@ -1,7 +1,8 @@
+
 /*
  * @(#)JDataViewGUI.java     1.0  99/09/02  Alok Chatterjee
  *
- * 1.0  99/09/02  Added the comments and made this a part of package IsawTools
+ * 1.0  99/09/02  Added the comments and made this a part of package IsawGUI
  * 
  */
  
@@ -48,6 +49,7 @@ public class JDataViewUI extends JDesktopPane implements Serializable
 	{
         
 	     ImageView iv = new ImageView(ds);
+	     
 	    if (frame == "Internal Frame")
 	    {
             JInternalFrame jif = new JInternalFrame(ds.toString());            
@@ -57,8 +59,11 @@ public class JDataViewUI extends JDesktopPane implements Serializable
     	    jif.setMaximizable(true);    
 	        jif.setClosable(true);
             jif.setVisible(true);
+           
             jif.getContentPane().add(iv);
+            
            // jif.addInternalFrameListener(new Listener());
+           
             add(jif);  
 			jif.toFront();
 		
@@ -174,31 +179,36 @@ public class JDataViewUI extends JDesktopPane implements Serializable
 	       public void printImage() 
 		{
             JInternalFrame[] frames = getAllFrames();
-            
+           
              for(int i=0; i < frames.length; ++i) 
 		    {
 		        
 		        
                       if (frames[i].isSelected())
                          sel_frame =  frames[i];
+                         
 		    }
-            Properties properties =new Properties();
+		    
+		   // PrintUtilities.printComponent(sel_frame) ;
+		    
+           // Properties properties =new Properties();
             JFrame frame  = new JFrame();
-                 frame.setContentPane(sel_frame) ;  
-            //frame.setContentPane(getSelectedFrame());
-            PrintJob pj = toolkit.getPrintJob(frame,"Print Image", properties);
+                frame.setContentPane(frames[0]) ;  
+            frame.setContentPane(getSelectedFrame());
+            PrintJob pj = toolkit.getPrintJob(frame,"Print Image", null);
 
-				    try 
-				    {
-				        //getSelectedFrame().printAll(pj.getGraphics());
-					    sel_frame.printAll(pj.getGraphics());
+				  
+				if(pj!=null)
+				      {  
+				        frame.printAll(pj.getGraphics());
+					    //sel_frame.printAll(pj.getGraphics());
+				
+					    pj.getGraphics().dispose();
 					    pj.end();
-				    }
-				    catch(Exception ex) 
-				    {
-					    System.out.println("closeViews vetoed!" +ex);
-				    }
-		   // }
+					  }
+					    else
+					    System.out.println("The printjob is null");
+		
 	    }
 
 
