@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/12/15 01:39:13  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.7  2003/05/20 20:57:43  pfpeterson
  * Fixed imports.
  *
@@ -58,7 +61,6 @@
 
 package Wizard;
 
-import java.io.*;
 import java.util.Vector;
 import DataSetTools.wizard.*;
 import DataSetTools.parameter.*;

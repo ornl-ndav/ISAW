@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2003/12/15 01:39:13  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.34  2003/11/19 04:13:21  bouzekc
  *  Is now a JavaBean.
  *
@@ -165,13 +168,10 @@ import Command.JavaCC.*;
 import Command.execOneLine;
 
 import DataSetTools.components.ParametersGUI.EntryWidget;
-import DataSetTools.components.ParametersGUI.HashEntry;
-
 import DataSetTools.dataset.DataSet;
 
 import java.awt.*;
 
-import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.*;
