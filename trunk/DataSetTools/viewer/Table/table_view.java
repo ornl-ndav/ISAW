@@ -6,7 +6,7 @@
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * of the License, or (at yoJTableur option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -31,6 +31,9 @@
  * Modified:
 * 
  * $Log$
+ * Revision 1.9  2001/08/16 17:08:45  rmikk
+ * Spelled Pressure Correctly
+ *
  * Revision 1.8  2001/08/15 14:13:16  rmikk
  * Added scroll pane to one of the lists.
  * Reset the data sets SetField operator parameters to
@@ -82,7 +85,7 @@ public class table_view extends JPanel implements ActionListener
   { 
 
     String Fields[] = { "Title", "X_units", "Y_units", "X_label", "Y_label",
-                        "Initial_Path", "Run Number", "Pressur", "Temp",
+                        "Initial_Path", "Run Number", "Pressure", "Temp",
                         "Group ID", "detector x Pos", "detector y Pos",
                         "detector z Pos",
                         "detector r Pos", "detector rho Pos", 
