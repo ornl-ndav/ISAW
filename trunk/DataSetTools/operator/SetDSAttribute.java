@@ -3,10 +3,6 @@
  *             
  * This operator sets a DataSet Attribute
  *
- * ---------------------------------------------------------------------------
- *  
- *
- *
  */
 
 package DataSetTools.operator;
@@ -24,7 +20,7 @@ import  DataSetTools.util.*;
   */
 
 public class SetDSAttribute extends    DataSetOperator 
-                                   implements Serializable
+                            implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
@@ -51,9 +47,9 @@ public class SetDSAttribute extends    DataSetOperator
    *  @param  new_Value   The new value of the Attribute
    */
 
-  public SetDSAttribute  ( DataSet    ds,
-                        AttributeNameString  Attrib,
-                        Object   new_Value )
+  public SetDSAttribute  ( DataSet              ds,
+                           AttributeNameString  Attrib,
+                           Object               new_Value )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -89,11 +85,12 @@ public class SetDSAttribute extends    DataSetOperator
 
     
 
-    Parameter parameter = new Parameter( "Attribute?", new AttributeNameString("") );
+    Parameter parameter = new Parameter( "Attribute?", 
+                                          new AttributeNameString("") );
     addParameter( parameter ); 
    
     
-    parameter = new Parameter( " New Value?", new Object());
+    parameter = new Parameter( " New Value?", null );
     addParameter( parameter );
   }
 
@@ -102,27 +99,29 @@ public class SetDSAttribute extends    DataSetOperator
 
   public Object getResult()
     { Attribute A;
-     DataSet ds = getDataSet();
-     String S = ((AttributeNameString)(getParameter(0).getValue())).toString();
-     Object O = getParameter(1).getValue();
+      DataSet ds = getDataSet();
+      String S = ((AttributeNameString)(getParameter(0).getValue())).toString();
+      Object O = getParameter(1).getValue();
       
-     if( O instanceof Integer) 
+      if ( O == null )
+        return new ErrorString(" null value");
+
+      if( O instanceof Integer) 
 	 A = new IntAttribute(S, ((Integer)O).intValue());
-     else if( O instanceof Float)
+      else if( O instanceof Float)
          A = new FloatAttribute( S , ((Float)O).floatValue());
-     else if( O instanceof String)
+      else if( O instanceof String)
          A = new StringAttribute(S , (String) O);
-     else if( O instanceof AttributeNameString)
+      else if( O instanceof AttributeNameString)
          A = new StringAttribute( S , ((AttributeNameString) O).toString());
-     else
+      else
 	 return new ErrorString(" new Value improper Data Type");
     
    
-     ds.setAttribute( A);
-     ds.addLog_entry( "Operation " + "SetDSAttribute "+ S +" on " +ds +
+      ds.setAttribute( A);
+      ds.addLog_entry( "Operation " + "SetDSAttribute "+ S +" on " +ds +
              " to " + O);
-     return "Attribute Set";     
-    
+      return "Attribute Set";     
   }  
 
   /* ------------------------------ clone ------------------------------- */

@@ -51,10 +51,10 @@ public class SetDataAttribute extends    DataSetOperator
    *  @param  new_Value   The new value of the Attribute
    */
 
-  public SetDataAttribute  ( DataSet    ds,
-                         Integer   index,  
-                        AttributeNameString  Attrib,
-                        Object   new_Value )
+  public SetDataAttribute  ( DataSet              ds,
+                             Integer              index,  
+                             AttributeNameString  Attrib,
+                             Object               new_Value )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -100,7 +100,7 @@ public class SetDataAttribute extends    DataSetOperator
     addParameter( parameter ); 
    
     
-    parameter = new Parameter( " New Value?", new Object());
+    parameter = new Parameter( " New Value?", null );
     addParameter( parameter );
   }
 
@@ -109,30 +109,33 @@ public class SetDataAttribute extends    DataSetOperator
 
   public Object getResult()
     { Attribute A;
-     DataSet ds = getDataSet();
-     int index = ((Integer)getParameter(0).getValue()).intValue();
-     String S = ((AttributeNameString)(getParameter(1).getValue())).toString();
-     Object O = getParameter(2).getValue();
+      DataSet ds = getDataSet();
+      int index = ((Integer)getParameter(0).getValue()).intValue();
+      String S = ((AttributeNameString)(getParameter(1).getValue())).toString();
+      Object O = getParameter(2).getValue();
+
+      if ( O == null )
+        return new ErrorString(" null value");
       
-     if( O instanceof Integer) 
-	 A = new IntAttribute(S, ((Integer)O).intValue());
-     else if( O instanceof Float)
-         A = new FloatAttribute( S , ((Float)O).floatValue());
-     else if( O instanceof String)
-         A = new StringAttribute(S , (String) O);
-     else if( O instanceof AttributeNameString)
-         A = new StringAttribute( S , ((AttributeNameString) O).toString());
-     else
-	 return new ErrorString(" new Value improper Data Type");
+      if( O instanceof Integer) 
+          A = new IntAttribute(S, ((Integer)O).intValue());
+      else if( O instanceof Float)
+          A = new FloatAttribute( S , ((Float)O).floatValue());
+      else if( O instanceof String)
+          A = new StringAttribute(S , (String) O);
+      else if( O instanceof AttributeNameString)
+          A = new StringAttribute( S , ((AttributeNameString) O).toString());
+      else
+          return new ErrorString(" new Value improper Data Type");
      
-     Data D = ds.getData_entry( index);
-     if( D == null) 
-	return new ErrorString("Improper Index"); 
-     D.setAttribute( A);
-     ds.addLog_entry( "Operation " + "SetDataAttribute "+ S +" on " +ds
+      Data D = ds.getData_entry( index);
+      if( D == null) 
+        return new ErrorString("Improper Index"); 
+      D.setAttribute( A);
+      ds.addLog_entry( "Operation " + "SetDataAttribute "+ S +" on " +ds
               +"["+index+"]"+  " to " + O);
-     //ds.notifyIObservers( IObserver.ATTRIBUTE_CHANGED);
-     return "Attribute Set";     
+      //ds.notifyIObservers( IObserver.ATTRIBUTE_CHANGED);
+      return "Attribute Set";     
     
   }  
 
