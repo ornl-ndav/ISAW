@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.24  2003/09/15 18:02:45  bouzekc
+ * Added parameters for Integrate's new "shoe box" parameters.
+ *
  * Revision 1.23  2003/09/11 21:22:32  bouzekc
  * Updated to work with new Form class.
  *
@@ -185,26 +188,16 @@ public class IntegrateMultiRunsForm extends Form {
     String calibfile, String time_slice_range, int increase_amt, int line2use,
     boolean append ) {
     this(  );
-    getParameter( 0 )
-      .setValue( rawpath );
-    getParameter( 1 )
-      .setValue( outpath );
-    getParameter( 2 )
-      .setValue( runnums );
-    getParameter( 3 )
-      .setValue( expname );
-    getParameter( 4 )
-      .setValue( choices.elementAt( ctype ) );
-    getParameter( 5 )
-      .setValue( calibfile );
-    getParameter( 6 )
-      .setValue( time_slice_range );
-    getParameter( 7 )
-      .setValue( new Integer( increase_amt ) );
-    getParameter( 8 )
-      .setValue( new Integer( line2use ) );
-    getParameter( 9 )
-      .setValue( new Boolean( append ) );
+    getParameter( 0 ).setValue( rawpath );
+    getParameter( 1 ).setValue( outpath );
+    getParameter( 2 ).setValue( runnums );
+    getParameter( 3 ).setValue( expname );
+    getParameter( 4 ).setValue( choices.elementAt( ctype ) );
+    getParameter( 5 ).setValue( calibfile );
+    getParameter( 6 ).setValue( time_slice_range );
+    getParameter( 7 ).setValue( new Integer( increase_amt ) );
+    getParameter( 8 ).setValue( new Integer( line2use ) );
+    getParameter( 9 ).setValue( new Boolean( append ) );
   }
 
   //~ Methods ******************************************************************
@@ -227,11 +220,8 @@ public class IntegrateMultiRunsForm extends Form {
     }
 
     addParameter( new DataDirPG( "Raw Data Path", "", false ) );  //0
-
     addParameter( new DataDirPG( "Peaks File Output Path", "", false ) );  //1
-
     addParameter( new IntArrayPG( "Run Numbers", "", false ) );  //2
-
     addParameter( new StringPG( "Experiment name", "quartz", false ) );  //3
 
     ChoiceListPG clpg = new ChoiceListPG( 
@@ -239,30 +229,29 @@ public class IntegrateMultiRunsForm extends Form {
 
     clpg.addItems( choices );
     addParameter( clpg );
-
     addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );  //5
-
     addParameter( new IntArrayPG( "The Time-Slice Range", "-1:3", false ) );  //6
-
     addParameter( 
       new IntegerPG( 
         "Amount to Increase Slice Size By", new Integer( 1 ), false ) );  //7
-
     addParameter( 
       new IntegerPG( 
         "SCD Calibration File Line to Use", new Integer( -1 ), false ) );  //8
-
     addParameter( new BooleanPG( "Append to File?", Boolean.FALSE, false ) );  //9
-
+    addParameter( new LoadFilePG( "Integrated Peaks File ", " ", false ) );  //10
     addParameter( 
-      new LoadFilePG( "Integrated Peaks File ", " ", false ) );  //10
+      new BooleanPG( "Use Shoe Box (NOT max I/sigI)", false, false ) );  //11
+    addParameter( new IntArrayPG( "Box Delta x (col) range", "-2:2", false ) );  //12
+    addParameter( new IntArrayPG( "Box Delta y (row) range", "-2:2", false ) );  //13
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
-        new int[]{ 0, 1, 3, 5, 8 }, new int[]{ 2, 4, 6, 7, 9 }, new int[]{ 10 } );
+        new int[]{ 0, 1, 3, 5, 8 }, new int[]{ 2, 4, 6, 7, 9, 11, 12, 13 },
+        new int[]{ 10 } );
     } else {
       setParamTypes( 
-        null, new int[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, new int[]{ 10 } );
+        null, new int[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13 },
+        new int[]{ 10 } );
     }
   }
 
@@ -332,33 +321,33 @@ public class IntegrateMultiRunsForm extends Form {
     String IPNSName;
     boolean append;
     boolean first;
+    boolean useShoeBox;
     int timeSliceDelta;
     int SCDline;
     DataSet histDS;
     int[] runsArray;
+    int[] boxDeltaX;
+    int[] boxDeltaY;
 
     //get raw data directory
-    param    = ( IParameterGUI )super.getParameter( 0 );
-    rawDir   = param.getValue(  )
-                    .toString(  );
+    param            = ( IParameterGUI )super.getParameter( 0 );
+    rawDir           = param.getValue(  ).toString(  );
 
     //get output directory
-    param       = ( IParameterGUI )getParameter( 1 );
-    outputDir   = param.getValue(  )
-                       .toString(  );
+    param            = ( IParameterGUI )getParameter( 1 );
+    outputDir        = param.getValue(  ).toString(  );
 
     //gets the run numbers
-    param       = ( IParameterGUI )super.getParameter( 2 );
-    runsArray   = IntList.ToArray( param.getValue(  ).toString(  ) );
+    param            = ( IParameterGUI )super.getParameter( 2 );
+    runsArray        = IntList.ToArray( param.getValue(  ).toString(  ) );
 
     //get experiment name
-    param     = ( IParameterGUI )getParameter( 3 );
-    expName   = param.getValue(  )
-                     .toString(  );
+    param            = ( IParameterGUI )getParameter( 3 );
+    expName          = param.getValue(  ).toString(  );
 
     //get centering type - this still needs to be checked here rather than Form
-    param   = ( IParameterGUI )getParameter( 4 );
-    obj     = param.getValue(  );
+    param            = ( IParameterGUI )getParameter( 4 );
+    obj              = param.getValue(  );
 
     if( obj != null ) {
       centerType = obj.toString(  );
@@ -368,38 +357,42 @@ public class IntegrateMultiRunsForm extends Form {
     }
 
     //get calibration file name
-    param       = ( IParameterGUI )getParameter( 5 );
-    calibFile   = param.getValue(  )
-                       .toString(  );
+    param            = ( IParameterGUI )getParameter( 5 );
+    calibFile        = param.getValue(  ).toString(  );
 
     //get time slice range
-    param        = ( IParameterGUI )getParameter( 6 );
-    sliceRange   = param.getValue(  )
-                        .toString(  );
+    param            = ( IParameterGUI )getParameter( 6 );
+    sliceRange       = param.getValue(  ).toString(  );
 
     //get time slice increase increment
     param            = ( IParameterGUI )getParameter( 7 );
     timeSliceDelta   = ( ( Integer )param.getValue(  ) ).intValue(  );
 
     //get line number for SCD calibration file
-    param     = ( IParameterGUI )super.getParameter( 8 );
-    SCDline   = ( ( Integer )param.getValue(  ) ).intValue(  );
+    param            = ( IParameterGUI )super.getParameter( 8 );
+    SCDline          = ( ( Integer )param.getValue(  ) ).intValue(  );
 
     //get append to file value
-    param    = ( IParameterGUI )super.getParameter( 9 );
-    append   = ( ( BooleanPG )param ).getbooleanValue(  );
+    param            = ( IParameterGUI )super.getParameter( 9 );
+    append           = ( ( BooleanPG )param ).getbooleanValue(  );
+    param            = ( IParameterGUI )super.getParameter( 11 );
+    useShoeBox       = ( ( BooleanPG )param ).getbooleanValue(  );
+    param            = ( IParameterGUI )super.getParameter( 12 );
+    boxDeltaX        = ( ( IntArrayPG )param ).getArrayValue(  );
+    param            = ( IParameterGUI )super.getParameter( 13 );
+    boxDeltaY        = ( ( IntArrayPG )param ).getArrayValue(  );
 
     //the name for the saved *.integrate file
-    integName   = outputDir + expName + ".integrate";
+    integName        = outputDir + expName + ".integrate";
 
     //first time through the file
-    first = true;
+    first            = true;
 
     //to avoid excessive object creation, we'll create all of the 
     //Operators here, then just set their parameters in the loop
     createIntegrateOperators( 
       calibFile, SCDline, integName, sliceRange, timeSliceDelta, append,
-      centerType );
+      centerType, useShoeBox, boxDeltaX, boxDeltaY );
 
     //validate the parameters and set the progress bar variables
     Object validCheck = validateSelf(  );
@@ -414,14 +407,11 @@ public class IntegrateMultiRunsForm extends Form {
 
     for( int i = 0; i < runsArray.length; i++ ) {
       IPNSName   = InstrumentType.formIPNSFileName( SCDName, runsArray[i] );
-
-      loadName = rawDir + IPNSName;
-
+      loadName   = rawDir + IPNSName;
       SharedData.addmsg( "Loading " + loadName + "." );
 
       //load the histogram
-      loadHist.getParameter( 0 )
-              .setValue( loadName );
+      loadHist.getParameter( 0 ).setValue( loadName );
       obj = loadHist.getResult(  );
 
       //make sure it is a DataSet
@@ -444,23 +434,16 @@ public class IntegrateMultiRunsForm extends Form {
 
       //Gets matrix file "lsxxxx.mat" for each run
       //pull the run number off of the IPNS name
-      IPNSName   = IPNSName.substring( 
+      IPNSName     = IPNSName.substring( 
           IPNSName.indexOf( SCDName ) + SCDName.length(  ),
           IPNSName.indexOf( '.' ) );
-
-      matrixName = outputDir + "ls" + expName + IPNSName + ".mat";
-
+      matrixName   = outputDir + "ls" + expName + IPNSName + ".mat";
       SharedData.addmsg( "Integrating run " + IPNSName + "." );
-
-      integrate.getParameter( 0 )
-               .setValue( histDS );
-      integrate.getParameter( 2 )
-               .setValue( matrixName );
-      integrate.getParameter( 7 )
-               .setValue( new Boolean( append ) );
+      integrate.getParameter( 0 ).setValue( histDS );
+      integrate.getParameter( 2 ).setValue( matrixName );
+      integrate.getParameter( 7 ).setValue( new Boolean( append ) );
       obj = integrate.getResult(  );
-      integrate.getParameter( 0 )
-               .setValue( null );
+      integrate.getParameter( 0 ).setValue( null );
 
       if( obj instanceof ErrorString ) {
         return errorOut( "Integrate failed: " + obj.toString(  ) );
@@ -501,10 +484,17 @@ public class IntegrateMultiRunsForm extends Form {
    * @param timeSliceDelta Amount to increase slice size by.
    * @param append Whether to append to peaks file.
    * @param centerType Centering type.
+   * @param use_shoebox Flag to specify using same-size shoebox around all
+   *        peaks, rather than trying to maximize I/sigI
+   * @param boxDeltaX The range of x (delta col) values to use around the peak
+   *        position
+   * @param boxDeltaY The range of y (delta row) values to use around the peak
+   *        position
    */
   private void createIntegrateOperators( 
     String calibFile, int SCDline, String integName, String sliceRange,
-    int timeSliceDelta, boolean append, String centerType ) {
+    int timeSliceDelta, boolean append, String centerType, boolean useShoeBox,
+    int[] boxDeltaX, int[] boxDeltaY ) {
     loadHist    = new LoadOneHistogramDS(  );
     integrate   = new Integrate(  );
     loadSCD     = new LoadSCDCalib(  );
@@ -512,36 +502,28 @@ public class IntegrateMultiRunsForm extends Form {
     //LoadOneHistogramDS
     //get the histogram.  A value of "1" will retrieve the first histogram
     //DataSet
-    loadHist.getParameter( 1 )
-            .setValue( new Integer( 1 ) );
+    loadHist.getParameter( 1 ).setValue( new Integer( 1 ) );
 
     /*If you want to be able to use a group mask,
        change the "" below to a String variable.
        I've been told this is not used. -CMB*/
-    loadHist.getParameter( 2 )
-            .setValue( "" );
+    loadHist.getParameter( 2 ).setValue( "" );
 
     //Integrate
-    integrate.getParameter( 1 )
-             .setValue( integName );
-    integrate.getParameter( 3 )
-             .setValue( centerType );
-    integrate.getParameter( 4 )
-             .setValue( sliceRange );
-    integrate.getParameter( 5 )
-             .setValue( new Integer( timeSliceDelta ) );
-    integrate.getParameter( 6 )
-             .setValue( new Integer( 1 ) );
-    integrate.getParameter( 7 )
-             .setValue( new Boolean( append ) );
+    integrate.getParameter( 1 ).setValue( integName );
+    integrate.getParameter( 3 ).setValue( centerType );
+    integrate.getParameter( 4 ).setValue( sliceRange );
+    integrate.getParameter( 5 ).setValue( new Integer( timeSliceDelta ) );
+    integrate.getParameter( 6 ).setValue( new Integer( 1 ) );
+    integrate.getParameter( 7 ).setValue( new Boolean( append ) );
+    integrate.getParameter( 8 ).setValue( new Boolean( useShoeBox ) );
+    integrate.getParameter( 9 ).setValue( boxDeltaX );
+    integrate.getParameter( 10 ).setValue( boxDeltaY );
 
     //LoadSCDCalib
-    loadSCD.getParameter( 0 )
-           .setValue( calibFile );
-    loadSCD.getParameter( 1 )
-           .setValue( new Integer( SCDline ) );
-    loadSCD.getParameter( 2 )
-           .setValue( "" );
+    loadSCD.getParameter( 0 ).setValue( calibFile );
+    loadSCD.getParameter( 1 ).setValue( new Integer( SCDline ) );
+    loadSCD.getParameter( 2 ).setValue( "" );
   }
 
   /**
