@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.28  2003/10/27 01:30:58  bouzekc
+ * Result parameter is now the last parameter.  This is to facilitate
+ * remote execution.
+ *
  * Revision 1.27  2003/10/26 19:17:37  bouzekc
  * Now returns the name of the file written rather than Boolean.TRUE when
  * getResult() executes successfully.
@@ -248,20 +252,20 @@ public class IntegrateMultiRunsForm extends Form {
       new IntegerPG( 
         "SCD Calibration File Line to Use", new Integer( -1 ), false ) );  //8
     addParameter( new BooleanPG( "Append to File?", Boolean.FALSE, false ) );  //9
-    addParameter( new LoadFilePG( "Integrated Peaks File ", " ", false ) );  //10
     addParameter( 
-      new BooleanPG( "Use Shoe Box (NOT max I/sigI)", false, false ) );  //11
-    addParameter( new IntArrayPG( "Box Delta x (col) Range", "-2:2", false ) );  //12
-    addParameter( new IntArrayPG( "Box Delta y (row) Range", "-2:2", false ) );  //13
+      new BooleanPG( "Use Shoe Box (NOT max I/sigI)", false, false ) );  //10
+    addParameter( new IntArrayPG( "Box Delta x (col) Range", "-2:2", false ) );  //11
+    addParameter( new IntArrayPG( "Box Delta y (row) Range", "-2:2", false ) );  //12
+    addParameter( new LoadFilePG( "Integrated Peaks File ", " ", false ) );  //13
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
-        new int[]{ 0, 1, 3, 5, 8 }, new int[]{ 2, 4, 6, 7, 9, 11, 12, 13 },
-        new int[]{ 10 } );
+        new int[]{ 0, 1, 3, 5, 8 }, new int[]{ 2, 4, 6, 7, 9, 10, 11, 12 },
+        new int[]{ 13 } );
     } else {
       setParamTypes( 
-        null, new int[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13 },
-        new int[]{ 10 } );
+        null, new int[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 },
+        new int[]{ 13 } );
     }
   }
 
@@ -387,11 +391,11 @@ public class IntegrateMultiRunsForm extends Form {
     append           = ( ( BooleanPG )param ).getbooleanValue(  );
 
     //shoebox parameters
-    param            = ( IParameterGUI )super.getParameter( 11 );
+    param            = ( IParameterGUI )super.getParameter( 10 );
     useShoeBox       = ( ( BooleanPG )param ).getbooleanValue(  );
-    param            = ( IParameterGUI )super.getParameter( 12 );
+    param            = ( IParameterGUI )super.getParameter( 11 );
     boxDeltaX        = ( ( IntArrayPG )param ).getStringValue(  );
-    param            = ( IParameterGUI )super.getParameter( 13 );
+    param            = ( IParameterGUI )super.getParameter( 12 );
     boxDeltaY        = ( ( IntArrayPG )param ).getStringValue(  );
 
     //the name for the saved *.integrate file
@@ -477,7 +481,7 @@ public class IntegrateMultiRunsForm extends Form {
     SharedData.addmsg( "Peaks are listed in " + integName );
 
     //set the integrate file name for the result
-    param = ( IParameterGUI )getParameter( 10 );
+    param = ( IParameterGUI )getParameter( 13 );
     param.setValue( integName.toString(  ) );
     param.setValid( true );
 
