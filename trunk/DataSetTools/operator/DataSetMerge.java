@@ -35,6 +35,10 @@
  * units match for the two DataSets being merged.
  *
  *  $Log$
+ *  Revision 1.10  2001/11/09 18:46:55  dennis
+ *  Now returns error string if the units on the DataSets being merged
+ *  don't match.
+ *
  *  Revision 1.9  2001/06/01 21:18:00  rmikk
  *  Improved documentation for getCommand() method
  *
@@ -42,7 +46,8 @@
  *  Added copyright and GPL info at the start of the file.
  *
  *  Revision 1.7  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
+ *     Introduced additional abstract classes to better categorize 
+ *     the operators.
  *  Existing operators were modified to be derived from one of the new abstract
  *  classes.  The abstract base class hierarchy is now:
  *
@@ -100,6 +105,7 @@ package DataSetTools.operator;
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
+import  DataSetTools.util.*;
 
 /**
   * This operator creates a new DataSet by combining the Data blocks from the 
@@ -152,7 +158,8 @@ public class DataSetMerge extends    DS_EditList
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case Merge
+   * @return	the command name to be used with script processor: 
+   *            in this case Merge
    */
    public String getCommand()
    {
@@ -188,7 +195,9 @@ public class DataSetMerge extends    DS_EditList
     DataSet ds = this.getDataSet();
 
     if ( !ds.SameUnits(ds_to_merge)) // DataSets are NOT COMPATIBLE TO COMBINE
-      return null;
+      return new ErrorString("Error DataSets have different units " + 
+                  ds.getX_units() + " != " + ds_to_merge.getX_units() + " or " +
+                  ds.getY_units() + " != " + ds_to_merge.getY_units() ); 
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
