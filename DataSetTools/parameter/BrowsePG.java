@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2003/08/28 01:47:55  bouzekc
+ *  Modified to work with new ParameterGUI.
+ *
  *  Revision 1.20  2003/08/26 18:29:51  bouzekc
  *  Removed entrywidget layout setup, changed entrywidget initialization to
  *  use default constructor.
@@ -142,22 +145,15 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
     private int defaultindex;
 
     // ********** Constructors **********
-    public BrowsePG(String name, Object value){
-        this(name,value,false);
-        this.setDrawValid(false);
+    public BrowsePG(String name, Object val){
+        super( name, val );
         this.type=TYPE;
     }
 
-    public BrowsePG(String name, Object value, boolean valid){
-        this.setName(name);
-        this.setValue(value);
-        this.setEnabled(true);
-        this.setValid(valid);
-        this.setDrawValid(true);
+    public BrowsePG(String name, Object val, boolean valid){
+        super( name, val, valid );
         this.type=TYPE;
-        this.initialized=false;
-        this.ignore_prop_change=false;
-        if(this.value==null || value.toString().length()<=0){
+        if(value==null || value.toString().length()<=0){
           String datadir=SharedData.getProperty("Data_Directory");
           this.setValue(datadir);
         }
