@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2004/09/16 18:12:09  dennis
+ * Made calibrations on both image axes linear and provided somewhat
+ * meaningful ranges of values ( |Q| ) for the axis calibrations.
+ *
  * Revision 1.16  2004/09/15 22:03:50  millermi
  * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
  *   Adding a second log required the boolean parameter to be changed
@@ -3242,10 +3246,10 @@ private class PlaneListener implements ActionListener
        VirtualArray2D va2d = new VirtualArray2D( image );
 
        // ##### patch
-       va2d.setAxisInfo( AxisInfo.X_AXIS, -10.0f, 10.0f,
-                         "X","Uncalibrated Units", AxisInfo.LINEAR );
-       va2d.setAxisInfo( AxisInfo.Y_AXIS, -10.0f, 10.0f,
-                         "Y","Uncalibrated Units", AxisInfo.TRU_LOG );
+       va2d.setAxisInfo( AxisInfo.X_AXIS, -SLICE_SIZE_IN_Q, SLICE_SIZE_IN_Q,
+                         " ","Change in |Q|", AxisInfo.LINEAR );
+       va2d.setAxisInfo( AxisInfo.Y_AXIS, -SLICE_SIZE_IN_Q, SLICE_SIZE_IN_Q,
+                         " ","Change in |Q|", AxisInfo.LINEAR );
 
        va2d.setTitle( title );
        if ( frame == null )
