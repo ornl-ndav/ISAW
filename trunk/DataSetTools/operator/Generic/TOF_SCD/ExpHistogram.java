@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/08/05 21:34:39  dennis
+ * Commented out debug print.
+ *
  * Revision 1.1  2003/05/20 18:36:40  pfpeterson
  * Added to CVS.
  *
@@ -490,8 +493,8 @@ public class ExpHistogram implements Comparable{
     x_val[x_val.length-1]=this.tmax;
 
     this.xscale=XScale.getInstance(x_val);
-    System.out.println("XSCALE="+this.xscale.getNum_x()+","+this.wlnum+" "+sb
-                       +" "+x_val[x_val.length-1]);
+//  System.out.println("XSCALE="+this.xscale.getNum_x()+","+this.wlnum+" "+sb
+//                     +" "+x_val[x_val.length-1]);
   }
 
   /**
