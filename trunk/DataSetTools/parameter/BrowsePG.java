@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/08/14 18:40:27  bouzekc
+ *  Made BrowseButtonListener transient.
+ *
  *  Revision 1.14  2003/07/17 21:44:50  bouzekc
  *  Now returns values with forward slashes, rather than
  *  backslashes.
@@ -117,7 +120,7 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString,
     protected StringEntry innerEntry  = null;
     protected JButton     browse      = null;
     protected Vector      filter_vector;
-    protected BrowseButtonListener browselistener;
+    protected transient BrowseButtonListener browselistener;
     protected int choosertype;
     
     private int defaultindex;
