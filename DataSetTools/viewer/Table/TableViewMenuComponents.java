@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/07/24 19:59:25  rmikk
+ *  Changed the choice time,row, vs col to call the specialized
+ *     viewer-TimeSliceView
+ *
  *  Revision 1.3  2002/07/17 19:58:25  rmikk
  *  Change the Menu Item names for the different types of
  *     tables
@@ -117,7 +121,7 @@ public class TableViewMenuComponents
  /** Returns the TableView associated with the view_type that corresponds to the
  * Name associated with the Menu items
  */
- public TableView getDataSetViewer( String view_type, DataSet DS, ViewerState state)
+ public DataSetViewer getDataSetViewer( String view_type, DataSet DS, ViewerState state)
    {
     
     if( DS.getSelectedIndices().length<1)
@@ -129,7 +133,8 @@ public class TableViewMenuComponents
     if( view_type.indexOf("x vs Group y")==0)
        return new TableView( DS, state,"HT,GF");//tv.getGenTableModel( DS,LM,"HT,FG",DS.getSelectedIndices() ));
     if(view_type.indexOf("x,Row vs Col y")==0)
-       return new TableView( DS, state,"HTI,JF");//tv.getGenTableModel( DS,LM,"HTI,JF",DS.getSelectedIndices() ));
+       return (DataSetViewer)(new TimeSliceView( DS, null));
+       //return new TableView( DS, state,"HTI,JF");//tv.getGenTableModel( DS,LM,"HTI,JF",DS.getSelectedIndices() ));
     
     return null;
 
