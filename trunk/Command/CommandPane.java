@@ -33,7 +33,12 @@
     2) GetDSAttr, GetDataAttr, GetField, and appropriate Sets have been 
        implemented in the DataSetTools.operator.
 
-   
+ 7/28/00
+   1) Parameters and Macros with parameters have been implemented.
+      Interfaces so a GUI gets a value of the parameters is available.
+      Macros have not been implemented as an instruction yet.
+
+   2) This class contributes to the Isaw session log.   
 
 */
 package Command; 
@@ -72,15 +77,15 @@ public class CommandPane  extends JPanel
   
  //***********************SECTION GUI****************
   JButton Run , 
-            Open , 
-            Save , 
-            Help , 
-            Undo ; 
+          Open , 
+          Save , 
+          Help , 
+          Clear ; 
 
     JTextArea  Commands , 
                Immediate ; 
 
-    JTextField    StatusLine ; 
+    JTextArea    StatusLine ; 
   
     Command.execOneLine ExecLine ; 
     
@@ -92,6 +97,7 @@ public class CommandPane  extends JPanel
     IObserverList OL ; 
     PropertyChangeSupport PL;
     String FilePath = null  ;                   // for macro storage and retrieval
+    File SelectedFile = null;
     Document logDocument = null;
 
     private boolean Debug = false;
@@ -144,61 +150,16 @@ public class CommandPane  extends JPanel
      *    @param   TextFileName     The name of the text file containg commands
      */
     public CommandPane( String TextFileName )
-      {int c ; 
-       int offset ; 
-       String line ; 
+      {int c ;       
        Document doc ; 
-       FileReader fr ; 
+       initialize() ; 
        File f ; 
        ExecLine = new Command.execOneLine() ; 
        OL = new IObserverList() ;
        PL = new PropertyChangeSupport( this );   
-       try{
-          f = new File( TextFileName ) ; 
-          }
-       catch( NullPointerException s )
-	 {System.out.println( " Improper filename" ) ; 
-	  return ; 
-         }
-       try{
-           fr = new FileReader( f ) ; 
-          }
-	 catch( FileNotFoundException s )
-	   {System.out.println( "File not found" ) ; 
-	    return ; 
-	   }
-       
       
-       doc = new PlainDocument() ; 
-                 
+        doc =new Util().openDoc( TextFileName);
       
-                 
-       line = "" ; 
-       offset = 0 ; 
-       try{
-       for( c = fr.read() ; c !=  -1 ;  )
-	 { 
-           line = line  +  new Character( ( char )c ).toString() ; 
-           if( c < 32 ) //assumes the new line character
-	     { //System.out.print( "K" ) ; 
-               doc.insertString( offset , line , null ) ; 
-	       offset += line.length() ; 
-               line = "" ;
-               }
-          
-            c = fr.read() ; 
-         }
-       if( line.length() > 0 )doc.insertString( offset , line , null ) ; 
-       fr.close() ; 
-         }
-       catch( IOException s )
-         { System.out.println( "Format Error in file" ) ; 
-	 return ; 
-         }
-       catch( BadLocationException s )
-	 {System.out.println( " Internal error in document" ) ; 
-	 return ; 
-	 }
        execute( doc ) ; 
     }
 
@@ -231,8 +192,27 @@ public class CommandPane  extends JPanel
     private void initialize()
     {
       Run  =  null ;   
-     Open = Save = Help = Undo = null ;  
+     Open = Save = Help = Clear = null ;  
      Commands = null ; 
+     try{
+        System.setProperty( "Scriptpath", "C:\\Ruth\\ISAW\\Scripts\\");
+        System.setProperty("DataDirectory" , "C:\\Ruth\\ISAW\\SampleRuns\\");
+         System.setProperty("DefaultInstrument" , "hrcs");
+     
+       FilePath = System.getProperty("Scriptpath");
+        if( Debug )System.out.println( "FilePath is "+FilePath);
+       
+            FilePath = DataSetTools.util.StringUtil.fixSeparator(FilePath);
+     
+     
+        if( Debug )System.out.println( "FilePath is "+FilePath);
+   
+        }
+     catch( Exception s) 
+      {FilePath = null;
+       if( Debug ) System.out.println(" System properties could not be set");
+      }
+     
     
     
     }
@@ -245,32 +225,35 @@ public class CommandPane  extends JPanel
        
         Rectangle R = getBounds() ; 
         
-       
+      
         Run = new JButton( "Run Prgm" ) ; 
        
         Open = new JButton( "Open Prgm" ) ; 
         Save = new JButton( "Save Prgm" ) ; 
         Help = new JButton( "Help" ) ; 
-        
+        Clear = new JButton("Clear");
         Run.addActionListener( new MyMouseListener() ) ; 
         Open.addActionListener( new MyMouseListener() ) ; 
         Save.addActionListener(new MyMouseListener() ) ; 
         Help.addActionListener( new MyMouseListener() ) ; 
-      
+        Clear.addActionListener( new MyMouseListener() ) ; 
 
         setLayout( new BorderLayout() ) ; 
            JP = new JPanel() ; 
-           JP.setLayout( new GridLayout( 1 , 6 ) ) ; 
-        
+           JP.setLayout( new GridLayout( 1 , 5 ) ) ; 
+         
            JP.add( Run ) ; 
            JP.add( new JLabel( "       " ) ) ; 
+         
            JP.add( Open ) ; 
+       
            JP.add( Save ) ; 
+           JP.add( Clear );
            JP.add( Help ) ; 
         
-	   
+	
         add( JP , BorderLayout.NORTH ) ; 
-
+     
 	
 
            Commands = new JTextArea( 7 , 50 ) ; 
@@ -283,22 +266,25 @@ public class CommandPane  extends JPanel
            X.setBorder( new TitledBorder( "Prgm Editor" ) ) ; 
           
            JPS.add( X ) ; 
-          
+         
            X =  new JScrollPane( Immediate ) ; 
            X.setBorder( new TitledBorder( "Immediate" ) ) ; 
-          
-           JPS.add( X ) ; 
-
+        
+           JPS.add( X ) ;
+           add( JPS , BorderLayout.CENTER); 
+           X = null;
           
          
-        add( JPS , BorderLayout.CENTER ) ; 
+       
 
-	   
-         StatusLine = new JTextField( "         " ) ; 
-         StatusLine.setBackground( Color.white);
-	 StatusLine.setBorder( new TitledBorder( "Status" ));
-        
-	 add( StatusLine , BorderLayout.SOUTH ) ; 
+	  
+         StatusLine = new JTextArea( 3 , 50 ) ; 
+	 // StatusLine.setBackground( Color.white);
+         X = new JScrollPane( StatusLine);
+         X.setBorder(new TitledBorder( "Status" ));
+	 //StatusLine.setBorder( new TitledBorder( "Status" ));
+         
+	 add( X , BorderLayout.SOUTH ) ; 
 
 	ExecLine.addPropertyChangeListener( "Display" , this ) ; 
 	
@@ -360,7 +346,7 @@ public class CommandPane  extends JPanel
          //   System.out.println( "Bad line numbers" + E + "," + 
 //                           E.getStartOffset() + "," + E.getEndOffset() ) ; 
 	// else 
-          // {StatusLine.setText( "Bad line numbers" + E + "," + E.getStartOffset() + "," 
+          // new Uilt().appendDoc{StatusLine, "Bad line numbers" + E + "," + E.getStartOffset() + "," 
            //                       + E.getEndOffset() ) ; 
 	   
           // }
@@ -589,16 +575,7 @@ public class CommandPane  extends JPanel
        E = Doc.getDefaultRootElement() ; 
        if( start < 0 ) return start ; 
        if( start >= E.getElementCount() ) return start ;  
-      /* 
-       F = E.getElement( start ) ; 
-       try{
-         S = Doc.getText( F.getStartOffset() , F.getEndOffset()  -  F.getStartOffset() ) ; 
-          }
-       catch( BadLocationException s )
-	 {seterror ( 0 , "Internal Errorb" ) ; 
-	  return start ; 
-	 }
-       */
+  
        S = getLine( Doc , start );
        if( S == null)
 	 {seterror ( 0 , "Internal Errorb" ) ; 
@@ -639,16 +616,7 @@ public class CommandPane  extends JPanel
 	      { seterror( 0 , "No EndFor for a FORb" + S ) ; 
 	        return line ; 
               }
-            /* F = E.getElement(line ) ; 
-             try{
-               S = Doc.getText( F.getStartOffset() ,  F.getEndOffset() - F.getStartOffset() ) ; 
-	        }
-             catch( BadLocationException s )
-	       {
-		seterror( 0 ,  "Internal error" ) ; 
-                return line ; 
-	       }
-              */
+         
              S = getLine( Doc , line );
              if( S == null )
 	       {
@@ -683,15 +651,7 @@ public class CommandPane  extends JPanel
        E = Doc.getDefaultRootElement() ; 
        if( start < 0 ) return start ; 
        if( start >= E.getElementCount() ) return start ;   
-       /*F = E.getElement( start ) ; 
-       try{
-         S = Doc.getText( F.getStartOffset() , F.getEndOffset()  -  F.getStartOffset() ) ; 
-          }
-       catch( BadLocationException s )
-	 {seterror ( 0 , "Internal Errorc" ) ; 
-	  return start ; 
-	 }
-       */
+  
        S = getLine( Doc , start);
 
        if( S == null )
@@ -720,15 +680,7 @@ public class CommandPane  extends JPanel
 	  return line ; 
           }
 
-/*       F = E.getElement( line ) ; 
-       try{
-          S = Doc.getText( F.getStartOffset() , F.getEndOffset() - F.getStartOffset() ) ; 
-           }
-       catch( BadLocationException s )
-	  {seterror ( 0 , "Internal Errorc" ) ; 
-	   return line ; 
-	  }
-*/
+
       S = getLine( Doc , line );
       if( S == null )
 	 {seterror ( 0 , "Internal Errorc" ) ; 
@@ -749,15 +701,7 @@ public class CommandPane  extends JPanel
 	}
 
          
-/*       F = E.getElement( line ) ; 
-       try{
-          S = Doc.getText( F.getStartOffset() , F.getEndOffset() - F.getStartOffset() ) ; 
-           }
-       catch( javax.swing.text.BadLocationException s )
-	  {seterror ( 0 , "Internal Errorc" ) ; 
-	   return line ; 
-	  }
-*/
+
      S = getLine( Doc , line );
      if( S == null )
 	 {seterror ( 0 , "Internal Errorc" ) ; 
@@ -1361,7 +1305,7 @@ public class CommandPane  extends JPanel
           start = ExecLine.skipspaces(Line , 1, start );
           j = findQuote( Line , 1, start, " ", "" );
        
-          String DT = Line.substring( start , j ).toUpperCase();
+          String DT = Line.substring( start , j );//.toUpperCase();
           String Message;
           j = ExecLine.skipspaces( Line , 1, j );
         
@@ -1371,13 +1315,42 @@ public class CommandPane  extends JPanel
             Message = "";
           if(Debug)
             System.out.println("in line start end="+ start + ","+DT+","+Message);
-          if( (DT .equals( "INT") ) || ( DT.equals( "INTEGER")))
+          if( (DT .equals( "Int") ) || ( DT.equals( "INTEGER")))
              V.add( new JIntegerParameterGUI( new Parameter ( Message , new Integer (0)) ) );
-          else if ( DT.equals( "FLOAT"))
+          else if ( DT.equals( "Float"))
              V.add( new JFloatParameterGUI(  new Parameter ( Message , new Float (0.0)) ) ); 
-          else if( DT.equals( "STRING"))
-             V.add( new JStringParameterGUI( new Parameter ( Message , " " ) ) );
-          else if ( DT.equals( "DATASET") )
+          else if( DT.equals( "String"))
+             V.add( new JStringParameterGUI( new Parameter ( Message , "" ) ) );
+          else if( DT.equals("DataDirectoryString"))
+             { String DirPath = System.getProperty("DataDirectory");
+               if( DirPath != null )
+                   DirPath = DataSetTools.util.StringUtil.fixSeparator( DirPath+"\\");
+               else
+                   DirPath = "";
+               V.add( new JStringParameterGUI( new Parameter( Message, DirPath)));
+              }
+          else if (DT.equals( "DSFieldString"))
+            {String Fields[] = {"Title","X_label", "X_units", "PointedAtIndex","SelectFlagOn",
+                       "SelectFlagOff","SelectFlag","Y_label","Y_units", "MaxGroupID",
+                        "MaxXSteps","MostRecentlySelectedIndex", "NumSelected" , "XRange",
+                       "YRange"};
+             AttributeList A = new AttributeList();
+            // Attribute A1;
+	    
+             for( k =0; k< Fields.length; k++)
+		 {   
+                    A.addAttribute( new StringAttribute( Fields[k] , "") );
+              }
+            
+             V.add( new JAttributeNameParameterGUI( new Parameter( Message ,"" ) , A));
+            }
+          else if( DT.equals( "InstrumentNameString"))
+            {String XX = System.getProperty("DefaultInstrument");
+             if( XX == null )
+               XX = "";
+             V.add( new JStringParameterGUI( new Parameter( Message, XX )));
+            }
+          else if ( DT.equals( "DataSet") )
            {System.out.println( "Argument is a data set");
 	   DataSet DS[] = ExecLine.getGlobalDataset();
             DataSet dd = new DataSet("DataSet=", null);
@@ -1402,7 +1375,7 @@ public class CommandPane  extends JPanel
       
        }// For i=0 to count
      
-     X = new Command.JScriptParameterDialog( V, ExecLine.getGlobalDataset() );
+     Command.JScriptParameterDialog X = new Command.JScriptParameterDialog( V, ExecLine.getGlobalDataset() );
      if( Debug ) System.out.println( "After Dialog box");
      V = X.getResult();
      if( V == null)
@@ -1420,7 +1393,9 @@ public class CommandPane  extends JPanel
 
          
    } 
-  private  Command.JScriptParameterDialog X = null;
+/*  private  Command.JScriptParameterDialog X = null;
+  // Will eventually get an operator form for a Macro with parameters.
+  //    So any result will hava a place to display
    public void SendMessageToScript( String Message)
     {if( MacroDocument == null )
        return;
@@ -1428,50 +1403,25 @@ public class CommandPane  extends JPanel
        return;
      X.setMessage( Message);
     }
- 
+*/
+ /**
+*  This routine can be used by Isaw to run a macro with parameters.
+*  It creates a GUI that lets users enter values for the parameters in the
+*  macro<P>
+*
+*@param    fname    The name of the file that stores the Macro
+*@param    X        An Obsever who will receive the data sets that are "Sent" with the SEND command
+*@param   DSS[]     A list of data sets that can be selected as values for Data Set Parameters.
+*
+*@return           The result( null usually) or an error message
+*/
  public Object getExecScript( String fname ,IObserver X , DataSet DDS[])
   {    int i;
        String S;
-      /*  S = System.getProperty("user.dir").trim();
-         if( S!=null) if( S.length() > 0 ) if(  "\\/".indexOf(S.charAt(S.length() - 1 ) ) < 0)
-	    S = S + "/";
-	 if( !new File( S + "IsawGUI/Isaw.class").exists()) 
-            S = null;
-        else
-            S=S.replace( '\\','/');
-            
+     
        
-        if( S == null )
-	    {String CP = System.getProperty("java.class.path").replace( '\\','/') ;
-	    int s, t ;
-            for( s = 0; (s < CP.length()) && (S == null); )
-	      {t = CP.indexOf( ";", s+1);
-               if( t < 0) t = CP.length();
-               S = CP.substring(s,t) .trim();
-               if( S.length() > 0 ) if ( S.charAt( S.length() -1) != '/') S = S + "/";
-               if( new File( S + "IsawGUI/Isaw.class").exists())
-                  {}
-               else S = null;     
-           
-                }
-              }
-         if( S == null )S = System.getProperty("user.dir").trim();;
-         FilePath = S+"Scripts";
-        final JFileChooser fc = new JFileChooser(FilePath) ; 
-        int state  ; 
-       
-             state =  fc.showOpenDialog( null  ) ;
- 
-         if( state != JFileChooser.APPROVE_OPTION )
-             return null ; 
-         FilePath= fc.getCurrentDirectory().toString();
-	 File f = fc.getSelectedFile() ; 
-         String filename  = f.toString() ; 
-         String 
-         */
-       
-         Document doc; 
-         File  f = new File( fname);
+         Document doc = (new Util()).openDoc( fname ); 
+        /* File  f = new File( fname);
 
          System.out.println( "The filename is "  + fname ) ;                        
          int x=0;
@@ -1519,7 +1469,7 @@ public class CommandPane  extends JPanel
                     perror = 0;
                     return null;
                      }
-      
+             */
          
 	 CommandPane cp = new CommandPane( doc , X);
          if( DDS != null )
@@ -1534,7 +1484,7 @@ public class CommandPane  extends JPanel
            {  
                return cp.getResult();
            }
-        
+         System.out.println("Macro Error "+ serror +" on line"+lerror+" at position "+ perror);
          return serror;
         
 
@@ -1583,7 +1533,7 @@ public class CommandPane  extends JPanel
              System.out.println(" in Display Data Type ="+ O.getClass()+PL.hasListeners("Display"));
              S = O.toString();
            if( StatusLine != null)
-	      StatusLine.setText( S ) ; 
+	      new Util().appendDoc(StatusLine.getDocument(), S ) ; 
           else
 	      System.out.println( "Display is " + S ) ;
             
@@ -1596,18 +1546,19 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
                                                                Serializable
   {public void actionPerformed( ActionEvent e )
     {Document doc ; 
-    if( e.getSource().equals( Run ) ) 
+     if( e.getSource().equals( Run ) ) 
        {
         doc = Commands.getDocument() ; 	
-        StatusLine.setText( "Status" ) ; 
+        StatusLine.setText( "" ) ; 
         perror = -1 ; 
         ExecLine.resetError() ; 
         execute( doc ) ; 
 	
        if( perror >= 0 )
-          {  StatusLine.setText( "Status: Error " +  serror + " on line " + lerror + " character" + perror ) ; 
+          {  new Util().appendDoc(StatusLine.getDocument(), "Status: Error " +  serror + " on line " + lerror + " character" + perror ) ; 
              Element E = doc.getDefaultRootElement();
-             if( lerror >= E.getElementCount()) Commands.setCaretPosition(doc.getLength()-1);
+             if( lerror >= E.getElementCount()) 
+                Commands.setCaretPosition(doc.getLength()-1);
              else if( lerror >= 0 )
 	       {int p;
                 Element Eline = E.getElement( lerror);
@@ -1619,86 +1570,46 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
 	       }
           }
        }
-    
+     else if( e.getSource().equals( Clear ))
+      {if( ExecLine == null ) return;
+       Commands.setText("");
+       Immediate.setText("");
+       ExecLine.removeDisplays();
+       StatusLine.setText("");
+      }
     else if( e.getSource().equals( Save ) || e.getSource().equals( Open ))
         {final JFileChooser fc = new JFileChooser(FilePath) ; 
          int state  ; 
+         if( SelectedFile != null )
+           fc.setSelectedFile( SelectedFile );
          if( e.getSource().equals( Save ))
 	     state = fc.showSaveDialog( null ) ; 
           else
              state =  fc.showOpenDialog( null  ) ;
- 
+       
          if( state != JFileChooser.APPROVE_OPTION )return ; 
          FilePath= fc.getCurrentDirectory().toString();
-	 File f = fc.getSelectedFile() ; 
-         String filename  = f.toString() ; 
-         String fname = f.getName() ; 
+	 SelectedFile = fc.getSelectedFile() ; 
+         String filename  = SelectedFile.toString() ; 
+         String fname = SelectedFile.getName() ; 
          System.out.println( "The filename is "  + filename ) ;                        
 	
 	 if( e.getSource().equals( Save ) )
-	     {Element line ; 
-	     try{
-                 FileWriter fw = new FileWriter( f ) ; 
+	     {
                  doc = Commands.getDocument() ; 
-	         int i ; 
-		
-                 Element  root ; 
-                 root = doc.getDefaultRootElement() ; 
-		
-                 for( i = 0 ; i < root.getElementCount() ; i++ )
-                    {line = root.getElement( i ) ; 
-		   
-		     fw.write( doc.getText( line.getStartOffset() , 
-                                  line.getEndOffset() - line.getStartOffset() - 1 ) ) ; 
-                     fw.write( "\n" ) ; 
-                     }
-		 fw.close() ; 
-                
-	         }
-	     catch( IOException s )
-                     {StatusLine.setText( "Status: Unsuccessful" ) ; }
-             catch( javax.swing.text.BadLocationException s )
-                 {
-                 }
-	      
+                 (new Util()).saveDoc( doc , filename );      
              }        
          else if( e.getSource().equals( Open ) )
-             {try{  
-                  FileReader fr = new FileReader( f ) ; 
-                  int c , offset ; 
-	          String line ; 
-                  doc = Commands.getDocument() ; 
-                 
-                  doc.remove( 0 , doc.getLength() ) ; 
-		
-                  line = "" ; offset = 0 ; 
-                  for( c = fr.read() ; c != -1 ;   )
-	              { line = line + new Character( ( char )c ).toString() ; 
-                        if( c < 32 ) //assumes the new line character
-			    {
-                           doc.insertString( offset , line , null ) ; 
-		           offset+=line.length() ; 
-                           line = "" ; 
-
-                          }
-			
-                         c = fr.read() ; 
-                       }
-		  if( line.length() > 0 )doc.insertString( offset , line , null ) ; 
-                  fr.close() ; 
-                  Commands.setCaretPosition(0);
-	           }
-	        catch( IOException s )
-                   {StatusLine.setText( "Status: unsuccessful" ) ; }
-                 catch( javax.swing.text.BadLocationException s )
-		     {
-                     }
-	 
-	    
-	     }
-
-        }
-        
+             {               
+		 doc = (new Util()).openDoc( filename );
+                 if( doc != null)
+                  {Commands.setDocument( doc ); 
+                   Commands.setCaretPosition(0);   
+                  }
+                else
+                  System.out.println("Document is null");   
+	     } 
+         }     
     else if( e.getSource().equals( Help ) )
         {BrowserControl H = new BrowserControl() ; 
 	 String S;
@@ -1709,7 +1620,7 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
 	    S = S + "/";
 	 if( !new File( S + "IsawHelp/Command/CommandPane.html").exists()) 
             S = null;
-        else
+         else
             S=S.replace( '\\','/');
             
        
@@ -1735,7 +1646,7 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
           
         
         }
-    } 
+    }// end actionperformed 
  }//End mouseAdapter 
 
   public String getVersion()
@@ -1749,32 +1660,14 @@ private class MyKeyListener  extends KeyAdapter
        {this.CP = CP;
        }
     public void keyTyped( KeyEvent e )
-    { if( Debug )System.out.println("In keyEvent");
-      if('x' == 'y')//e.getKeyChar()  )
+    { if( Debug )
+         System.out.println("In keyEvent");
+      if('x' == 'y')//e.getKeyChar()   used for testing macros)
       { 
         System.out.println( 
               CP.getExecScript( "C:\\Ruth\\ISAW\\Scripts\\MacDS.txt", 
                                 CP, CP.ExecLine.getGlobalDataset()));
-       /* Document D = Commands.getDocument();
-       CommandPane cp = new CommandPane( D , CP );
-       cp.addPropertyChangeListener( CP ) ;
-       System.out.println("After init");
-       DataSet dss[] = ExecLine.getGlobalDataset();
-       if( dss != null)
-         for( int i = 0; i < dss.length ; i++ )
-            cp.addDataSet( dss [i]);
-       cp.GUIgetParameters();
-       if(perror>=0)
-         if(StatusLine != null)
-            StatusLine.setText(serror);
-       if(Debug) System.out.println("After GUIget{ara,eter");
-       
-      
-       if( Debug) 
-          System.out.println("After macro execut error " + 
-              cp.getErrorCharPos()+ "," + cp.getErrorMessage() +","+cp.getErrorLine());
-       cp = null;
-      */
+     
        }
 
         if( e.getKeyChar() == KeyEvent.VK_ENTER )	
@@ -1799,8 +1692,8 @@ private class MyKeyListener  extends KeyAdapter
                   serror = "" ; 
                   lerror = -1 ; 
 	          ExecLine.resetError() ; 
-                  if( StatusLine != null )
-                     StatusLine.setText( "Status" ) ; 
+                 // if( StatusLine != null )
+                    // StatusLine.setText( "" ) ; 
                     new IsawGUI.Util().appendDoc(logDocument,"#$ Start Immediate Run");
                    new IsawGUI.Util().appendDoc(logDocument,getLine(Immediate.getDocument(), line));
 	          execute1( Immediate.getDocument() , line ) ;
@@ -1808,7 +1701,7 @@ private class MyKeyListener  extends KeyAdapter
                    new IsawGUI.Util().appendDoc(logDocument,"#$ End Immediate Run"); 
                   if( perror >= 0 )
                     {if( StatusLine != null )
-                        StatusLine.setText( "Status: Error " + serror + 
+                        new Util().appendDoc(StatusLine.getDocument(), "Status: Error " + serror + 
                            " on line " + line + " character" + perror ) ; 
 		     int p;
                      Element Eline = null;
