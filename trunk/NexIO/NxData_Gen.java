@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/24 20:06:46  rmikk
+ * Added a field to processDS so that there is a handle to and
+ * from linked data.
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
@@ -56,7 +60,7 @@ public class NxData_Gen extends NXData_util implements NxData
   *@param  DS  the existing DataSet that is to be filled out
   *@return  error status: true if there is an error otherwise false
   */
-   public boolean processDS( NxNode node , DataSet DS )
+   public boolean processDS( NxNode node , NxNode instrNode, DataSet DS )
      {errormessage = "";
       if( !node.getNodeClass().equals( "NXdata" ) )
           {errormessage = "Improper node";
@@ -98,7 +102,7 @@ public class NxData_Gen extends NXData_util implements NxData
            {errormessage = "Axes not specified";
             return false;
            }
-       if( super.processDS( node , ax1 , ax2 , dat , DS ) )
+       if( super.processDS( node , instrNode, ax1 , ax2 , dat , DS ) )
          {errormessage = super.getErrorMessage();
           return true;
          }
@@ -167,7 +171,8 @@ public class NxData_Gen extends NXData_util implements NxData
 * errormessage is not "" if it is not possible
  */
   public  int cnvertoint( Object X )
-    {try{
+    {errormessage ="";
+     try{
        if( X instanceof byte[] )
          X =  new String( ( byte[] )X );
        
