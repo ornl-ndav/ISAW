@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.110  2002/07/17 20:13:12  pfpeterson
+ *  Commented out the 'Search Database search' and 'Log View' menu items.
+ *
  *  Revision 1.109  2002/07/17 19:24:32  rmikk
  *  Updated the View file menu choices
  *
@@ -860,7 +863,7 @@ public class Isaw
     JMenuItem m_SEPD   = new JMenuItem( SEPD_MACRO_MI );
     JMenuItem m_CHEXS  = new JMenuItem( CHEXS_MACRO_MI );
  
-    fMenu.add(dbload);
+    //fMenu.add(dbload);
     fMenu.add(fileLoadDataset);
     fileLoadDataset.add(Runfile);
     fileLoadDataset.add(LiveData);
@@ -926,7 +929,7 @@ public class Isaw
     
     vMenu.add( Tables );
     vMenu.add( tableView );
-    vMenu.add( logView );
+    //vMenu.add( logView );
     vMenu.add(instrumentInfoView);         
       
     hMenu.add(helpAbout);
