@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/02/06 20:32:53  dennis
+ *  Added getDocumentation() method. (Tyler Stelzer)
+ *
  *  Revision 1.4  2002/11/27 23:17:40  pfpeterson
  *  standardized header
  *
@@ -319,6 +322,54 @@ public class DataSetMultiSort  extends    DS_EditList
 
     return new_op;
   }
+  
+  
+  public String getDocumentation()
+  {
+      StringBuffer Res = new StringBuffer();
+      Res.append("@overview This operator sorts a DataSet based on multiple");
+       Res.append(" attributes of the Data entries.");
+       
+      Res.append("@algorithm Get the parameters. Try to sort on each of the");
+       Res.append(" attributes requested.  If the sort succeeds, add a log");
+       Res.append(" entry, else exit with an error. The first sort can use");
+       Res.append(" Q_SORT but the later sorts must be STABLE.");
+
+      Res.append("@param ds   The DataSet to which the operation is applied"); 
+      Res.append("@param  attr_name_1   The name of the first attribute to be");
+       Res.append(" used for the sort");
+      Res.append("@param  increasing_1   Flag that indicates whether the sort");
+       Res.append(" should place the items in increasing ( vs. decreasing )");
+       Res.append(" order");
+      Res.append("@param  use_it_1   Flag that indicates whether this");
+       Res.append(" attribute is to actually be used, or is to be ignored.");
+      Res.append("@param  attr_name_2   The name of the second attribute to");
+       Res.append(" be used for the sort.");
+      Res.append("@param  increasing_2   Flag that indicates whether the sort");
+       Res.append(" should place the items in increasing ( vs. decreasing )");
+       Res.append(" order");
+      Res.append("@param  use_it_2   Flag that indicates whether this");
+       Res.append(" attribute is to actually be used, or is to be ignored.");
+      Res.append("@param  attr_name_3   The name of the third attribute to be");
+       Res.append(" used for the sort");
+      Res.append("@param  increasing_3   Flag that indicates whether the sort");
+       Res.append(" should place the items in increasing ( vs. decreasing )");
+       Res.append(" order");
+      Res.append("@param  use_it_3   Flag that indicates whether this");
+       Res.append(" attribute is to actually be used, or is to be ignored.");
+      Res.append("@param  make_new_ds   Flag that determines whether the sort");
+       Res.append(" creates a new DataSet and returns the new DataSet as a");
+       Res.append(" value, or just does the sort \"in place\" and just");
+       Res.append(" returns a message indicating the sort was done.");
+
+      Res.append("@return Returns a new DataSet or the string: DataSet sorted");
+       Res.append(" if successful. If it is unsuccessful, it returns an error");
+       Res.append(" stating the the sort failed.");
+
+      Res.append("@error ERROR: Sort failed... no attribute:   < attr name >");
+  
+     return Res.toString();
+    }
 
 
 }
