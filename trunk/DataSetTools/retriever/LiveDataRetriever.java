@@ -32,6 +32,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2001/09/21 19:13:24  dennis
+ *  The LiveDataServer now adds a log message giving the time to the
+ *  DataSet.  The code to add the time log message was removed from
+ *  the LiveDataRetriver.
+ *
  *  Revision 1.17  2001/08/14 15:11:55  dennis
  *  Added status method.
  *
@@ -249,8 +254,6 @@ public class LiveDataRetriever extends    RemoteDataRetriever
     if ( obj != null && obj instanceof DataSet )
     {
       DataSet ds = (DataSet)obj;
-      Date date = new Date( System.currentTimeMillis() );
-      ds.addLog_entry( "Live Data as of: " + date );
       return ds;
     }
 
