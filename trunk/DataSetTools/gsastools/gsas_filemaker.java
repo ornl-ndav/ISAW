@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2003/03/03 16:52:14  pfpeterson
+ *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  *  Revision 1.22  2002/11/27 23:15:00  pfpeterson
  *  standardized header
  *
@@ -146,8 +149,7 @@ public class gsas_filemaker
 	try{
 	    FileOutputStream op= new FileOutputStream(f);
 	    outStream=new OutputStreamWriter(op);
-            DataSetTools.util.SharedData.status_pane.add("The GSAS file "
-                                                         +"name is "+filename);
+            SharedData.addmsg("The GSAS file name is "+filename);
 	} catch(Exception e){}
     }
     

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/03/03 17:02:34  pfpeterson
+ *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  *  Revision 1.2  2002/11/27 23:26:45  pfpeterson
  *  standardized header
  *
@@ -84,12 +87,12 @@ public class XmlDWriter extends Writer
     
      if( DS == null)
       {
-        DataSetTools.util.SharedData.status_pane.add(" No Data sets to write");
+        DataSetTools.util.SharedData.addmsg(" No Data sets to write");
         return;
       }
      if( DS.length < 1)
      {
-        DataSetTools.util.SharedData.status_pane.add(" No Data sets to write");
+        DataSetTools.util.SharedData.addmsg(" No Data sets to write");
         return;
       }
      if( zip)
@@ -114,7 +117,7 @@ public class XmlDWriter extends Writer
      fo.close();
      }
      catch( Exception s)
-      { DataSetTools.util.SharedData.status_pane.add( "Exception="+
+      { DataSetTools.util.SharedData.addmsg( "Exception="+
              s.getClass()+":"+s.getMessage());
         return;
       }

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/03/03 16:49:16  pfpeterson
+ *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  *  Revision 1.10  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -160,14 +163,12 @@ public class IntAttribute extends    Attribute
     while(!done)
      {
       if( !xml_utils.skipAttributes( stream ) )
-       {DataSetTools.util.SharedData.status_pane.add(
-        xml_utils.getErrorMessage());
+       {DataSetTools.util.SharedData.addmsg(xml_utils.getErrorMessage());
         return false;
         }
       String v= xml_utils.getValue( stream);
       if( v== null)
-        {DataSetTools.util.SharedData.status_pane.add(
-                xml_utils.getErrorMessage());
+        {DataSetTools.util.SharedData.addmsg(xml_utils.getErrorMessage());
          return false;
         }
       if( key.equals( "name"))
@@ -183,15 +184,13 @@ public class IntAttribute extends    Attribute
           value = (new Integer( v)).intValue();
           }
        catch( Exception s)
-          { DataSetTools.util.SharedData.status_pane.add(
-              "Error"+s.getMessage()); 
+          { DataSetTools.util.SharedData.addmsg("Error"+s.getMessage()); 
              return false;
            
            }
        key=  xml_utils.getTag( stream );
        if( key == null)
-         {DataSetTools.util.SharedData.status_pane.add(
-                    xml_utils.getErrorMessage());
+         {DataSetTools.util.SharedData.addmsg(xml_utils.getErrorMessage());
           return false;
           }
        if( key.trim().equals("/IntAttribute"))
@@ -200,7 +199,7 @@ public class IntAttribute extends    Attribute
          if(fd.equals("nv"))
            return true;
          else
-          {DataSetTools.util.SharedData.status_pane.add(
+          {DataSetTools.util.SharedData.addmsg(
               "Did not Set both field in IntAttribute");
            return false;
           }

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/03/03 16:54:29  pfpeterson
+ *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  *  Revision 1.3  2002/12/10 22:13:53  pfpeterson
  *  Fixed javadoc
  *
@@ -63,13 +66,12 @@ public class XmlDFileRetriever extends Retriever
     zip = false;
     if(data_source_name == null)
       {errFile = true;
-       DataSetTools.util.SharedData.status_pane.add( "No data source");
+       DataSetTools.util.SharedData.addmsg("No data source");
        return;
       }
     if(data_source_name.length() <4)
       {errFile = true;
-       DataSetTools.util.SharedData.status_pane.add( 
-         "Improper filename extension");
+       DataSetTools.util.SharedData.addmsg("Improper filename extension");
        return;
       }
     if( data_source_name.substring( data_source_name.length()-3)
@@ -82,7 +84,7 @@ public class XmlDFileRetriever extends Retriever
         
            }
        catch( Exception ss)
-         { DataSetTools.util.SharedData.status_pane.add(
+         { DataSetTools.util.SharedData.addmsg(
              "Exception="+ss.getClass()+":"+ss.getMessage());
            errFile= true;
           }
@@ -132,7 +134,7 @@ public class XmlDFileRetriever extends Retriever
                
              }
             else
-              { DataSetTools.util.SharedData.status_pane.add( 
+              { DataSetTools.util.SharedData.addmsg( 
                     "improper nesting of DataSet tags" );
                 return;
               }
@@ -293,16 +295,14 @@ public class XmlDFileRetriever extends Retriever
    else
      {ZipEntry ze=zf.getEntry("Entry"+data_set_num);
       if( ze == null)
-       { DataSetTools.util.SharedData.status_pane.add(
-            "No zip entry "+data_set_num);
+       { DataSetTools.util.SharedData.addmsg("No zip entry "+data_set_num);
          return null;
        }
       try{
        fi= zf.getInputStream( ze);
          }
       catch( Exception s2)
-         {DataSetTools.util.SharedData.status_pane.add(
-            "No zip entry "+data_set_num);
+         {DataSetTools.util.SharedData.addmsg("No zip entry "+data_set_num);
          return null;
          }
       }
@@ -341,16 +341,14 @@ public class XmlDFileRetriever extends Retriever
     else
       {ZipEntry ze=zf.getEntry("Entry"+data_set_num);
       if( ze == null)
-       { DataSetTools.util.SharedData.status_pane.add(
-            "No zip entry "+data_set_num);
+       { DataSetTools.util.SharedData.addmsg("No zip entry "+data_set_num);
          return Retriever.INVALID_DATA_SET;
        }
       try{
         fi= zf.getInputStream( ze);
          }
       catch( Exception s2)
-         {DataSetTools.util.SharedData.status_pane.add(
-            "No zip entry "+data_set_num);
+         {DataSetTools.util.SharedData.addmsg("No zip entry "+data_set_num);
          return Retriever.INVALID_DATA_SET;
          }
       }
