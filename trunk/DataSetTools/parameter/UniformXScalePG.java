@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/09/09 23:33:17  bouzekc
+ * Added definition of type to the constructors.
+ *
  * Revision 1.2  2003/09/09 23:06:31  bouzekc
  * Implemented validateSelf().
  *
@@ -77,6 +80,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
 
   //~ Instance fields **********************************************************
 
+  private final String TYPE     = "UniformXScale";
   private final float TOLERANCE = 0.001f;
   private StringEntry start;
   private StringEntry end;
@@ -93,6 +97,8 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
    */
   public UniformXScalePG( String name, Object val ) {
     super( name, val );
+
+    this.type = TYPE;
   }
 
   /**
@@ -107,6 +113,8 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
    */
   public UniformXScalePG( String name, Object val, boolean valid ) {
     super( name, val, valid );
+
+    this.type = TYPE;
   }
 
   /**
@@ -124,6 +132,8 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     UniformXScale scale = new UniformXScale( start, end, steps );
 
     setValue( scale );
+
+    this.type = TYPE;
   }
 
   /**
@@ -143,6 +153,8 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     UniformXScale scale = new UniformXScale( start, end, steps );
 
     setValue( scale );
+
+    this.type = TYPE;
   }
 
   //~ Methods ******************************************************************

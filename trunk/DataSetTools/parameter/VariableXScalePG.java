@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/09/09 23:33:18  bouzekc
+ * Added definition of type to the constructors.
+ *
  * Revision 1.2  2003/09/09 22:59:57  bouzekc
  * Implemented validateSelf() and changed superclass to FloatArrayPG.
  *
@@ -66,6 +69,10 @@ import javax.swing.JFrame;
  * and a Vector, respectively.
  */
 public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
+  //~ Instance fields **********************************************************
+
+  private final String TYPE = "VariableXScale";
+
   //~ Constructors *************************************************************
 
   /**
@@ -77,6 +84,7 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
   public VariableXScalePG( String name, Object val ) {
     super( name, val );
     setParam( new FloatPG( "Enter divisions", 0.0f ) );
+    this.type = TYPE;
   }
 
   /**
@@ -89,6 +97,7 @@ public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
   public VariableXScalePG( String name, Object val, boolean valid ) {
     super( name, val, valid );
     setParam( new FloatPG( "Enter divisions", 0.0f ) );
+    this.type = TYPE;
   }
 
   //~ Methods ******************************************************************
