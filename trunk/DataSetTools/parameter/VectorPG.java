@@ -32,6 +32,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/06/09 22:35:52  rmikk
+ * Changed JFrames to JDialog's in a JFrame so they work with
+ *    the JParametersDialog system
+ * The entry widget that gets one element of a Vector is now
+ *    in the same window as the JList of values.
+ * Reduced the need to click as many buttons to get a list in
+ *
  * Revision 1.4  2003/06/06 18:49:44  pfpeterson
  * Made abstract and removed clone method.
  *
@@ -66,7 +73,9 @@ import java.util.*;
 *   A vector of choicelist should go through this constructor
 */
 abstract public class VectorPG extends ParameterGUI
-                                              implements PropertyChangeListener
+                                              implements PropertyChangeListener,
+                                                         ActionListener
+                                                        
   {
     String typeName;
     ParameterGUI param;
@@ -94,17 +103,18 @@ abstract public class VectorPG extends ParameterGUI
    public VectorPG( ParameterGUI param, String Prompt) 
       {super();
        typeName = param.getType()+"Array";
+       
        this.param = param;
        setName( Prompt);
        pcs = new PropertyChangeSupport( this);
 
-       GUI = new MJPanel();
+       GUI = new MJPanel( param );
        GUI.addPropertyChangeListener( new MyPropertyChangeListener() );
-      
+       entrywidget = butt;
        butt = new JButton( param.getName());
        buttonHolder = new JPanel( new GridLayout( 1,1) );
        buttonHolder.add( butt );
-       butt.addActionListener(  new ButtonListener());
+       butt.addActionListener(  this );
       }
 
    /**
@@ -118,8 +128,38 @@ abstract public class VectorPG extends ParameterGUI
        GUI.addPropertyChangeListener( this );
       }
 
+   public JComponent getEntryWidget()
+     {
 
+      return (JComponent)butt;
+     }
+  
+   Vector listeners = new Vector();
+   public void addActionListener( ActionListener listener)
+     {
+       listeners.addElement( listener);
+
+
+     }
+
+   public void removeActionListener( ActionListener listener)
+     {
+
+      listeners.remove( listener);
+
+     }
+
+   public void notifyActionListeners( String command)
+     {
+
+      for( int i=0; i< listeners.size(); i++)
+       ((ActionListener) listeners.elementAt(i)).actionPerformed( 
+            new ActionEvent( this, ActionEvent.ACTION_PERFORMED, command));
+
+
+     }
    /**
+
    *    Removes the property change listener 
    */
    public void removePropertyChangeListener(PropertyChangeListener listener)
@@ -177,11 +217,15 @@ abstract public class VectorPG extends ParameterGUI
      {
       if( isShowing) 
             return;
-       JFrame jf = new JFrame( param.getName() );
-       jf.setSize( 500, 300);
-          
-       jf.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE);
-       jf.addWindowListener( new MyWindowListener() );
+       
+       JFrame frame = new JFrame( param.getName()+" List");
+       frame.setSize( 500, 300);
+       GUI.setJFrame( frame);
+       JDialog jf = new JDialog(frame ,param.getName() ,true);
+       
+       jf.setSize( 500,300);   
+       frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE);
+       frame.addWindowListener( new MyWindowListener() );
           
        jf.getContentPane().setLayout( new GridLayout( 1,1));
 
@@ -189,7 +233,7 @@ abstract public class VectorPG extends ParameterGUI
        jf.invalidate();
        isShowing = true;
        jf.show();
-
+       
 
       }
 
@@ -197,8 +241,7 @@ abstract public class VectorPG extends ParameterGUI
    boolean isShowing = false;
    // Called when the original button is pressed. It creates the JFrame that stores the
    //  list box and editting buttons, etc.
-   class ButtonListener implements ActionListener
-    {
+  
 
       
       public void actionPerformed( ActionEvent evt )
@@ -207,7 +250,6 @@ abstract public class VectorPG extends ParameterGUI
          }
       
 
-     }
 
    // Used to ensure there is only one copy of a window up
    class MyWindowListener extends WindowAdapter
@@ -244,6 +286,7 @@ abstract public class VectorPG extends ParameterGUI
 
      }
 
+ 
    //This has the listbox and editting buttons for fixing an array
    class MJPanel  extends JPanel implements ActionListener
     {JList jlist;
@@ -252,13 +295,17 @@ abstract public class VectorPG extends ParameterGUI
      PropertyChangeSupport pcs;
      Vector oldVector;
      boolean firstAdd = false;
-      public MJPanel()
+     ParameterGUI  param;
+     JFrame jf = null;
+      public MJPanel( ParameterGUI param)
         {
           super( new BorderLayout() );
          
           oldVector = getValues();
           jlistModel = new DefaultListModel();
+
           jlist = new JList( jlistModel );
+          this.param = param;
           if( oldVector != null)
              for( int i=0; i< oldVector.size() ; i++)
                 jlistModel.addElement( oldVector.elementAt( i ));
@@ -279,6 +326,7 @@ abstract public class VectorPG extends ParameterGUI
           jp.add( Edit );
           jp.add( OK );
           add( jp, BorderLayout.EAST);
+          
 
           Up.addActionListener( this);
           Down.addActionListener( this);
@@ -287,7 +335,21 @@ abstract public class VectorPG extends ParameterGUI
           Delete.addActionListener( this);
           Edit.addActionListener( this);
           OK.addActionListener( this);
+
+          JPanel JP = new JPanel( new BorderLayout() );
+ 
+          param.init();
+ 
+          JP.add( param.getEntryWidget(), BorderLayout.CENTER);
+          JButton OOk = new JButton( "Set Value");
+          JP.add( OOk, BorderLayout.EAST);         
+          add(JP, BorderLayout.NORTH);
+          
           invalidate();
+          OOk.addActionListener( new OOkActionListener());
+          if( param instanceof VectorPG)
+            ((VectorPG) param).addPropertyChangeListener( new OOkActionListener() );
+          //param.addPropertyChangeListener( new OOkActionListener() );
           pcs = new PropertyChangeSupport( this );
           
          }
@@ -322,7 +384,15 @@ abstract public class VectorPG extends ParameterGUI
              param.setValue( jlistModel.elementAt(pos));
     
            }
-         if( isShowing)
+
+         if( param instanceof VectorPG)
+           {
+             ((VectorPG)param).actionPerformed( new ActionEvent(this,
+                  ActionEvent.ACTION_PERFORMED, "NEW"));
+
+            }
+          return;
+         /*if( isShowing)
            {
             return; 
             }
@@ -340,7 +410,7 @@ abstract public class VectorPG extends ParameterGUI
          JFrame jjf = new JFrame( param.getName());
          jjf.getContentPane().setLayout( new BorderLayout() );
          jjf.getContentPane().add( param.getGUIPanel(), BorderLayout.CENTER);
-         JButton OOk = new JButton( "OK");
+         JButton OOk = new JButton( "Set Value");
          jjf.getContentPane().add(OOk, BorderLayout.SOUTH);
          jjf.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE);
           jjf.addWindowListener( new MWindowListener());
@@ -352,6 +422,7 @@ abstract public class VectorPG extends ParameterGUI
          jjf.show();
          
          isShowing = true;  
+       */
          }
       boolean isShowing = false;
       class MWindowListener extends WindowAdapter
@@ -359,6 +430,7 @@ abstract public class VectorPG extends ParameterGUI
           public void windowClosed(WindowEvent e)
             {
               isShowing = false;
+             
              }
 
 
@@ -388,6 +460,12 @@ abstract public class VectorPG extends ParameterGUI
                   
            }
          }//OOkActionListener
+
+      public void setJFrame( JFrame jf)
+        {
+          this.jf = jf;
+         
+        }
 
       public void actionPerformed( ActionEvent evt)
         {
@@ -431,6 +509,11 @@ abstract public class VectorPG extends ParameterGUI
               Vector newVector = getValues();
               pcs.firePropertyChange("DataChanged", oldVector, newVector);
               oldVector = newVector;
+             
+              if( jf == null)
+                return;
+              jf.dispose();
+              
              }
 
 
