@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/05/21 20:10:30  pfpeterson
+ * Turned MyActionList into a private class so there is not conflicts
+ * when compiling the whole package.
+ *
  * Revision 1.1  2003/05/21 17:33:39  rmikk
  * -Initial Checkin.  Base for other intermediate length array entries
  *
@@ -433,8 +437,7 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
 
       }      
 
-  }
-class MyActionList implements ActionListener
+static class MyActionList implements ActionListener
   {
    VectorPG vpf;
    public MyActionList( VectorPG vpg)
@@ -451,3 +454,4 @@ class MyActionList implements ActionListener
       }
 
    }
+  }
