@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.56  2004/01/21 17:55:08  bouzekc
+ * processPaths() now handles the case of an empty String path.
+ *
  * Revision 1.55  2004/01/08 22:26:05  bouzekc
  * Added code to handle Wrappable Objects.
  *
@@ -873,6 +876,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         
         String[] paths=StringUtil.split(ScrPaths,";");
         for(int i=0 ; i<paths.length ; i++ ){
+          //ignore empty elements
+          if( !paths[i].trim( ).equals( "" )  ) {
             if(isJar(paths[i])){
                 ProcessJar(paths[i],opList);
             }else{
@@ -883,6 +888,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                     // do something
                 }
             }
+          }
         }
         
         return;
