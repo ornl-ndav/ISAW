@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/10/02 14:40:52  rmikk
+ * Eliminated? an array out of bounds error
+ *
  * Revision 1.12  2003/09/18 15:55:35  rmikk
  * -Added a parameter useTransB to the END of the argument list
  *
@@ -1090,7 +1093,13 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
                   Attribute.PIXEL_INFO_LIST));
       return Res;
   }
- 
+  /**
+  *   Return a new set of yvalues that correspond to the old set of yvalues
+  *   rebinned to the new XScale
+  *   @param  yvals  the old set of y values
+  *   @param  xvals  the x values corresponding to the old y values( assumes histogram)
+  *   @param  qu  the new XScale to be rebinned to
+  */ 
   public static float[] Rebin( float[] yvals,float[] xvals, XScale qu){
     float[] xx= qu.getXs();
     float[] Res = new float[ xx.length-1];
@@ -1108,7 +1117,7 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
                  java.lang.Math.max( xx[j],xvals[i]))/(xvals[i-1]-xvals[i]);
        i--;
        if( i > 0)
-       while( (i >=0)&&( xvals[i] <xx[j+1])){
+       while( (i >0)&&( xvals[i] <xx[j+1])){
          Res[j]+= yvals[i-1]*( java.lang.Math.min( xvals[i-1],xx[j+1])-
                  java.lang.Math.max( xx[j],xvals[i]))/(xvals[i-1]-xvals[i]);
          i--;
