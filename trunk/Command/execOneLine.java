@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.48  2003/06/06 22:27:38  pfpeterson
+ * Made reference to Script_Class_List_Handler a static variable.
+ *
  * Revision 1.47  2003/06/03 22:02:52  rmikk
  * -Allows for other Viewer Types that can be added at
  *   a later date
@@ -189,7 +192,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     PropertyChangeSupport PC;
     
     // Contains user supplied operators 
-    Script_Class_List_Handler SH = null;
+    static Script_Class_List_Handler SH = null;
     
     //Error variables
     int perror;                      //position of error on a line
