@@ -33,6 +33,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2003/02/22 23:12:46  dennis
+ *  Now only recalculates the compressed version of the DataSet when
+ *  the DataSet is requested, in case either 1 minute has elapsed, or
+ *  in case more than half of the spectra have been updated by the
+ *  DAS.
+ *
  *  Revision 1.29  2003/02/21 13:14:56  dennis
  *  Calls Reset() method before sending a DataSet, to avoid having to
  *  clone the DataSet first.
@@ -113,12 +119,25 @@ public class LiveDataServer extends    DataSetServer
   private  int     run_number       = -1;
   private  int     current_udp_port = DEFAULT_DAS_UDP_PORT;
 
-  DataSet data_set[]    = new DataSet[0];           // current DataSets
-  int     ds_type[]     = new int[0];               // current DataSet types
-  int     spec_buffer[] = new int[ 16384 ];         // buffer for one part of
+                                                    // maintain compressed 
+                                                    // copies of DataSets and
+                                                    // info on time and number
+                                                    // of updated spectra 
+  CompressedDataSet comp_ds[] = new CompressedDataSet[0];
+  long    comp_time_ms[] = new long[0];
+  int     num_updated[]  = new int[0];
+  boolean new_comp_ds    = true;                    // flag indicating whether
+                                                    // or not the compressed 
+                                                    // DataSet is new
+  
+  DataSet data_set[]     = new DataSet[0];          // current DataSets
+  int     ds_type[]      = new int[0];              // current DataSet types
+  int     spec_buffer[]  = new int[ 16384 ];        // buffer for one part of
                                                     // on spectrum
 
   int     max_seg_id  = 0;                  // size of table of all Data blocks
+  int     ds_index[]  = new int[0];         // list of indices into data_set[]
+                                            // array, indexed by group id
   Data    data_list[] = null;               // table of references to all Data
                                             // blocks.
 
@@ -248,13 +267,20 @@ public class LiveDataServer extends    DataSetServer
       int num_data_sets = rr.numDataSets();
       if ( num_data_sets > 0 )
       {
-        data_set = new DataSet[ num_data_sets ];
-        ds_type = new int[ num_data_sets ];
+        data_set     = new DataSet[ num_data_sets ];
+        ds_type      = new int[ num_data_sets ];
+        comp_ds      = new CompressedDataSet[ num_data_sets ];
+        comp_time_ms = new long[ num_data_sets ];
+        num_updated  = new int[ num_data_sets ];
         for ( int i = 0; i < num_data_sets; i++ )
         {
           ds_type[i] = rr.getType( i ); 
           data_set[i] = rr.getDataSet( i ); 
           SetToZero( data_set[i] );
+
+          comp_ds[i]      = null;
+          comp_time_ms[i] = System.currentTimeMillis();
+          num_updated[i]  = 0;
         }
         data_name = data_set[0].getTitle();
 
@@ -266,6 +292,7 @@ public class LiveDataServer extends    DataSetServer
                                           // the Data blocks, based on seg id
                                           // NOTE: seg_id's start at 1
         data_list = new Data[max_seg_id + 1]; 
+        ds_index  = new int[max_seg_id + 1]; 
         Data d;
         int  id;
         for ( int i = 0; i < num_data_sets; i++ )
@@ -275,6 +302,7 @@ public class LiveDataServer extends    DataSetServer
             d = data_set[i].getData_entry(k);
             id = d.getGroup_ID(); 
             data_list[id] = d;
+            ds_index[id] = i;
           }
         }
         return;
@@ -412,8 +440,8 @@ public class LiveDataServer extends    DataSetServer
         int types[] = new int[ ds_type.length ];
         for ( int i = 0; i < types.length; i++ )
           types[i] = ds_type[i];
-        tcp_io.Reset();
-        tcp_io.Send( types );
+        tcp_io.Reset();                              // must reset since we
+        tcp_io.Send( types );                        // changed the contents
         return;
       }
 
@@ -422,18 +450,20 @@ public class LiveDataServer extends    DataSetServer
         int index = extractIntParameter( command );
 
         if ( index >= 0 && index < ds_type.length )   // valid DataSet index
-        {                                             // so get a copy of a
-                                                      // snapshot of the ds
+        {                    
           DataSet source_ds = data_set[ index ];
-//        DataSet ds        = (DataSet)(source_ds.clone());
 
           if ( source_ds != null )                    // remove observers
           {                                           // before sending
             Date date = new Date( System.currentTimeMillis() );
             source_ds.addLog_entry( "Live Data as of: " + date );
             source_ds.deleteIObservers(); 
-            tcp_io.Reset();
-            tcp_io.Send( source_ds  );
+            CompressedDataSet comp_ds = getCompressedDS(index);
+
+            if ( new_comp_ds )                        // don't reset if we are
+              tcp_io.Reset();                         // just sending the same
+                                                      // compressed ds object
+            tcp_io.Send( comp_ds );
           }
           else                                       
             tcp_io.Send( DataSet.EMPTY_DATA_SET );
@@ -449,20 +479,17 @@ public class LiveDataServer extends    DataSetServer
       {
          if ( status.startsWith( RemoteDataRetriever.DAS_OFFLINE_STRING ) )
          {
-           tcp_io.Reset();
            tcp_io.Send( status );
            return;
          }
 
          if ( status.startsWith( RemoteDataRetriever.NO_DATA_SETS_STRING ) )
          {
-           tcp_io.Reset();
            tcp_io.Send( status + DateUtil.default_string() );
            return;
          }
 
          long time_ms = System.currentTimeMillis();
-         tcp_io.Reset();
          if ( time_ms - last_time_ms > OLD_THRESHOLD )
            tcp_io.Send( RemoteDataRetriever.DATA_OLD_STRING + last_time );
          else
@@ -561,7 +588,39 @@ public class LiveDataServer extends    DataSetServer
                                             DateUtil.default_string()  );
     d.setAttribute( attrib );
 
+    num_updated[ ds_index[id] ]++;                    // count another updated
+                                                      // spectrum for this ds.
     return true;
+  }
+
+
+ /* -------------------------- getCompressedDS ---------------------------- */
+ /**
+  *  Get a compressed form of the specified DataSet.  If there is no compressed
+  *  version available, make a new one.  Also, if the compressed version is
+  *  more than a minute old, or if half of it's spectra have been updated,
+  *  make a new one.
+  */
+  private CompressedDataSet getCompressedDS( int index )
+  {
+    if ( index < 0 || index > comp_ds.length )
+      return null;
+                                 // we need to make a new compressed DataSet if
+                                 // there is none, or if the compressed DataSet
+                                 // is too far out of date.
+    if ( comp_ds[index] == null                                        ||
+         num_updated[index]*2       > data_set[index].getNum_entries() ||
+         System.currentTimeMillis() > comp_time_ms[index] + 60000      ) 
+    {                                        // record the time and reset count
+      num_updated[index]  = 0;
+      comp_time_ms[index] = System.currentTimeMillis();
+      comp_ds[index] = new CompressedDataSet( data_set[index] );
+      new_comp_ds = true;
+    }
+    else
+      new_comp_ds = false;
+
+    return comp_ds[index];
   }
 
 
