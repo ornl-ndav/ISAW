@@ -30,6 +30,10 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.19  2003/11/19 04:06:53  bouzekc
+ *  This class is now a JavaBean.  Added code to clone() to copy all
+ *  PropertyChangeListeners.
+ *
  *  Revision 1.18  2003/10/11 19:04:23  bouzekc
  *  Now implements clone() using reflection.
  *
@@ -48,8 +52,8 @@
  *  already calls this.
  *
  *  Revision 1.13  2003/09/12 20:22:01  rmikk
- *  AddItem(one item only) now adds the item to the entrywidget too. If the
- *    ParameterGUI has been initialized, new entries can be
+ *  AddItem(one item only) now adds the item to the getEntryWidget() too. If the
+ *    ParameterGUI has been getInitialized(), new entries can be
  *    added afterwards.
  *
  *  Revision 1.12  2003/09/09 23:06:28  bouzekc
@@ -65,16 +69,16 @@
  *  Modified to work with new ParameterGUI.
  *
  *  Revision 1.8  2003/08/22 20:12:07  bouzekc
- *  Modified to work with EntryWidget.
+ *  Modified to work with getEntryWidget().
  *
  *  Revision 1.7  2003/08/15 23:56:23  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI.
  *
  *  Revision 1.6  2003/08/15 03:55:34  bouzekc
- *  Removed unnecessary initialized=true statement.
+ *  Removed unnecessary getInitialized()=true statement.
  *
  *  Revision 1.5  2003/08/02 04:52:23  bouzekc
- *  Fixed bug in init() which caused a reinitialization every time entrywidget
+ *  Fixed bug in init() which caused a reinitialization every time getEntryWidget()
  *  was shown.  Now properly updates the GUI when init() is called.
  *
  *  Revision 1.4  2003/06/05 22:34:34  bouzekc
@@ -100,6 +104,7 @@ import DataSetTools.dataset.DataSet;
 import DataSetTools.components.ParametersGUI.EntryWidget;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.beans.PropertyChangeListener;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -116,16 +121,16 @@ abstract public class ChooserPG extends ParameterGUI{
   // ********** Constructors **********
   public ChooserPG(String name, Object val){
     super(name, val);
-    //this.addItem(val);
+    addItem(val);
     setValue(val);
-    this.type=TYPE;
+    this.setType(TYPE);
   }
 
   public ChooserPG(String name, Object val, boolean valid){
     super(name, val, valid);
-    //this.addItem(val);
+    addItem(val);
     setValue(val);
-    this.type=TYPE;
+    this.setType(TYPE);
   }
 
   // ********** Methods to deal with the hash **********
@@ -137,8 +142,8 @@ abstract public class ChooserPG extends ParameterGUI{
     if(this.vals==null) this.vals=new Vector(); // initialize if necessary
     if(val==null) return; // don't add null to the vector
     if(this.vals.indexOf(val)<0) {this.vals.add(val);
-    if( initialized)
-       ((HashEntry)(entrywidget.getComponent(0))).addItem( val);}
+    if( getInitialized())
+       ((HashEntry)(getEntryWidget().getComponent(0))).addItem( val);}
   }
 
   /**
@@ -169,31 +174,36 @@ abstract public class ChooserPG extends ParameterGUI{
 
   /**
    * Returns the value of the selected item if this ParameterGUI has been
-   * initialized.  Otherwise, it returns the internal value.
+   * getInitialized().  Otherwise, it returns the internal value.
    */
   public Object getValue(){
-    Object value=null;
-    if(this.initialized){
-      value=((HashEntry)(entrywidget.getComponent(0))).getSelectedItem();
-    }else{
-      value=this.value;
+    Object val=super.getValue();
+    if(this.getInitialized()){
+      val=((HashEntry)(getEntryWidget().getComponent(0))).getSelectedItem();
     }
-    return value;
+    return val;
   }
 
   /**
    * Sets the value of the parameter.
    */
-  public void setValue(Object value){
-    if(this.initialized){
-      if(value==null){
-        // do nothing
-      }else{
-        ((HashEntry)(entrywidget.getComponent(0))).setSelectedItem(value);
-      }
-    }else{
-      this.value=value;
+  public void setValue(Object val){
+    if(vals == null) {
+      return;
     }
+
+    if(vals.indexOf(val) < 0) {
+      //can't find it, so return
+      return;
+    }
+    
+    //update the GUI part
+    if(this.getInitialized() && val!=null){
+      ((HashEntry)(getEntryWidget().getComponent(0))).setSelectedItem(val);
+    }
+
+    //always update the internal value
+    super.setValue(val);
   }
 
   // ********** IParameterGUI requirements **********
@@ -201,12 +211,12 @@ abstract public class ChooserPG extends ParameterGUI{
    * Allows for initialization of the GUI after instantiation.
    */
   public void initGUI(Vector init_values){
-    if(this.initialized) return;
+    if(this.getInitialized()) return;
     addItem(getValue());
     if(init_values!=null && init_values.size()>0){
-      this.vals=new Vector();
-      if(this.value!=null && this.value!=DataSet.EMPTY_DATA_SET)
-        this.addItem(this.value);
+      Object initVal = getValue();
+      if(initVal!=null && initVal!=DataSet.EMPTY_DATA_SET)
+        this.addItem(initVal);
       if(init_values.size()==1){
         this.setValue(init_values.elementAt(0));
       }else{
@@ -219,10 +229,10 @@ abstract public class ChooserPG extends ParameterGUI{
     }
 
     // set up the combobox
-    entrywidget=new EntryWidget(new HashEntry(this.vals));
+    setEntryWidget(new EntryWidget(new HashEntry(this.vals)));
     super.initGUI();
     //GUI won't properly update without this
-    setValue(value);
+    setValue(getValue());
   }
 
   /**
@@ -258,8 +268,21 @@ abstract public class ChooserPG extends ParameterGUI{
       else
         pg.vals=(Vector)this.vals.clone();
 
-      if( this.initialized ) {
+      if( this.getInitialized() ) {
         pg.initGUI( new Vector(  ) );
+      }
+
+      if( this.getPropListeners(  ) != null ) {
+        java.util.Enumeration e = getPropListeners(  ).keys(  );
+        PropertyChangeListener pcl = null;
+        String propertyName = null;
+
+        while( e.hasMoreElements(  ) ) {
+          pcl            = ( PropertyChangeListener )e.nextElement(  );
+          propertyName   = ( String )getPropListeners(  ).get( pcl );
+
+          pg.addPropertyChangeListener( propertyName, pcl );
+        }
       }
 
       return pg;
@@ -270,6 +293,7 @@ abstract public class ChooserPG extends ParameterGUI{
     } catch( NoSuchMethodException e ) {
       throw new NoSuchMethodError( e.getMessage(  ) );
     } catch( InvocationTargetException e ) {
+      e.printStackTrace();
       throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
     }
   }

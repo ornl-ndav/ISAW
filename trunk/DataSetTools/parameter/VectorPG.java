@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.41  2003/11/19 04:06:54  bouzekc
+ * This class is now a JavaBean.  Added code to clone() to copy all
+ * PropertyChangeListeners.
+ *
  * Revision 1.40  2003/10/11 19:05:47  bouzekc
  * Now implements clone() using reflection.  Changed return type of getParam()
  * from IParameterGUI to ParameterGUI.  Removed unused imports and variables.
@@ -80,16 +84,16 @@
  *
  * Revision 1.27  2003/08/26 18:26:34  bouzekc
  * Made the internal ArrayEntryJPanel protected so that subclasses can use
- * it.  Removed layout setup for entrywidget.
+ * it.  Removed layout setup for getEntryWidget().
  *
  * Revision 1.26  2003/08/22 20:12:06  bouzekc
- * Modified to work with EntryWidget.
+ * Modified to work with getEntryWidget().
  *
  * Revision 1.25  2003/08/22 01:25:45  bouzekc
- * Removed erroneous getEntryWidget() method.
+ * Removed erroneous getgetEntryWidget()() method.
  *
  * Revision 1.24  2003/08/19 21:01:54  bouzekc
- * Removed old entrywidget reference from initGUI().
+ * Removed old getEntryWidget() reference from initGUI().
  *
  * Revision 1.23  2003/08/19 18:49:56  rmikk
  * Arrays retain their initial values.
@@ -275,7 +279,7 @@ public abstract class VectorPG extends ParameterGUI
    * @param value The new value to set the VectorPG to.
    */
   public void setStringValue( String value ) {
-    this.value = ArrayPG.StringtoArray( value );
+    setValue( ArrayPG.StringtoArray( value ) );
   }
 
   /**
@@ -284,7 +288,7 @@ public abstract class VectorPG extends ParameterGUI
    * @return This VectorPG's String value.
    */
   public String getStringValue(  ) {
-    return ArrayPG.ArraytoString( ( Vector )value );
+    return ArrayPG.ArraytoString( ( Vector )getValue(  ) );
   }
 
   /**
@@ -293,16 +297,19 @@ public abstract class VectorPG extends ParameterGUI
    * @param newVal The new value to set the VectorPG to.
    */
   public void setValue( Object newVal ) {
+    Vector vecVal = null;
+
     if( newVal instanceof Vector ) {
-      value = newVal;
+      vecVal = ( Vector )newVal;
     } else if( newVal instanceof String ) {
-      setStringValue( ( String )newVal );
+      vecVal = ArrayPG.StringtoArray( ( String )newVal );
     } else {
-      value = null;
+      vecVal = new Vector(  );
     }
+    super.setValue( vecVal );
 
     if( GUI != null ) {
-      GUI.setValue( value );
+      GUI.setValue( vecVal );
     }
   }
 
@@ -310,11 +317,17 @@ public abstract class VectorPG extends ParameterGUI
    * Gets the value of the Vector
    */
   public Object getValue(  ) {
-    if( value == null ) {
-      return new Vector(  );
+    Object val = super.getValue(  );
+
+    if( GUI != null ) {
+      val = GUI.getValues(  );
     }
 
-    return value;
+    if( val == null ) {
+      val = new Vector(  );
+    }
+
+    return val;
   }
 
   /**
@@ -325,7 +338,7 @@ public abstract class VectorPG extends ParameterGUI
   public void addPropertyChangeListener( PropertyChangeListener listener ) {
     super.addPropertyChangeListener( listener );
 
-    if( initialized ) {
+    if( getInitialized(  ) ) {
       GUI.addPropertyChangeListener( listener );
     }
   }
@@ -340,7 +353,7 @@ public abstract class VectorPG extends ParameterGUI
     String property, PropertyChangeListener listener ) {
     super.addPropertyChangeListener( property, listener );
 
-    if( initialized ) {
+    if( getInitialized(  ) ) {
       GUI.addPropertyChangeListener( property, listener );
     }
   }
@@ -366,11 +379,24 @@ public abstract class VectorPG extends ParameterGUI
       ParameterGUI internalParam = this.getParam(  );
 
       if( internalParam != null ) {
-        pg.setParam( ( ParameterGUI ) internalParam.clone(  ) );
+        pg.setParam( ( ParameterGUI )internalParam.clone(  ) );
       }
 
-      if( this.initialized ) {
+      if( this.getInitialized(  ) ) {
         pg.initGUI( new Vector(  ) );
+      }
+
+      if( getPropListeners(  ) != null ) {
+        java.util.Enumeration e = getPropListeners(  ).keys(  );
+        PropertyChangeListener pcl = null;
+        String propertyName = null;
+
+        while( e.hasMoreElements(  ) ) {
+          pcl            = ( PropertyChangeListener )e.nextElement(  );
+          propertyName   = ( String )getPropListeners(  ).get( pcl );
+
+          pg.addPropertyChangeListener( propertyName, pcl );
+        }
       }
 
       return pg;
@@ -396,7 +422,7 @@ public abstract class VectorPG extends ParameterGUI
    * @param V The Vector to use when initializing this VectorPG.
    */
   public void initGUI( Vector V ) {
-    if( this.initialized ) {
+    if( this.getInitialized(  ) ) {
       return;
     }
 
@@ -406,9 +432,10 @@ public abstract class VectorPG extends ParameterGUI
     GUI = new ArrayEntryJFrame( innerParam );
     GUI.addPropertyChangeListener( DATA_CHANGED, this );
     GUI.setValue( getValue(  ) );
-    vectorButton   = new JButton( innerParam.getName(  ) );
-    entrywidget    = new EntryWidget(  );
-    entrywidget.add( vectorButton );
+    vectorButton = new JButton( innerParam.getName(  ) );
+    setEntryWidget( new EntryWidget(  ) );
+    getEntryWidget(  )
+      .add( vectorButton );
     vectorButton.addActionListener( GUI );
     super.initGUI(  );
   }
@@ -432,7 +459,7 @@ public abstract class VectorPG extends ParameterGUI
   public void removePropertyChangeListener( PropertyChangeListener listener ) {
     super.removePropertyChangeListener( listener );
 
-    if( initialized ) {
+    if( getInitialized(  ) ) {
       GUI.removePropertyChangeListener( listener );
     }
   }
@@ -460,8 +487,8 @@ public abstract class VectorPG extends ParameterGUI
    * show what this VectorPG is an array of.
    */
   protected final void setParam( ParameterGUI param ) {
-    innerParam   = param;
-    this.type    = param.getType(  ) + TYPE;
+    innerParam = param;
+    this.setType( param.getType(  ) + TYPE );
   }
 
   /**
