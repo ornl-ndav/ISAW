@@ -30,6 +30,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2004/02/17 19:08:05  dennis
+ *  Added method to calculate the total counts after getting all
+ *  or part of a DataSet.  This was previously done in the
+ *  getDataSet() method of the LiveDataRetriever class.  However,
+ *  since the system was revised to get partial DataSets, the
+ *  method to get the full data set was bypassed and the TotalCount
+ *  attribute was not being set.
+ *
  *  Revision 1.22  2003/10/16 17:21:24  dennis
  *  Fixed javadocs to build cleanly with jdk 1.4.2
  *
@@ -515,6 +523,8 @@ public class LiveDataManager extends    Thread
      last_command[ data_set_num ] = command;            // save the command.
      next_command[ data_set_num ] = command;
 
+     fixTotalCounts( temp_ds );
+
      if ( data_sets[data_set_num] == null )             // save new DataSet
        data_sets[data_set_num] = temp_ds;
      else                                               // or copy to current DS
@@ -720,16 +730,45 @@ public class LiveDataManager extends    Thread
     }
   }
 
-  /*
-   *  Get a valid DataSet that will be the specified DataSet if it is non-null
-   *  and will be a copy of the EMPTY_DATASET if the specified DataSet is null 
-   */
+/* --------------------------- getValidDataSet -------------------------- */
+/*
+ *  Get a valid DataSet that will be the specified DataSet if it is non-null
+ *  and will be a copy of the EMPTY_DATASET if the specified DataSet is null 
+ */
   private DataSet getValidDataSet( DataSet ds )
   {
     if ( ds == null )
       return (DataSet)DataSet.EMPTY_DATA_SET.clone();
 
     return ds; 
+  }
+
+/* --------------------------- fixTotalCounts -------------------------- */
+/*
+ * fix the total counts attributes and error arrays
+ *
+ */
+  private void fixTotalCounts( DataSet ds )
+  {
+     if ( ds == null )
+       return;
+
+     float y[];
+     float total;
+     Data  d;
+     for ( int i = 0; i < ds.getNum_entries(); i++ )
+     {
+       d = (TabulatedData)ds.getData_entry(i);
+       if ( d != null )
+       { 
+         d.setSqrtErrors( true ); 
+         y = d.getY_values();
+         total = 0;
+         for ( int j = 0; j < y.length; j++ )
+           total+= y[j];
+         d.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, total ) );
+       }
+     }
   }
 
 /* -------------------------------- main --------------------------------- */
