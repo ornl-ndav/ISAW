@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:25:57  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:10:45  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -52,21 +55,40 @@ import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 import devTools.Hawk.classDescriptor.modeledObjects.MethodDefn;
 
 /**
- * @author kramer
- *
+ * This class is used to write information about classes and interfaces to a file in ASCII format.
+ * @author Dominic Kramer
  */
 public class ASCIIPrintFileManager extends PrintManager
 {
+	/**
+	 * Constructor which creates an ASCIIPrintFileManager object to print to the file "file" with access "access"
+	 * @param file The file to print to
+	 * @param access The file's read-write access (i.e. "r", "w", or "rw")
+	 * @throws FileNotFoundException
+	 */
 	public ASCIIPrintFileManager(String file, String access) throws FileNotFoundException
 	{
 		super(file, access);
 	}
-
+	
+	/**
+	 * Constructor which creates an ASCIIPrintFileManager object.  This constructor opens a file chooser to allow the 
+	 * user to choose where to print the information to.
+	 * @param access The read-write access (i.e. "r", "w", or "rw")
+	 * @throws FileNotFoundException
+	 */
 	public ASCIIPrintFileManager(String access) throws FileNotFoundException
 	{
 		super(access);
 	}
-
+	
+	/**
+	 * This adds a shortened source code representation of the Interface object intFd to the file.
+	 * @param tabSize  The number of spaces you want the UML diagram to be moved in from the left of the page
+	 * @param intF The Inteface object to print
+	 * @param shortJava True if you want java names to be shortened
+	 * @param shortOther True if you want non-java names to be shortened
+	 */
 	public void printShortenedSource(int tabSize, Interface intF, boolean shortJava, boolean shortOther)
 	{
 		try
@@ -169,6 +191,13 @@ public class ASCIIPrintFileManager extends PrintManager
 			}
 		}
 		
+		/**
+		 * Prints the introduction.
+		 * @param title The title of the document printed.
+		 * @param date The date the document was printed.
+		 * @param author The author of the document printed
+		 * @param description A description of the document printed.
+		 */
 		public void printIntroduction(String title, String date, String author, String description)
 		{
 			try
@@ -198,6 +227,13 @@ public class ASCIIPrintFileManager extends PrintManager
 			}
 		}
 		
+		/**
+		 * This prints a sub-section heading in the format <br>
+		 * "description"<br>"-----------"
+		 * @param tabSize The number of spaces that the printout is indented from the left of the page
+		 * @param len The number of characters in one line
+		 * @param description The description to print
+		 */
 		public void printSubSectionHeading(int tabSize, int len, String description)
 		{
 			try
@@ -259,6 +295,18 @@ public class ASCIIPrintFileManager extends PrintManager
 			}
 		}
 		
+		/**
+		 * This prints the shortened source code representations of each of the Interface objects in the Vector "vec" as they are read from the
+		 * Vector.  This method takes a reference to a ProgressGUI used to display the progress of the printout.
+		 * @param tabSize The number of space to indent the source code from the left side of the page
+		 * @param vec A Vector of Interface objects
+		 * @param shortJava True if you want to shorten java names
+		 * @param shortOther True if you want to shorten non-java names
+		 * @param gui The ProgressGUI to print the status of the printout as it is being printed.  Note:  you need to create the ProgressGUI in
+		 * one thread and have this method working in a background thread to have the ProgressGUI print information correctly.
+		 * @param increment Each time an Inteface object's info from the Vector vec is printed, increment is the amount of change to add to the
+		 * progress gui's progress bar.
+		 */
 		public void printShortenedSource(int tabSize, Vector vec, boolean shortJava, boolean shortOther, ProgressGUI gui, int increment)
 		{
 			try
@@ -297,7 +345,19 @@ public class ASCIIPrintFileManager extends PrintManager
 				SystemsManager.printStackTrace(e);
 			}
 		}
-		
+
+	/**
+	 * This prints the shortened source code representations of each of the Interface objects in the Vector "vec" alphabetically.  
+	 * This method takes a reference to a ProgressGUI used to display the progress of the printout.
+	 * @param tabSize The number of space to indent the source code from the left side of the page
+	 * @param vec A Vector of Interface objects
+	 * @param shortJava True if you want to shorten java names
+	 * @param shortOther True if you want to shorten non-java names
+	 * @param gui The ProgressGUI to print the status of the printout as it is being printed.  Note:  you need to create the ProgressGUI in
+	 * one thread and have this method working in a background thread to have the ProgressGUI print information correctly.
+	 * @param increment Each time an Inteface object's info from the Vector vec is printed, increment is the amount of change to add to the
+	 * progress gui's progress bar.
+	 */
 		public void printShortenedSourceAlphabetically(int tabSize, Vector vec, boolean shortJava, boolean shortOther, ProgressGUI gui, int increment)
 		{
 			// now to alphabatize the vector
@@ -432,7 +492,17 @@ public class ASCIIPrintFileManager extends PrintManager
 		
 	}
 	
-	public void printUMLDiagramsAlphabetically(Vector vec, int len, int tabSize, boolean shortJava, boolean shortOther, ProgressGUI gui, int increment)
+	/**
+	 * This method takes Vector of Interface objects and alphabatizes them.  Then it prints a UML diagram for each class or 
+	 * interface to the file in alphabetical order.
+	 * @param vec A Vector of Interface objects.
+	 * @param tabSize The number of spaces that a tab contains.
+	 * @param shortJava Set this to true if java names are to be shortened.  For example, 
+	 * java.lang.String will be shortened to String.
+	 * @param shortOther Set this to true if non-java names are to be shortened.  
+	 * @param gui The window that dispalys the progress of the method as it writes the data to the file.
+	 */
+	public void printUMLDiagramsAlphabetically(Vector vec, int tabSize, boolean shortJava, boolean shortOther, ProgressGUI gui)
 	{
 		try
 		{
@@ -534,9 +604,19 @@ public class ASCIIPrintFileManager extends PrintManager
 			System.err.println(e);			
 		}
 	}
-
-	//this will print
-	//    " ------------ "
+	
+	/**
+	 * This method will print a sequence of dashes with | characters on the ends (|--------|).  This method is used in the method 
+	 * printSingleUML(Interface intF, boolean shortJava, boolean shortOther) to help print the 
+	 * UML diagram.
+	 * @param intF The interface whose data is written.
+	 * @param shortJava Set this to true if the java names in the data for the interface are to be shortened.  For example, 
+	 * java.lang.String will be shortened to String.  If you do not set the correct parameter here the sequence of dashes will 
+	 * not be the correct size.
+	 * @param shortOther Set this to true if the java names in the data for the interface are to be shortened.  If you do not 
+	 * set the correct parameter here the sequence of dashes will not be the correct size.
+	 * @return A sequence of dashes.
+	 */
 	public static String getOuterDivider(Interface intF, boolean shortJava, boolean shortOther)
 	{
 		String line1 = " ";
@@ -556,6 +636,18 @@ public class ASCIIPrintFileManager extends PrintManager
 		//ex.  line1 = " --------- "
 	}
 	
+	/**
+	 * This method will print the line in the UML diagram that contains the interface's name.  This method is used in the method 
+	 * printSingleUML(Interface intF, boolean shortJava, boolean shortOther) to help print the 
+	 * UML diagram.
+	 * @param intF The interface whose data is written.
+	 * @param shortJava Set this to true if the java names in the data for the interface are to be shortened.  For example, 
+	 * java.lang.String will be shortened to String.  If you do not set the correct parameter here the sequence of dashes will 
+	 * not be the correct size.
+	 * @param shortOther Set this to true if the java names in the data for the interface are to be shortened.  If you do not 
+	 * set the correct parameter here the sequence of dashes will not be the correct size.
+	 * @return A sequence of dashes.
+	 */
 	public static String getInterfaceNameLine(Interface intF, boolean shortJava, boolean shortOther)
 	{
 		String line2 = "| " + intF.getPgmDefn().getInterface_name(shortJava, shortOther);
@@ -569,9 +661,18 @@ public class ASCIIPrintFileManager extends PrintManager
 		
 	}
 	
-	//this will print
-	//      "|-------------------------|"
-	public static String getInnerDivider(Interface intF, boolean shortJava, boolean shortOther)
+	/**
+	 * This method will print a sequence of dashes (--------).  This method is used in the method 
+	 * printSingleUML(Interface intF, boolean shortJava, boolean shortOther) to help print the 
+	 * UML diagram.
+	 * @param intF The interface whose data is written.
+	 * @param shortJava Set this to true if the java names in the data for the interface are to be shortened.  For example, 
+	 * java.lang.String will be shortened to String.  If you do not set the correct parameter here the sequence of dashes will 
+	 * not be the correct size.
+	 * @param shortOther Set this to true if the java names in the data for the interface are to be shortened.  If you do not 
+	 * set the correct parameter here the sequence of dashes will not be the correct size.
+	 * @return A sequence of dashes.
+	 */	public static String getInnerDivider(Interface intF, boolean shortJava, boolean shortOther)
 	{
 		String line3 = "|";
 			
@@ -581,7 +682,19 @@ public class ASCIIPrintFileManager extends PrintManager
 		line3 = line3 + "|";
 		return line3;
 	}
-		
+	
+	/**
+	 * This method will print a sequence of spaces with | characters on the ends ( |         | ).  This method is used in the method 
+	 * printSingleUML(Interface intF, boolean shortJava, boolean shortOther) to help print the 
+	 * UML diagram.
+	 * @param intF The interface whose data is written.
+	 * @param shortJava Set this to true if the java names in the data for the interface are to be shortened.  For example, 
+	 * java.lang.String will be shortened to String.  If you do not set the correct parameter here the sequence of dashes will 
+	 * not be the correct size.
+	 * @param shortOther Set this to true if the java names in the data for the interface are to be shortened.  If you do not 
+	 * set the correct parameter here the sequence of dashes will not be the correct size.
+	 * @return A sequence of dashes.
+	 */
 	public static String getBlankLine(Interface intF, boolean shortJava, boolean shortOther)
 	{
 		String blank = "|";
@@ -673,7 +786,17 @@ public class ASCIIPrintFileManager extends PrintManager
 			
 		return methLine;
 	}
-		
+	
+	/**
+	 * This prints a UML diagram for the class or interface represented by the Interface object supplied to the method.
+	 * @param intF The interface whose data is written.
+	 * @param shortJava Set this to true if the java names in the data for the interface are to be shortened.  For example, 
+	 * java.lang.String will be shortened to String.  If you do not set the correct parameter here the sequence of dashes will 
+	 * not be the correct size.
+	 * @param shortOther Set this to true if the java names in the data for the interface are to be shortened.  If you do not 
+	 * set the correct parameter here the sequence of dashes will not be the correct size.
+	 * @return A sequence of dashes.
+	 */
 	public void printSingleUML(Interface intF, boolean shortJava, boolean shortOther)
 	{
 		try
