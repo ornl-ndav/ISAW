@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/02/18 22:08:46  pfpeterson
+ *  Fixed reference to deprecated method.
+ *
  *  Revision 1.10  2002/11/27 23:15:15  pfpeterson
  *  standardized header
  *
@@ -109,7 +112,7 @@ public class InstrumentType implements Serializable
            dot;
 
     String temp = file_name.trim();
-    file_name   = StringUtil.fixSeparator( file_name );
+    file_name   = StringUtil.setFileSeparator( file_name );
                                           // Strip the path from the file name
     last_slash = temp.lastIndexOf( File.separator );
     temp = temp.substring( last_slash + 1, temp.length() );
@@ -143,7 +146,7 @@ public class InstrumentType implements Serializable
            dot;
 
     String temp = file_name.trim();
-    file_name   = StringUtil.fixSeparator( file_name );
+    file_name   = StringUtil.setFileSeparator( file_name );
                                           // Strip the path from the file name
     last_slash = temp.lastIndexOf( File.separator );
     temp = temp.substring( last_slash + 1, temp.length() );
@@ -169,7 +172,7 @@ public class InstrumentType implements Serializable
            dot;
 
     String temp = file_name.trim();
-    file_name   = StringUtil.fixSeparator( file_name );
+    file_name   = StringUtil.setFileSeparator( file_name );
                                           // Strip the path from the file name
     last_slash = temp.lastIndexOf( File.separator );
     temp = temp.substring( 0, last_slash+1 );
