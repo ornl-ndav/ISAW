@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/12/15 14:40:30  rmikk
+ * Eliminated some commented out code
+ *
  * Revision 1.7  2003/11/24 00:05:51  rmikk
  * Made error messages include the work NXmonitor
  * Added the error fields to the monitor
@@ -107,23 +110,6 @@ public class NxMonitor{
     ndata = node.getChildNode( "data" );
     NxNode errors = node.getChildNode("errors");
     errormessage ="";
-    /*if( ( ntof == null ) ||( ndata == null ) )
-      for( int i = 0; i < node.getNChildNodes() ; i++ ){
-        NxNode mm = node.getChildNode( i );
-        if( ntof == null )
-          if( mm != null ){
-            Object X = mm.getAttrValue( "axis" );
-            if( X != null )
-              ntof = mm;
-          }
-        if( ndata == null )
-          if( mm != null ){
-            Object X = mm.getAttrValue( "signal" );
-            if( X != null )
-              ndata = mm;
-          }           
-      }
-    */ //make new plug in if monitors have different names
     if( ( ntof == null )||( ndata == null ) ){
       errormessage = "Cannot find the Monitor data here in NxMonitor";
       return true;
