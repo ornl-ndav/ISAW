@@ -31,6 +31,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/12/11 19:40:22  rmikk
+ * Starts with GroupID, Scat Ang, and Tot Count columns
+ * The control buttons have more descriptive names and
+ *    now occupy the whole space in the Panel
+ * A ClearAll( selected) Menu item is not under Select
+ * There now is only one Add window no matter how many
+ *     times the Add button is pressed
+ *
  * Revision 1.1  2003/12/04 20:47:07  rmikk
  * Initial Checkin
  *
@@ -46,7 +54,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;
 import DataSetTools.dataset.*;
-
+import java.awt.*;
 /**
   *  This class is the "ArrayMaker" part of a DataSetViewer that can be used
   *  to sort and select Data Blocks from a DataSet.
@@ -73,21 +81,25 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
       *                    in the TableGenerator View.
       *  @param state  the Viewer state. This is not implemented yet.
       */
-    public DataBlockSelector(DataSet DS, String[] FieldNames, ViewerState state) {
+    public DataBlockSelector(DataSet DS,  ViewerState state) {
         this.DS = DS;
         Fields = new Vector();
         Fields.addElement("Group ID");
-        if (FieldNames != null)
-            for (int i = 0; i < FieldNames.length; i++)
-                if (Fields.indexOf(FieldNames[i]) >= 0)
-                    Fields.addElement(FieldNames[i]);
+        FieldNames = GetFieldNames( state);
+        for (int i = 0; i < FieldNames.length; i++)
+            if (Fields.indexOf(FieldNames[i]) < 0)
+                Fields.addElement(FieldNames[i]);
         tbArray = new TableArray(DS, Fields);
         GroupSort = new Integer[ DS.getNum_entries()];
         for (int i = 0; i < GroupSort.length; i++)
             GroupSort[i] = new Integer(i);
 
     }
+    String[] FieldNames ={"Scat Ang","Total Count"};
+    private String[] GetFieldNames( ViewerState state){
 
+       return FieldNames;
+    }
   
     //---------------------- IArrayMakerDataSet Methods-----------------------
 
@@ -188,25 +200,29 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
     public JComponent[] getSharedControls() {
 
         JComponent[] Res = new JComponent[3];
-        JButton add = new JButton("Add");
+        JButton add = new JButton("Add Field");
 
         add.setToolTipText("Add a new Field");
-        JButton del = new JButton("Delete");
+        JButton del = new JButton("Delete Field");
 
         del.setToolTipText("Delete the last pointed at(clicked) column");
-        JButton sort = new JButton("Sort");
+        JButton sort = new JButton("Sort on Field");
 
         sort.setToolTipText("Sort using the last pointed at(clicked) column");
         add.addActionListener(new AddActionListener());
         del.addActionListener(new DeleteActionListener());
         sort.addActionListener(new SortActionListener());
-        Res[0] = add;
-        Res[1] = del;
-        Res[2] = sort;
+        Res[0] = PutInJPanel(add);
+        Res[1] = PutInJPanel(del);
+        Res[2] = PutInJPanel(sort);
         return Res;
     }
 
-
+    private JPanel PutInJPanel( JComponent comp){
+       JPanel jp = new JPanel( new GridLayout( 1,1));
+       jp.add(comp);
+       return jp;
+    }
     /**
      * Presently returns no Controls
      */   
@@ -220,7 +236,13 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
      * Presently returns NO MenuItems
      */   
     public ViewMenuItem[] getSharedMenuItems() {
-        return new ViewMenuItem[0];
+        JMenuItem jmi = new JMenuItem( "Clear All");
+        ViewMenuItem item = new ViewMenuItem(jmi);
+        jmi.addActionListener( new myClearActionListener());
+        
+        ViewMenuItem[] view_menu= new ViewMenuItem[1];
+        view_menu[0] = item;
+        return view_menu;
     }
 
    
@@ -236,7 +258,9 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
       * Returns null because there are no MenuItems
       */
     public String[] getSharedMenuItemPath() {
-        return null;
+        String[] Res = new String[1];
+        Res[0] = "Select";
+        return Res;
     }
 
 
@@ -245,6 +269,7 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
       * Returns null because there are no MenuItems
       */  
     public String[] getPrivateMenuItemPath() {
+
         return null;
 
     }
@@ -334,8 +359,14 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
             tbView = new table_view(DSS);
       
             listModel = new DefaultListModel();
-            for (int i = 0; i < Fields.size(); i++)
-                listModel.addElement(tbView.getFieldInfo(DS, (String) (Fields.elementAt(i))));
+            for (int i = 0; i < Fields.size(); i++){
+                table_view.FieldInfo fieldinf =(tbView.getFieldInfo(DS, 
+                             (String) (Fields.elementAt(i))));
+                if( fieldinf != null)
+                      listModel.addElement( fieldinf);
+                else
+                   System.out.println("Field not set "+Fields.elementAt(i));
+            }
             Groups = new int[ DS.getNum_entries()];
             for (int i = 0; i < DS.getNum_entries(); i++) 
                 Groups[i] = i;
@@ -645,13 +676,27 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
 
     }//class TableArray
 
- 
+
+    class myWindowAdapter extends WindowAdapter{
+       public void windowClosed(WindowEvent e){
+          opened = false;
+          jf = null;
+       }
+
+    }
+
+
+    boolean opened = false;
+    JFrame jf = null;
     class AddActionListener implements ActionListener {
 
         public void actionPerformed(ActionEvent evt) {
-
-            JFrame jf = new JFrame("Field Names");
-
+            if( opened)
+               return;
+            jf = new JFrame("Field Names");
+            jf.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            jf.addWindowListener( new myWindowAdapter());
+            opened = true;
             jf.setSize(100, 300);
             //------------------ Set up Field Choices -----------------
             DefaultListModel listmod = new DefaultListModel();
@@ -729,7 +774,7 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
             System.exit(0);
         }
         DataSet Ds = DS[DS.length - 1];
-        DataBlockSelector dbSel = new DataBlockSelector(Ds, null, null);
+        DataBlockSelector dbSel = new DataBlockSelector(Ds, null);
         LargeJTableViewComponent tab = new LargeJTableViewComponent(null,
                 (IVirtualArray2D) dbSel.getArray());
         DataSetViewerMaker1 viewer = new DataSetViewerMaker1(Ds, null, dbSel, tab);
@@ -788,7 +833,15 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
         public int showError(String message) {
             System.out.println("in Comparator message=" + message);
             return 0;
-        }
+       }
 
     }
+  class myClearActionListener implements ActionListener{
+     public void actionPerformed( ActionEvent evt){
+        DS.clearSelections();
+
+     }
+
+  }
+
 }
