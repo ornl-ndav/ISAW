@@ -36,6 +36,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/08/01 13:49:38  rmikk
+ *  Sped up the display when the intensity slider was changed.
+ *  Implemented hooks to display countours with arbitrary
+ *    axes handlers
+ *
  *  Revision 1.9  2002/07/30 14:37:10  rmikk
  *  Added the XScaleChooser to the control panel
  *
@@ -93,7 +98,7 @@ import DataSetTools.components.ThreeD.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.retriever.*;
 import gov.noaa.pmel.sgt.dm.*;
-
+import DataSetTools.operator.DataSet.*;
 
 /**
  * Example demonstrating how to use <code>JPlotLayout</code>
@@ -125,6 +130,7 @@ public class ContourView extends DataSetViewer
    JPane gridKeyPane;
    DataSet data_set;
    int sliderTime_index;
+   IAxisHandler  axis1,axis2,axis3;
    //JFrame frame;
    float[] times;
    int ncolors = 200;
@@ -138,13 +144,19 @@ public class ContourView extends DataSetViewer
   // JPanel main= null;
    //---------------------
    JSlider intensity = null;
-
+   JPanel intensitHolder = null;
    int PrevGroup;
    public ContourView( DataSet ds, ViewerState state1 )
+     { this( ds, state1, null,null,null);
+      }
+   public ContourView( DataSet ds, ViewerState state1 ,IAxisHandler axis1,
+                         IAxisHandler axis2, IAxisHandler axis3)
    {
 
       super( ds, state1 );  // Records the data_set and current ViewerState
- 
+      this.axis1 = axis1;
+      this.axis2 = axis2;
+      this.axis3 = axis3;
       data_set = ds;
       state = state1;
       if( !validDataSet() )
@@ -231,14 +243,15 @@ public class ContourView extends DataSetViewer
                         "Intensity") );
      
       intensity.addChangeListener( new MyChange());
-      
+      intensityHolder = new JPanel( new GridLayout(1,1));
+      intensityHolder.add( intensity);
 
      
       
       rpl_Holder = new MyJPanel( rpl_, Color.white);
       rpl_Holder.add( rpl_);
       setLayout(jpEast );
-     
+      rpl_.addFocusListener( new MyFocusListener());
      
        //main.setDividerLocation( .70);
      /*  main = new JPanel();
@@ -296,7 +309,7 @@ public class ContourView extends DataSetViewer
   public void setLayout(JPanel jpEast)
    {jpEast.add( ac );
     jpEast.add(XsclHolder);
-    jpEast.add(intensity);  
+    jpEast.add(intensityHolder);  
     jpEast.add( ConvTableHolder );
     jpEast.add( Box.createHorizontalGlue() );
     main = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,  rpl_Holder,  jpEast, .70f);
@@ -343,7 +356,7 @@ public class ContourView extends DataSetViewer
     main.add( acHolder);
     rpl_Holder.doLayout();
     acHolder.doLayout();
-    System.out.println( "acHolder bounds="+acHolder.getBounds());
+   // System.out.println( "acHolder bounds="+acHolder.getBounds());
     }
   //Will attempt to do box layout horizontally. NOPE cannot do this
   public void setLayout3( JPanel jpEast)
@@ -366,7 +379,10 @@ public class ContourView extends DataSetViewer
 
    private void setData( DataSet ds, int GridContourAttribute )
    {  
-      cd = new ContourData( ds );
+      if( axis1 == null)
+         cd = new ContourData( ds );
+      else
+         cd = new ContourData( ds, axis1, axis2, axis3);
       cd.setXScale( Xscl.getXScale() );
       times = cd.getTimeRange();
      
@@ -707,7 +723,7 @@ public class ContourView extends DataSetViewer
    }
   
    // For testing purposes only
-   public static void main( String[] args )
+   public static void main1( String[] args )
    {
       ViewerState CONTOUR = new ViewerState();
 
@@ -719,7 +735,126 @@ public class ContourView extends DataSetViewer
       //ContourView contour_view = new ContourView(data_set[1], CONTOUR);
 
    }
-   
+   /** Standalone to get Contour views of Qx,Qy,Qz
+   * @param  args[0]  The filename with the data set
+   * @param  args[1]  OPTIONAL, the histogram to view
+   */
+   public static void main( String[] args)
+   { if( args == null)
+       {System.out.println( " Please specify the filename with the data");
+        System.exit(0);
+        }
+      if( args.length <1)
+       {System.out.println( " Please specify the filename with the data");
+        System.exit(0);
+        }
+      String filename = args[0];
+      DataSet[] data_set;
+
+      data_set = new IsawGUI.Util().loadRunfile( filename );
+      int spectra = data_set.length -1;
+      if( args.length > 1)
+        try
+          {
+            spectra = ( new Integer( args[1].trim())).intValue();
+          }
+        catch( Exception ss){}
+     DataSet ds = data_set[spectra];
+     JFrame jf = new JFrame( "Contour View:"+ ds.toString());
+
+     jf.setSize( 400,600);
+     int Choice1 = 0, Choice2 = 1,Choice3 =2;
+    
+    
+     System.out.println("Enter option desired");
+     System.out.println("  a) Qx,Qy vs Qz");
+     System.out.println("  b) Qx,Qz vs Qy");
+     System.out.println("  c) Qy,Qz vs Qx");
+     char c=0;
+     try{
+       while( (c <=32)&&(c!='a') &&(c!='b')&& (c!='c'))
+          c = (char)System.in.read();
+         }
+      catch( Exception u){}
+      if( c =='b')
+        {Choice2 = 2; Choice3 = 1;}
+      else if( c=='c')
+        {Choice1 = 1; Choice2 = 2; Choice3 = 0;}
+      DataSetOperator op = ds.getOperator( "Convert to Q");
+      Object O = op.getResult();
+      if( O instanceof DataSet)
+         ds = (DataSet)O;
+      else
+        {System.out.println( O);
+         System.exit(0);
+        }
+      QxQyQzAxesHandler Qax = new QxQyQzAxesHandler(ds);
+      IAxisHandler Axis1, Axis2, Axis3;
+      if( Choice1 == 0)
+        Axis1 = Qax.getQxAxis();
+      else if( Choice1 ==1)
+        Axis1 = Qax.getQyAxis();
+      else
+        Axis1 = Qax.getQzAxis();
+
+      if( Choice2 == 0)
+        Axis2 = Qax.getQxAxis();
+      else if( Choice2 ==1)
+        Axis2 = Qax.getQyAxis();
+      else
+        Axis2 = Qax.getQzAxis();
+
+      if( Choice3 == 0)
+        Axis3 = Qax.getQxAxis();
+      else if( Choice3 ==1)
+        Axis3 = Qax.getQyAxis();
+      else
+        Axis3 = Qax.getQzAxis();
+    /* for(;;)
+      { try{
+          c=0;
+            String S ="";
+            System.out.println("Enter Group index");
+              c =(char)System.in.read();
+            while( c <=32)
+              {
+               c =(char)System.in.read();
+              }
+              while( c >32)
+              {S = S+c;
+               c =(char)System.in.read();
+              }
+              int GIndex = new Integer( S.trim()).intValue();
+              S ="";
+              System.out.println("Now enter position of time");
+ 
+             while( c <=32)
+              {
+               c =(char)System.in.read();
+              }
+                         while( c >32)
+              {S = S+c;
+               c =(char)System.in.read();
+              }
+            int Tindex = new Integer( S.trim()).intValue();
+           float f =Axis1.getValue( GIndex,Tindex);
+           System.out.println( f);
+           System.out.println( Axis1.getXindex( GIndex, f));
+           }
+        
+        catch(Exception ss){}
+
+       }
+       */
+     ContourView cv = new ContourView( ds, new ViewerState(),Axis1,Axis2,Axis2);
+    jf.getContentPane().setLayout( new GridLayout(1,1));
+    jf.getContentPane().add(cv);
+    jf.validate();
+    jf.show();
+         
+
+
+    } 
    class MyAction implements java.awt.event.ActionListener
    {
       public void actionPerformed( java.awt.event.ActionEvent event )
@@ -778,13 +913,13 @@ public class ContourView extends DataSetViewer
 
          if( obj != intensity )
            return;
-         acChange= XsclChange = XConvChange = false;
          state.set_int ("Contour.Intensity",intensity.getValue());
-         acChange=XsclChange=XConvChange = false;
-         setData( getDataSet(), state.get_int(ViewerState.CONTOUR_STYLE));
-         main.repaint();
+         rpl_Holder.remove( rpl_);
+         rpl_ = makeGraph( times[sliderTime_index], state);
+         rpl_Holder.add( rpl_);
+         rpl_.addMouseListener( new MyMouseListener() );
+         rpl_Holder.validate();
          rpl_.draw();
-        
             
       }
    }
@@ -843,7 +978,6 @@ public class ContourView extends DataSetViewer
       }
    public void redraw( String reason )
    { 
-      
       if( reason == IObserver.DESTROY )
       {
          setData( getDataSet(), GridAttribute.RASTER_CONTOUR );
@@ -875,7 +1009,7 @@ public class ContourView extends DataSetViewer
            if( dct != null )
              if( times != null)
                 dct.showConversions( times[Xindex], index );
-      
+            
            }
         if( Xindex != sliderTime_index) // java.lang.Math.abs(cd.getTime() -x) >.00001)
           { sliderTime_index = Xindex;
@@ -956,29 +1090,32 @@ public class ContourView extends DataSetViewer
       { //JPlotLayout jp = (JPlotLayout)(e.getSource());
          gov.noaa.pmel.sgt.Layer L = rpl_.getFirstLayer();
          gov.noaa.pmel.sgt.Graph g = L.getGraph();
+
         
          if( !( g instanceof CartesianGraph ) )
             return;
          CartesianGraph cg = ( CartesianGraph )g;
 
-       
+        
          double col = cg.getXPtoU( L.getXDtoP( e.getX() ) );
          double row = cg.getYPtoU( L.getYDtoP( e.getY() ) );
          int index = cd.getGroupIndex( row, col );
-         float time = cd.getTime();
-         
+         float time = cd.getTime( row, col);
+       
          if( index < 0)
            return;
+        
          if( index >= getDataSet().getNum_entries())
            return;
-         
+        
          data_set.setPointedAtIndex( index);
          
          data_set.setPointedAtX( time);
          
          data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-
-         //dct.showConversions( time, index ); moved to redraw
+         //redraw(IObserver.POINTED_AT_CHANGED );
+         PrevGroup = index;
+         dct.showConversions( time, index ); 
 
       }
 
@@ -1041,5 +1178,17 @@ public class ContourView extends DataSetViewer
      acHolder.paint(g1);
 
      }
+
+  class MyFocusListener implements FocusListener
+   {
+    public void focusGained(FocusEvent e)
+     { System.out.println("XXX focus gained");
+      }
+
+    public void focusLost(FocusEvent e)
+     { System.out.println("XXX focus Lost");
+      }
+
+   }
 }
 
