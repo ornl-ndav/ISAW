@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2004/07/16 18:58:37  rmikk
+ * Created a new grid whose entries correspond to the given Data Set, not
+ *   to the cloned data set
+ *
  * Revision 1.20  2004/05/29 16:41:10  rmikk
  * Removed commented out code segments
  *
@@ -594,7 +598,9 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          
 
       grid = (UniformGrid)(Grid_util.getAreaGrid( DS, DetNum));
-      UniformGrid.setDataEntriesInAllGrids(DS);
+      //UniformGrid.setDataEntriesInAllGrids(DS);
+      grid = new UniformGrid( grid, false);
+      grid.setData_entries( DS );
       SetUpGroups();
    }
    public void SetUpGroups(){
@@ -641,8 +647,11 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       if( DetNum < 0)
         return;
       grid = (UniformGrid)Grid_util.getAreaGrid( DS, DetNum);
+      
       if( grid == null)
          return;
+      grid = new UniformGrid( grid, false);
+      grid.setData_entries( DS );
       this.DetNum = DetNum;
       MaxRow = grid.num_rows();
       MaxCol = grid.num_cols();
@@ -666,7 +675,9 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
     if( choice != DetNum){
       DetNum = choice;
       grid = (UniformGrid)Grid_util.getAreaGrid( DS, DetNum);
-      UniformGrid.setDataEntriesInAllGrids( DS );
+      grid = new UniformGrid( grid,false);
+      grid.setData_entries( DS );
+      //UniformGrid.setDataEntriesInAllGrids( DS );
       MaxRow = grid.num_rows();
       MaxCol = grid.num_cols();
       SetUpGroups();
