@@ -2,6 +2,10 @@
  * @(#)SpectrometerScatteringFunction.java   0.1  2000/07/26   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.6  2000/08/09 17:09:35  dennis
+ *  Removed extra clone of each Data block that was no longer needed since
+ *  the CLSmooth operation is no longer done as part of this operator.
+ *
  *  Revision 1.5  2000/08/08 21:14:05  dennis
  *  Now adds the GeneralizedEnergyDistribution function operator to the
  *  DataSet.
@@ -194,12 +198,10 @@ public class SpectrometerScatteringFunction extends    DataSetOperator
 
       velocity_in = tof_calc.VelocityFromEnergy( energy_in );
       wvi = WVCON * velocity_in;
-      
-      new_data = (Data)data.clone();
                                         // compensate for detector efficiency
                                         // as a function of neutron velocity   
-      y_vals = new_data.getY_values();
-      x_vals = new_data.getX_scale().getXs();
+      y_vals = data.getY_values();
+      x_vals = data.getX_scale().getXs();
 
       int num_y = y_vals.length;
       new_y_vals = new float[ num_y ];
@@ -235,7 +237,6 @@ public class SpectrometerScatteringFunction extends    DataSetOperator
     
       new_data = data.multiply( conversion_data );
 
-//      new_data.CLSmooth( 500 );
       if ( make_new_ds )
         new_ds.addData_entry( new_data );
       else
