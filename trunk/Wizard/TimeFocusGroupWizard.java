@@ -29,8 +29,16 @@
  * Modified: 
  *
  * $Log$
+ * Revision 1.5  2003/03/19 15:08:33  pfpeterson
+ * Uses the TimeFocusGroupForm rather than TimeFocusForm and GroupingForm.
+ * (Chris Bouzek)
+ *
  * Revision 1.4  2003/03/13 19:00:52  dennis
- * Added $Log:$ comment to include revision information.
+ * Added $Log$
+ * Added Revision 1.5  2003/03/19 15:08:33  pfpeterson
+ * Added Uses the TimeFocusGroupForm rather than TimeFocusForm and GroupingForm.
+ * Added (Chris Bouzek)
+ * Added comment to include revision information.
  *
  */
 
@@ -69,7 +77,7 @@ public class TimeFocusGroupWizard
     StringBuffer s = new StringBuffer();
     s.append("This wizard will let you do time focusing and grouping on ");
     s.append("the spectra in one or more DataSets.  The default values for ");
-    s.append("FocusIDs focus all spectra in the DataSets.");
+    s.append("focusing IDs focus all spectra in the DataSets.");
     w.setHelpMessage(s.toString());
     w.setAboutMessage("This is a work in progress.  02/03/2003, CMB");
 
@@ -90,62 +98,31 @@ public class TimeFocusGroupWizard
     w.setParameter( "GMask",
                     new IntArrayPG( "Group IDs to omit",
                     new String(""), false));
-    w.setParameter( "MonitorRunNumbers",
-                    new IntArrayPG( "Monitor Run numbers",
-                    ((IntArrayPG)(w.getParameter( "RunNumbers" )))
-                    .getStringValue(), false));
     w.setParameter( "RunList",
                     new ArrayPG( "Run List", new Vector(), false));
     w.setParameter( "MonitorRunList",
                     new ArrayPG( "Monitor Run List", new Vector(), false));
 
-    //for TimeFocusForm
-    w.setParameter( "TimeFocusResults",
+    //for TimeFocusGroupForm
+    w.setParameter( "TimeFocusGroupResults",
                     new ArrayPG( "Time Focus Results", new Vector(), false));
     w.setParameter("FocusIDs",
-                   new StringPG("List of IDs to focus", new String(""), false));
+                   new StringPG("List of group IDs to focus", new String("1:50"), false));
     w.setParameter("NewAngle",
                    new FloatPG("New angle in degrees", new Float(30.0f), false));
     w.setParameter("NewFPath",
                    new FloatPG("New final path (m)", new Float(4.0f), false));
-    w.setParameter("MakeNewds",
-                   new BooleanPG("Make new DataSet?", new Boolean(true), false));
-
-    //for GroupingForm
-    w.setParameter("GroupStr",
-                   new StringPG("List of group IDs of the spectra",
-                   new String("1:50"), false));
-    w.setParameter("NewGroupID",
-                   new IntegerPG("Group ID of the new datablock",
-                   new Integer(1), false));
-    w.setParameter( "GroupingResults",
-                    new ArrayPG( "Grouping Results", new Vector(), false));
 
     //for SaveAsGSASForm
     w.setParameter("GSASDir",
                    new DataDirPG( "Directory to save to",
                    new String(""), false));
-    w.setParameter("GSASName",
-                   new StringPG("File name to save to",
-                   new String("GSAS"), false));
     w.setParameter( "ExportMon",
                     new BooleanPG("Export monitor DataSet?",
                     new Boolean(false), false));
     w.setParameter( "SeqNum",
                     new BooleanPG("Use sequential bank numbering?",
                     new Boolean(false), false));
-/*
-    //for LoadMonitorDSForm
-    w.setParameter( "MonitorRunNumbers",
-                    new IntArrayPG( "Enter run numbers",
-                    new String("12358"), false));
-    w.setParameter( "MonitorDataDir",
-                    new DataDirPG( "Enter directory",new String(""), false));
-    w.setParameter( "MonitorInstName",
-                    new InstNamePG( "Enter instrument name",
-                    new InstrumentNameString("GPPD"), false));
-    w.setParameter( "MonitorRunList",
-                    new ArrayPG( "Monitor Run List", new Vector(), false));*/
 
                                                     // Specify the parameters
                                                     // used by the forms and
@@ -156,37 +133,22 @@ public class TimeFocusGroupWizard
     String edit_parms0[] = {"RunNumbers", "DataDir", "InstName", "HNum", "GMask"};
     String result_parms0[] = {"RunList", "MonitorRunList"};
     Form form0 = new CreateMultiFilesForm(  edit_parms0, result_parms0, w );
-/*
-    //load monitor DS form
-    String edit_parms1[] = {"MonitorRunNumbers", "MonitorDataDir", "MonitorInstName"};
-    String result_parms1[] = {"MonitorRunList"};
-    Form form1 = new LoadMonitorDSForm(  edit_parms1, result_parms1, w );*/
 
-    //time focus form
-    String const_parms2[] = {"RunList"};
-    String edit_parms2[] = {"FocusIDs", "NewAngle", "NewFPath", "MakeNewds"};
-    String result_parms2[] = {"TimeFocusResults"};
-    Form form2 = new TimeFocusForm(  const_parms2, edit_parms2, result_parms2, w );
-
-    //grouping form
-    String const_parms3[] = {"TimeFocusResults"};
-    String edit_parms3[] = {"GroupStr", "NewGroupID"};
-    String result_parms3[] = {"GroupingResults"};
-    Form form3 = new GroupingForm(  const_parms3, edit_parms3, result_parms3, w );
+    //time focus and group form
+    String const_parms1[] = {"RunList"};
+    String edit_parms1[] = {"FocusIDs", "NewAngle", "NewFPath"};
+    String result_parms1[] = {"TimeFocusGroupResults"};
+    Form form1 = new TimeFocusGroupForm(  const_parms1, edit_parms1, result_parms1, w );
 
     //save as GSAS form
-    String const_parms4[] = {"GroupingResults"};
-    String edit_parms4[] = {"GSASDir", "GSASName", "ExportMon", "SeqNum"};
-    Form form4 = new SaveAsGSASForm( const_parms4, edit_parms4, w );
+    String const_parms2[] = {"TimeFocusGroupResults", "MonitorRunList", "RunNumbers", "InstName"};
+    String edit_parms2[] = {"GSASDir", "ExportMon", "SeqNum"};
+    Form form2 = new SaveAsGSASForm( const_parms2, edit_parms2, w );
 
     //add the forms
     w.add( form0 );   //CreateMultiFilesForm
-    //w.add( form1 );   //LoadMonitorDSForm
-    w.add( form2 );   //TimeFocusForm
-    w.add( form3 );   //GroupingForm
-    w.add( form4 );   //SaveAsGSASForm
-
-
+    w.add( form1 );   //TimeFocusGroupForm
+    w.add( form2 );   //SaveAsGSASForm
     w.show(0);
   }
 
