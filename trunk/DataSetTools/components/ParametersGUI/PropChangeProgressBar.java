@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/06/17 16:44:21  bouzekc
+ * No longer uses incremental changes.
+ *
  * Revision 1.1  2003/06/16 23:07:23  bouzekc
  * Added to CVS.
  *
@@ -52,7 +55,7 @@ import java.lang.IllegalArgumentException;
 public class PropChangeProgressBar extends JProgressBar implements
                                                           PropertyChangeListener
 {
-  private int increment;
+  private int newVal;
 
   //the name of the property associated with this component
   public static final String VALUE = "Percentage Done";
@@ -65,15 +68,11 @@ public class PropChangeProgressBar extends JProgressBar implements
 
     Object obj = pce.getNewValue();
 
-
     //progress bars need numbers to deal with
     if(obj instanceof Integer)
     {
-      increment = ((Integer)obj).intValue();
-    System.out.println("The current value is: " + this.getValue());
-    System.out.println("The current increment is: " + increment);
-
-      this.setValue( this.getValue() + increment);
+      newVal = ((Integer)obj).intValue();
+      this.setValue(newVal);
     }
     else
       throw new IllegalArgumentException(
