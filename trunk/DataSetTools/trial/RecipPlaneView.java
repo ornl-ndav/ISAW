@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/07/31 22:43:43  dennis
+ * Changed call to WritePeakData to match new method name.
+ *
  * Revision 1.10  2003/07/30 22:04:04  dennis
  * Modified to work with the current PeakData object.
  *
@@ -1467,7 +1470,7 @@ private class WriteFileListener implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
   {
-    PeakData.WritePeaks( all_peaks, "fft_peaks.dat" );
+    PeakData.WritePeakData( all_peaks, "fft_peaks.dat" );
   }
 }
 
