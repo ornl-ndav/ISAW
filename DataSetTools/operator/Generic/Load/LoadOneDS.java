@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/10/11 13:49:41  pfpeterson
+ *  Now has the filename specified using a LoadFileString.
+ *
  *  Revision 1.1  2002/10/10 21:12:46  dennis
  *  Initial form of operator to load selected IDs from one DataSet.
  *
@@ -88,7 +91,7 @@ public class LoadOneDS extends    GenericLoad
       this();
 
       IParameter parameter = getParameter(0);
-      parameter.setValue( file_name );
+      parameter.setValue( new LoadFileString(file_name) );
 
       parameter = getParameter(1);
       parameter.setValue( new Integer(ds_num) );
@@ -105,7 +108,9 @@ public class LoadOneDS extends    GenericLoad
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter("Full File Name:", "" );
+    Parameter parameter;
+
+    parameter=new Parameter("Full File Name:", new LoadFileString("") );
     addParameter( parameter );
 
     parameter = new Parameter("DataSet number (>=0)", new Integer(0) );
@@ -138,9 +143,9 @@ public class LoadOneDS extends    GenericLoad
    */
    public Object getResult()
    {                               
-     String  file_name  = (String)getParameter(0).getValue();
+     String  file_name  = getParameter(0).getValue().toString();
      int     ds_num     = ((Integer)(getParameter(1).getValue()) ).intValue();
-     String  ids_string = (String)getParameter(2).getValue();
+     String  ids_string = getParameter(2).getValue().toString();
 
      int     ids[] = IntList.ToArray( ids_string ); 
 
