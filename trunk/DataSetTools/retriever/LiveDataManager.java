@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2001/08/14 15:11:14  dennis
+ *  Now periodically gets the server status and sends it to the
+ *  LiveDataMonitor.
+ *
  *  Revision 1.13  2001/08/10 19:52:16  dennis
  *  Added test for data_sets[data_set_num] == null in
  *  UpdateDataSetNow() method.
@@ -114,7 +118,7 @@ public class LiveDataManager extends    Thread
 
   public static final int    MIN_DELAY   = 10;       // minimum delay in seconds
   public static final int    MAX_DELAY   = 600;      // maximum delay in seconds
-  public static final String STATUS_CHANGED = "Status Changed";
+  public static final String DATA_CHANGED   = "Data Changed ";
 
   private Vector            listeners   = null;        
   private LiveDataRetriever retriever   = null;
@@ -367,6 +371,7 @@ public class LiveDataManager extends    Thread
          sleep( time_ms / 20 );                     // so a long sleep will
                                                     // end sooner if time_ms
                                                     // is altered. 
+       send_message( retriever.status() );
 
        int n_ds = retriever.numDataSets();
        if (  n_ds != data_sets.length ) 
@@ -375,7 +380,7 @@ public class LiveDataManager extends    Thread
        else if ( n_ds != error_flag )
        {
          error_flag = n_ds;
-         send_message(  "Run 1: "+STATUS_CHANGED );
+         send_message(  DATA_CHANGED + "Run 1: " );
        }
 
        boolean new_runfile = false;
@@ -417,7 +422,7 @@ public class LiveDataManager extends    Thread
     if ( retriever == null )
     {
       error_flag = NO_CONNECTION;
-      send_message( "SetUpLocalCopies 1: "+ STATUS_CHANGED );
+      send_message( DATA_CHANGED + "SetUpLocalCopies 1: " );
     }
 
     else
@@ -427,7 +432,7 @@ public class LiveDataManager extends    Thread
       if ( error_flag != num_ds )
       {
         error_flag = num_ds; 
-        send_message(  "SetUpLocalCopies 2: "+STATUS_CHANGED );
+        send_message(  DATA_CHANGED + "SetUpLocalCopies 2: " );
       }
 
       if ( num_ds < 0 )    
@@ -460,7 +465,7 @@ public class LiveDataManager extends    Thread
           data_sets[i] = retriever.getDataSet(i);
           ignore[i]    = true;
         }
-        send_message(  "SetUpLocalCopies 3: "+STATUS_CHANGED );
+        send_message(  DATA_CHANGED + "SetUpLocalCopies 3: " );
       }
 
       else if ( num_ds > 0 )
@@ -473,7 +478,7 @@ public class LiveDataManager extends    Thread
           data_sets[i].copy( temp_ds );                  // copy notifies any
                                                          // observers of the ds
         }
-        send_message(  "SetUpLocalCopies 4: "+STATUS_CHANGED );
+        send_message(  DATA_CHANGED + "SetUpLocalCopies 4: " );
       }
     }
   }
