@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2002/01/11 22:14:56  dennis
+ *  Temporarilly added names for new Abstract base classs for
+ *  Generic operators for various instruments.
+ *
  *  Revision 1.11  2001/08/15 02:06:44  rmikk
  *  Fixed error if parameter's value is null.
  *
@@ -136,6 +140,7 @@ abstract public class Operator implements Serializable
    public static final String      LOAD                 = "Load";
    public static final String      SAVE                 = "Save";
    public static final String      BATCH                = "Batch";
+
    public static final String    DATA_SET_OPERATOR      = "DataSet Operator";
    public static final String      EDIT_LIST            = "Edit List";
    public static final String      MATH                 = "Math";
@@ -149,7 +154,19 @@ abstract public class Operator implements Serializable
    public static final String        XY_AXIS_CONVERSION = "XY Axes Conversion";
    public static final String      SPECIAL              = "Special";
 
-
+// ####### NOTE: THESE SHOULD BE UN-COMMENTED WHEN A NEW RELEASE IS MADE
+//               WITH INCOMPATIBLE OBJECT SERIALIZATION 
+// public static final String  TOF_DIFFRACTOMETER      = "TOF Diffractometer"; 
+// public static final String  TOF_SCD                 = "TOF SCD"; 
+// public static final String  TOF_SAD                 = "TOF SAD";
+// public static final String  TOF_REFLECTOMETER       = "TOF Reflectometer";
+// public static final String  TOF_DG_SPECTROMETER     = "TOF DG Spectrometer";
+// public static final String  TOF_IDG_SPECTROMETER    = "TOF IDG Spectrometer";
+// public static final String  TRIPLE_AXIS_SPECTROMETER  = "Triple Axis";
+// public static final String  MONO_CHROM_DIFFRACTOMETER = "Mono Chrom Diff";
+// public static final String  MONO_CHROM_SCD            = "Mono Chrom SCD";
+// public static final String  MONO_CHROM_SAD            = "Mono Chrom SAD";
+// public static final String  MONO_CHROM_REFLECTOMETER  = "Mono Chrom REFLECT";
 
    private   String    title;
    protected Vector    parameters;
