@@ -38,6 +38,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.49  2005/02/27 18:38:02  rmikk
+ *  Fixed problem where conversions do not update when the right arrow is
+ *     moved in another view
+ *
  *  Revision 1.48  2005/01/10 15:55:09  dennis
  *  Removed empty statement.
  *
@@ -1446,7 +1450,8 @@ public class ContourView extends DataSetViewer
            }
         int Xindex = getPointedAtXindex();
         
-        if( (PrevGroup != index) && notify)
+        //if( (PrevGroup != index) && notify)
+        if(true)
           {notify = true;
            PrevGroup = index;
            if( dct != null )
