@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/03/14 16:18:13  pfpeterson
+ * Added option to choose centering condition.
+ *
  * Revision 1.7  2003/02/18 22:45:57  pfpeterson
  * Updated deprecated method.
  *
@@ -73,6 +76,7 @@ import java.util.Vector;
 public class Integrate extends GenericTOF_SCD{
   private static final String     TITLE   = "Integrate";
   private static       boolean    DEBUG   = false;
+  private static       Vector     choices = null;
   
   /* ------------------------ Default constructor ------------------------- */ 
   /**
@@ -103,6 +107,7 @@ public class Integrate extends GenericTOF_SCD{
     getParameter(0).setValue(ds);
     getParameter(1).setValue(path);
     getParameter(2).setValue(expname);
+    // parameter 3 keeps its default value
   }
   
   /* --------------------------- getCommand ------------------------------- */ 
@@ -123,9 +128,15 @@ public class Integrate extends GenericTOF_SCD{
    */
   public void setDefaultParameters(){
     parameters = new Vector();
+
+    if( choices==null || choices.size()==0 ) init_choices();
+
     addParameter( new Parameter("Data Set", new SampleDataSet() ) );
     addParameter( new Parameter("Path",new DataDirectoryString()) );
     addParameter( new Parameter("Experiment Name", new String()) );
+    ChoiceListPG clpg=new ChoiceListPG("Centering", choices.elementAt(0));
+    clpg.addItems(choices);
+    addParameter(clpg);
   }
   
   /**
@@ -174,6 +185,7 @@ public class Integrate extends GenericTOF_SCD{
     String path;
     String expname;
     int threashold=1;
+    int centering=0;
 
     // first get the DataSet
     val=getParameter(0).getValue();
@@ -210,6 +222,14 @@ public class Integrate extends GenericTOF_SCD{
     }else{
       return new ErrorString("Experiment Name is null");
     }
+
+    // then the centering condition
+    val=getParameter(3).getValue().toString();
+    centering=choices.indexOf((String)val);
+    if( centering<0 || centering>=choices.size() ) centering=0;
+
+    if( 1==1)
+      return "CENTER("+centering+")="+choices.elementAt(centering);
 
     // now the uncertainty in the peak location
     int dX=2, dY=2, dZ=1;
@@ -362,7 +382,8 @@ public class Integrate extends GenericTOF_SCD{
       for( int k=hkl_lim[1][0] ; k<=hkl_lim[1][1] ; k++ ){
         for( int l=hkl_lim[2][0] ; l<=hkl_lim[2][1] ; l++ ){
           if( h==0 && k==0 && l==0 ) continue; // cannot have h=k=l=0
-          if( ! checkCenter(h,k,l,1) ) continue; // fails centering conditions
+          if( ! checkCenter(h,k,l,centering) ) // fails centering conditions
+            continue;
           peak=pkfac.getHKLInstance(h,k,l);
           peak.nearedge(rcBound[0],rcBound[2],rcBound[1],rcBound[3],
                         zmin,zmax);
@@ -405,6 +426,17 @@ public class Integrate extends GenericTOF_SCD{
     }
     WritePeaks writer=new WritePeaks(intfile,peaks,Boolean.TRUE);
     return writer.getResult();
+  }
+
+  private void init_choices(){
+    choices=new Vector();
+    choices.add("primative");               // 0 
+    choices.add("a centered");              // 1
+    choices.add("b centered");              // 2
+    choices.add("c centered");              // 3
+    choices.add("[f]ace centered");         // 4
+    choices.add("[i] body centered");       // 5
+    choices.add("[r]hombohedral centered"); // 6
   }
 
   /**
@@ -798,26 +830,26 @@ public class Integrate extends GenericTOF_SCD{
    * @return true if the hkl is allowed false otherwise
    */
   private boolean checkCenter(int h, int k, int l, int type){
-    if(type==1){       // primative
+    if(type==0){       // primative
       return true;
-    }else if(type==2){ // a-centered
+    }else if(type==1){ // a-centered
       int kl=(int)Math.abs(k+l);
       return ( (kl%2)==0 );
-    }else if(type==3){ // b-centered
+    }else if(type==2){ // b-centered
       int hl=(int)Math.abs(h+l);
       return ( (hl%2)==0 );
-    }else if(type==4){ // c-centered
+    }else if(type==3){ // c-centered
       int hk=(int)Math.abs(h+k);
       return ( (hk%2)==0 );
-    }else if(type==5){ // [f]ace-centered
+    }else if(type==4){ // [f]ace-centered
       int hk=(int)Math.abs(h+k);
       int hl=(int)Math.abs(h+l);
       int kl=(int)Math.abs(k+l);
       return ( (hk%2)==0 && (hl%2)==0 && (kl%2)==0 );
-    }else if(type==6){ // [i] body-centered
+    }else if(type==5){ // [i] body-centered
       int hkl=(int)Math.abs(h+k+l);
       return ( (hkl%2)==0 );
-    }else if(type==7){ // [r]hombohedral-centered
+    }else if(type==6){ // [r]hombohedral-centered
       int hkl=Math.abs(-h+k+l);
       return ( (hkl%3)==0 );
     }
