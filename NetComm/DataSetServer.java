@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/08/09 21:46:48  dennis
+ *  Uses start_TCP() method to start the TCPServer.
+ *
  *  Revision 1.3  2001/08/09 15:43:35  dennis
  *  Added command GET_NAME.
  *
@@ -231,13 +234,6 @@ public class DataSetServer extends TCPServer
     server.setLogFilename( "TestDataSetServerLog.txt" );
                                          // Start the DataSetServer to listen
                                          // for clients requesting data
-    System.out.println("Starting TCP server...");
-    TCPServiceInit TCPinit;
-    TCPinit = new TCPServiceInit( server, DEFAULT_SERVER_PORT_NUMBER );
-
-    TCPinit.start();
-    System.out.println("TCP server started.");
-    System.out.println();
-
+    server.start_TCP( -1 );
   }
 }

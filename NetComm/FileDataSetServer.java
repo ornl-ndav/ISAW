@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2001/08/09 21:47:26  dennis
+ *  Uses start_TCP() method to start the TCPServer.
+ *
  *  Revision 1.2  2001/08/09 15:35:46  dennis
  *  Added concept of "data_name".  Removed un-needed debug
  *  prints and put other debug prints in "if ( debug_server )" blocks.
@@ -170,16 +173,6 @@ public class FileDataSetServer extends DataSetServer
     server.setLogFilename( "Test_FileDataSetServerLog.txt" );
 
     server.addDataDirectory( "/home/dennis/ARGONNE_DATA/" );
-
-                                         // Start the DataSetServer to listen
-                                         // for clients requesting data
-    System.out.println("Starting TCP server...");
-    TCPServiceInit TCPinit;
-//    TCPinit = new TCPServiceInit( server, DEFAULT_SERVER_PORT_NUMBER );
-    TCPinit = new TCPServiceInit( server, 6089 );
-
-    TCPinit.start();
-    System.out.println("TCP server started.");
-    System.out.println();
+    server.start_TCP( 6089 );
   }
 }
