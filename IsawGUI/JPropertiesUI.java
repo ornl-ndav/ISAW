@@ -29,6 +29,14 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2003/08/06 19:35:07  dennis
+ * When new attributes are to be displayed, this now empties
+ * the current table, then adds the new rows of info, instead
+ * of creating a new table.  The column divider can now be
+ * adjusted to allow more room for the attribute values,
+ * and it does not instantly reset to the middle when new
+ * attributes are displayed.
+ *
  * Revision 1.12  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -77,8 +85,16 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
    */ 
   public JPropertiesUI()
   {
-    DefaultTableModel dtm = new DefaultTableModel();
+    Vector heading = new Vector();
+    heading.addElement("Attribute" ); 
+    heading.addElement("Value");
+
+    Vector data = new Vector();
+
+    DefaultTableModel dtm = new DefaultTableModel( data, heading );
+
     table = new JTable(dtm);
+
     setLayout(new GridLayout(1,1) );
     JScrollPane scrollPane = new JScrollPane(table);
     add( scrollPane );
@@ -107,26 +123,21 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
    */
   public void showAttributes( AttributeList attr_list )
   {
-    Vector heading = new Vector();
-    heading.addElement("Attribute" ); 
-    heading.addElement("Value");
-    Vector data = new Vector();
+    DefaultTableModel dtm = (DefaultTableModel)table.getModel();
+
+    int n_rows = dtm.getRowCount();          // empty the table
+                                             // headings counts as 1 row
+    for ( int i = n_rows-1; i >= 0; i-- )
+      dtm.removeRow(i);
+
     for (int i=0; i<attr_list.getNum_attributes(); i++)
     {
       Attribute attr = attr_list.getAttribute(i);
-        
-      Vector oo = new Vector();
-      oo.addElement(attr.getName()); 
-      oo.addElement(attr.getStringValue());
-      data.addElement(oo);
+      Vector row_data = new Vector();
+      row_data.addElement(attr.getName()); 
+      row_data.addElement(attr.getStringValue());
+      dtm.addRow( row_data );
     }
-    DefaultTableModel dtm = new DefaultTableModel(data, heading);
-    table.setModel(dtm);
-
-                                 // the numbers used don't seem to
-                                 // be important, but setting the 
-                                 // size get's the table to fill out
-    table.setSize( 30, 30 );     // the available space.
 
     ExcelAdapter myAd = new ExcelAdapter(table);
   }
