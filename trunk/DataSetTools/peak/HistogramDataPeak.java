@@ -4,6 +4,10 @@
  * ---------------------------------------------------------------------------
  *
  *  $Log$
+ *  Revision 1.3  2000/07/17 15:21:12  dennis
+ *  Added convenience routines to compute area and moments over the default
+ *  extent of the peak.
+ *
  *  Revision 1.2  2000/07/13 22:19:58  dennis
  *  Added constructor that also specifies the extent factor
  *
@@ -357,6 +361,21 @@ public class HistogramDataPeak implements IPeak,
 
 
   /**
+   *  Calculate the area under the curve over the current default peak extent.
+   *
+   *  @return The area under the peak only, the background or the peak plus
+   *          background depending on the evaluation mode that has been
+   *          set.   (see method: setEvaluationMode())
+   */
+  public float Area( )
+  {
+    float start_x = getPosition() - extent_factor * getFWHM()/2;
+    float end_x   = getPosition() + extent_factor * getFWHM()/2;
+
+    return Area( start_x, end_x );
+  }
+
+  /**
    *  Calculate the "nth" moment of the peak about the peak position over the
    *  interval [a,b].  The values  y(x) * (x-position)**n are summed over
    *  over the interval.  Here x means the position of the bin centers 
@@ -375,6 +394,29 @@ public class HistogramDataPeak implements IPeak,
   {
     return Moment( a, b, getPosition(), n );
   }
+
+  /**
+   *  Calculate the "nth" moment of the peak about the peak position over the
+   *  current default peak extent.  The function  f(x)*(x-position)**n is
+   *  integrated over the specified interval, where "f()" is the peak function
+   *  and "position" is the postion of the peak.
+   *
+   *  @param  n        specifies the order of the moment to calculate. If
+   *                   n <= 0, the area is returned.
+   *
+   *  @return The moment of the peak only, the background or the peak plus
+   *          background depending on the evaluation mode that has been
+   *          set.   (see method: setEvaluationMode())
+   */
+  public float Moment( int n )
+  {
+    float start_x = getPosition() - extent_factor * getFWHM()/2;
+    float end_x   = getPosition() + extent_factor * getFWHM()/2;
+
+    return Moment( start_x, end_x, n );
+  }
+
+
 
 
   /**
@@ -398,6 +440,28 @@ public class HistogramDataPeak implements IPeak,
   {
     float y[] = getEffectiveYValues();
     return NumericalAnalysis.HistogramMoment( x_vals, y, a, b, center, n );
+  }
+
+
+  /**
+   *  Calculate the "nth" moment of the peak about the specified center point
+   *  over the current default peak extent.  The function  f(x)*(x-center)**n is   *  integrated over the specified interval, where "f()" is the peak function
+   *  and "center" is the specified center point.
+   *
+   *  @param  center   the center point for the moment calculation.
+   *  @param  n        specifies the order of the moment to calculate. If
+   *                   n <= 0, the area is returned.
+   *  @return The moment of the peak only, the background or the peak plus
+   *          background depending on the evaluation mode that has been
+   *          set. (see method: setEvaluationMode())
+   *
+   */
+  public float Moment( float center, int n )
+  {
+    float start_x = getPosition() - extent_factor * getFWHM()/2;
+    float end_x   = getPosition() + extent_factor * getFWHM()/2;
+
+    return Moment( start_x, end_x, center, n );
   }
 
 
