@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2003/09/13 22:13:39  bouzekc
+ *  Now uses a Hashtable rather than parallel Vectors to store the list of
+ *  PropertyChangeListeners.
+ *
  *  Revision 1.23  2003/08/30 17:36:52  bouzekc
  *  Added documentation to reflect the need to set the type in the constructor.
  *
@@ -128,7 +132,6 @@ import DataSetTools.util.PropertyChanger;
 import java.awt.*;
 
 import java.beans.*;
-import java.beans.PropertyChangeListener;
 
 import java.util.Vector;
 
@@ -304,7 +307,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     if( this.label == null ) {
       label = new JLabel(  );
     }
-
     label.setText( "  " + this.getName(  ) );
   }
 
@@ -350,7 +352,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    */
   public void addPropertyChangeListener( PropertyChangeListener pcl ) {
     addPCLToVector( pcl );
-
     topPCS.addPropertyChangeListener( pcl );
 
     if( this.initialized ) {
@@ -370,7 +371,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   public void addPropertyChangeListener( 
     String prop, PropertyChangeListener pcl ) {
     addPCLToVector( prop, pcl );
-
     topPCS.addPropertyChangeListener( prop, pcl );
 
     if( this.initialized ) {
@@ -400,9 +400,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     if( this.ignore_prop_change ) {
       return;
     }
-
     this.setValid( false );
-
     topPCS.firePropertyChange( ev );
   }
 
@@ -416,7 +414,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    */
   public void removePropertyChangeListener( PropertyChangeListener pcl ) {
     removePCLFromVector( pcl );
-
     topPCS.removePropertyChangeListener( pcl );
 
     if( this.initialized ) {
@@ -451,14 +448,12 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     if( this.label == null ) {
       this.label = new JLabel(  );
     }
-
     label.setText( "  " + this.getName(  ) );
 
     // create the checkbox
     if( this.validcheck == null ) {
       this.validcheck = new JCheckBox( "" );
     }
-
     this.validcheck.setSelected( this.getValid(  ) );
     this.validcheck.setEnabled( false );
     this.validcheck.setVisible( this.getDrawValid(  ) );
@@ -481,12 +476,10 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
       this.guipanel.setLayout( new BorderLayout(  ) );
 
       JPanel innerpanel = new JPanel( new GridLayout( 1, 2 ) );
-
       innerpanel.add( this.getLabel(  ) );
       innerpanel.add( this.getEntryWidget(  ) );
 
       JPanel checkpanel = new JPanel( new GridLayout( 1, 1 ) );
-
       checkpanel.add( this.validcheck );
       this.guipanel.add( innerpanel, BorderLayout.CENTER );
       this.guipanel.add( checkpanel, BorderLayout.EAST );
@@ -515,14 +508,12 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   protected void showGUIPanel( int x, int y ) {
     if( this.getGUIPanel(  ) != null ) {
       JFrame mw = new JFrame( "Test Display of " + this.getType(  ) );
-
       mw.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
       mw.getContentPane(  )
         .add( this.getGUIPanel(  ) );
       mw.pack(  );
 
       Rectangle pos = mw.getBounds(  );
-
       pos.setLocation( x, y );
       mw.setBounds( pos );
       mw.show(  );
@@ -565,7 +556,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
       } else {
         temp = null;
       }
-
       pcl = ( PropertyChangeListener )propListeners.elementAt( i );
 
       if( temp != null ) {
@@ -583,7 +573,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    */
   private void removePCLFromVector( PropertyChangeListener pcl ) {
     int nameIndex = propListeners.indexOf( pcl );
-
     propListeners.remove( pcl );
 
     if( nameIndex >= 0 ) {
@@ -602,7 +591,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     if( this.validcheck == null ) {  // make the checkbox if it dne
       this.validcheck = new JCheckBox( "" );
     }
-
     this.validcheck.setSelected( this.getValid(  ) );
     this.validcheck.setEnabled( false );
     this.validcheck.setVisible( this.getDrawValid(  ) );
