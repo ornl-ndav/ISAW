@@ -4,6 +4,10 @@
  *  Renamed from MultiRunfileLoader.java
  *  
  *  $Log$
+ *  Revision 1.4  2000/07/31 15:44:48  dennis
+ *  Now uses SpecialStrings for the paramters so that the GUI can create
+ *  appropriate components.
+ *
  *  Revision 1.3  2000/07/21 19:52:01  dennis
  *  Now only do monitor pulse checking for direct geometry spectrometers
  *
@@ -72,11 +76,11 @@ public class SumRunfiles extends    Operator
    *                      in as true for chopper spectrometers such as HRCS,
    *                      and false for other instruments.
    */
-   public SumRunfiles(  String   path, 
-                        String   instrument, 
-                        String   runs,
-                        String   group_mask,
-                        boolean  compare_monitor_pulses  )
+   public SumRunfiles(  DataDirectoryString    path, 
+                        InstrumentNameString   instrument, 
+                        IntListString          runs,
+                        IntListString          group_mask,
+                        boolean                compare_monitor_pulses  )
    {
       super( "Sum Multiple Runfiles" );
 
@@ -104,17 +108,20 @@ public class SumRunfiles extends    Operator
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter("Path to runfiles:", new String("") );
+    Parameter parameter = new Parameter("Path to runfiles:", 
+                          new DataDirectoryString("") );
     addParameter( parameter );
 
     parameter = new Parameter("Instrument file prefix (eg. hrcs)", 
-                               new String("hrcs") );
+                               new InstrumentNameString("hrcs") );
     addParameter( parameter );
 
-    parameter = new Parameter("List of run numbers", new String("") );
+    parameter = new Parameter("List of run numbers", 
+                               new IntListString("") );
     addParameter( parameter );
 
-    parameter = new Parameter("Group IDs to omit", new String("") );
+    parameter = new Parameter("Group IDs to omit", 
+                               new IntListString("") );
     addParameter( parameter );
 
     parameter = new Parameter("Compare monitor pulses?",new Boolean(false));
@@ -218,10 +225,14 @@ public class SumRunfiles extends    Operator
 
                                           // get the parameters specifying the
                                           // runs         
-     String    path        = (String)getParameter(0).getValue();
-     String    instrument  = (String)getParameter(1).getValue();
-     String    run_nums    = (String)getParameter(2).getValue();
-     String    group_mask  = (String)getParameter(3).getValue();
+     String    path        =
+                 ((DataDirectoryString)getParameter(0).getValue()).toString();
+     String    instrument  = 
+                 ((InstrumentNameString)getParameter(1).getValue()).toString();
+     String    run_nums    = 
+                 ((IntListString)getParameter(2).getValue()).toString();
+     String    group_mask  = 
+                 ((IntListString)getParameter(3).getValue()).toString();
      boolean   compare_monitor_pulses
                         = ((Boolean)getParameter(4).getValue()).booleanValue(); 
 
@@ -388,36 +399,35 @@ public class SumRunfiles extends    Operator
 /*  Test case 1 ........................
       String runs = "9898,9899,6100";
       String mask = "";
-      SumRunfiles loader = new SumRunfiles( 
-                                      "/IPNShome/dennis/ARGONNE_DATA/",
-                                      "gppd",
-                                       runs,
-                                       mask,
-                                       true );
+      SumRunfiles loader = new SumRunfiles(
+                 new DataDirectoryString("/IPNShome/dennis/ARGONNE_DATA/"),
+                 new InstrumentNameString("gppd"),
+                 new IntListString(runs),
+                 new IntListString(mask),
+                     true );
 */
 /*  Test case 2 ..........................
 */
       String runs = "2444";
       String mask = "20:30,40:50";
       SumRunfiles loader = new SumRunfiles(
-                                      "/IPNShome/dennis/ARGONNE_DATA/",
-                                      "hrcs",
-                                       runs,
-                                       mask,
-                                       true );
+                 new DataDirectoryString("/IPNShome/dennis/ARGONNE_DATA/"),
+                 new InstrumentNameString("hrcs"),
+                 new IntListString(runs),
+                 new IntListString(mask),
+                     true );
 
 
 /*  Test case 3 .......................... 
       String runs = "979,980,981";
       String mask = "";
-      SumRunfiles loader = new SumRunfiles( 
-                                      "/IPNShome/dennis/ARGONNE_DATA/",
-                                      "HRCS",
-                                       runs,
-                                       mask,
-                                       true );
+      SumRunfiles loader = new SumRunfiles(
+                 new DataDirectoryString("/IPNShome/dennis/ARGONNE_DATA/"),
+                 new InstrumentNameString("hrcs"),
+                 new IntListString(runs),
+                 new IntListString(mask),
+                     true );
 */
-
 
       Object result = loader.getResult();
       if ( result instanceof DataSet[] )
