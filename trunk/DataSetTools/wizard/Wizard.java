@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.89  2003/10/15 05:41:27  bouzekc
+ * Fixed directory relationship bug with new setHelpMessage().
+ *
  * Revision 1.88  2003/10/15 05:35:45  bouzekc
  * Overloaded setHelpMessage to take a File object for more detailed
  * help on wizards.
@@ -665,7 +668,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   public void setHelpMessage( File helpFile ) {
     StringBuffer s     = new StringBuffer(  );
     TextFileReader tfr = null;
-    String fileName    = helpFile.getName(  );
+    String fileName    = helpFile.toString(  );
     fileName           = FilenameUtil.setForwardSlash( fileName );
 
     try {
