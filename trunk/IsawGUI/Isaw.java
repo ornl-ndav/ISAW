@@ -31,12 +31,20 @@
   * Modified:
   *
   *  $Log$
-  *  Revision 1.33  2001/07/13 13:41:28  dennis
-  *  Restoring previous version, accidentally overwritten by Ruth
+  *  Revision 1.34  2001/07/13 15:28:24  neffk
+  *  cleaned up "View" menu.  previously, it was around 700 lines
+  *  of cut'n'pasted code for figuring out what should be done w/
+  *  (tree) selections before popping up a viewer.  this task is now
+  *  in a function called getViewableData(), which deals w/ these
+  *  idiosyncrasies of selection.  also, spent a few hours replacing
+  *  "magic strings" w/ constant values, removing *many* old menu items
+  *  and irrelevant options.  cleaned up parts of the code, but the
+  *  indentation and the like are still in need of work.
   *
   *  Revision 1.31  2001/07/10 14:37:21  chatter
-  *  Fixed the Selected Graph View menuitem. The window still needs to be resized before the
-  *  selected graphs appear in the graph panel. Needs to be fixed.
+  *  Fixed the Selected Graph View menuitem. The window 
+  *  still needs to be resized before the selected graphs 
+  *  appear in the graph panel. Needs to be fixed.
   *
   *  Revision 1.30  2001/07/09 22:17:27  chatter
   *  Changed the User Interface
@@ -72,7 +80,8 @@
   *  Removed unused try{} catch{} block.
   *
   *  Revision 1.15  2001/06/08 14:08:49  chatter
-  *  Added code to create a new IsawProps.dat file in the user home directory if one is not already present
+  *  Added code to create a new IsawProps.dat file in the user home 
+  *  directory if one is not already present
   *
   *  Revision 1.14  2001/06/08 14:03:31  chatter
   *  Changed the name of the Properties file to IsawProps.dat
@@ -128,18 +137,57 @@
  /**
   * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
   * ChopTools and graph packages.
-  *
-  * @version 0.7 
   */
- 
- public class Isaw extends JFrame implements Serializable, IObserver
+public class Isaw 
+  extends JFrame 
+  implements Serializable, IObserver
  {
      
+    private static final String TITLE              = "ISAW version 1.1";
+
+    private static final String FILE_M             = "File";
+    private static final String LOAD_DATA_MI       = "Load Data File(s)";
+    private static final String LOAD_LIVE_DATA_M   = "Load Live Data";
+    private static final String LOAD_SCRIPT_MI     = "Load Script";
+    private static final String LOAD_ISAW_DATA_MI  = "Load ISAW Data";
+    private static final String SAVE_ISAW_DATA_MI  = "Save ISAW Data";
+    private static final String GSAS_EXPORT_MI     = "Export GSAS File";
+    private static final String EXIT_MI            = "Exit";
+
+    private static final String EDIT_M             = "Edit";
+    private static final String SET_GLOBAL_ATTR_MI = "Set Attribute for All Groups";
+    private static final String SET_ATTR_MI        = "Set Attribute(s)";
+    private static final String EDIT_ATTR_MI       = "Edit Attribute(s)";
+    private static final String EDIT_PROPS_MI      = "Edit Properties File";
+    private static final String CLEAR_SELECTION_MI = "Clear Selection";
+    private static final String REMOVE_NODE_MI     = "Remove Selected Node(s)";
+
+    private static final String VIEW_M             = "View";
+    private static final String IMAGE_VIEW_MI      = "Image View";
+    private static final String SCROLL_VIEW_MI     = "Scrolled Graph View";
+    private static final String SELECTED_VIEW_MI   = "Selected Graph View";
+    private static final String THREED_VIEW_MI     = "3D View";
+    private static final String INSTR_VIEW_M       = "Instrument Info";
+
+    private static final String MACRO_M            = "Macros";
+
+    private static final String OPTION_M           = "Options";
+    private static final String METAL_MI           = "Metal Look";
+    private static final String MOTIF_MI           = "Motif Look";
+    private static final String WINDOZE_MI         = "Windows Look";
+ 
+    private static final String OPERATOR_M         = "Operations";
+ 
+    private static final String HELP_M             = "Help";
+    private static final String ABOUT_MI           = "About ISAW";
+ 
+
+
      JTreeUI jtui;
      JPropertiesUI jpui;
      JDataViewUI jdvui;
      JCommandUI jcui;
-     JMenu oMenu = new JMenu("Operations");
+     JMenu oMenu = new JMenu( OPERATOR_M );
      JPopupMenu popup ;
      private PageFormat mPageFormat;
      JTree tree ;
@@ -164,7 +212,7 @@
      public Isaw() 
      {
         
-        super("ISAW version 1.1");
+        super( TITLE );
         my_Isaw = this;
 
     /*    
@@ -230,271 +278,213 @@
      * Sets up the menubar that is used for all operations on DataSets
      * 
      */
-     private void setupMenuBar() 
-      {
+  private void setupMenuBar() 
+  {
         
-         JMenuBar menuBar = new JMenuBar();
-         JMenu fMenu = new JMenu("File");
-         JMenu eMenu = new JMenu("Edit");
-         JMenu vMenu = new JMenu("View");
-         
-         JMenuItem imageView = new JMenuItem("Image View");
-         JMenuItem s_graphView = new JMenuItem("Scrolled Graph View");
-         JMenuItem graphView = new JMenuItem("Selected Graph View");
-         JMenu instrumentInfoView = new JMenu("Instrument Info");
-         JMenuItem threeDView = new JMenuItem("3D View");
- 	   JMenu LiveData = new JMenu("Load Live Data"); 
-         Script_Class_List_Handler SP= new Script_Class_List_Handler();      
-         opMenu macrosMenu = new opMenu(SP, new DSgetArray(jtui), sessionLog , this);
-         macrosMenu.setOpMenuLabel("Macros");
+    JMenuBar menuBar = new JMenuBar();
 
-         JMenu optionMenu = new JMenu("Options");
-         JMenu wMenu = new JMenu("Window");
-         JMenu hMenu = new JMenu("Help");
+    JMenu fMenu = new JMenu( FILE_M );
+    JMenuItem Runfile = new JMenuItem( LOAD_DATA_MI ); 
+    JMenu LiveData = new JMenu( LOAD_LIVE_DATA_M ); 
+    JMenuItem script_loader = new JMenuItem( LOAD_SCRIPT_MI );       
+    JMenuItem fileLoadDataset = new JMenuItem( LOAD_ISAW_DATA_MI );
+    JMenuItem fileSaveData = new JMenuItem( SAVE_ISAW_DATA_MI );
+    JMenuItem fileSaveDataAs = new JMenuItem( GSAS_EXPORT_MI );
+    JMenuItem fileExit = new JMenuItem( EXIT_MI );
+
+
+    JMenu eMenu = new JMenu( EDIT_M );
+    JMenuItem removeSelectedNode = new JMenuItem( REMOVE_NODE_MI );
+    JMenuItem editAttributes = new JMenuItem( EDIT_ATTR_MI );
+    JMenuItem editProps = new JMenuItem( EDIT_PROPS_MI );
+    JMenuItem editSetAttribute = new JMenuItem( SET_ATTR_MI );
+    JMenuItem setGroupAttributes = new JMenuItem( SET_GLOBAL_ATTR_MI );
+    JMenuItem clearSelection = new JMenuItem( CLEAR_SELECTION_MI );
+
+
+    JMenu vMenu = new JMenu( VIEW_M );
+    JMenuItem imageView   = new JMenuItem( IMAGE_VIEW_MI );
+    JMenuItem s_graphView = new JMenuItem( SCROLL_VIEW_MI );
+    JMenuItem graphView   = new JMenuItem( SELECTED_VIEW_MI );
+    JMenuItem threeDView = new JMenuItem( THREED_VIEW_MI );
+    JMenu instrumentInfoView = new JMenu( INSTR_VIEW_M );
+
+
+    Script_Class_List_Handler SP = new Script_Class_List_Handler();      
+    opMenu macrosMenu = new opMenu(SP, new DSgetArray(jtui), sessionLog , this);
+    macrosMenu.setOpMenuLabel( MACRO_M );
+
+
+    JMenu optionMenu = new JMenu( OPTION_M );
+    JMenuItem optionwindowsLook =  new JMenuItem( WINDOZE_MI );
+    JMenuItem optionmetalLook   =  new JMenuItem( METAL_MI );
+    JMenuItem optionmotifLook   =  new JMenuItem( MOTIF_MI );
+
+
+    JMenu hMenu = new JMenu( HELP_M );
+    JMenuItem helpISAW = new JMenuItem( ABOUT_MI );
  
-         JMenuItem fileRunfile = new JMenuItem("Load Entire Runfile(s)");
-         JMenuItem Runfile = new JMenuItem("Load Data File(s)"); 
          
-         JMenuItem fileRunfiles = new JMenuItem("Load Selected Data");
-         JMenuItem fileLoadDataset = new JMenuItem("Load ISAW Data");
-         JMenuItem fileSaveData = new JMenuItem("Save ISAW Data");
-         JMenuItem fileSaveDataAs = new JMenuItem("Export GSAS File");
-         JMenuItem imagePrint = new JMenuItem("Print to File");
-         JMenuItem fileExit = new JMenuItem("Exit");
-         JMenuItem script_loader = new JMenuItem("Load Script");       
-         JMenuItem removeSelectedNode = new JMenuItem("Remove Selected Node");
-         removeSelectedNode.setAccelerator(KeyStroke.getKeyStroke('X', 
- 							KeyEvent.CTRL_MASK, true));
- 	   JMenuItem editUndo = new JMenuItem("Undo");
-         editUndo.setAccelerator(KeyStroke.getKeyStroke('Z', KeyEvent.CTRL_MASK, true));
- 
-         JMenuItem editAttributes = new JMenuItem("Edit Attributes");
-         JMenuItem editProps = new JMenuItem("Edit IsawProps");
-         JMenuItem editSetAttribute = new JMenuItem("Set Attributes");
-         JMenuItem setGroupAttributes = new JMenuItem("Set Attribute For All Groups");
- 	   JMenuItem clearSelection = new JMenuItem("Clear Selection");
- 
-         JMenuItem viewFileSeparator =  new JMenuItem("File Separator");
-         JMenuItem viewLogView =  new JMenuItem("Log View");
-
-         JMenuItem optionwindowsLook =  new JMenuItem("Windows Look");
-         JMenuItem optionmetalLook =  new JMenuItem("Metal Look");
-         JMenuItem optionmotifLook =  new JMenuItem("Motif Look");
+    JMenuItem HRMECS = new JMenuItem("HRMECS Link");
+    JMenuItem LRMECS = new JMenuItem("LRMECS Link");
+    JMenuItem HIPD = new JMenuItem("HIPD Link");
+    JMenuItem SAD = new JMenuItem("SAD Link");
+    JMenuItem SCD = new JMenuItem("SCD Link");
+    JMenuItem SAND = new JMenuItem("SAND Link");
+    JMenuItem POSY1 = new JMenuItem("POSY1 Link");
+    JMenuItem POSY2 = new JMenuItem("POSY2 Link");
+    JMenuItem GLAD = new JMenuItem("GLAD Link");
+    JMenuItem QENS = new JMenuItem("QENS Link");
+    JMenuItem GPPD = new JMenuItem("GPPD Link");
+    JMenuItem SEPD = new JMenuItem("SEPD Link");
+    JMenuItem CHEXS = new JMenuItem("CHEXS Link");
          
-         JMenuItem windowRestoreView =  new JMenuItem("Restore Views");
-         JMenuItem windowMinimizeView =  new JMenuItem("Minimize Views");
-         JMenuItem windowMaximizeView =  new JMenuItem("Maximize Views");
-         JMenuItem windowCloseView =  new JMenuItem("Close Views");
-         JMenuItem windowtileView = new JMenuItem("Tile Views Vertically");
-         JMenuItem windowCascadeView = new JMenuItem("Cascade Views");
-         JMenuItem helpISAW = new JMenuItem("About ISAW");
-         
-         JMenuItem iFrame = new JMenuItem("Internal Frame");
-         JMenuItem eFrame = new JMenuItem("External Frame");
-         
-         JMenuItem eFrame_sg = new JMenuItem("Scrolled Graph External Frame");
-
-         JMenuItem iFrame_sg = new JMenuItem("Scrolled Graph Internal Frame");
-
-         JMenuItem iFrame_threeD = new JMenuItem("3D View Internal Frame");
-         JMenuItem eFrame_threeD = new JMenuItem("3D View External Frame");
-
-         
-         JMenuItem HRMECS = new JMenuItem("HRMECS Link");
-         JMenuItem LRMECS = new JMenuItem("LRMECS Link");
-         JMenuItem HIPD = new JMenuItem("HIPD Link");
-         JMenuItem SAD = new JMenuItem("SAD Link");
-         JMenuItem SCD = new JMenuItem("SCD Link");
-         JMenuItem SAND = new JMenuItem("SAND Link");
-         JMenuItem POSY1 = new JMenuItem("POSY1 Link");
-         JMenuItem POSY2 = new JMenuItem("POSY2 Link");
-         JMenuItem GLAD = new JMenuItem("GLAD Link");
-         JMenuItem QENS = new JMenuItem("QENS Link");
-         JMenuItem GPPD = new JMenuItem("GPPD Link");
-         JMenuItem SEPD = new JMenuItem("SEPD Link");
-         JMenuItem CHEXS = new JMenuItem("CHEXS Link");
-         
-         JMenuItem m_HRMECS = new JMenuItem("HRMECS ");
-         JMenuItem m_LRMECS = new JMenuItem("LRMECS ");
-         JMenuItem m_HIPD = new JMenuItem("HIPD ");
-         JMenuItem m_SAD = new JMenuItem("SAD ");
-         JMenuItem m_SCD = new JMenuItem("SCD ");
-         JMenuItem m_SAND = new JMenuItem("SAND ");
-         JMenuItem m_POSY1 = new JMenuItem("POSY1 ");
-         JMenuItem m_POSY2 = new JMenuItem("POSY2 ");
-         JMenuItem m_GLAD = new JMenuItem("GLAD ");
-         JMenuItem m_QENS = new JMenuItem("QENS ");
-         JMenuItem m_GPPD = new JMenuItem("GPPD ");
-         JMenuItem m_SEPD = new JMenuItem("SEPD ");
-         JMenuItem m_CHEXS = new JMenuItem("CHEXS ");
+    JMenuItem m_HRMECS = new JMenuItem("HRMECS ");
+    JMenuItem m_LRMECS = new JMenuItem("LRMECS ");
+    JMenuItem m_HIPD = new JMenuItem("HIPD ");
+    JMenuItem m_SAD = new JMenuItem("SAD ");
+    JMenuItem m_SCD = new JMenuItem("SCD ");
+    JMenuItem m_SAND = new JMenuItem("SAND ");
+    JMenuItem m_POSY1 = new JMenuItem("POSY1 ");
+    JMenuItem m_POSY2 = new JMenuItem("POSY2 ");
+    JMenuItem m_GLAD = new JMenuItem("GLAD ");
+    JMenuItem m_QENS = new JMenuItem("QENS ");
+    JMenuItem m_GPPD = new JMenuItem("GPPD ");
+    JMenuItem m_SEPD = new JMenuItem("SEPD ");
+    JMenuItem m_CHEXS = new JMenuItem("CHEXS ");
  
  
-         fMenu.add(Runfile);
-         fMenu.add(LiveData);
-         fMenu.add(script_loader);
-       //  fMenu.add(fileRunfile);
-       //  fMenu.add(fileRunfiles);
-         fMenu.add(fileLoadDataset);
-         fMenu.addSeparator();
-         fMenu.add(fileSaveData);
-         fMenu.add(fileSaveDataAs);
-         fMenu.add(imagePrint);
-         fMenu.addSeparator();
-         fMenu.add(fileExit);
+    fMenu.add(Runfile);
+    fMenu.add(LiveData);
+    fMenu.add(script_loader);
+    fMenu.add(fileLoadDataset);
+    fMenu.addSeparator();
+    fMenu.add(fileSaveData);
+    fMenu.add(fileSaveDataAs);
+    fMenu.addSeparator();
+    fMenu.add(fileExit);
  
-        // eMenu.add(editUndo);
- 	   eMenu.add(removeSelectedNode);
-         eMenu.add(editAttributes);
-         eMenu.add(editProps);
-         eMenu.add(editSetAttribute);
-         eMenu.add(setGroupAttributes);
-  	   eMenu.add(clearSelection);
-           
-         //imageView.add(iFrame);
-         //imageView.add(eFrame);
-         //threeDView.add(iFrame_threeD);
-        // threeDView.add(eFrame_threeD);
+    eMenu.add(removeSelectedNode);
+    eMenu.add(editAttributes);
+    eMenu.add(editProps);
+    eMenu.add(editSetAttribute);
+    eMenu.add(setGroupAttributes);
+    eMenu.add(clearSelection);
+      
 
-        // s_graphView.add(iFrame_sg);
-        // s_graphView.add(eFrame_sg);
          
-         instrumentInfoView.add(HRMECS);
-         instrumentInfoView.add(GPPD);
-         instrumentInfoView.add(SEPD);
-         instrumentInfoView.add(LRMECS);
-         instrumentInfoView.add(SAD);
-         instrumentInfoView.add(SAND);
-         instrumentInfoView.add(SCD);
-         instrumentInfoView.add(GLAD);
-         instrumentInfoView.add(HIPD);
-         instrumentInfoView.add(POSY1);
-         instrumentInfoView.add(POSY2);
-         instrumentInfoView.add(QENS);
-         instrumentInfoView.add(CHEXS);
-         
-         boolean found =true;
-         for( int ii =1; (ii<14)&&found;ii++)
-           {String SS =System.getProperty("Inst"+new Integer(ii).toString().trim()+"_Name");
-            if( SS == null) found=false;
-            else
-              {JMenuItem dummy = new JMenuItem(SS);
-               dummy.setToolTipText( System.getProperty("Inst"+new Integer(ii).toString().trim()+"_Path"));
-               dummy.addActionListener( new MenuItemHandler());
-               LiveData.add(dummy);
-               }
+    instrumentInfoView.add(HRMECS);
+    instrumentInfoView.add(GPPD);
+    instrumentInfoView.add(SEPD);
+    instrumentInfoView.add(LRMECS);
+    instrumentInfoView.add(SAD);
+    instrumentInfoView.add(SAND);
+    instrumentInfoView.add(SCD);
+    instrumentInfoView.add(GLAD);
+    instrumentInfoView.add(HIPD);
+    instrumentInfoView.add(POSY1);
+    instrumentInfoView.add(POSY2);
+    instrumentInfoView.add(QENS);
+    instrumentInfoView.add(CHEXS);
+    
+    boolean found =true;
+    for( int ii =1; (ii<14)&&found;ii++)
+      {String SS =System.getProperty("Inst"+new Integer(ii).toString().trim()+"_Name");
+       if( SS == null) found=false;
+       else
+         {JMenuItem dummy = new JMenuItem(SS);
+          dummy.setToolTipText( System.getProperty("Inst"+new Integer(ii).toString().trim()+"_Path"));
+          dummy.addActionListener( new MenuItemHandler());
+          LiveData.add(dummy);
+          }
             }
         
          
-         vMenu.add(imageView);
-         vMenu.add(s_graphView);
-         vMenu.add(graphView);
-         vMenu.add(threeDView);
-         vMenu.add(instrumentInfoView);         
-           
-         optionMenu.add(optionwindowsLook);
-         optionMenu.add(optionmetalLook);
-         optionMenu.add(optionmotifLook);
-         
-        /* wMenu.add(windowRestoreView);
-         wMenu.add(windowMinimizeView);
-         wMenu.add(windowMaximizeView);
-         wMenu.add(windowCloseView);
-         wMenu.add(windowCascadeView);
-         wMenu.add(windowtileView);
-          */     
-         hMenu.add(helpISAW);
-         fileExit.addActionListener(new MenuItemHandler());
-         Runfile.addActionListener(new LoadMenuItemHandler());
- 	   LiveData.addActionListener(new LoadMenuItemHandler());
- 
-         fileRunfile.addActionListener(new LoadMenuItemHandler());
-         fileRunfiles.addActionListener(new LoadMenuItemHandler());
- 
-         script_loader.addActionListener(new ScriptLoadHandler(this));
- 
-         fileSaveData.addActionListener(new MenuItemHandler());
-         fileSaveDataAs.addActionListener(new MenuItemHandler());
-         imagePrint.addActionListener(new MenuItemHandler());
-         
-         graphView.addActionListener(new MenuItemHandler()); 
-              
-         s_graphView.addActionListener(new MenuItemHandler()); 
-         //iFrame_sg.addActionListener(new MenuItemHandler()); 
-         //eFrame_sg.addActionListener(new MenuItemHandler()); 
+    vMenu.add(imageView);
+    vMenu.add(s_graphView);
+    vMenu.add(graphView);
+    vMenu.add(threeDView);
+    vMenu.add(instrumentInfoView);         
+      
+    optionMenu.add(optionwindowsLook);
+    optionMenu.add(optionmetalLook);
+    optionMenu.add(optionmotifLook);
+    
+    hMenu.add(helpISAW);
+    fileExit.addActionListener(new MenuItemHandler());
+    Runfile.addActionListener(new LoadMenuItemHandler());
+    LiveData.addActionListener(new LoadMenuItemHandler());
 
-        // iFrame_threeD.addActionListener(new MenuItemHandler()); 
-       //  eFrame_threeD.addActionListener(new MenuItemHandler()); 
-         threeDView.addActionListener(new MenuItemHandler()); 
-         imageView.addActionListener(new MenuItemHandler());  
+    script_loader.addActionListener(new ScriptLoadHandler(this));
+
+    fileSaveData.addActionListener(new MenuItemHandler());
+    fileSaveDataAs.addActionListener(new MenuItemHandler());
+    
+    graphView.addActionListener(new MenuItemHandler()); 
          
-         HRMECS.addActionListener(new MenuItemHandler());
-         LRMECS.addActionListener(new MenuItemHandler());
-         HIPD.addActionListener(new MenuItemHandler());
+    s_graphView.addActionListener(new MenuItemHandler()); 
+
+    threeDView.addActionListener(new MenuItemHandler()); 
+    imageView.addActionListener(new MenuItemHandler());  
          
-         GPPD.addActionListener(new MenuItemHandler());
-         SEPD.addActionListener(new MenuItemHandler());
-         SAND.addActionListener(new MenuItemHandler());
-         
-         SAD.addActionListener(new MenuItemHandler());
-         SCD.addActionListener(new MenuItemHandler());
-         POSY1.addActionListener(new MenuItemHandler());
-         
-         POSY2.addActionListener(new MenuItemHandler());
-         QENS.addActionListener(new MenuItemHandler());
-         GLAD.addActionListener(new MenuItemHandler());
-         CHEXS.addActionListener(new MenuItemHandler());
-         
-         
-         m_HRMECS.addActionListener(new MenuItemHandler());
-         m_LRMECS.addActionListener(new MenuItemHandler());
-         m_HIPD.addActionListener(new MenuItemHandler());
-         
-         m_GPPD.addActionListener(new MenuItemHandler());
-         m_SEPD.addActionListener(new MenuItemHandler());
-         m_SAND.addActionListener(new MenuItemHandler());
-         
-         m_SAD.addActionListener(new MenuItemHandler());
-         m_SCD.addActionListener(new MenuItemHandler());
-         m_POSY1.addActionListener(new MenuItemHandler());
-         
-         m_POSY2.addActionListener(new MenuItemHandler());
-         m_QENS.addActionListener(new MenuItemHandler());
-         m_GLAD.addActionListener(new MenuItemHandler());
-         m_CHEXS.addActionListener(new MenuItemHandler());
- 
- 
-         viewFileSeparator.addActionListener(new MenuItemHandler());
-         viewLogView.addActionListener(new MenuItemHandler());
-         optionmetalLook.addActionListener(new MenuItemHandler());
-         optionmotifLook.addActionListener(new MenuItemHandler());
-         optionwindowsLook.addActionListener(new MenuItemHandler());
-         fileLoadDataset.addActionListener(new MenuItemHandler());
-         removeSelectedNode.addActionListener(new MenuItemHandler());
- 	   editUndo.addActionListener(new MenuItemHandler());
-         editProps.addActionListener(new AttributeMenuItemHandler());
-         editAttributes.addActionListener(new AttributeMenuItemHandler());
-         editSetAttribute.addActionListener(new AttributeMenuItemHandler());
-         setGroupAttributes.addActionListener(new AttributeMenuItemHandler());
- 	   clearSelection.addActionListener(new AttributeMenuItemHandler());
-         
-         windowRestoreView.addActionListener(new MenuItemHandler());
-         windowMinimizeView.addActionListener(new MenuItemHandler());
-         windowMaximizeView.addActionListener(new MenuItemHandler());
-         windowCloseView.addActionListener(new MenuItemHandler());
-         windowCascadeView.addActionListener(new MenuItemHandler());
-         windowtileView.addActionListener(new MenuItemHandler());
-         helpISAW.addActionListener(new MenuItemHandler());
-        
-         menuBar.add(fMenu);
-         menuBar.add(eMenu);
-         menuBar.add(vMenu);
-         menuBar.add(optionMenu);
-         menuBar.add(oMenu);
-         menuBar.add(macrosMenu);
-         menuBar.add(wMenu);
-         menuBar.add(hMenu);
-         setJMenuBar(menuBar);
-      }
+    HRMECS.addActionListener(new MenuItemHandler());
+    LRMECS.addActionListener(new MenuItemHandler());
+    HIPD.addActionListener(new MenuItemHandler());
+    
+    GPPD.addActionListener(new MenuItemHandler());
+    SEPD.addActionListener(new MenuItemHandler());
+    SAND.addActionListener(new MenuItemHandler());
+    
+    SAD.addActionListener(new MenuItemHandler());
+    SCD.addActionListener(new MenuItemHandler());
+    POSY1.addActionListener(new MenuItemHandler());
+    
+    POSY2.addActionListener(new MenuItemHandler());
+    QENS.addActionListener(new MenuItemHandler());
+    GLAD.addActionListener(new MenuItemHandler());
+    CHEXS.addActionListener(new MenuItemHandler());
+    
+    
+    m_HRMECS.addActionListener(new MenuItemHandler());
+    m_LRMECS.addActionListener(new MenuItemHandler());
+    m_HIPD.addActionListener(new MenuItemHandler());
+    
+    m_GPPD.addActionListener(new MenuItemHandler());
+    m_SEPD.addActionListener(new MenuItemHandler());
+    m_SAND.addActionListener(new MenuItemHandler());
+    
+    m_SAD.addActionListener(new MenuItemHandler());
+    m_SCD.addActionListener(new MenuItemHandler());
+    m_POSY1.addActionListener(new MenuItemHandler());
+    
+    m_POSY2.addActionListener(new MenuItemHandler());
+    m_QENS.addActionListener(new MenuItemHandler());
+    m_GLAD.addActionListener(new MenuItemHandler());
+    m_CHEXS.addActionListener(new MenuItemHandler());
+
+
+    optionmetalLook.addActionListener(new MenuItemHandler());
+    optionmotifLook.addActionListener(new MenuItemHandler());
+    optionwindowsLook.addActionListener(new MenuItemHandler());
+    fileLoadDataset.addActionListener(new MenuItemHandler());
+    removeSelectedNode.addActionListener(new MenuItemHandler());
+    editProps.addActionListener(new AttributeMenuItemHandler());
+    editAttributes.addActionListener(new AttributeMenuItemHandler());
+    editSetAttribute.addActionListener(new AttributeMenuItemHandler());
+    setGroupAttributes.addActionListener(new AttributeMenuItemHandler());
+    clearSelection.addActionListener(new AttributeMenuItemHandler());
+    
+    helpISAW.addActionListener(new MenuItemHandler());
+   
+    menuBar.add(fMenu);
+    menuBar.add(eMenu);
+    menuBar.add(vMenu);
+    menuBar.add(optionMenu);
+    menuBar.add(oMenu);
+    menuBar.add(macrosMenu);
+    menuBar.add(hMenu);
+    setJMenuBar(menuBar);
+  }
  
      /**
      * Adds DataSets to the JTree and makes the tree, properties and
@@ -513,7 +503,8 @@
  	  dss[i].addIObserver(jcui);
  	}
      }
- 
+
+
     /**
      * Adds a modified DataSet to the JTree.
      *
@@ -526,7 +517,7 @@
     }
  
     /**
-     * Implementation of the "Edit Attribute" menu item's actions.
+     * Implementation of the EDIT_ATTR_MI menu item's actions.
      *
      */        
     private class AttributeMenuItemHandler implements ActionListener 
@@ -534,26 +525,28 @@
       public void actionPerformed(ActionEvent ev) 
       { 
         String s=ev.getActionCommand();
-             if(s=="Edit Attributes")
-                 {   
-                     DefaultMutableTreeNode mtn = jtui.getSelectedNode();
-                     JTree tree = jtui.getTree();
-                     DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
-                      if(mtn.getUserObject() instanceof DataSet || mtn.getUserObject() instanceof Data)
-                       {
-                          Object obj = mtn.getUserObject();
-                          JAttributesDialog  jad = new JAttributesDialog(((IAttributeList)obj).getAttributeList(), s);
-                          ((IAttributeList)obj).setAttributeList(jad.getAttributeList());
-                       }
-                 }
-                 if(s=="Edit IsawProps")
-                 {   
-                  propsDisplay();
-                 }
+
+        if( s == EDIT_ATTR_MI )
+        {   
+          DefaultMutableTreeNode mtn = jtui.getSelectedNode();
+          JTree tree = jtui.getTree();
+          DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
+          if(mtn.getUserObject() instanceof DataSet || mtn.getUserObject() instanceof Data)
+          {
+            Object obj = mtn.getUserObject();
+            JAttributesDialog  jad = new JAttributesDialog(((IAttributeList)obj).getAttributeList(), s);
+            ((IAttributeList)obj).setAttributeList(jad.getAttributeList());
+          }
+        }
+
+        if( s == EDIT_PROPS_MI )
+        {   
+          propsDisplay();
+        }
                  
 
                  
-                 if(s=="Set Attributes")
+                 if( s == SET_ATTR_MI )
                  {   
                      DefaultMutableTreeNode mtn = jtui.getSelectedNode();
                     
@@ -586,13 +579,15 @@
                          
                        }
                  }
-                 
- 	if(s=="Clear Selection")
-                 {   
-                     selectionModel.clearSelection();
-                 }
  
-                 if(s=="Set Attribute For All Groups")
+
+         if( s == CLEAR_SELECTION_MI )
+         {   
+           selectionModel.clearSelection();
+         }
+ 
+
+                 if( s == SET_GLOBAL_ATTR_MI )
                  {   
                      DefaultMutableTreeNode mtn = jtui.getSelectedNode();
                     
@@ -662,7 +657,7 @@
              
              String s=ev.getActionCommand();
              
-             if(s=="Load Script")
+             if( s == LOAD_SCRIPT_MI )
                 {
  			String SS = System.getProperty("Script_Path");
                    if(SS == null)
@@ -729,204 +724,14 @@
     }
    }
     
-    private class LoadMenuItemHandler implements ActionListener 
+  private class LoadMenuItemHandler implements ActionListener 
+  {
+    public void actionPerformed( ActionEvent e ) 
     {
-     
-       JFileChooser fc = new JFileChooser( );
-       
-                         
-         public void actionPerformed(ActionEvent ev) 
-         
-         {
-             
-             String s=ev.getActionCommand();
-             
-             if(s=="Load Data File(s)")
- 
-                  { 
-                     try
-                     {  
-
-
-
-               /*         String SS = System.getProperty("Data_Directory");
-                        if(SS == null)
-                            SS =System.getProperty("user.home");
-                         
-                         fc.setCurrentDirectory(new File(SS));
- 				int state = fc.showOpenDialog(null);
-                         if (state ==0 && fc.getSelectedFile() != null)
- 			      {
-                    	  File f = fc.getSelectedFile();
-                           String filename =f.toString();
-                           String fname = f.getName();
-                           System.out.println("The filename is "  + filename);
-                           setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                           //int is  = this.getState();
-                           //this.setState(this.ICONIFIED);
-                           util.appendDoc(sessionLog, "Load " + '"' +filename + '"' );
-                           DataSet[] dss = util.loadRunfile(filename);
-                           addDataSets(dss, fname);
- 				  if(dss[1]!=null)
- 				   {
- 				    // jdvui.ShowDataSet(dss[1],"Internal Frame",IViewManager.IMAGE);
- 				     //dss[1].setPointedAtIndex(0);
- 				    // dss[1].notifyIObservers(IObserver.POINTED_AT_CHANGED);
- 			         }
-                           setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                         //   Isaw.setState(Isaw.NORMAL);
-                        }
-                    */
-
-
-                          String SS = System.getProperty("Data_Directory");
-                        if(SS == null)
-                            SS =System.getProperty("user.home");
-                         
-                         fc.setCurrentDirectory(new File(SS));
- 
- 
- 				fc.setMultiSelectionEnabled(true);
-         			JFrame frame = new JFrame();
-         			int retval = fc.showDialog(frame, null);
- 	  			if(retval == JFileChooser.APPROVE_OPTION) {
- 	    			File theFile = fc.getSelectedFile();
- 	    			if(theFile != null) {
- 				  File [] files = fc.getSelectedFiles();
- 				  if(fc.isMultiSelectionEnabled() && files != null && files.length >= 1) 
-                           {
- 		    		    int size = files.length;
-                             String[] file_name = new String[size];
- 		              
-                             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                             DataSet[] dss=null;
- 		    		    for(int i = 0; i < size; i++) 
-                             {
- 		                   file_name[i] = files[i].getPath();
- 
-                                System.out.println("Print the files in listB  " +file_name[i]);
-                                 util.appendDoc(sessionLog, "Load " + '"' +file_name[i] + '"' );
-
-
-                                 dss = util.loadRunfile(file_name[i]);
-                                 addDataSets(dss, file_name[i]);
-
-
-
-              			/* RunfileRetriever r = new RunfileRetriever( file_name[i] );
-              			 int numberOfDataSets = r.numDataSets();
-                          
-  					 dss = new DataSet[numberOfDataSets];
-                                for (int j = 0; j < numberOfDataSets;j++)                                
-                                  dss[j] = r.getDataSet(j); 
-                                jtui.addDataSets(dss, files[i].getName());
-                               */
- 				    
-                             }
-                            if(dss.length > 1)
-                            if(dss[1]!=null)
- 				   { 		
-                            // jdvui.ShowDataSet( dss[1], "Internal Frame", IViewManager.IMAGE ); 
-                            // dss[1].notifyIObservers(IObserver.POINTED_AT_CHANGED);
- 			         }
-                             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
- 
- 		    		    }
- 		              }
-                        }
-
-                     } 
-                     catch (Exception e){System.out.println("Choose a input file");}
-                    
-                 }
- 
- 
-               
-                 if(s=="Load Entire Runfile(s)")
-                 {
-                     try
-                     {
-                         String SS = System.getProperty("Data_Directory");
-                        if(SS == null)
-                            SS =System.getProperty("user.home");
-                         
-                         fc.setCurrentDirectory(new File(SS));
- 
-                        // int state = fc.showOpenDialog(null);
-                        // if (state == 0 && fc.getSelectedFile() != null)
- 			     // {
-                        	 // LoadFiles db = new 	LoadFiles(jtui,fc.getCurrentDirectory().toString(),jdvui);
-                          // db.setSize(new Dimension(550,300));
-                          // db.show(); 
- 
- 				fc.setMultiSelectionEnabled(true);
-         			JFrame frame = new JFrame();
-         			int retval = fc.showDialog(frame, null);
- 	  			if(retval == JFileChooser.APPROVE_OPTION) {
- 	    			File theFile = fc.getSelectedFile();
- 	    			if(theFile != null) {
- 				  File [] files = fc.getSelectedFiles();
- 				  if(fc.isMultiSelectionEnabled() && files != null && files.length > 1) 
-                           {
- 		    		    int size = files.length;
-                             String[] file_name = new String[size];
- 		              
-                             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                             DataSet[] dss=null;
- 		    		    for(int i = 0; i < size; i++) 
-                             {
- 		                   file_name[i] = files[i].getPath();
- 
-                                System.out.println("Print the files in listB  " +file_name[i]);
- 
-              			 RunfileRetriever r = new RunfileRetriever( file_name[i] );
-              			 int numberOfDataSets = r.numDataSets();
-                          
-  					 dss = new DataSet[numberOfDataSets];
-                                for (int j = 0; j < numberOfDataSets;j++)
-                                
-                                  dss[j] = r.getDataSet(j); 
-                                  jtui.addDataSets(dss, files[i].getName());
- 				    
-                             }
- 		
-                            // jdvui.ShowDataSet( dss[1], "Internal Frame", IViewManager.IMAGE ); 
- 
-                             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
- 
- 		    		    }
- 		              }
-                        }
-                       }
-                     
- 
- 
-                     catch (Exception e){System.out.println("Choose a input file: "+e);}
-                 }
-                 if(s=="Load Selected Data")
-                 {
-                     try
-                     { 
-                        String SS = System.getProperty("Data_Directory");
-                        if(SS == null)
-                            SS =System.getProperty("user.home");
-                         
-                         fc.setCurrentDirectory(new File(SS));
- 
- 				int state = fc.showOpenDialog(null);
- 				if (state ==0 && fc.getSelectedFile() != null)
- 			      {
- 				  File f = fc.getSelectedFile();  
-                        	  ListFiles db = new ListFiles(jtui,fc.getCurrentDirectory().toString());
-                           db.setSize(new Dimension(550,300));
-                           db.show(); 
- 				}
-                     }
-                     catch (Exception e){System.out.println("Choose a input file: ");}
-                 }
-                     
-         } 
+      if(  e.getActionCommand().equals( LOAD_DATA_MI )  )
+        load_runfiles();
     }
+  }
  
  
     private class MenuItemHandler implements ActionListener 
@@ -940,95 +745,51 @@
          {
              String s=ev.getActionCommand();
              
-                 if(s=="Exit")
-                 {
-                     System.exit(0);
-                 }
- 
- 		if(s=="Undo")
-             {
- 	  		try
- 			{
- 				System.out.println("Inside Undo");
- 			}
- 	     		catch(Exception e){};
-             }
-                 if(s=="Print to File")
-                 {
- 		      //    PrintUtilities.printComponent(jdvui.getSelectedFrame());
- 
- 
-   /*
- 			Toolkit toolkit = ISI.getToolkit();
- 			PrinterJob job = toolkit.getPrintJob(jdvui.getSelectedFrame(),"Image",null);
-                 	mPageFormat = pj.pageDialog(mPageFormat);
-                 	ComponentPrintable cp = new ComponentPrintable(jdvui.getSelectedFrame());
-                 	pj.setPrintable(cp, mPageFormat);
-                 	if (pj.printDialog()) 
- 			{
- 				Graphics page  = job.getGraphics();
- 				ISI.print(page);
-                   	try { pj.print(); }
-                     	catch(Exception e) { System.out.println(e); }
- 
- 			 }
- 
- 
-                  try{
-                  internalframe = new MyInternalFrame(jdvui.getSelectedFrame());
-                    }
-               catch(IOException ioe){System.out.println("Printer error:" +ioe.getMessage());}
-       		PrinterJob job = PrinterJob.getPrinterJob();
-       		job.setPrintable(internalframe);
-       		try{
-            			job.print();
-          		}
-       		catch(PrinterException pe){System.out.println("Printer error:" +pe.getMessage());}
- 
- */
-    		  }
+                if( s == EXIT_MI )
+                {
+                  System.exit(0);
+                }
                  
                
           
-                if(s == "Windows Look")
-                 {
-                     try
-                     {
-                         UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-                         SwingUtilities.updateComponentTreeUI(jtui);
-                         SwingUtilities.updateComponentTreeUI(jpui);
-                         SwingUtilities.updateComponentTreeUI(jdvui);
-                         SwingUtilities.updateComponentTreeUI(jcui);
-                     
-                     }
-                     catch(Exception e){ System.out.println("ERROR: setting windows look"); }
-                 }
-                 if(s == "Metal Look")
-                 {
-                     try
-                     {
-                         UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
-                         SwingUtilities.updateComponentTreeUI(jtui);
-                         SwingUtilities.updateComponentTreeUI(jpui);
-                         SwingUtilities.updateComponentTreeUI(jdvui);
-                         SwingUtilities.updateComponentTreeUI(jcui);
-                     }
-                     catch(Exception e){System.out.println("ERROR: setting metal look "); }
-                 }
-                     if(s == "Motif Look")
-                     {
-                         try
-                         {
-                             UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
-                             SwingUtilities.updateComponentTreeUI(jtui);
-                             SwingUtilities.updateComponentTreeUI(jpui);
-                             SwingUtilities.updateComponentTreeUI(jdvui);
-                             SwingUtilities.updateComponentTreeUI(jcui);
-                         }
-                         catch(Exception e){System.out.println("ERROR: setting motif look" ); }
-                     }
+                if( s == WINDOZE_MI )
+                {
+                  try
+                  {
+                    UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+                    SwingUtilities.updateComponentTreeUI(jtui);
+                    SwingUtilities.updateComponentTreeUI(jpui);
+                    SwingUtilities.updateComponentTreeUI(jdvui);
+                    SwingUtilities.updateComponentTreeUI(jcui);
+                  }
+                  catch(Exception e){ System.out.println("ERROR: setting windows look"); }
+                }
+                if( s == METAL_MI )
+                {
+                  try
+                  {
+                    UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+                    SwingUtilities.updateComponentTreeUI(jtui);
+                    SwingUtilities.updateComponentTreeUI(jpui);
+                    SwingUtilities.updateComponentTreeUI(jdvui);
+                    SwingUtilities.updateComponentTreeUI(jcui);
+                  }
+                  catch(Exception e){System.out.println("ERROR: setting metal look "); }
+                }
+                if( s == MOTIF_MI )
+                {
+                  try
+                  {
+                    UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+                    SwingUtilities.updateComponentTreeUI(jtui);
+                    SwingUtilities.updateComponentTreeUI(jpui);
+                    SwingUtilities.updateComponentTreeUI(jdvui);
+                    SwingUtilities.updateComponentTreeUI(jcui);
+                  }
+                  catch(Exception e){System.out.println("ERROR: setting motif look" ); }
+                }
                     
-                    if(s == "Save ISAW Data")
+                    if( s == SAVE_ISAW_DATA_MI )
                      {
                         DefaultMutableTreeNode dn = jtui.getSelectedNode();
                          
@@ -1061,7 +822,7 @@
                          catch(Exception e){System.out.println("Choose a DataSet to Save");}   
                        }
                        
-                       if(s=="Load ISAW Data")
+                       if( s == LOAD_ISAW_DATA_MI )
                        {
                          
                          try
@@ -1433,7 +1194,7 @@
                             fs.setVisible(true);
                       }
                  
-                 if(s == "Export GSAS File")
+                 if( s == GSAS_EXPORT_MI )
                  {
                    //fc = new JFileChooser(new File(System.getProperty("user.dir")) );
                   
@@ -1453,398 +1214,83 @@
                   }
      
                                   
-                  if(s=="Image View" )
+                 if( s == IMAGE_VIEW_MI )
                  {
-    
-                   /*  DefaultMutableTreeNode mtn = jtui.getSelectedNode();
- 
- 
-                      if(  mtn.getLevel()==1)
-                      {
-                      System.out.println("Selected object is :"+mtn.getUserObject()); 
-                        int num_child =  mtn.getChildCount();
-                          for(int i=0; i<num_child; i++)
-                       {DefaultMutableTreeNode child_dataset = (DefaultMutableTreeNode) mtn.getChildAt(i);
-                        DataSet ds = (DataSet)child_dataset.getUserObject();
-                        System.out.println("Child Dataset are" +ds);
-                       }
-                      }
-                      */
-                      DefaultMutableTreeNode mtn = jtui.getSelectedNode();
- 			   if(mtn!=null)
- 			   {
- 
- 
- 
-                       if(  mtn.getLevel()==1)
-                      {  
-                            int num_child =  mtn.getChildCount();
-                        
-                            DataSet mergedDS1 = null;
-                            DataSet mergedDS2 = null;
-                            DataSetOperator  op1, op2;
-                    
-                          
-                            DefaultMutableTreeNode child_dataset0= (DefaultMutableTreeNode) mtn.getChildAt(0);
-                            DefaultMutableTreeNode child_dataset1 = (DefaultMutableTreeNode) mtn.getChildAt(1);
-            
-                            DataSet ds0 = (DataSet)child_dataset0.getUserObject();
-                            DataSet ds1 = (DataSet)child_dataset1.getUserObject();
-                   
-                        if(num_child == 2)
-                         {   
-                             op1 = new DataSetMerge( ds0, ds1 );
-                             mergedDS1 = (DataSet)op1.getResult(); 
- 
- 					jdvui.ShowDataSet(mergedDS1,"External Frame",IViewManager.IMAGE);
- 					mergedDS1.setPointedAtIndex(0);
- 				      mergedDS1.notifyIObservers(IObserver.POINTED_AT_CHANGED);
-                           //  addDataSet(mergedDS1);
-                         }
-                      if(num_child == 3)
-                           
-                         {  
-                             DefaultMutableTreeNode child_dataset2 = (DefaultMutableTreeNode) mtn.getChildAt(2);
-                             DataSet ds2 = (DataSet)child_dataset2.getUserObject();
-                             op1 = new DataSetMerge( ds0, ds1 );
-                             mergedDS1 = (DataSet)op1.getResult(); 
-                             op2 = new DataSetMerge( mergedDS1, ds2 );
-                             mergedDS2 = (DataSet)op2.getResult(); 
-                             
- 					jdvui.ShowDataSet(mergedDS2,"External Frame",IViewManager.IMAGE);
- 					mergedDS2.setPointedAtIndex(0);
- 				    mergedDS2.notifyIObservers(IObserver.POINTED_AT_CHANGED);
-                           //  addDataSet(mergedDS2);
-   
-                         }
-                      }
-                     
-                     if(mtn.getUserObject() instanceof DataSet)
-                     {
-                         DataSet ds = (DataSet)mtn.getUserObject();
-                         
- 				jdvui.ShowDataSet(ds,"External Frame",IViewManager.IMAGE);
-                         ds.setPointedAtIndex(0);
- 				ds.notifyIObservers(IObserver.POINTED_AT_CHANGED);
-                         jpui.showAttributes(ds.getAttributeList());
-                     }
-                       
-                     else if(mtn.getUserObject() instanceof Data)
-                     {
-                         Data data = (Data)mtn.getUserObject();
-                         DefaultMutableTreeNode  parent = (DefaultMutableTreeNode)mtn.getParent();
-                         DataSet ds = (DataSet)parent.getUserObject();
-                       //DataSet ds = (DataSet)mtn.getUserObject();
-                         TreePath[] paths = null;
- 	                    JTree tree = jtui.getTree();
- 	                    DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
- 	                    TreePath[] tp = tree.getSelectionPaths();
-                         Data ggg = (Data)mtn.getUserObject();
-                         int start_id =  ggg.getGroup_ID();
-                         DataSetOperator  op1;
-                         String attr_name = new String("Group ID");
-                         op1 = new ExtractByAttribute(ds, attr_name , true, start_id, start_id+tp.length-1);
-                         DataSet new_ds = (DataSet)op1.getResult(); 
- 
- 				jdvui.ShowDataSet(new_ds,"External Frame",IViewManager.IMAGE);
-                         jpui.showAttributes(data.getAttributeList());
-                     }
-                     else {
-                                 System.out.println("View is Selected");
-                                // IsawViewHelp("No DataSet selected");
-                          }
- 			}
- 
- 			else
- 				System.out.println("No Tree Node Selected");
-                   
+                   DataSet ds = getViewableData(  jtui.getSelectedNodes()  );
+                   if(  ds != null  )
+                   {
+                     jdvui.ShowDataSet( ds, 
+                                        JDataViewUI.EXTERNAL_FRAME, 
+                                        IViewManager.IMAGE );
+                     ds.setPointedAtIndex( 0 );
+                     ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+                   }
+                   else
+                     System.out.println( "nothing is currently highlighted in the tree" );
                  }
                  
                  
-                  if(s=="Selected Graph View" )	 
- 			{
-                     DefaultMutableTreeNode mtn = jtui.getSelectedNode();
- 	               if(mtn!=null)
-                     {   
-                          if(  mtn.getUserObject() instanceof DataSet)
-                          {
-                         
-                            DataSet ds = (DataSet)mtn.getUserObject();
-                            System.out.println("Selected graph view 0");
-                            jdvui.ShowDataSet(ds, "External Frame", IViewManager.SELECTED_GRAPHS);
-                          }
-                         
-                          else if(  mtn.getUserObject() instanceof Data)
-                          {
-                            //DataSet ds  = (DataSet) mtn.getParent();
-                            DefaultMutableTreeNode  parent = (DefaultMutableTreeNode)mtn.getParent();
-                            DataSet ds = (DataSet)parent.getUserObject();
-                         
-                            TreePath[] paths = null;
- 	                      JTree tree = jtui.getTree();
- 	                      DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
- 	                      TreePath[] tp = tree.getSelectionPaths();
-                            Data ggg = (Data)mtn.getUserObject();
-                            int start_id =  ggg.getGroup_ID();
-                            DataSetOperator  op1;
-                            String attr_name = new String("Group ID");
-                            op1 = new ExtractByAttribute(ds, attr_name , true, start_id, start_id+tp.length-1);
-                            DataSet new_ds = (DataSet)op1.getResult(); 
-                            jdvui.ShowDataSet(ds, "External Frame", IViewManager.SELECTED_GRAPHS);
-                            Data data = (Data)mtn.getUserObject();
-                            jpui.showAttributes(data.getAttributeList());
-                          }
-                          else 
-                          {
-                             System.out.println("View is Selected");
-               //            IsawViewHelp("No DataSet selected");
-                          }
- 
-                      }
-                   
-                 }
-                         
-                 
-                 if(s=="Scrolled Graph View" )
-                 {   
-                     DefaultMutableTreeNode mtn = jtui.getSelectedNode();
-                        if(mtn!=null)
- 			{
- 
-                     System.out.println("The Selected Node in ISaw is "  +mtn.getUserObject());
-                     if(  mtn.getLevel()==1)
-                      {  
-                            int num_child =  mtn.getChildCount();
-                        
-                            DataSet mergedDS1 = null;
-                            DataSet mergedDS2 = null;
-                            DataSetOperator  op1, op2;
-                    
-                          
-                            DefaultMutableTreeNode child_dataset0= (DefaultMutableTreeNode) mtn.getChildAt(0);
-                            DefaultMutableTreeNode child_dataset1 = (DefaultMutableTreeNode) mtn.getChildAt(1);
-            
-                            DataSet ds0 = (DataSet)child_dataset0.getUserObject();
-                            DataSet ds1 = (DataSet)child_dataset1.getUserObject();
-                   
-                        if(num_child == 2)
-                         {   
-                             op1 = new DataSetMerge( ds0, ds1 );
-                             mergedDS1 = (DataSet)op1.getResult(); 
- 
- 					jdvui.ShowDataSet(mergedDS1,"External Frame",IViewManager.SCROLLED_GRAPHS);
-                            // addDataSet(mergedDS1);
-                         }
-                      if(num_child == 3)
-                           
-                         {  
-                             DefaultMutableTreeNode child_dataset2 = (DefaultMutableTreeNode) mtn.getChildAt(2);
-                             DataSet ds2 = (DataSet)child_dataset2.getUserObject();
-                             op1 = new DataSetMerge( ds0, ds1 );
-                             mergedDS1 = (DataSet)op1.getResult(); 
-                             op2 = new DataSetMerge( mergedDS1, ds2 );
-                             mergedDS2 = (DataSet)op2.getResult(); 
- 
-                            // addDataSet(mergedDS2);
- 		       	   jdvui.ShowDataSet(mergedDS2,"External Frame",IViewManager.SCROLLED_GRAPHS);
- 
-                         }
-                      }           
-                     
-                     if(  mtn.getUserObject() instanceof DataSet)
-                     {
-                         DataSet ds = (DataSet)mtn.getUserObject();
-   				jdvui.ShowDataSet(ds,"External Frame",IViewManager.SCROLLED_GRAPHS);
- 
-                     }                   
-                     else if(  mtn.getUserObject() instanceof Data)
-                     {
-                         DefaultMutableTreeNode  parent = (DefaultMutableTreeNode)mtn.getParent();
-                         DataSet ds = (DataSet)parent.getUserObject();
-                        
-                        
-                     TreePath[] paths = null;
- 	                JTree tree = jtui.getTree();
- 	                DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
- 	                TreePath[] tp = tree.getSelectionPaths();
- 	                System.out.println("The number of selected files is  "+tp.length );
- 	                
- 	                Data ggg = (Data)mtn.getUserObject();
-                     int start_id =  ggg.getGroup_ID();
-                     DataSetOperator  op1;
-                     String attr_name = new String("Group ID");
-                     
- 	                for (int i=0; i<tp.length; i++)
- 	                {
-                       // dmtn = (DefaultMutableTreeNode)tp[i].getLastPathComponent();
-                       //  System.out.println("The selected files are in JTREEUI " +dmtn.toString());
-                     }
- 	                
-                     
-                     op1 = new ExtractByAttribute(ds, attr_name , true, start_id, start_id+tp.length-1);
-                     
-                     DataSet new_ds = (DataSet)op1.getResult(); 
- 			  jdvui.ShowDataSet(new_ds,"External Frame",IViewManager.SCROLLED_GRAPHS);
- 
- 
- 
-                         Data data = (Data)mtn.getUserObject();
-                         jpui.showAttributes(data.getAttributeList());
-                     }
-                     else {
-                                 System.out.println("View is Selected");
-                          }
- 	             }
- 			else 
-                                 System.out.println("No Tree Node Selected");
- 
-                   
-                 }
-                 
-
-
-
-
-                 if(s=="3D View" )
-                 {   
-                     DefaultMutableTreeNode mtn = jtui.getSelectedNode();
-                        if(mtn!=null)
- 			{
- 
-                     System.out.println("The Selected Node in ISaw is "  +mtn.getUserObject());
-                     if(  mtn.getLevel()==1)
-                      {  
-                            int num_child =  mtn.getChildCount();
-                        
-                            DataSet mergedDS1 = null;
-                            DataSet mergedDS2 = null;
-                            DataSetOperator  op1, op2;
-                    
-                          
-                            DefaultMutableTreeNode child_dataset0= (DefaultMutableTreeNode) mtn.getChildAt(0);
-                            DefaultMutableTreeNode child_dataset1 = (DefaultMutableTreeNode) mtn.getChildAt(1);
-            
-                            DataSet ds0 = (DataSet)child_dataset0.getUserObject();
-                            DataSet ds1 = (DataSet)child_dataset1.getUserObject();
-                   
-                        if(num_child == 2)
-                         {   
-                             op1 = new DataSetMerge( ds0, ds1 );
-                             mergedDS1 = (DataSet)op1.getResult(); 
- 
- 					jdvui.ShowDataSet(mergedDS1,"External Frame",IViewManager.THREE_D);
-                            // addDataSet(mergedDS1);
-                         }
-                      if(num_child == 3)
-                           
-                         {  
-                             DefaultMutableTreeNode child_dataset2 = (DefaultMutableTreeNode) mtn.getChildAt(2);
-                             DataSet ds2 = (DataSet)child_dataset2.getUserObject();
-                             op1 = new DataSetMerge( ds0, ds1 );
-                             mergedDS1 = (DataSet)op1.getResult(); 
-                             op2 = new DataSetMerge( mergedDS1, ds2 );
-                             mergedDS2 = (DataSet)op2.getResult(); 
- 
-                            // addDataSet(mergedDS2);
- 		       	   jdvui.ShowDataSet(mergedDS2,"External Frame",IViewManager.THREE_D);
- 
-                         }
-                      }           
-                     
-                     if(  mtn.getUserObject() instanceof DataSet)
-                     {
-                         DataSet ds = (DataSet)mtn.getUserObject();
-   				jdvui.ShowDataSet(ds,"External Frame",IViewManager.THREE_D);
- 
-                     }                   
-                     else if(  mtn.getUserObject() instanceof Data)
-                     {
-                         DefaultMutableTreeNode  parent = (DefaultMutableTreeNode)mtn.getParent();
-                         DataSet ds = (DataSet)parent.getUserObject();
-                        
-                        
-                     TreePath[] paths = null;
- 	                JTree tree = jtui.getTree();
- 	                DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
- 	                TreePath[] tp = tree.getSelectionPaths();
- 	                System.out.println("The number of selected files is  "+tp.length );
- 	                
- 	                Data ggg = (Data)mtn.getUserObject();
-                     int start_id =  ggg.getGroup_ID();
-                     DataSetOperator  op1;
-                     String attr_name = new String("Group ID");
-                     
- 	                for (int i=0; i<tp.length; i++)
- 	                {
-                       // dmtn = (DefaultMutableTreeNode)tp[i].getLastPathComponent();
-                       //  System.out.println("The selected files are in JTREEUI " +dmtn.toString());
-                     }
- 	                
-                     
-                     op1 = new ExtractByAttribute(ds, attr_name , true, start_id, start_id+tp.length-1);
-                     
-                     DataSet new_ds = (DataSet)op1.getResult(); 
- 			  jdvui.ShowDataSet(new_ds,"External Frame",IViewManager.THREE_D);
- 
- 
- 
-                         Data data = (Data)mtn.getUserObject();
-                         jpui.showAttributes(data.getAttributeList());
-                     }
-                     else {
-                                 System.out.println("View is Selected");
-                          }
- 	             }
- 			else 
-                                 System.out.println("No Tree Node Selected");
- 
-                   
-                 }
-
-                 
-                 if(s=="Restore Views")
-                 {    
-                     jdvui.openAll();
-                 } 
-                 
-                 if(s=="Minimize Views")
-                 {   
-                     jdvui.closeAll();
-                 }
-                 
-                  if(s=="Maximize Views")
-                 {   
-                     jdvui.MaxAll();
-                 } 
-                 
-                 if(s=="Tile Views Vertically")
-                 {   
-                     jdvui.tile_Vertically();
-                 }
-                 
-                  if(s=="Cascade Views")
-                 {   
-                     jdvui.cascade();
-                 }
-                 if(s=="Close Views")
-                 {   
-                     jdvui.closeViews();
-                 }
-                 
-                 if(s=="About ISAW")
+                 if( s == SELECTED_VIEW_MI )  
                  {
- 			String dir =  System.getProperty("user.dir")+ "/IsawHelp/Help.html";
-            		BrowserControl H = new BrowserControl() ; 
-            		H.displayURL( dir ) ;
- 
-           } 
+                   DataSet ds = getViewableData(  jtui.getSelectedNodes()  );
+                   if(  ds != DataSet.EMPTY_DATA_SET  )
+                   {
+                     jdvui.ShowDataSet( ds, 
+                                        JDataViewUI.EXTERNAL_FRAME, 
+                                        IViewManager.SELECTED_GRAPHS );
+                     ds.setPointedAtIndex( 0 );
+                     ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+                   }
+                   else
+                     System.out.println( "nothing is currently highlighted in the tree" );
+                 }
+                         
                  
-                  if(s=="Remove Selected Node")
-                 { 
+                 if( s == SCROLL_VIEW_MI )
+                 {   
+                   DataSet ds = getViewableData(  jtui.getSelectedNodes()  );
+                   if(  ds != DataSet.EMPTY_DATA_SET  )
+                   {
+                     jdvui.ShowDataSet( ds, 
+                                        JDataViewUI.EXTERNAL_FRAME, 
+                                        IViewManager.SCROLLED_GRAPHS );
+                     ds.setPointedAtIndex( 0 );
+                     ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+                   }
+                   else
+                     System.out.println( "nothing is currently highlighted in the tree" );
+                 }
+                 
+
+                 if( s == THREED_VIEW_MI )
+                 {   
+                   DataSet ds = getViewableData(  jtui.getSelectedNodes()  );
+                   if(  ds != DataSet.EMPTY_DATA_SET  )
+                   {
+                     jdvui.ShowDataSet( ds, 
+                                        JDataViewUI.EXTERNAL_FRAME, 
+                                        IViewManager.THREE_D );
+                     ds.setPointedAtIndex( 0 );
+                     ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+                   }
+                   else
+                     System.out.println( "nothing is currently highlighted in the tree" );
+                 }
+
+                 
+             if( s == ABOUT_MI )
+             {
+                String dir =  System.getProperty("user.dir")+ "/IsawHelp/Help.html";
+                BrowserControl H = new BrowserControl() ; 
+                H.displayURL( dir ) ;
+             } 
+                
  
-                      DefaultMutableTreeNode dmtn = null;
- 	                TreePath[] paths = null;
- 	                JTree tree = jtui.getTree();
+             if( s == REMOVE_NODE_MI )
+             { 
+               DefaultMutableTreeNode dmtn = null;
+ 	       TreePath[] paths = null;
+ 	       JTree tree = jtui.getTree();
  	                DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
  			    TreeSelectionModel selectionModel = tree.getSelectionModel();
  	                TreePath[] tp = tree.getSelectionPaths();
@@ -2040,8 +1486,8 @@
  		   }
                 else if(  mtn.getUserObject() instanceof Data)
                 {
-                   oMenu.removeAll();
- 			DefaultMutableTreeNode mtnn = (DefaultMutableTreeNode)jtui.getSelectedNode().getParent();
+                  oMenu.removeAll();
+                  DefaultMutableTreeNode mtnn = (DefaultMutableTreeNode)jtui.getSelectedNode().getParent();
                    DataSet ds = (DataSet)mtnn.getUserObject();  
                    jcui.showLog(ds);
                    JTable table = jcui.showDetectorInfo(ds);
@@ -2088,7 +1534,7 @@
            kp.setVisible(true);
 
            JMenuBar mb = new JMenuBar();
-           JMenu fi = new JMenu("File");
+           JMenu fi = new JMenu( FILE_M );
            JMenuItem op1 = new JMenuItem("Save IsawProps");
            fi.add(op1);
            mb.add(fi);
@@ -2153,24 +1599,21 @@
     * @param   info     Array of Strings for dispaly.
     *
     */
-  
-         public static void main(String[] args) 
-         {
-
-
-        Properties isawProp = new Properties(System.getProperties());
-        String path = System.getProperty("user.home")+"\\";
-        path = StringUtil.fixSeparator(path);
-        try {
- 	        FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
-              isawProp.load( input );
-              System.setProperties(isawProp);  
-         //   System.getProperties().list(System.out);
-              input.close();
-            
-        }
-        catch (IOException ex) 
-        {
+  public static void main( String[] args ) 
+  {
+ 
+    Properties isawProp = new Properties(System.getProperties());
+    String path = System.getProperty("user.home")+"\\";
+    path = StringUtil.fixSeparator(path);
+    try {
+      FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
+      isawProp.load( input );
+      System.setProperties(isawProp);  
+//      System.getProperties().list(System.out);
+      input.close();
+    }
+    catch (IOException ex) 
+    {
            System.out.println("Properties file could not be loaded due to error :" +ex);
            System.out.println("Creating a new Properties file called IsawProps in the directory " +System.getProperty("user.home"));
            
@@ -2391,5 +1834,120 @@
     	}
  
  
- 	
- }
+
+  /**
+   * loads runfiles
+   */
+  private void load_runfiles() 
+  {
+    JFileChooser fc = new JFileChooser();
+
+    try
+    {  
+      String data_dir = System.getProperty("Data_Directory");
+      if( data_dir == null )
+        data_dir = System.getProperty("user.home");
+        
+                                       //create and display the 
+                                       //file chooser, loading
+                                       //appropriate selected files
+      JFrame frame = new JFrame();
+      fc.setCurrentDirectory(  new File( data_dir )  );
+      fc.setMultiSelectionEnabled( true );
+      fc.setFileFilter(  new NeutronDataFileFilter()  ); 
+      if(  fc.showDialog(frame,null) == JFileChooser.APPROVE_OPTION  ) 
+      {
+        setCursor(  Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR )  );
+
+        File[]    files = fc.getSelectedFiles();
+        if( files != null ) 
+        {
+          String file_name;
+          DataSet[] dss = null;
+
+          for( int i=0;  i<files.length;  i++ ) 
+          {
+            file_name = files[i].getPath();
+            dss = util.loadRunfile( file_name );
+            addDataSets( dss, file_name );
+
+            util.appendDoc( sessionLog, "Load " + '"' + file_name + '"' );
+          }
+
+                                                //automatically pop up a view
+                                                //of the newly loaded data for 
+                                                //each runfile loaded
+          if(  dss.length > 1  &&  dss[1] != null  )
+          {   
+//            jdvui.ShowDataSet( dss[1], "Internal Frame", IViewManager.IMAGE ); 
+//            dss[1].notifyIObservers(IObserver.POINTED_AT_CHANGED);
+          }
+
+          setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+      }
+    } 
+    catch( Exception e )
+    {
+      System.out.println("Choose a input file");
+    }
+  }
+
+
+  /**
+   * organizes a number of selections on the tree into a
+   * DataSet.  Data and DataSet objects and combinations thereof
+   * are handled appropriatly.
+   */
+  private DataSet getViewableData( TreePath[] tps )
+  {
+
+                       //since it doesn't make sense to combine Data objects
+                       //from different DataSet objects, we'll disallow that
+                       //and arbitrarily choose the parent DataSet of the
+                       //first Data object selected
+    DataSet ds = null;
+    DefaultMutableTreeNode data = (DefaultMutableTreeNode)(  tps[0].getLastPathComponent()  );
+    DefaultMutableTreeNode parent = (DefaultMutableTreeNode)data.getParent(); 
+    if( parent.getUserObject() instanceof DataSet )  //karma++
+      return (DataSet)parent.getUserObject();
+
+
+                                   //get a handle on this tree by
+                                   //getting references to the objects
+                                   //contained and putting them into
+                                   //a nice, simple Vector
+    Vector selections = new Vector();
+    DefaultMutableTreeNode dmtn = null;
+    for( int i=0;  i<tps.length;  i++ )
+    {
+      dmtn = (DefaultMutableTreeNode)(  tps[i].getLastPathComponent()  );
+      selections.add(  dmtn.getUserObject()  );
+    }
+
+                                //if it's just 1 DataSet object
+                                //nothing need be done
+    if(  selections.size() == 1  &&  selections.get(0) instanceof DataSet  )
+      return (DataSet)selections.get(0);
+      
+
+                        //are all selections DataSet objects?
+    boolean areAllDataSetObjects = true;
+    for( int i=0;  i<selections.size();  i++ )
+      if(  !( selections.get(i) instanceof DataSet )  )
+        areAllDataSetObjects = false;
+ 
+
+                                //if all selections are DataSet objects,
+                                //all we have to do is merge the first
+                                //two in the list
+    if( areAllDataSetObjects )
+    {
+      DataSetMerge dsm = new DataSetMerge(  (DataSet)selections.get(0), (DataSet)selections.get(1)  );
+      return (DataSet)dsm.getResult();
+    }
+    else
+      return DataSet.EMPTY_DATA_SET;
+  }
+
+}
