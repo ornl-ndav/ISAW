@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/02/13 20:34:24  pfpeterson
+ * Added debug messages, made updating peaks file an option, and added
+ * writing information out to a log file, index.log.
+ *
  * Revision 1.4  2003/02/11 21:03:39  pfpeterson
  * Uses routine to read orientation matrix from LoadOrientation.
  *
@@ -47,6 +51,7 @@
 package Operators.TOF_SCD;
 
 import  java.io.*;
+import  java.text.DecimalFormat;
 import  java.util.Vector;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.DataSet.Attribute.LoadOrientation;
@@ -60,6 +65,8 @@ import  DataSetTools.parameter.*;
  */
 public class IndexJ extends    GenericTOF_SCD {
   public static String command=null;
+  private static final boolean DEBUG=false;
+
   /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
   /**
    * Construct an operator with a default parameter list.
@@ -79,12 +86,14 @@ public class IndexJ extends    GenericTOF_SCD {
    *  @param delta The error parameter for indexing peaks
    */
   
-  public IndexJ( String peaksfile, String matrixfile, float delta){
+  public IndexJ( String peaksfile, String matrixfile, float delta,
+                 boolean update){
     this();
     
     getParameter(0).setValue(peaksfile);
     getParameter(1).setValue(matrixfile);
     getParameter(2).setValue(new Float(delta));
+    getParameter(3).setValue(new Boolean(update));
   }
   
   /* ------------------------- setDefaultParmeters ----------------------- */
@@ -103,6 +112,7 @@ public class IndexJ extends    GenericTOF_SCD {
     matfilepg.setFilter(new MatrixFilter());
     addParameter(matfilepg);
     addParameter(new FloatPG("Delta",0.05f));
+    addParameter(new Parameter("update peaks file",Boolean.TRUE));
   }
   
   /**
@@ -140,13 +150,14 @@ public class IndexJ extends    GenericTOF_SCD {
    */
   public Object getResult(){
     ErrorString eString    = null;
-    String      peaksfile  = null; // peaks filename
-    String      matrixfile = null; // matrix filename
-    String      dir        = null; // directory that the files are all in
-    String      expname    = null; // the experiment name
-    File        file       = null; // for tests
-    int         index      = 0;    // for chopping up strings
-    float       delta      = 0f;   // error in index allowed
+    String      peaksfile  = null;  // peaks filename
+    String      matrixfile = null;  // matrix filename
+    String      dir        = null;  // directory that the files are all in
+    String      expname    = null;  // the experiment name
+    File        file       = null;  // for tests
+    int         index      = 0;     // for chopping up strings
+    float       delta      = 0f;    // error in index allowed
+    boolean     update     = false; // update the peaks file
 
     // get the peaks file name from the script and test it out
     peaksfile=getParameter(0).getValue().toString();
@@ -184,6 +195,19 @@ public class IndexJ extends    GenericTOF_SCD {
         delta=((Float)value).floatValue();
       }else{
         return new ErrorString("invalid value "+value);
+      }
+    }
+
+    // find out if want to update peaks file
+    iparm=getParameter(3);
+    if(iparm instanceof BooleanPG){
+      update=((BooleanPG)iparm).getbooleanValue();
+    }else{
+      Object value=iparm.getValue();
+      if(value instanceof Boolean){
+        update=((Boolean)value).booleanValue();
+      }else{
+        return new ErrorString("invalid value of update: "+value);
       }
     }
 
@@ -225,18 +249,52 @@ public class IndexJ extends    GenericTOF_SCD {
       peak.UB(UB);
     }
 
+    // create a StringBuffer for the log
+    StringBuffer log=new StringBuffer((1+peaks.size())*122);
+
     // unindex peaks outside of the given deltas
     for( int i=0 ; i<peaks.size() ; i++ ){
       peak=(Peak)peaks.elementAt(i);
+      log.append(formatHKL(peak.h(),peak.k(),peak.l()));
       if( (delta<=Math.abs(peak.h()%1)) || (delta<=Math.abs(peak.h()%1))
           || (delta<=Math.abs(peak.h()%1)) ){
         peak.sethkl(0f,0f,0f,false);
+      }else{
+        peak.reflag(1);
       }
+      log.append(peak.toString().substring(2)+"\n");
     }
 
+    // write out the log file
+    OutputStreamWriter out=null;
+    try{
+      if(DEBUG){
+        out=new OutputStreamWriter(System.out);
+      }else{
+        String logfile=FilenameUtil.fixSeparator(peaksfile);
+        index=logfile.lastIndexOf("/");
+        if(index>=0){
+          logfile=logfile.substring(0,index+1)+"index.log";
+        }else{
+          logfile="index.log";
+        }
+        System.out.println(logfile);
+        FileOutputStream fos=new FileOutputStream(logfile,false);
+        out=new OutputStreamWriter(fos);
+      }
+      out.write(" calc h  calc k  calc l   seq   h   k   l      ");
+      out.write("x      y      z    xcm    ycm      wl  ");
+      out.write("Iobs     intI    DintI flag   run det\n");
+      out.write(log.toString());
+      out.flush();
+      out.close();
+    }catch(IOException e){
+      // let it drop on the floor
+    }
+    //System.out.println(log.toString());
 
-    // print the results to STDOUT
-    {
+    // print the results to peaksfile
+    if(update){
       WritePeaks writePeaksOp=new WritePeaks(peaksfile,peaks,Boolean.FALSE);
       Object res=writePeaksOp.getResult();
       if(res instanceof ErrorString)
@@ -314,13 +372,42 @@ public class IndexJ extends    GenericTOF_SCD {
       return orient;
   }
 
+  /**
+   * Format text for a line of the log file
+   */
+  private static String formatHKL(float h, float k, float l){
+    DecimalFormat format=new DecimalFormat("###0.00");
+    StringBuffer res=new StringBuffer(8*3);
+    
+    StringBuffer temp=new StringBuffer(8);
+
+    temp.append(format.format(h));
+    while(temp.length()<7)
+      temp.insert(0," ");
+    res.append(temp.toString()+" ");
+    temp.delete(0,temp.length());
+
+    temp.append(format.format(k));
+    while(temp.length()<7)
+      temp.insert(0," ");
+    res.append(temp.toString()+" ");
+    temp.delete(0,temp.length());
+
+    temp.append(format.format(l));
+    while(temp.length()<7)
+      temp.insert(0," ");
+    res.append(temp.toString()+" ");
+
+    return res.toString();
+  }
+
   /* --------------------------- MAIN METHOD --------------------------- */
   public static void main(String[] args){
     String dir="/IPNShome/pfpeterson/data/SCD/";
 
     IndexJ op;
     
-    op=new IndexJ(dir+"int_quartz.peaks",dir+"quartz.x",0.05f);
+    op=new IndexJ(dir+"int_quartz.peaks",dir+"quartz.x",0.05f,false);
     //op=new IndexJ(dir+"int_quartz.peaks",dir+"int_quartz.mat",0.05f);
     System.out.println("RESULT: "+op.getResult());
 
