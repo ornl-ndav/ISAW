@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:19:38  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:09:16  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -46,17 +49,31 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class listens for menu events and modifies the JMenu of a DesktopInternalFrame 
+ * object as needed.
+ * @author Dominic Kramer
  */
 public class WindowMenuListener implements MenuListener
 {
+	/**
+	 * The DesktopInternalFrame that this class will be listening to.
+	 */
 	protected DesktopInternalFrame frame;
+	/**
+	 * The JMenuBar which is more specifically going to be listened to.
+	 */
 	protected JMenuBar menuBar;
+	/**
+	 * The JMenu that will even more specifically be listened to.
+	 */
 	protected JMenu windowMenu;
 	
+	/**
+	 * General constructor.
+	 * @param Frame The DesktopInternalFrame to listen to.
+	 * @param bar The JMenuBar to listen to.
+	 * @param menu The JMenu to listen to.
+	 */
 	public WindowMenuListener(DesktopInternalFrame Frame, JMenuBar bar, JMenu menu)
 	{
 		frame = Frame;
@@ -64,22 +81,44 @@ public class WindowMenuListener implements MenuListener
 		windowMenu = menu;
 	}
 	
+	/**
+	 * Responds to a menu being cancelled.
+	 * @param e The MenuEvent that is caught.
+	 */
 	public void menuCanceled(MenuEvent e)
 	{
 	}
-
+	
+	/**
+	 * Responds to a menu being deselected.
+	 * @param e The MenuEvent that is caught.
+	 */
 	public void menuDeselected(MenuEvent e)
 	{
 	}
-
+	
+	/**
+	 * Responds to a menu being selected.
+	 * @param e The MenuEvent that is caught.
+	 */
 	public void menuSelected(MenuEvent e)
 	{
+/*
 		int numOfTabs = frame.getHawkDesktop().getTabbedPane().getTabCount();		
 		if (numOfTabs == 1)
 			frame.setPreviousMenuItemEnabled(false);
 		else
 			frame.setPreviousMenuItemEnabled(true);
-		
-		frame.refreshMoveAndCopyMenu();
+*/
+		int num = frame.getHawkDesktop().getTabbedPane().getSelectedIndex();
+		if (num > -1)
+		{
+			if (num == 0)
+				frame.setPreviousMenuItemEnabled(false);
+			else
+				frame.setPreviousMenuItemEnabled(true);
+		}
+				
+//		frame.refreshMoveAndCopyMenu();
 	}
 }
