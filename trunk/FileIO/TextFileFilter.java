@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/03/15 20:16:55  dennis
+ * Changed to use RobustFileFilter from new
+ * gov.anl.ipns.Util.File package.
+ *
  * Revision 1.2  2003/12/15 23:53:56  bouzekc
  * Removed unused imports.
  *
@@ -39,7 +43,8 @@
  *
  */
 package FileIO;
-import DataSetTools.util.RobustFileFilter;
+
+import gov.anl.ipns.Util.File.RobustFileFilter;
 
 /**
  * Filters out .txt, .java, .f, .c files.
