@@ -6,6 +6,9 @@ package OverplotView.graphics;
  * graphical output panel
  *
  * $Log$
+ * Revision 1.6  2001/08/15 18:43:59  rmikk
+ * Eliminated a "redrawing..." output
+ *
  * Revision 1.5  2001/06/29 15:06:55  neffk
  * the correct labels, units, and title appear on the graph.  also, the number
  * of spectra now correspond to the number of selections (fixed in previous
@@ -210,7 +213,7 @@ public class sgtGraphableDataGraph
       return new JPanel();
     }
     
-    System.out.println( "redrawing..." );
+    //System.out.println( "redrawing..." );
 
     JPanel graph_panel = new JPanel();
     if(  data.size() > 0  )
