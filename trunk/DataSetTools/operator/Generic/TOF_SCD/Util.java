@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/05/06 16:00:22  pfpeterson
+ * Added new methods for determining information about data from two
+ * detectors. Old methods are deprecated to ease debugging.
+ *
  * Revision 1.11  2003/04/30 19:48:53  pfpeterson
  * Added methods to calculate lattice parameters for a given orientation
  * matrix and cell scalars for a given set of lattice parameters.
@@ -88,11 +92,38 @@ public class Util{
   }
 
   /**
+   * Determine the detector id from a given spectrum
+   */
+  static public int detectorID(Data data){
+    Attribute attr=data.getAttribute(Attribute.DETECTOR_IDS);
+    if( attr==null )
+      return -1;
+    else if(attr instanceof IntAttribute)
+      return ((IntAttribute)attr).getIntegerValue();
+    else if( attr instanceof IntListAttribute)
+      return (((IntListAttribute)attr).getIntegerValue())[0];
+    else
+      return -1;
+  }
+
+  /**
+   * Determine the detector center angle (in plane).
+   * 
+   * @deprecated use {@link #detector_angle(DataSet,int)
+   * detector_angle} instead
+   *
+   * @return the in plane angle in degrees
+   */
+  static public float detector_angle(DataSet ds){
+    return detector_angle(ds,detectorID(ds.getData_entry(0)));
+  }
+
+  /**
    * Determine the detector center angle (in plane).
    * 
    * @return the in plane angle in degrees
    */
-  static public float detector_angle(DataSet ds){
+  static public float detector_angle(DataSet ds, int detID){
     Data data=ds.getData_entry(0); 
     Object attr_val=data.getAttributeValue(Attribute.DETECTOR_CEN_ANGLE);
     if(attr_val!=null && attr_val instanceof Float)
@@ -112,6 +143,9 @@ public class Util{
    * Find the detector center angle (out of plane). This currently
    * just returns zero.
    *
+   * @deprecated use {@link #detector_angle2(DataSet,int)
+   * detector_angle2} instead
+   *
    * @return the out of plane angle in degrees
    */
   static public float detector_angle2(DataSet ds){
@@ -129,19 +163,63 @@ public class Util{
   }
 
   /**
+   * Find the detector center angle (out of plane). This currently
+   * just returns zero.
+   *
+   * @return the out of plane angle in degrees
+   */
+  static public float detector_angle2(DataSet ds, int detID){
+    return 0f;
+  }
+
+  /**
+   * Determine the detector center distance from the sample
+   *
+   * @deprecated use {@link #detector_distance(DataSet,int)
+   * detector_distance} instead
+   *
+   * @return the distance in cm
+   */
+  static public float detector_distance(DataSet ds,float avg_angle){
+    // determine the detector id
+    Data data=ds.getData_entry(0);
+    if(data==null) return Float.NaN;
+    int detID=detectorID(data);
+
+    // get the detector distance
+    if(detID==-1)
+      return Float.NaN;
+    else
+      return detector_distance(ds,detID);
+  }
+  
+  /**
    * Determine the detector center distance from the sample
    *
    * @return the distance in cm
    */
-  static public float detector_distance(DataSet ds, float avg_angle){
+  static public float detector_distance(DataSet ds,int detNum){
     // NOTE: avg_angle is no longer needed.
   
     PixelInfoListAttribute pil_attr;
-    Data data=ds.getData_entry(0);
+    Data data=null;
+    Attribute attr=null;
+    int detID=-1;
+    for( int i=0 ; i<ds.getNum_entries() ; i++ ){
+      detID=-1;
+      data=ds.getData_entry(i);
+      if(data==null) continue;
+      detID=detectorID(data);
+
+      // stop looping b/c we found something
+      if(detID==detNum) break;
+    }
+
+    if(data==null) return Float.NaN;
    
     Object attr_val=data.getAttributeValue(Attribute.DETECTOR_CEN_DISTANCE);
     if(attr_val!=null && attr_val instanceof Float)
-      return ((Float)attr_val).floatValue();
+      return 100f*((Float)attr_val).floatValue();
 
     pil_attr =
           (PixelInfoListAttribute)data.getAttribute(Attribute.PIXEL_INFO_LIST);
@@ -156,17 +234,41 @@ public class Util{
    * From the given dataset create a 2D array to map row and column to
    * id. This assumes that there is only one detector
    *
+   * @deprecated use {@link #createIdMap(DataSet,int)
+   * createIdMap} instead
+   *
    * @return a 2D matrix of ids from detector column and row (in
    * order). Elements that do not have an id are set to -1.
    */
   public static int[][] createIdMap(DataSet ds){
+    int detID=detectorID(ds.getData_entry(0));
+
+    return createIdMap(ds,detID);
+  }
+
+  /**
+   * From the given dataset create a 2D array to map row and column to
+   * id. This assumes that there is only one detector
+   *
+   * @return a 2D matrix of ids from detector column and row (in
+   * order). Elements that do not have an id are set to -1.
+   */
+  public static int[][] createIdMap(DataSet ds, int detID){
     Data data=null;
     int row,col;
     int rowMax=-1;
     int colMax=-1;
+    int dataDetID=-1;
 
     // determine the maximum number of rows and columns
-    Attribute attr=ds.getData_entry(0).getAttribute(Attribute.PIXEL_INFO_LIST);
+    Attribute attr=null;
+    for( int i=0 ; i<ds.getNum_entries() ; i++ ){
+      data=ds.getData_entry(i);
+      if(detectorID(data)==detID){
+        attr=data.getAttribute(Attribute.PIXEL_INFO_LIST);
+        break;
+      }
+    }
     if( attr == null || !(attr instanceof PixelInfoListAttribute) )
       return null;
 
@@ -191,6 +293,8 @@ public class Util{
     Object idObj=null;
     for( int id=0; id<ds.getNum_entries(); id++){
       data=ds.getData_entry(id);
+      dataDetID=detectorID(data);
+      if(dataDetID!=detID) continue;
       attr = data.getAttribute(Attribute.PIXEL_INFO_LIST);;
       if( attr!=null && attr instanceof PixelInfoListAttribute ){
         pil = (PixelInfoList)attr.getValue();
