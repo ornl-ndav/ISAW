@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2004/03/30 16:05:58  dennis
+ * Changed string returned by getCommand() to Crunch2 instead of Crunch.
+ *
  * Revision 1.6  2004/03/15 19:36:52  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -101,11 +104,11 @@ public class Crunch2 extends GenericSpecial{
   /** 
    * Get the name of this operator to use in scripts
    * 
-   * @return "Crunch", the command used to invoke this operator in
+   * @return "Crunch2", the command used to invoke this operator in
    * Scripts
    */
   public String getCommand(){
-    return "Crunch";
+    return "Crunch2";
   }
     
   /**
