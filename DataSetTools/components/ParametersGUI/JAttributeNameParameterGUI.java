@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/01/22 01:41:27  bouzekc
+ *  Removed unused variables and unused imports.
+ *
  *  Revision 1.8  2002/11/27 23:12:34  pfpeterson
  *  standardized header
  *
@@ -45,13 +48,11 @@ import javax.swing.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import java.awt.*;
-import java.awt.event.*;
 import DataSetTools.util.*;
 
 public class JAttributeNameParameterGUI extends JParameterGUI
 {
     private JPanel     segment;
-    private JTextField dsText;
     private JComboBox  combobox;
 
 

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/01/22 01:41:27  bouzekc
+ *  Removed unused variables and unused imports.
+ *
  *  Revision 1.4  2002/08/05 19:04:54  pfpeterson
  *  Fixed problem with the value of the parameter not being updated. Also added documentation to the file.
  *
@@ -40,7 +43,6 @@ package DataSetTools.components.ParametersGUI;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import DataSetTools.operator.*;
-import javax.swing.filechooser.*;
 import java.awt.event.*;
 import DataSetTools.util.*;
 import java.io.*;
@@ -61,7 +63,6 @@ public class JOneFileChooserParameterGUI  extends JParameterGUI{
      */
     public JOneFileChooserParameterGUI( Parameter  p){
         super(p);
-        this.filename = filename;
         this.GUI = new JPanel();
         BoxLayout bl = new BoxLayout(this.GUI, BoxLayout.X_AXIS);
         this.GUI.setLayout( bl);
