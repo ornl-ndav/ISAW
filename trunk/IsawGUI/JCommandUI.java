@@ -2,6 +2,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.13  2001/08/09 19:04:28  rmikk
+ * Removed Detector Info tab from the Command tabbed pane
+ *
  * Revision 1.12  2001/08/08 20:22:15  dennis
  * Now gets build date from DataSetTools/util/SharedData
  *
@@ -66,11 +69,11 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
   public JCommandUI(CommandPane cp, Document sessionLog, JPropertiesUI jpui)
   {
 
-          this.sessionLog = sessionLog;
+         this.sessionLog = sessionLog;
          JTextArea sessiontext = new JTextArea(sessionLog);
          sessiontext.setEditable(false);
          JScrollPane njsp = new JScrollPane(sessiontext);
-     setLayout(new GridLayout(1,1));
+        setLayout(new GridLayout(1,1));
         root = new DefaultMutableTreeNode("TreeLog");
         model = new DefaultTreeModel(root);
         String server_name = System.getProperty("Inst1_Path");
@@ -120,8 +123,8 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
         jtp.addTab("DataSet Log", pane);
         jtp.addTab("Session Log", njsp);
         jtp.addTab("System Props", ta);
-        jtp.addTab("Det Info", sp);
-   jtp.addTab("Scripts", cp);
+        //jtp.addTab("Det Info", sp);
+       jtp.addTab("Scripts", cp);
 
    //  for (int i=0; i<tab_names.length; i++)
   //   {
@@ -187,15 +190,16 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
             try{
                     // System.out.println("No. of entries = "+ds.getNum_entries());
                        
-                       Object[][] detParamList = new Object[ds.getNum_entries()][7];
+                       Object[][] detParamList = new Object[ds.getNum_entries()][3];
                     
         
          for (int i = 0; i < ds.getNum_entries(); i++) 
-                        {
-                            AttributeList  attr_list = ds.getData_entry(i).getAttributeList();
+           {
+            AttributeList  attr_list = ds.getData_entry(i).getAttributeList();
                            
-        detParamList[i][0] = new         Integer(((Integer)(attr_list.getAttributeValue(Attribute.GROUP_ID))).intValue());
-                            detParamList[i][1] = new         Float(((Float)(attr_list.getAttributeValue(Attribute.RAW_ANGLE))).floatValue());
+            detParamList[i][0] = new Integer(((Integer)(attr_list.getAttributeValue(Attribute.GROUP_ID))).
+                                 intValue());
+           detParamList[i][1] = new         Float(((Float)(attr_list.getAttributeValue(Attribute.RAW_ANGLE))).floatValue());
                             detParamList[i][2] = new         Float(((Float)(attr_list.getAttributeValue(Attribute.INITIAL_PATH))).floatValue());
                             
                           
@@ -206,11 +210,12 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
                           //  detParamList[i][4] = new //Float(((Float)(attr_list.getAttributeValue(Attribute.ENERGY_IN))).floatValue());
                           //  detParamList[i][5] = new //Float(((Float)(attr_list.getAttributeValue(Attribute.RAW_ANGLE))).floatValue());  
     
-                       }
+	   }
 
  String[] columnHeading = {"ID", "Raw Angle", "Flight Path",//"Start:Time(ms)", "End:Time(ms)"
                   //         , "Number of Channels", "Total Count"
        };
+ 
   DefaultTableModel dtm = new DefaultTableModel(detParamList, columnHeading);
   table.setModel(dtm);
   table.setSize( 200, 200 );
