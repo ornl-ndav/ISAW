@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.19  2003/07/14 16:41:19  bouzekc
+ * Added the LsqrsJ log file as a second "result."
+ *
  * Revision 1.18  2003/07/08 22:56:54  bouzekc
  * Updated documentation.
  *
@@ -181,36 +184,31 @@ public class LsqrsJForm extends Form {
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
 
-    //0
-    addParameter( new IntArrayPG( "Run Numbers", null, false ) );
+    addParameter( new IntArrayPG( "Run Numbers", null, false ) );//0
 
-    //1
-    addParameter( new DataDirPG( "Peaks File Path", null, false ) );
+    addParameter( new DataDirPG( "Peaks File Path", null, false ) );//1
 
-    //2
-    addParameter( new StringPG( "Experiment Name", null, false ) );
+    addParameter( new StringPG( "Experiment Name", null, false ) );//2
 
-    //3
     addParameter( 
-      new IntArrayPG( 
-        "Restrict Peaks Sequence Numbers (blank for all)", null, false ) );
+      new IntArrayPG( "Restrict Peaks Sequence Numbers (blank for all)", 
+                      null, false ) );//3
 
-    //4
-    addParameter( new ArrayPG( "Matrix Files", new Vector(  ), false ) );
+    addParameter( new ArrayPG( "Matrix Files", new Vector(  ), false ) );//4
 
-    //5
     addParameter( 
-      new IntegerPG( "Minimum Peak Intensity Threshold", 0, false ) );
+      new IntegerPG( "Minimum Peak Intensity Threshold", 0, false ) );//5
 
-    //6
     addParameter( 
-      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );
+      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );//6
+
+    addParameter( new LoadFilePG( "JLsqrs Log File", " ", false ) );  //7
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
-        new int[]{ 0, 1, 2 }, new int[]{ 3, 5, 6 }, new int[]{ 4 } );
+        new int[]{ 0, 1, 2 }, new int[]{ 3, 5, 6 }, new int[]{ 4, 7 } );
     } else {  //standalone or first time form
-      setParamTypes( null, new int[]{ 0, 1, 2, 3, 5, 6 }, new int[]{ 4 } );
+      setParamTypes( null, new int[]{ 0, 1, 2, 3, 5, 6 }, new int[]{ 4, 7 } );
     }
   }
 
@@ -252,6 +250,7 @@ public class LsqrsJForm extends Form {
     s.append( "@param minThresh The minimum peak intensity threshold to " );
     s.append( "use.\n" );
     s.append( "@param keepPixels The detector pixel range to keep.\n" );
+    s.append( "@param lsqrslog The log file from LsqrsJ.\n" );
     s.append( "@return A Boolean indicating success or failure of the Form's " );
     s.append( "execution.\n" );
     s.append( "@error Invalid peaks path.\n" );
@@ -380,6 +379,11 @@ public class LsqrsJForm extends Form {
     //set the matrix file name vector parameter
     param = ( IParameterGUI )getParameter( 4 );
     param.setValue( matNamesVec );
+    param.setValid( true );
+
+    //set the log file name parameter
+    param = ( IParameterGUI )getParameter( 7 );
+    param.setValue( obj.toString(  ) );
     param.setValid( true );
 
     SharedData.addmsg( "--- LsqrsJForm finished. ---" );
