@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/02/14 20:41:24  dennis
+ *  Added method trimToSize().
+ *
  *  Revision 1.15  2002/11/27 23:14:07  pfpeterson
  *  standardized header
  *
@@ -358,6 +361,19 @@ public class AttributeList implements Serializable,
         attributes.removeElementAt( i );
     }
   }
+
+
+  /**
+   *  Trim the Vector storing the attribute list to be of just the right size
+   *  to hold the current attributes.  This can be invoked after adding and/or
+   *  removing attributes, to guarantee that the vector of attributes is
+   *  no longer than needed. 
+   */
+   public void trimToSize()
+   {
+     attributes.trimToSize();
+   }
+
 
   /**
    * Combine the attributes from another AttributeList with the current
