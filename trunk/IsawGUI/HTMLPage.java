@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2002/10/08 15:15:50  rmikk
+ * Incorporates the getDocumentation method from the
+ *    operators
+ *
  * Revision 1.10  2002/09/20 16:47:51  dennis
  * Now uses IParameter rather than Parameter
  *
@@ -173,9 +177,9 @@ class HTMLPage extends JFrame
    private
    void SetText( JEditorPane JP, String ref ) {
       Script_Class_List_Handler SH = new Script_Class_List_Handler();
-      String Textt = "<HTML><BODY><A href=\"XX$Panel1\">BACK</a><P>";
+      StringBuffer Textt = new StringBuffer("<HTML><BODY><A href=\"XX$Panel1\">BACK</a><P>");
 
-      Textt += " <Center><H1>Operator</H1></Center><P>";
+      Textt.append(" <Center><H1>Operator</H1></Center><P>");
       int k;
 
       try
@@ -192,14 +196,23 @@ class HTMLPage extends JFrame
       if( O instanceof ScriptOperator )
       {
          filename = ( ( ScriptOperator ) O ).getFileName ();
-         Textt += "ScriptOperator from file <A href=XX$ScriptFile#" + filename +
-               ">" + ( ( ScriptOperator ) O ).getFileName () + "</a><BR>";
+         Textt.append("ScriptOperator from file <A href=XX$ScriptFile#");
+         Textt.append( filename);
+         Textt.append(">");
+        Textt.append(( ( ScriptOperator ) O ).getFileName ());
+        Textt.append( "</a><BR>");
       }
       else
-         Textt += "Java Operator. Class=" + O.getClass ().toString () + "<BR>";
-      Textt += "Title( in Menu's etc.) =" + O.getTitle () + "<BR>";
-      Textt += "Command(in commandPane) =" + O.getCommand () + "<P><P>";
-      Textt += "<Center><H3> Object " + O.getCommand () + "( <BR>";
+         Textt.append( "Java Operator. Class=" + O.getClass ().toString () + "<BR>");
+      Textt.append( "Title( in Menu's etc.) =");
+         Textt.append(O.getTitle ());
+         Textt.append("<BR>");
+      Textt.append("Command(in commandPane) =");
+         Textt.append( O.getCommand ());
+         Textt.append("<P><P>");
+      Textt.append( "<Center><H3> Object ");
+         Textt.append( O.getCommand () );
+          Textt.append("( <BR>");
      
       int n = SH.getNumParameters ( k );
     
@@ -210,18 +223,26 @@ class HTMLPage extends JFrame
          String Prompt = P.getName ();
 
          if( XX == null )
-            Textt += " <U>Object</U> " + Prompt;
+            Textt.append( " <U>Object</U> ");
          else
-            Textt += "<U>" + XX.getClass ().toString () + "</U>  " + Prompt;
+            Textt.append( "<U>" + XX.getClass ().toString () + "</U>  " );
+         Textt.append( Prompt);
          if( i < n - 1 )
-            Textt += " , ";   
-         Textt += "<BR>";   
+            Textt.append( " , ");   
+         Textt.append( "<BR>");   
       
       }
-      Textt += " ) ";
-      Textt += "</h3></Center></body></html>";
+      Textt.append( " ) ");
+      Textt.append("</h3></Center><P>");
+      Textt.append("<Center><H2>Documentation</H2></Center>");
+      Textt.append(convertJDocToHTML(O.getDocumentation()));
+
+
+      Textt.append( "</body></html>");
+
+      
     
-      JP.setText ( Textt );
+      JP.setText ( Textt.toString() );
    }
 
    private
@@ -277,6 +298,33 @@ class HTMLPage extends JFrame
      
    }
 
+   public
+   String convertJDocToHTML( String JDocString){
+      boolean start = true;
+      if( JDocString.indexOf("This is the placeholder documentation.")==0)
+        return "";
+      StringBuffer S = new StringBuffer();
+      int j=0;
+      for( int i = JDocString.indexOf('@'); (i >=0) && (j>=0) &&(j < JDocString.length());
+                       i = JDocString.indexOf('@',j) )
+        { S.append( JDocString.substring(j,i));
+          if( !start)
+            S.append( "</ul>");
+          else S.append("<P>");
+          start = false;;
+          j = JDocString.indexOf(' ',i);
+          if( j < 0)
+            j = JDocString.length();
+          S.append("<B>");
+          S.append( JDocString.substring(i+1,j));
+          S.append("</B><UL>");
+     
+          j++;
+         }
+      S.append( JDocString.substring(j));
+      return  S.toString();
+
+   }//convertJDocToHTML
    private
    void SetTextBack( JEditorPane JP ) {
       String P = "<HTML><BODY><A href=\"CommandPane.html\"> CONTENTS </a><P>";
