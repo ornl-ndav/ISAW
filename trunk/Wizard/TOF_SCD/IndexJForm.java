@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.20  2003/08/27 23:22:49  bouzekc
+ * Removed unnecessary String cast.
+ *
  * Revision 1.19  2003/07/29 08:11:16  bouzekc
  * Now uses RadioButtonPG for its matrix file choices.
  *
@@ -402,8 +405,8 @@ public class IndexJForm extends Form implements ActionListener {
 
       //validate the restrict runs value
       param          = ( IParameterGUI )super.getParameter( 9 );
-      restrictRuns   = ( String )param.getValue(  )
-                                      .toString(  );
+      restrictRuns   = param.getValue(  )
+                            .toString(  );
       param.setValid( true );
 
       SharedData.addmsg( 
