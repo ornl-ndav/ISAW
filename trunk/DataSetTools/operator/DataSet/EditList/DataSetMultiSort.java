@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/07/15 19:38:30  dennis
+ *  Now requests use of Java's sort method when a STABLE sort
+ *  is required.
+ *
  *  Revision 1.1  2002/02/22 21:01:50  pfpeterson
  *  Operator reorganization.
  *
@@ -44,7 +48,7 @@
  *  Added copyright and GPL info at the start of the file.
  *
  *  Revision 1.6  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
+ *    Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
  *  classes.  The abstract base class hierarchy is now:
  *
@@ -211,7 +215,8 @@ public class DataSetMultiSort  extends    DS_EditList
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, SortMK
+   * @return  the command name to be used with script processor: 
+   *          in this case, SortMK
    */
    public String getCommand()
    {
@@ -298,14 +303,13 @@ public class DataSetMultiSort  extends    DS_EditList
                                    // requested.  If the sort succeeds, add a 
                                    // a log entry, else exit with an error
  
-    int     sort_type = DataSet.Q_SORT;  // we can use Q_SORT the first sort 
-                                         // but since it is not a stable sort,
-                                         // the later sorts must be BUBBLE sort
+    int sort_type = DataSet.Q_SORT; // we can use Q_SORT for the first sort 
+                                    // but the later sorts must be STABLE
     if ( use_it_3 )
     {
       if ( new_ds.Sort( attr_name_3, increasing_3, sort_type ) )
       {
-        sort_type = DataSet.BUBBLE_SORT;
+        sort_type = DataSet.JAVA_SORT;
         new_ds.addLog_entry( "Sorted by " + attr_name_3 );
       }
       else
@@ -320,7 +324,7 @@ public class DataSetMultiSort  extends    DS_EditList
     {
       if ( new_ds.Sort( attr_name_2, increasing_2, sort_type ) )
       {
-        sort_type = DataSet.BUBBLE_SORT;
+        sort_type = DataSet.JAVA_SORT;
         new_ds.addLog_entry( "Sorted by " + attr_name_2 );
       }
       else
