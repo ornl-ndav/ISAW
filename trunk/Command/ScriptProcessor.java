@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.36  2003/03/14 16:55:07  pfpeterson
+ * No longer creates list of IObservers or a PropertyChangeSupport
+ * unless caller registers a need.
+ *
  * Revision 1.35  2003/03/14 15:19:47  pfpeterson
  * Major reworking of class. Now processes Script objects, only instantiates swing components when necessary, and removed obsolete code.
  *
@@ -1146,7 +1150,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   public void deleteIObserver( IObserver iobs ){
     ExecLine.deleteIObserver( this ) ; 
     if(OL==null)
-      OL=new IObserverList();
+      return; // can't remove anyone
     else
       OL.deleteIObserver( iobs ) ; 
   }
@@ -1157,7 +1161,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   public void deleteIObservers(){
     ExecLine.deleteIObservers();
     if(OL==null)
-      OL=new IObserverList();
+      return; // can't remove anyone
     else
       OL.deleteIObservers();
   }
@@ -1370,7 +1374,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    * "Display"
    */
   public void propertyChange(PropertyChangeEvent e){
-    if(PL==null) PL=new PropertyChangeSupport(this);
+    if(PL==null) return; // no one to notify
     PL.firePropertyChange( e );
   }
 
@@ -1395,7 +1399,8 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    *@see DataSetTools.util.IObserver
    */ 
   public void update(  Object observed_obj ,  Object reason ){
-    if(OL==null) OL=new IObserverList();
+    if(OL==null) return; // no one to notify
+
     if( !(reason instanceof String))
       OL.notifyIObservers( this  ,  reason  );
     else
