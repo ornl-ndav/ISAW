@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.165  2003/11/18 17:34:35  dennis
+ *  Changed version to 1.6.0 alpha 4
+ *
  *  Revision 1.164  2003/11/17 22:37:08  dennis
  *  Changed version to 1.6.0 alpha 3
  *
@@ -638,7 +641,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.6.0 alpha 3";
+          version="1.6.0 alpha 4";
         else
           version=SharedData.VERSION;
 
