@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2002/06/14 15:57:20  pfpeterson
+ *  Use the ShareData.getProperty() method to get ISAW_HOME.
+ *
  *  Revision 1.10  2001/08/16 01:38:35  chatterjee
  *  Changed the sleep time
  *
@@ -58,7 +61,7 @@ public class SplashWindowFrame extends    JFrame
   {
     super();
 
-    String ipath = System.getProperty("ISAW_HOME");
+    String ipath = SharedData.getProperty("ISAW_HOME");
     if ( ipath == null )
     {
       System.out.println("WARNING: ISAW_HOME not defined in IsawProps.dat");
