@@ -31,6 +31,18 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2002/11/12 00:47:20  dennis
+ *  Made immutable by:
+ *  1. remove setValue() method
+ *  2. add() & combine() methods now return a new Attribute
+ *  3. getValue() returns copy of the array value
+ *
+ *  Also:
+ *  4. Since it is now immutable, clone() method is not needed and
+ *     was removed
+ *  5. Default constructor is now private, since the value can't
+ *     be set from outside of the class
+ *
  *  Revision 1.11  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -119,19 +131,19 @@ public class IntListAttribute extends Attribute
   public IntListAttribute( String name, int values[] )
   {
     super( name );
-
-    setValue( values );
+    this.values = values; 
   }
 
-public IntListAttribute( )
+  private IntListAttribute( )
   {
     super( "" );
 
-    setValue( new int[0] );
+    values = new int[0];
   }
 
   /**
-   * Returns the list of int values of this attribute, as a generic object.
+   * Returns a copy of the list of int values of this attribute, 
+   * as a generic object.
    */
   public Object getValue( )
   {
@@ -141,29 +153,10 @@ public IntListAttribute( )
     return( new_array );
   } 
 
-  /**
-   * Set the value for the int list attribute using a generic object.  The 
-   * actual class of the object must be an array of int.  The array will be
-   * put in order and duplicates will be removed. 
-   */
-  public boolean setValue( Object obj )
-  { if( obj instanceof String)
-      { this.values = IntList.ToArray( (String) obj );
-        if( this.values == null)
-          return false;
-        if( this.values.length < 1)
-          return false;
-       }
-    else if ( obj instanceof int[] )
-      this.values = arrayUtil.make_increasing( (int[])obj );
-    else
-      return false;
-
-    return true;
-  }   
 
   /**
-   * Returns the int list value of this attribute as an array of ints.
+   * Returns a copy of the int list value of this attribute,
+   * as an array of ints.
    */
    public int[] getIntegerValue( )
    {
@@ -173,36 +166,32 @@ public IntListAttribute( )
      return( new_array );
    }
 
-  /**
-   * Set the value for the integer list attribute using an integer list.
-   */
-  public void setIntValue( int values[] )
+  public boolean XMLwrite( OutputStream stream, int mode )
   {
-    this.values = new int[ values.length ];
-    System.arraycopy( values, 0, this.values, 0, values.length );
+    return xml_utils.AttribXMLwrite( stream, mode, this);
   }
 
-public boolean XMLwrite( OutputStream stream, int mode )
-    {return xml_utils.AttribXMLwrite( stream, mode, this);
-
-     }
   public boolean XMLread( InputStream stream )
-    {return xml_utils.AttribXMLread(stream, this);
-    }
+  {
+    return xml_utils.AttribXMLread(stream, this);
+  }
 
   /**
    * Combine the value of this attribute with the value of the attribute
-   * passed as a parameter to obtain a new value for this attribute.  The
-   * new value is the result of merging the two lists of integers.
+   * passed as a parameter to obtain a Attribute.  The value the new Attribute
+   * is the result of merging the two lists of integers.
    *
    *  @param   attr   An attribute whose value is to be "combined" with the 
    *                  value of the this attribute.
-   *
+   *  @return  If the attr parameter is an IntListAttribute, this returns 
+   *           a new IntListAttribute whose value is the result of merging 
+   *           the lists of integers, otherwise, it returns the current
+   *           attribute.
    */
-  public void combine( Attribute attr )
+  public Attribute combine( Attribute attr )
   {
     if ( !(attr instanceof IntListAttribute) )         // can't do it so don't 
-      return;                                          
+      return this;                                          
        
     IntListAttribute other_attr = (IntListAttribute)attr; 
 
@@ -244,11 +233,11 @@ public boolean XMLwrite( OutputStream stream, int mode )
                         other_attr.values.length - j );
       num_used += other_attr.values.length - j;
     }
-      
                                                   // now copy the values into
-    values = new int[ num_used ];                 // a new array for this
-                                                  // attribute
-    System.arraycopy( temp, 0, values, 0, num_used );
+                                                  // a new attribute
+    int new_values[] = new int[ num_used ]; 
+    System.arraycopy( temp, 0, new_values, 0, num_used );
+    return new IntListAttribute( name, new_values );
   }
 
 
@@ -280,13 +269,6 @@ public boolean XMLwrite( OutputStream stream, int mode )
     return this.getName() + ": " + this.getStringValue();
   }
 
-  /**
-   * Returns a copy of the current attribute
-   */
-  public Object clone()
-  {
-    return new IntListAttribute( this.getName(), values );
-  }
 
 /* -----------------------------------------------------------------------
  *
