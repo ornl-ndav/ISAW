@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/06/08 21:58:41  dennis
+ *  Now also requires the DataSet titles to match before
+ *  restoring the Zoom region state.
+ *
  *  Revision 1.7  2001/06/04 20:04:20  dennis
  *  Added rebin flag for GraphView.
  *
@@ -83,6 +87,7 @@ public class ViewerState  implements Serializable
   private String        ds_y_label;                 // if the DataSet has the
   private String        ds_x_units;                 // same units and labels
   private String        ds_y_units; 
+  private String        ds_name;                    // and the names match.
 
     /** 
      * Constructs a ViewerState object with default values for the
@@ -218,7 +223,9 @@ public class ViewerState  implements Serializable
     *
     *  @param  ds     The current DataSet being viewed.  The zoom region should
     *                 only be restored provided the new DataSet given to the
-    *                 viewer is using the same units and axis labels.  The
+    *                 viewer is using the same units and axis labels and has
+    *                 the same basic title ( eg. for IPNS runfiles this is
+    *                 the instrument name and run number ).  The title,
     *                 axis labels and units of this DataSet are compared to 
     *                 those of the old DataSet that was passed to the 
     *                 setZoomRegion() method. 
@@ -230,10 +237,17 @@ public class ViewerState  implements Serializable
     */
    public CoordBounds getZoomRegion( DataSet ds )
    {
+     boolean units_match = false;
      if ( ds_x_label.equalsIgnoreCase( ds.getX_label() )   &&
           ds_y_label.equalsIgnoreCase( ds.getY_label() )   &&
           ds_x_units.equalsIgnoreCase( ds.getX_units() )   &&
           ds_y_units.equalsIgnoreCase( ds.getY_units() )    )        
+       units_match = true;
+
+     if ( !units_match )
+       return null;
+
+     if ( ds_name.equals( ds.getTitle() ) )
        return zoom_region;
      else
        return null;
@@ -257,6 +271,7 @@ public class ViewerState  implements Serializable
       ds_y_label = ds.getY_label();
       ds_x_units = ds.getX_units();
       ds_y_units = ds.getY_units();
+      ds_name    = ds.getTitle();
    }
 
 }
