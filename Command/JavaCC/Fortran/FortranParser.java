@@ -10,6 +10,15 @@ public class FortranParser implements FortranParserConstants {
   private static FortranParser myParser;
   private static boolean appendSemiColon = false;
   private static boolean standalone = false;
+  private static final String LOGICAL = "logical";
+  private static final String BOOLEAN = "boolean";
+  private static final String REAL = "real";
+  private static final String FLOAT = "float";
+  private static final String F_DOUBLE = "double precision";
+  private static final String J_DOUBLE = "double";
+  private static final String F_INT = "integer";
+  private static final String J_INT = "int";
+
 
   /**
    * Method used to run the FortranParser for testing purposes.
@@ -58,21 +67,41 @@ public class FortranParser implements FortranParserConstants {
    * Method to convert fromFortran style array and variable 
    * declaration to Java style array and variable declaration.
    * If no array declarations exist, this essentially just converts from
-   * Fortran type declaration to Java type declaration.
+   * Fortran type declaration to Java type declaration.  This method 
+   * "knows" how to convert from, say, a Fortran double to a Java
+   * double
    * 
    * @param s The String to convert Fortran arrays from.
-   * @param type The type (e.g. int) of the array.
    * 
    * @return The String representing the passed in String converted
-   *                 to Java style arrays.
+   *                 to Java style array or scalar declarations.
    */
   private static String convertToJavaStyle(
-    String s, String type ) {
+    String s ) {
+    String type = null;
+
+    s = s.replaceAll( ".true.", "true" ).replaceAll( ".false.", "false" );
+
+    if( s.indexOf( LOGICAL ) >= 0 ) {
+      type = BOOLEAN;
+      s = s.replaceAll( LOGICAL, "");
+    } else if( s.indexOf( F_DOUBLE ) >= 0 ) {
+      type = J_DOUBLE;
+      s = s.replaceAll( F_DOUBLE, "");
+    } else if( ( ( s.indexOf( F_INT ) >= 0 ) ||
+                    ( s.startsWith( "i | j | k | l | m | n ") ) ) ) {
+      type = J_INT;
+      s = s.replaceAll( F_INT, "");
+    } else {
+      type = FLOAT;
+      s = s.replaceAll( REAL, "");
+    }
+
     StringBuffer buffer = new StringBuffer( type );
     buffer.append( " " );
     //make sure these get a semicolon
     appendSemiColon = true;
-
+    s = s.trim(  );
     //the parentheses should NOT be right at the beginning of the declaration
     if( s.indexOf( "(" ) > 0 ) {
       String tokenList[] = s.split( "," );
@@ -107,12 +136,17 @@ public class FortranParser implements FortranParserConstants {
   }
 
   /**
-   * Simply replaces any occurrences of opName in s with Math.opName.
+   * Finds the first word in the String and prepends a "Math." onto it.
+   * The assumption with this is that the argument to the function is 
+   * the correct one (i.e. float).
+   * 
+   * @param s The String that is to be converted.
    * 
    * @return The converted String.
    */
-  private static String convertMath( String s, String opName ){
-    return s.replaceAll( opName, "Math." + opName );
+  private static String convertFPMath( String s ){
+    //int letterIndex = s.indexOf( "^")
+    return "Math." + s.trim(  );
   }
 
 /**
@@ -133,35 +167,22 @@ public class FortranParser implements FortranParserConstants {
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LINE_END:
-      case ONE_PLUS_WS:
-      case DIGIT:
+      case EMPTY_LINE:
       case STRING:
-      case FLOATING_POINT:
       case FORTRAN_COMMENT:
+      case FORTRAN_MATH_FUN:
       case FORTRAN_ABS:
-      case FORTRAN_SQRT:
-      case FORTRAN_SIN:
-      case FORTRAN_ASIN:
-      case FORTRAN_COS:
-      case FORTRAN_ACOS:
-      case FORTRAN_TAN:
-      case FORTRAN_ATAN:
-      case FORTRAN_LOG:
-      case FORTRAN_EXP:
       case FORTRAN_FLOAT_FUN:
       case FORTRAN_TRUNC_FUN:
       case FORTRAN_MOD_FUN:
-      case FORTRAN_FLOOR_FUN:
       case FORTRAN_FRACTION_FUN:
       case FORTRAN_EXPRESSION:
       case SINGLE_IF:
+      case ELSE_COND:
       case START_MULTI_IF:
       case END_IF:
       case VAR_ASSIGN:
-      case FORTRAN_INT:
-      case FORTRAN_REAL:
-      case FORTRAN_DOUBLE:
-      case FORTRAN_LOGICAL:
+      case FORTRAN_VARIABLE:
       case FORTRAN_CHAR_1:
       case FORTRAN_CHAR_2:
         ;
@@ -197,35 +218,22 @@ public class FortranParser implements FortranParserConstants {
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case ONE_PLUS_WS:
-      case DIGIT:
+      case EMPTY_LINE:
       case STRING:
-      case FLOATING_POINT:
       case FORTRAN_COMMENT:
+      case FORTRAN_MATH_FUN:
       case FORTRAN_ABS:
-      case FORTRAN_SQRT:
-      case FORTRAN_SIN:
-      case FORTRAN_ASIN:
-      case FORTRAN_COS:
-      case FORTRAN_ACOS:
-      case FORTRAN_TAN:
-      case FORTRAN_ATAN:
-      case FORTRAN_LOG:
-      case FORTRAN_EXP:
       case FORTRAN_FLOAT_FUN:
       case FORTRAN_TRUNC_FUN:
       case FORTRAN_MOD_FUN:
-      case FORTRAN_FLOOR_FUN:
       case FORTRAN_FRACTION_FUN:
       case FORTRAN_EXPRESSION:
       case SINGLE_IF:
+      case ELSE_COND:
       case START_MULTI_IF:
       case END_IF:
       case VAR_ASSIGN:
-      case FORTRAN_INT:
-      case FORTRAN_REAL:
-      case FORTRAN_DOUBLE:
-      case FORTRAN_LOGICAL:
+      case FORTRAN_VARIABLE:
       case FORTRAN_CHAR_1:
       case FORTRAN_CHAR_2:
         ;
@@ -283,13 +291,23 @@ public class FortranParser implements FortranParserConstants {
       //single line if
         t = jj_consume_token(SINGLE_IF);
     appendSemiColon = true;
-    {if (true) return t.image.replaceAll( ".lt.", "<" ).replaceAll( ".gt.", ">" );}
+    {if (true) return t.image.replaceAll( ".lt.", "<" )
+                          .replaceAll( ".gt.", ">" )
+                          .replaceAll( ".ge.", ">=")
+                          .replaceAll( ".le.", "<=");}
+      break;
+    case ELSE_COND:
+      t = jj_consume_token(ELSE_COND);
+    {if (true) return t.image.replaceAll( "else", "}else{");}
       break;
     case START_MULTI_IF:
       //start of multi line if
         t = jj_consume_token(START_MULTI_IF);
     {if (true) return t.image.replaceAll( ".lt.", "<" )
                           .replaceAll( ".gt.", ">" )
+                          .replaceAll( ".ge.", ">=")
+                          .replaceAll( ".le.", "<=")
+                          .replaceAll( "elseif", "}else if" )
                           .replaceAll( "then", "{");}
       break;
     case END_IF:
@@ -302,62 +320,17 @@ public class FortranParser implements FortranParserConstants {
         t = jj_consume_token(FORTRAN_ABS);
     s = t.image;
     if( s.indexOf( "iabs" ) >= 0 ) {
-      s.replaceAll( "iabs", "Math.abs" );
+      s = s.replaceAll( "iabs", "Math.abs" );
     } else {
-      s.replaceAll( "abs", "Math.abs" );
+      s = s.replaceAll( "abs", "Math.abs" );
     }
 
     {if (true) return s;}
       break;
-    case FORTRAN_SQRT:
-      //square root function
-        t = jj_consume_token(FORTRAN_SQRT);
-    {if (true) return convertMath( t.image, "sqrt" );}
-      break;
-    case FORTRAN_SIN:
-      //sine function
-        t = jj_consume_token(FORTRAN_SIN);
-    {if (true) return convertMath( t.image, "sin" );}
-      break;
-    case FORTRAN_ASIN:
-      //arcsine function
-        t = jj_consume_token(FORTRAN_ASIN);
-    {if (true) return convertMath( t.image, "asin" );}
-      break;
-    case FORTRAN_COS:
-      //cosine function
-        t = jj_consume_token(FORTRAN_COS);
-    {if (true) return convertMath( t.image, "cos" );}
-      break;
-    case FORTRAN_ACOS:
-      //arccosine function
-        t = jj_consume_token(FORTRAN_ACOS);
-    {if (true) return convertMath( t.image, "acos" );}
-      break;
-    case FORTRAN_TAN:
-      //tangent function
-        t = jj_consume_token(FORTRAN_TAN);
-    {if (true) return convertMath( t.image, "tan" );}
-      break;
-    case FORTRAN_ATAN:
-      //tangent function
-        t = jj_consume_token(FORTRAN_ATAN);
-    {if (true) return convertMath( t.image, "atan" );}
-      break;
-    case FORTRAN_LOG:
-      //log function
-        t = jj_consume_token(FORTRAN_LOG);
-    {if (true) return convertMath( t.image, "log" );}
-      break;
-    case FORTRAN_EXP:
-      //exp function
-        t = jj_consume_token(FORTRAN_EXP);
-    {if (true) return convertMath( t.image, "exp" );}
-      break;
-    case FORTRAN_FLOOR_FUN:
-      //floor function
-        t = jj_consume_token(FORTRAN_FLOOR_FUN);
-    {if (true) return convertMath( t.image, "floor" );}
+    case FORTRAN_MATH_FUN:
+      //generic simple floating point math functions
+        t = jj_consume_token(FORTRAN_MATH_FUN);
+    {if (true) return convertFPMath( t.image );}
       break;
     case FORTRAN_FRACTION_FUN:
       //fraction function
@@ -398,35 +371,14 @@ public class FortranParser implements FortranParserConstants {
       //matched the mod() function
         t = jj_consume_token(FORTRAN_MOD_FUN);
     s = t.image;
-    s = s.replaceAll( "mod", "" ).replaceAll( "\\)", "" ).replaceAll( "\\(", "" );
-    s = s.replaceAll( ",", " % " );
+    s = s.replaceAll( "mod", "" ).replaceAll( "\\)", "" )
+                                               .replaceAll( "\\(", "" )
+                                               .replaceAll( ",", " % " );
     {if (true) return s;}
       break;
-    case FORTRAN_DOUBLE:
-      //matched a double-precision floating point
-        t = jj_consume_token(FORTRAN_DOUBLE);
-    t.image = t.image.replaceAll( "double precision", "" );
-    {if (true) return convertToJavaStyle( t.image, "double" );}
-      break;
-    case FORTRAN_INT:
-      //matched an integer
-        t = jj_consume_token(FORTRAN_INT);
-    t.image = t.image.replaceAll( "integer", "" );
-    {if (true) return convertToJavaStyle( t.image, "int" );}
-      break;
-    case FORTRAN_REAL:
-      //matched a floating point
-        t = jj_consume_token(FORTRAN_REAL);
-    t.image = t.image.replaceAll( "real", "" );
-    {if (true) return convertToJavaStyle( t.image, "float" );}
-      break;
-    case FORTRAN_LOGICAL:
-      //matched a boolean
-        t = jj_consume_token(FORTRAN_LOGICAL);
-    t.image = t.image.replaceAll( "logical", "" )
-                              .replaceAll( ".true.", "true" )
-                              .replaceAll( ".false.", "false" );
-    {if (true) return convertToJavaStyle( t.image, "boolean" );}
+    case FORTRAN_VARIABLE:
+      t = jj_consume_token(FORTRAN_VARIABLE);
+    {if (true) return convertToJavaStyle( t.image );}
       break;
     case FORTRAN_CHAR_1:
       //matched a character or character array where each variable is
@@ -493,25 +445,15 @@ public class FortranParser implements FortranParserConstants {
 
     {if (true) return buffer.toString();}
       break;
-    case DIGIT:
-      //matched a digit
-        t = jj_consume_token(DIGIT);
-    {if (true) return t.image;}
-      break;
-    case FLOATING_POINT:
-      //matched a float
-        t = jj_consume_token(FLOATING_POINT);
-    {if (true) return t.image;}
-      break;
     case STRING:
       //matched a String
         t = jj_consume_token(STRING);
     //replace Fortran's double single quotes with a backslash quote
     {if (true) return t.image.replaceAll( "''", "\\\\\"");}
       break;
-    case ONE_PLUS_WS:
+    case EMPTY_LINE:
       //found an empty line, so spit it back
-        t = jj_consume_token(ONE_PLUS_WS);
+        t = jj_consume_token(EMPTY_LINE);
     {if (true) return t.image;}
       break;
     default:
@@ -536,10 +478,10 @@ public class FortranParser implements FortranParserConstants {
       jj_la1_1();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0xf80b010a,0xf80b0108,0xf80b0108,};
+      jj_la1_0 = new int[] {0x1f81200a,0x1f812008,0x1f812008,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x1ffc3ff,0x1ffc3ff,0x1ffc3ff,};
+      jj_la1_1 = new int[] {0xef9,0xef9,0xef9,};
    }
 
   public FortranParser(java.io.InputStream stream) {
@@ -659,8 +601,8 @@ public class FortranParser implements FortranParserConstants {
 
   static public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[57];
-    for (int i = 0; i < 57; i++) {
+    boolean[] la1tokens = new boolean[44];
+    for (int i = 0; i < 44; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -679,7 +621,7 @@ public class FortranParser implements FortranParserConstants {
         }
       }
     }
-    for (int i = 0; i < 57; i++) {
+    for (int i = 0; i < 44; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
