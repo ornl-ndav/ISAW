@@ -30,6 +30,11 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.19  2003/01/07 22:30:41  dennis
+ *  Added methods makeEulerRotation() and makeEulerRotationInverse() to
+ *  calculate matrices representing rotation (and inverse rotations) by Euler
+ *  angles phi, chi and omega about the z, x and z axes in that order.
+ *
  *  Revision 1.18  2002/11/27 23:15:47  pfpeterson
  *  standardized header
  *
@@ -647,6 +652,92 @@ public static float Omega( float two_theta )
   else
     return (alpha - 180);
 }
+
+
+/* ------------------------ makeEulerRotation ------------------------ */
+/**
+ *  Make the cumulative rotation matrix representing rotation by Euler angles
+ *  chi, phi and omega.  This produces a matrix representing the following 
+ *  sequence of rotations, applied in the order listed:
+ *
+ *  1. Rotate about z-axis by phi 
+ *  2. Rotate about x-axis by chi 
+ *  3. Rotate about z-axis by omega
+ *
+ *  NOTE: All rotations follow a right hand rule and the coordinate system is
+ *  assumed to be right handed.
+ *
+ *  @param phi    Angle to rotate about the z-axis
+ *  @param chi    Angle to rotate (the rotated system) about the x-axis
+ *  @param omega  Angle to rotate (the rotated system) about the z-axis
+ *  
+ *  @return The cumulative rotation matrix omegaRz * chiRx * phiRz, which
+ *          which carries out these rotations, starting with rotation by
+ *          phi about the z-axis.
+ */
+public static Tran3D makeEulerRotation( float phi, float chi, float omega )
+{
+   Tran3D omegaR = new Tran3D();
+   Tran3D phiR   = new Tran3D();
+   Tran3D chiR   = new Tran3D();
+
+   Vector3D i_vec = new Vector3D( 1, 0, 0 );
+   Vector3D k_vec = new Vector3D( 0, 0, 1 );
+
+   phiR.setRotation( phi, k_vec );
+   chiR.setRotation( chi, i_vec );
+   omegaR.setRotation( omega, k_vec );  
+
+   // build the matrix product (omegaR * chiR * phiR).  When applied to a
+   // vector v as in  (omegaR * chiR * phiR)v, this has the effect of doing
+   // the rotation phiR first!.
+
+   omegaR.multiply_by( chiR );
+   omegaR.multiply_by( phiR );
+   return omegaR;
+}
+
+
+/* ---------------------- makeEulerRotationInverse -------------------- */
+/*
+ *  Make the cumulative rotation matrix that reverses rotation by Euler angles
+ *  chi, phi and omega.  This produces a matrix representing the following   
+ *  sequence of rotations, applied in the order listed:
+ *
+ *  1. Rotate about z-axis by minus omega
+ *  2. Rotate about x-axis by minus chi
+ *  3. Rotate about z-axis by minus phi
+ *
+ *  NOTE: All rotations follow a right hand rule and the coordinate system is
+ *  assumed to be right handed.  To use this to "unwind" the goniometer 
+ *  rotations on the SCD at IPNS with the values of phi, chi and omega stored 
+ *  in the IPNS runfiles, use:
+ *
+ *     makeEulerRotationInverse(phi, chi, -omega)
+ *
+ *  @param phi    phi angle that the goniometer was rotated by 
+ *  @param chi    chi angle that the goniometer was rotated by 
+ *  @param omega  omega angle that the goniometer was rotated by 
+ *  
+ *  @return The cumulative rotation matrix that reversed the rotations by
+ *          phi, chi and omega.  This returns the matrix product:
+ *
+ *          phiRz_inverse * chiRx_inverse * omegaRz_inverse
+ *    
+ *          which which carries out these rotations, starting with rotation by
+ *          minus omega about the z-axis.
+ */
+public static Tran3D makeEulerRotationInverse(float phi, float chi, float omega)
+{
+  
+  Tran3D inverse = makeEulerRotation( phi, chi, omega );
+
+  inverse.transpose();  // NOTE: A Rotation matrix is an orthogonal
+                        //       transformation and so it's transpose is
+                        //       it's inverse.
+  return inverse;
+}
+
 
 /* --------------------------------- main -------------------------------- */
 /**
