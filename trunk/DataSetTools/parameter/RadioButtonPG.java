@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2003/09/13 23:06:56  bouzekc
+ *  Fixed bug where initGUI() did not set the button corresponding to
+ *  getValue()'s value.
+ *
  *  Revision 1.19  2003/09/13 22:11:10  bouzekc
  *  Now uses a Hashtable rather than parallel Vectors to store the JRadioButton
  *  names and buttons.  Removed a non-standard constructor.  setValue() now
@@ -264,11 +268,9 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    * @return String label of the selected radio button.
    */
   public Object getValue(  ) {
-    Object val = null;
+    Object val = this.value;
 
-    if( !initialized ) {
-      val = this.value;
-    } else if( radioChoices != null ) {
+    if( initialized && ( radioChoices != null ) ) {
       JRadioButton button;
       Enumeration names = radioChoices.keys(  );
       String buttonName = null;
@@ -404,8 +406,8 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
       }
     }
     entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
-    this.setEnabled( this.getEnabled(  ) );
     super.initGUI(  );
+    setValue( getValue(  ) );
   }
 
   /**
