@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2001/06/08 14:08:49  chatter
+ *  Added code to create a new IsawProps.dat file in the user home directory if one is not already present
+ *
  *  Revision 1.14  2001/06/08 14:03:31  chatter
  *  Changed the name of the Properties file to IsawProps.dat
  *  Used arrays to fill up some of the menuitems
@@ -112,13 +115,8 @@ public class Isaw extends JFrame implements Serializable, IObserver
     Properties isawProp;
     Object Script_Path, Data_Directory, Help_Directory, Default_Instrument, Instrument_Macro_Path, 
     User_Macro_Path, Image_Path;
-
-
-
-
     Document sessionLog = new PlainDocument();
 
-    
     /**
      * Creates a JFrame that displays different Isaw components.
      *
