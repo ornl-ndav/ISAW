@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/01/30 02:22:18  bouzekc
+ * Removed unused variables.
+ *
  * Revision 1.4  2003/10/14 21:05:15  dennis
  * Fixed javadocs on constructor to build cleanly with jdk 1.4.2.
  * and made a few other fixes to javadocs.
@@ -180,7 +183,7 @@ public class InputBox  extends GenericBatch
          return new ErrorString(" Prompt size differs from InitValues size" );
 
       ArgOperator A = new ArgOperator( Title, Prompts , InitValues, this );
-      JParametersDialog JP = new JParametersDialog(
+      new JParametersDialog(
                        A,
                        new VectDataSetHandler( DataSetList ),
                        null, null, false);
