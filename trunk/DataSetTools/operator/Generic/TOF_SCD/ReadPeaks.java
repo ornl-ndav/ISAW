@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/06/05 14:48:55  dennis
+ * Minor fix to javadocs. Shortened sb.append() statements to 80
+ * characters.
+ *
  * Revision 1.1  2003/01/31 21:11:16  pfpeterson
  * Added to CVS.
  *
@@ -50,7 +54,7 @@ public class ReadPeaks extends GenericTOF_SCD{
   
   /* ------------------------ Default constructor ------------------------- */ 
   /**
-   *  Creates operator with title "Write Peaks" and a default list of
+   *  Creates operator with title "Read Peaks" and a default list of
    *  parameters.
    */  
   public ReadPeaks(){
@@ -99,9 +103,12 @@ public class ReadPeaks extends GenericTOF_SCD{
     StringBuffer sb = new StringBuffer(100);
 
     // overview
-    sb.append("@overview This operator reads a \".peaks\" file and creates a vector of peak objects to be worked on using other operators.");
+    sb.append("@overview This operator reads a \".peaks\" file and creates a ");
+    sb.append("vector of peak objects to be worked on using other operators.");
     // assumptions
-    sb.append("@assumptions Information such as calibration and orientation matrix will be dealt with elsewhere. This only reads what is in the one file.");
+    sb.append("@assumptions Information such as calibration and orientation ");
+    sb.append("matrix will be dealt with elsewhere. This only reads what is ");
+    sb.append("in the one file.");
     // parameters
     sb.append("@param filename Name of the \".peaks\" file to load.");
     // return
