@@ -87,15 +87,13 @@ public class Script_Class_List_Handler  implements OperatorHandler
        if( PrevPath != null )
         if( PrevPath.length() > 0 )
           if( PathList.indexOf( PrevPath ) >= 0 )
-          {  i = PathList.indexOf( PrevPath );
-            
+          {  i = PathList.indexOf( PrevPath );            
              if( i >= 0 )
              while( PathList.indexOf( PrevPath+";", i+PrevPath.length()) >= 0 )
                {  
                  i = PathList.indexOf( PrevPath, i + PrevPath.length() );
                  
-               } 
-             
+               }              
              if( i < 0 ) 
                return null;
              i = i + PrevPath.length() +1;
@@ -107,10 +105,16 @@ public class Script_Class_List_Handler  implements OperatorHandler
        j = PathList.indexOf(';', i );
        
        if( j < 0 )
-         return null;
+          return null;
+       
        String Res = PathList.substring( i , j );
-       while( PathList.indexOf( Res, j ) > 0 )
-         { i = j+1 ;
+      // Prepare for several occurrences of the same path
+      // Only the last occurrence of a path comes through
+       String X=";";
+       if( i == 0)
+          X ="";
+       while( PathList.indexOf( X+Res+ ";" , j ) > 0 )
+         { i = j + 1 ;
            j = PathList.indexOf( ';' , i  );
            if( j < 0 )
              return null;
@@ -231,12 +235,12 @@ public  Operator getClassInst( String filename )
                }
             }
           
-        
+         
           if( CPath.indexOf(Path1 ) == 0 )
             {CPathFix = CPath.substring( Path1.length()+1);
              CPathFix =CPathFix.replace('/','.');
              CPath=CPathFix+"."+classname;
-             
+                        
              try{
                 Class C = Class.forName( CPath );
                 Object XX = C.newInstance();
