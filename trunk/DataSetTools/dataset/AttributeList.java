@@ -1,8 +1,10 @@
 /*
  * @(#)AttributeList.java     1.01  99/07/9  Dennis Mikkelson
  *
- * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.6  2000/11/10 22:52:10  dennis
+ *  Trivial change to documentation.
+ *
  *  Revision 1.5  2000/10/03 21:50:12  dennis
  *  Removed code in the combine() method that dealt with DataSet tags,
  *  since the DataSet tags will no longer be attributes, but will be
@@ -25,7 +27,6 @@
  *
  *  Revision 1.9  2000/05/11 16:00:45  dennis
  *  Added RCS logging
- *
  *
  */
 
