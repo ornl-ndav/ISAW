@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/01/24 20:05:19  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.3  2003/10/22 20:16:03  rmikk
  * Fixed javadoc errors
  *
@@ -52,8 +55,6 @@ import java.util.*;
 import java.io.*;
 import DataSetTools.util.*;
 import DataSetTools.parameter.*;
-import DataSetTools.util.*;
-import DataSetTools.math.*;
 
 /**
 *    This operator reads in files written by the WriteFlood operator to produce

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/01/24 20:05:19  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.5  2004/01/05 23:25:06  rmikk
  * Changed the Data Set name to Sensitivity
  *
@@ -55,7 +58,6 @@ import java.util.*;
 import java.io.*;
 import DataSetTools.util.*;
 import DataSetTools.parameter.*;
-import DataSetTools.util.*;
 import DataSetTools.math.*;
 
 /**

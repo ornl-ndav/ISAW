@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/01/24 20:05:19  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.3  2003/10/22 20:00:25  rmikk
  * Fixed javadoc errors
  *
@@ -43,9 +46,7 @@
  *
  */
 package DataSetTools.operator.Generic.TOF_SAD;
-import java.io.*;
 import DataSetTools.dataset.*;
-import DataSetTools.operator.Generic.*;
 import DataSetTools.util.*;
 import java.util.*;
 import DataSetTools.parameter.*;

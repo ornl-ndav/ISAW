@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/01/24 20:05:19  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.4  2004/01/05 23:28:03  rmikk
  * Now catches the run number for the efficiency run
  *
@@ -48,7 +51,6 @@
 package DataSetTools.operator.Generic.TOF_SAD;
 import java.io.*;
 import DataSetTools.dataset.*;
-import DataSetTools.operator.Generic.*;
 import DataSetTools.util.*;
 import java.util.*;
 import DataSetTools.parameter.*;
