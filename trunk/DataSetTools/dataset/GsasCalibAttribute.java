@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.6  2003/12/15 02:06:09  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.5  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -64,10 +67,12 @@
 
 package  DataSetTools.dataset;
 
-import   java.text.*;
-import   DataSetTools.math.*;
-import   java.io.*;
-import   DataSetTools.gsastools.GsasCalib;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.OutputStream;
+
+import DataSetTools.gsastools.GsasCalib;
 /**
  * The concrete class for an attribute whose value is a
  * GsasCalibration object.

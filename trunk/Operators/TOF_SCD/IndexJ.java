@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.19  2003/12/15 02:10:48  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.18  2003/07/16 19:48:46  bouzekc
  * Added parameter for appending to log file.
  *
@@ -93,14 +96,29 @@
 
 package Operators.TOF_SCD;
 
-import  java.io.*;
-import  java.text.DecimalFormat;
-import  java.util.Vector;
-import  DataSetTools.util.*;
-import  DataSetTools.operator.DataSet.Attribute.LoadOrientation;
-import  DataSetTools.operator.Parameter;
-import  DataSetTools.operator.Generic.TOF_SCD.*;
-import  DataSetTools.parameter.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.text.DecimalFormat;
+import java.util.Vector;
+
+import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
+import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
+import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
+import DataSetTools.operator.Generic.TOF_SCD.Peak;
+import DataSetTools.operator.Generic.TOF_SCD.ReadPeaks;
+import DataSetTools.operator.Generic.TOF_SCD.WritePeaks;
+import DataSetTools.parameter.BooleanPG;
+import DataSetTools.parameter.FloatPG;
+import DataSetTools.parameter.IParameter;
+import DataSetTools.parameter.IntArrayPG;
+import DataSetTools.parameter.LoadFilePG;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.FilenameUtil;
+import DataSetTools.util.IntList;
+import DataSetTools.util.SharedData;
+import DataSetTools.util.TextFileReader;
 
 /**
  * This operator is intended to run A.J. Schultz's "index"

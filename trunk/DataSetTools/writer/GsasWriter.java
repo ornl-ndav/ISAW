@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/12/15 02:06:10  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.4  2002/11/27 23:26:45  pfpeterson
  * standardized header
  *
@@ -37,9 +40,9 @@
 
 package DataSetTools.writer;
 
-import  DataSetTools.dataset.*;
-import  java.io.*;
-import  DataSetTools.gsastools.*;
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.gsastools.gsas_filemaker;
 
 /**
  * Class for writing DataSet objects to files in GSAS format. The
