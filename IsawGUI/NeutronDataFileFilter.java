@@ -3,6 +3,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.6  2002/01/08 21:26:21  rmikk
+ * Fixed the display of the filter to only show xm.,gsas and
+ * isd output and input.
+ *
  * Revision 1.5  2001/08/16 18:54:12  chatterjee
  * Reordered filter extension & labeled isd as temporary
  *
@@ -38,6 +42,8 @@ public class NeutronDataFileFilter
   public final static String NEXUS       = "nxs";
   public final static String RUNFILE     = "run";
   public final static String ISAW_NATIVE = "isd";
+  public final static String XML         = "xml";
+  public final static String GSAS        = "gsa";
   boolean SaveFilter;
 
   public NeutronDataFileFilter()
@@ -73,18 +79,23 @@ public class NeutronDataFileFilter
       return true;
 
     String extension = getExtension( filename );
+   if( extension == null) return false;
    if( 
       extension != null  &&
       (
         extension.equals( HDF         ) ||
         extension.equals( NEXUS       ) ||        
         extension.equals( ISAW_NATIVE ) 
+  
       )
     )
       return true;
-    else if( extension != null && extension.equals( RUNFILE) && !SaveFilter )
+    else if( extension != null && extension.equals( RUNFILE) &&!SaveFilter )
        return true;
-    else 
+    else if( !SaveFilter) return false;
+    else if( extension.equals( XML) || extension.equals(GSAS))
+       return true;
+    else  
       return false;
   }
 
@@ -100,9 +111,10 @@ public class NeutronDataFileFilter
                           
                          
    if(!SaveFilter)
-       S +=  "*."+ RUNFILE  + ", *." + ISAW_NATIVE+"(Temporary)"   ;
+       S =  "*."+ISAW_NATIVE+"(Temporary)";
    else
-       S +=  "*." + ISAW_NATIVE+"(Temporary)"   ;
+       S =  "*." + ISAW_NATIVE+"(Temporary),*."+XML+",*."+GSAS+
+              "(gsas)"   ;
    S += " )";
    return S;
   }
