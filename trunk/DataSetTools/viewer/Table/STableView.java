@@ -30,6 +30,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.19  2004/03/15 23:57:40  dennis
+ * Changed some instances to static methods to be through the
+ * class name instead of an instance.
+ *
  * Revision 1.18  2004/03/15 19:34:00  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -404,7 +408,7 @@ public class STableView  extends DataSetViewer
   * NOTE: All variables in a subclass should be initialized here.
   */
   public void initState( ViewerState state)
-    {if( state.TABLE_DATA.equals(""))
+    {if( ViewerState.TABLE_DATA.equals(""))
        {state.set_String(ViewerState.TABLE_DATA, "Y values;");
        }
    

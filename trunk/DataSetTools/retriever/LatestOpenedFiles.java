@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 23:57:40  dennis
+ * Changed some instances to static methods to be through the
+ * class name instead of an instance.
+ *
  * Revision 1.6  2004/03/15 03:28:42  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -97,7 +101,7 @@ public class LatestOpenedFiles{
         pref = Preferences.userNodeForPackage( 
                    Class.forName( "DataSetTools.retriever.Retriever" ) );
      }catch( Exception s1 ){
-       ( new JOptionPane() ).showMessageDialog( null , 
+       JOptionPane.showMessageDialog( null , 
                                                 "No Preferences " + s1 );
         return;
      }
