@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/08/14 19:32:09  chatterjee
+ * MyHandler actionlistener has a class of its own now
+ *
  * Revision 1.1  2001/08/14 16:47:51  rmikk
  * Initial checkin
  *
@@ -95,16 +98,8 @@ public class JPanelwithToolBar  extends JPanel
        JTextArea JA = new JTextArea(5,8);
        JA.setText( "123\n456\n789\n101112\n");
        JF.getContentPane().add( new JPanelwithToolBar( "EXIT","Save",
-                         new MyHandler()
-                        {public void actionPerformed(ActionEvent e)
-                          {System.out.println("in action performed 0");
-                          }
-                         }
-                      ,new MyHandler1()
-                        {public void actionPerformed(ActionEvent e)
-                           {System.out.println("in action performed 0");
-                           }
-                        } 
+                         new MyHandler() 
+                      ,new MyHandler1() 
                      , JA ));
        JF.setSize( 400,400);
        JF.show();
@@ -115,3 +110,14 @@ public class JPanelwithToolBar  extends JPanel
 
 
 }
+class MyHandler implements ActionListener
+   {public void actionPerformed(ActionEvent e)
+     {System.out.println("in action performed 0");
+     }
+  }
+
+class MyHandler1 implements ActionListener
+    {public void actionPerformed(ActionEvent e)
+         {System.out.println("in action performed 1");
+         }
+   }
