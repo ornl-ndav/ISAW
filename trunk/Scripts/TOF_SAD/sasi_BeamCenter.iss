@@ -1,12 +1,18 @@
 # Beam Center Finder
 #@overview- This script finds the center of the beam in a sand instrument
-#@param DSfilename- The name of the DataSet used to determine the center of the beam
-#@param SensFilename- the name of the file with the sensitivity data(from Flood Run)
+#@param DSfilename- The name of the DataSet used to determine the center of 
+#                   the beam
+#@param SensFilename- the name of the file with the sensitivity data
+#                     (from Flood Run)
 #@param StartTimeChan- the starting time channel to use
 #@param EndTimechan- the ending time channel to use
 #@param Xoff- the initial guess for the X offset in cm
 #@param Yoff- the intial guess for the Yoffset in cm
 #@return the Vector returned by the Center operator
+#
+# $Date$
+
+$Category=Operator, Instrument Type, TOF_NSAS
 
 
 $ DSfilename   LoadFileString("/IPNShome/sasi/data/sasi0017.run")   Enter DataSet Name
