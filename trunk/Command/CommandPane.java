@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.72  2004/05/14 04:12:27  bouzekc
+ * Fixed bug that switched the index back to "Isaw Script" when a Jython
+ * script with an error is parsed.
+ *
  * Revision 1.71  2004/05/14 03:29:24  bouzekc
  * Fixed annoying bug that would switch the script selector combo box to
  * "Isaw Script" no matter what type of script was loaded.  It now changes
@@ -981,11 +985,23 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
        
         IScriptProcessor sp = ScriptInterpretFetch.getScriptProcessor( 
             Fname, Commands.getDocument(  ) );
-
+       
         if( sp == null ) {
+          //if the IScriptProcessor comes back null, there was some kind of problem with the script.
+          //check to see what we are dealing with.
+          if( Fname.equals( "*.py" ) ) {
+            indx = 1;
+          } else {
+            indx   = 0;
+          }
+          
+          //swap it back to a regular ScriptOperator-we have an error in the script anyway
           sp     = new ScriptOperator( Commands.getDocument(  ) );
-          indx   = 0;
-          SharedData.addmsg( "Jython not found" );
+          SharedData.addmsg( "There was an error processing your script.  " +
+           "Either the Jython classes were not found, or there " );
+          SharedData.addmsg( "is a syntax error in your script.  " +
+           "You should see some additional messages either " );
+          SharedData.addmsg( "here or on the console that should help." );
         }
         SP = sp;
         
