@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.49  2003/08/25 17:55:45  rmikk
+ *  Eliminated the UNKNOWN in the dialog box title
+ *
  *  Revision 1.48  2003/08/15 23:59:40  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI.
  *
@@ -226,7 +229,10 @@ public class JParametersDialog implements Serializable,
         this.sessionLog = sessionLog;    
         this.io = io;
         this.modal = modal;
-        opDialog = new JDialog( new JFrame(), op.getTitle(), modal);
+        String Title = op.getTitle();
+        if( Title.equals( IssScript.UNKNOWN))
+           Title = "CommandPane";
+        opDialog = new JDialog( new JFrame(), Title, modal);
         //opDialog.addComponentListener( new MyComponentListener());       
         int Size = 0 ;
         int Size1 = 0;
