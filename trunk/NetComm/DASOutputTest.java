@@ -6,6 +6,9 @@
  *  Programmer:  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.3  2001/02/15 21:51:15  dennis
+ *  added debug message
+ *
  *  Revision 1.2  2001/02/02 21:00:51  dennis
  *  Now sends the instrument name and run number with each UPD packet.
  *  To run this test, specify the instrument name and run number
@@ -172,6 +175,7 @@ public class DASOutputTest
 */
     for ( int i = 0; i < 1000; i++ )
     {
+      System.out.println("Sending data " + i );
       test.SendDataBlocks( sender, monitor_ds, i );
       test.SendDataBlocks( sender, hist_ds, i );
     }
