@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2001/07/24 20:05:19  rmikk
+ * Assumed only one Isaw Monitor and names are monitor1
+ * and monitor2.
+ * Incorporated several more attributes.
+ *
  * Revision 1.2  2001/07/17 14:58:20  rmikk
  * Added More attributes
  *
@@ -53,7 +58,7 @@ public class NXentry_TOFNDGS implements NXentry
    NxNode node ; DataSet DS ;
    NxData nd ;
    NxMonitor nm ;
-
+   String monitorNames[];
      /**
 *@param  node  the datasource node used to retrieve information
 *@param  DS    the DataSet( already existing ) to be built up
@@ -65,6 +70,9 @@ public class NXentry_TOFNDGS implements NXentry
      nd = new NXdata_Fields( "time_of_flight","phi","data" ) ;
      nm =  new NxMonitor() ;
      nm.setMonitorNum( 0 ) ;
+     monitorNames = new String[2];
+     monitorNames[0] ="monitor1";
+     monitorNames[1] = "monitor2";
      }
 /** Returns any error or warning message or "" if none
 */
@@ -89,7 +97,8 @@ public class NXentry_TOFNDGS implements NXentry
 */  
 public boolean processDS( DataSet DS, int index )
     {
-    NxNode datanode ;
+    NxNode datanode ,instrNode;
+   
     boolean monitorDS, HistDS ;
     monitorDS = false ;
     HistDS = false ;
@@ -99,12 +108,28 @@ public boolean processDS( DataSet DS, int index )
       return false ;
     errormessage = "" ;
     
+   
+
      boolean done = false ;
      int nchildren =  node.getNChildNodes() ;
+      instrNode = null;
+      for( int i = 0; (i < nchildren)&&(!done); i++)
+        {datanode =  node.getChildNode( i ) ;
+         if( datanode == null )
+           {
+            return false ;
+           }
+      
+
+       if( datanode.getNodeClass().equals( "NXinstrument" ) )
+         {instrNode = datanode;
+          done = true;
+         }
+        }
      int ndatasets = 0 ;
      
-     
-     for( int i = 0 ; ( i<nchildren )&&( !done ) ; i++  )
+     done = false;
+/*     for( int i = 0 ; ( i<nchildren )&(!done) ; i++  )
       {datanode =  node.getChildNode( i ) ;
      
        if( datanode == null )
@@ -120,7 +145,7 @@ public boolean processDS( DataSet DS, int index )
              done =  true ; 
             }
           else
-           if( !nm.processDS( datanode , DS) )
+          { if( !nm.processDS( datanode , DS) )
 	       {
                monitorDS = true ;
 	       int nn = nm.getMonitorNum() + 1 ;
@@ -131,15 +156,44 @@ public boolean processDS( DataSet DS, int index )
                 {
                 errormessage += ";" + nm.getErrorMessage() ;                 
                 return true ;
-                }           
+                }  
+            }         
          
          }//if( NXmonitor node
       }//for each node
-   
+*/ // only one Monitor so break up
+  
+  for( int i = 0; i < monitorNames.length; i++)
+    {NxNode mon =node.getChildNode( monitorNames[i]);
+     if( mon != null)
+      {if( i== 0) 
+         {
+          ndatasets =1;
+         }
+       if( index == 0)
+         {monitorDS = true;
+          if( !nm.processDS( mon , DS) )
+	       {
+               monitorDS = true ;
+	       int nn = nm.getMonitorNum() + 1 ;
+               nm.setMonitorNum( nn ) ;
+              
+               }
+            else 
+                {
+                errormessage += ";" + nm.getErrorMessage() ;                 
+                return true ;
+                }  
+          }
+        
+      }
+    }  
      done =  false ;
+     HistDS = false;
+    
      if( !monitorDS )
-     for( int i = 0 ; ( i < nchildren )&&( !done ) ; i++ )
-      {
+     for( int i = 0 ; ( i < nchildren ) ; i++ )
+      {//System.out.print("i="+i+":");
        datanode =  node.getChildNode( i ) ;      
        if( datanode == null )
            {
@@ -147,25 +201,22 @@ public boolean processDS( DataSet DS, int index )
            }
     
        if( datanode.getNodeClass().equals( "NXdata" ) )
-        { if( ndatasets!= index )
-            {
-              ndatasets++ ;
-             }
-           else
-           if( !nd.processDS( datanode,DS ) )
+        { //System.out.print("child NxData");
+           if( !nd.processDS( datanode, instrNode, DS ) )
               {ndatasets++ ;
                HistDS = true ;
-               done = true ;
+               //done = true ;
                }
             else
-             {errormessage = nd.getErrorMessage() ;            
-              return true ;
+             {errormessage += ";"+nd.getErrorMessage() ;            
+	     //return true ;
              }           
           
-         }//if( NXmonitor node
+         }//if( NXdatar node
       }//for each node
+    // System.out.println("END:"+errormessage);
      if( !( monitorDS || HistDS ) )
-         {errormessage = "No more DataSets" ;
+         {errormessage += ";No more DataSets"+index ;
          return true ;
          }
     
@@ -243,8 +294,10 @@ public boolean processDS( DataSet DS, int index )
     for( int i = 0 ; i< node.getNChildNodes() ; i++  )
      {datanode = node.getChildNode( i ) ;
       String C = datanode.getNodeClass() ;
+     
       if( C.equals( "NXinstrument" ) )    
          {NxInstrument nx = new NxInstrument() ;
+           if( !monitorDS)
           if( !nx.processDS( datanode , DS ) )
              {}
            else
@@ -252,6 +305,7 @@ public boolean processDS( DataSet DS, int index )
           }
       else  if( C.equals( "NXsample" ) )
         { NxSample ns =  new NxSample() ;
+         
           if( !ns.processDS( datanode,DS ) )
             {
             }
@@ -260,11 +314,41 @@ public boolean processDS( DataSet DS, int index )
         }
       else if( C.equals( "NXbeam"))
         {NxBeam nb = new NxBeam();
+        if( !monitorDS)
         if( nb.processDS( datanode, DS))
           errormessage +=";"+nb.getErrorMessage();
 	}
     
      }
+    Object X1 = DS.getAttributeValue(Attribute.RUN_NUM);
+    int run_num = -1;
+    if( X1 != null)
+	if( X1 instanceof Integer)
+          run_num =((Integer)X1).intValue();
+    int npulses = -1;
+   
+      {X1 = DS.getAttributeValue(Attribute.NUMBER_OF_PULSES);
+       if( X1 instanceof Number)
+          npulses =((Number)X1).intValue();
+      }
+   
+    float initial_path = -1;
+   
+      {  X1 = DS.getAttributeValue(Attribute.INITIAL_PATH);
+         if( X1 != null) if(X1 instanceof Number)
+           initial_path = ((Number)X1).floatValue();       
+           
+      }
+  
+    for( int i = 0; i < DS.getNum_entries(); i++)
+      {Data DB = DS.getData_entry(i);
+       if( run_num >= 0)
+           DB.setAttribute( new IntAttribute(Attribute.RUN_NUM, run_num));
+       if( npulses >= 0)DB.setAttribute( new IntAttribute( 
+                        Attribute.NUMBER_OF_PULSES, npulses));
+       if( initial_path >= 0) DB.setAttribute( new FloatAttribute(
+                 Attribute.INITIAL_PATH, initial_path));
+      }
     return false ;
     }//process DS
   
