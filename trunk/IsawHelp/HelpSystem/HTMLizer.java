@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/11/26 22:15:26  dennis
+ * HTML format of documentation improved.
+ * Added method to return HTML formatted string for dynamically
+ * generated help set. (Chris Bouzek, Mike Miller)
+ *
  * Revision 1.1  2002/10/28 23:40:59  dennis
  * Generate html help documentation from the getDocumentation() method
  * for operators.  The documentation will be created in one of the directories:
@@ -62,11 +67,12 @@ import DataSetTools.util.*;
 
 public class HTMLizer
 {
-    String         help_dir;
-    File           help_out;
-    FileWriter     out;
-    BufferedReader reader;
-    String         op_name;
+    private String         help_dir;
+    private File           help_out;
+    private FileWriter     out;
+    private BufferedReader reader;
+    private String         op_name;
+    private Vector         op_vector;
 
     /* -----------------CONSTRUCTOR----------------------------------------- */
     /**
@@ -76,21 +82,24 @@ public class HTMLizer
 
     public HTMLizer()
     {
+	//get a list of all Operators
+	op_vector = createOperatorVector();
+
 	try
 	{ 
             PropertiesLoader loader = new PropertiesLoader("IsawProps.dat");
             String isaw_help = SharedData.getProperty("Help_Directory");
             if ( isaw_help != null )
-              help_dir = isaw_help + "/HelpSystem/html";
+              help_dir = isaw_help + "HelpSystem/html";
             else
             {
               isaw_help = SharedData.getProperty("ISAW_HOME");
               if ( isaw_help != null )
-                help_dir = isaw_help + "/IsawHelp/HelpSystem/html";
+                help_dir = isaw_help + "IsawHelp/HelpSystem/html";
               else
                 help_dir = "HelpSystem/html";
             }
-            SharedData.addmsg("Writing files to" + help_dir);
+	    // SharedData.addmsg("Writing files to " + help_dir);
 	}//try
 	catch(RuntimeException e)
 	{
@@ -98,67 +107,96 @@ public class HTMLizer
 	}//catch
     }//constructor()
 
-    /* ------------------------- createHelpDocs ---------------------------- */
+    /* ------------------------- createAllHelpFiles ---------------------------- */
     /** 
      * Creates the HTML files which consists of the information in an Operator's
-     * getDocumentation() method.  If one_file is true, it creates 
-     * documentation only for the operator named by class_name.  Otherwise, 
-     * it creates files for all operators. 
-     * @param The class name of the operator to create documentation for.
-     * @param Set to true if there is only one operator to create documentation
-     *             for.
+     * getDocumentation() method.  Documentation for all Operators is produced.
      */
-    public void createHelpDocs(String class_name, boolean one_file)
+    public void createAllHelpFiles()
     {
-	String op_name;
-	String op_class_name;
-	int delim_index, name_length;
-	Vector op_vector = createOperatorVector();
 	int op_vector_size = op_vector.size();
 	Operator op;
-
-	if( !op_vector.isEmpty()) //make sure we have operators to work with
-	{  
+	String op_class;
 
 	for( int i = 0; i < op_vector_size; i++ )
 	{
 	    op = (Operator)op_vector.get(i);  //get the jth Operator
-		
-	    //get operator class name which includes path
-	    op_class_name = op.getClass().toString(); 
+	    op_class = trimClassName( op.getClass().toString() );
 
-	    //remove all leading information in op_class so we have
-	    //just the class name
-	    delim_index = op_class_name.indexOf('.');
-	    name_length = op_class_name.length();
-
-	    while( delim_index > 0 && delim_index < name_length )
-	    {
-		op_class_name = op_class_name.substring(delim_index + 1);
-		//find next delimiter
-		delim_index = op_class_name.indexOf('.');
-
-	    }//while(delim_index...)
-
-	    if( !one_file )  //create help files for all operators
-		createHTMLFile(op, op_class_name);
-	    //only one operator needs a help file
-	    else if (class_name.equals(op_class_name) ) //we have found our 
-                                                        //operator
-		createHTMLFile(op, op_class_name);
-	}//for
-	}//if
+	    writeFile( op_class, createHTML(op) );
+	}
 
     }//createHelpFile()
 
 
+    /* ------------------------- dynamicDocCreation ------------------------- */
+    /** 
+     * Creates the HTML formatted documentation for the Operator op_in.
+     * @param The Operator class name for which you wish to create documentation.
+     * @return The String which consists of the HTML formatted documentation
+     * for op_in.  This can be written, as-is, to a file to produce an 
+     * HTML page.
+     * @return null if the Operator op_in is not found
+     */
+    public String dynamicDocCreation(String op_in_class)
+    {
+	int op_vector_size = op_vector.size();
+	Operator op;
+	String op_class;
+	boolean found = false;
+
+	for( int i = 0; i < op_vector_size; i++ )
+	{
+	    op = (Operator)op_vector.get(i);  //get the jth Operator
+
+	    op_class = trimClassName( op.getClass().toString() );
+
+	    //found our operator
+	    if( op_class.equals( op_in_class ) )
+		return createHTML(op);
+	}
+	
+	return null;
+
+    }
+
+    /* ------------------------- trimClassName ------------------------- */
+    /** 
+     * Trims the full class path given by class_name.
+     * @param The full class name which you wish to trim.
+     * @return The String which consists of the trimmed down class name.
+     */
+    public String trimClassName(String class_name)
+    {
+	StringTokenizer st = new StringTokenizer(class_name, ".");
+	String name = class_name;
+
+	while( st.hasMoreTokens() )
+	    name = st.nextToken(".");
+	return name;
+    }
+
+    /* ------------------------- createOneHelpFile --------------------- */
+    /** 
+     *  Creates a help file for a single Operator op.
+     *  @param The Operator class name which denotes the Operator you
+     *  wish to create documentation for.
+     */
+    public void createOneHelpFile(String op_class)
+    {
+	String s = dynamicDocCreation(op_class);
+	
+	if( s != null )
+	    writeFile( op_class, s );
+    }
+
     /* ------------------------- createOperatorVector --------------------- */
     /** 
-     * Create a Vector of Operators comprised of all "add-on" operators and 
-     * all of the tandard DataSet Operators, and returns this array.
+     * Create a list of Operators comprised of all "add-on" operators and 
+     * all of the standard DataSet Operators.
+     * @return A Vector representation of the Operator list.
      */
-
-    public Vector createOperatorVector()
+    public static Vector createOperatorVector()
     {
 	final int TOTAL_OPERATORS = 100;
 	final int INC_AMOUNT = 20;
@@ -185,102 +223,217 @@ public class HTMLizer
 	return op_vector;
     }//createOperatorVector()
 
-    /* ----------------------------- createHTMLFile ------------------------- */
+
+
+    /* ----------------------------- createHTML ------------------------- */
     /**
-     * This method creates an HTML file for the Operator which matches the 
-     * class name given by operator_class_name.
+     *  Formats the documentation of the Operator op by using HTML tags.
+     *  @param The Operator for which you wish to create HTML documentation
+     *  for.
+     *  @return the String consisting of the HTML formatting
      */
-    private void createHTMLFile(Operator op, String op_class)
+    public String createHTML(Operator op)
     {
-	String op_name;
+	StringBuffer html = new StringBuffer(); 
+	String class_name = op.getClass().toString();
+	String title = op.getTitle();
+	StringTokenizer st = new StringTokenizer( class_name, ".");
+
+	//trim the class name down
+	while( st.hasMoreTokens() )
+	    class_name = st.nextToken(".");
+
+	html.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Frameset//EN\"");
+	html.append("\"http://www.w3.org/TR/REC-html40/frameset.dtd\">\n");
+        html.append("<!--NewPage-->\n");
+	html.append("<html>\n");
+	html.append("<head>\n");
+	html.append("<title>\n");
+	html.append("ISAW ");
+	html.append(class_name);
+	html.append("</title>\n");
+	html.append("</head>\n");
+	html.append("<body BGCOLOR=#FFFFFF>\n");
+
+	html.append("<!-- ======== START OF OPERATOR DATA ======== -->\n");
+	html.append("<h2><hr><br>\n");
+
+	html.append("Operator Title: ");
+	html.append(title + "<br><br>\n");
+	html.append("Operator Class: ");
+	html.append(class_name);
+	html.append("</h2>\n");
+	
+	html.append("Command: ");
+	html.append(op.getCommand());
+	html.append(" <br>");
+	html.append("Class path: ");
+	html.append(op.getClass().toString());
+	html.append(" <br>");
+
+	html.append("<p><hr><p>\n");
+
+	//get the actual documentation
+	html.append( convertToHTML( op.getDocumentation() ) );
+
+	html.append("<!-- ========= END OF OPERATOR DATA ========= -->");
+	html.append("</body>\n");
+	html.append("</html>");
+
+	//try to write the file and print a message if operation failed
+	if ( !writeFile(class_name, html.toString()) )
+	    System.out.println("\nFailed to write to file");
+
+	return html.toString();
+      
+    }//createHTML()
+
+    /* ------------------------------ writeFile() ------------------------------ */
+    /**
+     *  Writes a file consisting of the String body.  The name of the file is 
+     *  operator_class +"Help.html".
+     *  @param The String which denotes the Operator class.  Used to 
+     *  create the file name.
+     *  @param The body of the file you wish to create.
+     *  @return A boolean indicating whether or not the file write was 
+     *  successful
+     */
+    public boolean writeFile(String operator_class, String body)
+    {
 	try
 	{
-	    op_name = op.toString();//get plain English operator name
-	    //create file with operator class name
-	    help_out = new File(help_dir, op_class + "Help.html"); 
+	    help_out = new File(help_dir, operator_class + "Help.html"); 
 	    out = new FileWriter(help_out);
-	    out.write("<html><body>");  //start HTML page
-	    out.write("<h1><center>" + op_name + "</h1></center><p>"); 
-                                                        //print operator name
-		
-	    //get documentation from operator and convert to HTML format
-	    out.write( convertJDocToHTML( op.getDocumentation() ) );
-	    out.write("</body></html>");  //end HTML formatting
-	    out.close();  //close file
+	    out.write(body);
+	    out.close();
+	    return true;
 	}
 	catch(Exception e)
 	{
 	    e.printStackTrace();
+	    return false;
 	}
-    }//createHTMLFile()
+    }
 
-
-    /* ------------------------- convertJDocToHTML ------------------------ */
+    /* --------------------------- convertToHTML() -------------------------- */
     /**
-     * This method converts a String that follows the @ conventions in the 
-     * JavaDoc specifications into an HTML page.  Although other purposes may 
-     * be found for this method, its primary use is for the JavaHelp System.
-     *
+     *  This method converts a String that follows the @ conventions in the 
+     *  JavaDoc specifications into an HTML page.  Although other purposes may 
+     *  be found for this method, its primary use is for the JavaHelp System.
+     *  @param The String to convert to HTML
      */
-    public String convertJDocToHTML( String JDocString)
+    private String convertToHTML(String m)
     {
-	boolean start = true;
+	//eliminate "garbage" information
+	m = m.substring(m.indexOf('@'));
 
-	StringBuffer S = new StringBuffer("");  // create beginning of 
-                                                // unordered list
-	int space_index = 0; //substring index; start creation of string at [0]
-	int newline_index = 0;  //newline character index
+	StringBuffer s = new StringBuffer();
+	int header = m.indexOf('@');
+	int space = m.indexOf(' ');
+	int newline = m.indexOf("\n");
+	String header_name, table_title = "";
+	int found_param = 0, found_error = 0;
 
-	int header_index = JDocString.indexOf('@');
+	//check for valid index information
+	if( space < 0 )
+	    return new String("Please insert spaces.");
+	
+	if( newline < 0 )
+	    newline = m.length();
 
-	//create beginning of HTML string, from index 0 to one before index of @
-	S.append( JDocString.substring(space_index,header_index));
+	//while we have information and the '@' exists
+	while( header < m.length() && header >= 0 )
+	{
+	    header_name = m.substring(header, space);
+	
+	    if( header_name.equals("@overview") )
+		table_title = "Overview";
+	    else if( header_name.equals("@assumptions") )
+		table_title = "Assumptions";
+	    else if( header_name.equals("@param") )
+	    {
+		found_param += 1;
+		table_title = "Parameters";
+	    }
+	    else if( header_name.equals("@algorithm") )
+		table_title = "Algorithm";
+	    else if( header_name.equals("@return") )
+		table_title = "Returns";
+	    else if( header_name.equals("@error") )
+	    {
+		found_error += 1;
+		table_title = "Errors";
+	    }
+	
+	    if( (header_name.equals("@param") && found_param > 1)
+		|| (header_name.equals("@error") && found_error > 1) )
+	    {
+		s.append("<ul>");
+	    }
+	    else
+	    {
+		s.append("\n<!-- ========= ");
+		s.append(table_title);
+		s.append(" detail ======== -->\n\n");
 
-	//create rest of HTML string
-	while( (header_index >= 0) && 
-               (space_index  >= 0) && 
-               (space_index < JDocString.length()) 
-	    && (header_index < JDocString.length()) )
-	{ 
-	    if( !start)     //not start of JDocString
-		S.append( "</ul>");   //end the unordered list from previous 
-                                      // heading
-	    else S.append("<p>");  //else start a new paragraph for the new file
+		s.append("<table BORDER=\"1\" CELLPADDING=\"3\" CELLSPACING=\"0\" WIDTH=\"100%\">\n");
+		s.append("<tr BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\n");
+		s.append("<td COLSPAN=1><font SIZE=\"+2\">\n");
+		s.append("<b>");
+		s.append(table_title);
+		s.append("</b></font></td>\n");
+		s.append("</tr>\n");
+		s.append("</table>\n\n");
 
-	    start = false;  // if we get this far, we have already started 
-                            // the HTML page
+		if( (header_name.equals("@param") && found_param <= 1 )
+		    || (header_name.equals("@error") && found_error <= 1) )
+		    s.append("<ul>");
+	    }
 
-            // increment space_index to first occurrence of a space after the 
-            // @ symbol
-	    space_index = JDocString.indexOf(' ',header_index); //index of space
-	    newline_index = JDocString.indexOf('\n',header_index); 
-                                                    //index of newline character
+	    //update the header index-for the loop and for the next conditional
+	    header = m.indexOf('@', header + 1);
+	
+	    if( header < 0 )
+		header = m.length();
+	
+	    //check to see if @ or newline comes first
+	    while( header > newline && newline > 0)
+	    {
+		s.append("<br>");
+		//grab text between \n and \n or \n and @
+		if( space != newline )
+		    s.append(m.substring(space + 1, newline));
 
-	    //if a space is not found
-	    if( space_index < 0 )
-		if( newline_index > 0 ) //but a newline character is
-                  space_index = newline_index; //there is more to the JDocString
-		else  //we have reached the end of the JDocString
-		    space_index = JDocString.length();
- 
-	    //create Operator help heading
-	    S.append( "<b>" );  //bold for operator headings
-	    S.append( JDocString.substring(header_index + 1, space_index) );  
-                                        //add operator heading name
-	    S.append( "</b><p><ul>" );  //end operator heading, start new 
-                                        //unordered list  
-   
-	    //create the subject text
-	    header_index = JDocString.indexOf('@',space_index);
-	    if( header_index < 0 ) //no more headers
-		header_index = JDocString.length(); //end of JDocString
-	    S.append( JDocString.substring(space_index, header_index) );
-	    space_index++;
+		//trick-need to go from newline to newline
+		space = newline;
+		newline = m.indexOf("\n", newline + 1);
+	    }
+	    
+	    if( header >= space && space < (m.length() - 1))//use our tricked out space index
+	    s.append(m.substring(space + 1, header));
+
+	    else if( header < (m.length() - 1) )//use the regular space index
+		s.append(m.substring(header + 1, space));
+	    else //end of string, explicitly kill the loop
+		header = m.length();
+
+	    //reset/update the space
+	    space = m.indexOf(' ', header);
+	    if( space < 0 )
+		space = m.length();
+
+	    s.append("<p>");
+	    if( header_name.equals("@param") && found_param >=  1 
+		|| (header_name.equals("@error") && found_error >= 1) )
+	    {
+	      s.append("</ul>");
+	    }
 	}
 
-    	return  S.toString();
-    }//convertJDocToHTML
+	return s.toString();
 
+    }
+     
     /* ------------------------- main ----------------------------------- */
     /**
      * Main method for running class as a standalone program.
@@ -289,24 +442,16 @@ public class HTMLizer
 
     public static void main(String args[])
     {
-	boolean only_one_op; 
-	String op_class_name = ("");
-	HTMLizer helpfile = new HTMLizer();
-	
-	//System.out.println(args[0]);
-	//create documentation for all operators
-	if( args.length <= 0 )
-	    only_one_op = false; 
-	//create documentation for one operator
-	else
-	{
-	    only_one_op = true;
-	    op_class_name = args[0];
-	}
 
 	System.out.println();
-	System.out.println("Creating JavaHelp HTML documentation.");
-	helpfile.createHelpDocs(op_class_name, only_one_op);
+	System.out.println("Creating JavaHelp HTML documentation....please wait.");
+	HTMLizer helpfile = new HTMLizer();	
+	//create documentation for all operators
+	if( args.length <= 0 )
+	    helpfile.createAllHelpFiles();
+	//create documentation for one operator
+	else
+	    helpfile.createOneHelpFile(args[0]);
 
         System.exit(0);
     }//main
