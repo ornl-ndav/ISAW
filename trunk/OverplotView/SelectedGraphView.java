@@ -11,6 +11,9 @@ package OverplotView;
  * @see DataSetTools.viewer.DataSetViewer\
  *
  * $Log$
+ * Revision 1.4  2000/07/17 14:55:21  neffk
+ * sloppy checkin to correct previous checkin errors
+ *
  * Revision 1.3  2000/07/12 14:58:39  neffk
  * added a makefile for generating documentation
  *
@@ -293,9 +296,9 @@ public class SelectedGraphView
 
       Dimension graphD = new Dimension( width, height );
 
-      //System.out.println( "controls resized: " + c.getComponent().getSize() );
-      //System.out.println( "graph size: " + graphD  );
-      //graph.calculateGraphSize( graphD );
+      System.out.println( "controls resized: " + c.getComponent().getSize() );
+      System.out.println( "graph size: " + graphD  );
+      graph.calculateGraphSize( graphD );
     }
   }
 
