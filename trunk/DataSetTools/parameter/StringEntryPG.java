@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/08/28 01:47:12  bouzekc
+ *  Modified to work with new ParameterGUI.
+ *
  *  Revision 1.9  2003/08/22 20:12:07  bouzekc
  *  Modified to work with EntryWidget.
  *
@@ -93,9 +96,8 @@ public abstract class StringEntryPG extends ParameterGUI {
    * @param name The name of this StringEntryPG.
    * @param value The value of this StringEntryPG.
    */
-  public StringEntryPG( String name, Object value ) {
-    this( name, value, false );
-    this.setDrawValid( false );
+  public StringEntryPG( String name, Object val ) {
+    super( name, val );
   }
 
   /**
@@ -105,15 +107,9 @@ public abstract class StringEntryPG extends ParameterGUI {
    * @param value The value of this StringEntryPG.
    * @param valid Whether or not this StringEntryPG should be valid.
    */
-  public StringEntryPG( String name, Object value, boolean valid ) {
-    this.setName( name );
-    this.setValue( value );
-    this.setEnabled( true );
-    this.setValid( valid );
-    this.setDrawValid( true );
+  public StringEntryPG( String name, Object val, boolean valid ) {
+    super( name, val, valid );
     this.type                 = "UNKNOWN";
-    this.initialized          = false;
-    this.ignore_prop_change   = false;
   }
 
   // ********** IParameter requirements **********
