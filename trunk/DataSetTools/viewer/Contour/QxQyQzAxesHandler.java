@@ -42,11 +42,12 @@ public class  QxQyQzAxesHandler implements IAxesHandler
        setTransformation( Transf,AxisName,AxisUnits);
      }
 
-   public static float[] getQxQyQz( int Group, float Time)
-     {float[] q =null;//=getQunitVect( Group);
+   public static float[] getQxQyQz( DataSet ds, int Group, float Time)
+     {QxQyQzAxesHandler QH = new QxQyQzAxesHandler(ds);
+      float[] q = QH.getQunitVect( Group);
       if( q == null) return null;
-      float Q=0;
-      //float Q = cnvrtToQ( Time);
+      
+      float Q = QH.cnvrtToQ( Time);
       if( Float.isNaN(Q)) return null;
       q[0]=(float)(Q*q[0]);
       q[1]=(float)(Q*q[1]);
@@ -103,7 +104,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
    public IAxisHandler getQzAxis()
     {return new QzAxisHandler();
      }
-   private float[] getQunitVect( int GroupIndex)
+   public float[] getQunitVect( int GroupIndex)
      {if( this.GroupIndex == GroupIndex)
         return Q;
       Data D = ds.getData_entry( GroupIndex);
@@ -206,7 +207,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
         return ds.getData_entry( GroupIndex).getX_scale();
      }
    private boolean errorReported = false;
-   private float cnvrtToQ( float v)
+   public float cnvrtToQ( float v)
      {
       if(x_units.equals("Inverse Angstroms"))
         return v;
@@ -661,6 +662,7 @@ public class  QxQyQzAxesHandler implements IAxesHandler
          this.units = units;
          if( units == null)
             units= "/Angst";
+         
        }
       public String getAxisName()
         {return name;
