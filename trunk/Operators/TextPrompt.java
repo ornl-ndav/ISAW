@@ -28,6 +28,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/03/05 23:03:14  hammonds
+ *  Add DataDirectoryString, LoadFileString, SaveFileString
+ *
  *  Revision 1.2  2003/03/05 20:59:35  hammonds
  *  Added support for Boolean and Array input.
  *
@@ -41,9 +44,7 @@ package Operators;
 import java.io.*;
 import java.util.*;
 import  DataSetTools.operator.Operator;
-import  DataSetTools.util.IntList;
-import  DataSetTools.util.IntListString;
-import  DataSetTools.util.ErrorString;
+import  DataSetTools.util.*;
 import  DataSetTools.operator.Generic.Batch.*;
 import  DataSetTools.parameter.StringPG;
 import  Command.execOneLine;
@@ -114,7 +115,9 @@ public class TextPrompt extends GenericBatch implements Serializable
 
     if ( !(inType.equals("String") || inType.equals("Integer") || 
 	   inType.equals("Float") || inType.equals("Array") ||
-	   inType.equals("Boolean") )) {
+	   inType.equals("Boolean") || inType.equals("DataDirectoryString") ||
+	   inType.equals("LoadFileString") || 
+	   inType.equals("SaveFileString") ) ) {
       return new ErrorString("TextPrompt: Invalid Type:" + inType );
     }
     //    byte inB = ' ';
@@ -131,6 +134,15 @@ public class TextPrompt extends GenericBatch implements Serializable
     }
     if ( inType.equals("String") ){
 	return inLine;
+    }
+    if ( inType.equals("DataDirectoryString") ){
+	return new DataDirectoryString(inLine);
+    }
+    if ( inType.equals("LoadFileString") ){
+	return new LoadFileString(inLine);
+    }
+    if ( inType.equals("SaveFileString") ){
+	return new SaveFileString(inLine);
     }
     if ( inType.equals("Float") ){
       try {
