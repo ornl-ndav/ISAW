@@ -3,6 +3,9 @@
  *                                         Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.6  2000/08/17 19:19:07  dennis
+ *  Moved OutputTable from DataSetTools/operator to DataSetTools/components/ui
+ *
  *  Revision 1.5  2000/08/17 19:08:28  dennis
  *  Modified 08/13 by Dongfeng.  Now prints output into JTable for viewing, copying
  *  and pasting.  Changed the output format. All of the output types can be pasted
@@ -231,8 +234,7 @@ public class DataSetPrint extends    Operator
    //3.Jtable
    if(OPtype==3)
    {
-        DataSetTools.operator.OutputTable frame 
-                  = new DataSetTools.operator.OutputTable( 
+        OutputTable frame = new OutputTable( 
                               tableArray,
                               columnName,
                               ds.toString()+"_INDX_"+index );
