@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2001/07/10 19:08:39  dennis
+ *  Added attributes for Omega, DETECTOR_INFO and
+ *  DETECTOR_INFO_LIST.
+ *
  *  Revision 1.10  2001/04/25 19:03:26  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -116,6 +120,7 @@ abstract public class Attribute implements Serializable
   public static final String  DETECTOR_POS      = "Effective Position";
   public static final String  RAW_ANGLE         = "Raw Detector Angle";
   public static final String  SOLID_ANGLE       = "Total Solid Angle";
+  public static final String  OMEGA             = "Omega";
   public static final String  DELTA_2THETA      = "\u0394"+"2"+"\u03b8";
   public static final String  EFFICIENCY_FACTOR = "Efficiency";
   public static final String  DETECTOR_IDS      = "Detector IDs";
@@ -136,7 +141,9 @@ abstract public class Attribute implements Serializable
 
   public static final String  Q_VALUE           = "Q(invA)";
 
-
+  public static final String  DETECTOR_INFO_LIST = "Det Info List";
+  public static final String  DETECTOR_INFO      = "Det Info";
+ 
   private String name;
 
 
