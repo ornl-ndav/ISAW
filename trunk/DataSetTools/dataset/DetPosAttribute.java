@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.7  2001/07/10 18:50:10  dennis
+ *  Fixed error in comment.
+ *
  *  Revision 1.6  2001/04/25 19:03:44  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -90,8 +93,8 @@ public class DetPosAttribute extends Attribute
   } 
 
   /**
-   * Set the value for the int attribute using a generic object.  The actual
-   * class of the object must be a Position3D object.
+   * Set the value for this position attribute using a generic object.  
+   * The actual class of the object must be a Position3D object.
    */
   public boolean setValue( Object obj )
   {
@@ -102,6 +105,7 @@ public class DetPosAttribute extends Attribute
 
     return true;
   }   
+
 
   /**
    * Returns a copy the DetectorPosition object that is the value of this
@@ -168,7 +172,6 @@ public class DetPosAttribute extends Attribute
   }
 
 
-
   /**
    * Get a numeric value to be used for sorting based on this attribute.
    */
@@ -186,6 +189,7 @@ public class DetPosAttribute extends Attribute
      return value.toString();
    }
 
+
   /**
    * Returns a string representation of the (name,value) pair for this
    * attribute
@@ -195,6 +199,7 @@ public class DetPosAttribute extends Attribute
      return this.getName() + ": " + this.getStringValue();
   }
 
+
   /**
    * Returns a copy of the current attribute
    */
@@ -202,5 +207,4 @@ public class DetPosAttribute extends Attribute
   {
     return new DetPosAttribute( this.getName(), value );
   }
-
 }
