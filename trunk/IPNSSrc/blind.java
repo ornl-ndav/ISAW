@@ -53,6 +53,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/05/14 20:17:35  pfpeterson
+ * Improved readability and encapsulation. No longer uses wrappers for int
+ * or double, log file better matches FORTRAN counterpart, simplified loop
+ * constructs when counter should decrease.
+ *
  * Revision 1.12  2003/05/13 20:16:51  pfpeterson
  * Code cleanup. This includes changing variable and method names
  * related to blaue.
@@ -171,8 +176,12 @@ public class blind {
     logBuffer.append("    #  SEQ       XCM       YCM      WL\n");
     for( int j=0 ; j<length ; j++ ){
       logBuffer.append(format(j+1,5,0)+format(seq[j],5,0));
-      for( int k=0 ; k<3 ; k++ )
-        logBuffer.append(format(angle[j+k*xx.length],10,4));
+      for( int k=0 ; k<2 ; k++ )
+        logBuffer.append(format(angle[j+k*xx.length],10,3));
+      logBuffer.append(format(angle[j+2*xx.length],10,4));
+      logBuffer.append(format(xx[j],10,4));
+      logBuffer.append(format(yy[j],10,4));
+      logBuffer.append(format(zz[j],10,4));
       logBuffer.append("\n");
     }
     logBuffer.append("\n");
@@ -417,51 +426,38 @@ public class blind {
   }
 
   /**
-   * Determinant of ad. This method does mutate both parameters.
+   * Determinant of ad. This method mutates the second parameter, aid.
    */
   public double mi(double [] ad, double [] aid){
-    int i=0,j=0,m=0,n=0,l=0,k=0;
-    double [] ai= new double[(3) * (3)];
-    double [] a= new double[(3) * (3)];
+    double [] ai= new double[3*3];
     double d=0.0f;
 
     // copy the input arrays
-    for( i=0 ; i<3 ; i++ ){
-      for( j=0 ; j<3 ; j++ ){
-        a[i+j*3]  = ad[i+j*3];
+    for( int i=0 ; i<3 ; i++ ){
+      for( int j=0 ; j<3 ; j++ ){
         ai[i+j*3] = aid[i+j*3];
       }
     }
 
-    for( j=0 ; j<3 ; j++ ){
-      m = (j+1)%3;
-      n = (j+2)%3;
-      for( i=0 ; i<3 ; i++ ){
-        k = (i+1)%3;
-        l = (i+2)%3;
-        ai[i+j*3]=a[m+k*3]*a[n+l*3]-a[m+l*3]*a[n+k*3];
+    for( int j=0 ; j<3 ; j++ ){
+      int m = (j+1)%3;
+      int n = (j+2)%3;
+      for( int i=0 ; i<3 ; i++ ){
+        int k = (i+1)%3;
+        int l = (i+2)%3;
+        ai[i+j*3]=ad[m+k*3]*ad[n+l*3]-ad[m+l*3]*ad[n+k*3];
       }
     }
 
     // d is the product of the first column of a and ai
-    d = ai[0+0*3]*a[0+0*3]+ai[1+0*3]*a[0+1*3]+a[0+2*3]*ai[2+0*3];
+    d = ai[0+0*3]*ad[0+0*3]+ai[1+0*3]*ad[0+1*3]+ad[0+2*3]*ai[2+0*3];
     if (d == 0.0e0)  
       return d;
 
-    // normalize ai with d
-    for( i=0 ; i<3 ; i++ ){
-      for( j=0 ; j<3 ; j++ ){
-        ai[i +j*3] = ai[i+j*3]/d;
-      }
-    }
-
-    // copy back the results
-    for( i=0 ; i<3; i++ ){
-      for( j=0 ; j<3; j++ ){
-        ad[i+j*3] = a[i+j*3];
-        aid[i+j*3] = ai[i+j*3];
-      }
-    }
+    // normalize ai with d and copy back the results
+    for( int i=0 ; i<3; i++ )
+      for( int j=0 ; j<3; j++ )
+        aid[i+j*3] = ai[i+j*3]/d;
 
     return d;
   }
@@ -469,33 +465,22 @@ public class blind {
   /**
    *
    */
-  public void bias (int lmt, double[] xx, double[] yy, double[] zz, int[] seq){
-    double mw=0;
-    double den=3;
-    double dj=4.0;
-    intW mj=new intW(0);
-    doubleW dd=new doubleW(.08);
+  public ErrorString bias (int lmt, double[] xx, double[] yy, double[] zz,
+                           int[] seq){
+    double dd=.08;
     double[] b=new double[9];
     double [] hh= new double[3 * lmt];
     double [] a = new double[3 * 3];
     double d= 0.0;
-    // 
+
     int [] jh= new int[3 * lmt];
-    int i= 0;
-    int j= 0;
-    int Goto= 0;
-    int iz= 0;
-    boolean mm= false;
+    boolean Goto=true;
 
     if(DEBUG) System.out.println("Got into BIAS");
-    doubleW DW = new doubleW(0);
-    intW IW= new intW(0);
 
-    iz = (int)(Math.abs(mj.val));
-    Goto = 1;
-    while( Goto==1){
-      Goto=0;
-      for( j=0 ; j<3 ; j++ ){
+    while( Goto){
+      Goto=false;
+      for( int j=0 ; j<3 ; j++ ){
         b[0+j*3] = xx[j];
         b[1+j*3] = yy[j];
         b[2+j*3] = zz[j];
@@ -503,30 +488,23 @@ public class blind {
 
       d=mi(b,a);
 
-      j = 0;
-      for( j=0 ; j<3 ; j++ ){
-        for( i=0 ; i<lmt ; i++ ) {
-          hh[j+i*3] = a[j+0*3]*xx[i]
-            +a[j+1*3]*yy[i]+a[j+2*3]*zz[i];
-        }
-      }
-      mm = false;
+      for( int j=0 ; j<3 ; j++ )
+        for( int i=0 ; i<lmt ; i++ )
+          hh[j+i*3] = a[j+0*3]*xx[i]+a[j+1*3]*yy[i]+a[j+2*3]*zz[i];
 
-      IW.val=iz;
-      lcl(hh,lmt,dd,IW);
+      dd=lcl(hh,lmt,dd);
       if( errormessage.length()>0)
-        return;
-      //dd=FW.val;
-      iz=IW.val;
-      printB("Aft LCL"+lmt+","+dd.val+","+iz,hh,1);
-      if (Math.abs(dd.val-0.100) < 0.00001)  
-        dd.val = 0.100;
+        return new ErrorString(errormessage);
 
-      if (dd.val == 0.100)  {
-        dd.val = -0.010;
-        Goto = 1;
+      printB("Aft LCL"+lmt+","+dd,hh,1);
+      if (Math.abs(dd-0.100) < 0.00001)  
+        dd = 0.100;
+
+      if (dd == 0.100)  {
+        dd = -0.010;
+        Goto = true;
       }
-      if (Goto == 0)  {
+      if(!Goto){
         printB("before Aaio,B=",b);
         aaio(xx,yy,zz,b,hh,lmt);
 
@@ -534,35 +512,25 @@ public class blind {
         aair(b,a);
 
         printB("before Thh,B=",b);
-        mm=thh(hh,xx,yy,zz,a,jh,dd.val,lmt);
+        thh(hh,xx,yy,zz,a,jh,dd,lmt);
 
         printB("aft Thh,B=",b);
-        if (mw > 0.0 && mm)  
-          Goto = 1;
-        if (mj.val < 0 && Goto == 0)  {
-
-          d=mi(b,a);
-          if(DEBUG) System.out.println("d="+d);
-          if (dj+0.1 > 1.0/Math.abs(d) && dj-0.1 < 1.0/Math.abs(d))  
-            Goto = 1;
-        }
       }
-    }//while Goto==1
+    }
     int start=logBuffer.length();
     logBuffer.append("******************\n\n");
-    logBuffer.append(" ERROR LIMIT="+format(dd.val,5,2)+"\n\n");
+    logBuffer.append(" ERROR LIMIT="+format(dd,9,2).trim()+"\n\n");
     logBuffer.append(" REDUCED CELL\n\n");
     System.out.print(logBuffer.substring(start));
-    lst(hh,xx,yy,zz,a,jh,mw,b,d,lmt,seq,den);
-    // 
-    mj.val = -iz;
-    return;
+    lst(jh,b,seq);
+
+    return null;
   }
 
   /**
    *
    */
-  public void lcl (double [] fh, int lmt, doubleW dd, intW iz)  {
+  public double lcl(double [] fh, int lmt, double dd){
     int _fh_offset=0;
     int ni = 512;
     int [] hh= new int[(3) * (lmt)];
@@ -589,19 +557,18 @@ public class blind {
       if (Goto == 0 || Goto == 2) 
         Goto = 0;
 
-      dd.val = dd.val+0.020;
+      dd = dd+0.020;
 
-      if (dd.val > 0.30)  {
+      if (dd > 0.30)  {
         for( i=0 ; i<lmt ; i++ ){
           if(DEBUG)
             System.out.println(" " + (fh[0+i*3+ _fh_offset]));
           errormessage ="INITIAL NON-INTEGER INDICES ";
-          return;
+          return dd;
         }
       }
 
-      iz.val = iz.val+1;
-      da = (int)(dd.val*ni);
+      da = (int)(dd*ni);
       kka = 0;
       for (mm = 1; mm <= 10; mm++) {
         if (Goto == 0)  
@@ -632,9 +599,8 @@ public class blind {
                 if (Goto == 0 || Goto == 14)  {
                   Goto = 0;
   
-                  intW LB= new intW(lb);
-                  if( !equ(s1+s2+s3,LB,da) ){
-                    lb=LB.val;
+                  lb=pre_equ(s1+s2+s3);
+                  if( !equ(s1+s2+s3,lb,da) ){
     
                     la[0] = k;
                     la[1] = l;
@@ -644,16 +610,14 @@ public class blind {
 
                     Goto = 30;
                   } 
-                  else lb=LB.val;
                 }
                 if (Goto == 0 || Goto == 20)  {
                   Goto = 0;
                   if (l == 0 && Goto == 0)  
                     Goto = 21;
-                  intW LB= new intW(lb);
-                  if (Goto == 0 && ! equ(s1-s2+s3,LB,da) )  {
-                    lb=LB.val;
-    
+                  int innerlb=pre_equ(s1-s2+s3);
+                  if (Goto == 0 && ! equ(s1-s2+s3,innerlb,da) )  {
+                    lb=innerlb;
                     la[0] = k;
                     la[1] = -l;
                     la[2] = m;
@@ -670,9 +634,9 @@ public class blind {
                     Goto = 803;
                   if (m != 0 && Goto == 0)  {
      
-                    intW LB= new intW(lb);
-                    if( !equ(s1+s2-s3,LB,da) ){
-                      lb=LB.val;
+                    int innerlb=pre_equ(s1+s2-s3);
+                    if( !equ(s1+s2-s3,innerlb,da) ){
+                      lb=innerlb;
                       la[0] = k;
                       la[1] = l;
                       la[2] = -m;
@@ -691,11 +655,11 @@ public class blind {
    
                   if (l == 0 || m == 0)  
                     Goto = 19;
-                  intW LB= new intW(lb);
-  
-                  if( equ(s1-s2-s3,LB,da) ){
+
+                  int innerlb=pre_equ(s1-s2-s3);
+                  if( equ(s1-s2-s3,innerlb,da) ){
+                    lb=innerlb;
                     Goto = 19;
-                    lb=LB.val;
                   }
 
                   if (Goto == 0)  {
@@ -716,12 +680,10 @@ public class blind {
                       j = 3+lmt-idum;
                       kkdum = la[0]*hh[0+(j-1)*3]
                         +la[1]*hh[1+(j-1)*3]+la[2]*hh[2+(j-1)*3];
-                      intW LB= new intW(lb);
 
-                      if( equ(kkdum,LB,da) ){
+                      lb=pre_equ(kkdum);
+                      if( equ(kkdum,lb,da) )
                         Goto = 19;
-                      }
-                      lb=LB.val;
                       if (Goto == 0)  
                         la[(j)- 1] = lb;
                     }
@@ -772,7 +734,7 @@ public class blind {
                       }
                     }
 
-                    return;
+                    return dd;
                   }
                 }
 
@@ -800,28 +762,31 @@ public class blind {
     }//while 3==3 gotot 2.go_to("Lcl",2);
   }
 
-
-  public boolean equ (int s, intW lb, int da)  {
+  private int pre_equ(int s){
     int ni = 512;
     int nj = 256;
 
     if( s>=0 )
-      lb.val = (s+nj)/ni;
+      return (s+nj)/ni;
     else
-      lb.val = (s-nj)/ni;
+      return (s-nj)/ni;
+  }
 
-    return (Math.abs(s-lb.val*ni)>=da);
+  /**
+   * must run pre_equ first to set value of lb
+   */
+  public boolean equ(int s, int lb, int da){
+    return (Math.abs(s-lb*512)>=da);
   }
 
   public void aair (double [] b, double [] a )  {
-    double [] ab= new double[(3) * (3)];
-    double [] v= new double[(6)];
+    double [] ab= new double[3*3];
+    double [] v= new double[6];
     double d= 0.0;
 
     int [] l= new int[(7)];
     int i= 0;
     int j= 0;
-    int Goto= 0;
     int k= 0;
     int idum= 0;
 
@@ -909,25 +874,19 @@ public class blind {
     double [] a= new double[(3) * (3)];
     double [] ai= new double[(3) * (3)];
     double d= 0.0;
-    int i= 0;
-    int j= 0;
-    int k= 0;
 
-    i = i+1;
-    j = 0;
-    j = j+1;
-    for( i=0 ; i<3 ; i++ ){
-      for( j=0 ; j<3 ; j++ ){
+    for( int i=0 ; i<3 ; i++ ){
+      for( int j=0 ; j<3 ; j++ ){
         a[i+j*3] = 0.0;
         b[i+j*3] = 0.0;
-        for( k=0 ; k<lmt ; k++ ){
+        for( int k=0 ; k<lmt ; k++ ){
           b[i+j*3]=b[i+j*3]+hh[i+k*3]*hh[j+k*3];
         }
       }
     }
 
-    for( i=0 ; i<3 ; i++ ){
-      for( k=0 ; k<lmt ; k++ ){
+    for( int i=0 ; i<3 ; i++ ){
+      for( int k=0 ; k<lmt ; k++ ){
         a[0+i*3]=a[0+i*3]+xx[k]*hh[i+k*3];
         a[1+i*3]=a[1+i*3]+yy[k]*hh[i+k*3];
         a[2+i*3]=a[2+i*3]+zz[k]*hh[i+k*3];
@@ -936,10 +895,10 @@ public class blind {
 
     d=mi(b,ai);
 
-    for( i=0 ; i<3 ; i++ ){
-      for( j=0 ; j<3 ; j++ ){
+    for( int i=0 ; i<3 ; i++ ){
+      for( int j=0 ; j<3 ; j++ ){
         b[i+j*3] = 0.0;
-        for( k=0 ; k<3 ; k++ ){
+        for( int k=0 ; k<3 ; k++ ){
             b[i+j*3]=b[i+j*3]+a[i+k*3]*ai[k+j*3];
         }
       }
@@ -953,22 +912,21 @@ public class blind {
    */
   public boolean thh (double[] hh, double[] xx, double[] yy, double[] zz, 
                           double [] a,  int [] jh, double dd, int lmt){
-    int i= 0;
-    int j= 0;
     int lb= 0;
     boolean mm=false;
 
-    for( i=3 ; i<lmt ; i++ ){
-      for( j=0 ; j<3 ; j++ ){
+    for( int i=3 ; i<lmt ; i++ ){
+      for( int j=0 ; j<3 ; j++ ){
         hh[j+i*3]=a[j+0*3]*xx[i]+a[j+1*3]*yy[i]+a[j+2*3]*zz[i];
-        if (hh[j+i*3] >= 0.0)  {
+
+        if (hh[j+i*3] >= 0.0)
           lb = (int)(hh[j+i*3]+0.5);
-        } else {
+        else
           lb = (int)(hh[j+i*3]-0.5);
-        }
-        if (Math.abs(hh[j+i*3]-lb) > dd)  {
+
+        if (Math.abs(hh[j+i*3]-lb) > dd)
           mm = true;
-        }
+
         jh[j+i*3] = lb;
       }
     }
@@ -979,14 +937,11 @@ public class blind {
   /**
    * Create the majority of the log file contents.
    */
-  public void lst( double[] HH, double[] XX,double[] YY, double[] ZZ,
-                   double[] A, int[] JH, double MW, double[] B,double D,
-                   int LMT,int[] SEQ, double DEN){
+  public void lst( int[] JH, double[] B, int[] SEQ){
     double[] AI = new double[9];
     double[] abc=new double[7];
 
     // get the orientation matrix
-    mi(B,AI);
     UB=new double[3][3];
     for( int i=0 ; i<3 ; i++ ){
       for( int j=0 ; j<3 ; j++ ){
@@ -1002,24 +957,25 @@ public class blind {
 
     // print the volume and scalars
     int start=logBuffer.length();
-    logBuffer.append(" CELL VOLUME=  "+format(abc[6],8,3)+"\n\n");
-    logBuffer.append("*** CELL SCALARS ***\n");
+    logBuffer.append(" CELL VOLUME=  "+format(abc[6],6,1)+"\n\n");
+    logBuffer.append("*** CELL SCALARS ***\n ");
     for( int i=0 ; i<6 ; i++ ){
-      logBuffer.append(format(scalars[i],9,2));
-      if(i==2 || i==5) logBuffer.append("\n");
+      logBuffer.append(format(scalars[i],8,2));
+      if(i==2) logBuffer.append("\n ");
+      else if(i==5) logBuffer.append("\n");
     }
     logBuffer.append("\n");
 
     // print the lattice parameters
-    logBuffer.append("A="+format(abc[0],8,3)+"   B="+format(abc[1],8,3)
+    logBuffer.append(" A="+format(abc[0],8,3)+"   B="+format(abc[1],8,3)
                      +"   C="+format(abc[2],8,3)+"\n");
-    logBuffer.append("ALPHA="+format(abc[3],7,2)+"   BETA="+format(abc[4],7,2)
+    logBuffer.append(" ALPHA="+format(abc[3],7,2)+"   BETA="+format(abc[4],7,2)
                      +"   GAMMA="+format(abc[5],7,2)+"\n\n");
 
     // print the peak indices
-    logBuffer.append("     #   SEQ     H     K     L\n");
+    logBuffer.append("      #   SEQ     H     K     L\n");
     for(int  i=0;i<SEQ.length; i++){
-      logBuffer.append(format(i+1,6,0)+format(SEQ[i],6,0)
+      logBuffer.append(" "+format(i+1,6,0)+format(SEQ[i],6,0)
                        +format(JH[(i+3)*3+0],6,0)+format(JH[(i+3)*3+1],6,0)
                        +format(JH[(i+3)*3+2],6,0)+"\n");
 
@@ -1033,10 +989,12 @@ public class blind {
 
     // finally the orientation matrix
     start=logBuffer.length();
-    logBuffer.append("ORIENTATION MATRIX\n");
+    logBuffer.append(" ORIENTATION MATRIX\n");
     for( int i=0 ; i<3 ; i++ ){
-      for( int j=0 ; j<3 ; j++ )
-        logBuffer.append(format(UB[j][i],10,5));
+      for( int j=0 ; j<3 ; j++ ){
+        logBuffer.append(format(UB[j][i],9,5));
+        if(j!=2) logBuffer.append("  ");
+      }
       logBuffer.append("\n");
     }
     logBuffer.append("\n");
@@ -1198,7 +1156,11 @@ public class blind {
       System.out.println(error.toString());
       System.exit(-1);
     }
-    BLIND.bias(V.size()+3,xx,yy,zz,seq);
+    error=BLIND.bias(V.size()+3,xx,yy,zz,seq);
+    if(error!=null){
+      System.out.println(error.toString());
+      System.exit(-1);
+    }
   }
 
   private static void printB(String label, Object b){
