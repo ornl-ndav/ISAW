@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2002/12/11 16:00:12  pfpeterson
+ * Workaround in windows where 'url.dll' does not work with '.htm' or '.html'
+ * files. This is done by replacing the 'm' with its hexidecimal equivalent.
+ * Added DEBUG flag and statements that are printed when it is true.
+ *
  * Revision 1.4  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -38,6 +43,7 @@ package IsawGUI;
 import java.io.*;
 public class BrowserControl
 {
+  public static final boolean DEBUG=false;
     /**
      * Display a file in the system browser. If you want to display a
      * file, you must include the absolute path name.
@@ -56,7 +62,18 @@ or
             if (windows )
             {
                 // cmd = 'rundll32 url.dll,FileProtocolHandler http://...'
+              int index=url.indexOf(".htm");
+              if(index==url.length()-4){
+                if(DEBUG) System.out.println("URL:"+url);
+                url=url.substring(0,index)+".ht%6D";
+                if(DEBUG) System.out.println("  ->"+url);
+              }else if(index==url.length()-5){
+                if(DEBUG) System.out.println("URL:"+url);
+                url=url.substring(0,index)+".ht%6Dl";
+                if(DEBUG) System.out.println("  ->"+url);
+              }
                 cmd = WIN_PATH + " " + WIN_FLAG + " " + url;
+                if(DEBUG) System.out.println("CMD="+cmd);
                 Process p = Runtime.getRuntime().exec(cmd);
             }
             else
@@ -68,6 +85,7 @@ or
 
                 // cmd = 'netscape -remote openURL(http://www.javaworld.com)'
                 cmd = UNIX_PATH + " " + UNIX_FLAG + "(" + url + ")";
+                if(DEBUG) System.out.println("CMD="+cmd);
                 Process p = Runtime.getRuntime().exec(cmd);
 
                 try
