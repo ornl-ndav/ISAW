@@ -3,6 +3,10 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.2  2000/07/17 15:21:13  dennis
+ *  Added convenience routines to compute area and moments over the default
+ *  extent of the peak.
+ *
  *  Revision 1.1  2000/07/10 22:48:59  dennis
  *  New classes to deal with peaks/peak fitting
  *
@@ -161,6 +165,17 @@ public interface IPeak
    */
   abstract public float Area( float a, float b );
 
+
+  /**
+   *  Calculate the area under the curve over the current default peak extent.
+   *
+   *  @return The area under the peak only, the background or the peak plus
+   *          background depending on the evaluation mode that has been
+   *          set.   (see method: setEvaluationMode())
+   */
+  abstract public float Area( );
+
+
   /**
    *  Calculate the "nth" moment of the peak about the peak position over the 
    *  interval [a,b].  The function  f(x)*(x-position)**n is
@@ -177,6 +192,26 @@ public interface IPeak
    *          set.   (see method: setEvaluationMode()) 
    */
   abstract public float Moment( float a, float b, int n ); 
+
+
+
+  /**
+   *  Calculate the "nth" moment of the peak about the peak position over the
+   *  current default peak extent.  The function  f(x)*(x-position)**n is
+   *  integrated over the specified interval, where "f()" is the peak function
+   *  and "position" is the postion of the peak.
+   *
+   *  @param  n        specifies the order of the moment to calculate. If
+   *                   n <= 0, the area is returned.
+   *
+   *  @return The moment of the peak only, the background or the peak plus
+   *          background depending on the evaluation mode that has been
+   *          set.   (see method: setEvaluationMode())
+   */
+  abstract public float Moment( int n );
+
+
+
 
   /**
    *  Calculate the "nth" moment of the peak about the specified center point
@@ -195,5 +230,24 @@ public interface IPeak
    *
    */
   abstract public float Moment( float a, float b, float center, int n ); 
+
+
+
+  /**
+   *  Calculate the "nth" moment of the peak about the specified center point
+   *  over the current default peak extent.  The function  f(x)*(x-center)**n is
+   *  integrated over the specified interval, where "f()" is the peak function
+   *  and "center" is the specified center point.
+   *
+   *  @param  center   the center point for the moment calculation.
+   *  @param  n        specifies the order of the moment to calculate. If
+   *                   n <= 0, the area is returned.
+   *  @return The moment of the peak only, the background or the peak plus
+   *          background depending on the evaluation mode that has been
+   *          set. (see method: setEvaluationMode())
+   *
+   */
+  abstract public float Moment( float center, int n );
+
 
 }
