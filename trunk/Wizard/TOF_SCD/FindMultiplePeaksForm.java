@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.20  2003/07/09 14:20:10  bouzekc
+ * No longer has a specific default directory for the SCD
+ * instprm.dat file.
+ *
  * Revision 1.19  2003/07/08 21:01:24  bouzekc
  * Changed default values for some parameters.
  *
@@ -225,9 +229,7 @@ public class FindMultiplePeaksForm extends Form {
         "SCD Calibration File Line to Use", new Integer( -1 ), false ) );
 
     //8
-    addParameter( 
-      new LoadFilePG( 
-        "SCD Calibration File", "/IPNShome/scd/instprm.dat", false ) );
+    addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );
 
     //9
     addParameter( new LoadFilePG( "Peaks File", null, false ) );
