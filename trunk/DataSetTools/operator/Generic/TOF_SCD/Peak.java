@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2003/05/13 20:18:30  pfpeterson
+ * Fixed a javadoc.
+ *
  * Revision 1.13  2003/05/09 14:12:27  pfpeterson
  * Fixed bug in converting hkl to real-space when the detector is not
  * at +/-90 degrees.
@@ -873,7 +876,7 @@ public class Peak{
     return post_l;
   }
 
-  /*
+  /**
    * Returns 1/d vector (Q/2PI) in crystal reference frame.
    */
   public double[] getUnrotQ(){
