@@ -4,6 +4,10 @@
  *  Ported to Java from tof_vis_calc.c
  * 
  *  $Log$
+ *  Revision 1.8  2000/08/01 19:08:01  dennis
+ *  Added documentation and fixed degenerate case bug in version of
+ *  ReBin that also rebins errors.
+ *
  *  Revision 1.7  2000/08/01 14:36:25  dennis
  *  Added version of ReBin that also calculates rebinned error values,
  *  given error values for the original histogram.
@@ -99,7 +103,7 @@ public static final float  RADIANS_PER_DEGREE  = 0.01745332925f;
    *                    iX[].
    * @param   nX[]      Array of bin boundaries for the new histogram.  These
    *                    can be an arbitrary non-decreasing sequence of X values.
-   * @param   nHist[]   Array of histogram values for the input histogram. The
+   * @param   nHist[]   Array of histogram values for the new histogram. The
    *                    length of nHist[] must be one less than the length of
    *                    nX[].
    */
@@ -262,12 +266,23 @@ public static final float  RADIANS_PER_DEGREE  = 0.01745332925f;
    * such counts from bins in the input histogram that they contain, or
    * partially overlap.  Also see the method "ResampleBin".
    *
+   * This version also accepts an array of error values for the input histogram
+   * and calculates a new array of error values for the new histogram.
+   *
    * @param   iX[]      Array of bin boundaries for the input histogram.  These
-   *                    can be an arbitrary non-decreasing sequence of X values.   * @param   iHist[]   Array of histogram values for the input histogram. The
+   *                    can be an arbitrary non-decreasing sequence of X values.
+   * @param   iHist[]   Array of histogram values for the input histogram. The
    *                    length of iHist[] must be one less than the length of
    *                    iX[].
+   * @param   iErr[]    Array of error values for the input histogram. The
+   *                    length of iErr[] must be one less than the length of
+   *                    iX[].
    * @param   nX[]      Array of bin boundaries for the new histogram.  These
-   *                    can be an arbitrary non-decreasing sequence of X values.   * @param   nHist[]   Array of histogram values for the input histogram. The
+   *                    can be an arbitrary non-decreasing sequence of X values
+   * @param   nHist[]   Array of histogram values for the new histogram. The
+   *                    length of nHist[] must be one less than the length of
+   *                    nX[].
+   * @param   nErr[]    Array of error values for the new histogram. The
    *                    length of nHist[] must be one less than the length of
    *                    nX[].
    */
@@ -332,7 +347,10 @@ public static final float  RADIANS_PER_DEGREE  = 0.01745332925f;
          (nXmin >= nXmax) || (iXmin >= iXmax)  )
     {
       for ( n = 0; n < nHist.length; n++ )
+      {
         nHist[n] = 0.0f;
+        nErr[n]  = 0.0f;
+      }
       return( true );
     }
 
