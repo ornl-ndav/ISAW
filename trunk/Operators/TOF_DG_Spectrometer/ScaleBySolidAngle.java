@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/01/07 17:35:17  dennis
+ * Now implements IWrappableWithCategoryList and includes method
+ * to set which menu it appears in.
+ *
  * Revision 1.2  2004/08/24 03:16:25  dennis
  * Now propagates error estimates in case of TabulatedData.
  *
@@ -48,10 +52,28 @@ import DataSetTools.util.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Messaging.*;
 
-public class ScaleBySolidAngle implements Wrappable
+public class ScaleBySolidAngle implements IWrappableWithCategoryList
 {
   public DataSet   ds          = DataSet.EMPTY_DATA_SET;
   public boolean   make_new_ds = false;
+
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.TOF_NDGS;
+  }
+
 
   /**
    *  Get the command name for this operator
