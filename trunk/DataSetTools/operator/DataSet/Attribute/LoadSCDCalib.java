@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2004/03/02 17:17:02  dennis
+ * Moved some prints into   if (DEBUG)  statement.
+ *
  * Revision 1.14  2004/01/22 02:39:54  bouzekc
  * Removed/commented out unused imports/variables.
  *
@@ -682,16 +685,18 @@ public class LoadSCDCalib extends DS_Attribute{
       float ycenter = ylower + height / 2;
       Vector3D center = grid.position();
 
-      System.out.println("ORGINAL CENTER IS: " + center );
-      System.out.println("Shift in X is : " + xcenter );
-      System.out.println("Shift in Y is : " + ycenter );
+      if ( DEBUG )
+      {
+        System.out.println("ORGINAL CENTER IS: " + center );
+        System.out.println("Shift in X is : " + xcenter );
+        System.out.println("Shift in Y is : " + ycenter );
+      }
 
       base.multiply( xcenter );
       up.multiply( ycenter );
       center.add( base );
       center.add( up );
       grid.setCenter( center );
-      System.out.println("NEW CENTER IS: " + center );
 
       Attribute T0_attribute = new FloatAttribute( Attribute.T0_SHIFT, cal[3] );
       Attribute l1_attribute = new FloatAttribute( Attribute.INITIAL_PATH,
@@ -703,8 +708,11 @@ public class LoadSCDCalib extends DS_Attribute{
           grid.getData_entry( row, col ).setAttribute( T0_attribute );
         }
 
-      System.out.println ("GRID IS " );
-      System.out.println ("" + grid );
+      if ( DEBUG )
+      {
+        System.out.println ("NEW GRID IS " );
+        System.out.println ("" + grid );
+      }
                                                // Finally, adjust the
                                                // effective detector pixel
                                                // positions
