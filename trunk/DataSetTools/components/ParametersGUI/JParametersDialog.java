@@ -42,6 +42,7 @@ public class JParametersDialog implements Serializable,
 {
     private Operator op;
     private DataSet  ds_list[];  
+    private IObserver io;
     IsawGUI.Util util = new IsawGUI.Util();
     Document sessionLog;  
     Vector vparamGUI = new Vector();
@@ -51,22 +52,23 @@ public class JParametersDialog implements Serializable,
 
     
     
-    public JParametersDialog(Operator op, DataSet ds_list[], Document sessionLog)
+    public JParametersDialog(Operator op, DataSet ds_list[], Document sessionLog, IObserver io )
     {   
         this.op =op;
         this.ds_list = ds_list;
-	this.sessionLog = sessionLog;    
-        
+	  this.sessionLog = sessionLog;    
+        this.io = io;
         opDialog = new JDialog( new JFrame(), op.getTitle(),true);
       
         opDialog.setSize(570,450);
         String SS ="Operation "+op.getTitle();
-        
+       
 
         if(op instanceof DataSetOperator)
             SS = SS +" on tree node "+((DataSetOperator)op).getDataSet();
         opDialog.getContentPane().add(new JLabel(SS));
         APH = new ApplyButtonHandler();
+         if( io != null) addIObserver(io);
 
         //Center the opdialog frame 
 	    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -219,6 +221,7 @@ public class JParametersDialog implements Serializable,
        
   public void addIObserver(IObserver iobs) 
      {APH.addIObserver(iobs);
+
      }
                
   public void deleteIObserver(IObserver iobs) 
@@ -243,6 +246,7 @@ public class JParametersDialog implements Serializable,
            }
          public void addIObserver(IObserver iobs) 
            {OL.addIObserver(iobs);
+             
             }
                
           public void deleteIObserver(IObserver iobs) 
@@ -299,10 +303,11 @@ public class JParametersDialog implements Serializable,
             {
                // DataSet[] dss = new DataSet[1];
              //   dss[0] = (DataSet)result;
-               // jtui.addDataSet((DataSet)result);
-              OL.notifyIObservers( this , (DataSet)result);	
+                  //jtui.addDataSet((DataSet)result);
+                  
+			OL.notifyIObservers( this , (DataSet)result);	
                 
-                System.out.println("The new Title is    :" +((DataSet)result).getTitle());
+                //System.out.println("The new Title is    :" +((DataSet)result).getTitle());
                 resultsLabel.setText("Operation completed");
                 util.appendDoc(sessionLog,  ((DataSet)result).toString()+"="+op.getCommand()+"(" +s +")");
 

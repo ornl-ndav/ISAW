@@ -57,7 +57,7 @@ public class JOperationsMenuHandler implements ActionListener, Serializable
             {   DSgetArray DSA= new DSgetArray( treeUI );
                 DataSet Dss[];
                 Dss= DSA.getDataSets();
-                JParametersDialog pDialog = new JParametersDialog(op, Dss, sessionLog);
+                JParametersDialog pDialog = new JParametersDialog(op, Dss, sessionLog, treeUI);
 
             }
         }
