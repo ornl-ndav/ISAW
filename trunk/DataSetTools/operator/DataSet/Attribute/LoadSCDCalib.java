@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2003/06/09 15:01:47  pfpeterson
+ * Better memory usage since only one copy of each attribute is created
+ * and added to the data.
+ *
  * Revision 1.9  2003/05/15 18:43:39  pfpeterson
  * Return string now tells detector number used.
  *
@@ -81,17 +85,7 @@ public class LoadSCDCalib extends DS_Attribute{
     private static final String     TITLE  = "Load SCD Calibration";
     private static final boolean    DEBUG  = false;
 
-    private int     detNum = 0;
-    private float   detA   = 0f;
-    private float   detD   = 0f;
-    private float   L1     = 0f;
-    private float[] calib = null;
-    private float   T0     = 0f;
-    private float   ax     = 0f;
-    private float   ay     = 0f;
-    private float   bx     = 0f;
-    private float   by     = 0f;
-    private String  descr  = null;
+    private calib kalib=null;
 
     /**
      *  Creates operator with title "Load SCD Calibration" and a
@@ -137,9 +131,9 @@ public class LoadSCDCalib extends DS_Attribute{
      */
     public void setDefaultParameters(){
         parameters = new Vector();
-        addParameter( new Parameter("Calibration File", new LoadFileString()) );
+        addParameter( new Parameter("Calibration File", new LoadFileString()));
         addParameter( new Parameter("Line to use",      new Integer(1)));
-        addParameter( new Parameter("Group IDs",        new IntListString() ) );
+        addParameter( new Parameter("Group IDs",        new IntListString()) );
     }
     
     /** 
@@ -176,22 +170,24 @@ public class LoadSCDCalib extends DS_Attribute{
             return new ErrorString("FAILURE");
         }
 
+        StringAttribute filenameAttr=
+                       new StringAttribute(Attribute.SCD_CALIB_FILE,calibfile);
         if( list_string!=null && list_string.trim().length()!=0 ){
             // use the list we were given
             int[] ids=IntList.ToArray(list_string);
             for( int i=0 ; i<ids.length ; i++ ){
                 d=ds.getData_entry_with_id(i);
-                assoc(d,calibfile);
+                assoc(d,filenameAttr);
             }
         }else{
             // don't bother with the id list, it is empty
             for( int i=0 ; i<ds.getNum_entries() ; i++ ){
                 d=ds.getData_entry(i);
-                assoc(d,calibfile);
+                assoc(d,filenameAttr);
             }
         }
 
-        return "Using '"+this.descr.trim()+"' on det#"+this.detNum;
+        return "Using '"+kalib.descr.trim()+"' on det#"+kalib.detNum;
     }
     
     /** 
@@ -203,9 +199,8 @@ public class LoadSCDCalib extends DS_Attribute{
         return op;
     }
     
-    private void assoc( Data d, String filename ){
+    private void assoc( Data d, StringAttribute filenameAttr ){
         FloatAttribute fa;
-        StringAttribute sa;
         Float1DAttribute faa;
         if(d==null) return;
             
@@ -221,20 +216,15 @@ public class LoadSCDCalib extends DS_Attribute{
             }*/
 
         // if detNum=-1 don't bother checking against existing number
-        if( detNum!=-1 && oldDetNum!=0 && oldDetNum!=detNum ) return;
+        if(kalib.detNum!=-1 && oldDetNum!=0 && oldDetNum!=kalib.detNum) return;
 
         //System.out.println(d);
 
-        fa=new FloatAttribute(Attribute.DETECTOR_CEN_ANGLE,detA);
-        d.setAttribute(fa);
-        fa=new FloatAttribute(Attribute.DETECTOR_CEN_DISTANCE,detD);
-        d.setAttribute(fa);
-        fa=new FloatAttribute(Attribute.INITIAL_PATH,L1);
-        d.setAttribute(fa);
-        faa=new Float1DAttribute(Attribute.SCD_CALIB,this.calib);
-        d.setAttribute(faa);
-        sa=new StringAttribute(Attribute.SCD_CALIB_FILE,filename);
-        d.setAttribute(sa);
+        d.setAttribute(kalib.detA_Attr);
+        d.setAttribute(kalib.detD_Attr);
+        d.setAttribute(kalib.L1_Attr);
+        d.setAttribute(kalib.calib_Attr);
+        d.setAttribute(filenameAttr);
     }
 
     /**
@@ -319,6 +309,7 @@ public class LoadSCDCalib extends DS_Attribute{
         StringBuffer calibline=null;
         TextFileReader tfr=null;
         float[] innercalib=null;
+        String descr=null;
 
         try{
           tfr=new TextFileReader(filename);
@@ -347,16 +338,8 @@ public class LoadSCDCalib extends DS_Attribute{
           }
         }
 
-        this.calib=new float[5];
-        this.detNum=(int)innercalib[0];
-        this.detA=innercalib[1];
-        this.detD=innercalib[2];
-        this.L1=innercalib[3];
-        for( int i=0 ; i<5 ; i++ )
-          this.calib[i]=innercalib[i+4];
 
-        this.detD=this.detD/100f;
-        this.L1=this.L1/100f;
+        this.kalib=new calib(descr,innercalib);
         return true;
     }
     
@@ -364,13 +347,13 @@ public class LoadSCDCalib extends DS_Attribute{
     {
       StringBuffer Res = new StringBuffer();
       Res.append("@overview This operator will add the calibration");
-       Res.append(" information from the file produced by A.J. Schultz's code");
+      Res.append(" information from the file produced by A.J. Schultz's code");
 
       Res.append("@algorithm This operator will add the calibration");
-       Res.append(" information from the file produced by A.J. Schultz's");
-       Res.append(" code. This sets the primary flight path, detector center");
-       Res.append(" angle, secondary flight path, and the bin to real space");
-       Res.append(" conversion information.");
+      Res.append(" information from the file produced by A.J. Schultz's");
+      Res.append(" code. This sets the primary flight path, detector center");
+      Res.append(" angle, secondary flight path, and the bin to real space");
+      Res.append(" conversion information.");
 
       Res.append("@param ds The DataSet to operate on.");
       Res.append("@param calib_file Calibration file to use.");
@@ -387,4 +370,35 @@ public class LoadSCDCalib extends DS_Attribute{
   
      return Res.toString();
     }
+
+  private class calib{
+    String           descr      = null;
+    int              detNum     = 0;
+    FloatAttribute   detA_Attr  = null;
+    FloatAttribute   detD_Attr  = null;
+    FloatAttribute   L1_Attr    = null;
+    Float1DAttribute calib_Attr = null;
+
+    calib(String descr,float[] innercalib){
+      // copy over information from the supplied information
+      this.descr=descr;
+      this.detNum=(int)Math.round(innercalib[0]);
+      float detA=innercalib[1];
+      float detD=innercalib[2];
+      float L1=innercalib[3];
+      float[] calib=new float[5];
+      for( int i=0 ; i<5 ; i++ )
+        calib[i]=innercalib[i+4];
+
+      // convert from cm to m
+      detD = detD/100f;
+      L1   = L1/100f;
+
+      // create attributes from the given values
+      this.detA_Attr=new FloatAttribute(Attribute.DETECTOR_CEN_ANGLE,detA);
+      this.detD_Attr=new FloatAttribute(Attribute.DETECTOR_CEN_DISTANCE,detD);
+      this.L1_Attr=new FloatAttribute(Attribute.INITIAL_PATH,L1);
+      calib_Attr=new Float1DAttribute(Attribute.SCD_CALIB,calib);
+    }
+  }
 }
