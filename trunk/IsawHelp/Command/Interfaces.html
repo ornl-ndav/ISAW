@@ -38,7 +38,7 @@
    parenthesis) and the third argument is a prompt that will 
    appear if a dialog box pops up requesting values for these parameters.<P>
 <A  name="DataTypes">
-   <OL> The data types supported so far are
+   <OL> The parameter data types supported so far are
      <li> Integer or int, Float, DataSet, String , and Array (not case sensitive)
      <li> DataDirectoryString - Uses IsawProps.dat(property Data_Directory) to fill in a name
      <li> InstrumentNameString - Uses IsawProps.dat(property Default_Instrument) to fill in instrument name
@@ -46,7 +46,12 @@
      <li> DSFieldString -Gives choice for fields that can be viewed
      <li> Choice( initValue) where initValue is a Script Array.  Creates a drop down choice box with the elements
            of the array.  The result is String 
-    
+     <li>LoadFileString- Will pop up an open file dialog box
+     <li>SaveFileString -Will pop up a Save file dialog box
+     <li>ServerTypeString- Will allow choice of a data server
+     <li>SampleDataSet- Like DataSet but only Sample Data Sets will be selectable
+     <li>MonitorDataSet- Like DataSet but only Monitor Data Sets will be selectable
+     
    </ol>
 
   </ul><P>
