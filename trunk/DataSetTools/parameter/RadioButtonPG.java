@@ -33,6 +33,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/07/29 08:06:17  bouzekc
+ *  Now fires off propertyChangeEvents when the radio buttons are
+ *  clicked.  Now implements PropertyChanger.  Fixed bug in
+ *  getStringValue().
+ *
  *  Revision 1.9  2003/07/29 07:32:02  bouzekc
  *  Fixed bug in init().  Should now successfully show the choices,
  *  regardless of when the GUI is made.
@@ -94,7 +99,7 @@ import javax.swing.*;
  * as a logical ButtonGroup to link them together.
  */
 public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
-  ActionListener {
+  ActionListener, PropertyChanger {
   //~ Static fields/initializers ***********************************************
 
   private static final String TYPE = "RadioButton";
@@ -107,6 +112,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
   private Vector radioChoices;
   private Vector extListeners      = null;
   private ButtonGroup radioGroup;
+  private PropertyChangeSupport pcs;
 
   //~ Constructors *************************************************************
 
@@ -135,6 +141,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     this.type                 = TYPE;
     this.initialized          = false;
     this.ignore_prop_change   = false;
+    pcs                       = new PropertyChangeSupport( this );
   }
 
   /**
@@ -185,6 +192,10 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
    * @return The String value associated with the selected radio button.
    */
   public String getStringValue(  ) {
+    if( getValue(  ) == null ) {
+      return null;
+    }
+
     String tempVal = getValue(  )
                        .toString(  );
 
@@ -252,11 +263,15 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
    * @param e The triggering ActionEvent.
    */
   public void actionPerformed( ActionEvent e ) {
+    Object oldVal = getValue(  );
+
     //System.out.println( "Previous value: " + getValue(  ) );
     this.value = e.getActionCommand(  );
 
     //System.out.println( "New value: " + getValue(  ) );
     this.setValid( false );
+    pcs.firePropertyChange( 
+      new PropertyChangeEvent( this, IParameter.VALUE, oldVal, getValue(  ) ) );
   }
 
   /**
@@ -292,6 +307,36 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
   public void addItems( Vector itemList ) {
     for( int i = 0; i < itemList.size(  ); i++ ) {
       addItem( itemList.elementAt( i ).toString(  ) );
+    }
+  }
+
+  /**
+   * @param pcl The property change listener to be added.
+   */
+  public void addPropertyChangeListener( PropertyChangeListener pcl ) {
+    pcs.addPropertyChangeListener( pcl );
+
+    if( radioButtons != null ) {
+      for( int i = 0; i < radioButtons.size(  ); i++ ) {
+        ( ( JRadioButton )radioButtons.elementAt( i ) ).addPropertyChangeListener( 
+          pcl );
+      }
+    }
+  }
+
+  /**
+   * @param pcl The property change listener to be added.
+   * @param prop The property to listen for.
+   */
+  public void addPropertyChangeListener( 
+    String prop, PropertyChangeListener pcl ) {
+    pcs.addPropertyChangeListener( prop, pcl );
+
+    if( radioButtons != null ) {
+      for( int i = 0; i < radioButtons.size(  ); i++ ) {
+        ( ( JRadioButton )radioButtons.elementAt( i ) ).addPropertyChangeListener( 
+          prop, pcl );
+      }
     }
   }
 
@@ -375,6 +420,20 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     pg.initialized = false;
 
     return pg;
+  }
+
+  /**
+   * @param pcl The property change listener to be removed.
+   */
+  public void removePropertyChangeListener( PropertyChangeListener pcl ) {
+    pcs.removePropertyChangeListener( pcl );
+
+    if( radioButtons != null ) {
+      for( int i = 0; i < radioButtons.size(  ); i++ ) {
+        ( ( JRadioButton )radioButtons.elementAt( i ) ).removePropertyChangeListener( 
+          pcl );
+      }
+    }
   }
 
   /**
