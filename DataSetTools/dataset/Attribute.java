@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2002/07/10 20:57:52  pfpeterson
+ *  All string constants are now transient and finally define the
+ *  serialVersionUID=1L (the first version when we are counting).
+ *
  *  Revision 1.24  2002/07/10 16:00:44  pfpeterson
  *  Added new string constants for GSAS handling.
  *
@@ -151,87 +155,92 @@ import  DataSetTools.math.*;
 abstract public class Attribute implements Serializable, 
                                            IXmlIO
 {
-  public static final int     MAX_LABEL_LENGTH  = 80; 
+  // CHANGE IF THE SERIALIZATION IS INCOMPATIBLE WITH PREVIOUS VERSIONS
+  static final long serialVersionUID = 1L;
+
+  transient public static final int     MAX_LABEL_LENGTH  = 80; 
   // Suggested names for attributes for neutron scattering data sets:
 
-  public static final String  TITLE             = "DataSet Name";
-  public static final String  LABEL             = "Label";
-  public static final String  DS_TAG            = "DataSet Tag";
+  transient public static final String  TITLE             = "DataSet Name";
+  transient public static final String  LABEL             = "Label";
+  transient public static final String  DS_TAG            = "DataSet Tag";
 
-  public static final String  INST_NAME         = "Instrument Name";
-  public static final String  INST_TYPE         = "Instrument Type";
+  transient public static final String  INST_NAME         = "Instrument Name";
+  transient public static final String  INST_TYPE         = "Instrument Type";
 
-  public static final String  FILE_NAME         = "File";
-  public static final String  RUN_TITLE         = "Run Title";
-  public static final String  RUN_NUM           = "Run Number";
-  public static final String  END_DATE          = "End Date";
-  public static final String  END_TIME          = "End Time";
-  public static final String  UPDATE_TIME       = "Update Time";
+  transient public static final String  FILE_NAME         = "File";
+  transient public static final String  RUN_TITLE         = "Run Title";
+  transient public static final String  RUN_NUM           = "Run Number";
+  transient public static final String  END_DATE          = "End Date";
+  transient public static final String  END_TIME          = "End Time";
+  transient public static final String  UPDATE_TIME       = "Update Time";
 
-  public static final String  DETECTOR_POS      = "Effective Position";
-  public static final String  RAW_ANGLE         = "Raw Detector Angle";
-  public static final String  SOLID_ANGLE       = "Total Solid Angle";
-  public static final String  OMEGA             = "Omega";
-  public static final String  DELTA_2THETA      = "\u0394"+"2"+"\u03b8";
-  public static final String  EFFICIENCY_FACTOR = "Efficiency";
-  public static final String  DETECTOR_IDS      = "Detector IDs";
-  public static final String  SEGMENT_IDS       = "Segment IDs";
-  public static final String  GROUP_ID          = "Group ID";
-  public static final String  TIME_FIELD_TYPE   = "Time Field Type";
-  public static final String  CRATE             = "Crate";
-  public static final String  SLOT              = "Slot";
-  public static final String  INPUT             = "Input";
+  transient public static final String  DETECTOR_POS      = "Effective Position";
+  transient public static final String  RAW_ANGLE         = "Raw Detector Angle";
+  transient public static final String  SOLID_ANGLE       = "Total Solid Angle";
+  transient public static final String  OMEGA             = "Omega";
+  transient public static final String  DELTA_2THETA      = "\u0394"+"2"+"\u03b8";
+  transient public static final String  EFFICIENCY_FACTOR = "Efficiency";
+  transient public static final String  DETECTOR_IDS      = "Detector IDs";
+  transient public static final String  SEGMENT_IDS       = "Segment IDs";
+  transient public static final String  GROUP_ID          = "Group ID";
+  transient public static final String  TIME_FIELD_TYPE   = "Time Field Type";
+  transient public static final String  CRATE             = "Crate";
+  transient public static final String  SLOT              = "Slot";
+  transient public static final String  INPUT             = "Input";
 
-  public static final String  DETECTOR_CEN_DISTANCE = 
+  transient public static final String  DETECTOR_CEN_DISTANCE = 
                                                   "Detector center distance";
-  public static final String  DETECTOR_CEN_ANGLE = 
+  transient public static final String  DETECTOR_CEN_ANGLE = 
                                                   "Detector center angle";
-  public static final String  DETECTOR_CEN_HEIGHT = 
+  transient public static final String  DETECTOR_CEN_HEIGHT = 
                                                   "Detector center height";
 
-  public static final String  INITIAL_PATH      = "Initial Path";
-  public static final String  ENERGY_IN         = "Energy In";
-  public static final String  NOMINAL_ENERGY_IN = "Nominal Energy In";
-  public static final String  ENERGY_OUT        = "Energy Out";
-  public static final String  NOMINAL_SOURCE_TO_SAMPLE_TOF = 
-                                                 "Nominal Source to Sample TOF";
-  public static final String  SOURCE_TO_SAMPLE_TOF = 
+  transient public static final String  INITIAL_PATH      = "Initial Path";
+  transient public static final String  ENERGY_IN         = "Energy In";
+  transient public static final String  NOMINAL_ENERGY_IN =
+                                                           "Nominal Energy In";
+  transient public static final String  ENERGY_OUT        = "Energy Out";
+  transient public static final String  NOMINAL_SOURCE_TO_SAMPLE_TOF = 
+                                                "Nominal Source to Sample TOF";
+  transient public static final String  SOURCE_TO_SAMPLE_TOF = 
                                                   "Source to Sample TOF";
 
-  public static final String  SAMPLE_CHI        = "Sample Chi";
-  public static final String  SAMPLE_PHI        = "Sample Phi";
-  public static final String  SAMPLE_OMEGA      = "Sample Omega";
-  public static final String  SAMPLE_NAME       = "Sample Name";
-  public static final String  TEMPERATURE       = "Temperature";
-  public static final String  PRESSURE          = "Pressure";
-  public static final String  MAGNETIC_FIELD    = "Magnetic Field";
-  public static final String  NUMBER_OF_PULSES  = "Number of Pulses";
-  public static final String  TOTAL_COUNT       = "Total Count";
+  transient public static final String  SAMPLE_CHI        = "Sample Chi";
+  transient public static final String  SAMPLE_PHI        = "Sample Phi";
+  transient public static final String  SAMPLE_OMEGA      = "Sample Omega";
+  transient public static final String  SAMPLE_NAME       = "Sample Name";
+  transient public static final String  TEMPERATURE       = "Temperature";
+  transient public static final String  PRESSURE          = "Pressure";
+  transient public static final String  MAGNETIC_FIELD    = "Magnetic Field";
+  transient public static final String  NUMBER_OF_PULSES  = "Number of Pulses";
+  transient public static final String  TOTAL_COUNT       = "Total Count";
 
-  public static final String  Q_VALUE           = "Q(invA)";
-  public static final String  GSAS_CALIB        = "GSAS calibration";
-  public static final String  GSAS_IPARM    = "GSAS Instrument Parameter File";
+  transient public static final String  Q_VALUE           = "Q(invA)";
+  transient public static final String  GSAS_CALIB        = "GSAS calibration";
+  transient public static final String  GSAS_IPARM        =
+                                              "GSAS Instrument Parameter File";
 
-  public static final String  DETECTOR_INFO_LIST = "Det Info List";
-  public static final String  DETECTOR_INFO      = "Det Info";
+  transient public static final String  DETECTOR_INFO_LIST = "Det Info List";
+  transient public static final String  DETECTOR_INFO      = "Det Info";
 
-  public static final String  DS_TYPE            = "Data Set Type";
+  transient public static final String  DS_TYPE            = "Data Set Type";
 
   // software grouping and time focusing
-  public static final String  TIME_OFFSET        ="Time Offset";
+  transient public static final String  TIME_OFFSET        ="Time Offset";
 
   // stuff for SDDS files
-  public static final String  START_TIME_SEC     = "Start Time(sec)";
-  public static final String  TIME_OF_DAY        = "Time of Day";
-  public static final String  DAY_OF_MONTH       = "Day of Month";
+  transient public static final String  START_TIME_SEC     = "Start Time(sec)";
+  transient public static final String  TIME_OF_DAY        = "Time of Day";
+  transient public static final String  DAY_OF_MONTH       = "Day of Month";
 
 
   // Suggested value Strings for DataSet attributes:
 
-  public static final String  UNKNOWN            = "Unknown";
-  public static final String  MONITOR_DATA       = "Monitor Data";
-  public static final String  SAMPLE_DATA        = "Sample Data";
-  public static final String  PULSE_HEIGHT_DATA  = "Pulse Height";
+  transient public static final String  UNKNOWN            = "Unknown";
+  transient public static final String  MONITOR_DATA       = "Monitor Data";
+  transient public static final String  SAMPLE_DATA        = "Sample Data";
+  transient public static final String  PULSE_HEIGHT_DATA  = "Pulse Height";
  
   protected String name;
 
