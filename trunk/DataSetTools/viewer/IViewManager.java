@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/10/30 17:16:06  dennis
+ *  Removed "OLD Selected Graph View" that used SGT.
+ *
  *  Revision 1.11  2003/08/08 17:52:47  dennis
  *  Added final String names for "Brent" view and old selected graph
  *  view.
@@ -69,8 +72,7 @@ public interface IViewManager extends IObserver
   public static final String ADDITIONAL_VIEW = "Additional View";
   public static final String IMAGE           = "Image View";
   public static final String SCROLLED_GRAPHS = "Scrolled Graph View";
-  public static final String SELECTED_GRAPHS = "NEW Selected Graph View";
-  public static final String SELECTED_GRAPH2 = "OLD Selected Graph View";
+  public static final String SELECTED_GRAPHS = "Selected Graph View";
   public static final String TABLE           = "Table Generator";
   public static final String THREE_D         = "3D View";
   public static final String CONTOUR         = "Contour View";
