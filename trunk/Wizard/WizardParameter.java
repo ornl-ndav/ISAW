@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/04/11 22:32:48  pfpeterson
+ * Added some comments for the javadocs.
+ *
  * Revision 1.2  2002/03/12 16:09:46  pfpeterson
  * Now automatically disable constant and result parameters.
  *
@@ -164,11 +167,17 @@ public class WizardParameter extends Parameter
     return extended_gui;
   }
 
+    /**
+     * enable or disable the gui (editable/noneditable)
+     */
     public void setEnabled(boolean en){
         this.enabled=en;
         param_gui.setEnabled(en);
     }
 
+    /**
+     * find out if the gui is editable
+     */
     public boolean getEnabled(){
         return this.enabled;
     }
