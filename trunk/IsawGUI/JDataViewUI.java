@@ -1,9 +1,15 @@
-
 /*
- * @(#)JDataViewGUI.java     1.0  99/09/02  Alok Chatterjee
+ * @(#)JDataViewGUI.java     1.0  99/09/02    Alok Chatterjee
+ *                           1.1  2000/02/23  Dennis Mikkelson
  *
- * 1.0  99/09/02  Added the comments and made this a part of package IsawGUI
- * 
+ * 1.0  99/09/02    Added the comments and made this a part of package IsawGUI
+ * 1.1  2000/09/02  Changed to use ViewManagers to hold internal and external
+ *                  viewers, instead of placing DataSetViewers in frames.
+ *                  Also removed the JInternalFrame listener, since it was
+ *                  no longer needed.  Finally, replaced drawImage() with
+ *                  a more flexible ShowDataSet() method that will create and
+ *                  initialize an internal or external ViewManager with
+ *                  any of several types of viewers. 
  */
  
 package IsawGUI;
@@ -26,10 +32,8 @@ import javax.swing.border.*;
 import java.util.zip.*;
 
 /**
- * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
- * ChopTools and graph packages.
  *
- * @version 1.0  
+ * @version 1.1  
  */
 
 public class JDataViewUI extends JDesktopPane implements Serializable
@@ -37,93 +41,84 @@ public class JDataViewUI extends JDesktopPane implements Serializable
     private int xoffset = 0, yoffset = 0;
     private int w = 500, h = 450;
     Toolkit toolkit;
-    JInternalFrame jif, sel_frame;
-    JFrame jef;
+    JInternalFrame sel_frame;
+
+    ViewManager         view_manager   = null;
+    InternalViewManager i_view_manager = null;
+
     public JDataViewUI()
     {
         toolkit = getToolkit();
-       
     }
     
-    public void drawImage(DataSet ds, String frame)
-	{
-        
-	     ImageView iv = new ImageView(ds);
-	     
-	    if (frame == "Internal Frame")
-	    {
-            JInternalFrame jif = new JInternalFrame(ds.toString());            
-            jif.setBounds(0,0,w,h);
-	        jif.setResizable(true);
-	        jif.setIconifiable(true);
-    	    jif.setMaximizable(true);    
-	        jif.setClosable(true);
-            jif.setVisible(true);
-           
-            jif.getContentPane().add(iv);
-            
-           // jif.addInternalFrameListener(new Listener());
-           
-            add(jif);  
-			jif.toFront();
-	//	System.out.println("Inside drawImage  " +jif);
-		}	
-		
-		else if (frame == "External Frame")
-		{
-		    jef = new JFrame(ds.toString());
-		    jef.setBounds(0,0,w,h);
-		    jef.setResizable(true);
-		    jef.setVisible(true);
-		    
-		    jef.addWindowListener(new WindowAdapter()
-		    {
-		       public void windowClosing(WindowEvent ev)
-		        {
-		            jef.dispose();
-		            System.gc();
-		            System.runFinalization();
-		        }
-		    });
-		    
-		    jef.getContentPane().add(iv);
-		    jef.validate();  
-		}
-     }
+    /**
+     *  Create a ViewManager to hold the specified DataSet.  The ViewManager
+     *  can be in an internal or external frame.  It can also be initialized
+     *  with any of the available types of viewers.
+     * 
+     *  @param   ds        Reference to the DataSet to be viewed
+     *  @param   frame     String specifying whether to use an internal or
+     *                     external frame for the ViewManager
+     *  @param   view_type Specifies the initial viewer type for to be used
+     *                     by the ViewManager.  Currently, this can be one
+     *                     of IViewManager.IMAGE  or
+     *                        IViewManager.SCROLLED_GRAPHS
+     *
+     *  @see DataSetTools.viewer.IViewManager
+     *  @see DataSetTools.viewer.ViewManager
+     *  @see DataSetTools.viewer.InternalViewManager
+     */
+    public void ShowDataSet(DataSet ds, String frame, String view_type )
+    {
+      if (frame == "Internal Frame")
+      {
+       i_view_manager = new InternalViewManager( ds, view_type );
+	 i_view_manager.setResizable(true);
+	 i_view_manager.setIconifiable(true);
+    	 i_view_manager.setMaximizable(true);    
+	 i_view_manager.setClosable(true);
+
+       add( i_view_manager );
+       i_view_manager.toFront();
+      }		
+      else if (frame == "External Frame")
+       view_manager = new ViewManager( ds, view_type );
+    }
+
      
      public void closeAll() {
-		JInternalFrame[] frames = getAllFrames();
+	JInternalFrame[] frames = getAllFrames();
 
-		for(int i=0; i < frames.length; ++i) {
-			if(!frames[i].isIcon()) {
-				try {
-					frames[i].setIcon(true);
-				}
-				catch(java.beans.PropertyVetoException ex) {
-					System.out.println("iconification vetoed!");
-				}
+	for(int i=0; i < frames.length; ++i) {
+		if(!frames[i].isIcon()) {
+			try {
+				frames[i].setIcon(true);
+			}
+			catch(java.beans.PropertyVetoException ex) {
+				System.out.println("iconification vetoed!");
 			}
 		}
 	}
+    }
 	
     
 	
-	 public void MaxAll() {
-		JInternalFrame[] frames = getAllFrames();
+    public void MaxAll() {
+	JInternalFrame[] frames = getAllFrames();
 
-		for(int i=0; i < frames.length; ++i) {
-			if(!frames[i].isIcon()) {
-				try 
-				{
-				    frames[i].setMaximum(true);	
-				}
-				catch(java.beans.PropertyVetoException ex) 
-				{
-					System.out.println("Maximization vetoed!");
-				}
-			}
-		}
-	}
+	for(int i=0; i < frames.length; ++i) {
+          if(!frames[i].isIcon()) {
+            try 
+            {
+              frames[i].setMaximum(true);	
+            }
+            catch(java.beans.PropertyVetoException ex) 
+            {
+              System.out.println("Maximization vetoed!");
+            }
+          }
+        }
+   }
 	
 	public void openAll() {
 		JInternalFrame[] frames = getAllFrames();
@@ -222,39 +217,4 @@ public class JDataViewUI extends JDesktopPane implements Serializable
 		    }
 		    return null;
 	    }
-	    
-	public class Listener implements InternalFrameListener 
-	 
-	{
-	    public Listener(){ }
-	    
-	    public void internalFrameClosing(InternalFrameEvent e)
-	    {
-	       System.out.println("Now closing frame ......"); 
-	       try
-	       {
-	            jif.dispose();
-	       }
-	       catch(Exception ee){ System.out.println("Now closing frame ......" +ee);}
-	    }
-	     public void internalFrameClosed(InternalFrameEvent e)
-	    {}
-	    
-	    public void internalFrameActivated(InternalFrameEvent e)
-	    {}
-	    
-	    public void internalFrameDeactivated(InternalFrameEvent e)
-	    {}
-	    
-	    public void internalFrameDeiconified(InternalFrameEvent e)
-	    {}
-	    
-	    public void internalFrameIconified(InternalFrameEvent e)
-	    {}
-	    
-	    public void internalFrameOpened(InternalFrameEvent e)
-	    {}
-	}
-	    
-	    
 }   

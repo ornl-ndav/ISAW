@@ -144,6 +144,9 @@ public class Isaw extends JFrame implements Serializable
        
         JMenuItem removeSelectedNode = new JMenuItem("Remove Selected Node");
         removeSelectedNode.setAccelerator(KeyStroke.getKeyStroke('X', KeyEvent.CTRL_MASK, true));
+	  JMenuItem editUndo = new JMenuItem("Undo");
+        editUndo.setAccelerator(KeyStroke.getKeyStroke('Z', KeyEvent.CTRL_MASK, true));
+
         JMenuItem editAttributes = new JMenuItem("Edit Attributes");
         JMenuItem editSetAttribute = new JMenuItem("Set Attributes");
         JMenuItem setGroupAttributes = new JMenuItem("Set Attribute For All Groups");
@@ -225,7 +228,8 @@ public class Isaw extends JFrame implements Serializable
         fMenu.addSeparator();
         fMenu.add(fileExit);
 
-        eMenu.add(removeSelectedNode);
+        eMenu.add(editUndo);
+	  eMenu.add(removeSelectedNode);
         eMenu.add(editAttributes);
         eMenu.add(editSetAttribute);
         eMenu.add(setGroupAttributes);
@@ -383,6 +387,8 @@ public class Isaw extends JFrame implements Serializable
         fileLoadDataset.addActionListener(new MenuItemHandler());
         
         removeSelectedNode.addActionListener(new MenuItemHandler());
+	  editUndo.addActionListener(new MenuItemHandler());
+
         editAttributes.addActionListener(new AttributeMenuItemHandler());
         editSetAttribute.addActionListener(new AttributeMenuItemHandler());
         setGroupAttributes.addActionListener(new AttributeMenuItemHandler());
@@ -520,8 +526,8 @@ public class Isaw extends JFrame implements Serializable
    private class LoadMenuItemHandler implements ActionListener 
    {
     
-    // final JFileChooser fc = new JFileChooser();
-        final FileDialog fd = new FileDialog(new Frame(), "Choose the Folder/File to open", FileDialog.LOAD);   
+     final JFileChooser fc = new JFileChooser();
+        //final FileDialog fd = new FileDialog(new Frame(), "Choose the Folder/File to open", FileDialog.LOAD);   
      
         public void actionPerformed(ActionEvent ev) 
         
@@ -533,14 +539,11 @@ public class Isaw extends JFrame implements Serializable
                  { 
                     try
                     {
-
-                        fd.show();
-                        File f = new File(fd.getDirectory(), fd.getFile());
-                       {
-                      
+				int state = fc.showOpenDialog(null);
+				File f = fc.getSelectedFile();
+                        fc.show();
                         String filename =f.toString();
-                        String ff = fd.getFile();
-                        System.out.println("The ffis "  + ff);
+                        
                         System.out.println("The filename is "  + filename);
                        
                         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -550,14 +553,17 @@ public class Isaw extends JFrame implements Serializable
                         DataSet[] dss = new DataSet[numberOfDataSets];
                         for (int i = 0; i< numberOfDataSets; i++)
                             dss[i] = r.getDataSet(i);
-                            System.out.println("Tree is : " +jtui.getTree()); 
-                            jtui.addDataSets(dss, ff);
-		
+				System.out.println("Tree is : " +jtui.getTree()); 
+                        jtui.addDataSets(dss, filename);
+				r=null;
+				
 				if(dss[1]!=null)
-				    jdvui.drawImage(dss[1],"Internal Frame");
+				    
+					jdvui.ShowDataSet(dss[1],"Internal Frame",IViewManager.IMAGE);
+
                        System.out.println("Print the dataset dss[1]  " +dss[1]);
                        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                       }
+                       
                     } 
                     catch (Exception e){System.out.println("Choose a input file");}
                    
@@ -567,21 +573,15 @@ public class Isaw extends JFrame implements Serializable
                 {
                     try
                     { 
-                           
-                            
-                         fd.show();
-                        File f = new File(fd.getDirectory(), fd.getFile());  
-                         String filename =f.toString();
-                        String ff = fd.getFile();
-                            
-                           // JOptionPane.showMessageDialog(null, fc.getCurrentDirectory().toString());
 
-                        //if ( state == JFileChooser.APPROVE_OPTION){
-                       // LoadFiles db = new LoadFiles(jtui, fc.getCurrentDirectory().toString());
-                       LoadFiles db = new LoadFiles(jtui,fd.getDirectory(),jdvui);
+                        int state = fc.showOpenDialog(null);
+                       	LoadFiles db = new LoadFiles(jtui,fc.getCurrentDirectory().toString(),jdvui);
                         db.setSize(new Dimension(550,300));
-                       db.show(); 
-                       // }
+                        db.show(); 
+
+                        fc.show();
+
+
                     }
                     catch (Exception e){System.out.println("Choose a input file: "+e);}
                 }
@@ -589,21 +589,14 @@ public class Isaw extends JFrame implements Serializable
                 {
                     try
                     { 
-                     // int state = fc.showOpenDialog(null);
-                       fd.show();
-                        File f = new File(fd.getDirectory(), fd.getFile());  
-                         String filename =f.toString();
-                        String ff = fd.getFile();
-                            
-                           // JOptionPane.showMessageDialog(null, fc.getCurrentDirectory().toString());
+				int state = fc.showOpenDialog(null);
+				File f = fc.getSelectedFile();   
+                        fc.show();
 
-                       // if ( state == JFileChooser.APPROVE_OPTION){
-                        
-                       // ListFiles db = new ListFiles(jtui,fc.getCurrentDirectory().toString());
-                       ListFiles db = new ListFiles(jtui,fd.getDirectory());
+                       	ListFiles db = new ListFiles(jtui,fc.getCurrentDirectory().toString());
                         db.setSize(new Dimension(550,300));
-                        db.show();  
-                       // }
+                        db.show(); 
+
                     }
                     catch (Exception e){System.out.println("Choose a input file: ");}
                 }
@@ -632,6 +625,19 @@ public class Isaw extends JFrame implements Serializable
 
                     System.exit(0);
                 }
+
+		if(s=="Undo")
+            {
+	  		try
+			{
+				System.out.println("Inside Undo");
+			}
+	     		catch(Exception e){};
+
+
+            }
+                
+
                 
                 if(s=="Print to File")
                 {
@@ -1026,7 +1032,7 @@ public class Isaw extends JFrame implements Serializable
                         new_ds2 = (DataSet)op2.getResult();
                         jtui.addDataSet(new_ds2);
 				
-				    jdvui.drawImage(new_ds2,"Internal Frame");
+					jdvui.ShowDataSet(new_ds2,"Internal Frame",IViewManager.IMAGE);
 
                         //    jtui.addDataSets(dss, ff);
                        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -1106,7 +1112,9 @@ public class Isaw extends JFrame implements Serializable
                         {   
                             op1 = new DataSetMerge( ds0, ds1 );
                             mergedDS1 = (DataSet)op1.getResult(); 
-                            jdvui.drawImage(mergedDS1,"Internal Frame");
+
+				    jdvui.ShowDataSet(mergedDS1,"Internal Frame",IViewManager.IMAGE);
+
                             //jtui.addDataSet(mergedDS1);
                         }
                      if(num_child == 3)
@@ -1118,7 +1126,7 @@ public class Isaw extends JFrame implements Serializable
                             mergedDS1 = (DataSet)op1.getResult(); 
                             op2 = new DataSetMerge( mergedDS1, ds2 );
                             mergedDS2 = (DataSet)op2.getResult(); 
-                            jdvui.drawImage(mergedDS2,"Internal Frame");
+					jdvui.ShowDataSet(mergedDS2,"Internal Frame",IViewManager.IMAGE);
                            // jtui.addDataSet(mergedDS2);
   
                         }
@@ -1129,7 +1137,8 @@ public class Isaw extends JFrame implements Serializable
                     if(  mtn.getUserObject() instanceof DataSet)
                     {
                         DataSet ds = (DataSet)mtn.getUserObject();
-                        jdvui.drawImage(ds,"Internal Frame");
+				  jdvui.ShowDataSet(ds,"Internal Frame",IViewManager.IMAGE);
+
                         jpui.showAttributes(ds.getAttributeList());
                     }
                       
@@ -1153,7 +1162,8 @@ public class Isaw extends JFrame implements Serializable
                         op1 = new SelectData(ds, attr_name , true, start_id, start_id+tp.length-1);
                         DataSet new_ds = (DataSet)op1.getResult(); 
 
-                        jdvui.drawImage(new_ds,"Internal Frame");
+
+				jdvui.ShowDataSet(new_ds,"Internal Frame",IViewManager.IMAGE);
                         jpui.showAttributes(data.getAttributeList());
                     }
                     else {
@@ -1198,7 +1208,8 @@ public class Isaw extends JFrame implements Serializable
                         {   
                             op1 = new DataSetMerge( ds0, ds1 );
                             mergedDS1 = (DataSet)op1.getResult(); 
-                            jdvui.drawImage(mergedDS1,"External Frame");
+
+					jdvui.ShowDataSet(mergedDS1,"External Frame",IViewManager.IMAGE);
                           //  jtui.addDataSet(mergedDS1);
                         }
                      if(num_child == 3)
@@ -1210,7 +1221,8 @@ public class Isaw extends JFrame implements Serializable
                             mergedDS1 = (DataSet)op1.getResult(); 
                             op2 = new DataSetMerge( mergedDS1, ds2 );
                             mergedDS2 = (DataSet)op2.getResult(); 
-                            jdvui.drawImage(mergedDS2,"External Frame");
+                            
+					jdvui.ShowDataSet(mergedDS2,"External Frame",IViewManager.IMAGE);
                           //  jtui.addDataSet(mergedDS2);
   
                         }
@@ -1219,7 +1231,8 @@ public class Isaw extends JFrame implements Serializable
                     if(mtn.getUserObject() instanceof DataSet)
                     {
                         DataSet ds = (DataSet)mtn.getUserObject();
-                        jdvui.drawImage(ds,"External Frame");
+                        
+				jdvui.ShowDataSet(ds,"External Frame",IViewManager.IMAGE);
                        
                         jpui.showAttributes(ds.getAttributeList());
                     }
@@ -1240,7 +1253,9 @@ public class Isaw extends JFrame implements Serializable
                         AttributeNameString attr_name = new AttributeNameString("Group ID");
                         op1 = new SelectData(ds, attr_name , true, start_id, start_id+tp.length-1);
                         DataSet new_ds = (DataSet)op1.getResult(); 
-                        jdvui.drawImage(new_ds,"External Frame");
+
+				jdvui.ShowDataSet(new_ds,"External Frame",IViewManager.IMAGE);
+
                         jpui.showAttributes(data.getAttributeList());
                     }
                     else {
@@ -1277,7 +1292,7 @@ public class Isaw extends JFrame implements Serializable
                         {   
                             op1 = new DataSetMerge( ds0, ds1 );
                             mergedDS1 = (DataSet)op1.getResult(); 
-                            //jdvui.drawImage(mergedDS1,"Internal Frame");
+
                            // jtui.addDataSet(mergedDS1);
                             chop_MacroTools fg = new chop_MacroTools();
                          fg.drawAlldata (mergedDS1); 
@@ -1292,7 +1307,8 @@ public class Isaw extends JFrame implements Serializable
                             mergedDS1 = (DataSet)op1.getResult(); 
                             op2 = new DataSetMerge( mergedDS1, ds2 );
                             mergedDS2 = (DataSet)op2.getResult(); 
-                           // jdvui.drawImage(mergedDS2,"Internal Frame");
+
+				
                           //  jtui.addDataSet(mergedDS2);
                           
                           chop_MacroTools fg = new chop_MacroTools();
@@ -1365,19 +1381,12 @@ public class Isaw extends JFrame implements Serializable
                         {   
                             op1 = new DataSetMerge( ds0, ds1 );
                             mergedDS1 = (DataSet)op1.getResult(); 
-                            //jdvui.drawImage(mergedDS1,"Internal Frame");
-                           // jtui.addDataSet(mergedDS1);
-                            GraphView graph_view =  new GraphView(mergedDS1);
-                          JInternalFrame f = new JInternalFrame();
-                        f.setBounds(0,0,600,400);
-                        f.setClosable(true);
-                        f.setResizable(true);
-                        f.setMaximizable(true);
-                        f.setIconifiable(true);
-                        f.getContentPane().add(graph_view);
-                        f.setVisible(true);
-                        jdvui.add(f); 
-                           
+
+
+					jdvui.ShowDataSet(mergedDS1,"Internal Frame",IViewManager.SCROLLED_GRAPHS);
+
+                       // jtui.addDataSet(mergedDS1);
+                      
                         }
                      if(num_child == 3)
                           
@@ -1388,36 +1397,19 @@ public class Isaw extends JFrame implements Serializable
                             mergedDS1 = (DataSet)op1.getResult(); 
                             op2 = new DataSetMerge( mergedDS1, ds2 );
                             mergedDS2 = (DataSet)op2.getResult(); 
-                           // jdvui.drawImage(mergedDS2,"Internal Frame");
+
                           //  jtui.addDataSet(mergedDS2);
+
+				jdvui.ShowDataSet(mergedDS2,"Internal Frame",IViewManager.SCROLLED_GRAPHS);
                           
-                          GraphView graph_view =  new GraphView(mergedDS2);
-                          JInternalFrame f = new JInternalFrame();
-                        f.setBounds(0,0,600,400);
-                        f.setClosable(true);
-                        f.setResizable(true);
-                        f.setMaximizable(true);
-                        f.setIconifiable(true);
-                        f.getContentPane().add(graph_view);
-                        f.setVisible(true);
-                        jdvui.add(f);  
-  
                         }
                      }           
                      
                     if(  mtn.getUserObject() instanceof DataSet)
                     {
                         DataSet ds = (DataSet)mtn.getUserObject();
-                           GraphView graph_view =  new GraphView(ds);
-                          JInternalFrame f = new JInternalFrame();
-                        f.setBounds(0,0,600,400);
-                        f.setClosable(true);
-                        f.setResizable(true);
-                        f.setMaximizable(true);
-                        f.setIconifiable(true);
-                        f.getContentPane().add(graph_view);
-                        f.setVisible(true);
-                        jdvui.add(f); 
+                        jdvui.ShowDataSet(ds,"Internal Frame",IViewManager.SCROLLED_GRAPHS);
+
                     }
                     
                     
@@ -1436,19 +1428,8 @@ public class Isaw extends JFrame implements Serializable
                         AttributeNameString attr_name = new AttributeNameString("Group ID");
                         op1 = new SelectData(ds, attr_name , true, start_id, start_id+tp.length-1);
                         DataSet new_ds = (DataSet)op1.getResult(); 
-                        GraphView graph_view =  new GraphView(new_ds);  
-                        
-                        
-                        JInternalFrame f = new JInternalFrame();
-                        f.setBounds(0,0,600,400);
-                        f.setClosable(true);
-                        f.setResizable(true);
-                        f.setMaximizable(true);
-                        f.setIconifiable(true);
-                        f.getContentPane().add(graph_view);
-                        f.setVisible(true);
-                        jdvui.add(f); 
-                    }
+				jdvui.ShowDataSet(new_ds,"Internal Frame",IViewManager.SCROLLED_GRAPHS);
+                    	}
                     else {
                                 System.out.println("View is Selected");
 //                                IsawViewHelp("No DataSet selected");
@@ -1479,19 +1460,9 @@ public class Isaw extends JFrame implements Serializable
                         {   
                             op1 = new DataSetMerge( ds0, ds1 );
                             mergedDS1 = (DataSet)op1.getResult(); 
-                            //jdvui.drawImage(mergedDS1,"Internal Frame");
+
+					jdvui.ShowDataSet(mergedDS1,"External Frame",IViewManager.SCROLLED_GRAPHS);
                            // jtui.addDataSet(mergedDS1);
-                            GraphView graph_view =  new GraphView(mergedDS1);
-                          JInternalFrame f = new JInternalFrame();
-                        f.setBounds(0,0,600,400);
-                        f.setClosable(true);
-                        f.setResizable(true);
-                        f.setMaximizable(true);
-                        f.setIconifiable(true);
-                        f.getContentPane().add(graph_view);
-                        f.setVisible(true);
-                        jdvui.add(f); 
-                           
                         }
                      if(num_child == 3)
                           
@@ -1502,44 +1473,23 @@ public class Isaw extends JFrame implements Serializable
                             mergedDS1 = (DataSet)op1.getResult(); 
                             op2 = new DataSetMerge( mergedDS1, ds2 );
                             mergedDS2 = (DataSet)op2.getResult(); 
-                           // jdvui.drawImage(mergedDS2,"Internal Frame");
-                          //  jtui.addDataSet(mergedDS2);
-                          
-                          GraphView graph_view =  new GraphView(mergedDS2);
-                          JInternalFrame f = new JInternalFrame();
-                        f.setBounds(0,0,600,400);
-                        f.setClosable(true);
-                        f.setResizable(true);
-                        f.setMaximizable(true);
-                        f.setIconifiable(true);
-                        f.getContentPane().add(graph_view);
-                        f.setVisible(true);
-                        jdvui.add(f);  
-  
+
+                           // jtui.addDataSet(mergedDS2);
+		       	   jdvui.ShowDataSet(mergedDS2,"External Frame",IViewManager.SCROLLED_GRAPHS);
+
                         }
                      }           
                     
                     if(  mtn.getUserObject() instanceof DataSet)
                     {
                         DataSet ds = (DataSet)mtn.getUserObject();
-                           GraphView graph_view =  new GraphView(ds);
-                        JFrame f = new JFrame("Test for GraphView class");
-                        f.setBounds(0,0,600,400);
-                       
-                       // f.setJMenuBar( graph_view.getMenuBar() );
-                        f.getContentPane().add(graph_view);
-                        f.setVisible(true);
-                     
+  				jdvui.ShowDataSet(ds,"External Frame",IViewManager.SCROLLED_GRAPHS);
+
                     }                   
                     else if(  mtn.getUserObject() instanceof Data)
                     {
                         DefaultMutableTreeNode  parent = (DefaultMutableTreeNode)mtn.getParent();
                         DataSet ds = (DataSet)parent.getUserObject();
-                        //GraphView graph_view =  new GraphView(ds);
-                        JFrame f = new JFrame("Test for GraphView class");
-                        f.setBounds(0,0,600,400);
-                       
-                       // f.setJMenuBar( graph_view.getMenuBar() );
                        
                        
                     TreePath[] paths = null;
@@ -1563,17 +1513,15 @@ public class Isaw extends JFrame implements Serializable
                     op1 = new SelectData(ds, attr_name , true, start_id, start_id+tp.length-1);
                     
                     DataSet new_ds = (DataSet)op1.getResult(); 
-                    GraphView graph_view =  new GraphView(new_ds); 
-                        
-                        f.getContentPane().add(graph_view);
-                        f.setVisible(true);
-                        
+			  jdvui.ShowDataSet(new_ds,"External Frame",IViewManager.SCROLLED_GRAPHS);
+
+
+
                         Data data = (Data)mtn.getUserObject();
                         jpui.showAttributes(data.getAttributeList());
                     }
                     else {
                                 System.out.println("View is Selected");
-//                                IsawViewHelp("No DataSet selected");
                          }
                   
                 }
@@ -1789,43 +1737,56 @@ public class Isaw extends JFrame implements Serializable
 	                DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
 	                TreePath[] tp = tree.getSelectionPaths();
 	                System.out.println("The number of selected files is  "+tp.length );
-	               
-	                for (int i=0; i<tp.length; i++)
-	                {
-                        dmtn = (DefaultMutableTreeNode)tp[i].getLastPathComponent();
-                        System.out.println("The selected files are in JTREEUI " +dmtn.toString());
+	               DataSet saved_parent = null;
+		for (int i=0; i<tp.length; i++)
+				{
+					 dmtn = (DefaultMutableTreeNode)tp[i].getLastPathComponent();
+                        // System.out.println("The selected files are in JTREEUI " +dmtn.toString());
                         try
                         {
                                
                                 if(  dmtn.getUserObject() instanceof DataSet)
                                 {
-                                    DefaultMutableTreeNode  parent = (DefaultMutableTreeNode)dmtn.getParent();
+
+
+						DataSet ds = (DataSet)dmtn.getUserObject();
+                                    DefaultMutableTreeNode  parent =(DefaultMutableTreeNode)dmtn.getParent();
                                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                                     model.removeNodeFromParent(dmtn); 
-                                    
+                                    ds.notifyIObservers(IObserver.DESTROY);
+
                                     System.gc();
-		                            System.runFinalization();
+						Runtime mem = Runtime.getRuntime();
+						mem.runFinalization();
+		                           // System.runFinalization();
 		                            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                                 }
                                 
                                 else if(  dmtn.getUserObject() instanceof Data)
                                 {
+
                                     DefaultMutableTreeNode  parent = (DefaultMutableTreeNode)dmtn.getParent();
                                     DataSet ds = (DataSet)parent.getUserObject();
                                 
                                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                                     int child_position = parent.getIndex(dmtn);
-                                    System.out.println("THe child index is   :" +child_position);
+                                   // System.out.println("THe child index is   :" +child_position);
                                     ds.removeData_entry(child_position);
-            
-                                    System.out.println("Removed from DS  :" +child_position);
+						//	ds.notifyIObservers(IObserver.REDRAW);
+            				saved_parent=ds;
+                                   // System.out.println("Removed from DS  :" +child_position);
                                     model.removeNodeFromParent(dmtn);
+                
+
+
+
                                     ds.addLog_entry( "Removed " +dmtn.getUserObject().toString());
                                     System.gc();
 		                            System.runFinalization();
 		                            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                                    System.out.println("Removed from treemodel  :" +child_position);
-                                }
+                                //    System.out.println("Removed from treemodel  :" +child_position);
+                    
+					}
                                 
                                 else if (dmtn.getLevel() == 1)
                                 {
@@ -1843,20 +1804,16 @@ public class Isaw extends JFrame implements Serializable
 		                            System.runFinalization();
                                 }
                               
-                                repaint();
                             }
          
                         catch(Exception e){System.out.println("Select a tree node to delete"+e);}
-                }
-                  
-                
+               }
+                  saved_parent.notifyIObservers(IObserver.REDRAW);
+                       repaint();         
+
                 }
           }
      }
-     
-     
-         
-                    
 
     public void IsawViewHelp(String [] info)
     {
@@ -1877,8 +1834,8 @@ public class Isaw extends JFrame implements Serializable
 	    hh.setLocation(x-200, y-200);
 	    JTextArea textArea = new JTextArea();
 	    for (int i=0;i<info.length; i++)
-        textArea.setText(info[i]);
-        textArea.setLineWrap(true);
+        	textArea.setText(info[i]);
+        	textArea.setLineWrap(true);
                 
         JScrollPane helpScroll = new JScrollPane(textArea);
         hh.getContentPane().add(helpScroll);   
@@ -1987,7 +1944,7 @@ public class Isaw extends JFrame implements Serializable
                                 mitem.addActionListener(new JOperationsMenuHandler(ds,jtui));
                                 pmitem.addActionListener(new JOperationsMenuHandler(ds,jtui));
                              }
-                             else //if(!mmm[k].endsWith("Scalar") && !mmm[k].endsWith("DataSet") && !mmm[k].startsWith("Convert"))
+                             else //if(!mmm[k].endsWith("Scalar") && !mmm[k].endsWith("DataSet") && 					!mmm[k].startsWith("Convert"))
                            {    mitem = new JMenuItem(mmm[k]);
                                 pmitem = new JMenuItem(mmm[k]);
                                 popup.add(pmitem);

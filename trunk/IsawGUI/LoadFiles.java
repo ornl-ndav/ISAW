@@ -15,11 +15,10 @@ import java.util.zip.*;
 import java.lang.*;
 import java.io.File.*;
 import javax.swing.*;
-//import javax.swing.preview.*;
 import javax.swing.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
-
+import DataSetTools.viewer.*;
 
 /**
  * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
@@ -308,7 +307,9 @@ public class LoadFiles extends JFrame
 				    
 
 		}
-		jdvui.drawImage(dss[1],"Internal Frame");
+//		jdvui.drawImage(dss[1],"Internal Frame");
+                jdvui.ShowDataSet( dss[1], "Internal Frame",
+                                   IViewManager.IMAGE ); 
 
 
 
