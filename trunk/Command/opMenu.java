@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2001/06/27 18:39:13  rmikk
+ * Added the setOpMenuLabel to change the label from "Operations:
+ *
  * Revision 1.10  2001/06/26 14:44:44  rmikk
  * Changed DataSetListHandler to IDataSetListHandler
  *
@@ -154,7 +157,9 @@ public opMenu(OperatorHandler op , IDataSetListHandler DS, Document logdoc , IOb
      }
   }
   }//constructor
-
+public void setOpMenuLabel( String newText)
+  {setText( newText );
+  }
 private class MActionListener implements ActionListener
   {OperatorHandler op;
    IDataSetListHandler DS;
@@ -239,6 +244,7 @@ public static void main( String args[] )
    Script_Class_List_Handler SH = new Script_Class_List_Handler();
    System.out.println( "operators="+SH.getNum_operators());
    opMenu opm = new opMenu( SH, null , null, null );
+   opm.setOpMenuLabel("Woops");
    JMenuBar bar= new JMenuBar();
    bar.add(opm);
    JF.setJMenuBar( bar );
