@@ -5,6 +5,9 @@
  * each selection appropriatly.
  *
  * $Log$
+ * Revision 1.13  2001/07/23 13:56:59  neffk
+ * removed some code that was commented out.
+ *
  * Revision 1.12  2001/07/18 17:05:30  neffk
  * fixed bug that selected the incorrect operator.  also moved from
  * JTreeUI to JDataTree.
@@ -81,7 +84,6 @@ public class JOperationsMenuHandler
     use_array = false;
 
     this.tree = tree;
-//    dss = tree.getDataSets(); 
 
     this.sessionLog = sessionLog;
   }
