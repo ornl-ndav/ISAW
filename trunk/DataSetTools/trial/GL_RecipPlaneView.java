@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/07/30 18:55:09  dennis
+ * Now ignores threshold values that are less than 3.
+ * The initialize() method now uses the SetThresholdScale method.
+ * "Apply" button name changed to "Calc FFTs".
+ *
  * Revision 1.7  2004/07/30 13:36:14  dennis
  * Number of points needed for the wire frame drawing the region
  * of Q covered by the detector is now based on the number of rows
@@ -368,7 +373,7 @@ public class GL_RecipPlaneView
     border.setTitleFont( FontUtil.BORDER_FONT );
     threshold_slider.setBorder( border );
 
-    JButton apply_button = new JButton("Apply");
+    JButton apply_button = new JButton("Calc FFTs");
     Box thresh_panel = new Box( BoxLayout.X_AXIS );
     thresh_panel.add( threshold_slider ); 
     thresh_panel.add( apply_button ); 
@@ -2642,6 +2647,7 @@ private class ThresholdApplyButtonHandler implements ActionListener
     String action  = e.getActionCommand();
     System.out.println("Button pressed : " + action );
     initialize( false );      
+    CalculateFFTs();
   }
 }
 
@@ -3011,11 +3017,12 @@ private class FFTListener implements IObserver
       {
         viewer.thresh_scale = (new Float(viewer.threshold)).floatValue();
         viewer.thresh_scale = Math.abs( viewer.thresh_scale );
-        if ( viewer.thresh_scale == 0 )
+        if ( viewer.thresh_scale < 3 )
         {
           viewer.thresh_scale = 20;
-          System.out.println("threshold of 0 ignored, using default...");
+          System.out.println("threshold less than 3 ignored, using default...");
         }
+        viewer.SetThresholdScale( (int)viewer.thresh_scale );
       }
       catch ( Exception e )
       {
