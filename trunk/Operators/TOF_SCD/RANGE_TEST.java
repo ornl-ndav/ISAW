@@ -9,7 +9,11 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 
 public class RANGE_TEST implements Wrappable,HiddenOperator{
 
-  public int[][] RANGE=null;
+  public int[][] RANGE=new int[0][0];
+
+  public int NXS=0;
+
+  public int NYS=0;
 
   public int IZ=0;
 
@@ -25,8 +29,8 @@ public class RANGE_TEST implements Wrappable,HiddenOperator{
 //----------------------------------------------------------------------
       REFLAG=(int)((0));
       if((((((RANGE[(int)(((1))-1)][(int)(((IZ))-1)])<(2)||(RANGE[(int)(((2))-1)
-        ][(int)(((IZ))-1)])>(84))||(RANGE[(int)(((3))-1)][(int)(((IZ))-1)])<(2))
-          ||(RANGE[(int)(((4))-1)][(int)(((IZ))-1)])>(84))))
+        ][(int)(((IZ))-1)])>(NXS-1))||(RANGE[(int)(((3))-1)][(int)(((IZ))-1)])<(
+          2))||(RANGE[(int)(((4))-1)][(int)(((IZ))-1)])>(NYS-1))))
                RANGE_TESTresult=(int)((500));
       if(((RANGE[(int)(((1))-1)][(int)(((IZ))-1)])>=(RANGE[(int)(((2))-1)][(int)
         (((IZ))-1)])))
