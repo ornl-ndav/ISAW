@@ -78,11 +78,11 @@ public class isawLineProfileLayout extends GraphicLayout
 
   //use these to create the correct aspect ratio?
   double xMin_  =  0.5;  //XMIN_
-  double xMax_  =  5.50;  //XMAX_
+  double xMax_  =  8.50;  //XMAX_
   double yMin_  =  0.5;  //YMIN_
   double yMax_  =  2.50;  //YMAX_
 
-  double xSize_ =  6.00;  //XSIZE_
+  double xSize_ =  9.00;  //XSIZE_
   double ySize_ =  3.00;  //YSIZE_
 
   

@@ -12,6 +12,9 @@ package OverplotView.components.containers;
  *
  * changelog
  *  $Log$
+ *  Revision 1.4  2000/07/12 14:58:39  neffk
+ *  added a makefile for generating documentation
+ *
  *  Revision 1.3  2000/07/06 20:11:19  neffk
  *  added these files, just to make sure, since they had a ? in front of them
  *  when updating.
@@ -54,7 +57,7 @@ public class GraphableDataManager
 
   private float abs_offset;
 
-  private boolean trace = true;
+  private boolean trace = false;
 
 
 /*--------------------------=[ default constructor ]=-------------------------*/
@@ -102,8 +105,6 @@ public class GraphableDataManager
     GraphableData data = null;
     Collection listGDV = values();  //get GraphableData objects
     Object it = listGDV.iterator();
-//    if(  (GraphableData)((Iterator)it).hasNext()  )
-//      data = (GraphableData)((Iterator)it).next();
 
     int count = 0;
     while(  ((Iterator)it).hasNext()  )
@@ -111,7 +112,7 @@ public class GraphableDataManager
 //      System.out.println( "adding..." );
    
       data = (GraphableData)((Iterator)it).next();
-      data.toString();
+      //System.out.println(  data.toString()  );
       data.setOffset( new Integer(count).floatValue() * abs_offset );
       RedrawInstruction instruction = new RedrawInstruction(
            false,
@@ -126,6 +127,53 @@ public class GraphableDataManager
 
     //redraw graph
 //    System.out.println( "drawing..." );
+    RedrawInstruction instruction = new RedrawInstruction(
+         true,
+         false,
+         xrange,
+         yrange,
+         null );
+    graph.redraw( instruction );
+  }
+
+
+
+  /**
+   * redraws the graphs in the order of the list of keys
+   *
+   */
+  public void redraw( String[] keys )
+  {
+    if( trace )
+      System.out.println( "GraphableDataManager::redraw(String[])" );
+
+    GraphableData data = null;
+
+    calculateRanges();
+    graph.clear();
+
+    //add data in the order that corresponds to 'keys'
+    for( int keyIndex=0;  keyIndex<size();  keyIndex++ )
+    {
+      if(   containsKey(  keys[keyIndex].toString()  )   )
+      {
+         data = (GraphableData)get( keys[keyIndex] );
+
+         System.out.println( "key: " + keys[keyIndex].toString()  );
+         if(  data.toString().compareTo( keys[keyIndex].toString() ) == 0  )
+           System.out.println( "match" );
+
+         data.setOffset( keyIndex * abs_offset );
+         RedrawInstruction instruction = new RedrawInstruction(
+           false,
+           true,
+           xrange,
+           yrange,
+           data  );
+      }
+    }
+
+    //redraw graph
     RedrawInstruction instruction = new RedrawInstruction(
          true,
          false,
@@ -366,16 +414,6 @@ public class GraphableDataManager
   }
 
 
-
-  /**
-   * sets the acceptable colors to graph data with
-   */
-/*
-  public void setColors( EntityColor[] c )
-  {
-    graph.setColors( c );
-  }
-*/
 
 }
 
