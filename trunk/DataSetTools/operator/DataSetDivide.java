@@ -8,6 +8,10 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.3  2000/10/03 22:13:10  dennis
+ *  Now uses the constant empty DataSet, DataSet.EMPTY_DATA_SET,
+ *   as a place holder for the DataSet parameter.
+ *
  *  Revision 1.2  2000/07/10 22:35:51  dennis
  *  July 10, 2000 version... many changes
  *
@@ -109,9 +113,8 @@ public class DataSetDivide extends  DataSetOperator
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter(
-                          "DataSet to Divide",
-                           new DataSet("DataSetToDivideBy","Empty DataSet"));
+    Parameter parameter = new Parameter( "DataSet to Divide",
+                                          DataSet.EMPTY_DATA_SET );
     addParameter( parameter );
 
     parameter = new Parameter( "Create new DataSet?", new Boolean(false) );

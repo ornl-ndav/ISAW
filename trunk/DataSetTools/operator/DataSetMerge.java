@@ -9,6 +9,10 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.6  2000/10/03 22:13:10  dennis
+ *  Now uses the constant empty DataSet, DataSet.EMPTY_DATA_SET,
+ *   as a place holder for the DataSet parameter.
+ *
  *  Revision 1.5  2000/09/11 23:05:54  dennis
  *  Added blank space in log message.
  *
@@ -103,7 +107,7 @@ public class DataSetMerge extends    DataSetOperator
     parameters = new Vector();  // must do this to clear any old parameters
 
     Parameter parameter = new Parameter( "DataSet to Merge",
-                              new DataSet("DataSetToMerge", "Empty DataSet") );
+                                          DataSet.EMPTY_DATA_SET ); 
     addParameter( parameter );
   }
 
