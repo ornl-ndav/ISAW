@@ -5,6 +5,9 @@
  *                             ( Modified from SpectrometerTofToEnergy.java )
  *             
  *  $Log$
+ *  Revision 1.4  2000/08/08 21:20:20  dennis
+ *  Now propagate errors, rather than set them to SQRT(counts)
+ *
  *  Revision 1.3  2000/08/02 01:43:55  dennis
  *  Changed to use Data.ResampleUniformly() so that the operation can be
  *  applied to functions as well as to histograms.
@@ -253,6 +256,7 @@ public class SpectrometerTofToQ extends    XAxisConversionOperator
                      new_data;
     DetectorPosition position;
     float            y_vals[];              // y_values from one spectrum
+    float            errors[];              // errors from one spectrum
     float            Q_vals[];              // Q values at bin boundaries
                                             // calculated from tof bin bounds
     XScale           Q_scale;
@@ -309,12 +313,14 @@ public class SpectrometerTofToQ extends    XAxisConversionOperator
         arrayUtil.Reverse( Q_vals );
         Q_scale = new VariableXScale( Q_vals );
 
-        y_vals = data.getCopyOfY_values();
+        y_vals = data.getCopyOfY_values();     // need copy, since we alter it
+        errors = data.getCopyOfErrors();
         arrayUtil.Reverse( y_vals );
+        arrayUtil.Reverse( errors );
 
-        new_data = new Data( Q_scale, y_vals, data.getGroup_ID() ); 
+        new_data = new Data( Q_scale, y_vals, errors, data.getGroup_ID() ); 
                                                 // create new data block with 
-        new_data.setSqrtErrors();               // non-uniform Q_scale and 
+                                                // non-uniform Q_scale and 
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 

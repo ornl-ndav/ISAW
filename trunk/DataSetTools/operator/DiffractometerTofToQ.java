@@ -9,6 +9,9 @@
  *             
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/08/08 21:20:16  dennis
+ *  Now propagate errors, rather than set them to SQRT(counts)
+ *
  *  Revision 1.4  2000/08/02 01:41:00  dennis
  *  Changed to use Data.ResampleUniformly() so that the operation can be
  *  applied to functions as well as to histograms.  Also made some
@@ -264,6 +267,7 @@ public class DiffractometerTofToQ extends    XAxisConversionOperator
     float            scattering_angle;
     float            t_vals[];
     float            y_vals[];              // y_values from one spectrum
+    float            errors[];              // errors from one spectrum
     float            Q_vals[];              // Q values at bin boundaries
                                             // calculated from tof bin bounds
     XScale           Q_scale;
@@ -297,7 +301,8 @@ public class DiffractometerTofToQ extends    XAxisConversionOperator
                                                 total_length, 
                                                 t_vals[i]        );
 
-        y_vals  = data.getCopyOfY_values();
+        y_vals  = data.getCopyOfY_values();    // need copy, since we alter it
+        errors  = data.getCopyOfErrors();
 /*
         for ( int i = 0; i < y_vals.length; i++ )
           if ( t_vals[i] != t_vals[i+1] )
@@ -306,21 +311,17 @@ public class DiffractometerTofToQ extends    XAxisConversionOperator
             y_vals[i] = 0;
 */
         arrayUtil.Reverse( y_vals );
+        arrayUtil.Reverse( errors );
 
         arrayUtil.Reverse( Q_vals );
         Q_scale = new VariableXScale( Q_vals );
-
-
-        float errors[] = new float[data.getErrors().length];
-        System.arraycopy( data.getErrors(), 0, errors, 0, errors.length );
-        arrayUtil.Reverse( errors );
 
         new_data = new Data( Q_scale, 
                              y_vals, 
                              errors,
                              data.getGroup_ID() );
                                                 // create new data block with 
-//        new_data.setSqrtErrors();               // non-uniform Q_scale and 
+                                                // non-uniform Q_scale and 
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 
