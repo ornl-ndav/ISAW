@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.200  2004/05/14 02:55:59  bouzekc
+ *  Added feature to store the last user-set (with mouse) size of the main
+ *  ISAW window.  This required a method addition and a conversion of an
+ *  anonymous class to a private final nested class.
+ *
  *  Revision 1.199  2004/04/28 21:15:57  dennis
  *  Changed version to 1.7.1 alpha 5
  *
@@ -819,7 +824,7 @@ public class Isaw
     JMenu Tables= new JMenu("Selected Table View");
 
     // set up some listeners for later use
-    MenuItemHandler menu_item_handler          =new MenuItemHandler();
+    MenuItemHandler menu_item_handler          =new MenuItemHandler(  );
     AttributeMenuItemHandler attr_menu_handler =new AttributeMenuItemHandler();
     LoadMenuItemHandler load_menu_handler      =new LoadMenuItemHandler();
 
@@ -1053,7 +1058,32 @@ public class Isaw
     ds.addIObserver( jpui );
 //    ds.addIObserver( jcui );
   }
- 
+  
+  /**
+   * Deals with closing up ISAW.  Saves the window size and exits the system.
+   */
+  void closeISAW(  ) {
+    gov.anl.ipns.Util.File.IsawPropsMutator.mutateIsawPropsKey( "Isaw_Height", this.getHeight(  ) + "", true );
+    gov.anl.ipns.Util.File.IsawPropsMutator.mutateIsawPropsKey( "Isaw_Width", this.getWidth(  )  + "", true );
+    gov.anl.ipns.Util.File.IsawPropsMutator.writeBackToFile(  );
+    System.exit(0);
+  }
+
+  /**
+   * Class to close up the ISAW window.  Stores the window size and exits the system.
+   * Had to do it this way because anonymous classes don't allow access to non-static
+   * methods in the way that is needed.
+   */
+  private final class IsawWindowCloser extends WindowAdapter {
+    /**
+     * Stores the height and width in IsawProps.dat and exits the system.
+     * 
+     * @param ev The triggering WindowEvent (ignored).
+     */
+    public void windowClosing( WindowEvent ev ){
+      closeISAW(  );
+    }
+  }
 
   /**
    * the EDIT_ATTR_MI menu item's actions.
@@ -1328,14 +1358,14 @@ public class Isaw
                                     FileDialog.LOAD );
     final JFileChooser fc = new JFileChooser();
     String filename=null;
-    
+     
     public void actionPerformed( ActionEvent ev ) 
     { 
       String s = ev.getActionCommand();
-      if( s.equals(EXIT_MI) )
-        System.exit(0);
+      if( s.equals(EXIT_MI) ) {
+        closeISAW(  );
         
-      if( s == IPW_MI ) {
+      } if( s == IPW_MI ) {
         new Wizard.TOF_SCD.InitialPeaksWizard( false ).wizardLoader( null );
       } else if( s == DPW_MI ) {
         new Wizard.TOF_SCD.DailyPeaksWizard( false ).wizardLoader( null );
@@ -1977,13 +2007,13 @@ public class Isaw
       Runnable window_shower = new WindowShower( Isaw );
       EventQueue.invokeLater( window_shower );
       window_shower = null;
+      
+      //this has to be some of the ugliest syntax I have seen yet, but I had to do it.  I didn't know the
+      //reason behind making the Isaw instance a JFrame (why not just make it of type Isaw?).
+      //At any rate, we need to cast it as an "Isaw" Object then qualify the "new" declaration (with the dot) 
+      //so we can instantiate the listener - CMB, 2004
+      Isaw.addWindowListener( ( ( Isaw )Isaw ).new IsawWindowCloser(  ) );
 
-      Isaw.addWindowListener( new WindowAdapter(){
-             public void windowClosing( WindowEvent ev ){
-                  //System.out.println("windowClosing:"+ev.toString());
-                 System.exit(0);
-             } 
-         } );
       mw_resized();
     }catch( Throwable ss){
       System.out.println("Error :"+ss.toString() );
