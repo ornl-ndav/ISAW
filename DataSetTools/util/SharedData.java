@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/08/16 19:34:07  dennis
+ *  Temporarily added an instance of Dongfeng's SpectrometerPlotter, so that
+ *  DataSets from an old server could be received properly.
+ *
  *  Revision 1.3  2001/07/27 22:18:26  dennis
  *  Added public final string BUILD_DATE.
  *
@@ -45,6 +49,8 @@
  */
 
 package DataSetTools.util;
+
+import DataSetTools.operator.*;
 
 /**
  *  Objects of this class have one instance of objects that are to be shared
@@ -62,4 +68,9 @@ public class SharedData implements java.io.Serializable
                                         = new PropertiesLoader("IsawProps.dat");
   
   public static final String BUILD_DATE = "Unknown_Build_Date";
+
+  // This is here to allow DataSets from an old version of the servers to
+  // be received by this version.  SpectromterPlotter is obsolete and should
+  // be removed.
+  public static final Operator old_op = new SpectrometerPlotter();
 }
