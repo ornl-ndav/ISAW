@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/06/11 23:03:00  bouzekc
+ *  Now returns the directory name with the system-appropriate
+ *  separator appended to the end.
+ *
  *  Revision 1.10  2003/06/02 22:10:57  bouzekc
  *  Fixed ClassCastException in constructor.
  *
@@ -76,7 +80,7 @@ import java.lang.String;
 import java.beans.*;
 import java.io.File;
 import DataSetTools.components.ParametersGUI.*;
-import DataSetTools.util.SharedData;
+import DataSetTools.util.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 
 /**
@@ -111,6 +115,24 @@ public class DataDirPG extends BrowsePG{
         this.type=TYPE;
         this.setValid(valid);
         super.choosertype = BrowseButtonListener.DIR_ONLY;
+    }
+
+    // ********** IParameter requirements **********
+
+    /**
+     * Returns the value of the parameter. While this is a generic
+     * object specific parameters will return appropriate
+     * objects. There can also be a 'fast access' method which returns
+     * a specific object (such as String or DataSet) without casting.
+     */
+    public Object getValue()
+    {
+      String str;
+
+      str = StringUtil.setFileSeparator(
+            super.getValue().toString() + "/");
+
+      return str;
     }
 
     public static void main(String args[]){
