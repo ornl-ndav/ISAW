@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2002/07/08 15:38:56  pfpeterson
+ *  Added SUM option to stich() which adds the counts together.
+ *
  *  Revision 1.26  2002/06/14 20:48:59  rmikk
  *  Implements the IXmlIO interface
  *
@@ -913,9 +916,9 @@ public abstract class Data implements IData,
 
 
   /**
-   *    "Stitch" another Data block together with the current Data block to form
-   *  a new TabulatedData block with the same attributes as the current Data 
-   *  block, but whose data is a combination of the two. 
+   *    "Stitch" another Data block together with the current Data block to 
+   *  form a new TabulatedData block with the same attributes as the current
+   *  Data block, but whose data is a combination of the two. 
    *
    *    New TabulatedData blocks will first be generated from the current
    *  Data object and the other_data block.  These TabulatedData blocks will
@@ -952,6 +955,7 @@ public abstract class Data implements IData,
    *                              Data.KEEP
    *                              Data.AVERAGE
    *                              Data.DISCARD
+   *                              Data.SUM
    *
    *                      indicating that the original Data's values should be
    *                      kept, averaged with the other Data's values or
@@ -1019,6 +1023,13 @@ public abstract class Data implements IData,
               if ( has_error_info )
                 new_data.errors[i] = temp_data.errors[i];
             }
+            else if ( overlap == Data.SUM ){
+              new_data.y_values[i] =new_data.y_values[i]+temp_data.y_values[i];
+              if ( has_error_info )
+                new_data.errors[i] = (float)Math.sqrt(
+                                  new_data.errors[i] * new_data.errors[i] +
+                                 temp_data.errors[i] * temp_data.errors[i] );
+            }
         }
 
         else if ( other_interval.contains( x[i] ) )  // use the other y_value
@@ -1057,6 +1068,13 @@ public abstract class Data implements IData,
               new_data.y_values[i] = temp_data.y_values[i];
               if ( has_error_info )
                 new_data.errors[i] = temp_data.errors[i];
+            }
+            else if ( overlap == Data.SUM ){
+              new_data.y_values[i] =new_data.y_values[i]+temp_data.y_values[i];
+              if ( has_error_info )
+                new_data.errors[i] = (float)Math.sqrt(
+                                  new_data.errors[i] * new_data.errors[i] +
+                                 temp_data.errors[i] * temp_data.errors[i] );
             }
         }
 
