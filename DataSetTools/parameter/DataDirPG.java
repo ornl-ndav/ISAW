@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/06/02 22:10:57  bouzekc
+ *  Fixed ClassCastException in constructor.
+ *
  *  Revision 1.9  2003/05/29 21:39:38  bouzekc
  *  Removed the init(Vector init_values) method.  Now uses
  *  BrowsePG's init method, and sets the file selection type
@@ -91,13 +94,19 @@ public class DataDirPG extends BrowsePG{
     
     public DataDirPG(String name, Object value, boolean valid){
         super(name,value,valid);
-        if(value!=null && ((String)value).length()>0){
+        if(value!=null)
+        {
+          if(!(value instanceof String))
+            value = value.toString();
+          if( ((String)value).length()>0 )
+          {
             File file=new File((String)value);
             if(file.exists()){
-                if(file.isFile()){
-                    this.setValue(file.getParent());
-                }
+              if(file.isFile()){
+                this.setValue(file.getParent());
+              }
             }
+          }
         }
         this.type=TYPE;
         this.setValid(valid);
