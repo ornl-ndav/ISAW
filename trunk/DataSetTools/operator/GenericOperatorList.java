@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2002/02/05 22:13:37  pfpeterson
+ *  Added references so TOF_SCD operators can be used in scripts.
+ *
  *  Revision 1.17  2001/08/15 02:21:19  dennis
  *  Added XYDataTable operator.
  *
@@ -91,6 +94,9 @@ public class GenericOperatorList implements Serializable
                                           "Table",
                                           "SaveNX",
                                           "SaveGSAS",
+                                          "FindPeaks",
+                                          "CentroidPeaks",
+                                          "WritePeaks",
                                           "Pause",
                                           "Echo"    };
 
@@ -195,6 +201,15 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals( "SaveGSAS" ) )
       return new WriteGSAS();
+
+    else if ( op_name.equals( "FindPeaks" ) )
+      return new DataSetTools.operator.Generic.TOF_SCD.FindPeaks();
+
+    else if ( op_name.equals( "CentroidPeaks" ) )
+      return new DataSetTools.operator.Generic.TOF_SCD.CentroidPeaks();
+
+    else if ( op_name.equals( "WritePeaks" ) )
+      return new DataSetTools.operator.Generic.TOF_SCD.WritePeaks();
 
     else if ( op_name.equals( "Pause" ) )
       return new pause();
