@@ -30,6 +30,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.4  2003/09/08 17:15:08  rmikk
+ * Changed to use the new ParameterGUI's where return values
+ *   must be of the proper data type.
+ *
  * Revision 1.3  2003/02/03 18:29:38  dennis
  * Added getDocumentation() method. (Joshua Olson)
  *
@@ -53,7 +57,7 @@ import DataSetTools.util.*;
 import java.util.*;
 import DataSetTools.util.*;
 import  javax.swing.*;
-
+import DataSetTools.parameter.*;
 /** This class creates a operator that produces a table of x vs y vs errors.
  *  The table can be sent to the console, table, or file<P>
  * The Title is <B>Table x, y, error</b>. This represents this operator on
@@ -84,7 +88,7 @@ public class XYDataTable  extends GenericSave
         addParameter( new Parameter( "Output:", 
                       new MediaList( "Console" )));
         addParameter( new Parameter("filename ", filename));
-        addParameter( new Parameter("Selected Group indices", 
+        addParameter( new IntArrayPG("Selected Group indices", 
                                     SelectedGroups));
                                  
       }
@@ -96,8 +100,8 @@ public class XYDataTable  extends GenericSave
         addParameter( new Parameter("Show Errors ", new Boolean( true ) ));
         addParameter( new Parameter( "Output", new MediaList("Console")));
         addParameter( new Parameter("filename ",new String()));
-        addParameter( new Parameter("Selected Group indices", 
-                                    new IntListString("1,3:8")));
+        addParameter( new IntArrayPG("Selected Group indices", 
+                                    ("1,3:8")));
     }
     
  /* ---------------------- getDocumentation --------------------------- */
@@ -159,9 +163,9 @@ public class XYDataTable  extends GenericSave
     { DataSet DS = (DataSet)(getParameter( 0 ).getValue());
       boolean showerrors = ((Boolean)(getParameter(1).getValue())).
                         booleanValue();
-     String output = ((MediaList)(getParameter(2).getValue())).toString();
+     String output = ((getParameter(2).getValue())).toString();
      String filename = getParameter(3).getValue().toString();
-     IntListString SelGroups = (IntListString)(getParameter(4).getValue());
+     int[] SelGroups =( (IntArrayPG)getParameter(4)).getArrayValue();
      int mode = 0;
      //System.out.println("output="+output);
      if( output .equals("Console"))
@@ -200,7 +204,7 @@ public class XYDataTable  extends GenericSave
      DataSet DSS[];
      DSS = new DataSet[1];
      DSS[0] = DS;
-     TB.Showw( DSS , sel , "HGT,F" , false, IntList.ToArray(SelGroups.toString()) );
+     TB.Showw( DSS , sel , "HGT,F" , false, (SelGroups) );
      return "Finished";
     }
 
