@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2001/11/21 21:19:40  dennis
+ *  Fixed bug in DataSetTools/dataset/Data.java  that caused an array
+ *  index out of range exception when trying to retrieve an interpolated
+ *  y-value for an x-value that was outside the current x-scale.
+ *
  *  Revision 1.18  2001/08/16 19:19:03  dennis
  *  add(Data) method now handles more attributes as special cases.
  *  subtract(Data), multiply(Data) and divide(Data) now just uses
@@ -418,11 +423,18 @@ public float getY_value( float x_value )
   if ( found )                          // if exact value is in list, return
     return y_values[mid];               // the corresponding y value.
 
-  float x1 = x_vals[last];              // first & last have crossed
+                                        // first & last have crossed
+  if ( first == 0 && last < 0 ) 
+    return 0;                          
+
+  if ( last == x_vals.length-1 && first > x_vals.length-1 )
+    return 0;
+ 
+  float x1 = x_vals[last];  
   float x2 = x_vals[first];
 
-  if ( isHistogram() || x1 == x2 )                    // histogram, or
-    return y_values[last];                            // duplicate x values
+  if ( isHistogram() || x1 == x2 )                   // histogram, or
+    return y_values[last];                           // duplicate x values
 
   float y1 = y_values[last];                         // otherwise, interpolate
   float y2 = y_values[first];
