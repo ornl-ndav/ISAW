@@ -30,6 +30,10 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.28  2004/02/25 00:42:14  bouzekc
+ *  Added a clear() method that clears the internal Vector and sets the
+ *  value to null (very useful for large items).
+ *
  *  Revision 1.27  2004/01/14 19:26:59  bouzekc
  *  Now checks the Vector of values in addItems() to be sure it is not null.
  *  initGUI() now directly calls addItems().
@@ -273,6 +277,16 @@ public abstract class ChooserPG extends ParameterGUI {
       for( int i = 0; i < values.size(  ); i++ ) {
         addItem( values.elementAt( i ) );
       }
+    }
+  }
+
+  /**
+   * Clears out the choices and sets the internal value to null.
+   */
+  public void clear(  ) {
+    if( vals != null ) {
+      vals.clear(  );
+      super.setValue( null );
     }
   }
 
