@@ -32,6 +32,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.40  2003/06/02 22:33:48  rmikk
+ *  -Added IObserver to operator right before the getResult
+ *   method is executed. Removed it right afterward.
+ *  -Displayed the result of an operation using the
+ *   NexIO.NxNodeUtil.Showw method which unravels Vectors
+ *   and arrays.
+ *
  *  Revision 1.39  2003/05/22 21:41:08  pfpeterson
  *  System.getProperty(String) changed to SharedData.getProperty(String)
  *  to insure that the properties file is loaded before call.
@@ -638,7 +645,12 @@ public class JParametersDialog implements Serializable,
       worker = new SwingWorker() {
           public Object construct(){
             try{
+              if( op instanceof IObservable)
+                {((IObservable)op).addIObserver(io);
+                }
               Result=op.getResult();
+              if( op instanceof IObservable)
+                ((IObservable)op).deleteIObserver(io);             
               return Result;
             }catch(RuntimeException e){
               Result=e;
@@ -756,7 +768,8 @@ public class JParametersDialog implements Serializable,
 
      else
      {
-        resultsLabel.setText("Result ="+ result.toString());
+        resultsLabel.setText("Result ="+ 
+             (new NexIO.NxNodeUtils()).Showw( result));
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
    }
