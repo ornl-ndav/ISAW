@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2005/02/17 21:53:19  dennis
+ *  The XInfo object now includes the 3 col FXYE GSAS output
+ *  format requirements. (Alok Chatterjee)
+ *
  *  Revision 1.6  2004/03/15 03:28:15  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -70,8 +74,11 @@ public class XInfo{
     private static String CONS    = GsasUtil.CONS;
     private static String CONQ    = GsasUtil.CONQ;
     private static String TIMEMAP = GsasUtil.TIMEMAP;
+    private static String SLOG = GsasUtil.SLOG;
 
     private static String STD     = GsasUtil.STD;
+    private static String ESD     = GsasUtil.ESD;
+    private static String FXYE     = GsasUtil.FXYE;
 
     private static int TIME = 1;
     private static int Q    = 2;
@@ -98,58 +105,64 @@ public class XInfo{
      */
     public XInfo(XScale xscale, String units){
         // get the number of channels right away
+        this.type=STD;
         this.nxchan=xscale.getNum_x();
         this.nchan=nxchan-1;
+        nrec=(int)((float)nchan/10f+0.9f);
+        init( xscale, units);
+    }
+    private void init(XScale xscale, String units){
+        
         // initialize all of the coefficients to zero
         this.coef1=0f;
         this.coef2=0f;
         this.coef3=0f;
         this.coef4=0f;
         // initialize some of the other stuff to null
-        this.nrec=0;
-        this.type=null;
+        
+        
         this.usetimemap=false;
         this.bintype="";
 
         // get the units and time scale
         int x_units=GsasUtil.getUnits(units);
-	float scale=0.0f;
+	      float scale=0.0f;
         if(x_units==TIME) scale=GsasUtil.getTimeScale(units);
 
         // determine if this is a constant stepping
         this.coef2=GsasUtil.getStepSize(xscale);
-        //this.coef2=0f; // this forces using a time map
+
         if(this.coef2>0f){
             this.coef1=xscale.getStart_x();
-            if(scale>0f){
-                this.coef1*=scale;
-                this.coef2*=scale;
-            }
-            if(x_units==TIME){
-                this.bintype=CONS;
-            }else if(x_units==Q){   // not supported by gsas yet
-                this.bintype=CONQ;  // not supported by gsas yet
-            }else if(x_units==D){   // not supported by gsas yet
-                this.bintype=COND;  // not supported by gsas yet
-            }else{
-                SharedData.addmsg("Cannot create appropriate XInfo Object");
-                return;
-            }
-            return;
-        }
+                if(scale>0f)
+                {
+                    this.coef1*=scale;
+                    this.coef2*=scale;
 
-        // otherwise it better be a time-map
-        if(x_units==TIME){
-            this.bintype=TIMEMAP;
-            this.usetimemap=true;
-            this.timemap=new TimeMap(xscale);
-            this.coef1=this.timemap.getMapNum();
-        }else{
-            SharedData.addmsg("Cannot create appropriate XInfo Object");
-            return;
+                 }
+                    this.coef3=0;
+                    this.coef4=0;
+                    this.bintype=CONS;
         }
-
-	return;
+        else{
+            this.bintype=SLOG;
+            this.coef1=xscale.getStart_x();
+            int numX = xscale.getNum_x();
+            
+           // this.coef2= (float)Math.pow( 1.0*xscale.getEnd_x()/xscale.getStart_x(),1.0/(xscale.getNum_x()-2));
+            this.coef2=xscale.getX( xscale.getNum_x()-2);
+            this.coef3=0.0004f;
+            
+            this.coef1*=scale;
+            this.coef2*=scale;
+            this.coef3*=scale;
+            this.coef4=0;
+        } 
+   //    if(this.type.equals(FXYE)){
+    //           this.coef2=xscale.getX( xscale.getNum_x()-2);
+    //           this.coef3 = .0004f;
+     // }
+	     return;
     } // end of constructor
 
     /**
@@ -159,13 +172,20 @@ public class XInfo{
      * completely what is needed for a gsas bank header.
      */
     public XInfo(XScale xscale, String units, String type){
-        this(xscale,units);
+       
+        this.nxchan=xscale.getNum_x();
+        this.nchan=nxchan-1;
         this.type=type;
         if(type.equals(STD)){
             nrec=(int)((float)nchan/10f+0.9f);
-        }else{
+           }
+        if(type.equals(ESD)){
             nrec=(int)((float)nchan/5f+0.9f);
         }
+        if(type.equals(FXYE)){
+            nrec=(int)((float)nchan/1f+0.9f);
+        }
+        init(xscale,units);
     } // end of constructor
 
     /**
@@ -219,7 +239,7 @@ public class XInfo{
         if(sb.length()<=0){
             this.type=STD;
         }else{
-            this.type=sb.toString();
+            this.type=FXYE;
         }
 
     }
@@ -281,8 +301,7 @@ public class XInfo{
      */
     public String toString(){
         StringBuffer sb=new StringBuffer(80);
-        
-        if(nrec>0) sb.append(Format.integer(nchan,7)+" ")
+        sb.append(Format.integer(nchan,7)+" ")
                      .append(Format.integer(nrec,7)+" ");
         sb.append(Format.string(this.bintype,8)).append(" ");
         if(this.usetimemap)
@@ -290,23 +309,30 @@ public class XInfo{
         else
             sb.append(this.coef1);
         sb.append(" ");
-        if(this.type.equals(STD)){
-            if(this.coef2!=0f){
-                sb.append(this.coef2).append(" ");
-                if(this.coef3!=0f){
-                    sb.append(this.coef3).append(" ");
-                    if(this.coef4!=0f) sb.append(this.coef4).append(" ");
-                }
-            }
-        }else{
-            if(!this.bintype.equals(TIMEMAP))
-                sb.append(this.coef2).append(" ")
-                    .append(this.coef3).append(" ")
-                    .append(this.coef4).append(" ");
-        }
-        if(this.type!=null) sb.append(this.type);
 
-        return sb.toString();
+        if(this.type.equals(STD))
+        {
+          sb.append(this.coef2).append(" ");
+          sb.append(this.coef3).append(" ");
+          sb.append(this.coef4).append(" ");
+          sb.append(this.type);
+        }
+
+        if(this.type.equals(ESD))
+        {
+          sb.append(this.coef2).append(" ");
+          sb.append(this.coef3).append(" ");
+          sb.append(this.coef4).append(" ");
+          sb.append(this.type);
+        }
+        if(this.type.equals(FXYE))
+        {
+          sb.append(this.coef2).append(" ");
+          sb.append(this.coef3).append(" ");
+          sb.append(this.coef4).append(" ");
+          sb.append(this.type);
+        }
+       return sb.toString();
     } // end of toString()
 
     /**
