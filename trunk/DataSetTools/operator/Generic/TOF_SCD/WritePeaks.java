@@ -119,10 +119,11 @@ public class WritePeaks extends GenericTOF_SCD{
   */
   public Object getResult()
   {
-    String file      = (String) (getParameter(0).getValue());
+    String  file     = (String) (getParameter(0).getValue());
     DataSet mon_data = (DataSet)(getParameter(1).getValue());
     DataSet data_set = (DataSet)(getParameter(2).getValue());
-    Vector peaks     = (Vector) (getParameter(3).getValue());
+    Vector  peaks    = (Vector) (getParameter(3).getValue());
+    boolean append   = false;
     OutputStreamWriter outStream;
 
     int nrun=((Peak)peaks.elementAt(0)).nrun();
@@ -143,7 +144,7 @@ public class WritePeaks extends GenericTOF_SCD{
 
     try{
 	// open and initialize a buffered file stream
-	FileOutputStream op = new FileOutputStream(new File(file));
+	FileOutputStream op = new FileOutputStream(file,append);
 	outStream=new OutputStreamWriter(op);
    
 	// general information header
