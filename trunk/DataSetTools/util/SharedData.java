@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/06/18 20:36:56  pfpeterson
+ *  Changed calls for NxNodeUtils.Showw(Object) to
+ *  DataSetTools.util.StringUtil.toString(Object)
+ *
  *  Revision 1.16  2003/03/06 15:47:53  pfpeterson
  *  Made the StatusPane a private variable that is not initialized until
  *  someone asks for a pointer to it. Also moved decision to print to
@@ -131,22 +135,10 @@ public class SharedData implements java.io.Serializable
      * Convenience method to ease adding to the status pane.
      */
     public static void addmsg(Object value){
-      if( status_pane==null || ! status_pane.isDisplayable()){
-        String string_rep = null;          
-        
-        if( value == null)  
-            string_rep = "null";  
-        else if( ! value.getClass().isArray( ))  
-            if( !(value instanceof java.util.Vector))  
-                   string_rep = value.toString();  
-        
-        if( string_rep == null)  
-            string_rep = (new NexIO.NxNodeUtils()).Showw( value);  
-
-        System.out.println( string_rep );  
-      }else{
+      if( status_pane==null || ! status_pane.isDisplayable())
+        System.out.println( StringUtil.toString( value) );  
+      else
         status_pane.add(value);
-      }
     }
 
 

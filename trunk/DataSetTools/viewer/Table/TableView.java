@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/06/18 20:37:28  pfpeterson
+ *  Changed calls for NxNodeUtils.Showw(Object) to
+ *  DataSetTools.util.StringUtil.toString(Object)
+ *
  *  Revision 1.5  2003/03/03 16:58:52  pfpeterson
  *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -49,6 +53,7 @@ package DataSetTools.viewer.Table;
 import javax.swing.*;
 import DataSetTools.viewer.*;
 import DataSetTools.dataset.*;
+import DataSetTools.util.StringUtil;
 import java.awt.*;
 import IsawGUI.*;
 import java.awt.event.*;
@@ -203,7 +208,7 @@ public class TableView extends DataSetViewer
                String SS = "NO SELECTED INDICES";
                int[] SelInd = data_set.getSelectedIndices() ;
                if( SelInd != null ) if( SelInd.length > 0 )
-                  SS = (new NexIO.NxNodeUtils()).Showw( SelInd );
+                  SS = StringUtil.toString( SelInd );
 
                S.append( "#     ");
                S.append(data_set.toString());
