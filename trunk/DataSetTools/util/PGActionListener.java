@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.3  2004/01/24 20:55:48  bouzekc
+ * Changed the call to JOptionPane's showMessageDialog() to static.
+ *
  * Revision 1.2  2003/06/23 16:27:02  bouzekc
  * Added javadoc class description.
  *
@@ -57,7 +60,7 @@ public class PGActionListener implements ActionListener{
   }
 
   public void actionPerformed( ActionEvent evt ){ 
-    (new JOptionPane()).showMessageDialog(null,"Result="+
+    JOptionPane.showMessageDialog(null,"Result="+
       StringUtil.toString(vpf.getValue()));
   }
 }    
