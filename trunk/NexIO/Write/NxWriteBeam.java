@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/11/20 16:15:36  pfpeterson
+ * reformating
+ *
  * Revision 1.2  2002/03/18 20:58:09  dennis
  * Added initial support for TOF Diffractometers.
  * Added support for more units.
@@ -42,32 +45,36 @@
 
 
 package NexIO.Write;
+
 import DataSetTools.dataset.*;
 import NexIO.*;
-/** Handles writing information to the NxBeam portion of the Nexus Standard
-*/
-public class NxWriteBeam
-{ String errormessage;
 
-  public NxWriteBeam(int instrType)
-    {
-      errormessage = "";
-    }
+/**
+ *Handles writing information to the NxBeam portion of the Nexus Standard
+ */
+public class NxWriteBeam{
+  String errormessage;
 
-/** Returns an error message or "" if there is no error
-*/
-  public String getErrorMessage()
-   { 
-     return errormessage;
-   }
+  public NxWriteBeam(int instrType){
+    errormessage = "";
+  }
 
-/** Extracts the information from the Data Set and writes it to
-*   the NxBeam portion of a Nexus file
-*@param  node    A node whose class is NXbeam
-*@param  DS      The data set whose information is to be written
-*/
-  public boolean processDS( NxWriteNode node, DataSet DS )
-   {errormessage = "Improper inputs to Write Beam ";
+  /**
+   * Returns an error message or "" if there is no error
+   */
+  public String getErrorMessage(){
+    return errormessage;
+  }
+
+  /**
+   * Extracts the information from the Data Set and writes it to the
+   * NxBeam portion of a Nexus file
+   *
+   * @param  node    A node whose class is NXbeam
+   * @param  DS      The data set whose information is to be written
+   */
+  public boolean processDS( NxWriteNode node, DataSet DS ){
+    errormessage = "Improper inputs to Write Beam ";
     if( node == null ) 
       return true;
     if( DS == null )
@@ -76,24 +83,24 @@ public class NxWriteBeam
     float ff[];
     NxWriteNode n1;
     Object O = DS.getAttributeValue( Attribute.ENERGY_IN );
-    if( O != null )
-    {if( O instanceof Float )
-      {float f = ( ( Float ) O ).floatValue();
-       ff = new float[1];
-       ff[0] = f;
-       rank = new int[1];
-       rank[0] = 1;
-       n1 = node.newChildNode( "incident_energy","SDS" );
-       n1.setNodeValue( ff, Types.Float, rank ); 
-       if( n1.getErrorMessage() != "" );
-         errormessage += ":"+n1.getErrorMessage();
+    if( O != null ){
+      if( O instanceof Float ){
+        float f = ( ( Float ) O ).floatValue();
+        ff = new float[1];
+        ff[0] = f;
+        rank = new int[1];
+        rank[0] = 1;
+        n1 = node.newChildNode( "incident_energy","SDS" );
+        n1.setNodeValue( ff, Types.Float, rank ); 
+        if( n1.getErrorMessage() != "" );
+        errormessage += ":"+n1.getErrorMessage();
       }  
     }
- //Energy out
+    //Energy out
     O = DS.getAttributeValue( Attribute.ENERGY_OUT );
-    if( O != null )
-     {if( O instanceof Float )
-       {float f = ( ( Float )O ).floatValue();
+    if( O != null ){
+      if( O instanceof Float ){
+        float f = ( ( Float )O ).floatValue();
         ff = new float[1];
         ff[0] = f;
         rank = new int[1];
@@ -101,16 +108,16 @@ public class NxWriteBeam
         n1 = node.newChildNode( "final_energy","SDS" );
         n1.setNodeValue( ff, Types.Float, rank ); 
         if( n1.getErrorMessage() != "" );
-          errormessage += ":"+n1.getErrorMessage();
+        errormessage += ":"+n1.getErrorMessage();
         n1.addAttribute("units",("meV"+(char)0).getBytes(),Types.Char,
-           Inst_Type.makeRankArray(4,-1,-1,-1,-1));
-       }  
-     } 
-// duration 
+                        Inst_Type.makeRankArray(4,-1,-1,-1,-1));
+      }  
+    } 
+    // duration 
     O = DS.getAttributeValue( Attribute.NUMBER_OF_PULSES );
-    if( O != null )
-     {if( O instanceof Number )
-       {float f = ( ( Number )O ).floatValue();
+    if( O != null ){
+      if( O instanceof Number ){
+        float f = ( ( Number )O ).floatValue();
         ff = new float[1];
         ff[0] = f/30.0f;
         rank = new int[1];
@@ -118,13 +125,11 @@ public class NxWriteBeam
         n1 = node.newChildNode( "duration" ,"SDS" );
         n1.setNodeValue( ff , Types.Float , rank ); 
         if( n1.getErrorMessage() != "" );
-          errormessage += ":" + n1.getErrorMessage();
-                n1.addAttribute("units",("msec"+(char)0).getBytes(),Types.Char,
-           Inst_Type.makeRankArray(5,-1,-1,-1,-1));
-       }  
-     } 
-   return false;
-   }//processDS
-
-
+        errormessage += ":" + n1.getErrorMessage();
+        n1.addAttribute("units",("msec"+(char)0).getBytes(),Types.Char,
+                        Inst_Type.makeRankArray(5,-1,-1,-1,-1));
+      }  
+    } 
+    return false;
+  }//processDS
 }//class NxWriteBeam

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/11/20 16:14:48  pfpeterson
+ * reformating
+ *
  * Revision 1.4  2002/04/01 20:28:37  rmikk
  * Eliminated unused code
  *
@@ -44,74 +47,81 @@
  * New Nexus datasource IO handlers
  *
  */
+
 package NexIO;
+
 import DataSetTools.dataset.*;
 import NexIO.*;
 import DataSetTools.math.*;
 import java.lang.reflect.*;
-/** This Class processes the NxMonitor Entries of a Nexus datasource
- */
-public class NxMonitor 
-{String errormessage;
- int monitor_num;
-  public NxMonitor()
-    {
-     errormessage = "";
-     monitor_num = -1;
-    }
 
-    /** Returns error and warning messages or "" if none
+/** 
+ * This Class processes the NxMonitor Entries of a Nexus datasource
+ */
+public class NxMonitor{
+  String errormessage;
+  int monitor_num;
+
+  public NxMonitor(){
+    errormessage = "";
+    monitor_num = -1;
+  }
+
+  /**
+   * Returns error and warning messages or "" if none
    */
- public String getErrorMessage()
-   {
+  public String getErrorMessage(){
     return errormessage;
   }
 
+  public void setMonitorNum( int num ){
+    monitor_num = num;
+  }
 
- public void setMonitorNum( int num )
-  {
-   monitor_num = num;
+  public int getMonitorNum(){
+    return monitor_num;
   }
- public int getMonitorNum()
-  {
-   return monitor_num;
-  }
-  /** Fills out an existing DataSet with information from the NXmonitor
+
+  /**
+   * Fills out an existing DataSet with information from the NXmonitor
    * section of a Nexus datasource
-  *@param node  the current node positioned to an NXmonitor part of a datasource
-  *@param  DS  the existing DataSet that is to be filled out
-  *@return  error status: true if there is an error otherwise false
-  */
- public boolean processDS( NxNode node ,  DataSet DS )
-   {errormessage = "null inputs";
+   *
+   * @param node the current node positioned to an NXmonitor part of a
+   * datasource
+   * @param DS the existing DataSet that is to be filled out
+   *
+   * @return error status: true if there is an error otherwise false
+   */
+  public boolean processDS( NxNode node ,  DataSet DS ){
+    errormessage = "null inputs";
     if( node == null ) 
-       return true;
+      return true;
     if( DS == null )
-        return true;
+      return true;
     NxNode ntof , 
-          ndata;
+      ndata;
     ntof = node.getChildNode( "time_of_flight" );
     ndata = node.getChildNode( "data" );
     if( ( ntof == null ) ||( ndata == null ) )
-      for( int i = 0; i < node.getNChildNodes() ; i++ )
-        {NxNode mm = node.getChildNode( i );
-         if( ntof == null )
-           if( mm != null )
-            {Object X = mm.getAttrValue( "axis" );
-             if( X != null )
-               ntof = mm;
-            }
-         if( ndata == null )
-          if( mm != null )
-            {Object X = mm.getAttrValue( "signal" );
-             if( X != null )
-               ndata = mm;
-            }           
-        }
-    if( ( ntof == null )||( ndata == null ) )
-       {errormessage = "Cannot find the Monitor data here";
-        return true;
-       }
+      for( int i = 0; i < node.getNChildNodes() ; i++ ){
+        NxNode mm = node.getChildNode( i );
+        if( ntof == null )
+          if( mm != null ){
+            Object X = mm.getAttrValue( "axis" );
+            if( X != null )
+              ntof = mm;
+          }
+        if( ndata == null )
+          if( mm != null ){
+            Object X = mm.getAttrValue( "signal" );
+            if( X != null )
+              ndata = mm;
+          }           
+      }
+    if( ( ntof == null )||( ndata == null ) ){
+      errormessage = "Cannot find the Monitor data here";
+      return true;
+    }
    
     Object X1 = ndata.getNodeValue();
     Object X2 = ntof.getNodeValue();
@@ -126,40 +136,38 @@ public class NxMonitor
     float xvals[];
     xvals = nd.Arrayfloatconvert( X2 );
     if( ( xvals == null ) ||(  yvals==null ) ) 
-       return true;
-    Data D = Data.getInstance( new VariableXScale( xvals ) , 
-                               yvals, 
-                               monitor_num+1 );
-    
+      return true;
+    Data D = Data.getInstance(new VariableXScale(xvals),yvals, monitor_num+1);
+
     DS.addData_entry( D );
     int index=DS.getNum_entries()-1;
     Object val = ntof.getAttrValue( "long_name" );
-    if( val != null )
-      {String S = nds.cnvertoString( val );
-       if( S != null )
-	 DS.setX_label( S );
-        }
-     val = ntof.getAttrValue( "units" );
-      if( val != null )
-	  {String S = nds.cnvertoString( val );
-	  if( S != null )
-	      DS.setX_units( S );
-          }  
-      val = ndata.getAttrValue( "long_name" );
-      if( val != null )
-	  {String S = nds.cnvertoString( val );
-	  if( S != null )
-	      DS.setY_label( S );
-          }       
-      val = ndata.getAttrValue( "units" );
-      if( val != null )
-	  {String S = nds.cnvertoString( val );
-	  if( S != null )
-	      DS.setY_units( S );
-          } 
-     (new NXData_util()).setOtherAttributes( node  ,DS , index ,index+1) ;
-
+    if( val != null ){
+      String S = nds.cnvertoString( val );
+      if( S != null )
+        DS.setX_label( S );
+    }
+    val = ntof.getAttrValue( "units" );
+    if( val != null ){
+      String S = nds.cnvertoString( val );
+      if( S != null )
+        DS.setX_units( S );
+    }  
+    val = ndata.getAttrValue( "long_name" );
+    if( val != null ){
+      String S = nds.cnvertoString( val );
+      if( S != null )
+        DS.setY_label( S );
+    }       
+    val = ndata.getAttrValue( "units" );
+    if( val != null ){
+      String S = nds.cnvertoString( val );
+      if( S != null )
+        DS.setY_units( S );
+    } 
+    (new NXData_util()).setOtherAttributes( node  ,DS , index ,index+1) ;
+    
     return false;
-   }
-
+  }
+  
 }

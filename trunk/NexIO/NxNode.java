@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/11/20 16:14:49  pfpeterson
+ * reformating
+ *
  * Revision 1.3  2002/02/26 15:45:21  rmikk
  * Added a getDimension routine
  *
@@ -44,44 +47,40 @@
  */
 package NexIO;
 
-/**Interface that must be implemented by every "datasource" to get at
+/**
+ * Interface that must be implemented by every "datasource" to get at
  * individual data values.  These nodes MUST obey the Nexus standard
  */
-public interface NxNode
-  {public String errormessage = ""; 
-   public int getNChildNodes();
-    
-   public NxNode getChildNode( int index );
+public interface NxNode{
+  public String errormessage = ""; 
 
-   public NxNode getChildNode( String NodeName );  //not class
+  public int getNChildNodes();
+  
+  public NxNode getChildNode( int index );
+  
+  public NxNode getChildNode( String NodeName );  //not class
+  
+  public String getNodeName();
+  
+  public String getNodeClass();
 
-   public String getNodeName();
+  public int getNAttributes();
 
-   public String getNodeClass();
+  public Object getNodeValue();
 
-   public int getNAttributes();
+  public Attr getAttribute( int index );
 
-   public Object getNodeValue();
+  public String getErrorMessage();
 
-   public Attr getAttribute( int index );
+  public int[] getDimension();//of the Node's value
 
-   public String getErrorMessage();
+  public Object getAttrValue( String AttrName );
 
-   public int[] getDimension();//of the Node's value
-
-   public Object getAttrValue( String AttrName );
-
-   public String getLinkName();
+  public String getLinkName();
    
-   public boolean equals( String linkName);
-   public void close();
+  public boolean equals( String linkName);
 
-   public String show();//for Debug purposes
-   }
-
-
-
-
-
-
-
+  public void close();
+  
+  public String show();//for Debug purposes
+}
