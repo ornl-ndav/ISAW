@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.126  2003/03/05 20:37:51  pfpeterson
+ *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  *  Revision 1.125  2003/02/13 21:45:13  pfpeterson
  *  Removed calls to deprecated function fixSeparator.
  *
@@ -1071,7 +1074,7 @@ public class Isaw
           else return;
         } 
         catch( Exception e )
-        {  SharedData.status_pane.add("Choose an input file");
+        {  SharedData.addmsg("Choose an input file");
           //System.out.println( "Choose a input file" );
           return;
         }
@@ -1194,7 +1197,7 @@ public class Isaw
           }
           catch( Exception e ) 
           {
-            SharedData.status_pane.add( "Error "+e );
+            SharedData.addmsg( "Error "+e );
             return;
           } 
          
@@ -1380,7 +1383,7 @@ public class Isaw
           ds.setPointedAtIndex( 0 );
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }else{
-          SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
+          SharedData.addmsg( "nothing is currently highlighted in the tree" );
         }
       }
                  
@@ -1394,7 +1397,7 @@ public class Isaw
           ds.setPointedAtIndex( 0 );
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }else{
-            SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
+            SharedData.addmsg("nothing is currently highlighted in the tree" );
         }
       }
                          
@@ -1407,7 +1410,7 @@ public class Isaw
           ds.setPointedAtIndex( 0 );
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }else{
-            SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
+            SharedData.addmsg("nothing is currently highlighted in the tree" );
         }
       }
                  
@@ -1420,7 +1423,7 @@ public class Isaw
             ds.setPointedAtIndex( 0 );
             ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }else{
-            SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
+            SharedData.addmsg("nothing is currently highlighted in the tree" );
         }
         return;
       }
@@ -1433,7 +1436,7 @@ public class Isaw
             ds.setPointedAtIndex( 0 );
             ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }else{
-            SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
+            SharedData.addmsg("nothing is currently highlighted in the tree" );
         }
         return;
       }
@@ -1446,7 +1449,7 @@ public class Isaw
             ds.setPointedAtIndex( 0 );
             ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }else{
-            SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
+            SharedData.addmsg("nothing is currently highlighted in the tree" );
         }
         return;
       }
@@ -1472,7 +1475,7 @@ public class Isaw
 	    H.show();
 	}
 	catch(Exception e){
-	    SharedData.status_pane.add("CANNOT FIND HELP FILE");
+	    SharedData.addmsg("CANNOT FIND HELP FILE");
 	}
         
 	H.show();
@@ -1491,7 +1494,7 @@ public class Isaw
 	    H.show();
 	}
 	catch(Exception e){
-	    SharedData.status_pane.add("CANNOT FIND HELP FILE");
+	    SharedData.addmsg("CANNOT FIND HELP FILE");
 	}
         
 	H.show();
@@ -1526,7 +1529,7 @@ public class Isaw
 	    H.show();
 	}
 	catch(Exception e){
-	    SharedData.status_pane.add("CANNOT FIND HELP FILE");
+	    SharedData.addmsg("CANNOT FIND HELP FILE");
 	}
         
 	H.show();
@@ -1534,7 +1537,7 @@ public class Isaw
                 
       if( s.equals(GLOSSARY_MI) ){
 	  String S=DataSetTools.util.FilenameUtil.docDir("Glossary.html");
-	  SharedData.status_pane.add("Displaying glossary in web browser");
+	  SharedData.addmsg("Displaying glossary in web browser");
 	  if( S != null) bc.displayURL(S);
       }
 
@@ -1542,24 +1545,24 @@ public class Isaw
 	  String S=DataSetTools.util.FilenameUtil.docDir("index.html");
           if( S != null){
               bc.displayURL(S);
-              SharedData.status_pane.add("Displaying API documentation"
+              SharedData.addmsg("Displaying API documentation"
                                          +" in web browser");
           }
       }
 
       if( s.equals(HOME_LINK_MI) ){
-	  SharedData.status_pane.add("Displaying ISAW homepage in"
+	  SharedData.addmsg("Displaying ISAW homepage in"
 				     +" web browser");
 	  bc.displayURL( HOME_LINK );
       }
 
       if( s.equals(FTP_LINK_MI) ){
-	  SharedData.status_pane.add("Displaying ftp site in web browser");
+	  SharedData.addmsg("Displaying ftp site in web browser");
 	  bc.displayURL( FTP_LINK );
       }
 
       if( s.equals(USERMAN_LINK_MI) ){
-	  SharedData.status_pane.add("Displaying user manual location"
+	  SharedData.addmsg("Displaying user manual location"
 				     +" in web browser");
 	  bc.displayURL( USERMAN_LINK );
       }
@@ -1580,7 +1583,7 @@ public class Isaw
              new ViewManager( ds, s);
              ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
            }else{
-            SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
+            SharedData.addmsg("nothing is currently highlighted in the tree" );
            }
           return;
          } 
@@ -1736,7 +1739,7 @@ public class Isaw
 
       else
       {
-        SharedData.status_pane.add( "type not appropriate for operators" );
+        SharedData.addmsg( "type not appropriate for operators" );
 
         oMenu.removeAll();
         oMenu.add(  new JMenuItem( "[empty]" )  );
@@ -1840,7 +1843,7 @@ public class Isaw
       propsText.setCaretPosition(0);   
     }
     else
-      SharedData.status_pane.add("Document is null");   
+      SharedData.addmsg("Document is null");   
   }
 
 
@@ -1858,17 +1861,17 @@ public class Isaw
       if( s.equals("Save") ){ 
         (new Util()).saveDoc( doc , filename );        
         SharedData.isaw_props.reload();
-        SharedData.status_pane.add( "IsawProps saved successfully") ;     
+        SharedData.addmsg( "IsawProps saved successfully") ;     
       }else if( s.equals("Save and Exit") ){
         (new Util()).saveDoc( doc , filename );        
         SharedData.isaw_props.reload();
-        SharedData.status_pane.add( "IsawProps saved successfully") ;     
+        SharedData.addmsg( "IsawProps saved successfully") ;     
 	kp.dispose();
       }else if( s.equals("Exit") ){ 
         kp.dispose();
       }
       else
-        SharedData.status_pane.add( "Unable to quit" );
+        SharedData.addmsg( "Unable to quit" );
     }
   }
 
@@ -1952,7 +1955,7 @@ public class Isaw
 //      System.out.println( "reason (Isaw.java): " + (String)reason );
     }
     else
-      SharedData.status_pane.add( "unsupported type in Isaw.update()" );
+      SharedData.addmsg( "unsupported type in Isaw.update()" );
   }
  
  
@@ -2050,7 +2053,7 @@ public class Isaw
       for( int i=0;  i<filenames.length;  i++ )
         if(  isForced( filenames[i] )  )
         {
-          SharedData.status_pane.add(  "loading (forced): " + removeForce( filenames[i] )  );
+          SharedData.addmsg(  "loading (forced): " + removeForce( filenames[i] )  );
           files[i] = new File(  removeForce( filenames[i] )  );
         }
         else if(  filter.accept_filename( filenames[i] )  )
@@ -2059,7 +2062,7 @@ public class Isaw
           files[i] = new File( filenames[i] );
         }
         else
-          SharedData.status_pane.add(  "failed: " + filenames[i]  );
+          SharedData.addmsg(  "failed: " + filenames[i]  );
 
       load_files( files );
 
