@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2004/07/31 23:07:25  rmikk
+ * Removed unused imports.
+ *
  * Revision 1.2  2004/07/29 14:01:20  rmikk
  * Fixed javadoc error
  *
@@ -46,21 +49,21 @@ import gov.anl.ipns.Util.File.TextFileReader;
 import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
-import java.io.File;
-import java.io.FileOutputStream;
+//import java.io.File;
+//import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+//import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
 import java.util.Vector;
 
 import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
 import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
-import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
+//import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
 import DataSetTools.operator.Generic.TOF_SCD.Peak;
-import DataSetTools.operator.Generic.TOF_SCD.ReadPeaks;
-import DataSetTools.operator.Generic.TOF_SCD.WritePeaks;
+//import DataSetTools.operator.Generic.TOF_SCD.ReadPeaks;
+//import DataSetTools.operator.Generic.TOF_SCD.WritePeaks;
 import DataSetTools.parameter.*;
-import DataSetTools.util.FilenameUtil;
+//import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 
 /**
