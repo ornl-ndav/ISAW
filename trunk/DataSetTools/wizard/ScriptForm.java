@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2003/07/09 23:15:57  bouzekc
+ * Constructor now attempts to find the given filename. If not
+ * found, it looks in the Script_Path directory.  Removed default
+ * constructor.
+ *
  * Revision 1.13  2003/07/09 22:25:12  bouzekc
  * Now implicitly uses OperatorForm's getTitle() to set the
  * Form title.
@@ -62,6 +67,8 @@ import Command.ScriptOperator;
 
 import DataSetTools.util.*;
 
+import java.io.File;
+
 
 /**
  * The ScriptForm class is an extension of Form designed to work with Scripts.
@@ -72,13 +79,6 @@ public class ScriptForm extends OperatorForm {
   //~ Constructors *************************************************************
 
   /**
-   * Construct an ScriptForm with the title "Script Form."
-   */
-  public ScriptForm(  ) {
-    super( "Script Form" );
-  }
-
-  /**
    * Construct an ScriptForm with the given filename. This creates a
    * ScriptOperator, and allows the use of that Operator for the getResult()
    * method.
@@ -87,6 +87,16 @@ public class ScriptForm extends OperatorForm {
    */
   public ScriptForm( String filename ) {
     super(  );
+
+    if( !( new File( filename ).exists(  ) ) ) {
+      String scriptsDir = SharedData.getProperty( "Script_Path" ) + "/";
+
+      //Script.java, which is ultimately called to create a new ISS script, uses
+      //forward slashes.  We are sending the String to setFileSeparator, however,
+      //to remove extra slashes.
+      filename = StringUtil.setFileSeparator( scriptsDir + filename );
+    }
+
     form_op = new ScriptOperator( filename );
     setDefaultParameters(  );
   }
