@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.49  2004/05/10 22:46:53  dennis
+ *  Test program now just instantiates a ViewManager to diplay
+ *  calculated DataSet, rather than keeping a reference to it.
+ *  This removes an Eclipse warning about a local variable that is
+ *  not read.
+ *
  *  Revision 1.48  2004/04/16 20:29:13  millermi
  *  - DataSetData no longer used as a parameter, now used to
  *    convert DataSets to IVirtualArrayList1D objects.
@@ -1071,9 +1077,7 @@ private float solve( float new_x ) // find what x in the original DataSet maps
     {
       String action = e.getActionCommand();
       if ( action.equals( ADDITIONAL_VIEW ) )
-      {
-        ViewManager vm = new ViewManager( dataSet, viewType );
-      }
+        new ViewManager( dataSet, viewType );
       else
         setView( action ); 
     }
