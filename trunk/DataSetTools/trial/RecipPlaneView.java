@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/07/28 21:59:02  dennis
+ * Added option '-B' to ignore border pixels.  Removed debug print
+ * of qxyz vs hkl values, since they can be written to a file
+ * (similar to peaks file).
+ *
  * Revision 1.7  2003/07/16 22:24:42  dennis
  * Changed output file format to be more like the "peaks" file
  * format.  Now writes the detector position and chi, phi, omega
@@ -143,6 +148,8 @@ public class RecipPlaneView
   String run_nums = null;
   int    runs[];
   String threshold = "";
+  String border_size = "";
+  int    edge_pix = 0;
 
   ThreeD_JPanel   vec_Q_space;
   AltAzController controller;
@@ -484,8 +491,13 @@ public class RecipPlaneView
 
       Tran3D combinedR = transformer.getGoniometerRotationInverse();
 
-      for ( int row = 1; row <= grid.num_rows(); row++ )
-        for ( int col = 1; col <= grid.num_cols(); col++ )
+      if ( edge_pix > grid.num_rows() / 3 )   // can't discard more than 1/3
+        edge_pix = grid.num_rows() / 3;       // of the rows and columns
+
+      System.out.println("Discarding " + edge_pix + " edge rows and columns");
+
+      for ( int row = 1+edge_pix; row <= grid.num_rows()-edge_pix; row++ )
+        for ( int col = 1+edge_pix; col <= grid.num_cols()-edge_pix; col++ )
         {
           d = grid.getData_entry(row,col);
           Vector3D pos_vec = grid.position(row,col);
@@ -1053,7 +1065,7 @@ public class RecipPlaneView
        System.exit(0);
      }
 
-     path = StringUtil.getCommand( 1, "-D", args );
+     path     = StringUtil.getCommand( 1, "-D", args );
      run_nums = StringUtil.getCommand( 1, "-R", args );
 
      if ( path.length() <= 0 || run_nums.length() <= 0 )
@@ -1064,7 +1076,8 @@ public class RecipPlaneView
 
      path = path + "/";
 
-     threshold = StringUtil.getCommand( 1, "-T", args );
+     border_size = StringUtil.getCommand( 1, "-B", args );
+     threshold   = StringUtil.getCommand( 1, "-T", args );
    }
 
 
@@ -1086,6 +1099,8 @@ public class RecipPlaneView
        "                        (values < 1 increase number of points shown)");
     System.out.println(
        "                        (values > 1 decrease number of points shown)");
+    System.out.println(
+       "  -B<border size> specifies number of border rows and column to skip");
     System.out.println("  -H,-h  print this message");
    }
 
@@ -1528,8 +1543,8 @@ private class LatticeParameterListener implements ActionListener
        float h = q.dot(a)/mag_a;
        float k = q.dot(b)/mag_b;
        float l = q.dot(c)/mag_c;
-       System.out.print  ("q = "+ pd.qx + ", " + pd.qy + ", " + pd.qz );
-       System.out.println(" hkl = "+ h + ", " + k + ", " + l ); 
+//     System.out.print  ("q = "+ pd.qx + ", " + pd.qy + ", " + pd.qz );
+//     System.out.println(" hkl = "+ h + ", " + k + ", " + l ); 
        pd.h = h;
        pd.k = k;
        pd.l = l;
@@ -1847,6 +1862,18 @@ private class FFTListener implements IObserver
       catch ( Exception e )
       {
         System.out.println("Invalid threshold value, ignored");
+      }
+
+    if ( viewer.border_size.length() > 0 )
+      try
+      {
+        viewer.edge_pix = (new Integer(viewer.border_size)).intValue();
+        if ( viewer.edge_pix < 0 )
+          throw new Exception("");
+      }
+      catch ( Exception e )
+      {
+        System.out.println("Invalid border size, ignored");
       }
 
     viewer.loadFiles(); 
