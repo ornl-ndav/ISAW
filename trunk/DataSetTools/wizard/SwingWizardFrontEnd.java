@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/02/14 05:01:10  bouzekc
+ * Changed several private methods to protected final to avoid performance
+ * hits with compiler generated synthetic accessor methods.
+ *
  * Revision 1.10  2004/02/11 04:09:02  bouzekc
  * Removed the PropChangeProgressBar.  The progress bars now use the JDK 1.4
  * setIndeterminate() method.  This should take some work off of writing
@@ -394,6 +398,165 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   }
 
   /**
+   * Method to call a ParameterViewer.  Since the only "oddball" events that
+   * currently happen are for the view menu, the only commands to listen for
+   * are the ones for the current form.
+   *
+   * @param com The command (IParameterGUI name) to attempt to display the
+   *        parameter viewer for.
+   */
+  protected final void displayParameterViewer( String com ) {
+    Form f;
+    IParameterGUI iparam;
+    boolean done;
+    int index;
+    int num_params;
+    f            = wiz.getCurrentForm(  );
+    done         = false;
+    index        = 0;
+
+    //get the parameters, remembering to get the result parameter
+    num_params   = f.getNum_parameters(  ) + 1;
+
+    while( !done && ( index < num_params ) ) {
+      iparam   = ( IParameterGUI )f.getParameter( index );
+
+      //does the command match up to a current form parameter name?
+      done     = com.equals( iparam.getName(  ) );
+
+      if( done ) {
+        new ParameterViewer( iparam ).showParameterViewer(  );
+      }
+      index++;
+    }
+  }
+
+  /**
+   * Utility to enable/disable the WizardFrontEnd navigation buttons.
+   *
+   * @param enable true to enable, false to disable.
+   * @param index The index of the Form to enable/disable navigation buttons
+   *        on.
+   */
+  protected final void enableNavButtons( boolean enable, int index ) {
+    if( enable ) {
+      for( int i = 0; i < wizButtons.length; i++ ) {
+        wizButtons[i].setEnabled( true );
+      }
+
+      // enable/disable the navigation buttons
+      if( index >= ( wiz.getNumForms(  ) - 1 ) ) {
+        wizButtons[NEXT_IND].setEnabled( false );
+        wizButtons[LAST_IND].setEnabled( false );
+      }
+
+      if( index <= 0 ) {
+        wizButtons[BACK_IND].setEnabled( false );
+        wizButtons[FIRST_IND].setEnabled( false );
+      }
+    } else {
+      //disable all the buttons
+      for( int i = 0; i < wizButtons.length; i++ ) {
+        wizButtons[i].setEnabled( false );
+      }
+    }
+  }
+
+  /**
+   * Launches a JFileChooser so the user can set the project directory.
+   */
+  protected final void launchProjectChooser(  ) {
+    JFileChooser projChooser = new JFileChooser(  );
+    projChooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
+
+    if( wiz.getProjectsDirectory(  ) != null ) {
+      projChooser.setCurrentDirectory( 
+        new File( wiz.getProjectsDirectory(  ) ) );
+    }
+
+    int result = projChooser.showOpenDialog( 
+        new JFrame( "Select Project Directory" ) );
+
+    if( result != JFileChooser.CANCEL_OPTION ) {
+      wiz.setProjectsDirectory( projChooser.getSelectedFile(  ).toString(  ) );
+    }
+  }
+
+  /**
+   * Creates the view menu and listeners for certain types of parameters in the
+   * current Form.
+   */
+  protected final void populateViewMenu(  ) {
+    JMenuItem jmi;
+    Form f;
+    IParameterGUI iparam;
+    Object val;
+    f = wiz.getCurrentForm(  );
+
+    if( f != null ) {
+      view_menu.removeAll(  );
+
+      //go through the parameter list.  We also want to look at the result
+      //parameter
+      for( int i = 0; i < ( f.getNum_parameters(  ) + 1 ); i++ ) {
+        iparam   = ( IParameterGUI )f.getParameter( i );
+        val      = iparam.getValue(  );
+
+        /*semi-sophisticated attempt at being able to view
+           DataSets, Vectors of items, and files.  Things like
+           Strings and ints, which are easily viewable on the
+           Form, should not be sent to the ParameterViewer. */
+        if( 
+          ( iparam instanceof DataSetPG ) || ( iparam instanceof ArrayPG ) ||
+            ( iparam instanceof LoadFilePG ) || ( iparam instanceof SaveFilePG ) ||
+            ( iparam instanceof StringPG &&
+            ( val.toString(  ).indexOf( '.' ) > 0 ) ) ||
+            iparam instanceof VectorPG ) {
+          jmi = new JMenuItem( iparam.getName(  ) );
+          view_menu.add( jmi );
+          jmi.addActionListener( command_handler );
+        }
+      }
+    }
+
+    //arbitrary file viewing
+    view_menu.addSeparator(  );
+    jmi = new JMenuItem( VIEW_DS );
+    view_menu.add( jmi );
+    jmi.addActionListener( command_handler );
+    jmi = new JMenuItem( VIEW_ASCII );
+    view_menu.add( jmi );
+    jmi.addActionListener( command_handler );
+  }
+
+  /**
+   * Shows the JavaHelp HTML page for the current form.
+   */
+  protected final void showFormHelpMessage(  ) {
+    HTMLizer form_htmlizer = new HTMLizer(  );
+    Form f                 = wiz.getCurrentForm(  );
+
+    if( f != null ) {
+      String html = form_htmlizer.createHTML( f );
+      displayHelpMessage( wiz.getTitle(  ), html );
+    }
+  }
+
+  /**
+   * Show the specified String in the help frame.  This is for the wizard help
+   * message
+   */
+  protected final void showWizardHelpMessage(  ) {
+    String wTitle = "Help: " + wiz.getTitle(  );
+
+    if( wiz.getWizardHelpURL(  ) != null ) {
+      displayURL( wTitle, wiz.getWizardHelpURL(  ) );
+    } else {
+      displayHelpMessage( wTitle, help_message );
+    }
+  }
+
+  /**
    * Sets the WizardFrontEnd's opening size.  This will attempt to find the
    * width and height in IsawProps.dat (WIZARD_WIDTH and WIZARD_HEIGHT).  If
    * it cannot find them, it sets the size to 75% of screen height and 45% of
@@ -445,40 +608,6 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   }
 
   /**
-   * Method to call a ParameterViewer.  Since the only "oddball" events that
-   * currently happen are for the view menu, the only commands to listen for
-   * are the ones for the current form.
-   *
-   * @param com The command (IParameterGUI name) to attempt to display the
-   *        parameter viewer for.
-   */
-  private void displayParameterViewer( String com ) {
-    Form f;
-    IParameterGUI iparam;
-    boolean done;
-    int index;
-    int num_params;
-    f            = wiz.getCurrentForm(  );
-    done         = false;
-    index        = 0;
-
-    //get the parameters, remembering to get the result parameter
-    num_params   = f.getNum_parameters(  ) + 1;
-
-    while( !done && ( index < num_params ) ) {
-      iparam   = ( IParameterGUI )f.getParameter( index );
-
-      //does the command match up to a current form parameter name?
-      done     = com.equals( iparam.getName(  ) );
-
-      if( done ) {
-        new ParameterViewer( iparam ).showParameterViewer(  );
-      }
-      index++;
-    }
-  }
-
-  /**
    * Utility to display an HTML formatted help message.  If an error occurs
    * while reading the URL a blank JFrame is displayed, otherwise a JFrame
    * with the HTML content at the URL is displayed.  URLs were used because
@@ -508,37 +637,6 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   }
 
   /**
-   * Utility to enable/disable the WizardFrontEnd navigation buttons.
-   *
-   * @param enable true to enable, false to disable.
-   * @param index The index of the Form to enable/disable navigation buttons
-   *        on.
-   */
-  private void enableNavButtons( boolean enable, int index ) {
-    if( enable ) {
-      for( int i = 0; i < wizButtons.length; i++ ) {
-        wizButtons[i].setEnabled( true );
-      }
-
-      // enable/disable the navigation buttons
-      if( index >= ( wiz.getNumForms(  ) - 1 ) ) {
-        wizButtons[NEXT_IND].setEnabled( false );
-        wizButtons[LAST_IND].setEnabled( false );
-      }
-
-      if( index <= 0 ) {
-        wizButtons[BACK_IND].setEnabled( false );
-        wizButtons[FIRST_IND].setEnabled( false );
-      }
-    } else {
-      //disable all the buttons
-      for( int i = 0; i < wizButtons.length; i++ ) {
-        wizButtons[i].setEnabled( false );
-      }
-    }
-  }
-
-  /**
    * Utility for initializing the global fileChooser.
    */
   private void initFileChooser(  ) {
@@ -562,26 +660,6 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     wizProgress.setMaximum( wiz.getNumForms(  ) );
     updateFormProgress(  );
     updateWizardProgress(  );
-  }
-
-  /**
-   * Launches a JFileChooser so the user can set the project directory.
-   */
-  private void launchProjectChooser(  ) {
-    JFileChooser projChooser = new JFileChooser(  );
-    projChooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-
-    if( wiz.getProjectsDirectory(  ) != null ) {
-      projChooser.setCurrentDirectory( 
-        new File( wiz.getProjectsDirectory(  ) ) );
-    }
-
-    int result = projChooser.showOpenDialog( 
-        new JFrame( "Select Project Directory" ) );
-
-    if( result != JFileChooser.CANCEL_OPTION ) {
-      wiz.setProjectsDirectory( projChooser.getSelectedFile(  ).toString(  ) );
-    }
   }
 
   /**
@@ -728,84 +806,10 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   }
 
   /**
-   * Creates the view menu and listeners for certain types of parameters in the
-   * current Form.
-   */
-  private void populateViewMenu(  ) {
-    JMenuItem jmi;
-    Form f;
-    IParameterGUI iparam;
-    Object val;
-    f = wiz.getCurrentForm(  );
-
-    if( f != null ) {
-      view_menu.removeAll(  );
-
-      //go through the parameter list.  We also want to look at the result
-      //parameter
-      for( int i = 0; i < ( f.getNum_parameters(  ) + 1 ); i++ ) {
-        iparam   = ( IParameterGUI )f.getParameter( i );
-        val      = iparam.getValue(  );
-
-        /*semi-sophisticated attempt at being able to view
-           DataSets, Vectors of items, and files.  Things like
-           Strings and ints, which are easily viewable on the
-           Form, should not be sent to the ParameterViewer. */
-        if( 
-          ( iparam instanceof DataSetPG ) || ( iparam instanceof ArrayPG ) ||
-            ( iparam instanceof LoadFilePG ) || ( iparam instanceof SaveFilePG ) ||
-            ( iparam instanceof StringPG &&
-            ( val.toString(  ).indexOf( '.' ) > 0 ) ) ||
-            iparam instanceof VectorPG ) {
-          jmi = new JMenuItem( iparam.getName(  ) );
-          view_menu.add( jmi );
-          jmi.addActionListener( command_handler );
-        }
-      }
-    }
-
-    //arbitrary file viewing
-    view_menu.addSeparator(  );
-    jmi = new JMenuItem( VIEW_DS );
-    view_menu.add( jmi );
-    jmi.addActionListener( command_handler );
-    jmi = new JMenuItem( VIEW_ASCII );
-    view_menu.add( jmi );
-    jmi.addActionListener( command_handler );
-  }
-
-  /**
-   * Shows the JavaHelp HTML page for the current form.
-   */
-  private void showFormHelpMessage(  ) {
-    HTMLizer form_htmlizer = new HTMLizer(  );
-    Form f                 = wiz.getCurrentForm(  );
-
-    if( f != null ) {
-      String html = form_htmlizer.createHTML( f );
-      displayHelpMessage( wiz.getTitle(  ), html );
-    }
-  }
-
-  /**
    * Shows the GUI for this Wizard by calling the outer Frame's show() method.
    */
   private void showGUI(  ) {
     frame.show(  );
-  }
-
-  /**
-   * Show the specified String in the help frame.  This is for the wizard help
-   * message
-   */
-  private void showWizardHelpMessage(  ) {
-    String wTitle = "Help: " + wiz.getTitle(  );
-
-    if( wiz.getWizardHelpURL(  ) != null ) {
-      displayURL( wTitle, wiz.getWizardHelpURL(  ) );
-    } else {
-      displayHelpMessage( wTitle, help_message );
-    }
   }
 
   //~ Inner Classes ************************************************************
