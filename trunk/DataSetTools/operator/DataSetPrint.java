@@ -3,6 +3,10 @@
  *                                  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.4  2000/08/08 21:12:52  dennis
+ *  Now prints error values and uses tabs & number format to make the
+ *  dislay neater.
+ *
  *  Revision 1.3  2000/08/03 22:10:23  dennis
  *  Now uses tabs as separators
  *
@@ -18,6 +22,8 @@
 package DataSetTools.operator;
 
 import  java.io.*;
+//import java.text.DateFormat;
+import java.text.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
@@ -140,6 +146,7 @@ public class DataSetPrint extends    Operator
                      new_data;
     float            y_vals[];              
     float            x_vals[];              
+    float            err_vals[];              
     
     int              num_data = ds.getNum_entries();
 
@@ -152,10 +159,16 @@ public class DataSetPrint extends    Operator
 
      x_vals           = data.getX_scale().getXs();
      y_vals  = data.getCopyOfY_values();
+     
+     //if(err_vals  !=null)
+     err_vals  = data.getErrors();
+     
      int numofy= y_vals.length;
+     DecimalFormat df=new DecimalFormat("####0.000");
+     
      for ( int i = 0; i < numofy; i++ )
      {
-       result.append( i+"\t "+x_vals[i]+"\t "+y_vals[i]+"\t \n");
+       result.append( i+"\t "+df.format(x_vals[i])+"\t "+df.format(y_vals[i])+"\t "+df.format(err_vals[i])+"\t \n");
      }
     
     String output = result.toString();
@@ -187,7 +200,7 @@ public class DataSetPrint extends    Operator
    if(OPtype==2)
 		try
 		{
-    		JFrameMessageCHOP JFMC=(new JFrameMessageCHOP("output for dataset", "Dongfeng Chen, Dennis Mikkelson) " , output));
+    		JFrameMessageCHOP JFMC=(new JFrameMessageCHOP("Test Field DataSet Output Window by Dongfeng Chen, Dennis Mikkelson", ds.toString()+" for index "+index , output));
 
     		JFMC.setVisible(true);
     		JFMC.setBounds(60, 60, 680, 680);
@@ -215,3 +228,4 @@ public static void pause(int time)
 
 
 }
+
