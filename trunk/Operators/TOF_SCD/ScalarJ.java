@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/06/05 22:07:22  bouzekc
+ * Updated documentation in constructor.
+ *
  * Revision 1.10  2003/05/28 20:38:31  pfpeterson
  * Changed System.getProperty to SharedData.getProperty
  *
@@ -227,14 +230,14 @@ public class ScalarJ extends GenericTOF_SCD{
   /**
    * Constructs a fully configured scalar operator
    *
-   * @param dir directory to find the blind log file
+   * @param matname the name of the blind.log, .matrix, or .x file
    * @param delta error parameter for finding higher symmetry
    * @param choice number for the type of search to do
    */
-  public ScalarJ(String dir, float delta, int choice){
+  public ScalarJ(String matname, float delta, int choice){
     this();
 
-    getParameter(0).setValue(dir);
+    getParameter(0).setValue(matname);
     getParameter(1).setValue(new Float(delta));
     getParameter(2).setValue(choices.elementAt(choice));
   }
