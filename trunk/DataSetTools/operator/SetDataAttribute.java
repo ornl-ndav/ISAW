@@ -4,6 +4,9 @@
  * This operator sets a Data Attribute on a particular Data block in a DataSet
  *
  *  $Log$
+ *  Revision 1.5  2000/11/17 23:41:07  dennis
+ *  Now constructs the attribute using the Attribute.Build() method.
+ *
  *  Revision 1.4  2000/11/10 22:41:34  dennis
  *     Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
@@ -136,35 +139,28 @@ public class SetDataAttribute extends    DS_Attribute
   /* ---------------------------- getResult ------------------------------- */
 
   public Object getResult()
-    { Attribute A;
+  {  
       DataSet ds = getDataSet();
+
       int index = ((Integer)getParameter(0).getValue()).intValue();
       String S = ((AttributeNameString)(getParameter(1).getValue())).toString();
       Object O = getParameter(2).getValue();
 
-      if ( O == null )
-        return new ErrorString(" null value");
-      
-      if( O instanceof Integer) 
-          A = new IntAttribute(S, ((Integer)O).intValue());
-      else if( O instanceof Float)
-          A = new FloatAttribute( S , ((Float)O).floatValue());
-      else if( O instanceof String)
-          A = new StringAttribute(S , (String) O);
-      else if( O instanceof AttributeNameString)
-          A = new StringAttribute( S , ((AttributeNameString) O).toString());
-      else
-          return new ErrorString(" new Value improper Data Type");
+      Object A = Attribute.Build( S, O );
+    
+      if ( A instanceof ErrorString )
+        return A;
      
       Data D = ds.getData_entry( index);
       if( D == null) 
         return new ErrorString("Improper Index"); 
-      D.setAttribute( A);
-      ds.addLog_entry( "Operation " + "SetDataAttribute "+ S +" on " +ds
-              +"["+index+"]"+  " to " + O);
+
+      D.setAttribute( (Attribute)A );
+      ds.addLog_entry( "SetDataAttribute for " +ds
+                       +" data["+index+"]"+  " to: " + A);
       //ds.notifyIObservers( IObserver.ATTRIBUTE_CHANGED);
+
       return "Attribute Set";     
-    
   }  
 
   /* ------------------------------ clone ------------------------------- */

@@ -4,6 +4,9 @@
  * This operator sets a DataSet Attribute
  *
  *  $Log$
+ *  Revision 1.7  2000/11/17 23:42:56  dennis
+ *  Now constructs the attribute using the Attribute.Build() method.
+ *
  *  Revision 1.6  2000/11/10 22:41:34  dennis
  *     Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
@@ -126,32 +129,21 @@ public class SetDSAttribute extends    DS_Attribute
   /* ---------------------------- getResult ------------------------------- */
 
   public Object getResult()
-    { Attribute A;
-      DataSet ds = getDataSet();
-      String S = ((AttributeNameString)(getParameter(0).getValue())).toString();
-      Object O = getParameter(1).getValue();
-      
-      if ( O == null )
-        return new ErrorString(" null value");
+  { 
+     DataSet ds = getDataSet();
 
-      if( O instanceof Integer) 
-	 A = new IntAttribute(S, ((Integer)O).intValue());
-      else if( O instanceof Float)
-         A = new FloatAttribute( S , ((Float)O).floatValue());
-      else if( O instanceof String)
-         A = new StringAttribute(S , (String) O);
-      else if( O instanceof AttributeNameString)
-         A = new StringAttribute( S , ((AttributeNameString) O).toString());
-      else if( O instanceof int[] )
-         A = new IntListAttribute( S , (int[])O );
-      else
-	 return new ErrorString(" new Value improper Data Type");
-    
+     String S = ((AttributeNameString)(getParameter(0).getValue())).toString();
+     Object O = getParameter(1).getValue();
+
+     Object A = Attribute.Build( S, O );
+     
+     if ( A instanceof ErrorString )
+       return A; 
    
-      ds.setAttribute( A);
-      ds.addLog_entry( "Operation " + "SetDSAttribute "+ S +" on " +ds +
-             " to " + O);
-      return "Attribute Set";     
+     ds.setAttribute( (Attribute)A );
+     ds.addLog_entry( "SetDSAttribute for " +ds + " to: " + A);
+
+     return "Attribute Set";     
   }  
 
   /* ------------------------------ clone ------------------------------- */
