@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/12/06 14:34:51  dennis
+ *  Fixed spelling error in java doc tag. (Chris Bouzek)
+ *
  *  Revision 1.4  2002/11/27 23:16:41  pfpeterson
  *  standardized header
  *
@@ -53,11 +56,12 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.operator.*;
 
 /**
   * This operator specifies the label for some or all of the Data blocks in
   * a DataSet.  The group IDs of the Data blocks for which the attribute is
-  * set are specified as String parameter.  If the list of group IDs
+  * set are specified as String parameters.  If the list of group IDs
   * is empty, then the label is applied for all groups in the DataSet.  If
   * the label is the name of an attribute, then the attribute's toString()
   * method will be used for the label.
@@ -88,7 +92,7 @@ public class SetDataLabel extends    DS_Attribute
    *  by calling getResult().
    *
    *  @param  ds          The DataSet to which the operation is applied
-   *  @parm   label       The new label to use for the specified Data blocks.
+   *  @param   label      The new label to use for the specified Data blocks.
    *                      If this is the name of an attribute, then the
    *                      toString() method of the named attribute will be used
    *                      as the label. 
@@ -126,7 +130,7 @@ public class SetDataLabel extends    DS_Attribute
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -141,11 +145,12 @@ public class SetDataLabel extends    DS_Attribute
     addParameter( parameter ); 
   }
 
-
   /* ---------------------------- getResult ------------------------------- */
   /** Sets the label for a specified number of groups or the whole dataset and 
   *   returns the log_message if successful. Otherwise it returns an error 
-  *   string if the dataSet is null
+  *   string if the DataSet is null.
+  *   @return String which consists of the log message if getResult() is 
+  *   successful.  
   */
   
   public Object getResult()
@@ -155,7 +160,21 @@ public class SetDataLabel extends    DS_Attribute
       String        label      = (String)(getParameter(0).getValue());
       IntListString ids_string = (IntListString)(getParameter(1).getValue());
 
+      /* original
       String list_string = ids_string.toString();
+      */
+
+      /* mine */
+      String list_string = null;
+
+      //check to see if ids_string is not null
+      //otherwise there is not much point to the 
+      //if ( list_string == null || list_string.trim().length() == 0 )
+      //conditional
+      if( ids_string != null )
+	  list_string = ids_string.toString();
+
+      /* mine */
 
       if ( ds == null )
         return new ErrorString("DataSet is null");     
@@ -210,6 +229,11 @@ public class SetDataLabel extends    DS_Attribute
   }
   
   /* ------------------------------ getDocumentation ------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+
   public String getDocumentation()
   {
      StringBuffer Res = new StringBuffer();
@@ -225,7 +249,7 @@ public class SetDataLabel extends    DS_Attribute
       Res.append(" will be used for the label.");
      
      Res.append("@param ds - The DataSet to which the operation is applied");
-     Res.append("@parm label - The new label to use for the specified Data");
+     Res.append("@param label - The new label to use for the specified Data");
       Res.append(" blocks. If this is the name of an attribute, then the");
       Res.append(" toString() method of the named attribute will be used as");
       Res.append(" the label."); 
@@ -245,7 +269,21 @@ public class SetDataLabel extends    DS_Attribute
   /* ------------------------------ main ------------------------------- */
   public static void main(String [] args)
   {
+      /*  Chris's main()  */
+    DataSet ds1 = DataSetFactory.getTestDataSet();
+    
+    Operator op = new SetDataLabel(ds1, "Test1", null);
+    Object ob = op.getResult();
+
+    System.out.println("\nThe result of calling setDataLabel");
+    System.out.println("on a generic DataSet is:\n");
+    System.out.println(ob.toString());
+    
+    String documentation = op.getDocumentation();
+    System.out.println("\nThe documentation is:\n " + documentation);
+      
   
+      /* Tyler's main() 
     SetDataLabel op = new SetDataLabel();
     String documentation = op.getDocumentation();
     
@@ -253,8 +291,8 @@ public class SetDataLabel extends    DS_Attribute
     
     //NOTE:  invalid default parameters
     //getResult returns "DataSet is null"
-    System.out.println(op.getResult().toString());
-  
+    System.out.println(op.getResult().toString());*/
+    
   }
 
 }
