@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/12/11 22:31:31  pfpeterson
+ *  Removed the '_2' from getCommand() and its javadocs.
+ *
  *  Revision 1.9  2002/11/27 23:30:33  pfpeterson
  *  standardized header
  *
@@ -120,11 +123,11 @@ public class FrequencyDistributionFunction
   /* ---------------------------- getCommand ------------------------------- */
   /**
    * @return the command name to be used with script processor: 
-   *         in this case, FFun_2
+   *         in this case, FFun
    */
    public String getCommand()
    {
-     return "FFun_2";
+     return "FFun";
    }
 
 

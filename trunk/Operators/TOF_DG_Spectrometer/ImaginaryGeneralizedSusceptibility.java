@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.6  2002/12/11 22:31:31  pfpeterson
+ *  Removed the '_2' from getCommand() and its javadocs.
+ *
  *  Revision 1.5  2002/11/27 23:30:33  pfpeterson
  *  standardized header
  *
@@ -125,11 +128,11 @@ public class ImaginaryGeneralizedSusceptibility
   /* ---------------------------- getCommand ------------------------------- */
   /**
    * @return the command name to be used with script processor: 
-   *         in this case, ImChi_2
+   *         in this case, ImChi
    */
    public String getCommand()
    {
-     return "ImChi_2";
+     return "ImChi";
    }
 
 
