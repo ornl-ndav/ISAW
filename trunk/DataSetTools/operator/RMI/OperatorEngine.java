@@ -31,11 +31,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/09/15 01:17:20  bouzekc
+ * Now uses IsawProps.dat for the host IP address.
+ *
  * Revision 1.1  2003/08/15 04:06:12  bouzekc
  * Added to CVS.
  *
  */
 package DataSetTools.operator.RMI;
+
+import DataSetTools.util.SharedData;
 
 import java.rmi.*;
 import java.rmi.server.*;
@@ -47,6 +52,10 @@ import java.rmi.server.*;
  */
 public class OperatorEngine extends UnicastRemoteObject
   implements IOperatorEngine {
+  //~ Static fields/initializers ***********************************************
+
+  public static final String RMI_HOST = "RMI_HOST";
+
   //~ Constructors *************************************************************
 
   /**
@@ -82,11 +91,11 @@ public class OperatorEngine extends UnicastRemoteObject
       System.setSecurityManager( new RMISecurityManager(  ) );
     }
 
-    String name = "//192.168.0.1/IOperatorEngine";
+    String host = SharedData.getProperty( RMI_HOST );
+    String name = "//" + host + "/IOperatorEngine";
 
     try {
       IOperatorEngine engine = new OperatorEngine(  );
-
       Naming.rebind( name, engine );
       System.out.println( "OperatorEngine bound" );
     } catch( Exception e ) {
