@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2001/07/03 21:26:36  dennis
+ * Added brightness control.
+ *
  * Revision 1.8  2001/07/02 20:48:21  dennis
  * Added X-Conversions table.
  *
@@ -101,7 +104,8 @@ public class ThreeDView extends DataSetViewer
   private ThreeD_JPanel            threeD_panel      = null; 
   private Box                      control_panel     = null; 
   private ImageJPanel              color_scale_image = null;
-  private AltAzController          view_control      = null;
+  private JSlider                  log_scale_slider  = new JSlider();
+  private AltAzController          view_control      = new AltAzController();
   private AnimationController      frame_control     = null;
   private SplitPaneWithState       split_pane        = null;
   private byte                     color_index[][]   = null;
@@ -275,7 +279,7 @@ private void set_colors( int frame )
   }
 
   threeD_panel.setColors( GROUPS, new_colors );
-  threeD_panel.repaint(0 );
+  threeD_panel.repaint( );
 }
 
 
@@ -548,8 +552,8 @@ private void init()
     control_panel.removeAll();
     removeAll();
   }
-  threeD_panel  = new ThreeD_JPanel();
-  threeD_panel.setBackground( new Color( 100, 100, 100 ) );
+  threeD_panel = new ThreeD_JPanel();
+  threeD_panel.setBackground( new Color( 90, 90, 90 ) );
 
   control_panel = new Box( BoxLayout.Y_AXIS );
 
@@ -557,7 +561,20 @@ private void init()
   color_scale_image.setNamedColorModel( getState().getColor_scale(), false );
   control_panel.add( color_scale_image );
 
-  view_control  = new AltAzController();
+  log_scale_slider.setPreferredSize( new Dimension(120,50) );
+  log_scale_slider.setValue(50);
+  log_scale_slider.setMajorTickSpacing(20);
+  log_scale_slider.setMinorTickSpacing(5);
+  log_scale_slider.setPaintTicks(true);
+
+  TitledBorder border = new TitledBorder(
+                             LineBorder.createBlackLineBorder(),"Brightness");
+  border.setTitleFont( FontUtil.BORDER_FONT );
+  log_scale_slider.setBorder( border );
+  log_scale_slider.addChangeListener( new LogScaleEventHandler() );
+
+  control_panel.add( log_scale_slider );
+
   view_control.addControlledPanel( threeD_panel );
   control_panel.add( view_control );
 
@@ -570,9 +587,7 @@ private void init()
   JPanel conv_panel = new JPanel();
   conv_panel.setLayout( new GridLayout(1,1) );
   conv_panel.add( conv_table.getTable() );
-  TitledBorder border = new TitledBorder(
-                                    LineBorder.createBlackLineBorder(), 
-                                    "Pixel Data");
+  border = new TitledBorder( LineBorder.createBlackLineBorder(), "Pixel Data");
   border.setTitleFont( FontUtil.BORDER_FONT );
   conv_panel.setBorder( border );
   control_panel.add( conv_panel );
@@ -580,7 +595,6 @@ private void init()
   JPanel filler = new JPanel();
   filler.setPreferredSize( new Dimension( 120, 2000 ) );
   control_panel.add( filler );
-
  
                                         // make a titled border around the
                                         // whole viewer, using an appropriate
@@ -636,11 +650,12 @@ private void init()
  *
  */
 
+/* ------------------------- ViewMouseMotionAdapter ----------------------- */
 /**
  *  Listen for mouse motion events and just print out the pixel coordinates
  *  to demonstrate how to handle such events.
  */
-class ViewMouseMotionAdapter extends MouseMotionAdapter
+private class ViewMouseMotionAdapter extends MouseMotionAdapter
 {
    int last_index = IThreeD_Object.INVALID_PICK_ID;
 
@@ -666,7 +681,7 @@ class ViewMouseMotionAdapter extends MouseMotionAdapter
    }
 }
 
-
+/* -------------------------- OptionMenuHandler --------------------------- */
 /**
  *  Listen for Option menu selections and just print out the selected option.
  *  It may be most convenient to have a separate listener for each menu.
@@ -684,6 +699,33 @@ private class OptionMenuHandler implements ActionListener
   }
 }
 
+
+/* ---------------------------- LogScaleEventHandler ----------------------- */
+/**
+ *  Listen for changes to the log scale slider and build a new color scale
+ *  when it changes.
+ */
+private class LogScaleEventHandler implements ChangeListener,
+                                              Serializable
+{
+  public void stateChanged(ChangeEvent e)
+  {
+    JSlider slider = (JSlider)e.getSource();
+
+                              // set new log scale when slider stops moving
+    if ( !slider.getValueIsAdjusting() )
+    {
+      setLogScale( slider.getValue() );
+      MakeColorList();
+      set_colors( frame_control.getFrameNumber() );
+    }
+  }
+}
+
+/* ---------------------------- FrameControlListener ----------------------- */
+/**
+ *  Step to new frames based on commands from the AnimationController.
+ */
 private class FrameControlListener implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
