@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/12 21:12:11  bouzekc
+ * Added javadocs.
+ *
  * Revision 1.5  2004/01/21 18:01:39  bouzekc
  * Removed unused local variables.
  *
@@ -85,8 +88,8 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
   /**
    * Creates a new Qbins1PG object.
    *
-   * @param Prompt DOCUMENT ME!
-   * @param val DOCUMENT ME!
+   * @param Prompt The name of this PG.
+   * @param val The initial value of this PG.
    */
   public Qbins1PG( String Prompt, Object val ) {
     super( Prompt, val );
@@ -96,9 +99,9 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
   /**
    * Creates a new Qbins1PG object.
    *
-   * @param Prompt DOCUMENT ME!
-   * @param val DOCUMENT ME!
-   * @param valid DOCUMENT ME!
+   * @param Prompt The name of this PG.
+   * @param val The initial value of this PG.
+   * @param valid Whether this PG should be considered initially valid.
    */
   public Qbins1PG( String Prompt, Object val, boolean valid ) {
     super( Prompt, val, valid );
@@ -108,9 +111,9 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
   //~ Methods ******************************************************************
 
   /**
-   * DOCUMENT ME!
+   * Sets the value of this QBinsPG.  This really wants a Vector.
    *
-   * @param V DOCUMENT ME!
+   * @param V The new value.
    */
   public void setValue( Object V ) {
     if( V instanceof Vector ) {
@@ -126,9 +129,8 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
   }
 
   /**
-   * DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
+   * 
+   * @return A Vector representation of the Qbins.
    */
   public Object getValue(  ) {
     if( !this.getInitialized() ) {
@@ -187,9 +189,9 @@ public class Qbins1PG extends ParameterGUI implements Concatenator {
   }
 
   /**
-   * DOCUMENT ME!
+   * Initializes the GUI.
    *
-   * @param V DOCUMENT ME!
+   * @param V The new value.
    */
   public void initGUI( Vector V ) {
     this.setEntryWidget( new EntryWidget(  ) );
