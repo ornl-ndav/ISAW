@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/07/09 16:53:47  bouzekc
+ *  Added all missing javadocs.  init() now actually sets the
+ *  value that is passed in as the ArrayPG's value.
+ *
  *  Revision 1.14  2003/07/09 16:32:22  bouzekc
  *  Removed unnecessary "this" qualifiers (clone() still has
  *  its "this" qualifiers).  Sets a small preferred size on
@@ -97,32 +101,49 @@ import DataSetTools.components.ParametersGUI.HashEntry;
 
 import DataSetTools.dataset.DataSet;
 
+import java.awt.*;
+
 import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.*;
-import java.awt.*;
 
 
 /**
- * This is a superclass to take care of many of the common details of
- * Array Parameter GUIs.
+ * This is a superclass to take care of many of the common details of Array
+ * Parameter GUIs.
  */
 public class ArrayPG extends ParameterGUI implements ParamUsesString {
-  // static variables
+  //~ Static fields/initializers ***********************************************
+
   private static String TYPE    = "Array";
   protected static int DEF_COLS = 20;
 
-  // instance variables
+  //~ Instance fields **********************************************************
+
   protected Vector value = null;
 
-  // ********** Constructors **********
+  //~ Constructors *************************************************************
+
+  /**
+   * Creates a new ArrayPG object.
+   *
+   * @param name DOCUMENT ME!
+   * @param val DOCUMENT ME!
+   */
   public ArrayPG( String name, Object val ) {
     this( name, val, false );
     setDrawValid( false );
     type = TYPE;
   }
 
+  /**
+   * Creates a new ArrayPG object.
+   *
+   * @param name Name of this ArrayPG.
+   * @param val Initial value of this ArrayPG.
+   * @param valid Whether it is valid or not.
+   */
   public ArrayPG( String name, Object val, boolean valid ) {
     setName( name );
     setValue( val );
@@ -134,85 +155,66 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     ignore_prop_change   = false;
   }
 
-  // ********** Methods to deal with the hash **********
+  //~ Methods ******************************************************************
 
   /**
-   * Add a single item to the vector
+   * Sets the editable state of the entry widget.
+   *
+   * @param enableMe Whether to make the entry widget enabled.
    */
-  public void addItem( Object val ) {
-    if( value == null ) {
-      value = new Vector(  );  // initialize if necessary
-    }
+  public void setEnabled( boolean enableMe ) {
+    enabled = enableMe;
 
-    if( val == null ) {
-      return;  // don't add null to the vector
-    }
-
-    if( value.indexOf( val ) < 0 ) {
-      value.add( val );  // add if unique
-    }
-
-    if( initialized ) {
-      ( ( JTextField )entrywidget ).setText( ArraytoString( value ) );
+    if( getEntryWidget(  ) != null ) {
+      ( ( JTextField )entrywidget ).setEditable( enabled );
     }
   }
 
   /**
-   * Add a set of items to the vector of choices at once.
+   * Sets the String value of this ArrayPG.
+   *
+   * @param val The String value to set it to.
    */
-  public void addItems( Vector values ) {
-    for( int i = 0; i < values.size(  ); i++ ) {
-      addItem( values.elementAt( i ) );
-    }
-  }
-
-  /**
-   * Remove an item from the hash based on its key.
-   */
-  public void removeItem( Object val ) {
-    int index = value.indexOf( val );
-
-    removeItem( index );
-  }
-
-  public void removeItem( int index ) {
-    if( ( index >= 0 ) && ( index < value.size(  ) ) ) {
-      value.remove( index );
-    }
-  }
-
-  /**
-   * Calls Vector.clear() on the value.
-   */
-  public void clearValue(  ) {
-    if( value == null ) {
-      return;
-    }
-
-    value.clear(  );
-
-    if( initialized ) {
-      ( ( JTextField )entrywidget ).setText( 
-        ArraytoString( ( Vector )value ) );
-    }
-  }
-
-  // **************** ParamUsesString requirements ***************
-  public String getStringValue(  ) {
-    return ArraytoString( value );
-  }
-
   public void setStringValue( java.lang.String val ) {
     setValue( val );
   }
 
-  // ********** IParameter requirements **********
+  /**
+   * Accessor method for this ArrayPG's String value.
+   *
+   * @return The String value associated with this ArrayPG.
+   */
+  public String getStringValue(  ) {
+    return ArraytoString( value );
+  }
 
   /**
-   * Returns the value of the parameter. While this is a generic
-   * object specific parameters will return appropriate
-   * objects. There can also be a 'fast access' method which returns
-   * a specific object (such as String or DataSet) without casting.
+   * Sets the value of this ArrayPG.
+   *
+   * @param val The value to set.
+   */
+  public void setValue( Object val ) {
+    if( val == null ) {
+      value = null;
+    } else if( val instanceof Vector ) {
+      value = ( Vector )val;
+    } else if( val instanceof String ) {
+      value = StringtoArray( ( String )val );
+    } else {
+      return;
+    }
+
+    if( initialized ) {
+      ( ( JTextField )( entrywidget ) ).setText( ArraytoString( value ) );
+    }
+
+    setValid( true );
+  }
+
+  /**
+   * Accessor method to retrieve the value of this ArrayPG.
+   *
+   * @return The value of this ArrayPG.
    */
   public Object getValue(  ) {
     //Vector of DataSets
@@ -235,36 +237,155 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     return val;
   }
 
+  /**
+   * Fast-access method to get the type cast value.
+   *
+   * @return The Vector cast value of this ArrayPG.
+   */
   public Vector getVectorValue(  ) {
     return value;
   }
 
   /**
-   * Sets the value of the parameter.
+   * Converts an array (Vector) to a String.
+   *
+   * @param V The Vector to convert
+   *
+   * @return A String representation of the Vector.
    */
-  public void setValue( Object val ) {
+  public static String ArraytoString( Vector V ) {
+    if( V == null ) {
+      return "[]";
+    }
+
+    Command.execOneLine execLine = new Command.execOneLine(  );
+    String res                   = execLine.Vect_to_String( V );
+
+    return res;
+  }
+
+  /**
+   * Method to turn a String into a Vector array.  It can handle nifty things
+   * like [ISAWDS1, ISAWDS2] which, if a runfile is loaded, will actually be
+   * turned into an array of DataSets.
+   *
+   * @param S The String to turn into an array.
+   *
+   * @return A Vector of Objects corresponding to the Strings.
+   */
+  public static Vector StringtoArray( String S ) {
+    if( S == null ) {
+      return null;
+    }
+
+    //now, the array may come in in a "bad" format...i.e. [String1, String2],
+    //rather than ["String1","String2"] which is what execOneLine expects.  So,
+    //we'll parse the String into a Vector
+    String temp     = S;
+    Vector elements = new Vector(  );
+
+    //pull out the brackets
+    temp   = temp.replace( '[', ' ' );
+    temp   = temp.replace( ']', ' ' );
+
+    //pull out the quotes
+    temp = temp.replace( '"', ' ' );
+
+    StringTokenizer st = new StringTokenizer( temp, "," );
+
+    while( st.hasMoreTokens(  ) ) {
+      //trim out the white space
+      elements.add( st.nextToken(  ).trim(  ) );
+    }
+
+    //now return it to the correct String format
+    S = ArrayPG.ArraytoString( elements );
+
+    //now we can send it to execOneLine
+    execOneLine execLine = new execOneLine(  );
+    int r                = execLine.execute( S, 0, S.length(  ) );
+
+    if( execLine.getErrorCharPos(  ) >= 0 ) {
+      return new Vector(  );
+    }
+
+    //parse the string and try to get a result
+    Object result = execLine.getResult(  );
+
+    //no dice...either no result, or we got a result, but it was not useful 
+    //to us.
+    if( ( result == null ) || !( result instanceof Vector ) ) {
+      return new Vector(  );
+    }
+
+    return ( Vector )result;
+  }
+
+  /**
+   * Add a single item to the Vector.
+   *
+   * @param val The item to add.
+   */
+  public void addItem( Object val ) {
+    if( value == null ) {
+      value = new Vector(  );  // initialize if necessary
+    }
+
     if( val == null ) {
-      value = null;
-    } else if( val instanceof Vector ) {
-      value = ( Vector )val;
-    } else if( val instanceof String ) {
-      value = StringtoArray( ( String )val );
-    } else {
-      return;
+      return;  // don't add null to the vector
+    }
+
+    if( value.indexOf( val ) < 0 ) {
+      value.add( val );  // add if unique
     }
 
     if( initialized ) {
-      ( ( JTextField )( entrywidget ) ).setText( 
-        ArraytoString( value ) );
+      ( ( JTextField )entrywidget ).setText( ArraytoString( value ) );
     }
-
-    setValid( true );
   }
 
-  // ********** IParameterGUI requirements **********
+  /**
+   * Add a set of items to the Vector at once.
+   *
+   * @param values The Vector to add.
+   */
+  public void addItems( Vector values ) {
+    for( int i = 0; i < values.size(  ); i++ ) {
+      addItem( values.elementAt( i ) );
+    }
+  }
+
+  /**
+   * Calls Vector.clear() on the value.
+   */
+  public void clearValue(  ) {
+    if( value == null ) {
+      return;
+    }
+
+    value.clear(  );
+
+    if( initialized ) {
+      ( ( JTextField )entrywidget ).setText( ArraytoString( ( Vector )value ) );
+    }
+  }
+
+  /**
+   * Definition of the clone method.
+   */
+  public Object clone(  ) {
+    ArrayPG apg = new ArrayPG( this.name, this.value, this.valid );
+
+    apg.setDrawValid( this.getDrawValid(  ) );
+    apg.initialized = false;
+
+    return apg;
+  }
 
   /**
    * Allows for initialization of the GUI after instantiation.
+   *
+   * @param init_values The Vector of values to initialize this ArrayPG to.
    */
   public void init( Vector init_values ) {
     if( initialized ) {
@@ -272,15 +393,19 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     }
 
     entrywidget = new JTextField( ArraytoString( value ) );
+
     //we'll set a really small preferred size and let the Layout Manager take
     //over at that point
     entrywidget.setPreferredSize( new Dimension( 2, 2 ) );
     super.initGUI(  );
+    setValue( init_values );
   }
 
   /**
-   * Since this is an array parameter, better allow an array to
-   * initialize the GUI.
+   * Since this is an array parameter, better allow an array to initialize the
+   * GUI.
+   *
+   * @param init_values The array of Objects to initialize this ArrayPG to.
    */
   public void init( Object[] init_values ) {
     Vector init_vec = new Vector(  );
@@ -293,98 +418,24 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
   }
 
   /**
-   * This is an empty method. It is not used because the value
-   * cannot be changed from the GUI.
+   * Remove an item based on its key.
+   *
+   * @param val The key of the item to remove.
    */
-  public void setEnabled( boolean enableMe ) {
-    enabled = enableMe;
+  public void removeItem( Object val ) {
+    int index = value.indexOf( val );
 
-    if( getEntryWidget(  ) != null ) {
-      ( ( JTextField )entrywidget ).setEditable( enabled );
-    }
+    removeItem( index );
   }
 
   /**
-   * Creates the string to be placed in the label for the GUI
+   * Remove an item based on its index.
+   *
+   * @param index The index of the item to remove.
    */
-  private String stringVersion(  ) {
-    if( ( value == null ) || ( value.size(  ) <= 0 ) ) {
-      return "";
-    } else {
-      StringBuffer result = new StringBuffer(  );
-      int numElements     = value.size(  );
-      int start           = 0;
-      int index           = 0;
-
-      while( start < numElements ) {
-        index = checkSame( value, start );
-        result.append( 
-          shortName( value.elementAt( ( index + start ) - 1 ) ) + "[" +
-          index + "]" );
-        start = start + index;
-
-        if( start < numElements ) {
-          result.append( ", " );
-        }
-
-        index = 0;
-      }
-
-      if( result.length(  ) > 0 ) {
-        return '[' + result.toString(  ) + ']';
-      } else {
-        return '[' + value.toString(  ) + ']';
-      }
-    }
-  }
-
-  /**
-   * Determines how many elements are identical.
-   */
-  private int checkSame( Vector vals, int start ) {
-    if( ( vals == null ) || ( vals.size(  ) <= 0 ) ) {
-      return -1;
-    }
-
-    if( start >= vals.size(  ) ) {
-      return -1;
-    }
-
-    int same = 1;
-
-    String first = vals.elementAt( start ).getClass(  ).getName(  );
-
-    for( int i = 1; i < vals.size(  ); i++ ) {
-      if( first.equals( vals.elementAt( i ).getClass(  ).getName(  ) ) ) {
-        same++;
-      } else {
-        return same;
-      }
-    }
-
-    return same;
-  }
-
-  /**
-   * Create a short version of a classname based on the object provided.
-   */
-  private String shortName( Object obj ) {
-    // get the name of the class
-    String res = obj.getClass(  ).getName(  );
-
-    // determine what to trim off
-    int start = res.lastIndexOf( "." );
-    int end   = res.length(  );
-
-    if( res.endsWith( ";" ) ) {
-      end--;
-    }
-
-    // return the trimmed version
-    if( ( start >= 0 ) && ( end >= 0 ) ) {
-      return res.substring( start + 1, end );
-    } else {
-      return res;
+  public void removeItem( int index ) {
+    if( ( index >= 0 ) && ( index < value.size(  ) ) ) {
+      value.remove( index );
     }
   }
 
@@ -444,80 +495,99 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
   }
 
   /**
-   * Definition of the clone method.
+   * Determines how many elements are of the same class.
+   *
+   * @param vals Vector of values to check.
+   * @param start The index of the item you wish to check against the other
+   *        items.
    */
-  public Object clone(  ) {
-    ArrayPG apg = new ArrayPG( this.name, this.value, this.valid );
+  private int checkSame( Vector vals, int start ) {
+    if( ( vals == null ) || ( vals.size(  ) <= 0 ) ) {
+      return -1;
+    }
 
-    apg.setDrawValid( this.getDrawValid(  ) );
-    apg.initialized = false;
+    if( start >= vals.size(  ) ) {
+      return -1;
+    }
 
-    return apg;
+    int same = 1;
+
+    String first = vals.elementAt( start )
+                       .getClass(  )
+                       .getName(  );
+
+    for( int i = 1; i < vals.size(  ); i++ ) {
+      if( first.equals( vals.elementAt( i ).getClass(  ).getName(  ) ) ) {
+        same++;
+      } else {
+        return same;
+      }
+    }
+
+    return same;
   }
 
   /**
-   *  Method to turn a String into a Vector array.  It can handle nifty things
-   *  like [ISAWDS1, ISAWDS2] which, if a runfile is loaded, will actually be
-   *  turned into an array of DataSets.
+   * Create a short version of a class name based on the object provided.
    *
-   *  @param   S                 The String to turn into an array.
+   * @param obj The object to get the class name of.
+   *
+   * @return The shortened class name.
    */
-  public static Vector StringtoArray( String S ) {
-    if( S == null ) {
-      return null;
+  private String shortName( Object obj ) {
+    // get the name of the class
+    String res = obj.getClass(  )
+                    .getName(  );
+
+    // determine what to trim off
+    int start = res.lastIndexOf( "." );
+    int end   = res.length(  );
+
+    if( res.endsWith( ";" ) ) {
+      end--;
     }
 
-    //now, the array may come in in a "bad" format...i.e. [String1, String2],
-    //rather than ["String1","String2"] which is what execOneLine expects.  So,
-    //we'll parse the String into a Vector
-    String temp     = S;
-    Vector elements = new Vector(  );
-
-    //pull out the brackets
-    temp   = temp.replace( '[', ' ' );
-    temp   = temp.replace( ']', ' ' );
-
-    //pull out the quotes
-    temp = temp.replace( '"', ' ' );
-
-    StringTokenizer st = new StringTokenizer( temp, "," );
-
-    while( st.hasMoreTokens(  ) ) {
-      //trim out the white space
-      elements.add( st.nextToken(  ).trim(  ) );
+    // return the trimmed version
+    if( ( start >= 0 ) && ( end >= 0 ) ) {
+      return res.substring( start + 1, end );
+    } else {
+      return res;
     }
-
-    //now return it to the correct String format
-    S = ArrayPG.ArraytoString( elements );
-
-    //now we can send it to execOneLine
-    execOneLine execLine = new execOneLine(  );
-    int r                = execLine.execute( S, 0, S.length(  ) );
-
-    if( execLine.getErrorCharPos(  ) >= 0 ) {
-      return new Vector(  );
-    }
-
-    //parse the string and try to get a result
-    Object result = execLine.getResult(  );
-
-    //no dice...either no result, or we got a result, but it was not useful 
-    //to us.
-    if( ( result == null ) || !( result instanceof Vector ) ) {
-      return new Vector(  );
-    }
-
-    return ( Vector )result;
   }
 
-  public static String ArraytoString( Vector V ) {
-    if( V == null ) {
-      return "[]";
+  /**
+   * Creates the string to be placed in the label for the GUI.
+   *
+   * @return The String label.
+   */
+  private String stringVersion(  ) {
+    if( ( value == null ) || ( value.size(  ) <= 0 ) ) {
+      return "";
+    } else {
+      StringBuffer result = new StringBuffer(  );
+      int numElements     = value.size(  );
+      int start           = 0;
+      int index           = 0;
+
+      while( start < numElements ) {
+        index = checkSame( value, start );
+        result.append( 
+          shortName( value.elementAt( ( index + start ) - 1 ) ) + "[" + index +
+          "]" );
+        start = start + index;
+
+        if( start < numElements ) {
+          result.append( ", " );
+        }
+
+        index = 0;
+      }
+
+      if( result.length(  ) > 0 ) {
+        return '[' + result.toString(  ) + ']';
+      } else {
+        return '[' + value.toString(  ) + ']';
+      }
     }
-
-    Command.execOneLine execLine = new Command.execOneLine(  );
-    String res                   = execLine.Vect_to_String( V );
-
-    return res;
   }
 }
