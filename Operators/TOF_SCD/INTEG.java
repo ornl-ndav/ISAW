@@ -9,7 +9,7 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 
 public class INTEG implements Wrappable,HiddenOperator{
 
-  public int[][][] JHIST=null;
+  public int[][][] JHIST=new int[0][0][0];
 
   public int NXS=0;
 
@@ -107,7 +107,7 @@ public class INTEG implements Wrappable,HiddenOperator{
 
     int[][] RANGE= new int[((4))-1+1][((5))-1+1];
 
-    float[][] SDATA= new float[((85))-1+1][((85))-1+1];
+    float[][] SDATA= new float[((NXS))-1+1][((NYS))-1+1];
 
     float[] SIGI= new float[((5))-1+1];
 
@@ -182,9 +182,9 @@ public class INTEG implements Wrappable,HiddenOperator{
 }
 }
     MAXP1=(int)((MAXP[(int)(((1))-1)]));
-    if((((((((MAXX[(int)(((1))-1)])<(5)||(MAXX[(int)(((1))-1)])>(81))||(MAXY[(
-      int)(((1))-1)])<(5))||(MAXY[(int)(((1))-1)])>(81))||(MAXZ)<(2))||(MAXZ)>((
-        ((WLNUM-3))))))){
+    if((((((((MAXX[(int)(((1))-1)])<(5)||(MAXX[(int)(((1))-1)])>(NXS-4))||(MAXY[
+      (int)(((1))-1)])<(5))||(MAXY[(int)(((1))-1)])>(NYS-4))||(MAXZ)<(2))||(
+        MAXZ)>((((WLNUM-3))))))){
       REFLAG=(int)((500));
       return null;
       }
@@ -234,10 +234,11 @@ public class INTEG implements Wrappable,HiddenOperator{
         K))-1)]+2));
       try{
         REFLAG=(int)((((Number)util.exec("RANGE_TEST",util.appendVect(
-          util.appendVect(util.appendVect(util.appendVect(new Vector()
-            , util.cvrtObject(((RANGE)))), util.cvrtObject(((K))))
-              , util.cvrtObject(((REFLAG)))), util.cvrtObject(((WLNUM))))))
-                .intValue()));
+          util.appendVect(util.appendVect(util.appendVect(util.appendVect(
+            util.appendVect(new Vector(), util.cvrtObject(((RANGE))))
+              , util.cvrtObject(((NXS)))), util.cvrtObject(((NYS))))
+                , util.cvrtObject(((K)))), util.cvrtObject(((REFLAG))))
+                  , util.cvrtObject(((WLNUM)))))).intValue()));
       }catch(Throwable Thrvar0){
           return new ErrorString( Thrvar0);
           }
@@ -305,10 +306,12 @@ public class INTEG implements Wrappable,HiddenOperator{
                   )-1)][(int)(((IZ))-1)]+STEP[(int)(((II))-1)]));
                 try{
                   REFLAG=(int)((((Number)util.exec("RANGE_TEST",util.appendVect(
-                    util.appendVect(util.appendVect(util.appendVect(new Vector()
-                      , util.cvrtObject(((RANGE)))), util.cvrtObject(((IZ))))
-                        , util.cvrtObject(((REFLAG)))), util.cvrtObject(((WLNUM)
-                          ))))).intValue()));
+                    util.appendVect(util.appendVect(util.appendVect(
+                      util.appendVect(util.appendVect(new Vector()
+                        , util.cvrtObject(((RANGE)))), util.cvrtObject(((NXS))))
+                          , util.cvrtObject(((NYS)))), util.cvrtObject(((IZ))))
+                            , util.cvrtObject(((REFLAG)))), util.cvrtObject(((
+                              WLNUM)))))).intValue()));
                 }catch(Throwable Thrvar2){
                     return new ErrorString( Thrvar2);
                     }
@@ -353,10 +356,13 @@ public class INTEG implements Wrappable,HiddenOperator{
                     try{
                       REFLAG=(int)((((Number)util.exec(
                         "RANGE_TEST",util.appendVect(util.appendVect(
-                          util.appendVect(util.appendVect(new Vector()
-                            , util.cvrtObject(((RANGE)))), util.cvrtObject(((IZ)
-                              ))), util.cvrtObject(((REFLAG))))
-                                , util.cvrtObject(((WLNUM)))))).intValue()));
+                          util.appendVect(util.appendVect(util.appendVect(
+                            util.appendVect(new Vector(), util.cvrtObject(((
+                              RANGE)))), util.cvrtObject(((NXS))))
+                                , util.cvrtObject(((NYS)))), util.cvrtObject(((
+                                  IZ)))), util.cvrtObject(((REFLAG))))
+                                    , util.cvrtObject(((WLNUM)))))).intValue()))
+                                      ;
                     }catch(Throwable Thrvar4){
                         return new ErrorString( Thrvar4);
                         }
@@ -377,10 +383,12 @@ public class INTEG implements Wrappable,HiddenOperator{
                   )-1)][(int)(((IZ))-1)]-STEP[(int)(((II))-1)]));
                 try{
                   REFLAG=(int)((((Number)util.exec("RANGE_TEST",util.appendVect(
-                    util.appendVect(util.appendVect(util.appendVect(new Vector()
-                      , util.cvrtObject(((RANGE)))), util.cvrtObject(((IZ))))
-                        , util.cvrtObject(((REFLAG)))), util.cvrtObject(((WLNUM)
-                          ))))).intValue()));
+                    util.appendVect(util.appendVect(util.appendVect(
+                      util.appendVect(util.appendVect(new Vector()
+                        , util.cvrtObject(((RANGE)))), util.cvrtObject(((NXS))))
+                          , util.cvrtObject(((NYS)))), util.cvrtObject(((IZ))))
+                            , util.cvrtObject(((REFLAG)))), util.cvrtObject(((
+                              WLNUM)))))).intValue()));
                 }catch(Throwable Thrvar5){
                     return new ErrorString( Thrvar5);
                     }
@@ -404,10 +412,11 @@ public class INTEG implements Wrappable,HiddenOperator{
             int)(((IZ))-1)]+1));
           try{
             REFLAG=(int)((((Number)util.exec("RANGE_TEST",util.appendVect(
-              util.appendVect(util.appendVect(util.appendVect(new Vector()
-                , util.cvrtObject(((RANGE)))), util.cvrtObject(((IZ))))
-                  , util.cvrtObject(((REFLAG)))), util.cvrtObject(((WLNUM))))))
-                    .intValue()));
+              util.appendVect(util.appendVect(util.appendVect(util.appendVect(
+                util.appendVect(new Vector(), util.cvrtObject(((RANGE))))
+                  , util.cvrtObject(((NXS)))), util.cvrtObject(((NYS))))
+                    , util.cvrtObject(((IZ)))), util.cvrtObject(((REFLAG))))
+                      , util.cvrtObject(((WLNUM)))))).intValue()));
           }catch(Throwable Thrvar6){
               return new ErrorString( Thrvar6);
               }
@@ -633,6 +642,8 @@ public class INTEG implements Wrappable,HiddenOperator{
         util.WRITEFLOAT(((ITOSIGI[(int)(((5))-1)])),(("F10.2")));
         util.WRITESTRING((("          ")));
         util.WRITESTRING(((PORM[(int)(((5))-1)])));
+        util.WRITELN();
+        util.WRITELN();
         }
 
     return null;
