@@ -11,6 +11,10 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/07/14 14:40:09  dennis
+ *  Added copy(ds) method to copy the contents of a DataSet ds
+ *  to the current DataSet
+ *
  *  Revision 1.4  2000/07/11 21:17:47  dennis
  *  Added method getIndex_of_data() to get the index of a specific Data block in the DataSet
  *
@@ -1244,6 +1248,49 @@ public class DataSet implements IAttributeList,
    }
 
 
+  /**
+   *  Copy the contents of another DataSet into the current DataSet.  This 
+   *  performs a complete "deep copy" EXCEPT for the list of observers.  The
+   *  list of observers is unchanged and the observers of this DataSet are
+   *  notified that the data was changed.
+   *
+   *  @param  ds   The DataSet whose contents are to copied into this DataSet.
+   */
+  public void copy( DataSet ds )
+  {
+    this.title            = ds.title;
+    this.pointed_at_index = ds.pointed_at_index;
+    this.x_units          = ds.x_units;
+    this.x_label          = ds.x_label;
+    this.y_units          = ds.y_units;
+    this.y_label          = ds.y_label;
+
+    this.setAttributeList( ds.getAttributeList() );
+
+    this.data = new Vector(); 
+    int num_entries = ds.getNum_entries();
+    for ( int i = 0; i < num_entries; i++ )
+    {
+      Data d = ds.getData_entry( i );
+      this.addData_entry( (Data)d.clone() );
+    }
+
+    this.operators = new Vector();
+    int num_ops = ds.getNum_operators(); 
+    for ( int i = 0; i < num_ops; i++ )
+    {
+      DataSetOperator op = (DataSetOperator)ds.getOperator(i).clone();
+      this.addOperator( op );
+    }                                 
+
+    this.op_log = (OperationLog)ds.op_log.clone();
+                                       // NOTE: We don't change the list of
+                                       //       observers, but rather notify
+                                       //       the observers of this DataSet
+                                       //       that it's contents changed.                              
+    this.notifyIObservers( IObserver.DATA_CHANGED );
+  }
+
 
   /**
    * Clone the current DataSet, including the operation log, the list of
@@ -1253,16 +1300,18 @@ public class DataSet implements IAttributeList,
   {
     DataSet new_ds = empty_clone();
                                       // now copy the list of Data objects.
-    Data data;
+    Data d;
     int num_entries = getNum_entries();
     for ( int i = 0; i < num_entries; i++ )
     {
-      data = getData_entry( i );
-      new_ds.addData_entry( (Data)data.clone() );
+      d = getData_entry( i );
+      new_ds.addData_entry( (Data)d.clone() );
     }
 
     return new_ds;
   }
+
+
 
   /**
    * Clone an EMPTY DataSet with the same title, units, label, operation log,
@@ -1290,7 +1339,7 @@ public class DataSet implements IAttributeList,
     new_ds.setAttributeList( attr_list );
 
     new_ds.pointed_at_index = pointed_at_index;
-    
+
     return new_ds;
   }
 
