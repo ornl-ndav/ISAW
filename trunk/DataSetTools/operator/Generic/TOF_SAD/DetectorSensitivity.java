@@ -28,6 +28,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/07/31 16:04:53  dennis
+ * Added log entries for the efficiency and mask DataSets.
+ * Removed unneeded clone method.
+ *
  * Revision 1.4  2003/07/21 22:55:31  dennis
  * Now uses methods from Grid_util to get the area detector
  * data grid.
@@ -243,6 +247,7 @@ public class DetectorSensitivity extends GenericTOF_SAD
         list.addAttribute( d.getAttribute( Attribute.PIXEL_INFO_LIST )); 
         d.setAttributeList( list );
       }
+    eff_ds.addLog_entry("Set Pixel values to relative sensitivity of pixel");
     eff_ds.setTitle( eff_ds.getTitle() + " Detector Efficiency" );
     eff_ds.setY_units("Efficiency");
     eff_ds.setY_label("Detector Relative Efficiency");
@@ -395,6 +400,7 @@ public class DetectorSensitivity extends GenericTOF_SAD
 
         mask_ds.addData_entry( new_d );
       }
+    mask_ds.addLog_entry("Set Pixel value to IFGOOD flag, 1 if used, else 0");
 
     if ( !mask_grid.setData_entries( mask_ds ) )
       return new ErrorString("Can't set the Mask grid entries");
@@ -412,16 +418,6 @@ public class DetectorSensitivity extends GenericTOF_SAD
     return result;
   }
 
-  /* ------------------------------- clone -------------------------------- */ 
-  /** 
-   *  Creates a clone of this operator.
-   */
-  public Object clone()
-  {
-    Operator op = new DetectorSensitivity();
-    op.CopyParametersFrom( this );
-    return op;
-  }
   
   /* ------------------------------- main --------------------------------- */ 
   /** 
