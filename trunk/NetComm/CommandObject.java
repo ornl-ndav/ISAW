@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/02/24 13:35:19  dennis
+ *  Added command to get the server type.
+ *
  *  Revision 1.3  2003/02/20 19:45:25  dennis
  *  Now implements Serializable
  *
@@ -54,14 +57,15 @@ import java.io.*;
  */
 public class CommandObject implements Serializable
 {
-  /**
+  /*
    *  The supported commands are given below.  Additional codes may be inserted
    *  in the proper category to allow for future expansion of the command set.
    */
   public static final int INVALID         =   0; // These can be used at this 
-  public static final int EXIT            =  10;
-  public static final int GET_STATUS      =  20; // level. That is no parameters
-  public static final int GET_DIRECTORIES =  30; // are needed.
+  public static final int EXIT            =  10; // level. That is, no
+  public static final int GET_STATUS      =  20; // parameters are needed. 
+  public static final int GET_SERVER_TYPE =  30;
+  public static final int GET_DIRECTORIES =  40; 
   public static final int END_BASIC_CMDS  = 100; // BOUND ON BASIC COMMANDS
 
   public static final int GET_DS_TYPES    = 110; // These can only be used with
@@ -75,6 +79,8 @@ public class CommandObject implements Serializable
   public static final int GET_FILE_SUMMARY = 120;// GetFileCommandObject, since 
                                                  // it requires a directory name
   public static final int END_FILE_CMDS   = 300; // BOUND ON FILE_COMMANDS
+
+  public static final String ALL_IDS = "-1";
 
   public static final int[] command_codes =    { INVALID,  
                                                  EXIT,
