@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/03/07 22:42:19  dennis
+ *  Added command GET_DS_X_RANGE, "fixed" command values for
+ *  GET_FILE_NAMES and GET_FILE_SUMMARY
+ *
  *  Revision 1.6  2003/03/05 22:06:56  dennis
  *  Added command to get the range of IDs in a DataSet
  *
@@ -79,10 +83,11 @@ public class CommandObject implements Serializable
   public static final int GET_DATA_BLOCKS = 140; // additional fields
   public static final int GET_SUMMARY     = 150; // to specify the data
   public static final int GET_DS_ID_RANGE = 160; 
+  public static final int GET_DS_X_RANGE  = 170; 
   public static final int END_DATA_CMDS   = 200; // BOUND ON DATA COMMANDS
 
-  public static final int GET_FILE_NAMES   = 110;// This can only be used with a
-  public static final int GET_FILE_SUMMARY = 120;// GetFileCommandObject, since 
+  public static final int GET_FILE_NAMES   = 210;// This can only be used with a
+  public static final int GET_FILE_SUMMARY = 220;// GetFileCommandObject, since 
                                                  // it requires a directory name
   public static final int END_FILE_CMDS   = 300; // BOUND ON FILE_COMMANDS
 
