@@ -31,8 +31,12 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.10  2001/08/17 21:16:50  rmikk
+ * Fixed spelling of indices.  Gave better prompts and
+ * titles
+ *
  * Revision 1.9  2001/08/14 16:11:27  rmikk
- * Used subroutine to set the selected indicies instead of
+ * Used subroutine to set the selected indices instead of
  * setting the text on the appropriate label
  *
  * Revision 1.8  2001/08/14 01:57:32  rmikk
@@ -47,15 +51,15 @@
  * set changed
  *
  * Revision 1.5  2001/08/13 14:50:03  rmikk
- * Fixed misspelling of indicies
+ * Fixed misspelling of indices
  *
  * Revision 1.4  2001/08/13 14:38:02  rmikk
- * Improved a Menu title to indicate the indicies are used in
+ * Improved a Menu title to indicate the indices are used in
  * selection.
  *
  * Revision 1.3  2001/08/09 21:49:59  rmikk
  * Added Documentation.
- * Incorporated Prompts to indicate that Group indicies are
+ * Incorporated Prompts to indicate that Group indices are
  *    needed not Group ID's.
  * Added Displayable Fields- Raw Angle, Solid Angle, and
  *   Group Index
