@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/01/24 19:48:52  bouzekc
+ *  Removed unused imports.  Removed unused variables in main().
+ *
  *  Revision 1.5  2002/12/10 21:56:21  dennis
  *  Added getDocumentation() method. (Shannon Hintzman)
  *
@@ -55,7 +58,6 @@ import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.util.*;
-import IPNS.Runfile.*;
 import DataSetTools.operator.Parameter;
 import DataSetTools.parameter.*;
 
@@ -215,9 +217,8 @@ public class LoadOneRunfile extends    GenericLoad
       {
         DataSet datasets[] = (DataSet[])result;
 
-        ViewManager viewmanager;
         for ( int i = 0; i < datasets.length; i++ )
-          viewmanager = new ViewManager( datasets[i], IViewManager.IMAGE );
+          new ViewManager( datasets[i], IViewManager.IMAGE );
       }
       else
         System.out.println( result.toString() );
