@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/08/11 22:53:30  dennis
+ * Now sets effective positions from grid, after adjusting
+ * the grid.
+ *
  * Revision 1.12  2003/08/11 22:15:18  dennis
  * First version that uses calibration information.
  *
@@ -379,12 +383,11 @@ public class RecipPlaneView
       float cal[] = (float[])calibrations.get( new Integer( ids[i] ) );
       if ( cal == null )
       {
-        System.out.println("Error: No calibration for detector ID " + ids[i] );
+        System.out.println("ERROR: No calibration for detector ID " + ids[i] );
         return;
       }
-
-      Grid_util.setEffectivePositions( ds, ids[i] );
-
+                                        // First adjust the grid according to
+                                        // the calibration information
       int n_rows = grid.num_rows();
       int n_cols = grid.num_cols();
       
@@ -428,7 +431,10 @@ public class RecipPlaneView
 
       System.out.println ("GRID IS " );
       System.out.println ("" + grid );
-      // ################### NOT DONE YET
+                                               // Finally, adjust the 
+                                               // effective detector pixel
+                                               // positions     
+      Grid_util.setEffectivePositions( ds, ids[i] );
     }
 
   }
