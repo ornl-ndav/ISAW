@@ -31,12 +31,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/04/19 15:42:31  dennis
+ *  Revised Documentation
+ *
  *  Revision 1.2  2002/04/04 18:01:00  dennis
  *  Removed setErrors( errors[] ) which can only be applied to
  *  TabulatedData objects.
  *
  */
-
 
 package  DataSetTools.dataset;
 
@@ -83,6 +85,20 @@ public interface IData extends IAttributeList
   public float[]       getCopyOfY_values();
   public float[]       getCopyOfErrors();
 
+  // The arithmetic operators and stitching are implemented in the Data
+  // class.  In all cases they return TabulatedData.
+  //
+  public Data    add( Data d );
+  public Data    add( float y, float err );
+  public Data    subtract( Data d );
+  public Data    subtract( float y, float err );
+  public Data    multiply( Data d );
+  public Data    multiply( float y, float err );
+  public Data    divide( Data d );
+  public Data    divide( float y, float err );
+
+  public Data    stitch( Data other_data, int overlap );
+
   // The remaining methods are abstract and will have to be implemented in 
   // each derived class.  Consequently, the semantics of the methods will vary
   // from class to class.
@@ -98,17 +114,7 @@ public interface IData extends IAttributeList
   public float[] getErrors();
   public void    setSqrtErrors();
 
-  public Data    add( Data d );
-  public Data    add( float y, float err );
-  public Data    subtract( Data d );
-  public Data    subtract( float y, float err );
-  public Data    multiply( Data d );
-  public Data    multiply( float y, float err );
-  public Data    divide( Data d );
-  public Data    divide( float y, float err );
-
   public void    resample( XScale x_scale, int smooth_flag );
-  public Data    stitch( Data other_data, int overlap );
 
   public String  toString();
   public Object  clone();
