@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.18  2003/07/03 14:26:39  bouzekc
+ * Added all missing javadoc comments and formatted existing
+ * comments.
+ *
  * Revision 1.17  2003/06/26 22:24:21  bouzekc
  * Added to getDocumentation() to explain error that occurred
  * when trying to append to a peaks file that does not exist.
@@ -106,13 +110,17 @@ import java.util.Vector;
 
 
 /**
- *
- *  This Form is a "port" of the script used to find peaks in
- *  multiple SCD files.
+ * This Form is a "port" of the script used to find peaks in multiple SCD
+ * files.
  */
 public class FindMultiplePeaksForm extends Form {
+  //~ Static fields/initializers ***********************************************
+
   protected static int RUN_NUMBER_WIDTH = 5;
-  protected final String SCDName        = "SCD";
+
+  //~ Instance fields **********************************************************
+
+  protected final String SCDName      = "SCD";
   private LoadOneHistogramDS loadHist;
   private LoadMonitorDS loadMon;
   private IntegrateGroup integGrp;
@@ -122,7 +130,7 @@ public class FindMultiplePeaksForm extends Form {
   private WriteExp wrExp;
   private WritePeaks wrPeaks;
 
-  /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
+  //~ Constructors *************************************************************
 
   /**
    * Construct a Form with a default parameter list.
@@ -132,39 +140,54 @@ public class FindMultiplePeaksForm extends Form {
     this.setDefaultParameters(  );
   }
 
-  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
-
   /**
-   *  Full constructor for FindMultiplePeaksForm.
+   * Full constructor for FindMultiplePeaksForm.
    *
-   *  @param rawpath        The raw data path.
-   *  @param outpath        The output data path for the *.peaks file.
-   *  @param runnums        The run numbers to load.
-   *  @param expname        The experiment name (i.e. "quartz").
-   *  @param num_peaks      The maximum number of peaks to return.
-   *  @param min_int        The minimum peak intensity to look for.
-   *  @param append         Append to file (yes/no).
-   *  @param line2use       SCD calibration file line to use.
-   *  @param calibfile      SCD calibration file.
+   * @param rawpath The raw data path.
+   * @param outpath The output data path for the .peaks file.
+   * @param runnums The run numbers to load.
+   * @param expname The experiment name (i.e. "quartz").
+   * @param num_peaks The maximum number of peaks to return.
+   * @param min_int The minimum peak intensity to look for.
+   * @param append Append to file (yes/no).
+   * @param line2use SCD calibration file line to use.
+   * @param calibfile SCD calibration file.
    */
   public FindMultiplePeaksForm( 
     String rawpath, String outpath, String runnums, String expname,
     int num_peaks, int min_int, boolean append, int line2use, String calibfile ) {
     this(  );
-    getParameter( 0 ).setValue( rawpath );
-    getParameter( 1 ).setValue( outpath );
-    getParameter( 2 ).setValue( runnums );
-    getParameter( 3 ).setValue( expname );
-    getParameter( 4 ).setValue( new Integer( num_peaks ) );
-    getParameter( 5 ).setValue( new Integer( min_int ) );
-    getParameter( 6 ).setValue( new Boolean( append ) );
-    getParameter( 7 ).setValue( new Integer( line2use ) );
-    getParameter( 8 ).setValue( calibfile );
+    getParameter( 0 )
+      .setValue( rawpath );
+    getParameter( 1 )
+      .setValue( outpath );
+    getParameter( 2 )
+      .setValue( runnums );
+    getParameter( 3 )
+      .setValue( expname );
+    getParameter( 4 )
+      .setValue( new Integer( num_peaks ) );
+    getParameter( 5 )
+      .setValue( new Integer( min_int ) );
+    getParameter( 6 )
+      .setValue( new Boolean( append ) );
+    getParameter( 7 )
+      .setValue( new Integer( line2use ) );
+    getParameter( 8 )
+      .setValue( calibfile );
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * @return the String command used for invoking this Form in a Script.
+   */
+  public String getCommand(  ) {
+    return "FINDMULTIPEAKSFORM";
   }
 
   /**
-   *
-   *  Attempts to set reasonable default parameters for this form.
+   * Attempts to set reasonable default parameters for this form.
    */
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
@@ -210,10 +233,7 @@ public class FindMultiplePeaksForm extends Form {
   }
 
   /**
-   *
-   *  Documentation for this OperatorForm.  Follows javadoc
-   *  conventions.
-   *
+   * @return documentation for this OperatorForm.  Follows javadoc conventions.
    */
   public String getDocumentation(  ) {
     StringBuffer s = new StringBuffer(  );
@@ -261,22 +281,14 @@ public class FindMultiplePeaksForm extends Form {
   }
 
   /**
-   *  Returns the String command used for invoking this
-   *  Form in a Script.
-   */
-  public String getCommand(  ) {
-    return "FINDMULTIPEAKSFORM";
-  }
-
-  /**
-   * getResult() finds multiple peaks using the following algorithm:
-   * First the calibration data from the SCD file is loaded.  Then the
-   * FindPeaks Operator is used to find the peaks, based on user input.
-   * Then the CentroidPeaks Operator is used to find the peak centers.
-   * Next it writes the results to the specified *.peaks file.  Finally it
-   * writes the SCD experiment (*.x) file.
+   * getResult() finds multiple peaks using the following algorithm: First the
+   * calibration data from the SCD file is loaded.  Then the FindPeaks
+   * Operator is used to find the peaks, based on user input. Then the
+   * CentroidPeaks Operator is used to find the peak centers. Next it writes
+   * the results to the specified .peaks file.  Finally it writes the SCD
+   * experiment (.x) file.
    *
-   *  @return A Boolean indicating success or failure.
+   * @return A Boolean indicating success or failure.
    */
   public Object getResult(  ) {
     SharedData.addmsg( "Executing...\n" );
@@ -305,11 +317,13 @@ public class FindMultiplePeaksForm extends Form {
 
     //get raw data directory
     param    = ( IParameterGUI )super.getParameter( 0 );
-    rawDir   = param.getValue(  ).toString(  );
+    rawDir   = param.getValue(  )
+                    .toString(  );
 
     //get output directory
     param       = ( IParameterGUI )super.getParameter( 1 );
-    outputDir   = param.getValue(  ).toString(  );
+    outputDir   = param.getValue(  )
+                       .toString(  );
 
     //gets the run numbers
     param       = ( IParameterGUI )super.getParameter( 2 );
@@ -317,7 +331,8 @@ public class FindMultiplePeaksForm extends Form {
 
     //get experiment name
     param     = ( IParameterGUI )super.getParameter( 3 );
-    expName   = param.getValue(  ).toString(  );
+    expName   = param.getValue(  )
+                     .toString(  );
 
     //get maximum number of peaks to find
     param      = ( IParameterGUI )super.getParameter( 4 );
@@ -337,8 +352,9 @@ public class FindMultiplePeaksForm extends Form {
 
     //get calibration file name
     param       = ( IParameterGUI )super.getParameter( 8 );
-    calibFile   = param.getValue(  ).toString(  );
-    first       = true;
+    calibFile   = param.getValue(  )
+                       .toString(  );
+    first   = true;
 
     //the name for the saved file
     saveName   = outputDir + expName + ".peaks";
@@ -368,7 +384,8 @@ public class FindMultiplePeaksForm extends Form {
       SharedData.addmsg( "Loading " + loadName + "." );
 
       //load the histogram
-      loadHist.getParameter( 0 ).setValue( loadName );
+      loadHist.getParameter( 0 )
+              .setValue( loadName );
       obj = loadHist.getResult(  );
 
       //make sure it is a DataSet
@@ -379,7 +396,8 @@ public class FindMultiplePeaksForm extends Form {
       }
 
       //load the monitor
-      loadMon.getParameter( 0 ).setValue( loadName );
+      loadMon.getParameter( 0 )
+             .setValue( loadName );
       obj = loadMon.getResult(  );
 
       //make sure it is a DataSet
@@ -410,8 +428,10 @@ public class FindMultiplePeaksForm extends Form {
       }
 
       // find peaks
-      fPeaks.getParameter( 0 ).setValue( histDS );
-      fPeaks.getParameter( 1 ).setValue( monCount );
+      fPeaks.getParameter( 0 )
+            .setValue( histDS );
+      fPeaks.getParameter( 1 )
+            .setValue( monCount );
       obj = fPeaks.getResult(  );
 
       if( obj instanceof Vector ) {
@@ -421,8 +441,10 @@ public class FindMultiplePeaksForm extends Form {
       }
 
       //"centroid" (find the center) the peaks
-      cenPeaks.getParameter( 0 ).setValue( histDS );
-      cenPeaks.getParameter( 1 ).setValue( peaksVec );
+      cenPeaks.getParameter( 0 )
+              .setValue( histDS );
+      cenPeaks.getParameter( 1 )
+              .setValue( peaksVec );
       obj = cenPeaks.getResult(  );
 
       if( obj instanceof Vector ) {
@@ -434,8 +456,10 @@ public class FindMultiplePeaksForm extends Form {
       SharedData.addmsg( "Writing peaks for " + loadName + "." );
 
       // write out the results to the .peaks file
-      wrPeaks.getParameter( 1 ).setValue( peaksVec );
-      wrPeaks.getParameter( 2 ).setValue( new Boolean( appendToFile ) );
+      wrPeaks.getParameter( 1 )
+             .setValue( peaksVec );
+      wrPeaks.getParameter( 2 )
+             .setValue( new Boolean( appendToFile ) );
       obj = wrPeaks.getResult(  );
 
       if( obj instanceof ErrorString ) {
@@ -443,9 +467,12 @@ public class FindMultiplePeaksForm extends Form {
       }
 
       //write the SCD experiment file
-      wrExp.getParameter( 0 ).setValue( histDS );
-      wrExp.getParameter( 1 ).setValue( monDS );
-      wrExp.getParameter( 4 ).setValue( new Boolean( appendToFile ) );
+      wrExp.getParameter( 0 )
+           .setValue( histDS );
+      wrExp.getParameter( 1 )
+           .setValue( monDS );
+      wrExp.getParameter( 4 )
+           .setValue( new Boolean( appendToFile ) );
       obj = wrExp.getResult(  );
 
       if( obj instanceof ErrorString ) {
@@ -477,21 +504,15 @@ public class FindMultiplePeaksForm extends Form {
   }
 
   /**
-   *  Creates the Operators necessary for this Form and sets their
-   *  constant values.
+   * Creates the Operators necessary for this Form and sets their constant
+   * values.
    *
-   *  @param  calibFile              SCD calibration file.
-   *
-   *  @param  maxPeaks               Maximum number of peaks.
-   *
-   *  @param  minInten               Minimum peak intensity.
-   *
-   *  @param  peaksName              Fully qualified peaks file name.
-   *
-   *  @param  expFile                Fully qualified experiment file name.
-   *
-   *  @param  SCDline                The line to use from the SCD calib file.
-   *
+   * @param calibFile SCD calibration file.
+   * @param maxPeaks Maximum number of peaks.
+   * @param minInten Minimum peak intensity.
+   * @param peaksName Fully qualified peaks file name.
+   * @param expFile Fully qualified experiment file name.
+   * @param SCDline The line to use from the SCD calib file.
    */
   private void createFindPeaksOperators( 
     String calibFile, int maxPeaks, int minInten, String peaksName,
@@ -507,32 +528,45 @@ public class FindMultiplePeaksForm extends Form {
 
     //LoadOneHistogramDS
     //get the histogram.  We want to retrieve the first one.
-    loadHist.getParameter( 1 ).setValue( new Integer( 1 ) );
+    loadHist.getParameter( 1 )
+            .setValue( new Integer( 1 ) );
 
     /*If you want to be able to use a group mask,
        change the "" below to a String variable.
        I've been told this is not used. -CMB*/
-    loadHist.getParameter( 2 ).setValue( "" );
+    loadHist.getParameter( 2 )
+            .setValue( "" );
 
     //IntegrateGroup
-    integGrp.getParameter( 0 ).setValue( new Integer( 1 ) );
-    integGrp.getParameter( 1 ).setValue( new Float( 0 ) );
-    integGrp.getParameter( 2 ).setValue( new Float( 50000 ) );
+    integGrp.getParameter( 0 )
+            .setValue( new Integer( 1 ) );
+    integGrp.getParameter( 1 )
+            .setValue( new Float( 0 ) );
+    integGrp.getParameter( 2 )
+            .setValue( new Float( 50000 ) );
 
     //LoadSCDCalib
-    loadSCD.getParameter( 0 ).setValue( calibFile );
-    loadSCD.getParameter( 1 ).setValue( new Integer( SCDline ) );
-    loadSCD.getParameter( 2 ).setValue( "" );
+    loadSCD.getParameter( 0 )
+           .setValue( calibFile );
+    loadSCD.getParameter( 1 )
+           .setValue( new Integer( SCDline ) );
+    loadSCD.getParameter( 2 )
+           .setValue( "" );
 
     //FindPeaks
-    fPeaks.getParameter( 2 ).setValue( new Integer( maxPeaks ) );
-    fPeaks.getParameter( 3 ).setValue( new Integer( minInten ) );
+    fPeaks.getParameter( 2 )
+          .setValue( new Integer( maxPeaks ) );
+    fPeaks.getParameter( 3 )
+          .setValue( new Integer( minInten ) );
 
     //WritePeaks
-    wrPeaks.getParameter( 0 ).setValue( peaksName );
+    wrPeaks.getParameter( 0 )
+           .setValue( peaksName );
 
     //WriteExp
-    wrExp.getParameter( 2 ).setValue( expFile );
-    wrExp.getParameter( 3 ).setValue( new Integer( 1 ) );
+    wrExp.getParameter( 2 )
+         .setValue( expFile );
+    wrExp.getParameter( 3 )
+         .setValue( new Integer( 1 ) );
   }
 }
