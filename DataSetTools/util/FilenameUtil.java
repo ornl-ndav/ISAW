@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2004/05/03 18:07:26  dennis
+ *  Removed unused local variable "opened_ok".
+ *
  *  Revision 1.20  2004/03/15 19:33:58  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -162,8 +165,6 @@ public class FilenameUtil
    */
   public static String fixCase( String file_name )
   {
-    boolean opened_ok = true;
-
     // try the provided file name
     File file = new File ( file_name );
     if ( file.exists() )
