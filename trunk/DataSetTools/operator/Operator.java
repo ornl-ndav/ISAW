@@ -5,6 +5,10 @@
  *                 attribute class.
  *
  *  $Log$
+ *  Revision 1.3  2000/10/03 21:51:40  dennis
+ *  Replaced vector.clear() with vector.removeAllElements() for
+ *  compatibility with Java 1.1.8
+ *
  *  Revision 1.2  2000/07/10 22:36:12  dennis
  *  July 10, 2000 version... many changes
  *
@@ -208,7 +212,7 @@ abstract public class Operator implements Serializable
   {
     int      num_param = op.getNum_parameters();
 
-    parameters.clear();
+    parameters.removeAllElements();
     for ( int i = 0; i < num_param; i++ )
       addParameter( (Parameter)op.getParameter(i).clone() );
   }
