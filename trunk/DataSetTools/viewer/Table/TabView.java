@@ -31,6 +31,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.9  2001/08/14 16:11:27  rmikk
+ * Used subroutine to set the selected indicies instead of
+ * setting the text on the appropriate label
+ *
  * Revision 1.8  2001/08/14 01:57:32  rmikk
  * Improved the Layout
  *
@@ -253,11 +257,11 @@ public class TabView extends DataSetViewer implements StateListener
    /** redraw Checks for selection Changed
    */
    public  void redraw( java.lang.String reason )
-    {
-    
+    { 
+	
       if( reason.equals( IObserver.SELECTION_CHANGED))
-        tv.SelectedIndecies.setText("Selected indices="+
-          IntList.ToString(getDataSet().getSelectedIndices())+"     ");
+        tv.setSelectedGRoup_Display(
+          IntList.ToString(getDataSet().getSelectedIndices()));
       else if( reason.equals( DataSetViewer.NEW_DATA_SET ))
         tv.setDataSet( getDataSet());
       }
