@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.58  2003/07/14 16:47:35  rmikk
+ * Added type checking code to prevent a run time error
+ *
  * Revision 1.57  2003/07/01 20:08:12  rmikk
  * -Added a lot more documentation
  * -Rearranged methods into sections
@@ -1258,6 +1261,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             ((DataSet)arg1).addIObserver( this);
         if( arg2 instanceof DataSet)
             ((DataSet)arg2).addIObserver( this);
+       
         OL.notifyIObservers( arg1,arg2 );
         Result = null;
         return end;
@@ -2372,6 +2376,12 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             operateArithDS( LeftValue , RightValue , operation );
             return;
         }
+        if( (LeftValue instanceof DataSet) || (RightValue instanceof DataSet) ){
+            seterror(1000, ER_ImproperDataType+" "+ operation );
+            Result = null;
+            return;
+        }
+
         if( (LeftValue instanceof Vector) || (RightValue instanceof Vector))
             if( ( operation != '&') || !(LeftValue instanceof String || 
                                          RightValue instanceof String)){
