@@ -31,7 +31,12 @@
  * Modified:
  *
  * $Log$
- * Revision 1.56  2003/06/26 21:48:54  rmikk
+ * Revision 1.57  2003/06/27 16:27:59  rmikk
+ * Reverted to version 1.51
+ * The if then statement no longer requires all upper case THEN
+ * The setDefaultParameters now initializes the parameters variable
+ *
+* Revision 1.56  2003/06/26 21:48:54  rmikk
  * Reinstated commented out code to deal correctly(ignore) with
  *  $  category = ...
  *  $ Title =....
@@ -424,7 +429,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   private int executeBlock( Script script, int start, boolean exec,
                             int onerror ){
     int line ;
-    String S,upperCase; 
+    String S ; 
         
 
     if( script == null){
@@ -442,40 +447,39 @@ public class ScriptProcessor  extends ScriptProcessorOperator
 
       if( S !=  null ){
         int i ; 
+        char c ; 
         for( i = S.length() - 1 ;  i >=  0  ;  i-- ){
           if( S.charAt( i ) <=  ' ' )S = S.substring( 0 , i ) ; 
           else i = -1 ; 
         }
       }
-      
-      S = S.trim();
-      upperCase = S.toUpperCase();
-      
-      if( S == null && Debug ){
+           
+      if( S == null ){
+        if( Debug )
           System.out.println(" S is null " );
-      /*}else if( S == null){
-      }else if( S.indexOf( "#") == 0 ){
-      }else if( S.indexOf("$" ) == 0){*/
-      }else if( upperCase.indexOf( "ELSE ERROR" ) == 0 ){
+      }else if( S.trim() == null){
+      }else if( S.trim().indexOf( "#") == 0 ){
+      }else if( S.trim().indexOf("$" ) == 0){
+      }else if( S.toUpperCase().trim().indexOf( "ELSE ERROR" ) == 0 ){
         return line ; 
-      }else if( upperCase.indexOf( "END ERROR" ) == 0 ){
+      }else if( S.toUpperCase().trim().indexOf( "END ERROR" ) == 0 ){
         return line ; 
-      }else if( upperCase.indexOf( "ON ERROR" ) == 0 ){
+      }else if( S.toUpperCase().trim().indexOf( "ON ERROR" ) == 0 ){
         line = executeErrorBlock( script , line , exec ) ;               
-      /*}else if( onerror > 0 ){*/
-      }else if( upperCase.indexOf( "FOR " ) == 0 ){
+      }else if( onerror > 0 ){
+      }else if( S.toUpperCase().trim().indexOf( "FOR " ) == 0 ){
         line = executeForBlock ( script , line , exec ,onerror ) ; 
-      }else if( upperCase.indexOf( "ENDFOR" ) == 0 ){
+      }else if( S.toUpperCase().trim().indexOf( "ENDFOR" ) == 0 ){
         return line ; 
-      }else if( upperCase.indexOf("IF ") == 0){
+      }else if( S.toUpperCase().trim().indexOf("IF ") == 0){
         line = executeIfStruct( script, line, exec , onerror );
-      }else if( upperCase.equals("ELSE")){
+      }else if( S.toUpperCase().trim().equals("ELSE")){
         return line;
-      }else if( upperCase.indexOf("ELSEIF") == 0){
+      }else if( S.toUpperCase().trim().indexOf("ELSEIF") == 0){
         return line;
-      }else if( upperCase.equals("ENDIF")){
+      }else if( S.toUpperCase().trim().equals("ENDIF")){
         return line;
-      /*}else if( S.trim().length() <= 0 ){*/
+      }else if( S.trim().length() <= 0 ){
       }else if( exec ){
         //can transverse a sequence of lines. On error , if then
         ExecLine.resetError();               
@@ -509,7 +513,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   private int executeForBlock( Script script , int start , boolean execute, 
                                int onerror ){
     String var; 
-    int i, j, n; 
+    int i, j, k, n; 
     int line;  
     String S; 
     Vector V;
@@ -580,6 +584,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
         }
       }
             
+      //if(execute) 
       kline = executeBlock( script , line , execute ,0 ) ; 
       if ( (perror >= 0) && (onerror == 0) )
         return kline ; 
@@ -608,6 +613,8 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   }
 
   private int executeErrorBlock( Script script, int start, boolean execute ){
+    String var;      
+    int i, j, k; 
     int line; 
     String S; 
     int mode; 
@@ -717,7 +724,8 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     i = i + 3;
     j = S.length();
     if( S.trim().length() >= 8 )
-      if( S.trim().substring( S.trim().length() - 5 ).equals( " THEN" ) )
+      if( S.toUpperCase().trim().substring( S.trim().length() - 5 )
+                .equals( " THEN" ) )
         j = S.toUpperCase().lastIndexOf("THEN") ;
 
     boolean b;
@@ -857,7 +865,8 @@ public class ScriptProcessor  extends ScriptProcessorOperator
 
     index=line.indexOf("#");
     if(index==0){ // could be comment
-      //if(index<0) it is a comment
+      //index=line.indexOf("#$$");
+      //if(index<0) // it is a comment
       if(line.indexOf("#$$")<0)
         return true; // it dealt with things correctly
     }
@@ -922,7 +931,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    
     // parse type and create a parameter
     if( DataType.equals("=")){
-    //do nothing title= or category=
+      // do nothing
     }else if( (DataType .equals( "INT") ) || ( DataType.equals( "INTEGER"))){
       if( InitValue == null)
         InitValue ="0";
@@ -957,18 +966,69 @@ public class ScriptProcessor  extends ScriptProcessorOperator
         addParameter( new BooleanPG( Prompt, new Boolean (true)) );
       }
     }else if( DataType.equals("ARRAY")){
+     /* if( InitValue != null)
+        ExecLine.execute(InitValue , 0 , InitValue.length());
+      Vector V = new Vector();
+      if( InitValue != null )
+        if( ExecLine.getErrorCharPos() < 0){
+          if( ExecLine.getResult() instanceof Vector)
+            V = (Vector)(ExecLine.getResult());
+        }
+      */
       addParameter( new ArrayPG( Prompt, InitValue));
     }else if( DataType.equals("DATADIRECTORYSTRING")){
+      /*String DirPath = null;
+      if(InitValue!=null && InitValue.length()>0){
+        DirPath=InitValue;
+      }else{
+        DirPath=SharedData.getProperty("Data_Directory")+"\\";
+      }
+      if( DirPath != null )
+        DirPath = 
+          DataSetTools.util.StringUtil.setFileSeparator( DirPath);
+      else
+        DirPath = "";
+      */
       addParameter( new DataDirPG( Prompt, null));
+                                 //  new DataDirectoryString(DirPath)));
     }else if( DataType.equals("DSSETTABLEFIELDSTRING")){
+      /*if(InitValue == null)
+        addParameter( new Parameter( Prompt ,
+                                     new DSSettableFieldString() ));
+      else
+        addParameter( new Parameter( Prompt ,
+                               new DSSettableFieldString(InitValue.trim()) ) );
+      */
       DSSettableFieldString dsf = new DSSettableFieldString();
       ChoiceListPG choice= new ChoiceListPG( Prompt, InitValue);
       for( int i = 0; i< dsf.num_strings(); i++)
         choice.addItem( dsf.getString(i));
       addParameter( choice);
     }else if( DataType.equals("LOADFILESTRING")){ 
+      /*String DirPath=null;
+      if(InitValue!=null && InitValue.length()>0){
+        DirPath=InitValue;
+      }else{
+        DirPath=SharedData.getProperty("Data_Directory")+"\\";
+      }
+      if(DirPath!=null)
+        DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
+      else
+        DirPath="";
+      */
       addParameter(new LoadFilePG(Prompt, InitValue));
     }else if( DataType.equals("SAVEFILESTRING")){ 
+      /*String DirPath=null;
+      if(InitValue!=null && InitValue.length()>0){
+        DirPath=InitValue;
+      }else{
+        DirPath=SharedData.getProperty("Data_Directory")+"\\";
+      }
+      if(DirPath!=null)
+        DirPath=DataSetTools.util.StringUtil.setFileSeparator(DirPath);
+      else
+        DirPath="";
+      */
       addParameter(new SaveFilePG(Prompt,InitValue));
     }else if( DataType.equals( "INTLIST" )){
        if(InitValue != null)
@@ -982,6 +1042,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
         addParameter( new Parameter( Prompt,new DSFieldString() ));
       else
         addParameter( new SaveFilePG( Prompt, InitValue ));
+                                     //new DSFieldString(InitValue.trim()) ));
     }else if( DataType.equals( "INSTRUMENTNAMESTRING")){
       String XX=null;
       if(InitValue!=null && InitValue.length()>0)
@@ -1009,14 +1070,44 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       for( nn=0; nn< V.size(); nn++){
         cpg.addItem( (V.elementAt(nn)).toString()) ;
       }
+      //StringChoiceList SL = new StringChoiceList(ss);
      
      
-      addParameter(  cpg);
+      addParameter(  cpg);//new Parameter(Prompt, SL));
     }else if ( DataType.equals( "DATASET") ){
+      /*DataSet dd = new DataSet("DataSet","");
+      if( InitValue != null){
+        ExecLine.execute( InitValue, 0, InitValue.length());
+        if( ExecLine.getErrorCharPos() < 0 )
+          if( ExecLine.getResult() instanceof DataSet )
+            dd = ( DataSet )( ExecLine.getResult() );
+      }
+      Parameter PP = new Parameter( Prompt , dd);
+      */
       addParameter ( new DataSetPG(Prompt, null));// PP );
     }else if ( DataType.equals( "SAMPLEDATASET") ){
+      /*SampleDataSet dd = new SampleDataSet();
+      if( InitValue != null){
+        ExecLine.execute( InitValue, 0, InitValue.length());
+                   
+        if( ExecLine.getErrorCharPos() < 0 )
+          if( ExecLine.getResult() instanceof SampleDataSet )
+            dd = ( SampleDataSet )( ExecLine.getResult() );
+      }
+ 
+      Parameter PP = new Parameter( Prompt , dd);
+      */
       addParameter ( new SampleDataSetPG(Prompt, null) );
     }else if ( DataType.equals( "MONITORDATASET") ){
+      /*MonitorDataSet dd = new MonitorDataSet();
+      if( InitValue != null){
+        ExecLine.execute( InitValue, 0, InitValue.length());
+        if( ExecLine.getErrorCharPos() < 0 )
+          if( ExecLine.getResult() instanceof MonitorDataSet )
+            dd = ( MonitorDataSet )( ExecLine.getResult() );
+      }
+      Parameter PP = new Parameter( Prompt , dd);
+      */
       addParameter ( new MonitorDataSetPG( Prompt, null) );
     }else{
       IParameter param = param_types.getInstance( DataType_C);
@@ -1080,7 +1171,11 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    * keeping track of line numbers.
    */
   private static String getLine( Document Doc, int start, boolean Continued ){
+    String var;
+    int i, j, k;
+    int line;
     String S;
+    boolean mode;
     Element  E, F;
        
     if( Doc == null ) 
@@ -1143,12 +1238,12 @@ public class ScriptProcessor  extends ScriptProcessorOperator
         prevchar = S.charAt ( i );
       }else if( " \t".indexOf(S.charAt(i))>=0){
         //!!if( S.charAt ( i ) == ' ')
-        //if( " +-*/^():[]{}," . indexOf(S.charAt(i + 1 )) >= 0){
-        //}else if( i+1>= S.length()){
-        //}else if( i < 1) {
-        //}else if("+-*/^():[]{},".indexOf(S.charAt( i - 1 ) ) >= 0){
-        //}else
-        Res = Res + S.charAt( i ) ; 
+        if( " +-*/^():[]{}," . indexOf(S.charAt(i + 1 )) >= 0){
+        }else if( i+1>= S.length()){
+        }else if( i < 1) {
+        }else if("+-*/^():[]{},".indexOf(S.charAt( i - 1 ) ) >= 0){
+        }else
+          Res = Res + S.charAt( i ) ; 
         prevchar = ' ';
       }else{
         Res = Res + S.charAt(i);
@@ -1206,6 +1301,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   public int getErrorCharPos(){
     if(ExecLine == null ) return -1;
     return perror;
+    //return ExecLine.getErrorCharPos();
   }
 
   /**
@@ -1238,6 +1334,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    *  Error conditions are returned in the error variables.
    */
   public void setDefaultParameters(){
+    parameters = new Vector();
     if(this.script==null) return; // don't do anything before there is a script
 
     String Line;
@@ -1366,7 +1463,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
           S = S + getParameter( i ).getValue().toString();            
         ExecLine.resetError() ;
                 
-        ExecLine.execute ( S , 0 , S.length());
+        int j = ExecLine.execute ( S , 0 , S.length());
         perror =ExecLine.getErrorCharPos() ;
                 
         if( perror >= 0 )
