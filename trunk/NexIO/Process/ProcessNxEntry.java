@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/12/12 15:24:19  rmikk
+ * The names of monitor data sets now start with Mon_ instead of M:
+ *
  * Revision 1.4  2003/12/08 23:05:36  rmikk
  * Eliminate call to addOperator
  *
@@ -101,7 +104,7 @@ public class ProcessNxEntry  implements IProcessNxEntry{
      if( NxDataNode == null){ // Monitor DataSet
         int k = 0;
         monitorDS = true;
-        DS.setTitle("M:"+ NxEntryNode.getNodeName());
+        DS.setTitle("Mon_"+ NxEntryNode.getNodeName());
         Integer instType = ((Integer) DS.getAttributeValue( Attribute.INST_TYPE));
         if( instType != null)
         DataSetFactory.addMonitorOperators( DS,instType.intValue());
