@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/09/13 23:16:39  bouzekc
+ *  Removed calls to setEnabled in initGUI(Vector), since ParameterGUI.init()
+ *  already calls this.
+ *
  *  Revision 1.11  2003/09/09 23:06:27  bouzekc
  *  Implemented validateSelf().
  *
@@ -208,7 +212,6 @@ public class BooleanPG extends ParameterGUI
     entrywidget=new EntryWidget(new JCheckBox("",
                                 ((Boolean)this.getValue()).booleanValue()));
     entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
-    this.setEnabled(this.getEnabled());
     super.initGUI();
   }
 

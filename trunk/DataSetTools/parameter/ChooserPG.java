@@ -30,6 +30,10 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.14  2003/09/13 23:16:40  bouzekc
+ *  Removed calls to setEnabled in initGUI(Vector), since ParameterGUI.init()
+ *  already calls this.
+ *
  *  Revision 1.13  2003/09/12 20:22:01  rmikk
  *  AddItem(one item only) now adds the item to the entrywidget too. If the
  *    ParameterGUI has been initialized, new entries can be
@@ -201,7 +205,6 @@ abstract public class ChooserPG extends ParameterGUI{
 
     // set up the combobox
     entrywidget=new EntryWidget(new HashEntry(this.vals));
-    entrywidget.setEnabled(this.enabled);
     entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
     super.initGUI();
     //GUI won't properly update without this

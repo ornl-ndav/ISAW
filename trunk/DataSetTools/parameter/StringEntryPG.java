@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/09/13 23:16:40  bouzekc
+ *  Removed calls to setEnabled in initGUI(Vector), since ParameterGUI.init()
+ *  already calls this.
+ *
  *  Revision 1.12  2003/09/09 23:06:31  bouzekc
  *  Implemented validateSelf().
  *
@@ -188,7 +192,6 @@ public abstract class StringEntryPG extends ParameterGUI {
     }
 
     entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
-    this.setEnabled( this.getEnabled(  ) );
     super.initGUI(  );
   }
 
