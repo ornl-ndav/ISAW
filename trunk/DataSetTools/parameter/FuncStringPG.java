@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/06/06 18:51:47  pfpeterson
+ *  Removed unneeded code due to new abstract grandparent.
+ *
  *  Revision 1.5  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -58,8 +61,8 @@ import DataSetTools.util.*;
 /**
  * This is class is to deal with float parameters.
  */
-public class FuncStringPG extends StringPG{
-    private static String TYPE="FuncString";
+public class FuncStringPG extends StringPG implements ParamUsesString{
+    private static final String TYPE="FuncString";
 
     // ********** Constructors **********
     public FuncStringPG(String name, Object value){
@@ -70,25 +73,6 @@ public class FuncStringPG extends StringPG{
     public FuncStringPG(String name, Object value, boolean valid){
         super(name,value,valid);
         this.type=TYPE;
-    }
-
-    // ********** IParameterGUI requirements **********
-    /**
-     * Allows for initialization of the GUI after instantiation.
-     */
-    public void init(Vector init_values){
-        if(init_values!=null){
-            if(init_values.size()==1){
-                // the init_values is what to set as the value of the parameter
-                this.setValue(init_values.elementAt(0));
-            }else{
-                // something is not right, should throw an exception
-            }
-        }
-        entrywidget=new StringEntry(this.getStringValue(),20);
-        entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
-        this.setEnabled(this.getEnabled());
-        super.initGUI();
     }
 
     static void main(String args[]){

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/06/06 18:51:47  pfpeterson
+ *  Removed unneeded code due to new abstract grandparent.
+ *
  *  Revision 1.7  2003/02/07 16:19:17  pfpeterson
  *  Fixed bug in constructor where the value of 'valid' was not properly set.
  *
@@ -66,21 +69,20 @@ import DataSetTools.util.*;
 /**
  * This is class is to deal with float parameters.
  */
-public class InstNamePG extends StringPG{
-    private static String TYPE="InstName";
-    private static String propName="Default_Instrument";
-    private static final SharedData share=new SharedData();
+public class InstNamePG extends StringPG implements ParamUsesString{
+    private static final String TYPE     = "InstName";
+    private static       String propName = "Default_Instrument";
 
     // ********** Constructors **********
     public InstNamePG(String name, Object value){
         super(name,value);
         this.type=TYPE;
         if( value==null ){
-            this.setValue(share.isaw_props.get(propName));
+            this.setValue(SharedData.getProperty(propName));
         }else{
             String temp=this.getStringValue();
             if(temp==null || temp.length()==0){
-                this.setValue(share.getProperty(propName));
+                this.setValue(SharedData.getProperty(propName));
             }
         }
     }
@@ -89,11 +91,11 @@ public class InstNamePG extends StringPG{
         super(name,value,valid);
         this.type=TYPE;
         if( value==null ){
-            this.setValue(share.isaw_props.get(propName));
+            this.setValue(SharedData.getProperty(propName));
         }else{
             String temp=this.getStringValue();
             if(temp==null || temp.length()==0){
-                this.setValue(share.getProperty(propName));
+                this.setValue(SharedData.getProperty(propName));
             }
         }
         this.setValid(valid);
