@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.28  2004/04/20 17:42:15  dennis
+ * Added check that at least three peaks are present before
+ * calling BestFitMatrix() to find the matrix that most nearly
+ * maps from the assigned hkl values to the peaks' q vectors.
+ *
  * Revision 1.27  2004/04/15 15:12:27  dennis
  * Removed unneeded wrappers around LinearAlgebra.double2float()
  * methods.  Added documentation regarding the output to the log
@@ -478,6 +483,13 @@ public class LsqrsJ extends GenericTOF_SCD {
     if( peaks.size(  ) == 0 ) {
       return new ErrorString( "No peaks to refine" );
     }
+
+    // can't do a least squares fit without at least 3 points
+    if( peaks.size( ) < 3 ) {
+      return new ErrorString( "Only " + peaks.size() + " peaks to fit in " +
+                              "LsqrsJ, need at least 3" );
+    }
+
 
     // create the hkl-matrix and q-matrix (q=1/d)
     double[][] q   = new double[peaks.size(  )][3];
