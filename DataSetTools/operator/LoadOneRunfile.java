@@ -2,6 +2,9 @@
  * @(#)LoadOneRunfile.java     0.2  2000/07/21  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2000/07/21 20:54:38  dennis
+ *  Now uses mask to omit specified groups
+ *
  *  Revision 1.1  2000/07/21 20:38:56  dennis
  *  Generic operator to load all DataSets from one runfile
  *
@@ -120,9 +123,16 @@ public class LoadOneRunfile extends    Operator
 
      DataSet[] dss = new DataSet[ n_ds ];
      for (int i = 0; i< n_ds; i++)
+     {
        dss[i] = rr.getDataSet(i);
+                                         // remove masked detectors for the
+                                         // histogram DataSets
+       if ( rr.getType( i ) == Retriever.HISTOGRAM_DATA_SET )
+         for ( int k = 0; k < masked_ids.length; k++ )
+           dss[i].removeData_entry_with_id( masked_ids[k] );
+     }
 
-      return dss;
+     return dss;
    }
 
 
