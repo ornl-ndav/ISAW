@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/08/28 02:01:58  bouzekc
+ *  Modified to work with new ParameterGUI.
+ *
  *  Revision 1.14  2003/08/25 19:39:43  bouzekc
  *  Fixed bug where getValue() did not return the value.
  *
@@ -131,11 +134,14 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    * Creates a new RadioButtonPG object without a drawn "valid" checkbox and an
    * initial state of valid = false.
    *
-   * @param PGname The name of this ParameterGUI
+   * @param name The name of this ParameterGUI
+   * @param Object val
    */
-  public RadioButtonPG( String PGname, Object newVal ) {
-    this( PGname, newVal, false );
-    this.setDrawValid( false );
+  public RadioButtonPG( String name, Object val ) {
+    super( name, val );
+    addItem( val.toString(  ) );
+    setValue( val.toString(  ) );
+    this.type = TYPE;
   }
 
   /**
@@ -145,31 +151,29 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    * @param valid Whether this parameterGUI should be initially valid or not.
    */
   public RadioButtonPG( String PGname, boolean valid ) {
-    this.setName( PGname );
-    this.setEnabled( true );
-    this.setValid( valid );
-    this.setDrawValid( true );
-    this.type                 = TYPE;
-    this.initialized          = false;
-    this.ignore_prop_change   = false;
+    this( PGname, null, valid );
   }
 
   /**
    * Creates a new RadioButtonPG object.
    *
    * @param PGname The name of this parameterGUI.
-   * @param choices The Vector of (String) values that this RadioButtonPG
-   *        should have.
+   * @param val Either the Vector of (String) values that this RadioButtonPG
+   *        should have, or a single choice to add.
    * @param valid Whether this parameterGUI should be initially valid or not.
    */
-  public RadioButtonPG( String PGname, Object choices, boolean valid ) {
-    this( PGname, valid );
+  public RadioButtonPG( String PGname, Object val, boolean valid ) {
+    super( PGname, val, valid );
 
-    if( !( choices instanceof Vector ) ) {
-      radioChoices = new Vector(  );
+    if( val instanceof Vector ) {
+      radioChoices = ( Vector )val;
     } else {
-      radioChoices = ( Vector )choices;
+      radioChoices = new Vector(  );
+      addItem( val.toString(  ) );
+      setValue( val.toString(  ) );
     }
+
+    this.type = TYPE;
   }
 
   //~ Methods ******************************************************************
