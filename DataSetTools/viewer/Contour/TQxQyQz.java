@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2004/06/18 18:39:55  rmikk
+ * Eliminated unused variables
+ *
  * Revision 1.11  2004/03/15 19:33:59  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -312,7 +315,7 @@ public class TQxQyQz  extends ContourView
        DataSetOperator opp = ds.getOperator("Load Orientation Matrix");
        if( opp != null)
          {
-          LoadFileString lfs = new LoadFileString( ORfilename);
+          //LoadFileString lfs = new LoadFileString( ORfilename);
      
           opp.setParameter(new Parameter("filename", ORfilename ),0);
          System.out.println( opp.getResult() );
@@ -491,9 +494,9 @@ public class TQxQyQz  extends ContourView
            {if( B1== null)
               return;
             float a1 = -(V[0]*B1[0]+V[1]*B1[1]+V[2]*B1[2]);
-            float a2=0;
-            if( B2 != null)
-              a2 =-(V[0]*B2[0]+V[1]*B2[1]+V[2]*B2[2]);
+            //float a2=0;
+            //if( B2 != null)
+            //  a2 =-(V[0]*B2[0]+V[1]*B2[1]+V[2]*B2[2]);
             for( int i=0;i<3;i++)
               {V[i]+=a1*B1[i];
                //if( (a2 !=0)&&(B2!=null));
@@ -501,8 +504,8 @@ public class TQxQyQz  extends ContourView
                }
             }
           public void actionPerformed( ActionEvent evt)
-           {int Group=-1;
-            float time=Float.NaN;
+           {//int Group=-1;
+            //float time=Float.NaN;
             float[] Q = null;
             try{
             if( evt.getSource().equals( Vec1))
