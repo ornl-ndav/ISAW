@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2003/08/16 02:09:54  bouzekc
+ * Now properly adds PropertyChangeListeners which exist before the GUI is
+ * created.
+ *
  * Revision 1.21  2003/08/15 23:56:21  bouzekc
  * Modified to work with new IParameterGUI and ParameterGUI.
  *
@@ -303,8 +307,12 @@ public abstract class VectorPG extends ParameterGUI
    * @param listener The listener to add.
    */
   public void addPropertyChangeListener( PropertyChangeListener listener ) {
-    pcs.addPropertyChangeListener( listener );
-    GUI.addPropertyChangeListener( listener );
+    addPCLToVector( listener );
+
+    if( initialized ) {
+      pcs.addPropertyChangeListener( listener );
+      GUI.addPropertyChangeListener( listener );
+    }
   }
 
   /**
@@ -315,8 +323,12 @@ public abstract class VectorPG extends ParameterGUI
    */
   public void addPropertyChangeListener( 
     String property, PropertyChangeListener listener ) {
-    pcs.addPropertyChangeListener( property, listener );
-    GUI.addPropertyChangeListener( property, listener );
+    addPCLToVector( property, listener );
+
+    if( initialized ) {
+      pcs.addPropertyChangeListener( property, listener );
+      GUI.addPropertyChangeListener( property, listener );
+    }
   }
 
   /**
@@ -384,8 +396,12 @@ public abstract class VectorPG extends ParameterGUI
    * @param listener The listener to remove
    */
   public void removePropertyChangeListener( PropertyChangeListener listener ) {
-    pcs.removePropertyChangeListener( listener );
-    GUI.removePropertyChangeListener( listener );
+    removePCLFromVector( listener );
+
+    if( initialized ) {
+      pcs.removePropertyChangeListener( listener );
+      GUI.removePropertyChangeListener( listener );
+    }
   }
 
   /**
