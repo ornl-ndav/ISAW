@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2003/05/14 20:14:05  pfpeterson
+ * More changes to get detectors not at -90deg to work. Now code
+ * produces exactly same result as FORTRAN.
+ *
  * Revision 1.14  2003/05/13 20:18:30  pfpeterson
  * Fixed a javadoc.
  *
@@ -811,13 +815,13 @@ public class Peak{
     double ang = this.detA*Math.PI/180.;
     double xt = xdp;
     double yt = pos[1];
-    xdp = xt*Math.cos(ang)-yt*Math.sin(ang);
-    ydp = xt*Math.sin(ang)+yt*Math.cos(ang);
+    xdp =     xt*Math.cos(ang) + yt*Math.sin(ang);
+    ydp = -1.*xt*Math.sin(ang) + yt*Math.cos(ang);
     zdp = pos[2];
 
     // calculate XCM and YCM                                             
     this.xcm = (float)(-(ydp/xdp)*this.detD);
-    this.ycm = (float)(-(zdp/xdp)*this.detD);
+    this.ycm = (float)((zdp/xdp)*this.detD);
   }
 
   /**
@@ -856,20 +860,20 @@ public class Peak{
                        +this.detD*this.detD);
     if(Double.isNaN(r) || Float.isNaN(this.wl)) return null;
     if(r==0. || this.wl==0f) return null;
-    post_d[0]=(float)(-1.*this.detD/(r*this.wl));
-    post_d[1]=(float)(this.xcm/(r*this.wl));
+    post_d[0]=(float)(this.detD/(r*this.wl));
+    post_d[1]=(float)(-1.*this.xcm/(r*this.wl));
     post_d[2]=(float)(this.ycm/(r*this.wl));
     
     // rotate the detector to where it actually is
-    float deta = -this.detA;                     // Dennis, 10/1/2002
-    double cosa=Math.cos(-deta*Math.PI/180.);
-    double sina=Math.sin(-deta*Math.PI/180.);
-    post_a[0]=(float)(    post_d[0]*cosa+post_d[1]*sina);
-    post_a[1]=(float)(-1.*post_d[0]*sina+post_d[1]*cosa);
+    double deta = this.detA*Math.PI/180.;
+    double cosa=Math.cos(deta);
+    double sina=Math.sin(deta);
+    post_a[0]=(float)( post_d[0]*cosa - post_d[1]*sina);
+    post_a[1]=(float)( post_d[0]*sina + post_d[1]*cosa);
     post_a[2]=post_d[2];
       
     // translate the origin
-    post_l[0]=post_a[0]-(float)(1./this.wl);      // Dennis, 10/1/2002
+    post_l[0]=post_a[0]-(float)(1./this.wl);
     post_l[1]=post_a[1];
     post_l[2]=post_a[2];
 
