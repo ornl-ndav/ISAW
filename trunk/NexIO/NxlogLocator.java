@@ -30,8 +30,13 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.4  2005/02/16 23:29:58  kramer
+ * Modified Log to L0G in the previous log message in the source file.
+ *
  * Revision 1.3  2005/02/16 02:02:00  kramer
- * Added javadoc documentation and $Log:$ to the file's header.  Also, the
+ *
+ *
+ * Added javadoc documentation and $L0G:$ to the file's header.  Also, the
  * method getNxLogDataSet(int i) will return 'null' if 'i' is invalid.
  *
  */
