@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 19:04:06  bouzekc
+ * Documented file using javadoc statements.
+ * Modified the names of the methods used from the StatisticsManager class because
+ * they were changed in the StatisticsManager class.
+ *
  * Revision 1.1  2004/02/07 05:08:52  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -57,17 +62,26 @@ import devTools.Hawk.classDescriptor.modeledObjects.Project;
 import devTools.Hawk.classDescriptor.tools.StatisticsManager;
 
 /**
+ * This class makes a window displaying statistics about the supplied Project.  These 
+ * statistics include the number of classes, interfaces, inner-classes, abstract classes, 
+ * etc. in the project.
  * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class StatisticsGUI extends JFrame implements ActionListener
 {
+	/**
+	 * The Project that is being analyzed.
+	 */
 	protected Project project;
+	/**
+	 * The manager used to obtain information about the Project.
+	 */
 	protected StatisticsManager manager;
-	protected JButton closeButton;
 	
+	/**
+	 * Create a new StatisticsGUI.
+	 * @param pro The Project to analyze.
+	 */
 	public StatisticsGUI(Project pro)
 	{
 		project = pro;
@@ -102,16 +116,16 @@ public class StatisticsGUI extends JFrame implements ActionListener
 		numberPanel.add(new JLabel(""+manager.getTotalNumberOfClassesAndInterfaces()));
 
 		textPanel.add(new JLabel("     Number of Interfaces:  "));
-		numberPanel.add(new JLabel(""+manager.getNumberOfInterfaces()));
+		numberPanel.add(new JLabel(""+manager.getTotalNumberOfInterfaces()));
 
 		textPanel.add(new JLabel("     Total number of classes:  "));
-		numberPanel.add(new JLabel(""+manager.getNumberOfClasses()));
+		numberPanel.add(new JLabel(""+manager.getTotalNumberOfClasses()));
 		
 		textPanel.add(new JLabel("          Number of Inner Classes:  "));
-		numberPanel.add(new JLabel(""+manager.getTotalNumberOfInnerClass()));
+		numberPanel.add(new JLabel(""+manager.getTotalNumberOfInnerClasses()));
 
 		textPanel.add(new JLabel("          Number of Non-Inner Classes:  "));
-		numberPanel.add(new JLabel(""+manager.getTotalNumberOfNonInnerClass()));
+		numberPanel.add(new JLabel(""+manager.getTotalNumberOfOuterClasses()));
 
 		textPanel.add(new JLabel("          Number of Abstract Classes:  "));
 		numberPanel.add(new JLabel(""+manager.getTotalNumberOfAbstractClasses()));
@@ -120,7 +134,7 @@ public class StatisticsGUI extends JFrame implements ActionListener
 		numberPanel.add(new JLabel(""+manager.getNumberOfAbstractInnerClasses()));
 
 		textPanel.add(new JLabel("               Number of Abstract Non-Inner Classes:  "));
-		numberPanel.add(new JLabel(""+manager.getNumberOfAbstractNonInnerClasses()));
+		numberPanel.add(new JLabel(""+manager.getNumberOfAbstractOuterClasses()));
 		
 		textPanel.add(new JLabel("          Number of Concrete Classes:  "));
 		numberPanel.add(new JLabel(""+manager.getTotalNumberOfConcreteClasses()));
@@ -129,13 +143,13 @@ public class StatisticsGUI extends JFrame implements ActionListener
 		numberPanel.add(new JLabel(""+manager.getNumberOfConcreteInnerClasses()));
 
 		textPanel.add(new JLabel("               Number of Concrete Non-Inner Classes:  "));
-		numberPanel.add(new JLabel(""+manager.getNumberOfConcreteNonInnerClasses()));
+		numberPanel.add(new JLabel(""+manager.getNumberOfConcreteOuterClasses()));
 
 			subMainPanel.add(textPanel, BorderLayout.WEST);
 			subMainPanel.add(numberPanel, BorderLayout.EAST);
 			subMainPanel.add(new JSeparator(), BorderLayout.SOUTH);
 			
-		closeButton = new JButton("Close");
+		JButton closeButton = new JButton("Close");
 		closeButton.addActionListener(this);
 		buttonPanel.add(closeButton);
 		
@@ -146,6 +160,9 @@ public class StatisticsGUI extends JFrame implements ActionListener
 		pack();
 	}
 	
+	/**
+	 * Handles ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent e)
 	{
 		dispose();
