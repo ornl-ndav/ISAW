@@ -95,22 +95,28 @@ public class Util
          
          return;  
         }
-    
+    else if( filename.toUpperCase().endsWith(".GSA") ||
+	     filename.toUpperCase().endsWith(".GDAT") ||
+	     filename.toUpperCase().endsWith(".GSAS"))
+	{
+	    X=new WriteGSAS();
+	}
     else 
-      { int i= filename.lastIndexOf('.');
-        
-        if( i<0) return;
-        if( ".GSA;.GDAT;.GSAS;".indexOf(filename.toUpperCase().substring(i))
-             >=0)
-         { 
-           DataSetTools.gsastools.gsas_filemaker XX =
-               new DataSetTools.gsastools.gsas_filemaker( null, ds, filename); 
-          }
+      { 
+	/* int i= filename.lastIndexOf('.');
+	   if( i<0) return;
+	   if( ".GSA;.GDAT;.GSAS;".indexOf(filename.toUpperCase().substring(i))
+	   >=0)
+	   { 
+	   DataSetTools.gsastools.gsas_filemaker XX =
+	   new DataSetTools.gsastools.gsas_filemaker( null, ds, filename);
+	   }*/
         return;
       }
    
    X.setParameter( new Parameter("filename",filename ), 2);
-   
+   X.setParameter( new Parameter("dataset",ds),1);
+
    JParametersDialog JP = new JParametersDialog( X , lh,
           null,null);
 

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/01/14 20:28:49  pfpeterson
+ * Modified to use writer interface for GSAS files
+ *
  * Revision 1.4  2001/11/09 19:27:52  dennis
  * Passes in a null monitor DataSet to gsas_filemaker, since the
  * gsas_filemaker was changed to require a monitor DataSet.
@@ -53,6 +56,7 @@ package DataSetTools.operator;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
+import DataSetTools.writer.*;
 import DataSetTools.gsastools.*;
 import java.util.*;
 
@@ -73,10 +77,11 @@ public class WriteGSAS extends GenericSave
     *@param DS  The data set that is to be saved in gsas format
     *@param filename the name of the file where the data will be saved
     */
-   public WriteGSAS( DataSet DS, String filename )
+   public WriteGSAS( DataSet MS, DataSet DS, String filename )
     {
      super( "Save as GSAS File" );
      parameters = new Vector();
+     addParameter( new Parameter("MS=" , MS ));
      addParameter( new Parameter("DS=" , DS ));
      addParameter( new Parameter("filename=", filename ));
     }
@@ -84,6 +89,7 @@ public class WriteGSAS extends GenericSave
    public void setDefaultParameters()
     {
      parameters = new Vector();
+     addParameter( new Parameter("Monitor=" , new DataSet("","") ));
      addParameter( new Parameter("Data Set=" , new DataSet("","") ));
      addParameter( new Parameter("Output file name=", "filename"));
     }  
@@ -104,10 +110,13 @@ public class WriteGSAS extends GenericSave
    */
    public Object getResult()
     { 
-      DataSet DS       = (DataSet)( getParameter(0).getValue());
-      String  filename = (String) (getParameter(1).getValue());
+      DataSet MS       = (DataSet)( getParameter(0).getValue());
+      DataSet DS       = (DataSet)( getParameter(1).getValue());
+      String  filename = (String) ( getParameter(2).getValue());
 
-      gsas_filemaker gsas_output = new gsas_filemaker( null, DS, filename );
+      GsasWriter gw=new GsasWriter(filename);
+      gw.writeDataSets(new DataSet[] {MS , DS});
+
       return "Success";
     }
 
