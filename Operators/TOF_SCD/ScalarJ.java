@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/05/02 14:25:04  pfpeterson
+ * More code cleanup. Changed the sigma variables to be more like the scalars.
+ *
  * Revision 1.5  2003/05/01 19:35:15  pfpeterson
  * Created a method to add found matrices into the index.
  *
@@ -119,23 +122,13 @@ public class ScalarJ extends GenericTOF_SCD{
   private int i= 0;
   private int [] k= new int[60];
   private int [] l= new int[60];
-  private double[] scalars=null;
-  private double sig11= 0.0;
-  private double sig22= 0.0;
-  private double sig33= 0.0;
-  private double sig23= 0.0;
-  private double sig31= 0.0;
-  private double sig12= 0.0;
-  private double sig11sq= 0.0;
-  private double sig22sq= 0.0;
-  private double sig33sq= 0.0;
-  private double sig23sq= 0.0;
-  private double sig31sq= 0.0;
-  private double sig12sq= 0.0;
+  private double[] scalars = null;
+  private double[] sig     = new double[6];
+  private double[] sigsq   = new double[6];
   private int nequal= 0;
   private int nchoice= NO_RESTRICTION;
   private int ncell= 0;
-  private int Goto= 0;
+  private boolean freePass=false;
   private int npick= 0;
   private static String [] cell = {"P, CUBIC", "F, CUBIC", "R, HEXANONAL",
                         "I, CUBIC", "I, TETRAGONAL", "I, ORTHORHOMBIC",
@@ -368,32 +361,28 @@ public class ScalarJ extends GenericTOF_SCD{
     double beta  = Math.acos(scalars[4]/(a*c));
     double gamma = Math.acos(scalars[5]/(a*b));
 
-    sig11 = 2.*delta*scalars[0];
-    sig22 = 2.*delta*scalars[1];
-    sig33 = 2.*delta*scalars[2];
-    sig11sq=sig11*sig11;
-    sig22sq=sig22*sig22;
-    sig33sq=sig33*sig33;
-    sig23sq=2.*(delta*scalars[3]*delta*scalars[3])
+    sig[0] = 2.*delta*scalars[0];
+    sig[1] = 2.*delta*scalars[1];
+    sig[2] = 2.*delta*scalars[2];
+    for( int index=0 ; index<3 ; index++ )
+      sigsq[index]=sig[index]*sig[index];
+    sigsq[3]=2.*(delta*scalars[3]*delta*scalars[3])
                               +Math.pow((b*c*Math.sin(alpha)*0.017),2);
-    sig31sq=2.*(delta*scalars[4]*delta*scalars[4])
+    sigsq[4]=2.*(delta*scalars[4]*delta*scalars[4])
                               +Math.pow((a*c*Math.sin(beta)*0.017),2);
-    sig12sq=2.*(delta*scalars[5]*delta*scalars[5])
+    sigsq[5]=2.*(delta*scalars[5]*delta*scalars[5])
                               +Math.pow((a*b*Math.sin(gamma)*0.017),2);
-    sig23 = sqrt(sig23sq);
-    sig31 = sqrt(sig31sq);
-    sig12 = sqrt(sig12sq);
+    for( int index=3 ; index<6 ; index++ )
+      sig[index]=sqrt(sigsq[index]);
 
     i = 1;
     k[i-1] = 0;
     l[i-1] = 0;
 
-    System.out.println(Format.real(scalars[0],10,3)+Format.real(sig11,11,3));
-    System.out.println(Format.real(scalars[1],10,3)+Format.real(sig22,11,3));
-    System.out.println(Format.real(scalars[2],10,3)+Format.real(sig33,11,3));
-    System.out.println(Format.real(scalars[3],10,3)+Format.real(sig23,11,3));
-    System.out.println(Format.real(scalars[4],10,3)+Format.real(sig31,11,3));
-    System.out.println(Format.real(scalars[5],10,3)+Format.real(sig12,11,3));
+    for( int index=0 ; index<6 ; index++ ){
+      System.out.println(Format.real(scalars[index],10,3)
+                         +Format.real(sig[index],11,3));
+    }
 
     return true;
   }
@@ -667,6 +656,24 @@ public class ScalarJ extends GenericTOF_SCD{
   }
 
   /**
+   * Compares two scalars using indices to see if they are equal
+   * within uncertainties. Specify b=-1 to compare with zero.
+   */
+  private boolean compare(int a, int b){
+    if(b>0)
+      return compare(scalars[a],scalars[b],sigsq[a],sigsq[b]);
+    else
+      return (abs(scalars[a])<(3.*sig[a]));
+  }
+
+  /**
+   * Compares two numbers to see if they are equal within uncertainties
+   */
+  private boolean compare(double a, double b, double sqDa, double sqDb){
+    return (abs(a-b)<(3.*sqrt(sqDa+sqDb)));
+  }
+
+  /**
    * This runs if the following conditions exist:
    * <UL><LI>looking for symmetry (nchoice=SYMMETRIC)</LI>
    *     <LI>A is same length as B AND A is same length as C (within
@@ -676,11 +683,8 @@ public class ScalarJ extends GenericTOF_SCD{
    * </UL>
    */
   private void mark01(){
-    // are looking for symmetry
-    if( (nchoice == SYMMETRIC)
-        // or |A|==|B| && |A|==|C| within uncertainties
-          || ( abs(scalars[0]-scalars[1]) < (3.*sqrt(sig11sq+sig22sq)) )
-        && ( abs(scalars[0]-scalars[2]) < (3.*sqrt(sig11sq+sig33sq)) ) ){
+    // are looking for symmetry OR |A|==|B|==|C|
+    if( (nchoice == SYMMETRIC) || ( compare(0,1) && compare(0,2) ) ){
       if(DEBUG)System.out.println("MARK01");
     }else{
       return;
@@ -688,63 +692,54 @@ public class ScalarJ extends GenericTOF_SCD{
 
     // can't look for anything other than |A|==|B|==|C|
     if (nchoice == SYMMETRIC && nequal != A_EQ_B_EQ_C){
-      Goto = 40;
+      freePass=true;
       return;
     }
 
-    if( abs(scalars[3])<(3.*sig23) ){ // BdotC=0
+    // BdotC=0
+    if( compare(3,-1) ){
       // AdotC=0 AND AdotB=0
-      if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
+      if( compare(4,-1) && compare(5,-1) )
         appendMatrix(1,1);
-      }
       // AdotC=-AdotA/2 AND AdotB=-AdotA/2
-      if( abs(scalars[4]+(0.5*scalars[0]))<(3.0*sqrt(sig31sq+0.25*sig11sq))
-         && abs(scalars[5]+(0.5*scalars[0]))<(3.0*sqrt(sig12sq+0.25*sig11sq))){
+      if( compare(scalars[4],-.5*scalars[0],sigsq[4],0.25*sigsq[0])
+         && compare(scalars[5],-.5*scalars[0],sigsq[5],0.25*sigsq[0]) )
         appendMatrix(3,2);
-      }
     }
 
     // BdotC=-AdotA/2
-    if( abs(scalars[3]-(-0.5*scalars[0]))<(3.0*sqrt(sig23sq+0.25*sig11sq)) ){
+    if( compare(scalars[3],-.5*scalars[0],sigsq[3],0.25*sigsq[0]) ){
       // AdotC=BdotC AND AdotB=0
-      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
-          && abs(scalars[5])<(3.*sig12) ){
+      if( compare(4,3) && compare(5,-1) )
         appendMatrix(2,2);
-      }
       // AdotB=BdotC AND AdotC=0
-      if( abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq))
-          && abs(scalars[4])<(3.*sig31) ){
+      if( compare(5,3) && compare(4,-1) )
         appendMatrix(4,2);
-      }
       // AdotC=BdotC AND AdotB=BdotC
-      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) 
-          && abs(scalars[5]-(-scalars[3]))<(3.*sqrt(sig12sq+sig23sq)) ){
+      if( compare(4,3) && compare(5,3) )
         appendMatrix(5,2);
-      }
     }
 
     // BdotC==AdotA/3 AND AdotC=BdotC AND AdotB=BdotC
-    if( abs(scalars[3]-(-scalars[0]/3.))<(3.*sqrt(sig23sq+(sig11sq/9.)))
-        && abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
-        && abs(scalars[5]-scalars[3]) < (3.*sqrt(sig12sq+sig23sq)) ){
+    if( compare(scalars[3],-scalars[0]/3.,sigsq[3],sigsq[0]/9.)
+        && compare(4,3) && compare(5,3) ){
       appendMatrix(8,4);
     }
 
-    // BdotC=(AdotA-AdotC)/2 AND AdotB=BdotC AND AdotC<0
-    if( abs(scalars[3]-0.5*(-scalars[0]-scalars[4]))<3.*sqrt(sig23sq+0.25*sig11sq+0.25*sig31sq)
-        && abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq))
-        && scalars[4]<0. ){
+    // BdotC=(-AdotA-AdotC)/2 AND AdotB=BdotC AND AdotC<0
+    if( compare(scalars[3],0.5*(-scalars[0]-scalars[4]),sigsq[3],(sigsq[0]+sigsq[4])/4.)
+        && compare(5,3) && scalars[4]<0. ){
       appendMatrix(10,5);
     }
 
     // BdotC=(AdotA-AdotB)/2 AND AdotC=BdotC AND AdotB<0
-    if( abs(scalars[3]-0.5*(-scalars[0]-scalars[5]))<3.*sqrt(sig23sq+0.25*sig11sq+0.25*sig12sq)
-        && abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) && scalars[5]<0.    ){
+    if( compare(scalars[3],-.5*(scalars[0]+scalars[5]),sigsq[3],(sigsq[0]+sigsq[5])/4.)
+        && compare(4,3) && scalars[5]<0. ){
       appendMatrix(11,5);
     }
 
     // BdotC=AdotA-AdotC-AdotB AND AdotC<0 AND AdotB<0
-    if( abs(scalars[3]-(-scalars[0]-scalars[4]-scalars[5]))<3.*sqrt(sig23sq+sig11sq+sig31sq+sig12sq)
+    if( compare(scalars[3],-(scalars[0]+scalars[4]+scalars[5]),sigsq[3],sigsq[0]+sigsq[4]+sigsq[5])
         && scalars[4]<0. && scalars[5]<0.  ){
       appendMatrix(12,6);
     }
@@ -752,30 +747,23 @@ public class ScalarJ extends GenericTOF_SCD{
     // BdotC<0
     if( scalars[3]<0. ){
       // AdotC=BdotC AND AdotB=-BdotC
-      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
-          && abs(scalars[5]-(-scalars[3]))<(3.*sqrt(sig12sq+sig23sq))  ){
+      if( compare(4,3) && compare(scalars[5],-scalars[3],sigsq[5],sigsq[3]) )
         appendMatrix(6,3);
-      }
       // AdotC=BdotC AND AdotB=BdotC
-      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
-          && abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq))  ){
+      if( compare(4,3) && compare(5,3) )
         appendMatrix(7,3);
-      }
       // AdotC=-(AdotA+BdotC)/2 AND AdotB=-(AdotA+BdotC)/2
-      if( abs(scalars[4]-(0.5*(-scalars[0]-scalars[3])))<3.*sqrt(sig31sq+0.25*sig11sq+0.25*sig23sq)
-          && abs(scalars[5]-(0.5*(-scalars[0]-scalars[3])))<3.*sqrt(sig12sq+0.25*sig11sq+0.25*sig23sq)){
+      if( compare(scalars[4],-.5*(scalars[0]+scalars[3]),sigsq[4],(sigsq[0]+sigsq[3])/4.)
+          && compare(scalars[5],-.5*(scalars[0]+scalars[3]),sigsq[5],(sigsq[0]+sigsq[3])/4.) )
         appendMatrix(9,5);
-      }
       // AdotC=-(AdotA+BdotC+AdotB) && AdotB<0
-      if( abs(scalars[4]-(-scalars[0]-scalars[3]-scalars[5]))<3.*sqrt(sig31sq+sig11sq+sig23sq+sig12sq)
-          && scalars[5]<0. ){
+      if( compare(scalars[4],-(scalars[0]+scalars[3]+scalars[5]),sigsq[4],sigsq[0]+sigsq[3]+sigsq[5])
+          && scalars[5]<0. )
         appendMatrix(13,6);
-      }
       // AdotB=-(AdotA+BdotC+AdotC) AND AdotC<0
-      if( abs(scalars[5]-(-scalars[0]-scalars[3]-scalars[4]))<3.*sqrt(sig12sq+sig11sq+sig23sq+sig31sq)
-          && scalars[4]<0. ){
+      if( compare(scalars[5],-scalars[0]-scalars[3]-scalars[4],sigsq[5],sigsq[0]+sigsq[3]+sigsq[4])
+          && scalars[4]<0. )
         appendMatrix(14,6);
-      }
     }
   }  // ==================== end of mark01
 
@@ -789,87 +777,71 @@ public class ScalarJ extends GenericTOF_SCD{
    * </UL>
    */
   private void mark02(){
-    // free pass
-    if( Goto == 40
-        // |A|==|B| AND |A|!=|C|
-        || ( abs(scalars[0]-scalars[1])<(3.*sqrt(sig11sq+sig22sq) ) 
-             && abs(scalars[0]-scalars[2])>=(3.*sqrt(sig11sq+sig33sq))) ){
+    // free pass OR |A|==|B| AND |A|!=|C|
+    if( freePass || ( compare(0,1) && !compare(0,2) ) ){
       if(DEBUG) System.out.println("MARK02");
     }else{
       return;
     }
 
     // can't look for anything other than |A|==|B|!=|C|
-    Goto = 0;
+    freePass=false;
     if (nchoice == SYMMETRIC && nequal != A_EQ_B_NE_C){
-      Goto = 41;
+      freePass=true;
       return;
     }
 
     // BdotC=0
-    if( abs(scalars[3])<(3.*sig23)  ){
+    if( compare(3,-1) ){
       // AdotC=0 AND AdotB=0
-      if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
+      if( compare(4,-1) && compare(5,-1) )
         appendMatrix(15,7);
-      }
       // AdotB=AdotA/2 AND AdotC=0
-      if( abs(scalars[5]-0.50*scalars[0])<3.*sqrt(sig12sq+0.25*sig11sq) 
-          && abs(scalars[4])<(3.*sig31) ){
+      if( compare(scalars[5],.5*scalars[0],sigsq[5],0.25*sigsq[0])
+          && compare(4,-1) )
         appendMatrix(16,8);
-      }
-      // AdotB=AdotA/2 AND AdotC=0
-      if( abs(scalars[5]-0.50*(-scalars[0]))<3.*sqrt(sig12sq+0.25*sig11sq)
-          && abs(scalars[4])<(3.*sig31) ){
+      // AdotB=-AdotA/2 AND AdotC=0
+      if( compare(scalars[5],-.5*scalars[0],sigsq[5],0.25*sigsq[0])
+          && compare(4,-1) )
         appendMatrix(17,8);
-      }
       // AdotC=0 AND AdotB>0
-      if( abs(scalars[4])<(3.*sig31) && scalars[5]>0. ){
+      if( compare(4,-1) && scalars[5]>0. )
         appendMatrix(18,9);
-      }
       // AdotC=0 and AdotB<0
-      if( abs(scalars[4])<(3.*sig31) && scalars[5]<0. ){
+      if( compare(4,-1) && scalars[5]<0. )
         appendMatrix(19,9);
-      }
     }
 
     // BdotC=CdotC/2
-    if( abs(scalars[3]-(-0.50*scalars[2]))<3.*sqrt(sig23sq+0.25*sig33sq) ){
+    if( compare(scalars[3],-.5*scalars[2],sigsq[3],0.25*sigsq[2]) ){
       // AdotC=BdotC AND AdotB=CdotC/2
-      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) 
-          && abs(scalars[5]-(0.25*scalars[2]))<3.*sqrt(sig12sq+0.0625*sig33sq) ){
+      if( compare(4,3)
+          && compare(scalars[5],0.25*scalars[2],sigsq[5],0.0625*sigsq[2]) )
         appendMatrix(20,5);
-      }
       // AdotC=BdotC AND AdotB>0
-      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
-          && scalars[5]>0. ){
+      if( compare(4,3) && scalars[5]>0. )
         appendMatrix(21,6);
-      }
       // AdotC=BdotC AND AdotB<0
-      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
-          && scalars[5]<0. ){
+      if( compare(4,3) && scalars[5]<0. )
         appendMatrix(22,6);
-      }
     }
 
     // BdotC=-CdotC/3 AND AdotC=BdotC AND AdotB=CdotC/6-AdotA/2
-    if( abs(scalars[3]+scalars[2]/3.)<3.*sqrt(sig23sq+sig33sq/9.)
-        && abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
-        && abs(scalars[5]-(-scalars[0]/2.+scalars[2]/6.))<3.*sqrt(sig12sq+sig11sq/4.+sig33sq/36.) ){
+    if( compare(scalars[3],-scalars[2]/3.,sigsq[3],sigsq[2]/9.) && compare(4,3)
+        && compare(scalars[5],-scalars[0]/2.+scalars[2]/6.,sigsq[5],sigsq[0]/4.+sigsq[2]/36.) ){
       appendMatrix(23,3);
     }
 
     // BdotC<0
     if( scalars[3]<0. ){
       // AdotC=BdotC
-      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) ){
+      if( compare(4,3) ){
         // AdotB>0
-        if( scalars[5]>0. ){
+        if( scalars[5]>0. )
           appendMatrix(24,10);
-        }
         // AdotB<0
-        if( scalars[5]<0. ){
+        if( scalars[5]<0. )
           appendMatrix(25,10);
-        }
       }
     }
     
@@ -885,81 +857,68 @@ public class ScalarJ extends GenericTOF_SCD{
    * </UL>
    */
   private void mark03(){
-    // free pass
-    if( Goto == 41 
-        // |A|=|C|!=|B|
-        || (abs(scalars[0]-scalars[2])<(3.*sqrt(sig11sq+sig33sq))
-            && abs(scalars[0]-scalars[1]) >= (3.*sqrt(sig11sq+sig22sq)))  ){
+    // free pass OR  |A|=|C|!=|B|
+    if( freePass || ( compare(0,2) && !compare(0,1) ) ){
       if(DEBUG) System.out.println("MARK03");
     }else{
       return;
     }
 
     // can't look for anything other than |A|==|C|!=|B|
-    Goto = 0;
+    freePass=false;
     if (nchoice == SYMMETRIC && nequal != A_EQ_C_NE_B){
-        Goto = 42;
+        freePass=true;
         return;
     }
 
     // BdotC=0
-    if( abs(scalars[3])<(3.*sig23) ){
+    if( compare(3,-1) ){
       // AdotC=0 AND AdotB=0
-      if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
+      if( compare(4,-1) && compare(5,-1) )
         appendMatrix(26,7);
-      }
       // AdotC=-AdotA/2 AND AdotB=0
-      if( abs(scalars[4]+scalars[0]/2.)<3.*sqrt(sig31sq+sig11sq/4.)
-          && abs(scalars[5])<(3.*sig12) ){
+      if( compare(scalars[4],-scalars[0]/2.,sigsq[4],sigsq[0]/4.)
+          && compare(5,-1) )
         appendMatrix(27,8);
-      }
       // AdotC<0 and AdotB=0
-      if( scalars[4]<0 && abs(scalars[5])<(3.*sig12) ){
+      if( scalars[4]<0 && compare(5,-1) )
         appendMatrix(28,9);
-      }
     }
 
     // BdotC=-AdotA/2
-    if( abs(scalars[3]-(-0.50*scalars[0]))<3.*sqrt(sig23sq+0.25*sig11sq) ){
+    if( compare(scalars[3],-0.50*scalars[0],sigsq[3],0.25*sigsq[0]) ){
       // AdotC=0 AND AdotB=AdotA/2
-      if( abs(scalars[4])<(3.*sig31)
-          && abs(scalars[5]-scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.) ){
+      if( compare(4,-1)
+          && compare(scalars[5],scalars[0]/2.,sigsq[5],sigsq[0]/4.) )
         appendMatrix(29,5);
-      }
       // AdotC=0 AND AdotB=-AdotA/2
-      if( abs(scalars[4])<(3.*sig31)
-          && abs(scalars[5]+scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.) ){
+      if( compare(4,-1)
+          && compare(scalars[5],-scalars[0]/2.,sigsq[5],sigsq[0]/4.) )
         appendMatrix(30,5);
-      }
-      // AdotC=BdotC AND AdotB=BdotC
-      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq)) 
-          && abs(scalars[5]+scalars[3])<(3.*sqrt(sig12sq+sig23sq)) ){
+      // AdotC=BdotC AND AdotB=-BdotC
+      if( compare(4,3)
+          && compare(scalars[5],-scalars[3],sigsq[5],sigsq[3]) )
         appendMatrix(33,3);
-      }
     }
 
     // BdotC<0
     if( scalars[3]<0. ){
       // AdotC=-AdotA-2*BdotC AND AdotB=BdotC
-      if( abs(scalars[4]-(-scalars[0]-2.*scalars[3]))<3.*sqrt(sig31sq+sig11sq+4.*sig23sq)
-          && abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq)) ){
+      if( compare(scalars[4],-scalars[0]-2.*scalars[3],sigsq[4],sigsq[0]+4.*sigsq[3])
+          && compare(5,3) )
         appendMatrix(34,11);
-      }
       // AdotC=-(AdotA+BdotC+AdotB) AND AdotB<0
-      if( abs(scalars[4]-(-scalars[0]-scalars[3]-scalars[5]))<3.*sqrt(sig31sq+sig11sq+sig23sq+sig12sq)
-          && scalars[5]<0. ){
+      if( compare(scalars[4],-scalars[0]-scalars[3]-scalars[5],sigsq[4],sigsq[0]+sigsq[3]+sigsq[5])
+          && scalars[5]<0. )
         appendMatrix(35,10);
-      }
       // AdotC<0
       if( scalars[4]<0. ){
         // AdotB=-BdotC
-        if( abs(scalars[5]-(-scalars[3]))<(3.*sqrt(sig12sq+sig23sq)) ){
+        if( compare(scalars[5],-scalars[3],sigsq[5],sigsq[3]) )
           appendMatrix(31,10);
-        }
         // AdotB=BdotC
-        if( abs(scalars[5]-scalars[3])<(3.*sqrt(sig12sq+sig23sq)) ){
+        if( compare(5,3) )
           appendMatrix(32,10);
-        }
       }
     }
   }  // ==================== end of mark03
@@ -975,158 +934,128 @@ public class ScalarJ extends GenericTOF_SCD{
    * </UL>
    */
   private void mark04(){
-    // free pass
-    if( Goto == 42
-        // |A|!=|B|!=|C|
-        || (abs(scalars[0]-scalars[1])>=(3.*sqrt(sig11sq+sig22sq)) 
-            && abs(scalars[0]-scalars[2])>=(3.*sqrt(sig11sq+sig33sq)) 
-            && abs(scalars[1]-scalars[2]) >= (3.*sqrt(sig22sq+sig33sq))) ){
+    // free pass OR |A|!=|B|!=|C|
+    if( freePass || !compare(0,1) && !compare(0,2) && !compare(1,2) ){
       if(DEBUG) System.out.println("MARK04");
     }else{
       return;
     }
 
     // can't look for anything other than |A|!=|B|!=|C|
-    Goto = 0;
+    freePass=false;
     if (nchoice == SYMMETRIC && nequal != A_NE_B_NE_C){
-      Goto = 43;
+      freePass=true;
       return;
     }
 
     // BdotC=0
-    if( abs(scalars[3])<(3.*sig23) ){
+    if( abs(scalars[3])<(3.*sig[3]) ){
       // AdotC=0 AND AdotB=0
-      if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
+      if( compare(4,-1) && compare(5,-1) )
         appendMatrix(36,12);
-      }
       // AdotC=0 AND AdotB=AdotA/2
-      if( abs(scalars[4])<(3.*sig31) 
-          && abs(scalars[5]-0.5*scalars[0])<3.*sqrt(sig12sq+0.25*sig11sq) ){
+      if( compare(4,-1)
+          && compare(scalars[5],0.5*scalars[0],sigsq[5],0.25*sigsq[0]) )
         appendMatrix(37,9);
-      }
       // AdotC=0 AND AdotB=-AdotA/2
-      if( abs(scalars[4])<(3.*sig31)
-          && abs(scalars[5]-0.50*(-scalars[0]))<3.*sqrt(sig12sq+0.25*sig11sq)){
+      if( compare(4,-1)
+          && compare(scalars[5],-.5*scalars[0],sigsq[5],0.25*sigsq[0]) )
         appendMatrix(38,9);
-      }
       // AdotC=0 AND AdotB>0
-      if( abs(scalars[4])<(3.*sig31) && scalars[5]>0. ){
+      if( compare(4,-1) && scalars[5]>0. )
         appendMatrix(39,13);
-      }
       // AdotC=0 and AdotB<0
-      if( abs(scalars[4])<(3.*sig31) && scalars[5]<0. ){
+      if( compare(4,-1) && scalars[5]<0. )
         appendMatrix(40,13);
-      }
       // AdotC=-BdotB/2 AND AdotB=0
-      if( abs(scalars[4]+scalars[2]/2.)<3.*sqrt(sig31sq+sig33sq/4.)
-          && abs(scalars[5])<(3.*sig12) ){
+      if( compare(scalars[4],-scalars[2]/2.,sigsq[4],sigsq[2]/4.)
+          && compare(5,-1) )
         appendMatrix(41,9);
-      }
       // AdotC<0 AND AdotB=0
-      if( scalars[4]<0 && abs(scalars[5])<(3.*sig12) ){
+      if( scalars[4]<0 && compare(5,-1) )
         appendMatrix(42,13);
-      }
       // AdotC=BdotC AND AdotB>0
-      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
-          && scalars[5]>0. ){
+      if( compare(4,3) && scalars[5]>0. )
         appendMatrix(43,10);
-      }
       // AdotC=BdotC AND AdotB<0
-      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
-          && scalars[5]<0. ){
+      if( compare(4,3) && scalars[5]<0. )
         appendMatrix(44,10);
-      }
     }
 
     // BdotC=CdotC/2
-    if( abs(scalars[3]-(0.5*scalars[2]))<3.*sqrt(sig23sq+0.25*sig33sq) ){
+    if( compare(scalars[3],.5*scalars[2],sigsq[3],0.25*sigsq[2]) ){
       // AdotC=0 AND AdotB=0
-      if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
+      if( compare(4,-1) && compare(5,-1) )
         appendMatrix(45,9);
-      }
       // AdotC=0 AND AdotB=-AdotA/2
-      if( abs(scalars[4])<(3.*sig31)
-          && abs(scalars[5]+scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4) ){
+      if( compare(4,-1)
+          && compare(scalars[5],-scalars[0]/2.,sigsq[5],sigsq[0]/4) )
         appendMatrix(48,6);
-      }
     }
 
     // BdotC=-CdotC/2
-    if( abs(scalars[3]-(-0.50*scalars[2]))<3.*sqrt(sig23sq+0.25*sig33sq) ){
+    if( compare(scalars[3],-0.50*scalars[2],sigsq[3],0.25*sigsq[2]) ){
       // AdotC=0 AND AdotB=AdotA/2
-      if( abs(scalars[4])<(3.*sig31)
-          && abs(scalars[5]-scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.) ){
+      if( compare(4,-1)
+          && compare(scalars[5],scalars[0]/2.,sigsq[5],sigsq[0]/4.) )
         appendMatrix(47,6);
-      }
       // AdotC=0 AND AdotB>0
-      if( abs(scalars[4])<(3.*sig31) && scalars[5] > 0. ){
+      if( compare(4,-1) && scalars[5] > 0. )
         appendMatrix(49,10);
-      }
       // AdotC=0 AND AdotB<0
-      if( abs(scalars[4])<(3.*sig31) && scalars[5]<0. ){
+      if( compare(4,-1) && scalars[5]<0. )
         appendMatrix(50,10);
-      }
       // AdotC=BdotC AND AdotB=CtodC/4
-      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
-          && abs(scalars[5]-(0.25*scalars[2]))<3.*sqrt(sig12sq+0.25*sig33sq) ){
+      if( compare(4,3)
+          && compare(scalars[5],0.25*scalars[2],sigsq[5],0.25*sigsq[2]) )
         appendMatrix(53,11);
-      }
       // AdotC=BdotC AND AdotB>0
-      if( abs(scalars[4]-scalars[3])<(3.*sqrt(sig31sq+sig23sq))
-          && scalars[5]>0. ){
+      if( compare(4,3) && scalars[5]>0. )
         appendMatrix(54,10);
-      }
       // AdotC<0 AND AdotB=-AdotC/2
       if( scalars[4]<0.
-          && abs(scalars[5]-(-0.5*scalars[4]))<3.*sqrt(sig12sq+0.25*sig31sq) ){
+          && compare(scalars[5],-.5*scalars[4],sigsq[5],0.25*sigsq[4]) )
         appendMatrix(55,10);
-      }
     }
 
     // BdotC=AdotC/2 AND AdotC<0 AND AdotB=AdotA/2
-    if( abs(scalars[3]-(0.50*scalars[4]))<3.*sqrt(sig23sq+0.25*sig31sq)
+    if( compare(scalars[3],.5*scalars[4],sigsq[3],0.25*sigsq[4])
         && scalars[4]<0.
-        && abs(scalars[5]-0.5*scalars[0]) < 3.*sqrt(sig12sq+0.25*sig11sq) ){
+        && compare(scalars[5],.5*scalars[0],sigsq[5],0.25*sigsq[0]) ){
       appendMatrix(56,10);
     }
 
     // BdotC=-BdotB-AdotC/2 AND AdotC<0 AND AdotB=-(AdotA+AdotC)/2
-    if( abs(scalars[3]+(scalars[2]+scalars[4])/2.)<3.*sqrt(sig23sq+sig33sq/4.+sig31sq/4.) && scalars[4]<0.
-        && abs(scalars[5]-(0.5*(-scalars[0]-scalars[4])))<3.*sqrt(sig12sq+sig11sq/4.+sig31sq/4.) ){
+    if( compare(scalars[3],-(scalars[2]+scalars[4])/2.,sigsq[3],(sigsq[2]+sigsq[4])/4.) && scalars[4]<0.
+        && compare(scalars[5],-.5*(scalars[0]+scalars[4]),sigsq[5],(sigsq[0]+sigsq[4])/4.) ){
       appendMatrix(58,10);
     }
 
     // BdotC<0
     if( scalars[3]< 0. ){
       // AdotC=0 AND AdotB=0
-      if( abs(scalars[4])<(3.*sig31) && abs(scalars[5])<(3.*sig12) ){
+      if( compare(4,-1) && compare(5,-1) )
         appendMatrix(46,13);
-      }
       // AdotB=AdotA/2 AND AdotC=0
-      if( abs(scalars[5]-scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.)
-          && abs(scalars[4])<(3.*sig31) ){
+      if( compare(scalars[5],scalars[0]/2.,sigsq[5],sigsq[0]/4.)
+          && compare(4,-1) )
         appendMatrix(51,10);
-      }
       // AdotB=-AdotA/2 AND AdotC=0
-      if( abs(scalars[5]+scalars[0]/2.)<3.*sqrt(sig12sq+sig11sq/4.)
-          && abs(scalars[4])<(3.*sig31) ){
+      if( compare(scalars[5],-scalars[0]/2.,sigsq[5],sigsq[0]/4.)
+          && compare(4,-1) )
         appendMatrix(52,10);
-      }
       // AdotC=-CdotC/2 AND AdotB=-BdotC/2
-      if( abs(scalars[4]+0.5*scalars[2])<3.0*sqrt(sig31sq+sig33sq/4.)
-          && abs(scalars[5]+0.5*scalars[3])<3.*sqrt(sig12sq+sig23sq/4.) ){
+      if( compare(scalars[4],-.5*scalars[2],sigsq[4],sigsq[2]/4.)
+          && compare(scalars[5],-.5*scalars[3],sigsq[5],sigsq[3]/4.) )
         appendMatrix(57,10);
-      }
       // AdotC<0
       if( scalars[4]<0. ){
         // AdotB>0
-        if( scalars[5]>0. ){
+        if( scalars[5]>0. )
           appendMatrix(59,14);
-        }
         // AdotB<0
-        if( scalars[5]<0. ){
+        if( scalars[5]<0. )
           appendMatrix(60,14);
-        }
       }
     }
   }  // ==================== end of mark04
