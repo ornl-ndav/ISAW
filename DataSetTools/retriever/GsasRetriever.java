@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/01/24 20:36:22  bouzekc
+ *  Removed unused variables and imports.
+ *
  *  Revision 1.9  2003/12/15 02:06:09  bouzekc
  *  Removed unused imports.
  *
@@ -91,24 +94,17 @@ import DataSetTools.util.TextFileReader;
 
 public class GsasRetriever extends Retriever{
     private static final int  INVALID_DS   = Retriever.INVALID_DATA_SET;
-    private static final int  MONITOR_DS   = Retriever.MONITOR_DATA_SET;
     private static final int  HISTOGRAM_DS = Retriever.HISTOGRAM_DATA_SET;
 
     // string constants for bintypes
-    private static String COND    = GsasUtil.COND;
-    private static String CONS    = GsasUtil.CONS;
-    private static String CONQ    = GsasUtil.CONQ;
-    private static String SLOG    = GsasUtil.SLOG;
     private static String TIMEMAP = GsasUtil.TIMEMAP;
 
     // string constants for types (how errors are written)
     private static String STD = GsasUtil.STD;
-    private static String ESD = GsasUtil.ESD;
 
     // constants for labeling things
     private static String BANK  = GsasUtil.BANK;
     private static String IPARM = "Instrument parameter file:";
-    private static String MONITOR = "MONITOR";
 
     // set debug mode
     private static boolean  DEBUG = false;
@@ -317,7 +313,7 @@ public class GsasRetriever extends Retriever{
         int x_size=(int)nchan+(int)((etime-time[nval-1])/dt[nval-1]);
         float[] xval=new float[x_size];
         xval[0]=time[0];
-        boolean first=true;
+
         for( int i=1, j=0 ; i<x_size ; i++ ){
             if(j+1==time.length){
                 if(xval[i-1]+dt[j]>=etime){
