@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/04/04 20:41:48  pfpeterson
+ *  getParameter returns a String.
+ *
  *  Revision 1.1  2002/04/02 22:50:29  pfpeterson
  *  Added to CVS.
  *
@@ -55,17 +58,17 @@ public class JSaveFileParameterGUI  extends JParameterGUI{
     JButton  browse;
     FileFilter file_filter;
 
-    public JSaveFileParameterGUI( Parameter  p){
-        super(p);
+    public JSaveFileParameterGUI( Parameter  parameter){
+        super(parameter);
         this.filename = filename;
         GUI = new JPanel();
         //BoxLayout bl = new BoxLayout(GUI, BoxLayout.X_AXIS);
         GUI.setLayout( new GridLayout(1,2));
 
-        tf = new JTextField(( p.getValue().toString()),20);
-        filename = (p.getValue()).toString();
+        tf = new JTextField(( parameter.getValue().toString()),20);
+        filename = (parameter.getValue()).toString();
         browse = new JButton( "Browse");
-        GUI.add( new JLabel( "  "+p.getName()));
+        GUI.add( new JLabel( "  "+parameter.getName()));
 
         JPanel inner=new JPanel();
         GUI.add(inner);
@@ -80,9 +83,8 @@ public class JSaveFileParameterGUI  extends JParameterGUI{
     }
 
     public Parameter getParameter(){
-        Parameter p = super.getParameter();
-        p.setValue( filename); 
-        return p;
+        parameter.setValue( filename.toString() ); 
+        return parameter;
     }
 
     public void setFileFilter(  FileFilter file_filter){
