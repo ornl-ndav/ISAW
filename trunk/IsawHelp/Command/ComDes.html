@@ -12,7 +12,8 @@ Set and a float, between two integers, between two floats, or between two
 strings(&amp; only).
 <p>&nbsp;Mixed types are allowed and are converted. "&amp;" is always string
 add so non string data is converted to strings.
-<P> <B>Logical operations</B> AND, OR, and NOT operate on two booleans.<BR>
+<P> <B>Logical operations</B> AND, OR, operate on two booleans and NOT is a unary
+   operator. They are not case sensitive.<BR>
 <B>Relational operators</b> are >, >=, < , <= , <> , = or ==
 </ul>
 
@@ -46,9 +47,9 @@ There are several forms of load. </h3>
 
 <br>The return value is the number of datasets loaded.
 <br>These files are loaded into the local workspace</ol><P>
-<UL> NOTE: if the extension of the filename is
-   <li>"run" a runfile will be loaded and converted to a list of data sets
-   <li>"isd" a java binary data set( see <A href="#Save">Save</a>) will be loaded
+<UL> NOTE: if the extension of the filename must correspond to a filetype of 
+   a supported file retriever.  Currently, extensions of run, isd, xmi(ISAW xml),
+    zip(zipped xml),sdds,gsa,gds,dat,bxs,hdf,and csd(IDEAS MC simulation).
  </ul>
 </ul>
 
@@ -76,6 +77,10 @@ The data sets will be displayed in an external viewer of type IMAGE.<P>
     <li> Contour:Qy,Qz vs Qx
     <li> Contour:Qxyz slices
    </ul>
+  Note: As new Viewers appear in IsawGUI.Isaw under the View menu, they can be accessed by
+  replacing the ImageType by the name that appears on the menu item in quotes and case 
+  sensitive. Also, some of the above choices for ImageType may disappear when they are
+  renames or eliminated.
 </ol>
 </ul>
 
@@ -91,9 +96,10 @@ Listener</ul>
 
 <hr><a NAME="Save"></a>Save
 <ul><b>Save DataSet, String Filename</b>
-<br>&nbsp;This will save the data set in "java binary form". NOTE this form could change
-  from one version of Isaw and/or Java to the next.<P>
-  Use the extension ".isd" on the filename to reload it back into Isaw or the Command Pane.
+<br>&nbsp;This will save the data set in a form specified by the extension.<P>
+  The current extensions for saving are:
+  <ul> gsa, gda, dat,isd,xmi,zip,nxs,hdj</ul>
+   
   See <A href="#Load">Load</a></ul>
 
 
