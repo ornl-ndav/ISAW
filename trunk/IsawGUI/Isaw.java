@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.100  2002/06/11 14:48:43  pfpeterson
+ *  Changed default version to 1.4.0alpha.
+ *
  *  Revision 1.99  2002/05/28 21:22:27  pfpeterson
  *  Changed mw SplitPaneWithState to JSPlitPane. Now resizing
  *  is smoother.
@@ -661,7 +664,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version")){
-            version="1.3.1";
+            version="1.4.0alpha";
         }else{
             version=SharedData.VERSION;
         }
