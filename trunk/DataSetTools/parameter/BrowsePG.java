@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2003/10/11 19:00:16  bouzekc
+ *  Now implements clone() using reflection.
+ *
  *  Revision 1.27  2003/09/16 22:46:53  bouzekc
  *  Removed addition of this as a PropertyChangeListener.  This is already done
  *  in ParameterGUI.  This should fix the excessive events being fired.
@@ -144,6 +147,8 @@ import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.util.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.util.PropertyChanger;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -164,6 +169,7 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
     private int defaultindex;
 
     // ********** Constructors **********
+    
     public BrowsePG(String name, Object val){
         super( name, val );
         this.type=TYPE;
@@ -180,6 +186,38 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
         this.filter_vector = new Vector();
         choosertype = BrowseButtonListener.LOAD_FILE;
         defaultindex = -1;
+    }
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+      try {
+        Class klass = this.getClass(  );
+        Constructor construct = 
+          klass.getConstructor( new Class[]{ String.class, Object.class } );
+        BrowsePG pg = 
+          ( BrowsePG )construct.newInstance( new Object[] { null, null } );
+        pg.setName( new String( this.getName(  ) ) );
+        pg.setValue( this.getValue(  ) );
+        pg.setDrawValid( this.getDrawValid(  ) );
+        pg.setValid( this.getValid(  ) );
+        pg.filter_vector = this.filter_vector;
+
+        if( this.initialized ) {
+          pg.initGUI( null );
+        }
+
+        return pg;
+      } catch( InstantiationException e ) {
+        throw new InstantiationError( e.getMessage(  ) );
+      } catch( IllegalAccessException e ) {
+        throw new IllegalAccessError( e.getMessage(  ) );
+      } catch( NoSuchMethodException e ) {
+        throw new NoSuchMethodError( e.getMessage(  ) );
+      } catch( InvocationTargetException e ) {
+        throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
+      }
     }
 
     // ********** ParamUsesString requirements **********
@@ -238,7 +276,6 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
         }else{
           this.value=svalue;
         }
-        validateSelf(  );
     }
 
     // ********** IParameterGUI requirements **********

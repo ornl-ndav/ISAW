@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/10/11 19:04:24  bouzekc
+ *  Now implements clone() using reflection.
+ *
  *  Revision 1.13  2003/09/16 22:46:54  bouzekc
  *  Removed addition of this as a PropertyChangeListener.  This is already done
  *  in ParameterGUI.  This should fix the excessive events being fired.
@@ -80,6 +83,8 @@ package DataSetTools.parameter;
 import java.util.Vector;
 import DataSetTools.components.ParametersGUI.HashEntry;
 import DataSetTools.components.ParametersGUI.EntryWidget;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -150,6 +155,43 @@ abstract public class HashPG extends ParameterGUI{
         }
     }
 
+    /** 
+     * Clones this HashPG.  Overridden to preserve the hash values.
+     */
+    public Object clone(  ) {
+      try {
+        Class klass           = this.getClass(  );
+        Constructor construct = klass.getConstructor( 
+            new Class[]{ String.class, Object.class } );
+        HashPG pg             = ( HashPG )construct.newInstance( 
+            new Object[]{ null, null } );
+        pg.setName( new String( this.getName(  ) ) );
+        pg.setValue( this.getValue(  ) );
+        pg.setDrawValid( this.getDrawValid(  ) );
+        pg.setValid( this.getValid(  ) );
+
+        if( keys != null && vals != null && keys.size(  ) > 0 && 
+            vals.size(  ) > 0 ) {
+          pg.keys = ( Vector )keys.clone(  );
+        }
+
+        if( this.initialized ) {
+          pg.initGUI( null );
+        }
+
+        return pg;
+      } catch( InstantiationException e ) {
+        throw new InstantiationError( e.getMessage(  ) );
+      } catch( IllegalAccessException e ) {
+        throw new IllegalAccessError( e.getMessage(  ) );
+      } catch( NoSuchMethodException e ) {
+        throw new NoSuchMethodError( e.getMessage(  ) );
+      } catch( InvocationTargetException e ) {
+        throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
+      }
+    }
+
+
     /**
      * Remove an item from the hash based on its key.
      */
@@ -212,7 +254,6 @@ abstract public class HashPG extends ParameterGUI{
         }else{
             this.value=value;
         }
-        validateSelf();
     }
 
     // ********** IParameterGUI requirements **********
