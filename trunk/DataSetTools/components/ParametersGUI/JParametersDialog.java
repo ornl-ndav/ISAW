@@ -32,9 +32,9 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.50  2003/09/12 20:04:03  rmikk
- *  -Fixed the use of DataSetPG to conform with the newer
- *    concept of the init methods
+ *  Revision 1.51  2003/09/14 18:04:33  rmikk
+ *  -Removed all DataSets from the DataSetPG when the exit
+ *    button is pressed.  Used ChooserPTG.removeItem
  *
  *  Revision 1.49  2003/08/25 17:55:45  rmikk
  *  Eliminated the UNKNOWN in the dialog box title
@@ -214,7 +214,7 @@ public class JParametersDialog implements Serializable,
     
   private static final String APPLY="Apply";
   private static final String HALT="Halt";
-
+  private DataSet[] DSSS = null;
     public JParametersDialog( Operator  op, 
                               IDataSetListHandler ds_src, 
                               Document  sessionLog, 
@@ -294,11 +294,11 @@ public class JParametersDialog implements Serializable,
            iparam = op.getParameter(i);
            if( iparam instanceof IParameterGUI)
              {if( iparam instanceof DataSetPG){
-                DataSet[] DSs= (ds_src.getDataSets());
-                for( int j=0; j< DSs.length;j++)
-                  ((DataSetPG)iparam).addItem( DSs[j]);
-                ((DataSetPG)iparam).initGUI((Vector) null );
-              
+                DSSS=ds_src.getDataSets();
+                if( DSSS != null)
+                for( int k =0; k> DSSS.length; k++)
+                    ((DataSetPG)iparam).addItem( DSSS[k]);
+                ((DataSetPG)iparam).initGUI((Vector)null);
               }else
                 ((IParameterGUI)iparam).initGUI(null);
 
@@ -874,6 +874,15 @@ public class JParametersDialog implements Serializable,
   {
     public void actionPerformed(ActionEvent ev) 
     {
+      //Remove All DataSets from DataSetPG's
+      for( int i=0; i< op.getNum_parameters(); i++){
+        IParameter iparam = op.getParameter(i);
+        if( (iparam instanceof DataSetPG) && (DSSS != null))
+           for( int j = 0; j < DSSS.length; j++)
+              ((DataSetPG)iparam).removeItem( DSSS[i]);
+
+      }
+     
       opDialog.dispose();     
     } 
   }
