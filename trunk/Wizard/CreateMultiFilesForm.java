@@ -34,7 +34,8 @@ import DataSetTools.wizard.*;
 import DataSetTools.parameter.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
-import DataSetTools.operator.Generic.Load.LoadOneRunfile;
+import DataSetTools.operator.Generic.Load.LoadOneHistogramDS;
+import DataSetTools.operator.Generic.Load.LoadMonitorDS;
 import DataSetTools.operator.Operator;
 
 /**
@@ -50,7 +51,9 @@ public class CreateMultiFilesForm extends    Form
    *  just calls the super class constructor and builds an appropriate
    *  help message for the form.
    *
-   *  @param  operands  The list of names of parameters to be added.
+   *  @param  operands  The list of names of parameters to be loaded.
+   *  @param  result    The list of names of parameters for the loaded
+   *                    DataSets.
    *  @param  w         The wizard controlling this form.
    */
   public CreateMultiFilesForm( String operands[], String result[], Wizard w )
@@ -63,21 +66,23 @@ public class CreateMultiFilesForm extends    Form
   }
 
   /**
-   *  This overrides the execute() method of the super class and provides
-   *  the code that actually does the calculation.
+   *  Loads the specifed runfile's DataSets into an ArrayPG.  Each
+   *  runfile's DataSet array occupies a space in the ArrayPG's
+   *  Vector.
    *
-   *  @return
+   *  @return true if all of the parameters are valid and all Datasets
+   *  can be loaded; false if any significant error occurs
    */
   public boolean execute()
   {
     SharedData.addmsg("Executing...\n");
     IParameterGUI param;
-    ArrayPG apg;
-    int run_numbers[];
-    String run_dir, inst_name, file_name;
-    Operator op;
-    Object result, obj;
-    DataSet[] result_sets = new DataSet[0];
+    ArrayPG histograms, monitors;
+    int run_numbers[], h_num;
+    String run_dir, inst_name, file_name, g_mask;
+    Operator op, mon;
+    Object result, obj, mon_res;
+    DataSet result_ds;
 
     //gets the run numbers
     param = wizard.getParameter( "RunNumbers" );
@@ -114,40 +119,85 @@ public class CreateMultiFilesForm extends    Form
     {
        param.setValid(false);
        SharedData.addmsg(
-         "ERROR: you must enter one or more valid run numbers.\n");
+         "ERROR: you must enter a valid instrument name.\n");
        return false;
     }
 
-    //create full runfile array
-    apg = (ArrayPG)wizard.getParameter( "RunList" );
+    //get histogram number
+    param = wizard.getParameter( "HNum" );
+    obj = param.getValue();
+    if( obj != null && obj instanceof Integer )
+    {
+        h_num = ((Integer)obj).intValue();
+        param.setValid(true);
+    }
+    else
+    {
+       param.setValid(false);
+       SharedData.addmsg(
+         "ERROR: you must enter a valid histogram number.\n");
+       return false;
+    }
+
+    //get group mask
+    //how should I validate this?
+    param = wizard.getParameter( "GMask" );
+    obj = param.getValue();
+    if( obj != null  )
+    {
+        g_mask = obj.toString();
+        param.setValid(true);
+    }
+    else
+    {
+       param.setValid(false);
+       SharedData.addmsg(
+         "ERROR: you must enter a valid group mask.\n");
+       return false;
+    }
+
+    //get the DataSet array
+    histograms = (ArrayPG)wizard.getParameter( "RunList" );
+    monitors = (ArrayPG)wizard.getParameter( "MonitorRunList" );
     //clear it out when the form is re-run
-    apg.clearValue();
+    histograms.clearValue();
+    monitors.clearValue();
 
     for( int i = 0; i < run_numbers.length; i++ )
     {
       file_name = run_dir + inst_name + run_numbers[i] + ".RUN";
-      op = new LoadOneRunfile(file_name, "0");
+      op = new LoadOneHistogramDS(file_name, h_num, g_mask);
+      mon = new LoadMonitorDS(file_name);
       result = op.getResult();
+      mon_res = mon.getResult();
 
-      if( result instanceof DataSet[] )
+      if( result instanceof DataSet && mon_res instanceof DataSet)
       {
-        //add the runfile
-        result_sets = (DataSet[])result;
-        apg.addItem(result_sets);
-        //let the user know the runfile was added successfully
-        SharedData.addmsg(file_name + " added successfully.\n");
-        apg.setValid(true);
+        //add the DataSet and its monitor
+        result_ds = (DataSet)result;
+        histograms.addItem(result_ds);
+        result_ds = (DataSet)mon_res;
+        monitors.addItem(result_ds);
+        //let the user know the DataSet was added successfully
+        SharedData.addmsg(
+          result + " and " + mon_res + " added successfully.\n");
       }
       else // something went wrong
       {
         if( result instanceof ErrorString )
           SharedData.addmsg(result.toString() + "\n");
+        else if (mon_res instanceof ErrorString )
+          SharedData.addmsg(result.toString() + "\n");
         else
-          SharedData.addmsg("Could not load " + file_name + ".\n");
+          SharedData.addmsg(
+            "Could not load histogram and/or monitor from "
+            + file_name + ".\n");
         return false;
       }
 
     }//for
+    histograms.setValid(true);
+    monitors.setValid(true);
 
     SharedData.addmsg("Finished loading DataSets from runfiles.\n\n");
 

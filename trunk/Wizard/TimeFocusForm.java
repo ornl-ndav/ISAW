@@ -37,6 +37,8 @@ import java.util.Vector;
 import DataSetTools.operator.Operator;
 import Operators.TOF_Diffractometer.TimeFocus;
 import DataSetTools.util.*;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  *  This class defines a form for time focusing spectra in
@@ -45,15 +47,20 @@ import DataSetTools.util.*;
 public class TimeFocusForm extends    Form
                               implements Serializable
 {
+  private JPanel godlike, demonic;
+  private JButton maestro;
+
   /**
    *  Construct an TimeFocusForm to time focus the spectra in a DataSet
    *  using the arguments in operands[].  This constructor basically
    *  just calls the super class constructor and builds an appropriate
    *  help message for the form.
    *
-   *  @param  constants The vector of arrays of DataSets to be time focused
-   *  @param  operands  The list of names of parameters to be added.
-   *  @param  result    The
+   *  @param  constants The list of names of parameters to be time focused
+   *  @param  operands  The list of names of parameters to use for the
+   *                    time focusing.
+   *  @param  result    The list of names of parameters which have been
+   *                    time focused.
    *  @param  w         The wizard controlling this form.
    */
   public TimeFocusForm( String constants[], String operands[], String result[], Wizard w )
@@ -65,32 +72,35 @@ public class TimeFocusForm extends    Form
     help.append("Note that whatever you put in for parameters will affect ");
     help.append("ALL DataSets in the list.\n");
     setHelpMessage( help.toString() );
+
+
   }
 
   /**
-   *  This overrides the execute() method of the super class and provides
-   *  the code that actually does the calculation.
+   *  Time focuses the Vector of DataSet arrays and loads them
+   *  into a new Vector of DataSet arrays (in an ArrayPG).
    *
-   *  @return
+   *  @return true if all of the parameters are valid and all hist_ds
+   *  can be time focused; false if any significant error occurs
    */
   public boolean execute()
   {
     SharedData.addmsg("Executing...\n");
-    ArrayPG apg, tfr;
-    Vector runfiles;
+    ArrayPG histograms, tfr;
+    Vector hist_ds_vec;
     Operator tf;
     Object obj, result;
-    DataSet datasets[], time_focused[];
-    int num_runs, num_datasets;
+    DataSet hist_ds, time_focused;
+    int num_ds;
     float angle, path;
     boolean make_new_ds;
     String focusing_IDs;
     IParameterGUI param;
     DataSet ds;
 
-    //get the ArrayPG run list result
-    apg = (ArrayPG)wizard.getParameter("RunList");
-    runfiles = (Vector)apg.getValue();
+    //get the DataSet array
+    histograms = (ArrayPG)wizard.getParameter("RunList");
+    hist_ds_vec = (Vector)histograms.getValue();
 
     //get the user input parameters
     param = wizard.getParameter("FocusIDs");
@@ -143,61 +153,57 @@ public class TimeFocusForm extends    Form
     tfr.clearValue();
 
     //make sure list exists
-    if( runfiles != null )
+    if( hist_ds_vec != null )
     {
-      //get the runfiles array size
-      num_runs = runfiles.size();
-      //go through the array, getting each runfile's DataSets
-      for( int i = 0; i < num_runs; i++ )
+      //get the hist_ds_vec array size
+      num_ds = hist_ds_vec.size();
+      //go through the array, getting each runfile's hist_ds
+      for( int i = 0; i < num_ds; i++ )
       {
-        obj = runfiles.elementAt(i);
+        obj = hist_ds_vec.elementAt(i);
 
-        if( obj instanceof DataSet[] )
+        if( obj instanceof DataSet )
         {
-          datasets = (DataSet[])obj;
-          num_datasets = datasets.length;
+          hist_ds = (DataSet)obj;
 
-          //the time focused DataSets will be the same in number
-          //so create the time_focused_array at that size
-          time_focused = new DataSet[num_datasets];
+          //time_focus the DataSet
 
-          //time_focus the DataSets
-          for( int j = 0; j < num_datasets; j++ )
+          if( hist_ds != DataSet.EMPTY_DATA_SET )
           {
-            ds = datasets[j];
-
-            if( ds != DataSet.EMPTY_DATA_SET )
-            {
-              tf = new TimeFocus(ds, focusing_IDs,
-                                 angle, path, make_new_ds);
-              obj = tf.getResult();
-            }
-            else
-            {
-              SharedData.addmsg("Encountered empty DataSet: "+j);
-              return false;
-            }
-
-            //make sure we are working with DataSets
-            //TimeFocus will always return a DataSet unless it
-            //hits an error (as of 02/17/2003)
-            if( obj instanceof DataSet )
-            {
-              time_focused[j] = (DataSet)obj;
-              SharedData.addmsg(datasets[j] + " time focused.\n");
-            }
-            else
-            {
-              if( obj instanceof ErrorString )
-                SharedData.addmsg(obj.toString() + "\n");
-              else
-                SharedData.addmsg("Could not focus DataSet: "
-                                  +datasets[j]);
-              return false;
-            }
+            tf = new TimeFocus(hist_ds, focusing_IDs,
+                               angle, path, make_new_ds);
+            obj = tf.getResult();
           }
-          //add the time focused DataSet array to time focused results
+          else
+          {
+            SharedData.addmsg("Encountered empty DataSet: " + hist_ds);
+            return false;
+          }
+
+          //make sure we are working with hist_ds
+          //TimeFocus will always return a DataSet unless it
+          //hits an error (as of 02/17/2003)
+          if( obj instanceof DataSet )
+          {
+            time_focused = (DataSet)obj;
+            SharedData.addmsg(hist_ds + " time focused.\n");
+          }
+          else
+          {
+            if( obj instanceof ErrorString )
+              SharedData.addmsg(obj.toString() + "\n");
+            else
+              SharedData.addmsg("Could not focus DataSet: "
+                                + hist_ds);
+            return false;
+          }
+          //add the time focused DataSet to time focused results
           tfr.addItem(time_focused);
+        }
+        else //something went wrong in previous form
+        {
+          SharedData.addmsg("Encountered non-DataSet.\n");
+          return false;
         }
       }
       tfr.setValid(true);
@@ -207,7 +213,7 @@ public class TimeFocusForm extends    Form
     //broke, need to return false to let the wizard know
     else
     {
-      SharedData.addmsg("No runfiles selected.\n");
+      SharedData.addmsg("No histograms selected.\n");
       return false;
     }
 
