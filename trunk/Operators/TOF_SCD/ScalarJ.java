@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/03/27 23:11:22  pfpeterson
+ * Added clause to deal with NumberFormatException when reading the log file.
+ *
  * Revision 1.1  2003/02/14 20:40:31  pfpeterson
  * Added to CVS.
  *
@@ -58,6 +61,7 @@ import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.parameter.*;
 import DataSetTools.util.ErrorString;
 import DataSetTools.util.FilenameUtil;
+import DataSetTools.util.SharedData;
 import DataSetTools.util.TextFileReader;
 import java.io.IOException;
 import java.util.Vector;
@@ -373,6 +377,9 @@ public class ScalarJ extends GenericTOF_SCD{
       r31=tfr.read_double();
       r12=tfr.read_double();
     }catch( IOException e){
+      return false;
+    }catch( NumberFormatException e){
+      SharedData.addmsg("NumberFormatException: "+e.getMessage());
       return false;
     }finally{
       if(tfr!=null)
