@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.61  2004/05/26 18:34:25  rmikk
+ *  Cleaned up the DataSetPG's on Exit using the clear button
+ *  Added this.finalize to eliminate a warning
+ *
  *  Revision 1.60  2004/03/23 23:44:16  dennis
  *  Resolved ambiguity on addWindowListener method in class
  *  FinishJDialog. (Ruth)
@@ -935,8 +939,10 @@ public class JParametersDialog implements Serializable,
       for( int i=0; i< op.getNum_parameters(); i++){
         IParameter iparam = op.getParameter(i);
         if( (iparam instanceof DataSetPG) && (DSSS != null))
-           for( int j = 0; j < DSSS.length; j++)
-              ((DataSetPG)iparam).removeItem( DSSS[j]);
+             ((DataSetPG)iparam).clear();
+           //for( int j = 0; j < DSSS.length; j++)
+              //((DataSetPG)iparam).removeItem( DSSS[j]);
+       
 
       }
      
@@ -979,7 +985,7 @@ public class JParametersDialog implements Serializable,
     
     public void finish(){
       try{
-         finalize();
+         this.finalize();
      }catch( Throwable ss){
      }
     }
