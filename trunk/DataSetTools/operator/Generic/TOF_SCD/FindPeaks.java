@@ -152,6 +152,16 @@ public class FindPeaks extends GenericTOF_SCD{
     int minTime=0;
     int maxTime=(data.getCopyOfY_values()).length;
 
+    float[] times=(data_set.getXRange()).getXs();
+
+    // position of detector center
+    float detA = detector_angle(data_set);
+    float detD = detector_distance(data_set,detA);
+    // sample orientation
+    float chi   = ((Float)data_set.getAttributeValue("Sample Chi")).floatValue();
+    float phi   = ((Float)data_set.getAttributeValue("Sample Phi")).floatValue();
+    float omega = ((Float)data_set.getAttributeValue("Sample Omega")).floatValue();
+
     for( int i=0 ; i<numData ; i++ ){
 	if(pos[i][2]>maxColumn) maxColumn=pos[i][2];
 	if(pos[i][2]<minColumn) minColumn=pos[i][2];
@@ -310,6 +320,12 @@ public class FindPeaks extends GenericTOF_SCD{
 		    peak.nearedge(minColumn, maxColumn,
 				  minRow,    maxRow,
 				  minTime,   maxTime);
+		    peak.t(times[k]);
+		    peak.detA(detA);
+		    peak.detD(detD);
+		    peak.chi(chi);
+		    peak.phi(phi);
+		    peak.omega(omega);
 		    peaks.add(peak.clone());
 		    peakNum++;
 		}
@@ -419,6 +435,61 @@ public class FindPeaks extends GenericTOF_SCD{
 	    }
 	}
 	return minT;
+    }
+
+ /* -------------------------- detector position ------------------------- */ 
+ /**
+  * Find the detector angle by averaging over pixel angles.
+  */
+    static private float detector_angle(DataSet ds){
+	DetInfoListAttribute detI;
+	DetectorInfo det;
+	Data data=ds.getData_entry(0);
+	float angle=0f;
+	int total=0;
+	for( int i=0 ; i< ds.getNum_entries() ; i++ ){
+	    data=ds.getData_entry(i);
+	    detI=(DetInfoListAttribute)
+		data.getAttribute(Attribute.DETECTOR_INFO_LIST);
+	    det=((DetectorInfo[])detI.getValue())[0];
+	    angle+=det.getPosition().getScatteringAngle();
+	    total++;
+	    //System.out.println(total+":"+angle);
+	}
+	angle=(180*angle)/((float)(total+1)*(float)Math.PI);
+
+	return angle;
+    }
+
+ /**
+  * Find the detector distance by averaging over perpendicular pixel
+  * distance.
+  */
+    static private float detector_distance(DataSet ds, float avg_angle){
+	DetInfoListAttribute detI;
+	DetectorInfo det;
+	Data data=ds.getData_entry(0);
+	float angle=0f;
+	float distance=0f;
+	int total=0;
+
+	for( int i=0 ; i< ds.getNum_entries() ; i++ ){
+	    data=ds.getData_entry(i);
+	    detI=(DetInfoListAttribute)
+		data.getAttribute(Attribute.DETECTOR_INFO_LIST);
+	    det=((DetectorInfo[])detI.getValue())[0];
+
+	    angle=det.getPosition().getScatteringAngle();
+	    angle=angle-2f*avg_angle/(float)Math.PI;
+
+	    angle=(float)Math.abs(Math.cos((double)angle));
+
+	    distance+=angle*det.getPosition().getDistance();
+	    total++;
+	}
+	distance=distance/((float)(total+1));
+
+	return distance;
     }
 
  /* ------------------------------- clone -------------------------------- */ 

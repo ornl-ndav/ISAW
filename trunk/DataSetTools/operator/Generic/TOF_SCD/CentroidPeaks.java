@@ -116,11 +116,17 @@ public class CentroidPeaks extends GenericTOF_SCD{
     Vector  peaks    = (Vector) (getParameter(1).getValue());
     Vector  cpeaks   = new Vector();
 
+    float[] times=(data_set.getXRange()).getXs();
+
     Peak peak=new Peak();
     for( int i=0 ; i<peaks.size() ; i++ ){
 	peak=(Peak)peaks.elementAt(i);
 	float[][][] surround=makeSurround(data_set,peak);
+	//System.out.print("t["+(int)peak.z()+" -> ");
 	peak=centroid(peak,surround);
+	//System.out.print(peak.z()+"]="+peak.t()+" -> ");
+	peak.t(times[(int)peak.z()],times[(int)peak.z()+1]);
+	//System.out.println(peak.t());
     }
 
     return peaks;
