@@ -1,0 +1,187 @@
+
+Proposed Categories for Operators, ( 10/31/2000 ), D.M.
+
+  Modified: 11/7/2000, Added separate conversions for X,Y and XY. 
+                       Added the Java class names.
+                       Added the string form of the categories.
+
+I believe that we could categorize the operators into the following categories:
+
+        CATEGORY                                     JAVA CLASS
+---------------------------                 ----------------------------
+Operator                                        Operator  
+
+ -Generic                                          GenericOperator
+    --Load                                            GenericLoad
+    --Batch                                           GenericBatch
+
+ -DataSet Operator                                 DataSetOperator
+    --Edit List                                        DS_EditList
+    --Math                                             DS_Math
+       ---Scalar                                          ScalarOp
+       ---DataSet                                         DataSetOp
+       ---Analyze                                         AnalyzeOp
+    --Attribute                                        DS_Attribute
+    --Conversion                                       DS_Conversion
+       ---X Axis Conversion                               XAxisConversionOp
+       ---Y Axis Conversion                               YAxisConversionOp
+       ---XY Axes Conversion                              XYAxesConversionOp
+    --Special                                          DS_Special
+
+String constants to use in menus are defined in class Operator:
+
+   public static final String  OPERATOR                 = "Operator";
+   public static final String    GENERIC                = "Generic";
+   public static final String      LOAD                 = "Load";
+   public static final String      BATCH                = "Batch";
+   public static final String    DATA_SET_OPERATOR      = "DataSet Operator";
+   public static final String      EDIT_LIST            = "Edit List";
+   public static final String      MATH                 = "Math";
+   public static final String        SCALAR             = "Scalar";
+   public static final String        DATA_SET_OP        = "DataSet";
+   public static final String        ANALYZE            = "Analyze";
+   public static final String      ATTRIBUTE            = "Attribute";
+   public static final String      CONVERSION           = "Conversion";
+   public static final String        X_AXIS_CONVERSION  = "X Axis Conversion";
+   public static final String        Y_AXIS_CONVERSION  = "Y Axis Conversion";
+   public static final String        XY_AXIS_CONVERSION = "XY Axes Conversion";
+   public static final String      SPECIAL              = "Special";
+
+
+COMMENTS:
+
+  Here the Generic operators are NOT associated with any DataSet.  They can be
+invoked from the CommandPane.  Some of these operators would NOT make sense to 
+invoke from ISAW and would be categorized as "Batch".  Those that do make
+sense to invoke from ISAW could be placed in the ISAW menus.  Currently there
+is only one such category... various forms of loading DataSets that could be 
+invoked from the ISAW File menu.
+
+  The DataSet operators are kept with the DataSet and would appear in the same
+menu that the currently appear in.  However, the proposed categories would
+introduce an additional level to the menu hierachy. 
+
+  I would propose implementing the catgories using an inheritance heirarchy
+so the categories could be determined via "instanceof".  This is also better
+adapted to the heirarchy of menus, than a "flat" getCategory() method that 
+only returns one category name.  For compatibility, getCategory() would still
+be supported.  
+
+  Two of Dongfeng's operators do not fit nicely into this scheme,
+SpectrometerPlotter and DataSetPrint.  The SpectrometerPlotter operator is 
+really just a single Data block plotter and has nothing to do with 
+Spectrometers.  It should be replaced by a Viewer, like Kevin's.  Similarly,
+I think that the DataSetPrint operator should be replaced by the TableViewer.
+In the meantime, they could appear, uncategorized, at the end of the DataSet 
+operator menu, or be put into a "Miscellaneous" category.
+
+  A detailed list of how the current and some future operators would fit into
+the categories is given below.  Operators that are not yet implemented are
+marked with a question mark. 
+
+                     
+GENERIC ( NOT associated with any DataSet )  ( GenericOperator )
+
+  -Load  ( GenericLoad )
+           SumRunfiles
+           LoadMonitorDS
+           LoadOneHistogramDS
+           LoadOneRunfile
+        ?  MergeRunfiles           // Not yet implemented
+
+  -Batch ( GenericBatch )
+           EchoObject
+           pause
+
+DataSet Operator ( DataSetOperator )
+            ( associated with a DataSet, the first three catgeories, Edit List,
+              Attribute and Math, apply to ANY DataSet.  The last 
+              categories, Conversion and Special will vary with instrument
+              type and what operations have already been done. )
+    
+  -EditList  ( sort, delete, merge )( DS_EditList )
+           DataSetMerge
+           DataSetSort
+           DataSetMultiSort
+           DeleteByAttribute
+           DeleteCurrentlySelected
+           ExtractByAttribute
+        ?  ExtractCurrentlySelected
+
+  -Math  ( DS_Math )
+     -- Scalar  ( ScalarOp ) 
+           DataSetScalarAdd
+           DataSetScalarSubtract
+           DataSetScalarMultiply
+           DataSetScalarDivide
+
+     -- DataSet ( DataSetOp ) 
+           SumByAttribute
+           SumCurrentlySelected
+           DataSetAdd
+           DataSetSubtract
+           DataSetMultiply
+           DataSetDivide
+       ?   DataSetAdd_1            // operations using ONE Data block of a
+       ?   DataSetSubtract_1       // DataSet with ALL Data blocks of a second
+       ?   DataSetMultiply_1       // DataSet.  Not yet implemented.
+       ?   DataSetDivide_1
+
+     -- Analyze ( integrate, curve fit ) ( AnalyzeOp )
+           DataSetCrossSection
+           IntegrateGroup
+           CalculateMomentOfGroup
+           ConvertHistogramToFunction
+           ResampleDataSet
+       ?   x = T(x)                      // transformations applied to x, y
+       ?   y = T(y)                      // values in Data blocks
+       ?   x = T(x,y)                    // Not yet implemented
+       ?   y = T(x,y)
+       ?   FFT 
+       ?   FitPeak(s)
+
+  -Attribute ( DS_Attribute )
+           GetDSAttribute
+           GetDataAttribute
+           GetField
+           SetDSAttribute
+           SetDSDataAttributes
+           SetDataAttribute
+           SetField
+
+  -Conversion
+      --X Axis Conversion ( XAxisConversionOp )
+           DiffractometerTofToD
+           DiffractometerTofToEnergy
+           DiffractometerTofToQ
+           DiffractometerTofToWavelength
+           SpectrometerTofToEnergy
+           SpectrometerTofToEnergyLoss
+           SpectrometerTofToQ
+           SpectrometerTofToWavelength
+           TofToChannel
+       --Y Axis Conversion ( YAxisConversionOp )
+           TrueAngle
+       --XY Axes Conversion ( XYAxisConversionOp )
+           SpectrometerTofToQE
+
+  -Special  ( DS_Special )
+           MonitorPeakArea
+           EnergyFromMonitorDS
+           DoubleDifferentialCrossection
+           SpectrometerDetectorNormalizationFactor
+           SpectrometerFrequencyDistributionFunction
+           SpectrometerGeneralizedEnergyDistributionFunction
+           SpectrometerImaginaryGeneralizedSusceptibility
+           SpectrometerMacro
+           SpectrometerScatteringFunction
+           SpectrometerSymmetrizedScatteringFunction
+           SpectrometerNormalizer       // This is now obsolete
+           SpectrometerEvaluator  
+       ?   TimeFocus                    // Not yet implemented
+
+NOT CATEGORIZED, Misc
+       *   DataSetPrint          // Replace with TableView ?
+       *   SpectrometerPlotter   // Dongfeng's "operator" to plot one group,
+                                 // using the Austrailian graphics package.
+                                 // This really should be done with a viewer.
