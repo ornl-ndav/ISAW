@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 19:50:04  kramer
+ * The class now contains a JavadocsJPanel which actually displays the Javadoc
+ * information.
+ *
  * Revision 1.3  2004/03/12 19:46:16  bouzekc
  * Changes since 03/10.
  *
@@ -43,19 +47,12 @@
  */
 package devTools.Hawk.classDescriptor.gui.internalFrame;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Component;
 
-import javax.swing.JEditorPane;
-import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
+import devTools.Hawk.classDescriptor.gui.panel.JavadocsJPanel;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 
 /**
@@ -63,16 +60,12 @@ import devTools.Hawk.classDescriptor.modeledObjects.Interface;
  * or interface.
  * @author Dominic Kramer
  */
-public class JavadocsGUI extends DesktopInternalFrame implements ActionListener
+public class JavadocsGUI extends DesktopInternalFrame
 {
 	/**
-	 * The pane to add the javadocs file to.
+	 * The JavadocsJPanel that is located on the frame.
 	 */
-	protected JEditorPane htmlPane;
-	/**
-	 * The Interface whose javadocs file is to be displays.
-	 */
-	protected Interface selectedInterface;
+	protected JavadocsJPanel panel;
 	
 	/**
 	 * Create a new JavadocsGUI.
@@ -82,10 +75,8 @@ public class JavadocsGUI extends DesktopInternalFrame implements ActionListener
 	 */
 	public JavadocsGUI(Interface INT, String title, HawkDesktop desk)
 	{
-		super(desk);
+		super(desk,desk.getSelectedDesktop(),INT,true,true,false,true);
 		
-		//now to instantiate selectedInterface
-			selectedInterface = INT;
 		//now to set some of the characteristics of the window
 			setTitle(title);
 			setLocation(0,0);
@@ -95,38 +86,12 @@ public class JavadocsGUI extends DesktopInternalFrame implements ActionListener
 			setMaximizable(true);
 			setResizable(true);
 		
-		//now to make the main areas of the frame
-			Container pane = getContentPane();
-			JPanel mainPanel = new JPanel();
-			mainPanel.setLayout(new BorderLayout());
-			
-		//now to create the area for placing the javadocs in html format
-			htmlPane = new JEditorPane("text/html", INT.getJavadocAsString());
-			htmlPane.setEditable(false);
-							
-		//now to create the JScrollPane to put the JEditorPane on
-			JScrollPane scrollPane = new JScrollPane(htmlPane);
-			
-		//now to add the components to the main panel
-			mainPanel.add(scrollPane, BorderLayout.CENTER);
-						
-		pane.add(mainPanel);
-		
-		//Now to make the JMenuBar
-			JMenuBar javadocsMenuBar = new JMenuBar();
-				JMenu fileMenu = new JMenu("File");
-					JMenuItem closeItem = new JMenuItem("Close");
-					closeItem.setActionCommand("Close");
-					closeItem.addActionListener(this);
-				fileMenu.add(closeItem);
-			javadocsMenuBar.add(fileMenu);
-			javadocsMenuBar.add(InternalFrameUtilities.constructViewMenu(this,true,true,false,true));					
-//			refreshMoveAndCopyMenu();
-//			windowMenu.addMenuListener(new WindowMenuListener(this,menuBar,windowMenu));
-			javadocsMenuBar.add(windowMenu);
-		menuBar = javadocsMenuBar;
-		setJMenuBar(javadocsMenuBar);
-		
+		panel = new JavadocsJPanel(INT,this);
+		JMenuBar menuBar = panel.createMenuBar();
+		menuBar.add(viewMenu);
+		menuBar.add(windowMenu);
+		setJMenuBar(menuBar);
+		getContentPane().add(panel);
 		resizeAndRelocate();
 	}
 	
@@ -134,27 +99,17 @@ public class JavadocsGUI extends DesktopInternalFrame implements ActionListener
 	 * Gets a copy of this window.
 	 * @return A copy of this window.
 	 */	
-	public DesktopInternalFrame getCopy()
+	public AttachableDetachableFrame getCopy()
 	{
 		return new JavadocsGUI(selectedInterface,getTitle(),desktop);
 	}
 	
 	/**
-	 * Handles ActionEvents.
+	 * The Components in the array returned from this method are the Components that should have the 
+	 * mouse use the waiting animation when an operation is in progress.
 	 */
-	public void actionPerformed(ActionEvent event)
+	public Component[] determineWaitingComponents()
 	{
-		if (event.getActionCommand().equals("Close"))
-		{
-			dispose();
-		}
-		else
-		{
-//			JavadocsGUI copy = (JavadocsGUI)getCopy();
-//			copy.setVisible(true);
-//			processWindowChange(event,copy,this);
-			super.actionPerformed(event);
-			InternalFrameUtilities.processActionEventFromViewMenu(event,selectedInterface,desktop);
-		}
+		return panel.determineWaitingComponents();
 	}
 }
