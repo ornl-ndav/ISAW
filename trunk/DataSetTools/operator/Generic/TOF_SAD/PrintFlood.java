@@ -1,5 +1,3 @@
-
-
 /*
  * File:  PrintFlood.java 
  *             
@@ -33,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/07/22 16:27:02  dennis
+ * Fixed formatting.
+ *
  * Revision 1.1  2003/07/14 16:50:45  rmikk
  * Initial Checkin
  *
@@ -57,6 +58,7 @@ public class PrintFlood  extends GenericTOF_SAD{
        super("Print Flood");
     }
 
+
     /**
     *   Constructor
     *   @ param   EfficiencyDS  The Efficiency Data Set
@@ -69,9 +71,8 @@ public class PrintFlood  extends GenericTOF_SAD{
        addParameter( new DataSetPG("Efficiency DataSet", EfficiencyDS ) );
        
        addParameter( new SaveFilePG("Output FileName", Outfilename) );
-     
-       
     }
+
 
    public void setDefaultParameters(){
       parameters = new Vector();
@@ -81,9 +82,9 @@ public class PrintFlood  extends GenericTOF_SAD{
 
 
    /**
-   *   Prints the values then the errors of the Effice=iency Data Set( with one time bin)
-   *   to the specified file in the specific format.  Then the Mask file( also with one
-   *   time bin) is printed to this file
+   *   Prints the values then the errors of the Efficeiency Data Set
+   *   (with one time bin) to the specified file in the specific format.  
+   *   Then the Mask file (also with one time bin) is printed to the same file
    *   @return  "Success"  or an ErrorString
    */ 
    public Object getResult(){
@@ -143,9 +144,7 @@ public class PrintFlood  extends GenericTOF_SAD{
        if(((Integer) R).intValue() != n)
        SharedData.addmsg("Not all data written");
 
-   
      Format ="I10,I10,I10,I10,I10,I10,I10,I10,/";
-
 
      V = new Vector();
      V.addElement( Mask);    
@@ -158,7 +157,9 @@ public class PrintFlood  extends GenericTOF_SAD{
        SharedData.addmsg("Not all data written");
 
      //Get and print the last line identifying the run number etc.
-     IntListAttribute A = (IntListAttribute)(Efficiency.getAttribute( Attribute.RUN_NUM));
+     IntListAttribute A = 
+              (IntListAttribute)(Efficiency.getAttribute( Attribute.RUN_NUM));
+
      int run_num = -1;
      if( A != null)
         run_num = A.getIntegerValue()[0];
@@ -195,25 +196,27 @@ public class PrintFlood  extends GenericTOF_SAD{
       if( plist.num_pixels() < 1)
         return null;
       return plist.pixel(0).DataGrid();
-
    }
 
 
    public String getDocumentation(){
       StringBuffer Res = new StringBuffer();
-      Res.append( "@overview  Prints the values then the errors of the Efficiency Data ");
-      Res.append( "Set( with one time bin) to the specified file in the specific format.");
-      Res.append( "Then the Mask is printed to this file");
-      Res.append(  "@param  EfficiencyDS - the Efficiency Data Set. The 0 entries ");
-      Res.append( " are the mask");
+      Res.append("@overview  Prints the values followed by the errors of the");
+      Res.append(" Efficiency Data Set(with one time bin) to the specified");
+      Res.append(" file in the specific format.  The Mask is also printed");
+      Res.append(" to this file");
+      Res.append("@param  EfficiencyDS - the Efficiency Data Set. ");
+      Res.append(" The mask is set to 0 where the data is 0 and is set ");
+      Res.append(" to 1 where the data is non-zero.");
      
-      Res.append(  "@param  OutFileName-  the name of the output file");
-      Res.append(  "@return  Success or an error message");
-      Res.append(  "@error  \"Grids are null\" if the data sets do not have IDataGrid's");
-      Res.append(  "@error  \"size of mask file incorrect\" ");
-      Res.append(  "@error   Error Messages from the underlying write routines");
+      Res.append("@param  OutFileName-  the name of the output file");
+      Res.append("@return  Success or an error message");
+      Res.append("@error  \"Grids are null\" if the data sets do not");
+      Res.append(" have IDataGrid's");
+      Res.append("@error  \"size of mask file incorrect\" ");
+      Res.append("@error   Error Messages from the underlying write routines");
 
       return Res.toString();
-
    }
+
 }//PrintFlood

@@ -1,4 +1,3 @@
-
 /*
  * File:  ReadFlood.java 
  *             
@@ -28,17 +27,21 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- *
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/07/22 16:27:01  dennis
+ * Fixed formatting.
+ *
  * Revision 1.1  2003/07/15 21:36:37  rmikk
  * Initial Checkin
  *
  */
 
 package DataSetTools.operator.Generic.TOF_SAD;
+
 import DataSetTools.dataset.*;
+import DataSetTools.operator.DataSet.Attribute.*;
 import java.util.*;
 import java.io.*;
 import DataSetTools.util.*;
@@ -47,9 +50,10 @@ import DataSetTools.util.*;
 import DataSetTools.math.*;
 
 /**
-*    This operator reads in files written by the WriteFlood operator to produce
-*    two data sets, and Efficiency DataSet and a Mask DataSet.  The XScale is just 0 to 1.
-*/
+ *  This operator reads in files written by the WriteFlood operator to produce
+ *  two data sets, and Efficiency DataSet and a Mask DataSet.  
+ *  The XScale is just 0 to 1.
+ */
 public class ReadFlood extends GenericTOF_SAD{
 
    /**
@@ -88,10 +92,9 @@ public class ReadFlood extends GenericTOF_SAD{
    *     creates two data sets, an Efficiency and Mask data set.  Both have
    *     the PixelInfoList Attribute set so row and column information is a
    *     preserved.  The Efficiency data set also has the errors recorded.
-   *     @ return  a Vector with two elements.  The first is the Efficiency data set
-   *               and the second is the Mask data set or an ErrorString if an error 
-   *               ocurred.
-   *     
+   *     @ return  a Vector with two elements.  The first is the Efficiency 
+   *               data set and the second is the Mask data set or an 
+   *               ErrorString if an error ocurred.
    */
    public Object getResult(){
      String filename = ((LoadFilePG)(getParameter(0))).getStringValue();
@@ -160,21 +163,28 @@ public class ReadFlood extends GenericTOF_SAD{
                 "Valid", "Valid");
      //   Add operators
      DataSetFactory.addOperators( Efficiencies);
-     Efficiencies.addOperator(new DataSetTools.operator.DataSet.Attribute.GetPixelInfo_op() );
+     Efficiencies.addOperator(new GetPixelInfo_op() );
      DataSetFactory.addOperators( Mask);
-     Mask.addOperator(new DataSetTools.operator.DataSet.Attribute.GetPixelInfo_op());
+     Mask.addOperator(new GetPixelInfo_op());
 
      // Set up Shared Grid References
-     UniformGrid gridEff = new UniformGrid(37,"cm",new Vector3D(.5f,0f,0f),
-                new Vector3D(0f,-1f,0f),new Vector3D( 0f,0f,1f), .21f,.21f,.001f,nrows,ncols);
-     UniformGrid gridMask = new UniformGrid(37,"cm",new Vector3D(.5f,0f,0f),
-                new Vector3D(0f,-1f,0f),new Vector3D( 0f,0f,1f), .21f,.21f,.0011f,nrows,ncols);
+     UniformGrid gridEff = new UniformGrid(37,"cm",
+                                           new Vector3D(.5f,0f,0f),
+                                           new Vector3D(0f,-1f,0f),
+                                           new Vector3D( 0f,0f,1f), 
+                                           .21f,.21f,.001f,nrows,ncols);
+     UniformGrid gridMask = new UniformGrid(37,"cm",
+                                            new Vector3D(.5f,0f,0f),
+                                            new Vector3D(0f,-1f,0f),
+                                            new Vector3D( 0f,0f,1f), 
+                                            .21f,.21f,.0011f,nrows,ncols);
 
      // Allocate storage for the 1 bin data
      float[] yy = new float[1];
      float[]err = new float[1];
 
-     // Create Each Data block for the Efficiency Data Set and the Mask Data Set.
+     // Create Each Data block for the Efficiency Data Set and 
+     // the Mask Data Set.
      int row = 1;
      int col = 1;
      for( int i =0; i< nrows*ncols; i++){
@@ -186,10 +196,10 @@ public class ReadFlood extends GenericTOF_SAD{
         Efficiencies.addData_entry( D);
 
         
-          DetectorPixelInfo dpi = new DetectorPixelInfo( i,(short)row,(short)col,
+        DetectorPixelInfo dpi = new DetectorPixelInfo( i,(short)row,(short)col,
                                   gridEff);
-          DetectorPixelInfo[] pinf = new DetectorPixelInfo[1];
-          pinf[0] = dpi;
+        DetectorPixelInfo[] pinf = new DetectorPixelInfo[1];
+        pinf[0] = dpi;
         D.setAttribute( new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST,
                               new PixelInfoList(  (pinf))   )   );
 
@@ -199,44 +209,43 @@ public class ReadFlood extends GenericTOF_SAD{
        
         D = new HistogramTable( new UniformXScale( 0f,1f,2), yy, i); 
         Mask.addData_entry( D );
-          dpi = new DetectorPixelInfo( i,(short)row,(short)col,
-                                  gridMask);
+        dpi = new DetectorPixelInfo( i,(short)row,(short)col, gridMask);
         
-          DetectorPixelInfo[] pinf1 = new DetectorPixelInfo[1];
-          pinf1[0] = dpi; 
+        DetectorPixelInfo[] pinf1 = new DetectorPixelInfo[1];
+        pinf1[0] = dpi; 
         D.setAttribute( new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST,
-                              new PixelInfoList( ( pinf1))   )  );
+                        new PixelInfoList( ( pinf1))   )  );
        
-         col++;
-        if( col > ncols){
-           row++; 
-           col=1;
-         }
-      
+        col++;
+        if( col > ncols)
+        {
+          row++; 
+          col=1;
+        }
      }
 
-    V = new Vector();
-    V.addElement( Efficiencies);
-    V.addElement( Mask);
-    return V;
-  
+     V = new Vector();
+     V.addElement( Efficiencies);
+     V.addElement( Mask);
+     return V;
    }
 
    public String getDocumentation(){
       StringBuffer Res = new StringBuffer();
-      Res.append( "@overview This operator reads in files written by the ");
-      Res.append("WriteFlood operator to produce two data sets, and Efficiency");
-      Res.append(" DataSet and a Mask DataSet.  The XScale is just 0 to 1.");
+      Res.append("@overview This operator reads in files written by the");
+      Res.append(" WriteFlood operator to produce two data sets,");
+      Res.append(" an Efficiency DataSet and a Mask DataSet. ");
+      Res.append(" The XScale is just 0 to 1.");
       Res.append("@param  filename -  the name of the file");
       Res.append("@param  nrows -    the number of rows in the detector");
-      Res.append(" @param  ncols -    the number of columns in the detector");
-      Res.append(" @return  A Vector with two elements, the first is the ");
+      Res.append("@param  ncols -    the number of columns in the detector");
+      Res.append("@return  A Vector with two elements, the first is the");
       Res.append(" Efficiency data set and the second is the mask data set");
-      Res.append("@assumptions The data set was written by the Write Flood ");
-      Res.append("  operator or in that specific format. The Efficiency y ");
-      Res.append("  are all written, then the errors, then the mask values");
-      Res.append("(1's or 0's). Only eight numbers are written per line. ");
-      Res.append(" The Efficiency values are written F10.7 and the Mask ");
+      Res.append("@assumptions The data set was written by the Write Flood");
+      Res.append(" operator or in that specific format. The Efficiency y");
+      Res.append(" are all written, then the errors, then the mask values");
+      Res.append(" (1's or 0's). Only eight numbers are written per line. ");
+      Res.append(" The Efficiency values are written F10.7 and the Mask");
       Res.append(" values are written I10");
       return Res.toString();
    }
