@@ -50,8 +50,6 @@ public class IntegrateMultiRunsForm extends Form
 {
 
   private Vector choices;
-  //set it up as a standalone form
-  private boolean HAS_CONSTANTS = false;
   protected static int RUN_NUMBER_WIDTH = 5;
   protected final String SCDName = "SCD";
 
@@ -74,6 +72,7 @@ public class IntegrateMultiRunsForm extends Form
    *  @param outpath            The output data path for the *.integrate file.
    *  @param runnums            The run numbers to load.
    *  @param expname            The experiment name (i.e. "quartz").
+   *  @param ctype              Number for the centering type.
    *  @param calibfile          SCD calibration file.
    *  @param time_slice_range   The time-slice range
    *  @param increase_amt       Amount to increase slice size by.
@@ -81,7 +80,7 @@ public class IntegrateMultiRunsForm extends Form
    */
   
   public IntegrateMultiRunsForm(String rawpath, String outpath, String runnums,
-                                String expname, String calibfile, 
+                                String expname, int ctype, String calibfile,
                                 String time_slice_range, 
                                 int increase_amt, String matrix_name)
   {
@@ -90,10 +89,11 @@ public class IntegrateMultiRunsForm extends Form
     getParameter(1).setValue(outpath);
     getParameter(2).setValue(runnums);
     getParameter(3).setValue(expname);
-    getParameter(4).setValue(calibfile);
-    getParameter(5).setValue(time_slice_range);
-    getParameter(6).setValue(new Integer(increase_amt));
-    getParameter(7).setValue(matrix_name);
+    getParameter(4).setValue(choices.elementAt(ctype));
+    getParameter(5).setValue(calibfile);
+    getParameter(6).setValue(time_slice_range);
+    getParameter(7).setValue(new Integer(increase_amt));
+    getParameter(8).setValue(matrix_name);
   }
 
   /**
@@ -109,7 +109,7 @@ public class IntegrateMultiRunsForm extends Form
     //0
     addParameter(new DataDirPG( "Raw Data Path", "", false));
     //1
-    addParameter(new DataDirPG("Output Path", "", false));
+    addParameter(new DataDirPG("Peaks File Output Path", "", false));
     //2
     addParameter(new IntArrayPG("Run Numbers", "", false));
     //3
@@ -156,10 +156,25 @@ public class IntegrateMultiRunsForm extends Form
     s.append("@assumptions It is assumed that:\n");
     s.append("1. Data of interest is in histogram 2.\n");
     s.append("2. There is a matrix file for each run.");
-    s.append("@algorithm ");
+    s.append("@algorithm This Form first gets all the user input parameters, ");
+    s.append("then for each runfile, it loads the first histogram, the SCD ");
+    s.append("calibration data, and calls Integrate.\n");
+    s.append("@param rawpath The raw data path.\n");
+    s.append("@param outpath The output data path for the *.integrate file.\n");
+    s.append("@param runnums The run numbers to load.\n");
+    s.append("@param expname The experiment name (i.e. \"quartz\").\n");
+    s.append("@param ctype Number for the centering type.\n");
+    s.append("@param calibfile SCD calibration file.\n");
+    s.append("@param time_slice_range The time-slice range.\n");
+    s.append("@param increase_amt Amount to increase slice size by.\n");
+    s.append("@param matrix_name The matrix file name to load.\n");
     s.append("@return A Boolean indicating success or failure of the Form's ");
     s.append("execution.\n");
-    s.append("@error ");
+    s.append("@error Invalid raw data path.\n");
+    s.append("@error Invalid peaks file path.\n");
+    s.append("@error Invalid run numbers.\n");
+    s.append("@error Invalid experiment name.\n");
+    s.append("@error Invalid calibration file name.\n");
     return s.toString();
   }
 
@@ -173,6 +188,8 @@ public class IntegrateMultiRunsForm extends Form
   }
 
   /**
+   *  This Form first gets all the user input parameters, then for each runfile, 
+   *  it loads the first histogram, the SCD calibration data, and calls Integrate.
    *
    *  @return A Boolean indicating success or failure.
    */
@@ -182,9 +199,8 @@ public class IntegrateMultiRunsForm extends Form
     IParameterGUI param;
     Object obj;
     String outputDir, centerType, matrixName, calibFile, expName, rawDir;
-    String sliceRange, loadName, runNum;
+    String integName, sliceRange, loadName, runNum;
     boolean append, first;
-    StringBuffer integName;
     int timeSliceDelta, histNum;
     DataSet histDS;
     int[] runsArray;
@@ -210,12 +226,8 @@ public class IntegrateMultiRunsForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
-         "ERROR: you must enter one or more valid run numbers.\n");
-       return new Boolean(false);
-    }
+      return errorOut(param,
+         "ERROR: you must enter one or more valid run numbers.");
 
     //get experiment name
     param = (IParameterGUI)getParameter( 3 );
@@ -226,12 +238,8 @@ public class IntegrateMultiRunsForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
-         "ERROR: you must enter a valid experiment name.\n");
-       return new Boolean(false);
-    }
+      return errorOut(param,
+         "ERROR: you must enter a valid experiment name.");
 
     //get centering type
     param = (IParameterGUI)getParameter( 4 );
@@ -242,12 +250,8 @@ public class IntegrateMultiRunsForm extends Form
       param.setValid(true);
     }
     else
-    {
-      param.setValid(false);
-      SharedData.addmsg(
+      return errorOut(param,
         "ERROR: you must enter a valid centering type.");
-      return new Boolean(false);
-    }
 
     //get calibration file name
     param = (IParameterGUI)getParameter( 5 );
@@ -258,12 +262,8 @@ public class IntegrateMultiRunsForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
+      return errorOut(param,
          "ERROR: you must enter a valid calibration file name.");
-       return new Boolean(false);
-    }
 
     //get time slice range
     param = (IParameterGUI)getParameter( 6 );
@@ -274,12 +274,8 @@ public class IntegrateMultiRunsForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
+      return errorOut(param,
          "ERROR: you must enter a valid time slice range.");
-       return new Boolean(false);
-    }
 
     //get time slice increase increment
     param = (IParameterGUI)getParameter( 7 );
@@ -290,13 +286,8 @@ public class IntegrateMultiRunsForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
-         "ERROR: you must enter a valid integer " +
-         "to increment the slice size by.");
-       return new Boolean(false);
-    }
+      return errorOut(param,
+        "ERROR: you must enter a valid integer to increment the slice size by.");
 
     //get matrix file name
     param = (IParameterGUI)getParameter( 8 );
@@ -307,18 +298,12 @@ public class IntegrateMultiRunsForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
+      return errorOut(param,
          "ERROR: you must enter a matrix file name.");
-       return new Boolean(false);
-    }
 
     //the name for the saved *.integrate file
-    integName = new StringBuffer();
-    integName.append(outputDir);
-    integName.append(expName);
-    integName.append(".integrate");
+    integName = outputDir + "/" + expName + ".integrate";
+    integName = StringUtil.setFileSeparator(integName);
 
     //first time through the file
     first = true;
@@ -334,7 +319,8 @@ public class IntegrateMultiRunsForm extends Form
                .Format
                .integerPadWithZero(runsArray[i], RUN_NUMBER_WIDTH);
 
-      loadName = rawDir + SCDName + runNum + ".RUN";
+      loadName = rawDir + "/" + SCDName + runNum + ".RUN";
+      loadName = StringUtil.setFileSeparator(loadName);
 
       /*get the histogram from runfile retriever.
       histNum = some RunfileRetriever thing;*/
@@ -349,10 +335,7 @@ public class IntegrateMultiRunsForm extends Form
       if(obj instanceof DataSet)
         histDS = (DataSet)obj;
       else
-      {
-        SharedData.addmsg(obj.toString());
-        return new Boolean(false);
-      }
+        return errorOut("LoadOneHistogramDS failed: " + obj.toString());
 
       SharedData.addmsg("Integrating peaks for " + 
                          histDS.toString());
@@ -360,26 +343,20 @@ public class IntegrateMultiRunsForm extends Form
       //load the SCD calibration data
       obj = new LoadSCDCalib(histDS, calibFile,1,"").getResult();
       if(obj instanceof ErrorString)
-      {
-        SharedData.addmsg(obj.toString());
-        return new Boolean(false);
-      }
+        return errorOut("LoadSCDCalib failed: " + obj.toString());
 
       /*Gets matrix file "lsxxxx.mat" for each run
         The "1" means that every peak will be written to the integrate.log file.
         At the moment, this will only load one matrix file, and will stay so
         until a LsqrsForm is written that can create these lsxxxx.mat files
         automagically.*/
-      obj = new Integrate(histDS, integName.toString(), 
-                         /*outputDir + "ls"  + runsArray[i] + ".mat",*/
-                         matrixName,
+      obj = new Integrate(histDS, integName, 
+                          outputDir + "ls"  + runNum + ".mat",
+                         /*matrixName,*/
                          sliceRange, timeSliceDelta, 1,
                          append).getResult();
       if(obj instanceof ErrorString)
-      {
-        SharedData.addmsg(obj.toString());
-        return new Boolean(false);
-      }
+        return errorOut("Integrate failed: " + obj.toString());
 
       if (first)
       {
@@ -388,8 +365,8 @@ public class IntegrateMultiRunsForm extends Form
       }
     }
     
-    SharedData.addmsg("--- integrate_multiple_runs is done. ---");
-    SharedData.addmsg("Peaks are listed in " + integName.toString());
+    SharedData.addmsg("--- IntegrateMultiRunsForm is done. ---");
+    SharedData.addmsg("Peaks are listed in " + integName);
 
     //set the integrate file name for the result
     param = (IParameterGUI)getParameter(9);
@@ -412,20 +389,5 @@ public class IntegrateMultiRunsForm extends Form
     choices.add("[f]ace centered");         // 4
     choices.add("[i] body centered");       // 5
     choices.add("[r]hombohedral centered"); // 6
-  }
-
-
-  /**
-   *  Sets the HAS_CONSTANTS variable so that the Form can be
-   *  run as a standalone or first Form, or as a Form that
-   *  relies on previous Forms.
-   *
-   *  @param    constant    Set true if this is a Form that
-   *                        relies on previous Forms, or
-   *                        false if it is a standalone Form.
-   */
-  public void setHasConstants(boolean constant)
-  {
-    this.HAS_CONSTANTS = constant;
   }
 }
