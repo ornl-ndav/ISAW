@@ -30,6 +30,11 @@
 # Modified:
 #
 # $Log$
+# Revision 1.2  2004/05/07 18:14:15  dennis
+# Changed so it extends GenericTOF_SCD.  This places it in
+# the TOF_SCD submenu.  Also used name Find Multiple Peaks 2
+# consistently.
+#
 # Revision 1.1  2004/01/16 16:03:04  dennis
 # Added previously existing scripts to the new
 # subdirectories.
@@ -45,7 +50,7 @@
 # Added to CVS (Chris Bouzek).
 #
 # 
-class find_multiple_peaks2(GenericOperator):
+class find_multiple_peaks2(GenericTOF_SCD):
     def setDefaultParameters(self):
         self.super__clearParametersVector()
         self.addParameter(DataDirPG("Raw Data Path",None))
@@ -122,7 +127,7 @@ class find_multiple_peaks2(GenericOperator):
             if(first):
                 first=0
                 append=Boolean(1)
-        echo=EchoObject("--- Find Multiple Peaks is done ---") # Echo
+        echo=EchoObject("--- Find Multiple Peaks 2 is done ---") # Echo
         echo.getResult()
         # show the peaks file
         viewASCII=ViewASCII(out_path+expname+".peaks") # ViewASCII
@@ -133,4 +138,4 @@ class find_multiple_peaks2(GenericOperator):
         return out_path+expname+".peaks"
 
     def __init__(self):
-        Operator.__init__(self,"Find Multiple Peaks")
+        Operator.__init__(self,"Find Multiple Peaks 2")
