@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/07/30 18:47:28  dennis
+ *  Minor documentation improvements.
+ *
  *  Revision 1.5  2001/04/25 21:57:55  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -54,8 +57,8 @@ import  DataSetTools.dataset.*;
 import  java.io.*;
 
 /**
- * Root class for operators that retrieve DataSet objects from files, or
- * directly from hardware.  Derived classes for particular types of data
+ * Root class for objects that retrieve DataSet objects from files, or via 
+ * a network connection.  Derived classes for particular types of data
  * sources must actually implement the methods to get specified data sets
  * and their types.
  */
@@ -67,16 +70,15 @@ public abstract class Retriever implements Serializable
     public static final int  HISTOGRAM_DATA_SET    = 2;
     public static final int  PULSE_HEIGHT_DATA_SET = 3;
 
-    /** The dataSource from which the retriever retrieves data */
     protected String data_source_name = null;
 
 
     /**
      * Construct the retriever for the specified source name.
      *
-     * @param dataSourceName   This identifies the data source.  For file
-     *                         data retrievers, this will be the fully 
-     *                         qualified file name
+     * @param data_source_name   This identifies the data source.  For file
+     *                           data retrievers, this should be the fully 
+     *                           qualified file name
      */
 
     public Retriever( String data_source_name )
