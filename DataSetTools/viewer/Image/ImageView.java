@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2002/06/17 22:09:09  dennis
+ *  When the image is "zoomed", the graph is now redrawn using the
+ *  same x interval as the image.  Also, the x interval for the
+ *  graph is no longer reset when the y-scale slider is adjusted.
+ *
  *  Revision 1.29  2002/05/30 22:57:16  chatterjee
  *  Added print feature
  *
@@ -287,14 +292,7 @@ public ImageView( DataSet data_set, ViewerState state )
   if ( !validDataSet() )
     return;
   JMenuBar jmb= getMenuBar();
-  /*JMenu  jm = jmb.getMenu( DataSetTools.viewer.DataSetViewer.FILE_MENU_ID );
-  JMenuItem jmi= new JMenuItem("Print");
-  int nitems= jm.getItemCount();
-  if( nitems < 0) nitems= 0;
-  jm.add(jmi, nitems );
-  jmi.addActionListener(new myActionListener(this));
-  */
-  DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( jmb, this);
+  DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( jmb, this );
   init();
   MakeImage( false );
   getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(), data_set );
@@ -303,19 +301,6 @@ public ImageView( DataSet data_set, ViewerState state )
   UpdateHGraphRange();
 }
 
-class myActionListener implements ActionListener
-  { ImageView iview;
-    public myActionListener( ImageView iview)
-       {this.iview=iview;
-        }
-    public void actionPerformed( ActionEvent evt)
-    {
-   PrintUtilities printHelper = new PrintUtilities(iview);
-//new ViewManager( ds, IViewManager.IMAGE ));
-printHelper.print();
-
-     }
-   }
 
 /* -----------------------------------------------------------------------
  *
@@ -671,7 +656,7 @@ private void MakeImage( boolean redraw_flag )
       delta_x = (x_max - x_min) / (num_cols -1);
     else
       delta_x = 0;
-    bounds = new CoordBounds( x_min-delta_x/2, 0, x_max+delta_x/2, num_rows-1 );  
+    bounds = new CoordBounds( x_min-delta_x/2, 0, x_max+delta_x/2, num_rows-1 ); 
   }
 
   image_Jpanel.initializeWorldCoords( bounds );
@@ -1111,6 +1096,7 @@ private void DrawHGraph( int index, int graph_num, boolean pointed_at )
                           image_bounds.getX2(), graph_bounds.getY2() );
 
   h_graph.initializeWorldCoords( graph_bounds );
+  h_graph.setX_bounds( image_bounds.getX1(), image_bounds.getX2() );
 }
 
 
@@ -1202,8 +1188,8 @@ private Point ProcessImageMouseEvent( MouseEvent e,
     if ( value == 0 )
     {
       h_graph.autoY_bounds();
-      TitledBorder border = new TitledBorder(LineBorder.createBlackLineBorder(),
-                         "Auto-Scale" );
+      TitledBorder border = 
+           new TitledBorder(LineBorder.createBlackLineBorder(), "Auto-Scale");
       border.setTitleFont( FontUtil.BORDER_FONT );
       hgraph_scale_slider.setBorder( border );
     }
@@ -1273,6 +1259,7 @@ private class ImageZoomMouseHandler extends    MouseAdapter
       MakeSelectionImage( true );
       getState().setZoomRegion( image_Jpanel.getGlobalWorldCoords(),
                                 getDataSet()  );
+      DrawSelectedHGraphs();
     }
   }
 
@@ -1281,6 +1268,7 @@ private class ImageZoomMouseHandler extends    MouseAdapter
     MakeSelectionImage( true );
     getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(),
                               getDataSet()  );
+    DrawSelectedHGraphs();
   }
 }
 
