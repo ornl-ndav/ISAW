@@ -5,6 +5,7 @@
 
 # Date: 2004/11/10 16:03:04 
 
+$Category=Macros, Instrument Type, TOF_NPD
 
 $run_numbers		Array([25727:25728])          		Enter run numbers like [21378]
 $path                	DataDirectoryString(/IPNShome/gppduser)	Inputname
