@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/06/10 20:19:31  dennis
+ *  Added getI(x) and getX(i) methods to get individual points and positions
+ *  of individual points in the list.
+ *
  *  Revision 1.5  2001/04/25 19:04:13  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -52,6 +56,7 @@
 
 package DataSetTools.dataset;
 import java.io.*;
+import java.util.*;
 import DataSetTools.util.*;
 
 /**
@@ -113,6 +118,48 @@ public class VariableXScale extends XScale implements Serializable
     System.arraycopy( x, 0, copy, 0, x.length );
     return( copy );
   }
+
+
+  /**
+   *  Get the ith x-value from this XScale.
+   *
+   *  @param  i    The position of the x-value that is needed.  This should be
+   *               between 0 and the number_of_x_values - 1.
+   *
+   *  @return The x value in position i in the "list" of x-values for this
+   *          x scale.  If there is no such x value, this will return Float.NaN.   */
+  public float getX( int i )
+  {
+    if ( i < 0 || i >= num_x )
+      return Float.NaN;
+
+    return x[i];
+  }
+
+
+  /**
+   *  Get the position of the specified x-value in this XScale.
+   *
+   *  @param  x_value   The x value to find in the "list" of x values 
+   *                    represented by this x scale.
+   *
+   *  @return The position "i" in the list of x-values, where the specified
+   *          x occurs, if it is in the list.  If the specified x is less
+   *          than or equal to the last x in the "list", this function returns
+   *          the index of the first x that is greater than or equal to the
+   *          specified x.  If the specified x value is above the end of
+   *          the x scale, the number of points in the x scale is returned.
+   */
+  public int getI( float x_value )
+  {
+    int position = Arrays.binarySearch( x, x_value );
+    if ( position < 0 )
+      position = -( position + 1 );
+
+    return position;
+  }
+
+
 
   /**
    *  Constructs a new VariableXScale that extends over the smallest interval
@@ -248,6 +295,15 @@ public class VariableXScale extends XScale implements Serializable
     float x[] = extended.getXs();
     for ( int i = 0; i < x.length; i++ )
       System.out.println( x[i] );
+
+    System.out.println("Position of 0    " + extended.getI( 0.0f ) ); 
+    System.out.println("Position of 8    " + extended.getI( 8.0f ) ); 
+    System.out.println("Position of 9    " + extended.getI( 9.0f ) ); 
+    System.out.println("Position of 9.5  " + extended.getI( 9.5f ) ); 
+    System.out.println("Position of 9.75 " + extended.getI( 9.75f ) ); 
+    System.out.println("Position of 10   " + extended.getI( 10.0f ) ); 
+    System.out.println("Position of 12.5 " + extended.getI( 12.5f ) ); 
+    System.out.println("Position of 130  " + extended.getI( 130.0f ) ); 
   }
 
 
