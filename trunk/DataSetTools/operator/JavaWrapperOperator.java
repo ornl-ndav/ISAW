@@ -32,6 +32,12 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.6  2004/02/01 01:18:02  bouzekc
+ * Changed the algorithm that determined category name.  It now looks at the
+ * package name of the Wrappable Object and breaks it down, removing any
+ * starting "DataSetTools" and replacing "Operators" with "operator.Generic".
+ * This should now allow correct location of any Wrappable within the menus.
+ *
  * Revision 1.5  2004/01/30 02:10:38  bouzekc
  * Now handles Fields and values that represent primitive array type
  * initializations (e.g. int num[] = {4,3}) as well as regular
@@ -74,6 +80,11 @@ import java.util.*;
  * Operators.
  */
 public class JavaWrapperOperator extends GenericOperator {
+  //~ Static fields/initializers ***********************************************
+
+  private static String DS_OP  = "DataSetTools";
+  private static String BIG_OP = "Operators";
+
   //~ Instance fields **********************************************************
 
   private Field[] fieldParams;
@@ -131,16 +142,19 @@ public class JavaWrapperOperator extends GenericOperator {
           //BooleanPG
           if( ( type == Boolean.TYPE ) || ( type == Boolean.class ) ) {
             addParameter( new BooleanPG( name, val ) );
+
             //FloatPG
           } else if( 
             ( type == Float.TYPE ) || ( type == Double.TYPE ) ||
               ( type == Float.class ) || ( type == Double.class ) ) {
             addParameter( new FloatPG( name, val ) );
+
             //IntegerPG
           } else if( 
             ( type == Integer.TYPE ) || ( type == Long.TYPE ) ||
               ( type == Integer.class ) || ( type == Long.class ) ) {
             addParameter( new IntegerPG( name, val ) );
+
             //StringPG
           } else if( ( type == Character.TYPE ) || ( type == String.class ) ) {
             addParameter( new StringPG( name, null ) );
@@ -196,20 +210,21 @@ public class JavaWrapperOperator extends GenericOperator {
         values[i] = ( ( ParameterGUI )parameters.get( i ) ).getValue(  );
       }
 
-      for( int k = 0; k < fieldParams.length; k++ ) {       
+      for( int k = 0; k < fieldParams.length; k++ ) {
         if( fieldParams[k].getType(  ).isArray(  ) ) {
           //this means that we have hit an ArrayPG
           //make sure we can go through the vector
-          if( values[k] instanceof Vector) {
+          if( values[k] instanceof Vector ) {
             Vector myVect = ( Vector )values[k];
-            
+
             //iterate through the vector of values and set each of the field
             //param's values to the element value
             for( int m = 0; m < myVect.size(  ); m++ ) {
               Array.set( fieldParams[k].get( wrapped ), 1, myVect.get( m ) );
             }
           }
-         // fieldParams[k].set( wrapped, values[k] );
+
+          // fieldParams[k].set( wrapped, values[k] );
         } else {
           fieldParams[k].set( wrapped, values[k] );
         }
@@ -240,9 +255,13 @@ public class JavaWrapperOperator extends GenericOperator {
    * Testbed.
    */
   public static void main( String[] args ) {
-    Operators.WrappedCrunch crunch = new Operators.WrappedCrunch(  );
+    //DataSetTools.operator.Generic.Special.getDateTime op = 
+    //new DataSetTools.operator.Generic.Special.getDateTime(  );
+    Operators.WrappedCrunch op = new Operators.WrappedCrunch(  );
+
     //Operators.MyFortran crunch = new Operators.MyFortran(  );
-    JavaWrapperOperator wrapper    = new JavaWrapperOperator( crunch );
+    JavaWrapperOperator wrapper = new JavaWrapperOperator( op );
+
     /*DataSet temp                   = new DataSetTools.retriever.RunfileRetriever(
        "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
        new DataSetTools.viewer.ViewManager(
@@ -278,28 +297,44 @@ public class JavaWrapperOperator extends GenericOperator {
       return null;
     }
 
-    // determine the correct abstract class
-    Class wrappedKlass = wrapped.getClass(  );
-    Class wrapperKlass = this.getClass(  );
+    String category = this.wrapped.getClass(  ).getPackage(  ).getName(  );
 
-    while( !Operator.isAbstract( wrapperKlass ) ) {
-      wrapperKlass = wrapperKlass.getSuperclass(  );
-    }
+    if( category.startsWith( DS_OP ) ) {
+      //we don't need the DataSetTools part of the package name
+      category = category.substring( DS_OP.length(  ), category.length(  ) );
 
-    // get the category name and shorten it
-    String category = wrapperKlass.getPackage(  ).getName(  );
-    category = category.substring( 
-        category.indexOf( "." ) + 1, category.length(  ) );
-
-    String wrappedCat = wrappedKlass.getPackage(  ).getName(  );
-    int dotIndex      = wrappedCat.indexOf( "." );
-
-    if( dotIndex >= 0 ) {
-      wrappedCat   = wrappedCat.substring( dotIndex + 1, wrappedCat.length(  ) );
-      category     = category + "." + wrappedCat;
+      //now remove the "." if it is there
+      if( category.startsWith( "." ) ) {
+        category = category.substring( 1, category.length(  ) );
+      }
+    } else if( category.startsWith( BIG_OP ) ) {
+      //however, we have to catch the oddball fact that "Operators" is not recognized
+      //the same way as "operator" is, i.e. we want "operator.Generic" rather than
+      //"Operators" for the start of the package name 
+      category = category.replaceFirst( BIG_OP, "operator.Generic" );
     }
 
     // split up into an array and return
     return category.split( "\\." );
   }
+
+  /**
+   * Clone method for JavaWrapperOperators.  Works by cloning the Wrappable
+   * inside.
+   */
+
+  /*public Object clone(){
+     try{
+       Constructor konstruktor = this.getClass(  ).getConstructor( new Class[]{Wrappable.class} );
+  
+       //Wrappable newWrapped = ( Wrappable )konstruktor.newInstance( new Object[]{this.wrapped} );
+       JavaWrapperOperator op =
+       ( JavaWrapperOperator )konstruktor.newInstance( new Object[]{this.wrapped.getClass().newInstance() } );
+       op.CopyParametersFrom(this);
+       return op;
+     }catch(Exception e){
+       SharedData.addmsg( "Unable to clone " + this.getClass(  ) + "." );
+       return null;
+     }
+     }*/
 }
