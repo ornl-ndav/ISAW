@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.13  2003/07/02 15:37:38  bouzekc
+ * No longer implements Serializable.
+ *
  * Revision 1.12  2003/07/02 15:35:32  bouzekc
  * Fixed javadoc error.
  *
@@ -71,7 +74,7 @@ import javax.swing.border.*;
  * many of the methods.  In addition, an OperatorForm has the advantage of
  * automated parameter linking, so it can "return" more than one value.
  */
-public class OperatorForm extends Form implements Serializable, HiddenOperator {
+public class OperatorForm extends Form implements HiddenOperator {
   private static ParameterClassList PL = null;
   protected Operator form_op;
   protected IParameterGUI result_param;
