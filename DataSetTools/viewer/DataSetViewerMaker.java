@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/07/02 19:17:31  serumb
+ *  Added code to get the menu items from the view component.
+ *
  *  Revision 1.16  2004/04/16 20:30:17  millermi
  *  - DataSetData no longer used as a parameter, now used to
  *    convert DataSets to IVirtualArrayList1D objects.
@@ -86,6 +89,7 @@ package DataSetTools.viewer;
 import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.ViewTools.Components.OneD.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.*;
+import gov.anl.ipns.ViewTools.Components.Menu.*;
 import gov.anl.ipns.ViewTools.UI.*;
 
 import javax.swing.*;
@@ -125,7 +129,12 @@ public class DataSetViewerMaker  extends DataSetViewer
       ViewControl[] Compcontrols = viewComp.getControls();
       if( Compcontrols != null)
         for( int i=0; i< Compcontrols.length; i++)
-          East.add( Compcontrols[i]);    
+          East.add( Compcontrols[i]);   
+
+      ViewMenuItem[] Comp_menuItems = viewComp.getMenuItems();
+      if( Comp_menuItems != null)
+        for( int i=0; i< Comp_menuItems.length; i++)
+          (getMenuBar().getMenu(3)).add( Comp_menuItems[i].getItem()); 
       
       PrintComponentActionListener.setUpMenuItem( getMenuBar(), this);
       SaveImageActionListener.setUpMenuItem( getMenuBar(), this);
@@ -133,7 +142,7 @@ public class DataSetViewerMaker  extends DataSetViewer
       setLayout( new GridLayout( 1,1));
       SplitPaneWithState the_pane =
        new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
-          viewComp.getDisplayPanel(), East, .70f);
+          viewComp.getDisplayPanel(), East, 1.00f);
       the_pane.addAncestorListener( new ancestor_listener());
       add(the_pane);
       invalidate();
