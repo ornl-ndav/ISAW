@@ -1,8 +1,10 @@
 /*
  * @(#)DataSetFactory.java     0.1  99/06/07  Dennis Mikkelson
  *
- * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.7  2000/08/03 15:49:36  dennis
+ *  Added ResampleDataSet() and ConvertHistogramToFunction() operators
+ *
  *  Revision 1.6  2000/08/03 03:16:32  dennis
  *  Added ResampleDataSet() operator
  *
@@ -30,7 +32,6 @@
  *
  *  Revision 1.15  2000/05/11 16:00:45  dennis
  *  Added RCS logging
- *
  *
  */
 
@@ -192,8 +193,9 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new DeleteCurrentlySelected() );
     new_ds.addOperator( new SumCurrentlySelected() );
 
-    new_ds.addOperator( new ResampleDataSet() );
     new_ds.addOperator( new DataSetMerge() );
+    new_ds.addOperator( new ResampleDataSet() );
+    new_ds.addOperator( new ConvertHistogramToFunction() );
 
     new_ds.addOperator( new GetDataAttribute() );
     new_ds.addOperator( new SetDataAttribute() );
