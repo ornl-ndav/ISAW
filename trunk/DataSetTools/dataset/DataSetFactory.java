@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.6  2000/08/03 03:16:32  dennis
+ *  Added ResampleDataSet() operator
+ *
  *  Revision 1.5  2000/07/17 20:59:02  dennis
  *  Added SetDSDataAttributes() operator
  *
@@ -189,6 +192,7 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new DeleteCurrentlySelected() );
     new_ds.addOperator( new SumCurrentlySelected() );
 
+    new_ds.addOperator( new ResampleDataSet() );
     new_ds.addOperator( new DataSetMerge() );
 
     new_ds.addOperator( new GetDataAttribute() );
