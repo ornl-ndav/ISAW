@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2004/05/03 16:27:55  dennis
+ * Removed one unused local variable.
+ *
  * Revision 1.16  2004/03/15 06:10:54  dennis
  * Removed unused import statements.
  *
@@ -1310,7 +1313,6 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
 
    private void handle_event( MouseEvent e )
    {
-     Point pt = e.getPoint();
      int index = vec_Q_space.pickID( e.getX(), e.getY(), 5 );
      if ( index != last_index )
      {
