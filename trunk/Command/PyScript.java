@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/06/13 20:05:57  pfpeterson
+ * Added a comment.
+ *
  * Revision 1.2  2003/06/13 16:27:14  pfpeterson
  * Error conversion switches from one index to zero indexed.
  *
@@ -60,6 +63,7 @@ public class PyScript extends Script{
     super(doc);
   }
 
+  // ============================== PUBLIC UTILITY METHODS
   public boolean reload(){
     this.valid=null;
     return super.reload();
