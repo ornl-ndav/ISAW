@@ -1,9 +1,13 @@
-package  OverplotView;
+package  DataSetTools.viewer.OverplotView;
 
 /*
  * $Id$
  * ----------
  * $Log$
+ * Revision 1.1  2002/07/18 22:06:19  dennis
+ * Moved separate OverplotView hiearchy into DataSetTools/viewer
+ * hierarchy.
+ *
  * Revision 1.1  2001/06/29 16:28:17  neffk
  * attribute for storing color information in AttributeList objects
  *
