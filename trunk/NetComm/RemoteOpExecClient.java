@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/05/07 17:45:57  dennis
+ *  Changed test program to use Hello operator from
+ *  Operators/Example instead of from Operators
+ *
  *  Revision 1.4  2004/03/15 06:10:58  dennis
  *  Removed unused import statements.
  *
@@ -53,6 +57,7 @@ import DataSetTools.operator.*;
 import DataSetTools.viewer.*;
 import DataSetTools.operator.Generic.Load.*;
 import Operators.*;
+import Operators.Example.*;
 
 /**
  *  This class provides access to a RemoteOpExecServer.  The client must 
