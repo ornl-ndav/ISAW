@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.79  2002/02/15 20:30:37  pfpeterson
+ *  Fixed the file filter in the "Save As" JFileChooser.
+ *
  *  Revision 1.78  2002/02/14 22:43:48  pfpeterson
  *  Added "Glossary" and "API Documentation" to the help menus. This requires the
  *  docs.jar to be unpacked and Glossary.html to work properly.
@@ -1188,6 +1191,7 @@ public class Isaw
                filename =System.getProperty("user.home");
             fc.setCurrentDirectory(  new File( filename )  );
             fc.setMultiSelectionEnabled( false );
+	    fc.resetChoosableFileFilters();
             fc.addChoosableFileFilter(  new NeutronDataFileFilter( true )  ); 
             fc.addChoosableFileFilter(  new NexIO.NexusfileFilter()  );
            // fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
