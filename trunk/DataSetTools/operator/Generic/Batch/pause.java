@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/03/27 22:25:28  pfpeterson
+ * Prints message to StatusPane and returns an ErrorString if interrupted.
+ *
  * Revision 1.4  2003/02/03 18:15:22  dennis
  * Added getDocumentation() method and java docs on getResult().
  * (Shannon Hintzman).
@@ -53,6 +56,8 @@ import  DataSetTools.operator.Operator;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.Generic.Batch.GenericBatch;
 import  DataSetTools.parameter.*;
+import  DataSetTools.util.ErrorString;
+import  DataSetTools.util.SharedData;
 
 /**
  * This operator pauses the program.
@@ -137,25 +142,19 @@ public class pause extends  GenericBatch
   public Object getResult()
   {
     int   ms  =( (Integer)(getParameter(0).getValue()) ).intValue() ;
-    System.out.print("Pause for "+(ms) +" milli-second! Please wait...\n ");
+    SharedData.addmsg("Pause for "+(ms) +" milli-second! Please wait...\n ");
 
-    do_pause(ms);
+    try{
+      Thread.sleep(ms);
+    }
+    catch(InterruptedException e)
+    { 
+      return new ErrorString("InterruptedException in do_pause from pause "
+                        +"operator"); 
+    }
 
     return "Pause for "+ms+" milli-seconds";
   }  
-
-  /* ---------------------------- do_pause ------------------------------- */
-  public static void do_pause(int time)
-  { 
-    try
-    { 
-      Thread.sleep(time); 
-    }
-    catch(Exception e)
-    { 
-      System.out.println("Exception in do_pause from pause operator"); 
-    }
-  }
 
   /* ------------------------------ main --------------------------------- */
   public static void main(String[] arg)
