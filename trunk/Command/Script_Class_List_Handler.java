@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.29  2002/08/15 18:53:41  pfpeterson
+ * More code cleanup and added functionality for extracting
+ * operators that are in a jar and removed all dependency on DataSetTools.operator.GenericOperatorList.
+ *
  * Revision 1.28  2002/08/13 16:29:13  pfpeterson
  * Reformatted the file to make it easier to read.
  *
@@ -141,6 +145,7 @@ package Command;
 import Command.*;
 import java.io.*;
 import java.util.*;
+import java.util.zip.*;
 import java.lang.*;
 import DataSetTools.util.*;
 import DataSetTools.operator.*;
@@ -161,7 +166,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     private static int Command_Compare =257;
     private static int File_Compare = 322;
     private static boolean first = true;
-    public static boolean LoadDebug = false;
+    public  static boolean LoadDebug = false;
     private final int MIN_DIR_NAME__LENGTH=3;
 
     /**
@@ -209,9 +214,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                             i=PathList.indexOf( PrevPath, i+PrevPath.length() );
                         }        
                     }      
-                    if( i < 0 ){
-                        return null;
-                    }
+                    if( i < 0 ) return null;
 
                     i = i + PrevPath.length() +1;
                     if( i >= PathList.length()) return null;
@@ -292,17 +295,19 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             System.out.println("No Name");
             return null;
         }
-    
-        filename = filename.replace('\\' , '/' );
+        // fix up the filename
+        filename = FilenameUtil.fixSeparator(filename);
+
+        // get the pathlist
         String pathlist = System.getProperty("java.class.path");
-        pathlist=pathlist.replace('\\','/');
-        pathlist=pathlist.replace(java.io.File.pathSeparatorChar,';');
+        pathlist=FilenameUtil.fixSeparator(pathlist);
+        pathlist=pathlist.replace(File.pathSeparatorChar,';');
+
+        // get the location of ISAW
         String ScrPath=System.getProperty("ISAW_HOME");
         if(ScrPath!=null){
-            ScrPath=ScrPath.replace('\\','/');
-            if(ScrPath.lastIndexOf('/')<ScrPath.length()){
-                ScrPath=ScrPath+"/";
-            }
+            ScrPath=ScrPath+"/";
+            ScrPath=FilenameUtil.fixSeparator(ScrPath);
             if(pathlist.indexOf(ScrPath+"Isaw.jar;")>=0){
                 if(pathlist.indexOf(ScrPath+";")>=0){
                     // do nothing
@@ -311,6 +316,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                 }
             }
         }
+
+        // find where the last '/' is in the filename
         int i = filename.lastIndexOf('/' );
         if( i < 0 ){
             if( LoadDebug){
@@ -318,65 +325,88 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             }
             return null;
         }
+
+        // the path of the file (everything except the classname)
         String CPath = filename.substring( 0 , i ).trim();
+        // the name of the class is between CPath and '.class'
         String classname = filename.substring( i + 1 , filename.length()-6); 
-        
+        // CPathFix starts out as CPath
         String CPathFix=CPath;
         
-        if( CPath == null ){
-            if( LoadDebug ){
-                System.out.println("No Name");
-            }
-            return null;
-        }
-        if( CPath.length() <= 0 ){
-            if( LoadDebug ){
-                System.out.println("No Name");
-            }
+        // if CPath is null or empty then give up
+        if( (CPath == null) || (CPath.length()<=0) ){
+            if( LoadDebug ) System.out.println("No Name");
             return null;
         }
         
-        for( path = getNextPath( pathlist, null ) ; path != null;
-             path = getNextPath( pathlist, path )){
-            String Path1=path.trim();
-            
-            if( Path1 != null ){
-                if( Path1.length() > 0 ){
-                    if( Path1.lastIndexOf('/') == Path1.length()-1)
-                        Path1=Path1.substring(0,Path1.lastIndexOf('/' )).trim();
-                    if( Path1 !=null ){
-                        if( Path1.length() > 0 ){
-                            // do nothing
-			}
-                    }
-                }
-            }
-            
-            if( CPath.indexOf(Path1 ) == 0 ){
-                CPathFix = CPath.substring( Path1.length()+1);
-                CPathFix =CPathFix.replace('/','.');
-                CPath=CPathFix+"."+classname;
+        
+        GenericOperator XX=null;
+        if( CPath.startsWith("/") || CPath.indexOf(":")>=0 ){
+            // go through the classpath to shorten the classname appropriately
+            for( path = getNextPath( pathlist, null ) ; path != null;
+                 path = getNextPath( pathlist, path )){
+                String Path1=path.trim();
                 
-                try{
-                    Class C = Class.forName( CPath );
-                    Object XX = C.newInstance();
-                    if( XX instanceof GenericOperator){
-                        return (Operator)XX;
-                    }            
-                    if( LoadDebug){
-                        System.out.println("NO: Not Generic OP");
-                    }
-                }catch(Exception s){
-                    if( LoadDebug ){
-                        System.out.println("NO-"+s);
+                if( Path1 != null ){
+                    if( Path1.length() > 0 ){
+                        int lastindex=Path1.lastIndexOf('/');
+                        if( lastindex == Path1.length()-1){
+                            Path1=Path1.substring(0,lastindex).trim();
+                        }
                     }
                 }
                 
+                // if Path1 starts CPath then take it out of CPath
+                if( CPath.indexOf(Path1 ) == 0 ){
+                    CPathFix = CPath.substring( Path1.length()+1);
+                    CPathFix =CPathFix.replace('/','.');
+                    CPath=CPathFix+"."+classname;
+                    
+                    try{
+                        XX=getGenOperator(CPath);
+                    }catch(ClassNotFoundException e){
+                        if(LoadDebug) System.out.print("(ClassNotFound:"
+                                                       +e.getMessage()+") ");
+                        return null;
+                    }catch(InstantiationException e){
+                        if(LoadDebug) System.out.print("(Cannot Instantiate) ");
+                        return null;
+                    }catch(IllegalAccessException e){
+                        if(LoadDebug) System.out.print("(IllegalAccess:"
+                                                       +e.getMessage()+") ");
+                        return null;
+                    }
+                    if( XX == null){
+                        return null;
+                    }else{
+                        return XX;
+                    }
+                }
             }
-            
-        }//Check each classpath for match
-        if( LoadDebug ) System.out.print(" (not in classpath) ");
-        return null;
+            // must not be anywhere in the classpath
+            if( LoadDebug ) System.out.print(" (not in classpath) ");
+            return null;
+        }else{
+            // try getting an instance of the operator without shortening
+            // the name...this picks up classes in a jar file
+            try{
+                XX=getGenOperator(CPath.replace('/','.')+"."+classname);
+            }catch(ClassNotFoundException e){
+                if(LoadDebug) System.out.print("(ClassNotFound:"
+                                               +e.getMessage()+") ");
+                return null;
+            }catch(InstantiationException e){
+                if(LoadDebug) System.out.print("(Instantiation:"
+                                               +e.getMessage()+") ");
+                return null;
+            }catch(IllegalAccessException e){
+                if(LoadDebug) System.out.print("(IllegalAccess:"
+                                               +e.getMessage()+") ");
+                return null;
+            }
+            return XX; // whatever it is return it
+        }
+        
     }
 
     /**
@@ -500,10 +530,11 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      */
     private void inittt(){  
         if( !first) return;
-        for( int i = 0 ; i < GenericOperatorList.getNum_operators(); i++){
-            Operator op = GenericOperatorList.getOperator( i );
-            if( op instanceof GenericOperator) add( op );
-        }
+        processIsaw();
+        /*for( int i = 0 ; i < GenericOperatorList.getNum_operators(); i++){
+          Operator op = GenericOperatorList.getOperator( i );
+          if( op instanceof GenericOperator) add( op );
+          }*/
         first = false;  
         toggleDebug(); 
         
@@ -549,8 +580,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                 // shorten some other lines in the inner for loop
                 String ith=(String)includeVec.elementAt(i);
                 String jth=(String)includeVec.elementAt(j);
-                // check that j does not start with i
-                if( jth.indexOf(ith)==0 ){
+                // check that i and j are unique
+                if(ith.equals(jth)){
                     //System.out.println("REMOVING("+i+","+j+")"+jth);
                     includeVec.remove(j);
                     j--;
@@ -558,11 +589,11 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             }
         }
         
-        /* System.out.println("********************");
-           for( int i=0 ; i<includeVec.size() ; i++ ){
-           System.out.println("* "+i+":"+includeVec.elementAt(i));
-           }
-           System.out.println("********************"); */
+        /*System.out.println("********************");
+          for( int i=0 ; i<includeVec.size() ; i++ ){
+          System.out.println("* "+i+":"+includeVec.elementAt(i));
+          }
+          System.out.println("********************");*/
         
         for( int i=0 ; i<includeVec.size() ; i++ ){
             processPaths((String)includeVec.elementAt(i));
@@ -592,7 +623,9 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             if( dir!=null && dir.length()>0 ){
                 dir=standardizeDir(dir);
                 //System.out.println(dir);
-                if(existDir(dir)){
+                if(isJar(dir)){
+                    include.add(dir.substring(0,dir.length()-1));
+                }else if(existDir(dir)){
                     if(existDir(dir+"Operators")){
                         //System.out.println(dir+"Operators");
                         include.add(dir+"Operators");
@@ -610,13 +643,27 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     private String standardizeDir( String dir ){
         // remove whitespace from the name
         dir.trim();
-        // switch \ to /
-        dir=dir.replace('\\','/');
-        // put a / at the end if it is not there already
-        if( !(dir.charAt(dir.length()-1) == '/') ){
-            dir=dir+'/';
-        }
+        // add a '/' at the end (fixSeparator will remove redundancies)
+        dir=dir+'/';
+        // switch '\' to '/' and remove any extra of either
+        dir=FilenameUtil.fixSeparator(dir);
+
         return dir;
+    }
+
+    private boolean isJar( String file ){
+        // the filename must be at least a certain length long
+        if(file.length()<=MIN_DIR_NAME__LENGTH) return false;
+        if(file.endsWith("/")){      // chop off the trailing '/'
+            file=file.substring(0,file.length()-1);
+        }
+        // it better end with .jar to be a jar file
+        if(! file.endsWith(".jar")) return false;
+
+        // now two tests that depend on it really being a file
+        File f=new File(file);
+        if(! f.exists() ) return false;
+        return f.isFile();
     }
 
     private boolean existDir( String dir ){
@@ -627,23 +674,86 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return Dir.isDirectory();
     }
 
+    private void processIsaw(){
+        String  className  = null;
+        String  classFile  = null;
+        boolean injar      = false;
+        Vector  classnames = new Vector();
+
+        className='/'+this.getClass().getName().replace('.','/')+".class";
+        classFile=this.getClass().getResource(className).toString();
+        if( (classFile!=null) && (classFile.startsWith("jar:")) ) injar=true;
+        // the start is to remove the jar or file
+        // the end is to remove the classname
+        classFile=classFile.substring(5,classFile.indexOf(className));
+        // then change the separator to forward slash (should be already)
+        classFile=FilenameUtil.fixSeparator(classFile);
+
+        if(injar){ // we are working from a jar file
+            // remove a little bit more from classFile
+            classFile=classFile.substring(4,classFile.length()-1);
+            if( LoadDebug) System.out.println("----PATH="+classFile);
+            ProcessJar(classFile,opList);
+        }else{     // isaw is unpacked
+            File opDir=new File(classFile+"/DataSetTools/operator/Generic");
+            if(opDir.exists() && opDir.isDirectory()){
+                if( LoadDebug) System.out.println("----PATH="+classFile+"/DataSetTools/operator/Generic");
+                ProcessDirectory(opDir,opList);
+            }
+        }
+    }
+
     private void processPaths( String ScrPaths){
         ScrPaths.trim();
         if( LoadDebug) System.out.println("----PATH="+ScrPaths);
 
-        ScrPaths=ScrPaths.replace(java.io.File.pathSeparatorChar,';'); 
+        ScrPaths=ScrPaths.replace(File.pathSeparatorChar,';'); 
         if( ScrPaths.lastIndexOf(';') != ';')
             ScrPaths = ScrPaths+";";
         
         
         for( String Path = getNextPath( ScrPaths , null );
                           Path != null; Path = getNextPath( ScrPaths , Path ) ){
-   
-            File Dir = new File( Path) ;
-            if( Dir.isDirectory() )ProcessDirectory( Dir ,opList);
+            if(isJar(Path)){
+                ProcessJar(Path, opList);
+            }else{
+                File Dir = new File( Path) ;
+                if( Dir.isDirectory() ){
+                    ProcessDirectory( Dir ,opList);
+                }else{
+                    // do something
+                }
+            }
         }
         
         return;
+    }
+
+    private void ProcessJar( String jarname, Vector opList ){
+        ZipFile zf=null;
+        try{
+            zf=new ZipFile(jarname);
+        }catch(IOException e){
+            return; // something wrong, just exit out
+        }
+        Enumeration entries=zf.entries();
+        ZipEntry entry=null;
+        String name=null;
+        String matchname="Operators";
+        if(jarname.endsWith("Isaw.jar")){
+            matchname=
+                FilenameUtil.fixSeparator("DataSetTools/operator/Generic/");
+        }
+
+        // go through the entries
+        while(entries.hasMoreElements()){
+            entry=(ZipEntry)entries.nextElement();
+            name=FilenameUtil.fixSeparator(entry.getName());
+            if( (name.indexOf(matchname)>=0) && (name.endsWith(".class")) ){
+                //System.out.println("ENTRY:"+name);
+                add(name,opList);
+            }
+        }
     }
 
     private  void ProcessDirectory( File Dir, Vector opList ){
@@ -673,7 +783,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             return false;
         String ext = nm.substring( i + 1).toUpperCase();
 
-        if( ext.equals("ISS") || ext.equals("CLASS") ){
+        //System.out.println(ext);
+        if( ext.equals("ISS") || ext.equals("CLASS") || ext.equals("JAR")){
             return true;
         }else{
             return false;
@@ -683,17 +794,16 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     private  void add( String filename , Vector opList){
         int i;
         
-        if(filename == null )
-            return;
-        if( LoadDebug)
-            System.out.print( "Processing "+filename+":");
+        // only deal with real filenames
+        if(filename == null ) return;
+        if( LoadDebug) System.out.print( "Processing "+filename+":");
 
         i = filename.lastIndexOf('.');
-        if( i< 0 )
-            return;
+        // give up if there is not a '.' near the end of the name (for class)
+        if( i< 0 ) return;
 
         String Extension = filename.substring( i + 1 );
-        if( Extension.equalsIgnoreCase("iss")){
+        if( Extension.equalsIgnoreCase("iss")){ // it is a script
             ScriptOperator X = new ScriptOperator( filename );
             if(X.getErrorMessage().length()<=0){
                 add( X );
@@ -702,16 +812,16 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             }else if( LoadDebug ){
                 System.out.println( "NO "+X.getErrorMessage() );
             }
-        }else{
+        }else if(Extension.equalsIgnoreCase("class")){ // it is a class
             Operator X = getClassInst( filename );
             if( X != null ){
-                if(LoadDebug)
-                    System.out.println( "OK" );
+                if(LoadDebug) System.out.println( "OK" );
                 add( X );
             }else{
-                if(LoadDebug)
-                    System.out.println( "NO ");
+                if(LoadDebug) System.out.println( "NO ");
             }
+        }else{
+            return;
         }
     }
 
@@ -828,6 +938,48 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return X;
    }
 
+    /**
+     * Method to get an instance of the operator if possible. The
+     * method checks for NoClassDefFoundError (see java docs) and
+     * removes parts of the packagename (from the beginning) until
+     * either nothing is left or the class is found.
+     *
+     * @param classname the package qualified name of the class.
+     *
+     * @return A generic operator or null.
+     *
+     * @throws ClassNotFoundException
+     * @throws InstatiationException
+     * @throws IllegalAccessException
+     */
+    private GenericOperator getGenOperator( String classname ) throws
+     ClassNotFoundException, InstantiationException, IllegalAccessException{
+        // make sure we have something to get
+        if(classname==null) return null;
+
+        while(classname.length()>0){
+            try{
+                Class C = Class.forName( classname );
+                Object XX = C.newInstance();
+                if( XX instanceof GenericOperator){
+                    return (GenericOperator)XX;
+                }else{
+                    if(LoadDebug) System.out.print("(Not Generic OP) ");
+                    return null;
+                }
+            }catch(NoClassDefFoundError e){
+                // the package name and the classname do not agree,
+                // trim off the first part of the package and try
+                // again
+                int index=classname.indexOf(".");
+                if(index>0)
+                    classname=classname.substring(index+1,classname.length());
+            }
+        }
+        // nothing works, just return null
+        return null;
+    }
+
     private int CommandListIndex(int index){
         if( (index<0) || (index>=SortOnCommand.size()) ) return -1;
 
@@ -847,7 +999,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                 S = S + c;
                 c = (char)System.in.read();
             }
-        }catch(Exception s){
+        }catch(IOException e){
             // let it drop on the floor
         }
         //System.out.println("getString="+S);
