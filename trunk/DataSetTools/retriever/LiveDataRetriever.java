@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2001/08/07 21:35:33  dennis
+ *  Now sends commands and returns error codes that are consistent
+ *  with the RemoteFileRetriever.
+ *
  *  Revision 1.12  2001/08/03 21:41:03  dennis
  *  Now extends RemoteDataRetriever, which provides basic communication to
  *  the server.
@@ -134,18 +138,25 @@ public class LiveDataRetriever extends    RemoteDataRetriever
  *  @return the number of distinct DataSets in this runfile.
  */  
   public int numDataSets()
-  { 
-    Object obj = getObjectFromServer( LiveDataServer.COMMAND_GET_NUM_DS );
+  {
+              // include file_name for compatibilty with RemoteFileRetriever
 
-    if ( obj != null && obj instanceof Integer )
+    Object obj = getObjectFromServer( DataSetServer.COMMAND_GET_DS_TYPES +
+                                      file_name );
+
+    if ( obj != null && obj instanceof int[] )
     {
-      int num = ((Integer)obj).intValue();
-      if ( num >= 0 )
-        return num;
+      int types[] = (int[])obj;
+      return types.length; 
     }
 
-    return 0;                                   // somethings wrong, so no
-                                                // DataSets are available
+    if ( server_alive && user_pass_ok )
+      return WRONG_SERVER_TYPE;
+
+    if ( server_alive )
+      return BAD_USER_OR_PASSWORD;
+
+    return SERVER_DOWN;
   }
 
 /* ------------------------------ getType ------------------------------- */
@@ -162,17 +173,27 @@ public class LiveDataRetriever extends    RemoteDataRetriever
 
   public int getType( int data_set_num )
   {
-    Object obj = getObjectFromServer( LiveDataServer.COMMAND_GET_DS_TYPE + 
-                                      data_set_num );
+              // include file_name for compatibilty with RemoteFileRetriever
 
-    if ( obj != null && obj instanceof Integer )
+    Object obj = getObjectFromServer( DataSetServer.COMMAND_GET_DS_TYPES +
+                                      file_name );
+
+    if ( obj != null && obj instanceof int[] )
     {
-      int num = ((Integer)obj).intValue();
-      return num;
+      int types[] = (int[])obj;
+      if ( data_set_num < 0 || data_set_num >= types.length )
+        return Retriever.INVALID_DATA_SET;
+      else
+        return types[data_set_num];
     }
 
-    return Retriever.INVALID_DATA_SET;          // somethings wrong, so 
-                                                // DataSet type is invalid
+    if ( server_alive && user_pass_ok )
+      return WRONG_SERVER_TYPE;
+
+    if ( server_alive )
+      return BAD_USER_OR_PASSWORD;
+
+    return SERVER_DOWN;
   }
 
 
@@ -188,8 +209,10 @@ public class LiveDataRetriever extends    RemoteDataRetriever
  */
   public DataSet getDataSet( int data_set_num )
   {
-    Object obj = getObjectFromServer( 
-                           LiveDataServer.COMMAND_GET_DS + data_set_num );
+    Object obj = getObjectFromServer( DataSetServer.COMMAND_GET_DS +
+                                      file_name + " " +
+                                      data_set_num );
+
     if ( obj != null && obj instanceof DataSet )
     {
       DataSet ds = (DataSet)obj;
