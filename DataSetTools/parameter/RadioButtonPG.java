@@ -33,6 +33,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/07/17 20:25:04  bouzekc
+ *  Separated adding values to the inner choice list from
+ *  adding values to the actual buttons.  Now requires a call
+ *  to init() to actually create the GUI.  Added constructor to
+ *  comply with ParameterClassLists's getInstance() method.
+ *
  *  Revision 1.4  2003/07/17 18:55:59  bouzekc
  *  Single parameter constructor now no longer draws a "valid"
  *  checkbox.  Added a method to add a list of items.
@@ -81,9 +87,11 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
 
   //~ Instance fields **********************************************************
 
+  //the radioButtons and radioChoices are parallel Vectors...they must be added
+  //to simultaneously!!
   private Vector radioButtons;
+  private Vector radioChoices;
   private ButtonGroup radioGroup;
-  private String selectedState;
 
   //~ Constructors *************************************************************
 
@@ -93,8 +101,8 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
    *
    * @param PGname The name of this ParameterGUI
    */
-  public RadioButtonPG( String PGname ) {
-    this( PGname, false );
+  public RadioButtonPG( String PGname, Object newVal ) {
+    this( PGname, newVal, false );
     this.setDrawValid( false );
   }
 
@@ -112,6 +120,24 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     this.type                 = TYPE;
     this.initialized          = false;
     this.ignore_prop_change   = false;
+  }
+
+  /**
+   * Creates a new RadioButtonPG object.
+   *
+   * @param PGname The name of this parameterGUI.
+   * @param choices The Vector of (String) values that this RadioButtonPG
+   *        should have.
+   * @param valid Whether this parameterGUI should be initially valid or not.
+   */
+  public RadioButtonPG( String PGname, Object choices, boolean valid ) {
+    this( PGname, valid );
+
+    if( !( choices instanceof Vector ) ) {
+      radioChoices = new Vector(  );
+    } else {
+      radioChoices = ( Vector )choices;
+    }
   }
 
   //~ Methods ******************************************************************
@@ -151,8 +177,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
       return null;
     }
 
-    return tempVal.toString(  )
-                  .toLowerCase(  );
+    return tempVal.toLowerCase(  );
   }
 
   /**
@@ -185,7 +210,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
    * @return String label of the selected radio button.
    */
   public Object getValue(  ) {
-    return selectedState;
+    return value;
   }
 
   /**
@@ -196,37 +221,39 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
    */
   public void actionPerformed( ActionEvent e ) {
     //System.out.println( "Previous value: " + getValue(  ) );
-    this.selectedState = e.getActionCommand(  );
+    this.value = e.getActionCommand(  );
 
     //System.out.println( "New value: " + getValue(  ) );
     this.setValid( false );
   }
 
   /**
-   * Adds a radio button to the list (and GUI) if and only if it is not already
-   * in the list.
+   * Adds a radio button to the list if and only if it is not already in the
+   * list.  If this RadioButtonPG has been initialized (i.e. the GUI has been
+   * created) then it is also added to the GUI.
+   *
+   * @param buttonName The name of the value to add.
    */
   public void addItem( String buttonName ) {
-    if( !initialized ) {
-      init( null );
-    }
-
-    if( ( radioButtons == null ) || ( radioGroup == null ) ) {
-      radioButtons   = new Vector(  );
-      radioGroup     = new ButtonGroup(  );
+    if( radioChoices == null ) {
+      radioChoices = new Vector(  );
     }
 
     //only add if the button does not exist
     int foundIndex = getButtonIndex( buttonName );
 
     if( foundIndex < 0 ) {
-      //negative number, so it doesn't exist in the list
-      JRadioButton tempButton = new JRadioButton( buttonName );
+      radioChoices.add( buttonName );
 
-      radioButtons.add( tempButton );
-      radioGroup.add( tempButton );
-      entrywidget.add( tempButton );
-      tempButton.addActionListener( this );
+      //negative number, so it doesn't exist in the list
+      if( initialized ) {
+        JRadioButton tempButton = new JRadioButton( buttonName );
+
+        radioButtons.add( tempButton );
+        radioGroup.add( tempButton );
+        entrywidget.add( tempButton );
+        tempButton.addActionListener( this );
+      }
     }
   }
 
@@ -243,14 +270,20 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
 
   /**
    * Allows for initialization of the GUI after instantiation.
+   *
+   * @param init_values The values to initialize the GUI to.
    */
   public void init( Vector init_values ) {
     if( this.initialized ) {
       return;  // don't initialize more than once
     }
 
-    //one column grid
-    entrywidget = new JPanel( new GridLayout( 0, 1 ) );
+    //one column grid.  Also, if we create the GUI stuff before we add items,
+    //we can let addItem take care of adding it to the button group, entry
+    //widget, and Vector of buttons.
+    entrywidget    = new JPanel( new GridLayout( 0, 1 ) );
+    radioButtons   = new Vector(  );
+    radioGroup     = new ButtonGroup(  );
 
     if( init_values != null ) {
       for( int i = 0; i < init_values.size(  ); i++ ) {
@@ -307,11 +340,10 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     boolean found  = false;
     int foundIndex = -1;
 
-    for( int i = 0; i < radioButtons.size(  ); i++ ) {
-      if( 
-        ( ( JRadioButton )radioButtons
-            .elementAt( i ) ).getText(  )
-            .equals( buttonName ) ) {
+    for( int i = 0; i < radioChoices.size(  ); i++ ) {
+      if( radioChoices.elementAt( i )
+                        .toString(  )
+                        .equals( buttonName ) ) {
         found        = true;
         foundIndex   = i;
 
