@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/11/29 17:12:59  rmikk
+ * Improved the javadocs
+ * Changed the port number of memory: to a constant 322
+ *
  * Revision 1.6  2003/05/30 14:15:06  pfpeterson
  * Changed System.getProperty to SharedData.getProperty
  *
@@ -63,29 +67,39 @@ import DataSetTools.util.SharedData;
 import DataSetTools.util.StringUtil;
 import DataSetTools.operator.*;
 
-/** A javax.help.HelpSet that gets all information on the data sets from Memory
+/**  A javax.help.HelpSet that gets all information on the data sets operators
+  *  from Memory
 */
 public class IsawOpHelpSet extends HelpSet
  {
   Script_Class_List_Handler  sh;
-  TOCView toc;
+  static TOCView toc ;
   boolean operatorsOnly;
 
+  /**
+  *      Constructor
+  *    @param operatorsOnly  if true only documentation for the operators
+  *                         will be shown, otherwise all the help will
+  *                         be displayed
+  */
   public IsawOpHelpSet( boolean operatorsOnly) 
-    { 
+    {
      setTitle( "Isaw Operations" );
      setHomeID( "IsawOpHelp" );
      sh = new Script_Class_List_Handler();
      setLocalMap( new opMap( "IsawOpHelp" ,  sh , this ) );
      this.operatorsOnly = operatorsOnly;
+     
      toc = new IsawTOC( this , "TOC" , "Operators" , null , sh , operatorsOnly);
+    
     }
+
 
   /** Returns the Navigator view for this helpset.
   *
-  * @param   name  the name of the view. Currently only the namd TOC returns a non null
-  *                 view
-  *@return   The Navigator view
+  * @param   name  the name of the view. Currently only the name TOC returns 
+  *                 a non null  view
+  * @return   The Navigator view
   */
   public NavigatorView getNavigatorView( java.lang.String name )
     {
@@ -97,7 +111,7 @@ public class IsawOpHelpSet extends HelpSet
 
 
   /** Returns an array of navigator views
-  *Currently only one TOC view is supported
+  *    Currently only one TOC view is supported
   */
   public NavigatorView[] getNavigatorViews()
     {
@@ -105,18 +119,19 @@ public class IsawOpHelpSet extends HelpSet
      Res[ 0 ] = toc;
      return Res;
     }
-
+//----------------------------- Class opMap---------------------------------
 
   /** This class implements the Map for this help set.
   *  The Id's are either Genxx or Datxx where xx is the index of the
   *  appropriate index in the Generic operator list or DataSetOperator
   *  List or is htm.xxx[.yy] where xxx is the base filename and yy is the reference.
-  *  The Gen abd Dat id's are mapped to URL's with the Memory url handler, that 
-  *  calculates and gets the appropriate information out of memory.  The others are mapped to
-  *  the associated file.
+  *  The Gen and Dat id's are mapped to URL's with the Memory url handler, that 
+  *  calculates and gets the appropriate information out of memory.  The 
+  *  others are mapped to the associated file.
   */
   public class opMap implements javax.help.Map
     {
+
      Script_Class_List_Handler sh;
      int ngeneric , ndataset;
      String HomeID;
@@ -124,16 +139,22 @@ public class IsawOpHelpSet extends HelpSet
      HelpSet hs;
      Vector IDs;  
      String helpPath = null;
+  
+     //----- Strings for id's that map to filenames ------------
+     static final String hostStrings = 
+                    ";CommandPane;Grammer;Attributes;Interfaces;ComDes;Examples1;";
 
-     static final String hostStrings = ";CommandPane;Grammer;Attributes;Interfaces;ComDes;Examples1;";
-     static final String ComDesRefStrings = ";Display;Load;Return;Save;Send;Load;";
+     static final String ComDesRefStrings = 
+                     ";Display;Load;Return;Save;Send;Load;";
+
      static final String ExampRefStrings = 
        ";Aritmetic;Arrays;For;if;error;Parameters;Batch;DataSetsSimple;DataSetAdvance;";
 
 
      /** Constructor for this Map
      *   @param HomeID  the home is for the help system to refer to this helpset
-     *   @param SH      the Script_Class_List_Handler that has access to all the installed operators
+     *   @param SH      the Script_Class_List_Handler that has access to all the 
+     *                      installed operators
      *   @param hs      the helpset for which this maps the id's to URL's
      */
      public opMap( String HomeID , Script_Class_List_Handler SH , HelpSet hs )
@@ -151,6 +172,7 @@ public class IsawOpHelpSet extends HelpSet
           return;
         helpPath =fixUpHelpPath( SharedData.getProperty( "Help_Directory"));
         
+        //------ get the HelpPath -----------------------
         if( helpPath == null )
           {helpPath = fixUpHelpPath(SharedData.getProperty( "ISAW_HOME" ));
            if( helpPath != null )
@@ -169,7 +191,8 @@ public class IsawOpHelpSet extends HelpSet
        }
 
 
-    //Fixes the / \ problem and check if the Command/CommandPane.html exists at the end of the path
+    //Fixes the / \ problem and check if the Command/CommandPane.html exists at 
+    //        the end of the path
      private String fixUpHelpPath(  String hpath)
        {
          if( hpath == null )
@@ -190,7 +213,8 @@ public class IsawOpHelpSet extends HelpSet
      * The helpset must be an instance of IsawOpHelpSet and
      * the id must be of the form Genxx or Datxx where xx represents
      * the index of a Generic operator or DataSetOperator  or htm.xxx[.yy] where
-     * xxx is the base name of the file and yy is the reference string if there is one
+     * xxx is the base name of the file and yy is the reference string if 
+     *      there is one
      */
      public boolean isValidID( java.lang.String id , HelpSet hs )
        {
@@ -218,7 +242,8 @@ public class IsawOpHelpSet extends HelpSet
       
         if( operatorsOnly) 
            return false;
-        
+
+        //------- Check if it is a correct htm.xxx.yyy        
         int i = id.indexOf('.' , 4);
         if( i < 0)
           i = id.length();
@@ -232,11 +257,14 @@ public class IsawOpHelpSet extends HelpSet
         if( ref.equals( "")) 
           return true;
         if( host.equals("CommandPane") )
-          if( ref.equals("OverView")) return true;
-          else return false;
+          if( ref.equals("OverView")) 
+             return true;
+          else
+             return false;
 
         if( host.equals("ComDes"))
-         if( ref.equals( "")) return true;
+         if( ref.equals( "")) 
+             return true;
          else if( ComDesRefStrings.indexOf(";"+ref+";") < 0 )
             return false;
          else
@@ -245,7 +273,8 @@ public class IsawOpHelpSet extends HelpSet
        if( host.equals( "Examples1" ))
          if( ExampRefStrings.indexOf( ";"+ref+";") < 0 )
             return false;
-         else return true;
+         else
+            return true;
  
        if( !ref.equals("" ) )
           return false;
@@ -253,6 +282,7 @@ public class IsawOpHelpSet extends HelpSet
            return true;
        
        }
+
 
 
      /** Returns an enumeration of all id's
@@ -336,7 +366,7 @@ public class IsawOpHelpSet extends HelpSet
         try{
            int opnum = ( new Integer( id.id.substring( 3 ).trim() ) ).intValue();
           
-           return new URL( "memory" , host , opnum , "x" , urlh );
+           return new URL( "memory" , "Memory" , 322 , host+":"+opnum , urlh );
             }
         catch( Exception ss )
           {throw new java.net.MalformedURLException( "improper id number" );
@@ -543,7 +573,9 @@ public class IsawOpHelpSet extends HelpSet
     }//class opMap
 
 
-  /** Creates this help set and viewer
+  /** Creates this help set and viewer.
+  *   No parameters are needed.  It displays the helpset for the operators
+  *   only
   */
   public static void main( String args[] )
     {
@@ -555,22 +587,34 @@ public class IsawOpHelpSet extends HelpSet
     }
  }//class IsawOpHelpSet
 
-
-/** This is the TOC view used by IsawOpHelpSet.  There is NO file.  The information is
-*   created in memory
+//------------------------------- class IsawTOC(Table of Contents)--------------
+/** This is the TOC view used by IsawOpHelpSet.  There is NO file.  The 
+*   information is created in memory
 */
 class IsawTOC  extends TOCView
  {HelpSet hs;
   static Script_Class_List_Handler sh;
   int ngeneric , ndatasets;
-  static DefaultMutableTreeNode  Node = null;
+  static DefaultMutableTreeNode  Node ;
   static boolean operatorsOnly = false;
 
 
   /** Constructor.  sh contains all the information needed for the operators
+   *  @param   hs  the helpset that uses this TOCView
+   *  @param   name   the Name of to be given to this view
+   *  @param   label  The label used by the JHelp System
+   *  @param   params   parameters passed through to JHelp. Not used by
+   *                    the IsawOpHelpSet system
+   *  @param   sh     The Script_Class_List_Handler that contains all the
+   *                   "installed" operators
+   *  @param operatorsOnly  If true, only the operator documentation is
+   *                   used. Otherwise the other help on the Command Sytem
+   *                   is used.
+   *
   */
-  public IsawTOC( HelpSet hs , String name , String label , java.util.Hashtable params ,
-         Script_Class_List_Handler sh , boolean operatorsOnly)
+  public IsawTOC( HelpSet hs , String name , String label ,
+                 java.util.Hashtable params ,
+                 Script_Class_List_Handler sh , boolean operatorsOnly)
     {
      super( hs , name , label , params );
      this.hs = hs;
@@ -578,7 +622,7 @@ class IsawTOC  extends TOCView
      this.operatorsOnly = operatorsOnly;
      ngeneric = sh.getNum_operators();
      ndatasets = sh.getNumDataSetOperators(); 
-  
+    
      Node = getTOC( ngeneric , ndatasets , hs , operatorsOnly );
      }
    
@@ -602,8 +646,8 @@ class IsawTOC  extends TOCView
  
   /** Returns the node associated with this view
   */
-  public static DefaultMutableTreeNode parse( java.net.URL url , HelpSet hs , Locale locale ,
-                                                            TreeItemFactory factory )
+  public static DefaultMutableTreeNode parse( java.net.URL url , HelpSet hs
+                                   , Locale locale , TreeItemFactory factory )
     {if( Node == null)
        {
          sh = new Script_Class_List_Handler();
@@ -618,7 +662,8 @@ class IsawTOC  extends TOCView
 
 
   /** Recursive Binary search. end not an option, start has not been checked*/
-  private static int find( DefaultMutableTreeNode parent , String Name , int start , int end )
+  private static int find( DefaultMutableTreeNode parent , String Name , 
+                         int start , int end )
     {
      if( start < 0 ) 
         return -1;
@@ -663,11 +708,16 @@ class IsawTOC  extends TOCView
     }
 
 
-  /** Inserts a toc item at the end of a category list of an operator. New Nodes are created
-  *   if the category is not present.
+  /** Inserts a toc item in the tree at the end of a category list. New Nodes are 
+  *   created if the category or subcategory is not present.
+  *  @param parent  the part of a TOC tree to insert toc into
+  *  @param toc      the TOCItem to insert
+  *  @param cat     the category list. Determines where in the tree to place toc
+  *  @param catpositon position in the cat[]. Used for recursion. 
+  *  NOTE: Standard insert in a tree algorithm
   */
-  private static void insert( DefaultMutableTreeNode parent , TOCItem toc , String[] cat , 
-                              int catposition )
+  private static void insert( DefaultMutableTreeNode parent , TOCItem toc ,
+                              String[] cat , int catposition )
     {
      DefaultMutableTreeNode node;
      if( catposition >= cat.length )
@@ -706,7 +756,6 @@ class IsawTOC  extends TOCView
            parent.insert( node , pos );
           }
        }
-
     if( node != null )
        insert( node , toc , cat , catposition + 1 );
     }
@@ -714,8 +763,8 @@ class IsawTOC  extends TOCView
 
   /** Utility method to add a node at the end of its parent's children
   */
-  private static  DefaultMutableTreeNode addNode( DefaultMutableTreeNode parent , String Name ,
-                         javax.help.Map.ID id , HelpSet hs )
+  private static  DefaultMutableTreeNode addNode( DefaultMutableTreeNode parent , 
+                        String Name ,javax.help.Map.ID id , HelpSet hs )
     {
      TOCItem toc;
 
@@ -733,10 +782,15 @@ class IsawTOC  extends TOCView
 
 
   /**
-  * Calculated the Table of Contents(TOC) from the Script_Class_List_Handler
+  *  Calculated the Table of Contents(TOC) from the Script_Class_List_Handler
+  *  @param ngeneric   The number of generic operators
+  *  @param ndatasets  The number of data set operators
+  *  @param hs         the helpset that has this TOC
+  *  @param operatorsOnly  if true only the data set and generic operator help
+  *                    will be displayed
   */
-  public static DefaultMutableTreeNode getTOC( int ngeneric , int ndatasets , HelpSet hs , 
-        boolean operatorsOnly )
+  public static DefaultMutableTreeNode getTOC( int ngeneric , int ndatasets , 
+                                          HelpSet hs ,  boolean operatorsOnly )
     {
      DefaultMutableTreeNode topNode , parentNode;
      parentNode = new DefaultMutableTreeNode();
@@ -744,20 +798,22 @@ class IsawTOC  extends TOCView
      top.setName( "Top" );
      topNode = new DefaultMutableTreeNode( top );
      DefaultMutableTreeNode opParent = topNode;
-
-     if( ! operatorsOnly)
+     if( ! operatorsOnly)// Add the nodes for documentation stored on files
        {
-        DefaultMutableTreeNode command = addNode( topNode , "Scripting/Operators", null, null );
-        addNode( command, "OverView", javax.help.Map.ID.create( "htm.CommandPane.OverView" , hs ) ,
-                hs );
+        DefaultMutableTreeNode command = addNode( topNode , "Scripting/Operators", 
+                  null, null );
+        addNode( command, "OverView", javax.help.Map.ID.create( 
+                "htm.CommandPane.OverView" , hs ) ,hs );
 
-        DefaultMutableTreeNode  operations = addNode( command, "Commands", null, null);
+        DefaultMutableTreeNode  operations = addNode( command, "Commands", null, 
+                         null);
              
            addNode( operations, "Arithmetic,Logic and Assignment Operations" ,
                  javax.help.Map.ID.create( "htm.ComDes", hs ) , hs );
 
           
-           DefaultMutableTreeNode subs = addNode( operations, "Subroutines" , null , null );
+           DefaultMutableTreeNode subs = addNode( operations, "Subroutines" ,
+                   null , null );
                  
            addNode( subs, "Display" ,
                  javax.help.Map.ID.create( "htm.ComDes.Display", hs ) , hs );
@@ -780,8 +836,8 @@ class IsawTOC  extends TOCView
         addNode( command, "Syntax", javax.help.Map.ID.create( "htm.Grammer" , hs ) ,
                 hs );
 
-        addNode( command, "Interfaces", javax.help.Map.ID.create( "htm.Interfaces" , hs ) ,
-                hs );
+        addNode( command, "Interfaces", javax.help.Map.ID.create( 
+                                  "htm.Interfaces" , hs ) ,hs );
 
         DefaultMutableTreeNode  Examples= addNode( command, "Examples", null, null);
            
@@ -810,21 +866,23 @@ class IsawTOC  extends TOCView
                 hs );
 
        }
-      
+     //------------- Now add the nodes for the operators --------------------------
      DefaultMutableTreeNode operators = addNode( opParent , "operators" , null , null );
      DefaultMutableTreeNode Alphabetic = addNode( operators , "Alphabetic" , null , null );
      DefaultMutableTreeNode Category = addNode( operators , "Category" , null , null );
      DefaultMutableTreeNode Generic = addNode( Alphabetic , "Generic" , null , null );
-     DefaultMutableTreeNode DataSet = addNode( Alphabetic , "DataSet" , null , null );
+     //DefaultMutableTreeNode DataSet = addNode( Alphabetic , "DataSet" , null , null );
      DefaultMutableTreeNode letters = addNode( Generic , "A-E" , null , null );
-     char lastletter = 'E';  
-       
+     char lastletter = 'E'; //as in A-E 
+     //--------------------- Add the generic operators -------------- 
      for( int i = 0 ; i < ngeneric ; i++  )
        {
-        Operator op  = sh.getOperator( i );
+        Operator op  = sh.getOperator( i ); //alphabetic
         String title = op.getCommand();
-        if( title == null ) title = "";
-        if( title.length() >= 1 )
+        if( title == null ) 
+             title = "";
+        
+        if( title.length() >= 1 ) 
            while( title.toUpperCase().charAt(0 ) > lastletter )
              {
               String range = ((char)( lastletter + 1 ) + "-" + (char)( lastletter + 5 ) );
@@ -832,19 +890,20 @@ class IsawTOC  extends TOCView
               
               lastletter = (char)( lastletter + 5 ); 
              }
-
         String idd = "Gen" + i;
         TOCItem ttt = (TOCItem)addNode( letters , title ,  
                      javax.help.Map.ID.create( "Gen" + i , hs ) , hs ).getUserObject();
         String[] cat = op.getCategoryList();
-        insert( Category , ttt , cat , 1 );
+        insert( Category , ttt , cat , 1 ); //Insert into the category node too.
            
        }
 
      //Now Add to the Data set nodes
+     DefaultMutableTreeNode DataSet = addNode( Alphabetic , "DataSet" , null , null );
      letters = addNode( DataSet , "A-E" , null , null );
      lastletter = 'E';  
-      
+     
+     //--------------------- Now add the data sets --------------------
      for( int i = 0 ;i < ndatasets ; i++ )
        {Operator op  = sh.getDataSetOperator( i );
         String title = op.getCommand();
@@ -865,7 +924,6 @@ class IsawTOC  extends TOCView
         String[] cat = op.getCategoryList();
         insert( Category , ttt , cat , 1 );
        }
-   
      return topNode;
 
     }//getTOC
