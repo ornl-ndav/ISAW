@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2002/10/24 16:51:08  pfpeterson
+ *  Removed references to old DGCS operators.
+ *
  *  Revision 1.32  2002/10/09 21:13:33  dennis
  *  Added method getTestDataSet() to fabricate a simple DataSet for
  *  test purposes.
@@ -482,9 +485,6 @@ public class DataSetFactory implements Serializable
     }
     else if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
     {
-      ds.addOperator( new SpectrometerEvaluator() );
-      ds.addOperator( new SpectrometerNormalizer());
-      ds.addOperator( new SpectrometerMacro() );
       ds.addOperator( new SpectrometerTofToEnergyLoss() );
       ds.addOperator( new SpectrometerTofToEnergy() );
       ds.addOperator( new SpectrometerTofToWavelength() );
