@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/06/17 22:04:43  pfpeterson
+ *  Fixed a javadoc.
+ *
  *  Revision 1.5  2003/06/16 19:06:12  pfpeterson
  *  Removed old code and updated to work with new getCategoryList() code
  *  in base operator class.
@@ -68,7 +71,7 @@ import DataSetTools.operator.Operator;
  * DataSetTools.operator.Generic.GenericOperator GenericOperator} or
  * {@link DataSetTools.operator.DataSet.DataSetOperator
  * DataSetOperator}. If it does not then they will not be categorized
- * by {@link Command.Script_Class_ListHandler
+ * by {@link Command.Script_Class_List_Handler
  * Script_Class_List_Handler}. The effect of this is that the operatr
  * will not be added to menus, will not be found by the help system,
  * and will not be available in scripts.
