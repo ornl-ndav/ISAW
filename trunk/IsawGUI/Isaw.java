@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.91  2002/04/10 20:47:00  pfpeterson
+ *  Added command line switches -v and --version which print the version
+ *  of ISAW currently running and exit.
+ *
  *  Revision 1.90  2002/04/10 15:39:21  pfpeterson
  *  Added System properties to control MW width and height. Also improved
  *  changing the divider positions in the SplitPanes and removed SplitPanes
@@ -361,6 +365,7 @@ import java.beans.*;
 import java.io.*;
 import java.io.IOException; 
 import java.lang.*;
+import java.lang.reflect.Array;
 import java.net.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -684,7 +689,7 @@ public class Isaw
      * Print version information
      */
     public static void printVersion(){
-        System.out.print("Loading " + TITLE + " Release ");
+        System.out.print(TITLE + " Release ");
         if(SharedData.VERSION.equals("Unknown_Version")){
             System.out.print("1.3.1 alpha");
         }else{
@@ -2049,6 +2054,13 @@ public class Isaw
     */
   public static void main( String[] args ) 
   {
+    for( int i=0 ; i<Array.getLength(args) ; i++ ){
+        if("--version".equals(args[i]) || "-v".equals(args[i])){
+            printVersion();
+            System.exit(0);
+        }
+    }
+
     Properties isawProp = new Properties(System.getProperties());
     String path = System.getProperty("user.home")+"\\";
     path = StringUtil.fixSeparator(path);
@@ -2064,36 +2076,13 @@ public class Isaw
       prop.write();
     }
 
-
     SplashWindowFrame sp = new SplashWindowFrame();
     Thread splash_thread = new Thread(sp);
     splash_thread.start();
     splash_thread = null;
     sp = null;
 
-    //int x,y,window_height,window_width;
-    /* read in values for default screen size from system properties */
-    //{
-    //double isawwidth=
-    //(new Double(System.getProperty("IsawWidth","0.8"))).doubleValue();
-    //double isawheight=
-    //(new Double(System.getProperty("IsawHeight","0.4"))).doubleValue();
-    //System.out.println("("+isawwidth+","+isawheight+")");
-    //
-    /* assume a 4:3 aspect ratio for the monitor */
-    //Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    //window_height = (int)(screenSize.height*isawwidth);
-    //window_width = (int)(screenSize.height*4*isawheight/3);
-    //
-    /* set the top left corner such that the window is centered
-     * horizontally and 3/4 of the way down vertically */
-    //y = (int)(screenSize.height - window_height)*3/4;
-    //x = (int)(screenSize.height*4/3 - window_width)/2;
-    //System.out.println("("+x+","+y+","+window_width+","+window_height+")");
-    //}
-
-
-
+    System.out.print("Loading ");
     printVersion();
 
     JFrame Isaw = new Isaw( args );
