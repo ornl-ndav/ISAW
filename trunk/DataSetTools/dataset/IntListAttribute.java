@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/09/11 23:02:57  dennis
+ *  Now converts list of integers to compact string form n:m,i:j,...
+ *
  *  Revision 1.4  2000/07/13 22:23:03  dennis
  *  Removed control-M characters
  *
@@ -19,6 +22,8 @@
  */
 
 package  DataSetTools.dataset;
+
+import DataSetTools.util.*;
 
 /**
  * The concrete class for an attribute whose value is a list of integers.  
@@ -160,20 +165,11 @@ public class IntListAttribute extends Attribute
    }
 
   /**
-   * Returns a string representation of the float value of this attribute
+   * Returns a string representation of the list of integers 
    */
   public String getStringValue()
   {
-    int    length = values.length;
-    String string = "";
-
-    for ( int i = 0; i < length; i++ )
-      if ( i == length-1 )
-        string = string + Integer.toString( values[i] ); // no comma after last
-      else
-        string = string + Integer.toString( values[i] ) + ",";
-    
-    return string;
+    return IntList.ToString( values );
   }
 
   /**
