@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/10/14 21:05:15  dennis
+ * Fixed javadocs on constructor to build cleanly with jdk 1.4.2.
+ * and made a few other fixes to javadocs.
+ *
  * Revision 1.3  2003/09/27 13:19:07  rmikk
  * Made the dialog box non-modal with a sleep until new values are set
  * at the end.
@@ -52,25 +56,33 @@ import DataSetTools.operator.Generic.Batch.*;
 import DataSetTools.util.*;
 
 
-/** This class behaves like Visual Basic's Input box to allow quick entry of data
-*   by the user at run time.  
-*/
+/** This class behaves like Visual Basic's Input box to allow quick entry of 
+ *  data by the user at run time.  
+ */
 public class InputBox  extends GenericBatch
- {Vector Prompts,InitValues,DataSetList;
+ {
+  Vector Prompts,
+         InitValues,
+         DataSetList;
+
   boolean Done;
  
-  /**
-  *   Constructor
-  *   @param Title   The title of the ParametersDialog box
-  *   @param Prompts The Vector of Prompts.  They should be strings
-  *   @param InitValues  The Vector of initial values
-  *   @param DataSetList  The Vector of DataSets that could be choices for DataSet Parameters
+ /**
+  *   Construct an input box that modifies the values in the InitValues 
+  *   vector to those input by the user, after getResult() is called. 
   *
-  *   @return  after getResult is done, The values in the InitValues Vector are changed
-  *            to those input by the user
+  *   @param Title        The title of the ParametersDialog box
+  *   @param Prompts      The Vector of Prompts.  They should be strings
+  *   @param InitValues   The Vector of initial values
+  *   @param DataSetList  The Vector of DataSets that could be choices for 
+  *                       DataSet Parameters
   */
-  public InputBox( String Title, Vector Prompts,  Vector InitValues, Vector DataSetList)
-    {super( "InputBox" );
+  public InputBox( String Title, 
+                   Vector Prompts,  
+                   Vector InitValues, 
+                   Vector DataSetList)
+    {
+     super( "InputBox" );
      setParameter( new Parameter( "Title", Title) ,  0);
      setParameter( new Parameter( "Prompts", Prompts) ,  1);
      setParameter( new Parameter( "InitValues", InitValues) ,  2);
@@ -81,7 +93,8 @@ public class InputBox  extends GenericBatch
     }
 
   public InputBox()
-    {super( "InputBox" );
+    {
+     super( "InputBox" );
      setDefaultParameters();
     }
    
@@ -95,7 +108,7 @@ public class InputBox  extends GenericBatch
    public String toString()
      {
        return "InputBox";
-      }
+     }
 
    /**
    *   Sets the default parameters
@@ -150,11 +163,12 @@ public class InputBox  extends GenericBatch
     /**
     *    Pops up the Parameters Dialog box to get the new values. These new
     *    values are then placed in the InitValues Vector and returned.
-    *    ERROR Conditions: If the Prompt Vector and/or InitValue are null or disagree in
-    *    size.
+    *    ERROR Conditions: If the Prompt Vector and/or InitValue are null 
+    *    or disagree in size.
     */
     public Object getResult()
-     {String Title = getParameter(0).getValue().toString();
+     {
+      String Title = getParameter(0).getValue().toString();
       Prompts = (Vector)( getParameter( 1 ).getValue() );
       InitValues = (Vector)( getParameter( 2 ).getValue() );
       DataSetList = (Vector)( getParameter( 3 ).getValue() );
@@ -179,17 +193,16 @@ public class InputBox  extends GenericBatch
                 Done = true;
               }
       return new DataSetTools.operator.Generic.Batch.ExitClass(); 
- 
-      
      }
 
 
   /** 
-  *   This class implements the IDataSetListHandler interface for DataSet Lists
-  *   that are stored in a Vector
-  */
+   *   This class implements the IDataSetListHandler interface for DataSet Lists
+   *   that are stored in a Vector
+   */
   class  VectDataSetHandler  implements IDataSetListHandler
-    {DataSet[] ds;
+    {
+     DataSet[] ds;
      public VectDataSetHandler( Vector V)
        {if( V == null)
           ds = new DataSet[0];
@@ -201,12 +214,11 @@ public class InputBox  extends GenericBatch
            }
 
         }
+
      public DataSet[] getDataSets()
        {
          return ds;
        }
-
-
 
     }//VectDataSetHandler
 
@@ -241,7 +253,10 @@ class ArgOperator extends GenericBatch
   String Title;
   Vector Prompts,InitValues;
   InputBox mainn;
-  public ArgOperator( String Title, Vector Prompts, Vector InitValues, InputBox mainn)
+  public ArgOperator( String   Title, 
+                      Vector   Prompts, 
+                      Vector   InitValues, 
+                      InputBox mainn)
     {super( Title );
      this.Prompts = Prompts;
      this.InitValues = InitValues;
@@ -272,4 +287,3 @@ class ArgOperator extends GenericBatch
     }
 
  }//ArgOperator Class
-
