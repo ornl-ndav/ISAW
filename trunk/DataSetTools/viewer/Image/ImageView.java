@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.41  2003/04/18 15:21:53  dennis
+ *  Now explicitly sets vertical scrolling true, so that vertical
+ *  scrolling is done when there are more spectra than pixels.
+ *
  *  Revision 1.40  2003/02/22 23:14:37  dennis
  *  Added a couple of checks for null DataSet and null Data blocks.
  *
@@ -354,7 +358,7 @@ public static void main(String[] args)
   }
 
   ImageView image_view = new ImageView( data_set, null );
-  JFrame f = new JFrame("Test for ImageJPanel.class");
+  JFrame f = new JFrame("Test for ImageView.class");
   f.setBounds(0,0,600,400);
   f.setJMenuBar( image_view.getMenuBar() );
   f.getContentPane().add(image_view);
@@ -381,6 +385,7 @@ private void init()
     removeAll();
   }
   image_Jpanel = new ImageJPanel();
+  image_Jpanel.setVerticalScrolling(true);
   image_Jpanel.setNamedColorModel( 
                    getState().get_String( ViewerState.COLOR_SCALE), true );
                                                // make box to contain both the
@@ -392,6 +397,7 @@ private void init()
   
   JPanel sel_image_container = new JPanel();
   selection_image = new ImageJPanel();
+  selection_image.setVerticalScrolling(true);
   sel_image_container.setLayout( new GridLayout(1,1) );
   sel_image_container.add( selection_image );
 
@@ -819,7 +825,7 @@ private void SetHorizontalScrolling( boolean state )
 {
   getState().set_boolean( ViewerState.H_SCROLL, state );
   left_split_pane.setVisible( false );
-  image_Jpanel.SetHorizontalScrolling( state );
+  image_Jpanel.setHorizontalScrolling( state );
   if ( state )                                 // position the image scroll bar
   {
     JScrollBar scroll_bar = image_scroll_pane.getHorizontalScrollBar();
@@ -838,7 +844,7 @@ private void SetHorizontalScrolling( boolean state )
   Dimension preferred_size = image_Jpanel.getPreferredSize();
   preferred_size.height = 0;
   h_graph.my_setPreferredSize( preferred_size );
-  h_graph.SetHorizontalScrolling( state );
+  h_graph.setHorizontalScrolling( state );
 
   if ( state )                            // position the graph scroll bar
     SyncHGraphScrollBar();
