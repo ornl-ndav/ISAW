@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.5  2003/06/10 20:11:56  bouzekc
+ * Moved IndexJ creation out of for loop to avoid
+ * excessive Object creation.
+ *
  * Revision 1.4  2003/06/09 21:50:39  bouzekc
  * Changed Form to run with BlindJ matrix files if it
  * could not find LsqrsJ matrix files rather than having
@@ -63,6 +67,7 @@ public class IndexJForm extends Form
 {
 
   protected static int RUN_NUMBER_WIDTH = 5;
+  private IndexJ indexJOp;
 
   /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
   /**
@@ -272,10 +277,17 @@ public class IndexJForm extends Form
     peaksName = StringUtil.setFileSeparator(
       peaksDir + "/" + expName + ".peaks");
 
+    //no need to continually recreate this Operator in a loop
+    indexJOp = new IndexJ();
+    indexJOp.getParameter(0).setValue(peaksName);
+    indexJOp.getParameter(3).setValue(new Float(delta));
+    indexJOp.getParameter(4).setValue(new Boolean(update));
+
     //if the lsqrs matrix files exist, this is their format
     runNum = formatRunNum(runsArray[0]);
     matName = StringUtil.setFileSeparator(peaksDir + "/ls" + 
                 expName + runNum + ".mat");
+
     //if there is no matrix file, run off BlindJ's output
     if( !(new File(matName).exists()) )
     {
@@ -283,7 +295,8 @@ public class IndexJForm extends Form
       matName = StringUtil.setFileSeparator(
                   peaksDir + "/" + expName + ".mat");
       SharedData.addmsg("IndexJ is updating " + peaksName + " with " + matName);
-      obj = new IndexJ(peaksName, matName, delta, update).getResult();
+      indexJOp.getParameter(1).setValue(matName);
+      obj = indexJOp.getResult();
     }
     else     //otherwise, use LsqrsJ's output
     {
@@ -299,11 +312,11 @@ public class IndexJForm extends Form
         SharedData.addmsg("IndexJ is updating " + peaksName + " with " + matName);
 
         //call IndexJ
-        obj = new IndexJ(peaksName, matName, delta, update);
+        indexJOp.getParameter(1).setValue(matName);
         //synchronize the run number in the peaks and matrix file
         ((Operator)obj).getParameter(2).setValue(runNum);
 
-        obj = ((Operator)obj).getResult();
+        obj = indexJOp.getResult();
       }
     }
 
@@ -312,7 +325,7 @@ public class IndexJForm extends Form
   
     SharedData.addmsg("--- IndexJForm finished. ---");
 
-    return new Boolean(true);
+    return Boolean.TRUE;
   }
 
   /**
