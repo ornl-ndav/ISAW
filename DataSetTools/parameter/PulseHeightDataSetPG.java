@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/06/06 18:54:00  pfpeterson
+ *  No longer prints warning message when setting value to null.
+ *
  *  Revision 1.6  2003/04/25 15:39:39  pfpeterson
  *  Improved support for null values which are automatically converted
  *  to EMPTY_DATA_SET.
@@ -74,7 +77,7 @@ public class PulseHeightDataSetPG extends DataSetPG{
     public PulseHeightDataSetPG(String name, Object value){
         super(name,value);
         this.type=TYPE;
-        if(!isPulseHeightDataSet(value)){
+        if(value!=null && !isPulseHeightDataSet(value)){
                 SharedData.addmsg("WARN: Non-"+this.type
                                   +" in PulseHeightDataSetPG constructor");
         }
