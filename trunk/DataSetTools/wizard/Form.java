@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.36  2003/08/21 17:31:55  bouzekc
+ * Changed call from init() to initGUI(null) to correspond to new ParameterGUI.
+ *
  * Revision 1.35  2003/07/29 08:09:55  bouzekc
  * Now handles RadioButtonPGs in validateParameterGUIs().
  *
@@ -556,7 +559,7 @@ public abstract class Form extends Operator implements PropertyChanger {
     for( int i = 0; i < num.length; i++ ) {
       IParameterGUI param = ( IParameterGUI )getParameter( num[i] );
 
-      param.init(  );
+      param.initGUI( null  );
       subBox.add( param.getGUIPanel(  ) );
     }
 
