@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2003/11/25 03:02:32  bouzekc
+ *  Now only tries to clone the Label if it has been initialized.
+ *
  *  Revision 1.36  2003/11/23 02:27:58  bouzekc
  *  Removed setGUIPanel().
  *
@@ -495,13 +498,13 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
       ParameterGUI pg       = ( ParameterGUI )construct.newInstance( 
           new Object[]{ null, null } );
       pg.setName( new String( this.getName(  ) ) );
-      pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
       pg.setValid( this.getValid(  ) );
 
       if( this.getInitialized(  ) ) {
         pg.initGUI( null );
+        pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
       }
 
       if( propListeners != null ) {
