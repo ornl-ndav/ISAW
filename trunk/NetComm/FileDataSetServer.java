@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/08/10 20:19:57  dennis
+ *  Main program exits if help message was requested.
+ *
  *  Revision 1.4  2001/08/10 19:45:13  dennis
  *  Changed main program to use the command line arguments and other
  *  new features of the servers.
@@ -53,6 +56,7 @@ import java.io.*;
 import java.util.*;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
+import DataSetTools.util.*;
 
 /**
  *  This is a base class for servers that receive requests for DataSets and 
@@ -172,6 +176,10 @@ public class FileDataSetServer extends DataSetServer
   {
     FileDataSetServer server= new FileDataSetServer();
     server.parseArgs( args );
+
+    if ( StringUtil.commandPresent( "-h", args )  ||
+         StringUtil.commandPresent( "-h", args )  )
+      System.exit(1);
 
     Date date = new Date( System.currentTimeMillis() );
     System.out.println("Starting " + server.getServerName() + " on " + date );
