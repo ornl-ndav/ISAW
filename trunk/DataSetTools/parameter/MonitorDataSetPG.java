@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/09/15 18:24:43  dennis
+ *  Fixed bug in clone() method that assigned null to this.vals.
+ *
  *  Revision 1.9  2003/09/15 18:12:46  dennis
  *  Added check for this.vals != null in clone() method. (Ruth)
  *
@@ -225,8 +228,7 @@ public class MonitorDataSetPG extends DataSetPG{
        if( this.vals != null)
           pg.vals=(Vector)this.vals.clone();
         else 
-          this.vals = null;
-        pg.vals=(Vector)this.vals.clone();
+          pg.vals = null;
         pg.setDrawValid(this.getDrawValid());
         pg.initialized=false;
         return pg;
