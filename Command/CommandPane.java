@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.64  2003/10/20 16:25:05  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.63  2003/10/10 01:17:36  bouzekc
  * Changed instantiation references from ScriptProcessor to ScriptOperator.
  *
@@ -246,7 +249,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
    * @param fname The name of the file that stores the Macro
    * @param X An Obsever who will receive the data sets that are "Sent" with
    *        the SEND command and that are the result of the script fname
-   * @param DSS[] A list of data sets that can be selected as values for Data
+   * @param DSS A list of data sets that can be selected as values for Data
    *        Set Parameters.
    */
   public void getExecScript( 

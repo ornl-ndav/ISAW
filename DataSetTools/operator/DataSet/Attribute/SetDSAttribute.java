@@ -32,6 +32,9 @@
  * This operator sets a DataSet Attribute
  *
  *  $Log$
+ *  Revision 1.5  2003/10/20 16:34:29  rmikk
+ *  Fixed javadoc errors
+ *
  *  Revision 1.4  2002/12/10 22:03:22  dennis
  *  Added getDocumentation() method. (Tyler Stelzer)
  *
@@ -88,7 +91,6 @@ public class SetDSAttribute extends    DS_Attribute
    *  @parm   Attrib   The Attribute to be set.
    *  @param  new_Value   The new value of the Attribute
    */
-
   public SetDSAttribute  ( DataSet              ds,
                            AttributeNameString  Attrib,
                            Object               new_Value )
