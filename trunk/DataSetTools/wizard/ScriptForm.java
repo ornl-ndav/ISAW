@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2003/07/02 18:52:08  bouzekc
+ * Fixed javadoc spelling error.
+ *
  * Revision 1.9  2003/07/02 18:24:41  bouzekc
  * Removed unused imports.
  *
@@ -83,7 +86,7 @@ public class ScriptForm extends OperatorForm {
   }
 
   /**
-   *  Construct a ScriptForm with the given Script file nameand
+   *  Construct a ScriptForm with the given Script file name and
    *  result parameter type.
    *
    *  @param  filename        The Script file name to use
