@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2002/04/02 22:50:53  pfpeterson
+ *  Provides for LoadFileString and SaveFileString.
+ *
  *  Revision 1.22  2002/02/22 20:34:02  pfpeterson
  *  Operator Reorganization.
  *
@@ -129,6 +132,7 @@ import java.util.*;
 import java.io.*;
 import DataSetTools.util.*;
 import javax.swing.text.*;
+import java.lang.reflect.Array;
 
 public class JParametersDialog implements Serializable,
                                IObservable
@@ -289,6 +293,36 @@ public class JParametersDialog implements Serializable,
                  paramGUI = new JDataSetParameterGUI(  param, 
                              ds_src.getDataSets()  );
                 
+            /* else if((param.getValue() instanceof MonitorDataSet)  ){
+               System.out.println("MonitorDataSet in JParametersDialog");
+               int num_mon=0;
+               DataSet mon_ds[]=ds_src.getDataSets();
+               for( int count=Array.getLength(mon_ds) ; count>=0 ; count-- ){
+               String type
+               =(String)mon_ds[i].getAttributeValue(Attribute.DS_TYPE);
+               System.out.println(mon_ds[i]+" is a "+type);
+               if(type.toLowerCase().indexOf("monitor")>=0){
+               // do nothing
+               }else{
+               num_mon++;
+               }
+               }
+
+               System.out.println("Found "+num_mon+" of the "
+               +Array.getLength(mon_ds)+" DataSets");
+               DataSet just_mon[]=new DataSet[num_mon];
+               int countt=0;
+               for( int count=Array.getLength(mon_ds) ; i>=0 ; i-- ){
+               String type
+               =(String)mon_ds[i].getAttributeValue(Attribute.DS_TYPE);
+               if(type.toLowerCase().indexOf("monitor")>=0){
+               just_mon[countt]=mon_ds[i];
+               countt++;
+               }
+               }
+
+               paramGUI = new JDataSetParameterGUI(  param,  mon_ds );
+               } */
            else if( param.getValue() instanceof DataDirectoryString )
            { 
             String DirPath = System.getProperty("Data_Directory");
@@ -297,8 +331,8 @@ public class JParametersDialog implements Serializable,
                                  fixSeparator(DirPath+"\\");
             else
               DirPath = "";
-               param.setValue( new DataDirectoryString(DirPath) );
 
+            param.setValue( new DataDirectoryString(DirPath) );
             paramGUI = new JOneFileChooserParameterGUI( param ) ;
           }
 
@@ -332,6 +366,30 @@ public class JParametersDialog implements Serializable,
 
           param.setValue(new InstrumentNameString( XX ));
           paramGUI= new JStringParameterGUI( param);
+        }
+        else if( param.getValue() instanceof LoadFileString){
+            String FileName=System.getProperty("Data_Directory");
+            if(FileName!=null){
+                FileName
+                    =DataSetTools.util.StringUtil.fixSeparator(FileName+"\\");
+            }else{
+                FileName="";
+            }
+
+            param.setValue( new LoadFileString(FileName) );
+            paramGUI=new JLoadFileParameterGUI(param);
+        }
+        else if( param.getValue() instanceof SaveFileString){
+            String FileName=System.getProperty("Data_Directory");
+            if(FileName!=null){
+                FileName
+                    =DataSetTools.util.StringUtil.fixSeparator(FileName+"\\");
+            }else{
+                FileName="";
+            }
+
+            param.setValue( new SaveFileString(FileName) );
+            paramGUI=new JSaveFileParameterGUI(param);
         }
      
         else 
