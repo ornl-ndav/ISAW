@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.23  2004/05/03 16:42:02  dennis
+ * Removed unused variables: "livePanel" and "server_name"
+ *
  * Revision 1.22  2004/03/15 03:31:25  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -86,7 +89,6 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
      private JTable table;
      public JTabbedPane jtp;
      private JTextArea textArea;
-     private JPanel livePanel;
      Document sessionLog=null;
      DefaultTreeModel model;
      DefaultTableModel dtm ;
@@ -107,7 +109,6 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
         setLayout(new GridLayout(1,1));
         root = new DefaultMutableTreeNode("TreeLog");
         model = new DefaultTreeModel(root);
-        String server_name = SharedData.getProperty("Inst1_Path");
         dtm = new DefaultTableModel();
         table = new JTable(dtm);
         logTree = new JTree(model);
