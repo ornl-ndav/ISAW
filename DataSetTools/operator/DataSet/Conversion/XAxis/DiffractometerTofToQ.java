@@ -26,8 +26,12 @@
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
- *             
+ *
  *  $Log$
+ *  Revision 1.11  2002/12/20 17:11:01  dennis
+ *  Added getDocumentation() method, java docs for getResult() and
+ *  simple main test program. (Chris Bouzek)
+ *
  *  Revision 1.10  2002/11/27 23:17:04  pfpeterson
  *  standardized header
  *
@@ -73,6 +77,8 @@ import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
 import  DataSetTools.gsastools.GsasCalib;
+import  DataSetTools.viewer.*;
+import  DataSetTools.retriever.*;
 
 /**
  * This operator converts a neutron time-of-flight DataSet to "Q".  The
@@ -80,10 +86,10 @@ import  DataSetTools.gsastools.GsasCalib;
  * and source to sample distance ( the initial flight path ). In addition,
  * it is assumed that the XScale for the spectra represents the time-of-flight
  * from the source to the detector.
- * 
+ *
  */
 
-public class DiffractometerTofToQ extends    XAxisConversionOp 
+public class DiffractometerTofToQ extends    XAxisConversionOp
                                   implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -137,7 +143,8 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, ToQ
+   * @return the command name to be used with script processor: in this case,
+   * ToQ
    */
    public String getCommand()
    {
@@ -145,7 +152,7 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -158,15 +165,19 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
     Parameter parameter;
 
     if ( scale == null )
-      parameter = new Parameter( "Min Q("+FontUtil.INV_ANGSTROM+")", new Float(0.0) );
+      parameter = new Parameter( "Min Q("+FontUtil.INV_ANGSTROM+")",
+                                  new Float(0.0) );
     else
-      parameter = new Parameter( "Min Q("+FontUtil.INV_ANGSTROM+")", new Float(scale.getStart_x()));
+      parameter = new Parameter( "Min Q("+FontUtil.INV_ANGSTROM+")",
+                                  new Float(scale.getStart_x()));
     addParameter( parameter );
 
     if ( scale == null )
-      parameter = new Parameter( "Max Q("+FontUtil.INV_ANGSTROM+")", new Float(20.0) );
+      parameter = new Parameter( "Max Q("+FontUtil.INV_ANGSTROM+")",
+                                  new Float(20.0) );
     else
-      parameter = new Parameter( "Max Q("+FontUtil.INV_ANGSTROM+")", new Float(scale.getEnd_x()));
+      parameter = new Parameter( "Max Q("+FontUtil.INV_ANGSTROM+")",
+                                  new Float(scale.getEnd_x()));
 
     addParameter( parameter );
 
@@ -229,7 +240,7 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
     }else{
         if( position == null || initial_path_obj == null)  // make sure it has
             return Float.NaN;                          // the needed attributes
-        
+
         float initial_path       = initial_path_obj.floatValue();
         float spherical_coords[] = position.getSphericalCoords();
         float total_length       = initial_path + spherical_coords[0];
@@ -239,8 +250,46 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
     }
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator converts the X-axis units on a ");
+    s.append("DataSet from neutron time-of-flight to Q values.");
+    s.append("@assumptions The DataSet must contain spectra with ");
+    s.append("attributes giving the detector position and source to sample ");
+    s.append("distance ( the initial flight path ). In addition, it is ");
+    s.append("assumed that the XScale for the spectra represents the ");
+    s.append("time-of-flight from the source to the detector.");
+    s.append("@algorithm Creates a new DataSet which has the same title ");
+    s.append("as the input DataSet, the same y-values as the input DataSet, ");
+    s.append("and whose X-axis units have been converted to Q values.  ");
+    s.append("The new DataSet also has a message appended to its log ");
+    s.append("indicating that a conversion to units of Q values on the ");
+    s.append("X-axis was done.  ");
+    s.append("Furthermore, two operators are added to the DataSet: ");
+    s.append("DiffractometerQToD and DiffractometerQToWavelength.");
+    s.append("@param ds The DataSet to which the operation is applied.");
+    s.append("@param min_Q The minimum Q value to be binned.");
+    s.append("@param max_Q The maximum Q value to be binned.");
+    s.append("@param num_Q The number of \"bins\" to be used between ");
+    s.append("min_Q and max_Q.");
+    s.append("@return A new DataSet which is the result of converting the ");
+    s.append("input DataSet's X-axis units to Q values.");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+   *  Converts the input DataSet to a DataSet which is identical except that
+   *  the new DataSet's X-axis units have been converted to Q values.
+   *
+   *  @return DataSet whose X-axis units have been converted to Q values.
+   */
 
   public Object getResult()
   {
@@ -248,7 +297,7 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
     DataSet ds = this.getDataSet();
                                      // construct a new data set with the same
                                      // title, as the current DataSet, ds.
-    DataSetFactory factory = new DataSetFactory( 
+    DataSetFactory factory = new DataSetFactory(
                                      ds.getTitle(),
                                      "Inverse Angstroms",
                                      "Q",
@@ -256,14 +305,14 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
                                      "Scattering Intensity" );
 
     // #### must take care of the operation log... this starts with it empty
-    DataSet new_ds = factory.getDataSet(); 
+    DataSet new_ds = factory.getDataSet();
     new_ds.copyOp_log( ds );
     new_ds.addLog_entry( "Converted to Q" );
 
     // copy the attributes of the original data set
     new_ds.setAttributeList( ds.getAttributeList() );
 
-                                     // get the Q scale parameters 
+                                     // get the Q scale parameters
     float min_Q = ( (Float)(getParameter(0).getValue()) ).floatValue();
     float max_Q = ( (Float)(getParameter(1).getValue()) ).floatValue();
     int   num_Q = ( (Integer)(getParameter(2).getValue()) ).intValue() + 1;
@@ -280,10 +329,10 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
     if ( num_Q <= 1.0 || min_Q >= max_Q )       // no valid scale set
       new_Q_scale = null;
     else
-      new_Q_scale = new UniformXScale( min_Q, max_Q, num_Q );  
+      new_Q_scale = new UniformXScale( min_Q, max_Q, num_Q );
 
-                                            // now proceed with the operation 
-                                            // on each data block in DataSet 
+                                            // now proceed with the operation
+                                            // on each data block in DataSet
     Data             data,
                      new_data;
     DetectorPosition position;
@@ -307,7 +356,7 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
       data = ds.getData_entry( j );        // get reference to the data entry
       attr_list = data.getAttributeList();
                                            // get the detector position and
-                                           // initial path length 
+                                           // initial path length
       position=(DetectorPosition)
                    attr_list.getAttributeValue(Attribute.DETECTOR_POS);
 
@@ -317,7 +366,7 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
                           attr_list.getAttributeValue(Attribute.INITIAL_PATH);
 
       if( gsas!=null || (position != null && initial_path_obj != null))
-                                                       // has needed attributes 
+                                                       // has needed attributes
       {                                                // so convert it to Q
                                        // calculate d-values at bin boundaries
         initial_path     = initial_path_obj.floatValue();
@@ -335,7 +384,7 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
         }else{
             for ( int i = 0; i < t_vals.length; i++ )
                 Q_vals[i] = tof_calc.DiffractometerQ( scattering_angle,
-                                                      total_length, 
+                                                      total_length,
                                                       t_vals[i]        );
         }
 
@@ -355,27 +404,27 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
         arrayUtil.Reverse( Q_vals );
         Q_scale = new VariableXScale( Q_vals );
 
-        new_data = Data.getInstance( Q_scale, 
-                                     y_vals, 
+        new_data = Data.getInstance( Q_scale,
+                                     y_vals,
                                      errors,
                                      data.getGroup_ID() );
-                                                // create new data block with 
-                                                // non-uniform Q_scale and 
+                                                // create new data block with
+                                                // non-uniform Q_scale and
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 
                                                 // resample if a valid
         if ( new_Q_scale != null )              // scale was specified
-          new_data.resample( new_Q_scale, IData.SMOOTH_NONE );  
+          new_data.resample( new_Q_scale, IData.SMOOTH_NONE );
 
-        new_ds.addData_entry( new_data );      
+        new_ds.addData_entry( new_data );
       }
     }
     new_ds.addOperator(new DiffractometerQToD());
     new_ds.addOperator(new DiffractometerQToWavelength());
 
     return new_ds;
-  }  
+  }
 
   /* ------------------------------ clone ------------------------------- */
   /**
@@ -394,5 +443,30 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
     return new_op;
   }
 
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    float min_1 = (float)5.0, max_1 = (float)7.0;
+    String file_name = "/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
+                     /*"D:\\ISAW\\SampleRuns\\GPPD12358.RUN";*/
+    try
+    {
+      RunfileRetriever rr = new RunfileRetriever( file_name );
+      DataSet ds1 = rr.getDataSet(1);
+      ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+      DiffractometerTofToQ op = 
+                           new DiffractometerTofToQ(ds1, min_1, max_1, 100);
+      DataSet new_ds = (DataSet)op.getResult();
+      ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+      System.out.println(op.getDocumentation());
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
+  }
 
 }
