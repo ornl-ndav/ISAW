@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/03/05 13:48:26  dennis
+ *  Added method equals() that does field by field comparison.
+ *
  *  Revision 1.3  2003/02/24 13:36:04  dennis
  *  Fixed bug... subclass command was not recorded properly in the
  *  constructor.
@@ -137,6 +140,37 @@ public class FileInfoCommand extends CommandObject
            "directory = "   + dir_name;
   }
 
+
+  /**
+   *  Check whether or not the data members in this file info command object
+   *  match the data members in the other specified command object.
+   *
+   *  @param  other  The other CommandObject that is compared to the
+   *                 current object.
+   *
+   *  @return  True if the fields match, false otherwise.
+   */
+  public boolean equals( CommandObject other )
+  {
+    if ( other == this )                         // same object
+      return true;
+
+    if ( ! (other instanceof FileInfoCommand) )  // can't match if wrong class
+      return false;
+
+    if ( !super.equals( other ) )                // fields in base class must
+      return false;                              // match
+
+    FileInfoCommand other_fic = (FileInfoCommand)other;
+
+    if ( filename.equals( other_fic.filename )   &&
+         dir_name.equals( other_fic.dir_name )   )
+      return true;
+    else
+      return false;
+  }
+
+
  /* ---------------------------- readObject ------------------------------- */
  /**
   *  The readObject method is called when objects are read from a serialized
@@ -147,7 +181,6 @@ public class FileInfoCommand extends CommandObject
   *  and new fields that are required in the current version but are not
   *  present in the serialized version being read.
   */
-
   private void readObject( ObjectInputStream s ) throws IOException,
                                                         ClassNotFoundException
   {

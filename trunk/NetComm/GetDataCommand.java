@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/03/05 13:48:26  dennis
+ *  Added method equals() that does field by field comparison.
+ *
  *  Revision 1.3  2003/02/24 13:36:04  dennis
  *  Fixed bug... subclass command was not recorded properly in the
  *  constructor.
@@ -225,6 +228,42 @@ public class GetDataCommand extends CommandObject
            "rebin_factor = " + rebin_factor + '\n' +
            "attr_mode    = " + attr_mode;
   }
+
+
+  /**
+   *  Check whether or not the data members in this get data command 
+   *  object match the data members in the other specified command object.
+   *
+   *  @param  other  The other CommandObject that is compared to the 
+   *                 current object.
+   *
+   *  @return  True if the fields match, false otherwise.
+   */
+  public boolean equals( CommandObject other )
+  {
+    if ( other == this )                         // same object
+      return true;
+
+    if ( ! (other instanceof GetDataCommand) )   // can't match if wrong class
+      return false;                            
+
+    if ( !super.equals( other ) )                // fields in base class must
+      return false;                              // match
+
+    GetDataCommand other_gd = (GetDataCommand)other;
+
+    if ( ds_number    == other_gd.ds_number     &&
+         min_x        == other_gd.min_x         && 
+         max_x        == other_gd.max_x         && 
+         rebin_factor == other_gd.rebin_factor  && 
+         attr_mode    == other_gd.attr_mode     &&
+         filename.equals( other_gd.filename )   &&    
+         group_ids.equals( other_gd.group_ids )  ) 
+      return true;
+    else
+      return false;
+  }
+
 
  /* ---------------------------- readObject ------------------------------- */
  /**
