@@ -8,6 +8,10 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/10/03 22:13:10  dennis
+ *  Now uses the constant empty DataSet, DataSet.EMPTY_DATA_SET,
+ *   as a place holder for the DataSet parameter.
+ *
  *  Revision 1.4  2000/07/10 22:35:54  dennis
  *  July 10, 2000 version... many changes
  *
@@ -110,10 +114,8 @@ public class DataSetMultiply extends  DataSetOperator
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter(
-                             "DataSet to Multiply by",
-                             new DataSet("DataSetToMultiplyBy",
-                                         "Empty DataSet")  );
+    Parameter parameter = new Parameter( "DataSet to Multiply by",
+                                          DataSet.EMPTY_DATA_SET );
     addParameter( parameter );
 
     parameter = new Parameter( "Create new DataSet?", new Boolean(false) );

@@ -91,7 +91,7 @@ public class SpectrometerNormalizer extends    DataSetOperator
     addParameter( parameter );
    
     parameter = new Parameter( "Monitor DataSet",
-                              new DataSet("Monitor DataSet", "Empty DataSet"));
+                                DataSet.EMPTY_DATA_SET );
     addParameter( parameter );
   }
 

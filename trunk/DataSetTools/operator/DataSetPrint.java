@@ -3,6 +3,10 @@
  *                                         Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.7  2000/10/03 22:13:10  dennis
+ *  Now uses the constant empty DataSet, DataSet.EMPTY_DATA_SET,
+ *   as a place holder for the DataSet parameter.
+ *
  *  Revision 1.6  2000/08/17 19:19:07  dennis
  *  Moved OutputTable from DataSetTools/operator to DataSetTools/components/ui
  *
@@ -107,7 +111,7 @@ public class DataSetPrint extends    Operator
                                  // parameters
 
      Parameter parameter = new Parameter( "Run for DataSetPrinting",
-                    new DataSet("Run for DataSetPrinting", "Empty DataSet"));
+                                           DataSet.EMPTY_DATA_SET );
      addParameter( parameter );
 
      parameter = new Parameter("Data block index", new Integer( 0) );
