@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2003/10/11 19:04:24  bouzekc
+ *  Now implements clone() using reflection.
+ *
  *  Revision 1.21  2003/09/16 22:50:08  bouzekc
  *  Now uses an internal ActionListener class to retrieve and set the value.
  *  This fixes a subtle bug related to ActionEvents being implicitly
@@ -130,6 +133,9 @@ import java.awt.*;
 import java.awt.event.*;
 
 import java.beans.*;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 import java.util.*;
 
@@ -272,7 +278,6 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
     } else {
       this.value = val;
     }
-    validateSelf(  );
   }
 
   /**
@@ -350,15 +355,38 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
   }
 
   /**
-   * Definition of the clone method.
+   * Clones this RadioButtonPG.  Overwritten so that the choices are preserved.
    */
   public Object clone(  ) {
-    RadioButtonPG pg = new RadioButtonPG( this.name, this.getValue(  ) );
-    pg.setDrawValid( this.getDrawValid(  ) );
-    pg.setValid( this.getValid(  ) );
-    pg.initialized = false;
+    try {
+      Class klass           = this.getClass(  );
+      Constructor construct = klass.getConstructor( 
+          new Class[]{ String.class, Object.class } );
+      RadioButtonPG pg      = ( RadioButtonPG )construct.newInstance( 
+          new Object[]{ null, null } );
+      pg.setName( new String( this.getName(  ) ) );
+      pg.setValue( this.getValue(  ) );
+      pg.setDrawValid( this.getDrawValid(  ) );
+      pg.setValid( this.getValid(  ) );
 
-    return pg;
+      if( radioChoices != null ) {
+        pg.radioChoices = ( Hashtable )radioChoices.clone(  );
+      }
+
+      if( this.initialized ) {
+        pg.initGUI( null );
+      }
+
+      return pg;
+    } catch( InstantiationException e ) {
+      throw new InstantiationError( e.getMessage(  ) );
+    } catch( IllegalAccessException e ) {
+      throw new IllegalAccessError( e.getMessage(  ) );
+    } catch( NoSuchMethodException e ) {
+      throw new NoSuchMethodError( e.getMessage(  ) );
+    } catch( InvocationTargetException e ) {
+      throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
+    }
   }
 
   /**
