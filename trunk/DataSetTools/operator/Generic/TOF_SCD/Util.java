@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2004/04/12 21:31:29  dennis
+ * The method to get the detector ID now will first try to get
+ * the ID from the data blocks PixelInfoList.
+ *
  * Revision 1.17  2004/03/15 03:28:39  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -123,6 +127,15 @@ public class Util{
    * Determine the detector id from a given spectrum
    */
   static public int detectorID(Data data){
+    Object obj = data.getAttributeValue( Attribute.PIXEL_INFO_LIST );
+    if ( obj != null && obj instanceof PixelInfoList )
+    {
+      PixelInfoList pil = (PixelInfoList)obj; 
+      if ( pil.num_pixels() > 0 )
+        return pil.pixel(0).gridID();
+    }
+
+    // if no valid PixelInfoList, try to get the detector ID attribute
     Attribute attr=data.getAttribute(Attribute.DETECTOR_IDS);
     if( attr==null )
       return -1;
