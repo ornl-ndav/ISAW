@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.42  2004/12/05 05:23:29  millermi
+ * - Fixed eclipse warnings.
+ *
  * Revision 1.41  2004/10/21 01:35:01  millermi
  * - Project Directory restored immediately so Load S(Qx,Qy) will
  *   begin in the last directory saved if SandProps.isv exists.
@@ -284,7 +287,6 @@ import gov.anl.ipns.ViewTools.Components.Menu.ViewMenuItem;
 import gov.anl.ipns.ViewTools.Components.Region.*;
 import gov.anl.ipns.ViewTools.Components.Transparency.SelectionOverlay;
 import gov.anl.ipns.ViewTools.Components.TwoD.ImageViewComponent;
-import gov.anl.ipns.ViewTools.Components.ViewControls.CursorOutputControl;
 import gov.anl.ipns.ViewTools.Components.ViewControls.FieldEntryControl;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
 import gov.anl.ipns.ViewTools.Panels.Transforms.*;
@@ -608,7 +610,6 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       // are each stored in a separate 2-D array.
       reader = new TextFileReader( filename );
       String header_line = removeLeadingSpaces(reader.read_line());
-      String key = "";
       String info = null;
       int colon_index = -1;
       // while a line starts with #, treat it as special information.
@@ -2026,7 +2027,6 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       if( ivc != null )
       {
         Region[] regions = ivc.getSelectedRegions();
-        String[] sel_names = new String[regions.length + 1];
         String temp = "";
 	String temp_name = "";
 	selectlist.removeAllItems();
