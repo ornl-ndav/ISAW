@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2005/01/06 16:43:09  rmikk
+ * Made a Hidden operator
+ *
  * Revision 1.1  2004/07/14 16:21:40  rmikk
  * BlindJ except input is the Peaks Vector and output is the orientation 
  *   matrix
@@ -46,13 +49,15 @@ import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 import java.util.Vector;
 import DataSetTools.parameter.*;
 import IPNSSrc.blind;
-import DataSetTools.operator.Generic.TOF_SCD.*;
+//import DataSetTools.operator.Generic.TOF_SCD.*;
 /** 
  * This operator takes a peaks file and a list of sequence numbers in
  * this file.  It then calculates the orientation matrix and other
  * parameters and stores them in a matrix file
  */
-public class BlindJ_base extends  GenericTOF_SCD {
+public class BlindJ_base extends  GenericTOF_SCD implements
+                             DataSetTools.operator.HiddenOperator{
+                               
   private static final String  TITLE = "JBlind";
   float[][] UB=new float[3][3];
   /* ------------------------ Default constructor ------------------------- */ 
