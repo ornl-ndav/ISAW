@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2003/02/12 20:05:14  dennis
+ *  Removed SEGMENT_INFO and SEGMENT_INFO_LIST.
+ *  Added RAW_DISTANCE for TOF_DG_SPECTROMETERs.
+ *
  *  Revision 1.36  2003/02/07 19:45:06  dennis
  *  Added DETECTOR_DATA_GRID
  *
@@ -181,6 +185,7 @@ abstract public class Attribute implements Serializable,
 
   public static final String  DETECTOR_POS      = "Effective Position";
   public static final String  RAW_ANGLE         = "Raw Detector Angle";
+  public static final String  RAW_DISTANCE      = "Ave. Raw Detector Distance";
   public static final String  SOLID_ANGLE       = "Total Solid Angle";
   public static final String  OMEGA             = "Omega";
   public static final String  DELTA_2THETA      = "\u0394"+"2"+"\u03b8";
@@ -233,8 +238,8 @@ abstract public class Attribute implements Serializable,
   public static final String SCD_CALIB_FILE     = "SCD Calibration File";
 
   public static final String  PIXEL_INFO_LIST   = "Pixel Info List";
-  public static final String  SEGMENT_INFO_LIST = "Seg Info List";
-  public static final String  SEGMENT_INFO      = "Seg Info";
+//  public static final String  SEGMENT_INFO_LIST = "Seg Info List";
+//  public static final String  SEGMENT_INFO      = "Seg Info";
 
   public static final String  DS_TYPE            = "Data Set Type";
 
