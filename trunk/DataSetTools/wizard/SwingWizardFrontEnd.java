@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/01/09 22:27:15  bouzekc
+ * Implements the IGUIWizardFrontEnd.
+ *
  * Revision 1.6  2004/01/09 15:35:17  bouzekc
  * Now correctly disposes of the window when it is not standalone and exits the
  * system when it is.
@@ -90,7 +93,7 @@ import javax.swing.*;
  * all the Swing niceties, including dual progress bars.  It is meant to have
  * package level access only.
  */
-class SwingWizardFrontEnd implements IWizardFrontEnd {
+class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   //~ Static fields/initializers ***********************************************
 
   public static final String VIEW_DS    = "View DataSet";
@@ -121,19 +124,22 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
     wiz               = wizard;
     wizButtons        = new AbstractButton[8];  //number of buttons
     frame             = new JFrame( wiz.getTitle(  ) );
-    
+
     if( wiz.getStandalone(  ) ) {
       frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     } else {
       frame.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
     }
-    
     form_panel        = new JPanel(  );
     form_label        = new JLabel( " ", SwingConstants.CENTER );
     formProgress      = new PropChangeProgressBar(  );
     wizProgress       = new JProgressBar(  );
     command_handler   = new CommandHandler( wiz );
 
+    try {
+      UIManager.setLookAndFeel( 
+        new com.incors.plaf.kunststoff.KunststoffLookAndFeel(  ) );
+    } catch( Exception e ) {}
   }
 
   //~ Methods ******************************************************************
@@ -238,8 +244,8 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
     if( wiz.getProjectsDirectory(  ) != null ) {
       TextWriter.writeASCII( Wizard.CONFIG_FILE, wiz.getProjectsDirectory(  ) );
     }
-    
-   if( wiz.getStandalone(  ) ) {
+
+    if( wiz.getStandalone(  ) ) {
       System.exit( 0 );
     } else {
       frame.dispose(  );
@@ -878,7 +884,7 @@ class SwingWizardFrontEnd implements IWizardFrontEnd {
       } else if( command == CLEAR_ALL_COMMAND ) {
         wizard.invalidate( 0 );
       } else if( command == CLEAR_COMMAND ) {
-        wizard.invalidate( wizard.getCurrentFormNumber(  ) );
+        wizard.invalidate( curFormNum);
       } else if( command == EXEC_ALL_COMMAND ) {
         worker = new WizardWorker( wizard );
         worker.setFormNumber( wizard.getNumForms(  ) - 1 );
