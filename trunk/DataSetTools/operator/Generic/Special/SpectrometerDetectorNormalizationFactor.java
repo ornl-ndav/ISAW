@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/02/28 14:20:06  dennis
+ *  Added getDocumentation() method. (Tyler Stelzer)
+ *
  *  Revision 1.7  2002/11/27 23:21:43  pfpeterson
  *  standardized header
  *
@@ -499,5 +502,45 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
      System.out.println("5. MULT  SC  PHI = "  + PHI + " FIRST = " + FIRST +
                         " SECOND = " + SECOND + " XMS = " + XMS );
    return XMS;
+  }
+  
+  
+  public String getDocumentation()
+  {
+    StringBuffer res = new StringBuffer("");
+    
+    res.append("@overview This operator calculates detector normalization");
+     res.append(" factors for a direct geometry spectrometer based on the");
+     res.append(" difference of vanadium run and background run DataSets.");
+    
+    res.append("@algorithm Get the current data set.  Construct a new data");
+     res.append(" set for the normalization factors. Copy the attributes of");
+     res.append(" the original data set. Get reference to the data entry.");
+     res.append(" Get the detector position and Initial path length. Convert");
+     res.append(" it to E. Calculate energies at bin boundaries.");
+    
+    res.append("@param  ds  This DataSet must contain the difference between");
+     res.append("a vanadium run and a background run.  These DataSets");
+     res.append(" must have the same machine geometry and detector");
+     res.append(" grouping as the sample runs that the normalization");
+     res.append(" factors will be applied to. Also, the difference");
+     res.append(" must have been converted to energy loss.");
+   
+    res.append("@param theta    The angle between the normal to the sample");
+     res.append(" slab and the beam direction.");
+    
+    res.append("@return This returns a new DataSet containing three Data");
+     res.append(" blocks.  The first Data block has the experimentally");
+     res.append(" determined efficiencies. The second has the calculated");
+     res.append(" efficiencies based on Vineyard's approximation for multiple");
+     res.append(" scattering ( J.R.D. Copley et al., Nucl. Instr. Method"); 
+     res.append(" 107, 501(1973) ).  The third has the ratio of the");
+     res.append(" calculated to experimental efficiencies:");
+     res.append(" cal_FF[j]/exp_FF[j]. If an error occurs, this returns a");
+     res.append(" message String.");
+    
+    res.append("@error Error calculating detector normalization factors.");
+    
+    return res.toString();
   }
 }
