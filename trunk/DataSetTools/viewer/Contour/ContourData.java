@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2004/06/11 17:03:17  dennis
+ *  Now references static method setDataEntriesInAllGrids() through the
+ *  class UniformGrid, rather than through an instance.
+ *
  *  Revision 1.28  2004/05/14 15:04:56  rmikk
  *  Removed unused variables
  *
@@ -619,7 +623,7 @@ public class ContourData
          for( int j=0; j< ds.getNum_entries(); j++)
             if( ds.getData_entry(j).getX_scale() != x_scale)
                 ds.getData_entry(j).resample( x_scale,0);
-         grid.setDataEntriesInAllGrids(ds);
+         UniformGrid.setDataEntriesInAllGrids(ds);
          //SetUpGroups();
         }
       else if( xscale != null)
@@ -775,8 +779,11 @@ public class ContourData
                DetNum = DetNums[0];
           else
               state.set_int( ViewerState.CONTOUR_DETNUM, DetNum);
-          grid = (UniformGrid)(Grid_util.getAreaGrid( ds, DetNum));
-          grid.setDataEntriesInAllGrids(ds);
+
+          UniformGrid.setDataEntriesInAllGrids(ds);
+                                                   // now get the grid and assign it
+                                                   // to the instance variable "grid"
+          grid = (UniformGrid)(Grid_util.getAreaGrid( ds, DetNum)); 
           //SetUpGroups();
         }else DetNums = null;
      
@@ -858,7 +865,7 @@ public class ContourData
          grid = (UniformGrid)Grid_util.getAreaGrid( ds, DetNum);
          return;
       }
-      grid.setDataEntriesInAllGrids(ds);
+      UniformGrid.setDataEntriesInAllGrids(ds);
       num_rows = grid.num_rows();
       num_cols = grid.num_cols();
       //SetUpGroups();

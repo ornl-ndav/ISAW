@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/06/11 17:03:59  dennis
+ * Now references static method setDataEntriesInAllGrids() through the
+ * class UniformGrid, rather than through an instance.
+ *
  * Revision 1.10  2004/04/18 02:12:21  dennis
  * Added check that the dimensions of the area detector sensitivity
  * data matches the dimensions of the sample run used for calculating
@@ -171,9 +175,8 @@ public class Center extends GenericTOF_SAD{
      if( GridIDs.length < 1)
         return new ErrorString("No Data Set Grids set up for "+ DS.toString());
      
-
+     UniformGrid.setDataEntriesInAllGrids( DS );
      UniformGrid DSGrid =(UniformGrid)Grid_util.getAreaGrid( DS, GridIDs[0]);
-     DSGrid.setDataEntriesInAllGrids( DS);
 
      GridIDs = Grid_util.getAreaGridIDs(SensDS);
      if( GridIDs == null)
@@ -182,8 +185,8 @@ public class Center extends GenericTOF_SAD{
      if( GridIDs.length < 1)
         return new ErrorString("No Sensitivity Data Set Grids set up for "+ SensDS.toString());
 
+     UniformGrid.setDataEntriesInAllGrids( SensDS );
      UniformGrid SensGrid =(UniformGrid)Grid_util.getAreaGrid( SensDS,GridIDs[0]);
-     SensGrid.setDataEntriesInAllGrids( SensDS);
 
      if ( SensGrid.num_rows() != DSGrid.num_rows() )
        return new ErrorString("Wrong size sensitivity grid, rows = " + 

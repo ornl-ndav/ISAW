@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/06/11 17:03:59  dennis
+ * Now references static method setDataEntriesInAllGrids() through the
+ * class UniformGrid, rather than through an instance.
+ *
  * Revision 1.6  2004/04/08 15:18:09  dennis
  * Now uses "new" DataSetPGs consistently and calls clear() after getting the
  * value from the DataSetPG, to avoid memory leaks.
@@ -122,7 +126,7 @@ public class Print4Col2D1Chan extends GenericTOF_SAD{
       IDataGrid grid = ipinf.DataGrid();
       if( grid == null)
         return new ErrorString("DataSet has no grid");
-      ((UniformGrid)grid).setDataEntriesInAllGrids( DS);
+      UniformGrid.setDataEntriesInAllGrids( DS );
       //Grid_util.setEffectivePositions( DS, grid.ID());
       FileOutputStream fout= null;
       try{
