@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.40  2003/06/26 19:35:40  bouzekc
+ * Shrunk Wizard opening size to 75% full screen width and
+ * 60% full screen height.
+ *
  * Revision 1.39  2003/06/26 16:58:52  bouzekc
  * Viewing of generic file result parameters, such as those
  * returned from OperatorForms, now enabled.
@@ -807,10 +811,10 @@ public abstract class Wizard implements PropertyChangeListener {
     frame.getContentPane(  ).add( work_area );
 
     {
-      int screenheight = ( int )Toolkit.getDefaultToolkit(  ).getScreenSize(  )
-                                       .getHeight(  );
-      int screenwidth = ( int )Toolkit.getDefaultToolkit(  ).getScreenSize(  )
-                                      .getWidth(  );
+      int screenheight = ( int )(Toolkit.getDefaultToolkit(  ).getScreenSize(  )
+                                       .getHeight(  ) * 0.60f);
+      int screenwidth = ( int )(Toolkit.getDefaultToolkit(  ).getScreenSize(  )
+                                      .getWidth(  ) * 0.75f);
 
       //full screen
       frame.setBounds( 0, 0, screenwidth, screenheight );
