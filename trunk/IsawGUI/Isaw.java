@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.112  2002/08/12 19:13:37  pfpeterson
+ *  Changed the default version if being run from cvs.
+ *
  *  Revision 1.111  2002/08/06 21:32:42  pfpeterson
  *  Fixed a filefilter bug where it kept two copies of the selected
  *  filter and added gsas files to the load dialog.
@@ -702,7 +705,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version")){
-            version="1.4.0alpha";
+            version="1.4.0";
         }else{
             version=SharedData.VERSION;
         }
