@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/11/05 02:12:16  bouzekc
+ * Changed constructor interfaces to reflect OperatorForm and Form changes.
+ *
  * Revision 1.7  2003/10/10 00:56:06  bouzekc
  * Removed import of PyOperatorFactory.
  *
@@ -61,6 +64,8 @@ package DataSetTools.wizard;
 
 import DataSetTools.operator.PyScriptOperator;
 
+import DataSetTools.parameter.IParameterGUI;
+
 import DataSetTools.util.*;
 
 import java.io.File;
@@ -92,45 +97,35 @@ public class JyScriptForm extends OperatorForm {
       //to remove extra slashes.
       filename = StringUtil.setFileSeparator( jyScriptsDir + filename );
     }
-
     form_op = new PyScriptOperator( filename );
     setDefaultParameters(  );
   }
 
   /**
    * Construct a JyScriptForm with the given Jython script file name and result
-   * parameter type.
+   * parameter.
    *
    * @param filename The Jython script file name to use
-   * @param type The IParameterGUI type of the result parameter.  e.g. for a
-   *        LoadFilePG, use "LoadFile"
-   * @param name The name of the result parameter. e.g. "log file"
+   * @param resultPG The IParameterGUI to use for the result.
    */
-  public JyScriptForm( String filename, String type, String name ) {
+  public JyScriptForm( String filename, IParameterGUI resultPG ) {
     this( filename );
-    setParamClass( type );
-
-    result_param.setName( name );
+    setResultParam( resultPG );
     setDefaultParameters(  );
   }
 
   /**
    * Construct a JyScriptForm with the given Jython script file name and result
-   * parameter type. This constructor allows setting of the constant
-   * parameters.
+   * parameter. This constructor allows setting of the constant parameters.
    *
    * @param filename The Jython script file name to use for this form
-   * @param type The IParameterGUI type of the result parameter.  e.g. for a
-   *        LoadFilePG, use "LoadFile"
-   * @param name The name of the result parameter. e.g. "log file"
+   * @param resultPG The IParameterGUI to use for the result.
    * @param indices The array of indices that represent constant parameters for
    *        this Form.
    */
-  public JyScriptForm( 
-    String filename, String type, String name, int[] indices ) {
+  public JyScriptForm( String filename, IParameterGUI resultPG, int[] indices ) {
     this( filename );
-    setParamClass( type );
-    result_param.setName( name );
+    setResultParam( resultPG );
     setConstantParamIndices( indices );
     setDefaultParameters(  );
   }
@@ -142,7 +137,6 @@ public class JyScriptForm extends OperatorForm {
    */
   public static void main( String[] args ) {
     JyScriptForm form = new JyScriptForm( args[0] );
-
     System.out.println( "The Script title is " + form.getTitle(  ) );
   }
 }
