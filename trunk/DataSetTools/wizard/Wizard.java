@@ -32,6 +32,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.82  2003/09/18 18:46:21  bouzekc
+ * Fixed bug where loading a file from the command line would not show the
+ * last valid Form.  Fixed bug where a file loaded from the menu would not
+ * properly show the last valid form.  Fixed bug where a previously valid
+ * Form was invalidated due to stray PropertyChangeEvents.  Removed call
+ * to populateViewMenu() from propertyChange(), as creating the View menu
+ * no longer relies on the validity of parameters.
+ *
  * Revision 1.81  2003/09/18 17:58:13  bouzekc
  * Refactored wizard progress bar updating, fixing a bug that prevented
  * the proper updating during execution of all Forms at once.
@@ -826,16 +834,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     }
 
     loadForms( f );
-
-    int lastValidNum = getLastValidFormNum(  );
-
-    if( lastValidNum < 0 ) {
-      showForm( 0 );
-    } else {
-      showForm( lastValidNum );
-    }
-
-    this.populateViewMenu(  );
+    showLastValidForm(  );
 
     return true;
   }
@@ -852,8 +851,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       modified = true;
       this.invalidate( this.getCurrentFormNumber(  ) );
     }
-
-    this.populateViewMenu(  );
   }
 
   /**
@@ -883,11 +880,18 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
   /**
    * Show the form at the specified position in the list of forms. If the index
-   * is invalid, an error message will be displayed in the status pane.
+   * is invalid, an error message will be displayed in the status pane. To
+   * avoid strange events that can occur due to all of the
+   * PropertyChangeListeners, this sets ignorePropChanges to true upon entry,
+   * and to the previous state upon exit.
    *
    * @param index The index of the form to show.
    */
   public void showForm( int index ) {
+    boolean ignore = getIgnorePropertyChanges(  );
+
+    setIgnorePropertyChanges( true );
+
     if( !frame.isShowing(  ) ) {
       this.makeGUI(  );
       this.showGUI(  );
@@ -922,6 +926,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
     updateFormProgressBar(  );
     updateWizardProgressBar(  );
+    this.populateViewMenu(  );
+    setIgnorePropertyChanges( ignore );
   }
 
   /**
@@ -951,7 +957,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       } else {
         //assume everything is OK
         this.loadForms( new File( argv[0] ) );
-        this.showForm( 0 );
+        this.showLastValidForm(  );
       }
     } else if( argv.length == 2 ) {
       if( argv[0].equals( "--nogui" ) ) {
@@ -1606,25 +1612,28 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     Object val;
 
     f = this.getCurrentForm(  );
-    view_menu.removeAll(  );
 
-    for( int i = 0; i < f.getNum_parameters(  ); i++ ) {
-      iparam   = ( IParameterGUI )f.getParameter( i );
-      val      = iparam.getValue(  );
+    if( f != null ) {
+      view_menu.removeAll(  );
 
-      /*semi-sophisticated attempt at being able to view
-         DataSets, Vectors of items, and files.  Things like
-         Strings and ints, which are easily viewable on the
-         Form, should not be sent to the ParameterViewer. */
-      if( 
-        ( iparam instanceof DataSetPG ) || ( iparam instanceof ArrayPG ) ||
-          ( iparam instanceof LoadFilePG ) || ( iparam instanceof SaveFilePG ) ||
-          ( iparam instanceof StringPG &&
-          ( val.toString(  ).indexOf( '.' ) > 0 ) ) ||
-          iparam instanceof VectorPG ) {
-        jmi = new JMenuItem( iparam.getName(  ) );
-        view_menu.add( jmi );
-        jmi.addActionListener( command_handler );
+      for( int i = 0; i < f.getNum_parameters(  ); i++ ) {
+        iparam   = ( IParameterGUI )f.getParameter( i );
+        val      = iparam.getValue(  );
+
+        /*semi-sophisticated attempt at being able to view
+           DataSets, Vectors of items, and files.  Things like
+           Strings and ints, which are easily viewable on the
+           Form, should not be sent to the ParameterViewer. */
+        if( 
+          ( iparam instanceof DataSetPG ) || ( iparam instanceof ArrayPG ) ||
+            ( iparam instanceof LoadFilePG ) || ( iparam instanceof SaveFilePG ) ||
+            ( iparam instanceof StringPG &&
+            ( val.toString(  ).indexOf( '.' ) > 0 ) ) ||
+            iparam instanceof VectorPG ) {
+          jmi = new JMenuItem( iparam.getName(  ) );
+          view_menu.add( jmi );
+          jmi.addActionListener( command_handler );
+        }
       }
     }
   }
@@ -1645,6 +1654,19 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     help_frame.getContentPane(  ).add( 
       new JScrollPane( new JEditorPane( "text/html", html ) ) );
     help_frame.show(  );
+  }
+
+  /**
+   * Shows the last valid Form.
+   */
+  private void showLastValidForm(  ) {
+    int lastValidNum = getLastValidFormNum(  );
+
+    if( lastValidNum < 0 ) {
+      showForm( 0 );
+    } else {
+      showForm( lastValidNum );
+    }
   }
 
   /**
