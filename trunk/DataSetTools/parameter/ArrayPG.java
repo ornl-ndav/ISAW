@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2003/09/15 22:51:08  bouzekc
+ *  Fixed commenting problem which prevented compilation.
+ *
  *  Revision 1.29  2003/09/15 22:48:54  bouzekc
  *  initGUI(Vector) now calls setValue() if the passed-in value is not null.
  *
@@ -538,8 +541,8 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
         fpg.setDrawValid( true );
         fpg.initGUI( vals );
         fpg.showGUIPanel( 0, y );
-        y += dy;*/
-     }
+        y += dy;
+     }*/
 
   /**
    * Determines how many elements are of the same class.
