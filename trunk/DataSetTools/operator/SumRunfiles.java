@@ -4,6 +4,12 @@
  *  Renamed from MultiRunfileLoader.java
  *  
  *  $Log$
+ *  Revision 1.8  2001/03/01 20:57:43  dennis
+ *  Modified import statments to JUST import IPNS.Runfile.Runfile
+ *  and to explicitly import DataSetTools.instruments.InstrumentType.
+ *  This resolved conflicting names between the InstrumentType
+ *  class in IPNS.Runfile and in DataSetTools.instruments.
+ *
  *  Revision 1.7  2000/11/10 22:41:34  dennis
  *     Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
@@ -61,13 +67,13 @@ package DataSetTools.operator;
 import java.util.Vector;
 import java.io.*;
 import DataSetTools.dataset.*;
-import DataSetTools.instruments.*;
+import DataSetTools.instruments.InstrumentType;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.util.*;
 import DataSetTools.math.*;
 import DataSetTools.peak.*;
-import IPNS.Runfile.*;
+import IPNS.Runfile.Runfile;
 
 
 /**
