@@ -29,6 +29,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2001/11/09 18:16:20  dennis
+ *  1. Eliminated reporting of the command is "UNKNOWN".
+ *  2. Set the Result label to "" before executing a getResult.
+ *  3. Introduced an addWindowListener method.
+ *
  *  Revision 1.17  2001/08/16 22:27:20  rmikk
  *  Got the initial size of the dialog box closer for 0 arguments and many arguments
  *
@@ -143,7 +148,7 @@ public class JParametersDialog implements Serializable,
         if(op instanceof DataSetOperator)
             SS = SS +" on "+((DataSetOperator)op).getDataSet();
 	//#
-        
+        if(op.getCommand().equals("UNKNOWN")) SS ="";
         Box BB = new Box( BoxLayout.Y_AXIS);
         JLabel Header = new JLabel(SS ,SwingConstants.CENTER);
         Header.setForeground( Color.black);
@@ -380,7 +385,12 @@ public class JParametersDialog implements Serializable,
  */
     public Object getLastResult()   
      {return Result;
-     }           
+     }  
+
+  public void addWindowListener(WindowListener l) 
+   { opDialog.addWindowListener( l );
+   }
+/*        
   public class MyComponentListener extends ComponentAdapter
   {
    public void componentHidden(ComponentEvent e)
@@ -396,6 +406,7 @@ public class JParametersDialog implements Serializable,
       { System.out.println( "In componentShown ");
       }
   }
+*/
   public class ApplyButtonHandler implements ActionListener,
                                   IObservable
   {
@@ -428,6 +439,8 @@ public class JParametersDialog implements Serializable,
       JParameterGUI pGUI;
       String s="";
 
+      resultsLabel.setText("");
+
       if(op instanceof DataSetOperator)
       {
          s = ((DataSetOperator)op).getDataSet().toString();
@@ -452,7 +465,7 @@ public class JParametersDialog implements Serializable,
 
       //util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
       opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-             
+      
       Object result = op.getResult();
       Result = result;
       for( int i = 0; i < ObjectParameters.size(); i++ )
