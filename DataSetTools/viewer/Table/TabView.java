@@ -31,6 +31,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.6  2001/08/13 16:07:48  rmikk
+ * Used getDataSet before each Showw() in case the data
+ * set changed
+ *
  * Revision 1.5  2001/08/13 14:50:03  rmikk
  * Fixed misspelling of indicies
  *
@@ -189,19 +193,23 @@ public class TabView extends DataSetViewer
                {File F = JFC.getSelectedFile();
                 tv.filename = F.getPath().trim();          
                }
+            tv.setDataSet( getDataSet());
             tv.Showw();
            }
          else if( e.getSource().equals( tableView ) )
           { tv.mode = 2;
+            tv.setDataSet( getDataSet());
             tv.Showw();
           }
          else if( e.getSource().equals( consoleView ))
           {tv.mode = 0;
+           tv.setDataSet( getDataSet());
            tv.Showw();
           }
          else if( e.getSource().equals( selectEdit ))
           { 
-            DataSet DS = getDataSet();        
+            DataSet DS = getDataSet();  
+            tv.setDataSet( getDataSet());      
             DataSetOperator op = DS.getOperator( "Set DataSet Field" );        
             if( op == null )
               {System.out.println( " No such operator " );
