@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2003/02/10 13:28:38  dennis
+ *  getAttributeList() now returns a reference to the attribute list,
+ *  not a clone.
+ *
  *  Revision 1.35  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -1361,11 +1365,13 @@ public class DataSet implements IAttributeList,
   }
 
   /**
-   *  Get a copy of the list of attributes for this Data object.
+   *  Get a reference to the list of attributes for this DataSet object.
+   *
+   *  @return return the AttributeList for this DataSet 
    */
   public AttributeList getAttributeList()
   {
-    return (AttributeList)attr_list.clone();
+    return attr_list;
   }
 
   /**
@@ -1374,7 +1380,8 @@ public class DataSet implements IAttributeList,
    */
   public void setAttributeList( AttributeList attr_list )
   {
-    this.attr_list = (AttributeList)attr_list.clone();
+    if ( !attr_list.equals( this.attr_list ))             // only clone if it's
+      this.attr_list = (AttributeList)attr_list.clone();  // a new attr_list
 
     setTitle( this.title );   // force the attribute list to contain the
                               // correct title

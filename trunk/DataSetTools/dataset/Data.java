@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2003/02/10 13:28:37  dennis
+ *  getAttributeList() now returns a reference to the attribute list,
+ *  not a clone.
+ *
  *  Revision 1.34  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -418,16 +422,13 @@ public abstract class Data implements IData,
    }
 
   /**
-   *  Get a copy of the list of attributes for this Data object.
+   *  Get a reference to the list of attributes for this Data object.
    *
-   *  @return A clone of the AttributeList for this Data object. 
+   *  @return The AttributeList for this Data object. 
    */
   public AttributeList getAttributeList()
   {
-    if ( attr_list != null )
-      return (AttributeList)attr_list.clone();
-    else
-      return null;
+    return attr_list;
   }
 
   /**
@@ -438,7 +439,8 @@ public abstract class Data implements IData,
    */
   public void setAttributeList( AttributeList attr_list )
   {
-    this.attr_list = (AttributeList)attr_list.clone();
+    if ( !attr_list.equals( this.attr_list ) )            // only clone if this
+      this.attr_list = (AttributeList)attr_list.clone();  // is a new list
 
     boolean id_set = false;
     int     i      = 0;
