@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/06/03 22:57:34  bouzekc
+ * Changed ASCII file viewing to accept nearly all ASCII
+ * files.
+ *
  * Revision 1.2  2003/06/02 22:13:23  bouzekc
  * Added code to view ASCII files.
  * Fixed inconsistent indenting.
@@ -51,6 +55,7 @@ import DataSetTools.parameter.*;
 import DataSetTools.viewer.*;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Generic.Special.ViewASCII;
+import DataSetTools.util.*;
  
 /**
   *  Class for viewing IParameterGUIs.  Originally designed for the 
@@ -91,7 +96,6 @@ public class ParameterViewer implements ActionListener
   {
     Object obj;
     Vector v;
-    //ViewManager vm;     
 
     if( param != null )
     {
@@ -135,17 +139,25 @@ public class ParameterViewer implements ActionListener
         String fileName = (String)obj, tempName;
         //try to determine if it is a viewable file
 
-        //is this a file?
+        //is this a file we can read?
         if(fileName.indexOf('.') > 0)
         {
-          //I think in lowercase...gives me a headache to shout
           tempName = fileName.toLowerCase();
           
           //ASCII files
-          if((tempName.indexOf(".peaks") >= 0) || 
-             (tempName.indexOf(".mat") >= 0 ))
+          //we don't want any windoze executables, or 
+          //any big ISAW data files
+          if( !( (tempName.indexOf(".sdds") >= 0)  || 
+                 (tempName.indexOf(".exe" ) >= 0)  ||
+                 (tempName.indexOf(".hdf" ) >= 0)  ||
+                 (tempName.indexOf(".run" ) >= 0)  ||
+                 (tempName.indexOf(".nxs" ) >= 0) )
+             )
           {
-            new ViewASCII(fileName).getResult();  //look at the peaks file
+            //look at the peaks file
+            obj = new ViewASCII(fileName).getResult();  
+            if(obj instanceof ErrorString)
+              SharedData.addmsg(obj.toString());
           }
 
         }  
