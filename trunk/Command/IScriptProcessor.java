@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2004/01/08 20:08:13  bouzekc
+ * Removed two unused import statements.
+ *
  * Revision 1.5  2003/10/10 02:28:52  bouzekc
  * Now extends IObservable.
  *
@@ -42,11 +45,9 @@
  */
 package Command;
 import DataSetTools.dataset.*;
-import DataSetTools.operator.*;
 import DataSetTools.util.*;
 import java.beans.*;
 import DataSetTools.components.ParametersGUI.*;
-import DataSetTools.operator.Generic.*;
 
 /**
  * Interface for a Script Processor<P>
