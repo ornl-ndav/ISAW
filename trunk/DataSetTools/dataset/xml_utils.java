@@ -1,5 +1,5 @@
 /*
- * File:  xml_utils.java.java
+ * File:  xml_utils.java.java 
  *
  * Copyright (C) 2002,  Ruth Mikkelson
  *
@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/06/22 15:39:35  rmikk
+ *  Added code to catch end of file in improper XML files
+ *
  *  Revision 1.11  2004/04/26 13:26:35  rmikk
  *  The Attr read method now returns an object with the name and value.
  *     Attributes were made immutable so an external method can no longer
@@ -137,16 +140,26 @@ public class xml_utils
   private static char findChar(InputStream is, String delim, boolean stop)
                                  throws IOException
    {char c;
+    int cc;
     if(lastchar == '>')
       c=lastchar;
-    else
-      c =(char)is.read();
+    else{
+      cc =is.read();
+      if( cc < 0)
+        throw new IOException("End of File");
+      else
+        c=(char)cc;
+    }
+    
     lastchar=0;
     boolean done = delim.indexOf(c) >= 0;
     if( !stop)
       done = !done;
     while( !done)
-     {c=(char)is.read();
+     {cc= is.read();
+      if( cc < 0)
+         throw new IOException("End of File");
+      c =( char) cc;
       done = delim.indexOf(c) >=0;
       if( !stop)
        done = !done;        
@@ -157,10 +170,17 @@ public class xml_utils
   private static String getNextWord( InputStream is) throws IOException
    {
     char c;
+    int cc;
     if(lastchar == '>')
       return null;
-    else
-      c =(char)is.read();
+    else{
+      cc = is.read();
+      if( cc < 0)
+        throw new IOException("End of File");
+      else
+        c=(char)cc;
+    }
+
     lastchar=0;
      
     if( delimiters.indexOf(c) >= 0)
@@ -168,10 +188,20 @@ public class xml_utils
       return sb.toString();
       }
     sb.append(c);
-    for( c=(char)is.read(); (delimiters+"=></\"").indexOf(c)<0;
-                 c=(char)is.read())
-     sb.append(c);
-    lastchar = c;
+    cc=is.read();
+    c = (char)cc;
+    while( (cc>=0)&&((delimiters+"=></\"").indexOf((char)c)<0)){
+      sb.append(c);
+      cc=is.read();
+      c = (char)cc;
+    }
+  /*  for( cc=is.read(); ((delimiters+"=></\"").indexOf((char)cc)<0) &&(cc>=0);
+                 cc=is.read())
+     sb.append((char)cc);
+   */
+    lastchar = (char)cc;
+    if( cc < 0)
+       lastchar = (char)26;
     if(sb.length() <=0) 
      {errormessage ="No Tag";
        return null;
@@ -315,6 +345,7 @@ public class xml_utils
   /** This will ignore all values in a block<P>
   * Invoke this method AFTER the tag and all its attributes have
   * been dealt with(">" has been read)
+  * @return the End Tag for the block
   */
  public static String skipBlock( InputStream is)
   {errormessage=null;
