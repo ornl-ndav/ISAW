@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/08/02 21:13:42  rmikk
+ * Removed unused imports
+ *
  * Revision 1.6  2004/07/26 14:58:06  rmikk
  * Fixed the ConvertToWL to fix the data set operators to correspond
  *   to those from wave length
@@ -80,7 +83,7 @@ package DataSetTools.operator.Generic.TOF_SAD;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.ViewTools.Panels.Transforms.*;
-import DataSetTools.util.*;
+//import DataSetTools.util.*;
 
 import java.util.Vector;
 import java.util.*;

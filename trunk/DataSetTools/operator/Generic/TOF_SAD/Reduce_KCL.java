@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2004/08/02 21:13:18  rmikk
+ * Removed unused imports
+ *
  * Revision 1.31  2004/06/02 15:41:21  rmikk
  * Added parameter(s) to specify monitor ID(s)
  *
@@ -122,7 +125,7 @@
  */
 package DataSetTools.operator.Generic.TOF_SAD;
 
-import gov.anl.ipns.Util.Sys.*;
+//import gov.anl.ipns.Util.Sys.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.ViewTools.Panels.Transforms.*;
 
