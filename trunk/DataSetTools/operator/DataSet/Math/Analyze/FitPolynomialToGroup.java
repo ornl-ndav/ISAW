@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/11/18 21:42:59  dennis
+ * Added getDocumentation() method, trivial main() program, and
+ * documentation for getResult() method. (Tyler Stelzer)
+ *
  * Revision 1.3  2002/09/19 16:01:55  pfpeterson
  * Now uses IParameters rather than Parameters.
  *
@@ -199,7 +203,16 @@ public class  FitPolynomialToGroup  extends    AnalyzeOp
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+  * @return getResult either returns a reference to the current data set, or a
+  *       new dataset which contains a new Data block that contains the fitted
+  *       polynomial.  If the operation is not succesful, an error string is 
+  *       returned.
+  *       Errors occur when there is no data entry with the group_ID, 
+  *       bad number in par_values, an invalid interval,no Data points in 
+  *       specified interval, or not enough data points to fit polynomial
+  */ 
+  
   public Object getResult()
   {                                  // get the parameters
 
@@ -364,6 +377,74 @@ public class  FitPolynomialToGroup  extends    AnalyzeOp
 
     return new_op;
   }
+  
+  /*------------------------------- getDocumentation --------------------- */
+  
+  public String getDocumentation()
+  {
+     StringBuffer Res = new StringBuffer();
+     
+     Res.append("@overview This operator fits a polynomial to the data values");
+      Res.append(" of one Data block over a specified domain.");
+      
+     Res.append("@algorithm A new DataSet is produced that contains a new");
+      Res.append(" Data block that is a modified version of the original");
+      Res.append(" Data block.  The modified Data block has the fitted");
+      Res.append(" polynomial values over a specified x interval and the");
+      Res.append(" original Data block values over the rest of the original");
+      Res.append(" domain of the original Data block.  The polynomial");
+      Res.append(" calculated is the least squares approximation of the");
+      Res.append(" specified degree.");
+     
+     Res.append("@param ds - The DataSet to which the operation is applied");
+     Res.append("@param  group_id - The group_id of the Data block that to");
+      Res.append(" which a polynomial is to be fit");
+     Res.append("@param  a - Left hand endpoint of interval [a,b] used to"); 
+     Res.append(" calculate the least squares approximation"); 
+     Res.append("@param  b - Right hand endpoint of interval [a,b] used to"); 
+      Res.append(" calculate the least squares approximation"); 
+     Res.append("@param  degree - The degree of the polynomial to use");
+     Res.append("@param  new_a - Left hand endpoint of interval");
+      Res.append(" [new_a, new_b] where the least squares polynomial is to be"); 
+      Res.append(" evaluated.");
+     Res.append("@param  new_b - Right hand endpoint of interval");
+      Res.append(" [new_a, new_b] where the least squares polynomial is to");
+      Res.append(" be evaluated.");
+     Res.append("@param  n_points - Number of evenly spaced points on");
+      Res.append(" [new_a, new_b] where the polynomial is evaluated.  If");
+      Res.append(" n_points == 0, The number of evaluation points used will");
+      Res.append(" be chosen to match the orignal Data block's sampling rate.");
+     
+     Res.append("@return getResult either returns a reference to the current");
+      Res.append("data set, or a new dataset which contains a new Data block");
+      Res.append(" that contains the fitted polynomial.  If the operation is");
+      Res.append(" not succesful, an error string is returned.");
+     
+     Res.append("@error no data entry with the group_ID");
+     Res.append("@error interval invalid, [a,b] =");
+     Res.append("@error no Data points in specified interval");
+     Res.append("@error not enough data points to fit polynomial");
+     Res.append("@error couldn't fit data with polynomial");
+     
+     return Res.toString();
+  
+  }
 
-
+  /*------------------------------- main ---------------------------------*/
+  // this method is only used for testing purposes
+   
+  public static void main(String[]args)
+  {
+			       
+     FitPolynomialToGroup op = new FitPolynomialToGroup();
+					
+     String documentation = op.getDocumentation();
+     System.out.println(documentation);
+     
+     //THE FOLLOWING CALL TO getResult() USING DEFAULT PARAMETERS 
+     //CAUSES A NULL-POINTER EXCEPTION
+     
+     //System.out.println("/n" + op.getResult().toString());
+  
+  }
 }

@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/11/18 21:42:48  dennis
+ * Added getDocumentation() method, trivial main() program, and
+ * documentation for getResult() method. (Tyler Stelzer)
+ *
  * Revision 1.2  2002/07/16 22:43:16  dennis
  * Now writes parameter estimates, parameter sgimas and Chi squared
  * values to status pane
@@ -157,6 +161,15 @@ public class  FitExpressionToGroup  extends    AnalyzeOp
 
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+  * @return getResult either returns a reference to the current data set, or a
+  *       new dataset which contains a new Data block that contains the fitted
+  *       function.  If the operation is not succesful, an error string is 
+  *       returned.
+  *       Errors occur when there is no data entry with the group_ID, 
+  *       bad number in par_values, an invalid interval,no Data points in 
+  *       specified interval, or not enough data points to fit polynomial
+  */ 
 
   public Object getResult()
   {                                  // get the parameters
@@ -329,6 +342,71 @@ public class  FitExpressionToGroup  extends    AnalyzeOp
     new_op.CopyParametersFrom( this );
 
     return new_op;
+  }
+  
+  /*------------------------------ getDocumentation ----------------------*/
+  public String getDocumentation()
+  {
+     StringBuffer Res = new StringBuffer();
+     
+     Res.append("@overview This operator fits a function to the data values");
+      Res.append(" of one Data block over a specified domain.");
+      
+     Res.append("@algorithm This operator fits a function defined by an");
+      Res.append(" expression to the data values of one Data block over a");
+      Res.append(" specified domain.  If make_new_ds is true, A new DataSet");
+      Res.append(" is produced that contains");
+      Res.append(" a new Data block that contains the fitted function.");
+     
+     Res.append("@param  ds - DataSet containing the Data to fit.");
+     Res.append("@param  group_id - Group_id of group to fit function to.");
+     Res.append("@param  expression - String containing the expression");
+      Res.append(" specifying the Data.");
+     Res.append("@param  var_name - String containing the independent");
+      Res.append(" variable name for this expression");
+     Res.append("@param  par_names - String containing delimited list of"); 
+      Res.append(" parameter names for this expression.  Valid delimiters");
+      Res.append(" include \" ,;:\\t\\n\\r\\f\".  The parameter names must");
+      Res.append(" be un-broken strings of alpha-numeric characters, or");
+      Res.append("underscores.");
+     Res.append("@param  par_values - String containing initial values for");
+      Res.append(" the parameters.");
+     Res.append("@param  x_min - Minimum value for domain of fitted function."); 
+     Res.append("@param  x_max - Maximum value for domain of fitted function."); 
+     Res.append("@param  make_new_ds - Flag that determines whether a new");
+      Res.append(" DataSet is constructed, or the new fitted function is just");
+      Res.append(" added to the original DataSet.");
+     
+     Res.append("@return getResult either returns a reference to the current");
+      Res.append("data set, or a new dataset which contains a new Data block");
+      Res.append(" that contains the fitted function.  If the operation is");
+      Res.append(" not succesful, an error string is returned.");
+  
+     Res.append("@error no data entry with the group_ID");
+     Res.append("@error Bad Number in <par_values>");
+     Res.append("@error interval invalid, [a,b] = ");
+     Res.append("@error no Data points in specified interval");
+     Res.append("@error not enough data points to fit polynomial");
+     
+     return Res.toString();
+  
+  } 
+  /*------------------------------- main ---------------------------------*/
+  // this method is only used for testing purposes
+   
+  public static void main(String[]args)
+  {
+			       
+     FitExpressionToGroup op = new FitExpressionToGroup();
+					
+     String documentation = op.getDocumentation();
+     System.out.println(documentation);
+     
+     //THE FOLLOWING CALL TO getResult() USING DEFAULT PARAMETERS 
+     //CAUSES A NULL-POINTER EXCEPTION
+     
+     //System.out.println("/n" + op.getResult().toString());
+  
   }
 
 

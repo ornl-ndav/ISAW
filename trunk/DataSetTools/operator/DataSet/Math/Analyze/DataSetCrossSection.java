@@ -31,6 +31,10 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.5  2002/11/18 21:42:48  dennis
+ *  Added getDocumentation() method, trivial main() program, and
+ *  documentation for getResult() method. (Tyler Stelzer)
+ *
  *  Revision 1.4  2002/09/19 16:01:54  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -233,6 +237,12 @@ public class DataSetCrossSection extends    AnalyzeOp
 
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+  *  @return returns a new DataSet or an Error String
+  *	If the operation is not successful, error strings are returned when
+  *	there are no Data groups in DataSet or there is no attribute, 
+  */
+  
 
   public Object getResult()
   {
@@ -384,6 +394,44 @@ public class DataSetCrossSection extends    AnalyzeOp
 
     return new_op;
   }
+  
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+	
+    Res.append("@overview Forms a new DataSet that contains the integrated ");
+     Res.append("crossection of the current DataSet over the specified interval.");
+    
+    Res.append("@algorithm This operator calculates the integral over a specified"); 
+     Res.append(" interval for each Data block in a DataSet and forms a new DataSet");
+     Res.append(" with one entry: a Data block whose value at each of the original");
+     Res.append(" Data blocks is the value of the integral for the original Data");
+     Res.append(" block.  The new Data block will have an X-Scale taken from an");
+     Res.append(" attribute of one of the original Data blocks.  The integral values");
+     Res.append(" will be ordered according to increasing attribute value. If several");
+     Res.append(" Data blocks have the same value of the attribute, their integral");
+     Res.append(" values are averaged.  For example, if the \"Raw Detector Angle\"");
+     Res.append(" attribute is used and several Data blocks have the same angle");
+     Res.append(" value, the integral values for that angle are averaged to form");
+     Res.append(" the y-value that corresponds to that angle in the new Data block.");
+    
+    Res.append("@param  ds - The DataSet to which the operation is applied");
+    Res.append("@param  a - The left hand endpoint of the interval [a, b] over");
+     Res.append("which each Data block is integrated");
+    Res.append("@param  b - The righ hand endpoint of the interval [a, b] over");
+     Res.append(" which each Data block is integrated");
+    Res.append("@param  attr_name - The name of that attribute to be used for");
+     Res.append(" ordering the integrated Data block values");
+   
+    Res.append("@return returns a new DataSet or an Error String");
+     Res.append(" If the operation is not successful, error strings are returned when");
+     Res.append(" there are no Data groups in DataSet or there is no attribute, ");
+    
+    Res.append("@error No Data groups in DataSetCrossSection");
+    Res.append("@error DataSetCrossSection faiiled...no attribute");
+  
+    return Res.toString();
+  }
 
   /* --------------------------- main ----------------------------------- */
   /*
@@ -391,12 +439,21 @@ public class DataSetCrossSection extends    AnalyzeOp
    */
   public static void main( String[] args )
   {
+    
     DataSetCrossSection op = new DataSetCrossSection();
 
     String list[] = op.getCategoryList();
     System.out.println( "Categories are: " );
     for ( int i = 0; i < list.length; i++ )
       System.out.println( list[i] );
+      
+    String documentation = op.getDocumentation();
+    System.out.println(documentation);
+    
+    //THE FOLLOWING CALL TO getResult() USING DEFAULT PARAMETERS 
+    //CAUSES A NULL-POINTER EXCEPTION
+
+    //System.out.println("/n" + op.getResult().toString());
 
   }
 
