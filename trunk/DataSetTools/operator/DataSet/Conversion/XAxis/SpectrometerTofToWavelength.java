@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/13 16:19:17  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.1  2002/02/22 21:00:58  pfpeterson
  * Operator reorganization.
  *
@@ -347,14 +350,18 @@ public class SpectrometerTofToWavelength extends    XAxisConversionOp
         y_vals = data.getY_values();
         errors = data.getErrors();
 
-        new_data = new Data( wl_scale, y_vals, errors, data.getGroup_ID() );
+        new_data = Data.getInstance( wl_scale, 
+                                     y_vals, 
+                                     errors, 
+                                     data.getGroup_ID() );
                                                  // create new data block with 
                                                  // non-uniform E_scale and 
                                                  // the original y_vals.
         new_data.setAttributeList( attr_list );  // copy the attributes
 
-        if ( new_wl_scale != null )                   // resample if a valid
-          new_data.ResampleUniformly( new_wl_scale ); // scale was specified
+                                                 // resample if a valid
+        if ( new_wl_scale != null )              // scale was specified
+          new_data.resample( new_wl_scale, IData.SMOOTH_NONE ); 
 
         new_ds.addData_entry( new_data );      
       }

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/13 16:19:17  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.1  2002/02/22 21:00:59  pfpeterson
  * Operator reorganization.
  *
@@ -297,11 +300,15 @@ public class TofToChannel extends  XAxisConversionOp
                                                  // create new data block with 
                                                  // time-channel XScale and 
                                                  // the original y_vals.
-      new_data = new Data( channel_scale, y_vals, errors, data.getGroup_ID() );
+      new_data = Data.getInstance( channel_scale, 
+                                   y_vals, 
+                                   errors, 
+                                   data.getGroup_ID() );
       new_data.setAttributeList( attr_list );  
 
-      if ( new_channel_scale != null )                    // resample if a valid
-          new_data.ResampleUniformly( new_channel_scale );// scale was specified
+                                                 // resample if a valid
+      if ( new_channel_scale != null )           // scale was specified
+          new_data.resample( new_channel_scale, IData.SMOOTH_NONE );
 
       new_ds.addData_entry( new_data );      
     }

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/03/13 16:22:12  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.7  2001/04/25 20:56:57  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -305,7 +308,7 @@ public static Data IncSpecFocus( Data    monitor_spec,
       new_y[i] = 0;
   }
 
-  Data new_data = new Data( new_tof_scale, new_y, new_group_ID );
+  Data new_data = Data.getInstance( new_tof_scale, new_y, new_group_ID );
   new_data.setAttribute( new FloatAttribute( Attribute.INITIAL_PATH, 
                                              initial_path )); 
   DetectorPosition det_pos = new DetectorPosition();

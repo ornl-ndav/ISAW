@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/03/13 16:13:39  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.3  2002/02/28 19:57:33  dennis
  * Modified import statements due to operator reorganization.
  *
@@ -92,7 +95,7 @@ public class BuildDataSetDemo
       for ( int channel = 0; channel < 50; channel++ )
         y_values[ channel ] = 100*(float)Math.sin( id * channel / 10.0 );
 
-      data = new Data( x_scale, y_values, id ); 
+      data = Data.getInstance( x_scale, y_values, id ); 
 
       //
       // 4. Add attributes as needed to the Data block

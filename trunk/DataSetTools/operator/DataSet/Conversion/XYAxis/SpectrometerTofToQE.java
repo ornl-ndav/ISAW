@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/13 16:19:17  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.1  2002/02/22 21:01:13  pfpeterson
  * Operator reorganization.
  *
@@ -408,7 +411,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     Data new_data;
     for ( int row = 0; row < n_Q_bins; row++ )
     {
-      new_data = new Data( E_scale, QE_vals[row], row+1 );
+      new_data = Data.getInstance( E_scale, QE_vals[row], row+1 );
 
       q_val = row * (max_Q - min_Q) / n_Q_bins + min_Q;
       Attribute q_attr = new FloatAttribute( Attribute.Q_VALUE, q_val );

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/03/13 16:26:24  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.2  2002/02/22 20:45:03  pfpeterson
  * Operator reorganization.
  *
@@ -236,7 +239,7 @@ public class IntegratedIntensityVsAngle extends GenericSpecial
                                           // and they will be since the DataSet
                                           // was sorted on the detector position
     XScale x_scale = new VariableXScale( angle );
-    Data new_d = new Data( x_scale, area, 1 );
+    Data new_d = Data.getInstance( x_scale, area, 1 );
 
     new_ds.addData_entry( new_d );
     return new_ds;

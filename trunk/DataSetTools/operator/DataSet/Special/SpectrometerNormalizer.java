@@ -8,6 +8,9 @@
  *
  *
  *  $Log$
+ *  Revision 1.2  2002/03/13 16:19:17  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.1  2002/02/22 21:03:46  pfpeterson
  *  Operator reorganization.
  *
@@ -18,7 +21,7 @@
  *  Added copyright and GPL info at the start of the file.
  *
  *  Revision 1.5  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
+ *    Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
  *  classes.  The abstract base class hierarchy is now:
  *
@@ -44,8 +47,6 @@
  *     To allow for automatic generation of hierarchial menus, each new operator
  *  should fall into one of these categories, or a new category should be
  *  constructed within this hierarchy for the new operator.
- *
- *
  */
 
 package DataSetTools.operator.DataSet.Special;
@@ -190,7 +191,7 @@ public class SpectrometerNormalizer extends    DS_Special
       for ( int i = 0; i < num_data; i++ )
       {
         data = ds.getData_entry( i );       // get reference to the data entry
-        new_data = data.divide( scale );    // divide by scale factor, assuming
+        new_data = data.divide( scale, 0 ); // divide by scale factor, assuming
                                             // 0 error in the scale factor.
         new_ds.addData_entry( new_data );      
       }

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2002/03/13 16:11:08  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.18  2001/07/26 19:51:24  dennis
  * Now uses/saves the Auto-Scale valuator values.
  *
@@ -520,7 +523,7 @@ private void MakeColorList()
   for ( int i = 0; i < num_rows; i++ )    // interval
   {
     data_block = ds.getData_entry(i);
-    y_vals[i] = data_block.getY_values( x_scale ); 
+    y_vals[i] = data_block.getY_values( x_scale, IData.SMOOTH_NONE ); 
   }
  
   float x_vals[]     = x_scale.getXs();
