@@ -29,6 +29,10 @@
  *
  * Modified:
  * 
+ *  $Log$
+ *  Revision 1.9  2004/03/19 20:30:04  millermi
+ *  - Added special LOG characters so log messages will now be
+ *    recorded in the file.
  *
  */
 
