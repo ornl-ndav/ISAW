@@ -158,9 +158,12 @@ public class FindPeaks extends GenericTOF_SCD{
     float detA = detector_angle(data_set);
     float detD = detector_distance(data_set,detA);
     // sample orientation
-    float chi   = ((Float)data_set.getAttributeValue("Sample Chi")).floatValue();
-    float phi   = ((Float)data_set.getAttributeValue("Sample Phi")).floatValue();
-    float omega = ((Float)data_set.getAttributeValue("Sample Omega")).floatValue();
+    //float chi   = ((Float)data_set.getAttributeValue("Sample Chi")).floatValue(); 
+    //float phi   = ((Float)data_set.getAttributeValue("Sample Phi")).floatValue();
+    //float omega = ((Float)data_set.getAttributeValue("Sample Omega")).floatValue();
+    float chi   = ((Float)data_set.getAttributeValue(Attribute.SAMPLE_CHI)).floatValue();
+    float phi   = ((Float)data_set.getAttributeValue(Attribute.SAMPLE_PHI)).floatValue();
+    float omega = ((Float)data_set.getAttributeValue(Attribute.SAMPLE_OMEGA)).floatValue();
 
     for( int i=0 ; i<numData ; i++ ){
 	if(pos[i][2]>maxColumn) maxColumn=pos[i][2];
