@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/10/14 22:03:16  dennis
+ *  Fixed javadoc comment to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.7  2002/11/27 23:27:59  pfpeterson
  *  standardized header
  *
@@ -63,7 +66,7 @@ public class ThreadedTCPComm extends TCPComm
    *  socket and call the ProcessData routine of the given ITCPUser object.
    *  Set the timeout period to the specified number of milliseconds.
    *
-   *  @param  socket      The socket to use 
+   *  @param  sock        The socket to use 
    *  @param  timeout_ms  The time out period for communications on this
    *                      socket.  If timeout_ms <= 0, the time out period
    *                      will be infinite.
@@ -71,9 +74,9 @@ public class ThreadedTCPComm extends TCPComm
    *                      when an object is received on the specified socket. 
    */
 
-  public ThreadedTCPComm( Socket sock, 
-                          int timeout_ms, 
-                          ITCPUser user   )    throws Exception
+  public ThreadedTCPComm( Socket   sock, 
+                          int      timeout_ms, 
+                          ITCPUser user        )  throws Exception
   { 
     super( sock, timeout_ms );
     this.user   = user;
