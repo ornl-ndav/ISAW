@@ -1,7 +1,5 @@
 /*
- * @(#)DataSetScalarDivide.java   0.2  99/06/07   Dennis Mikkelson
- *                                     99/08/16   Added constructor to allow
- *                                                calling operator directly
+ * @(#)DataSetScalarDivide.java   0.1  99/06/07   Dennis Mikkelson
  *             
  * This operator divides all data objects in a data set by a scalar value.
  *
@@ -19,45 +17,17 @@ import  DataSetTools.dataset.*;
 public class DataSetScalarDivide extends    DataSetOperator 
                                  implements Serializable
 {
-  /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
-  /**
-   * Construct an operator with a default parameter list.  If this
-   * constructor is used, the operator must be subsequently added to the
-   * list of operators of a particular DataSet.  Also, meaningful values for
-   * the parameters should be set ( using a GUI ) before calling getResult()
-   * to apply the operator to the DataSet this operator was added to.
-   */
+  /* --------------------------- CONSTRUCTOR ------------------------------ */
 
+                                     // The constructor calls the super
+                                     // class constructor, then sets up the
+                                     // list of parameters.
   public DataSetScalarDivide( )
   {
     super( "Divide by Scalar" );
 
     Parameter parameter = new Parameter( "Divisor", new Float(1.0) );
     addParameter( parameter );
-  }
-
-  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
-
-  /**
-   *  Construct an operator for a specified DataSet and with the specified
-   *  parameter values so that the operation can be invoked immediately
-   *  by calling getResult().
-   *
-   *  @param  ds          The DataSet to which the operation is applied
-   *  @parm   value       The value to divide into to each point in each Data
-   *                      block in ds
-   */
-
-  public DataSetScalarDivide( DataSet ds, float value )
-  {
-    this();                         // do the default constructor, then set
-                                    // the parameter value(s)
-
-    Parameter parameter = getParameter( 0 );
-    parameter.setValue( new Float( value) );
-
-    setDataSet( ds );               // record reference to the DataSet that
-                                    // this operator should operate on
   }
 
 
@@ -76,7 +46,7 @@ public class DataSetScalarDivide extends    DataSetOperator
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
-    DataSet new_ds = ds.empty_clone(); 
+    DataSet new_ds = (DataSet)ds.empty_clone(); 
     new_ds.addLog_entry( "Divided by " + scale );
 
     if ( scale != 0 )                // do the operation if possible

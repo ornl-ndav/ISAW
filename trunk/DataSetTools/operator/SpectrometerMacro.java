@@ -21,6 +21,7 @@ import  ChopTools.*;
  * @author Tom Worlton
  * @version 1.0
  * @since August 10, 1999
+ *        August 16, 1999 Added constructor to allow calling operator directly
  * @see ISaw
  * @see SpectrometerEvaluator
  * @see SpectrometerGrouper
@@ -37,7 +38,7 @@ public class SpectrometerMacro extends    DataSetOperator
    */
   public SpectrometerMacro( )
   {
-    super( "HRMECS Data Visualization Macro" );
+    super( "HRMECS Macro: Calibration, Evaluation, Grouping & Tof~E " );
     
     Parameter parameter;
  
@@ -53,6 +54,43 @@ public class SpectrometerMacro extends    DataSetOperator
     addParameter( parameter );
     
   }
+
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct an operator for a specified DataSet and with the specified
+   *  parameter values so that the operation can be invoked immediately
+   *  by calling getResult().
+   *
+   *  @param  ds          The DataSet to which the operation is applied
+   *  @param  monitor_ds  The DataSet containing the monitors for this
+   *                      histogram
+   *  @param  up_level    Upper cut off for the detector quality measure
+   *  @param  up_level    Lower cut off for the detector quality measure
+   */
+
+  public SpectrometerMacro( DataSet    ds,
+                            DataSet    monitor_ds,
+                            float      up_level,
+                            float      low_level  )
+  {
+    this();                         // do the default constructor, then set
+                                    // the parameter value(s) by altering a
+                                    // reference to each of the parameters
+
+    Parameter parameter = getParameter( 0 );
+    parameter.setValue( monitor_ds );
+
+    parameter = getParameter( 1 );
+    parameter.setValue( new Float( up_level ) );
+
+    parameter = getParameter( 2 );
+    parameter.setValue( new Float( low_level ) );
+
+    setDataSet( ds );               // record reference to the DataSet that
+                                    // this operator should operate on
+  }
+
+
 
   /**
    * Run the macro use chop_MacroTools
@@ -78,11 +116,21 @@ public class SpectrometerMacro extends    DataSetOperator
     new_ds.addLog_entry( "Bring a monitors dataset "+ monitor_ds+"!(HRMECS Macro)");
     
     if ( !ds.SameUnits( monitor_ds ) )       
-    return null;                             
+      {
+        ErrorString message = new ErrorString(
+                           "ERROR: monitor_ds has different units " );
+        System.out.println( message );
+        return message;
+      }
     
     if ( !ds.getX_units().equalsIgnoreCase("Time(us)")  ||  !ds.getY_units().equalsIgnoreCase("Counts") )      
-    return null;        
-    
+      {
+        ErrorString message = new ErrorString(
+                           "ERROR: DataSet units not Time(us) & Counts " );
+        System.out.println( message );
+        return message;
+      }
+ 
     new_ds.addLog_entry( "Finish Comparing the units between "+ds+" and "+monitor_ds +"!(HRMECS Macro)" );
       
     float uplevel = ( (Float)(getParameter(1).getValue()) ).floatValue();
@@ -171,8 +219,9 @@ public class SpectrometerMacro extends    DataSetOperator
     
     new_ds.addLog_entry( "Save S-E LQ, Mq, Hq data in file as g_Q(4~6)X-Yh(RunNumber).opt!(HRMECS Macro)" );
     //*/
- chop_MacroTools gg = new  chop_MacroTools();
-   //gg.drawAlldata(new_ds);   
+chop_MacroTools cmt = new chop_MacroTools();
+
+    cmt.drawAlldata(new_ds);   
     
     new_ds.addLog_entry( "Draw LQ, Mq , HQ data by graphview!(HRMECS Macro)" );
     
