@@ -38,6 +38,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/07/15 14:38:58  rmikk
+ *  Fixed an error caused by a misunderstanding of a method.
+ *    Now peaks are white
+ *
  *  Revision 1.1  2002/07/12 21:14:43  rmikk
  *  Initial check in
  *
@@ -52,6 +56,7 @@ import java.lang.Math.*;
 public class logTransform  implements Transform
   {
     double pstart,pend,ustart,uend;
+    double pstart0,pend0,ustart0,uend0;
     float intensity;
     double a,b,K;
    /** Transforms [ustart,uend] to [pstart, pend] as follows:<P>
@@ -64,8 +69,13 @@ public class logTransform  implements Transform
      this.pend=pend;
      this.ustart=ustart;
      this.uend=uend;
+      pstart0=pstart;
+      pend0=pend;
+      ustart0=ustart;
+      uend0=uend;
      setIntensity( intensity);
      calc();
+    // System.out.println("in logTransform "+pstart+","+pend+","+ustart+","+uend);
 
 
     }
@@ -108,6 +118,7 @@ public class logTransform  implements Transform
                       double u2)
     {ustart=u1;
      uend= u2;
+     System.out.println("AIn set U range uend="+uend);
      calc();
      }
 
@@ -116,6 +127,7 @@ public class logTransform  implements Transform
    public void setRangeU(Range2D urange)
     {ustart = urange.start;
      uend = urange.end;
+   //System.out.println("BIn set U range uend="+uend);
      }
 
    /** Gets the physical range
@@ -129,8 +141,12 @@ public class logTransform  implements Transform
   */
 
    public double getTransP(double u)
-     {if( u < ustart) return ustart;
-      if( u > uend) return uend;
+     {if( u < ustart0) 
+         return pstart0;
+      if( u > uend0) 
+        {//System.out.println( "log u, uend="+u+","+uend);
+         return pend0;
+        }
       return a*Math.log( u + b ) + K;
 	
       }
@@ -142,8 +158,8 @@ public class logTransform  implements Transform
    public double getTransU(double p)
       { if( a == 0)
          return ustart;
-        if( p< pstart) return pstart;
-        if( p > pend) return pend;
+        if( p< pstart0) return ustart0;
+        if( p > pend0) return uend0;
         return Math.exp( (p - K)/a)- b;
        }
 
@@ -173,16 +189,18 @@ public class logTransform  implements Transform
 
     public static void main( String[] args )
    { System.out.println("Here");
-     logTransform lt = new logTransform( 0.,10., 20., 50., 1.0f);
+     logTransform lt = new logTransform( 0.,199., 0., 356., 1.0f);
       logTransform lt1=new logTransform( 0.,10., 20., 50., 20.0f);
      logTransform lt2=new logTransform( 0.,10., 20., 50., .5f);
-     for( int i=0; i<50; i++)
+   /*  for( int i=0; i<50; i++)
       { double f=20.+30.*i/50.;
        // System.out.println(f+","+lt1.getTransP(f)+","+lt.getTransP(f)+","+lt2.getTransP(f)+
        //       ","+(f-20.)*10./30.);
         System.out.println( f+","+ lt.getTransU(lt.getTransP(f))+","+
                   lt1.getTransU(lt1.getTransP(f)));
       }
-
+   */
+    double f = (new Double( args[0])).doubleValue();
+    System.out.println( lt.getTransP(f));
    }	
    }
