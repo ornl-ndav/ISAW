@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/12/11 19:27:15  rmikk
+ * Printed a stack trace if an exception occurs while loading
+ *    the file
+ *
  * Revision 1.1  2003/11/30 19:09:55  rmikk
  * Initial Checkin
  *
@@ -211,6 +215,7 @@ class MyActionListener implements ActionListener{
      }catch( Exception ss ){
 
         ( new JOptionPane() ).showMessageDialog( null , "Error :" + ss );
+        ss.printStackTrace();
         SharedData.addmsg( "Error :" + ss ); 
      }
   }
