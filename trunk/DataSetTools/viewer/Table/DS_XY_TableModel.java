@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/07/18 22:01:57  rmikk
+ * Fixed a programmer error in selected groups
+ *
  * Revision 1.9  2003/07/02 16:38:51  rmikk
  * Fixed an error that occurs when showing indicies
  *
@@ -112,6 +115,7 @@ public class DS_XY_TableModel extends TableViewModel
        this.includeIndex = includeIndex;
        if( DS != null )
          { xvals = table_view.MergeXvals( 0, DS, u, false, Groups ); 
+           
            if( xvals.length > 1 ) 
                dx = xvals[ 1 ] -  xvals[ 0 ];
            else 
@@ -208,6 +212,9 @@ public class DS_XY_TableModel extends TableViewModel
           return new Float( time );
        if( Group < 0 )
           return "";
+       if( Group >= Groups.length)
+          return "";
+       Group = Groups[Group];
        XScale xscl = DS.getData_entry( Group ).getX_scale();
        int index = xscl.getI(  time );
        if( index > 0 )
@@ -234,7 +241,6 @@ public class DS_XY_TableModel extends TableViewModel
            return "";
        if( index < 0 )
            return "";
-
        return new Float( vals[ index ] );
       }
 
@@ -378,14 +384,15 @@ public class DS_XY_TableModel extends TableViewModel
  
  
  
-    /** returns the group corresponding the the JTable entry at row, col
+    /** returns the group index in Selected indecies corresponding the the JTable 
+    *   entry at row, col
      */
      public int getGroup( int row, int column )
      { if( column <= 0 ) return -1;
        if( column >= getColumnCount() )
          return -1;
-       
-       return  (  column-1 )/ncolsPgroup; 
+        
+       return (  column-1 )/ncolsPgroup; 
      
       }
 
