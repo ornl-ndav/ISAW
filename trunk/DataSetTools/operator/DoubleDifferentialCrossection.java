@@ -2,6 +2,11 @@
  * @(#)DoubleDifferentialCrossection.java   0.1  2000/07/25   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.6  2000/07/26 22:38:31  dennis
+ *  Fixed problem with interpolating in wrong table.
+ *  Also, now adds the Scattering Function operator to the result of the
+ *  Double Differential Crossection calculation.
+ *
  *  Revision 1.5  2000/07/26 20:50:27  dennis
  *  now interpolates in tables of eff[] and fpcorr[] values to avoid
  *  recalculating these values for each point of the spectrum
@@ -239,7 +244,7 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
         eff    = arrayUtil.interpolate( spherical_coords[0]/tof, 
                                         speed_arr, eff_arr );
         fpcorr = arrayUtil.interpolate(spherical_coords[0]/tof,
-                                        speed_arr, eff_arr );
+                                        speed_arr, fpcorr_arr );
 // recalculate each time
 //      corr = tof_data_calc.getEfficiencyFactor( spherical_coords[0]/tof, 1 );
 //      eff    = corr[0];
@@ -255,6 +260,7 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
         new_ds.replaceData_entry( new_data, index );
     }
 
+    new_ds.addOperator( new SpectrometerScatteringFunction() );
     if ( make_new_ds )
       return new_ds;
     else
