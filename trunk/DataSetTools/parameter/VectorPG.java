@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/06/23 13:53:35  bouzekc
+ * Reformatted for consistent indenting.
+ *
  * Revision 1.8  2003/06/18 20:36:41  pfpeterson
  * Changed calls for NxNodeUtils.Showw(Object) to
  * DataSetTools.util.StringUtil.toString(Object)
@@ -96,14 +99,9 @@ abstract public class VectorPG extends ParameterGUI
     MJPanel GUI;
     JButton butt;
     JPanel buttonHolder;
+    Vector listeners = new Vector();
   
-     
-/*   public VectorPG()
-     { this( ObjectPG);
-       typeName = "Array";
-      }
- */
-   /**
+  /**
    *  Constructor 
    *  @param   param   a ParameterGUI that determines the data type of the elements of the resultant
    *                   vector.
@@ -113,535 +111,401 @@ abstract public class VectorPG extends ParameterGUI
    *  The ParameterGUI is just a button in a JPanel.  When the button is pressed a more complicated
    *  JFrame is created with the list box and editting buttons
    */
-   public VectorPG( ParameterGUI param, String Prompt) 
-      {super();
-       typeName = param.getType()+"Array";
-       this.param = param;
-       setName( Prompt);
-       pcs = new PropertyChangeSupport( this);
-       GUI = null;  //new MJPanel( param );
-       //GUI.addPropertyChangeListener( new MyPropertyChangeListener() );
-       //entrywidget = butt;
-       butt = null;//new JButton( param.getName());
-       buttonHolder = null;//new JPanel( new GridLayout( 1,1) );
-       //buttonHolder.add( butt );
-       //butt.addActionListener(  this );
-      }
+  public VectorPG( ParameterGUI param, String Prompt){
+    super();
+    typeName = param.getType()+"Array";
+    this.param = param;
+    setName( Prompt);
+    pcs = new PropertyChangeSupport( this);
+    GUI = null;  //new MJPanel( param );
+    butt = null;//new JButton( param.getName());
+    buttonHolder = null;//new JPanel( new GridLayout( 1,1) );
+  }
 
-   public void init(){
-       GUI = new MJPanel( param );
-       GUI.addPropertyChangeListener( new MyPropertyChangeListener() );
-       entrywidget = butt;
-       GUI.setValue( value);
-       butt = new JButton( param.getName());
-       buttonHolder = new JPanel( new GridLayout( 1,1) );
-       buttonHolder.add( butt );
-       butt.addActionListener(  this );
-   }
+  public void init(){
+    GUI = new MJPanel( param );
+    GUI.addPropertyChangeListener( new MyPropertyChangeListener() );
+    entrywidget = butt;
+    GUI.setValue( value);
+    butt = new JButton( param.getName());
+    buttonHolder = new JPanel( new GridLayout( 1,1) );
+    buttonHolder.add( butt );
+    butt.addActionListener(  this );
+  }
 
-     
-
-   /**
+  /**
    *    Adds property change listeners to listen for new Vector values
    */
-   public void addPropertyChangeListener(PropertyChangeListener listener)
-     {
-       
-       pcs.addPropertyChangeListener( listener );
-       
-       GUI.addPropertyChangeListener( this );
-      }
+  public void addPropertyChangeListener(PropertyChangeListener listener){
+    pcs.addPropertyChangeListener( listener );
+    GUI.addPropertyChangeListener( this );
+  }
 
-   public JComponent getEntryWidget()
-     {
-
-      return (JComponent)butt;
-     }
+  public JComponent getEntryWidget(){
+    return (JComponent)butt;
+  }
   
-   Vector listeners = new Vector();
-   public void addActionListener( ActionListener listener)
-     {
-       listeners.addElement( listener);
+  public void addActionListener( ActionListener listener){
+    listeners.addElement( listener);
+  }
 
+  public void removeActionListener( ActionListener listener){
+    listeners.remove( listener);
+  }
 
-     }
+  public void notifyActionListeners( String command){
+    for( int i=0; i< listeners.size(); i++)
+    ((ActionListener) listeners.elementAt(i)).actionPerformed( 
+      new ActionEvent( this, ActionEvent.ACTION_PERFORMED, command));
+  }
 
-   public void removeActionListener( ActionListener listener)
-     {
-
-      listeners.remove( listener);
-
-     }
-
-   public void notifyActionListeners( String command)
-     {
-
-      for( int i=0; i< listeners.size(); i++)
-       ((ActionListener) listeners.elementAt(i)).actionPerformed( 
-            new ActionEvent( this, ActionEvent.ACTION_PERFORMED, command));
-
-
-     }
-   /**
-
+  /**
    *    Removes the property change listener 
    */
-   public void removePropertyChangeListener(PropertyChangeListener listener)
-     {
-       pcs.removePropertyChangeListener( listener);
-       GUI.removePropertyChangeListener( this );
-      }
+  public void removePropertyChangeListener(PropertyChangeListener listener){
+    pcs.removePropertyChangeListener( listener);
+    GUI.removePropertyChangeListener( this );
+  }
 
   //*********** ParamUsesString methods *********************************
-   public String getStringValue(){
-     return ArrayPG.ArraytoString((Vector) value);
-   }
-   public void setStringValue(String value){
-     this.value = ArrayPG.StringtoArray( value);
-     checkValue();
-   }
-   protected void checkValue(){
-   }
-     
- 
-   // Receives notification of a new Vector value from the JFrame that pops up after
-   //  the button is pressed
-   class MyPropertyChangeListener implements PropertyChangeListener
-     {
-      public void propertyChange(PropertyChangeEvent evt)
-        { 
-          value = ( GUI.getValues());
-          setValid( true );
-          
-          pcs.firePropertyChange(  evt );
-        }
-     }
+  public String getStringValue(){
+    return ArrayPG.ArraytoString((Vector) value);
+  }
 
-   /**
+  public void setStringValue(String value){
+    this.value = ArrayPG.StringtoArray( value);
+    checkValue();
+  }
+  protected void checkValue(){
+  }
+ 
+  // Receives notification of a new Vector value from the JFrame that pops up after
+  //  the button is pressed
+  class MyPropertyChangeListener implements PropertyChangeListener{
+    public void propertyChange(PropertyChangeEvent evt){ 
+      value = ( GUI.getValues());
+        setValid( true );
+        pcs.firePropertyChange(  evt );
+    }
+  }
+
+  /**
    *    Gets the value of the Vector
    */
-   public Object getValue()
-     {
-      return value;
+  public Object getValue(){
+    return value;
+  }
 
+  public void setEnabled( boolean enable){
+    enabled = enable;
+  }
 
-     }
-
-
-   public void setEnabled( boolean enable)
-     {
-       enabled = enable;
-     }
-
-   /**
+  /**
    *   Sets the value and displays these values in the associated JList.
    */
-   public void setValue( Object valuee)
-     {
-       if( valuee instanceof Vector)
-         value = valuee;
-       else if( valuee instanceof String)
-         setStringValue( (String)valuee);
-       else
-         value = null;
+  public void setValue( Object valuee){
+    if( valuee instanceof Vector)
+      value = valuee;
+    else if( valuee instanceof String)
+      setStringValue( (String)valuee);
+    else
+      value = null;
 
-       if( GUI != null)
-           GUI.setValue( value);
-
-      }
+    if( GUI != null)
+      GUI.setValue( value);
+  }
   
-   /**
+  /**
    *   Displays the JFrame with the list box containing the elements of the vector if
    *   it is not already being displayed
    */
-   public void showGUI()
-     {
-      if( isShowing) 
-            return;
+  public void showGUI(){
+    if( isShowing) return;
        
-       JFrame frame = new JFrame( param.getName()+" List");
-       frame.setSize( 500, 300);
-       GUI.setJFrame( frame);
-       JDialog jf = new JDialog(frame ,param.getName() ,true);
+    JFrame frame = new JFrame( param.getName()+" List");
+    frame.setSize( 500, 300);
+    GUI.setJFrame( frame);
+    JDialog jf = new JDialog(frame ,param.getName() ,true);
        
-       jf.setSize( 500,300);   
-       frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE);
-       frame.addWindowListener( new MyWindowListener() );
-          
-       jf.getContentPane().setLayout( new GridLayout( 1,1));
+    jf.setSize( 500,300);   
+    frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE);
+    frame.addWindowListener( new MyWindowListener() );
+    
+    jf.getContentPane().setLayout( new GridLayout( 1,1));
 
-       jf.getContentPane().add( GUI );
-       jf.invalidate();
-       isShowing = true;
-       jf.show();
-       
+    jf.getContentPane().add( GUI );
+    jf.invalidate();
+    isShowing = true;
+    jf.show();
+  }
 
-      }
-
-
-   boolean isShowing = false;
-   // Called when the original button is pressed. It creates the JFrame that stores the
-   //  list box and editting buttons, etc.
-  
-
+  boolean isShowing = false;
+  // Called when the original button is pressed. It creates the JFrame that stores the
+  //  list box and editting buttons, etc.
       
-      public void actionPerformed( ActionEvent evt )
-        { 
-          showGUI();
-         }
-      
-
+  public void actionPerformed( ActionEvent evt ){ 
+    showGUI();
+  }
 
    // Used to ensure there is only one copy of a window up
-   class MyWindowListener extends WindowAdapter
-     {
-       public void windowClosed(WindowEvent e)
-         {
-           isShowing = false;
-          }
+  class MyWindowListener extends WindowAdapter{
+    public void windowClosed(WindowEvent e){
+      isShowing = false;
+    }
+  }
 
-      }
-
-   /**
+  /**
    *  The type name is the param's type name with the letters "Array" affixed to the end
    */
-   public String getType()
-     {
-       return typeName;
-     }
+  public String getType(){
+    return typeName;
+  }
 
-   /**
+  /**
    *  Returns a JPanel that holds a button.  When the button is pressed, a new JFrame with more
    *  options appears
    */  
-   public JPanel getGUIPanel()
-     {
-       return buttonHolder;
-      }
-
-
-   public void init( Vector V)
-     {
-       value = ( V);
-       init();
-
-     }
-
- 
-   //This has the listbox and editting buttons for fixing an array
-   class MJPanel  extends JPanel implements ActionListener
-    {JList jlist;
-     DefaultListModel jlistModel;
-     JButton Delete,Add,Up,Down, Edit, OK, Show;
-     PropertyChangeSupport pcs;
-     Vector oldVector;
-     boolean firstAdd = false;
-     ParameterGUI  param;
-     JFrame jf = null;
-      public MJPanel( ParameterGUI param)
-        {
-          super( new BorderLayout() );
-         
-          oldVector = getValues();
-          jlistModel = new DefaultListModel();
-
-          jlist = new JList( jlistModel );
-          this.param = param;
-          if( oldVector != null)
-             for( int i=0; i< oldVector.size() ; i++)
-                jlistModel.addElement( oldVector.elementAt( i ));
-          add( jlist, BorderLayout.CENTER);
-          JPanel jp = new JPanel( new GridLayout( 7,1));
-          Up = new JButton( "Up");
-          Down = new JButton( "Down");
-          Delete = new JButton( "Delete");
-          Add = new JButton("Add");
-          Edit = new JButton( "Edit");
-          OK = new JButton("Ok");
-          Show = new JButton("Show");
-          jp.add( Up);
-          jp.add( Down );
-          jp.add( Show );
-          jp.add( Add) ;
-          jp.add( Delete );
-          jp.add( Edit );
-          jp.add( OK );
-          add( jp, BorderLayout.EAST);
-          
-
-          Up.addActionListener( this);
-          Down.addActionListener( this);
-          Show.addActionListener( this);
-          Add.addActionListener( this);
-          Delete.addActionListener( this);
-          Edit.addActionListener( this);
-          OK.addActionListener( this);
-
-          JPanel JP = new JPanel( new BorderLayout() );
- 
-          param.init();
- 
-          JP.add( param.getEntryWidget(), BorderLayout.CENTER);
-          JButton OOk = new JButton( "Set Value");
-          JP.add( OOk, BorderLayout.EAST);         
-          add(JP, BorderLayout.NORTH);
-          
-          invalidate();
-          OOk.addActionListener( new OOkActionListener());
-          if( param instanceof VectorPG)
-            ((VectorPG) param).addPropertyChangeListener( new OOkActionListener() );
-          //param.addPropertyChangeListener( new OOkActionListener() );
-          pcs = new PropertyChangeSupport( this );
-          
-         }
-   
-      private void move( int i)
-        {
-           int j = jlist.getSelectedIndex();
-           if( j <=0)
-             if( i == -1)
-                return;
-
-           if( j < 0) return;
-           if( j >=  jlist.getModel().getSize())
-             return;
-           if( i >0)
-             if( j == jlist.getModel().getSize() -1)
-                return;
-           Object V = jlistModel.elementAt( j);
-           jlistModel.removeElementAt( j );
-           jlistModel.insertElementAt(V, j+i);
-           jlist.setSelectedIndex( j+i);
-         }
-
-      private void newVal( int pos)
-        {
-       
-         position = pos;
-        
-         if( (pos >=0) && (pos < jlistModel.getSize()))
-           {
-             
-             param.setValue( jlistModel.elementAt(pos));
-    
-           }
-
-         if( param instanceof VectorPG)
-           {
-             ((VectorPG)param).actionPerformed( new ActionEvent(this,
-                  ActionEvent.ACTION_PERFORMED, "NEW"));
-
-            }
-          return;
-         /*if( isShowing)
-           {
-            return; 
-            }
-         param.init();
-         if( param instanceof VectorPG) // eliminate button, OK button reused
-           {
-             ((VectorPG)param).showGUI();
-              if( ! firstAdd)
-                {
-                 param.addPropertyChangeListener( new OOkActionListener() );
-                 firstAdd = true;
-                 }
-             return;
-           }
-         JFrame jjf = new JFrame( param.getName());
-         jjf.getContentPane().setLayout( new BorderLayout() );
-         jjf.getContentPane().add( param.getGUIPanel(), BorderLayout.CENTER);
-         JButton OOk = new JButton( "Set Value");
-         jjf.getContentPane().add(OOk, BorderLayout.SOUTH);
-         jjf.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE);
-          jjf.addWindowListener( new MWindowListener());
-
-         OOk.addActionListener( new OOkActionListener());
-         
-         jjf.invalidate();
-         jjf.setSize( 100,100);
-         jjf.show();
-         
-         isShowing = true;  
-       */
-         }
-      boolean isShowing = false;
-      class MWindowListener extends WindowAdapter
-        {
-          public void windowClosed(WindowEvent e)
-            {
-              isShowing = false;
-             
-             }
-
-
-
-         }
-     
-      int position = -1;
-      //Listens for the change in value of the List in the JFrame
-      class OOkActionListener implements ActionListener,  PropertyChangeListener
-        {
-
-
-          public void propertyChange( PropertyChangeEvent evt)
-            {
-              actionPerformed( null);
-
-
-              }
-          public void actionPerformed( ActionEvent evt )
-            {
-              Object O = param.getValue();
-              if( (position >=0) && (position < jlistModel.getSize()) )
-                 jlistModel.setElementAt( O, position);  
-              else
-                 jlistModel.addElement( O);
-             
-                  
-           }
-         }//OOkActionListener
-
-      public void setJFrame( JFrame jf)
-        {
-          this.jf = jf;
-         
-        }
-
-      public void actionPerformed( ActionEvent evt)
-        {
-          JButton butt = (JButton)(evt.getSource());
-          if( butt == Up)
-            {
-              move(-1);
-             }
-          else if ( butt == Down)           
-             {
-              move( +1);
-             }
-          else if ( butt == Edit)
-             {
-               newVal( jlist.getSelectedIndex());
-              
-             }
-          else if ( butt == Add)
-             {
-               newVal( -1);    
-             }
-          else if ( butt == Delete)
-             {
-              int j = jlist.getSelectedIndex();
-              position = -1;
-              if( j < 0)
-                 return;
-              jlistModel.removeElementAt( j );
-              if( j >=0)
-                if( j < jlistModel.getSize() )
-                 jlist.setSelectedIndex( j );
-             }
-          else if ( butt == Show)
-             { 
-               (new JOptionPane()).showMessageDialog(null, 
-                               StringUtil.toString( jlist.getSelectedValue()));
-             }
-          else if ( butt == OK)
-            
-             { 
-              Vector newVector = getValues();
-              pcs.firePropertyChange("DataChanged", oldVector, newVector);
-              oldVector = newVector;
-             
-              if( jf == null)
-                return;
-              jf.dispose();
-              
-             }
-
-
-        }
-
-      public void addPropertyChangeListener(PropertyChangeListener listener)
-        {
-       
-         pcs.addPropertyChangeListener( listener );
-     
-         }
-
-      public void removePropertyChangeListener(PropertyChangeListener listener)
-        {
-         pcs.removePropertyChangeListener( listener);
-      
-        }
-
-
-
-      public Vector getValues()
-        {
-          if( jlist == null)
-            return new Vector();
-          ListModel lmodel = jlist.getModel();
-          Vector V = new Vector( lmodel.getSize());
-          for( int i = 0; i < lmodel.getSize() ; i++)
-            V.addElement( lmodel.getElementAt( i ) );
-          return V;
-
-        }
-
-     public void setValue( Object valuee)
-       {
-        if( jlistModel != null)
-         {
-            jlistModel.clear();
-            if( valuee != null)
-              if( valuee instanceof Vector)
-                 for( int i=0; i< ((Vector)valuee).size(); i++)
-                   jlistModel.addElement( ((Vector)valuee).elementAt(i));
-          }
-          position = -1;
-
-       }
-
-     }//MJPanel
-
-    /**
-    *   Test program for this module.  There are no arguments
-    */
-/*
-    public static void main( String args[] )
-      {
-         JFrame jf = new JFrame("Test");
-         jf.getContentPane().setLayout( new GridLayout( 1,2));
-         FloatPG ipg = new FloatPG("Enter Float",5.0f);
-         if( ipg == null)
-            DataSetTools.util.SharedData.addmsg("Null parameter????");
-         VectorPG vpg = new VectorPG( ipg, "Integer List");
-         jf.getContentPane().add(vpg.getGUIPanel());
-         JButton  jb = new JButton("Result");
-         jf.getContentPane().add(jb);
-         jb.addActionListener( new MyActionList( vpg));
-         jf.setSize( 500,100);
-         jf.invalidate();
-         jf.show();
-      }  
-*/
-
-static class MyActionList implements ActionListener
-  {
-   VectorPG vpf;
-   public MyActionList( VectorPG vpg)
-     {
-
-       vpf = vpg;
-     }
-
-    public void actionPerformed( ActionEvent evt )
-      { 
-        (new JOptionPane()).showMessageDialog(null,"Result="+
-                                          StringUtil.toString(vpf.getValue()));
-
-      }
-
-   }    
-
+  public JPanel getGUIPanel(){
+    return buttonHolder;
   }
 
+  public void init( Vector V){
+    value = ( V);
+    init();
+  }
+ 
+  //This has the listbox and editting buttons for fixing an array
+  class MJPanel  extends JPanel implements ActionListener{
+    JList jlist;
+    DefaultListModel jlistModel;
+    JButton Delete,Add,Up,Down, Edit, OK, Show;
+    PropertyChangeSupport pcs;
+    Vector oldVector;
+    boolean firstAdd = false;
+    ParameterGUI  param;
+    JFrame jf = null;
+
+    public MJPanel( ParameterGUI param){
+      super( new BorderLayout() );
+      oldVector = getValues();
+      jlistModel = new DefaultListModel();
+      jlist = new JList( jlistModel );
+      this.param = param;
+      
+      if( oldVector != null)
+        for( int i=0; i< oldVector.size() ; i++)
+          jlistModel.addElement( oldVector.elementAt( i ));
+
+      add( jlist, BorderLayout.CENTER);
+      JPanel jp = new JPanel( new GridLayout( 7,1));
+      Up = new JButton( "Up");
+      Down = new JButton( "Down");
+      Delete = new JButton( "Delete");
+      Add = new JButton("Add");
+      Edit = new JButton( "Edit");
+      OK = new JButton("Ok");
+      Show = new JButton("Show");
+      jp.add( Up);
+      jp.add( Down );
+      jp.add( Show );
+      jp.add( Add) ;
+      jp.add( Delete );
+      jp.add( Edit );
+      jp.add( OK );
+      add( jp, BorderLayout.EAST);
+
+      Up.addActionListener( this);
+      Down.addActionListener( this);
+      Show.addActionListener( this);
+      Add.addActionListener( this);
+      Delete.addActionListener( this);
+      Edit.addActionListener( this);
+      OK.addActionListener( this);
+
+      JPanel JP = new JPanel( new BorderLayout() );
+      param.init();
+ 
+      JP.add( param.getEntryWidget(), BorderLayout.CENTER);
+      JButton OOk = new JButton( "Set Value");
+      JP.add( OOk, BorderLayout.EAST);         
+      add(JP, BorderLayout.NORTH);
+          
+      invalidate();
+      OOk.addActionListener( new OOkActionListener());
+      if( param instanceof VectorPG)
+      ((VectorPG) param).addPropertyChangeListener( new OOkActionListener() );
+      pcs = new PropertyChangeSupport( this );
+          
+    }//MJPanel - constructor
+   
+    //MJPanel method
+    private void move( int i){
+      int j = jlist.getSelectedIndex();
+      if( j <=0)
+      if( i == -1) return;
+
+      if( j < 0) return;
+      if( j >=  jlist.getModel().getSize()) return;
+      if( i >0)
+        if( j == jlist.getModel().getSize() -1) return;
+      Object V = jlistModel.elementAt( j);
+      jlistModel.removeElementAt( j );
+      jlistModel.insertElementAt(V, j+i);
+      jlist.setSelectedIndex( j+i);
+    }
+
+    //MJPanel method
+    private void newVal( int pos){
+      position = pos;
+        
+      if( (pos >=0) && (pos < jlistModel.getSize())){
+        param.setValue( jlistModel.elementAt(pos));
+      }
+
+      if( param instanceof VectorPG){
+        ((VectorPG)param).actionPerformed( new ActionEvent(this,
+        ActionEvent.ACTION_PERFORMED, "NEW"));
+      }
+      return;
+    }
+
+    //Why isn't this at the top???
+    /**********************/
+    boolean isShowing = false;
+    /**********************/
+
+
+    
+    //MJPanel inner class
+    class MWindowListener extends WindowAdapter{
+      public void windowClosed(WindowEvent e){
+        isShowing = false;
+      }
+    }
+     
+    /*************/
+    //What is this?  Why is it here rather than at the top?
+    int position = -1;
+    /*************/
+
+
+    //MJPanel inner class
+    //Listens for the change in value of the List in the JFrame
+    class OOkActionListener implements ActionListener,  PropertyChangeListener{
+
+      public void propertyChange( PropertyChangeEvent evt){
+        actionPerformed( null);
+      }
+
+      public void actionPerformed( ActionEvent evt ){
+        Object O = param.getValue();
+        if( (position >=0) && (position < jlistModel.getSize()) )
+          jlistModel.setElementAt( O, position);  
+        else
+          jlistModel.addElement( O);
+      }
+    }//OOkActionListener
+
+    public void setJFrame( JFrame jf){
+      this.jf = jf;
+    }
+
+    public void actionPerformed( ActionEvent evt){
+      JButton butt = (JButton)(evt.getSource());
+      if( butt == Up){
+        move(-1);
+      }else if ( butt == Down){
+        move( +1);
+      }else if ( butt == Edit){
+        newVal( jlist.getSelectedIndex());
+      }else if ( butt == Add){
+        newVal( -1);    
+      }else if ( butt == Delete){
+        int j = jlist.getSelectedIndex();
+        position = -1;
+        if( j < 0) return;
+        jlistModel.removeElementAt( j );
+        if( j >=0)
+          if( j < jlistModel.getSize() )
+            jlist.setSelectedIndex( j );
+      }else if ( butt == Show){ 
+        (new JOptionPane()).showMessageDialog(null, 
+          StringUtil.toString( jlist.getSelectedValue()));
+      }else if ( butt == OK){ 
+        Vector newVector = getValues();
+        pcs.firePropertyChange("DataChanged", oldVector, newVector);
+        oldVector = newVector;
+             
+        if( jf == null) return;
+
+        jf.dispose();
+      }
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener){
+      pcs.addPropertyChangeListener( listener );
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener){
+      pcs.removePropertyChangeListener( listener);
+    }
+
+    public Vector getValues(){
+      if( jlist == null) return new Vector();
+
+      ListModel lmodel = jlist.getModel();
+      Vector V = new Vector( lmodel.getSize());
+      for( int i = 0; i < lmodel.getSize() ; i++)
+        V.addElement( lmodel.getElementAt( i ) );
+      return V;
+    }
+
+    public void setValue( Object valuee){
+      if( jlistModel != null){
+        jlistModel.clear();
+        if( valuee != null)
+          if( valuee instanceof Vector)
+            for( int i=0; i< ((Vector)valuee).size(); i++)
+              jlistModel.addElement( ((Vector)valuee).elementAt(i));
+      }
+      position = -1;
+
+    }
+
+  }//MJPanel class end
+
+  /**
+   *   Test program for this module.  There are no arguments
+   */
+/*
+  public static void main( String args[] ){
+    JFrame jf = new JFrame("Test");
+    jf.getContentPane().setLayout( new GridLayout( 1,2));
+    FloatPG ipg = new FloatPG("Enter Float",5.0f);
+    if( ipg == null)
+      DataSetTools.util.SharedData.addmsg("Null parameter????");
+    VectorPG vpg = new VectorPG( ipg, "Integer List");
+    jf.getContentPane().add(vpg.getGUIPanel());
+    JButton  jb = new JButton("Result");
+    jf.getContentPane().add(jb);
+    jb.addActionListener( new MyActionList( vpg));
+    jf.setSize( 500,100);
+    jf.invalidate();
+    jf.show();
+  }  
+*/
+
+  //VectorPG inner class
+  static class MyActionList implements ActionListener{
+    VectorPG vpf;
+    public MyActionList( VectorPG vpg){
+      vpf = vpg;
+    }
+
+    public void actionPerformed( ActionEvent evt ){ 
+      (new JOptionPane()).showMessageDialog(null,"Result="+
+        StringUtil.toString(vpf.getValue()));
+    }
+  }    
+
+}
