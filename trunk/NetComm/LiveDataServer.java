@@ -8,6 +8,12 @@
  *               Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.3  2001/02/02 20:58:23  dennis
+ *  Now gets the instrument name and run number from each UDP packet sent
+ *  by the DAS.  If the instrument name or run number changes, the
+ *  Histogram and Monitor DataSets will be re-initialized from the
+ *  corresponding runfile.
+ *
  *  Revision 1.2  2001/01/31 14:21:27  dennis
  *  Fixed error in javadoc comment.
  *
@@ -20,6 +26,7 @@ package NetComm;
 
 import java.lang.*;
 import java.net.*;
+import java.util.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
@@ -45,19 +52,48 @@ public class LiveDataServer implements IUDPUser,
   public static final int MAGIC_NUMBER       = 483719513;
   public static final int SERVER_PORT_NUMBER = 6088;
 
+  String  file_name = null;
+  String  instrument_name = null;
+  int     run_number = -1;
+
   DataSet mon_ds;                                   // current monitor DataSet
   DataSet hist_ds;                                  // current histogram DataSet
 
   int     spec_buffer[] = new int[ 16384 ];         // buffer for one part of
                                                     // on spectrum
 
+  /**
+   *  Load the histogram and monitor DataSet structure for the specified
+   *  instrument and run number from the runfile then zero out the monitor 
+   *  and histogram DataSets.
+   *
+   *  @param  new_instrument   String giving the abbreviated instrument name
+   *                           such as HRCS.
+   *  @param  new_run_number   integer run number used to form the file name.
+   *
+   */
+  private void InitializeDataSets( String new_instrument, int new_run_number )
+  {
+    instrument_name = new_instrument.toUpperCase();
+    run_number      = new_run_number;
+    file_name       = instrument_name + run_number + ".RUN"; 
+
+    RunfileRetriever rr = new RunfileRetriever( file_name );
+    mon_ds  = rr.getDataSet(0);
+    hist_ds = rr.getDataSet(1);
+    rr = null;
+    SetToZero( mon_ds );
+    SetToZero( hist_ds );
+  }
 
   /**
    *  Method to process data from the UDP port.  This is the method needed 
    *  to implement the IUDPUser interface.  It is called whenever UDP data
-   *  is received from the DAS.  This method unpacks the group ID, integer
-   *  spectrum data, etc. from the byte buffer and calls a method to pack
-   *  that information into the current DataSet.
+   *  is received from the DAS.  This method unpacks the instrument name,
+   *  run number, group ID, integer spectrum data, etc. from the byte buffer.
+   *  If the instrument or run number has changed, it loads the initial 
+   *  monitor and histogram DataSets from the runfile.  Finally, it calls 
+   *  a method to pack the new spectrum information into the DataSets.
    *  
    *  @param  buffer  byte buffer[] containing the data from the UDP packet
    *                  sent by the DAS.
@@ -66,11 +102,13 @@ public class LiveDataServer implements IUDPUser,
    */
   public void ProcessData( byte buffer[], int length )
   { 
+    String new_instrument_name;
+    int    new_run_number;
                                                // make sure the buffer is long
                                                // enough to hold some data
-    if ( length < 16 )
+    if ( length < 24 )
     {
-      System.out.println("UDP packet with < 16 bytes, ignored");
+      System.out.println("UDP packet with < 24 bytes, ignored");
       return;
     }
 
@@ -88,6 +126,20 @@ public class LiveDataServer implements IUDPUser,
       System.out.println("UDP packet with wrong magic number, ignored");
       return;
     }
+
+    int n_chars = buffer[ start ];            // get the instrument name length
+    start++;                                  // instrument name String
+    new_instrument_name = new String( buffer, start, n_chars );
+    start += n_chars; 
+                                              // unpack the new run number
+    new_run_number = ByteConvert.toInt( buffer, start );
+    start += 4;
+
+    if ( new_run_number != run_number      ||
+         instrument_name == null           ||
+         !instrument_name.equalsIgnoreCase( new_instrument_name ) )
+      InitializeDataSets( new_instrument_name, new_run_number );
+
                                               // unpack the group ID
     id = ByteConvert.toInt( buffer, start );
     start += 4;
@@ -98,7 +150,7 @@ public class LiveDataServer implements IUDPUser,
     num_channels = ByteConvert.toInt( buffer, start );
     start += 4;
 
-    if ( length < 16 + 4 * num_channels )
+    if ( length < 24 + 4 * num_channels )
     {
       System.out.println("UDP packet too short, ignored");
       return;
@@ -194,13 +246,18 @@ public class LiveDataServer implements IUDPUser,
                               int     num_channels,
                               int     spec_buffer[]  )
   {
-    Data d = ds.getData_entry_with_id( id );
+    Data d = ds.getData_entry_with_id( id );           // get the Data block
     if ( d == null )
       return false;
-
+                                                       // set the Y_values
     float y[] = d.getY_values();
     for ( int i = first_channel; i < first_channel+num_channels; i++ )
       y[i] = spec_buffer[ i-first_channel ];
+                                                      // set the time attribute 
+    Date date = new Date( System.currentTimeMillis() );
+    Attribute attrib = new StringAttribute( Attribute.CURRENT_TIME, 
+                                            date.toString()         );
+    d.setAttribute( attrib );
 
     ds.notifyIObservers( IObserver.DATA_CHANGED );
     return true;
@@ -211,28 +268,11 @@ public class LiveDataServer implements IUDPUser,
 
   public static void main(String args[])
   {
+    Date date = new Date( System.currentTimeMillis() );
+    System.out.println("Date = " + date );
 
     LiveDataServer server= new LiveDataServer();
                      
-    if ( args.length <= 0 )
-    {
-      System.out.println("ERROR: you must specifiy a runfile to use for");
-      System.out.println("       testing.  This runfile must be the same");
-      System.out.println("       as will be used when starting the ");
-      System.out.println("       DASOutputTest." );
-      System.out.println("       Try 'java DASOutputTest hrcs2447.run'");
-
-      System.exit(1);
-    }
-                                         // Load the DataSet structure from
-                                         // the runfile, and zero out the
-                                         // monitor and histogram data
-    RunfileRetriever rr = new RunfileRetriever( args[0] );
-    server.mon_ds  = rr.getDataSet(0);
-    server.hist_ds = rr.getDataSet(1);
-    rr = null;
-    server.SetToZero( server.mon_ds );
-    server.SetToZero( server.hist_ds );
                                          // Start the UPD receiver to listen
                                          // for data from the DAS
     System.out.println("Starting UDP receiver...");
