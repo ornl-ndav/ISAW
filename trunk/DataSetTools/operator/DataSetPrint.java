@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2001/07/23 15:34:46  dennis
+ *  Added infomational messages to catch block for printing
+ *  to file.
+ *
  *  Revision 1.13  2001/07/20 18:17:00  dennis
  *  Made prompt for print destination more compact.
  *
@@ -247,10 +251,11 @@ public class DataSetPrint extends    GenericOperator
    }
 
     //1.write to a file 
+    String filename = "";
     if(OPtype==1)
     try
     {
-        String filename = ds.toString()+"_"+index+".prt";
+        filename = ds.toString()+"_"+index+".prt";
         filename = StringUtil.fixSeparator( filename );
         File f = new File(filename);
         FileOutputStream op = new FileOutputStream(f);
@@ -260,7 +265,12 @@ public class DataSetPrint extends    GenericOperator
         opw.close();
         return_str += " to file " +filename;
     }
-    catch(Exception e){}
+    catch(Exception e)
+    { 
+      System.out.println("Exception while writing file "+filename );
+      System.out.println("Exception is " + e );
+      e.printStackTrace();
+    }
  
    //2.Jtextfield
    if(OPtype==2)
