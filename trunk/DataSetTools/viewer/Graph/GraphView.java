@@ -1,8 +1,13 @@
 /**
- * @(#)GraphView.java  0.1 99/08/17 Dennis Mikkelson
+ * @(#)GraphView.java  
  *
- * ---------------------------------------------------------------------------
+ * Programmer: Dennis Mikkelson
+ *
  *  $Log$
+ *  Revision 1.5  2000/12/07 22:44:00  dennis
+ *  Now shows raw data rather than resampling the data uniformly
+ *  before drawing the graphs.
+ *
  *  Revision 1.4  2000/11/07 15:26:36  dennis
  *  Includes ViewerState object in constructor and uses ViewerState for
  *  horizontal scrolling state.
@@ -31,8 +36,6 @@
  *
  *  Revision 1.18  2000/05/11 15:23:11  dennis
  *  added RCS logging
- *
- *
  *
  */
 package DataSetTools.viewer.Graph;
@@ -406,9 +409,10 @@ private void DrawGraphs( )
 
   for ( int i = 0; i < num_data_blocks; i++ )
   {
-    Data temp_data_block = getDataSet().getData_entry( i );  // rebin the Data 
-    Data data_block = (Data)temp_data_block.clone();
-    data_block.ResampleUniformly( x_scale );
+    Data data_block = getDataSet().getData_entry( i );;       // don't rebin, or
+//    Data temp_data_block = getDataSet().getData_entry( i ); // rebin the Data 
+//    Data data_block = (Data)temp_data_block.clone();
+//    data_block.ResampleUniformly( x_scale );
 
     float x[] = data_block.getX_scale().getXs();
     float y[] = data_block.getY_values();
@@ -520,10 +524,11 @@ private void DrawSpecifiedGraph( int index )
   int num_cols = (int)n_bins_ui.getValue();
   UniformXScale x_scale = new UniformXScale( x_min, x_max, num_cols );
  
+  Data data_block = getDataSet().getData_entry( index );   // don't rebin or
                                                            // rebin the Data
-  Data temp_data_block = getDataSet().getData_entry( index );
-  Data data_block = (Data)temp_data_block.clone();
-  data_block.ResampleUniformly( x_scale );
+//  Data temp_data_block = getDataSet().getData_entry( index );
+//  Data data_block = (Data)temp_data_block.clone();
+//  data_block.ResampleUniformly( x_scale );
 
   JPanel border_panel = (JPanel)h_graph[ index ].getParent();
   TitledBorder border = (TitledBorder)border_panel.getBorder();
