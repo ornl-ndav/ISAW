@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.49  2003/07/01 15:06:29  bouzekc
+ * Fixed bug where if the user clicked <cancel> during the
+ * overwrite prompt, it set the Wizard's modified variable to
+ * false.
+ *
  * Revision 1.48  2003/06/30 17:48:22  bouzekc
  * Removed printing of the stack trace when loadForms()
  * catches an Exception.
@@ -475,6 +480,11 @@ public abstract class Wizard implements PropertyChangeListener {
       s.append( "enter a new name or click <Cancel>." );
       temp = JOptionPane.showInputDialog( s.toString(  ) );
 
+      //if this occurred, the user clicked <Cancel>
+      if( temp == null ) {
+        return null;
+      }
+
       if( ( temp != null ) && !temp.equals( "" ) ) {
         temp        = wizFilter.appendExtension( temp );
         save_file   = new File( 
@@ -796,6 +806,10 @@ public abstract class Wizard implements PropertyChangeListener {
       file = getFile( true );
 
       if( file == null ) {
+        //somewhere along the line, the save operation was canceled.  We'll
+        //take the safe route and presume that the Wizard was modified.
+        modified = true;
+
         return;
       }
 
