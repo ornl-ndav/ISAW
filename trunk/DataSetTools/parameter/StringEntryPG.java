@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2003/10/17 02:28:17  bouzekc
+ *  Fixed javadoc errors and updated method javadocs.
+ *
  *  Revision 1.18  2003/10/11 19:12:46  bouzekc
  *  Now implements clone() using reflection.  Now implements ParamUsesString.
  *
@@ -109,7 +112,8 @@ import javax.swing.*;
  * This is a superclass to take care of many of the common details of
  * StringEntryPGs.
  */
-public abstract class StringEntryPG extends ParameterGUI implements ParamUsesString{
+public abstract class StringEntryPG extends ParameterGUI
+  implements ParamUsesString {
   //~ Static fields/initializers ***********************************************
 
   protected static final int DEF_COLS = 20;
@@ -127,7 +131,7 @@ public abstract class StringEntryPG extends ParameterGUI implements ParamUsesStr
    * the "valid" checkbox.
    *
    * @param name The name of this StringEntryPG.
-   * @param value The value of this StringEntryPG.
+   * @param val The value of this StringEntryPG.
    */
   public StringEntryPG( String name, Object val ) {
     super( name, val );
@@ -137,7 +141,7 @@ public abstract class StringEntryPG extends ParameterGUI implements ParamUsesStr
    * Creates a StringEntryPG with the specified name, value and validity.
    *
    * @param name The name of this StringEntryPG.
-   * @param value The value of this StringEntryPG.
+   * @param val The value of this StringEntryPG.
    * @param valid Whether or not this StringEntryPG should be valid.
    */
   public StringEntryPG( String name, Object val, boolean valid ) {
@@ -159,12 +163,10 @@ public abstract class StringEntryPG extends ParameterGUI implements ParamUsesStr
   }
 
   /**
-   * Returns the value of the parameter. While this is a generic object
-   * specific parameters will return appropriate objects. There can also be a
-   * 'fast access' method which returns a specific object (such as String or
-   * DataSet) without casting.
+   * Accessor method for the value of this StringEntryPG.
    *
-   * @return The value of this ParameterGUI.
+   * @return The value in the text field of this StringEntryPG.  If no GUI is
+   *         present, returns the internal value.
    */
   public Object getValue(  ) {
     Object value = null;
