@@ -35,6 +35,11 @@
  * corresponding operators.
  *
  *  $Log$
+ *  Revision 1.4  2001/08/16 19:14:23  dennis
+ *  Added method AddDataBlocks to form a sum of Data blocks in a
+ *  DataSet and to form an average DetectorPosition, weighted by
+ *  the solid angles ( if present ).
+ *
  *  Revision 1.3  2001/04/26 19:04:34  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -58,6 +63,7 @@ import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
+import  DataSetTools.math.*;
 
 /**
  * This class contains static methods that actually implement operations
@@ -267,5 +273,90 @@ public final class DSOpsImplementation implements Serializable
     } 
    }
 
+
+  /* -------------------------- AddDataBlocks ---------------------------- */
+  /**
+   *  Remove all of the Data blocks in a DataSet and put the sum of those
+   *  Data blocks back into the DataSet.  The Group ID's should either all
+   *  be the same, or they should all be different.  If they are all the
+   *  same, the DetectorPosition attribute will NOT be adjusted from the
+   *  default behavior when adding Data blocks.  Otherwise, the summed 
+   *  Data block will have it's DetectorPosition set to the weighted
+   *  average of the DetectorPositions.  The weights used are the solid 
+   *  angle values, if all Data blocks have a solid angle attribute.
+   *
+   */
+   public static SpecialString AddDataBlocks( DataSet ds )
+   {
+      if ( ds == null )
+        return new ErrorString("null DataSet in AddDataBlocks");
+
+      if ( ds.getNum_entries() < 1 )
+        return new ErrorString("no Data blocks to add in AddDataBlocks");
+
+      Attribute attr;
+      boolean   same_group_id     = true;
+      boolean   have_solid_angles = true;
+      boolean   have_det_pos      = true;
+      int       group_id          = ds.getData_entry(0).getGroup_ID();
+      Data      sum               = ds.getData_entry( 0 ); // get the first
+                                                           // and add all the
+                                                           // later ones to it
+      for ( int i = 1; i < ds.getNum_entries(); i++ )
+      {                                                   
+        Data d = ds.getData_entry(i);
+
+        if ( d.getGroup_ID() != group_id )
+          same_group_id = false;
+
+        attr = d.getAttribute( Attribute.SOLID_ANGLE );
+        if ( attr == null )
+          have_solid_angles = false;
+
+        attr = d.getAttribute( Attribute.DETECTOR_POS );
+        if ( attr == null )
+          have_det_pos = false;
+
+        sum = sum.add( ds.getData_entry(i) );
+        if ( sum == null )
+          return  new ErrorString("ERROR: Data block not compatible to add" );
+      }
+                                                     // adjust the detector
+                                                     // position to the new
+                                                     // "effective" position
+      if ( have_det_pos && !same_group_id )
+      {
+        float            weights[] = new float[ ds.getNum_entries() ];
+        DetectorPosition points[]  = new DetectorPosition[ds.getNum_entries()];
+
+        for ( int i = 1; i < ds.getNum_entries(); i++ )
+        {
+          Data d =  ds.getData_entry(i);
+          points[i] =
+               (DetectorPosition)(d.getAttributeValue(Attribute.DETECTOR_POS));
+          if ( have_solid_angles )
+          {
+            Float sa = (Float)(d.getAttributeValue( Attribute.SOLID_ANGLE ));
+            weights[i] = sa.floatValue();
+          }
+          else
+            weights[i] = 1;
+        }
+
+        DetectorPosition ave_pos =
+                        DetectorPosition.getAveragePosition( points, weights );
+        DetPosAttribute ave_pos_attr =
+                        new DetPosAttribute( Attribute.DETECTOR_POS, ave_pos );
+
+        sum.setAttribute( ave_pos_attr );
+      }
+
+      for ( int i = ds.getNum_entries()-1; i >= 0 ; i-- )
+        ds.removeData_entry(i);                    // throw out used entries
+
+      ds.addData_entry( sum );
+
+      return null;
+   } 
 
 }
