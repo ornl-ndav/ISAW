@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2002/08/19 17:09:37  pfpeterson
+ * Switched AbstractButton.getLabel() to AbstractButton.getText()
+ * so is no longer using deprecated api.
+ *
  * Revision 1.20  2002/08/19 17:07:11  pfpeterson
  * Reformated file to make it easier to read.
  *
@@ -171,7 +175,7 @@ public class opMenu extends JMenu{
                     while ( comp_index < num_components && !found ){
                         comp = (JMenuItem)(current_menu.getItem( comp_index) );
                         if(comp instanceof JMenu)
-                            if ( comp.getLabel().equalsIgnoreCase(
+                            if ( comp.getText().equalsIgnoreCase(
                                                       categories[cat_index] ) ){
                                 found = true;
                                 current_menu = (JMenu)((JMenuItem)comp);
