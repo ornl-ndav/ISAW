@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/09/12 16:56:54  bouzekc
+ * Added underscore and dash to the list of "valid" characters.
+ *
  * Revision 1.5  2003/08/16 01:36:28  bouzekc
  * Now handles *NIX and Windows paths more correctly.
  *
@@ -165,7 +168,7 @@ TOKEN : {
 
 
 TOKEN : {
-  < #CHARACTER: ( ["a"-"z"] | ["A"-"Z"] )+ >
+  < #CHARACTER: ( ["a"-"z"] | ["A"-"Z"] | "_" | "-" )+ >
 }
 
 TOKEN : {
