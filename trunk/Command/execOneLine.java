@@ -62,7 +62,7 @@ public class execOneLine implements IObservable ,
     public static final String ER_ExtraArguments              ="Extra Arguments";
     private Document logDocument = null;
 
-    private boolean Debug= true;
+    private boolean Debug= false;
 
    
 
@@ -713,8 +713,11 @@ public class execOneLine implements IObservable ,
                 dss[];
         int i,
             j;
-  
-       dss = new IsawGUI.Util().loadRunfile( filename );
+
+        Util util = new Util();
+        filename = StringUtil.fixSeparator(filename);
+       dss = util.loadRunfile( filename );
+       util = null;
        if( dss == null )
         {seterror( 1000 , "Data File Improper" );
          return null;
@@ -857,7 +860,7 @@ public class execOneLine implements IObservable ,
             FrameType = (String) (V.get(2));
           x = 4;
           Display( DS , DisplayType , FrameType );
-          System.out.println("Return from Display1");
+         
           if( perror >= 0 ) 
              perror = start;
           return j;
@@ -1450,7 +1453,7 @@ public class execOneLine implements IObservable ,
       if( (j1 < S.length()) && ( j1 < end ) )
         if( S.charAt( j1 ) == '(' )//function
           {
-           return execOperation( C , S , j , end );
+           return execOperation( C , S , j1 , end );
           }     
 	else if( "([{}".indexOf( S.charAt( j1 ) ) >= 0 )
 	  {seterror( j , ER_IllegalCharacter );
@@ -1829,11 +1832,17 @@ public class execOneLine implements IObservable ,
          System.out.println("Check sizes = "+ Args.size() +","+ op.getNum_parameters());
        if( op.getNum_parameters() !=  Args.size() -start )
          return false;
-       for( k = 0; (k < op.getNum_parameters()) && fit ; k++ )          
+       fit = true;
+       for( k =0 ; (k < op.getNum_parameters()) && fit ; k++ )          
          { 
            Arg2 = Args.get( k +start );
-           //if( Debug)
-	   // System.out.print("Check"+Arg2.getClass()+","+op.getParameter(k).getValue().getClass());
+           if( Debug)
+	       {System.out.print("Check"+Arg2.getClass());
+	        if( op.getParameter(k) != null)
+                 
+		   System.out.println( op.getParameter(k).getValue());
+               }
+            
            if( op.getParameter(k).getValue() == null)
               {if(Debug) System.out.print("H");                         
                }
@@ -1845,7 +1854,7 @@ public class execOneLine implements IObservable ,
                  
             else if( Arg2.getClass().equals( op.getParameter( k ).getValue().getClass() ))
 	      {
-		 if( Debug ) System.out.print("E");
+		 if( Debug ) System.out.print("E"+ Arg2.getClass());
               }
                        
 	    else 
@@ -1927,11 +1936,11 @@ public class execOneLine implements IObservable ,
 //start is the position of the (
     private  int execOperation( String Command , String S ,  int start , int end )
       {if( ( start < 0 ) ||  ( start >= S.length() ) || ( start >= end ) )
-	 {seterror( S.length() + 2 , "internal errorp" );
+	 {seterror( S.length() + 2 , "internal errorq" );
 	 return start;
 	 }
        if( S.charAt( start ) != '(' )
-         {seterror( S.length() + 2 , "internal errorp" );
+         {seterror( S.length() + 2 , "internal errorr" );
 	  return start;
          }
        if( Debug)
