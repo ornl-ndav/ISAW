@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.21  2003/09/11 21:22:29  bouzekc
+ * Updated to work with new Form class.
+ *
  * Revision 1.20  2003/08/27 23:22:49  bouzekc
  * Removed unnecessary String cast.
  *
@@ -365,11 +368,11 @@ public class IndexJForm extends Form implements ActionListener {
     peaksName = peaksDir + expName + ".peaks";
 
     //validate the parameters and init the progress bar variables
-    Object superRes = super.getResult(  );
+    Object validCheck = validateSelf(  );
 
     //had an error, so return
-    if( superRes instanceof ErrorString ) {
-      return superRes;
+    if( validCheck instanceof ErrorString ) {
+      return validCheck;
     }
 
     //no need to continually recreate this Operator in a loop
