@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2004/01/24 23:09:38  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.13  2003/10/30 20:40:30  dennis
  * Removed @see tag referring to InternalViewManager.
  * (InternalViewManager is no longer used and has been
@@ -42,22 +45,11 @@
 package IsawGUI;
 
 import java.awt.*;
-import java.awt.print.*;
-import java.awt.event.*;
-import java.awt.Frame.*;
-import java.util.*;
 import java.io.*;
-import java.lang.*;
-import java.awt.Color.*;
 import DataSetTools.dataset.*;
-import DataSetTools.operator.*;
-import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
 import javax.swing.border.*;
-import java.util.zip.*;
 
 /**
  * The display area for the images and graphs for ISAW. It defines different methods 
@@ -69,7 +61,7 @@ import java.util.zip.*;
 
 public class JDataViewUI extends JDesktopPane implements Serializable
 {
-  private int xoffset = 0, yoffset = 0;
+  private int xoffset = 0;
   private int w = 500, h = 450;
   Toolkit toolkit;
   JInternalFrame sel_frame;
