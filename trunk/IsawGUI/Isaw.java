@@ -31,6 +31,9 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.25  2001/06/25 20:09:26  chatter
+  *  Splashpane and IsawProps.dat read in main
+  *
   *  Revision 1.24  2001/06/20 21:43:47  chatter
   *  Loading of Nexus files added via the IsawGUI.util.loadRunfile method.
   *
@@ -127,7 +130,7 @@
      CommandPane cp;
      MyInternalFrame internalframe;
      IObserver my_Isaw;
-     Properties isawProp;
+    // Properties isawProp;
      Object Script_Path, Data_Directory, Help_Directory, Default_Instrument, Instrument_Macro_Path, 
      User_Macro_Path, Image_Path;
      Document sessionLog = new PlainDocument();
@@ -148,7 +151,7 @@
  	  PrinterJob pj = PrinterJob.getPrinterJob();
         mPageFormat = pj.defaultPage();
     */
- 	  isawProp = new Properties(System.getProperties());
+ /*	  isawProp = new Properties(System.getProperties());
         String path = System.getProperty("user.home")+"\\";
         path = StringUtil.fixSeparator(path);
         try {
@@ -307,7 +310,7 @@
               } catch(Exception d){}
          }
  
- 
+ */
         setupMenuBar();
 
  	  util = new Util(); 
@@ -1827,7 +1830,7 @@
                             // addDataSet(mergedDS1);
                             // chop_MacroTools fg = new chop_MacroTools();
                           //   fg.drawAlldata (mergedDS1); 
-                              OverplotView.SelectedGraphView sgv = new OverplotView.SelectedGraphView(mergedDS1);
+                              OverplotView.GraphableDataManager sgv = new OverplotView.GraphableDataManager(mergedDS1);
                             
                          }
                       if(num_child == 3)
@@ -2439,6 +2442,178 @@
   
          public static void main(String[] args) 
          {
+
+
+        Properties isawProp = new Properties(System.getProperties());
+        String path = System.getProperty("user.home")+"\\";
+        path = StringUtil.fixSeparator(path);
+        try {
+ 	        FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
+              isawProp.load( input );
+              System.setProperties(isawProp);  
+         //   System.getProperties().list(System.out);
+              input.close();
+              
+              
+             
+
+        }
+        catch (IOException ex) 
+        {
+           System.out.println("Properties file could not be loaded due to error :" +ex);
+           System.out.println("Creating a new Properties file called IsawProps in the directory " +System.getProperty("user.home"));
+           
+           String npath = System.getProperty("user.home")+"\\";
+           String ipath = System.getProperty("user.dir")+"\\";
+           npath = StringUtil.fixSeparator(npath);
+           npath = npath.replace('\\','/');
+ 
+           ipath = StringUtil.fixSeparator(ipath);
+           ipath = ipath.replace('\\','/');
+ 
+           File f= new File( npath + "IsawProps.dat" );
+ 
+           try{
+                FileOutputStream op= new FileOutputStream(f);
+                OutputStreamWriter opw = new OutputStreamWriter(op);
+                opw.write("#This is a properties file");
+                opw.write("\n");
+                opw.write("Help_Directory="+ipath+"IsawHelp/");
+                System.setProperty("Help_Directory",  ipath+"IsawHelp/");
+                opw.write("\n");
+                opw.write("Script_Path="+ipath+"Scripts/");
+                System.setProperty("Script_Path",ipath+"Scripts/");
+                opw.write("\n");
+                opw.write("Data_Directory="+ipath+"SampleRuns/");
+                 System.setProperty("Data_Directory",ipath+"SampleRuns/");
+                opw.write("\n");
+                opw.write("Default_Instrument=HRCS");
+                System.setProperty("Default_Instrument","HRCS");
+                opw.write("\n");
+                opw.write("Instrument_Macro_Path="+ipath);
+                System.setProperty("Instrument_Macro_Path",ipath);
+                opw.write("\n");
+                opw.write("User_Macro_Path="+ipath);
+                System.setProperty("User_Macro_Path",ipath);
+                opw.write("\n");
+ 
+             //   opw.write("Image_Path="+ipath);
+             //   System.setProperty("Image_Path",ipath);
+ 
+              //  opw.write("\n");
+                opw.write("Inst1_Name=HRMECS");
+                opw.write("\n"); 
+                opw.write("Inst1_Path=zeus.pns.anl.gov");
+                System.setProperty("Inst1_Name", "HRMECS");
+                System.setProperty("Inst1_Path", "zeus.pns.anl.gov");
+                opw.write("\n");  
+ 
+                opw.write("Inst2_Name=LRMECS");
+                opw.write("\n");  
+                opw.write("Inst2_Path=webproject-4.pns.anl.gov");
+                System.setProperty("Inst2_Name", "LRMECS");
+                System.setProperty("Inst2_Path", "webproject-4.pns.anl.gov");
+                opw.write("\n");  
+ 
+                opw.write("Inst3_Name=GPPD");
+                opw.write("\n");  
+                opw.write("Inst3_Path=gppd-pc.pns.anl.gov");
+                System.setProperty("Inst3_Name", "GPPD");
+                System.setProperty("Inst3_Path", "gppd-pc.pns.anl.gov");
+                opw.write("\n");  
+ 
+                opw.write("Inst4_Name=SEPD");
+                opw.write("\n");  
+                opw.write("Inst4_Path=dmikk.mscs.uwstout.edu");
+                System.setProperty("Inst4_Name", "SEPD");
+                System.setProperty("Inst4_Path", "dmikk.mscs.uwstout.edu");
+                opw.write("\n");
+ 
+                opw.write("Inst5_Name=SAD");
+                opw.write("\n");
+                opw.write("Inst5_Path=webproject-4.pns.anl.gov");
+                System.setProperty("Inst5_Name", "SAD");
+                System.setProperty("Inst5_Path", "webproject-4.pns.anl.gov");
+                opw.write("\n");    
+   
+                opw.write("Inst6_Name=SAND");
+                opw.write("\n");      
+                opw.write("Inst6_Path=webproject-4.pns.anl.gov");
+                System.setProperty("Inst6_Name", "SAND");
+                System.setProperty("Inst6_Path", "webproject-4.pns.anl.gov");
+                opw.write("\n");
+       
+                opw.write("Inst7_Name=SCD");
+                opw.write("\n");      
+                opw.write("Inst7_Path=webproject-4.pns.anl.gov");
+                System.setProperty("Inst7_Name", "SCD");
+                System.setProperty("Inst7_Path", "webproject-4.pns.anl.gov");
+                opw.write("\n");  
+     
+                opw.write("Inst8_Name=GLAD");
+                opw.write("\n");      
+                opw.write("Inst8_Path=webproject-4.pns.anl.gov");
+                System.setProperty("Inst8_Name", "GLAD");
+                System.setProperty("Inst8_Path", "webproject-4.pns.anl.gov");
+                opw.write("\n"); 
+      
+                opw.write("Inst9_Name=HIPD");
+                opw.write("\n"); 
+                opw.write("Inst9_Path=webproject-4.pns.anl.gov");
+                System.setProperty("Inst9_Name", "HIPD");
+                System.setProperty("Inst9_Path", "webproject-4.pns.anl.gov");
+                opw.write("\n");
+ 
+                opw.write("Inst10_Name=POSY1");
+                opw.write("\n");      
+                opw.write("Inst10_Path=webproject-4.pns.anl.gov");
+                System.setProperty("Inst10_Name", "POSY1");
+                System.setProperty("Inst10_Path", "webproject-4.pns.anl.gov");
+                opw.write("\n");  
+     
+                opw.write("Inst11_Name=POSY2");
+                opw.write("\n");  
+                opw.write("Inst11_Path=webproject-4.pns.anl.gov");
+                System.setProperty("Inst11_Name", "POSY2");
+                System.setProperty("Inst11_Path", "webproject-4.pns.anl.gov");
+                opw.write("\n");  
+                
+                opw.write("Inst12_Name=QENS");
+                opw.write("\n");                 
+                opw.write("Inst12_Path=webproject-4.pns.anl.gov");
+                System.setProperty("Inst12_Name", "QENS");
+                System.setProperty("Inst12_Path", "webproject-4.pns.anl.gov");
+                opw.write("\n");  
+                
+                opw.write("Inst13_Name=CHEXS");
+                opw.write("\n");                 
+                opw.write("Inst13_Path=webproject-4.pns.anl.gov");
+                System.setProperty("Inst13_Name", "CHEXS");
+                System.setProperty("Inst13_Path", "webproject-4.pns.anl.gov");
+                opw.write("\n"); 
+ 
+          //      opw.write("neutron.nexus.JNEXUSLIB="+ipath+"jnexus.dll");
+          // String sss = "neutron.nexus.JNEXUSLIB"+ ipath+"jnexus.dll";
+          //      System.setProperty("neutron.nexus.JNEXUSLIB",ipath+"jnexus.dll");
+          //      opw.write("\n"); 
+               
+                                              
+                opw.flush();
+                opw.close(); 
+              } catch(Exception d){}
+         }
+ 
+
+
+
+
+
+
+
+
+
+
+
             SplashWindowFrame sp = new SplashWindowFrame();
        	sp.dispose();
  		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
