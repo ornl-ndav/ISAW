@@ -34,6 +34,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2001/12/10 22:05:24  dennis
+ *  Now will pad run numbers with leading zeros, to length 4 when
+ *  forming the file name string.
+ *
  *  Revision 1.23  2001/09/21 19:10:25  dennis
  *  Now the LiveDataServer adds a Log message giving the time to
  *  the DataSet that is sent.
@@ -300,7 +304,15 @@ public class LiveDataServer extends    DataSetServer
   {
     instrument_name  = new_instrument.toLowerCase();
     run_number       = new_run_number;
-    String file_name = instrument_name + run_number + ".run"; 
+                                                         // pad run_number with
+                                                         // leading 0's to at 
+                                                         // least length 4.
+    String run_number_string = new String();
+    run_number_string = "" + run_number;
+    while ( run_number_string.length() < 4 )
+       run_number_string = "0" + run_number_string;
+
+    String file_name = instrument_name + run_number_string + ".run"; 
 
     System.out.println( "FileName: " + file_name );
     Retriever rr = get_retriever( file_name );
