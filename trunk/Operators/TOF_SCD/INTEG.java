@@ -567,86 +567,107 @@ public class INTEG implements Wrappable,HiddenOperator{
       if(((GOTO)==(690)))
            GOTO=(int)((0));
       if(((IPFLAG)==(0))){
-      util.WRITESTRING(((" Layer  T   MaxX MaxY  IPK     dX      dY  ")));
-        util.WRITESTRING(((
+      util.WRITESTRING(((0)),((" Layer  T   MaxX MaxY  IPK     dX      dY  ")))
+        ;
+        util.WRITESTRING(((0)),((
           "     Ihkl      sigI    I/sigI   Included in I(hkl)?")));
-        util.WRITELN();
-        util.WRITEINT(((TSLICE[(int)(((2))-1)])),(("I4")));
-        util.WRITEINT(((MAXZ-1)),(("I6")));
-        util.WRITEINT(((MAXX[(int)(((2))-1)])),(("I5")));
-        util.WRITEINT(((MAXY[(int)(((2))-1)])),(("I5")));
-        util.WRITEINT(((MAXP[(int)(((2))-1)])),(("I6")));
-        util.WRITEINT(((RANGE[(int)(((1))-1)][(int)(((2))-1)])),(("I5")));
-        util.WRITEINT(((RANGE[(int)(((2))-1)][(int)(((2))-1)])),(("I3")));
-        util.WRITEINT(((RANGE[(int)(((3))-1)][(int)(((2))-1)])),(("I5")));
-        util.WRITEINT(((RANGE[(int)(((4))-1)][(int)(((2))-1)])),(("I3")));
-        util.WRITEFLOAT(((IHKL[(int)(((2))-1)])),(("F10.2")));
-        util.WRITEFLOAT(((SIGI[(int)(((2))-1)])),(("F10.2")));
-        util.WRITEFLOAT(((ITOSIGI[(int)(((2))-1)])),(("F10.2")));
-        util.WRITESTRING((("          ")));
-        util.WRITESTRING(((PORM[(int)(((2))-1)])));
-        util.WRITELN();
-        util.WRITEINT(((TSLICE[(int)(((1))-1)])),(("I4")));
-        util.WRITEINT(((MAXZ)),(("I6")));
-        util.WRITEINT(((MAXX[(int)(((1))-1)])),(("I5")));
-        util.WRITEINT(((MAXY[(int)(((1))-1)])),(("I5")));
-        util.WRITEINT(((MAXP[(int)(((1))-1)])),(("I6")));
-        util.WRITEINT(((RANGE[(int)(((1))-1)][(int)(((1))-1)])),(("I5")));
-        util.WRITEINT(((RANGE[(int)(((2))-1)][(int)(((1))-1)])),(("I3")));
-        util.WRITEINT(((RANGE[(int)(((3))-1)][(int)(((1))-1)])),(("I5")));
-        util.WRITEINT(((RANGE[(int)(((4))-1)][(int)(((1))-1)])),(("I3")));
-        util.WRITEFLOAT(((IHKL[(int)(((1))-1)])),(("F10.2")));
-        util.WRITEFLOAT(((SIGI[(int)(((1))-1)])),(("F10.2")));
-        util.WRITEFLOAT(((ITOSIGI[(int)(((1))-1)])),(("F10.2")));
-        util.WRITESTRING((("          ")));
-        util.WRITESTRING(((PORM[(int)(((1))-1)])));
-        util.WRITELN();
-        util.WRITEINT(((TSLICE[(int)(((3))-1)])),(("I4")));
-        util.WRITEINT(((MAXZ+1)),(("I6")));
-        util.WRITEINT(((MAXX[(int)(((3))-1)])),(("I5")));
-        util.WRITEINT(((MAXY[(int)(((3))-1)])),(("I5")));
-        util.WRITEINT(((MAXP[(int)(((3))-1)])),(("I6")));
-        util.WRITEINT(((RANGE[(int)(((1))-1)][(int)(((3))-1)])),(("I5")));
-        util.WRITEINT(((RANGE[(int)(((2))-1)][(int)(((3))-1)])),(("I3")));
-        util.WRITEINT(((RANGE[(int)(((3))-1)][(int)(((3))-1)])),(("I5")));
-        util.WRITEINT(((RANGE[(int)(((4))-1)][(int)(((3))-1)])),(("I3")));
-        util.WRITEFLOAT(((IHKL[(int)(((3))-1)])),(("F10.2")));
-        util.WRITEFLOAT(((SIGI[(int)(((3))-1)])),(("F10.2")));
-        util.WRITEFLOAT(((ITOSIGI[(int)(((3))-1)])),(("F10.2")));
-        util.WRITESTRING((("          ")));
-        util.WRITESTRING(((PORM[(int)(((3))-1)])));
-        util.WRITELN();
-        util.WRITEINT(((TSLICE[(int)(((4))-1)])),(("I4")));
-        util.WRITEINT(((MAXZ+2)),(("I6")));
-        util.WRITEINT(((MAXX[(int)(((4))-1)])),(("I5")));
-        util.WRITEINT(((MAXY[(int)(((4))-1)])),(("I5")));
-        util.WRITEINT(((MAXP[(int)(((4))-1)])),(("I6")));
-        util.WRITEINT(((RANGE[(int)(((1))-1)][(int)(((4))-1)])),(("I5")));
-        util.WRITEINT(((RANGE[(int)(((2))-1)][(int)(((4))-1)])),(("I3")));
-        util.WRITEINT(((RANGE[(int)(((3))-1)][(int)(((4))-1)])),(("I5")));
-        util.WRITEINT(((RANGE[(int)(((4))-1)][(int)(((4))-1)])),(("I3")));
-        util.WRITEFLOAT(((IHKL[(int)(((4))-1)])),(("F10.2")));
-        util.WRITEFLOAT(((SIGI[(int)(((4))-1)])),(("F10.2")));
-        util.WRITEFLOAT(((ITOSIGI[(int)(((4))-1)])),(("F10.2")));
-        util.WRITESTRING((("          ")));
-        util.WRITESTRING(((PORM[(int)(((4))-1)])));
-        util.WRITELN();
-        util.WRITEINT(((TSLICE[(int)(((5))-1)])),(("I4")));
-        util.WRITEINT(((MAXZ+3)),(("I6")));
-        util.WRITEINT(((MAXX[(int)(((5))-1)])),(("I5")));
-        util.WRITEINT(((MAXY[(int)(((5))-1)])),(("I5")));
-        util.WRITEINT(((MAXP[(int)(((5))-1)])),(("I6")));
-        util.WRITEINT(((RANGE[(int)(((1))-1)][(int)(((5))-1)])),(("I5")));
-        util.WRITEINT(((RANGE[(int)(((2))-1)][(int)(((5))-1)])),(("I3")));
-        util.WRITEINT(((RANGE[(int)(((3))-1)][(int)(((5))-1)])),(("I5")));
-        util.WRITEINT(((RANGE[(int)(((4))-1)][(int)(((5))-1)])),(("I3")));
-        util.WRITEFLOAT(((IHKL[(int)(((5))-1)])),(("F10.2")));
-        util.WRITEFLOAT(((SIGI[(int)(((5))-1)])),(("F10.2")));
-        util.WRITEFLOAT(((ITOSIGI[(int)(((5))-1)])),(("F10.2")));
-        util.WRITESTRING((("          ")));
-        util.WRITESTRING(((PORM[(int)(((5))-1)])));
-        util.WRITELN();
-        util.WRITELN();
+        util.WRITELN(((0)));
+        util.WRITEINT(((0)),((TSLICE[(int)(((2))-1)])),(("I4")));
+        util.WRITEINT(((0)),((MAXZ-1)),(("I6")));
+        util.WRITEINT(((0)),((MAXX[(int)(((2))-1)])),(("I5")));
+        util.WRITEINT(((0)),((MAXY[(int)(((2))-1)])),(("I5")));
+        util.WRITEINT(((0)),((MAXP[(int)(((2))-1)])),(("I6")));
+        util.WRITEINT(((0)),((RANGE[(int)(((1))-1)][(int)(((2))-1)])),(("I5")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((2))-1)][(int)(((2))-1)])),(("I3")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((3))-1)][(int)(((2))-1)])),(("I5")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((4))-1)][(int)(((2))-1)])),(("I3")))
+          ;
+        util.WRITEFLOAT(((0)),((IHKL[(int)(((2))-1)])),(("F10.2")));
+        util.WRITEFLOAT(((0)),((SIGI[(int)(((2))-1)])),(("F10.2")));
+        util.WRITEFLOAT(((0)),((ITOSIGI[(int)(((2))-1)])),(("F10.2")));
+        util.WRITESTRING(((0)),(("          ")));
+        util.WRITESTRING(((0)),((PORM[(int)(((2))-1)])));
+        util.WRITELN(((0)));
+        util.WRITEINT(((0)),((TSLICE[(int)(((1))-1)])),(("I4")));
+        util.WRITEINT(((0)),((MAXZ)),(("I6")));
+        util.WRITEINT(((0)),((MAXX[(int)(((1))-1)])),(("I5")));
+        util.WRITEINT(((0)),((MAXY[(int)(((1))-1)])),(("I5")));
+        util.WRITEINT(((0)),((MAXP[(int)(((1))-1)])),(("I6")));
+        util.WRITEINT(((0)),((RANGE[(int)(((1))-1)][(int)(((1))-1)])),(("I5")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((2))-1)][(int)(((1))-1)])),(("I3")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((3))-1)][(int)(((1))-1)])),(("I5")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((4))-1)][(int)(((1))-1)])),(("I3")))
+          ;
+        util.WRITEFLOAT(((0)),((IHKL[(int)(((1))-1)])),(("F10.2")));
+        util.WRITEFLOAT(((0)),((SIGI[(int)(((1))-1)])),(("F10.2")));
+        util.WRITEFLOAT(((0)),((ITOSIGI[(int)(((1))-1)])),(("F10.2")));
+        util.WRITESTRING(((0)),(("          ")));
+        util.WRITESTRING(((0)),((PORM[(int)(((1))-1)])));
+        util.WRITELN(((0)));
+        util.WRITEINT(((0)),((TSLICE[(int)(((3))-1)])),(("I4")));
+        util.WRITEINT(((0)),((MAXZ+1)),(("I6")));
+        util.WRITEINT(((0)),((MAXX[(int)(((3))-1)])),(("I5")));
+        util.WRITEINT(((0)),((MAXY[(int)(((3))-1)])),(("I5")));
+        util.WRITEINT(((0)),((MAXP[(int)(((3))-1)])),(("I6")));
+        util.WRITEINT(((0)),((RANGE[(int)(((1))-1)][(int)(((3))-1)])),(("I5")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((2))-1)][(int)(((3))-1)])),(("I3")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((3))-1)][(int)(((3))-1)])),(("I5")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((4))-1)][(int)(((3))-1)])),(("I3")))
+          ;
+        util.WRITEFLOAT(((0)),((IHKL[(int)(((3))-1)])),(("F10.2")));
+        util.WRITEFLOAT(((0)),((SIGI[(int)(((3))-1)])),(("F10.2")));
+        util.WRITEFLOAT(((0)),((ITOSIGI[(int)(((3))-1)])),(("F10.2")));
+        util.WRITESTRING(((0)),(("          ")));
+        util.WRITESTRING(((0)),((PORM[(int)(((3))-1)])));
+        util.WRITELN(((0)));
+        util.WRITEINT(((0)),((TSLICE[(int)(((4))-1)])),(("I4")));
+        util.WRITEINT(((0)),((MAXZ+2)),(("I6")));
+        util.WRITEINT(((0)),((MAXX[(int)(((4))-1)])),(("I5")));
+        util.WRITEINT(((0)),((MAXY[(int)(((4))-1)])),(("I5")));
+        util.WRITEINT(((0)),((MAXP[(int)(((4))-1)])),(("I6")));
+        util.WRITEINT(((0)),((RANGE[(int)(((1))-1)][(int)(((4))-1)])),(("I5")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((2))-1)][(int)(((4))-1)])),(("I3")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((3))-1)][(int)(((4))-1)])),(("I5")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((4))-1)][(int)(((4))-1)])),(("I3")))
+          ;
+        util.WRITEFLOAT(((0)),((IHKL[(int)(((4))-1)])),(("F10.2")));
+        util.WRITEFLOAT(((0)),((SIGI[(int)(((4))-1)])),(("F10.2")));
+        util.WRITEFLOAT(((0)),((ITOSIGI[(int)(((4))-1)])),(("F10.2")));
+        util.WRITESTRING(((0)),(("          ")));
+        util.WRITESTRING(((0)),((PORM[(int)(((4))-1)])));
+        util.WRITELN(((0)));
+        util.WRITEINT(((0)),((TSLICE[(int)(((5))-1)])),(("I4")));
+        util.WRITEINT(((0)),((MAXZ+3)),(("I6")));
+        util.WRITEINT(((0)),((MAXX[(int)(((5))-1)])),(("I5")));
+        util.WRITEINT(((0)),((MAXY[(int)(((5))-1)])),(("I5")));
+        util.WRITEINT(((0)),((MAXP[(int)(((5))-1)])),(("I6")));
+        util.WRITEINT(((0)),((RANGE[(int)(((1))-1)][(int)(((5))-1)])),(("I5")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((2))-1)][(int)(((5))-1)])),(("I3")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((3))-1)][(int)(((5))-1)])),(("I5")))
+          ;
+        util.WRITEINT(((0)),((RANGE[(int)(((4))-1)][(int)(((5))-1)])),(("I3")))
+          ;
+        util.WRITEFLOAT(((0)),((IHKL[(int)(((5))-1)])),(("F10.2")));
+        util.WRITEFLOAT(((0)),((SIGI[(int)(((5))-1)])),(("F10.2")));
+        util.WRITEFLOAT(((0)),((ITOSIGI[(int)(((5))-1)])),(("F10.2")));
+        util.WRITESTRING(((0)),(("          ")));
+        util.WRITESTRING(((0)),((PORM[(int)(((5))-1)])));
+        util.WRITELN(((0)));
+        util.WRITELN(((0)));
         }
 
     return null;
