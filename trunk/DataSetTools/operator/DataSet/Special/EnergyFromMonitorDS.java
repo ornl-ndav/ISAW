@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/01/24 19:41:12  bouzekc
+ * Removed unused variables from main().  Removed unused imports.
+ *
  * Revision 1.3  2003/01/13 17:13:49  dennis
  * Added getDocumentation(), main test program and javadocs for getResult.
  * (Chris Bouzek)
@@ -49,7 +52,6 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.math.*;
-import  DataSetTools.operator.Parameter;
 import  DataSetTools.retriever.*;
 
 /**

@@ -32,6 +32,9 @@
  * Programmer:  Dennis Mikkelson
  *
  * $Log$
+ * Revision 1.6  2004/01/24 19:41:13  bouzekc
+ * Removed unused variables from main().  Removed unused imports.
+ *
  * Revision 1.5  2003/01/13 17:20:56  dennis
  * Added getDocumentation(), main test program and javadocs on getResult()
  *
@@ -374,7 +377,7 @@ public class  FocusIncidentSpectrum  extends   DS_Special
      {
        new_ds = (DataSet) result;
        System.out.println(new_ds.getData_entry(1).toString());
-       ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+       new ViewManager(new_ds, IViewManager.IMAGE);
      }
 
      else
