@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/04/11 21:03:55  dennis
+ *  Now uses the OneVariableFunction classes from package
+ *  DataSetTools.functions.
+ *
  *  Revision 1.1  2002/04/04 19:46:19  dennis
  *  Abstract base class for Data objects whose values are
  *  determined by a function of one variable.
@@ -41,6 +45,7 @@ package  DataSetTools.dataset;
 
 import java.io.*;
 import DataSetTools.math.*;
+import DataSetTools.functions.*;
 import DataSetTools.util.*;
 
 /**
