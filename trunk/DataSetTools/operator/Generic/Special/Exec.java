@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/07/29 18:22:56  pfpeterson
+ *  Started working out the details of calling code interactively.
+ *
  *  Revision 1.3  2002/07/29 16:35:09  pfpeterson
  *  Now redirects stderr from the process to the console as well.
  *
@@ -58,7 +61,9 @@ import  DataSetTools.retriever.RunfileRetriever;
 /**
  * This operator makes system calls. It does grab the process' STDOUT
  * stream and prints it to screen, otherwise it blindly calls the
- * method and returns the result (an integer).
+ * method and returns the result (an integer). The method called is
+ * assumed to be run without interaction. If it requires interaction
+ * ISAW WILL HANG.
  */
 public class Exec extends    GenericSpecial {
     /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
@@ -113,23 +118,39 @@ public class Exec extends    GenericSpecial {
     public Object getResult(){
         String command=(String)(getParameter(0).getValue());
         Process process=null;
-        String output;
-        String error;
+        String output=null;
+        String error=null;
+        String input=null;
+        boolean interactive=false; // start of interactive coding
 
         try{
             process=Runtime.getRuntime().exec(command);
-            InputStream in_stream  = process.getInputStream();
-            InputStream er_stream  = process.getErrorStream();
-            InputStreamReader in_reader = new InputStreamReader(in_stream);
-            InputStreamReader er_reader = new InputStreamReader(er_stream);
-            BufferedReader in = new BufferedReader(in_reader);
-            BufferedReader er = new BufferedReader(er_reader);
+            InputStream  in_stream  = process.getInputStream();
+            OutputStream out_stream = process.getOutputStream();
+            InputStream  err_stream = process.getErrorStream();
+            InputStreamReader  in_reader  = new InputStreamReader(in_stream);
+            OutputStreamWriter out_write  = new OutputStreamWriter(out_stream);
+            InputStreamReader  err_reader = new InputStreamReader(err_stream);
+            InputStreamReader  sys_reader = new InputStreamReader(System.in);
+            BufferedReader in  = new BufferedReader(in_reader);
+            BufferedWriter out = new BufferedWriter(out_write);
+            BufferedReader err = new BufferedReader(err_reader);
+            BufferedReader sys = new BufferedReader(sys_reader);
             while(true){
                 output=in.readLine();
-                error=er.readLine();
-                if( output==null && error==null )
-                    break;
-                else{
+                error=err.readLine();
+                if( output==null && error==null ){
+                    if(!interactive)break;
+                    input=sys.readLine();
+                    if(input==null || input.length()<=0)
+                        break;
+                }else{
+                    if(input!=null){
+                        System.out.println("IN:"+input);
+                        out.write(input,0,input.length());
+                        out.newLine();
+                        out.flush();
+                    }
                     if(error!=null)
                         System.err.println(error);
                     if(output!=null)
