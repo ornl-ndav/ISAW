@@ -90,7 +90,7 @@ public class GenericOperatorList implements Serializable
   static public Operator getOperator( String op_name )
   {
 
-    if ( op_name == "SumFiles" )
+    if ( op_name.equals( "SumFiles") )
       return new SumRunfiles();
 
      return null;
