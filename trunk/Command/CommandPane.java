@@ -58,7 +58,7 @@ import javax.swing.border.*;
 import DataSetTools.operator.*; 
 import java.beans.*; 
 import java.util.Vector;
-
+import Command.*;
 
 /** Pane to enter and execute and handle commands
  *  A command can be executed immediately  or 
@@ -177,6 +177,10 @@ public class CommandPane  extends JPanel
        addIObserver( O );
        PL = new PropertyChangeSupport( this );  
        MacroDocument = Doc ;
+       ExecLine.initt();
+       ExecLine.resetError();
+       seterror( -1,"");
+       lerror = -1;
         
       }
 /** 
@@ -200,7 +204,7 @@ public class CommandPane  extends JPanel
          //System.setProperty("DefaultInstrument" , "hrcs");
      
        FilePath = System.getProperty("Script_Path");
-        if( Debug )System.out.println( "FilePath is "+FilePath);
+      
        
             FilePath = DataSetTools.util.StringUtil.fixSeparator(FilePath);
      
@@ -258,7 +262,9 @@ public class CommandPane  extends JPanel
 
            Commands = new JTextArea( 7 , 50 ) ; 
            Commands.setLineWrap( true ) ; 
+           Commands.setFont(FontUtil.MONO_FONT ) ;
            Immediate = new JTextArea( 5 , 50 ) ; 
+           Immediate .setFont(FontUtil.MONO_FONT ) ;
            Immediate.addKeyListener( new MyKeyListener(this)) ;        
 	 
            JSplitPane JPS = new JSplitPane(JSplitPane.VERTICAL_SPLIT) ; 
@@ -296,8 +302,9 @@ public class CommandPane  extends JPanel
      *@param    dss    The data set that is to be added
      */
     public void addDataSet( DataSet dss )   
-      {ExecLine.addDataSet( dss ) ; 
-
+    {System.out.println( dss.getTitle());
+       ExecLine.addDataSet( dss ) ; 
+       
       }
    
 
@@ -315,11 +322,7 @@ public class CommandPane  extends JPanel
      if( Doc == null )return ; 
   
      if( line < 0 )return ; 
-     //E = Doc.getDefaultRootElement().getElement( line ) ; 
-     //if( E == null )return ;  
-     
-     //try{
-         // S = Doc.getText( E.getStartOffset() , E.getEndOffset() - E.getStartOffset() - 1 ) ;         
+           
            S = getLine( Doc , line);
            
            
@@ -339,20 +342,7 @@ public class CommandPane  extends JPanel
                 {lerror = line ;  
                 perror = kk ; 
                 serror = "Extra Characters at the end of command" ; 
-               }
-
-        // }
-    // catch( javax.swing.text.BadLocationException s )
-	// {if( StatusLine == null )
-         //   System.out.println( "Bad line numbers" + E + "," + 
-//                           E.getStartOffset() + "," + E.getEndOffset() ) ; 
-	// else 
-          // new Uilt().appendDoc{StatusLine, "Bad line numbers" + E + "," + E.getStartOffset() + "," 
-           //                       + E.getEndOffset() ) ; 
-	   
-          // }
-          
-       // }
+               } 
 
     }
 
@@ -397,8 +387,11 @@ public class CommandPane  extends JPanel
      String S;
      
      Vector vnames = new Vector();
-     if( Args != null)
      ExecLine.initt();
+     ExecLine.resetError();
+     seterror( -1, "");
+     lerror = -1;
+     if( Args != null)    
      for( i = 0 ; i < Args.length ; i++)
        {  if( Args[i].getValue() instanceof DataSet)
             { DataSet ds = (DataSet)(Args[i].getValue());
@@ -424,7 +417,23 @@ public class CommandPane  extends JPanel
             }
 
        }
-    
+      new IsawGUI.Util().appendDoc(logDocument , "#$ Start Macro Run");
+      S="(";
+      int line;
+      if( Args != null)
+      for( i=0; i< Args.length ; i++)
+         {S = S + Args[i].getValue().toString();
+          if( i+1 < Args.length) S = S+",";
+         }
+       S = S + ")";
+        new IsawGUI.Util().appendDoc(logDocument , "Args ="+S);
+
+       Element E = MacroDocument.getDefaultRootElement() ; 
+         for( line = 0 ; line < E.getElementCount(); line ++)
+           { S = getLine( MacroDocument , line);
+              new IsawGUI.Util().appendDoc(logDocument , S);
+            }
+
      int k = executeBlock( MacroDocument ,2 ,true ) ;
   
      for(i = 0 ; i < (vnames.size()/2) ; i++)
@@ -434,6 +443,9 @@ public class CommandPane  extends JPanel
     seterror( ExecLine.getErrorCharPos(), ExecLine.getErrorMessage());
     if( (perror >= 0) && (lerror <  0 ))
         lerror = k;
+        
+     new IsawGUI.Util().appendDoc(logDocument , "#$ End Macro Run");
+
     }
    private int executeBlock ( Document Doc , int start ,  boolean exec )
      { int line ; 
@@ -811,6 +823,22 @@ public class CommandPane  extends JPanel
       return j;
       
      } 
+  /*
+   *  Used for more free form placement of the parameter definitions
+   *  in a document
+  */
+   private int getNextMacroLine( Document Doc, int prevLine)
+    { String Line;
+      prevLine++;
+      if( prevLine < 0 ) 
+        prevLine = 0;
+      Line = getLine( Doc , prevLine);
+      if( Line == null )
+        return -1;
+      if( Line.trim().indexOf("#$$") == 0)
+         return prevLine;
+      return getNextMacroLine( Doc, prevLine++);
+    } 
    private String getLine( Document Doc, int start )
      {
       String var ;      
@@ -1247,18 +1275,25 @@ public class CommandPane  extends JPanel
       int start ,
           i;
       Vector V = new Vector();
-      
+      if( Debug) System.out.println("Start get Def par"+ perror);
        if( doc == null) 
          return null;
        
-         S = " Enter Parameter Value ";
-    
-       V.add( getLine(MacroDocument , 1 ));
+       S = " Enter Parameter Value ";
+       Line = getLine( doc , 1 );
+       if( Line == null )
+          Line ="";
+       if( Line.trim().indexOf('#')==0)
+         { i = Line.indexOf( '#');
+           Line = Line.substring( i+1);
+         }
+       V.add( Line );
        E = doc.getDefaultRootElement();
        start = 0;
        int j , k;
-       for( i = 0 ; i< E.getElementCount(); i++)
-         {Line = getLine( MacroDocument , 2+i);
+       for( i = getNextMacroLine( doc,-1) ; i>= 0; i = getNextMacroLine( doc , i))
+         {Line = getLine( doc , i);
+         
          if( Debug)
             System.out.print("Line="+Line);
           if(Line == null )
@@ -1325,7 +1360,7 @@ public class CommandPane  extends JPanel
              V.add( new JStringParameterGUI( new Parameter( Message, XX )));
             }
           else if ( DT.equals( "DataSet".toUpperCase()) )
-           {System.out.println( "Argument is a data set");
+           {//System.out.println( "Argument is a data set");
 	   DataSet DS[] = ExecLine.getGlobalDataset();
             DataSet dd = new DataSet("DataSet=","");
             Parameter PP = new Parameter( Message , dd);
@@ -1341,12 +1376,12 @@ public class CommandPane  extends JPanel
 
             } 
           else
-            { seterror( i , "Data Type not supported " + DT);
-             
+            { seterror( start+12 , "Data Type not supported " + DT);
+	    lerror = i;
               return null; 
           }
       
-      
+        if( Debug) System.out.println("At bottom get def "+ perror+","+serror);
        }// For i=0 to count
        return V;
     }
@@ -1394,122 +1429,12 @@ public class CommandPane  extends JPanel
          {seterror( 1000, "Macro Does not Exist ");
           return  null;
          }
-/*       int count = 0;
-       String Line = getLine( MacroDocument , 2);
-       if( Line == null)
-         {seterror( 1000, "Macro Does not Exist ");
-          return ;
-         }
-       while( Line.trim().indexOf("#$$")>= 0)
-         { count ++;
-           Line = getLine( MacroDocument , 2+count);
-           if( Line == null)
-             {seterror( 1000, "Macro Does not Exist ");
-              return ;
-             }
-          }
-       if(Debug)
-         System.out.println(" # of parameters = " + count);
-
-       Parameter P[] = new Parameter[count];
-       Vector vname = new Vector();
-       int i;
-       String S;
-       Vector  V = new Vector();  
-       if( MacroDocument == null)
-         S = "Enter Value";
-       else
-         S = " Enter Parameter Value ";
-    
-       V.add( getLine(MacroDocument , 1 ));
-       int start = 0;
-       int j , k;
-       for( i = 0 ; i < count ; i++)
-         {Line = getLine( MacroDocument , 2+i);
-          start = Line.indexOf("#$$")+3;
-          start = ExecLine.skipspaces(Line , 1 , start );
-          j = findQuote ( Line , 1 , start, " " , "" );
-          if( (j >= 0) && ( j < Line.length() ))
-            vname.add(Line.substring( start , j).trim());
-          start = j;
-          if( start >= Line.length())
-            {seterror( start , "Improper Parameter Format");
-             return ;
-            }
-          start = ExecLine.skipspaces(Line , 1, start );
-          j = findQuote( Line , 1, start, " ", "" );
-       
-          String DT = Line.substring( start , j );//.toUpperCase();
-          String Message;
-          j = ExecLine.skipspaces( Line , 1, j );
-        
-          if( j < Line.length() )
-            Message = Line.substring( j ).trim();
-          else
-            Message = "";
-          if(Debug)
-            System.out.println("in line start end="+ start + ","+DT+","+Message);
-          if( (DT .equals( "Int") ) || ( DT.equals( "INTEGER")))
-             V.add( new JIntegerParameterGUI( new Parameter ( Message , new Integer (0)) ) );
-          else if ( DT.equals( "Float"))
-             V.add( new JFloatParameterGUI(  new Parameter ( Message , new Float (0.0)) ) ); 
-          else if( DT.equals( "String"))
-             V.add( new JStringParameterGUI( new Parameter ( Message , "" ) ) );
-          else if( DT.equals("DataDirectoryString"))
-             { String DirPath = System.getProperty("DataDirectory");
-               if( DirPath != null )
-                   DirPath = DataSetTools.util.StringUtil.fixSeparator( DirPath+"\\");
-               else
-                   DirPath = "";
-               V.add( new JStringParameterGUI( new Parameter( Message, DirPath)));
-              }
-          else if (DT.equals( "DSFieldString"))
-            {String Fields[] = {"Title","X_label", "X_units", "PointedAtIndex","SelectFlagOn",
-                       "SelectFlagOff","SelectFlag","Y_label","Y_units", "MaxGroupID",
-                        "MaxXSteps","MostRecentlySelectedIndex", "NumSelected" , "XRange",
-                       "YRange"};
-             AttributeList A = new AttributeList();
-            // Attribute A1;
-	    
-             for( k =0; k< Fields.length; k++)
-		 {   
-                    A.addAttribute( new StringAttribute( Fields[k] , "") );
-              }
-            
-             V.add( new JAttributeNameParameterGUI( new Parameter( S ,"" ) , A));
-            }
-          else if( DT.equals( "InstrumentNameString"))
-            {String XX = System.getProperty("DefaultInstrument");
-             if( XX == null )
-               XX = "";
-             V.add( new JStringParameterGUI( new Parameter( S, XX )));
-            }
-          else if ( DT.equals( "DataSet") )
-           {System.out.println( "Argument is a data set");
-	   DataSet DS[] = ExecLine.getGlobalDataset();
-            DataSet dd = new DataSet("DataSet=", null);
-            Parameter PP = new Parameter( Message , dd);
-            JlocDataSetParameterGUI JJ = new JlocDataSetParameterGUI( PP , DS);
-            V.add(JJ);
-           
-            if(Debug)
-              {System.out.print("DS"+JJ.getClass()+","); 
-               System.out.print( JJ.getParameter()+",");
-               System.out.print(  JJ.getParameter().getValue()+",");
-              // System.out.println(JJ.getParameter().getValue().getClass());
-              }
-
-            } 
-          else
-            { seterror( i , "Data Type not supported " + DT);
-             
-              return ; 
-          }
-        
-      
-       }// For i=0 to count
-    */
+    if( Debug) System.out.println("Start GUI get Parameters");
     Vector V1 = getDefaultParameters( MacroDocument );
+    if( Debug )System.out.println("after get defaults "+ perror+","+lerror+","+serror);
+    if( perror >= 0)
+       {return null; 
+       }
     if( Debug )
        if( V1 != null )
          for( int i = 0 ; i < V1.size() ; i++)
@@ -1564,77 +1489,51 @@ public class CommandPane  extends JPanel
 *
 *@return           The result( null usually) or an error message
 */
- public Object getExecScript( String fname ,IObserver X , DataSet DDS[])
+ public Object getExecScript( String fname ,IObserver X , DataSet DDS[], Document  DocLog)
   {    int i;
        String S;
      
-       
+        seterror(-1,"");
+        lerror = -1;
          Document doc = (new Util()).openDoc( fname ); 
-        /* File  f = new File( fname);
-
-         System.out.println( "The filename is "  + fname ) ;                        
-         int x=0;
-	 try{  
-                  FileReader fr = new FileReader( f ) ; 
-                  int c , offset ; 
-                  x=1;
-	          String line ; 
-                  //doc = Commands.getDocument() ; 
-                 
-                  //doc.remove( 0 , doc.getLength() ) ; 
-		  doc = new PlainDocument();
-                  line = "" ; offset = 0 ; 
-                  x=2;
-                  for( c = fr.read() ; c != -1 ;   )
-	              { line = line + new Character( ( char )c ).toString() ; 
-                        if( c < 32 ) //assumes the new line character
-			    {x=x+1;
-                           doc.insertString( offset , line , null ) ; 
-		           offset+=line.length() ; 
-                           line = "" ; 
-
-                          }
-			
-                         c = fr.read() ; 
-                       }
-		  x=10000;
-		  if( line.length() > 0 )doc.insertString( offset , line , null ) ; 
-                  fr.close() ; 
-                 // Commands.setCaretPosition(0);
-	           }
-	        catch( IOException s )
-		    {//if( StatusLine != null )StatusLine.setText( "Status: unsuccessful" ) ;
-			// else 
-                         System.out.println("UnsuccessfulA" + x+","+s); 
-                    serror = "unsuccessful";
-                    perror = 0;
-                    return null;
-                   }
-                 catch( javax.swing.text.BadLocationException s )
-		     {//if( StatusLine != null )StatusLine.setText( "Status: unsuccessful" ) ;
-			 // else 
-                           System.out.println("UnsuccessfulB"); 
-                    serror = "unsuccessful";
-                    perror = 0;
-                    return null;
-                     }
-             */
+       
          
 	 CommandPane cp = new CommandPane( doc , X);
+         cp.setLogDoc(DocLog);
+         MessageBox B;
          if( DDS != null )
            for( i = 0; i < DDS.length ; i++)
             cp.addDataSet(DDS[i]);
+         
          Parameter P[] = cp.GUIgetParameters();
+         seterror( cp.getErrorCharPos(), cp.getErrorMessage());
+         lerror = cp.getErrorLine();
+         if( Debug)System.out.println("getExec agter getGUIParam"+perror+","+lerror+","+serror);
+         if( perror >= 0 )
+           { B = new MessageBox("Error="+serror+" on line "+ lerror + "at position "+ perror);
+           return "Error="+serror+" on line "+ lerror + "at position "+ perror;
+           }
+         if( Debug)System.out.println("Ere cp.execute" );
+         if( P == null) System.out.println("P is null");
+         else System.out.println("P has length"+ P.length);
          cp.execute(P);
          seterror( cp.getErrorCharPos(), cp.getErrorMessage());
          lerror = cp.getErrorLine();
+         lerror = cp.getErrorLine();
          if( Debug)
 	     System.out.println("End getExec err&result are"+perror+","+lerror+","+serror+","+cp.getResult());
+         
          if( perror < 0 ) 
-           {  
+	   {  Object O = cp.getResult();
+              String SS ;
+              if( O == null ) SS = "(null)"; else SS = O.toString();
+              if( cp.StatusLine == null)
+                B = new MessageBox( SS );
+              
                return cp.getResult();
            }
-         System.out.println("Macro Error "+ serror +" on line"+lerror+" at position "+ perror);
+         if( cp.StatusLine == null )
+         B = new MessageBox("Macro Error "+ serror +" on line"+lerror+" at position "+ perror);
          return serror;
         
 
@@ -1699,23 +1598,41 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
      if( e.getSource().equals( Run ) ) 
        {doc = Commands.getDocument() ;
         MacroDocument = doc;
-        Parameter P[] = GUIgetParameters();
-        if( P == null ) 
-          return;
-        StatusLine.setText( "" ) ; 
-        perror = -1 ; 
+       
         ExecLine.resetError() ; 
         ExecLine.initt();
+        seterror( -1,"");
+        lerror = -1;
+        Parameter P[] = GUIgetParameters();
        
+         if( perror >= 0)
+          {new Util().appendDoc( StatusLine.getDocument(), "Error"+serror+" at position"+
+                                    perror+"on line"+lerror); 
+           MacroDocument = null;
+           return;
+          }
+        if( P == null ) 
+          {MacroDocument = null;
+            return;
+          }
+       
+        StatusLine.setText( "" ) ; 
+        perror = -1 ; 
+       
+        
         if( P.length > 0 )
           { execute( P ) ;
+            if( perror >= 0)
+              new Util().appendDoc( StatusLine.getDocument(), "Error"+serror+" at position"+
+                                    perror+"on line"+lerror); 
           }
         else
          {  execute( doc ) ; 
           }
 	MacroDocument = null;
         if( perror >= 0 )
-          {  new Util().appendDoc(StatusLine.getDocument(), "Status: Error " +  serror + " on line " + lerror + " character" + perror ) ; 
+          {  new Util().appendDoc(StatusLine.getDocument(), "Status: Error " +  serror + " on line " 
+                                       + lerror + " character" + perror ) ; 
              Element E = doc.getDefaultRootElement();
              if( lerror >= E.getElementCount()) 
                 Commands.setCaretPosition(doc.getLength()-1);
@@ -1732,10 +1649,11 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
        }
      else if( e.getSource().equals( Clear ))
       {if( ExecLine == null ) return;
-       Commands.setText("");
-       Immediate.setText("");
+      // Commands.setText("");
+      // Immediate.setText("");
        ExecLine.removeDisplays();
-       StatusLine.setText("");
+       //StatusLine.setText("");
+       ExecLine.initt();
       }
     else if( e.getSource().equals( Save ) || e.getSource().equals( Open ))
         {final JFileChooser fc = new JFileChooser(FilePath) ; 
@@ -1771,21 +1689,34 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
 	     } 
          }     
     else if( e.getSource().equals( Help ) )
-        {BrowserControl H = new BrowserControl() ; 
+        {//BrowserControl H = new BrowserControl() ; 
+           HTMLPage H;
 	 String S;
          
-         
-         S= System.getProperty("user.dir").trim();
-         if( S!=null) if( S.length() > 0 ) if(  "\\/".indexOf(S.charAt(S.length() - 1 ) ) < 0)
-	    S = S + "/";
-	 if( !new File( S + "IsawHelp/Command/CommandPane.html").exists()) 
-            S = null;
-         else
-            S=S.replace( '\\','/');
-            
+         S = System.getProperty("Help_Directory");
+	 if( S!= null)
+           { S = DataSetTools.util.StringUtil.fixSeparator( S);
+             S = S.trim();
+             if( S.length() < 1) 
+                S = null;
+             else if( "\\/".indexOf(S.charAt(S.length() - 1 ))< 0)
+                S = S + java.io.File.separator;
+            } 
+
+         if( S == null)
+            { S= System.getProperty("user.dir").trim();
+              if( S!=null) 
+                if( S.length() > 0 ) 
+                 if(  "\\/".indexOf(S.charAt(S.length() - 1 ) ) < 0)
+	           S = S + java.io.File.separator;
+              S = DataSetTools.util.StringUtil.fixSeparator( S);
+	      if( !new File( S + "IsawHelp/Command/CommandPane.html").exists()) 
+                 S = null;
+             S = S +"IsawHelp"+java.io.File.separator;
+            }
        
         if( S != null )
-	    S = S + "IsawHelp/Command/CommandPane.html";
+	    S = S + "Command/CommandPane.html";
         else
 	    {String CP = System.getProperty("java.class.path").replace( '\\','/') ;
 	    int s, t ;
@@ -1800,10 +1731,16 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
            
                 }
               }
+         
          if( S == null )S = "http://www.pns.anl.gov/isaw/IsawHelp/CommandPane.html";
-         else S = "file://" + S;
-         H.displayURL( S ) ; 
-          
+         else S = "file:///" + S;
+         //H.displayURL( S ) ;
+          S= S.replace( '\\','/');
+          System.out.println("Source is"+S); 
+          H = new HTMLPage( S ) ;
+          Dimension D = getToolkit().getScreenSize();
+          H.setSize((int)(.6* D.width) , (int)(.6*D.height) ); 
+          H.show();
         
         }
     }// end actionperformed 
@@ -1816,17 +1753,17 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
 private class MyKeyListener  extends KeyAdapter 
                              implements KeyListener
   { CommandPane CP;
+    int line =0;
     public MyKeyListener( CommandPane CP) 
        {this.CP = CP;
        }
     public void keyTyped( KeyEvent e )
     { if( Debug )
          System.out.println("In keyEvent");
-      if('x' == e.getKeyChar())//   used for testing macros)
+      if('x' == 'y') //e.getKeyChar())   used for testing macros)
       { 
-        System.out.println( 
-              CP.getExecScript( "C:\\Ruth\\ISAW\\Scripts\\Load1.iss", 
-                                CP, CP.ExecLine.getGlobalDataset()));
+        line = getNextMacroLine( Commands.getDocument(), line);
+        System.out.println( "line ="+line);
      
        }
 
@@ -1893,7 +1830,8 @@ private class MyKeyListener  extends KeyAdapter
 */
 public int getErrorCharPos()
    { if(ExecLine == null ) return -1;
-     return ExecLine.getErrorCharPos();
+     return perror;
+     //return ExecLine.getErrorCharPos();
    }
 
 /**
@@ -1902,7 +1840,8 @@ public int getErrorCharPos()
 */
 public String getErrorMessage()
    { if( ExecLine == null ) return "";
-     return ExecLine.getErrorMessage();
+      return serror;
+     //return ExecLine.getErrorMessage();
    }
 /**
 * Returns the line where the error occurred
