@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/09/02 18:21:04  bouzekc
+ * Added method to get at the inner panel with the data entry GUI components
+ * on it.
+ *
  * Revision 1.1  2003/08/30 19:46:38  bouzekc
  * Derived from ArrayEntryJPanel and committed to CVS.  Builds upon
  * ArrayEntryJPanel's functionality and is more self-contained.
@@ -198,6 +202,20 @@ public class ArrayEntryJFrame extends JFrame implements ActionListener,
    */
   public String getHelpMessage(  ) {
     return helpMessage;
+  }
+
+  /**
+   * Accessor method for external classes to get the JPanel holding the buttons
+   * and input fields.
+   *
+   * @return The inner JPanel, if it exists, null otherwise.
+   */
+  public JPanel getInnerPanel(  ) {
+    if( innerPanel == null ) {
+      return null;
+    }
+
+    return innerPanel;
   }
 
   /**
