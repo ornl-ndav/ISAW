@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2003/07/18 20:14:01  dennis
+ *  Added method SubtractDelayedNeutrons(,,)
+ *
  *  Revision 1.21  2003/04/17 20:34:16  pfpeterson
  *  Changed DiffractometerFocus to use XScale.getInstance so the returned
  *  type is correct. Also included check against machine epsilon so nothing
@@ -545,6 +548,107 @@ public static XScale DiffractometerFocus(XScale scale,
     }
 
     return new_scale;
+}
+
+
+
+/* -------------------- SubtractDelayedNeutrons ---------------------- */
+/**
+ *  Subtract delayed neutrons from a time-of-flight Data block.  This
+ *  method finds the total count for the given Data block, and the total
+ *  time between pulses.  It the subtracts off:
+ *
+ *  dn_fraction*total*(width_i/total_time)
+ *
+ *  from the ith sample, where total_time is the time in microseconds between
+ *  pulses, and width_i is the with of the ith time bin (if the Data block
+ *  is a histogram).  If the Data block is a function, then width_i will be
+ *  the distance between the midpoints of the intervals on either side of
+ *  sample point i.  NOTE: This may not be correct, depending on how the
+ *  Data was converted from a histogram to a function.
+ *
+ *  @param  d            The Data block; this should be a HistogramTable, with
+ *                       x-axis representing time bin boundaries, in
+ *                       microseconds.  Note: d must have at least one bin if
+ *                       it is a histogram and must have at least two samples
+ *                       if it is a function. 
+ *
+ *  @param  frequency    The number of pulses per second.
+ *
+ *  @param  dn_fraction  Decimal fraction representing the portion of the total
+ *                       count that is attributed to delayed neutrons, 
+ *                       eg. 0.0011;
+ *
+ *  @return true if the input parameters were resonable and the calculation
+ *          was done.
+ */
+public static boolean SubtractDelayedNeutrons( TabulatedData d, 
+                                               float         frequency,
+                                               float         dn_fraction )
+{
+  if ( d == null )
+  {
+    System.out.println("ERROR: Data block null in SubtractDelayedNeutrons");
+    return false;
+  }
+
+  if ( frequency <= 0 )
+  {
+    System.out.println("ERROR: frequency invalid in SubtractDelayedNeutrons");
+    System.out.println("frequency = " + frequency );
+    return false;
+  }
+
+  if ( dn_fraction <= 0 || dn_fraction >= 1 )
+  {
+    System.out.println("ERROR: dn_fraction invalid in SubtractDelayedNeutrons");
+    System.out.println("dn_fraction = " + dn_fraction );
+    return false;
+  }
+
+  float y[] = d.getY_values();
+  float x[] = d.getX_scale().getXs();
+  float total_time = (float)1.0e6/frequency;
+
+  float total = 0;
+  for ( int i = 0; i < y.length; i++ )
+    total += y[i];
+
+  if ( d.isHistogram())
+  {
+    for ( int i = 0; i < y.length; i++ )
+      y[i] -= dn_fraction * total * (x[i+1]-x[i])/total_time;
+
+    return true;
+  }
+  else                                       // use midpoints of intervals.
+  {                                          // First and last value are special
+    if ( y.length < 2 )
+      return false;
+ 
+    y[0] -= dn_fraction * total * (x[1]-x[0])/total_time;
+    float pt_1,
+          pt_2;
+    y[y.length-1] -= dn_fraction * total * (x[1]-x[0])/total_time;
+
+    for ( int i = 1; i < y.length-1; i++ )
+    {
+      pt_1 = (x[i-1] + x[i]  )/2;
+      pt_2 = (x[i]   + x[i+1])/2;
+      y[i] -= dn_fraction * total * (pt_2 - pt_1)/total_time;
+    }
+
+    if ( y.length > 2 )
+    {
+      pt_1 = x[ y.length - 2 ];
+      pt_2 = x[ y.length - 1 ];
+      y[ y.length-1 ] -= dn_fraction * total * (pt_2 - pt_1)/total_time;
+    }
+
+    return true;
+  }
+
+
 }
 
 /* -------------------------------------------------------------------------
