@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:33:12  bouzekc
+ * Documented file using javadoc statesments.
+ * Added tooltips to the buttons on the GUI.
+ *
  * Revision 1.1  2004/02/07 05:08:49  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -72,29 +76,52 @@ import devTools.Hawk.classDescriptor.tools.FileReflector;
 import devTools.Hawk.classDescriptor.tools.SystemsManager;
 
 /**
- * @author kramer
- *
+ * This class creates a window which allows the user to create a new project.
+ * @author Dominic Kramer
  */
 public class CreateNewProjectGUI extends JFrame implements ActionListener, ListSelectionListener
 {
+	/**
+	 * Used to create Interface objects from .class files.
+	 */
 	protected FileReflector fileReflector;
+	/**
+	 * Window used to display any errors that occured when trying to make the project.
+	 */
 	protected UnableToLoadClassGUI gui;
-
+	
+	/**
+	 * The Project that will be returned as being created.
+	 */
 	protected Project createdProject;
-	
+	/**
+	 * The JList containing all of the files to used to load classes.
+	 */
 	protected JList list;
+	/**
+	 * The model for the JList.
+	 */
 	protected DefaultListModel model;
+	/**
+	 * The JTextField which used to hold the project's name.
+	 */
 	protected JTextField nameField;
+	/**
+	 * The ProjectSelectorJPanel from which the project is to be added to.
+	 */
 	protected ProjectSelectorJPanel projectSelector;
+	/**
+	 * This is the button which causes the project to be created.
+	 */
+	protected JButton createProjectButton;
 	
-	protected boolean createNewProject;
-	
-	protected CreateNewProjectGUI() {}
-	
+	/**
+	 * Creats the window with everything on it.
+	 * @param psjp The ProjectSelectorJPanel to which the the project is added.
+	 * @param GUI The window onto which any problems are displayed when trying to make the project.
+	 */
 	public CreateNewProjectGUI(ProjectSelectorJPanel psjp, UnableToLoadClassGUI GUI)
 	{
-		createNewProject = true;
-		
 		gui = GUI;
 		fileReflector = new FileReflector(gui);
 		projectSelector = psjp;
@@ -139,6 +166,7 @@ public class CreateNewProjectGUI extends JFrame implements ActionListener, ListS
 		//now to make the JList
 			model = new DefaultListModel();
 			list = new JList(model);
+			list.setToolTipText("This is the list of files from which class information will be obtained");
 			list.addListSelectionListener(this);
 			list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			JScrollPane listScrollPane = new JScrollPane(list);
@@ -147,21 +175,25 @@ public class CreateNewProjectGUI extends JFrame implements ActionListener, ListS
 		//now to make the button panel
 			JButton addFileButton = new JButton("Add file");
 			addFileButton.setActionCommand("add.file");
+			addFileButton.setToolTipText("Add files to the list");
 			addFileButton.addActionListener(this);
 			buttonPanel.add(addFileButton);
 			
 			JButton removeFileButton = new JButton("Remove selected files");
+			removeFileButton.setToolTipText("Remove the selected files from the list");
 			removeFileButton.setActionCommand("remove.selected.files");
 			removeFileButton.addActionListener(this);
 			buttonPanel.add(removeFileButton);
 			
 			JButton closeButton = new JButton("Close");
 			closeButton.setActionCommand("close");
+			closeButton.setToolTipText("Close this window without making a project");
 			closeButton.addActionListener(this);
 			buttonPanel.add(closeButton);
 			
-			JButton createProjectButton = new JButton("Create Project");
+			createProjectButton = new JButton("Create Project");
 			createProjectButton.setActionCommand("create.project");
+			createProjectButton.setToolTipText("Load the files in the list to make the project");
 			createProjectButton.addActionListener(this);
 			buttonPanel.add(createProjectButton);
 			
@@ -171,21 +203,42 @@ public class CreateNewProjectGUI extends JFrame implements ActionListener, ListS
 			pack();
 	}
 	
+	/**
+	 * Returns the created project in its current state.
+	 * @return The current project
+	 */
 	public Project getCreatedProject()
 	{
 		return createdProject;
 	}
 	
+	/**
+	 * Returns the flag that describes if the class should make a new project.
+	 * @return True if a new project should be created and false otherwise.
+	 */
 	public boolean createNewProject()
 	{
-		return createNewProject;
+		return true;
 	}
 	
+	/**
+	 * Returns the JButton corresponding to the the button which allows the user to 
+	 * create a project.
+	 * @return createProjectButton
+	 */
+	public JButton getCreateProjectButton()
+	{
+		return createProjectButton;
+	}
+	
+	/**
+	 * Handles ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent event)
 	{
 		if (event.getActionCommand().equals("create.project"))
-		{			
-			LoadClassThread thread = new LoadClassThread(this);
+		{
+			LoadClassThread thread = new LoadClassThread(createdProject,this);
 			thread.start();
 		}
 		else if (event.getActionCommand().equals("close"))
@@ -207,7 +260,11 @@ public class CreateNewProjectGUI extends JFrame implements ActionListener, ListS
 			}
 		}
 	}
-		
+	
+	/**
+	 * This disposes the window and brings up the window that displays any errors 
+	 * that occured while trying to make the project.
+	 */	
 	public void disposeAndShowErrorBox()
 	{
 		if (gui.showErrorBox())
@@ -215,16 +272,30 @@ public class CreateNewProjectGUI extends JFrame implements ActionListener, ListS
 		dispose();
 	}
 	
+	/**
+	 * Get the FileReflector object associated with this window.  The FileReflector object is 
+	 * used to create Interface objects from .class files.
+	 * @return fileReflector
+	 */
 	public FileReflector getFileReflector()
 	{
 		return fileReflector;
 	}
 	
+	/**
+	 * Returns the list's model.
+	 * @return The list's model.
+	 */
 	public DefaultListModel getModel()
 	{
 		return model;
 	}
 	
+	/**
+	 * Returns the number of .class files in a .jar file
+	 * @param fileName The full filename for the .jar file
+	 * @return The number of .class files.
+	 */
 	private int getNumberOfClassesInJarFile(String fileName)
 	{
 		int answer = 0;
@@ -250,22 +321,39 @@ public class CreateNewProjectGUI extends JFrame implements ActionListener, ListS
 		}
 		return answer;
 	}
-		
+	
+	/**
+	 * Returns the ProjectSelectorJPanel from which the project was selected.
+	 * @return projectSelector
+	 */
 	public ProjectSelectorJPanel getProjectSelectorJPanel()
 	{
 		return projectSelector;
 	}
 	
+	/**
+	 * Returns the JTextField which holds the project's name.
+	 * @return nameField
+	 */
 	public JTextField getTextField()
 	{
 		return nameField;
 	}
 	
+	/**
+	 * Returns a Vector containing all of the Interface objects created.
+	 * @return A Vector of Interface objects
+	 */
 	public Vector getVectorOfInterfacesCreated()
 	{
 		return createdProject.getInterfaceVec();
 	}
 	
+	/**
+	 * Reads all of the files from the list and determines the total number of classes that 
+	 * would be loaded.
+	 * @return The total number of classes to load.
+	 */
 	public int numberOfClassesToLoad()
 	{
 		int answer = 0;
@@ -282,14 +370,21 @@ public class CreateNewProjectGUI extends JFrame implements ActionListener, ListS
 		return answer;
 	}
 	
+	/**
+	 * This sets the Interfaces that will be returned as being created.
+	 * @param vec A Vector of Interface objects.
+	 */
 	public void setVectorOfInterfaces(Vector vec)
 	{
 		createdProject.setInterfaceVec(vec);
 	}
-
+	
+	/**
+	 * This responds to a change in the JList.  Currently, this does nothing but has to be 
+	 * in this class because it implements ListSelectionListener.
+	 */
 	public void valueChanged(ListSelectionEvent e)
 	{
 
 	}
-
 }
