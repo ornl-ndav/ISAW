@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.13  2003/06/18 19:56:09  bouzekc
+ * Uses super.getResult() for initializing PropertyChanger
+ * variables.
+ *
  * Revision 1.12  2003/06/17 20:34:54  bouzekc
  * Fixed setDefaultParameters so all parameters have a
  * visible checkbox.  Added more robust error checking on
@@ -247,7 +251,6 @@ public class FindMultiplePeaksForm extends Form
     SharedData.addmsg("Executing...\n");
     IParameterGUI param;
     int maxPeaks, minIntensity, SCDline;
-    float newPercent, oldPercent, increment;
     Float monCount;
     String rawDir, outputDir, saveName, expName, calibFile, loadName;
     String expFile, IPNSName;
@@ -362,10 +365,11 @@ public class FindMultiplePeaksForm extends Form
     createFindPeaksOperators(calibFile, maxPeaks, minIntensity,
                              saveName, expFile, SCDline);
 
+    //validate the parameters and set the progress bar variables
+    super.getResult();
 
     //set the increment amount
     increment = (1.0f / runsArray.length) * 100.0f;
-    newPercent = oldPercent = 0;
 
     for(int i = 0; i < runsArray.length; i++)
     {
