@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.50  2003/10/10 00:58:51  bouzekc
+ * Removed references to PyOperatorFactory.
+ *
  * Revision 1.49  2003/08/25 18:12:34  rmikk
  * Caught a Throwable from Jython scripts
  *
@@ -197,8 +200,6 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     public    static boolean           LoadDebug       = false;
     private   static String[]          pathlist        = null;
 
-    private   static PyScriptOperator  pyOperatorFactory      = null;
-    private   static PyOperatorFactory pyOperator      = null;
     private   static boolean           hasJython       = true;
 
     private String errorMessage = "";
