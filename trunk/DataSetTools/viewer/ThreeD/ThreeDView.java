@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2001/06/29 18:39:35  dennis
+ * Now allows selection of color scales and temporarily
+ * marks group positons using rectangles..
+ *
  * Revision 1.6  2001/06/28 20:28:19  dennis
  * Keeps list of bytes for color indices, rather than
  * a list of Color objects.  Also uses new form of
@@ -91,15 +95,16 @@ public class ThreeDView extends DataSetViewer
   private final int NUM_PSEUDO_COLORS   = 2 * NUM_POSITIVE_COLORS + 1;
   private final int ZERO_COLOR_INDEX    = NUM_POSITIVE_COLORS;
 
-  private ThreeD_JPanel       threeD_panel    = null; 
-  private Box                 control_panel   = null; 
-  private AltAzController     view_control    = null;
-  private AnimationController frame_control   = null;
-  private SplitPaneWithState  split_pane      = null;
-  private byte                color_index[][] = null;
-  private Color               color_table[]   = null;
-  private IThreeD_Object      objects[]       = null;
-  private float               log_scale[]     = null;
+  private ThreeD_JPanel       threeD_panel      = null; 
+  private Box                 control_panel     = null; 
+  private ImageJPanel         color_scale_image = null;
+  private AltAzController     view_control      = null;
+  private AnimationController frame_control     = null;
+  private SplitPaneWithState  split_pane        = null;
+  private byte                color_index[][]   = null;
+  private volatile Color      color_table[]     = null;
+  private IThreeD_Object      objects[]         = null;
+  private float               log_scale[]       = null;
 
   private final String        GROUPS          = "Groups";
   private final String        AXES            = "AXES";
@@ -119,22 +124,13 @@ public ThreeDView( DataSet data_set, ViewerState state )
                            // sets up the menu bar with items handled by the
                            // parent class.
 
+  color_table = IndexColorMaker.getDualColorTable( getState().getColor_scale(),
+                                                   NUM_POSITIVE_COLORS );
+
   setLogScale( 50 );
   init();
-                                        // Add an item to the Option menu and
-                                        // add a listener for the option menu
-                                        // If the menu options are dependent
-                                        // on the DataSet, they must be added
-                                        // in init.  Unfortunately, in that 
-                                        // case, the old versions would have
-                                        // to be removed before adding the 
-                                        // new ones.
-  OptionMenuHandler option_menu_handler = new OptionMenuHandler();
-  JMenu option_menu = menu_bar.getMenu( OPTION_MENU_ID );
 
-  JMenuItem button = new JMenuItem( "My new option" );
-  button.addActionListener( option_menu_handler );
-  option_menu.add( button );
+  AddOptionsToMenu();
 }
 
 /* -----------------------------------------------------------------------
@@ -143,6 +139,7 @@ public ThreeDView( DataSet data_set, ViewerState state )
  *
  */
 
+/* ------------------------------- redraw ------------------------------- */
 
 public void redraw( String reason )
 {
@@ -165,10 +162,15 @@ public void redraw( String reason )
         threeD_panel.set_crosshair( pixel_point );
       }
    }
-   else
+   else                                       // really regenerate everything
+   {
+     MakeColorList();
      MakeThreeD_Scene();
+   }
 }
 
+
+/* ------------------------------ setDataSet ----------------------------- */
 
 public void setDataSet( DataSet ds )
 {   
@@ -188,6 +190,19 @@ public void setDataSet( DataSet ds )
  *  PRIVATE METHODS
  *
  */
+
+/* ------------------------- AddOptionsToMenu --------------------------- */
+
+private void AddOptionsToMenu()
+{
+  OptionMenuHandler option_menu_handler = new OptionMenuHandler();
+  JMenu option_menu = menu_bar.getMenu( OPTION_MENU_ID );
+
+                                                     // color options
+  JMenu color_menu = new ColorScaleMenu( option_menu_handler );
+  option_menu.add( color_menu );
+}
+
 
 /* ---------------------------- group_location --------------------------- */
 
@@ -212,6 +227,7 @@ private Vector3D group_location( int index )
   return pt_3D;
 }
 
+
 /* --------------------------- MakeThreeD_Scene --------------------------- */
 
 private void MakeThreeD_Scene()
@@ -230,8 +246,7 @@ private void MakeThreeD_Scene()
 
   draw_axes( radius/5 );
 
-  MakeColorList();
-  set_colors( 0 );
+  set_colors( frame_control.getFrameNumber() );
 }
 
 
@@ -239,6 +254,12 @@ private void MakeThreeD_Scene()
 
 private void set_colors( int frame )
 {
+  if ( color_index == null || color_index[0] == null )   // invalid color_index
+    return;
+
+  if ( frame < 0 || frame >= color_index[0].length )     // invalid frame num
+    frame = 0;                                           // so just use 0
+
   Color new_colors[] = new Color[ color_index.length ];
   int   index;
   for ( int i = 0; i < new_colors.length; i++ )
@@ -316,9 +337,6 @@ private void MakeColorList()
   else
     scale_factor = 0;
 
-  color_table = IndexColorMaker.getDualColorTable(
-                                IndexColorMaker.HEATED_OBJECT_SCALE_2,
-                                NUM_POSITIVE_COLORS );
   int index;
   for ( int i = 0; i < y_vals.length; i++ )
    for ( int j = 0; j < y_vals[0].length; j++ )
@@ -387,11 +405,14 @@ private float draw_groups()
       if ( radius > max_radius )
         max_radius = radius;
 
+      objects[i] = make_rectangle( point, 0.025f, 0.025f ); 
+/*
       points[0]= point;
       objects[i] = new Polymarker( points, Color.red );
-      objects[i].setPickID( i );
       ((Polymarker)(objects[i])).setType( Polymarker.STAR );
       ((Polymarker)(objects[i])).setSize( 2 );
+*/
+      objects[i].setPickID( i );
     }
   }
 
@@ -404,20 +425,53 @@ private float draw_groups()
 
 private void draw_axes( float length  )
 {
-  objects = new IThreeD_Object[ 3 ];
+  objects = new IThreeD_Object[ 4 ];
   Vector3D points[] = new Vector3D[2];
 
-  points[0] = new Vector3D( 0, 0, 0 );                    // x-axis
-  points[1] = new Vector3D( length, 0, 0 );
-  objects[0] = new Polyline( points, Color.red );
-                                                          // y_axis
+  points[0] = new Vector3D( 0, 0, 0 );                    // y_axis
   points[1] = new Vector3D( 0, length, 0 );
-  objects[1] = new Polyline( points, Color.green );
+  objects[0] = new Polyline( points, Color.green );
                                                           // z_axis
   points[1] = new Vector3D( 0, 0, length );
-  objects[2] = new Polyline( points, Color.blue );
+  objects[1] = new Polyline( points, Color.blue );
+
+  points[1] = new Vector3D( length, 0, 0 );               // +x-axis
+  objects[2] = new Polyline( points, Color.red );
+
+  points[1] = new Vector3D( -length/3, 0, 0 );            // -x-axis
+  objects[3] = new Polyline( points, Color.red );
 
   threeD_panel.setObjects( AXES, objects );
+}
+
+
+/* ---------------------------- make_rectangle --------------------------- */
+
+private DataSetTools.components.ThreeD.Polygon make_rectangle( Vector3D point, 
+                                                               float    width, 
+                                                               float    length )
+{
+  Vector3D verts[] = new Vector3D[4];
+
+  verts[0] = new Vector3D(  width/2,  length/2, 0 );
+  verts[1] = new Vector3D( -width/2,  length/2, 0 );
+  verts[2] = new Vector3D( -width/2, -length/2, 0 );
+  verts[3] = new Vector3D(  width/2, -length/2, 0 );
+
+  float coords[] = point.get();
+  Vector3D base = new Vector3D ( coords[1], -coords[0], 0 );
+  base.normalize();
+
+  Vector3D n  = new Vector3D( point );
+  Vector3D up = new Vector3D();
+  up.cross( n, base );
+  up.normalize();
+  Tran3D orient = new Tran3D();
+  orient.setOrientation( base, up, point );
+
+  orient.apply_to( verts, verts );
+
+  return new DataSetTools.components.ThreeD.Polygon( verts, Color.red );
 }
 
 
@@ -494,6 +548,10 @@ private void init()
   threeD_panel.setBackground( new Color( 100, 100, 100 ) );
 
   control_panel = new Box( BoxLayout.Y_AXIS );
+
+  color_scale_image = new ColorScaleImage();
+  color_scale_image.setNamedColorModel( getState().getColor_scale(), false );
+  control_panel.add( color_scale_image );
 
   view_control  = new AltAzController();
   view_control.addControlledPanel( threeD_panel );
@@ -600,7 +658,11 @@ private class OptionMenuHandler implements ActionListener
   public void actionPerformed( ActionEvent e )
   {
     String action = e.getActionCommand();
-    System.out.println("The user selected : " + action );
+    color_table = IndexColorMaker.getDualColorTable( action,
+                                                     NUM_POSITIVE_COLORS );
+    set_colors( frame_control.getFrameNumber() );
+    color_scale_image.setNamedColorModel( action, true );
+    getState().setColor_scale( action );
   }
 }
 
