@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/03/01 18:45:22  dennis
+ *  Now sends: RemoteDataRetriever.BAD_FILE_NAME in case the requested
+ *  file does not exist.
+ *
  *  Revision 1.9  2003/10/21 21:16:42  dennis
  *  Fixed some errors with javadoc comments and other comments.
  *  Removed redundant debug print.
@@ -115,7 +119,7 @@ public class FileDataServer extends DataSetServer
           String file_name = ((GetDataCommand)command).getFilename();
           Retriever r = get_retriever( file_name );
           if ( r == null )
-            tcp_io.Send( new Integer(-1) );
+            tcp_io.Send( new Integer( RemoteDataRetriever.BAD_FILE_NAME ) );
           else
           {
             int n_ds = r.numDataSets();
