@@ -55,14 +55,21 @@ public class SpectrometerTofToQE extends    DataSetOperator
    *  @param  ds          The DataSet to which the operation is applied
    *  @param  min_Q       The minimum Q to include
    *  @param  max_Q       The maximum Q to include 
-   *  @param  n_bins      The number of "bins" to be used between min_Q and
+   *  @param  n_Q_bins    The number of "bins" to be used between min_Q and
    *                      max_Q.
+   *  @param  min_E       The minimum E to include
+   *  @param  max_E       The maximum E to include 
+   *  @param  n_E_bins    The number of "bins" to be used between min_E and
+   *                      max_E.
    */
 
   public SpectrometerTofToQE( DataSet     ds,
                               float       min_Q,
                               float       max_Q,
-                              int         n_bins )
+                              int         n_Q_bins,
+                              float       min_E,
+                              float       max_E,
+                              int         n_E_bins )
   {
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
@@ -75,7 +82,16 @@ public class SpectrometerTofToQE extends    DataSetOperator
     parameter.setValue( new Float(max_Q));
     
     parameter = getParameter(2);
-    parameter.setValue( new Integer(n_bins) );
+    parameter.setValue( new Integer(n_Q_bins) );
+
+    parameter = getParameter(3);
+    parameter.setValue( new Float(min_E) );
+    
+    parameter = getParameter(4); 
+    parameter.setValue( new Float(max_E));
+    
+    parameter = getParameter(5);
+    parameter.setValue( new Integer(n_E_bins) );
 
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on
@@ -106,7 +122,16 @@ public class SpectrometerTofToQE extends    DataSetOperator
     parameter = new Parameter( "Max Q", new Float(20.0f) );
     addParameter( parameter );
 
-    parameter = new Parameter( Parameter.NUM_BINS, new Integer(200));
+    parameter = new Parameter( "Num Q bins", new Integer(100));
+    addParameter( parameter );
+
+    parameter = new Parameter( "Min E", new Float(40.0f) );
+    addParameter( parameter );
+
+    parameter = new Parameter( "Max E", new Float(200.0f) );
+    addParameter( parameter );
+
+    parameter = new Parameter( "Num E bins", new Integer(100));
     addParameter( parameter );
   }
 
@@ -121,80 +146,109 @@ public class SpectrometerTofToQE extends    DataSetOperator
                                      // title, units, and operations as the
                                      // current DataSet, ds
 
-    DataSetOperator op = ds.getOperator( "Convert to Energy" );
-    op.setDefaultParameters();
-    DataSet new_ds = (DataSet)op.getResult();
-    new_ds.addLog_entry( "Converted to Q vs. E" );
+                                     // get the E and Q scale parameters
+    float min_Q    = ( (Float)(getParameter(0).getValue()) ).floatValue();
+    float max_Q    = ( (Float)(getParameter(1).getValue()) ).floatValue();
+    int   n_Q_bins = ( (Integer)(getParameter(2).getValue()) ).intValue();
+    float min_E    = ( (Float)(getParameter(3).getValue()) ).floatValue();
+    float max_E    = ( (Float)(getParameter(4).getValue()) ).floatValue();
+    int   n_E_bins = ( (Integer)(getParameter(5).getValue()) ).intValue();
 
-    // copy the attributes of the original data set
-    new_ds.setAttributeList( ds.getAttributeList() );
+                                        // validate energy bounds
+    if ( min_E > max_E )                // swap bounds to be in proper order
+    {
+      float temp = min_E;
+      min_E  = max_E;
+      max_E  = temp;
+    }
 
-                                     // get the Q scale parameters
-    float min_Q  = ( (Float)(getParameter(0).getValue()) ).floatValue();
-    float max_Q  = ( (Float)(getParameter(1).getValue()) ).floatValue();
-    int   n_bins = ( (Integer)(getParameter(2).getValue()) ).intValue();
+    if ( n_E_bins <= 0 )                // calculate a default
+      n_E_bins = 100;                   // number of E bins.
 
-                                     // validate angular bounds
-    if ( min_Q > max_Q )             // swap bounds to be in proper order
+    UniformXScale E_scale = null;
+    if ( min_E >= max_E )               // no valid range specified, so err out
+    {
+      ErrorString message = new ErrorString(
+                      "ERROR: no valid E range in QE operator");
+      return message;
+    }
+    else
+     E_scale = new UniformXScale( min_E, max_E, n_E_bins );
+
+
+                                        // validate Q bounds
+    if ( min_Q > max_Q )                // swap bounds to be in proper order
     {
       float temp = min_Q;
       min_Q  = max_Q;
       max_Q  = temp;
     }
 
-    if ( n_bins <= 0 )                               // calculate a default 
-      n_bins = 200;                                  // number of Q bins.
+    if ( n_Q_bins <= 0 )                // calculate a default 
+      n_Q_bins = 100;                   // number of E bins.
 
-    UniformXScale Q_scale = null;
-    if ( min_Q >= max_Q )                       // no valid range specified 
+    if ( min_Q >= max_Q )               // no valid range specified, so err out
     {
       ErrorString message = new ErrorString(
                       "ERROR: no valid Q range in QE operator");
       return message;
     }
-    else
-     Q_scale = new UniformXScale( min_Q, max_Q, n_bins + 1 );
 
-                                                // get common XScale for Data 
-    int num_xsteps = new_ds.getMaxXSteps();       
-    UniformXScale x_scale = new_ds.getXRange();
-    x_scale = new UniformXScale( x_scale.getStart_x(), 
-                                 x_scale.getEnd_x(),
-                                 num_xsteps );
 
-    int num_cols = num_xsteps - 1;
+    // Now, map the counts from each time channel in each spectrum to a
+    // point in QE space.  The values at the grid of points in QE space
+    // will be averaged.
+  
+                                                   // set up arrays for S(Q,E)
+                                                   // and counters.        
+    float QE_vals[][]   = new float[n_Q_bins][n_E_bins] ; 
+    int   n_QE_vals[][] = new int[n_Q_bins][n_E_bins] ; 
+    float old_QE_val;
+    int   count;
 
-                                                // place all y_values from all
-                                                // spectra in one 2D array
-                                                // also, record min & max Q 
-                                                // values corresponding to the
-                                                // spectra.  The 2D array will 
-                                                // be resampled to form the
-                                                // QE image "in place"
-                                                // so it must be large enough.  
-    int num_data = new_ds.getNum_entries();
-    float y_vals[][];
-    if ( num_data > n_bins )
-      y_vals = new float[num_data][] ; 
-    else
-      y_vals = new float[n_bins][] ; 
+    int q_index,
+        e_index;
+    for ( q_index = 0; q_index < n_Q_bins; q_index++ )
+      for ( e_index = 0; e_index < n_E_bins; e_index++ )
+      {
+        QE_vals  [q_index][e_index] = 0.0f;
+        n_QE_vals[q_index][e_index] = 0;
+      }
 
-    float min_ang[]  = new float[num_data];
-    float max_ang[]  = new float[num_data];
-    float e_in[]     = new float[num_data];
+    float            min_ang,
+                     max_ang;
+    float            e_in;
     Data             data;
-    AttributeList    attr_list;
     DetectorPosition position = null;
     float            scattering_angle; 
     Float            delta_theta_obj = null;
     float            delta_theta;
     Float            energy_in_obj = null;
+    float            q1, 
+                     q2,
+                     q_val;
+    float            e_val,
+                     y_val;
+    float            spherical_coords[];
+    AttributeList    attr_list;
 
-    for ( int i = 0; i < num_data; i++ )
+    float            tof_vals[],
+                     center_tof;
+    float            y_vals[];
+
+    //
+    // Now step along each time-of-flight spectrum, calculate the Q,E 
+    // coordinates for each bin and map the events in the bin to a point in
+    // the Q,E plane.
+    //
+    int num_data = ds.getNum_entries();
+    for ( int i = 0; i < num_data; i++ )  
     {
-      data          = new_ds.getData_entry(i);
-      y_vals[i]     = data.getY_values();
-
+      data             = ds.getData_entry(i);
+                                              // first, get the position, 
+                                              // delta 2theta and initial 
+                                              // energy attributes for the 
+                                              // current spectrum
       attr_list = data.getAttributeList();
       position = (DetectorPosition)
                   attr_list.getAttributeValue( Attribute.DETECTOR_POS);
@@ -204,6 +258,7 @@ public class SpectrometerTofToQE extends    DataSetOperator
                     "ERROR: no DETECTOR_POS attribute in QE operator");
         return message;
       }
+      spherical_coords = position.getSphericalCoords();
      
       delta_theta_obj = (Float)
                         attr_list.getAttributeValue( Attribute.DELTA_2THETA );
@@ -215,80 +270,83 @@ public class SpectrometerTofToQE extends    DataSetOperator
       }
 
       energy_in_obj = (Float)attr_list.getAttributeValue(Attribute.ENERGY_IN);
-      e_in[i]       = energy_in_obj.floatValue();
+      e_in          = energy_in_obj.floatValue();
 
       scattering_angle = position.getScatteringAngle() * (float)(180.0/Math.PI);
       delta_theta = delta_theta_obj.floatValue();
 
-      min_ang[i] = (float)(Math.PI/180.0) * (scattering_angle - delta_theta/2); 
-      max_ang[i] = (float)(Math.PI/180.0) * (scattering_angle + delta_theta/2); 
-    }    
+      min_ang = (float)(Math.PI/180.0) * (scattering_angle - delta_theta/2); 
+      max_ang = (float)(Math.PI/180.0) * (scattering_angle + delta_theta/2); 
 
-    for ( int i = num_data; i < n_bins; i++ )   // allocate the rest of the
-      y_vals[i] = new float[num_cols];          // array, if needed.
-
-    for ( int row = num_data-1; row >= 0; row-- )  // clear out the new DataSet
-      new_ds.removeData_entry( row );
-
-                                                // now resample the columns
-                                                // of the 2D array
-    float resampled_col[] = new float[n_bins];
-    float zero_array[]    = new float[n_bins];
-    for ( int row = 0; row < n_bins; row++ )
-      zero_array[row] = 0.0f;
-
-    float e_vals[] = x_scale.getXs();
-    float q1, q2;
-
-    for ( int col = 0; col < y_vals[0].length; col++ )    
-    {
-      System.arraycopy( zero_array, 0, resampled_col, 0, n_bins );
-      for ( int row = 0; row < num_data; row++ )
+                                             // Now get the x and y values from
+                                             // the spectrum and map them to
+                                             // the Q,E plane
+      tof_vals = data.getX_scale().getXs();
+      y_vals   = data.getY_values();
+      for ( int col = 0; col < y_vals.length; col++ )    
       {
-        q1 = tof_calc.SpectrometerQ( e_in[row], 
-                                   ( e_vals[col] + e_vals[col+1] ) / 2, 
-                                     min_ang[row] );
-        q2 = tof_calc.SpectrometerQ( e_in[row], 
-                                   ( e_vals[col] + e_vals[col+1] ) / 2, 
-                                     max_ang[row] );
+                                             // calculate the energy at the
+                                             // bin center
+        center_tof = (tof_vals[col] + tof_vals[col+1]) / 2.0f;
+        e_val = tof_calc.Energy( spherical_coords[0], center_tof );
+          
+                                             // calculate the q values at the
+                                             // left and right edges of the
+                                             // detector
+        q1 = tof_calc.SpectrometerQ( e_in, e_val, min_ang );
+        q2 = tof_calc.SpectrometerQ( e_in, e_val, max_ang );
         if ( q1 > q2 )
         {
           float temp = q1;
           q1 = q2;
           q2 = temp;
+        }                               // use the average Q value
+        q_val = ( q1 + q2 ) / 2.0f;
+                                        // divide by the counts by delta Q, 
+                                        // to get intensity  ( we assume that
+                                        // the values have already been divided
+                                        // by delta E and delta Omega as in the
+                                        // DSDODE operator
+        y_val = y_vals[col] / (q2 - q1); 
+                                        // now map the y(Q,E) value to the 
+                                        // array of values and average it with
+                                        // any previous values
+
+        q_index = Math.round(( q_val - min_Q )/( max_Q - min_Q ) * n_Q_bins);
+        e_index = Math.round(( e_val - min_E )/( max_E - min_E ) * n_E_bins);
+
+        if ( q_index > 0 && q_index < n_Q_bins &&      // the value falls in
+             e_index > 0 && e_index < n_E_bins   )     // the range we're using
+        {
+          old_QE_val = QE_vals[q_index][e_index];
+          count      = n_QE_vals[q_index][e_index];
+          QE_vals[q_index][e_index] = (old_QE_val * count + y_val)/( count + 1);
+          n_QE_vals[q_index][e_index] = count + 1;   
         }
 
-        Sample.ResampleBin( q1, q2, y_vals[row][col],
-                            min_Q, max_Q,  resampled_col );  
       }
-      for ( int row = 0; row < n_bins; row++ )
-        y_vals[row][col] = resampled_col[row];        
+
     }
 
+   DataSetFactory factory = new DataSetFactory(
+                                     ds.getTitle(),
+                                     "meV",
+                                     "FinalEnergy",
+                                     "Counts",
+                                     "Scattering Intensity" );
+
+    // #### must take care of the operation log... this starts with it empty
+    DataSet new_ds = factory.getDataSet();
+    new_ds.copyOp_log( ds );
+    new_ds.addLog_entry( "Converted to S(Q,E)" );
+
+    // copy the attributes of the original data set
+    new_ds.setAttributeList( ds.getAttributeList() );
+
     Data new_data;
-    boolean all_zero;
-    int col;
-    UniformXScale two_point_xscale = new UniformXScale( x_scale.getStart_x(), 
-                                                        x_scale.getEnd_x(),
-                                                        2 );
-    float one_point_y[] = new float[1];
-    one_point_y[0] = 0;
-    for ( int row = 0; row < n_bins; row++ )
+    for ( int row = 0; row < n_Q_bins; row++ )
     {
-      all_zero = true;
-      col = 0;
-      while ( all_zero && col < y_vals[0].length )
-      {
-        if ( y_vals[row][col] != 0 )
-          all_zero = false;
-        col++;
-      }  
-
-      if ( all_zero )
-        new_data = new Data( two_point_xscale, one_point_y, row+1 );
-      else
-        new_data = new Data( x_scale, y_vals[row], row+1 );
-
+      new_data = new Data( E_scale, QE_vals[row], row+1 );
       new_ds.addData_entry( new_data );      
     }
 
