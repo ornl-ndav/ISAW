@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2005/03/23 01:16:49  dennis
+ *  Removed unused import.
+ *
  *  Revision 1.13  2004/04/26 13:17:15  rmikk
  *  null constructor is now public
  *  Added documentation
@@ -72,7 +75,7 @@
  */
 
 package  DataSetTools.dataset;
-import gov.anl.ipns.Util.File.*;
+
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import   java.io.*;
