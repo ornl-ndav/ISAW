@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/10/18 21:33:23  bouzekc
+ * Removed call to setAboutMessage().
+ *
  * Revision 1.5  2003/04/02 15:02:46  pfpeterson
  * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
  *
@@ -69,8 +72,6 @@ public class ActivateWizard extends Wizard{
     super.setHelpMessage(
     "This wizard calculates the contact dose, prompt activation, "
     + "and storage time for a sample"); 
-    super.setAboutMessage(
-    "This is a simple Demonstration Wizard, 2/26/2002, D.M. 3/27/02 CMB");
   }
 
   /**
