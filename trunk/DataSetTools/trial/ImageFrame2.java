@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/08/14 17:05:37  millermi
+ * - Changed how controls are selected for display.
+ *
  * Revision 1.2  2003/08/13 02:53:23  millermi
  * - Removed controls for Selection Overlay and Color scale
  * - Controls now contained in a Box instead of a JPanel.
@@ -188,14 +191,14 @@ public class ImageFrame2 extends JFrame
     int ctrlcounter = 0;
     for( int i = 0; i < ctrl.length; i++ )
     {
-      if( !(ctrl[i] instanceof ControlCheckbox) &&
-          !(ctrl[i] instanceof ControlColorScale) )
+      if( ctrl[i] instanceof ControlCheckboxButton ) 
       {
+        if( !((ControlCheckboxButton)ctrl[i]).
+	     getTitle().equals("Selection Overlay") )
         controls.add(ctrl[i]);
 	ctrlcounter++;
       }
     }
-    System.out.println(ctrlcounter);
     JPanel spacer = new JPanel();
     spacer.setPreferredSize(new Dimension(0,((10-ctrlcounter)*40) ) );
     controls.add(spacer);
