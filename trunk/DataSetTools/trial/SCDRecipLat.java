@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/11/01 00:12:04  dennis
+ * Improved documentation, increased marker size to 10 and made pick IDs
+ * unique through out all spectra.
+ *
  * Revision 1.4  2002/10/31 23:22:31  dennis
  * Extensive revision, includes:
  *  1) readout of vector Qxyz, when a data point is pointed at
@@ -99,6 +103,8 @@ public class SCDRecipLat
   JLabel          a_star_b_star;
   JLabel          b_star_c_star;
   JLabel          c_star_a_star;
+
+  int             global_obj_index = 0;  // needed to keep the pick ids distinct
 
   /* ---------------------------- Constructor ----------------------------- */
 
@@ -199,6 +205,17 @@ public class SCDRecipLat
  
 
   /* ---------------------------- Angle ---------------------------------- */
+  /*
+   *  Calculate the angle between two vectors, in degrees and return the
+   *  result in a formatted string.  
+   *
+   *  @param  v1    The first vector
+   *  @param  v2    The second vector
+   *
+   *  @return If both v1 and v2 are vectors of length > 0, this calculates
+   *          the angle between the vectors.  If either is null or of 
+   *          length 0, the String "undefined" is returned.
+   */
   private String Angle( Vector3D v1, Vector3D v2 )
   {
     if ( v1 == null || v2 == null || v1.length() == 0 || v2.length() == 0 )
@@ -213,7 +230,10 @@ public class SCDRecipLat
   }
 
   /* ------------------------------ draw_axes ----------------------------- */
-
+  /*
+   *  Draw a simple set of red, green and blue lines to represent the 
+   *  coordinate system.
+   */
   private  void draw_axes( float length, ThreeD_JPanel threeD_panel  )
   {
     IThreeD_Object objects[] = new IThreeD_Object[ 4 ];
@@ -237,6 +257,14 @@ public class SCDRecipLat
 
 
   /* ------------------------- MarkPoint --------------------------- */
+  /*
+   * Mark the specified point with a polymarker of the specified type.
+   *
+   *  @param  vec   the point to mark
+   *  @param  name  the name of the Polymarker, so that it can be removed
+   *                when the point is cleared
+   *  @param  type  the type of marker to draw
+   */
   private void MarkPoint( Vector3D vec, String name, int type )
   {
     IThreeD_Object objects[] = new IThreeD_Object[ 1 ];
@@ -244,7 +272,7 @@ public class SCDRecipLat
 
     points[0] = vec;
     Polymarker marker = new Polymarker( points, Color.yellow );
-    marker.setSize( 8 );
+    marker.setSize( 10 );
     marker.setType( type );
     objects[0] = marker;
 
@@ -252,6 +280,16 @@ public class SCDRecipLat
   }
 
   /* ------------------------- BasisVector --------------------------- */
+  /*
+   * Draw a segmented line from the "origin" point in the direction given 
+   * by the specified vector.  
+   *
+   * @param  vec    The vector offset from the origin.  This must be a 
+   *                valid non-zero vector.
+   * @param  name   the name for the line object, so that it can be 
+   *                removed when it is not needed.
+   * @param  color  the color to draw the line with 
+   */
   private void BasisVector( Vector3D vec, String name, Color color )
   {
     final int N_SEGMENTS = 100;
@@ -292,6 +330,10 @@ public class SCDRecipLat
 
 
   /* ------------------------- Redraw ------------------------------ */
+  /*
+   *  Redraw the current origin and basis vectors, and set the new
+   *  values for the cosines of the angles between the basis vectors.
+   */
   private void Redraw()
   {
     Vector3D origin = origin_vec.getVector();
@@ -355,7 +397,7 @@ public class SCDRecipLat
    *  @param args  Array of strings from the command line, containing
    *               command characters and arguments.
    */
-   public void parseArgs( String args[] )
+   private void parseArgs( String args[] )
    {
      if ( args == null || args.length < 2        ||
           StringUtil.commandPresent("-h", args ) ||
@@ -383,7 +425,7 @@ public class SCDRecipLat
   /**
    *  Print list of supported commands.
    */
-   public void showUsage()
+   private void showUsage()
    {
     System.out.println(
        "  -D<dir name>  specifies directory for data files (required)");
@@ -402,10 +444,15 @@ public class SCDRecipLat
 
 
  /* ------------------------- findAverages ---------------------- */
- /*
-  *  Find the average intensity at each time slice.
+ /**
+  *  Find the average intensity at each time slice. 
+  * 
+  *  @param  ds    The DataSet to be averaged.  
+  *
+  *  @return An array with an entry for each time bin.  The value is the
+  *          average across all spectra of the values in that time bin.
   */
-  public float[] findAverages( DataSet ds )
+  private float[] findAverages( DataSet ds )
   {
     if ( ds == null || ds.getNum_entries() <= 0 )
       return null;
@@ -441,7 +488,7 @@ public class SCDRecipLat
   *  phi and omega, to put the data into one common reference frame for the
   *  crystal.
   */
-  public Tran3D makeGoniometerRotation( DataSet ds )
+  private Tran3D makeGoniometerRotation( DataSet ds )
   {
       float omega = ((Float)ds.getAttributeValue(Attribute.SAMPLE_OMEGA))
                          .floatValue();
@@ -477,8 +524,15 @@ public class SCDRecipLat
   /*
    *  Get an array of peaks from the dataset, based on the specified
    *  threshold scale factor.
+   *
+   *  @param ds            The data set from which peaks are extracted.
+   *  @param thresh_scale  The relative scale factor used to calculate
+   *                       the threshold.  The default threshold is 10
+   *                       times the average intensity in the time slice.
+   *  @return an array os ThreeD_Objects representing the points above the
+   *                      threshold.
    */
-  public IThreeD_Object[] getPeaks( DataSet ds, float thresh_scale )
+  private IThreeD_Object[] getPeaks( DataSet ds, float thresh_scale )
   {
       Data  d;
       float t;
@@ -488,7 +542,6 @@ public class SCDRecipLat
       Position3D q_pos;
       Color c;
       IThreeD_Object objs[] = null;
-      int   obj_index = 0;
       Vector3D pts[] = new Vector3D[1];
       pts[0]         = new Vector3D();
       float aves[]   = findAverages( ds );
@@ -501,6 +554,7 @@ public class SCDRecipLat
 
       int n_objects = n_data * n_bins;
       objs = new IThreeD_Object[n_objects];
+      int obj_index = 0;
 
       for ( int i = 0; i < n_data; i++ )
       {
@@ -527,8 +581,9 @@ public class SCDRecipLat
               color_index = 127;
             c = colors[ color_index ];
             objs[obj_index] = new Ball( pts[0], 0.02f, c );
-            objs[obj_index].setPickID( obj_index );
+            objs[obj_index].setPickID( global_obj_index );
             obj_index++;
+            global_obj_index++;
           }
         }
       }
@@ -573,6 +628,7 @@ public class SCDRecipLat
 
     RunfileRetriever rr;
     DataSet ds;
+    viewer.global_obj_index = 0;
     for ( int count = 0; count < file_names.length; count++ )
     {
       System.out.println("Loading file: " + file_names[count]);
@@ -593,7 +649,7 @@ public class SCDRecipLat
 
 /* ------------------------- ViewMouseInputAdapter ----------------------- */
 /**
- *  Listen for mouse events
+ *  Handles mouse events for picking data points displayed. 
  */
 private class ViewMouseInputAdapter extends MouseInputAdapter
 {
@@ -634,6 +690,8 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
 
 /* ------------------------- ReadoutListener ----------------------- */
 /**
+ *  Class to handle user selection and scale factor change events
+ *  from the VectorReadout components for origin, a*, b*, c*
  */
 private class ReadoutListener implements ActionListener 
 {
