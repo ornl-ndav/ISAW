@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.44  2004/08/17 15:13:35  rmikk
+ *  Added code to prevent output from an operator to show up in strange places
+ *
  *  Revision 1.43  2004/08/02 20:05:00  rmikk
  *  Added the integrate operator to SCD data sets
  *
@@ -441,7 +444,10 @@ public class DataSetFactory implements Serializable
       ds.addOperator( new TrueAngle() );
       ds.addOperator( new LoadOrientation() );
       ds.addOperator( new LoadSCDCalib() );
-      ds.addOperator( new IntegratePt());
+      IntegratePt intPk = new IntegratePt();
+      
+      ds.addOperator(intPk);
+      intPk.setIntgratePkOp(new Operators.TOF_SCD.INTEG(),1,1,1);
     }
     else if ( instrument_type == InstrumentType.TOF_SAD )  // will be different
     {                                                      // when SAD properly
