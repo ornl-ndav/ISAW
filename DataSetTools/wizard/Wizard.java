@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2003/06/09 14:51:23  bouzekc
+ * Added code to handle ErrorStrings as well as a Boolean
+ * "false" for Form invalidation.
+ *
  * Revision 1.22  2003/06/05 22:17:52  bouzekc
  * Incremental improvement to more carefully define what
  * should be listed in the Wizard's View menu.
@@ -941,7 +945,8 @@ public abstract class Wizard implements PropertyChangeListener{
           if(DEBUG) System.out.print("EXECUTING "+i);
           Object worked=f.getResult();
           if(DEBUG) System.out.println("  W="+worked+" D="+f.done());
-          if(worked instanceof Boolean && (!((Boolean)worked).booleanValue())){
+          if( (worked instanceof ErrorString) ||  
+              (worked instanceof Boolean && (!((Boolean)worked).booleanValue())) ){
             if(DEBUG) System.out.println("BREAKING "+i);
             end=i-1;
             break;
