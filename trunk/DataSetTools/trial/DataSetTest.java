@@ -74,7 +74,7 @@ public class DataSetTest
     {
       String action = e.getActionCommand();
       System.out.println( action );
-      if ( action == "Switch DataSet" ) 
+      if ( action.equals( "Switch DataSet" )) 
       {
         if ( current == A_histogram_ds )
         {
