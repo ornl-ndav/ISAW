@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/05/01 00:39:18  bouzekc
+ *  Modified to accept upper and lower case names.  The name in IsawProps.dat
+ *  should still be upper case.
+ *
  *  Revision 1.15  2003/12/15 02:10:48  bouzekc
  *  Removed unused imports.
  *
@@ -160,6 +164,11 @@ public class InstNamePG extends StringPG {
       if( val != null ) {
         String name = val.toString(  );
         Object propVal = SharedData.getProperty( name );
+        
+        if( propVal == null ) {
+          //try uppercase
+          propVal = SharedData.getProperty( name.toUpperCase(  ) );
+        }
         
         if( propVal != null ) {
           setValid( true );
