@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2003/08/11 19:44:44  dennis
+ * Detector segment orientation is now calculated from the DataGrid,
+ * (if possible), rather than making individual pixels so that their
+ * normal vector points towards the sample
+ *
  * Revision 1.30  2003/07/09 15:08:51  dennis
  * Uses new form of DataSetXConversionsTable.showConversions()
  * method, which rebins to a specified XScale.  The conversions
@@ -693,10 +698,14 @@ private float draw_detectors()
   float   radius = 0;
 
   Vector3D  points[] = new Vector3D[1];
-  Vector3D  point;
+  Vector3D  point,
+            base,
+            up;
+
   points[0] = new Vector3D();
   IThreeD_Object objects[];
   IThreeD_Object detector_icon[];
+  IDataGrid      grid;
 
   for ( int i = 0; i < n_data; i++ )
   {
@@ -711,6 +720,8 @@ private float draw_detectors()
       for ( int k = 0; k < n_pixels; k++ )
       {
         point = pil.pixel(k).position();
+        base  = pil.pixel(k).x_vec();
+        up    = pil.pixel(k).y_vec();
 
         if ( point == null )
           objects[k]   = new ThreeD_Non_Object();
@@ -721,6 +732,8 @@ private float draw_detectors()
             max_radius = radius;
 
           objects[k] = make_detector( point, 
+                                      base,
+                                      up,
                                       pil.pixel(k).width(), 
                                       pil.pixel(k).height(),
                                       i );
@@ -835,6 +848,8 @@ private void draw_instrument( float radius  )
  *  Draw a detector object that is a simple rectangle, polyline, or marker. 
  */
 private IThreeD_Object make_detector( Vector3D point,
+                                      Vector3D base,
+                                      Vector3D up,
                                       float    width,
                                       float    length,
                                       int      pick_id )
@@ -860,14 +875,18 @@ private IThreeD_Object make_detector( Vector3D point,
     verts[2] = new Vector3D(  width/2, -length/2, 0 );
     verts[3] = new Vector3D(  width/2,  length/2, 0 );
 
-    float coords[] = point.get();
-    Vector3D base = new Vector3D ( coords[1], -coords[0], 0 );
-    base.normalize();
+    if ( base == null || up == null )
+    {
+      float coords[] = point.get();
+      base = new Vector3D ( coords[1], -coords[0], 0 );
+      base.normalize();
 
-    Vector3D n  = new Vector3D( point );
-    Vector3D up = new Vector3D();
-    up.cross( n, base );
-    up.normalize();
+      Vector3D n  = new Vector3D( point );
+      up = new Vector3D();
+      up.cross( n, base );
+      up.normalize();
+    }
+
     Tran3D orient = new Tran3D();
     orient.setOrientation( base, up, point );
     orient.apply_to( verts, verts );
