@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2004/08/02 21:14:06  rmikk
+ * Removed Unused imports
+ *
  * Revision 1.2  2004/06/18 19:18:57  rmikk
  * Eliminated unused variables
  *
@@ -42,7 +45,7 @@ package DataSetTools.operator.Generic.TOF_SAD;
 
 import DataSetTools.operator.Wrappable;
 import java.util.*;
-import DataSetTools.util.*;
+//import DataSetTools.util.*;
 import java.io.*;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.MathTools.Functions.*;
