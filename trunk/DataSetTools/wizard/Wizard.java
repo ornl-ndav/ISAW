@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.42  2003/06/27 18:40:34  bouzekc
+ * Fixed bug where changing parameters in a Form did not
+ * always reset the Wizard progress bar.  Modifed boolean
+ * check in the propertyChange method.
+ *
  * Revision 1.41  2003/06/26 22:19:42  bouzekc
  * Changed Wizard height to 75% of full screen to
  * accomodate taller Forms.
@@ -682,7 +687,6 @@ public abstract class Wizard implements PropertyChangeListener {
             curParam.setValid( false );
           } else {  //Test the assumption
 
-            //curParam.setValid(true);
             for( int k = 0; k < v.size(  ); k++ ) {
               if( !( new File( v.elementAt( k ).toString(  ) ).exists(  ) ) ) {
                 curParam.setValid( false );
@@ -815,10 +819,10 @@ public abstract class Wizard implements PropertyChangeListener {
     frame.getContentPane(  ).add( work_area );
 
     {
-      int screenheight = ( int )(Toolkit.getDefaultToolkit(  ).getScreenSize(  )
-                                       .getHeight(  ) * 0.75f);
-      int screenwidth = ( int )(Toolkit.getDefaultToolkit(  ).getScreenSize(  )
-                                      .getWidth(  ) * 0.75f);
+      int screenheight = ( int )( Toolkit.getDefaultToolkit(  ).getScreenSize(  )
+                                         .getHeight(  ) * 0.75f );
+      int screenwidth = ( int )( Toolkit.getDefaultToolkit(  ).getScreenSize(  )
+                                        .getWidth(  ) * 0.75f );
 
       frame.setBounds( 0, 0, screenwidth, screenheight );
     }
@@ -1077,6 +1081,7 @@ public abstract class Wizard implements PropertyChangeListener {
     } else {
       formProgress.setString( f + " Progress" );
       formProgress.setValue( 0 );
+      wizProgress.setValue( lastForm + 1 );
     }
 
     //add the listener (this) to the Form's parameters
@@ -1313,7 +1318,7 @@ public abstract class Wizard implements PropertyChangeListener {
    * the viewMenu is the only thing that changes.
    */
   public void propertyChange( PropertyChangeEvent ev ) {
-    if( ignorePropChanges == false ) {
+    if( !ignorePropChanges ) {
       modified = true;
       this.invalidate( this.getCurrentFormNumber(  ) );
     }
