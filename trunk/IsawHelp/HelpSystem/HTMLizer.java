@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2003/07/03 16:25:56  bouzekc
+ * Added all missing javadocs and rearranged methods according
+ * to access privilege.
+ *
  * Revision 1.17  2003/06/25 20:37:28  bouzekc
  * Reformatted for indenting and spacing consistency.
  *
@@ -134,15 +138,21 @@ import java.util.*;
 
 
 /**
- * This class takes a String input from an Operator's
- * getDocumentation() method and converts it into an HTML file to be
- * used with JavaHelp 1.1.3.
+ * This class takes a String input from an Operator's getDocumentation() method
+ * and converts it into an HTML file to be used with JavaHelp 1.1.3.
  */
 public class HTMLizer {
-  private static String help_dir = null;
+  //~ Static fields/initializers ***********************************************
+
+  private static String help_dir  = null;
   private static Vector op_vector = null;
-  private File help_out           = null;
-  private FileWriter out          = null;
+
+  //~ Instance fields **********************************************************
+
+  private File help_out  = null;
+  private FileWriter out = null;
+
+  //~ Constructors *************************************************************
 
   /* -----------------CONSTRUCTOR----------------------------------------- */
 
@@ -153,12 +163,13 @@ public class HTMLizer {
     // does nothing
   }
 
+  //~ Methods ******************************************************************
+
   /* ---------------------- createAllHelpFiles --------------------------- */
 
   /**
-   * Creates the HTML files which consists of the information in an
-   * Operator's getDocumentation() method.  Documentation for all
-   * Operators is produced.
+   * Creates the HTML files which consists of the information in an Operator's
+   * getDocumentation() method.  Documentation for all Operators is produced.
    */
   public void createAllHelpFiles(  ) {
     // create the list of operators if it doesn't already exist
@@ -177,156 +188,14 @@ public class HTMLizer {
       writeFile( op_class, createHTML( op ) );
     }
   }
-    //createHelpFile()
-
-  public String dynamicDocCreation( String op_in_class ) {
-    // create the list of operators if it doesn't already exist
-    if( ( op_vector == null ) || ( op_vector.size(  ) == 0 ) ) {
-      op_vector = createOperatorVector(  );
-    }
-
-    int op_vector_size = op_vector.size(  );
-    Operator op;
-    String op_class;
-
-    for( int i = 0; i < op_vector_size; i++ ) {
-      op   = ( Operator )op_vector.get( i );  // get the jth Operator
-
-      op_class = trimClassName( op.getClass(  ).toString(  ) );
-
-      // found our operator
-      if( op_class.equals( op_in_class ) ) {
-        return createHTML( op );
-      }
-    }
-
-    return null;
-  }
-
-  /* ------------------------- trimClassName ------------------------- */
-
-  /**
-   * Trims the full class path given by class_name.
-   *
-   * @param class_name The full class name which you wish to trim.
-   *
-   * @return The String which consists of the trimmed down class name.
-   */
-  public String trimClassName( String class_name ) {
-    StringTokenizer st = new StringTokenizer( class_name, "." );
-    String name        = class_name;
-
-    while( st.hasMoreTokens(  ) ) {
-      name = st.nextToken( "." );
-    }
-
-    return name;
-  }
-
-  /* ------------------------- createOneHelpFile --------------------- */
-
-  /**
-   * Creates a help file for a single Operator op.
-   *
-   * @param op_class The Operator class name which denotes the
-   * Operator you wish to create documentation for.
-   */
-  public void createOneHelpFile( String op_class ) {
-    String s = dynamicDocCreation( op_class );
-
-    if( s != null ) {
-      writeFile( op_class, s );
-    }
-  }
-
-  /* ------------------------- createOperatorVector --------------------- */
-
-  /**
-   * Create a list of Operators comprised of all "add-on" operators
-   * and all of the standard DataSet Operators.
-   *
-   * @return A Vector representation of the Operator list.
-   */
-  public static Vector createOperatorVector(  ) {
-    final int TOTAL_OPERATORS = 100;
-    final int INC_AMOUNT      = 20;
-
-    // script handler for the operator list
-    Script_Class_List_Handler base_op_handler = new Script_Class_List_Handler(  );
-
-    Vector op_vector    = new Vector( TOTAL_OPERATORS, INC_AMOUNT );
-    int num_add_on_ops  = base_op_handler.getNum_operators(  );
-    int num_dataset_ops = base_op_handler.getNumDataSetOperators(  );
-
-    // get all add-on operators
-    for( int j = 0; j < num_add_on_ops; j++ ) {
-      op_vector.add( j, base_op_handler.getOperator( j ) );
-    }
-
-    int num_operators = op_vector.size(  );
-
-    // get the DataSet operators
-    for( int k = 0; k < num_dataset_ops; k++ ) {
-      op_vector.add( 
-        k + num_operators, base_op_handler.getDataSetOperator( k ) );
-    }
-
-    return op_vector;
-  }
-    //createOperatorVector()
-
-  private Vector[] getParameterInfoList( Operator op ) {
-    String class_s;
-    String name_s;
-    Vector[] v;
-    final int info = 2;
-    int num_params;
-    Object ob;
-
-    v = new Vector[info];
-
-    for( int i = 0; i < info; i++ ) {
-      v[i] = new Vector( 10, 2 );
-    }
-
-    num_params = op.getNum_parameters(  );
-
-    // get parameter list; differentiate between DataSetOperators and
-    // generic operators
-    if( op instanceof DataSetOperator ) {
-      v[0].addElement( "DataSet" );
-      v[1].addElement( "DataSet for Operator" );
-    }
-
-    for( int i = 0; i < num_params; i++ ) {
-      // for some reason, EchoObject and maybe others return "null"
-      // when getValue() is called.  this takes care of it
-      // temporarily, although this should be researched
-      ob = op.getParameter( i ).getValue(  );
-
-      if( ob == null ) {
-        class_s = "";
-      } else {
-        class_s = ob.getClass(  ).toString(  );
-      }
-
-      name_s = op.getParameter( i ).getName(  ).toString(  );
-      v[0].addElement( this.trimClassName( class_s ) );
-      v[1].addElement( name_s );
-    }
-
-    return v;
-  }
-
-  /* ----------------------------- createHTML ------------------------- */
 
   /**
    * Formats the documentation of the Operator op by using HTML tags.
    *
-   * @param op The Operator for which you wish to create HTML
-   * documentation for.
+   * @param op The Operator for which you wish to create HTML documentation
+   *        for.
    *
-   * @return the String consisting of the HTML formatting
+   * @return the String consisting of the HTML formatted documentation
    */
   public String createHTML( Operator op ) {
     StringBuffer html;
@@ -337,7 +206,8 @@ public class HTMLizer {
     int num_params;
 
     html         = new StringBuffer(  );
-    class_name   = op.getClass(  ).toString(  );
+    class_name   = op.getClass(  )
+                     .toString(  );
     title        = op.getTitle(  );
     v            = this.getParameterInfoList( op );
     docs         = cleanDocumentation( op.getDocumentation(  ) );
@@ -407,8 +277,131 @@ public class HTMLizer {
 
     return html.toString(  );
   }
-    //createHTML()
 
+  /**
+   * Creates a help file for a single Operator op.
+   *
+   * @param op_class The Operator class name which denotes the Operator you
+   *        wish to create documentation for.
+   */
+  public void createOneHelpFile( String op_class ) {
+    String s = dynamicDocCreation( op_class );
+
+    if( s != null ) {
+      writeFile( op_class, s );
+    }
+  }
+
+  /**
+   * Create a list of Operators comprised of all "add-on" operators and all of
+   * the standard DataSet Operators.
+   *
+   * @return A Vector representation of the Operator list.
+   */
+  public static Vector createOperatorVector(  ) {
+    final int TOTAL_OPERATORS = 100;
+    final int INC_AMOUNT      = 20;
+
+    // script handler for the operator list
+    Script_Class_List_Handler base_op_handler = new Script_Class_List_Handler(  );
+
+    Vector op_vector    = new Vector( TOTAL_OPERATORS, INC_AMOUNT );
+    int num_add_on_ops  = base_op_handler.getNum_operators(  );
+    int num_dataset_ops = base_op_handler.getNumDataSetOperators(  );
+
+    // get all add-on operators
+    for( int j = 0; j < num_add_on_ops; j++ ) {
+      op_vector.add( j, base_op_handler.getOperator( j ) );
+    }
+
+    int num_operators = op_vector.size(  );
+
+    // get the DataSet operators
+    for( int k = 0; k < num_dataset_ops; k++ ) {
+      op_vector.add( 
+        k + num_operators, base_op_handler.getDataSetOperator( k ) );
+    }
+
+    return op_vector;
+  }
+
+  /**
+   * Dynamically creates documentation for a single Operator.
+   *
+   * @param op_in_class The Operator to create documentation for.
+   *
+   * @return HTML formatted Operator documentation.
+   */
+  public String dynamicDocCreation( String op_in_class ) {
+    // create the list of operators if it doesn't already exist
+    if( ( op_vector == null ) || ( op_vector.size(  ) == 0 ) ) {
+      op_vector = createOperatorVector(  );
+    }
+
+    int op_vector_size = op_vector.size(  );
+    Operator op;
+    String op_class;
+
+    for( int i = 0; i < op_vector_size; i++ ) {
+      op   = ( Operator )op_vector.get( i );  // get the jth Operator
+
+      op_class = trimClassName( op.getClass(  ).toString(  ) );
+
+      // found our operator
+      if( op_class.equals( op_in_class ) ) {
+        return createHTML( op );
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Main method for running class as a standalone program.
+   */
+  public static void main( String[] args ) {
+    System.out.println(  );
+    System.out.println( "Creating JavaHelp HTML documentation....please wait." );
+
+    HTMLizer helpfile = new HTMLizer(  );
+
+    if( args.length <= 0 ) {  //create documentation for all operators
+      helpfile.createAllHelpFiles(  );
+    } else {  //create documentation for one operator
+      helpfile.createOneHelpFile( args[0] );
+    }
+
+    System.exit( 0 );
+  }
+
+  /**
+   * Trims the full class path given by class_name.
+   *
+   * @param class_name The full class name which you wish to trim.
+   *
+   * @return The String which consists of the trimmed down class name.
+   */
+  public String trimClassName( String class_name ) {
+    StringTokenizer st = new StringTokenizer( class_name, "." );
+    String name        = class_name;
+
+    while( st.hasMoreTokens(  ) ) {
+      name = st.nextToken( "." );
+    }
+
+    return name;
+  }
+
+  /**
+   * Utility to writes the HTML Operator documentation file.  You must send
+   * this method the html-formatted documentation.
+   *
+   * @param operator_class The Operator to write the HTML-formatted
+   *        documentation file for.
+   * @param body The HTML-formatted documentation.
+   *
+   * @return boolean indicating success or failure.
+   */
   public boolean writeFile( String operator_class, String body ) {
     if( ( help_dir == null ) || ( help_dir.length(  ) == 0 ) ) {
       try {
@@ -430,8 +423,8 @@ public class HTMLizer {
       } catch( RuntimeException e ) {
         e.printStackTrace(  );
       }
-        //catch
 
+      //catch
       help_dir = FilenameUtil.setForwardSlash( help_dir );
     }
 
@@ -451,48 +444,161 @@ public class HTMLizer {
     }
   }
 
-  /* ------------------------- createDefaultDocs() ----------------------- */
-
   /**
-   * Creates the default documentation for an operator in the event
-   * that the documentation has not yet been written
+   * Checks to see if the Operator documentation is an empty tag.
    *
-   * @param v Vector consisting of the Strings representing parameter
-   * names for an operator
+   * @param tag The tag to check.
    *
-   * @return String which consists of operator name and title
+   * @return true if the tag is empty, false otherwise
    */
-  private String createDefaultDocs( Vector[] v ) {
-    StringBuffer s = new StringBuffer(  );
+  private boolean isEmptyTag( String tag ) {
+    if( ( tag == null ) || ( tag.length(  ) == 0 ) ) {
+      return true;
+    }
 
-    s.append( 
-      "<table BORDER=\"1\" CELLPADDING=\"3\" CELLSPACING=\"0\" WIDTH=\"100%\">\n" );
-    s.append( "<tr BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\n" );
-    s.append( "<td COLSPAN=1><font SIZE=\"+2\">\n" );
-    s.append( "<b>Parameters" );
-    s.append( "</b></font></td>\n" );
-    s.append( "</tr>\n" );
-    s.append( "</table>\n\n" );
-    s.append( "<ul>\n" );
-
-    if( v[0] != null ) {
-      for( int i = 0; i < v[0].size(  ); i++ ) {
-        s.append( "<li><b>" + v[0].elementAt( i ) );
-        s.append( "</b> " + v[1].elementAt( i ) );
-        s.append( " </li>\n" );
+    if( tag.indexOf( "@overview" ) == 0 ) {
+      if( tag.length(  ) == 9 ) {
+        return true;
       }
 
-      s.append( "</ul>\n" );
+      tag = tag.substring( 9 )
+               .trim(  );
 
-      return s.toString(  );
+      if( tag.length(  ) == 0 ) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if( tag.indexOf( "@assumptions" ) == 0 ) {
+      if( tag.length(  ) == 12 ) {
+        return true;
+      }
+
+      tag = tag.substring( 12 )
+               .trim(  );
+
+      if( tag.length(  ) == 0 ) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if( tag.indexOf( "@algorithm" ) == 0 ) {
+      if( tag.length(  ) == 10 ) {
+        return true;
+      }
+
+      tag = tag.substring( 10 )
+               .trim(  );
+
+      if( tag.length(  ) == 0 ) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if( tag.indexOf( "@param" ) == 0 ) {
+      if( tag.length(  ) == 6 ) {
+        return true;
+      }
+
+      tag = tag.substring( 6 )
+               .trim(  );
+
+      if( tag.length(  ) == 0 ) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if( tag.indexOf( "@return" ) == 0 ) {
+      if( tag.length(  ) == 7 ) {
+        return true;
+      }
+
+      tag = tag.substring( 7 )
+               .trim(  );
+
+      if( tag.length(  ) == 0 ) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if( tag.indexOf( "@error" ) == 0 ) {
+      if( tag.length(  ) == 6 ) {
+        return true;
+      }
+
+      tag = tag.substring( 6 )
+               .trim(  );
+
+      if( tag.length(  ) == 0 ) {
+        return true;
+      } else {
+        return false;
+      }
     } else {
-      return "";
+      return true;
     }
   }
 
   /**
-   * This method is inteded to clean up poorly formatted documentation
-   * Strings
+   * Gets information about an Operator's parameters.
+   *
+   * @param op The Operator to get the information list for.
+   *
+   * @return an array of Vectors which hold: v[0] = parameter class names v[1]
+   *         = parameter names
+   */
+  private Vector[] getParameterInfoList( Operator op ) {
+    String class_s;
+    String name_s;
+    Vector[] v;
+    final int info = 2;
+    int num_params;
+    Object ob;
+
+    v = new Vector[info];
+
+    for( int i = 0; i < info; i++ ) {
+      v[i] = new Vector( 10, 2 );
+    }
+
+    num_params = op.getNum_parameters(  );
+
+    // get parameter list; differentiate between DataSetOperators and
+    // generic operators
+    if( op instanceof DataSetOperator ) {
+      v[0].addElement( "DataSet" );
+      v[1].addElement( "DataSet for Operator" );
+    }
+
+    for( int i = 0; i < num_params; i++ ) {
+      //catch any getValue() == null stuff
+      ob = op.getParameter( i )
+             .getValue(  );
+
+      if( ob == null ) {
+        class_s = "";
+      } else {
+        class_s = ob.getClass(  )
+                    .toString(  );
+      }
+
+      name_s = op.getParameter( i )
+                 .getName(  )
+                 .toString(  );
+      v[0].addElement( this.trimClassName( class_s ) );
+      v[1].addElement( name_s );
+    }
+
+    return v;
+  }
+
+  /**
+   * This method is intended to clean up poorly formatted documentation
+   * Strings.
+   *
+   * @param orig The original String to clean up.
+   *
+   * @return the cleaned up String.
    */
   private String cleanDocumentation( String orig ) {
     // return null in the cases that this is truly bad
@@ -508,13 +614,15 @@ public class HTMLizer {
     int end         = 0;
 
     // deal with a preamble (if it exists)
-    start = sb.toString(  ).indexOf( "@" );
+    start = sb.toString(  )
+              .indexOf( "@" );
 
     if( start < 0 ) {  // just add an overview tag in front
       sb.insert( 0, "@overview " );
     } else if( start > 0 ) {  // deal with preamble appropriately
 
-      if( sb.toString(  ).indexOf( "@overview" ) >= 0 ) {
+      if( sb.toString(  )
+              .indexOf( "@overview" ) >= 0 ) {
         sb.delete( 0, start );
       } else {
         sb.insert( 0, "@overview " );
@@ -522,16 +630,20 @@ public class HTMLizer {
     }
 
     // cut out empty tags
-    start   = sb.toString(  ).indexOf( "@" );
-    end     = sb.toString(  ).indexOf( "@", start + 1 );
+    start   = sb.toString(  )
+                .indexOf( "@" );
+    end = sb.toString(  )
+            .indexOf( "@", start + 1 );
 
     while( ( start >= 0 ) && ( end >= 0 ) && ( start < end ) ) {
       if( isEmptyTag( sb.substring( start, end ) ) ) {
         sb.delete( start, end );
-        end = sb.toString(  ).indexOf( "@", start + 1 );
+        end = sb.toString(  )
+                .indexOf( "@", start + 1 );
       } else {
         start   = end;  //sb.toString().indexOf("@",end+1);
-        end     = sb.toString(  ).indexOf( "@", start + 1 );
+        end     = sb.toString(  )
+                    .indexOf( "@", start + 1 );
       }
 
       if( end == -1 ) {
@@ -547,97 +659,15 @@ public class HTMLizer {
     }
   }
 
-  private boolean isEmptyTag( String tag ) {
-    if( ( tag == null ) || ( tag.length(  ) == 0 ) ) {
-      return true;
-    }
-
-    if( tag.indexOf( "@overview" ) == 0 ) {
-      if( tag.length(  ) == 9 ) {
-        return true;
-      }
-
-      tag = tag.substring( 9 ).trim(  );
-
-      if( tag.length(  ) == 0 ) {
-        return true;
-      } else {
-        return false;
-      }
-    } else if( tag.indexOf( "@assumptions" ) == 0 ) {
-      if( tag.length(  ) == 12 ) {
-        return true;
-      }
-
-      tag = tag.substring( 12 ).trim(  );
-
-      if( tag.length(  ) == 0 ) {
-        return true;
-      } else {
-        return false;
-      }
-    } else if( tag.indexOf( "@algorithm" ) == 0 ) {
-      if( tag.length(  ) == 10 ) {
-        return true;
-      }
-
-      tag = tag.substring( 10 ).trim(  );
-
-      if( tag.length(  ) == 0 ) {
-        return true;
-      } else {
-        return false;
-      }
-    } else if( tag.indexOf( "@param" ) == 0 ) {
-      if( tag.length(  ) == 6 ) {
-        return true;
-      }
-
-      tag = tag.substring( 6 ).trim(  );
-
-      if( tag.length(  ) == 0 ) {
-        return true;
-      } else {
-        return false;
-      }
-    } else if( tag.indexOf( "@return" ) == 0 ) {
-      if( tag.length(  ) == 7 ) {
-        return true;
-      }
-
-      tag = tag.substring( 7 ).trim(  );
-
-      if( tag.length(  ) == 0 ) {
-        return true;
-      } else {
-        return false;
-      }
-    } else if( tag.indexOf( "@error" ) == 0 ) {
-      if( tag.length(  ) == 6 ) {
-        return true;
-      }
-
-      tag = tag.substring( 6 ).trim(  );
-
-      if( tag.length(  ) == 0 ) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      return true;
-    }
-  }
-
-  /* -------------------------- convertToHTML() -------------------------- */
-
   /**
-   *  This method converts a String that follows the @ conventions in the
-   *  JavaDoc specifications into an HTML page.  Although other purposes may
-   *  be found for this method, its primary use is for the JavaHelp System.
+   * This method converts a String that follows the conventions in the JavaDoc
+   * specifications into an HTML page.  Although other purposes may be found
+   * for this method, its primary use is for the JavaHelp System.
    *
-   *  @param m The String to convert to HTML
-   *  @param paramsVec The vector of parameters
+   * @param m The String to convert to HTML.
+   * @param paramsVec The Vector of parameters.
+   *
+   * @return the javadoc HTML formatted String.
    */
   private String convertToHTML( String m, Vector[] paramsVec ) {
     // eliminate "garbage" information
@@ -765,7 +795,7 @@ public class HTMLizer {
       }
 
       // put in line breaks
-      // check to see if @ or newline comes first
+      // check to see if '@' or newline comes first
       while( ( header > newline ) && ( newline > 0 ) ) {
         //grab text before the newline character
         if( space < newline ) {
@@ -815,8 +845,8 @@ public class HTMLizer {
         s.append( "</b><br>" );
       }
     }
-      //note: this is not a perfect fix.  If any tags come after the
 
+    //note: this is not a perfect fix.  If any tags come after the
     //@error tag, this will not work as intended, since it relies on the
     //@error tag being the last one.  Repeat: this is a temporary fix.
     //close the unordered error list
@@ -827,25 +857,40 @@ public class HTMLizer {
     return s.toString(  );
   }
 
-  /* ------------------------- main ----------------------------------- */
-
   /**
-   * Main method for running class as a standalone program.
+   * Creates the default documentation for an operator in the event that the
+   * documentation has not yet been written
+   *
+   * @param v Vector consisting of the Strings representing parameter names for
+   *        an operator
+   *
+   * @return String which consists of operator name and title
    */
-  public static void main( String[] args ) {
-    System.out.println(  );
-    System.out.println( "Creating JavaHelp HTML documentation....please wait." );
+  private String createDefaultDocs( Vector[] v ) {
+    StringBuffer s = new StringBuffer(  );
 
-    HTMLizer helpfile = new HTMLizer(  );
+    s.append( 
+      "<table BORDER=\"1\" CELLPADDING=\"3\" CELLSPACING=\"0\" WIDTH=\"100%\">\n" );
+    s.append( "<tr BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\n" );
+    s.append( "<td COLSPAN=1><font SIZE=\"+2\">\n" );
+    s.append( "<b>Parameters" );
+    s.append( "</b></font></td>\n" );
+    s.append( "</tr>\n" );
+    s.append( "</table>\n\n" );
+    s.append( "<ul>\n" );
 
-    if( args.length <= 0 ) {  //create documentation for all operators
-      helpfile.createAllHelpFiles(  );
-    } else {  //create documentation for one operator
-      helpfile.createOneHelpFile( args[0] );
+    if( v[0] != null ) {
+      for( int i = 0; i < v[0].size(  ); i++ ) {
+        s.append( "<li><b>" + v[0].elementAt( i ) );
+        s.append( "</b> " + v[1].elementAt( i ) );
+        s.append( " </li>\n" );
+      }
+
+      s.append( "</ul>\n" );
+
+      return s.toString(  );
+    } else {
+      return "";
     }
-
-    System.exit( 0 );
   }
-    //main
 }
-  //HTMLizer
