@@ -31,8 +31,10 @@
   * Modified:
   *
   *  $Log$
-  *  Revision 1.22  2001/06/19 19:43:44  chatter
-  *  Set the window start coordinates x=1, y=1
+  *  Revision 1.23  2001/06/20 21:18:57  chatter
+  *  Removed Properties tab from the command view.
+  *  Added menuitem "Edit IsawProps" that will display the
+  *  IsawProps.dat file and let user edit and save it.
   *
   *  Revision 1.19  2001/06/14 14:54:01  chatter
   *  Removed Images_Directory and the jnexus.dll path from IsawProps.dat
@@ -131,7 +133,9 @@
      Object Script_Path, Data_Directory, Help_Directory, Default_Instrument, Instrument_Macro_Path, 
      User_Macro_Path, Image_Path;
      Document sessionLog = new PlainDocument();
- 
+     JTextArea propsText = new JTextArea(5,20);
+     JFrame kp;
+
      /**
       * Creates a JFrame that displays different Isaw components.
       *
@@ -140,40 +144,25 @@
      {
         
         super("ISAW version 1.1");
-       my_Isaw = this;
- 
- /*
-          // Center ISAW in the screen
-             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-             Dimension windowSize = this.getSize();
-             setBounds( (screenSize.width - windowSize.width) / 2,
-                         (screenSize.height - windowSize.height) / 2,
-                         windowSize.width,
-                         windowSize.height);
- 
- 		//Isaw.show();
-             setVisible(true);
-   
- */
- 
+        my_Isaw = this;
+
     /*    
- 	 PrinterJob pj = PrinterJob.getPrinterJob();
+ 	  PrinterJob pj = PrinterJob.getPrinterJob();
         mPageFormat = pj.defaultPage();
     */
- 	 isawProp = new Properties(System.getProperties());
+ 	  isawProp = new Properties(System.getProperties());
         String path = System.getProperty("user.home")+"\\";
         path = StringUtil.fixSeparator(path);
         try {
- 	    FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
-           isawProp.load( input );
-            
- 
-           System.setProperties(isawProp);  
- 
-        
-         //  System.getProperties().list(System.out);
-          
-           input.close();
+ 	        FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
+              isawProp.load( input );
+              System.setProperties(isawProp);  
+         //   System.getProperties().list(System.out);
+              input.close();
+              
+              
+             
+
         }
         catch (IOException ex) 
         {
@@ -321,16 +310,12 @@
          }
  
  
-          setupMenuBar();
- 	   util = new Util(); 
- 
-      
+        setupMenuBar();
+
+ 	  util = new Util(); 
         Vector mm = util.listProperties();
- 
         JScrollPane tt = util.viewProperties();
-        
- 
- 	 cp = new Command.CommandPane();
+        cp = new Command.CommandPane();
         cp.addIObserver(this);
         cp.setLogDoc(sessionLog);
         jpui = new JPropertiesUI();
@@ -345,28 +330,22 @@
         jcui.setPreferredSize( new Dimension( 700, 50 ) );
         jcui.setMinimumSize(new Dimension(20, 50));
         
- 
- 
-        jcui.setTab("Properties file", tt);
- 
- 
- 
- 
+       // jcui.setTab("Properties file", tt);
         jtui = new JTreeUI(jpui,jcui, cp);
         jtui.setPreferredSize(new Dimension(200, 500));
         jtui.setMinimumSize(new Dimension(20, 50));
         tree = jtui.getTree();
         tree.addTreeSelectionListener(new TreeSelectionHandler());
- 	 selectionModel = tree.getSelectionModel();
+ 	  selectionModel = tree.getSelectionModel();
         
         JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         JSplitPane rightPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
       	 leftPane.setOneTouchExpandable(true);
- 	 rightPane.setOneTouchExpandable(true);
+ 	  rightPane.setOneTouchExpandable(true);
  
         rightPane.setTopComponent(jdvui);
         rightPane.setBottomComponent(jcui);
- 	 rightPane.setResizeWeight( .6);
+ 	  rightPane.setResizeWeight( .6);
         leftPane.setBottomComponent(jpui);
         leftPane.setTopComponent(jtui);
         leftPane.setResizeWeight( .7);
@@ -397,7 +376,7 @@
          JMenu imageView = new JMenu("Image View");
          JMenu s_graphView = new JMenu("Scrolled Graph View");
          JMenu instrumentInfoView = new JMenu("Instrument Info");
- 	  JMenu LiveData = new JMenu("Load Live Data"); 
+ 	   JMenu LiveData = new JMenu("Load Live Data"); 
                
          JMenu macrosMenu = new JMenu("Macros");
          JMenu optionMenu = new JMenu("Options");
@@ -405,7 +384,7 @@
          JMenu hMenu = new JMenu("Help");
  
          JMenuItem fileRunfile = new JMenuItem("Load Entire Runfile(s)");
-         JMenuItem Runfile = new JMenuItem("Load Runfile"); 
+         JMenuItem Runfile = new JMenuItem("Load Data File(s)"); 
          
          JMenuItem fileRunfiles = new JMenuItem("Load Selected Data");
          JMenuItem fileLoadDataset = new JMenuItem("Load ISAW Data");
@@ -417,13 +396,14 @@
          JMenuItem removeSelectedNode = new JMenuItem("Remove Selected Node");
          removeSelectedNode.setAccelerator(KeyStroke.getKeyStroke('X', 
  							KeyEvent.CTRL_MASK, true));
- 	  JMenuItem editUndo = new JMenuItem("Undo");
+ 	   JMenuItem editUndo = new JMenuItem("Undo");
          editUndo.setAccelerator(KeyStroke.getKeyStroke('Z', KeyEvent.CTRL_MASK, true));
  
          JMenuItem editAttributes = new JMenuItem("Edit Attributes");
+         JMenuItem editProps = new JMenuItem("Edit IsawProps");
          JMenuItem editSetAttribute = new JMenuItem("Set Attributes");
          JMenuItem setGroupAttributes = new JMenuItem("Set Attribute For All Groups");
- 	  JMenuItem clearSelection = new JMenuItem("Clear Selection");
+ 	   JMenuItem clearSelection = new JMenuItem("Clear Selection");
  
          JMenuItem viewFileSeparator =  new JMenuItem("File Separator");
          JMenuItem viewLogView =  new JMenuItem("Log View");
@@ -443,7 +423,7 @@
          JMenuItem iFrame = new JMenuItem("Internal Frame");
          JMenuItem eFrame = new JMenuItem("External Frame");
  
-         JMenuItem graphView = new JMenuItem("Graph View");
+         JMenuItem graphView = new JMenuItem("SelectedGraph View");
          
          JMenuItem iFrame_sg = new JMenuItem("Scrolled Graph Internal Frame");
          JMenuItem eFrame_sg = new JMenuItem("Scrolled Graph External Frame");
@@ -480,8 +460,8 @@
          fMenu.add(Runfile);
          fMenu.add(LiveData);
          fMenu.add(script_loader);
-         fMenu.add(fileRunfile);
-         fMenu.add(fileRunfiles);
+       //  fMenu.add(fileRunfile);
+       //  fMenu.add(fileRunfiles);
          fMenu.add(fileLoadDataset);
          fMenu.addSeparator();
          fMenu.add(fileSaveData);
@@ -490,12 +470,13 @@
          fMenu.addSeparator();
          fMenu.add(fileExit);
  
-         eMenu.add(editUndo);
- 	  eMenu.add(removeSelectedNode);
+        // eMenu.add(editUndo);
+ 	   eMenu.add(removeSelectedNode);
          eMenu.add(editAttributes);
+         eMenu.add(editProps);
          eMenu.add(editSetAttribute);
          eMenu.add(setGroupAttributes);
-  	  eMenu.add(clearSelection);
+  	   eMenu.add(clearSelection);
            
          imageView.add(iFrame);
          imageView.add(eFrame);
@@ -563,7 +544,7 @@
          hMenu.add(helpISAW);
          fileExit.addActionListener(new MenuItemHandler());
          Runfile.addActionListener(new LoadMenuItemHandler());
- 	  LiveData.addActionListener(new LoadMenuItemHandler());
+ 	   LiveData.addActionListener(new LoadMenuItemHandler());
  
          fileRunfile.addActionListener(new LoadMenuItemHandler());
          fileRunfiles.addActionListener(new LoadMenuItemHandler());
@@ -627,12 +608,12 @@
          optionwindowsLook.addActionListener(new MenuItemHandler());
          fileLoadDataset.addActionListener(new MenuItemHandler());
          removeSelectedNode.addActionListener(new MenuItemHandler());
- 	  editUndo.addActionListener(new MenuItemHandler());
- 
+ 	   editUndo.addActionListener(new MenuItemHandler());
+         editProps.addActionListener(new AttributeMenuItemHandler());
          editAttributes.addActionListener(new AttributeMenuItemHandler());
          editSetAttribute.addActionListener(new AttributeMenuItemHandler());
          setGroupAttributes.addActionListener(new AttributeMenuItemHandler());
- 	  clearSelection.addActionListener(new AttributeMenuItemHandler());
+ 	   clearSelection.addActionListener(new AttributeMenuItemHandler());
          
          windowRestoreView.addActionListener(new MenuItemHandler());
          windowMinimizeView.addActionListener(new MenuItemHandler());
@@ -703,6 +684,12 @@
                           ((IAttributeList)obj).setAttributeList(jad.getAttributeList());
                        }
                  }
+                 if(s=="Edit IsawProps")
+                 {   
+                  propsDisplay();
+                 }
+                 
+
                  
                  if(s=="Set Attributes")
                  {   
@@ -892,11 +879,15 @@
              
              String s=ev.getActionCommand();
              
-             if(s=="Load Runfile")
+             if(s=="Load Data File(s)")
  
                   { 
                      try
-                     {  String SS = System.getProperty("Data_Directory");
+                     {  
+
+
+
+               /*         String SS = System.getProperty("Data_Directory");
                         if(SS == null)
                             SS =System.getProperty("user.home");
                          
@@ -923,6 +914,55 @@
                            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                          //   Isaw.setState(Isaw.NORMAL);
                         }
+                    */
+
+
+                          String SS = System.getProperty("Data_Directory");
+                        if(SS == null)
+                            SS =System.getProperty("user.home");
+                         
+                         fc.setCurrentDirectory(new File(SS));
+ 
+ 
+ 				fc.setMultiSelectionEnabled(true);
+         			JFrame frame = new JFrame();
+         			int retval = fc.showDialog(frame, null);
+ 	  			if(retval == JFileChooser.APPROVE_OPTION) {
+ 	    			File theFile = fc.getSelectedFile();
+ 	    			if(theFile != null) {
+ 				  File [] files = fc.getSelectedFiles();
+ 				  if(fc.isMultiSelectionEnabled() && files != null && files.length >= 1) 
+                           {
+ 		    		    int size = files.length;
+                             String[] file_name = new String[size];
+ 		              
+                             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                             DataSet[] dss=null;
+ 		    		    for(int i = 0; i < size; i++) 
+                             {
+ 		                   file_name[i] = files[i].getPath();
+ 
+                                System.out.println("Print the files in listB  " +file_name[i]);
+ 
+              			 RunfileRetriever r = new RunfileRetriever( file_name[i] );
+              			 int numberOfDataSets = r.numDataSets();
+                          
+  					 dss = new DataSet[numberOfDataSets];
+                                for (int j = 0; j < numberOfDataSets;j++)
+                                
+                                  dss[j] = r.getDataSet(j); 
+                                  jtui.addDataSets(dss, files[i].getName());
+ 				    
+                             }
+ 		
+                             jdvui.ShowDataSet( dss[1], "Internal Frame", IViewManager.IMAGE ); 
+ 
+                             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+ 
+ 		    		    }
+ 		              }
+                        }
+
                      } 
                      catch (Exception e){System.out.println("Choose a input file");}
                     
@@ -1750,7 +1790,7 @@
                  }
                  
                  
-                  if(s=="Graph View" )
+                  if(s=="SelectedGraph View" )
                  {   
                      
                      DefaultMutableTreeNode mtn = jtui.getSelectedNode();
@@ -2078,7 +2118,7 @@
                   if(s=="Remove Selected Node")
                  { 
  
-                       DefaultMutableTreeNode dmtn = null;
+                      DefaultMutableTreeNode dmtn = null;
  	                TreePath[] paths = null;
  	                JTree tree = jtui.getTree();
  	                DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
@@ -2196,10 +2236,10 @@
      {
          
          JFrame mm = new JFrame();
-         //JDialog hh = new JDialog(mm, "ISAW View Help");
+     //JDialog hh = new JDialog(mm, "ISAW View Help");
          JDialog hh = new JDialog();
          hh.setSize(188,70);
-         //Center the opdialog frame 
+     //Center the opdialog frame 
  	    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
  	    Dimension size = hh.getSize();
  	    screenSize.height = screenSize.height/2;
@@ -2306,8 +2346,83 @@
              }
  }
  
- 
- 
+      private void propsDisplay() 
+      {
+            kp = new JFrame();
+            kp.setSize(400,600);
+
+        //Center the properties frame 
+	     Dimension size = this.getSize();
+           Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+           int window_height = (int)(screenSize.height*.9);
+           int window_width = (int)(screenSize.width*.95);  
+	     size.height = window_height/2+200;
+	     size.width = window_width/2;
+	     int y = window_height - size.height;
+	     int x = window_width - size.width;
+	     kp.setLocation(x, y);
+           kp.setVisible(true);
+
+           JMenuBar mb = new JMenuBar();
+           JMenu fi = new JMenu("File");
+           JMenuItem op1 = new JMenuItem("Save IsawProps");
+           fi.add(op1);
+           mb.add(fi);
+           JMenuItem op2 = new JMenuItem("Quit");
+           fi.add(op2);
+           mb.add(fi);
+
+           kp.setJMenuBar(mb);  
+           op1.addActionListener(new propsHandler());
+           op2.addActionListener(new propsHandler());
+           kp.setTitle("IsawProperties Panel (editable)");
+           JScrollPane Z = new JScrollPane(propsText);
+           kp.getContentPane().add(Z);
+           kp.setVisible(true);
+            String path = System.getProperty("user.home")+"\\";
+            path = StringUtil.fixSeparator(path);
+            String filename = path + "IsawProps.dat" ;
+                      
+
+               Document doc = (new Util()).openDoc( filename );
+                 if( doc != null)
+                  {propsText.setDocument( doc ); 
+                   propsText.setCaretPosition(0);   
+                  }
+                else
+                  System.out.println("Document is null");   
+      }
+
+    private class propsHandler implements ActionListener 
+    {
+          public void actionPerformed(ActionEvent ev) 
+         
+         {
+             String s=ev.getActionCommand();
+
+            String path = System.getProperty("user.home")+"\\";
+            path = StringUtil.fixSeparator(path);
+            String filename = path + "IsawProps.dat" ;
+                      
+	      Document doc = propsText.getDocument() ; 
+	      if( s == "Save IsawProps" )
+              { (new Util()).saveDoc( doc , filename );        
+                System.out.println( "IsawProps saved successfully") ;     
+              }
+             else if( s == "Quit" )
+               { 
+                 kp.dispose();
+               }
+             else
+                System.out.println("Unable to quit");    
+
+                
+         }
+
+   }
+
+
+
    /**
     * Creates a frame which can display a string array.
     * 
@@ -2317,26 +2432,17 @@
   
          public static void main(String[] args) 
          {
-             SplashWindowFrame sp = new SplashWindowFrame();
+            SplashWindowFrame sp = new SplashWindowFrame();
        	sp.dispose();
  		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
       	int window_height = (int)(screenSize.height*.9);
             int window_width = (int)(screenSize.width*.95);        
- 		//System.out.println("Window height is   " +window_height);
-            //System.out.println("Window width is   " +window_width);
-          // System.out.println("Screen size is   " +screenSize);
+
         	System.out.println("Loading ISAW version 1.1");
          	JFrame Isaw = new Isaw();
          	Isaw.pack();
          	Isaw.setBounds(1,1,window_width,window_height);
             Isaw.show();
-           
-           //  int is = Isaw.getState();
-           //  System.out.println("Initial state of Isaw is "+is);
- 
- 
- 
- 
  		Isaw.validate();
          	Isaw.addWindowListener(new WindowAdapter(){
              public void windowClosing(WindowEvent e) {System.exit(0);} 
