@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2001/06/01 21:18:00  rmikk
+ *  Improved documentation for getCommand() method
+ *
  *  Revision 1.6  2001/05/23 17:41:46  dennis
  *  Minor improvement to documentation.
  *
@@ -176,7 +179,7 @@ abstract public class Operator implements Serializable
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * Returns the abbreviated command string for this operator.
+   * @return	the command name to be used with script processor
    *
    */
    abstract public String getCommand();
