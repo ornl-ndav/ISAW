@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2003/08/28 15:03:27  rmikk
+ *  Added code to incorporate Several Area Detectors
+ *
  *  Revision 1.32  2003/08/12 14:31:47  rmikk
  *  Added the SaveDataSetActionListener Menu item to save
  *    the current data set
@@ -460,13 +463,24 @@ public class ContourView extends DataSetViewer
   public void setLayout(JPanel jpEast)
     {jpEast.add( ac );
      jpEast.add(XsclHolder);
-     jpEast.add(intensityHolder);  
+     jpEast.add(intensityHolder);
+     JComponent[] controls = cd.getControls();
+     for( int i = 0; i <  controls.length; i++){
+       jpEast.add( controls[i]);
+     }
+     cd.addDataChangeListener( new DataChangeListener());
      addControl( jpEast);
      jpEast.add( ConvTableHolder );
      jpEast.add( Box.createHorizontalGlue() );
      main = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,  rpl_Holder,  jpEast, .70f);
     }
 
+   class DataChangeListener implements ActionListener{
+      public void actionPerformed( ActionEvent evt){
+         setDataSet( data_set);      
+
+     }
+   }
    public  void addControl( JPanel jpanel)
     {
 
@@ -713,31 +727,7 @@ public class ContourView extends DataSetViewer
       
    
      rpl_.addMouseListener( cursors );
-     //gridKeyPane = rpl_.getKeyPane();
-     //rpl_.setBatch(true);
-     //rpl_.setLayout( new GridLayout( 1,1));
-      
-     // rpl_.setKeyAlignment(AbstractPane.BOTTOM, AbstractPane.CENTER);
-     /*
-      * Layout the plot, key, buttons, and slider.
-      */
-
-     //main.add(rpl_, BorderLayout.CENTER);
-
-
-     // gridKeyPane.setLayout( new GridLayout( 1,1));
-     // gridKeyPane.setSize(new Dimension(600,100));
-     //rpl_.setKeyLayerSizeP(new Dimension2D(6.0, 1.0));
-     // rpl_.setKeyBoundsP(new Rectangle2D.Double(0.0, 1.0, 6.0, 1.0));
-     //gridKeyPane.setLayout( new GridLayout(1,1));
-     //main.add(gridKeyPane, BorderLayout.SOUTH);
-
-
-     //main.add(jpEast, BorderLayout.EAST);
-
-     //frame.pack();
-     //frame.setVisible(true);
-
+ 
      /*
       * Turn batching off. JPlotLayout will redraw if it has been
       * modified since batching was turned on.
@@ -910,7 +900,6 @@ public class ContourView extends DataSetViewer
 
       //cd = new ContourData(data_set);
       newData = cd.getSGTData( time );
-
       /*
        * Create the layout without a Logo image and with the
        * ColorKey on a separate Pane object.
