@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2005/01/28 21:27:32  dennis
+ *  Changed operator title to SpectrometerDetectorNormalizationFactor_test,
+ *  to distinguish it from SpectrometerDetectorNormalizationFactor in the
+ *  menu system.
+ *  Added getCategoryList() method to place operator under TOF_NDGS
+ *  category.
+ *
  *  Revision 1.5  2004/07/16 19:02:46  dennis
  *  Fixed improper comparison with Float.NaN
  *
@@ -90,17 +97,22 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  java.util.Vector;
+
+import  DataSetTools.operator.*;
 import  DataSetTools.dataset.*;
-import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
 
 /**
  * This operator calculates detector normalization factors for a direct 
  * geometry spectrometer based on the difference of vanadium run and 
  * background run DataSets.  The difference must first be converted to
- * energy loss.
+ * energy loss.  This version of the operator weights the experimentally
+ * derived normalization factors by 1/solid_angle.  Minor changes include
+ * better error checking on the Attributes and a different scale factor
+ * (1000000).  Since the solid angles are very small, the previous scale
+ * factor (1000) still gave huge values for the normalization factors.
  * 
- *  <p><b>Title:</b> Detector Normalization Factors 
+ *  <p><b>Title:</b> Detector Normalization Factors_test
  *
  *  <p><b>Command:</b> DetNormFac
  *
@@ -141,7 +153,7 @@ public class SpectrometerDetectorNormalizationFactor_test
 
   public SpectrometerDetectorNormalizationFactor_test( )
   {
-    super( "Detector Normalization Factors" );
+    super( "Detector Normalization Factors_test" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -171,6 +183,23 @@ public class SpectrometerDetectorNormalizationFactor_test
 
     parameter = getParameter(1);
     parameter.setValue( new Float( theta ) );
+  }
+
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.TOF_NDGS;
   }
 
 
@@ -228,7 +257,7 @@ public class SpectrometerDetectorNormalizationFactor_test
     // #### must take care of the operation log... this starts with it empty
     DataSet new_ds = factory.getDataSet(); 
     new_ds.copyOp_log( ds );
-    new_ds.addLog_entry( "Detector Normalization Factors" );
+    new_ds.addLog_entry( "Detector Normalization Factors_test" );
 
     // copy the attributes of the original data set
     new_ds.setAttributeList( ds.getAttributeList() );
