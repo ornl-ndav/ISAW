@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2004/04/21 19:18:29  bouzekc
+ * Now uses the ProgressBarUpdater which updates the JProgressBar through the
+ * event queue.  Also fixed the problem where the Wizard Progress Bar didn't
+ * correctly update when executing all Forms at once.
+ *
  * Revision 1.17  2004/04/21 18:04:42  bouzekc
  * Now uses the WindowShower class.
  *
@@ -250,8 +255,21 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * indeterminate.  updateFormProgress() will change it back.
    */
   public final void setFormProgressIndeterminate(  ) {
-    formProgress.setString( "Executing " + wiz.getCurrentForm(  ) );
+    formProgress.setVisible( false );
+    
+    //we want to display the currently executing form correctly, even if we are
+    //on the last form and e.g. no forms have been done already
+    int lastValFormNum = wiz.getLastValidFormNum(  );
+    
+    if( lastValFormNum < 0 ) {
+      lastValFormNum = -1;
+    }
+    
+    formProgress.setString( "Executing " + wiz.getForm( lastValFormNum + 1 ) );
     formProgress.setIndeterminate( true );
+    ProgressBarUpdater pBarUpdater = new ProgressBarUpdater( formProgress );
+    EventQueue.invokeLater( pBarUpdater );
+    pBarUpdater = null;
   }
 
   /**
@@ -391,7 +409,8 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    */
   public final void updateFormProgress(  ) {
     Form f = wiz.getCurrentForm(  );
-
+    
+    formProgress.setVisible( false );
     formProgress.setIndeterminate( false );
 
     if( f != null ) {
@@ -406,6 +425,10 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
       formProgress.setString( "Form Progress" );
       formProgress.setValue( 0 );
     }
+    
+    ProgressBarUpdater pBarUpdater = new ProgressBarUpdater( formProgress );
+    EventQueue.invokeLater( pBarUpdater );
+    pBarUpdater = null;
   }
 
   /**
@@ -413,6 +436,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * based on the last form completed at the time of the method call.
    */
   public final void updateWizardProgress(  ) {
+    wizProgress.setVisible( false );
     wizProgress.setIndeterminate( false );
 
     int lastDone = wiz.getLastValidFormNum(  ) + 1;
@@ -421,6 +445,9 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     wizProgress.setString( 
       "Wizard Progress: " + ( lastDone ) + " of " + wiz.getNumForms(  ) +
       " Forms done" );
+    ProgressBarUpdater pBarUpdater = new ProgressBarUpdater( wizProgress );
+    EventQueue.invokeLater( pBarUpdater );
+    pBarUpdater = null;
   }
 
   /**
