@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/10/10 01:20:04  bouzekc
+ * Changed references from: ScriptProcessorOperator to IScriptProcessor,
+ * ScriptProcessor to ScriptOperator, and pyScriptProcessor to
+ * PyScriptOperator.
+ *
  * Revision 1.3  2003/07/31 22:28:17  rmikk
  * Changed an Exception catch to a throwable catch
  *
@@ -48,6 +53,7 @@
 */
 package Command;
 import javax.swing.text.*;
+import DataSetTools.operator.PyScriptOperator;
 
 /** This class wraps the static method that fetches the appropriate ScriptProcessorOperator
 *   relative to the extension of a filename.  If Jython is not installed, a null will be returned
@@ -63,20 +69,20 @@ public class ScriptInterpretFetch
    *   @return  the Jython interpreter if the extension is "py", ISAW's script 
    *                 interpreter if the extension is "iss", otherwise null
    */
-   public static ScriptProcessorOperator getScriptProcessor( String filename, Document doc)
+   public static IScriptProcessor getScriptProcessor( String filename, Document doc)
      {
       if( filename == null)
         return null;
     
       if( filename.toUpperCase().endsWith( ".ISS" ))
-         return new ScriptProcessor( doc );
+         return new ScriptOperator( doc );
      
       if( !filename.toUpperCase().endsWith( ".PY" ))
          return null;
     
       try
         {
-          return new pyScriptProcessor( doc ); 
+          return new PyScriptOperator( doc ); 
         }
       catch( Throwable ss)
         {
