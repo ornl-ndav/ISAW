@@ -29,6 +29,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2004/04/22 18:48:33  dennis
+ * Replaced num_row, num_cols parameters with min and max group id.
+ * This can now be used for either the LPSDs or area detector, by
+ * specifying the correct range of group ids.
+ * Added main program for testing.
+ *
  * Revision 1.1  2004/04/22 17:32:42  dennis
  * Initial Version of sensitivity calculation for SAND LPSDs. (Alok)
  *
@@ -39,14 +45,17 @@ package DataSetTools.operator.Generic.TOF_SAD;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.Attribute.*;
-import gov.anl.ipns.Util.Numeric.*;
-import gov.anl.ipns.Util.SpecialStrings.*;
+
+import DataSetTools.viewer.*;
+import DataSetTools.retriever.*;
 
 import java.util.*;
 
 /** 
  * This operator calculates the sensitivity (with errors) and corresponding
- * mask for the pixels of a single area detector or LPSD. 
+ * mask for the pixels of a collection of detectors.  While it could be used
+ * for any type of detector, it should only be applied to DataSets with one
+ * type of detector, or the sensitivity data may not be comparable.
  */
 public class LPSDSensitivity extends GenericTOF_SAD
 {
@@ -55,7 +64,7 @@ public class LPSDSensitivity extends GenericTOF_SAD
 
   /* ------------------------ Default constructor ------------------------- */ 
   /**
-   *  Creates operator with title "Area Detector Sensitivity" and a default 
+   *  Creates operator with title "LPSD Detector Sensitivity" and a default 
    *  list of parameters.
    */  
   public LPSDSensitivity()
@@ -65,7 +74,7 @@ public class LPSDSensitivity extends GenericTOF_SAD
   
   /* ---------------------------- constructor ---------------------------- */ 
   /** 
-   *  Creates operator with title "Area Detector Sensitivity" and the 
+   *  Creates operator with title "LPSD Detector Sensitivity" and the 
    *  specified list of parameters. The getResult method must still be 
    *  used to execute the operator.
    *
@@ -79,21 +88,23 @@ public class LPSDSensitivity extends GenericTOF_SAD
    *  @param  hot_level   Relative sensitivity, above which a pixel will be 
    *                      discarded as "hot", i.e. noisy. 
    *
-   *  @param  num_rows    Number of rows in the LPSDs, 64 in the case of SAND        
-   *
-   *  @param  num_colss   Number of cols in the LPSDs, 40 in the case of SAND       
+   *  @param  first_id    The first group id to use.
+   *  @param  last_id     The last group id to use.
    */
-  public LPSDSensitivity( DataSet ds, float dead_level, float hot_level, int num_rows, int num_cols)
+  public LPSDSensitivity( DataSet  ds, 
+                          float    dead_level, 
+                          float    hot_level, 
+                          int      first_id, 
+                          int      last_id )
   {
     this(); 
     parameters = new Vector();
     addParameter( new Parameter("Flood Pattern Histogram", ds) );
     addParameter( new Parameter("Dead pixel threshold", new Float(dead_level)));
     addParameter( new Parameter("Hot pixel threshold", new Float(hot_level)) );
-    addParameter( new Parameter("Number of rows", new Integer(num_rows)) );
-    addParameter( new Parameter("Number of cols", new Integer(num_cols)) );
+    addParameter( new Parameter("First ID", new Integer(first_id)) );
+    addParameter( new Parameter("Last ID", new Integer(last_id)) );
   }
-  
 
 
   /* --------------------------- getCommand ------------------------------- */ 
@@ -108,6 +119,7 @@ public class LPSDSensitivity extends GenericTOF_SAD
     return "LPSDSens";
   }
   
+
   /* ------------------------ getDocumentation ---------------------------- */
   /**
    *  Get the documentation to be displayed by the help system.
@@ -130,10 +142,15 @@ public class LPSDSensitivity extends GenericTOF_SAD
     Res.append("the pixel divided by the average counts of the good pixels.");
         
     Res.append("@param ds - DataSet with the flood pattern Data.");
+
     Res.append("@param dead_level - Relative sensitivity, below which ");
     Res.append(" a pixelwill be discarded as 'dead'.");
+
     Res.append("@param hot_level - Relative sensitivity, above which a pixel ");
     Res.append(" will be discarded as 'hot', i.e. noisy.");
+
+    Res.append("@param first_id - The first group ID to use ");    
+    Res.append("@param last_id - The last group ID to use ");    
     
     Res.append("@return Returns a vector of two DataSets.  The first ");
     Res.append("DataSet contains the pixel sensitivity values, with ");
@@ -141,6 +158,7 @@ public class LPSDSensitivity extends GenericTOF_SAD
     
     return Res.toString();
   }
+
 
   /* ----------------------- setDefaultParameters ------------------------- */ 
   /** 
@@ -154,9 +172,10 @@ public class LPSDSensitivity extends GenericTOF_SAD
                                  DataSet.EMPTY_DATA_SET) );
     addParameter( new Parameter("Dead pixel threshold", new Float(0.6f)) );
     addParameter( new Parameter("Hot pixel threshold", new Float(1.4f)) );
-    addParameter( new Parameter("Number of rows", new Integer(64)) );
-    addParameter( new Parameter("Number of columns", new Integer(40)) );
+    addParameter( new Parameter("First Group ID", new Integer(16389)) );
+    addParameter( new Parameter("Last Group ID", new Integer(18948)) );
   }
+
   
   /* ----------------------------- getResult ------------------------------ */ 
   /** 
@@ -171,43 +190,45 @@ public class LPSDSensitivity extends GenericTOF_SAD
     DataSet ds         = (DataSet)(getParameter(0).getValue());
     float   dead_level = ((Float)(getParameter(1).getValue())).floatValue();
     float   hot_level  = ((Float)(getParameter(2).getValue())).floatValue();
-    int num_rows=((Integer)(getParameter(3).getValue())).intValue();
-    int num_cols=((Integer)(getParameter(4).getValue())).intValue();
+    int     first_id   = ((Integer)(getParameter(3).getValue())).intValue();
+    int     last_id    = ((Integer)(getParameter(4).getValue())).intValue();
 
     //
-    // Find the DataGrid for this detector and make sure that we have a 
-    // segmented detector. 
+    // Clone the DataSet, so we don't lose the original data,
+    // but only keep the data blocks in the specified range of group IDs. 
+    // Also, simplify the attribute lists and operator list.
     //
-    DataSet sens_ds = (DataSet)ds.clone();
-
- 
-    // Remove specialty operators and un-needed attributes.  Fix up the
-    // title, labels and units.
-    //
-    Data d = null;
+    DataSet sens_ds = (DataSet)ds.empty_clone();
     sens_ds.removeAllOperators();
     DataSetFactory.addOperators( sens_ds );
-    for ( int cc = 0; cc < sens_ds.getNum_entries(); cc++ )
-      {
-        d = sens_ds.getData_entry( cc );
-        AttributeList list = new AttributeList();
-        list.addAttribute( d.getAttribute( Attribute.DETECTOR_POS )); 
-        list.addAttribute( d.getAttribute( Attribute.PIXEL_INFO_LIST )); 
-        d.setAttributeList( list );
-      }
+
+    Data  d;
+    int   id;
+    for ( int i = 0; i < ds.getNum_entries(); i++ )     // copy over the data
+    {                                                   // blocks with the 
+       d = ds.getData_entry(i);                         // right ids
+       id = d.getGroup_ID();
+       if ( id >= first_id && id <= last_id )
+       { 
+         d = (Data)d.clone();
+         AttributeList list = new AttributeList();
+         list.addAttribute( d.getAttribute( Attribute.DETECTOR_POS ));
+         list.addAttribute( d.getAttribute( Attribute.PIXEL_INFO_LIST ));
+         d.setAttributeList( list );
+         sens_ds.addData_entry( d ); 
+       }
+    }
+
     sens_ds.addLog_entry("Set Pixel values to relative sensitivity of pixel");
     sens_ds.setTitle( sens_ds.getTitle() + "Pixel Sensitivity" );
     sens_ds.setY_units("Sensitivity");
     sens_ds.setY_label("Pixel Relative Sensitivity");
   
     //
-    // Now rebin the Data down to one bin.  We assume there is only one 
-    // x_scale for the Data blocks from this detector.
+    // Now rebin the Data down to one bin.  We take a wide enough range to
+    // to cover all possible times-of-flight.
     //
-    XScale old_scale = sens_ds.getData_entry(0).getX_scale();
-    XScale new_scale = new UniformXScale( old_scale.getStart_x(),
-                                          old_scale.getEnd_x(),
-                                          2 );
+    XScale new_scale = new UniformXScale( 0, 33333, 2 );
     for ( int i = 0; i < sens_ds.getNum_entries(); i++ )
       sens_ds.getData_entry(i).resample( new_scale, IData.SMOOTH_NONE );
 
@@ -215,19 +236,19 @@ public class LPSDSensitivity extends GenericTOF_SAD
     // Next, calculate the total counts and average counts for all pixels 
     //
     double sum = 0;
-    for ( int cc = 0; cc < sens_ds.getNum_entries()-1; cc++ )
-          sum += sens_ds.getData_entry(cc).getY_values()[0]; 
-    double average = sum / (num_rows*num_cols);
+    for ( int cc = 0; cc < sens_ds.getNum_entries(); cc++ )
+      sum += sens_ds.getData_entry(cc).getY_values()[0]; 
+    double average = sum / sens_ds.getNum_entries();
 
     System.out.println();
-    System.out.println("LIVE CELLS = " + num_rows*num_cols );
+    System.out.println("LIVE CELLS = " + sens_ds.getNum_entries() );
     System.out.println("NET COUNTS = " + sum ); 	
     System.out.println("AVERAGE COUNTS PER CELL = " + average );
 
     //
     // Calculate the total counts and average counts only using pixels 
     // whose counts are within limits set from the dead_level and hot_level.
-    // Mark a selected those Data blocks that were used.  Keep track of the
+    // Mark as selected those Data blocks that were used.  Keep track of the
     // number of dead and hot pixels. 
     //
     double good_counts = 0;
@@ -235,7 +256,7 @@ public class LPSDSensitivity extends GenericTOF_SAD
     int n_dead = 0;
     int n_hot  = 0;
     int n_good = 0;
-    for ( int cc = 0; cc < sens_ds.getNum_entries()-1; cc++ )
+    for ( int cc = 0; cc < sens_ds.getNum_entries(); cc++ )
        {
         counts = sens_ds.getData_entry(cc).getY_values()[0];
         if ( counts/average <= dead_level )
@@ -267,31 +288,31 @@ public class LPSDSensitivity extends GenericTOF_SAD
     System.out.println("(AFTER ACCOUNTING FOR DEAD AND HOT CELLS)" );
 
     //
-    // Calculate the efficiencies and errors for the selected cells 
+    // Calculate the sensitivities and errors for the selected cells 
     // and set the others to zero.  Keep track of the min and max 
     // sensitivities.
     //
-    float eff[];
+    float sens[];
     float errors[];
     float min_sens = 1;
     float max_sens = 1;
-    for ( int cc = 0; cc < sens_ds.getNum_entries()-1; cc++ )
+    for ( int cc = 0; cc < sens_ds.getNum_entries(); cc++ )
       {
-        eff    = sens_ds.getData_entry(cc).getY_values();
+        sens   = sens_ds.getData_entry(cc).getY_values();
         errors = new float[1];
         if ( sens_ds.getData_entry(cc).isSelected() )
         {
-          errors[0] = (float)(Math.sqrt( eff[0] ) / good_average);
-          eff[0]   /= good_average;
-          if ( eff[0] > max_sens )
-            max_sens = eff[0];
-          if ( eff[0] < min_sens )
-            min_sens = eff[0];
+          errors[0] = (float)(Math.sqrt( sens[0] ) / good_average);
+          sens[0]   /= good_average;
+          if ( sens[0] > max_sens )
+            max_sens = sens[0];
+          if ( sens[0] < min_sens )
+            min_sens = sens[0];
         }
         else
         {
           errors[0] = 0;
-          eff[0]    = 0;
+          sens[0]   = 0;
         }
         ((TabulatedData)sens_ds.getData_entry(cc)).setErrors( errors );
       }
@@ -303,7 +324,6 @@ public class LPSDSensitivity extends GenericTOF_SAD
     System.out.println("MAX = " + max_sens ); 
 
     sens_ds.addOperator( new GetPixelInfo_op() );
-
 
     sens_ds.clearSelections();
     Vector result = new Vector(1);
@@ -321,6 +341,24 @@ public class LPSDSensitivity extends GenericTOF_SAD
    */
   public static void main( String args[] )
   {
+     String file_name;
+     if ( args.length > 0 )
+       file_name = args[0];
+     else
+       file_name = "/usr2/ARGONNE_DATA/SAND_LPSD_RUNS/sand22403.run";
+
+     RunfileRetriever rr = new RunfileRetriever( file_name );
     
+     DataSet ds = rr.getDataSet(1);
+     
+     Operator op = new LPSDSensitivity( ds, 0.6f, 1.4f, 0, 16388 );
+     Vector result = (Vector)op.getResult();
+     DataSet area_sens = (DataSet)result.elementAt(0);
+     ViewManager vm = new ViewManager( area_sens, IViewManager.THREE_D );
+     
+     op = new LPSDSensitivity( ds, 0.6f, 1.4f, 16389, 18948 );
+     result = (Vector)op.getResult();
+     DataSet lpsd_sens = (DataSet)result.elementAt(0);
+     vm = new ViewManager( lpsd_sens, IViewManager.THREE_D );
   }
 }
