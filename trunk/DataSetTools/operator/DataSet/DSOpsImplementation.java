@@ -35,6 +35,11 @@
  * corresponding operators.
  *
  *  $Log$
+ *  Revision 1.3  2002/07/17 21:13:16  dennis
+ *  Added implementation of operators that combine one Data
+ *  block from a DataSet with all Data blocks in the
+ *  current DataSet.
+ *
  *  Revision 1.2  2002/03/13 16:19:17  dennis
  *  Converted to new abstract Data class.
  *
@@ -84,7 +89,6 @@ public final class DSOpsImplementation implements Serializable
    */
    private DSOpsImplementation(){}
 
-
   /* -------------------------- DoDSBinaryOp ------------------------------- */
   /**
    *  Carry out the specified binary operation on the given DataSet. This
@@ -98,7 +102,7 @@ public final class DSOpsImplementation implements Serializable
    *                  DataSetDivide.
    *               There must be two parameters to the operator, the second
    *               DataSet operand and a boolean flag indicating wheter or not
-   *               to create a new DataSet.  All parameters to the operation 
+   *               to create a new DataSet.  All parameters to the operation
    *               must have been given values before calling this method.
    *
    *  @return An object containing the result of the operation.  This object
@@ -106,7 +110,7 @@ public final class DSOpsImplementation implements Serializable
    */
 
   public static Object DoDSBinaryOp( DataSetOperator op )
-  {                        
+  {
                                                    // get the current data set
    DataSet ds_1        = op.getDataSet();
                                                    // get the parameters
@@ -127,7 +131,7 @@ public final class DSOpsImplementation implements Serializable
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
-    DataSet new_ds = ds_1.empty_clone(); 
+    DataSet new_ds = ds_1.empty_clone();
                                             // now proceed to do the operation
     int num_data = ds_1.getNum_entries();
     Data data_1,
@@ -139,29 +143,29 @@ public final class DSOpsImplementation implements Serializable
       data_1 = ds_1.getData_entry( i );      // get reference to the data entry
 
       data_2 = ds_2.getData_entry_with_id( data_1.getGroup_ID() );
- 
+
       if ( data_2 != null )                  // there is a corresponding entry
-      {                                      // to try to combine 
-        if ( op_name.equals( "Add" )) 
-          new_data = data_1.add( data_2 );  
+      {                                      // to try to combine
+        if ( op_name.equals( "Add" ))
+          new_data = data_1.add( data_2 );
 
-        else if ( op_name.equals( "Sub" ) ) 
-          new_data = data_1.subtract( data_2 );  
+        else if ( op_name.equals( "Sub" ) )
+          new_data = data_1.subtract( data_2 );
 
-        else if ( op_name.equals( "Mult" )) 
-          new_data = data_1.multiply( data_2 );  
+        else if ( op_name.equals( "Mult" ))
+          new_data = data_1.multiply( data_2 );
 
-        else if ( op_name.equals( "Div" )) 
-          new_data = data_1.divide( data_2 );  
+        else if ( op_name.equals( "Div" ))
+          new_data = data_1.divide( data_2 );
 
         else
         {
           System.out.println("ERROR: unsupported operation in DoDSBinaryOp");
           new_data = null;
-        } 
+        }
 
-        if ( new_data != null )            // they could be combined 
-          new_ds.addData_entry( new_data );      
+        if ( new_data != null )            // they could be combined
+          new_ds.addData_entry( new_data );
       }
     }
 
@@ -170,25 +174,140 @@ public final class DSOpsImplementation implements Serializable
       return new ErrorString("Error: no compatible Data blocks to combine in "
                               + op_name );
     }
-    else if ( make_new_ds ) 
+    else if ( make_new_ds )
     {
       new_ds.addLog_entry( "Operation " + op_name + " on " + ds_2 );
       new_ds.CombineAttributeList( ds_2 );
       return new_ds;
-    } 
+    }
     else                         // copy Data blocks to the original DataSet
-    {            
+    {
       ds_1.addLog_entry( "Operation " + op_name + " on " + ds_2 );
-      ds_1.CombineAttributeList( ds_2 );  
-      ds_1.removeAll_data_entries();        
+      ds_1.CombineAttributeList( ds_2 );
+      ds_1.removeAll_data_entries();
 
       for ( int i = 0; i < new_ds.getNum_entries(); i++ )
-        ds_1.addData_entry( new_ds.getData_entry(i) );  
+        ds_1.addData_entry( new_ds.getData_entry(i) );
 
       ds_1.notifyIObservers( IObserver.DATA_CHANGED );
 
       new_ds = null;
       return new String(op_name + " on " + ds_2 + " DONE");
+    }
+  }
+
+
+
+  /* ------------------------ DoDSOneDataBlockOp --------------------------- */
+  /**
+   *  Carry out the specified operation using one Data block from the second
+   *  DataSet on each spectrum of the first DataSet. This supports the 
+   *  operations of Add, Subtract, Multiply and Divide between all Data blocks
+   *  of one DataSet and one Data block from a second DataSet.
+   *
+   *  @param  op   The operation to carry out.  This must be one of
+   *                  DataSetAdd_1,
+   *                  DataSetSubtract_1,
+   *                  DataSetMultiply_1,
+   *                  DataSetDivide_1.
+   *               There must be three parameters to the operator, the second
+   *               DataSet operand, the group ID for the Data block from the 
+   *               second DataSet operand, and a boolean flag indicating 
+   *               wheter or not to create a new DataSet.  All parameters 
+   *               to the operation must have been given values before 
+   *               calling this method.
+   *
+   *  @return An object containing the result of the operation.  This object
+   *          may be a new DataSet, an ErrorString or a String.
+   */
+
+  public static Object DoDSOneDataBlockOp( DataSetOperator op )
+  {                        
+                                                   // get the current data set
+   DataSet ds_1        = op.getDataSet();
+                                                   // get the parameters
+   DataSet ds_2        = (DataSet)(op.getParameter(0).getValue());
+   int     id          =((Integer)op.getParameter(1).getValue()).intValue();
+   boolean make_new_ds =((Boolean)op.getParameter(2).getValue()).booleanValue();
+
+    String op_name = op.getCommand();
+    if ( !ds_1.SameUnits( ds_2 ) )    // DataSets are NOT COMPATIBLE TO COMBINE
+    {
+      ErrorString message = new ErrorString(
+                                "ERROR: DataSets have different units in"+
+                                 op_name );
+      System.out.println( message );
+      return message;
+    }
+
+    Data data_2 = ds_2.getData_entry_with_id( id );
+    if ( data_2 == null )
+    {
+      ErrorString message = new ErrorString(
+                                "ERROR: id " + id + " not present in"+
+                                 op_name );
+      System.out.println( message );
+      return message;
+    }
+                                     // construct a new data set with the same
+                                     // title, units, and operations as the
+                                     // current DataSet, ds_1
+    DataSet new_ds = null;
+    if ( make_new_ds )
+      new_ds = ds_1.empty_clone();
+                                            // now proceed to do the operation
+    Data data_1,
+         new_data;
+    int num_new = 0; 
+    int num_data = ds_1.getNum_entries();
+    for ( int i = 0; i < num_data; i++ )
+    {
+      data_1 = ds_1.getData_entry( i );      // get reference to the data entry
+
+      if ( op_name.equals( "Add" )) 
+        new_data = data_1.add( data_2 );  
+
+      else if ( op_name.equals( "Sub" ) ) 
+        new_data = data_1.subtract( data_2 );  
+
+      else if ( op_name.equals( "Mult" )) 
+        new_data = data_1.multiply( data_2 );  
+
+      else if ( op_name.equals( "Div" )) 
+        new_data = data_1.divide( data_2 );  
+
+      else
+      {
+        System.out.println("ERROR: unsupported operation in DoDSBinaryOp");
+        new_data = null;
+      } 
+
+      if ( new_data != null )            // they could be combined 
+      {
+        num_new++;
+        if ( make_new_ds ) 
+          new_ds.addData_entry( new_data );      
+        else
+          ds_1.replaceData_entry( new_data, i );
+      }
+    }
+
+    String log_entry = "Operation " +op_name+ " using " +ds_2+ " group " +id; 
+    if ( num_new <= 0 )
+    {
+      return new ErrorString("Error: no compatible Data blocks to combine in "
+                              + op_name );
+    }
+    else if ( make_new_ds ) 
+    {
+      new_ds.addLog_entry( log_entry );
+      return new_ds;
+    } 
+    else                         // copy Data blocks to the original DataSet
+    {            
+      ds_1.addLog_entry( log_entry );
+      ds_1.notifyIObservers( IObserver.DATA_CHANGED );
+      return  log_entry + " DONE";
     }
   }  
 
