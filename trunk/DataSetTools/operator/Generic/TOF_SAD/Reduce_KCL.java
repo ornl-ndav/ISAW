@@ -251,7 +251,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
  
     int RUNC, RUNB, RUNS;
     float XOFF, YOFF;
-
+       int[] MonitorInd; 
+        int[] MonitorID; 
     public Reduce_KCL(){
       super("Reduce");
     }
@@ -284,7 +285,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         DataSet RUNBds1,DataSet RUNCds0,DataSet RUNCds1, float BETADN, 
         float SCALE, float THICK,
         float XOFF, float YOFF, int NQxBins, int NQyBins) {
-        
         super( "Reduce");
         parameters = new Vector();
         addParameter( new Parameter("", TransS));
@@ -393,6 +393,15 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         this.RUNBds = RUNBds;
         this.RUNCds = RUNCds;
         this.qu = qu;
+        
+        MonitorInd = CalcTransmission.setMonitorInd( RUNSds0);
+        MonitorID = new int[MonitorInd.length];
+        System.out.println("Monit Inds="+StringUtil.toString( MonitorInd));
+      
+ 
+        for( int i = 0; i< MonitorInd.length; i++)
+          MonitorID[i]= RUNSds0.getData_entry( MonitorInd[i]).getGroup_ID();
+       System.out.println("Monit Ids="+StringUtil.toString( MonitorID));
         RUNS = (((IntListAttribute) (RUNSds[0].getAttribute(Attribute.RUN_NUM))).getIntegerValue())[0];
 
         RUNB = (((IntListAttribute) (RUNBds[0].getAttribute(Attribute.RUN_NUM))).getIntegerValue())[0];
@@ -531,7 +540,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         double SFX = XDIM / NUMX;
         double SFY = YDIM / NUMY;
         
-        tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNSds[0].getData_entry(0),
+        /*tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNSds[0].getData_entry(0),
             30f, BETADN);
         tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNSds[1].getData_entry(1),
             30f, BETADN);
@@ -542,7 +551,29 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNCds[0].getData_entry(0),
             30f, BETADN);
         tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNCds[1].getData_entry(1),
+     
             30f, BETADN);
+       */
+       for( int i=0;i<1;i++){
+          tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNSds[0].getData_entry(
+               MonitorInd[i]),30f, BETADN);
+          tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNBds[0].getData_entry(
+               MonitorInd[i]),30f, BETADN);
+          
+          tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNCds[0].getData_entry(
+               MonitorInd[i]),30f, BETADN);
+       }      
+      for( int i=0; i< RUNSds[1].getNum_entries(); i++){
+          tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNSds[1].getData_entry(
+               i),30f, BETADN);
+          tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNBds[1].getData_entry(
+              i),30f, BETADN);
+          
+          tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNCds[1].getData_entry(
+               i),30f, BETADN);
+
+       }
+    
         RUNSds[1] = convertToLambda(RUNSds[1]);
         RUNSds[0] = convertToLambda(RUNSds[0]);
    
@@ -554,18 +585,18 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         
         xscl = RUNSds[1].getData_entry(NUMX * NUMY / 2).getX_scale();
          
-        RUNSds[0].getData_entry(0).resample(xscl, IData.SMOOTH_NONE);
+        RUNSds[0].getData_entry(MonitorInd[0]).resample(xscl, IData.SMOOTH_NONE);
  
-        RUNBds[0].getData_entry(0).resample(xscl, IData.SMOOTH_NONE);
+        RUNBds[0].getData_entry(MonitorInd[0]).resample(xscl, IData.SMOOTH_NONE);
         if (RUNCds[0] != null)
-            RUNCds[0].getData_entry(0).resample(xscl, IData.SMOOTH_NONE);
-        RUNSds[0].getData_entry(2).resample(xscl, IData.SMOOTH_NONE);
-        RUNBds[0].getData_entry(2).resample(xscl, IData.SMOOTH_NONE);
+            RUNCds[0].getData_entry(MonitorInd[0]).resample(xscl, IData.SMOOTH_NONE);
+        RUNSds[0].getData_entry(MonitorInd[1]).resample(xscl, IData.SMOOTH_NONE);
+        RUNBds[0].getData_entry(MonitorInd[1]).resample(xscl, IData.SMOOTH_NONE);
         if (RUNCds[0] != null)
-            RUNCds[0].getData_entry(2).resample(xscl, IData.SMOOTH_NONE);
-        float[] yy = RUNSds[0].getData_entry(0).getY_values();
+            RUNCds[0].getData_entry(MonitorInd[1]).resample(xscl, IData.SMOOTH_NONE);
+        float[] yy = RUNSds[0].getData_entry(MonitorInd[0]).getY_values();
 
-        yy = RUNCds[0].getData_entry(0).getY_values();
+        yy = RUNCds[0].getData_entry(MonitorInd[0]).getY_values();
 
         Resample(RUNSds[1], xscl);
         Resample(RUNBds[1], xscl);
@@ -658,9 +689,9 @@ public class Reduce_KCL  extends GenericTOF_SAD{
       *    Had to do this so global variables were used in 2nd code
       */
        public Object init(){
-
+         System.out.println("A");
         //----------------- Divide by Monitor ------------------------
-        Object Res = (new DataSetDivide_1(RUNSds[1], RUNSds[0], 1, true)).getResult();
+        Object Res = (new DataSetDivide_1(RUNSds[1], RUNSds[0], MonitorID[0], true)).getResult();
 
         if (Res instanceof ErrorString)
             return new ErrorString("AA1:" + Res.toString());
@@ -669,15 +700,15 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         RelSamp = (DataSet) Res;
 
         RelSamp.setTitle("Samp to MOnitor");
-
-        Res = (new DataSetDivide_1(RUNCds[1], RUNCds[0], 1, true)).getResult();
+   System.out.println("B");
+        Res = (new DataSetDivide_1(RUNCds[1], RUNCds[0], MonitorID[0], true)).getResult();
         if (Res instanceof ErrorString)
             return new ErrorString("AB:" + Res.toString());;
         if (Res instanceof String)
             return new ErrorString("AC:" + (String) Res);
         DataSet RelCadmium = (DataSet) Res;
-
-        Res = (new DataSetDivide_1(RUNBds[1], RUNBds[0], 1, true)).getResult();
+System.out.println("C");
+        Res = (new DataSetDivide_1(RUNBds[1], RUNBds[0], MonitorID[0], true)).getResult();
         if (Res instanceof ErrorString)
             return new ErrorString("AD:" + Res.toString());;
         if (Res instanceof String)
@@ -755,11 +786,11 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         //----------------------- After MonGet--------------------
         //QUE1 is the "xscale" for 1 to N 
   
-
+        System.out.println("E");
         //------------------ Calculate Weight DS -------------------
-        (new DataSetMultiply_1(weight, RUNSds[0], 1, false)).getResult();
+        (new DataSetMultiply_1(weight, RUNSds[0], MonitorID[0], false)).getResult();
         
-       
+       System.out.println("F");
 
         Operator opp = null;
 
