@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/05/27 19:18:22  robertsonj
+ * *** empty log message ***
+ *
+ * Rivision 1.7 2004/05/27 robertson
+ * added functionality: Print in landscape, pick printer from list, print x copies, choose print quality.
+ * 
  * Revision 1.6  2004/05/04 19:03:50  dennis
  * Now clears DataSetPG after getting value, to avoid memory leak.
  *
@@ -65,6 +71,7 @@ import javax.print.attribute.standard.*;
 import java.util.*;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 
 /**
 *  This operator will Print a View of the DataSet corresponding to one of the
@@ -98,30 +105,52 @@ public class PrintImage extends GenericSave{
    *   @param PrintOptions (not implemented yet).For options like Portrait, etc.
    */
    public PrintImage( DataSet DS, String view_type, Vector State,
-         int width, int height, String PrintName, 
-         String PrintLocation, Vector PrintOptions){
-      this();
+   int width, int height, String PrintName, 
+	  String PrintLocation, Vector PrintOptions, String orientation, int copies){
+   this();
+   
+   
+  
+  	
+	  
       parameters = new Vector();
       addParameter( new DataSetPG( "Select DataSet",DS));
-      addParameter( new StringPG( "View Name", view_type));
+	  addParameter( new PrinterNamePG("select printer", null));
+	  addParameter( new StringPG( "View Name", view_type));
+	  addParameter(new BooleanPG("Landscape" , orientation));
+      addParameter( new IntegerPG("copies", copies));
       addParameter( new ArrayPG("State info", null));
+	  addParameter( new IntegerPG("quality", 1));
+	  addParameter( new IntegerPG("height",height));
       addParameter( new IntegerPG("width", width));
-      addParameter( new IntegerPG("height",height));
-      addParameter( new StringPG( "Printer Name", PrintName));
-      addParameter( new StringPG( "Printer Location", PrintLocation));
-      addParameter( new ArrayPG("Printer Options", PrintOptions));
+      
+	 
+      
+	  
+	  
+	  
    }
 
   public void setDefaultParameters(){ 
+	
+	
+
       parameters = new Vector();
-      addParameter( new DataSetPG( "Select DataSet",null));
-      addParameter( new StringPG( "View Name", "Image View"));
-      addParameter( new ArrayPG("State info", null));
-      addParameter( new IntegerPG("width", 500));
-      addParameter( new IntegerPG("height",500));
-      addParameter( new StringPG( "Printer Name",""));
-      addParameter( new StringPG( "Printer Location", ""));
-      addParameter( new ArrayPG("Printer Options", new Vector()));
+      addParameter( new DataSetPG( "Select DataSet",null));//0
+	  addParameter( new PrinterNamePG("select printer", null));//5
+	  addParameter( new StringPG( "View Name", "Image View"));//1
+	  addParameter( new BooleanPG("LandScape",""));//7
+      addParameter( new IntegerPG("Copies", 1));
+	  addParameter( new IntegerPG("quality",0));//8
+      addParameter( new ArrayPG("State info", null));//2
+	  addParameter( new IntegerPG("height",500));//4
+      addParameter( new IntegerPG("width", 500));//3
+      
+	  
+      
+	  
+	  
+	  
   }
 
   /**
@@ -129,59 +158,128 @@ public class PrintImage extends GenericSave{
   *    it attempts to find a printer to print this image
   */
   public Object getResult(){
+  	
      DataSet DS = ((DataSetPG)(getParameter(0))).getDataSetValue();
      ((DataSetPG)(getParameter(0))).clear();  //needed to avoid memory leak
 
-     String ViewName = getParameter(1).getValue().toString();
-     Vector State = ((ArrayPG)(getParameter(2))).getVectorValue();
-     int  width = ((IntegerPG)(getParameter(3))).getintValue();
-     int height = ((IntegerPG)(getParameter(4))).getintValue();
-     String PrintName = getParameter(5).getValue().toString();
-     String PrintLocation = getParameter(6).getValue().toString();
-     Vector PrintOptions = ((ArrayPG)(getParameter(7))).getVectorValue();
-
+     String ViewName = getParameter(2).getValue().toString();
+     Vector State = ((ArrayPG)(getParameter(6))).getVectorValue();
+     int  width = ((IntegerPG)(getParameter(8))).getintValue();
+     int height = ((IntegerPG)(getParameter(7))).getintValue();
+     String PrintName = getParameter(1).getValue().toString();
+     boolean orientation =((BooleanPG)(getParameter(3))).getbooleanValue();
+     int quality = ((IntegerPG)(getParameter(5))).getintValue();
+     int copies = ((IntegerPG)(getParameter(4))).getintValue();
+     
+   
      // Set up the Viewer State here
      DataSetViewer DSV = ViewManager.getDataSetView(DS, ViewName, null);
-     DSV.setSize( width,height);
+     DSV.validate();
+     DSV.setSize(width-5, height-5);
      JFrame jf = new JFrame();
+     jf.setSize(width, height);
      jf.getContentPane().setLayout( new GridLayout(1,1));
-     jf.setSize( width,height);
-     jf.getContentPane().add( DSV);
-     jf.show();
-     PrintUtilities pr_utils = new PrintUtilities( DSV);
+     jf.getContentPane().add(DSV);
+     jf.addWindowListener(new MyWindowListener(DSV, PrintName, orientation, quality, copies, jf));
+	 jf.show();
+	
+     return "Success";
+  }
+  class MyWindowListener extends WindowAdapter{
+	DataSetViewer DSV;
+ 	String PrintLocation;
+ 	String PrintName;
+ 	JFrame jf;
+ 	int quality;
+ 	boolean orientation;
+ 	int copies;
+  	public MyWindowListener(DataSetViewer DSV, String PrintName, 
+  														boolean orientation, int quality, int copies, JFrame jf)
+  	{
+			this.DSV = DSV;
+		
+			this.PrintName = PrintName;
+			this.jf = jf;
+			this.orientation = orientation;
+			this.quality = quality;
+			this.copies = copies;
+  	}
+	
+  public void windowOpened(WindowEvent winevt){
+  	printResult(DSV,PrintLocation, PrintName, orientation, quality, copies, jf);
+  }
+ 
+  	public void printResult(DataSetViewer DSV, String PrintLocation, String PrintName, 
+  										boolean orientation, int quality, int copies, JFrame jf){
+	
+	
+	
+	 DocFlavor myFormat = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
+	 Doc myDoc = null;
+     PrintUtilities pr_utils = new PrintUtilities(DSV);
      // Set the document type
-     DocFlavor myFormat = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
+    
      // Create a Doc
-     Doc myDoc = null;
+     
      try{
        myDoc = new SimpleDoc(pr_utils, myFormat, null); 
      }catch(Throwable u){jf.dispose();
-       return new ErrorString( u.toString());
+       /*return*/ new ErrorString( u.toString());
      }
     // Build a set of attributes
-     HashPrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
-      
-     
-     PrintService[] services =
+    HashPrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
+    Copies numberOfCopies = new Copies(copies);
+    aset.add(numberOfCopies);
+  	if (orientation == true){
+  		boolean fake = aset.add(OrientationRequested.LANDSCAPE);
+  	}
+  	else
+  	{
+  		boolean fake2 = aset.add(OrientationRequested.PORTRAIT);
+  	}
+
+  	// To determine the level of quality. (may not work with laser printers
+	if (quality != 0)
+  	System.out.println("Past quality check");
+      PrintService[] services =
 	PrintServiceLookup.lookupPrintServices(myFormat, aset);
+	
+
      // Create a print job from one of the print services
    
      PrintService service = getPrintService( services, PrintName,
                 PrintLocation);
+     if (quality != 0)
+     {
+     	
+   		if (service.isAttributeCategorySupported(PrintQuality.class) )
+   		{
+   			if (quality == 1){aset.add(PrintQuality.DRAFT);
+   			}
+   			if (quality == 2){aset.add(PrintQuality.NORMAL);
+   			}
+   			if (quality == 3){aset.add(PrintQuality.HIGH);
+   			}
+   		}
+     }
     if (service !=null) { 
         
 	DocPrintJob job = service.createPrintJob(); 
+	
+	
+	
 	try { 
 		job.print(myDoc, aset); 
 	} catch (PrintException pe) {jf.dispose();
-         return new ErrorString( "Print Exception:"+ pe.toString());
+         /*return*/ new ErrorString( "Print Exception:"+ pe.toString());
         } 
-   }else{jf.dispose();
-       return new ErrorString( " No Printers Found");
+   }else{;//jf.dispose();
+       /*return*/ new ErrorString( " No Printers Found");
    }
    jf.dispose();
-   return "Success";
+  
    }
+  }
   private PrintService getPrintService( PrintService[] services, 
           String PrintName,String  PrintLocation){
     if( services == null)
