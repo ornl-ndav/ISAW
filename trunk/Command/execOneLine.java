@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2001/08/15 14:15:30  rmikk
+ * Set Default Parameters on all operators that had their
+ *    parameters changed.  The data types of these operators
+ *    will now be accurate when used later.
+ *
  * Revision 1.25  2001/08/02 20:54:40  rmikk
  * This now supports the RETURN statement.
  *
@@ -2326,6 +2331,7 @@ private Operator getSHOp( Vector Args, String Command)
         if( op instanceof Customizer)
            ((Customizer)op).addPropertyChangeListener( this );
         Result = op.getResult();
+        op.setDefaultParameters();
        if( op instanceof IObservable)
            ((IObservable)op).deleteIObserver( this );
         if( op instanceof Customizer)
@@ -2465,7 +2471,7 @@ private Operator getSHOp( Vector Args, String Command)
                  */
                 SetOpParameters( op , Args , 1);
 		Result = op.getResult();
-		   
+		op.setDefaultParameters();   
                 if( Result instanceof ErrorString )
 		  {seterror (1000 , ((ErrorString)Result).toString() );
 		   if(Debug)
