@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.50  2003/06/17 16:34:04  pfpeterson
+ * Uses new methods in IssScript for getCommand, getTitle, getDocumentation,
+ * and getCategoryList.
+ *
  * Revision 1.49  2003/06/13 20:07:48  pfpeterson
  * Takes advantage of the IssScript class.
  *
@@ -195,10 +199,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   
   private boolean Debug = false;
   private Vector vnames= new Vector();
-  private String command ="UNKNOWN";
-  private String Title = "UNKNOWN";
-  private String CategoryList="OPERATOR";
-  private Script script=null;
+  private IssScript script=null;
   private ParameterClassList param_types = new ParameterClassList();
   
   /**
@@ -281,7 +282,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   }
   
   public void setDocument( Document doc){
-    this.script=new Script(doc);
+    this.script=new IssScript(doc);
   }
   
   /**
@@ -907,13 +908,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    
     // parse type and create a parameter
     if( DataType.equals("=")){
-      VarName = VarName.toUpperCase();
-      if( VarName.equals("COMMAND")){
-        command = Prompt;
-      }else if(VarName.equals( "TITLE" )){
-        Title = Prompt ;
-      }else if( VarName.equals( "CATEGORY") )
-        CategoryList= Prompt ;
+      // do nothing
     }else if( (DataType .equals( "INT") ) || ( DataType.equals( "INTEGER"))){
       if( InitValue == null)
         InitValue ="0";
@@ -1306,10 +1301,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    * the lines that start with a '#' up to the first non-empty line.
    */
   public String getDocumentation(){
-    if(this.script instanceof IssScript)
-      return ((IssScript)this.script).getDocumentation();
-    else
-      return super.getDocumentation();
+    return this.script.getDocumentation();
   }
 
   /**
@@ -1378,6 +1370,10 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     return ;
   }
 
+  public String[] getCategoryList(){
+    return this.script.getCategoryList();
+  }
+
   /** 
    * Gives the Command to use this script in the as a function in
    * this ScriptProcessor.<BR> NOT USED
@@ -1387,7 +1383,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    *@see  Command.ScriptOperator
    */
   public String getCommand(){
-    return command;
+    return this.script.getCommand();
   }
     
   /**
@@ -1398,7 +1394,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    * the document
    */
   public String getTitle(){
-    return Title;
+    return this.script.getTitle();
   }
     
   /**
