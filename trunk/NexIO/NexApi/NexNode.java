@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/12/19 15:55:30  rmikk
+ * The getNodeValue now uses slabs to retrieve large blocks in parts.
+ *
  * Revision 1.12  2003/10/28 15:30:26  rmikk
  * Fixed errors if file cannot be openned or created
  *
@@ -82,7 +85,7 @@ public class NexNode implements NxNode{
   Hashtable LinkInfo;
   static int NameInt = 0;
   boolean debug = false;
-
+  public static int MAX_BLOB_SIZE = 20000;
   /**
    *@param filename  the nexus filename
    */
@@ -401,12 +404,20 @@ public class NexNode implements NxNode{
 
     if( X instanceof NXlink ){
       NXlink l2 = ( NXlink )X;
-
-      if( l2.tag != l.tag )
+      if( l2.equals( l))
+          return true;
+      else
+          return false;
+      /*if( l2.tag != l.tag )
         return false;
       if( l2.ref != l.ref )
         return false;
+      if( !(l2.ref5.equals(l.ref5)))
+         return false;
+      if( !(l2.refd.equals(l.refd)))
+         return false;
       return true;
+     */
     }
 
     errormessage = "Improper Link value";
@@ -453,7 +464,7 @@ public class NexNode implements NxNode{
     *  <LI> Char arrays go to strings
     *  </ol>
     */
-  public Object getNodeValue(){
+  public Object getNodeValue1(){
     errormessage = "";
     if( NF == null) return null;
     if( !open() )
@@ -495,6 +506,133 @@ public class NexNode implements NxNode{
     }
   }
 
+/**
+    * Returns the value(data-not attribute) of this node.<P>
+    * <OL>Note:<LI> mulitdimensioned arrays are linearlized.
+    *  <LI> Unsigned data types are "fixed" by copying to the
+    *       next higher data type
+    *  <LI> Char arrays go to strings
+    *  </ol>
+    */
+  public Object getNodeValue(){
+    errormessage = "";
+    if( NF == null) return null;
+    if( !open() )
+      return null;
+    int iDim[], args[];
+
+    iDim = new int[7];
+    args = new int[2];
+    
+    try{
+      if( debug )
+        System.out.println( "----NxApNode: start----" );
+      NF.getinfo( iDim, args );
+
+      if( args[0] <= 0 ){
+        errormessage = "No Data Here";
+        return null;
+      }
+
+      // **Object array=CreateMultiArray(0,args[0],iDim,args[1]);
+      int n = args[0];
+      int pos = -1,  //position in iDim where sub elements start  
+          step = -1, // Number of blocks in that position that can be retrieved
+                     // before getting above MAX_BLOB_SIZE
+          lenn=-1;  // The number of float array elements that will be retrieved
+                    // in each blob
+      if( iDim[n-1] >= MAX_BLOB_SIZE){
+        pos = n-2;
+        step = 1;
+        lenn = 1;
+      }else if( n == 1){
+        pos =-1;
+        step = 1;
+        lenn = 1;
+     
+      }else{
+         int Prod = iDim[n-1];
+         pos = n-1;
+         lenn = iDim[n-1];
+         while( (Prod < MAX_BLOB_SIZE)&&(pos >0)){
+           pos--;
+           Prod = Prod*iDim[pos]; 
+           if( Prod < MAX_BLOB_SIZE)
+               lenn = Prod;
+          
+         }
+         if( Prod >= MAX_BLOB_SIZE){
+           
+           Prod = Prod/iDim[pos];
+           step = MAX_BLOB_SIZE/Prod;
+           if( step <1) step = 1;
+        
+         }else {
+           step = iDim[0];
+           lenn = lenn/iDim[0];
+         }
+           
+      }
+      int TotLength = 1;
+      int i;
+      for(  i = 0; i< n; i++) 
+           TotLength *= iDim[i];
+      Object array =  ((new NxNodeUtils()).CreateArray(args[1],
+                                TotLength));
+      boolean done = false;
+      int k_array = 0;
+      int[] start=new int[n], size=new int[n] ;
+ 
+      for(  i=0; i< n; i++) 
+         start[i]=0;
+      for(  i=0; i< pos; i++) 
+         size[i] = 1;
+      if( pos >= 0){
+         size[pos]= step;
+         for(  i=pos+1; i< n; i++)
+            size[i] = iDim[i];
+      }
+      else {
+         for( i = 0; i < n; i++)
+           size[i] = iDim[i];
+          lenn = 1;
+      }
+
+      Object subarray = ((new NxNodeUtils()).CreateArray(args[1],
+                                java.lang.Math.min(MAX_BLOB_SIZE,TotLength)));
+      
+      while( !done){
+
+         NF.getslab(start, size, subarray);
+
+         System.arraycopy( subarray,0, array, k_array, lenn*size[(int)java.lang.Math.max(pos,0)]);
+         k_array += lenn*size[(int)java.lang.Math.max(pos,0)];
+         if( pos >=0){
+            start[pos] += size[pos];
+            if( start[pos] >= iDim[pos]){
+               start[pos] = 0;
+               for( i = pos -1; ( i>=0)&&( start[i]+1>= iDim[i]); i--){
+                  start[i] = 0;
+               }
+               if( i < 0)
+                  done = true;
+               else if( i < pos){
+                  start[i]+=1;
+               }
+            }
+            size[pos] = (int)java.lang.Math.min(step, iDim[pos] - start[pos]);
+          }else{ //case where all are done
+           done = true;
+          }
+         
+       }
+       
+      return array;
+    }catch( NexusException s ){
+      errormessage = s.getMessage();
+      return null;
+    }
+  }
 
   private Object linearlizeArray(Object array, int ndims, int lengths[],
                                  int type){
@@ -931,16 +1069,18 @@ public class NexNode implements NxNode{
     char c = 0;
     int n = 0;
     int N = 0;
-    String S = "";;
+    int[] initslabElement=null,rank=null;
+    String S = "";
+    int[] dim=null;
     while( c != 'x' ){
       System.out.println("Select Option Desired" );
-      System.out.println("  n: Enter number argument         1.Act->Node1");
-      System.out.println("  N: Enter 2nd Number arguemt      2. Act->Node2");
-      System.out.println("  s: enter string argument         3. Node1->Act");
-      System.out.println("  S: show this node                4. Node2->Act");
+      System.out.println("  n: Enter number argument         d.show dim");
+      System.out.println("  N: Enter 2nd Number arguemt      r.set rank for get slab");
+      System.out.println("  s: enter string argument         b. getslab");
+      System.out.println("  S: show this node                i. initial getslab");
       System.out.println("  a: Show number of Attributes     E.error?");
-      System.out.println("  A: show the nth attribute        5.Nodelists");
-      System.out.println("  c:Show number of children        6.GetNodeValue");
+      System.out.println("  A: show the nth attribute        5.GetNodeValue");
+      System.out.println("  c:Show number of children        6.GetNodeValue1");
       System.out.println("  C: Show and set ith child        7.Compare links");
       System.out.println("  p: open parent new node ");
       try{
@@ -997,23 +1137,25 @@ public class NexNode implements NxNode{
       }else if( c == 'E' ){
         System.out.println( "Error=" + NN.getErrorMessage() );
       }else if( c == '5' ){
-        NN.showVectors();
-        System.out.println( "-----------Node1" );
-        Node1.showVectors();
-      }else if( c == '1' ){
-        Node1 = NN;
-      }else if( c == '2' ){
-        Node2 = NN;
-      }else if( c == '3' ){
-        NN = Node1;
-      }else if( c == '4' ){
-        NN = Node2;
-      }else if( c == '6' ){
         Object X = NN.getNodeValue();
+        System.out.println("Value="+ StringUtil.toString( X, false));
+      }else if( c == 'd' ){
+          dim = NN.getDimension();
+         System.out.println("dimension ="+StringUtil.toString( dim,false ));
+      }else if( c == 'r' ){
+        rank = NN.getRank();
+      }else if( c == 'b' ){
+          Object O = NN.getSlab(dim, rank, initslabElement);
+         System.out.println("slab ="+ StringUtil.toString( O,false));
+
+      }else if( c == 'i' ){
+         initslabElement = NN.getRank();
+      }else if( c == '6' ){
+        Object X = NN.getNodeValue1();
         
         if( ( NN != null ) && ( X != null ) ){
           System.out.println( "Class&Val=" + X.getClass() );
-          System.out.println( StringUtil.toString( X ) );
+          System.out.println( StringUtil.toString( X, false ) );
         }else
           System.out.println( "Check error message please" );
       }else if( c == '7' ){
@@ -1026,4 +1168,50 @@ public class NexNode implements NxNode{
       }
     }
   }
+ /**
+   * elements in rank must be more than 0
+   */
+ public Object getSlab( int[] dim, int[] rank, int[] initslabElement){
+     System.out.println("dim,rank,init, array length="+StringUtil.toString(dim)+
+             StringUtil.toString(rank)+StringUtil.toString(initslabElement));
+    float[] array = new float[arrayProd( rank)];
+   System.out.println( array.length);
+   if(array.length < 1) return array;
+    try{
+    NF.getslab( initslabElement, rank, array);
+    return array;
+   }catch( Exception ss){System.out.println("Slab exception="+ss.toString());return null;}
+ }
+ private int arrayProd( int[] ar){
+   int Prod =1;
+   if( ar == null) return 0;
+   if( ar.length < 1) return 0;
+   for( int i = 0; i < ar.length; i++)
+     
+       Prod = Prod*ar[i];
+
+   return Prod;
+  
+ }
+ public int[] getRank(){
+   int[] Res = new int[20];
+   int k = 0;
+   String S = readLine();
+   S=S.trim();
+   int i = S.indexOf( ' ');
+   if( (i < 0) &&( S.length() > 0))
+     i = S.length();
+   while( i > 0){
+     Res[k] = (new Integer( S.substring(0,i).trim())).intValue();
+     k++;
+     S = S.substring( i).trim();
+
+     i = S.indexOf( ' ');
+     if( (i < 0) &&( S.length() > 0))
+       i = S.length();
+   }
+   int[] R = new int[k];
+   System.arraycopy( Res,0, R,0,k);
+   return R;
+ }
 }
