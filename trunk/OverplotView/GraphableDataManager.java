@@ -10,6 +10,10 @@ package OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.7  2001/08/30 14:41:03  dennis
+ * Changed the title of a line to the Group_ID
+ * not its index. (Ruth)
+ *
  * Revision 1.6  2001/08/15 18:29:15  rmikk
  * If no Data blocks are selected, A screen with that message
  *     appears.
@@ -279,7 +283,8 @@ public class GraphableDataManager
 
         FloatAttribute offset_attr = new FloatAttribute( GraphableData.OFFSET,
                                                          0.0f );
-        String name_str = new String( "Group # " + i );
+        String name_str = new String( "Group # " + 
+                getDataSet().getData_entry(i).getGroup_ID() );
         StringAttribute name_attr = new StringAttribute( GraphableData.NAME,
                                                          name_str );
         ColorAttribute color_attr = new ColorAttribute( GraphableData.COLOR,
