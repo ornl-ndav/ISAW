@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/03/11 01:47:29  bouzekc
+ *  Removed debug statement.
+ *
  *  Revision 1.15  2004/03/11 01:45:25  bouzekc
  *  Added javadocs.
  *
@@ -119,7 +122,6 @@ public class ChoiceListPG extends ChooserPG {
    */
   public ChoiceListPG( String name, Object value, boolean valid ) {
     super( name, value, valid );
-    System.out.println( "CHOICELIST " + value.getClass(  ) );
     this.setType( TYPE );
 
     if( value != null ) {
