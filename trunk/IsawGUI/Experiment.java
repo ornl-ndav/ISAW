@@ -3,6 +3,11 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.5  2001/07/25 19:16:07  neffk
+ * added functionality to 'setUserObject()' to add single DataSet
+ * objects in hopes that it would generate the appropriate redraw
+ * events.
+ *
  * Revision 1.4  2001/07/25 15:53:47  neffk
  * added a new constructor to create an empty Experiment.  also changed
  * the setUserObject function to only reset the Experiment when passed
@@ -169,6 +174,7 @@ public class Experiment
    */
   public void insert( MutableTreeNode child, int index )
   {
+    child.setParent( this );
     dataset_nodes.insertElementAt( child, index );
   }
 
@@ -223,6 +229,17 @@ public class Experiment
    */
   public void setUserObject( Object obj )
   {
+                        //add to this container
+    if( obj instanceof DataSet )
+    {
+      DataSet ds = (DataSet)obj;
+      DataSetMutableTreeNode node = new DataSetMutableTreeNode( ds );
+      node.setParent( this );
+      dataset_nodes.addElement( node );
+      return;
+    }
+     
+
     DataSet[] dss = (DataSet[])obj;
     dataset_nodes = new Vector();
    
