@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.68  2003/08/14 18:59:14  bouzekc
+ * Moved some object creation out of a loop.
+ *
  * Revision 1.67  2003/07/29 21:04:02  bouzekc
  * Moved writeASCII() into DataSetTools.utilTextWriter.  An error file is
  * now printed when a wsf file load operation fails.  Now uses TextWriter
@@ -910,6 +913,8 @@ public abstract class Wizard implements PropertyChangeListener {
   protected void exec_forms( int end ) {
     modified = true;
 
+    Object worked = null;
+
     Form f;
 
     // execute the previous forms
@@ -921,7 +926,7 @@ public abstract class Wizard implements PropertyChangeListener {
         formProgress.setValue( 0 );
         formProgress.setString( "Executing " + f );
 
-        Object worked = f.getResult(  );
+        worked = f.getResult(  );
 
         if( 
           ( worked instanceof ErrorString ) ||
