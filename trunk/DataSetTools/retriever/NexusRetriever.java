@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/12/15 00:52:50  rmikk
+ * Implements the hasInformation interface so more information on the datasets
+ * in a file can be returned before retrieving the whole data set
+ *
  * Revision 1.10  2003/10/20 16:41:53  rmikk
  * Fixed javadoc error
  *
@@ -51,7 +55,7 @@ import NexIO.*;
 
 /**  Class used to Retrieve local nexus files
  */
-public class NexusRetriever extends Retriever
+public class NexusRetriever extends Retriever implements hasInformation
 {ExtGetDS ext ;
  String errormessage ;
  NxNode node ;
@@ -125,6 +129,20 @@ public class NexusRetriever extends Retriever
            return RemoteDataRetriever.BAD_FILE_NAME;
        return nsets ;
       }
+
+   /**
+     *  Returns info in the form for selecting this data set
+     * @param  data_set_num  the number of the data set
+     * @return an array of Strings where the first is the data set name,
+     *         the second is the data set type( monitor,sample) and the
+     *         third is the string description of a range of default GroupID'x
+     *         for this data set.
+     * @see #getType()
+     */
+   public String[] getDataSetInfo( int data_set_num){
+      return ext.getDataSetInfo( data_set_num);
+   }
+
 
   /**
   * Returns any errormessages or "" if there are no errors or warnings
