@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/06/12 22:39:42  bouzekc
+ *  Fixed bug where an array of DataSets was not returned
+ *  properly in getValue().  Added code to complete the
+ *  setEnabled() method.
+ *
  *  Revision 1.9  2003/06/12 21:54:22  bouzekc
  *  Fixed class cast problem in setValue().  Changed non-class
  *  "value" variables to "val" to avoid confusion.
@@ -73,6 +78,7 @@ import java.util.Vector;
 import DataSetTools.components.ParametersGUI.HashEntry;
 import javax.swing.JLabel;
 import javax.swing.*;
+import DataSetTools.dataset.DataSet;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -170,6 +176,13 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString{
      */
     public Object getValue(){
        // return this.value;
+       
+       //Vector of DataSets
+       if( (value != null) && 
+           (value.size() > 0) &&
+           (value.elementAt(0) instanceof DataSet) )
+         return this.value;
+
         Object val=null;
         if(this.initialized){
             String StringValue=((JTextField)this.entrywidget).getText();
@@ -232,6 +245,10 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString{
      * cannot be changed from the GUI.
      */
     public void setEnabled(boolean enabled){
+      this.enabled=enabled;
+      if(this.getEntryWidget()!=null){
+        ((JTextField)this.entrywidget).setEditable(enabled);
+      }
     }
 
     /**
