@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/08/21 15:46:55  rmikk
+ *   If there are no selected Groups the pointed At group or if none,group 0 is selected
+ *
  *  Revision 1.6  2002/07/26 22:01:51  rmikk
  *  Replaced the null for the state in the TimeSliceView with
  *    the state variable.
@@ -134,8 +137,15 @@ public class TableViewMenuComponents
      if(view_type.indexOf("x,Row vs Col y")==0)
        return (DataSetViewer)(new TimeSliceView( DS, state));
     if( DS.getSelectedIndices().length<1)
-       {DataSetTools.util.SharedData.addmsg("No data sets selected");
-        return null;
+       {//DataSetTools.util.SharedData.addmsg("No data sets selected");
+        if( DS == null)
+           return null;
+        if( DS.getNum_entries() <=0)
+           return null;
+        int indx = DS.getPointedAtIndex();
+        if( indx == DataSet.INVALID_INDEX)
+          indx = 0;
+        DS.setSelectFlag(indx, true);
        }
     if( view_type.indexOf("Group x vs y")==0)
       return new TableView( DS, state,"HGT,F");//tv.getGenTableModel( DS,LM,"HGT,F",DS.getSelectedIndices() ));
