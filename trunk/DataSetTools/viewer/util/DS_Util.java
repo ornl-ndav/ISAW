@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/06/04 22:42:24  dennis
+ *  Added getData_ID_String() to construct border labels for the
+ *  graphs in ImageView and GraphView
+ *
  *  Revision 1.3  2001/04/26 14:38:57  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -148,5 +152,41 @@ public final class DS_Util implements Serializable
     return max_bins;
   }
 
+
+  /**
+   *  Get an identifing string for a Data block in a DataSet, based on the
+   *  last sort that was performed.
+   *
+   *  @param ds    The DataSet containing the Data block to identify
+   *  @param index The index of the Data block in the DataSet
+   *
+   *  @return An identifying string for the specified Data block. 
+   */
+  public static String getData_ID_String( DataSet ds, int index )
+  {
+    if ( index < 0 || index >= ds.getNum_entries() )
+      return "ID_";
+
+    Data data = ds.getData_entry( index );
+
+    String s = "ID_" + data.getGroup_ID();
+
+    String time = (String)(data.getAttributeValue(Attribute.UPDATE_TIME));
+    if ( time != null )
+      s += ", " + time;
+
+    String sort_name = ds.getLastSortAttribute();
+    Object obj = data.getAttributeValue( sort_name );
+    if ( obj == null )
+      return s;
+
+    s += ", " + sort_name + " " + obj.toString();
+
+    if ( data.isSelected() )
+      s += " (Selected)";
+
+    return s;
+  }
+  
 
 } 
