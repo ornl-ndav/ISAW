@@ -1,8 +1,19 @@
 /*
- * @(#)JCommandGUI.java     1.0  99/09/02  Alok Chatterjee
+ * $Id$
  *
+ * $Log$
+ * Revision 1.11  2001/07/31 19:38:16  neffk
+ * the setTab() method now inserts a tab at index zero (0) instead
+ * of adding it on the end of the list.  this has the added effect
+ * of popping the new tab to the top.  however, this is a poor
+ * solution... if the tabs are arranged in some other order, this won't
+ * actually bring the new tab up the surface. also, if the menu item
+ * that invlokes new live data servers should check if this one exists
+ * and if it does, just pop the tab to the front instead of tring to
+ * make a second.  there are some additional formatting changes, also.
+ *
+ * -----------
  * 1.0  99/09/02  Added the comments and made this a part of package IsawGUI
- * 
  */
  
 package IsawGUI;
@@ -24,14 +35,13 @@ import java.util.*;
 import IPNS.Runfile.*;
 import javax.swing.border.*;
 import Command.*;
+
+
 /**
  * The class that displays various JTabbed panes containing 
  * different information. Presently contains logtree, detector info, 
  * System info and a command pane to run macro scripts.
- *
- * @version 1.0  
  */
-
 public class JCommandUI  extends JPanel  implements IObserver, Serializable
 {
      private JTree logTree;
@@ -50,14 +60,14 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
          /** @associates <{IsawGUI.JCommandUI}> */
         // private com.sun.java.util.collections.TreeSet lnkJCommandUI;
      
-	 public JCommandUI(CommandPane cp, Document sessionLog, JPropertiesUI jpui)
-	 {
+  public JCommandUI(CommandPane cp, Document sessionLog, JPropertiesUI jpui)
+  {
 
           this.sessionLog = sessionLog;
          JTextArea sessiontext = new JTextArea(sessionLog);
          sessiontext.setEditable(false);
          JScrollPane njsp = new JScrollPane(sessiontext);
-	    setLayout(new GridLayout(1,1));
+     setLayout(new GridLayout(1,1));
         root = new DefaultMutableTreeNode("TreeLog");
         model = new DefaultTreeModel(root);
         String server_name = System.getProperty("Inst1_Path");
@@ -70,33 +80,33 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
         JScrollPane pp = new JScrollPane(jpui.getPropsTable());
         JScrollPane pane = new JScrollPane(logTree);
         //setBorder(new BevelBorder (BevelBorder.RAISED));
-			setBorder(new CompoundBorder(new EmptyBorder(4,4,4,4), new EtchedBorder (EtchedBorder.RAISED)));
+   setBorder(new CompoundBorder( new EmptyBorder(4,4,4,4), 
+                                                      new EtchedBorder (EtchedBorder.RAISED)));
 
 
         Runtime rt = Runtime.getRuntime();         
-	    textArea = new JTextField("Build Date: unknown\n"
-                                     +"Total JVM Memory in bytes = "+ rt.totalMemory()+"\n"
-	                             +"Free JVM Memory in bytes = "+ rt.freeMemory()+"\n"
-	                             +"\n"
-	                             +"Java Version = "+ System.getProperty("java.version") +"\n"
-	                             +"Java Vendor = "+ System.getProperty("java.vendor") +"\n"
-	                           //  +"Java Vendor URL = "+ System.getProperty("java.version.url") +"\n"
-	                           //  +"Java Home = "+ System.getProperty("java.version.home") +"\n"
-	                             +"Java Class Version = "+ System.getProperty("java.class.version")+"\n"
-	                             +"Java ClassPath = "+ System.getProperty("java.class.path") +"\n"
-	                             +"Java Home = "+ System.getProperty("java.home") +"\n"
-	                             +"\n"
-	                             +"User Home = "+ System.getProperty("user.home") +"\n"
-	                             +"User Directory = "+ System.getProperty("user.dir") +"\n"
-	                             +"User Name = "+ System.getProperty("user.name") +"\n"
-	                             +"\n"
-	                             +"File Separator= "+ System.getProperty("file.separator")+"\n"
-	                             +"Path Separator= "+ System.getProperty("path.separator")+"\n"
-	                             +"\n"
-	                             +"Operating System Name= "+ System.getProperty("os.name")+"\n"
-	                             +"Operating System Architecture= "+ System.getProperty("os.arch")+"\n"
-	                             +"Operating System Version= "+ System.getProperty("os.version")
-	                             );
+     textArea = new JTextField(
+       "Build Date: unknown\n" +
+       "Total JVM Memory in bytes = "+ rt.totalMemory() + "\n" +
+       "Free JVM Memory in bytes = "+ rt.freeMemory() + "\n" +
+       "\n" +
+       "Java Version = "+ System.getProperty("java.version") + "\n" +
+       "Java Vendor = "+ System.getProperty("java.vendor") + "\n" +
+       "Java Class Version = "+ System.getProperty("java.class.version") + "\n" +
+       "Java ClassPath = "+ System.getProperty("java.class.path") + "\n" +
+       "Java Home = "+ System.getProperty("java.home") + "\n" +
+       "\n" +
+       "User Home = "+ System.getProperty("user.home") + "\n" +
+       "User Directory = "+ System.getProperty("user.dir") + "\n" +
+       "User Name = "+ System.getProperty("user.name") + "\n" +
+       "\n" +
+       "File Separator= "+ System.getProperty("file.separator") + "\n" +
+       "Path Separator= "+ System.getProperty("path.separator") + "\n" +
+       "\n" +
+       "Operating System Name= "+ System.getProperty("os.name") + "\n" +
+       "Operating System Architecture= "+ System.getProperty("os.arch") + "\n" +
+       "Operating System Version= "+ System.getProperty("os.version")
+     );
       
         JScrollPane ta = new JScrollPane(textArea);
        
@@ -108,37 +118,46 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
         jtp.addTab("Session Log", njsp);
         jtp.addTab("System Props", ta);
         jtp.addTab("Det Info", sp);
-	  jtp.addTab("Scripts", cp);
+   jtp.addTab("Scripts", cp);
 
    //  for (int i=0; i<tab_names.length; i++)
-	 //   {
-	  //      String attr = tab_names[i];
-	       
-	  //       tab_titles.addElement(attr);
-	  //  }
+  //   {
+   //      String attr = tab_names[i];
+        
+   //       tab_titles.addElement(attr);
+   //  }
 
 //System.out.println("Tab names   " +tab_titles);
         add(jtp);
-	 }
+  }
 
 
-	 public void setTab(String tab_title, JPanel obj)
-       {
-          jtp.addTab(tab_title, obj);
-       }
-
-      	 public void setTab(String tab_title, JScrollPane obj)
-       {
-          jtp.addTab(tab_title, obj);
-       }
-
+  /**
+   * adds a tab and pops it up to the front.
+   */ 
+  public void setTab( String tab_title, JPanel obj )
+  {
+//    jtp.addTab(tab_title, obj);
+    jtp.insertTab( tab_title, null, obj, null, 0 );
+  }
 
 
-	 public void showLog(DataSet ds)
-	 {
-		if(ds == current_ds)    //Only draw the log for a different dataset.
-			return;
-		current_ds = ds; 
+  /**
+   * adds a tab and pops it up to the front.
+   */ 
+  public void setTab( String tab_title, JScrollPane obj )
+  {
+//    jtp.addTab(tab_title, obj);
+    jtp.insertTab( tab_title, null, obj, null, 0 );
+  }
+
+
+
+  public void showLog(DataSet ds)
+  {
+  if(ds == current_ds)    //Only draw the log for a different dataset.
+   return;
+  current_ds = ds; 
             DefaultMutableTreeNode level1 = new DefaultMutableTreeNode(ds); 
             if(root.getChildCount()>0)
              {
@@ -157,10 +176,10 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
                 logTree.expandRow(i);
                 logTree.expandRow(1);
             }
-	 }	 
-	 
-	 public JTable showDetectorInfo(DataSet ds)
-	 {
+  }  
+  
+  public JTable showDetectorInfo(DataSet ds)
+  {
                
             try{
                     // System.out.println("No. of entries = "+ds.getNum_entries());
@@ -168,16 +187,16 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
                        Object[][] detParamList = new Object[ds.getNum_entries()][7];
                     
         
-      			for (int i = 0; i < ds.getNum_entries(); i++) 
+         for (int i = 0; i < ds.getNum_entries(); i++) 
                         {
                             AttributeList  attr_list = ds.getData_entry(i).getAttributeList();
                            
-				    detParamList[i][0] = new 				    Integer(((Integer)(attr_list.getAttributeValue(Attribute.GROUP_ID))).intValue());
-                            detParamList[i][1] = new 				    Float(((Float)(attr_list.getAttributeValue(Attribute.RAW_ANGLE))).floatValue());
-                            detParamList[i][2] = new 				    Float(((Float)(attr_list.getAttributeValue(Attribute.INITIAL_PATH))).floatValue());
+        detParamList[i][0] = new         Integer(((Integer)(attr_list.getAttributeValue(Attribute.GROUP_ID))).intValue());
+                            detParamList[i][1] = new         Float(((Float)(attr_list.getAttributeValue(Attribute.RAW_ANGLE))).floatValue());
+                            detParamList[i][2] = new         Float(((Float)(attr_list.getAttributeValue(Attribute.INITIAL_PATH))).floatValue());
                             
                           
-      			//   detParamList[i][3] = new 
+         //   detParamList[i][3] = new 
 //Float(((Float)(attr_list.getAttributeValue(Attribute.NUM_CHANNELS))).floatValue());
       //                      detParamList[i][4] = new //Float(((Float)(attr_list.getAttributeValue(Attribute.TOTAL_COUNT))).floatValue());
                             
@@ -186,50 +205,49 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
     
                        }
 
-	String[] columnHeading = {"ID", "Raw Angle", "Flight Path",//"Start:Time(ms)", "End:Time(ms)"
-				              //         , "Number of Channels", "Total Count"
-							};
-		DefaultTableModel dtm = new DefaultTableModel(detParamList, columnHeading);
-		table.setModel(dtm);
-		table.setSize( 200, 200 );
+ String[] columnHeading = {"ID", "Raw Angle", "Flight Path",//"Start:Time(ms)", "End:Time(ms)"
+                  //         , "Number of Channels", "Total Count"
+       };
+  DefaultTableModel dtm = new DefaultTableModel(detParamList, columnHeading);
+  table.setModel(dtm);
+  table.setSize( 200, 200 );
       
             }
             
              catch(Exception e){};
-		ExcelAdapter myAd = new ExcelAdapter(table);
+  ExcelAdapter myAd = new ExcelAdapter(table);
 
 
              return (JTable)table;  
-	 }
+  }
 
 
-	public void update( Object observed, Object reason )
-   	{
-			// System.out.println("Inside update in JCommandUI");
-     		if ( !( reason instanceof String) )   // currently we only allow Strings
-     		{
-       	//	 System.out.println("Error: Tree update called with wrong reason");
-       		return;
-     		}
+  public void update( Object observed, Object reason )
+  {
+   // System.out.println("Inside update in JCommandUI");
+    if ( !( reason instanceof String) )   // currently we only allow Strings
+    {
+//      System.out.println("Error: Tree update called with wrong reason");
+      return;
+    }
  
-     		if ( observed instanceof DataSet )             
-     		{
-			DataSet ds = (DataSet)observed;
-      		// System.out.println("Update in CommandUI is called :"+ds.toString());
+    if( observed instanceof DataSet )             
+    {
+      DataSet ds = (DataSet)observed;
+//      System.out.println("Update in CommandUI is called :"+ds.toString());
 
-			if ( (String)reason == DESTROY )
-        			System.out.print("");
+    if ( (String)reason == DESTROY )
+      System.out.print("");
 
-			else if ( (String)reason == SELECTION_CHANGED )
-			  showLog(ds);
-     			else
-     			{
-       		//	System.out.println("ERROR: Unsupported Tree Update:" + reason );
-       		}
+    else if( (String)reason == SELECTION_CHANGED )
+      showLog(ds);
 
-      		return; 
-     		}          	
-   	}
+    else
+//      System.out.println("ERROR: Unsupported Tree Update:" + reason );
+
+      return; 
+    }           
+  }
 
 
 }
