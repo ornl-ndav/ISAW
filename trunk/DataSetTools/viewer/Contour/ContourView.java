@@ -36,6 +36,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/07/24 23:01:06  rmikk
+ *  Fixed code so the Contour display moves with outside
+ *    POINTED_AT events
+ *
  *  Revision 1.7  2002/07/24 15:24:25  rmikk
  *  Fixed so input POINTED_AT events do not send out
  *    POINTED_AT events.
@@ -681,17 +685,19 @@ public class ContourView extends DataSetViewer
             try
             {
                int i = new Integer( event.getActionCommand() ).intValue();
-               if( sliderTime_index == i)
-                 return;
+               //if( sliderTime_index == i)
+               //  return;
                
                if( i < 0 ) 
                  i=0;
                else if( i >= times.length )
                   i = times.length -1;;
-               sliderTime_index = i;
+               
                SimpleGrid newData1 = ( SimpleGrid )( cd.getSGTData( times[i] ) );
                data_set.setPointedAtX( times[i]);
-               data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+               if( sliderTime_index != i)
+                  data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+               sliderTime_index = i;
                ( ( SimpleGrid )newData ).setZArray( newData1.getZArray() );
                rpl_.draw();
 
@@ -758,7 +764,7 @@ public class ContourView extends DataSetViewer
       }
    }
 
-   private int getPointedAtXindex()
+   public int getPointedAtXindex()
      {float X = getDataSet().getPointedAtX();
       int index = java.util.Arrays.binarySearch( times, X);
       if( index < 0)
