@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.27  2003/09/11 21:21:30  bouzekc
+ * Updated to work with new Form class.
+ *
  * Revision 1.26  2003/07/09 23:06:26  bouzekc
  * Now uses validateParameterGUIs() in getResult().
  *
@@ -394,7 +397,7 @@ public class OperatorForm extends Form implements HiddenOperator {
     }
 
     //return early if we can't validate the parameters
-    Object allValid = super.validateParameterGUIs(  );
+    Object allValid = validateSelf(  );
 
     if( allValid instanceof ErrorString ) {
       return errorOut( allValid.toString(  ) );
