@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2004/04/01 01:28:27  bouzekc
+ *  Fixed javadoc comments.
+ *
  *  Revision 1.34  2004/03/12 21:13:48  bouzekc
  *  Added clear() method.
  *
@@ -199,7 +202,7 @@ public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
    * Creates a new BrowsePG object.
    *
    * @param name The name.
-   * @param value The initial value.
+   * @param val The initial value.
    */
   public BrowsePG( String name, Object val ) {
     super( name, val );
@@ -210,7 +213,7 @@ public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
    * Creates a new BrowsePG object.
    *
    * @param name The name.
-   * @param value The initial value.
+   * @param val The initial value.
    * @param valid Whether this PG should be considered initially valid.
    */
   public BrowsePG( String name, Object val, boolean valid ) {
