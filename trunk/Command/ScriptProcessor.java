@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2003/02/24 13:28:17  rmikk
+ * Improved update method to allow scripts to send values to
+ *    variables.  For use in wizards
+ *
  * Revision 1.26  2003/02/19 16:50:25  pfpeterson
  * Now passes the default value to the parameter that is created for
  * DataDirectoryString, LoadFileString, SaveFileString, and
@@ -1302,8 +1306,11 @@ public class ScriptProcessor  extends ScriptProcessorOperator
      *
      *@see DataSetTools.util.IObserver
      */ 
-    public  void   update(  Object observed_obj ,  Object reason ){
-        OL.notifyIObservers( this  ,  reason  );
+    public void update(  Object observed_obj ,  Object reason ){
+       if( !(reason instanceof String))
+          OL.notifyIObservers( this  ,  reason  );
+       else
+          OL.notifyIObservers( observed_obj, reason);
     }
 
     /**
