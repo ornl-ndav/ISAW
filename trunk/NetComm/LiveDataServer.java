@@ -34,6 +34,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2001/08/07 21:30:59  dennis
+ *    Removed command to get DS_TYPE and get NUM_DS... now only uses
+ *  get DS_TYPES, for the whole list of types.  This is simpler,
+ *  reduces the number of requests needed and allows LiveDataServer
+ *  and FileDataServer to handle the same requests.
+ *
  *  Revision 1.12  2001/08/03 21:32:00  dennis
  *  Now derives from DataSetServer/TCPServer, to provide user name,
  *  password and logging features.
@@ -309,26 +315,16 @@ public class LiveDataServer extends    DataSetServer
       System.out.println("Received request " + command );
       try
       {
-        if (  command.equalsIgnoreCase( COMMAND_GET_NUM_DS ) )
+        if (  command.startsWith( COMMAND_GET_DS_TYPES ) )
         {
-          System.out.println("Processing GET NUM DS " + command );
-          tcp_io.Send( new Integer( data_set.length ) );
-        }
-
-        else if ( command.startsWith( COMMAND_GET_DS_TYPE ) )
-        {
-          System.out.println("Processing GET DS TYPE " + command );
-          int index = extractIntParameter( command );
-
-          if ( index >= 0 && index < ds_type.length )
-            tcp_io.Send( new Integer( ds_type[ index ] ) );
-          else
-            tcp_io.Send( new Integer( Retriever.INVALID_DATA_SET ) );
+          int types[] = new int[ ds_type.length ];
+          for ( int i = 0; i < types.length; i++ )
+            types[i] = ds_type[i];
+          tcp_io.Send( types );
         }
 
         else if ( command.startsWith( COMMAND_GET_DS ) )
         {
-          System.out.println("Processing GET DS " + command );
           int index = extractIntParameter( command );
 
           if ( index >= 0 && index < ds_type.length )   // valid DataSet index
@@ -339,10 +335,8 @@ public class LiveDataServer extends    DataSetServer
 
             if ( ds != null )                           // remove observers
             {                                           // before sending
-              System.out.println("Trying to send " + ds );
               ds.deleteIObservers(); 
               tcp_io.Send( ds  );
-              System.out.println("Finished sending " + ds );
             }
             else                                       
               tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
