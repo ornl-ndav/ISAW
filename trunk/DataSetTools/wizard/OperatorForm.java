@@ -29,6 +29,10 @@
  *
  *
  * $Log$
+ * Revision 1.30  2003/10/29 02:48:59  bouzekc
+ * Redesign.  Now uses its own parameter list, with the result parameter as the
+ * parameter.  Removed several methods that became obsolete with this change.
+ *
  * Revision 1.29  2003/10/15 03:38:05  bouzekc
  * Fixed javadoc errors.
  *
@@ -240,45 +244,53 @@ public class OperatorForm extends Form implements HiddenOperator {
       result_param = new StringPG( "Result", null, false );
     }
 
-    //set the variable parameters length and indices
-    int num_params;
+    //acquire the number of internal operator parameters
+    int numOpParams;
+    numOpParams = form_op.getNum_parameters(  );
 
     //set the variable parameters length and indices
     int[] var_indices;
 
-    num_params = form_op.getNum_parameters(  );
-
-    boolean isConstant = false;
-
+    //if we are told that we have constant parameters, determine the indices of
+    //the parameters that are variable.  Otherwise, consider them all variable.
     if( HAS_CONSTANTS ) {
-      var_indices = new int[num_params - constIndices.length];
+      var_indices = new int[numOpParams - constIndices.length];
     } else {
-      var_indices = new int[num_params];
+      var_indices = new int[numOpParams];
     }
 
+    boolean curParamIsConstant = false;
+
     // initialize the variable indices and tell parameters to show valid
-    for( int i = 0; i < num_params; i++ ) {
+    for( int i = 0; i < numOpParams; i++ ) {
+      //if we have constant parameters, set up the storage for them
       if( HAS_CONSTANTS ) {
         if( temp == null ) {
           temp = new Vector( var_indices.length, 2 );
         }
 
-        isConstant = false;
+        //reset the flag that tells us if we have a constant parameter
+        curParamIsConstant = false;
 
+        //see if the current parameter index is in our constant index list
         for( int j = 0; j < constIndices.length; j++ ) {
           if( i == constIndices[j] ) {  //found a constant parameter index
-            isConstant = true;
+            curParamIsConstant = true;
 
             break;
           }
         }
 
-        if( !isConstant ) {  //non-constant parameter
+        //not a constant parameter, so add its index to the variable indices
+        //list
+        if( !curParamIsConstant ) {
           temp.add( new Integer( i ) );
         }
       }
     }
 
+    //load all of the variable parameter indices we found into the variable
+    //indices list
     if( HAS_CONSTANTS ) {
       //create an Integer array and copy it over to the variable indices
       Object[] tempIndices = temp.toArray(  );
@@ -288,23 +300,32 @@ public class OperatorForm extends Form implements HiddenOperator {
       }
     } else {  //no constant parameters
 
-      for( int i = 0; i < num_params; i++ ) {
+      for( int i = 0; i < numOpParams; i++ ) {
         var_indices[i] = i;
       }
     }
 
-    //set the parameters to be drawn
-    for( int i = 0; i < num_params; i++ ) {
+    //reference all of the internal Operator parameters to this Operator's
+    //parameters and add the result parameter
+    clearParametersVector(  );
+
+    for( int pNum = 0; pNum < numOpParams; pNum++ ) {
+      addParameter( form_op.getParameter( pNum ) );
+    }
+    addParameter( result_param );
+
+    //draw all of the internal Operator parameters and our result parameter
+    for( int i = 0; i < getNum_parameters(  ); i++ ) {
       ( ( IParameterGUI )this.getParameter( i ) ).setDrawValid( true );
     }
 
     /*set the parameter types so we can build the GUI
        the result parameter is one after the last variable parameter
-       and so we'll set it to num_params.*/
+       and so we'll set it to numOpParams.*/
     if( HAS_CONSTANTS ) {
-      setParamTypes( constIndices, var_indices, new int[]{ num_params } );
+      setParamTypes( constIndices, var_indices, new int[]{ numOpParams } );
     } else {
-      setParamTypes( null, var_indices, new int[]{ num_params } );
+      setParamTypes( null, var_indices, new int[]{ numOpParams } );
     }
   }
 
@@ -317,76 +338,6 @@ public class OperatorForm extends Form implements HiddenOperator {
       return form_op.getDocumentation(  );
     } else {
       return Operator.DEFAULT_DOCS;
-    }
-  }
-
-  /**
-   * Gets the number of parameters for this Form.
-   *
-   * @return Returns the number of parameters that this operator has.
-   */
-  public int getNum_parameters(  ) {
-    if( form_op != null ) {
-      return form_op.getNum_parameters(  ) + 1;
-    } else {
-      return 0;
-    }
-  }
-
-  /**
-   * Set the parameter at the specified index in the list of parameters for
-   * this Form.  The parameter that is set MUST have the same type of value
-   * object as that was originally placed in the list of parameters using the
-   * addParameter() method.  Typically, the "GUI" will get a parameter from
-   * the operator, change its value and then set the parameter back at the
-   * same index.
-   *
-   * @param parameter The IParameter to set.
-   * @param index The index in the list of parameters of the parameter that is
-   *        to be set.  "index" must be between 0 and the number of parameters
-   *        - 1.
-   *
-   * @return Returns true if the parameter was properly set, and returns false
-   *         otherwise.  Specifically, it returns false if either the given
-   *         index is invalid, or the specified parameter has a different data
-   *         type than the parameter at the given index.
-   */
-  public boolean setParameter( IParameter parameter, int index ) {
-    if( ( index < 0 ) || ( index >= this.getNum_parameters(  ) ) ) {
-      return false;
-    }
-
-    if( index < form_op.getNum_parameters(  ) ) {
-      return form_op.setParameter( parameter, index );
-    } else {
-      try {
-        result_param = ( IParameterGUI )parameter;
-
-        return true;
-      } catch( ClassCastException e ) {
-        return false;
-      }
-    }
-  }
-
-  /**
-   * Get the parameter at the specified index from the list of parameters for
-   * this Form.  Note: This returns a reference to the specified parameter.
-   * Consequently the value of the parameter can be altered.
-   *
-   * @param index The index in the list of parameters of the parameter that is
-   *        to be returned.  "index" must be between 0 and the number of
-   *        parameters - 1.
-   *
-   * @return Returns the parameters at the specified position in the list of
-   *         parameters for this object.  If the index is invalid, this
-   *         returns null.
-   */
-  public IParameter getParameter( int index ) {
-    if( index < form_op.getNum_parameters(  ) ) {
-      return form_op.getParameter( index );
-    } else {
-      return result_param;
     }
   }
 
@@ -413,6 +364,14 @@ public class OperatorForm extends Form implements HiddenOperator {
       }
     }
 
+    //set the value for the internal Operator's parameters to the values that
+    //we currently have for this OperatorForm.  Don't include the result
+    //parameter
+    for( int pNum = 0; pNum < ( getNum_parameters(  ) - 1 ); pNum++ ) {
+      form_op.getParameter( pNum )
+             .setValue( getParameter( pNum ).getValue(  ) );
+    }
+
     Object result = form_op.getResult(  );
 
     //Operator failed - exit out
@@ -421,7 +380,6 @@ public class OperatorForm extends Form implements HiddenOperator {
 
       return errorOut( result.toString(  ) );
     }
-
     result_param.setValue( result );
     result_param.validateSelf(  );
 
@@ -435,15 +393,6 @@ public class OperatorForm extends Form implements HiddenOperator {
   }
 
   /**
-   * Gets the internal Operator's title.
-   *
-   * @return String consisting of internal Operator's title.
-   */
-  public String getTitle(  ) {
-    return form_op.getTitle(  );
-  }
-
-  /**
    * Used to set the class type of the result parameter by passing in the type
    * (as determined by getType()) of the IParameterGUI.
    *
@@ -454,7 +403,6 @@ public class OperatorForm extends Form implements HiddenOperator {
       if( PL == null ) {
         PL = new ParameterClassList(  );
       }
-
       result_param = ( IParameterGUI )( PL.getInstance( type ) );
     } catch( ClassCastException cce ) {
       SharedData.addmsg( 
