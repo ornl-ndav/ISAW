@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2001/08/01 14:36:23  rmikk
+ * Isaw's instrument type is Now tied to the NXentry
+ * analysis field
+ *
  * Revision 1.4  2001/07/26 13:52:34  rmikk
  * Removed Dependence on NDS package
  *
@@ -172,15 +176,19 @@ public DataSet getDataSet( int data_set_num )
    Inst_Type it = new Inst_Type();
    int instrType = it.getIsawInstrNum( Analysis );
    
-   if( (Analysis == null) ||(Analysis ==""))
-     {Object OO = nd.getAttrValue( "isaw_instr_type");
-      
-     if(OO != null) if( OO instanceof int[])
-     if( Array.getLength( OO) > 0)
-       { instrType = ((int[])OO)[0];
-        
-       }
-     }
+   if( (Analysis == null) ||(Analysis =="")|| 
+       (instrType ==InstrumentType.UNKNOWN))
+     {
+
+        NxNode n2 = nd.getChildNode( "analysis");
+        if( n2 != null)            
+          { Object OO = n2.getAttrValue( "isaw_instr_type");
+	    if( OO instanceof int[])
+              if( Array.getLength( OO) ==1)
+               instrType = ((int[])OO)[0];
+           
+          }      
+         }
    
    DataSetFactory DSF = new DataSetFactory( "" ) ;
    DataSet DS = DSF.getTofDataSet(instrType) ;   
@@ -226,12 +234,16 @@ private String getAnalysis( NxNode node)
    if( !node.getNodeClass().equals("NXentry"))
       return "";
    NxNode n1 = node.getChildNode( "analysis");
-   if( n1 == null) return "";
+   if( n1 == null) 
+       return "";
    Object O = n1.getNodeValue();
+ 
    NxData_Gen ng = new NxData_Gen();
    String S = ng.cnvertoString( O);
-   if( S == null) return "";
-   else return S;
+   if( S == null) 
+       return "";
+   else 
+       return S;
   } 
 /** returns the number of datasets in this file
 */
