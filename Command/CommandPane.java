@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2001/06/25 19:25:26  rmikk
+ * Added SplitPane With State and Clearred the
+ * Status Line before every run
+ *
  * Revision 1.21  2001/06/05 16:50:35  rmikk
  * Changed props.dat to IsawProps.dat
  *
@@ -122,6 +126,7 @@ import DataSetTools.retriever.*;
 import DataSetTools.dataset.*; 
 import DataSetTools.util.*; 
 import DataSetTools.viewer.*; 
+import DataSetTools.components.containers.*;
 import DataSetTools.components.ParametersGUI.*;
 import java.awt.*; 
 import javax.swing.*; 
@@ -216,7 +221,7 @@ public void setLogDoc(Document doc)
            JP.add( Clear );
            JP.add( Help ) ; 
         
-        add( JP , BorderLayout.NORTH ) ; 
+         add( JP , BorderLayout.NORTH ) ; 
      
            Commands = new JTextArea( 7 , 50 ) ; 
            Commands.setLineWrap( true ) ; 
@@ -226,17 +231,19 @@ public void setLogDoc(Document doc)
            Immediate.addKeyListener( new MyKeyListener( this )) ;        
 	   Commands.setCaret( new MyCursor());
            Immediate.setCaret( new MyCursor());
-           JSplitPane JPS = new JSplitPane(JSplitPane.VERTICAL_SPLIT) ; 
+           //JSplitPane JPS = new JSplitPane(JSplitPane.VERTICAL_SPLIT) ; 
            //JPS.setResizeWeight( .8);
            JScrollPane X =  new JScrollPane( Commands ) ; 
            X.setBorder( new TitledBorder( "Prgm Editor" ) ) ; 
           
-           JPS.add( X ) ; 
+           //JPS.add( X ) ; 
          
-           X =  new JScrollPane( Immediate ) ; 
-           X.setBorder( new TitledBorder( "Immediate" ) ) ; 
+           JScrollPane Y =  new JScrollPane( Immediate ) ; 
+           Y.setBorder( new TitledBorder( "Immediate" ) ) ; 
         
-           JPS.add( X ) ;
+           //JPS.add( X ) ;
+           SplitPaneWithState JPS = new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT ,
+                        X , Y , .75f);              
            add( JPS , BorderLayout.CENTER); 
            X = null;
           
@@ -480,16 +487,16 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
        {CP.SP.MacroDocument = CP.Commands.getDocument();
         CP.SP.setDefaultParameters();
         if( CP.SP.getErrorCharPos() >= 0)
-          {new Util().appendDoc( CP.StatusLine.getDocument(), "setDefault Error "+CP.SP.getErrorMessage()+" at position "+
+          {new Util().appendDoc( CP.StatusLine.getDocument(), "setDefault Error "+
+                                 CP.SP.getErrorMessage()+" at position "+
                                     CP.SP.getErrorCharPos()+" on line "+CP.SP.getErrorLine()); 
            CP.SP.MacroDocument = null;
            return;
           }
         
-       
+        StatusLine.setText("");
         if( CP.SP.getNum_parameters() > 0 )
-           {//JTreeUI JT = new JTreeUI( (JPropertiesUI)null,(JCommandUI)null, CP);
-            //JT.addDataSets(CP.SP.ExecLine.getGlobalDataset(),"CCC");
+           {
              DataSetTools.components.ParametersGUI.JParametersDialog pDialog = 
                      new DataSetTools.components.ParametersGUI.JParametersDialog(CP.SP, SP.getDataSets(), new PlainDocument());
              
@@ -498,10 +505,11 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
            CP.SP.getResult();
 
         if( CP.SP.getErrorCharPos() >= 0)
-          {new Util().appendDoc( StatusLine.getDocument(), "Error "+CP.SP.getErrorMessage()+" at position "+
-                                    CP.SP.getErrorCharPos()+" on line "+CP.SP.getErrorLine()); 
+          {new Util().appendDoc( StatusLine.getDocument(), "Error "+
+                                CP.SP.getErrorMessage()+" at position "+
+                                CP.SP.getErrorCharPos()+" on line "+CP.SP.getErrorLine()); 
            CP.SP.MacroDocument = null;
-            CP.setErrorCursor( Commands, SP.getErrorLine(), SP.getErrorCharPos()); 
+           CP.setErrorCursor( Commands, SP.getErrorLine(), SP.getErrorCharPos()); 
 
            return;
           }
