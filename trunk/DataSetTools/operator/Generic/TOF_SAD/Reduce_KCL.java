@@ -1,4 +1,3 @@
-
 /*
  * File:  Reduce_KCL.java 
  *             
@@ -28,10 +27,14 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- *
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2004/03/19 20:28:16  dennis
+ * Fixed output file name in 2D case, so it uses the
+ * correct run number, not always 19990.
+ * Added correct javadocs on getResult() method.
+ *
  * Revision 1.19  2004/03/15 03:28:37  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -238,9 +241,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
     /**
      * INITIALIZE SOME COUNTERS FOR COUNTING THE EVENTS:
-     C	TOTAL, NET
+     * C TOTAL, NET
      */
-
 
     double CNTTOT = 0.0;
     double CNTNET = 0.0;
@@ -260,6 +262,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     public Reduce_KCL(){
       super("Reduce");
     }
+
     /**
     *    Constructor for Reduce_KCL.
     *    @param TransS   The sample Transmission data set
@@ -316,9 +319,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
       }
 
     public void setDefaultParameters(){
-
        parameters = new Vector();
-         addParameter( new DataSetPG("Sample Transmission DS", null));
+        addParameter( new DataSetPG("Sample Transmission DS", null));
         addParameter( new DataSetPG("Background Transmission DS", null));
         addParameter( new DataSetPG("Efficiency Data Set", null));
         addParameter( new DataSetPG("Sensitivity Data Set", null));
@@ -339,13 +341,21 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         addParameter( new IntegerPG("# Qx bins", new Integer(-1)));
         addParameter( new IntegerPG("#Qy bins", new Integer(-1)));
         addParameter( new BooleanPG("", new Boolean( true)));
-
     }
+
   /* ---------------------------- getResult ------------------------------- */
-    
-    /**  Executes the operator using the parameters that were set up
-     *@return  "Success" if there were no errors otherwise  the ErrorString
-     *             "No Data Set Selected" is returned.<P>
+    /**  
+     *  Builds three DataSets containing the corrected scattering results
+     *  for the sample, background and sample minus background, respectively.
+     *  These DataSets are returned in a java Vector.   If either of the
+     *  "size" parameters NQxBins or NQyBins are less than 1, the one
+     *  dimensional S(Q) will be calculated and returned in the three
+     *  DataSets.  If both NQxBins and NQyBins are at least 1, then the
+     *  two dimensional S(Qx,Qy) will be calculated instead.
+     *
+     *  @return The vector of three DataSets will be returned if 
+     *          no errors are encountered, otherwise an ErrorString
+     *          will be returned. 
      *
      *NOTE: A SelectedGraph View will also pop up
      */
@@ -394,6 +404,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
             IF2D = 0;
         else
             IF2D = 1;
+
         MaxSlice = RUNSds[1].getData_entry(0).getX_scale().getXs().length;
         this.TransS = TransS;
         this.TransB = TransB;
@@ -412,9 +423,12 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         RUNS = (((IntListAttribute) (RUNSds[0].getAttribute(Attribute.RUN_NUM))).getIntegerValue())[0];
 
         RUNB = (((IntListAttribute) (RUNBds[0].getAttribute(Attribute.RUN_NUM))).getIntegerValue())[0];
+
         if( RUNCds != null)
           RUNC = (((IntListAttribute) (RUNCds[0].getAttribute(Attribute.RUN_NUM))).getIntegerValue())[0];
-        else RUNC = -1;
+        else
+          RUNC = -1;
+
         ITEMP[1] = LTEMP;
         sdt[1] = sdt[1];
         edt[1] = edt[1];
@@ -433,14 +447,9 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         /***
          * INITIALIZE
          */
-
-
         int IUI = 5;
-
         OUTUNIT = 9;
-
         HISTNUM = 1;
-
         IFDELAY = 1;
         ANSDN = "Y";
 
@@ -461,6 +470,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
  
         if (BETADN > 0) 
             IFDELAY = 1;
+
         IFNONLIN = 0;
 
         /**
@@ -504,6 +514,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         YDIM = grid.height();
         double SFX = XDIM / NUMX;
         double SFY = YDIM / NUMY;
+
         for( int i=0;i<1;i++){
           tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNSds[0].getData_entry(
                MonitorInd[i]),30f, BETADN);
@@ -513,6 +524,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
           tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNCds[0].getData_entry(
                MonitorInd[i]),30f, BETADN);
          }      
+
         for( int i=0; i< RUNSds[1].getNum_entries(); i++){
           tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNSds[1].getData_entry(
                i),30f, BETADN);
@@ -521,26 +533,28 @@ public class Reduce_KCL  extends GenericTOF_SAD{
           
           tof_data_calc.SubtractDelayedNeutrons((TabulatedData) RUNCds[1].getData_entry(
                i),30f, BETADN);
-
          }
        
         float[] tofs=RUNSds[1].getData_entry(NUMX * NUMY / 2).getX_scale().getXs();
         tofs = cnvertToWL(tofs, (XAxisConversionOp)RUNSds[1].
                  getOperator("Convert to WaveLength"),NUMX*NUMY/2);
-        if( tofs[0] > tofs[1]) Reverse(tofs);
+
+        if( tofs[0] > tofs[1]) 
+          Reverse(tofs);
+
         xscl = new VariableXScale( tofs);
         
-       ConvertToWL( RUNSds[0],xscl);
-       ConvertToWL( RUNSds[1],xscl);
-       System.gc();
-       ConvertToWL( RUNBds[0],xscl);
-       ConvertToWL( RUNBds[1],xscl);
-       System.gc();
-       ConvertToWL( RUNCds[0],xscl);
-       ConvertToWL( RUNCds[1],xscl);
-       System.gc();
+        ConvertToWL( RUNSds[0],xscl);
+        ConvertToWL( RUNSds[1],xscl);
+        System.gc();
+        ConvertToWL( RUNBds[0],xscl);
+        ConvertToWL( RUNBds[1],xscl);
+        System.gc();
+        ConvertToWL( RUNCds[0],xscl);
+        ConvertToWL( RUNCds[1],xscl);
+        System.gc();
       
-       LAMBDA = xscl.getXs();
+        LAMBDA = xscl.getXs();
         this.SCALE = this.SCALE / THICK;
 
         /**
@@ -550,23 +564,22 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         try {
             str1 = TITLE+" "+RUNS;
             F1.write( str1.getBytes());
-
-            
            
             str1 = TITLE+" "+RUNB;
             F1.write( str1.getBytes());
 
             if (RUNC != 0) {
-                str1 = TITLE+" "+RUNC;
-            F1.write( str1.getBytes());
-
+              str1 = TITLE+" "+RUNC;
+              F1.write( str1.getBytes());
             }
-
         } catch (IOException e) {
         }
          return init();
-       }
-      /**
+
+     } // end of getResult()
+
+
+     /**
       *    Had to do this so global variables were used in 2nd code
       */
        public Object init(){
@@ -584,12 +597,11 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         X = CalcRatios( BackGrid,CadGrid,TransB,
                RUNBds[0],RUNCds[0], SensGrid, Eff,SCALE, useTransB);
         Object Res = null;
-
         
         DataSet RelSamp = RUNSds[1];
         DataSet RelBackground = RUNBds[1];
+
         if (IF2D != 1) {
-             
 	    xscl = new VariableXScale(qu);
             
             DataSet SSampQ = SumQs( SampGrid, xscl, RUNSds[0], SensGrid, Eff);
@@ -626,7 +638,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
             V.addElement(SDifQ);
             return V;
         }
-       Res = (new DataSetSubtract(RelSamp, RelBackground, true)).getResult();
+
+        Res = (new DataSetSubtract(RelSamp, RelBackground, true)).getResult();
         if (Res instanceof ErrorString)
             return Res;
         DataSet RelDiff = (DataSet) Res;
@@ -660,8 +673,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         WTQXQY=sss(DIVx,DIVy);SQXQY=sss(DIVx,DIVy);SERRXY=sss(DIVx,DIVy);
         BQXQY=sss(DIVx,DIVy);BERRXY=sss(DIVx,DIVy);SBQXQY=sss(DIVx,DIVy); 
         SBERRXY=sss(DIVx,DIVy);;
-                
-        
         
 	int nn =0;
         float[] eff = Eff.getData_entry(0).getY_values();
@@ -697,7 +708,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 	   SampErrs = Dsamp.getErrors();
 	   BackErrs = Dback.getErrors(); 
 	   wlvals = Dsamp.getX_scale().getXs();
-   
             
 	   for( int w =0; w+1 < wlvals.length;w++){
 	      k=w;
@@ -731,8 +741,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 		         //  Qymin+","+Qy+","+Qymax);
 	      }
 	   }
-	   
-	  }//for( int i = 0; i< RelSamp.getNum_entries(); i++)
+	}//for( int i = 0; i< RelSamp.getNum_entries(); i++)
         
 	
         for( int i = 0; i < DIVx; i++)
@@ -753,19 +762,21 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 	      SBERRXY[i][j] = (float)java.lang.Math.sqrt(SBERRXY[i][j])/WTQXQY[i][j];
             }
 	  }
+
         WTQXQY = null;
         eff = effErr= Mon=MonErr = null;
         Qxy= SampYvals= BackYvals= SampErrs= BackErrs= wlvals= null;
         Dback = Dsamp = null;
         System.gc(); 
+
         Vector  V = new Vector();
-	Object O1=show( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, SQXQY,SERRXY,"s2d19990");
+	Object O1=show( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, SQXQY,SERRXY,"s2d");
         SQXQY = null;
         SERRXY = null;
         System.gc();
-	Object O2=show( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, BQXQY,BERRXY,"b2d19990");
+	Object O2=show( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, BQXQY,BERRXY,"b2d");
         BQXQY= null;BERRXY= null;
-	Object O3=show( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, SBQXQY,SBERRXY,"sn2d19990");
+	Object O3=show( Qxmin,Qymin,xDELTAQ,yDELTAQ,DIVx,DIVy, SBQXQY,SBERRXY,"sn2d");
         SBQXQY= null;SBERRXY= null;
         System.gc();
 	if( O1 instanceof ErrorString)
@@ -778,8 +789,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         V.addElement( O1); V.addElement(O2); V.addElement( O3);
         
         return V;
-
-    }//end of getResult
+    }
 
    
     public void AdjustGrid(DataSet ds, float xoff, float yoff) { 
@@ -799,10 +809,14 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         Grid_util.setEffectivePositions(ds, grid.ID());
     }
 
-public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
-    float[][] list, float[][] err, String DataSetName){
-    DataSet DS = new DataSet(DataSetName,new OperationLog(),"per Angstrom",
-          "","Rel Counts", "Rel Counts");
+    public  Object show( float Qxmin,    float Qymin, 
+                         float Dx,       float Dy, 
+                         int   Nx,       int   Ny,
+                         float[][] list, float[][] err, 
+                         String DataSetName) {
+
+    DataSet DS = new DataSet(DataSetName ,new OperationLog(), "per Angstrom",
+                             "", "Rel Counts", "Rel Counts");
     DataSetFactory.addOperators( DS);
     DS.addOperator( new GetPixelInfo_op() );
     UniformGrid grid = new UniformGrid(47,"per Angstrom",new Vector3D(0f,0f,0f),
@@ -833,7 +847,6 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
        Dat.setAttribute( new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST,
                new PixelInfoList( dpi)));
 
-
        Dat.setAttribute( new FloatAttribute( Attribute.INITIAL_PATH, 3));
        Dat.setAttribute( new FloatAttribute( Attribute.TOTAL_COUNT, yvals[0]));
        Dat.setAttribute( new IntListAttribute(Attribute.RUN_NUM, RunNums));
@@ -841,14 +854,14 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
     }
     DS.addOperator( new DataSetTools.operator.DataSet.Attribute.GetPixelInfo_op());
     DS.setAttribute( new StringAttribute(Attribute.INST_NAME,"SAND"));
-
     DS.setAttribute( new IntListAttribute(Attribute.RUN_NUM, RunNums));
+    if ( RunNums.length > 0 )
+      DS.setTitle( DS.getTitle()+RunNums[0] );
     
     grid.setDataEntriesInAllGrids( DS);
    
     Grid_util.setEffectivePositions( DS, 47);
     return DS;
-   
     }
 
     public static void main(String[] args) {
@@ -897,9 +910,8 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
         ScriptUtil.display(V.elementAt(0));
         ScriptUtil.display(V.elementAt(1));
         ScriptUtil.display(V.elementAt(2));
-       
-
     }
+
   private static Vector toVec( float[] list){
      if( list == null)
        return new Vector();
@@ -908,7 +920,6 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
          Res.addElement( new Float( list[i]));
      return Res;
   }
-
  
     
  private DataSet SumQs(UniformGrid SampGrid, XScale xscl, DataSet RunsDs, 
@@ -954,9 +965,7 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
                    ErrSq[chan] += errs[chan];
                    weight[chan] += sens*eff1[chan];
                  }
-               
             }//sens !=0
-           
 
        }//for rows and cols
        for( int i = 0; i< Resy.length;i++)
@@ -971,7 +980,6 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
       D = new HistogramTable( xscl, (Resy), (ErrSq), 0);
       Result.addData_entry( D); 
       return Result; 
-
   }//SumQs 
 
   private float[] AdjustErrs( float[] err, float[] yvals, float[] eff, float[] effErr,
@@ -989,15 +997,14 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
        */
         err[i] = err[i]*monit[i]*eff[i]*sens;
       }               
-      
      
       return err;
-
   }
+
   private float prodErr( float Fac1, float Fac1Err, float Fac2, float Fac2Err){
       return (float)Math.sqrt(Fac1*Fac2Err*Fac1*Fac2Err+Fac2*Fac1Err*Fac2*Fac1Err);
-
   }
+
   private float SumDiffErr(  float Term1Err, float Term2Err){
     return (float)Math.sqrt( Term1Err*Term1Err+Term2Err*Term2Err);
   }
@@ -1059,18 +1066,19 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
                      prodErr( sens, senserr, Effy[i], Efferr[i]));
             sampy[i]= SCALE*sampy[i];
             samperr[i] = samperr[i]*SCALE;
-
         }
        }//else sens ==0
      }
     return null;
  }
+
  private float quoErr( float Num, float NumErr, float Den, float DenErr){
    if( Den ==0){DenErr=0;Den=1;}
    
    float V = Num/Den/Den;
    return (float)Math.sqrt(NumErr*NumErr/Den/Den+ V*V*DenErr*DenErr );
  }
+
   private  static float[]  Reverse(  float[] X){
         if( X == null)
           return null;
@@ -1085,6 +1093,7 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
        return X;
 
   }
+
   //assumes in wave length
   private float[] convt_toQ( Data D){
       float[] Res = D.getX_scale().getXs();
@@ -1093,7 +1102,6 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
        float a = Res[Res.length-1];
        for( int i = 0; i< Res.length; i++){
           Res[i] = tof_calc.DiffractometerQofWavelength( scatAngle, Res[i]);
-
        }
       PixelInfoList pilist =(PixelInfoList)(D.getAttributeValue(
                   Attribute.PIXEL_INFO_LIST));
@@ -1131,11 +1139,9 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
        if( i < 0) return Res;
        if( xvals[i] >= xx[j+1]) i++;
        if( i >= xvals.length) i =xvals.length-1;        
-
     }
   
    return Res;
-
   }
  
   private UniformGrid SetUpGrid( DataSet DS){
@@ -1150,7 +1156,6 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
     if( errs == null) return;
     for( int i=0; i< errs.length; i++)
        errs[i]= errs[i]*errs[i];
-  
    }
 
   private void ZeroSens( UniformGrid SensGrid, UniformGrid SampGrid){
@@ -1173,8 +1178,9 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
                 Z = true;
             if( Z)
                SensGrid.getData_entry(row,col).getY_values()[0]= 0.0f;
-   }
+     }
   }
+
   private float[][] sss( int nrows, int ncols){
 
     float[][]Res = new float[nrows][ncols];
@@ -1183,12 +1189,14 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
       Arrays.fill(Res[i],0.0f);
     return Res;
   }
+
   public static float[] cnvertToWL( float[] x, XAxisConversionOp op, int DataIndex){
       for(int i= 0; i< x.length; i++)
         x[i]= op.convert_X_Value(x[i], DataIndex);
       return x;
   }
-  /**
+
+ /**
   *     This method is "memory efficient".  Since all have a common XScale there
   *     is little extra space
   */
@@ -1215,8 +1223,8 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
      D1.setAttributeList( alist);
      D1.resample( wlScale, IData.SMOOTH_NONE);
      ds.replaceData_entry( D1, i);
-
     }
+
    ds.setX_units("Angstrom");
    ds.setX_label("WaveLength");
    return ds;
