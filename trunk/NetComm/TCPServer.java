@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/02/24 13:39:19  dennis
+ *  Switched to use CommandObject instead of compound command Strings.
+ *
  *  Revision 1.9  2002/11/27 23:27:59  pfpeterson
  *  standardized header
  *
@@ -56,18 +59,15 @@ import DataSetTools.util.*;
 
 public class TCPServer implements ITCPUser
 {
-  public static final String COMMAND_GET_STATUS   = "COMMAND:GET_STATUS ";
-  public static final String COMMAND_PASSWORD_IS  = "COMMAND:PASSWORD_IS ";
-  public static final String COMMAND_USER_IS      = "COMMAND:USER_IS ";
-  public static final String COMMAND_GET_DATA_NAME= "COMMAND:GET_DATA_NAME ";
-  public static final String ANSWER_OK            = "OK";
-  public static final String ANSWER_NOT_OK        = "Not_OK";
+  public static final String ANSWER_OK        = "OK";
+  public static final String ANSWER_NOT_OK    = "Not_OK";
 
-  public static final String UNKNOWN_USER         = "UNKNOWN";
-  public static final String FAIL_STRING          = "WRITE FAIL";
-  public static final String EXIT_STRING          = "EXIT";
-  public static final String INVALID_STRING       = "Bad user_name or password";
-  public static final String INVALID_COMMAND      = "Invalid Command";
+  public static final String DEFAULT_DATA_NAME= "NONE";
+  public static final String UNKNOWN_USER     = "UNKNOWN";
+  public static final String FAIL_STRING      = "WRITE FAIL";
+  public static final String EXIT_STRING      = "EXIT";
+  public static final String INVALID_STRING   = "Bad user_name or password";
+  public static final String INVALID_COMMAND  = "Invalid NOT CommandObject";
 
   public static final int    DEFAULT_SERVER_TCP_PORT = 6088;
   public static final String DEFAULT_PASSWORD        = "IPNS";
@@ -85,7 +85,8 @@ public class TCPServer implements ITCPUser
   private    String    server_name      = "TCPServer";
   private    int       current_tcp_port = DEFAULT_SERVER_TCP_PORT;
   private    String    start_time       = "";
-  protected  String    data_name        = "NONE";   // identifier for last
+  protected  String    data_name        = "DEFAULT_DATA_NAME"; 
+                                                    // identifier for last
                                                     // data processed.   
 
   /* ---------------------------- Constructor -------------------------- */
@@ -242,40 +243,28 @@ public class TCPServer implements ITCPUser
   /**
    *  Method to process commands from a TCP client.  Derived classes should
    *  override this method with methods that process the command properly
-   *  and return an appropriate object through the tcp_io object.
+   *  and return an appropriate object through the tcp_io object.  
    *
-   *  @param  command    The command string sent by the client.
+   *  @param  command    The command object sent by the client.
    *
    *  @param  tcp_io     The TCP communications object to which the response
    *                     must be sent.
+   *
+   *  @return True if the command was processed and no further action is 
+   *          needed. Returns false if the command was not handled, and
+   *          so some response must still be sent back to the client. 
    */
-   synchronized public void ProcessCommand( String          command, 
-                                            ThreadedTCPComm tcp_io   )
+   synchronized public boolean ProcessCommand( CommandObject   command, 
+                                               ThreadedTCPComm tcp_io   )
    {  
-      try
-      {                                                // handle GET_STATUS, but
-                                                       // allow derived classes
-                                                       // to override it.
-        if ( command.startsWith( COMMAND_GET_STATUS) )
-        {
-          if ( !user_ok )
-            tcp_io.Send( RemoteDataRetriever.BAD_USER_NAME_STRING );
+     if ( debug_server )
+      System.out.println("TCPServer.ProcessCommand called: " + command);
 
-          else if ( !password_ok )
-            tcp_io.Send( RemoteDataRetriever.BAD_PASSWORD_STRING );
-
-          else 
-            tcp_io.Send( RemoteDataRetriever.SERVER_OK_STRING );
-        } 
-        else 
-          tcp_io.Send( ANSWER_NOT_OK );      // no operation was carried out
-      }
-      catch ( Exception e )
-      {
-        System.out.println("Error: TCPServer command: " + command);
-        System.out.println("Error: couldn't send data "+e );
-      }
+     return true;
    }
+
+
+
 
 
  /* --------------------------- ProcessData ------------------------------ */
@@ -294,62 +283,26 @@ public class TCPServer implements ITCPUser
   synchronized public void ProcessData(Object data_obj, ThreadedTCPComm tcp_io)
   {
 
-    if ( data_obj instanceof String )
+    if ( data_obj instanceof CommandObject )
     {
-      String command = (String)data_obj; 
+      CommandObject command = (CommandObject)data_obj; 
       if ( debug_server )
         System.out.println("Received request " + command );
       try
       {
-        if ( command.startsWith( COMMAND_USER_IS ))  
-        {
-          MakeLogEntry( command, tcp_io.getInetAddressString(), false );
-          user_name = getArgument( command );
-          user_ok = true;
-          tcp_io.Send( ANSWER_OK );
-          return;
-        } 
+        MakeLogEntry(command.toString(), tcp_io.getInetAddressString(), false);
 
-        else if ( command.startsWith( COMMAND_PASSWORD_IS ))
-        { 
-                                             // don't put password in log file
-          MakeLogEntry( COMMAND_PASSWORD_IS,  
-                        tcp_io.getInetAddressString(),  
-                        false );
-                                             // stub, replace with method
-                                             // to check password for validity
-          String password = getArgument( command );
-          boolean valid_password = true;     
-          if ( valid_password )             
+        if ( CheckPassword( command ) )
+        {
+          if ( !ProcessCommand( command, tcp_io ) )
           {
-            tcp_io.Send( ANSWER_OK );
-            password_ok = true;
-          }
-          else
-          {
+            System.out.println("ERROR: Process command failed");
+            MakeLogEntry( "Command failed for" + command,
+                          tcp_io.getInetAddressString(), 
+                          true );
             tcp_io.Send( ANSWER_NOT_OK );
-            password_ok = false;
-          }
-          return;
+          }  
         }
-
-        else if ( command.startsWith( COMMAND_GET_DATA_NAME ))
-        {
-          MakeLogEntry( command, tcp_io.getInetAddressString(), false );
-          if ( user_ok && password_ok )
-            tcp_io.Send( data_name );
-          else
-            tcp_io.Send( ANSWER_NOT_OK );          
-          return;
-        }
-
-
-        if ( user_ok && password_ok )
-        {
-          MakeLogEntry( command, tcp_io.getInetAddressString(), false );
-          ProcessCommand( command, tcp_io );
-        }
-
         else                                           // break connection
         {
           if ( !user_ok )
@@ -358,11 +311,10 @@ public class TCPServer implements ITCPUser
           if ( !password_ok )
             System.out.println("ERROR: password not valid in TCPServer");
 
-          reset_user_info();
-          tcp_io.Send( new TCPCommExitClass() );
-          MakeLogEntry( INVALID_STRING + " for " + command,
+          MakeLogEntry( "Invalid user info for " + command,
                         tcp_io.getInetAddressString(), 
                         true );
+          tcp_io.Send( new TCPCommExitClass() );
         }
 
       }
@@ -376,7 +328,6 @@ public class TCPServer implements ITCPUser
         MakeLogEntry( FAIL_STRING + " for " + command,
                       tcp_io.getInetAddressString(), 
                       true );
-        reset_user_info();
       }  
     }
 
@@ -389,8 +340,20 @@ public class TCPServer implements ITCPUser
     }
 
     else
+    {
+      System.out.println("Error: int TCPServer, command NOT CommandObject");
       MakeLogEntry( INVALID_COMMAND, tcp_io.getInetAddressString(), true );
+      try 
+      {
+        tcp_io.Send( ANSWER_NOT_OK );
+      }
+      catch ( Exception e )
+      {
+        System.out.println("Error: couldn't send error response " + e );
+        e.printStackTrace();
+      } 
 
+    }
   }
 
 
@@ -423,6 +386,22 @@ public class TCPServer implements ITCPUser
    *  PRIVATE METHODS
    *
    */
+
+  /* -------------------------- CheckPassword -------------------------- */
+  /**
+   *  Check the username and password for this command object.
+   *
+   *  @param  command    The command object sent by the client.
+   *
+   *  @return true if the username and password are valid, false otherwise.
+   */
+   synchronized public boolean CheckPassword( CommandObject command )
+   {
+     user_ok     = true;                // for now just accept any user
+     password_ok = true;                // or password
+
+     return true;
+   }
 
   /* ---------------------------- MakeLogEntry --------------------------- */
   /**
@@ -483,17 +462,6 @@ public class TCPServer implements ITCPUser
      }
   }
 
-
-  /* --------------------------- reset_user_info ------------------------ */
-  /**
-   *  Reset the user_name to "", and reset user and password ok flags to false.
-   */
-  private void reset_user_info()
-  {
-    user_name   = UNKNOWN_USER;
-    user_ok     = false;
-    password_ok = false;
-  }
 
   /* -------------------------------------------------------------------------
    *
