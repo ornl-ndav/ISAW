@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/11/12 21:53:24  dennis
+ *  Use XScale.getInstance() rather than automatically creating a
+ *  variable XScale, so that we use a UniformXScale if possible.
+ *
  *  Revision 1.9  2002/10/03 15:42:46  dennis
  *  Changed setSqrtErrors() to setSqrtErrors(boolean) in Data classes.
  *  Added use_sqrt_errors flag to Data base class and changed derived
@@ -213,7 +217,7 @@ public class HistogramTable extends    TabulatedData
         new_x_values[i] = (old_x_values[i-1] + old_x_values[i]) / 2.0f;
       new_x_values[n_bins] = old_x_values[n_bins-1] 
                       + (old_x_values[n_bins-1] - old_x_values[n_bins-2]) / 2; 
-      x_scale = new VariableXScale( new_x_values ); // #### check if uniform?
+      x_scale = XScale.getInstance( new_x_values );      // checks if uniform!
     }
 
     init( d.getY_values() );
