@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2004/06/03 16:31:36  chatterjee
+ * Added code to get Monitor indicies that correspond to the
+ *   specified Monitor IDs
+ *
  * Revision 1.14  2004/06/02 15:41:22  rmikk
  * Added parameter(s) to specify monitor ID(s)
  *
@@ -216,6 +220,16 @@ public class CalcTransmission extends GenericTOF_SAD {
      //int SampMonitor1GroupID = downStreamID;
      int CadMonitor1GroupID = downStreamID;
      int EmpMonitor1GroupID = downStreamID;
+     if( upStreamID >=0){
+ 
+         Monitor0= Sample.getIndex_of_data(Sample.getData_entry_with_id(upStreamID));
+         Monitor1= Sample.getIndex_of_data(Sample.getData_entry_with_id(downStreamID));
+         if(Monitor0 < 0)
+            Monitor0=0;
+         if(Monitor1 < 0)
+            Monitor1=1;
+       
+     }
      if( (upStreamID <0) ||(downStreamID<0)){
             
         int[] MonIndx = setMonitorInd( Sample);
