@@ -64,22 +64,19 @@ public class Isaw extends JFrame implements Serializable
     JMenuItem mi;
     String dirName = null;
     boolean set_selection = false ;
+
     public Isaw() 
     {
        super("ISAW");
        System.out.println("Loading ISAW");
        setupMenuBar();
-       
-      
 
        jtui = new JTreeUI();
        jtui.setPreferredSize(new Dimension(200, 500));
        jtui.setMinimumSize(new Dimension(20, 50));
        tree = jtui.getTree();
        tree.addTreeSelectionListener(new TreeSelectionHandler());
-       
-    
-       
+
        jpui = new JPropertiesUI();
        jpui.setPreferredSize( new Dimension(200, 200) );
        jpui.setMinimumSize(new Dimension(20, 50));
@@ -126,6 +123,7 @@ public class Isaw extends JFrame implements Serializable
         JMenu imageView = new JMenu("Image View");
         JMenu s_graphView = new JMenu("Scrolled Graph View");
         JMenu instrumentInfoView = new JMenu("Instrument Info");
+	  JMenu macro_loader = new JMenu("Load Macro");       
         JMenu macrosMenu = new JMenu("Macros");
         JMenu optionMenu = new JMenu("Options");
         JMenu wMenu = new JMenu("Window");
@@ -135,6 +133,7 @@ public class Isaw extends JFrame implements Serializable
         
         JMenuItem fileRunfile = new JMenuItem("Load Entire Runfile(s)");
         JMenuItem Runfile = new JMenuItem("Load Runfile");
+	  
         JMenuItem fileRunfiles = new JMenuItem("Load Selected Data");
         JMenuItem fileLoadDataset = new JMenuItem("Load ISAW Data");
         JMenuItem fileSaveData = new JMenuItem("Save ISAW Data");
@@ -198,8 +197,24 @@ public class Isaw extends JFrame implements Serializable
         JMenuItem m_GPPD = new JMenuItem("GPPD ");
         JMenuItem m_SEPD = new JMenuItem("SEPD ");
         JMenuItem m_CHEXS = new JMenuItem("CHEXS ");
+
+        JMenuItem l_HRMECS = new JMenuItem("HRMECS  ");
+        JMenuItem l_LRMECS = new JMenuItem("LRMECS  ");
+        JMenuItem l_HIPD = new JMenuItem("HIPD  ");
+        JMenuItem l_SAD = new JMenuItem("SAD   ");
+        JMenuItem l_SCD = new JMenuItem("SCD  ");
+        JMenuItem l_SAND = new JMenuItem("SAND  ");
+        JMenuItem l_POSY1 = new JMenuItem("POSY1  ");
+        JMenuItem l_POSY2 = new JMenuItem("POSY2  ");
+        JMenuItem l_GLAD = new JMenuItem("GLAD  ");
+        JMenuItem l_QENS = new JMenuItem("QENS  ");
+        JMenuItem l_GPPD = new JMenuItem("GPPD  ");
+        JMenuItem l_SEPD = new JMenuItem("SEPD  ");
+        JMenuItem l_CHEXS = new JMenuItem("CHEXS  ");
+
     
         fMenu.add(Runfile);
+	  fMenu.add(macro_loader);
         fMenu.add(fileRunfile);
         fMenu.add(fileRunfiles);
         fMenu.add(fileLoadDataset);
@@ -248,6 +263,21 @@ public class Isaw extends JFrame implements Serializable
         macrosMenu.add(m_POSY2);
         macrosMenu.add(m_QENS);
         macrosMenu.add(m_CHEXS);
+
+	  macro_loader.add(l_HRMECS);
+        macro_loader.add(l_GPPD);
+        macro_loader.add(l_SEPD);
+        macro_loader.add(l_LRMECS);
+        macro_loader.add(l_SAD);
+        macro_loader.add(l_SAND);
+        macro_loader.add(l_SCD);
+        macro_loader.add(l_GLAD);
+        macro_loader.add(l_HIPD);
+        macro_loader.add(l_POSY1);
+        macro_loader.add(l_POSY2);
+        macro_loader.add(l_QENS);
+        macro_loader.add(l_CHEXS);
+
         
         vMenu.add(imageView);
         vMenu.add(s_graphView);
@@ -271,6 +301,7 @@ public class Isaw extends JFrame implements Serializable
         hMenu.add(helpISAW);
         fileExit.addActionListener(new MenuItemHandler());
         Runfile.addActionListener(new LoadMenuItemHandler());
+	  
         fileRunfile.addActionListener(new LoadMenuItemHandler());
         fileRunfiles.addActionListener(new LoadMenuItemHandler());
 
@@ -323,6 +354,25 @@ public class Isaw extends JFrame implements Serializable
         m_QENS.addActionListener(new MenuItemHandler());
         m_GLAD.addActionListener(new MenuItemHandler());
         m_CHEXS.addActionListener(new MenuItemHandler());
+
+
+        l_HRMECS.addActionListener(new MenuItemHandler());
+        l_LRMECS.addActionListener(new MenuItemHandler());
+        l_HIPD.addActionListener(new MenuItemHandler());
+        
+        l_GPPD.addActionListener(new MenuItemHandler());
+        l_SEPD.addActionListener(new MenuItemHandler());
+        l_SAND.addActionListener(new MenuItemHandler());
+       
+        l_SAD.addActionListener(new MenuItemHandler());
+        l_SCD.addActionListener(new MenuItemHandler());
+        l_POSY1.addActionListener(new MenuItemHandler());
+        
+        l_POSY2.addActionListener(new MenuItemHandler());
+        l_QENS.addActionListener(new MenuItemHandler());
+        l_GLAD.addActionListener(new MenuItemHandler());
+        l_CHEXS.addActionListener(new MenuItemHandler());
+
         
         viewFileSeparator.addActionListener(new MenuItemHandler());
         viewLogView.addActionListener(new MenuItemHandler());
@@ -498,11 +548,14 @@ public class Isaw extends JFrame implements Serializable
                         
                         int numberOfDataSets = r.numDataSets();
                         DataSet[] dss = new DataSet[numberOfDataSets];
-
                         for (int i = 0; i< numberOfDataSets; i++)
                             dss[i] = r.getDataSet(i);
                             System.out.println("Tree is : " +jtui.getTree()); 
                             jtui.addDataSets(dss, ff);
+		
+				if(dss[1]!=null)
+				    jdvui.drawImage(dss[1],"Internal Frame");
+                       System.out.println("Print the dataset dss[1]  " +dss[1]);
                        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                        }
                     } 
@@ -525,7 +578,7 @@ public class Isaw extends JFrame implements Serializable
 
                         //if ( state == JFileChooser.APPROVE_OPTION){
                        // LoadFiles db = new LoadFiles(jtui, fc.getCurrentDirectory().toString());
-                       LoadFiles db = new LoadFiles(jtui,fd.getDirectory());
+                       LoadFiles db = new LoadFiles(jtui,fd.getDirectory(),jdvui);
                         db.setSize(new Dimension(550,300));
                        db.show(); 
                        // }
@@ -570,6 +623,13 @@ public class Isaw extends JFrame implements Serializable
             
                 if(s=="Exit")
                 {
+	  try
+		{
+		//	Runtime.getRuntime().exec("C:\\Winnt\\Notepad.exe");
+
+		}
+	     catch(Exception e){};
+
                     System.exit(0);
                 }
                 
@@ -701,6 +761,8 @@ public class Isaw extends JFrame implements Serializable
                                 //IsawViewHelp("No DataSet selected");
                                 }
                      }
+
+
                      
                      if(s == "HRMECS")
                       {  
@@ -792,7 +854,7 @@ public class Isaw extends JFrame implements Serializable
                       }
                       
                       
-                      
+  //Menuitems for macro action below                    
                       
                       
                       
@@ -882,7 +944,122 @@ public class Isaw extends JFrame implements Serializable
                         htm.show();
                       }
                       
+   // menuitem for macro loader below
+
+			if(s == "HRMECS  ")
+                      { 
+
+                      }
+                  if(s == "LRMECS  ")
+                      { 
+             
+
+                        
+                      }
+                   if(s == "HIPD  ")  
+                      {  
+                        
+                      }
+       
+                   if(s == "QENS  ")
+                      {  
+                        
+                      }
+                   if(s == "POSY1  ")
+                      {  
+                        
+                      }
+                   if(s == "POSY2  ")
+                      {  
+                        
+                      }
+                   if(s == "SCD  ")
+                      {  
+                        
+                      }
+                   if(s == "SAND  ")
+                      {  
+
+                      }
+                   if(s == "SAD  ")
+                      {  
+                        
+                      }
+                   if(s == "SEPD  ")
+                      {  
+                        
+                      }
+                   if(s == "GPPD  ")
+                      {  
+                        System.out.println("Inside GPPd macro loader");
+
+                        
+                  try
+                    {
+
+                        fd.show();
+                        File f = new File(fd.getDirectory(), fd.getFile());
+                       {
                       
+                        String filename =f.toString();
+                        String ff = fd.getFile();
+                        System.out.println("The ffis "  + ff);
+                        System.out.println("The filename is "  + filename);
+                       
+                        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                        RunfileRetriever r = new RunfileRetriever(filename);
+                        
+                        int numberOfDataSets = r.numDataSets();
+                        DataSetOperator op1,op2;
+                        DataSet new_ds1, new_ds2;
+                        AttributeNameString attr_name = new AttributeNameString(Attribute.RAW_ANGLE);
+                        DataSet[] dss = new DataSet[numberOfDataSets];
+
+                        for (int i = 0; i< numberOfDataSets; i++)
+                            dss[i] = r.getDataSet(i);
+                            System.out.println("Tree is : " +jtui.getTree()); 
+                        op1 = new DiffractometerTofToD(dss[1],0, 4,2000 );
+                        new_ds1 = (DataSet)op1.getResult();
+
+                        op2 = new DataSetMultiSort(new_ds1, attr_name, false,
+                                                    true, attr_name, true, false,attr_name, true, false);
+                        new_ds2 = (DataSet)op2.getResult();
+                        jtui.addDataSet(new_ds2);
+				
+				    jdvui.drawImage(new_ds2,"Internal Frame");
+
+                        //    jtui.addDataSets(dss, ff);
+                       setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                       }
+                    } 
+                    catch (Exception e){System.out.println("Choose a input file");}
+
+
+//			DefaultMutableTreeNode mtn = jtui.getSelectedNode();
+ /*                       DataSet ds = (DataSet)mtn.getUserObject();
+                        System.out.println("Inside GPPd macro loader");
+                        DataSetOperator op1,op2;
+                        DataSet new_ds1, new_ds2;
+                        AttributeNameString attr_name = new AttributeNameString(Attribute.RAW_ANGLE);
+                        op1 = new DiffractometerTofToD(ds,0, 5,1000 );
+                        new_ds1 = (DataSet)op1.getResult();
+
+                        op2 = new DataSetMultiSort(new_ds1, attr_name, false,
+                                                    true, attr_name, true, false,attr_name, true, false);
+                        new_ds2 = (DataSet)op2.getResult();
+                        jtui.addDataSet(new_ds2);
+*/
+
+                      }
+                   if(s == "GLAD  ")
+                      {  
+
+                      }
+                   if(s == "CHEXS  ")
+                      {  
+                        
+                      }
+
                      if(s == "File Separator")
                       {
                       
@@ -930,7 +1107,7 @@ public class Isaw extends JFrame implements Serializable
                             op1 = new DataSetMerge( ds0, ds1 );
                             mergedDS1 = (DataSet)op1.getResult(); 
                             jdvui.drawImage(mergedDS1,"Internal Frame");
-                            jtui.addDataSet(mergedDS1);
+                            //jtui.addDataSet(mergedDS1);
                         }
                      if(num_child == 3)
                           
@@ -942,7 +1119,7 @@ public class Isaw extends JFrame implements Serializable
                             op2 = new DataSetMerge( mergedDS1, ds2 );
                             mergedDS2 = (DataSet)op2.getResult(); 
                             jdvui.drawImage(mergedDS2,"Internal Frame");
-                            jtui.addDataSet(mergedDS2);
+                           // jtui.addDataSet(mergedDS2);
   
                         }
                      }
@@ -1022,7 +1199,7 @@ public class Isaw extends JFrame implements Serializable
                             op1 = new DataSetMerge( ds0, ds1 );
                             mergedDS1 = (DataSet)op1.getResult(); 
                             jdvui.drawImage(mergedDS1,"External Frame");
-                            jtui.addDataSet(mergedDS1);
+                          //  jtui.addDataSet(mergedDS1);
                         }
                      if(num_child == 3)
                           
@@ -1034,7 +1211,7 @@ public class Isaw extends JFrame implements Serializable
                             op2 = new DataSetMerge( mergedDS1, ds2 );
                             mergedDS2 = (DataSet)op2.getResult(); 
                             jdvui.drawImage(mergedDS2,"External Frame");
-                            jtui.addDataSet(mergedDS2);
+                          //  jtui.addDataSet(mergedDS2);
   
                         }
                      }

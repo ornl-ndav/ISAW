@@ -66,7 +66,7 @@ public class JDataViewUI extends JDesktopPane implements Serializable
            
             add(jif);  
 			jif.toFront();
-		
+	//	System.out.println("Inside drawImage  " +jif);
 		}	
 		
 		else if (frame == "External Frame")

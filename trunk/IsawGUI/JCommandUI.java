@@ -73,7 +73,7 @@ public class JCommandUI  extends JPanel  implements Serializable
 	                             +"\n"
 	                             +"Operating System Name= "+ System.getProperty("os.name")+"\n"
 	                             +"Operating System Architecture= "+ System.getProperty("os.arch")+"\n"
-	                             +"Operating System Name= "+ System.getProperty("os.name")
+	                             +"Operating System Version= "+ System.getProperty("os.version")
 	                             );
       
         JScrollPane ta = new JScrollPane(textArea);
@@ -133,15 +133,16 @@ public class JCommandUI  extends JPanel  implements Serializable
                             detParamList[i][2] = new Float(((Float)(attr_list.getAttributeValue(Attribute.INITIAL_PATH))).floatValue());
                             
                           
-                            detParamList[i][3] = new Float(((Float)(attr_list.getAttributeValue(Attribute.NUM_CHANNELS))).floatValue());
-                            detParamList[i][4] = new Float(((Float)(attr_list.getAttributeValue(Attribute.TOTAL_COUNT))).floatValue());
+      //                      detParamList[i][3] = new Float(((Float)(attr_list.getAttributeValue(Attribute.NUM_CHANNELS))).floatValue());
+      //                      detParamList[i][4] = new Float(((Float)(attr_list.getAttributeValue(Attribute.TOTAL_COUNT))).floatValue());
                             
                           //  detParamList[i][4] = new Float(((Float)(attr_list.getAttributeValue(Attribute.ENERGY_IN))).floatValue());
                           //  detParamList[i][5] = new Float(((Float)(attr_list.getAttributeValue(Attribute.RAW_ANGLE))).floatValue());      
                        }
 
-				         String[] columnHeading = {"ID", "Raw Angle", "Flight Path",//"Start:Time(ms)", "End:Time(ms)",
-				                        "Number of Channels", "Total Count"};
+				         String[] columnHeading = {"ID", "Raw Angle", "Flight Path",//"Start:Time(ms)", "End:Time(ms)"
+				              //         , "Number of Channels", "Total Count"
+							};
 
 	                    DefaultTableModel dtm = new DefaultTableModel(detParamList, columnHeading);
 	                    table.setModel(dtm);

@@ -86,12 +86,14 @@ public class JTreeUI extends JPanel implements Serializable // ,DragGestureListe
             JScrollPane pane = new JScrollPane(tree);
             add(pane);
 
-       /*     BasicTreeCellRenderer renderer = new BasicTreeCellRenderer();
-            renderer.setOpenIcon(new ImageIcon("C://DataSet.jpg"));
-            renderer.setClosedIcon(new ImageIcon("C://DataSet.jpg"));
-            renderer.setLeafIcon(new ImageIcon("C://DataEntry.jpg"));
-            tree.setCellRenderer(renderer);
-        */    
+           /* DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+		
+              renderer.setOpenIcon(new ImageIcon("C://Doggie.gif"));
+              renderer.setClosedIcon(new ImageIcon("C://Devil.gif"));
+              renderer.setLeafIcon(new ImageIcon("C://new-orange.gif"));
+              tree.setCellRenderer(renderer);
+	    */
+            
         
  
     }// End of Constructor
