@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2002/08/01 22:33:34  dennis
+ *  Set Java's serialVersionUID = 1.
+ *  Set the local object's IsawSerialVersion = 1 for our
+ *  own version handling.
+ *  Added readObject() method to handle reading of different
+ *  versions of serialized object.
+ *
  *  Revision 1.31  2002/08/01 19:46:18  dennis
  *  Made more robust for serialization:
  *  Made appropriate fields transient.
@@ -210,8 +217,8 @@ public class DataSet implements IAttributeList,
   //
   // CHANGE THE "serialVersionUID" IF THE SERIALIZATION IS INCOMPATIBLE WITH 
   // PREVIOUS VERSIONS, IN WAYS THAT CAN NOT BE FIXED BY THE readObject() 
-  // METHOD.  SEE "DataSetVersion" COMMENTS BELOW.  CHANGING THIS CAUSES JAVA
-  // TO REFUSE TO READ DIFFERENT VERSIONS.
+  // METHOD.  SEE "IsawSerialVersion" COMMENTS BELOW.  CHANGING THIS CAUSES 
+  // JAVA TO REFUSE TO READ DIFFERENT VERSIONS.
   //
   public  static final long serialVersionUID = 1L;
 
@@ -250,10 +257,10 @@ public class DataSet implements IAttributeList,
   //       readObject() method for compatibility with old servers, until the
   //       servers can be updated. 
 
-  private int           DataSetVersion = 1;  // CHANGE THIS WHEN ADDING OR
-                                             // REMOVING FIELDS, IF
-                                             // readObject() CAN FIX ANY
-                                             // COMPATIBILITY PROBLEMS
+  private int           IsawSerialVersion = 1;  // CHANGE THIS WHEN ADDING OR
+                                                // REMOVING FIELDS, IF
+                                                // readObject() CAN FIX ANY
+                                                // COMPATIBILITY PROBLEMS
 
   private String        title;      // NOTE: we force a DataSet to have a title
                                     // and also keep the same title as an
@@ -2044,6 +2051,9 @@ public class DataSet implements IAttributeList,
                                                         ClassNotFoundException 
   {
     s.defaultReadObject();               // read basic information
+
+    if ( IsawSerialVersion != 1 )
+      System.out.println("Warning:DataSet IsawSerialVersion != 1");
 
     ds_tag    = current_ds_tag++;        // fill out default value for transient
     observers = new IObserverList();     // fields
