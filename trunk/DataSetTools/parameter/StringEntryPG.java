@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/08/15 23:56:21  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI.
+ *
  *  Revision 1.6  2003/06/30 16:00:44  bouzekc
  *  Now returns the StringFilterer FILTER associated with this
  *  class, rather than the entrywidget's filter.  This is to
@@ -150,7 +153,7 @@ public abstract class StringEntryPG extends ParameterGUI {
   /**
    * Allows for initialization of the GUI after instantiation.
    */
-  public void init( Vector init_values ) {
+  public void initGUI( Vector init_values ) {
     if( this.initialized ) {
       return;  // don't initialize more than once
     }

@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/08/15 23:59:40  bouzekc
+ * Modified to work with new IParameterGUI and ParameterGUI.
+ *
  * Revision 1.9  2003/07/07 22:41:37  bouzekc
  * Now uses VectorPG's class constant for the "Data Changed"
  * event.
@@ -179,7 +182,9 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
 
     JPanel dataPanel = new JPanel( new BorderLayout(  ) );
 
-    param.init(  );
+    //to avoid ambiguity when the parameter's initGUI( Vector ) method is
+    //overloaded, we'll just send a new Vector.
+    param.initGUI( new Vector(  ) );
 
     //use the inner parameter's entrywidget for entering values
     dataPanel.add( param.getEntryWidget(  ), BorderLayout.CENTER );

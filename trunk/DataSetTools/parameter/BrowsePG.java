@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/08/15 23:56:22  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI.
+ *
  *  Revision 1.16  2003/08/15 03:54:26  bouzekc
  *  Should now properly add previously existing PropertyChangeListeners to the
  *  entrywidget.
@@ -213,7 +216,7 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString,
     /**
      * Allows for initialization of the GUI after instantiation.
      */
-    public void init(Vector init_values){
+    public void initGUI(Vector init_values){
         if(this.initialized) return; // don't initialize more than once
         if(init_values!=null){
             if(init_values.size()==1){
