@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/06/10 14:40:42  rmikk
+ *  Now implements ParamUsesString
+ *  ArraytoString and StringtoArray are now public static
+ *  ArraytoString works with null Vectors
+ *
  *  Revision 1.7  2003/06/03 21:59:37  rmikk
  *  -Created an entrywidget for text entry of Vectors
  *
@@ -69,7 +74,7 @@ import javax.swing.*;
  * This is a superclass to take care of many of the common details of
  * Array Parameter GUIs.
  */
-public class ArrayPG extends ParameterGUI{
+public class ArrayPG extends ParameterGUI implements ParamUsesString{
     // static variables
     private   static String TYPE     = "Array";
     protected static int    DEF_COLS = 20;
@@ -139,6 +144,16 @@ public class ArrayPG extends ParameterGUI{
       this.value.clear();
       if(this.initialized)
         ((JTextField)this.entrywidget).setText(this.ArraytoString((Vector)value));
+    }
+
+    // **************** ParamUsesString requirements ***************
+    public String getStringValue(){
+      return ArraytoString( value );
+    }
+
+
+    public void setStringValue(java.lang.String value){
+       setValue( value);
     }
 
     // ********** IParameter requirements **********
@@ -339,8 +354,10 @@ public class ArrayPG extends ParameterGUI{
         apg.initialized=false;
         return apg;
     }
-   private Vector StringtoArray( String S)
+   public static Vector StringtoArray( String S)
    {
+     if( S == null)
+       return null;
      Command.execOneLine execLine = new Command.execOneLine();
      int r=execLine.execute(S, 0 , S.length());
 
@@ -357,8 +374,10 @@ public class ArrayPG extends ParameterGUI{
      return (Vector) O;
    }
 
-  private String ArraytoString(Vector V)
+  public static String ArraytoString(Vector V)
    {
+      if( V == null)
+        return "[]";
       Command.execOneLine execLine = new Command.execOneLine();
       String res = execLine.Vect_to_String(V);
       return res;
