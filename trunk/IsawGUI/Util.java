@@ -35,6 +35,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2002/06/18 19:49:42  rmikk
+ * -Eliminated extra returns and prettified the code.
+ * -Added code to read and write xmi, xmn and zip files
+ *   xml files are no longer supported
+ *
  * Revision 1.11  2002/05/02 19:14:57  pfpeterson
  * Changed the SDDS import statement.
  *
@@ -53,10 +58,11 @@ import IPNS.Runfile.Header.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import DataSetTools.retriever.*;
-import javax.swing.text.*; 
+import DataSetTools.writer.*;
+import javax.swing.text.*;
 import java.io.*;
 import java.util.*;
-import java.awt.*; 
+import java.awt.*;
 import javax.swing.filechooser.*;
 import javax.swing.table.*;
 import javax.swing.*;
@@ -74,250 +80,316 @@ import SDDS.java.SDDS.*;
  */
 
 
-public class Util { 
-   public Util() {}
-  
+public class Util
+{
+   public Util()
+   {}
+
+
    /**
     * This returns an array of DataSets that are created from a runfile. 
     *
     * @filename String that gives the absolute path for a runfile  
     */
-   public DataSet[] loadRunfile(String filename) {
-    
-      filename = StringUtil.fixSeparator(filename);
-    
+   public DataSet[] loadRunfile( String filename )
+   {
+
+      filename = StringUtil.fixSeparator( filename );
+
       Retriever r;
 
-      if (filename.endsWith("nxs") ||
-         filename.endsWith("NXS") ||
-         filename.endsWith("hdf") ||
-         filename.endsWith("HDF"))
-         r = new NexusRetriever(filename);
-      else if (filename.toUpperCase().endsWith(".ISD")) {
+      if( filename.endsWith( "nxs" ) ||
+         filename.endsWith( "NXS" ) ||
+         filename.endsWith( "hdf" ) ||
+         filename.endsWith( "HDF" ) )
+         r = new NexusRetriever( filename );
+      else if( filename.toUpperCase().endsWith("ZIP") ||
+               filename.toUpperCase().endsWith("XMI"))
+         r = new XmlDFileRetriever( filename);
+      else if( filename.toUpperCase().endsWith( ".ISD" ) )
+      {
          DataSet dss[];
 
          dss = new DataSet[1];
-         
-         dss[0] = DataSet_IO.LoadDataSet(filename);
-        
+
+         dss[0] = DataSet_IO.LoadDataSet( filename );
+
          return dss;
-      } else if (filename.toUpperCase().endsWith(".SDDS")) {
+      }
+      else if( filename.toUpperCase().endsWith( ".SDDS" ) )
+      {
          DataSet dss[];
-         SDDSRetriever sdds_ret = new SDDSRetriever(filename);
+         SDDSRetriever sdds_ret = new SDDSRetriever( filename );
          int num_of_ds = sdds_ret.numDataSets();
 
          dss = new DataSet[num_of_ds];
-         for (int i = 0; i < num_of_ds; i++)
-            dss[i] = sdds_ret.getDataSet(i); 
+         for( int i = 0; i < num_of_ds; i++ )
+            dss[i] = sdds_ret.getDataSet( i );
          return dss;
-      } else
-         r = new RunfileRetriever(filename);
+      }
+      else
+         r = new RunfileRetriever( filename );
 
       int numberOfDataSets = r.numDataSets();
       DataSet[] dss = new DataSet[numberOfDataSets];
 
-      if (numberOfDataSets >= 0) {
-         for (int i = 0; i < numberOfDataSets; i++)
-            dss[i] = r.getDataSet(i);
+      if( numberOfDataSets >= 0 )
+      {
+         for( int i = 0; i < numberOfDataSets; i++ )
+            dss[i] = r.getDataSet( i );
       }
       r = null;
       System.gc();
       return dss;
    }
 
-   public void Save(String filename, DataSet ds, IDataSetListHandler lh) { 
+
+   public void Save( String filename, DataSet ds, IDataSetListHandler lh )
+   {
       Operator X = null;
-     
-      if (filename == null) 
+
+      if( filename == null )
          return;
-      else if (filename.length() < 4) 
+      else if( filename.length() < 4 )
          return;
-      else if (filename.endsWith("nxs") ||
-         filename.endsWith("NXS") ||
-         filename.endsWith("hdf") ||
-         filename.endsWith("HDF")) {
+      else if( filename.endsWith( "nxs" ) ||
+         filename.endsWith( "NXS" ) ||
+         filename.endsWith( "hdf" ) ||
+         filename.endsWith( "HDF" ) )
+      {
          X = new WriteNexus();
-      } else if (filename.toUpperCase().endsWith(".XML")) {
+      }
+      else if( filename.toUpperCase().endsWith( ".XMN" ) )
+      {
          X = new WriteNexus();
-      } else if (filename.toUpperCase().endsWith(".ISD")) {
-         DataSet_IO.SaveDataSet(ds, filename);
-         
-         return;  
-      } else if (filename.toUpperCase().endsWith(".GSA") ||
-         filename.toUpperCase().endsWith(".GDAT") ||
-         filename.toUpperCase().endsWith(".GSAS")) {
-         X = new WriteGSAS();
-      } else { 
+      }
+      else if( filename.toUpperCase().endsWith("ZIP") ||
+               filename.toUpperCase().endsWith("XMI"))
+      { XmlDWriter xwr = new XmlDWriter( filename);
+        DataSet[] DSS = new DataSet[1];
+        DSS[0]= ds;
+        xwr.writeDataSets( DSS );
+        return;
+       }
+      else if( filename.toUpperCase().endsWith( ".ISD" ) )
+      {
+         DataSet_IO.SaveDataSet( ds, filename );
 
          return;
       }
-   
-      X.setParameter(new Parameter("filename", filename), 2);
-      X.setParameter(new Parameter("dataset", ds), 1);
+      else if( filename.toUpperCase().endsWith( ".GSA" ) ||
+         filename.toUpperCase().endsWith( ".GDAT" ) ||
+         filename.toUpperCase().endsWith( ".GSAS" ) )
+      {
+         X = new WriteGSAS();
+      }
+      else
+      {
 
-      JParametersDialog JP = new JParametersDialog(X, lh,
-            null, null);
+         return;
+      }
+
+      X.setParameter( new Parameter( "filename", filename ), 2 );
+      X.setParameter( new Parameter( "dataset", ds ), 1 );
+
+      JParametersDialog JP = new JParametersDialog( X, lh,
+            null, null );
 
    }
-   class ArrayDSHandler implements IDataSetListHandler {
+   class ArrayDSHandler implements IDataSetListHandler
+   {
       DataSet DS[];
-      public ArrayDSHandler(DataSet DS[]) {
+      public ArrayDSHandler( DataSet DS[] )
+      {
          this.DS = DS;
       }
 
-      public DataSet[] getDataSets() {
+
+      public DataSet[] getDataSets()
+      {
          return DS;
       }
 
    }
-   public Document openDoc(String filename) {
-      FileReader fr; 
-    
-      if (filename == null)
-         return null;
-      try {
-         File f = new File(filename); 
+   public Document openDoc( String filename )
+   {
+      FileReader fr;
 
-         try { 
-            fr = new FileReader(f); 
-         } catch (FileNotFoundException s) {
+      if( filename == null )
+         return null;
+      try
+      {
+         File f = new File( filename );
+
+         try
+         {
+            fr = new FileReader( f );
+         }
+         catch( FileNotFoundException s )
+         {
             return null;
          }
 
-         int c, 
-            offset; 
-         String line; 
-         Document doc = new PlainDocument(); 
- 
-         line = ""; 
-         offset = 0; 
-         for (c = fr.read(); c != -1;) {  
-               
-            line = line + new Character((char) c).toString(); 
-            if (c < ' ') //assumes the new line character
-            { 
-               doc.insertString(offset, line, null); 
-               offset += line.length(); 
-               line = ""; 
+         int c,
+            offset;
+         String line;
+         Document doc = new PlainDocument();
+
+         line = "";
+         offset = 0;
+         for( c = fr.read(); c != -1; )
+         {
+
+            line = line + new Character( ( char )c ).toString();
+            if( c < ' ' ) //assumes the new line character
+            {
+               doc.insertString( offset, line, null );
+               offset += line.length();
+               line = "";
             }
-		
-            c = fr.read(); 
+
+            c = fr.read();
          }
          //offset is doc.getLength(?)-1
-         if (line.length() > 0)
-            doc.insertString(offset, line, null); 
+         if( line.length() > 0 )
+            doc.insertString( offset, line, null );
          fr.close();
-         return doc; 	    
-      } catch (Exception s) {
+         return doc;
+      }
+      catch( Exception s )
+      {
          return null;
       }
-       
+
    }
 
-   public void appendDoc(Document doc, String S) {
-      if (doc == null)return;
+
+   public void appendDoc( Document doc, String S )
+   {
+      if( doc == null )return;
       int end = doc.getLength();
-   
-      try {
-         doc.insertString(end, S + "\n", null);
-      } catch (Exception s) {
-         System.out.println("Error in appendDoc=" + s);
+
+      try
+      {
+         doc.insertString( end, S + "\n", null );
+      }
+      catch( Exception s )
+      {
+         System.out.println( "Error in appendDoc=" + s );
       }
 
    }
 
-   public String saveDoc(Document doc, String filename) {
-      if (doc == null) {
+
+   public String saveDoc( Document doc, String filename )
+   {
+      if( doc == null )
+      {
          return null;
       }
       Element line;
 
-      if (filename == null) {
+      if( filename == null )
+      {
          return null;
       }
-      File f = new File(filename);
+      File f = new File( filename );
 
-      try { 
-         FileWriter fw = new FileWriter(f); 
-                
-         int i; 
-		 
-         Element  root; 
+      try
+      {
+         FileWriter fw = new FileWriter( f );
 
-         root = doc.getDefaultRootElement(); 
+         int i;
+
+         Element root;
+
+         root = doc.getDefaultRootElement();
          String c = "";
 
-         for (i = 0; i < root.getElementCount(); i++) {
-            line = root.getElement(i); 
-		    
-            fw.write(doc.getText(line.getStartOffset(), line.getEndOffset() - 
-                  line.getStartOffset() - 1)); 
-            c = doc.getText(line.getEndOffset() - 1, 1);
-            if (i + 1 < root.getElementCount())
-               fw.write("\n"); 
+         for( i = 0; i < root.getElementCount(); i++ )
+         {
+            line = root.getElement( i );
+
+            fw.write( doc.getText( line.getStartOffset(), line.getEndOffset() -
+                  line.getStartOffset() - 1 ) );
+            c = doc.getText( line.getEndOffset() - 1, 1 );
+            if( i + 1 < root.getElementCount() )
+               fw.write( "\n" );
          }
-         fw.close(); 
+         fw.close();
          return null;
-                
-      } catch (IOException s) {
+
+      }
+      catch( IOException s )
+      {
          return "Status: Unsuccessful";
-      } catch (javax.swing.text.BadLocationException s) {
+      }
+      catch( javax.swing.text.BadLocationException s )
+      {
          return "status Usuccessful";
       }
-	      
+
    }
 
-   public Vector listProperties() {
+
+   public Vector listProperties()
+   {
       StringBuffer buf = new StringBuffer();
       String pName, pVal;
       Vector data = new Vector();
       Properties props = new Properties();
 
-      String path = System.getProperty("user.home") + "\\";
+      String path = System.getProperty( "user.home" ) + "\\";
 
-      path = StringUtil.fixSeparator(path);
-      try {
-         FileInputStream input = new FileInputStream(path + "IsawProps.dat");
+      path = StringUtil.fixSeparator( path );
+      try
+      {
+         FileInputStream input = new FileInputStream( path + "IsawProps.dat" );
 
-         props.load(input);
-      } catch (IOException ex) {
-         System.out.println("Properties file could not be loaded due to error :" + ex);
+         props.load( input );
       }
-        
+      catch( IOException ex )
+      {
+         System.out.println( "Properties file could not be loaded due to error :" + ex );
+      }
+
       Enumeration enum = props.propertyNames();
 
-      while (enum.hasMoreElements()) {
+      while( enum.hasMoreElements() )
+      {
          pName = enum.nextElement().toString();
-         pVal = props.getProperty(pName);
+         pVal = props.getProperty( pName );
          Vector oo = new Vector();
 
-         oo.addElement(pName); 
-         oo.addElement(pVal);
-         data.addElement(oo);
-       
+         oo.addElement( pName );
+         oo.addElement( pVal );
+         data.addElement( oo );
+
       }
       return data;
    }
 
-   public JScrollPane viewProperties() {
+
+   public JScrollPane viewProperties()
+   {
       JTable table;
-           	
+
       Vector heading = new Vector();
 
-      heading.addElement("Attribute"); 
-      heading.addElement("Value");
+      heading.addElement( "Attribute" );
+      heading.addElement( "Value" );
       Vector data = listProperties();
-      DefaultTableModel dtm = new DefaultTableModel(data, heading);
+      DefaultTableModel dtm = new DefaultTableModel( data, heading );
 
-      table = new JTable(dtm);
-      table.setModel(dtm);
-      table.setSize(30, 30);    // the numbers used don't seem to
+      table = new JTable( dtm );
+      table.setModel( dtm );
+      table.setSize( 30, 30 );    // the numbers used don't seem to
       // be important, but setting the 
       // size get's the table to fill out
       // the available space.
-      ExcelAdapter myAd = new ExcelAdapter(table);
-      JScrollPane scrollPane = new JScrollPane(table);
-     
+      ExcelAdapter myAd = new ExcelAdapter( table );
+      JScrollPane scrollPane = new JScrollPane( table );
+
       return scrollPane;
    }
 
