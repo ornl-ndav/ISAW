@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.39  2003/04/25 22:15:38  pfpeterson
+ * Made changes to improve readability, removed some redundant checks,
+ * and 'synchronized inittt()' to make the class more thread-safe. When
+ * a file is found to not be an operator (or loadable) the debug
+ * information is now more informative as well.
+ *
  * Revision 1.38  2003/03/06 22:50:53  pfpeterson
  * Added a boolean to decide whether or not a script is reloaded when
  * asked for. This shortens the initial loading of ISAW by ~25% since
@@ -119,6 +125,7 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 import java.lang.*;
+import java.lang.reflect.Modifier;
 import DataSetTools.util.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
@@ -134,17 +141,20 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     //Contains ordering for Command Names
     private static final Vector SortOnCommand = new Vector();  
     //Contains ordering for file names
-    private static final Vector SortOnFileName = new Vector();
-    private static  final Vector opList  = new Vector();
-    private  Vector dsOpList  = new Vector();
-    private static  DataSetOperator[] dsOpListI = null;
-    private String errorMessage= "";
-    private static int Command_Compare =257;
-    private static int File_Compare = 322;
-    private static boolean first = true;
-    public  static boolean LoadDebug = false;
-    private final int MIN_DIR_NAME__LENGTH=3;
-    protected static boolean reload_scripts=true;
+    private static final Vector SortOnFileName       = new Vector();
+    private static final Vector opList               = new Vector();
+    private static final int    MIN_DIR_NAME__LENGTH = 3;
+
+    private   static Vector            dsOpList        = new Vector();
+    private   static DataSetOperator[] dsOpListI       = null;
+    private   static int               Command_Compare = 257;
+    private   static int               File_Compare    = 322;
+    private   static boolean           first           = true;
+    protected static boolean           reload_scripts  = true;
+    public    static boolean           LoadDebug       = false;
+    private   static String[]          pathlist        = null;
+
+    private String errorMessage = "";
 
     /**
      * The System property user.home,ISAW_HOME, GROUP_HOME,
@@ -155,6 +165,38 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         inittt();
     }
     
+  public String[] getPathArray(String PathList){
+    if(PathList==null || PathList.length()<0) return null;
+
+    // prepare the PathList
+    PathList=PathList.trim();
+    if(PathList.lastIndexOf(';')!=PathList.length()-1)
+      PathList=PathList+";";
+
+    // create a vector to hold this
+    Vector pathVec=new Vector();
+    int start,stop;
+    String tempString;
+    start=0;
+    stop=PathList.indexOf(';',start+1);
+    while(stop>0){
+      // get the path element
+      tempString=PathList.substring(start,stop);
+      // only add unique elements
+      if(pathVec.indexOf(tempString)<0) pathVec.add(tempString);
+      // get new indices
+      start=stop+1;
+      stop=PathList.indexOf(';',start+1);
+    }
+
+    // pack up and return
+    if(pathVec.size()<=0) return null;
+    String[] pathArray=new String[pathVec.size()];
+    for( int i=0 ; i<pathArray.length ; i++ )
+      pathArray[i]=(String)pathVec.elementAt(i);
+    return pathArray;
+  }
+
     /**
      * Extracts the Next Path in a semicolon delimited list of paths
      * This method can be used to extract next Entry from any
@@ -171,32 +213,31 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     public  String getNextPath( String PathList , String PrevPath ){
         if(PathList == null ) return null;
         
-        int i ;
-        int j;
-        if( PrevPath != null )
-            if( PrevPath.length() <= 0)
+        int i=0;
+        int j=0;
+
+        // prepare the PrevPath
+        if( PrevPath != null && PrevPath.length() <= 0)
                 PrevPath = null;
         
-        PathList.trim();
+        // prepare the PathList
+        PathList=PathList.trim();
         if( PathList.lastIndexOf( ';') != PathList.length()-1)
             PathList = PathList+ ";";
-        i = 0;
-        if( PrevPath != null ){
-            if( PrevPath.length() > 0 ){
-                if( PathList.indexOf( PrevPath ) >= 0 ){
-                    i = PathList.indexOf( PrevPath );            
-                    if( i >= 0 ){
-                        while(PathList.indexOf(PrevPath+";",
-                                               i+PrevPath.length())>=0){
-                            i=PathList.indexOf( PrevPath, i+PrevPath.length() );
-                        }        
-                    }      
-                    if( i < 0 ) return null;
 
-                    i = i + PrevPath.length() +1;
-                    if( i >= PathList.length()) return null;
-                }
-            }
+        // locate PrevPath in PathList
+        if( PrevPath != null ){
+          int prevPathLength=PrevPath.length();
+          PrevPath=PrevPath+";";
+          i=PathList.indexOf(PrevPath);
+          if(i>=0){
+            j=PathList.lastIndexOf(PrevPath,i+prevPathLength);
+            if(j>=0) i=j;
+            i = i + prevPathLength +1;
+            if( i >= PathList.length()) return null;
+          }else{
+            i=0;
+          }
         }
         
         j = PathList.indexOf(';', i );
@@ -291,22 +332,27 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         filename = FilenameUtil.setForwardSlash(filename);
 
         // get the pathlist
-        String pathlist = System.getProperty("java.class.path");
-        pathlist=FilenameUtil.setForwardSlash(pathlist);
-        pathlist=pathlist.replace(File.pathSeparatorChar,';');
-
-        // get the location of ISAW
-        String ScrPath=System.getProperty("ISAW_HOME");
-        if(ScrPath!=null){
+        if(pathlist==null){
+          String mypathlist=null;
+          mypathlist = System.getProperty("java.class.path");
+          mypathlist=FilenameUtil.setForwardSlash(mypathlist);
+          mypathlist=mypathlist.replace(File.pathSeparatorChar,';');
+          
+          // get the location of ISAW
+          String ScrPath=System.getProperty("ISAW_HOME");
+          if(ScrPath!=null){
             ScrPath=ScrPath+"/";
             ScrPath=FilenameUtil.setForwardSlash(ScrPath);
-            if(pathlist.indexOf(ScrPath+"Isaw.jar;")>=0){
-                if(pathlist.indexOf(ScrPath+";")>=0){
+            if(mypathlist.indexOf(ScrPath+"Isaw.jar;")>=0){
+                if(mypathlist.indexOf(ScrPath+";")>=0){
                     // do nothing
                 }else{
-                    pathlist=ScrPath+";"+pathlist;
+                    mypathlist=ScrPath+";"+mypathlist;
                 }
             }
+          }
+          // pass the string into something that packs up an array
+          pathlist=getPathArray(mypathlist);
         }
 
         // find where the last '/' is in the filename
@@ -335,9 +381,8 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         Operator XX=null;
         if( CPath.startsWith("/") || CPath.indexOf(":")>=0 ){
             // go through the classpath to shorten the classname appropriately
-            for( path = getNextPath( pathlist, null ) ; path != null;
-                 path = getNextPath( pathlist, path )){
-                String Path1=path.trim();
+          for( int index=0 ; index<pathlist.length ; index++ ){
+                String Path1=pathlist[index].trim();
                 
                 if( Path1 != null ){
                     if( Path1.length() > 0 ){
@@ -568,7 +613,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     /** 
      * Method for finding operators and scripts.
      */
-    private void inittt(){  
+    private synchronized void inittt(){  
         if( !first) return;
         processIsaw();
         /*for( int i = 0 ; i < GenericOperatorList.getNum_operators(); i++){
@@ -1090,12 +1135,20 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         while(classname.length()>0){
             try{
                 Class C = Class.forName( classname );
-                Object XX = C.newInstance();
-                if( XX instanceof Operator){
-                    return (Operator)XX;
+                int modifier=C.getModifiers();
+                if(Modifier.isAbstract(modifier)){
+                  if(LoadDebug) System.out.print("(Abstract)");
+                  return null;
+                }
+                if(Modifier.isInterface(modifier)){
+                  if(LoadDebug) System.out.print("(Interface)");
+                  return null;
+                }
+                if(Operator.class.isAssignableFrom(C)){
+                  return (Operator)C.newInstance();
                 }else{
-                    if(LoadDebug) System.out.print("(Not Operator) ");
-                    return null;
+                  if(LoadDebug) System.out.print("(Not Operator) ");
+                  return null;
                 }
             }catch(NoClassDefFoundError e){
                 // the package name and the classname do not agree,
@@ -1124,7 +1177,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * @throws IllegalAccessException
      */
     private GenericOperator getGenOperator( String classname ) throws
-     ClassNotFoundException, InstantiationException, IllegalAccessException{
+        ClassNotFoundException, InstantiationException, IllegalAccessException{
         Operator op=getOperatorInst(classname);
         if(op instanceof GenericOperator)
             return (GenericOperator)op;
@@ -1146,7 +1199,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * @throws IllegalAccessException
      */
     private DataSetOperator getDSOperator( String classname ) throws
-     ClassNotFoundException, InstantiationException, IllegalAccessException{
+        ClassNotFoundException, InstantiationException, IllegalAccessException{
         Operator op=getOperatorInst(classname);
         if(op instanceof DataSetOperator)
             return (DataSetOperator)op;
