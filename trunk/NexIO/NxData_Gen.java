@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2001/07/26 20:50:50  rmikk
+ * Used StringFromBytes method to fix titles, etc.
+ *
  * Revision 1.2  2001/07/24 20:06:46  rmikk
  * Added a field to processDS so that there is a handle to and
  * from linked data.
@@ -151,7 +154,7 @@ public class NxData_Gen extends NXData_util implements NxData
      if( X instanceof char[] )
           return new String( ( char[] )X );
      if( X instanceof byte[] )
-               return new String( ( byte[] ) X );
+	 return DataSetTools.nexus.NexusUtils.StringFromBytes((byte[])X);
      if( X instanceof short[] )
 	 {byte b[]; b =  new byte[( ( short[] )X ).length];
 	 try{
