@@ -33,6 +33,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/08/29 23:07:31  millermi
+ * - setData() now will setVisible(true) if the ImageFrame2
+ *   is not visible.
+ * - setData() now creates a new pane for the ImageFrame2 if
+ *   the data array is of different size.
+ * - Labels and titles are now updated when setData() is called.
+ *
  * Revision 1.5  2003/08/26 06:00:02  millermi
  * - Replaced EXIT_ON_CLOSE with HIDE_ON_CLOSE so it does not
  *   close other windows.
@@ -94,6 +101,7 @@ public class ImageFrame2 extends JFrame
   private ImageViewComponent ivc;
   private IVirtualArray2D data;
   private JMenuBar menu_bar;
+  private boolean paneadded = false;
 
  /**
   * Construct a frame with the specified image and title
@@ -103,7 +111,6 @@ public class ImageFrame2 extends JFrame
   public ImageFrame2( IVirtualArray2D iva )
   {
     data = new VirtualArray2D(1,1);
-    
     menu_bar = new JMenuBar();
     setJMenuBar(menu_bar);   
     menu_bar.add(new JMenu("File")); 
@@ -169,12 +176,17 @@ public class ImageFrame2 extends JFrame
     else
     {
       dispose();
+      // if pane has been added, remove it.
+      if( paneadded )
+        remove(pane);
       data = values;
       buildPane();
       getContentPane().add(pane);
+      paneadded = true;
     }
-
     setTitle( values.getTitle() );       // set correct title on frame
+    if( !isVisible() )
+      setVisible(true);
   }
   
  /**
@@ -201,12 +213,9 @@ public class ImageFrame2 extends JFrame
     ivc.addActionListener( new ImageListener() );
     Box controls = new Box(BoxLayout.Y_AXIS);
     JComponent[] ctrl = ivc.getSharedControls();
-    //int ctrlcounter = 0;
     for( int i = 0; i < ctrl.length; i++ )
-    {
       controls.add(ctrl[i]);
-      //ctrlcounter++;
-    }
+    
     JPanel spacer = new JPanel();
 //    spacer.setPreferredSize(new Dimension(0,((10-ctrlcounter)*40) ) );
     spacer.setPreferredSize( new Dimension(0,10000) );
@@ -215,17 +224,20 @@ public class ImageFrame2 extends JFrame
                                   ivc.getDisplayPanel(),
 			          controls, .75f );
     
-    // get menu items from view component and place it in a menu
-    ViewMenuItem[] menus = ivc.getSharedMenuItems();
-    
-    for( int i = 0; i < menus.length; i++ )
+    if( !paneadded ) // only add the menu items for the ivc once
     {
-      if( ViewMenuItem.PUT_IN_FILE.toLowerCase().equals(
-               menus[i].getPath().toLowerCase()) )
-        menu_bar.getMenu(0).add( menus[i].getItem() ); 
-      else // put in options menu
-        menu_bar.getMenu(1).add( menus[i].getItem() ); 	  
-    }	   
+      // get menu items from view component and place it in a menu
+      ViewMenuItem[] menus = ivc.getSharedMenuItems();
+    
+      for( int i = 0; i < menus.length; i++ )
+      {
+        if( ViewMenuItem.PUT_IN_FILE.toLowerCase().equals(
+                 menus[i].getPath().toLowerCase()) )
+          menu_bar.getMenu(0).add( menus[i].getItem() ); 
+        else // put in options menu
+          menu_bar.getMenu(1).add( menus[i].getItem() ); 	  
+      }	
+    }   
   }
   
  /*
