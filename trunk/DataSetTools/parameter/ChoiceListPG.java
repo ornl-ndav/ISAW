@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/09/09 23:06:28  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.9  2003/08/15 23:50:04  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -171,4 +174,13 @@ public class ChoiceListPG extends ChooserPG{
         pg.initialized=false;
         return pg;
     }
+
+  /**
+   * Validates this ChoiceListPG.  A valid ChoiceListPG is one where getValue()
+   * returns a non-null String.  
+   */
+  public void validateSelf(  ) {
+    Object val = getValue(  );
+    setValid( val != null && val instanceof String );
+  }
 }

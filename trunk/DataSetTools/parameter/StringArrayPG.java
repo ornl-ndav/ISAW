@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/09/09 23:06:31  bouzekc
+ * Implemented validateSelf().
+ *
  * Revision 1.11  2003/08/28 03:38:40  bouzekc
  * Changed innerParameter assignment to call to setParam().
  *
@@ -100,4 +103,12 @@ public class StringArrayPG extends VectorPG{
     StringArrayPG faap = new StringArrayPG( getName(), getValue());
     return (Object)faap;
   }       
+
+  /**
+   * Validates this StringArrayPG.  An StringArrayPG is considered valid if 
+   * it contains all String elements.
+   */
+  public void validateSelf(  ) {
+    validateElements( new String(  ).getClass(  ) );
+  }
 }

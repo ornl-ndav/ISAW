@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.12  2003/09/09 23:06:28  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.11  2003/08/28 02:28:11  bouzekc
  *  Removed setEnabled() method.
  *
@@ -139,10 +142,8 @@ abstract public class ChooserPG extends ParameterGUI{
   // ********** IParameter requirements **********
 
   /**
-   * Returns the value of the parameter. While this is a generic
-   * object specific parameters will return appropriate
-   * objects. There can also be a 'fast access' method which returns
-   * a specific object (such as String or DataSet) without casting.
+   * Returns the value of the selected item if this ParameterGUI has been
+   * initialized.  Otherwise, it returns the internal value.
    */
   public Object getValue(){
     Object value=null;
@@ -210,5 +211,14 @@ abstract public class ChooserPG extends ParameterGUI{
       init_vec.add(init_values[i]);
     }
     initGUI(init_vec);
+  }
+
+  /**
+   * Validates this ChooserPG.  This just checks to be sure that getValue()
+   * does not return null.  A derived class may want to do more stringent
+   * checks.
+   */
+  public void validateSelf(  ) {
+    setValid( ( getValue(  ) != null ) );
   }
 }

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/09/09 23:06:27  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.10  2003/08/28 02:28:09  bouzekc
  *  Removed setEnabled() method.
  *
@@ -247,5 +250,18 @@ public class BooleanPG extends ParameterGUI
     pg.setDrawValid(this.getDrawValid());
     pg.initialized=false;
     return pg;
+  }
+
+  /**
+   * Validates this BooleanPG.  In general, if getValue() does not return a
+   * null or a non-Boolean, this BooleanPG is considered valid.
+   */
+  public void validateSelf(  ) {
+    Object val = getValue(  );
+    if( val != null && val instanceof Boolean) {
+      setValid( true );
+    } else {
+      setValid( false );
+    }
   }
 }
