@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2003/06/19 18:46:21  pfpeterson
+ *  Implemented clone().
+ *
  *  Revision 1.28  2003/06/17 22:21:26  pfpeterson
  *  Format changes to javadocs.
  *
@@ -386,6 +389,22 @@ abstract public class Operator implements Serializable
       parameters=new Vector();
     for ( int i = 0; i < num_param; i++ )
       addParameter( (IParameter)op.getParameter(i).clone() );
+  }
+
+  /**
+   * This should take care of clone for the majority of
+   * operators. Classes that need more can still override this method.
+   */
+  public Object clone(){
+    try{
+      Operator operator=(Operator)this.getClass().newInstance();
+      operator.CopyParametersFrom(this);
+      return operator;
+    }catch(InstantiationException e){
+      throw new InstantiationError(e.getMessage());
+    }catch(IllegalAccessException e){
+      throw new IllegalAccessError(e.getMessage());
+    }
   }
 
   /* -------------------------- getDocumentation --------------------------- */

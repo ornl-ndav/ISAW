@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/06/19 18:46:30  pfpeterson
+ *  Implemented clone().
+ *
  *  Revision 1.7  2003/06/17 22:21:34  pfpeterson
  *  Format changes to javadocs.
  *
@@ -156,8 +159,20 @@ abstract public class DataSetOperator extends Operator implements Serializable
 
   /**
    * Get a copy of the current DataSetOperator.  The list of parameters
-   * and the reference to the DataSet to which it applies is copied.  This
-   * method must be implemented in classes derived from DataSetOperator.
+   * and the reference to the DataSet to which it applies is copied. This
+   * method can be overridden by classes derived from DataSetOperator.
    */
-  abstract public Object clone();
+  public Object clone(){
+    try{
+      DataSetOperator operator=(DataSetOperator)this.getClass().newInstance();
+      operator.CopyParametersFrom(this);
+      operator.setDataSet(this.getDataSet());
+      return operator;
+    }catch(InstantiationException e){
+      throw new InstantiationError(e.getMessage());
+    }catch(IllegalAccessException e){
+      throw new IllegalAccessError(e.getMessage());
+    }
+
+  }
 } 
