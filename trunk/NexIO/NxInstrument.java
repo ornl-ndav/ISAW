@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/02/16 02:15:55  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.10  2003/11/24 00:02:58  rmikk
  * Eliminated some debugging prints
  * If there is only one NXdetector, it is matched with all NXdata
@@ -64,7 +67,6 @@
 
 package NexIO;
 import DataSetTools.dataset.*;
-import NexIO.*;
 import java.lang.reflect.*;
 import java.util.*;
 

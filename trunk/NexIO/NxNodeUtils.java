@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2004/02/16 02:15:55  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.18  2003/10/19 20:01:57  rmikk
  * Added some documentation
  * Fixed new units for time to be us
@@ -77,7 +80,6 @@ package NexIO;
 
 import DataSetTools.util.StringUtil;
 import neutron.nexus.*;
-import java.lang.*;
 import java.io.*;
 import java.text.*;
 import java.util.*;

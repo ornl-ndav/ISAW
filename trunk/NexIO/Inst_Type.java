@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/02/16 02:15:55  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.12  2003/12/08 17:27:19  rmikk
  * Finished connecting Instrument type number to instrument type name
  *
@@ -71,7 +74,6 @@ package NexIO;
 import java.util.*;
 import DataSetTools.instruments.*;
 import java.io.*;
-import java.util.*;
 import NexIO.Write.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;

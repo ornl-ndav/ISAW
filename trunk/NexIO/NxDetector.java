@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/02/16 02:15:55  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.6  2002/11/27 23:28:17  pfpeterson
  * standardized header
  *
@@ -42,7 +45,7 @@
  */
 package NexIO;
 import DataSetTools.dataset.*;
-import DataSetTools.math.*;
+//import DataSetTools.math.*;
 
 /**
  * Processor for NXdetector parts of the Nexus source

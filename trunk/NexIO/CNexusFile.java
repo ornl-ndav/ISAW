@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/02/16 02:15:53  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.4  2002/11/27 23:28:17  pfpeterson
  * standardized header
  *
@@ -46,9 +49,7 @@ package NexIO;
 
 
 import  neutron.nexus.*;
-import ncsa.hdf.hdflib.HDFArray;
-import ncsa.hdf.hdflib.HDFException;
-import ncsa.hdf.hdflib.HDFConstants;
+//import ncsa.hdf.hdflib.HDFArray;
 
 /** 
  * This class extends the NexusFile class to getData that is

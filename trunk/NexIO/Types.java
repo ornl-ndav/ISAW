@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/02/16 02:15:56  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.5  2003/10/15 02:52:58  bouzekc
  * Fixed javadoc errors.
  *
@@ -46,9 +49,6 @@
 
 
 package NexIO;
-
-import DataSetTools.math.*;
-import java.lang.*;
 
 /**
  * Contains equates for this modules data types. All others should map
