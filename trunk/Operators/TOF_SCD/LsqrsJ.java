@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.23  2003/07/28 20:21:39  dennis
+ * The log file now includes the "fractional" hkl values corresponding
+ * to a peak, as well as the integer hkl values.  Also, the difference
+ * between the "fractional" and integer hkl values is included.
+ *
  * Revision 1.22  2003/07/28 18:51:17  dennis
  * Fixed off by one error in extracting x,y,z values from the
  * result of Peak.toString().  The "x" value lost it's leading
@@ -516,29 +521,104 @@ public class LsqrsJ extends GenericTOF_SCD {
       Tq     = LinearAlgebra.mult( UB, Thkl );
       Thkl   = LinearAlgebra.mult( LinearAlgebra.getInverse( UB ), Tq );
 
+                                // the "observed" hkl corresponding to measured
+                                // q values.
+      double obs_q[][] = LinearAlgebra.getTranspose( q );
+      double obs_hkl[][];          
+      obs_hkl = LinearAlgebra.mult( LinearAlgebra.getInverse( UB ), obs_q );
+
       // write information to the log file
       logBuffer.append( 
         " seq#   h     k     l      x      y      z      " +
         "xcm    ycm      wl  Iobs    Qx     Qy     Qz\n" );
 
-      String peakString;
-
       for( int i = 0; i < peaks.size(  ); i++ ) {
-        peakString = peaks.elementAt( i )
-                          .toString(  );
-        logBuffer.append( 
-          peakString.substring( 2, 11 ) + "   " +
-          peakString.substring( 12, 17 ) + "   " +
-          peakString.substring( 18, 21 ) + "   " +
-          peakString.substring( 21, peakString.length(  ) - 32 ) + " " +
-          Format.real( q[i][0], 7, 3 ) + Format.real( q[i][1], 7, 3 ) +
-          Format.real( q[i][2], 7, 3 ) + "\n" );
-        logBuffer.append( 
-          "      " + Format.real( Thkl[0][i], 6, 2 ) +
-          Format.real( Thkl[1][i], 6, 2 ) + Format.real( Thkl[2][i], 6, 2 ) +
-          "                                                 " +
+        peak = (Peak)peaks.elementAt(i);
+  
+        logBuffer.append( Format.integer( peak.seqnum(), 5 ) +
+                          Format.integer( peak.h(), 4 ) +
+                          Format.integer( peak.k(), 6 ) +
+                          Format.integer( peak.l(), 6 ) +
+                          Format.real( peak.x(),   9, 2 ) +
+                          Format.real( peak.y(),   7, 2 ) +
+                          Format.real( peak.z(),   7, 2 ) +
+                          Format.real( peak.xcm(), 7, 2 ) +
+                          Format.real( peak.ycm(), 7, 2 ) +
+                          Format.real( peak.wl(),  8, 4 ) +
+                          Format.integer(  peak.ipkobs(), 6 ) +
+                          Format.real( peak.getUnrotQ()[0], 8, 3 ) +
+                          Format.real( peak.getUnrotQ()[1], 7, 3 ) + 
+                          Format.real( peak.getUnrotQ()[2], 7, 3 ) +"\n" );
+
+/* This "should" eventually work, for writing out the values that correspond
+   to the integerized hkl, but the peak requires the calibration information
+   which is not currently available.  Also, the 
+
+        Peak exact_peak = (Peak)peak.clone();
+                                 // now trigger the peak to recalculate it's
+                                 // values based on the integerized h,k,l.
+        exact_peak.sethkl( peak.h(), peak.k(), peak.l(), true );  
+
+        logBuffer.append( Format.string("", 21) + 
+                          Format.real( exact_peak.x(),   9, 2 ) +
+                          Format.real( exact_peak.y(),   7, 2 ) +
+                          Format.real( exact_peak.z(),   7, 2 ) +
+                          Format.real( exact_peak.xcm(), 7, 2 ) +
+                          Format.real( exact_peak.ycm(), 7, 2 ) +
+                          Format.real( exact_peak.wl(),  8, 4 ) +
+                          Format.integer( exact_peak.ipkobs(), 6 ) +
+                          Format.real( exact_peak.getUnrotQ()[0], 8, 3 ) +
+                          Format.real( exact_peak.getUnrotQ()[1], 7, 3 ) +
+                          Format.real( exact_peak.getUnrotQ()[2], 7, 3 ) +"\n");
+*/
+        logBuffer.append( Format.string("",73) +
           Format.real( Tq[0][i], 7, 3 ) + Format.real( Tq[1][i], 7, 3 ) +
           Format.real( Tq[2][i], 7, 3 ) + "\n" );
+
+                                              // print out third line, with 
+                                              // fractional hkl values and
+                                              // display difference between
+                                              // observed and integer hkl
+        logBuffer.append( "      " + 
+                          Format.real( obs_hkl[0][i], 6, 2 ) +
+                          Format.real( obs_hkl[1][i], 6, 2 ) + 
+                          Format.real( obs_hkl[2][i], 6, 2 )  );
+
+        double error = Math.abs( obs_hkl[0][i] - peak.h() ) +
+                       Math.abs( obs_hkl[1][i] - peak.k() ) +
+                       Math.abs( obs_hkl[2][i] - peak.l() );
+
+        int n_stars = (int)( error / 0.1 );
+
+        logBuffer.append( "   Del =" + Format.real( error, 6, 3 ) + " " ); 
+
+        while ( n_stars > 0 )               // show one "*" for .1 error in hkl
+        {
+          logBuffer.append( "*" ); 
+          n_stars--;
+        } 
+        logBuffer.append( "\n" );
+
+/* keep this around for debugging, until values corresponding to integer hkl
+   have been calculated and written to the log file.
+ 
+        logBuffer.append( "obs_hkl " + 
+                          Format.real( obs_hkl[0][i], 6, 2 ) +
+                          Format.real( obs_hkl[1][i], 6, 2 ) + 
+                          Format.real( obs_hkl[2][i], 6, 2 ) +"\n" );
+        logBuffer.append( "obs_q   " + 
+                          Format.real( obs_q[0][i], 6, 3 ) +
+                          Format.real( obs_q[1][i], 6, 3 ) + 
+                          Format.real( obs_q[2][i], 6, 3 ) +"\n" );
+        logBuffer.append( "pk_hkl  " + 
+                          Format.real( peak.h(), 6, 2 ) +
+                          Format.real( peak.k(), 6, 2 ) + 
+                          Format.real( peak.l(), 6, 2 ) +"\n" );
+        logBuffer.append( "pk_q    " + 
+                          Format.real( peak.getUnrotQ()[0], 6, 3 ) +
+                          Format.real( peak.getUnrotQ()[1], 6, 3 ) + 
+                          Format.real( peak.getUnrotQ()[2], 6, 3 ) +"\n" );
+*/
       }
 
       // calculate chisq
