@@ -7,6 +7,10 @@ package OverplotView.components.containers;
  * that is necessary for graphing objects of its type.
  *
  * $Log$
+ * Revision 1.5  2000/07/27 16:38:18  neffk
+ * added a selection order mechanism so that data can be graphed in the order
+ * it was selected, despite the fact that it's stored in a hashtable
+ *
  * Revision 1.4  2000/07/12 14:58:39  neffk
  * added a makefile for generating documentation
  *
@@ -58,6 +62,8 @@ import OverplotView.util.*;
 
 public class GraphableData extends DataSet
 {
+
+  private boolean trace = false; 
 
 
   /**
@@ -205,7 +211,8 @@ public class GraphableData extends DataSet
 
   public void setColor( EntityColor _c )
   {
-    System.out.println( "EntityColor::setColor()" );
+    if( trace )
+      System.out.println( "EntityColor::setColor()" );
     color = _c;
   }
 
@@ -320,38 +327,17 @@ public class GraphableData extends DataSet
 
 
 
-/*---------------------------------static------------------------------------*/
-
-
-/*
-//  private static LineTypeDesignator ltDesignator = null;
-//  private static MarkerDesignator mDesignator = null;
-//  private static ColorDesignator colorDesignator = null;
-
-  private static LineTypeDesignator ltDesignator = 
-    new LineTypeDesignator();
-  private static MarkerDesignator mDesignator = 
-    new MarkerDesignator();
-  private static ColorDesignator colorDesignator = 
-    new ColorDesignator();
-
-  public static void addLT( LineType _lt )
+  public void setSelectionOrder( int i )
   {
-    ltDesignator.add( _lt );
+    selectionOrder = i;
   }
 
 
-  public static void addMarker( Marker _m )
-  {
-    mDesignator.add( _m );
-  }
 
-
-  public static void addColor( EntityColor _c )
+  public int getSelectionOrder()
   {
-    colorDesignator.add( _c );
+    return selectionOrder;
   }
-*/
 
 
 /*-----------------------------------data-------------------------------------*/
@@ -365,6 +351,7 @@ public class GraphableData extends DataSet
   private  String        id;
   private  float[]       offsetData;
   private  float         offset;
+  private  int           selectionOrder;
 }
 
 
