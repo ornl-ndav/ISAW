@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.55  2004/01/08 22:26:05  bouzekc
+ * Added code to handle Wrappable Objects.
+ *
  * Revision 1.54  2003/12/15 00:48:27  rmikk
  * Uncommented out some code in main so it can again be used to debug classpath,etc.
  * problems
@@ -216,8 +219,6 @@ public class Script_Class_List_Handler  implements OperatorHandler{
 
     private   static boolean           hasJython       = true;
 
-    private String errorMessage = "";
-
     /**
      * The System property user.home,ISAW_HOME, GROUP_HOME,
      * GROUP1_HOME,..  are the paths for the operators that are to be
@@ -285,7 +286,6 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     }
 
     static private Operator myGetClassInst(String filename, boolean isgeneric){
-        String path;
         if( filename == null ){
             System.out.println("No Name");
             return null;
@@ -793,7 +793,6 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         String  className  = null;
         String  classFile  = null;
         boolean injar      = false;
-        Vector  classnames = new Vector();
 
         className='/'+Script_Class_List_Handler.class.getName()
                                                     .replace('.','/')+".class";
@@ -1188,7 +1187,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                 }
                 if(Operator.class.isAssignableFrom(C)){
                   return (Operator)C.newInstance();
-                }else{
+                } else if( Wrappable.class.isAssignableFrom(C) ) {
+                  //we need to create a JavaWrapperOperator
+                  return new JavaWrapperOperator( ( Wrappable )C.newInstance() );
+                } else{
                   if(LoadDebug) System.out.print("(Not Operator) ");
                   return null;
                 }
@@ -1257,7 +1259,12 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         return j;
     }
 
-    private String getString(){
+    /**
+     * Utility to read a space separated String from the console.
+     * 
+     * @return The String that was read.
+     */
+    public static String getString(){
         char c=0;
         String S ="";
         try{
