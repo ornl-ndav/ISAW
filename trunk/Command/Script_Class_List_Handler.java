@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2001/12/07 20:40:30  pfpeterson
+ * Corrected directory parser to not double load operators and scripts if isaw is installed in $HOME/ISAW. We still should account for multiply defined directories within the GROUP#_HOME listings.
+ *
  * Revision 1.18  2001/11/12 21:27:19  dennis
  *  1. Eliminated a developmental test program.  The main program
  *     of this class can now be used to see the directories and the
@@ -166,14 +169,27 @@ public class Script_Class_List_Handler  implements OperatorHandler
          {ScrPaths2 =ScrPaths2.replace('\\','/');
           ScrPaths2= ScrPaths2.trim();
           if( ScrPaths2.charAt(ScrPaths2.length()-1) != '/' )
-             ScrPaths2 = ScrPaths2+'/';
+             ScrPaths2 = ScrPaths2+'/'+"ISAW";
           String X =ScrPaths2+"ISAW";
-          processPaths(ScrPaths2+"ISAW/Operators") ;
-          processPaths(ScrPaths2+"ISAW/Scripts") ;
+          processPaths(ScrPaths2+"/Operators") ;
+          processPaths(ScrPaths2+"/Scripts") ;
            
          }
         int g = 0;
        
+        String ScrPaths = System.getProperty( "ISAW_HOME" );
+        if( ScrPaths != null )
+          if(ScrPaths.length()>0)
+           {ScrPaths=ScrPaths.replace('\\','/');
+            if( ScrPaths.charAt(ScrPaths.length()-1) =='/')
+                ScrPaths=ScrPaths.substring(0, ScrPaths.length()-1);
+	    if(!ScrPaths.equals(ScrPaths2)){
+		processPaths(ScrPaths+"/Operators") ;
+		processPaths(ScrPaths+"/Scripts") ;
+            }
+           }
+
+
        String ScrPaths1 = System.getProperty( "GROUP_HOME" );
        while(ScrPaths1 != null)
         {
@@ -182,8 +198,11 @@ public class Script_Class_List_Handler  implements OperatorHandler
             if( ScrPaths1.charAt(ScrPaths1.length()-1) == '/')
                 ScrPaths1=ScrPaths1.substring(0, ScrPaths1.length()-1);
           
-            processPaths(ScrPaths1+"/Operators") ;
-            processPaths(ScrPaths1+"/Scripts") ;
+            if( !ScrPaths.equals(ScrPaths))
+	    if(!ScrPaths.equals(ScrPaths2)){
+              processPaths(ScrPaths1+"/Operators") ;
+              processPaths(ScrPaths1+"/Scripts") ;
+	    }
            }
           g++;
           String suff=""+g;
@@ -191,17 +210,7 @@ public class Script_Class_List_Handler  implements OperatorHandler
           ScrPaths1 = System.getProperty( "GROUP"+suff+"_HOME" );
           
          }
-        String ScrPaths = System.getProperty( "ISAW_HOME" );
-        if( ScrPaths != null )
-          if(ScrPaths.length()>0)
-           {ScrPaths=ScrPaths.replace('\\','/');
-            if( ScrPaths.charAt(ScrPaths.length()-1) =='/')
-                ScrPaths=ScrPaths.substring(0, ScrPaths.length()-1);
-            if( !ScrPaths.equals(ScrPaths1))
-            if(!ScrPaths.equals(ScrPaths2))
-            processPaths(ScrPaths+"/Operators") ;
-            processPaths(ScrPaths+"/Scripts") ;
-           }
+
        
        
  
