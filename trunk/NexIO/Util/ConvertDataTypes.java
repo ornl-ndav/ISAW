@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/11/23 23:49:22  rmikk
+ * Implemented the method CreateDetectorPositionAttribute
+ *
  * Revision 1.1  2003/11/16 21:46:43  rmikk
  * Initial Checkin
  *
@@ -356,7 +359,12 @@ public class ConvertDataTypes{
    */
   public  static DetPosAttribute CreateDetPosAttribute( String AttributeName,
                                                     Object value)
-        {return null;}
+   {if(value == null) return null;
+    if( !(value instanceof DetectorPosition))
+        return null;
+
+    return new DetPosAttribute( AttributeName, (DetectorPosition)value);
+   }
 
   /** 
    *  Creates a FloatAttribute if possible, otherwise null is returned
