@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2004/05/29 16:42:02  rmikk
+ * Eliminated a debug print
+ *
  * Revision 1.13  2004/05/06 17:36:09  rmikk
  * Added a setTime Method 
  * Added an argument to the Selected2D constructor
@@ -403,8 +406,7 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
    */ 
   public float[][] getRegionValues( int first_row, int last_row,
                                      int first_column, int last_column )
-    { System.out.println("first/lastrow,first/lastcol="+first_row+","+last_row+","+
-               first_column+","+last_column);
+    {
      first_row = AdjustRowCol( first_row, getNumRows());
      last_row = AdjustRowCol( last_row, getNumRows());
      first_column = AdjustRowCol( first_column, getNumColumns());
