@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/10/22 20:13:48  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.3  2003/08/21 15:26:44  rmikk
  * Set Detector Positions
  *
@@ -95,7 +98,7 @@ public class ReadFlood extends GenericTOF_SAD{
    *     creates two data sets, an Efficiency and Mask data set.  Both have
    *     the PixelInfoList Attribute set so row and column information is a
    *     preserved.  The Efficiency data set also has the errors recorded.
-   *     @ return  a Vector with two elements.  The first is the Efficiency 
+   *     @return  a Vector with two elements.  The first is the Efficiency 
    *               data set and the second is the Mask data set or an 
    *               ErrorString if an error ocurred.
    */
