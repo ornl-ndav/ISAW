@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/10/14 19:53:49  rmikk
+ *  Fixed the getIndex method to interpolate indecies
+ *
  *  Revision 1.1  2002/08/30 15:20:47  rmikk
  *  Initial Checkin
  *
@@ -77,7 +80,15 @@ public class TimeAxisHandler implements IAxisHandler
   *  this Group. Interpolated
   */
   public float  getXindex( int GroupIndex, float Value)
-    { return ds.getData_entry( GroupIndex).getX_scale().getI( Value); // all have same time value
+    { XScale xscl=ds.getData_entry( GroupIndex).getX_scale();
+      int i= xscl.getI(Value);
+      float x1,x2 = xscl.getX(i);
+      if( i > 0)
+         x1 = xscl.getX(i-1);
+      else
+         return x2;
+     
+      return  (float)(i - 1+(Value - x1)/(x2-x1));
     }
 
   /**Returns the Maximum possible value for this axis and GroupIndex
