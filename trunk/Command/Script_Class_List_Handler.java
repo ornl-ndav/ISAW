@@ -32,6 +32,17 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2001/11/12 21:27:19  dennis
+ *  1. Eliminated a developmental test program.  The main program
+ *     of this class can now be used to see the directories and the
+ *     files that are considered in installing scripts and operators.
+ *
+ *  2. The user's home directory is now searched first, then the Group
+ *     directories(see 3), and finally the ISAW_HOME directory.
+ *
+ *  3. Added GROUP1_HOME, GROUP2_HOME, etc. as other search paths for
+ *     scripts and operators.
+ *
  * Revision 1.17  2001/08/15 14:17:58  rmikk
  * This now returns the SAME java operator whenever the
  *    getOperator method is called (no clone is returned).
@@ -148,30 +159,7 @@ public class Script_Class_List_Handler  implements OperatorHandler
           }
         first = false;  
         toggleDebug(); 
-        String ScrPaths = System.getProperty( "ISAW_HOME" );
-        if( ScrPaths != null )
-          if(ScrPaths.length()>0)
-           {ScrPaths=ScrPaths.replace('\\','/');
-            if( ScrPaths.charAt(ScrPaths.length()-1) =='/')
-                ScrPaths=ScrPaths.substring(0, ScrPaths.length()-1);
-           
-            processPaths(ScrPaths+"/Operators") ;
-            processPaths(ScrPaths+"/Scripts") ;
-           }
-       
-       
-        String ScrPaths1 = System.getProperty( "GROUP_HOME" );
-        toggleDebug(); 
-        if( ScrPaths1 != null )
-	    if(!ScrPaths1.equals(ScrPaths))
-           {ScrPaths1=ScrPaths1.replace('\\','/');
-            if( ScrPaths1.charAt(ScrPaths1.length()-1) == '/')
-                ScrPaths1=ScrPaths1.substring(0, ScrPaths1.length()-1);
-          
-            processPaths(ScrPaths1+"/Operators") ;
-            processPaths(ScrPaths1+"/Scripts") ;
-           }
-         toggleDebug(); 
+
         String ScrPaths2 = System.getProperty( "user.home" );
         if( ScrPaths2 != null )
 	 if( ScrPaths2.length() > 0)
@@ -180,18 +168,45 @@ public class Script_Class_List_Handler  implements OperatorHandler
           if( ScrPaths2.charAt(ScrPaths2.length()-1) != '/' )
              ScrPaths2 = ScrPaths2+'/';
           String X =ScrPaths2+"ISAW";
-         
-         // if(ScrPaths2 != null)
-         //   if( ScrPaths2.charAt(ScrPaths2.length()-1)== 
-        //              java.io.File.pathSeparatorChar)
-        //       X = ScrPaths2+"ISAW"+ java.io.File.pathSeparator;
-          if(! X.equals(ScrPaths))
-          if( !X.equals(ScrPaths1))
-           {processPaths(ScrPaths2+"ISAW/Operators") ;
-            processPaths(ScrPaths2+"ISAW/Scripts") ;
-           }
+          processPaths(ScrPaths2+"ISAW/Operators") ;
+          processPaths(ScrPaths2+"ISAW/Scripts") ;
+           
          }
-
+        int g = 0;
+       
+       String ScrPaths1 = System.getProperty( "GROUP_HOME" );
+       while(ScrPaths1 != null)
+        {
+	  if(!ScrPaths1.equals(ScrPaths2))
+           {ScrPaths1=ScrPaths1.replace('\\','/');
+            if( ScrPaths1.charAt(ScrPaths1.length()-1) == '/')
+                ScrPaths1=ScrPaths1.substring(0, ScrPaths1.length()-1);
+          
+            processPaths(ScrPaths1+"/Operators") ;
+            processPaths(ScrPaths1+"/Scripts") ;
+           }
+          g++;
+          String suff=""+g;
+          suff=suff.trim();
+          ScrPaths1 = System.getProperty( "GROUP"+suff+"_HOME" );
+          
+         }
+        String ScrPaths = System.getProperty( "ISAW_HOME" );
+        if( ScrPaths != null )
+          if(ScrPaths.length()>0)
+           {ScrPaths=ScrPaths.replace('\\','/');
+            if( ScrPaths.charAt(ScrPaths.length()-1) =='/')
+                ScrPaths=ScrPaths.substring(0, ScrPaths.length()-1);
+            if( !ScrPaths.equals(ScrPaths1))
+            if(!ScrPaths.equals(ScrPaths2))
+            processPaths(ScrPaths+"/Operators") ;
+            processPaths(ScrPaths+"/Scripts") ;
+           }
+       
+       
+ 
+         toggleDebug(); 
+      
       }
       private void processPaths( String ScrPaths) 
         {ScrPaths.trim();
@@ -702,7 +717,7 @@ private String getString()
 /** Test program for this module.  No arguments are used 
 */
 public static void main( String args[] )
-   { java.util.Properties isawProp;
+   { /*java.util.Properties isawProp;
      isawProp = new java.util.Properties(System.getProperties());
    String path = System.getProperty("user.home")+"\\";
        path = StringUtil.fixSeparator(path);
@@ -717,70 +732,18 @@ public static void main( String args[] )
        catch (IOException ex) {
           System.out.println("Properties file could not be loaded due to error :" +ex);
        }
-     System.out.println("Here");
+    */
+      
+     
+     PropertiesLoader PL= new PropertiesLoader("IsawProps.dat"  );
+    
      Script_Class_List_Handler.LoadDebug = true;
      Script_Class_List_Handler BB = new Script_Class_List_Handler();
+     System.out.println("--------------------------------------------------------------------------");
      System.out.println("#operators ="+BB.getNum_operators());
      BB.show(257);
      
    
-     char c=0;
-     String S="";
-     int n=0, N=0;
-     Operator O1=null, O2=null;
-     
-     while( c!='x')
-       {
-            System.out.println("Enter option desired");
-            System.out.println("    s: Enter String");
-            System.out.println("    n: Enter Integer");
-            System.out.println("    N: Enter 2nd Integer");
-            System.out.println("     c:Test getopCommand(index)");
-            System.out.println("     i.Test index=getOp(Command)");
-            System.out.println("     1: getNewOp(index) 1");
-            System.out.println("     2: getNewOp(index) 2");
-	    System.out.println("     m: getNumParameters");
-            System.out.println("     p:getParameter");
-            try
-               {
-                 c=0;
-                while( c < 32)
-                  { c=(char)System.in.read();
-                   }
-               }
-             catch(IOException s){c=0;}
-            try{
-            if( c=='s')
-              S = BB.getString();
-            
-            else if( c=='n')
-              n = new Integer(BB.getString()).intValue();
-            else if( c=='N')
-              N = new Integer(BB.getString()).intValue();
-
-            else if( c=='c')
-              System.out.println(BB.getOperatorCommand( n ));
-
-            else if( c=='i')
-              System.out.println(BB.getOperatorPosition( S));
-            else if( c=='1')
-             { O1=BB.getOperator( n );
-               JParametersDialog JP=new JParametersDialog( O1, null, null, null);
-             }
-            else if( c=='2')
-              {O2=BB.getOperator( N);
-               JParametersDialog JP=new JParametersDialog( O2,null,null , null);
-
-              }
-
-            else if( c=='m')
-               System.out.println(BB.getNumParameters(n));
-            else if( c=='p')
-               System.out.println(BB.getOperatorParameter(n,N));
-               }
-           catch(Exception s){ System.out.println("Exception="+s);}
-
-        }
      System.exit( 0 );
    }
 private  boolean ScompareLess( String s1, String s2)
