@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/02/16 02:15:56  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.3  2002/11/27 23:28:17  pfpeterson
  * standardized header
  *
@@ -41,7 +44,6 @@
 package NexIO;
 
 import DataSetTools.dataset.*;
-import NexIO.*;
 
 /**
  * This class is used to process the NxSample part of a Nexus datasource

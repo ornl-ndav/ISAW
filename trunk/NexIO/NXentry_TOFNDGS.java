@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/02/16 02:15:55  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.10  2003/10/15 03:05:46  bouzekc
  * Fixed javadoc errors.
  *
@@ -63,9 +66,7 @@ package NexIO;
 
 
 import DataSetTools.dataset.*;
-import DataSetTools.operator.*;
 import java.util.*;
-import java.text.*;
 
 
 /** 
