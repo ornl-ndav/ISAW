@@ -32,6 +32,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/06/30 21:09:22  bouzekc
+ * Removed "Set Value" button and moved its functionality to
+ * the "Add" button.  Changed private method newVal() to
+ * setInnerParameterValue().  "Add" button now has
+ * SetValueActionListener rather than the ArrayEntryJPanel
+ * as its ActionListener.
+ *
  * Revision 1.2  2003/06/30 20:34:23  bouzekc
  * Moved button names into final instance variables.
  *
@@ -70,13 +77,13 @@ import javax.swing.*;
  */
 public class ArrayEntryJPanel extends JPanel implements ActionListener,
   PropertyChanger {
-  private final String UP_LABEL     = new String( "Up" );
-  private final String DOWN_LABEL   = new String( "Down" );
-  private final String DELETE_LABEL = new String( "Delete Item" );
-  private final String ADD_LABEL    = new String( "Add Item" );
-  private final String EDIT_LABEL   = new String( "Edit Item" );
-  private final String DONE_LABEL   = new String( "Done" );
-  private final String SHOW_LABEL   = new String( "Show Items" );
+  private final String UP_LABEL       = new String( "Move Item Up" );
+  private final String DOWN_LABEL     = new String( "Move Item Down" );
+  private final String DELETE_LABEL   = new String( "Delete Item" );
+  private final String ADD_LABEL      = new String( "Add Item" );
+  private final String EDIT_LABEL     = new String( "Edit Item" );
+  private final String DONE_LABEL     = new String( "Done" );
+  private final String SHOW_LABEL     = new String( "Show Items" );
   private JList jlist;
   private DefaultListModel jlistModel;
   private JButton Delete;
@@ -89,9 +96,9 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
   private PropertyChangeSupport pcs;
   private Vector oldVector;
   private ParameterGUI param;
-  private JFrame jf         = null;
-  private boolean isShowing = false;
-  private int position      = -1;
+  private JFrame jf                   = null;
+  private boolean isShowing           = false;
+  private int position                = -1;
 
   /**
    *  ArrayEntryJPanel constructor.
@@ -135,25 +142,25 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     Up.addActionListener( this );
     Down.addActionListener( this );
     Show.addActionListener( this );
-    Add.addActionListener( this );
+    Add.addActionListener( new SetValueActionListener(  ) );
     Delete.addActionListener( this );
     Edit.addActionListener( this );
     OK.addActionListener( this );
 
-    JPanel JP = new JPanel( new BorderLayout(  ) );
+    JPanel dataPanel = new JPanel( new BorderLayout(  ) );
 
     param.init(  );
 
-    JP.add( param.getEntryWidget(  ), BorderLayout.CENTER );
+    //use the inner parameter's entrywidget for entering values
+    dataPanel.add( param.getEntryWidget(  ), BorderLayout.CENTER );
 
-    JButton setValButton = new JButton( "Set Value" );
+    this.add( dataPanel, BorderLayout.NORTH );
 
-    JP.add( setValButton, BorderLayout.EAST );
-    add( JP, BorderLayout.NORTH );
-
+    //just changed the value, so invalidate the parameter.
     invalidate(  );
-    setValButton.addActionListener( new SetValueActionListener(  ) );
 
+    //if we happen to have a VectorPG as an element in our ArrayJPanel, we will
+    //need to add the SetValueActionListener to it
     if( param instanceof VectorPG ) {
       ( ( VectorPG )param ).addPropertyChangeListener( 
         new SetValueActionListener(  ) );
@@ -204,7 +211,7 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
    *  @param     pos            The index of the position where the new value
    *                            is at.
    */
-  private void newVal( int pos ) {
+  private void setInnerParameterValue( int pos ) {
     position = pos;
 
     if( ( pos >= 0 ) && ( pos < jlistModel.getSize(  ) ) ) {
@@ -227,9 +234,7 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     } else if( actionButton == Down ) {
       move( +1 );
     } else if( actionButton == Edit ) {
-      newVal( jlist.getSelectedIndex(  ) );
-    } else if( actionButton == Add ) {
-      newVal( -1 );
+      setInnerParameterValue( jlist.getSelectedIndex(  ) );
     } else if( actionButton == Delete ) {
       int j = jlist.getSelectedIndex(  );
 
