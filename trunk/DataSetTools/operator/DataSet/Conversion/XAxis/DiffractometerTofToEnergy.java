@@ -30,6 +30,10 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.6  2002/12/17 19:18:40  dennis
+ *  Added getDocumentation() method, simple main test program and
+ *  Java docs for the getResult() method. (Chris Bouzek)
+ *
  *  Revision 1.5  2002/11/27 23:17:04  pfpeterson
  *  standardized header
  *
@@ -57,6 +61,7 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
 
 /**
  * This operator converts a neutron time-of-flight DataSet to energy.  The
@@ -121,7 +126,8 @@ public class DiffractometerTofToEnergy extends    XAxisConversionOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, ToE
+   * @return the command name to be used with script processor: 
+   *         in this case, ToE
    */
    public String getCommand()
    {
@@ -215,9 +221,43 @@ public class DiffractometerTofToEnergy extends    XAxisConversionOp
     return tof_calc.Energy( total_length, x );
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /** 
+   *  Returns the documentation for this method as a String.  The format 
+   *  follows standard JavaDoc conventions.  
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator converts the X-axis units on a DataSet ");
+    s.append("from neutron time-of-flight to energy.");
+    s.append("@assumptions The DataSet must contain spectra with ");
+    s.append("attributes giving the detector position and source to sample ");
+    s.append("distance ( the initial flight path ). In addition, it is ");
+    s.append("assumed that the XScale for the spectra represents the ");
+    s.append("time-of-flight from the source to the detector.");
+    s.append("@algorithm Creates a new DataSet which has the same title ");
+    s.append("as the input DataSet, the same y-values as the input DataSet, ");
+    s.append("and whose X-axis units have been converted to energy.  The new ");
+    s.append("DataSet also has a message appended to its log indicating ");
+    s.append("that a conversion to units of energy on the X-axis was done.");
+    s.append("@param ds The DataSet to which the operation is applied.");
+    s.append("@param min_E The minimum energy value to be binned.");
+    s.append("@param max_E The maximum energy value to be binned.");
+    s.append("@param num_E The number of \"bins\" to be used between ");
+    s.append("min_E and max_E.");
+    s.append("@return A new DataSet which is the result of converting the ");
+    s.append("input DataSet's X-axis units to energy.");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+   *  Converts the input DataSet to a DataSet which is identical except that
+   *  the new DataSet's X-axis units have been converted to energy.
+   *  
+   *  @return DataSet whose X-axis units have been converted to energy.
+   */
   public Object getResult()
   {
                                      // get the current data set
@@ -349,4 +389,22 @@ public class DiffractometerTofToEnergy extends    XAxisConversionOp
     return new_op;
   }
 
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    float min_1 = (float)0.5, max_1 = (float)1.0;
+                                              //create the first test DataSet
+    DataSet ds1 = DataSetFactory.getTestDataSet(); 
+    ViewManager viewer = new ViewManager(ds1, ViewManager.IMAGE);
+
+    DiffractometerTofToEnergy op = 
+                        new DiffractometerTofToEnergy(ds1, min_1, max_1, 100);
+
+    DataSet new_ds = (DataSet)op.getResult();
+    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE);	
+    System.out.println(op.getDocumentation());
+  }
 }
