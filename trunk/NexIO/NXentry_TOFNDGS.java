@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/02/26 15:40:42  rmikk
+ * Added a debug field
+ * Added a timeField field to put into the TimeField attribute.  All NXdata are
+ *    merged.  To unmerge, extract with the TimefieldType  attribute
+ * The code now allows for fixed monitor names and arbitrary monitor names
+ * Some error messages now appear on the status pane
+ *
  * Revision 1.3  2001/07/24 20:05:19  rmikk
  * Assumed only one Isaw Monitor and names are monitor1
  * and monitor2.
@@ -43,7 +50,7 @@
  * New Nexus datasource IO handlers
  *
 */
-package NexIO ; 
+package NexIO; 
 
 import DataSetTools.dataset.* ;
 import DataSetTools.operator.* ;
@@ -59,6 +66,8 @@ public class NXentry_TOFNDGS implements NXentry
    NxData nd ;
    NxMonitor nm ;
    String monitorNames[];
+   boolean debug=false;
+   boolean unknown=true;
      /**
 *@param  node  the datasource node used to retrieve information
 *@param  DS    the DataSet( already existing ) to be built up
@@ -71,8 +80,8 @@ public class NXentry_TOFNDGS implements NXentry
      nm =  new NxMonitor() ;
      nm.setMonitorNum( 0 ) ;
      monitorNames = new String[2];
-     monitorNames[0] ="monitor1";
-     monitorNames[1] = "monitor2";
+     monitorNames[0] = null;
+     monitorNames[1] = null;
      }
 /** Returns any error or warning message or "" if none
 */
@@ -85,24 +94,32 @@ public class NXentry_TOFNDGS implements NXentry
 *@param  nd  a NXdata handler
 */
   public void setNxData( NxData nd )
-    {
+    { if(nd instanceof NxData_Gen)
+           unknown=true;
+      else 
+           unknown=false;
       this.nd = nd ;
     }
     
 /** adds fields to the data set DS
-* @param DS  the Data Set( already existing ) that is to be built
+*@param DS  the Data Set( already existing ) that is to be built
 *@param index  A given NXentry has several data sets. The index parameter
-* tells which one is to be retrieved
-*<P>NOTE: The Monitors are retrieved first, then the Others next
+*           tells which one is to be retrieved
+*<P>NOTE: The Monitors are retrieved and merged,  The Other NXdata are merged
 */  
 public boolean processDS( DataSet DS, int index )
     {
     NxNode datanode ,instrNode;
-   
+     
     boolean monitorDS, HistDS ;
     monitorDS = false ;
     HistDS = false ;
    NxNodeUtils nu = new NxNodeUtils();
+   if( monitorNames==null) unknown=false;
+   else if( monitorNames.length <1) unknown= false;
+   else if( monitorNames[0]== null) unknown = false;
+   else if( !(monitorNames[0].equals("monitor1"))) unknown=false;
+
     errormessage = "improper index" ;
     if( index < 0 ) 
       return false ;
@@ -113,6 +130,7 @@ public boolean processDS( DataSet DS, int index )
      boolean done = false ;
      int nchildren =  node.getNChildNodes() ;
       instrNode = null;
+      if(debug)System.out.println("NXentry:find NXinstrument");
       for( int i = 0; (i < nchildren)&&(!done); i++)
         {datanode =  node.getChildNode( i ) ;
          if( datanode == null )
@@ -129,7 +147,8 @@ public boolean processDS( DataSet DS, int index )
      int ndatasets = 0 ;
      
      done = false;
-/*     for( int i = 0 ; ( i<nchildren )&(!done) ; i++  )
+     if(monitorNames[0]==null)
+    for( int i = 0 ; ( i<nchildren )&(!done) ; i++  )
       {datanode =  node.getChildNode( i ) ;
      
        if( datanode == null )
@@ -161,7 +180,8 @@ public boolean processDS( DataSet DS, int index )
          
          }//if( NXmonitor node
       }//for each node
-*/ // only one Monitor so break up
+  // only one Monitor so break up
+  else
   
   for( int i = 0; i < monitorNames.length; i++)
     {NxNode mon =node.getChildNode( monitorNames[i]);
@@ -176,7 +196,7 @@ public boolean processDS( DataSet DS, int index )
 	       {
                monitorDS = true ;
 	       int nn = nm.getMonitorNum() + 1 ;
-               nm.setMonitorNum( nn ) ;
+               nm.setMonitorNum( i ) ;
               
                }
             else 
@@ -190,7 +210,8 @@ public boolean processDS( DataSet DS, int index )
     }  
      done =  false ;
      HistDS = false;
-    
+     int timeFieldNum=0;
+     
      if( !monitorDS )
      for( int i = 0 ; ( i < nchildren ) ; i++ )
       {//System.out.print("i="+i+":");
@@ -201,18 +222,23 @@ public boolean processDS( DataSet DS, int index )
            }
     
        if( datanode.getNodeClass().equals( "NXdata" ) )
-        { //System.out.print("child NxData");
+        { 
+           if(debug)System.out.println("NXentry:ere process NXdata at node "+i);
+           nd.setTimeFieldType( timeFieldNum);
+           timeFieldNum++;
            if( !nd.processDS( datanode, instrNode, DS ) )
               {ndatasets++ ;
+               if(debug)System.out.println("NXentry:thru process data set at node "+ i);
                HistDS = true ;
                //done = true ;
                }
             else
-             {errormessage += ";"+nd.getErrorMessage() ;            
+             {errormessage += ";"+nd.getErrorMessage() ;   
+              DataSetTools.util.SharedData.status_pane.add( "ERROR="+errormessage);         
 	     //return true ;
              }           
           
-         }//if( NXdatar node
+         }//if( NXdata node
       }//for each node
     // System.out.println("END:"+errormessage);
      if( !( monitorDS || HistDS ) )
