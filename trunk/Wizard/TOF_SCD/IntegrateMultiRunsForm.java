@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.17  2003/07/03 14:30:32  bouzekc
+ * Added all missing javadoc comments and formatted existing
+ * comments.  Arranged methods according to access privileges.
+ *
  * Revision 1.16  2003/06/25 20:25:37  bouzekc
  * Unused private variables removed, reformatted for
  * consistency.
@@ -104,21 +108,24 @@ import java.util.Vector;
 
 
 /**
- *
- *  This Form is a "port" of the script used to integrate
- *  multiple SCD runs.  It "knows" to apply the
- *  lsxxxx.expName.mat file to the SCDxxxx.run in the peaks
- *  file.
+ * This Form is a "port" of the script used to integrate multiple SCD runs.  It
+ * "knows" to apply the lsxxxx.expName.mat file to the SCDxxxx.run in the
+ * peaks file.
  */
 public class IntegrateMultiRunsForm extends Form {
+  //~ Static fields/initializers ***********************************************
+
   protected static int RUN_NUMBER_WIDTH = 5;
+
+  //~ Instance fields **********************************************************
+
   private Vector choices;
-  protected final String SCDName      = "SCD";
+  protected final String SCDName        = "SCD";
   private LoadOneHistogramDS loadHist;
   private Integrate integrate;
   private LoadSCDCalib loadSCD;
 
-  /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
+  //~ Constructors *************************************************************
 
   /**
    * Construct a Form with a default parameter list.
@@ -129,53 +136,68 @@ public class IntegrateMultiRunsForm extends Form {
   }
 
   /**
-   *  Construct a Form using the default parameter list.
+   * Construct a Form using the default parameter list.
    *
-   *  @param hasConstParams         boolean indicating whether
-   *                                this Form should have constant
-   *                                parameters.
+   * @param hasConstParams boolean indicating whether this Form should have
+   *        constant parameters.
    */
   public IntegrateMultiRunsForm( boolean hasConstParams ) {
     super( "IntegrateMultiRunsForm", hasConstParams );
     this.setDefaultParameters(  );
   }
 
-  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
-
   /**
-   *  Full constructor for IntegrateMultiRunsForm.
+   * Full constructor for IntegrateMultiRunsForm.
    *
-   *  @param rawpath            The raw data path.
-   *  @param outpath            The output data path for the *.integrate file.
-   *  @param runnums            The run numbers to load.
-   *  @param expname            The experiment name (i.e. "quartz").
-   *  @param ctype              Number for the centering type.
-   *  @param calibfile          SCD calibration file.
-   *  @param time_slice_range   The time-slice range
-   *  @param increase_amt       Amount to increase slice size by.
-   *  @param line2use           SCD calibration file line to use.
-   *  @param append             Append to file (yes/no).
+   * @param rawpath The raw data path.
+   * @param outpath The output data path for the .integrate file.
+   * @param runnums The run numbers to load.
+   * @param expname The experiment name (i.e. "quartz").
+   * @param ctype Number for the centering type.
+   * @param calibfile SCD calibration file.
+   * @param time_slice_range The time-slice range
+   * @param increase_amt Amount to increase slice size by.
+   * @param line2use SCD calibration file line to use.
+   * @param append Append to file (yes/no).
    */
   public IntegrateMultiRunsForm( 
     String rawpath, String outpath, String runnums, String expname, int ctype,
     String calibfile, String time_slice_range, int increase_amt, int line2use,
     boolean append ) {
     this(  );
-    getParameter( 0 ).setValue( rawpath );
-    getParameter( 1 ).setValue( outpath );
-    getParameter( 2 ).setValue( runnums );
-    getParameter( 3 ).setValue( expname );
-    getParameter( 4 ).setValue( choices.elementAt( ctype ) );
-    getParameter( 5 ).setValue( calibfile );
-    getParameter( 6 ).setValue( time_slice_range );
-    getParameter( 7 ).setValue( new Integer( increase_amt ) );
-    getParameter( 8 ).setValue( new Integer( line2use ) );
-    getParameter( 9 ).setValue( new Boolean( append ) );
+    getParameter( 0 )
+      .setValue( rawpath );
+    getParameter( 1 )
+      .setValue( outpath );
+    getParameter( 2 )
+      .setValue( runnums );
+    getParameter( 3 )
+      .setValue( expname );
+    getParameter( 4 )
+      .setValue( choices.elementAt( ctype ) );
+    getParameter( 5 )
+      .setValue( calibfile );
+    getParameter( 6 )
+      .setValue( time_slice_range );
+    getParameter( 7 )
+      .setValue( new Integer( increase_amt ) );
+    getParameter( 8 )
+      .setValue( new Integer( line2use ) );
+    getParameter( 9 )
+      .setValue( new Boolean( append ) );
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * @return the String command used for invoking this Form in a Script.
+   */
+  public String getCommand(  ) {
+    return "INTEGRATEMULTIRUNSFORM";
   }
 
   /**
-   *
-   *  Attempts to set reasonable default parameters for this form.
+   * Attempts to set reasonable default parameters for this form.
    */
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
@@ -227,8 +249,6 @@ public class IntegrateMultiRunsForm extends Form {
     //10
     addParameter( new LoadFilePG( "Integrated Peaks File ", "", false ) );
 
-    //don't monkey around with the run numbers and such if this form
-    //relies on previously calculated values
     if( HAS_CONSTANTS ) {
       setParamTypes( 
         new int[]{ 0, 1, 2, 3, 5, 8 }, new int[]{ 4, 6, 7, 9 }, new int[]{ 10 } );
@@ -239,10 +259,7 @@ public class IntegrateMultiRunsForm extends Form {
   }
 
   /**
-   *
-   *  Documentation for this OperatorForm.  Follows javadoc
-   *  conventions.
-   *
+   * @return documentation for this OperatorForm.  Follows javadoc conventions.
    */
   public String getDocumentation(  ) {
     StringBuffer s = new StringBuffer(  );
@@ -284,18 +301,11 @@ public class IntegrateMultiRunsForm extends Form {
   }
 
   /**
-   *  Returns the String command used for invoking this
-   *  Form in a Script.
-   */
-  public String getCommand(  ) {
-    return "INTEGRATEMULTIRUNSFORM";
-  }
-
-  /**
-   *  This Form first gets all the user input parameters, then for each runfile,
-   *  it loads the first histogram, the SCD calibration data, and calls Integrate.
+   * This Form first gets all the user input parameters, then for each runfile,
+   * it loads the first histogram, the SCD calibration data, and calls
+   * Integrate.
    *
-   *  @return A Boolean indicating success or failure.
+   * @return A Boolean indicating success or failure.
    */
   public Object getResult(  ) {
     SharedData.addmsg( "Executing...\n" );
@@ -321,11 +331,13 @@ public class IntegrateMultiRunsForm extends Form {
 
     //get raw data directory
     param    = ( IParameterGUI )super.getParameter( 0 );
-    rawDir   = param.getValue(  ).toString(  );
+    rawDir   = param.getValue(  )
+                    .toString(  );
 
     //get output directory
     param       = ( IParameterGUI )getParameter( 1 );
-    outputDir   = param.getValue(  ).toString(  );
+    outputDir   = param.getValue(  )
+                       .toString(  );
 
     //gets the run numbers
     param       = ( IParameterGUI )super.getParameter( 2 );
@@ -333,11 +345,12 @@ public class IntegrateMultiRunsForm extends Form {
 
     //get experiment name
     param     = ( IParameterGUI )getParameter( 3 );
-    expName   = param.getValue(  ).toString(  );
+    expName   = param.getValue(  )
+                     .toString(  );
 
     //get centering type - this still needs to be checked here rather than Form
-    param       = ( IParameterGUI )getParameter( 4 );
-    obj         = param.getValue(  );
+    param   = ( IParameterGUI )getParameter( 4 );
+    obj     = param.getValue(  );
 
     if( obj != null ) {
       centerType = obj.toString(  );
@@ -348,11 +361,13 @@ public class IntegrateMultiRunsForm extends Form {
 
     //get calibration file name
     param       = ( IParameterGUI )getParameter( 5 );
-    calibFile   = param.getValue(  ).toString(  );
+    calibFile   = param.getValue(  )
+                       .toString(  );
 
     //get time slice range
     param        = ( IParameterGUI )getParameter( 6 );
-    sliceRange   = param.getValue(  ).toString(  );
+    sliceRange   = param.getValue(  )
+                        .toString(  );
 
     //get time slice increase increment
     param            = ( IParameterGUI )getParameter( 7 );
@@ -397,7 +412,8 @@ public class IntegrateMultiRunsForm extends Form {
       SharedData.addmsg( "Loading " + loadName + "." );
 
       //load the histogram
-      loadHist.getParameter( 0 ).setValue( loadName );
+      loadHist.getParameter( 0 )
+              .setValue( loadName );
       obj = loadHist.getResult(  );
 
       //make sure it is a DataSet
@@ -427,9 +443,12 @@ public class IntegrateMultiRunsForm extends Form {
 
       SharedData.addmsg( "Integrating run " + IPNSName + "." );
 
-      integrate.getParameter( 0 ).setValue( histDS );
-      integrate.getParameter( 2 ).setValue( matrixName );
-      integrate.getParameter( 7 ).setValue( new Boolean( append ) );
+      integrate.getParameter( 0 )
+               .setValue( histDS );
+      integrate.getParameter( 2 )
+               .setValue( matrixName );
+      integrate.getParameter( 7 )
+               .setValue( new Boolean( append ) );
       obj = integrate.getResult(  );
 
       if( obj instanceof ErrorString ) {
@@ -460,6 +479,60 @@ public class IntegrateMultiRunsForm extends Form {
   }
 
   /**
+   * Creates the Operators necessary for this Form and sets their constant
+   * values.
+   *
+   * @param calibFile SCD calibration file.
+   * @param SCDline The line to use from the SCD calib file.
+   * @param integName The name of the .integrate file.
+   * @param sliceRange The time slice range.
+   * @param timeSliceDelta Amount to increase slice size by.
+   * @param append Whether to append to peaks file.
+   * @param centerType Centering type.
+   */
+  private void createIntegrateOperators( 
+    String calibFile, int SCDline, String integName, String sliceRange,
+    int timeSliceDelta, boolean append, String centerType ) {
+    loadHist    = new LoadOneHistogramDS(  );
+    integrate   = new Integrate(  );
+    loadSCD     = new LoadSCDCalib(  );
+
+    //LoadOneHistogramDS
+    //get the histogram.  A value of "1" will retrieve the first histogram
+    //DataSet
+    loadHist.getParameter( 1 )
+            .setValue( new Integer( 1 ) );
+
+    /*If you want to be able to use a group mask,
+       change the "" below to a String variable.
+       I've been told this is not used. -CMB*/
+    loadHist.getParameter( 2 )
+            .setValue( "" );
+
+    //Integrate
+    integrate.getParameter( 1 )
+             .setValue( integName );
+    integrate.getParameter( 3 )
+             .setValue( centerType );
+    integrate.getParameter( 4 )
+             .setValue( sliceRange );
+    integrate.getParameter( 5 )
+             .setValue( new Integer( timeSliceDelta ) );
+    integrate.getParameter( 6 )
+             .setValue( new Integer( 1 ) );
+    integrate.getParameter( 7 )
+             .setValue( new Boolean( append ) );
+
+    //LoadSCDCalib
+    loadSCD.getParameter( 0 )
+           .setValue( calibFile );
+    loadSCD.getParameter( 1 )
+           .setValue( new Integer( SCDline ) );
+    loadSCD.getParameter( 2 )
+           .setValue( "" );
+  }
+
+  /**
    * Create the vector of choices for the ChoiceListPG of centering.
    */
   private void init_choices(  ) {
@@ -471,54 +544,5 @@ public class IntegrateMultiRunsForm extends Form {
     choices.add( "[f]ace centered" );  // 4
     choices.add( "[i] body centered" );  // 5
     choices.add( "[r]hombohedral centered" );  // 6
-  }
-
-  /**
-   *  Creates the Operators necessary for this Form and sets their
-   *  constant values.
-   *
-   *  @param  calibFile              SCD calibration file.
-   *
-   *  @param  SCDline                The line to use from the SCD calib file.
-   *
-   *  @param  integName              The name of the .integrate file.
-   *
-   *  @param  sliceRange             The time slice range.
-   *
-   *  @param  timeSliceDelta         Amount to increase slice size by.
-   *
-   *  @param  append                 Whether to append to peaks file.
-   *
-   *  @param  centerType             Centering type.
-   *
-   */
-  private void createIntegrateOperators( 
-    String calibFile, int SCDline, String integName, String sliceRange,
-    int timeSliceDelta, boolean append, String centerType ) {
-    loadHist    = new LoadOneHistogramDS(  );
-    integrate   = new Integrate(  );
-    loadSCD     = new LoadSCDCalib(  );
-
-    //LoadOneHistogramDS
-    //get the histogram.  We want to retrieve the first one.
-    loadHist.getParameter( 1 ).setValue( new Integer( 1 ) );
-
-    /*If you want to be able to use a group mask,
-       change the "" below to a String variable.
-       I've been told this is not used. -CMB*/
-    loadHist.getParameter( 2 ).setValue( "" );
-
-    //Integrate
-    integrate.getParameter( 1 ).setValue( integName );
-    integrate.getParameter( 3 ).setValue( centerType );
-    integrate.getParameter( 4 ).setValue( sliceRange );
-    integrate.getParameter( 5 ).setValue( new Integer( timeSliceDelta ) );
-    integrate.getParameter( 6 ).setValue( new Integer( 1 ) );
-    integrate.getParameter( 7 ).setValue( new Boolean( append ) );
-
-    //LoadSCDCalib
-    loadSCD.getParameter( 0 ).setValue( calibFile );
-    loadSCD.getParameter( 1 ).setValue( new Integer( SCDline ) );
-    loadSCD.getParameter( 2 ).setValue( "" );
   }
 }
