@@ -32,9 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 19:00:38  bouzekc
- * Documented file using javadoc statements.
- * Added a private constructor because all of the methods are static.
+ * Revision 1.3  2004/03/12 19:46:20  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:10:47  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter

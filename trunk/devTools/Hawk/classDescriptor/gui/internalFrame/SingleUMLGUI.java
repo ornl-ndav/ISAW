@@ -32,12 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 19:01:51  bouzekc
- * Documented file using javadoc statements.
- * Added the method resizeAndRelocate() method to handle the size and placement of
- * the window.
- * Added a JTabbedPane which displays the UML diagram in ASCII format in one tab
- * and in HTML format in the other tab.
+ * Revision 1.3  2004/03/12 19:46:16  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:09:16  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -161,7 +157,7 @@ public class SingleUMLGUI extends DesktopInternalFrame implements ActionListener
 					closeItem.setActionCommand("close");
 					fileMenu.add(closeItem);
 				menuBar.add(fileMenu);
-
+				menuBar.add(InternalFrameUtilities.constructViewMenu(this,false,true,true,true));
 				JMenu propertiesMenu = new JMenu("Properties");
 					shortJavaCheckBox = new JCheckBox("Shorten Java Classnames");
 						shortJavaCheckBox.setSelected(shortJava);
@@ -282,6 +278,7 @@ public class SingleUMLGUI extends DesktopInternalFrame implements ActionListener
 			processWindowChange(event,copy,this);
 */
 			super.actionPerformed(event);
+			InternalFrameUtilities.processActionEventFromViewMenu(event,selectedInterface,desktop);
 		}
 	}
 }

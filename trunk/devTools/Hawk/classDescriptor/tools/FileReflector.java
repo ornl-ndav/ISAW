@@ -32,11 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:38:49  bouzekc
- * Documented file using javadoc statements.
- * Fixed a bug that caused this class to find only one "characteristic" for some part
- * of a class (i.e. If a method was public static final it would only find public.
- * Now it finds all three "characteristics").
+ * Revision 1.3  2004/03/12 19:46:20  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:10:46  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter

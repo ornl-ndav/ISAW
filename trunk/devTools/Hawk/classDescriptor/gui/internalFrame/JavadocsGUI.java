@@ -32,15 +32,14 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:48:32  bouzekc
- * Documented file using javadoc statements.
- * Removed the WindowDestroyer inner class.
+ * Revision 1.3  2004/03/12 19:46:16  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:09:15  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
  * Dominic.
- *
+ * 
  */
 package devTools.Hawk.classDescriptor.gui.internalFrame;
 
@@ -121,6 +120,7 @@ public class JavadocsGUI extends DesktopInternalFrame implements ActionListener
 					closeItem.addActionListener(this);
 				fileMenu.add(closeItem);
 			javadocsMenuBar.add(fileMenu);
+			javadocsMenuBar.add(InternalFrameUtilities.constructViewMenu(this,true,true,false,true));					
 //			refreshMoveAndCopyMenu();
 //			windowMenu.addMenuListener(new WindowMenuListener(this,menuBar,windowMenu));
 			javadocsMenuBar.add(windowMenu);
@@ -129,7 +129,7 @@ public class JavadocsGUI extends DesktopInternalFrame implements ActionListener
 		
 		resizeAndRelocate();
 	}
-
+	
 	/**
 	 * Gets a copy of this window.
 	 * @return A copy of this window.
@@ -154,6 +154,7 @@ public class JavadocsGUI extends DesktopInternalFrame implements ActionListener
 //			copy.setVisible(true);
 //			processWindowChange(event,copy,this);
 			super.actionPerformed(event);
+			InternalFrameUtilities.processActionEventFromViewMenu(event,selectedInterface,desktop);
 		}
 	}
 }

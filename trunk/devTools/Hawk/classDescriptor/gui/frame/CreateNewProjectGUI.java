@@ -32,9 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:33:12  bouzekc
- * Documented file using javadoc statesments.
- * Added tooltips to the buttons on the GUI.
+ * Revision 1.3  2004/03/12 19:46:14  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:08:49  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -50,11 +49,11 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -238,8 +237,10 @@ public class CreateNewProjectGUI extends JFrame implements ActionListener, ListS
 	{
 		if (event.getActionCommand().equals("create.project"))
 		{
+			setVisible(false);
 			LoadClassThread thread = new LoadClassThread(createdProject,this);
 			thread.start();
+			dispose();
 		}
 		else if (event.getActionCommand().equals("close"))
 		{
@@ -315,7 +316,17 @@ public class CreateNewProjectGUI extends JFrame implements ActionListener, ListS
 					answer += getNumberOfClassesInJarFile(entry.toString());
 			}
 		}
-		catch (IOException e)
+		catch (ZipException e)
+		{
+			//if this exception is caught then most likely the ZipElement does not exist because 
+			//the exception's message would be "No such file or directory"
+			System.out.println("The following exception was thrown in getNumberOfClassesInJarFile(String fileName) in devTools.Hawk.classDescriptor.gui.frame.CreateNewProjectGUI.java");
+			System.out.println("  and was handled properly.");
+			System.err.println(e);
+			System.out.println();
+			//SystemsManager.printStackTraceToStandardOutput(e);
+		}
+		catch (Exception e)
 		{
 			SystemsManager.printStackTrace(e);
 		}

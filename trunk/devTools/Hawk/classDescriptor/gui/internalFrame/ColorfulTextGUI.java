@@ -32,9 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:30:31  bouzekc
- * Documented file using javadoc statements.
- * Added support for colored line numbers.
+ * Revision 1.3  2004/03/12 19:46:16  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:09:14  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -57,6 +56,7 @@ import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
 import devTools.Hawk.classDescriptor.tools.SourceCodeToken;
 import devTools.Hawk.classDescriptor.tools.SourceCodeTokenizer;
 import devTools.Hawk.classDescriptor.tools.SystemsManager;
+import devTools.Hawk.classDescriptor.tools.InterfaceUtilities;
 
 /**
  * This is the superclass to the classes SourceCodeGUI and ShortenedSourceGUI because 
@@ -181,7 +181,7 @@ public abstract class ColorfulTextGUI extends DesktopInternalFrame
 					}
 					//now token is the actual word that a person would see
 					//now to add that word to the document
-					if (isAKeyword(token))
+					if (InterfaceUtilities.isAJavaKeyword(token))
 						doc.insertString(doc.getLength(),token+subToken,doc.getStyle("keyword"));
 					else
 						doc.insertString(doc.getLength(),token+subToken,null);
@@ -228,28 +228,5 @@ public abstract class ColorfulTextGUI extends DesktopInternalFrame
 		StyleConstants.setForeground(comment,Color.GREEN);
 		Style javadocs = doc.addStyle("javadocs",comment);
 		StyleConstants.setForeground(javadocs,Color.RED);
-	}
-	
-	/**
-	 * This returns true if the string supplied is a keyword.  Here are the following keywords:  
-	 * abstract, boolean, break, byte, case, catch, char, class, const, continue, default, do, double, 
-	 * else, extends, final, finally, float, for, future, generic, goto, if, implements, imports, inner, 
-	 * instanceof, int, interface, long, native, new, null, operator, outer, package, private, protected, 
-	 * public, rest, return, short, static, super, switch, synchronized, this, throw, throws, transient, 
-	 * try, var, void, volatile, while
-	 * @param str The string to analyze.
-	 * @return True if str is a keyword and false otherwise.
-	 */
-	protected boolean isAKeyword(String str)
-	{
-		if (str.equals("abstract") || str.equals("boolean") || str.equals("break") || str.equals("byte") || str.equals("case") || str.equals("catch") || str.equals("char") || str.equals("class") || str.equals("const") ||
-		str.equals("continue") || str.equals("default") || str.equals("do") || str.equals("double") || str.equals("else") || str.equals("extends") || str.equals("final") || str.equals("finally") || str.equals("float") || str.equals("for") || 
-		str.equals("future") || str.equals("generic") || str.equals("goto") || str.equals("if") || str.equals("implements") || str.equals("import") || str.equals("inner") || str.equals("instanceof") || str.equals("int") || str.equals("interface") || 
-		str.equals("long") || str.equals("native") || str.equals("new") || str.equals("null") || str.equals("operator") || str.equals("outer") || str.equals("package") || str.equals("private") || str.equals("protected") || str.equals("public") || 
-		str.equals("rest") || str.equals("return") || str.equals("short") || str.equals("static") || str.equals("super") || str.equals("switch") || str.equals("synchronized") || str.equals("this") || str.equals("throw") || str.equals("throws") ||
-		str.equals("transient") || str.equals("try") || str.equals("var") || str.equals("void") || str.equals("volatile") || str.equals("while"))
-			return true;
-		else
-			return false;
 	}
 }

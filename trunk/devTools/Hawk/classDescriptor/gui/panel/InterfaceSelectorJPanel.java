@@ -32,8 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:45:14  bouzekc
- * Documented file using javadoc statements.
+ * Revision 1.3  2004/03/12 19:46:17  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:09:42  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter

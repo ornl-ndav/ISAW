@@ -32,17 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:34:33  bouzekc
- * Documented file using javadoc statements.
- * Modified the constructor such that a window menu is created and its actions are
- * handled in this class.
- * Removed the use of the a MenuListener to add JMenuItems to the window menu if
- * more tabs are created in the HawkDesktop "desktop" to allow the user to select
- * which tab to move/copy the window.
- * Added the MoveToGUI and CopyToGUI inner classes used for allowing the user to
- * select what tab (in a HawkDesktop) they want the window to be moved/copied to.
- * Added the resizeAndRelocate() method which works better than pack() for making
- * the window fit the screen.
+ * Revision 1.3  2004/03/12 19:46:16  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:09:15  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter

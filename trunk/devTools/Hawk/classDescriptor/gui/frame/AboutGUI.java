@@ -32,10 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.4  2004/03/11 18:18:30  bouzekc
- * Documented file using javadoc statements.
- * Modified class to use ISAW's SharedData class to get access to a copy of the GNU liscense to display
- *   in the GUI.
+ * Revision 1.5  2004/03/12 19:46:14  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.3  2004/02/07 05:30:39  bouzekc
  * Made the path to the GPL relative to ISAW_HOME.
@@ -75,8 +73,6 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 
 import devTools.Hawk.classDescriptor.tools.SystemsManager;
-
-import DataSetTools.util.*;
 
 /**
  * This class is used to open a window displaying information about Hawk.  It contains
@@ -167,12 +163,12 @@ public class AboutGUI extends JFrame implements ActionListener
 			String line = "";
 			try
 			{
-				BufferedReader gnuReader = new BufferedReader(
-        new FileReader(/*"devTools.Hawk.classDescriptor.gui.license.LICENSE.txt"));*/
-        FilenameUtil.setForwardSlash( 
-          SharedData.getProperty( "ISAW_HOME" ) +
-          "/devTools/Hawk/classDescriptor/gui/license/LICENSE.txt") ) );
-            
+				BufferedReader gnuReader = new BufferedReader(new FileReader("devTools.Hawk.classDescriptor.gui.license.LICENSE.txt"));
+          /*
+          FilenameUtil.setForwardSlash( 
+            SharedData.getProperty( "ISAW_HOME" ) +
+            "/devTools/Hawk/classDescriptor/gui/license/LICENSE.txt") );
+            */
 				while (line != null)
 				{
 					license.append(line+"\n");

@@ -32,11 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:20:29  bouzekc
- * Documented file using javadoc statements.
- * Added the createNewProject() method which allows the same code to be used in the AddInterfaceGUI and CreateNewInterfaceGUI
- *   classes because they refer to this method on whether or not to make a new project or just add interfaces to a previous
- *   project.
+ * Revision 1.3  2004/03/12 19:46:14  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:08:49  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter

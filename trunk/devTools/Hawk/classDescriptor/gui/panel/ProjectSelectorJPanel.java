@@ -32,12 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.3  2004/03/11 18:58:36  bouzekc
- * Documented file using javadoc statements.
- * Removed the field ProjectVec.  Instead of holding the projects in a Vector, the
- * projects are held in the JList's DefaultListModel.
- * Added support for selecting multiple projects and performing tasks on all of the
- * projects selected.
+ * Revision 1.4  2004/03/12 19:46:17  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.2  2004/02/07 05:31:17  bouzekc
  * Commented out debugging println.
@@ -52,6 +48,7 @@ package devTools.Hawk.classDescriptor.gui.panel;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -90,6 +87,7 @@ import devTools.Hawk.classDescriptor.gui.frame.CreateNewProjectGUI;
 import devTools.Hawk.classDescriptor.gui.frame.FileAssociationGUI;
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
 import devTools.Hawk.classDescriptor.gui.frame.PrintGUI;
+import devTools.Hawk.classDescriptor.gui.frame.RemoveInterfaceGUI;
 import devTools.Hawk.classDescriptor.gui.frame.SearchGUI;
 import devTools.Hawk.classDescriptor.gui.frame.StatisticsGUI;
 import devTools.Hawk.classDescriptor.gui.frame.UnableToLoadClassGUI;
@@ -322,7 +320,7 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 					JMenuItem remIntItem = new JMenuItem("Remove Interface");
 					remIntItem.addActionListener(this);
 					remIntItem.setActionCommand("project.removeInterface");
-					//projectEditMenu.add(remIntItem);
+					projectEditMenu.add(remIntItem);
 
 					projectEditMenu.add(new JSeparator());
 					
@@ -745,18 +743,11 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 					{
 						AlphabeticalListGUI alphaGUI3 = new AlphabeticalListGUI(proArr[i], proArr[i].getProjectName() +" (Alphabetical Listing)", false, false,desktop);
 						alphaGUI3.setVisible(true);
-						if (desktop.getSelectedDesktop() != null)
-						{
+						if (desktop.getSelectedDesktop() == null)
+							createNewTab();
+							
 							desktop.getSelectedDesktop().add(alphaGUI3);
 							alphaGUI3.setAsSelected(true);
-						}
-						else
-						{
-							JOptionPane opPane = new JOptionPane();
-								JOptionPane.showMessageDialog(opPane,"You need to select a tab to view the\nproject's interfaces alphabetically"
-									,"Note"
-									,JOptionPane.INFORMATION_MESSAGE);
-						}
 					}
 				}
 				else
@@ -794,18 +785,11 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 					{
 						PackageTreeGUI packageGUI = new PackageTreeGUI(proArr[i],proArr[i].getProjectName()+" (Package Listing)", false, false, true, true,desktop);
 						packageGUI.setVisible(true);
-						if (desktop.getSelectedDesktop() != null)
-						{
-							desktop.getSelectedDesktop().add(packageGUI);
-							packageGUI.setAsSelected(true);
-						}
-						else
-						{
-							JOptionPane opPane = new JOptionPane();
-								JOptionPane.showMessageDialog(opPane,"You need to select a tab to view the\nproject's interfaces by package name"
-									,"Note"
-									,JOptionPane.INFORMATION_MESSAGE);
-						}
+						if (desktop.getSelectedDesktop() == null)
+							createNewTab();
+							
+						desktop.getSelectedDesktop().add(packageGUI);
+						packageGUI.setAsSelected(true);
 					}
 				}
 				else
@@ -929,6 +913,34 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 						,"Note"
 						,JOptionPane.INFORMATION_MESSAGE);
 				}
+			}
+			else if (event.getActionCommand().equals("project.removeInterface"))
+			{
+				if (!noProjectsListed)
+				{
+					Project[] proArr = getSelectedProjects();
+				
+					if (proArr.length == 0)
+					{
+						JOptionPane opPane = new JOptionPane();
+						JOptionPane.showMessageDialog(opPane,"Open a project from the file menu\nand select it to remove classes and interfaces from it"
+							,"Note"
+							,JOptionPane.INFORMATION_MESSAGE);
+					}
+					
+					for (int i=0; i<proArr.length; i++)
+					{
+						RemoveInterfaceGUI gui = new RemoveInterfaceGUI(proArr[i],false,false,true,true);
+						gui.setVisible(true);
+					}
+				}
+				else
+				{
+					JOptionPane opPane = new JOptionPane();
+					JOptionPane.showMessageDialog(opPane,"You need to select a project to add classes and interfaces to it"
+						,"Note"
+						,JOptionPane.INFORMATION_MESSAGE);
+				}
 			}				
 			else if (event.getActionCommand().equals("about"))
 			{
@@ -947,9 +959,7 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 			}
 			else if (event.getActionCommand().equals("open.newTab"))
 			{
-				int num = desktop.getTabbedPane().getTabCount() + 1;
-				desktop.getTabbedPane().add(new JDesktopPane());
-				desktop.getTabbedPane().setTitleAt(num-1,"Tab"+num);
+				createNewTab();
 			}
 			else if (event.getActionCommand().equals("rename.tab"))
 			{	
@@ -978,13 +988,26 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 		}
 	
 	/**
+	 * Used to create a new tab on the HawkDesktop this panel is placed onto.
+	 * The tab is also given the name "Tab (n+1)" where n is the number of tabs 
+	 * currently displayed.
+	 */
+	private void createNewTab()
+	{
+		int num = desktop.getTabbedPane().getTabCount() + 1;
+		desktop.getTabbedPane().add(new JDesktopPane());
+		desktop.getTabbedPane().setTitleAt(num-1,"Tab"+num);
+	}
+		
+	/**
 	* Handles the action events that happen in the GUI such as button clicks and
 	* menu selections etc.
 	* @param event The ActionEvent that occured
 	*/
 	public void actionPerformed( ActionEvent event)
 	{
-		processSentEvent(event);
+		ActionPerformedThread thread = new ActionPerformedThread(event,this);
+		thread.start();
 	}
 	
 	//this is for the menu listener's methods
@@ -1185,6 +1208,32 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 			}
 
 				dispose();
+		}
+	}
+	
+	/**
+	 * Class which handles ActionEvents the same way as processSentEvent(ActionEvent) method would, 
+	 * except in a separate thread.
+	 * @author Dominic Kramer
+	 */
+	class ActionPerformedThread extends Thread
+	{
+		/** The ActionEvent to handle. */
+		private ActionEvent e;
+		/** The panel from which the user selects to perform an action. */
+		private JPanel panel;
+		/** Make an ActionPerformedThread object. */
+		public ActionPerformedThread(ActionEvent ev, JPanel pan)
+		{
+			e = ev;
+			panel = pan;
+		}
+		/** Define what the thread should do. */
+		public void run()
+		{
+			panel.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+			processSentEvent(e);
+			panel.setCursor(Cursor.getDefaultCursor());
 		}
 	}
 }

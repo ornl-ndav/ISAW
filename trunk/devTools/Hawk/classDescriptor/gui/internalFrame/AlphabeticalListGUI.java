@@ -32,11 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:22:12  bouzekc
- * Documented file using javadoc statements.
- * Created class AlphabeticalListJPanel to do the bulk of the work of this class.
- * This class is just a wrapper class which places the AlphabeticalListJPanel in a
- * window.
+ * Revision 1.3  2004/03/12 19:46:16  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:09:14  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -45,14 +42,13 @@
  *
  */
 package devTools.Hawk.classDescriptor.gui.internalFrame;
-import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
 import devTools.Hawk.classDescriptor.gui.panel.AlphabeticalListJPanel;
@@ -92,6 +88,7 @@ public class AlphabeticalListGUI extends DesktopInternalFrame implements ActionL
 			setResizable(true);
 			
 			listPanel = new AlphabeticalListJPanel(pro,shortJava,shortOther,desktop,this);
+			listPanel.setLayout(new GridLayout(1,1));
 			JMenuBar menuBar = new JMenuBar();
 			JMenu fileMenu = new JMenu("File");
 				JMenuItem closeItem = listPanel.getCloseMenuItem();
@@ -104,10 +101,10 @@ public class AlphabeticalListGUI extends DesktopInternalFrame implements ActionL
 			menuBar.add(windowMenu);
 
 			setJMenuBar(menuBar);
-			JPanel mainPanel = new JPanel();
-			mainPanel.setLayout(new BorderLayout());
-			mainPanel.add(listPanel,BorderLayout.CENTER);
-			getContentPane().add(mainPanel);
+//			JPanel mainPanel = new JPanel();
+//			mainPanel.setLayout(new BorderLayout());
+//			mainPanel.add(listPanel,BorderLayout.CENTER);
+			getContentPane().add(listPanel);
 			
 			pack();
 	}

@@ -32,8 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 19:00:07  bouzekc
- * Documented file using javadoc statements.
+ * Revision 1.3  2004/03/12 19:46:15  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:08:52  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -45,6 +45,7 @@ package devTools.Hawk.classDescriptor.gui.frame;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
@@ -146,6 +147,7 @@ public class SearchGUI extends JFrame implements ActionListener, ListSelectionLi
 			panel5.setLayout(new BorderLayout());
 			projectMadeFromSearch = new Project();
 			listPanel = new AlphabeticalListJPanel(projectMadeFromSearch,false,false,desktop,panel5);
+			listPanel.setLayout(new GridLayout(1,1));
 			JPanel topPanel = new JPanel();
 			topPanel.setLayout(new BorderLayout());
 				topPanel.add(new JLabel("Search Results"),BorderLayout.NORTH);
@@ -171,6 +173,7 @@ public class SearchGUI extends JFrame implements ActionListener, ListSelectionLi
 			fileMenu.add(closeItem);
 		menubar.add(fileMenu);
 		menubar.add(listPanel.getEditMenu());
+		menubar.add(listPanel.getViewMenu());
 		menubar.add(listPanel.getPropertiesMenu(listPanel.getShortenJavaCheckBox().isSelected(),listPanel.getShortenOtherCheckBox().isSelected()));
 		setJMenuBar(menubar);
 		

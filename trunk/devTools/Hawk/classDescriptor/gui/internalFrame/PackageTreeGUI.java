@@ -32,8 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:52:28  bouzekc
- * Documented file using javadoc statements.
+ * Revision 1.3  2004/03/12 19:46:16  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:09:15  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -46,6 +46,7 @@ package devTools.Hawk.classDescriptor.gui.internalFrame;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.GridLayout;
 
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
 import devTools.Hawk.classDescriptor.gui.panel.PackageTreeJPanel;
@@ -94,6 +95,7 @@ public class PackageTreeGUI extends DesktopInternalFrame implements ActionListen
 		//JPanel mainPanel = new JPanel();
 		//mainPanel.setLayout(new BorderLayout());
 		treeJPanel = new PackageTreeJPanel(pro, this, packageShortJava, packageShortOther, classShortJava, classShortOther,desktop);
+		treeJPanel.setLayout(new GridLayout(1,1));
 		//mainPanel.add(treeJPanel, BorderLayout.CENTER);
 		pane.add(treeJPanel);
 		

@@ -32,8 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:26:44  bouzekc
- * Documented file using javadoc statements.
+ * Revision 1.3  2004/03/12 19:46:19  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:10:26  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
@@ -216,14 +216,6 @@ public class ASCIIPrintThread extends Thread
 			{
 				SystemsManager.printStackTrace(e);
 			}
-		}
-		else
-		{
-			JOptionPane opPane = new JOptionPane();
-			JOptionPane.showMessageDialog(opPane,
-				"Please select a file to save the printout to.",
-				"Filename Not Given",
-			JOptionPane.INFORMATION_MESSAGE);
 		}
 
 		super.run();

@@ -32,11 +32,8 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2004/03/11 18:33:53  bouzekc
- * Documented file using javadoc statements.
- * Added methods isAlreadySaved() and setAlreadySaved(boolean).
- * Moved the methods writeJDFFile(Project,String), getVectorOfInterfaceObjects() to
- * the class Project.
+ * Revision 1.3  2004/03/12 19:46:21  bouzekc
+ * Changes since 03/10.
  *
  * Revision 1.1  2004/02/07 05:10:48  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
