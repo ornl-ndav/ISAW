@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/01/05 23:28:03  rmikk
+ * Now catches the run number for the efficiency run
+ *
  * Revision 1.3  2003/10/22 20:11:29  rmikk
  * Fixed javadoc errors
  *
@@ -170,7 +173,8 @@ public class Read3Col1D extends GenericTOF_SAD{
          return (ErrorString)Res;
       int[] RunNum = new int[1];
       String[] Slist = (String[])(V.elementAt(0));
-      RunNum[0] = (new Integer(Slist[0].substring(18).trim())).intValue();
+      System.out.println( "MMMMMMMM ="+Slist[0]);
+      RunNum[0] = (new Integer(Slist[0].substring(17).trim())).intValue();
       DS.setAttribute( new IntListAttribute(Attribute.RUN_NUM,RunNum));
       DS.getData_entry(0).setAttribute( new IntListAttribute(Attribute.RUN_NUM,RunNum));
       DS.setTitle( "EFR"+RunNum[0]);  
