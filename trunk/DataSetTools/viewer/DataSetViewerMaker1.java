@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/12/04 20:45:29  rmikk
+ *  Added some input checking
+ *
  *  Revision 1.3  2003/11/06 21:27:26  rmikk
  *  Now can handle selected Regions for specifying
  *    data sets and time ranges to be selected
@@ -44,6 +47,9 @@
  *
  *  Revision 1.4  2003/08/08 15:48:24  dennis
  *  Added GPL copyright information and $Log$
+ *  Added GPL copyright information and Revision 1.4  2003/12/04 20:45:29  rmikk
+ *  Added GPL copyright information and Added some input checking
+ *  Added GPL copyright information and
  *  Added GPL copyright information and Revision 1.3  2003/11/06 21:27:26  rmikk
  *  Added GPL copyright information and Now can handle selected Regions for specifying
  *  Added GPL copyright information and   data sets and time ranges to be selected
@@ -319,9 +325,11 @@ public class DataSetViewerMaker1  extends DataSetViewer
           {
            SelectedData2D X = (SelectedData2D)(((DataSetViewerMethods)viewComp).
                                 IgetPointedAt());
-           
            int Group = viewArray.getGroupIndex( X);
+
            float Time = viewArray.getTime( X);
+           if( Group < 0) return;
+           if( Float.isNaN(Time)) return;
            Conversions.showConversions( Time, Group);
            Vector V = new Vector();
            V.addElement( new Integer( Group));
