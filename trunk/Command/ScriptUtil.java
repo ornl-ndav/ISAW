@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/06/19 21:21:03  pfpeterson
+ * Now does type checking when looking for an operator if could not
+ * determine one from number of supplied parameters.
+ *
  * Revision 1.1  2003/06/19 20:51:55  pfpeterson
  * Added to CVS.
  *
@@ -43,6 +47,7 @@ import DataSetTools.operator.Operator;
 import DataSetTools.operator.Generic.GenericOperator;
 import DataSetTools.retriever.*;
 import DataSetTools.util.SharedData;
+import DataSetTools.util.SpecialString;
 import DataSetTools.util.StringUtil;
 import DataSetTools.viewer.IViewManager;
 import DataSetTools.viewer.ViewManager;
@@ -76,12 +81,16 @@ public class ScriptUtil{
    * DataSets will be brought up in a viewer while all other objects
    * will have thier value converted to a string and printed in the
    * status pane.
+   *
+   * @return if the Object is a DataSet then ViewManager used is
+   * returned, otherwise null.
    */
-  public static void display(Object object){
+  public static ViewManager display(Object object){
     if(object instanceof DataSet){
-      display((DataSet)object,null);
+      return display((DataSet)object,null);
     }else{
       SharedData.addmsg(StringUtil.toString(object));
+      return null;
     }
   }
 
@@ -399,10 +408,14 @@ public class ScriptUtil{
       return (GenericOperator)configOperator(operator,param_vals);
     }
 
-    // default to the first in the list
+    // now do the type checking
     if(operator==null){
+      int opNum=findOperator(candidates,param_vals);
+      if(opNum<0)
+        throw new MissingResourceException("Could not find command \""+command
+                            +"\"","Command.Script_Class_List_Handler",command);
       // throws a ClassCastException if Operator not a GenericOperator
-      operator=(GenericOperator)SCLH.getOperator(candidates[0]);
+      operator=(GenericOperator)SCLH.getOperator(opNum);
       // copy over the values into the parameters
       return (GenericOperator)configOperator(operator,param_vals);
     }
@@ -438,10 +451,14 @@ public class ScriptUtil{
                                                                    param_vals);
     }
 
-    // default to the first in the list
+    // now do the type checking
     if(operator==null){
+      int opNum=findOperator(candidates,param_vals);
+      if(opNum<0)
+        throw new MissingResourceException("Could not find command \""+command
+                            +"\"","Command.Script_Class_List_Handler",command);
       // throws a ClassCastException if Operator not a GenericOperator
-      operator=(GenericOperator)SCLH.getOperator(candidates[0]);
+      operator=(GenericOperator)SCLH.getOperator(opNum);
       // copy over the values into the parameters
       return (GenericOperator)configOperator((Operator)operator.clone(),
                                                                    param_vals);
@@ -472,6 +489,69 @@ public class ScriptUtil{
     
     // return the configured operator
     return operator;
+  }
+
+  /**
+   * This compares types in an operator with the parameter values to
+   * determine which sould be used. This will return the first that
+   * has a matching signature.
+   *
+   * @param candidates the list of candidates should all have the same
+   * number of parameters.
+   */
+  private static int findOperator(int[] candidates, Object[] param_vals){
+    // make sure there are candidates
+    if(candidates==null || candidates.length<=0)
+      return -1;
+
+    // if there is only one element return its value
+    if(candidates.length==1)
+      return candidates[0];
+
+    // set up for how many parameter types to check
+    int num_param=SCLH.getNumParameters(candidates[0]);
+    int num_vals=0;
+    if(param_vals!=null) num_vals=param_vals.length;
+    int max=Math.min(num_param,num_vals);
+
+    // do the checking
+    Object param=null;
+    outer: for( int i=0 ; i<candidates.length ; i++ ){
+      for( int j=0 ; j<max ; j++ ){
+        param=SCLH.getOperatorParameter(candidates[i],j);
+        if(param_vals[j]==null){
+          // do nothing
+        }else if( compareClass(param_vals[j],param) ){
+          // do nothing
+        }else{
+          continue outer;
+        }
+      }
+      // made it through all the parameters so this must be okay
+      return i;
+    }
+
+    // didn't find what we want so return error
+    return -1;
+  }
+
+  /**
+   * This compares the classes of two objects to see if they can be
+   * coerced into each other.
+   */
+  private static boolean compareClass(Object a, Object b){
+    if( (a instanceof String) && (b instanceof SpecialString) )
+      return true;
+    if( (a instanceof SpecialString) && (b instanceof String) )
+      return true;
+    else if( (a instanceof Integer) && (b instanceof Float) )
+      return true;
+    else if( (a instanceof Float) && (b instanceof Integer) )
+      return true;
+    else if( a.getClass().isInstance(b) )
+      return true;
+    else
+      return false;
   }
 
   /**
