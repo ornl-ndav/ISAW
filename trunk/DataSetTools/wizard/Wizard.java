@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.87  2003/10/15 03:38:01  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.86  2003/10/11 21:06:03  bouzekc
  * The height and width can now optionally be set with WIZARD_HEIGHT and
  * WIZARD_WIDTH in IsawProps.dat.
@@ -497,7 +500,7 @@ import javax.swing.*;
  * makes no sense.<br><br>
  * </p>
  *
- * @see Form
+ * @see DataSetTools.wizard.Form
  */
 public abstract class Wizard implements PropertyChangeListener, Serializable {
   //~ Static fields/initializers ***********************************************
@@ -944,7 +947,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    * This method tries take away some of the tedious work of handling command
    * line options when running the Wizard.
    *
-   * @param argv[] The String array of command line arguments that is sent to
+   * @param argv The String array of command line arguments that is sent to
    *        the main() method of the derived Wizards.
    */
   public void wizardLoader( String[] argv ) {
