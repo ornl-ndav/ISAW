@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/05/08 19:52:50  pfpeterson
+ * Added check that the calibration file is a regular file.
+ *
  * Revision 1.6  2003/03/14 17:28:57  pfpeterson
  * Changed errors into warnings when calibration file is not found or
  * not readable. Warnings are printed to the StatusPane and returned.
@@ -154,6 +157,10 @@ public class LoadSCDCalib extends DS_Attribute{
           return(warn_msg);
         }else if(! file.canRead() ){
           String warn_msg="WARNING(LoadSCDCalib): cannot read file "+calibfile;
+          SharedData.addmsg(warn_msg);
+          return warn_msg;
+        }else if(! file.isFile() ){
+          String warn_msg="WARNING(LoadSCDCalib): not regular file "+calibfile;
           SharedData.addmsg(warn_msg);
           return warn_msg;
         }
