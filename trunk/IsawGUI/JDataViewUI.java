@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2003/10/30 20:40:30  dennis
+ * Removed @see tag referring to InternalViewManager.
+ * (InternalViewManager is no longer used and has been
+ *  removed from the source tree.)
+ *
  * Revision 1.12  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -100,7 +105,6 @@ public class JDataViewUI extends JDesktopPane implements Serializable
     *
     *  @see DataSetTools.viewer.IViewManager
     *  @see DataSetTools.viewer.ViewManager
-    *  @see DataSetTools.viewer.InternalViewManager
     */
   public void ShowDataSet(DataSet ds, String frame, String view_type )
   {
