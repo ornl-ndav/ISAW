@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2001/08/09 16:47:06  rmikk
+ * Put a flush into the close to try to get files to be saved in
+ * Unix systems.
+ *
  * Revision 1.2  2001/07/30 20:13:40  rmikk
  * added an(empty) show() method
  *
@@ -548,8 +552,10 @@ private void SetDataLink( NexusFile nf , Hashtable LinkInfo , Vector children )
   /** Needed to actually save this type of Nexus file
   */
   public void close()
-    {errormessage = ""; 
+    {errormessage = "";
+    
       try{
+	nf.flush();
         nf.finalize();
         }
       catch( Throwable s )
