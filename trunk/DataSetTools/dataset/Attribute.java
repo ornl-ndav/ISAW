@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2001/10/17 18:37:46  dennis
+ *  Added constants for Crate, Slot and Input, as comments only, to avoid
+ *  breaking communication with servers.  These should be un-commented
+ *  when a major revision is made.
+ *
  *  Revision 1.13  2001/08/16 14:35:39  rmikk
  *  Added IntListString case BEFORE SpecialString so it will
  *  be dealt with correctly
@@ -133,6 +138,9 @@ abstract public class Attribute implements Serializable
   public static final String  DETECTOR_IDS      = "Detector IDs";
   public static final String  GROUP_ID          = "Group ID";
   public static final String  TIME_FIELD_TYPE   = "Time Field Type";
+//public static final String  CRATE             = "Crate";
+//public static final String  SLOT              = "Slot";
+//public static final String  INPUT             = "Input";
 
   public static final String  INITIAL_PATH      = "Initial Path";
   public static final String  ENERGY_IN         = "Energy In";
