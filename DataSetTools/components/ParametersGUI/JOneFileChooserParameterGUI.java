@@ -36,6 +36,12 @@ public Parameter getParameter()
 public void setFileFilter(  javax.swing.filechooser.FileFilter file_filter)
   {  this.file_filter = file_filter;
    }
+
+    public void setEnabled(boolean en){
+        tf.setEnabled(en);
+        browse.setEnabled(en);
+    }
+
 public JPanel getGUISegment()
  { return GUI;
   }
