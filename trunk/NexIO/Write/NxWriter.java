@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/04/01 20:56:56  rmikk
+ * Fixed so it only writes one NXentry which now can contain several histograms
+ *
  * Revision 1.4  2002/03/18 20:59:02  dennis
  * Added initial support for TOF Diffractometers.
  * Added support for more units.
@@ -100,7 +103,7 @@ public int getNumHistograms()
 *@param  Histogram  The set of histograms to be added to a Nexus formatted file.
 *NOTE: To Save an experiment, call the Append function twice
 */
- public void Append( DataSet[] Monitors , DataSet[] Histogram)
+ private void Append1( DataSet[] Monitors , DataSet[] Histogram)
     {int n;
     String runTitle = null;
     Object run_title = null;
@@ -140,14 +143,42 @@ public int getNumHistograms()
           n = Histogram.length;
     n1 = n2 = null;
     NxWriteInstrument nw = new NxWriteInstrument( instrType);
+    
     int kNxentries = getNumHistograms();
-    for( int i = 0; i<n ; i++ )
+    NxWriteNode nxentry = node.newChildNode("Entry"+kNxentries, "NXentry");
+
+    NxWriteNode nxInstr= nxentry.newChildNode("Instrument","NXinstrument");
+    if( nw.processDS(nxInstr, Histogram[0]))
+     { errormessage +=";"+nw.getErrorMessage();
+      }
+
+    
+    //There should only be one monitor
+    if( Monitors !=null)
+       if( Monitors.length > 0)
+        { if( Monitors.length >1)
+           DataSetTools.util.SharedData.status_pane.add("Only one monitor is allowed for "+
+             "a set of data sets in Writer.Append");
+         for( int k = 0; k < Monitors[0].getNum_entries(); k++)
+           {String S =  (new Inst_Type()).getMonitorName( instrType, k);
+             NxWriteNode nmonitor = nxentry.newChildNode(
+                S, "NXmonitor");
+          
+            NxWriteMonitor nmon= new NxWriteMonitor(instrType) ; 
+
+            if( nmon.processDS(nmonitor, Monitors[0], k))
+             {errormessage += ";"+nmon.getErrorMessage();
+             }
+           }
+        }
+    for( int i = 0; i < n ; i++ )
 	{String S;       
 	 if( Histogram != null )
-           {n1 = node.newChildNode( "Histogram" + 
-                                   new Integer( i+kNxentries ).toString() ,
-                                 "NXentry" );
-            NxWriteNode nwNode = n1.newChildNode( "instrument" , 
+           {n1 = nxentry.newChildNode( //"Histogram" + 
+                                  // new Integer( i+kNxentries ).toString() ,
+                                  Histogram[i].getTitle()+":"+i,
+                                 "NXdata" );
+            /*NxWriteNode nwNode = n1.newChildNode( "instrument" , 
                                                    "NXinstrument" );
             if( nwNode == null )
 	      {errormessage = n1.getErrorMessage();	      
@@ -157,8 +188,9 @@ public int getNumHistograms()
               { errormessage += ";" + nw.getErrorMessage();	     
 	       return;
               }
+            */
             int kk =1;
-            if( Monitors != null )
+           /* if( Monitors != null )
              if( i == 0 )
               for( int j = 0; j<Monitors.length; j++ )
                if(Monitors[j]!=null)
@@ -184,10 +216,11 @@ public int getNumHistograms()
                }
 
 	 
+            */
           NxWriteData nxd = new NxWriteData(instrType);
-          if( nxd.processDS( n1 ,nwNode , Histogram[i] , true ) )  
-	      {errormessage += ";" +  nxd.getErrorMessage();
-	      }
+         // if( nxd.processDS( n1 ,nwInstr , Histogram[i] , true ) )  
+	 //     {errormessage += ";" +  nxd.getErrorMessage();
+	 //     }
          
            
           }
@@ -228,6 +261,89 @@ public int getNumHistograms()
       
         }//For each histogram
     //     (( NexWriteNode )node ).show();
+    if(errormessage !="")
+      DataSetTools.util.SharedData.status_pane.add(errormessage);
+    }
+
+/** Appends the histograms with their monitors to a nexus file
+*@param   Monitors   The set of monitor datasets associated with All
+*                    the Histograms
+*@param  Histogram  The set of histograms to be added to a Nexus formatted file.
+*NOTE: To Save an experiment, call the Append function twice
+*/
+ public void Append( DataSet[] Monitors , DataSet[] Histogram)
+    {int n;
+    String runTitle = null;
+    Object run_title = null;
+   System.out.println("In NxWriter.Append");
+   
+    int instrType = getInstrumentType( Monitors, Histogram);
+    NxWriteMonitor nm = new NxWriteMonitor(instrType);
+    NxWriteNode n1 , 
+                n2;
+    
+    if( Histogram == null ) 
+         n = 1;
+    else 
+          n = Histogram.length;
+    n1 = n2 = null;
+    NxWriteInstrument nw = new NxWriteInstrument( instrType);
+    
+    int kNxentries = getNumHistograms();
+    NxWriteNode nxentry = node.newChildNode("Entry"+kNxentries, "NXentry");
+
+    NxWriteNode nxInstr= nxentry.newChildNode("Instrument","NXinstrument");
+    if( nw.processDS(nxInstr, Histogram[0]))
+     { errormessage +=";"+nw.getErrorMessage();
+      }
+
+    
+    //There should only be one monitor
+    if( Monitors !=null)
+       if( Monitors.length > 0)
+        { if( Monitors.length >1)
+           DataSetTools.util.SharedData.status_pane.add("Only one monitor is allowed for "+
+             "a set of data sets in Writer.Append");
+         for( int k = 0; k < Monitors[0].getNum_entries(); k++)
+           {NxWriteNode nmonitor = nxentry.newChildNode( 
+                 (new NexIO.Inst_Type()).getMonitorName( 
+                            instrType, k), "NXmonitor");
+          
+            NxWriteMonitor nmon= new NxWriteMonitor( instrType) ; 
+
+            if( nmon.processDS(nmonitor, Monitors[0], k))
+             {errormessage += ";"+nmon.getErrorMessage();
+             }
+           }
+        }
+    for( int i = 0; i < n ; i++ )
+	{String S;       
+	 if( Histogram != null )
+           {//n1 = nxentry.newChildNode( 
+             //                     Histogram[i].getTitle()+":"+i;
+             //                    "NXdata" );
+           
+          NxWriteData nxd = new NxWriteData(instrType);
+          if( nxd.processDS( nxentry ,nxInstr , Histogram[i] , true ) )  
+	      {errormessage += ";" +  nxd.getErrorMessage();
+	      }
+  
+       
+           }
+        }//For each histogram
+  
+
+       NxWriteEntry ne = new NxWriteEntry(instrType);  
+       if( ne.processDS( nxentry , Histogram[0] ) )
+         errormessage +=  ";" + ne.getErrorMessage();
+
+       NxWriteSample ns = new NxWriteSample(instrType);
+       if( ns.processDS( nxentry , Histogram[0] ) )
+          errormessage +=  ";" + ns.getErrorMessage();
+
+       NxWriteBeam nb = new NxWriteBeam(instrType);
+       if( nb.processDS( nxentry , Histogram[0] ) )
+          errormessage += ";" + nb.getErrorMessage();
     }
 
 /** Append the Monitor/DataSet pair to the Nexus formatted file
