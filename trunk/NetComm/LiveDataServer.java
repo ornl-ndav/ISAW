@@ -6,8 +6,14 @@
  *  Programmers: Ruth Mikkelson,
  *               Alok Chatterjee,
  *               Dennis Mikkelson
+ *               John Hammonds
  *
  *  $Log$
+ *  Revision 1.4  2001/02/06 22:06:41  dennis
+ *  The directory where the current runfile will be found
+ *  can now be specified on the command line.  If it is
+ *  not specified, the current directory will be used.
+ *
  *  Revision 1.3  2001/02/02 20:58:23  dennis
  *  Now gets the instrument name and run number from each UDP packet sent
  *  by the DAS.  If the instrument name or run number changes, the
@@ -52,9 +58,10 @@ public class LiveDataServer implements IUDPUser,
   public static final int MAGIC_NUMBER       = 483719513;
   public static final int SERVER_PORT_NUMBER = 6088;
 
-  String  file_name = null;
+  String  directory_name  = null;
+  String  file_name       = null;
   String  instrument_name = null;
-  int     run_number = -1;
+  int     run_number      = -1;
 
   DataSet mon_ds;                                   // current monitor DataSet
   DataSet hist_ds;                                  // current histogram DataSet
@@ -74,10 +81,11 @@ public class LiveDataServer implements IUDPUser,
    */
   private void InitializeDataSets( String new_instrument, int new_run_number )
   {
-    instrument_name = new_instrument.toUpperCase();
+    instrument_name = new_instrument.toLowerCase();
     run_number      = new_run_number;
-    file_name       = instrument_name + run_number + ".RUN"; 
+    file_name       = directory_name + instrument_name + run_number + ".run"; 
 
+    System.out.println( "FileName: " + file_name );
     RunfileRetriever rr = new RunfileRetriever( file_name );
     mon_ds  = rr.getDataSet(0);
     hist_ds = rr.getDataSet(1);
@@ -85,6 +93,18 @@ public class LiveDataServer implements IUDPUser,
     SetToZero( mon_ds );
     SetToZero( hist_ds );
   }
+
+  /**
+   *  Method to set the data directory.  If a directory is specified on the 
+   *  command line it is used as the data directory.  If not, the current
+   *  directory is used.
+   *
+   *  @ param String dataDirectory
+   */
+  public void SetDataDirectory( String dataDirectory )
+    {
+	directory_name = dataDirectory;
+    }
 
   /**
    *  Method to process data from the UDP port.  This is the method needed 
@@ -268,11 +288,22 @@ public class LiveDataServer implements IUDPUser,
 
   public static void main(String args[])
   {
+    String dataDirectory = null;
     Date date = new Date( System.currentTimeMillis() );
     System.out.println("Date = " + date );
 
     LiveDataServer server= new LiveDataServer();
                      
+    if ( args.length != 0 ) {
+	dataDirectory = args[0];
+	System.out.println( "Data directory is: " + dataDirectory );
+    }
+    else {
+	dataDirectory = new String("");
+	System.out.println("No Directory was specified.  Data directory "
+			   + " will be current directory" );
+    }
+    server.SetDataDirectory( dataDirectory );
                                          // Start the UPD receiver to listen
                                          // for data from the DAS
     System.out.println("Starting UDP receiver...");
