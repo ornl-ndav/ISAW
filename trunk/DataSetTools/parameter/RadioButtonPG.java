@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/07/29 07:32:02  bouzekc
+ *  Fixed bug in init().  Should now successfully show the choices,
+ *  regardless of when the GUI is made.
+ *
  *  Revision 1.8  2003/07/29 06:48:27  bouzekc
  *  getStringValue() now returns proper case.
  *
@@ -101,6 +105,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
   //to simultaneously!!
   private Vector radioButtons;
   private Vector radioChoices;
+  private Vector extListeners      = null;
   private ButtonGroup radioGroup;
 
   //~ Constructors *************************************************************
@@ -270,16 +275,11 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     int foundIndex = getButtonIndex( buttonName );
 
     if( foundIndex < 0 ) {
+      //negative number, so it doesn't exist in the list
       radioChoices.add( buttonName );
 
-      //negative number, so it doesn't exist in the list
       if( initialized ) {
-        JRadioButton tempButton = new JRadioButton( buttonName );
-
-        radioButtons.add( tempButton );
-        radioGroup.add( tempButton );
-        entrywidget.add( tempButton );
-        tempButton.addActionListener( this );
+        createGUIButton( buttonName );
       }
     }
   }
@@ -316,6 +316,10 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
       for( int i = 0; i < init_values.size(  ); i++ ) {
         addItem( init_values.elementAt( i ).toString(  ) );
       }
+    } else if( radioChoices != null ) {
+      for( int k = 0; k < radioChoices.size(  ); k++ ) {
+        createGUIButton( radioChoices.elementAt( k ).toString(  ) );
+      }
     }
 
     this.setEnabled( this.getEnabled(  ) );
@@ -332,18 +336,33 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     JFrame mainWindow = new JFrame(  );
     RadioButtonPG rpg = new RadioButtonPG( "Tester", false );
 
-    rpg.init( null );
     rpg.addItem( "Choice 1" );
     rpg.addItem( "Choice 2" );
     rpg.addItem( "Choice 3" );
     rpg.addItem( "Choice 3" );
     rpg.setValue( 2 );
     System.out.println( rpg.getValue(  ) );
+    rpg.init( null );
 
     //rpg.setValue( "Choice 5" );
     rpg.setValue( "Choice 1" );
     System.out.println( rpg.getValue(  ) );
     rpg.showGUIPanel(  );
+  }
+
+  /**
+   * Utility method to allow adding external action listeners to this PG's list
+   * of ActionListeners.  This will not do much unless the PG's GUI has been
+   * initialized.
+   *
+   * @param al The ActionListener to add.
+   */
+  public void addActionListener( ActionListener al ) {
+    if( extListeners == null ) {
+      extListeners = new Vector( 5, 2 );
+    }
+
+    extListeners.add( al );
   }
 
   /**
@@ -382,5 +401,28 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     }
 
     return foundIndex;
+  }
+
+  /**
+   * Used by addItem() and init() to create the GUI buttons when this PG is
+   * shown.
+   *
+   * @param buttonName The name of the Button to add.
+   */
+  private void createGUIButton( String buttonName ) {
+    JRadioButton tempButton = new JRadioButton( buttonName );
+
+    radioButtons.add( tempButton );
+    radioGroup.add( tempButton );
+    entrywidget.add( tempButton );
+    tempButton.addActionListener( this );
+
+    //add the external listeners
+    if( extListeners != null ) {
+      for( int i = 0; i < extListeners.size(  ); i++ ) {
+        tempButton.addActionListener( 
+          ( ( ActionListener )extListeners.elementAt( i ) ) );
+      }
+    }
   }
 }
