@@ -29,6 +29,15 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.21  2004/02/18 22:33:41  dennis
+ * Changed the behavior of the addExperiment() methods.
+ * Previously, if an experiment name was already in the tree,
+ * addExperiment() would return false and not add the new
+ * experiment with a duplicate name to the tree.
+ * Now, the experiment name will be modified by prepending
+ * the smallest integer that makes the name unique, and
+ * the experiment will always be added to the tree.
+ *
  * Revision 1.20  2004/01/08 15:06:19  bouzekc
  * Removed unused imports and unused local variables.
  *
@@ -193,6 +202,15 @@ public class JDataTree
 
   /**
    * create and add a new Experiment object to the tree.
+   *
+   * @param  dss   Array of DataSets that make up the experiment
+   * @param  name  Suggested name for the experiment.  If the 
+   *               name is already in use, it will be modified by
+   *               prepending an integer code to make it unique.
+   *
+   * @return  Currently, this will always return true, since the
+   *          requested name will be modified if needed to make
+   *          the name unique.
    */
   public boolean addExperiment( DataSet[] dss, String name )
   {
@@ -202,17 +220,14 @@ public class JDataTree
 
 
   /**
-   * add a new Experiment container to the tree.  the new Experiment object
-   * is added to the bottom of the tree.
+   * Add a new Experiment container to the tree.  The new Experiment object
+   * is added to the bottom of the tree.  If the name already existed
+   * in the tree the name of the new experiment will have been changed
+   * by prepending the smallest integer code that makes it unique.
    */
   public boolean addExperiment( Experiment e )
   {
-                              //we don't want to be creating duplicate
-                              //names, so enforce their uniqueness
-    Experiment[] exps = getExperiments();
-    for( int i=0;  i<exps.length;  i++ )
-      if(   exps[i].toString().equals(  e.toString()  )   )
-        return false;
+    makeNameUnique( e );
 
     for( int i=0;  i<e.getChildCount();  i++ )
       e.getUserObject(i).addIObserver( this );
@@ -775,5 +790,38 @@ public class JDataTree
     return ds_nodes;
   }
 
+
+  /*
+   *  Check to see if the experiment name was already used in the 
+   *  tree.  If it was, then change the name of the experiment to
+   *  be unique by prepending the smallest integer that makes the
+   *  name unqiue.
+   */
+  private void makeNameUnique( Experiment e )
+  {
+    Experiment[] exps = getExperiments();
+    boolean unique = false;
+    String  exp_name = e.getName();
+    int tag_count = 0;
+    while ( !unique ) 
+    {                      // try prepending an integer, until it is unique 
+      if ( tag_count > 0 )
+        exp_name = "" + tag_count + "_" + e.getName();
+
+      int i = 0;
+      unique = true;
+      while ( i < exps.length && unique )
+      {
+        if( exps[i].toString().equals( exp_name ) )
+        {
+          unique = false;
+          tag_count++;
+        }
+        else
+          i++;
+      }
+    }
+    e.setName( exp_name );    // Now set the experiment name to the unique one
+  }
 
 }
