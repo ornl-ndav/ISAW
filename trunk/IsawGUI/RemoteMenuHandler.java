@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/10/15 03:18:31  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.5  2003/05/28 18:58:20  pfpeterson
  * Changed System.getProperty to SharedData.getProperty
  *
@@ -63,17 +66,20 @@ public class RemoteMenuHandler implements ActionListener
       this.sessionLog = sessionLog;
     }
 
-  /** This method is invoked when a menu item corresponding to the 
-  * LoadRemote operator is invoked <P>
-  * USES:<UL>
-  * <LI> System properties IsawFileServer1_Name, IsawGileServer1_Path,
-  *         IsawFileServer2_Name, ...  NDSFileServer1_Name, 
-  *         NDSFileServer1_Path
-  * <LI> Several Server types are supported: Live Data Server, Isaw Data
- *       Server and the NDS Server so far
- *  <LI> Default port numbers are used corresponding to the server Type
- *  </ul>
-  */
+  /** 
+   * This method is invoked when a menu item corresponding to the 
+   * LoadRemote operator is invoked.  
+   *
+   * USES:<ul>
+   * <li> System properties IsawFileServer1_Name, IsawGileServer1_Path,
+   *         IsawFileServer2_Name, ...  NDSFileServer1_Name, 
+   *         NDSFileServer1_Path</li>
+   * <li> Several Server types are supported: Live Data Server, Isaw Data
+   *       Server and the NDS Server so far</li>
+   *  <li> Default port numbers are used corresponding to the server Type
+   *  </li>
+   *  </ul>
+   */
   public void actionPerformed( ActionEvent ev ) 
     {   
         

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2003/10/15 03:18:31  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.23  2003/10/14 22:08:04  dennis
  * Fixed javadoc so that it builds cleanly on jdk 1.4.2.
  * Also, corrected javadoc to include support for NeXus, GSAS, ISD
@@ -126,7 +129,7 @@ public class Util
     * This returns an array of DataSets that are created from a runfile,
     * NeXus file, "ISD" file, GSAS file or XML file. 
     *
-    * @param String that gives the fully qualified file name  
+    * @param filename Fully qualified runfile name.
     */
    public DataSet[] loadRunfile( String filename )
    {

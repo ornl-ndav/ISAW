@@ -32,6 +32,9 @@
  * each selection appropriatly.
  *
  * $Log$
+ * Revision 1.20  2003/10/15 03:18:31  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.19  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -121,12 +124,6 @@ public class JOperationsMenuHandler
    *                         capability is provided so that the programmer can 
    *                         apply operators to more than one DataSet object 
    *                         at a time.
-   * @param tree             reference to a JDataTree as a container of DataSet 
-   *                         objects.
-   *                         this parameter is used to get a list of all of the 
-   *                         DataSet objects that can be operated upon.  this is
-   *                         distinct from the multiple DataSet capability that
-   *                         the above parameter provides.
    * @param use_array        overrides default behavior of using only the first
    *                         element in dss_to_act_upon.
    */
