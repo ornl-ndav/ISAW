@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/12/03 20:59:24  dennis
+ * Added getDocumentation() and simple main() program for testing.
+ * (Shannon Hintzman)
+ *
  * Revision 1.4  2002/11/27 23:18:38  pfpeterson
  * standardized header
  *
@@ -107,10 +111,44 @@ public class ConvertHistogramToFunction extends    AnalyzeOp
                                     // this operator should operate on
   }
 
+  /*----------------------------getDocumentation-----------------------------*/
+  
+   public String getDocumentation()
+   {
+   	StringBuffer Res = new StringBuffer();
+	
+	Res.append("@overview This operator converts the histograms ");
+	Res.append("in a DataSet to tabulated functions.");
+	
+	Res.append("@algorithm If make a new DataSet is selected, an empty ");
+    	Res.append("clone of the DataSet is constructed and the new function");
+    	Res.append(" data is added to it. If it is not selected the original ");
+	Res.append("DataSet values will be altered with the new function ");
+	Res.append("data.");
+	
+	Res.append("@param ds - The DataSet to which the operation is applied");
+	Res.append("@param divide - Flag that indicates whether the histogram");
+	Res.append(" values should be divided by the width of the histogram ");
+	Res.append("bin.");
+	Res.append("@param  make_new_ds - Flag that determines whether a new ");
+	Res.append("DataSet is constructed, or the Data blocks of the ");
+	Res.append("original DataSet are just altered.");
+	
+	Res.append("@return Returns a DataSet or a String.  If a new DataSet ");
+	Res.append("is made then the return object will be a new DataSet ");
+	Res.append("containing only the new function data values.  If a new ");
+	Res.append("DataSet is not made then the return object will be a ");
+	Res.append("String that reads \"Data converted to functions\".");
+	
+	return Res.toString();
+   
+   }
+
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case ConvHist
+   * @return	the command name to be used with script processor: in this case
+   *		 ConvHist
    */
    public String getCommand()
    {
@@ -136,7 +174,13 @@ public class ConvertHistogramToFunction extends    AnalyzeOp
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+  *  @return returns a DataSet or a String
+  *  If a new DataSet is made then the return object will be a new DataSet 
+  *  containing only the new function data values. 
+  *  If a new DataSet is not made then the return object will be a String
+  *  that says "Data converted to functions".
+  */
   public Object getResult()
   {
                                   // get the parameters specified by the user 
@@ -193,6 +237,15 @@ public class ConvertHistogramToFunction extends    AnalyzeOp
 
     return new_op;
   }
-
-
+  
+  /*------------------------------ main -----------------------------------*/
+  public static void main(String[] args)
+  {
+  	ConvertHistogramToFunction op = new ConvertHistogramToFunction();
+      
+	System.out.println(op.getDocumentation() + "\n");
+	
+	//System.out.println(op.getResult().toString());
+  	//Calling the getResult() method creates a NullPointerException
+  }
 }
