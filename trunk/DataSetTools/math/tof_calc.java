@@ -30,6 +30,11 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.20  2003/02/18 15:48:33  dennis
+ *  Changed documentation for Euler rotation methods to explicitly
+ *  state that angles are measured in degrees and are about the
+ *  positive axes.
+ *
  *  Revision 1.19  2003/01/07 22:30:41  dennis
  *  Added methods makeEulerRotation() and makeEulerRotationInverse() to
  *  calculate matrices representing rotation (and inverse rotations) by Euler
@@ -660,18 +665,18 @@ public static float Omega( float two_theta )
  *  chi, phi and omega.  This produces a matrix representing the following 
  *  sequence of rotations, applied in the order listed:
  *
- *  1. Rotate about z-axis by phi 
- *  2. Rotate about x-axis by chi 
- *  3. Rotate about z-axis by omega
+ *  1. Rotate about the positive z-axis by phi 
+ *  2. Rotate about the positive x-axis by chi 
+ *  3. Rotate about the positive z-axis by omega
  *
  *  NOTE: All rotations follow a right hand rule and the coordinate system is
- *  assumed to be right handed.
+ *  assumed to be right handed.  Rotation angles are specified in degrees.
  *
- *  @param phi    Angle to rotate about the z-axis
- *  @param chi    Angle to rotate (the rotated system) about the x-axis
- *  @param omega  Angle to rotate (the rotated system) about the z-axis
+ *  @param phi    Angle to rotate about the +z-axis
+ *  @param chi    Angle to rotate (the rotated system) about the +x-axis
+ *  @param omega  Angle to rotate (the rotated system) about the +z-axis
  *  
- *  @return The cumulative rotation matrix omegaRz * chiRx * phiRz, which
+ *  @return The cumulative rotation matrix omegaRz * chiRx * phiRz, 
  *          which carries out these rotations, starting with rotation by
  *          phi about the z-axis.
  */
@@ -704,20 +709,20 @@ public static Tran3D makeEulerRotation( float phi, float chi, float omega )
  *  chi, phi and omega.  This produces a matrix representing the following   
  *  sequence of rotations, applied in the order listed:
  *
- *  1. Rotate about z-axis by minus omega
- *  2. Rotate about x-axis by minus chi
- *  3. Rotate about z-axis by minus phi
+ *  1. Rotate about the positive z-axis by minus omega
+ *  2. Rotate about the positive x-axis by minus chi
+ *  3. Rotate about the positive z-axis by minus phi
  *
  *  NOTE: All rotations follow a right hand rule and the coordinate system is
- *  assumed to be right handed.  To use this to "unwind" the goniometer 
- *  rotations on the SCD at IPNS with the values of phi, chi and omega stored 
- *  in the IPNS runfiles, use:
+ *  assumed to be right handed.  Rotation angles are specified in degrees.
+ *  To use this to "unwind" the goniometer rotations on the SCD at IPNS with 
+ *  the values of phi, chi and omega stored in the IPNS runfiles, use:
  *
  *     makeEulerRotationInverse(phi, chi, -omega)
  *
- *  @param phi    phi angle that the goniometer was rotated by 
- *  @param chi    chi angle that the goniometer was rotated by 
- *  @param omega  omega angle that the goniometer was rotated by 
+ *  @param phi    phi angle that the goniometer was rotated by about +z axis
+ *  @param chi    chi angle that the goniometer was rotated by about +x axis
+ *  @param omega  omega angle that the goniometer was rotated by about +z axis
  *  
  *  @return The cumulative rotation matrix that reversed the rotations by
  *          phi, chi and omega.  This returns the matrix product:
