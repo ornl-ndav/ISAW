@@ -133,7 +133,7 @@ public class chop_MacroTools
 
         new_data = Data.getInstance( E_scale, y_vals, data.getGroup_ID() ); 
                                                  
-        new_data.setSqrtErrors();                
+        new_data.setSqrtErrors( true );                
         new_data.setAttributeList( attr_list );
         
         if ( new_e_scale != null )               
