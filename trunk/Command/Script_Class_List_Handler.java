@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.51  2003/11/18 22:21:41  bouzekc
+ * Now finds ISAW_HOME Operators when a non-System ClassLoader is used.
+ *
  * Revision 1.50  2003/10/10 00:58:51  bouzekc
  * Removed references to PyOperatorFactory.
  *
@@ -160,7 +163,6 @@ import Command.*;
 import java.io.*;
 import java.util.*;
 import java.util.zip.*;
-import java.lang.*;
 import java.lang.reflect.Modifier;
 import DataSetTools.util.*;
 import DataSetTools.operator.*;
@@ -291,12 +293,20 @@ public class Script_Class_List_Handler  implements OperatorHandler{
           if(ScrPath!=null){
             ScrPath=ScrPath+"/";
             ScrPath=FilenameUtil.setForwardSlash(ScrPath);
+
+            //if the system is using a different classloader (as Tomcat does),
+            //the System classpath may not be what we think it is.  If that is
+            //the case, we are in danger of ignoring the Operator and Script
+            //paths given in IsawProps.dat.  That is why the else clause is
+            //added. 11/16/2003 CMB
             if(mypathlist.indexOf(ScrPath+"Isaw.jar;")>=0){
-                if(mypathlist.indexOf(ScrPath+";")>=0){
-                    // do nothing
-                }else{
-                    mypathlist=ScrPath+";"+mypathlist;
-                }
+              if(mypathlist.indexOf(ScrPath+";")>=0){
+                  // do nothing
+              }else{
+                mypathlist=ScrPath+";"+mypathlist;
+              }
+            } else {
+              mypathlist=mypathlist+";"+ScrPath;
             }
           }
           // pass the string into something that packs up an array
@@ -898,6 +908,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         File F[];
         F = new File[0];
         F = Dir.listFiles();
+        
         for( int i = 0; i < F.length; i++){
             if( F[i].isDirectory()){
                 ProcessDirectory( F[i], opList );
@@ -1267,13 +1278,13 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     public static void main( String args[] ){
         PropertiesLoader PL= new PropertiesLoader("IsawProps.dat"  );
         
-        Script_Class_List_Handler.LoadDebug = true;
+        //Script_Class_List_Handler.LoadDebug = true;
         Script_Class_List_Handler BB = new Script_Class_List_Handler();
-        System.out.println("-------------------------------------------"
+        /*System.out.println("-------------------------------------------"
                            +"-------------------------------");
         System.out.println("=====Number of Generic operators: "
                            +BB.getNum_operators());
-        BB.show(257);
+        BB.show(257);*/
        
         
         System.exit( 0 );
