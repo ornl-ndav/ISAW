@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/10/07 18:38:51  bouzekc
+ *  Removed declaration of "implements ParamUsesString" as the
+ *  StringEntryPG superclass now declares it.
+ *
  *  Revision 1.11  2003/09/13 23:36:34  bouzekc
  *  Added call to validateSelf() in setValue().
  *
@@ -83,7 +87,7 @@ import DataSetTools.util.*;
  * This is a superclass to take care of many of the common details of
  * IntegerPGs.
  */
-public class IntegerPG extends StringEntryPG implements ParamUsesString{
+public class IntegerPG extends StringEntryPG {
     private static final String TYPE="Integer";
 
     // ********** Constructors **********
@@ -215,14 +219,4 @@ public class IntegerPG extends StringEntryPG implements ParamUsesString{
         fpg.initGUI(null);
         fpg.showGUIPanel();
     }*/
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        IntegerPG pg=new IntegerPG(this.name,this.value,this.valid);
-        pg.setDrawValid(this.getDrawValid());
-        pg.initialized=false;
-        return pg;
-    }
 }

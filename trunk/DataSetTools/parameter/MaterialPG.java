@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/10/07 18:38:51  bouzekc
+ *  Removed declaration of "implements ParamUsesString" as the
+ *  StringEntryPG superclass now declares it.
+ *
  *  Revision 1.9  2003/09/09 23:06:29  bouzekc
  *  Implemented validateSelf().
  *
@@ -71,7 +75,7 @@ import DataSetTools.util.*;
 /**
  * This is class is to deal with float parameters.
  */
-public class MaterialPG extends StringPG implements ParamUsesString{
+public class MaterialPG extends StringPG {
     private static final String TYPE="Material";
 
     // ********** Constructors **********
@@ -116,16 +120,6 @@ public class MaterialPG extends StringPG implements ParamUsesString{
         fpg.initGUI(null);
         fpg.showGUIPanel();
     }*/
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        MaterialPG pg=new MaterialPG(this.name,this.value,this.valid);
-        pg.setDrawValid(this.getDrawValid());
-        pg.initialized=false;
-        return pg;
-    }
 
     /**
      * Validates this MaterialPG.  A valid MaterialPG is one where getValue()

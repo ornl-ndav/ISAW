@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/10/07 18:38:51  bouzekc
+ *  Removed declaration of "implements ParamUsesString" as the
+ *  StringEntryPG superclass now declares it.
+ *
  *  Revision 1.10  2003/09/13 23:29:47  bouzekc
  *  Moved calls from setValid(true) to validateSelf().
  *
@@ -75,7 +79,7 @@ import DataSetTools.util.*;
  * This is class is to deal with Integer Arrays. Its value is stored
  * as a String.
  */
-public class IntArrayPG extends StringEntryPG implements ParamUsesString{
+public class IntArrayPG extends StringEntryPG {
     private static final String TYPE="IntArray";
 
     // ********** Constructors **********
@@ -96,7 +100,6 @@ public class IntArrayPG extends StringEntryPG implements ParamUsesString{
         super.setEntryValue(value);
       else
         this.value=value;
-      validateSelf();
     }
 
     public int[] getArrayValue(){
@@ -145,14 +148,4 @@ public class IntArrayPG extends StringEntryPG implements ParamUsesString{
         fpg.initGUI(null);
         fpg.showGUIPanel();
     }*/
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        IntArrayPG pg=new IntArrayPG(this.name,this.value,this.valid);
-        pg.setDrawValid(this.getDrawValid());
-        pg.initialized=false;
-        return pg;
-    }
 }
