@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/08/15 19:28:55  rmikk
+ * Set the new parameter in the constructor
+ *
  * Revision 1.3  2003/07/25 16:36:18  rmikk
  * Now can Print transmission files. A parameter is added
  * to select transmission type.
@@ -76,6 +79,7 @@ public class PrintFlood  extends GenericTOF_SAD{
        addParameter( new DataSetPG("Efficiency DataSet", EfficiencyDS ) );
        
        addParameter( new SaveFilePG("Output FileName", Outfilename) );
+       addParameter( new ChoiceListPG( "File Type",fileType));
     }
 
 
