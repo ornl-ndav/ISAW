@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.65  2003/12/02 18:58:34  rmikk
+ * Fixed incompatibility error with DataSetPG.
+ *
  * Revision 1.64  2003/11/22 20:37:05  rmikk
  * Updated the javadocs for the Send command
  *
@@ -2835,6 +2838,10 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
                 Integer I = new Integer(
                            ((Number)(Args.elementAt(k + start))).intValue());
                 op.getParameter(k).setValue( I);
+            }else if( op.getParameter(k) instanceof DataSetPG){
+                 ((DataSetPG)op.getParameter(k)).addItem( Args.elementAt(k+start));
+                  op.getParameter( k ).setValue( Args.elementAt( k + start ) );
+                  
             }else{
                 op.getParameter( k ).setValue( Args.elementAt( k + start ) );
             }
