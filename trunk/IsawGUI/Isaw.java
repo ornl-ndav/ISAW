@@ -31,13 +31,18 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.73  2002/01/10 15:46:01  rmikk
+ *  Now uses the Global Status Pane
+ *     DataSetTools.util.SharedData.status_pane
+ *  A few file dialog boxes remember their last files
+ *
  *  Revision 1.72  2002/01/09 20:12:11  rmikk
  *  -Fixed a compiler error.
  *
  *  Revision 1.71  2002/01/09 19:33:43  rmikk
  *  -Incorporated a Status Pane.  It is static and has the name
  *    IsawStatusPane.  It can be used as follows:
- *          Isaw.IsawStatusPane.add( Message)
+ *          SharedData.status_pane.add( Message)
  *   ONLY IF ISAW is RUNNING with a non null StatusPane
  *
  *  Revision 1.70  2002/01/09 15:45:11  rmikk
@@ -433,7 +438,7 @@ public class Isaw
 
   JPropertiesUI jpui;
   JCommandUI jcui;
-  static StatusPane IsawStatusPane;
+   //StatusPane IsawStatusPane;
   JMenu oMenu = new JMenu( OPERATOR_M );
   CommandPane cp;
   Util util;
@@ -495,20 +500,23 @@ public class Isaw
               //immediatly.
     parse_args( args );
 
+    //IsawStatusPane = new StatusPane(30, 80, 
+          SharedData.status_pane.setBorder(new javax.swing.border.TitledBorder("Status"));
+          SharedData.status_pane.setEditable(true);
+          SharedData.status_pane.setLineWrap(false);
+
     setupMenuBar();        
 
-    IsawStatusPane = new StatusPane(30, 80, 
-          new javax.swing.border.TitledBorder("Status"),
-          true,false);
+    
     JPanel StatusPanel= new JPanelwithToolBar(
                  "Save","Clear",
                   new SaveDocToFileListener( 
-                         IsawStatusPane.getDocument(),null),
-                  new ClearDocListener( IsawStatusPane.getDocument()),
-                  new JScrollPane( IsawStatusPane),
+                         SharedData.status_pane.getDocument(),null),
+                  new ClearDocListener( SharedData.status_pane.getDocument()),
+                  new JScrollPane( SharedData.status_pane),
                   BorderLayout.EAST);
                          
-    cp.addPropertyChangeListener(IsawStatusPane);
+    cp.addPropertyChangeListener(SharedData.status_pane);
     JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
     JSplitPane rightPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
     leftPane.setOneTouchExpandable(false);
@@ -588,6 +596,8 @@ public class Isaw
     Script_Class_List_Handler SP = new Script_Class_List_Handler();      
     opMenu macrosMenu = new opMenu(SP, jdt, sessionLog , Isaw.this);
     macrosMenu.setOpMenuLabel( MACRO_M );
+    macrosMenu.addStatusPane( SharedData.status_pane );
+
 
 
 /*
@@ -847,7 +857,7 @@ public class Isaw
    */
   public void addModifiedDataSet( DataSet ds )
   {
-//    Isaw.IsawStatusPane.add( "Isaw: addModifiedDataSet(...)" );
+//    SharedData.status_pane.add( "Isaw: addModifiedDataSet(...)" );
 
     jdt.addToModifiedExperiment( ds );
 
@@ -1007,7 +1017,7 @@ public class Isaw
   private class ScriptLoadHandler implements ActionListener 
   {  
     Isaw IS;
-       
+    String filename = null; 
  
     public ScriptLoadHandler( Isaw IS)
     {  
@@ -1022,18 +1032,20 @@ public class Isaw
              
       if( s.equals(LOAD_SCRIPT_MI) )
       {
-        String SS = System.getProperty( "Script_Path" );
-        if( SS == null )
-          SS = System.getProperty( "user.home" );
+        String SS;
+        if( filename == null)
+              filename = System.getProperty( "Script_Path" );
+        if( filename == null )
+          filename = System.getProperty( "user.home" );
 
         JFileChooser fc = new JFileChooser();
-        fc.setCurrentDirectory(new File(SS));
+        fc.setCurrentDirectory(new File(filename));
 	Dimension d = new Dimension(650,300);
 	fc.setPreferredSize(d);
  
         String str = (String)Script_Path ;
         fc.setFileFilter(new scriptFilter());
-        String fname, filename;
+        String fname;
         try
         {
           int state = fc.showOpenDialog(null);
@@ -1050,13 +1062,13 @@ public class Isaw
           else return;
         } 
         catch( Exception e )
-        {  Isaw.IsawStatusPane.add("Chooce an input file");
+        {  SharedData.status_pane.add("Chooce an input file");
           //System.out.println( "Choose a input file" );
           return;
         }
 
         JDataTree jjt=IS.jdt;
-        cp.getExecScript( filename, IS, jdt, sessionLog);
+        cp.getExecScript( filename, IS, jdt, sessionLog, SharedData.status_pane);
       }
     }
  
@@ -1128,7 +1140,7 @@ public class Isaw
                                     FileDialog.LOAD );
     final JFileChooser fc = new JFileChooser();
     BrowserControl bc =  new BrowserControl();
-
+    String filename=null;
     
     public void actionPerformed( ActionEvent ev ) 
     { 
@@ -1168,7 +1180,7 @@ public class Isaw
           }
           catch( Exception e ) 
           {
-            Isaw.IsawStatusPane.add( "Error "+e );
+            SharedData.status_pane.add( "Error "+e );
             return;
           } 
          
@@ -1196,19 +1208,19 @@ public class Isaw
                                   //hence, there is only one DataSet object
                                   //to be loaded.
       if( s.equals(LOAD_LOCAL_DATA_MI) )
-      {
+      { System.out.println("filename="+filename);
         try
-        {
+        { if( filename == null) filename= System.getProperty("user.home");
                                              //create a file dialog box and get
                                              //which file to open
           String msg = new String( "Please choose the File to open" );
           FileDialog fc = new FileDialog(  new Frame(), 
                                            msg, 
                                            FileDialog.LOAD  );
-	  fc.setDirectory(  System.getProperty( "user.home" )  );
+	  fc.setDirectory(  filename  );
           fc.show();
           File f = new File( fc.getDirectory(), fc.getFile() );
-          String filename = f.toString();
+          filename = f.toString();
           DataSet ds = DataSet_IO.LoadDataSet( filename );
                           
                                 //add it to the tree and other 
@@ -1271,13 +1283,13 @@ public class Isaw
 
 
       if( s.equals(CHEXS_MACRO_MI) ) 
-        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
+        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(GLAD_MACRO_MI) ) 
-        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
+        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(GPPD_MACRO_MI) ) 
-        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
+        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(HRMECS_MACRO_MI) )
       { 
@@ -1291,31 +1303,31 @@ public class Isaw
       }
 
       if( s.equals(HIPD_MACRO_MI) )  
-        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
+        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(LRMECS_MACRO_MI) ) 
-        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
+        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(POSY1_MACRO_MI) ) 
-        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
+        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(POSY2_MACRO_MI) ) 
-        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
+        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(QENS_MACRO_MI) ) 
-        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
+        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SAD_MACRO_MI) ) 
-        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
+        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SAND_MACRO_MI) ) 
-        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
+        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SCD_MACRO_MI) ) 
-        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
+        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
       if( s.equals(SEPD_MACRO_MI) ) 
-        Isaw.IsawStatusPane.add( "Instrument-specific macros/scripts are not implemented" );
+        SharedData.status_pane.add( "Instrument-specific macros/scripts are not implemented" );
 
  
 
@@ -1369,7 +1381,7 @@ public class Isaw
         if (state ==0 && fc.getSelectedFile() != null)
         {
           File f = fc.getSelectedFile();
-          String filename =f.toString();
+          filename =f.toString();
    
           MutableTreeNode node = jdt.getSelectedNode();
           if( node instanceof DataSetMutableTreeNode )
@@ -1393,12 +1405,12 @@ public class Isaw
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
         else
-          Isaw.IsawStatusPane.add( "nothing is currently highlighted in the tree" );
+          SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
       }
                  
                  
       if( s.equals(SELECTED_VIEW_MI) )  
-      { Isaw.IsawStatusPane.add("Hi There");
+      { SharedData.status_pane.add("Hi There");
         
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
         if(  ds != DataSet.EMPTY_DATA_SET  )
@@ -1408,7 +1420,7 @@ public class Isaw
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
         else
-          Isaw.IsawStatusPane.add( "nothing is currently highlighted in the tree" );
+          SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
       }
                          
                  
@@ -1422,7 +1434,7 @@ public class Isaw
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
         else
-          Isaw.IsawStatusPane.add( "nothing is currently highlighted in the tree" );
+          SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
       }
                  
 
@@ -1436,7 +1448,7 @@ public class Isaw
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
         else
-          Isaw.IsawStatusPane.add( "nothing is currently highlighted in the tree" );
+          SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
         return;
       }
 
@@ -1450,7 +1462,7 @@ public class Isaw
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
         else
-          Isaw.IsawStatusPane.add( "nothing is currently highlighted in the tree" );
+          SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
         return;
       }
 
@@ -1475,7 +1487,7 @@ public class Isaw
 	    H.show();
 	}
 	catch(Exception e){
-	    Isaw.IsawStatusPane.add("CANNOT FIND HELP FILE");
+	    SharedData.status_pane.add("CANNOT FIND HELP FILE");
 	}
         
 	H.show();
@@ -1493,7 +1505,7 @@ public class Isaw
 	    H.show();
 	}
 	catch(Exception e){
-	    Isaw.IsawStatusPane.add("CANNOT FIND HELP FILE");
+	    SharedData.status_pane.add("CANNOT FIND HELP FILE");
 	}
         
 	H.show();
@@ -1512,7 +1524,7 @@ public class Isaw
 	    H.show();
 	}
 	catch(Exception e){
-	    Isaw.IsawStatusPane.add("CANNOT FIND HELP FILE");
+	    SharedData.status_pane.add("CANNOT FIND HELP FILE");
 	}
         
 	H.show();
@@ -1683,7 +1695,7 @@ public class Isaw
 
       else
       {
-        Isaw.IsawStatusPane.add( "type not appropriate for operators" );
+        SharedData.status_pane.add( "type not appropriate for operators" );
 
         oMenu.removeAll();
         oMenu.add(  new JMenuItem( "[empty]" )  );
@@ -1757,7 +1769,7 @@ public class Isaw
       propsText.setCaretPosition(0);   
     }
     else
-      Isaw.IsawStatusPane.add("Document is null");   
+      SharedData.status_pane.add("Document is null");   
   }
 
 
@@ -1776,14 +1788,14 @@ public class Isaw
       { 
         (new Util()).saveDoc( doc , filename );        
         SharedData.isaw_props.reload();
-        Isaw.IsawStatusPane.add( "IsawProps saved successfully") ;     
+        SharedData.status_pane.add( "IsawProps saved successfully") ;     
       }
       else if( s.equals("Quit") )
       { 
         kp.dispose();
       }
       else
-        Isaw.IsawStatusPane.add( "Unable to quit" );
+        SharedData.status_pane.add( "Unable to quit" );
     }
   }
 
@@ -2053,7 +2065,7 @@ public class Isaw
     Isaw.setBounds(x,y,window_width,window_height);
     Isaw.show();
     Isaw.validate();
-    //Isaw.IsawStatusPane.add("Hi There");
+    //SharedData.status_pane.add("Hi There");
     Isaw.addWindowListener( 
       new WindowAdapter()
       {
@@ -2105,11 +2117,11 @@ public class Isaw
 //      System.out.println( "reason (Isaw.java): " + (String)reason );
     }
     else
-      Isaw.IsawStatusPane.add( "unsupported type in Isaw.update()" );
+      SharedData.status_pane.add( "unsupported type in Isaw.update()" );
   }
  
  
-
+ String data_dir = null;
   /**
    * loads runfiles interactivly or in batch.  please use this function to
    * load runfiles, not one of the lower level functions.  the low-level
@@ -2134,7 +2146,7 @@ public class Isaw
                 //loads files in an interactive mode
     if( !batch )
     {
-      String data_dir = System.getProperty( DATA_DIR_ENV );
+       if( data_dir==null) data_dir = System.getProperty( DATA_DIR_ENV );
       if( data_dir == null )
         data_dir = System.getProperty( "user.home" );
         
@@ -2153,8 +2165,9 @@ public class Isaw
         setCursor(  Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR )  );
 
         load_files(  fc.getSelectedFiles()  );
-
+      
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        data_dir = fc.getCurrentDirectory().getName();
       }
     }
 
@@ -2176,7 +2189,7 @@ public class Isaw
       for( int i=0;  i<filenames.length;  i++ )
         if(  isForced( filenames[i] )  )
         {
-          Isaw.IsawStatusPane.add(  "loading (forced): " + removeForce( filenames[i] )  );
+          SharedData.status_pane.add(  "loading (forced): " + removeForce( filenames[i] )  );
           files[i] = new File(  removeForce( filenames[i] )  );
         }
         else if(  filter.accept_filename( filenames[i] )  )
@@ -2185,7 +2198,7 @@ public class Isaw
           files[i] = new File( filenames[i] );
         }
         else
-          Isaw.IsawStatusPane.add(  "failed: " + filenames[i]  );
+          SharedData.status_pane.add(  "failed: " + filenames[i]  );
 
       load_files( files );
 
