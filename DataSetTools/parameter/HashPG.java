@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/09/13 23:29:47  bouzekc
+ *  Moved calls from setValid(true) to validateSelf().
+ *
  *  Revision 1.11  2003/09/13 23:16:40  bouzekc
  *  Removed calls to setEnabled in initGUI(Vector), since ParameterGUI.init()
  *  already calls this.
@@ -205,7 +208,7 @@ abstract public class HashPG extends ParameterGUI{
         }else{
             this.value=value;
         }
-        this.setValid(true);
+        validateSelf();
     }
 
     // ********** IParameterGUI requirements **********
