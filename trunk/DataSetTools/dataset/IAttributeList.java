@@ -31,6 +31,11 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.5  2001/07/02 16:41:46  dennis
+ *  Added methods:
+ *    getAttribute( index )
+ *    getAttribute( name )
+ *
  *  Revision 1.4  2001/04/25 19:03:52  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -113,10 +118,29 @@ public interface IAttributeList
 
 
   /**
+   * Get the attribute at the specified index from the list of
+   * attributes. If the index is invalid, this returns null.
+   *
+   * @param  index  The position of the attribute in the list of attributes.
+   */
+  public Attribute getAttribute( int index );
+
+
+  /**
+   * Get the attribute with the specified name from the list of
+   * attributes.  If the named attribute is not in the list, this 
+   * returns null.
+   *
+   * @param  name  The name of the attribute value to get.
+   */
+  public Attribute getAttribute( String name );
+
+
+  /**
    * Get the value of the attribute at the specified index from the list of
    * attributes. If the index is invalid, this returns null.
    *
-   * @param  name  The name of the attribute value to get.
+   * @param  index  The position of the attribute in the list of attributes.
    */
   public Object  getAttributeValue( int index );
 
