@@ -2,6 +2,12 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.11  2002/07/24 15:02:46  dennis
+ * Now keeps track of the last Data block whose attributes were shown
+ * and does not regenerate the properties display if it is not changed.
+ * This was necessary to prevent excessive updates when POINTED_AT_CHANGED
+ * messages are generated in a viewer using an AnimationController.
+ *
  * Revision 1.10  2002/04/05 15:27:17  dennis
  * Removed printing of error message when an update() message is received
  * that the JPropertiesUI does not respond to.  It is not an error to
@@ -54,8 +60,7 @@ import javax.swing.border.*;
 public class JPropertiesUI extends  JPanel implements IObserver, Serializable
 {
   private JTable  table;
-  private DataSet ds;
-
+  private Data    data_shown = null;
 
   /**
    *
@@ -140,13 +145,10 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
     if( observed instanceof DataSet  &&  reason instanceof String )
     {
       String reason_str = (String)reason;
-
       DataSet ds = (DataSet)observed;
-      showAttributes(ds.getAttributeList());
 
       if( reason_str.equals(DESTROY) )
-      {
-      }
+        data_shown = null;
 
       else if( reason_str.equals(SELECTION_CHANGED) )
       {
@@ -156,7 +158,8 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
           Data d = ds.getData_entry(index);
           if( d.isMostRecentlySelected() )
             showAttributes(d.getAttributeList());
-        }
+          data_shown = d;
+        }                             
       }
 
       else if( reason_str.equals(POINTED_AT_CHANGED) )
@@ -165,13 +168,24 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
         if(index>=0)
         {
           Data d = ds.getData_entry( index );
-          showAttributes(  d.getAttributeList()  );
+          if ( d != data_shown )
+            showAttributes(  d.getAttributeList()  );
+          data_shown = d;
         }
       }
 
       else if( reason_str.equals(DATA_DELETED) )
-        showAttributes(  new AttributeList()  );     
+      {
+        showAttributes(new AttributeList());
+        data_shown = null;
+      }
 
+      else
+      {
+        showAttributes(ds.getAttributeList());
+        data_shown = null;
+      }
+ 
       return; 
     }     
   }
