@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2001/06/26 14:34:54  rmikk
+ * Fixed Session Log reporting
+ *
  * Revision 1.23  2001/06/25 19:59:31  chatter
  * Added Last Parameter to JParametersDialog Constructor
  *
@@ -279,7 +282,8 @@ public void setLogDoc(Document doc)
 *  macro<P>
 *
 *@param    fname    The name of the file that stores the Macro
-*@param    X        An Obsever who will receive the data sets that are "Sent" with the SEND command
+*@param    X        An Obsever who will receive the data sets that are "Sent" with the SEND command and that
+*                   are the result of the script fname
 *@param   DSS[]     A list of data sets that can be selected as values for Data Set Parameters.
 *
 */
@@ -297,8 +301,9 @@ public void setLogDoc(Document doc)
           {
            return ;
           }
+        new IsawGUI.Util().appendDoc(logDoc,"#$ Script File Execute "+fname);
         DataSetTools.components.ParametersGUI.JParametersDialog pDialog = 
-                new DataSetTools.components.ParametersGUI.JParametersDialog(cp, DSS, new PlainDocument(),X);
+                new DataSetTools.components.ParametersGUI.JParametersDialog(cp, DSS, logDoc ,X);
    }
 
 /**
@@ -351,7 +356,26 @@ public void  deleteIObservers()
     { SP.deleteIObservers();
     }
                 
-  
+public void appendlog(  Document logDoc, Document appendDoc, String Message)
+  {if( appendDoc == null) 
+      return;
+   if( logDoc == null)
+      return;
+  try{
+     
+     String Txt = appendDoc.getText( appendDoc.getStartPosition().getOffset(),
+                                   appendDoc.getLength());
+     if( Txt !=null)
+       if( Txt.length() >0)
+          if( Txt.charAt( Txt.length() - 1) != '\n')
+            Txt = Txt + "\n";
+       Txt = "#$ Start"+Message+"\n"+Txt+"#$ End"+Message+"\n";
+       logDoc.insertString( logDoc.getLength(), Txt, null);
+      }
+   catch(Exception s)
+       {System.out.println("Error in appendlog="+s); }
+
+  }
 private class MyKeyListener  extends KeyAdapter 
                              implements KeyListener
   { CommandPane CP;
@@ -498,6 +522,7 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
           }
         
         StatusLine.setText("");
+        appendlog( logDoc, Commands.getDocument(), "CommandPane Run");
         if( CP.SP.getNum_parameters() > 0 )
            {
              DataSetTools.components.ParametersGUI.JParametersDialog pDialog = 
