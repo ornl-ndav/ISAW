@@ -28,6 +28,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/01/07 16:08:47  rmikk
+ * The main program now has file browse buttons.  If there is an orientation file
+ * for the given data set, it can now be loaded.  This means that the hkl values
+ * will show for the selected points.
+ *
  * Revision 1.3  2002/11/27 23:24:30  pfpeterson
  * standardized header
  *
@@ -39,6 +44,11 @@ import java.util.*;
 import javax.swing.*;
 import java.awt.*;
 import DataSetTools.dataset.*;
+import DataSetTools.util.*;
+import Operators.Generic.*;
+import DataSetTools.operator.DataSet.*; 
+import DataSetTools.operator.*;
+
 
 public class TQxQyQz  extends ContourView
   {
@@ -55,25 +65,59 @@ public class TQxQyQz  extends ContourView
        super.setDataSet( ds );
        }
    public static void main( String args[])
-   {JFrame jf = new JFrame("URtyjjh");
+   {JFrame jf = new JFrame("QxQyQz transform");
    
-    jf.setSize(400,600);
-    if( args == null)
+    jf.setSize(600,600);
+   /* if( args == null)
        System.exit(0);
     if( args.length <= 0)
         System.exit(0);
-    DataSet[] DS = ( new IsawGUI.Util()).loadRunfile( args[0]);
+  */
+ Vector Prompts, InitValues;
+ Prompts = new Vector();
+ InitValues = new Vector();
+ Prompts.addElement( "DataSet Filename?");
+ InitValues.addElement( new LoadFileString() );
+ Prompts.addElement( "Histogram number ");
+ InitValues.addElement( new Integer(1));
+ Prompts.addElement( "Orientation file Exists?");
+ InitValues.addElement( new Boolean( false));
+ Prompts.addElement("Orientation Filename");
+ InitValues.addElement( new LoadFileString() );
+ Operator op =( new InputBox( "TQxQyQz", Prompts, InitValues, new Vector()));
+ Object Result = op.getResult();
+ if(Result instanceof ErrorString)
+  {System.out.println("Error="+Result);
+   System.exit( 0 );
+  }
+ String DSfilename =  InitValues.elementAt(0).toString();
+ int k = ((Integer)(InitValues.elementAt(1))).intValue();
+ String ORfilename = InitValues.elementAt(3).toString();
+ boolean orient_file = ((Boolean)(InitValues.elementAt(2))).booleanValue();
+  DataSet[] DS = ( new IsawGUI.Util()).loadRunfile( DSfilename);
+
+   
     if( DS == null)
        System.exit(0);
     if( DS.length <=0)
        System.exit(0);
-    int k = DS.length-1;
-    if( args.length >1)
+   
+   /* if( args.length >1)
       try{k = (new Integer( args[1])).intValue();}
       catch( Exception u){};
-    if( k < 0) k=DS.length-1;
+   */ if( k < 0) k=DS.length-1;
     if( k >= DS.length) k = DS.length-1;
+    
     DataSet ds = DS[k];
+    if( orient_file)
+    {DataSetOperator opp = ds.getOperator("Load Orientation Matrix");
+    if( opp != null)
+     {opp.setParameter(new Parameter("filename",new LoadFileString(  ORfilename)),0);
+     opp.getResult();
+     }
+
+
+    }
     TQxQyQz TQ = new TQxQyQz(ds, null);
     jf.getContentPane().add( TQ);
     jf.show();
