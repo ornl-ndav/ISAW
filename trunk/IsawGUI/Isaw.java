@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.125  2003/02/13 21:45:13  pfpeterson
+ *  Removed calls to deprecated function fixSeparator.
+ *
  *  Revision 1.124  2003/01/27 15:06:22  rmikk
  *  Added the New "Intro to Isaw" menu item under the
  *     Help Menu
@@ -1827,7 +1830,7 @@ public class Isaw
     kp.getContentPane().add(Z);
     kp.setVisible(true);
     String path = SharedData.getProperty("user.home")+"\\";
-    path = StringUtil.fixSeparator(path);
+    path = StringUtil.setFileSeparator(path);
     String filename = path + "IsawProps.dat" ;
 
     Document doc = (new Util()).openDoc( filename );
@@ -1848,7 +1851,7 @@ public class Isaw
       String s=ev.getActionCommand();
 
       String path = SharedData.getProperty("user.home")+"\\";
-      path = StringUtil.fixSeparator(path);
+      path = StringUtil.setFileSeparator(path);
       String filename = path + "IsawProps.dat" ;
                       
       Document doc = propsText.getDocument() ; 

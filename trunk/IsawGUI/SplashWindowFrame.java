@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/02/13 21:45:13  pfpeterson
+ *  Removed calls to deprecated function fixSeparator.
+ *
  *  Revision 1.15  2003/02/13 17:28:33  pfpeterson
  *  Moved decision making for image directory to PropertiesLoader.
  *
@@ -70,7 +73,7 @@ public class SplashWindowFrame extends    JFrame
 
     String ipath=SharedData.getProperty("IMAGE_DIR");
     if(ipath==null) return;
-    ipath = StringUtil.fixSeparator(ipath);
+    ipath = StringUtil.setFileSeparator(ipath);
     splashIm = Toolkit.getDefaultToolkit().getImage(ipath+"Isaw.gif");
     splashIm=splashIm.getScaledInstance(width,height,Image.SCALE_FAST);
 
