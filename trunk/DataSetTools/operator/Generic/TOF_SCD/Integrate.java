@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/02/12 15:29:56  pfpeterson
+ * Various improvements to user interface including autimatically loading
+ * the oirentation matrix and calibration from experiment file if not
+ * already preset, and writting the resultant peaks to a file.
+ *
  * Revision 1.2  2003/02/10 16:03:41  pfpeterson
  * Fixed semantic error.
  *
@@ -105,7 +110,7 @@ public class Integrate extends GenericTOF_SCD{
    */
   public void setDefaultParameters(){
     parameters = new Vector();
-    addParameter( new Parameter("Data Set", DataSet.EMPTY_DATA_SET ) );
+    addParameter( new Parameter("Data Set", new SampleDataSet() ) );
     addParameter( new Parameter("Path",new DataDirectoryString()) );
     addParameter( new Parameter("Experiment Name", new String()) );
   }
@@ -217,6 +222,18 @@ public class Integrate extends GenericTOF_SCD{
     if(data==null)
       return new ErrorString("no minimum pixel found");
 
+    // get the calibration for this
+    float[] calib=(float[])data.getAttributeValue(Attribute.SCD_CALIB);
+    if(calib==null){
+      LoadSCDCalib loadcalib=new LoadSCDCalib(ds,expfile,0,"");
+      Object res=loadcalib.getResult();
+      if(res instanceof ErrorString) return res;
+      calib=(float[])data.getAttributeValue(Attribute.SCD_CALIB);
+      if(calib==null)
+        return new ErrorString("Could not load calibration from experiment "
+                               +"file");
+    }
+
     // get the xscale from the data to give to the new peaks objects
     XScale times=data.getX_scale();
 
@@ -265,17 +282,27 @@ public class Integrate extends GenericTOF_SCD{
         UB=(float[][])UBval;
       UBval=null;
     }
-    if(UB==null)
-      return new ErrorString("no orientation matrix found");
+    if(UB==null){ // try loading it
+      LoadOrientation loadorient=new LoadOrientation(ds,
+                                                  new LoadFileString(expfile));
+      Object res=loadorient.getResult();
+      if(res instanceof ErrorString) return res;
+      // try getting the value again
+      Object UBval=null;
+      UBval=data.getAttributeValue(Attribute.ORIENT_MATRIX);
+      if(UBval==null)
+        UBval=ds.getAttributeValue(Attribute.ORIENT_MATRIX);
+      if(UBval!=null && UBval instanceof float[][])
+        UB=(float[][])UBval;
+      UBval=null;
+      if(UB==null) // now give up if it isn't there
+        return new ErrorString("Could not load orientation matrix from "
+                               +"experiment file");
+    }
 
     // determine the min and max pixel-times
     int zmin=0;
     int zmax=times.getNum_x()-1;
-
-    // get the calibration for this
-    float[] calib=(float[])data.getAttributeValue(Attribute.SCD_CALIB);
-    if(calib==null)
-      return new ErrorString("no calibration found");
 
     // get the run number
     int nrun=0;
@@ -363,7 +390,14 @@ public class Integrate extends GenericTOF_SCD{
       peaks.set(i,peak);
     }
 
-    return peaks;
+    // write out the peaks
+    String intfile=expfile;
+    {
+      int index=intfile.lastIndexOf(".");
+      intfile=intfile.substring(0,index)+".integrate";
+    }
+    WritePeaks writer=new WritePeaks(intfile,peaks,Boolean.TRUE);
+    return writer.getResult();
   }
 
   /**
