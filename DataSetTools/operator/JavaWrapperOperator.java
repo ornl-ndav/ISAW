@@ -32,6 +32,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.22  2004/06/15 18:54:08  robertsonj
+ * Added PrinterNameString which is a special string so the JavaWrapperOperator
+ * can use the PrinterNamePG
+ *
  * Revision 1.21  2004/06/03 16:39:56  rmikk
  * Setting Special String and Array parameters of a Wrappable that were not
  *   assigned an original value now no longer yields a null pointer exception
@@ -366,6 +370,8 @@ public class JavaWrapperOperator extends GenericOperator {
             addParameter( new LoadFilePG( name, val ) );
           } else if( type == SaveFileString.class ) {
             addParameter( new SaveFilePG( name, val ) );
+          } else if( type == PrinterNameString.class ){
+          	addParameter( new PrinterNamePG(name, val));
           } else if( type == MediaList.class ) {
             MediaList ml   = new MediaList(  );
             Vector choices = new Vector(  );
