@@ -29,6 +29,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.31  2003/09/20 23:09:05  dennis
+ * Finished first version of shoebox integration routine.
+ * No longer includes extra slice before and after (in TOF)
+ * the specified region.
+ * Logging is done in the same style as the code that maximizes
+ * I/sigI, however, all slices are integrated and included.
+ *
  * Revision 1.30  2003/09/19 21:26:12  dennis
  * Does integration over full shoebox region, including one extra time
  * slice in each direction.  Logging is not complete for shoebox region
@@ -367,10 +374,10 @@ public class Integrate extends GenericTOF_SCD{
     addParameter(new BooleanPG("Use Shoe Box (NOT max I/sigI)",false));
 
     // parameter(9)
-    addParameter(new IntArrayPG("Box Delta x (col) range","-2:2"));
+    addParameter(new IntArrayPG("Box Delta x (col) Range","-2:2"));
 
     // parameter(10)
-    addParameter(new IntArrayPG("Box Delta y (row) range","-2:2"));
+    addParameter(new IntArrayPG("Box Delta y (row) Range","-2:2"));
   }
   
   /**
@@ -924,10 +931,10 @@ public class Integrate extends GenericTOF_SCD{
 
      int minZ = 0;
      int maxZ = ds.getData_entry(ids[1][1]).getX_scale().getNum_x() - 1; 
-     if ( cenZ + timeZrange[0] < minZ + 1 )  // too close to time channel 0
+     if ( cenZ + timeZrange[0] < minZ )  // too close to time channel 0
        return;                   
   
-     if ( cenZ + timeZrange[1] > maxZ - 1 )  // too close to max time channel
+     if ( cenZ + timeZrange[1] > maxZ )  // too close to max time channel
        return;
 
      int minX = 1;                           // in ids[][] the first index
@@ -954,58 +961,82 @@ public class Integrate extends GenericTOF_SCD{
      int nY = rowYrange[1]  - rowYrange[0]  + 1;
      int nZ = timeZrange[1] - timeZrange[0] + 1;
 
-     float n_signal =  nX    *  nY    *  nZ;   
-     float n_total  = (nX+2) * (nY+2) * (nZ+2);   
+     float n_signal =  nX    *  nY;   
+     float n_total  = (nX+2) * (nY+2);   
      float n_border = n_total - n_signal;
      float ratio    = n_signal/n_border;
 
-     float total = 0;            // overall total on peak + background region
+     float slice_total = 0;      // slice total on peak + background region
      float p_sig_plus_back = 0;  // signal + background total for peak region
      float intensity;            // intensity at one voxel
+     float border;               // total on border region only 
+     float slice_I;              // signal - background on one slice
+     float slice_sigI;           // sigI on one slice
+     float totI = 0;             // cumulative I for all slices
+     float totSigI = 0;          // cumulative sigI for all slices
+     float slice_peak;           // largest intensity in slice
+     int   slice_peak_x;         // x value of largest intensity in slice
+     int   slice_peak_y;         // y value of largest intensity in slice
+     boolean border_peak;        // set true if the largest value occurs on 
+                                 // the border of this slice
 
-     int n_in = 0;
-     int n_tot = 0;
-
-     for(int i = cenX + colXrange[0] - 1; i <= cenX + colXrange[1] + 1; i++)
-      for(int j = cenY + rowYrange[0] - 1; j <= cenY + rowYrange[1] + 1; j++)
-       for(int k = cenZ + timeZrange[0] - 1; k <= cenZ + timeZrange[1] + 1; k++)
+                                          // range of x,y,z enclosed in shoebox
+     int first_x = cenX + colXrange[0];
+     int last_x  = cenX + colXrange[1];
+     int first_y = cenY + rowYrange[0];
+     int last_y  = cenY + rowYrange[1];
+     int first_z = cenZ + timeZrange[0];
+     int last_z  = cenZ + timeZrange[1];
+     for(int k = first_z; k <= last_z;  k++)
+     {
+       slice_peak   = -1;
+       slice_peak_x = -1;
+       slice_peak_y = -1;
+       slice_total  =  0;
+       p_sig_plus_back = 0;
+       for(int i = first_x - 1; i <= last_x + 1;   i++)
+         for(int j = first_y - 1; j <= last_y + 1; j++)
        {
          intensity = getObs( ds, ids[i][j], k );
-         n_tot++;
-         total += intensity;
-         if ( i >= cenX + colXrange[0]  &&  i <= cenX + colXrange[1]    &&
-              j >= cenY + rowYrange[0]  &&  j <= cenY + rowYrange[1]    &&
-              k >= cenZ + timeZrange[0] &&  k <= cenZ + timeZrange[1]   )
-         {
+         slice_total += intensity;
+         if ( i >= first_x  &&  i <= last_x &&    // check if pixel in peak region
+              j >= first_y  &&  j <= last_y )     // of this slice
            p_sig_plus_back += intensity;
-           n_in++;
+
+         if ( intensity > slice_peak )
+         {
+           slice_peak = intensity;
+           slice_peak_x = i;
+           slice_peak_y = j;
          }
        }
 
-     float border = total - p_sig_plus_back;      // total on border region only
-     float signal = p_sig_plus_back - ratio * border;  
-     float sigI   = (float)Math.sqrt(p_sig_plus_back + ratio * ratio * border);
+       if ( slice_peak_x == first_x - 1 || 
+            slice_peak_x == last_x  + 1 ||
+            slice_peak_y == first_y - 1 || 
+            slice_peak_y == last_y  + 1  )
+         border_peak = true;
+       else
+         border_peak = false;
 
-/*
-     System.out.println("" + nX + ", " + nY + ", " + nZ +
-                        ", ratio = " + ratio + 
-                        ", p_sig_plus_back = " + p_sig_plus_back +
-                        ", total = " + total +
-                        ", signal = " + signal +
-                        ", n_in = " + n_in +
-                        ", n_tot = " + n_tot + 
-                        ", cenX  = " + cenX  +
-                        ", cenY  = " + cenY  +
-                        ", cenZ  = " + cenZ  ); 
-     System.out.println("X: " + colXrange[0]  + ", " + colXrange[1] +" " +
-                        "Y: " + rowYrange[0]  + ", " + rowYrange[1] +" " +
-                        "Z: " + timeZrange[0] + ", " + timeZrange[1] ); 
-*/                           
+       border = slice_total - p_sig_plus_back;    // total on border region only
+       slice_I    = p_sig_plus_back - ratio * border;
+       slice_sigI = (float)Math.sqrt(p_sig_plus_back + ratio * ratio * border);
 
-     peak.inti( signal );
-     peak.sigi( sigI   );
+       totI += slice_I;
+       totSigI = (float)Math.sqrt( slice_sigI * slice_sigI + totSigI * totSigI );
 
-     addPeakSummary( log, signal, sigI );
+       addLogSlice( log, 
+                    k-cenZ, k, 
+                    slice_peak_x, slice_peak_y, (int)slice_peak, 
+                    first_x, last_x, first_y, last_y,
+                    slice_I, slice_sigI, "Yes", border_peak );
+     }
+
+     peak.inti( totI );
+     peak.sigi( totSigI );
+
+     addLogPeakSummary( log, totI, totSigI );
    }
 
 
@@ -1266,7 +1297,7 @@ public class Integrate extends GenericTOF_SCD{
           log.append("No\n");
       }
 
-      addPeakSummary( log, Itot, dItot );
+      addLogPeakSummary( log, Itot, dItot );
     }
 
     // change the peak to reflect what we just did
@@ -1840,9 +1871,51 @@ public class Integrate extends GenericTOF_SCD{
     }
   }
 
-  private static void addPeakSummary( StringBuffer log, 
-                                      float        Itot, 
-                                      float        sigItot )
+  private static void addLogSlice( StringBuffer log, 
+                                   int          layer, 
+                                   int          cenZ, 
+                                   int          cenX, 
+                                   int          cenY, 
+                                   int          slice_peak, 
+                                   int          minX, 
+                                   int          maxX, 
+                                   int          minY, 
+                                   int          maxY,
+                                   float        sliceI, 
+                                   float        slice_sigI, 
+                                   String       included,
+                                   boolean      border_peak )
+  {
+    if ( log != null )
+    {
+      log.append( formatInt(layer)              + 
+                  "   "  + formatInt(cenZ)      +
+                  "  "  + formatInt(cenX)       +
+                  "  "  + formatInt(cenY)       +
+                  "   " + formatInt(slice_peak) +
+                  "  "  + formatInt(minX)       +
+                  " "   + formatInt(maxX)       +
+                  "  "  + formatInt(minY)       +
+                  " "   + formatInt(maxY)       +
+                  " " + formatFloat(sliceI)     +
+                  "  " + formatFloat(slice_sigI) );
+      if ( slice_sigI != 0 )
+        log.append( " " + formatFloat(sliceI/slice_sigI) );
+      else
+        log.append( " " + formatFloat(0) );
+ 
+      log.append( "      " + included );
+      if ( border_peak )
+        log.append(" *BP" + "\n");
+      else
+        log.append("\n");
+    }
+  }
+
+
+  private static void addLogPeakSummary( StringBuffer log, 
+                                         float        Itot, 
+                                         float        sigItot )
   {
     if ( log != null )
     {
