@@ -23,7 +23,7 @@
  *           9700 South Cass Avenue, Bldg 360
  *           Argonne, IL 60439-4845, USA
  *
- * This work was supported by the Intense Pulsed Neutron Source Division
+ * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2005/02/17 21:55:33  dennis
+ *  The "TYPE" in GSAS files now includes FXYE. (Alok Chatterjee)
+ *
  *  Revision 1.6  2004/03/15 03:28:14  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -71,8 +74,9 @@ public class GsasUtil{
     public static String TIMEMAP = "TIME_MAP";
 
     // string constants for types (how errors are written)
-    public static String STD = "   ";
+    public static String STD = "STD";
     public static String ESD = "ESD";
+    public static String FXYE = "FXYE";
 
     // constants for what the x-axis is
     public static int TIME = 1;
@@ -115,6 +119,7 @@ public class GsasUtil{
             return 0f;
     }
 
+
     /**
      * Determine the TYPE. This is done by calculating the percent
      * difference between sqrt(I) and sigmaI. If it is more than
@@ -132,17 +137,25 @@ public class GsasUtil{
         if(dI==null) // nothing we can say about the errors
           return STD;
 
-	for( int i=0 ; i<dI.length ; i++ ){
-	    if((tol*(float)Math.sqrt((double)I[i])<dI[i])||(dI[i]==0.0f)){
-                // do nothing
-            }else{
-              //System.out.println((float)Math.sqrt(I[i])+">"+dI[i]);
-                return ESD;
-	    }
-	}
+	    for( int i=0 ; i<dI.length ; i++ )
+      {
+	       if((tol*(float)Math.sqrt((double)I[i])<dI[i])||(dI[i]==0.0f))
+         {
+           // do nothing
+         }  
+         else
+         {
+           //System.out.println((float)Math.sqrt(I[i])+">"+dI[i]);
+             return ESD;
+	       }
 
-        return STD;
+	    }
+
+        return FXYE;
     }
+
+
+
     /**
      * Determine if the XScale given is constant binning. If it is
      * constant the spacing is returned, otherwise zero.
