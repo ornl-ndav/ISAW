@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2001/07/24 16:33:49  dennis
+ *  Added java docs for reload() method, now that it has
+ *  been tested.
+ *
  *  Revision 1.1  2001/07/23 19:03:18  dennis
  *  Utility class to load System properties one time.
  *
@@ -57,6 +61,13 @@ public class PropertiesLoader implements java.io.Serializable
     reload();
   }
 
+/**
+ *  Load or reload the properties file that was specified when this 
+ *  PropertiesLoader object was constructed.  NOTE: This may be called
+ *  at any time, if the cost of re-reading the properties file is not
+ *  to high and the user may have edited the properties file since it
+ *  was last read.
+ */
   public void reload()
   {
     String full_name = System.getProperty( "user.home" ) + "/" + f_name;
