@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/07/22 20:56:20  rmikk
+ * Added documentation
+ * Added another parameter to select weights when
+ *   fitting polynomials to the data
+ *
  * Revision 1.1  2003/07/22 13:40:45  rmikk
  * Initial Check in
  *
@@ -48,18 +53,41 @@ import DataSetTools.parameter.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.EditList.*;
 
-
-public class CalcTransmission extends GenericTOF_SAD implements IObservable{
+/**
+*     This class creates a transmission data set in llambda and rebinned
+*     to match the corresponding histogram when it is converted to llambda
+*/
+public class CalcTransmission extends GenericTOF_SAD {
   StringBuffer log = new StringBuffer();
-  
+
+
+  /**
+  *    Constructor for this class
+  */
   public CalcTransmission(){
      super("Calculate Transmission Run");
   }
+  
+  /**
+  *     Constructor for this class
+  *    @param Sample   The monitor data set for the sample run
+  *    @param Empty   The monitor data set for the Empty run
+  *    @param Cadmium   The monitor data set for the Cadmium run
+  *    @param SampleDS   The Histogram data set for the sample run
+  *    @param useCadmium  true if cadmium run is to be used
+  *    @param Neutron_Delay The delay factor or 0 if no delay is needed
+  *    @param polyfitIndx1   the start channel to be fit(in rebinned llambda). the first
+  *                         channel is channel 0
+  *    @param  polyfitIndx2  the last channed to be fit(in rebinned llambda).the first
+  *                         channel is channel 0. This last channel is included.
+  *    @param  degree      degree of the polynomial to fit or -1 if no fitting is desired
+  *    @param  weight      use 1/|y| values for weights instead of 1.
+  */
 
   public CalcTransmission( MonitorDataSet Sample, MonitorDataSet Empty, MonitorDataSet Cadmium,
                 SampleDataSet SampleDS,
                 boolean useCadmium,float Neutron_Delay, int polyfitIndx1, int polyfitIndx2,
-                int degree){
+                int degree, boolean weight){
      this();
      parameters = new Vector();
      addParameter( new MonitorDataSetPG("Enter Sample Monitor",Sample) );
@@ -72,19 +100,15 @@ public class CalcTransmission extends GenericTOF_SAD implements IObservable{
      addParameter( new IntegerPG( "Polyfit indx 2", polyfitIndx2) );
      addParameter( new IntegerPG( "Polynomial degree 1", degree) );
 
+     addParameter( new BooleanPG("Use 1/y weights", weight));
+
 
 
   } 
-  IObserver iobs = null;
-  public void addIObserver(IObserver iobs){
-    this.iobs = iobs;
-  }
-  public void deleteIObserver(IObserver iobs){
-     this.iobs = null;
-  }
-  public void deleteIObservers(){
-     this.iobs = null;
-  }
+
+  /**
+  *    Sets the default parameters
+  */
   public void setDefaultParameters(){
      parameters = new Vector();
      addParameter( new MonitorDataSetPG("Enter Sample Monitor", null));
@@ -97,14 +121,23 @@ public class CalcTransmission extends GenericTOF_SAD implements IObservable{
      addParameter( new IntegerPG( "Polyfit indx 2", -1) );
      addParameter( new IntegerPG( "Polynomial degree 1", -1) );
 
+     addParameter( new BooleanPG("Use 1/y weights", false));
+
   }
- 
+
+  /**
+  *     Returns a string with log information
+  */ 
   public String getLogString(){
      return log.toString();
 
   }
  
-public Object getResult(){
+  /**
+  *     Calculates and returns the transmission data set that is converted to llambda;
+  *     and rebinned to the corresponding histogram.
+  */
+  public Object getResult(){
      DataSet Sample = ((MonitorDataSetPG)getParameter(0)).getDataSetValue();
      DataSet Empty = ((MonitorDataSetPG)getParameter(1)).getDataSetValue();
      DataSet Cadmium = ((MonitorDataSetPG)getParameter(2)).getDataSetValue();
@@ -199,8 +232,8 @@ public Object getResult(){
       }
 
      //----------- resample Monitors----------------
-
-      XScale xscl = SampleDs.getData_entry(0).getX_scale();
+      int n = SampleDs.getNum_entries();
+      XScale xscl = SampleDs.getData_entry(n/2).getX_scale();
       Sample.getData_entry(0).resample(xscl,IData.SMOOTH_NONE );
       Empty.getData_entry(0).resample(xscl,IData.SMOOTH_NONE);
       if( Cadmium != null)
@@ -211,17 +244,7 @@ public Object getResult(){
          Cadmium.getData_entry(2).resample(xscl,IData.SMOOTH_NONE);
 
 
-    /*  //Debug "print"( send to ISAW)
-        if(iobs != null){
-          Sample.setTitle("Sample-Lambd-resampled");
-          Empty.setTitle("Empty-Lambd-resampled");
-          Cadmium.setTitle("Cadmium-Lambd-resampled");
-          iobs.update( this, Sample.clone());
-          iobs.update( this, Empty.clone());
-          iobs.update( this, Cadmium.clone());
-
-        }*/
-   
+    
      //------------ Calculate downstream monitor Relative monitors-------
      DataSet RelCadmium = null;
      Object Res = null;
@@ -316,24 +339,28 @@ public Object getResult(){
       return tr;
     int groupID = tr.getData_entry(0).getGroup_ID();
     XScale xscl1 = tr.getData_entry(0).getX_scale();
-    //iobs.update( this, tr.clone() );
+
     float[] xvals = xscl1.getXs();
     float[] yvals = tr.getData_entry(0).getY_values();
+    
     double[] trunc_yvals = new double[ polyfitIndx2 - polyfitIndx1+1];
     double[] trunc_xvals = new double[ polyfitIndx2 - polyfitIndx1+1];
-    for( int ii=polyfitIndx1 ; ii<polyfitIndx2; ii++){
+    for( int ii=polyfitIndx1 ; ii<= polyfitIndx2; ii++){
        trunc_xvals[ii-polyfitIndx1]=(xvals[ii]+xvals[ii +1])/2.0;
        trunc_yvals[ii-polyfitIndx1] =(double) yvals[ii];
-    }
+    } 
      
     double[] coeff = new double[degree + 1];
     
     double errr=DataSetTools.math.CurveFit.Polynomial(trunc_xvals,trunc_yvals,coeff);
     for( int ii = 0; ii< yvals.length; ii++){
-      yvals[ii]=0;
+      yvals[ii]=0f;
       float xx = (xvals[ii]+xvals[ii+1])/2f;
-      for(int trm=0; trm <=degree; trm++)
-        yvals[ii] +=coeff[trm]* Math.pow(xx,0.0+trm);
+      float xterm = 1;
+      for(int trm=0; trm <=degree; trm++){
+        yvals[ii] +=coeff[trm]* xterm;
+        xterm = xterm*xx;
+      }
     }
     return tr;
     
@@ -358,23 +385,62 @@ public Object getResult(){
  }
  // only works for monitor data sets
   private void applyNeutronDelay( DataSet Sample, float delay){
-    /* if( Sample == null)
-       return ;
-     for( int i = 0; i < Sample.getNum_entries() ; i++){
-        Data D = Sample.getData_entry( i );
-        float[] yvals = D.getY_values();
-        XScale xscl= D.getX_scale();
-        float TotCnt = ((Float)(D.getAttribute(Attribute.TOTAL_COUNT).getValue())).intValue();
-        float TotTime =(float)( 1E6)/30; // 30 is pulse frequency
-        for( int j = 0; j < yvals.length -1; j++)
-           yvals[j] -= delay*TotCnt*(xscl.getX(j+1)-xscl.getX(j))/TotTime;
-     } 
-    */
+   
     tof_data_calc.SubtractDelayedNeutrons(
            (TabulatedData) Sample.getData_entry(0),30f, delay);
     
     tof_data_calc.SubtractDelayedNeutrons(
             (TabulatedData) Sample.getData_entry(2),30f, delay);
+
+  }
+
+
+  public String getDocumentation(){
+      StringBuffer Res = new StringBuffer();
+      Res.append( "@overview - This class creates a transmission data set in");
+      Res.append( " llambda and rebinned to match the corresponding histogram");
+      Res.append( " when it is converted to llambda.");
+      Res.append( "@algorithm  Each monitor data set has the delay neutron ");
+      Res.append( "fraction subtracted from its entries.  Then the monitor ");
+      Res.append( "data is rebinned to match the corresponding histogram ");
+      Res.append( "bins. Next the ratio of the upstream to down stream ");
+      Res.append( "monitors are calculated for each monitor data set. The ");
+      Res.append( "resultant data set is the quotient of the sample ratio ");
+      Res.append( "minus the cadmium ratio  divided by the Empty ratio minus ");
+      Res.append( "the cadmium ratio.  If polynomial fitting is chosen,");
+      Res.append( "  it is done.");
+      Res.append( "@param Sample -  The monitor data set for the sample run");
+      Res.append( "@param Empty -  The monitor data set for the Empty run");
+      Res.append( "@param Cadmium - The monitor data set for the Cadmium run");
+      Res.append( " @param SampleDS - The Histogram data set for the sample run");
+      Res.append( "@param useCadmium - true if cadmium run is to be used");
+      Res.append( "@param Neutron_Delay -The delay factor or 0 if no delay is");
+      Res.append( "needed.");
+      Res.append( " @param polyfitIndx1 -  the start channel to be fit(in ");
+      Res.append( "rebinned llambda). the first");
+      Res.append( "                 channel is channel 0");
+      Res.append( "@param  polyfitIndx2 - the last channed to be fit(in ");
+      Res.append( "rebinned llambda).the first");
+      Res.append( "                 channel is channel 0. This last channel is ");
+      Res.append( "included.");
+      Res.append( "@param  degree -  degree of the polynomial to fit or -1 if ");
+      Res.append( "no fitting is desired");
+      Res.append( "@param  weight  - use 1/|y| values for weights instead of 1.");
+      Res.append( "@return  a Data Set of transmission ratios converted to llamda");
+      Res.append( " and rebinned to match the corresponding sample histogram. ");
+
+      Res.append( "The data is fitted to a polynomial if chosen.");
+      Res.append( "@error Could not Convert Sample to Llamda");
+      Res.append( "@error  See errors from DataSetDivide, Subtract etc.");
+      Res.append( "@error Tranmission data is empty");
+      Res.append( "@assumptions  The downstream monitor is 1 and the upstream");
+      Res.append( "  is 3. There has to be three monitors included in each ");
+      Res.append("    histogram data set");
+      return Res.toString();
+
+  
+
+
 
   }
 
