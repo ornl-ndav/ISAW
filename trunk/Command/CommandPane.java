@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.60  2003/10/10 00:41:52  bouzekc
+ * Changed references from ScriptProcessor to IScriptProcessor.
+ *
  * Revision 1.59  2003/07/18 22:00:48  rmikk
  * Added code so that the Send in scripts works in the
  * immediate pane and also when a script with no
@@ -191,7 +194,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
     String FilePath = null  ;             // for macro storage and retrieval
     File SelectedFile = null;
     Document logDoc=null;
-    public ScriptProcessorOperator  SP;
+    public IScriptProcessor  SP;
     boolean Debug = false;
     PropertyChangeSupport PC;
     IObserverList IObslist;
@@ -252,7 +255,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
         String[] LanguageChoices = new String[2];
         LanguageChoices[0]=ISAWscript;
         {
-          ScriptProcessorOperator sp=ScriptInterpretFetch
+          IScriptProcessor sp=ScriptInterpretFetch
                                            .getScriptProcessor("mine.py",null);
           if(sp==null){
             LanguageChoices=new String[1];
@@ -389,7 +392,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
         dss.addIObserver( this );
     }
     
-    private void addDataSets( ScriptProcessorOperator X){
+    private void addDataSets( IScriptProcessor X){
       for( int i = 0; i< DSList.size(); i++)
         X.addDataSet( (DataSet)(DSList.elementAt(i) ) );
     }
@@ -413,7 +416,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
             CommandSP.setBorder(new TitledBorder( "Prgm Editor:"+filename ));
             PC.firePropertyChange("filename", null, filename);
        
-            ScriptProcessorOperator sp = ScriptInterpretFetch.
+            IScriptProcessor sp = ScriptInterpretFetch.
                                             getScriptProcessor( filename, Commands.getDocument() );
            
             
@@ -628,7 +631,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
         CommandPane P;
         
         F = new JFrame( "Command Pane" ); 
-        
+          
         P = new CommandPane(); 
         Dimension D = P.getToolkit().getScreenSize();
         F.setSize((int)(.6* D.width) , (int)(.7*D.height) ); 
@@ -797,7 +800,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
              
               if( indx !=0) 
                 Fname = "*.py";
-              ScriptProcessorOperator sp = ScriptInterpretFetch.
+              IScriptProcessor sp = ScriptInterpretFetch.
                              getScriptProcessor( Fname, Commands.getDocument() );
               if( sp == null)
                  {sp = new ScriptProcessor( Commands.getDocument() );
