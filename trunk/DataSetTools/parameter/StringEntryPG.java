@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2003/11/05 04:35:06  bouzekc
+ *  validateSelf now handles the case where the StringFilterer is null.
+ *
  *  Revision 1.19  2003/10/17 02:28:17  bouzekc
  *  Fixed javadoc errors and updated method javadocs.
  *
@@ -259,7 +262,7 @@ public abstract class StringEntryPG extends ParameterGUI
     if( sf == null ) {
       setValid( false );
     } else {
-      setValid( getStringFilter(  ).isOkay( 0, getValue(  ).toString(  ), "" ) );
+      setValid( sf.isOkay( 0, getValue(  ).toString(  ), "" ) );
     }
   }
 
