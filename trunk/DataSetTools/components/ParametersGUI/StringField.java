@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/01/24 21:59:44  bouzekc
+ *  Made inner class final.
+ *
  *  Revision 1.6  2004/01/23 15:45:42  bouzekc
  *  Added javadoc comments.
  *
@@ -167,7 +170,7 @@ public abstract class StringField extends JTextField {
   /**
    * Internal class to do all of the formatting checks.
    */
-  protected class StringDocument extends PlainDocument {
+  protected final class StringDocument extends PlainDocument {
     //~ Instance fields ********************************************************
 
     private StringField textBox;
