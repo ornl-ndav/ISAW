@@ -286,6 +286,8 @@ public class FindMultiplePeaksForm extends Form
 
       loadName = rawDir + SCDName + runNum + ".RUN";
 
+      SharedData.addmsg("Loading " + loadName + ".");
+
       /*get the histogram.  We want to retrieve the first one.*/
       histNum = 1;
       
@@ -308,8 +310,7 @@ public class FindMultiplePeaksForm extends Form
       else
         return errorOut("LoadMonitorDS failed: " + obj.toString());
 
-      SharedData.addmsg("Finding peaks for ");
-      SharedData.addmsg(histDS.toString());
+      SharedData.addmsg("Finding peaks for " + loadName + ".");
       
       //integrate
       obj = new IntegrateGroup(monDS, 1, 0, 50000).getResult();
@@ -340,6 +341,8 @@ public class FindMultiplePeaksForm extends Form
         peaksVec = (Vector)obj;
       else
         return errorOut("CentroidPeaks failed: " + obj.toString());
+
+      SharedData.addmsg("Writing peaks for " + loadName + ".");
 
       // write out the results to the .peaks file
       obj = new WritePeaks(saveName, peaksVec, 
