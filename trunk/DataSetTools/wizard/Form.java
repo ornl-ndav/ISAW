@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2003/07/09 22:35:44  bouzekc
+ * Made validateParameterGUIS() protected again.
+ *
  * Revision 1.29  2003/07/09 22:27:42  bouzekc
  * Made validateParameterGUIS() public so that Wizards can
  * use it on ScriptForms, JyScriptForms, and OperatorForms.
@@ -691,7 +694,7 @@ public abstract class Form extends Operator implements PropertyChanger {
    * @return Either Boolean.TRUE or an ErrorString, depending on the whether
    *         the parameters successfully validated or not, respectively.
    */
-  public Object validateParameterGUIs(  ) {
+  protected Object validateParameterGUIs(  ) {
     IParameterGUI ipg;
     Object obj;
 
