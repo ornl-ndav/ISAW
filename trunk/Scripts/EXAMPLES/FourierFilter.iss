@@ -1,9 +1,14 @@
 #  FourierFilter.iss
 #
-#  $Date$
-#
 #  This script demonstrates a low-pass Butterworth filter applied to
-#  a single vanadium spectrum. 
+#  a single vanadium spectrum.  Several different cutoff frequencies are
+#  used.  For each cutoff frequency, the filtered and original Data blocks
+#  are merged into one DataSet so that the results can be compared.
+#
+#  $Date$
+
+$Category = Operator, Utils, Examples 
+
 #
 #  1. Load the data from a simple ASCII file and mark the first group as
 #     selected, so it shows up int the Selected Graph View
