@@ -13,7 +13,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
- 
+import javax.swing.text.*; 
 /**
  * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
  * ChopTools and graph packages.
@@ -25,11 +25,12 @@ public class JOperationsMenuHandler implements ActionListener, Serializable
 {
     private DataSet ds;
     private JTreeUI treeUI;
-    
-    public JOperationsMenuHandler(DataSet ds, JTreeUI treeUI)
+    Document sessionLog;
+    public JOperationsMenuHandler(DataSet ds, JTreeUI treeUI, Document sessionLog)
     
     { this.ds = ds ;
       this.treeUI = treeUI;
+      this.sessionLog = sessionLog;
     }
  
     public void actionPerformed(ActionEvent ev) 
@@ -48,11 +49,11 @@ public class JOperationsMenuHandler implements ActionListener, Serializable
                 found = true;
                 }
                 else i++;
-                System.out.println("We are looking for s:" +s);
+                //System.out.println("We are looking for s:" +s);
             }
             if (found)
             {
-                JParametersDialog pDialog = new JParametersDialog(op, treeUI);
+                JParametersDialog pDialog = new JParametersDialog(op, treeUI, sessionLog);
 
             }
         }

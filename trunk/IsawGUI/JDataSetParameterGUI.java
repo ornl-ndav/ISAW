@@ -35,7 +35,9 @@ public class JDataSetParameterGUI extends JParameterGUI
        
         combobox = new JComboBox();
         //combobox.addItem(ds);
-        
+        JLabel label = new JLabel(parameter.getName());
+       label.setPreferredSize(new Dimension(150,25));
+
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)jtui.getTree().getModel().getRoot();
         int n_containers = root.getChildCount();
   
@@ -53,9 +55,9 @@ public class JDataSetParameterGUI extends JParameterGUI
         }
         
         segment = new JPanel();
-        segment.setLayout(new GridLayout(1,2));
+        segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5)); 
        
-        segment.add(new JLabel(parameter.getName()));
+        segment.add(label);
         segment.add(combobox);
         
        
@@ -76,3 +78,4 @@ public class JDataSetParameterGUI extends JParameterGUI
     }
 
 }
+

@@ -8,7 +8,7 @@ package IsawGUI;
 
 import javax.swing.*;
 //import javax.swing.*;
-import DataSetTools.*;
+
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import java.awt.*;
@@ -27,14 +27,17 @@ import DataSetTools.util.*;
 public class JAttributeNameParameterGUI extends JParameterGUI
 {
     private JPanel segment;
-    private JTextArea dsText;
+    private JTextField dsText;
     private JComboBox combobox;
     public JAttributeNameParameterGUI(Parameter parameter, AttributeList attr_list)
     { 
         super(parameter);
         combobox = new JComboBox();
+        combobox.setEditable(true);
         //combobox.addItem(ds);
-        
+        JLabel label = new JLabel(parameter.getName());
+       label.setPreferredSize(new Dimension(150,25));
+
         for(int i = 0; i<attr_list.getNum_attributes(); i++)
         {
             Attribute attr = attr_list.getAttribute(i);
@@ -42,9 +45,9 @@ public class JAttributeNameParameterGUI extends JParameterGUI
         }
         
         segment = new JPanel();
-        segment.setLayout(new GridLayout(1,2));
+        segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5)); 
        
-        segment.add(new JLabel(parameter.getName()));
+        segment.add(label);
         segment.add(combobox);
         
        
@@ -56,12 +59,21 @@ public class JAttributeNameParameterGUI extends JParameterGUI
         
     }
 
-    public Parameter getParameter()
+
+	 public Parameter getParameter()
     {
-       
-       AttributeNameString s = new AttributeNameString( (String)combobox.getSelectedItem() );
-        parameter.setValue(s);
+
+        Class C = parameter.getValue().getClass();
+        try{
+           SpecialString X = (SpecialString)(C.newInstance());
+           X.setString ((String)(combobox.getSelectedItem()));
+           parameter.setValue(X );
+           }
+        catch( Exception s)
+         {}
         return parameter;
     }
 
-}
+
+
+  }

@@ -24,18 +24,20 @@ import java.io.Serializable;
 public class JStringParameterGUI extends JParameterGUI implements Serializable
 {
     private JPanel segment;
-    private JTextArea stringText;
+    private JTextField stringText;
     
     public JStringParameterGUI(Parameter parameter)
     { 
        super(parameter);
        
        String value = ((String)parameter.getValue()).toString();
-       stringText = new JTextArea();
+       JLabel label = new JLabel(parameter.getName());
+       label.setPreferredSize(new Dimension(170,25));
+       stringText = new JTextField(20);
        stringText.setText(value);
        segment = new JPanel();
-       segment.setLayout(new GridLayout(1,2));
-       segment.add(new JLabel(parameter.getName()));
+       segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5)); 
+       segment.add(label);
        segment.add(stringText);
    
     }

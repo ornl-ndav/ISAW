@@ -28,10 +28,13 @@ public class HTMLPage extends JFrame {
 
 		editorPane.addHyperlinkListener(new HyperlinkListener() {
 			public void hyperlinkUpdate(HyperlinkEvent e) {
-				try { 
+			if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) 
+{
+		      	try { 
 					editorPane.setPage(e.getURL());
 				}
 				catch(IOException ex) { ex.printStackTrace(); }
+}
 			}
 		});
 	}
