@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/06/05 21:43:44  dennis
+ * Added option to print lattice parameters.
+ * Copy normal from FFT DataSet no longer attempts to further
+ * refine the normal.
+ *
  * Revision 1.3  2003/06/05 14:42:31  dennis
  * Now allows user to select planes of constant h, k or l either using
  * the FFT DataSet, or by selecting peaks interactively.  Also shows slices
@@ -199,6 +204,12 @@ public class RecipPlaneView
     control_panel.add( k_plane_ui );
     control_panel.add( l_plane_ui );
 
+    JButton show_lat_param = new JButton( "Lattice Parameters" );
+    JPanel button_panel = new JPanel();
+    button_panel.setLayout( new GridLayout(1,1) );
+    button_panel.add( show_lat_param );
+    control_panel.add( button_panel );
+
     JPanel filler = new JPanel();
     filler.setPreferredSize( new Dimension( 120, 2000 ) );
     control_panel.add( filler );
@@ -238,6 +249,8 @@ public class RecipPlaneView
     h_plane_ui.addActionListener( plane_listener );    
     k_plane_ui.addActionListener( plane_listener );    
     l_plane_ui.addActionListener( plane_listener );    
+
+    show_lat_param.addActionListener( new LatticeParameterListener() );
 
     Redraw();
 
@@ -308,7 +321,18 @@ public class RecipPlaneView
 //  vm = new ViewManager( all_fft_ds, IViewManager.IMAGE );
 
     System.out.println("Filtering FFTs of all projections....");
-    filtered_fft_ds = FilterFFTds( all_fft_ds );
+    filtered_fft_ds = FilterFFTds( all_fft_ds, LSQ_THRESHOLD );
+    if ( filtered_fft_ds.getNum_entries() < 10 )
+    {
+      System.out.println("WARNING: recalculating FFT since too few found");
+      filtered_fft_ds = FilterFFTds( all_fft_ds, 2*LSQ_THRESHOLD );
+    }
+    if ( filtered_fft_ds.getNum_entries() < 10 )
+    {
+      System.out.println("WARNING: recalculating FFT AGAIN, too few found");
+      filtered_fft_ds = FilterFFTds( all_fft_ds, 4*LSQ_THRESHOLD );
+    }
+
     filtered_fft_ds.addIObserver( new FFTListener() );
     System.out.println("DONE");
     vm = new ViewManager( filtered_fft_ds, IViewManager.IMAGE );
@@ -829,7 +853,7 @@ public class RecipPlaneView
  * Go through the FFT ds refine the normals and only keep the FFT's for 
  * which the refined normals are distinct.
  */
-  public DataSet FilterFFTds( DataSet fft_ds )
+  public DataSet FilterFFTds( DataSet fft_ds, float err_threshold )
   {
     DataSet new_ds = fft_ds.empty_clone();
     new_ds.setTitle("Filtered FFT DataSet");
@@ -889,7 +913,7 @@ public class RecipPlaneView
       d_spacing = (float)(2*Math.PI / q_spacing);
       sigma = values[DIMENSION];
 
-      if ( sigma < LSQ_THRESHOLD && d_spacing > 0 )
+      if ( sigma < err_threshold && d_spacing > 0 )
       { 
         new_normal.normalize();
 
@@ -1209,6 +1233,41 @@ public class RecipPlaneView
   }
 
 
+/* ------------------------- showLatticeParameters ----------------------- */
+
+private void showLatticeParameters( Vector3D a, Vector3D b, Vector3D c )
+{
+  Vector3D a_normal = new Vector3D( a );
+  a_normal.normalize();
+
+  Vector3D b_normal = new Vector3D( b );
+  b_normal.normalize();
+
+  Vector3D c_normal = new Vector3D( c );
+  c_normal.normalize();
+
+  double alpha = (180/Math.PI) * Math.acos( b_normal.dot( c_normal ) );
+  double beta  = (180/Math.PI) * Math.acos( a_normal.dot( c_normal ) );
+  double gamma = (180/Math.PI) * Math.acos( a_normal.dot( b_normal ) );
+
+  Vector3D temp = new Vector3D();
+  temp.cross( a, b );
+  float volume = Math.abs(c.dot( temp ));
+
+  System.out.println("-------------------------------------------------------");
+  System.out.println("Lattice Parameters:");
+  System.out.println("");
+  System.out.println( "  "  + Format.real( a.length(), 5, 5 ) +
+                      "  "  + Format.real( b.length(), 5, 5 ) +
+                      "  "  + Format.real( c.length(), 5, 5 ) +
+                      " : " + Format.real( alpha, 5, 5 )      +
+                      "  "  + Format.real( beta, 5, 5 )       +
+                      "  "  + Format.real( gamma, 5, 5 )      + 
+                      " : " + Format.real( volume, 5, 5 )     );
+  System.out.println("");
+  System.out.println("-------------------------------------------------------");
+}
+
 /* --------------------------------------------------------------------------
  *
  *  PRIVATE CLASSES
@@ -1292,6 +1351,35 @@ private class ThresholdApplyButtonHandler implements ActionListener
     String action  = e.getActionCommand();
     System.out.println("Button pressed : " + action );
     initialize( false );      
+  }
+}
+
+
+/* ---------------------- LatticeParameterListener ------------------------ */
+
+private class LatticeParameterListener implements ActionListener
+{
+  public void actionPerformed( ActionEvent e )
+  {
+    float h_vals[] = h_plane_ui.get_normal(); 
+    float k_vals[] = k_plane_ui.get_normal(); 
+    float l_vals[] = l_plane_ui.get_normal(); 
+
+    if ( h_vals == null || k_vals == null || l_vals == null )
+    {
+      System.out.println("ERROR: must have h,k,l normals set");
+      return;
+    }
+
+    Vector3D a = new Vector3D( h_vals );
+    Vector3D b = new Vector3D( k_vals );
+    Vector3D c = new Vector3D( l_vals );
+
+    a.multiply( h_plane_ui.get_d_spacing() ); 
+    b.multiply( k_plane_ui.get_d_spacing() ); 
+    c.multiply( l_plane_ui.get_d_spacing() ); 
+    
+    showLatticeParameters( a, b, c );
   }
 }
 
@@ -1397,18 +1485,12 @@ private class PlaneListener implements ActionListener
 
        float value[] = (float[])d.getAttributeValue( NORMAL_ATTRIBUTE );
 
-       Vector3D normal = new Vector3D( value );
-       value = refinePlane( normal ); 
+       Attribute attr = d.getAttribute( D_SPACING_ATTRIBUTE );
+       float d_spacing = (float)attr.getNumericValue();
 
-       float sigma = value[DIMENSION];
-       float d_spacing = value[DIMENSION+1];
+       attr = d.getAttribute( LSQ_ERROR_ATTRIBUTE );
+       float sigma = (float)attr.getNumericValue();
 
-       normal.set(value);
-       float length = normal.length();
-   
-       for ( int i = 0; i < 3; i++ )
-        value[i] /= length;
- 
        if ( DIMENSION == 3 )
          value[DIMENSION] = 0;
 
@@ -1506,7 +1588,7 @@ private class FFTListener implements IObserver
        if ( value instanceof float[] )
        {
          Vector3D normal = new Vector3D( (float[])value );
-         System.out.println( "Normal for this Data block is " + normal );
+//         System.out.println( "Normal for this Data block is " + normal );
 
          Polyline normal_line[] = new Polyline[1];
          Vector3D verts[] = new Vector3D[2];
@@ -1522,8 +1604,8 @@ private class FFTListener implements IObserver
          {
            float max_chan = ((FloatAttribute)attr).getFloatValue();
            q_spacing = (2*SLICE_SIZE_IN_Q)/(max_chan);
-           System.out.println("old Q-spacing = " + q_spacing );
-           System.out.println("old d-spacing = " + 2*Math.PI/q_spacing );
+//           System.out.println("old Q-spacing = " + q_spacing );
+//           System.out.println("old d-spacing = " + 2*Math.PI/q_spacing );
            Vector3D poly_verts[] = new Vector3D[15];
            poly_verts[0] = new Vector3D( origin_vec.getVector() );
            Vector3D step_vec = new Vector3D( normal );
@@ -1540,22 +1622,22 @@ private class FFTListener implements IObserver
            vec_Q_space.setObjects( "Selected Plane Spacing", plane_marks );
 
            float values[] = refinePlane( normal, q_spacing );
-           System.out.print("Refined normal values : " );
-           for ( int i = 0; i < values.length; i++ )
-             System.out.print(" " + values[i] );
-           System.out.println();
+//           System.out.print("Refined normal values : " );
+//           for ( int i = 0; i < values.length; i++ )
+//             System.out.print(" " + values[i] );
+//             System.out.println();
            Vector3D new_normal = new Vector3D( values );
            new_normal.normalize();
            System.out.println("Normalized new_normal = " + new_normal );
 
-           attr = d.getAttribute( LSQ_ERROR_ATTRIBUTE );
-           if ( attr != null )
-             System.out.println("LSQ ERROR = " + attr.getNumericValue() );
+//           attr = d.getAttribute( LSQ_ERROR_ATTRIBUTE );
+//           if ( attr != null )
+//             System.out.println("LSQ ERROR = " + attr.getNumericValue() );
          }
          else
          {
            vec_Q_space.removeObjects( "Selected Plane Spacing" );
-           System.out.println("Removing plane marks" );
+//           System.out.println("Removing plane marks" );
          }
 
          Redraw();
