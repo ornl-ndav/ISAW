@@ -45,11 +45,12 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
      DefaultTableModel dtm ;
      DataSet current_ds = null;
      Vector tab_titles;
+     JPropertiesUI jpui;
      
          /** @associates <{IsawGUI.JCommandUI}> */
         // private com.sun.java.util.collections.TreeSet lnkJCommandUI;
      
-	 public JCommandUI(CommandPane cp, Document sessionLog)
+	 public JCommandUI(CommandPane cp, Document sessionLog, JPropertiesUI jpui)
 	 {
 
           this.sessionLog = sessionLog;
@@ -64,8 +65,9 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
         table = new JTable(dtm);
         logTree = new JTree(model);
         logTree.setShowsRootHandles(true);
-        
+
         JScrollPane sp = new JScrollPane(table);
+        JScrollPane pp = new JScrollPane(jpui.getPropsTable());
         JScrollPane pane = new JScrollPane(logTree);
         //setBorder(new BevelBorder (BevelBorder.RAISED));
 			setBorder(new CompoundBorder(new EmptyBorder(4,4,4,4), new EtchedBorder (EtchedBorder.RAISED)));
@@ -96,18 +98,16 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
 	                             );
       
         JScrollPane ta = new JScrollPane(textArea);
-        
-        //pane.setPreferredSize(new Dimension(300,100));
-        //pane.setMinimumSize(new Dimension(50,50));
-       // add(pane);
        
      //   String tab_names [] = {"DataSet Log", "Session Log", "Detector Info", "System Properties", "CommandPane"};
-        jtp = new JTabbedPane();
+        
+       jtp = new JTabbedPane();
+        jtp.addTab("Properties Panel", pp);
         jtp.addTab("DataSet Log", pane);
         jtp.addTab("Session Log", njsp);
-        jtp.addTab("Detector Info", sp);
-        jtp.addTab("System Properties", ta);
-	  jtp.addTab("CommandPane", cp);
+        jtp.addTab("System Props", ta);
+        jtp.addTab("Det Info", sp);
+	  jtp.addTab("Scripts", cp);
 
    //  for (int i=0; i<tab_names.length; i++)
 	 //   {
