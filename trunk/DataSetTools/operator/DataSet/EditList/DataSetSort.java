@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2002/07/23 18:15:37  dennis
+ *  Fixed javadoc comment.
+ *
  *  Revision 1.1  2002/02/22 21:01:52  pfpeterson
  *  Operator reorganization.
  *
@@ -168,7 +171,8 @@ public class DataSetSort  extends    DS_EditList
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, Sort
+   * @return  the command name to be used with script processor: 
+   *          in this case, Sort
    */
    public String getCommand()
    {
