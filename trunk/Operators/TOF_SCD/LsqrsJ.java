@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2003/06/27 15:00:05  bouzekc
+ * Now traps error which occurred if the matrix file was not
+ * specified.  In that case, the lsqrs log file is returned
+ * rather than "Success."
+ *
  * Revision 1.15  2003/06/26 22:23:20  bouzekc
  * Added code to reject peaks based on peak intensity
  * threshold and detector geometry.
@@ -205,9 +210,10 @@ public class LsqrsJ extends GenericTOF_SCD {
     sb.append( "@param keepPixels The detector pixel range to keep." );
 
     // return
-    sb.append( "@return If successful, returns the name of the matrix file " );
-    sb.append( "was written.  If no matrix file was written, it merely " );
-    sb.append( "returns \"Success\"" );
+    sb.append( "@return If a matrix file name was given and the file was " );
+    sb.append( "successfully written, it returns the " );
+    sb.append( "name of the matrix file.  If no matrix file was written, it " );
+    sb.append( "returns the name of the lsqrsJ log file." );
 
     // error
     sb.append( "@error If the peaks file is not found or cannot be read from." );
@@ -236,11 +242,12 @@ public class LsqrsJ extends GenericTOF_SCD {
     int threshold    = ( ( IntegerPG )getParameter( 5 ) ).getintValue(  );
     int[] keepRange  = ( ( IntArrayPG )getParameter( 6 ) ).getArrayValue(  );
     float[][] matrix = null;
-
-    int lowerLimit = keepRange[0];  //lower limit of range
+    int lowerLimit   = keepRange[0];  //lower limit of range
 
     //upper limit of range
     int upperLimit = keepRange[keepRange.length - 1];
+    String matDir  = null;
+    String logfile;
 
     {
       IParameter iparm = getParameter( 3 );
@@ -274,11 +281,13 @@ public class LsqrsJ extends GenericTOF_SCD {
         file = new File( matfile );
 
         if( file.isDirectory(  ) ) {
-          matfile = null;
+          matDir    = matfile;  //we'll need this later
+          matfile   = null;
         }
       }
 
       if( matfile == null ) {
+        //apparently this is not an error, only a warning...?
         SharedData.addmsg( 
           "WARN(" + getCommand(  ) + "): not writing to matrix file" );
       }
@@ -374,7 +383,6 @@ public class LsqrsJ extends GenericTOF_SCD {
     }
 
     // trim out small peaks (defined by the threshold parameter)
-    //
     if( threshold >= 0 ) {
       for( int i = peaks.size(  ) - 1; i >= 0; i-- ) {
         peak = ( Peak )peaks.elementAt( i );
@@ -579,17 +587,43 @@ public class LsqrsJ extends GenericTOF_SCD {
 
     // write the log file
     {
-      String logfile = "lsqrs.log";
-      int index      = matfile.lastIndexOf( "/" );
+      if( 
+        ( matfile == null ) &&
+          ( ( matDir == null ) || ( matDir.length(  ) <= 0 ) ) ) {
+        //this shouldn't happen, but just in case...
+        return new ErrorString( 
+          "No directory to write the matrix file or log file to was given." );
+      }
 
-      if( index >= 0 ) {
-        logfile = matfile.substring( 0, index + 1 ) + logfile;
+      logfile = "lsqrs.log";
+
+      int index;
+
+      if( matfile != null ) {
+        index = matfile.lastIndexOf( "/" );
+
+        if( index >= 0 ) {
+          logfile = matfile.substring( 0, index + 1 ) + logfile;
+        }
+      } else {
+        index = matDir.length(  ) - 1;  //matDir.lastIndexOf("/");
+
+        if( index >= 0 ) {
+          if( matDir.lastIndexOf( "/" ) != index ) {
+            //need to add a slash
+            logfile = matDir + "/" + logfile;
+          } else {
+            logfile = matDir + "/" + logfile;
+          }
+        }
       }
 
       String warn = writeLog( logfile, logBuffer.toString(  ) );
 
       if( ( warn != null ) && ( warn.length(  ) > 0 ) ) {
         SharedData.addmsg( "JLsqrs(WARN) while writting lsqrs.log: " + warn );
+      } else {
+        SharedData.addmsg( "Wrote log file: " + logfile + "." );
       }
     }
 
@@ -607,7 +641,7 @@ public class LsqrsJ extends GenericTOF_SCD {
         return matfile;
       }
     } else {
-      return "Success";
+      return logfile;
     }
   }
 
