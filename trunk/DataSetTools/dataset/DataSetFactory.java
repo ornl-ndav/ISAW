@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2002/04/03 20:41:16  pfpeterson
+ *  Added the LoadOffsets DataSet operator to the DataSets.
+ *
  *  Revision 1.19  2002/02/26 21:17:01  pfpeterson
  *  Unsupported instrument type error appears in status pane now.
  *
@@ -296,6 +299,7 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new SetDSDataAttributes() );
     new_ds.addOperator( new GetField() );
     new_ds.addOperator( new SetField() );
+    new_ds.addOperator( new LoadOffsets() );
 
     new_ds.addOperator( new PlotterOp() );
     return new_ds;
