@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2004/01/21 18:00:40  bouzekc
+ *  Removed three unused private methods.
+ *
  *  Revision 1.37  2003/12/15 17:28:16  bouzekc
  *  Uncommented and fixed main method.
  *
@@ -571,102 +574,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       }
     } else {
       setValid( false );
-    }
-  }
-
-  /**
-   * Determines how many elements are of the same class.
-   *
-   * @param vals Vector of values to check.
-   * @param start The index of the item you wish to check against the other
-   *        items.
-   */
-  private int checkSame( Vector vals, int start ) {
-    if( ( vals == null ) || ( vals.size(  ) <= 0 ) ) {
-      return -1;
-    }
-
-    if( start >= vals.size(  ) ) {
-      return -1;
-    }
-
-    int same     = 1;
-    String first = vals.elementAt( start ).getClass(  ).getName(  );
-
-    for( int i = 1; i < vals.size(  ); i++ ) {
-      if( first.equals( vals.elementAt( i ).getClass(  ).getName(  ) ) ) {
-        same++;
-      } else {
-        return same;
-      }
-    }
-
-    return same;
-  }
-
-  /**
-   * Create a short version of a class name based on the object provided.
-   *
-   * @param obj The object to get the class name of.
-   *
-   * @return The shortened class name.
-   */
-  private String shortName( Object obj ) {
-    // get the name of the class
-    String res = obj.getClass(  ).getName(  );
-
-    // determine what to trim off
-    int start = res.lastIndexOf( "." );
-    int end   = res.length(  );
-
-    if( res.endsWith( ";" ) ) {
-      end--;
-    }
-
-    // return the trimmed version
-    if( ( start >= 0 ) && ( end >= 0 ) ) {
-      return res.substring( start + 1, end );
-    } else {
-      return res;
-    }
-  }
-
-  /**
-   * Creates the string to be placed in the label for the GUI.
-   *
-   * @return The String label.
-   */
-  private String stringVersion(  ) {
-    Object obj = getValue(  );
-
-    if( ( obj == null ) || ( ( ( Vector )obj ).size(  ) <= 0 ) ) {
-      return "";
-    } else {
-      StringBuffer result = new StringBuffer(  );
-      Vector val          = ( Vector )getValue(  );
-      int numElements     = val.size(  );
-      int start           = 0;
-      int index           = 0;
-
-      while( start < numElements ) {
-        index = checkSame( val, start );
-        result.append( 
-          shortName( val.elementAt( ( index + start ) - 1 ) ) + "[" + index +
-          "]" );
-        start = start + index;
-
-        if( start < numElements ) {
-          result.append( ", " );
-        }
-
-        index = 0;
-      }
-
-      if( result.length(  ) > 0 ) {
-        return '[' + result.toString(  ) + ']';
-      } else {
-        return '[' + val.toString(  ) + ']';
-      }
     }
   }
 }
