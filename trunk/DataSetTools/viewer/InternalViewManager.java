@@ -1,27 +1,15 @@
 /*
- * @(#)InternalViewManager.java   1.14  2000/05/10  Dennis Mikkelson
+ * @(#)InternalViewManager.java  
  *
- *  Modified:
- *   1.1 2000/03/30  Dennis Mikkelson  
- *                   Changed it to pass a second "tempDataSet" to the viewers,
- *                   so that axis conversions can be done and hidden Data 
- *                   blocks can be omitted.
- *  1.11 2000/04/04  Dennis Mikkelson
- *                   Added translation arrays between indices in the original
- *                   DataSet and tempDataSet. "Pointed At" messages are now
- *                   transferred from one to the other.
- *  1.12 2000/04/11  Added edit menu options to Delete, Hide, Group the 
- *                   un-selected items, as well as the selected items.
- *  1.13 2000/04/28  Temporarily removed Group and Hide operations.  Added 
- *                   option to save the tempDataSet to the tree as a new 
- *                   DataSet
- *  1.14 2000/05/10  Sum selected groups and delete selected groups are not
- *                   implemented using operators.
+ * Programmer:  Dennis Mikkelson
  *
- * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.2  2000/12/07 23:09:06  dennis
+ *  Now includes basic support for maintaining ViewerState.
+ *  Also refined some reasons for doing an update.
+ *
  *  Revision 1.1  2000/07/10 22:59:15  dennis
- *  July 10, 2000 version... many changes
+ *  July 10, 2000 version... many changes, switched to CVS
  *
  *  Revision 1.18  2000/06/14 22:18:46  dennis
  *  changed order of parameters to SumCurrentlySelected() since the operator
@@ -29,12 +17,6 @@
  *
  *  Revision 1.17  2000/06/12 19:53:58  dennis
  *  Now implements Serializable and handles DATA_CHANGED notifications
- *
- *  Revision 1.16  2000/06/08 19:13:55  dennis
- *  *** empty log message ***
- *
- *  Revision 1.15  2000/05/24 22:37:22  dennis
- *  *** empty log message ***
  *
  *  Revision 1.20  2000/05/18 20:58:56  dennis
  *  made default Frame size slightly larger and removed unused "Show All"
@@ -49,6 +31,22 @@
  *  Revision 1.18  2000/05/11 15:19:52  dennis
  *  Added RCS logging.
  *
+ *  Modified:
+ *   1.1 2000/03/30  Dennis Mikkelson
+ *                   Changed it to pass a second "tempDataSet" to the viewers,
+ *                   so that axis conversions can be done and hidden Data
+ *                   blocks can be omitted.
+ *  1.11 2000/04/04  Dennis Mikkelson
+ *                   Added translation arrays between indices in the original
+ *                   DataSet and tempDataSet. "Pointed At" messages are now
+ *                   transferred from one to the other.
+ *  1.12 2000/04/11  Added edit menu options to Delete, Hide, Group the
+ *                   un-selected items, as well as the selected items.
+ *  1.13 2000/04/28  Temporarily removed Group and Hide operations.  Added
+ *                   option to save the tempDataSet to the tree as a new
+ *                   DataSet
+ *  1.14 2000/05/10  Sum selected groups and delete selected groups are not
+ *                   implemented using operators.
  */
  
 package DataSetTools.viewer;
@@ -59,7 +57,7 @@ import DataSetTools.util.*;
 import DataSetTools.viewer.util.*;
 import DataSetTools.viewer.Graph.*;
 import DataSetTools.viewer.Image.*;
-import OverplotView.*;
+//import OverplotView.*;                         // import this for Kevin's viewer
 import DataSetTools.viewer.ViewerTemplate.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -82,6 +80,7 @@ public class InternalViewManager extends    JInternalFrame
 {
    private   InternalViewManager     view_manager = null;
    private   DataSetViewer   viewer;
+   private   ViewerState     state;
    private   DataSet         dataSet;
    private   DataSet         tempDataSet;
    private   DataSetOperator conversion_operator = null;
@@ -186,20 +185,25 @@ public class InternalViewManager extends    JInternalFrame
    {
      getContentPane().setVisible(false);
      getContentPane().removeAll();
+
+     if ( viewer != null )
+       state = viewer.getState();
+
      viewer = null;
       if ( view_type == IMAGE )
-        viewer = new ImageView( tempDataSet );
+        viewer = new ImageView( tempDataSet, state );
       else if ( view_type == SCROLLED_GRAPHS )
-        viewer = new GraphView( tempDataSet );
-      else if ( view_type == SELECTED_GRAPHS )
-        viewer = new SelectedGraphView( tempDataSet );
-//        viewer = new ViewerTemplate( tempDataSet );
+        viewer = new GraphView( tempDataSet, state );
+      else if ( view_type == SELECTED_GRAPHS )                  // Use either
+//        viewer = new SelectedGraphView( tempDataSet );          // Kevin's or
+        viewer = new ViewerTemplate( tempDataSet, state );      // Template  
       else
       {
-        System.out.println( "ERROR: Unsupported view type in InternalViewManager:" );
+        System.out.println( 
+                  "ERROR: Unsupported view type in InternalViewManager:" );
         System.out.println( "      " + view_type );
         System.out.println( "using " + IMAGE + " by default" );
-        viewer = new ImageView( tempDataSet );
+        viewer = new ImageView( tempDataSet, state );
       }
       getContentPane().add(viewer);
       getContentPane().setVisible(true);
@@ -270,7 +274,9 @@ public class InternalViewManager extends    JInternalFrame
              }  
        }
        else if ( (String)reason == GROUPS_CHANGED    ||
-                 (String)reason == SELECTION_CHANGED ) 
+                 (String)reason == SELECTION_CHANGED ||
+                 (String)reason == FIELD_CHANGED     ||
+                 (String)reason == ATTRIBUTE_CHANGED  )
        {
          viewer.redraw( (String)reason );
        }
@@ -519,7 +525,7 @@ private void BuildConversionsMenu()
   for ( int i = 0; i < n_ops; i++ )
   {
     op = dataSet.getOperator(i);
-    if ( op.getCategory() == DataSetOperator.X_AXIS_CONVERSION )
+    if ( op.getCategory() == Operator.X_AXIS_CONVERSION )
     {
       button = new JRadioButtonMenuItem( op.getTitle() );
       button.addActionListener( conversion_menu_handler );
