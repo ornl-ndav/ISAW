@@ -31,6 +31,17 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.11  2002/11/12 02:08:43  dennis
+ *  Made immutable by:
+ *  1. remove setValue() method
+ *  2. add() & combine() methods now return a new Attribute
+ *
+ *  Also:
+ *  3. Since it is now immutable, clone() method is not needed and
+ *     was removed
+ *  4. Default constructor is now private, since the value can't
+ *     be set from outside of the class
+ *
  *  Revision 1.10  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -115,11 +126,12 @@ public class DetPosAttribute extends Attribute
     this.value = new DetectorPosition( value );
   }
 
-  public DetPosAttribute()
+  private DetPosAttribute()
   {
     super("");
     this.value = new DetectorPosition();
   }
+
   /**
    * Returns a copy the DetectorPosition object that is the value of this
    * attribute, as a generic object.
@@ -128,20 +140,6 @@ public class DetPosAttribute extends Attribute
   {
      return new DetectorPosition( value );
   } 
-
-  /**
-   * Set the value for this position attribute using a generic object.  
-   * The actual class of the object must be a Position3D object.
-   */
-  public boolean setValue( Object obj )
-  {
-    if ( obj instanceof Position3D )
-      value = new DetectorPosition( (Position3D)obj );
-    else
-      return false;
-
-    return true;
-  }   
 
 
   /**
@@ -152,8 +150,12 @@ public class DetPosAttribute extends Attribute
    {
      return new DetectorPosition( value );
    }
+
    public boolean XMLwrite( OutputStream stream, int mode )
-    { try{StringBuffer SS = new StringBuffer(1000);
+    { 
+      try
+      {
+       StringBuffer SS = new StringBuffer(1000);
        SS.append("<DetPosAttribute>\n<name>");
        SS.append(name);
        SS.append("</name>\n");
@@ -167,8 +169,8 @@ public class DetPosAttribute extends Attribute
       catch( Exception s)
         {return xml_utils.setError( "IO Err="+s.getMessage());
          }
-      
      }
+
   public boolean XMLread( InputStream stream )
     {try{
 //-----------------get name v
@@ -204,7 +206,8 @@ public class DetPosAttribute extends Attribute
       if( Tag == null)
         return xml_utils.setError( xml_utils.getErrorMessage());
       if( !Tag.equals("DetectorPosition"))
-        return xml_utils.setError("missing DetectorPosition tag in Det Pos"+Tag); 
+        return xml_utils.setError(
+                            "missing DetectorPosition tag in Det Pos"+Tag); 
       if(!xml_utils.skipAttributes( stream))
          return xml_utils.setError( xml_utils.getErrorMessage());
       if(!((Position3D)this.value).XMLread( stream))
@@ -242,10 +245,10 @@ public class DetPosAttribute extends Attribute
    *  @param   attr   A DetPosAttribute whose position is to be averaged 
    *                  with the value of the this attribute.
    */
-  public void combine( Attribute attr )
+  public Attribute combine( Attribute attr )
   {
      if ( !(attr instanceof DetPosAttribute) )       // can't combine
-       return;
+       return this;
 
      float pos[] = new float[3]; 
      float this_pos[],
@@ -257,7 +260,9 @@ public class DetPosAttribute extends Attribute
      for ( int i = 0; i < 3; i++ )
        pos[i] = ( this_pos[i] + other_pos[i] ) / 2.0f;
   
-     this.value.setSphericalCoords( pos[0], pos[1], pos[2] );
+     DetectorPosition new_pos = new DetectorPosition();
+     new_pos.setSphericalCoords( pos[0], pos[1], pos[2] );
+     return new DetPosAttribute( name, new_pos );
   }
 
 
@@ -269,10 +274,10 @@ public class DetPosAttribute extends Attribute
    *                  position value of the this attribute.
    *
    */
-  public void add( Attribute attr )
+  public Attribute add( Attribute attr )
   {
      if ( !(attr instanceof DetPosAttribute) )       // can't combine
-       return;
+       return this;
 
      float xyz[] = new float[3];
      float this_xyz[],
@@ -284,7 +289,9 @@ public class DetPosAttribute extends Attribute
      for ( int i = 0; i < 3; i++ )
        xyz[i] = this_xyz[i] + other_xyz[i];
 
-     this.value.setCartesianCoords( xyz[0], xyz[1], xyz[2] );
+     DetectorPosition new_pos = new DetectorPosition();
+     new_pos.setCartesianCoords( xyz[0], xyz[1], xyz[2] );
+     return new DetPosAttribute( name, new_pos );
   }
 
 
@@ -315,14 +322,6 @@ public class DetPosAttribute extends Attribute
      return this.getName() + ": " + this.getStringValue();
   }
 
-
-  /**
-   * Returns a copy of the current attribute
-   */
-  public Object clone()
-  {
-    return new DetPosAttribute( this.getName(), value );
-  }
 
 /* -----------------------------------------------------------------------
  *
