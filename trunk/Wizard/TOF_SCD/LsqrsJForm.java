@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.14  2003/06/25 21:30:39  bouzekc
+ * Now contains (saveable) parameter hooks and documentation
+ * for minimum peak threshold and channels to keep.
+ *
  * Revision 1.13  2003/06/25 20:26:02  bouzekc
  * Unused private variables removed.
  *
@@ -190,6 +194,12 @@ public class LsqrsJForm extends Form {
     //7
     addParameter( new ArrayPG( "Matrix Files", new Vector(  ), false ) );
 
+    //8
+    addParameter( new IntegerPG( "Minimum Peak Threshold", 0, false ) );
+
+    //9
+    addParameter( new IntArrayPG( "Channels to Keep", "1:100", false ) );
+
     if( HAS_CONSTANTS ) {
       setParamTypes( 
         new int[]{ 0, 1, 2 }, new int[]{ 3, 4, 5, 6 }, new int[]{ 7 } );
@@ -246,6 +256,10 @@ public class LsqrsJForm extends Form {
     s.append( "@param matrixFiles The Vector of LsqrsJ output matrix files.\n" );
     s.append( "@return A Boolean indicating success or failure of the Form's " );
     s.append( "execution.\n" );
+    s.append( "@param minThresh The minimum peak threshold to use - NOT " );
+    s.append( "IMPLEMENTED YET.\n" );
+    s.append( "@param keepChannels The channel range to keep - NOT " );
+    s.append( "IMPLEMENTED YET.\n" );
     s.append( "@error Invalid peaks path.\n" );
     s.append( "@error Invalid experiment name.\n" );
     s.append( "@error Invalid transformation matrix.\n" );
@@ -383,6 +397,11 @@ public class LsqrsJForm extends Form {
     param.setValid( true );
 
     SharedData.addmsg( "--- LsqrsJForm finished. ---" );
+
+    //these are here only until the minimum peaks threshold and channel
+    //limiting code is put in
+    ( ( IParameterGUI )super.getParameter( 8 ) ).setValid( true );
+    ( ( IParameterGUI )super.getParameter( 9 ) ).setValid( true );
 
     return new Boolean( true );
   }
