@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/07/23 14:13:34  rmikk
+ * Improved data reporting
+ *
  * Revision 1.10  2003/07/18 22:01:57  rmikk
  * Fixed a programmer error in selected groups
  *
@@ -216,12 +219,38 @@ public class DS_XY_TableModel extends TableViewModel
           return "";
        Group = Groups[Group];
        XScale xscl = DS.getData_entry( Group ).getX_scale();
-       int index = xscl.getI(  time );
-       if( index > 0 )
+       int index1 = xscl.getI(  time );
+     
+       if( index1 > 0) 
+          if( xscl.getX( index1) < time)
+             index1--;
+
+       int index2 =xscl.getNum_x()-1;
+       if( row + 1 < xvals.length)
+           index2 = xscl.getI( xvals[ row + 1] );
+      /* float t = xscl.getX(index);
+       if( t < xvals[ row ] )
+         return "";
+       if( row + 1 < xvals.length)
+         {if( t >= xvals[row+1])
+            return "";
+         }
+       else if ( t> xvals[ xvals.length -1])
+          return "";
+
+       
+       //Caused Repeats of values from xscl
+      if( index > 0 )
          if( xscl.getX(  index )-time > time -xscl.getX(  index - 1 ) )
            index--;
        if( (  time -xscl.getX(  index ) )> 1E-5*java.lang.Math.abs(  time ) )
-          return ""; 
+          return "";
+       */
+       // if( row > 0)
+       //   if( xvals[ row - 1] >= t)
+       //      return "";
+
+       
        //Now return the appropriate value
        float[] vals = null;
        int offset = (  column-1 )/ncolsPgroup;
@@ -235,13 +264,39 @@ public class DS_XY_TableModel extends TableViewModel
        else if( offset == 2 )
            vals = null;
           
-       if( vals == null ) 
-          return new Integer(  index );
-       if( vals.length  <= index )
+       //if( vals == null ) 
+       //   return new Integer(  index );
+       if( vals != null)
+         if( vals.length  <= index1 )
+             return "";
+       if( index1 < 0 )
            return "";
-       if( index < 0 )
-           return "";
-       return new Float( vals[ index ] );
+       float S = 0;
+       boolean hasEntry = false;
+       float a = xvals[row];
+       if( row <= 0 )
+          a = Float.NEGATIVE_INFINITY;
+       float b = Float.POSITIVE_INFINITY;
+       if( row + 1 < xvals.length){
+          b = xvals[ row + 1];
+       }
+       for( int j = index1; j <=index2; j++){
+            float tt = xscl.getX( j);
+            if( tt < a){
+            }if( tt >= b){
+            }else
+               if( vals == null) //show indicies
+                  return new Integer(j);
+               else if( j < vals.length){
+                 S +=vals[j];
+                 hasEntry = true;
+               }
+
+       }
+       if( hasEntry)
+          return new Float( S);
+       else
+          return "";
       }
 
 
