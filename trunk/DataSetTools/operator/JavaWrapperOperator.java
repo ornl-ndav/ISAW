@@ -32,6 +32,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.25  2005/01/04 19:55:34  rmikk
+ * Fixed HiddenOperator problem.  The category list must have length 1
+ *    in this case
+ *
  * Revision 1.24  2005/01/02 17:55:59  rmikk
  * Added a method go getWrappable for documenting the location of the
  *    relevant code.
@@ -289,20 +293,19 @@ public class JavaWrapperOperator extends GenericOperator {
       //is not recognized the same way as "operator" is, 
       //i.e. we want "operator.Generic" rather than
       //"Operators" for the start of the package name 
-      category = category.replaceFirst( BIG_OP, "operator.Generic" );
-    }
+       category = category.replaceFirst( BIG_OP,"Operator.Generic");
+                  //  DataSetTools.operator.Operator.OPERATOR );
+    }else if( category.startsWith("DataSetTools.operator.Generic"))
+
+     category = category.replaceFirst( "DataSetTools.operator.Generic",
+                "Operator.Generic");
 
     String[] tempList = category.split( "\\." );
     String[] catList  = null;
 
     if( wrapped instanceof HiddenOperator ) {
-      catList      = new String[tempList.length + 1];
+      catList      = new String[1];
       catList[0]   = "HIDDENOPERATOR";
-
-      //copy the rest of the categories over
-      for( int catIndex = 1; catIndex < catList.length; catIndex++ ) {
-        catList[catIndex] = tempList[catIndex - 1];
-      }
     } else {
       catList = tempList;
     }
