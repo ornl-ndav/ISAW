@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.45  2004/05/26 18:36:32  rmikk
+ *  Removed unused variables
+ *
  *  Revision 1.44  2004/05/14 15:04:55  rmikk
  *  Removed unused variables
  *
@@ -1188,7 +1191,7 @@ public class ContourView extends DataSetViewer
       QxQyQzAxesHandler Qax = new QxQyQzAxesHandler(ds);
       IAxisHandler Axis1, Axis2, Axis3;
       System.out.println("ds size x_units="+ds.getNum_entries()+ds.getX_units());
-      Data D = ds.getData_entry( 960);
+      //Data D = ds.getData_entry( 960);
       //System.out.println("x="+nd.Showw( D.getX_scale().getXs()));
       //System.out.println("y="+nd.Showw( D.getY_values()));
       if( Choice1 == 0)
@@ -1709,7 +1712,7 @@ public class ContourView extends DataSetViewer
    {System.out.println("In ContourView paint");
      Graphics g1 = g;
      rpl_Holder.paint(g1);
-     Rectangle R = acHolder.getBounds();
+     //Rectangle R = acHolder.getBounds();
      g1=g;
      //g1.translate( R.x,R.y);
      System.out.println("CV acHolder.bounds="+acHolder.getBounds());

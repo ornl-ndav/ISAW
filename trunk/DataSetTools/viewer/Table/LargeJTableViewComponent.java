@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.12  2004/05/26 18:37:56  rmikk
+ *  Removed unused variables
+ *
  *  Revision 1.11  2004/05/17 13:52:45  rmikk
  *  Added IViewComponent2D methods
  *  Changed to implement IViewComponent2D
@@ -395,7 +398,6 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
      {if( Info instanceof SelectedData2D )
       { 
         SelectedData2D Info2D = (SelectedData2D)Info;
-        
         int row = Info2D.getRow();
         int col = Info2D.getCol();
         if( row <  0)
@@ -566,8 +568,8 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
      {
       public void mouseClicked(MouseEvent e)
         { 
-          int row = jtb.getSelectedRow();
-          int col = jtb.getSelectedColumn();
+          //int row = jtb.getSelectedRow();
+          //int col = jtb.getSelectedColumn();
           notifyActionListeners( IViewComponent.POINTED_AT_CHANGED);
           if( jtb.getInputMap() ==  inp_map){}
           else{ 
@@ -659,8 +661,8 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
         System.exit(0);
       if( args.length<1)
         System.exit(0);
-      DataSet[] DS = (new IsawGUI.Util()).loadRunfile( args[0]);
-      Time_Slice_TableModel tbm = new Time_Slice_TableModel(DS[1],4317.0f,false,false);
+      //DataSet[] DS = (new IsawGUI.Util()).loadRunfile( args[0]);
+      //Time_Slice_TableModel tbm = new Time_Slice_TableModel(DS[1],4317.0f,false,false);
       JFrame jf = new JFrame("Test");
       //LargeJTableViewComponent stab = new LargeJTableViewComponent( DS[1], null,tbm);
       //jf.getContentPane().add( stab);
@@ -716,7 +718,7 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
    */ 
    public void dataChanged(){
        
-       int V =Array.getNumColumns(); 
+       //int V =Array.getNumColumns(); 
        if( 
            (Array.getNumColumns() != jtb.getColumnCount()) ||
            (Array.getNumRows() != jtb.getRowCount()) )
