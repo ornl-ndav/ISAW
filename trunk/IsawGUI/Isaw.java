@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.177  2003/12/30 14:27:55  rmikk
+ *  Fixed showing the DataSet Tag twice
+ *  Hopefully, files that have no data sets will not be added to the
+ *     Latest opened files list
+ *  ALL New loaded files that are not in the Recently opened files are now added
+ *     to the File submenus
+ *
  *  Revision 1.176  2003/12/19 17:10:04  dennis
  *  Changed version to 1.6.1 alpha 1
  *
@@ -1175,7 +1182,47 @@ public class Isaw
     }
   }
  
- 
+ private void AddNewFiles( String filename){
+
+     java.util.prefs.Preferences pref = null;
+     try{
+        pref = java.util.prefs.Preferences.userNodeForPackage( 
+                   Class.forName( "DataSetTools.retriever.Retriever" ) );
+     }catch( Exception s1 ){
+       
+        return;
+     }
+    String NO_SUCH_FILE="No Such File";
+    boolean isAlready = false;
+    for( int i = 0 ; i < LatestOpenedFiles.NSavedFiles ; i++ ){
+
+        String filname = pref.get( "File" + i , NO_SUCH_FILE );
+        
+        if((filname.equals(filename)) ){
+           isAlready = true;
+        }
+     }
+     if(! isAlready){
+           
+           JMenuItem jmi = new JMenuItem( LatestOpenedFiles.Mangle( filename ) );
+           fMenu.add( jmi );
+           MyActionListener actList =new MyActionListener(  filename  
+                                                                 ) ;
+           jmi.addActionListener(actList );
+        }
+    LatestOpenedFiles.addNewOpenedFile( filename);
+
+ }
+ class MyActionListener implements ActionListener{
+    String[] filename;
+    public MyActionListener( String filname){
+       filename = new String[1];
+       filename[0] = filname;
+    }
+    public void actionPerformed( ActionEvent evt){
+       load_runfiles( false, filename);
+    }
+ }
 
   /*
    * trap menu events
@@ -1277,7 +1324,7 @@ public class Isaw
                                 //dependants
           DataSet[] dss = new DataSet[1];  dss[0] = ds;
           addNewDataSets(  dss, dss[0].toString()  );
-          LatestOpenedFiles.addNewOpenedFile( filename);
+          if( dss != null) if( dss.length >0)AddNewFiles( filename);
           
         }
         catch( Exception e )
@@ -1883,7 +1930,7 @@ public class Isaw
     else if( reason instanceof DataSet[]){
        DataSet[] DSS = (DataSet[])reason;
        if( DSS != null) if(DSS.length > 0)
-           addNewDataSets( DSS, DSS[0].getTag()+":"+DSS[0].toString());
+           addNewDataSets( DSS, DSS[0].toString());
  
     }else
       SharedData.addmsg( "unsupported type in Isaw.update()" );
@@ -2040,8 +2087,8 @@ public class Isaw
         {
          DataSet DSS[];
          DSS = util.loadRunfile(  files[i].getPath()  );
-         if( DSS != null)
-            LatestOpenedFiles.addNewOpenedFile(files[i].getPath());
+         if( DSS != null) if( DSS.length > 0)
+           AddNewFiles(files[i].getPath());
              
          if( DSS != null)
            if( DSS.length > 0)
