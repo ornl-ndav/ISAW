@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/07/07 19:44:26  bouzekc
+ * Added error message outputs for syntax errors and missing
+ * "class" name.
+ *
  * Revision 1.4  2003/06/18 18:13:09  pfpeterson
  * Added a method to get the classname that should be in the script.
  * isValid() now checks that the class is defined in the script.
@@ -92,6 +96,12 @@ public class PyScript extends Script{
       }else if(line.startsWith("class")){
         if(line.indexOf(this.getClassname())>0)
           hasClass=true;
+        else {
+          DataSetTools.util.SharedData.addmsg( 
+          "Class name and file name do not agree:\n" +
+          "  line " + i + ".");
+          return false;
+        }
         continue;
       }else if(line.startsWith("from")){
         continue;
@@ -106,11 +116,17 @@ public class PyScript extends Script{
           continue;
       }          
       if(DEBUG) System.out.println(">>"+line+"<<");
+      DataSetTools.util.SharedData.addmsg( 
+        "Script syntax error on line " + i + ".");
       valid=new Boolean(false);
       return valid.booleanValue();
     }
     line=null;
 
+    if( !hasClass ){
+      DataSetTools.util.SharedData.addmsg( 
+      "No class name specified:\n" );
+    }
     valid=new Boolean(hasClass);
     return valid.booleanValue();
   }
