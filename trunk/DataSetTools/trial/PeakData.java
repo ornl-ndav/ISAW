@@ -31,8 +31,9 @@
  * Modified:
  *
  * $Log$
- * Revision 1.2  2003/07/30 16:45:51  dennis
- * Now records sample phi, chi, omega in one SampleOrientation object
+ * Revision 1.3  2003/07/30 22:03:35  dennis
+ * Now uses a SampleOrientation object to store phi, chi and omega,
+ * and uses a UniformGrid object to store the detector information.
  *
  * Revision 1.1  2003/07/30 16:30:10  dennis
  * Initial form of convenience class that groups information about a peak.
@@ -45,6 +46,7 @@ import java.io.*;
 import java.util.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
+import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
 
   /*
@@ -57,34 +59,19 @@ import DataSetTools.instruments.*;
    *  measured position, Q, and Miller indices.  This version is "experimental"
    *  and is intended for use by the SCD calibration, and RecipPlaneView 
    *  classes.
-   *
-   *  NOTE: The current "flat" structure should be changed to use
-   *         SampleOrientation to record chi, phi, omega, and UniformGrid
-   *         to record the detector information.
    */
 public class PeakData
 {
+    public static final double DEFAULT_DEPTH = 0.002; // default area detector
+                                                      // thickness, 2mm
     int    run_num = 0;                // Run info .....
     double moncnt = 0;
-
                                        // Instrument info .....
     double l1     = 9.378;
-    SampleOrientation_d orientation = new IPNS_SCD_SampleOrientation_d(0,0,0);
+    SampleOrientation_d orientation;
 
-    int    det_id = 0;                 // Detector info ......
-
-    double det_a  = 90,                // Detector position
-           det_a2 = 0,
-           det_d  = .23;
-                                       // Detector orientation
-    Vector3D_d up_vec   = new Vector3D_d( 0, 1, 0 );
-    Vector3D_d base_vec = new Vector3D_d( 1, 0, 0 );
-
-    int    n_rows = 100,               // Detector size
-           n_cols = 100;
-    double width  = .15,
-           height = .15;
-
+                                       // Detector info ......
+    UniformGrid_d grid;
                                        // Peak info .....
     int    seqn   = 0;
     double counts = 0;
@@ -102,6 +89,39 @@ public class PeakData
            l   = 0;
 
 
+  /**
+   *  Construct a default PeakData object.
+   */
+  public PeakData()
+  {
+    orientation = new IPNS_SCD_SampleOrientation_d(0,0,0);
+
+    int    det_id = 0; 
+    Vector3D_d center = new Vector3D_d( 0, -1, 0 );
+    Vector3D_d up_vec   = new Vector3D_d( 0, 0, 1 );
+    Vector3D_d base_vec = new Vector3D_d( -1, 0, 0 );
+
+    int    n_rows = 100,
+           n_cols = 100;
+
+    double width  = .15,
+           height = .15,
+           depth  = DEFAULT_DEPTH;
+
+    grid = new UniformGrid_d( det_id, "m", 
+                              center, base_vec, up_vec, 
+                              width, height, depth,
+                              n_rows, n_cols );
+  }
+
+  /**
+   *  Write a vector of PeakData objects to the specified file.
+   *
+   *  @param  peaks      The vector of peaks that will be written
+   *  @param  file_name  The name of the file that will be written
+   *
+   *  @return True if the file was written correctly and false otherwise.
+   */
   public static boolean WritePeaks( Vector peaks, String file_name ) 
   {
     System.out.println("Starting to write peaks " + peaks.size() );
@@ -116,7 +136,7 @@ public class PeakData
       for ( int i = 0; i < peaks.size(); i++ )
       {
         PeakData pd = (PeakData)peaks.elementAt(i);
-        if ( pd.run_num != last_run || pd.det_id != last_id )
+        if ( pd.run_num != last_run || pd.grid.ID() != last_id )
         {
           writer.print("0   NRUN DETNUM DETA   DETA2    DETD");
           writer.print("     CHI     PHI   OMEGA  MONCNT      L1");
@@ -126,30 +146,35 @@ public class PeakData
           writer.println();
           writer.print("1 ");
           writer.print( Format.integer( pd.run_num, 6 ) );
-          writer.print( Format.integer( pd.det_id, 4 ) );
-          writer.print( Format.real(pd.det_a, 8, 2 ));
-          writer.print( Format.real(pd.det_a2, 8, 2 ));
-          writer.print( Format.real(pd.det_d, 8, 4 ));
+          writer.print( Format.integer( pd.grid.ID(), 4 ) );
+          DetectorPosition_d center = 
+                   new DetectorPosition_d( pd.grid.position());
+          double coords[] = center.getSphericalCoords();
+          writer.print( Format.real(180*coords[1]/Math.PI, 8, 2 ));
+          writer.print( Format.real(90-(180*coords[2]/Math.PI), 8, 2 ));
+          writer.print( Format.real(coords[0], 8, 4 ));
           writer.print( Format.real(pd.orientation.getChi(), 8, 2 ));
           writer.print( Format.real(pd.orientation.getPhi(), 8, 2 ));
           writer.print( Format.real(pd.orientation.getOmega(), 8, 2 ));
           writer.print( Format.real(pd.moncnt, 8, 2 ));
           writer.print( Format.real(pd.l1, 8, 4) );
-          writer.print( Format.integer( pd.n_rows, 4 ) );
-          writer.print( Format.integer( pd.n_cols, 4 ) );
-          writer.print( Format.real(pd.height, 8, 2 ));
-          writer.print( Format.real(pd.width, 8, 2 ));
-          writer.print( Format.real(pd.base_vec.get()[0], 8, 4 ));
-          writer.print( Format.real(pd.base_vec.get()[1], 8, 4 ));
-          writer.print( Format.real(pd.base_vec.get()[2], 8, 4 ));
-          writer.print( Format.real(pd.up_vec.get()[0], 8, 4 ));
-          writer.print( Format.real(pd.up_vec.get()[1], 8, 4 ));
-          writer.print( Format.real(pd.up_vec.get()[2], 8, 4 ));
+          writer.print( Format.integer( pd.grid.num_rows(), 4 ) );
+          writer.print( Format.integer( pd.grid.num_cols(), 4 ) );
+          writer.print( Format.real(pd.grid.height(), 8, 2 ));
+          writer.print( Format.real(pd.grid.width(), 8, 2 ));
+          coords = pd.grid.x_vec().get();
+          writer.print( Format.real(coords[0], 8, 4 ));
+          writer.print( Format.real(coords[1], 8, 4 ));
+          writer.print( Format.real(coords[2], 8, 4 ));
+          coords = pd.grid.y_vec().get();
+          writer.print( Format.real(coords[0], 8, 4 ));
+          writer.print( Format.real(coords[1], 8, 4 ));
+          writer.print( Format.real(coords[2], 8, 4 ));
           writer.println();
           writer.print("2   SEQN      H      K      L    COL    ROW");
           writer.println("       TOF     IPK     QX     QY     QZ");
           last_run = pd.run_num;
-          last_id  = pd.det_id;
+          last_id  = pd.grid.ID();
         }
         writer.print("3 ");                               // line type 3, data
         writer.print( Format.integer( i, 6 ) );
@@ -178,39 +203,49 @@ public class PeakData
   }
 
 
+  /**
+   *  Read a vector of peaks objects from a specified file.
+   *
+   *  @param  file_name   The peaks file to read (NOTE: This must be
+   *                      a peaks file in the form handled by RecipPlaneView
+   *                      and SCDcal, NOT the current peaks file used by
+   *                      the SCD analysis codes.
+   *
+   *  @return  A vector filled with the PeakData objects read from the file.
+   */
   public static Vector ReadPeaks( String file_name )
   {
-    Vector peaks = new Vector();
-    int line_type;
-    SampleOrientation_d  last_orientation = 
-                                  new IPNS_SCD_SampleOrientation_d(0,0,0);
-    double last_det_a    = 90.0,
-           last_det_a2   =  0.0, 
-           last_det_d    =  1.0,
-           last_chi      =  0.0,
-           last_phi      =  0.0,
-           last_omega    =  0.0,
-           last_moncnt   =  1.0,
-           last_l1       =  9.378,
-           last_height   =  0.15,
-           last_width    =  0.15,
-           last_base_vx  = -1.0, 
-           last_base_vy  =  0.0, 
-           last_base_vz  =  0.0, 
-           last_up_vx    =  0.0,
-           last_up_vy    =  0.0,
-           last_up_vz    =  1.0;
+    Vector              peaks            = new Vector();
 
-    int    n_peaks,
-           last_run    = -1,
-           last_det    = -1,
-           last_n_rows = 100,
-           last_n_cols = 100;
+    SampleOrientation_d last_orientation = null; 
+    double chi,
+           phi,
+           omega;
+
+    UniformGrid_d  last_grid = null;
+    double det_a,
+           det_a2, 
+           det_d,
+           height,
+           width,
+           x, y, z;
+
+    double last_moncnt   =  1.0,
+           last_l1       =  9.378;
+
+    int    det_id,
+           n_rows,
+           n_cols,
+           n_peaks;
+
+    int    last_run    = -1,
+           last_det    = -1;
       try
       {
         TextFileReader tfr = new TextFileReader( file_name );
         n_peaks = tfr.read_int();
 
+        int line_type;
         for ( int i = 0; i < n_peaks; i++ )
         {
           line_type = tfr.read_int();
@@ -218,30 +253,47 @@ public class PeakData
           {
             tfr.read_line();         // end of line 0
 
-            line_type = tfr.read_int();
+            line_type    = tfr.read_int();
             last_run     = tfr.read_int();
-            last_det     = tfr.read_int();
-            last_det_a   = tfr.read_double();
-            last_det_a2  = tfr.read_double();
-            last_det_d   = tfr.read_double();
-            last_chi     = tfr.read_double();
-            last_phi     = tfr.read_double();
-            last_omega   = tfr.read_double();
-            last_orientation = new IPNS_SCD_SampleOrientation_d( last_phi, 
-                                                                 last_chi, 
-                                                                 last_omega );
+
+            det_id  = tfr.read_int();
+            det_a   = tfr.read_double();
+            det_a2  = tfr.read_double();
+            det_d   = tfr.read_double();
+            DetectorPosition_d position = new DetectorPosition_d();
+            position.setSphericalCoords( det_d, 
+                                         Math.PI * det_a / 180, 
+                                         Math.PI * (det_a2-90) / 180 );
+            Vector3D_d center = new Vector3D_d( position );
+
+            chi     = tfr.read_double();
+            phi     = tfr.read_double();
+            omega   = tfr.read_double();
+            last_orientation = new IPNS_SCD_SampleOrientation_d(phi,chi,omega);
             last_moncnt  = tfr.read_double();
             last_l1      = tfr.read_double();
-            last_n_rows  = tfr.read_int();
-            last_n_cols  = tfr.read_int();
-            last_height  = tfr.read_double(); 
-            last_width   = tfr.read_double();
-            last_base_vx = tfr.read_double();
-            last_base_vy = tfr.read_double();
-            last_base_vz = tfr.read_double();
-            last_up_vx   = tfr.read_double();
-            last_up_vy   = tfr.read_double();
-            last_up_vz   = tfr.read_double();
+
+            n_rows  = tfr.read_int();
+            n_cols  = tfr.read_int();
+
+            height  = tfr.read_double(); 
+            width   = tfr.read_double();
+
+            x = tfr.read_double();
+            y = tfr.read_double();
+            z = tfr.read_double();
+            Vector3D_d base_vec = new Vector3D_d( x, y, z );
+            x = tfr.read_double();
+            y = tfr.read_double();
+            z = tfr.read_double();
+            Vector3D_d up_vec = new Vector3D_d( x, y, z );
+
+            last_grid = new UniformGrid_d( det_id, "m",
+                                           center, 
+                                           base_vec, up_vec,
+                                           width, height, DEFAULT_DEPTH,
+                                           n_rows, n_cols );
+
             tfr.read_line();          // end of line type 1
 
             line_type = tfr.read_int();
@@ -259,19 +311,7 @@ public class PeakData
           peak.orientation = last_orientation;               
           peak.l1       = last_l1;
 
-          peak.det_id   = last_det;               // Det position & orientation
-          peak.det_a    = last_det_a;
-          peak.det_a2   = last_det_a2;
-          peak.det_d    = last_det_d;
-          peak.up_vec   = new Vector3D_d( last_up_vx, last_up_vy, last_up_vz );
-          peak.base_vec = new Vector3D_d( last_base_vx, 
-                                          last_base_vy, 
-                                          last_base_vz );
-
-          peak.n_rows   = last_n_rows;            // Detector size
-          peak.n_cols   = last_n_cols;
-          peak.width    = last_width;
-          peak.height   = last_height;
+          peak.grid  = last_grid;               // Det position & orientation
 
           peak.seqn     = tfr.read_int();         // Peak Data
           peak.h        = tfr.read_double();
