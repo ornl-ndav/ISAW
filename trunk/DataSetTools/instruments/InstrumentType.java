@@ -1,8 +1,39 @@
 /*
- * @(#)InstrumentType.java     0.1  99/07/08  Dennis Mikkelson
+ * File:  InstrumentType.java
  *
+ * Copyright (C) 1999, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/04/25 20:28:10  dennis
+ *  Added copyright and GPL info at the start of the file.
+ *
  *  Revision 1.7  2001/03/01 20:50:12  dennis
  *  Now takes the instrument type codes from the class
  *  IPNS.Runfile.InstrumentType
@@ -23,7 +54,7 @@
  *  name from the path, instrument name and run number.
  *
  *  Revision 1.2  2000/07/10 22:24:44  dennis
- *  July 10, 2000 version... many changes
+ *  Now Using CVS 
  *
  *  Revision 1.2  2000/05/11 16:42:51  dennis
  *  added RCS logging
