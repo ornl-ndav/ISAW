@@ -32,6 +32,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.15  2002/12/09 20:29:36  pfpeterson
+ * Added jhall.jar to the classpath in generated batch file.
+ *
  * Revision 1.14  2002/11/27 23:11:55  pfpeterson
  * standardized header
  *
@@ -571,8 +574,8 @@ public class IsawInstaller extends JFrame
 		+"cd "+isaw_home+newline
 		+"path %PATH%;./lib"+newline
 		+"java -mx128m -cp "+fixSeparator(isaw_home)
-                +";Isaw.jar;sgt_v2.jar;IPNS.jar;jnexus.jar;sdds.jar;.  "
-                +"IsawGUI.Isaw"+newline
+                +";Isaw.jar;sgt_v2.jar;IPNS.jar;jnexus.jar;sdds.jar;"
+                +"jhall.jar;. IsawGUI.Isaw"+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
 		+newline
@@ -587,7 +590,7 @@ public class IsawInstaller extends JFrame
 		+"cd $ISAW"+newline
 		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/IPNS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
-		+" IsawGUI.Isaw"+newline;
+		+":$ISAW/jhall.jar IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(SUN_ID)){
 	    content="#!/bin/sh"+newline
 		+"ISAW="+isaw_home+newline
@@ -596,7 +599,7 @@ public class IsawInstaller extends JFrame
 		+"cd $ISAW"+newline
 		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/IPNS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
-		+" IsawGUI.Isaw"+newline;
+		+":$ISAW/jhall.jar IsawGUI.Isaw"+newline;
         }else if(operating_system.equals(MAC_ID)){
             content="tell application \"Terminal\""+newline
                 +"      do script with command \"java -mx128m -cp "
@@ -605,7 +608,8 @@ public class IsawInstaller extends JFrame
                 +isaw_home+"/sgt_v2.jar:"
                 +isaw_home+"/IPNS.jar:"
                 +isaw_home+"/jnexus.jar:"
-                +isaw_home+"/sdds.jar:. IsawGUI.Isaw\""+newline
+                +isaw_home+"/sdds.jar:"
+                +isaw_home+"/jhall.jar:. IsawGUI.Isaw\""+newline
                 +"end tell"+newline;
 	}else{
 	    System.err.println("Unknown operating system: "+operating_system);
