@@ -29,6 +29,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.5  2003/08/07 14:22:58  bouzekc
+ * Now uses wizardLoader() rather than show().
+ *
  * Revision 1.4  2003/07/09 23:16:51  bouzekc
  * Works with the new versions of ScriptForm and JyScriptForm.
  *
@@ -94,7 +97,7 @@ public class JythonExampleWizard extends Wizard {
   public static void main( String[] args ) {
     JythonExampleWizard w = new JythonExampleWizard( true );
 
-    w.showForm( 0 );
+    w.wizardLoader( args );
   }
 
   /**
