@@ -30,6 +30,12 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.5  2003/12/06 21:39:48  dennis
+ *  Added some additional tests for Euler angles.
+ *  Changed threshold for special cases in Euler
+ *  calculation to 1E-15 from 1E-10 based on tests
+ *  with randomly generated angles.
+ *
  *  Revision 1.4  2003/12/01 17:12:16  dennis
  *  Added method getEulerAngles(u,v) to calculate Euler angles phi, chi, omega
  *  for rotations about the z axis, x axis and z axis again, given the ortho-
@@ -717,10 +723,11 @@ public static double[] getEulerAngles( Vector3D_d u, Vector3D_d v )
                           // angles.  A special case  occurs if the "n" vector 
                           // is collinear with "k". 
 
-  double one = 1 - 1.0E-10;     // We'll consider anything within 1E-10 of 1 to
-                                // be 1, to deal with rounding problems.
+  double one = 1 - 1.0E-15;    // We'll consider anything within 1E-15 of 1 to
+                               // be 1, to deal with special cases chi == 0
+                               // and chi == 180 degrees.
 
-  if ( n.get()[2] >= one )      // chi rotation is 0, just rotate about z-axis  
+  if ( n.get()[2] >= one )     // chi rotation is 0, just rotate about z-axis  
   {
     euler[0] = Math.atan2( u.get()[1], u.get()[0] );        // phi
     euler[1] = 0;                                           // chi
@@ -869,6 +876,11 @@ public static void main( String args[] )
   System.out.println("Tran3D = ");
   System.out.println("" + s_rot);
 
+  Tran3D_d test_rot  = makeEulerRotation(  25.0,  35.0,  45.0 );
+  Tran3D_d test_rot2 = makeEulerRotation( -25.0, -35.0, -45.0 );
+  System.out.println( "-----------Rotation with + = \n" + test_rot );
+  System.out.println( "-----------Rotation with - = \n" + test_rot2 );
+
   // Check Euler angle calculation for special cases with n along z-axis
   Vector3D_d u = new Vector3D_d(  Math.sqrt(2)/2, Math.sqrt(2)/2, 0 );
   Vector3D_d v = new Vector3D_d( -Math.sqrt(2)/2, Math.sqrt(2)/2, 0 );
@@ -887,12 +899,18 @@ public static void main( String args[] )
 
   // Check Euler angle calculation for randomly distributed rotations
   double error = 0;
-  int N_TRIES = 100000;
+  double max_error = 0;
+  int N_TRIES = 10000;
   for ( int i = 0; i < N_TRIES; i++ )
   {
     double phi   = 360 * Math.random();
-    double chi   = 360 * Math.random();
+
+    double chi   = .001 * Math.random() - 180.0005;// try angles near 180 
+//    double chi   = .001 * Math.random() - .0005;   // try angles near zero
+//    double chi   = 360 * Math.random();
+
     double omega = 360 * Math.random();
+
     d_rot = tof_calc.makeEulerRotation( phi, chi, omega );
     u = new Vector3D_d( d_rot[0][0], d_rot[1][0], d_rot[2][0] );
     v = new Vector3D_d( d_rot[0][1], d_rot[1][1], d_rot[2][1] );
@@ -902,12 +920,24 @@ public static void main( String args[] )
                                     ", " + euler[1] + 
                                     ", " + euler[2] );
 */
+    double current_error = 0;
     double d_rot2[][] = tof_calc.makeEulerRotation(euler[0],euler[1],euler[2]);
     for ( int row = 0; row < 3; row++ )
       for ( int col = 0; col < 3; col++ )
-        error += Math.abs( d_rot[row][col] - d_rot2[row][col]);
+        current_error += Math.abs( d_rot[row][col] - d_rot2[row][col]);
+
+    if ( current_error > 5.0E-10 )
+      System.out.println( " i = "   + i + 
+                          " ang = " + euler[0] +
+                               ", " + euler[1] +
+                               ", " + euler[2] + 
+                           " ==== " + current_error );
+    error += current_error;
+    if ( current_error > max_error )
+      max_error = current_error;
   }
   System.out.println( "Total Error = " + error + " in " + N_TRIES );
+  System.out.println( "Max   Error = " + max_error + " in " + N_TRIES );
 
   DetectorPosition_d det_pos = new DetectorPosition_d();
   det_pos.setCartesianCoords( 0, 0.32, 0 ); 
