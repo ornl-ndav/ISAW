@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/07/16 15:04:01  dennis
+ * Added calibrated axes.
+ * Readout of QxQyQz positions of peaks now supported.
+ * Picking of 3 peaks to select a plane now supported.
+ *
  * Revision 1.1  2004/07/14 16:53:43  dennis
  * Initial port of SCD reciprocal space view & selection tool to
  * OpenGL based 3D tools.
@@ -1437,33 +1442,26 @@ public class GL_RecipPlaneView
    */
   private  void draw_axes( float length, ThreeD_GL_Panel threeD_panel  )
   {
-    GL_Shape objects[] = new GL_Shape[ 4 ];
-    Vector3D start[] = new Vector3D[1];
-    Vector3D end[]   = new Vector3D[1];
-
+    Axis x_axis = Axis.getInstance( new Vector3D( -0.9f, 0, 0 ),
+                                    new Vector3D( 10,    0, 0 ),
+                                    "Qx" );
+    Axis y_axis = Axis.getInstance( new Vector3D( 0, -0.9f, 0 ),
+                                    new Vector3D( 0, 10,    0 ),
+                                    "Qy" );
+    Axis z_axis = Axis.getInstance( new Vector3D( 0, 0, -0.9f ),
+                                    new Vector3D( 0, 0, 10    ),
+                                    "Qz" );
+    z_axis.setSkipValue( 0 );
     float red[]   = { 0.8f, 0.3f, 0.3f };
     float green[] = { 0.3f, 0.8f, 0.3f };
     float blue[]  = { 0.3f, 0.3f, 0.8f };
-
-    start[0] = new Vector3D( 0, 0, 0 );                    // y_axis
-    end[0]   = new Vector3D( 0, length, 0 );
-
-    objects[0] = new Lines( start, end );
-    objects[0].setColor( green );
-                                                          // z_axis
-    end[0] = new Vector3D( 0, 0, length );
-    objects[1] = new Lines( start, end );
-    objects[1].setColor( blue );
- 
-    end[0] = new Vector3D( length, 0, 0 );               // +x-axis
-    objects[2] = new Lines( start, end );
-    objects[2].setColor( red );
-
-    end[0] = new Vector3D( -length/3, 0, 0 );               // -x-axis
-    objects[3] = new Lines( start, end );
-    objects[3].setColor( red );
-
-    threeD_panel.setObjects( "AXES", objects );
+    x_axis.setColor( red );
+    y_axis.setColor( green );
+    z_axis.setColor( blue );
+    
+    threeD_panel.setObject( "X-AXIS", x_axis );
+    threeD_panel.setObject( "Y-AXIS", y_axis );
+    threeD_panel.setObject( "Z-AXIS", z_axis );
   }
 
   /* ------------------------- MarkPoint --------------------------- */
@@ -1649,12 +1647,14 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
    private void handle_event( MouseEvent e )
    {
      int index = vec_Q_space.pickID( e.getX(), e.getY(), 5 );
+     System.out.println("++++ ViewMouseInputAdapter: pickID = " + index );
      if ( index != last_index )
      {
        last_index = index;
        if ( index != GL_Shape.INVALID_PICK_ID )
        {
-         Vector3D position = vec_Q_space.pickedPoint();
+         Vector3D position = vec_Q_space.pickedPoint( e.getX(), e.getY() );
+         System.out.println("++++ View Mouse: pickedPoint = " + position );
          if ( position != null )
          {
            float coords[] = position.get();
@@ -1784,9 +1784,11 @@ private class ReadoutListener implements ActionListener
      String              action  = e.getActionCommand();
      SimpleVectorReadout readout = (SimpleVectorReadout)e.getSource();
 
+     System.out.println("+++++++++ ReadoutListener called " + action );
      if ( action.startsWith( "Select" ) )
      {
        Vector3D position = vec_Q_space.pickedPoint();
+       System.out.println("++++ ReadoutListener: pickedPoint = " + position );
        if ( position == null )
        {
          if ( readout.getTitle().equals(ORIGIN) )      // origin defaults to
