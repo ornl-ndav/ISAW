@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2003/07/16 19:48:46  bouzekc
+ * Added parameter for appending to log file.
+ *
  * Revision 1.17  2003/07/07 15:57:34  bouzekc
  * Added missing param tags in constructor and
  * getDocumentation().  Made capitalization consistent in
@@ -163,7 +166,9 @@ public class IndexJ extends    GenericTOF_SCD {
     //5
     addParameter(new FloatPG("Delta l",0.20f));
     //6
-    addParameter(new BooleanPG("Update peaks file",true));
+    addParameter(new BooleanPG("Update peaks file?",true));
+    //7
+    addParameter(new BooleanPG("Append to log file?",false));
   }
   
   /**
@@ -192,6 +197,7 @@ public class IndexJ extends    GenericTOF_SCD {
     sb.append("@param delta_l the allowable uncertainty in the calculated ");
     sb.append("l value.");
     sb.append("@param update Whether to update the peaks file. ");
+    sb.append("@param appen Whether to append to the log file. ");
     // return
     sb.append("@return The number of peaks indexed out of the total number present.");
     // error
@@ -226,6 +232,7 @@ public class IndexJ extends    GenericTOF_SCD {
     float       delta_k     = 0f;    // error in index (k) allowed
     float       delta_l     = 0f;    // error in index (l) allowed
     boolean     update      = false; // update the peaks file
+    boolean     appendlog   = false; // append to the log file
     int         crystallite = 1;     // placeholder for future feature
     int[]       runs        = null;  // run numbers to index
     int[]       seqs        = null;  // sequence numbers to index
@@ -320,6 +327,19 @@ public class IndexJ extends    GenericTOF_SCD {
       }
     }
 
+    // find out if we want to append to the log file
+    iparm=getParameter(7);
+    if(iparm instanceof BooleanPG){
+      appendlog=((BooleanPG)iparm).getbooleanValue();
+    }else{
+      Object value=iparm.getValue();
+      if(value instanceof Boolean){
+        appendlog=((Boolean)value).booleanValue();
+      }else{
+        return new ErrorString("invalid value of appendlog: "+value);
+      }
+    }
+
     // have someone else read in our peaks file
     Vector peaks=null;
     {
@@ -395,7 +415,7 @@ public class IndexJ extends    GenericTOF_SCD {
         }else{
           logfile="index.log";
         }
-        FileOutputStream fos=new FileOutputStream(logfile,false);
+        FileOutputStream fos=new FileOutputStream(logfile,appendlog);
         out=new OutputStreamWriter(fos);
       }
       out.write(" calc h  calc k  calc l   seq   h   k   l      ");
