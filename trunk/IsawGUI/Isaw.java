@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.168  2003/12/02 00:54:56  bouzekc
+ *  Removed unused local and global variables.
+ *
  *  Revision 1.167  2003/11/30 19:18:06  rmikk
  *  Incorporated code to display the filenames of the last 4 DataSets that were
  *    opened in the File menu.  Selecting these new menu options will open those
@@ -495,11 +498,6 @@ public class Isaw
 
   private static final String MACRO_M            = "Macros";
 
-  private static final String OPTION_M           = "Options";
-  private static final String METAL_MI           = "Metal Look";
-  private static final String MOTIF_MI           = "Motif Look";
-  private static final String WINDOZE_MI         = "Windows Look";
-
   private static final String OPERATOR_M         = "Operations";
 
   private static final String HELP_M          = "Help";
@@ -516,23 +514,6 @@ public class Isaw
   private static final String HOME_LINK       = "http://www.pns.anl.gov/ISAW/";
   private static final String FTP_LINK        = "ftp://zuul.pns.anl.gov/isaw/";
   private static final String USERMAN_LINK    = "ftp://zuul.pns.anl.gov/isaw/Documents/";
-
-  private static final String CHEXS_MACRO_MI  = "CHEXS";
-  private static final String GLAD_MACRO_MI   = "GLAD";
-  private static final String GPPD_MACRO_MI   = "GPPD";
-  private static final String HIPD_MACRO_MI   = "HIPD";
-  private static final String HRMECS_MACRO_MI = "HRMECS";
-  private static final String LRMECS_MACRO_MI = "LRMECS";
-  private static final String POSY1_MACRO_MI  = "POSY1";
-  private static final String POSY2_MACRO_MI  = "POSY2";
-  private static final String QENS_MACRO_MI   = "QENS";
-  private static final String SAD_MACRO_MI    = "SAD";
-  private static final String SAND_MACRO_MI   = "SAND";
-  private static final String SCD_MACRO_MI    = "SCD";
-  private static final String SEPD_MACRO_MI   = "SEPD";
-
-  private final float RIGHT_WEIGHT = 0.6f;
-  private final float LEFT_WEIGHT  = 0.90f;
 
   public static final String FILE_CMD = "-F";
 
@@ -578,8 +559,6 @@ public class Isaw
     if(showTiming)
       System.out.println("00:"+(System.currentTimeMillis()-time)/1000.);
     util = new Util(); 
-    Vector mm = util.listProperties();
-    JScrollPane tt = util.viewProperties();
     if(showTiming)
       System.out.println("01:"+(System.currentTimeMillis()-time)/1000.);
     cp = new Command.CommandPane();
@@ -782,7 +761,7 @@ public class Isaw
     fileLoadDataset.add(Runfile);
     fileLoadDataset.add(LiveData);
     fileLoadDataset.add(RemoteData);
-      SetUpRemoteData( RemoteData, jdt); 
+    SetUpRemoteData( RemoteData ); 
 
 
     fMenu.add(script_loader);
@@ -911,7 +890,7 @@ public class Isaw
     }
   }
 
-   private void SetUpRemoteData( JMenu RemoteData, IObserver jdt)
+   private void SetUpRemoteData( JMenu RemoteData )
        {
           int i=1;
           boolean done =false;
@@ -1135,9 +1114,8 @@ public class Isaw
 	Dimension d = new Dimension(650,300);
 	fc.setPreferredSize(d);
  
-        String str = (String)Script_Path ;
         fc.setFileFilter(new scriptFilter());
-        String fname;
+
         try
         {
           int state = fc.showOpenDialog(null);
@@ -1145,7 +1123,6 @@ public class Isaw
           {
             File f = fc.getSelectedFile();
             filename =f.toString();
-            //fname = f.getName();
                         
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                           
@@ -1159,7 +1136,6 @@ public class Isaw
           return;
         }
 
-        JDataTree jjt=IS.jdt;
         cp.getExecScript( filename, IS, jdt, sessionLog );
       }
     }
@@ -1209,7 +1185,6 @@ public class Isaw
         {
           try
           { 
-            String title = new String( "Please choose the File to save" );
             if(filename ==  null)
                filename =SharedData.getProperty("user.home");
             fc.setCurrentDirectory(  new File( filename )  );
@@ -1512,7 +1487,6 @@ public class Isaw
           tab_name=tab_name.substring(0,index)+"Name";
       tab_name=SharedData.getProperty(tab_name)+" Live Data";
 
-      String name = instrument_computer+" Live Data";
       jcui.setTab( tab_name, monitor );
     }
   }
@@ -1526,7 +1500,6 @@ public class Isaw
    */
   public void IsawViewHelp( String[] info )
   {
-    JFrame mm = new JFrame();
     JDialog hh = new JDialog();
     hh.setSize(188,70);
 
@@ -1609,8 +1582,6 @@ public class Isaw
         
         jcui.showLog(ds);
 
-        JTable table = jcui.showDetectorInfo(ds);
-//        table.hasFocus();  
         jpui.showAttributes( ds.getAttributeList() );
 
                               //since the Operations menu is sensitive
@@ -1672,7 +1643,7 @@ public class Isaw
      * Handle resizing the internal parts of ISAW when the main window
      * resizes.
      */
-    private static void mw_resized(int width, int height){
+    private static void mw_resized(){
         // Set the tree width
         double tree_widthD=SharedData.getdoubleProperty("Tree_Width");
         int tree_width=(int)tree_widthD;
@@ -1842,7 +1813,7 @@ public class Isaw
                  System.exit(0);
              } 
          } );
-      mw_resized(Isaw.getWidth(),Isaw.getHeight());
+      mw_resized();
     }catch( Throwable ss){
       System.out.println("Error :"+ss.toString() );
       ss.printStackTrace();
@@ -2142,7 +2113,6 @@ public class Isaw
     {
       if(  jdt.getSelectionCount() > 0  )
       {
-        TreePath[] selectedPath = null;
         TreePath[] tps          = jdt.getSelectedNodePaths();
 
         int button1 =  e.getModifiers() & InputEvent.BUTTON1_MASK;
@@ -2184,7 +2154,6 @@ public class Isaw
 
       if(  jdt.getSelectionCount() > 0  )
       {
-        TreePath[] selectedPath = null;
         TreePath[] tps          = jdt.getSelectedNodePaths();
 
         int downKey =  KeyEvent.VK_DOWN;
@@ -2221,7 +2190,7 @@ public class Isaw
             if(ev.getComponent().equals(isaw)){
                 if(isaw.isVisible()){
                     param=this.getDimension(param);
-                    mw_resized(this.getWidth(param),this.getHeight(param));
+                    mw_resized();
                 }
             }
         }
