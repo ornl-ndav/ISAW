@@ -53,6 +53,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2003/10/14 22:14:59  dennis
+ * Fixed javadoc comment so that it builds cleanly on jdk 1.4.2
+ *
  * Revision 1.16  2003/06/26 14:56:17  dennis
  * Fixed syntax error.
  *
@@ -1050,8 +1053,8 @@ public class blind {
 
   /**
    * blind main program only using the run file
-   * @param args[0] should be the the name of the run file or peaks file
-   * @param args[1] list of sequence numbers
+   * @param args An array containg two entries, the name of the run file 
+   *             or peaks file and the list of sequence numbers. 
    */
   public static void main( String args[]){
     String filename = args[0];
