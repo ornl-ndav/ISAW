@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2004/03/09 17:57:17  rmikk
+ * Fixed Javadoc errors
+ *
  * Revision 1.1  2004/02/29 17:56:02  rmikk
  * Inital Checkin.  This operator adds,subtracts,multiplies,or divides two
  * (possible multidimensional) arrays or vectors.
@@ -107,7 +110,7 @@ public class ArrayArithm implements Wrappable, HiddenOperator {
     * common data type
     * @param Argument1  The first array(Argument1 in division)
     * @param Argument2  The second array
-    * @param Operation  Either Add,Subtract,Mult,or Divide
+    * @param op  Either Add,Subtract,Mult,or Divide
     * @return the DataSet or an ErrorString
     */
 
