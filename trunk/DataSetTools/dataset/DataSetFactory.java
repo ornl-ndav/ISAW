@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/07/17 20:59:02  dennis
+ *  Added SetDSDataAttributes() operator
+ *
  *  Revision 1.4  2000/07/17 13:38:31  dennis
  *  Added operators to get/set attributes & fields
  *
@@ -192,6 +195,7 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new SetDataAttribute() );
     new_ds.addOperator( new GetDSAttribute() );
     new_ds.addOperator( new SetDSAttribute() );
+    new_ds.addOperator( new SetDSDataAttributes() );
     new_ds.addOperator( new GetField() );
     new_ds.addOperator( new SetField() );
 
