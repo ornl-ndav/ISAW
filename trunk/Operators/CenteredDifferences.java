@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/02/22 20:45:00  pfpeterson
+ * Operator reorganization.
+ *
  * Revision 1.2  2001/11/27 18:16:41  dennis
  * Improved documentation.
  * Use average of x[i+1] and x[i-1] for the x position of the
@@ -43,6 +46,7 @@
 package Operators;
 
 import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.81  2002/02/22 20:39:12  pfpeterson
+ *  Operator reorganization.
+ *
  *  Revision 1.80  2002/02/18 21:57:52  pfpeterson
  *  Fixed nexus and windows problem.
  *  Made a "Save and Exit" option on the "Edit Properties" text editor.
@@ -310,7 +313,6 @@ import DataSetTools.dataset.*;
 import DataSetTools.components.containers.*;
 import DataSetTools.gsastools.*;
 import DataSetTools.instruments.*;
-import DataSetTools.operator.*;
 import DataSetTools.operator.*;
 import DataSetTools.retriever.*;
 import DataSetTools.util.*;

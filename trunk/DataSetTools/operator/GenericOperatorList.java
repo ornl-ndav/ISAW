@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2002/02/22 20:49:24  pfpeterson
+ *  Operator reorganization.
+ *
  *  Revision 1.19  2002/02/14 16:54:44  pfpeterson
  *  Added operator to convert SCD pixel position to real space.
  *
@@ -75,6 +78,13 @@ import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
+import  DataSetTools.operator.Generic.*;
+import  DataSetTools.operator.Generic.Batch.*;
+import  DataSetTools.operator.Generic.Load.*;
+import  DataSetTools.operator.Generic.Save.*;
+import  DataSetTools.operator.Generic.Special.*;
+import  DataSetTools.operator.Generic.TOF_DG_Spectrometer.*;
+import  DataSetTools.operator.Generic.TOF_SCD.*;
 
 /**
   *  This class keeps a list of generic operators that are not associated

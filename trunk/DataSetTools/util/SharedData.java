@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/02/22 20:36:43  pfpeterson
+ *  Operator reorganization.
+ *
  *  Revision 1.5  2002/01/10 15:36:42  rmikk
  *  Added a Global StatusPane.  Everyone can write to this
  *  as follows:
@@ -56,6 +59,7 @@
 package DataSetTools.util;
 
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.SpectrometerPlotter;
 
 /**
  *  Objects of this class have one instance of objects that are to be shared

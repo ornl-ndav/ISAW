@@ -33,6 +33,7 @@
 package Operators;
 
 import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/02/22 20:39:14  pfpeterson
+ * Operator reorganization.
+ *
  * Revision 1.2  2001/08/15 22:37:19  chatterjee
  * Added session log to the current constructor
  * Fixed port number error, Caught illegal server path
@@ -45,6 +48,7 @@ import DataSetTools.viewer.Table.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.Load.*;
 import javax.swing.text.*;
 /** This class is the ActionListener for the menu item that invokes the
 *  LoadRemoteData operator.  This operator gets datasets from remote

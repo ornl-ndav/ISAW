@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.40  2002/02/22 20:36:25  pfpeterson
+ *  Operator reorganization.
+ *
  *  Revision 1.39  2002/02/04 23:02:28  dennis
  *  Added attributes to SCD Data and DataSets giving the sample orientation
  *  "Sample Chi", "Sample Phi" and "Sample Omega"
@@ -202,6 +205,9 @@ package DataSetTools.retriever;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.*;
+import DataSetTools.operator.DataSet.Special.*;
+import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.instruments.InstrumentType;
 import DataSetTools.instruments.DetectorInfo;
 import IPNS.Runfile.*;
