@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2003/03/20 22:05:51  pfpeterson
+ * Added logfile to operator and added a couple of minor features.
+ *
  * Revision 1.9  2003/03/14 21:19:26  pfpeterson
  * Added hooks for writing out a logfile.
  *
@@ -191,6 +194,7 @@ public class Integrate extends GenericTOF_SCD{
     int threashold=1;
     int centering=0;
     this.logBuffer=new StringBuffer();
+    int listNthPeak=3;
 
     // first get the DataSet
     val=getParameter(0).getValue();
@@ -233,9 +237,6 @@ public class Integrate extends GenericTOF_SCD{
     centering=choices.indexOf((String)val);
     if( centering<0 || centering>=choices.size() ) centering=0;
 
-    if( 1==1)
-      return "CENTER("+centering+")="+choices.elementAt(centering);
-
     // now the uncertainty in the peak location
     int dX=2, dY=2, dZ=1;
 
@@ -244,6 +245,16 @@ public class Integrate extends GenericTOF_SCD{
       System.out.println("Path   :"+path);
       System.out.println("ExpName:"+expname);
     }
+
+    // add the parameter values to the logBuffer
+    logBuffer.append("---------- PARAMETERS\n");
+    logBuffer.append(getParameter(0).getName()+" = "+ds.toString()+"\n");
+    logBuffer.append(getParameter(1).getName()+" = "+path+"\n");
+    logBuffer.append(getParameter(2).getName()+" = "+expname+"\n");
+    logBuffer.append(getParameter(3).getName()+" = "
+                     +choices.elementAt(centering)+"\n");
+    logBuffer.append("Adjust center to nearest point with dX="+dX+" dY="+dY
+                     +" dZ="+dZ+"\n");
 
     // create the lookup table
     int[][] ids=Util.createIdMap(ds);
@@ -375,9 +386,34 @@ public class Integrate extends GenericTOF_SCD{
     pkfac.sample_orient(chi,phi,omega);
     pkfac.time(times);
 
+    // add the position number to the logBuffer
+    logBuffer.append("---------- PHYSICAL PARAMETERS\n");
+    logBuffer.append(" x/y min, x/y max: "+rcBound[0]+" "+rcBound[1]+"   "
+                     +rcBound[2]+" "+rcBound[3]+"\n");
+    logBuffer.append("chi="+chi+"  phi="+phi+"  omega="+omega+"\n");
+    logBuffer.append("detD="+detD+"  detA="+detA+"  detA2="+detA2+"\n");
+
     // determine the detector limits in hkl
     int[][] hkl_lim=minmaxhkl(pkfac, ids, times);
     float[][] real_lim=minmaxreal(pkfac, ids, times);
+
+    // add the limits to the logBuffer
+    logBuffer.append("---------- LIMITS\n");
+    logBuffer.append("min hkl,  max hkl : "+hkl_lim[0][0]+" "+hkl_lim[1][0]
+                     +" "+hkl_lim[2][0]+"   "+hkl_lim[0][1]+" "+hkl_lim[1][1]
+                     +" "+hkl_lim[2][1]+"\n");
+    logBuffer.append("min xcm ycm wl, max xcm ycm wl: "
+                     +formatFloat(real_lim[0][0])+" "
+                     +formatFloat(real_lim[1][0])+" "
+                     +formatFloat(real_lim[2][0])+"   "
+                     +formatFloat(real_lim[0][1])+" "
+                     +formatFloat(real_lim[1][1])+" "
+                     +formatFloat(real_lim[2][1])+"\n");
+
+    // add information about integrating the peaks
+    logBuffer.append("\n");
+    logBuffer.append("========== PEAK INTEGRATION ==========\n");
+    logBuffer.append("listing information about every "+listNthPeak+" peak\n");
 
     Peak peak=null;
     Vector peaks=new Vector();
@@ -394,7 +430,6 @@ public class Integrate extends GenericTOF_SCD{
                         zmin,zmax);
           if( (peak.nearedge()>=2f) && (checkReal(peak,real_lim)) ){
             peak.seqnum(seqnum);
-            //getObs(peak,ds,groups);
             peaks.add(peak);
             seqnum++;
           }
@@ -405,26 +440,40 @@ public class Integrate extends GenericTOF_SCD{
     // move peaks to the most intense point nearby
     for( int i=peaks.size()-1 ; i>=0 ; i-- ){
       movePeak((Peak)peaks.elementAt(i),ds,ids,dX,dY,dZ);
-      if(((Peak)peaks.elementAt(i)).ipkobs()<=threashold)
-        peaks.remove(i); // remove peaks below threashold
+      peak=(Peak)peaks.elementAt(i);
+      for( int j=i+1 ; j<peaks.size() ; j++ ){ // remove peak if it gets
+        if( peak.equals(peaks.elementAt(j)) ){ // shifted on top of another
+          peaks.remove(j);
+          break;
+        }
+      }
+      /*if(((Peak)peaks.elementAt(i)).ipkobs()<=threashold)
+        peaks.remove(i); // remove peaks below threashold*/
     }
 
     // integrate the peaks
     for( int i=peaks.size()-1 ; i>=0 ; i-- ){
-      integratePeak((Peak)peaks.elementAt(i),ds,ids);
-      if(((Peak)peaks.elementAt(i)).inti()==0f)
-        peaks.remove(i);
+      if( i%listNthPeak == 0 )
+        integratePeak((Peak)peaks.elementAt(i),ds,ids,logBuffer);
+      else
+        integratePeak((Peak)peaks.elementAt(i),ds,ids,null);
+      /*if(((Peak)peaks.elementAt(i)).inti()==0f)
+        peaks.remove(i);*/
     }
 
     // centroid the peaks
     for( int i=0 ; i<peaks.size() ; i++ ){
       peak=Util.centroid((Peak)peaks.elementAt(i),ds,ids);
-      peak.seqnum(i+1); // renumber the peaks
-      peaks.set(i,peak);
+      if(peak!=null){
+        peak.seqnum(i+1); // renumber the peaks
+        peaks.set(i,peak);
+      }else{
+        peaks.remove(i);
+        i--;
+      }
     }
 
-    // write out the logfile
-/* THIS WRITES OUT THE LOG FILE INTEGRATE.LOG
+    // write out the logfile integrate.log
     String logfile=expfile;
     {
       int index=logfile.lastIndexOf("/");
@@ -433,7 +482,6 @@ public class Integrate extends GenericTOF_SCD{
     String errmsg=this.writeLog(logfile);
     if(errmsg!=null)
       SharedData.addmsg(errmsg);
-*/
 
     // write out the peaks
     String intfile=expfile;
@@ -496,7 +544,8 @@ public class Integrate extends GenericTOF_SCD{
    * each time slice to get the maximum I/dI for each time slice then
    * adds the results from each time slice to maximize the total I/dI.
    */
-  private static void integratePeak(Peak peak, DataSet ds, int[][] ids){
+  private static void integratePeak(Peak peak, DataSet ds, int[][] ids,
+                                                             StringBuffer log){
     float[] tempIsigI=null;
     int cenX=(int)Math.round(peak.x());
     int cenY=(int)Math.round(peak.y());
@@ -515,17 +564,33 @@ public class Integrate extends GenericTOF_SCD{
       if( zrange[i]<minZ || zrange[i]>=maxZ ) return; // ends of time axis
     }
     
+    if(log!=null){
+      log.append("\n******************** hkl = "+formatInt(peak.h())+" "
+                 +formatInt(peak.k())+" "+formatInt(peak.l())
+                 +"   at XYT = "+formatInt(peak.x())+" "+formatInt(peak.y())
+                 +" "+formatInt(peak.z())+" ********************\n");
+      log.append("Layer  T   maxX maxY  IPK     dX       dY      Ihkl     sigI"
+                 +"  I/sigI   included?\n");
+    }
+
     float[][] IsigI=new float[zrange.length][2];
 
     // integrate each time slice
     for( int k=0 ; k<zrange.length ; k++ ){
       if(zrange[k]<minZrange  || zrange[k]>maxZrange)
         continue;
-      tempIsigI=integratePeakSlice(ds,ids,cenX,cenY,zrange[k]);
+      if(log!=null)
+        log.append(formatInt(zrange[k]-cenZ)+"   "+formatInt(zrange[k])+"  ");
+      tempIsigI=integratePeakSlice(ds,ids,cenX,cenY,zrange[k],log);
+      if(log!=null) log.append(" "+formatFloat(tempIsigI[0])+"  "
+                               +formatFloat(tempIsigI[1]));
       if( tempIsigI[0]>0f ){
         IsigI[k][0]=tempIsigI[0];
         IsigI[k][1]=tempIsigI[1];
+        if(log!=null) log.append(" "+formatFloat(tempIsigI[0]/tempIsigI[1])
+                                 +"      Yes\n");
       }else{
+        if(log!=null) log.append(" "+formatFloat(0f)+"      No\n");
         if(k==0)  // if this is the peak's time slice then something
           return; // is wrong and we should just return
         if(zrange[k]<zrange[0])
@@ -547,6 +612,16 @@ public class Integrate extends GenericTOF_SCD{
       }
     }
 
+    if(log!=null){
+      log.append("***** Final       Ihkl = "+formatFloat(Itot)+"       sigI = "
+                 +formatFloat(dItot)+"       I/sigI = ");
+      if(dItot>0f)
+        log.append(formatFloat(Itot/dItot));
+      else
+        log.append(formatFloat(0f));
+      log.append(" *****\n");
+    }
+
     // change the peak to reflect what we just did
     peak.inti(Itot);
     peak.sigi(dItot);
@@ -558,9 +633,13 @@ public class Integrate extends GenericTOF_SCD{
    * maximize I/dI.
    */
   private static float[] integratePeakSlice(DataSet ds, int[][] ids,
-                                          int Xcen, int Ycen, int z){
+                                  int Xcen, int Ycen, int z, StringBuffer log){
     float[] IsigI=new float[2];
     float[] tempIsigI=new float[2];
+
+    if(log!=null)
+      log.append(formatInt(Xcen)+"  "+formatInt(Ycen)+" "
+                 +formatInt(getObs(ds,ids[Xcen][Ycen],z),5));
 
     int[] rng={Xcen-2,Xcen+2,Ycen-2,Ycen+2};
     int[] step={-1,1,-1,1};
@@ -568,8 +647,11 @@ public class Integrate extends GenericTOF_SCD{
     // initial run with default size for integration
     if( checkRange(ids,rng[0],rng[2],rng[1],rng[3])){
       tempIsigI=integrateSlice(ds,ids,rng[0],rng[2],rng[1],rng[3],z);
-      if(tempIsigI[0]==0f || tempIsigI[1]==0f) return IsigI; // something wrong
-      if( tempIsigI[0]/tempIsigI[1] < 3f ) return IsigI; // peak is too weak
+      if(tempIsigI[0]==0f || tempIsigI[1]==0f){ // something wrong
+        formatRange(rng,log);
+        return IsigI;
+      }
+      //if( tempIsigI[0]/tempIsigI[1] < 3f ) return IsigI; // peak is too weak
 
       if( tempIsigI[0]>0f && tempIsigI[1]>0f ){
         IsigI[0]=tempIsigI[0];
@@ -587,10 +669,12 @@ public class Integrate extends GenericTOF_SCD{
         rng[i]=rng[i]+step[i];
         if( checkRange(ids,rng[0],rng[2],rng[1],rng[3])){
           tempIsigI=integrateSlice(ds,ids,rng[0],rng[2],rng[1],rng[3],z);
-          if(tempIsigI[0]==0f||tempIsigI[1]==0f) // something wrong
+          if(tempIsigI[0]==0f||tempIsigI[1]==0f){ // something wrong
+            formatRange(rng,log);
             return IsigI;
-          if( tempIsigI[0]/tempIsigI[1] < 3f )   // peak is too weak
-            return IsigI;
+          }
+          //if( tempIsigI[0]/tempIsigI[1] < 3f )   // peak is too weak
+          //return IsigI;
           if( tempIsigI[0]>0f && tempIsigI[1]>0f ){
             if( IsigI[0]/IsigI[1]<tempIsigI[0]/tempIsigI[1]){
               IsigI[0]=tempIsigI[0];
@@ -609,7 +693,16 @@ public class Integrate extends GenericTOF_SCD{
       }
     }
 
+    formatRange(rng,log);
+
     return IsigI;
+  }
+
+  private static void formatRange(int[] rng, StringBuffer log){
+    if(log==null) return;
+      log.append("  "+formatInt(rng[0])+" "+formatInt(rng[1])+"  "
+                 +formatInt(rng[2])+" "+formatInt(rng[3]));
+    
   }
 
   /**
@@ -986,6 +1079,33 @@ public class Integrate extends GenericTOF_SCD{
     return op;
   }
   
+  private static String formatInt(double num){
+    return formatInt(num,3);
+  }
+
+  private static String formatInt(double num, int width){
+    StringBuffer text=new StringBuffer(Integer.toString((int)Math.round(num)));
+    while(text.length()<width)
+      text.insert(0," ");
+    return text.toString();
+  }
+
+  private static String formatFloat(double num){
+    StringBuffer text=new StringBuffer(Double.toString(num));
+    int index=text.toString().indexOf(".");
+    if(index<0){
+      text.append(".");
+      index=text.toString().indexOf(".");
+    }
+    text.append("00");
+    text.delete(index+3,text.length());
+
+    while(text.length()<7)
+      text.insert(0," ");
+
+    return text.toString();
+  }
+
   /* ------------------------------- main --------------------------------- */ 
   /** 
    * Test program to verify that this will complile and run ok.  
@@ -1003,7 +1123,7 @@ public class Integrate extends GenericTOF_SCD{
     System.out.println("LoadSCDCalib.RESULT="+lsc.getResult());
     
     // load an orientation matrix
-    LoadOrientation lo=new LoadOrientation(rds,new LoadFileString(prefix+"int_quartz.mat"));
+    LoadOrientation lo=new LoadOrientation(rds,new LoadFileString(prefix+"quartz.mat"));
     System.out.println("LoadOrientation.RESULT="+lo.getResult());
 
     // integrate the dataset
@@ -1019,6 +1139,8 @@ public class Integrate extends GenericTOF_SCD{
       for( int i=0 ; i<peaks.size() ; i++ ){
         System.out.println(peaks.elementAt(i));
       }
+    }else{
+      System.out.println(res.toString());
     }
 
     System.exit(0);
