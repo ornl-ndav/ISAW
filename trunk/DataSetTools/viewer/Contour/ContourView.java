@@ -36,6 +36,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2002/08/23 13:51:08  rmikk
+ *  -Eliminated some dead code
+ *  -Added a color scale ( Need to elongate JFrame to see it
+ *     sometimes)
+ *  -Fixed the aspect ratio problem
+ *
  *  Revision 1.13  2002/08/21 15:42:36  rmikk
  *  -If pointedAtX is NaN(undefined) defaults to 0th frame
  *  - Title of Contour Plot is now the title of the data set
@@ -125,7 +131,8 @@ public class ContourView extends DataSetViewer
 {
    static JPlotLayout rpl_ = null;
    private GridAttribute gridAttr_ = null;
-   JButton edit_;
+  // JButton edit_;
+   boolean rpldrawn  = false;
    JButton space_ = null;
    AnimationController ac;
    JMenuItem tree_;
@@ -136,7 +143,7 @@ public class ContourView extends DataSetViewer
    XScaleChooserUI Xscl = null;
    JPanel  XsclHolder = null;
    boolean acChange,XsclChange,XConvChange;
-   JButton print_;
+   //JButton print_;
    ContourData cd;
    JSlider time_slider;
    SGTData newData;
@@ -144,7 +151,7 @@ public class ContourView extends DataSetViewer
    DataSet data_set;
    int sliderTime_index;
    IAxisHandler  axis1,axis2,axis3;
-   //JFrame frame;
+   
    float[] times;
    int ncolors = 200;
    public int nlevels = 10;
@@ -166,357 +173,369 @@ public class ContourView extends DataSetViewer
 
   public ContourView( DataSet ds, ViewerState state1 ,IAxisHandler axis1,
                          IAxisHandler axis2, IAxisHandler axis3)
-   {
+    {
 
-      super( ds, state1 );  // Records the data_set and current ViewerState
-      this.axis1 = axis1;
-      this.axis2 = axis2;
-      this.axis3 = axis3;
-      data_set = ds;
-      state = state1;
-      if( !validDataSet() )
-      {
-         return;
-      }
-      sliderTime_index = 0;
-      PrevGroup = ds.getPointedAtIndex();
-      if( state1 == null)
-        { state = new ViewerState();
-          state.set_int ("Contour.Intensity",50);
+     super( ds, state1 );  // Records the data_set and current ViewerState
+     this.axis1 = axis1;
+     this.axis2 = axis2;
+     this.axis3 = axis3;
+     data_set = ds;
+     state = state1;
+     if( !validDataSet() )
+       {
+        return;
+       }
+     sliderTime_index = 0;
+     PrevGroup = ds.getPointedAtIndex();
+     if( state1 == null)
+       {state = new ViewerState();
+        state.set_int ("Contour.Intensity",50);
          
-        }
+       }
        
    //Create the Menu bar items
-      JMenuBar menu_bar = getMenuBar();
-      JMenu jm = menu_bar.getMenu( DataSetViewer.EDIT_MENU_ID );
+     JMenuBar menu_bar = getMenuBar();
+     JMenu jm = menu_bar.getMenu( DataSetViewer.EDIT_MENU_ID );
 
-      tree_ = new JMenuItem( "Graph" );
-      jm.add( tree_ );
-      tree_.addActionListener( new MyAction() );
-      DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( menu_bar, this );
+     tree_ = new JMenuItem( "Graph" );
+     jm.add( tree_ );
+     tree_.addActionListener( new MyAction() );
+     DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( menu_bar, this );
       
-      jm = menu_bar.getMenu( DataSetViewer.OPTION_MENU_ID );
-      jm.add( new ColorScaleMenu( new ColorActionListener() ) );
+     jm = menu_bar.getMenu( DataSetViewer.OPTION_MENU_ID );
+     jm.add( new ColorScaleMenu( new ColorActionListener() ) );
 
-      JMenuItem jmi;
-      JMenu cont_style=new JMenu("Contour Style");
-      jm.add( cont_style);
+     JMenuItem jmi;
+     JMenu cont_style=new JMenu("Contour Style");
+     jm.add( cont_style);
       /*jmi = new JMenuItem("AREA_FILL");
-      cont_style.add( jmi);
-      jmi.addActionListener( new MyContStyleListener());
+     cont_style.add( jmi);
+     jmi.addActionListener( new MyContStyleListener());
 
-      jmi = new JMenuItem("AREA_FILL_CONTOUR");
-      cont_style.add( jmi);
-      jmi.addActionListener( new MyContStyleListener());
-  */
-      jmi = new JMenuItem("RASTER_CONTOUR");
-      cont_style.add( jmi);
-      jmi.addActionListener( new MyContStyleListener());
+     jmi = new JMenuItem("AREA_FILL_CONTOUR");
+     cont_style.add( jmi);
+     jmi.addActionListener( new MyContStyleListener());
+     */
+     jmi = new JMenuItem("RASTER_CONTOUR");
+     cont_style.add( jmi);
+     jmi.addActionListener( new MyContStyleListener());
 
-      jmi = new JMenuItem("CONTOUR");
-      cont_style.add( jmi);
-      jmi.addActionListener( new MyContStyleListener());
+     jmi = new JMenuItem("CONTOUR");
+     cont_style.add( jmi);
+     jmi.addActionListener( new MyContStyleListener());
 
-      jmi = new JMenuItem("RASTER");
-      cont_style.add( jmi);
-      jmi.addActionListener( new MyContStyleListener());
+     jmi = new JMenuItem("RASTER");
+     cont_style.add( jmi);
+     jmi.addActionListener( new MyContStyleListener());
 
-      ac = new AnimationController();
+     ac = new AnimationController();
 
-      ac.addActionListener( new MyAction() );
+     ac.addActionListener( new MyAction() );
       
       
-      boolean b= state.get_boolean(ViewerState.CONTOUR_DATA);
-      if( !b)
-        {state.set_int( "ContourTimeStep" , 0 );
-         UniformXScale xx = getDataSet().getXRange();
-         state.set_float("ContourTimeMin", xx.getStart_x());
-         state.set_float("ContourTimeMax",xx.getEnd_x());
-         state.set_boolean(ViewerState.CONTOUR_DATA, true);
-         }
-      Xscl = new XScaleChooserUI( getDataSet().getX_label(), getDataSet().getX_units(),
+     boolean b= state.get_boolean(ViewerState.CONTOUR_DATA);
+     if( !b)
+       {state.set_int( "ContourTimeStep" , 0 );
+        UniformXScale xx = getDataSet().getXRange();
+        state.set_float("ContourTimeMin", xx.getStart_x());
+        state.set_float("ContourTimeMax",xx.getEnd_x());
+        state.set_boolean(ViewerState.CONTOUR_DATA, true);
+       }
+     Xscl = new XScaleChooserUI( getDataSet().getX_label(), getDataSet().getX_units(),
                         state.get_float("ContourTimeMin"), state.get_float("ContourTimeMax"),
                         state.get_int("ContourTimeStep"));
 
-      Xscl.addActionListener( new MyXSCaleActionListener());
-      XsclHolder = new JPanel( new GridLayout( 1,1));
-      XsclHolder.add( Xscl);
-      acChange = true;
-      XsclChange = true;
-      XConvChange = true;
-      setData( data_set, state.get_int( ViewerState.CONTOUR_STYLE) );
+     Xscl.addActionListener( new MyXSCaleActionListener());
+     XsclHolder = new JPanel( new GridLayout( 1,1));
+     XsclHolder.add( Xscl);
+     acChange = true;
+     XsclChange = true;
+     XConvChange = true;
+     setData( data_set, state.get_int( ViewerState.CONTOUR_STYLE) );
+     //Add the components to the window
+     JPanel jpEast = new JPanel();
+
+     BoxLayout blay = new BoxLayout( jpEast, BoxLayout.Y_AXIS );
+
+     jpEast.setLayout( blay );
       
-      //Add the components to the window
-      JPanel jpEast = new JPanel();
 
-      BoxLayout blay = new BoxLayout( jpEast, BoxLayout.Y_AXIS );
-
-      jpEast.setLayout( blay );
-      
-
-      intensity = new JSlider( 0, 100);
-      intensity.setBorder( BorderFactory.createTitledBorder( BorderFactory.createEtchedBorder(),
+     intensity = new JSlider( 0, 100);
+     intensity.setBorder( BorderFactory.createTitledBorder( BorderFactory.createEtchedBorder(),
                         "Intensity") );
      
-      intensity.addChangeListener( new MyChange());
-      intensityHolder = new JPanel( new GridLayout(1,1));
-      intensityHolder.add( intensity);
+     intensity.addChangeListener( new MyChange());
+     intensityHolder = new JPanel( new GridLayout(1,1));
+     intensityHolder.add( intensity);
 
      
       
-      rpl_Holder = new MyJPanel( rpl_, Color.white);
-      rpl_Holder.add( rpl_);
-      setLayout(jpEast );
-      rpl_.addFocusListener( new MyFocusListener());
+     rpl_Holder = new JPanel(new GridLayout(1,1));//MyJPanel( rpl_, Color.white);
+     rpl_Holder.add( rpl_);
+     setLayout(jpEast );
+     rpl_.addFocusListener( new MyFocusListener());
      
-       //main.setDividerLocation( .70);
+     //main.setDividerLocation( .70);
      /*  main = new JPanel();
-      GridBagLayout gbl = new GridBagLayout();
-      GridBagConstraints gbc = new GridBagConstraints();
+     GridBagLayout gbl = new GridBagLayout();
+     GridBagConstraints gbc = new GridBagConstraints();
      
-      main.setLayout( new BorderLayout());
-      //gbc.fill = GridBagConstraints.BOTH;
-      gbc.weightx=2;
+     main.setLayout( new BorderLayout());
+     //gbc.fill = GridBagConstraints.BOTH;
+     gbc.weightx=2;
      // gbc.gridx = 0;
     
      // gbl.setConstraints( rpl_Holder, gbc);
      
-      //main.add(rpl_, BorderLayout.CENTER);
-      gbc.weightx = 1;
+     //main.add(rpl_, BorderLayout.CENTER);
+     gbc.weightx = 1;
      
-      //gbc.gridx = 3;
+     //gbc.gridx = 3;
       
-      //gbl.setConstraints( jpEast, gbc);
+     //gbl.setConstraints( jpEast, gbc);
      
-      main.add( jpEast, BorderLayout.EAST);
-    */
-  /* all grid bag layout for all components
-       main = new JPanel();
+     main.add( jpEast, BorderLayout.EAST);
+     */
+     /* all grid bag layout for all components
+     main = new JPanel();
   
-      GridBagLayout gbl = new GridBagLayout();
-      GridBagConstraints gbc = new GridBagConstraints();
-      gbc.weightx =2;
-      gbc.gridheight = 6;
-      gbl.setConstraints( rpl_Holder, gbc);
+     GridBagLayout gbl = new GridBagLayout();
+     GridBagConstraints gbc = new GridBagConstraints();
+     gbc.weightx =2;
+     gbc.gridheight = 6;
+     gbl.setConstraints( rpl_Holder, gbc);
 
-      gbc.weightx =1;
-      gbc.gridheight = 1;
-      gbc.gridwidth =  GridBagConstraints.REMAINDER;
-      gbl.setConstraints( ac, gbc);
+     gbc.weightx =1;
+     gbc.gridheight = 1;
+     gbc.gridwidth =  GridBagConstraints.REMAINDER;
+     gbl.setConstraints( ac, gbc);
 
-      gbl.setConstraints( intensity, gbc);
+     gbl.setConstraints( intensity, gbc);
 
-      gbc.gridheight =3;
-      gbl.setConstraints( ConvTableHolder, gbc);
+     gbc.gridheight =3;
+     gbl.setConstraints( ConvTableHolder, gbc);
 
-      main.add( rpl_Holder);
-      main.add( ac);
-      main.add( intensity);
-      main.add( ConvTableHolder);
-  // end grid bag layout for all components
-  */
-      main.addComponentListener( new MyComponentListener() );
-      add( main);
-      setLayout( new GridLayout( 1,1));
-      validate();
-     
-   }
+     main.add( rpl_Holder);
+     main.add( ac);
+     main.add( intensity);
+     main.add( ConvTableHolder);
+     // end grid bag layout for all components
+     */  
+     setLayout( new GridLayout( 1,1));
+     main.addComponentListener( new MyComponentListener() );
+     add( main);
+     validate();
+     rpldrawn=false;
+    }
+
+
   // main splitpane with state, 
   public void setLayout(JPanel jpEast)
-   {jpEast.add( ac );
-    jpEast.add(XsclHolder);
-    jpEast.add(intensityHolder);  
-    jpEast.add( ConvTableHolder );
-    jpEast.add( Box.createHorizontalGlue() );
-    main = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,  rpl_Holder,  jpEast, .70f);
-   }
+    {jpEast.add( ac );
+     jpEast.add(XsclHolder);
+     jpEast.add(intensityHolder);  
+     jpEast.add( ConvTableHolder );
+     jpEast.add( Box.createHorizontalGlue() );
+     main = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,  rpl_Holder,  jpEast, .70f);
+    }
+
+
    //Change the name of doLayou when changing this
    //Cannot get the column 2 items to draw correctly.
-   JPanel acHolder, intensityHolder;
+  JPanel acHolder, intensityHolder;
   public void setLayout2( JPanel jpEast)
-     { //main = new JPanel();
-       main.setLayout( null);
-       acHolder = new MyJPanel(  ac ,Color.blue);//new JPanel( new GridLayout( 1,1));//
-       intensityHolder =new JPanel( new GridLayout( 1,1));
+    {//main = new JPanel();
+     main.setLayout( null);
+     acHolder = new MyJPanel(  ac ,Color.blue);//new JPanel( new GridLayout( 1,1));//
+     intensityHolder =new JPanel( new GridLayout( 1,1));
       
-       acHolder.add( ac);
-       intensityHolder.add( intensity);
+     acHolder.add( ac);
+     intensityHolder.add( intensity);
        
-     }
+    }
+
+
   public void doLayout2()
-   {if( acHolder == null)
-      { super.doLayout();
+    {if( acHolder == null)
+       {super.doLayout();
         
         return;
        }
-    System.out.println("in doLayout Bounds ="+getBounds());
-    Rectangle R = getBounds();
-    if( R.width <=0) return;
-    if(R.height <=0) return;
-    int R1 = (int)(R.width*.7);
-    rpl_Holder.setBounds     ( new Rectangle( 0,    0,                (int)(R.width*.7),
+     System.out.println("in doLayout Bounds ="+getBounds());
+     Rectangle R = getBounds();
+     if( R.width <=0) 
+        return;
+     if(R.height <=0) 
+        return;
+     int R1 = (int)(R.width*.7);
+     rpl_Holder.setBounds     ( new Rectangle( 0,    0,                (int)(R.width*.7),
                          R.height) );
-    acHolder.setBounds       ( new Rectangle(R1+1,   0,                 R.width-R1-2, 
+     acHolder.setBounds       ( new Rectangle(R1+1,   0,                 R.width-R1-2, 
                    (int) (R.height*.2)));
-    //intensityHolder.setBounds( new Rectangle(R1+1, 1+(int)(R.height*.2),R.width-R1, 
-     //                  (int)(R.height*.1)) ));
-   // ConvTableHolder.setBounds( new Rectangle(R1+1, 3+(int)(R.height*.3), R.width -R1,
-    //                                 R.height-2-(int)(R.height*.3));
+     //intensityHolder.setBounds( new Rectangle(R1+1, 1+(int)(R.height*.2),R.width-R1, 
+      //                  (int)(R.height*.1)) ));
+     // ConvTableHolder.setBounds( new Rectangle(R1+1, 3+(int)(R.height*.3), R.width -R1,
+     //                                 R.height-2-(int)(R.height*.3));
    
      rpl_Holder.doLayout();
-    //acHolder.doLayout();
-    //intensityHolder.doLayout();
-    //ConversionTableHolder.doLayout();
+     //acHolder.doLayout();
+     //intensityHolder.doLayout();
+     //ConversionTableHolder.doLayout();
 
-    main.add( rpl_Holder);
-    main.add( acHolder);
-    rpl_Holder.doLayout();
-    acHolder.doLayout();
-   // System.out.println( "acHolder bounds="+acHolder.getBounds());
+     main.add( rpl_Holder);
+     main.add( acHolder);
+     rpl_Holder.doLayout();
+     acHolder.doLayout();
+     // System.out.println( "acHolder bounds="+acHolder.getBounds());
     }
+
+
   //Will attempt to do box layout horizontally. NOPE cannot do this
   public void setLayout3( JPanel jpEast)
     {jpEast.add( ac );
-    jpEast.add(intensity);  
-    jpEast.add( ConvTableHolder );
-    jpEast.add( Box.createHorizontalGlue() );
+     jpEast.add(intensity);  
+     jpEast.add( ConvTableHolder );
+     jpEast.add( Box.createHorizontalGlue() );
 
-    BoxLayout bl = new BoxLayout(main, BoxLayout.X_AXIS );
-    //main = new JPanel();
-    main.setLayout( bl);
-    main.add(rpl_Holder);
-    main.add( jpEast);
-     }
+     BoxLayout bl = new BoxLayout(main, BoxLayout.X_AXIS );
+     //main = new JPanel();
+     main.setLayout( bl);
+     main.add(rpl_Holder);
+     main.add( jpEast);
+    }
+
+
   public ViewerState getState()
-   {return state;
-   }
+    {return state;
+    }
 
 
 
   private void setData( DataSet ds, int GridContourAttribute )
-   {  
-      if( axis1 == null)
-         cd = new ContourData( ds );
-      else
-         cd = new ContourData( ds, axis1, axis2, axis3);
-      cd.setXScale( Xscl.getXScale() );
-      times = cd.getTimeRange();
+    {  
+     if( axis1 == null)
+        cd = new ContourData( ds );
+     else
+        cd = new ContourData( ds, axis1, axis2, axis3);
+     cd.setXScale( Xscl.getXScale() );
+     times = cd.getTimeRange();
      
-      if( (ac != null) && (acChange  ||  XsclChange) )
-        { ac.setFrame_values( times );
-          if( Float.isNaN( ds.getPointedAtX()))
-              {ac.setFrameNumber( 0);
+     if( (ac != null) && (acChange  ||  XsclChange) )
+       {ac.setFrame_values( times );
+        if( Float.isNaN( ds.getPointedAtX()))
+          {ac.setFrameNumber( 0 );
                
-              }
-          else
-              ac.setFrameValue( ds.getPointedAtX());
-          sliderTime_index = ac.getFrameNumber();
+          }
+        else
+           ac.setFrameValue( ds.getPointedAtX());
+        sliderTime_index = ac.getFrameNumber();
           
           
-        }
-      if( ConvTableHolder == null )
-         ConvTableHolder = new JPanel( new GridLayout( 1, 1 ) );
-      else if( XConvChange)
-         ConvTableHolder.remove( dctScroll );
+       }
+     if( ConvTableHolder == null )
+        ConvTableHolder = new JPanel( new GridLayout( 1, 1 ) );
+     else if( XConvChange)
+        ConvTableHolder.remove( dctScroll );
 
       
-      if( XConvChange )
-         {
-          dct = new DataSetXConversionsTable( getDataSet() );
-          dct.showConversions(getDataSet().getPointedAtX(), 
+     if( XConvChange )
+       {
+        dct = new DataSetXConversionsTable( getDataSet() );
+        dct.showConversions(getDataSet().getPointedAtX(), 
                               getDataSet().getPointedAtIndex());
           
-          dctScroll = new JScrollPane( dct.getTable() );
-          ConvTableHolder.add( dctScroll );
-          }
+        dctScroll = new JScrollPane( dct.getTable() );
+        ConvTableHolder.add( dctScroll );
+       }
 
-      if( XsclHolder == null)
-          XsclHolder = new JPanel( new GridLayout( 1,1 ));
-      else if( XsclChange)
-          XsclHolder.remove( Xscl);
+     if( XsclHolder == null)
+        XsclHolder = new JPanel( new GridLayout( 1,1 ));
+     else if( XsclChange)
+        XsclHolder.remove( Xscl);
 
-      if( XsclChange)
-         {
-          Xscl = new XScaleChooserUI( getDataSet().getX_label(), getDataSet().getX_units(),
+     if( XsclChange)
+       {
+        Xscl = new XScaleChooserUI( getDataSet().getX_label(), getDataSet().getX_units(),
                      state.get_float("ContourTimeMin"), state.get_float("ContourTimeMax"),
                      state.get_int("ContourTimeStep"));
 
-          Xscl.addActionListener( new MyXSCaleActionListener());
-          XsclHolder.add( Xscl);
-          }
-      init( ds, GridContourAttribute );
-   }
+        Xscl.addActionListener( new MyXSCaleActionListener());
+        XsclHolder.add( Xscl);
+       }
+     init( ds, GridContourAttribute );
+    }
 
 
-   /** GridContourAttribute is GridAttribute.RASTER_CONTOUR or GridAttribute.CONTOUR, etc
-    *  only creates rpl_ the JPlotLayout
-    */
+  /** GridContourAttribute is GridAttribute.RASTER_CONTOUR or GridAttribute.CONTOUR, etc
+   *  only creates rpl_ the JPlotLayout
+  */
   private void init( DataSet ds, int GridContourAttribute )
-   {
+    {
 
-      /*
-       * Create JPlotLayout and turn batching on.  With batching on the
-       * plot will not be updated as components are modified or added to
-       * the plot tree.
-       */
-      if( ac != null )
-      {
-         ac.setBorderTitle( data_set.getX_label() );
-         ac.setTextLabel( data_set.getX_units() + "=" );
-      }
-      state.set_int("Contour.Style", GridContourAttribute);
-      if( ( main != null ) )
-       if( rpl_Holder != null)  
-         { //main.remove( rpl_Holder);
-            //main.remove( rpl_ );
-             rpl_Holder.remove( rpl_);
-         }
-        else System.out.println("main != null && rpl_Holder is null");
-      rpl_ = this.makeGraph( times[sliderTime_index], state );
+     /*
+      * Create JPlotLayout and turn batching on.  With batching on the
+      * plot will not be updated as components are modified or added to
+      * the plot tree.
+      */
+     if( ac != null )
+       {
+        ac.setBorderTitle( data_set.getX_label() );
+        ac.setTextLabel( data_set.getX_units() + "=" );
+       }
+     state.set_int("Contour.Style", GridContourAttribute);
+     if( ( main != null ) )
+        if( rpl_Holder != null)  
+          {//main.remove( rpl_Holder);
+           //main.remove( rpl_ );
+           rpl_Holder.remove( rpl_);
+          }
+        else 
+           System.out.println("main != null && rpl_Holder is null");
+     rpl_ = this.makeGraph( times[sliderTime_index], state );
       
-      //rpl_.setKeyBoundsP(new Rectangle2D.Double(2.0,2.0,ls.width,1.0 )); 
-      //rpl_.setKeyLocationP( new Point2D.Double( 2.0,2.0));
+     //rpl_.setKeyBoundsP(new Rectangle2D.Double(2.0,2.0,ls.width,1.0 )); 
+     //rpl_.setKeyLocationP( new Point2D.Double( 2.0,2.0));
 
-      rpl_.addMouseListener( new MyMouseListener() );
-      //gridKeyPane = rpl_.getKeyPane();
-      //rpl_.setBatch(true);
-      rpl_.setLayout( new GridLayout( 1,1));
+     rpl_.addMouseListener( new MyMouseListener() );
+     //gridKeyPane = rpl_.getKeyPane();
+     //rpl_.setBatch(true);
+     //rpl_.setLayout( new GridLayout( 1,1));
       
-      // rpl_.setKeyAlignment(AbstractPane.BOTTOM, AbstractPane.CENTER);
-      /*
-       * Layout the plot, key, buttons, and slider.
-       */
+     // rpl_.setKeyAlignment(AbstractPane.BOTTOM, AbstractPane.CENTER);
+     /*
+      * Layout the plot, key, buttons, and slider.
+      */
 
-      //main.add(rpl_, BorderLayout.CENTER);
-
-
-      // gridKeyPane.setLayout( new GridLayout( 1,1));
-      // gridKeyPane.setSize(new Dimension(600,100));
-      //rpl_.setKeyLayerSizeP(new Dimension2D(6.0, 1.0));
-      // rpl_.setKeyBoundsP(new Rectangle2D.Double(0.0, 1.0, 6.0, 1.0));
-      //gridKeyPane.setLayout( new GridLayout(1,1));
-      //main.add(gridKeyPane, BorderLayout.SOUTH);
+     //main.add(rpl_, BorderLayout.CENTER);
 
 
-      //main.add(jpEast, BorderLayout.EAST);
+     // gridKeyPane.setLayout( new GridLayout( 1,1));
+     // gridKeyPane.setSize(new Dimension(600,100));
+     //rpl_.setKeyLayerSizeP(new Dimension2D(6.0, 1.0));
+     // rpl_.setKeyBoundsP(new Rectangle2D.Double(0.0, 1.0, 6.0, 1.0));
+     //gridKeyPane.setLayout( new GridLayout(1,1));
+     //main.add(gridKeyPane, BorderLayout.SOUTH);
 
-      //frame.pack();
-      //frame.setVisible(true);
 
-      /*
-       * Turn batching off. JPlotLayout will redraw if it has been
-       * modified since batching was turned on.
-       */
-      //rpl_.setBatch(false);
-      if( main != null )
-       if( rpl_Holder != null)
-         {  rpl_Holder.add( rpl_);
+     //main.add(jpEast, BorderLayout.EAST);
+
+     //frame.pack();
+     //frame.setVisible(true);
+
+     /*
+      * Turn batching off. JPlotLayout will redraw if it has been
+      * modified since batching was turned on.
+      */
+     //rpl_.setBatch(false);
+     if( main != null )
+        if( rpl_Holder != null)
+          {rpl_Holder.add( rpl_);
            //main.setLeftComponent( rpl_ );
            validate();
           }
       
 
-   }
+    }
 
 
   public void setDataSet( DataSet ds )
@@ -532,7 +551,7 @@ public class ContourView extends DataSetViewer
   class ColorActionListener implements ActionListener
     {
      public void actionPerformed( ActionEvent evt )
-      {
+      { 
          if( rpl_ == null )
             return;
          if( !rpl_.isDisplayable() )
@@ -568,32 +587,11 @@ public class ContourView extends DataSetViewer
        }
     }
 
-  JPanel makeButtonPanel()
-    {
-     JPanel button = new JPanel();
-
-     button.setLayout( new FlowLayout() );
-     //tree_ = new JButton("Tree View");
-     MyAction myAction = new MyAction();
-
-     tree_.addActionListener( myAction );
-     button.add( tree_ );
-     edit_ = new JButton( "Edit GridAttribute" );
-     edit_.addActionListener( myAction );
-     button.add( edit_ );
-     tree_.addActionListener( myAction );
-     print_ = new JButton( "Print Contour" );
-     print_.addActionListener( myAction );
-     button.add( print_ );
-     return button;
-    }
-
-  void edit_actionPerformed( java.awt.event.ActionEvent e )
+ 
+ /* void edit_actionPerformed( java.awt.event.ActionEvent e )
    {
 
-      /*
-       * Create a GridAttributeDialog and set the renderer.
-       */
+      
       GridAttributeDialog gad = new GridAttributeDialog();
 
       gad.setJPane( rpl_ );
@@ -603,7 +601,7 @@ public class ContourView extends DataSetViewer
       //        gad.setGridAttribute(gridAttr_);
       gad.setVisible( true );
    }
-
+  */
 
   void tree_actionPerformed( java.awt.event.ActionEvent e )
    {
@@ -619,12 +617,10 @@ public class ContourView extends DataSetViewer
    }
 
 
-  void slider_changePerformed( javax.swing.event.ChangeEvent event )
+  /*void slider_changePerformed( javax.swing.event.ChangeEvent event )
    {
 
-      /*
-       * Change the time value and redraw the graph with the new data
-       */
+      
       time_label.setText( "" + times[time_slider.getValue()] );
 
       if( main == null || rpl_ == null || cd == null )
@@ -634,19 +630,9 @@ public class ContourView extends DataSetViewer
       ( ( SimpleGrid )newData ).setZArray( newData1.getZArray() );
       rpl_.draw();
 
-      /*main.remove(rpl_);
-       rpl_= makeGraph(times[time_slider.getValue()], null);
-       rpl_.setBatch(true);
-       main.add(rpl_, BorderLayout.CENTER);
-       JPane gridKeyPane = rpl_.getKeyPane();
-       // gridKeyPane.setSize(new Dimension(600,100));
-       main.add(gridKeyPane, BorderLayout.SOUTH);
-       //frame.getContentPane().add(main, "Center");    
-       rpl_.getKeyPane().draw();
-       rpl_.setBatch(false);
-       */
+      
    }
-
+  */
   private String getMainTitle()
     {DataSet ds = getDataSet();
      return ds.getTitle();
@@ -666,7 +652,7 @@ public class ContourView extends DataSetViewer
     {return java.lang.Math.pow( 10.0, 0.0+power);
      }
   private int digVal( double v, int digit)
-    {float MACHINE_EPSILON = 1.1920929E-7f;
+    {
      if( v==0)
         return 0;
      if( v<0)
@@ -919,9 +905,18 @@ public class ContourView extends DataSetViewer
        * Create the layout without a Logo image and with the
        * ColorKey on a separate Pane object.
        */
-      rpl = new JPlotLayout( true, false, false, "ISAW Layout", null, true );
-      rpl.setEditClasses( true );
-
+      rpl = new JPlotLayout( true, false, false, "ISAW Layout", null, false);
+     
+      gov.noaa.pmel.util.Dimension2D sz =new Dimension2D( 6.0, 6.0);
+      rpl.setLayerSizeP( sz );
+        //rpl.setKeyLocationP( new Point2D.Double(0.0,1.0));
+      int style =state.get_int("Contour.Style");
+      if( style != GridAttribute.CONTOUR)
+        { 
+          rpl.setKeyBoundsP( new Rectangle2D.Double(sz.width/2, 0.0,
+                                sz.width-.01, .1));
+         }
+      
       /*
        * Create a GridAttribute for CONTOUR style.
        */
@@ -935,21 +930,28 @@ public class ContourView extends DataSetViewer
 
       //Range2D datar = new Range2D( -20f, 45f, 5f );
       clevels = ContourLevels.getDefault(Aclev );
-      gridAttr_ = new GridAttribute( clevels );
+     
 
       /*
        * Create a ColorMap and change the style to RASTER_CONTOUR.
        */
       IndexedColorMap cmap = createColorMap( datar, state, clevels );
-
-      gridAttr_.setColorMap( cmap );
-      gridAttr_.setStyle( state.get_int("Contour.Style"));
-
+      
+      
+      
+      if( style != GridAttribute.CONTOUR)
+        { gridAttr_ = new GridAttribute( style,cmap);
+          if( gridAttr_.isContour())
+            gridAttr_.setContourLevels( clevels );
+         }
+      else
+        gridAttr_ = new GridAttribute( clevels );
+      
       /*
        * Add the grid to the layout and give a label for
        * the ColorKey.
        */
-      rpl.addData( newData, gridAttr_, "Area Detector Data" );
+      rpl.addData( newData, gridAttr_, "Color Scale" );
 
       /*
        * Change the layout's three title lines.
@@ -966,10 +968,11 @@ public class ContourView extends DataSetViewer
        * size. Set the size of the key in physical units and place
        * the key pane at the "South" of the frame.
        */
-     
+       // rpl.setKeyAlignment(ColorKey.BOTTOM, ColorKey.CENTER);
+        
       //rpl.setKeyLayerSizeP(new Dimension2D(6.0, 1.02));
       // rpl.setKeyBoundsP(new Rectangle2D.Double(0.01, 1.01, 5.98, 1.0));
-
+      
       return rpl;
    }
 
@@ -994,10 +997,11 @@ public class ContourView extends DataSetViewer
             ColorMap = C;
       }
 
-      IndexedColorMap cmap = new IndexedColorMap( IndexColorMaker.getColorTable( ColorMap, ncolors ) );
-
-      cmap.setTransform( new logTransform( 0.0, ncolors - 1.0,
-            datar.start, datar.end ,state.get_int("Contour.Intensity")) );
+      IndexedColorMap cmap = new IndexedColorMap( 
+             IndexColorMaker.getColorTable( ColorMap, ncolors ) );
+    
+     cmap.setTransform( new logTransform( 0.0, ncolors - 1.0,
+               datar.start, datar.end ,state.get_int("Contour.Intensity")) );
       //IndexedColorMap cmap = new IndexedColorMap(IndexColorMaker.getColorTable(ColorMap, 18),clevels);
       return cmap;
    }
@@ -1110,43 +1114,7 @@ public class ContourView extends DataSetViewer
         Axis3 = Qax.getQzAxis();
     
     
-    /* for(;;)
-      { try{
-          c=0;
-            String S ="";
-            System.out.println("Enter Group index");
-              c =(char)System.in.read();
-            while( c <=32)
-              {
-               c =(char)System.in.read();
-              }
-              while( c >32)
-              {S = S+c;
-               c =(char)System.in.read();
-              }
-              int GIndex = new Integer( S.trim()).intValue();
-              S ="";
-              System.out.println("Now enter position of time");
- 
-             while( c <=32)
-              {
-               c =(char)System.in.read();
-              }
-                         while( c >32)
-              {S = S+c;
-               c =(char)System.in.read();
-              }
-            int Tindex = new Integer( S.trim()).intValue();
-           float f =Axis1.getValue( GIndex,Tindex);
-           System.out.println( f);
-           System.out.println( Axis1.getXindex( GIndex, f));
-           }
-        
-        catch(Exception ss){}
-
-       }
-       */
-     ContourView cv = new ContourView( ds, new ViewerState(),Axis1,Axis2,Axis3);
+    ContourView cv = new ContourView( ds, new ViewerState(),Axis1,Axis2,Axis3);
     jf.getContentPane().setLayout( new GridLayout(1,1));
     jf.getContentPane().add(cv);
     jf.validate();
@@ -1158,19 +1126,19 @@ public class ContourView extends DataSetViewer
   class MyAction implements java.awt.event.ActionListener
    {
       public void actionPerformed( java.awt.event.ActionEvent event )
-      {
+      {  
          Object obj = event.getSource();
 
-         if( obj == edit_ )
-            edit_actionPerformed( event );
+         
          if( obj == tree_ )
             tree_actionPerformed( event );
-         if( obj == print_ )
-            print_actionPerformed( event );
+         //if( obj == print_ )
+         //   print_actionPerformed( event );
          if( obj == ac )
-         {
+         {  
             if( main == null || rpl_ == null || cd == null )
                return;
+           
             try
             {  
                int i = new Integer( event.getActionCommand() ).intValue();
@@ -1181,21 +1149,21 @@ public class ContourView extends DataSetViewer
                  i=0;
                else if( i >= times.length )
                   i = times.length -1;;
-               
+              
                SimpleGrid newData1 = ( SimpleGrid )( cd.getSGTData( times[i] ) );
               
                data_set.setPointedAtX( times[i]);
+             
                if( sliderTime_index != i)
                   { sliderTime_index = i;
-                    data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+                    if( rpldrawn)
+                      data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
                    }
                 
                ( ( SimpleGrid )newData ).setZArray( newData1.getZArray() );
               
                rpl_.draw();
-               
-
-
+               rpldrawn = true;
               // dct.showConversions( -1, -1 );
             }
             catch( Exception s )
@@ -1229,7 +1197,7 @@ public class ContourView extends DataSetViewer
     * a separate JPane to append the keyPane to the plot on the
     * same page.
     */
-  void print_actionPerformed( java.awt.event.ActionEvent event )
+  /*void actionPerformed( java.awt.event.ActionEvent event )
    {
       Color saveColor;
 
@@ -1260,7 +1228,7 @@ public class ContourView extends DataSetViewer
          }
       }
    }
-
+*/
   public int getPointedAtXindex()
      {float X = getDataSet().getPointedAtX();
       if( Float.isNaN(X))
@@ -1279,7 +1247,7 @@ public class ContourView extends DataSetViewer
        
       }
   public void redraw( String reason )
-   { 
+   {
       if( reason == IObserver.DESTROY )
       {
          setData( getDataSet(), GridAttribute.RASTER_CONTOUR );
@@ -1313,10 +1281,11 @@ public class ContourView extends DataSetViewer
                 dct.showConversions( times[Xindex], index );
             
            }
-        if( Xindex != sliderTime_index) // java.lang.Math.abs(cd.getTime() -x) >.00001)
+       
+        if( (Xindex != sliderTime_index) || !rpldrawn) 
           { sliderTime_index = Xindex;
             ac.setFrameNumber( Xindex );
-            
+           
             //ac.stop();
            }
         if( notify)
@@ -1346,7 +1315,7 @@ public class ContourView extends DataSetViewer
       }
       //else  don't redraw
       //redraw();                      
-
+    
    }
 
   class MyComponentListener extends ComponentAdapter
