@@ -30,6 +30,13 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.27  2004/02/26 21:10:37  dennis
+ *  Added method DiffractometerVecQ() that takes and returns
+ *  vector objects for the detector position and Q vector.
+ *  The previous version of DiffractometerVecQ() that
+ *  takes and returns position 3D objects now calls the
+ *  new method.
+ *
  *  Revision 1.26  2003/12/01 17:12:16  dennis
  *  Added method getEulerAngles(u,v) to calculate Euler angles phi, chi, omega
  *  for rotations about the z axis, x axis and z axis again, given the ortho-
@@ -512,17 +519,18 @@ public static float  DiffractometerQ( float angle_radians,
 
 /* ------------------------- DiffractometerVecQ ------------------------- */
 /**
- *   Calculate a "Q" vector based on the detector position, total flight path
- *   length and time of flight for a neutron that was scattered by a sample.
+ *   Calculate a 3 dimensional "Q" based on the detector position, total
+ *   flight path length and time of flight for a neutron that was scattered 
+ *   by a sample.
  *
  *   @param det_pos         The position of the detector, relative to the
- *                          sample.
+ *                          sample, as a detector position object.
  *   @param initial_path_m  The distance from the moderator to the sample 
  *                          in meters.
  *   @param time_us         The time in microseconds for the neutron to travel
  *                          the distance from the moderator to the detector.
  *
- *   @return A vector position, "Q" with components in inverse Angstroms.
+ *   @return A 3D position, "Q" with components in inverse Angstroms.
  *
  */
 
@@ -530,21 +538,53 @@ public static Position3D DiffractometerVecQ( DetectorPosition  det_pos,
                                              float             initial_path_m,
                                              float             time_us    )
 {
+  Vector3D pos_vec = new Vector3D( det_pos );
+  Vector3D q_vec = DiffractometerVecQ( pos_vec, initial_path_m, time_us );
+  return new Position3D( q_vec );
+}
+
+/* ------------------------- DiffractometerVecQ ------------------------- */
+/**
+ *   Calculate a Vector3D "Q" based on the detector position, total
+ *   flight path length and time of flight for a neutron that was scattered 
+ *   by a sample.
+ *
+ *   @param det_pos         The position of the detector, relative to the 
+ *                          sample, as a Vector3D object.
+ *   @param initial_path_m  The distance from the moderator to the sample 
+ *                          in meters.
+ *   @param time_us         The time in microseconds for the neutron to travel
+ *                          the distance from the moderator to the detector.
+ *
+ *   @return A 3D position, "Q" with components in inverse Angstroms.
+ *
+ */
+
+public static Vector3D DiffractometerVecQ( Vector3D  det_pos,
+                                           float     initial_path_m,
+                                           float     time_us    )
+{
   float       distance;
   float       path_len_m;
   float       angle_radians;
   float       magnitude_Q;
-  Position3D  vector_Q = new Position3D();
   float       xyz[];
   float       magnitude_xyz;
   float       scale;
 
-  distance      = det_pos.getDistance();
+  distance      = det_pos.length();
   path_len_m    = distance + initial_path_m;
-  angle_radians = det_pos.getScatteringAngle();
-  magnitude_Q   = DiffractometerQ( angle_radians, path_len_m, time_us ); 
 
-  xyz = det_pos.getCartesianCoords();        // this is vector K'
+                  // K' is in the direction of the detector.
+                  // Let "a" be the scattering angle, and "i" be the unit
+                  // vector in the positive x direction.  Then
+                  // K' dot i = ||K'|| cos(a), so cos(a) = K'x / ||K'||
+                  // where K'x is the x component of K'.
+
+  angle_radians = (float)Math.acos( det_pos.get()[0] / distance );
+  magnitude_Q   = DiffractometerQ( angle_radians, path_len_m, time_us );
+
+  xyz = det_pos.get();                       // this is vector K'
   xyz[0] -= distance;                        // now it's in the direction of
                                              // vector Q = K' - K
   magnitude_xyz = (float)Math.sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]+xyz[2]*xyz[2]);
@@ -553,7 +593,7 @@ public static Position3D DiffractometerVecQ( DetectorPosition  det_pos,
   xyz[1] *= scale;
   xyz[2] *= scale;                           // now it's really Q
 
-  vector_Q.setCartesianCoords( xyz[0], xyz[1], xyz[2] );
+  Vector3D  vector_Q = new Vector3D( xyz[0], xyz[1], xyz[2] );
   return vector_Q;
 }
 
@@ -1008,6 +1048,26 @@ public static void main( String args[] )
   System.out.println( "meV_PER_MM_PER_US_2 " + meV_PER_MM_PER_US_2   );
   System.out.println( "ANGST_PER_US_PER_MM " + ANGST_PER_US_PER_MM  );
   System.out.println( "ANGST_PER_US_PER_M  " + ANGST_PER_US_PER_M  );
+
+  // Check calculation of vec Q for different detector positions 
+  System.out.println("NEW TOF_CALC");
+  det_pos = new DetectorPosition();
+  Position3D q_pos;
+  float l1 = 9.378f;
+  int counter = 0;
+  for ( int det_x = -3; det_x < 3; det_x += 2 )
+    for ( int det_y = -3; det_y < 3; det_y += 2 )
+      for ( int det_z = -3; det_z < 3; det_z += 2 )
+        for ( int time = 5000; time <= 10000; time += 5000 )
+  {
+    counter++;
+    System.out.print("counter = " + counter );
+    det_pos.setCartesianCoords( det_x, det_y, det_z );
+    q_pos = DiffractometerVecQ( det_pos, l1, time );   
+    float q[] = q_pos.getCartesianCoords();
+    System.out.println(" q_pos = " + q[0] + ", " + q[1] + ", " + q[2] );
+  }
+
 }
 
 }
