@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.45  2002/06/28 20:49:46  dennis
+ *  Now adds MonitorTofToWavelength operator
+ *
  *  Revision 1.44  2002/06/03 22:33:34  dennis
  *  tof_data_calc.NewEnergyInData(,) is now used to adjust the spectra
  *  for a TOF_DG_Spectrometer, to the incident energy calculated from the
@@ -623,6 +626,7 @@ private float CalculateEIn()
          data_set.addOperator( new FocusIncidentSpectrum() );
 
        data_set.addOperator( new MonitorTofToEnergy() );
+       data_set.addOperator( new MonitorTofToWavelength() );
      }
 
                                             // Fix the label and units for
