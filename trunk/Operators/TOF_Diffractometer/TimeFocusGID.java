@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/07/10 15:52:08  pfpeterson
+ * Uses information from gsas calibration from attributes if present.
+ *
  * Revision 1.1  2002/07/08 15:44:48  pfpeterson
  * Added to CVS.
  *
@@ -42,6 +45,7 @@ import DataSetTools.operator.Generic.TOF_Diffractometer.*;
 import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
+import DataSetTools.gsastools.GsasCalib;
 import DataSetTools.viewer.*;
 import DataSetTools.util.*;
 import DataSetTools.math.*;
@@ -169,10 +173,6 @@ public class TimeFocusGID extends GenericTOF_Diffractometer{
         else
             new_ds = ds;
         
-        new_ds.addLog_entry("Time Focused groups (GID=" + group_str + 
-                            ") to angle " + angle_deg +
-                            " with L2 " + final_L_m );
-        
         Data             d, new_d;
         float            y_vals[], errors[];
         DetectorPosition pos;
@@ -180,7 +180,13 @@ public class TimeFocusGID extends GenericTOF_Diffractometer{
         float            theta, r, initial_path;
         Float            initial_path_obj;
         XScale           x_scale; 
+        // set up what focus_dif_c is
+        float            focus_dif_c=0f;
+        GsasCalib        calib=null;
+        AttributeList    attr_list;
+
         for ( int i = 0; i < ids.length; i++ ){
+            calib=null;
             d = new_ds.getData_entry_with_id( ids[i] );     
             if(d!=null){
                 pos = (DetectorPosition)d.getAttributeValue( Attribute.DETECTOR_POS );
@@ -197,13 +203,25 @@ public class TimeFocusGID extends GenericTOF_Diffractometer{
                 
                 r     = pos.getDistance();
                 theta = pos.getScatteringAngle() / 2;
-                x_scale=tof_data_calc.DiffractometerFocus(d.getX_scale(),
-                                            r+initial_path,theta,
-                                            final_L_m+initial_path,new_theta);
+                calib=(GsasCalib)d.getAttributeValue(Attribute.GSAS_CALIB);
+
+                if(calib!=null){
+                    focus_dif_c=(float)
+                     (252.816*2.*Math.sin(new_theta)*(final_L_m+initial_path));
+                    x_scale=tof_data_calc.DiffractometerFocus(d.getX_scale(),
+                                                              calib.dif_c(),
+                                                              focus_dif_c);
+                }else{
+                    x_scale=tof_data_calc.DiffractometerFocus(d.getX_scale(),
+                                                          r+initial_path,theta,
+                                             final_L_m+initial_path,new_theta);
+                }
+
                 y_vals  = d.getY_values();
                 errors  = d.getErrors();
                 new_d = Data.getInstance( x_scale, y_vals, errors, ids[i] );
                 new_d.setAttributeList( d.getAttributeList() );
+                new_d.removeAttribute(Attribute.GSAS_CALIB);
                 
                 pos = new DetectorPosition();
                 if ( final_L_m > 0 )
@@ -217,6 +235,16 @@ public class TimeFocusGID extends GenericTOF_Diffractometer{
                 new_ds.replaceData_entry_with_id( new_d, ids[i] );
             }
         }
+        new_ds.removeAttribute(Attribute.GSAS_IPARM);
+        if(calib!=null){
+            new_ds.addLog_entry("Time Focused groups (GID=" + group_str + 
+                                ") to DIFC " + focus_dif_c );
+        }else{
+            new_ds.addLog_entry("Time Focused groups (GID=" + group_str + 
+                                ") to angle " + angle_deg +
+                                " with L2 " + final_L_m );
+        }
+        
         return new_ds;
     }
     
