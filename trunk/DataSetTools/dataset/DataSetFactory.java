@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2002/09/17 20:29:50  dennis
+ *  Now adds operator SetGroupIDs to all DataSets
+ *
  *  Revision 1.29  2002/09/10 22:39:54  dennis
  *  Now adds operator SetDataLabel to all DataSets.
  *
@@ -341,6 +344,7 @@ public class DataSetFactory implements Serializable
     ds.addOperator( new TofToChannel() );     // convert to channel for any
                                                   // DataSet
 //    ds.addOperator( new IntervalSelectionOp() );
+    ds.addOperator( new SetGroupIDs() );
     ds.addOperator( new SetDataLabel() );
     ds.addOperator( new GetDataAttribute() );
     ds.addOperator( new SetDataAttribute() );
