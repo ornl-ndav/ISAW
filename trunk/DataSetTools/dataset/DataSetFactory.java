@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2001/08/15 21:46:18  dennis
+ *  Added DongFeng's SpectrometerPlotter to all DataSets.
+ *
  *  Revision 1.14  2001/08/14 20:29:40  dennis
  *  Added ExtractCurrentlySelected operator.
  *
@@ -271,6 +274,7 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new GetField() );
     new_ds.addOperator( new SetField() );
 
+    new_ds.addOperator( new SpectrometerPlotter() );
     return new_ds;
   }
 
@@ -324,7 +328,6 @@ public class DataSetFactory implements Serializable
     }
     else if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
     {
-      new_ds.addOperator( new SpectrometerPlotter() );
       new_ds.addOperator( new SpectrometerEvaluator() );
       new_ds.addOperator( new SpectrometerNormalizer());
       new_ds.addOperator( new SpectrometerMacro() );
