@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.26  2003/09/20 23:11:18  dennis
+ * Minor change to some prompt strings.
+ *
  * Revision 1.25  2003/09/15 22:23:12  dennis
  * made boxDeltaX and boxDeltaY Strings, as needed by the IntArrayPG.
  *
@@ -233,7 +236,7 @@ public class IntegrateMultiRunsForm extends Form {
     clpg.addItems( choices );
     addParameter( clpg );
     addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );  //5
-    addParameter( new IntArrayPG( "The Time-Slice Range", "-1:3", false ) );  //6
+    addParameter( new IntArrayPG( "Time-Slice Range", "-1:3", false ) );  //6
     addParameter( 
       new IntegerPG( 
         "Amount to Increase Slice Size By", new Integer( 1 ), false ) );  //7
@@ -244,8 +247,8 @@ public class IntegrateMultiRunsForm extends Form {
     addParameter( new LoadFilePG( "Integrated Peaks File ", " ", false ) );  //10
     addParameter( 
       new BooleanPG( "Use Shoe Box (NOT max I/sigI)", false, false ) );  //11
-    addParameter( new IntArrayPG( "Box Delta x (col) range", "-2:2", false ) );  //12
-    addParameter( new IntArrayPG( "Box Delta y (row) range", "-2:2", false ) );  //13
+    addParameter( new IntArrayPG( "Box Delta x (col) Range", "-2:2", false ) );  //12
+    addParameter( new IntArrayPG( "Box Delta y (row) Range", "-2:2", false ) );  //13
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
