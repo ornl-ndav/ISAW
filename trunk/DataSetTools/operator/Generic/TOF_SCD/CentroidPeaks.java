@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/01/15 20:54:25  dennis
+ * Changed to use SegmentInfo, SegInfoListAttribute, etc.
+ *
  * Revision 1.7  2002/11/27 23:22:20  pfpeterson
  * standardized header
  *
@@ -154,14 +157,14 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
     int x;
     int y;
     Data spectrum;
-    DetInfoListAttribute detI;
-    DetectorInfo det;
+    SegInfoListAttribute segI;
+    SegmentInfo det;
     float[] intens;
     for( int i=0 ; i<data.getNum_entries() ; i++ ){
       spectrum=data.getData_entry(i);
-      detI=(DetInfoListAttribute)
-        spectrum.getAttribute(Attribute.DETECTOR_INFO_LIST);
-      det=((DetectorInfo[])detI.getValue())[0];
+      segI=(SegInfoListAttribute)
+        spectrum.getAttribute(Attribute.SEGMENT_INFO_LIST);
+      det=((SegmentInfo[])segI.getValue())[0];
       x=det.getColumn();
       y=det.getRow();
       intens=spectrum.getCopyOfY_values();
@@ -175,9 +178,9 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
     // be in agreement with the original software
     for( int i=0 ; i<data.getNum_entries() ; i++ ){
       spectrum=data.getData_entry(i);
-      detI=(DetInfoListAttribute)
-        spectrum.getAttribute(Attribute.DETECTOR_INFO_LIST);
-      det=((DetectorInfo[])detI.getValue())[0];
+      segI=(SegInfoListAttribute)
+        spectrum.getAttribute(Attribute.SEGMENT_INFO_LIST);
+      det=((SegmentInfo[])segI.getValue())[0];
       x=det.getColumn();
       y=det.getRow();
       intens=spectrum.getCopyOfY_values();

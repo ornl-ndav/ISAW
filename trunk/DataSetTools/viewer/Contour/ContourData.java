@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/01/15 20:54:27  dennis
+ *  Changed to use SegmentInfo, SegInfoListAttribute, etc.
+ *
  *  Revision 1.13  2002/11/27 23:24:29  pfpeterson
  *  standardized header
  *
@@ -50,13 +53,13 @@
  *     range.
  *
  *  Revision 1.9  2002/08/30 15:29:46  rmikk
- *    -If there is no  DetInfoListAttribute or if two groups have the same row or column,
- *      a phi,theta vs time countour plot is shown
+ *    -If there is no  DetInfoListAttribute or if two groups have the same 
+ *      row or column, a phi,theta vs time countour plot is shown
  *    -added units to the data
  *    -fixed errors in calculating intensities
  *    -Added code to take care of one row or one column cases
- *    -Gave a better estimate of the range of intensities caused by several groups or
- *     several channels being mapped to the same Contour "pixel".
+ *    -Gave a better estimate of the range of intensities caused by several 
+ *     groups or several channels being mapped to the same Contour "pixel".
  *
  *  Revision 1.8  2002/08/02 19:34:13  rmikk
  *  Semi Fix to replace XScale features
@@ -158,7 +161,8 @@ public class ContourData
       for( int i = 0; i < ds.getNum_entries(); i++ )
       {
          Data db = ds.getData_entry( i );
-         DetInfoListAttribute dl = ( DetInfoListAttribute )db.getAttribute( Attribute.DETECTOR_INFO_LIST );
+         SegInfoListAttribute dl = ( SegInfoListAttribute )
+                              db.getAttribute( Attribute.SEGMENT_INFO_LIST );
          
          if( dl == null )
            {ThetPhiData( ds, new thetaAxisHandler( ds), new phiAxisHandler( ds), 
@@ -167,7 +171,7 @@ public class ContourData
            }
          else
          {
-            DetectorInfo[] dll = ( DetectorInfo[] )dl.getValue();
+            SegmentInfo[] dll = ( SegmentInfo[] )dl.getValue();
 
             if( dll.length >= 1 )
             {
