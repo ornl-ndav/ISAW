@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/12/18 22:46:06  millermi
+ * - This file was involved in generalizing AxisInfo2D to
+ *   AxisInfo. This change was made so that the AxisInfo
+ *   class can be used for more than just 2D axes.
+ *
  * Revision 1.7  2003/12/15 00:33:52  rmikk
  * Now notifies the observers of a DataSet when the selected groups have changed
  *
@@ -135,11 +140,11 @@ public class RowColTimeVirtualArray extends
 
   //---------------- IVirtualArray2D Methods----------------
   /**
-   * Returns the attributes of the data array in a AxisInfo2D wrapper.
-   * This method will take in a boolean value to determine for which axis
-   * info is being retrieved for.    true = X axis, false = Y axis.
+   * Returns the attributes of the data array in a AxisInfo wrapper.
+   * This method will take in an integer to determine which axis
+   * info is being retrieved for.
    */
-  public AxisInfo2D getAxisInfoVA( boolean isX )
+  public AxisInfo getAxisInfo( int axis )
     {
      return null;
     }
@@ -147,22 +152,22 @@ public class RowColTimeVirtualArray extends
 
 
   /**
-   * Sets the attributes of the data array within a AxisInfo2D wrapper.
-   * This method will take in a boolean value to determine for which axis
-   * info is being altered.          true = X axis, false = Y axis.
+   * Sets the attributes of the data array within a AxisInfo wrapper.
+   * This method will take in an integer to determine which axis
+   * info is being altered.
    */
-  public void setAxisInfoVA( boolean isX, float min, float max,
-                              String label, String units, boolean islinear )
+  public void setAxisInfo( int axis, float min, float max,
+                           String label, String units, boolean islinear )
     {
     }
 
 
   /**
-   * Sets the attributes of the data array within a AxisInfo2D wrapper.
-   * This method will take in a boolean value to determine for which axis
-   * info is being altered.          true = X axis, false = Y axis.
+   * Sets the attributes of the data array within a AxisInfo wrapper.
+   * This method will take in an integer to determine which axis
+   * info is being altered.
    */
-  public void setAxisInfoVA( boolean isX, AxisInfo2D info )
+  public void setAxisInfo( int axis, AxisInfo info )
     {
     }
    

@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/12/18 22:46:06  millermi
+ * - This file was involved in generalizing AxisInfo2D to
+ *   AxisInfo. This change was made so that the AxisInfo
+ *   class can be used for more than just 2D axes.
+ *
  * Revision 1.6  2003/12/18 13:05:49  rmikk
  * Notifies observers of the data set that the selected data blocks have changed.
  *   This makes this view more interactive with the other views
@@ -414,7 +419,7 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
 
         /** 
           *  Not implemented.
-          *  @param the Title for this Virtual Arrau
+          *  @param the Title for this Virtual Array
           */
         public void setTitle(String Title) {}
 
@@ -426,42 +431,42 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
         }
 
         /**
-         * Returns the attributes of the data array in a AxisInfo2D wrapper.
-         * This method will take in a boolean value to determine for which axis
-         * info is being retrieved for.    true = X axis, false = Y axis.
+         * Gets the attributes of the data array within a AxisInfo wrapper.
+         * This method will take in an integer to determine which axis
+         * info is being returned.
          *
-         *  @param  isX - Use AxisInfo2D.XAXIS (true) or AxisInfo2D.YAXIS (false). 
+         *  @param  axis Use AxisInfo integer codes.
          *  @return the axis info for the axis specified.
          */
-        public AxisInfo2D getAxisInfoVA(boolean isX) {
+        public AxisInfo getAxisInfo( int axis ) {
             return null;
         }
   
  
        /**
-         * Sets the attributes of the data array within a AxisInfo2D wrapper.
-         * This method will take in a boolean value to determine for which axis
-         * info is being altered.	    true = X axis, false = Y axis.
+         * Sets the attributes of the data array within a AxisInfo wrapper.
+         * This method will take in an integer to determine which axis
+         * info is being altered.
          *
-         *  @param  isX - Use AxisInfo2D.XAXIS (true) or AxisInfo2D.YAXIS (false).
-         *  @param  min - Minimum value for this axis.
-         *  @param  max - Maximum value for this axis.
-         *  @param  label - label associated with the axis.
-         *  @param  units - units associated with the values for this axis.
-         *  @param  islinear - is axis linear (true) or logarithmic (false)
+         *  @param  axis Use AxisInfo integer codes.
+         *  @param  min Minimum value for this axis.
+         *  @param  max Maximum value for this axis.
+         *  @param  label label associated with the axis.
+         *  @param  units units associated with the values for this axis.
+         *  @param  islinear Is axis linear (true) or logarithmic (false)
          */
-        public void setAxisInfoVA(boolean isX, float min, float max,
+        public void setAxisInfo(int axis, float min, float max,
             String label, String units, boolean islinear) {} 
   
         /**
-         * Sets the attributes of the data array within a AxisInfo2D wrapper.
-         * This method will take in a boolean value to determine for which axis
-         * info is being altered.	    true = X axis, false = Y axis.
-         * 
-         *  @param  isX - Use AxisInfo2D.XAXIS (true) or AxisInfo2D.YAXIS (false).
+         * Sets the attributes of the data array within a AxisInfo wrapper.
+         * This method will take in an integer to determine which axis
+         * info is being altered.
+         *
+         *  @param  axis Use AxisInfo.X_AXIS (0) or AxisInfo.Y_AXIS (1).
          *  @param  info - The axis info object associated with the axis specified.
          */
-        public void setAxisInfoVA(boolean isX, AxisInfo2D info) {}
+        public void setAxisInfo(int axis, AxisInfo info) {}
   
         /*
          ***************************************************************************
