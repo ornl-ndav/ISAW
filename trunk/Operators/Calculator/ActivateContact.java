@@ -156,7 +156,7 @@ public class ActivateContact extends GenericCalculator
 	    rs="no activation";
 	}
 
-	rs=rs+" ["+material.toString()+"]";
+	//rs=rs+" ["+material.toString()+"]";
 	return rs;
   }
 
