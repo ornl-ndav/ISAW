@@ -30,7 +30,14 @@
  *
  *
  * $Log$
+ * Revision 1.18  2005/02/07 23:02:05  dennis
+ * Replaced highly inefficient sequence that cloned a DataSet
+ * then removed all data entries with single call to get an
+ * empty clone of the DataSet.  This occurred in a method
+ * that is not currently used.
+ *
  * Revision 1.17  2004/07/15 14:38:15  kramer
+ *
  * Now when the user highlights a group of DataMutableTreeNodes, right clicks,
  * and selects clear, only the highlighted nodes are cleared, not the entire
  * tree.
@@ -832,13 +839,11 @@ public class JDataTreeRingmaster
     DataSet[] new_dss = new DataSet[ old_dss.size() ];
     for( int i=0;  i<new_dss.length;  i++ )
     {
-                              //make a copy of the DataSet object
+                              //make an empty clone of the DataSet object
                               //that these Data objects came from
                               //to make sure we get the right units
       DataSet ds = (DataSet)old_dss.get(i);
-      new_dss[i] = (DataSet)ds.clone();
-
-      new_dss[i].removeAll_data_entries();
+      new_dss[i] = (DataSet)ds.empty_clone();
       new_dss[i].clearSelections();
 
                               //add Data objects to the appropriate
@@ -853,4 +858,5 @@ public class JDataTreeRingmaster
 
     return new_dss;
   }
+
 }
