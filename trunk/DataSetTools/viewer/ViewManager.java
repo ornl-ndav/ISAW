@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2003/09/11 17:22:41  rmikk
+ *  Added a constructor that takes the ViewerState
+ *  Extracted code to return a DataSetViewer given a DataSet,
+ *     View Name and ViewerStata
+ *
  *  Revision 1.35  2003/08/08 17:54:10  dennis
  *  Added option to change to New Selected Graph (Brent's) view.
  *
@@ -181,7 +186,7 @@ public class ViewManager extends    JFrame
    private static final String SHOW_ALL             = "Show All";
    private static final String LINK_VIEWS           = "Link Views";
    private static final String NO_CONVERSION_OP     = "None";
-   private TableViewMenuComponents table_MenuComp   = null;
+   private static TableViewMenuComponents table_MenuComp   = null;
     
    /**  
     *  Accepts a DataSet and view type and creates an instance of a 
@@ -197,7 +202,24 @@ public class ViewManager extends    JFrame
     *  @see DataSet
     */
    public ViewManager(DataSet ds, String view_type )
-   {
+   {  this( ds,view_type, null);
+    }
+
+   /**  
+    *  Accepts a DataSet and view type and creates an instance of a 
+    *  ViewManager for the data set.  
+    *
+    *  @param  ds        The DataSet to be viewed
+    *  @param  view_type String describing the initial type of viewer to be 
+    *                    used.  The valid strings are listed in the interface,
+    *                    IViewManager
+    *  @param   ViewerState The viewer state
+    * 
+    *  @see IViewManager
+    *  @see DataSetViewer
+    *  @see DataSet
+    */  
+   public ViewManager(DataSet ds, String view_type, ViewerState state ){
       super( ds.toString() );
       view_manager = this;
       setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -218,6 +240,7 @@ public class ViewManager extends    JFrame
 
       setBounds(0,0,600,425);
       makeTempDataSet( true );
+      this.state = state;
       setView( view_type ); 
       show();
   //  setVisible(true);
@@ -280,8 +303,27 @@ public class ViewManager extends    JFrame
      if ( viewer != null )
          state = viewer.getState();
 
-      viewer = null;
-      viewType = view_type;
+      viewer = ViewManager.getDataSetView( tempDataSet,view_type, state);
+      if( viewer instanceof ImageView)
+          viewType = IMAGE;
+      else 
+          viewType = view_type;
+      getContentPane().add(viewer);
+      getContentPane().setVisible(true);
+
+      setJMenuBar( viewer.getMenuBar() );
+      BuildFileMenu();
+      BuildEditMenu();
+      BuildViewMenu();
+      BuildConversionsMenu();
+      BuildOptionMenu();
+      System.gc();
+   }
+
+   public static DataSetViewer getDataSetView( DataSet tempDataSet, String view_type,
+            ViewerState state){
+      DataSetViewer viewer = null;
+      
       if ( view_type.equals( IMAGE ))
         viewer = new ImageView( tempDataSet, state );
       else if ( view_type.equals( SCROLLED_GRAPHS ))
@@ -312,19 +354,10 @@ public class ViewManager extends    JFrame
            System.out.println( "      " + view_type );
            System.out.println( "using " + IMAGE + " by default" );
            viewer = new ImageView( tempDataSet, state );
-           viewType = IMAGE;
+           
         }
       }
-      getContentPane().add(viewer);
-      getContentPane().setVisible(true);
-
-      setJMenuBar( viewer.getMenuBar() );
-      BuildFileMenu();
-      BuildEditMenu();
-      BuildViewMenu();
-      BuildConversionsMenu();
-      BuildOptionMenu();
-      System.gc();
+      return viewer;
    }
 
   /**
