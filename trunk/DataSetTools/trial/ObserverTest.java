@@ -53,7 +53,7 @@ public class ObserverTest extends    JFrame
     System.out.println( command );
     DataSet ds;
 
-    if ( command == "Load" )
+    if ( command.equals( "Load" ) )
     {
       System.out.println("Should load");
       RunfileRetriever rr = new RunfileRetriever(
@@ -67,7 +67,7 @@ public class ObserverTest extends    JFrame
 //      view_man = null;
     } 
 
-    if ( command == "Modify" )
+    if ( command.equals( "Modify" ))
     {
       ds = view_man.getDataSet();
       System.out.println("Should modify");
@@ -77,7 +77,7 @@ public class ObserverTest extends    JFrame
       ds.notifyIObservers( IObserver.DATA_REORDERED );
    }
 
-    if ( command == "Test" )
+    if ( command.equals( "Test" ))
     {
       System.out.println("Loop to repeatedly create/destroy DataSet");
       DataSet new_ds;
@@ -97,7 +97,7 @@ public class ObserverTest extends    JFrame
       }
     }
 
-    if ( command == "Delete" )
+    if ( command.equals( "Delete" ))
     {
       System.out.println("Should delete");
 //      view_man.destroy(); 
