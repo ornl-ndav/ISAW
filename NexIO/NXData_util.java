@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2003/10/22 20:38:36  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.18  2003/10/19 19:59:20  rmikk
  * Added documentation
  * Converted the x values to micro seconds
@@ -212,8 +215,8 @@ public class NXData_util{
 
   /**
    * Gets the index-th element of an array X( if possible) or 0.
-   *  @parameter  X  some Object
-   *  @parameter  index  the position in X( could be an array or Vector )
+   *  @param  X  some Object
+   *  @param  index  the position in X( could be an array or Vector )
    *  @return  the ith element of X converted to a float or Float.NaN
    */
   public static float getfloatEntry( Object X, int index ){
