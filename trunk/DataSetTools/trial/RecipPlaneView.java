@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2004/03/03 23:13:16  dennis
+ * Added experimental method to calculate threshold levels in terms of
+ * the median value on time slices.  Not currently used.
+ *
  * Revision 1.17  2004/01/05 23:33:10  dennis
  * Now checks if value returned by VecQToTOF.intensityAtQ() is >= 0
  * since now -1 is returned instead of 0, to indicate that the Q vector
@@ -655,6 +659,8 @@ public class RecipPlaneView
       VecQToTOF transformer = (VecQToTOF)vec_q_transformer.elementAt(index);
       IDataGrid grid = transformer.getDataGrid();
       d = grid.getData_entry(1,1);
+
+      float base_levels[] = getBaseLevels( grid, 5 );
  
       SampleOrientation orientation = null;
       attr = d.getAttribute(Attribute.SAMPLE_ORIENTATION);
@@ -702,6 +708,7 @@ public class RecipPlaneView
           ys    = d.getY_values();
           for ( int j = 0; j < ys.length; j++ )
           {
+//            if ( ys[j] > (thresh_scale / 10) * base_levels[j] )
             if ( ys[j] > thresh_scale )
             {
               t = (times[j] + times[j+1]) / 2;     // shift by calibrated T)
@@ -763,6 +770,69 @@ public class RecipPlaneView
       return non_zero_objs;
   }
 
+
+  /* ---------------------- getBaseLevels -------------------------- */
+  
+  private float[] getBaseLevels( IDataGrid grid, int width )
+  {
+    width = 10;
+    int border = 10;
+
+    if ( width > grid.num_rows()/2 - 2 )
+      width = grid.num_rows()/2 - 2;
+
+    if ( width > grid.num_cols()/2 - 2 )
+      width = grid.num_cols()/2 - 2;
+
+    Data d = grid.getData_entry(1,1);
+    if ( d == null )
+      return null;
+
+    int   n_bins   = d.getY_values().length;
+    int   n_rows   = grid.num_rows();
+    int   n_cols   = grid.num_cols();
+    float levels[] = new float[ n_bins ]; 
+                                             // use median of values along a
+                                             // horizontal and vertical cut
+                                             // through the detector center
+    float sort_list[] = new float[ n_rows + n_cols ];
+    int offset;
+    for ( int i = 0; i < n_bins; i++ )
+    { 
+      for ( int row = 1 + border; row < grid.num_rows() - border; row++ )
+      {
+        sort_list[row-1] = 0; 
+        for ( int w = -width; w <= width; w++ )
+          sort_list[row-1] += 
+                     grid.getData_entry( row, n_cols/2 + w ).getY_values()[i];
+      }
+
+      offset = grid.num_rows() - 1;
+      for ( int col = 1 + border; col < grid.num_cols() - border; col++ )
+      {
+        sort_list[ col + offset ] = 0;
+        for ( int w = -width; w <= width; w++ )
+          sort_list[ col + offset ] += 
+                   grid.getData_entry( n_rows/2 + w, col ).getY_values()[i];
+      }
+
+      java.util.Arrays.sort( sort_list );
+/*
+      if ( i == 10 )
+      {
+        System.out.println("sort list = " );
+        for ( int k = 0; k < sort_list.length; k++ )
+          System.out.print( " " + sort_list[k] );
+        System.out.println("END sort list = " );
+      }
+*/      
+      levels[i] = sort_list[ sort_list.length/2 ] / (2*width + 1);
+      levels[i] = levels[i] + 5*(float)Math.sqrt( levels[i] );
+//    System.out.print( " "+levels[i] );
+    }
+
+    return levels;
+  }
 
   /* ---------------------- get_data_objects ----------------------- */
 
