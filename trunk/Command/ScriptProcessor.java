@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.48  2003/06/10 14:57:22  bouzekc
+ * Fixed NullPointerException when DataType is "INTLIST."
+ *
  * Revision 1.47  2003/06/09 22:28:45  rmikk
  * Incorporated the ParameterList into the data types checked in scripts
  *
@@ -1007,7 +1010,11 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       */
       addParameter(new SaveFilePG(Prompt,InitValue));
     }else if( DataType.equals( "INTLIST" )){
-       addParameter( new IntArrayPG( Prompt, InitValue.trim() ));
+       if(InitValue != null)
+         addParameter( new IntArrayPG( Prompt, InitValue.trim() ));
+       else
+         addParameter( new IntArrayPG( Prompt, InitValue ));
+
 
     }else if (DataType.equals( "DSFIELDSTRING")){
       if( InitValue == null )
