@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/10/11 20:29:32  bouzekc
+ * Removed import of java.lang.  This is not needed and can
+ * sometimes cause problems.
+ *
  * Revision 1.13  2003/10/11 19:30:56  bouzekc
  * Removed definition of clone() as the superclass implements it using
  * reflection.  Moved Qbins1PG out to a package-level access class
@@ -88,7 +92,6 @@ package DataSetTools.parameter;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import java.lang.*;
 import java.beans.*;
 import DataSetTools.components.ParametersGUI.*;
 import java.util.*;
