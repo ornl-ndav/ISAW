@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2003/03/21 20:13:52  pfpeterson
+ * Fixed a memory leak with the operator keeping a reference to the
+ * dataset and monitor.
+ *
  * Revision 1.8  2003/02/18 20:21:01  dennis
  * Switched to use SampleOrientation attribute instead of separate
  * phi, chi and omega values.
@@ -313,6 +317,10 @@ public class WriteExp extends GenericTOF_SCD{
     }catch(IOException e){
       return new ErrorString("IOException: "+e.getMessage());
     }
+
+    // release the DataSets
+    this.ds=null;
+    this.mon=null;
 
     return filename;
   }
