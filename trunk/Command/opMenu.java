@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2003/06/02 22:31:35  rmikk
+ * -Eliminated adding IObservers to an operator.  This is
+ *  done in the JParametersDialog
+ *
  * Revision 1.25  2003/05/28 18:53:46  pfpeterson
  * Changed System.getProperty to SharedData.getProperty
  *
@@ -229,14 +233,14 @@ public class opMenu extends JMenu{
             if( opnum >=0 ){
                 Operator opn = op.getOperator( opnum );  
                  
-                if( opn instanceof IObservable)
-                    if( iobs != null)
-                        ((IObservable)opn).addIObserver( iobs );
+               // if( opn instanceof IObservable)
+                //    if( iobs != null)
+                       // ((IObservable)opn).addIObserver( iobs );
                 JParametersDialog JP = new JParametersDialog( opn, DS, logdoc, 
                                                               iobs,false);
-                if( opn instanceof IObservable)
-                    if( iobs != null)
-                        ((IObservable)opn).deleteIObserver( iobs );
+               // if( opn instanceof IObservable)
+                    //if( iobs != null)
+                       // ((IObservable)opn).deleteIObserver( iobs );
             }
             
         }
