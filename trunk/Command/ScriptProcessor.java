@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2001/08/01 19:12:54  rmikk
+ * Fixed Array parameter handling
+ *
  * Revision 1.8  2001/07/03 22:14:58  rmikk
  * Added Code that will eliminate the "UNKOWN" at the
  * top of the JParameterDialog box.
@@ -370,7 +373,7 @@ public class ScriptProcessor  extends GenericOperator
      { int line ;
       
        String S ; 
-     
+      
       if( Doc == null)
          { seterror (0 , "No Document");
            if( Debug)System.out.println("NO DOCUMENT");
@@ -384,7 +387,7 @@ public class ScriptProcessor  extends GenericOperator
        while ( ( line < E.getElementCount() ) && ( perror < 0 ) )
 	   {
            S = getLine( Doc , line );
-           
+          
            
            if( S !=  null )
                { 
@@ -1476,6 +1479,10 @@ public Object getResult()
               ExecLine.addParameterDataSet( ds , (String)vnames.elementAt(i));
               
             }
+          else if( getParameter(i).getValue() instanceof Vector)
+            {Vector V = (Vector)( getParameter(i).getValue());
+              ExecLine.Assign((String)(vnames.elementAt(i)) , V );
+            }
           else
             {S =  (String)vnames.elementAt(i)+ "=" ;
              if( (getParameter( i ).getValue() instanceof String) ||
@@ -1487,6 +1494,7 @@ public Object getResult()
             
              int j = ExecLine.execute ( S , 0 , S.length());
              perror =ExecLine.getErrorCharPos() ;
+             
              if( perror >= 0 )
                 serror = ExecLine.getErrorMessage()+" in Parameters " + S;
              if( perror >= 0)
