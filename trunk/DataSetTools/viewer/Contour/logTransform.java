@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/08/11 22:11:32  rmikk
+ *  Improves the color response to match the other views better.
+ *
  *  Revision 1.6  2002/11/27 23:24:30  pfpeterson
  *  standardized header
  *
@@ -71,6 +74,7 @@ public class logTransform  implements Transform
     double pstart,pend,ustart,uend;
     double pstart0,pend0,ustart0,uend0;
     float intensity;
+    double mu,bu,mp,bp;
     double a,b,K;
     int sgn;
    /** Transforms [ustart,uend] to [pstart, pend] as follows:<P>
@@ -89,7 +93,7 @@ public class logTransform  implements Transform
       uend0=uend;
      
      setIntensity( intensity);
-     calc();
+      
     // System.out.println("in logTransform "+pstart+","+pend+","+ustart+","+uend);
 
 
@@ -99,18 +103,11 @@ public class logTransform  implements Transform
    */
    public void setIntensity( int intensity)
      { if( intensity <0)
-        this.intensity = 1.f;
+        this.intensity = 0;
        if( intensity > 100)
-        this.intensity = .001f;
-       else
-         this.intensity = (float)(1.- .00999*intensity);
-       float x = (this.intensity -.001f)/(.999f);
-       x = x*x*x;
-      
-       this.intensity = x +.001f;
-       //if( intensity < 50) sgn = -1;
-      //else sgn =1;
-       sgn = 1;
+          intensity = 100;
+ 
+       this.intensity = intensity;
        calc();
      }
    /** Sets the physical range
@@ -119,14 +116,16 @@ public class logTransform  implements Transform
                       double p2)
     {pstart =p1;
      pend = p2;
-     calc();
+
+       calc();
     }
   /** Sets the physical range
    */
     public void setRangeP(Range2D prange)
     {pstart =prange.start;
      pend = prange.end;
-     calc();
+
+       calc();
     }
 
    /** Gets the physical range
@@ -141,8 +140,8 @@ public class logTransform  implements Transform
                       double u2)
     {ustart=u1;
      uend= u2;
-     System.out.println("AIn set U range uend="+uend);
-     calc();
+
+       calc();
      }
 
    /** Sets the user range
@@ -150,7 +149,8 @@ public class logTransform  implements Transform
    public void setRangeU(Range2D urange)
     {ustart = urange.start;
      uend = urange.end;
-   //System.out.println("BIn set U range uend="+uend);
+
+       calc();
      }
 
    /** Gets the physical range
@@ -164,13 +164,21 @@ public class logTransform  implements Transform
   */
 
    public double getTransP(double u)
-     {if( u < ustart0) 
-         return pstart0;
-      if( u > uend0) 
-        {//System.out.println( "log u, uend="+u+","+uend);
-         return pend0;
+     {if( u < ustart) 
+         return pstart;
+      if( u > uend) 
+        {
+         return pend;
         }
-      return a*Math.log( u + b ) + K;
+        double x = bu+ mu*(u-ustart);
+        double y = a*Math.log( x+ b)/Math.log(10)+K;
+        //System.out.println("xy="+x+","+y+","+a+","+K);
+        if( y >=100)
+          return pend;
+        if( y <=0)
+          return pstart;
+        
+      return (y-bp)/mp;
 	
       }
 
@@ -179,25 +187,32 @@ public class logTransform  implements Transform
   */
 
    public double getTransU(double p)
-      { if( a == 0)
+      { 
+        if( p < pstart)
          return ustart;
-        if( p< pstart0) return ustart0;
-        if( p > pend0) return uend0;
-        return Math.exp( (p - K)/a)- b;
+        if( p>pend)
+          return uend;
+        double y = mp*p+bp;
+        double x= Math.pow(10.0,(y-K)/a) -b;
+        double u = (x-bu)/mu +ustart;
+        if( u<ustart)
+          return ustart;
+        if( u > uend)
+          return uend;
+        return u;
        }
 
    private void calc()
-    { if( ustart == uend)
-       { K=  ustart;
-         a = 0;
-         b = ustart+1;
-         return;
-       
-        }
-      b =intensity-Math.min(sgn*ustart,sgn*uend);
-      a = (pend-pstart)/(Math.log(sgn*uend + b)-Math.log(sgn*ustart + b));
-      K = pstart - a*Math.log( sgn*ustart + b);
-       
+    { 
+      mu = 99.9/(uend-ustart);
+      bu =.1f;
+      mp = 100/(pend-pstart);
+      bp=0;
+      float u = (1 - intensity/100);
+      u = u*u*u;
+       a = 30+ 70*u;
+       b = 0 ;
+       K = 37-137*u;
      }
 
    /** Unused
@@ -212,7 +227,8 @@ public class logTransform  implements Transform
 
     public static void main( String[] args )
    { System.out.println("Here");
-     logTransform lt = new logTransform( 0.,199., 0., 356., 50);
+     logTransform lt = new logTransform( 0.,100., .1, 100., 
+                    ( new Integer(args[0])).intValue());
       logTransform lt1=new logTransform( 0.,10., 20., 50., 0);
      logTransform lt2=new logTransform( 0.,10., 20., 50., 100);
    /*  for( int i=0; i<50; i++)
@@ -223,7 +239,8 @@ public class logTransform  implements Transform
                   lt1.getTransU(lt1.getTransP(f)));
       }
    */
-    double f = (new Double( args[0])).doubleValue();
-    System.out.println( lt.getTransP(f));
+    //double f = (new Double( args[0])).doubleValue();
+   for( double x = .1; x<100; x+=10)
+      System.out.println( x+"  "+lt.getTransP(x));
    }	
    }
