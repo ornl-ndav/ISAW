@@ -19,6 +19,7 @@ $Delta       Float(.20)       Deltas
 $peakfilename    SaveFileString("NONE")   Filename to save peak to
 $logfile    Boolean(true)   Show log info 
 
+$ CATEGORY = operator,Instrument Type, TOF_NSCD
 V = JIndex(peaks,OrientMat,RestrRuns, Delta,Delta,Delta)
 Display "A"&peakfilename
 if peakfilename <>"NONE"
