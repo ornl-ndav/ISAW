@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2002/06/03 14:23:00  dennis
+ *  Now sets the errors to sqrt(counts) when recieving a DataSet, since the
+ *  errors are not set by the LiveDataServer.
+ *
  *  Revision 1.19  2001/10/17 18:35:21  dennis
  *  Now recalculates the Total Count attribute for each spectrum, as the
  *  DataSet is received, since the attributes were originally read from the
@@ -259,10 +263,13 @@ public class LiveDataRetriever extends    RemoteDataRetriever
     if ( obj != null && obj instanceof DataSet )
     {
       DataSet ds = (DataSet)obj;
+      TabulatedData d;
                                           // fix the total counts attributes
+                                          // and error arrays
       for ( int i = 0; i < ds.getNum_entries(); i++ )
       {
-        Data d = ds.getData_entry(i);
+        d = (TabulatedData)ds.getData_entry(i);
+        d.setSqrtErrors(); 
         float y[] = d.getY_values();
         float total = 0;
         for ( int j = 0; j < y.length; j++ )
