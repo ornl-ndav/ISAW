@@ -14,12 +14,12 @@ Yoff =0.00008747
 #======================================================================
 #======================================================================
 
-Input_Path ="/IPNShome/sasi/data/"
-Output_Path ="/IPNShome/sasi/GeorgeUser/"
+#Input_Path ="/IPNShome/sasi/data/"
+#Output_Path ="/IPNShome/sasi/GeorgeUser/"
 
 
-#Input_Path ="c:/sasi/"
-#Output_Path ="c:/sasi/"
+Input_Path ="c:/sasi/"
+Output_Path ="c:/sasi/"
 
 # Sample thickness in cm:
 ThickA = [0.1]
@@ -159,6 +159,10 @@ for i in [0:2]
     Print4Col2D1Chan( Res[i], Output_Path&GetField(Res[i], "Title")&".dat")
   endif
 endfor
+if do_2D == true
+    ss = SWV(Output_Path&GetField(Res[2], "Title")&".dat")
+  endif
+
 Echo("Finished REDUCE and written files: "  )
 Echo (Output_Path&GetField(Res[0], "Title") )
 Echo (Output_Path&GetField(Res[1], "Title") )
@@ -170,3 +174,4 @@ endfor
 
 Display "Finished"
 Return "Finished"
+
