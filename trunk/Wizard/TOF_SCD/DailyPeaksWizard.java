@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2003/07/16 16:29:00  bouzekc
+ * Now uses the base class's wizardLoader().
+ *
  * Revision 1.8  2003/07/14 15:34:29  bouzekc
  * Removed link to IntegrateMultiRunsForm's run numbers
  * parameter.
@@ -125,17 +128,7 @@ public class DailyPeaksWizard extends Wizard {
    */
   public static void main( String[] args ) {
     DailyPeaksWizard w = new DailyPeaksWizard( true );
-
-    //specified a --nogui switch but forgot to give a filename
-    if( args.length == 1 ) {
-      System.out.println( 
-        "USAGE: java Wizard.TOF_SCD.DailyPeaksWizard " +
-        "[--nogui] <Wizard Save File>" );
-    } else if( args.length == 2 ) {
-      w.executeNoGUI( args[1] );
-    } else {
-      w.showForm( 0 );
-    }
+    w.wizardLoader( args );
   }
 
   /**
