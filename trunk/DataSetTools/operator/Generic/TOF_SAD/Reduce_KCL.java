@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/09/18 15:55:35  rmikk
+ * -Added a parameter useTransB to the END of the argument list
+ *
  * Revision 1.11  2003/09/11 19:52:18  rmikk
  * Added GetField to the new DataSets
  *
@@ -112,6 +115,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     DataSet[] RUNBds = new DataSet[2];
     DataSet[]RUNCds = new DataSet[2];;
     DataSet[]RUNSds = new DataSet[2];
+    boolean useTransB;
     public String INSTR;
     public String INAME;
     String str1;
@@ -277,7 +281,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         Vector qu, DataSet RUNSds0, DataSet RUNSds1, DataSet RUNBds0, 
         DataSet RUNBds1,DataSet RUNCds0,DataSet RUNCds1, float BETADN, 
         float SCALE, float THICK,
-        float XOFF, float YOFF, int NQxBins, int NQyBins) {
+        float XOFF, float YOFF, int NQxBins, int NQyBins, boolean useTransB) {
         
         super( "Reduce");
         parameters = new Vector();
@@ -299,6 +303,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         addParameter( new Parameter("", new Float(YOFF)));
         addParameter( new Parameter("", new Integer(NQxBins)));
         addParameter( new Parameter("", new Integer(NQyBins)));
+        addParameter( new Parameter("", new Boolean( useTransB)));
+
       }
 
     public void setDefaultParameters(){
@@ -323,7 +329,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         addParameter( new FloatPG("X offset of beam in m", new Float(0)));
         addParameter( new FloatPG("Y offset of beam in m", new Float(0)));
         addParameter( new IntegerPG("# Qx bins", new Integer(-1)));
-        addParameter( new Parameter("#Qy bins", new Integer(-1)));
+        addParameter( new IntegerPG("#Qy bins", new Integer(-1)));
+        addParameter( new BooleanPG("", new Boolean( true)));
 
     }
   /* ---------------------------- getResult ------------------------------- */
@@ -354,7 +361,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         float XOFF=((Float)(getParameter(14).getValue())).floatValue();
         float YOFF=((Float)(getParameter(15).getValue())).floatValue();
         int NQxBins=((Integer)(getParameter(16).getValue())).intValue();
-         int NQyBins=((Integer)(getParameter(17).getValue())).intValue();
+        int NQyBins=((Integer)(getParameter(17).getValue())).intValue();
+        useTransB =((Boolean)(getParameter(18).getValue())).booleanValue();
         this.SCALE = SCALE;
         this.XOFF = XOFF;
         this.YOFF = YOFF;
@@ -564,9 +572,9 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         Grid_util.setEffectivePositions(RUNBds[1], BackGrid.ID());
         ZeroSens( SensGrid,SampGrid);
         ErrorString X = CalcRatios( SampGrid,CadGrid,TransS,RUNSds[0],
-               RUNCds[0], SensGrid, Eff, SCALE);
+               RUNCds[0], SensGrid, Eff, SCALE, true);
         X = CalcRatios( BackGrid,CadGrid,TransB,
-               RUNBds[0],RUNCds[0], SensGrid, Eff,SCALE);
+               RUNBds[0],RUNCds[0], SensGrid, Eff,SCALE, useTransB);
         Object Res = null;
 
         
@@ -872,7 +880,7 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
                 Eff[0], Sens[0],toVec(qu), RUNSds[0], RUNSds[1], 
 		RUNBds[0],RUNBds[1], RUNCds[0],RUNCds[1], BETADN, SCALE, .1f,
                 //     0f,0f);
-                .000725f, .006909f, -200, -200);
+                .000725f, .006909f, -200, -200, true);
         Object O = Reduce_KCL.getResult();
 //new float[]{-.5f,.5f,-.5f,.5f}
         System.out.println("Finished O=" + O);
@@ -990,13 +998,20 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
  //  Calcs   (S/Ms-C/Mc)/Ts  with errs for That/sens/eff
  private ErrorString CalcRatios( IDataGrid SampGr, IDataGrid CadmiumGr, 
            DataSet Transm, DataSet SampMon, DataSet CadmMon, IDataGrid SensGr,
-           DataSet Eff, float SCALE){
+           DataSet Eff, float SCALE, boolean useTransmission){
      float[] sampy,samperr,Cadmy,Cadmerr;
-     float[] Transmy = Transm.getData_entry(0).getY_values();
+  
+     float[] Transmy ;
+     if( useTransmission)
+        Transmy= Transm.getData_entry(0).getY_values();
+     else
+        Transmy = null;
      float[] SampMony = SampMon.getData_entry(MonitorInd[0]).getY_values();
      float[]  CadmMony =  CadmMon.getData_entry(MonitorInd[0]).getY_values();
      float[]  Effy = Eff.getData_entry(0).getY_values();
-     float[] Transmerr = Transm.getData_entry(0).getErrors();
+     float[] Transmerr=null;
+     if( useTransmission)
+         Transmerr = Transm.getData_entry(0).getErrors();
      float[] SampMonerr = SampMon.getData_entry(MonitorInd[0]).getErrors();
      float[]  CadmMonerr =  CadmMon.getData_entry(MonitorInd[0]).getErrors();
      float[]  Efferr = Eff.getData_entry(0).getErrors();
@@ -1026,8 +1041,10 @@ public  Object show( float Qxmin,float Qymin,float Dx, float Dy, int Nx, int Ny,
            
             Num = sampy[i]/SampMony[i] -Cadmy[i]/CadmMony[i]; 
             sampy[i] = Num;
-            samperr[i] = quoErr( sampy[i], err3,Transmy[i],Transmerr[i]);
-            sampy[i] =sampy[i]/Transmy[i];
+            if( useTransmission){
+              samperr[i] = quoErr( sampy[i], err3,Transmy[i],Transmerr[i]);
+               sampy[i] =sampy[i]/Transmy[i];
+            }
             
             samperr[i]= quoErr( sampy[i],samperr[i], sens*Effy[i],
                      prodErr( sens, senserr, Effy[i], Efferr[i]));
