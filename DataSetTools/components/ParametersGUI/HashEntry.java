@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/05/09 18:35:06  bouzekc
+ *  Changed javadocs at beginning of class to describe what this class
+ *  actually does.
+ *
  *  Revision 1.7  2004/05/09 18:32:11  bouzekc
  *  Added check for null selected value.
  *
@@ -76,10 +80,8 @@ import javax.swing.*;
 
 
 /**
- * This class is intended to be used as a replacement for JTextField whan a
- * integer value is to be entered. The major difference is an overridden
- * insertString method which beeps when something that isn't found in an
- * integer is entered.
+ * This class is intended to be used as a replacement for JComboBox.  It allows only
+ * unique values.
  */
 public class HashEntry extends JComboBox implements PropertyChanger {
   //~ Static fields/initializers ***********************************************
