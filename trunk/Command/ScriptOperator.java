@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2003/05/28 18:53:45  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.22  2003/03/25 22:49:13  pfpeterson
  * Added a EOL when printing the return of getResult in main.
  *
@@ -448,24 +451,6 @@ public class ScriptOperator extends GenericOperator
      */
     public static void main( String args [] ){
         DataSetTools.util.SharedData sd = new DataSetTools.util.SharedData();
-     
-        /*java.util.Properties isawProp;
-          isawProp = new java.util.Properties(System.getProperties());
-          String path = System.getProperty("user.home")+"\\";
-          path = StringUtil.fixSeparator(path);
-          try {
-          FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
-          isawProp.load( input );
-	  
-          System.setProperties(isawProp);  
-          //    System.getProperties().list(System.out);
-          input.close();
-          }
-          catch (IOException ex) {
-          System.out.println("Properties file could not be loaded due"
-          +" to error :" +ex);
-          }
-        */
 
         if( args == null)
             System.exit( 0 );

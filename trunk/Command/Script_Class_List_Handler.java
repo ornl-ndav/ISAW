@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.40  2003/05/28 18:53:46  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.39  2003/04/25 22:15:38  pfpeterson
  * Made changes to improve readability, removed some redundant checks,
  * and 'synchronized inittt()' to make the class more thread-safe. When
@@ -334,12 +337,12 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         // get the pathlist
         if(pathlist==null){
           String mypathlist=null;
-          mypathlist = System.getProperty("java.class.path");
+          mypathlist = SharedData.getProperty("java.class.path");
           mypathlist=FilenameUtil.setForwardSlash(mypathlist);
           mypathlist=mypathlist.replace(File.pathSeparatorChar,';');
           
           // get the location of ISAW
-          String ScrPath=System.getProperty("ISAW_HOME");
+          String ScrPath=SharedData.getProperty("ISAW_HOME");
           if(ScrPath!=null){
             ScrPath=ScrPath+"/";
             ScrPath=FilenameUtil.setForwardSlash(ScrPath);
@@ -625,7 +628,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         
         Vector includeVec = new Vector();
         // add $HOME/ISAW to the path
-        String ScrPaths2 = System.getProperty( "user.home" );
+        String ScrPaths2 = SharedData.getProperty( "user.home" );
         //String ScrPaths2 = "/IPNShome/hammonds";
         if( ScrPaths2 != null ){
             //System.out.print("**********\n"+"USER_HOME:");
@@ -634,19 +637,19 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         int g = 0;
         
         // add the different GROUP#_HOMEs to the path
-        String ScrPaths1 = System.getProperty( "GROUP_HOME" );
+        String ScrPaths1 = SharedData.getProperty( "GROUP_HOME" );
         while(ScrPaths1 != null){
             //System.out.print("**********\n"+"GROUP"+g+"_HOME:");
             includeVec=addDir(ScrPaths1,includeVec);
             g++;
             String suff=""+g;
             suff=suff.trim();
-            ScrPaths1 = System.getProperty( "GROUP"+suff+"_HOME" );
+            ScrPaths1 = SharedData.getProperty( "GROUP"+suff+"_HOME" );
         }
         
         
         // add where ISAW lives to the path
-        String ScrPaths = System.getProperty( "ISAW_HOME" );
+        String ScrPaths = SharedData.getProperty( "ISAW_HOME" );
         if( ScrPaths != null ){
             //System.out.print("**********\n"+"ISAW_HOME:");
             includeVec=addDir(ScrPaths,includeVec);

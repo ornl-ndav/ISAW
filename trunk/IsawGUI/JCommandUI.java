@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.19  2003/05/28 18:58:20  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.18  2003/03/07 21:17:11  dennis
  * Now really destroys the LiveDataMonitor when the Exit button
  * is pressed, rather than just setting the reference to it
@@ -97,7 +100,7 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
         setLayout(new GridLayout(1,1));
         root = new DefaultMutableTreeNode("TreeLog");
         model = new DefaultTreeModel(root);
-        String server_name = System.getProperty("Inst1_Path");
+        String server_name = SharedData.getProperty("Inst1_Path");
         dtm = new DefaultTableModel();
         table = new JTable(dtm);
         logTree = new JTree(model);
@@ -118,22 +121,24 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
        "Total JVM Memory in bytes = "+ rt.totalMemory() + "\n" +
        "Free JVM Memory in bytes = "+ rt.freeMemory() + "\n" +
        "\n" +
-       "Java Version = "+ System.getProperty("java.version") + "\n" +
-       "Java Vendor = "+ System.getProperty("java.vendor") + "\n" +
-       "Java Class Version = "+ System.getProperty("java.class.version") + "\n" +
-       "Java ClassPath = "+ System.getProperty("java.class.path") + "\n" +
-       "Java Home = "+ System.getProperty("java.home") + "\n" +
+       "Java Version = "+ SharedData.getProperty("java.version") + "\n" +
+       "Java Vendor = "+ SharedData.getProperty("java.vendor") + "\n" +
+       "Java Class Version = "+ SharedData.getProperty("java.class.version") + 
        "\n" +
-       "User Home = "+ System.getProperty("user.home") + "\n" +
-       "User Directory = "+ System.getProperty("user.dir") + "\n" +
-       "User Name = "+ System.getProperty("user.name") + "\n" +
+       "Java ClassPath = "+ SharedData.getProperty("java.class.path") + "\n" +
+       "Java Home = "+ SharedData.getProperty("java.home") + "\n" +
        "\n" +
-       "File Separator= "+ System.getProperty("file.separator") + "\n" +
-       "Path Separator= "+ System.getProperty("path.separator") + "\n" +
+       "User Home = "+ SharedData.getProperty("user.home") + "\n" +
+       "User Directory = "+ SharedData.getProperty("user.dir") + "\n" +
+       "User Name = "+ SharedData.getProperty("user.name") + "\n" +
        "\n" +
-       "Operating System Name= "+ System.getProperty("os.name") + "\n" +
-       "Operating System Architecture= "+ System.getProperty("os.arch") + "\n" +
-       "Operating System Version= "+ System.getProperty("os.version")
+       "File Separator= "+ SharedData.getProperty("file.separator") + "\n" +
+       "Path Separator= "+ SharedData.getProperty("path.separator") + "\n" +
+       "\n" +
+       "Operating System Name= "+ SharedData.getProperty("os.name") + "\n" +
+       "Operating System Architecture= "+ SharedData.getProperty("os.arch") + 
+       "\n" +
+       "Operating System Version= "+ SharedData.getProperty("os.version")
      );
       
         JScrollPane ta = new JScrollPane(textArea);

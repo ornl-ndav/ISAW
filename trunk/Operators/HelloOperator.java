@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/05/28 18:59:19  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.6  2003/04/02 15:04:37  pfpeterson
  * Now uses IParameterGUI rather than IParameter.
  *
@@ -51,6 +54,7 @@ package Operators;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.parameter.StringPG;
+import DataSetTools.util.SharedData;
 import java.util.*;
 
 /** 
@@ -191,7 +195,7 @@ public class HelloOperator extends GenericOperator
                                                  // since we're not running
                                                  // in Isaw here, get the user
                                                  // name from the system.
-    String name = System.getProperty( "user.name" );
+    String name = SharedData.getProperty( "user.name" );
 
                                                  // make and run the operator
     Operator op  = new HelloOperator( name );
