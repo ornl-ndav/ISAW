@@ -114,6 +114,8 @@ public class SetDSAttribute extends    DataSetOperator
          A = new StringAttribute(S , (String) O);
       else if( O instanceof AttributeNameString)
          A = new StringAttribute( S , ((AttributeNameString) O).toString());
+      else if( O instanceof int[] )
+         A = new IntListAttribute( S , (int[])O );
       else
 	 return new ErrorString(" new Value improper Data Type");
     
