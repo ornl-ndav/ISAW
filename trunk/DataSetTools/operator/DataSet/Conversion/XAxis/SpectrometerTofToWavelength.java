@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/07/23 18:13:56  dennis
+ * Fixed javadoc comment.
+ *
  * Revision 1.4  2002/07/08 20:46:10  pfpeterson
  * Now uses String constants in FontUtil.
  *
@@ -186,7 +189,8 @@ public class SpectrometerTofToWavelength extends    XAxisConversionOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return the command name to be used with script processor: in this case, ToWL
+   * @return the command name to be used with script processor: 
+   *         in this case, ToWL
    */
    public String getCommand()
    {

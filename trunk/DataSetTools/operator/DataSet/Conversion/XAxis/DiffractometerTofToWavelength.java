@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2002/07/23 18:12:58  dennis
+ * Fixed javadoc comment.
+ *
  * Revision 1.5  2002/07/08 20:46:05  pfpeterson
  * Now uses String constants in FontUtil.
  *
@@ -127,7 +130,7 @@ import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 
 /**
- * This operator converts a neutron time-of-flight DataSet for a Diffractometer, 
+ * This operator converts a neutron time-of-flight DataSet for a Diffractometer,
  * to wavelength.  The DataSet must contain spectra with attributes giving the
  * detector position and source to sample distance ( the initial flight path ).
  * In addition, it is assumed that the XScale for the spectra represents the
@@ -188,7 +191,8 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, ToWL
+   * @return	the command name to be used with script processor: 
+   *            in this case, ToWL
    */
    public String getCommand()
    {
