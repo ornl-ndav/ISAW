@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/07/24 21:14:54  dennis
+ *  Added DoubleDifferentialCrossection.java
+ *
  *  Revision 1.4  2000/07/11 13:38:04  dennis
  *  Removed SpectrometerTofToQ() operation
  *
@@ -97,6 +100,7 @@ public class SpectrometerTofDataSetFactory extends    DataSetFactory
     new_ds.addOperator( new SpectrometerTofToEnergyLoss() );
     new_ds.addOperator( new SpectrometerTofToEnergy() );
     new_ds.addOperator( new SpectrometerTofToWavelength() );
+    new_ds.addOperator( new DoubleDifferentialCrossection() );
 //    new_ds.addOperator( new SpectrometerTofToQ() );
     new_ds.addOperator( new SpectrometerTofToQE() );
     new_ds.addOperator( new TofToChannel() );
