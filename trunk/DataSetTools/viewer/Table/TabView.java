@@ -31,6 +31,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.8  2001/08/14 01:57:32  rmikk
+ * Improved the Layout
+ *
  * Revision 1.7  2001/08/13 16:23:34  dennis
  * Added constructor that takes a ViewerState parameter and
  * separated initialization code in an init() method.
@@ -71,18 +74,12 @@ import java.awt.*;
 
 /** This implements DataSetViewer by giving tables of information
  */
-public class TabView extends DataSetViewer
+public class TabView extends DataSetViewer implements StateListener
 {   JMenu View,  
           Edit, 
           Options;
-    JMenuItem  fileView,  
-               tableView, 
-               consoleView;
-    JMenuItem  selectEdit, 
-               selectAllEdit;
-    JMenuItem  DBSeqOpt, 
-               DBPairedOpt;
-    ButtonGroup radios = new ButtonGroup();
+   
+   
     table_view tv;
     Boolean DBSeq;
 
@@ -95,6 +92,10 @@ public class TabView extends DataSetViewer
   {
     super( DS, state );
     init( DS );
+    
+    
+    if( state != null )
+      tv.restoreState( state.get_String( "table_view Data" ) );
   }
 
   /**
@@ -104,10 +105,11 @@ public class TabView extends DataSetViewer
    {
       super( DS );
       init( DS );
+      
    }
-
+  
    private void init( DataSet DS )
-   {
+    {  
        setLayout( new GridLayout( 1,1 ));
        JMenuBar jmb = getMenuBar();
        int n = jmb.getMenuCount();
@@ -121,20 +123,14 @@ public class TabView extends DataSetViewer
           else if( "Options".equals( item.getText()))
               Options = item;
          }
-       fileView = new JMenuItem( "Save to File" );
-       tableView = new JMenuItem( "Table" );
-       consoleView = new JMenuItem( "Console" );
-       selectEdit = new JMenuItem( "Select Group indicies" );
-       selectAllEdit = new JCheckBoxMenuItem( "Select All Groups" , false );
-       DBSeqOpt = new JRadioButtonMenuItem( "List Groups Sequentially" ,
-                                           true );
-       DBPairedOpt = new JRadioButtonMenuItem( "List Groups in Columns" ,
-                                               false);      
-       if( View != null )
+       
+       
+      /* if( View != null )
          { View.add( fileView );
            View.add( tableView );
            View.add( consoleView );
          }
+      
        if( Edit != null )
          {Edit.add( selectEdit );
           Edit.add( selectAllEdit );
@@ -149,14 +145,16 @@ public class TabView extends DataSetViewer
          Options.add( JM );
          //Options.add( DSOperations );
         }
+      */
       MyActionListener  al = new MyActionListener();
-      fileView.addActionListener( al );
+     /* fileView.addActionListener( al );
       tableView.addActionListener( al );
       consoleView.addActionListener( al );
-      selectEdit.addActionListener( al );
-      selectAllEdit.addActionListener( al );
-      DBSeqOpt.addActionListener( al );
-      DBPairedOpt.addActionListener( al );
+     */
+     
+     // selectAllEdit.addActionListener( al );
+      //DBSeqOpt.addActionListener( al );
+     // DBPairedOpt.addActionListener( al );
       //DSOperations.addActionListener( al );
   // Setup table_view
       DataSet DSS[];
@@ -166,9 +164,14 @@ public class TabView extends DataSetViewer
       add( tv );
       tv.DBSeq = true;
       tv.useAll = false;
+      tv.addStateListener( this );
       }//Constructor
 
-
+   public void setState( String State )
+       { ViewerState vs = getState();
+        
+         vs.set_String(  "table_view Data" , State );
+       }
 
    /** An implementation of OperatorHandler that gets operators from
    * a data set
@@ -204,7 +207,7 @@ public class TabView extends DataSetViewer
       { 
        public void actionPerformed( ActionEvent e )
         {
-         if( e.getSource().equals( fileView ))
+        /* if( e.getSource().equals( fileView ))
 	   {tv.mode = 1;
 	    JFileChooser JFC = new JFileChooser( 
                             System.getProperty( "user.dir" ));
@@ -214,112 +217,50 @@ public class TabView extends DataSetViewer
                {File F = JFC.getSelectedFile();
                 tv.filename = F.getPath().trim();          
                }
-            tv.setDataSet( getDataSet());
-            tv.Showw();
+           // tv.setDataSet( getDataSet());
+            //tv.Showw();
            }
          else if( e.getSource().equals( tableView ) )
           { tv.mode = 2;
-            tv.setDataSet( getDataSet());
-            tv.Showw();
+           // tv.setDataSet( getDataSet());
+           // tv.Showw();
           }
          else if( e.getSource().equals( consoleView ))
           {tv.mode = 0;
-           tv.setDataSet( getDataSet());
-           tv.Showw();
+           //tv.setDataSet( getDataSet());
+           //tv.Showw();
           }
-         else if( e.getSource().equals( selectEdit ))
-          { 
-            DataSet DS = getDataSet();  
-            tv.setDataSet( getDataSet());      
-            DataSetOperator op = DS.getOperator( "Set DataSet Field" );        
-            if( op == null )
-              {System.out.println( " No such operator " );
-               return;
-               }
-            op.setDefaultParameters();
-            IntListString IString = new IntListString( "1,3:5" );        
-            Parameter PP = new Parameter( "Group Indicies=" , IString );        
-            op.setParameter( PP , 1 );        
-       
-            DSSettableFieldString argument = new DSSettableFieldString( 
-                                      DSFieldString.SELECTED_GROUPS );         
+         else
         
-            MOperator newOp =
-               new MOperator( op , 0 , ( Object )argument );
-        
-            JParametersDialog JP = new JParametersDialog( newOp , null ,
-                                       null , null );
-            tv.useAll = false;
-           }
-         else if( e.getSource().equals( selectAllEdit ))
+         
+          if( e.getSource().equals( selectAllEdit ))
             tv.useAll = selectAllEdit.isSelected() ;
            
          else if( e.getSource().equals( DBSeqOpt ))
             tv.DBSeq = true;               
            
          else if( e.getSource().equals( DBPairedOpt ))
-            tv.DBSeq = false;         
+            tv.DBSeq = false;  
+     */       
      }
    }
 
-
-   class MOperator extends DataSetOperator
-     { int paramPos = -1;
-       Object DefValue = null;
-       String Title = "xxx";
-       DataSetOperator op = null;
-       public  MOperator( DataSetOperator op , int paramPos , Object DefValue )
-          {super( op.getTitle());
-     
-           Title = op.getTitle();
-           this.paramPos = paramPos;
-           this.op = op;
-           this.DefValue = DefValue;
-     
-           setDefaultParameters();
-          }
-       public MOperator()
-         {super( "unknown" );          
-          setDefaultParameters();
-         }
-       public String getCommand()
-         { return op.getCommand();
-         }
-       public void setDefaultParameters()
-         {
-           if( op == null )
-             return;
-           parameters = new Vector();        
-           CopyParametersFrom( op );   
-           parameters.remove( paramPos );      
-        }
-
-       public DataSet getDataSet()
-          {return op.getDataSet();
-          }
-       public Object getResult()
-         {
-           for( int i = 0 ; i < paramPos ; i++ )       
-              op.setParameter(  getParameter( i ) , i );
-      
-    
-           op.setParameter( new Parameter( "ttt" , DefValue ) , paramPos );
-     
-           for( int i = paramPos + 1 ; i < op.getNum_parameters() ; i++ )
-              op.setParameter( getParameter( i - 1 ) , i );        
-     
-           return  op.getResult();
-         }
-       public Object clone()
-         {MOperator Res = new MOperator( op , paramPos , DefValue );
-           return Res;
-         }
-   }//MOperator
-
-   /** redraw does nothing for this viewer
+    public void setDataSet( DataSet ds )
+     { super.setDataSet( ds );
+       tv.setDataSet( ds );
+      }
+  
+   /** redraw Checks for selection Changed
    */
    public  void redraw( java.lang.String reason )
-     {}
+    {
+    
+      if( reason.equals( IObserver.SELECTION_CHANGED))
+        tv.SelectedIndecies.setText("Selected indices="+
+          IntList.ToString(getDataSet().getSelectedIndices())+"     ");
+      else if( reason.equals( DataSetViewer.NEW_DATA_SET ))
+        tv.setDataSet( getDataSet());
+      }
 
    /** A Test program for routines in this module
    */
