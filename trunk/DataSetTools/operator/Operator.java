@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2001/08/08 22:25:56  rmikk
+ *  Added Code so null parameters values( for Objects data
+ *  types ) will not crash
+ *
  *  Revision 1.8  2001/07/30 19:52:29  dennis
  *  Added GENERIC SAVE category.
  *
@@ -313,9 +317,11 @@ abstract public class Operator implements Serializable
   {
     if ( index < 0 || index >= parameters.size() )
       return false;
- 
-    if (  parameter.getValue().getClass() == 
-          ((Parameter)parameters.elementAt( index )).getValue().getClass() )
+                                             // NOTE: object parameters are
+                                             //       represented using null
+    Object value = ((Parameter)parameters.elementAt( index )).getValue();
+    if (  value == null ||
+          value.getClass() == parameter.getValue().getClass() ) 
     {
       parameters.setElementAt( parameter, index );   // types ok, so record it
       return true;
