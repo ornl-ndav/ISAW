@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2002/02/11 21:32:18  rmikk
+ * Fixed a bug that occurred with the new StringChoiceList.
+ * The fix was a major fix that could break the other SpecialStrings
+ *  CVS: ----------------------------------------------------------------------
+ *
  * Revision 1.31  2002/01/11 19:27:36  rmikk
  * The Display view can now Display Tables
  * The Send can now take 1 or 2 arguments
@@ -2500,19 +2505,33 @@ private Operator getSHOp( Vector Args, String Command)
       for( k = 0 ; k < op.getNum_parameters() ; k++ )
         {if( (Args.elementAt( k + start ) instanceof String)  &&  
              (op.getParameter( k ).getValue( ) instanceof SpecialString) )
-	   { try{
-             Class C = op.getParameter( k ).getValue().getClass();
-             Class ArgsC[] = new Class[1];
-             ArgsC[0] = Class.forName("java.lang.String");
-             java.lang.reflect.Constructor Cons = C.getConstructor( ArgsC);
-             Object Argvs[] = new Object[1];
-             Argvs[0] = Args.elementAt( k + start ) ;            
-
-             op.getParameter( k ).setValue( Cons.newInstance(Argvs));
-             }
+	   { /*try{ Object V=null;
+               if( op.getParameter(k).getValue() instanceof hasCloneMethod)
+                  { V=((hasCloneMethod)( op.getParameter(k).getValue())).clone();
+                   }
+               else
+                 {Class C = op.getParameter( k ).getValue().getClass();
+                  Class ArgsC[] = new Class[1];
+                  ArgsC[0] = Class.forName("java.lang.String");
+                  java.lang.reflect.Constructor Cons = C.getConstructor( ArgsC);
+                  Object Argvs[] = new Object[1];
+                  Argvs[0] = Args.elementAt( k + start ) ; 
+                  V =  Cons.newInstance(Argvs);          
+                  }
+              SpecialString X =(SpecialString)V;
+             X.setString((String)(Args.elementAt(k+start)));
+             op.getParameter( k ).setValue( X );
+	       */
+	      if( op.getParameter(k).getValue() != null)
+	        { SpecialString X=(SpecialString)(op.getParameter(k).getValue());
+		
+		    X.setString((String)(Args.elementAt(k+start)));
+		}
+            /* }
            catch( Exception s )
-             {System.out.println("Internal ERROR XXXX"+ s);
-             }
+             {System.out.println("Internal ERROR XXXX"+ s+","+s.getMessage()+","+
+                    op.getClass()+", arg="+k);
+             }*/
            }
           else if( op.getParameter(k).getValue() instanceof Float)
             {Float F = new Float(((Number)(Args.elementAt(k + start))).floatValue());
