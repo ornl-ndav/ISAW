@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/01/10 16:38:18  dennis
+ * Added getCategoryList method to place operator in menu system.
+ *
  * Revision 1.2  2005/01/07 20:00:24  rmikk
  * Made loop more efficient
  *
@@ -51,7 +54,7 @@ import gov.anl.ipns.Util.SpecialStrings.*;
  * dataset. It has an option to create this array for FORTRAN jni programs
  *
  */
-public class getDSArray implements Wrappable{
+public class getDSArray implements Wrappable, IWrappableWithCategoryList {
 
    /**
     *  The Data Set with the y values
@@ -66,13 +69,29 @@ public class getDSArray implements Wrappable{
    public int  DetectorId =-1;
    
    /**
-    *   If false, a multidimensional Java float array is returned with dimensions
-    *      row, col, time
-    *   If true, a one dimension float array will be returned. The fastest
-    *     changing dimension is time then col then row
+    *  If false, a multidimensional Java float array is returned with dimensions
+    *   row, col, time
+    *  If true, a one dimension float array will be returned. The fastest
+    *  changing dimension is time then col then row
     */
    public boolean FortArray = false;
    
+
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.UTILS_CONVERSIONS;
+  }
+
    
    /**
     *  Returns getDSArray, the name used to invoke this operator in scripts
@@ -142,24 +161,23 @@ public class getDSArray implements Wrappable{
    public String getDocumentation(){
      StringBuffer s = new StringBuffer();
 
-            s.append("@overview  This wrappable operator creates an array out");
-            s.append(" of the y values from a dataset. It has an option to ");
-            s.append("create this array for FORTRAN jni programs");
-            s.append("@param DS  The Data Set with the y values that are to ");            
-            s.append("be put in the resultant array");
-            s.append("@param DetectorId  The detector ID from which to get ");
-            s.append("the y value. The result will be a 3 dimensional array with ");
-            s.append("dimensions of row, col, and time ");  
+     s.append("@overview  This wrappable operator creates an array out");
+     s.append(" of the y values from a dataset. It has an option to ");
+     s.append("create this array for FORTRAN jni programs");
+     s.append("@param DS  The Data Set with the y values that are to ");            
+     s.append("be put in the resultant array");
+     s.append("@param DetectorId  The detector ID from which to get ");
+     s.append("the y value. The result will be a 3 dimensional array with ");
+     s.append("dimensions of row, col, and time ");  
  
-            s.append("@param FortArray  If false, a multidimensional Java ");
-            s.append("float array is returned with dimensions row, col, time");
-            s.append("If true, a one dimension float array will be returned. The ");
-             s.append("fastest changing dimension is time then col then row");
+     s.append("@param FortArray  If false, a multidimensional Java ");
+     s.append("float array is returned with dimensions row, col, time");
+     s.append("If true, a one dimension float array will be returned. The ");
+     s.append("fastest changing dimension is time then col then row");
    
-            s.append("@return The array in the proper format for one detector");
+     s.append("@return The array in the proper format for one detector");
        
-            return s.toString();
-
+     return s.toString();
    }
 
 }
