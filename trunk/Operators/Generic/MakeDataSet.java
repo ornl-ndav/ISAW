@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2004/03/10 17:58:15  rmikk
+ * Added two parameters for width and height of grids
+ *
  * Revision 1.3  2004/03/09 17:56:52  rmikk
  * Fixed Javadoc errors
  *
@@ -74,6 +77,9 @@ public class MakeDataSet implements Wrappable {
     public String XUnits = "Time units";
     public String YLabel = "Y label";
     public String YUnits = "Y units";
+    public Vector GridWidths = new Vector();  //Elements must be Floats,1 for @ grid
+    public Vector GridHeights = new Vector();
+
     private boolean hasRowCol = false;
 
     /**
@@ -91,10 +97,13 @@ public class MakeDataSet implements Wrappable {
      * @param XUnits the Units of the xvalues
      * @param YLabel the label for the Y values( Intensities)
      * @param YUnits the Units for the Y values
+     * @param GridWidths  The list of widths for any Grids
+     * @param GridHeights The list of heights for any Grids
      * @return a DataSet with the given values, titles, etc.
      */
-    public Object calculate(Vector xbins, Vector yvals, Vector errs, String Title, String XLabel,
-        String XUnits, String YLabel, String YUnits) {
+    public Object calculate(Vector xbins, Vector yvals, Vector errs, 
+                 String Title, String XLabel,String XUnits, String YLabel,
+                 String YUnits, Vector GridWidths, Vector GridHeights) {
 
         this.errs = errs;
         this.Title = Title;
@@ -139,6 +148,8 @@ public class MakeDataSet implements Wrappable {
         s.append("@param XUnits the Units of the xvalues");
         s.append(" @param YLabel the label for the Y values( Intensities)");
         s.append("@param YUnits the Units for the Y values");
+        s.append("@param GridWidths  The list of widths for any Grids");
+        s.append("@param GridHeights The list of heights for any Grids");
         s.append("@return a DataSet with the given values, titles, etc.");
         s.append("@error Improper match in size of yvalues and xvalues");
         s.append("@error Improper Inputs");
@@ -337,10 +348,19 @@ public class MakeDataSet implements Wrappable {
 
             else 
                n = dd[1];
+            
+            float width =.8f;
+            float height =.8f;
+            if( GridWidths != null) if( GridWidths.size()>n-1)
+            if( GridWidths.elementAt(n-1) instanceof Number)
+                width = ((Number)(GridWidths.elementAt(n-1))).floatValue();
+            if( GridHeights != null) if( GridHeights.size()>n-1)
+            if( GridHeights.elementAt(n-1) instanceof Number)
+                height = ((Number)(GridHeights.elementAt(n-1))).floatValue();
 
             theGrid = new UniformGrid(n, "m", new Vector3D(0f, 0f, 1f), 
                         new Vector3D(1f, 0f, 0f),
-                        new Vector3D(0f, 1f, 0f), .8f, .8f, .1f, 
+                        new Vector3D(0f, 1f, 0f), width, height, .1f, 
                         Max(1, dimensions[1]), Max(1, dimensions[0]));
 
         }
