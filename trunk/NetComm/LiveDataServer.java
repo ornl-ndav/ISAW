@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.45  2004/03/19 17:12:52  dennis
+ *  Removed unused variable
+ *
  *  Revision 1.44  2004/03/15 06:10:58  dennis
  *  Removed unused import statements.
  *
@@ -538,8 +541,7 @@ public class LiveDataServer extends    DataSetServer
              index < ds_type.length   &&
              data_set[index] != null  &&
              data_set[index].getNum_entries() > 0 )      // non-empty DataSet
-        {
-          int list[] = new int[2];                       // ID's are sequential
+        {                                                // ID's are sequential
           int id_1 = data_set[index].getData_entry(0).getGroup_ID();   
           int id_2 = id_1 + data_set[index].getNum_entries() - 1;
           tcp_io.Send( "" + id_1 + ":" + id_2 );
