@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/01/24 22:03:42  bouzekc
+ * Removed unused variables.
+ *
  * Revision 1.2  2003/09/23 18:40:55  rmikk
  * Changed an erroneous @see tag in the javadocs
  *
@@ -100,7 +103,6 @@ public class SaveDataSetActionListener extends JMenuItem implements ActionListen
 
 try
           { JFileChooser fc = new JFileChooser();
-            String title = new String( "Please choose the File to save" );
             if( filename == null)
                filename =SharedData.getProperty("user.home");
             fc.setCurrentDirectory(  new File( filename )  );
