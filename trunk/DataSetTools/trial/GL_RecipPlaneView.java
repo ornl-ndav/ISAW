@@ -31,6 +31,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/07/28 15:44:05  dennis
+ * Added public methods to draw  contours, hkl marks and Q-regions
+ * covered by detectors.
+ * Added constructor that takes the path, run numbers, etc., so it
+ * can be constructed from an operator.
+ * No longer makes a new grid for each PeakData object, but refers to
+ * the grids from the DataSet.
+ * Made more variables private.
+ *
  * Revision 1.4  2004/07/26 21:50:51  dennis
  * Now displays "voxel" extending between the eight corners of a bin that
  * is above the current threshold, rather than just a cube centered at the
@@ -205,6 +214,7 @@ import gov.anl.ipns.ViewTools.Panels.Contour.*;
 import gov.anl.ipns.ViewTools.UI.*;
 
 import java.util.*;
+import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -232,6 +242,11 @@ public class GL_RecipPlaneView
   public static final String CONST_L_SLICE = "Const l Slice";
   public static final int    SLICE_STEPS = 700;
 
+                                                    // flags for various options
+  private boolean detector_boundaries_shown = false;
+  private boolean hkl_marks_shown           = false;
+  private boolean contours_shown            = false;
+
   private final int DIMENSION = 3;       // set to 4 to allow affine transform
                                          // set to 3 to just use rotation and
                                          // scaling.
@@ -242,61 +257,83 @@ public class GL_RecipPlaneView
   private int   SLIDER_MAX      = 250;
   private float thresh_scale    = 20;
   private float LSQ_THRESHOLD   = 0.10f;
-  private float YELLOW[]        = { 0.8f, 0.8f, 0.2f };
-  private float CYAN[]          = { 0.2f, 0.8f, 0.8f };
+  private final float YELLOW[]        = { 0.8f, 0.8f, 0.2f };
+  private final float CYAN[]          = { 0.2f, 0.8f, 0.8f };
+  private final float GRAY[]  = { 0.4f, 0.4f, 0.4f };
+  private final float RED[]   = { 0.8f, 0.3f, 0.3f };
+  private final float GREEN[] = { 0.3f, 0.8f, 0.3f };
+  private final float BLUE[]  = { 0.3f, 0.3f, 0.8f };
 
-  ImageFrame2 h_frame = null;
-  ImageFrame2 k_frame = null;
-  ImageFrame2 l_frame = null;
+  private ImageFrame2 h_frame = null;
+  private ImageFrame2 k_frame = null;
+  private ImageFrame2 l_frame = null;
 
-  String path       = null;
-  String run_nums   = null;
-  String calib_file = null;
-  String orient_file = null;
+  private String path       = null;
+  private String run_nums   = null;
+  private String calib_file = null;
+  private String orient_file = null;
 
-  int    runs[];
-  String threshold = "";
-  String border_size = "";
-  int    edge_pix = 0;
+  private int    runs[];
+  private String threshold = "";
+  private String border_size = "";
+  private int    edge_pix = 0;
 
-  ThreeD_GL_Panel vec_Q_space;
-  AltAzController controller;
-  Color           colors[];
-  float           rgb_colors[][];
+  private ThreeD_GL_Panel vec_Q_space;
+  private AltAzController controller;
+  private Color           colors[];
+  private float           rgb_colors[][];
       
-  JSlider         threshold_slider;
-  JLabel          q_readout;
-  SimpleVectorReadout   origin_vec;
-  SimpleVectorReadout   vec_1;
-  SimpleVectorReadout   vec_2;
+  private JSlider         threshold_slider;
+  private JLabel          q_readout;
+  private SimpleVectorReadout   origin_vec;
+  private SimpleVectorReadout   vec_1;
+  private SimpleVectorReadout   vec_2;
 
-  LatticePlaneUI  h_plane_ui;
-  LatticePlaneUI  k_plane_ui;
-  LatticePlaneUI  l_plane_ui;
+  private LatticePlaneUI  h_plane_ui;
+  private LatticePlaneUI  k_plane_ui;
+  private LatticePlaneUI  l_plane_ui;
 
-  Vector          vec_q_transformer;
-  Vector          all_peaks;
+  private Vector          vec_q_transformer;
+  private Vector          all_peaks;
 
-  int             global_obj_index = 0;  // needed to keep the pick ids distinct
-  String          file_names[];
-  Vector          data_sets;
-  Hashtable       calibrations = null;
-  Tran3D          orientation_matrix = null;
-  Tran3D          orientation_matrix_inverse = null;
+  private int             global_obj_index = 0;  // needed to keep the pick 
+                                                 // ids distinct
+  private String          file_names[];
+  private Vector          data_sets;
+  private Hashtable       calibrations = null;
+  private Tran3D          orientation_matrix = null;
+  private Tran3D          orientation_matrix_inverse = null;
 
-  Vector3D        all_vectors[];
-  double          QR_Rmat[][];           // "R" factor of QR factorization
-  double          QR_Umat[][];           // Matrix containing unit vectors U
+  private Vector3D        all_vectors[];
+  private double          QR_Rmat[][];   // "R" factor of QR factorization
+  private double          QR_Umat[][];   // Matrix containing unit vectors U
                                          // describing the matrix Q, from QR
                                          // factorization.
-  DataSet         projection_ds;
-  DataSet         all_fft_ds;
-  DataSet         filtered_fft_ds;
+  private DataSet         projection_ds;
+  private DataSet         all_fft_ds;
+  private DataSet         filtered_fft_ds;
 
-  float gray[] = { 0.4f, 0.4f, 0.4f };
-  float red[]   = { 0.8f, 0.3f, 0.3f };
-  float green[] = { 0.3f, 0.8f, 0.3f };
-  float blue[]  = { 0.3f, 0.3f, 0.8f };
+
+  /* ---------------------------- Constructor ----------------------------- */
+
+  public GL_RecipPlaneView( String path, 
+                            String run_nums, 
+                            String calib_file,
+                            String orient_file )
+  {
+    this(); 
+
+    this.path        = path;
+    this.run_nums    = run_nums;
+
+    File temp = new File( calib_file );
+    if ( temp.exists() && temp.isFile() )
+      this.calib_file  = calib_file;
+ 
+    temp = new File( orient_file );
+    if ( temp.exists() && temp.isFile() )
+      this.orient_file = orient_file;
+  }
 
 
   /* ---------------------------- Constructor ----------------------------- */
@@ -304,10 +341,12 @@ public class GL_RecipPlaneView
   public GL_RecipPlaneView()
   {
     JFrame scene_f = new JFrame("Reciprocal Lattice Plane Viewer");
+    scene_f.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+
     JPanel q_panel = new JPanel();
 
     vec_Q_space = new ThreeD_GL_Panel();
-    controller  = new AltAzController( 45, 45, 2, 50, 25 );
+    controller  = new AltAzController( 45, 45, 1, 100, 25 );
 
     threshold_slider = new JSlider(SLIDER_MIN,SLIDER_MAX,SLIDER_DEF);
     threshold_slider.setMajorTickSpacing(20);
@@ -397,7 +436,6 @@ public class GL_RecipPlaneView
     ViewControlListener c_listener = new ViewControlListener( vec_Q_space );
     controller.addActionListener( c_listener );
 
-    scene_f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     WindowShower shower = new WindowShower( scene_f );
     EventQueue.invokeLater( shower );
     shower = null;
@@ -436,7 +474,7 @@ public class GL_RecipPlaneView
   {
     try 
     {
-      TextFileReader tfr = new TextFileReader( path + file_name );
+      TextFileReader tfr = new TextFileReader( file_name );
       calibrations = new Hashtable();
       tfr.read_line();
       boolean done = false;
@@ -480,8 +518,17 @@ public class GL_RecipPlaneView
     }
   }
 
+  /* -------------------- applyCalibrations --------------------------- */
 
-  public void applyCalibration( DataSet ds )
+  public void applyCalibrations()
+  {
+     for ( int i = 0; i < data_sets.size(); i++ )
+       applyCalibration( (DataSet)data_sets.elementAt(i) );
+  }
+
+  /* --------------------- applyCalibration ---------------------------- */
+
+  private void applyCalibration( DataSet ds )
   {
     if ( calibrations == null )
     {
@@ -558,7 +605,7 @@ public class GL_RecipPlaneView
     float or_mat[][] = new float[3][3];
     try
     {
-      TextFileReader tfr = new TextFileReader( path + file_name );
+      TextFileReader tfr = new TextFileReader( file_name );
       or_mat = new float[3][3];
 
       for ( int col = 0; col < 3; col++ )
@@ -620,12 +667,11 @@ public class GL_RecipPlaneView
         Attribute attr = ds.getAttribute( Attribute.RUN_TITLE );
         System.out.println("Loaded run: " + attr.toString() + " -------------");
         data_sets.addElement(ds);
-
-        applyCalibration( ds );
       }
       ds = null;
     }
 
+    applyCalibrations();
 
     System.out.println("DONE loading DataSets : " + data_sets.size() );
   }
@@ -646,7 +692,13 @@ public class GL_RecipPlaneView
 
     if ( extract_peaks )
       ExtractPeaks();
+  }
 
+
+/* -------------------------- CalculateFFTs --------------------------- */
+
+  public void CalculateFFTs()
+  {
     System.out.println("Getting array of points for peaks....");
     all_vectors = get_data_points();
     System.out.println("DONE");
@@ -685,6 +737,75 @@ public class GL_RecipPlaneView
     filtered_fft_ds.addIObserver( new FFTListener() );
     System.out.println("DONE");
     new ViewManager( filtered_fft_ds, IViewManager.IMAGE );
+  }
+
+
+/* ------------------------ ShowBoundaries ----------------------------- */
+
+  public void ShowBoundaries( boolean is_on )
+  {
+    detector_boundaries_shown = is_on;
+
+    if ( is_on )
+    {
+      for ( int i = 0; i < vec_q_transformer.size(); i++ )
+      {
+        GL_Shape bounds[] = getBoundaries( i );
+        vec_Q_space.setObjects( BOUNDARY_OBJECTS+i, bounds );
+      }
+    }
+    else
+      for ( int i = 0; i < vec_q_transformer.size(); i++ )
+        vec_Q_space.removeObjects( BOUNDARY_OBJECTS+i );
+  }
+
+
+/* ------------------------ ShowHKL_Marks ----------------------------- */
+
+  public void ShowHKL_Marks( boolean is_on )
+  {
+    hkl_marks_shown = is_on;
+
+    if ( is_on )
+    {
+      for ( int i = 0; i < vec_q_transformer.size(); i++ )
+      {
+        GL_Shape marks[] = getHKL_Marks( i );
+        vec_Q_space.setObjects( MARK_OBJECTS+i, marks );
+      }
+    }
+    else
+      for ( int i = 0; i < vec_q_transformer.size(); i++ )
+        vec_Q_space.removeObjects( MARK_OBJECTS+i );
+  }
+
+
+/* ------------------------ ShowContours ----------------------------- */
+
+  public void ShowContours( boolean is_on, float level )
+  {
+    contours_shown = is_on;
+
+    if ( is_on )
+    {
+      for ( int i = 0; i < vec_q_transformer.size(); i++ )
+      {
+        GL_Shape contours[] = getContours( i, level );
+        vec_Q_space.setObjects( CONTOUR_OBJECTS+i, contours );
+      }
+    }
+    else
+      for ( int i = 0; i < vec_q_transformer.size(); i++ )
+        vec_Q_space.removeObjects( CONTOUR_OBJECTS+i );
+  }
+
+
+/* ------------------------ SetThresholdScale ---------------------- */
+
+  public void SetThresholdScale( int value )
+  {
+    thresh_scale = Math.abs( value );
+    threshold_slider.setValue(value);
   }
 
 /* ---------------------------------------------------------------------
@@ -874,7 +995,7 @@ public class GL_RecipPlaneView
          end_vec[i] = (Vector3D)h_line_list.elementAt( 2*i + 1 );
        }
        Lines h_lines = new Lines( start_vec, end_vec );
-       h_lines.setColor( red );
+       h_lines.setColor( RED );
 
        for ( int i = 0; i < n_points; i++ )
        {
@@ -882,7 +1003,7 @@ public class GL_RecipPlaneView
          end_vec[i] = (Vector3D)k_line_list.elementAt( 2*i + 1 );
        }
        Lines k_lines = new Lines( start_vec, end_vec );
-       k_lines.setColor( green );
+       k_lines.setColor( GREEN );
 
        for ( int i = 0; i < n_points; i++ )
        {
@@ -890,7 +1011,7 @@ public class GL_RecipPlaneView
          end_vec[i] = (Vector3D)l_line_list.elementAt( 2*i + 1 );
        }
        Lines l_lines = new Lines( start_vec, end_vec );
-       l_lines.setColor( blue );
+       l_lines.setColor( BLUE );
 
        GL_Shape[] result = new GL_Shape[3]; 
        result[0] = h_lines;
@@ -913,19 +1034,9 @@ public class GL_RecipPlaneView
        GL_Shape non_zero_objs[] = getPeaks(i,thresh_scale);
        vec_Q_space.setObjects( PEAK_OBJECTS+i, non_zero_objs);
        System.out.println("Found peaks : " + non_zero_objs.length );
-
-//     non_zero_objs = getBoundaries( i );
-//     vec_Q_space.setObjects( BOUNDARY_OBJECTS+i, non_zero_objs);
-
-       non_zero_objs = getContours( i, thresh_scale / 2 );
-       vec_Q_space.setObjects( CONTOUR_OBJECTS+i, non_zero_objs);
-
-//     GL_Shape hkl_marks[] = getHKL_Marks( i );
-//     vec_Q_space.setObjects( MARK_OBJECTS+i, hkl_marks );
      }
      System.out.println("DONE");
   }
-
 
  
   /* ---------------------- makeVecQTransformers --------------------- */
@@ -1040,44 +1151,24 @@ public class GL_RecipPlaneView
                 if ( color_index > 127 )
                   color_index = 127;
                 c = rgb_colors[ color_index ];
-                float coords[] = pts[0].get();
 
+//                float coords[] = pts[0].get();
 //                objs[ obj_index ] =
 //                            new Cube(coords[0], coords[1], coords[2], 0.04f);Z
+
                 objs[ obj_index ] = getVoxel( grid, row, col, times, j, 
                                               t0, combinedR, initial_path );
 
                 objs[ obj_index ].setColor( c );
+                objs[ obj_index ].setLighting( true );
 
                 objs[obj_index].setPickID( global_obj_index );
                 obj_index++;
                 global_obj_index++;
-                PeakData_d pd = new PeakData_d();
+                PeakData pd = new PeakData( orientation, (UniformGrid)grid );
                 pd.run_num = runs[run_num_index];
-                pd.orientation = new IPNS_SCD_SampleOrientation_d(
-                                                      orientation.getPhi(), 
-                                                      orientation.getChi(), 
-                                                      orientation.getOmega());
                 pd.l1    = initial_path; 
   
-                coords = grid.position().get();
-                Vector3D_d center = new Vector3D_d( coords[0], 
-                                                    coords[1], 
-                                                    coords[2] );
-                coords = grid.x_vec().get();
-                Vector3D_d base   = new Vector3D_d( coords[0], 
-                                                    coords[1], 
-                                                    coords[2] );
-                coords = grid.y_vec().get();
-                Vector3D_d up     = new Vector3D_d( coords[0], 
-                                                    coords[1], 
-                                                    coords[2] );
-                pd.grid  = new UniformGrid_d( 
-                                   grid.ID(), grid.units(),
-                                   center, base, up,
-                                   grid.width(), grid.height(), grid.depth(),
-                                   grid.num_rows(), grid.num_cols() );
-
                 pd.tof = t;
                 pd.row = row;
                 pd.col = col;
@@ -1250,7 +1341,7 @@ public class GL_RecipPlaneView
       end_vec[i]   = (Vector3D)end.elementAt(i);
     }
     Lines lines = new Lines( start_vec, end_vec );
-    lines.setColor( gray );
+    lines.setColor( GRAY );
     return lines;
   }
 
@@ -1314,7 +1405,7 @@ public class GL_RecipPlaneView
       end_vec[i]   = (Vector3D)end.elementAt(i);
     }
     Lines lines = new Lines( start_vec, end_vec );
-    lines.setColor( gray );
+    lines.setColor( GRAY );
     return lines;
   }
 
@@ -1379,7 +1470,7 @@ public class GL_RecipPlaneView
       end_vec[i]   = (Vector3D)end.elementAt(i);
     }
     Lines lines = new Lines( start_vec, end_vec );
-    lines.setColor( gray );
+    lines.setColor( GRAY );
     return lines;
   }
 
@@ -1520,6 +1611,12 @@ public class GL_RecipPlaneView
 
     boundaries[2] = new LineStrip( points );
 
+    for ( int i = 0; i < boundaries.length; i++ )
+    {
+      boundaries[i].setColor( GRAY );
+//      boundaries[i].setLighting(false);
+    }
+
     return boundaries;
   }
 
@@ -1592,10 +1689,10 @@ public class GL_RecipPlaneView
   private Vector3D[] get_data_points()
   {
     Vector3D all_vectors[] = new Vector3D[ all_peaks.size() ];
-    PeakData_d pd;
+    PeakData pd;
     for ( int i = 0; i < all_vectors.length; i++ )
     {
-      pd = (PeakData_d)all_peaks.elementAt(i);
+      pd = (PeakData)all_peaks.elementAt(i);
       all_vectors[i] = new Vector3D((float)pd.qx, (float)pd.qy, (float)pd.qz );
     }
 
@@ -2075,10 +2172,16 @@ public class GL_RecipPlaneView
        System.exit(0);
      }
 
-     path       = StringUtil.getCommand( 1, "-D", args );
-     run_nums   = StringUtil.getCommand( 1, "-R", args );
-     calib_file = StringUtil.getCommand( 1, "-C", args );
+     path        = StringUtil.getCommand( 1, "-D", args );
+     run_nums    = StringUtil.getCommand( 1, "-R", args );
+     calib_file  = StringUtil.getCommand( 1, "-C", args );
      orient_file = StringUtil.getCommand( 1, "-O", args );
+
+     if ( calib_file != null && calib_file.length() > 0 )
+       calib_file = path + "/" + calib_file;
+
+     if ( orient_file != null && orient_file.length() > 0 )
+       orient_file = path + "/" + orient_file;
 
      if ( path.length() <= 0 || run_nums.length() <= 0 )
      {
@@ -2176,9 +2279,9 @@ public class GL_RecipPlaneView
                                     new Vector3D( 0, 0,  length    ),
                                     "Qz" );
     z_axis.setSkipValue( 0 );
-    x_axis.setColor( red );
-    y_axis.setColor( green );
-    z_axis.setColor( blue );
+    x_axis.setColor( RED );
+    y_axis.setColor( GREEN );
+    z_axis.setColor( BLUE );
     
     threeD_panel.setObject( "QX-AXIS", x_axis );
     threeD_panel.setObject( "QY-AXIS", y_axis );
@@ -2269,9 +2372,9 @@ public class GL_RecipPlaneView
     h_axis.setSkipValue( 0 );
     k_axis.setSkipValue( 0 );
     l_axis.setSkipValue( 0 );
-    h_axis.setColor( red );
-    k_axis.setColor( green );
-    l_axis.setColor( blue );
+    h_axis.setColor( RED );
+    k_axis.setColor( GREEN );
+    l_axis.setColor( BLUE );
 
     h_axis.setCharHeight( length/50 );
     k_axis.setCharHeight( length/50 );
@@ -2501,7 +2604,6 @@ private class ThresholdScaleEventHandler implements ChangeListener
   {
     JSlider slider = (JSlider)e.getSource();
 
-                              // set image log scale when slider stops moving
     if ( !slider.getValueIsAdjusting() )
     {
       int value = slider.getValue();
@@ -2539,7 +2641,7 @@ private class WriteFileListener implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
   {
-    PeakData_d.WritePeakData( all_peaks, "fft_peaks.dat" );
+    PeakData.WritePeakData( all_peaks, "fft_peaks.dat" );
   }
 }
 
@@ -2580,7 +2682,7 @@ private class LatticeParameterListener implements ActionListener
     c.normalize();
     for ( int i = 0; i < all_peaks.size(); i++ )
     {
-       PeakData_d pd = (PeakData_d)all_peaks.elementAt(i);
+       PeakData pd = (PeakData)all_peaks.elementAt(i);
        q = new Vector3D( (float)pd.qx, (float)pd.qy, (float)pd.qz );
        float h = q.dot(a)/mag_a;
        float k = q.dot(b)/mag_b;
