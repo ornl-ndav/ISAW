@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/08/13 23:27:43  dennis
+ *  Now has separate error messages for bad user name and bad password.
+ *
  *  Revision 1.15  2001/08/09 15:24:06  dennis
  *  Put debug prints in "if (debug_retriever)" blocks.
  *
@@ -157,11 +160,14 @@ public class LiveDataRetriever extends    RemoteDataRetriever
       return types.length; 
     }
 
-    if ( server_alive && user_pass_ok )
+    if ( server_alive && user_ok && password_ok )
       return WRONG_SERVER_TYPE;
 
+    if ( server_alive && user_ok )
+      return BAD_PASSWORD;
+
     if ( server_alive )
-      return BAD_USER_OR_PASSWORD;
+      return BAD_USER_NAME;
 
     return SERVER_DOWN;
   }
@@ -194,13 +200,7 @@ public class LiveDataRetriever extends    RemoteDataRetriever
         return types[data_set_num];
     }
 
-    if ( server_alive && user_pass_ok )
-      return WRONG_SERVER_TYPE;
-
-    if ( server_alive )
-      return BAD_USER_OR_PASSWORD;
-
-    return SERVER_DOWN;
+    return INVALID_DATA_SET;
   }
 
 
