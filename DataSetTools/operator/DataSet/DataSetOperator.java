@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/03/15 06:10:43  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.8  2003/06/19 18:46:30  pfpeterson
  *  Implemented clone().
  *
@@ -59,7 +62,6 @@
 
 package DataSetTools.operator.DataSet;
 
-import java.util.Vector;
 import java.io.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.Operator;

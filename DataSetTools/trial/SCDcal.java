@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2004/03/15 06:10:54  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.10  2004/03/15 03:28:44  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -83,11 +86,7 @@ import gov.anl.ipns.Util.Numeric.*;
 import java.io.*;
 import java.util.*;
 import DataSetTools.math.*;
-import DataSetTools.util.*;
-import DataSetTools.instruments.*;
 import DataSetTools.dataset.*;
-import DataSetTools.viewer.*;
-import DataSetTools.functions.*;
 
 /**
  * This class implements a parameterized "function" that calculates the

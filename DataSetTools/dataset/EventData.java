@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/03/15 06:10:36  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.6  2004/03/15 03:28:06  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -61,10 +64,7 @@ package  DataSetTools.dataset;
 import gov.anl.ipns.MathTools.Functions.*;
 
 import java.io.*;
-import DataSetTools.math.*;
-import DataSetTools.util.*;
 import DataSetTools.viewer.*;
-import DataSetTools.functions.*;
 
 /**
  * This is the class for a histogram data object whose values are determined 

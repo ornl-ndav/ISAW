@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/03/15 06:10:50  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.4  2004/03/15 03:28:34  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -53,7 +56,6 @@ package DataSetTools.operator.Generic.Save;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.parameter.*;
-import IsawGUI.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Sys.*;
 
@@ -61,7 +63,6 @@ import javax.print.*;
 import javax.print.attribute.*;
 import javax.print.attribute.standard.*;
 import java.util.*;
-import DataSetTools.util.*;
 import javax.swing.*;
 import java.awt.*;
 

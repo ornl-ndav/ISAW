@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/03/15 06:10:58  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.3  2003/10/31 18:15:44  dennis
  *  Added a few checks for null in the main (test) program.
  *
@@ -44,14 +47,9 @@
  */
 package NetComm;
 
-import java.io.*;
-import java.util.*;
-import java.net.*;
 import DataSetTools.dataset.*;
-import DataSetTools.retriever.*;
 import DataSetTools.util.*;
 import DataSetTools.operator.*;
-import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.operator.Generic.Load.*;
 import Operators.*;

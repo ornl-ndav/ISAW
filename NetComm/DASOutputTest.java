@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/03/15 06:10:57  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.15  2002/11/30 22:21:31  dennis
  *  Now pauses after sending each 5 spectra, instead of each 10 spectra,
  *  to give the LiveDataServer a better chance to process the Data when
@@ -53,11 +56,7 @@
  */
 package NetComm;
 
-import java.io.*;
-import java.net.*;
-import NetComm.*;
 import DataSetTools.dataset.*;
-import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
 import DataSetTools.instruments.*;
 

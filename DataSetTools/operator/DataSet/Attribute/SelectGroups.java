@@ -29,6 +29,9 @@
 
  *
  * $Log$
+ * Revision 1.5  2004/03/15 06:10:44  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.4  2004/03/15 03:28:23  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -49,7 +52,6 @@ package DataSetTools.operator.DataSet.Attribute;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
-import DataSetTools.util.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.io.Serializable;

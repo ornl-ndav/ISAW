@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2004/03/15 06:10:51  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.24  2004/03/15 03:28:42  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -96,13 +99,11 @@ package DataSetTools.retriever;
 import gov.anl.ipns.Util.Numeric.*;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 import java.awt.event.*;
 import NetComm.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
-import DataSetTools.util.*;
 
 /**
  *  This class constructs a LiveDataRetriever object for a specified source

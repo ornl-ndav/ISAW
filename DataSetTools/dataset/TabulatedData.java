@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2004/03/15 06:10:38  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.10  2004/03/15 03:28:08  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -78,13 +81,9 @@
 
 package  DataSetTools.dataset;
 
-import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.Numeric.*;
 
-import java.util.Vector;
 import java.io.*;
-import DataSetTools.math.*;
-import DataSetTools.util.*;
 
 /**
  * The abstract base class for a tabulated function data object.  This class

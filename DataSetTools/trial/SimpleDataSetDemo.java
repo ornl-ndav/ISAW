@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/15 06:10:54  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.7  2004/03/14 20:23:46  dennis
  * Put in package DataSetTools.trial
  *
@@ -39,10 +42,7 @@
  */
 package DataSetTools.trial;
 
-import javax.swing.*;
-
 import DataSetTools.dataset.*;
-import DataSetTools.operator.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
 

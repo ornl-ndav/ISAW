@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.42  2004/03/15 06:10:35  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.41  2003/10/15 02:30:44  bouzekc
  *  Updated to correspond with correct spelling of reflectometer in IPNS
  *  files.
@@ -114,7 +117,6 @@
 package  DataSetTools.dataset;
 
 import java.io.*;
-import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
 import DataSetTools.operator.DataSet.Special.*;
 import DataSetTools.operator.DataSet.TOF_DG_Spectrometer.*;

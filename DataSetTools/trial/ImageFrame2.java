@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/03/15 06:10:52  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.9  2004/03/15 03:28:43  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -104,9 +107,6 @@ import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
 
 import javax.swing.*;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 
 /**
  * Simple class to display an image, specified by an IVirtualArray2D or a 

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/03/15 06:10:52  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.4  2004/03/15 03:28:43  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -52,10 +55,6 @@ package  DataSetTools.trial;
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Sys.*;
-
-import java.io.*;
-import DataSetTools.math.*;
-import DataSetTools.util.*;
 
 public class BestFitTest
 {

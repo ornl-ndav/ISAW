@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.34  2004/03/15 06:10:56  dennis
+ * Removed unused import statements.
+ *
  * Revision 1.33  2004/03/15 03:29:03  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -95,12 +98,7 @@
 package DataSetTools.viewer.ThreeD;
 
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
-import DataSetTools.components.image.*;
 import DataSetTools.viewer.*;
-import DataSetTools.math.*;
-import DataSetTools.components.containers.*;
-import DataSetTools.components.ThreeD.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.retriever.*;
 import gov.anl.ipns.MathTools.Geometry.*;

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2004/03/15 06:10:35  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.37  2004/03/15 03:28:05  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -121,8 +124,6 @@ import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.Numeric.*;
 
 import java.io.*;
-import DataSetTools.math.*;
-import DataSetTools.util.*;
 
 public abstract class Data implements IData,
                                       Serializable ,

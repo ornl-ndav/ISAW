@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2004/03/15 06:10:58  dennis
+ *  Removed unused import statements.
+ *
  *  Revision 1.14  2003/03/24 20:40:25  pfpeterson
  *  Fixed a javadoc tag to refer to proper class.
  *
@@ -64,10 +67,8 @@
 package NetComm;
 
 import java.net.*;
-import java.lang.*;
 import java.io.*;
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
 
 /**
  *  Creates Object I/O streams, given a TCP socket, and handles sending
