@@ -30,7 +30,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2005/02/03 08:18:07  kramer
+ * Fixed an error in the getISO8601String(Date date) method, the current date
+ * was used instead of 'date'.
+ *
+ * Commented out the section that writes fractions of a second because
+ * parseISO8601(String dateString) can't read a ISO8601 string written to a
+ * fraction of a second.
+ *
  * Revision 1.23  2005/02/03 06:36:50  kramer
+ *
  * Added the parseISO8601(String dateString) and getISO8601String(Date date)
  * methods which get a Date from an String written in ISO8601 format and a
  * String written in ISO8601 format from a Date.
@@ -233,20 +242,22 @@ public class NxNodeUtils {
     
     public static String getISO8601String(Date date)
     {
-       int year = Calendar.getInstance().get(Calendar.YEAR);
+       GregorianCalendar calendar = new GregorianCalendar();
+          calendar.setTime(date);
+       
+       int year = calendar.get(Calendar.YEAR);
        //one is added because Calendar.getInstance().get(Calendar.MONTH) = 0
        //  to refer to January but the ISO8601 standard uses 01 to represent 
        //  January
-       int month = Calendar.getInstance().get(Calendar.MONTH)+1;
-       int dayOfMonth = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+       int month = calendar.get(Calendar.MONTH)+1;
+       int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
        
+       int hour = calendar.get(Calendar.HOUR_OF_DAY);
+       int minute = calendar.get(Calendar.MINUTE);
+       int second = calendar.get(Calendar.SECOND);
+       int milliseconds = calendar.get(Calendar.MILLISECOND);
        
-       int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-       int minute = Calendar.getInstance().get(Calendar.MINUTE);
-       int second = Calendar.getInstance().get(Calendar.SECOND);
-       int milliseconds = Calendar.getInstance().get(Calendar.MILLISECOND);
-       
-       int zoneOffsetMs = Calendar.getInstance().get(Calendar.ZONE_OFFSET);
+       int zoneOffsetMs = calendar.get(Calendar.ZONE_OFFSET);
        
        
        DecimalFormat twoDigitFormat = new DecimalFormat("00");
@@ -269,12 +280,16 @@ public class NxNodeUtils {
              dateBuffer.append(twoDigitFormat.format(second));
           }
           
+          /*
+           * TODO Uncomment this when parseISO8601(String dateString)  
+           *      can read a String written to the fraction of a second
           if (milliseconds != 0)
           {
              DecimalFormat threeDigitFormat = new DecimalFormat("000");
              dateBuffer.append(".");
              dateBuffer.append(threeDigitFormat.format(milliseconds));
           }
+          */
           
           if (zoneOffsetMs == 0)
           {
@@ -296,6 +311,7 @@ public class NxNodeUtils {
              int extraMins = totalPosOffsetMin-hourToUse*60;
              
              dateBuffer.append(twoDigitFormat.format(hourToUse));
+             dateBuffer.append(":");
              dateBuffer.append(twoDigitFormat.format(extraMins));
           }
           
