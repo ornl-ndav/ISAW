@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2005/01/10 15:28:50  dennis
+ * Removed unused imports.
+ *
  * Revision 1.3  2004/07/30 14:28:00  rmikk
  * Eliminated unused Variables
  *
@@ -55,7 +58,7 @@ import java.text.DecimalFormat;
 
 import DataSetTools.dataset.*;
 import DataSetTools.math.tof_calc;
-import gov.anl.ipns.MathTools.Geometry.*; 
+
 /**
  * This class contains variables describing a voxel(peak) in three formats:
  * real(xcm,ycm,wl), pixel( x,y,z {col,row,time chan}) and hkl. It also stores
