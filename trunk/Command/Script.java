@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/03/21 15:27:02  pfpeterson
+ * No longer throws NullPointerException when working with null script.
+ *
  * Revision 1.2  2003/03/14 16:45:39  pfpeterson
  * Removed some debugging messages.
  *
@@ -127,6 +130,9 @@ public class Script extends Object{
    * The total number of lines in the script
    */
   public int numLines(){
+    // just return if there is an empty script
+    if(this.script==null || this.script.length()<=0) return -1;
+    
     if(this.linenum==null)
       this.init_linenum(true);
     return this.linenum.length-1;
@@ -136,6 +142,9 @@ public class Script extends Object{
    * get a particular line from the script
    */
   public String getLine(int line){
+    // just return if there is an empty script
+    if(this.script==null || this.script.length()<=0) return null;
+
     // initialize the linenumber array if it isn't already
     if(this.linenum==null)
       this.init_linenum(true);
@@ -158,6 +167,9 @@ public class Script extends Object{
   private void init_linenum(boolean fill_in){
     int linecount=0;
     int index=0;
+
+    // don't initialize an empty script
+    if(this.script==null || this.script.length()<=0) return;
 
     // first count the number of lines
     //while( index>=0 ){
