@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/11/29 17:16:09  rmikk
+ * The port number for the memory: protocol is now a constant 322.
+ * The getHostAddress was implemented to always return the loop-back IP address.
+ *    This improved the speed immensly once the Help was up
+ *
  * Revision 1.5  2003/05/30 13:35:38  dennis
  * Changed the protocol name from "Memory" to "memory" so that the
  * dynamic generation of help pages works under JDK 1.4.1. (Ruth)
@@ -76,10 +81,17 @@ public class Handler extends URLStreamHandler
   {  
      if( !(u.getProtocol().equals("memory")))
                throw new IOException("improper protocol");
-        
      return new MURLConnection( u);
   }
 
+   /**
+     * Returns the loop-back IP address.
+     */
+   public InetAddress getHostAddress(URL u){
+      try{
+       return InetAddress.getByName("127.0.0.1");
+      }catch(Exception ss){return null;}
+   }
 
  /** The URLConnection class that handles the "Memory:" protocol for html pages
   *   for ISAW operators
@@ -99,10 +111,13 @@ public class Handler extends URLStreamHandler
      public MURLConnection(URL url)
      {
         super(url);
-        this.url=url;
+        
         Script_Class_List_Handler sh = new Script_Class_List_Handler();
-        String c = url.getHost();
-        int num = url.getPort();
+        this.url=url;
+        String c = url.getFile();
+        int num = (new Integer(c.substring(8))).intValue();
+        c = c.substring(0,7);
+        
         if( c.equals("DataSet"))
          op = sh.getDataSetOperator( num);
         else if( c.equals( "Generic" ))
@@ -183,10 +198,11 @@ public class Handler extends URLStreamHandler
   public static void main( String args[])
     {
      JFrame jf= new JFrame( "Test");
+     Script_Class_List_Handler sh = new Script_Class_List_Handler();
      try{
         System.setProperty("java.protocol.handler.pkgs","test");//did not work
 	URLStreamHandler MyurlStreamHandler = (URLStreamHandler)(new Handler());
-	URL url=new URL("memory","DataSet",15,"x",MyurlStreamHandler);
+	URL url=new URL("memory","DataSet",322,"15",MyurlStreamHandler);
 	JEditorPane jep = new JEditorPane( url);
 	jf.getContentPane().add(jep);
 	jf.setSize(600,600);
@@ -198,5 +214,4 @@ public class Handler extends URLStreamHandler
          System.out.println("Exception="+ss);
        }
      }//method main
-
 }//class Handler
