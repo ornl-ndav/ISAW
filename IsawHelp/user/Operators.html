@@ -138,8 +138,8 @@ parameter specified by the user.  A list of these means follow:
    
   <li>Convert to Java Wrapped operator. <a href="Add2Ints5.html">Example</a><ul>
      This utility, <b>Command.JavaCC.Fortran.Fcvrt <I>filename.f</I></b>, is used to translate simple Fortran
-     subroutines to a 
-     <a href="#JavaWrapped">Java Wrapped Operator</a>.  The aim is to translate simple
+     subroutines to 
+     <a href="#JavaWrapped">Java Wrapped Operators</a>.  The aim is to translate simple
      subroutines or, for those who do not know Java, to write the code in FORTRAN as 
      opposed to Java.<P>
      <ul> Some notes
@@ -170,7 +170,7 @@ parameter specified by the user.  A list of these means follow:
    The unitnumber in the above methods can be 0 through 11. Unit number 0 uses the logging
    system.  Unit number 6 goes to the status pane.<P>
    Other operators can use these methods.  They are in Command.JavaCC.Fortran.util. The Isaw 
-   scripting language is about to get an operator shell around these methods.  It can use these
+   scripting language is about to get an operator shell around these methods.  It can then use these
    methods too.
 
      <li> If an argument is an [multidimensional] array, the parameter is an input/output 
@@ -200,23 +200,23 @@ parameter specified by the user.  A list of these means follow:
      </ul>
   <li><a name="JNIFOR">Via Java Native Interfaces</a><UL><P>
        FORTRAN subroutines can be compiled to dynamically linked libraries( Windows) or to unix
-       libraries. In this form, the code is theoretically the same as C code.  The next section
+       libraries. In this form, the code is theoretically "machine code".  The next section
        discusses some details concerning this type of interface to ISAW.
       </ul>
     </ol>
 <LI><OL type="a"><a name="JNI">Operators written using C or C++</a>
   <LI>Via Java Native Interfaces<ul>
-      Java is capable of using most code that can be placed in a library( dll for windows or so
-      for unix). This means that the connection between a Java application and this code is made
+      Java is capable of using most code that can be placed in a library( .dll file in windows or .so
+      file in unix). This means that the connection between a Java application and this code is made
       at run time.  The connection is determined by method name and argument types.  These are 
       often mangled according to special operating system dependent rules. The code must be translated
       for every operating system and possibly for different compilers and linkers on the same
       operating system.  It could be possible to compile some code with a parallelizing compiler
       for a multiprocessor system.  Since most code is "embarassingly" parallel, this could 
       easily speed up processing by a factor of 4.<P>
-      There is work on systems to automatically connect different languages.  Currently these 
-      include Babel, Jace, and Jacaw. I have had some initial success connecting java with FORTRAN
-      using the gcc and g77 system.
+        I have had some initial success connecting java with FORTRAN
+      using the gcc and g77 system.  There is also work on systems to automatically connect different languages. 
+      Currently these include Babel, Jace, and Jacaw. 
       <OL type="1"> Some Steps and considerations in using JNI
          <LI> Each method or subroutine must have some glue code to specify the mangled names.  This
               code is written in C.
@@ -265,7 +265,7 @@ JNIEXPORT jint JNICALL Java_Operators_Example_Add2Int5_Add2Ints
 }
 #endif
 #endif
-<pre><P>
+</pre><P>
               <LI> Write a C program to implement the method from this header file. All this 
                    implementation will do is call the external method Add2Int5 from the library,
                    This is the glue code and should also be compiled and placed in the library.<P>
