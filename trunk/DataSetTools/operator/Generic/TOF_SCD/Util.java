@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2003/04/22 14:32:14  pfpeterson
+ * Changed formatting when writting a matrix file.
+ *
  * Revision 1.8  2003/04/21 14:15:02  pfpeterson
  * Changed detector_angle, and detector_distance to look at the attributes
  * of one of the spectra rather than the DataSet.
@@ -327,13 +330,13 @@ public class Util{
     }
 
     // lattice parameters
-    for( int i=0 ; i<7 ; i++ )
-      sb.append(Format.real(abc[i],10,3));
-    sb.append("\n");
+    for( int i=0 ; i<6 ; i++ )
+      sb.append(Format.real(abc[i],10,5));
+    sb.append(Format.real(abc[6],10,2)+"\n");
     // sigmas
-    for( int i=0; i < 7; i++)
-      sb.append(Format.real(sig[i],10,3));
-    sb.append("\n");
+    for( int i=0; i < 6; i++)
+      sb.append(Format.real(sig[i],10,5));
+    sb.append(Format.real(sig[6],10,2)+"\n");
 
     //Write results to the matrix file
     FileOutputStream fout = null;
