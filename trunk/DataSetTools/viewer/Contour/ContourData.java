@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/08/01 22:10:54  rmikk
+ *  Fixed some errors with the Arbitrary axis handler system
+ *
  *  Revision 1.6  2002/08/01 13:51:45  rmikk
  *  Implemented code to deal with arbitrary axis handlers
  *
@@ -261,24 +264,29 @@ public class ContourData
     Arrays.fill( Groupss, -1);
     for( int i=0;i< ds.getNum_entries(); i++)
       {int indx = Axis3.getXindex( i, X);
-       float ax1= Axis1.getValue( i,indx);
-       float ax2 = Axis2.getValue( i,indx);
-       int row = (int)( .5+ nrowws*(ax2-minAx2)/(maxAx2-minAx2));
-       int col =(int)( .5+ ncolls*(ax1-minAx1)/(maxAx1-minAx1));
-       double y=0;
-       Data D =ds.getData_entry(i);
-       if( indx >=0)
-        if( indx <= D.getX_scale().getNum_x())
-          {if( D.isHistogram() && indx >0) indx--;
-           y = D.getX_scale().getX(indx);
-          }
-       if( y > 0)
-         {
-          values[ col*nrowws+row ]+=y;
-          Groupss[ col*nrowws+row ] = i;
-         // System.out.println("("+ax1+","+ax2+","+i+","+y);
-          }
-     
+       if( indx >= 0)
+         {float ax1= Axis1.getValue( i,indx);
+          float ax2 = Axis2.getValue( i,indx);
+          int row = (int)( nrowws*(ax2-minAx2)/(maxAx2-minAx2));
+          int col =(int)( ncolls*(ax1-minAx1)/(maxAx1-minAx1));
+          double y=0;
+          Data D =ds.getData_entry(i);
+          if( indx >=0)
+           if( indx < D.getX_scale().getNum_x())
+            {//if( D.isHistogram() && indx >0) indx--;
+            // y = D.getX_scale().getX(indx);
+               y = D.getY_values()[indx];
+            }
+         if( y > 0)
+           { //if(values[col*nrowws+row]>0)
+              // System.out.println("Dup "+row+","+col);
+            values[ col*nrowws+row ]+=y;
+            Groupss[ col*nrowws+row ] = i;
+           // if( (i==257)||(i==345))
+            //  System.out.println("XX i,y,indx="+i+","+y+","+indx);
+           // System.out.println("("+ax1+","+ax2+","+i+","+y);
+            }
+      }//if indx >=0
       }
      /* System.out.println("Time ="+X);
       for( int k=0; k<values.length;k++)
@@ -310,7 +318,9 @@ public class ContourData
       //there could be missing data in the returned array, we will take a
       //chance and say that the first detector will give us good data.
       if( mode !=0)
-        return (new UniformXScale(minAx3,maxAx3, ntimes)).getXs();
+        { //System.out.println("in getTimeRange "+minAx3+","+maxAx3+","+ntimes);
+          return (new UniformXScale(minAx3,maxAx3, ntimes)).getXs();
+        }
       Data db = ds.getData_entry( 0 );
 
       if( x_scale == null)
@@ -333,12 +343,14 @@ public class ContourData
 
 
    public float getTime(double row, double col)
-   {  if( mode == 0)
+   { if( mode == 0)
         return lastTime;
       //Needs to be the time in the data set.
      int Group = getGroupIndex( row, col);
+     if( Group < 0)
+       return Float.NaN;
      int time = Axis3.getXindex( Group, lastTime);
-     Data D = ds.getData_entry(0);
+     Data D = ds.getData_entry(Group);
      return D.getX_scale().getX(time);
       
    }
@@ -385,16 +397,23 @@ public class ContourData
          return groups[r][c];
          }
       else //returns user coordinates
-         { r = (int)((row-minAx2)/(maxAx2-minAx2)*nrowws);
-           c =(int) ((col -minAx1)/(maxAx1-minAx1)*ncolls);
+         { float R = (int)((row-minAx2)/(maxAx2-minAx2)*nrowws);
+           float C =(int) ((col -minAx1)/(maxAx1-minAx1)*ncolls);
           // System.out.println("mode 1 "+r+","+c+","+nrowws+","+ncolls);
           // System.out.println("Range row(Ax2)="+minAx2+","+row+","+maxAx2+","+
            //      (row-minAx2)+","+(maxAx2-minAx2)+","+((row-minAx2)/(maxAx2-minAx2)));
           // System.out.println( ((row-minAx2)/(maxAx2-minAx2)*nrowws)+","+r);
-           if( r<0) return -1;
-           if( c<0) return -1;
-           if( r >=nrowws) return -1;
-           if( c >=ncolls) return -1;
+           if( R<0) return -1;
+           if( C<0) return -1;
+           if( R >nrowws) return -1;
+           if( C >ncolls) return -1;
+           r = (int) R;
+           c = (int) C;
+           //System.out.println( "RCrc="+R+","+C+","+r+","+c +","+values[c*nrowws+r]);
+           int G =Groupss[ c*nrowws+r];
+           int xIndex = Axis3.getXindex( G, lastTime);
+          // System.out .println("Gr, A1,A2,time, timeIndex="+G+","+Axis1.getValue(G,xIndex)+","+
+            //  Axis2.getValue( G, xIndex)+ ","+lastTime+","+Axis3.getValue(G,xIndex)+","+xIndex);
            return Groupss[ c*nrowws+r];
          }
 
@@ -429,7 +448,7 @@ public class ContourData
          
          //System.out.println("Ax1 min,max="+ minAx1+","+maxAx1);
          }
-      ncolls =(int)(.5+java.lang.Math.sqrt( 4*ds.getNum_entries()*(maxAx2-minAx2)/(maxAx1-minAx1)));
+      ncolls =(int)(.5+java.lang.Math.sqrt( 8*ds.getNum_entries()*(maxAx2-minAx2)/(maxAx1-minAx1)));
        
       nrowws = (int)(.5+ncolls*(maxAx1-minAx1)/(maxAx2-minAx2));
       ntimes = 20;
