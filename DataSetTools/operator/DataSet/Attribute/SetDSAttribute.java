@@ -32,6 +32,9 @@
  * This operator sets a DataSet Attribute
  *
  *  $Log$
+ *  Revision 1.4  2002/12/10 22:03:22  dennis
+ *  Added getDocumentation() method. (Tyler Stelzer)
+ *
  *  Revision 1.3  2002/11/27 23:16:41  pfpeterson
  *  standardized header
  *
@@ -135,7 +138,9 @@ public class SetDSAttribute extends    DS_Attribute
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**@return Sets an attribute of the given DataSet if successful.  Otherwise 
+  *          it returns an error string if an error occurs in Attribute.Build()
+  */
   public Object getResult()
   { 
      DataSet ds = getDataSet();
@@ -147,7 +152,7 @@ public class SetDSAttribute extends    DS_Attribute
      
      if ( A instanceof ErrorString )
        return A; 
-   
+    
      ds.setAttribute( (Attribute)A );
      ds.addLog_entry( "SetDSAttribute for " +ds + " to: " + A);
 
@@ -168,6 +173,42 @@ public class SetDSAttribute extends    DS_Attribute
     new_op.CopyParametersFrom( this );
 
     return new_op;
+  }
+  
+  public String getDocumentation()
+  {
+     StringBuffer Res = new StringBuffer();
+     Res.append("@overview This operator sets an attribute of a DataSet.");
+     
+     Res.append("@algorithm Check to make sure the attribute is");
+      Res.append(" valid.  If it is, it sets the data attribute of the");
+      Res.append(" DataSet that is specified.");
+     
+     Res.append("@param  ds - The DataSet to which the operation is applied");
+     Res.append("@param   Attrib - The Attribute to be set.");
+     Res.append("@param  new_Value - The new value of the Attribute");
+     
+     Res.append("@return Sets a Data Attribute ");
+      Res.append(" in a DataSet and returns the String \"SetDSAttribute for: \"");
+      Res.append(" if successful.  Otherwise it returns an error string if");
+      Res.append(" there is an error in Attribute.Build");
+      
+     Res.append("@error null value object");
+     Res.append("@error null name object");
+     Res.append("@error can't build Attribute for");
+  
+     return Res.toString();
+  }
+  
+  /* ------------------------------ main ------------------------------- */
+  public static void main(String [] args)
+  {
+  	SetDSAttribute op = new SetDSAttribute();
+	String documentation = op.getDocumentation();
+	
+	System.out.println(documentation);
+	
+	System.out.println(op.getResult().toString());
   }
 
 }
