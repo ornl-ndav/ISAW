@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2003/02/07 19:05:51  dennis
+ *  Added PIXEL_INFO_LIST String.
+ *
  *  Revision 1.34  2003/01/15 20:54:25  dennis
  *  Changed to use SegmentInfo, SegInfoListAttribute, etc.
  *
@@ -225,6 +228,7 @@ abstract public class Attribute implements Serializable,
   public static final String SCD_CALIB          = "SCD Calibration";
   public static final String SCD_CALIB_FILE     = "SCD Calibration File";
 
+  public static final String  PIXEL_INFO_LIST   = "Pixel Info List";
   public static final String  SEGMENT_INFO_LIST = "Seg Info List";
   public static final String  SEGMENT_INFO      = "Seg Info";
 
