@@ -393,6 +393,9 @@ day 209>
 -TODO: 209-1: implement some neater method for choosing marker types
 -TODO: 209-2: fix viewer so that it resizes without errors when there's 1
                 spectra being viewed.
+-DONE: 209-0: done, but the default color chooser is too big of a hammer.  
+                perhaps a more simple version can be added later.
+-TODO: 209-3: correct zoom so that units on the y-axis change.
 
 
 
