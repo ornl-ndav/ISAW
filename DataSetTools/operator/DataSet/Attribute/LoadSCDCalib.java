@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2004/01/07 14:40:11  dennis
+ * Now also uses the calibration file to adjust the data grid positions
+ * and to set the effective detector positions based on the calibrated
+ * data grid positions.
+ *
  * Revision 1.12  2003/12/15 02:20:38  bouzekc
  * Removed unused imports.
  *
@@ -73,6 +78,8 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
+import java.util.Hashtable;
+import java.util.Enumeration;
 
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.Data;
@@ -80,6 +87,8 @@ import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.Float1DAttribute;
 import DataSetTools.dataset.FloatAttribute;
 import DataSetTools.dataset.StringAttribute;
+import DataSetTools.dataset.Grid_util;
+import DataSetTools.dataset.UniformGrid;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.parameter.IntegerPG;
@@ -89,6 +98,9 @@ import DataSetTools.util.IntListString;
 import DataSetTools.util.LoadFileString;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.TextFileReader;
+import DataSetTools.math.LinearAlgebra;
+import DataSetTools.math.Vector3D;
+
 
 /** 
  * This operator will add the calibration information from the file
@@ -100,8 +112,9 @@ public class LoadSCDCalib extends DS_Attribute{
     private static final String     TITLE  = "Load SCD Calibration";
     private static final boolean    DEBUG  = false;
 
-    private Vector calibrations=null;
-    private Vector detNums=null;
+    private Vector    calibrations = null;
+    private Hashtable calibrations_table = null;
+    private Vector    detNums = null;
 
     /**
      *  Creates operator with title "Load SCD Calibration" and a
@@ -234,6 +247,9 @@ public class LoadSCDCalib extends DS_Attribute{
               detList="Loaded calibration for all detectors";
           }
         }
+
+        loadCalibrations( calibfile );
+        applyCalibration( ds );
 
         return detList;
     }
@@ -566,4 +582,135 @@ public class LoadSCDCalib extends DS_Attribute{
       calib_Attr=new Float1DAttribute(Attribute.SCD_CALIB,calib);
     }
   }
+
+
+/* ----------------------------- loadCalibrations -------------------- */
+/*
+ *  Load calibration data into form used for adjusting the data grid
+ *  size and position. 
+ */ 
+  private void loadCalibrations( String file_name )
+  {
+    try
+    {
+      TextFileReader tfr = new TextFileReader( file_name );
+      calibrations_table = new Hashtable();
+      tfr.read_line();
+      boolean done = false;
+      while ( !done && !tfr.end_of_data() )
+      {
+        int det_num = tfr.read_int();
+        float det_A   = tfr.read_float();
+        float det_D   = tfr.read_float();
+        float l1      = tfr.read_float();
+        float t0      = tfr.read_float();
+        float x2cm    = tfr.read_float();
+        float y2cm    = tfr.read_float();
+        float xleft   = tfr.read_float();
+        float ylower  = tfr.read_float();
+        String calib_name = tfr.read_line();
+
+        float calib[] = { det_A, det_D, l1, t0, x2cm, y2cm, xleft, ylower };
+        Integer key = new Integer( det_num );
+        if ( calibrations_table.get( key ) == null )    // new detector
+        {
+          System.out.println("Using calibration: " +calib_name +
+                             " for " + det_num );
+          calibrations_table.put( key, calib );
+        }
+        else
+          done = true;                           // just use first calibrations
+      }
+    }
+    catch ( Exception e )
+    {
+      System.out.println("Exception reading calibration file is " + e );
+      e.printStackTrace();
+      calibrations_table = null;
+    }
+
+    if ( calibrations_table != null )
+    {
+      Enumeration e = calibrations_table.elements();
+      while ( e.hasMoreElements() )
+        LinearAlgebra.print( (float[])e.nextElement() );
+    }
+  }
+
+
+/* ----------------------------- applyCalibrations -------------------- */
+/*
+ *  Apply calibration data loaded by loadCalibrations to adjust the data
+ *  grid positions and effective position information. 
+ */
+ private void applyCalibration( DataSet ds )
+  {
+    if ( calibrations_table == null )
+    {
+      System.out.println("No calibrations for DataSet " + ds );
+      return;
+    }
+ 
+    int ids[] = Grid_util.getAreaGridIDs( ds );
+    for ( int i = 0; i < ids.length; i++ )
+    {
+      UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid( ds, ids[i] );
+      float cal[] = (float[])calibrations_table.get( new Integer( ids[i] ) );
+      if ( cal == null )
+      {
+        System.out.println("ERROR: No calibration for detector ID " + ids[i] );
+        return;
+      }
+                                        // First adjust the grid according to
+                                        // the calibration information
+      int n_rows = grid.num_rows();
+      int n_cols = grid.num_cols();
+
+      float width  = n_cols * cal[4]/100;
+      float height = n_rows * cal[5]/100;
+
+      grid.setWidth( width );
+      grid.setHeight( height );
+
+      float xleft   = cal[6]/100;
+      float ylower  = cal[7]/100;
+      Vector3D base = grid.x_vec();
+      Vector3D up   = grid.y_vec();
+      base.normalize();
+      up.normalize();
+
+      float xcenter = xleft  + width / 2;
+      float ycenter = ylower + height / 2;
+      Vector3D center = grid.position();
+
+      System.out.println("ORGINAL CENTER IS: " + center );
+      System.out.println("Shift in X is : " + xcenter );
+      System.out.println("Shift in Y is : " + ycenter );
+
+      base.multiply( xcenter );
+      up.multiply( ycenter );
+      center.add( base );
+      center.add( up );
+      grid.setCenter( center );
+      System.out.println("NEW CENTER IS: " + center );
+
+      Attribute T0_attribute = new FloatAttribute( Attribute.T0_SHIFT, cal[3] );
+      Attribute l1_attribute = new FloatAttribute( Attribute.INITIAL_PATH,
+                                                   cal[2]/100 );
+      for ( int row = 1; row <= n_rows; row++ )
+        for ( int col = 1; col <= n_cols; col++ )
+        {
+          grid.getData_entry( row, col ).setAttribute( l1_attribute );
+          grid.getData_entry( row, col ).setAttribute( T0_attribute );
+        }
+
+      System.out.println ("GRID IS " );
+      System.out.println ("" + grid );
+                                               // Finally, adjust the
+                                               // effective detector pixel
+                                               // positions
+      Grid_util.setEffectivePositions( ds, ids[i] );
+    }
+  }
+
 }
