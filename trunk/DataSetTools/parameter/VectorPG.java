@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2003/08/26 18:26:34  bouzekc
+ * Made the internal ArrayEntryJPanel protected so that subclasses can use
+ * it.  Removed layout setup for entrywidget.
+ *
  * Revision 1.26  2003/08/22 20:12:06  bouzekc
  * Modified to work with EntryWidget.
  *
@@ -190,7 +194,7 @@ public abstract class VectorPG extends ParameterGUI
   private String typeName;
   private ParameterGUI param;
   private PropertyChangeSupport pcs;
-  private ArrayEntryJPanel GUI;
+  protected ArrayEntryJPanel GUI;
   private JButton vectorButton;
   private Vector listeners                = new Vector(  );
   private JDialog entryDialog;
@@ -275,8 +279,11 @@ public abstract class VectorPG extends ParameterGUI
    * Gets the value of the Vector
    */
   public Object getValue(  ) {
-    if( value == null)  //The iss scripting system does not like null
-      return new Vector();//parameters yet
+    if( value == null ) {  //The iss scripting system does not like null
+
+      return new Vector(  );  //parameters yet
+    }
+
     return value;
   }
 
@@ -344,21 +351,17 @@ public abstract class VectorPG extends ParameterGUI
    * @param V The Vector to use when initializing this VectorPG.
    */
   public void initGUI( Vector V ) {
-    if( V != null) // Usually is null so use the previous value
-      setValue ( V );
-    GUI     = new ArrayEntryJPanel( param );
+    if( V != null ) {  // Usually is null so use the previous value
+      setValue( V );
+    }
+
+    GUI = new ArrayEntryJPanel( param );
     GUI.addPropertyChangeListener( this );
     GUI.setValue( value );
     vectorButton   = new JButton( param.getName(  ) );
     entrywidget    = new EntryWidget(  );
-    entrywidget.setLayout( new GridLayout(  ) );
 
-    //a Box is needed so that when the entrywidget is resized
-    //smaller, the components will not overlap
-    Box widgetbox = new Box( BoxLayout.X_AXIS );
-
-    widgetbox.add( vectorButton );
-    entrywidget.add( widgetbox );
+    entrywidget.add( vectorButton );
     entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
     vectorButton.addActionListener( this );
 
