@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2004/01/30 00:16:16  bouzekc
+ * Removed debug line.
+ *
  * Revision 1.4  2004/01/30 00:04:23  bouzekc
  * Spruced up the javadocs in the class description.
  *
@@ -180,7 +183,6 @@ public class FortranOperatorFactory {
    */
   private static Wrappable createFortranWrapped( String fileName ) {
     String code         = createWrappedCodeFromFortran( fileName );
-    System.out.println( code );
     Wrappable myWrapped = null;
 
     try {
