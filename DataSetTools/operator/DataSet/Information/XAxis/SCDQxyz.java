@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/01/14 19:52:57  dennis
+ * Added getDocumentation() and basic main test program.(Chris Bouzek)
+ *
  * Revision 1.5  2003/01/06 22:43:31  dennis
  * Adjusted signs to compensate for different coordinate system.
  *
@@ -52,7 +55,6 @@
  * of reference is mapped back to a common frame by reversing
  * the rotations defined by Phi, Chi and Omega.
  *
- *
  */
 
 package DataSetTools.operator.DataSet.Information.XAxis;
@@ -66,6 +68,9 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.retriever.*;
+
 
 /**
  *  This operator uses the chi, phi and omega attributes of a single crystal
@@ -160,6 +165,45 @@ public class SCDQxyz extends  XAxisInformationOp
      return "Qx,Qy,Qz";
    }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator uses the chi, phi and omega ");
+    s.append("attributes of a single crystal diffractometer DataSet to ");
+    s.append("produce a string giving the values of Qx, Qy, Qz for a ");
+    s.append("specific bin in a histogram, in a frame of reference ");
+    s.append("attached to the crystal, ");
+    s.append("( chi = 0, phi = 0 and omega = 0 ).\n");
+    s.append("@assumptions It is assumed that the DataSet has an attribute ");
+    s.append("specifying the detector position.\n");
+    s.append("@algorithm First this operator gets the data entry specified ");
+    s.append("by the given Data block.\n");
+    s.append("Then it uses the SCD calibration to get to real-space at the ");
+    s.append("point specified by the data entry and time-of-flight values.\n");
+    s.append("Then it calculates wavelength based on time-of-flight data ");
+    s.append("and distance to sample.\n");
+    s.append("Next it uses detector center distance, center angle, ");
+    s.append("wavelength and sample orientation to calculate 1/d values ");
+    s.append("by converting from real-space to Q values and rotating the ");
+    s.append("sample orientation out of the Q orientation.\n");
+    s.append("Finally it creates a new Position3D based upon the calculated ");
+    s.append("values.\n");
+    s.append("@param ds The DataSet to which the operation is applied.\n");
+    s.append("@param i The index of the Data block to use.\n");
+    s.append("@param tof The time-of-flight at which Qx,Qy,Qz is to be ");
+    s.append("obtained.\n");
+    s.append("@return Position3D of the calculated Q.\n");
+    s.append("@error Returns null if the conversion from real-space to ");
+    s.append("Q-values fails.  This will occur if the wavelength cannot be ");
+    s.append("calculated, although anything which hinders the conversion to ");
+    s.append("1/d values will cause this to occur.\n");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
   /**
@@ -353,5 +397,46 @@ public class SCDQxyz extends  XAxisInformationOp
       return post_phi;
   }
 
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    int index;
+    float TOF;
+
+    StringBuffer p = new StringBuffer();
+
+    index = 70;
+    TOF = (float)3512.438;
+
+    String file_name = "/home/groups/SCD_PROJECT/SampleRuns/SCD06496.RUN";
+                       //"D:\\ISAW\\SampleRuns\\SCD06496.RUN";
+
+    try
+    {
+       RunfileRetriever rr = new RunfileRetriever( file_name );
+       DataSet ds1 = rr.getDataSet(1);
+       ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+       SCDQxyz op = new SCDQxyz(ds1, index, TOF);
+       p.append("\nThe results of calling this operator are:\n");
+
+       if( op.getResult() == null )
+         p.append("The results of this operator are invalid.");
+
+       else
+         p.append(op.getResult().toString());
+
+       p.append("\n\nThe results of calling getDocumentation are:\n");
+       p.append(op.getDocumentation());
+
+       System.out.print(p.toString());
+     }
+     catch(Exception e)
+     {
+       e.printStackTrace();
+     }
+  }
 
 }
