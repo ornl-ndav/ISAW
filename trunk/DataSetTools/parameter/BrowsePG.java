@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2003/08/26 18:17:19  bouzekc
+ *  Fixed GUI layout.
+ *
  *  Revision 1.18  2003/08/22 20:12:08  bouzekc
  *  Modified to work with EntryWidget.
  *
@@ -236,14 +239,11 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
           browselistener.setFileFilter(defaultindex);
         }
         browse.addActionListener(browselistener);
-        entrywidget=new EntryWidget(new JPanel(new GridLayout()));
-        //a Box is needed so that when the entrywidget is resized
-        //smaller, the components will not overlap
+        entrywidget=new EntryWidget(  );
+        entrywidget.setLayout( new BoxLayout( entrywidget, BoxLayout.X_AXIS  ) );
 
-        Box widgetbox = new Box(BoxLayout.X_AXIS);
-        widgetbox.add(innerEntry);
-        widgetbox.add(browse);
-        entrywidget.add(widgetbox);
+        entrywidget.add(innerEntry);
+        entrywidget.add(browse);
         entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
         this.setEnabled(this.getEnabled());
         super.initGUI();
