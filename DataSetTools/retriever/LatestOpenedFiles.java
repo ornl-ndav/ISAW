@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/05/29 16:36:01  rmikk
+ * Fixed error from last commit
+ *
  * Revision 1.10  2004/05/29 16:32:52  rmikk
  * Eliminated an unused variable
  *
@@ -243,10 +246,10 @@ class MyActionListener implements ActionListener{
      DataSet[] DSS = null;
      try{
         DSS = ScriptUtil.load( filename );
-        /*filename = filename.replace( '\\' , '/' );
+        filename = filename.replace( '\\' , '/' );
         int l = filename.lastIndexOf( '/' );
         String filename1=filename;
-        */
+        
         if( l >= 0 ) 
            filename1 = filename.substring( l + 1 );
       
