@@ -30,6 +30,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.11  2003/03/20 20:18:29  rmikk
+ * Caught and handled an exception if value at a given
+ *   row and column does not represent a legitimate number
+ *
  * Revision 1.10  2003/03/19 16:52:53  rmikk
  * Added the Intensity calculation for a selected region of the
  * current table to the Edit/SpreadSheet menu item of the
@@ -180,7 +184,10 @@ public class STableView  extends DataSetViewer
          return ((Number)O).floatValue();
 
        else if( O instanceof String)
+        try{
          return ( new Float( (String)O)).floatValue();
+           }
+        catch( Exception ss){}
        return 0.0f;
        }
      /** "Integrates" the selected cells, removing background (level =
