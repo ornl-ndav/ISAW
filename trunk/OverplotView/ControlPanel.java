@@ -30,12 +30,6 @@ public class ControlPanel
   extends JTabbedPane
 {
 
-  public void paint()
-  {
-    System.out.println( "ControlPane::paint()" );
-  }
-
-
   public ControlPanel( DataSet d_, GraphableDataManager m_ )
   {
     manager = m_;
@@ -118,29 +112,29 @@ public class ControlPanel
   protected Component initSelect_inJPanel()
   {
     //create list
-    modelDLM = new DefaultListModel();
-    listJL = new JList( modelDLM );
+    dataDLM = new DefaultListModel();
+    dataJL = new JList( dataDLM );
 
-    modelDLM1 = new DefaultListModel();
-    listJL1 = new JList( modelDLM1 );
+    graphDLM = new DefaultListModel();
+    graphJL = new JList( graphDLM );
 
-    listJL.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
-    listJL.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
+    dataJL.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
+    dataJL.setSelectionMode( ListSelectionModel.MULTIPLE_INTERVAL_SELECTION );
 
     //create a scrolled pane
-    JScrollPane paneJS = new JScrollPane( listJL );
+    JScrollPane paneJS = new JScrollPane( dataJL );
     paneJS.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
 
-    JScrollPane paneJS1 = new JScrollPane( listJL1 );
+    JScrollPane paneJS1 = new JScrollPane( graphJL );
     paneJS1.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
 
     //create a listener for selection events and attach it to list
-    listJL.addListSelectionListener(  new SelectListSelectionListener()  );
-    listJL1.addListSelectionListener(  new GraphedListSelectionListener()  );
+    dataJL.addListSelectionListener(  new SelectListSelectionListener()  );
+    graphJL.addListSelectionListener(  new GraphedListSelectionListener()  );
 
     //create a listener for double-click events and attach it to the list
-    listJL.addMouseListener(  new DoubleClickSelectionListener()  );
-    listJL1.addMouseListener(  new DoubleClickDeselectionListener()  );
+    dataJL.addMouseListener(  new DoubleClickSelectionListener()  );
+    graphJL.addMouseListener(  new DoubleClickDeselectionListener()  );
 
    
     String addS = "Add";
@@ -180,11 +174,11 @@ public class ControlPanel
     int last = data.length;
     for( int i=0; i<last; i++ ) 
     {
-      String item = new String(  data[i].getID()  );
-      modelDLM.addElement( item );
+      String key = new String(  data[i].getID()  );
+      dataDLM.addElement( key );
       if(  data[i].isSelected()  )
       {
-        int[] list = { i };
+        String[] list = { key };
         addToGraphList( list );
       }
     }
@@ -489,6 +483,7 @@ public class ControlPanel
     {
       manager.setPercentOffset( percent_offset );
       manager.redraw();
+      //manager.redraw(  getSelectedKeyList()  );
     }
   }
 
@@ -534,6 +529,7 @@ public class ControlPanel
     public void actionPerformed( ActionEvent e )
     {
       manager.redraw();
+      //manager.redraw(  getSelectedKeyList()  );
     }
   }
 
@@ -555,6 +551,7 @@ public class ControlPanel
                                             yrange.getMax() ) );
       manager.setPercentOffset( percent_offset );
       manager.redraw();
+      //manager.redraw(  getSelectedKeyList()  );
     }
   }
 
@@ -590,6 +587,7 @@ public class ControlPanel
                                             yrange.getMax() ) );
       manager.setPercentOffset( percent_offset );
       manager.redraw();
+      //manager.redraw(  getSelectedKeyList()  );
     }
   }
 
@@ -614,6 +612,7 @@ public class ControlPanel
       percent_offset = (float)source.getValue() / 100;
       manager.setPercentOffset( percent_offset );
       manager.redraw();
+      //manager.redraw(  getSelectedKeyList()  );
     }
   }
 
@@ -667,7 +666,16 @@ public class ControlPanel
       int[] selections = list.getSelectedIndices();
       data_selections = new String[ selections.length ];
       for( int i=0; i<selections.length; i++ )
-        data_selections[i] = (String)modelDLM.get( selections[i] ); 
+        data_selections[i] = (String)dataDLM.get( selections[i] ); 
+
+      //update observers, if need be
+      if(  !dataJL.getSelectionModel().isSelectionEmpty()  &&
+            dataJL.getSelectedIndices().length == 1  )
+      { 
+        int selectedIndex = dataJL.getSelectionModel().getMaxSelectionIndex();
+        data_set.setPointedAtIndex( selectedIndex );
+        data_set.notifyIObservers(  IObserver.POINTED_AT_CHANGED );
+      }
 
       //adjust buttons and selections
       addJB.setEnabled( true );
@@ -692,7 +700,20 @@ public class ControlPanel
       int[] selections = list.getSelectedIndices();
       graph_selections = new String[ selections.length ];
       for( int i=0; i<selections.length; i++ )
-        graph_selections[i] = (String)modelDLM1.get( selections[i] ); 
+        graph_selections[i] = (String)graphDLM.get( selections[i] ); 
+
+      //update observers, if need be
+      if(  !graphJL.getSelectionModel().isSelectionEmpty()  &&
+            graphJL.getSelectedIndices().length == 1  )
+      { 
+        int selectedIndex = graphJL.getSelectionModel().getMaxSelectionIndex();
+        String key = (String)graphDLM.get( selectedIndex );
+        GraphableData value = (GraphableData)manager.get( key );
+        System.out.println(  "value: " + value.toString()  );
+        System.out.println(  "group id: " + value.getData().getGroup_ID()  );
+        data_set.setPointedAtIndex(  value.getData().getGroup_ID()  );
+        data_set.notifyIObservers(  IObserver.POINTED_AT_CHANGED );
+      }
 
       //adjust controls
       removeJB.setEnabled( true );
@@ -835,15 +856,15 @@ public class ControlPanel
     //remove all elements from propertyList
     clearPropertyList();
 
-    for( int i=0; i<modelDLM1.size(); i++ )
+    for( int i=0; i<graphDLM.size(); i++ )
     {
-      String id = (String)modelDLM1.get( i );
+      String id = (String)graphDLM.get( i );
       manager.remove( id ).setSelected( false );
-      modelDLM1.removeElement( id );
+      graphDLM.removeElement( id );
       //System.out.println( "cleared: " + id );  //**dbg**
     }
-    listJL.getSelectionModel().clearSelection();
-    listJL1.getSelectionModel().clearSelection();
+    dataJL.getSelectionModel().clearSelection();
+    graphJL.getSelectionModel().clearSelection();
   }
 
 
@@ -855,11 +876,12 @@ public class ControlPanel
    * sorted before this method is called, the selection will be invalid.
    *
    */
+/*
   protected void addToGraphList( int[] selections )
   {
     System.out.println( "ERROR: addToGraphList( int[] selections )" );
   }
-  
+*/  
 
 
   /**
@@ -867,11 +889,11 @@ public class ControlPanel
    */
   public void addToGraphList( GraphableData d )
   {
-    if( !modelDLM1.contains( d.getID() )  )
+    if( !graphDLM.contains( d.getID() )  )
     {
       d.setSelected( true );
       manager.add( d );
-      modelDLM1.addElement(  d.getID()  );
+      graphDLM.addElement(  d.getID()  );
     }
 
     if( manager.size() > 0 )
@@ -903,11 +925,11 @@ public class ControlPanel
         
 
       //add to list of specta to be graphed (if it's not already there)
-      if( !modelDLM1.contains( d.getID() )  )
+      if( !graphDLM.contains( d.getID() )  )
       {
         d.setSelected( true );
         manager.add( d );
-        modelDLM1.addElement(  d.getID()  );
+        graphDLM.addElement(  d.getID()  );
       }
     }
 
@@ -930,11 +952,11 @@ public class ControlPanel
     {
       String id = selections[i];
       manager.remove( id ).setSelected( false );
-      modelDLM1.removeElement( id );
+      graphDLM.removeElement( id );
 
       //System.out.println( "removed: " + id );
     }
-    listJL1.getSelectionModel().clearSelection();
+    graphJL.getSelectionModel().clearSelection();
   }
 
 
@@ -977,6 +999,26 @@ public class ControlPanel
 
 
 
+/*------------------------------=[ misc ]=------------------------------------*/
+
+  /**
+   * returns an array of Strings.  used to plot data in the order that it was
+   * selected.
+   */
+  protected String[] getSelectedKeyList()
+  {
+    Object[] objects = graphDLM.toArray();
+    String[] strings = new String[ objects.length ];
+
+    for( int i=0;  i<graphDLM.toArray().length;  i++ )
+      strings[i] = (String)objects[i];
+
+    return strings;
+  }
+  
+
+
+
 
 /*---------------------------=[ private data ]=-------------------------------*/
 
@@ -989,8 +1031,8 @@ public class ControlPanel
   private GraphableDataManager manager = null;
 
   //used in 'Select' tab
-  private DefaultListModel modelDLM, modelDLM1; 
-  private JList listJL, listJL1;
+  private DefaultListModel dataDLM, graphDLM; 
+  private JList dataJL, graphJL;
 
   /* used to communicate list selections between the listener and a function
      the strings are, incidently, the key to their corresponding GraphableData 
