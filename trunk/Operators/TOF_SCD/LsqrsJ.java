@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/04/28 16:39:24  pfpeterson
+ * Changed calculation of chisq to agree with how the best fit matrix
+ * is calculated.
+ *
  * Revision 1.2  2003/04/23 15:52:33  pfpeterson
  * Fixed calculation of lattice parameters and implemented own method
  * for calculating chisq.
@@ -246,14 +250,14 @@ public class LsqrsJ extends GenericTOF_SCD{
       }
       chisq=LinearAlgebra.BestFitMatrix(UB,Thkl,Tq);
       chisq=0.; // reset chisq
-      Tq=new double[3][peaks.size()];
+      Thkl=new double[3][peaks.size()];
       for( int i=0 ; i<hkl.length ; i++ )
         for( int j=0 ; j<3 ; j++ )
-          Tq[j][i]=q[i][j];
-          Thkl=LinearAlgebra.mult(UB,Tq);
+          Thkl[j][i]=hkl[i][j];
+          Tq=LinearAlgebra.mult(UB,Thkl);
       for( int i=0 ; i<peaks.size() ; i++ )
         for( int j=0 ; j<3 ; j++ )
-          chisq=chisq+Math.sqrt((hkl[i][j]-Thkl[j][i])*(hkl[i][j]-Thkl[j][i]));
+          chisq=chisq+(q[i][j]-Tq[j][i])*(q[i][j]-Tq[j][i]);
     }
 /* REMOVE
     System.out.println("UB="+arrayToString(UB));
