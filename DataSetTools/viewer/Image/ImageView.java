@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2002/07/29 16:46:53  dennis
+ *  ImageView no longer sets "PointedAt" to 0 when drawing it's
+ *  default horizontal graph.  DataSet observers are no longer
+ *  notified of the default graph drawn by ImageView.
+ *
  *  Revision 1.34  2002/07/24 23:21:55  dennis
  *  Now updates X-Conversions table when POINTED_AT_CHANGED
  *  message is received.
@@ -1086,28 +1091,17 @@ private void DrawDefaultDataBlock()
   {                                      // none, try to draw the last one
                                          // that was pointed at.
 
-    int   last_pointed_at   = getState().get_int( ViewerState.POINTED_AT_INDEX);
-    float last_pointed_at_x = getState().get_float( ViewerState.POINTED_AT_X );
+    int   last_pointed_at = getDataSet().getPointedAtIndex();
+
     if (last_pointed_at >= 0 && last_pointed_at < getDataSet().getNum_entries())
-    {
       DrawHGraph( last_pointed_at, 0, true );
-      getDataSet().setPointedAtIndex( last_pointed_at );
-      if ( last_pointed_at_x != Float.NaN )
-        getDataSet().setPointedAtX( last_pointed_at_x );
-      image_sent_pointed_at = true;
-      getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
-    }
+
     else                                 // if none, try to draw data block 0
     {
       Data data_block = getDataSet().getData_entry(0);
+
       if ( data_block != null )
-      {
         DrawHGraph( 0, 0, true );
-        getDataSet().setPointedAtIndex(0);
-        getState().set_int( ViewerState.POINTED_AT_INDEX, 0 );
-        image_sent_pointed_at = true;
-        getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
-      }
 
       else
         System.out.println("ERROR... no Data blocks in DataSet" );
