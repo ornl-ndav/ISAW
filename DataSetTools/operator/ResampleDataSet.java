@@ -2,6 +2,10 @@
  * @(#)ResampleDataSet.java   0.1 2000/08/2   Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.3  2000/08/03 14:35:25  dennis
+ *  made more efficient by removing redundant copy of attributes and only
+ *  cloning Data blocks when a new DataSet is to be created.
+ *
  *  Revision 1.2  2000/08/03 14:21:58  dennis
  *  Now includes parameter "make_new_ds" to determine whether or not to
  *  construct a new DataSet
@@ -172,22 +176,19 @@ public class ResampleDataSet extends DataSetOperator
     Data             data,
                      new_data;
     int              num_data = ds.getNum_entries();
-    AttributeList    attr_list;
 
     for ( int j = 0; j < num_data; j++ )
     {
       data = ds.getData_entry( j );        // get reference to the data entry
-      new_data = (Data)data.clone();
-
-      attr_list = data.getAttributeList();
-      new_data.setAttributeList( attr_list ); // copy the attributes
-
-      new_data.ResampleUniformly( new_x_scale );
 
       if ( make_new_ds )
+      {
+        new_data = (Data)data.clone();
+        new_data.ResampleUniformly( new_x_scale );
         new_ds.addData_entry( new_data );
+      }
       else
-        new_ds.replaceData_entry( new_data, j );
+        data.ResampleUniformly( new_x_scale );
     }
 
     if ( make_new_ds )
