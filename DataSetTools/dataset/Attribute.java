@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2001/12/14 22:19:19  dennis
+ *  Added attributes for LABEL and nominal and actual SOURCE_TO_SAMPLE_TOF.
+ *  These attributes are currently commented out to avoid breaking the
+ *  server<->client communication.
+ *
  *  Revision 1.14  2001/10/17 18:37:46  dennis
  *  Added constants for Crate, Slot and Input, as comments only, to avoid
  *  breaking communication with servers.  These should be un-commented
@@ -117,6 +122,7 @@ abstract public class Attribute implements Serializable
   // Suggested names for attributes for neutron scattering data sets:
 
   public static final String  TITLE             = "DataSet Name";
+//public static final String  LABEL             = "Label";
   public static final String  DS_TAG            = "DataSet Tag";
 
   public static final String  INST_NAME         = "Instrument Name";
@@ -146,6 +152,10 @@ abstract public class Attribute implements Serializable
   public static final String  ENERGY_IN         = "Energy In";
   public static final String  NOMINAL_ENERGY_IN = "Nominal Energy In";
   public static final String  ENERGY_OUT        = "Energy Out";
+//public static final String  NOMINAL_SOURCE_TO_SAMPLE_TOF = 
+//                                               "Nominal Source to Sample TOF";
+//public static final String  SOURCE_TO_SAMPLE_TOF = 
+//                                                "Source to Sample TOF";
 
   public static final String  SAMPLE_NAME       = "Sample Name";
   public static final String  TEMPERATURE       = "Temperature";
