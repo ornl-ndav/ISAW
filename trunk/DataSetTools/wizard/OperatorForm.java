@@ -29,6 +29,11 @@
  *
  *
  * $Log$
+ * Revision 1.23  2003/07/07 20:35:14  bouzekc
+ * Now implicitly sets HAS_CONSTANTS by way of
+ * setConstantParamIndices().  setConstantParamIndices() no
+ * longer allows resetting of the constant parameter indices.
+ *
  * Revision 1.22  2003/07/03 14:12:02  bouzekc
  * Added all missing javadoc comments and formatted existing
  * comments.
@@ -172,8 +177,7 @@ public class OperatorForm extends Form implements HiddenOperator {
     this( op );
     setParamClass( type );
     result_param.setName( name );
-    HAS_CONSTANTS   = true;
-    constIndices    = indices;
+    setConstantParamIndices( indices );
     setDefaultParameters(  );
   }
 
@@ -188,13 +192,17 @@ public class OperatorForm extends Form implements HiddenOperator {
 
   /**
    * Method to allow OperatorForms to set their constant parameters indices.
+   * Does not allow resetting once the constant parameter indices have been
+   * set.
    *
    * @param indices Array of integers indicating which parameters should be
    *        constant.
    */
   public void setConstantParamIndices( int[] indices ) {
-    HAS_CONSTANTS   = true;
-    constIndices    = indices;
+    if( constIndices == null ) {
+      HAS_CONSTANTS   = true;
+      constIndices    = indices;
+    }
   }
 
   /**
