@@ -31,7 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/10/03 07:00:12  kramer
+ * Now this operator can smooth a selected x range if the long method is used
+ * as well as the quick method.
+ *
  * Revision 1.4  2004/10/03 03:44:30  kramer
+ *
  * Now this operator can smooth a selected range of x values if and only if
  * the quick method is used.
  *
@@ -268,7 +273,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
       if (useQuick)
          returnedObject = performQuickSmoothing(new_ds,nL,nR,M,xmin,xmax);
       else
-         returnedObject = performLeastSquaresSmoothing(new_ds,nL,nR,M);
+         returnedObject = performLeastSquaresSmoothing(new_ds,nL,nR,M,xmin,xmax);
             
       return returnedObject;
    }
@@ -766,7 +771,63 @@ public class SavitzkyGolayFilter extends GenericSpecial
       return sum;
    }
    
-   //-----------=[ Methods that smooth the data using least-squares fitting]=----------------
+   //----=[ Methods that smooth the data using least-squares fitting]=---------
+   
+   private float[] getFunctionizedXValues(Data data)
+   {
+      float[] actualXValues = data.getX_values();
+      if (data.isHistogram())
+      {
+          float[] realXValues = new float[actualXValues.length-1];
+          for (int i=0; i<realXValues.length; i++)
+             realXValues[i] = (actualXValues[i]+actualXValues[i+1])/2.0f;
+          
+          return realXValues;
+      }
+      else
+         return actualXValues;
+   }
+   
+   /*
+    * Get the x value corresponding the to y value at the 
+    * index <code>yIndex</code>.  This method is needed because 
+    * it returns the correct x value to use if the data is from 
+    * a histogram or a function.
+    * <p>
+    * If the x and y values specified correspond to a histogram, 
+    * the average of x values at the ends of the bin that the 
+    * y value is in is returned.  Otherwise, if the x and y values 
+    * correspond to a function, the x value at the same index of 
+    * the y value is returned.
+    * <p>
+    * It is up to the caller of this method to verify that 
+    * <code>yIndex</code> is valid.
+    * @param xValues     The x values used in the data.
+    * @param yValues     The y values used in the data.
+    * @param isHistogram True if the data is from a histogram and 
+    *                    false if it is from a function.
+    * @param yIndex      The index from <code>yValues</code> 
+    *                    for which you want to get the 
+    *                    corresponding x value.
+    * @return            The corresponding x value or Float.NaN 
+    *                    if yIndex is invalid.
+    *
+   private float getXValue(float[] xValues, boolean isHistogram, int yIndex)
+   {
+      if (isHistogram)
+      {
+         if ((yIndex+1)<xValues.length)
+            return (xValues[yIndex]+xValues[yIndex+1])/2.0f;
+         else
+         {
+            System.out.println("Invalid paramter ((yIndex+1)="+(yIndex+1)+" !< xValues.length="+(xValues.length)+") in getXValue\n  Returning Float.NaN");
+            return Float.NaN;
+         }
+      }
+      else
+         return xValues[yIndex];
+   }*/
+   
    /**
     * Uses the long algorithm to smooth the data from all of the Data objects from the 
     * DataSet given.
@@ -783,8 +844,8 @@ public class SavitzkyGolayFilter extends GenericSpecial
     * @return       The Object that this method wants the 
     *               {@link #getResult() getResult()} to return.
     */
-   private Object performLeastSquaresSmoothing(DataSet new_ds, 
-                                                int nL, int nR, int M)
+   private Object performLeastSquaresSmoothing(DataSet new_ds, int nL, int nR, 
+                     int M, float xmin, float xmax)
    {
       //first to test if the numbers entered are valid
       if (nR+nL<M)
@@ -806,7 +867,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
          {
             //now to get the current Data object
                currentData   = new_ds.getData_entry(i);
-            leastSquaresSmoothDataObject(currentData,nL,nR,M);
+            leastSquaresSmoothDataObject(currentData,nL,nR,M,xmin,xmax);
          }
       }
       else if (idBounds instanceof int[])
@@ -816,7 +877,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
          {
             currentData = new_ds.getData_entry_with_id(ids[i]);
             if (currentData != null)
-               leastSquaresSmoothDataObject(currentData,nL,nR,M);
+               leastSquaresSmoothDataObject(currentData,nL,nR,M,xmin,xmax);
             else
                System.out.println("The data block with id "+ids[i]+
                      " could not be smoothed because it doesn't exist.");
@@ -825,23 +886,33 @@ public class SavitzkyGolayFilter extends GenericSpecial
       
       return new_ds;
    }
-   
+
    private void leastSquaresSmoothDataObject(Data currentData, 
-                        int nL, int nR, int M)
+                        int nL, int nR, int M, float xmin, float xmax)
    {
-      //and its y values.  This is a copy of the array of y values
-         float[] copyOfYValues = currentData.getCopyOfY_values();
-      //and this is a reference to the actual array of y values
-         float[] actualYValues = currentData.getY_values();
-      float smoothedValue = 0;
-         
-      for (int yIndex = 0; yIndex<copyOfYValues.length; yIndex++)
+      int[] xIndexArr = getXIndexRange(currentData,xmin,xmax);
+      
+      if (xIndexArr != null)
       {
-         smoothedValue = getSmoothedValue(currentData.getX_values(), copyOfYValues,
-                                            currentData.isHistogram(),
-                                              yIndex,nL,nR,M);
-         if (!Float.isNaN(smoothedValue))
-            actualYValues[yIndex] = smoothedValue;
+         //and its y values.  This is a copy of the array of y values
+            float[] copyOfYValues = currentData.getCopyOfY_values();
+         //and this is a reference to the actual array of y values
+            float[] actualYValues = currentData.getY_values();
+         //and its x values
+            float[] xValues = getFunctionizedXValues(currentData);
+            //float[] xValues = new float[xIndexArr[1]-xIndexArr[0]];
+            //System.arraycopy(pureXValues,xIndexArr[0],xValues,0,xValues.length);
+         
+         float smoothedValue = 0;
+      
+         for (int yIndex = xIndexArr[0]; yIndex <= xIndexArr[1]; yIndex++)
+         {
+            smoothedValue = getSmoothedValue(xValues, copyOfYValues,
+                                         currentData.isHistogram(),
+                                           yIndex,nL,nR,M);
+            if (!Float.isNaN(smoothedValue))
+               actualYValues[yIndex] = smoothedValue;
+         }
       }
    }
    
@@ -867,46 +938,6 @@ public class SavitzkyGolayFilter extends GenericSpecial
       return b;
    }
 
-   /**
-    * Get the x value corresponding the to y value at the 
-    * index <code>yIndex</code>.  This method is needed because 
-    * it returns the correct x value to use if the data is from 
-    * a histogram or a function.
-    * <p>
-    * If the x and y values specified correspond to a histogram, 
-    * the average of x values at the ends of the bin that the 
-    * y value is in is returned.  Otherwise, if the x and y values 
-    * correspond to a function, the x value at the same index of 
-    * the y value is returned.
-    * <p>
-    * It is up to the caller of this method to verify that 
-    * <code>yIndex</code> is valid.
-    * @param xValues     The x values used in the data.
-    * @param yValues     The y values used in the data.
-    * @param isHistogram True if the data is from a histogram and 
-    *                    false if it is from a function.
-    * @param yIndex      The index from <code>yValues</code> 
-    *                    for which you want to get the 
-    *                    corresponding x value.
-    * @return            The corresponding x value or Float.NaN 
-    *                    if yIndex is invalid.
-    */
-   private float getXValue(float[] xValues, boolean isHistogram, int yIndex)
-   {
-      if (isHistogram)
-      {
-         if ((yIndex+1)<xValues.length)
-            return (xValues[yIndex]+xValues[yIndex+1])/2.0f;
-         else
-         {
-            System.out.println("Invalid paramter ((yIndex+1)="+(yIndex+1)+" !< xValues.length="+(xValues.length)+") in getXValue\n  Returning Float.NaN");
-            return Float.NaN;
-         }
-      }
-      else
-         return xValues[yIndex];
-   }
-   
    /**
     * Get the matrix "A" used in solving for a polynomial of best fit.
     * @param isHistogram True if the data is from a histogram and false 
@@ -936,10 +967,11 @@ public class SavitzkyGolayFilter extends GenericSpecial
       for (int row=0; row<nR+nL+1; row++)
       {
         if (yIndex<0 || yIndex>=yValues.length || yIndex>=xValues.length)
-           System.out.println("Invalid paramter (yIndex="+yIndex+") in getMatrixA\n  Returning Float.NaN");
+           System.out.println("Invalid paramter (yIndex="+yIndex+
+              ") in getMatrixA\n  Returning Float.NaN");
         else
         {
-         currentX = getXValue(xValues,isHistogram,yIndex);
+         currentX = xValues[yIndex];
          A[row][0] = 1;
          for (int column=1; column<(M+1); column++)
             A[row][column] = A[row][column-1]*currentX;
@@ -1044,7 +1076,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
            return Float.NaN;
         }
         else
-          return (float)computeApproximateValueAt(getXValue(xValues, isHistogram, yIndex-nL),b,M+1);
+          return (float)computeApproximateValueAt(xValues[yIndex-nL],b,M+1);
       }
       else if (rightCompensate)
       {
@@ -1054,7 +1086,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
            return Float.NaN;
         }
         else
-          return (float)computeApproximateValueAt(getXValue(xValues, isHistogram, yIndex+nR),b,M+1);
+          return (float)computeApproximateValueAt(xValues[yIndex+nR],b,M+1);
       }
       else
       {
@@ -1063,7 +1095,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
            System.out.println("Invalid paramter (y Index="+yIndex+") in getSmoothedValue\n  Returning Float.NaN");
            return Float.NaN;
         }
-          return (float)computeApproximateValueAt(getXValue(xValues, isHistogram, yIndex),   b,M+1);
+          return (float)computeApproximateValueAt(xValues[yIndex],b,M+1);
       }
    }
 }
