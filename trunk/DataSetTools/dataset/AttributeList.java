@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2002/06/17 22:43:49  rmikk
+ *  Made a code segment more debuggable
+ *
  *  Revision 1.10  2002/06/14 20:48:37  rmikk
  *  Implements the IXmlIO interface
  *
@@ -475,8 +478,12 @@ public class AttributeList implements Serializable,
         {
           Class AT = Class.forName( "DataSetTools.dataset."+Tag);
           Attribute A = (Attribute)(AT.newInstance());
-          if(!A.XMLread(stream))
-            { return xml_utils.setError("improper read for "+Tag);
+          boolean OK;
+        
+          OK= A.XMLread( stream );
+          if(!OK)
+            { return xml_utils.setError("ximproper read for "+Tag+","+
+                   A.getClass());
             }
           setAttribute( A);
                
