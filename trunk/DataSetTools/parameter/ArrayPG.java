@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2003/07/11 21:29:36  bouzekc
+ *  Removed a call to setValue() that prevented displaying the
+ *  ArrayPG's value on occasion.
+ *
  *  Revision 1.17  2003/07/10 18:15:28  bouzekc
  *  Added missing constructor documentation.
  *
@@ -442,7 +446,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     //over at that point
     entrywidget.setPreferredSize( new Dimension( 2, 2 ) );
     super.initGUI(  );
-    setValue( init_values );
   }
 
   /**
