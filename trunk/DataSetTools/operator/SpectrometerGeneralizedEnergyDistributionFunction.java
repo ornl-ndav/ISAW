@@ -1,20 +1,18 @@
 /*
- * @(#)SpectrometerGeneralizedEnergyDistributionFunction.java   0.1  2000/08/07   Dongfeng Chen Dennis Mikkelson
+ * @(#)SpectrometerGeneralizedEnergyDistributionFunction.java   
+ *     1.3  2000/08/09   Dongfeng Chen Dennis Mikkelson
  *             
  *  $Log$
- *  Revision 1.1  2000/08/08 21:21:43  dennis
- *  Initial version of Generalized Energy Distribution Function for
- *  Spectrometers.  Not yet working correctly.
+ *  Revision 1.2  2000/08/09 17:11:35  dennis
+ *  Many small changes... removed un-needed clones of Data blocks and DataSets.
  *
- *  Revision 1.4  
  *
- *  Revision 1.3  
+ *  Revision 1.2  2000/08/08 15:15:00   Dongfeng dennis  
+ *  Take scattering function's dataset and use ToEL, ConvHist and Resample 
+ *  in this operator.
  *
- *  Revision 1.2  
- *
- *  Revision 1.1  2000/08/07 2210:40:00  Dongfeng dennis
+ *  Revision 1.1  2000/08/07 10:40:00  Dongfeng dennis
  *  Initial version of Scattering Crossection function for Spectrometers
- *
  *
  */
 
@@ -37,8 +35,9 @@ import  DataSetTools.math.*;
   *  @see Operator
   */
 
-public class SpectrometerGeneralizedEnergyDistributionFunction extends    DataSetOperator 
-                                            implements Serializable
+public class SpectrometerGeneralizedEnergyDistributionFunction 
+             extends    DataSetOperator 
+             implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
@@ -74,10 +73,14 @@ public class SpectrometerGeneralizedEnergyDistributionFunction extends    DataSe
    *                           DataSet are just altered.
    */
 
-  public SpectrometerGeneralizedEnergyDistributionFunction( DataSet    ds,
+  public SpectrometerGeneralizedEnergyDistributionFunction( 
+                                         DataSet    ds,
                                          float      temperature, 
                                          float      xmass, 
                                          float      alpha, 
+                                         float      min_X,
+                                         float      max_X,
+                                         int        num_X,
                                          boolean    make_new_ds )
   {
     this();                         // do the default constructor, then set
@@ -91,8 +94,17 @@ public class SpectrometerGeneralizedEnergyDistributionFunction extends    DataSe
 
     parameter = getParameter( 2 );
     parameter.setValue( new Float(alpha) );
-
+    
     parameter = getParameter( 3 );
+    parameter.setValue( new Float( min_X ) );
+
+    parameter = getParameter( 4 );
+    parameter.setValue( new Float( max_X ) );
+
+    parameter = getParameter( 5 );
+    parameter.setValue( new Integer( num_X ) );
+
+    parameter = getParameter( 6 );
     parameter.setValue( new Boolean( make_new_ds ) );
 
     setDataSet( ds );               // record reference to the DataSet that
@@ -121,12 +133,19 @@ public class SpectrometerGeneralizedEnergyDistributionFunction extends    DataSe
                                          new Float(5.0) );
     addParameter( parameter );
 
-    parameter = new Parameter("XMASS",
-                                         new Float(1.0) );
+    parameter = new Parameter("XMASS", new Float(1.0) );
     addParameter( parameter );
     
-    parameter = new Parameter("ALPHA",
-                                         new Float(0.00001) );
+    parameter = new Parameter("ALPHA", new Float(0.00001) );
+    addParameter( parameter );
+    
+    parameter = new Parameter( "Min X", new Float(0) );
+    addParameter( parameter );
+
+    parameter = new Parameter("Max X", new Float(1000) );
+    addParameter( parameter );
+
+    parameter = new Parameter( "Num X", new Integer( 200 ) );
     addParameter( parameter );
     
     parameter = new Parameter( "Create new DataSet?", new Boolean(false) );
@@ -138,29 +157,46 @@ public class SpectrometerGeneralizedEnergyDistributionFunction extends    DataSe
 
   public Object getResult()
   {       
-    
     System.out.println("Start g_fn_ds now!");
     
     final float XKCON   = 0.086165f; // conversion factor 
-                                                   // get the current data set
-    DataSet ds  = getDataSet();
+
+                                     // get the current data set
+    DataSet ds     = getDataSet();
                                                     // get the parameters
     float   temperature = ((Float)(getParameter(0).getValue()) ).floatValue();
     float   xmass       = ((Float)(getParameter(1).getValue()) ).floatValue();
     float   alpha       = ((Float)(getParameter(2).getValue()) ).floatValue();
-    boolean make_new_ds =((Boolean)getParameter(3).getValue()).booleanValue();
+    float   min_X       = ((Float)(getParameter(3).getValue()) ).floatValue();
+    float   max_X       = ((Float)(getParameter(4).getValue()) ).floatValue();
+    int     num_X       = ((Integer)(getParameter(5).getValue()) ).intValue();
+    boolean make_new_ds =((Boolean)getParameter(6).getValue()).booleanValue();
+    
+    // SpectrometerTofToEnergyLoss will create a new DataSet, so we don't need
+    // to clone it first.
+    Operator op = new SpectrometerTofToEnergyLoss( ds,
+                                                   min_X,
+                                                   max_X,
+                                                   0    );
+    DataSet new_ds =(DataSet)op.getResult();
+      
+    // ConvertHistogramToFunction for the new energy loss DataSet
+
+    System.out.println("\n\nConvertHistogramToFunction start...");
+    op = new ConvertHistogramToFunction( new_ds, false, false );
+    op.getResult();
+      
+    // ResampleDataSet for the new energy loss DataSet
+    op = new ResampleDataSet( new_ds, min_X, max_X, num_X, false );
+    op.getResult();
+      
+    //viewmanager = new ViewManager(new_ds, IViewManager.IMAGE);
 
     if ( temperature <= 0||xmass<=0)
       return new ErrorString(
                 "ERROR: temperature and xmass must be greater than 0");
 
-    DataSet new_ds = null;
-    if ( make_new_ds )
-      new_ds = ds.empty_clone();
-    else
-      new_ds = ds;
-
-    new_ds.addLog_entry( "Calculated Generalized Energy Distribution Function" );
+    new_ds.addLog_entry("Calculated Generalized Energy Distribution Function");
 
     AttributeList attr_list;
     Float   Float_val;
@@ -184,10 +220,10 @@ public class SpectrometerGeneralizedEnergyDistributionFunction extends    DataSe
     Data  data,
           conversion_data,
           new_data;
-    num_data = ds.getNum_entries();
+    num_data = new_ds.getNum_entries();
     for ( int index = 0; index < num_data; index++ )
     {
-      data = ds.getData_entry( index );
+      data = new_ds.getData_entry( index );
                                                // get the needed attributes
       attr_list   = data.getAttributeList();
 
@@ -198,33 +234,25 @@ public class SpectrometerGeneralizedEnergyDistributionFunction extends    DataSe
                   attr_list.getAttributeValue(Attribute.DETECTOR_POS);
       spherical_coords = position.getSphericalCoords();
 
-     
-      new_data = (Data)data.clone();
-
-      y_vals = new_data.getY_values();
-      x_vals = new_data.getX_scale().getXs();
+      y_vals = data.getY_values();
+      x_vals = data.getX_scale().getXs();
 
       int num_y = y_vals.length;
       new_y_vals = new float[ num_y ];
       new_errors = new float[ num_y ];
 
-      for ( int i = 0; i < y_vals.length; i++ )
+      for ( int i = 0; i < (y_vals.length-1); i++ )
       {
         if ( x_vals.length > y_vals.length )  // histogram
           energy_transfer = (x_vals[i]+x_vals[i+1])/2;
         else                                  // function
           energy_transfer = x_vals[i];
 
-
-        energy_final = energy_in-energy_transfer;
-        scattering_angle = position.getScatteringAngle() * (float)(180.0/Math.PI);
+        energy_final     = energy_in-energy_transfer;
+        scattering_angle = position.getScatteringAngle() * 
+                                  (float)(180.0/Math.PI);
         
-        Q           =  // 1.0f;
-        //*
-                                              tof_calc.SpectrometerQ( energy_in, 
-                                              energy_final, 
-                                              scattering_angle );
-        //*/
+        Q = tof_calc.SpectrometerQ( energy_in, energy_final, scattering_angle );
         
         xkt=XKCON*temperature;
         ebykt=energy_transfer/xkt;
@@ -235,14 +263,14 @@ public class SpectrometerGeneralizedEnergyDistributionFunction extends    DataSe
         popinv= -popinv;
         new_y_vals[i] =energy_transfer/(2.0539802f*Q*Q)*
                             (float)( Math.exp(alpha*Q*Q))*xmass*popinv;
-        
-        
+         /*        
         if(index ==( 0))
         System.out.println("new_y_vals[i]="+ new_y_vals[i]+"\n"+
                            "energy_transfer="+ energy_transfer+"\n"+
                            "temperature=" + temperature+"\n"+
                            "alpha=" + alpha+"\n"+
-                           "spherical_coords[1]=" + spherical_coords[1]+"and  "+ (spherical_coords[1]*180/3.1415926)+"\n"+ 
+                           "spherical_coords[1]=" +spherical_coords[1]+"and  "+
+                                    + (spherical_coords[1]*180/3.1415926)+"\n"+ 
                            "scattering_angle =" +  scattering_angle +"\n"+ 
                            "Q=" + Q+"\n"+ 
                            "xmass=" + xmass+"\n"+ 
@@ -250,6 +278,7 @@ public class SpectrometerGeneralizedEnergyDistributionFunction extends    DataSe
                            "xkt=" + xkt+"\n"+
                            "ebykt=" + ebykt+"\n"+
                            "popinv=" + popinv+"\n");                    
+           //*/                
       }
 
       conversion_data = new Data( data.getX_scale(),
@@ -257,19 +286,17 @@ public class SpectrometerGeneralizedEnergyDistributionFunction extends    DataSe
                                   new_errors,
                                   data.getGroup_ID() );
     
-      new_data = //conversion_data;
-            data.multiply( conversion_data );
+      //now multiply the spectrum by the conversion_data;
+      new_data = data.multiply( conversion_data );
 
-      if ( make_new_ds )
-        new_ds.addData_entry( new_data );
-      else
-        new_ds.replaceData_entry( new_data, index );
+      new_ds.replaceData_entry( new_data, index );
     }
 
     if ( make_new_ds )
       return new_ds;
     else
     {
+      ds.copy( new_ds );
       ds.notifyIObservers( IObserver.DATA_CHANGED );
       return new String( "Calculated Scattering Function" );
     }
@@ -283,7 +310,7 @@ public class SpectrometerGeneralizedEnergyDistributionFunction extends    DataSe
   public Object clone()
   {
     SpectrometerGeneralizedEnergyDistributionFunction new_op = 
-                                   new SpectrometerGeneralizedEnergyDistributionFunction( );
+                  new SpectrometerGeneralizedEnergyDistributionFunction( );
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
@@ -291,6 +318,4 @@ public class SpectrometerGeneralizedEnergyDistributionFunction extends    DataSe
 
     return new_op;
   }
-
 }
-
