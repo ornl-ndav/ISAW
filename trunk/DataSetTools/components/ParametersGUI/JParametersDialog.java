@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.44  2003/06/24 16:41:26  dennis
+ *  Changed to compare with IssScript.UNKNOWN instead of "UNKNOWN"
+ *
  *  Revision 1.43  2003/06/23 18:41:35  rmikk
  *  Caught a throwable instead of an exception in the swing worker
  *      code.
@@ -208,7 +211,7 @@ public class JParametersDialog implements Serializable,
         if(op instanceof DataSetOperator)
             SS = SS +" on "+((DataSetOperator)op).getDataSet();
 	//#
-        if(op.getCommand().equals("UNKNOWN")) SS ="";
+        if(op.getCommand().equals(IssScript.UNKNOWN)) SS ="";
         Box BB = new Box( BoxLayout.Y_AXIS);
         JLabel Header = new JLabel(SS ,SwingConstants.CENTER);
         Header.setForeground( Color.black);
