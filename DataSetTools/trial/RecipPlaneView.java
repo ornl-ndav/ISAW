@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/12/08 16:22:09  dennis
+ * Explicitly set axis units to (currently) uncalibrated values to work
+ * around "bug" in ImageFrame2 that breaks the zoom capability, if
+ * axes are not specified.
+ *
  * Revision 1.14  2003/08/21 19:15:14  dennis
  * After refining the normal vector in FilterFFTds(), the frequency
  * attribute is now recalculated based on the least-squares approx
@@ -1869,6 +1874,12 @@ private class PlaneListener implements ActionListener
        origin.multiply((float)(miller_index * Math.PI * 2/d_spacing) );
        float image[][] = make_slice( origin, normal, base, up );
        VirtualArray2D va2d = new VirtualArray2D( image );
+// ##### patch
+    va2d.setAxisInfoVA( AxisInfo2D.XAXIS, -10.0f, 10.0f,
+                        "X","Uncalibrated Units", true );
+    va2d.setAxisInfoVA( AxisInfo2D.YAXIS, -10.0f, 10.0f,
+                        "Y","Uncalibrated Units", false );
+
        va2d.setTitle( title );
        if ( frame == null )
          frame = new ImageFrame2( va2d );
