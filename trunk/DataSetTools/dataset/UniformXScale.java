@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/02/24 13:33:54  dennis
+ *  Added method restrict() to restrict an XScale to the intersection
+ *  of the XScale and a ClosedInterval.
+ *
  *  Revision 1.10  2002/11/27 23:14:07  pfpeterson
  *  standardized header
  *
@@ -57,7 +61,9 @@
  */
 
 package DataSetTools.dataset;
+
 import java.io.*;
+import DataSetTools.util.*;
 
 /**
  * The class for "X" scales that consist of evenly spaced points along a
@@ -257,6 +263,39 @@ public class UniformXScale extends XScale implements Serializable
 
      return new UniformXScale( temp_start_x, temp_end_x, temp_num_x );
    }
+
+  /**
+   *  Constructs a new XScale that is the restriction of the current
+   *  XScale to the intersection of the ClosedInterval and the interval
+   *  of the current XScale.  If the intersection is empty, this method
+   *  returns null.
+   *
+   *  @param   interval  the interval the XScale is restricted to.
+   *
+   *  @return  A new XScale of the same type ( Uniform or Variable ) as the
+   *           current XScale is returned if the intersection is non-empty,
+   *           or null if the intersection is empty.
+   */
+   public XScale restrict( ClosedInterval interval )
+   {
+     float min = interval.getStart_x();
+     float max = interval.getEnd_x();
+  
+     if ( min > end_x )
+       return null;
+ 
+     if ( max < start_x )
+       return null;
+
+     int i_min = getI( min );
+     int i_max = getI( max );
+
+     min = getX( i_min );
+     max = getX( i_max );
+
+     return new UniformXScale( min, max, i_max - i_min + 1 );
+   }
+
 
   /*
    * main program for basic testing only
