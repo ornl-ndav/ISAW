@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 20:31:00  kramer
+ * Added the constructor:
+ *   protected BasicOptionsJPanel()
+ * Made the class not implement ActionListener anymore.
+ *
  * Revision 1.3  2004/03/12 19:46:17  bouzekc
  * Changes since 03/10.
  *
@@ -44,8 +49,6 @@
 package devTools.Hawk.classDescriptor.gui.panel.search;
 
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -60,7 +63,7 @@ import javax.swing.JTextField;
  *
  *@author Dominic Kramer
  */
-public class BasicOptionsJPanel extends JPanel implements ActionListener
+public class BasicOptionsJPanel extends JPanel
 {
 	/**
 	 * Constant used to specify that the search must match the word.
@@ -111,10 +114,8 @@ public class BasicOptionsJPanel extends JPanel implements ActionListener
 			strArr[1]="Match Must Not Contain Word";
 		comboBox = new JComboBox(strArr);
 		entireWordBox = new JCheckBox("Match Entire Word");
-			entireWordBox.addActionListener(this);
 			entireWordBox.setActionCommand("entire.word");
 		caseSensitiveBox = new JCheckBox("Case Sensitive");
-			caseSensitiveBox.addActionListener(this);
 			caseSensitiveBox.setActionCommand("case.sensitive");
 		
 		setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -124,6 +125,14 @@ public class BasicOptionsJPanel extends JPanel implements ActionListener
 		add(entireWordBox);
 		add(caseSensitiveBox);
 	}
+	
+	/**
+	 * This constructor is used by subclasses if they want 
+	 * to make the panel look different because this constructor 
+	 * doesn't do anything.
+	 */
+	protected BasicOptionsJPanel()
+	{}
 	
 	/**
 	 * Get the JLabel's text.
@@ -244,12 +253,5 @@ public class BasicOptionsJPanel extends JPanel implements ActionListener
 	public boolean matchCaseSensitive()
 	{
 		return caseSensitiveBox.isSelected();
-	}
-	
-	/**
-	 * Handles ActionEvents.
-	 */
-	public void actionPerformed(ActionEvent event)
-	{
 	}
 }
