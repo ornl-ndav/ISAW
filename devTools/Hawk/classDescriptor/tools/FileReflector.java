@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/06/04 23:31:03  kramer
+ * Fixed some Javadoc errors.
+ *
  * Revision 1.4  2004/03/15 20:30:15  dennis
  * Changed to use RobustFileFilter from new package,
  * gov.anl.ipns.Util.File
@@ -323,8 +326,8 @@ public class FileReflector
 		}
 			
 	/**
-	* This creates an Interface object from a .class file with the name "fileName."
-	* The method using this method should make sure "fileName" is a .class file.
+	* This creates an Interface object from a .class file with the name <code>fileName</code>.
+	* The method using this method should make sure <code>fileName</code> is a .class file.
 	* If it isn't, or if the Interface object could not be created, then null is returned.
 	* The Class object is made by reading the .class file byte by byte.  Then, the bytes
 	* are used to create the Class object.
@@ -515,7 +518,7 @@ public class FileReflector
 	 * <br> CONSTRUCTOR corresponds to a Constructor object
 	 * <br> METHOD corresponds to a Method object
 	 * <br> CLASS corresponds to a Class object
-	 * @return
+	 * @return A Vector of Strings.
 	 */
 	private Vector getCharacteristicVector(Object obj, String str)
 	{
