@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2001/08/16 20:31:09  rmikk
+ * Fixed the javadocs @see tags
+ *
  * Revision 1.15  2001/08/14 16:16:19  rmikk
  * GenericBatch operators no longer show in opMenu
  *
@@ -91,8 +94,9 @@ public class opMenu extends JMenu
 * @param DS  Gets the list of Data Sets that can be used for parameters
 * @param logdoc the log file to place log comments
 * @param iobs  an iobserver of these operations
-*@see #OperatorHandler , #DataSetTools.components.ParametersGUI.IDataSetListHandler , 
-*@see #DataSetTools.util.IObserver
+*@see OperatorHandler 
+*@see DataSetTools.components.ParametersGUI.IDataSetListHandler 
+*@see DataSetTools.util.IObserver
 */
 public opMenu(OperatorHandler op , IDataSetListHandler DS, Document logdoc , 
            IObserver iobs)
