@@ -1,5 +1,41 @@
-
-/* 6-9-2000
+/*
+ * File:  execOneLine.java 
+ *             
+ * Copyright (C) 2001, Ruth Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
+ *
+ * $Log$
+ * Revision 1.19  2001/06/04 20:15:36  rmikk
+ * Fixed Documentation
+ *
+ 
+ 6-9-2000
    implemented Load, Display, Send(check) , Expressions with data sets, and Data Set Operators
    Ned to 
        extend the Load function to give variable names
@@ -276,10 +312,10 @@ public void addDataSet(DataSet dss, String vname)
         if(Debug)System.out.println("EndADD DATA SET vname="+vname);
         addDataSet(dss, vname);
       }
-/*
+/**
 *  Removes all displays created by the CommandPane
 *
-* @see  Display( String , String , String)
+* @see  execOneLine.Display( DataSetTools.DataSet, java.lang.String , java.lang.String)
 */
     public void removeDisplays()
     {  if( Graphs == null)
@@ -1099,9 +1135,11 @@ public void addDataSet(DataSet dss, String vname)
  /**
    Sends the data set to all Iobservers
   *@param   ds    The data set that is to be sent
-  *@see  DataSetTools.util.IObserverList#addIObserver(DataSetTools.util.IObserver) addIobserver<P>
+ * Not implemented yet. 
+  *@see  <A href="DataSetTools.util.IObserverList.html#addIObserver(DataSetTools.util.IObserver)">
+          addIObserver</a> <P>
   *
-  * Not implemented yet. 
+ 
   */
     public void Send( DataSet ds)
       {
@@ -1923,7 +1961,7 @@ private void operateLogic(Object R1 , Object R2 , char c )
  *      subtract,... will be used
 
  * Use getErrorCharPos to determine if an error occurred<br>
- *     @see #getErrorCharPos()
+ *     @see getErrorCharPos()
  */
     public void operateArith( Object R1 , Object R2 , char c )
       {
@@ -2524,7 +2562,7 @@ private Operator getSHOp( Vector Args, String Command)
    *@param  S   A string used to refer to a variable 
    *@return  The value of this string or
    *         an error message if the variable is not found
-   *  @see #getErrorCharPos()
+   *  @see getErrorCharPos()
    */
      public Object getVal( String S )
        {int i;
@@ -3362,3 +3400,4 @@ private Operator getSHOp( Vector Args, String Command)
 
    }   
 }
+

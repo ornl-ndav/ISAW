@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2001/06/04 20:15:21  rmikk
+ * Fixed Documentation
+ *
  * Revision 1.5  2001/06/04 14:10:27  rmikk
  * Did not add Scripts that had errors with their construction.
  *
@@ -207,6 +210,11 @@ private  void ProcessFile( File file , Vector opList)
   {  
  add( file.toString() , opList);
    }
+/** Shows the master list
+*@param  mode   determines order presented
+*NOTE: if mode ==257    the output is sorted by command name.<br>
+* Otherwise it is sorted by the filename(and only includes script operators)
+*/
 public  void show( int mode  )
   {if( SortOnFileName.size() <= 0)
     return;
@@ -250,6 +258,11 @@ private  void add( String filename , Vector opList)
            add( X );
        }
    }
+/** Utility that tries to create an GenericOperator for a .class filename
+*@param filename  The name of the class file. 
+*@return  An instance of an Operator that subclasses the Generic operator <P>
+*         or null if it cannot create this class.
+*/
 public  Operator getClassInst( String filename )
    {String path;
    if( filename == null )
@@ -544,6 +557,8 @@ private String getString()
    return S;
 
    }
+/** Test program for this module.  No arguments are used 
+*/
 public static void main( String args[] )
    { java.util.Properties isawProp;
      isawProp = new java.util.Properties(System.getProperties());
@@ -646,4 +661,5 @@ private  boolean ScompareLess( String s1, String s2)
 
   }
 }
+
 
