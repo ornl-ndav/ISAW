@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/01/30 21:09:44  pfpeterson
+ * Takes advantage of the PeakFactory class and utility class.
+ *
  * Revision 1.11  2003/01/15 20:54:26  dennis
  * Changed to use SegmentInfo, SegInfoListAttribute, etc.
  *
@@ -132,24 +135,13 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     Data data=data_set.getData_entry(0);
     int numData=data_set.getNum_entries();
     SegInfoListAttribute segI;
-    SegmentInfo seg;
-    
+    SegmentInfo seg=null;
+    int det_number=0;
+
     run_number=((int[])data_set.getAttributeValue(Attribute.RUN_NUM))[0];
-    
-    int[] dims={numData,5};
-    int [][] pos=(int[][])Array.newInstance(int.class,dims);
-    
-    for( int i=0 ; i<numData ; i++ ){
-      data=data_set.getData_entry(i);
-      segI=(SegInfoListAttribute)
-        data.getAttribute(Attribute.SEGMENT_INFO_LIST);
-      seg=((SegmentInfo[])segI.getValue())[0];
-      pos[i][0]=i;
-      pos[i][1]=seg.getDet_num();
-      pos[i][2]=seg.getColumn();
-      pos[i][3]=seg.getRow();
-      pos[i][4]=seg.getDet_num();
-    }
+
+    // create an array of for indexing into the data
+    int[][] ids=Util.createIdMap(data_set);
     
     float init_path=((Float)data.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
 
@@ -160,188 +152,127 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     int minTime=0;
     int maxTime=(data.getCopyOfY_values()).length;
 
-    float[] times=data.getX_scale().getXs();
-    
     // position of detector center
-    float detA  = detector_angle(data_set);
-    float detA2 = 0f;
-    float detD  = detector_distance(data_set,detA);
+    float detA  = Util.detector_angle(data_set);
+    float detA2 = Util.detector_angle2(data_set);
+    float detD  = Util.detector_distance(data_set,detA);
+
     // sample orientation
     float chi   = ((Float)data_set.getAttributeValue(Attribute.SAMPLE_CHI)).floatValue();
     float phi   = ((Float)data_set.getAttributeValue(Attribute.SAMPLE_PHI)).floatValue();
     float omega = ((Float)data_set.getAttributeValue(Attribute.SAMPLE_OMEGA)).floatValue();
 
-    for( int i=0 ; i<numData ; i++ ){
-      if(pos[i][2]>maxColumn) maxColumn=pos[i][2];
-      if(pos[i][2]<minColumn) minColumn=pos[i][2];
-      if(pos[i][3]>maxRow) maxRow=pos[i][3];
-      if(pos[i][3]<minRow) minRow=pos[i][3];
-    }
-    
-    String instName=(String)
-      (data_set.getAttribute(Attribute.INST_NAME)).getValue();
-    if(instName.equals("SCD")){
-      if(maxRow==87){
-        SharedData.addmsg("Instrument is SCD, reseting"
-                          +" maxRow from 87 to 85");
-        maxRow=85;
+    // determine the minimum and maximum row and columns
+    outer: for( int i=0 ; i<ids.length ; i++ ){
+      for( int j=0 ; j<ids[0].length ; j++ ){
+        if(ids[i][j]==-1) continue; // there is nothing here
+        minColumn=i;
+        minRow=j;
+        break outer;
       }
-    } 
-    
+    }
+    outer: for( int i=ids.length-1 ; i>minColumn ; i-- ){
+      for( int j=ids[0].length-1 ; j>minRow ; j-- ){
+        if(ids[i][j]==-1) continue; // there is nothing here
+        maxColumn=i;
+        maxRow=j;
+        break outer;
+      }
+    }
+
+    // the detector number
+    if(seg!=null){
+      det_number=seg.getDet_num();
+    }else{
+      segI=(SegInfoListAttribute)data_set.getData_entry(ids[minColumn][minRow])
+        .getAttribute(Attribute.SEGMENT_INFO_LIST);
+      seg=((SegmentInfo[])segI.getValue())[0];
+      det_number=seg.getDet_num();
+    }
+
     SharedData.addmsg("Columns("+minColumn+"<"+maxColumn
                       +") Rows("+minRow+"<"+maxRow
                       +") TimeIndices("+minTime+"<"+maxTime+")");
     
-    int iPrev,iNext;
-    int jPrev,jNext;
-    int kPrev,kNext;
-    
-    /* Data Dpp,Dtp,Dnp,
-       Dpt,Dtt,Dnt,
-       Dpn,Dtn,Dnn; */
-    
-    float[] Dpp,Dtp,Dnp,
-            Dpt,Dtt,Dnt,
- 	    Dpn,Dtn,Dnn;
-    
-    Dpp=data_set.getData_entry(0).getCopyOfY_values();
-    Dtp=Dpp; Dnp=Dpp;
-    Dpt=Dpp; Dtt=Dpp; Dnt=Dpp;
-    Dpn=Dpp; Dtn=Dpp; Dnn=Dpp;
-    
-    
-    int  Ipp,Itp,Inp,
-         Ipt,Itt,Int,
-         Ipn,Itn,Inn;
-    Ipp=0; Itp=0; Inp=0;
-    Ipt=0; Itt=0; Int=0;
-    Ipn=0; Itn=0; Inn=0;
+    float[] Dpp=null, Dtp=null, Dnp=null,
+            Dpt=null, Dtt=null, Dnt=null,
+ 	    Dpn=null, Dtn=null, Dnn=null;
     
     Peak peak=new Peak();
     //int[] peak={0,0,0,0,0,0,0};
     Vector peaks=new Vector();
     int peakNum=0;
-    float[] calib=null;
-    XScale xscale=data_set.getData_entry(0).getX_scale();
-    
-    for( int i=minRow ; i<=maxRow ; i++ ){    // loop over row
-      iPrev=i-1;
-      iNext=i+1;
-      if(iPrev<minRow){
-        iPrev=minRow;
-      }else if(iNext>maxRow){
-        iNext=maxRow;
-      }
-      for( int j=minColumn ; j<=maxColumn ; j++ ){      // loop over column
-        jPrev=j-1;
-        jNext=j+1;
-        if(jPrev<minColumn){
-          jPrev=minColumn;
-        }else if(jNext>maxColumn){
-          jNext=maxColumn;
-        }
-        
+    float[] calib=(float[])data_set.getData_entry(ids[minColumn][minRow])
+      .getAttributeValue(Attribute.SCD_CALIB);
+    XScale xscale=data_set.getData_entry(ids[minColumn][minRow])
+      .getX_scale();
+    PeakFactory pkfac=new PeakFactory(run_number,det_number,init_path,
+                                      detD,detA,detA2);
+    pkfac.time(xscale);
+    pkfac.calib(calib);
+    pkfac.detA(detA);
+    pkfac.detA2(detA2);
+    pkfac.detD(detD);
+    pkfac.sample_orient(chi,phi,omega);
+    pkfac.monct(moncount);
+    pkfac.L1(init_path);
+
+    // stay off of the edges
+    for( int i=minColumn+1 ; i<maxColumn ; i++ ){  // loop over column
+      for( int j=minRow+1 ; j<maxRow ; j++ ){      // loop over row
         // set up datasets for adjacent pixels
-        for( int m=0 ; m<numData ; m++ ){
-          if(pos[m][3]==jPrev){       // is it in the p row
-            if(pos[m][2]==iPrev){       // is it the pp element
-              Dpp=data_set.getData_entry(m).getCopyOfY_values();
-              Ipp=m;
-            }else if(pos[m][2]==i){     // is it the pt element
-              Dpt=data_set.getData_entry(m).getCopyOfY_values();
-              Ipt=m;
-            }else if(pos[m][2]==iNext){ // is it the pn element
-              Dpn=data_set.getData_entry(m).getCopyOfY_values();
-              Ipn=m;
-            }
-          }else if(pos[m][3]==j){     // is it in the t row
-            if(pos[m][2]==iPrev){       // is it the tp element
-              Dtp=data_set.getData_entry(m).getCopyOfY_values();
-              Itp=m;
-            }else if(pos[m][2]==i){     // is it the tt element
-              Dtt=data_set.getData_entry(m).getCopyOfY_values();
-              Itt=m;
-              calib=(float[])data_set.getData_entry(m)
-                .getAttributeValue(Attribute.SCD_CALIB);
-            }else if(pos[m][2]==iNext){ // is it the tn element
-              Dtn=data_set.getData_entry(m).getCopyOfY_values();
-              Itn=m;
-            }
-          }else if(pos[m][3]==jNext){ // is it in the n row
-            if(pos[m][2]==iPrev){       // is it the np element
-              Dnp=data_set.getData_entry(m).getCopyOfY_values();
-              Inp=m;
-            }else if(pos[m][2]==i){     // is it the nt element
-              Dnt=data_set.getData_entry(m).getCopyOfY_values();
-              Int=m;
-            }else if(pos[m][2]==iNext){ // is it the nn element
-              Dnn=data_set.getData_entry(m).getCopyOfY_values();
-              Inn=m;
-            }
-          }
-        }
-        
-        for( int k=minTime ; k<maxTime ; k++ ){ // loop over timeslice
-          kPrev=k-1;
-          kNext=k+1;
-          if(kPrev<minTime){
-            kPrev=minTime;
-          }else if(kNext>maxTime-1){
-            kNext=maxTime-1;
-          }
-          
+        Dpp=data_set.getData_entry(ids[i-1][j-1]).getCopyOfY_values();
+        Dpt=data_set.getData_entry(ids[i+0][j-1]).getCopyOfY_values();
+        Dpn=data_set.getData_entry(ids[i+1][j-1]).getCopyOfY_values();
+        Dtp=data_set.getData_entry(ids[i-1][j+0]).getCopyOfY_values();
+        Dtt=data_set.getData_entry(ids[i+0][j+0]).getCopyOfY_values();
+        Dtn=data_set.getData_entry(ids[i+1][j+0]).getCopyOfY_values();
+        Dnp=data_set.getData_entry(ids[i-1][j+1]).getCopyOfY_values();
+        Dnt=data_set.getData_entry(ids[i+0][j+1]).getCopyOfY_values();
+        Dnn=data_set.getData_entry(ids[i+1][j+1]).getCopyOfY_values();
+        for( int k=minTime+1 ; k<maxTime ; k++ ){ // loop over timeslice
           float I=Dtt[k];
           if(I>min_count){
-            if(I<Dpp[kPrev]) continue;
-            if(I<Dpp[k])     continue;
-            if(I<Dpp[kNext]) continue;
+            if(I<Dpp[k-1]) continue;
+            if(I<Dpp[k+0]) continue;
+            if(I<Dpp[k+1]) continue;
             
-            if(I<Dtp[kPrev]) continue;
-            if(I<Dtp[k])     continue;
-            if(I<Dtp[kNext]) continue;
+            if(I<Dtp[k-1]) continue;
+            if(I<Dtp[k+0]) continue;
+            if(I<Dtp[k+1]) continue;
             
-            if(I<Dnp[kPrev]) continue;
-            if(I<Dnp[k])     continue;
-            if(I<Dnp[kNext]) continue;
+            if(I<Dnp[k-1]) continue;
+            if(I<Dnp[k+0]) continue;
+            if(I<Dnp[k+1]) continue;
             
-            if(I<Dpt[kPrev]) continue;
-            if(I<Dpt[k])     continue;
-            if(I<Dpt[kNext]) continue;
+            if(I<Dpt[k-1]) continue;
+            if(I<Dpt[k+0]) continue;
+            if(I<Dpt[k+1]) continue;
             
-            if(I<Dtt[kPrev]) continue;
+            if(I<Dtt[k-1]) continue;
             // this is the current one
-            if(I<Dtt[kNext]) continue;
+            if(I<Dtt[k+1]) continue;
             
-            if(I<Dnt[kPrev]) continue;
-            if(I<Dnt[k])     continue;
-            if(I<Dnt[kNext]) continue;
+            if(I<Dnt[k-1]) continue;
+            if(I<Dnt[k+0]) continue;
+            if(I<Dnt[k+1]) continue;
             
-            if(I<Dpn[kPrev]) continue;
-            if(I<Dpn[k])     continue;
-            if(I<Dpn[kNext]) continue;
+            if(I<Dpn[k-1]) continue;
+            if(I<Dpn[k+0]) continue;
+            if(I<Dpn[k+1]) continue;
             
-            if(I<Dtn[kPrev]) continue;
-            if(I<Dtn[k])     continue;
-            if(I<Dtn[kNext]) continue;
+            if(I<Dtn[k-1]) continue;
+            if(I<Dtn[k+0]) continue;
+            if(I<Dtn[k+1]) continue;
             
-            if(I<Dnn[kPrev]) continue;
-            if(I<Dnn[k])     continue;
-            if(I<Dnn[kNext]) continue;
+            if(I<Dnn[k-1]) continue;
+            if(I<Dnn[k+0]) continue;
+            if(I<Dnn[k+1]) continue;
             
-            peak=new Peak(peakNum,pos[Itt][2],pos[Itt][3],k,
-                          (int)I,run_number,pos[Itt][4]);
-            peak.nearedge(minColumn, maxColumn,
-                          minRow,    maxRow,
-                          minTime,   maxTime);
-            //peak.t(times[k]);
-            peak.detA(detA);
-            peak.detA2(detA2);
-            peak.detD(detD);
-            peak.sample_orient(chi,phi,omega);
-            peak.monct(moncount);
-            peak.L1(init_path);
-            peak.times(xscale.getX(k),xscale.getX(k+1));
-            peak.calib(calib);
+            peak=pkfac.getPixelInstance(i,j,k,0,0);
+            peak.seqnum(peakNum);
+            peak.ipkobs((int)Math.round(I));
+            peak.nearedge(minColumn,maxColumn,minRow,maxRow,minTime,maxTime);
             peaks.add(peak.clone());
             peakNum++;
           }
@@ -367,11 +298,6 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     return peaks;
   }
   
-  
-  /* ------------------------------ printme ------------------------------- */ 
-  private void printme( int x, int y, int z, int I){
-    System.out.println("("+x+","+y+","+z+") "+I);
-  }
   
   /* ------------------------------- sort --------------------------------- */ 
   private Vector sort(Vector peaks, int maxNumPeaks){
@@ -452,86 +378,6 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     return minT;
   }
   
-  /* -------------------------- detector position ------------------------- */ 
-  /**
-   * Find the detector angle by averaging over pixel angles.
-   */
-  static private float detector_angle(DataSet ds){
-    SegInfoListAttribute segI;
-    SegmentInfo seg;
-    Data data=ds.getData_entry(0);
-    float angle=0f;
-    Float Fangle=new Float(0f);
-    int total=0;
-    //System.out.print("ANGLE="+angle);
-    Fangle=(Float)data.getAttributeValue(Attribute.DETECTOR_CEN_ANGLE);
-    if(Fangle!=null){
-      angle=Fangle.floatValue();
-    }
-    //System.out.print("->"+angle);
-    if(angle==0f){
-      for( int i=0 ; i< ds.getNum_entries() ; i++ ){
-        data=ds.getData_entry(i);
-        segI=(SegInfoListAttribute)
-          data.getAttribute(Attribute.SEGMENT_INFO_LIST);
-        seg=((SegmentInfo[])segI.getValue())[0];
-        angle+=seg.getPosition().getScatteringAngle();
-        total++;
-        //System.out.println(total+":"+angle);
-      }
-      angle=(180*angle)/((float)(total+1)*(float)Math.PI);
-    }
-    //System.out.println("->"+angle);
-    
-    return angle;
-  }
-  
-  /**
-   * Find the detector angle by averaging over pixel angles.
-   */
-  static private float detector_angle2(DataSet ds){
-    return 0f;
-  }
-  
- /**
-  * Find the detector distance by averaging over perpendicular pixel
-  * distance.
-  */
-  static private float detector_distance(DataSet ds, float avg_angle){
-    SegInfoListAttribute segI;
-    SegmentInfo seg;
-    Data data=ds.getData_entry(0);
-    float angle=0f;
-    float distance=0f;
-    Float Fdistance=new Float(distance);
-    int total=0;
-    
-    Fdistance=(Float)data.getAttributeValue(Attribute.DETECTOR_CEN_DISTANCE);
-    if(Fdistance!=null){
-      distance=Fdistance.floatValue();
-    }
-    
-    if(distance==0f){
-      for( int i=0 ; i< ds.getNum_entries() ; i++ ){
-        data=ds.getData_entry(i);
-        segI=(SegInfoListAttribute)
-          data.getAttribute(Attribute.SEGMENT_INFO_LIST);
-        seg=((SegmentInfo[])segI.getValue())[0];
-        
-        angle=seg.getPosition().getScatteringAngle();
-        angle=angle-2f*avg_angle/(float)Math.PI;
-        
-        angle=(float)Math.abs(Math.cos((double)angle));
-        
-        distance+=angle*seg.getPosition().getDistance();
-        total++;
-      }
-      distance=distance/((float)(total+1));
-    }
-    
-    return distance*100f;
-  }
-  
   /* ------------------------------- clone -------------------------------- */ 
   /** 
    *  Creates a clone of this operator.
@@ -560,7 +406,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
       LoadSCDCalib(rds,"/IPNShome/pfpeterson/data/SCD/instprm.dat",1,null);
     lsc.getResult();
     
-    FindPeaks op = new FindPeaks();
+    FindPeaks op =null;
     
     //op = new FindPeaks( rds, 0 );
     //op.getResult();
@@ -571,10 +417,8 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     
     //System.out.println(((int[])rds.getAttributeValue(Attribute.RUN_NUM))[0]);
     
-    Peak peak=new Peak();
     for( int i=0 ; i<peaked.size() ; i++ ){
-      peak=(Peak)peaked.elementAt(i);
-      System.out.println(peak);
+      System.out.println(peaked.elementAt(i));
     }
     System.exit(0);
   }
