@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2003/10/28 16:19:10  rmikk
+ *  Fixed some spelliing errors in state names
+ *
  *  Revision 1.24  2003/10/28 15:50:12  rmikk
  *  Added new State Strings for the Table Views
  *
@@ -126,9 +129,9 @@ public class ViewerState  implements Serializable
   public static final String TABLE_TS_ERR          ="TableTS_ShowError";
   public static final String TABLE_TS_IND          ="TableTS_ShowIndex";
   public static final String TABLE_TS_ROWMIN          ="TableTS_MinRow";
-  public static final String TABLE_TS_ROWMAX          ="TableTS_MaxnRow";
+  public static final String TABLE_TS_ROWMAX          ="TableTS_MaxRow";
   public static final String TABLE_TS_COLMIN          ="TableTS_MinCol";
-  public static final String TABLE_TS_COLMAX          ="TableTS_MaxRow";
+  public static final String TABLE_TS_COLMAX          ="TableTS_MaxCol";
   public static final String TABLE_TS_TIMEMIN          ="TABLE_TS_MIN_TIME";
   public static final String TABLE_TS_TIMEMAX          ="TABLE_TS_MAX_TIME";
   public static final String TABLE_TS_NSTEPS          ="TABLE_TS_NXSTEPS";
