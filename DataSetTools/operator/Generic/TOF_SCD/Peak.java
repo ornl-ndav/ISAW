@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.19  2003/07/28 20:01:37  dennis
+ * clone() method now also copies the UB and inverse UB matrix,
+ * if they are set.
+ *
  * Revision 1.18  2003/07/22 15:16:23  dennis
  * Replaced local "value" of h/mn, by more accurate value from
  * tof_calc.java
@@ -972,6 +976,10 @@ public class Peak{
     peak.xcm=this.xcm;
     peak.ycm=this.ycm;
     peak.wl=this.wl;
+
+    if ( UB != null )                  
+      peak.UB( UB );    // also copy the UB matrix, which also sets UB inverse
+
     return peak;
   }
   
