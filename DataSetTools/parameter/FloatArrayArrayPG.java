@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/08/28 03:38:40  bouzekc
+ * Changed innerParameter assignment to call to setParam().
+ *
  * Revision 1.8  2003/08/28 02:32:36  bouzekc
  * Modified to work with new VectorPG.
  *
@@ -76,12 +79,12 @@ public class FloatArrayArrayPG extends VectorPG{
 
   public FloatArrayArrayPG( String name, Object val){ 
     super( name, val );
-    innerParam =  new FloatArrayPG("Enter Float Array", null);
+    setParam( new FloatArrayPG("Enter Float Array", null) );
   }
 
   public FloatArrayArrayPG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-    innerParam =  new FloatArrayPG("Enter Float Array", null);
+    setParam( new FloatArrayPG("Enter Float Array", null) );
   }
 
   /*
