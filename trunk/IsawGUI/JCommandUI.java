@@ -2,6 +2,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.12  2001/08/08 20:22:15  dennis
+ * Now gets build date from DataSetTools/util/SharedData
+ *
  * Revision 1.11  2001/07/31 19:38:16  neffk
  * the setTab() method now inserts a tab at index zero (0) instead
  * of adding it on the end of the list.  this has the added effect
@@ -86,7 +89,7 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
 
         Runtime rt = Runtime.getRuntime();         
      textArea = new JTextField(
-       "Build Date: unknown\n" +
+       "Build Date: "+ SharedData.BUILD_DATE + "\n" +
        "Total JVM Memory in bytes = "+ rt.totalMemory() + "\n" +
        "Free JVM Memory in bytes = "+ rt.freeMemory() + "\n" +
        "\n" +
