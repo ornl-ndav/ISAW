@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/02/17 18:59:06  dennis
+ *  Added getDocumentation() method and main test program. (Chris Bouzek)
+ *
  *  Revision 1.10  2002/12/11 22:31:31  pfpeterson
  *  Removed the '_2' from getCommand() and its javadocs.
  *
@@ -65,6 +68,8 @@ import  DataSetTools.math.*;
 import  DataSetTools.operator.*;
 import  DataSetTools.operator.Generic.TOF_DG_Spectrometer.*;
 import  DataSetTools.parameter.*;
+import  DataSetTools.retriever.*;
+import  DataSetTools.viewer.*;
 
 /**
   *  Compute the Frequency Distribution Function for a direct 
@@ -95,12 +100,12 @@ public class FrequencyDistributionFunction
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
-   *  Construct an operator to calculate the Scattering Function
+   *  Construct an operator to calculate the Frequency Distribution Function
    *  for a spectrometer DataSet.  It is assumed that the 
-   *  DoubleDifferentialCrossection operator has already been applied.
+   *  ScatteringFunction operator has already been applied.
    *
-   *  @param  ds               The sample DataSet for which the scattering 
-   *                           function is to be calculated 
+   *  @param  ds               The sample DataSet for which the frequency
+   *                           distribution function is to be calculated 
    *  @param  make_new_ds Flag that determines whether a new DataSet is
    *                           constructed, or the Data blocks of the original 
    *                           DataSet are just altered.
@@ -131,7 +136,7 @@ public class FrequencyDistributionFunction
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -146,8 +151,53 @@ public class FrequencyDistributionFunction
     addParameter( parameter );
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+   public String getDocumentation()
+   {
+     StringBuffer s = new StringBuffer("");
+     s.append("@overview This operator computes the frequency distribution ");
+     s.append("function for a direct geometry spectrometer based on the ");
+     s.append("result of applying the scattering function operator.\n");
+     s.append("@assumptions It is assumed that the ScatteringFunction ");
+     s.append("operator has been applied.\n");
+     s.append("@algorithm For each data entry in the DataSet, this operator ");
+     s.append("first uses the initial energy and the data's x-values to ");
+     s.append("calculate the final energy.\n");
+     s.append("Then it uses tof_calc's SpectrometerQ method to calculate a ");
+     s.append("Q value.\n");
+     s.append("Next it calculates new y-values and uses Data's getInstance");
+     s.append(" method to calculate conversion data using the data's ");
+     s.append("X-scale, the group ID, and the new y-values.\n");
+     s.append("Finally it multiplies the spectrum by the conversion data ");
+     s.append("and appends a log to the DataSet indicating that a frequency ");
+     s.append("distribution function was performed.\n");
+     s.append("@param ds The sample DataSet for which the frequency ");
+     s.append("distribution function is to be calculated.\n");
+     s.append("@param make_new_ds Flag that determines whether a new ");
+     s.append("DataSet is constructed, or the Data blocks of the original ");
+     s.append("DataSet are just altered.\n");
+     s.append("@return If make_new_ds is true, returns the new DataSet to ");
+     s.append("which the frequency distribution function has been applied.  ");
+     s.append("Otherwise, it returns a String indicating that the frequency ");
+     s.append("distribution function was applied.\n");
+     s.append("@error No standard errors are returned if invalid parameters ");
+     s.append("are entered.\n");
+     return s.toString();
+    }
 
   /* ---------------------------- getResult ------------------------------- */
+  /** 
+    * Computes the frequency distribution function.
+    *
+    * @return If make_new_ds is true, returns the new DataSet to which the 
+    * frequency distribution function has been applied.  
+    * Otherwise, it returns a String indicating that the frequency distribution 
+    * function was applied.
+    */
 
   public Object getResult()
   {       
@@ -211,9 +261,9 @@ public class FrequencyDistributionFunction
 
       for ( int i = 0; i < (y_vals.length-1); i++ )
       {
-        if ( x_vals.length > y_vals.length )  // histogram
+        if ( data.isHistogram() )                       // histogram
           energy_transfer = (x_vals[i]+x_vals[i+1])/2;
-        else                                  // function
+        else                                            // else function
           energy_transfer = x_vals[i];
 
         energy_final     = energy_in-energy_transfer;
@@ -267,14 +317,66 @@ public class FrequencyDistributionFunction
     return new_op;
   }
 
-  /* ------------------------------- main ---------------------------------- */
-  /**
-   *  Main program for testing purposes.
-   */
-   public static void main( String args[] )
-   {
-     System.out.println( "FrequencyDistributionFunction" );
-   }
+ /* ------------------------------- main ---------------------------------- */
+ /**
+  *  Main program for testing purposes.
+  */
+  public static void main( String args[] )
+  {
+    System.out.println("Test of FrequencyDistributionFunction" );
+   
+    String    run_name = "/home/groups/SCD_PROJECT/SampleRuns/hrcs2447.run";
+    //String    run_name = "d:\\SCD_PROJECT\\SampleRuns\\hrcs2447.run";
+    Retriever rr       = new RunfileRetriever( run_name );
+    DataSet   ds       = rr.getDataSet(1);
+
+    Operator op = new DoubleDifferentialCrossection( ds, null, false,
+                                                     10000, 1, true );
+
+    Object ddif_ds = op.getResult();
+    if ( ddif_ds == null )
+      System.out.println("Error in calculating DSDODE... returned null");
+    else
+    {
+      System.out.println("DSDODE returned:" + ddif_ds );
+      if ( ddif_ds instanceof DataSet )
+      {
+        ViewManager vm1 = new ViewManager((DataSet)ddif_ds,IViewManager.IMAGE);
+      }
+    }
+
+   op = new ScatteringFunction( (DataSet)ddif_ds, 1, true );
+   Object scat_ds = op.getResult();
+   if ( scat_ds == null )
+      System.out.println("Error in calculating SCAT... returned null");
+    else
+    {
+      System.out.println("SCAT returned:" + scat_ds );
+      if ( scat_ds instanceof DataSet )
+      {
+        ViewManager vm3 = new ViewManager((DataSet)scat_ds,IViewManager.IMAGE);
+      }
+    }
+    
+   op = new FrequencyDistributionFunction( (DataSet)scat_ds, true );
+   Object freq_dis_ds = op.getResult();
+   if ( freq_dis_ds == null )
+      System.out.println("Error in calculating FFUN... returned null");
+    else
+    {
+      System.out.println("FFUN returned:" + freq_dis_ds );
+      if ( freq_dis_ds instanceof DataSet )
+      {
+        ViewManager vm4 = 
+                    new ViewManager((DataSet)freq_dis_ds,IViewManager.IMAGE);
+      }
+    }
+    
+   System.out.println("Documentation: " + op.getDocumentation()); 
+    
+
+   System.out.println("End of test of FrequencyDistributionFunction");
+  }
 
 }
 
