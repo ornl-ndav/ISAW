@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.47  2002/07/24 14:59:30  dennis
+ *  TIME_FIELD_TYPE attribute no longer added
+ *  OMEGA attribute only added for TOF_DIFFRACTOMETER
+ *
  *  Revision 1.46  2002/07/10 20:07:42  dennis
  *  Now uses XScale.getInstance() to get a uniform XScale if possible.
  *
@@ -846,8 +850,8 @@ private float CalculateEIn()
     attr_list.setAttribute( int_list_attr );
 
     // Time field type
-    int_attr = new IntAttribute( Attribute.TIME_FIELD_TYPE, tf_type );
-    attr_list.setAttribute( int_attr );
+    // int_attr = new IntAttribute( Attribute.TIME_FIELD_TYPE, tf_type );
+    // attr_list.setAttribute( int_attr );
 
     // SCD sample orientation, Sample Chi, Sample Phi, Sample Omega
     if ( instrument_type == InstrumentType.TOF_SCD )
@@ -989,9 +993,12 @@ private float CalculateEIn()
     attr_list.setAttribute( pos_attr );
 
     // Omega
-    float omega = tof_calc.Omega( angle * 180 / 3.14159264f );
-    FloatAttribute omega_attr = new FloatAttribute( Attribute.OMEGA, omega );
-    attr_list.setAttribute( omega_attr );
+    if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
+    {
+      float omega = tof_calc.Omega( angle * 180 / 3.14159264f );
+      FloatAttribute omega_attr = new FloatAttribute( Attribute.OMEGA, omega );
+      attr_list.setAttribute( omega_attr );
+    }
 
     // Raw Detector Angle ...........
     float_attr =new FloatAttribute(Attribute.RAW_ANGLE,
