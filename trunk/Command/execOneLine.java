@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.73  2005/01/07 17:46:54  rmikk
+ * Added type checking to eliminate run time errors
+ * Added a method to clear ChooserPG storage
+ *
  * Revision 1.72  2004/03/17 20:25:08  dennis
  * Fixed @see tag that was broken when view components, math and
  * util were moved to gov package.
@@ -2467,7 +2471,18 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
                     Result = execOneLine.Vect_to_String((Vector)LeftValue)+
                                            (String)RightValue;
             }
-
+    if(!(LeftValue instanceof String ))
+      if(!(LeftValue instanceof Float ))
+        if(!(LeftValue instanceof Integer )){
+          seterror(1000, ER_ImproperArgument);
+          return;
+        }
+      if(!(RightValue instanceof String ))
+        if(!(RightValue instanceof Float ))
+          if(!(RightValue instanceof Integer )){
+            seterror(1000, ER_ImproperArgument);
+            return;
+          }
        //---------------------- +-*/^<> operations -----------------------
 	if( "+-/*<>^".indexOf( operation ) >= 0 ){
             if( LeftValue instanceof String ){
@@ -2904,6 +2919,19 @@ public class execOneLine implements gov.anl.ipns.Util.Messaging.IObserver,IObser
         }//For i = 0
         seterror( 1000 , ER_NoSuchOperator );
     }
+
+    public static void ClearChooserPGParameters( Operator op){
+
+       if( op == null) 
+         return;
+       for( int i=0; i < op.getNum_parameters(); i++){
+          IParameter param = op.getParameter( i);
+          if( param instanceof DataSetPG)
+            ((ChooserPG)param).clear();
+       }
+
+    }
+
 
     /**
      *  This method executes the operation corresponding to  Command
