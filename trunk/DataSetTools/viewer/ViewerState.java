@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2002/07/30 14:33:35  rmikk
+ *  Added a ViewerState constant for the Contour View
+ *
  *  Revision 1.20  2002/07/26 22:00:10  rmikk
  *  Added a Constant for states in the time slice table
  *
@@ -144,6 +147,10 @@ public class ViewerState  implements Serializable
    */
   public static final String CONTOUR_STYLE     =  "Contour.Style";
 
+  /**if false data has not been set
+  */
+  public static final String CONTOUR_DATA      =  "Contour.Data";
+
   public static final String TABLE_TS          ="Time Slice Table";
 
   private Hashtable     state = null;
@@ -215,6 +222,7 @@ public class ViewerState  implements Serializable
       state.put(CONTOUR_STYLE, contour_style );
 
       state.put( TABLE_TS, "");
+     state.put( CONTOUR_DATA, new Boolean(false));
 
       zoom_region                = new CoordBounds( 0, 1000, 0, 1000 );
       ds_x_label = "";
