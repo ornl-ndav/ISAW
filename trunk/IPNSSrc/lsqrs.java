@@ -1188,7 +1188,7 @@ public class lsqrs {
     ans = "N";
     answr=readans();
     if(answr!=null && answr.length()>0)
-      ans=aswr.trim().substring(0,1);
+      ans=answr.trim().substring(0,1);
     if (ans.equalsIgnoreCase("Y") || ans.equalsIgnoreCase("y")){
       return;
     }
