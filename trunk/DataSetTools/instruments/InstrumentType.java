@@ -3,6 +3,10 @@
  *
  *
  *  $Log$
+ *  Revision 1.6  2001/02/16 21:53:49  dennis
+ *  Added instrument types for triple axis spectrometer and four
+ *  mono-chromatic instrument types. ( For compatibility with NeXus.)
+ *
  *  Revision 1.5  2000/08/03 21:50:32  dennis
  *  Added methods to get the path and file name separately from the fully
  *  qualified file name.
@@ -35,17 +39,19 @@ import DataSetTools.util.*;
 
 public class InstrumentType implements Serializable
 {
-  public static final int  UNKNOWN              = 0;
-  public static final int  TOF_DIFFRACTOMETER   = 1;    // powder & amorphous
-  public static final int  TOF_SCD              = 2;    // single crystal
-  public static final int  TOF_SAD              = 3;    // small angle
+  public static final int  UNKNOWN                   = 0;
+  public static final int  TOF_DIFFRACTOMETER        = 1;
+  public static final int  TOF_SCD                   = 2;    
+  public static final int  TOF_SAD                   = 3;    
+  public static final int  TOF_REFLECTROMETER        = 4;
+  public static final int  TOF_DG_SPECTROMETER       = 5;    // direct geometry
+  public static final int  TOF_IDG_SPECTROMETER      = 6;   // inverse geometry
 
-  public static final int  TOF_REFLECTROMETER   = 4;
-
-  public static final int  TOF_DG_SPECTROMETER  = 5;    // direct geometry
-  public static final int  TOF_IDG_SPECTROMETER = 6;    // indirect geometry
-  
-
+  public static final int  TRIPLE_AXIS_SPECTROMETER  = 7;
+  public static final int  MONO_CHROM_DIFFRACTOMETER = 8;
+  public static final int  MONO_CHROM_SCD            = 9;    
+  public static final int  MONO_CHROM_SAD            = 10;    
+  public static final int  MONO_CHROM_REFLECTROMETER = 11;
 
 
   /**
