@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.29  2003/09/15 22:21:08  dennis
+ * Added spaces to improve readability.
+ *
  * Revision 1.28  2003/09/15 03:26:11  dennis
  * Added parameters that allow a constant (shoe box) region of integration
  * to be used for all peaks.  (This option is not implemented yet.)
@@ -325,30 +328,40 @@ public class Integrate extends GenericTOF_SCD{
 
     // parameter(0)
     addParameter( new DataSetPG("Data Set", null, false ) );
+
     // parameter(1)
     SaveFilePG sfpg=new SaveFilePG("Integrate File",null);
     sfpg.setFilter(new IntegrateFilter());
     addParameter(sfpg);
+
     // parameter(2)
     LoadFilePG lfpg=new LoadFilePG("Matrix File",null);
     lfpg.setFilter(new MatrixFilter());
     addParameter( lfpg );//new Parameter("Path",new DataDirectoryString()) );
+
     // parameter(3)
     ChoiceListPG clpg=new ChoiceListPG("Centering Type", choices.elementAt(0));
     clpg.addItems(choices);
     addParameter(clpg);
+
     // parameter(4)
     addParameter(new IntArrayPG("Time Slice Range","-1:3"));
+
     // parameter(5)
     addParameter(new IntegerPG("Increase Slice Size by",0));
+
     // parameter(6)
     addParameter(new IntegerPG("Log Every nth Peak",3));
+
     // parameter(7)
     addParameter(new BooleanPG("Append",false));
+
     // parameter(8)
     addParameter(new BooleanPG("Use Shoe Box (NOT max I/sigI)",false));
+
     // parameter(9)
     addParameter(new IntArrayPG("Box Delta x (col) range","-2:2"));
+
     // parameter(10)
     addParameter(new IntArrayPG("Box Delta y (row) range","-2:2"));
   }
