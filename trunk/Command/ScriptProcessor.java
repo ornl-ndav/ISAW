@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.33  2003/03/11 20:12:52  pfpeterson
+ * Fixed bug with setting initial value of a parameter.
+ *
  * Revision 1.32  2003/03/11 15:33:40  pfpeterson
  * Does not use a Document until getResult(). setDefaultParameters()
  * now uses a StringBuffer.
@@ -786,7 +789,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       index=buffer.toString().indexOf(")");
       if(index>0){
         InitValue=InitValue+buffer.substring(0,index);
-        buffer.delete(0,index);
+        buffer.delete(0,index+1);
         StringUtil.trim(buffer);
       }else{
         InitValue=InitValue.substring(0,InitValue.length()-1);
