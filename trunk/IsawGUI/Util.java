@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2004/06/18 19:32:05  rmikk
+ * Eliminated several unused variables
+ *
  * Revision 1.26  2004/03/15 03:31:26  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -250,7 +253,7 @@ public class Util
       X.setParameter( new Parameter( "filename", filename ), 2 );
       X.setParameter( new Parameter( "dataset", ds ), 1 );
 
-      JParametersDialog JP = new JParametersDialog( X, lh,
+       new JParametersDialog( X, lh,
             null, null );
 
    }
@@ -364,7 +367,7 @@ public class Util
          Element root;
 
          root = doc.getDefaultRootElement();
-         String c = "";
+         //String c = "";
 
          for( i = 0; i < root.getElementCount(); i++ )
          {
@@ -372,7 +375,8 @@ public class Util
 
             fw.write( doc.getText( line.getStartOffset(), line.getEndOffset() -
                   line.getStartOffset() - 1 ) );
-            c = doc.getText( line.getEndOffset() - 1, 1 );
+            //c = 
+            doc.getText( line.getEndOffset() - 1, 1 );
             if( i + 1 < root.getElementCount() )
                fw.write( "\n" );
          }
@@ -446,7 +450,8 @@ public class Util
       // be important, but setting the 
       // size get's the table to fill out
       // the available space.
-      ExcelAdapter myAd = new ExcelAdapter( table );
+      //ExcelAdapter myAd = 
+      new ExcelAdapter( table );
       JScrollPane scrollPane = new JScrollPane( table );
 
       return scrollPane;
