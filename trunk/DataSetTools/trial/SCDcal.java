@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/04/02 17:47:51  dennis
+ *  Added method getAllGridIDs() to get the list of IDs used in the
+ *  calibration.  Modified getMeasuredPeakPositions() and
+ *  getTheoreticalPeakPositions() to include the detector ID as
+ *  a parameters and return the list if positions with NULL for
+ *  data that did not correspond to the specified detector ID.
+ *
  *  Revision 1.13  2004/04/02 15:29:21  dennis
  *  Added method getMeasuredPeakPositions() to return the measured
  *  peaks (row,col,tof) values used in the calibration.
@@ -534,27 +541,62 @@ public class SCDcal   extends    OneVarParameterizedFunction
   }
 
 
+  /** 
+   *  Get an array listing all of the grid IDs (i.e. detector IDs) for 
+   *  the peaks. 
+   */
+  public int[] getAllGridIDs()
+  {
+     Object grid_objects[] = grids.values().toArray();
+     int ids[] = new int[ grid_objects.length ];
+
+     for ( int i = 0; i < ids.length; i++ )
+       ids[i] = ((UniformGrid_d)grid_objects[i]).ID();
+
+     return ids;
+  }
+
+
   /**
-   *  Get list of triples, row, col, time-of-flight for the measured peaks
+   *  Get a full length list of triples: row, col, time-of-flight for 
+   *  the measured peaks, for the specified detetector ID, many of which
+   *  are NULL!  
+   *  NOTE: MANY OF THE POSITIONS IN THIS ARRAY WILL BE NULL, SINCE A NULL
+   *        TRIPLE IS ENTERED IF THE PEAK CAME FROM THE OTHER DETECTOR!!
+   *
+   *  @param det_id  The id of the detector for which the peaks are returned
    */ 
-  public float[][] getMeasuredPeakPositions()
+  public float[][] getMeasuredPeakPositions( int det_id )
   {
      float positions[][] = new float[n_peaks][3];
      for ( int i = 0; i < n_peaks; i++ )
      {
        PeakData peak = (PeakData)peaks_vector.elementAt(i);
-       positions[i][0] = (float)peak.row;
-       positions[i][1] = (float)peak.col;
-       positions[i][2] = (float)peak.tof;
+       if ( det_id != id[i] )
+         positions[i] = null;
+       else
+       {
+         positions[i][0] = (float)peak.row;
+         positions[i][1] = (float)peak.col;
+         positions[i][2] = (float)peak.tof;
+       }
      }
      return positions;
   }
 
 
   /**
-   *  Get list of triples, row, col, time-of-flight for the expected peaks
+   *  Get a full length list of triples: row, col, time-of-flight for 
+   *  the theoretically expected peaks, for the specified detetector ID,
+   *  many of which are NULL!  
+   *  NOTE: MANY OF THE POSITIONS IN THIS ARRAY WILL BE NULL, SINCE A NULL
+   *        TRIPLE IS ENTERED IF THE PEAK CAME FROM THE OTHER DETECTOR, OR
+   *        IF THE PEAK WOULD MISS THE DETECTOR, AFTER CALIBRATION ADJUSTMENTS
+   *        ARE MADE!!!
+   *
+   *  @param det_id  The id of the detector for which the peaks are returned
    */
-  public float[][] getTheoreticalPeakPositions()
+  public float[][] getTheoreticalPeakPositions( int det_id )
   {
      double l1 = all_parameters[L1_INDEX];
      double t0 = all_parameters[T0_INDEX];
@@ -576,24 +618,29 @@ public class SCDcal   extends    OneVarParameterizedFunction
      for ( int i = 0; i < n_peaks; i++ )
      {
        PeakData peak = (PeakData)peaks_vector.elementAt(i);
-       UniformGrid_d grid_d = (UniformGrid_d)grids.get( new Integer( id[i] ) );
-       UniformGrid grid = new UniformGrid( grid_d, false ); 
-       float phi   = (float)peak.orientation.getPhi();
-       float chi   = (float)peak.orientation.getChi();
-       float omega = (float)peak.orientation.getOmega();
+       if ( det_id != id[i] )
+         positions[i] = null;
+       else
+       {
+         UniformGrid_d grid_d = (UniformGrid_d)grids.get( new Integer(id[i]) );
+         UniformGrid grid = new UniformGrid( grid_d, false ); 
+         float phi   = (float)peak.orientation.getPhi();
+         float chi   = (float)peak.orientation.getChi();
+         float omega = (float)peak.orientation.getOmega();
        
-       IPNS_SCD_SampleOrientation orientation = 
+         IPNS_SCD_SampleOrientation orientation = 
                            new IPNS_SCD_SampleOrientation( phi, chi, omega );
 
-       VecQMapper mapper = new VecQMapper( grid, 
-                                          (float)l1, 
-                                          (float)t0, 
-                                           orientation );
+         VecQMapper mapper = new VecQMapper( grid, 
+                                            (float)l1, 
+                                            (float)t0, 
+                                             orientation );
 
-       Vector3D q_vec = new Vector3D( (float)qxyz_theoretical[i][0],
-                                      (float)qxyz_theoretical[i][1],
-                                      (float)qxyz_theoretical[i][2] );
-       positions[i] = mapper.QtoRowColTOF( q_vec );
+         Vector3D q_vec = new Vector3D( (float)qxyz_theoretical[i][0],
+                                        (float)qxyz_theoretical[i][1],
+                                        (float)qxyz_theoretical[i][2] );
+         positions[i] = mapper.QtoRowColTOF( q_vec );
+       }
      }
      return positions;
   }
