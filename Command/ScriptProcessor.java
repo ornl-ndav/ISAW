@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2002/06/12 18:44:56  rmikk
+ * Added code to deal with tabs like spaces
+ *
  * Revision 1.19  2002/04/03 19:53:34  pfpeterson
  * Added SampleDataSet and MonitorDataSet.
  *
@@ -1394,7 +1397,7 @@ public void setDefaultParameters()
           if( start < 1)
             return;
           start = ExecLine.skipspaces(Line , 1 , start );
-          j = findQuote ( Line , 1 , start, " =" , "" );
+          j = findQuote ( Line , 1 , start, " =\t" , "" );
           if( (j >= 0) && ( j < Line.length() ))
             VarName = Line.substring( start , j).trim();
           else
@@ -1408,12 +1411,12 @@ public void setDefaultParameters()
              return ;
             }
           start = ExecLine.skipspaces(Line , 1, start );
-          j = findQuote( Line , 1, start, " (", "" );
+          j = findQuote( Line , 1, start, " (\t", "" );
           if( start < Line.length())
 	    if( Line.charAt( start) == '=')
                 j = start + 1;
           String DT = Line.substring( start , j );//.toUpperCase();
-          
+        
        // Now get the initial value
           InitValue = null;
           if( DT.equals( "=" ) )
@@ -1440,6 +1443,7 @@ public void setDefaultParameters()
             Message = Line.substring( j ).trim();
           else
             Message = "";
+          
           if(Debug)
             System.out.println("in line start end="+ start + ","+DT+","+Message);
           DT = DT.toUpperCase();
