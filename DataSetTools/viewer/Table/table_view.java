@@ -30,6 +30,13 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.24  2002/05/03 14:31:00  rmikk
+ * Change the font family to the font family of the buttons
+ * The maximum and minimum font size is now 12 and 6.
+ * The file browser for the Save to File option now opens first in the directory
+ *    specified by the system property Data_Save_Directory.
+ * The file browser now "remembers" the last directory
+ *
  * Revision 1.23  2002/05/02 15:52:35  rmikk
  * Eliminated a few segments of dead code
  * Sent it through a Prettifier code
@@ -219,7 +226,7 @@ public class table_view extends JPanel implements ActionListener {
       util = new IsawGUI.Util();
       Worder = new WString();
       Worder.value = "HGT,F";
-      filename = System.getProperty("Table_Save_Directory");
+      filename = System.getProperty("Data_Save_Directory");
       if (filename == null)
          filename = System.getProperty("user.dir");
    }
@@ -624,7 +631,7 @@ public class table_view extends JPanel implements ActionListener {
             File F = JFC.getSelectedFile();
 
             filename = F.getPath().trim();
-            System.setProperty("Table_Save_Directory", filename); 
+            System.setProperty("Data_Save_Directory", filename); 
             Showw(); 
             try {
                if (f != null) f.close();
@@ -3541,33 +3548,35 @@ public class table_view extends JPanel implements ActionListener {
          int charWidth = FM.charWidth('A');
          int font_size = (int) (.5 + 12 * tot_dots / ((float) (charWidth * Nchars)));
 
-         if (font_size > 18)
-            font_size = 18;
-         else if (font_size < 5)
-            font_size = 5;
+         if (font_size > 12)
+            font_size = 12;
+         else if (font_size < 6)
+            font_size = 6;
 
+     Font ff= Add.getFont();
+         ff = new Font( ff.getFamily(), Font.PLAIN, font_size) ;
             // Replace by the controls in main dialog box
-         Add.setFont(new Font("Courier", Font.PLAIN, font_size));
-         Remove.setFont(new Font("Courier", Font.PLAIN, font_size));
-         Up.setFont(new Font("Courier", Font.PLAIN, font_size));
-         Down.setFont(new Font("Courier", Font.PLAIN, font_size));
+         Add.setFont( ff );
+         Remove.setFont(ff );
+         Up.setFont( ff );
+         Down.setFont( ff );
  
-         fileView.setFont(new Font("Courier", Font.PLAIN, font_size));
-         tableView.setFont(new Font("Courier", Font.PLAIN, font_size)); 
-         consoleView.setFont(new Font("Courier", Font.PLAIN, font_size));
+         fileView.setFont(ff );
+         tableView.setFont( ff ); 
+         consoleView.setFont( ff );
   
-         selectEdit.setFont(new Font("Courier", Font.PLAIN, font_size));
-         selectAllEdit.setFont(new Font("Courier", Font.PLAIN, font_size));
+         selectEdit.setFont( ff );
+         selectAllEdit.setFont( ff );
  
-         SelectedIndecies.setFont(new Font("Courier", Font.PLAIN, font_size));
+         SelectedIndecies.setFont( ff );
    
-         unsel.setFont(new Font("Courier", Font.PLAIN, font_size));
-         sel.setFont(new Font("Courier", Font.PLAIN, font_size));
+         unsel.setFont( ff );
+         sel.setFont( ff );
 
-         Order.setFont(new Font("Courier", Font.PLAIN, font_size));
+         Order.setFont( ff );
 
-         ControlL.setFont(new Font("Courier", Font.PLAIN, font_size));
-         OrderL.setFont(new Font("Courier", Font.PLAIN, font_size));
+         ControlL.setFont( ff );
+         OrderL.setFont( ff );
       }
    } //MyComponentListener1 for Main dialog box
 }
