@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/08/28 01:43:55  bouzekc
+ *  Modified to work with new ParameterGUI.
+ *
  *  Revision 1.8  2003/08/22 20:12:08  bouzekc
  *  Modified to work with EntryWidget.
  *
@@ -79,20 +82,13 @@ public class BooleanPG extends ParameterGUI
 
   // ********** Constructors **********
   public BooleanPG(String name, Object value){
-    this(name,value,false);
-    this.setDrawValid(false);
+    super( name, value );
     this.type=TYPE;
   }
     
   public BooleanPG(String name, Object value, boolean valid){
-    this.setName(name);
-    this.setValue(value);
-    this.setEnabled(true);
-    this.setValid(valid);
-    this.setDrawValid(true);
+    super( name, value, valid );
     this.type=TYPE;
-    this.initialized=false;
-    this.ignore_prop_change=false;
   }
     
   public BooleanPG(String name, boolean value){
