@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.83  2004/05/03 16:32:11  dennis
+ *  Removed nominal_eff_attr attribute that is no longer used.
+ *  Removed unused "grid" variable.
+ *
  *  Revision 1.82  2004/04/12 21:29:52  dennis
  *  Split code that adds a spectrum's attributes into separate
  *  private methods.
@@ -278,8 +282,6 @@ public class RunfileRetriever extends    Retriever
   private FloatAttribute   initial_path_attr = null;
   private SampleOrientationAttribute 
                            scd_sample_orientation_attr = null;
-  private FloatAttribute   nominal_eff_attr 
-                            = new FloatAttribute(Attribute.EFFICIENCY_FACTOR,1);
   private Hashtable        det_cen_dist_attrs  = new Hashtable();
   private Hashtable        det_cen_angle_attrs = new Hashtable();
   private Hashtable        det_data_grids      = new Hashtable();
@@ -843,11 +845,9 @@ private float CalculateEIn()
     {
       System.out.println("TEMPORARY FIX FOR SAND AREA DETECTOR .....");
       ids = Grid_util.getAreaGridIDs( data_set );
-      UniformGrid grid;
       for ( int i = 0; i < ids.length; i++ )
       {
         int det_id = ids[i];
-        grid = (UniformGrid)Grid_util.getAreaGrid( data_set, det_id );
         Grid_util.setEffectivePositions( data_set, det_id );
       }
     }
