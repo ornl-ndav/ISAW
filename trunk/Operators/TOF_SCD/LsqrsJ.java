@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.27  2004/04/15 15:12:27  dennis
+ * Removed unneeded wrappers around LinearAlgebra.double2float()
+ * methods.  Added documentation regarding the output to the log
+ * file.
+ *
  * Revision 1.26  2004/03/15 03:37:03  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -247,7 +252,7 @@ public class LsqrsJ extends GenericTOF_SCD {
     sb.append( "matrix is valid." );
 
     //algorithm
-    sb.append( "@algorithm The reflections are read in from the peaks file.  " );
+    sb.append( "@algorithm The reflections are read in from the peaks file.  ");
     sb.append( 
       "Then peaks that are not within the selected sequence numbers, " );
     sb.append( "not within the h, k, and l delta values, and not within the " );
@@ -255,7 +260,7 @@ public class LsqrsJ extends GenericTOF_SCD {
     sb.append( "matrix are created, and the transformation matrix is " );
     sb.append( "applied.  The UB matrix is calculated, and lattice " );
     sb.append( "parameters and cell volume are calculated.  Next the " );
-    sb.append( "uncertainties and derivatives are calculated, and the sigmas " );
+    sb.append( "uncertainties and derivatives are calculated, and the sigmas ");
     sb.append( "are accumulated and turned into \"actual\" sigmas.  At this " );
     sb.append( "point, the log file and matrix file are written and/or " );
     sb.append( "updated." );
@@ -277,7 +282,7 @@ public class LsqrsJ extends GenericTOF_SCD {
     sb.append( "returns the name of the lsqrsJ log file." );
 
     // error
-    sb.append( "@error If the peaks file is not found or cannot be read from." );
+    sb.append( "@error If the peaks file is not found or cannot be read from.");
     sb.append( 
       "@error If the matrix file is not found or cannot be written to." );
 
@@ -559,6 +564,8 @@ public class LsqrsJ extends GenericTOF_SCD {
       for( int i = 0; i < peaks.size(  ); i++ ) {
         peak = (Peak)peaks.elementAt(i);
   
+                        // The first line logged for a peak has the observered
+                        // values for the peak, 'indexed' by integer hkl values.
         logBuffer.append( Format.integer( peak.seqnum(), 5 ) +
                           Format.integer( peak.h(), 4 ) +
                           Format.integer( peak.k(), 6 ) +
@@ -574,6 +581,9 @@ public class LsqrsJ extends GenericTOF_SCD {
                           Format.real( peak.getUnrotQ()[1], 7, 3 ) + 
                           Format.real( peak.getUnrotQ()[2], 7, 3 ) +"\n" );
 
+                        // The second line logged for a peak should have the 
+                        // theoretical values, corresponding to the indexed
+                        // hkl values
 /* This "should" eventually work, for writing out the values that correspond
    to the integerized hkl, but the peak requires the calibration information
    which is not currently available.  
@@ -600,10 +610,9 @@ public class LsqrsJ extends GenericTOF_SCD {
                           Format.real( Tq[1][i], 7, 3 ) +
                           Format.real( Tq[2][i], 7, 3 ) + "\n" );
 
-                                              // print out third line, with 
-                                              // fractional hkl values and
-                                              // display difference between
-                                              // observed and integer hkl
+                          // The third line logged has the fractional hkl
+                          // values observed for a peak, together with the
+                          // difference in theoretical and observed hkl
         logBuffer.append( "      " + 
                           Format.real( obs_hkl[0][i], 6, 2 ) +
                           Format.real( obs_hkl[1][i], 6, 2 ) + 
@@ -751,9 +760,10 @@ public class LsqrsJ extends GenericTOF_SCD {
     }
 
     // update the matrix file
-    ErrorString error = Util.writeMatrix( 
-        matfile, double2float( UB ), double2float( abc ),
-        double2float( sig_abc ) );
+    ErrorString error = Util.writeMatrix( matfile, 
+                                     LinearAlgebra.double2float( UB ), 
+                                     LinearAlgebra.double2float( abc ),
+                                     LinearAlgebra.double2float( sig_abc ) );
 
     if( error != null ) {
       return new ErrorString( "LsqrsJ failed to update matrix file: " + error );
@@ -1011,27 +1021,6 @@ public class LsqrsJ extends GenericTOF_SCD {
     }
   }
 
-  /**
-   * DOCUMENT ME!
-   *
-   * @param array DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
-   */
-  private static float[][] double2float( double[][] array ) {
-    return LinearAlgebra.double2float( array );
-  }
-
-  /**
-   * DOCUMENT ME!
-   *
-   * @param array DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
-   */
-  private static float[] double2float( double[] array ) {
-    return LinearAlgebra.double2float( ( double[] )array );
-  }
 
   /**
    * Method to generate the hkl sums matrix
