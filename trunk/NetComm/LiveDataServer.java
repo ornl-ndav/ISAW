@@ -34,6 +34,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2001/08/14 01:27:43  dennis
+ *  Added missing "return".  One return is needed after each tcpio.Send().
+ *
  *  Revision 1.18  2001/08/13 23:42:05  dennis
  *  ProcessCommand() now calls super.ProcessCommand() for commands
  *  that are not handled.
@@ -427,6 +430,7 @@ public class LiveDataServer extends    DataSetServer
         for ( int i = 0; i < types.length; i++ )
           types[i] = ds_type[i];
         tcp_io.Send( types );
+        return;
       }
 
       else if ( command.startsWith( COMMAND_GET_DS ) )
@@ -450,10 +454,16 @@ public class LiveDataServer extends    DataSetServer
 
         else                                          
           tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
+
+        return;
       }
    
       else
+      {
+        if ( debug_server )
+          System.out.println("CALLING super.ProcessCommand() for " + command );
         super.ProcessCommand( command, tcp_io );
+      }
     }
     catch ( Exception e )
     {
