@@ -29,7 +29,14 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.26  2004/07/14 18:51:25  kramer
+ * Now the tree QUICKLY handles selection changed messages and makes the
+ * selected nodes' text blue (and makes unselected nodes' text black).
+ * If a spectrum is selected in a viewer the corresponding node in the tree
+ * is selected.  However, now the tree does not scroll to make the node visible.
+ *
  * Revision 1.25  2004/07/07 16:38:54  kramer
+ *
  * Now the tree responds to "selection changes" from viewers.  If a Data object
  * in a DataSet is selected, its corresponding node in the tree has its text
  * color set to blue.  Also, now the tree will allow the user to use shift
@@ -685,17 +692,26 @@ public class JDataTree
 
       else if ( reason_str.equals(SELECTION_CHANGED) )
       {
-         Data data = null;
-         MutableTreeNode node = null;
-         for (int i=0; i<ds.getNum_entries(); i++)
+         int[] selectedIndices = ds.getSelectedIndices();
+         Enumeration en = ds_node.children();
+         int i = 0;
+         DataMutableTreeNode node;
+         Object nextElement = null;
+         while (en.hasMoreElements())
          {
-            data = ds.getData_entry(i);
-            if (data != null)
+            nextElement = en.nextElement();
+            if (nextElement instanceof DataMutableTreeNode)
             {
-               node = getNodeOfObject(data);
-               if (node != null)
-                  if (node instanceof DataMutableTreeNode)
-                     ((DataMutableTreeNode)node).setSelected(data.isSelected());
+               node = (DataMutableTreeNode)nextElement;
+               node.setSelected(false);
+               if (i < selectedIndices.length)
+               {
+                  if (node.getUserObject().equals(ds.getData_entry(selectedIndices[i])))
+                  {
+                     i++;
+                     node.setSelected(true);
+                  }
+               }
             }
          }
          repaint();
@@ -712,8 +728,13 @@ public class JDataTree
                if (node != null)
                {
                   TreePath createdPath = createTreePathForNode(node);
-                  selectNode(createdPath);
-               }
+                  tree.getSelectionModel().clearSelection();
+                  //createdPath != null does not have to be checked because 
+                  //createTreePathForNode() will not return null
+                  //and tree.getSelectionModel().addSelectionPath(TreePath) 
+                  //ignores its TreePath argument if it is null
+                  tree.getSelectionModel().addSelectionPath(createdPath);
+                }
             }
          }
       }
@@ -738,7 +759,8 @@ public class JDataTree
   
   /**
    * Causes the node with the TreePath <code>
-   * path</code> to be selected.  The tree 
+   * path</code> (and only that node) 
+   * to be selected.  The tree 
    * expands and scrolls to make the node 
    * visible.  Note:  This method causes a 
    * <code>TreeSelectionEvent</code> to be 
@@ -748,12 +770,12 @@ public class JDataTree
    * if <code>path</code> is null the tree 
    * remains unchanged.
    */
-  private void selectNode(TreePath path)
+  private void scrollToSelectNode(TreePath path)
   {
-     tree.setExpandsSelectedPaths(true);
-     tree.getSelectionModel().clearSelection();
      if (path != null)
      {
+        tree.setExpandsSelectedPaths(true);
+        tree.getSelectionModel().clearSelection();
         tree.scrollPathToVisible(path);
         tree.getSelectionModel().addSelectionPath(path);
      }
