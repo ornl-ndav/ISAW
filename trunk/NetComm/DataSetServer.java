@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/08/10 19:43:22  dennis
+ *  Added methods to parse command line arguments and show usage.
+ *  Also added methods to get and show data directories being used.
+ *  Added code to add a directory separator at the end of a
+ *  directory name, if it was not there.
+ *
  *  Revision 1.4  2001/08/09 21:46:48  dennis
  *  Uses start_TCP() method to start the TCPServer.
  *
@@ -60,6 +66,7 @@ import java.io.*;
 import java.util.*;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
+import DataSetTools.util.*;
 
 /**
  *  This is a base class for servers that receive requests for DataSets and 
@@ -102,12 +109,87 @@ public class DataSetServer extends TCPServer
    */
   public void addDataDirectory( String data_directory )
   {
+    String fixed = data_directory.trim();
+
+   if ( !fixed.endsWith( File.separator ))
+     fixed += File.separator;
+
     for ( int i = 0; i < directory_names.size(); i++ )
-      if ( data_directory.equals( (String)directory_names.elementAt(i) ) )
+      if ( fixed.equals( (String)directory_names.elementAt(i) ) )
         return;
  
-    directory_names.add( data_directory ); 
+    directory_names.add( fixed ); 
   }
+
+
+  /* ------------------------ getDataDirectory --------------------------- */
+  /**
+   *  Get the specified data directory from the list of data directories;
+   *
+   *  @return  The specified entry in the data directory list or an empty
+   *           string if the entry does not exist.
+   */
+  public String getDataDirectory( int i )
+  {
+    if ( i < 0 || i > directory_names.size()-1 )
+      return "";
+
+    return (String)directory_names.elementAt(i);
+  }
+
+
+  /* ------------------------ showDataDirectories ------------------------ */
+  /**
+   *  Show the list of data directories currently being used.
+   */
+  public void showDataDirectories()
+  {
+    for ( int i = 0; i < directory_names.size(); i++ )
+      System.out.println("   " + (String)directory_names.elementAt(i) );
+  }
+
+
+  /* ------------------------- parseArgs ----------------------------- */
+  /**
+   *  Parse a list of command line arguments to extract values for the
+   *  the data directories.  The only command supported at this level
+   *  is -D.
+   *
+   *  @param args  Array of strings from the command line, containing
+   *               command characters and arguments.
+   *
+   *  @see  showDataSetServerUsage
+   */
+   public void parseArgs( String args[] )
+   {
+     super.parseArgs( args );
+
+     if ( StringUtil.commandPresent("-h", args ) ||
+          StringUtil.commandPresent("-H", args )  )
+       showDataSetServerUsage();
+
+     int count = 1;
+     String dir_name = StringUtil.getCommand( count, "-D", args );
+     while ( dir_name.length() > 0 )
+     {
+       addDataDirectory( dir_name ); 
+       count++;
+       dir_name = StringUtil.getCommand( count, "-D", args );
+     }
+   }
+
+  /* ----------------------- showDataSetServerUsage ----------------------- */
+  /**
+   *  Print list of supported commands.
+   */ 
+   public void showDataSetServerUsage()
+   {
+    System.out.println("  -D<dir name>     Add a directory to list of");
+    System.out.println("                   directories to search for data.");
+    System.out.println("                   To add multiple directories, use");
+    System.out.println("                   -D multiple times, once for each");
+    System.out.println("                   additional directory.");
+   }
 
 
  /*-------------------------------------------------------------------------
@@ -230,10 +312,7 @@ public class DataSetServer extends TCPServer
     System.out.println("DataSetServer starting:");
 
     DataSetServer server= new DataSetServer();
-    server.setServerName( "TestDataSetServer" );
-    server.setLogFilename( "TestDataSetServerLog.txt" );
-                                         // Start the DataSetServer to listen
-                                         // for clients requesting data
-    server.start_TCP( -1 );
+    server.parseArgs( args );
+    server.startTCP();
   }
 }
