@@ -35,6 +35,11 @@ public opMenu(OperatorHandler op , DataSetListHandler DS, Document logdoc , IObs
                                               // add it.  
     JMenu current_menu = this;           // current_menu pointer steps  
                                               // down the tree of menus
+    if( categories == null)
+       {categories = new String[1];
+        categories[0]=Operator.OPERATOR; 
+       }
+   
     for ( cat_index = 1; cat_index < categories.length; cat_index++ ) 
     {
        num_components = current_menu.getMenuComponentCount();
@@ -81,31 +86,35 @@ private class MActionListener implements ActionListener
         this.iobs=iobs;
        }
    public void actionPerformed(ActionEvent e) 
-       { if( !(e.getSource() instanceof MJMenuItem))
+      {
+        if( !(e.getSource() instanceof MJMenuItem))
            return;
        if( op == null ) 
             return;
       
          MJMenuItem x =(MJMenuItem)( e.getSource());
          int opnum = x.getopnum();
+         
          DataSet dss[];
         
          if( DS == null ) 
              dss = null;
          else 
              dss = DS.getDataSets();
-        
+         
          if( opnum >=0 )
           { Operator opn = op.getOperator( opnum );        
             if( opn instanceof IObservable)
                if( iobs != null)
                  ((IObservable)opn).addIObserver( iobs );
+           
             JParametersDialog JP= new JParametersDialog( opn , dss, logdoc );
+          
             if( opn instanceof IObservable)
                if( iobs != null)
                  ((IObservable)opn).deleteIObserver( iobs );
            }
-
+          
        }
                
 
