@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2001/07/13 22:11:26  dennis
+ * Now uses as many frames as there are channels in the
+ * data.
+ *
  * Revision 1.12  2001/07/12 16:31:35  dennis
  * Now allows choice of drawing "groups" using markers
  * and/or drawing individual detector segments using
@@ -388,6 +392,7 @@ private void set_colors( int frame )
     if ( detector_draw_mode != DETECTOR_NONE )
       threeD_panel.setColors( DETECTOR_PREFIX+i, color_table[index] );
   }
+
   threeD_panel.repaint( );
 }
 
@@ -407,17 +412,21 @@ private void MakeColorList()
   UniformXScale x_scale = ds.getXRange();
   float x_min    = x_scale.getStart_x();
   float x_max    = x_scale.getEnd_x();
-//  int   num_cols = x_scale.getNum_x();
-  int   num_cols = 500;
-  x_scale = new UniformXScale( x_min, x_max, num_cols );
 
-  frame_control.setFrame_values( x_scale.getXs() );
+  int   num_cols = x_scale.getNum_x() - 1;
+  x_scale = new UniformXScale( x_min, x_max, num_cols+1 );
+
+//  System.out.println("num_cols = " + num_cols );
+//  System.out.println("num_rows = " + num_rows );
+//  System.out.println("num_Xs = " + ds.getData_entry(0).getX_scale().getNum_x());
+//  System.out.println("num_Ys = " + ds.getData_entry(0).getY_values().length );
 
   if ( num_cols == 0 )
     return;
   
   color_index = new byte[num_rows][num_cols];
 
+//  System.out.println("MakeColorList: Rebinning.....");
   y_vals = new float[num_rows][];
   Data  data_block;
   Data  rebinned_data_block;
@@ -430,6 +439,15 @@ private void MakeColorList()
     y_vals[i] = rebinned_data_block.getY_values();
   }
 
+  float x_vals[]     = x_scale.getXs();
+  float frame_vals[] = new float[ y_vals[0].length ];
+//  System.out.println("x_vals length = " + x_vals.length );
+//  System.out.println("frame_vals length = " + frame_vals.length );
+  for ( int i = 0; i < frame_vals.length; i++ )        // for now just use left 
+    frame_vals[i] = x_vals[i];                         // bin boundary for hist
+  frame_control.setFrame_values( frame_vals );
+
+//  System.out.println("MakeColorList: finding extrema.....");
   float max_data = Float.NEGATIVE_INFINITY;
   float min_data = Float.POSITIVE_INFINITY;
   float val;
@@ -439,7 +457,7 @@ private void MakeColorList()
      val = y_vals[i][j];
      if ( val > max_data )
        max_data = y_vals[i][j];
-     if ( val < min_data )
+     else if ( val < min_data )
        min_data = y_vals[i][j]; 
    } 
 
@@ -455,6 +473,7 @@ private void MakeColorList()
   else
     scale_factor = 0;
 
+//  System.out.println("MakeColorList: building index table.....");
   int index;
   for ( int i = 0; i < y_vals.length; i++ )
    for ( int j = 0; j < y_vals[0].length; j++ )
