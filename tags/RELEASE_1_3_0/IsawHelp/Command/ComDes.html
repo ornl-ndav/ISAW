@@ -1,0 +1,90 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (Windows NT 5.0; U) [Netscape]">
+</head>
+<body>
+<a href="CommandPane.html">CONTENTS</a>
+<p><a NAME="#rith"></a>Arithmetic Operations :+,-, *, /, &amp;, and ^(power)
+<ul>These binary operations(Except &amp;) can be between Data Sets, a Data
+Set and a float, between two integers, between two floats, or between two
+strings(&amp; only).
+<p>&nbsp;Mixed types are allowed and are converted. "&amp;" is always string
+add so non string data is converted to strings.
+<P> <B>Logical operations</B> AND, OR, and NOT operate on two booleans.<BR>
+<B>Relational operators</b> are >, >=, < , <= , <> , = or ==
+</ul>
+
+<hr>Assignment operator =
+<ul>To store a quantity in the local workspace memory, use "=" just like
+it is used in FORTRAN</ul>
+
+<hr><a NAME="Load"></a>Load
+<ul>
+<ol type="1">
+<h3>
+There are several forms of load. </h3>
+
+<li>
+<b>Load String Filename</b></li>
+
+<br><b>Load(String Filename)</b>
+<p>The names of the variables are names related to the file
+<li>
+<b>Load String Filename, String VariableName</b></li>
+
+<br><b>Load( String Filename , String VariableName )</b>
+<br>The names of the variables are varname[0], varname[1], varname[2], etc.
+<P>
+<li>
+<b>Integer Load String Filename</b></li>
+
+<br><b>Integer Load(String Filename)</b>
+<br><b>Integer Load String Filename, String VariableName</b>
+<br><b>Integer Load( String Filename , String VariableName )</b>
+
+<br>The return value is the number of datasets loaded.
+<br>These files are loaded into the local workspace</ol><P>
+<UL> NOTE: if the extension of the filename is
+   <li>"run" a runfile will be loaded and converted to a list of data sets
+   <li>"isd" a java binary data set( see <A href="#Save">Save</a>) will be loaded
+ </ul>
+</ul>
+
+<hr><a NAME="Display"></a>Display
+<ul>
+<ol type ="1">
+<li>
+<b>Display Object Expr</b></li>
+
+<br>&nbsp;The expression can be a variable or constant of any type.
+The data sets will be displayed in an external viewer of type IMAGE.<P>
+<li>
+<b>*Display Object Expr, String ImageType</b></li>
+
+<br>&nbsp;ImageType should be either "IMAGE" , "SCROLLED_GRAPHS" ,
+"SELECTED_GRAPHS", "TABLE", or "THREE_D" without quotes(")</ol>
+</ul>
+
+<hr><a NAME="Send"></a>Send
+<ul><LI><b>Send DataSet</b>
+<ul>This command sends the data set back to anyone that is an IObserver
+Listener</ul>
+  <LI> <b> Send Object Reason , Object ObservedObject</b>
+   <ul> Sends this information to all IObservers. Note order is reversed relative to the
+      IObserver update
+   </ul>
+</ul>
+
+<hr><a NAME="Save"></a>Save
+<ul><b>Save DataSet, String Filename</b>
+<br>&nbsp;This will save the data set in "java binary form". NOTE this form could change
+  from one version of Isaw and/or Java to the next.<P>
+  Use the extension ".isd" on the filename to reload it back into Isaw or the Command Pane.
+  See <A href="#Load">Load</a></ul>
+
+
+</body>
+</html>
+

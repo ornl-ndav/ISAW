@@ -1,0 +1,312 @@
+/*
+ * File: HistogramTable.java 
+ *
+ * Copyright (C) 2002, Dennis Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
+ *
+ *  $Log$
+ *  Revision 1.2  2002/04/04 18:21:44  dennis
+ *  The constructor that takes a Data object now also copies
+ *  the attributes as well as the selected and hide flags.
+ *  Moved stitch() to Data.java
+ *  Moved Data add(), subtract(), multiply() and dividc()
+ *  to Data.java
+ *  Moved compatible() to Data.java
+ *  Made Rebin() method private ( use resample() which calls Rebin()
+ *
+ *  Revision 1.1  2002/03/13 16:08:35  dennis
+ *  Data class is now an abstract base class that implements IData
+ *  interface. FunctionTable and HistogramTable are concrete derived
+ *  classes for storing tabulated functions and frequency histograms
+ *  respectively.
+ *
+ */
+
+package  DataSetTools.dataset;
+
+import java.util.Vector;
+import java.io.*;
+import DataSetTools.math.*;
+import DataSetTools.util.*;
+
+/**
+ * The concrete root class for a tabulated frequency histogram data object.  
+ * This class bundles together the basic data necessary to describe a frequency
+ * histogram.  An object of this class contains a list of "X" values
+ * and a list of "Y" values together with an extensible list of attributes
+ * for the object.  A list of errors for the "Y" values can also be kept.
+ *  
+ * @see DataSetTools.dataset.IData
+ * @see DataSetTools.dataset.Data
+ * @see DataSetTools.dataset.TabulatedData
+ * @see DataSetTools.dataset.FunctionTable
+ *
+ */
+
+public class HistogramTable extends    TabulatedData
+                            implements Serializable
+{
+  /**
+   * Constructs a Data object containing a table of frequency histogram values 
+   * specifying an "X" scale, "Y" values and a group id for that data object.
+   * The X scale specifies bin boundaries and should have one more value than 
+   * the list of Y values.  If too many Y values are given, the extra values 
+   * will be ignored.  If too few Y values are given, the saved Y values will 
+   * be padded with trailing zero values.
+   *
+   * @param   x_scale   the list of x values for this data object 
+   * @param   y_values  the list of y values for this data object 
+   * @param   group_id  an integer id for this data object
+   *
+   */
+  public HistogramTable( XScale x_scale, float y_values[], int group_id )
+  {
+    super( x_scale, y_values, group_id );
+    init( y_values );  
+  }
+
+  /**
+   * Constructs a Data object by specifying an "X" scale, 
+   * "Y" values and an array of error values.
+   *
+   * @param   x_scale   the list of x values for this data object 
+   * @param   y_values  the list of y values for this data object 
+   * @param   errors    the list of error values for this data object.  The
+   *                    length of the error list should be the same as the
+   *                    length of the list of y_values.  
+   * @param   group_id  an integer id for this data object
+   *
+   */
+  public HistogramTable( XScale  x_scale, 
+                         float   y_values[], 
+                         float   errors[], 
+                         int     group_id )
+  {
+    super( x_scale, y_values, group_id );
+    init( y_values );  
+    this.setErrors( errors );
+  }
+
+
+  /**
+   * Constructs a HistogramTable Data object from another Data object.
+   *
+   *  @param  width_1   Width of the first bin.  For VariableXScales, this is
+   *                    is used to determine the bin boundaries.  NOTE: this
+   *                    process is subject to rounding errors and should be
+   *                    avoided if possible.  If width_1 is less than or equal
+   *                    to zero, the distance between the first two x values
+   *                    will be used as a default.
+   *
+   *  @param  multiply  Flag that indicates whether the function values
+   *                    should be multiplied by the width of the histogram bin.
+   * @param   group_id  an integer id for this data object
+   *
+   */
+  public HistogramTable( Data d, boolean multiply, int group_id )
+  {
+    super( d.x_scale, null, group_id );
+
+    init( d.getY_values() );
+    this.setErrors( d.getErrors() );
+
+    if ( !d.isHistogram() )                  // we need to convert to histogram 
+    {
+      float temp_x_values[] = d.getX_values();
+      int n_bins = temp_x_values.length;
+
+      float new_x_values[]  = new float[ n_bins + 1 ];
+      new_x_values[0] = temp_x_values[0] 
+                            - (temp_x_values[1] - temp_x_values[0]) / 2; 
+      for ( int i = 1; i < n_bins; i++ )
+        new_x_values[i] = (temp_x_values[i-1] + temp_x_values[i]) / 2.0f;
+      new_x_values[n_bins] = temp_x_values[n_bins-1] 
+                      + (temp_x_values[n_bins-1] - temp_x_values[n_bins-2]) / 2; 
+      x_scale = new VariableXScale( new_x_values ); // #### check if uniform?
+
+      if ( multiply )
+      {
+        if ( errors == null )
+          for ( int i = 0; i < n_bins; i++ )
+          {
+            float dx = new_x_values[i+1] - new_x_values[i];
+            y_values[i] = y_values[i] * dx;
+          }
+          else
+          for ( int i = 0; i < n_bins; i++ )
+          {
+            float dx = new_x_values[i+1] - new_x_values[i];
+            y_values[i] = y_values[i] * dx;
+            errors[i]   = errors[i] * dx;        //#### how should
+          }                                      // errors be treated?
+       }
+    }
+    AttributeList attr_list = d.getAttributeList();
+    setAttributeList( attr_list );
+    selected = d.selected;
+    hide     = d.hide;
+  }
+
+
+  /**
+   *  Set the specified array of y_values as the y_values for this Data 
+   *  object.  If there are more y_values than there are x_values in the
+   *  XScale for this object, the excess y_values are discarded.  If there
+   *  are not as many y_values as there are x_values, the new y_values array
+   *  is padded with 0s.
+   */
+  private void init( float y_values[] )
+  {
+    int n_bins = x_scale.getNum_x() - 1;
+    this.y_values = new float[ n_bins ];
+
+    if ( y_values.length >= n_bins )
+      System.arraycopy( y_values, 0, this.y_values, 0, n_bins );
+    else
+    {
+      System.arraycopy( y_values, 0, this.y_values, 0, y_values.length );
+      for ( int i = y_values.length; i < n_bins; i++ )
+        this.y_values[i] = 0;
+    }
+  }
+
+
+
+/**
+ *  Get an approximate y value corresponding to the specified x_value in this 
+ *  Data block. If the x_value is outside of the interval of x values
+ *  for the Data, this returns 0.  In other cases, the approximation used is
+ *  controlled by the smooth_flag.  #### smooth_flag not implemented yet.
+ *
+ *  @param  x_value      the x value for which the corresponding y value is to
+ *                       be interpolated
+ *
+ *  @param  smooth_flag  Currently, for a HistogramTable, the smooth_flag has
+ *                       no effect.  The count within the bin containing the
+ *                       the specified x is returned.
+ *
+ *  @return approximate y value at the specified x value
+ */
+public float getY_value( float x_value, int smooth_flag )
+{
+  if ( x_value < x_scale.getStart_x() || 
+       x_value > x_scale.getEnd_x()    )
+    return 0.0f;
+
+  float x_vals[] = x_scale.getXs();
+  int index = arrayUtil.get_index_of( x_value, x_vals );
+
+  return y_values[index]; 
+}
+
+
+  /**
+    * Determine whether or not the current Data block has HISTOGRAM data.
+    * HISTOGRAM data records bin boundaries and a number of counts in each
+    * bin, so the number of x-values is one more than the number of y-values.
+    *
+    * @return  true if the number of x-values is one more than the number
+    *          of y-values.
+    */
+  public boolean isHistogram()
+  {
+    return true;
+  }  
+ 
+
+  /**
+   * Return a new Data object containing a copy of the x_scale, y_values
+   * errors, group_id and attributes from the current Data object.
+   */
+  public Object clone()
+  {
+    Data temp = new HistogramTable( x_scale, y_values, errors, group_id );
+
+                                      // copy the list of attributes.
+    AttributeList attr_list = getAttributeList();
+    temp.setAttributeList( attr_list );
+    temp.selected = selected;
+    temp.hide     = hide;
+
+    return temp;
+  }
+
+
+  /**
+   *  Resample the Data block on an arbitrarily spaced set of points given by
+   *  the new_X scale parameter.  The histogram will be re-binned to form a 
+   *  new histogram with the specified bin sizes. #### smooth_flag not 
+   *  implemented yet 
+   *
+   *  @param new_X  The x scale giving the set of x values to use for the
+   *                 resampling and/or rebinning operation.
+   */
+  public void resample( XScale new_X, int smooth_flag )
+  {
+     ReBin( new_X );
+     return;
+  }
+
+
+  /**
+   * Alter this Data object by "rebinning" the y values of the current 
+   * object to correspond to a new set of x "bins" given by the parameter
+   * "new_X".  Also, rebin the error array.
+   *
+   * @param  new_X    This specifies the new set of "x" values to be used
+   */
+  private void ReBin( XScale new_X )
+  {
+                                           // Rebin the y_values
+    float old_ys[] = arrayUtil.getPortion( y_values, x_scale.getNum_x() - 1 );
+    float new_ys[] = new float[ new_X.getNum_x() - 1 ];
+
+    if ( errors != null )
+    {
+      float new_errs[] = new float[ new_X.getNum_x() - 1 ];
+      Sample.ReBin( x_scale.getXs(), old_ys, errors,
+                    new_X.getXs(),   new_ys, new_errs );
+      y_values = new_ys;
+      errors   = new_errs;
+    }
+    else
+    {
+      Sample.ReBin( x_scale.getXs(), old_ys, new_X.getXs(), new_ys );
+      y_values = new_ys;
+    }
+
+    x_scale  = new_X;
+  }
+
+
+  public static void main( String argv[] )
+  {
+  }
+
+}
