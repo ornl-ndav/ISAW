@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2001/07/27 15:55:59  dennis
+ *  Now passes in 0 as default number of bins for conversion operators.
+ *  In this case, the conversion operators should use the number of
+ *  bins from the DataSet.
+ *
  *  Revision 1.11  2001/07/23 18:31:01  dennis
  *  ViewManager in a JInternalFrame, instead of in a JFrame.  This file is
  *  copied from ViewManager.java, then edited to replace:
@@ -394,11 +399,16 @@ public class InternalViewManager extends    JInternalFrame
                                       temp_scale.getNum_x() );
          
        if ( x_scale == null || use_default_conversion_range ) 
+       {
          op.setDefaultParameters();
+         Parameter p = op.getParameter(2);                // 0 means use the
+         if ( p.getName().equals( Parameter.NUM_BINS ))   // number of bins
+           p.setValue( new Integer( 0 ) );                // in the DataSet
+       }
        else
        {                                           // try to set the parameters
          Parameter p = op.getParameter(2);
-         if ( p.getName() != Parameter.NUM_BINS )
+         if ( !p.getName().equals( Parameter.NUM_BINS ))
            op.setDefaultParameters();              // fall back to defaults
          else
          {
