@@ -32,12 +32,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/05/26 19:46:46  kramer
+ * Added Javadoc documentation.
+ *
  * Revision 1.1  2004/03/12 19:47:40  bouzekc
  * Added to CVS.
  *
  */
  package devTools.Hawk.classDescriptor.gui.internalFrame;
 
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
@@ -45,7 +49,9 @@ import java.util.Vector;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
+import devTools.Hawk.classDescriptor.gui.MouseNotifiable;
 import devTools.Hawk.classDescriptor.gui.frame.FileAssociationGUI;
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
@@ -62,6 +68,11 @@ public class InternalFrameUtilities
 	/** The constructor is private because all of the methods are static. */
 	private InternalFrameUtilities() {}
 	
+	/**
+	 * Displays SingleUMLGUI windows in the HawkDesktop desktop for each Interface object given.
+	 * @param intfArr The Interface objects used.
+	 * @param desktop The HawkDesktop to place the windows in.
+	 */
 	public static void showSingleUMLDiagrams(Interface[] intfArr, HawkDesktop desktop)
 	{
 		if (intfArr.length == 0)
@@ -88,11 +99,21 @@ public class InternalFrameUtilities
 		}
 	}
 	
+	/**
+	 * Displays a SingleUMLGUI window in the HawkDesktop desktop for the Interface object given.
+	 * @param intf The Interface object used.
+	 * @param desktop The HawkDesktop to place the windows in.
+	 */
 	public static void showSingleUMLDiagram(Interface intf, HawkDesktop desktop)
 	{
 		showSingleUMLDiagrams(getInterfaceArrayFromInterface(intf),desktop);
 	}
 	
+	/**
+	 * Displays ShortenedSourceGUI windows in the HawkDesktop desktop for each Interface object given.
+	 * @param intfArr The Interface objects used.
+	 * @param desktop The HawkDesktop to place the windows in.
+	 */
 	public static void showShortenedSourceCode(Interface[] intfArr, HawkDesktop desktop)
 	{
 		if (intfArr.length == 0)
@@ -114,11 +135,21 @@ public class InternalFrameUtilities
 		}
 	}
 	
+	/**
+	 * Displays a ShortenedSourceGUI window in the HawkDesktop desktop for the Interface object given.
+	 * @param intf The Interface object used.
+	 * @param desktop The HawkDesktop to place the windows in.
+	 */
 	public static void showShortenedSourceCode(Interface intf, HawkDesktop desktop)
 	{
 		showShortenedSourceCode(getInterfaceArrayFromInterface(intf),desktop);
 	}
 	
+	/**
+	 * Displays SourceCodeGUI windows in the HawkDesktop desktop for each Interface object given.
+	 * @param intfArr The Interface objects used.
+	 * @param desktop The HawkDesktop to place the windows in.
+	 */
 	public static void showSourceCode(Interface[] intfArr, HawkDesktop desktop)
 	{
 		if (intfArr.length == 0)
@@ -140,11 +171,21 @@ public class InternalFrameUtilities
 		}
 	}
 	
+	/**
+	 * Displays a SourceCodeGUI window in the HawkDesktop desktop for the Interface object given.
+	 * @param intf The Interface object used.
+	 * @param desktop The HawkDesktop to place the windows in.
+	 */
 	public static void showSourceCode(Interface intf, HawkDesktop desktop)
 	{
 		showSourceCode(getInterfaceArrayFromInterface(intf),desktop);
 	}
-
+	
+	/**
+	 * Displays JavadocsGUI windows in the HawkDesktop desktop for each Interface object given.
+	 * @param intfArr The Interface objects used.
+	 * @param desktop The HawkDesktop to place the windows in.
+	 */
 	public static void showJavadocs(Interface[] intfArr, HawkDesktop desktop)
 	{
 		if (intfArr.length == 0)
@@ -166,11 +207,21 @@ public class InternalFrameUtilities
 		}
 	}
 	
+	/**
+	 * Displays a JavadocsGUI window in the HawkDesktop desktop for the Interface object given.
+	 * @param intf The Interface object used.
+	 * @param desktop The HawkDesktop to place the windows in.
+	 */
 	public static void showJavadocs(Interface intf, HawkDesktop desktop)
 	{
 		showJavadocs(getInterfaceArrayFromInterface(intf),desktop);
 	}
-
+	
+	/**
+	 * Displays FileAssociationGUI windows used for associating java source files in the HawkDesktop desktop for the Interface objects given.
+	 * @param intfArr The Interface objects used.
+	 * @param desktop The HawkDesktop to place the windows in.
+	 */
 	public static void showAssociateSourceCodeWindow(Interface[] intfArr, HawkDesktop desktop)
 	{
 		if (intfArr.length == 0)
@@ -200,11 +251,21 @@ public class InternalFrameUtilities
 		}
 	}
 	
+	/**
+	 * Displays a FileAssociationGUI window used for associating java source files in the HawkDesktop desktop for the Interface object given.
+	 * @param intf The Interface object used.
+	 * @param desktop The HawkDesktop to place the windows in.
+	 */
 	public static void showAssociateSourceCodeWindow(Interface intf, HawkDesktop desktop)
 	{
 		showAssociateSourceCodeWindow(getInterfaceArrayFromInterface(intf),desktop);
 	}
 	
+	/**
+	 * Displays FileAssociationGUI windows used for associating javadoc files in the HawkDesktop desktop for the Interface objects given.
+	 * @param intfArr The Interface objects used.
+	 * @param desktop The HawkDesktop to place the windows in.
+	 */
 	public static void showAssociateJavadocsWindow(Interface[] intfArr, HawkDesktop desktop)
 	{
 		if (intfArr.length == 0)
@@ -234,11 +295,25 @@ public class InternalFrameUtilities
 		}
 	}
 	
+	/**
+	 * Displays a FileAssociationGUI window used for associating javadocs files in the HawkDesktop desktop for the Interface object given.
+	 * @param intf The Interface object used.
+	 * @param desktop The HawkDesktop to place the windows in.
+	 */
 	public static void showAssociateJavadocsWindow(Interface intf, HawkDesktop desktop)
 	{
 		showAssociateJavadocsWindow(getInterfaceArrayFromInterface(intf),desktop);
 	}
 	
+	/**
+	 * Constructs a JMenu holding options to view a SingleUMLGUI, ShortenedSourceGUI, JavadocsGUI, or SourceCodeGUI for an Interface object.
+	 * @param act The object that will be listening for ActionEvents.
+	 * @param showUMLOption True if the option to view a SingleUMLGUI should be given.
+	 * @param showShortenedSourceOption True if the option to view a ShortenedSourceGUI should be given.
+	 * @param showJavadocsOption True if the option to view a JavadocsGUI should be given.
+	 * @param showSourceOption True if the option to view a SourceCodeGUI should be given.
+	 * @return The corresponding JMenu.
+	 */
 	public static JMenu constructViewMenu(ActionListener act, boolean showUMLOption, boolean showShortenedSourceOption, boolean showJavadocsOption, boolean showSourceOption)
 	{
 		JMenu viewMenu = new JMenu("View");
@@ -273,22 +348,71 @@ public class InternalFrameUtilities
 		return viewMenu;
 	}
 	
-	public static void processActionEventFromViewMenu(ActionEvent event, Interface intf, HawkDesktop desktop)
+	/**
+	 * Process the ActionEvent that would be thrown from one of the JMenuItem objects from the JMenu created by the method 
+	 * constructViewMenu(ActionListener act, boolean showUMLOption, boolean showShortenedSourceOption, boolean showJavadocsOption, boolean showSourceOption).  
+	 * This method will display the appropriate DesktopInternal from on the HawkDesktop desktop.  Here are the pairings for the result from 
+	 * event.getActionCommand() and the corresponding action performed:<br>
+	 * "view.uml"  Display a SingleUMLGUI window<br>
+	 * "view.shortenedSource"  Display a ShortenedSourceGUI window<br>
+	 * "view.javadocs"  Displays a JavadocsGUI window<br>
+	 * "view.sourceCode"  Displays a SourceCodeGUI window<br>
+	 * @param event The ActionEvent to process.
+	 * @param intf The Interface object whose information is to be displayed.
+	 * @param desktop The HawkDesktop onto which the window will be displayed.
+	 */
+	public static void processActionEventFromViewMenu(final ActionEvent event, final Interface intf, final HawkDesktop desktop, final MouseNotifiable mouseNot)
 	{
-		if (event.getActionCommand().equals("view.uml"))
-			showSingleUMLDiagram(intf,desktop);
-		else if (event.getActionCommand().equals("view.shortenedSource"))
-			showShortenedSourceCode(intf,desktop);
-		else if (event.getActionCommand().equals("view.javadocs"))
-			showJavadocs(intf,desktop);
-		else if (event.getActionCommand().equals("view.sourceCode"))
-			showSourceCode(intf,desktop);
+		SwingUtilities.invokeLater(new Runnable()
+		  {
+		  	public void run()
+		  	{
+				InternalFrameUtilitiesThread thread = new InternalFrameUtilitiesThread(event,intf,desktop,mouseNot);
+				thread.start();
+		  	}
+		  });
 	}
 	
+	/**
+	 * Used in this class to make an array of one Interface object from the Interface object given.
+	 * @param intf The Interface object to use.
+	 * @return intf as the only element in a one element array of Interface objects.
+	 */
 	private static Interface[] getInterfaceArrayFromInterface(Interface intf)
 	{
 		Interface[] intfArr = new Interface[1];
 		intfArr[0] = intf;
 		return intfArr;
+	}
+	
+	private static class InternalFrameUtilitiesThread extends Thread
+	{
+		private ActionEvent event;
+		private Interface intf;
+		private HawkDesktop desktop;
+		private MouseNotifiable mouseNot;
+		public InternalFrameUtilitiesThread(ActionEvent actEvent, Interface intFace, HawkDesktop hDesktop, MouseNotifiable mouseN)
+		{
+			event = actEvent;
+			intf = intFace;
+			desktop = hDesktop;
+			mouseNot = mouseN;
+		}
+		
+		public void run()
+		{
+			for (int i=0; i<mouseNot.determineWaitingComponents().length; i++)
+				mouseNot.determineWaitingComponents()[i].setCursor(new Cursor(Cursor.WAIT_CURSOR));
+			if (event.getActionCommand().equals("view.uml"))
+				showSingleUMLDiagram(intf,desktop);
+			else if (event.getActionCommand().equals("view.shortenedSource"))
+				showShortenedSourceCode(intf,desktop);
+			else if (event.getActionCommand().equals("view.javadocs"))
+				showJavadocs(intf,desktop);
+			else if (event.getActionCommand().equals("view.sourceCode"))
+				showSourceCode(intf,desktop);
+			for (int i=0; i<mouseNot.determineWaitingComponents().length; i++)
+				mouseNot.determineWaitingComponents()[i].setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		}
 	}
 }
