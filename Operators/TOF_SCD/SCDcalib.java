@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/04/02 17:50:05  dennis
+ *  Now displays and logs comparisons between measured and theoretical
+ *  values for row, col and tof, for each of the detectors used in
+ *  the calibration, organized by detector.
+ *
  *  Revision 1.7  2004/04/02 15:31:26  dennis
  *  Added code to log and display views of scatter plots showing the
  *  comparison between  measured and theoretical row, col and tof
@@ -401,10 +406,16 @@ public class SCDcalib extends GenericTOF_SCD
        System.out.println("ERROR: invalid index in SCDcalib.getPairs() " + k );
        return null;
      }
+                                                    // Build a vector keeping
+                                                    // only non-null points
+     Vector pairs_vector = new Vector( measured.length );
+     for ( int i = 0; i < measured.length; i++ )
+       if ( theory[i] != null && measured[i] != null )
+         pairs_vector.add( new floatPoint2D( theory[i][k], measured[i][k] ) );
 
-     floatPoint2D[] pairs = new floatPoint2D[ measured.length ];
+     floatPoint2D pairs[] = new floatPoint2D[ pairs_vector.size() ];
      for ( int i = 0; i < pairs.length; i++ )
-        pairs[i] = new floatPoint2D( theory[i][k], measured[i][k] );
+       pairs[i] = (floatPoint2D)pairs_vector.elementAt( i );
 
      arrayUtil.SortOnX( pairs );
      return pairs;
@@ -463,7 +474,7 @@ public class SCDcalib extends GenericTOF_SCD
    *           that could have been allowed to vary, followed by the names
    *           of the parameters.
    */
-  public Object getResult(  ) 
+  public Object getResult() 
   {
     String peaksfile = getParameter(0).getValue().toString();
     String runfile   = getParameter(1).getValue().toString();
@@ -706,42 +717,47 @@ public class SCDcalib extends GenericTOF_SCD
     error_f.ShowOldCalibrationInfo( System.out );
     error_f.ShowOldCalibrationInfo( log_print  );
 
-    float meas_pos[][] = error_f.getMeasuredPeakPositions();
-    float theo_pos[][] = error_f.getTheoreticalPeakPositions();
+    int id_list[] = error_f.getAllGridIDs();
+    for ( int count = 0; count < id_list.length; count++ )
+    {
+      int det_id = id_list[count]; 
 
-    System.out.println("Number of measured positions = " + meas_pos.length );
-    System.out.println("Number of theoretical positions = " + theo_pos.length );
+      float meas_pos[][] = error_f.getMeasuredPeakPositions( det_id );
+      float theo_pos[][] = error_f.getTheoreticalPeakPositions( det_id );
 
-    floatPoint2D row_pairs[] = getPairs( 0, theo_pos, meas_pos );
-    floatPoint2D col_pairs[] = getPairs( 1, theo_pos, meas_pos );
-    floatPoint2D tof_pairs[] = getPairs( 2, theo_pos, meas_pos );
+      floatPoint2D row_pairs[] = getPairs( 0, theo_pos, meas_pos );
+      floatPoint2D col_pairs[] = getPairs( 1, theo_pos, meas_pos );
+      floatPoint2D tof_pairs[] = getPairs( 2, theo_pos, meas_pos );
 
-    log_print.println("Detector Row Number Comparison");
-    log_print.println("Theoetical     Measured");
-    for ( int i = 0; i < row_pairs.length; i++ )
-      log_print.println( Format.real( row_pairs[i].x, 10, 5 ) + "   " +
-                         Format.real( row_pairs[i].y, 13, 5 )    );
+      log_print.println("Detector Row Number Comparison, ID " + det_id );
+      log_print.println("Theoetical     Measured");
+      for ( int i = 0; i < row_pairs.length; i++ )
+        log_print.println( Format.real( row_pairs[i].x, 10, 5 ) + "   " +
+                           Format.real( row_pairs[i].y, 13, 5 )    );
 
-    log_print.println("Detector Column Number Comparison");
-    log_print.println("Theoetical     Measured");
-    for ( int i = 0; i < col_pairs.length; i++ )
-      log_print.println( Format.real( col_pairs[i].x, 10, 5 ) + "   " +
-                         Format.real( col_pairs[i].y, 13, 5 )    );
+      log_print.println("Detector Column Number Comparison, ID " + det_id );
+      log_print.println("Theoetical     Measured");
+      for ( int i = 0; i < col_pairs.length; i++ )
+        log_print.println( Format.real( col_pairs[i].x, 10, 5 ) + "   " +
+                           Format.real( col_pairs[i].y, 13, 5 )    );
 
-    log_print.println("Detector Time-of-flight Comparison");
-    log_print.print  ("NOTE: The calculated T0 shift should be added to the ");
-    log_print.println("measured value ");
-    log_print.println("Theoetical     Measured");
-    for ( int i = 0; i < tof_pairs.length; i++ )
-      log_print.println( Format.real( tof_pairs[i].x, 10, 3 ) + "   " +
-                         Format.real( tof_pairs[i].y, 13, 3 )    );
+      log_print.println("Detector Time-of-flight Comparison, ID " + det_id );
+      log_print.print ("NOTE: The calculated T0 shift should be added to the ");
+      log_print.println("measured value ");
+      log_print.println("Theoetical     Measured");
+      for ( int i = 0; i < tof_pairs.length; i++ )
+        log_print.println( Format.real( tof_pairs[i].x, 10, 3 ) + "   " +
+                           Format.real( tof_pairs[i].y, 13, 3 )    );
 
+
+      MakeDisplay( "Theoretical vs Measured Row, ID " + det_id, 
+                   "Row", "Number", row_pairs );
+      MakeDisplay( "Theoretical vs Measured Column, ID " + det_id, 
+                   "Column", "Number", col_pairs );
+      MakeDisplay( "Theoretical vs Measured TOF, ID " + det_id, 
+                   "Time", "us", tof_pairs );
+    }
     log_print.close();
-
-    MakeDisplay( "Theoretical vs Measured Row", "Row", "Number", row_pairs );
-    MakeDisplay( "Theoretical vs Measured Column", "Column", "Number", 
-                  col_pairs );
-    MakeDisplay( "Theoretical vs Measured TOF", "Time", "us", tof_pairs );
 
     float results[] = new float[ parameters.length ];
     for ( int i = 0; i < parameters.length; i++ )
