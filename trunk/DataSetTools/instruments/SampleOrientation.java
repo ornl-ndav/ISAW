@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2003/02/20 20:04:03  dennis
+ *  Now implements Serializable
+ *
  *  Revision 1.1  2003/02/18 18:59:32  dennis
  *  Initial version.
  *
@@ -52,7 +55,7 @@ import java.util.*;
  *  the z-axis vertical.
  */  
 
-abstract public class SampleOrientation 
+abstract public class SampleOrientation implements Serializable
 {
   // NOTE: any field that is static or transient is NOT serialized.
   //
