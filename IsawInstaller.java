@@ -29,6 +29,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.12  2002/08/16 15:18:56  pfpeterson
+ * Fixed bug where you couldn't install from a directory with
+ * spaces in the name.
+ *
  * Revision 1.11  2002/08/15 18:40:41  pfpeterson
  * Fixed the windows and mac batch file creation.
  *
@@ -309,6 +313,7 @@ public class IsawInstaller extends JFrame
 
         result = replace(filename, "\\\\", separator);
         result = replace(result,   "\\",   separator);
+        result = replace(result,   "//",   separator);
 
         return result;
     }
@@ -630,15 +635,17 @@ public class IsawInstaller extends JFrame
      * Determine the name of the jar file.
      */
     private String getJarFileName(){
+        String urlStr=null;
         if(inJar()){
             myClassName = this.getClass().getName()+".class";
-            URL urlJar = this.getClass().getResource(myClassName);
-            String urlStr = urlJar.toString();
+            urlStr = this.getClass().getResource(myClassName).toString();
             if(urlStr!=null){
+                urlStr=fixSeparator(urlStr);
+                urlStr=URLDecoder.decode(urlStr);
                 int from = "jar:file:".length();
-                int to = urlStr.indexOf("!/");
+                int to = urlStr.indexOf("!");
                 if( from<to && from!=-1 ){
-                    //unpack.setText(urlStr.substring(from,to));
+                    if(operating_system.equals(WIN_ID)) from++;
                     return urlStr.substring(from, to);
                 }else{
                     System.err.println("'"+urlStr+"' not an archive("
