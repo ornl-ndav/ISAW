@@ -10,6 +10,11 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.7  2000/08/01 19:10:37  dennis
+ *  Data.ReBin now calls error handling version of tof_calc.ReBin() if
+ *  the Data block has non-null errors.  Also, added crude print() routine
+ *  to print x,y,err values for debugging.
+ *
  *  Revision 1.6  2000/08/01 01:32:13  dennis
  *  Changed getAttributeList() to return null if the current list is null.
  *
@@ -525,17 +530,21 @@ public float getY_value( float x_value )
                                            // Rebin the y_values
     float old_ys[] = arrayUtil.getPortion( y_values, x_scale.getNum_x() - 1 );
     float new_ys[] = new float[ new_X.getNum_x() - 1 ];
-    tof_calc.ReBin( x_scale.getXs(), old_ys, new_X.getXs(), new_ys );
-    y_values = new_ys;
 
-    if ( errors != null )                 // Rebin the errors
+    if ( errors != null )
     {
-      float old_errors[] = arrayUtil.getPortion( errors, 
-                                                 x_scale.getNum_x() - 1 );
-      float new_errors[] = new float[ new_X.getNum_x() - 1 ];
-      tof_calc.ReBin( x_scale.getXs(), old_errors, new_X.getXs(), new_errors );
-      errors = new_errors;
+      float new_errs[] = new float[ new_X.getNum_x() - 1 ];
+      tof_calc.ReBin( x_scale.getXs(), old_ys, errors,
+                      new_X.getXs(),   new_ys, new_errs );
+      y_values = new_ys;
+      errors   = new_errs;
     }
+    else
+    {
+      tof_calc.ReBin( x_scale.getXs(), old_ys, new_X.getXs(), new_ys );
+      y_values = new_ys;
+    }
+
     x_scale  = new_X;
   }
 
@@ -1010,6 +1019,35 @@ public float getY_value( float x_value )
     }
     return d;
   }
+
+ /**
+  *
+  */
+  public void print( int first_index, int last_index )
+  {
+    if ( first_index < 0 )
+      first_index = 0;
+    if ( first_index >= y_values.length )
+      first_index = y_values.length - 1;
+
+    if ( last_index < first_index )
+      last_index = first_index;
+
+    if ( last_index >= y_values.length )
+      last_index = y_values.length - 1;
+
+    float x[] = x_scale.getXs();
+    for ( int i = first_index; i < last_index; i++ )
+    {
+      System.out.print( Format.integer( i, 6 ) + " ");
+      System.out.print( Format.real( x[i], 15, 6 ) + " " );
+      System.out.print( Format.real( y_values[i], 15, 6 )+ " " );
+      if ( errors != null )
+        System.out.println( Format.real( errors[i], 15, 6 ) );
+      else
+        System.out.println();
+    }
+  } 
 
   /**
    *  Provide an identifier string for this Data block
