@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/08/19 20:59:36  rmikk
+ * Eliminated leading "/" in the title of 1D reduce files
+ *
  * Revision 1.1  2003/08/15 19:35:03  rmikk
  * Initial Checkin
  *
@@ -101,8 +104,8 @@ public class Read3Col1D extends GenericTOF_SAD{
        return new ErrorString( "File Not found-"+ss.toString());
      }
      String Format = setFormat( fileType);
-     
      int nelts=ReadHeader(fin, fileType);
+     
      Vector V = new Vector();
      V.addElement( new float[0]);
      V.addElement( new float[0]);
@@ -196,7 +199,7 @@ public class Read3Col1D extends GenericTOF_SAD{
      S = S.replace('\\','/');
      k = S.lastIndexOf('/');
      if( k >=0)
-        S =S.substring( k);
+        S =S.substring( k+1);
      for( k = S.length()-1; (k>=0)&& Character.isDigit(S.charAt(k));k--)
           {}
      S = S.substring( 0, k+1);
