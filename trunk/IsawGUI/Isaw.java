@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.64  2001/11/20 21:38:07  pfpeterson
+ *  Revised GSAS Export menu to be more precise.
+ *
  *  Revision 1.63  2001/11/13 22:38:10  pfpeterson
  *  added PDF name to GSAS export menu item
  *
@@ -300,7 +303,7 @@ public class Isaw
   
 
   private static final String SAVE_ISAW_DATA_MI  = "Save As";
-  private static final String GSAS_EXPORT_MI     = "Export As GSAS/PDF File";
+  private static final String GSAS_EXPORT_MI     = "Export As GSAS Powder File";
   private static final String DB_IMPORT_MI       = "Search Database";
   private static final String EXIT_MI            = "Exit";
 
