@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2005/01/02 17:59:34  rmikk
+ *  Added a getSource Method for producing documentation.
+ *  
+ *  Eliminated a warning
+ *
  *  Revision 1.35  2004/05/24 18:37:42  rmikk
  *  Eliminated a clone in the CopyParametersfrom method because the
  *    AddParametersMethod already clones the parameter
@@ -422,6 +427,7 @@ abstract public class Operator implements Serializable
    * original list of parameters is cleared before copying the new parameter
    * list. 
    *
+   *
    *  @param  op  The operator object whose parameter list is to be 
    *              copied to the current operator.
    */
@@ -431,7 +437,8 @@ abstract public class Operator implements Serializable
 
     if(parameters!=null){
       while(parameters.size()>0){
-      	Object O=parameters.remove(0);
+      	//Object O =
+            parameters.remove(0);
       }
       parameters = null;
       
@@ -476,4 +483,22 @@ abstract public class Operator implements Serializable
   protected final void clearParametersVector(  ) {
     parameters = new Vector(  );
   }
+  
+ /**
+  * Returns the filename or classname associated with this operator.  It 
+  * translates ScriptOperators, PyScriptOperators, and wrappables.
+  * @param op  The operator of interest
+  * @return   The filename or classname for the source of this operator
+  */ 
+ public String getSource(){
+   Operator op = this;
+   if( op instanceof JavaWrapperOperator){
+     return ((JavaWrapperOperator)op).getWrappable().getClass().toString();
+   }else if( op instanceof Command.ScriptOperator){
+      return ((Command.ScriptOperator)op).getFileName();
+   }else if( op instanceof PyScriptOperator){
+      return ((PyScriptOperator)op).getFileName();
+   }else
+      return op.getClass().toString();
+ }
 } 
