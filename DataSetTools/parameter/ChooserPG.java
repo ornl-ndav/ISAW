@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.18  2003/10/11 19:04:23  bouzekc
+ *  Now implements clone() using reflection.
+ *
  *  Revision 1.17  2003/09/16 22:46:53  bouzekc
  *  Removed addition of this as a PropertyChangeListener.  This is already done
  *  in ParameterGUI.  This should fix the excessive events being fired.
@@ -95,6 +98,8 @@ import java.util.Vector;
 import DataSetTools.components.ParametersGUI.HashEntry;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.components.ParametersGUI.EntryWidget;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * This is a superclass to take care of many of the common details of
@@ -189,7 +194,6 @@ abstract public class ChooserPG extends ParameterGUI{
     }else{
       this.value=value;
     }
-    validateSelf();
   }
 
   // ********** IParameterGUI requirements **********
@@ -231,6 +235,43 @@ abstract public class ChooserPG extends ParameterGUI{
       init_vec.add(init_values[i]);
     }
     initGUI(init_vec);
+  }
+
+  /**
+   * Definition of the clone method.  Overridden to provide for cloning the
+   * internal Vector of values.
+   */
+  public Object clone(){
+    try {
+      Class klass           = this.getClass(  );
+      Constructor construct = klass.getConstructor( 
+          new Class[]{ String.class, Object.class } );
+      ChooserPG pg       = ( ChooserPG )construct.newInstance( 
+          new Object[]{ null, null } );
+      pg.setName( new String( this.getName(  ) ) );
+      pg.setValue( this.getValue(  ) );
+      pg.setDrawValid( this.getDrawValid(  ) );
+      pg.setValid( this.getValid(  ) );
+
+      if((this.vals) == null)
+        pg.vals = null;
+      else
+        pg.vals=(Vector)this.vals.clone();
+
+      if( this.initialized ) {
+        pg.initGUI( new Vector(  ) );
+      }
+
+      return pg;
+    } catch( InstantiationException e ) {
+      throw new InstantiationError( e.getMessage(  ) );
+    } catch( IllegalAccessException e ) {
+      throw new IllegalAccessError( e.getMessage(  ) );
+    } catch( NoSuchMethodException e ) {
+      throw new NoSuchMethodError( e.getMessage(  ) );
+    } catch( InvocationTargetException e ) {
+      throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
+    }
   }
 
   /**
