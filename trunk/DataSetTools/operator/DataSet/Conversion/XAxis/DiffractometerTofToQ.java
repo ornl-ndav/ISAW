@@ -2,6 +2,10 @@
  *  File:  DiffractometerTofToQ.java 
  *             
  *  $Log$
+ *  Revision 1.4  2002/06/19 21:59:49  pfpeterson
+ *  Modified to add the new conversion operators once Operation
+ *  is completed.
+ *
  *  Revision 1.3  2002/03/18 21:32:48  dennis
  *  Now checks whether or not the errors array is null before attempting
  *  to reverse the array.
@@ -377,6 +381,7 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
         new_ds.addData_entry( new_data );      
       }
     }
+    new_ds.addOperator(new DiffractometerQToD());
 
     return new_ds;
   }  

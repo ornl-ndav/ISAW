@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/06/19 21:59:50  pfpeterson
+ * Modified to add the new conversion operators once Operation
+ * is completed.
+ *
  * Revision 1.2  2002/03/13 16:19:17  dennis
  * Converted to new abstract Data class.
  *
@@ -382,6 +386,8 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
         new_ds.addData_entry( new_data );      
       }
     }
+    new_ds.addOperator(new DiffractometerWavelengthToQ());
+    new_ds.addOperator(new DiffractometerWavelengthToD());
 
     return new_ds;
   }  
