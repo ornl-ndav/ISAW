@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.36  2004/07/16 18:48:06  dennis
+ * Fixed improper comparison with Float.NaN
+ *
  * Revision 1.35  2004/05/03 16:25:20  dennis
  * Removed unused local variables.
  *
@@ -248,13 +251,13 @@ public void redraw( String reason )
       }
 
       int index = ds.getPointedAtIndex();
-      if ( index != DataSet.INVALID_INDEX && last_pointed_at_x != Float.NaN ) 
+      if ( index != DataSet.INVALID_INDEX && ! Float.isNaN( last_pointed_at_x ) ) 
       {
         XScale x_scale = getXConversionScale();
         conv_table.showConversions( last_pointed_at_x, index, x_scale );
       }
 
-      if ( ds.getPointedAtX() != Float.NaN      &&
+      if ( !Float.isNaN( ds.getPointedAtX() )   &&
            ds.getPointedAtX() != last_pointed_at_x )
       {
         last_pointed_at_x = ds.getPointedAtX();
@@ -1114,7 +1117,7 @@ private class ViewMouseMotionAdapter extends MouseMotionAdapter
          redraw_cursor = false;
          ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
          float frame_val = frame_control.getFrameValue();
-         if ( frame_val != Float.NaN )
+         if ( !Float.isNaN( frame_val ) )
          {
            XScale x_scale = getXConversionScale();
            conv_table.showConversions( frame_val, index, x_scale );
@@ -1182,7 +1185,7 @@ private class FrameControlListener implements ActionListener
     set_colors( frame );
 
     float frame_val = frame_control.getFrameValue();
-    if ( frame_val != Float.NaN && notify_ds_observers )
+    if ( !Float.isNaN( frame_val ) && notify_ds_observers )
     {
       getDataSet().setPointedAtX( frame_val );
       getState().set_float( ViewerState.POINTED_AT_X, frame_val );
