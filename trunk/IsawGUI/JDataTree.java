@@ -2,6 +2,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.13  2001/08/16 00:54:39  chatterjee
+ * Removed comment lines
+ *
  * Revision 1.12  2001/08/02 19:45:20  neffk
  * fixed delete operation for Data objects.  also changed some string
  * comparisons to use .equals() instead of the == operator.
@@ -479,7 +482,7 @@ public class JDataTree
      */ 
     else if( node instanceof DataSetMutableTreeNode )
     {
-      System.out.println( "destroyed a DataSet object" );
+     // System.out.println( "destroyed a DataSet object" );
 
       if( notify )
       {
