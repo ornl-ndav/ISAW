@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.37  2003/09/10 00:18:28  bouzekc
+ * Removed space in the setting of type for derived classes.
+ *
  * Revision 1.36  2003/09/09 23:56:19  bouzekc
  * Removed a this.type = TYPE in the constructor, as it conflicts with
  * ArrayPG's type.
@@ -429,7 +432,7 @@ public abstract class VectorPG extends ParameterGUI
    */
   protected final void setParam( ParameterGUI param ) {
     innerParam   = param;
-    this.type    = param.getType(  ) + " " + TYPE;
+    this.type    = param.getType(  ) + TYPE;
   }
 
   /**
