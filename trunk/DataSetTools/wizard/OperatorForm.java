@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.20  2003/07/02 20:09:48  bouzekc
+ * Removed unused import statement.
+ *
  * Revision 1.19  2003/07/02 18:27:44  bouzekc
  * Removed unused imports.
  *
@@ -68,7 +71,6 @@ package DataSetTools.wizard;
 
 import Command.ParameterClassList;
 
-//import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.operator.HiddenOperator;
 import DataSetTools.operator.Operator;
 
