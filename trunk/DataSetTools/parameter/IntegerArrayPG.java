@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/06/09 22:30:06  rmikk
+ * Added a clone method
+ *
  * Revision 1.3  2003/05/25 18:42:49  rmikk
  * Added GPL
  *
@@ -50,6 +53,13 @@ public class IntegerArrayPG extends VectorPG
         setValue( value);
        }
 
+   public Object clone()
+      {
+
+       IntegerArrayPG iapg = new IntegerArrayPG( getName(), getValue());
+       return (Object) iapg;
+
+      }
       public static void main( String args[] )
       {
          JFrame jf = new JFrame("Test");
