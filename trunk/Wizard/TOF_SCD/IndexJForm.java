@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.26  2003/10/26 19:17:36  bouzekc
+ * Now returns the name of the file written rather than Boolean.TRUE when
+ * getResult() executes successfully.
+ *
  * Revision 1.25  2003/10/06 23:26:11  bouzekc
  * Fixed bug where parameter did not properly disable when the RadioButton
  * value changed.
@@ -484,7 +488,7 @@ public class IndexJForm extends Form implements PropertyChangeListener {
     param.setValid( true );
     SharedData.addmsg( "--- IndexJForm finished. ---" );
 
-    return Boolean.TRUE;
+    return obj.toString(  );
   }
 
   /**

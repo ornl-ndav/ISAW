@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.27  2003/10/26 19:17:37  bouzekc
+ * Now returns the name of the file written rather than Boolean.TRUE when
+ * getResult() executes successfully.
+ *
  * Revision 1.26  2003/09/20 23:11:18  dennis
  * Minor change to some prompt strings.
  *
@@ -478,7 +482,7 @@ public class IntegrateMultiRunsForm extends Form {
     param.setValid( true );
 
     //not really sure what to return
-    return new Boolean( true );
+    return integName.toString(  );
   }
 
   /**

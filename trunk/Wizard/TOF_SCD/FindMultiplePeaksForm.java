@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.26  2003/10/26 19:17:36  bouzekc
+ * Now returns the name of the file written rather than Boolean.TRUE when
+ * getResult() executes successfully.
+ *
  * Revision 1.25  2003/09/11 21:22:28  bouzekc
  * Updated to work with new Form class.
  *
@@ -557,7 +561,7 @@ public class FindMultiplePeaksForm extends Form {
     param.setValue( saveName );
     param.setValid( true );
 
-    return Boolean.TRUE;
+    return saveName;
   }
 
   /**
