@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/06/10 14:38:21  pfpeterson
+ * Added an exit at the end of main.
+ *
  * Revision 1.3  2003/06/09 21:10:40  bouzekc
  * Fixed bug in constructor where initialized was not set
  * to true.
@@ -326,5 +329,6 @@ public class ParameterClassList{
   public static void main(String[] args){
     DEBUG = true;
     ParameterClassList PL=new ParameterClassList();
+    System.exit(0);
   }
 }
