@@ -9,6 +9,12 @@
  *               John Hammonds
  *
  *  $Log$
+ *  Revision 1.6  2001/02/16 22:04:38  dennis
+ *  Added array bounds checking on the information from the DAS to
+ *  avoid problems if the DAS sends bad channel numbers.
+ *  Also, made instance variables private, and only notify
+ *  any observers of the dataset once every 300 pulses.
+ *
  *  Revision 1.5  2001/02/15 22:10:24  dennis
  *  Now makes clones of the monitor and histogram DataSets before sending
  *  them.  This was needed since otherwise the DataSets would not actually
@@ -30,7 +36,6 @@
  *
  *  Revision 1.1  2001/01/30 23:27:24  dennis
  *  Initial version, network communications for ISAW.
- *
  *
  */
 package NetComm;
@@ -60,13 +65,18 @@ import DataSetTools.util.*;
 public class LiveDataServer implements IUDPUser,
                                        ITCPUser
 {
-  public static final int MAGIC_NUMBER       = 483719513;
-  public static final int SERVER_PORT_NUMBER = 6088;
+  public  static final int MAGIC_NUMBER       = 483719513;
+  public  static final int SERVER_PORT_NUMBER = 6088;
+  private static final int DELAY_COUNT        = 300;
 
-  String  directory_name  = null;
-  String  file_name       = null;
-  String  instrument_name = null;
-  int     run_number      = -1;
+  private  int     delay_counter   = 0;             // only issue DATA_CHANGED
+                                                    // messages when we have
+                                                    // processed a specified
+                                                    // number of pulses
+  private  String  directory_name  = null;
+  private  String  file_name       = null;
+  private  String  instrument_name = null;
+  private  int     run_number      = -1;
 
   DataSet mon_ds;                                   // current monitor DataSet
   DataSet hist_ds;                                  // current histogram DataSet
@@ -191,6 +201,14 @@ public class LiveDataServer implements IUDPUser,
                                               // DataSet. 
     if ( !RecordData( mon_ds, id, first_channel, num_channels, spec_buffer ) )
       RecordData( hist_ds, id, first_channel, num_channels, spec_buffer );
+
+    delay_counter++;                         // only notify observers after
+    if ( delay_counter >= DELAY_COUNT )      // DELAY_COUNT pulses have been
+    {                                        // processed.
+      mon_ds.notifyIObservers( IObserver.DATA_CHANGED );
+      hist_ds.notifyIObservers( IObserver.DATA_CHANGED );
+      delay_counter = 0;
+    }
   }
 
  /**
@@ -280,9 +298,20 @@ public class LiveDataServer implements IUDPUser,
     Data d = ds.getData_entry_with_id( id );           // get the Data block
     if ( d == null )
       return false;
-                                                       // set the Y_values
+
+    if ( first_channel < 0 || num_channels < 0 )       // nonsense, so bail out
+      return false;
+                                                       // get the Y_values
     float y[] = d.getY_values();
-    for ( int i = first_channel; i < first_channel+num_channels; i++ )
+    if ( first_channel >= y.length )                   // now make sure that
+      return false;                                    // the indices are in
+                                                       // range
+    int last_channel = first_channel+num_channels - 1;
+    if ( last_channel >= y.length )
+      last_channel = y.length - 1; 
+                                                       // actually set the new
+                                                       // Y_values 
+    for (int i = first_channel; i <= last_channel; i++)
       y[i] = spec_buffer[ i-first_channel ];
                                                       // set the time attribute 
     Date date = new Date( System.currentTimeMillis() );
@@ -290,7 +319,6 @@ public class LiveDataServer implements IUDPUser,
                                             date.toString()         );
     d.setAttribute( attrib );
 
-    ds.notifyIObservers( IObserver.DATA_CHANGED );
     return true;
   }
 
