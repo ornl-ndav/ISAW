@@ -30,6 +30,12 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.8  2003/07/07 20:32:27  dennis
+ *  Added copy constructor, to create a new UniformGrid from
+ *  an exisiting one.  The copy constructor has an additional
+ *  parameter to select whether or not the array of references
+ *  to Data blocks are copied, if the references have been set.
+ *
  *  Revision 1.7  2003/07/01 22:17:36  dennis
  *  Added static method setDataEntriesInAllGrids(ds) to allow the
  *  runfile retriever to efficiently set references to all Data blocks
@@ -194,6 +200,55 @@ public class UniformGrid implements IDataGrid
 
     setCenter( center );
     setOrientation( x_vector, y_vector );
+  }
+
+
+  /* ----------------------------- copy constructor ---------------------- */
+  /**
+   *  Make a new UniformGrid, copying the values from the given UniformGrid.
+   *  
+   *  @param  grid      The grid to be copied
+   *  @param  copy_data Flag indicating whether the references to the Data
+   *                    blocks should be copied, if the references are set.
+   */
+  public UniformGrid( UniformGrid grid, boolean copy_data )
+  {
+    id = grid.id;
+    units = grid.units;
+    center = new float[3]; 
+    x_vector = new float[3]; 
+    y_vector = new float[3]; 
+    z_vector = new float[3]; 
+    for ( int i = 0; i < 3; i++ )
+    {
+      center[i]   = grid.center[i];
+      x_vector[i] = grid.x_vector[i];
+      y_vector[i] = grid.y_vector[i];
+      z_vector[i] = grid.z_vector[i];
+    }
+
+    width  = grid.width;
+    height = grid.height;
+    depth  = grid.depth;
+
+    n_rows = grid.n_rows;
+    n_cols = grid.n_cols;
+
+    dx = grid.dx;
+    dy = grid.dy;
+
+    col_x_offset = grid.col_x_offset;
+    row_y_offset = grid.row_y_offset;
+
+    data = null;
+    data_loaded = false;
+    if ( copy_data && grid.data_loaded )
+    {
+      data = new Data[ data.length ][ data[0].length ];
+      for ( int i = 0; i < data.length; i++ )
+        for ( int j = 0; j < data[0].length; i++ )
+          data[i][j] = grid.data[i][j];
+    }
   }
 
   /**
@@ -855,7 +910,7 @@ public class UniformGrid implements IDataGrid
       }
       row++;
     }
-        
+
     return data_loaded;
   }
 
