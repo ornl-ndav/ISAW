@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2003/01/31 22:54:00  pfpeterson
+ * Added a new method which allows updating the value of hkl without then
+ * recalculating the real-space and pixel representations. This is useful
+ * for setting hkl to zero.
+ *
  * Revision 1.9  2003/01/31 19:17:14  pfpeterson
  * Added mutator method for the real space representation.
  *
@@ -137,17 +142,30 @@ public class Peak{
   
   /**
    * Mutator method for index
+   *
+   * @param propagate whether or not to propagate the change in hkl to
+   * the other representations.
    */
-  public void sethkl( float H, float K, float L){
+  public void sethkl( float H, float K, float L, boolean propagate){
     this.h=H;
     this.k=K;
     this.l=L;
+
+    if(!propagate) return;
+
     if(invUB!=null){
       this.hkl_to_real();
       if(calib!=null){
         this.real_to_pixel();
       }
     }
+  }
+
+  /**
+   * Mutator method for index
+   */
+  public void sethkl( float H, float K, float L){
+    this.sethkl(H,K,L,true);
   }
   
   /**
