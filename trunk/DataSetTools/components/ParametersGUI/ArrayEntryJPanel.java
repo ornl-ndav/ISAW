@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/08/25 14:59:07  rmikk
+ * -Included a JScrollPane around the list box
+ *
  * Revision 1.12  2003/08/22 20:14:17  bouzekc
  * Modified to work with EntryWidget.
  *
@@ -158,7 +161,7 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
       }
     }
 
-    add( jlist, BorderLayout.CENTER );
+    add( new JScrollPane(jlist), BorderLayout.CENTER );
 
     JPanel jp = new JPanel( new GridLayout( 7, 1 ) );
 
