@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2002/04/02 22:51:05  pfpeterson
+ * Provides for LoadFileString and SaveFileString.
+ *
  * Revision 1.17  2002/02/22 20:33:44  pfpeterson
  * Operator Reorganization.
  *
@@ -1528,6 +1531,22 @@ public void setDefaultParameters()
 
              
             }
+          else if( DT.equals("LoadFileString".toUpperCase())){ 
+              String DirPath=System.getProperty("Data_Directory");
+              if(DirPath!=null)
+                  DirPath=DataSetTools.util.StringUtil.fixSeparator(DirPath+"\\");
+              else
+                  DirPath="";
+              addParameter(new Parameter(Message,new LoadFileString(DirPath)));
+            }
+          else if( DT.equals("SaveFileString".toUpperCase())){ 
+              String DirPath=System.getProperty("Data_Directory");
+              if(DirPath!=null)
+                  DirPath=DataSetTools.util.StringUtil.fixSeparator(DirPath+"\\");
+              else
+                  DirPath="";
+              addParameter(new Parameter(Message,new SaveFileString(DirPath)));
+            }
           else if (DT.equals( "DSFieldString".toUpperCase()))
             {  if( InitValue == null )
                 addParameter( new Parameter( Message ,new DSFieldString() ));
@@ -1578,6 +1597,21 @@ public void setDefaultParameters()
            
 
             } 
+          /* else if ( DT.equals( "MonitorDataSet".toUpperCase()) )
+             {
+             System.out.println("MonitorDataSet in ScriptProcessor");
+             MonitorDataSet dd = new MonitorDataSet();
+             if( InitValue != null)
+             {ExecLine.execute( InitValue, 0, InitValue.length());
+             System.out.println("InitValue="+InitValue);
+             if( ExecLine.getErrorCharPos() < 0 )
+             if( ExecLine.getResult() instanceof MonitorDataSet )
+             dd = ( MonitorDataSet )( ExecLine.getResult() );
+             }
+             System.out.println("DataSet="+dd.toString());
+             Parameter PP = new Parameter( Message , dd);
+             addParameter ( PP );
+             }*/ 
           else
             { seterror( start+12 , "Data Type not supported " + DT);
 	    lerror = i;
