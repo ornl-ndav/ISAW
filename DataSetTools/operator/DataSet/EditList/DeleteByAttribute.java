@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/10/16 00:03:44  dennis
+ * Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  * Revision 1.4  2003/02/06 20:32:54  dennis
  * Added getDocumentation() method. (Tyler Stelzer)
  *
@@ -92,7 +95,7 @@ public class DeleteByAttribute extends    DS_EditList
    *                      selected Data blocks satisfy:
    *                          min <= attribute value <= max
    *
-   *  @parm   max         The upper bound for the selection criteria.
+   *  @param  max         The upper bound for the selection criteria.
    *
    *  @param  status      Flag that indicates whether Data blocks that meet 
    *                      the selection criteria are to be kept or removed 
