@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/08/04 15:51:14  dennis
+ *  Temporarily made U_observed[][], B_observed[][] and B_theoretical[][]
+ *  public, for use by the SCDcalib operator that is in another package.
+ *
  *  Revision 1.8  2003/08/01 13:29:55  dennis
  *  Reordered quartz lattice parameters to match order in peaks
  *  file produced by "Blind".  Altered which parameters are actually
@@ -112,9 +116,9 @@ public class SCDcal   extends    OneVarParameterizedFunction
   private double row[];
   private double col[];
 
-  private double U_observed[][];
-  private double B_observed[][];
-  private double B_theoretical[][];
+  public double U_observed[][];
+  public double B_observed[][];
+  public double B_theoretical[][];
 
   private double qxyz_observed[][];
   private double qxyz_theoretical[][];
