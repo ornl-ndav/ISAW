@@ -34,6 +34,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2001/08/03 21:32:00  dennis
+ *  Now derives from DataSetServer/TCPServer, to provide user name,
+ *  password and logging features.
+ *
  *  Revision 1.11  2001/06/08 16:13:24  dennis
  *  Change PORT to DEFAULT_PORT and now allow specifying
  *  different ports.
@@ -110,15 +114,10 @@ import DataSetTools.util.*;
  *  @see TCPServiceInit 
  */
 
-public class LiveDataServer implements IUDPUser,
-                                       ITCPUser
+public class LiveDataServer extends    DataSetServer
+                            implements IUDPUser
 {
-  public static final String COMMAND_GET_DS      = "COMMAND:GET_DATA_SET ";
-  public static final String COMMAND_GET_DS_TYPE = "COMMAND:GET_DATA_SET_TYPE ";
-  public static final String COMMAND_GET_NUM_DS  = "COMMAND:GET_NUM_DATA_SETS";
-
   public  static final int MAGIC_NUMBER               = 483719513;
-  public  static final int DEFAULT_SERVER_PORT_NUMBER = 6088;
 
   private static final int DELAY_COUNT        = 300;
 
@@ -131,8 +130,6 @@ public class LiveDataServer implements IUDPUser,
                                                     // messages when we have
                                                     // processed a specified
                                                     // number of pulses
-  private  String  directory_name  = null;
-  private  String  file_name       = null;
   private  String  instrument_name = null;
   private  int     run_number      = -1;
 
@@ -148,6 +145,18 @@ public class LiveDataServer implements IUDPUser,
   int     spec_buffer[] = new int[ 16384 ];         // buffer for one part of
                                                     // on spectrum
 
+  /* ---------------------------- Constructor -------------------------- */
+  /**
+   *  Construct a FileDataSetServer with an empty list of DataSets.
+   */
+   public LiveDataServer()
+   {
+     super();
+     setServerName( "LiveDataServer" );
+     setLogFilename( "LiveDataServerLog.txt" );
+   }
+
+  /* -------------------------- InitializeDataSets ---------------------- */
   /**
    *  Load the histogram and monitor DataSet structure for the specified
    *  instrument and run number from the runfile then zero out the monitor 
@@ -160,12 +169,12 @@ public class LiveDataServer implements IUDPUser,
    */
   private void InitializeDataSets( String new_instrument, int new_run_number )
   {
-    instrument_name = new_instrument.toLowerCase();
-    run_number      = new_run_number;
-    file_name       = directory_name + instrument_name + run_number + ".run"; 
+    instrument_name  = new_instrument.toLowerCase();
+    run_number       = new_run_number;
+    String file_name = instrument_name + run_number + ".run"; 
 
     System.out.println( "FileName: " + file_name );
-    RunfileRetriever rr = new RunfileRetriever( file_name );
+    Retriever rr = get_retriever( file_name );
 
     int num_data_sets = rr.numDataSets();
 
@@ -190,18 +199,7 @@ public class LiveDataServer implements IUDPUser,
     rr = null;
   }
 
-  /**
-   *  Method to set the data directory.  If a directory is specified on the 
-   *  command line it is used as the data directory.  If not, the current
-   *  directory is used.
-   *
-   *  @ param String dataDirectory
-   */
-  public void SetDataDirectory( String dataDirectory )
-    {
-	directory_name = dataDirectory;
-    }
-
+  /* ---------------------------- ProcessData -------------------------- */
   /**
    *  Method to process data from the UDP port.  This is the method needed 
    *  to implement the IUDPUser interface.  It is called whenever UDP data
@@ -294,22 +292,20 @@ public class LiveDataServer implements IUDPUser,
     }
   }
 
+ /* --------------------------- ProcessCommand --------------------------- */
  /**
-  *  Method to process data from a TCP client.  This is the method needed
-  *  to implement the ITCPUser interface.  It is called whenever an Object
-  *  is received from a TCP client.  The Object should consist of a String
-  *  command, requesting the monitor or histogram DataSet.
+  *  Method to process commands from a TCP client.  Derived classes should
+  *  override this method with methods that process the command properly
+  *  and return an appropriate object through the tcp_io object.
   *
-  *  @param  buffer  byte buffer[] containing the data from the UDP packet
-  *                  sent by the DAS.
+  *  @param  command    The command string sent by the client.
   *
-  *  @param  length  the length of the buffer that is used.
+  *  @param  tcp_io     The TCP communications object to which the response
+  *                     must be sent.
   */
-  public void ProcessData( Object data_obj, ThreadedTCPComm tcp_io )
+  synchronized public void ProcessCommand( String          command,
+                                           ThreadedTCPComm tcp_io   )
   {
-    if ( data_obj instanceof String )
-    {
-      String command = (String)data_obj; 
       System.out.println("Received request " + command );
       try
       {
@@ -361,7 +357,6 @@ public class LiveDataServer implements IUDPUser,
         System.out.println("Error: LiveDataServer command: " + command);
         System.out.println("Error: couldn't send data "+e );
       }  
-    }
   }
 
 
@@ -371,6 +366,8 @@ public class LiveDataServer implements IUDPUser,
   *
   * 
   */
+
+  /* -------------------------- TestAndSetAccessFlag ---------------------- */
 
   synchronized private boolean TestAndSetAccessFlag( int access ) 
   {
@@ -434,33 +431,6 @@ public class LiveDataServer implements IUDPUser,
   }
 
 
-  /**
-   *  Extract the first integer value occuring in a command string.
-   *
-   *  @param command  A command string containing an integer parameter following
-   *                  a space ' ' character. 
-   */
-  private int extractIntParameter( String command )
-  {
-    int first_space = command.indexOf( " " );       // extract string following 
-                                                    // the first space, if
-                                                    // possible
-    if ( first_space < 0 )
-      return -1;
-    
-    command = command.substring( first_space + 1 );
-    command.trim();
-
-    int next_space = command.indexOf( " " );
-    String int_string = " ";
-    if ( next_space < 0 )
-      int_string = command;
-    else
-      int_string = command.substring( 0, next_space );
-
-    int parameter = (Integer.valueOf( int_string )).intValue();
-    return parameter;
-  }
 
   /**
    *  Zero out all of the spectra in the specified DataSet
@@ -549,7 +519,7 @@ public class LiveDataServer implements IUDPUser,
 	System.out.println("No Directory was specified.  Data directory "
 			   + " will be current directory" );
     }
-    server.SetDataDirectory( dataDirectory );
+    server.addDataDirectory( dataDirectory );
 
 
                                          // Start the UPD receiver to listen
