@@ -124,12 +124,17 @@ public class GroupingForm extends    Form
           //group the DataSets
           for( int j = 0; j < num_datasets; j++ )
           { 
-	           ds = time_focused[j];
-	          
-	          	if( ds != DataSet.EMPTY_DATA_SET )
-	           {
+            ds = time_focused[j];
+            
+            if( ds != DataSet.EMPTY_DATA_SET )
+            {
               grp = new Grouping(time_focused[j], group_string, new_id);
               obj = grp.getResult();
+            }
+            else
+            {
+              SharedData.addmsg("Encountered empty DataSet: "+j);
+              return false;
             }
             
             //make sure we are working with DataSets
@@ -142,11 +147,12 @@ public class GroupingForm extends    Form
             }
             else
             {
-	             if( obj instanceof ErrorString )
-                       SharedData.addmsg(obj.toString() + "\n");
-	             else
-                       SharedData.addmsg("Could not focus DataSet: "
-                                         + time_focused[j] + "\n");
+              if( obj instanceof ErrorString )
+                SharedData.addmsg(obj.toString() + "\n");
+              else
+                SharedData.addmsg("Could not focus DataSet: "
+                                  +time_focused[j]+"\n");
+              return false;
             }
           }
           //add the time focused DataSet array to time focused results
