@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/14 20:23:46  dennis
+ * Put in package DataSetTools.trial
+ *
  * Revision 1.6  2002/12/11 22:27:01  pfpeterson
  * Commented out section that uses DoubleDifferentialCrossSection.
  *
@@ -40,6 +43,7 @@
  * Modified import statements due to operator reorganization.
  *
  */
+package DataSetTools.trial;
 
 import javax.swing.*;
 
