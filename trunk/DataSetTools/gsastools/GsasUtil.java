@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/08/06 21:25:22  pfpeterson
+ *  New methods to get an xscale and units from an XInfo.
+ *
  *  Revision 1.1  2002/07/25 19:28:40  pfpeterson
  *  Added to CVS.
  *
@@ -40,6 +43,7 @@ package DataSetTools.gsastools;
 
 import DataSetTools.dataset.*;
 import DataSetTools.util.Format;
+import DataSetTools.util.SharedData;
 
 /**
  * This class contains only static methods intended to deal with
@@ -152,5 +156,46 @@ public class GsasUtil{
             .append(" ").append(info);
 
         return sb.toString();
+    }
+
+    /**
+     * Create an XScale from a given XInfo object. This is originally
+     * written to deal with loading gsas powder data.
+     */
+    public static XScale getXScale( XInfo info ){
+        XScale xscale = null;
+        float start   = 0f;
+        float end     = 0f;
+        int   numX    = 0;
+
+        if( info.bintype().equals(CONS) || info.bintype().equals(CONQ) 
+            || info.bintype().equals(COND) ){
+            start = info.coef1();
+            numX  = info.nchan()+1;
+            end   = start+(float)info.nchan()*info.coef2();
+            xscale=new UniformXScale(start,end,numX);
+        }else if(info.bintype().equals(TIMEMAP)){
+            SharedData.addmsg("Cannot currently read in files with time map");
+            TimeMap timemap=info.timemap();
+            if(timemap==null) return null;
+            xscale=timemap.getXScale();
+            //System.out.println("XSCALE:"+xscale);
+        }
+
+        return xscale;
+    }
+
+    public static String getUnit(XInfo info){
+        String unit=null;
+        if( info.bintype().equals(CONS) || info.bintype().equals(TIMEMAP) 
+                                        || info.bintype().equals(SLOG) ){
+            unit="Time(us)";
+        }else if( info.bintype().equals(CONQ) ){
+            unit="Inverse Angstroms";
+        }else if( info.bintype().equals(COND) ){
+            unit="Angstroms";
+        }
+
+        return unit;
     }
 }
