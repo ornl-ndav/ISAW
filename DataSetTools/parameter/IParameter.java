@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/05/31 19:43:20  pfpeterson
+ *  Added a string constant 'VALUE'.
+ *
  *  Revision 1.1  2002/05/28 22:24:12  pfpeterson
  *  added to cvs
  *
@@ -43,6 +46,8 @@ package DataSetTools.parameter;
  * that need to use IParameters do not need a GUI constructed.
  */
 public interface IParameter{
+    public static String VALUE="value";
+
     /**
      * Returns the name of the parameter. This is normally used as the
      * title of the parameter.
