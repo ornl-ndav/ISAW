@@ -38,8 +38,7 @@ for i in run_numbers
   load(filename,"ds")
 
   # The calibration file "instprm.dat" must be in the outpath directory.
-  LoadSCDCalib(ds[dsnum],outpath&"instprm.dat",1,"")
-  # LoadSCDCalib(ds[dsnum],outpath&"instprm.dat",2,"")
+  LoadSCDCalib(ds[dsnum],outpath&"instprm.dat",-1,"")
 
   # integrate peaks
   #Display(ds[dsnum])
