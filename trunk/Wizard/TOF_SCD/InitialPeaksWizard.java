@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2003/07/08 23:04:47  bouzekc
+ * Added second IndexJ OperatorForm to end of Wizard.
+ *
  * Revision 1.9  2003/07/08 22:50:22  bouzekc
  * Changed result parameter names.
  *
@@ -148,9 +151,9 @@ public class InitialPeaksWizard extends Wizard {
    */
   private void createAllForms(  ) {
     int[][] fpi = {
-      { 9, 0, 0, -1, 0 },  //peaks file 
-      { -1, 2, 1, 0, -1 }
-    };  //matrix file
+      { 9, 0, 0, -1, 0, 0 },  //peaks file 
+      { -1, 2, 1, 0, -1, -1 }
+    };  //matrix
 
     FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
 
@@ -164,12 +167,15 @@ public class InitialPeaksWizard extends Wizard {
         new ScalarJ(  ), LOADFILETYPE, "ScalarJ log file", new int[]{ 0 } );
     OperatorForm lsqrsjform = new OperatorForm( 
         new LsqrsJ(  ), LOADFILETYPE, "LsqrsJ log file", new int[]{ 0 } );
+    OperatorForm indexjform2 = new OperatorForm( 
+        new IndexJ(  ), LOADFILETYPE, "IndexJ log file", new int[]{ 0 } );
 
     this.addForm( peaksform );
     this.addForm( blindjform );
     this.addForm( indexjform );
     this.addForm( scalarjform );
     this.addForm( lsqrsjform );
+    this.addForm( indexjform2 );
 
     super.linkFormParameters( fpi );
   }
