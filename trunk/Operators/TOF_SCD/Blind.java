@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/09/30 20:17:41  pfpeterson
+ *  Added support for windows executable.
+ *
  *  Revision 1.2  2002/09/30 14:45:50  pfpeterson
  *  Changed the unsuccesful returns to be ErrorString and the
  *  successful return to be the name of the saved matrix file.
@@ -267,7 +270,13 @@ public class Blind extends    GenericTOF_SCD {
      * be right next to the class file.
      */
     private String getFullBlindName(){
-        return SysUtil.getBinLocation(this.getClass(),"blind");
+        if(SysUtil.isOSokay(SysUtil.LINUX_ONLY)){
+            return SysUtil.getBinLocation(this.getClass(),"blind");
+        }else if(SysUtil.isOSokay(SysUtil.WINDOWS_ONLY)){
+            return SysUtil.getBinLocation(this.getClass(),"blind.exe");
+        }else{
+            return null;
+        }
     }
 
     /* --------------------------- MAIN METHOD --------------------------- */
