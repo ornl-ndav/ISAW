@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.51  2001/08/08 18:08:46  chatter
+ *  DB search URl added
+ *
  *  Revision 1.50  2001/08/07 22:11:39  rmikk
  *  Fixed session log report when a file is loaded in.
  *
@@ -330,7 +333,7 @@ public class Isaw
   private static final String SAND_URL   = "http://www.pns.anl.gov/SAND/";
   private static final String SCD_URL    = "http://www.pns.anl.gov/SCD/";
   private static final String SEPD_URL   = "http://www.pns.anl.gov/SEPD/";
-  private static final String DB_URL     = "http://www.pns.anl.gov/ISAW/";
+  private static final String DB_URL     = "http://www.pns.anl.gov/ISAW/DBSearch.html";
 
   JDataTree jdt;
   JPropertiesUI jpui;
