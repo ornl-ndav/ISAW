@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2001/11/12 21:28:41  dennis
+ *   1. Added Choice to the permissible data types for script parameters.
+ *
  * Revision 1.14  2001/11/09 18:20:51  dennis
  *  1. Made changes so that the ScriptProcessor implements
  *     ScriptProcessorOperator
@@ -1534,6 +1537,21 @@ public void setDefaultParameters()
                 addParameter( new Parameter( Message , STS ));
                      
                }
+          else if( DT.equals("CHOICE"))
+             {int nn = ExecLine.execute( InitValue, 0, InitValue.length()); 
+              Vector V= new Vector();
+              if( ExecLine.getErrorCharPos() <0)
+                if( ExecLine.getResult() instanceof Vector)
+                   V = (Vector)(ExecLine.getResult());
+              String[] ss;
+              ss = new String[V.size()];
+              for( nn=0; nn< V.size(); nn++)
+                { ss[nn] = (V.elementAt(nn)).toString();
+                 }
+               StringChoiceList SL = new StringChoiceList(ss);
+               addParameter( new Parameter(Message, SL));
+             }
+              
           else if ( DT.equals( "DataSet".toUpperCase()) )
            {
 	    
