@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.37  2004/05/04 19:02:25  dennis
+ * Now clears DataSetPG after getting value, to avoid memory leak.
+ *
  * Revision 1.36  2004/03/15 03:28:38  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -473,6 +476,8 @@ public class Integrate extends GenericTOF_SCD{
 
     // first get the DataSet
     val=getParameter(0).getValue();
+    ((DataSetPG)getParameter(0)).clear();    // needed to avoid memory leak
+
     if( val instanceof DataSet){
       if(((DataSet)val).getNum_entries()>0)
         ds=(DataSet)val;

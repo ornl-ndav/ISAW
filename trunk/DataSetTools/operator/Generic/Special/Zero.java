@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/05/04 19:03:09  dennis
+ * Now clears DataSetPG after getting value, to avoid memory leak.
+ *
  * Revision 1.5  2004/03/15 19:33:53  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -88,6 +91,8 @@ public class Zero extends GenericSpecial{
    public Object getResult(){
 
      DataSet ds = (DataSet)(getParameter(0).getValue());
+     ((DataSetPG)getParameter(0)).clear();    // needed to avoid memory leak
+
      int Group = ((Integer)(getParameter(1).getValue())).intValue();
      int firstIndex = ((Integer)(getParameter(2).getValue())).intValue();
      int lastIndex = ((Integer)(getParameter(3).getValue())).intValue();
