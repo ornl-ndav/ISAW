@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.41  2003/06/06 21:31:17  pfpeterson
+ * Switch order of checks in getInstance(classname) to properly
+ * report Interfaces.
+ *
  * Revision 1.40  2003/05/28 18:53:46  pfpeterson
  * Changed System.getProperty to SharedData.getProperty
  *
@@ -1139,12 +1143,12 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             try{
                 Class C = Class.forName( classname );
                 int modifier=C.getModifiers();
-                if(Modifier.isAbstract(modifier)){
-                  if(LoadDebug) System.out.print("(Abstract)");
-                  return null;
-                }
                 if(Modifier.isInterface(modifier)){
                   if(LoadDebug) System.out.print("(Interface)");
+                  return null;
+                }
+                if(Modifier.isAbstract(modifier)){
+                  if(LoadDebug) System.out.print("(Abstract)");
                   return null;
                 }
                 if(Operator.class.isAssignableFrom(C)){
