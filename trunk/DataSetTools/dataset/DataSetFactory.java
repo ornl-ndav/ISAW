@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/08/16 19:20:05  dennis
+ *  Removed DongFeng's SpectrometerPlotter.
+ *
  *  Revision 1.15  2001/08/15 21:46:18  dennis
  *  Added DongFeng's SpectrometerPlotter to all DataSets.
  *
@@ -274,7 +277,7 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new GetField() );
     new_ds.addOperator( new SetField() );
 
-    new_ds.addOperator( new SpectrometerPlotter() );
+//    new_ds.addOperator( new SpectrometerPlotter() );
     return new_ds;
   }
 
