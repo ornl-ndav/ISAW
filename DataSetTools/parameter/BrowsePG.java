@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2003/08/28 02:28:09  bouzekc
+ *  Removed setEnabled() method.
+ *
  *  Revision 1.21  2003/08/28 01:47:55  bouzekc
  *  Modified to work with new ParameterGUI.
  *
@@ -246,25 +249,6 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
         entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
         this.setEnabled(this.getEnabled());
         super.initGUI();
-    }
-
-    /**
-     * Set the enabled state of the EntryWidget. This produces a more
-     * pleasant effect than the default setEnabled of the widget.
-     */
-    public void setEnabled(boolean enabled){
-        this.enabled=enabled;
-        if(this.innerEntry!=null){
-            this.innerEntry.setEditable(enabled);
-            if(enabled){
-                this.innerEntry.setColumns(VIS_COLS);
-            }else{
-                this.innerEntry.setColumns(HIDE_COLS);
-            }
-        }
-        if(this.browse!=null){
-            this.browse.setVisible(enabled);
-        }
     }
 
     /**
