@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2003/06/17 22:04:27  pfpeterson
+ *  Fixed a javadoc.
+ *
  *  Revision 1.26  2003/06/17 16:12:19  pfpeterson
  *  Uses StringUtil.split to create the category list array.
  *
@@ -104,7 +107,7 @@ import DataSetTools.util.StringUtil;
  * DataSetTools.operator.Generic.GenericOperator GenericOperator} or
  * {@link DataSetTools.operator.DataSet.DataSetOperator
  * DataSetOperator}. If it does not then they will not be categorized
- * by {@link Command.Script_Class_ListHandler
+ * by {@link Command.Script_Class_List_Handler
  * Script_Class_List_Handler}. The effect of this is that the operatr
  * will not be added to menus, will not be found by the help system,
  * and will not be available in scripts.
