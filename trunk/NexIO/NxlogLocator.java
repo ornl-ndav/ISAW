@@ -26,6 +26,14 @@
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
+ * 
+ * Modified:
+ * 
+ * $Log$
+ * Revision 1.3  2005/02/16 02:02:00  kramer
+ * Added javadoc documentation and $Log:$ to the file's header.  Also, the
+ * method getNxLogDataSet(int i) will return 'null' if 'i' is invalid.
+ *
  */
 package NexIO;
 
@@ -34,12 +42,23 @@ import java.util.Vector;
 import NexIO.NexApi.NexNode;
 
 /**
+ * This class is used to search all of the nodes under a given 
+ * {@link NexIO.NxNode NxNode} for nodes that are NxLog nodes.
  * @author Dominic Kramer
  */
 public class NxlogLocator
 {
+   /** Vector of NxNode used to hold all of the NxLog nodes found. */
    private Vector logNodeVec;
    
+   /**
+    * This constructor searches for all of the NxLog nodes under the 
+    * NxNode <code>rootNode</code>.  The methods 
+    * {@link #getNumNxLogDataSets() getNumNxLogDataSets()} and 
+    * {@link #getNxLogDataSet(int) getNxLogDataSet(int)} can be used to 
+    * access the nodes.
+    * @param rootNode The node where the searching begins.
+    */
    public NxlogLocator(NxNode rootNode)
    {
       if (rootNode == null)
@@ -78,18 +97,28 @@ public class NxlogLocator
    }
    
    /**
-    *  Returns the list of NxLog data sets
-    *  @return NxNode[i] is the NxNode corresponding to the ith NXlog NeXus
-    *          class which is converted to the ith log DataSet
+    * Wraps the ith NxLog node found in a {@link DataSetInfo DataSetInfo} 
+    * object.
+    * @param i The index of the NxLog node to access.  This index is valid 
+    *          only if 
+    *          0<i<={@link #getNumNxLogDataSets() getNumNxLogDataSets()}.
+    *  @return The ith NxLog node found or <code>null</code> if 
+    *          <code>i</code> is invalid.
     */
    public DataSetInfo getNxLogDataSet(int i)
    {
-      NxNode ithLogNode = (NxNode)logNodeVec.elementAt(i);
+      if (i<0 || i>=getNumNxLogDataSets())
+         return null;
       
+      NxNode ithLogNode = (NxNode)logNodeVec.elementAt(i);
       //TODO FIXME I DON'T KNOW IF THIS IS IMPLEMENTED CORRECTLY
       return new DataSetInfo(ithLogNode,ithLogNode,0,0,"");
    }
    
+   /**
+    * Get the number of NxLog nodes found.
+    * @return The number of NxLog nodes found.
+    */
    public int getNumNxLogDataSets()
    {
       return logNodeVec.size();
