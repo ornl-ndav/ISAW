@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.43  2003/06/02 14:29:36  rmikk
+ * -Checked for and handled errors occurring in the
+ *     parameter lines.
+ *
  * Revision 1.42  2003/05/28 18:53:46  pfpeterson
  * Changed System.getProperty to SharedData.getProperty
  *
@@ -1243,6 +1247,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    *  Sets Default parameters for getResult or for the JParametersGUI
    *  Dialog box. This will parse the macroBuffer created in the
    *  constructor.
+   *  Error conditions are returned in the error variables.
    */
   public void setDefaultParameters(){
     if(this.script==null) return; // don't do anything before there is a script
@@ -1286,12 +1291,14 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       if(index>=0){
         Line=buffer.substring(0,index);
         buffer.delete(0,index+1);
-        processMacroLine(Line,linenum);
+        if( !processMacroLine(Line,linenum))
+          return;
         linenum++;
       }else if(buffer.length()>0){
         Line=buffer.toString();
         buffer.delete(0,buffer.length());
-        processMacroLine(Line,linenum);
+        if( !processMacroLine(Line,linenum))
+            return;
         linenum++;
       }else{
         break;
