@@ -28,6 +28,12 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.12  2003/06/17 20:35:44  bouzekc
+ * Fixed setDefaultParameters so all parameters have a
+ * visible checkbox.  Added more robust error checking on
+ * the raw and output directory parameters.  Fixed progress
+ * bar bug.
+ *
  * Revision 1.11  2003/06/17 17:06:30  bouzekc
  * Now uses InstrumentType.formIPNSFileName to get the
  * file name.  Changed to work with new PropChangeProgressBar.
@@ -72,6 +78,7 @@ import  DataSetTools.dataset.DataSet;
 import  DataSetTools.operator.DataSet.Math.Analyze.*;
 import  DataSetTools.operator.Generic.Load.LoadOneHistogramDS;
 import  DataSetTools.instruments.InstrumentType;
+import  java.io.File;
 
 /**
  * 
@@ -166,12 +173,13 @@ public class IntegrateMultiRunsForm extends Form
     //3
     addParameter(new StringPG("Experiment name", "quartz", false));
     //4
-    ChoiceListPG clpg=new ChoiceListPG("Centering Type", choices.elementAt(0));
+    ChoiceListPG clpg=new ChoiceListPG("Centering Type", choices.elementAt(0), 
+                                       false);
     clpg.addItems(choices);
     addParameter(clpg);
     //5
-    addParameter(new LoadFilePG("SCD Calibration File", "/IPNShome/scd/instprm.dat", 
-                                false));
+    addParameter(new LoadFilePG("SCD Calibration File", 
+                                "/IPNShome/scd/instprm.dat", false));
     //6
     addParameter(new IntArrayPG("The Time-Slice Range", "-1:3", false));
     //7
@@ -265,16 +273,20 @@ public class IntegrateMultiRunsForm extends Form
     int[] runsArray;
 
     //get raw data directory
-    //should be no need to check this for validity
     param = (IParameterGUI)super.getParameter( 0 );
     rawDir = param.getValue().toString();
-    param.setValid(true);
+    if(new File(rawDir).exists())
+      param.setValid(true);
+    else
+      param.setValid(false);
 
     //get output directory
-    //should be no need to check this for validity
     param = (IParameterGUI)getParameter( 1 );
     outputDir = param.getValue().toString();
-    param.setValid(true);
+    if(new File(outputDir).exists())
+      param.setValid(true);
+    else
+      param.setValid(false);
 
     //gets the run numbers
     param = (IParameterGUI)super.getParameter(2);
@@ -379,7 +391,7 @@ public class IntegrateMultiRunsForm extends Form
 
     //set the increment amount
     increment = (1.0f / runsArray.length) * 100.0f;
-    oldPercent = newPercent = increment;
+    oldPercent = newPercent = 0;
 
     for(int i = 0; i < runsArray.length; i++)
     {
