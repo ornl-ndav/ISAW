@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/10/20 16:22:44  rmikk
+ *  Used floatval for value in setValue
+ *  Used super.getValue() to get initial value in getValue.  This checks the
+ *     entrywidget's value and the value variable
+ *
  *  Revision 1.14  2003/10/11 19:27:14  bouzekc
  *  Removed declaration of ParamUsesString as the superclass declares this
  *  already.  Removed clone() definition as the superclass implements this
@@ -121,9 +126,11 @@ public class FloatPG extends StringEntryPG {
      * @return The value of this FloatPG.
      */
     public Object getValue() throws NumberFormatException{
-        Object val = value;
-
-        if(val instanceof Float)
+        Object val = super.getValue();
+       
+        if( val == null)
+          return new Float(0.0f);
+        else if(val instanceof Float)
           return val;
         else if( val instanceof Number){
           return new Float( ((Number)val).floatValue() );
@@ -148,7 +155,6 @@ public class FloatPG extends StringEntryPG {
      */
     public void setValue(Object value){
       Float floatval=null;
-
       if(value==null){
         floatval=new Float(Float.NaN);
       }else if(value instanceof Float){
@@ -166,10 +172,10 @@ public class FloatPG extends StringEntryPG {
       }
 
       if(this.initialized){
-        super.setEntryValue(value);
-      }else{
-        this.value=value;
+        super.setEntryValue((floatval));
       }
+      this.value=(floatval);
+     
     }
 
     /**
