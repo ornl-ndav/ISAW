@@ -10,6 +10,9 @@ package DataSetTools.viewer.OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.2  2002/09/18 14:04:35  dennis
+ * Now uses Data.getLabel() method, rather than a "Label" attribute.
+ *
  * Revision 1.1  2002/07/18 22:06:19  dennis
  * Moved separate OverplotView hiearchy into DataSetTools/viewer
  * hierarchy.
@@ -385,12 +388,8 @@ public class GraphableDataManager
         FloatAttribute offset_attr = new FloatAttribute( GraphableData.OFFSET,
                                                          0.0f );
 	Data Dat = getDataSet().getData_entry(i);
-	Attribute O = Dat.getAttribute( "Label");
+	String name_str = Dat.getLabel();
 	 						                
-        String name_str =null;
-	if( O != null)
-	  if( O instanceof StringAttribute)
-	     name_str= ((StringAttribute) O).getStringValue();
 	if( name_str == null)	
 	  name_str = new String( "Group # " + 
                          getDataSet().getData_entry(i).getGroup_ID() );
