@@ -7,15 +7,14 @@
 # Pressure : Creates 1 bank of data with available detectors and focus to 100 degrees.
 # Choice is given to display dialog box.
 
-# Modify Date: 2005/02/17 23:11:32 : Ashfia Huq , sesample bins to start
-# at 2000 micro sec and end at 32000 micro sec with dT = 5 micro sec
-
-# Modify Date: 2005/02/17 23:11:32 : Ashfia Huq , ID's should remain the same 
-# (bad detectors are turned off using the discriminator levels)
-
 # CVS VERSION $Date$
 
-$Category=Macros, Instrument Type, TOF_NPD
+# Date: 2004/01/16 16:03:04
+
+# Modify Date: 2004/10/13 16:03:04 : Ashfia Huq , sesample bins to start
+# at 2000 micro sec and end at 32000 micro sec with dT = 5 micro sec
+
+# Modify Date: 2005/1/18 16:03:04  : Ashfia Huq , ID's should remain the same (bad detectors are turned off using the discriminator levels
 
 $Sort_d_by_Omega		Boolean(true)	Sort_d_by_Omega (Indiv detectors)
 $Standard        		Boolean(false)	Standard (5B, sum & T focus)
@@ -26,11 +25,11 @@ $Pressure             	Boolean(false)  Pressure (1B with selected detectors)
 
 $Current			Boolean(true)							Is this a Current Run ?
 
-$run_numbers   		Array([21378])							Enter run numbers like [1,2:5]
-$path                	DataDirectoryString    						Path
-$path_archive		DataDirectoryString(/IPNShome/gppduser/archive_data/)		path_archive
-$instrument          	InstrumentNameString   					I	nstrument
-$outputname		DataDirectoryString(C:/material)   				outputname    
+$run_numbers		Array([21378])          				Enter run numbers like [21378]
+$path                	DataDirectoryString    					Inputname
+$path_archive		DataDirectoryString(/IPNShome/gppduser/archive_data/)	path_archive
+$instrument          	InstrumentNameString    				Instrument
+$outputname			DataDirectoryString(/IPNShome/gppduser/aaaUSER_data/)  	outputname    
 
 $Create_FullProf	Boolean(false)        Create FullProf data?
 $dT_bin			Boolean(false)        dT/T binning ?
