@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2001/10/17 18:36:23  dennis
+ *  The int list is now forced to be in increasing order, with no duplicates.
+ *
  *  Revision 1.8  2001/07/10 18:51:47  dennis
  *  Constructor now calls setValue() so that the value is set
  *  the same way both at construction time and later.
@@ -105,28 +108,13 @@ public class IntListAttribute extends Attribute
 
   /**
    * Set the value for the int list attribute using a generic object.  The 
-   * actual class of the object must be an array of int.
+   * actual class of the object must be an array of int.  The array will be
+   * put in order and duplicates will be removed. 
    */
   public boolean setValue( Object obj )
   {
     if ( obj instanceof int[] )
-    {
-      int length  = ((int[])obj).length;
-      this.values = new int[ length ];
-      System.arraycopy( (int[])obj, 0, this.values, 0, length );
-
-      boolean in_order = true;
-
-      for ( int i = 0; i < values.length - 1; i++ )
-        if ( values[i] > values[i+1] )
-          in_order = false;
-
-      if ( !in_order )
-      {
-        System.out.println("Warning: values not ordered in IntListAttribute");
-        arrayUtil.sort( this.values );
-      }
-    }
+      this.values = arrayUtil.make_increasing( (int[])obj );
     else
       return false;
 
@@ -250,4 +238,5 @@ public class IntListAttribute extends Attribute
   {
     return new IntListAttribute( this.getName(), values );
   }
+
 }
