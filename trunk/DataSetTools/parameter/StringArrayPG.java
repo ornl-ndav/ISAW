@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/06/09 22:30:57  rmikk
+ * Added Clone method
+ *
  * Revision 1.3  2003/05/25 18:43:28  rmikk
  * Added GPL
  *
@@ -68,7 +71,12 @@ public class StringArrayPG extends VectorPG
 
 
       }      
+public Object clone()
+  {
+    StringArrayPG faap = new StringArrayPG( getName(), getValue());
+    return (Object)faap;
 
+  }       
 static class MyActionList implements ActionListener
   {
    StringArrayPG  vpf;
