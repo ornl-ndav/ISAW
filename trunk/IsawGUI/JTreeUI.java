@@ -2,6 +2,13 @@
  * $Id$ 
  *
  * $Log$
+ * Revision 1.14  2001/07/12 21:17:39  neffk
+ * removed comments in getSelectedNodes() so that it returns an array
+ * of TreePath objects.  this was the intention of the function, but
+ * for some reason it was changed to only return the first selected
+ * item as a TreePath[] with 1 element.  i'm baffled.  hopefully this
+ * doesn't break anything...
+ *
  * Revision 1.13  2001/07/11 16:39:28  neffk
  * modified getSelectedNodes()
  *
@@ -165,7 +172,7 @@ public class JTreeUI
   public DefaultMutableTreeNode getSelectedNode()
   {
     TreePath selectedPath = null;
-    if(tree.getSelectionCount()>0)
+    if(  tree.getSelectionCount() > 0  )
     {
       int[] selectedRows = tree.getSelectionRows();
       selectedPath =  tree.getPathForRow(selectedRows[0]); 
@@ -181,18 +188,14 @@ public class JTreeUI
    */ 
   public TreePath[] getSelectedNodes()
   {
-/*
     if(  tree.getSelectionCount() > 0  )
     {
-      TreePath[] paths = new TreePath[ tree.getSelectionCount ];
+      TreePath[] paths = new TreePath[ tree.getSelectionCount() ];
       paths = tree.getSelectionPaths();
       return paths;
     }
     else 
       return null;
-*/
-    TreePath[] tp = new TreePath[1];
-    return tp;
   }
 
 
