@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/09/15 18:19:26  dennis
+ *  Added test for this.vals != null in clone() method. (Ruth)
+ *
  *  Revision 1.12  2003/09/13 23:29:46  bouzekc
  *  Moved calls from setValid(true) to validateSelf().
  *
@@ -239,7 +242,10 @@ public class DataSetPG extends ChooserPG implements IObserver{
      */
     public Object clone(){
         DataSetPG pg=new DataSetPG(this.name,this.value,this.valid);
-        pg.vals=(Vector)this.vals.clone();
+        if( this.vals != null)
+           pg.vals=(Vector)this.vals.clone();
+        else
+           pg.vals = null;
         pg.setDrawValid(this.getDrawValid());
         pg.initialized=false;
         return pg;
