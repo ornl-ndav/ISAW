@@ -3,6 +3,22 @@
  *
  *  Ported to Java from tof_vis_calc.c
  * 
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.2  2000/07/10 22:25:15  dennis
+ *  July 10, 2000 version... many changes
+ *
+ *  Revision 1.5  2000/07/06 21:19:59  dennis
+ *  added some constants for Planck's constant and added VelocityOfEnergy()
+ *  function.
+ *
+ *  Revision 1.4  2000/06/12 14:50:05  dennis
+ *  *** empty log message ***
+ *
+ *  Revision 1.3  2000/05/11 16:08:13  dennis
+ *  Added RCS logging
+ *
+ *
  */
 
 package DataSetTools.math;
@@ -17,14 +33,31 @@ public final class tof_calc
 
 */
 
-static final float  MN_KG               =  1.67495e-27f;  // mass of neutron(kg)
-static final float  JOULES_PER_meV      =  1.60206e-22f;
-static final float  H_JS                =  6.6262e-34f;    // h in Joule seconds          */
+                                                         // mass of neutron(kg)
+public static final float  MN_KG        = 1.67492716e-27f;
 
-static final float  meV_per_mm_per_us_2 =  5.2276f;       // meV/(mm/us)^2 
-static final float  ANGST_PER_US_PER_M  =  3.956058e-3f;
-static final float  ANGST_PER_US_PER_MM =  3.956058f;
-static final float  RADIANS_PER_DEGREE  =  0.01745332925f;
+public static final float  JOULES_PER_meV=  1.602176462e-22f;
+
+                                                      //h in Joule seconds
+public static final float  H_JS          =  6.62606876e-34f;
+
+                                                      // h in erg seconds
+public static final float  H_ES          =  6.62606876e-27f;
+
+                                                      // h_bar in Joule seconds
+public static final float  H_BAR_JS      =  1.05457160e-34f;
+
+                                                      // h in erg seconds
+public static final float  H_BAR_ES      =  1.05457160e-27f;   
+
+
+public static final float  meV_per_mm_per_us_2 = 5.227037f;    // meV/(mm/us)^2 
+
+public static final float  ANGST_PER_US_PER_M  = 3.956058e-3f;
+
+public static final float  ANGST_PER_US_PER_MM = 3.956058f;
+
+public static final float  RADIANS_PER_DEGREE  = 0.01745332925f;
  
   /**
    * Don't let anyone instantiate this class.
@@ -42,7 +75,7 @@ static final float  RADIANS_PER_DEGREE  =  0.01745332925f;
    * input histogram bin, all of the counts from the input bin are assigned 
    * to the new bin.  The bins of the new histogram recieve the total of all 
    * such counts from bins in the input histogram that they contain, or 
-   * partially overlap.
+   * partially overlap.  Also see the method "ResampleBin".
    *
    * @param   iX[]      Array of bin boundaries for the input histogram.  These
    *                    can be an arbitrary non-decreasing sequence of X values.
@@ -54,7 +87,6 @@ static final float  RADIANS_PER_DEGREE  =  0.01745332925f;
    * @param   nHist[]   Array of histogram values for the input histogram. The
    *                    length of nHist[] must be one less than the length of
    *                    nX[].
-   * @see ResampleBin
    */
 
   public static boolean ReBin( float iX[], float iHist[], 
@@ -208,6 +240,7 @@ static final float  RADIANS_PER_DEGREE  =  0.01745332925f;
   /**
    * Constructs a simple histogram by spreading the counts of one input "bin"
    * from a histogram across a set of equal size bins in another histogram.
+   * Also see the method "ReBin". 
    *
    * @param   iXmin     the left  bin boundary of the input bin
    * @param   iXmax     the right bin boundary of the input bin
@@ -218,8 +251,6 @@ static final float  RADIANS_PER_DEGREE  =  0.01745332925f;
    *                    count values MUST have been initialized on input.  This
    *                    function adds counts from the input bin to the values
    *                    initially in the nHist[] bins.
-   *
-   * @see ReBin 
    */
 
   public static boolean ResampleBin( float  iXmin, 
@@ -335,6 +366,21 @@ public static float  TOFofEnergy( float path_len_m, float e_meV )
 {
   return (float)( path_len_m * 1000.0/Math.sqrt( e_meV/meV_per_mm_per_us_2 ));
 }
+
+
+/* ------------------------- VelocityOfEnergy ---------------------------- */
+
+public static float VelocityOfEnergy( float e_meV )
+{
+
+  if ( e_meV <= 0.0f )                     /* NOT MEANINGFUL */
+    return( Float.MAX_VALUE );
+
+  float   v = (float)Math.sqrt( e_meV / meV_per_mm_per_us_2 );
+
+  return( v );
+}
+
 
 
 

@@ -1,6 +1,15 @@
 /*
  * @(#)InstrumentType.java     0.1  99/07/08  Dennis Mikkelson
  *
+ *
+ * ---------------------------------------------------------------------------   *  $Log$
+ * ---------------------------------------------------------------------------   *  Revision 1.2  2000/07/10 22:24:44  dennis
+ * ---------------------------------------------------------------------------   *  July 10, 2000 version... many changes
+ * ---------------------------------------------------------------------------   *
+ * ---------------------------------------------------------------------------   *  Revision 1.2  2000/05/11 16:42:51  dennis
+ * ---------------------------------------------------------------------------   *  added RCS logging
+ * ---------------------------------------------------------------------------   *
+ *
  */
 package DataSetTools.instruments;
 
@@ -102,11 +111,11 @@ public class InstrumentType implements Serializable
 
   public static int getIPNSInstrumentType( String file_name )
   {
-    String inst_name;
-    
-    inst_name = getIPNSInstrumentName( file_name );
+    String inst_name = getIPNSInstrumentName( file_name );
+
     if ( inst_name.equalsIgnoreCase( "GPPD" )  ||
          inst_name.equalsIgnoreCase( "SEPD" )  ||
+         inst_name.equalsIgnoreCase( "HIPD" )  ||
          inst_name.equalsIgnoreCase( "GLAD")    ) 
       return TOF_DIFFRACTOMETER;
     

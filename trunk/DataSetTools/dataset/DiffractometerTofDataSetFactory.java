@@ -1,5 +1,18 @@
 /*
  * @(#)DiffractometerTofDataSetFactory.java     0.1  99/06/16  Dennis Mikkelson
+ *
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.3  2000/07/10 22:23:57  dennis
+ *  July 10, 2000 version... many changes
+ *
+ *  Revision 1.6  2000/06/01 21:18:41  dennis
+ *  Added TofToChannel and TrueAngle operators
+ *
+ *  Revision 1.5  2000/05/11 16:00:45  dennis
+ *  Added RCS logging
+ *
+ *
  */
 
 package  DataSetTools.dataset;
@@ -8,7 +21,7 @@ import java.io.*;
 import DataSetTools.operator.*;
 
 /**
- * The concrete root class for "Factory" objects that produce properly 
+ * The concrete class for "Factory" objects that produce properly 
  * configured, empty DataSets with operators suitable for a Time-of-Flight
  * neutron diffractometer.
  *
@@ -70,10 +83,13 @@ public class DiffractometerTofDataSetFactory extends    DataSetFactory
 
                                                     // add the list of TOF
                                                     // Diffractometer operations
+     
     new_ds.addOperator( new DiffractometerTofToD() );
     new_ds.addOperator( new DiffractometerTofToQ() );
     new_ds.addOperator( new DiffractometerTofToEnergy() );
     new_ds.addOperator( new DiffractometerTofToWavelength() );
+    new_ds.addOperator( new TofToChannel() );
+    new_ds.addOperator( new TrueAngle() );
     return new_ds;
   }
 
