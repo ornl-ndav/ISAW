@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.52  2003/11/20 20:13:25  rmikk
+ * Uses FilenameUtil.URLSpacetoSpace to eliminate the
+ *   "%20"'s.
+ * Uncommented out the show methods in the main progrqam
+ *
  * Revision 1.51  2003/11/18 22:21:41  bouzekc
  * Now finds ISAW_HOME Operators when a non-System ClassLoader is used.
  *
@@ -793,7 +798,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         classFile=classFile.substring(5,classFile.indexOf(className));
         // then change the separator to forward slash (should be already)
         classFile=FilenameUtil.setForwardSlash(classFile);
-
+        classFile=FilenameUtil.URLSpacetoSpace( classFile );
         if(injar){ // we are working from a jar file
             // remove a little bit more from classFile
             classFile=classFile.substring(4,classFile.length()-1);
@@ -1280,11 +1285,11 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         
         //Script_Class_List_Handler.LoadDebug = true;
         Script_Class_List_Handler BB = new Script_Class_List_Handler();
-        /*System.out.println("-------------------------------------------"
+        System.out.println("-------------------------------------------"
                            +"-------------------------------");
         System.out.println("=====Number of Generic operators: "
                            +BB.getNum_operators());
-        BB.show(257);*/
+        BB.show(257);
        
         
         System.exit( 0 );
