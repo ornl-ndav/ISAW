@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.56  2003/07/09 20:42:43  bouzekc
+ * Catches all exceptions thrown from exec_forms(), prints a
+ * stack trace and shows an error dialog.
+ *
  * Revision 1.55  2003/07/09 16:29:12  bouzekc
  * Now shows last valid Form when the Wizard is loading.  Fixed
  * bug where if save files were successively loaded, the progress
@@ -1717,20 +1721,41 @@ public abstract class Wizard implements PropertyChangeListener {
      * @return "Success" - unused.
      */
     public Object construct(  ) {
+      String message = "";
+
       //can't have users mutating the values!
       enableNavButtons( false, getCurrentFormNumber(  ) );
 
       this.enableFormParams( false );
 
-      //here is where the time intensive work is.
-      exec_forms( formNum );
-      populateViewMenu(  );
+      try {
+        //here is where the time intensive work is.
+        exec_forms( formNum );
+      } catch( Exception e ) {
+        //crashed hard when executing an outside Operator, Form, or Script
+        //try to salvage what we can
+        JOptionPane.showMessageDialog( 
+          null,
+          "Unknown failure occurred.  " +
+          "Please save your data then restart " + "the Wizard.", "ERROR",
+          JOptionPane.ERROR_MESSAGE );
+        e.printStackTrace(  );
 
-      enableNavButtons( true, getCurrentFormNumber(  ) );
+        message = "Failure";
 
-      this.enableFormParams( true );
+        //reset the progress bars by re-showing the Form
+        showForm( getCurrentFormNumber(  ) );
+      } finally {
+        populateViewMenu(  );
 
-      return "Success";  //unused
+        enableNavButtons( true, getCurrentFormNumber(  ) );
+
+        this.enableFormParams( true );
+
+        message = "Success";
+
+        return message;  //unused
+      }
     }
 
     /**
