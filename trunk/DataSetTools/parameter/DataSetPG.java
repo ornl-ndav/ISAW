@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/12/15 01:51:44  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.15  2003/11/19 04:13:22  bouzekc
  *  Is now a JavaBean.
  *
@@ -85,10 +88,8 @@ package DataSetTools.parameter;
 
 import DataSetTools.components.ParametersGUI.HashEntry;
 import DataSetTools.dataset.*;
-import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.IObserver;
-import java.util.Vector;
 
 /**
  * This is a superclass to take care of many of the common details of

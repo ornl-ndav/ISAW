@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/12/15 01:56:37  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.3  2003/01/23 19:25:10  dennis
  *  Added getDocumentation() method and javadocs on getResult().
  *  (Chris Bouzek)
@@ -46,11 +49,8 @@
 
 package DataSetTools.operator.Generic.Special;
 
-import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
-import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.retriever.RunfileRetriever;
 

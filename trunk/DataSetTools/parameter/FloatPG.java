@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2003/12/15 01:56:37  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.17  2003/11/19 04:13:22  bouzekc
  *  Is now a JavaBean.
  *
@@ -91,12 +94,7 @@
  */
 
 package DataSetTools.parameter;
-import javax.swing.*;
-import java.util.Vector;
-import java.lang.Float;
-import java.beans.*;
-import DataSetTools.components.ParametersGUI.*;
-import DataSetTools.util.*;
+import DataSetTools.util.FloatFilter;
 
 /**
  * This is class is to deal with float parameters.

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/12/15 01:56:37  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.5  2003/05/08 18:49:21  dennis
  *  Fixed error in javadoc comment.
  *
@@ -60,9 +63,12 @@
 
 package  DataSetTools.dataset;
 
-import java.text.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.OutputStream;
 import java.util.Vector;
+
 import DataSetTools.util.StringUtil;
 
 /**
