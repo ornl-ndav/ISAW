@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2001/12/21 17:26:47  dennis
+ *  Did complete change to using detector segments instead of detector ids.
+ *
  *  Revision 1.36  2001/12/14 22:13:12  dennis
  *  Refined calculations for DG Spectrometers.  It now calculates the
  *  energy from the monitor peaks in the constructor and stores the
@@ -457,9 +460,9 @@ private float CalculateEIn()
         DetectorPosition det_position = new DetectorPosition();
 
         Segment group_segments[] = run_file.SegsInSubgroup( group_id );
-        float seg_angle  = (float)run_file.RawDetectorAngle( group_segments[0] );
+        float seg_angle  = (float)run_file.RawDetectorAngle(group_segments[0]);
               seg_angle *= (float)(Math.PI / 180.0);
-        float seg_height = (float)run_file.RawDetectorHeight( group_segments[0]);
+        float seg_height = (float)run_file.RawDetectorHeight(group_segments[0]);
         float seg_path   = (float)run_file.RawFlightPath( group_segments[0] );
               seg_path   = Math.abs( seg_path );
 
@@ -593,12 +596,12 @@ private float CalculateEIn()
 
      for ( group_id = first_id; group_id <= last_id; group_id++ )
      {
-      int     group_members[]  = run_file.IdsInSubgroup( group_id );
+//      int     group_members[]  = run_file.IdsInSubgroup( group_id );
       Segment group_segments[] = run_file.SegsInSubgroup( group_id );
-      if ( group_members.length != group_segments.length )
-        System.out.println("ERROR: Wrong number of segments");
+//      if ( group_members.length != group_segments.length )
+//        System.out.println("ERROR: Wrong number of segments");
 
-      if ( group_members.length > 0 )   // only deal with non-trivial groups
+      if ( group_segments.length > 0 )  // only deal with non-trivial groups
                                         // and then pick out the groups of the
                                         // correct type, in case there are 
                                         // several types in this histogram
@@ -649,7 +652,7 @@ private float CalculateEIn()
                                    instrument_type,
                                    histogram_num,
                                    group_id,
-                                   group_members, 
+//                                  group_members, 
                                    group_segments,
                                    tf_type,
                                    spectrum      );
@@ -747,7 +750,7 @@ private float CalculateEIn()
  *  @param  instrument_type  The file name for this DataSet
  *  @param  histogram_num    The histogram number for this group
  *  @param  group_id         The group_id for this group
- *  @param  group_members    The list of Detectors that belong to this group
+// *  @param  group_members    The list of Detectors that belong to this group
  *  @param  group_segments   The list of Segments that belong to this group
  *  @param  tf_type          The time field type for this group 
  *  @param  spectrum         The Data block to which the attributes are added  
@@ -757,7 +760,7 @@ private float CalculateEIn()
                                       int     instrument_type,
                                       int     histogram_num,
                                       int     group_id,
-                                      int     group_members[], 
+//                                      int     group_members[], 
                                       Segment group_segments[], 
                                       int     tf_type,
                                       Data    spectrum )
@@ -783,9 +786,20 @@ private float CalculateEIn()
     int_attr = new IntAttribute( Attribute.TIME_FIELD_TYPE, tf_type );
     attr_list.setAttribute( int_attr );
 
-    // Detector ID list ..........
+    // Detector and Segment ID lists ..........
+    int det_ids[] = new int[ group_segments.length ];
+    int seg_ids[] = new int[ group_segments.length ];
+    for ( int i = 0; i < group_segments.length; i++ )
+    {
+      det_ids[i] = group_segments[i].DetID();
+      seg_ids[i] = group_segments[i].SegID();
+    }
     int_list_attr = new IntListAttribute( Attribute.DETECTOR_IDS,
-                                            group_members );
+                                          det_ids );
+    attr_list.setAttribute( int_list_attr );
+
+    int_list_attr = new IntListAttribute( "Segment IDs",
+                                          seg_ids );
     attr_list.setAttribute( int_list_attr );
 
     // Initial flight path ............
@@ -829,15 +843,18 @@ private float CalculateEIn()
     float solid_angles[] = GrpSolidAngles( group_id );
     if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
     {
-      angle      = getAverageAngle( group_members, 
+      angle      = getAverageAngle( group_segments, 
                                     histogram_num, 
                                     solid_angles,
                                     true  );   
       angle      *= (float)(Math.PI / 180.0);
   
-      height     = getAverageHeight( group_members, solid_angles, true );
+      height     = getAverageHeight( group_segments, 
+                                     histogram_num,
+                                     solid_angles, 
+                                     true );
 
-      final_path = getAverageFlightPath( group_members, 
+      final_path = getAverageFlightPath( group_segments, 
                                          histogram_num, 
                                          solid_angles,
                                          false );
@@ -845,11 +862,11 @@ private float CalculateEIn()
     else           //  Just get the values from the runfile where possible
     {              //  don't weight by solid angles
 
-      angle = (float)run_file.DetectorAngle(group_members[0], histogram_num);
+      angle = (float)run_file.DetectorAngle(group_segments[0], histogram_num);
       angle      *= (float)(Math.PI / 180.0);
 
-      height     = getAverageHeight( group_members, false );
-      final_path = getAverageFlightPath(group_members, histogram_num, false);
+      height     = getAverageHeight( group_segments, histogram_num, false );
+      final_path = getAverageFlightPath(group_segments, histogram_num, false);
     }
 
 
@@ -861,15 +878,18 @@ private float CalculateEIn()
     // also turn out to be 0 for such instruments. 
     // else
     // {
-    //  angle      = getAverageAngle( group_members,
+    //  angle      = getAverageAngle( group_segments,
     //                                histogram_num,
     //                                solid_angles,
     //                                false );
     //  angle      *= (float)(Math.PI / 180.0);
     //
-    //  height     = getAverageHeight( group_members, solid_angles, false );
+    //  height     = getAverageHeight( group_segments, 
+    //                                 histogram_num, 
+    //                                 solid_angles, 
+    //                                 false );
     //
-    //  final_path = getAverageFlightPath( group_members,
+    //  final_path = getAverageFlightPath( group_segments,
     //                                     histogram_num,
     //                                     solid_angles,
     //                                     false ); 
@@ -907,7 +927,7 @@ private float CalculateEIn()
 
     // Raw Detector Angle ...........
     float_attr =new FloatAttribute(Attribute.RAW_ANGLE,
-                      (float)run_file.RawDetectorAngle( group_members[0]) );
+                      (float)run_file.RawDetectorAngle( group_segments[0]) );
     attr_list.setAttribute( float_attr );
 
     // Delta 2 theta ( range of scattering angles covered ), assuming 1" tube
@@ -920,8 +940,8 @@ private float CalculateEIn()
 
     // DetectorInfo ....
 
-    DetectorInfo det_info_list[] = new DetectorInfo[ group_members.length ];
-    for ( int id = 0; id < group_members.length; id++ )
+    DetectorInfo det_info_list[] = new DetectorInfo[ group_segments.length ];
+    for ( int id = 0; id < group_segments.length; id++ )
     {
       DetectorPosition det_position = new DetectorPosition();
       float seg_angle  = (float)run_file.RawDetectorAngle( group_segments[id] );
@@ -937,8 +957,8 @@ private float CalculateEIn()
       
       det_position.setCylindricalCoords( rho, seg_angle, seg_height );
 
-      DetectorInfo det_info = new DetectorInfo( group_segments[id].DetID(), 
-                                              group_members[id], 
+      DetectorInfo det_info = new DetectorInfo( group_segments[id].SegID(), 
+                                              group_segments[id].DetID(), 
                                               group_segments[id].Row(),
                                               group_segments[id].Column(),
                                               det_position,
@@ -949,7 +969,7 @@ private float CalculateEIn()
       det_info_list[id] = det_info;
     }
 
-    if ( group_members.length > 0 )           // add the DetInfoListAttribute
+    if ( group_segments.length > 0 )           // add the DetInfoListAttribute
     {
       DetInfoListAttribute det_info_attr = new DetInfoListAttribute( 
                              Attribute.DETECTOR_INFO_LIST, det_info_list );
@@ -957,10 +977,10 @@ private float CalculateEIn()
                                                // add the crate, input & slot
                                                // info for the first segment
                                                // in the group
-      int crates[] = new int[ group_members.length ];
-      int slots[]  = new int[ group_members.length ];
-      int inputs[] = new int[ group_members.length ];
-      for ( int id = 0; id < group_members.length; id++ )
+      int crates[] = new int[ group_segments.length ];
+      int slots[]  = new int[ group_segments.length ];
+      int inputs[] = new int[ group_segments.length ];
+      for ( int id = 0; id < group_segments.length; id++ )
       {
         Segment seg = group_segments[id];        
         crates[id] = runfile.CrateNum(seg); 
@@ -1009,7 +1029,7 @@ private float CalculateEIn()
   *  get the average flight path for the detectors that are in the specified
   *  group.  This routine should probably be put in the IPNS Runfile package.
   *
-  *  @param  ids      Array of detector ids for this group
+  *  @param  segs     Array of detector segments for this group
   *  @param  hist_num The histogram number for which the flight path is to
   *                   be found.
   *  @param  raw      If true, get the raw flight path, otherwise get the
@@ -1017,16 +1037,16 @@ private float CalculateEIn()
   *
   *  @return the averages of the flight paths of the detectors in this group
   */
-  private float getAverageFlightPath( int ids[], int hist_num, boolean raw )
+  private float getAverageFlightPath(Segment segs[], int hist_num, boolean raw)
   {
-    float values[] = new float[ ids.length ];
+    float values[] = new float[ segs.length ];
     try
     {
-      for ( int i = 0; i < ids.length; i++ )
+      for ( int i = 0; i < segs.length; i++ )
         if ( raw )
-          values[i] = (float)run_file.RawFlightPath( ids[i] );
+          values[i] = (float)run_file.RawFlightPath( segs[i] );
         else
-          values[i] = (float)run_file.FlightPath( ids[i], hist_num );
+          values[i] = (float)run_file.FlightPath( segs[i], hist_num );
     }
     catch ( Exception e )
     {
@@ -1044,7 +1064,7 @@ private float CalculateEIn()
   *  specified group, weighted by the solid angle of the detectors.  
   *  This routine should probably be put in the IPNS Runfile package.
   *
-  *  @param  ids      Array of detector ids for this group
+  *  @param  segs     Array of detector segments for this group
   *  @param  hist_num The histogram number for which the flight path is to
   *                   be found.
   *  @param  solid_angles  Array of detector solid angles for this group
@@ -1053,23 +1073,23 @@ private float CalculateEIn()
   *
   *  @return the averages of the flight paths of the detectors in this group
   */
-  private float getAverageFlightPath( int      ids[], 
+  private float getAverageFlightPath( Segment  segs[], 
                                       int      hist_num,
                                       float    solid_angles[],
                                       boolean  raw )
   {
-    float values[] = new float[ ids.length ];
+    float values[] = new float[ segs.length ];
     float tot_solid_ang = 0;
     try
     {
-      for ( int i = 0; i < ids.length; i++ )
+      for ( int i = 0; i < segs.length; i++ )
       {
         if ( raw )
           values[i] = (float)( solid_angles[i] * 
-                               run_file.RawFlightPath( ids[i]) );
+                               run_file.RawFlightPath( segs[i]) );
         else
           values[i] = (float)( solid_angles[i] * 
-                               run_file.FlightPath( ids[i], hist_num) );
+                               run_file.FlightPath( segs[i], hist_num) );
         tot_solid_ang += solid_angles[i];
       }
     }
@@ -1088,22 +1108,26 @@ private float CalculateEIn()
   *  get the average "z" position for the detectors that are in the specified
   *  group.  This routine should probably be put in the IPNS Runfile package.
   *
-  *  @param  ids      Array of detector ids for this group
+  *  @param  segs     Array of detector segments for this group
+  *  @param  hist_num The histogram number for which the average "z" position
+  *                   is to be found.
   *  @param  raw      If true, get the raw "z" value, otherwise get the
   *                   effective "z" value.
   *
   *  @return the averages of the "z" positions of the detectors in this group
   */ 
-  private float getAverageHeight( int ids[], boolean raw )
+  private float getAverageHeight( Segment segs[], 
+                                  int     hist_num, 
+                                  boolean raw )
   {
-    float values[] = new float[ ids.length ];
+    float values[] = new float[ segs.length ];
     try
     {
-      for ( int i = 0; i < ids.length; i++ )
+      for ( int i = 0; i < segs.length; i++ )
         if ( raw )
-          values[i] = (float)run_file.RawDetectorHeight( ids[i] );
+          values[i] = (float)run_file.RawDetectorHeight( segs[i] );
         else
-          values[i] = (float)run_file.DetectorHeight( ids[i] );
+          values[i] = (float)run_file.DetectorHeight( segs[i], hist_num );
     }
     catch ( Exception e )
     {
@@ -1112,7 +1136,7 @@ private float CalculateEIn()
       e.printStackTrace();
     }
 
-    return arrayUtil.SignedAbsSum( values ) / ids.length;   
+    return arrayUtil.SignedAbsSum( values ) / segs.length;   
   }
 
 
@@ -1121,27 +1145,32 @@ private float CalculateEIn()
   *  the specified group, weighted by the solid angle of the detectors.  
   *  This routine should probably be put in the IPNS Runfile package.
   *
-  *  @param  ids           Array of detector ids for this group
+  *  @param  segs          Array of detector segments for this group
+  *  @param  hist_num      The histogram number for which the average "z" 
+  *                        position is to be found.
   *  @param  solid_angles  Array of detector solid angles for this group
   *  @param  raw           If true, get the raw "z" value, otherwise get the
   *                        effective "z" value.
   *  
   *  @return the averages of the "z" positions of the detectors in this group
   */
-  private float getAverageHeight(int ids[], float solid_angles[], boolean raw)
+  private float getAverageHeight( Segment segs[], 
+                                  int     hist_num,
+                                  float   solid_angles[], 
+                                  boolean raw )
   {
-    float values[] = new float[ ids.length ];
+    float values[] = new float[ segs.length ];
     float tot_solid_ang = 0;
     try
     {
-      for ( int i = 0; i < ids.length; i++ )
+      for ( int i = 0; i < segs.length; i++ )
       {
         if ( raw )
           values[i] = (float)( solid_angles[i] * 
-                               run_file.RawDetectorHeight( ids[i] ));
+                               run_file.RawDetectorHeight( segs[i] ));
         else
           values[i] = (float)( solid_angles[i] * 
-                               run_file.DetectorHeight( ids[i] ));
+                               run_file.DetectorHeight( segs[i], hist_num ));
         tot_solid_ang += solid_angles[i];
       }
     }
@@ -1162,7 +1191,7 @@ private float CalculateEIn()
   *  specified group.  This routine should probably be put in the IPNS 
   *  Runfile package.
   *
-  *  @param  ids   Array of detector ids for this group
+  *  @param  segs          Array of detector segments for this group
   *  @param  hist_num      The histogram number for which the average angle
   *                        is to be found
   *  @param  raw           If true, get the raw angle, otherwise get the
@@ -1171,16 +1200,16 @@ private float CalculateEIn()
   *  @return the averages of the horizontal angles of the detectors in this 
   *          group
   */
-  private float getAverageAngle( int ids[], int hist_num, boolean raw )
+  private float getAverageAngle( Segment segs[], int hist_num, boolean raw )
   {
     float total = 0;
     try
     {
-      for ( int i = 0; i < ids.length; i++ )
+      for ( int i = 0; i < segs.length; i++ )
         if ( raw )
-          total += run_file.RawDetectorAngle( ids[i] );
+          total += run_file.RawDetectorAngle( segs[i] );
         else
-          total += run_file.DetectorAngle( ids[i], hist_num );
+          total += run_file.DetectorAngle( segs[i], hist_num );
     }
     catch ( Exception e )
     {
@@ -1189,7 +1218,7 @@ private float CalculateEIn()
       e.printStackTrace();
     }
 
-    return total / ids.length;  
+    return total / segs.length;  
   }
 
 
@@ -1199,7 +1228,7 @@ private float CalculateEIn()
   *  the specified group, weighted by the solid angle of the detectors.  
   *  This routine should probably be put in the IPNS Runfile package.
   *
-  *  @param  ids           Array of detector ids for this group
+  *  @param  segs          Array of detector segments for this group
   *  @param  hist_num      The histogram number for which the average angle
   *                        is to be found
   *  @param  solid_angles  Array of detector solid angles for this group
@@ -1209,7 +1238,7 @@ private float CalculateEIn()
   *  @return the averages of the horizontal angles of the detectors in this
   *          group
   */
-  private float getAverageAngle( int      ids[],  
+  private float getAverageAngle( Segment  segs[],  
                                  int      hist_num, 
                                  float    solid_angles[],
                                  boolean  raw )
@@ -1218,12 +1247,12 @@ private float CalculateEIn()
     float sum   = 0;
     try
     {
-      for ( int i = 0; i < ids.length; i++ )
+      for ( int i = 0; i < segs.length; i++ )
       {
         if ( raw )
-          total += solid_angles[i] * run_file.RawDetectorAngle( ids[i] );
+          total += solid_angles[i] * run_file.RawDetectorAngle( segs[i] );
         else
-          total += solid_angles[i] * run_file.DetectorAngle( ids[i], hist_num );
+          total += solid_angles[i] * run_file.DetectorAngle(segs[i], hist_num);
         sum   += solid_angles[i];
       }
     }
@@ -1240,7 +1269,7 @@ private float CalculateEIn()
 
  /**
   *
-  *  Calculate the total solid angle for the specified group of detectors
+  *  Calculate the total solid angle for the specified group of segments 
   * 
   *  @param  group_id  The id of the group of detectors whose solid angle is
   *                    to be computed.
@@ -1249,16 +1278,12 @@ private float CalculateEIn()
   */
   private float GrpSolidAngle( int group_id )
   {
-    int ids[] = run_file.IdsInSubgroup( group_id );
+    Segment segs[] = run_file.SegsInSubgroup( group_id );
 
     float solid_angle = 0;
-    int   id;
 
-    for ( int det_count = 0; det_count < ids.length; det_count++ )
-    {
-      id     = ids[ det_count ];
-      solid_angle += DetSolidAngle( id );
-    }
+    for ( int seg_count = 0; seg_count < segs.length; seg_count++ )
+      solid_angle += SegmentSolidAngle( segs[seg_count] );
 
     return solid_angle; 
   }
@@ -1266,25 +1291,21 @@ private float CalculateEIn()
 
  /**
   *
-  *  Calculate array of solid angles for the list of detectors in a group
+  *  Calculate array of solid angles for the list of segements in a group
   *
-  *  @param  group_id  The id of the group for which the list of detector
-  *                    whose solid angle is to be computed.  *
+  *  @param  group_id  The id of the group for which the list of  
+  *                    solid angles is to be computed. 
   *
-  *  @return The list of solid angles subtended by the detectors in the 
+  *  @return The list of solid angles subtended by the segments in the 
   *          specified group.
   */
   private float[] GrpSolidAngles( int group_id )
   {
-    int   ids[]          = run_file.IdsInSubgroup( group_id );
-    float solid_angles[] = new float[ ids.length ];
+    Segment segs[]       = run_file.SegsInSubgroup( group_id );
+    float solid_angles[] = new float[ segs.length ];
 
-    int   id;
-    for ( int det_count = 0; det_count < ids.length; det_count++ )
-    {
-      id     = ids[ det_count ];
-      solid_angles[ det_count ] = DetSolidAngle( id );
-    }
+    for ( int seg_count = 0; seg_count < segs.length; seg_count++ )
+      solid_angles[ seg_count ] = SegmentSolidAngle( segs[seg_count] );
 
     return solid_angles;
   }
@@ -1292,13 +1313,13 @@ private float CalculateEIn()
 
  /**
   *
-  *  Calculate the solid angle for the specified single detector
+  *  Calculate the solid angle for the specified single segment 
   *
-  *  @param  det_id  The id of the detector whose solid angle is to be computed.
+  *  @param  seg  The segment whose solid angle is to be computed.
   *
-  *  @return The solid angle subtended by the detector.
+  *  @return The solid angle subtended by the segment.
   */
-  private float DetSolidAngle( int det_id )
+  private float SegmentSolidAngle( Segment seg )
   {
     float solid_angle = 0;
     int   type;
@@ -1310,21 +1331,21 @@ private float CalculateEIn()
           nom_height,
           nom_dist;
 
-    type   = run_file.DetectorType( det_id );
+    type   = run_file.DetectorType( seg );
     length = Runfile.LENGTH[ type ] / 100;   // convert cm to m
 //    width  = Runfile.WIDTH[ type ] / 100;    // convert cm to m
     width = .0254f;                        // assume 1" outside diameter to
                                              // match Chun's results
 
-    nom_radius = (float) run_file.RawFlightPath( det_id );
-    nom_height = (float) run_file.RawDetectorHeight( det_id );
+    nom_radius = (float) run_file.RawFlightPath( seg );
+    nom_height = (float) run_file.RawDetectorHeight( seg );
     nom_dist   = (float) Math.sqrt( nom_radius * nom_radius +
                                       nom_height * nom_height );
 
     raw_dist = (float) Math.sqrt( nom_dist * nom_dist -
                                   length * length / 12.0 );
     solid_angle += length*width / (raw_dist * raw_dist);
-//    System.out.println("Det ID = " + det_id +
+//    System.out.println("Det ID = " + seg.detID() +
 //                       " type  = " + type + 
 //                       " nom_dist = " + nom_dist +
 //                       " raw_dist = " + raw_dist +
@@ -1342,9 +1363,9 @@ private float CalculateEIn()
  */
   private void ShowGroupDetectorInfo( int group_id, int hist )
   {
-    int ids[] = run_file.IdsInSubgroup( group_id );
-    int type, 
-        id;
+    Segment segs[] = run_file.SegsInSubgroup( group_id );
+    int type; 
+    Segment seg;
     float area,
           length,
           width,
@@ -1358,15 +1379,15 @@ private float CalculateEIn()
     try
     {
       System.out.println("---------- GROUP ID " + group_id + " ----------");
-      for ( int i = 0; i < ids.length; i++ )
+      for ( int i = 0; i < segs.length; i++ )
       {
-        id = ids[i];
-        type = run_file.DetectorType( id );
+        seg = segs[i];
+        type = run_file.DetectorType( seg );
         length = Runfile.LENGTH[ type ] / 100;   // convert cm to m
         width  = Runfile.WIDTH[ type ] / 100;    // convert cm to m
 
-        nom_radius = (float) run_file.RawFlightPath( id );
-        nom_height = (float) run_file.RawDetectorHeight( id );
+        nom_radius = (float) run_file.RawFlightPath( seg );
+        nom_height = (float) run_file.RawDetectorHeight( seg );
         nom_dist   = (float) Math.sqrt( nom_radius * nom_radius +
                                         nom_height * nom_height );
 
@@ -1374,13 +1395,13 @@ private float CalculateEIn()
                                     length * length / 12.0 );
         solid_angle = length*width / (raw_dist * raw_dist);
 
-        System.out.println("ID = " + ids[i] +
-           "  RawAng= " + (float)run_file.RawDetectorAngle( ids[i] ) +
-           "  EffAng= " + (float)run_file.DetectorAngle( ids[i], hist ) +
+        System.out.println("ID = " + segs[i].SegID() +
+           "  RawAng= " + (float)run_file.RawDetectorAngle( seg ) +
+           "  EffAng= " + (float)run_file.DetectorAngle( seg, hist ) +
            "  RawHt= " + (float)nom_height +
-           "  EffHt= " + (float)run_file.DetectorHeight( id ) +
+           "  EffHt= " + (float)run_file.DetectorHeight( seg, hist ) +
            "  Pth= " + (float)nom_radius +
-           "  EffPth= " + (float)run_file.FlightPath( id, hist ) +
+           "  EffPth= " + (float)run_file.FlightPath( seg, hist ) +
            "  RawD= " + raw_dist +
            "  SAng= " + solid_angle );
         total_solid_angle += solid_angle;
@@ -1389,18 +1410,18 @@ private float CalculateEIn()
 
       System.out.println("Runfile's Group Effective Values:" );
       System.out.println(
-           "Ang= " + (float)run_file.DetectorAngle( ids[0], hist ) +
-           "  Ht= " +(float)run_file.DetectorHeight( ids[0] ) +
-           "  Pth= " + (float)run_file.FlightPath( ids[0], hist ) ); 
+           "Ang= " + (float)run_file.DetectorAngle( segs[0], hist ) +
+           "  Ht= " +(float)run_file.DetectorHeight( segs[0], hist ) +
+           "  Pth= " + (float)run_file.FlightPath( segs[0], hist ) ); 
 
       // Show position using RAW data and WEIGHTED average
       float solid_angs[] = GrpSolidAngles( group_id );
       DetectorPosition position = new DetectorPosition();
 
-      float angle  = getAverageAngle( ids, hist, solid_angs, true );
+      float angle  = getAverageAngle( segs, hist, solid_angs, true );
       angle       *= (float)(Math.PI / 180.0);
-      float height = getAverageHeight( ids, solid_angs, true );
-      float path   = getAverageFlightPath( ids, hist, solid_angs, true );
+      float height = getAverageHeight( segs, hist, solid_angs, true );
+      float path   = getAverageFlightPath( segs, hist, solid_angs, true );
       float r      = (float)Math.sqrt( path * path - height * height );
       position.setCylindricalCoords( r, angle, height );
 
@@ -1411,10 +1432,10 @@ private float CalculateEIn()
                           " Phi = " + sphere_coords[2]*180/3.14159265f );
 
       // Show effective position using RAW data and simple average
-      angle  = getAverageAngle( ids, hist, true );
+      angle  = getAverageAngle( segs, hist, true );
       angle *= (float)(Math.PI / 180.0);
-      height = getAverageHeight( ids, true );
-      path   = getAverageFlightPath( ids, hist, true );
+      height = getAverageHeight( segs, hist, true );
+      path   = getAverageFlightPath( segs, hist, true );
       r      = (float)Math.sqrt( path * path - height * height );
       position.setCylindricalCoords( r, angle, height );
 
@@ -1426,10 +1447,10 @@ private float CalculateEIn()
 
 
       // Show position using EFFECTIVE data and WEIGHTED average
-      angle  = getAverageAngle( ids, hist, solid_angs, false );
+      angle  = getAverageAngle( segs, hist, solid_angs, false );
       angle *= (float)(Math.PI / 180.0);
-      height = getAverageHeight( ids, solid_angs, false );
-      path   = getAverageFlightPath( ids, hist, solid_angs, false );
+      height = getAverageHeight( segs, hist, solid_angs, false );
+      path   = getAverageFlightPath( segs, hist, solid_angs, false );
       r      = (float)Math.sqrt( path * path - height * height );
       position.setCylindricalCoords( r, angle, height );
 
@@ -1440,10 +1461,10 @@ private float CalculateEIn()
                           " Phi = " + sphere_coords[2]*180/3.14159265f );
 
       // Show position using EFFECTIVE data and simple average
-      angle  = getAverageAngle( ids, hist, false );
+      angle  = getAverageAngle( segs, hist, false );
       angle *= (float)(Math.PI / 180.0);
-      height = getAverageHeight( ids, false );
-      path   = getAverageFlightPath( ids, hist, false );
+      height = getAverageHeight( segs, hist, false );
+      path   = getAverageFlightPath( segs, hist, false );
       r      = (float)Math.sqrt( path * path - height * height );
       position.setCylindricalCoords( r, angle, height );
 
