@@ -1,39 +1,43 @@
 C File:  FortranParserInput.f
-C
+C 
 C Copyright 2003 Chris M. Bouzek
-C
+C 
 C This program is free software; you can redistribute it and/or
 C modify it under the terms of the GNU General Public License
 C as published by the Free Software Foundation; either version 2
 C of the License, or (at your option) any later version.
-C
+C 
 C This program is distributed in the hope that it will be useful,
 C but WITHOUT ANY WARRANTY; without even the implied warranty of
 C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 C GNU General Public License for more details.
-C
+C 
 C You should have received a copy of the GNU General Public License
 C along with this library; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
-C
+C 
 C Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
 C           Chris Bouzek <coldfusion78@yahoo.com>
 C           Department of Mathematics, Statistics and Computer Science
 C           University of Wisconsin-Stout
 C           Menomonie, WI 54751, USA
-C
+C 
 C This work was supported by the Intense Pulsed Neutron Source Division
 C of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
 C This work was supported by the National Science Foundation under
 C grant number DMR-0218882.
-C
+C 
 C For further information, see <http://www.pns.anl.gov/ISAW/>
-C
+C 
 C Modified:
 C $Log$
+C Revision 1.2  2004/01/16 01:07:48  bouzekc
+C Added one space after each comment line with nothing on it.  This is
+C needed because the parser expects at least a C and a space.
+C
 C Revision 1.1  2004/01/16 01:02:29  bouzekc
 C Added to CVS.
-C
+C 
 
 C the math functions
   abs(5.5)
