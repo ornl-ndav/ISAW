@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2003/03/10 19:26:24  pfpeterson
+ * Provided a new constructor which takes a StringBuffer and simplified
+ * all constructors.
+ *
  * Revision 1.29  2003/03/07 20:20:53  pfpeterson
  * Reduced the indent level to two.
  *
@@ -124,12 +128,26 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   private Document logDocument = null;
   
   private boolean Debug = false;
-  Document MacroDocument = null;
+  private Document MacroDocument = null;
   private Vector vnames= new Vector();
   private String command ="UNKNOWN";
   private String Title = "UNKNOWN";
   private String CategoryList="OPERATOR";
   
+  /**
+   * Constructor to take care of the common parts of initializing the
+   * ScriptProcessor.
+   */
+  private ScriptProcessor(){
+    super("UNKNOWN");
+    ExecLine=new Command.execOneLine();
+    ExecLine.resetError();
+    OL = new IObserverList() ;
+    PL = new PropertyChangeSupport( (Object)this );
+    seterror(-1,"");
+    lerror=-1;
+  }
+
   /**
    * Constructor with no Visual Editing Element.  This form could be
    * used for Batch files
@@ -137,21 +155,25 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    * @param TextFileName The name of the text file containg commands
    */
   public ScriptProcessor ( String TextFileName ){
-    super( "UNKNOWN");
-    int c ;       
-    Document doc ; 
-    initialize() ; 
-    File f ; 
-    ExecLine = new Command.execOneLine() ; 
-    OL = new IObserverList() ;
-    PL = new PropertyChangeSupport((Object) this );   
-    
+    this();
     MacroDocument =new Util().openDoc( TextFileName);
     CommandPane.fixUP( MacroDocument);
     setDefaultParameters();
     Title = TextFileName;
   }
   
+  public ScriptProcessor( StringBuffer buffer ){
+    this();
+    MacroDocument=new PlainDocument();
+    try{
+      MacroDocument.insertString(0,buffer.toString(),null);
+    }catch(BadLocationException e){
+      // let it drop on the floor
+    }
+    CommandPane.fixUP(MacroDocument);
+    setDefaultParameters();
+  }
+
   /**
    * Constructor that can be used to run Macros- non visual?
    *
@@ -159,19 +181,9 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    * @param  O        Observer for the Send command
    */
   public ScriptProcessor ( Document Doc  ){
-    super( "UNKNOWN");
-    OL = new IObserverList() ;         
-    initialize();
-    
-    ExecLine = new execOneLine() ;
-    
-    PL = new PropertyChangeSupport( (Object)this ); 
+    this();
     MacroDocument = Doc ;
     CommandPane.fixUP( MacroDocument );
-    ExecLine.initt();
-    ExecLine.resetError();
-    seterror( -1,"");
-    lerror = -1;       
     setDefaultParameters(); 
   }
   
