@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/08/09 15:22:52  dennis
+ *  Added debug_retriever flag.
+ *
  *  Revision 1.7  2001/08/03 21:37:53  dennis
  *  Improved the docs and now allow numDataSets() to return a negative
  *  value as an error code.
@@ -74,8 +77,9 @@ public abstract class Retriever implements Serializable
     public static final int  HISTOGRAM_DATA_SET    = 2;
     public static final int  PULSE_HEIGHT_DATA_SET = 3;
 
-    protected String data_source_name = null;
+    public static boolean  debug_retriever = false;
 
+    protected String data_source_name = null;
 
     /* ------------------------ Constructor -------------------------- */
     /**
