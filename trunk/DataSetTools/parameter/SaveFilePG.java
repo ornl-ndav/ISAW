@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/09/09 23:06:30  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.8  2003/08/15 23:50:06  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -157,5 +160,28 @@ public class SaveFilePG extends BrowsePG{
         pg.initialized=false;
         pg.filter_vector=this.filter_vector;
         return pg;
+    }
+
+    /**
+     * Validates this SaveFilePG.  A SaveFilePG is considered valid if
+     * getValue() returns a non-null String and the String references 
+     * a non-directory writeable File, regardless of whether that File actually
+     * exists.
+     */
+    public void validateSelf(  ) {
+      Object val = getValue(  );
+      
+      if( val != null ) {
+      
+        File file = new File( val.toString(  ) );
+        
+        if( !( file.isDirectory(  ) ) && file.canWrite(  ) ) {
+          setValid( true );
+        } else {
+          setValid( false );
+        }
+      } else {
+        setValid( false );
+      }
     }
 }

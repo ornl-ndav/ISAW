@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/09/09 23:06:28  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.9  2003/08/15 23:50:04  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -143,5 +146,27 @@ public class InstNamePG extends StringPG implements ParamUsesString{
         pg.setDrawValid(this.getDrawValid());
         pg.initialized=false;
         return pg;
+    }
+
+    /**
+     * Validates this InstNamePG.  An InstNamePG is valid if and only if
+     * getValue() returns a non-null String which references an Instrument name
+     * in IsawProps.dat.
+     */
+    public void validateSelf(  ) {
+      Object val = getValue(  );
+
+      if( val != null ) {
+        String name = val.toString(  );
+        Object propVal = SharedData.getProperty( name );
+        
+        if( propVal != null ) {
+          setValid( true );
+        } else {
+          setValid( false );
+        }
+      } else {
+        setValid( false );
+      }
     }
 }

@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2003/09/09 23:06:30  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.17  2003/09/02 21:20:35  bouzekc
  *  Now handles null values in the constructor and setValue() better.
  *
@@ -224,8 +227,10 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    * Overrides the default version of setValue to properly deal with radio
    * buttons.
    *
-   * @param value The value to set the radio button to.  This must be a String
-   *        name.  If the value does not exist, it will not be added.
+   * @param value The value to set the radio button to.  This will be converted
+   *        to a String if it is not one already by way of an Object's
+   *        toString() method.  If the value does not exist, it will not be
+   *        added.
    */
   public void setValue( Object sVal ) {
     if( sVal == null ) {
@@ -409,6 +414,20 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
 
     this.setEnabled( this.getEnabled(  ) );
     super.initGUI(  );
+  }
+
+  /**
+   * Validates this RadioButtonPG.  A RadioButtonPG is considered valid if the
+   * value returned from getValue() is not null and is a String.
+   */
+  public void validateSelf(  ) {
+    Object val = getValue(  );
+
+    if( ( val != null ) && val instanceof String ) {
+      setValid( true );
+    } else {
+      setValid( false );
+    }
   }
 
   /**

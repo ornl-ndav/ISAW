@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/09/09 23:06:30  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.7  2003/08/15 23:50:05  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -104,6 +107,20 @@ public class SampleDataSetPG extends DataSetPG{
         if(isSampleDataSet(val)){
              super.addItem(val);
         }
+    }
+
+    /**
+     * Validates this SampleDataSetPG.  A valid SampleDataSetPG is one that
+     * passes DataSetPG's validateSelf() checks and also the more stringent
+     * requirement that the value be a sample DataSet.
+     */
+    public void validateSelf(  ) {
+      super.validateSelf(  );
+
+      //if it passed the superclasses checks, run it through ours
+      if( getValid(  ) ) {
+        setValid( isSampleDataSet( getValue(  ) ) );
+      }
     }
 
     /**

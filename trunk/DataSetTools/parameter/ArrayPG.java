@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2003/09/09 23:06:25  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.26  2003/08/28 02:28:08  bouzekc
  *  Removed setEnabled() method.
  *
@@ -186,7 +189,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    */
   public ArrayPG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-    type                 = TYPE;
+    type = TYPE;
   }
 
   //~ Methods ******************************************************************
@@ -515,6 +518,26 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
   public void removeItem( int index ) {
     if( ( index >= 0 ) && ( index < value.size(  ) ) ) {
       value.remove( index );
+    }
+  }
+
+  /**
+   * Validates this ArrayPG.  An ArrayPG is considered valid if getValue() does
+   * not return either a null, and empty Vector, or a non-Vector.
+   */
+  public void validateSelf(  ) {
+    Object o = getValue(  );
+
+    if( ( o != null ) && o instanceof Vector ) {
+      Vector v = ( Vector )o;
+
+      if( ( v == null ) || v.isEmpty(  ) ) {
+        setValid( false );
+      } else {  //assume it is valid, then test that assumption
+        setValid( true );
+      }
+    } else {
+      setValid( false );
     }
   }
 

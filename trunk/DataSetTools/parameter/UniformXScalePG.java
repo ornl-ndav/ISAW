@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/09/09 23:06:31  bouzekc
+ * Implemented validateSelf().
+ *
  * Revision 1.1  2003/09/09 00:31:56  bouzekc
  * Added to CVS.
  *
@@ -230,11 +233,17 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
 
   /**
    * Uses the internal XScalePGHelper to convert the inner UniformXScale to a
-   * Vector and return it.
+   * Vector and return it.  If the internal value is null and this is
+   * initialized, it will first trigger the creation of the inner
+   * UniformXScale the same way that clicking on the "Create" button would.
    *
    * @return The Vector of values for this UniformXScalePG.
    */
   public Object getValue(  ) {
+    if( value == null ) {
+      createXScaleFromGUIValues(  );
+    }
+
     return XScalePGHelper.convertXScaleToVector( ( XScale )this.value );
   }
 
@@ -259,8 +268,8 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
   /**
    * Creates the GUI for this UniformXScalePG.
    *
-   * @param vals The Vector of initial values.  Note that this folloews the
-   *        same rules as setValue() does when determining whether or not the
+   * @param vals The Vector of initial values.  Note that this follows the same
+   *        rules as setValue() does when determining whether or not the
    *        Vector is valid for this UniformXScalePG.
    */
   public void initGUI( Vector vals ) {
@@ -326,6 +335,26 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     uxpg.showGUIPanel(  );
   }
 
+  /**
+   * Validates this UniformXScalePG.  Due to the way setValue works, a
+   * UniformXScalePG is considered valid if getValue() returns a non-null
+   * value.
+   */
+  public void validateSelf(  ) {
+    setValid( ( getValue(  ) != null ) );
+  }
+
+  /**
+   * Creates an XScale from the filled in GUI values.
+   */
+  private void createXScaleFromGUIValues(  ) {
+    float startNum = Float.parseFloat( start.getText(  ) );
+    float endNum   = Float.parseFloat( end.getText(  ) );
+    int stepNum    = Integer.parseInt( steps.getText(  ) );
+
+    setValue( new UniformXScale( startNum, endNum, stepNum ) );
+  }
+
   //~ Inner Classes ************************************************************
 
   /**
@@ -341,11 +370,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
      */
     public void actionPerformed( ActionEvent ae ) {
       if( ae.getActionCommand(  ) == CREATE_LABEL ) {
-        float startNum = Float.parseFloat( start.getText(  ) );
-        float endNum   = Float.parseFloat( end.getText(  ) );
-        int stepNum    = Integer.parseInt( steps.getText(  ) );
-
-        setValue( new UniformXScale( startNum, endNum, stepNum ) );
+        createXScaleFromGUIValues(  );
       }
     }
   }

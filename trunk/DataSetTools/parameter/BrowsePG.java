@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2003/09/09 23:06:27  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.22  2003/08/28 02:28:09  bouzekc
  *  Removed setEnabled() method.
  *
@@ -276,5 +279,18 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
      */
     public void addFilter(FileFilter filefilter){
         filter_vector.add(filefilter);
+    }
+
+    /**
+     * Validates this BrowsePG.  A BrowsePG is considered valid if the file or
+     * directory it references exists.
+     */
+    public void validateSelf(  ) {
+      if( getValue(  ) != null && 
+          new File( getValue(  ).toString(  ) ).exists(  ) ) {
+        setValid( true );
+      } else {
+        setValid( false );
+      }
     }
 }
