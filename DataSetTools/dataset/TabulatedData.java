@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/06/14 21:13:27  rmikk
+ *  Implements IXmlIO interface
+ *
  *  Revision 1.4  2002/04/19 15:42:33  dennis
  *  Revised Documentation
  *
@@ -308,6 +311,160 @@ public float[] getY_values( XScale x_scale, int smooth_flag ) //#############
   } 
 
 
+ /** Implements the IXmlIO interface so a Data Object can write itself
+  *
+  * @param stream  the OutputStream to which the data is written
+  * @param mode    either IXmlIO.BASE64 or IXmlOP.NORMAL. This indicates 
+  *                how a Data's xvals, yvals and errors are written
+  * @return true if successful otherwise false<P>
+  *
+  * NOTE: This routine writes all of the begin and end tags.  These tag names
+  *       are NOT TabulatedData but either HistogramTable or FunctionTable
+  */
+  public boolean XMLwrite( OutputStream stream, int mode)
+  { StringBuffer sb = new StringBuffer(1000);
+    String DT = getClass().toString();
+    DT = DT.substring(DT.lastIndexOf('.')+1);
+    sb.append( "<"+DT+" ID=");
+    sb.append("\""+getGroup_ID()+"\"");
+    sb.append("  ysize=\"");
+    sb.append(""+getY_values().length+"\" >\n<yvals>");
+    float[] yvals=getY_values();
+    byte[] b = xml_utils.convertToB64(yvals);
+    if( b== null)
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    try
+    {
+      stream.write( sb.toString().getBytes());
+      stream.write( b);
+      sb.delete(0,sb.length());
+      sb.append("</yvals>\n<errors>");
+      yvals=getErrors();
+   
+      b = xml_utils.convertToB64(yvals);
+      if( b== null)
+        return xml_utils.setError( xml_utils.getErrorMessage());
+        
+      stream.write( sb.toString().getBytes());
+      stream.write( b);
+      sb.delete(0,sb.length());
+      sb.append("</errors>\n"); 
+      stream.write( sb.toString().getBytes());
+      AttributeList al = getAttributeList();
+      if(!al.XMLwrite(stream, mode)    )
+        return false;
+      stream.write(("</"+DT+">\n").getBytes());
+    }
+    catch( Exception s)
+    { return xml_utils.setError("Exception3="+s.getClass()+"::"+
+                       s.getMessage());
+    }
+    return true;  
+       
+
+  }
+
+
+ /** Implements the IXmlIO interface so a Data Object can read itself
+  *
+  * @param stream  the InStream to which the data is written
+
+  * @return true if successful otherwise false<P>
+  *
+  * NOTE: This routine assumes the begin tag has been completely read.  It reads
+  *       the end tag.  The tag names 
+  *       are NOT TabulatedData but either HistogramTable or FunctionTable
+  */
+  public boolean XMLread( InputStream stream )
+  { 
+    String Tag = xml_utils.getTag( stream);
+    if(Tag == null)
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    if(!Tag.equals("yvals"))
+      return xml_utils.setError( "Improper tag in DATA. "+Tag+
+               " should be yvals");
+    if(!xml_utils.skipAttributes( stream ))
+      return xml_utils.setError( xml_utils.getErrorMessage());
+      
+    String v = xml_utils.getValue( stream);
+    if( v== null)
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    Tag = xml_utils.getEndTag( stream);
+    if( !Tag.equals("/yvals"))
+      return xml_utils.setError( "Improper End Tag in Data. "+Tag+
+           " should be /yvals");
+      
+    float[] yy =xml_utils.convertB64Tofloat(v.getBytes());
+    if(yy.length != y_values.length)
+      return xml_utils.setError( "incorrect yval lengths in DATA"+
+                  "should be "+y_values.length+" is "+yy.length);
+       
+      
+    System.arraycopy( yy,0, y_values,0, 
+               java.lang.Math.max(y_values.length,yy.length));
+        
+ 
+//--------------errors
+    Tag = xml_utils.getTag( stream);
+    if(Tag == null)
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    if(Tag.equals("errors"))
+    {   
+      if(!xml_utils.skipAttributes( stream))
+        return xml_utils.setError( xml_utils.getErrorMessage());
+
+      v = xml_utils.getValue( stream);
+      if( v== null)
+        return xml_utils.setError( xml_utils.getErrorMessage());
+          
+      Tag = xml_utils.getEndTag( stream);
+      if( !Tag.equals("/errors"))
+        return xml_utils.setError( "Improper End Tag in Data. "+Tag+
+              " should be /yvals");
+          
+      yy =xml_utils.convertB64Tofloat(v.getBytes());
+          
+      if(yy.length != y_values.length)
+        return xml_utils.setError( "incorrect error lengths in DATA");
+         
+         
+      errors = yy;
+      Tag = xml_utils.getTag( stream);
+    }
+  
+//--------------Attributes
+    if(Tag == null)
+      return xml_utils.setError( xml_utils.getErrorMessage());
+        
+    if(Tag.equals( "AttributeList"))
+    { if(!xml_utils.skipAttributes( stream ) )
+        return xml_utils.setError( xml_utils.getErrorMessage());
+         
+      attr_list = new AttributeList();
+      if(!attr_list.XMLread( stream ))
+        return false;
+          
+      Tag = xml_utils.getTag( stream);
+    }
+       
+//----------End tag
+    if(Tag == null)
+      return xml_utils.setError( xml_utils.getErrorMessage()); 
+    if(!xml_utils.skipAttributes( stream ) )
+      return xml_utils.setError( xml_utils.getErrorMessage());  
+    String DT = getClass().toString();
+    DT = DT.substring(DT.lastIndexOf('.')+1);
+        
+    if(!Tag.equals( "/"+DT))
+    { return xml_utils.setError("Improper end tag. "+Tag+
+             " should be /"+DT);
+    }
+      
+    return true;
+  }
+  
+
+  
   public static void main( String argv[] )
   {
   }
