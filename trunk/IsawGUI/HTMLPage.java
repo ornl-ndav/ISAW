@@ -41,9 +41,9 @@ public class HTMLPage extends JFrame {
                                                     "IsawHelp/Command/XX$netscape");
                                             if( k < 0) return;
                                             Fname = Fname.substring( 0,k);
-                                            Fname += "docs/DataSetTools/operator/Operator.html";
+                                            Fname += "docs/html/DataSetTools/operator/Operator.html";
                                             //U = new URL( "file://"+Fname);
-                                            System.out.println("URL=file://"+Fname);
+                                            //System.out.println("URL=file://"+Fname);
                                             BC.displayURL( "file://"+Fname);
                                             return;
                                            }
