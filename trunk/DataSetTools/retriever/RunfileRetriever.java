@@ -11,11 +11,12 @@
  *                                      to Get1DSum( ) )
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
+ *
  *  $Log$
- *  Revision 1.16  2000/10/03 21:25:10  dennis
- *  Now uses one DataSetFactory for all Instrument types.
- *  Also, now verifies that the source-to-sample distance is valid before
- *  it uses the value to calculate the sample-to-detector distance.
+ *  Revision 1.17  2000/10/10 19:58:42  dennis
+ *  Now gets pulse height spectrum as a special type of DataSet.
+ *  Fixed bug that didn't correct runfile name upper/lower case
+ *  properly.
  *
  *  Revision 1.15  2000/08/03 21:40:15  dennis
  *  Now calls FilenameUtil.fixCase()
@@ -132,10 +133,11 @@ public class RunfileRetriever extends    Retriever
     int       num_histograms;
     boolean   has_monitors;
     boolean   has_detectors;
+    boolean   has_pulse_height;
     String    file_name     = StringUtil.fixSeparator( data_source_name );
 
-    String temp_file_name = FilenameUtil.fixCase( file_name );
-    if ( temp_file_name == null )
+    file_name = FilenameUtil.fixCase( file_name );
+    if ( file_name == null )
     {
       System.out.println("ERROR: file " + file_name + 
                           " not found in RunfileRetriever");
@@ -147,8 +149,8 @@ public class RunfileRetriever extends    Retriever
     {
       run_file         = new Runfile( file_name );
       num_histograms   = run_file.NumOfHistograms();
-      data_set_type    = new int[ 2 * num_histograms ];
-      histogram        = new int[ 2 * num_histograms ];
+      data_set_type    = new int[ 3 * num_histograms ];
+      histogram        = new int[ 3 * num_histograms ];
       num_data_sets    = 0;
       for ( int hist = 1; hist <= num_histograms; hist++ )
       {
@@ -156,12 +158,15 @@ public class RunfileRetriever extends    Retriever
         {
           first_id = run_file.MinSubgroupID( hist );
           last_id  = run_file.MaxSubgroupID( hist );
-          has_monitors = false;
-          has_detectors = false;
+          has_monitors     = false;
+          has_detectors    = false;
+          has_pulse_height = false;
           for ( int group_id = first_id; group_id < last_id; group_id++ )
           {
             if ( run_file.IsSubgroupBeamMonitor(group_id) )
               has_monitors = true;
+            else if ( run_file.IsPulseHeight(group_id) )
+              has_pulse_height = true;
             else
               has_detectors = true;
           }
@@ -172,12 +177,19 @@ public class RunfileRetriever extends    Retriever
             histogram[ num_data_sets ]     = hist;
             num_data_sets++;
           }
-          if ( has_detectors )
+          if ( has_pulse_height )
           { 
+            data_set_type[ num_data_sets ] = PULSE_HEIGHT_DATA_SET;
+            histogram[ num_data_sets ]     = hist;
+            num_data_sets++;
+          }
+          if ( has_detectors )
+          {
             data_set_type[ num_data_sets ] = HISTOGRAM_DATA_SET;
             histogram[ num_data_sets ]     = hist;
             num_data_sets++;
           }
+
         }
       }
     }
@@ -211,6 +223,7 @@ public class RunfileRetriever extends    Retriever
  *     Retriever.INVALID_DATA_SET
  *     Retriever.MONITOR_DATA_SET
  *     Retriever.HISTOGRAM_DATA_SET
+ *     Retriever.PULSE_HEIGHT_DATA_SET
  *
  *  @param  data_set_num  The number of the DataSet in this runfile whose
  *                        type code is needed.  data_set_num must be between
@@ -252,11 +265,13 @@ public class RunfileRetriever extends    Retriever
 
 /**
  *  Get the first DataSet in this runfile that has the specified type, 
- *  histogram or monitor.  If no DataSet in the runfile has the specified 
- *  type this returns null.
+ *  histogram, monitor or pulse height.  If no DataSet in the runfile has 
+ *  the specified type this returns null.
  *
  *  @param type  The type of the DataSet to retrieve from the runfile.
- *               Retriever.HISTOGRAM_DATA_SET or Retriever.MONITOR_DATA_SET
+ *                 Retriever.HISTOGRAM_DATA_SET 
+                   Retriever.MONITOR_DATA_SET
+                   Retriever.PULSE_HEIGHT_DATA_SET
  *
  *  @return  The first DataSet in the with the specified type, or null if
  *           no such DataSet exists in the runfile.
@@ -267,7 +282,8 @@ public class RunfileRetriever extends    Retriever
      return null;
 
    if ( type != Retriever.HISTOGRAM_DATA_SET  &&
-        type != Retriever.MONITOR_DATA_SET  )
+        type != Retriever.MONITOR_DATA_SET    &&
+        type != Retriever.PULSE_HEIGHT_DATA_SET  )
      return null;
 
    for ( int i = 0; i < num_data_sets; i++ )
@@ -321,12 +337,14 @@ public class RunfileRetriever extends    Retriever
   private DataSet getDataSet( int data_set_num, int instrument_type )
   {
     int               num_times = 0;
-    XScale            x_scale = null;
+    XScale            x_scale = new UniformXScale(0,1,2);
     float[]           raw_spectrum;
     int               group_id;
     Data              spectrum; 
     int               histogram_num;
-    boolean           monitor;
+    boolean           is_monitor      = false;
+    boolean           is_histogram    = false;
+    boolean           is_pulse_height = false;
     int               first_id, last_id;
     float[]           bin_boundaries = null;
     float             source_to_sample_tof;
@@ -341,32 +359,44 @@ public class RunfileRetriever extends    Retriever
     title = InstrumentType.getBaseFileName( data_source_name );
     if ( getType( data_set_num ) == MONITOR_DATA_SET )
       {
-        monitor = true;
+        is_monitor = true;
         title = "M" + histogram_num + "_" + title; 
+      }
+    else if ( getType( data_set_num ) == PULSE_HEIGHT_DATA_SET )
+      {
+        is_pulse_height = true;
+        title = "P" + histogram_num + "_" + title;
       }
     else
       {
-        monitor = false;    
+        is_histogram = true;    
         title = "H" + histogram_num + "_" + title; 
       }
  
     try
     {
-     first_id = run_file.MinSubgroupID( histogram_num );
-     last_id  = run_file.MaxSubgroupID( histogram_num );
+                                            // Construct the empty DataSet
+                                            // with reasonable defaults
 
      DataSetFactory ds_factory = new DataSetFactory( title );
-     if ( monitor )
+     if ( is_monitor || is_pulse_height )
        data_set = ds_factory.getDataSet();  // just generic operations
 
      else                                   // get data_set with ops for the
                                             // current instrument
        data_set = ds_factory.getTofDataSet( instrument_type );  
-                                                           
-     if ( monitor && instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
+
+                                            // Adjust the empty DataSet based
+                                            // on the current situation 
+     if ( is_monitor && instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
      {
        data_set.addOperator( new EnergyFromMonitorDS() );
        data_set.addOperator( new MonitorPeakArea() );
+     }
+     else if ( is_pulse_height )
+     {
+       data_set.setX_label( "P.H. Channel" );
+       data_set.setX_units( "Channel" );
      }
 
      data_set.addLog_entry( "Loaded " + title );
@@ -376,61 +406,57 @@ public class RunfileRetriever extends    Retriever
 
      int last_tf_type = Integer.MAX_VALUE;  // keep track of the previous time
      int tf_type;                           // type so we only create new 
-     boolean new_tf_type;                   // XScales when needed.  
+                                            // XScales when needed.  
+
+     first_id = run_file.MinSubgroupID( histogram_num );
+     last_id  = run_file.MaxSubgroupID( histogram_num );
 
      for ( group_id = first_id; group_id <= last_id; group_id++ )
      {
       int[] group_members = run_file.IdsInSubgroup( group_id );
 
       if ( group_members.length > 0 )   // only deal with non-trivial groups
-      if ( monitor &&  run_file.IsSubgroupBeamMonitor(group_id) ||
-          !monitor && !run_file.IsSubgroupBeamMonitor(group_id) )
+                                        // and then pick out the groups of the
+                                        // correct type, in case there are 
+                                        // several types in this histogram
+      if ( is_monitor      &&  run_file.IsSubgroupBeamMonitor(group_id) ||
+           is_pulse_height &&  run_file.IsPulseHeight(group_id)         ||
+           is_histogram                               && 
+            !run_file.IsSubgroupBeamMonitor(group_id) &&
+            !run_file.IsPulseHeight(group_id)                            )
       {
         tf_type = run_file.TimeFieldType(group_id);
-        if ( tf_type == last_tf_type )       // only get the times if it's a
-          new_tf_type = false;               // new time field type
-        else
+        if ( tf_type != last_tf_type )      // only get the times if it's a
+                                            // new time field type
         { 
           bin_boundaries = run_file.TimeChannelBoundaries(group_id);
-          num_times = bin_boundaries.length;
-          new_tf_type = true;
-          last_tf_type = tf_type;
+          num_times      = bin_boundaries.length;
+          last_tf_type   = tf_type;
+
+          if ( is_pulse_height )          // change bin bounds to channel number
+            for ( int chan=0; chan<num_times; chan ++ )
+              bin_boundaries[chan] = chan;
+
+            // change times to sample to detector TOF for spectrometers 
+            // and groups that are NOT beam monitors 
+            // if there is valid source_to_sample information available
+          else if (instrument_type==InstrumentType.TOF_DG_SPECTROMETER &&
+                   !is_monitor                                           )
+           {
+             source_to_sample_tof = (float)run_file.SourceToSampleTime();
+             if ( !Float.isInfinite(source_to_sample_tof) )
+               for ( int i = 0; i < bin_boundaries.length; i++ )
+                 bin_boundaries[i] -= source_to_sample_tof;
+           }
+
+           x_scale = new VariableXScale( bin_boundaries );
         }
 
         if ( num_times > 1 )
         {
-           raw_spectrum = run_file.Get1DSpectrum( group_id );
-  //         float max_val = 0;
-  //         for ( int i = 0; i < raw_spectrum.length; i++ )
-  //           if ( raw_spectrum[i] > max_val )
-  //             max_val =  raw_spectrum[i];
-  //         System.out.println( "max = " + max_val );
-
-   //      if ( group_id == 7 || group_id == 52 )
-   //        ShowGroupDetectorInfo( group_id, histogram_num );
-
+          raw_spectrum = run_file.Get1DSpectrum( group_id );
           if ( raw_spectrum.length >= 1 )
           {
-            // change times to sample to detector TOF for spectrometers 
-            // and groups that are NOT beam monitors ------------------------ 
-            // and this is a new set of bin boundaries 
-            // and there is a valid source_to_sample time of flight
-            source_to_sample_tof = (float)run_file.SourceToSampleTime();
-            if (instrument_type==InstrumentType.TOF_DG_SPECTROMETER && 
-                !monitor                                            &&
-                new_tf_type                                         && 
-                !Float.isInfinite(source_to_sample_tof)             ) 
-                  for ( int i = 0; i < bin_boundaries.length; i++ )
-                     bin_boundaries[i] -= source_to_sample_tof;
-
-          // DON'T DO THIS FOR NOW... WE'LL JUST DEAL WITH HISTOGRAMS
-          // change counts to counts per unit time
-          //  for ( int i = 0; i < raw_spectrum.length; i++ )
-          //    raw_spectrum[i] /= (bin_boundaries[i+1] - bin_boundaries[i]);
-
-            if ( new_tf_type )
-              x_scale = new VariableXScale( bin_boundaries );
-
             spectrum = new Data( x_scale, raw_spectrum, group_id );
             spectrum.setSqrtErrors();
 
