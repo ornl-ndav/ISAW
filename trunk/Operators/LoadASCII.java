@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/11/27 18:19:17  dennis
+ * Added operator title to constructor java docs.
+ *
  * Revision 1.1  2001/11/21 21:27:39  dennis
  * Example of user-supplied add-on operator.
  *
@@ -87,8 +90,8 @@ public class LoadASCII extends GenericLoad
 
  /* ------------------------- DefaultConstructor -------------------------- */
  /** 
-  *   Default constructor that is used when the parameters will be
-  *   set later
+  *  Creates operator with title "Load ASCII file" and a  default list of
+  *  parameters.
   */  
   public LoadASCII()
   {
@@ -97,8 +100,9 @@ public class LoadASCII extends GenericLoad
 
  /* ----------------------------- Constructor ----------------------------- */
  /** 
-  *  This form of the constructor specifies the parameters at construction 
-  *  time.  The getResult method must be called to actually run the operator.
+  *  Creates operator with title "Load ASCII file" and the specified list
+  *  of parameters.  The getResult method must still be used to execute
+  *  the operator.
   *  
   *  @param  file_name   The fully qualified ASCII file name.
   */
@@ -135,8 +139,8 @@ public class LoadASCII extends GenericLoad
  /** 
   *  Executes this operator using the current values of the parameters.
   *
-  *  @return  If successful, this returns a new DataSet with the values that
-  *           y-values that were read from the data file.
+  *  @return  If successful, this returns a new DataSet with the histogram
+  *           that was read from the data file.
   */
   public Object getResult()
   {
