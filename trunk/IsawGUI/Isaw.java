@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.181  2004/01/26 17:05:07  rmikk
+ *  The node name on the tree from the Latest Opened files now
+ *     corresponds to the filename
+ *
  *  Revision 1.180  2004/01/09 21:15:50  dennis
  *  Changed version to 1.6.1 alpha 3
  *
@@ -1971,8 +1975,15 @@ public class Isaw
     }
     else if( reason instanceof DataSet[]){
        DataSet[] DSS = (DataSet[])reason;
-       if( DSS != null) if(DSS.length > 0)
-           addNewDataSets( DSS, DSS[0].toString());
+       if( DSS != null) if(DSS.length > 0){
+           Object name = DSS[0].getAttributeValue( Attribute.FILE_NAME);
+           if( name == null)
+              name = DSS[0].toString();
+           else
+              name = (Object)(""+DSS[0].getTag()+":"+(new File(name.toString())).getName());
+           addNewDataSets( DSS, name.toString());
+
+       }
  
     }else
       SharedData.addmsg( "unsupported type in Isaw.update()" );
