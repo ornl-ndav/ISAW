@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.150  2003/08/11 22:56:50  dennis
+ *  Set version number to 1.5.1 beta 1
+ *
  *  Revision 1.149  2003/08/08 18:00:07  dennis
  *  Added new Selected Graph view to menus.  Cleaned up handling of
  *  viewer selection.
@@ -589,7 +592,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.5.1 alpha 11";
+          version="1.5.1 beta 1";
         else
           version=SharedData.VERSION;
 
