@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2003/10/18 21:22:02  bouzekc
+ * Now uses HTML file for help message.
+ *
  * Revision 1.9  2003/07/16 16:29:00  bouzekc
  * Now uses the base class's wizardLoader().
  *
@@ -110,15 +113,7 @@ public class DailyPeaksWizard extends Wizard {
   public DailyPeaksWizard( boolean standalone ) {
     super( "Daily SCD Peaks Wizard", standalone );
     this.createAllForms(  );
-
-    StringBuffer s = new StringBuffer(  );
-
-    s.append( "This Wizard is designed to be used as an daily\n" );
-    s.append( "tool for finding peaks from SCD run files.  It\n" );
-    s.append( "applies IndexJ and LsqrsJ in an iterative\n" );
-    s.append( "refinement to the output .peaks file from the \n" );
-    s.append( "first Form.\n" );
-    this.setHelpMessage( s.toString(  ) );
+    this.setHelpURL( "DPW.html" );
   }
 
   //~ Methods ******************************************************************
@@ -135,7 +130,7 @@ public class DailyPeaksWizard extends Wizard {
    * Adds and coordinates the necessary Forms for this Wizard.
    */
   private void createAllForms(  ) {
-    int[][] fpi = {
+    int[][] fpi                     = {
       { 0, -1, -1, 0 },  //raw data path 
       { 1, 1, 1, 1 },  //peaks file path
       { 2, 0, 0, -1 },  //run numbers
@@ -143,7 +138,6 @@ public class DailyPeaksWizard extends Wizard {
       { 8, -1, -1, 5 },  //SCD calibration file
       { 7, -1, -1, 8 }
     };  //SCD calibration file line
-
     FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
 
     //A.J. Schultz wants the "update" parameter to default to true
@@ -155,12 +149,10 @@ public class DailyPeaksWizard extends Wizard {
     IndexJForm indexjform                 = new IndexJForm( true );
     LsqrsJForm lsqrsjform                 = new LsqrsJForm( true );
     IntegrateMultiRunsForm integmultiform = new IntegrateMultiRunsForm( true );
-
     this.addForm( peaksform );
     this.addForm( indexjform );
     this.addForm( lsqrsjform );
     this.addForm( integmultiform );
-
     super.linkFormParameters( fpi );
   }
 }
