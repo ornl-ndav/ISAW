@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.87  2002/03/12 20:37:48  chatterjee
+ *  Added SDDS functionality
+ *
  *  Revision 1.86  2002/03/07 22:24:57  pfpeterson
  *  Now using global version information.
  *
@@ -2028,13 +2031,14 @@ public class Isaw
       fc.setMultiSelectionEnabled( true );
       fc.setFileFilter(  new NeutronDataFileFilter()  ); 
       fc.addChoosableFileFilter(  new NexIO.NexusfileFilter()  );
+	fc.addChoosableFileFilter(  new DataSetTools.retriever.SDDSFileFilter()  );
       fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
       Dimension d = new Dimension(650,300);
       fc.setPreferredSize(d);
       if(  fc.showDialog(frame,null) == JFileChooser.APPROVE_OPTION  ) 
       {
         setCursor(  Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR )  );
-
+         
         load_files(  fc.getSelectedFiles()  );
       
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));

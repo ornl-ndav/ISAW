@@ -63,6 +63,15 @@ public class Util
         
          return dss;
         }
+      else if( filename.toUpperCase().endsWith(".SDDS"))
+       { DataSet dss[];
+	  SDDSRetriever sdds_ret = new SDDSRetriever(filename);
+       int num_of_ds = sdds_ret.numDataSets() ;
+       dss = new DataSet[num_of_ds];
+       for(int i=0; i<num_of_ds;i++)
+         dss[i] = sdds_ret.getDataSet( i ) ; 
+         return dss;
+        }
       else
         r = new RunfileRetriever( filename );
 
@@ -285,3 +294,4 @@ public String saveDoc(Document doc, String filename)
 
 
 }
+
