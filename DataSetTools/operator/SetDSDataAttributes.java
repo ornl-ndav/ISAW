@@ -91,7 +91,7 @@ public class SetDSDataAttributes extends    DataSetOperator
               new Parameter( "Attribute?", new AttributeNameString("") );
     addParameter( parameter ); 
     
-    parameter = new Parameter( " New Value?", new Object() );
+    parameter = new Parameter( " New Value?", null );
     addParameter( parameter );
   }
 
@@ -103,6 +103,9 @@ public class SetDSDataAttributes extends    DataSetOperator
       DataSet ds = getDataSet();
       String S = ((AttributeNameString)(getParameter(0).getValue())).toString();
       Object O = getParameter(1).getValue();
+
+      if ( O == null )
+        return new ErrorString(" null value");
       
       if( O instanceof Integer) 
  	 A = new IntAttribute(S, ((Integer)O).intValue());
