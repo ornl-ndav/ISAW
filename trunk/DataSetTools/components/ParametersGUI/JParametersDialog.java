@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.41  2003/06/10 14:39:04  rmikk
+ *  Initialized the ParameterGUI with init() instead of init(null)
+ *
  *  Revision 1.40  2003/06/02 22:33:48  rmikk
  *  -Added IObserver to operator right before the getResult
  *   method is executed. Removed it right afterward.
@@ -247,7 +250,7 @@ public class JParametersDialog implements Serializable,
              {if( iparam instanceof DataSetPG)
                 ((DataSetPG)iparam).init((Object[])(ds_src.getDataSets()));
               else
-                ((IParameterGUI)iparam).init(null);
+                ((IParameterGUI)iparam).init();
 
               JComponent pp= ((IParameterGUI)iparam).getGUIPanel();
               if( pp == null)
