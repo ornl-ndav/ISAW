@@ -3,17 +3,6 @@
  *                                     99/08/16   Added constructor to allow
  *                                                calling operator directly
  *             
- * This operator calculates the integral over a specified interval for each
- * Data block in a DataSet and forms a new DataSet with one entry: a Data
- * block whose value at each of the original Data blocks is the value of the
- * integral for the original Data block.  The new Data block will have an
- * X-Scale taken from an attribute of one of the original Data blocks.  The
- * integral values will be ordered according to increasing attribute value.
- * If several Data blocks have the same value of the attribute, their integral 
- * values are averaged.  For example, if the "Raw Detector Angle" attribute 
- * is used and several Data blocks have the same angle value, the integral
- * values for that angle are averaged to form the y-value that corresponds to 
- * that angle in the new Data block.
  */
 
 package DataSetTools.operator;
@@ -25,7 +14,22 @@ import  DataSetTools.math.*;
 
 /**
   *  Form a new DataSet that contains the integrated crossection of the
-  *  current DataSet.
+  * current DataSet.
+  *
+  *  This operator calculates the integral over a specified interval for each
+  * Data block in a DataSet and forms a new DataSet with one entry: a Data
+  * block whose value at each of the original Data blocks is the value of the
+  * integral for the original Data block.  The new Data block will have an
+  * X-Scale taken from an attribute of one of the original Data blocks.  The
+  * integral values will be ordered according to increasing attribute value.
+  * If several Data blocks have the same value of the attribute, their integral
+  * values are averaged.  For example, if the "Raw Detector Angle" attribute
+  * is used and several Data blocks have the same angle value, the integral
+  * values for that angle are averaged to form the y-value that corresponds to
+  * that angle in the new Data block.
+  *
+  *  @see DataSetOperator
+  *  @see Operator
   */
 
 public class DataSetCrossSection extends    DataSetOperator 

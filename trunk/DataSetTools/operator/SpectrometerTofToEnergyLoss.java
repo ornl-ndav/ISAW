@@ -180,7 +180,7 @@ public class SpectrometerTofToEnergyLoss extends    DataSetOperator
         new_ds.addData_entry( new_data );      
       }
     }
-    //ChopTools.chop_dataDrawer.drawgraphDataSet(new_ds);
+//    ChopTools.chop_dataDrawer.drawgraphDataSet(new_ds);
     return new_ds;
   }  
 

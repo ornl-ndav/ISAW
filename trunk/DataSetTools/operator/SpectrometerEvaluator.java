@@ -98,7 +98,7 @@ public class SpectrometerEvaluator extends    DataSetOperator
     
     DataSet monitor_ds    =    (DataSet)(getParameter(0).getValue());
     
-    System.out.println("The H1 and M1 are : "+ds+" and"+  monitor_ds );
+//    System.out.println("The H1 and M1 are : "+ds+" and"+  monitor_ds );
     
     if ( !ds.SameUnits( monitor_ds ) )    // units don't match so return error 
       {

@@ -23,6 +23,9 @@ import  DataSetTools.math.*;
   *  specified by the parameter "Moment".  The interval [a,b] over which the 
   *  integration is done is specified by the two endpoints a, b where it is 
   *  assumed that a < b.
+  *
+  *  @see DataSetOperator
+  *  @see Operator
   */
 
 public class  CalculateMoment  extends    DataSetOperator 
@@ -50,15 +53,19 @@ public class  CalculateMoment  extends    DataSetOperator
     parameter = new Parameter("Right end point (b)", new Float(0));
     addParameter( parameter );
 
+    parameter = new Parameter("Center point for moment calculation", 
+                               new Float(0));
+    addParameter( parameter );
+
     parameter = new Parameter("Moment ( 1, 2, 3 ... )", new Integer(1));
     addParameter( parameter );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
-   *  Construct an operator for a specified DataSet and with the specified
-   *  parameter values so that the operation can be invoked immediately 
-   *  by calling getResult()
+   *  Construct a CalculateMoment  operator for a specified DataSet and 
+   *  with the specified parameter values so that the operation can be 
+   *  invoked immediately by calling getResult()
    *
    *  @param  ds          The DataSet to which the operation is applied
    *  @param  group_id    The id of the group for which the moment is to be
@@ -69,6 +76,7 @@ public class  CalculateMoment  extends    DataSetOperator
    *  @param  b           The right hand endpoint of the interval [a, b] over
    *                      which the moment is to be calculated.
    *                      from the data set.
+   *  @param  center      The center point for the moment calculation.
    *  @parm   moment      The moment to be calculated.
    */
 
@@ -76,6 +84,7 @@ public class  CalculateMoment  extends    DataSetOperator
                           int                 group_id,
                           float               a,
                           float               b,
+                          float               center,
                           int                 moment   )
   {
     this();                         // do the default constructor, then set
@@ -92,6 +101,9 @@ public class  CalculateMoment  extends    DataSetOperator
     parameter.setValue( new Float( b ) );
 
     parameter = getParameter( 3 );
+    parameter.setValue( new Float( center ) );
+
+    parameter = getParameter( 4 );
     parameter.setValue( new Integer( moment ) );
 
     setDataSet( ds );               // record reference to the DataSet that
@@ -105,10 +117,11 @@ public class  CalculateMoment  extends    DataSetOperator
   {                                  // get the parameters
 
     int group_ID = ( (Integer)(getParameter(0).getValue()) ).intValue();
-    int moment   = ( (Integer)(getParameter(3).getValue()) ).intValue();
+    int moment   = ( (Integer)(getParameter(4).getValue()) ).intValue();
 
-    float a = ( (Float)(getParameter(1).getValue()) ).floatValue();
-    float b = ( (Float)(getParameter(2).getValue()) ).floatValue();
+    float a      = ( (Float)(getParameter(1).getValue()) ).floatValue();
+    float b      = ( (Float)(getParameter(2).getValue()) ).floatValue();
+    float center = ( (Float)(getParameter(3).getValue()) ).floatValue();
 
                                      // get the current data set and do the 
                                      // operation
@@ -129,9 +142,8 @@ public class  CalculateMoment  extends    DataSetOperator
 
       float result = NumericalAnalysis.HistogramMoment( x_vals, y_vals, 
                                                         a,      b, 
+                                                        center,
                                                         moment     );
-
-      System.out.println("Moment = " + result );
       return new Float( result );
     }
   }  
