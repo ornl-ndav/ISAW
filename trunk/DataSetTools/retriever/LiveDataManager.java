@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/06/08 22:05:14  dennis
+ *  UpdateDataSetNow() now checks for an invalid data_set_num and
+ *  refreshes the local state is the data_set_num is too large.
+ *
  *  Revision 1.7  2001/06/07 16:45:09  dennis
  *  Now periodically checks for a change in the number of DataSets
  *  available and reinitializes its local data if this changes.
@@ -245,6 +249,13 @@ public class LiveDataManager extends    Thread
  */
  synchronized public void UpdateDataSetNow( int data_set_num )
  {
+   if ( data_set_num < 0 )
+     return;
+
+   if ( data_set_num > data_sets.length - 1 )
+     SetUpLocalCopies();
+
+
    DataSet temp_ds = retriever.getDataSet( data_set_num );
 
    if ( temp_ds == data_sets[data_set_num] )
