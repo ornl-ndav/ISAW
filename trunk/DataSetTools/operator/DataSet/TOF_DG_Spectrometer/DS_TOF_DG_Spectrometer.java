@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/06/16 19:05:05  pfpeterson
+ *  Removed old code and updated to work with new getCategoryList() code
+ *  in base operator class.
+ *
  *  Revision 1.3  2002/11/27 23:19:32  pfpeterson
  *  standardized header
  *
@@ -60,23 +64,11 @@ import DataSetTools.operator.DataSet.DataSetOperator;
 abstract public class DS_TOF_DG_Spectrometer extends    DataSetOperator 
                                  implements Serializable
 {
+   private static String[] categoryList=null;
    protected DS_TOF_DG_Spectrometer( String title )
    {
       super( title );
    } 
-
-  /* -------------------------- getCategory -------------------------------- */
-  /**
-   * Get the category of this operator
-   *
-   * @return  A String specifying the category of this operator.  This is
-   *          actually the category of the abstract base class from which
-   *          the current operator is directly derived.
-   */
-  public String getCategory()
-  {
-      return "TOF_DG_Spectrometer";
-  }
 
   /* ------------------------ getCategoryList ------------------------------ */
   /**
@@ -93,11 +85,9 @@ abstract public class DS_TOF_DG_Spectrometer extends    DataSetOperator
    */
   public String[] getCategoryList()
   {
-    String partial_list[] = super.getCategoryList();  // get list of ancestor
-                                                      // categories and put 
-                                                      // them in a new larger
-                                                      // list.
-    return AppendCategory( "TOF_DG_Spectrometer", partial_list );
-  }
+    if(categoryList==null)
+      categoryList=createCategoryList();
 
+    return categoryList;
+  }
 } 

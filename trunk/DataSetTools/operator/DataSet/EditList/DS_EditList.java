@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/06/16 19:03:04  pfpeterson
+ *  Removed old code and updated to work with new getCategoryList() code
+ *  in base operator class.
+ *
  *  Revision 1.2  2002/11/27 23:17:40  pfpeterson
  *  standardized header
  *
@@ -56,23 +60,11 @@ abstract public class DS_EditList extends    DataSetOperator
                                   implements Serializable
 {
 
+   private static String[] categoryList=null;
    protected DS_EditList( String title )
    {
       super( title );
    } 
-
-  /* -------------------------- getCategory -------------------------------- */
-  /**
-   * Get the category of this operator
-   *
-   * @return  A String specifying the category of this operator.  This is
-   *          actually the category of the abstract base class from which
-   *          the current operator is directly derived.
-   */
-  public String getCategory()
-  {
-    return EDIT_LIST;
-  }
 
   /* ------------------------ getCategoryList ------------------------------ */
   /**
@@ -89,11 +81,9 @@ abstract public class DS_EditList extends    DataSetOperator
    */
   public String[] getCategoryList()
   {
-    String partial_list[] = super.getCategoryList();  // get list of ancestor
-                                                      // categories and put 
-                                                      // them in a new larger
-                                                      // list.
-    return AppendCategory( EDIT_LIST, partial_list );
-  }
+    if(categoryList==null)
+      categoryList=createCategoryList();
 
+    return categoryList;
+  }
 } 
