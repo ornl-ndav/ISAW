@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2002/07/16 21:37:55  rmikk
+ *  Introduced support for the other quick table views
+ *
  *  Revision 1.20  2002/07/12 18:26:15  rmikk
  *  Used the Constructor with the state variable for starting
  *    the Selected Graph view.
@@ -213,7 +216,7 @@ public class ViewManager extends    JFrame
 
    private static final String SHOW_ALL             = "Show All";
    private static final String NO_CONVERSION_OP     = "None";
-
+   private TableViewMenuComponents table_MenuComp   = null;
     
    /**  
     *  Accepts a DataSet and view type and creates an instance of a 
@@ -314,16 +317,20 @@ public class ViewManager extends    JFrame
       else if ( view_type.equals( SELECTED_GRAPHS ))             // use either
         viewer = new GraphableDataManager( tempDataSet, state );        // Kevin's or
 //        viewer = new ViewerTemplate( tempDataSet, state );     // Template  
-      else if ( view_type.equals( TABLE ) )
-        viewer = new TabView( tempDataSet, state ); 
+      else if ( view_type.equals( "Advanced Table")) //TABLE ) )
+         viewer = new TabView( tempDataSet, state ); 
       else if ( view_type.equals( CONTOUR ) )
         viewer = new ContourView( tempDataSet, state ); 
       else
-      {
-        System.out.println( "ERROR: Unsupported view type in ViewManager:" );
-        System.out.println( "      " + view_type );
-        System.out.println( "using " + IMAGE + " by default" );
-        viewer = new ImageView( tempDataSet, state );
+      { if( table_MenuComp == null)
+           table_MenuComp= new TableViewMenuComponents();
+        viewer = table_MenuComp.getDataSetViewer( view_type, tempDataSet, state);
+        if( viewer == null)
+          {System.out.println( "ERROR: Unsupported view type in ViewManager:" );
+           System.out.println( "      " + view_type );
+           System.out.println( "using " + IMAGE + " by default" );
+           viewer = new ImageView( tempDataSet, state );
+          }
       }
       getContentPane().add(viewer);
       getContentPane().setVisible(true);
@@ -660,17 +667,37 @@ private void BuildViewMenu()
   button = new JMenuItem( THREE_D );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
+  
+  JMenu Tables = new JMenu( "Tables");
+  view_menu.add( Tables);
+  
+  BuildTableMenu( Tables);
 
-  button = new JMenuItem( TABLE );
+ /* button = new JMenuItem( TABLE );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
-
+ */
   button = new JMenuItem( CONTOUR );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 }
 
+ public void BuildTableMenu( JMenu Tables)
+  { int n= TableViewMenuComponents.getNMenuItems();
+    ViewMenuHandler view_menu_handler = new ViewMenuHandler();
+     if( table_MenuComp == null)
+        table_MenuComp = new TableViewMenuComponents();
+   
+     table_MenuComp.addMenuItems( Tables , view_menu_handler);
+    
+    Tables.addSeparator();  
+    JMenuItem button;
+    button = new JMenuItem( "Advanced Table");
+    button.addActionListener( view_menu_handler );
+    Tables.add( button );
 
+
+  }
 /*
  * Build the menu of conversion options and turn on the radio button for the 
  * currently active conversion operator.
@@ -846,7 +873,9 @@ private String CurrentConversionName()     // get current conversion name
 
   private class ViewMenuHandler implements ActionListener,
                                            Serializable
-  {
+  {  boolean errors = false, 
+              index =false;
+    
     public void actionPerformed( ActionEvent e )
     {
       String action = e.getActionCommand();
