@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:51:52  bouzekc
+ * Documented file using javadoc statements.
+ * Added the toString() method.
+ *
  * Revision 1.1  2004/02/07 05:10:06  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -55,9 +59,9 @@ import devTools.Hawk.classDescriptor.tools.InterfaceUtilities;
 /**
 * This class defines the object which describes a method in a class or interface.
 * Each method in a class or interface has a unique MethodDefn object.
+* 
+* @author Dominic Kramer
 */
-
-
 public class MethodDefn extends ConstructorDefn
 {
 	//-----------------class attributes-------------------------
@@ -98,51 +102,100 @@ public class MethodDefn extends ConstructorDefn
 						 	
 	//------------------class methods----------------------------
 	
+	/**
+	 * Get the method's "characteristics" (public, static, etc.).
+	 * @return A Vector of Strings.
+	 */
 	public Vector getMethod_char_vector()
 	{
 		return getConst_char_vector();
 	}
 	
+	/**
+	 * Set the method's "characteristics" (public, static, etc.).
+	 * @param vec A Vector of Strings.
+	 */
 	public void setMethod_char_vector(Vector vec)
 	{
 		setConst_char_vector(vec);
 	}
 	
+	/**
+	 * Get the method's return type.
+	 * @return A String representing what the method returns.
+	 */
 	public String getMethod_return_type()
 	{
 		return method_return_type;
 	}
 	
+	/**
+	 * Get the method's return type in a modified format.
+	 * @param shortJava If this is set to true, if the method returns a java object, its name will be shortened.  For example 
+	 * if the method returns java.lang.String, String will be returned from this method.
+	 * @param shortOther If this is set to true, if the method returns a non-java object, its name will be shortened.
+	 * @return A modified version of the String representing what the method returns.
+	 */
 	public String getMethod_return_type(boolean shortJava, boolean shortOther)
 	{
 		return InterfaceUtilities.getAbbreviatedName(method_return_type, shortJava, shortOther);
 	}
 	
+	/**
+	 * Set the method's return type.
+	 * @param str The String representing what the method returns.
+	 */
 	public void setMethod_return_type(String str)
 	{
 		method_return_type = str;
 	}
 	
+	/**
+	 * Get the method's name.
+	 * @return The method's name.
+	 */
 	public String getMethod_name()
 	{
 		return getConst_name();
 	}
 	
+	/**
+	 * Get the method's name in a modified format.
+	 * @param shortJava If this is set to true, if the method's name is a java name its name will be shortened.  For example, if 
+	 * the name is java.lang.String, it will be returned as String.
+	 * @param shortOther If this is set to true, if the method's name is a non-java name, its name will be shortened.
+	 * @return The method's name in a modified format.
+	 */
 	public String getMethod_name(boolean shortJava, boolean shortOther)
 	{
 		return InterfaceUtilities.getAbbreviatedName(getConst_name(), shortJava, shortOther);
 	}
 	
+	/**
+	 * Set the method's name.
+	 * @param str The method's new name.
+	 */
 	public void setMethod_name(String str)
 	{
 		setConst_name(str);
 	}
 	
+	/**
+	 * Get the names of the parameters that this method takes.
+	 * @return A Vector of Strings.
+	 */
 	public Vector getMethod_parameter_vector()
 	{
 		return getConst_parameter_vector();
 	}
 	
+	/**
+	 * Get the names of the paramters (in a modified format) that this method takes.
+	 * @param shortJava If this is set to true, if a parameter's name is a java name it will be shortened.  For example 
+	 * if java.lang.String is a parameter, it will be returned as String.
+	 * @param shortOther If this is set to true, if a parameter's name is a non-java name it will be shortened.
+	 * @return A Vector of Strings.
+	 */
 	public Vector getMethod_parameter_vector(boolean shortJava, boolean shortOther)
 	{
 		Vector vec = new Vector();
@@ -152,13 +205,17 @@ public class MethodDefn extends ConstructorDefn
 		return vec;
 	}
 	
+	/**
+	 * Set the method's parameters.
+	 * @param vec A Vector of Strings.
+	 */
 	public void setMethod_parameter_vector(Vector vec)
 	{
 		setConst_parameter_vector(vec);
 	}
 	
 	/**
-	* Prints the data to the file specified by the RandomAccessFile writer 
+	* Prints the data to the file specified by the DataOutputStream writer 
 	* starting where writer's file pointer is currently located.  This method
 	* works only if method_parameter_vector is a vector of Strings.
 	*
@@ -211,7 +268,7 @@ public class MethodDefn extends ConstructorDefn
 	}
 	
 	/**
-	* Prints the data to the file specified by the RandomAccessFile writer 
+	* Prints the data to the file specified by the DataOutputStream writer 
 	* starting where writer's file pointer is currently located.  Then it 
 	* moves the file pointer to the start of the next line in the file.
 	* This method works only if method_parameter_vector is a vector of Strings.
@@ -247,10 +304,12 @@ public class MethodDefn extends ConstructorDefn
 	}
 
 	/**
-	* Returns the JPanel which holds all of the information about the method
-	* in the form of JLabel and JTextField pairs.
-	* @return The JPanel that contains the information
-	*/
+	 * This creates a JPanel with all of the textfields and labels that display the information for this MethodDefn object.  The textfields 
+	 * and labels are positioned vertically on the JPanel.  The panel created does not display information in a 
+	 * compact or effecient way and may be removed or significantly changed.
+	 * @deprecated
+	 * @return A JPanel.
+	 */
 	public JPanel getMethodJPanel()
 	{
 		JPanel methodJPanel = new JPanel();
@@ -284,6 +343,14 @@ public class MethodDefn extends ConstructorDefn
 	*/
 	public String getStringInJavadocFormat(boolean shortJava, boolean shortOther)
 	{
-		return ""+InterfaceUtilities.makeStringFromVector(const_char_vector, ", ")+getMethod_return_type(shortJava, shortOther)+" "+getMethod_name(shortJava, shortOther)+"( "+InterfaceUtilities.makeStringFromVector(getMethod_parameter_vector(shortJava, shortOther), ", ")+")";
+		return ""+InterfaceUtilities.makeStringFromVector(const_char_vector, " ")+getMethod_return_type(shortJava, shortOther)+" "+getMethod_name(shortJava, shortOther)+"( "+InterfaceUtilities.makeStringFromVector(getMethod_parameter_vector(shortJava, shortOther), ", ")+")";
+	}
+	
+	/**
+	 * Get a the method's name.
+	 */
+	public String toString()
+	{
+		return const_name;
 	}
 }
