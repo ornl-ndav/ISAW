@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/07/23 14:35:11  rmikk
+ * Incorporated the weighting for the polynomial fit
+ *
  * Revision 1.2  2003/07/22 20:56:20  rmikk
  * Added documentation
  * Added another parameter to select weights when
@@ -121,7 +124,7 @@ public class CalcTransmission extends GenericTOF_SAD {
      addParameter( new IntegerPG( "Polyfit indx 2", -1) );
      addParameter( new IntegerPG( "Polynomial degree 1", -1) );
 
-     addParameter( new BooleanPG("Use 1/y weights", false));
+     addParameter( new BooleanPG("Use 1/sqrt y weights", false));
 
   }
 
@@ -147,11 +150,14 @@ public class CalcTransmission extends GenericTOF_SAD {
      int polyfitIndx1=((IntegerPG)getParameter(6)).getintValue();
      int polyfitIndx2=((IntegerPG)getParameter(7)).getintValue();
      int degree=((IntegerPG)getParameter(8)).getintValue();
-
+     boolean weight = ((Boolean)(getParameter(9).getValue())).booleanValue();
    
      if( !useCadmium)
         Cadmium = null;
      //--------------- Neutron Delay
+     Sample = (DataSet)(Sample.clone());
+     Empty = (DataSet)(Empty.clone());
+     Cadmium = (DataSet)(Cadmium.clone());
      if( NeutronDelay > 0){
        applyNeutronDelay( Sample, NeutronDelay );
        applyNeutronDelay( Empty, NeutronDelay );
@@ -352,7 +358,8 @@ public class CalcTransmission extends GenericTOF_SAD {
      
     double[] coeff = new double[degree + 1];
     
-    double errr=DataSetTools.math.CurveFit.Polynomial(trunc_xvals,trunc_yvals,coeff);
+    double errr=DataSetTools.math.CurveFit.Polynomial(trunc_xvals,
+                            trunc_yvals,coeff, weight);
     for( int ii = 0; ii< yvals.length; ii++){
       yvals[ii]=0f;
       float xx = (xvals[ii]+xvals[ii+1])/2f;
