@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/05/08 18:49:21  dennis
+ *  Fixed error in javadoc comment.
+ *
  *  Revision 1.4  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -63,7 +66,8 @@ import java.util.Vector;
 import DataSetTools.util.StringUtil;
 
 /**
- * The concrete class for an attribute whose value is a float.  
+ * The concrete class for an attribute whose value is a two dimensional 
+ * array of floats.  
  *
  * @see DataSetTools.dataset.Data
  * @see DataSetTools.dataset.Attribute
