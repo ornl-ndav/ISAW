@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2004/07/28 18:35:38  rmikk
+ *  Replaced one of the experimental Q views by the Proffen View
+ *
  *  Revision 1.21  2004/07/28 18:29:33  rmikk
  *  Prints a Stack trace if the initialization of a viewer causes an exception
  *
@@ -165,7 +168,7 @@ public class TableViewMenuComponents
       if( i == 3)
          return "Contour:Qx,Qy vs Qz";
       if( i == 4)
-         return "Contour:Qx,Qz vs Qy";
+         return "Proffen View";
       if( i == 5)
          return "Contour:Qy,Qz vs Qx";
       if( i == 6 )
@@ -233,6 +236,8 @@ public class TableViewMenuComponents
        }
     if( view_type.indexOf("GRX_Y")==0)
       return new TableView( DS, state,"HGT,F");//tv.getGenTableModel( DS,LM,"HGT,F",DS.getSelectedIndices() ));
+    if( view_type.indexOf("Proffen View")==0)
+       return new ProffenViewController( DS, state);
     if( view_type.indexOf("Parallel y(x)")==0){
        TimeVersusGroupValues ArrayMaker = new TimeVersusGroupValues( DS,  
                               DS.getSelectedIndices(), false, false, state);
