@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2001/08/16 01:38:35  chatterjee
+ *  Changed the sleep time
+ *
  *  Revision 1.9  2001/07/09 22:20:29  chatter
  *  Changed the sleep time to 10000
  *
@@ -88,7 +91,7 @@ public class SplashWindowFrame extends    JFrame
   {
     try
     {
-     Thread.sleep(10000);
+     Thread.sleep(7000);
     }
     catch(InterruptedException ie){}
     this.dispose();
