@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2002/05/24 14:42:40  pfpeterson
+ *  Modified to use new monitor finding routines.
+ *
  *  Revision 1.15  2002/05/20 20:24:13  pfpeterson
  *  Added checkbox to allow for numbering banks as the
  *  raw data does or sequentially. Also look for "IParmFile"
@@ -92,6 +95,7 @@ import java.text.DateFormat;
 import java.text.*;
 import DataSetTools.math.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.retriever.RunfileRetriever;
 /**
  * Transfer diffractometer Data Set histogram to GSAS file
@@ -625,7 +629,7 @@ public class gsas_filemaker
      * Determine the total monitor count.
      */
     private float getMonitorCount( ){
-	Data monD = mon.getData_entry(monNum);
+	Data monD = mon.getData_entry_with_id(monNum);
 	Float count = (Float)
 	    monD.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
 	return count.floatValue();
@@ -651,36 +655,55 @@ public class gsas_filemaker
 	float monCount=-1.0f;
 
 	// confirm that there is something in the upstream monitor
-	for( int i=0 ; i<mon.getNum_entries() ; i++ ){
-	    Data monD = mon.getData_entry(i);
-	    Float ang = (Float)
-		monD.getAttributeList().getAttributeValue(Attribute.RAW_ANGLE);
-	    if( ang.floatValue() == 0.0f ){
-		Float count = (Float)
-		    monD.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
-		if(count.floatValue()>monCount){
-		    monCount=count.floatValue();
-		    monDataNum=i;
-		}
-	    }
-	}
+        GenericSpecial op = new UpstreamMonitorID(mon);
+        monDataNum=((Integer)op.getResult()).intValue();
+        if(monDataNum>=0){
+          Data monD = mon.getData_entry_with_id(monDataNum);
+          monCount=((Float)
+                   monD.getAttributeValue(Attribute.TOTAL_COUNT)).floatValue();
+        }
+            
+	// if there isn't then use the downstream monitor
+        if(monCount<=0f){
+            op = new DownstreamMonitorID(mon);
+            monDataNum=((Integer)op.getResult()).intValue();
+            if(monDataNum>=0){
+                Data monD = mon.getData_entry_with_id(monDataNum);
+                monCount=((Float)
+                   monD.getAttributeValue(Attribute.TOTAL_COUNT)).floatValue();
+            }
+        }
+            
+	/*for( int i=0 ; i<mon.getNum_entries() ; i++ ){
+          Data monD = mon.getData_entry(i);
+          Float ang = (Float)
+          monD.getAttributeList().getAttributeValue(Attribute.RAW_ANGLE);
+          if( ang.floatValue() == 0.0f ){
+          Float count = (Float)
+          monD.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
+          if(count.floatValue()>monCount){
+          monCount=count.floatValue();
+          monDataNum=i;
+          }
+          }
+          } */
 	
 	// if there isn't then use the downstream monitor
-	if( monCount <= 0.0f ){
-	    for( int i=0 ; i<mon.getNum_entries() ; i++ ){
-		Data monD = mon.getData_entry(i);
-		Float ang = (Float)
-		    monD.getAttributeList().getAttributeValue(Attribute.RAW_ANGLE);
-		if( (ang.floatValue() == 180f) || (ang.floatValue()== -180f) ){
-		    Float count = (Float)
-			monD.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
-		    if(count.floatValue()>monCount){
-			monCount=count.floatValue();
-			monDataNum=i;
-		    }
-		}
-	    }
-	}
+	/*if( monCount <= 0.0f ){
+          for( int i=0 ; i<mon.getNum_entries() ; i++ ){
+          Data monD = mon.getData_entry(i);
+          Float ang = (Float)
+          monD.getAttributeList().getAttributeValue(Attribute.RAW_ANGLE);
+          if( (ang.floatValue() == 180f) || (ang.floatValue()== -180f) ){
+          Float count = (Float)
+          monD.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
+          if(count.floatValue()>monCount){
+          monCount=count.floatValue();
+          monDataNum=i;
+          }
+          }
+          }
+          }*/
 	
 	this.monNum=monDataNum;
 
