@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/04/26 13:25:02  rmikk
+ *  XMLread now has access to all the grids already created by the data set
+ *    being constructed
+ *
  *  Revision 1.11  2004/03/15 06:10:38  dennis
  *  Removed unused import statements.
  *
@@ -82,7 +86,8 @@
 package  DataSetTools.dataset;
 
 import gov.anl.ipns.Util.Numeric.*;
-
+import java.util.*;
+import gov.anl.ipns.Util.File.*;
 import java.io.*;
 
 /**
@@ -101,7 +106,7 @@ import java.io.*;
  * @version 1.0  
  */
 
-public abstract class TabulatedData extends    Data
+public abstract class TabulatedData extends    Data implements IXmlIO
 {
   // NOTE: any field that is static or transient is NOT serialized.
   //
@@ -425,7 +430,7 @@ public float[] getY_values( XScale x_scale, int smooth_flag ) //#############
     }
     return true;  
   }
-
+transient Hashtable gridIDs=new Hashtable();
 
  /** Implements the IXmlIO interface so a Data Object can read itself
   *
@@ -503,6 +508,7 @@ public float[] getY_values( XScale x_scale, int smooth_flag ) //#############
         return xml_utils.setError( xml_utils.getErrorMessage());
          
       attr_list = new AttributeList();
+      attr_list.setGridIDs( gridIDs);
       if(!attr_list.XMLread( stream ))
         return false;
           
