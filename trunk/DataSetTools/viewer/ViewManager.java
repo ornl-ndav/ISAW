@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.48  2004/04/16 20:29:13  millermi
+ *  - DataSetData no longer used as a parameter, now used to
+ *    convert DataSets to IVirtualArrayList1D objects.
+ *
  *  Revision 1.47  2004/03/23 15:51:44  rmikk
  *  Listeners were added to finalized the ViewManager(JFrame) after it is
  *     disposed.
@@ -389,9 +393,10 @@ public class ViewManager extends    JFrame
         viewer = new HKL_SliceView( tempDataSet, state );
       else if ( view_type.equals( SELECTED_GRAPHS ))             // Brent's 
       {
-        DataSetData dsd = new DataSetData( tempDataSet );
-        FunctionViewComponent viewComp = new FunctionViewComponent( dsd);
-        viewer = new DataSetViewerMaker(tempDataSet, state, dsd, viewComp);
+        VirtualArrayList1D varray = DataSetData.convertToVirtualArray(
+	                                                         tempDataSet );
+        FunctionViewComponent viewComp = new FunctionViewComponent(varray);
+        viewer = new DataSetViewerMaker(tempDataSet, state, varray, viewComp);
       }
       else if ( view_type.equals( TABLE)) //TABLE ) )
          viewer = new TabView( tempDataSet, state ); 
