@@ -1,5 +1,42 @@
-
-
+/*
+ * File:  XYDataTable.java 
+ *
+ * Copyright (C) 2001, Ruth Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Ruth Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
+ * 
+ * $Log$
+ * Revision 1.2  2001/08/09 21:51:30  rmikk
+ * Added Documentation.
+ * Included better prompts to indicate Selected Groups are
+ *    by index not group ID
+ *
+ */
 package DataSetTools.operator;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
@@ -7,15 +44,28 @@ import DataSetTools.viewer.Table.*;
 import DataSetTools.util.*;
 import java.util.*;
 import DataSetTools.util.*;
+
+/** This class creates a operator the produces a table of x vs y vs errors.
+ *  The table can be sent to the console, table, or file<P>
+ * The Title is <B>Table x, y, error</b>. This represents this operator on
+ *     menu items.<BR>
+ * The Command name is <B>Table</b>. This represents this operator in the
+ *    Command Pane.
+*/
 public class XYDataTable  extends DataSetTools.operator.GenericSave
 {  
-
-
     public XYDataTable( )
      { super( "Table x, y, error");
        setDefaultParameters();
      }
     
+    /**
+    *@param DS The data Set that is to be viewed as a table
+    *@param showErrors  A third column of errors will be viewed
+    *@param outputMedia  The output can be Console, File, or Table
+    *@param filename   The file where the File View sends the "view"
+    *@param SelectedGroups The INDECIES of the groups to be viewed
+    */    
     public XYDataTable( DataSet DS, boolean showErrors , MediaList outputMedia,
                 DataDirectoryString filename, IntListString SelectedGroups )
       { super( "Table x,y, error");
@@ -25,10 +75,11 @@ public class XYDataTable  extends DataSetTools.operator.GenericSave
         addParameter( new Parameter( "Output:", 
                       new MediaList( "Console" )));
         addParameter( new Parameter("filename ", filename));
-        addParameter( new Parameter("Selected Groups", 
+        addParameter( new Parameter("Selected Group indecies", 
                                     SelectedGroups));
                                  
       }
+
 
     public void setDefaultParameters()
      {parameters = new Vector();
@@ -36,14 +87,21 @@ public class XYDataTable  extends DataSetTools.operator.GenericSave
         addParameter( new Parameter("Show Errors ", new Boolean( true ) ));
         addParameter( new Parameter( "Output", new MediaList("Console")));
         addParameter( new Parameter("filename ",new DataDirectoryString()));
-        addParameter( new Parameter("Selected Groups", 
+        addParameter( new Parameter("Selected Group indecies", 
                                     new IntListString("1,3:8")));
     }
 
+   /** Returns <B>Table</b>, the name used to refer to this operator in Scripts
+   */ 
    public String getCommand()
      {return "Table";
      }
 
+   /** The "Result" here is a table view. 
+   * @return "Finished" if there were no errors, otherwise an error message 
+   * NOTE: Some error messages may appear in the command window if no view
+   *  appears.
+   */ 
    public Object getResult()
     { DataSet DS = (DataSet)(getParameter( 0 ).getValue());
       boolean showerrors = ((Boolean)(getParameter(1).getValue())).
@@ -89,12 +147,16 @@ public class XYDataTable  extends DataSetTools.operator.GenericSave
      return "Finished";
     }
 
+  /** clones this operator
+  */
   public Object clone()
    {XYDataTable Res = new XYDataTable();
     Res.CopyParametersFrom( this );
    return Res;
    }
 
+/** Test program to determine if Classpaths, etc. are set up correctly
+*/
 public static void main( String args[])
   {System.out.println("XYDataTable");
    String Used[];
