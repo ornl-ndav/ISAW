@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/05/29 21:46:50  bouzekc
+ *  Added a constructor which takes a Vector of FileFilters.
+ *  Added the capability to select a default FileFilter.
+ *
  *  Revision 1.5  2003/02/07 15:35:50  pfpeterson
  *  Fixed a bug when the list of FileFilters is null.
  *
@@ -73,18 +77,39 @@ public class BrowseButtonListener implements ActionListener{
     private static final boolean DEBUG=false;
 
     private JFileChooser   jfc;
-    //private FileFilter     file_filter;
     private JTextComponent textbox;
     private String         def_filename;
     private int            type;
     private Vector         filters;
+    private FileFilter     defaultfilter;
 
     public BrowseButtonListener( JTextComponent entry, int type ){
-        this(entry,type,null);
+        //create a new Vector and basically toss it-we need to 
+        //be able to differentiate between the constructor
+        //that takes a FileFilter and the one that takes a Vector
+        //I picked an empty Vector rather than a temporary FileFilter
+        this(entry,type,new Vector());
     }
 
     public BrowseButtonListener( JTextComponent entry, int type,
                                  FileFilter filter ){
+        this.textbox=entry;
+        this.type=type;
+        this.jfc=null;
+        this.def_filename=null;
+
+        if(this.type==LOAD_MULTI){
+            System.err.println("LOAD_MULTI not instantiated yet "
+                               +"-- using LOAD_FILE instead");
+            this.type=LOAD_FILE;
+        }
+        this.filters=null;
+        this.addFileFilter(filter);
+        defaultfilter = null;
+    }
+    
+    public BrowseButtonListener( JTextComponent entry, int type,
+                                 Vector file_filters ){
         this.textbox=entry;
         this.type=type;
         this.jfc=null;
@@ -94,10 +119,38 @@ public class BrowseButtonListener implements ActionListener{
                                +"-- using LOAD_FILE instead");
             this.type=LOAD_FILE;
         }
-        this.filters=null;
-        this.addFileFilter(filter);
+
+        //now we will KNOW that all the items in the Vector are 
+        //FileFilters
+        for( int i = 0; i < file_filters.size(); i ++ )
+        {
+          if( !(file_filters.elementAt(i) instanceof FileFilter) )
+            file_filters.remove(i);
+        }
+        this.filters = file_filters;
+
+        defaultfilter = null;
     }
 
+    /**
+     * Sets a FileFilter to be the current FileFilter.
+     * 
+     * @param filterindex          The index of the FileFilter
+     *                             to use.
+     */
+    public void setFileFilter( int filterindex ){
+      if(filterindex < 0) 
+        return;
+        
+      defaultfilter = (FileFilter)
+                        (filters.elementAt(filterindex));
+    }
+    
+    /**
+     * Adds a FileFilter to this BrowseButtonListener.
+     * 
+     * @param filter          The FileFilter to add.
+     */
     public void addFileFilter( FileFilter filter ){
       if(filter==null) return; // can't add nothing
 
@@ -115,6 +168,11 @@ public class BrowseButtonListener implements ActionListener{
       if( !has) this.filters.add(filter); // add if it isn't already there
     }
 
+    /**
+     * Removes a FileFilter from this BrowseButtonListener.
+     * 
+     * @param filter          The FileFilter to remove.
+     */
     public void removeFileFilter( FileFilter filter ){
       if(filter==null) return; // can't remove nothing
 
@@ -128,6 +186,16 @@ public class BrowseButtonListener implements ActionListener{
       }
     }
 
+    /**
+     * Implementation of ActionEvent for BrowseButtonListener.
+     * If the JFileChooser is not yet configured, this will 
+     * configure it.  Once the JFileChooser is configured, 
+     * this method will display it according to the specified
+     * configuration.
+     *
+     * @param evt            Unused parameter.  There is only one
+     *                       button, thus only one event.
+     */
     public void actionPerformed( ActionEvent evt){ 
         if(DEBUG)System.out.println("type="+this.type);
         String filename=null;
@@ -141,6 +209,8 @@ public class BrowseButtonListener implements ActionListener{
             if( this.filters!=null && this.filters.size()>0 ){
               for( int i=0 ; i<this.filters.size() ; i++ )
                 jfc.addChoosableFileFilter( (FileFilter)filters.elementAt(i) );
+              if(defaultfilter != null)
+                jfc.setFileFilter(defaultfilter);
             }
         }
         
