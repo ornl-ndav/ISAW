@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/01/24 19:38:30  bouzekc
+ * Removed unused variables from main() and removed unused imports.
+ *
  * Revision 1.5  2002/12/06 14:40:55  dennis
  * getDocumentation() now includes name of parameter. (Chris Bouzek)
  *
@@ -57,8 +60,6 @@ import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
 import  DataSetTools.parameter.*;
-import  DataSetTools.retriever.*;
-import  DataSetTools.viewer.*;
 
 /**
   *  Replace Data blocks with the sum of the Data blocks.  Data blocks that 
