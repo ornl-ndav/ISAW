@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/01/24 22:56:01  bouzekc
+ * Made the default access action methods private and removed unused
+ * variables.
+ *
  * Revision 1.1  2003/12/10 19:10:27  bouzekc
  * Added to CVS.
  *
@@ -108,7 +112,7 @@ public class Search extends JFrame {
     browseButton.addActionListener(
       new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          browseButton_actionPerformed(e);
+          browseButton_actionPerformed(  );
         }
       }
     );
@@ -141,7 +145,7 @@ public class Search extends JFrame {
     // Hitting enter in text field or on button submits
     ActionListener submitAction = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          submitButton_actionPerformed(e);
+          submitButton_actionPerformed(  );
         }
     };
     expression.addActionListener(submitAction);
@@ -206,7 +210,7 @@ public class Search extends JFrame {
     contentPane.add(results, BorderLayout.CENTER);
   }
 
-  void browseButton_actionPerformed(ActionEvent e) {
+  private void browseButton_actionPerformed(  ) {
     int returnValue = fileChooser.showOpenDialog(this);
     if (returnValue == JFileChooser.APPROVE_OPTION) {
       searchDirectory.setText(
@@ -216,7 +220,7 @@ public class Search extends JFrame {
 //
 // This is where all the action occurs
 //
-  void submitButton_actionPerformed(ActionEvent e) {
+  private void submitButton_actionPerformed(  ) {
 // Start searching asynchronously (in separate thread)
     ResultsPanel resultsPanel = new ResultsPanel(
       expression.getText(),
