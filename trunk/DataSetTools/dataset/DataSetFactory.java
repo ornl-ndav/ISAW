@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2002/10/09 21:13:33  dennis
+ *  Added method getTestDataSet() to fabricate a simple DataSet for
+ *  test purposes.
+ *
  *  Revision 1.31  2002/09/25 16:47:47  pfpeterson
  *  Now adds LoadSCDCalib operator to SCD data.
  *
@@ -387,6 +391,45 @@ public class DataSetFactory implements Serializable
     addOperators( new_ds, instrument_type );
     return new_ds;
   }
+
+
+  /**
+   *  Get a simple test data set with a collection of sine waves of different
+   *  frequencies.
+   */
+  static public DataSet getTestDataSet()
+  {
+    DataSetFactory factory = new DataSetFactory( "Test Data Set",
+                                                 "time",
+                                                 "milli-seconds",
+                                                 "signal level",
+                                                 "volts" );
+    DataSet new_ds = factory.getDataSet();
+    new_ds.setAttribute( new StringAttribute( Attribute.RUN_TITLE,
+                                             "Test Data Set" ) );
+
+    Data          data;         // data block that will hold info on one signal
+    float[]       y_values;     // array to hold the y-values for that signal
+    XScale        x_scale;      // "time channels" for the signal
+
+    for ( int id = 1; id < 10; id++ )            // for each id
+    {
+      float  frequency = id;
+      x_scale = new UniformXScale( 0, 1000, 500 );//build list of time channels
+      y_values = new float[500];                  // build list of counts
+      for ( int channel = 0; channel < 500; channel++ )
+        y_values[ channel ] = 100*(float)
+                                 Math.sin( channel/500.0*2*Math.PI*frequency );
+
+      data = Data.getInstance( x_scale, y_values, id );
+
+      data.setAttribute( new FloatAttribute( "Frequency", frequency ) );
+      new_ds.addData_entry( data );
+    }
+
+    return new_ds;
+  }
+
 
   /**
    * Configure an existing DataSet by adding the set of operators 
