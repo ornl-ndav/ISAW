@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:07:22  pfpeterson
+ *  Changed to work with new system where operators get IParameters in stead of Parameters. Now support clone method.
+ *
  *  Revision 1.1  2002/08/01 18:40:04  pfpeterson
  *  Added to CVS.
  *
@@ -275,5 +278,15 @@ public class HashPG extends ParameterGUI{
         fpg.showGUIPanel(0,y);
         y+=dy;
 
+    }
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+        HashPG hpg=new HashPG(this.name,this.value,this.valid);
+        hpg.setDrawValid(this.getDrawValid());
+        hpg.initialized=false;
+        return hpg;
     }
 }

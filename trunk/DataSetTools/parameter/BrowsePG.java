@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:07:21  pfpeterson
+ *  Changed to work with new system where operators get IParameters in stead of Parameters. Now support clone method.
+ *
  *  Revision 1.1  2002/07/15 21:26:06  pfpeterson
  *  Added to CVS.
  *
@@ -194,5 +197,15 @@ public class BrowsePG extends ParameterGUI{
         fpg.init();
         fpg.showGUIPanel(0,y);
 
+    }
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+        BrowsePG bpg=new BrowsePG(this.name,this.value,this.valid);
+        bpg.setDrawValid(this.getDrawValid());
+        bpg.initialized=false;
+        return bpg;
     }
 }

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/09/19 16:07:23  pfpeterson
+ *  Changed to work with new system where operators get IParameters in stead of Parameters. Now support clone method.
+ *
  *  Revision 1.2  2002/05/31 19:43:20  pfpeterson
  *  Added a string constant 'VALUE'.
  *
@@ -88,4 +91,9 @@ public interface IParameter{
      * parameter.
      */
     String getType();
+
+    /**
+     * Defines the clone method for all IParameters.
+     */
+    Object clone();
 }

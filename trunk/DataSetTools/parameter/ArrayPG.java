@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:07:20  pfpeterson
+ *  Changed to work with new system where operators get IParameters in stead of Parameters. Now support clone method.
+ *
  *  Revision 1.1  2002/08/01 18:40:01  pfpeterson
  *  Added to CVS.
  *
@@ -221,5 +224,15 @@ public class ArrayPG extends ParameterGUI{
         fpg.showGUIPanel(0,y);
         y+=dy;
 
+    }
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+        ArrayPG apg=new ArrayPG(this.name,this.value,this.valid);
+        apg.setDrawValid(this.getDrawValid());
+        apg.initialized=false;
+        return apg;
     }
 }
