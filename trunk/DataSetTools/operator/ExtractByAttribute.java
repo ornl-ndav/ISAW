@@ -31,6 +31,9 @@
  * Modified:
  *             
  * $Log$
+ * Revision 1.7  2001/07/23 19:01:17  dennis
+ * Fixed error: no longer using "==" for String comparison.
+ *
  * Revision 1.6  2001/06/01 21:18:00  rmikk
  * Improved documentation for getCommand() method
  *
@@ -250,7 +253,7 @@ public class ExtractByAttribute extends    DS_EditList
                                            // attribute value.
       Attribute attr = data.getAttributeList().getAttribute( attr_name );
       float val = (float)attr.getNumericValue(); 
-      if (attr_name == Attribute.DETECTOR_POS )        // convert to degrees
+      if (attr_name.equals( Attribute.DETECTOR_POS ))    // convert to degrees
         val *= (float) 180.0/Math.PI;
 
       if ( keep && min <= val && val <= max  ||
