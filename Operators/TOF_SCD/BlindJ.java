@@ -27,6 +27,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/07/08 22:46:51  bouzekc
+ * Now returns the fully qualified name of the blind.log file.
+ *
  * Revision 1.10  2003/06/20 16:02:45  bouzekc
  * Changed "Matrix filename" to "Matrix file" for
  * consistency in viewing parameters in the Wizards.
@@ -156,7 +159,7 @@ public class BlindJ extends  GenericTOF_SCD {
     S.append("Eg 33:36,47,56");
     S.append("@param  MatFilename- The filename to store the orientation ");
     S.append("matrix and the other cell parameters ");
-    S.append("@return  Success or one of the errormessages below ");
+    S.append("@return  The log file name or one of the errormessages below ");
     S.append("@error Improper Peak filename ");
     S.append("@error Improper sequence numbers");
     S.append("@error Improper save matrix filename");
@@ -252,11 +255,16 @@ public class BlindJ extends  GenericTOF_SCD {
 
     if(index>=0)
       dir=matrixfile.substring(0,index+1);
-    if(!BLIND.writeLog(dir+"blind.log"))
+
+    String logfile = dir + "blind.log";
+    if(!BLIND.writeLog(logfile))
         SharedData.addmsg("WARNING: Failed to create logfile");
 
     // write the matrix file
-    return writeMatFile(matrixfile,BLIND);
+    writeMatFile(matrixfile,BLIND);
+
+    //return the log file
+    return logfile;
   }
     
   /* ------------------------------- clone -------------------------------- */ 
