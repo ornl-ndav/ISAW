@@ -7,6 +7,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/12/07 23:04:17  dennis
+ *  Now includes basic support for maintaining ViewerState.
+ *
  *  Revision 1.4  2000/07/11 22:40:01  dennis
  *  @see reference fixed
  *
@@ -55,7 +58,8 @@ public abstract class DataSetViewer extends    JPanel
     public static final String BINS_CHANGED    = "Bins Changed";
     public static final String X_RANGE_CHANGED = "X Range Changed";
 
-    private   DataSet data_set;     // The Data Set being viewed 
+    private   DataSet     data_set; // The Data Set being viewed 
+    private   ViewerState state;    // state information for the DataSetViewer
     
     protected JMenuBar menu_bar;    // NOTE: it is the responsibility 
                                     // of the user of this class to add the 
@@ -66,15 +70,34 @@ public abstract class DataSetViewer extends    JPanel
     JMenu editMenu    = new JMenu("Edit");
     JMenu viewMenu    = new JMenu("View");
     JMenu optionsMenu = new JMenu("Options");
-    
-    /** 
-     * Accepts a dataSet and creates an instance of a viewer for the data set.  
-     * 
+
+    /**
+     * Accepts a DataSet creates an instance of a viewer for the data set, 
+     * using default options.
+     *
      * @param  data_set   The DataSet to be viewed
      */
     public DataSetViewer( DataSet data_set )
     {
+        this( data_set, null );
+    }
+    
+    /** 
+     * Accepts a DataSet and a ViewerState object and creates an instance of 
+     * a viewer for the data set, with it's options initialized from the
+     * state paramter.  If the state parameter is null, a new default state
+     * is created.
+     * 
+     * @param  data_set   The DataSet to be viewed
+     * @param  state      The state of options for this viewer
+     */
+    public DataSetViewer( DataSet data_set, ViewerState state )
+    {
         this.data_set = data_set;
+        if ( state == null )
+          this.state    = new ViewerState();
+        else
+          this.state    = state;
 
         //neccesary so popup menus show up above heavyweight containers
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
@@ -105,6 +128,17 @@ public abstract class DataSetViewer extends    JPanel
     {
       return data_set;
     }
+
+
+    /**
+     *  Get a reference to a state object containing information about the
+     *  state of the options for this viewer. 
+     */
+    public ViewerState getState()
+    {
+      return state;
+    }
+
 
     /**
      *  Redraw the view of the DataSet, since the DataSet has been changed.
