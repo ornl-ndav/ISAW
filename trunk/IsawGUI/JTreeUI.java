@@ -2,6 +2,11 @@
  * $Id$ 
  *
  * $Log$
+ * Revision 1.12  2001/07/02 20:30:46  neffk
+ * added deleteNode( Object obj ) method.  also, deleting DataSet objects is
+ * now done by calling <ds>.notifyIObservers( IObserver.DESTROY ), and the
+ * actual deletion is performed by this class's update(...) method.
+ *
  * Revision 1.11  2001/06/28 19:13:11  neffk
  * removed extra log message, cleaned up code a little
  *
@@ -53,21 +58,22 @@ public class JTreeUI
   implements IObserver, 
              Serializable 
 {
-    protected JPopupMenu m_popup;
-    protected Action m_action;
-    private JDataViewUI jdvui;
-    private JTree tree;
-    private JPropertiesUI jpui;
-    private JCommandUI jcui;
-    private CommandPane cp;
+  protected JPopupMenu m_popup;
+  protected Action m_action;
+  private JDataViewUI jdvui;
+  private JTree tree;
+  private JPropertiesUI jpui;
+  private JCommandUI jcui;
+  private CommandPane cp;
 
-    private DefaultMutableTreeNode root, root1;
-    DefaultTreeModel model, model1;
-    boolean set_selection = false ;
-    private JTabbedPane jtp;
-    private JTree logTree;
-    DataSet current_ds = null;
+  private DefaultMutableTreeNode root, root1;
+  DefaultTreeModel model, model1;
+  boolean set_selection = false ;
+  private JTabbedPane jtp;
+  private JTree logTree;
+  DataSet current_ds = null;
 
+  public static final String MODIFIED_NODE_TITLE = "Modified DataSet(s)";
 
   /**
    *
@@ -83,8 +89,8 @@ public class JTreeUI
     // set up the JTree object that runfiles and
     // data sets will be shown in.
     //
-    root = new DefaultMutableTreeNode("Session");
-    DefaultMutableTreeNode level1 = new DefaultMutableTreeNode( "Modified DataSet(s)");
+    root = new DefaultMutableTreeNode( "Session" );
+    DefaultMutableTreeNode level1 = new DefaultMutableTreeNode( MODIFIED_NODE_TITLE );
     model = new DefaultTreeModel(root);
     model.insertNodeInto(level1, root, 0);
     tree = new JTree(model);
@@ -190,7 +196,7 @@ public class JTreeUI
    * adds data to the tree that displays runfiles
    * and data sets,
    */
-  public void addDataSets(DataSet[] dss, String name)
+  public void addDataSets( DataSet[] dss, String name )
   {
     DefaultMutableTreeNode level1 = new DefaultMutableTreeNode(name);
     int index = root.getChildCount();
@@ -306,6 +312,15 @@ public class JTreeUI
   }
 
 
+  /*
+   * remove an arbitrary node from the tree.
+   */
+  public void deleteNode( Object obj )
+  {
+    DefaultMutableTreeNode ds_node = getNodeOfObject( obj );
+    model.removeNodeFromParent( ds_node );
+  }
+
 
   /**
    * examines the type of change made to 'observed' and
@@ -337,8 +352,9 @@ public class JTreeUI
       DataSet ds = (DataSet)observed;
 
       if( (String)reason == DESTROY )
-        System.out.println("Reason: " + reason );
-
+      {
+        deleteNode( observed );
+      }
       else if( (String)reason == DATA_REORDERED)
       {
         DefaultMutableTreeNode node = getNodeOfObject(observed);
@@ -455,13 +471,14 @@ public class JTreeUI
 
         else
         {
-   // System.out.println("Error: Tree update called with wrong reason");
-
         }
 
         return; 
        }           
     }
+
+  
+
 
 /*--------------------------=[ start MouseAdapter ]=--------------------------*/
 
