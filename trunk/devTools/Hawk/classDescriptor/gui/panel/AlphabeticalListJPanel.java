@@ -32,6 +32,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/05/26 20:03:23  kramer
+ * Added the methods:
+ *   getWaitingComponents()
+ *   setEveryButtonIsSelected()
+ *   setEveryButtonIsEnabled()
+ * Optimized the fillList() method
+ * Created a new renderer for the JList in the gui
+ * Added gui components to filter and search the items displayed in the list
+ *
  * Revision 1.2  2004/03/12 19:46:16  bouzekc
  * Changes since 03/10.
  *
@@ -40,21 +49,20 @@
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.net.URL;
 import java.util.Vector;
 
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
@@ -63,17 +71,23 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTextField;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.ToolTipManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import devTools.Hawk.classDescriptor.gui.ExternallyControlledFrame;
+import devTools.Hawk.classDescriptor.gui.MouseNotifiable;
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
 import devTools.Hawk.classDescriptor.gui.internalFrame.InternalFrameUtilities;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 import devTools.Hawk.classDescriptor.modeledObjects.InterfaceDefn;
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
 import devTools.Hawk.classDescriptor.tools.InterfaceUtilities;
+import devTools.Hawk.classDescriptor.tools.SearchUtilities;
 import devTools.Hawk.classDescriptor.tools.SystemsManager;
 
 /**
@@ -85,19 +99,16 @@ import devTools.Hawk.classDescriptor.tools.SystemsManager;
  * thrown when the user selects the close option.
  * @author Dominic Kramer
  */
-public class AlphabeticalListJPanel extends JPanel implements ActionListener, ListSelectionListener
+public class AlphabeticalListJPanel extends JPanel implements ActionListener, ListSelectionListener, MouseNotifiable
 {
 	//the following are declared here to allow actionPerformed() to find them
 	//they are components placed on the GUI
-		/** The Jlist that contains all of the interfacees and/or classes
+		/** 
+		 * The Jlist that contains all of the interfacees and/or classes
 		* in a project in alphabetical order
 		*/
 		protected JList alphaList;
 		
-		/**
-		* The mode that describes list
-		*/
-		protected DefaultListModel alphaModel;
 		/**
 		* The popup menu that appears when the user right clicks on the JList
 		*/
@@ -124,8 +135,23 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 		/**
 		 * The component on which the list is added.
 		 */
-		protected Object component;
-
+		protected ExternallyControlledFrame frame;
+		
+		protected JToggleButton viewInner;
+		protected JToggleButton viewOuter;
+		protected JToggleButton viewAbstract;
+		protected JToggleButton viewConcrete;
+		protected JToggleButton viewClasses;
+		protected JToggleButton viewInterfaces;
+//		protected JLabel label;
+		protected JTextField label;
+		protected JPanel searchPanel;
+		protected JButton clearButton;
+		protected JButton searchButton;
+		protected JTextField searchField;
+//		protected JComboBox comboBox;
+		protected JCheckBox checkBox;
+		
 	/**
 	 * Create a new AlphabeticalListGUI.
 	 * @param PRO The Project whose data is written.
@@ -136,31 +162,114 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 	 * @param comp The component onto which the panel is placed.  If the component is a JFrame or JInternalFrame the 
 	 * panel's size automatically changes to fit the contents of the list when the contents change.
 	 */
-	public AlphabeticalListJPanel(Project PRO, boolean shortJava, boolean shortOther, HawkDesktop desk, Object comp)
+	public AlphabeticalListJPanel(Project PRO, boolean shortJava, boolean shortOther, HawkDesktop desk, ExternallyControlledFrame comp)
 	{
 		//Now to define the Project that the information is obtained from
 		//to fill in data in the GUI
 			project = PRO;
 			desktop = desk;
-			component = comp;
-			shortenJavaBox = new JCheckBox();
+			frame = comp;
+			label = new JTextField(20);
+				label.setBackground(this.getBackground());
+				label.setEditable(false);
+/*
+			String[] strArr = new String[2];
+				strArr[0]="All Data";
+				strArr[1]="Currently Displayed Data";
+			comboBox = new JComboBox(strArr);
+				comboBox.addActionListener(this);
+				comboBox.setActionCommand("comboBox");
+				ToolTipManager.sharedInstance().registerComponent(comboBox);
+				comboBox.setToolTipText("Set whether to perform the search and/or filters on all the classes and interfaces or only those that are currently displayed.");
+*/
+				checkBox = new JCheckBox("Search/filter within results");
+					checkBox.setSelected(false);
+					checkBox.addActionListener(this);
+					checkBox.setActionCommand("checkBox");
+					ToolTipManager.sharedInstance().registerComponent(checkBox);
+					checkBox.setToolTipText("Specify if you want to search/filter the currently displayed classes and interfaces");
+				shortenJavaBox = new JCheckBox();
 				shortenJavaBox.setSelected(shortJava);
+				ToolTipManager.sharedInstance().registerComponent(shortenJavaBox);
 			shortenOtherBox = new JCheckBox();
 				shortenOtherBox.setSelected(shortOther);
-			
+				ToolTipManager.sharedInstance().registerComponent(shortenOtherBox);
+		
+			searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+				JLabel textLabel = new JLabel("Name:  ");
+				searchField = new JTextField(20);
+				searchButton = new JButton("Search");
+					searchButton.addActionListener(this);
+					searchButton.setActionCommand("search");
+					ToolTipManager.sharedInstance().registerComponent(searchButton);
+					searchButton.setToolTipText("Searches all of the currently displayed classes and/or interfaces.");
+				clearButton = new JButton("Reset");
+					clearButton.addActionListener(this);
+					clearButton.setActionCommand("reset");
+					ToolTipManager.sharedInstance().registerComponent(clearButton);
+					clearButton.setToolTipText("Resets the search and filters specifications and displays all classes and interfaces.");
+			searchPanel.add(textLabel);
+			searchPanel.add(searchField);
+			searchPanel.add(clearButton);
+			searchPanel.add(searchButton);
+		
+		setLayout(new GridLayout(1,1));
+		
+		//these are used for the toolbar
+		viewInner = getImagedJToggleButton("view_inner.png","Inner");
+			viewInner.setActionCommand("toolbar.inner");
+			viewInner.addActionListener(this);
+			viewInner.setSelected(false);
+			ToolTipManager.sharedInstance().registerComponent(viewInner);
+			viewInner.setToolTipText("View only inner classes or interfaces");
+		viewOuter = getImagedJToggleButton("view_outer.png","Outer");
+			viewOuter.setActionCommand("toolbar.outer");
+			viewOuter.addActionListener(this);
+			viewOuter.setSelected(false);
+			ToolTipManager.sharedInstance().registerComponent(viewOuter);
+			viewOuter.setToolTipText("View only outer classes or interfaces");
+		viewAbstract = getImagedJToggleButton("view_abstract.png","Abstract");
+			viewAbstract.setActionCommand("toolbar.abstract");
+			viewAbstract.addActionListener(this);
+			viewAbstract.setSelected(false);
+			ToolTipManager.sharedInstance().registerComponent(viewAbstract);
+			viewAbstract.setToolTipText("View only interfaces or abstract classes");
+		viewConcrete = getImagedJToggleButton("view_concrete.png","Concrete");
+			viewConcrete.setActionCommand("toolbar.concrete");
+			viewConcrete.addActionListener(this);
+			viewConcrete.setSelected(false);
+			ToolTipManager.sharedInstance().registerComponent(viewConcrete);
+			viewConcrete.setToolTipText("View only concrete classes");
+		viewClasses = getImagedJToggleButton("view_classes.png","Classes");
+			viewClasses.setActionCommand("toolbar.classes");
+			viewClasses.addActionListener(this);
+			viewClasses.setSelected(false);
+			ToolTipManager.sharedInstance().registerComponent(viewClasses);
+			viewClasses.setToolTipText("View only classes");
+		viewInterfaces = getImagedJToggleButton("view_interfaces.png","Interfaces");
+			viewInterfaces.setActionCommand("toolbar.interfaces");
+			viewInterfaces.addActionListener(this);
+			viewInterfaces.setSelected(false);
+			ToolTipManager.sharedInstance().registerComponent(viewInterfaces);
+			viewInterfaces.setToolTipText("View only interfaces");
+		
+		label.setText("All classes and interfaces are displayed");
+		
 		//Now to make the JList
 			//now to make the list for the gui		
 			//this model allows you to modify the list
-			alphaModel = new DefaultListModel();
-			alphaList = new JList(alphaModel);
+			alphaList = new JList();
+			alphaList.setListData(project.getInterfaceVec());
 			alphaList.addListSelectionListener(this);
-			alphaList.setCellRenderer(new AlphaListRenderer());
+			alphaList.setCellRenderer(new AlphaListRenderer(this));
 			ToolTipManager.sharedInstance().registerComponent(alphaList);
 			//the following only allows one item to be selected at a time
 			alphaList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);		
 		
 		//now to fill the list
-			fillList(shortJava, shortOther);
+			shortenJavaBox.setSelected(shortJava);
+			shortenOtherBox.setSelected(shortOther);
+			fillList();
 				
 		//now to make the JScrolPane to put the JList on		
 			JScrollPane listPane = new JScrollPane(alphaList);
@@ -206,6 +315,54 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 			alphaList.addMouseListener(popupListener);
 			
 		add(listPane);
+	}
+	
+	private JToggleButton getImagedJToggleButton(String filename, String name)
+	{
+		ImageIcon icon = SystemsManager.getImageIconOrNull(filename);
+		if (icon != null)
+			return new JToggleButton(icon);
+		else
+			return new JToggleButton(name);
+	}
+	
+	public JPanel getSearchPanel()
+	{
+		return searchPanel;
+	}
+	
+	public void setSearchPanel(JPanel panel)
+	{
+		searchPanel = panel;
+	}
+	
+	public JTextField getLabel()
+	{
+		return label;
+	}
+	
+	public void setLabel(JTextField str)
+	{
+		label = str;
+	}
+	
+	public JToolBar createToolBar()
+	{
+		JToolBar toolBar = new JToolBar();
+			toolBar.add(new JLabel("Filters:  "));
+			toolBar.add(viewInner);
+			toolBar.add(viewOuter);
+			toolBar.add(viewAbstract);
+			toolBar.add(viewConcrete);
+			toolBar.add(viewClasses);
+			toolBar.add(viewInterfaces);
+			toolBar.add(new JToolBar.Separator());
+			toolBar.add(checkBox);
+		toolBar.setFloatable(false);
+		ToolTipManager.sharedInstance().registerComponent(toolBar);
+		toolBar.setToolTipText("Filter which classes or interfaces are to be displayed");
+		
+		return toolBar;
 	}
 	
 	/**
@@ -349,26 +506,12 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 	 */
 	public Interface[] getSelectedInterfaces()
 	{
-/*
 		int[] indexArr = alphaList.getSelectedIndices();
 		Vector tempVec = new Vector();
 		for (int i=0; i<indexArr.length; i++)
 		{
 			if (indexArr[i] >= 0)
-				tempVec.add((Interface)project.getInterfaceVec().elementAt(indexArr[i]));
-		}
-		Interface[] intfArr = new Interface[tempVec.size()];
-		for (int i=0; i<tempVec.size(); i++)
-			intfArr[i] = (Interface)tempVec.elementAt(i);
-			
-		return intfArr;
-*/
-		int[] indexArr = alphaList.getSelectedIndices();
-		Vector tempVec = new Vector();
-		for (int i=0; i<indexArr.length; i++)
-		{
-			if (indexArr[i] >= 0)
-				tempVec.add(((InterfaceListItem)alphaModel.elementAt(indexArr[i])).getInterface());
+				tempVec.add( (Interface)alphaList.getModel().getElementAt(indexArr[i]) );
 		}
 		Interface[] intfArr = new Interface[tempVec.size()];
 		for (int i=0; i<tempVec.size(); i++)
@@ -376,44 +519,140 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 					
 		return intfArr;
 	}
-	
+		
 	/**
 	 * Fill the list with the classes and interfaces from the Project object from the field project.
 	 * @param shortJava True if you want a name to be shortened if it is a java name.  For 
 	 * example, java.lang.String would be shortened to String.
 	 * @param shortOther True if you want a name to be shortened if it is a non-java name.
 	 */
-	public void fillList(boolean shortJava, boolean shortOther)
+	public void fillList()//boolean shortJava, boolean shortOther)
 	{
-		alphaModel.removeAllElements();
-		//first check if the Vector of Interfaces needs to be alphabatized
-			InterfaceUtilities.alphabatizeVector(project.getInterfaceVec(), shortJava, shortOther);
+		shortenJavaBox.setEnabled(false);
+		shortenOtherBox.setEnabled(false);
+		shortenJavaBox.setToolTipText("The list is still being populated");
+		shortenOtherBox.setToolTipText("The list is still being populated");
 		
-		for (int i = 0; i < (project.getInterfaceVec()).size(); i++)
+		Vector currentlyDisplayedIntf = null;
+		
+		if (!checkBox.isSelected())
+			currentlyDisplayedIntf = project.getInterfaceVec();
+		else
 		{
-			//alphaModel.addElement((((((Interface)((project.getInterfaceVec()).elementAt(i))).getPgmDefn()).getInterface_name(shortJava, shortOther))) );
-			alphaModel.addElement(new InterfaceListItem((Interface)project.getInterfaceVec().elementAt(i), shortJava, shortOther));
+			currentlyDisplayedIntf = new Vector();
+			for (int i=0; i<alphaList.getModel().getSize(); i++)
+				currentlyDisplayedIntf.add(alphaList.getModel().getElementAt(i));
 		}
-	}
 
-	/**
-	 * Fill the list with the classes and interfaces from the Project object pro.
-	 * @param pro The Project object whose classes and interfaces are displayed.
-	 * @param shortJava True if you want a name to be shortened if it is a java name.  For 
-	 * example, java.lang.String would be shortened to String.
-	 * @param shortOther True if you want a name to be shortened if it is a non-java name.
-	 */
-	public void fillList(Project pro, boolean shortJava, boolean shortOther)
-	{
-		alphaModel.removeAllElements();
-		//first check if the Vector of Interfaces needs to be alphabatized
-			InterfaceUtilities.alphabatizeVector(pro.getInterfaceVec(), shortJava, shortOther);
-		for (int i = 0; i < (pro.getInterfaceVec()).size(); i++)
+		InterfaceUtilities.alphabatizeVector(currentlyDisplayedIntf, shortenJavaBox.isSelected(), shortenOtherBox.isSelected());
+		Vector tempVec = new Vector();
+		InterfaceDefn intf = new InterfaceDefn();
+		boolean viewAll = (!viewInner.isSelected() && !viewOuter.isSelected() && !viewAbstract.isSelected() && !viewConcrete.isSelected() && !viewClasses.isSelected() && !viewInterfaces.isSelected());
+		for (int i=0; i<currentlyDisplayedIntf.size(); i++)
 		{
-			alphaModel.addElement( (((((Interface)((pro.getInterfaceVec()).elementAt(i))).getPgmDefn()).getInterface_name(shortJava, shortOther))) );
+			intf = ((Interface)currentlyDisplayedIntf.elementAt(i)).getPgmDefn();
+
+			boolean show = true;
+			
+			if (!viewAll)
+			{
+				if (viewInner.isSelected())
+					show = show && intf.isInner();
+				else if (show && viewOuter.isSelected())
+					show = show && intf.isOuter();
+				
+				if (show && viewAbstract.isSelected())
+					show = show && intf.isAbstract();
+				else if (show && viewConcrete.isSelected())
+					show = show && intf.isConcrete();
+					
+				if (show && viewClasses.isSelected())
+					show = show && intf.isClass();
+				else if (show && viewInterfaces.isSelected())
+					show = show && intf.isInterface();
+			}
+
+			if (show)
+				tempVec.addElement((Interface)currentlyDisplayedIntf.elementAt(i));
 		}
+		alphaList.setListData(tempVec);
+		
+		shortenJavaBox.setEnabled(true);
+		shortenOtherBox.setEnabled(true);
+		shortenJavaBox.setToolTipText(null);
+		shortenOtherBox.setToolTipText(null);
 	}
 	
+	/**
+	 * Looks at the JToggleButton, JCheckBoxes, and JTextField (holding the search querie) to determine 
+	 * which Interfaces should be displayed in the list.  The Interfaces that are to be displayed are placed in 
+	 * Vector returned.
+	 */
+	private Vector getAppropriateInterfaces()
+	{
+		Vector vec = new Vector();
+		if (!checkBox.isSelected())
+		{
+			Vector initialVec = project.getInterfaceVec();
+			
+		}
+		else
+		{
+		}
+		
+		return vec;
+	}
+	
+	public void searchList()
+	{
+		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		StringBuffer str = new StringBuffer();
+		
+		if (!checkBox.isSelected())
+			str.append("all ");
+		
+		if (viewAbstract.isSelected())
+			str.append("abstract ");
+		else if (viewConcrete.isSelected())
+			str.append("concrete ");
+			
+		if (viewInner.isSelected())
+			str.append("inner ");
+		else if (viewOuter.isSelected())
+			str.append("outer ");
+			
+		if (!viewClasses.isSelected() && !viewInterfaces.isSelected())
+			str.append("classes and interfaces");
+		else if (viewClasses.isSelected())
+			str.append("classes");
+		else if (viewInterfaces.isSelected())
+			str.append("interfaces");
+			
+		if (!checkBox.isSelected())
+			str.append(".");
+		else
+			str.append(" within previous results.");
+			
+		label.setText("Searching "+str.toString());
+		Vector tempVec = new Vector();
+		if (!checkBox.isSelected())
+		{
+			for (int i=0; i<project.getInterfaceVec().size(); i++)
+				if (searchField.getText().trim().equals("") || SearchUtilities.stringMatches(searchField.getText(),((Interface)project.getInterfaceVec().elementAt(i)).getPgmDefn().getInterface_name(shortenJavaBox.isSelected(),shortenOtherBox.isSelected()),true,false,false))
+					tempVec.add((Interface)project.getInterfaceVec().elementAt(i));
+		}
+		else
+		{
+			for (int i=0; i<alphaList.getModel().getSize(); i++)
+				if (searchField.getText().trim().equals("") || SearchUtilities.stringMatches(searchField.getText(),((Interface)alphaList.getModel().getElementAt(i)).getPgmDefn().getInterface_name(shortenJavaBox.isSelected(),shortenOtherBox.isSelected()),true,false,false))
+					tempVec.add((Interface)alphaList.getModel().getElementAt(i));
+		}
+			
+		alphaList.setListData(tempVec);
+		label.setText("Searched "+str.toString());
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	}
+		
 	/**
 	 * Handles ActionEvents.
 	 */
@@ -421,6 +660,26 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 	{
 		ActionPerformedThread thread = new ActionPerformedThread(event,this);
 		thread.start();
+	}
+	
+	private void setEveryButtonIsSelected(boolean bol)
+	{
+		viewInner.setSelected(bol);
+		viewOuter.setSelected(bol);
+		viewAbstract.setSelected(bol);
+		viewConcrete.setSelected(bol);
+		viewClasses.setSelected(bol);
+		viewInterfaces.setSelected(bol);
+	}
+	
+	private void setEveryButtonIsEnabled(boolean bol)
+	{
+		viewInner.setEnabled(bol);
+		viewOuter.setEnabled(bol);
+		viewAbstract.setEnabled(bol);
+		viewConcrete.setEnabled(bol);
+		viewClasses.setEnabled(bol);
+		viewInterfaces.setEnabled(bol);
 	}
 	
 	/**
@@ -441,28 +700,106 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 		else if (event.getActionCommand().equals("associate.javadocs"))
 			InternalFrameUtilities.showAssociateJavadocsWindow(getSelectedInterfaces(),desktop);
 		else if (event.getActionCommand().equals("properties.shorten"))
+			fillList();
+		else if (event.getActionCommand().equals("search"))
+			searchList();
+		else if (event.getActionCommand().equals("reset"))
 		{
-			fillList(shortenJavaBox.isSelected(), shortenOtherBox.isSelected());
-			try
+			this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+			label.setText("Clearing the search specifications.");
+			alphaList.setListData(project.getInterfaceVec());
+			searchField.setText("");
+			setEveryButtonIsSelected(false);
+			label.setText("All classes and interfaces are displayed");
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			System.out.println("setting the cursor to the default cursor in reset");
+		}
+		else if (event.getActionCommand().startsWith("toolbar."))
+		{
+			if (event.getActionCommand().endsWith(".abstract"))
 			{
-				if (component instanceof JFrame)
-					((JFrame)component).pack();
-				else if (component instanceof JInternalFrame)
-					((JInternalFrame)component).pack();
+				if (viewConcrete.isSelected() && viewAbstract.isSelected())
+					viewConcrete.setSelected(false);
 			}
-			catch (Throwable e)
+			else if (event.getActionCommand().endsWith(".concrete"))
 			{
-				SystemsManager.printStackTraceToStandardOutput(e);
-				try
-				{
-					fillList(shortenJavaBox.isSelected(), shortenOtherBox.isSelected());
-				}
-				catch (Throwable e2)
-				{
-					SystemsManager.printStackTraceToStandardOutput(e2);
-				}
+				if (viewConcrete.isSelected() && viewAbstract.isSelected())
+					viewAbstract.setSelected(false);
 			}
+			else if (event.getActionCommand().endsWith(".inner"))
+			{
+				if (viewInner.isSelected() && viewOuter.isSelected())
+					viewOuter.setSelected(false);
+			}
+			else if (event.getActionCommand().endsWith(".outer"))
+			{
+				if (viewInner.isSelected() && viewOuter.isSelected())
+					viewInner.setSelected(false);
+			}
+			else if (event.getActionCommand().endsWith(".classes"))
+			{
+				if (viewClasses.isSelected() && viewInterfaces.isSelected())
+					viewInterfaces.setSelected(false);
+			}
+			else if (event.getActionCommand().endsWith(".interfaces"))
+			{
+				if (viewClasses.isSelected() && viewInterfaces.isSelected())
+					viewClasses.setSelected(false);
+			}
+			String frontFilterStr = "";
+			String frontStr = "";
+			StringBuffer str = new StringBuffer();
+
+			if (!checkBox.isSelected())
+			{
+				frontStr = "All";
+				frontFilterStr = "Filtering all";
+			}
+			else
+				frontFilterStr = "Filtering";
 			
+			if (viewAbstract.isSelected())
+				str.append(" abstract");
+			else if (viewConcrete.isSelected())
+				str.append(" concrete");
+			
+			if (viewInner.isSelected())
+				str.append(" inner");
+			else if (viewOuter.isSelected())
+				str.append(" outer");
+			
+			if (!viewClasses.isSelected() && !viewInterfaces.isSelected())
+				str.append(" classes and interfaces");
+			else if (viewClasses.isSelected())
+				str.append(" classes");
+			else if (viewInterfaces.isSelected())
+				str.append(" interfaces");
+			
+			if (checkBox.isSelected())
+				str.append(" from the previous results");
+			
+			String end = "";
+			if (searchField.getText().equals(""))
+				end = ".";
+			else
+				end = " that meet the search requirements.";
+			
+			//String front = String.valueOf(str.toString().charAt(0));
+			//	front.toUpperCase();
+			
+			this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+			label.setText(frontFilterStr+str.toString()+end);
+			fillList();
+			label.setText(frontStr+str.toString()+" are displayed"+end);
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		}
+		else if (event.getActionCommand().equals("checkBox"))
+		{
+			// Don't do anything.  The next option selected (search queried) will applied to the 
+			// whole list or the currently displayed interfaces, depending on whether the checkbox
+			// is selected or not.
+			// fillList(shortenJavaBox.isSelected(),shortenOtherBox.isSelected());
+			// searchList();
 		}
 	}
 	
@@ -532,51 +869,44 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 		/** Defines what to do in the new thread. */
 		public void run()
 		{
-			panel.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 			actionPerformedInSeparateThread(e);
-			panel.setCursor(Cursor.getDefaultCursor());
 		}
 	}
 	
 	public class AlphaListRenderer extends DefaultListCellRenderer
 	{
+		protected AlphabeticalListJPanel aljp;
+				
+		public AlphaListRenderer(AlphabeticalListJPanel panel)
+		{
+			aljp = panel;
+		}
+		
 		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
 		{
 			super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
 			
-			InterfaceDefn intfD = ((InterfaceListItem)value).getInterface().getPgmDefn();
-
-/*			
-			if (isSelected)
-			{
-				list.setForeground(list.getSelectionForeground());
-				list.setBackground(list.getSelectionBackground());
-			}
-			else
-			{
-				list.setForeground(list.getForeground());
-				list.setBackground(list.getBackground());
-			}
-*/			
-			ImageIcon icon = null;
+			InterfaceDefn intfD =  ((Interface)value).getPgmDefn();
+			setText( intfD.getInterface_name(aljp.getShortenJavaCheckBox().isSelected(),aljp.getShortenOtherCheckBox().isSelected()));
 			
+			ImageIcon icon = null;
 			if (intfD.isClass())
 			{
 				if (intfD.isAbstract())
 				{
 					setToolTipText("Abstract Class "+intfD.getInterface_name());
-					icon = getImageIcon("devTools/Hawk/classDescriptor/pixmaps/abstract_class_icon.png");
+					icon = SystemsManager.getImageIconOrBlankIcon("abstract_class_icon.png");
 				}
 				else
 				{
 					setToolTipText("Class "+intfD.getInterface_name());
-					icon = getImageIcon("devTools/Hawk/classDescriptor/pixmaps/class_icon.png");
+					icon =SystemsManager. getImageIconOrBlankIcon("class_icon.png");
 				}
 				setFont(new Font("Plain",Font.PLAIN,12));
 			}
 			else
 			{
-				icon = getImageIcon("devTools/Hawk/classDescriptor/pixmaps/interface_icon.png");
+				icon = SystemsManager.getImageIconOrBlankIcon("interface_icon.png");
 				setFont(new Font("Italic",Font.ITALIC,12));
 				setToolTipText("Interface "+intfD.getInterface_name());
 			}
@@ -588,46 +918,19 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 //			setOpaque(true);
 			
 			return this;
-		}
-		
-		private ImageIcon getImageIcon(String location)
-		{
-			URL imageURL = ClassLoader.getSystemClassLoader().getResource(location);
-			ImageIcon icon = null;
-			if (imageURL != null)
-				icon = new ImageIcon(imageURL);
-		
-			return icon;
-		}
+		}		
 	}
 	
-	public class InterfaceListItem
+	/**
+	 * The Components in the array returned from this method are the Components that should have the 
+	 * mouse use the waiting animation when an operation is in progress.
+	 */
+	public Component[] determineWaitingComponents()
 	{
-		protected Interface intf;
-		protected boolean shortenJava;
-		protected boolean shortenOther;
-		
-		public InterfaceListItem(Interface intF, boolean shortJava, boolean shortOther)
-		{
-			intf = intF;
-			shortenJava = shortJava;
-			shortenOther = shortOther;
-		}
-		
-		public Interface getInterface()
-		{
-			return intf;
-		}
-		
-		public void setShorteningParameters(boolean shortJava, boolean shortOther)
-		{
-			shortenJava = shortJava;
-			shortenOther = shortOther;
-		}
-		
-		public String toString()
-		{
-			return intf.getPgmDefn().getInterface_name(shortenJava,shortenOther);
-		}
+		Component[] compArr = new Component[3];
+		compArr[0] = alphaList;
+		compArr[1] = popup;
+		compArr[2] = this;
+		return compArr;
 	}
 }
