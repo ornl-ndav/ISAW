@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/05/31 20:18:55  rmikk
+ *  Added javadocs for the getCommand method
+ *
  *  Revision 1.4  2001/04/26 19:04:25  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -175,7 +178,7 @@ public class  CalculateMomentOfGroup  extends    AnalyzeOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * Returns the abbreviated command string for this operator.
+   * @return	the command name to be used with script processor: in this case MomGrp
    */
    public String getCommand()
    {
