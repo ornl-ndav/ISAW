@@ -44,9 +44,13 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
     } else {
       myParser.ReInit( new StringReader( text )  );
     }
-    //Vector tempy = myParser.ExpansionList(  );
-    return myParser.ExpansionList(  );
-    //return tempy;
+    Vector tempy = myParser.ExpansionList(  );
+
+    if( tempy.size(  ) == 1 && tempy.get( 0 ).equals( "" ) ) {
+      return new Vector(  );
+    }  else  {
+      return tempy;
+    }
   }
 
 
