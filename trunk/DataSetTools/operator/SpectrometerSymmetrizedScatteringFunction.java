@@ -3,8 +3,8 @@
  *     1.1  2000/08/10   Dongfeng Chen Dennis Mikkelson
  *             
  *  $Log$
- *  Revision 1.1  2000/10/03 22:21:16  dennis
- *  New operator for HRMECS
+ *  Revision 1.2  2000/10/10 20:23:29  dennis
+ *  Log message was missing.  New operator for HMRECS.
  *
  *
  *  Revision 1.1  2000/08/10 10:19:00  Dongfeng dennis
