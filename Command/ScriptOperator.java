@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2001/08/02 15:52:01  chatter
+ * Changed message in the log entry for running this as a batch file
+ *
  * Revision 1.12  2001/07/31 22:16:26  rmikk
  * Used Dennis' DataSet.util Shared Data to load the Isaw
  * Props.dat file
@@ -38,7 +41,7 @@
  * Revision 1.11  2001/07/20 21:23:31  rmikk
  * Fixed Main program so a script and or class file(?) can
  * be executed as follows:
- *     "java Command.ScriptProcessor  filename"
+ *     "java Command.ScriptOperator  filename"
  * The dialog box will pop up if there are any script parameters
  *
  * Revision 1.10  2001/06/27 18:37:53  rmikk
