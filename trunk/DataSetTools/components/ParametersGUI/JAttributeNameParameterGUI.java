@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/03/08 16:20:39  pfpeterson
+ *  Added method to disable the GUIs. This is to help out wizards.
+ *
  *  Revision 1.6  2001/08/16 15:33:05  rmikk
  *  Fixed Layout to conform with the other ParameterGUI's
  *  Fixed the Selected item in the combo box to the .toString value of the parameter
@@ -90,6 +93,10 @@ public class JAttributeNameParameterGUI extends JParameterGUI
         return segment;
     }
 
+
+    public void setEnabled(boolean en){
+        this.combobox.setEnabled(en);
+    }
 
     public Parameter getParameter()
     {

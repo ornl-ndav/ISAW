@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/03/08 16:20:41  pfpeterson
+ *  Added method to disable the GUIs. This is to help out wizards.
+ *
  *  Revision 1.5  2001/08/15 02:08:38  rmikk
  *  Set the selected item of the combo box to the value of
  *  the parameter
@@ -85,6 +88,10 @@ public class JDataSetParameterGUI extends JParameterGUI
     public JPanel getGUISegment()
     {
         return segment;
+    }
+
+    public void setEnabled(boolean en){
+        this.combobox.setEnabled(en);
     }
 
     public Parameter getParameter()

@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/03/08 16:20:44  pfpeterson
+ *  Added method to disable the GUIs. This is to help out wizards.
+ *
  *  Revision 1.4  2001/08/07 20:58:16  rmikk
  *  Eliminated setPreferred size and set segment layout to a
  *  grid layout
@@ -51,7 +54,7 @@ import java.io.*;
 public class JIntegerParameterGUI extends JParameterGUI implements Serializable
 {
     private JPanel segment;
-    private JTextField intText;
+    private IntegerField intText;
     
     public JIntegerParameterGUI(Parameter parameter)
     { 
@@ -60,7 +63,7 @@ public class JIntegerParameterGUI extends JParameterGUI implements Serializable
        String value = ((Integer)parameter.getValue()).toString();
        JLabel label = new JLabel("  "+parameter.getName());
        //label.setPreferredSize(new Dimension(170,25));
-       intText = new JTextField(20);
+       intText = new IntegerField(20);
        intText.setText(value);
 
        segment = new JPanel();
@@ -72,6 +75,10 @@ public class JIntegerParameterGUI extends JParameterGUI implements Serializable
     public JPanel getGUISegment()
     {
         return segment;
+    }
+
+    public void setEnabled(boolean en){
+        this.intText.setEditable(en);
     }
 
     public Parameter getParameter()

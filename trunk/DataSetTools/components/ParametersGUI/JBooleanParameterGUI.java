@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/03/08 16:20:40  pfpeterson
+ *  Added method to disable the GUIs. This is to help out wizards.
+ *
  *  Revision 1.3  2001/06/26 18:37:26  dennis
  *  Added Copyright and GPL license.
  *  Removed un-needed imports and improved
@@ -65,6 +68,10 @@ public class JBooleanParameterGUI extends    JParameterGUI
     public JPanel getGUISegment()
     {
         return segment;
+    }
+
+    public void setEnabled(boolean en){
+        this.jcb.setEnabled(en);
     }
 
     public Parameter getParameter()

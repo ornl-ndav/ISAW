@@ -3,6 +3,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.3  2002/03/08 16:20:45  pfpeterson
+ * Added method to disable the GUIs. This is to help out wizards.
+ *
  * Revision 1.2  2001/07/25 17:39:08  neffk
  * fixed method getParameter() by removing some errors introduced from
  * copying a different operator.
@@ -65,6 +68,10 @@ public class JIntervalParameterGUI
     return segment;
   }
 
+
+  public void setEnabled(boolean en){
+      this.text.setEnabled(en);
+  }
 
   /**
    * get the value that the user entered.
