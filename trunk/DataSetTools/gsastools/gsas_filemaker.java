@@ -31,8 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/11/09 19:40:06  dennis
+ *  Now allows the monitor DataSet to be null.
+ *
  *  Revision 1.7  2001/11/08 22:28:49  chatterjee
- *  Added lines required to be read as a PDF file. GSAS will ignore the extra lines.
+ *  Added lines required to be read as a PDF file. GSAS will ignore the 
+ *  extra lines.
  *
  *  Revision 1.6  2001/09/21 19:11:35  dennis
  *  Improved label on file name that's printed to the console.
@@ -68,19 +72,16 @@ import DataSetTools.operator.*;
 
 public class gsas_filemaker
 {                      
-   
     public gsas_filemaker(){};
    
-    public gsas_filemaker( DataSet mon_ds, DataSet ds, String filename){
-  
+    public gsas_filemaker( DataSet mon_ds, DataSet ds, String filename )
+    {
     File f= new File(filename);
     try{
         FileOutputStream op= new FileOutputStream(f);
         OutputStreamWriter opw = new OutputStreamWriter(op);
          System.out.println("The GSAS file name is " +filename);
          String S = ds.getTitle();
-        
-
 
         opw.write("BANKS"  + "     Ref Angle" + "     Total length");
         opw.write("\n"); 
@@ -88,18 +89,17 @@ public class gsas_filemaker
         
          for(int i=1; i<=ein; i++)
         {
-
             DataSetTools.dataset.Data dd = ds.getData_entry(i-1);
             AttributeList attr_list = dd.getAttributeList();
-             DetectorPosition position=(DetectorPosition)
+            DetectorPosition position=(DetectorPosition)
                        attr_list.getAttributeValue( Attribute.DETECTOR_POS);
 
-             Float initial_path_obj=(Float)
+            Float initial_path_obj=(Float)
                         attr_list.getAttributeValue(Attribute.INITIAL_PATH);
 
-    		float initial_path       = initial_path_obj.floatValue();
-    		float spherical_coords[] = position.getSphericalCoords();
-    		float total_length       = initial_path + spherical_coords[0];
+    	    float initial_path       = initial_path_obj.floatValue();
+    	    float spherical_coords[] = position.getSphericalCoords();
+            float total_length       = initial_path + spherical_coords[0];
             float cylindrical_coords[] = position.getCylindricalCoords();
             float ref_angle = (float)(cylindrical_coords[1]*180.0/(java.lang.Math.PI));
 
@@ -113,12 +113,14 @@ public class gsas_filemaker
          int en= ds.getNum_entries();
          int bank=0;
 
-        
-	  Data mon_1 = mon_ds.getData_entry(0);
-
-        Float result =(Float)(mon_1.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT));
-        opw.write ("MONITOR: " +result);
-        opw.write("\n");
+        if ( mon_ds != null )                // allow this to still work without
+        {                                    // a monitor data set specified.
+   	  Data mon_1 = mon_ds.getData_entry(0);
+          Float result =(Float)
+            (mon_1.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT));
+          opw.write ("MONITOR: " +result);
+          opw.write("\n");
+        }
 
          for(int i=1; i<=en; i++)
         {
@@ -146,17 +148,13 @@ public class gsas_filemaker
                         opw.write("  "+df.format(y[l]));
                   }
                   opw.write("\n");
-                  
             }
-       
         }
         opw.flush();
         opw.close();
         Thread.sleep(100);
         } catch(Exception d){}
-    
     }
+
     public static void main(String[] args){}
-
-
 }
