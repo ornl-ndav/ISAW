@@ -28,18 +28,18 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- *
- *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/01/10 15:35:59  dennis
+ * Added getCategoryList method to place operator in menu system.
+ *
  * Revision 1.1  2004/07/23 17:42:46  taoj
  * test version.
  *
-
  */
 package Operators.TOF_Diffractometer;
 
-import DataSetTools.operator.Wrappable;
+import DataSetTools.operator.*;
 import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
 import DataSetTools.math.tof_calc;
 import java.io.IOException;
@@ -68,17 +68,20 @@ import java.util.ArrayList;
 
 
 /**
- * This class preforms deadtime and delayed neutron corrections, calculates detector efficiency, normalizes
- * detector counts to beam monitor counts, and convert TOF to wavelength then rebin data to Q, i.e., the first
- * step of the S(Q) data analysis that derives normalized counts in Q from IPNS run files. It corresponds to the
+ * This class preforms deadtime and delayed neutron corrections, calculates 
+ * detector efficiency, normalizes detector counts to beam monitor counts, 
+ * and convert TOF to wavelength then rebin data to Q, i.e., the first
+ * step of the S(Q) data analysis that derives normalized counts in Q from 
+ * IPNS run files. It corresponds to the
  * CRUNCH routine in th 1999 GLAD manual;
  */
-public class GLADCrunch implements Wrappable {          //used as an ISAW operator;
+public class GLADCrunch implements Wrappable, IWrappableWithCategoryList { 
   //~ Instance fields **********************************************************
   
   private boolean DEBUG = false;
   /* @param runfile use ISAW GUI to input the absolute path of the runfile;
-   * @param ISvan the vanadium calibration's beam monitor spectrum is needed for later use;
+   * @param ISvan the vanadium calibration's beam monitor spectrum is needed 
+   *              for later use;
    * @param redpar GLAD bad detector list file;
    */
   public LoadFileString runfile = new LoadFileString();
@@ -86,6 +89,22 @@ public class GLADCrunch implements Wrappable {          //used as an ISAW operat
   public LoadFileString redpar = new LoadFileString();
 
   //~ Methods ******************************************************************
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.TOF_NGLAD;
+  }
 
   /**
    * @return The script name for this Operator.

@@ -29,10 +29,12 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- *
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/01/10 15:36:00  dennis
+ * Added getCategoryList method to place operator in menu system.
+ *
  * Revision 1.1  2004/07/14 16:06:27  rmikk
  * Initial Checkin.  Does arbitrary calibration.  Also does full calibration
  *
@@ -56,9 +58,9 @@ import DataSetTools.math.*;
  */
 
 
-public class Calib implements Wrappable{
-  //~ Instance fields **********************************************************
+public class Calib implements Wrappable, IWrappableWithCategoryList {
 
+  //~ Instance fields **********************************************************
   
   public DataSet DS;
   public LoadFileString CalibFile1;
@@ -66,6 +68,22 @@ public class Calib implements Wrappable{
   public Vector otherInformation= new Vector();
 
   //~ Methods ******************************************************************
+
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.UTILS_DATA_SET;
+  }
+
 
   /**
    *  Returns "Calib", the name used to invoke this operator in Scripts
@@ -78,24 +96,22 @@ public class Calib implements Wrappable{
    *  Returns an HTML-Like documentation for the ISAW documentation system
    */
   public String getDocumentation(  ) {
-    
 
-       StringBuffer s = new StringBuffer(  );
-       s.append( "@This class is central point to calibrate \"All\" data sets" );
+     StringBuffer s = new StringBuffer(  );
+     s.append( "@This class is central point to calibrate \"All\" data sets" );
       
-       s.append( "@algorithm The Data Set filename, instrument type, ");
-       s.append( "calibration filename and extension are used to determine the" );
-       s.append( " calibration procedure that is used" );
-       s.append( "@param DS  the DataSet to use" );
-       s.append( "@param CalibFile1  The first calibration file" );
-       s.append( "@param CalibFile2" );
-       s.append( "@param otherInformation" );
+     s.append( "@algorithm The Data Set filename, instrument type, ");
+     s.append( "calibration filename and extension are used to determine the" );
+     s.append( " calibration procedure that is used" );
+     s.append( "@param DS  the DataSet to use" );
+     s.append( "@param CalibFile1  The first calibration file" );
+     s.append( "@param CalibFile2" );
+     s.append( "@param otherInformation" );
        
-       s.append( "@return null or an error String " );
-       return s.toString(  );
-
-    
+     s.append( "@return null or an error String " );
+     return s.toString(  );
   }
+
   float width = Float.NaN ,
         height = Float.NaN ,
         x_off = Float.NaN ,

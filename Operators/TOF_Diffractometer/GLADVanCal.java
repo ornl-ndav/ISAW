@@ -28,18 +28,18 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- *
- *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/01/10 15:35:59  dennis
+ * Added getCategoryList method to place operator in menu system.
+ *
  * Revision 1.1  2004/07/23 17:43:37  taoj
  * test version.
  *
-
  */
 package Operators.TOF_Diffractometer;
 
-import DataSetTools.operator.Wrappable;
+import DataSetTools.operator.*;
 import java.io.StringReader;
 import DataSetTools.math.tof_calc;
 import DataSetTools.dataset.Attribute;
@@ -52,11 +52,13 @@ import Operators.Special.LowPassFilterDS0;
  * This class calculates the vanadium calibration function from a dataset of normalized vanadium intensity in
  * Q. It corresponds to VANCOR of the ATLAS package.
  */
-public class GLADVanCal implements Wrappable {
+public class GLADVanCal implements Wrappable, IWrappableWithCategoryList {
   //~ Instance fields **********************************************************
   
   private boolean DEBUG = false;
-  /* @param ISVac1 Variable Aperture Collimator 1, which determines beam width and height;
+
+  /* @param ISVac1 Variable Aperture Collimator 1, which determines beam width 
+   *               and height;
    * @param nrm_van normalized vanadium dataset with background subtracted;
    * @param DOsmooth smooth the vanadium spectra or not;
    * @param temperature vanadium rod temperature.
@@ -71,6 +73,23 @@ public class GLADVanCal implements Wrappable {
 
 
   //~ Methods ******************************************************************
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.TOF_NGLAD;
+  }
+
 
   /**
    * @return The script name for this Operator.
