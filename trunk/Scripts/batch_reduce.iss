@@ -61,6 +61,9 @@ inst= "sand"
 ext= ".run"
 Scale = 843000
 #======================== End of Reduce run inputs ====================
+if useDefault == false
+$ qu   Qbins     Enter Q 
+endif
 
 # loop over number of runs
 for i in [0: number_of_runs-1]
@@ -81,8 +84,9 @@ CameraFile = CameraTFileA[i]
 EffFile = EffFileA[i]
 SensFile = SensFileA[i] 
 
-Reduce(Input_Path, Output_Path, inst, ext, Thick, TransSFile, SampleFile,BackGroundTFile,BackGroundFile,CadmiumTFile,CadmiumFile,useCadmiumRun,CameraFile,polyfitIndx1, polyfitIndx2, polyDegree, sqrtWeight, NeutronDelay, true,useDefault,EffFile,SensFile,Scale,Xoff,Yoff,NQxBins, NQyBins)
+Reduce(Input_Path, Output_Path, inst, ext, Thick, TransSFile, SampleFile,BackGroundTFile,BackGroundFile,CadmiumTFile,CadmiumFile,useCadmiumRun,CameraFile,polyfitIndx1, polyfitIndx2, polyDegree, sqrtWeight, NeutronDelay, true,qu,useDefault,EffFile,SensFile,Scale,Xoff,Yoff,NQxBins, NQyBins)
 
 endfor
 Display "Finished"
+
 
