@@ -3,6 +3,10 @@
  *
  *
  *  $Log$
+ *  Revision 1.7  2001/03/01 20:50:12  dennis
+ *  Now takes the instrument type codes from the class
+ *  IPNS.Runfile.InstrumentType
+ *
  *  Revision 1.6  2001/02/16 21:53:49  dennis
  *  Added instrument types for triple axis spectrometer and four
  *  mono-chromatic instrument types. ( For compatibility with NeXus.)
@@ -29,6 +33,7 @@ package DataSetTools.instruments;
 
 import java.io.*;
 import DataSetTools.util.*;
+import IPNS.Runfile.*;
 
 /**
  *  This class defines constants for various instrument types and provides
@@ -39,19 +44,43 @@ import DataSetTools.util.*;
 
 public class InstrumentType implements Serializable
 {
-  public static final int  UNKNOWN                   = 0;
-  public static final int  TOF_DIFFRACTOMETER        = 1;
-  public static final int  TOF_SCD                   = 2;    
-  public static final int  TOF_SAD                   = 3;    
-  public static final int  TOF_REFLECTROMETER        = 4;
-  public static final int  TOF_DG_SPECTROMETER       = 5;    // direct geometry
-  public static final int  TOF_IDG_SPECTROMETER      = 6;   // inverse geometry
+  public static final int UNKNOWN                   = 
+                          IPNS.Runfile.InstrumentType.UNKNOWN;
 
-  public static final int  TRIPLE_AXIS_SPECTROMETER  = 7;
-  public static final int  MONO_CHROM_DIFFRACTOMETER = 8;
-  public static final int  MONO_CHROM_SCD            = 9;    
-  public static final int  MONO_CHROM_SAD            = 10;    
-  public static final int  MONO_CHROM_REFLECTROMETER = 11;
+  public static final int TOF_DIFFRACTOMETER        = 
+                          IPNS.Runfile.InstrumentType.TOF_DIFFRACTOMETER;
+
+  public static final int TOF_SCD                   =    
+                          IPNS.Runfile.InstrumentType.TOF_SCD;
+
+  public static final int TOF_SAD                   =    
+                          IPNS.Runfile.InstrumentType.TOF_SAD;
+
+  public static final int TOF_REFLECTROMETER        =
+                          IPNS.Runfile.InstrumentType.TOF_REFLECTROMETER;
+
+  public static final int TOF_DG_SPECTROMETER       =      // direct geometry
+                          IPNS.Runfile.InstrumentType.TOF_DG_SPECTROMETER;
+
+  public static final int TOF_IDG_SPECTROMETER      =      // inverse geometry
+                          IPNS.Runfile.InstrumentType.TOF_IDG_SPECTROMETER;
+
+
+  public static final int TRIPLE_AXIS_SPECTROMETER  = 
+                          IPNS.Runfile.InstrumentType.TRIPLE_AXIS_SPECTROMETER;
+
+  public static final int MONO_CHROM_DIFFRACTOMETER =
+                          IPNS.Runfile.InstrumentType.MONO_CHROM_DIFFRACTOMETER;
+
+  public static final int MONO_CHROM_SCD            =   
+                          IPNS.Runfile.InstrumentType.MONO_CHROM_SCD;
+
+  public static final int MONO_CHROM_SAD            =     
+                          IPNS.Runfile.InstrumentType.MONO_CHROM_SAD;
+
+  public static final int MONO_CHROM_REFLECTROMETER = 
+                          IPNS.Runfile.InstrumentType.MONO_CHROM_REFLECTROMETER;
+
 
 
   /**
