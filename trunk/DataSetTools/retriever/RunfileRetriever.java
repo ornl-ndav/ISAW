@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.75  2003/07/21 22:32:54  dennis
+ *  Added temporary fix to put M1 monitor upstream, for SAD instruments.
+ *
  *  Revision 1.74  2003/07/01 22:21:03  dennis
  *  Fixed problem with VERY slow reading of GLAD data by replacing
  *  call to setData_entries( ds ) for each DataGrid with a single
@@ -806,6 +809,22 @@ private float CalculateEIn()
         d = tof_data_calc.NewEnergyInData( (TabulatedData)d, calculated_E_in );
         data_set.replaceData_entry( d, i );
       } 
+
+                                     // make sure that detector 1 is upstream
+    if ( instrument_type == InstrumentType.TOF_SAD && is_monitor )
+    {
+      System.out.println("TEMPORARY FIX FOR SAND MONITOR 1 .....");
+      Data d = data_set.getData_entry(0);
+      DetectorPosition position = 
+         (DetectorPosition)d.getAttributeValue(Attribute.DETECTOR_POS);
+      float coords[] = position.getCartesianCoords();
+      if ( coords[0] > 0 )
+        coords[0] *= -1;
+
+      position.setCartesianCoords( coords[0], coords[1], coords[2] ); 
+      d.setAttribute( new DetPosAttribute( Attribute.DETECTOR_POS, position ));
+    }
+
     return data_set;
   }
 
