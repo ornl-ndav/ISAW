@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.33  2002/10/14 15:59:48  pfpeterson
+ * Fixed a couple of bugs with finding an operator given its
+ * command name. Now finds the last version of the operator in
+ * the SortonCommand vector so all versions can be checked
+ * against the parameter list of the operator provided.
+ *
  * Revision 1.32  2002/09/19 15:57:22  pfpeterson
  * Now uses IParameters rather than Parameters.
  *
@@ -527,21 +533,11 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             return i;
         if( getOperatorCommand(i) == null) 
             return -1;
-        if( getOperatorCommand(i).equals( CommName))
-            return i;
-        int j = i-1;
-        while( j >= 0 ){
-            if( getOperatorCommand( j ).equals(CommName)){
-                i = j;
-                j--;
-            }else{
-                return i;
-            }
-        }
-        if( getOperatorCommand(i).equals( CommName))
-            return i;
-        else
-            return -1;
+	for( int j=i ; j>=0 ; j-- ){
+	    if( getOperatorCommand(j).equals( CommName))
+		return j;
+	}
+	return -1;
     }
 
     /**
@@ -993,8 +989,6 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                 if( mode == Command_Compare){
                     if( ScompareLess(opp.getCommand() , textt))
                         less = true;
-                    else if( opp.getCommand().equals( textt ))  
-                        return mid;  
                 }else{
                     if( !(V.equals( SortOnFileName )  ) )
                         return -12;
@@ -1146,14 +1140,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     private  boolean ScompareLess( String s1, String s2){
         if( s1 == null ) return ( s2!=null );
 
-        for( int i=0 ; i< s1.length(); i++){
-            if( (i >= s2.length()) || (s1.charAt(i) >s2.charAt( i )) )
-                return false;
-            else if( s1.charAt(i) < s2.charAt( i ))
-                return true;
-        }
-        
-        return ( s1.length()==s2.length() );
+	if(s1.compareTo(s2)<=0)
+	    return true;
+	else
+	    return false;
     }
 
     /**
