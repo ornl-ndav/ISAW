@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:48:32  bouzekc
+ * Documented file using javadoc statements.
+ * Removed the WindowDestroyer inner class.
+ *
  * Revision 1.1  2004/02/07 05:09:15  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -44,8 +48,6 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
@@ -57,11 +59,28 @@ import javax.swing.JScrollPane;
 import devTools.Hawk.classDescriptor.gui.frame.HawkDesktop;
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 
+/**
+ * This is a special type of JInternalFrame that displays the javadocs file for a class 
+ * or interface.
+ * @author Dominic Kramer
+ */
 public class JavadocsGUI extends DesktopInternalFrame implements ActionListener
 {
+	/**
+	 * The pane to add the javadocs file to.
+	 */
 	protected JEditorPane htmlPane;
+	/**
+	 * The Interface whose javadocs file is to be displays.
+	 */
 	protected Interface selectedInterface;
 	
+	/**
+	 * Create a new JavadocsGUI.
+	 * @param INT The Interface whose javadocs file is to be displayed.
+	 * @param title The title of the window.
+	 * @param desk The HawkDesktop that this window is on.
+	 */
 	public JavadocsGUI(Interface INT, String title, HawkDesktop desk)
 	{
 		super(desk);
@@ -102,18 +121,27 @@ public class JavadocsGUI extends DesktopInternalFrame implements ActionListener
 					closeItem.addActionListener(this);
 				fileMenu.add(closeItem);
 			javadocsMenuBar.add(fileMenu);
-			refreshMoveAndCopyMenu();
-			windowMenu.addMenuListener(new WindowMenuListener(this,menuBar,windowMenu));
+//			refreshMoveAndCopyMenu();
+//			windowMenu.addMenuListener(new WindowMenuListener(this,menuBar,windowMenu));
 			javadocsMenuBar.add(windowMenu);
 		menuBar = javadocsMenuBar;
 		setJMenuBar(javadocsMenuBar);
+		
+		resizeAndRelocate();
 	}
-	
+
+	/**
+	 * Gets a copy of this window.
+	 * @return A copy of this window.
+	 */	
 	public DesktopInternalFrame getCopy()
 	{
 		return new JavadocsGUI(selectedInterface,getTitle(),desktop);
 	}
 	
+	/**
+	 * Handles ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent event)
 	{
 		if (event.getActionCommand().equals("Close"))
@@ -122,19 +150,10 @@ public class JavadocsGUI extends DesktopInternalFrame implements ActionListener
 		}
 		else
 		{
-			JavadocsGUI copy = (JavadocsGUI)getCopy();
-			copy.setVisible(true);
-			processWindowChange(event,copy,this);
-		}
-	}
-	
-	public class WindowDestroyer extends WindowAdapter
-	{
-		public WindowDestroyer() {}
-		
-		public void windowClosing(WindowEvent e)
-		{
-			dispose();
+//			JavadocsGUI copy = (JavadocsGUI)getCopy();
+//			copy.setVisible(true);
+//			processWindowChange(event,copy,this);
+			super.actionPerformed(event);
 		}
 	}
 }
