@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/08/06 21:26:15  pfpeterson
+ *  Added hooks for returning an XScale associated with the TimeMap.
+ *
  *  Revision 1.2  2002/07/26 19:02:44  pfpeterson
  *  Fixed bug in code. Now produces gsas compliant time maps.
  *
@@ -56,6 +59,7 @@ public class TimeMap{
     private float[] dt;
     private int mapno;
     private float clockwidth;
+    private XScale xscale;
 
     /**
      * Creates a time map from the given XScale. This assumes that the
@@ -63,6 +67,7 @@ public class TimeMap{
      * number and clock width are given default values.
      */
     public TimeMap(XScale xscale){
+        this.xscale=xscale;
         tmax=xscale.getEnd_x();
         nval=0;
         clockwidth=1000f;
@@ -175,6 +180,18 @@ public class TimeMap{
             .append(Format.real(this.clockwidth,7,1)).append("  ");
 
         return sb.toString();
+    }
+
+    /**
+     * Get a XScale that this time map could be made from. If the
+     * TimeMap was initialized with an XScale then a reference to that
+     * XScale is returned.
+     */
+    public XScale getXScale(){
+        if(this.xscale!=null) return this.xscale;
+        XScale xscale=null;
+
+        return xscale;
     }
 
     /**
