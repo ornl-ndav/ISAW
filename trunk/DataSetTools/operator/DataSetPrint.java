@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/08/10 18:40:53  rmikk
+ *  Removed the System.exit commands and returned
+ *  errormessages.
+ *
  *  Revision 1.15  2001/07/23 15:42:39  dennis
  *  Now uses DataSet tile ( no tag ) for the filename to print to.
  *
@@ -273,6 +277,7 @@ public class DataSetPrint extends    GenericOperator
       System.out.println("Exception while writing file "+filename );
       System.out.println("Exception is " + e );
       e.printStackTrace();
+      return new ErrorString( e.toString());
     }
  
    //2.Jtextfield
@@ -292,7 +297,8 @@ public class DataSetPrint extends    GenericOperator
    {
      System.err.println(tt);
      tt.printStackTrace();
-     System.exit(1);
+     return new ErrorString( tt.toString());
+     //System.exit(1);
    }
     
    //3.Jtable
