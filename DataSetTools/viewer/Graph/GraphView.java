@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2001/07/20 16:52:24  dennis
+ *  Now uses an XScaleChooserUI to let the user specify new
+ *  x_scales.  Also uses method Data.getY_values( x_scale )
+ *  to get resampled y_values.
+ *
  *  Revision 1.12  2001/07/17 20:46:00  dennis
  *  Now checks validDataSet() before using it.
  *  If rebinning, the graphs are now drawn based on the
@@ -126,9 +131,8 @@ public class GraphView extends    DataSetViewer
                                                     // Image and border
   SplitPaneWithState   main_split_pane = null;
 
-  private JPanel       display_controls  = new JPanel();
-  private TextRangeUI  x_range_ui;
-  private TextValueUI  n_bins_ui;
+  private JPanel          display_controls = new JPanel();
+  private XScaleChooserUI x_scale_ui       = null;
 
   private JPanel       graph_data_panel  = new JPanel();
   private DataSetXConversionsTable graph_table;
@@ -222,20 +226,17 @@ public void setDataSet( DataSet ds )
 
 /* ------------------------ getXConversionScale -------------------------- */
  /**
-  *  Return a range of X values specified by the user to be used to
-  *  control X-Axis conversions.
+  *  Return an XScale specified by the user to be used to control X-Axis
+  *  conversions.
   *
   *  @return  The current values from the number of bins control and the
   *           x range control form the Xscale that is returned.
   *
   */
- public UniformXScale getXConversionScale()
+ public XScale getXConversionScale()
   {
-    int num_bins = (int)n_bins_ui.getValue();
-    float x_min = x_range_ui.getMin();
-    float x_max = x_range_ui.getMax();
-
-    return ( new UniformXScale( x_min, x_max, num_bins ) );
+    XScale x_scale = x_scale_ui.getXScale();
+    return x_scale;
   }
 
 
@@ -362,14 +363,12 @@ private Component MakeControlArea()
   UniformXScale x_scale  = getDataSet().getXRange();
   float x_min = x_scale.getStart_x();
   float x_max = x_scale.getEnd_x();
-  x_range_ui = new TextRangeUI(label, x_min, x_max );
-  x_range_ui.setPreferredSize( new Dimension(120, 50) );
-  x_range_ui.setFont( FontUtil.LABEL_FONT );
-  control_area.add( x_range_ui );
+  int n_steps = getDataSet().getMaxXSteps();
+  if ( getDataSet().getData_entry(0).isHistogram() )
+    n_steps = n_steps - 1;
+  x_scale_ui = new XScaleChooserUI( "X Scale", label, x_min, x_max, n_steps );
+  control_area.add( x_scale_ui );
 
-  int num_cols = getDataSet().getMaxXSteps();
-  n_bins_ui = new TextValueUI( "Num Bins", num_cols-1 );
-  control_area.add( n_bins_ui );
                                                      // Add the y-range slider
   hgraph_scale_slider.setPreferredSize( new Dimension(120,50) );
   TitledBorder border = new TitledBorder(LineBorder.createBlackLineBorder(), 
@@ -428,8 +427,7 @@ private JScrollPane MakeHorGraphArea( )
 private void MakeConnections()
 {
    hgraph_scale_slider.addChangeListener( new HGraphScaleEventHandler() );   
-   x_range_ui.addActionListener( new X_Range_Listener() );
-   n_bins_ui.addActionListener( new NumBins_Listener() );
+   x_scale_ui.addActionListener( new XScaleListener() );
 }
 
 
@@ -439,7 +437,8 @@ private void SetHorizontalScrolling( boolean state )
   getState().setHorizontal_scrolling( state );
   if ( state )
   {
-    viewport_preferred_width = (int)n_bins_ui.getValue();
+    XScale x_scale = getXConversionScale();
+    viewport_preferred_width = x_scale.getNum_x();
     JScrollBar scroll_bar = hgraph_scroll_pane.getHorizontalScrollBar();
     int min = scroll_bar.getMinimum();
     int max = scroll_bar.getMaximum();
@@ -565,21 +564,8 @@ private void DrawSpecifiedGraph( int index )
 
   Data data_block = getDataSet().getData_entry( index );
 
-  if ( getState().getRebin() )
-  {
-    UniformXScale x_scale = getXConversionScale();
-    int num_cols = x_scale.getNum_x() + 1;
-    float x_min  = x_scale.getStart_x();
-    float x_max  = x_scale.getEnd_x();
-    x_scale = new UniformXScale( x_min, x_max, num_cols );
-
-    data_block = (Data)data_block.clone();
-    data_block.ResampleUniformly( x_scale );
-  }
-
   JPanel border_panel = (JPanel)h_graph[ index ].getParent();
   TitledBorder border = (TitledBorder)border_panel.getBorder();
-//  String border_label = data_block.toString();
   String border_label = DS_Util.getData_ID_String( getDataSet(), index );
 
   if ( data_block.isSelected() )
@@ -595,13 +581,25 @@ private void DrawSpecifiedGraph( int index )
     was_selected[index] = false;
   }
 
+  float x[];
+  float y[];
+  if ( getState().getRebin() )
+  {
+    XScale x_scale = getXConversionScale();
+    x = x_scale.getXs();
+    y = data_block.getY_values( x_scale );
+  }
+  else
+  {
+    x = data_block.getX_scale().getXs();
+    y = data_block.getY_values();
+  }
+
+  h_graph[index].setData( x, y, 0, true );
+
   XScale x_scale = data_block.getX_scale();
   float  x_min  = x_scale.getStart_x();
   float x_max  = x_scale.getEnd_x();
-  float x[] = x_scale.getXs();
-  float y[] = data_block.getY_values();
-  h_graph[index].setData( x, y, 0, true );
-
   CoordBounds graph_bounds = h_graph[index].getGlobalWorldCoords();
   graph_bounds.setBounds( x_min, graph_bounds.getY1(),
                           x_max, graph_bounds.getY2() );
@@ -681,6 +679,9 @@ private class HGraphScaleEventHandler implements ChangeListener,
   }
 }
 
+
+/* ----------------------- HGraphMouseMotionAdapter ------------------------ */
+
 private class HGraphMouseMotionAdapter extends    MouseMotionAdapter
                                        implements Serializable
 {
@@ -700,6 +701,8 @@ private class HGraphMouseMotionAdapter extends    MouseMotionAdapter
      UpdateHGraphReadout( gp );
    }
 }
+
+/* ----------------------- HGraphMouseAdapter ---------------------------- */
 
 private class HGraphMouseAdapter extends    MouseAdapter
                                  implements Serializable
@@ -722,6 +725,7 @@ private class HGraphMouseAdapter extends    MouseAdapter
 }
 
 
+/* ------------------------------ finalize ----------------------------- */
   /**
    *  Trace the finalization of objects
    */
@@ -731,6 +735,8 @@ private class HGraphMouseAdapter extends    MouseAdapter
     System.out.println( "finalize GraphView" );
   }
 */
+
+/* ----------------------- OptionMenuHandler --------------------------- */
 
   private class OptionMenuHandler implements ActionListener,
                                              Serializable
@@ -752,6 +758,19 @@ private class HGraphMouseAdapter extends    MouseAdapter
     }
   }
 
+/* ------------------------ XScaleListener ----------------------------- */
+
+  private class XScaleListener implements ActionListener,
+                                          Serializable
+  {
+     public void actionPerformed(ActionEvent e)
+     {
+       String action  = e.getActionCommand();
+       getDataSet().notifyIObservers( action );
+     }
+  }
+
+/* ------------------------- SelectionKeyAdapter ------------------------ */
 
 private class SelectionKeyAdapter extends    KeyAdapter
                                   implements Serializable
@@ -767,24 +786,7 @@ private class SelectionKeyAdapter extends    KeyAdapter
   }
 }
 
-  private class X_Range_Listener implements ActionListener,
-                                            Serializable
-  {
-     public void actionPerformed(ActionEvent e)
-     {
-       getDataSet().notifyIObservers( X_RANGE_CHANGED );
-     }
-  }
-
-
-  private class NumBins_Listener implements ActionListener,
-                                            Serializable
-  {
-     public void actionPerformed(ActionEvent e)
-     {
-       getDataSet().notifyIObservers( BINS_CHANGED );
-     }
-  }
+/* ----------------------- HScrollBarListener ---------------------------- */
 
   private class HScrollBarListener implements AdjustmentListener,
                                               Serializable
