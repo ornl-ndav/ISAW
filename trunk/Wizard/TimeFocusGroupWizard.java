@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/07/03 15:02:08  bouzekc
+ * Added html formatting to createAllForms()'s javadocs.
+ * Arranged methods according to access privileges.
+ *
  * Revision 1.14  2003/07/03 14:43:40  bouzekc
  * Fixed odd CVS log entries due to double inclusion of the
  * log header tag.
@@ -59,7 +63,7 @@
  * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
  *
  * Revision 1.6   2003/03/19 23:07:37  pfpeterson
- * Expanded TimeFocusGroupForm to allow for up to 20 'banks' to be focused 
+ * Expanded TimeFocusGroupForm to allow for up to 20 'banks' to be focused
  * and grouped. (Chris Bouzek)
  *
  * Revision 1.5   2003/03/19 15:08:33  pfpeterson
@@ -72,7 +76,7 @@
  * Revision 1.3   2003/03/11 19:49:52  pfpeterson
  * Chris Bouzek's next version of the wizard.
  *
- * Revision 1.2   2003/03/03 13:38:17  dennis 
+ * Revision 1.2   2003/03/03 13:38:17  dennis
  * Added more error checking (Chris Bouzek).
  *
  * Revision 1.1   2003/02/26 20:22:42  pfpeterson
@@ -90,72 +94,90 @@ import javax.swing.*;
 
 
 /**
- *  This class has a main program that constructs a Wizard for time
- *  focusing and grouping spectra in a DataSet.
+ * This class has a main program that constructs a Wizard for time focusing and
+ * grouping spectra in a DataSet.
  */
 public class TimeFocusGroupWizard extends Wizard {
+  //~ Constructors *************************************************************
+
   /**
-   *
-   *  Default constructor.  Sets standalone in Wizard to true.
+   * Default constructor.  Sets standalone in Wizard to true.
    */
   public TimeFocusGroupWizard(  ) {
     this( true );
   }
 
   /**
-   *  Constructor for setting the standalone variable in Wizard.
+   * Constructor for setting the standalone variable in Wizard.
    *
-   *  @param standalone          Boolean indicating whether the
-   *                             Wizard stands alone (true) or
-   *                             is contained in something else
-   *                             (false).
+   * @param standalone Boolean indicating whether the Wizard stands alone
+   *        (true) or is contained in something else (false).
    */
   public TimeFocusGroupWizard( boolean standalone ) {
     super( "Time Focus and Group Wizard", standalone );
     this.createAllForms(  );
   }
 
+  //~ Methods ******************************************************************
+
   /**
-   *  Adds and coordinates the necessary Forms for this Wizard.
-   *
-   *  The referential links are arranged in a tabular format.
-   *  At some point, the Wizard base class will be automating the
-   *  links, so please follow this format.  This particular wizard follows
-   *  this format.
-   *
-   *  Note that:
-   *  LoadMultiHistogramsForm = lmhf
-   *  TimeFocusGroupForm = tfgf
-   *  SaveAsGSASForm = sagf
-   *
-   *    lmhf    tfgf    sagf
-   *  |----------------------|
-   *  |   5   |   0   | -1   |
-   *  |----------------------|
-   *  |  -1   |  61   |  0   |
-   *  |----------------------|
-   *  |   6   |  -1   |  1   |
-   *  |----------------------|
-   *  |   0   |  -1   |  2   |
-   *  |----------------------|
-   *  |   2   |  -1   |  3   |
-   *  |----------------------|
-   *
-   *  The indices are accessed in the following manner, using [x][y]:
-   *  x = row, y = col
-   *  You must place the actual parameter number within the integer array.
-   *  For example, to set the link between LoadMultiHistogramForm's 5th
-   *  parameter into TimeFocusGroupForm's 0th parameter, use the following:
-   *  (assuming fpi has already been declared as a two-dimensional integer
-   *  array of sufficient size):
-   *
-   *  fpi[0][0] = 5;
-   *  fpi[0][1] = 0;
-   *
-   *  Alternately, you may create the entire table  using Java's array
-   *  initialization scheme, as shown:
-   *
-   *   int fpi[][] = { {5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3} };
+   * Method for running the Time Focus Group wizard as standalone.
+   */
+  public static void main( String[] args ) {
+    TimeFocusGroupWizard w = new TimeFocusGroupWizard( true );
+
+    //specified a --nogui switch but forgot to give a filename
+    if( args.length == 1 ) {
+      System.out.println( 
+        "USAGE: java Wizard.TimeFocusGroupWizard " +
+        "[--nogui] <Wizard Save File>" );
+    } else if( args.length == 2 ) {
+      w.executeNoGUI( args[1] );
+    } else {
+      w.showForm( 0 );
+    }
+  }
+
+  /**
+   * Adds and coordinates the necessary Forms for this Wizard. The referential
+   * links are arranged in a tabular format. At some point, the Wizard base
+   * class will be automating the links, so please follow this format.  This
+   * particular wizard follows this format.<br>
+   * <br>
+   * Note that:<br>
+   * LoadMultiHistogramsForm = lmhf<br>
+   * TimeFocusGroupForm = tfgf<br>
+   * SaveAsGSASForm = sagf<br>
+   * 
+   * <p align=center>
+   * lmhf    tfgf    sagf<br>
+   * |----------------------|<br>
+   * |   5   |   0   | -1   |<br>
+   * |----------------------|<br>
+   * |  -1   |  61   |  0   |<br>
+   * |----------------------|<br>
+   * |   6   |  -1   |  1   |<br>
+   * |----------------------|<br>
+   * |   0   |  -1   |  2   |<br>
+   * |----------------------|<br>
+   * |   2   |  -1   |  3   |<br>
+   * |----------------------|<br><br>
+   * </p>
+   * The indices are accessed in the following manner, using [x][y]:<br>
+   * x = row, y = col<br>
+   * You must place the actual parameter number within the integer array. For
+   * example, to set the link between LoadMultiHistogramForm's 5th parameter
+   * into TimeFocusGroupForm's 0th parameter, use the following: (assuming fpi
+   * has already been declared as a two-dimensional integer array of
+   * sufficient size):<br>
+   * <br>
+   * fpi[0][0] = 5;<br>
+   * fpi[0][1] = 0;<br>
+   * <br>
+   * Alternately, you may create the entire table  using Java's array
+   * initialization scheme, as shown:<br>
+   * <br>
+   * int fpi[][] = {{5,0,-1}, {-1,61,0}, {6,-1,1},{0,-1,2},{2,-1,3}};
    */
   private void createAllForms(  ) {
     int[][] fpi = {
@@ -175,24 +197,5 @@ public class TimeFocusGroupWizard extends Wizard {
     this.addForm( sagf );
 
     super.linkFormParameters( fpi );
-  }
-
-  /**
-   *  Method for running the Time Focus Group wizard
-   *   as standalone.
-   */
-  public static void main( String[] args ) {
-    TimeFocusGroupWizard w = new TimeFocusGroupWizard( true );
-
-    //specified a --nogui switch but forgot to give a filename
-    if( args.length == 1 ) {
-      System.out.println( 
-        "USAGE: java Wizard.TimeFocusGroupWizard " +
-        "[--nogui] <Wizard Save File>" );
-    } else if( args.length == 2 ) {
-      w.executeNoGUI( args[1] );
-    } else {
-      w.showForm( 0 );
-    }
   }
 }
