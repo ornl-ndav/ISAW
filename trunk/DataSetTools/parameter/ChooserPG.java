@@ -30,6 +30,10 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.32  2004/03/11 07:35:01  bouzekc
+ *  Removed the vals = null assignment, as it messed up the polymorphic
+ *  method calls.
+ *
  *  Revision 1.31  2004/03/11 06:53:02  bouzekc
  *  setValue() now handles a Vector of values.
  *
@@ -163,7 +167,7 @@ public abstract class ChooserPG extends ParameterGUI {
 
   //~ Instance fields **********************************************************
 
-  protected Vector vals = null;
+  protected Vector vals;
 
   //~ Constructors *************************************************************
 
