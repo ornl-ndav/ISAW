@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/11/01 15:50:18  pfpeterson
+ *  Commented out lines which check if the directory is writable
+ *  (win32 java bug), modified returned ErrorStrings, only looks
+ *  for the wrapped code on the first call (saved result in a
+ *  static String).
+ *
  *  Revision 1.8  2002/10/23 19:09:09  pfpeterson
  *  Reformatted
  *
@@ -75,6 +81,7 @@ import  DataSetTools.parameter.*;
  * program. This is not heavily tested but works fairly well.
  */
 public class Blind extends    GenericTOF_SCD {
+  private static String command=null;
   /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
   /**
    * Construct an operator with a default parameter list.
@@ -134,37 +141,35 @@ public class Blind extends    GenericTOF_SCD {
     String direc;
     String matfile   = "blind.mat";
     int seqs[]       = IntList.ToArray(seq_nums);
-    String fail      = "FAILED";
     
     // first check if the OS is acceptable
     if(! SysUtil.isOSokay(SysUtil.LINUX_WINDOWS) )
-      return new ErrorString(fail+": must be using linux or windows system");
+      return new ErrorString("must be using linux or windows system");
     
     // confirm that the name of the peaksfile is a non-null string
     if( peaksfile==null || peaksfile.length()==0 )
-      return new ErrorString(fail+": must specify a peaks file");
+      return new ErrorString("must specify a peaks file");
     
     // standardize the peaks filename
     peaksfile=FilenameUtil.fixSeparator(peaksfile);
     
     // then confirm the peaks file exists
     if(! SysUtil.fileExists(peaksfile) )
-      return new ErrorString(fail+": peaks file does not exist");
+      return new ErrorString("peaks file does not exist");
     
     // find out the file directory
     index=peaksfile.lastIndexOf("/");
     if(index>0){
       direc=peaksfile.substring(0,index);
     }else{
-      return new ErrorString(fail+": directory not found");
+      return new ErrorString("directory not found");
     }
     peaksfile=peaksfile.substring(index+1);
     
-    // confirm that the directory is writable
-    File dirF=new File(direc);
-    if(! dirF.canWrite() )
-      return new ErrorString(fail+": cannot write to specified directory "
-                             +dirF);
+    // confirm that the directory is writable DOES NOT WORK ON WIN32
+    /*File dirF=new File(direc);
+      if(! dirF.canWrite() )
+      return new ErrorString("cannot write to specified directory "+dirF);*/
     
     // strip the end off of the peaks filename
     index=peaksfile.lastIndexOf(".peaks");
@@ -176,11 +181,13 @@ public class Blind extends    GenericTOF_SCD {
     Process process=null;
     String output=null;
     File dir=new File(direc);
-    String command=this.getFullBlindName();
+    if(command==null){
+	command=this.getFullBlindName();
+    }
     
     // exit out early if no blind executable found
     if(command==null)
-      return new ErrorString(fail+": could not find blind executable");
+      return new ErrorString("could not find blind executable");
     
     try{
       process=SysUtil.startProcess(command,direc);
@@ -234,7 +241,7 @@ public class Blind extends    GenericTOF_SCD {
         }
         System.out.println(output);
         
-        return new ErrorString(fail);
+        return new ErrorString("Abnormal termination of Blind");
       }
       
       // save to a matrix file
@@ -260,12 +267,12 @@ public class Blind extends    GenericTOF_SCD {
     }finally{
       if(process!=null){
         if(process.exitValue()!=0){
-          return new ErrorString(fail+"("+process.exitValue()+")");
+          return new ErrorString("("+process.exitValue()+")");
         }else{
           return direc+'/'+matfile;
         }
       }else{
-        return new ErrorString(fail);
+        return new ErrorString("Something went wrong");
       }
     }
   }  
