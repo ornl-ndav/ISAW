@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:41:19  bouzekc
+ * Documented file using javadoc statements.
+ * Removed code using a BufferedReader which was only there for testing reading
+ * data from a file to use in the SourceCodeGUI.
+ *
  * Revision 1.1  2004/02/07 05:08:08  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -47,42 +52,24 @@ import devTools.Hawk.classDescriptor.tools.CommandLineManager;
 import devTools.Hawk.classDescriptor.tools.SystemsManager;
 
 /**
- * @author kramer
+ * This is the main class which contains the main method used to start Hawk.
+ * @author Dominic Kramer
  *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class HawkMain
 {
+	/**
+	 * This constructor is private to signify that HawkMain doesn't need to be instantiated.
+	 */
+	private HawkMain()
+	{}
+	
+	/**
+	 * The main method that is used to start all of Hawk.
+	 * @param args The array of Strings passed as arguments to the main method.
+	 */
 	public static void main(String args[])
 	{
-/*
-		try
-		{
-			BufferedReader reader = new BufferedReader(new FileReader("/home/kramer/workspace/ClassDescriptor/devTools.Hawk.classDescriptor/gui/HawkMain.java"));
-			String code = "";
-			String line = reader.readLine();
-			if (line != null)
-				line += "\n";
-			while (line != null)
-			{
-				code += line;
-				line = reader.readLine();
-				if (line != null)
-					line += "\n";
-			}
-			
-			SourceCodeTokenizer tokenizer = new SourceCodeTokenizer(code);
-			String str = tokenizer.getNextChar();
-			while (str != null)
-				str = tokenizer.getNextChar();
-		}
-		catch(Exception e)
-		{
-			SystemsManager.printStackTrace(e);
-		}
-*/		
-		
 		//now to check for any command line arguments
 			CommandLineManager commandManager = new CommandLineManager(args);
 			int result = commandManager.parseCommandLine();
@@ -99,9 +86,9 @@ public class HawkMain
 						HawkDesktop gui = null;
 						
 						if (proVec.size() == 0)
-							gui = new HawkDesktop(null);
+							gui = new HawkDesktop(null,true);
 						else
-							gui = new HawkDesktop(proVec);
+							gui = new HawkDesktop(proVec,true);
 							
 						gui.setVisible(true);
 					}
