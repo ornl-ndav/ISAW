@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.48  2003/06/30 17:48:22  bouzekc
+ * Removed printing of the stack trace when loadForms()
+ * catches an Exception.
+ *
  * Revision 1.47  2003/06/30 17:11:40  bouzekc
  * Moved enabling/disabling of navigation buttons into a
  * private method.  This allows the inner SwingWorker class to
@@ -594,7 +598,6 @@ public abstract class Wizard implements PropertyChangeListener {
 
       convertXMLtoParameters( s );
     } catch( IOException e ) {
-      e.printStackTrace(  );
       JOptionPane.showMessageDialog( 
         save_frame, "Error loading file.  Does the file match the Wizard?",
         "ERROR", JOptionPane.ERROR_MESSAGE );
