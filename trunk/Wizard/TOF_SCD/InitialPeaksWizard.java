@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/06/30 16:05:53  bouzekc
+ * Now takes --nogui command line arguments.
+ *
  * Revision 1.6  2003/06/26 16:31:18  bouzekc
  * Unlinked the LsqrsJForm matrix file parameter from the
  * other Forms.
@@ -150,6 +153,17 @@ public class InitialPeaksWizard extends Wizard {
   public static void main( String[] args ) {
     InitialPeaksWizard w = new InitialPeaksWizard( true );
 
-    w.showForm( 0 );
+    //specified a --nogui switch but forgot to give a filename
+    if( args.length == 1 ) {
+      System.out.println( 
+        "USAGE: java Wizard.TOF_SCD.InitialPeaksWizard " +
+        "[--nogui] <Wizard Save File>" );
+    }
+    else if( args.length == 2 ) {
+      w.executeNoGUI( args[1] );
+    }
+    else {
+      w.showForm( 0 );
+    }
   }
 }
