@@ -31,6 +31,9 @@ C For further information, see <http://www.pns.anl.gov/ISAW/>
 C
 C Modified:
 C $Log$
+C Revision 1.4  2004/01/26 21:44:29  bouzekc
+C Added test for function.
+C
 C Revision 1.3  2004/01/22 00:57:58  bouzekc
 C Added multidimensional array variables.
 C
@@ -159,3 +162,14 @@ C do (aka for) loop
     do 20 i = 10, 1, -2
       x = x +5
   20  continue
+  
+C functions
+  integer m = 2
+  real t = 2.0
+  
+  real function r()
+    r = 0.1*t * (m*2 + 14*m + 46)
+    if (r .lt. 0) r = 0.0
+
+    return
+    end
