@@ -5,6 +5,10 @@
  * each selection appropriatly.
  *
  * $Log$
+ * Revision 1.14  2001/07/25 16:14:59  neffk
+ * fixed constructor to assign this.observer to the 'observer' parameter
+ * and changed some names to make the code easier to read.
+ *
  * Revision 1.13  2001/07/23 13:56:59  neffk
  * removed some code that was commented out.
  *
@@ -44,6 +48,9 @@ import java.io.Serializable;
 import javax.swing.text.*; 
 import Command.*;
  
+/**
+ * 
+ */
 public class JOperationsMenuHandler 
   implements ActionListener, 
              Serializable
@@ -55,12 +62,20 @@ public class JOperationsMenuHandler
                           //false.  if 'use_array' is true, then the
                           //operator is applied to all DataSet objects
                           //in this array.
-  private DataSet[] dss;
+  private DataSet[] dss_to_act_upon;
 
                           //allows this menu acess to all of the DataSet
-                          //objects in the tree.
-  private JDataTree tree;  
-  boolean use_array;
+                          //objects that could be used in the case that
+                          //the operator needs DataSet objects as parameters.
+  private IDataSetListHandler alt_ds_src;  
+  private boolean use_array;
+
+
+                          //if an operator generates a new DataSet, this is
+                          //the only object that is notified.  it is sent
+                          //via the IObserver.update(...) method, where
+                          //'reason' is an instnace of DataSet.
+  private IObserver observer;
 
                           //the sessionLog must be in scope so that 
                           //messages can be appended to it.  since the 
@@ -75,16 +90,16 @@ public class JOperationsMenuHandler
    * constructs this object with the appropriate links to ISAW's tree and
    * session log.
    */
-  public JOperationsMenuHandler( DataSet ds, 
-                                 JDataTree tree, 
-                                 Document sessionLog )
+  public JOperationsMenuHandler( DataSet             ds, 
+                                 IDataSetListHandler alt_ds_src,
+                                 IObserver           observer,
+                                 Document            sessionLog )
   {
-    dss = new DataSet[1];  
-    dss[0] = ds;
+    dss_to_act_upon = new DataSet[1];  
+    dss_to_act_upon[0] = ds;
     use_array = false;
-
-    this.tree = tree;
-
+    this.alt_ds_src = alt_ds_src;
+    this.observer = observer;
     this.sessionLog = sessionLog;
   }
 
@@ -94,42 +109,49 @@ public class JOperationsMenuHandler
    * session log.  the array of DataSet objects allows the JParametersDialog
    * to offer only selected DataSet objects as additional parameters.
    *
-   * @param dss        the DataSet object or objects on which to operate.  
-   *                   by default, only the first element is used.  to override
-   *                   this behavior, set use_array.  this capability is
-   *                   provided so that the programmer can apply operators to
-   *                   more than one DataSet object at a time.
-   * @param tree       reference to a JDataTree as a container of DataSet objects.
-   *                   this parameter is used to get a list of all of the 
-   *                   DataSet objects that can be operated upon.  this is
-   *                   distinct from the multiple DataSet capability that the
-   *                   above parameter provides.
-   * @param use_array  overrides default behavior of using only the first
-   *                   element in dss.
+   * @param dss_to_act_upon  the DataSet object or objects on which to operate.  
+   *                         by default, only the first element is used.  to
+   *                         override this behavior, set use_array.  this 
+   *                         capability is provided so that the programmer can 
+   *                         apply operators to more than one DataSet object 
+   *                         at a time.
+   * @param tree             reference to a JDataTree as a container of DataSet 
+   *                         objects.
+   *                         this parameter is used to get a list of all of the 
+   *                         DataSet objects that can be operated upon.  this is
+   *                         distinct from the multiple DataSet capability that
+   *                         the above parameter provides.
+   * @param use_array        overrides default behavior of using only the first
+   *                         element in dss_to_act_upon.
    */
-  public JOperationsMenuHandler( DataSet[] dss, 
-                                 JDataTree tree,
-                                 boolean use_array )
+  public JOperationsMenuHandler( DataSet[]           dss_to_act_upon, 
+                                 boolean             use_array, 
+                                 IDataSetListHandler alt_ds_src,
+                                 IObserver           observer,
+                                 Document            sessionLog )
   {
-    this.dss = dss;
-    this.tree = tree;
-    sessionLog = null;
+    this.dss_to_act_upon = dss_to_act_upon;
+    this.alt_ds_src = alt_ds_src;
+    this.observer = observer;
+    this.sessionLog = sessionLog;
     use_array = use_array;
   }
 
 
   /** 
-   * handles all of the menu selection events.  
+   * handles all of the menu selection events.  note that 'observer'
+   * is the only object that is notified of new DataSet that might 
+   * be generated by this method. 
    */     
   public void actionPerformed( ActionEvent e ) 
   {
     String s = e.getActionCommand();
 
-    for( int dataset=0;  dataset<dss.length;  dataset++ )
+    for( int dataset=0;  dataset<dss_to_act_upon.length;  dataset++ )
     {
-      DataSet ds = dss[ dataset ];
+      DataSet ds = dss_to_act_upon[ dataset ];
 
-      for( int i=0;  i<dss[0].getNum_operators();  i++ )
+      for( int i=0;  i<dss_to_act_upon[0].getNum_operators();  i++ )
       {
         if( !use_array  )
         {
@@ -137,9 +159,9 @@ public class JOperationsMenuHandler
           {
             DataSetOperator op = ds.getOperator(i);
             JParametersDialog pDialog = new JParametersDialog( op,
-                                                               tree, 
+                                                               alt_ds_src, 
                                                                sessionLog,
-                                                               (IObserver)tree );
+                                                               observer );
           }
         }
         else
