@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2001/08/16 22:27:20  rmikk
+ *  Got the initial size of the dialog box closer for 0 arguments and many arguments
+ *
  *  Revision 1.16  2001/08/15 02:10:17  rmikk
  *  Removed the setDefaultParameters. Now the parameter
  *  values( except Object types) will retain their values.
@@ -349,7 +352,7 @@ public class JParametersDialog implements Serializable,
         opDialog.getContentPane().add( BB);
         //#
        
-        Size += (num_param  + 4 )*7 + 12;
+        Size += (num_param  + 4 )*2 + 38;
         
         opDialog.setSize((int)(.4* Width) , new Float(Size +.8).intValue());
         opDialog.validate();
