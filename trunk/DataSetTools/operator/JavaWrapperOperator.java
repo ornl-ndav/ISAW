@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.7  2004/02/01 01:36:45  bouzekc
+ * Added clone.  The JavaWrapperOperators can now be called from Scripts.
+ *
  * Revision 1.6  2004/02/01 01:18:02  bouzekc
  * Changed the algorithm that determined category name.  It now looks at the
  * package name of the Wrappable Object and breaks it down, removing any
@@ -322,19 +325,23 @@ public class JavaWrapperOperator extends GenericOperator {
    * Clone method for JavaWrapperOperators.  Works by cloning the Wrappable
    * inside.
    */
+  public Object clone(  ) {
+    try {
+      Constructor konstruktor = this.getClass(  ).getConstructor( 
+          new Class[]{ Wrappable.class } );
+      JavaWrapperOperator op  = ( JavaWrapperOperator )konstruktor.newInstance( 
+          new Object[]{ this.wrapped.getClass(  ).newInstance(  ) } );
+      op.CopyParametersFrom( this );
 
-  /*public Object clone(){
-     try{
-       Constructor konstruktor = this.getClass(  ).getConstructor( new Class[]{Wrappable.class} );
-  
-       //Wrappable newWrapped = ( Wrappable )konstruktor.newInstance( new Object[]{this.wrapped} );
-       JavaWrapperOperator op =
-       ( JavaWrapperOperator )konstruktor.newInstance( new Object[]{this.wrapped.getClass().newInstance() } );
-       op.CopyParametersFrom(this);
-       return op;
-     }catch(Exception e){
-       SharedData.addmsg( "Unable to clone " + this.getClass(  ) + "." );
-       return null;
-     }
-     }*/
+      return op;
+    } catch( InstantiationException ie ) {
+      throw new InstantiationError( ie.getMessage(  ) );
+    } catch( IllegalAccessException iae ) {
+      throw new IllegalAccessError( iae.getMessage(  ) );
+    } catch( NoSuchMethodException nsme ) {
+      throw new NoSuchMethodError( nsme.getMessage(  ) );
+    } catch( InvocationTargetException ite ) {
+      throw new RuntimeException( ite.getMessage(  ) );
+    }
+  }
 }
