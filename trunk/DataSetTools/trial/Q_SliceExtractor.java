@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/01/29 00:01:07  dennis
+ * Put debug prints in if (debug).
+ * Made constructor public.
+ *
  * Revision 1.3  2004/01/24 23:41:15  dennis
  * Methods that extract slice planes and line cuts now
  * make copies of their parameters, so that the parameters
@@ -71,7 +75,9 @@ public class Q_SliceExtractor
 {
   Vector calculators = null;
 
-  Q_SliceExtractor( DataSet ds_array[] )
+  boolean debug = false;
+
+  public Q_SliceExtractor( DataSet ds_array[] )
   {
     if ( ds_array == null )
     {
@@ -93,15 +99,19 @@ public class Q_SliceExtractor
         while ( true )                     // there actually is an ith detector
         {
           VecQToTOF transformer = new VecQToTOF( ds_array[index], i );
-          System.out.println("Found Data Grid...................... " );
-          System.out.println( transformer.getDataGrid() );
+          if ( debug )
+          {
+            System.out.println("Found Data Grid...................... " );
+            System.out.println( transformer.getDataGrid() );
+          }
           calculators.add( transformer );
           i++;
         }
       }
       catch (InstantiationError e )
       {
-        System.out.println( e );
+        if ( debug )
+          System.out.println( e );
       }
    }
   }
@@ -164,7 +174,6 @@ public class Q_SliceExtractor
       else
         slice[j] = 0;
     }
-    System.out.println("DONE WITH LINE CUT");
     return slice;
   }
 
@@ -194,7 +203,9 @@ public class Q_SliceExtractor
                              int      n_u_steps, 
                              int      n_v_steps )
   {
-//  System.out.println("Start of make_slice......");
+    if ( debug )
+      System.out.println("Start of make_slice......");
+
     origin = new Vector3D( origin );
     u      = new Vector3D( u );
     v      = new Vector3D( v );
@@ -218,11 +229,14 @@ public class Q_SliceExtractor
 
     float b1[] = base1.get();
     float b2[] = base2.get();
-/*
-    System.out.println("Origin = " + origin );
-    System.out.println("base1  = " + base1 );
-    System.out.println("base2  = " + base2 );
-*/
+
+    if ( debug )
+    {
+      System.out.println("Origin = " + origin );
+      System.out.println("base1  = " + base1 );
+      System.out.println("base2  = " + base2 );
+    }
+
     float orig[] = origin.get();
     Vector3D q = new Vector3D();
 
@@ -262,7 +276,6 @@ public class Q_SliceExtractor
         else
           image[row + n_v_steps][col + n_u_steps] = 0;
       }
-//  System.out.println("DONE");
     return image;
   }
 
