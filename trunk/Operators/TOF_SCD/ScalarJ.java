@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2003/05/28 20:38:31  pfpeterson
+ * Changed System.getProperty to SharedData.getProperty
+ *
  * Revision 1.9  2003/05/20 18:51:21  pfpeterson
  * Fixed NullPointerException problem when running operator a second time.
  *
@@ -1226,7 +1229,7 @@ public class ScalarJ extends GenericTOF_SCD{
   public static void main (String [] args)  {
 
     ScalarJ scal=new ScalarJ();
-    scal.getParameter(0).setValue(System.getProperty("user.dir"));
+    scal.getParameter(0).setValue(SharedData.getProperty("user.dir"));
 
     if(!scal.readUser())
       System.exit(-1);
