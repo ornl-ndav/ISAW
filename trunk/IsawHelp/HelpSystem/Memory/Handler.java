@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/01/24 23:24:09  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.6  2003/11/29 17:16:09  rmikk
  * The port number for the memory: protocol is now a constant 322.
  * The getHostAddress was implemented to always return the loop-back IP address.
@@ -59,7 +62,6 @@ import java.io.*;
 import javax.swing.*;
 import Command.*;
 import DataSetTools.operator.*;
-import IsawHelp.HelpSystem.*;
 
 /** This a URLStreamHandler that is associated with a URLConnection that
  *   calculates the information at run time.  The protocol for this handler
