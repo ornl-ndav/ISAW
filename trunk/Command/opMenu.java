@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2001/08/06 22:14:41  rmikk
+ * Fixed Error so Data Sets are now sent to the tree
+ *
  * Revision 1.12  2001/07/18 16:25:25  neffk
  * changed the DataSet[] parameter to IDataSetListHandler, a more
  * dynamic solution to having a current list of DataSet objects.
@@ -72,8 +75,8 @@ import java.io.*;
 public class opMenu extends JMenu 
 {OperatorHandler op;
  MActionListener ML;
-  IDataSetListHandler DS;
-
+ IDataSetListHandler DS;
+ IObserver iobs;
 /**
 * @param op   Gets the list of operators to be placed in this menu
 * @param DS  Gets the list of Data Sets that can be used for parameters
@@ -86,6 +89,7 @@ public opMenu(OperatorHandler op , IDataSetListHandler DS, Document logdoc , IOb
   {super("Operations");
    this.op = op;
    this.DS = DS;
+   this.iobs = iobs;
    int cat_index;
    int       comp_index;                       // index of submenu components
   int       num_components;                   // number of submenu components
@@ -201,7 +205,7 @@ private class MActionListener implements ActionListener
             JParametersDialog JP = new JParametersDialog(  opn, 
                                                            DS, 
                                                            logdoc, 
-                                                           null  );
+                                                           iobs  );
           
             if( opn instanceof IObservable)
                if( iobs != null)
