@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/10/03 15:50:50  dennis
+ *  Replace call to Data.setSqrtErrors() to Data.setSqrtErrors(true)
+ *
  *  Revision 1.2  2002/09/27 17:48:52  pfpeterson
  *  Now supports loading files with TIME_MAPs
  *
@@ -396,7 +399,7 @@ public class GsasRetriever extends Retriever{
             datablock=new HistogramTable(xscale,y_val,dy_val,bankNum);
         }else{
             datablock=new HistogramTable(xscale,y_val,bankNum);
-            datablock.setSqrtErrors();
+            datablock.setSqrtErrors(true);
         }
         data.add(datablock);
         data_xunit.add(GsasUtil.getUnit(info));
