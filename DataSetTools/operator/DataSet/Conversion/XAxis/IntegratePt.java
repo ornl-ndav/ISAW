@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/07/30 14:09:50  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.2  2004/06/23 20:37:26  rmikk
  * Reduced the number of times the data has to be copied to an arrray
  * Improved Documentation
@@ -74,8 +77,8 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
   /**
      *  Constructor 
      *  @param DS  The DataSet of interest
-     *  @param x   The time of the associated peak
-     *  @param i   The INDEX of the datablock where the peak is centered.
+     *  @param time   The time of the associated peak
+     *  @param dataBlockIndex   The INDEX of the datablock where the peak is centered.
      */
   public IntegratePt( DataSet DS,  float time, int dataBlockIndex ){
     this();
@@ -236,8 +239,8 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
   /**
       *   Applies the INTEG operator to the ith data block of the data set DS and time x
      
-      *  @param x   The time of the associated peak
-      *  @param i   The INDEX of the datablock where the peak is centered.
+      *  @param time   The time of the associated peak
+      *  @param dataBlockIndex   The INDEX of the datablock where the peak is centered.
       *  @param op  The wrappable that will actually integrate the peak
       *  @return  A Vector with two elements, ITOT, SIGI, null, or an ErrorString
       */
