@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/01/08 14:51:15  bouzekc
+ * Changed visibility on tryToDisplayASCII() to public static.  Added public
+ * static method to view a DataSet from a runfile.
+ *
  * Revision 1.11  2003/12/15 02:47:33  bouzekc
  * Removed unused imports.
  *
@@ -74,6 +78,19 @@
  */
 package DataSetTools.parameter;
 
+import DataSetTools.dataset.DataSet;
+
+import DataSetTools.operator.Generic.Special.ViewASCII;
+
+import DataSetTools.retriever.RunfileRetriever;
+
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.SharedData;
+import DataSetTools.util.TextWriter;
+
+import DataSetTools.viewer.IViewManager;
+import DataSetTools.viewer.ViewManager;
+
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -81,8 +98,10 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import java.io.File;
 import java.io.IOException;
+
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -92,14 +111,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
-
-import DataSetTools.dataset.DataSet;
-import DataSetTools.operator.Generic.Special.ViewASCII;
-import DataSetTools.util.ErrorString;
-import DataSetTools.util.SharedData;
-import DataSetTools.util.TextWriter;
-import DataSetTools.viewer.IViewManager;
-import DataSetTools.viewer.ViewManager;
 
 
 /**
@@ -128,7 +139,7 @@ public class ParameterViewer implements ActionListener {
   /**
    * Creates a new ParameterViewer object.
    *
-   * @param ipg DOCUMENT ME!
+   * @param ipg The IParameterGUI to attempt to view.
    */
   public ParameterViewer( IParameterGUI ipg ) {
     param = ipg;
@@ -145,11 +156,9 @@ public class ParameterViewer implements ActionListener {
     int index;
     Object obj;
 
-    if( e.getActionCommand(  )
-           .equals( CANCEL ) ) {
+    if( e.getActionCommand(  ).equals( CANCEL ) ) {
       holder.dispose(  );
-    } else if( e.getActionCommand(  )
-                  .equals( VIEW ) ) {
+    } else if( e.getActionCommand(  ).equals( VIEW ) ) {
       index = selector.getSelectedIndex(  );
 
       if( ( index >= 0 ) && ( items != null ) && ( items.size(  ) > 0 ) ) {
@@ -163,6 +172,18 @@ public class ParameterViewer implements ActionListener {
         }
       }
     }
+  }
+
+  /**
+   * Utility method to display DataSets.  Defaults to image view.
+   *
+   * @param runfile The name of the Runfile to get the DataSet from.
+   * @param dsNum The DataSet number to display.
+   */
+  public static void displayDataSet( String runfileName, int dsNum ) {
+    new ViewManager( 
+      new RunfileRetriever( runfileName ).getDataSet( dsNum ),
+      IViewManager.IMAGE );
   }
 
   /**
@@ -205,7 +226,6 @@ public class ParameterViewer implements ActionListener {
             //display a list so the user can choose the DataSet to view
             //basic setup for selection list
             int num_items = v.size(  );
-
             item_names   = new String[num_items];
             items        = new Vector( num_items );
 
@@ -214,7 +234,6 @@ public class ParameterViewer implements ActionListener {
               item_names[i]   = obj.toString(  );
               items.add( obj );
             }
-
             this.makeSelectionList(  );
           }
         }
@@ -228,63 +247,13 @@ public class ParameterViewer implements ActionListener {
   }
 
   /**
-   * Sets the JFrame's opening size.
-   */
-  private void setInitialSize(  ) {
-    int screenheight = ( int )( Toolkit.getDefaultToolkit(  )
-                                       .getScreenSize(  )
-                                       .getHeight(  ) * 0.30f );
-    int screenwidth = ( int )( Toolkit.getDefaultToolkit(  )
-                                      .getScreenSize(  )
-                                      .getWidth(  ) * 0.30f );
-
-    holder.setBounds( 0, 0, screenwidth, screenheight );
-  }
-
-  /**
-   * Note that this relies mainly on what is in the String array item_names in
-   * order to create the list
-   */
-  private void makeSelectionList(  ) {
-    if( item_names != null ) {
-      //create the selection list 
-      holder = new JFrame(  );
-      holder.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
-      c = holder.getContentPane(  );
-
-      setInitialSize(  );
-      selector = new JList( item_names );
-      selector.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
-      selector.setPreferredSize( new Dimension( 320, 240 ) );
-      jsp = new JScrollPane( selector );
-      jsp.setPreferredSize( new Dimension( 320, 240 ) );
-
-      view_b     = new JButton( VIEW );
-      cancel_b   = new JButton( CANCEL );
-      view_b.addActionListener( this );
-      cancel_b.addActionListener( this );
-      view_b.setPreferredSize( new Dimension( 80, 40 ) );
-      cancel_b.setPreferredSize( new Dimension( 80, 40 ) );
-
-      c.setLayout( new BorderLayout(  ) );
-      c.add( jsp, BorderLayout.CENTER );
-      button_p = new JPanel( new GridLayout(  ) );
-      button_p.add( view_b );
-      button_p.add( cancel_b );
-      c.add( button_p, BorderLayout.SOUTH );
-
-      holder.show(  );
-    }
-  }
-
-  /**
    * Utility method to display ASCII text.  If the String given is a File, it
    * reads the File.  If the String is text, it will create a temporary File
    * so that the ViewASCII operator can display it.
    *
    * @param s The String (either filename or readable text) to display.
    */
-  private void tryToDisplayASCII( String s ) {
+  public static void tryToDisplayASCII( String s ) {
     String tempName;
     String fileName;
     s = s.replace( '\"', ' ' ).trim(  );
@@ -305,18 +274,12 @@ public class ParameterViewer implements ActionListener {
         //we don't want any windoze executables, or 
         //any big ISAW data files
         if( 
-          
-          /*!*/ ( ( tempName.indexOf( ".sdds" ) >= 0 ) ||
+          ( ( tempName.indexOf( ".sdds" ) >= 0 ) ||
             ( tempName.indexOf( ".exe" ) >= 0 ) ||
             ( tempName.indexOf( ".hdf" ) >= 0 ) ||
             ( tempName.indexOf( ".run" ) >= 0 ) ||
             ( tempName.indexOf( ".nxs" ) >= 0 ) ) ) {
           return;
-
-          //obj = new ViewASCII( fileName ).getResult(  );
-          //if( obj instanceof ErrorString ) {
-          //SharedData.addmsg( obj.toString(  ) );
-          //}
         }
       }
     } else {
@@ -338,6 +301,58 @@ public class ParameterViewer implements ActionListener {
 
     if( obj instanceof ErrorString ) {
       SharedData.addmsg( obj.toString(  ) );
+    }
+  }
+
+  /**
+   * Convenience method for displaying ASCII files
+   *
+   * @param file The file name for loading.
+   */
+  public static void tryToDisplayASCII( File file ) {
+    tryToDisplayASCII( file.toString(  ) );
+  }
+
+  /**
+   * Sets the JFrame's opening size.
+   */
+  private void setInitialSize(  ) {
+    int screenheight = ( int )( Toolkit.getDefaultToolkit(  ).getScreenSize(  )
+                                       .getHeight(  ) * 0.30f );
+    int screenwidth  = ( int )( Toolkit.getDefaultToolkit(  ).getScreenSize(  )
+                                       .getWidth(  ) * 0.30f );
+    holder.setBounds( 0, 0, screenwidth, screenheight );
+  }
+
+  /**
+   * Note that this relies mainly on what is in the String array item_names in
+   * order to create the list
+   */
+  private void makeSelectionList(  ) {
+    if( item_names != null ) {
+      //create the selection list 
+      holder = new JFrame(  );
+      holder.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+      c = holder.getContentPane(  );
+      setInitialSize(  );
+      selector = new JList( item_names );
+      selector.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
+      selector.setPreferredSize( new Dimension( 320, 240 ) );
+      jsp = new JScrollPane( selector );
+      jsp.setPreferredSize( new Dimension( 320, 240 ) );
+      view_b     = new JButton( VIEW );
+      cancel_b   = new JButton( CANCEL );
+      view_b.addActionListener( this );
+      cancel_b.addActionListener( this );
+      view_b.setPreferredSize( new Dimension( 80, 40 ) );
+      cancel_b.setPreferredSize( new Dimension( 80, 40 ) );
+      c.setLayout( new BorderLayout(  ) );
+      c.add( jsp, BorderLayout.CENTER );
+      button_p = new JPanel( new GridLayout(  ) );
+      button_p.add( view_b );
+      button_p.add( cancel_b );
+      c.add( button_p, BorderLayout.SOUTH );
+      holder.show(  );
     }
   }
 }
