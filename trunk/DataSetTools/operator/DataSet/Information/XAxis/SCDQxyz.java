@@ -1,7 +1,7 @@
 /*
  * File:  SCDQxyz.java 
  *             
- * Copyright (C) 2002, Dennis Mikkelson
+ * Copyright (C) 2002,2004 Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,7 +22,8 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * This work was supported by the Intense Pulsed Neutron Source Division
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0218882, and by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
@@ -30,48 +31,37 @@
  * Modified:
  *
  * $Log$
- * Revision 1.11  2003/10/16 17:27:07  dennis
- * Fixed javadocs to build cleanly with jdk 1.4.2, and
- * clarified description of what is returned by getResult()
+ * Revision 1.12  2004/01/07 14:44:23  dennis
+ * Replaced Art & Peter's code for calculating Qxyz, with simpler, more
+ * general, correct code that works for arbitrary detector positions,
+ * based on the individual pixel positions.  This version now also uses
+ * calibrated values, provided the calibrations were loaded using the
+ * LoadSCDCalib, since LoadSCDCalib now updates the effective pixel
+ * position information.
  *
- * Revision 1.10  2003/03/10 06:10:37  dennis
- * Now checks that it has the required attributes before doing
- * the calculation and returns ErrorStrings if not.
+ * Revision 1.5  2003/07/07 15:51:45  bouzekc
+ * Added getDocumentation().
  *
- * Revision 1.9  2003/02/18 20:22:16  dennis
+ * Revision 1.4  2003/02/18 20:22:16  dennis
  * Switched to use SampleOrientation attribute instead of separate
  * phi, chi and omega values.
  *
- * Revision 1.8  2003/02/12 21:50:09  dennis
- * Changed to use PixelInfoList instead of SegmentInfoList
+ * Revision 1.3  2003/01/07 22:33:06  dennis
+ * Changed to use routine makeEulerRotationInverse() from tof_calc to
+ * build the matrix that "unwinds" the goniometer rotations.
  *
- * Revision 1.7  2003/01/15 20:23:53  dennis
- * Changed to use SegmentInfo and SegInfoListAttribute
- *
- * Revision 1.6  2003/01/14 19:52:57  dennis
- * Added getDocumentation() and basic main test program.(Chris Bouzek)
- *
- * Revision 1.5  2003/01/06 22:43:31  dennis
- * Adjusted signs to compensate for different coordinate system.
- *
- * Revision 1.4  2002/11/27 23:18:10  pfpeterson
+ * Revision 1.2  2002/11/27 23:18:10  pfpeterson
  * standardized header
  *
- * Revision 1.3  2002/09/25 16:45:06  pfpeterson
- * Changed algorithm to be A.J. Schultz's. This has the benefit of
- * using the SCD calibration if read into the Data's AttributeList.
- * Also moved the calculation into getResult() which returns a
- * Position3D of the Q-vector. The PointInfo method then just formats
- * the result.
- *
- * Revision 1.2  2002/09/19 16:01:30  pfpeterson
- * Now uses IParameters rather than Parameters.
- *
- * Revision 1.1  2002/07/31 16:28:32  dennis
- * Calculate vector Q for a diffractometer in a common frame
- * of reference relative to a crystal.  The laboratory frame
- * of reference is mapped back to a common frame by reversing
- * the rotations defined by Phi, Chi and Omega.
+ * Revision 1.1  2002/10/15 19:58:14  dennis
+ * SCDQxyz calculation based on original version from July 2002.
+ * getResult() returns Position3D object and PointInfo() calls
+ * getResult() like SCDQxzy.  Currently does NOT use area detector
+ * calibration data, but will work for an arbitrary collection of
+ * spectra, as will be needed for two or more separate area
+ * detectors.  Includes a boolean "debug" flag that will cause
+ * intermediate results and the CHI PHI OMEGA "unwinding" transform
+ * to be printed.
  *
  */
 
@@ -81,14 +71,11 @@ import  java.io.*;
 import  java.util.*;
 import  java.text.*; 
 import  DataSetTools.dataset.*;
-import  DataSetTools.instruments.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
+import  DataSetTools.instruments.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
-import  DataSetTools.viewer.*;
-import  DataSetTools.retriever.*;
-
 
 /**
  *  This operator uses the chi, phi and omega attributes of a single crystal
@@ -100,7 +87,7 @@ import  DataSetTools.retriever.*;
 public class SCDQxyz extends  XAxisInformationOp 
                               implements Serializable
 {
-    private static final double PI = Math.PI;
+  public boolean debug = false;
 
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
@@ -183,139 +170,10 @@ public class SCDQxyz extends  XAxisInformationOp
      return "Qx,Qy,Qz";
    }
 
-  /* ---------------------- getDocumentation --------------------------- */
-  /**
-   *  Returns the documentation for this method as a String.  The format
-   *  follows standard JavaDoc conventions.
-   */
-  public String getDocumentation()
-  {
-    StringBuffer s = new StringBuffer("");
-    s.append("@overview This operator uses the chi, phi and omega ");
-    s.append("attributes of a single crystal diffractometer DataSet to ");
-    s.append("produce a string giving the values of Qx, Qy, Qz for a ");
-    s.append("specific bin in a histogram, in a frame of reference ");
-    s.append("attached to the crystal, ");
-    s.append("( chi = 0, phi = 0 and omega = 0 ).\n");
-    s.append("@assumptions It is assumed that the DataSet has an attribute ");
-    s.append("specifying the detector position.\n");
-    s.append("@algorithm First this operator gets the data entry specified ");
-    s.append("by the given Data block.\n");
-    s.append("Then it uses the SCD calibration to get to real-space at the ");
-    s.append("point specified by the data entry and time-of-flight values.\n");
-    s.append("Then it calculates wavelength based on time-of-flight data ");
-    s.append("and distance to sample.\n");
-    s.append("Next it uses detector center distance, center angle, ");
-    s.append("wavelength and sample orientation to calculate 1/d values ");
-    s.append("by converting from real-space to Q values and rotating the ");
-    s.append("sample orientation out of the Q orientation.\n");
-    s.append("Finally it creates a new Position3D based upon the calculated ");
-    s.append("values.\n");
-    s.append("@param ds The DataSet to which the operation is applied.\n");
-    s.append("@param i The index of the Data block to use.\n");
-    s.append("@param tof The time-of-flight at which Qx,Qy,Qz is to be ");
-    s.append("obtained.\n");
-    s.append("@return The calculated Q vector as a Position3D object.\n");
-    s.append("@error Returns null if the conversion from real-space to ");
-    s.append("Q-values fails.  This will occur if the wavelength cannot be ");
-    s.append("calculated, although anything which hinders the conversion to ");
-    s.append("1/d values will cause this to occur.\n");
-    return s.toString();
-  }
-
-  /* ---------------------------- getResult ------------------------------- */
-  /**
-   * Calculates the Q vector for the given time and spectrum. 
-   *
-   * @return  The calculated Q vector as a Position3D object.
-   */
-  public Object getResult(){
-     DataSet ds = this.getDataSet();
-     int   i    = ((Integer)(getParameter(0).getValue())).intValue();
-     float x    = ((Float)(getParameter(1).getValue())).floatValue();
-     Data    d  = ds.getData_entry(i);
-
-                                                // check for needed Attributes
-     Attribute attr;                      
-     attr = d.getAttribute(Attribute.INITIAL_PATH);
-     if ( attr == null )
-       return new ErrorString("Missing INITIAL_PATH Attribute"); 
-     attr = d.getAttribute(Attribute.DETECTOR_CEN_DISTANCE);
-     if ( attr == null )
-       return new ErrorString("Missing DETECTOR_CEN_DISTANCE Attribute");
-     attr = d.getAttribute(Attribute.DETECTOR_CEN_ANGLE);
-     if ( attr == null )
-       return new ErrorString("Missing DETECTOR_CEN_ANGLE Attribute");
-
-     float[] Q={0f,0f,0f};
-     float[] calib=(float[])d.getAttributeValue(Attribute.SCD_CALIB);
-     float init_path=
-         ((Float)d.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
-     float detD=((Float)
-             d.getAttributeValue(Attribute.DETECTOR_CEN_DISTANCE)).floatValue();
-     float detA=((Float)
-             d.getAttributeValue(Attribute.DETECTOR_CEN_ANGLE)).floatValue();
-
-     // set up the conversion to real-space
-     double distance=0.;
-     float wl=0f;
-     
-     Q[2]=x; // time is the time no matter what
-     if(calib!=null){ // use the SCD calibration to get to real space
-         // set up the initial position
-         PixelInfoListAttribute pixI=
-             (PixelInfoListAttribute)d.getAttribute(Attribute.PIXEL_INFO_LIST);
-         IPixelInfo pix=((PixelInfoList)pixI.getValue()).pixel(0);
-         Q[0]=pix.col();
-         Q[1]=pix.row();
-         
-         // convert to real-space, the 100 is to convert from cm to m
-         Q[0]=(calib[1]*(Q[0]-0.5f)+calib[3])/100f;
-         Q[1]=(calib[2]*(Q[1]-0.5f)+calib[4])/100f;
-         Q[2]=calib[0]+Q[2];
-     }else{ // use the detector position from the file
-         DetectorPosition pos=
-             (DetectorPosition)d.getAttributeValue(Attribute.DETECTOR_POS);
-         float[] coords=pos.getCylindricalCoords();
-         // the methods below assume cm, not meters
-         Q[0]=-1f*(float)(coords[0]*Math.sin(coords[1]-detA*PI/180.));
-         Q[1]=coords[2];
-     }
-     // now convert the wavelength
-     distance=init_path+Math.sqrt(detD*detD+(Q[0]*Q[0]+Q[1]*Q[1]));
-     wl=tof_calc.Wavelength((float)distance,Q[2]);
-     Q[2]=wl;
-
-     // get the sample orientation
-     SampleOrientation orientation =
-        (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
-     float phi  =orientation.getPhi();
-     float chi  =orientation.getChi();
-     float omega=orientation.getOmega();
-     
-     // do the actual conversion to 1/d
-     Q=cmtoqs(detA,detD,wl,Q);
-     if(Q==null) return null;
-     Q=rotSample(chi,phi,omega,Q);
-     if(Q==null) return null;
-
-
-     // now multiply by 2PI to get Q
-     for( int j=0 ; j<3 ; j++ ){
-         Q[j]=(float)(2*PI*Q[j]);
-     }
-
-     Position3D Qpos=new Position3D();
-     Qpos.setCartesianCoords(Q[0],Q[1],Q[2]);
-
-     return Qpos;
-   }
-
 
   /* ------------------------------ PointInfo ----------------------------- */
   /**
-   * Get Qx,Qy,Qz at the specified point. This calls getResult for the
-   * actual calculation.
+   * Get Qx,Qy,Qz at the specified point.
    *
    *  @param  x    the x-value (tof) for which the axis information is to be 
    *               obtained.
@@ -325,27 +183,111 @@ public class SCDQxyz extends  XAxisInformationOp
    *
    *  @return  information for the x axis at the specified x.
    */
-  public String PointInfo( float x, int i ){
+   public String PointInfo( float x, int i )
+   {
       // set the parameters for getResult
       getParameter(0).setValue(new Integer(i));
       getParameter(1).setValue(new Float(x));
-      
-     // set up a number format to display the result
+
+      // set up a number format to display the result
       NumberFormat fmt = NumberFormat.getInstance();
       fmt.setMinimumFractionDigits(3);
       fmt.setMaximumFractionDigits(3);
-      
+
       // let getResult calculate Q
-      Object obj = this.getResult();
-
-      if ( obj == null || !(obj instanceof Position3D) )
-        return "N/A";
-
-      Position3D Qpos=(Position3D)obj;
+      Position3D Qpos=(Position3D)this.getResult();
+      if(Qpos==null) return "N/A";
       float[] Q=Qpos.getCartesianCoords();
 
       return fmt.format(Q[0])+","+fmt.format(Q[1])+","+fmt.format(Q[2]);
+   }
+
+  /**
+   *  @return javadoc-style documentation for this Operator.
+   */
+  public String getDocumentation(  ) {
+    StringBuffer s = new StringBuffer(  );
+
+    s.append( "@overview This operator uses the chi, phi and omega " );
+    s.append( "attributes of a single crystal diffractometer DataSet to " );
+    s.append( "produce a string giving the values of Qx, Qy, Qz for a " );
+    s.append( "specific bin in a histogram, in a frame of reference " );
+    s.append( "attached to the crystal, ( chi = 0, phi = 0 and omega = 0 ). ");
+    s.append( "This Operator is meant as a temporary solution.\n" );
+    s.append( "@param ds The DataSet to which the operation is applied.\n" );
+    s.append( "@param i Index of the Data block to use.\n" );
+    s.append( "@param tof The time-of-flight at which Qx,Qy,Qz is to be " );
+    s.append( "obtained.\n" );
+
+    return s.toString(  );
   }
+
+  /* ---------------------------- getResult ------------------------------- */
+
+  public Object getResult()
+  {                                       // get the current data set
+     DataSet ds = this.getDataSet();
+     int   i    = ( (Integer)(getParameter(0).getValue()) ).intValue();
+     float tof  = ( (Float)(getParameter(1).getValue()) ).floatValue();
+
+     Data    d   = ds.getData_entry(i);
+
+     DetectorPosition pos = (DetectorPosition)
+                             d.getAttributeValue( Attribute.DETECTOR_POS );
+     if ( pos == null )
+       return new ErrorString("Missing DETECTOR POSITION attribute");
+
+     Vector3D pt    = new Vector3D();
+     Vector3D i_vec = new Vector3D( 1, 0, 0 );
+     Vector3D k_vec = new Vector3D( 0, 0, 1 );
+    
+     Float initial_path_F = (Float)d.getAttributeValue(Attribute.INITIAL_PATH);
+     if ( initial_path_F == null )
+       return new ErrorString("Missing INITIAL PATH attribute");
+     float initial_path = initial_path_F.floatValue();
+
+     Position3D q_pos = tof_calc.DiffractometerVecQ(pos, initial_path, tof);
+
+                                              // q is now in the fixed coord
+                                              // system of the lab.  Rotate it
+                                              // back to phi,chi,omega = 0,0,0
+     SampleOrientation orientation =
+        (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
+
+     if (orientation == null) 
+       return new ErrorString("Missing SampleOrientation attribute");
+
+     Tran3D combinedR =orientation.getGoniometerRotationInverse();
+
+     float xyz[] = q_pos.getCartesianCoords();
+     pt.set( xyz[0], xyz[1], xyz[2] );
+
+     if ( debug )
+     {
+       System.out.println("Dennis's+++++++++++++++++++++++++++++++++++++++++");
+       System.out.println("det pos =       " + pos ); 
+       float det_xyz[] = pos.getCartesianCoords();
+       System.out.println("det pos,x,y,z = " + det_xyz[0] +
+                          "   "              + det_xyz[1] +
+                          "   "              + det_xyz[2] );
+       System.out.println("q_pos =       " + q_pos );
+       System.out.println("q_pos,x,y,z = "+xyz[0]+"   "+xyz[1]+"   "+xyz[2] );
+       System.out.println("combined R = \n" + combinedR );
+     }
+
+     combinedR.apply_to( pt, pt );
+     q_pos.setCartesianCoords(pt.get()[0], pt.get()[1], pt.get()[2]);
+
+     if ( debug )
+     {
+       System.out.println("After unwinding PHI, CHI, OMEGA");
+       xyz = q_pos.getCartesianCoords();
+       System.out.println("q_pos =       " + q_pos );
+       System.out.println("q_pos,x,y,z = "+xyz[0]+"   "+xyz[1]+"   "+xyz[2] );
+     }
+
+     return q_pos;
+  }  
 
 
   /* ------------------------------ clone ------------------------------- */
@@ -363,113 +305,6 @@ public class SCDQxyz extends  XAxisInformationOp
     new_op.CopyParametersFrom( this );
 
     return new_op;
-  }
-
-  /**
-   * Convert the real-space position to Q
-   */
-  private float[] cmtoqs(float deta, float detd, float wl, float pos[]){
-      float[] post_d=new float[3];
-      float[] post_a=new float[3];
-      float[] post_l=new float[3];
-
-      // convert to 1/d
-      double r=Math.sqrt(pos[0]*pos[0]+pos[1]*pos[1]+detd*detd);
-      if(Double.isNaN(r) || Float.isNaN(pos[2])) return null;
-      if(r==0. || pos[2]==0f) return null;
-      post_d[0]=(float)(-1.*detd/(r*pos[2]));
-      post_d[1]=(float)(pos[0]/(r*pos[2]));
-      post_d[2]=(float)(pos[1]/(r*pos[2]));
-      
-      // rotate the detector to where it actually is
-      deta = -deta;                                 // Dennis, 10/1/2002
-      double cosa=Math.cos(-deta*PI/180.);
-      double sina=Math.sin(-deta*PI/180.);
-      post_a[0]=(float)(    post_d[0]*cosa+post_d[1]*sina);
-      post_a[1]=(float)(-1.*post_d[0]*sina+post_d[1]*cosa);
-      post_a[2]=post_d[2];
-
-      // translate the origin
-      post_l[0]=post_a[0]-(float)(1./wl);           // Dennis, 10/1/2002
-      post_l[1]=post_a[1];
-      post_l[2]=post_a[2];
-      
-      return post_l;
-  }
-
-  /**
-   * Rotate the sample orientation out of the Q-orientation
-   */
-  private float[] rotSample( float chi, float phi, float omega, float[] pos){
-      float[] post_ome=new float[3];
-      float[] post_chi=new float[3];
-      float[] post_phi=new float[3];
-      
-      // reverse omega rotation
-      double coso=Math.cos(omega*PI/180.);
-      double sino=Math.sin(omega*PI/180.);
-      post_ome[0]=(float)(pos[0]*coso-pos[1]*sino);
-      post_ome[1]=(float)(pos[0]*sino+pos[1]*coso);
-      post_ome[2]=pos[2];
-      
-      // reverse the chi rotation
-      chi=-chi;                                      // Dennis, 10/1/2002
-      double cosc=Math.cos(chi*PI/180.);
-      double sinc=Math.sin(chi*PI/180.);
-      post_chi[0]=post_ome[0];
-      post_chi[1]=(float)(post_ome[1]*cosc-post_ome[2]*sinc);
-      post_chi[2]=(float)(post_ome[1]*sinc+post_ome[2]*cosc);
-      
-      // reverse the phi rotation
-      double cosp=Math.cos(phi*PI/180.);
-      double sinp=Math.sin(phi*PI/180.);
-      post_phi[0]=(float)(    post_chi[0]*cosp+post_chi[1]*sinp);
-      post_phi[1]=(float)(-1.*post_chi[0]*sinp+post_chi[1]*cosp);
-      post_phi[2]=post_chi[2];
-      
-      return post_phi;
-  }
-
-  /* --------------------------- main ----------------------------------- */
-  /*
-   *  Main program for testing purposes
-   */
-  public static void main( String[] args )
-  {
-    int index;
-    float TOF;
-
-    StringBuffer p = new StringBuffer();
-
-    index = 70;
-    TOF = (float)3512.438;
-
-    String file_name = "/home/groups/SCD_PROJECT/SampleRuns/SCD06496.RUN";
-                       //"D:\\ISAW\\SampleRuns\\SCD06496.RUN";
-
-    try
-    {
-       RunfileRetriever rr = new RunfileRetriever( file_name );
-       DataSet ds1 = rr.getDataSet(1);
-       ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
-       SCDQxyz op = new SCDQxyz(ds1, index, TOF);
-       p.append("\nThe results of calling this operator are:\n");
-
-       if( op.getResult() == null )
-         p.append("The results of this operator are invalid.");
-
-       else
-         p.append(op.getResult().toString());
-
-       p.append("\n\nThe results of calling getDocumentation are:\n");
-       p.append(op.getDocumentation());
-
-       System.out.print(p.toString());
-     }
-     catch(Exception e)
-     {
-       e.printStackTrace();
-     }
   }
 
 }
