@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/06/27 18:43:28  dennis
+ *  Now uses Kevin's GraphableDataManager instead of
+ *  Kevin's SelectedGraphView
+ *
  *  Revision 1.7  2001/06/07 21:17:56  dennis
  *  Added calls to System.gc() where major changes are made
  *  to a view.
@@ -245,8 +249,8 @@ public class InternalViewManager extends    JInternalFrame
         viewer = new GraphView( tempDataSet, state );
       else if ( view_type == THREE_D )
         viewer = new ThreeDView( tempDataSet, state );
-      else if ( view_type == SELECTED_GRAPHS )                  // Use either
-        viewer = new SelectedGraphView( tempDataSet );          // Kevin's or
+      else if ( view_type == SELECTED_GRAPHS )                    // Use either
+        viewer = new GraphableDataManager( tempDataSet );         // Kevin's or
 //        viewer = new ViewerTemplate( tempDataSet, state );      // Template  
       else
       {
