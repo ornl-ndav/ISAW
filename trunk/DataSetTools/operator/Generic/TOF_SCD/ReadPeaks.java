@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/07/03 15:32:10  dennis
+ * Fixed java docs on getResult() method.
+ *
  * Revision 1.2  2003/06/05 14:48:55  dennis
  * Minor fix to javadocs. Shortened sb.append() statements to 80
  * characters.
@@ -124,12 +127,11 @@ public class ReadPeaks extends GenericTOF_SCD{
 
   /* ----------------------------- getResult ------------------------------ */ 
   /** 
-   *  Writes a list of x,y, and time bins and intensities to the specified
-   *  file.
+   *  Reads a list of peaks from a file of the form written by the WritePeaks
+   *  operator.
    *
-   *  @return String containing the value of the specified file, which is 
-   *  summary information for the peaks data written to the file as well as 
-   *  the file's path. (if successful).
+   *  @return A vector of peak objects, if the file was read successfully,
+   *          or an ErrorString if the read failed.
    */
   public Object getResult(){
     // get the filename
