@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/02/13 17:04:33  pfpeterson
+ * Added proper logic for summing of slice integrations.
+ *
  * Revision 1.4  2003/02/12 21:48:47  dennis
  * Changed to use PixelInfoList instead of SegmentInfoList.
  *
@@ -412,6 +415,12 @@ public class Integrate extends GenericTOF_SCD{
     int cenZ=(int)Math.round(peak.z());
 
     int[] zrange={cenZ,cenZ-1,cenZ+1,cenZ+2,cenZ+3};
+    int minZrange=zrange[0];
+    int maxZrange=zrange[0];
+    for( int i=1 ; i<zrange.length ; i++ ){
+      if(zrange[i]<minZrange) minZrange=zrange[i];
+      if(zrange[i]>maxZrange) maxZrange=zrange[i];
+    }
     int minZ=0;
     int maxZ=ds.getData_entry(ids[1][1]).getX_scale().getNum_x();
     for( int i=0 ; i<zrange.length ; i++ ){           // can't integrate past
@@ -422,12 +431,19 @@ public class Integrate extends GenericTOF_SCD{
 
     // integrate each time slice
     for( int k=0 ; k<zrange.length ; k++ ){
+      if(zrange[k]<minZrange  || zrange[k]>maxZrange)
+        continue;
       tempIsigI=integratePeakSlice(ds,ids,cenX,cenY,zrange[k]);
       if( tempIsigI[0]>0f ){
         IsigI[k][0]=tempIsigI[0];
         IsigI[k][1]=tempIsigI[1];
-      }else{             // if this is the peak's time slice then something
-        if(k==0) return; // is wrong and we should just return
+      }else{
+        if(k==0)  // if this is the peak's time slice then something
+          return; // is wrong and we should just return
+        if(zrange[k]<zrange[0])
+          minZrange=zrange[k];
+        else if(zrange[k]>zrange[0])
+          maxZrange=zrange[k];
       }
     }
     
@@ -549,6 +565,8 @@ public class Integrate extends GenericTOF_SCD{
    * will increase the overall ratio or not
    */
   private static boolean compItoDI(float Itot, float dItot, float I, float dI){
+    if(I<=0f || dI==0f) return false;
+
     float myItot=Itot+I;
     float myDItot=(float)Math.sqrt(dItot*dItot+dI*dI);
     
