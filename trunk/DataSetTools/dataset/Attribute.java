@@ -6,6 +6,10 @@
  *                  Removed method "greater_than" to compare objects.
  *
  *  $Log$
+ *  Revision 1.7  2000/11/17 23:45:55  dennis
+ *  Added method Build( name, value ) to construct an Attribute of the correct
+ *  subclass based on the type of the Object "value".
+ *
  *  Revision 1.6  2000/11/10 22:50:00  dennis
  *  Added constant for Q_VALUE
  *
@@ -33,6 +37,8 @@
 package  DataSetTools.dataset;
 
 import java.io.*;
+import  DataSetTools.util.*;
+import  DataSetTools.math.*;
 
 /**
  * The abstract root class for attributes used in data objects.  Attribute
@@ -42,9 +48,10 @@ import java.io.*;
  * compare the values of two attribute objects is also provided. 
  *  
  * @see DataSetTools.dataset.Data
- * @see DataSetTools.dataset.StringAttribute
  * @see DataSetTools.dataset.IntAttribute
  * @see DataSetTools.dataset.FloatAttribute
+ * @see DataSetTools.dataset.StringAttribute
+ * @see DataSetTools.dataset.IntListAttribute
  * @see DataSetTools.dataset.DoubleAttribute
  * @see DataSetTools.dataset.DetPosAttribute
  *
@@ -233,5 +240,66 @@ abstract public class Attribute implements Serializable
    * Returns a copy of the current attribute
    */
   abstract public Object clone();
+
+
+  /**
+   *  Build an Attribute object, if possible, given a title string and an
+   *  object holding the value for the Attribute.
+   *
+   *  @param  name     String holding the name of the attribute.
+   *  @param  value    An Object holding the value for the attribute.  
+   *                   Integer, Float, Double, String, Integer[] and
+   *                   DetectorPosition are supported.
+   *
+   *  @return  If it is possible to construct an Attribute using the specified
+   *           Object, this returns an Attribute of the correct type.  If not,
+   *           this returns an ErrorString object. 
+   */
+  public static Object Build( String name, Object value )
+  {
+    Attribute A = null;
+
+    if ( value == null )
+      return new ErrorString(" null value object");
+
+    if ( name == null )
+      return new ErrorString(" null name object");
+
+    else if( value instanceof Integer)
+      A = new IntAttribute(name, ((Integer)value).intValue());
+
+    else if( value instanceof Float)
+      A = new FloatAttribute( name , ((Float)value).floatValue());
+
+    else if( value instanceof Double)
+      A = new DoubleAttribute( name , ((Double)value).doubleValue());
+
+    else if( value instanceof String)
+      A = new StringAttribute( name , (String) value);
+
+    else if( value instanceof SpecialString)
+      A = new StringAttribute( name, value.toString());
+
+    else if( value instanceof DetectorPosition )
+      A = new DetPosAttribute( name, (DetectorPosition)value );
+
+    else if( value instanceof int[] )
+      A = new IntListAttribute( name , (int[])value );
+
+    else if( value instanceof Integer[] )          // copy values into an int[]
+    {
+      int n_vals = ((Integer[])value).length;
+      int vals[] = new int[ n_vals ];
+      for ( int i = 0; i < n_vals; i++ )
+        vals[i] = ((Integer[])value)[i].intValue();
+      A = new IntListAttribute( name , vals );
+    }
+
+    else
+      return new ErrorString(" can't build Attribute for " + 
+                               value.getClass().getName()  );
+
+    return A;
+  }
 
 }
