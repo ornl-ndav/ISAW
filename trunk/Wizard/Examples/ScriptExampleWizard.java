@@ -29,6 +29,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.5  2003/11/05 02:20:29  bouzekc
+ * Changed to work with new Wizard and Form design.
+ *
  * Revision 1.4  2003/09/27 00:53:32  bouzekc
  * Main method now uses wizardLoader().  This is in keeping with the other
  * wizards.
@@ -47,6 +50,7 @@
 package Wizard.Examples;
 
 import DataSetTools.parameter.IParameterGUI;
+import DataSetTools.parameter.LoadFilePG;
 
 import DataSetTools.util.SharedData;
 import DataSetTools.util.StringUtil;
@@ -80,7 +84,6 @@ public class ScriptExampleWizard extends Wizard {
     this.createAllForms(  );
 
     StringBuffer s = new StringBuffer(  );
-
     s.append( 
       "This class has a main program that constructs a Wizard to show\n" );
     s.append( "how ScriptForms can be created and have their parameters\n" );
@@ -95,7 +98,6 @@ public class ScriptExampleWizard extends Wizard {
    */
   public static void main( String[] args ) {
     ScriptExampleWizard w = new ScriptExampleWizard( true );
-
     w.wizardLoader( args );
   }
 
@@ -104,19 +106,18 @@ public class ScriptExampleWizard extends Wizard {
    */
   private void createAllForms(  ) {
     //here is where we link all of our parameters.
-    int[][] fpi = {
+    int[][] fpi          = {
       { 0, 0 },  //raw data path
       { 1, 1 },  //peaks file path
       { 2, 2 },  //run numbers
       { 3, 3 }
     };  //experiment name
-
-    ScriptForm peaks = new ScriptForm( 
-        "/find_multiple_peaks.iss", "LoadFile", "Peaks File" );
+    ScriptForm peaks     = new ScriptForm( 
+        "/find_multiple_peaks.iss", new LoadFilePG( "Peaks File", null, false ) );
     ScriptForm integrate = new ScriptForm( 
-        "/integrate_multiple_runs.iss", "LoadFile", "Integrated Peaks File",
+        "/integrate_multiple_runs.iss",
+        new LoadFilePG( "Integrated Peaks File", null, false ),
         new int[]{ 0, 1, 2, 3 } );
-
     this.addForm( peaks );
     this.addForm( integrate );
 

@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/11/05 02:20:30  bouzekc
+ * Changed to work with new Wizard and Form design.
+ *
  * Revision 1.1  2003/07/14 20:36:46  bouzekc
  * Added to CVS.
  *
@@ -64,10 +67,6 @@ import javax.swing.*;
  * which uses OperatorForms and custom crafted Forms.
  */
 public class JyInitPeaksWizard extends Wizard {
-  //~ Static fields/initializers ***********************************************
-
-  private static final String LOADFILETYPE = "LoadFile";
-
   //~ Constructors *************************************************************
 
   /**
@@ -88,7 +87,6 @@ public class JyInitPeaksWizard extends Wizard {
     this.createAllForms(  );
 
     StringBuffer s = new StringBuffer(  );
-
     s.append( "This Wizard is designed to be used as an initial\n" );
     s.append( "tool for finding peaks from SCD run files.  It\n" );
     s.append( "applies BlindJ, IndexJ, ScalarJ, and LsqrsJ\n" );
@@ -120,34 +118,36 @@ public class JyInitPeaksWizard extends Wizard {
    * Adds and coordinates the necessary Forms for this Wizard.
    */
   private void createAllForms(  ) {
-    int[][] fpi = {
+    int[][] fpi            = {
       { 10, 0, 0, -1, 0, 0 },  //peaks file 
       { -1, 2, 1, 0, -1, -1 }
     };  //matrix
-
     JyScriptForm peaksform = new JyScriptForm( 
-        "find_multiple_peaks2.py", LOADFILETYPE, "Peaks file" );
+        "find_multiple_peaks2.py", new LoadFilePG( "Peaks file", null, false ) );
 
     //the return types of all of these Operator Forms is LoadFilePG,
     //hence the "LoadFile"
-    OperatorForm blindjform = new OperatorForm( 
-        new BlindJ(  ), LOADFILETYPE, "BlindJ log file", new int[]{ 0 } );
-    OperatorForm indexjform = new OperatorForm( 
-        new IndexJ(  ), LOADFILETYPE, "IndexJ log file", new int[]{ 0, 1 } );
+    OperatorForm blindjform  = new OperatorForm( 
+        new BlindJ(  ), new LoadFilePG( "BlindJ log file", null, false ),
+        new int[]{ 0 } );
+    OperatorForm indexjform  = new OperatorForm( 
+        new IndexJ(  ), new LoadFilePG( "IndexJ log file", null, false ),
+        new int[]{ 0, 1 } );
     OperatorForm scalarjform = new OperatorForm( 
-        new ScalarJ(  ), LOADFILETYPE, "ScalarJ log file", new int[]{ 0 } );
-    OperatorForm lsqrsjform = new OperatorForm( 
-        new LsqrsJ(  ), LOADFILETYPE, "LsqrsJ log file", new int[]{ 0 } );
+        new ScalarJ(  ), new LoadFilePG( "ScalarJ log file", null, false ),
+        new int[]{ 0 } );
+    OperatorForm lsqrsjform  = new OperatorForm( 
+        new LsqrsJ(  ), new LoadFilePG( "LsqrsJ log file", null, false ),
+        new int[]{ 0 } );
     OperatorForm indexjform2 = new OperatorForm( 
-        new IndexJ(  ), LOADFILETYPE, "IndexJ log file", new int[]{ 0 } );
-
+        new IndexJ(  ), new LoadFilePG( "IndexJ log file", null, false ),
+        new int[]{ 0 } );
     this.addForm( peaksform );
     this.addForm( blindjform );
     this.addForm( indexjform );
     this.addForm( scalarjform );
     this.addForm( lsqrsjform );
     this.addForm( indexjform2 );
-
     super.linkFormParameters( fpi );
   }
 }

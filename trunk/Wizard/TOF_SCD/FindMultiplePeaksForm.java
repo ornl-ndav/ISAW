@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.28  2003/11/05 02:20:30  bouzekc
+ * Changed to work with new Wizard and Form design.
+ *
  * Revision 1.27  2003/10/27 01:30:56  bouzekc
  * Result parameter is now the last parameter.  This is to facilitate
  * remote execution.
@@ -223,35 +226,23 @@ public class FindMultiplePeaksForm extends Form {
    */
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
-
     addParameter( new DataDirPG( "Raw Data Path", null, false ) );  //0
-
     addParameter( new DataDirPG( "Peaks File Output Path", null, false ) );  //1
-
     addParameter( new IntArrayPG( "Run Numbers", "", false ) );  //2
-
     addParameter( new StringPG( "Experiment name", "", false ) );  //3
-
     addParameter( 
       new IntegerPG( "Maximum Number of Peaks", new Integer( 30 ), false ) );  //4
-
     addParameter( 
       new IntegerPG( "Minimum Peak Intensity", new Integer( 10 ), false ) );  //5
-
     addParameter( 
       new BooleanPG( "Append Data to File?", new Boolean( false ), false ) );  //6
-
     addParameter( 
       new IntegerPG( 
         "SCD Calibration File Line to Use", new Integer( -1 ), false ) );  //7
-
     addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );  //8
-
     addParameter( 
       new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );  //9
-
-    addParameter( new LoadFilePG( "Peaks File", " ", false ) );  //10
-
+    setResultParam( new LoadFilePG( "Peaks File", " ", false ) );  //10
     setParamTypes( 
       null, new int[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, new int[]{ 10 } );
   }
@@ -261,7 +252,6 @@ public class FindMultiplePeaksForm extends Form {
    */
   public String getDocumentation(  ) {
     StringBuffer s = new StringBuffer(  );
-
     s.append( "@overview This Form is designed to find peaks from multiple" );
     s.append( "SCD RunFiles. " );
     s.append( "@assumptions It is assumed that:\n" );
@@ -339,33 +329,32 @@ public class FindMultiplePeaksForm extends Form {
     DataSet histDS;
     DataSet monDS;
     Object obj;
-    Peak peak = null;
-
+    Peak peak       = null;
     int[] runsArray;
     int[] keepRange;
 
     //get raw data directory
-    param    = ( IParameterGUI )super.getParameter( 0 );
-    rawDir   = param.getValue(  )
-                    .toString(  );
+    param          = ( IParameterGUI )super.getParameter( 0 );
+    rawDir         = param.getValue(  )
+                          .toString(  );
 
     //get output directory
-    param       = ( IParameterGUI )super.getParameter( 1 );
-    outputDir   = param.getValue(  )
-                       .toString(  );
+    param          = ( IParameterGUI )super.getParameter( 1 );
+    outputDir      = param.getValue(  )
+                          .toString(  );
 
     //gets the run numbers
-    param       = ( IParameterGUI )super.getParameter( 2 );
-    runsArray   = IntList.ToArray( param.getValue(  ).toString(  ) );
+    param          = ( IParameterGUI )super.getParameter( 2 );
+    runsArray      = IntList.ToArray( param.getValue(  ).toString(  ) );
 
     //get experiment name
-    param     = ( IParameterGUI )super.getParameter( 3 );
-    expName   = param.getValue(  )
-                     .toString(  );
+    param          = ( IParameterGUI )super.getParameter( 3 );
+    expName        = param.getValue(  )
+                          .toString(  );
 
     //get maximum number of peaks to find
-    param      = ( IParameterGUI )super.getParameter( 4 );
-    maxPeaks   = ( ( Integer )param.getValue(  ) ).intValue(  );
+    param          = ( IParameterGUI )super.getParameter( 4 );
+    maxPeaks       = ( ( Integer )param.getValue(  ) ).intValue(  );
 
     //get minimum intensity of peaks
     param          = ( IParameterGUI )super.getParameter( 5 );
@@ -376,29 +365,29 @@ public class FindMultiplePeaksForm extends Form {
     appendToFile   = ( ( BooleanPG )param ).getbooleanValue(  );
 
     //get line number for SCD calibration file
-    param     = ( IParameterGUI )super.getParameter( 7 );
-    SCDline   = ( ( Integer )param.getValue(  ) ).intValue(  );
+    param          = ( IParameterGUI )super.getParameter( 7 );
+    SCDline        = ( ( Integer )param.getValue(  ) ).intValue(  );
 
     //get calibration file name
-    param       = ( IParameterGUI )super.getParameter( 8 );
-    calibFile   = param.getValue(  )
-                       .toString(  );
+    param          = ( IParameterGUI )super.getParameter( 8 );
+    calibFile      = param.getValue(  )
+                          .toString(  );
 
     //get the detector border range
-    keepRange = ( ( IntArrayPG )getParameter( 9 ) ).getArrayValue(  );
+    keepRange      = ( ( IntArrayPG )getParameter( 9 ) ).getArrayValue(  );
 
     if( keepRange != null ) {
       lowerLimit   = keepRange[0];  //lower limit of range
 
       //upper limit of range
-      upperLimit = keepRange[keepRange.length - 1];
+      upperLimit   = keepRange[keepRange.length - 1];
     } else {  //shouldn't happen, but default to 0:MAX_VALUE
       lowerLimit   = 0;
       upperLimit   = Integer.MAX_VALUE;
     }
 
     //first time through the file
-    first   = true;
+    first      = true;
 
     //the name for the saved file
     saveName   = outputDir + expName + ".peaks";
@@ -422,9 +411,7 @@ public class FindMultiplePeaksForm extends Form {
 
     for( int i = 0; i < runsArray.length; i++ ) {
       IPNSName   = InstrumentType.formIPNSFileName( SCDName, runsArray[i] );
-
-      loadName = rawDir + IPNSName;
-
+      loadName   = rawDir + IPNSName;
       SharedData.addmsg( "Loading " + loadName + "." );
 
       //load the histogram
@@ -450,7 +437,6 @@ public class FindMultiplePeaksForm extends Form {
       } else {
         return errorOut( "LoadMonitorDS failed: " + obj.toString(  ) );
       }
-
       SharedData.addmsg( "Finding peaks for " + loadName + "." );
 
       //integrate
@@ -515,7 +501,6 @@ public class FindMultiplePeaksForm extends Form {
       } else {
         return errorOut( "CentroidPeaks failed: " + obj.toString(  ) );
       }
-
       SharedData.addmsg( "Writing peaks for " + loadName + "." );
 
       // write out the results to the .peaks file
@@ -555,9 +540,7 @@ public class FindMultiplePeaksForm extends Form {
       super.fireValueChangeEvent( ( int )oldPercent, ( int )newPercent );
       histDS = null;
     }
-
     SharedData.addmsg( "--- Done finding peaks. ---" );
-
     SharedData.addmsg( "Peaks are listed in " );
     SharedData.addmsg( saveName );
 

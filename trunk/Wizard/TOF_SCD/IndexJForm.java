@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.27  2003/11/05 02:20:30  bouzekc
+ * Changed to work with new Wizard and Form design.
+ *
  * Revision 1.26  2003/10/26 19:17:36  bouzekc
  * Now returns the name of the file written rather than Boolean.TRUE when
  * getResult() executes successfully.
@@ -246,7 +249,7 @@ public class IndexJForm extends Form implements PropertyChangeListener {
     addParameter( rpg );  //7
     addParameter( new LoadFilePG( "Matrix File to Load", "", false ) );  //8
     addParameter( new IntArrayPG( "Restrict Runs", "", false ) );  //9
-    addParameter( new LoadFilePG( "JIndex Log", " ", false ) );  //10
+    setResultParam( new LoadFilePG( "JIndex Log", " ", false ) );  //10
     rpg.addPropertyChangeListener( IParameter.VALUE, this );
 
     if( HAS_CONSTANTS ) {
@@ -496,6 +499,7 @@ public class IndexJForm extends Form implements PropertyChangeListener {
    */
   public void propertyChange( PropertyChangeEvent pce ) {
     Object newVal = pce.getNewValue(  );
+
     if( newVal == FROM_FILE ) {
       ( ( IParameterGUI )getParameter( 8 ) ).setEnabled( true );
       ( ( IParameterGUI )getParameter( 9 ) ).setEnabled( true );

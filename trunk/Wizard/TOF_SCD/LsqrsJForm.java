@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.24  2003/11/05 02:20:30  bouzekc
+ * Changed to work with new Wizard and Form design.
+ *
  * Revision 1.23  2003/10/26 19:17:38  bouzekc
  * Now returns the name of the file written rather than Boolean.TRUE when
  * getResult() executes successfully.
@@ -214,26 +217,18 @@ public class LsqrsJForm extends Form {
    */
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
-
     addParameter( new IntArrayPG( "Run Numbers", null, false ) );  //0
-
     addParameter( new DataDirPG( "Peaks File Path", null, false ) );  //1
-
     addParameter( new StringPG( "Experiment Name", null, false ) );  //2
-
     addParameter( 
       new IntArrayPG( 
         "Restrict Peaks Sequence Numbers (blank for all)", null, false ) );  //3
-
     addParameter( new ArrayPG( "Matrix Files", new Vector(  ), false ) );  //4
-
     addParameter( 
       new IntegerPG( "Minimum Peak Intensity Threshold", 0, false ) );  //5
-
     addParameter( 
       new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );  //6
-
-    addParameter( new LoadFilePG( "JLsqrs Log File", " ", false ) );  //7
+    setResultParam( new LoadFilePG( "JLsqrs Log File", " ", false ) );  //7
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
@@ -248,7 +243,6 @@ public class LsqrsJForm extends Form {
    */
   public String getDocumentation(  ) {
     StringBuffer s = new StringBuffer(  );
-
     s.append( "@overview This is a Form to add extra functionality to " );
     s.append( "LsqrsJ.  It use the given *.peaks file and the transformation " );
     s.append( "matrix for calculation.  In addition, it " );
@@ -315,38 +309,38 @@ public class LsqrsJForm extends Form {
     LsqrsJ leastSquares;
 
     //gets the run numbers
-    param       = ( IParameterGUI )getParameter( 0 );
-    runsArray   = IntList.ToArray( param.getValue(  ).toString(  ) );
+    param          = ( IParameterGUI )getParameter( 0 );
+    runsArray      = IntList.ToArray( param.getValue(  ).toString(  ) );
 
     //get input file directory 
-    param      = ( IParameterGUI )super.getParameter( 1 );
-    peaksDir   = param.getValue(  )
-                      .toString(  );
+    param          = ( IParameterGUI )super.getParameter( 1 );
+    peaksDir       = param.getValue(  )
+                          .toString(  );
 
     //gets the experiment name
-    param     = ( IParameterGUI )super.getParameter( 2 );
-    expName   = param.getValue(  )
-                     .toString(  );
+    param          = ( IParameterGUI )super.getParameter( 2 );
+    expName        = param.getValue(  )
+                          .toString(  );
 
     /*get restricted sequence numbers - leave in String form
        for LsqrsJ*/
-    param         = ( IParameterGUI )getParameter( 3 );
-    restrictSeq   = param.getValue(  )
-                         .toString(  );
+    param          = ( IParameterGUI )getParameter( 3 );
+    restrictSeq    = param.getValue(  )
+                          .toString(  );
 
     //get the peak intensity threshold
-    param       = ( IParameterGUI )getParameter( 5 );
-    threshold   = ( Integer )( param.getValue(  ) );
+    param          = ( IParameterGUI )getParameter( 5 );
+    threshold      = ( Integer )( param.getValue(  ) );
 
     //get the detector border range - leave in string form for LsqrsJ
-    param   = ( IParameterGUI )getParameter( 6 );
-    range   = ( ( IntArrayPG )param ).getStringValue(  );
+    param          = ( IParameterGUI )getParameter( 6 );
+    range          = ( ( IntArrayPG )param ).getStringValue(  );
 
     //peaks file
-    peaksName   = peaksDir + expName + ".peaks";
+    peaksName      = peaksDir + expName + ".peaks";
 
     //call LsqrsJ - this is the same every time, so keep it out of the loop
-    leastSquares = new LsqrsJ(  );
+    leastSquares   = new LsqrsJ(  );
     leastSquares.getParameter( 0 )
                 .setValue( peaksName );
     leastSquares.getParameter( 2 )
@@ -370,20 +364,16 @@ public class LsqrsJForm extends Form {
     increment = ( 1.0f / runsArray.length ) * 100.0f;
 
     for( int i = 0; i < runsArray.length; i++ ) {
-      runNum   = DataSetTools.util.Format.integerPadWithZero( 
+      runNum        = DataSetTools.util.Format.integerPadWithZero( 
           runsArray[i], RUN_NUMBER_WIDTH );
-
-      matFileName = peaksDir + "ls" + expName + runNum + ".mat";
+      matFileName   = peaksDir + "ls" + expName + runNum + ".mat";
       matNamesVec.add( matFileName );
-
       SharedData.addmsg( 
         "LsqrsJ is creating " + matFileName + " for " + peaksName );
-
       leastSquares.getParameter( 1 )
                   .setValue( runNum );
       leastSquares.getParameter( 4 )
                   .setValue( matFileName );
-
       obj = leastSquares.getResult(  );
 
       if( obj instanceof ErrorString ) {
@@ -418,7 +408,6 @@ public class LsqrsJForm extends Form {
     param = ( IParameterGUI )getParameter( 7 );
     param.setValue( obj.toString(  ) );
     param.setValid( true );
-
     SharedData.addmsg( "--- LsqrsJForm finished. ---" );
 
     return obj.toString(  );

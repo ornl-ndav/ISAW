@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2003/11/05 02:20:30  bouzekc
+ * Changed to work with new Wizard and Form design.
+ *
  * Revision 1.13  2003/10/27 01:31:39  bouzekc
  * Modified to work with updated Forms.
  *
@@ -103,10 +106,6 @@ import javax.swing.*;
  * Wizard, BlindJ is used for creating a matrix file.
  */
 public class InitialPeaksWizard extends Wizard {
-  //~ Static fields/initializers ***********************************************
-
-  private static final String LOADFILETYPE = "LoadFile";
-
   //~ Constructors *************************************************************
 
   /**
@@ -147,19 +146,21 @@ public class InitialPeaksWizard extends Wizard {
       { -1, 2, 1, 0, -1, -1 }
     };  //matrix
     FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
-
-    //the return types of all of these Operator Forms is LoadFilePG,
-    //hence the "LoadFile"
-    OperatorForm blindjform  = new OperatorForm( 
-        new BlindJ(  ), LOADFILETYPE, "BlindJ log file", new int[]{ 0 } );
-    OperatorForm indexjform  = new OperatorForm( 
-        new IndexJ(  ), LOADFILETYPE, "IndexJ log file", new int[]{ 0, 1 } );
-    OperatorForm scalarjform = new OperatorForm( 
-        new ScalarJ(  ), LOADFILETYPE, "ScalarJ log file", new int[]{ 0 } );
-    OperatorForm lsqrsjform  = new OperatorForm( 
-        new LsqrsJ(  ), LOADFILETYPE, "LsqrsJ log file", new int[]{ 0 } );
-    OperatorForm indexjform2 = new OperatorForm( 
-        new IndexJ(  ), LOADFILETYPE, "IndexJ log file", new int[]{ 0 } );
+    OperatorForm blindjform         = new OperatorForm( 
+        new BlindJ(  ), new LoadFilePG( "BlindJ log file", null, false ),
+        new int[]{ 0 } );
+    OperatorForm indexjform         = new OperatorForm( 
+        new IndexJ(  ), new LoadFilePG( "IndexJ log file", null, false ),
+        new int[]{ 0, 1 } );
+    OperatorForm scalarjform        = new OperatorForm( 
+        new ScalarJ(  ), new LoadFilePG( "ScalarJ log file", null, false ),
+        new int[]{ 0 } );
+    OperatorForm lsqrsjform         = new OperatorForm( 
+        new LsqrsJ(  ), new LoadFilePG( "LsqrsJ log file", null, false ),
+        new int[]{ 0 } );
+    OperatorForm indexjform2        = new OperatorForm( 
+        new IndexJ(  ), new LoadFilePG( "IndexJ log file", null, false ),
+        new int[]{ 0 } );
     this.addForm( peaksform );
     this.addForm( blindjform );
     this.addForm( indexjform );
