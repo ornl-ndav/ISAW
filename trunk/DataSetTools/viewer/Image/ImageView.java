@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2001/07/23 16:22:04  dennis
+ *  Fixed error: no longer using "==" for String comparison.
+ *
  *  Revision 1.22  2001/07/20 16:53:25  dennis
  *  Now uses an XScaleChooserUI to let the user specify new
  *  x_scales.  Also uses method Data.getY_values( x_scale )
@@ -289,12 +292,12 @@ public void redraw( String reason )
   if ( !validDataSet() )
     return;
 
-  if ( reason == IObserver.SELECTION_CHANGED )
+  if ( reason.equals( IObserver.SELECTION_CHANGED ))
   {
     MakeSelectionImage( true );
     DrawSelectedHGraphs();
   }
-  else if ( reason == IObserver.POINTED_AT_CHANGED )
+  else if ( reason.equals( IObserver.POINTED_AT_CHANGED ))
   {
     DrawSelectedHGraphs(); 
     float n_data = getDataSet().getNum_entries();
@@ -425,8 +428,8 @@ private void init()
     main_split_pane.removeAll(); 
     removeAll();
   }
-  image_Jpanel      = new ImageJPanel();
-  image_Jpanel.setNamedColorModel( getState().getColor_scale(), false );
+  image_Jpanel = new ImageJPanel();
+  image_Jpanel.setNamedColorModel( getState().getColor_scale(), true );
                                                // make box to contain both the
                                                // image and selection indicator
   Box image_area = new Box( BoxLayout.X_AXIS );
@@ -514,28 +517,28 @@ private void AddOptionsToMenu()
 
   ButtonGroup group = new ButtonGroup();
   JRadioButtonMenuItem r_button = new JRadioButtonMenuItem( NO_MULTI_PLOT );
-  if ( current_multi_plot_mode == NO_MULTI_PLOT )
+  if ( current_multi_plot_mode.equals( NO_MULTI_PLOT ))
     r_button.setSelected(true);
   r_button.addActionListener( multi_plot_menu_handler );
   multiplot_menu.add( r_button );
   group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( MULTI_PLOT_DIAGONAL );
-  if ( current_multi_plot_mode == MULTI_PLOT_DIAGONAL )
+  if ( current_multi_plot_mode.equals( MULTI_PLOT_DIAGONAL ))
     r_button.setSelected(true);
   r_button.addActionListener( multi_plot_menu_handler );
   multiplot_menu.add( r_button );
   group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( MULTI_PLOT_VERTICAL );
-  if ( current_multi_plot_mode == MULTI_PLOT_VERTICAL )
+  if ( current_multi_plot_mode.equals( MULTI_PLOT_VERTICAL ))
     r_button.setSelected(true);
   r_button.addActionListener( multi_plot_menu_handler );
   multiplot_menu.add( r_button );
   group.add( r_button );
 
   r_button = new JRadioButtonMenuItem( MULTI_PLOT_OVERLAY );
-  if ( current_multi_plot_mode == MULTI_PLOT_OVERLAY )
+  if ( current_multi_plot_mode.equals( MULTI_PLOT_OVERLAY ))
     r_button.setSelected(true);
   r_button.addActionListener( multi_plot_menu_handler );
   multiplot_menu.add( r_button );
@@ -695,7 +698,7 @@ private Component MakeControlArea()
 
                                                   // make a color scale bar
   color_scale_image = new ColorScaleImage();
-  color_scale_image.setNamedColorModel( getState().getColor_scale(), false );
+  color_scale_image.setNamedColorModel( getState().getColor_scale(), true );
   control_area.add( color_scale_image );
 
   log_scale_slider.setPreferredSize( new Dimension(120,50) );
@@ -916,13 +919,13 @@ private int DrawSelectedHGraphs()
 
   h_graph.clearData();
 
-  if ( current_multi_plot_mode != NO_MULTI_PLOT )
+  if ( !current_multi_plot_mode.equals( NO_MULTI_PLOT ))
   {
-    if ( current_multi_plot_mode == MULTI_PLOT_OVERLAY )
+    if ( current_multi_plot_mode.equals( MULTI_PLOT_OVERLAY ))
       h_graph.setMultiplotOffsets( 0, 0 );
-    else if ( current_multi_plot_mode == MULTI_PLOT_VERTICAL )
+    else if ( current_multi_plot_mode.equals( MULTI_PLOT_VERTICAL ))
       h_graph.setMultiplotOffsets( 0, 10 );
-    else if ( current_multi_plot_mode == MULTI_PLOT_DIAGONAL )
+    else if ( current_multi_plot_mode.equals( MULTI_PLOT_DIAGONAL ))
       h_graph.setMultiplotOffsets( 10, 10 );
 
     int pointed_at_row = getDataSet().getPointedAtIndex();
@@ -1379,14 +1382,14 @@ private class ConsumeKeyAdapter extends     KeyAdapter
       String action  = e.getActionCommand();
                                                 // color or hidden line option
                                                 // change
-      if ( action == MULTI_PLOT_COLOR     ||     
-           action == MULTI_PLOT_HIDDEN_LINES )
+      if ( action.equals( MULTI_PLOT_COLOR )     ||     
+           action.equals( MULTI_PLOT_HIDDEN_LINES ))
       {
         DrawSelectedHGraphs();
         return;
       }
                                                  // multiplot mode change 
-      if ( action != current_multi_plot_mode )
+      if ( !action.equals( current_multi_plot_mode ))
       {
         JRadioButtonMenuItem button = (JRadioButtonMenuItem)e.getSource();
         button.setSelected(true);
