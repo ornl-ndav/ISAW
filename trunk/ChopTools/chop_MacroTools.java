@@ -18,11 +18,9 @@ import  java.awt.*;
  * @author Tom Worlton
  * @version 1.0
  * @since August 10, 1999
- * @see ISaw
- * @see SpectrometerEvaluator
- * @see SpectrometerGrouper
- * @see SpectrometerNomalizer
- * @see SpectrometerTofToEnergyLoss
+ * @see DataSetTools.operator.SpectrometerEvaluator
+ * @see DataSetTools.operator.SpectrometerNormalizer
+ * @see DataSetTools.operator.SpectrometerTofToEnergyLoss
  */
 
 public class chop_MacroTools 

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/09/20 17:37:55  dennis
+ *  Fixed @see javadoc comment
+ *
  *  Revision 1.5  2001/08/10 19:43:22  dennis
  *  Added methods to parse command line arguments and show usage.
  *  Also added methods to get and show data directories being used.
@@ -157,8 +160,6 @@ public class DataSetServer extends TCPServer
    *
    *  @param args  Array of strings from the command line, containing
    *               command characters and arguments.
-   *
-   *  @see  showDataSetServerUsage
    */
    public void parseArgs( String args[] )
    {
