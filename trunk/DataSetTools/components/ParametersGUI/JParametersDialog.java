@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2003/03/06 22:56:20  pfpeterson
+ *  No longer provides methods for receiving StatusPane. Access to
+ *  StatusPane is done directly with SharedData.
+ *
  *  Revision 1.36  2003/02/26 16:06:37  pfpeterson
  *  First pass at multi-threading the apply button.
  *
@@ -141,7 +145,6 @@ public class JParametersDialog implements Serializable,
                                  //of DataSet objects in the tree
                                  //w/o a reference to the actual tree.
     IDataSetListHandler ds_src;
-    StatusPane stat_pane=null;
 
     JButton apply = null;
     JButton exit = null;
@@ -161,14 +164,7 @@ public class JParametersDialog implements Serializable,
                               IDataSetListHandler ds_src, 
                               Document  sessionLog, 
                               IObserver io , boolean modal )
-     {this(op,ds_src,sessionLog,io,modal,null);
-     }
-     public JParametersDialog( Operator  op, 
-                              IDataSetListHandler ds_src, 
-                              Document  sessionLog, 
-                              IObserver io , boolean modal,
-                              StatusPane sp )
-    {   stat_pane=sp;
+     {
         this.op =op;
         this.ds_src = ds_src;
         this.sessionLog = sessionLog;    
@@ -444,9 +440,10 @@ public class JParametersDialog implements Serializable,
                 }
      
               else 
-                {if( stat_pane != null)
-                  stat_pane.add("Unsupported Parameter in JParamatersDialog");
-                 return ;
+                {
+                  SharedData.addmsg("Unsupported Parameter in "
+                                    +"JParamatersDialog");
+                  return ;
                 }
               Size1 = paramGUI.getGUISegment().getPreferredSize().height;
         
@@ -612,16 +609,12 @@ public class JParametersDialog implements Serializable,
         }
       }
 
-
-      //util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
-//#####      opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-      if(stat_pane !=null)
-        {if( op instanceof IusesStatusPane)
-          ((IusesStatusPane)op).addStatusPane( stat_pane);
-         if(op instanceof java.beans.Customizer)
-           ((java.beans.Customizer)op).addPropertyChangeListener( stat_pane);
-         }
-
+      if( op instanceof IusesStatusPane)
+        ((IusesStatusPane)op).addStatusPane( SharedData.getStatusPane());
+      if(op instanceof java.beans.Customizer)
+        ((java.beans.Customizer)op)
+                       .addPropertyChangeListener( SharedData.getStatusPane());
+      
       // create a subclass of SwingWorker to call getResult()
       final SwingWorker worker = new SwingWorker() {
           public Object construct(){
@@ -646,12 +639,11 @@ public class JParametersDialog implements Serializable,
       Object result = Result;
       String s="";
 
-      if(stat_pane !=null)
-        {if( op instanceof IusesStatusPane)
-          ((IusesStatusPane)op).addStatusPane( null);
-         if(op instanceof java.beans.Customizer)
-           ((java.beans.Customizer)op).removePropertyChangeListener( stat_pane);
-         }
+      if( op instanceof IusesStatusPane)
+        ((IusesStatusPane)op).addStatusPane( null);
+      if(op instanceof java.beans.Customizer)
+        ((java.beans.Customizer)op)
+                    .removePropertyChangeListener( SharedData.getStatusPane());
       Result = result;
       for( int i = 0; i < ObjectParameters.size(); i++ )
         { int k = ((Integer)ObjectParameters.elementAt(i)).intValue();
@@ -660,7 +652,6 @@ public class JParametersDialog implements Serializable,
               ParName = "Value?";
           op.setParameter( new Parameter( ParName , null ) , k );
         }
-//#####      opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       if( result instanceof ExitClass)
       { opDialog.dispose();  
       }
