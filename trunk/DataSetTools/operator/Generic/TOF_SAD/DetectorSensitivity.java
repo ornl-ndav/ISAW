@@ -28,6 +28,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/07/21 22:55:31  dennis
+ * Now uses methods from Grid_util to get the area detector
+ * data grid.
+ *
  * Revision 1.3  2003/07/09 20:20:36  dennis
  * Now adds GetPixelInfo_op to the efficiency and mask DataSets,
  * so that col,row readouts are supported.  Clears selections on
@@ -191,33 +195,17 @@ public class DetectorSensitivity extends GenericTOF_SAD
     // segmented detector. 
     //
     DataSet eff_ds = (DataSet)ds.clone();
-    UniformGrid grid = null;
-    Data d = null;
-    PixelInfoList pil;
-    Attribute attr;
-    boolean segmented_detector_found  = false;
-    int data_index = 0;
-    int n_data     = eff_ds.getNum_entries();
 
-    while ( !segmented_detector_found && data_index < n_data )
-    {
-     d = eff_ds.getData_entry( data_index );
-     attr = d.getAttribute( Attribute.PIXEL_INFO_LIST );
-     if ( attr != null && attr instanceof PixelInfoListAttribute )
-     {
-        pil  = (PixelInfoList)attr.getValue();
-        grid = (UniformGrid)pil.pixel(0).DataGrid();
-        if ( grid.num_rows() > 1 || grid.num_cols() > 1 )
-          segmented_detector_found = true;
-      }
-      else
-        return new ErrorString("Need PixelInfoList attribute.");
+    int grid_ids[] = Grid_util.getAreaGridIDs( eff_ds );
 
-      data_index++;
-    }
+    if ( grid_ids.length < 1 )
+      return new ErrorString( "No Area Detectors in DataSet" );
 
-    if ( !segmented_detector_found )
-      return new ErrorString("Need and Area Detector or LPSD");
+    if ( grid_ids.length > 1 )
+      return new ErrorString("Too many Area Detectors in DataSet: " +
+                              IntList.ToString( grid_ids )          );
+
+    UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid(eff_ds, grid_ids[0]);
 
     //
     // Throw out any Data blocks that don't belong with this detector
@@ -243,6 +231,7 @@ public class DetectorSensitivity extends GenericTOF_SAD
     // Remove specialty operators and un-needed attributes.  Fix up the
     // title, labels and units.
     //
+    Data d = null;
     eff_ds.removeAllOperators();
     DataSetFactory.addOperators( eff_ds );
     for ( int row = 1; row <= grid.num_rows(); row++ )
@@ -378,6 +367,9 @@ public class DetectorSensitivity extends GenericTOF_SAD
     int        id;
     Data       new_d;
     IPixelInfo list[];
+    PixelInfoList pil;
+    Attribute attr;
+
     UniformGrid mask_grid = new UniformGrid( grid, false );
     for ( short row = 1; row <= mask_grid.num_rows(); row++ )
       for ( short col = 1; col <= mask_grid.num_cols(); col++ )
