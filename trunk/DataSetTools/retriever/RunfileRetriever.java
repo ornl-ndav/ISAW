@@ -12,6 +12,12 @@
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.13  2000/07/31 20:49:05  dennis
+ *  Now calculates effective positions weighted by solid angles ONLY for
+ *  direct geometry spectrometers.  For all other instruments, just use
+ *  Runfile routine for angle and calculate un-weighted average for
+ *  the detector height and flight path length.
+ *
  *  Revision 1.12  2000/07/28 18:42:57  dennis
  *  Added call to fixSeparator() for the file name.
  *
@@ -590,26 +596,39 @@ public class RunfileRetriever extends    Retriever
                                          histogram_num, 
                                          solid_angles,
                                          false );
-      }
+    }
+    else           //  Just get the values from the runfile where possible
+    {              //  don't weight by solid angles
 
-    // Form weighted average of effective detector angles, heights and
-    // flight path lengths, for all other instruments. 
-    else
-    {
-      angle      = getAverageAngle( group_members,
-                                    histogram_num,
-                                    solid_angles,
-                                    false );
+      angle = (float)run_file.DetectorAngle(group_members[0], histogram_num);
       angle      *= (float)(Math.PI / 180.0);
-  
-      height     = getAverageHeight( group_members, solid_angles, false );
 
-      final_path = getAverageFlightPath( group_members,
-                                         histogram_num,
-                                         solid_angles,
-                                         false ); 
-      }
+      height     = getAverageHeight( group_members, false );
+      final_path = getAverageFlightPath(group_members, histogram_num, false);
+    }
 
+
+    // We should probably use the following to form weighted average of 
+    // effective detector angles, heights and flight path lengths, for all 
+    // other instruments, but for now, it doesn't work since the detector
+    // type of LPSD's is set to 0 by the Runfile package.  Consequently,
+    // the solid angles are all 0 and so the angle, height and final_path
+    // also turn out to be 0 for such instruments. 
+    // else
+    // {
+    //  angle      = getAverageAngle( group_members,
+    //                                histogram_num,
+    //                                solid_angles,
+    //                                false );
+    //  angle      *= (float)(Math.PI / 180.0);
+    //
+    //  height     = getAverageHeight( group_members, solid_angles, false );
+    //
+    //  final_path = getAverageFlightPath( group_members,
+    //                                     histogram_num,
+    //                                     solid_angles,
+    //                                     false ); 
+    // }
 
     float r  = (float)Math.sqrt( final_path * final_path - height * height );
     position.setCylindricalCoords( r, angle, height );
@@ -979,11 +998,13 @@ public class RunfileRetriever extends    Retriever
     raw_dist = (float) Math.sqrt( nom_dist * nom_dist -
                                   length * length / 12.0 );
     solid_angle += length*width / (raw_dist * raw_dist);
-//  System.out.println("nom_dist = " + nom_dist +
-//                     "  raw_dist = " + raw_dist +
-//                     " length = " + length +
-//                     " width = " + width  +
-//                     " solid ang = " + solid_angle );
+//    System.out.println("Det ID = " + det_id +
+//                       " type  = " + type + 
+//                       " nom_dist = " + nom_dist +
+//                       " raw_dist = " + raw_dist +
+//                       " length = " + length +
+//                       " width = " + width  +
+//                       " solid ang = " + solid_angle );
 
     return solid_angle;
   }
