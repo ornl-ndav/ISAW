@@ -17,9 +17,9 @@ public class Inst_Type
    { if( HT == null)
       {HT = new Hashtable();
        HT.put( "MonoNXPD", new Integer(0)); 
-        HT.put( "MonoNXTAS", new Integer(1));  
-        HT.put( "TOFNDGS", new Integer(2));  
-         HT.put( "TOFNIGS", new Integer(3));  
+       // HT.put( "MonoNXTAS", new Integer(1));  
+        HT.put( "TOFNDGS", new Integer(1));  
+         HT.put( "TOFNIGS", new Integer(2));  
       }
    }
 
