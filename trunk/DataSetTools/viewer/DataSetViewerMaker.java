@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/12/16 23:13:32  dennis
+ *  Removed calls to getSharedControls() and getPrivateControls() for
+ *  the IVirtualArray1D, since these methods were removed from the
+ *  interface.
+ *
  *  Revision 1.9  2003/11/25 20:11:31  rmikk
  *  Added a Save Image as a submenu of the File Menu
  *
@@ -88,15 +93,6 @@ public class DataSetViewerMaker  extends DataSetViewer
       BoxLayout blayout = new BoxLayout( East,BoxLayout.Y_AXIS);
      
       East.setLayout( blayout);
-       JComponent[] ArrayScontrols =viewArray.getSharedControls();
-      if( ArrayScontrols != null)
-        for( int i=0; i< ArrayScontrols.length; i++)
-          East.add( ArrayScontrols[i]);
-
-      JComponent[] Arraycontrols =viewArray.getPrivateControls();
-      if( Arraycontrols != null)
-        for( int i=0; i< Arraycontrols.length; i++)
-          East.add( Arraycontrols[i]);
 
       JComponent[] Compcontrols = viewComp.getSharedControls();
       if( Compcontrols != null)
