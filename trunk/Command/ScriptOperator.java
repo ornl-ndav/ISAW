@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2003/02/21 19:28:17  rmikk
+ * Changed the Parameter argument to setParameter and addParameter
+ *   to use IParameter instead of Parameter
+ *
  * Revision 1.19  2002/11/27 23:12:10  pfpeterson
  * standardized header
  *
@@ -364,7 +368,7 @@ public class ScriptOperator extends GenericOperator
         return SP.getNum_parameters();
     }
 
-    public boolean setParameter(Parameter parameter, int index){
+    public boolean setParameter(IParameter parameter, int index){
         return SP.setParameter( parameter,index);
     }
     
@@ -372,7 +376,7 @@ public class ScriptOperator extends GenericOperator
         return SP.getParameter( index );
     }
 
-    public void addParameter( Parameter P){
+    public void addParameter( IParameter P){
         return;
     }
     
