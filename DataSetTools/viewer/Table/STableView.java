@@ -31,6 +31,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.3  2002/07/29 22:09:16  rmikk
+ * Fixed interactive table views so that they scroll
+ *   correctly to the pointed at cell.
+ *
  * Revision 1.2  2002/07/25 20:58:51  rmikk
  * Changed Background color of the selected cell
  * Fixed viewport to place the PointedAt cell in the center and
@@ -85,7 +89,9 @@ public class STableView  extends DataSetViewer
     {super( DS, state1);
      state = state1;
      if( state == null)
-       state = new ViewerState();
+       {state = new ViewerState();
+        
+        }
      this.ds = DS;
      table_model = tabMod;
      initState( state );
@@ -275,7 +281,7 @@ public class STableView  extends DataSetViewer
         int height = Rscr.height;
         int nrows = height/ R.height;
         int ncols = width/R.width;
-        if( R.x > Rscr.x + Rscr.width/nrows*4)
+       /* if( R.x > Rscr.x + Rscr.width/nrows*4)
            if( R.x < Rscr.x -Rscr.width/nrows*4)
              if( R.y > Rscr.y + Rscr.height/ncols*4)
                if( R.y < Rscr.y -Rscr.height/ncols*4) 
@@ -283,11 +289,25 @@ public class STableView  extends DataSetViewer
                   jtb.setRowSelectionInterval(row,row);
                    
                  }
-                  
+         */        
         Rectangle RR = R;
         RR.y = R.y - height/2;
         RR.x = R.x -width/2;
-        if( col> jtb.getColumnCount() -ncols/2)
+        Rectangle RTL = jtb.getCellRect( 0, 0, false);
+        Rectangle RBR = jtb.getCellRect( jtb.getRowCount() -1,jtb.getColumnCount()-1, false);
+        
+        if( RR.x < RTL.x)
+           RR.x = RTL.x;
+        else if( RR.x > RBR.x)
+           RR.x = RBR.x;
+
+
+        if( RR.y < RTL.y)
+           RR.y = RTL.y;
+        else if( RR.y > RBR.y)
+           RR.y = RBR.y;
+
+/*        if( col> jtb.getColumnCount() -ncols/2)
            RR.x = jtb.getCellRect(row,java.lang.Math.min(0,col-ncols/2) ,false).x;
         else if( col-ncols/2 <=0)
            RR.x = jtb.getCellRect( row, 0,false).x;
@@ -296,9 +316,9 @@ public class STableView  extends DataSetViewer
        
         else if( row -nrows/2 < 0)
            RR.y =jtb.getCellRect( 0,col,false).y;
+*/
 
-
-        JscrlPane.getViewport() .setViewPosition( new Point( RR.x, RR.y));
+        JscrlPane.getViewport().setViewPosition( new Point( RR.x, RR.y));
         
         jtb.setColumnSelectionInterval( col,col);
         jtb.setRowSelectionInterval(row,row);
