@@ -29,6 +29,11 @@
  *
  *
  * $Log$
+ * Revision 1.18  2003/07/02 17:05:10  bouzekc
+ * Fixed bug where if setDefaultParameters() was called after
+ * setting the result parameter name and type, the result
+ * parameter return to a StringPG with a name of "Result."
+ *
  * Revision 1.17  2003/07/02 16:26:46  bouzekc
  * Returned const_indices to private status.
  *
@@ -149,8 +154,6 @@ public class OperatorForm extends Form implements HiddenOperator {
   public OperatorForm( Operator op, String type, String name ) {
     this( op );
     setParamClass( type );
-
-    //after calling that, we need to call setDefaultParameters()
     result_param.setName( name );
     setDefaultParameters(  );
   }
@@ -179,8 +182,6 @@ public class OperatorForm extends Form implements HiddenOperator {
   public OperatorForm( Operator op, String type, String name, int[] indices ) {
     this( op );
     setParamClass( type );
-
-    //after calling that, we need to call setDefaultParameters()
     result_param.setName( name );
     HAS_CONSTANTS   = true;
     constIndices    = indices;
@@ -249,7 +250,9 @@ public class OperatorForm extends Form implements HiddenOperator {
     Vector temp = null;  //may need temporary index storage
 
     // set the result parameter
-    result_param = new StringPG( "Result", null, false );
+    if( result_param == null ) {
+      result_param = new StringPG( "Result", null, false );
+    }
 
     //set the variable parameters length and indices
     int num_params;
