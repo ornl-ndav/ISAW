@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/04/26 13:37:50  rmikk
+ * Added the standard operators to the resultant data set
+ *
  * Revision 1.8  2004/03/15 19:36:54  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -289,6 +292,7 @@ public class LoadExpression extends GenericLoad
     ds.addData_entry( d );
 
     ds.addLog_entry("Generated Data:" + expression );
+    DataSetFactory.addOperators( ds);
     return ds;
   }
 
