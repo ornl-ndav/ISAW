@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.91  2003/10/23 00:58:13  bouzekc
+ * Now changes the BrowsePG directories on demand when the Projects
+ * Directory is changed.
+ *
  * Revision 1.90  2003/10/18 21:17:16  bouzekc
  * Removed "About" command in help menu.  Changed save dialog message to
  * "Save As".  Moved the setHelpMessage that took a File to setHelpURL that
@@ -735,6 +739,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    */
   public void setProjectsDirectory( String dir ) {
     projectsDirectory = dir;
+    setBrowsePGDirectory(  );
   }
 
   /**
@@ -1027,6 +1032,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       if( !f.done(  ) ) {
         formProgress.setValue( 0 );
         formProgress.setString( "Executing " + f );
+
+        //worked = f.getResultRemotely(  );
         worked = f.getResult(  );
 
         if( 
