@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.39  2004/04/26 13:06:48  rmikk
+ *  Passes on the Hashtable of already created Grids to subclasses that
+ *    need it
+ *
  *  Revision 1.38  2004/03/15 06:10:35  dennis
  *  Removed unused import statements.
  *
@@ -122,7 +126,7 @@ package DataSetTools.dataset;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.File.*;
 import gov.anl.ipns.Util.Numeric.*;
-
+import java.util.*;
 import java.io.*;
 
 public abstract class Data implements IData,
@@ -1419,5 +1423,10 @@ public abstract class Data implements IData,
 
     return false;
   }
+Hashtable gridIDs = null;
+public void setGridIds( Hashtable gridIds ){
+  this.gridIDs = gridIds;	
+	
+}
 
 }
