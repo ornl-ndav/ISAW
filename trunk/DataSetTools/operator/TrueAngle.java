@@ -6,6 +6,9 @@
  *
  *
  * $Log$
+ * Revision 1.5  2001/04/02 20:43:52  dennis
+ * Fixed minor problem in Java doc comment.
+ *
  * Revision 1.4  2000/11/10 22:41:34  dennis
  *    Introduced additional abstract classes to better categorize the operators.
  * Existing operators were modified to be derived from one of the new abstract
@@ -318,7 +321,7 @@ public class TrueAngle extends    YAxisConversionOp
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current TofToChannel Operator.  The list 
+   * Get a copy of the current TrueAngle Operator.  The list 
    * of parameters and the reference to the DataSet to which it applies are
    * also copied.
    */
