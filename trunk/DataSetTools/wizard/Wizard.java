@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2003/06/18 22:47:43  bouzekc
+ * Fixed potential bug with validating File parameters from
+ * a loaded .wsf file.
+ *
  * Revision 1.31  2003/06/17 20:28:33  bouzekc
  * Added method to get last valid Form.  Fixed progress bar
  * updating code to more accurately reflect the status of the
@@ -593,20 +597,20 @@ public abstract class Wizard implements PropertyChangeListener{
             else
               curParam.setValid(false);
           }
-          else if((curParam instanceof ArrayPG) || 
-                  (curParam instanceof VectorPG) )
+          else if(curParam instanceof ArrayPG || curParam instanceof VectorPG)
           {
             Vector v = (Vector)(curParam.getValue());
-            //set the parameter valid initially.  If we check the elements, and
-            //any one of them fails our valid file test, we will invalidate the
-            //parameter.
-            curParam.setValid(true);
-            for(int k = 0; k < v.size(); k++)
-              if( !(new File( v.elementAt(k).toString() ).exists()) )
-              {
-                curParam.setValid(false);
-                break;
+            if(v == null || v.isEmpty())
+              curParam.setValid(false);
+           else{  //assume it is valid, then test that assumption
+              curParam.setValid(false);
+              for(int k = 0; k < v.size(); k++){
+                if( !(new File( v.elementAt(k).toString() ).exists()) ){
+                  curParam.setValid(false);
+                  break;
+                }
               }
+            }
           }
 
           else //some other form of simple PG that we can easily validate
