@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/06/11 21:24:40  pfpeterson
+ * Added jython functionality.
+ *
  * Revision 1.5  2003/06/09 22:28:51  pfpeterson
  * Fleshed out NOGUI methods and added functionality to allow user to
  * specify a file to take input from in NOGUI mode.
@@ -127,8 +130,20 @@ public class IsawLite{
       File file=new File(filename);
       if(file.isFile())
         operator=new ScriptOperator(filename);
+    }else if(filename.endsWith(".py")){ // this is a jython attempt
+      File file=new File(filename);
+      if(file.isFile()){
+        try{
+          DataSetTools.operator.PyOperatorFactory pyFac=
+                                 new DataSetTools.operator.PyOperatorFactory();
+          operator=pyFac.getInstance(filename);
+        }catch(NoClassDefFoundError e){
+          if(LoadDebug) System.out.print("(Jython not found)");
+          operator=null;
+        }
+      }
     }else{
-      if(LoadDebug) System.out.print("(Does not end in .iss)");
+      if(LoadDebug) System.out.print("(Does not end in .iss or .py)");
     }
     checkOperator(operator);
     return operator;
