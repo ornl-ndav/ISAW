@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2004/01/24 20:31:16  bouzekc
+ * Removed/commented out unused variables/imports.
+ *
  * Revision 1.15  2003/12/15 02:38:18  bouzekc
  * Removed unused imports.
  *
@@ -234,7 +237,6 @@ public class Util{
   
     PixelInfoListAttribute pil_attr;
     Data data=null;
-    Attribute attr=null;
     int detID=-1;
     for( int i=0 ; i<ds.getNum_entries() ; i++ ){
       detID=-1;
@@ -321,7 +323,6 @@ public class Util{
 
     // create a reference 2D array to locate the proper group for the
     // given row and column
-    Object idObj=null;
     for( int id=0; id<ds.getNum_entries(); id++){
       data=ds.getData_entry(id);
       dataDetID=detectorID(data);

@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2004/01/24 20:31:16  bouzekc
+ * Removed/commented out unused variables/imports.
+ *
  * Revision 1.3  2003/07/03 15:32:10  dennis
  * Fixed java docs on getResult() method.
  *
@@ -159,7 +162,6 @@ public class ReadPeaks extends GenericTOF_SCD{
 
       // variables for dealing with the file contents
       String       line = null;
-      StringBuffer sb   = null;
 
       while( ! tfr.eof() ){
         line=tfr.read_line();

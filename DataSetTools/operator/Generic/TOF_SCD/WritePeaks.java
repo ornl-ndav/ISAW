@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2004/01/24 20:31:16  bouzekc
+ * Removed/commented out unused variables/imports.
+ *
  * Revision 1.14  2003/12/15 02:38:18  bouzekc
  * Removed unused imports.
  *
@@ -62,7 +65,6 @@ import java.util.Vector;
 import DataSetTools.operator.HiddenOperator;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
-import DataSetTools.util.SharedData;
 import DataSetTools.util.StringUtil;
 import DataSetTools.util.TextFileReader;
 
@@ -73,7 +75,6 @@ import DataSetTools.util.TextFileReader;
  */
 public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
   private static final String TITLE       = "Write Peaks";
-  private static final SharedData shared= new SharedData();
   
   /* ------------------------ Default constructor ------------------------- */ 
   /**
