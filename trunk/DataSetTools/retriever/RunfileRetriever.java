@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.85  2004/07/08 16:02:46  dennis
+ *  Added TOF_SAD to list of supported instrument types in java docs.
+ *
  *  Revision 1.84  2004/06/11 16:37:53  dennis
  *  Made ShowGroupSegmentInfo public, for debugging purposes.
  *  Removed tf_type from list of parameters to AddSpectrumAttributes(),
@@ -669,6 +672,7 @@ private float CalculateEIn()
  *                           Currently only:
  *                               InstrumentType.TOF_DIFFRACTOMETER
  *                               InstrumentType.TOF_DG_SPECTROMETER
+ *                               InstrumentType.TOF_SAD
  *                           are supported.
  *  @param  ids              The list of segment IDs from the specified DataSet
  *                           that are to be read from the runfile and returned 
