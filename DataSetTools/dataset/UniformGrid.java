@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2003/02/06 20:22:32  dennis
+ *  Fixed solid angle calculation.  Now uses orientation of pixel to obtain
+ *  a better approximation to the solid angle.
+ *
  *  Revision 1.1  2003/02/04 18:15:06  dennis
  *  Initial version.
  *
@@ -450,19 +454,38 @@ public class UniformGrid implements IDataGrid
   /**
    *  Get the solid angle subtended by this grid "box" from the origin. 
    *  If the row and column values are not integers, they will be rounded
-   *  to obtain integer values that specify a particular grid "box".
+   *  to obtain integer values that specify a particular grid "box".  The
+   *  solid angle is approximated as:
+   *
+   *    A * |cos(t)| / (r*r) 
    *  
+   *  where A = dx * dy is the area of the "face" of the pixel, t is the
+   *  angle between the unit vector pointing towards the origin from the 
+   *  center of the box and the "z" orientation vector for the box.
+   * 
    *  @return the solid angle subtended by the specified grid box.
    */
   public float SolidAngle( float row, float col )
   {
+    row = Math.round(row);
+    col = Math.round(col);
+
     Vector3D pos = position( row, col );
     float r = pos.length();
 
     if ( r == 0 )
       return 0;
 
-    return dx * dy / (float)( 4 * Math.PI * r * r );
+    pos.normalize();
+    float pos_arr[] = pos.get();
+    float dot = 0f;
+    for ( int i = 0; i < 3; i++ )
+      dot += z_vector[i] * pos_arr[i];
+
+    if ( dot < 0 )
+      dot = -dot;
+
+    return dot * dx * dy / (float)( r * r );
   }
 
   /**
