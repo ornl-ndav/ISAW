@@ -1,4 +1,4 @@
-package OverplotView;
+package DataSetTools.viewer.OverplotView;
 
 /**
  * $Id$
@@ -7,6 +7,10 @@ package OverplotView;
  * OverplotView.
  *
  * $Log$
+ * Revision 1.1  2002/07/18 22:06:19  dennis
+ * Moved separate OverplotView hiearchy into DataSetTools/viewer
+ * hierarchy.
+ *
  * Revision 1.2  2001/06/28 22:06:24  neffk
  * added setAttributeList( AttributeList l ) to the interface so that the
  * graph can store things like units, labels, and the title--things that are
@@ -21,7 +25,6 @@ package OverplotView;
 import DataSetTools.dataset.AttributeList;
 import java.util.Vector;
 import javax.swing.JComponent;
-import OverplotView.GraphableData;
 
 
 public interface IGraphableDataGraph

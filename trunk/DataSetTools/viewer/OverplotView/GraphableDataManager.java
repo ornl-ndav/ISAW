@@ -1,4 +1,4 @@
-package OverplotView;
+package DataSetTools.viewer.OverplotView; 
 
 /**
  * $Id$
@@ -10,6 +10,10 @@ package OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.1  2002/07/18 22:06:19  dennis
+ * Moved separate OverplotView hiearchy into DataSetTools/viewer
+ * hierarchy.
+ *
  * Revision 1.16  2002/07/12 18:21:48  rmikk
  * Changed the Constructor to include the state variable so
  *    that the previous states are retained when changing the
@@ -87,12 +91,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Vector;
 import javax.swing.*;
-//import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import OverplotView.GraphableData;
-import OverplotView.IGraphableDataGraph;
-import OverplotView.graphics.sgtGraphableDataGraph;
+import  DataSetTools.viewer.OverplotView.graphics.*;
 import java.awt.*;
 import java.awt.event.*;
 import gov.noaa.pmel.sgt.swing.*;
