@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2001/06/11 18:00:31  dennis
+ *  Now calls Exit() and MakeConnection() on the retriever
+ *  every time a data set is obtained to avoid a memory
+ *  leak.
+ *
  *  Revision 1.8  2001/06/08 22:05:14  dennis
  *  UpdateDataSetNow() now checks for an invalid data_set_num and
  *  refreshes the local state is the data_set_num is too large.
@@ -257,6 +262,8 @@ public class LiveDataManager extends    Thread
 
 
    DataSet temp_ds = retriever.getDataSet( data_set_num );
+   retriever.Exit();
+   retriever.MakeConnection();
 
    if ( temp_ds == data_sets[data_set_num] )
      System.out.println("ERROR!!!! same data set" );
