@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2002/06/19 15:55:22  rmikk
+ * Fixed the order of Date formats so that the seconds, when
+ * there, is found
+ *
  * Revision 1.9  2002/04/01 20:45:41  rmikk
  * Fixed Date Format exception report in jdk1.4
  * Added some support for the Nexus NXChar type
@@ -115,10 +119,10 @@ public class NxNodeUtils
                                 "MMM dd,yyyy", };
                               
                               
-      String Time_formats[] =  { "HH:mm" ,"HH:mm:ss" , "hh:mm a" , "hh:mma" , 
-                               "H:mm" ,"H:mm:ss" ,  "h:mm a" , "h:mma" ,  
-                                "H:m" ,"H:m:ss" ,  "h:m a" , "h:ma", "" };
-
+      String Time_formats[] =  { "HH:mm:ss", "HH:mm" , "hh:mm a" , "hh:mma" , 
+                                "H:mm:ss" ,"H:mm" ,  "h:mm a" , "h:mma" ,  
+                                 "H:m:ss" , "H:m" , "h:m a" , "h:ma", "" };
+     
       for( int i = 0; i<Date_formats.length; i++ )    
           {         
            for( int k = 0; k<Time_formats.length; k++ )
