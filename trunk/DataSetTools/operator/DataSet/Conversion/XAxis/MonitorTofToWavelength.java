@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/07/02 17:06:53  pfpeterson
+ *  Now uses string constants defined in IsawGUI.Isaw.
+ *
  *  Revision 1.1  2002/06/28 20:45:10  dennis
  *  Operator calculating TOF to Wavelength for monitors.  This should be
  *  replaced by DiffractometerTofToWavelength, when that no longer adds
@@ -48,6 +51,7 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.DataSet.*;
 import  DataSetTools.operator.Parameter;
+import  IsawGUI.Isaw;
 
 /**
  * This operator converts a beammonitor time-of-flight DataSet to wavelength.
@@ -137,16 +141,18 @@ public class MonitorTofToWavelength extends    XAxisConversionOp
     Parameter parameter;
 
     if ( scale == null )
-      parameter = new Parameter( "Min Wavelength(A)", new Float(0) );
+      parameter = new Parameter( "Min Wavelength("+Isaw.Angstrom+")",
+                                 new Float(0) );
     else
-      parameter = new Parameter( "Min Wavelength(A)", 
+      parameter = new Parameter( "Min Wavelength("+Isaw.Angstrom+")", 
                                   new Float(scale.getStart_x()) );
     addParameter( parameter );
 
     if ( scale == null )
-      parameter = new Parameter("Max Wavelength(A)", new Float(5.0) );
+      parameter = new Parameter("Max Wavelength("+Isaw.Angstrom+")",
+                                new Float(5.0) );
     else
-      parameter = new Parameter("Max Wavelength(A)", 
+      parameter = new Parameter("Max Wavelength("+Isaw.Angstrom+")", 
                                  new Float(scale.getEnd_x()));
 
     addParameter( parameter );
@@ -163,7 +169,7 @@ public class MonitorTofToWavelength extends    XAxisConversionOp
    */
    public String new_X_label()
    {
-     return new String( "\u03bb" + "(A)" );
+     return new String( Isaw.Lambda + "("+Isaw.Angstrom+")" );
    }
 
 

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/07/02 17:06:54  pfpeterson
+ *  Now uses string constants defined in IsawGUI.Isaw.
+ *
  *  Revision 1.3  2002/03/18 21:33:24  dennis
  *  Now checks whether or not the errors array is null before attempting
  *  to reverse the array.
@@ -99,6 +102,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  IsawGUI.Isaw;
 
 /**
  * This operator converts neutron time-of-flight DataSet to Q.  The
@@ -184,16 +188,19 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
     Parameter parameter;
 
     if ( scale == null )
-      parameter = new Parameter( "Min Q(inv A)", new Float(5.0) );
+      parameter = new Parameter( "Min Q("+Isaw.InvAngstrom+")",
+                                 new Float(5.0) );
     else
-      parameter = new Parameter( "Min Q(inv A)", 
+      parameter = new Parameter( "Min Q("+Isaw.InvAngstrom+")", 
                                   new Float(scale.getStart_x()) );
     addParameter( parameter );
 
     if ( scale == null )
-      parameter = new Parameter("Max Q(inv A)", new Float(500.0) );
+      parameter = new Parameter("Max Q("+Isaw.InvAngstrom+")",
+                                new Float(500.0) );
     else
-      parameter = new Parameter("Max Q(inv A)", new Float(scale.getEnd_x()));
+      parameter = new Parameter("Max Q("+Isaw.InvAngstrom+")",
+                                new Float(scale.getEnd_x()));
 
     addParameter( parameter );
 
@@ -209,7 +216,7 @@ public class SpectrometerTofToQ extends    XAxisConversionOp
    */
    public String new_X_label()
    {
-     return new String( "Q(inv A)" );
+     return new String( "Q("+Isaw.InvAngstrom+")" );
    }
 
 
