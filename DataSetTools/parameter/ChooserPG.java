@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.10  2003/08/28 01:40:28  bouzekc
+ *  Fixed bug in constructor where the passed in value was not added.
+ *
  *  Revision 1.9  2003/08/28 01:36:56  bouzekc
  *  Modified to work with new ParameterGUI.
  *
@@ -83,12 +86,15 @@ abstract public class ChooserPG extends ParameterGUI{
   // ********** Constructors **********
   public ChooserPG(String name, Object val){
     super(name, val);
+    this.addItem(val);
+    setValue(val);
     this.type=TYPE;
   }
 
   public ChooserPG(String name, Object val, boolean valid){
     super(name, val, valid);
-    this.addItem(value);
+    this.addItem(val);
+    setValue(val);
     this.type=TYPE;
   }
 
@@ -149,7 +155,6 @@ abstract public class ChooserPG extends ParameterGUI{
    * Sets the value of the parameter.
    */
   public void setValue(Object value){
-    this.addItem(value);
     if(this.initialized){
       if(value==null){
         // do nothing
