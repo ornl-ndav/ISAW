@@ -4,6 +4,10 @@
  *  Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.9  2001/02/09 14:20:35  dennis
+ *  Added last update time to graph title, if it is present as
+ *  a Data attribute.
+ *
  *  Revision 1.8  2001/01/29 21:29:30  dennis
  *  Now uses CVS version numbers.
  *
@@ -854,12 +858,13 @@ private boolean DrawPointedAtHGraph()
   if ( pointed_at_row >= 0 )
   {
     pointed_at_data_block = getDataSet().getData_entry( pointed_at_row );
-    DrawHGraph( pointed_at_data_block, 0, true );
 
     if ( remove_hidden_lines.getState() )
       h_graph.setRemoveHiddenLines( true );
     else 
       h_graph.setRemoveHiddenLines( false );
+
+    DrawHGraph( pointed_at_data_block, 0, true );
 
     return true;
   }
@@ -963,6 +968,12 @@ private void DrawHGraph( Data data_block, int graph_num, boolean pointed_at )
     String border_label = data_block.toString();
     if ( data_block.isSelected() )
       border_label += " (Selected)";
+
+    String update_time = (String)
+                         (data_block.getAttributeValue(Attribute.UPDATE_TIME));
+    if ( update_time != null )
+      border_label = border_label + ", " + update_time;
+
     TitledBorder border = new TitledBorder( LineBorder.createBlackLineBorder(),
                                           border_label );
     border.setTitleFont( FontUtil.BORDER_FONT );
