@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/07/31 22:29:42  rmikk
+ * the default_imports.py is now searched for in the
+ * ISAW_HOME/Scripts directory
+ *
  * Revision 1.4  2003/07/08 23:40:11  bouzekc
  * Added static method initImports() to take a
  * PythonInterpreter and initialize a series of import
@@ -375,9 +379,12 @@ public class pyScriptProcessor extends ScriptProcessorOperator
    */
   public static void initImports( PythonInterpreter pyInterp )
     {
-    String scriptsDir = SharedData.getProperty( "Script_Path" );
+    String scriptsDir = SharedData.getProperty( "ISAW_HOME" );
+    if( scriptsDir == null)
+      return;
+    
 
-    scriptsDir = StringUtil.setFileSeparator( scriptsDir + "/" );
+    scriptsDir = StringUtil.setFileSeparator( scriptsDir + "/Scripts/" );
     pyInterp.execfile( scriptsDir + "default_imports.py" );
     }
 
