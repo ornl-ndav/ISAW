@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/07/31 16:06:59  dennis
+ * Implements IDataPointInfo and provides "wrapper" function that
+ * call the numeric calculation methods of derived conversion ops.
+ *
  * Revision 1.1  2002/02/22 21:01:00  pfpeterson
  * Operator reorganization.
  *
@@ -58,6 +62,7 @@
 package DataSetTools.operator.DataSet.Conversion.XAxis;
 
 import  java.io.*;
+import  java.text.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
@@ -73,7 +78,8 @@ import  DataSetTools.operator.DataSet.Conversion.DS_Conversion;
   */
 
 abstract public class XAxisConversionOp extends    DS_Conversion 
-                                        implements Serializable
+                                        implements IDataPointInfo,
+                                                   Serializable
 {
   public XAxisConversionOp( String title )
   {
@@ -139,6 +145,38 @@ abstract public class XAxisConversionOp extends    DS_Conversion
    */
   abstract public float convert_X_Value( float x, int i );
 
+
+  /* ------------------------- PointInfoLabel --------------------------- */
+  /**
+   * Get string label for information about a point on the xaxis.
+   *
+   *  @param  x    the x-value for which the axis label is to be obtained.
+   *  @param  i    the index of the Data block that will be used for obtaining
+   *               the label.
+   *
+   *  @return  String describing the information provided by X_Info().
+   */
+  public String PointInfoLabel( float x, int i )
+  {
+    return new_X_label();
+  }
+
+
+  /* ----------------------------- PointInfo ----------------------------- */
+  /**
+   * Get the information for the specified point and Data block.
+   *
+   *  @param  x    the x-value for which the axis information is to be obtained.   *  @param  i    the index of the Data block that will be used for obtaining
+   *               the information about the x axis.
+   *
+   *  @return  information for the x axis at the specified x.
+   */
+  public String PointInfo( float x, int i )
+  {
+    float value = convert_X_Value( x, i );
+    NumberFormat f = NumberFormat.getInstance();
+    return f.format( value );
+  }
 
 
   /* --------------------------- getXRange() ------------------------------- */
