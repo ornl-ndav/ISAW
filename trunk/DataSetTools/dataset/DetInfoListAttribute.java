@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2001/07/10 19:37:14  dennis
+ *  Now imports DataSetTools.instruments.*
+ *
  *  Revision 1.1  2001/07/10 18:48:49  dennis
  *  Attribute for infomation on list of individual
  *  detector segment positions, sizes, efficiency, etc.
@@ -40,6 +43,7 @@
 package  DataSetTools.dataset;
 
 import DataSetTools.util.*;
+import DataSetTools.instruments.*;
 
 /**
  * The concrete class for an attribute whose value is a list of DetectorInfo
