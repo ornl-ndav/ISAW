@@ -86,13 +86,16 @@ public class FortranParser implements FortranParserConstants {
           //will have to put the '[' back on however
           temp = tokenList[i].split( "\\[" );
           tokenList[i] = temp[0] + " = new " + type + "[" + temp[1];
-        }
 
-        //put the array element in
-        buffer.append( tokenList[i] );
+          //put the array element in
+          buffer.append( tokenList[i] );
 
-        if( i < tokenList.length - 1 ) {
-          buffer.append( "," );
+          if( i < tokenList.length - 1 ) {
+            buffer.append( "," );
+          }
+        } else {
+          //just put the token back on
+          buffer.append( tokenList[i] );
         }
       }
     } else {
@@ -457,10 +460,10 @@ public class FortranParser implements FortranParserConstants {
       jj_la1_1();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0xffc06042,0xffc06040,0xffc06040,};
+      jj_la1_0 = new int[] {0xff806042,0xff806040,0xff806040,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x7ff,0x7ff,0x7ff,};
+      jj_la1_1 = new int[] {0xfff,0xfff,0xfff,};
    }
 
   public FortranParser(java.io.InputStream stream) {
@@ -580,8 +583,8 @@ public class FortranParser implements FortranParserConstants {
 
   static public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[43];
-    for (int i = 0; i < 43; i++) {
+    boolean[] la1tokens = new boolean[44];
+    for (int i = 0; i < 44; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -600,7 +603,7 @@ public class FortranParser implements FortranParserConstants {
         }
       }
     }
-    for (int i = 0; i < 43; i++) {
+    for (int i = 0; i < 44; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
