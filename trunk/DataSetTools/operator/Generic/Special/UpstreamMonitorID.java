@@ -1,5 +1,5 @@
 /*
- * File:  UpstreamMonitorID.java   
+ * File:  UpstreamMonitorID.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,13 +31,16 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/01/23 19:21:03  dennis
+ *  Added getDocumentation() method. (Chris Bouzek)
+ *
  *  Revision 1.2  2002/11/27 23:21:43  pfpeterson
  *  standardized header
  *
  *  Revision 1.1  2002/05/24 14:21:23  pfpeterson
  *  added to cvs
  *
- *   
+ *
  */
 
 package DataSetTools.operator.Generic.Special;
@@ -51,11 +54,12 @@ import  DataSetTools.operator.Parameter;
 import  DataSetTools.retriever.RunfileRetriever;
 
 /**
- * This operator determines what the group ID of the opstream monitor
+ * This operator determines what the group ID of the upstream monitor
  * is for a given monitor dataset.
  */
 
 public class UpstreamMonitorID extends    GenericSpecial {
+
     /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
     /**
      * Construct an operator with a default parameter list.
@@ -68,65 +72,96 @@ public class UpstreamMonitorID extends    GenericSpecial {
     /**
      *  Construct operator to determine the upstream monitor group id.
      *
-     *  @param  mds     The monitor data set.
+     *  @param  ds     The monitor data set.
      */
-    
+
     public UpstreamMonitorID( DataSet ds ){
         this();
-        
+
         parameters=new Vector();
         addParameter(new Parameter("Monitor",ds));
     }
 
-    
-    /* ------------------------- setDefaultParmeters ----------------------- */
+
+    /* ------------------------- setDefaultParameters ----------------------- */
     /**
      *  Set the parameters to default values.
      */
     public void setDefaultParameters(){
-        parameters = new Vector();  // must do this to create empty list of 
+        parameters = new Vector();  // must do this to create empty list of
                                     // parameters
 
         parameters=new Vector();
         addParameter( new Parameter("Monitor",DataSet.EMPTY_DATA_SET ));
     }
-    
+
     /* --------------------------- getCommand ------------------------------ */
     /**
-     * @return	the command name to be used with script processor.
+     * @return the command name to be used with script processor, UpMonitorID
      */
     public String getCommand(){
         return "UpMonitorID";
     }
-    
+
+    /* ---------------------- getDocumentation --------------------------- */
+    /**
+     *  Returns the documentation for this method as a String.  The format
+     *  follows standard JavaDoc conventions.
+     */
+    public String getDocumentation()
+    {
+      StringBuffer s = new StringBuffer("");
+      s.append("@overview This operator determines what the group ID of ");
+      s.append("the histogram of the upstream monitor is for a given ");
+      s.append("monitor dataset.\n");
+      s.append("@assumptions At least one upstream monitor exists in ");
+      s.append("the monitor DataSet.\n");
+      s.append("@algorithm Searches through the specified DataSet ds for ");
+      s.append("the histogram of the upstream monitor with the highest ");
+      s.append("total count.\n");
+      s.append("It then determines the group ID for that data entry.\n");
+      s.append("@param ds The monitor DataSet to be used for the ");
+      s.append("operator.\n");
+      s.append("@return Integer representing the group ID of the histogram ");
+      s.append("of the upstream monitor with the largest total count ");
+      s.append("attribute.\n");
+      s.append("@error Returns -1 if no upstream monitor is found.\n");
+      return s.toString();
+    }
+
     /* --------------------------- getResult ------------------------------- */
     /*
-     * This returns the group id of the detector with the largest
-     * TOTAL_COUNT attribute. If no upstream monitor is found it will
-     * return -1.
+     * Searches through the specified DataSet for the upstream monitor 
+     * data entry with the highest total count.
+     *
+     * @return Integer Object representing the Group ID of the histogram of the 
+     * upstream monitor with the largest TOTAL_COUNT attribute. If no 
+     * upstream monitor is found it will return -1.
      */
-    public Object getResult(){
+    public Object getResult()
+    {
         DataSet mon      = (DataSet)(getParameter(0).getValue());
         Integer     mon_id   = new Integer(-1);
         float   monCount = -1f;
 
-        for( int i=0 ; i<mon.getNum_entries() ; i++ ){
-	    Data monD = mon.getData_entry(i);
-	    Float ang = (Float)
-		monD.getAttributeValue(Attribute.RAW_ANGLE);
-	    if( Math.abs(Math.abs(ang.floatValue())-180.0f)==0 ){
-		Float count = (Float)
-                    monD.getAttributeValue(Attribute.TOTAL_COUNT);
-		if(count.floatValue()>monCount){
-		    monCount=count.floatValue();
+        for( int i=0 ; i<mon.getNum_entries() ; i++ )
+        {
+         Data monD = mon.getData_entry(i);
+         Float ang = (Float)monD.getAttributeValue(Attribute.RAW_ANGLE);
+         if( Math.abs(Math.abs(ang.floatValue())-180.0f)==0 )
+         {
+          Float count = (Float)monD.getAttributeValue(Attribute.TOTAL_COUNT);
+          if(count.floatValue()>monCount)
+          {
+            monCount=count.floatValue();
 
-		    mon_id=(Integer)monD.getAttributeValue(Attribute.GROUP_ID);
-		}
-	    }
-	}
+            mon_id=(Integer)monD.getAttributeValue(Attribute.GROUP_ID);
+          }
+         }
+       }
 
         return mon_id;
-    }  
+    }
 
 
     /* ------------------------------ clone ------------------------------- */
@@ -136,26 +171,37 @@ public class UpstreamMonitorID extends    GenericSpecial {
      */
 
     public Object clone(){
-        UpstreamMonitorID new_op = 
+        UpstreamMonitorID new_op =
             new UpstreamMonitorID( );
-        
+
         new_op.CopyParametersFrom( this );
-        
+
         return new_op;
     }
 
+    /* ------------------------------ main ------------------------------- */
+    /**
+     * Main method for testing purposes.
+     */
     public static void main(String[] args){
         if(args.length==1){
             String filename=args[0];
             RunfileRetriever rr=new RunfileRetriever(filename);
             DataSet mds=rr.getDataSet(0);
-            
+
             //UpstreamMonitorID op=new UpstreamMonitorID();
             UpstreamMonitorID op=new UpstreamMonitorID(mds);
             System.out.println("For "+filename+" monitor GID= "
                                +op.getResult());
-        }else{
-            System.out.println("USAGE: UpstreamMonitorID <filename>");
+            /* ----------- added by Chris Bouzek ------------ */
+            System.out.println("Documentation: " + op.getResult());
         }
+        else{
+            UpstreamMonitorID op=new UpstreamMonitorID();
+            System.out.println("USAGE: UpstreamMonitorID <filename>");
+            /* ----------- added by Chris Bouzek ------------ */
+            System.out.println("Documentation: " + op.getDocumentation());     
+        }
+
     }
 }
