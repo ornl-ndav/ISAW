@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/08/16 02:22:29  bouzekc
+ *  Added a top level PropertyChangeSupport so that child classes don't need to
+ *  rewrite the property change listener methods just to have property change
+ *  support.
+ *
  *  Revision 1.13  2003/08/16 02:05:33  bouzekc
  *  Fixed NullPointerException when adding PropertyChangeListeners to the
  *  entrywidget in addPCLToWidget().
@@ -119,6 +124,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   // extra instance variables
   protected boolean initialized;
   protected boolean ignore_prop_change;
+  protected PropertyChangeSupport topPCS;
 
   //these are PARALLEL Vectors.  They must be added to and removed from
   //simultaneously.
@@ -259,6 +265,10 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   public void addPropertyChangeListener( PropertyChangeListener pcl ) {
     addPCLToVector( pcl );
 
+    if( topPCS != null ) {
+      topPCS.addPropertyChangeListener( pcl );
+    }
+
     if( this.initialized ) {
       entrywidget.addPropertyChangeListener( pcl );
     }
@@ -276,6 +286,10 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   public void addPropertyChangeListener( 
     String prop, PropertyChangeListener pcl ) {
     addPCLToVector( prop, pcl );
+
+    if( topPCS != null ) {
+      topPCS.addPropertyChangeListener( prop, pcl );
+    }
 
     if( this.initialized ) {
       entrywidget.addPropertyChangeListener( prop, pcl );
@@ -318,6 +332,10 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    */
   public void removePropertyChangeListener( PropertyChangeListener pcl ) {
     removePCLFromVector( pcl );
+
+    if( topPCS != null ) {
+      topPCS.removePropertyChangeListener( pcl );
+    }
 
     if( this.initialized ) {
       entrywidget.removePropertyChangeListener( pcl );
