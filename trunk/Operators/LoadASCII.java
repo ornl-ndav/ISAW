@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/10/15 02:37:54  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.6  2003/02/05 17:17:14  dennis
  * Added getDocumentation() method. (Joshua Olson)
  *
@@ -261,8 +264,8 @@ public class LoadASCII extends GenericLoad
 
  /* --------------------------------- clone -------------------------------- */
  /** 
-  *  Creates a clone of this operator.  ( Operators need a clone method, so 
-  *  that Isaw can make copies of them when needed. )
+  *  Creates a clone of this operator.  Operators need a clone method, so 
+  *  that Isaw can make copies of them when needed.
   */
   public Object clone()
   { 

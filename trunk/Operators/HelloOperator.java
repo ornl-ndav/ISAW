@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/10/15 02:37:54  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.7  2003/05/28 18:59:19  pfpeterson
  * Changed System.getProperty to SharedData.getProperty
  *
@@ -173,8 +176,8 @@ public class HelloOperator extends GenericOperator
 
  /* --------------------------------- clone -------------------------------- */
  /** 
-  *  Creates a clone of this operator.  ( Operators need a clone method, so 
-  *  that Isaw can make copies of them when needed. )
+  *  Creates a clone of this operator.  Operators need a clone method, so 
+  *  that Isaw can make copies of them when needed.
   */
   public Object clone()
   { 
