@@ -122,7 +122,7 @@ public class Axis extends Object {
   /**
    * Default value <i>true</i>. Normally never changed. If set <i>false</I>
    * the Axis draw method exits without drawing the axis.
-   * @see Axis#drawAxis()
+   * @see Axis#drawAxis
    */
       public boolean redraw           = true;
   /**
@@ -476,7 +476,7 @@ public class Axis extends Object {
    * the data value into a pixel value
    * @param v data value to convert
    * @return equivalent pixel value
-   * @see graph.Axis#getDouble( )
+   * @see graph.Axis#getDouble
    */ 
       public int getInteger(double v) {
           double scale;
@@ -499,7 +499,7 @@ public class Axis extends Object {
    * the pixel position into a data value
    * @param i pixel value
    * @return equivalent data value
-   * @see graph.Axis#getInteger( )
+   * @see graph.Axis#getInteger
    */ 
       public double getDouble(int i) {
             double scale;
