@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2003/06/17 22:21:26  pfpeterson
+ *  Format changes to javadocs.
+ *
  *  Revision 1.27  2003/06/17 22:04:27  pfpeterson
  *  Fixed a javadoc.
  *
@@ -102,15 +105,15 @@ import DataSetTools.util.StringUtil;
  * methods to set the required parameters and to get the result of performing 
  * the operation, as an object.
  *
- * <B>NOTE:</B> No class should directly extend Operator. Instead they
- * should extend either {@link
+ * <P><B>NOTE:</B> No class should directly extend Operator. Instead
+ * they should extend either {@link
  * DataSetTools.operator.Generic.GenericOperator GenericOperator} or
  * {@link DataSetTools.operator.DataSet.DataSetOperator
  * DataSetOperator}. If it does not then they will not be categorized
  * by {@link Command.Script_Class_List_Handler
  * Script_Class_List_Handler}. The effect of this is that the operatr
  * will not be added to menus, will not be found by the help system,
- * and will not be available in scripts.
+ * and will not be available in scripts.</P>
  */
 
 abstract public class Operator implements Serializable

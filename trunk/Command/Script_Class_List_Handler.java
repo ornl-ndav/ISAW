@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.45  2003/06/17 22:21:12  pfpeterson
+ * Format changes to javadocs.
+ *
  * Revision 1.44  2003/06/17 21:40:32  pfpeterson
  * Now is thread-safe. This was done by making init() static.
  *
@@ -154,15 +157,15 @@ import DataSetTools.parameter.*;
  * Gets and Saves all scripts and java GenericOperators in the
  * Path(s) of the system property Script_Path
  *
- * <B>NOTE:</B> No class should directly extend Operator. Instead they
- * should extend either {@link
+ * <P><B>NOTE:</B> No class should directly extend Operator. Instead
+ * they should extend either {@link
  * DataSetTools.operator.Generic.GenericOperator GenericOperator} or
  * {@link DataSetTools.operator.DataSet.DataSetOperator
  * DataSetOperator}. If it does not then they will not be categorized
- * by {@link Command.Script_Class_ListHandler
+ * by {@link Command.Script_Class_List_Handler
  * Script_Class_List_Handler}. The effect of this is that the operatr
  * will not be added to menus, will not be found by the help system,
- * and will not be available in scripts.
+ * and will not be available in scripts.</P>
  */
 public class Script_Class_List_Handler  implements OperatorHandler{
     //Contains ordering for Command Names
@@ -770,16 +773,14 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             // remove a little bit more from classFile
             classFile=classFile.substring(4,classFile.length()-1);
            
-              //UNCOMMENT THIS TO PROCESS DATASETOPERATORS
-              processDataSetOperators(classFile,true);
+            processDataSetOperators(classFile,true);
            
             if( LoadDebug) System.out.println("----PATH="+classFile);
             ProcessJar(classFile,opList);
         }else{     // isaw is unpacked
             
-              //UNCOMMENT THIS TO PROCESS DATASETOPERATORS
-              processDataSetOperators(classFile+"/DataSetTools/operator/DataSet",
-              false);
+            processDataSetOperators(classFile+"/DataSetTools/operator/DataSet",
+                                                                        false);
            
             File opDir=new File(classFile+"/DataSetTools/operator/Generic");
             if(opDir.exists() && opDir.isDirectory()){
@@ -1257,7 +1258,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                            +"-------------------------------");
         System.out.println("=====Number of Generic operators: "
                            +BB.getNum_operators());
-        //BB.show(257); UNCOMMENT
+        BB.show(257);
        
         
         System.exit( 0 );

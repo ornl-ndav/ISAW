@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/06/17 22:21:34  pfpeterson
+ *  Format changes to javadocs.
+ *
  *  Revision 1.6  2003/06/17 22:04:35  pfpeterson
  *  Fixed a javadoc.
  *
@@ -63,7 +66,7 @@ import DataSetTools.operator.Operator;
  * extends the Operator class by adding a DataSet member and methods 
  * to get/set the DataSet member. 
  *
- *   A DataSetOperator is typically used in one of two ways.  First, the 
+ * <P>A DataSetOperator is typically used in one of two ways.  First, the 
  * operator might be added to the list of operators that work on a particular
  * DataSet.  In this case, the DataSet associated with the operator is set
  * by the DataSet's addOperator method.  If the default constructor for the
@@ -71,18 +74,15 @@ import DataSetTools.operator.Operator;
  * must be set later.  In particular, a GUI can get the operator from the 
  * DataSet and have the user specify values for any remaining parameters.
  * After the parameter values are set the getResult() method of the operator
- * is used to carry out the operation.
+ * is used to carry out the operation.</P>
  *
- *   Alternatively, an operator can be applied directly if the so-called
+ * <P>Alternatively, an operator can be applied directly if the so-called
  * "full constructor" is used.  A full constructor includes the DataSet
  * that is associated with the operator, as well as values for all other 
  * parameters needed by the operator.  In this case, the operation can be 
- * carried out immediately by calling getResult().
+ * carried out immediately by calling getResult().</P>
  *
- * @see Operator
- * @see DataSetTools.operator.DataSet.Math.DataSet.DataSetAdd
- *
- * <B>NOTE:</B> No class should directly extend Operator. Instead they
+ * <P><B>NOTE:</B> No class should directly extend Operator. Instead they
  * should extend either {@link
  * DataSetTools.operator.Generic.GenericOperator GenericOperator} or
  * {@link DataSetTools.operator.DataSet.DataSetOperator
@@ -90,7 +90,10 @@ import DataSetTools.operator.Operator;
  * by {@link Command.Script_Class_List_Handler
  * Script_Class_List_Handler}. The effect of this is that the operatr
  * will not be added to menus, will not be found by the help system,
- * and will not be available in scripts.
+ * and will not be available in scripts.</P>
+ *
+ * @see Operator
+ * @see DataSetTools.operator.DataSet.Math.DataSet.DataSetAdd
  */
 
 abstract public class DataSetOperator extends Operator implements Serializable
