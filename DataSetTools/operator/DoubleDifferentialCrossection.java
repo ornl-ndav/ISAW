@@ -2,6 +2,10 @@
  * @(#)DoubleDifferentialCrossection.java   0.1  2000/07/25   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.5  2000/07/26 20:50:27  dennis
+ *  now interpolates in tables of eff[] and fpcorr[] values to avoid
+ *  recalculating these values for each point of the spectrum
+ *
  *  Revision 1.4  2000/07/25 18:10:33  dennis
  *  Fixed error with tsec in calculation
  *
@@ -158,6 +162,7 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
           def,
           tsec,
           eff,
+          fpcorr,
           flux;
     float energy_in,
           velocity_in,
@@ -166,6 +171,22 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
           num_pulses;
     Data  data,
           new_data;
+                                          // make table of eff and fpcorr
+                                          // values and interpolate to get
+                                          // faster calculation
+    float speed_arr[]  = new float[1001];
+    float eff_arr[]    = new float[1001];
+    float fpcorr_arr[] = new float[1001];
+    float result[];
+    float final_speed;
+    for ( int i = 0; i <= 1000; i++ )
+    {
+      final_speed = i * 0.00002f;
+      result      = tof_data_calc.getEfficiencyFactor( final_speed, 1 );
+      speed_arr[i]  = final_speed;
+      eff_arr[i]    = result[0];
+      fpcorr_arr[i] = result[1];
+    }
 
     num_data = ds.getNum_entries();
     for ( int index = 0; index < num_data; index++ )
@@ -213,9 +234,18 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
       {
         tof = (x_vals[i]+x_vals[i+1])/2;
         delta_tof = x_vals[i+1] - x_vals[i];
-        corr = tof_data_calc.getEfficiencyFactor( spherical_coords[0]/tof, 1 );
-        eff = corr[0];
-        def = 2*tof_calc.Energy(spherical_coords[0]+corr[1], tof)*delta_tof/tof;
+
+// interpolate in table or....         
+        eff    = arrayUtil.interpolate( spherical_coords[0]/tof, 
+                                        speed_arr, eff_arr );
+        fpcorr = arrayUtil.interpolate(spherical_coords[0]/tof,
+                                        speed_arr, eff_arr );
+// recalculate each time
+//      corr = tof_data_calc.getEfficiencyFactor( spherical_coords[0]/tof, 1 );
+//      eff    = corr[0];
+//      fpcorr = corr[1];
+
+        def = 2*tof_calc.Energy(spherical_coords[0]+fpcorr, tof)*delta_tof/tof;
         y_vals[i] /= (def*eff);
       }
 
