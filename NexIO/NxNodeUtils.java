@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2003/10/15 03:05:44  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.16  2003/09/14 16:35:34  rmikk
  * -incorporated leading factors like 100us for times and
  * lengths
@@ -97,7 +100,7 @@ public class NxNodeUtils{
   
   /**
    * Attempts to parse a date string with various formats including
-   * - ,/, and . separators for month,year,day specifiers
+   * "- ,/, and ." separators for month,year,day specifiers.
    */
   public static Date parse( String DateString ){
     Date Result;
