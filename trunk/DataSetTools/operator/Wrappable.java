@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2004/02/24 22:26:37  bouzekc
+ * Now extends Serializable.
+ *
  * Revision 1.1  2003/10/29 01:14:23  bouzekc
  * Added to CVS.
  *
@@ -42,7 +45,7 @@ package DataSetTools.operator;
  * This is an interface used to denote that a class is "wrappable" i.e. can be
  * sent in as an argument to JavaWrapperOperator.
  */
-public interface Wrappable {
+public interface Wrappable extends java.io.Serializable{
   //~ Methods ******************************************************************
 
   /**
