@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2001/12/12 19:43:33  pfpeterson
+ * Fixed the multiple listing of operators and scripts.
+ *
  * Revision 1.20  2001/12/07 21:45:49  pfpeterson
  * Put the order of parsing directories back to correct order.
  *
@@ -138,6 +141,7 @@ public class Script_Class_List_Handler  implements OperatorHandler
      private static int File_Compare = 322;
      private static boolean first = true;
      public static boolean LoadDebug = false;
+     private final int MIN_DIR_NAME__LENGTH=3;
 /** The System property Script_Path is an input to this
 */
      public Script_Class_List_Handler()
@@ -166,59 +170,98 @@ public class Script_Class_List_Handler  implements OperatorHandler
         first = false;  
         toggleDebug(); 
 
+	Vector includeVec = new Vector();
+	// add $HOME/ISAW to the path
         String ScrPaths2 = System.getProperty( "user.home" );
-        if( ScrPaths2 != null )
-	 if( ScrPaths2.length() > 0)
-         {ScrPaths2 =ScrPaths2.replace('\\','/');
-          ScrPaths2= ScrPaths2.trim();
-          if( ScrPaths2.charAt(ScrPaths2.length()-1) != '/' )
-             ScrPaths2 = ScrPaths2+'/'+"ISAW";
-          String X =ScrPaths2+"ISAW";
-          processPaths(ScrPaths2+"/Operators") ;
-          processPaths(ScrPaths2+"/Scripts") ;
-           
-         }
-        int g = 0;
-       
-       String ScrPaths1 = System.getProperty( "GROUP_HOME" );
-       while(ScrPaths1 != null)
-        {
-	  if(!ScrPaths1.equals(ScrPaths2))
-           {ScrPaths1=ScrPaths1.replace('\\','/');
-            if( ScrPaths1.charAt(ScrPaths1.length()-1) == '/')
-                ScrPaths1=ScrPaths1.substring(0, ScrPaths1.length()-1);
-          
-	    if(!ScrPaths1.equals(ScrPaths2)){
-              processPaths(ScrPaths1+"/Operators") ;
-              processPaths(ScrPaths1+"/Scripts") ;
+        if( ScrPaths2 != null ){
+	    if( ScrPaths2.length() > 0){
+		ScrPaths2=ScrPaths2+'/'+"ISAW";
+		ScrPaths2=standardizeDir(ScrPaths2);
+		if(existDir(ScrPaths2)){
+		    includeVec.add(ScrPaths2);
+		}
 	    }
-           }
-          g++;
-          String suff=""+g;
-          suff=suff.trim();
-          ScrPaths1 = System.getProperty( "GROUP"+suff+"_HOME" );
-          
-         }
+	}
+        int g = 0;
+	
+	// add the different GROUP#_HOMEs to the path
+	String ScrPaths1 = System.getProperty( "GROUP_HOME" );
+	while(ScrPaths1 != null){
+	    //if(!ScrPaths1.equals(ScrPaths2)){
+	    if(ScrPaths1.length()>0){
+		ScrPaths1=standardizeDir(ScrPaths1);
+		if(existDir(ScrPaths1)){
+		    includeVec.add(ScrPaths1);
+		}
+	    }
+	    g++;
+	    String suff=""+g;
+	    suff=suff.trim();
+	    ScrPaths1 = System.getProperty( "GROUP"+suff+"_HOME" );
+	}
 
        
-        String ScrPaths = System.getProperty( "ISAW_HOME" );
-        if( ScrPaths != null )
-          if(ScrPaths.length()>0)
-           {ScrPaths=ScrPaths.replace('\\','/');
-            if( ScrPaths.charAt(ScrPaths.length()-1) =='/')
-                ScrPaths=ScrPaths.substring(0, ScrPaths.length()-1);
-            if( !ScrPaths.equals(ScrPaths1))
-	    if(!ScrPaths.equals(ScrPaths2)){
-		processPaths(ScrPaths+"/Operators") ;
-		processPaths(ScrPaths+"/Scripts") ;
-            }
-           }
-
-
+	// add where ISAW lives to the path
+       String ScrPaths = System.getProperty( "ISAW_HOME" );
+       if( ScrPaths != null ){
+	   if(ScrPaths.length()>0){
+	       ScrPaths=standardizeDir(ScrPaths);
+		if(existDir(ScrPaths)){
+		    includeVec.add(ScrPaths);
+		}
+	   }
+       }
        
- 
-         toggleDebug(); 
-      
+       /* System.out.println("********************");
+	  for( int i=0 ; i<includeVec.size() ; i++ ){
+	  System.out.println("* "+i+":"+includeVec.elementAt(i));
+	  }
+	  System.out.println("********************"); */
+
+       // remove redundant listings from the path
+       for( int i=0 ; i<includeVec.size() ; i++ ){
+	   for( int j=i ; j<includeVec.size() ; j++ ){
+	       if( i==j )continue; // do the next j loop
+	       // shorten some other lines in the inner for loop
+	       String ith=(String)includeVec.elementAt(i);
+	       String jth=(String)includeVec.elementAt(j);
+	       if( jth.indexOf(ith)==0 ){ // check that j does not start with i
+		   //System.out.println("REMOVING("+i+","+j+")"+jth);
+		   includeVec.remove(j);
+		   j--;
+	       }
+	   }
+       }
+
+       /* System.out.println("********************");
+	  for( int i=0 ; i<includeVec.size() ; i++ ){
+	  System.out.println("* "+i+":"+includeVec.elementAt(i));
+	  }
+	  System.out.println("********************"); */
+
+       for( int i=0 ; i<includeVec.size() ; i++ ){
+	   processPaths((String)includeVec.elementAt(i)+"Operators");
+	   processPaths((String)includeVec.elementAt(i)+"Scripts");
+       }
+
+
+       toggleDebug(); 
+      }
+      private String standardizeDir( String dir ){
+	  // remove whitespace from the name
+	  dir.trim();
+	  // switch \ to /
+	  dir=dir.replace('\\','/');
+	  // put a / at the end if it is not there already
+	  if( !(dir.charAt(dir.length()-1) == '/') ){ dir=dir+'/'; }
+	  return dir;
+      }
+      private boolean existDir( String dir ){
+	  // the directory must be at least a certain length long
+	  if(dir.length()<=MIN_DIR_NAME__LENGTH)return false;
+	  // check if the directory exists
+	  File Dir = new File(dir);
+	  return Dir.isDirectory();
       }
       private void processPaths( String ScrPaths) 
         {ScrPaths.trim();
