@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2003/09/14 16:35:34  rmikk
+ * -incorporated leading factors like 100us for times and
+ * lengths
+ * -Finished incorporating the time units up to hours.
+ *
  * Revision 1.15  2003/06/18 20:32:54  pfpeterson
  * Removed deprecated method.
  *
@@ -298,6 +303,31 @@ public class NxNodeUtils{
     }
   }
   
+  private static int getNumericStart( String S){
+     int n=0;
+     boolean decimalDone = false, expOn = false, leadSign=true;
+
+     for( int i = 0; i< S.length(); i++){
+      char c= S.charAt(i);
+      if( Character.isDigit( c)){ 
+          leadSign = false;}
+      else if( (c=='.') && !decimalDone&&!expOn){
+          leadSign = false;
+          decimalDone = true;
+      }
+      else if( ("+-".indexOf(c) >=0) && leadSign)
+          leadSign = false;
+      else if( ("Ee".indexOf( c) >=0) && !expOn){
+          expOn = true;
+          leadSign = true;
+          decimalDone = true;
+      }else
+         return i;
+        
+
+     }
+     return S.length();
+  }
   /**
    * Gives Factor to mulitply OldUnits to get NewUnits(ISAW units)
    */
@@ -320,6 +350,9 @@ public class NxNodeUtils{
     
     if( NewUnits.equals( "Mev" ) )
       return EnergyConversionFactor( OldUnits.trim() );
+
+    if( NewUnits.equals("steradian"))  //"sr is another symbol but if not this
+       return 1.0f;                    //??????????????????????????????????
     
     else return 1.0f;
   }
@@ -339,27 +372,37 @@ public class NxNodeUtils{
 
 
   public static float LengthConversionFactor( String OldUnits ){ //base m
+    int n = getNumericStart( OldUnits);
+    float factor = 1;
+    if( n >0)
+      try{
+        factor = (new Float( OldUnits.substring( 0,n))).floatValue();
+ 
+      }catch( Exception ss){
+        factor = 1;
+      }
+    OldUnits = OldUnits.substring(0);
     if( "m;meter;met;".indexOf( OldUnits + ";" ) >= 0 )
-      return 1;
+      return factor*1;
     
     if( "cm;centim;centimeter;cmeter;cmet;100mm;100millim;100millimeter;"
         .indexOf( OldUnits + ";" ) >= 0 )
-      return .01f;
+      return factor*.01f;
     
     if("mm;millim;millimeter;100um;100microm;".indexOf( OldUnits + ";" ) >= 0)
-      return .001f;
+      return factor*.001f;
     
     if( "um;umet;umeter;umeters;".indexOf( OldUnits ) >= 0 )
-      return .000001f;
+      return factor*.000001f;
     
     
     if( "in;inch;".indexOf( OldUnits + ";" ) >= 0 )
-      return( float )( 1.0 / 254.0 );
+      return  factor*( float )( 1.0 / 254.0 );
     
     if( "ft;foot;feet;".indexOf( OldUnits + ";" ) >= 0 )
-      return( float )( 12.0 / 254.0 );
+      return factor*( float )( 12.0 / 254.0 );
     
-    return 1.0f;
+    return factor*1.0f;
     
   }
 
@@ -375,8 +418,33 @@ public class NxNodeUtils{
   }
 
 
-  public static float TimeConversionFactor( String OldUnits ){ //seconds
+  public static float TimeConversionFactor( String OldUnits ){ //seconds 
+    int n = getNumericStart( OldUnits);
+    float factor = 1;
+    if( n >0)
+      try{
+        factor = (new Float( OldUnits.substring( 0,n))).floatValue();
+ 
+      }catch( Exception ss){
+        factor = 1;
+      }
+    if("s;sec;second;seconds;".indexOf(OldUnits+";") >=0)
+      return factor*1000000.0f;
+    if( "ms;msec;mseconds;msecond;millis;millisec;milliseconds".indexOf(OldUnits+";")>=0)
+      return factor*1000.0f;
+    if("us;usec;useconds;usecond;micros;microsec;microseconds;".indexOf( OldUnits+";") >=0)
+      return factor;
+    if("ns;nsec;nseconds;nanos;nanosec;nanosecond;nanoseconds;".indexOf( OldUnits+";") >=0)
+      return factor*.001f;
+    if("min;minute;minutes;".indexOf(OldUnits+";")>=0)
+      return factor*60*1000000.0f;
+    if("hr;hour;hrs;hours;".indexOf(OldUnits+";")>=0)
+      return 60*factor*1000000.0f;
+    if("day;days;".indexOf(OldUnits+";")>=0)
+      return 24*60*factor*1000000.0f;
+
     return 1.0f;
+    
   }
 
 
