@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/12 16:09:44  pfpeterson
+ * Now automatically disable constant and result parameters.
+ *
  * Revision 1.1  2002/02/27 17:29:20  dennis
  * Form base class that defines one logical step in a sequence
  * of steps controlled by a Wizard.  Derived classes will actually
@@ -64,8 +67,8 @@ import DataSetTools.components.ParametersGUI.*;
  *
  *  @see Wizard
  *  @see WizardParameter
- *  @see Examples.MathWizard 
- *  @see Examples.AdderExampleForm
+ *  @see Wizard.Examples.MathWizard 
+ *  @see Wizard.Examples.AdderExampleForm
  */
 
 public class Form implements Serializable
@@ -146,16 +149,31 @@ public class Form implements Serializable
     box.add( title_panel );
 
     JPanel sub_panel = build_param_panel("CONSTANT PARAMETERS", const_params);
-    if ( sub_panel != null )
-      box.add( sub_panel ); 
+    if ( sub_panel != null ){
+        box.add( sub_panel ); 
+        for( int i=0 ; i<const_params.length ; i++ ){
+            WizardParameter param = wizard.getParameter( const_params[i] );
+            param.setEnabled(false);
+        }
+    }
 
-    sub_panel = build_param_panel("USER SPECIFIED PARAMETERS", editable_params);
-    if ( sub_panel != null )
-      box.add( sub_panel ); 
+    sub_panel = build_param_panel("USER SPECIFIED PARAMETERS",editable_params);
+    if ( sub_panel != null ){
+        box.add( sub_panel ); 
+        for( int i=0 ; i<editable_params.length ; i++ ){
+            WizardParameter param = wizard.getParameter( editable_params[i] );
+            param.setEnabled(true);
+        }
+    }
 
     sub_panel = build_param_panel("RESULTS", result_params);
-    if ( sub_panel != null )
-      box.add( sub_panel ); 
+    if ( sub_panel != null ){
+        box.add( sub_panel ); 
+        for( int i=0 ; i<result_params.length ; i++ ){
+            WizardParameter param = wizard.getParameter( result_params[i] );
+            param.setEnabled(false);
+        }
+    }
 
     JPanel button_panel = new JPanel();
     button_panel.add( execute_button );
