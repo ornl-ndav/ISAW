@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.193  2004/03/19 17:15:57  dennis
+ *  Created "anonymous" SplashPane to remove unused variable
+ *
  *  Revision 1.192  2004/03/17 20:56:23  dennis
  *  Changed version to 1.7.0 alpha 1
  *
@@ -1938,8 +1941,7 @@ public class Isaw
       // load IsawProps.dat into the system properties
       SharedData.isaw_props.reload();
       // show the splashscreen
-      SplashWindowFrame sp = new SplashWindowFrame();
-      sp = null;
+      new SplashWindowFrame();
 
       System.out.println("Loading "+getVersion(true));
  
