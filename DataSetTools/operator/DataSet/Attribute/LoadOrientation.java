@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/12/15 02:20:38  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.11  2003/05/06 20:56:01  pfpeterson
  *  Added a constructor which takes a string to specify matrix file.
  *
@@ -83,16 +86,24 @@
 
 package DataSetTools.operator.DataSet.Attribute;
 
-import  java.io.*;
-import  java.util.Vector;
-import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
-import  DataSetTools.util.*;
-import  DataSetTools.operator.Parameter;
-import  DataSetTools.operator.DataSet.Information.XAxis.SCDhkl;
-import  DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
-import  DataSetTools.parameter.*;
-import  DataSetTools.retriever.RunfileRetriever;
+import java.io.File;
+import java.io.IOException;
+import java.util.Vector;
+
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.Float1DAttribute;
+import DataSetTools.dataset.Float2DAttribute;
+import DataSetTools.dataset.FloatAttribute;
+import DataSetTools.dataset.StringAttribute;
+import DataSetTools.operator.DataSet.Information.XAxis.SCDhkl;
+import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
+import DataSetTools.parameter.LoadFilePG;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.FilenameUtil;
+import DataSetTools.util.LoadFileString;
+import DataSetTools.util.SharedData;
+import DataSetTools.util.TextFileReader;
 
 /**
  * This operator loads a orientation matrix and lattice parameters

@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.29  2003/12/15 02:17:29  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.28  2003/11/11 20:36:43  bouzekc
  * Modified to work with new Form.addParameter().
  *
@@ -131,21 +134,25 @@
  */
 package Wizard.TOF_SCD;
 
-import DataSetTools.operator.Operator;
-
-import DataSetTools.parameter.*;
-
-import DataSetTools.util.*;
-
-import DataSetTools.wizard.*;
-
-import Operators.TOF_SCD.*;
-
-import java.beans.*;
-
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
-
 import java.util.Vector;
+
+import DataSetTools.parameter.BooleanPG;
+import DataSetTools.parameter.DataDirPG;
+import DataSetTools.parameter.FloatPG;
+import DataSetTools.parameter.IParameter;
+import DataSetTools.parameter.IParameterGUI;
+import DataSetTools.parameter.IntArrayPG;
+import DataSetTools.parameter.LoadFilePG;
+import DataSetTools.parameter.RadioButtonPG;
+import DataSetTools.parameter.StringPG;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.IntList;
+import DataSetTools.util.SharedData;
+import DataSetTools.wizard.Form;
+import Operators.TOF_SCD.IndexJ;
 
 
 /**

@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.25  2003/12/15 02:24:20  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.24  2003/08/05 21:41:20  dennis
  * Set new hkl values into the Peak objects, after transforming the
  * hkl values by the transform specified by Scalar.  This fixes the
@@ -130,26 +133,27 @@
  */
 package Operators.TOF_SCD;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Vector;
+
 import DataSetTools.math.LinearAlgebra;
-
-import DataSetTools.operator.Generic.TOF_SCD.*;
-
-import DataSetTools.parameter.*;
-
+import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
+import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
+import DataSetTools.operator.Generic.TOF_SCD.Peak;
+import DataSetTools.operator.Generic.TOF_SCD.ReadPeaks;
+import DataSetTools.operator.Generic.TOF_SCD.Util;
+import DataSetTools.parameter.IParameter;
+import DataSetTools.parameter.IntArrayPG;
+import DataSetTools.parameter.IntegerPG;
+import DataSetTools.parameter.LoadFilePG;
+import DataSetTools.parameter.SaveFilePG;
+import DataSetTools.parameter.StringPG;
 import DataSetTools.util.ErrorString;
 import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.Format;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.TextFileReader;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
-import java.lang.reflect.Array;
-
-import java.util.Enumeration;
-import java.util.Vector;
 
 
 /**

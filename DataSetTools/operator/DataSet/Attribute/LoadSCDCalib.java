@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/12/15 02:20:38  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.11  2003/06/09 19:48:31  pfpeterson
  * Now can read 'new' experiment files. Also added ability to read in all
  * unique detectors from a file when -1 is specified as the 'line to use'.
@@ -66,19 +69,26 @@
  */
 package DataSetTools.operator.DataSet.Attribute;
 
-import DataSetTools.dataset.*;
-import DataSetTools.operator.*;
-import DataSetTools.instruments.*;
-//import DataSetTools.util.LoadFileString;
-import DataSetTools.operator.DataSet.Information.XAxis.SCDhkl;
-import DataSetTools.parameter.IntegerPG;
-import DataSetTools.util.*;
-import DataSetTools.retriever.RunfileRetriever;
-import java.util.*;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
 import java.util.Vector;
-import java.lang.reflect.Array;
-import java.text.DecimalFormat;
-import java.io.*;
+
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.Float1DAttribute;
+import DataSetTools.dataset.FloatAttribute;
+import DataSetTools.dataset.StringAttribute;
+import DataSetTools.operator.Operator;
+import DataSetTools.operator.Parameter;
+import DataSetTools.parameter.IntegerPG;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.IntList;
+import DataSetTools.util.IntListString;
+import DataSetTools.util.LoadFileString;
+import DataSetTools.util.SharedData;
+import DataSetTools.util.TextFileReader;
 
 /** 
  * This operator will add the calibration information from the file

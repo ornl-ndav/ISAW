@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/12/15 02:17:29  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.4  2002/11/27 23:12:34  pfpeterson
  *  standardized header
  *
@@ -48,14 +51,22 @@
  */
 package DataSetTools.components.ParametersGUI;
 
-import javax.swing.*;
-import DataSetTools.operator.*;
-import DataSetTools.util.LoadFileString;
-import javax.swing.filechooser.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
+
+import DataSetTools.operator.Parameter;
+import DataSetTools.util.LoadFileString;
 
 /**
  * This class is intended to be used for selecting a file for

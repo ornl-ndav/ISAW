@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/12/15 02:33:26  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.5  2003/01/23 19:04:39  dennis
  *  Added getDocumentation() method (Chris Bouzek)
  *
@@ -71,16 +74,28 @@
 
 package DataSetTools.operator.Generic.Special;
 
-import  DataSetTools.util.*;
-import  DataSetTools.operator.Parameter;
-import  java.awt.*;
-import  java.awt.event.*;
-import  java.io.*;
-import  java.util.Vector;
-import  javax.swing.text.*;
-import  javax.swing.*;
-import DataSetTools.viewer.*;
-import IsawGUI.*;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.Vector;
+
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
+
+import DataSetTools.operator.Parameter;
+import DataSetTools.util.LoadFileString;
+import DataSetTools.util.TextFileReader;
 
 /* ------------------------- class ViewASCII ------------------------------- */
 /**

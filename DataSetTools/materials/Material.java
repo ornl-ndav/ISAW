@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/12/15 02:24:21  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.3  2003/02/04 16:03:47  pfpeterson
  * Throws an InstantiationError if not all atoms can be created.
  *
@@ -38,9 +41,7 @@
  */
 package DataSetTools.materials;
 
-import java.io.*;
-import DataSetTools.util.TextFileReader;
-import DataSetTools.materials.Atom;
+import java.io.File;
 import java.util.Vector;
 
 /**
