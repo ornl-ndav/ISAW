@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2003/08/28 02:28:08  bouzekc
+ *  Removed setEnabled() method.
+ *
  *  Revision 1.25  2003/08/28 01:34:44  bouzekc
  *  Modified to work with new ParameterGUI.
  *
@@ -187,19 +190,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
   }
 
   //~ Methods ******************************************************************
-
-  /**
-   * Sets the editable state of the entry widget.
-   *
-   * @param enableMe Whether to make the entry widget enabled.
-   */
-  public void setEnabled( boolean enableMe ) {
-    enabled = enableMe;
-
-    if( getEntryWidget(  ) != null ) {
-      ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setEditable( enabled );
-    }
-  }
 
   /**
    * Sets the String value of this ArrayPG.

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/08/28 02:28:12  bouzekc
+ *  Removed setEnabled() method.
+ *
  *  Revision 1.10  2003/08/28 01:47:12  bouzekc
  *  Modified to work with new ParameterGUI.
  *
@@ -200,19 +203,5 @@ public abstract class StringEntryPG extends ParameterGUI {
     entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
     this.setEnabled( this.getEnabled(  ) );
     super.initGUI(  );
-  }
-
-  /**
-   * Set the enabled state of the EntryWidget. This produces a more
-   * pleasant effect than the default setEnabled of the widget.
-   *
-   * @param enabled Whether or not this StringEntryPG should be enabled.
-   */
-  public void setEnabled( boolean enabled ) {
-    this.enabled = enabled;
-
-    if( this.getEntryWidget(  ) != null ) {
-      ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setEditable( enabled );
-    }
   }
 }

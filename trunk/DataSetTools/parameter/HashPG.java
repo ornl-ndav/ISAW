@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/08/28 02:28:11  bouzekc
+ *  Removed setEnabled() method.
+ *
  *  Revision 1.9  2003/08/28 01:54:05  bouzekc
  *  Modified to work with new ParameterGUI.
  *
@@ -246,14 +249,5 @@ abstract public class HashPG extends ParameterGUI{
         }else{
             this.initGUI(null);
         }
-    }
-
-    /**
-     * Set the enabled state of the EntryWidget. This produces a more
-     * pleasant effect that the default setEnabled of the widget.
-     */
-    public void setEnabled(boolean enabled){
-        this.enabled=enabled;
-        if(this.entrywidget!=null) this.entrywidget.setEnabled(this.enabled);
     }
 }
