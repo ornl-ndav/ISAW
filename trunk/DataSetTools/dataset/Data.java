@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2002/06/14 20:48:59  rmikk
+ *  Implements the IXmlIO interface
+ *
  *  Revision 1.25  2002/06/10 22:32:01  dennis
  *  Fixed some problems with error propagation that were introduced when
  *  the Data object hierarchy was made.  Also made error propagation more
@@ -67,7 +70,8 @@ import DataSetTools.math.*;
 import DataSetTools.util.*;
 
 public abstract class Data implements IData,
-                                      Serializable 
+                                      Serializable ,
+                                      IXmlIO
 {
   public static final String FUNCTION  = "Function";
   public static final String HISTOGRAM = "Histogram";
@@ -1136,4 +1140,32 @@ public abstract class Data implements IData,
     return true;
   }
 
+  /** Implements the IXmlIO interface so a Data Object can write itself
+  *
+  * @param stream  the OutputStream to which the data is written
+  * @param mode    either IXmlIO.BASE64 or IXmlOP.NORMAL. This indicates 
+  *                how a Data's xvals, yvals and errors are written
+  * @return true if successful otherwise false<P>
+  *
+  * NOTE: This implementation returns false. All subclasses should implement
+  *      a legitimate XMLwrite routine
+  */
+  public boolean XMLwrite( OutputStream stream, int mode)
+    {
+     return xml_utils.setError("Data XMLwrite not implemented");
+    }
+
+  /** Implements the IXmlIO interface so a Data Object can read itself
+  *
+  * @param stream  the InputStream from which the data is to be read
+ 
+  * @return true if successful otherwise false<P>
+  *
+  * NOTE: This implementation returns false. All subclasses should implement
+  *      a legitimate XMLread routine
+  */
+  public boolean XMLread( InputStream stream )
+    {
+     return xml_utils.setError("Data XMLread not implemented");
+    }
 }
