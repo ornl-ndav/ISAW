@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/08/14 18:45:19  bouzekc
+ *  Now implements Serializable.
+ *
  *  Revision 1.6  2003/06/20 16:30:25  bouzekc
  *  Removed non-instantiated methods.  Added methods to get and
  *  set the ignore property change value.
@@ -66,7 +69,8 @@ import DataSetTools.util.PropertyChanger;
  * ParameterGUIs.
  */
 public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
-                                              PropertyChangeListener{
+                                              PropertyChangeListener, 
+                                              java.io.Serializable{
     // instance variables for IParameter
     protected String     name;
     protected Object     value;
