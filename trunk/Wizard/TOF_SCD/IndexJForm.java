@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.13  2003/06/18 23:34:24  bouzekc
+ * Parameter error checking now handled by superclass Form.
+ *
  * Revision 1.12  2003/06/18 19:57:03  bouzekc
  * Uses super.getResult() for initializing PropertyChanger
  * variables.  Now fires off property change events in a
@@ -259,100 +262,53 @@ public class IndexJForm extends Form
     IParameterGUI param;
     String peaksDir, expName, peaksName, runNum, matInputPath, matrixFrom, 
            matName, restrictRuns;
-    Object obj;
+    Object obj = null;
     float delta_h, delta_k, delta_l;
     boolean update, useSpecMat;
     int[] runsArray;
 
     //gets the run numbers
     param = (IParameterGUI)super.getParameter(0);
-    obj = param.getValue();
-    if( obj != null && obj.toString().length() != 0 )
-    {
-        runsArray = IntList.ToArray(obj.toString());
-        param.setValid(true);
-    }
-   else
-     return errorOut(param,
-       "ERROR: you must enter one or more valid run numbers.\n");
-
+    runsArray = IntList.ToArray(param.getValue().toString());
     //gets the input path
     param = (IParameterGUI)super.getParameter(1);
     peaksDir = param.getValue().toString();
-    param.setValid(true);
 
     //gets the experiment name
     param = (IParameterGUI)super.getParameter(2);
-    obj = param.getValue();
-
-    if( (obj != null) && (obj.toString().length() > 0) )
-    {
-        expName = obj.toString();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param, 
-        "ERROR: you must enter a valid experiment name.");
-
+    expName = param.getValue().toString();
     //gets the delta_h
     param = (IParameterGUI)super.getParameter(3);
-    obj = param.getValue();
-
-    if( (obj != null) && (obj instanceof Float) )
-    {
-        delta_h = ((Float)obj).floatValue();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param, 
-        "ERROR: you must enter a valid delta value.");
-
+    delta_h = ((Float)param.getValue()).floatValue();
     //gets the delta_k
     param = (IParameterGUI)super.getParameter(4);
-    obj = param.getValue();
-
-    if( (obj != null) && (obj instanceof Float) )
-    {
-        delta_k = ((Float)obj).floatValue();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param, 
-        "ERROR: you must enter a valid delta value.");
-
+    delta_k = ((Float)param.getValue()).floatValue();
     //gets the delta_l
     param = (IParameterGUI)super.getParameter(5);
-    obj = param.getValue();
-
-    if( (obj != null) && (obj instanceof Float) )
-    {
-        delta_l = ((Float)obj).floatValue();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param, 
-        "ERROR: you must enter a valid delta value.");
-
+    delta_l = ((Float)param.getValue()).floatValue();
     //gets the update value 
     param = (IParameterGUI)super.getParameter(6);
-    param.setValid(true);
     update = ((BooleanPG)param).getbooleanValue();
-
     //get the "use matrix" boolean value
     param = (IParameterGUI)super.getParameter(7);
-    param.setValid(true);
     useSpecMat = ((BooleanPG)param).getbooleanValue();
 
-    //#8 the matrix name will be validated later
+    //#8 the matrix name will be validated later - setting it valid here
+    //skips the Form's parameter checking for this parameter
+    ((IParameterGUI)getParameter(8)).setValid(true);
 
     //#9 the restrict runs value will be validated later
-    param = (IParameterGUI)super.getParameter(9);
+    ((IParameterGUI)getParameter(8)).setValid(true);
 
     //peaks file name - make sure it is right for the system
     peaksName = peaksDir + expName + ".peaks";
 
     //validate the parameters and init the progress bar variables
-    super.getResult();
+    Object superRes = super.getResult();
+
+    //had an error, so return
+    if(superRes instanceof ErrorString)  
+      return superRes;
 
     //no need to continually recreate this Operator in a loop
     indexJOp = new IndexJ();
