@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/06/06 16:15:45  pfpeterson
+ * Now use new parameters.
+ *
  * Revision 1.1  2002/05/28 20:36:00  pfpeterson
  * Moved files
  *
@@ -62,6 +65,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import DataSetTools.operator.*;
 import DataSetTools.util.*;
+import DataSetTools.parameter.*;
 
 /**
  *  The Wizard class provides the top level control for a sequence of 
@@ -91,6 +95,7 @@ public class Wizard implements Serializable{
     private static final String NEXT_COMMAND        = "Next";
     private static final String LAST_COMMAND        = "Last";
     private static final String CLEAR_COMMAND       = "Clear All";
+    private static final String EXEC_ALL_COMMAND    = "Exec All";
     private static final String EXEC_COMMAND        = "Execute";
     private static final String HELP_ABOUT_COMMAND  = "About";
     private static final String WIZARD_HELP_COMMAND = "on Wizard";
@@ -115,6 +120,7 @@ public class Wizard implements Serializable{
     private Vector       forms;
     private int          form_num;
     private JPanel       form_panel;
+    private JButton      exec_all_button;
     private JButton      first_button;
     private JButton      back_button;
     private JButton      next_button;
@@ -217,6 +223,7 @@ public class Wizard implements Serializable{
         
         // add the progress bar to the panel
         JButton clear_button = new JButton( CLEAR_COMMAND );
+        exec_all_button=new JButton(EXEC_ALL_COMMAND);
         if(forms.size()>1){
             gbc.weighty=1.0;
             gbc.fill=GridBagConstraints.HORIZONTAL;
@@ -226,16 +233,22 @@ public class Wizard implements Serializable{
             progress.setMaximum(forms.size());
             progress.setValue(0);
             gbc.fill=GridBagConstraints.NONE;
-            gbc.gridwidth=GridBagConstraints.RELATIVE;
+            gbc.gridwidth=1;
             progress_panel.add( clear_button, gbc );
             gbc.weightx=20.0;
             gbc.fill=GridBagConstraints.HORIZONTAL;
-            gbc.gridwidth=GridBagConstraints.REMAINDER;
+            gbc.gridwidth=GridBagConstraints.RELATIVE;
             progress_panel.add( progress,     gbc );
+            gbc.weightx=1.0;
+            gbc.fill=GridBagConstraints.NONE;
+            gbc.gridwidth=GridBagConstraints.REMAINDER;
+            gbc.anchor=GridBagConstraints.EAST;
+            progress_panel.add( exec_all_button, gbc );
         }
         
         // add the navigation buttons to the panel
         gbc.weightx=1.0;
+        gbc.anchor=GridBagConstraints.WEST;
         gbc.gridwidth=GridBagConstraints.REMAINDER;
         gbc.fill=GridBagConstraints.HORIZONTAL;
         work_area.add(button_panel,gbc);
@@ -281,20 +294,21 @@ public class Wizard implements Serializable{
         work_area.add( status_display,gbc );
         
         CommandHandler command_handler = new CommandHandler(this);
-        save_form   .addActionListener( command_handler );
-        load_form   .addActionListener( command_handler );
-        save_wizard .addActionListener( command_handler );
-        load_wizard .addActionListener( command_handler );
-        first_button.addActionListener( command_handler );
-        back_button .addActionListener( command_handler );
-        next_button .addActionListener( command_handler );
-        last_button .addActionListener( command_handler );
-        clear_button.addActionListener( command_handler );
-        exec_button .addActionListener( command_handler );
-        help_about  .addActionListener( command_handler );
-        wizard_help .addActionListener( command_handler );
-        form_help   .addActionListener( command_handler );
-        exit_item   .addActionListener( command_handler );
+        save_form      .addActionListener( command_handler );
+        load_form      .addActionListener( command_handler );
+        save_wizard    .addActionListener( command_handler );
+        load_wizard    .addActionListener( command_handler );
+        first_button   .addActionListener( command_handler );
+        back_button    .addActionListener( command_handler );
+        next_button    .addActionListener( command_handler );
+        last_button    .addActionListener( command_handler );
+        clear_button   .addActionListener( command_handler );
+        exec_all_button.addActionListener( command_handler );
+        exec_button    .addActionListener( command_handler );
+        help_about     .addActionListener( command_handler );
+        wizard_help    .addActionListener( command_handler );
+        form_help      .addActionListener( command_handler );
+        exit_item      .addActionListener( command_handler );
     }
 
     protected void showGUI(){
@@ -308,7 +322,7 @@ public class Wizard implements Serializable{
      *  @param  name   A descriptive name for this parameter.  
      *  @param  param  The parameter to be added to the master list
      */
-    public void setParameter( String name, WizardParameter param ){
+    public void setParameter( String name, IParameterGUI param ){
         master_list.put( name, param );
     }
     
@@ -323,14 +337,14 @@ public class Wizard implements Serializable{
      *                 by the given name.  If there is no such parameter, this
      *                 returns null. 
      */ 
-    public WizardParameter getParameter( String name ){
+    public IParameterGUI getParameter( String name ){
         Object obj = master_list.get( name );
-        if ( obj == null || !(obj instanceof WizardParameter )){
+        if ( obj == null || !(obj instanceof IParameterGUI )){
             status_display.append("name not found in Wizard.getParameter()"
                                   +name+"\n");
             return null;
         }else{
-            return (WizardParameter)obj; 
+            return (IParameterGUI)obj; 
         }
     }
 
@@ -351,9 +365,16 @@ public class Wizard implements Serializable{
      *  @return  The currently displayed form.
      */ 
     public Form getCurrentForm(){
-        return getForm(form_num);
+        return getForm(getCurrentFormNumber());
     }
     
+    /**
+     * Get the number of the form currently being shown.
+     */
+    public int getCurrentFormNumber(){
+        return form_num;
+    }
+
     /**
      * Get the form at specified index.
      *
@@ -510,7 +531,15 @@ public class Wizard implements Serializable{
                                       JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /* ---------------- Internal Event Handler Classes --------------------- */
+    /**
+     * Invalidate all forms starting with the number specified.
+     */
+    protected void invalidate(int start){
+        for( int i=start ; i<forms.size() ; i++ ){
+            getForm(i).setCompleted(false);
+        }
+    }
+
     /**
      *  This class closes down the application when the user closes
      *  the frame.
@@ -521,6 +550,28 @@ public class Wizard implements Serializable{
         }   
     }
 
+    /**
+     * Execute all forms up to the number specified.
+     */
+    protected void exec_forms(int end){
+        Form f = getCurrentForm();
+        // execute the previous forms
+        for( int i=0 ; i<=end ; i++ ){
+            progress.setValue(i);
+            f=getForm(i);
+            if(!f.done()){ 
+                //invalidate(i);
+                f.setCompleted(f.execute());
+                if(!f.done()) break;
+            }
+            progress.setValue(i+1);
+        }
+        
+        // invalidate subsequent forms
+        invalidate(end+1);
+    }
+
+    /* ---------------- Internal Event Handler Classes --------------------- */
     /**
      *  This class handles all of the commands from buttons and menu
      *  items.
@@ -556,21 +607,10 @@ public class Wizard implements Serializable{
             }else if ( command.equals( CLEAR_COMMAND ) ){
                 invalidate(0);
                 progress.setValue(0);
+            }else if ( command.equals( EXEC_ALL_COMMAND) ){
+                exec_forms(forms.size()-1);
             }else if ( command.equals( EXEC_COMMAND ) ){
-                Form f = getCurrentForm();
-                // execute the previous forms
-                for( int i=0 ; i<=form_num ; i++ ){
-                    progress.setValue(i);
-                    f=getForm(i);
-                    if(!f.done()){ 
-                        f.setCompleted(f.execute());
-                        if(!f.done()) break;
-                    }
-                    progress.setValue(i+1);
-                }
-                
-                // invalidate subsequent forms
-                invalidate(form_num+1);
+                exec_forms(form_num); 
             }else if ( command.equals( HELP_ABOUT_COMMAND ) ){
                 ShowHelpMessage( about_message, "About: "+wizard.title );
             }else if ( command.equals( WIZARD_HELP_COMMAND ) ){
@@ -595,15 +635,7 @@ public class Wizard implements Serializable{
                 close();
             }
         } 
-        /**
-         * Invalidate all forms starting with the number specified.
-         */
-        private void invalidate(int start){
-            for( int i=start ; i<forms.size() ; i++ ){
-                getForm(i).setCompleted(false);
-            }
-        }
-
+        
     }
     
     /**
@@ -615,11 +647,11 @@ public class Wizard implements Serializable{
         Wizard w = new Wizard( "Wizard Test" ); 
         
         w.setParameter( "Height", 
-                  new WizardParameter( "Height_Name", new Float(5.0), true ));
+                  new FloatPG( "Height_Name", new Float(5.0), false ));
         w.setParameter( "Name", 
-                  new WizardParameter( "Name_Name","Dennis", false ));
+                  new StringPG( "Name_Name","Dennis", false ));
         
-        Parameter p = w.getParameter( "Height" );
+        IParameter p = w.getParameter( "Height" );
         System.out.println("P1=" + p.getName() + ", " + p.getValue() );
         
         p = w.getParameter( "Name" );
