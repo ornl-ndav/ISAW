@@ -10,6 +10,12 @@ package OverplotView;
  * ----------
  *
  * $Log$
+ * Revision 1.6  2001/08/15 18:29:15  rmikk
+ * If no Data blocks are selected, A screen with that message
+ *     appears.
+ * The View now responds to notifications when the selected
+ *    groups change and the data set changes.
+ *
  * Revision 1.5  2001/08/13 14:40:46  rmikk
  * Added layout and event code to ensure that the graph takes
  * up the whole pane and that it shows at first and when
@@ -45,7 +51,8 @@ import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Vector;
-import javax.swing.JComponent;
+import javax.swing.*;
+//import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import OverplotView.GraphableData;
@@ -62,7 +69,7 @@ public class GraphableDataManager
 
   private Vector                graphable_data;
   private sgtGraphableDataGraph graph;
-
+  private String Error;
 
   /**
    * default constructor
@@ -71,6 +78,13 @@ public class GraphableDataManager
   {
     super(data_set);
     setLayout( new GridLayout( 1 , 1 ));
+    Error =null;
+    if( data_set == null)
+	Error = "No data Set";
+    else if( data_set.getSelectedIndices().length <=0)
+        Error = "No Data Sets are Selected";
+   
+       
     graph = new sgtGraphableDataGraph();
     StringAttribute title, subtitle1, subtitle2, 
                     x_units, y_units, x_label, y_label;
@@ -106,6 +120,7 @@ public class GraphableDataManager
     JMenuItem exitButton = new JMenuItem( AUX_EXIT );
     exitButton.addActionListener( option_menu_handler );
     option_menu.add( exitButton );
+   
   }
 
   
@@ -118,7 +133,7 @@ public class GraphableDataManager
   public void redraw( String reason ) 
   {
     //System.out.println( "DataSetViewer> " + reason );
-
+    
     if ( reason == IObserver.DESTROY )
     {
       graphable_data = null;
@@ -131,14 +146,19 @@ public class GraphableDataManager
     {
     }
     else if( reason == IObserver.SELECTION_CHANGED )
-    {
-      redraw();
+    { DataSet ds = getDataSet();
+       if( ds.getSelectedIndices().length  > 0)
+           Error = null;
+       redraw();
+      
     }
     else if( reason == IObserver.POINTED_AT_CHANGED )
     {
     }
     else if( reason == IObserver.GROUPS_CHANGED )
-    {
+    {  
+       
+       redraw();
     }
     else if( reason == IObserver.DATA_CHANGED )
     {
@@ -171,8 +191,8 @@ public class GraphableDataManager
    * objects to GraphableData objects
    */
   public void redraw()
-  {
-                                       //convert data from Data objects
+  {  
+                                      //convert data from Data objects
                                        //to GraphableData objects
     convert_Data_to_GraphableData();
 
@@ -185,11 +205,20 @@ public class GraphableDataManager
                                        //the new graph that redraw() 
                                        //generates
     removeAll();
-    JComponent graph_component = graph.redraw();
-    graph_component.setLayout( new GridLayout( 1,1 ));
-    graph_component.addComponentListener( new 
-           MyComponentListener(graph_component));
-    graph_component.doLayout();
+    
+    JComponent graph_component ;
+    if( Error == null)
+      {graph_component = graph.redraw();
+       graph_component.setLayout( new GridLayout( 1,1 ));
+       graph_component.addComponentListener( new 
+             MyComponentListener(graph_component));
+        graph_component.doLayout();
+      }
+    else
+     {graph_component = (new JTextArea( 15 , 30 ));
+      ((JTextArea)graph_component).setText("\n\n    "+Error);
+     
+     }
     
     add( graph_component );
 
