@@ -31,6 +31,11 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.36  2001/07/23 13:55:47  neffk
+  *  now uses ViewManager instead of JDataViewUI.  JDataViewUI has been
+  *  removed from the source tree.  also, fixed some more indentation
+  *  problems.
+  *
   *  Revision 1.35  2001/07/18 16:45:36  neffk
   *  cleaned house.  removed *many* unused menu options, variables,
   *  and blocks of code.  found and made constants for many 'magic
@@ -249,7 +254,6 @@ public class Isaw
 
     JDataTree jdt;
     JPropertiesUI jpui;
-    JDataViewUI jdvui;
     JCommandUI jcui;
     JMenu oMenu = new JMenu( OPERATOR_M );
     CommandPane cp;
@@ -292,9 +296,6 @@ public class Isaw
     jpui.setPreferredSize( new Dimension(200, 200) );
     jpui.setMinimumSize(new Dimension(20, 50));
 
-    jdvui = new JDataViewUI();
-    jdvui.setPreferredSize(new Dimension(700, 500));
-    SwingUtilities.updateComponentTreeUI(jdvui);
 
     jcui = new JCommandUI(cp, sessionLog,jpui);
     jcui.setPreferredSize( new Dimension( 700, 50 ) );
@@ -321,7 +322,6 @@ public class Isaw
     leftPane.setOneTouchExpandable(false);
     rightPane.setOneTouchExpandable(false);
  
-    //rightPane.setTopComponent(jdvui);
     rightPane.setBottomComponent(jcui);
     rightPane.setResizeWeight( RIGHT_WEIGHT );
     //leftPane.setBottomComponent(jpui);
@@ -1111,14 +1111,13 @@ public class Isaw
         }
       }
      
+
       if( s == IMAGE_VIEW_MI )
       {
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
         if(  ds != null  )
         {
-          jdvui.ShowDataSet( ds, 
-                             JDataViewUI.EXTERNAL_FRAME, 
-                             IViewManager.IMAGE );
+          new ViewManager( ds, IViewManager.IMAGE );
           ds.setPointedAtIndex( 0 );
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
@@ -1132,9 +1131,7 @@ public class Isaw
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
         if(  ds != DataSet.EMPTY_DATA_SET  )
         {
-          jdvui.ShowDataSet( ds, 
-                             JDataViewUI.EXTERNAL_FRAME, 
-                             IViewManager.SELECTED_GRAPHS );
+          new ViewManager( ds, IViewManager.SELECTED_GRAPHS );
           ds.setPointedAtIndex( 0 );
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
@@ -1148,9 +1145,7 @@ public class Isaw
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
         if(  ds != DataSet.EMPTY_DATA_SET  )
         {
-          jdvui.ShowDataSet( ds, 
-                             JDataViewUI.EXTERNAL_FRAME, 
-                             IViewManager.SCROLLED_GRAPHS );
+          new ViewManager( ds, IViewManager.SCROLLED_GRAPHS );
           ds.setPointedAtIndex( 0 );
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
@@ -1164,9 +1159,7 @@ public class Isaw
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
         if(  ds != DataSet.EMPTY_DATA_SET  )
         {
-          jdvui.ShowDataSet( ds, 
-                             JDataViewUI.EXTERNAL_FRAME, 
-                             IViewManager.THREE_D );
+          new ViewManager( ds, IViewManager.THREE_D );
           ds.setPointedAtIndex( 0 );
           ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
         }
@@ -1200,7 +1193,6 @@ public class Isaw
     {
       SwingUtilities.updateComponentTreeUI(jdt);
       SwingUtilities.updateComponentTreeUI(jpui);
-      SwingUtilities.updateComponentTreeUI(jdvui);
       SwingUtilities.updateComponentTreeUI(jcui);
     }
 
@@ -1602,42 +1594,38 @@ public class Isaw
 
 
   
+  /**
+   * since this object is an IObserver, this method is called to
+   * make changes as per notification.
+   */ 
   public void update( Object observed, Object reason )
-     {
-        if ( !( reason instanceof String) && !( reason instanceof DataSet) )   
-                    // currently we only allow Strings & DataSets
-             {
-            return;
-                 }
+  {
+                                  //currently we only allow 
+                                  //String and DataSet objects
+    if( !( reason instanceof String) && !( reason instanceof DataSet) )   
+      return;
  
-       // if ( observed instanceof CommandPane )                   should always be true!!!
-        {
-                         
-     if ( reason instanceof DataSet )
+    if ( reason instanceof DataSet )
     {
-       DataSet ds1 = (DataSet)reason;
-     MutableTreeNode node = jdt.getNodeOfObject(reason);
+      DataSet ds = (DataSet)reason;
+      MutableTreeNode node = jdt.getNodeOfObject( reason );
  
-                                 if ( node == null )    // ds1 is a NEW DataSet, add it as a modified DataSet
-         { addDataSet( ds1 );
-           //jdvui.ShowDataSet(ds1,"External Frame",IViewManager.IMAGE);
-       }
-                                 else
-                                    System.out.println("ERROR: Currently we only insert a new DataSet");
-     return;
-    }         
- 
- 
- 
-         else
-         {
+      if( node == null ) 
+      {
+                    //this must be a new DataSet object...
+                    //put it in the modified folder on 
+                    //the tree.
+        addDataSet( ds );
+      }
+      else
+        return;
+    }
+    else
+    {
       System.out.println("Error: Tree update called with wrong reason");
- 
-         }
- 
-         return; 
-        }           
-     }
+      return;
+    }
+  }
  
  
 
