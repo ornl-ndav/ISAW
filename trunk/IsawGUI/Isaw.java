@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.63  2001/11/13 22:38:10  pfpeterson
+ *  added PDF name to GSAS export menu item
+ *
  *  Revision 1.62  2001/11/08 22:27:52  chatterjee
  *  Added ability to write out PDF (Pair distribution function) format as a part of the GSAS file output.
  *
@@ -297,7 +300,7 @@ public class Isaw
   
 
   private static final String SAVE_ISAW_DATA_MI  = "Save As";
-  private static final String GSAS_EXPORT_MI     = "Export As GSAS File";
+  private static final String GSAS_EXPORT_MI     = "Export As GSAS/PDF File";
   private static final String DB_IMPORT_MI       = "Search Database";
   private static final String EXIT_MI            = "Exit";
 
