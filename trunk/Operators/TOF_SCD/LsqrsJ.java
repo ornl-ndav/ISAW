@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2003/06/09 22:00:30  bouzekc
+ * getResult() now returns the name of the log file
+ * and prints a message to SharedData.
+ *
  * Revision 1.8  2003/06/02 14:31:06  pfpeterson
  * Fixed a spelling error.
  *
@@ -414,7 +418,10 @@ public class LsqrsJ extends GenericTOF_SCD{
       if(error!=null)
         return error;
       else
-        return "Wrote file: "+matfile;
+      {
+        SharedData.addmsg("Wrote file: "+matfile);
+        return matfile;
+      }
     }else{
       return "Success";
     }
