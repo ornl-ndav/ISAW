@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/08/04 15:49:09  dennis
+ * Temporarily made 'l1' and the grid public, for use by the SCDcalib
+ * operator, that is in a different package.
+ *
  * Revision 1.6  2003/08/01 13:30:51  dennis
  * Now uses files from both new detectors in test code in main.
  *
@@ -89,11 +93,11 @@ public class PeakData
     int    run_num = 0;                // Run info .....
     double moncnt = 0;
                                        // Instrument info .....
-    double l1     = 9.378;
+    public double l1     = 9.378;
     SampleOrientation_d orientation;
 
                                        // Detector info ......
-    UniformGrid_d grid;
+    public UniformGrid_d grid;
                                        // Peak info .....
     int    seqn   = 0;
     double counts = 0;
