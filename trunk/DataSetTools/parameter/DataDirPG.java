@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/11/19 04:13:22  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.16  2003/10/11 19:19:15  bouzekc
  *  Removed clone() as the superclass now implements it using reflection.
  *
@@ -129,7 +132,7 @@ public class DataDirPG extends BrowsePG{
             }
           }
         }
-        this.type=TYPE;
+        this.setType(TYPE);
         this.setValid(valid);
         super.choosertype = BrowseButtonListener.DIR_ONLY;
     }
@@ -144,10 +147,8 @@ public class DataDirPG extends BrowsePG{
      */
     public Object getValue()
     {
-      String str;
-      
-      str = FilenameUtil.setForwardSlash(
-            super.getValue().toString());
+      String str = FilenameUtil.setForwardSlash(
+                     super.getValue().toString());
       if( !str.endsWith("/") ){
         str += "/";
       }

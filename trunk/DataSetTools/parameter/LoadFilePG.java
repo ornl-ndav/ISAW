@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/11/19 04:13:22  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.10  2003/10/11 19:19:16  bouzekc
  *  Removed clone() as the superclass now implements it using reflection.
  *
@@ -93,7 +96,7 @@ public class LoadFilePG extends BrowsePG{
     
     public LoadFilePG(String name, Object value, boolean valid){
         super(name,value,valid);
-        this.type=TYPE;
+        this.setType(TYPE);
         super.choosertype = BrowseButtonListener.LOAD_FILE;
     }
 

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/11/19 04:13:22  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.11  2003/10/11 19:19:15  bouzekc
  *  Removed clone() as the superclass now implements it using reflection.
  *
@@ -91,12 +94,12 @@ public class ChoiceListPG extends ChooserPG{
     public ChoiceListPG(String name, Object value){
         this(name,value,false);
         this.setDrawValid(false);
-        this.type=TYPE;
+        this.setType(TYPE);
     }
 
     public ChoiceListPG(String name, Object value, boolean valid){
         super(name,value,valid);
-        this.type=TYPE;
+        this.setType(TYPE);
         if( value != null)
         if(!(value instanceof String))
             SharedData.addmsg("WARN: Non-String"

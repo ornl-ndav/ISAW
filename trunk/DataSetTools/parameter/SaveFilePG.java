@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/11/19 04:13:23  bouzekc
+ *  Is now a JavaBean.
+ *
  *  Revision 1.11  2003/10/11 19:19:17  bouzekc
  *  Removed clone() as the superclass now implements it using reflection.
  *
@@ -97,7 +100,7 @@ public class SaveFilePG extends BrowsePG{
     
     public SaveFilePG(String name, Object value, boolean valid){
         super(name,value,valid);
-        this.type=TYPE;
+        this.setType(TYPE);
         super.choosertype = BrowseButtonListener.SAVE_FILE;
     }
 
