@@ -12,6 +12,9 @@
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/07/13 14:23:43  dennis
+ *  Changed TOTAL_COUNTS to TOTAL_COUNT to remove redundant attribute name
+ *
  *  Revision 1.4  2000/07/11 21:18:35  dennis
  *  Added private method to show information about the detectors in a group
  *
@@ -557,7 +560,7 @@ public class RunfileRetriever extends    Retriever
     
     // Total Counts  ........
     try{
-    float_attr = new FloatAttribute( Attribute.TOTAL_COUNTS, 
+    float_attr = new FloatAttribute( Attribute.TOTAL_COUNT, 
                                (float)run_file.Get1DSum( group_id ));
     attr_list.setAttribute( float_attr );
     }
