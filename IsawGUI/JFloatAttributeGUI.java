@@ -59,7 +59,7 @@ public class JFloatAttributeGUI extends JAttributeGUI implements Serializable
         attr = new FloatAttribute(attr.getName(),Float.NaN);
         else{
         float value = Float.valueOf(s).floatValue();
-        ((FloatAttribute)attr).setFloatValue(value);
+        attr = new FloatAttribute(attr.getName(),value);
         }
         return attr;
     }
