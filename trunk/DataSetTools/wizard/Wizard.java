@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.46  2003/06/30 15:16:23  bouzekc
+ * Added executeNoGUI() method to allow execution of the
+ * Wizard without creating the GUI.
+ *
  * Revision 1.45  2003/06/30 14:26:10  bouzekc
  * Now uses the LookAndFeelManager class to set the Pluggable
  * Look and Feel (PLAF) of the Wizard.  Sets the PLAF to Motif
@@ -1451,6 +1455,21 @@ public abstract class Wizard implements PropertyChangeListener {
         }
       }
     }
+  }
+
+  /**
+   *  Method to execute the Wizard without bringing up the GUI.
+   *
+   *  @param  saveFile             The Wizard Save File (*.wsf) to use.
+   */
+  public void executeNoGUI( String saveFile ) {
+    this.setIgnorePropertyChanges( true );
+
+    //load the data from the file
+    loadForms( new File( saveFile ) );
+
+    this.setIgnorePropertyChanges( false );
+    exec_forms( forms.size(  ) - 1 );
   }
 
   /**
