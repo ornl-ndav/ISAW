@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2001/07/26 19:51:24  dennis
+ * Now uses/saves the Auto-Scale valuator values.
+ *
  * Revision 1.17  2001/07/25 18:11:50  dennis
  * Now uses new "generic" methods to get/set state information
  * in the ViewerState object.  Also saves 3D view state info
@@ -190,7 +193,7 @@ public ThreeDView( DataSet data_set, ViewerState state )
   group_draw_mode    = getState().get_String( ViewerState.V_GROUPS );
   detector_draw_mode = getState().get_String( ViewerState.V_DETECTORS );
 
-  setLogScale( 50 );
+  setLogScale( getState().get_int( ViewerState.BRIGHTNESS ));
 
   if ( !validDataSet() )
     return;
@@ -951,7 +954,7 @@ private void init()
   control_panel.add( color_scale_image );
 
   log_scale_slider.setPreferredSize( new Dimension(120,50) );
-  log_scale_slider.setValue(50);
+  log_scale_slider.setValue( getState().get_int( ViewerState.BRIGHTNESS) );
   log_scale_slider.setMajorTickSpacing(20);
   log_scale_slider.setMinorTickSpacing(5);
   log_scale_slider.setPaintTicks(true);
@@ -1107,7 +1110,9 @@ private class LogScaleEventHandler implements ChangeListener,
                               // set new log scale when slider stops moving
     if ( !slider.getValueIsAdjusting() )
     {
-      setLogScale( slider.getValue() );
+      int value = slider.getValue();
+      setLogScale( value );
+      getState().set_int( ViewerState.BRIGHTNESS, value );
       MakeColorList();
       set_colors( frame_control.getFrameNumber() );
     }
