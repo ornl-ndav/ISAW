@@ -6,6 +6,9 @@
  *                  Removed method "greater_than" to compare objects.
  *
  *  $Log$
+ *  Revision 1.8  2001/02/02 20:53:05  dennis
+ *  Added CURRENT_TIME attribute for LiveDataServer.
+ *
  *  Revision 1.7  2000/11/17 23:45:55  dennis
  *  Added method Build( name, value ) to construct an Attribute of the correct
  *  subclass based on the type of the Object "value".
@@ -75,6 +78,7 @@ abstract public class Attribute implements Serializable
   public static final String  RUN_NUM           = "Run Number";
   public static final String  END_DATE          = "End Date";
   public static final String  END_TIME          = "End Time";
+  public static final String  CURRENT_TIME      = "Time";
 
   public static final String  DETECTOR_POS      = "Effective Position";
   public static final String  RAW_ANGLE         = "Raw Detector Angle";
