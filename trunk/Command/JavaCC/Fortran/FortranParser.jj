@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2004/01/07 15:54:54  bouzekc
+ * Added abs(), sqrt(), float(), and int() function recognition.
+ *
  * Revision 1.1  2004/01/06 23:13:49  bouzekc
  * Added to CVS.  Only bare functionality exists at this point.
  *
@@ -260,6 +263,47 @@ TOKEN: {
   ) >
 }
 
+TOKEN: {
+  <#MATH_VAR: (
+    <FLOATING_POINT> | <DIGICHAR>
+  ) >
+}
+
+TOKEN: {
+  < FORTRAN_ABS: (
+    ( "abs(" | "iabs(" ) ( <WHITESPACE> )* ( <MATH_VAR> )+ 
+    ( <WHITESPACE> )* ")"
+  ) >
+}
+
+TOKEN: {
+  < FORTRAN_SQRT: (
+    "sqrt(" ( <WHITESPACE> )* ( <MATH_VAR> )+ 
+    ( <WHITESPACE> )* ")"
+  ) >
+}
+
+TOKEN: {
+  < FORTRAN_FLOAT_FUN: (
+    ( "float(" | "real(" ) ( <WHITESPACE> )* ( <DIGICHAR> )+ 
+    ( <WHITESPACE> )* ")"
+  ) >
+}
+
+TOKEN: {
+  < FORTRAN_INT_FUN: (
+    "int(" ( <WHITESPACE> )* ( <MATH_VAR> )+
+    ( <WHITESPACE> )* ")"
+  ) >
+}
+
+TOKEN: {
+  < FORTRAN_MOD_FUN: (
+    "mod(" ( <WHITESPACE> )* ( <DIGICHAR> )+
+    ( <WHITESPACE> )* ")"
+  ) >
+}
+
 //integer variable
 TOKEN : {
   < FORTRAN_INT: ( 
@@ -324,10 +368,10 @@ TOKEN : {
 TOKEN: {
   < FORTRAN_CHAR_2: ( 
     "character" ( <WHITESPACE> )* "*" ( <UNSIGNED_DIGIT> )+ 
-    ( <WHITESPACE> )+ <VARIABLE> ( 
+    <WHITESPACE> <VARIABLE> ( 
       ( <WHITESPACE> )* "," 
       ( <WHITESPACE> )* <VARIABLE> )* 
-    )>
+    ) >
 }
 
 /**
@@ -404,6 +448,37 @@ String convertFortranTokens(  ) : {
   String[] tokenList;
 }
 {
+  t = <FORTRAN_ABS> {
+    if( t.image.indexOf( "iabs" ) >= 0 ) {
+      return t.image.replaceAll( "iabs", "Math.abs" );
+    } else {
+      return t.image.replaceAll( "abs", "Math.abs" );
+    }
+  }
+|
+  t = <FORTRAN_SQRT> {
+    return t.image.replaceAll( "sqrt", "Math.sqrt" );
+  }
+| 
+  t = <FORTRAN_FLOAT_FUN> {
+    if( t.image.indexOf( "float" ) >= 0 ) {
+      return t.image.replaceAll( "float", "rint" );
+    } else {
+      return t.image.replaceAll( "real", "rint" );
+    }
+  }
+|
+  t = <FORTRAN_INT_FUN> {
+    return t.image.replaceAll( "int", "round" );
+  }
+|
+  t = <FORTRAN_MOD_FUN> {
+    s = t.image;
+    s = s.replaceAll( "\"mod\" | \\) | \\(", "" );
+    s = s.replaceAll( ",", "%" );
+    return s + ";";
+  }
+|
   //matched an integer
   t = <FORTRAN_INT> {
     t.image = ( t.image.replaceAll( "integer", "" ) + ";" ).trim(  );
