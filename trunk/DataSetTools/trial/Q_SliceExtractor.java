@@ -32,11 +32,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/01/07 15:02:57  dennis
+ * Added methods to allow extracting 1 & 2 dimensional slices, using
+ * HKL values.  Refined main test program to produce these slices
+ * with properly labeled axes.
+ *
  * Revision 1.1  2004/01/06 16:01:18  dennis
  * Initial form of display of slices in Q space, based on new ViewComponents.
  * (Not Complete)
- *
- *
  */
 
 package DataSetTools.trial;
@@ -48,8 +51,13 @@ import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.components.View.*;
+import DataSetTools.operator.DataSet.Attribute.*;
 
-
+/**
+ *  This class takes a reference to an SCD DataSet and allows the user to
+ *  extract 1 or 2 dimensional cuts through Q-space, by specifying a line
+ *  or slice, either using Q vectors, or using Miller indices.
+ */
 public class Q_SliceExtractor
 {
   Vector calculators = null;
@@ -87,12 +95,23 @@ public class Q_SliceExtractor
         System.out.println( e );
       }
    }
-
   }
 
-  float[]    Q_Slice( Vector3D start_point, 
-                      Vector3D end_point,
-                      int      n_steps  )
+
+  public float[]  HKL_Slice( Tran3D   orientation_matrix,
+                             Vector3D start_point, 
+                             Vector3D end_point,
+                             int      n_steps  )
+  {
+    orientation_matrix.apply_to( start_point, start_point );
+    orientation_matrix.apply_to( end_point,   end_point );
+
+    return Q_Slice( start_point, end_point, n_steps );
+  }
+
+  public float[]  Q_Slice( Vector3D start_point, 
+                           Vector3D end_point,
+                           int      n_steps  )
   {
     if ( n_steps < 2 )
       n_steps = 2;
@@ -134,12 +153,27 @@ public class Q_SliceExtractor
     return slice;
   }
 
+ 
+  public float[][]  HKL_Slice( Tran3D   orientation_matrix,
+                               Vector3D origin,
+                               Vector3D u,
+                               Vector3D v,
+                               int      n_u_steps,
+                               int      n_v_steps )
+  {
+    orientation_matrix.apply_to( origin, origin );
+    orientation_matrix.apply_to( u, u );
+    orientation_matrix.apply_to( v, v );
+
+    return Q_Slice( origin, u, v, n_u_steps, n_v_steps );
+  }
+
   
-  float[][]  Q_Slice( Vector3D origin, 
-                      Vector3D u,  
-                      Vector3D v, 
-                      int      n_u_steps, 
-                      int      n_v_steps )
+  public float[][]  Q_Slice( Vector3D origin, 
+                             Vector3D u,  
+                             Vector3D v, 
+                             int      n_u_steps, 
+                             int      n_v_steps )
   {
     System.out.println("Start of make_slice......");
     if( origin == null || u == null || v == null )
@@ -211,50 +245,26 @@ public class Q_SliceExtractor
 
   public static void main( String args[] )
   {
-     Vector3D origin = null;
+     String   CONST_H = "Constant H";
+     String   CONST_K = "Constant K";
+     String   CONST_L = "Constant L";
+
      String   file_name = null;
      int      hist_num = 1;
-/*
-     file_name = "/home/dennis/SCD_NEW/scd08630.run";
-     origin = new Vector3D( -0.673f, 3.641f, 1.356f ); 
-     hist_num = 2;
-*/
 
-/*
-     // IN 6496 r,c,t = 28,78,2327
-     file_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ/scd06496.run";
-     origin = new Vector3D( -1.818f, 10.220f, 3.247f ); 
-     hist_num = 1;
-*/
-/*
-     // ART's IN 8336, det 17, r,c,t = 39,77,2717.9
-     file_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/scd08336.run";
-     origin = new Vector3D( -2.038f, 8.899f, 2.479f ); 
-     hist_num = 2;
-*/
-/*
-     // DENNIS's IN 8336, det 17, r,c,t = 39,77,2717.9
-     file_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/scd08336.run";
-     origin = new Vector3D( .332f, 7.271f, 2.103f ); 
-     hist_num = 2;
-*/
-/*
      // FIND PEAKs IN 8336, det 19, r,c,chan = 15,26,189, seq #59
-    file_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/scd08336.run";
-    origin = new Vector3D(  -0.117f,  0.537f,  0.241f ); 
-    origin.multiply( 6.2832f );
-    hist_num = 2;
-*/
-/*
-*/
-     // DENNIS's (uncal) IN 8336, det 19, r,c,chan = 15,26,189
-    file_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/scd08336.run";
-    origin = new Vector3D(  -0.642f,  3.38f,  1.44f ); 
-    hist_num = 2;
+     file_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/scd08336.run";
+     hist_num = 2;
 
      System.out.println("----------LOADING FILE " + file_name );
      RunfileRetriever rr = new RunfileRetriever( file_name );
      DataSet ds = rr.getDataSet(hist_num);
+
+     String calib_file_name = 
+                      "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/instprm.dat";
+     LoadSCDCalib load_cal = new LoadSCDCalib( ds, calib_file_name, -1, null );
+     load_cal.getResult();
+ 
      ViewManager viewer = new ViewManager(ds, IViewManager.IMAGE );
 
      DataSet ds_array[] = new DataSet[1];
@@ -262,27 +272,89 @@ public class Q_SliceExtractor
      Q_SliceExtractor slicer = new Q_SliceExtractor( ds_array );
 
      float image_array[][] = null;
-/*
-*/
-     Vector3D u = new Vector3D( 5f, 0, 0 );
-     Vector3D v = new Vector3D( 0, 5f, 0 );
-     image_array = slicer.Q_Slice( origin, u, v, 300, 300 );
 
-     Vector3D start = new Vector3D( u );
-     start.multiply( -.1f );
-     start.add( origin );
-     Vector3D end = new Vector3D( u );
-     end.multiply( .1f );
-     end.add( origin );
-     float slice_array[] = slicer.Q_Slice( start, end, 300 );
+     float orient_mat[][] = { { -0.101476f, -0.179852f,  0.114093f, 0 },
+                              {  0.002035f, -0.002749f,  0.233230f, 0 },
+                              { -0.162069f,  0.089732f,  0.001447f, 0 },
+                              {      0,           0,          0,    0 } };
+     orient_mat = LinearAlgebra.getTranspose( orient_mat );
+     for ( int i = 0; i < 3; i++ )
+       for ( int j = 0; j < 3; j++ )
+         orient_mat[i][j] *= ((float)Math.PI * 2);
+
+     Tran3D orientation_matrix = new Tran3D( orient_mat );
+ 
+     Vector3D origin = null,
+              u      = null, 
+              v      = null,
+              start  = null,
+              end    = null;
+     String   hkl_cut = CONST_K;
+     if ( hkl_cut.equals( CONST_H ) )
+     {
+       origin = new Vector3D( -4, 4, 4 );
+       u      = new Vector3D(  0, 3, 0 );
+       v      = new Vector3D(  0, 0, 3 );
+       start  = new Vector3D( -3.5f, 2, 3 );
+       end    = new Vector3D( -2.5f, 2, 3 );
+     }
+     if ( hkl_cut.equals( CONST_K ) )
+     {
+       origin = new Vector3D( -4, 4, 4 );
+       u      = new Vector3D(  3, 0, 0 );
+       v      = new Vector3D(  0, 0, 3 );
+       start  = new Vector3D( -3.5f, 2, 3 );
+       end    = new Vector3D( -2.5f, 2, 3 );
+     }
+     if ( hkl_cut.equals( CONST_L ) )
+     {
+       origin = new Vector3D( -4, 4, 4 );
+       u      = new Vector3D(  3, 0, 0 );
+       v      = new Vector3D(  0, 3, 0 );
+       start  = new Vector3D( -3.5f, 2, 3 );
+       end    = new Vector3D( -2.5f, 2, 3 );
+     }
+
+     image_array = slicer.HKL_Slice( orientation_matrix, 
+                                     origin, u, v, 500, 500 );
+
+     float slice_array[] = slicer.HKL_Slice( orientation_matrix, 
+                                             start, end, 300);
+
+     Vector3D test_vec = new Vector3D( -9, 7, 3 );
+     System.out.println("+++++Test Vector in HKL  = " + test_vec );
+     orientation_matrix.apply_to( test_vec, test_vec );
+     System.out.println("+++++Test Vector in Qxyz = " + test_vec );
+     
+
      GraphFrame gf = new GraphFrame( slice_array, "Linear Cut" ); 
-/*    
-     Vector3D u = new Vector3D( .1f, 0, 0 );
-     Vector3D v = new Vector3D( 0, .1f, 0 );
-     image_array = slicer.Q_Slice( origin, u, v, 1, 1 );
-*/
-
      VirtualArray2D va2D = new VirtualArray2D( image_array );
+
+     if ( hkl_cut.equals( CONST_H ) )
+     {  
+       va2D.setTitle( "H = -4" );
+       va2D.setAxisInfo( AxisInfo.X_AXIS, 1f, 7f,
+                        "K","(Index)", true );
+       va2D.setAxisInfo( AxisInfo.Y_AXIS, 1f, 7f,
+                        "L","(Index)", true );
+     }
+     if ( hkl_cut.equals( CONST_K ) )
+     {  
+       va2D.setTitle( "K = 4" );
+       va2D.setAxisInfo( AxisInfo.X_AXIS, 1f, 7f,
+                        "H","(Index)", true );
+       va2D.setAxisInfo( AxisInfo.Y_AXIS, 1f, 7f,
+                        "L","(Index)", true );
+     }
+     if ( hkl_cut.equals( CONST_L ) )
+     {
+       va2D.setTitle( "L = 4" );
+       va2D.setAxisInfo( AxisInfo.X_AXIS, 1f, 7f,
+                        "H","(Index)", true );
+       va2D.setAxisInfo( AxisInfo.Y_AXIS, 1f, 7f,
+                        "K","(Index)", true );
+     }
+
      ImageFrame2 frame = new ImageFrame2( va2D );
   }
 
