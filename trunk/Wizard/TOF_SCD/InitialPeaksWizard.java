@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/06/25 20:25:36  bouzekc
+ * Unused private variables removed, reformatted for
+ * consistency.
+ *
  * Revision 1.4  2003/06/19 20:51:39  bouzekc
  * Now uses constant parameters for the OperatorForms.
  *
@@ -46,35 +50,41 @@
  *
  *
  */
-
 package Wizard.TOF_SCD;
 
-import java.util.*;
-import java.io.*;
+import DataSetTools.operator.*;
+
+import DataSetTools.parameter.*;
+
+import DataSetTools.util.*;
+
+import DataSetTools.wizard.*;
+
+import Operators.TOF_SCD.*;
+
 import java.awt.*;
 import java.awt.event.*;
+
+import java.io.*;
+
+import java.util.*;
+
 import javax.swing.*;
-import DataSetTools.wizard.*;
-import DataSetTools.util.*;
-import DataSetTools.operator.*;
-import DataSetTools.parameter.*;
-import Operators.TOF_SCD.*;
+
 
 /**
  *  This class constructs a Wizard used for initially finding peaks.  In this
  *  Wizard, BlindJ is used for creating a matrix file.
  */
-public class InitialPeaksWizard extends Wizard
-{
-
+public class InitialPeaksWizard extends Wizard {
   private static final String LOADFILETYPE = "LoadFile";
+
   /**
    *
    *  Default constructor.  Sets standalone in Wizard to true.
    */
-  public InitialPeaksWizard()
-  {
-    this(true);
+  public InitialPeaksWizard(  ) {
+    this( true );
   }
 
   /**
@@ -85,56 +95,57 @@ public class InitialPeaksWizard extends Wizard
    *                             is contained in something else
    *                             (false).
    */
-  public InitialPeaksWizard(boolean standalone)
-  {
-    super("Initial SCD Peaks Wizard", standalone);
-    this.createAllForms();
+  public InitialPeaksWizard( boolean standalone ) {
+    super( "Initial SCD Peaks Wizard", standalone );
+    this.createAllForms(  );
 
-    StringBuffer s = new StringBuffer();
-    s.append("This Wizard is designed to be used as an initial\n");
-    s.append("tool for finding peaks from SCD run files.  It\n");
-    s.append("applies BlindJ, IndexJ, ScalarJ, and LsqrsJ\n");
-    s.append("to the output .peaks file from the first Form.\n");
-    this.setHelpMessage(s.toString());
+    StringBuffer s = new StringBuffer(  );
+
+    s.append( "This Wizard is designed to be used as an initial\n" );
+    s.append( "tool for finding peaks from SCD run files.  It\n" );
+    s.append( "applies BlindJ, IndexJ, ScalarJ, and LsqrsJ\n" );
+    s.append( "to the output .peaks file from the first Form.\n" );
+    this.setHelpMessage( s.toString(  ) );
   }
 
   /**
    *  Adds and coordinates the necessary Forms for this Wizard.
    */
-  private void createAllForms()
-  {
-    int fpi[][] = { {9,0,0,-1,0}, //peaks file 
-                    {-1,2,1,0,4}};  //matrix file
+  private void createAllForms(  ) {
+    int[][] fpi = {
+      { 9, 0, 0, -1, 0 },  //peaks file 
+      { -1, 2, 1, 0, 4 }
+    };  //matrix file
 
-    FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm();
+    FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
 
     //the return types of all of these Operator Forms is LoadFilePG,
     //hence the "LoadFile"
-    OperatorForm blindjform = new OperatorForm(new BlindJ(), LOADFILETYPE,
-                                               "Matrix file", new int[] {0});
-    OperatorForm indexjform = new OperatorForm(new IndexJ(),LOADFILETYPE,
-                                               "IndexJ log file", new int[] {0,1});
-    OperatorForm scalarjform = new OperatorForm(new ScalarJ(),LOADFILETYPE, 
-                                                "ScalarJ log file", new int[] {0});
-    OperatorForm lsqrsjform = new OperatorForm(new LsqrsJ(), LOADFILETYPE,
-                                               "LsqrsJ matrix file",new int[] {0});
+    OperatorForm blindjform = new OperatorForm( 
+        new BlindJ(  ), LOADFILETYPE, "Matrix file", new int[]{ 0 } );
+    OperatorForm indexjform = new OperatorForm( 
+        new IndexJ(  ), LOADFILETYPE, "IndexJ log file", new int[]{ 0, 1 } );
+    OperatorForm scalarjform = new OperatorForm( 
+        new ScalarJ(  ), LOADFILETYPE, "ScalarJ log file", new int[]{ 0 } );
+    OperatorForm lsqrsjform = new OperatorForm( 
+        new LsqrsJ(  ), LOADFILETYPE, "LsqrsJ matrix file", new int[]{ 0 } );
 
-    this.addForm(peaksform);
-    this.addForm(blindjform );
-    this.addForm(indexjform );
-    this.addForm(scalarjform );
-    this.addForm(lsqrsjform );  
+    this.addForm( peaksform );
+    this.addForm( blindjform );
+    this.addForm( indexjform );
+    this.addForm( scalarjform );
+    this.addForm( lsqrsjform );
 
-    super.linkFormParameters(fpi);
+    super.linkFormParameters( fpi );
   }
 
   /**
-   *  Method for running the Initial Peaks wizard 
+   *  Method for running the Initial Peaks wizard
    *   as standalone.
    */
-  public static void main(String args[])
-  {
-    InitialPeaksWizard w = new InitialPeaksWizard(true);
-    w.showForm(0);
+  public static void main( String[] args ) {
+    InitialPeaksWizard w = new InitialPeaksWizard( true );
+
+    w.showForm( 0 );
   }
 }

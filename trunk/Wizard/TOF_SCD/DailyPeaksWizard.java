@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/06/25 20:25:33  bouzekc
+ * Unused private variables removed, reformatted for
+ * consistency.
+ *
  * Revision 1.3  2003/06/19 16:20:17  bouzekc
  * Now uses Wizard's linkFormParameters() to link the
  * parameters in the parameter table.
@@ -43,33 +47,39 @@
  *
  *
  */
-
 package Wizard.TOF_SCD;
 
-import java.util.*;
-import java.io.*;
+import DataSetTools.operator.*;
+
+import DataSetTools.parameter.*;
+
+import DataSetTools.util.*;
+
+import DataSetTools.wizard.*;
+
+import Operators.TOF_SCD.*;
+
 import java.awt.*;
 import java.awt.event.*;
+
+import java.io.*;
+
+import java.util.*;
+
 import javax.swing.*;
-import DataSetTools.wizard.*;
-import DataSetTools.util.*;
-import DataSetTools.operator.*;
-import DataSetTools.parameter.*;
-import Operators.TOF_SCD.*;
+
 
 /**
  *  This class constructs a Wizard used for initially finding peaks.  In this
  *  Wizard, an iteration over LsqrsJ and IndexJ is used for creating a matrix file.
  */
-public class DailyPeaksWizard extends Wizard
-{
+public class DailyPeaksWizard extends Wizard {
   /**
    *
    *  Default constructor.  Sets standalone in Wizard to true.
    */
-  public DailyPeaksWizard()
-  {
-    this(true);
+  public DailyPeaksWizard(  ) {
+    this( true );
   }
 
   /**
@@ -80,55 +90,56 @@ public class DailyPeaksWizard extends Wizard
    *                             is contained in something else
    *                             (false).
    */
-  public DailyPeaksWizard(boolean standalone)
-  {
-    super("Daily SCD Peaks Wizard", standalone);
-    this.createAllForms();
+  public DailyPeaksWizard( boolean standalone ) {
+    super( "Daily SCD Peaks Wizard", standalone );
+    this.createAllForms(  );
 
-    StringBuffer s = new StringBuffer();
-    s.append("This Wizard is designed to be used as an daily\n");
-    s.append("tool for finding peaks from SCD run files.  It\n");
-    s.append("applies IndexJ and LsqrsJ in an iterative\n");
-    s.append("refinement to the output .peaks file from the \n");
-    s.append("first Form.\n");
-    this.setHelpMessage(s.toString());
+    StringBuffer s = new StringBuffer(  );
+
+    s.append( "This Wizard is designed to be used as an daily\n" );
+    s.append( "tool for finding peaks from SCD run files.  It\n" );
+    s.append( "applies IndexJ and LsqrsJ in an iterative\n" );
+    s.append( "refinement to the output .peaks file from the \n" );
+    s.append( "first Form.\n" );
+    this.setHelpMessage( s.toString(  ) );
   }
 
   /**
    *  Adds and coordinates the necessary Forms for this Wizard.
    */
-  private void createAllForms()
-  {
-    int fpi[][] = { {0,-1,-1,0}, //raw data path 
-                    {1,1,1,1},  //peaks file path
-                    {2,0,0,2},  //run numbers
-                    {3,2,2,3},  //experiment name
-                    {8,-1,-1,5},  //SCD calibration file
-                    {7,-1,-1,8}};  //SCD calibration file line
+  private void createAllForms(  ) {
+    int[][] fpi = {
+      { 0, -1, -1, 0 },  //raw data path 
+      { 1, 1, 1, 1 },  //peaks file path
+      { 2, 0, 0, 2 },  //run numbers
+      { 3, 2, 2, 3 },  //experiment name
+      { 8, -1, -1, 5 },  //SCD calibration file
+      { 7, -1, -1, 8 }
+    };  //SCD calibration file line
 
-    FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm();
+    FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
 
     //these Forms rely on previously calculated values, so set them
     //up as having constants with "true"
-    IndexJForm indexjform = new IndexJForm(true);
-    LsqrsJForm lsqrsjform = new LsqrsJForm(true);
-    IntegrateMultiRunsForm integmultiform = new IntegrateMultiRunsForm(true);
+    IndexJForm indexjform                 = new IndexJForm( true );
+    LsqrsJForm lsqrsjform                 = new LsqrsJForm( true );
+    IntegrateMultiRunsForm integmultiform = new IntegrateMultiRunsForm( true );
 
-    this.addForm(peaksform);
-    this.addForm(indexjform );
-    this.addForm(lsqrsjform );  
-    this.addForm(integmultiform );
+    this.addForm( peaksform );
+    this.addForm( indexjform );
+    this.addForm( lsqrsjform );
+    this.addForm( integmultiform );
 
-    super.linkFormParameters(fpi);
+    super.linkFormParameters( fpi );
   }
 
   /**
-   *  Method for running the Daily Peaks wizard 
+   *  Method for running the Daily Peaks wizard
    *   as standalone.
    */
-  public static void main(String args[])
-  {
-    DailyPeaksWizard w = new DailyPeaksWizard(true);
-    w.showForm(0);
+  public static void main( String[] args ) {
+    DailyPeaksWizard w = new DailyPeaksWizard( true );
+
+    w.showForm( 0 );
   }
 }
