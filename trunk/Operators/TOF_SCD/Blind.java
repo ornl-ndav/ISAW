@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/10/14 16:49:46  pfpeterson
+ *  Added some more comments, made ErrorStrings slightly more useful,
+ *  and hardwired that the output file will be 'blind.mat'.
+ *
  *  Revision 1.5  2002/10/07 18:41:59  pfpeterson
  *  Made getResult() more windows friendly.
  *
@@ -64,8 +68,6 @@ import  DataSetTools.operator.Generic.TOF_SCD.*;
  * program. This is not heavily tested but works fairly well.
  */
 public class Blind extends    GenericTOF_SCD {
-    private static final int BUFF_SIZE=100;
-    private static final int MARK_LIMIT=80;
     /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
     /**
      * Construct an operator with a default parameter list.
@@ -122,7 +124,7 @@ public class Blind extends    GenericTOF_SCD {
         String seq_nums  = (getParameter(1).getValue()).toString();
         int index;
         String direc;
-        String matfile;
+        String matfile   = "blind.mat";
         int seqs[]       = IntList.ToArray(seq_nums);
         String fail      = "FAILED";
 
@@ -154,16 +156,14 @@ public class Blind extends    GenericTOF_SCD {
         // confirm that the directory is writable
         File dirF=new File(direc);
         if(! dirF.canWrite() )
-           return new ErrorString(fail+": cannot write to specified directory");
+            return new ErrorString(fail+": cannot write to specified directory "
+                                   +dirF);
 
         // strip the end off of the peaks filename
         index=peaksfile.lastIndexOf(".peaks");
         if(index>0){
             peaksfile=peaksfile.substring(0,index);
         }
-
-        // set up the matrix filename
-        matfile=peaksfile+".mat";
 
         // declare some things
         Process process=null;
@@ -234,8 +234,8 @@ public class Blind extends    GenericTOF_SCD {
             SysUtil.writeline(out,"y");
             System.out.println(output+"y");
             output=SysUtil.readline(in);
-            SysUtil.writeline(out,"1");
-            System.out.println(output+"1");
+            SysUtil.writeline(out,"1");      // must choose (1) since experiment
+            System.out.println(output+"1");  // file does not exist
             output=SysUtil.readline(in);
             SysUtil.writeline(out,matfile);
             System.out.println(output+matfile);
