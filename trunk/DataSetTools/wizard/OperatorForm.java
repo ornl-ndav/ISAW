@@ -192,8 +192,6 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
 
      Vector temp = null;  //may need temporary index storage
 
-     //form_op.setDefaultParameters();
-
      // set the result parameter
      result_param=new StringPG("Result",null,false);
 
@@ -231,13 +229,10 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
        for(int i = 0; i < var_indices.length; i++)
          var_indices[i] = ((Integer)tempIndices[i]).intValue();
      }
-       
 
      else  //no constant parameters
        for(int i = 0; i < num_params; i++)
          var_indices[i] = i;
-
-
 
      //set the parameters to be drawn
      for(int i = 0; i < num_params; i++)
