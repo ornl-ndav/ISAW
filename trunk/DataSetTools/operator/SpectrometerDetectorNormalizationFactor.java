@@ -4,8 +4,8 @@
  *     Dongfeng Chen  Dennis Mikkelson
  *
  *  $Log$
- *  Revision 1.1  2000/10/03 22:21:10  dennis
- *  New operator for HRMECS
+ *  Revision 1.2  2000/10/10 20:21:43  dennis
+ *  Log message was missing.  New operator for HRMECS.
  *
  *  Revision 1.3  2000/09/11 23:03:58  dennis
  *  minor improvement to documentation
