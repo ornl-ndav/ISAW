@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2005/02/07 22:32:34  dennis
+ *  clone() method now calls copyFields(this) to makes sure that
+ *  all fields of the base class Data are properly copied.
+ *
  *  Revision 1.16  2004/03/15 06:10:37  dennis
  *  Removed unused import statements.
  *
@@ -322,15 +326,9 @@ public class HistogramTable extends    TabulatedData
   public Object clone()
   {
     Data temp = new HistogramTable( x_scale, y_values, errors, group_id );
-
-                                      // copy the fields
-    temp.setSqrtErrors( isSqrtErrors() );
-
-                                      // copy the list of attributes.
-    AttributeList attr_list = getAttributeList();
-    temp.setAttributeList( attr_list );
-    temp.selected = selected;
-    temp.hide     = hide;
+ 
+    temp.setAttributeList( getAttributeList() );    // copy the attributes
+    temp.copyFields( this );                        // and fields
 
     return temp;
   }
