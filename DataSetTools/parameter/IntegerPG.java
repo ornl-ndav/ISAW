@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2004/03/12 21:13:49  bouzekc
+ *  Added clear() method.
+ *
  *  Revision 1.17  2004/03/12 20:27:29  bouzekc
  *  Code reformat and added javadocs.
  *
@@ -234,6 +237,13 @@ public class IntegerPG extends StringEntryPG {
   }
 
   /**
+   * Used to clear out the PG.  This sets the internal value to 0.
+   */
+  public void clear(  ) {
+    setValue( new Integer( 0 ) );
+  }
+
+  /**
    * Returns a primitive integer version of the value.
    */
   public int getintValue(  ) {
@@ -246,7 +256,6 @@ public class IntegerPG extends StringEntryPG {
   public void setintValue( int value ) {
     this.setValue( new Integer( value ) );
   }
-
   /*
    * Testbed.
    */

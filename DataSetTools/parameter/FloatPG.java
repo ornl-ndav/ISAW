@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2004/03/12 21:13:48  bouzekc
+ *  Added clear() method.
+ *
  *  Revision 1.20  2004/03/12 20:23:36  bouzekc
  *  Code reformat and added javadocs.
  *
@@ -158,7 +161,8 @@ public class FloatPG extends StringEntryPG {
   //~ Methods ******************************************************************
 
   /**
-   * Sets the value of this PG using a String consisting of a floating point number.
+   * Sets the value of this PG using a String consisting of a floating point
+   * number.
    *
    * @param val The new value.
    *
@@ -174,8 +178,7 @@ public class FloatPG extends StringEntryPG {
   }
 
   /**
-   *
-   * @return Accessor method for the String value.
+   * @return The String value.
    */
   public String getStringValue(  ) {
     Object val = this.getValue(  );
@@ -241,6 +244,13 @@ public class FloatPG extends StringEntryPG {
   }
 
   /**
+   * Used to clear out the PG.  This sets the internal value to 0.0f.
+   */
+  public void clear(  ) {
+    setValue( new Float( 0.0f ) );
+  }
+
+  /**
    * Convenience method to get the proper type value right away.
    */
   public float getfloatValue(  ) {
@@ -253,6 +263,7 @@ public class FloatPG extends StringEntryPG {
   public void setfloatValue( float value ) {
     this.setValue( new Float( value ) );
   }
+
   /*
    * Testbed.
    */

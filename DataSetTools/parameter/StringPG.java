@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/03/12 21:13:49  bouzekc
+ *  Added clear() method.
+ *
  *  Revision 1.15  2004/03/12 20:30:53  bouzekc
  *  Code reformat and added javadocs.
  *
@@ -172,28 +175,39 @@ public class StringPG extends StringEntryPG {
   /*
    * Testbed.
    */
-  /*public static void main(String args[]){
-     StringPG fpg;
-     fpg=new StringPG("a","1f");
-     System.out.println(fpg);
-     fpg.initGUI(null);
-     fpg.showGUIPanel();
-     fpg=new StringPG("b","10f");
-     System.out.println(fpg);
-     fpg.setEnabled(false);
-     fpg.initGUI(null);
-     fpg.showGUIPanel();
-     fpg=new StringPG("c","1000f",false);
-     System.out.println(fpg);
-     fpg.setEnabled(false);
-     fpg.initGUI(null);
-     fpg.showGUIPanel();
-     fpg=new StringPG("d","100f",true);
-     System.out.println(fpg);
-     fpg.setDrawValid(true);
-     fpg.initGUI(null);
-     fpg.showGUIPanel();
-     }*/
+  public static void main( String[] args ) {
+    StringPG fpg;
+
+    fpg = new StringPG( "a", "1f" );
+    fpg.clear(  );
+    System.out.println( fpg.getValue(  ) );
+    System.out.println( fpg );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+    fpg = new StringPG( "b", "10f" );
+    System.out.println( fpg );
+    fpg.setEnabled( false );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+    fpg = new StringPG( "c", "1000f", false );
+    System.out.println( fpg );
+    fpg.setEnabled( false );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+    fpg = new StringPG( "d", "100f", true );
+    System.out.println( fpg );
+    fpg.setDrawValid( true );
+    fpg.initGUI( null );
+    fpg.showGUIPanel(  );
+  }
+
+  /**
+   * Used to clear out the PG.  This sets the internal value to an empty
+   * String.
+   */
+  public void clear(  ) {
+    setValue( "" );
+  }
 
   /**
    * Validates this StringPG.  A StringPG is considered valid if its getValue()

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2004/03/12 21:13:48  bouzekc
+ *  Added clear() method.
+ *
  *  Revision 1.19  2004/03/12 20:03:07  bouzekc
  *  Code reformat.
  *
@@ -113,6 +116,12 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
 
   //~ Constructors *************************************************************
 
+  /**
+   * Creates a new BooleanPG object.
+   *
+   * @param name The name.
+   * @param value The initial value.
+   */
   public BooleanPG( String name, Object value ) {
     super( name, value );
     this.setType( TYPE );
@@ -287,6 +296,13 @@ public class BooleanPG extends ParameterGUI implements ParamUsesString {
     fpg.setDrawValid( true );
     fpg.initGUI( null );
     fpg.showGUIPanel(  );
+  }
+
+  /**
+   * Used to clear out the BooleanPG.  This sets the internal value to false.
+   */
+  public void clear(  ) {
+    setValue( Boolean.FALSE );
   }
 
   /**
