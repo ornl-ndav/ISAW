@@ -31,6 +31,9 @@
  * Modified:
 * 
  * $Log$
+ * Revision 1.10  2001/08/17 21:17:21  rmikk
+ * Fixed major errors in views when groups are paired.
+ *
  * Revision 1.9  2001/08/16 17:08:45  rmikk
  * Spelled Pressure Correctly
  *
@@ -42,7 +45,7 @@
  *
  * Revision 1.6  2001/08/14 01:59:00  rmikk
  * Improved layout.
- * Added line indicating the selected indicies.
+ * Added line indicating the selected indices.
  * Added the state feature to save and restore state when
  *    traversing several views
  *
@@ -308,8 +311,8 @@ public class table_view extends JPanel implements ActionListener
        // Bottom status panel
       
         fileView = new JRadioButtonMenuItem( "Save to File" ,false);
-       tableView = new JRadioButtonMenuItem( "Make a Table",false );
-       consoleView = new JRadioButtonMenuItem( "Write to Console" ,true);   
+       tableView = new JRadioButtonMenuItem( "Make a Table",true );
+       consoleView = new JRadioButtonMenuItem( "Write to Console" ,false);   
        fileView.addActionListener( this );  
        consoleView.addActionListener( this );  
        tableView.addActionListener( this );          
@@ -331,7 +334,7 @@ public class table_view extends JPanel implements ActionListener
        setSelectedGRoup_Display( IntList.ToString( DS[0].
                                  getSelectedIndices() ) );
 
-       selectEdit = new JButton( "Select Group indicies" );
+       selectEdit = new JButton( "Select Group indices" );
        selectEdit.addActionListener( this );
        selectAllEdit = new JCheckBox( "Use All Groups" , false );
        DBSeqOpt = new JRadioButton( "List Groups Sequentially" ,
@@ -405,7 +408,7 @@ public class table_view extends JPanel implements ActionListener
       
      }
    public void setSelectedGRoup_Display( String S )
-     { String Res ="Selected indicies:";
+     { String Res ="Selected indices:";
        
        if( S == null)
           Res += "None        ";
@@ -421,7 +424,7 @@ public class table_view extends JPanel implements ActionListener
  /**
 *  Restores the state of this system to the way it was the previous time
 * the ViewManager visited this module.<BR>
-* The used indicies, filename, output choice, useAll and Data Block sequential
+* The used indices, filename, output choice, useAll and Data Block sequential
 * fields are all saved as one String
 */
   public void restoreState( String state )
@@ -690,7 +693,7 @@ public class table_view extends JPanel implements ActionListener
                }
             op.setDefaultParameters();
             IntListString IString = new IntListString( "1,3:5" );        
-            Parameter PP = new Parameter( "Group Indicies=" , IString );        
+            Parameter PP = new Parameter( "Group Indices=" , IString );        
             op.setParameter( PP , 1 );        
        
             DSSettableFieldString argument = new DSSettableFieldString( 
@@ -803,7 +806,7 @@ public class table_view extends JPanel implements ActionListener
        JF.getContentPane().add( JtabPane );
        JtabPane.add( "Table",new JScrollPane( JTb ,
                                  JScrollPane.VERTICAL_SCROLLBAR_ALWAYS ,
-                               JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED  ));
+                               JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS  ));
        JtabPane.add( "Header", new JScrollPane( HeaderInfoPane ,
                                  JScrollPane.VERTICAL_SCROLLBAR_ALWAYS ,
                                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED  ));
@@ -842,7 +845,8 @@ public class table_view extends JPanel implements ActionListener
      catch( IOException ss ){}
     
      else if( columnHeader)
-      DTM.addColumn( S );
+      DTM.addColumn( S );      
+     
      else
        V.addElement( S );
 
@@ -993,7 +997,8 @@ public class table_view extends JPanel implements ActionListener
          ncols++;
         }
      DataHandler DH[];
-     DBcol = XYcol = false;
+     boolean has_Xcol;
+     DBcol = XYcol = has_Xcol = false;
      DH = new DataHandler[ ncols ];
      for( i = 0 ; i < ncols ; i++ )
       {if( used[ i ] < nDSfields )
@@ -1009,14 +1014,11 @@ public class table_view extends JPanel implements ActionListener
            DH[ i ] = new XYData( args[ used[ i ] ] );
            XYcol = true;
            DBcol = true;
+           if( used[i] ==  nDSfields+ nDSattr+nDBattr)
+	       has_Xcol = true;
          }
       }          
-/*      i = JCBNuse.getSelectedIndex();
-     if( (i < 0 ) || ( i >= DSS.length  ) ) 
-        {System.out.println( "No Data Sets are Selected" );
-         return;
-        }
-*/
+
     initOutput( DSS[ 0 ] );
     columnHeader = false;
     MakeHeaderInfo( DSS , UseAll );
@@ -1055,56 +1057,73 @@ public class table_view extends JPanel implements ActionListener
          n = xvals.length;
       if( n <= 0 )
          n = 1;
-       int count =  0;   
-       columnHeader = true;
-       for( int j = 0 ; j < DS.getNum_entries() ; j++ )
+      int count =  0;   
+      columnHeader = true;
+      if( has_Xcol)
+	   OutputField( "x");
+          
+      for( int j = 0 ; j < DS.getNum_entries() ; j++ )
           {Data DB = DS.getData_entry( j );
            if( UseAll || DB.isSelected() )
-            {                      
-              for( int l = 0 ; l < ncols ; l++ )
+            { count = 1;                     
+              for( int l = 0 ; l < ncols ; l++ )                
                 { 
-                    if( ( count == 0 )||
+                  if( ( count == 0 )||
                           ( used[ l ]!= nDSfields+  nDSattr +  nDBattr ))  
-                      OutputField( "Group"+ DB.getGroup_ID()+ ":"+ 
+                      OutputField( "Gr"+ DB.getGroup_ID()+ ":"+ 
                                                       Fields[ used[ l ] ] );
                                     
-                 if( used[ l ]== nDSfields+  nDSattr +  nDBattr ) 
-                   { count = 1;                                        
-                   }
+                  if( used[ l ]== nDSfields+  nDSattr +  nDBattr ) 
+                      count = 1;                                        
+                   
                 }
              }//if DB.isSelected                        
             }
        OutputEndField();
        columnHeader = false;
+     
       for( int k = 0 ; k < n ; k++ ) //xvals
        {float x = Float.NaN;
         if( xvals != null )           
            x = xvals[ k ];
         count = 0;
+       
+        if( has_Xcol)
+	   OutputField( new Float( x));
+           
+          
+        
         for( int j = 0 ; j < DS.getNum_entries() ; j++ )
           {Data DB = DS.getData_entry( j );
            if( UseAll ||  DB.isSelected() )
             { float xx[];
-              xx = DB.getX_scale().getXs();
-            
-              boolean C = contains( xx,  x );
+              xx = DB.getX_scale().getXs();             
+             
+              int k1  = contains( xx,  x );//should be true
               if( xvals == null )
-                    C = true;
+                    k1 = -1;
+              count = 1;
               for( int l = 0 ; l < ncols ; l++ )
-                { if( C )
+                { if( k1 >= 0 )
                     {if(( count == 0 )||
                           ( used[ l ]!= nDSfields+  nDSattr +  nDBattr ))  
-                      OutputField( DH[ l ].getVal( DSS,  i, j ,k ));
+                       {OutputField( DH[ l ].getVal( DSS,  i, j , k1 ));   
+                       }
                     }
-                 else 
-                    OutputField( "  " );
+                 else if( used[ l ]!= nDSfields+  nDSattr +  nDBattr )
+                    {OutputField( "  " );
+                     
+                    }
+
                  if( used[ l ] == nDSfields+  nDSattr +  nDBattr ) 
                    { count = 1;                                        
                    }
-                }                        
-            }
-          }//for
-         OutputEndField();
+                }//for l    
+                                
+            } 
+          }//for j
+          OutputEndField();
+        
 
 
        }
@@ -1116,15 +1135,24 @@ public class table_view extends JPanel implements ActionListener
                                , boolean UseAll )
     {if( db >= DS.getNum_entries() )
         return xvals; 
-     if( db == 0 )
-       { Data DB = DS.getData_entry( 0 );
+     if( xvals == null )       
+       { Data DB = DS.getData_entry( db );
+         if( !DB.isSelected() )
+           return MergeXvals( db+1, DS, xvals, UseAll);
          XScale XX = DB.getX_scale();
-         return MergeXvals( 1 , DS , XX.getXs() , UseAll );
+                
+         return MergeXvals( db + 1 , DS , XX.getXs() , UseAll );
         }
      Data DB = DS.getData_entry( db );
-     if( UseAll ||  !DB.isSelected())
+     if( UseAll)
+         {}
+     else if( DB.isSelected())
+         {}
+     else
         return MergeXvals( db+ 1, DS , xvals , UseAll );
+    
      XScale XX = DB.getX_scale();
+     
      float xlocvals[];
      xlocvals = XX.getXs();
      float Delta = 
@@ -1175,22 +1203,22 @@ public class table_view extends JPanel implements ActionListener
     }
 
 
-  private boolean contains( float xx[],  float x )
+  public int contains( float xx[],  float x )
     {float delta;
      if( xx == null ) 
-       return false;
+       return -1;
      if( xx.length <= 0 )
-       return false;
+       return -1;
      delta = ( xx[ xx.length - 1 ] - xx[ 0 ] )/ xx.length/ 20.0f;     
      for( int i = 0 ; i< xx.length ; i++ )
         {
          if( java.lang.Math.abs( xx[ i ] - x ) < delta )
-           return true;
+           return i;
          else if(  xx[ i ] > x )
-            return false;
+            return -1;
      
         }    
-     return false;
+     return -1;
     }
 
   class DataHandler
@@ -1310,18 +1338,28 @@ public class table_view extends JPanel implements ActionListener
  
       public Object getVal( DataSet DSS[], int DS_index,  int DB_index, 
                  int XY_index )
-         {if( arg == null ) 
+         { if( DB_index == 1 && XY_index == 4907)
+              System.out.println("A");
+          if( arg == null ) 
              return new Integer( XY_index );
+           if( DB_index == 1 && XY_index == 4907)
+                            System.out.println("B");
           if( ( DSS == null ) ||( DS_index < 0 )||( DB_index < 0 ) 
                          ||( XY_index < 0 )) 
              return null;
+          if( DB_index == 1 && XY_index == 4907)
+                            System.out.println("C");
           if( DS_index >= DSS.length ) 
                 return null;
+          if( DB_index == 1 && XY_index == 4907)
+                            System.out.println("D");
 
           DataSet DS = DSS[ DS_index ];
      
           if( DB_index >= DS.getNum_entries() ) 
              return null;
+          if( DB_index == 1 && XY_index == 4907)
+                            System.out.println("E"+arg);
           Data DB = DS.getData_entry( DB_index );
           float Res[];
           if( arg.equals( "x" ))
@@ -1332,12 +1370,22 @@ public class table_view extends JPanel implements ActionListener
              Res = DB.getErrors();
           else 
              return null; 
+          if( DB_index == 1 && XY_index == 4907)
+                            System.out.println("F");
           if( XY_index < 0 )
              return null;
+          if( DB_index == 1 && XY_index == 4907)
+                            System.out.println("G");
           if( Res == null ) 
               return null;
+          if( DB_index == 1 && XY_index == 4907)
+                            System.out.println("H"+Res.length+","+
+                            DB.getX_scale().getXs().length   
+                                );
           if( XY_index >= Res.length ) 
             return null;
+          if( DB_index == 1 && XY_index == 4907)
+                            System.out.println("I");
           return  new Float( Res[ XY_index ] );
          }
 
