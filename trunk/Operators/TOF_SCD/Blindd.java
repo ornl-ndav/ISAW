@@ -27,6 +27,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/02/14 21:14:52  pfpeterson
+ * Set indent level to two and split lines longer than 80 characters.
+ *
  * Revision 1.2  2003/02/10 15:36:35  pfpeterson
  * Added FileFilter to two of the parameters and modified the full
  * constructor to be slightly cleaner.
@@ -52,173 +55,178 @@ import DataSetTools.parameter.*;
 import java.text.*;
 import java.io.*;
 import IPNSSrc.*;
+
 /** 
- * This operator takes a peaks file and a list of sequence numbers in this file.
- * It then calculates the orientation matrix and other parameters and stores them
- * in a matrix file
+ * This operator takes a peaks file and a list of sequence numbers in
+ * this file.  It then calculates the orientation matrix and other
+ * parameters and stores them in a matrix file
  */
 public class Blindd extends  GenericTOF_SCD {
-    private static final String  TITLE = "JBlind";
-    private static final boolean DEBUG = false;
+  private static final String  TITLE = "JBlind";
+  private static final boolean DEBUG = false;
 
-    /* ------------------------ Default constructor ------------------------- */ 
-    /**
-     *  Creates operator with title "Operator Template" and a default
-     *  list of parameters.
-     */  
-    public Blindd()
-    {
-	super( TITLE );
-    }
+  /* ------------------------ Default constructor ------------------------- */ 
+  /**
+   *  Creates operator with title "Operator Template" and a default
+   *  list of parameters.
+   */  
+  public Blindd()
+  {
+    super( TITLE );
+  }
     
-    /* ---------------------------- Constructor ----------------------------- */ 
-    /** 
-    *  
-     */
-    public Blindd( String PeaksFilename, String SeqNums, String MatFilename)
-    {
-      this();
-      getParameter(0).setValue(PeaksFilename);
-      getParameter(1).setValue(SeqNums);
-      getParameter(2).setValue(MatFilename);
-    }
+  /* ---------------------------- Constructor ----------------------------- */ 
+  /** 
+   *  
+   */
+  public Blindd( String PeaksFilename, String SeqNums, String MatFilename)
+  {
+    this();
+    getParameter(0).setValue(PeaksFilename);
+    getParameter(1).setValue(SeqNums);
+    getParameter(2).setValue(MatFilename);
+  }
     
-    /* --------------------------- getCommand ------------------------------- */ 
-    /** 
-     * Returns Blindd, the name of this operator to use in scripts
-     * 
-     * @return  "Blindd", the command used to invoke this operator in Scripts
-     */
-    public String getCommand(){
-	return "JBlind";
-    }
+  /* --------------------------- getCommand ------------------------------- */ 
+  /** 
+   * Returns Blindd, the name of this operator to use in scripts
+   * 
+   * @return  "Blindd", the command used to invoke this operator in Scripts
+   */
+  public String getCommand(){
+    return "JBlind";
+  }
     
 
-    /*----------------------- getDocumentation -----------------------------*/
-    public String getDocumentation(){
-      StringBuffer S= new StringBuffer( 1200);
-      S.append( "@overview This operator take a peaks file(produced by FindPeaks) and ");
-      S.append( "a list of sequence numbers from this file to create a file with the ");
-      S.append( "orientation matrix for the crystal along with several other ");
-      S.append( "parameters. A blind.log file is also produced");
-      S.append( "@algorithm The peaks are sent through the Blind program. This is a ");
-      S.append( "program used at the IPNS division at Argonne National Laboratory for ");
-      S.append( "this task.");
-      S.append( "@assumptions The peak file must be of the standard format for peak ");
-      S.append( "files supported by the IPNS division at Argonne National Laboratory");
-      S.append( "@param   PeaksFilename- The name of the file with peak information");
-      S.append( "@param  SeqNums- The list of sequence numbers to use. Eg 33:36,47,56");
-      S.append( "@param  MatFilename- The filename to store the orientation matrix ");
-      S.append( "and the other cell parameters ");
-      S.append( "@return  Success or one of the errormessages below ");
-      S.append( "@error Improper Peak filename ");
-      S.append( "@error Improper sequence numbers");
-      S.append( "@error Improper save matrix filename");
-      S.append( "@error No sequence numbers selected");
-      S.append( "@error  No peaks");
-      S.append( "@error  Several I/O errors");
-      S.append( "@error   ALL REFLECTIONS COPLANAR-PROGRAM TERMINATING \n");
-      S.append( "  All the peaks were in one plane or on one line");
-      S.append( "@error INITIAL NON-INTEGER INDICES \n");
-      S.append( " Cannot get basis where all peaks have integer coefficients");
+  /*----------------------- getDocumentation -----------------------------*/
+  public String getDocumentation(){
+    StringBuffer S= new StringBuffer( 1200);
+    S.append("@overview This operator take a peaks file(produced by ");
+    S.append("FindPeaks) and a list of sequence numbers from this file to ");
+    S.append("create a file with the orientation matrix for the crystal ");
+    S.append("along with several other parameters. A blind.log file is also ");
+    S.append("produced");
+    S.append("@algorithm The peaks are sent through the Blind program. This ");
+    S.append("is a program used at the IPNS division at Argonne National ");
+    S.append("Laboratory for this task.");
+    S.append("@assumptions The peak file must be of the standard format for ");
+    S.append("peak files supported by the IPNS division at Argonne National ");
+    S.append("Laboratory");
+    S.append("@param   PeaksFilename- The name of the file with peak ");
+    S.append("information");
+    S.append("@param  SeqNums- The list of sequence numbers to use. ");
+    S.append("Eg 33:36,47,56");
+    S.append("@param  MatFilename- The filename to store the orientation ");
+    S.append("matrix and the other cell parameters ");
+    S.append("@return  Success or one of the errormessages below ");
+    S.append("@error Improper Peak filename ");
+    S.append("@error Improper sequence numbers");
+    S.append("@error Improper save matrix filename");
+    S.append("@error No sequence numbers selected");
+    S.append("@error  No peaks");
+    S.append("@error  Several I/O errors");
+    S.append("@error   ALL REFLECTIONS COPLANAR-PROGRAM TERMINATING \n");
+    S.append("  All the peaks were in one plane or on one line");
+    S.append("@error INITIAL NON-INTEGER INDICES \n");
+    S.append(" Cannot get basis where all peaks have integer coefficients");
      
-      return S.toString();
+    return S.toString();
 
-    }
+  }
     
-    /* ----------------------- setDefaultParameters ------------------------- */ 
-    /** 
-     * Sets default values for the parameters.  This must match the
-     * data types of the parameters.
-     */
-    public void setDefaultParameters(){
-      parameters = new Vector();
+  /* ----------------------- setDefaultParameters ------------------------- */ 
+  /** 
+   * Sets default values for the parameters.  This must match the
+   * data types of the parameters.
+   */
+  public void setDefaultParameters(){
+    parameters = new Vector();
 
-      LoadFilePG peaksfilepg=new LoadFilePG("Peak filename","" );
-      peaksfilepg.setFilter(new PeaksFilter());
-      addParameter(peaksfilepg);
+    LoadFilePG peaksfilepg=new LoadFilePG("Peak filename","" );
+    peaksfilepg.setFilter(new PeaksFilter());
+    addParameter(peaksfilepg);
 
-      int[] intAr= new int[5];
-      intAr[0]=30;intAr[1]=31;intAr[2]=32; intAr[3]=40;intAr[4]=42; 
-      addParameter( new IntArrayPG("Seq nums",intAr ) );
+    int[] intAr= new int[5];
+    intAr[0]=30;intAr[1]=31;intAr[2]=32; intAr[3]=40;intAr[4]=42; 
+    addParameter( new IntArrayPG("Seq nums",intAr ) );
 
-      SaveFilePG matfilepg=new SaveFilePG("Matrix filename","" );
-      matfilepg.setFilter(new MatrixFilter());
-      addParameter( matfilepg );
+    SaveFilePG matfilepg=new SaveFilePG("Matrix filename","" );
+    matfilepg.setFilter(new MatrixFilter());
+    addParameter( matfilepg );
    
     
-    }
+  }
     
-    /* ----------------------------- getResult ------------------------------ */ 
-    /** 
-     *  Gets the desired peaks from the input peak file, runs the
-     *  blind method, then stores the resultant orientation matrix and
-     *  other parameters in the given matrix file.  A blind.log file
-     *  is also created.
-     *
-     *  @return If successful, this operator returns the word 'Success'.
-     *  @see IPNSSrc.blind
-     */
-    public Object getResult(){
-      String filename=((LoadFilePG)getParameter(0)).getStringValue();
-      int[] seq= DataSetTools.util.IntList.ToArray(
-                           ((IntArrayPG)getParameter(1)).getStringValue());
-      String savFilename=((SaveFilePG)getParameter(2)).getStringValue();
+  /* ----------------------------- getResult ------------------------------ */ 
+  /** 
+   *  Gets the desired peaks from the input peak file, runs the
+   *  blind method, then stores the resultant orientation matrix and
+   *  other parameters in the given matrix file.  A blind.log file
+   *  is also created.
+   *
+   *  @return If successful, this operator returns the word 'Success'.
+   *  @see IPNSSrc.blind
+   */
+  public Object getResult(){
+    String filename=((LoadFilePG)getParameter(0)).getStringValue();
+    int[] seq= DataSetTools.util.IntList.ToArray(
+                               ((IntArrayPG)getParameter(1)).getStringValue());
+    String savFilename=((SaveFilePG)getParameter(2)).getStringValue();
      
-      if( filename == null)
-         return new ErrorString("Improper Peak filename");
-       if( seq == null)
-         return new ErrorString("Improper sequence numbers");
-      if( savFilename== null)
-          return new ErrorString("Improper save matrix filename");
+    if( filename == null)
+      return new ErrorString("Improper Peak filename");
+    if( seq == null)
+      return new ErrorString("Improper sequence numbers");
+    if( savFilename== null)
+      return new ErrorString("Improper save matrix filename");
         
-      if( seq.length < 1)
-        return new ErrorString(" No sequence numbers selected");
-      Vector V=new Vector();
+    if( seq.length < 1)
+      return new ErrorString(" No sequence numbers selected");
+    Vector V=new Vector();
        
-      float chi=0.0f,
-            phi=0.0f,
-            omega=0.0f,
-            deta=0.0f,
-            detd=0.0f;
+    float chi=0.0f,
+      phi=0.0f,
+      omega=0.0f,
+      deta=0.0f,
+      detd=0.0f;
      
-      TextFileReader fin=null;
-      FileOutputStream fout = null;
-      try{ 
-        fin= new TextFileReader( filename);
-        fout = new FileOutputStream( savFilename );
-        fin.read_line();
-        int nseq= 0; 
-        while( (!fin.eof())&&(nseq < seq.length))
-          {int kk = fin.read_int();
-           if(kk==1)
-             {kk=fin.read_int();
-              kk=fin.read_int();
-              deta= (float)(fin.read_float() );
-              detd= (float) (fin.read_float());
-              detd= (float)(fin.read_float());
-              chi= (float)(fin.read_float());
-              phi=(float)( fin.read_float());
-              omega=(float) (fin.read_float());
+    TextFileReader fin=null;
+    FileOutputStream fout = null;
+    try{ 
+      fin= new TextFileReader( filename);
+      fout = new FileOutputStream( savFilename );
+      fin.read_line();
+      int nseq= 0; 
+      while( (!fin.eof())&&(nseq < seq.length))
+        {int kk = fin.read_int();
+        if(kk==1)
+          {kk=fin.read_int();
+          kk=fin.read_int();
+          deta= (float)(fin.read_float() );
+          detd= (float) (fin.read_float());
+          detd= (float)(fin.read_float());
+          chi= (float)(fin.read_float());
+          phi=(float)( fin.read_float());
+          omega=(float) (fin.read_float());
 
-              fin.read_line();
+          fin.read_line();
             
-             }
-           else if( kk==3)
-            {
-             int seqnum=fin.read_int();
+          }
+        else if( kk==3)
+          {
+            int seqnum=fin.read_int();
          
-             boolean done = seqnum <= seq[nseq];
-             while( !done) 
-               {nseq ++;
-                if(nseq >= seq.length)
-                   done = true;
-                else
-                   done = seqnum <= seq[nseq];
-                }
-             if( nseq < seq.length)
-                if( seqnum== seq[nseq])
-                 {
+            boolean done = seqnum <= seq[nseq];
+            while( !done) 
+              {nseq ++;
+              if(nseq >= seq.length)
+                done = true;
+              else
+                done = seqnum <= seq[nseq];
+              }
+            if( nseq < seq.length)
+              if( seqnum== seq[nseq])
+                {
                   float[] dat = new float[9];
                   dat[ 8]  = seqnum;
                   kk = fin.read_int();
@@ -239,57 +247,57 @@ public class Blindd extends  GenericTOF_SCD {
                   fin.read_line();
           
                   V.addElement(dat);
-                 }
-                else  
-                   fin.read_line();  
-             else 
-                fin.read_line();
+                }
+              else  
+                fin.read_line();  
+            else 
+              fin.read_line();
 
            
-            }
-           else
-             fin.read_line();
           }
-         } 
-      catch( Exception s)
-        {return new ErrorString("error="+s);
-        
+        else
+          fin.read_line();
         }
+    } 
+    catch( Exception s)
+      {return new ErrorString("error="+s);
+        
+      }
 
      
-      if( V== null) 
-         return new ErrorString("No peaks");
-      if(V.size()<1)
-        return new ErrorString( "No peaks");
-      double[] xx,
-               yy,
-               zz;
-      xx = new double[V.size()+3];
-      yy = new double[V.size()+3];
-      zz = new double[V.size()+3];
-      intW LMT = new intW(0);
+    if( V== null) 
+      return new ErrorString("No peaks");
+    if(V.size()<1)
+      return new ErrorString( "No peaks");
+    double[] xx,
+      yy,
+      zz;
+    xx = new double[V.size()+3];
+    yy = new double[V.size()+3];
+    zz = new double[V.size()+3];
+    intW LMT = new intW(0);
      
-      blind.blaue( V,xx,yy,zz,LMT,seq,1);
-      double[] b= new double[9];
-      doubleW dd= new doubleW(.08);
-      intW mj= new intW(0);
+    blind.blaue( V,xx,yy,zz,LMT,seq,1);
+    double[] b= new double[9];
+    doubleW dd= new doubleW(.08);
+    intW mj= new intW(0);
     
-      blind.bias(V.size()+3,xx,yy,zz,b,0,3,dd,4.0,mj,seq,1,123,0);
+    blind.bias(V.size()+3,xx,yy,zz,b,0,3,dd,4.0,mj,seq,1,123,0);
 
-      //Write results to the matrix file
-      try{
+    //Write results to the matrix file
+    try{
       DecimalFormat df = new DecimalFormat("##0.000000;#0.000000");
       StringBuffer sb= new StringBuffer(10*3+1);
     
       
       for( int i=0;i<3;i++)
         {for (int j=0;j<3;j++)
-            sb.append(format(df.format( blind.u[3*j+i]),10));
-         sb.append("\n");
-            //fout.write((blind.u[3*j+i]+" ").getBytes());
-         fout.write(sb.toString().getBytes());//"\n".getBytes());
-         sb.setLength( 0 );
-         }
+          sb.append(format(df.format( blind.u[3*j+i]),10));
+        sb.append("\n");
+        //fout.write((blind.u[3*j+i]+" ").getBytes());
+        fout.write(sb.toString().getBytes());//"\n".getBytes());
+        sb.setLength( 0 );
+        }
       df = new DecimalFormat("#####0.000;####0.000");
      
       sb.append(format(df.format( blind.D1),10));
@@ -300,7 +308,7 @@ public class Blindd extends  GenericTOF_SCD {
       sb.append(format(df.format( blind.D6),10));
       sb.append(format(df.format( blind.cellVol),10));
       //fout.write((blind.D1+" "+blind.D2+" "+blind.D3+" "+blind.D4+" "+
-        //                blind.D5+" "+blind.D6+" "+blind.cellVol).getBytes());
+      //                blind.D5+" "+blind.D6+" "+blind.cellVol).getBytes());
       sb.append("\n");
       fout.write( sb.toString().getBytes());
       sb.setLength(0);
@@ -310,24 +318,24 @@ public class Blindd extends  GenericTOF_SCD {
       fout.write( sb.toString().getBytes());
       //fout.write(("\n 0  0  0  0  0  0  0 \n").getBytes());
       fout.close();
-         }
-      catch( Exception sss)
-        {
-          return new ErrorString( sss.toString());
-        }
-      return "Success";
+    }
+    catch( Exception sss)
+      {
+        return new ErrorString( sss.toString());
+      }
+    return "Success";
     	
-    }
+  }
     
-    /* ------------------------------- clone -------------------------------- */ 
-    /** 
-     *  Creates a clone of this operator.
-     */
-    public Object clone(){ 
-	GenericTOF_SCD op = new Blindd();
-	op.CopyParametersFrom( this );
-	return op;
-    }
+  /* ------------------------------- clone -------------------------------- */ 
+  /** 
+   *  Creates a clone of this operator.
+   */
+  public Object clone(){ 
+    GenericTOF_SCD op = new Blindd();
+    op.CopyParametersFrom( this );
+    return op;
+  }
     
   static private String format(String rs, int length){
     while(rs.length()<length){
@@ -335,28 +343,30 @@ public class Blindd extends  GenericTOF_SCD {
     }
     return rs;
   }
-    /* ------------------------------- main --------------------------------- */ 
-    /** 
-     * Standalong program to carry out the operations
-     * @param   args[0] The name of the file with peak information
-     * @param   args[1] The list of sequence numbers to use. Eg 33:36,47,56
-     * @param   args[2] The name of the file to write the orientation matrix
-     *
-     */
-    public static void main( String args[] )
-    {
-      if( args != null)
-        if( args.length >2)
-          {
-           Blindd bl= new Blindd( args[0], args[1], args[2]);
-           System.out.println("Result="+ bl.getResult() );
-           System.exit( 0 );
-          }
-       System.out.println(" This program requires three arguments");
-       System.out.println("   Arg 1:The name of the file with peak information");
-       System.out.println("   Arg 2:The list of sequence numbers to use. Eg 33:36,47,56");
-       System.out.println("   Arg 3:The name of the file to write the orientation matrix");
-       System.exit( 0);
+  /* ------------------------------- main --------------------------------- */ 
+  /** 
+   * Standalong program to carry out the operations
+   * @param   args[0] The name of the file with peak information
+   * @param   args[1] The list of sequence numbers to use. Eg 33:36,47,56
+   * @param   args[2] The name of the file to write the orientation matrix
+   *
+   */
+  public static void main( String args[] )
+  {
+    if( args != null)
+      if( args.length >2)
+        {
+          Blindd bl= new Blindd( args[0], args[1], args[2]);
+          System.out.println("Result="+ bl.getResult() );
+          System.exit( 0 );
+        }
+    System.out.println(" This program requires three arguments");
+    System.out.println("   Arg 1:The name of the file with peak information");
+    System.out.println("   Arg 2:The list of sequence numbers to use. "
+                       +"Eg 33:36,47,56");
+    System.out.println("   Arg 3:The name of the file to write the "
+                       +"orientation matrix");
+    System.exit( 0);
 
-    }
+  }
 }
