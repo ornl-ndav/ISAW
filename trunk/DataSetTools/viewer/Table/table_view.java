@@ -30,6 +30,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.27  2002/07/16 21:39:47  rmikk
+ * Added routines to use the Gen_TableModel outside of
+ *   table_view
+ *
  * Revision 1.26  2002/06/12 13:41:59  rmikk
  * Fixed the duplicate column detector method. Now the
  * field XY_index is not repeated as much and in the
@@ -214,7 +218,7 @@ public class table_view extends JPanel implements ActionListener
    JMenuItem JCp = null;
 
    JLabel ControlL,
-      OrderL;
+          OrderL;
 
    /** Only Constructor without GUI components
     *@param  outputMedia  <ol>The views can be sent to
@@ -229,9 +233,13 @@ public class table_view extends JPanel implements ActionListener
    {
       initt();
       mode = outputMedia;
+      selModel = new DefaultListModel();
 
    }
-
+   public void setDataSets( DataSet DSS[])
+   {
+      this.DSS = DSS;
+   }
 
    private void initt()
    {
@@ -485,7 +493,7 @@ public class table_view extends JPanel implements ActionListener
     * fields are all saved as one String
     */
    public void restoreState( String state )
-   {
+   { 
       int i = 0;
       int j,
           k;
@@ -505,7 +513,14 @@ public class table_view extends JPanel implements ActionListener
       {
          nused = state.substring( j, i );
          j = i + 1;
-         selModel.addElement( getFieldInfo( DSS[ 0 ], nused ) );
+        
+         FieldInfo fi = this.getFieldInfo( DSS[ 0 ], nused ) ;
+         
+         if( fi != null)
+            selModel.addElement(fi);
+         else
+            System.out.println("improper field "+nused);
+         
          if( i + 1 < state.length() )
             i = state.indexOf( ";", i + 1 );
          else i = -1;
@@ -515,7 +530,10 @@ public class table_view extends JPanel implements ActionListener
          ( ( StateListener )( StateListeners.elementAt( i ) ) ).setState( state );
    }
 
-
+ public DefaultListModel getListModel()
+    { 
+      return selModel;
+     }
    /** Sets the state of this system so it can be restored
     */
    public void setState()
@@ -1025,7 +1043,7 @@ public class table_view extends JPanel implements ActionListener
     *
     */
    public FieldInfo getFieldInfo( DataSet DS, String field )
-   {
+   { 
       if( field.equals( "X values" ) )
          return new FieldInfo( "X values", new XYData( "x" ) );
       if( field.equals( "Y values" ) )
@@ -2667,6 +2685,7 @@ public class table_view extends JPanel implements ActionListener
          this.LM = LM;
          this.order = order;
          this.Groups = Groups;
+          
          xvals = null;
          NXvals = null;
          HGTF = "HGTF";
@@ -2811,7 +2830,7 @@ public class table_view extends JPanel implements ActionListener
          Arrays.fill( item, 0, offset + 4, -1 );
 
          nrows = Nrows( 0, order, item );
-
+        
          return nrows;
 
       }
@@ -2827,7 +2846,7 @@ public class table_view extends JPanel implements ActionListener
          int r = Nrows( 0, order, item );
 
          ncols = Nrows( commapos + 1, order, item );
-
+        
          return ncols;
       }
 
@@ -2839,7 +2858,7 @@ public class table_view extends JPanel implements ActionListener
       int SvColSize = 20;
 
       public String getColumnName( int col )
-      {
+      { 
          int col1 = col;
 
          if( col < 0 )
@@ -2867,10 +2886,10 @@ public class table_view extends JPanel implements ActionListener
          {
             System.out.println( "In case XXXXXX" );
             String S = getColumnName( ( Sv.size() + 1 ) * SvColSize );
-
+           
             return getColumnName( col );
          }
-
+         
          int[] cp_items = new int[ items.length ];
 
          for( int jj = 0; jj < items.length; jj++ )
@@ -2889,6 +2908,7 @@ public class table_view extends JPanel implements ActionListener
          String S = "";
 
          items = cp_items;
+         
          for( int i = commapos + 1; i < order.length(); i++ )
          {
             char c = order.charAt( i );
@@ -2911,7 +2931,7 @@ public class table_view extends JPanel implements ActionListener
             if( i + 1 < order.length() )
                S += ":";
          }
-
+         
          return S;
       }
 
@@ -3012,7 +3032,7 @@ public class table_view extends JPanel implements ActionListener
       /** Gets the value that should appear in  row, column of the table
        */
       public Object getValueAt( int row, int column )
-      {
+      {  
          if( row < 0 )
             return "";
          if( column < 0 )
@@ -3063,6 +3083,8 @@ public class table_view extends JPanel implements ActionListener
                dh = new XYDataVal( xvals, dh.getArg() );
 
             }
+         //System.out.println("value at "+row+","+column+"="+dh.getVal( DSS, item[ 0 ],
+         //      Groups[ G  ], item[ 2 + offset ] ));
          return dh.getVal( DSS, item[ 0 ],
                Groups[ G  ], item[ 2 + offset ] );
       }
