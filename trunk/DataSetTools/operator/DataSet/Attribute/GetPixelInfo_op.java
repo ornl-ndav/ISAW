@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/12/30 13:09:18  rmikk
+ * Fixed an error in the  non-default constructor
+ *
  * Revision 1.4  2003/12/08 15:16:17  rmikk
  * The getResult method now returns a vector with 3 elements.  The last one
  * is the gridID.
@@ -105,6 +108,7 @@ public class GetPixelInfo_op extends    DS_Attribute
   public GetPixelInfo_op( DataSet ds, int index){
     this(); 
     this.setDataSet( ds);
+    parameters = new Vector();
     parameters.addElement( new Parameter( "Data index=", new Integer( index)));
   }
 
