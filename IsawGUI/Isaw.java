@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.78  2002/02/14 22:43:48  pfpeterson
+ *  Added "Glossary" and "API Documentation" to the help menus. This requires the
+ *  docs.jar to be unpacked and Glossary.html to work properly.
+ *
  *  Revision 1.77  2002/01/25 19:37:17  pfpeterson
  *  scriptFilter is no longer embedded in Isaw.java. It is now in the IsawGUI directory.
  *
@@ -391,6 +395,9 @@ public class Isaw
   private static final String OPERATIONS_MI   = "Operations";
   private static final String COMMAND_PANE_MI = "Command Pane";
 
+  private static final String GLOSSARY_MI     = "Glossary";
+  private static final String API_DOCS_MI     = "API Documentation";
+
   private static final String HOME_LINK_MI    = "ISAW Homepage";
   private static final String FTP_LINK_MI     = "ISAW FTP Site";
   private static final String USERMAN_LINK_MI = "Online Documentation";
@@ -627,6 +634,8 @@ public class Isaw
     JMenuItem helpAbout       = new JMenuItem( ABOUT_MI );
     JMenuItem helpOperations  = new JMenuItem( OPERATIONS_MI );
     JMenuItem helpCommandPane = new JMenuItem( COMMAND_PANE_MI );
+    JMenuItem glossary        = new JMenuItem( GLOSSARY_MI );
+    JMenuItem apiDocs         = new JMenuItem( API_DOCS_MI );
     JMenuItem homeLink        = new JMenuItem( HOME_LINK_MI );
     JMenuItem ftpLink         = new JMenuItem( FTP_LINK_MI );
     JMenuItem docLink         = new JMenuItem( USERMAN_LINK_MI );
@@ -727,6 +736,8 @@ public class Isaw
     hMenu.add(helpAbout);
     hMenu.add(helpOperations);
     hMenu.add(helpCommandPane);
+    hMenu.add(glossary);
+    hMenu.add(apiDocs);
     hMenu.addSeparator();
     hMenu.add(homeLink);
     hMenu.add(ftpLink);
@@ -798,6 +809,8 @@ public class Isaw
     helpAbout.addActionListener(new MenuItemHandler());
     helpOperations.addActionListener(new MenuItemHandler());
     helpCommandPane.addActionListener(new MenuItemHandler());
+    glossary.addActionListener(new MenuItemHandler());
+    apiDocs.addActionListener(new MenuItemHandler());
     homeLink.addActionListener(new MenuItemHandler());
     ftpLink.addActionListener(new MenuItemHandler());
     docLink.addActionListener(new MenuItemHandler());
@@ -1553,15 +1566,33 @@ public class Isaw
 	H.show();
       } 
                 
+      if( s.equals(GLOSSARY_MI) ){
+	  String S=DataSetTools.util.FilenameUtil.docDir("Glossary.html");
+	  SharedData.status_pane.add("Displaying glossary in web browser");
+	  if( S != null) bc.displayURL(S);
+      }
+
+      if( s.equals(API_DOCS_MI) ){
+	  String S=DataSetTools.util.FilenameUtil.docDir("index.html");
+	  SharedData.status_pane.add("Displaying API documentation"
+				     +" in web browser");
+	  if( S != null) bc.displayURL(S);
+      }
+
       if( s.equals(HOME_LINK_MI) ){
+	  SharedData.status_pane.add("Displaying ISAW homepage in"
+				     +" web browser");
 	  bc.displayURL( HOME_LINK );
       }
 
       if( s.equals(FTP_LINK_MI) ){
+	  SharedData.status_pane.add("Displaying ftp site in web browser");
 	  bc.displayURL( FTP_LINK );
       }
 
       if( s.equals(USERMAN_LINK_MI) ){
+	  SharedData.status_pane.add("Displaying user manual location"
+				     +" in web browser");
 	  bc.displayURL( USERMAN_LINK );
       }
 
