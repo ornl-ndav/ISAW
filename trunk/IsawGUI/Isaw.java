@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.134  2003/06/16 16:48:51  bouzekc
+ *  Changed accept_filename to acceptFileName to correspond
+ *  with the new FileFilters.
+ *
  *  Revision 1.133  2003/06/03 19:22:43  dennis
  *  Changed version number to 1.5.1 alpha 3
  *
@@ -1894,7 +1898,7 @@ public class Isaw
                                        //of the correct formatt by
       int count = 0;                   //checking file extension
       for( int i=0;  i<filenames.length;  i++ )
-        if(  filter.accept_filename( filenames[i] )  ||  isForced( filenames[i] )  )
+        if(  filter.acceptFileName( filenames[i] )  ||  isForced( filenames[i] )  )
           count++;
 
                                        //load the files w/ acceptable
@@ -1906,7 +1910,7 @@ public class Isaw
           SharedData.addmsg(  "loading (forced): " + removeForce( filenames[i] )  );
           files[i] = new File(  removeForce( filenames[i] )  );
         }
-        else if(  filter.accept_filename( filenames[i] )  )
+        else if(  filter.acceptFileName( filenames[i] )  )
         {
         //  System.out.println( "loading: " + filenames[i] );
           files[i] = new File( filenames[i] );
