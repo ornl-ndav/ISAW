@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.54  2003/07/08 22:31:58  bouzekc
+ * Now properly sets the progress bar labels when a Form is
+ * executed and/or invalidated.
+ *
  * Revision 1.53  2003/07/03 15:57:30  bouzekc
  * changed private method writeForms() to only take a File
  * to write to, rather than a Forms Vector and a File.  This
@@ -831,8 +835,6 @@ public abstract class Wizard implements PropertyChangeListener {
             ( !( ( Boolean )worked ).booleanValue(  ) ) ) ) {
           failed   = true;
           end      = i - 1;  //index to the last "good" Form
-
-          break;
         }
       }
 
@@ -843,6 +845,10 @@ public abstract class Wizard implements PropertyChangeListener {
           " Forms done" );
         formProgress.setValue( FORM_PROGRESS );
         formProgress.setString( f + " Done" );
+      } else {
+        formProgress.setString( f + " Progress" );
+
+        break;  //don't execute any more Forms
       }
     }
 
@@ -865,7 +871,7 @@ public abstract class Wizard implements PropertyChangeListener {
     if( wizProgress.getValue(  ) > start ) {
       wizProgress.setValue( start );
       wizProgress.setString( 
-        "Wizard Progress: " + ( start + 1 ) + " of " + forms.size(  ) +
+        "Wizard Progress: " + ( start ) + " of " + forms.size(  ) +
         " Forms done" );
       formProgress.setValue( 0 );
       formProgress.setString( getForm( start ) + " Progress" );
