@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2003/07/31 22:42:31  dennis
+ *  Added a constructor to make a double precision UniformGrid_d
+ *  from a single precison UniformGrid.
+ *
  *  Revision 1.1  2003/07/14 22:25:13  dennis
  *  Double precision version, ported from single precision version.
  *
@@ -180,9 +184,10 @@ public class UniformGrid_d implements IDataGrid_d
    */
   public UniformGrid_d( UniformGrid_d grid, boolean copy_data )
   {
-    id = grid.id;
+    id    = grid.id;
     units = grid.units;
-    center = new double[3]; 
+
+    center   = new double[3]; 
     x_vector = new double[3]; 
     y_vector = new double[3]; 
     z_vector = new double[3]; 
@@ -215,8 +220,57 @@ public class UniformGrid_d implements IDataGrid_d
       for ( int i = 0; i < data.length; i++ )
         for ( int j = 0; j < data[0].length; i++ )
           data[i][j] = grid.data[i][j];
+      data_loaded = true;
     }
   }
+
+
+  /* -------------------------- "copy" constructor ---------------------- */
+  /**
+   *  Make a new double precision UniformGrid_d, copying the values from 
+   *  the given single precision UniformGrid.
+   *
+   *  @param  grid      The grid to be copied
+   *
+   *  @param  copy_data Flag indicating whether the references to the Data
+   *                    blocks should be copied, if the references are set.
+   */
+  public UniformGrid_d( UniformGrid grid, boolean copy_data )
+  {
+    id    = grid.ID();
+    units = grid.units();
+
+    n_rows = grid.num_rows();
+    n_cols = grid.num_cols();
+
+    center   = new double[3];
+    x_vector = new double[3];
+    y_vector = new double[3];
+    z_vector = new double[3];
+    for ( int i = 0; i < 3; i++ )
+    {
+      center[i]   = grid.position().get()[i];
+      x_vector[i] = grid.x_vec().get()[i];
+      y_vector[i] = grid.y_vec().get()[i];
+      z_vector[i] = grid.z_vec().get()[i];
+    }
+
+    setWidth ( grid.width()  );       // calling these methods also calculates
+    setHeight( grid.height() );       // the values for dx, dy, and offsets
+    setDepth ( grid.depth()  );
+
+    data = null;
+    data_loaded = false;
+    if ( copy_data && grid.isData_entered() )
+    {
+      data = new Data[ data.length ][ data[0].length ];
+      for ( int i = 0; i < data.length; i++ )
+        for ( int j = 0; j < data[0].length; i++ )
+          data[i][j] = grid.getData_entry( i, j );
+      data_loaded = true;
+    }
+  }
+
 
   /**
    *  Get the ID of the current data grid (i.e. detector).  This ID should be 
@@ -674,7 +728,7 @@ public class UniformGrid_d implements IDataGrid_d
     if ( x_vector == null || y_vector == null )
       return false;
 
-    Vector3D_d temp_z = new Vector3D_d();              // calculate vector in z dir
+    Vector3D_d temp_z = new Vector3D_d();         // calculate vector in z dir
     temp_z.cross( x_vector, y_vector );
 
     if ( temp_z.length() == 0 )
