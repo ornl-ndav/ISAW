@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.204  2004/07/12 22:26:56  kramer
+ *  Added ISISFileFilter and AllInOneFileFilter to the filters used when loading
+ *  files.  Now, the user can select to view only ISIS files or all of the files
+ *  ISAW can understand.
+ *
  *  Revision 1.203  2004/06/04 22:13:16  dennis
  *  Changed Version to 1.7.1 alpha 7
  *
@@ -2141,6 +2146,8 @@ public class Isaw
       JFrame frame = new JFrame();
       fc.setCurrentDirectory(  new File( data_dir )  );
       fc.setMultiSelectionEnabled( true );
+      if(!(load_filter instanceof DataSetTools.operator.Generic.AllInOneFileFilter))
+         fc.addChoosableFileFilter( new DataSetTools.operator.Generic.AllInOneFileFilter());
       if(!(load_filter instanceof NeutronDataFileFilter))
           fc.setFileFilter(  new NeutronDataFileFilter()  ); 
       if(!(load_filter instanceof DataSetTools.retriever.SDDSFileFilter))
@@ -2153,6 +2160,8 @@ public class Isaw
           fc.addChoosableFileFilter( new IPNS.Runfile.RunfileFilter()  );
       if(!(load_filter instanceof DataSetTools.retriever.IdeasFileFilter))
           fc.addChoosableFileFilter( new DataSetTools.retriever.IdeasFileFilter()  );
+      if(!(load_filter instanceof ISIS.retriever.ISISFileFilter))
+         fc.addChoosableFileFilter( new ISIS.retriever.ISISFileFilter());
       Dimension d = new Dimension(650,300);
       fc.setPreferredSize(d);
       if (load_filter!=null) fc.setFileFilter(load_filter);
