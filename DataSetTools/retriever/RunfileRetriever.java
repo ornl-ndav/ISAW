@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2001/10/17 18:33:45  dennis
+ *  Now adds crate, slot and input attributes for each spectrum.
+ *
  *  Revision 1.34  2001/10/08 18:30:21  dennis
  *  Added operator FocusIncidentSpectrum() to Monitor DataSet for
  *  Diffractometers.  This was accidentally removed.
@@ -571,7 +574,8 @@ public class RunfileRetriever extends    Retriever
             spectrum.setSqrtErrors();
 
             // Add the relevant attributes ----------------------------------
-            AddSpectrumAttributes( instrument_type,
+            AddSpectrumAttributes( run_file,
+                                   instrument_type,
                                    histogram_num,
                                    group_id,
                                    group_members, 
@@ -668,14 +672,18 @@ public class RunfileRetriever extends    Retriever
 /**
  *  Add the Spectrum attributes to the specified Data block.
  *
+ *  @param  run_file         The Runfile we're reading from 
  *  @param  instrument_type  The file name for this DataSet
  *  @param  histogram_num    The histogram number for this group
  *  @param  group_id         The group_id for this group
  *  @param  group_members    The list of Detectors that belong to this group
+ *  @param  group_segments   The list of Segments that belong to this group
+ *  @param  tf_type          The time field type for this group 
  *  @param  spectrum         The Data block to which the attributes are added  
  *
  */
-  private void AddSpectrumAttributes( int     instrument_type,
+  private void AddSpectrumAttributes( Runfile runfile,
+                                      int     instrument_type,
                                       int     histogram_num,
                                       int     group_id,
                                       int     group_members[], 
@@ -862,11 +870,28 @@ public class RunfileRetriever extends    Retriever
                                               group_segments[id].Efficiency() );
       det_info_list[id] = det_info;
     }
-    if ( group_members.length > 0 )
+
+    if ( group_members.length > 0 )           // add the DetInfoListAttribute
     {
       DetInfoListAttribute det_info_attr = new DetInfoListAttribute( 
                              Attribute.DETECTOR_INFO_LIST, det_info_list );
       attr_list.setAttribute( det_info_attr );
+                                               // add the crate, input & slot
+                                               // info for the first segment
+                                               // in the group
+      int crates[] = new int[ group_members.length ];
+      int slots[]  = new int[ group_members.length ];
+      int inputs[] = new int[ group_members.length ];
+      for ( int id = 0; id < group_members.length; id++ )
+      {
+        Segment seg = group_segments[id];        
+        crates[id] = runfile.CrateNum(seg); 
+        slots[id]  = runfile.SlotNum(seg); 
+        inputs[id] = runfile.InputNum(seg); 
+      }
+      attr_list.setAttribute( new IntListAttribute( "Crate", crates ) );
+      attr_list.setAttribute( new IntListAttribute( "Slot",  slots  ) );
+      attr_list.setAttribute( new IntListAttribute( "Input", inputs ) );
     }
 
     // Solid angle
