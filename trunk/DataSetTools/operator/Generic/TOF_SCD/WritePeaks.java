@@ -145,6 +145,8 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
 	//moncnt=Moncnt.floatValue();
     }
 
+    int seqnum_off=0;
+
     try{
 	// open and initialize a buffered file stream
 	FileOutputStream op = new FileOutputStream(file,append);
@@ -172,7 +174,13 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
 			+"     INTI     SIGI RFLG  NRUN DN"+"\n");
 	// write out the peaks
 	for( int i=0 ; i<peaks.size() ; i++ ){
-	    outStream.write(((Peak)peaks.elementAt(i)).toString()+"\n");
+            if(((Peak)peaks.elementAt(i)).reflag()==20){
+                seqnum_off++;
+            }else{
+                int seqnum=((Peak)peaks.elementAt(i)).seqnum()-seqnum_off;
+                ((Peak)peaks.elementAt(i)).seqnum(seqnum);
+                outStream.write(((Peak)peaks.elementAt(i)).toString()+"\n");
+            }
 	}
 
 	// flush and close the buffered file stream
