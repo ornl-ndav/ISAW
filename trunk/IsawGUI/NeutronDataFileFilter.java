@@ -30,6 +30,11 @@
 
  *
  * $Log$
+ * Revision 1.11  2003/06/13 22:01:15  bouzekc
+ * Now extends RobustFileFilter to take care of common
+ * functionality.  Removed setExtension() method and
+ * SaveFilter variable.
+ *
  * Revision 1.10  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -51,118 +56,46 @@
 
 package IsawGUI;
 
-import javax.swing.filechooser.FileFilter;
-import java.io.File;
+import DataSetTools.util.RobustFileFilter;
+import java.util.Vector;
 
 /**
  * filters neutron data file types.
  */
-public class NeutronDataFileFilter
-  extends FileFilter
+public class NeutronDataFileFilter extends RobustFileFilter
 {
-
-  public final static String HDF         = "hdf";
-  public final static String NEXUS       = "nxs";
-  public final static String RUNFILE     = "run";
-  public final static String ISAW_NATIVE = "isd";
-  public final static String XML         = "xmi";
-  public final static String NXML        = "xmn";
-  public final static String GSAS        = "gsa";
-  public final static String ZIP         = "zip";
-  boolean SaveFilter;
-
+  /**
+   *  Default constructor.  Calls the super constructor,
+   *  sets the description, and sets the file extensions.
+   */
   public NeutronDataFileFilter()
   {
     super();
-    SaveFilter = false;
-  }
-  public NeutronDataFileFilter( boolean SaveFilter)
-   {super();
-       this.SaveFilter = SaveFilter;
-   }
 
-  public boolean accept( File f )
-  {  
-    if(  f.isDirectory()  ) 
-      return true;
-
-    return accept_filename(  f.getName()  );
-  }
-
-
-  /**
-   * provides filename checking capability where it's not convenient
-   * to use File objects as parameters.
-   */ 
-  public boolean accept_filename( String filename )
-  { 
-                                 //if the filename has a bang (!)
-                                 //appended to it, then accept it
-                                 //reguardless of its extension.
-    int bang_index = filename.lastIndexOf( '!' );
-    if(  bang_index == filename.length() - 1  )
-      return true;
-
-    String extension = getExtension( filename );
-   if( extension == null) return false;
-   if( 
-      extension != null  &&
-      (
-        extension.equals( HDF         ) ||
-        extension.equals( NEXUS       ) ||        
-        extension.equals( ISAW_NATIVE ) ||  
-        extension.equals( XML         ) ||
-        extension.equals( ZIP         )        
-  
-      )
-    )
-      return true;
-    else if( extension != null && extension.equals( RUNFILE) &&!SaveFilter )
-       return true;
-    else if( !SaveFilter) return false;
-    else if( extension.equals( NXML) || extension.equals(GSAS))
-       return true;
-    else  
-      return false;
+    //trying to speed things up by creating a Vector of the exact size and
+    //setting it directly rather than adding one by one 
+    Vector v = new Vector(8,2);
+    super.setDescription("*.isd (Temporary), *.xmi (Isaw XML), *.zip");
+    v.add(".isd");
+    v.add(".xmi");
+    v.add(".zip");
+    v.add(".hdf");
+    v.add(".nxs");
+    v.add(".run");
+    v.add(".xmn");
+    v.add(".gsa");
+    super.setExtensionList(v);
   }
 
-  
-  /**
-   * returns a description of this filter for use in the the file chooser.
-   */ 
-  public String getDescription()
+  /** 
+   *  Legacy constructor.  Any calls to this in ISAW should be removed, as the
+   *  SaveFilter class variable is no longer used.  I have left it in for
+   *  compatibility reasons, although it merely tosses the sFilter parameter
+   *  and calls the default constructor.
+   */
+  public NeutronDataFileFilter(boolean sFilter)
   {
-    String S = new String( 
-      "Neutron Data Files (*." + HDF         + ", " +
-                          "*." + NEXUS       + ", ") ;
-                          
-                         
-   if(!SaveFilter)
-       S =  "*."+ISAW_NATIVE+"(Temporary) *."+XML+"(Isaw XML) *.zip";
-   else
-       S =  "*." + ISAW_NATIVE+"(Temporary),*."+XML+"(Isaw XML) *.zip"   ;
-   /*S =  "*." + ISAW_NATIVE+"(Temporary),*."+XML+",*."+GSAS+
-     "(gsas) *."+XML+"(Isaw XML) *.zip"   ;*/
-   //S += " )";
-   return S;
+    this();
   }
-
-
-  /*
-   * Get the extension of a file.
-   */  
-  public static String getExtension( String filename )
-  {
-    String ext = null;
-    int i = filename.lastIndexOf('.');
-
-    if (i > 0 &&  i < filename.length() - 1) 
-    {
-      ext = filename.substring(i+1).toLowerCase();
-    }
-
-    return ext;
-  }
-
 } 
 
