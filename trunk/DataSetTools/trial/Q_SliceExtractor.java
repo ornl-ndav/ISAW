@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/02/26 22:58:13  dennis
+ * Added javadocs.
+ *
  * Revision 1.4  2004/01/29 00:01:07  dennis
  * Put debug prints in if (debug).
  * Made constructor public.
@@ -67,9 +70,10 @@ import DataSetTools.components.View.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 
 /**
- *  This class takes a reference to an SCD DataSet and allows the user to
- *  extract 1 or 2 dimensional cuts through Q-space, by specifying a line
- *  or slice, either using Q vectors, or using Miller indices.
+ *  This class takes a reference to a list of SCD time-of-flight DataSets 
+ *  and allows the user to extract 1 or 2 dimensional cuts through Q-space, 
+ *  by specifying a line or slice, either using Q vectors, or using 
+ *  Miller indices.
  */
 public class Q_SliceExtractor
 {
@@ -77,6 +81,14 @@ public class Q_SliceExtractor
 
   boolean debug = false;
 
+  /* -------------------------- constructor ------------------------------- */
+  /**
+   *  Construct a Q_SliceExtractor for the specified DataSets.
+   *
+   *  @param ds_array  Array of time-of-flight DataSets from which the 
+   *                   Q or HKL slices will be calculated. 
+   *
+   */
   public Q_SliceExtractor( DataSet ds_array[] )
   {
     if ( ds_array == null )
@@ -117,10 +129,26 @@ public class Q_SliceExtractor
   }
 
 
+  /* --------------------------- HKL_Slice ------------------------------- */
+  /**
+   *  Calculate a list of interpolated intensity values from the DataSets 
+   *  at evenly spaced points along a line through HKL space.  If a point 
+   *  in HKL corresponds to more than one DataSet, the intensity values from
+   *  those DataSets will be averaged.
+   *
+   *  @param  orientation_matrix   The orientation matrix used to map from 
+   *                               HKL to Q.
+   *  @param  start_point          The first endpoint of the line in HKL
+   *  @param  end_point            The last  endpoint of the line in HKL
+   *  @param  n_points             The number of points along the line.
+   *
+   *  @return An array of intensity values the "n_points" evenly space points
+   *          along the line from start_point to end_point.
+   */
   public float[]  HKL_Slice( Tran3D   orientation_matrix,
                              Vector3D start_point, 
                              Vector3D end_point,
-                             int      n_steps  )
+                             int      n_points  )
   {
     start_point = new Vector3D( start_point );
     end_point   = new Vector3D( end_point );
@@ -128,30 +156,45 @@ public class Q_SliceExtractor
     orientation_matrix.apply_to( start_point, start_point );
     orientation_matrix.apply_to( end_point,   end_point );
 
-    return Q_Slice( start_point, end_point, n_steps );
+    return Q_Slice( start_point, end_point, n_points );
   }
 
+
+  /* --------------------------- Q_Slice ------------------------------- */
+  /**
+   *  Calculate a list of interpolated intensity values from the DataSets 
+   *  at evenly spaced points along a line through Q space.  If a point 
+   *  in Q corresponds to more than one DataSet, the intensity values from
+   *  those DataSets will be averaged.
+   *
+   *  @param  start_point          The first endpoint of the line in HKL
+   *  @param  end_point            The last  endpoint of the line in HKL
+   *  @param  n_points             The number of points along the line.
+   *
+   *  @return An array of intensity values the "n_points" evenly space points
+   *          along the line from start_point to end_point.
+   */
   public float[]  Q_Slice( Vector3D start_point, 
                            Vector3D end_point,
-                           int      n_steps  )
+                           int      n_points  )
   {
     start_point = new Vector3D( start_point );
     end_point   = new Vector3D( end_point );
 
-    if ( n_steps < 2 )
-      n_steps = 2;
+    if ( n_points < 2 )
+      n_points = 2;
 
     Vector3D step_vec = new Vector3D( end_point );
     step_vec.subtract( start_point );
-    step_vec.multiply( 1.0f/(n_steps-1) ); 
+    step_vec.multiply( 1.0f/(n_points-1) ); 
     Vector3D q = new Vector3D();
 
     float value;
-    float slice[] = new float[n_steps];
+    float slice[] = new float[n_points];
     VecQToTOF transformer;
     float sum;
     int n_non_neg;
-    for ( int j = 0; j < n_steps; j++ )
+    for ( int j = 0; j < n_points; j++ )
     {
       q.set( step_vec );
       q.multiply( j );
@@ -178,6 +221,42 @@ public class Q_SliceExtractor
   }
 
  
+  /* --------------------------- HKL_Slice ------------------------------- */
+  /**
+   *  Calculate a two dimensional array of interpolated intensity values 
+   *  from the DataSets at points on a plane in HKL space.  If a point 
+   *  in HKL corresponds to more than one DataSet, the intensity values from
+   *  those DataSets will be averaged.  The basis vectors u, v should usually
+   *  be perpendicular.  In any case the sample points are all of the form
+   *  origin + i*dx*u + j*dy*v
+   *
+   *  @param  orientation_matrix   The orientation matrix used to map from 
+   *                               HKL to Q.
+   *  @param  origin               Center of the planar slice through HKL space
+   *  @param  u                    Vector in HKL space that will both serve as
+   *                               local x-axis direction and deterimine the
+   *                               distance from the origin to the "right" 
+   *                               edge of the plane. 
+   *  @param  v                    Vector in HKL space that will both serve as
+   *                               local y-axis direction and deterimine the
+   *                               distance from the origin to the "top" 
+   *                               edge of the plane. 
+   *  @param  n_u_steps            The number of intervals along the line from 
+   *                               the origin to (origin+u).  For example, if
+   *                               50 steps are specified, the intensity will
+   *                               be interpolated at 101 steps in the +-u
+   *                               directions.
+   *  @param  n_v_steps            The number of intervals along the line from 
+   *                               the origin to (origin+v).  For example, if
+   *                               50 steps are specified, the intensity will
+   *                               be interpolated at 101 steps in the +-v
+   *                               directions.
+   *
+   *  @return A two dimensional array of interpolated intensity values of size 
+   *          (2*n_u_steps+1)*(2*n_v_steps+1) evaluated at points of the form 
+   *          origin + i*dx*u + j*dy*v. 
+   */
+
   public float[][]  HKL_Slice( Tran3D   orientation_matrix,
                                Vector3D origin,
                                Vector3D u,
@@ -197,6 +276,40 @@ public class Q_SliceExtractor
   }
 
   
+  /* ---------------------------- Q_Slice ------------------------------- */
+  /**
+   *  Calculate a two dimensional array of interpolated intensity values 
+   *  from the DataSets at points on a plane in Q space.  If a point 
+   *  in Q corresponds to more than one DataSet, the intensity values from
+   *  those DataSets will be averaged.  The basis vectors u, v should usually
+   *  be perpendicular.  In any case the sample points are all of the form
+   *  origin + i*dx*u + j*dy*v
+   *
+   *  @param  origin               Center of the planar slice through Q space
+   *  @param  u                    Vector in Q space that will both serve as
+   *                               local x-axis direction and deterimine the
+   *                               distance from the origin to the "right" 
+   *                               edge of the plane. 
+   *  @param  v                    Vector in Q space that will both serve as
+   *                               local y-axis direction and deterimine the
+   *                               distance from the origin to the "top" 
+   *                               edge of the plane. 
+   *  @param  n_u_steps            The number of intervals along the line from 
+   *                               the origin to (origin+u).  For example, if
+   *                               50 steps are specified, the intensity will
+   *                               be interpolated at 101 steps in the +-u
+   *                               directions.
+   *  @param  n_v_steps            The number of intervals along the line from 
+   *                               the origin to (origin+v).  For example, if
+   *                               50 steps are specified, the intensity will
+   *                               be interpolated at 101 steps in the +-v
+   *                               directions.
+   *
+   *  @return A two dimensional array of interpolated intensity values of size 
+   *          (2*n_u_steps+1)*(2*n_v_steps+1) evaluated at points of the form 
+   *          origin + i*dx*u + j*dy*v. 
+   */
+
   public float[][]  Q_Slice( Vector3D origin, 
                              Vector3D u,  
                              Vector3D v, 
@@ -279,6 +392,11 @@ public class Q_SliceExtractor
     return image;
   }
 
+ /* ---------------------------- main ------------------------------ */
+ /** 
+  *  Simple main program for testing purposes.
+  *
+  */
 
   public static void main( String args[] )
   {
@@ -290,7 +408,7 @@ public class Q_SliceExtractor
      int      hist_num = 1;
 
      // FIND PEAKs IN 8336, det 19, r,c,chan = 15,26,189, seq #59
-     file_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/scd08336.run";
+     file_name = "/usr2/ARGONNE_DATA/SCD_QUARTZ_2_DET/scd08336.run";
      hist_num = 2;
 
      System.out.println("----------LOADING FILE " + file_name );
@@ -298,7 +416,7 @@ public class Q_SliceExtractor
      DataSet ds = rr.getDataSet(hist_num);
 
      String calib_file_name = 
-                      "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/instprm.dat";
+                      "/usr2/ARGONNE_DATA/SCD_QUARTZ_2_DET/instprm.dat";
      LoadSCDCalib load_cal = new LoadSCDCalib( ds, calib_file_name, -1, null );
      load_cal.getResult();
  
