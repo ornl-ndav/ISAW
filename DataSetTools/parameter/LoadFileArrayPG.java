@@ -1,9 +1,10 @@
+
 package DataSetTools.parameter;
 
 import DataSetTools.util.StringUtil;
-import java.awt.event.*;
 import javax.swing.*;
 import java.awt.*;
+import DataSetTools.util.PGActionListener;
 
 public class LoadFileArrayPG extends VectorPG
   {
@@ -22,7 +23,7 @@ public class LoadFileArrayPG extends VectorPG
          jf.getContentPane().add(IaPg.getGUIPanel());
          JButton  jb = new JButton("Result");
          jf.getContentPane().add(jb);
-         jb.addActionListener( new MyActionList( IaPg));
+         jb.addActionListener( new PGActionListener( IaPg));
          jf.setSize( 500,100);
          jf.invalidate();
          jf.show();
@@ -37,20 +38,4 @@ public Object clone()
     return (Object)faap;
 
   }       
-
-static class MyActionList implements ActionListener
-  {
-   LoadFileArrayPG  vpf;
-   public MyActionList( LoadFileArrayPG vpg)
-     {
-
-       vpf = vpg;
-     }
-
-    public void actionPerformed( ActionEvent evt )
-      { 
-        (new JOptionPane()).showMessageDialog(null,"Result="+
-                                          StringUtil.toString(vpf.getValue()));
-      }
-   }
   }

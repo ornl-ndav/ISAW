@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/06/23 14:50:31  bouzekc
+ * Removed duplicate inner ActionListener class.  Now uses
+ * PGActionListener.
+ *
  * Revision 1.3  2003/06/18 20:36:40  pfpeterson
  * Changed calls for NxNodeUtils.Showw(Object) to
  * DataSetTools.util.StringUtil.toString(Object)
@@ -47,9 +51,9 @@
 package DataSetTools.parameter;
 
 import DataSetTools.util.StringUtil;
-import java.awt.event.*;
 import javax.swing.*;
 import java.awt.*;
+import DataSetTools.util.PGActionListener;
 
 /**
 *   This ParameterGUI allows for users to enter a Vector whose elements are Vectors
@@ -72,7 +76,7 @@ public class FloatArrayArrayPG extends VectorPG
          jf.getContentPane().add(IaPg.getGUIPanel());
          JButton  jb = new JButton("Result");
          jf.getContentPane().add(jb);
-         jb.addActionListener( new MyActionList( IaPg));
+         jb.addActionListener( new PGActionListener( IaPg));
          jf.setSize( 600,100);
          jf.invalidate();
          jf.show();
@@ -87,26 +91,5 @@ public Object clone()
     return (Object)faap;
 
   }     
-static class MyActionList implements ActionListener
-  {
-   FloatArrayArrayPG  vpf;
-   public MyActionList( FloatArrayArrayPG vpg)
-     {
-
-       vpf = vpg;
-     }
-
-    public void actionPerformed( ActionEvent evt )
-      { 
-        (new JOptionPane()).showMessageDialog(null,"Result="+
-                                          StringUtil.toString(vpf.getValue()));
-
-      }
-
-   
-
-
-
-   }
   }
 
