@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/01/30 02:46:05  bouzekc
+ * Removed unused variable.
+ *
  * Revision 1.8  2003/12/15 01:39:13  bouzekc
  * Removed unused imports.
  *
@@ -95,27 +98,6 @@ import Operators.Calculator.*;
     "LANSCE SPEAR  0.041",};
  */
 public class ActivateForm extends Form{
-  private static String[] inst_facs={"IPNS CHEX     ",
-                                     "IPNS GPPD     ",
-                                     "IPNS HIPD     ",
-                                     "IPNS SAD      ",
-                                     "IPNS POSY     ",
-                                     "IPNS POSY II  ",
-                                     "IPNS SAND     ",
-                                     "IPNS LRMECS   ",
-                                     "IPNS SEPD     0.5",
-                                     "IPNS SCD      ",
-                                     "IPNS GLAD     ",
-                                     "IPNS QENS     ",
-                                     "IPNS HRMECS   ",
-                                     "LANSCE HIPD   1.00 (reference)",
-                                     "LANSCE SCD    1.44",
-                                     "LANSCE FDS    0.50",
-                                     "LANSCE CQS    1.65",
-                                     "LANSCE NPD    0.025",
-                                     "LANSCE PHAROS 0.060",
-                                     "LANSCE LQD    0.033",
-                                     "LANSCE SPEAR  0.041",};
 
   /**
    *  Construct an ActivateForm.  This constructor also
