@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2001/08/10 19:58:47  rmikk
+ * Added Constant strings to refer to a few errors
+ *
  * Revision 1.6  2001/08/09 16:44:56  rmikk
  * Eliminated System.out's in the Showw routines
  *
@@ -62,6 +65,11 @@ import java.util.*;
  */
 public class NxNodeUtils
 {String errormessage = "";
+    // ERROR CODES
+    public static final String ER_BADFILE    ="Bad File name";
+    public static final String ER_OPEN       ="Cannot open or Connect";
+   
+    
     private void showConst()
    {     System.out.println( "CHAR="+NexusFile.NX_CHAR );
          System.out.println( "FLOAT32="+NexusFile.NX_FLOAT32 );
