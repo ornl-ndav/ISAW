@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/10/23 19:09:09  pfpeterson
+ *  Reformatted
+ *
  *  Revision 1.7  2002/10/23 19:05:51  pfpeterson
  *  Changed to use IParameterGUI.
  *
@@ -72,242 +75,240 @@ import  DataSetTools.parameter.*;
  * program. This is not heavily tested but works fairly well.
  */
 public class Blind extends    GenericTOF_SCD {
-    /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
-    /**
-     * Construct an operator with a default parameter list.
-     */
-    public Blind( ){
-        super( "Blind" );
-    }
-
-    /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
-    /**
-     *  Construct operator to execute blind
-     *
-     *  @param file     The peaks file to use with blind
-     *  @param seq_nums The sequence numbers of peaks to use
-     */
+  /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
+  /**
+   * Construct an operator with a default parameter list.
+   */
+  public Blind( ){
+    super( "Blind" );
+  }
+  
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct operator to execute blind
+   *
+   *  @param file     The peaks file to use with blind
+   *  @param seq_nums The sequence numbers of peaks to use
+   */
+  public Blind( LoadFileString file, IntListString seq_nums ){
+    this();
     
-    public Blind( LoadFileString file, IntListString seq_nums ){
-        this();
+    parameters=new Vector();
+    getParameter(0).setValue(file.toString());
+    getParameter(1).setValue(seq_nums.toString());
+  }
+  
+    
+  /* ------------------------- setDefaultParmeters ----------------------- */
+  /**
+   *  Set the parameters to default values.
+   */
+  public void setDefaultParameters(){
+    parameters = new Vector();  // must do this to create empty list of 
+    // parameters
+    
+    parameters=new Vector();
+    LoadFilePG lfpg=new LoadFilePG("Peaks File",null);
+    lfpg.setFilter(new PeaksFilter());
+    addParameter(lfpg);
+    addParameter( new IntArrayPG("Sequence Numbers",null));
+  }
+  
+  /* --------------------------- getCommand ------------------------------ */
+  /**
+   * @return the command name to be used with script processor, in
+   * this case Blind.
+   */
+  public String getCommand(){
+    return "Blind";
+  }
+  
+  /* --------------------------- getResult ------------------------------- */
+  /*
+   * Runs blind.
+   */
+  public Object getResult(){
+    String peaksfile = (getParameter(0).getValue()).toString();
+    String seq_nums  = (getParameter(1).getValue()).toString();
+    int index;
+    String direc;
+    String matfile   = "blind.mat";
+    int seqs[]       = IntList.ToArray(seq_nums);
+    String fail      = "FAILED";
+    
+    // first check if the OS is acceptable
+    if(! SysUtil.isOSokay(SysUtil.LINUX_WINDOWS) )
+      return new ErrorString(fail+": must be using linux or windows system");
+    
+    // confirm that the name of the peaksfile is a non-null string
+    if( peaksfile==null || peaksfile.length()==0 )
+      return new ErrorString(fail+": must specify a peaks file");
+    
+    // standardize the peaks filename
+    peaksfile=FilenameUtil.fixSeparator(peaksfile);
+    
+    // then confirm the peaks file exists
+    if(! SysUtil.fileExists(peaksfile) )
+      return new ErrorString(fail+": peaks file does not exist");
+    
+    // find out the file directory
+    index=peaksfile.lastIndexOf("/");
+    if(index>0){
+      direc=peaksfile.substring(0,index);
+    }else{
+      return new ErrorString(fail+": directory not found");
+    }
+    peaksfile=peaksfile.substring(index+1);
+    
+    // confirm that the directory is writable
+    File dirF=new File(direc);
+    if(! dirF.canWrite() )
+      return new ErrorString(fail+": cannot write to specified directory "
+                             +dirF);
+    
+    // strip the end off of the peaks filename
+    index=peaksfile.lastIndexOf(".peaks");
+    if(index>0){
+      peaksfile=peaksfile.substring(0,index);
+    }
+    
+    // declare some things
+    Process process=null;
+    String output=null;
+    File dir=new File(direc);
+    String command=this.getFullBlindName();
+    
+    // exit out early if no blind executable found
+    if(command==null)
+      return new ErrorString(fail+": could not find blind executable");
+    
+    try{
+      process=SysUtil.startProcess(command,direc);
+      BufferedReader in=SysUtil.getSTDINreader(process);
+      BufferedWriter out=SysUtil.getSTDOUTwriter(process);
+      
+      // skip over the first couple of lines
+      SysUtil.jumpline(in,"LAUE INDEXER");
+      
+      // We are going to use a peaks file
+      output=SysUtil.readline(in);
+      while( output==null || output.indexOf("Input reflection from")<0 ){
+        if( output!=null && output.length()>0){
+          System.out.println(output);
+        }
+        output=SysUtil.readline(in);
+      }
+      SysUtil.writeline(out,"y");
+      System.out.println(output+"y");
+      
+      // enter the name of the peaks file
+      output=SysUtil.readline(in);
+      while( output==null || output.indexOf("Experiment name")<0 ){
+        if(output!=null) System.out.print(output);
+        output=SysUtil.readline(in);
+      }
+      SysUtil.writeline(out,peaksfile);
+      System.out.println(output+peaksfile);
+      
+      // enter the reflections
+      for(int i=0 ; i<seqs.length ; i++ ){
+        output=SysUtil.readline(in);
+        SysUtil.writeline(out,Integer.toString(seqs[i]));
+        System.out.println(output+seqs[i]);
+      }
+      output=SysUtil.readline(in);
+      SysUtil.writeline(out,"");
+      System.out.println(output);
+      
+      // print out all the other information give from program
+      output=SysUtil.readline(in);
+      while( output==null || (output.indexOf("STORE THE MATRIX")<0
+                              && output.indexOf("PROGRAM TERMINATING")<0)){
+        if(output!=null) System.out.println(output);
+        output=SysUtil.readline(in);
+      }
+      if(output.indexOf("TERMINATING")>0){
+        while( output==null || output.indexOf("D=")<0 ){
+          if(output!=null) System.out.println(output);
+          output=SysUtil.readline(in) ;
+        }
+        System.out.println(output);
         
-        parameters=new Vector();
-        getParameter(0).setValue(file.toString());
-        getParameter(1).setValue(seq_nums.toString());
-    }
-
-    
-    /* ------------------------- setDefaultParmeters ----------------------- */
-    /**
-     *  Set the parameters to default values.
-     */
-    public void setDefaultParameters(){
-        parameters = new Vector();  // must do this to create empty list of 
-                                    // parameters
-
-        parameters=new Vector();
-        LoadFilePG lfpg=new LoadFilePG("Peaks File",null);
-        lfpg.setFilter(new PeaksFilter());
-        addParameter(lfpg);
-        addParameter( new IntArrayPG("Sequence Numbers",null));
-    }
-    
-    /* --------------------------- getCommand ------------------------------ */
-    /**
-     * @return the command name to be used with script processor, in
-     * this case Blind.
-     */
-    public String getCommand(){
-        return "Blind";
-    }
-    
-    /* --------------------------- getResult ------------------------------- */
-    /*
-     * Runs blind.
-     */
-    public Object getResult(){
-        String peaksfile = (getParameter(0).getValue()).toString();
-        String seq_nums  = (getParameter(1).getValue()).toString();
-        int index;
-        String direc;
-        String matfile   = "blind.mat";
-        int seqs[]       = IntList.ToArray(seq_nums);
-        String fail      = "FAILED";
-
-        // first check if the OS is acceptable
-        if(! SysUtil.isOSokay(SysUtil.LINUX_WINDOWS) )
-            return new ErrorString(fail+": must be using linux or windows "+
-                                   "system");
-
-        // confirm that the name of the peaksfile is a non-null string
-        if( peaksfile==null || peaksfile.length()==0 )
-            return new ErrorString(fail+": must specify a peaks file");
-
-        // standardize the peaks filename
-        peaksfile=FilenameUtil.fixSeparator(peaksfile);
-
-        // then confirm the peaks file exists
-        if(! SysUtil.fileExists(peaksfile) )
-            return new ErrorString(fail+": peaks file does not exist");
-
-        // find out the file directory
-        index=peaksfile.lastIndexOf("/");
-        if(index>0){
-            direc=peaksfile.substring(0,index);
+        return new ErrorString(fail);
+      }
+      
+      // save to a matrix file
+      SysUtil.writeline(out,"y");
+      System.out.println(output+"y");
+      output=SysUtil.readline(in);
+      SysUtil.writeline(out,"1");      // must choose (1) since experiment
+      System.out.println(output+"1");  // file does not exist
+      output=SysUtil.readline(in);
+      SysUtil.writeline(out,matfile);
+      System.out.println(output+matfile);
+      
+      // keep writing out information until the last line
+      output=SysUtil.readline(in);
+      SysUtil.jumpline(in,"To analyze the cell");
+      
+      // wait for the process to terminate
+      process.waitFor();
+    }catch(IOException e){
+      SharedData.addmsg("IOException reported: "+e.getMessage());
+    }catch(InterruptedException e){
+      SharedData.addmsg("InterruptedException reported: "+e.getMessage());
+    }finally{
+      if(process!=null){
+        if(process.exitValue()!=0){
+          return new ErrorString(fail+"("+process.exitValue()+")");
         }else{
-            return new ErrorString(fail+": directory not found");
+          return direc+'/'+matfile;
         }
-        peaksfile=peaksfile.substring(index+1);
-
-        // confirm that the directory is writable
-        File dirF=new File(direc);
-        if(! dirF.canWrite() )
-            return new ErrorString(fail+": cannot write to specified directory "
-                                   +dirF);
-
-        // strip the end off of the peaks filename
-        index=peaksfile.lastIndexOf(".peaks");
-        if(index>0){
-            peaksfile=peaksfile.substring(0,index);
-        }
-
-        // declare some things
-        Process process=null;
-        String output=null;
-        File dir=new File(direc);
-        String command=this.getFullBlindName();
-
-        // exit out early if no blind executable found
-        if(command==null)
-            return new ErrorString(fail+": could not find blind executable");
-
-        try{
-            process=SysUtil.startProcess(command,direc);
-            BufferedReader in=SysUtil.getSTDINreader(process);
-            BufferedWriter out=SysUtil.getSTDOUTwriter(process);
-
-            // skip over the first couple of lines
-            SysUtil.jumpline(in,"LAUE INDEXER");
-
-            // We are going to use a peaks file
-            output=SysUtil.readline(in);
-            while( output==null || output.indexOf("Input reflection from")<0 ){
-                if( output!=null && output.length()>0){
-                    System.out.println(output);
-                }
-                output=SysUtil.readline(in);
-            }
-            SysUtil.writeline(out,"y");
-            System.out.println(output+"y");
-              
-            // enter the name of the peaks file
-            output=SysUtil.readline(in);
-            while( output==null || output.indexOf("Experiment name")<0 ){
-                if(output!=null) System.out.print(output);
-                output=SysUtil.readline(in);
-            }
-            SysUtil.writeline(out,peaksfile);
-            System.out.println(output+peaksfile);
-
-            // enter the reflections
-            for(int i=0 ; i<seqs.length ; i++ ){
-                output=SysUtil.readline(in);
-                SysUtil.writeline(out,Integer.toString(seqs[i]));
-                System.out.println(output+seqs[i]);
-            }
-            output=SysUtil.readline(in);
-            SysUtil.writeline(out,"");
-            System.out.println(output);
-            
-            // print out all the other information give from program
-            output=SysUtil.readline(in);
-            while( output==null || (output.indexOf("STORE THE MATRIX")<0
-                                 && output.indexOf("PROGRAM TERMINATING")<0)){
-                if(output!=null) System.out.println(output);
-                output=SysUtil.readline(in);
-            }
-            if(output.indexOf("TERMINATING")>0){
-                while( output==null || output.indexOf("D=")<0 ){
-                    if(output!=null) System.out.println(output);
-                    output=SysUtil.readline(in) ;
-                }
-                System.out.println(output);
-                
-                return new ErrorString(fail);
-            }
-
-            // save to a matrix file
-            SysUtil.writeline(out,"y");
-            System.out.println(output+"y");
-            output=SysUtil.readline(in);
-            SysUtil.writeline(out,"1");      // must choose (1) since experiment
-            System.out.println(output+"1");  // file does not exist
-            output=SysUtil.readline(in);
-            SysUtil.writeline(out,matfile);
-            System.out.println(output+matfile);
-            
-            // keep writing out information until the last line
-            output=SysUtil.readline(in);
-            SysUtil.jumpline(in,"To analyze the cell");
-
-            // wait for the process to terminate
-            process.waitFor();
-        }catch(IOException e){
-            SharedData.addmsg("IOException reported: "+e.getMessage());
-        }catch(InterruptedException e){
-            SharedData.addmsg("InterruptedException reported: "+e.getMessage());
-        }finally{
-            if(process!=null){
-                if(process.exitValue()!=0){
-                    return new ErrorString(fail+"("+process.exitValue()+")");
-                }else{
-                    return direc+'/'+matfile;
-                }
-            }else{
-                return new ErrorString(fail);
-            }
-        }
-    }  
-
-    /* ------------------------------ clone ------------------------------- */
-    /**
-     * Get a copy of the current SpectrometerEvaluator Operator.  The
-     * list of parameters is also copied.
-     */
-
-    public Object clone(){
-        Blind new_op = 
-            new Blind( );
-        
-        new_op.CopyParametersFrom( this );
-        
-        return new_op;
+      }else{
+        return new ErrorString(fail);
+      }
     }
-
-    /* ------------------------------ PRIVATE METHODS -------------------- */
-    /**
-     * Method to get the location of the blind executable. Assumed to
-     * be right next to the class file.
-     */
-    private String getFullBlindName(){
-        if(SysUtil.isOSokay(SysUtil.LINUX_ONLY)){
-            return SysUtil.getBinLocation(this.getClass(),"blind");
-        }else if(SysUtil.isOSokay(SysUtil.WINDOWS_ONLY)){
-            return SysUtil.getBinLocation(this.getClass(),"blind.exe");
-        }else{
-            return null;
-        }
+  }  
+  
+  /* ------------------------------ clone ------------------------------- */
+  /**
+   * Get a copy of the current SpectrometerEvaluator Operator. The
+   * list of parameters is also copied.
+   */
+  
+  public Object clone(){
+    Blind new_op = new Blind( );
+    
+    new_op.CopyParametersFrom( this );
+    
+    return new_op;
+  }
+  
+  /* ------------------------------ PRIVATE METHODS -------------------- */
+  /**
+   * Method to get the location of the blind executable. Assumed to be
+   * right next to the class file.
+   */
+  private String getFullBlindName(){
+    if(SysUtil.isOSokay(SysUtil.LINUX_ONLY)){
+      return SysUtil.getBinLocation(this.getClass(),"blind");
+    }else if(SysUtil.isOSokay(SysUtil.WINDOWS_ONLY)){
+      return SysUtil.getBinLocation(this.getClass(),"blind.exe");
+    }else{
+      return null;
     }
-
-    /* --------------------------- MAIN METHOD --------------------------- */
-    public static void main(String[] args){
-        LoadFileString file=new LoadFileString("/IPNShome/pfpeterson/ISAW/Operators/TOF_SCD/quartz_isaw.peaks");
-        IntListString seq_nums=new IntListString("1:5");
-        
-        Blind op;
-
-        op=new Blind(file,seq_nums);
-        System.out.println("RESULT: "+op.getResult());
-        System.exit(0);
-    }
+  }
+  
+  /* --------------------------- MAIN METHOD --------------------------- */
+  public static void main(String[] args){
+    LoadFileString file=new LoadFileString("/IPNShome/pfpeterson/ISAW/"
+                                     +"Operators/TOF_SCD/quartz_isaw.peaks");
+    IntListString seq_nums=new IntListString("1:5");
+    
+    Blind op;
+    
+    op=new Blind(file,seq_nums);
+    System.out.println("RESULT: "+op.getResult());
+    System.exit(0);
+  }
 }
