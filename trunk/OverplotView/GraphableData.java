@@ -1,12 +1,14 @@
 package OverplotView;
 
-/**
+/*
  * $Id$
- *
- * container for data and state information associated with data that
- * is intended for visualization.
+ * ----------
  *
  * $Log$
+ * Revision 1.4  2001/06/29 16:29:24  neffk
+ * integrated ColorAttribute class for storing color information in
+ * GraphableData objects
+ *
  * Revision 1.3  2001/06/28 22:02:45  neffk
  * all data that is to be associated with the data is now stored as various
  * types of Attributes.
@@ -16,17 +18,19 @@ package OverplotView;
  *
  * Revision 1.1  2001/06/21 15:44:42  neffk
  * redesign of OverplotView
- *
+ * ----------
  */
 
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
-import DataSetTools.dataset.ColorAttribute;
 import java.awt.Color;
 import java.lang.String;
-//import java.util.;
 
+/**
+ * container for data and state information associated with data that
+ * is intended for visualization.
+ */
 public class GraphableData
 {
 
