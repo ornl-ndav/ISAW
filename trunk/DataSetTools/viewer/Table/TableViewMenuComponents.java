@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/07/17 19:58:25  rmikk
+ *  Change the Menu Item names for the different types of
+ *     tables
+ *
  *  Revision 1.2  2002/07/17 19:11:39  rmikk
  *  Added GPL
  *  Fixed up the table views menu choices
@@ -83,11 +87,11 @@ public class TableViewMenuComponents
     { if( i < 0)
          return null;
       if( i == 0)
-         return "Gr,Time vs Field";
+         return "Group x vs y";
       if( i == 1)
-         return "Time vs Gr,Field";
+         return "x vs Group y";
       if( i == 2 )
-         return "Time,Row vs Col";
+         return "x,Row vs Col y";
       else return null;
     }
 
@@ -115,30 +119,16 @@ public class TableViewMenuComponents
  */
  public TableView getDataSetViewer( String view_type, DataSet DS, ViewerState state)
    {
-    /*table_view tv= new table_view(0);
-    String state1 = "X values;Y values;";
-    if( error || (view_type.indexOf("err")>=0))
-      state1 += "Error values;";
-    if( index || (view_type.indexOf("indx") >=0))
-      state1 += "XY index;";
-    state.set_String( ViewerState.TABLE_DATA, state1);
-    DataSet[] DSS = new DataSet[1];
-    DSS[0] = DS;
-    tv.setDataSets( DSS );
-    tv.restoreState( state1);
-    DefaultListModel LM = tv.getListModel();
-    */
-   // for( int j = 0; j<LM.size();j++)
-   //   System.out.println("LM+"+LM.elementAt(j));
+    
     if( DS.getSelectedIndices().length<1)
        {DataSetTools.util.SharedData.addmsg("No data sets selected");
         return null;
        }
-    if( view_type.indexOf("Gr,Time vs Field")==0)
+    if( view_type.indexOf("Group x vs y")==0)
       return new TableView( DS, state,"HGT,F");//tv.getGenTableModel( DS,LM,"HGT,F",DS.getSelectedIndices() ));
-    if( view_type.indexOf("Time vs Gr,Field")==0)
+    if( view_type.indexOf("x vs Group y")==0)
        return new TableView( DS, state,"HT,GF");//tv.getGenTableModel( DS,LM,"HT,FG",DS.getSelectedIndices() ));
-    if(view_type.indexOf("Time,Row vs Col")==0)
+    if(view_type.indexOf("x,Row vs Col y")==0)
        return new TableView( DS, state,"HTI,JF");//tv.getGenTableModel( DS,LM,"HTI,JF",DS.getSelectedIndices() ));
     
     return null;
