@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2001/07/26 14:28:54  dennis
+ *  Now preserves Brightness and Auto-Scale values in the
+ *  ViewerState.
+ *
  *  Revision 1.24  2001/07/25 18:10:27  dennis
  *  Now uses new "generic" methods to get/set state information
  *  in the ViewerState object.
@@ -275,6 +279,7 @@ public ImageView( DataSet data_set, ViewerState state )
   getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(), data_set );
 
   DrawDefaultDataBlock();
+  UpdateHGraphRange();
 }
 
 /* -----------------------------------------------------------------------
@@ -320,6 +325,7 @@ public void redraw( String reason )
   {
     MakeImage( true );
     DrawSelectedHGraphs();
+    UpdateHGraphRange();
   }
 }
 
@@ -475,6 +481,9 @@ private void init()
                                           );
   log_scale_slider = new JSlider();
   hgraph_scale_slider = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
+  int value = (int)(10 * getState().get_float( ViewerState.AUTO_SCALE ));
+  System.out.println("Image: auto-scale value = " + value );
+  hgraph_scale_slider.setValue( value );
 
   main_split_pane = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
                                           MakeDisplayArea(),
@@ -708,7 +717,7 @@ private Component MakeControlArea()
   control_area.add( color_scale_image );
 
   log_scale_slider.setPreferredSize( new Dimension(120,50) );
-  log_scale_slider.setValue(50);
+  log_scale_slider.setValue( getState().get_int( ViewerState.BRIGHTNESS) );
   log_scale_slider.setMajorTickSpacing(20);
   log_scale_slider.setMinorTickSpacing(5);
   log_scale_slider.setPaintTicks(true);
@@ -1147,6 +1156,36 @@ private Point ProcessImageMouseEvent( MouseEvent e,
 }
 
 
+/* -------------------------- UpdateHGraphRange --------------------------- */
+
+  public void UpdateHGraphRange()
+  {
+    int value = hgraph_scale_slider.getValue();
+    getState().set_float( ViewerState.AUTO_SCALE, value/10.0f );
+
+    if ( value == 0 )
+    {
+      h_graph.autoY_bounds();
+      TitledBorder border = new TitledBorder(LineBorder.createBlackLineBorder(),
+                         "Auto-Scale" );
+      border.setTitleFont( FontUtil.BORDER_FONT );
+      hgraph_scale_slider.setBorder( border );
+    }
+    else
+    {
+      float y_min = y_range.getStart_x();
+      float y_max = y_range.getEnd_x();
+      float range = ( y_max - y_min ) * value / 1000.0f;
+      h_graph.setY_bounds( y_min, y_min + range );
+      TitledBorder border = new TitledBorder(LineBorder.createBlackLineBorder(),
+                         "" + value /10.0f+"%(max)" );
+      border.setTitleFont( FontUtil.BORDER_FONT );
+      hgraph_scale_slider.setBorder( border );
+    }
+  }
+
+
+
 /* -------------------------------------------------------------------------
  *
  *  INTERNAL CLASSES
@@ -1164,7 +1203,11 @@ private class LogScaleEventHandler implements ChangeListener,
 
                               // set image log scale when slider stops moving
     if ( !slider.getValueIsAdjusting() )
-      image_Jpanel.changeLogScale( slider.getValue(), true );
+    {
+      int value = slider.getValue();
+      image_Jpanel.changeLogScale( value, true );
+      getState().set_int( ViewerState.BRIGHTNESS, value );
+    } 
   }
 } 
 
@@ -1176,27 +1219,7 @@ private class HGraphScaleEventHandler implements ChangeListener,
 {
   public void stateChanged(ChangeEvent e)
   {
-    JSlider slider = (JSlider)e.getSource();
-
-    if ( slider.getValue() == 0 )
-    {
-      h_graph.autoY_bounds();
-      TitledBorder border = new TitledBorder(LineBorder.createBlackLineBorder(),
-                         "Auto-Scale" );
-      border.setTitleFont( FontUtil.BORDER_FONT );
-      slider.setBorder( border );
-    }
-    else
-    {
-      float y_min = y_range.getStart_x();
-      float y_max = y_range.getEnd_x();
-      float range = ( y_max - y_min ) * slider.getValue() / 1000.0f;
-      h_graph.setY_bounds( y_min, y_min + range );
-      TitledBorder border = new TitledBorder(LineBorder.createBlackLineBorder(),
-                         ""+slider.getValue()/10.0f+"%(max)" );
-      border.setTitleFont( FontUtil.BORDER_FONT );
-      slider.setBorder( border );
-    }
+    UpdateHGraphRange();
   }
 }
 
