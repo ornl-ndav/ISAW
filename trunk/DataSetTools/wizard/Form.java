@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/06/09 22:09:08  bouzekc
+ * Added constructor for setting HAS_CONSTANTS on
+ * initialization, and removed the method which previously
+ * set them.
+ *
  * Revision 1.13  2003/06/09 14:50:44  bouzekc
  * Changed errorOut() to return ErrorStrings rather than
  * Booleans.
@@ -124,6 +129,12 @@ import DataSetTools.util.*;
  *  @see Wizard.AdderExampleForm
  */
 
+/**
+ *  Note that Forms are set up by default as standalone Forms, or the first Form
+ *  in a Wizard.  To set a Form to have constant parameters that rely on 
+ *  values obtained from previous Forms, set the HAS_CONSTANTS variable to 
+ *  true by using the appropriate constructor.
+ */
 public abstract class Form extends Operator implements Serializable{
   private final boolean DEBUG=false;
 
@@ -146,11 +157,7 @@ public abstract class Form extends Operator implements Serializable{
 
   /**
    *  Construct a form with the given title to work with 
-   *  the specified Wizard.  Note that the integer
-   *  arrays const_params, editable_params, and result_params
-   *  are used to provide references within the parameter Vector
-   *  so that the Form can properly call makeGUI().  If a subclass
-   *  overwrites this method, it must follow the same protocol.
+   *  the specified Wizard.  
    *
    *  @param  title           The title to show on this form
    *
@@ -160,6 +167,21 @@ public abstract class Form extends Operator implements Serializable{
     super(title);
     panel = null;
     this.param_ref=null;
+  } 
+
+  /**
+   *  Construct a form with the given title to work with 
+   *  the specified Wizard.  This constructor also allows
+   *  for setting whether or not this Form has constant 
+   *  parameters.
+   *
+   *  @param  title           The title to show on this form
+   *
+   */
+  public Form( String title, boolean hasConstantParams )
+  {
+    super(title);
+    this.HAS_CONSTANTS = hasConstantParams;
   } 
 
   /* ---------------------------- addParameter ---------------------------- */
@@ -428,20 +450,6 @@ public abstract class Form extends Operator implements Serializable{
           .addPropertyChangeListener(IParameter.VALUE,w);
       }
     }
-  }
-
-  /**
-   *  Sets the HAS_CONSTANTS variable so that the Form can be
-   *  run as a standalone or first Form, or as a Form that
-   *  relies on previous Forms.
-   *
-   *  @param    constant    Set true if this is a Form that
-   *                        relies on previous Forms, or
-   *                        false if it is a standalone Form.
-   */
-  public void setHasConstants(boolean constant)
-  {
-    this.HAS_CONSTANTS = constant;
   }
 
   /**
