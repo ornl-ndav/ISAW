@@ -52,11 +52,48 @@ END ERROR<br>
 endfor<br>
 Display R<P><P><P><hr>
 
+<li>
+<P><P>
+x = 1<BR>
+S=0<BR>
+if x<2<ul>
+  S=1</ul>
+elseif x >=5<ul>
+  S = S + 2</ul>
+else <ul>
+   S = S+4</ul>
+endif<BR>
+Display S<BR>
+<hr>
+<P><P>
+<li><A name = "Macro"></a><ul>
 
+#Test Macro-<br>
+#<br>
+#$$ Joe    Integer    Id<br>
+#$$  Tom  String   Name<br>
+#$$   X     float     float value<br>
+R = Tom<br>
+R = R&Joe&X<br>
+Display R<br>
+</ul>
+<hr><P><P>
+<li><ul>
+#Test Macro-With a Data Set<br>
+#<br>
+#$$ Joe    Integer    Id<br>
+#$$  Tom  String   Name<br>
+#$$   X     DataSet    ds<br>
+R = Tom<br>
+R = R&Joe<br>
+Display R<br>
+Display X<br>
+</ul>
+<hr><P><P>
+ 
 <li><P><A name="Batch1"></a>
 import IsawGUI.*;<br>
 import CommandPane;<br>
-<P><P>
 
 public class Batch <br>
 {CommandPane cp;<P><P><P>
