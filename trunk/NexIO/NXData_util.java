@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/03/05 20:51:44  pfpeterson
+ * Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  * Revision 1.14  2002/11/27 23:28:17  pfpeterson
  * standardized header
  *
@@ -732,7 +735,7 @@ public class NXData_util{
 
      if( ylength <= 0 ){
        errormessage = "Axis 2 has no length";
-       DataSetTools.util.SharedData.status_pane.add( errormessage );
+       DataSetTools.util.SharedData.addmsg( errormessage );
        return true;
      }
      xlength = nx;
