@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2003/12/14 19:18:08  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.31  2003/11/23 20:00:48  rmikk
  * The main program now executes all Jython scripts not just those that
  *   are written in the special format for operators.
@@ -207,18 +210,13 @@
 package Command; 
 
 import IsawGUI.*; 
-import java.io.*; 
-import DataSetTools.retriever.*; 
 import DataSetTools.dataset.*; 
 import DataSetTools.util.*; 
 import DataSetTools.parameter.*; 
 import DataSetTools.components.ParametersGUI.*;
 
-import java.awt.*; 
-import javax.swing.*; 
 import javax.swing.text.*; 
 import java.awt.event.*; 
-import javax.swing.border.*; 
 import DataSetTools.operator.*; 
 import DataSetTools.operator.Generic.*;
 import java.beans.*; 
