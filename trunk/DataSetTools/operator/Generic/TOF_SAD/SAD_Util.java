@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/04/27 15:23:23  dennis
+ * Added RemoveAreaDetectorData() method for use by Reduce_LPSD.
+ *
  * Revision 1.2  2004/04/26 18:54:16  dennis
  *   Added method Build2D_Difference_DS() that subtracts the sample
  * and background S(Qx,Qy) faster than the general DataSet subtract
@@ -515,7 +518,7 @@ public class SAD_Util
              Cadmerr,
              Transmy;
 
-     if( useTransmission)
+     if( useTransmission )
        Transmy = Transm.getData_entry(0).getY_values();
      else
        Transmy = null;
@@ -720,6 +723,60 @@ public class SAD_Util
   }
  
 
+  /* ---------------------- RemoveAreaDetectorData ------------------------ */
+  /**
+   *  If the given DataSet has groups from an area detector, construct a
+   *  new DataSet that has those groups removed.  
+   *  NOTE: All groups between the min and max ID for the area detector 
+   *        will be removed.
+   *
+   *  @param  ds  The DataSet from which the area detector data (if any) 
+   *              will be removed.
+   *
+   *  @return The original DataSet, if there was not an a area detector, or
+   *          a new DataSet with the area detector data removed.
+   */
+  public static DataSet RemoveAreaDetectorData( DataSet ds )
+  {
+    int[] ids = Grid_util.getAreaGridIDs( ds );
+
+    if ( ids == null || ids.length == 0 )
+      return ds;
+
+    if ( ids.length > 1 )
+      System.out.println("WARNING...RemoveAreaDetectorData only removes ONE");
+
+    UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid( ds, ids[0] );
+   
+    int minID = Integer.MAX_VALUE;                    // find min and max ID
+    int maxID = Integer.MIN_VALUE;
+    int  id;
+    Data d;
+    for ( int row = 1; row < grid.num_rows(); row++ )
+      for ( int col = 1; col < grid.num_cols(); col++ )
+      {
+         d  = grid.getData_entry( row, col );
+         id = d.getGroup_ID();
+         if ( id < minID )
+           minID = id;
+         else if ( id > maxID )
+           maxID = id;
+      }
+                                                     // copy groups with ids 
+                                                     // outside [minID, maxID]
+    DataSet new_ds = ds.empty_clone();
+    for ( int i = 0; i < ds.getNum_entries(); i++ )
+    {
+      d  = ds.getData_entry(i);
+      id = d.getGroup_ID();
+      if ( id < minID || id > maxID )
+        new_ds.addData_entry( (Data)(d.clone()) );
+    }
+
+    return new_ds;
+  }
+
+
   /* --------------------------- SetUpGrid ------------------------------ */
   /**
    *  Get the data grid for an area detector and reset the Data entries
@@ -727,7 +784,7 @@ public class SAD_Util
    */
   public static UniformGrid SetUpGrid( DataSet DS )
   {
-    int[] Ids= Grid_util.getAreaGridIDs( DS );
+    int[] Ids = Grid_util.getAreaGridIDs( DS );
     UniformGrid SampGrid = (UniformGrid)Grid_util.getAreaGrid( DS, Ids[0] );
     SampGrid.clearData_entries();
     SampGrid.setData_entries( DS );
