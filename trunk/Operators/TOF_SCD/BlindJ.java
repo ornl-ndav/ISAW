@@ -27,6 +27,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2004/01/30 02:38:51  bouzekc
+ * Removed unused variables and an unused private method to pad a String
+ * with spaces on the left.  This method will likely be moved to
+ * StringUtil.java.
+ *
  * Revision 1.13  2003/10/14 21:02:04  dennis
  * Adjusted javadocs on main method to build cleanly under jdk 1.4.2
  *
@@ -110,7 +115,6 @@ import IPNSSrc.blind;
  */
 public class BlindJ extends  GenericTOF_SCD {
   private static final String  TITLE = "JBlind";
-  private static final boolean DEBUG = false;
 
   /* ------------------------ Default constructor ------------------------- */ 
   /**
@@ -284,15 +288,6 @@ public class BlindJ extends  GenericTOF_SCD {
   }
     
   /* -------------------------- private methods --------------------------- */ 
-  /**
-   * Pad a string with spaces on the left
-   */
-  static private String format(String rs, int length){
-    while(rs.length()<length){
-      rs=" "+rs;
-    }
-    return rs;
-  }
 
   /**
    * Read in the peaks from the specified file. This returns the
