@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2004/01/08 22:27:58  bouzekc
+ *  Now uses java.lang.String.split() rather than StringUtil.split().
+ *  Changed indexing scheme for removing first name from package hierarchy
+ *  so that it is based on the first "." rather than a set number of
+ *  characters.
+ *
  *  Revision 1.33  2004/01/08 14:48:07  bouzekc
  *  Changed title to getTitle() in toString().
  *
@@ -113,7 +119,6 @@ package DataSetTools.operator;
 import java.util.Vector;
 import java.io.*;
 import DataSetTools.parameter.IParameter;
-import DataSetTools.util.StringUtil;
 import DataSetTools.util.SharedData;
 import NetComm.RemoteOpExecClient;
 
@@ -143,7 +148,6 @@ abstract public class Operator implements Serializable
                                  // generate menus.
    public static final String  OPERATOR                 = "Operator";
 
-   protected static final int dstools_length="DataSetTools.".length();
    private static String[] categoryList=null;
 
    public static final String DEFAULT_DOCS =  "This is the placeholder "
@@ -270,16 +274,18 @@ abstract public class Operator implements Serializable
   protected String[] createCategoryList(){
     // determine the correct abstract class
     Class klass=this.getClass();
-    //System.out.print(klass.getName()+"->"); // REMOVE
+
     while(!isAbstract(klass)){
       klass=klass.getSuperclass();
     }
 
     // get the category name and shorten it
-    String category=klass.getPackage().getName().substring(dstools_length);
+    String category=klass.getPackage().getName();
+    category = category.substring( category.indexOf( "." ) + 1, 
+                                                       category.length(  ) );
 
     // split up into an array and return
-    return StringUtil.split(category,".");
+    return category.split( "\\." );
   }
 
   static protected boolean isAbstract(Class klass){
