@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/01/05 15:25:42  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.6  2003/11/30 02:32:14  bouzekc
  * Calls wizardLoader instead of showForm().
  *
@@ -60,15 +63,7 @@
 
 package Wizard;
 
-import java.util.*;
-import java.io.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
 import DataSetTools.wizard.*;
-import DataSetTools.util.*;
-import DataSetTools.operator.*;
-import DataSetTools.parameter.*;
 
 /**
  *  This class constructs a Wizard for doing add,
