@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/01/08 17:45:30  dennis
+ * Added option to show slice through Qxyz space.  This is currently just
+ * a "proof of concept", and works only for "old" SCD data.
+ *
+ *
  * Revision 1.7  2002/11/27 23:23:30  pfpeterson
  * standardized header
  *
@@ -57,7 +62,6 @@
  *
  * Revision 1.1  2002/08/05 05:38:40  dennis
  * Rudimentary command line version of SCD reciprocal lattice viewer.
- *
  *
  */
 
@@ -92,6 +96,14 @@ public class SCDRecipLat
   public static final String B_STAR = " b* (*)";
   public static final String C_STAR = " c* (X)";
 
+  public static final String A_B_SLICE = "a*<->b* Slice";
+  public static final String B_C_SLICE = "b*<->c* Slice";
+  public static final String C_A_SLICE = "c*<->a* Slice";
+
+  ImageFrame a_b_frame = null;
+  ImageFrame b_c_frame = null;
+  ImageFrame c_a_frame = null;
+
   String path = null;
   String run_nums = null;
   String threshold = "";
@@ -108,6 +120,8 @@ public class SCDRecipLat
   JLabel          a_star_b_star;
   JLabel          b_star_c_star;
   JLabel          c_star_a_star;
+
+  Vector          vec_q_transformer;
 
   int             global_obj_index = 0;  // needed to keep the pick ids distinct
 
@@ -173,6 +187,20 @@ public class SCDRecipLat
     angle_panel.add( c_star_a_star );
     control_panel.add( angle_panel );
 
+    JPanel button_panel = new JPanel();
+    button_panel.setLayout( new GridLayout(3,1) );
+    JButton a_b_button = new JButton(A_B_SLICE);
+    JButton b_c_button = new JButton(B_C_SLICE);
+    JButton c_a_button = new JButton(C_A_SLICE);
+    button_panel.add( a_b_button );
+    button_panel.add( b_c_button );
+    button_panel.add( c_a_button );
+    SliceButtonListener slice_listener = new SliceButtonListener();
+    a_b_button.addActionListener( slice_listener );
+    b_c_button.addActionListener( slice_listener );
+    c_a_button.addActionListener( slice_listener );
+    control_panel.add( button_panel );
+
     JPanel filler = new JPanel();
     filler.setPreferredSize( new Dimension( 120, 2000 ) );
     control_panel.add( filler );
@@ -206,6 +234,8 @@ public class SCDRecipLat
     b_star_vec.addActionListener( listener );
     c_star_vec.addActionListener( listener );
     Redraw();
+
+    vec_q_transformer = new Vector();
   }
  
 
@@ -502,27 +532,10 @@ public class SCDRecipLat
       float chi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_CHI))
                          .floatValue();
 
-      Tran3D omegaR = new Tran3D();
-      Tran3D phiR   = new Tran3D();
-      Tran3D chiR   = new Tran3D();
-      Tran3D combinedR = new Tran3D();
-
-      Vector3D i_vec = new Vector3D( 1, 0, 0 );
-      Vector3D k_vec = new Vector3D( 0, 0, 1 );
-
-      phiR.setRotation( -phi, k_vec );
-      chiR.setRotation( -chi, i_vec );
-      omegaR.setRotation( +omega, k_vec );   // rotate by +45 deg, about z,
-                                             // (using right hand rule)
-      combinedR.setIdentity();
-      combinedR.multiply_by( phiR );
-      combinedR.multiply_by( chiR );
-      combinedR.multiply_by( omegaR );
-      System.out.println("phi, chi, omega = " + phi +
-                                         ", " + chi +
-                                         ", " + omega );
-      return combinedR;
+      return tof_calc.makeEulerRotationInverse( phi, chi, -omega );
   }
+
+
 
 
   /* ------------------------- getPeaks ---------------------------- */
@@ -539,6 +552,7 @@ public class SCDRecipLat
    */
   private IThreeD_Object[] getPeaks( DataSet ds, float thresh_scale )
   {
+
       Data  d;
       float t;
       float ys[];
@@ -598,7 +612,74 @@ public class SCDRecipLat
       for ( int i = 0; i < obj_index; i++ )
         non_zero_objs[i] = objs[i];
 
+      vec_q_transformer.add( new VecQToTOF(ds ) );
       return non_zero_objs;
+  }
+
+  /* ------------------------- make_slice ---------------------------- */
+  private float[][] make_slice( Vector3D origin, Vector3D base, Vector3D up )
+  {
+    int n_rows = 500;
+    int n_cols = 500;
+    float image[][] = new float[n_rows][n_cols];
+
+    float size;
+/*
+    size = base.length();
+    if ( up.length() > size )
+      size = up.length();
+*/
+    size = 20;
+                                             // make two orthonormal vectors
+    Vector3D base1 = new Vector3D( base );
+    base1.normalize();    
+    Vector3D base2 = new Vector3D( up );      
+    base2.normalize();
+    float component = base1.dot(base2);
+    Vector3D temp = new Vector3D( base1 );
+    temp.multiply( component );
+    base2.subtract( temp );
+    base2.normalize();
+
+    float b1[] = base1.get();
+    float b2[] = base2.get();
+    float orig[] = origin.get();
+    Vector3D q = new Vector3D();
+    float step = size/250;
+    float d_row, d_col;
+    float value;
+    int   n_non_zero;
+                                             // for each point in the plane...
+    VecQToTOF transformer;
+    float sum;
+    for ( int row = 0; row < n_rows; row++ )
+      for ( int col = 0; col < n_cols; col++ )
+      {
+        d_row = (250-row)*step;        
+        d_col = (col-250)*step;        
+        q.set( orig[0] + d_row * b2[0] + d_col * b1[0], 
+               orig[1] + d_row * b2[1] + d_col * b1[1], 
+               orig[2] + d_row * b2[2] + d_col * b1[2]  );
+
+         sum = 0;
+         n_non_zero = 0;
+         for ( int i = 0; i < vec_q_transformer.size(); i++ )
+         {
+           transformer = (VecQToTOF)(vec_q_transformer.elementAt(i));
+           value = transformer.intensityAtQ( q );
+           if ( value != 0 )
+           {
+             sum += value;
+             n_non_zero++;
+           }
+         }
+         if ( n_non_zero > 0 )
+           image[row][col] = sum / n_non_zero;
+         else
+           image[row][col] = 0;
+      }
+
+    return image;
   }
 
   /* ------------------------- main -------------------------------- */
@@ -628,6 +709,7 @@ public class SCDRecipLat
 
     int runs[] = IntList.ToArray( viewer.run_nums );
     String file_names[] = new String[ runs.length ];
+
     for ( int i = 0; i < runs.length; i++ )
      file_names[i] = viewer.path+InstrumentType.formIPNSFileName("scd",runs[i]);
 
@@ -692,6 +774,51 @@ private class ViewMouseInputAdapter extends MouseInputAdapter
    }
 }
 
+/* ------------------------- SliceButtonListener ------------------------- */
+/**
+ * Class to handle SliceButton press events
+ */
+private class SliceButtonListener implements ActionListener
+{
+  public void actionPerformed( ActionEvent e )
+  {
+    String action = e.getActionCommand();
+    System.out.println( action );
+
+    float image[][] = null;
+    if ( action.equals( A_B_SLICE ) )
+    {
+      image = make_slice( origin_vec.getVector(), 
+                          a_star_vec.getVector(),
+                          b_star_vec.getVector() );
+      if ( a_b_frame == null )
+        a_b_frame = new ImageFrame( image, A_B_SLICE );
+      else
+        a_b_frame.setData( image );
+    }
+    else if ( action.equals( B_C_SLICE ) )
+    {
+      image = make_slice( origin_vec.getVector(), 
+                          b_star_vec.getVector(),
+                          c_star_vec.getVector() );
+      if ( b_c_frame == null )
+        b_c_frame = new ImageFrame( image, B_C_SLICE );
+      else
+        b_c_frame.setData( image );
+    }
+    else if ( action.equals( C_A_SLICE ) )
+    {
+      image = make_slice( origin_vec.getVector(), 
+                          c_star_vec.getVector(),
+                          a_star_vec.getVector() );
+      if ( c_a_frame == null )
+        c_a_frame = new ImageFrame( image, C_A_SLICE );
+      else
+        c_a_frame.setData( image );
+    }
+  }
+}
+
 
 /* ------------------------- ReadoutListener ----------------------- */
 /**
@@ -747,7 +874,7 @@ private class ReadoutListener implements ActionListener
 
      Redraw();
    }
-}
+ } 
 
 
 }
