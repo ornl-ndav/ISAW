@@ -32,6 +32,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/03/11 18:58:36  bouzekc
+ * Documented file using javadoc statements.
+ * Removed the field ProjectVec.  Instead of holding the projects in a Vector, the
+ * projects are held in the JList's DefaultListModel.
+ * Added support for selecting multiple projects and performing tasks on all of the
+ * projects selected.
+ *
  * Revision 1.2  2004/02/07 05:31:17  bouzekc
  * Commented out debugging println.
  *
@@ -46,12 +53,12 @@ package devTools.Hawk.classDescriptor.gui.panel;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.FileNotFoundException;
 import java.util.Vector;
 
 import javax.swing.DefaultListModel;
@@ -88,50 +95,66 @@ import devTools.Hawk.classDescriptor.gui.frame.StatisticsGUI;
 import devTools.Hawk.classDescriptor.gui.frame.UnableToLoadClassGUI;
 import devTools.Hawk.classDescriptor.gui.internalFrame.AlphabeticalListGUI;
 import devTools.Hawk.classDescriptor.gui.internalFrame.PackageTreeGUI;
+import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
 import devTools.Hawk.classDescriptor.tools.FileAssociationManager;
-import devTools.Hawk.classDescriptor.tools.dataFileUtilities;
+import devTools.Hawk.classDescriptor.tools.SystemsManager;
 
+/**
+ * This is a special type of JPanel that contains a list of all of the currently opened projects.  This class 
+ * handles any events that are thrown when the user selects a project from the list.
+ * @author Dominic Kramer
+ */
 public class ProjectSelectorJPanel extends JPanel implements ActionListener, ListSelectionListener, MenuListener
 {
-	//these are declare here to allow the actionPerformed() method to find them
+	//these are declared here to allow the actionPerformed() method to find them
 	//and are components found on the GUI	
 	/**
-	* this is the JList of names for all of the projects currently open
+	* This is the JList of names for all of the projects currently open
 	* and is placed on the GUI
 	*/
-		protected JList list;
-	/** the model describing list */
-		protected DefaultListModel model;
+	protected JList list;
+	/** The model that handles modifying the list.*/
+	protected DefaultListModel model;
 	/** the popup window */
-		protected JPopupMenu popup;
-		protected HawkDesktop desktop;
+	protected JPopupMenu popup;
+	/** The HawkDesktop on which this panel is placed (after being placed on a JInternalFrame). */
+	protected HawkDesktop desktop;
 	
 	//these attributes are used to describe the ProjectSelectorJPanel
 	/** 
-	* this is a Vector of Project objects, and each 
+	* This is a Vector of Project objects, and each 
 	* time a Project object is made (new) or opened from a file
 	* it is placed at the end of this Vector.
 	*/
-		protected Vector ProjectVec;
+//	protected Vector ProjectVec;
 	/** 
-	* set this to true to have a new AlphabeticalListGUI 
-	* pop up when the user selects an item in the list
+	* Set this to true to have a new AlphabeticalListGUI 
+	* pop up when the user selects an item in the list.  This is no 
+	* used an will be removed.
 	*/
-		protected boolean openNewAlphaWindowOnSelect;
+//	protected boolean openNewAlphaWindowOnSelect;
 	
-	protected JMenuItem copyToPreviousTabItem;
-	protected JMenuItem previousTabItem;
+	protected boolean noProjectsListed;
 	
+//	protected JMenuItem copyToPreviousTabItem;
+//	protected JMenuItem previousTabItem;
+	
+	/**
+	 * Create a new ProjectSelectorJPanel.
+	 * @param PROVEC The Vector of Project objects to add to this panel's list.
+	 * @param desk The HawkDesktop on which this panel is located.
+	 */
 	public ProjectSelectorJPanel(Vector PROVEC, HawkDesktop desk)
 	{
+		noProjectsListed = true;
 		desktop = desk;
 		
 		//now to instantiate the Continer and main panel everything is added on
 			setLayout(new BorderLayout());
 		
 		//this initially has a new window pop up if the list is selected
-			openNewAlphaWindowOnSelect = true;
+//			openNewAlphaWindowOnSelect = true;
 		
 		//now to make the list for the gui		
 			//this model allows you to modify the list
@@ -139,22 +162,26 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 			
 			if (PROVEC != null)
 			{
-				ProjectVec = PROVEC;
-				for (int i=0; i<ProjectVec.size(); i++)
-					model.addElement( ((Project)ProjectVec.elementAt(i)).getProjectName());
+			//	ProjectVec = PROVEC;
+				for (int i=0; i<PROVEC.size(); i++)
+					model.addElement( (Project)PROVEC.elementAt(i));
+				
+				noProjectsListed = false;
 			}
 			else
 			{
-				ProjectVec = new Vector();
-				ProjectVec.add(new Project());
-				model.addElement("No projects listed");
+//				ProjectVec = new Vector();
+//				ProjectVec.add(new Project());
+				Project tempProject = new Project();
+				tempProject.setProjectName("No projects listed");
+				model.addElement(tempProject);
 			}
 
 			list = new JList(model);
 			list.addListSelectionListener(this);
 			list.setVisibleRowCount(-1);
 			//the following only allows one item to be selected at a time
-			list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);		
+			list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);		
 				
 		//now to make the JScrolPane to put the JList on		
 			JScrollPane listPane = new JScrollPane(list);
@@ -182,16 +209,39 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 		list.addMouseListener(popupListener);
 	}
 	
+	/**
+	 * Used in subclasses of this class.
+	 */
 	protected ProjectSelectorJPanel() {}
 	
+	/**
+	 * Get this panel.
+	 * @return this
+	 */
 	public JPanel getProjectSelectorJPanel()
 	{
 		return this;
 	}
 	
+	/**
+	 * Get the model that is used to modify the panel's Jlist.
+	 * @return The panel's list's model.
+	 */
 	public DefaultListModel getModel()
 	{
 		return model;
+	}
+	
+	/**
+	 * Returns a Vector of Project s that are in this panel's list's model.
+	 */
+	public Vector getProjectVec()
+	{
+		Vector proVec = new Vector();
+		for (int i=0; i<model.size(); i++)
+			proVec.addElement((Project)model.elementAt(i));
+			
+		return proVec;
 	}
 	
 	/**
@@ -230,7 +280,7 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 					 JMenuItem projectSaveItem = new JMenuItem("Save");
 					 projectSaveItem.addActionListener(this);
 					 projectSaveItem.setActionCommand("project.save");
-					 //projectFileMenu.add(projectSaveItem);
+					 projectFileMenu.add(projectSaveItem);
 			
 					 JMenuItem projectSaveAsItem = new JMenuItem("Save As");
 					 projectSaveAsItem.addActionListener(this);
@@ -354,87 +404,123 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 		 return projectMenuBar;
 	}
 	
+	/**
+	 * Get this panel's list.
+	 * @return The panel's list.
+	 */
 	public JList getList()
 	{
 		return list;
 	}
-		
+	
+	/**
+	 * Set the HawkDesktop on which this panel is placed.
+	 * @param desk The HawkDesktop.
+	 */
 	public void setHawkDesktop(HawkDesktop desk)
 	{
 		desktop = desk;
 	}
 	
+	/**
+	 * Get the HawkDesktop on which this panel is placed.
+	 * @return The HawkDesktop.
+	 */
 	public HawkDesktop getHawkDesktop()
 	{
 		return desktop;
 	}
 	
 	/**
-	* This sets ProjectVec
-	* @param vec The vector to set equal to ProjectVec
-	*/
-		public void setProjectVec(Vector vec)
-		{
-			ProjectVec = vec;
-		}
+	 * Returns true if no projects are listed and false if there are projects listed.
+	 */
+	public boolean noProjectsListed()
+	{
+		return noProjectsListed;
+	}
 	
 	/**
-	* This returns the Vector of Project objects that the user has opened
-	* @return ProjectVec
-	*/
-		public Vector getProjectVec()
-		{
-			return ProjectVec;
-		}
-	
+	 * Sets the flag that describes if there are projects currently listed.
+	 * @param bol True if no projects are listed and false if there are projects currently listed.
+	 */
+	public void setNoProjectsListed(boolean bol)
+	{
+		noProjectsListed = bol;
+	}
+		
 	/**
 	* This returns the currently selected Project from the Jlist in the GUI
 	* @return The Project object currently selected
 	*/
-		public Project getSelectedProject()
-		{
-			int selectedIndex = list.getSelectedIndex();
+	public Project[] getSelectedProjects()
+	{
+		int[] selectedIndexArray = list.getSelectedIndices();
+		Vector proVec = new Vector();
 		
-			if (selectedIndex < 0)
-				return null;
-			else
-				return (Project)(ProjectVec.elementAt(selectedIndex));
-		}
-		
-		public void setSelectedProjectsName(String name)
+		for (int i=0; i<selectedIndexArray.length; i++)
 		{
-			int selectedIndex = list.getSelectedIndex();
-			if (selectedIndex >= 0)
-				model.set(selectedIndex, name);
-			if (getSelectedProject() != null)
-				getSelectedProject().setProjectName(name);
+			if (selectedIndexArray[i]>=0)
+				proVec.add((Project)model.elementAt(selectedIndexArray[i]));
 		}
+		Project[] proArr = new Project[proVec.size()];
+		for (int i=0; i<proVec.size(); i++)
+			proArr[i] = (Project)proVec.elementAt(i);
+			
+		return proArr;
+	}
 	
 	/**
-	* This sets openNewAlphaWindowOnSelect to either true or false.  Set it to true 
-	* if you want a new AlphabeticalListGUI to appear
-	* when the user selects a new Project from the Jlist.  Set to false if you
-	* want the new Projects information to appear in the AlphabeticalListGUI
-	* already open.  Note:  In AlphabeticalListGUI.java when the user closes the
-	* GUI, the setOpenNewAlphaWindowOnSelect(true) is automatically selected to
-	* have a new GUI window pop up.
-	* @param bol True for a new window to pop up, and false otherwise.
-	*/	
-		public void setOpenNewAlphaWindowOnSelect(boolean bol)
+	 * Sets the names of the currently selected projects if one of the elements from 
+	 * the list is selected.  This method updates the name on the list and sets the 
+	 * project's name.
+	 * @param name A Vector of Strings each of which is the name of one of the selected projects.  
+	 * The number elements in the Vector name has to be greater than or equal to number of selected 
+	 * elements from the list.
+	 */	
+	public void setSelectedProjectsNames(Vector name)
+	{
+		int[] selectedIndex = list.getSelectedIndices();
+		Project pro = new Project();
+		for (int i=0; i<selectedIndex.length; i++)
 		{
-			openNewAlphaWindowOnSelect = bol;
+			if (selectedIndex[i]>=0)
+			{
+				pro = (Project)model.elementAt(selectedIndex[i]);
+				pro.setProjectName((String)name.elementAt(i));
+				model.set(selectedIndex[i],pro);
+			}
 		}
-	
-	/**
-	* This is used in if statements to decide whether or not to open a new 
-	* AlphabeticalListGUI if the current class trying to obtain the information
-	* can't due to encapsulation.
-	* @return The value of openNewAlphaWindowOnSelect
-	*/
-		public boolean getOpenNewAlphaWindowOnSelect()
+	}		
+		/**
+		 * This method is used exclusively for the processSentEvent(ActionEvent) method to 
+		 * handle saving the project to a file.  This method opens a window asking the user for 
+		 * the filename to save the project to.
+		 */
+		private void promptForFileToSaveProject(Project pro)
 		{
-			return openNewAlphaWindowOnSelect;
+			JFrame frame = new JFrame();
+			frame.setSize(500,400);
+			Container framePane = frame.getContentPane();
+		
+			JPanel mainPanel = new JPanel();
+			mainPanel.setLayout(new BorderLayout());
+		
+			JFileChooser chooser = new JFileChooser();
+			int returnVal = chooser.showSaveDialog(frame);
+		
+			mainPanel.add(chooser, BorderLayout.CENTER);
+					
+			framePane.add(mainPanel);
+			framePane.setVisible(true);
+		
+			if (returnVal == JFileChooser.APPROVE_OPTION)
+			{
+				String fileName = chooser.getSelectedFile().getAbsoluteFile().toString();
+				pro.getData().setFileName(fileName);
+				pro.writeNativeHawkFile();
+			}
 		}
+		
 		
 		/**
 		 * This method processes an ActionEvent.  If a gui has a ProjectSelectorJPanel in it and has buttons or other components to throw ActionEvents.
@@ -444,11 +530,11 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 		 */
 		public void processSentEvent(ActionEvent event)
 		{
-			//System.out.println("command="+event.getActionCommand());
-			
 			if (event.getActionCommand().equals("exit"))
 			{
 				desktop.dispose();
+				if (desktop.isFirstWindowOpen())
+					System.exit(0);
 			}
 			else if (event.getActionCommand().trim().equals("project.new"))
 			{
@@ -457,23 +543,11 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 			}
 			else if (event.getActionCommand().equals("project.edit.projectName"))
 			{
-				int index = list.getSelectedIndex();
-				boolean con = true;
-			
-				if (index < 0)
-					con = false;
-				else if ( ((String)(model.getElementAt(index))).equals("No projects listed") )
-					con = false;
-			
-				if (con)
-				{	
-					ChangeProjectNameGUI gui = new ChangeProjectNameGUI();
-					gui.setVisible(true);
-				}
-				else
+				if (!noProjectsListed)
 				{
-					//custom title, informational icon
-					if ( (index == 0) && ((String)(model.getElementAt(index))).equals("No projects listed") )
+					Project[] proArr = getSelectedProjects();
+				
+					if (proArr.length == 0)
 					{
 						JOptionPane opPane = new JOptionPane();
 						JOptionPane.showMessageDialog(opPane,"Open a project from the file menu to edit its name"
@@ -482,40 +556,25 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 					}
 					else
 					{
-						JOptionPane opPane = new JOptionPane();
-						JOptionPane.showMessageDialog(opPane,"You need to select a project to edit its name"
-							,"Note"
-							,JOptionPane.INFORMATION_MESSAGE);
+						ChangeProjectNameGUI gui = new ChangeProjectNameGUI();
+						gui.setVisible(true);
 					}
+				}
+				else
+				{
+					JOptionPane opPane = new JOptionPane();
+					JOptionPane.showMessageDialog(opPane,"You need to select a project to edit its name"
+						,"Note"
+						,JOptionPane.INFORMATION_MESSAGE);
 				}
 			}
 			else if (event.getActionCommand().equals("project.search"))
 			{
-				int index = list.getSelectedIndex();
-				boolean con = true;
-
-				if (index < 0)
-					con = false;
-				else if ( ((String)(model.getElementAt(index))).equals("No projects listed") )
-					con = false;
-
-				if (con)
-				{	
-					SearchGUI gui = new SearchGUI(getSelectedProject().getInterfaceVec());
-					gui.setVisible(true);
-				}
-				else
+				if (!noProjectsListed)
 				{
-					//custom title, informational icon
-					if ( (index == 0) && ((String)(model.getElementAt(index))).equals("No projects listed") )
-					{
-						JOptionPane opPane = new JOptionPane();
-						JOptionPane.showMessageDialog(opPane,"Open a project from the file menu to\n" +
-																					   "search through its classes and interfaces"
-							,"Note"
-							,JOptionPane.INFORMATION_MESSAGE);
-					}
-					else
+					Project[] proArr = getSelectedProjects();
+				
+					if (proArr.length == 0)
 					{
 						JOptionPane opPane = new JOptionPane();
 						JOptionPane.showMessageDialog(opPane,"You need to select a project to search\n" +
@@ -523,7 +582,34 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 							,"Note"
 							,JOptionPane.INFORMATION_MESSAGE);
 					}
-				}			
+					Vector interfacesVec = new Vector();
+					Vector intfVec = new Vector();
+					String title = "Search ";
+					for (int i=0; i<proArr.length; i++)
+					{
+						if (i == proArr.length-1)
+							title += proArr[i].getProjectName();
+						else if (i == proArr.length-2)
+							title += proArr[i].getProjectName()+", and ";
+						else
+							title += proArr[i].getProjectName()+", ";
+						intfVec = proArr[i].getInterfaceVec();
+						for (int j=0; j<intfVec.size(); j++)
+							interfacesVec.add((Interface)intfVec.elementAt(j));
+					}
+					
+					SearchGUI gui = new SearchGUI(interfacesVec,desktop);
+					gui.setVisible(true);
+					gui.setTitle(title);
+				}
+				else
+				{
+					JOptionPane opPane = new JOptionPane();
+					JOptionPane.showMessageDialog(opPane,"Open a project from the file menu to\n" +
+																				   "search through its classes and interfaces"
+						,"Note"
+						,JOptionPane.INFORMATION_MESSAGE);
+				}
 			}
 			else if (event.getActionCommand().equals("project.open"))
 			{
@@ -536,7 +622,7 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 			
 				JFileChooser chooser = new JFileChooser();
 					RobustFileFilter jdfFilter = new RobustFileFilter();
-					jdfFilter.addExtension("jdf");
+					jdfFilter.addExtension(SystemsManager.getHawkFileExtensionWithoutPeriod());
 					chooser.setFileFilter(jdfFilter);			
 				int returnVal = chooser.showOpenDialog(frame);
 			
@@ -548,236 +634,195 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 				if (returnVal == JFileChooser.APPROVE_OPTION)
 				{
 					String fileName = chooser.getSelectedFile().getAbsoluteFile().toString();
-								
-					String project_Name = "";
-					try
-					{
-						dataFileUtilities data = new dataFileUtilities(fileName, true);
-											
-						//this gets the projects name
-						project_Name = Project.getProjectName(fileName);
-					
 						//this will remove the first element which states "No projects listed"
 						//if this is the first time the user has opened a new project
-						if ( ((String)(model.elementAt(0))).equals("No projects listed") )
+						if (noProjectsListed)
 						{
-							ProjectVec.remove(0);
 							model.remove(0);
 						}
-					
+						
 						//now to add the project to the list
 						//this constructor makes a Project object with a new Interface object in interfaceVec
-						Project newProject = new Project(data, project_Name);
-										
-						ProjectVec.add(newProject);
-					
-						model.addElement(project_Name);
-					
-					}
-					catch(FileNotFoundException e)
-					{
-						//custom title, error icon
-							JOptionPane opPane = new JOptionPane();
-							JOptionPane.showMessageDialog(opPane,
-								"The file you selected is either not of the correct type or has been corrupted.\nPlease choose a file that ends in .jdf",
-								"File Error",
-								JOptionPane.ERROR_MESSAGE);
-					}
+						Project newProject = new Project(fileName, true);					
+						model.addElement(newProject);
+						noProjectsListed = false;
 				}
 			}
 			else if (event.getActionCommand().equals("project.save"))
 			{
-					if (getSelectedProject() != null)
-					{
-					
-					}
-			}
-			else if (event.getActionCommand().equals("project.saveAs"))
-			{
-				int index = list.getSelectedIndex();
-				boolean con = true;
-			
-				if (index < 0)
-					con = false;
-				else if ( ((String)(model.getElementAt(index))).equals("No projects listed") )
-					con = false;
-			
-				if (con)
+				if (!noProjectsListed)
 				{	
-					JFrame frame = new JFrame();
-					frame.setSize(500,400);
-					Container framePane = frame.getContentPane();
-			
-					JPanel mainPanel = new JPanel();
-					mainPanel.setLayout(new BorderLayout());
-			
-					JFileChooser chooser = new JFileChooser();
-					int returnVal = chooser.showSaveDialog(frame);
-			
-					mainPanel.add(chooser, BorderLayout.CENTER);
-						
-					framePane.add(mainPanel);
-					framePane.setVisible(true);
-			
-					if (returnVal == JFileChooser.APPROVE_OPTION)
-					{
-						String fileName = chooser.getSelectedFile().getAbsoluteFile().toString();
-						dataFileUtilities.writeJDFFile(getSelectedProject(), fileName);
-					}
-				}
-				else
-				{
-					//custom title, informational icon
-					if ( (index == 0) && ((String)(model.getElementAt(index))).equals("No projects listed") )
+					Project[] proArr = getSelectedProjects();
+					if (proArr.length == 0)
 					{
 						JOptionPane opPane = new JOptionPane();
-						JOptionPane.showMessageDialog(opPane,"Open a project from the file menu to save\nits contents"
+						JOptionPane.showMessageDialog(opPane,"You need to select a project to save its contents."
 							,"Note"
 							,JOptionPane.INFORMATION_MESSAGE);
 					}
 					else
+					{
+						for (int i=0; i<proArr.length; i++)
+						{
+							if (proArr[i].getData().isAlreadySaved())
+								proArr[i].writeNativeHawkFileWithoutPrompting();
+							else
+								promptForFileToSaveProject(proArr[i]);
+						}
+					}
+				}
+				else
+				{
+						JOptionPane opPane = new JOptionPane();
+						JOptionPane.showMessageDialog(opPane,"Open a project from the file menu to save\nits contents"
+							,"Note"
+							,JOptionPane.INFORMATION_MESSAGE);
+				}
+			}
+			else if (event.getActionCommand().equals("project.saveAs"))
+			{
+				if (!noProjectsListed)
+				{
+					Project[] proArr = getSelectedProjects();
+				
+					if (proArr.length == 0)
 					{
 						JOptionPane opPane = new JOptionPane();
 						JOptionPane.showMessageDialog(opPane,"You need to select a project to save\nits contents"
 							,"Note"
 							,JOptionPane.INFORMATION_MESSAGE);
 					}
+					else
+					{
+						for (int i=0; i<proArr.length; i++)
+							promptForFileToSaveProject(proArr[i]);
+					}
+				}
+				else
+				{
+						JOptionPane opPane = new JOptionPane();
+						JOptionPane.showMessageDialog(opPane,"Open a project from the file menu to save\nits contents"
+							,"Note"
+							,JOptionPane.INFORMATION_MESSAGE);
 				}
 			}
 			else if (event.getActionCommand().equals("project.remove"))
 			{
-				int selectedIndex = list.getSelectedIndex();
+				int[] selectedIndex = list.getSelectedIndices();
 			
-				if (selectedIndex >= 0)
-				{	
-					ProjectVec.remove(selectedIndex);
-					model.remove(selectedIndex);
+				for (int i=selectedIndex.length-1; i>=0; i--)
+				{
+					if (selectedIndex[i] >= 0)
+					{	
+						model.remove(selectedIndex[i]);
+					}
 				}
-			
+				
 				if (model.isEmpty())
 				{
-					ProjectVec.add(new Project());
-					model.addElement("No projects listed");
+					Project tempProject = new Project();
+					tempProject.setProjectName("No projects listed");
+					model.addElement(tempProject);
+					noProjectsListed = true;
 				}
 			
 			}
 			else if (event.getActionCommand().equals("alphaWindow.popup"))
 			{
-				int index = list.getSelectedIndex();
-				boolean con = true;
-			
-				if (index < 0)
-					con = false;
-				else if ( ((String)(model.getElementAt(index))).equals("No projects listed") )
-					con = false;
-			
-				if (con)
+				if (!noProjectsListed)
 				{
-					AlphabeticalListGUI alphaGUI3 = new AlphabeticalListGUI(getSelectedProject(), this, getSelectedProject().getProjectName(), false, false,desktop);
-					alphaGUI3.setVisible(true);
-					if (desktop.getSelectedDesktop() != null)
-						desktop.getSelectedDesktop().add(alphaGUI3);
-					else
-					{
-						JOptionPane opPane = new JOptionPane();
-							JOptionPane.showMessageDialog(opPane,"You need to select a tab to view the\nproject's interfaces alphabetically"
-								,"Note"
-								,JOptionPane.INFORMATION_MESSAGE);
-					}
-				}
-				else
-				{
-					//custom title, informational icon
-					if ( (index == 0) && ((String)(model.getElementAt(index))).equals("No projects listed") )
-					{
-						JOptionPane opPane = new JOptionPane();
-						JOptionPane.showMessageDialog(opPane,"Open a project from the file menu to view\nits interfaces alphabetically"
-							,"Note"
-							,JOptionPane.INFORMATION_MESSAGE);
-					}
-					else
+					Project[] proArr = getSelectedProjects();
+				
+					if (proArr.length == 0)
 					{
 						JOptionPane opPane = new JOptionPane();
 						JOptionPane.showMessageDialog(opPane,"You need to select a project to view\nits interfaces alphabetically"
 							,"Note"
 							,JOptionPane.INFORMATION_MESSAGE);
 					}
-				}
-			}
-			else if (event.getActionCommand().equals("project.print"))
-			{
-				PrintGUI pg = new PrintGUI(ProjectVec, "Current Projects");
-				pg.setVisible(true);
-			}
-			else if (event.getActionCommand().equals("packageWindow.popup"))
-			{
-				int index = list.getSelectedIndex();
-				boolean con = true;
-			
-				if (index < 0)
-					con = false;
-				else if ( ((String)(model.getElementAt(index))).equals("No projects listed") )
-					con = false;
-			
-				if (con)
-				{
-					PackageTreeGUI packageGUI = new PackageTreeGUI(getSelectedProject(), false, false, true, true,desktop);
-					packageGUI.setVisible(true);
-					if (desktop.getSelectedDesktop() != null)
-						desktop.getSelectedDesktop().add(packageGUI);
-					else
+				
+					for (int i=0; i<proArr.length; i++)
 					{
-						JOptionPane opPane = new JOptionPane();
-							JOptionPane.showMessageDialog(opPane,"You need to select a tab to view the\nproject's interfaces by package name"
-								,"Note"
-								,JOptionPane.INFORMATION_MESSAGE);
+						AlphabeticalListGUI alphaGUI3 = new AlphabeticalListGUI(proArr[i], proArr[i].getProjectName() +" (Alphabetical Listing)", false, false,desktop);
+						alphaGUI3.setVisible(true);
+						if (desktop.getSelectedDesktop() != null)
+						{
+							desktop.getSelectedDesktop().add(alphaGUI3);
+							alphaGUI3.setAsSelected(true);
+						}
+						else
+						{
+							JOptionPane opPane = new JOptionPane();
+								JOptionPane.showMessageDialog(opPane,"You need to select a tab to view the\nproject's interfaces alphabetically"
+									,"Note"
+									,JOptionPane.INFORMATION_MESSAGE);
+						}
 					}
 				}
 				else
 				{
-					//custom title, informational icon
-					if ( (index == 0) && ((String)(model.getElementAt(index))).equals("No projects listed") )
-					{
-						JOptionPane opPane = new JOptionPane();
-						JOptionPane.showMessageDialog(opPane,"Open a project from the file menu to view\nits interfaces organized in packages"
-							,"Note"
-							,JOptionPane.INFORMATION_MESSAGE);
-					}
-					else
+					JOptionPane opPane = new JOptionPane();
+					JOptionPane.showMessageDialog(opPane,"Open a project from the file menu to view\nits interfaces alphabetically"
+						,"Note"
+						,JOptionPane.INFORMATION_MESSAGE);
+				}
+			}
+			else if (event.getActionCommand().equals("project.print"))
+			{
+				Vector proVec = new Vector();
+				for (int i=0; i<model.size(); i++)
+					proVec.add((Project)model.elementAt(i));
+				
+				PrintGUI pg = new PrintGUI(proVec, "Current Projects");
+				pg.setVisible(true);
+			}
+			else if (event.getActionCommand().equals("packageWindow.popup"))
+			{
+				if (!noProjectsListed)
+				{
+					Project[] proArr = getSelectedProjects();
+				
+					if (proArr.length == 0)
 					{
 						JOptionPane opPane = new JOptionPane();
 						JOptionPane.showMessageDialog(opPane,"You need to select a project to view\nits interfaces organized in packages"
 							,"Note"
 							,JOptionPane.INFORMATION_MESSAGE);
 					}
+				
+					for (int i=0; i<proArr.length; i++)
+					{
+						PackageTreeGUI packageGUI = new PackageTreeGUI(proArr[i],proArr[i].getProjectName()+" (Package Listing)", false, false, true, true,desktop);
+						packageGUI.setVisible(true);
+						if (desktop.getSelectedDesktop() != null)
+						{
+							desktop.getSelectedDesktop().add(packageGUI);
+							packageGUI.setAsSelected(true);
+						}
+						else
+						{
+							JOptionPane opPane = new JOptionPane();
+								JOptionPane.showMessageDialog(opPane,"You need to select a tab to view the\nproject's interfaces by package name"
+									,"Note"
+									,JOptionPane.INFORMATION_MESSAGE);
+						}
+					}
+				}
+				else
+				{
+					JOptionPane opPane = new JOptionPane();
+					JOptionPane.showMessageDialog(opPane,"Open a project from the file menu to view\nits interfaces organized in packages"
+						,"Note"
+						,JOptionPane.INFORMATION_MESSAGE);
 				}
 			}
 			else if (event.getActionCommand().equals("project.associate.source"))
 			{
-				int index = list.getSelectedIndex();
-				boolean con = true;
-			
-				if (index < 0)
-					con = false;
-				else if ( ((String)(model.getElementAt(index))).equals("No projects listed") )
-					con = false;			
-			
-				if (con)
+				if (!noProjectsListed)
 				{
-					FileAssociationGUI sourceGUI = new FileAssociationGUI(getSelectedProject(), FileAssociationManager.JAVASOURCE);
-					sourceGUI.setVisible(true);
-				}
-				else
-				{
-					//custom title, informational icon
-					if ( (index == 0) && ((String)(model.getElementAt(index))).equals("No projects listed") )
-					{
-						JOptionPane opPane = new JOptionPane();
-						JOptionPane.showMessageDialog(opPane,"Open a project from the file menu and select it\nto associate source code files with it"
-							,"Note"
-							,JOptionPane.INFORMATION_MESSAGE);
-					}
-					else
+					Project[] proArr = getSelectedProjects();
+				
+					if (proArr.length == 0)
 					{
 						JOptionPane opPane = new JOptionPane();
 						JOptionPane.showMessageDialog(opPane
@@ -785,34 +830,28 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 							,"Note"
 							,JOptionPane.INFORMATION_MESSAGE);
 					}
+				
+					for (int i=0; i<proArr.length; i++)
+					{
+						FileAssociationGUI sourceGUI = new FileAssociationGUI(proArr[i].getInterfaceVec(), FileAssociationManager.JAVASOURCE,"Assigning Java Source Files for the Project "+proArr[i].getProjectName());
+						sourceGUI.setVisible(true);
+					}
+				}
+				else
+				{
+					JOptionPane opPane = new JOptionPane();
+					JOptionPane.showMessageDialog(opPane,"Open a project from the file menu and select it\nto associate source code files with it"
+						,"Note"
+						,JOptionPane.INFORMATION_MESSAGE);
 				}
 			}
 			else if (event.getActionCommand().equals("project.associate.javadocs"))
 			{
-				int index = list.getSelectedIndex();
-				boolean con = true;
-			
-				if (index < 0)
-					con = false;
-				else if ( ((String)(model.getElementAt(index))).equals("No projects listed") )
-					con = false;			
-			
-				if (con)
+				if (!noProjectsListed)
 				{
-					FileAssociationGUI javadocsGUI = new FileAssociationGUI(getSelectedProject(), FileAssociationManager.JAVADOCS);
-					javadocsGUI.setVisible(true);
-				}
-				else
-				{
-					//custom title, informational icon
-					if ( (index == 0) && ((String)(model.getElementAt(index))).equals("No projects listed") )
-					{
-						JOptionPane opPane = new JOptionPane();
-						JOptionPane.showMessageDialog(opPane,"Open a project from the file menu and select it\nto associate javadoc files with it"
-							,"Note"
-							,JOptionPane.INFORMATION_MESSAGE);
-					}
-					else
+					Project[] proArr = getSelectedProjects();
+				
+					if (proArr.length == 0)
 					{
 						JOptionPane opPane = new JOptionPane();
 						JOptionPane.showMessageDialog(opPane
@@ -820,74 +859,75 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 							,"Note"
 							,JOptionPane.INFORMATION_MESSAGE);
 					}
+				
+					for (int i=0; i<proArr.length; i++)
+					{
+						FileAssociationGUI sourceGUI = new FileAssociationGUI(proArr[i].getInterfaceVec(), FileAssociationManager.JAVADOCS,"Assigning Javadoc Files for the Project "+proArr[i].getProjectName());
+						sourceGUI.setVisible(true);
+					}
+				}
+				else
+				{
+					JOptionPane opPane = new JOptionPane();
+					JOptionPane.showMessageDialog(opPane,"Open a project from the file menu and select it\nto associate javadoc files with it"
+						,"Note"
+						,JOptionPane.INFORMATION_MESSAGE);
 				}
 			}
 			else if (event.getActionCommand().equals("project.statistics"))
 			{
-				int index = list.getSelectedIndex();
-				boolean con = true;
-			
-				if (index < 0)
-					con = false;
-				else if ( ((String)(model.getElementAt(index))).equals("No projects listed") )
-					con = false;
-			
-				if (con)
-				{	
-					StatisticsGUI statsGUI = new StatisticsGUI(getSelectedProject());
-					statsGUI.setVisible(true);
-				}
-				else
+				if (!noProjectsListed)
 				{
-					//custom title, informational icon
-					if ( (index == 0) && ((String)(model.getElementAt(index))).equals("No projects listed") )
+					Project[] proArr = getSelectedProjects();
+				
+					if (proArr.length == 0)
 					{
 						JOptionPane opPane = new JOptionPane();
 						JOptionPane.showMessageDialog(opPane,"Open a project from the file menu\nand select it to view its statistics"
 							,"Note"
 							,JOptionPane.INFORMATION_MESSAGE);
 					}
-					else
+				
+					for (int i=0; i<proArr.length; i++)
 					{
-						JOptionPane opPane = new JOptionPane();
-						JOptionPane.showMessageDialog(opPane,"You need to select a project to view its statistics"
-							,"Note"
-							,JOptionPane.INFORMATION_MESSAGE);
+						StatisticsGUI statsGUI = new StatisticsGUI(proArr[i]);
+						statsGUI.setVisible(true);
 					}
+				}
+				else
+				{
+					JOptionPane opPane = new JOptionPane();
+					JOptionPane.showMessageDialog(opPane,"You need to select a project to view its statistics"
+						,"Note"
+						,JOptionPane.INFORMATION_MESSAGE);
 				}
 			}
 			else if (event.getActionCommand().equals("project.addInterface"))
 			{
-				int index = list.getSelectedIndex();
-				boolean con = true;
-			
-				if (index < 0)
-					con = false;
-				else if ( ((String)(model.getElementAt(index))).equals("No projects listed") )
-					con = false;
-			
-				if (con)
+				if (!noProjectsListed)
 				{
-					AddInterfaceGUI gui = new AddInterfaceGUI(this, new UnableToLoadClassGUI(), getSelectedProject());
-					gui.setVisible(true);
-				}
-				else
-				{
-					//custom title, informational icon
-					if ( (index == 0) && ((String)(model.getElementAt(index))).equals("No projects listed") )
+					Project[] proArr = getSelectedProjects();
+				
+					if (proArr.length == 0)
 					{
 						JOptionPane opPane = new JOptionPane();
 						JOptionPane.showMessageDialog(opPane,"Open a project from the file menu\nand select it to add classes and interfaces to it"
 							,"Note"
 							,JOptionPane.INFORMATION_MESSAGE);
 					}
-					else
+					
+					for (int i=0; i<proArr.length; i++)
 					{
-						JOptionPane opPane = new JOptionPane();
-						JOptionPane.showMessageDialog(opPane,"You need to select a project to add classes and interfaces to it"
-							,"Note"
-							,JOptionPane.INFORMATION_MESSAGE);
+						AddInterfaceGUI gui = new AddInterfaceGUI(this, new UnableToLoadClassGUI(), proArr[i]);
+						gui.setVisible(true);
 					}
+				}
+				else
+				{
+					JOptionPane opPane = new JOptionPane();
+					JOptionPane.showMessageDialog(opPane,"You need to select a project to add classes and interfaces to it"
+						,"Note"
+						,JOptionPane.INFORMATION_MESSAGE);
 				}
 			}				
 			else if (event.getActionCommand().equals("about"))
@@ -897,7 +937,12 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 			}
 			else if (event.getActionCommand().equals("open.newWindow"))
 			{
-				HawkDesktop newHawkDesktop = new HawkDesktop(ProjectVec);
+				Vector proVec = new Vector();
+				for (int i=0; i<model.size(); i++)
+					proVec.add((Project)model.elementAt(i));
+				
+				HawkDesktop newHawkDesktop = new HawkDesktop(proVec,false);
+				newHawkDesktop.setHawkDesktopTitle("Secondary Hawk");
 				newHawkDesktop.setVisible(true);
 			}
 			else if (event.getActionCommand().equals("open.newTab"))
@@ -927,7 +972,8 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 			else if (event.getActionCommand().equals("remove.tab"))
 			{
 				int index = desktop.getTabbedPane().getSelectedIndex();
-				desktop.getTabbedPane().remove(index);				
+				if (index >= 0)
+					desktop.getTabbedPane().remove(index);				
 			}
 		}
 	
@@ -942,18 +988,30 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 	}
 	
 	//this is for the menu listener's methods
+	/**
+	 * Handles the menus being selected.
+	 */
 	public void menuSelected(MenuEvent event)
 	{
 	}
 	
+	/**
+	 * Handles the menus being deselected.
+	 */
 	public void menuDeselected(MenuEvent event)
 	{
 	}
 	
+	/**
+	 * Handles the menu being cancelled.
+	 */
 	public void menuCanceled(MenuEvent event)
 	{
 	}
 	
+	/**
+	 * Handles the list changing.
+	 */
 	public void valueChanged(ListSelectionEvent e)
 	{
 		//list.getSelectedIndex() returns the current selected index with -1 if nothing is selected
@@ -967,19 +1025,23 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 	/**
 	* This class handles what to do when the user wants to open
 	* a popup menu.
+	* @author Dominic Kramer
 	*/
 	class PopupListener extends MouseAdapter 
 	{
-        	public void mousePressed(MouseEvent e)
+		/** Handles the mouse being pressed. */
+        public void mousePressed(MouseEvent e)
 		{
 			maybeShowPopup(e);
-        	}
-
+        }
+        
+        /** Handles the mouse button being released. */
 		public void mouseReleased(MouseEvent e)
 		{
 			maybeShowPopup(e);
-        	}
-
+        }
+        
+        /** Handles showing the popup menu. */
 		private void maybeShowPopup(MouseEvent e)
 		{
 			if (e.isPopupTrigger())
@@ -990,13 +1052,23 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 		}
 	}
 	
+	/**
+	 * A window that allows the user to change the currently selected project's name.
+	 * @author Dominic Kramer
+	 */
 	private class ChangeProjectNameGUI extends JFrame implements ActionListener
 	{
-		private JTextField textField;
+		/** The field on which the user enters the new name. */
+		private JTextField[] textfieldArr;
+		private Project[] proArr;
+		private int[] selectedIndicesArr;
 		
+		/**
+		 * Create a new ChangeProjectNameGUI.
+		 */
 		public ChangeProjectNameGUI()
-		{
-			setTitle("Editing "+getSelectedProject().getProjectName()+"'s Name");
+		{			
+			setTitle("Editing the project(s) Name(s)");
 			JPanel mainPanel = new JPanel();
 			mainPanel.setLayout(new BorderLayout());
 			
@@ -1010,15 +1082,28 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 				okButton.addActionListener(this);
 				buttonPanel.add(okButton);
 			
-			JPanel textPanel = new JPanel();
-			textPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-				textField = new JTextField(getSelectedProject().getProjectName(), 15);
-				JLabel label = new JLabel("New Name=");
-				textPanel.add(label);
-				textPanel.add(textField);
+			selectedIndicesArr = list.getSelectedIndices();	
+			proArr = getSelectedProjects();
+			textfieldArr = new JTextField[proArr.length];
 			
-			mainPanel.add(new JLabel("Enter the project's new name below."), BorderLayout.NORTH);
-			mainPanel.add(textPanel, BorderLayout.CENTER);
+			JPanel panelsPanel = new JPanel();
+			panelsPanel.setLayout(new GridLayout(proArr.length,0));
+			
+			for (int i=0; i<proArr.length; i++)
+			{
+				JPanel textPanel = new JPanel();
+				textPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+					JTextField textField = new JTextField(proArr[i].getProjectName(), 15);
+					JLabel label = new JLabel("Old Name = "+proArr[i].getProjectName()+" and New Name=");
+					textPanel.add(label);
+					textPanel.add(textField);
+					
+					textfieldArr[i] = textField;
+					panelsPanel.add(textPanel);
+			}
+			
+			mainPanel.add(new JLabel("Enter the projects' new names below."), BorderLayout.NORTH);
+			mainPanel.add(panelsPanel, BorderLayout.CENTER);
 			mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 			getContentPane().add(mainPanel);
 
@@ -1026,23 +1111,36 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 			setVisible(true);
 		}
 		
+		/**
+		 * Handles ActionEvents.
+		 */
 		public void actionPerformed(ActionEvent event)
 		{
 			if (event.getActionCommand().equals("Ok"))
 			{
-				getSelectedProject().setProjectName(textField.getText());
-				int selectedIndex = list.getSelectedIndex();
-				model.setElementAt(getSelectedProject().getProjectName(), selectedIndex);
+				for (int i=0; i<proArr.length; i++)
+				{
+					proArr[i].setProjectName(textfieldArr[i].getText());
+					model.setElementAt(proArr[i], selectedIndicesArr[i]);
+				}
 			}
 
-				dispose();
+			dispose();
 		}
 	}
 	
+	/**
+	 * A window that allows the user to change the currently selected tab's name.
+	 * @author Dominic Kramer
+	 */
 	private class ChangeTabNameGUI extends JFrame implements ActionListener
 	{
+		/** The field where the user enters the new name */
 		private JTextField textField;
 		
+		/**
+		 * Create a new ChangeTabNameGUI.
+		 */
 		public ChangeTabNameGUI()
 		{
 			setTitle("Editing the Selected Tab's Name");
@@ -1075,6 +1173,9 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 			setVisible(true);
 		}
 		
+		/**
+		 * Handles ActionEvents.
+		 */
 		public void actionPerformed(ActionEvent event)
 		{
 			if (event.getActionCommand().equals("Ok"))
