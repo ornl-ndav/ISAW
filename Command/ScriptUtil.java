@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/07/14 16:36:49  rmikk
+ * Added .RAW extension so ISIS files can be retrieved
+ *
  * Revision 1.9  2004/03/15 03:30:15  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -278,6 +281,8 @@ public class ScriptUtil{
       return new GsasRetriever(filename);
     else if( extension.equals("SDDS") )
       return new SDDSRetriever( filename );
+    else if( extension.equals("RAW"))
+      return new IsisRetriever(filename);
     else
       throw new IOException("Unsupported extension "+extension);
   }
