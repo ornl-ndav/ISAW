@@ -34,10 +34,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/08/13 03:28:35  millermi
+ * - Fixed javadoc errors.
+ * - Split up lines exceeding 80 characters.
+ *
  * Revision 1.5  2004/08/02 20:09:00  rmikk
  * ISX, ISY, and ISZ can now be set
  * The Integrate one peak is now NOT static to this class
- * A clone method now copies all the information of the Integrate one peak method
+ * A clone method now copies all the information of the Integrate one peak
+ * method
  *
  * Revision 1.4  2004/07/30 14:51:35  rmikk
  * Removed unused imports
@@ -69,7 +74,8 @@ import java.lang.reflect.*;
  *
  * This Class gets the integrated value and deviation for a peak
  */
-public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.AnalyzeOp  
+public class IntegratePt extends
+                          DataSetTools.operator.DataSet.Math.Analyze.AnalyzeOp  
                              implements IDataPointInfo {
   DataSet DS;
   int[][][] JHist = null;
@@ -89,7 +95,8 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
      *  Constructor 
      *  @param DS  The DataSet of interest
      *  @param time   The time of the associated peak
-     *  @param dataBlockIndex   The INDEX of the datablock where the peak is centered.
+     *  @param dataBlockIndex   The INDEX of the datablock where the peak is
+     *                          centered.
      */
   public IntegratePt( DataSet DS,  float time, int dataBlockIndex ){
     this();
@@ -115,8 +122,8 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
    *   Applies the INTEG operator to the ith data block and time x
    *  @param x   The time of the associated peak
    *  @param i   The INDEX of the datablock where the peak is centered.
-   *  @return  The string representation of the total intensity(- background) at that
-   *      point, or whatever the INTEG operator leaves in its variable ITOT
+   *  @return  The string representation of the total intensity(- background)
+   *  at that point, or whatever the INTEG operator leaves in its variable ITOT
    */
   public java.lang.String PointInfo(float x,
                                     int i){
@@ -148,20 +155,20 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
 
   public String getDocumentation(){
     StringBuffer s = new StringBuffer("");
-         s.append("@overview This operator gets the integrated value and ");
-         s.append("its error for a peak");
-         s.append("@algorithm  Converts the given information to the information");
-         s.append("needed by the Operators.TOF_SCD.INTEG operator to calculate ");
-         s.append("the desired result. Changing the INTEG operator can change ");
-         s.append("the integrate peak algorithm. This INTEG operator may become ");
-         s.append("a variable in the future");
-         s.append("@param DS  The DataSet of interest ");
-         s.append("@param x   The time of the associated peak ");
-         s.append("@param i   The INDEX of the datablock where the peak is centered. ");
-         s.append("@return  A Vector with two elements, ITOT(The  ");
-         s.append("integrated value of the peak), SIGI(The standard deviation of ITOT), ");
-         s.append("null, or an ErrorString ");
-         return s.toString();
+      s.append("@overview This operator gets the integrated value and ");
+      s.append("its error for a peak");
+      s.append("@algorithm  Converts the given information to the information");
+      s.append("needed by the Operators.TOF_SCD.INTEG operator to calculate ");
+      s.append("the desired result. Changing the INTEG operator can change ");
+      s.append("the integrate peak algorithm. This INTEG operator may become ");
+      s.append("a variable in the future");
+      s.append("@param DS  The DataSet of interest ");
+      s.append("@param x   The time of the associated peak ");
+      s.append("@param i   The INDEX of the datablock where the peak is ");
+      s.append("centered. @return  A Vector with two elements, ITOT(The  ");
+      s.append("integrated value of the peak), SIGI(The standard deviation ");
+      s.append("of ITOT), null, or an ErrorString ");
+      return s.toString();
 
     
   }
@@ -170,7 +177,8 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
        float time = ((FloatPG)getParameter(1)).getfloatValue();
        DS = getDataSet();
        if( DS == null)
-         return new ErrorString("No DataSet Associated with this DataSet operator");
+         return new ErrorString("No DataSet Associated with this DataSet "+
+	                        "operator");
        Vector V = Integrate( time, GroupIndex, op);
        if( V == null)
           V = new Vector();
@@ -251,13 +259,15 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
   }
  //--------------------- Base method for all interfaces -------------- 
   /**
-      *   Applies the INTEG operator to the ith data block of the data set DS and time x
-     
-      *  @param time   The time of the associated peak
-      *  @param dataBlockIndex   The INDEX of the datablock where the peak is centered.
-      *  @param op  The wrappable that will actually integrate the peak
-      *  @return  A Vector with two elements, ITOT, SIGI, null, or an ErrorString
-      */
+    *	Applies the INTEG operator to the ith data block of the data set DS
+    *	and time x
+    *
+    *  @param time   The time of the associated peak
+    *  @param dataBlockIndex   The INDEX of the datablock where the peak is
+    *                          centered.
+    *  @param op1  The wrappable that will actually integrate the peak
+    *  @return  A Vector with two elements, ITOT, SIGI, null, or an ErrorString
+    */
   public Vector Integrate( float time, int dataBlockIndex, Wrappable op1){
   
     if( dataBlockIndex < 0)
@@ -320,7 +330,8 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
 
     Object O = op.calculate();
     if( O instanceof ErrorString){
-      DataSetTools.util.SharedData.addmsg("Integrate Error "+((ErrorString)O).toString());
+      DataSetTools.util.SharedData.addmsg("Integrate Error "+
+                                          ((ErrorString)O).toString());
       return null;
     }   
     Vector V = new Vector();
