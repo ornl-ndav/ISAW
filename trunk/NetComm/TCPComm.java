@@ -8,6 +8,11 @@
  *               Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2001/02/15 22:03:11  dennis
+ *  Now handles time outs down to 0 ms, and treats values <= 0 as
+ *  requests for an infinite time out period.
+ *  Also, now flushes the out streams when writing.
+ *
  *  Revision 1.1  2001/01/30 23:27:28  dennis
  *  Initial version, network communications for ISAW.
  *
@@ -49,14 +54,19 @@ public class TCPComm
    *  @param  sock         The socket to use 
    *  
    *  @param  time_out_ms  The time out period for communications on this
-   *                       socket.
+   *                       socket.  If time_out_ms <= 0, the time out period
+   *                       will be infinite.
    */
   
   public TCPComm( Socket sock, int time_out_ms ) throws Exception
   { 
     this.sock       = sock;
-    if(time_out_ms >= 10)
+
+    if(time_out_ms > 0)
        this.sock.setSoTimeout( time_out_ms );
+    else
+       this.sock.setSoTimeout( 0 );            // zero means timeout = infinite
+
     in_stream       = sock.getInputStream();
     out_stream      = sock.getOutputStream();
 
@@ -77,6 +87,8 @@ public class TCPComm
     try
     {
       obj_out_stream.writeObject( data_obj );
+      obj_out_stream.flush();
+      out_stream.flush();
       if ( data_obj instanceof TCPCommExitClass )       // Exit request, so 
       {                                                 // shutdown connection
         System.out.println("'Exit' sent, shutting down TCP connection");
@@ -99,7 +111,7 @@ public class TCPComm
    */        
   public Object Receive() throws IOException
   { 
-    Object data_obj;
+    Object data_obj = null;
     try
     {
       data_obj = obj_in_stream.readObject( );
