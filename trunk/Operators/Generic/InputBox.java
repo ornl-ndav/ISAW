@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/23 15:55:50  rmikk
+ * Called the JParametersDialog's dispose method after operator is finished
+ *
  * Revision 1.7  2004/03/15 19:36:53  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -191,10 +194,10 @@ public class InputBox  extends GenericBatch
          return new ErrorString(" Prompt size differs from InitValues size" );
 
       ArgOperator A = new ArgOperator( Title, Prompts , InitValues, this );
-      new JParametersDialog(
-                       A,
-                       new VectDataSetHandler( DataSetList ),
-                       null, null, false);
+      JParametersDialog jpDialog =new JParametersDialog(
+                                          A,
+                                          new VectDataSetHandler( DataSetList ),
+                                          null, null, false);
       while( !Done)
            try{
             Thread.sleep(250);
@@ -203,6 +206,10 @@ public class InputBox  extends GenericBatch
              { 
                 Done = true;
               }
+      jpDialog.dispose();
+      
+      A = null;
+      jpDialog = null;
       return new DataSetTools.operator.Generic.Batch.ExitClass(); 
      }
 
