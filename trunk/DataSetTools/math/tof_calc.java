@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.15  2002/07/02 19:09:24  pfpeterson
+ *  Added a method to do Q->wavelength calculations.
+ *
  *  Revision 1.14  2002/06/19 21:52:14  pfpeterson
  *  Added more conversions between wl, d, and Q.
  *
@@ -324,6 +327,19 @@ public static float Wavelength( float path_len_m, float time_us )
 public static float TOFofWavelength( float path_len_m, float wavelength_A )
 {
   return( wavelength_A * path_len_m / ANGST_PER_US_PER_M );
+}
+
+/**
+ * Calculate the wavelength of a given Q.
+ *
+ * @param angle_radians The scattering angle.
+ * @param diffractometerQ The Q value to be converted
+ *
+ * @return The wavelength related to the Q given.
+ */
+public static float WavelengthofDiffractometerQ( float angle_radians, float Q){
+    float theta_radians=Math.abs(angle_radians/2.0f);
+    return (float)( 4.0 * Math.PI * Math.sin(theta_radians) / Q );
 }
 
 
