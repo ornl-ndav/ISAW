@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2003/06/16 19:01:02  pfpeterson
+ *  Full reworking of getCategoryList() code. List is now synthesized from
+ *  the package of the nearest abstract ancestor. The list is also static
+ *  for each abstract class and created only when needed.
+ *
  *  Revision 1.24  2003/06/12 18:47:42  pfpeterson
  *  Updated javadocs to reflect a idiosycracy of Script_Class_List_Handler.
  *
@@ -109,39 +114,9 @@ abstract public class Operator implements Serializable
                                  // method are chosen from these and used to
                                  // generate menus.
    public static final String  OPERATOR                 = "Operator";
-   public static final String    GENERIC                = "Generic";
-   public static final String      LOAD                 = "Load";
-   public static final String      SAVE                 = "Save";
-   public static final String      BATCH                = "Batch";
 
-   public static final String    DATA_SET_OPERATOR      = "DataSet Operator";
-   public static final String      EDIT_LIST            = "Edit List";
-   public static final String      MATH                 = "Math";
-   public static final String        SCALAR             = "Scalar";
-   public static final String        DATA_SET_OP        = "DataSet";
-   public static final String        ANALYZE            = "Analyze";
-   public static final String      ATTRIBUTE            = "Attribute";
-   public static final String      CONVERSION           = "Conversion";
-   public static final String        X_AXIS_CONVERSION  = "X Axis Conversion";
-   public static final String        Y_AXIS_CONVERSION  = "Y Axis Conversion";
-   public static final String        XY_AXIS_CONVERSION = "XY Axes Conversion";
-   public static final String      INFORMATION          = "Information";
-   public static final String        X_AXIS_INFORMATION = "X Axis Information";
-   public static final String        Y_AXIS_INFORMATIO  = "Y Axis Information";
-   public static final String        XY_AXIS_INFORMATION= "XY Axes Information";
-   public static final String      SPECIAL              = "Special";
-
-   public static final String  TOF_DIFFRACTOMETER      = "TOF Diffractometer"; 
-   public static final String  TOF_SCD                 = "TOF SCD"; 
-   public static final String  TOF_SAD                 = "TOF SAD";
-   public static final String  TOF_REFLECTOMETER       = "TOF Reflectometer";
-   public static final String  TOF_DG_SPECTROMETER     = "TOF DG Spectrometer";
-   public static final String  TOF_IDG_SPECTROMETER    = "TOF IDG Spectrometer";
-   public static final String  TRIPLE_AXIS_SPECTROMETER  = "Triple Axis";
-   public static final String  MONO_CHROM_DIFFRACTOMETER = "Mono Chrom Diff";
-   public static final String  MONO_CHROM_SCD            = "Mono Chrom SCD";
-   public static final String  MONO_CHROM_SAD            = "Mono Chrom SAD";
-   public static final String  MONO_CHROM_REFLECTOMETER  = "Mono Chrom REFLECT";
+   private static final int dstools_length="DataSetTools.".length();
+   private static String[] categoryList=null;
 
    public static final String DEFAULT_DOCS =  "This is the placeholder "
      +"documentation. The full documentation needs to be written using the "
@@ -235,29 +210,51 @@ abstract public class Operator implements Serializable
    */
   public String[] getCategoryList()
   {
-    String list[] = new String[1];
-    list[0] = OPERATOR;
+    if(categoryList==null)
+      categoryList=createCategoryList();
+
+    return categoryList;
+  }
+
+  /**
+   * Method to create a category list from this classes nearest
+   * abstract parent's package name.
+   */
+  protected String[] createCategoryList(){
+    // determine the correct abstract class
+    Class klass=this.getClass();
+    //System.out.print(klass.getName()+"->"); // REMOVE
+    while(!isAbstract(klass)){
+      klass=klass.getSuperclass();
+    }
+
+    // get the category name and shorten it
+    String category=klass.getPackage().getName().substring(dstools_length);
+
+    // split up into an array and return
+    int count=1;
+    int index=category.indexOf(".");
+    while(index>0){
+      index=category.indexOf(".",index+1);
+      count++;
+    }
+    String list[] = new String[count];
+
+    int start=0;
+    int end=category.indexOf(".");
+    for(int i=0 ; i<list.length ; i++ ){
+      list[i]=category.substring(start,end);
+      start=end+1;
+      end=category.indexOf(".",start);
+      if(end<0) end=category.length();
+    }
+
     return list;
   }
 
-  /* -------------------------- AppendCategory ---------------------------- */
-  /**
-   *  Utility function to append an extra operator category onto an array of
-   *  operators.
-   */
-  protected String[] AppendCategory( String category, String[] partial_list )
-  {
-                          // get a new array with an extra space, copy the
-                          // original array and append the new category
-
-    String list[] = new String[ partial_list.length + 1 ];
-
-    for ( int i = 0; i < partial_list.length; i++ )
-      list[i] = partial_list[i];
-
-    list[ partial_list.length ] = category;
- 
-    return list;
+  static private boolean isAbstract(Class klass){
+    int modifier=klass.getModifiers();
+    return java.lang.reflect.Modifier.isAbstract(modifier);
   }
 
    /* ---------------------------- addParameter ---------------------------- */
