@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2004/06/22 15:37:45  rmikk
+ *  Added the XMLread and XMLwrite methods
+ *  Added a null constructor for the above methods
+ *
  *  Revision 1.2  2004/03/15 06:10:38  dennis
  *  Removed unused import statements.
  *
@@ -81,6 +85,16 @@ public class SampleOrientationAttribute extends Attribute
     super( name );
 
     this.value = value;
+  }
+
+   /**
+     *  Needed for the XML-IO system
+     */
+   public SampleOrientationAttribute(  )
+  {
+    super( Attribute.SAMPLE_ORIENTATION );
+
+    this.value = null;
   }
 
   /**
@@ -163,6 +177,130 @@ public class SampleOrientationAttribute extends Attribute
                  "Warning:SampleOrientationAttribute IsawSerialVersion != 1");
   }
 
+ 
+  public boolean XMLwrite( OutputStream stream, int mode )
+  {
+    SampleOrientation or = (SampleOrientation) getValue();   
+    if( or == null)
+       return true;
+
+    try{
+      StringBuffer sb=new StringBuffer(30 );
+      sb.append("<SampleOrientationAttribute>\n<name>" );
+      sb.append( this.name );
+
+      sb.append( "</name>\n<value>\n" );
+      sb.append( or.getPhi() +" "+or.getChi()+" "+or.getOmega() );
+
+      sb.append( "</value>\n</SampleOrientationAttribute>\n" );
+
+      stream.write( sb.substring(0).getBytes() );
+      return true;
+    }catch( IOException e ){
+      return xml_utils.setError("IO Err="+e.getMessage() );
+    }
+  }
+
+
+
+  public boolean XMLread( InputStream stream )
+  {
+        
+    //-----------------get name field--------------------
+    String Tag = xml_utils.getTag( stream );
+    if( Tag == null)
+      return xml_utils.setError( xml_utils.getErrorMessage() );
+    if(!xml_utils.skipAttributes( stream))
+      return xml_utils.setError( xml_utils.getErrorMessage() );
+    if( !Tag.equals( "name" ) )
+      return xml_utils.setError( "name Tag Missing in SampleOrientation" );
+    name = xml_utils.getValue( stream );
+    if( name == null)
+      return xml_utils.setError( "name Tag Missing in SampleOrientation" );
+        
+    Tag =xml_utils.getEndTag( stream );
+
+
+    if( Tag == null)
+      return xml_utils.setError( xml_utils.getErrorMessage());
+    if( !Tag.equals("/name" ) )
+      return xml_utils.setError( "name Tag not nested in SampleOrientation" );
+    if(!xml_utils.skipAttributes( stream))
+      return xml_utils.setError( xml_utils.getErrorMessage() );
+        
+    //----------------  get value field----------------
+    Tag =xml_utils.getTag( stream );
+    if( Tag == null)
+      return xml_utils.setError( xml_utils.getErrorMessage() );
+    if( !Tag.equals("value"))
+      return xml_utils.setError( "missing value tag in SampleOrientation" + Tag ); 
+    if(!xml_utils.skipAttributes( stream))
+      return xml_utils.setError( xml_utils.getErrorMessage());
+
+
+             //-----------actual values--------
+    String pcom=xml_utils.getValue( stream);
+    String err = xml_utils.getErrorMessage();
+    if( pcom == null ) 
+      return xml_utils.setError( xml_utils.getErrorMessage() );
+    if( err != null)
+      return xml_utils.setError( xml_utils.getErrorMessage() );
+      
+    IPNS_SCD_SampleOrientation or = new IPNS_SCD_SampleOrientation( 0f , 0f , 0f );
+    pcom = pcom.trim();
+    try{
+      int j = pcom.indexOf(' ');
+      String S = pcom.substring(0,j).trim();
+      Float F = new Float( S);
+      float f = F.floatValue();
+      or.setPhi(  f);
+      pcom = pcom.substring(j).trim();
+      j=pcom.indexOf(' ');
+      or.setChi((new Float( pcom.substring(0,j).trim())).floatValue() );
+
+      or.setOmega((new Float( pcom.substring(j).trim()) ).floatValue() );
+      value = or;
+
+    }catch( Exception ss ){
+           
+      DataSetTools.util.SharedData.addmsg( "Improper format for Sample orientation values" );
+      String S ;
+      if( !xml_utils.skipAttributes( stream ) )
+        return false;
+      S = xml_utils.skipBlock( stream );
+      if( S == null )
+        return false;
+      if( !S.equals( "/value" ) )
+        return false;
+      S = xml_utils.skipBlock( stream );
+      if( S == null )
+        return false;
+      if( !S.equals("/SampleOrientationAttribute") )
+        return false;
+
+      if( !xml_utils.skipAttributes( stream ) )
+        return false;
+      return true;
+    }
+        
+    //--------- Read to end of SampleOrientationAttribute block-----------------
+    Tag = xml_utils.getEndTag( stream ); 
+    if( Tag == null)
+      return xml_utils.setError( xml_utils.getErrorMessage() );
+    if( !Tag.equals("/value") )
+      return xml_utils.setError("Tags not nested in Sample orientation" + Tag );
+    if(!xml_utils.skipAttributes( stream ))
+      return xml_utils.setError( xml_utils.getErrorMessage() );
+        
+    Tag =xml_utils.getTag( stream ); 
+    if( Tag == null)
+      return xml_utils.setError( xml_utils.getErrorMessage() );
+    if( !Tag.equals( "/SampleOrientationAttribute" ) )
+      return xml_utils.setError( "Tags not nested in Sample orientation" + Tag );
+    if( !xml_utils.skipAttributes( stream ) )
+      return xml_utils.setError( xml_utils.getErrorMessage() );
+    return true;
+  }
 
 /* ---------------------------- main --------------------------------- */
 /*
