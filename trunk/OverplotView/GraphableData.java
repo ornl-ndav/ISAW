@@ -10,17 +10,18 @@ package OverplotView;
  * getAttributeList().
  *
  * $Log$
+ * Revision 1.2  2001/06/27 16:45:23  neffk
+ * added toString() method
+ *
  * Revision 1.1  2001/06/21 15:44:42  neffk
  * redesign of OverplotView
  *
  */
 
+import DataSetTools.dataset.*;
 import java.awt.Color;
 import java.lang.String;
 import java.util.*;
-
-import DataSetTools.dataset.*;
-import OverplotView.util.*;
 
 public class GraphableData
 {
@@ -96,7 +97,16 @@ public class GraphableData
   {
     attrs = l;
   }
-  
+ 
+
+  /**
+   *
+   */
+  public String toString()
+  {
+    return hidden_data.toString();
+  }
+ 
 
 /*----------------------------=[ private methods ]=---------------------------*/
 
