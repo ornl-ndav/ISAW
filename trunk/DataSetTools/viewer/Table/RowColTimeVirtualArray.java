@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/11/06 20:01:57  rmikk
+ * Eliminated warning messages by removing paths from
+ *   ViewMenuItems
+ * Now throws and Illegal argument exception if the DataSet
+ *    does not have enough information to make a table
+ *
  * Revision 1.2  2003/10/28 19:57:58  rmikk
  * Fixed javadoc errors
  *
@@ -101,7 +107,7 @@ public class RowColTimeVirtualArray extends
   *</table>
   */
   public RowColTimeVirtualArray(DataSet DS, float time, boolean showErrors, 
-     boolean showInd, ViewerState state)
+     boolean showInd, ViewerState state) throws IllegalArgumentException
     {
      super( DS, time, false,false);
      this.DS = DS;
@@ -461,8 +467,8 @@ public class RowColTimeVirtualArray extends
         jmInd = new JCheckBoxMenuItem("Show Indicies");
         jmInd.addActionListener( new CheckBoxListener());
         jmInd.setSelected( state.get_boolean(ViewerState.TABLE_TS_IND));
-        Res[0] = new ViewMenuItem("Options",jmErr);
-        Res[1] = new ViewMenuItem("Options",jmInd);
+        Res[0] = new ViewMenuItem(jmErr);
+        Res[1] = new ViewMenuItem(jmInd);
         
        }
      //if( JMenuName.equals( "File"))
@@ -471,10 +477,10 @@ public class RowColTimeVirtualArray extends
         JMenuItem item = new JMenuItem( "Save DataSet to File");
         SaveDataSetActionListener DSActList =new SaveDataSetActionListener( DS);
         item.addActionListener(DSActList);
-        Res[2] = new ViewMenuItem( "File",item);
+        Res[2] = new ViewMenuItem( item);
         JMenuItem sv= new JMenuItem( "Save Table to a File");
         sv.addActionListener( new MyActionListener());
-        Res[3] =new ViewMenuItem("File",sv);
+        Res[3] =new ViewMenuItem(sv);
         return Res;
        }
 
