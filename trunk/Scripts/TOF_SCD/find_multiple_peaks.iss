@@ -16,11 +16,12 @@ $ CATEGORY = Operators,Generic,TOF_SCD
 $ path                DataDirectoryString    Raw Data Path
 $ outpath             DataDirectoryString    Output Data Path
 $ run_numbers         Array                  Run Number
-$ expname            String         Experiment Name
+$ expname             String                 Experiment Name
 $ num_peaks           Integer(50)            Number of Peaks
 $ min_int             Integer(3)             Minimum Peak intensity
-$ append              Boolean(true)         Append
-#$ inst                InstrumentNameString   Instrument
+$ min_time_chan       Integer(0)             Minimum time channel to use 
+$ max_time_chan       Integer(1000)          Maximum time channel to use 
+$ append              Boolean(true)          Append
 $ calibfile           LoadFileString         SCD Calibration File
 
 inst = "SCD"
@@ -40,7 +41,7 @@ for i in run_numbers
   monct=IntegGrp(ds[0],1,0,50000)
   LoadSCDCalib(ds[dsnum],calibfile,-1,"")
   # find peaks
-  peaks=FindPeaks(ds[dsnum],monct,num_peaks,min_int)
+  peaks=FindPeaks(ds[dsnum],monct,num_peaks,min_int,min_time_chan,max_time_chan)
   peaks=CentroidPeaks(ds[dsnum],peaks)
   # write out the results
   WritePeaks(outpath&expname&".peaks",peaks,append)
