@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/06/18 20:34:23  pfpeterson
+ * Changed calls for NxNodeUtils.Showw(Object) to
+ * DataSetTools.util.StringUtil.toString(Object)
+ *
  * Revision 1.6  2002/11/27 23:29:29  pfpeterson
  * standardized header
  *
@@ -40,6 +44,7 @@
  
 
 package NexIO.Write.NexApi;
+import DataSetTools.util.StringUtil;
 import neutron.nexus.*;
 import NexIO.Write.*;
 import NexIO.*;
@@ -734,8 +739,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
     System.out.println( "Start Name"+nodename+"     class "+classname );
     if( value != null ){
       if( showData ){
-	NxNodeUtils nu = new NxNodeUtils();
-        nu.Showw( value );
+        StringUtil.toString( value );
       }else{
         System.out.print( "Value Data Type = "+value.getClass()+ 
                           value.getClass().isArray() );
@@ -892,7 +896,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
           System.out.println( "Error = "+nnn.getErrorMessage() );
         else
           System.out.println( Res.getClass()+"::"
-                              +( new NxNodeUtils() ).Showw(  Res ) );
+                              +StringUtil.toString(  Res ) );
       }else if( c == 'n' )
 	System.out.println( nnn.getNumNXentries());
       

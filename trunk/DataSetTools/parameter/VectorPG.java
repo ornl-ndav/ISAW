@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/06/18 20:36:41  pfpeterson
+ * Changed calls for NxNodeUtils.Showw(Object) to
+ * DataSetTools.util.StringUtil.toString(Object)
+ *
  * Revision 1.7  2003/06/10 14:54:07  pfpeterson
  * Commented out a call that was meant to be a comment.
  *
@@ -65,6 +69,7 @@
 
 package DataSetTools.parameter;
 
+import DataSetTools.util.StringUtil;
 import javax.swing.*;
 import java.awt.event.*;
 import java.beans.*;
@@ -537,7 +542,7 @@ abstract public class VectorPG extends ParameterGUI
           else if ( butt == Show)
              { 
                (new JOptionPane()).showMessageDialog(null, 
-                 (new NexIO.NxNodeUtils()).Showw( jlist.getSelectedValue()));
+                               StringUtil.toString( jlist.getSelectedValue()));
              }
           else if ( butt == OK)
             
@@ -632,7 +637,7 @@ static class MyActionList implements ActionListener
     public void actionPerformed( ActionEvent evt )
       { 
         (new JOptionPane()).showMessageDialog(null,"Result="+
-       (new NexIO.NxNodeUtils()).Showw(vpf.getValue()));
+                                          StringUtil.toString(vpf.getValue()));
 
       }
 

@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/06/18 20:36:40  pfpeterson
+ * Changed calls for NxNodeUtils.Showw(Object) to
+ * DataSetTools.util.StringUtil.toString(Object)
+ *
  * Revision 1.2  2003/06/09 22:29:18  rmikk
  * Added a clone method
  *
@@ -42,6 +46,7 @@
  */
 package DataSetTools.parameter;
 
+import DataSetTools.util.StringUtil;
 import java.awt.event.*;
 import javax.swing.*;
 import java.awt.*;
@@ -94,7 +99,7 @@ static class MyActionList implements ActionListener
     public void actionPerformed( ActionEvent evt )
       { 
         (new JOptionPane()).showMessageDialog(null,"Result="+
-       (new NexIO.NxNodeUtils()).Showw(vpf.getValue()));
+                                          StringUtil.toString(vpf.getValue()));
 
       }
 
