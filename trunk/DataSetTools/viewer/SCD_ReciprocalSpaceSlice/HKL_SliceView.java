@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/05/10 22:45:16  dennis
+ * Removed unused "debug" flag.
+ *
  * Revision 1.11  2004/03/15 06:10:55  dennis
  * Removed unused import statements.
  *
@@ -149,8 +152,6 @@ public class HKL_SliceView extends DataSetViewer
   private Tran3D   orientation_matrix = null;
   
   private boolean valid_ds = false; 
-
-  private boolean debug = false;
 
   private boolean ignore_pointed_at = false;
 
