@@ -31,6 +31,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/07/31 22:46:49  dennis
+ * Added method  ReadPeaks( peaks_file_name, run_file_name ) to build
+ * a vector of PeakData objects from an "ordinary" SCD peaks file
+ * and a run file that was used to make the peaks file.  The run file
+ * is used to get needed information on the instrument and detectors
+ * that is not included in the "ordinary" peaks file.
+ * Changed names of methods that read & write lists of PeakData objects
+ * to ReadPeakData() and WritePeakData(), to avoid confusion with methods
+ * that deal with "ordinary" peaks files.
+ *
  * Revision 1.4  2003/07/31 14:18:18  dennis
  * Fixed reading of detector angle 2... it's now properly
  * interpreted as the angle above (or below) the "scattering plane"
@@ -54,6 +64,9 @@ import DataSetTools.math.*;
 import DataSetTools.util.*;
 import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
+import DataSetTools.retriever.*;
+import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.TOF_SCD.*;
 
   /*
    *  This is a convenience class for recording complete peak info with methods
@@ -128,7 +141,7 @@ public class PeakData
    *
    *  @return True if the file was written correctly and false otherwise.
    */
-  public static boolean WritePeaks( Vector peaks, String file_name ) 
+  public static boolean WritePeakData( Vector peaks, String file_name ) 
   {
     System.out.println("Starting to write peaks " + peaks.size() );
     try
@@ -145,8 +158,8 @@ public class PeakData
         if ( pd.run_num != last_run || pd.grid.ID() != last_id )
         {
           writer.print("0   NRUN DETNUM DETA   DETA2    DETD");
-          writer.print("     CHI     PHI   OMEGA  MONCNT      L1");
-          writer.print(" ROW COL  HEIGHT   WIDTH");
+          writer.print("     CHI     PHI   OMEGA     MONCNT      L1");
+          writer.print(" ROW COL   HEIGHT    WIDTH");
           writer.print(" BASE_VX BASE_VY BASE_VZ");
           writer.print("   UP_VX   UP_VY   UP_VZ");
           writer.println();
@@ -162,12 +175,12 @@ public class PeakData
           writer.print( Format.real(pd.orientation.getChi(), 8, 2 ));
           writer.print( Format.real(pd.orientation.getPhi(), 8, 2 ));
           writer.print( Format.real(pd.orientation.getOmega(), 8, 2 ));
-          writer.print( Format.real(pd.moncnt, 8, 2 ));
+          writer.print( Format.real(pd.moncnt, 11, 2 ));
           writer.print( Format.real(pd.l1, 8, 4) );
           writer.print( Format.integer( pd.grid.num_rows(), 4 ) );
           writer.print( Format.integer( pd.grid.num_cols(), 4 ) );
-          writer.print( Format.real(pd.grid.height(), 8, 2 ));
-          writer.print( Format.real(pd.grid.width(), 8, 2 ));
+          writer.print( Format.real(pd.grid.height(), 9, 5 ));
+          writer.print( Format.real(pd.grid.width(), 9, 5 ));
           coords = pd.grid.x_vec().get();
           writer.print( Format.real(coords[0], 8, 4 ));
           writer.print( Format.real(coords[1], 8, 4 ));
@@ -208,18 +221,22 @@ public class PeakData
     return true;
   }
 
+ /**
+  *  Read a vector 
+  */
+
 
   /**
-   *  Read a vector of peaks objects from a specified file.
+   *  Read a vector of PeakData objects from a specified file.
    *
-   *  @param  file_name   The peaks file to read (NOTE: This must be
-   *                      a peaks file in the form handled by RecipPlaneView
+   *  @param  file_name   The PeakData file to read (NOTE: This must be
+   *                      a file in the form handled by RecipPlaneView
    *                      and SCDcal, NOT the current peaks file used by
    *                      the SCD analysis codes.
    *
    *  @return  A vector filled with the PeakData objects read from the file.
    */
-  public static Vector ReadPeaks( String file_name )
+  public static Vector ReadPeakData( String file_name )
   {
     Vector              peaks            = new Vector();
 
@@ -344,14 +361,156 @@ public class PeakData
      return peaks;
   }
 
+
+  /**
+   *  Read a vector of PeakData objects from an SCD peaks file AND
+   *  one of the IPNS Runfiles used to form the peaks file.  The
+   *  Runfile is needed to provide information about the time-of-flight
+   *  and detector size. 
+   *
+   *  @param  peaks_file_name   The SCD peaks file to read (NOTE: This must be
+   *                            a file in the form handled by the SCD analysis
+   *                            software.
+   *
+   *  @param  run_file_name     The name of one of the Runfiles used to form
+   *                            the peaks file; this provides the time scale
+   *                            and detector size information.
+   *
+   *  @return  A vector filled with the PeakData objects read from the file.
+   */
+  public static Vector ReadPeaks( String peaks_file_name, String run_file_name )
+  {
+    Operator op = new ReadPeaks( peaks_file_name );
+
+    Object obj = op.getResult();
+    if ( !(obj instanceof Vector) )
+    {
+      System.out.println("ERROR: Couldn't read peaks file");
+      System.out.println( obj.toString() );
+      return null;
+    }
+
+    RunfileRetriever rr = new RunfileRetriever( run_file_name );
+    DataSet ds = (DataSet)rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
+    if ( ds == null )
+    {
+      System.out.println("ERROR: Couldn't read Runfile " + run_file_name );
+      return null;
+    }
+
+    Vector all_peaks = (Vector)obj;
+    System.out.println("TOTAL NUMBER OF PEAKS = " + all_peaks.size() );
+    
+    Vector peaks = new Vector();                    // only keep those that
+    for ( int i = 0; i < all_peaks.size(); i++ )    // are indexed
+    {
+      Peak p  = (Peak)all_peaks.elementAt(i);
+      if ( p.h() != 0 || p.k() != 0 || p.l() != 0 )
+        peaks.addElement( p );
+    }
+    System.out.println("NUMBER OF INDEXED PEAKS = " + peaks.size() );
+    
+    int grid_ids[]  = Grid_util.getAreaGridIDs( ds );
+    if ( grid_ids.length <= 0 )
+    {
+      System.out.println("ERROR: no area detectors in " + run_file_name );
+      return null;
+    }
+
+    UniformGrid_d grid; 
+    UniformGrid   sgrid;
+    Hashtable grids = new Hashtable();
+    for ( int i = 0; i < grid_ids.length; i++ )
+    {
+      sgrid = (UniformGrid)Grid_util.getAreaGrid( ds, grid_ids[i] );
+      grid = new UniformGrid_d( sgrid, false );
+      grids.put( new Integer(grid_ids[i]), grid );
+      System.out.println( "" + grid );
+    }
+
+    sgrid = (UniformGrid)Grid_util.getAreaGrid( ds, grid_ids[0] );
+    Data d = sgrid.getData_entry( 1, 1 );
+    XScale xscale = d.getX_scale();
+
+    Attribute attr = d.getAttribute( Attribute.INITIAL_PATH );
+    if ( attr == null )
+    {
+      System.out.println("ERROR: no initial path in " + peaks_file_name );
+      return null;
+    }
+      
+    Vector pd_peaks = new Vector( peaks.size() );
+    for ( int i = 0; i < peaks.size(); i++ )
+    {
+      PeakData pd = new PeakData();
+      Peak     p  = (Peak)peaks.elementAt(i);
+   
+      pd.run_num = p.nrun();
+      pd.moncnt  = p.monct();
+      pd.l1      = attr.getNumericValue();
+      pd.seqn    = p.seqnum();
+      pd.counts  = p.ipkobs();
+      pd.row     = p.y();
+      pd.col     = p.x();
+
+      int    bin = (int)p.z();
+      if ( bin >= xscale.getNum_x() - 1 )
+        pd.tof = xscale.getX( xscale.getNum_x() - 1 );
+      else if ( bin >= 0 )
+      {
+        double x1 = xscale.getX( bin     );
+        double x2 = xscale.getX( bin + 1 );
+        pd.tof    = x1 + ( p.z() - bin ) * ( x2 - x1 ); 
+      }
+      else
+      {
+        pd.tof = 0;
+        System.out.println("ERROR: invalid time channel 'z' in " + 
+                            peaks_file_name );
+      }
+
+      pd.orientation = new IPNS_SCD_SampleOrientation_d( p.phi(), 
+                                                         p.chi(), 
+                                                         p.omega() );
+      pd.grid = (UniformGrid_d)grids.get( new Integer(p.detnum()) );
+
+      pd.qx  = 0;            // Q position, not set for now, since not needed
+      pd.qy  = 0;
+      pd.qz  = 0;
+
+      pd.h   = p.h();
+      pd.k   = p.k();
+      pd.l   = p.l();
+      pd_peaks.add( pd );
+    }
+
+    return pd_peaks;
+  }
+
+
  /**
   *  Main program for test purposes
   */
   public static void main( String args[] )
   {
-    Vector peaks = ReadPeaks( "fft_peaks.dat" );
+   
+    String peakdata_name = "fft_peaks.dat";
+    System.out.println("Test loading " + peakdata_name );
+    Vector peaks = ReadPeakData( peakdata_name );
     System.out.println("Read peaks, # = " + peaks.size() );
-    WritePeaks( peaks, "junk_peaks.dat" );
+
+    String new_peakdata_name = "junk_peaks.dat";
+    System.out.println("Test writing to " + new_peakdata_name );
+    WritePeakData( peaks, new_peakdata_name );
+
+    String peaks_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ/quartz.peaks";
+    String run_name   = "/usr/local/ARGONNE_DATA/SCD_QUARTZ/scd06496.run";
+    System.out.println("Test loading " + peaks_name + " and " + run_name );
+    peaks = ReadPeaks( peaks_name, run_name );
+ 
+    String new_peakdata2_name = "junk_peaks2.dat";
+    System.out.println("Test writing to " + new_peakdata2_name );
+    WritePeakData( peaks, new_peakdata2_name );
   }
 
 }
