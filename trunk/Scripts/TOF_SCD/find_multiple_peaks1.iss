@@ -11,7 +11,7 @@
 #  - The run number requires a '0' before it for SCD runs
 #  - The Generic Calib operator is used to read the calibration file
 
-$ CATEGORY = Operators,Generic,TOF_SCD
+$ CATEGORY = operator,Instrument Type, TOF_NSCD
 $ path                DataDirectoryString    Raw Data Path
 $ outpath             DataDirectoryString    Output Data Path
 $ run_numbers         Array                  Run Number
