@@ -32,6 +32,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.92  2003/10/23 02:43:24  bouzekc
+ * Added hooks and a check box for remote execution.  Refactored global
+ * variables into method variables where possible.  Updated javadocs for
+ * getFile to reflect its true actions.  Changed the interaction when
+ * trying to overwrite a .wsf file that already exists.  Changed parent
+ * component of all JOptionPanes to the Wizard JFrame.  Now performs ==
+ * checking on ActionEvent action command names, since they are static.
+ *
  * Revision 1.91  2003/10/23 00:58:13  bouzekc
  * Now changes the BrowsePG directories on demand when the Projects
  * Directory is changed.
@@ -542,6 +550,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   private static final String LOAD_WIZARD_COMMAND = "Load Wizard State";
   private static final String VIEW_MENU           = "View Parameters";
   private static final String SET_PROJECT_DIR     = "Set Project Directory";
+  private static final String REMOTE_SELECTOR     = "Remote Wizard";
   private static boolean DEBUG                    = false;
 
   //~ Instance fields **********************************************************
@@ -559,7 +568,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   private final String CONFIG_FILE                     = SharedData.getProperty( 
       "user.home" ) + "/" + "wizard.cfg";
   private String help_message                          = "Help not available for Wizard";
-  private String about_message                         = "Default Help About Message";
   private boolean standalone                           = true;
   private transient JFrame frame;
   private String title;
@@ -572,14 +580,12 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   private transient JMenu view_menu;
   private transient CommandHandler command_handler;
   private boolean modified;
-  private transient JFrame save_frame;
   private transient JFileChooser fileChooser;
-  private transient File save_file;
   private transient AbstractButton[] wizButtons;
   private boolean ignorePropChanges;
-  private transient WizardFileFilter wizFilter;
-  private String projectsDirectory;
-  private URL wizardHelpURL                            = null;
+  private transient String projectsDirectory;
+  private transient URL wizardHelpURL                  = null;
+  private boolean isRemote                             = false;
 
   //~ Constructors *************************************************************
 
@@ -610,8 +616,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     formProgress      = new PropChangeProgressBar(  );
     wizProgress       = new JProgressBar(  );
     command_handler   = new CommandHandler( this );
-    save_frame        = new JFrame( "Save As..." );
-    wizFilter         = new WizardFileFilter(  );
     tryToLoadProjectsDir(  );
   }
 
@@ -778,7 +782,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
     if( modified ) {
       save_me = JOptionPane.showConfirmDialog( 
-          null, "Would you like to save your changes?",
+          frame, "Would you like to save your changes?",
           "Would you like to save your changes?", JOptionPane.YES_NO_OPTION );
 
       if( save_me == 0 ) {
@@ -1033,8 +1037,11 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
         formProgress.setValue( 0 );
         formProgress.setString( "Executing " + f );
 
-        //worked = f.getResultRemotely(  );
-        worked = f.getResult(  );
+        if( this.isRemote ) {
+          worked = f.getResultRemotely(  );
+        } else {
+          worked = f.getResult(  );
+        }
 
         if( 
           ( worked instanceof ErrorString ) ||
@@ -1106,6 +1113,11 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     for( int j = 0; j < menuList.length; j++ ) {
       menu_bar.add( menuList[j] );
     }
+
+    //enable remote/non-remote capabilities
+    JCheckBox remoteCheck = new JCheckBox( REMOTE_SELECTOR );
+    remoteCheck.addActionListener( command_handler );
+    menu_bar.add( remoteCheck );
 
     JScrollPane form_scrollpane = new JScrollPane( form_panel );
 
@@ -1206,31 +1218,26 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   }
 
   /**
-   * Opens a file for input or output.
+   * Gets a file for input or output.
    *
    * @param saving A boolean indicating whether you want to open the file for
    *        saving (true) or loading (false)
    *
-   * @return the File that has been opened.
+   * @return the File that has been retrieved.
    */
   private File getFile( boolean saving ) {
     int result;
     String save_file_abs_path;
+    File save_file;
 
     if( fileChooser == null ) {
       initFileChooser(  );
     }
 
-    //try to remember the previous value the user entered
-    if( ( save_file != null ) && !save_file.toString(  )
-                                             .equals( "" ) ) {
-      fileChooser.setSelectedFile( save_file );
-    }
-
     if( saving ) {
-      result = fileChooser.showSaveDialog( save_frame );
+      result = fileChooser.showSaveDialog( frame );
     } else {
-      result = fileChooser.showOpenDialog( save_frame );
+      result = fileChooser.showOpenDialog( frame );
     }
 
     if( result == JFileChooser.CANCEL_OPTION ) {
@@ -1242,30 +1249,26 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       save_file_abs_path   = save_file.toString(  );
 
       //make sure the extension is on there
-      save_file_abs_path   = wizFilter.appendExtension( save_file_abs_path );
+      save_file_abs_path   = new WizardFileFilter(  ).appendExtension( 
+          save_file_abs_path );
       save_file            = new File( save_file_abs_path );
     }
 
     if( saving && save_file.exists(  ) ) {
-      String temp;
+      int choice;
       StringBuffer s = new StringBuffer(  );
       s.append( "You are about to overwrite " );
       s.append( save_file.toString(  ) );
       s.append( ".\n  If this is OK, press " );
-      s.append( "<Enter> or click the <OK> button.\n  Otherwise, please " );
-      s.append( "enter a new name or click <Cancel>." );
-      temp = JOptionPane.showInputDialog( s.toString(  ) );
+      s.append( "<Enter> or click the <Yes> button.\n  Otherwise, please " );
+      s.append( "click <No> to re-select the file." );
+      choice = JOptionPane.showConfirmDialog( 
+          frame, s.toString(  ), "Overwrite File?", JOptionPane.YES_NO_OPTION,
+          JOptionPane.QUESTION_MESSAGE );
 
-      //if this occurred, the user clicked <Cancel>
-      if( temp == null ) {
-        return null;
-      }
-
-      if( ( temp != null ) && !temp.equals( "" ) ) {
-        temp        = wizFilter.appendExtension( temp );
-        save_file   = new File( 
-            StringUtil.setFileSeparator( 
-              fileChooser.getCurrentDirectory(  ) + "/" + temp ) );
+      //if this occurred, the user clicked <No>, so we'll do a recursive call
+      if( choice == JOptionPane.NO_OPTION ) {
+        return this.getFile( saving );
       }
     }
 
@@ -1273,12 +1276,12 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     if( ( save_file == null ) || save_file.getName(  )
                                             .equals( "" ) ) {
       JOptionPane.showMessageDialog( 
-        save_frame, "Please enter a valid file name", "ERROR",
+        frame, "Please enter a valid file name", "ERROR",
         JOptionPane.ERROR_MESSAGE );
 
       return null;
     } else {
-      //successfull opened a file
+      //successfully retrieved a File
       return save_file;
     }
   }
@@ -1452,7 +1455,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     message.append( errDir );
     message.append( " for more information.\n" );
     JOptionPane.showMessageDialog( 
-      null, message.toString(  ), "ERROR", JOptionPane.ERROR_MESSAGE );
+      frame, message.toString(  ), "ERROR", JOptionPane.ERROR_MESSAGE );
 
     String saveFile = StringUtil.setFileSeparator( errDir + "/" + errFile );
     TextWriter.writeStackTrace( saveFile, e );
@@ -1575,13 +1578,12 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   }
 
   /**
-   * Utility for initializing the fileChooser so that both the getFile and the
-   * Exception handler in the SwingWorker class can call it.
+   * Utility for initializing the fileChooser so that getFile can call it.
    */
   private void initFileChooser(  ) {
     fileChooser = new JFileChooser(  );
     fileChooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
-    fileChooser.setFileFilter( wizFilter );
+    fileChooser.setFileFilter( new WizardFileFilter(  ) );
 
     //start out in the projects directory
     if( this.getProjectsDirectory(  ) != null ) {
@@ -1973,11 +1975,11 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     public void actionPerformed( ActionEvent event ) {
       String command = event.getActionCommand(  );
 
-      if( command.equals( FIRST_COMMAND ) ) {
+      if( command == FIRST_COMMAND ) {
         form_num = 0;
         showForm( form_num );
         populateViewMenu(  );
-      } else if( command.equals( BACK_COMMAND ) ) {
+      } else if( command == BACK_COMMAND ) {
         if( ( form_num - 1 ) >= 0 ) {
           form_num--;
           showForm( form_num );
@@ -1986,7 +1988,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
           DataSetTools.util.SharedData.addmsg( 
             "FORM 0 SHOWN, CAN'T STEP BACK\n" );
         }
-      } else if( command.equals( NEXT_COMMAND ) ) {
+      } else if( command == NEXT_COMMAND ) {
         if( ( form_num + 1 ) < forms.size(  ) ) {
           form_num++;
           showForm( form_num );
@@ -1995,43 +1997,46 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
           DataSetTools.util.SharedData.addmsg( 
             "NO MORE FORMS, CAN'T ADVANCE\n" );
         }
-      } else if( command.equals( LAST_COMMAND ) ) {
+      } else if( command == LAST_COMMAND ) {
         form_num = forms.size(  ) - 1;
         showForm( form_num );
         populateViewMenu(  );
-      } else if( command.equals( CLEAR_ALL_COMMAND ) ) {
+      } else if( command == CLEAR_ALL_COMMAND ) {
         invalidate( 0 );
-      } else if( command.equals( CLEAR_COMMAND ) ) {
+      } else if( command == CLEAR_COMMAND ) {
         invalidate( getCurrentFormNumber(  ) );
-      } else if( command.equals( EXEC_ALL_COMMAND ) ) {
+      } else if( command == EXEC_ALL_COMMAND ) {
         worker = new WizardWorker(  );
         worker.setFormNumber( forms.size(  ) - 1 );
         worker.start(  );
-      } else if( command.equals( EXEC_COMMAND ) ) {
+      } else if( command == EXEC_COMMAND ) {
         //a new SwingWorker needs to be created for each click of the
         //execute button
         worker = new WizardWorker(  );
         worker.setFormNumber( form_num );
         worker.start(  );
-      } else if( command.equals( WIZARD_HELP_COMMAND ) ) {
+      } else if( command == WIZARD_HELP_COMMAND ) {
         showWizardHelpMessage(  );
-      } else if( command.equals( FORM_HELP_COMMAND ) ) {
+      } else if( command == FORM_HELP_COMMAND ) {
         Form f = getCurrentForm(  );
 
         if( f != null ) {
           showFormHelpMessage(  );
         }
-      } else if( command.equals( SAVE_WIZARD_COMMAND ) ) {
+      } else if( command == SAVE_WIZARD_COMMAND ) {
         save(  );
-      } else if( command.equals( LOAD_WIZARD_COMMAND ) ) {
+      } else if( command == LOAD_WIZARD_COMMAND ) {
         load(  );
-      } else if( command.equals( VIEW_MENU ) ) {
+      } else if( command == VIEW_MENU ) {
         populateViewMenu(  );
-      } else if( command.equals( SET_PROJECT_DIR ) ) {
+      } else if( command == SET_PROJECT_DIR ) {
         launchProjectChooser(  );
-      } else if( command.equals( EXIT_COMMAND ) ) {
+      } else if( command == EXIT_COMMAND ) {
         close(  );
+      } else if( command == REMOTE_SELECTOR ) {
+        isRemote = ( ( JCheckBox )event.getSource(  ) ).isSelected(  );
       } else {
+        //parameter selection command
         displayParameterViewer( command );
       }
     }
@@ -2081,7 +2086,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
         message.append( "save the Wizard and send both the Wizard Save\n" );
         message.append( "File and the wizard.err file to your developer.\n" );
         displayAndSaveErrorMessage( e, "wizard", message );
-        initFileChooser(  );  //reset the file chooser
 
         //reset the progress bars by re-showing the Form
         showForm( getCurrentFormNumber(  ) );
