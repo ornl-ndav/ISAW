@@ -3,6 +3,11 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/10/03 21:50:12  dennis
+ *  Removed code in the combine() method that dealt with DataSet tags,
+ *  since the DataSet tags will no longer be attributes, but will be
+ *  a field in the DataSet.
+ *
  *  Revision 1.4  2000/08/01 01:31:17  dennis
  *  Changed so that if an attribute is present in the first list, but not the
  *  second, the attribute from the first list used.
@@ -321,11 +326,7 @@ public class AttributeList implements Serializable
 
         else                              // combine them and append the result 
         {  
-          if ( attr_name == Attribute.DS_TAG )
-            new_list.addAttribute( this_attr ); 
-              // keep the DataSet tag from the first attribute list
-
-          else if ( attr_name == Attribute.RUN_TITLE )
+          if ( attr_name == Attribute.RUN_TITLE )
             new_list.addAttribute( this_attr ); 
               // keep the run title from the first attribute list, it would
               // be too long if concatenated
