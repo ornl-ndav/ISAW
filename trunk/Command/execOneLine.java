@@ -53,7 +53,7 @@ public class execOneLine implements IObservable ,
     public static final String ER_ImproperArgument            = "Improper Argument";
     public static final String ER_MissingArgument             = "Argument is Missing";
     public static final String ER_NumberFormatError           = "Number Format Error";
-    public static final String ER_NoSuchOperator              = "Operation is not Allowed";
+    public static final String ER_NoSuchOperator              = "Operation is not Found";
     public static final String ER_FunctionUndefined           = "Function is undefined";
     public static final String  ER_OutputOperationInvalid     =" Could not Save";
     public static final String ER_MissingQuote                = "Quotation mark missing";
@@ -346,7 +346,9 @@ public class execOneLine implements IObservable ,
                {seterror( i , "Must be the First command on a line" );
 	        return i;
                }
-          return execSave( S , j , end );
+             retn = execSave( S , j , end );
+             Result = null;
+             return retn;
               
          }
        else if( C.equals( "SEND") )
@@ -356,11 +358,14 @@ public class execOneLine implements IObservable ,
                 }
 	        if(Debug)
 	          System.out.println("Send j1="+j1);	
-	  return execSend(S,j1,end);
-              
+	      retn =execSend(S,j1,end);
+              Result = null;
+             return retn;             
          }
-        else if ( C.equals( "REM" ) )
-	  {if( start == 0 ) return S.length(); }
+        else if ( (C.equals( "REM" )) && (start == 0)  )
+	  {    Result = null; 
+               return S.length(); 
+          }
            
 	  
              if( Debug )
@@ -1818,7 +1823,7 @@ public class execOneLine implements IObservable ,
     public void DoOperation( Vector Args, String Command )
       { if(Debug)
           System.out.println("Start DoOperation comm =" + Command);
-        Operator op = (new GenericOperatorList()).getOperator( Command );
+        Operator op = GenericOperatorList.getOperator( Command );
         if( op == null )
           { if(Debug)
               System.out.print("A");
@@ -1907,8 +1912,7 @@ public class execOneLine implements IObservable ,
              ArgsC[0] = Class.forName("java.lang.String");
              java.lang.reflect.Constructor Cons = C.getConstructor( ArgsC);
              Object Argvs[] = new Object[1];
-             Argvs[0] = Args.get( k + start ) ;
-             
+             Argvs[0] = Args.get( k + start ) ;            
 
              op.getParameter( k ).setValue( Cons.newInstance(Argvs));
              }
@@ -2684,11 +2688,38 @@ public class execOneLine implements IObservable ,
          };
       }//end Assign
 
-
+     private void Delete( int i , DataSet DS[])
+       { if( i < 0 ) return;
+         if( i >= DS.length)
+           return;
+         int k;
+         for( k = i; i < DS.length ; k++)
+           DS[k] = DS[ k+1];
+         DS [ DS.length - 1] = null;
+       }
     
 
      public void update( Object observed_obj , Object reason )
-       {
+       { if( observed_obj != null) 
+          if( observed_obj instanceof DataSet)
+            if( reason instanceof String)
+              if( reason.equals( IObserver.DESTROY))
+                 { int i = finddDS( ((DataSet)observed_obj).getTitle(), ds);
+                   int leng = ds.length;
+                   if( i < leng )
+                    if( ds[ i ] != null )
+                      {Delete( i , ds);
+                       ds1 = ds;
+                       ds = new DataSet[ leng - 1];
+                       int m;
+                       for( m = 0; m < i ; m++ )
+                         ds[ m ] = ds1[ m ];
+
+                       for( m = i ; m < leng - 1; m++)
+                         ds[ m ] = ds1[ m +1 ];
+                       }
+                       
+                 }    
        } 
 //************************SECTION:EVENTS********************
     /** 
