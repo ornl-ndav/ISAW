@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/05/10 22:46:53  dennis
+ *  Test program now just instantiates a ViewManager to diplay
+ *  calculated DataSet, rather than keeping a reference to it.
+ *  This removes an Eclipse warning about a local variable that is
+ *  not read.
+ *
  *  Revision 1.5  2004/05/07 17:45:57  dennis
  *  Changed test program to use Hello operator from
  *  Operators/Example instead of from Operators
@@ -56,7 +62,6 @@ import DataSetTools.util.*;
 import DataSetTools.operator.*;
 import DataSetTools.viewer.*;
 import DataSetTools.operator.Generic.Load.*;
-import Operators.*;
 import Operators.Example.*;
 
 /**
@@ -168,7 +173,7 @@ public class RemoteOpExecClient extends TCPClient
       if ( result instanceof DataSet )
       {
         System.out.println("Result of LoadOneHistogramDS is a DataSet...");
-        ViewManager vm = new ViewManager( (DataSet)result, ViewManager.IMAGE );
+        new ViewManager( (DataSet)result, ViewManager.IMAGE );
       }
       else
         System.out.println("LoadOneHistogramDS returned " + result.toString());
