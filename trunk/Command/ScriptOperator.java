@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2001/11/12 21:27:55  dennis
+ *   1. Supports  GROUP1_HOME, GROUP2_HOME, etc. These will be separated
+ *      under IsawGUI's Macros menu into  Group Scripts, Group1 Scripts,
+ *      Group2 Scripts, etc.
+ *
  * Revision 1.14  2001/11/09 18:23:20  dennis
  *   1. Eliminated the System.exit(0) when the JParametersDialog is
  *      needed for parameters. Used a Window Listener to exit when
@@ -172,20 +177,32 @@ public class ScriptOperator extends GenericOperator
           }
      
        String F3=F;
-       if( MainCat == null)  
-         {  X = System.getProperty( "GROUP_HOME");
+       int g=0;
+       String grp ="";
+       
+       X = System.getProperty( "GROUP_HOME");
+       while( (MainCat== null)&&(X !=null)) 
+         {if( MainCat == null)  
+           {  
             
-            if( X!=null)
-               {X = X.replace( '\\', '/');
-                X.replace(java.io.File.pathSeparatorChar, ';');
-                F3 = adjust ( F , X );
-               }
-         } 
-       if( !(F3.equals(F)))
-         { MainCat = "Group Scripts";
-           F = F3;
-         }
-      
+              if( X!=null)
+                 {X = X.replace( '\\', '/');
+                  X.replace(java.io.File.pathSeparatorChar, ';');
+                  F3 = adjust ( F , X );
+                 }
+           } 
+         if( !(F3.equals(F)))
+            { MainCat = "Group"+grp+" Scripts";
+              F = F3;
+            }
+         else
+            { g++;
+              grp=""+g;
+              grp=grp.trim();
+              X = System.getProperty( "GROUP"+grp+"_HOME");
+             }
+        
+        }
        if( MainCat == null)
          {  X = System.getProperty( "user.home");
             if( X != null)   
