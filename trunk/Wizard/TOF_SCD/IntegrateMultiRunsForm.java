@@ -155,7 +155,8 @@ public class IntegrateMultiRunsForm extends Form
     s.append("multiple SCD RunFiles. ");
     s.append("@assumptions It is assumed that:\n");
     s.append("1. Data of interest is in histogram 2.\n");
-    s.append("2. There is a matrix file for each run.");
+    s.append("2. There is a matrix file for each run, in the format \"ls");
+    s.append("<experiment name><run number>.mat\"\n.");
     s.append("@algorithm This Form first gets all the user input parameters, ");
     s.append("then for each runfile, it loads the first histogram, the SCD ");
     s.append("calibration data, and calls Integrate.\n");
@@ -346,13 +347,12 @@ public class IntegrateMultiRunsForm extends Form
         return errorOut("LoadSCDCalib failed: " + obj.toString());
 
       /*Gets matrix file "lsxxxx.mat" for each run
-        The "1" means that every peak will be written to the integrate.log file.
-        At the moment, this will only load one matrix file, and will stay so
-        until a LsqrsForm is written that can create these lsxxxx.mat files
-        automagically.*/
+        The "1" means that every peak will be written to the integrate.log file.*/
+      matrixName = outputDir + "/ls" + expName + runNum + ".mat";
+      matrixName = StringUtil.setFileSeparator(matrixName);
+      SharedData.addmsg("Integrating run number " + runNum + ".");
       obj = new Integrate(histDS, integName, 
-                          outputDir + "ls"  + runNum + ".mat",
-                         /*matrixName,*/
+                         matrixName,
                          sliceRange, timeSliceDelta, 1,
                          append).getResult();
       if(obj instanceof ErrorString)
