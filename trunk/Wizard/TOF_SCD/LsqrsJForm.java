@@ -28,6 +28,16 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.30  2004/06/04 19:03:21  dennis
+ * Changed minimum run number length from 5 to 4.  This is a consequence
+ * of using SCD0 as the instrument prefix in the integrate form.
+ * This fixes a problem with the default orientation matrix file names:
+ *  "ls" + exp_name + run_number + ".mat"
+ * Previously, the leading "0" was taken as part of the run number when
+ * forming the matrix file name in least squares, and was not taken as
+ * part of the run number when the orientation matrix was used in the
+ * updated integrate form.
+ *
  * Revision 1.29  2004/03/15 03:37:40  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -157,7 +167,9 @@ import Operators.TOF_SCD.LsqrsJ;
 public class LsqrsJForm extends Form {
   //~ Static fields/initializers ***********************************************
 
-  protected static int RUN_NUMBER_WIDTH = 5;
+  protected static int RUN_NUMBER_WIDTH = 4;      // minimum run number width
+                                                  // shorter run numbers are
+                                                  // padded with zeros on left
   private static final String identmat  = "[[1,0,0][0,1,0][0,0,1]]";
 
   //~ Constructors *************************************************************
