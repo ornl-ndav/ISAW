@@ -29,6 +29,13 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.27  2003/09/15 02:05:52  dennis
+ * 1. Renamed compItoDI() method to increasingIsigI()
+ * 2. Added method is_significant() that checks if I > 2 * sigI
+ *    AND I > 0.01 * total I.
+ * 3. Slices are now integrated and included if either the increase I/sigI
+ *    or if is_significant() is true.
+ *
  * Revision 1.26  2003/08/27 23:17:44  bouzekc
  * Added constructor to set the centering type parameter (similar to other full
  * constructor).
@@ -769,6 +776,17 @@ public class Integrate extends GenericTOF_SCD{
    */
   private static void integratePeak(Peak peak, DataSet ds, int[][] ids,
                         int[] timeZrange, int increaseSlice, StringBuffer log){
+    // track what's going on in some cases
+    boolean trace = false;
+    int trace_h = -1;
+    int trace_k =  3;
+    int trace_l =  3;
+    if ( Math.round(peak.h()) == trace_h && 
+         Math.round(peak.k()) == trace_k && 
+         Math.round(peak.l()) == trace_l  )
+      trace = true;
+    trace = false;   // disable trace now.
+
     // set up where the peak is located
     float[] tempIsigI=null;
     int cenX=(int)Math.round(peak.x());
@@ -881,7 +899,8 @@ public class Integrate extends GenericTOF_SCD{
       // shrink what is calculated if the slice would not be added
                 // this is not fully correct since Itot and dItot aren't
                 // changing when a slice should be added
-      if(! compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
+      if(! increasingIsigI(Itot,dItot,IsigI[k][0],IsigI[k][1]) && 
+         ! is_significant (Itot,dItot,IsigI[k][0],IsigI[k][1]) ) {
         minZrange=zrange[k]+1;
         continue;
       }
@@ -932,7 +951,8 @@ public class Integrate extends GenericTOF_SCD{
         // shrink what is calculated if the slice would not be added
         // this is not fully correct since Itot and dItot aren't
         // changing when a slice should be added
-        if(! compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
+        if(! increasingIsigI(Itot,dItot,IsigI[k][0],IsigI[k][1]) && 
+           ! is_significant (Itot,dItot,IsigI[k][0],IsigI[k][1]) ) {
           maxZrange=zrange[k]-1;
           continue;
         }
@@ -958,7 +978,8 @@ public class Integrate extends GenericTOF_SCD{
 
     // now the previous slices
     for( int k=indexZcen-1 ; k>=indexZmin ; k-- ){
-      if( compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
+      if( increasingIsigI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ||
+          is_significant (Itot,dItot,IsigI[k][0],IsigI[k][1]) ) {
         Itot=Itot+IsigI[k][0];
         dItot=(float)Math.sqrt(dItot*dItot+IsigI[k][1]*IsigI[k][1]);
       }else{
@@ -969,7 +990,8 @@ public class Integrate extends GenericTOF_SCD{
 
     // now the following slices
     for( int k=indexZcen+1 ; k<=indexZmax ; k++ ){
-      if( compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
+      if( increasingIsigI(Itot,dItot,IsigI[k][0],IsigI[k][1])  ||
+          is_significant (Itot,dItot,IsigI[k][0],IsigI[k][1])  ) {
         Itot=Itot+IsigI[k][0];
         dItot=(float)Math.sqrt(dItot*dItot+IsigI[k][1]*IsigI[k][1]);
       }else{
@@ -977,6 +999,11 @@ public class Integrate extends GenericTOF_SCD{
         indexZmax=k-1;
       }
     }
+
+   if ( trace )
+     for ( int k = 0; k < IsigI.length; k++ )
+       System.out.println("slice, I, sigI = " + k + 
+                          ", " + IsigI[k][0] + ", " + IsigI[k][1] ); 
 
     // then add information to the log file
     if(log!=null){
@@ -1163,9 +1190,11 @@ public class Integrate extends GenericTOF_SCD{
   
   /**
    * Utility method to determine whether adding I,dI to Itot,dItot
-   * will increase the overall ratio or not
+   * will increase the overall I/sigI ratio or not
    */
-  private static boolean compItoDI(float Itot, float dItot, float I, float dI){
+  private static boolean increasingIsigI( float Itot, float dItot, 
+                                          float I,    float dI)  
+  {
     if(I<=0f || dI==0f) return false;
     if(Itot==0f && dItot==0f) return true;
 
@@ -1174,6 +1203,42 @@ public class Integrate extends GenericTOF_SCD{
     
     return ( (Itot/dItot)<(myItot/myDItot) );
   }
+
+  /**
+   * Check whether or not the additional intensity is at least 1% of the
+   * total AND the I/sigI ratio is at least 2.
+   */
+  private static boolean is_significant( float Itot, 
+                                         float dItot, 
+                                         float I, 
+                                         float dI)
+  {
+    // System.out.print("is_significant: " + Itot + ", " + dItot + 
+    //                                ", " + I    + ", " + dI );
+    if(I<=0f || dI==0f)
+    {
+      // System.out.println(" false, since I <=, dI = 0 ");
+      return false;
+    }
+
+    if(Itot==0f && dItot==0f) 
+    {
+      // System.out.println(" true, since Itot, dItot = 0 ");
+      return true;
+    }
+
+    if ( (I > 0.01 * Itot) && I > 2*dI )
+    {
+      // System.out.println(" true, since I > 0.01 Itot && I > 2*dI ");
+      return true;
+    }
+    else
+    {
+      // System.out.println(" false ");
+      return false;
+    }
+  }
+
 
   /**
    * Determines whether the integration range lies on the detector.
