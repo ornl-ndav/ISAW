@@ -142,6 +142,8 @@ public class FortranParser implements FortranParserConstants {
       case FORTRAN_MOD_FUN:
       case FORTRAN_FLOOR_FUN:
       case FORTRAN_FRACTION_FUN:
+      case FORTRAN_EXPRESSION:
+      case VAR_ASSIGN:
       case FORTRAN_INT:
       case FORTRAN_REAL:
       case FORTRAN_DOUBLE:
@@ -201,6 +203,8 @@ public class FortranParser implements FortranParserConstants {
       case FORTRAN_MOD_FUN:
       case FORTRAN_FLOOR_FUN:
       case FORTRAN_FRACTION_FUN:
+      case FORTRAN_EXPRESSION:
+      case VAR_ASSIGN:
       case FORTRAN_INT:
       case FORTRAN_REAL:
       case FORTRAN_DOUBLE:
@@ -241,6 +245,16 @@ public class FortranParser implements FortranParserConstants {
     s = s.substring( 1, s.length(  ) );
     s = "//" + s;
     {if (true) return s;}
+      break;
+    case FORTRAN_EXPRESSION:
+      //some kind of math expression
+        t = jj_consume_token(FORTRAN_EXPRESSION);
+    {if (true) return t.image;}
+      break;
+    case VAR_ASSIGN:
+      //variable assignment
+        t = jj_consume_token(VAR_ASSIGN);
+    {if (true) return t.image;}
       break;
     case FORTRAN_ABS:
       //matched the absolute function
@@ -479,7 +493,7 @@ public class FortranParser implements FortranParserConstants {
       jj_la1_0 = new int[] {0xfe02c04a,0xfe02c048,0xfe02c048,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x3fff,0x3fff,0x3fff,};
+      jj_la1_1 = new int[] {0xff0ff,0xff0ff,0xff0ff,};
    }
 
   public FortranParser(java.io.InputStream stream) {
@@ -599,8 +613,8 @@ public class FortranParser implements FortranParserConstants {
 
   static public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[46];
-    for (int i = 0; i < 46; i++) {
+    boolean[] la1tokens = new boolean[52];
+    for (int i = 0; i < 52; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -619,7 +633,7 @@ public class FortranParser implements FortranParserConstants {
         }
       }
     }
-    for (int i = 0; i < 46; i++) {
+    for (int i = 0; i < 52; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

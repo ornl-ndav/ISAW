@@ -43,12 +43,18 @@ public interface FortranParserConstants {
   int FORTRAN_MOD_FUN = 37;
   int FORTRAN_FLOOR_FUN = 38;
   int FORTRAN_FRACTION_FUN = 39;
-  int FORTRAN_INT = 40;
-  int FORTRAN_REAL = 41;
-  int FORTRAN_DOUBLE = 42;
-  int FORTRAN_LOGICAL = 43;
-  int FORTRAN_CHAR_1 = 44;
-  int FORTRAN_CHAR_2 = 45;
+  int OPERATOR = 40;
+  int OPERAND = 41;
+  int SIMPLE_EXPRESSION = 42;
+  int NESTED_EXPRESSION = 43;
+  int FORTRAN_EXPRESSION = 44;
+  int VAR_ASSIGN = 45;
+  int FORTRAN_INT = 46;
+  int FORTRAN_REAL = 47;
+  int FORTRAN_DOUBLE = 48;
+  int FORTRAN_LOGICAL = 49;
+  int FORTRAN_CHAR_1 = 50;
+  int FORTRAN_CHAR_2 = 51;
 
   int DEFAULT = 0;
 
@@ -93,6 +99,12 @@ public interface FortranParserConstants {
     "<FORTRAN_MOD_FUN>",
     "<FORTRAN_FLOOR_FUN>",
     "<FORTRAN_FRACTION_FUN>",
+    "<OPERATOR>",
+    "<OPERAND>",
+    "<SIMPLE_EXPRESSION>",
+    "<NESTED_EXPRESSION>",
+    "<FORTRAN_EXPRESSION>",
+    "<VAR_ASSIGN>",
     "<FORTRAN_INT>",
     "<FORTRAN_REAL>",
     "<FORTRAN_DOUBLE>",
