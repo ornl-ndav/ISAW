@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.20  2004/01/08 15:06:19  bouzekc
+ * Removed unused imports and unused local variables.
+ *
  * Revision 1.19  2003/08/08 16:31:43  chatterjee
  * The 'Modified' folder in the Tree view now opens up and the
  * scrollbar moves to it when a modified dataset is put into it.
@@ -53,29 +56,19 @@
  
 package IsawGUI;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
-import javax.swing.JTree.*;
-import javax.swing.plaf.basic.*;
-import java.util.*;
-import java.awt.*;
+import java.awt.GridLayout;
 import java.awt.event.*;
-import java.io.*;
-import DataSetTools.retriever.*;
-import DataSetTools.dataset.*;
-import DataSetTools.math.*;
-import DataSetTools.viewer.*;
-import DataSetTools.util.*;
-import Command.*;
-import javax.swing.border.*;
+import java.io.Serializable;
+import java.util.*;
 
-import IPNS.Runfile.*;
-import DataSetTools.operator.*;
-import DataSetTools.instruments.*;
-import DataSetTools.components.ui.OperatorMenu;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.*;
+
 import DataSetTools.components.ParametersGUI.IDataSetListHandler;
-import java.awt.datatransfer.*;
+import DataSetTools.dataset.*;
+import DataSetTools.util.IObserver;
 
 /**
  * wraps a JTree object.  the result is a simpler interface that's
@@ -474,7 +467,6 @@ public class JDataTree
     {
 
       DataMutableTreeNode data_node = (DataMutableTreeNode)node;
-      int group_id = data_node.getUserObject().getGroup_ID();
 
       DataSetMutableTreeNode dataset_node = (DataSetMutableTreeNode)data_node.getParent();
       ds = (DataSet)dataset_node.getUserObject();
@@ -665,7 +657,6 @@ public class JDataTree
 
     if(  node instanceof DataMutableTreeNode  )
     {
-      DataMutableTreeNode d_node = (DataMutableTreeNode)node;
       DataSetMutableTreeNode ds_node = (DataSetMutableTreeNode)node.getParent();
       ds = ds_node.getUserObject();
     }
