@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/04/01 20:18:47  rmikk
+ * Changed an argument to the ProcessDS method from the DataSet index to the NxNode of the first NXdata
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
@@ -49,7 +52,7 @@ public interface NXentry
  
  //index parameter is there in case that there is more
  //   than one NXdata per NXentry
-  public boolean processDS(DataSet DS, int index);
+  public boolean processDS(DataSet DS, NxNode Mon_DB);
                             
 
   //
