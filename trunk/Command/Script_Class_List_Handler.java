@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.49  2003/08/25 18:12:34  rmikk
+ * Caught a Throwable from Jython scripts
+ *
  * Revision 1.48  2003/08/11 18:04:01  bouzekc
  * Now uses PyScriptOperator.
  *
@@ -977,6 +980,9 @@ public class Script_Class_List_Handler  implements OperatorHandler{
           }catch(InstantiationError e){
             op=null;
             if(LoadDebug) System.out.print("(InstantiationError) ");
+          }catch(Throwable e){
+            op = null;
+            if(LoadDebug) System.out.println( "Err="+e.toString());
           }
 
           // add it to the proper lists
