@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2003/04/15 18:54:08  pfpeterson
+ * Added option to increase integration size of time slice after maximizing
+ * the ratio of I/dI for the time slice.
+ *
  * Revision 1.15  2003/04/14 18:50:46  pfpeterson
  * Fixed bug where observed intensity was not always found.
  *
@@ -132,6 +136,8 @@ public class Integrate extends GenericTOF_SCD{
     getParameter(1).setValue(path);
     getParameter(2).setValue(expname);
     // parameter 3 keeps its default value
+    // parameter 4 keeps its default value
+    // parameter 5 keeps its default value
   }
   
   /* --------------------------- getCommand ------------------------------- */ 
@@ -161,6 +167,7 @@ public class Integrate extends GenericTOF_SCD{
     ChoiceListPG clpg=new ChoiceListPG("Centering", choices.elementAt(0));
     clpg.addItems(choices);
     addParameter(clpg);
+    addParameter(new IntegerPG("Increase slice size by",0));
     addParameter(new IntegerPG("Log every nth Peak",3));
   }
   
@@ -213,6 +220,7 @@ public class Integrate extends GenericTOF_SCD{
     int centering=0;
     this.logBuffer=new StringBuffer();
     int listNthPeak=3;
+    int increaseSlice=0;
 
     // first get the DataSet
     val=getParameter(0).getValue();
@@ -255,8 +263,11 @@ public class Integrate extends GenericTOF_SCD{
     centering=choices.indexOf((String)val);
     if( centering<0 || centering>=choices.size() ) centering=0;
 
+    // then how much to increase the integration size
+    increaseSlice=((IntegerPG)getParameter(4)).getintValue();
+
     // then how often to log a peak
-    listNthPeak=((IntegerPG)getParameter(4)).getintValue();
+    listNthPeak=((IntegerPG)getParameter(5)).getintValue();
 
     // now the uncertainty in the peak location
     int dX=2, dY=2, dZ=1;
@@ -274,6 +285,7 @@ public class Integrate extends GenericTOF_SCD{
     logBuffer.append(getParameter(2).getName()+" = "+expname+"\n");
     logBuffer.append(getParameter(3).getName()+" = "
                      +choices.elementAt(centering)+"\n");
+    logBuffer.append(getParameter(4).getName()+" = "+increaseSlice+"\n");
     logBuffer.append("Adjust center to nearest point with dX="+dX+" dY="+dY
                      +" dZ="+dZ+"\n");
 
@@ -475,9 +487,9 @@ public class Integrate extends GenericTOF_SCD{
     // integrate the peaks
     for( int i=peaks.size()-1 ; i>=0 ; i-- ){
       if( i%listNthPeak == 0 )
-        integratePeak((Peak)peaks.elementAt(i),ds,ids,logBuffer);
+        integratePeak((Peak)peaks.elementAt(i),ds,ids,increaseSlice,logBuffer);
       else
-        integratePeak((Peak)peaks.elementAt(i),ds,ids,null);
+        integratePeak((Peak)peaks.elementAt(i),ds,ids,increaseSlice,null);
       /*if(((Peak)peaks.elementAt(i)).inti()==0f)
         peaks.remove(i);*/
     }
@@ -566,12 +578,14 @@ public class Integrate extends GenericTOF_SCD{
    * adds the results from each time slice to maximize the total I/dI.
    */
   private static void integratePeak(Peak peak, DataSet ds, int[][] ids,
-                                                             StringBuffer log){
+                                          int increaseSlice, StringBuffer log){
+    // set up where the peak is located
     float[] tempIsigI=null;
     int cenX=(int)Math.round(peak.x());
     int cenY=(int)Math.round(peak.y());
     int cenZ=(int)Math.round(peak.z());
 
+    // set up the time slices to integrate
     int minZrange=-1;
     int maxZrange=3;
     int[] zrange=new int[maxZrange-minZrange+1];
@@ -589,6 +603,17 @@ public class Integrate extends GenericTOF_SCD{
       if( zrange[i]<minZ || zrange[i]>=maxZ ) return; // ends of time axis
     }
     
+    // determine the range in index
+    int indexZmin=0;
+    int indexZcen=0;
+    int indexZmax=0;
+    for( int i=0 ; i<zrange.length ; i++ ){
+      if(zrange[i]==minZrange) indexZmin=i;
+      if(zrange[i]==cenZ)      indexZcen=i;
+      if(zrange[i]==maxZrange) indexZmax=i;
+    }
+
+    // add some information to the log file (if necessary)
     if(log!=null){
       log.append("\n******************** hkl = "+formatInt(peak.h())+" "
                  +formatInt(peak.k())+" "+formatInt(peak.l())
@@ -609,7 +634,8 @@ public class Integrate extends GenericTOF_SCD{
       innerLog.delete(0,innerLog.length());
       if(zrange[k]<minZrange  || zrange[k]>maxZrange)
         continue;
-      tempIsigI=integratePeakSlice(ds,ids,cenX,cenY,zrange[k],innerLog);
+      tempIsigI
+        =integratePeakSlice(ds,ids,cenX,cenY,zrange[k],increaseSlice,innerLog);
       integSliceLogs[k]=innerLog.toString();
       // update the list of integrals if intensity is positive
       if( tempIsigI[0]>0f ){
@@ -641,9 +667,6 @@ public class Integrate extends GenericTOF_SCD{
     }
 
     // determine the range to bother trying to sum over
-    int indexZmin=0;
-    int indexZcen=0;
-    int indexZmax=0;
     for( int i=0 ; i<zrange.length ; i++ ){
       if(zrange[i]==minZrange) indexZmin=i;
       if(zrange[i]==cenZ)      indexZcen=i;
@@ -722,7 +745,7 @@ public class Integrate extends GenericTOF_SCD{
    * maximize I/dI.
    */
   private static float[] integratePeakSlice(DataSet ds, int[][] ids,
-                                  int Xcen, int Ycen, int z, StringBuffer log){
+               int Xcen, int Ycen, int z, int increaseSlice, StringBuffer log){
     float[] IsigI=new float[2];
     float[] tempIsigI=new float[2];
 
@@ -782,8 +805,24 @@ public class Integrate extends GenericTOF_SCD{
       }
     }
 
-    formatRange(rng,log);
+    // increase the size of the slice's integration (if requested)
+    if(increaseSlice>0){
+      rng[0]=rng[0]-increaseSlice;
+      rng[1]=rng[1]+increaseSlice;
+      rng[2]=rng[2]-increaseSlice;
+      rng[3]=rng[3]+increaseSlice;
+      if( checkRange(ids,rng[0],rng[2],rng[1],rng[3])){
+        IsigI=integrateSlice(ds,ids,rng[0],rng[2],rng[1],rng[3],z);
+      }else{ // goes out of range
+        rng[0]=rng[0]+increaseSlice;
+        rng[1]=rng[1]-increaseSlice;
+        rng[2]=rng[2]+increaseSlice;
+        rng[3]=rng[3]-increaseSlice;
+      }
+    }
 
+    // add information to the log and return the integral
+    formatRange(rng,log);
     return IsigI;
   }
 
