@@ -1,5 +1,5 @@
 /*
- * File:  ChooserPG.java 
+ * File:  ChooserPG.java
  *
  * Copyright (C) 2003, Peter F. Peterson
  *
@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.25  2004/01/14 19:00:11  bouzekc
+ *  Formatted code in preparation for bug hunting.
+ *
  *  Revision 1.24  2004/01/14 18:41:12  bouzekc
  *  Fixed a bug that occurred when calling setValue() when the internal
  *  list was empty.
@@ -113,77 +116,94 @@
  *  Added to CVS.
  *
  */
-
 package DataSetTools.parameter;
 
-import java.util.Vector;
-import DataSetTools.components.ParametersGUI.HashEntry;
-import DataSetTools.dataset.DataSet;
 import DataSetTools.components.ParametersGUI.EntryWidget;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import DataSetTools.components.ParametersGUI.HashEntry;
+
+import DataSetTools.dataset.DataSet;
+
 import java.beans.PropertyChangeListener;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import java.util.Vector;
+
+
 /**
- * This is a superclass to take care of many of the common details of
- * Parameter GUIs that use a combobox.
+ * This is a superclass to take care of many of the common details of Parameter
+ * GUIs that use a combobox.
  */
-abstract public class ChooserPG extends ParameterGUI{
+public abstract class ChooserPG extends ParameterGUI {
+  //~ Static fields/initializers ***********************************************
+
   // static variables
-  private   static String TYPE     = "Chooser";
-  protected static int    DEF_COLS = 20;
+  private static String TYPE    = "Chooser";
+  protected static int DEF_COLS = 20;
+
+  //~ Instance fields **********************************************************
 
   // instance variables
-  protected Vector vals=null;
+  protected Vector vals = null;
+
+  //~ Constructors *************************************************************
 
   // ********** Constructors **********
-  public ChooserPG(String name, Object val){
-    super(name, val);
-    setValue(val);
-    this.setType(TYPE);
-  }
-
-  public ChooserPG(String name, Object val, boolean valid){
-    super(name, val, valid);
-    setValue(val);
-    this.setType(TYPE);
-  }
-
-  // ********** Methods to deal with the hash **********
-
-  /**
-   * Add a single item to the vector of choices.
-   */
-  public void addItem( Object val){
-    if(this.vals==null) this.vals=new Vector(); // initialize if necessary
-    if(val==null) return; // don't add null to the vector
-    if(this.vals.indexOf(val)<0) {this.vals.add(val);
-    if( getInitialized())
-       ((HashEntry)(getEntryWidget().getComponent(0))).addItem( val);}
+  public ChooserPG( String name, Object val ) {
+    super( name, val );
+    setValue( val );
+    this.setType( TYPE );
   }
 
   /**
-   * Add a set of items to the vector of choices at once.
+   * Creates a new ChooserPG object.
+   *
+   * @param name DOCUMENT ME!
+   * @param val DOCUMENT ME!
+   * @param valid DOCUMENT ME!
    */
-  public void addItems( Vector values){
-    for( int i=0 ; i<values.size() ; i++ ){
-      addItem(values.elementAt(i));
+  public ChooserPG( String name, Object val, boolean valid ) {
+    super( name, val, valid );
+    setValue( val );
+    this.setType( TYPE );
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * Get the index of an item.
+   */
+  public int getIndex( Object val ) {
+    return vals.indexOf( val );
+  }
+
+  /**
+   * Sets the value of the parameter.  This will add an item to the list if it
+   * is not in there already.  This will simply return if the new value is
+   * null
+   *
+   * @param val The new value to be set.
+   */
+  public void setValue( Object val ) {
+    if( val != null ) {
+      if( vals == null ) {
+        vals = new Vector(  );
+      }
+
+      if( vals.indexOf( val ) < 0 ) {
+        addItem( val );
+      }
+
+      //update the GUI part
+      if( this.getInitialized(  ) ) {
+        ( ( HashEntry )( getEntryWidget(  ).getComponent( 0 ) ) ).setSelectedItem( 
+          val );
+      }
+
+      //always update the internal value
+      super.setValue( val );
     }
-  }
-
-  /**
-   * Remove an item from the hash based on its key.
-   */
-  public void removeItem( Object val ){
-    int index=vals.indexOf(val);
-    if(index>=0) vals.remove(index);
-  }
-
-  /**
-   *  Get the index of an item.
-   */
-  public int getIndex(Object val){
-    return vals.indexOf(val);
   }
 
   // ********** IParameter requirements **********
@@ -192,122 +212,83 @@ abstract public class ChooserPG extends ParameterGUI{
    * Returns the value of the selected item if this ParameterGUI has been
    * getInitialized().  Otherwise, it returns the internal value.
    */
-  public Object getValue(){
-    Object val=super.getValue();
-    if(this.getInitialized()){
-      val=((HashEntry)(getEntryWidget().getComponent(0))).getSelectedItem();
+  public Object getValue(  ) {
+    Object val = super.getValue(  );
+
+    if( this.getInitialized(  ) ) {
+      val = ( ( HashEntry )( getEntryWidget(  ).getComponent( 0 ) ) ).getSelectedItem(  );
     }
+
     return val;
   }
 
+  // ********** Methods to deal with the hash **********
+
   /**
-   * Sets the value of the parameter.  This will add an item to the list
-   * if it is not in there already.  This will simply return if the new value
-   * is null
-   * 
-   * @param val The new value to be set.
+   * Add a single item to the vector of choices.
    */
-  public void setValue(Object val){
-    if(val != null) {
+  public void addItem( Object val ) {
+    if( this.vals == null ) {
+      this.vals = new Vector(  );  // initialize if necessary
+    }
 
-      if( vals == null ) {
-        vals = new Vector(  );
-      }
-      
-      if(vals.indexOf(val) < 0) {
-        addItem( val );
-      }
-    
-      //update the GUI part
-      if(this.getInitialized()){
-        ((HashEntry)(getEntryWidget().getComponent(0))).setSelectedItem(val);
-      }
+    if( val == null ) {
+      return;  // don't add null to the vector
+    }
 
-      //always update the internal value
-      super.setValue(val);
+    if( this.vals.indexOf( val ) < 0 ) {
+      this.vals.add( val );
+
+      if( getInitialized(  ) ) {
+        ( ( HashEntry )( getEntryWidget(  ).getComponent( 0 ) ) ).addItem( val );
+      }
     }
   }
 
-  // ********** IParameterGUI requirements **********
   /**
-   * Allows for initialization of the GUI after instantiation.
+   * Add a set of items to the vector of choices at once.
    */
-  public void initGUI(Vector init_values){
-    if(this.getInitialized()) return;
-    addItem(getValue());
-    if(init_values!=null && init_values.size()>0){
-      Object initVal = getValue();
-      if(initVal!=null && initVal!=DataSet.EMPTY_DATA_SET)
-        this.addItem(initVal);
-      if(init_values.size()==1){
-        this.setValue(init_values.elementAt(0));
-      }else{
-        for( int i=0 ; i<init_values.size() ; i++ ){
-          this.addItem(init_values.elementAt(i));
-        }
-      }
-    }else{
-      // something is not right, should throw an exception
+  public void addItems( Vector values ) {
+    for( int i = 0; i < values.size(  ); i++ ) {
+      addItem( values.elementAt( i ) );
     }
-
-    // set up the combobox
-    setEntryWidget(new EntryWidget(new HashEntry(this.vals)));
-    super.initGUI();
-    //ignore prop changes because we are about to change the value
-    boolean ignore = getIgnorePropertyChange(  );
-    setIgnorePropertyChange( true );
-    //GUI won't properly update without this
-    setValue( super.getValue(  ) );
-    setIgnorePropertyChange( ignore );
-  }
-
-  /**
-   * Since this is an array parameter, better allow an array to
-   * initialize the GUI.
-   */
-  public void initGUI(Object init_values[]){
-    Vector init_vec=new Vector();
-    for( int i=0 ; i<init_values.length ; i++ ){
-      init_vec.add(init_values[i]);
-    }
-    initGUI(init_vec);
   }
 
   /**
    * Definition of the clone method.  Overridden to provide for cloning the
    * internal Vector of values.
    */
-  public Object clone(){
+  public Object clone(  ) {
     try {
       Class klass           = this.getClass(  );
       Constructor construct = klass.getConstructor( 
           new Class[]{ String.class, Object.class } );
-      ChooserPG pg       = ( ChooserPG )construct.newInstance( 
+      ChooserPG pg          = ( ChooserPG )construct.newInstance( 
           new Object[]{ null, null } );
       pg.setName( new String( this.getName(  ) ) );
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
       pg.setValid( this.getValid(  ) );
 
-      if((this.vals) == null)
+      if( ( this.vals ) == null ) {
         pg.vals = null;
-      else
-        pg.vals=(Vector)this.vals.clone();
+      } else {
+        pg.vals = ( Vector )this.vals.clone(  );
+      }
 
-      if( this.getInitialized() ) {
+      if( this.getInitialized(  ) ) {
         pg.initGUI( new Vector(  ) );
         pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
       }
 
       if( this.getPropListeners(  ) != null ) {
-        java.util.Enumeration e = getPropListeners(  ).keys(  );
+        java.util.Enumeration e    = getPropListeners(  ).keys(  );
         PropertyChangeListener pcl = null;
-        String propertyName = null;
+        String propertyName        = null;
 
         while( e.hasMoreElements(  ) ) {
           pcl            = ( PropertyChangeListener )e.nextElement(  );
           propertyName   = ( String )getPropListeners(  ).get( pcl );
-
           pg.addPropertyChangeListener( propertyName, pcl );
         }
       }
@@ -320,8 +301,74 @@ abstract public class ChooserPG extends ParameterGUI{
     } catch( NoSuchMethodException e ) {
       throw new NoSuchMethodError( e.getMessage(  ) );
     } catch( InvocationTargetException e ) {
-      e.printStackTrace();
+      e.printStackTrace(  );
       throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
+    }
+  }
+
+  // ********** IParameterGUI requirements **********
+
+  /**
+   * Allows for initialization of the GUI after instantiation.
+   */
+  public void initGUI( Vector init_values ) {
+    if( this.getInitialized(  ) ) {
+      return;
+    }
+    addItem( getValue(  ) );
+
+    if( ( init_values != null ) && ( init_values.size(  ) > 0 ) ) {
+      Object initVal = getValue(  );
+
+      if( ( initVal != null ) && ( initVal != DataSet.EMPTY_DATA_SET ) ) {
+        this.addItem( initVal );
+      }
+
+      if( init_values.size(  ) == 1 ) {
+        this.setValue( init_values.elementAt( 0 ) );
+      } else {
+        for( int i = 0; i < init_values.size(  ); i++ ) {
+          this.addItem( init_values.elementAt( i ) );
+        }
+      }
+    } else {
+      // something is not right, should throw an exception
+    }
+
+    // set up the combobox
+    setEntryWidget( new EntryWidget( new HashEntry( this.vals ) ) );
+    super.initGUI(  );
+
+    //ignore prop changes because we are about to change the value
+    boolean ignore = getIgnorePropertyChange(  );
+    setIgnorePropertyChange( true );
+
+    //GUI won't properly update without this
+    setValue( super.getValue(  ) );
+    setIgnorePropertyChange( ignore );
+  }
+
+  /**
+   * Since this is an array parameter, better allow an array to initialize the
+   * GUI.
+   */
+  public void initGUI( Object[] init_values ) {
+    Vector init_vec = new Vector(  );
+
+    for( int i = 0; i < init_values.length; i++ ) {
+      init_vec.add( init_values[i] );
+    }
+    initGUI( init_vec );
+  }
+
+  /**
+   * Remove an item from the hash based on its key.
+   */
+  public void removeItem( Object val ) {
+    int index = vals.indexOf( val );
+
+    if( index >= 0 ) {
+      vals.remove( index );
     }
   }
 
