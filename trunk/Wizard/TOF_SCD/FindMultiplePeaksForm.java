@@ -28,6 +28,12 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.32  2004/04/21 19:13:21  dennis
+ * Added min and max time channel parameters and pass them through
+ * to FindPeaks() operator.
+ * Added name variables to hold parameter indices to improve
+ * maintainability.
+ *
  * Revision 1.31  2004/03/15 03:37:40  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -179,6 +185,21 @@ public class FindMultiplePeaksForm extends Form {
   private CentroidPeaks cenPeaks;
   private WriteExp wrExp;
   private WritePeaks wrPeaks;
+                                               // FYI, parameter indices, as set in
+                                               // setDefaultParameters() method
+  private int DATA_DIR_PARAM     = 0;
+  private int OUT_DIR_PARAM      = 1;
+  private int RUN_NUM_PARAM      = 2;
+  private int EXP_NAME_PARAM     = 3;
+  private int NUM_PEAKS_PARAM    = 4;
+  private int MIN_INTENS_PARAM   = 5;
+  private int MIN_TIME_PARAM     = 6;
+  private int MAX_TIME_PARAM     = 7;
+  private int APPEND_PARAM       = 8;
+  private int CALIB_LINE_PARAM   = 9;
+  private int CALIB_FILE_PARAM   = 10;
+  private int ROWS_TO_KEEP_PARAM = 11;
+  private int PEAK_FILE_PARAM    = 12;
 
   //~ Constructors *************************************************************
 
@@ -193,37 +214,51 @@ public class FindMultiplePeaksForm extends Form {
   /**
    * Full constructor for FindMultiplePeaksForm.
    *
-   * @param rawpath The raw data path.
-   * @param outpath The output data path for the .peaks file.
-   * @param runnums The run numbers to load.
-   * @param expname The experiment name (i.e. "quartz").
-   * @param num_peaks The maximum number of peaks to return.
-   * @param min_int The minimum peak intensity to look for.
+   * @param rawpath       The raw data path.
+   * @param outpath       The output data path for the .peaks file.
+   * @param runnums       The run numbers to load.
+   * @param expname       The experiment name (i.e. "quartz").
+   * @param num_peaks     The maximum number of peaks to return.
+   * @param min_int       The minimum peak intensity to look for.
+   * @param min_time_chan The minimum time channel to use.
+   * @param max_time_chan The maximum time channel to use.
    * @param append Append to file (yes/no).
-   * @param line2use SCD calibration file line to use.
-   * @param calibfile SCD calibration file.
+   * @param line2use      SCD calibration file line to use.
+   * @param calibfile     SCD calibration file.
    */
-  public FindMultiplePeaksForm( 
-    String rawpath, String outpath, String runnums, String expname,
-    int num_peaks, int min_int, boolean append, int line2use, String calibfile ) {
+  public FindMultiplePeaksForm( String  rawpath, 
+                                String  outpath, 
+                                String  runnums, 
+                                String  expname,
+                                int     num_peaks, 
+                                int     min_int, 
+                                int     min_time_chan, 
+                                int     max_time_chan, 
+                                boolean append, 
+                                int     line2use, 
+                                String calibfile ) {
     this(  );
-    getParameter( 0 )
+    getParameter( DATA_DIR_PARAM )
       .setValue( rawpath );
-    getParameter( 1 )
+    getParameter( OUT_DIR_PARAM )
       .setValue( outpath );
-    getParameter( 2 )
+    getParameter( RUN_NUM_PARAM )
       .setValue( runnums );
-    getParameter( 3 )
+    getParameter( EXP_NAME_PARAM )
       .setValue( expname );
-    getParameter( 4 )
+    getParameter( NUM_PEAKS_PARAM )
       .setValue( new Integer( num_peaks ) );
-    getParameter( 5 )
+    getParameter( MIN_INTENS_PARAM )
       .setValue( new Integer( min_int ) );
-    getParameter( 6 )
+    getParameter( MIN_TIME_PARAM )
+      .setValue( new Integer( min_time_chan ) );
+    getParameter( MAX_TIME_PARAM )
+      .setValue( new Integer( max_time_chan ) );
+    getParameter( APPEND_PARAM )
       .setValue( new Boolean( append ) );
-    getParameter( 7 )
+    getParameter( CALIB_LINE_PARAM )
       .setValue( new Integer( line2use ) );
-    getParameter( 8 )
+    getParameter( CALIB_FILE_PARAM )
       .setValue( calibfile );
   }
 
@@ -240,26 +275,71 @@ public class FindMultiplePeaksForm extends Form {
    * Attempts to set reasonable default parameters for this form.
    */
   public void setDefaultParameters(  ) {
+
     parameters = new Vector(  );
-    addParameter( new DataDirPG( "Raw Data Path", null, false ) );  //0
+    addParameter( new DataDirPG( "Raw Data Path", null, false ) );           //0
+    DATA_DIR_PARAM = 0;
+
     addParameter( new DataDirPG( "Peaks File Output Path", null, false ) );  //1
-    addParameter( new IntArrayPG( "Run Numbers", "", false ) );  //2
-    addParameter( new StringPG( "Experiment name", "", false ) );  //3
+    OUT_DIR_PARAM = 1;
+
+    addParameter( new IntArrayPG( "Run Numbers", "", false ) );              //2
+    RUN_NUM_PARAM = 2;
+
+    addParameter( new StringPG( "Experiment name", "", false ) );            //3
+    EXP_NAME_PARAM = 3;
+
     addParameter( 
-      new IntegerPG( "Maximum Number of Peaks", new Integer( 30 ), false ) );  //4
+      new IntegerPG( "Maximum Number of Peaks", new Integer( 30 ), false ) );//4
+    NUM_PEAKS_PARAM = 4;
+
     addParameter( 
-      new IntegerPG( "Minimum Peak Intensity", new Integer( 10 ), false ) );  //5
+      new IntegerPG( "Minimum Peak Intensity", new Integer( 10 ), false ) ); //5
+    MIN_INTENS_PARAM = 5;
+
     addParameter( 
-      new BooleanPG( "Append Data to File?", new Boolean( false ), false ) );  //6
+      new IntegerPG( "Minimum Time Channel", new Integer( 0 ), false ) );    //6
+    MIN_TIME_PARAM = 6;
+
+    addParameter( 
+      new IntegerPG( "Maximum Time Channel", new Integer( 1000 ), false ) ); //7
+    MAX_TIME_PARAM = 7;
+
+    addParameter( 
+      new BooleanPG( "Append Data to File?", new Boolean( false ), false ) );//8
+    APPEND_PARAM = 8;
+
     addParameter( 
       new IntegerPG( 
-        "SCD Calibration File Line to Use", new Integer( -1 ), false ) );  //7
-    addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );  //8
+        "SCD Calibration File Line to Use", new Integer( -1 ), false ) );    //9
+    CALIB_LINE_PARAM = 9;
+
+    addParameter( new LoadFilePG( "SCD Calibration File", null, false ) );  //10
+    CALIB_FILE_PARAM = 10;
+
     addParameter( 
-      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) );  //9
-    setResultParam( new LoadFilePG( "Peaks File", " ", false ) );  //10
-    setParamTypes( 
-      null, new int[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, new int[]{ 10 } );
+      new IntArrayPG( "Pixel Rows and Columns to Keep", "0:100", false ) ); //11
+    ROWS_TO_KEEP_PARAM = 11;
+
+    setResultParam( new LoadFilePG( "Peaks File", " ", false ) );           //12
+    PEAK_FILE_PARAM = 12;
+
+    // Now mark which parameters are constant, user specified, or results
+
+    setParamTypes( null, 
+                   new int[]{ DATA_DIR_PARAM,
+                              OUT_DIR_PARAM,
+                              RUN_NUM_PARAM,
+                              EXP_NAME_PARAM,
+                              NUM_PEAKS_PARAM,
+                              MIN_INTENS_PARAM,
+                              MIN_TIME_PARAM,
+                              MAX_TIME_PARAM,
+                              APPEND_PARAM,
+                              CALIB_LINE_PARAM,
+                              CALIB_FILE_PARAM,
+                              ROWS_TO_KEEP_PARAM },
+                   new int[]{ PEAK_FILE_PARAM } );
   }
 
   /**
@@ -287,6 +367,8 @@ public class FindMultiplePeaksForm extends Form {
     s.append( "@param expname The experiment name (i.e. \"quartz\").\n" );
     s.append( "@param num_peaks The maximum number of peaks to return.\n" );
     s.append( "@param min_int The minimum peak intensity to look for.\n" );
+    s.append( "@param min_time_chan The minimum time channel to use.\n" );
+    s.append( "@param max_time_chan The maximum time channel to use.\n" );
     s.append( "@param append Whether to append data to the peaks file.\n" );
     s.append( "@param line2use SCD calibration file line to use.\n" );
     s.append( "@param calibfile SCD calibration file.\n" );
@@ -326,6 +408,8 @@ public class FindMultiplePeaksForm extends Form {
     IParameterGUI param;
     int maxPeaks;
     int minIntensity;
+    int minTimeChan;
+    int maxTimeChan;
     int SCDline;
     int lowerLimit;
     int upperLimit;
@@ -349,47 +433,56 @@ public class FindMultiplePeaksForm extends Form {
     int[] keepRange;
 
     //get raw data directory
-    param          = ( IParameterGUI )super.getParameter( 0 );
+    param          = ( IParameterGUI )super.getParameter( DATA_DIR_PARAM );
     rawDir         = param.getValue(  )
                           .toString(  );
 
     //get output directory
-    param          = ( IParameterGUI )super.getParameter( 1 );
+    param          = ( IParameterGUI )super.getParameter( OUT_DIR_PARAM );
     outputDir      = param.getValue(  )
                           .toString(  );
 
     //gets the run numbers
-    param          = ( IParameterGUI )super.getParameter( 2 );
+    param          = ( IParameterGUI )super.getParameter( RUN_NUM_PARAM );
     runsArray      = IntList.ToArray( param.getValue(  ).toString(  ) );
 
     //get experiment name
-    param          = ( IParameterGUI )super.getParameter( 3 );
+    param          = ( IParameterGUI )super.getParameter( EXP_NAME_PARAM );
     expName        = param.getValue(  )
                           .toString(  );
 
     //get maximum number of peaks to find
-    param          = ( IParameterGUI )super.getParameter( 4 );
+    param          = ( IParameterGUI )super.getParameter( NUM_PEAKS_PARAM );
     maxPeaks       = ( ( Integer )param.getValue(  ) ).intValue(  );
 
     //get minimum intensity of peaks
-    param          = ( IParameterGUI )super.getParameter( 5 );
+    param          = ( IParameterGUI )super.getParameter( MIN_INTENS_PARAM );
     minIntensity   = ( ( Integer )param.getValue(  ) ).intValue(  );
 
+    //get minimum time channel to use 
+    param          = ( IParameterGUI )super.getParameter( MIN_TIME_PARAM );
+    minTimeChan    = ( ( Integer )param.getValue(  ) ).intValue(  );
+
+    //get maximum time channel to use 
+    param          = ( IParameterGUI )super.getParameter( MAX_TIME_PARAM );
+    maxTimeChan    = ( ( Integer )param.getValue(  ) ).intValue(  );
+
     //get append to file value
-    param          = ( IParameterGUI )super.getParameter( 6 );
+    param          = ( IParameterGUI )super.getParameter( APPEND_PARAM );
     appendToFile   = ( ( BooleanPG )param ).getbooleanValue(  );
 
     //get line number for SCD calibration file
-    param          = ( IParameterGUI )super.getParameter( 7 );
+    param          = ( IParameterGUI )super.getParameter( CALIB_LINE_PARAM );
     SCDline        = ( ( Integer )param.getValue(  ) ).intValue(  );
 
     //get calibration file name
-    param          = ( IParameterGUI )super.getParameter( 8 );
+    param          = ( IParameterGUI )super.getParameter( CALIB_FILE_PARAM );
     calibFile      = param.getValue(  )
                           .toString(  );
 
     //get the detector border range
-    keepRange      = ( ( IntArrayPG )getParameter( 9 ) ).getArrayValue(  );
+    keepRange      = ( ( IntArrayPG )getParameter( ROWS_TO_KEEP_PARAM ) )
+                     .getArrayValue(  );
 
     if( keepRange != null ) {
       lowerLimit   = keepRange[0];  //lower limit of range
@@ -410,8 +503,14 @@ public class FindMultiplePeaksForm extends Form {
 
     //to avoid excessive object creation, we'll create all of the 
     //Operators here, then just set their parameters in the loop
-    createFindPeaksOperators( 
-      calibFile, maxPeaks, minIntensity, saveName, expFile, SCDline );
+    createFindPeaksOperators( calibFile, 
+                              maxPeaks, 
+                              minIntensity, 
+                              minTimeChan, 
+                              maxTimeChan, 
+                              saveName, 
+                              expFile, 
+                              SCDline );
 
     //validate the parameters and set the progress bar variables
     Object validCheck = validateSelf(  );
@@ -553,7 +652,7 @@ public class FindMultiplePeaksForm extends Form {
     SharedData.addmsg( saveName );
 
     //set the peaks file name
-    param = ( IParameterGUI )super.getParameter( 10 );
+    param = ( IParameterGUI )super.getParameter( PEAK_FILE_PARAM );
     param.setValue( saveName );
     param.setValid( true );
 
@@ -567,13 +666,20 @@ public class FindMultiplePeaksForm extends Form {
    * @param calibFile SCD calibration file.
    * @param maxPeaks Maximum number of peaks.
    * @param minInten Minimum peak intensity.
+   * @param minTimeChan Minimum time channel number.
+   * @param maxTimeChan Maximum time channel number.
    * @param peaksName Fully qualified peaks file name.
    * @param expFile Fully qualified experiment file name.
    * @param SCDline The line to use from the SCD calib file.
    */
-  private void createFindPeaksOperators( 
-    String calibFile, int maxPeaks, int minInten, String peaksName,
-    String expFile, int SCDline ) {
+  private void createFindPeaksOperators( String calibFile, 
+                                         int    maxPeaks, 
+                                         int    minInten, 
+                                         int    minTimeChan, 
+                                         int    maxTimeChan, 
+                                         String peaksName,
+                                         String expFile, 
+                                         int    SCDline ) {
     loadHist   = new LoadOneHistogramDS(  );
     loadMon    = new LoadMonitorDS(  );
     integGrp   = new IntegrateGroup(  );
@@ -615,6 +721,10 @@ public class FindMultiplePeaksForm extends Form {
           .setValue( new Integer( maxPeaks ) );
     fPeaks.getParameter( 3 )
           .setValue( new Integer( minInten ) );
+    fPeaks.getParameter( 4 )
+          .setValue( new Integer( minTimeChan ) );
+    fPeaks.getParameter( 5 )
+          .setValue( new Integer( maxTimeChan ) );
 
     //WritePeaks
     wrPeaks.getParameter( 0 )
