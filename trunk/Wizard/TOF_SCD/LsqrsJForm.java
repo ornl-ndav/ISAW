@@ -28,6 +28,12 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.9  2003/06/17 20:37:56  bouzekc
+ * Fixed setDefaultParameters so all parameters have a
+ * visible checkbox.  Added more robust error checking on
+ * the raw and output directory parameters.  Fixed matrix
+ * files parameter setting bug.
+ *
  * Revision 1.8  2003/06/11 23:04:08  bouzekc
  * No longer uses StringUtil.setFileSeparator as DataDirPG
  * now takes care of this.
@@ -70,6 +76,7 @@ import  DataSetTools.parameter.*;
 import  DataSetTools.wizard.*;
 import  Operators.TOF_SCD.*;
 import  DataSetTools.operator.Operator;
+import  java.io.File;
 
 /**
  * 
@@ -141,22 +148,25 @@ public class LsqrsJForm extends Form
     parameters = new Vector();
 
     //0
-    addParameter(new IntArrayPG("Run Numbers",null));
+    addParameter(new IntArrayPG("Run Numbers",null, false));
     //1
-    addParameter(new DataDirPG( "Peaks File Path", null));
+    addParameter(new DataDirPG( "Peaks File Path", null, false));
     //2
-    addParameter(new StringPG( "Experiment Name", null));
+    addParameter(new StringPG( "Experiment Name", null, false));
     //3
     addParameter(new IntArrayPG(
-                   "Restrict Peaks Sequence Numbers (blank for all)", null));
+                   "Restrict Peaks Sequence Numbers (blank for all)", 
+                    null, false));
     //4
-    addParameter(new BooleanPG("Use Identity Matrix for Iteration?", false));
+    addParameter(new BooleanPG("Use Identity Matrix for Iteration?", false, 
+                               false));
     //5
-    addParameter(new StringPG("Transform Matrix",identmat));
-    //6 - parameter added solely so user can view scalar file
-    addParameter(new LoadFilePG("Scalar Log", "", true));
+    addParameter(new StringPG("Transform Matrix",identmat, false));
+    //6 - parameter added solely so user can view scalar file and is optional.
+    //As such, it is ALWAYS valid
+    addParameter(new LoadFilePG("Scalar Log", null, true));
     //7
-    addParameter(new ArrayPG("Matrix Files", new Vector()));
+    addParameter(new ArrayPG("Matrix Files", new Vector(), false));
 
     if(HAS_CONSTANTS)
       setParamTypes(new int[]{0,1,2},new int[]{3,4,5,6}, new int[]{7});
@@ -245,8 +255,9 @@ public class LsqrsJForm extends Form
     int[] runsArray;
     LsqrsJ leastSquares;
 
-    //the scalar log file - always valid
-    ((IParameterGUI)getParameter(6)).setValid(true);
+    //the scalar log file - ALWAYS valid
+    param = (IParameterGUI)getParameter(6);
+    param.setValid(true);
 
     //gets the run numbers
     param = (IParameterGUI)getParameter(0);
@@ -261,9 +272,12 @@ public class LsqrsJForm extends Form
        "ERROR: you must enter one or more valid run numbers.\n");
 
     //get input file directory 
-    //should be no need to check this for validity
     param = (IParameterGUI)super.getParameter(1);
     peaksDir = param.getValue().toString();
+    if(new File(peaksDir).exists())
+      param.setValid(true);
+    else
+      param.setValid(false);
 
     //gets the experiment name
     param = (IParameterGUI)super.getParameter(2);
@@ -358,8 +372,9 @@ public class LsqrsJForm extends Form
       return errorOut("LsqrsJ failed: " + obj.toString());
 
     //set the matrix file name vector parameter
-    param = (IParameterGUI)getParameter(6);
+    param = (IParameterGUI)getParameter(7);
     param.setValue(matNamesVec);
+    param.setValid(true);
   
     SharedData.addmsg("--- LsqrsJForm finished. ---");
 
@@ -372,8 +387,11 @@ public class LsqrsJForm extends Form
    */
   protected void makeGUI()
   {
-    //the scalar log file - always valid
-    ((IParameterGUI)getParameter(6)).setValid(true);
+    IParameterGUI param;
+    //the scalar log file - ALWAYS valid
+    param = (IParameterGUI)getParameter(6);
+    if(new File(param.getValue().toString()).exists())
+    param.setValid(true);
     if(useIdentCheckBox == null)
       setIdentityParameter();
     //after the first time through, we don't want to change the
