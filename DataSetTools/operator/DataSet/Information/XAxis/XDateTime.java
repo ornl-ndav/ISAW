@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/07/31 16:10:28  dennis
+ * Implements IDataPointInfo to display data in a viewer's
+ * DataSetXConversionsTable.
+ *
  * Revision 1.2  2002/05/29 22:43:12  dennis
  * Now returns day and date as the label, and the time as the value of the
  * information.
@@ -81,7 +85,6 @@ public class XDateTime extends  XAxisInformationOp
    *  by calling getResult().
    *
    *  @param  ds          The DataSet to which the operation is applied
-   *                      the specified min and max channels will be kept.
    *  @param  i           index of the Data block to use for the x-scale(time) 
    *  @param  time        the time(x-value) at which the Date is to be obtained
    */
@@ -126,7 +129,7 @@ public class XDateTime extends  XAxisInformationOp
     addParameter( parameter );
   }
 
-  /* -------------------------- XInfo_label ---------------------------- */
+  /* -------------------------- PointInfoLabel --------------------------- */
   /**
    * Get string label for the xaxis information, in this case the month,
    * day and year are returned.
@@ -137,7 +140,7 @@ public class XDateTime extends  XAxisInformationOp
    *
    *  @return  String describing the information provided by X_Info().
    */
-   public String XInfo_label( float x, int i )
+   public String PointInfoLabel( float x, int i )
    {
      Date date = getDate( x, i ); 
 
@@ -146,7 +149,7 @@ public class XDateTime extends  XAxisInformationOp
    }
 
 
-  /* ------------------------------ X_Info ----------------------------- */
+  /* ------------------------------ PointInfo ----------------------------- */
   /**
    * Get the axis information at one point only, in this case the time of
    * day is returned.
@@ -158,7 +161,7 @@ public class XDateTime extends  XAxisInformationOp
    *
    *  @return  information for the x axis at the specified x.
    */
-   public String X_Info( float x, int i )
+   public String PointInfo( float x, int i )
    {
      Date date = getDate( x, i ); 
 
@@ -209,7 +212,7 @@ public class XDateTime extends  XAxisInformationOp
     int   i    = ( (Integer)(getParameter(0).getValue()) ).intValue();
     float time = ( (Float)(getParameter(1).getValue()) ).floatValue();
 
-    return X_Info( time, i );
+    return PointInfo( time, i );
   }  
 
   /* ------------------------------ clone ------------------------------- */
