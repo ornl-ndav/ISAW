@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/01/27 14:58:38  rmikk
+ * Changed so that only the http: protocol changes the "m"
+ *    in the extension to %06D
+ *
  * Revision 1.5  2002/12/11 16:00:12  pfpeterson
  * Workaround in windows where 'url.dll' does not work with '.htm' or '.html'
  * files. This is done by replacing the 'm' with its hexidecimal equivalent.
@@ -62,16 +66,19 @@ or
             if (windows )
             {
                 // cmd = 'rundll32 url.dll,FileProtocolHandler http://...'
-              int index=url.indexOf(".htm");
-              if(index==url.length()-4){
-                if(DEBUG) System.out.println("URL:"+url);
-                url=url.substring(0,index)+".ht%6D";
-                if(DEBUG) System.out.println("  ->"+url);
-              }else if(index==url.length()-5){
-                if(DEBUG) System.out.println("URL:"+url);
-                url=url.substring(0,index)+".ht%6Dl";
-                if(DEBUG) System.out.println("  ->"+url);
-              }
+               if( url.startsWith("http:"))
+                  {
+                   int index=url.indexOf(".htm");
+                   if(index==url.length()-4){
+                      if(DEBUG) System.out.println("URL:"+url);
+                      url=url.substring(0,index)+".htm%06D";
+                      if(DEBUG) System.out.println("  ->"+url);
+                   }else if(index==url.length()-5){
+                      if(DEBUG) System.out.println("URL:"+url);
+                      url=url.substring(0,index)+".ht%06Dl";
+                      if(DEBUG) System.out.println("  ->"+url);
+                   }
+                }
                 cmd = WIN_PATH + " " + WIN_FLAG + " " + url;
                 if(DEBUG) System.out.println("CMD="+cmd);
                 Process p = Runtime.getRuntime().exec(cmd);
