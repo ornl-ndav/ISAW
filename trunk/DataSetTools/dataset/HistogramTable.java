@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/07/09 14:42:54  dennis
+ *  The method to get a y-value at a specified x-value no longer gets
+ *  the full list of x-values and does a binary search.  It now uses
+ *  the XScale method getI_GLB(x).
+ *
  *  Revision 1.11  2002/11/27 23:14:07  pfpeterson
  *  standardized header
  *
@@ -272,8 +277,7 @@ public class HistogramTable extends    TabulatedData
          x_value > x_scale.getEnd_x()    )
       return 0.0f;
 
-    float x_vals[] = x_scale.getXs();
-    int index = arrayUtil.get_index_of( x_value, x_vals );
+    int index = x_scale.getI_GLB( x_value );
 
     if ( index < 0 || index >= y_values.length )
       return 0.0f;
