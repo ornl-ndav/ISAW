@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2002/09/27 22:08:56  pfpeterson
+ *  Added another parameter to getDocumentation method.
+ *
  *  Revision 1.16  2002/09/19 16:04:59  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -419,6 +422,7 @@ abstract public class Operator implements Serializable
           +"@assumptions\n\n"
           +"@algorithm\n\n"
           +"@param\n\n"
-          +"@return";
+          +"@return\n\n"
+          +"@error";
   }
 } 
