@@ -32,6 +32,11 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.8  2001/09/14 20:50:14  dennis
+ *  Fixed calculation of G to use the same expression when e_transf < 0 as
+ *  when e_transf > 0.  Clamp exp( -e_transf/kt ) to exp( 10 ) when
+ *  e_transf < 0.
+ *
  *  Revision 1.7  2001/09/13 22:52:47  dennis
  *  Fixed problem with calculation of Q ( angle should not have been converted
  *  to degrees ).
@@ -44,7 +49,8 @@
  *  Added copyright and GPL info at the start of the file.
  *
  *  Revision 1.4  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
+ *     Introduced additional abstract classes to better categorize the 
+ *  operators.
  *  Existing operators were modified to be derived from one of the new abstract
  *  classes.  The abstract base class hierarchy is now:
  *
@@ -269,6 +275,7 @@ public class SpectrometerGeneralizedEnergyDistributionFunction
                 "ERROR: temperature and xmass must be greater than 0");
 
     new_ds.addLog_entry("Calculated Generalized Energy Distribution Function");
+    new_ds.addLog_entry("exp(-e_transf/kt) clamped to exp(10) for e_transf<0");
 
     AttributeList attr_list;
     Float   Float_val;
@@ -279,12 +286,11 @@ public class SpectrometerGeneralizedEnergyDistributionFunction
           y_vals[],
           conversion_vals[],
           conversion_errors[],
-          energy_transfer;
+          e_transf;
     float energy_in,
           energy_final,
           xkt,
           ebykt,
-          E,
           scattering_angle,
           Q;
     int   num_data;
@@ -317,24 +323,30 @@ public class SpectrometerGeneralizedEnergyDistributionFunction
       for ( int i = 0; i < (y_vals.length-1); i++ )
       {            
         if ( data.isHistogram() )                       // use bin centers
-          energy_transfer = (x_vals[i]+x_vals[i+1])/2;
+          e_transf = (x_vals[i]+x_vals[i+1])/2;
         else                                            // just use x value 
-          energy_transfer = x_vals[i];
+          e_transf = x_vals[i];
 
-        energy_final = energy_in - energy_transfer;
+        energy_final = energy_in - e_transf;
+
         Q = tof_calc.SpectrometerQ( energy_in, energy_final, scattering_angle );
-        E = Math.abs( energy_transfer );
 
-        ebykt=E/xkt;
+        ebykt=e_transf/xkt;
 
-        conversion_vals[i] =xmass * E / (2.0539802f * Q * Q ) *
-                            (float)( Math.exp(alpha * Q * Q)) * 
-                            ( 1 - (float)Math.exp(-ebykt) );
+        if ( ebykt >= -10 )
+          conversion_vals[i] =xmass * e_transf / (2.0539802f * Q * Q ) *
+                              (float)( Math.exp(alpha * Q * Q)) * 
+                              ( 1 - (float)Math.exp(-ebykt) );
+        else
+          conversion_vals[i] =xmass * e_transf / (2.0539802f * Q * Q ) *
+                              (float)( Math.exp(alpha * Q * Q)) * 
+                              ( 1 - (float)Math.exp(10) );
+
 
 /*                
         if(i == 200 )
         System.out.println("conversion_vals[i]="+ conversion_vals[i]+"\n"+
-                           "energy_transfer="+ energy_transfer+"\n"+
+                           "energy_transfer="+ e_transf+"\n"+
                            "temperature=" + temperature+"\n"+
                            "alpha=" + alpha+"\n"+
                            "scattering_angle =" +  scattering_angle +"\n"+ 
