@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/08/15 23:56:20  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI.
+ *
  *  Revision 1.6  2003/06/06 18:49:44  pfpeterson
  *  Made abstract and removed clone method.
  *
@@ -195,7 +198,7 @@ abstract public class HashPG extends ParameterGUI{
     /**
      * Allows for initialization of the GUI after instantiation.
      */
-    public void init(Vector init_values){
+    public void initGUI(Vector init_values){
         if(this.initialized) return; // don't initialize more than once
         if(init_values!=null){
             if(init_values.size()==1){
@@ -227,14 +230,14 @@ abstract public class HashPG extends ParameterGUI{
     /**
      * An easier method for adding the hash of keys and values.
      */
-    public void init(Vector keys, Vector vals){
+    public void initGUI(Vector keys, Vector vals){
         if(keys.size()==vals.size()){
             Vector init_vals=new Vector();
             init_vals.addElement(keys);
             init_vals.addElement(vals);
-            this.init(init_vals);
+            this.initGUI(init_vals);
         }else{
-            this.init(null);
+            this.initGUI(null);
         }
     }
 

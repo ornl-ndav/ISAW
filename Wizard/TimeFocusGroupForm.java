@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/08/16 00:00:38  bouzekc
+ * Modified to work with new IParameterGUI and ParameterGUI.
+ *
  * Revision 1.12  2003/08/14 19:42:27  bouzekc
  * Fixed javadoc error.
  *
@@ -421,8 +424,7 @@ public class TimeFocusGroupForm extends Form implements Serializable {
     for( int i = 0; i < num_params; i++ ) {
       IParameterGUI param = ( IParameterGUI )parameters.elementAt( num[i] );
 
-      ;
-      param.init(  );
+      param.initGUI( null );
 
       ipgs[i] = param;
 
