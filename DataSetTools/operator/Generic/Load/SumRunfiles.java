@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2004/08/17 23:06:56  dennis
+ *  If an exception is thrown while reading a file, the stack trace
+ *  will now be printed.
+ *
  *  Revision 1.10  2004/03/15 03:28:34  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -417,6 +421,7 @@ public class SumRunfiles extends    GenericLoad
      catch ( Exception e )
      {
        System.out.println("ERROR: exception accessing first runfile. " + e );
+       e.printStackTrace();
        return new ErrorString("ERROR: Can not access file: " + file_name);
      }
 
