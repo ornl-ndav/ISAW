@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2002/03/13 16:24:21  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.7  2002/02/26 15:37:40  rmikk
  * Added Code to incorporate the TOFNDGS instrument type
  * Added a debug field
@@ -704,8 +707,7 @@ public static void setOtherAttributes( NxNode detNode ,Data newData, int index)
         */
         System.arraycopy(fdata,group_id*xlength,yvals,0,xlength);
         int xx = DS.getNum_entries();
-        newData = new Data( new VariableXScale( xvals ) , 
-                   yvals , xx );
+        newData = Data.getInstance( new VariableXScale( xvals ), yvals , xx );
         setOtherAttributes(detNode ,newData, group_id);
         if(timeFieldType >=0)
            newData.setAttribute( new IntAttribute(Attribute.TIME_FIELD_TYPE,timeFieldType));

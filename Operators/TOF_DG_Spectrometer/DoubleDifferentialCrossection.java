@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.3  2002/03/13 16:26:26  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.2  2002/02/22 20:43:48  pfpeterson
  *  Operator reorganization.
  *
@@ -433,10 +436,10 @@ public class DoubleDifferentialCrossection extends    GenericTOF_DG_Spectrometer
         }
                                           // correction Data block is also
                                           // histogram, for compatibility
-        correction_data = new Data ( data.getX_scale(),
-                                     new_y_vals,
-                                     new_errors,
-                                     data.getGroup_ID() );
+        correction_data = Data.getInstance ( data.getX_scale(),
+                                             new_y_vals,
+                                             new_errors,
+                                             data.getGroup_ID() );
 
         new_data = data.multiply( correction_data );  
         // at this point we've multiplied by the scale factors:

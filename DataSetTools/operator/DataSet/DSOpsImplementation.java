@@ -35,6 +35,9 @@
  * corresponding operators.
  *
  *  $Log$
+ *  Revision 1.2  2002/03/13 16:19:17  dennis
+ *  Converted to new abstract Data class.
+ *
  *  Revision 1.1  2002/02/22 20:59:42  pfpeterson
  *  Operator reorganization.
  *
@@ -244,16 +247,16 @@ public final class DSOpsImplementation implements Serializable
                                        // carry out the operation, assuming
                                        // zero error in the the numerical value.
      if ( op_name.equals("Add") )
-        new_data = data.add( value );
+        new_data = data.add( value, 0 );
 
      else if ( op_name.equals("Sub") )
-        new_data = data.subtract( value );
+        new_data = data.subtract( value, 0 );
 
      else if ( op_name.equals( "Mult" ) )
-        new_data = data.multiply( value );
+        new_data = data.multiply( value, 0 );
 
      else if ( op_name.equals( "Div" ) )
-        new_data = data.divide( value );
+        new_data = data.divide( value, 0 );
 
      else
        {

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/13 16:19:17  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.1  2002/02/22 21:02:28  pfpeterson
  * Operator reorganization.
  *
@@ -189,14 +192,11 @@ public class ConvertHistogramToFunction extends    AnalyzeOp
     {
       data = ds.getData_entry( j );        // get reference to the data entry
 
+      new_data = new FunctionTable( data, divide, data.getGroup_ID() );
       if ( make_new_ds )
-      {
-        new_data = (Data)data.clone();
-        new_data.ConvertToFunction( divide );
         new_ds.addData_entry( new_data );
-      }
       else
-        data.ConvertToFunction( divide );
+        ds.replaceData_entry( new_data, j );
     }
 
     if ( make_new_ds )

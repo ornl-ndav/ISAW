@@ -131,13 +131,13 @@ public class chop_MacroTools
         E_scale = new VariableXScale( e_vals );
         y_vals  = data.getCopyOfY_values();
 
-        new_data = new Data( E_scale, y_vals, data.getGroup_ID() ); 
+        new_data = Data.getInstance( E_scale, y_vals, data.getGroup_ID() ); 
                                                  
         new_data.setSqrtErrors();                
         new_data.setAttributeList( attr_list );
         
         if ( new_e_scale != null )               
-          new_data.ReBin( new_e_scale );         
+          new_data.resample( new_e_scale, IData.SMOOTH_NONE );         
 
         new_ds.addData_entry( new_data );      
       }
@@ -181,7 +181,7 @@ public class chop_MacroTools
       for ( int i = 0; i < num_data; i++ )
       {
         data = ds.getData_entry( i );        
-        new_data = data.divide( scale );    
+        new_data = data.divide( scale, 0 );    
                                              
         new_ds.addData_entry( new_data );      
         System.out.println("data.getY_values()[5] is :"+data.getY_values()[5]);
@@ -320,7 +320,7 @@ public class chop_MacroTools
                 sumy[j]=sumy[j]/addednum;                
          }
          System.out.println(" Number of added detector "+addednum);         
-         Data groupeddata=new Data(x1, sumy, 1000);
+         Data groupeddata=Data.getInstance(x1, sumy, 1000);
          groupeddata.setAttributeList( attr_list );
          groupeddata.setGroup_ID(1000); 
          return  groupeddata;

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/03/13 16:26:22  dennis
+ * Converted to new abstract Data class.
+ *
  * Revision 1.3  2002/02/22 20:45:00  pfpeterson
  * Operator reorganization.
  *
@@ -176,7 +179,7 @@ public class CenteredDifferences extends GenericSpecial
                                           // make a new Data block with the new
                                           // x and y values and same group ID
       XScale x_scale = new VariableXScale( new_x );
-      Data new_d = new Data( x_scale, new_y, d.getGroup_ID() );
+      Data new_d = Data.getInstance( x_scale, new_y, d.getGroup_ID() );
 
                                           // copy the Data attributes and add
                                           // the Data block to the new DataSet
