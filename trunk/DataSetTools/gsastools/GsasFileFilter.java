@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2005/01/15 01:34:56  rmikk
+ * Changed the legitimate extensions for gsas files. .dat is no longer
+ *    in the list.
+ *
  * Revision 1.4  2004/03/15 03:28:14  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -56,9 +60,10 @@ public class GsasFileFilter extends RobustFileFilter{
   public GsasFileFilter()
   {
     super();
-    super.setDescription("GSAS files (*.gsa, *.gda, *.dat)");
+    super.setDescription("GSAS files (*.gsa, *.gdat, *.gda, *.gsas)");
     super.addExtension(".gsa");
+    super.addExtension(".gdat");
     super.addExtension(".gda");
-    super.addExtension(".dat");
+    super.addExtension(".gsas");
   }
 }
