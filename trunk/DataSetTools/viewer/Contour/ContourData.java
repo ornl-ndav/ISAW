@@ -1,4 +1,4 @@
-/**
+/*
  * File:  ContourView.java
  *
  * Copyright (C) 2002, Rion Dooley & Ruth Mikkelson
@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2004/01/24 22:24:16  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.24  2003/12/21 18:14:41  rmikk
  *  Fixed an error if the grid are all null
  *
@@ -127,13 +130,9 @@ package DataSetTools.viewer.Contour;
 
 import javax.swing.*;
 import gov.noaa.pmel.sgt.dm.*;
-import IsawGUI.Util;
 import java.awt.*;
-import java.lang.*;
 import java.util.*;
 import DataSetTools.dataset.*;
-import DataSetTools.instruments.*;
-import DataSetTools.math.*;
 import DataSetTools.util.*;
 import java.awt.event.*;
 import DataSetTools.viewer.*;
