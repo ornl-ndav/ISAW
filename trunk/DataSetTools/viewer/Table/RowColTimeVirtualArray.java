@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/11/09 22:28:45  rmikk
+ * Fixed an error so that the region selected in the table view is correct
+ *
  * Revision 1.4  2003/11/06 21:26:10  rmikk
  * Implemented method to select data sets via the table.  In
  * this form only data sets are selected and not time intervals.
@@ -603,7 +606,7 @@ public class RowColTimeVirtualArray extends
            return;
         for( int i = 0; i < Region.rows.length; i++)
           for( int j = 0; j< Region.cols.length; j++){
-             int Group = getGroup( i, j);
+             int Group = getGroup(Region.rows[ i], Region.cols[j]);
              DS.setSelectFlag( Group, true);
 
          }
