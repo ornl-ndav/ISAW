@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.157  2003/09/23 21:11:06  dennis
+ *  Set version number to 1.5.1 beta 7
+ *
  *  Revision 1.156  2003/09/22 12:34:23  dennis
  *  Changed version to 1.5.1 beta 6
  *
@@ -148,7 +151,8 @@
  *  Removed a diagnostic print statement.
  *
  *  Revision 1.122  2003/01/20 17:26:16  pfpeterson
- *  Added method for having a default file filter. Currently allows 'nxs', 'nexus', 'sdds', 'ipns', 'run', 'gsas', 'gsa', and 'gda'.
+ *  Added method for having a default file filter. Currently allows 'nxs', 'nexus', 
+ *  'sdds', 'ipns', 'run', 'gsas', 'gsa', and 'gda'.
  *
  *  Revision 1.121  2002/12/10 20:39:27  pfpeterson
  *  More gracefully errors when JavaHelp is not present.
@@ -211,7 +215,8 @@
  *  Added public string constants for lambda, angstrom, and inv(angstrom).
  *
  *  Revision 1.103  2002/06/28 13:38:42  rmikk
- *  -Uses the NEW status pane.  The new status pane includes not only the text area but now the scroll bars and buttons.
+ *  -Uses the NEW status pane.  The new status pane includes not only the text area 
+ *    but now the scroll bars and buttons.
  *    These features do not need to be added by the standalone ISAW application.
  *
  *  Revision 1.102  2002/06/14 15:58:30  pfpeterson
@@ -347,13 +352,15 @@
  *  in a table. This is using the package from APS.
  *
  *  Revision 1.67  2001/12/11 17:56:47  pfpeterson
- *  Modified the help menu system. Now includes, About, Operations (old help), Command Pane, and links to online resources.
+ *  Modified the help menu system. Now includes, About, Operations (old help), 
+ *  Command Pane, and links to online resources.
  *
  *  Revision 1.66  2001/12/05 20:53:05  pfpeterson
  *  extended dual monitor support to cover more windows
  *
  *  Revision 1.65  2001/11/30 23:14:58  pfpeterson
- *  Changed the size and position of the main window to assume a 4:3 aspect ratio from the screen height. This should fix the dual monitor problem.
+ *  Changed the size and position of the main window to assume a 4:3 aspect ratio 
+ *  from the screen height. This should fix the dual monitor problem.
  *
  */
 
@@ -611,7 +618,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.5.1 beta 6";
+          version="1.5.1 beta 7";
         else
           version=SharedData.VERSION;
 
