@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/05/26 16:55:03  rmikk
+ *  Added one input verification to a method
+ *
  *  Revision 1.13  2004/05/17 13:54:40  rmikk
  *  Now deals with ImageViewComponents, except for pointed at and selected
  *
@@ -302,7 +305,8 @@ public class DataSetViewerMaker1  extends DataSetViewer
         int Group = ds.getPointedAtIndex();
         float time = ds.getPointedAtX();
         if( !eliminate( Group,time, InternalPointedAts)){
-           viewArray.setTime( time);
+           if(!Float.isNaN(time))
+               viewArray.setTime( time);
            ((DataSetViewerMethods)viewComp).setPointedAt( 
                       viewArray.getSelectedData( Group,time));
         }
