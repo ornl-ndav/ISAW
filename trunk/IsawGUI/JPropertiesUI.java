@@ -1,5 +1,12 @@
 /*
- * @(#)PropertiesUI.java   1.0  2000/03/14  Alok Chatterjee
+ * $Id$
+ *
+ * $Log$
+ * Revision 1.6  2001/07/11 16:47:04  neffk
+ * added keywords for substitution.  some other seemingly harmless
+ * changes have been made, hopefully only in the formatting of the code.
+ * i have no recollection of ever even looking at this file, so the
+ * changes may have been inadvertent.
  *
  */
  
@@ -101,18 +108,18 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
        return;
      }
  
-     if ( observed instanceof DataSet )             
-     {
-
-		// System.out.println("Inside update in PropertiesUI");
-		DataSet ds = (DataSet)observed;
-		showAttributes(ds.getAttributeList());
-      	// System.out.println("Error: ViewManager update called with wrong DataSet");
-      	if ( (String)reason == DESTROY )
-       			System.out.println("Reason:" + reason );
+    if ( observed instanceof DataSet )             
+    {
+//      System.out.println("Inside update in PropertiesUI");
+      DataSet ds = (DataSet)observed;
+      showAttributes(ds.getAttributeList());
+//      System.out.println("Error: ViewManager update called with wrong DataSet");
+//      if ( (String)reason == DESTROY )
+//        System.out.println("Reason:" + reason );
     
-		else if ( (String)reason == SELECTION_CHANGED )
-			{
+//      else if ( (String)reason == SELECTION_CHANGED )
+      if ( (String)reason == SELECTION_CHANGED )
+	{
 				int index = ds.getMostRecentlySelectedIndex();
 					if(index>=0)
 					{
