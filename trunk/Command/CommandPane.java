@@ -31,6 +31,17 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.38  2002/06/28 13:26:25  rmikk
+ * -Eliminated  unused code and methods
+ * -Made the last opened filename appear on the title of the
+ *  CommandPane's Editor window
+ * - Command Pane( standalone) now uses the SharedData
+ *   to load the system properties
+ * - The status pane is now IS a JPanel that includes
+ *    a) The scroll bars
+ *    b) The Save and Clear buttons
+ *   c) The editable unwrappable text area( this was the previous StatusPane)
+ *
  * Revision 1.37  2002/06/03 13:54:53  rmikk
  * Eliminated the clearing of the status pane when the Run
  *   or Clear button is pressed
@@ -188,7 +199,7 @@
 */
 package Command; 
 
-//import IsawGUI.Isaw.*; 
+
 import IsawGUI.*; 
 import java.io.*; 
 import DataSetTools.retriever.*; 
@@ -222,27 +233,28 @@ public class CommandPane extends JPanel  implements PropertyChangeListener ,
                                          IObservable 
 
 {
- JButton Run ,  
+  JButton Run ,  
           Open , 
           Save , 
           Help , 
           Clear ; 
 
-    JTextArea  Commands , 
-               Immediate ; 
+  JTextArea  Commands , 
+             Immediate ; 
 
-   
+  JScrollPane CommandSP = null; //Needed to change its border's title
 
-    String FilePath = null  ;             // for macro storage and retrieval
-    File SelectedFile = null;
-    Document logDoc=null;
-    public ScriptProcessorOperator  SP;
-    boolean Debug = false;
-    PropertyChangeSupport PC;
- /**
- *  Creates the JPanel for editing and executing scripts
- */
- public CommandPane()
+  String FilePath = null  ;             // for macro storage and retrieval
+  File SelectedFile = null;
+  Document logDoc=null;
+  public ScriptProcessorOperator  SP;
+  boolean Debug = false;
+  PropertyChangeSupport PC;
+
+  /**
+  *  Creates the JPanel for editing and executing scripts
+  */
+  public CommandPane()
     { 
       initt();
       SP = new ScriptProcessor(  Commands.getDocument());     
@@ -287,9 +299,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener ,
         Help = new JButton( "Help" ) ; 
         Clear = new JButton("Clear");
         Run.addActionListener( new MyMouseListener(this ) ) ; 
-        
-        //Open.addActionListener( new MyMouseListener( this ) ) ; 
-        //Save.addActionListener(new MyMouseListener( this ) ) ; 
+ 
         Help.addActionListener( new MyMouseListener( this ) ) ; 
         Clear.addActionListener( new MyMouseListener( this ) ) ; 
 
@@ -316,29 +326,21 @@ public class CommandPane extends JPanel  implements PropertyChangeListener ,
            Immediate.addKeyListener( new MyKeyListener( this )) ;        
 	   Commands.setCaret( new MyCursor());
            Immediate.setCaret( new MyCursor());
-           //JSplitPane JPS = new JSplitPane(JSplitPane.VERTICAL_SPLIT) ; 
-           //JPS.setResizeWeight( .8);
-           JScrollPane X =  new JScrollPane( Commands ) ; 
-           X.setBorder( new TitledBorder( "Prgm Editor" ) ) ; 
-          
-           //JPS.add( X ) ; 
-         
+
+           CommandSP =  new JScrollPane( Commands ) ; 
+           CommandSP.setBorder( new TitledBorder( "Prgm Editor" ) ) ; 
+  
            JScrollPane Y =  new JScrollPane( Immediate ) ; 
            Y.setBorder( new TitledBorder( "Immediate" ) ) ; 
-        
-           //JPS.add( X ) ;
+
            SplitPaneWithState JPS = new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT ,
-                        X , Y , .75f);    
-           //add( JPS , BorderLayout.CENTER);           
-            X = null;
-          
+                        CommandSP , Y , .75f);    
+
 	  
         
      
           add(JPS, BorderLayout.CENTER); 
-        //add(Center, BorderLayout.CENTER);         
-	 //add( X , BorderLayout.SOUTH ) ; 
- 
+
      try{        
        FilePath = System.getProperty("Script_Path");  
        FilePath = DataSetTools.util.StringUtil.fixSeparator(FilePath);   
@@ -354,8 +356,10 @@ public class CommandPane extends JPanel  implements PropertyChangeListener ,
                 FilePath);
         SaveDocToFileListener Sav = new SaveDocToFileListener( Commands.getDocument(),
                 FilePath, Opn,"filename");
+
         Opn.addPropertyChangeListener( Sav);
-                           
+        Opn.addPropertyChangeListener( this );   
+                
         Open.addActionListener( Opn);
         Save.addActionListener( Sav );
 
@@ -407,28 +411,18 @@ public class CommandPane extends JPanel  implements PropertyChangeListener ,
  *Note: The only event that is serviced is the one with the property name "Display".<BR>
  *<ul> The new value will be displayed in the Status line </ul>
  */ 
-public void propertyChange( PropertyChangeEvent evt )
-      {/*if(Debug)
-	System.out.println("IN PROPERTY CHANGEXXXXXX");
-      if( evt.getPropertyName().equals( "Display" ) )    
-	  {String S;
-           Object O = evt.getNewValue();     
-           
-           if(Debug)
-             System.out.println(" in Display Data Type ="+ O.getClass());
-	                    // ","+PL.hasListeners("Display"));
-	    S = O.toString();
-          // if( StatusLine != null)
-	   //   new Util().appendDoc(StatusLine.getDocument(), S ) ; 
-          //else
-	  //    System.out.println( "Display is " + S ) ;
-           PC.firePropertyChange( "Display", null, S);
-         
-           
-          }
-      */ 
+ public void propertyChange( PropertyChangeEvent evt )
+   {if( evt.getSource() instanceof OpenFileToDocListener )
+      {OpenFileToDocListener opn = (OpenFileToDocListener)(evt.getSource());
+       String filename = opn.getFileName();
+       CommandSP.setBorder(
+			      new TitledBorder( "Prgm Editor:"+filename ));
+       }
 
-    }
+ 
+
+
+   }
 /**
 * adds and IObserver.
 *@param iobs   The IObserver that is to be added
@@ -595,46 +589,29 @@ public void propertyChange( PropertyChangeEvent evt )
  */
  public static void  main( String args[] )
     { 
-    java.util.Properties isawProp;
-     isawProp = new java.util.Properties(System.getProperties());
-   String path = System.getProperty("user.home")+"\\";
-       path = StringUtil.fixSeparator(path);
-       try {
-	    FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
-          isawProp.load( input );
-	   // Script_Path = isawProp.getProperty("Script_Path");
-         // Data_Directory = isawProp.getProperty("Data_Directory");
-          //Default_Instrument = isawProp.getProperty("Default_Instrument");
-	    //Instrument_Macro_Path = isawProp.getProperty("Instrument_Macro_Path");
-	    //User_Macro_Path = isawProp.getProperty("User_Macro_Path");
-          System.setProperties(isawProp);  
-    //    System.getProperties().list(System.out);
-          input.close();
-       }
-       catch (IOException ex) {
-          System.out.println("Properties file could not be loaded due to error :" +ex);
-       }
+
+     SharedData dd = new SharedData();
       JFrame F ;  
     CommandPane P;
-     //StatusPane    StatusLine ;  
+
       F = new JFrame( "Command Pane" ); 
 
      P = new CommandPane(); 
      Dimension D = P.getToolkit().getScreenSize();
      F.setSize((int)(.6* D.width) , (int)(.7*D.height) ); 
      F.show() ;  
-      //StatusLine = new StatusPane( 3 , 50 ) ; 
-	 // StatusLine.setBackground( Color.white);
-         JScrollPane X = new JScrollPane( SharedData.status_pane);
+
+      /*   JScrollPane X = new JScrollPane( SharedData.status_pane);
          X.setBorder(new TitledBorder( "Status" ));
          JPanelwithToolBar YY = new JPanelwithToolBar("Save", "Clear",
                            new SaveDocToFileListener( SharedData.status_pane.getDocument(), null),
                            new ClearDocListener( SharedData.status_pane.getDocument()),
                            X,BorderLayout.EAST);
-	 //SharedData.status_pane.setBorder( new TitledBorder( "Status" ));
+     
          SharedData.status_pane.setEditable( true);
+      */
          SplitPaneWithState Center= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT ,
-                      P,  YY,.80f);
+                      P,  DataSetTools.util.SharedData.status_pane,.80f);
      F.getContentPane().add( Center ); 
      P.addPropertyChangeListener( SharedData.status_pane);
    
@@ -713,7 +690,7 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
        //CP.PC.firePropertyChange("Clear", null,null);
       
       }
-    else if( e.getSource().equals( CP.Save ) || e.getSource().equals( CP.Open ))
+    /*else if( e.getSource().equals( CP.Save ) || e.getSource().equals( CP.Open ))
         {final JFileChooser fc = new JFileChooser(FilePath) ; 
          int state  ; 
          if( SelectedFile != null )
@@ -743,27 +720,14 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
                    Commands.setCaretPosition(0); 
 		   Commands.setBorder(
 		        new TitledBorder( "Last File:"+filename ));
-                   /*Container X = CP.getParent();
-                    while( X!= null)  
-                     {if( X instanceof JFrame)
-                       {((JFrame)X).setTitle(filename);
-                         X = null;
-                        }
-		      else if( X instanceof JScrollPane)
-		        { ((JScrollPane)X).setBorder(
-			      new TitledBorder( "Prgm Editor:"+filename ));
-			   X = null;
-			}
-                      else
-                      X = X.getParent();		      
-                     } 
-		    */
+                   
 		    
                   }
                 else
                   System.out.println("Document is null");   
 	     } 
-         }     
+         }
+      */     
     else if( e.getSource().equals( Help ) )
        {//BrowserControl H = new BrowserControl() ; 
           
@@ -785,19 +749,19 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
              if( new File( S + "Command/CommandPane.html").exists())
                {}
              else S = null;
-             // System.out.print("B");if(S!=null)System.out.println(S); else System.out.println("");
+            
             } 
 
          if( S == null)
             { S= System.getProperty("user.dir").trim();
-               //System.out.print("C");
+              
 
               if( S!=null) 
                 if( S.length() > 0 ) 
                  if(  "\\/".indexOf(S.charAt(S.length() - 1 ) ) < 0)
 	           S = S + java.io.File.separator;
               S = DataSetTools.util.StringUtil.fixSeparator( S);
-             // System.out.println(S);
+           
 	      if( !new File( S + "IsawHelp/Command/CommandPane.html").exists()) 
                  S = null;
               else 
@@ -805,7 +769,7 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
              
 
             }
-         //System.out.print("D");if(S!=null)System.out.println(S); else System.out.println("");
+         
 
         if( S != null )
 	    S = S + "Command/CommandPane.html";
@@ -827,11 +791,13 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
            
                 }
               }
-         if( S == null )S = "http://www.pns.anl.gov/isaw/IsawHelp/CommandPane.html";
-         else S = "file:///" + S;
-         //H.displayURL( S ) ;
+         if( S == null )
+            S = "http://www.pns.anl.gov/isaw/IsawHelp/CommandPane.html";
+         else 
+           S = "file:///" + S;
+         
           S= S.replace( '\\','/');
-          //System.out.println("Source is"+S); 
+         
           try{
              H = new HTMLPage( S ) ;
              Dimension D = getToolkit().getScreenSize();
@@ -839,10 +805,7 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
              H.show();
              }
            catch(Exception s)
-             {//if(CP.StatusLine!=null) 
-                 CP.PC.firePropertyChange("Display" , null, "CANNOT FIND HELP FILE");
-             //else 
-              //     System.out.println("CANNOT FIND HELP FILE");
+             {
              }
         
         }
