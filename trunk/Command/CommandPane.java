@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2001/06/04 20:04:17  rmikk
+ * Fixed Documentation
+ * Change ; to pathSeparator
+ *
  * Revision 1.19  2001/06/01 21:14:12  rmikk
  * Added Documentation for javadocs etc.
  *
@@ -132,7 +136,7 @@ import Command.*;
  *      The Immediate commands are entered in the immediate window
  *      The sequence of commands are entered in the Editor window.
  *  The commands can act on Isaw Data Sets and will be extended to include
- *  most of the commands availabe in the GUI.
+ *  most of the commands available in the GUI.
  */
 
 
@@ -589,36 +593,34 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
               //System.out.println("E");
 
             for( s = 0; (s < CP.length()) && (S == null); s++)
-	      {t = CP.indexOf( ";", s+1);
+	      {t = CP.indexOf( java.io.File.pathSeparator, s+1);
                if( t < 0) t = CP.length();
                S = CP.substring(s,t) .trim();
-               if( S.length() > 0 ) if ( S.charAt( S.length() -1) != '/') S = S + "/";
-                //System.out.print("F");if(S!=null)System.out.println(S); else System.out.println("");
-
-
+               if( S.length() > 0 ) 
+                  if ( S.charAt( S.length() -1) != '/') 
+                      S = S + "/";
                if( new File( S + "IsawHelp/Command/CommandPane.html").exists())
                  S= S + "IsawHelp/Command/CommandPane.html";
                else S = null;     
            
                 }
               }
-          //System.out.print("G");if(S!=null)System.out.println(S); else System.out.println("");
-
-
          if( S == null )S = "http://www.pns.anl.gov/isaw/IsawHelp/CommandPane.html";
          else S = "file:///" + S;
          //H.displayURL( S ) ;
           S= S.replace( '\\','/');
           System.out.println("Source is"+S); 
           try{
-            H = new HTMLPage( S ) ;
-            Dimension D = getToolkit().getScreenSize();
+             H = new HTMLPage( S ) ;
+             Dimension D = getToolkit().getScreenSize();
              H.setSize((int)(.6* D.width) , (int)(.6*D.height) ); 
-              H.show();
+             H.show();
              }
            catch(Exception s)
-             {if(CP.StatusLine!=null) CP.StatusLine.setText("CANNOT FIND HELP FILE");
-              else System.out.println("CANNOT FIND HELP FILE");
+             {if(CP.StatusLine!=null) 
+                  CP.StatusLine.setText("CANNOT FIND HELP FILE");
+              else 
+                   System.out.println("CANNOT FIND HELP FILE");
              }
         
         }
@@ -626,4 +628,5 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
  }//End mouseAdapter 
 
 }
+
 
