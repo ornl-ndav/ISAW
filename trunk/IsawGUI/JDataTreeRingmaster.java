@@ -12,6 +12,11 @@ package IsawGUI;
  * associated with the generated right-click menu.
  *
  * $Log$
+ * Revision 1.4  2001/07/02 20:27:36  neffk
+ * now right-click menu allows the user to delete a single DataSet from the
+ * tree.  also, the framework for manipulating runfile entries in the
+ * data tree was added.
+ *
  * Revision 1.3  2001/06/28 19:16:44  neffk
  * karma boost
  *
@@ -132,13 +137,19 @@ public class JDataTreeRingmaster
         dmtn = (DefaultMutableTreeNode)(  tp[i].getLastPathComponent()  );
 
         if(   ds.equals( traverseUpToDataSet( tp[i] ) )  &&    //only use first DataSet's Data.
-              dmtn.getUserObject() instanceof DataSet   )       //make sure we're dealing with a group of
-        {                                                        //consistant objects.
+              dmtn.getUserObject() instanceof DataSet   )      //make sure we're dealing with a group of
+        {                                                      //consistant objects.
           MultipleDataSetPopupMenu( tp, e );
         }
       }
     }
-    else
+    else if(  dmtn.getUserObject() instanceof String  )
+    {
+      String str = (String)dmtn.getUserObject();
+      if( str != JTreeUI.MODIFIED_NODE_TITLE  )
+        SingleRunfilePopupMenu( tp, e );     
+    }
+    else 
     {
       System.out.println( "type not appropriate for actionMenu" );
     }
@@ -345,44 +356,79 @@ public class JDataTreeRingmaster
 
     class singleDataSetMenuItemListener implements ActionListener
     {
+      DataSet ds;
+ 
+      public singleDataSetMenuItemListener( DataSet ds )
+      {
+        this.ds = ds;
+      }
+
+
       public void actionPerformed( ActionEvent item_e )
       {
-        System.out.println( "singleDataSetMenuItemListener> " + item_e.getActionCommand()  );
-
         if(  item_e.getActionCommand() == MENU_SELECT  )
-        {
-        }
-        if(  item_e.getActionCommand() == MENU_CLEAR  )
-        {
-        }
-        if(  item_e.getActionCommand() == MENU_CLEAR_ALL  )
         {
         }
         if(  item_e.getActionCommand() == MENU_DELETE  )
         {
-        
+          ds.notifyIObservers( IObserver.DESTROY );
         }
       }
     }
 
-    singleDataSetMenuItemListener item_listener = new singleDataSetMenuItemListener();
+
+    singleDataSetMenuItemListener item_listener = new singleDataSetMenuItemListener( ds );
 //    JMenuItem select_item = new JMenuItem( MENU_SELECT );
 //              //select_item.setMnemonic( KeyEvent.VK_S );
 //              select_item.addActionListener( item_listener );
-//    JMenuItem clear_item = new JMenuItem( MENU_CLEAR );
-//              //clear_item.setMnemonic( KeyEvent.VK_BACK_SPACE );
-//              clear_item.addActionListener( item_listener );
-//    JMenuItem clear_all_item = new JMenuItem( MENU_CLEAR_ALL );
-//              //clear_all_item.setMnemonic( KeyEvent.VK_S );
-//              clear_all_item.addActionListener( item_listener );
     JMenuItem delete_item = new JMenuItem( MENU_DELETE );
               //delete_item.setMnemonic( KeyEvent.VK_X );
               delete_item.addActionListener( item_listener );
     JPopupMenu popup_menu = new JPopupMenu( "SingleDataSetPopupMenu" );
-//               popup_menu.add( clear_item );
-//               popup_menu.add( clear_all_item );
                popup_menu.add( delete_item );
                popup_menu.add( ops_popup_menu );
+               popup_menu.show(  e.getComponent(), e.getX(), e.getY()  );
+  }
+
+
+
+  /**
+   * creates a popup menu that is appropriate for a single
+   * Runfile selection (when the user right-clicks on highlighted
+   * runfile)
+   */
+  public void SingleRunfilePopupMenu( TreePath[] tp, MouseEvent e )
+  {
+    DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode)(  tp[0].getLastPathComponent()  );
+
+    class singleRunfileMenuItemListener implements ActionListener
+    {
+      public singleRunfileMenuItemListener()
+      {
+      }
+
+
+      public void actionPerformed( ActionEvent item_e )
+      {
+        if(  item_e.getActionCommand() == MENU_SELECT  )
+        {
+        }
+        if(  item_e.getActionCommand() == MENU_DELETE  )
+        {
+        }
+      }
+    }
+
+
+    singleRunfileMenuItemListener item_listener = new singleRunfileMenuItemListener();
+//    JMenuItem select_item = new JMenuItem( MENU_SELECT );
+//              //select_item.setMnemonic( KeyEvent.VK_S );
+//              select_item.addActionListener( item_listener );
+    JMenuItem delete_item = new JMenuItem( MENU_DELETE );
+              //delete_item.setMnemonic( KeyEvent.VK_X );
+              delete_item.addActionListener( item_listener );
+    JPopupMenu popup_menu = new JPopupMenu( "SingleDataSetPopupMenu" );
+               popup_menu.add( delete_item );
                popup_menu.show(  e.getComponent(), e.getX(), e.getY()  );
   }
 
