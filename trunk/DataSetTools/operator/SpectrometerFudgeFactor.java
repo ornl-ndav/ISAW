@@ -3,6 +3,9 @@
  *                                                    Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.3  2000/09/11 23:03:58  dennis
+ *  minor improvement to documentation
+ *
  *  Revision 1.2  2000/08/02 21:11:45  dennis
  *  Made this an instance of a generic Operator rather than a DataSetOperator
  *  so that it does not have to be placed in the list of operators for
@@ -92,18 +95,19 @@ public class SpectrometerFudgeFactor extends    Operator
 
   public Object getResult()
   {
-    final float  ECON = 5.2276f*1000000,LAMCON = 3.95541f/1000, WVCON = 1.5885f*1000,
-                        XKCON = 0.086165f;
+    final float  ECON   = 5.2276f*1000000,
+                 LAMCON = 3.95541f/1000, 
+                 WVCON  = 1.5885f*1000,
+                 XKCON  = 0.086165f;
     
     float ELAM = ECON*LAMCON*LAMCON;
                                      // get the current data set
     DataSet ds = (DataSet)(getParameter(0).getValue());
  
-                                     // construct a new data set with the same
-                                     // title, units, and operations as the
-                                     // current DataSet, ds
+                                     // construct a new data set for the
+                                     // fudge factors
     DataSetFactory factory = new DataSetFactory( 
-                                     ds.getTitle(),
+                                     "Fudge factors from " +ds.getTitle(),
                                      "# of index",
                                      "Group ID Index",
                                      "arb. ",
@@ -125,8 +129,6 @@ public class SpectrometerFudgeFactor extends    Operator
     float            y_vals[];              // y_values from one spectrum
     float            e_vals[];              // energy values at bin boundaries
                                             // calculated from tof bin bounds
-                                            
-                                            
     
     XScale           E_scale;
     float            spherical_coords[];
@@ -157,9 +159,7 @@ public class SpectrometerFudgeFactor extends    Operator
         float EI = energy_in;
         spherical_coords = position.getSphericalCoords();
         
-        
-        
-        e_vals           = data.getX_scale().getXs();
+        e_vals  = data.getX_scale().getXs();
         y_vals  = data.getCopyOfY_values();
         
         float EDUM = (float)(193.0f* Math.pow((energy_in/1000.0f), 0.36f));
@@ -190,7 +190,7 @@ public class SpectrometerFudgeFactor extends    Operator
             float HLAMF = 0.5f*DLAMF;
             float DEfudge =(float)( ELAM*(Math.pow((LAMF-HLAMF), -2.0f)-Math.pow((LAMF+HLAMF), -2.0f)));
             sum += DEfudge*y_vals[i+1]/1000;
-          // System.out.print(e_vals[i]+" "+sum+"\n");
+           // System.out.print(e_vals[i]+" "+sum+"\n");
            // pause(300);
         }
 
