@@ -217,7 +217,7 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
       		// System.out.println("Update in CommandUI is called :"+ds.toString());
 
 			if ( (String)reason == DESTROY )
-        			System.out.println("");
+        			System.out.print("");
 
 			else if ( (String)reason == SELECTION_CHANGED )
 			  showLog(ds);
