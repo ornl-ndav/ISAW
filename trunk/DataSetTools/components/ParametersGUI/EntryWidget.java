@@ -29,6 +29,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.5  2003/08/26 18:23:36  bouzekc
+ * Default layout is now X-axis BoxLayout.
+ *
  * Revision 1.4  2003/08/26 17:58:14  bouzekc
  * Added call to this() in Components[] constructor.  Moved call to super()
  * into default constructor.
@@ -54,7 +57,7 @@ import DataSetTools.util.PropertyChanger;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.GridLayout;
+import javax.swing.BoxLayout;
 import java.awt.event.*;
 
 import java.beans.*;
@@ -92,6 +95,7 @@ public class EntryWidget extends JPanel implements PropertyChanger,
    */
   public EntryWidget(  ) {
     super(  );
+    super.setLayout( new BoxLayout( this, BoxLayout.X_AXIS  ) );
   }
 
   /**
