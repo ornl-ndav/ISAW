@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2001/07/18 13:40:40  dennis
+ * Implemented rebinning capabilities.
+ *
  * Revision 1.13  2001/07/13 22:11:26  dennis
  * Now uses as many frames as there are channels in the
  * data.
@@ -134,10 +137,13 @@ public class ThreeDView extends DataSetViewer
   private String detector_draw_mode = DETECTOR_NONE;
 
   private ThreeD_JPanel            threeD_panel      = null; 
+
   private Box                      control_panel     = null; 
+  private TextRangeUI              x_range_ui        = null;
+  private TextValueUI              n_bins_ui         = null;
   private ImageJPanel              color_scale_image = null;
   private JSlider                  log_scale_slider  = new JSlider();
-  private AltAzController          view_control      = new AltAzController();
+  private AltAzController          view_control      = null;
   private AnimationController      frame_control     = null;
   private SplitPaneWithState       split_pane        = null;
   private byte                     color_index[][]   = null;
@@ -169,6 +175,10 @@ public ThreeDView( DataSet data_set, ViewerState state )
                                                    NUM_POSITIVE_COLORS );
 
   setLogScale( 50 );
+
+  if ( !validDataSet() )
+    return;
+
   init();
 
   AddOptionsToMenu();
@@ -180,18 +190,27 @@ public ThreeDView( DataSet data_set, ViewerState state )
  *
  */
 
-/* ------------------------------- redraw ------------------------------- */
-
+/* ----------------------------- redraw --------------------------------- */
+/**
+ * Redraw all or part of the image. The amount that needs to be redrawn is
+ * determined by the "reason" parameter.
+ *
+ * @param  reason  The reason the redraw is needed.
+ *
+ */
 public void redraw( String reason )
 {
     // This will be called by the "outside world" if the contents of the
     // DataSet are changed and it is necesary to redraw the graphs using the
     // current DataSet.
 
-   if ( reason == IObserver.SELECTION_CHANGED )    // no selection display yet
+   if ( !validDataSet() )
      return;
 
-   if ( reason == IObserver.POINTED_AT_CHANGED )
+   if ( reason.equals(IObserver.SELECTION_CHANGED))  // no selection display yet
+     return;
+
+   else if ( reason.equals(IObserver.POINTED_AT_CHANGED) )
    {
       DataSet ds = getDataSet();
       Vector3D detector_location = group_location( ds.getPointedAtIndex() );
@@ -203,6 +222,13 @@ public void redraw( String reason )
         threeD_panel.set_crosshair( pixel_point );
       }
    }
+   else if ( reason.equals(BINS_CHANGED) ||
+             reason.equals(X_RANGE_CHANGED)   )
+   {
+     MakeColorList();
+     set_colors( frame_control.getFrameNumber() );
+   }
+
    else                                       // really regenerate everything
    {
      MakeColorList();
@@ -211,8 +237,13 @@ public void redraw( String reason )
 }
 
 
-/* ------------------------------ setDataSet ----------------------------- */
-
+/* ----------------------------- setDataSet ------------------------------- */
+/**
+ * Specify a different DataSet to be shown by this viewer.
+ *
+ * @param  ds   The new DataSet to view
+ *
+ */
 public void setDataSet( DataSet ds )
 {   
   // This will be called by the "outside world" if the viewer is to replace 
@@ -221,9 +252,32 @@ public void setDataSet( DataSet ds )
 
   setVisible( false );
   super.setDataSet( ds );
+
+  if ( !validDataSet() )
+    return;
+
   init();
   setVisible( true );
 }
+
+
+/* ------------------------ getXConversionScale -------------------------- */
+ /**
+  *  Return a range of X values specified by the user to be used to
+  *  control X-Axis conversions.
+  *
+  *  @return  The current values from the number of bins control and the
+  *           x range control form the Xscale that is returned.
+  *
+  */
+ public UniformXScale getXConversionScale()
+  {
+    int num_bins = (int)n_bins_ui.getValue();
+    float x_min = x_range_ui.getMin();
+    float x_max = x_range_ui.getMax();
+
+    return ( new UniformXScale( x_min, x_max, num_bins ) );
+  }
 
 
 /* -------------------------------------------------------------------------
@@ -402,6 +456,9 @@ private void set_colors( int frame )
 
 private void MakeColorList()
 {
+  if ( !validDataSet() )
+    return;
+
   DataSet ds = getDataSet();
   float   y_vals[][];
 
@@ -409,42 +466,62 @@ private void MakeColorList()
   if ( num_rows == 0 ) 
     return;
 
-  UniformXScale x_scale = ds.getXRange();
-  float x_min    = x_scale.getStart_x();
-  float x_max    = x_scale.getEnd_x();
+  UniformXScale x_scale = getXConversionScale();
+  int   num_cols   = x_scale.getNum_x() + 1;
+  int   num_frames = num_cols - 1;
+  float x_min      = x_scale.getStart_x();
+  float x_max      = x_scale.getEnd_x();
 
-  int   num_cols = x_scale.getNum_x() - 1;
-  x_scale = new UniformXScale( x_min, x_max, num_cols+1 );
+  x_scale = new UniformXScale( x_min, x_max, num_cols );
 
-//  System.out.println("num_cols = " + num_cols );
 //  System.out.println("num_rows = " + num_rows );
-//  System.out.println("num_Xs = " + ds.getData_entry(0).getX_scale().getNum_x());
-//  System.out.println("num_Ys = " + ds.getData_entry(0).getY_values().length );
+//  System.out.println("num_cols = " + num_cols );
+//  System.out.println("num_frames = " + num_frames );
 
-  if ( num_cols == 0 )
+  if ( num_frames == 0 )
     return;
   
-  color_index = new byte[num_rows][num_cols];
+  color_index = new byte[num_rows][ num_frames ];
 
 //  System.out.println("MakeColorList: Rebinning.....");
   y_vals = new float[num_rows][];
   Data  data_block;
-  Data  rebinned_data_block;
+
+  if ( num_frames > 1 ) 
   for ( int i = 0; i < num_rows; i++ )
   {
     data_block = ds.getData_entry(i);
-    rebinned_data_block = (Data)data_block.clone();
+    data_block = (Data)data_block.clone();
+    data_block.ResampleUniformly( x_scale );
+    y_vals[i] = data_block.getY_values();
+  }
 
-    rebinned_data_block.ResampleUniformly( x_scale );
-    y_vals[i] = rebinned_data_block.getY_values();
+  else if ( num_frames == 1 )           // ResampleUniformly seems to fail if
+  for ( int i = 0; i < num_rows; i++ )  // there is only one frame!! 
+  {
+    data_block = ds.getData_entry(i);
+    data_block = (Data)data_block.clone();
+    float temp_y[] = data_block.getY_values();
+    float sum = 0;
+    for ( int j = 0; j < temp_y.length; j++ )
+      sum += temp_y[j];
+
+    y_vals[i] = new float[1];
+    y_vals[i][0] = sum;
   }
 
   float x_vals[]     = x_scale.getXs();
-  float frame_vals[] = new float[ y_vals[0].length ];
+  float frame_vals[] = new float[ num_frames ];
 //  System.out.println("x_vals length = " + x_vals.length );
 //  System.out.println("frame_vals length = " + frame_vals.length );
-  for ( int i = 0; i < frame_vals.length; i++ )        // for now just use left 
-    frame_vals[i] = x_vals[i];                         // bin boundary for hist
+
+  if ( x_vals.length > num_frames )
+    for ( int i = 0; i < num_frames; i++ ) 
+      frame_vals[i] = ( x_vals[i] + x_vals[i+1] )/ 2 ;   // bin center for hist
+  else
+    for ( int i = 0; i < num_frames; i++ ) 
+      frame_vals[i] = x_vals[i];                         // point for function 
+ 
   frame_control.setFrame_values( frame_vals );
 
 //  System.out.println("MakeColorList: finding extrema.....");
@@ -452,7 +529,7 @@ private void MakeColorList()
   float min_data = Float.POSITIVE_INFINITY;
   float val;
   for ( int i = 0; i < y_vals.length; i++ )
-   for ( int j = 0; j < y_vals[0].length; j++ )
+   for ( int j = 0; j < num_frames; j++ )
    {
      val = y_vals[i][j];
      if ( val > max_data )
@@ -476,7 +553,7 @@ private void MakeColorList()
 //  System.out.println("MakeColorList: building index table.....");
   int index;
   for ( int i = 0; i < y_vals.length; i++ )
-   for ( int j = 0; j < y_vals[0].length; j++ )
+   for ( int j = 0; j < num_frames; j++ )
     {
       val = y_vals[i][j] * scale_factor;
       if ( val >= 0 )
@@ -837,10 +914,24 @@ private void init()
     control_panel.removeAll();
     removeAll();
   }
+
   threeD_panel = new ThreeD_JPanel();
   threeD_panel.setBackground( new Color( 90, 90, 90 ) );
 
   control_panel = new Box( BoxLayout.Y_AXIS );
+
+  String label = getDataSet().getX_units();
+  UniformXScale x_scale  = getDataSet().getXRange();
+  float x_min = x_scale.getStart_x();
+  float x_max = x_scale.getEnd_x();
+  x_range_ui = new TextRangeUI(label, x_min, x_max );
+  x_range_ui.addActionListener( new X_Range_Listener() );
+  control_panel.add( x_range_ui );
+
+  int num_cols = getDataSet().getMaxXSteps();
+  n_bins_ui = new TextValueUI( "Num Bins", num_cols-1 );
+  n_bins_ui.addActionListener( new NumBins_Listener() );
+  control_panel.add( n_bins_ui );
 
   color_scale_image = new ColorScaleImage();
   color_scale_image.setNamedColorModel( getState().getColor_scale(), false );
@@ -860,6 +951,7 @@ private void init()
 
   control_panel.add( log_scale_slider );
 
+  view_control = new AltAzController();
   view_control.addControlledPanel( threeD_panel );
   control_panel.add( view_control );
 
@@ -1082,5 +1174,27 @@ private class FrameControlListener implements ActionListener
     }
   }
 
+/* ------------------------ X_Range_Listener ----------------------------- */
+
+  private class X_Range_Listener implements ActionListener,
+                                            Serializable
+  {
+     public void actionPerformed(ActionEvent e)
+     {
+       getDataSet().notifyIObservers( X_RANGE_CHANGED );
+     }
+  }
+
+
+/* ------------------------ NumBins_Listener ----------------------------- */
+
+  private class NumBins_Listener implements ActionListener,
+                                            Serializable
+  {
+     public void actionPerformed(ActionEvent e)
+     {
+       getDataSet().notifyIObservers( BINS_CHANGED );
+     }
+  }
 
 }
