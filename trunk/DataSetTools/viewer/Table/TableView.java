@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/07/17 19:17:28  rmikk
+ *  Change label on a menu choice
+ *
  *  Revision 1.2  2002/07/17 19:11:28  rmikk
  *  Added GPL
  *  Fixed up the table views menu choices
@@ -97,7 +100,7 @@ public class TableView extends DataSetViewer
          jmInd.setState( true);
 
       jm= menu_bar.getMenu( DataSetViewer.EDIT_MENU_ID);
-      JMi = new JMenuItem( "All" );
+      JMi = new JMenuItem( "Select All" );
       JCp = new JMenuItem( "Copy Sel" );
       jm.add( JMi);
       jm.add( JCp);
