@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.103  2002/06/28 13:38:42  rmikk
+ *  -Uses the NEW status pane.  The new status pane includes not only the text area but now the scroll bars and buttons.
+ *    These features do not need to be added by the standalone ISAW application.
+ *
  *  Revision 1.102  2002/06/14 15:58:30  pfpeterson
  *  Changed all System.getProperty to SharedData.getProperty. Also
  *  leave the creation of the default properties file the SharedData.
@@ -619,22 +623,22 @@ public class Isaw
               //immediatly.
     parse_args( args );
 
-    //IsawStatusPane = new StatusPane(30, 80, 
+   /* //IsawStatusPane = new StatusPane(30, 80, 
           SharedData.status_pane.setBorder(new javax.swing.border.TitledBorder("Status"));
           SharedData.status_pane.setEditable(true);
           SharedData.status_pane.setLineWrap(false);
-
+   */
     setupMenuBar();        
 
     
-    JPanel StatusPanel= new JPanelwithToolBar(
+    /*JPanel StatusPanel= new JPanelwithToolBar(
                  "Save","Clear",
                   new SaveDocToFileListener( 
                          SharedData.status_pane.getDocument(),null),
                   new ClearDocListener( SharedData.status_pane.getDocument()),
                   new JScrollPane( SharedData.status_pane),
                   BorderLayout.EAST);
-                         
+     */                    
     cp.addPropertyChangeListener(SharedData.status_pane);
 
     upper_sp= new JSplitPane( JSplitPane.HORIZONTAL_SPLIT,
@@ -646,7 +650,7 @@ public class Isaw
     }
     
     main_sp= new JSplitPane( JSplitPane.VERTICAL_SPLIT,
-                             upper_sp, StatusPanel);
+                             upper_sp,SharedData.status_pane);
     sp_comp=main_sp.getComponents();
     for( int i=0 ; i<sp_comp.length ; i++ ){
         if(sp_comp[i] instanceof BasicSplitPaneDivider)
