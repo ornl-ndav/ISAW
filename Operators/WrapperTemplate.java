@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2003/12/15 02:44:08  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.1  2003/10/29 01:16:16  bouzekc
  * Added to CVS.
  *
@@ -47,11 +50,7 @@
  */
 package Operators;
 
-import DataSetTools.dataset.*;
-
-import DataSetTools.operator.*;
-
-import DataSetTools.util.*;
+import DataSetTools.operator.Wrappable;
 
 
 /**
