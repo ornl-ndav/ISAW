@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/01/21 18:01:39  bouzekc
+ * Removed unused local variables.
+ *
  * Revision 1.4  2003/12/16 00:06:00  bouzekc
  * Removed unused imports.
  *
@@ -51,7 +54,6 @@ import java.awt.GridLayout;
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -73,13 +75,10 @@ import DataSetTools.util.IntegerFilter;
 public class Qbins1PG extends ParameterGUI implements Concatenator {
   //~ Instance fields **********************************************************
 
-  private JPanel Container;
   private StringEntry start;
   private StringEntry end;
   private StringEntry steps;
   private JRadioButton dQ;
-  private JButton Add;
-  private JButton Help;
 
   //~ Constructors *************************************************************
 
