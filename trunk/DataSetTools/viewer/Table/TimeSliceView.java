@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.7  2003/09/05 21:46:06  rmikk
+ * Implemented support for more than one detector
+ *
  * Revision 1.6  2002/11/27 23:25:37  pfpeterson
  * standardized header
  *
@@ -87,6 +90,10 @@ public class TimeSliceView  extends STableView
    {super( DS,state1, new Time_Slice_TableModel(DS, 0.0f, false, false));
     TimeIndex = state.get_int("TableTS_TimeInd");
     
+     if( table_model instanceof Time_Slice_TableModel)
+       ((Time_Slice_TableModel)table_model).addDataChangeListener( 
+                new DetectorChangeListener(this));
+
      
      if(xvals1 == null)
         {
@@ -94,6 +101,7 @@ public class TimeSliceView  extends STableView
          }
      ((Time_Slice_TableModel)table_model).setTime( xvals1[TimeIndex]);
      jtb.invalidate();
+
      super.redraw( IObserver.POINTED_AT_CHANGED );    
    }
 
@@ -223,8 +231,16 @@ public class TimeSliceView  extends STableView
      tr.addActionListener( new MyRangeActionListener(2, this));
      JRowColPanel.setBorder( BorderFactory.createTitledBorder(
                                 BorderFactory.createLoweredBevelBorder() ,"Ranges") );
+
+     if( table_model instanceof Time_Slice_TableModel){
+        JComponent[] jcomps = ((Time_Slice_TableModel)table_model).getControls();
+        if( jcomps != null) if(jcomps.length > 0)
+           for( int i=0; i< jcomps.length; i++)
+             EastPanel.add( jcomps[i]);
+     }
      EastPanel.add( JRowColPanel);
   // XSCale Chooser
+     
      XScl= new XScaleChooserUI("XScale", getDataSet().getX_units(),
                              state.get_float("TABLE_TS_MIN_TIME"),
                              state.get_float("TABLE_TS_MAX_TIME"),
@@ -432,4 +448,18 @@ public class TimeSliceView  extends STableView
        
        }
     }
+
+ class DetectorChangeListener implements ActionListener{
+   TimeSliceView tv;
+   public DetectorChangeListener( TimeSliceView tv){
+     this.tv = tv;
+   }
+   public  void actionPerformed( ActionEvent evt){
+     jtb.validate();
+     jtb.repaint();
+   
+   }//actionPerformed
+
+
+ }//DetectorChangeListener
   }
