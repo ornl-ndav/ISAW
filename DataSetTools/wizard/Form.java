@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.44  2003/11/05 02:03:32  bouzekc
+ * Made the result parameter an instance variable, separate from the
+ * parameter list.  This removes a dependency on ParameterClassList as
+ * well as making Forms more consistent with Operators in design.
+ *
  * Revision 1.43  2003/10/15 03:38:05  bouzekc
  * Fixed javadoc errors.
  *
@@ -202,6 +207,8 @@
  */
 package DataSetTools.wizard;
 
+import Command.ParameterClassList;
+
 import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
 
 import DataSetTools.dataset.DataSet;
@@ -235,12 +242,13 @@ import javax.swing.border.*;
  * involving the parameters.  The execute() method is responsible for using
  * the input parameters and producing new values for the result parameters. If
  * special layouts and parameter interfaces are needed, the MakeGUI() method
- * can also be overridden in sub classes.
- * <br><br>
- *
- * Note that Forms are set up by default as standalone Forms, or the first 
- * Form in a Wizard.  To set a Form to have constant parameters that rely on 
- * values obtained from previous Forms, set the HAS_CONSTANTS variable to true 
+ * can also be overridden in sub classes.  Note that the result parameter is
+ * not actually stored in the list of parameters.  It can, however, be
+ * accessed by asking for the parameter at index getNum_parameters(). <br>
+ * <br>
+ * Note that Forms are set up by default as standalone Forms, or the first
+ * Form in a Wizard.  To set a Form to have constant parameters that rely on
+ * values obtained from previous Forms, set the HAS_CONSTANTS variable to true
  * by using the appropriate constructor.
  *
  * @see DataSetTools.wizard.Wizard
@@ -261,9 +269,9 @@ public abstract class Form extends Operator implements PropertyChanger {
 
   //~ Instance fields **********************************************************
 
-  private final boolean DEBUG = false;
+  private final boolean DEBUG      = false;
   protected transient JPanel panel;  // panel that the Wizard will draw
-  private int[][] param_ref   = null;
+  private int[][] param_ref        = null;
 
   //used for standalone or first Forms.  Default is standalone.
   protected boolean HAS_CONSTANTS          = false;
@@ -277,6 +285,9 @@ public abstract class Form extends Operator implements PropertyChanger {
 
   //used for the progress bars
   protected float increment;
+
+  //used so that we don't "dirty up" the parameters list.
+  protected IParameterGUI result_param = null;
 
   //~ Constructors *************************************************************
 
@@ -311,7 +322,7 @@ public abstract class Form extends Operator implements PropertyChanger {
    * Set the parameter at the specified index in the list of parameters for
    * this Form.  The parameter that is set MUST have the same type of value
    * object as that was originally placed in the list of parameters using the
-   * addParameter() method.
+   * addParameter() method.  This will NOT work on the result parameter.
    *
    * @param iparam The IParameterGUI to set.
    * @param index The index in the list of parameters of the parameter that is
@@ -329,7 +340,8 @@ public abstract class Form extends Operator implements PropertyChanger {
 
   /**
    * Similar to the above method, but takes a IParameter.  This needed to be
-   * overridden from Operator, and so had to have the same signature.
+   * overridden from Operator, and so had to have the same signature.  This
+   * will NOT work on the result parameter.
    *
    * @param iparam The IParameter to set.
    * @param index The index in the list of parameters of the parameter that is
@@ -371,14 +383,50 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
+   * Get the parameter at the specified index from the list of parameters for
+   * this Form.  Note: This returns a reference to the specified parameter.
+   * Consequently the value of the parameter can be altered.
+   *
+   * @param index The index in the list of parameters of the parameter that is
+   *        to be returned.  "index" must be between 0 and the number of
+   *        parameters.
+   *
+   * @return Returns the parameters at the specified position in the list of
+   *         parameters for this object.  If the index is invalid, this
+   *         returns null. Asking for one more than the actual number of
+   *         parameters will return the result parameter.
+   */
+  public IParameter getParameter( int index ) {
+    if( index < getNum_parameters(  ) ) {
+      return super.getParameter( index );
+    } else {
+      return result_param;
+    }
+  }
+
+  /**
+   * Convenience method to set the result parameter.  This may be set multiple
+   * times, but exercise caution with this capability, especially if the
+   * result is linked to another parameter.  This overrides the normal
+   * functioning of Operator.setParameter() in that it allows a change of
+   * parameter type.  Note that this forces the "valid" checkbox to be shown
+   * for the result parameter.
+   *
+   * @param resultPG The IParameterGUI to use for the result parameter.
+   */
+  public void setResultParam( IParameterGUI resultPG ) {
+    result_param = resultPG;
+    result_param.setDrawValid( true );
+  }
+
+  /**
    * This is called when displaying or hiding the current form.  While this
    * currently only sets the form to be visible or not, additional
    * functionality could be added so that it will ensure that the Form's
    * execute() method is called before advancing to the next Form.  Replaces
    * show() and hide().
    *
-   * @param show True when you want the form to show, false when you
-   *        do not.
+   * @param show True when you want the form to show, false when you do not.
    */
   public void setVisible( boolean show ) {
     if( show ) {
@@ -442,7 +490,7 @@ public abstract class Form extends Operator implements PropertyChanger {
       }
     }
 
-    return ( areSet == totalParam );
+    return ( ( areSet == totalParam ) && result_param.getValid(  ) );
   }
 
   /**
@@ -457,15 +505,7 @@ public abstract class Form extends Operator implements PropertyChanger {
       return;
     }
 
-    int[] result_indices = this.getParamType( RESULT_PARAM );
-
-    if( ( result_indices == null ) || ( result_indices.length <= 0 ) ) {
-      return;
-    }
-
-    for( int i = 0; i < result_indices.length; i++ ) {
-      ( ( IParameterGUI )getParameter( result_indices[i] ) ).setValid( false );
-    }
+    result_param.setValid( false );
   }
 
   /**
@@ -708,11 +748,10 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   * Validates this Form by calling validateSelf(  ) on each ParameterGUI.
-   * 
-   * It also resets the progress bars.  Although it can be overwritten to
-   * provide a more customized approach to validating parameters, this should
-   * not usually be necessary, as the recommended approach is to retrieve all
+   * Validates this Form by calling validateSelf(  ) on each ParameterGUI.  It
+   * also resets the progress bars.  Although it can be overwritten to provide
+   * a more customized approach to validating parameters, this should not
+   * usually be necessary, as the recommended approach is to retrieve all
    * parameters, validate them using this method, then perform any special
    * validations directly in the child class.  This method will check all
    * variable parameters for validity, stopping only when it reaches the end
@@ -797,14 +836,10 @@ public abstract class Form extends Operator implements PropertyChanger {
    *         are none, returns null.
    */
   private int[] retrieveVarParamIndices(  ) {
-    //add the listener to the parameter.  No parameters?  Don't listen to them 
-    //then.
     if( this.getNum_parameters(  ) <= 0 ) {
       return null;
     }
 
-    //add the listener to the Form's parameters-only listen to the variable
-    //ones.
     int[] var_indices = this.getParamType( VAR_PARAM );
 
     if( ( var_indices == null ) || ( var_indices.length <= 0 ) ) {
