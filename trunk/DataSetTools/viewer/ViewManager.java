@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2001/07/20 19:04:58  dennis
+ *  Removed @see InternalViewManager, since we no longer are using
+ *  InternalViewManager.
+ *
  *  Revision 1.10  2001/07/20 18:15:45  dennis
  *  Now uses new version of getXConversionScale that returns
  *  an arbitrary XScale.  Currently it makes a UniformXScale
@@ -179,7 +183,6 @@ public class ViewManager extends    JFrame
     *                    IViewManager
     * 
     *  @see IViewManager
-    *  @see InternalViewManager
     *  @see DataSetViewer
     *  @see DataSet
     */
