@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2001/07/20 15:48:21  chatter
+ * Checked Properties directories for tailing '/' ir '\'
+ *
  * Revision 1.12  2001/07/20 13:59:47  rmikk
  * Replace \ by / so Scripts can be installed from Unix
  *
@@ -111,20 +114,29 @@ public class Script_Class_List_Handler  implements OperatorHandler
         first = false;     
         String ScrPaths = System.getProperty( "ISAW_HOME" );
         if( ScrPaths != null )
-           {processPaths(ScrPaths+"/Operators") ;
+          if(ScrPaths.length()>0)
+           {ScrPaths=ScrPaths.replace('\\','/');
+            if( ScrPaths.charAt(ScrPaths.length()-1) =='/')
+                ScrPaths=ScrPaths.substring(0, ScrPaths.length()-1);
+            processPaths(ScrPaths+"/Operators") ;
             processPaths(ScrPaths+"/Scripts") ;
            }
         String ScrPaths1 = System.getProperty( "GROUP_HOME" );
        
         if( ScrPaths1 != null )
 	    if(!ScrPaths1.equals(ScrPaths))
-           {processPaths(ScrPaths1+"/Operators") ;
+           {ScrPaths1=ScrPaths1.replace('\\','/');
+            if( ScrPaths1.charAt(ScrPaths1.length()-1) == '/')
+                ScrPaths1=ScrPaths1.substring(0, ScrPaths1.length()-1);
+          
+            processPaths(ScrPaths1+"/Operators") ;
             processPaths(ScrPaths1+"/Scripts") ;
            }
         String ScrPaths2 = System.getProperty( "user.home" );
         if( ScrPaths2 != null )
 	 if( ScrPaths2.length() > 0)
          {ScrPaths2 =ScrPaths2.replace('\\','/');
+          
           if( ScrPaths2.charAt(ScrPaths2.length()-1) != '/' )
              ScrPaths2 = ScrPaths2+'/';
           String X =ScrPaths2+java.io.File.pathSeparator+"ISAW";
@@ -324,17 +336,18 @@ public  Operator getClassInst( String filename )
     pathlist=pathlist.replace('\\','/');
     pathlist=pathlist.replace(java.io.File.pathSeparatorChar,';');
     int i = filename.lastIndexOf('/' );
-   
-    if( i < 0 )
+         if( i < 0 )
        return null;
     String CPath = filename.substring( 0 , i ).trim();
     String classname = filename.substring( i + 1 , filename.length()-6); 
+    
     String CPathFix=CPath;
     
     if( CPath == null )
       return null;
     if( CPath.length() <= 0 )
         return null;
+    
     for( path = getNextPath( pathlist, null ) ; path != null;
          path = getNextPath( pathlist, path ))
       {String Path1=path.trim();
@@ -348,8 +361,7 @@ public  Operator getClassInst( String filename )
                {
                }
             }
-          
-         
+                   
           if( CPath.indexOf(Path1 ) == 0 )
             {CPathFix = CPath.substring( Path1.length()+1);
              CPathFix =CPathFix.replace('/','.');
@@ -359,7 +371,8 @@ public  Operator getClassInst( String filename )
                 Class C = Class.forName( CPath );
                 Object XX = C.newInstance();
                 if( XX instanceof GenericOperator)
-                  { return (Operator)XX;
+                  { 
+                    return (Operator)XX;
                   }            
                 
                 }
