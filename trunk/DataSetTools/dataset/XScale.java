@@ -32,6 +32,10 @@
  *
  *
  *  $Log$
+ *  Revision 1.8  2002/06/10 20:19:52  dennis
+ *  Added getI(x) and getX(i) methods to get individual points and positions
+ *  of individual points in the list.
+ *
  *  Revision 1.7  2001/04/25 19:04:15  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -126,7 +130,7 @@ abstract public class XScale implements Serializable
   /**
    * Returns the number of "X" values.
    */
-  public int   getNum_x()  { return num_x; }
+  public int getNum_x()  { return num_x; }
 
   /**
    * Returns the array of "X" values.  The array will have num_x entries.   
@@ -135,6 +139,34 @@ abstract public class XScale implements Serializable
    * as specified when the object was constructed.
    */
   abstract public float[] getXs();
+
+
+  /**
+   *  Get the ith x-value from this XScale.
+   *
+   *  @param  i    The position of the x-value that is needed.  This should be
+   *               between 0 and the number_of_x_values - 1.
+   *
+   *  @return The x value in position i in the "list" of x-values for this
+   *          x scale.  If there is no such x value, this will return Float.NaN.
+   */
+  abstract public float getX( int i );
+
+
+  /**
+   *  Get the position of the specified x-value in this XScale.
+   *
+   *  @param  x    The x value to find in the "list" of x values represented
+   *               by this x scale.
+   *
+   *  @return The position "i" in the list of x-values, where the specified
+   *          x occurs, if it is in the list.  If the specified x is less
+   *          than or equal to the last x in the "list", this function returns
+   *          the index of the first x that is greater than or equal to the 
+   *          specified x.  If the specified x value is above the end of 
+   *          the x scale, the number of points in the x scale is returned.
+   */
+  abstract public int getI( float x );
 
 
   /**
