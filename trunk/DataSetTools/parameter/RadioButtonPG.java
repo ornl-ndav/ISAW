@@ -33,6 +33,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/07/17 18:27:42  bouzekc
+ *  No longer implements PropertyChanger, now correctly
+ *  invalidates itself when a radio button is clicked, fixed
+ *  bug in addItem().
+ *
  *  Revision 1.1  2003/07/17 16:56:05  bouzekc
  *  Added to CVS.
  *
@@ -61,8 +66,8 @@ import javax.swing.*;
  * choice) parameters.  It contains an inner Vector of JRadioButtons, as well
  * as a logical ButtonGroup to link them together.
  */
-public class RadioButtonPG extends ParameterGUI implements PropertyChanger,
-  ParamUsesString, ActionListener {
+public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
+  ActionListener {
   //~ Static fields/initializers ***********************************************
 
   private static final String TYPE = "RadioButton";
@@ -182,6 +187,7 @@ public class RadioButtonPG extends ParameterGUI implements PropertyChanger,
    */
   public void actionPerformed( ActionEvent e ) {
     this.selectedState = e.getActionCommand(  );
+    this.setValid( false );
   }
 
   /**
@@ -189,6 +195,10 @@ public class RadioButtonPG extends ParameterGUI implements PropertyChanger,
    * in the list.
    */
   public void addItem( String buttonName ) {
+    if( !initialized ) {
+      init( null );
+    }
+
     if( ( radioButtons == null ) || ( radioGroup == null ) ) {
       radioButtons   = new Vector(  );
       radioGroup     = new ButtonGroup(  );
@@ -288,32 +298,6 @@ public class RadioButtonPG extends ParameterGUI implements PropertyChanger,
   }
 
   /**
-   * Adds a property change listener.
-   *
-   * @param pcl The property change listener to be added.
-   */
-  public void addPropertyChangeListener( PropertyChangeListener pcl ) {
-    for( int i = 0; i < radioButtons.size(  ); i++ ) {
-      ( ( JRadioButton )radioButtons.elementAt( i ) ).addPropertyChangeListener( 
-        pcl );
-    }
-  }
-
-  /**
-   * Adds a property change listener.
-   *
-   * @param pcl The property change listener to be added.
-   * @param prop The property to listen for.
-   */
-  public void addPropertyChangeListener( 
-    String prop, PropertyChangeListener pcl ) {
-    for( int i = 0; i < radioButtons.size(  ); i++ ) {
-      ( ( JRadioButton )radioButtons.elementAt( i ) ).addPropertyChangeListener( 
-        prop, pcl );
-    }
-  }
-
-  /**
    * Definition of the clone method.
    */
   public Object clone(  ) {
@@ -323,18 +307,6 @@ public class RadioButtonPG extends ParameterGUI implements PropertyChanger,
     pg.initialized = false;
 
     return pg;
-  }
-
-  /**
-   * Removes a property change listener.
-   *
-   * @param pcl The property change listener to be removed.
-   */
-  public void removePropertyChangeListener( PropertyChangeListener pcl ) {
-    for( int i = 0; i < radioButtons.size(  ); i++ ) {
-      ( ( JRadioButton )radioButtons.elementAt( i ) ).removePropertyChangeListener( 
-        pcl );
-    }
   }
 
   /**
