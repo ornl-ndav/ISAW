@@ -8,6 +8,9 @@
  *               Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.4  2001/03/01 21:04:00  dennis
+ *  Moved detailed exception checking to TCPComm.Receive() method.
+ *
  *  Revision 1.3  2001/02/20 23:11:56  dennis
  *  Added more elaborate exception handling when an object is read from
  *  the object input stream.
@@ -83,10 +86,9 @@ public class ThreadedTCPComm extends TCPComm
 
       try
       {
-        while ( true )
-        {
-          data_obj = obj_in_stream.readObject( );
-       
+        while ( true )                // loop to receive and process data until
+        {                             // an error occurs, or 'Exit' is received
+          data_obj = Receive( );
           user.ProcessData( data_obj, this_object );
 
           if ( data_obj instanceof TCPCommExitClass ) 
@@ -96,52 +98,16 @@ public class ThreadedTCPComm extends TCPComm
           }
         }
       }
-      catch( ClassNotFoundException e )
-      {
-        System.out.println("ClassNotFoundException reading Object " + 
-                           "in TCP_thread.run() " + e );
-        e.printStackTrace();
-      }
-
-      catch( InvalidClassException e )
-      {
-        System.out.println("InvalidClassException reading Object " + 
-                           "in TCP_thread.run() " + e );
-        e.printStackTrace();
-      }
-
-      catch( StreamCorruptedException e )
-      {
-        System.out.println("StreamCorruptedException reading Object " +
-                           "in TCP_thread.run() " + e );
-        e.printStackTrace();
-      }
-
-      catch( OptionalDataException e )
-      {
-        System.out.println("OptionalDataException reading Object " +
-                           "in TCP_thread.run() " + e );
-        e.printStackTrace();
-      }
-
       catch( IOException e )
       {
         System.out.println("IOException reading Object " +
                            "in TCP_thread.run() " + e );
-        e.printStackTrace();
       }
 
-      catch( Exception e )
-      {
-        System.out.println("ERROR reading Object in TCP_thread.run() " + e ); 
-        e.printStackTrace();
-      }
                            // if we get here, either the attempt to read an
                            // object failed, or we received an "exit" object.  
-
-      System.out.println("Shutting down TCP connection");
+                           // and TCP connection was shut down in TCPComm
       thread = null;
-      FreeResources();
     }
   }
 }
