@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2004/04/20 17:44:35  dennis
+ * Now uses EventQueue.invokeLater with a "WindowShower" to
+ * show the main window, instead of doing it directly.
+ *
  * Revision 1.20  2004/03/15 06:10:53  dennis
  * Removed unused import statements.
  *
@@ -327,7 +331,9 @@ public class RecipPlaneView
     controller.addControlledPanel( vec_Q_space );
 
     scene_f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    scene_f.setVisible( true );
+    WindowShower shower = new WindowShower( scene_f );
+    EventQueue.invokeLater( shower );
+    shower = null;
 
     apply_button.addActionListener( new ThresholdApplyButtonHandler() );
 
