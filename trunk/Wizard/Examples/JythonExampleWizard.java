@@ -29,6 +29,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.6  2003/11/05 02:20:29  bouzekc
+ * Changed to work with new Wizard and Form design.
+ *
  * Revision 1.5  2003/08/07 14:22:58  bouzekc
  * Now uses wizardLoader() rather than show().
  *
@@ -49,6 +52,7 @@
 package Wizard.Examples;
 
 import DataSetTools.parameter.IParameterGUI;
+import DataSetTools.parameter.LoadFilePG;
 
 import DataSetTools.util.SharedData;
 import DataSetTools.util.StringUtil;
@@ -82,7 +86,6 @@ public class JythonExampleWizard extends Wizard {
     this.createAllForms(  );
 
     StringBuffer s = new StringBuffer(  );
-
     s.append( "This class has a main program that constructs a Wizard to \n" );
     s.append( "show how JyScriptForms can be created and have their \n" );
     s.append( "parameters linked together.\n" );
@@ -96,7 +99,6 @@ public class JythonExampleWizard extends Wizard {
    */
   public static void main( String[] args ) {
     JythonExampleWizard w = new JythonExampleWizard( true );
-
     w.wizardLoader( args );
   }
 
@@ -105,20 +107,19 @@ public class JythonExampleWizard extends Wizard {
    */
   private void createAllForms(  ) {
     //here is where we link all of our parameters.
-    int[][] fpi = {
+    int[][] fpi            = {
       { 0, 0 },  //raw data path
       { 1, 1 },  //peaks file path
       { 2, 2 },  //run numbers
       { 3, 3 },  //experiment name
       { 7, 5 }
     };  //SCD calibration file
-
-    JyScriptForm peaks = new JyScriptForm( 
-        "find_multiple_peaks2.py", "LoadFile", "Peaks File" );
+    JyScriptForm peaks     = new JyScriptForm( 
+        "find_multiple_peaks2.py", new LoadFilePG( "Peaks File", null, false ) );
     JyScriptForm integrate = new JyScriptForm( 
-        "integrate_multiple_runs2.py", "LoadFile", "Integrated Peaks File",
+        "integrate_multiple_runs2.py",
+        new LoadFilePG( "Integrated Peaks File", null, false ),
         new int[]{ 0, 1, 2, 3, 5 } );
-
     this.addForm( peaks );
     this.addForm( integrate );
 
