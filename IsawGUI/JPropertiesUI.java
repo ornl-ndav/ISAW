@@ -29,6 +29,16 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2005/03/30 01:08:13  dennis
+ * Modified showAttributes() method to take an object
+ * that implements IAttributeList.  This allows either
+ * DataSets or Data blocks to be passed in to have
+ * their attributes displayed.  In the case that a
+ * a DataSet is passed in, the "Title" is now obtained
+ * using the getTitle() method on the DataSet.  This
+ * modification was necessary since the redundant DataSet
+ * name attribute was removed.
+ *
  * Revision 1.17  2004/03/15 19:35:31  dennis
  * Rmoved unused imports after factoring out view components,
  * math and utilities.
@@ -119,7 +129,7 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
       )
     );
 
-    showAttributes(  new AttributeList() );
+    showAttributes( null );
   }  
  
 
@@ -138,7 +148,7 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
    *  @param attr_list  The list of attributes to be displayed.
    *  
    */
-  public void showAttributes( AttributeList attr_list )
+  public void showAttributes( IAttributeList attr_list )
   {
     DefaultTableModel dtm = (DefaultTableModel)table.getModel();
 
@@ -147,15 +157,25 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
     for ( int i = n_rows-1; i >= 0; i-- )
       dtm.removeRow(i);
 
-    for (int i=0; i<attr_list.getNum_attributes(); i++)
+    if ( attr_list != null )
     {
-      Attribute attr = attr_list.getAttribute(i);
-      Vector row_data = new Vector();
-      row_data.addElement(attr.getName()); 
-      row_data.addElement(attr.getStringValue());
-      dtm.addRow( row_data );
+      if ( attr_list instanceof DataSet )    // show the DS title
+      {
+        Vector ds_name_row = new Vector(2);
+        ds_name_row.addElement( "DataSet Tag:Title" ); 
+        ds_name_row.addElement( ((DataSet)attr_list).toString() ); 
+        dtm.addRow( ds_name_row );
+      }
+                                             // show the attributes
+      for ( int i=0; i < attr_list.getNum_attributes(); i++ )
+      {
+        Attribute attr = attr_list.getAttribute(i);
+        Vector row_data = new Vector(2);
+        row_data.addElement(attr.getName()); 
+        row_data.addElement(attr.getStringValue());
+        dtm.addRow( row_data );
+      }
     }
-
     ExcelAdapter myAd = new ExcelAdapter(table);
 
     data_shown = null;  // Reset the data_shown variable.  If this is called
@@ -196,7 +216,7 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
 
       if( reason_str.equals(DESTROY) )
       {
-        showAttributes(new AttributeList());
+        showAttributes( null );
       }
 
       else if( reason_str.equals(SELECTION_CHANGED) )
@@ -206,7 +226,7 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
         {
           Data d = ds.getData_entry(index);
           if( d.isMostRecentlySelected() )
-            showAttributes(d.getAttributeList());
+            showAttributes( d );
           data_shown = d;                         // keep track of what was
                                                   // shown, so we don't show
                                                   // it twice
@@ -220,7 +240,7 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
         {
           Data d = ds.getData_entry( index );
           if ( d != data_shown )
-            showAttributes(  d.getAttributeList()  );
+            showAttributes( d );
           data_shown = d;                        // keep track of what was
                                                  // shown, so we don't show
                                                  // it twice
@@ -229,12 +249,12 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
 
       else if( reason_str.equals(DATA_DELETED) )
       {
-        showAttributes(new AttributeList());
+        showAttributes( null );
       }
 
       else
       {
-        showAttributes(ds.getAttributeList());
+        showAttributes( ds );
       }
  
       return; 
