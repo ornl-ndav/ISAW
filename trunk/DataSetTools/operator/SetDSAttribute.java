@@ -75,7 +75,7 @@ public class SetDSAttribute extends    DataSetOperator
    */
    public String getCommand()
    {
-     return "SetDSAttr";
+     return "SetAttr";
    }
 
 
