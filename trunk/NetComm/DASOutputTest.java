@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2001/06/01 22:04:23  dennis
+ *  Now runs "forever" instead of terminating after sending 20,000
+ *  spectra.
+ *
  *  Revision 1.6  2001/04/23 19:44:07  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -210,9 +214,11 @@ public class DASOutputTest
 
     rr = null;
 
-    for ( int count = 0; count < 20000; count++ )   // repeatedly send the data 
+    int count = 0;
+    while ( true )
     {
-      System.out.println("Sending data " + count );
+      System.out.println("Sent block " + count );
+      count++;
 
       for ( int i = 0; i < data_sets.length; i++ )         // send each DataSet
         test.SendDataBlocks( sender, data_sets[i], count );
