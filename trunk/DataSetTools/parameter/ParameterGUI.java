@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/06/20 16:30:25  bouzekc
+ *  Removed non-instantiated methods.  Added methods to get and
+ *  set the ignore property change value.
+ *
  *  Revision 1.5  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -102,23 +106,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     }
 
     /**
-     * Returns the value of the parameter. While this is a generic
-     * object specific parameters will return appropriate
-     * objects. There can also be a 'fast access' method which returns
-     * a specific object (such as Float or DataSet) without casting.
-     */
-    /* public Object getValue(){
-       return value;
-       } */
-
-    /**
-     * Sets the value of the parameter.
-     */
-    /*public void setValue(Object value){
-      this.value=value;
-      }*/
-
-    /**
      * Returns whether or not the parameter is valid. Currently used
      * only by wizards.
      */
@@ -141,13 +128,28 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     public String getType(){
         return this.type;
     }
+
+    /**
+     *  Method to set the ignore_prop_change variable.  Useful for changing the
+     *  value and validity within code.
+     *
+     *  @param  ignore              boolean indicating whether to ignore
+     *                              property changes or not.
+     */
+    public void setIgnorePropertyChange(boolean ignore)
+    {
+      ignore_prop_change = ignore;
+    }
+
+    /**
+     *  Accessor method to get the ignore_prop_change variable.  
+     */
+    public boolean getIgnorePropertyChange()
+    {
+      return ignore_prop_change;
+    }
     
     // ********** IParameterGUI requirements **********
-    /**
-     * Allows for initialization of the GUI after instantiation.
-     */
-     /*public void init(java.util.Vector init_values){
-       }*/
 
     /**
      * Method for producing an alternative layout of the GUI.
@@ -176,14 +178,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     public boolean getEnabled(){
         return enabled;
     }
-
-    /**
-     * Set the enabled state of the EntryWidget. This produces a more
-     * pleasant effect that the default setEnabled of the widget.
-     */
-    /*public void setEnabled(boolean enable){
-      this.enable=enable;
-      }*/
 
     /**
      * Determine if the 'valid' checkbox will be drawn.
@@ -225,10 +219,9 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
 
     // ********** methods for PropertyChangeListener **********
     public void propertyChange(PropertyChangeEvent ev){
-        if(this.ignore_prop_change) return;
+        if(this.ignore_prop_change)
+          return;
         this.setValid(false);
-        /* this.setValue(ev.getNewValue());
-           this.setValid(false); */
     }
 
     // ********** methods for PropertyChanger **********
@@ -290,12 +283,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
             checkpanel.add(this.validcheck);
             this.guipanel.add(innerpanel,BorderLayout.CENTER);
             this.guipanel.add(checkpanel,BorderLayout.EAST);
-            /* this.guipanel.setLayout(new FlowLayout(FlowLayout.CENTER,5,2));
-               JPanel innerpanel=new JPanel(new GridLayout(1,2));
-               innerpanel.add(this.getLabel());
-               innerpanel.add(this.getEntryWidget());
-               this.guipanel.add(innerpanel);
-               this.guipanel.add(this.validcheck); */
         }else{
             System.err.println("cannot construct GUI component of "
                                +this.getType()+" "+this.getName());
