@@ -31,6 +31,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.3  2002/02/11 21:44:24  rmikk
+ * Altered to reflect changes in table_view
+ *
  * Revision 1.2  2001/08/09 21:51:30  rmikk
  * Added Documentation.
  * Included better prompts to indicate Selected Groups are
@@ -40,10 +43,12 @@
 package DataSetTools.operator;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
+import DataSetTools.util.*;
 import DataSetTools.viewer.Table.*;
 import DataSetTools.util.*;
 import java.util.*;
 import DataSetTools.util.*;
+import  javax.swing.*;
 
 /** This class creates a operator the produces a table of x vs y vs errors.
  *  The table can be sent to the console, table, or file<P>
@@ -75,7 +80,7 @@ public class XYDataTable  extends DataSetTools.operator.GenericSave
         addParameter( new Parameter( "Output:", 
                       new MediaList( "Console" )));
         addParameter( new Parameter("filename ", filename));
-        addParameter( new Parameter("Selected Group indecies", 
+        addParameter( new Parameter("Selected Group indices", 
                                     SelectedGroups));
                                  
       }
@@ -86,8 +91,8 @@ public class XYDataTable  extends DataSetTools.operator.GenericSave
         addParameter( new Parameter( "Data Set", new DataSet("","") ));
         addParameter( new Parameter("Show Errors ", new Boolean( true ) ));
         addParameter( new Parameter( "Output", new MediaList("Console")));
-        addParameter( new Parameter("filename ",new DataDirectoryString()));
-        addParameter( new Parameter("Selected Group indecies", 
+        addParameter( new Parameter("filename ",new String()));
+        addParameter( new Parameter("Selected Group indices", 
                                     new IntListString("1,3:8")));
     }
 
@@ -110,7 +115,7 @@ public class XYDataTable  extends DataSetTools.operator.GenericSave
      String filename = getParameter(3).getValue().toString();
      IntListString SelGroups = (IntListString)(getParameter(4).getValue());
      int mode = 0;
-     System.out.println("output="+output);
+     //System.out.println("output="+output);
      if( output .equals("Console"))
          mode = 0;
      else if( output.equals("File"))
@@ -122,28 +127,32 @@ public class XYDataTable  extends DataSetTools.operator.GenericSave
        mode = 0;
      table_view TB = new table_view( mode );
      TB.setFileName( filename );
-     DataSetOperator op = new SetField( DS,
-			new DSSettableFieldString( 
-                        DSFieldString.SELECTED_GROUPS), SelGroups);
-     op.getResult();
-     String Used[];
-     if( showerrors )
-        {Used = new String[3];
-         Used[2] = "error";
+     //DataSetOperator op = new SetField( DS,
+     //			new DSSettableFieldString( 
+     //                   DSFieldString.SELECTED_GROUPS), SelGroups);
+     //op.getResult();
+     //String Used[];
+     DefaultListModel sel = new DefaultListModel();
+     if( TB.getFieldInfo(DS,"X values") == null)
+       { return new ErrorString("No such field x");
         }
-     else
-        Used = new String[2];
-     Used[0] = "x value"; 
-     Used[1] = "y value";
-     int used[];
-     used = TB.Convertt( Used );
-     if( used == null)
-        return new ErrorString( "improper field names");
+     sel.addElement( TB.getFieldInfo(DS,"X values"));
+     if(TB.getFieldInfo(DS,"Y values")==null)
+       return new ErrorString("No such Field y");
+     sel.addElement(TB.getFieldInfo(DS,"Y values"));
+     if( showerrors )
+        {if(TB.getFieldInfo(DS, "Error values")==null)
+           return new ErrorString(" No such fieldinfo e");
+         sel.addElement( TB.getFieldInfo(DS, "Error values"));
+        }
+     
+     
+     
      
      DataSet DSS[];
      DSS = new DataSet[1];
      DSS[0] = DS;
-     TB.Showw( DSS , used , true , false );
+     TB.Showw( DSS , sel , "HGT,F" , false, IntList.ToArray(SelGroups.toString()) );
      return "Finished";
     }
 
