@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2002/07/18 22:08:55  dennis
+ *  Moved separate OverplotView hiearchy into DataSetTools/viewer
+ *  hierarchy.
+ *
  *  Revision 1.22  2002/07/17 19:10:55  rmikk
  *  Fixed up the table views menu choices and reordered
  *    the view menu
@@ -165,7 +169,7 @@ import DataSetTools.viewer.Image.*;
 import DataSetTools.viewer.ThreeD.*;
 import DataSetTools.viewer.Table.*;
 import DataSetTools.viewer.Contour.*;
-import OverplotView.*;                      // import this for Kevin's viewer
+import DataSetTools.viewer.OverplotView.*;
 import DataSetTools.viewer.ViewerTemplate.*;
 import java.awt.*;
 import java.awt.event.*;

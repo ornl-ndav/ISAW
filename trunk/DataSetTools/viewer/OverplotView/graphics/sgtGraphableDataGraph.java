@@ -1,4 +1,4 @@
-package OverplotView.graphics;
+package DataSetTools.viewer.OverplotView.graphics;
 
 /**
  * $Id$
@@ -6,6 +6,10 @@ package OverplotView.graphics;
  * graphical output panel
  *
  * $Log$
+ * Revision 1.1  2002/07/18 22:06:56  dennis
+ * Moved separate OverplotView hiearchy into DataSetTools/viewer
+ * hierarchy.
+ *
  * Revision 1.9  2001/12/21 17:54:27  dennis
  * -Implemented offsets for graphs (Ruth)
  *
@@ -60,8 +64,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import OverplotView.GraphableData;
-import OverplotView.IGraphableDataGraph;
+import DataSetTools.viewer.OverplotView.*;
 
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
