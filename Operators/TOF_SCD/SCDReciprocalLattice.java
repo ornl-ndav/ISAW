@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/10/15 02:17:30  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.5  2003/04/02 15:18:02  dennis
  * Added getDocumentation() method. (Joshua Olson)
  *
@@ -85,11 +88,11 @@ public class SCDReciprocalLattice extends GenericTOF_SCD
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
-   *  Construct an operator for with the specified parameter values so
+   *  Construct an operator with the specified parameter values so
    *  that the operation can be invoked immediately by calling getResult().
    *
    *  @param  path        The directory path to the data directory
-   *  @param  run_numbers A list of run numbers to be loaded
+   *  @param  runs        A list of run numbers to be loaded
    */
    public SCDReciprocalLattice(  DataDirectoryString    path,
                                  IntListString          runs  )
@@ -323,8 +326,8 @@ private static void draw_axes( float length, ThreeD_JPanel threeD_panel  )
 
  /* --------------------------------- clone -------------------------------- */
  /** 
-  *  Creates a clone of this operator.  ( Operators need a clone method, so 
-  *  that Isaw can make copies of them when needed. )
+  *  Creates a clone of this operator.  Operators need a clone method, so 
+  *  that Isaw can make copies of them when needed.
   */
   public Object clone()
   { 
