@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/06/30 22:22:53  bouzekc
+ * Now implements KeyListener and listens for <Enter> key
+ * presses in the data entry text field.
+ *
  * Revision 1.4  2003/06/30 22:10:02  bouzekc
  * Now uses ParameterViewer to show values of the elements in
  * its list.  Now implements PropertyChangeListener rather than
@@ -65,10 +69,7 @@ import DataSetTools.util.StringUtil;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -85,7 +86,7 @@ import javax.swing.*;
  *  etc.  This class was extracted from VectorPG and redesigned.
  */
 public class ArrayEntryJPanel extends JPanel implements ActionListener,
-  PropertyChanger, PropertyChangeListener {
+  PropertyChanger, PropertyChangeListener, KeyListener {
   private final String UP_LABEL       = new String( "Move Item Up" );
   private final String DOWN_LABEL     = new String( "Move Item Down" );
   private final String DELETE_LABEL   = new String( "Delete Item" );
@@ -163,6 +164,9 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     //use the inner parameter's entrywidget for entering values
     dataPanel.add( param.getEntryWidget(  ), BorderLayout.CENTER );
 
+    //add a key listener to the parameter
+    param.getEntryWidget(  ).addKeyListener( this );
+
     this.add( dataPanel, BorderLayout.NORTH );
 
     //just changed the value, so invalidate the parameter.
@@ -235,7 +239,6 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
   /******************* ActionListener requirement ********************/
   public void actionPerformed( ActionEvent evt ) {
     JButton actionButton = ( JButton )( evt.getSource(  ) );
-    String event         = evt.getActionCommand(  );
 
     if( actionButton == Up ) {
       move( -1 );
@@ -287,6 +290,26 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
   }
 
   /**************** end ActionListener requirement ********************/
+  /******************* KeyListener requirement ********************/
+  /**
+   *  We are interested in listening for the <Enter> key here.
+   */
+  public void keyPressed( KeyEvent evt ) {
+    if( evt.getKeyCode(  ) == KeyEvent.VK_ENTER ) {
+      jlistModel.addElement( param.getValue(  ) );
+    }
+  }
+
+  /**
+   *  Needed for implementation of KeyListener, but unnecessary here.
+   */
+  public void keyReleased( KeyEvent evt ) {}
+
+  /**
+   *  Needed for implementation of KeyListener, but unnecessary here.
+   */
+  public void keyTyped( KeyEvent evt ) {}
+
   /**************** PropertyChanger requirement ********************/
   public void addPropertyChangeListener( PropertyChangeListener listener ) {
     pcs.addPropertyChangeListener( listener );
