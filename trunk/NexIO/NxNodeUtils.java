@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2002/02/26 15:46:41  rmikk
+ * Fixed the utility Showw routine
+ * Added a utility routine to getConversion factors
+ *
  * Revision 1.7  2001/08/10 19:58:47  rmikk
  * Added Constant strings to refer to a few errors
  *
@@ -360,7 +364,7 @@ public String ShowwArr( Object X )
       //System.out.println("Vector length="+ n);  
      } 
      
-   else
+   else 
     {//System.out.println("SHnot supported"+X.getClass());
      return X.toString();
     }
@@ -370,7 +374,7 @@ public String ShowwArr( Object X )
 /** Shows the value of many, many types of Objects
 */
 public String Showw( Object X  )
-  {if( X instanceof Integer )
+  {/*if( X instanceof Integer )
       return X.toString();
    else if( X instanceof Float )
       return X.toString();
@@ -381,12 +385,21 @@ public String Showw( Object X  )
   else if( X == null )
       return "(null)";
    else return ShowwArr( X );
+  */
+   if( X == null) return "(null)";
+   if( X.getClass().isArray())
+     return ShowwArr(X);
+   if( X instanceof Vector)
+     return ShowwArr(X);
+   return X.toString();
   
    }
 /** test array for parse dates
 */
  public static void main( String args[])
   {Object X;
+  String[] ss={"abc","cde","efg"};
+  System.out.println("String Arry="+new NxNodeUtils().Showw(ss));
    NxNodeUtils NU= new NxNodeUtils();
    Calendar C = new GregorianCalendar();
    while(true)
@@ -421,10 +434,61 @@ public String Showw( Object X  )
 
     }
    }
+/** Gives Factor to mulitply OldUnits to get NewUnits(ISAW units)
+*/
+public static float getConversionFactor( String OldUnits, String NewUnits)
+  { if( NewUnits.equals("radians"))
+          return AngleConversionFactor( OldUnits);
+    if( NewUnits.equals("meters"))
+          return LengthConversionFactor(OldUnits);
+    if(NewUnits.equals("Kelvin"))
+          return TempConversionFactor(OldUnits);
+    if( NewUnits.equals("second")) return TimeConversionFactor( OldUnits );
+    if( NewUnits.equals("grams")) return MassConversionFactor( OldUnits);
+    if( NewUnits.equals("Mev")) return EnergyConversionFactor( OldUnits );
+    
+    else return 1.0f;
+  }
+
+public static float AngleConversionFactor(String OldUnits) //base radians
+  {boolean hasDegree=false;
+   if("rad;radian;".indexOf(OldUnits+";")>=0)return 1.0f;
+   if("deg;degree;d;".indexOf(OldUnits+";")>=0) return (float)(java.lang.Math.PI/180.0);
+   return 1.0f;
+ 
+  }
+public static float LengthConversionFactor(String OldUnits)//base m
+  { if( "m;meter;met;".indexOf(OldUnits+";")>=0) return 1;
+    if("cm;centim;centimeter;cmeter;cmet;100mm;100millim;100millimeter;".indexOf(OldUnits+";")>=0)
+            return .01f;
+    if("mm;millim;millimeter;100um;100microm;".indexOf(OldUnits+";")>=0)return .001f;
+    if("um;umet;umeter;umeters;".indexOf(OldUnits)>=0) return .000001f;
+ 
+    if("in;inch;".indexOf(OldUnits+";")>=0) return (float)(1.0/254.0);
+    if("ft;foot;feet;".indexOf(OldUnits+";")>=0)return (float)(12.0/254.0);
+    return 1.0f;
+    
+  }
+public static float TempConversionFactor(String OldUnits)//base Kelvin
+  { if("kelvin;k;".indexOf(OldUnits.toLowerCase()+";")>=0)return 1.0f;
+    if( "deg;degrees;d;".indexOf(OldUnits+";")>=0) return (float)(100.0/212.0);
+    return 1.0f;
+  }
+public static float TimeConversionFactor(String OldUnits)//seconds
+  {return 1.0f;
+  }
+public static float MassConversionFactor(String OldUnits)//grams
+  {return 1.0f;
+  }
+public static float EnergyConversionFactor(String OldUnits)//Mev
+  {return 1.0f;
+  }
 /** Test program for NxNodeUtils.java
 */
 public static void main1( String args[] )
  {Object X;
+
+  
  NxNodeUtils NU= new NxNodeUtils();
   System.out.println( "Byte="+java.lang.Byte.MAX_VALUE );
  System.out.println( "Short="+java.lang.Short.MAX_VALUE );
@@ -433,6 +497,7 @@ public static void main1( String args[] )
   char c = 0;
   X = null;
  NU.showConst();
+  c='x';
   while( c!= 'x' )
    { System.out.println( "Enter option desired" );
      System.out.println( "   1. Create int array" );
