@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/12/11 22:08:53  rmikk
+ * Added a kill command to remove orphaned windows
+ *
  * Revision 1.5  2003/11/09 22:28:45  rmikk
  * Fixed an error so that the region selected in the table view is correct
  *
@@ -496,7 +499,8 @@ public class RowColTimeVirtualArray extends
     }
    
 
-
+   public void kill(){
+   }
   /**
    * To be continued...
    */

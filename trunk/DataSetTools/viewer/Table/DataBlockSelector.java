@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/12/11 22:09:04  rmikk
+ * Added a kill command to remove orphaned windows
+ *
  * Revision 1.2  2003/12/11 19:40:22  rmikk
  * Starts with GroupID, Scat Ang, and Tot Count columns
  * The control buttons have more descriptive names and
@@ -93,7 +96,7 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
         GroupSort = new Integer[ DS.getNum_entries()];
         for (int i = 0; i < GroupSort.length; i++)
             GroupSort[i] = new Integer(i);
-
+        
     }
     String[] FieldNames ={"Scat Ang","Total Count"};
     private String[] GetFieldNames( ViewerState state){
@@ -331,7 +334,12 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
     public IVirtualArray getArray() {
         return tbArray;
     }
-  
+    
+   public void kill(){
+
+      if( jf != null)
+         jf.dispose();
+   }
 
     /**
       *  The IVirutalArray2D class created by this Array Maker
@@ -843,5 +851,4 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
      }
 
   }
-
 }
