@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/10/11 18:57:56  bouzekc
+ *  Removed clone() as ParameterGUI now implements it.
+ *
  *  Revision 1.14  2003/09/16 22:46:52  bouzekc
  *  Removed addition of this as a PropertyChangeListener.  This is already done
  *  in ParameterGUI.  This should fix the excessive events being fired.
@@ -175,8 +178,6 @@ public class BooleanPG extends ParameterGUI
     }else{
       this.value=booval;
     }
-
-    validateSelf();
   }
 
   /**
@@ -251,16 +252,6 @@ public class BooleanPG extends ParameterGUI
     fpg.setDrawValid(true);
     fpg.initGUI(null);
     fpg.showGUIPanel();
-  }
-
-  /**
-   * Definition of the clone method.
-   */
-  public Object clone(){
-    BooleanPG pg=new BooleanPG(this.name,this.value,this.valid);
-    pg.setDrawValid(this.getDrawValid());
-    pg.initialized=false;
-    return pg;
   }
 
   /**

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2003/10/11 18:59:06  bouzekc
+ *  Removed clone() as ParameterGUI now implements it.
+ *
  *  Revision 1.32  2003/09/16 22:46:50  bouzekc
  *  Removed addition of this as a PropertyChangeListener.  This is already done
  *  in ParameterGUI.  This should fix the excessive events being fired.
@@ -246,8 +249,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
         ArraytoString( ( Vector )value ) );
     }
-
-    validateSelf(  );
   }
 
   /**
@@ -405,18 +406,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
         ArraytoString( ( Vector )value ) );
     }
-  }
-
-  /**
-   * Definition of the clone method.
-   */
-  public Object clone(  ) {
-    ArrayPG apg = new ArrayPG( this.name, this.value, this.valid );
-
-    apg.setDrawValid( this.getDrawValid(  ) );
-    apg.initialized = false;
-
-    return apg;
   }
 
   /**
