@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:47:20  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:10:06  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -58,20 +61,56 @@ import javax.swing.JScrollPane;
 import devTools.Hawk.classDescriptor.tools.ASCIIPrintFileManager;
 import devTools.Hawk.classDescriptor.tools.SystemsManager;
 
+/**
+ * This class is used to describe a class or interface.  It contains the following field
+ * <br> An InterfaceDefn object that describes the general properties
+ * <br> A vector of AttributeDefn objects, each of which describes one of the class's or interface's
+ * attributes (fields)
+ * <br> A vector of ConstructorDefn objects, each of which describes one of the class's or interface's
+ * constructors
+ * <br> A vector of MethodDefn objects, each of which describes one of the class's or interface's
+ * methods
+ * <br> There is also support for storing the class's or interface's source file's and javadocs file's
+ * locations.
+ * 
+ * @author Dominic Kramer
+ *
+ */
 public class Interface
 {
 	//--------------------class attributes--------------------------------
 	
+	/**
+	 * The InterfaceDefn object which holds all of the general characteristics of the interface.
+	 */
 	protected InterfaceDefn pgmDefn;  //an object of type InterfaceDefn
+	/**
+	 * A Vector of AttributeDefn objects, one for each of the interface's attributes (fields).
+	 */
 	protected Vector attribute_vector;  //a vector of objects of type AttributeDefn
+	/**
+	 * A Vector of ConstructorDefn objects, one for each of the interface's constructors.
+	 */
 	protected Vector const_vector;  //a vector of objects of type ConstructorDefn
+	/**
+	 * A Vector of MethodDefn objects, one for each of the interface's methods.
+	 */
 	protected Vector method_vector;  //a vector of objects of type MethodDefn
 	
+	/**
+	 * The full filename for the source code file for the interface.
+	 */
 	protected String sourceFileName;
+	/**
+	 * The full filename for the javadocs file for the interface.
+	 */
 	protected String javadocsFileName;
 	
 	//--------------------constructors------------------------------------
 	
+	/**
+	 * Creates a default Interface object.
+	 */
 	public Interface()
 	{
 		pgmDefn = new InterfaceDefn();
@@ -82,6 +121,15 @@ public class Interface
 		javadocsFileName = "";
 	}
 	
+	/**
+	 * Creates a Interface object given the specified parameters.
+	 * @param pf The InterfaceDefn object associated with this Interface.
+	 * @param atV The Vector of AttributeDefn objects associated with this Interface.
+	 * @param cV The Vector of ConstructorDefn objects associated with this Interface.
+	 * @param mV The Vector of MethodDefn objects associated with this Interface.
+	 * @param sourceF The full filename to the Interface's source code file.
+	 * @param javaF The full filename to the Interface's javadocs file.
+	 */
 	public Interface(InterfaceDefn pf, Vector atV, Vector cV, Vector mV, String sourceF, String javaF)
 	{
 		pgmDefn = pf;
@@ -96,59 +144,111 @@ public class Interface
 	
 	//this is used to allow you to add an Interface object to
 	//a JTree and have it's name get printed for the node name
+	/**
+	 * Returns the Interface's name.  This method is used when adding Interface objects to a JTree.  When an 
+	 * object is added to a JTree, the JTree class uses the toString() method to name the corresponding node.  Thus 
+	 * if you place an Interface object in a JTree, the Interface's name will be displayed in the node.
+	 */
 	public String toString()
 	{
 		return pgmDefn.getInterface_name();
 	}
 	
+	/**
+	 * Get the InterfaceDefn object associated with this Interface.
+	 * @return An InterfaceDefn object.
+	 */
 	public InterfaceDefn getPgmDefn()
 	{
 		return pgmDefn;
 	}
 	
+	/**
+	 * Set the InterfaceDefn object associated with this Interface.
+	 * @param pd The InterfaceDefn object to associate with this Interface.
+	 */
 	public void setPgmDefn(InterfaceDefn pd)
 	{
 		pgmDefn = pd;
 	}
 	
+	/**
+	 * Get the Vector of AttributeDefn objects associated with this Interface.
+	 * @return A Vector of AttributeDefn objects.
+	 */	
 	public Vector getAttribute_vector()
 	{
 		return attribute_vector;
 	}
 	
+	/**
+	 * Set the Vector of AttributeDefn objects associated with this Interface.
+	 * @param vec A Vector of AttributeDefn objects.
+	 */
 	public void setAttribute_vector(Vector vec)
 	{
 		attribute_vector = vec;
 	}
 	
+	/**
+	 * Get the Vector of MethodDefn objects associated with this Interface.
+	 * @return A Vector of MethodDefn objects.
+	 */
 	public Vector getMethod_vector()
 	{
 		return method_vector;
-	}	
+	}
+	
+	/**
+	 * Set the Vector of MethodDefn objects associated with this Interface.
+	 * @param vec A Vector of MethodDefn objects.
+	 */
 	public void setMethod_vector(Vector vec)
 	{
 		method_vector = vec;
 	}
 	
+	/**
+	 * Get the Vector of ConstructorDefn objects associated with this Interface.
+	 * @return A Vector of ConstructorDefn objects.
+	 */
 	public Vector getConst_vector()
 	{
 		return const_vector;
-	}	
+	}
+	
+	/**
+	 * Set the Vector of ConstructorDefn objects associated with this Interface.
+	 * @param vec A Vector of ConstructorDefn  objects.
+	 */
 	public void setConst_vector(Vector vec)
 	{
 		const_vector = vec;
 	}
-
+	
+	/**
+	 * Get the filename for this Interface's source code file.
+	 * @return The source code filename.
+	 */
 	public String getSourceFileName()
 	{
 		return sourceFileName;
 	}
 	
+	/**
+	 * Get the filename for this Interface's javadocs file.
+	 * @param str The javadocs filename.
+	 */
 	public void setSourceFileName(String str)
 	{
 		sourceFileName = str;
 	}
 	
+	/**
+	 * This returns the source code compacted into one String.  Note, having the entire source code in one 
+	 * String takes up a large section of memory.
+	 * @return The source code as a String.
+	 */
 	public String getSourceCodeAsString()
 	{
 		String code = "";
@@ -180,17 +280,30 @@ public class Interface
 		
 		return code;
 	}
-		
+	
+	/**
+	 * Get the filename where this Interface's javadocs file is located.
+	 * @return The location of the javadocs file.
+	 */
 	public String getJavadocsFileName()
 	{
 		return javadocsFileName;
 	}
 	
+	/**
+	 * Set the filename where the Interface's javadocs file is located.
+	 * @param str The location of the javadocs file.
+	 */
 	public void setJavadocsFileName(String str)
 	{
 		javadocsFileName = str;
 	}	
-
+	
+	/**
+	 * This returns the entire contents of the javadocs file as a String.  Note, having such a big String 
+	 * may use a large section of memory.
+	 * @return The javadocs file as a String.
+	 */
 	public String getJavadocAsString()
 	{
 		String line = "";
@@ -220,6 +333,15 @@ public class Interface
 		return line;
 	}
 	
+	/**
+	 * Prints a UML diagram to the file specified by the RandomAccessFile raf using "ASCII art."
+	 * @param raf The RandomAccessFile to print the information to.
+	 * @param tab The String to place before each line in UML diagram.  If tab is simply "   ", then 
+	 * the effect is that the UML diagram is tabbed towards the right side of the page.
+	 * @param shortJava Set this to true if you want java names in the UML diagram to be shortened.  For example, 
+	 * java.lang.String would be shortened to String.
+	 * @param shortOther Set this to true if you want non-java names in the UML diagram to be shortened.
+	 */
 	public void printSingleUMLAsString(RandomAccessFile raf, String tab, boolean shortJava, boolean shortOther)
 	{
 		try
@@ -255,6 +377,13 @@ public class Interface
 		}
 	}
 	
+	/**
+	 * Get the an ASCII version of the UML diagram for this interface.
+	 * @param shortJava Set this to true if you want java names to be shortened.  For example, 
+	 * java.lang.String would be written as String.
+	 * @param shortOther Set this to true if you want non-java names to be shortened.
+	 * @return An ASCII version of the UML diagram.
+	 */
 	public String getSingleUMLAsString(boolean shortJava, boolean shortOther)
 	{
 		return getSingleUMLAsString("",shortJava,shortOther);
@@ -299,6 +428,11 @@ public class Interface
 
 	
 	//-----these methods print to the file specified by the PrintWriter 'writer'
+	/**
+	 * Prints data about this Interface to the DataOutputStream writer and does not write a new line character 
+	 * at the end of the data.  This method prints the data in the native Hawk format to save the interface to 
+	 * a file.
+	 */
 	public void print(DataOutputStream writer)
 	{
 		int i = 0;
@@ -349,7 +483,12 @@ public class Interface
 			System.err.println(e);
 		}
 	}
-	
+
+	/**
+	 * Prints data about this Interface to the DataOutputStream writer and writes a new line character 
+	 * at the end of the data.  This method prints the data in the native Hawk format to save the interface to 
+	 * a file.
+	 */	
 	public void println(DataOutputStream writer)
 	{
 		try
@@ -363,26 +502,15 @@ public class Interface
 		}
 	}
 	
-	public void printExtends(RandomAccessFile writer)
-	{
-		pgmDefn.printExtends(writer);
-	}
-	
-	public void printlnExtends(RandomAccessFile writer)
-	{
-		pgmDefn.printlnExtends(writer);
-	}
-
-	public void printLink(RandomAccessFile linker, String file)
-	{
-		pgmDefn.printLink(linker,file);
-	}
-	
-	public void printlnLink(RandomAccessFile linker, String file)
-	{
-		pgmDefn.printlnLink(linker,file);
-	}
-	
+	/**
+	 * This assigns the parameters to the correct fields for the Interface object this is called on.
+	 * @param pgm The InterfaceDefn object to assign to this Interface.
+	 * @param att_vec The Vector of AttributeDefn objects.
+	 * @param c_vec The Vector of ConstructorDefn objects.
+	 * @param method_vec The Vector of MethodDefn objects.
+	 * @param sourceF The full filename to the interface's source code file.
+	 * @param javaF The full filename to the interface's javadocs file.
+	 */
 	public void makeInterfaceObject(InterfaceDefn pgm, Vector att_vec, Vector c_vec, Vector method_vec, String sourceF, String javaF)
 	{
 		pgmDefn = pgm;
@@ -393,11 +521,23 @@ public class Interface
 		javadocsFileName = javaF;
 	}
 	
-	public Interface Clone()
+	/**
+	 * This makes a clone of the Interface that this is called on.
+	 * @return A clone of the Interface.
+	 */
+	public Interface getClone()
 	{
-		return (new Interface( (pgmDefn.Clone()), (Vector)(attribute_vector.clone()), (Vector)(const_vector.clone()), (Vector)(method_vector.clone()), (new String(sourceFileName)), (new String(javadocsFileName)) ));
+		return (new Interface( (pgmDefn.getClone()), (Vector)(attribute_vector.clone()), (Vector)(const_vector.clone()), (Vector)(method_vector.clone()), (new String(sourceFileName)), (new String(javadocsFileName)) ));
 	}
 	
+	/**
+	 * This creates a JPanel with all of the textfields, labels, and panels that display the information for this Interface object.  The textfields 
+	 * and labels are positioned vertically on the JPanel.  This panel was used to be used in the class 
+	 * devTools.Hawk.classDescriptor.gui.frame.VerticalInterfacePanelGUI.  The panel created does not display information in a 
+	 * compact or effecient way and may be removed or significantly changed.
+	 * @deprecated
+	 * @return A JPanel.
+	 */
 	public JPanel getVerticalInterfaceJPanel()
 	{
 
@@ -501,6 +641,14 @@ public class Interface
 		return pgmJPanel;
 	}
 	
+	/**
+	 * This creates a JPanel with all of the textfields, labels, and panels that display the information for this Interface object.  The textfields 
+	 * and labels are positioned horizontally on the JPanel.  This panel was used to be used in the class 
+	 * devTools.Hawk.classDescriptor.gui.frame.HorizontalInterfacePanelGUI.  The panel created does not display information in a 
+	 * compact or effecient way and may be removed or significantly changed.
+	 * @deprecated
+	 * @return A JPanel.
+	 */
 	public JPanel getHorizontalInterfaceJPanel()
 	{
 
@@ -621,6 +769,14 @@ public class Interface
 		return pgmJPanel;
 	}
 	
+	/**
+	 * Get a String representing the Interface object.  The string is written to look like actual 
+	 * source code without constructor or method bodies and without comments.
+	 * @param shortJava Set this to true if you want java names to be shortened.  For example, 
+	 * java.lang.String would be shortened to String.
+	 * @param shortOther Set this to true if you want non-java names to be shortened.
+	 * @return A String representing the Interface object.
+	 */
 	public String getStringInJavadocFormat(boolean shortJava, boolean shortOther)
 	{
 		String str = "";
@@ -688,12 +844,15 @@ public class Interface
 		return str;
 	}
 	
-	//this str is assumed to be read from the .inf file so the string
-	//should be in the exact format of a line from the .inf file
-	//the string is obtained by using infoRAF.readLine() where in dataFileUtilities.java
-	//infoRAF is the random access file for the .inf file
+	//this str is assumed to be read from a native Hawk file so the string
+	//should be in the exact format of a line from the file
 	//ln is the string which is parsed to make the Interface object
-	//NUM is the line number in the .inf file that the object is located
+	/**
+	 * This takes the String ln which is exactly the same as one line from a native Hawk file and 
+	 * returns the Interface object represented by this String.
+	 * @param ln The String which is encoded to represent an Interface object.
+	 * @return The Interface object represented by the String ln.
+	 */
 	public Interface makeInterfaceObject(String ln)
 	{
 		Interface intF = new Interface();  //this is the InterfaceDefn object that will be returned
@@ -961,5 +1120,5 @@ public class Interface
 		}
 		intF = new Interface(intFDefn, attVec, constVec, methodVec, sourceFile, javadocsFile);
 		return intF;
-	}	
+	}
 }

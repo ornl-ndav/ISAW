@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:58:03  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:08:52  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -54,15 +57,21 @@ import javax.swing.JPanel;
 import devTools.Hawk.classDescriptor.gui.panel.ProjectSelectorJPanel;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This window displays a list of projects that the user can select to open.  This 
+ * class was used only for testing purposes, is incomplete, and may be removed.
+ * @author Dominic Kramer
  */
 public class ProjectSelectorGUI extends JFrame implements ActionListener
 {
+	/**
+	 * The panel which displays a list of the Projects.
+	 */
 	private ProjectSelectorJPanel panel;
 	
+	/**
+	 * Create a new ProjectSelectorGUI
+	 * @param provec The Vector of Projects to add to the list.
+	 */
 	public ProjectSelectorGUI(Vector provec)
 	{
 		addWindowListener(new WindowDestroyer());
@@ -79,7 +88,10 @@ public class ProjectSelectorGUI extends JFrame implements ActionListener
 		getContentPane().add(mainPanel);
 		pack();
 	}
-
+	
+	/**
+	 * Handles ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent e)
 	{
 	}

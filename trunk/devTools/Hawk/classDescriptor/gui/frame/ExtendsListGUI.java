@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:35:12  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:08:49  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -54,9 +57,15 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 
-import devTools.Hawk.classDescriptor.gui.panel.*;
+import devTools.Hawk.classDescriptor.gui.panel.ProjectSelectorJPanel;
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
 
+/**
+ * This class is under construction and is incomplete.  It could be used to 
+ * display the class and interfaces in a project in a JTree based on what classes or 
+ * interfaces it extends.
+ * @author Dominic Kramer
+ */
 public class ExtendsListGUI extends JFrame implements ActionListener
 {
 	protected JPopupMenu popup;

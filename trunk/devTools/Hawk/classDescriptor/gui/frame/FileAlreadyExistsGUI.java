@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:35:48  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:08:49  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -45,16 +48,24 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This window asks the user if he/she wants to overwrite, append, or cancel writing a file if 
+ * the user selects to write to a file which already exists.
+ * @author Dominic  Kramer
  */
 public class FileAlreadyExistsGUI extends JFrame
 {
+	/**
+	 * Default constructor.
+	 */
 	public FileAlreadyExistsGUI()
 	{}
 	
+	/**
+	 * This method displays the window and returns the answer if the user wants to 
+	 * overwrite, append, or cancel writing the file.
+	 * @param fileName The full filename for the file to be written to.
+	 * @return Either "Overwrite", "Append", or "Cancel"
+	 */
 	public String showQuestionDialog(String fileName)
 	{
 		String[] optionsArr = {"Overwrite","Append","Cancel"};

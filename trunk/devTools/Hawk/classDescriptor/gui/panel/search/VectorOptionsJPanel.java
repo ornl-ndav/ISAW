@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 19:06:05  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:15:51  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -56,21 +59,39 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
- * @author kramer
- *
  *This class is a special JPanel which has a place to enter a combination of Strings.  It also has a JButton.  When the
- *user presses this button a window pops up to allow the user to specify more specific options.
+ *user presses this button a window pops up to allow the user to specify more specific options for each String entered.  
+ *The class is used to allow the user to specify a combination of Strings each of which may correspond to an element 
+ *from a Vector from an Interface object.
+ *@author Dominic Kramer
  */
 public class VectorOptionsJPanel extends JPanel implements ActionListener
 {
+	/** The panel's secondary label. */
 	protected String subTitle;
+	/** The panel's label. */
 	protected JLabel label;
+	/** Allows the user to enter the text to search for. */
 	protected JTextField textField;
+	/** The button that opens the window to edit advanced options. */
 	protected JButton advancedButton;
-	protected Vector optionsVec; //a vector of AdvanceOptionsJPanel objects
+	/**
+	 *  A Vector of AdvancedOptionsJPanel objects (One for each token entered where a token is 
+	 * a section of the text entered into the JTextField as separated by spaces).
+	 */
+	protected Vector optionsVec; //a vector of AdvancedOptionsJPanel objects
+	/** Used to specify how many elements the Vector must contain. */
 	protected GlobalOptionsJPanel globalOptionsPanel;
+	/** Used to determine if the user has changed the String entered. */
 	private String previousText;
 	
+	/**
+	 * Create a new VectorOptionsJPanel.
+	 * @param textTitle The text that is on the first label on the panel (from left to right).
+	 * @param SUBTITLE The text that is on the second label on the panel (from left to right).
+	 * @param pluralFormOfType The plural form of the type that is to be entered on this panel.  For 
+	 * example "Parameters" or "Characteristcs"
+	 */
 	public VectorOptionsJPanel(String textTitle, String SUBTITLE, String pluralFormOfType)
 	{
 		subTitle = SUBTITLE;
@@ -89,36 +110,58 @@ public class VectorOptionsJPanel extends JPanel implements ActionListener
 		globalOptionsPanel = new GlobalOptionsJPanel("Match must contain",pluralFormOfType);
 	}
 	
+	/**
+	 * Get optionsVec.
+	 */	
 	public Vector getOptionsVec()
 	{
 		return optionsVec;
 	}
 	
+	/**
+	 * Get label's text.
+	 */
 	public String getLabelText()
 	{
 		return label.getText();
 	}
 	
+	/**
+	 * Set label's text.
+	 * @param str The new label's text.
+	 */	
 	public void setLabelText(String str)
 	{
 		label.setText(str);
 	}
 	
+	/**
+	 * Get the text from textField.
+	 * @return The text from textField.
+	 */
 	public String getTextFieldText()
 	{
 		return textField.getText();
 	}
 	
+	/**
+	 * Set the text for textField.
+	 * @param str The new text.
+	 */	
 	public void setTextFieldText(String str)
 	{
 		textField.setText(str);
 	}
 	
+	/**
+	 * Get globalOptionsPanel.
+	 */	
 	public GlobalOptionsJPanel getGlobalOptionsJPanel()
 	{
 		return globalOptionsPanel;
 	}
 	
+	/** Handles ActionEvents. */
 	public void actionPerformed(ActionEvent event)
 	{
 		if (event.getActionCommand().equals("advanced.options"))
@@ -176,10 +219,22 @@ public class VectorOptionsJPanel extends JPanel implements ActionListener
 		}
 	}
 	
+	/**
+	 * This class takes the strings entered in the JTextField of the outer class and tokenizes them by using a space 
+	 * as a deliminator.  This window then allow the user to specify options for each string.
+	 * @author Dominic Kramer
+	 */
 	class AdvancedOptionsGUI extends JFrame implements ActionListener
 	{	
+		/**
+		 * The panel on which all the elements are added.
+		 */
 		protected JPanel mainPanel;
-			
+		
+		/**
+		 * Create a new AdvancedOptionsGUI.
+		 * @param vec The Vector of Strings whose options are to be specified by the user.
+		 */	
 		public AdvancedOptionsGUI(Vector vec)
 		{
 			mainPanel = new JPanel();
@@ -206,28 +261,17 @@ public class VectorOptionsJPanel extends JPanel implements ActionListener
 			 pack();
 		}
 		
+		/** Get the main panel on which all of the components are placed. */
 		public JPanel getMainPanel()
 		{
 			return mainPanel;
 		}
 		
+		/** Handles ActionEvents. */
 		public void actionPerformed(ActionEvent event)
 		{
 			if (event.getActionCommand().equals("ok"))
 				dispose();
 		}
-	}
-	
-	//this is to test how the JPanel looks
-	public static void main(String args[])
-	{
-		JFrame frame = new JFrame();
-		JPanel mainPanel = new JPanel();
-		mainPanel.setLayout(new BorderLayout());
-		VectorOptionsJPanel panel = new VectorOptionsJPanel("Parameters:  ", "Parameter:  ","parameters");
-		mainPanel.add(panel, BorderLayout.CENTER);
-		frame.getContentPane().add(mainPanel);
-		frame.setVisible(true);
-		frame.pack();
 	}
 }

@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:52:28  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:09:15  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -49,20 +52,37 @@ import devTools.Hawk.classDescriptor.gui.panel.PackageTreeJPanel;
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This is a special type of JInternalFrame that displays classes in a JTree.  Packages are 
+ * displayed in the nodes under the root node.  Under each package node are the nodes that 
+ * contain the classes and interfaces in the package.
+ * @author Dominic Kramer
  */
 public class PackageTreeGUI extends DesktopInternalFrame implements ActionListener
 {
+	/**
+	 * The panel which displays a JTree and all of the packages and classes and interfaces.
+	 */
 	protected PackageTreeJPanel treeJPanel;
 	
-	public PackageTreeGUI(Project pro, boolean packageShortJava, boolean packageShortOther, boolean classShortJava, boolean classShortOther, HawkDesktop desk)
+	/**
+	 * Creates a new PackageTreeGUI.
+	 * @param pro The Project whose data is to be written.
+	 * @param packageShortJava Set this to true if you want package names to be shortened if it is 
+	 * a java name.
+	 * @param packageShortOther Set this to true if you want packages names to be shortened if it is 
+	 * a non-java name.
+	 * @param title The window's title.
+	 * @param classShortJava Set this to true if you want class names to be shortened if they are 
+	 * java names.
+	 * @param classShortOther Set this to true if you want class names to be shortened if they are 
+	 * non-java names.
+	 * @param desk The HawkDesktop that this window this is on.
+	 */
+	public PackageTreeGUI(Project pro, String title, boolean packageShortJava, boolean packageShortOther, boolean classShortJava, boolean classShortOther, HawkDesktop desk)
 	{
 		super(desk);
 		
-		setTitle(pro.getProjectName());
+		setTitle(title);
 		setLocation(0,0);
 		setSize(200,200);
 		setClosable(true);
@@ -78,24 +98,32 @@ public class PackageTreeGUI extends DesktopInternalFrame implements ActionListen
 		pane.add(treeJPanel);
 		
 		menuBar = treeJPanel.getJMenuBar();
-		refreshMoveAndCopyMenu();
-		windowMenu.addMenuListener(new WindowMenuListener(this,menuBar,windowMenu));
+//		refreshMoveAndCopyMenu();
+//		windowMenu.addMenuListener(new WindowMenuListener(this,menuBar,windowMenu));
 		menuBar.add(windowMenu);
 			
 		setJMenuBar(menuBar);
 		pack();
 	}
 	
+	/**
+	 * Gets a copy of this window.
+	 * @return A copy of this window.
+	 */
 	public DesktopInternalFrame getCopy()
 	{
-		return new PackageTreeGUI(treeJPanel.getProject(),treeJPanel.getShortenPackageJavaBox().isSelected(),treeJPanel.getShortenPackageOtherBox().isSelected(),treeJPanel.getShortenClassJavaBox().isSelected(), treeJPanel.getShortenClassOtherBox().isSelected(),desktop);
+		return new PackageTreeGUI(treeJPanel.getProject(),getTitle(),treeJPanel.getShortenPackageJavaBox().isSelected(),treeJPanel.getShortenPackageOtherBox().isSelected(),treeJPanel.getShortenClassJavaBox().isSelected(), treeJPanel.getShortenClassOtherBox().isSelected(),desktop);
 	}
 	
+	/**
+	 * Handles ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent event)
 	{
-		PackageTreeGUI copy = (PackageTreeGUI)getCopy();
-		copy.setVisible(true);
-		processWindowChange(event,copy,this);
+//		PackageTreeGUI copy = (PackageTreeGUI)getCopy();
+//		copy.setVisible(true);
+//		processWindowChange(event,copy,this);
+		super.actionPerformed(event);
 	}
 
 /*

@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:55:21  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:08:51  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -83,39 +86,109 @@ import devTools.Hawk.classDescriptor.modeledObjects.Project;
 import devTools.Hawk.classDescriptor.threads.ASCIIPrintThread;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class creates a window allowing the user to print information about Interface objects to a file.  The window contains 
+ * a section to change the options for printing.  It also contains a JTree to allow the user to choose which Interface objects to print.
+ * @author Dominic Kramer
  */
 public class PrintGUI extends JFrame implements ActionListener, ItemListener, TreeSelectionListener
 {
+	/**
+	 * A Vector of Project objects.  Each project in this Vector is placed into the JTree in the window displayed.  Below each project, the 
+	 * project's Interfaces are entered into the tree.
+	 */
 	private Vector projectVec;  // a vector of projects
+	/**
+	 * This holds the name of the file to print the information to.
+	 */
 	private JTextField fileField;
+	/**
+	 * This is the tree which holds all of the project and interfaces can can be selected to print.
+	 */
 	private JTree tree;
+	/**
+	 * This is the list which contains all of the currently selected interfaces that are to be printed.
+	 */
 	private JList list;
+	/**
+	 * This is the model that is used to modify the JList list.
+	 */
 	private DefaultListModel model;
+	/**
+	 * This is a Vector of Interface objects containing all of the interfaces selected to be printed.
+	 */
 	private Vector selectedIntFVec;
 	
 	//these are the components in introPanel
+		/**
+		 *  This checkbox that is placed on the window to allow the user to choose if he/she wants to print
+		 * the introduction.
+		 */
 		private JCheckBox useIntroCheckBox;
+		/**
+		 * This holds the title of the document that is printed.
+		 */
 		private JTextField titleField;
+		/**
+		 * This holds the author's name who printed the document which will appear on the document.
+		 */
 		private JTextField authorField;
+		/**
+		 * This holds the date that will appear on the document when the document was printed.
+		 */
 		private JTextField dateField;
+		/**
+		 * This checkbox allows the user to select whether or not to use the current date.
+		 */
 		private JCheckBox useCurrentDateBox;
+		/**
+		 * This text area is used to allow the user to type a description about the document.  This 
+		 * description is printed in the introduction section of the document.
+		 */
 		private JTextArea descTextArea;
 		
 	//these are the other checkboxes
+		/**
+		 * This allows the user to decide if he/she wants to add a table of contents to the printout.
+		 */
 		private JCheckBox useContentsCheckBox;
+		/**
+		 * This allows the user to decide if he/she wants to add the package list to the printout.
+		 */
 		private JCheckBox usePackageListCheckBox;
+		/**
+		 * This allows the user to decide if he/she wants to add the UML diagrams for each Interface 
+		 * object to the printout.  The UML diagrams are printed alphabetically.
+		 */
 		private JCheckBox useAlphaUMLCheckBox;
+		/**
+		 * This allows the user to decide if he/she wants to add the shortened source code for each interface object 
+		 * to the printout.  The shortened source code diagrams are printed alphabetically.
+		 */
 		private JCheckBox useShortenedSourceCheckBox;
-		
+		/**
+		 * This allows the user to decide if he/she wants to shorten java names in the single UML printouts.
+		 */
 		private JCheckBox singleUMLShortenJava;
+		/**
+		 * This allows the user to decide if he/she wants to shorten non-java names in the single UML printouts.
+		 */
 		private JCheckBox singleUMLShortenNonJava;
+		/**
+		 * This allows the user to decide if he/she wants to shorten java names in the shortened source 
+		 * code printouts.
+		 */
 		private JCheckBox shortenedSourceShortenJava;
+		/**
+		 * This allows the user to decide if he/she wants to shorten non-java names in the shorten source code 
+		 * printouts.
+		 */
 		private JCheckBox shortenedSourceShortenNonJava;
-		
+	
+	/**
+	 * This constructor cretes the printout window.
+	 * @param vec This is the Vector of Project objects displayed in the window's tree.
+	 * @param rootNodeTitle This is the title of the root node in the window's tree.
+	 */
 	public PrintGUI(Vector vec, String rootNodeTitle)
 	{
 		projectVec = vec;
@@ -300,7 +373,6 @@ public class PrintGUI extends JFrame implements ActionListener, ItemListener, Tr
 			
 		mainPanel.add(tabbedPane, BorderLayout.CENTER);
 		pane.add(mainPanel);
-		pack();
 		
 		//now to add the information to the JTree
 		Vector projectNodeVec = new Vector();
@@ -326,98 +398,187 @@ public class PrintGUI extends JFrame implements ActionListener, ItemListener, Tr
 				}
 			//now to expand the root node
 			tree.expandPath(new TreePath(root));
+			pack();
 	}
+	
+	/**
+	 * This returns the model associated with the list which displays the currently selected 
+	 * interfaces.
+	 * @return A DefaultListModel
+	 */
 	public DefaultListModel getModel()
 	{
 		return model;
 	}
 	
+	/**
+	 * This returns a Vector of Interface objects.  Each Interface object in this Vector is one of the 
+	 * interfaces that the user chose to print to the document.
+	 * @return A Vector of Interface objects.
+	 */
 	public Vector getVectorOfSelectedInterfaces()
 	{
 		return selectedIntFVec;
 	}
 	
+	/**
+	 * This returns the print window.
+	 * @return The print window.
+	 */
 	public JFrame getFrame()
 	{
 		return this;
 	}
 	
+	/**
+	 * This returns the JTextField which holds the file to print the document to.
+	 * @return A JTextField.
+	 */	
 	public JTextField getFileField()
 	{
 		return fileField;
 	}
-
+	
+	/**
+	 * This returns the JCheckBox that holds the user's choice of whether or not to 
+	 * print the introduction.
+	 * @return A JCheckBox.
+	 */
 	public JCheckBox getUseIntroCheckBox()
 	{
 		return useIntroCheckBox;
 	}
 	
+	/**
+	 * This returns the JTextField that holds the title of the document.
+	 * @return A JTextField.
+	 */
 	public JTextField getTitleField()
 	{
 		return titleField;
 	}
 	
+	/**
+	 * This returns the JTextField that holds the author of the document.
+	 * @return A JTextField.
+	 */
 	public JTextField getAuthorField()
 	{
 		return authorField;
 	}
 	
+	/**
+	 * This returns the JTextField that contains the date that document was printed.
+	 * @return A JTextField.
+	 */
 	public JTextField getDateField()
 	{
 		return dateField;
 	}
 	
+	/**
+	 * This returns the JCheckBox that describes whether or not to use the current date.  If 
+	 * this checkbox is selected, an ActionEvent is thrown and the current date is printed in the 
+	 * JTextField dateField.  If the checkbox is de-selected, the JTextField, dateField is cleared.
+	 * @return A JCheckBox.
+	 */
 	public JCheckBox getUseCurrentDateBox()
 	{
 		return useCurrentDateBox;
 	}
 	
+	/**
+	 * This returns the JTextArea which holds the user's description about the document that is 
+	 * going to be printed.
+	 * @return A JTextArea.
+	 */
 	public JTextArea getDescTextArea()
 	{
 		return descTextArea;
 		
 	}
-		
+	
+	/**
+	 * Thisreturns the JCheckBox which describes if the user wants to print the table of contents.
+	 * @return A JCheckBox.
+	 */
 	public JCheckBox getUseContentsCheckBox()
 	{
 		return useContentsCheckBox;
 	}
 	
+	/**
+	 * This returns the JCheckBox which descirbes if the user wants to print the package list.
+	 * @return A JCheckBox.
+	 */
 	public JCheckBox getUsePackageListCheckBox()
 	{
 		return usePackageListCheckBox;
 	}
 	
+	/**
+	 * This returns the JCheckBox which describes if the user wants to print the UML documentation 
+	 * alphabetically for all of the interfaces he/she selected.
+	 * @return A JCheckBox.
+	 */
 	public JCheckBox getUseAlphaUMLCheckBox()
 	{
 		return useAlphaUMLCheckBox;
 	}
 	
+	/**
+	 * This returns the JCheckBox which describes if the user wants to print the shortened source 
+	 * code alphabetically for all of the interfaces he/she selected.
+	 * @return A JCheckBox.
+	 */
 	public JCheckBox getUseShortenedSourceCheckBox()
 	{
 		return useShortenedSourceCheckBox;
 	}
 	
+	/***
+	 * This returns the JCheckBox which describes if the user wants to shorten java names for single UML 
+	 * diagrams.
+	 * @return A JCheckBox
+	 */
 	public JCheckBox getSingleUMLShortenJavaCheckBox()
 	{
 		return singleUMLShortenJava;
 	}
 	
+	/**
+	 * This returns the JCheckBox which describes if the user wants to shorten non-java names for single UML 
+	 * diagrams.
+	 * @return A JCheckBox
+	 */
 	public JCheckBox getSingleUMLShortenNonJavaCheckBox()
 	{
 		return singleUMLShortenNonJava;
 	}
 	
+	/**
+	 * This returns the JCheckBox which describes if the user wants to shorten java names for shortened source code 
+	 * printouts.
+	 * @return A JCheckBox
+	 */
 	public JCheckBox getShortenedSourceShortenJavaCheckBox()
 	{
 		return shortenedSourceShortenJava;
 	}
 	
+	/**
+	 * This returns the JCheckBox which describes if the user wants to shorten non-java names for shortened source 
+	 * code printouts.
+	 * @return A JCheckBox.
+	 */
 	public JCheckBox getShortenedSourceShortenNonJavaCheckBox()
 	{
 		return shortenedSourceShortenNonJava;
 	}
 	
+	/**
+	 * This handles ActionEvents.
+	 */
 	public void actionPerformed(ActionEvent event) 
 	{
 		if (event.getActionCommand().equals("Browse"))
@@ -447,6 +608,8 @@ public class PrintGUI extends JFrame implements ActionListener, ItemListener, Tr
 			dispose();
 			ASCIIPrintThread printThread = new ASCIIPrintThread(this);
 			printThread.start();
+			//HTMLPrintThread thread = new HTMLPrintThread(this);
+			//thread.start();
 		}
 		else if (event.getActionCommand().equals("Close"))
 		{
@@ -531,6 +694,9 @@ public class PrintGUI extends JFrame implements ActionListener, ItemListener, Tr
 		}
 	}
 	
+	/**
+	 * Handles ItemEvents.  This has to be here because this class implements ItemListener.
+	 */
 	public void itemStateChanged(ItemEvent event)
 	{
 		Object source = event.getItemSelectable();
@@ -540,19 +706,37 @@ public class PrintGUI extends JFrame implements ActionListener, ItemListener, Tr
 		}
 	}
 	
+	/**
+	 * Handles TreeSelectionEvents.  This has to be here because this class implements 
+	 * TreeSelectionListener.
+	 */
 	public void valueChanged(TreeSelectionEvent event)
 	{}
 	
+	/**
+	 * This class handles closing the print window.
+	 * @author Dominic Kramer
+	 */
 	private class WindowDestroyer extends WindowAdapter
 	{
+		/**
+		 * Handles WindowEvents.
+		 */
 		public void windowClosing(WindowEvent event)
 		{
 			dispose();
 		}
 	}
 	
+	/**
+	 * This class is used to create a window which holds the introduction options.
+	 * @author Dominic Kramer
+	 */
 	class IntroductionOptionsGUI extends JFrame implements ActionListener, ItemListener
 	{
+		/**
+		 * Creates the window.
+		 */
 		public IntroductionOptionsGUI()
 		{
 			JPanel introPanel = new JPanel();
@@ -611,6 +795,9 @@ public class PrintGUI extends JFrame implements ActionListener, ItemListener, Tr
 				pack();
 		}
 		
+		/**
+		 * Handles ActionEvents.
+		 */		
 		public void actionPerformed(ActionEvent event)
 		{
 			if (event.getActionCommand().equals("Use current date"))
@@ -628,6 +815,9 @@ public class PrintGUI extends JFrame implements ActionListener, ItemListener, Tr
 				dispose();
 		}
 		
+		/**
+		 * Handles ItemEvents.
+		 */		
 		public void itemStateChanged(ItemEvent event)
 		{
 			Object source = event.getItemSelectable();
@@ -638,8 +828,15 @@ public class PrintGUI extends JFrame implements ActionListener, ItemListener, Tr
 		}
 	}
 	
+	/**
+	 * This class is used to create a window displaying the options for single UML diagrams.
+	 * @author Dominic Kramer
+	 */
 	class SingleUMLOptionsGUI extends JFrame implements ActionListener
 	{
+		/**
+		 * Creates the window.
+		 */
 		public SingleUMLOptionsGUI()
 		{			
 			JMenuBar bar = new JMenuBar();
@@ -659,15 +856,26 @@ public class PrintGUI extends JFrame implements ActionListener, ItemListener, Tr
 			pack();
 		}
 		
+		/**
+		 * Handles the ActionEvents.
+		 */
 		public void actionPerformed(ActionEvent event)
 		{
 			if (event.getActionCommand().equals("Close"))
 				dispose();
 		}
 	}
-
+	
+	/**
+	 * This class is used to create a window which displays the options printing the 
+	 * shortened source code.
+	 * @author Dominic Kramer
+	 */
 	class ShortenedSourceOptionsGUI extends JFrame implements ActionListener
 	{
+		/**
+		 * Creates the window.
+		 */
 		public ShortenedSourceOptionsGUI()
 		{
 			JMenuBar bar = new JMenuBar();
@@ -687,6 +895,9 @@ public class PrintGUI extends JFrame implements ActionListener, ItemListener, Tr
 			pack();
 		}
 		
+		/**
+		 * Handles ActionEvents.
+		 */		
 		public void actionPerformed(ActionEvent event)
 		{
 			if (event.getActionCommand().equals("Close"))

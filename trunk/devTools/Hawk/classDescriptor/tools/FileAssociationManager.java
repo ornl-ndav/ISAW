@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:37:46  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:10:45  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -48,34 +51,62 @@ import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 import devTools.Hawk.classDescriptor.modeledObjects.Project;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This class handles associating Interface objects with their appropriate javadocs and/or 
+ * source code files.
+ * @author Dominic Kramer
  */
 public class FileAssociationManager
 {
+	/**
+	 * Constant passed to the constructor to specify that the manager is to associate 
+	 * javadocs files.
+	 */
 	public static final int JAVASOURCE = 1;
+	/**
+	 * Constant passed to hte constructor to specify that the manager is to assocaite 
+	 * source code files.
+	 */
 	public static final int JAVADOCS = 2;
 	
 	/**
 	 * A Vector of Interface objects
 	 */
 	private Vector intFVector;
+	/**
+	 * The type of file that this manager is supposed to work with.  Either JAVASOURCE or 
+	 * JAVADOCS.
+	 */
 	private int fileType;
 	
+	/**
+	 * Create a FileAssociationManager to associate the files to the Vector of Interface objects 
+	 * supplied.
+	 * @param vec The Vector of Interface bojects to associate the files to.
+	 * @param type The type of files to associate (either JAVASOURCE or JAVADOCS).
+	 */
 	public FileAssociationManager(Vector vec, int type)
 	{
 		intFVector = vec;
 		fileType = type;
 	}
 	
+	/**
+	 * Create a FileAssociationManager to associate the files to the Interface objects from the Project 
+	 * object supplied.
+	 * @param pro The project whose interfaces are going to have file associated with them.
+	 * @param type The type of files to associate (either JAVASOURCE or JAVADOCS).
+	 */
 	public FileAssociationManager(Project pro, int type)
 	{
 		intFVector = pro.getInterfaceVec();
 		fileType = type;
 	}
 	
+	/**
+	 * Create a FileAssociationManager to associate the files to Interface object supplied.
+	 * @param intF The interface to associate the files to.
+	 * @param type The type of files to associate (either JAVASOURCE or JAVADOCS).
+	 */
 	public FileAssociationManager(Interface intF, int type)
 	{
 		Vector tempVector = new Vector();
@@ -84,11 +115,22 @@ public class FileAssociationManager
 		fileType = type;
 	}
 	
+	/**
+	 * Get the filetype that this manager is associating with the interfaces.  It will either 
+	 * correspond to javadocs files or source code files.
+	 * @return Either JAVADOCS or JAVASOURCE.
+	 */
 	public int getFileType()
 	{
 		return fileType;
 	}
 	
+	/**
+	 * This method takes a filename and determines if it is the type of file that this manager is 
+	 * supposed to handle.
+	 * @param str The filename
+	 * @return True if the file is the correct type.
+	 */
 	public boolean isFileType(String str)
 	{
 		boolean answer = false;
@@ -104,6 +146,12 @@ public class FileAssociationManager
 		return answer;
 	}
 	
+	/**
+	 * This takes a filename for a .class file and gets the shortened name for a class.  For instance if the filename 
+	 * is /home/person/package1/package2/demoGUI.class this class will return demoGUI.
+	 * @param fileName The filename to use.
+	 * @return The shortened name for the class specified by the filename supplied.
+	 */
 	public String getShortenedClassName(String fileName)
 	{
 		String answer = "";
@@ -128,6 +176,14 @@ public class FileAssociationManager
 		return answer;
 	}
 	
+	/**
+	 * This method associates the file "fileName" to the Interface object (if it exists) whose shortened name 
+	 * is "shortClassName".  The method looks for a match from the Interface objects in 
+	 * the Vector intFVector.
+	 * @param fileName The filename to associate.
+	 * @param shortClassName The shortened classname of the class or interface to associate the file 
+	 * with.
+	 */
 	public void associateFile(String fileName, String shortClassName)
 	{
 		Interface currentInterface = new Interface();
@@ -148,6 +204,14 @@ public class FileAssociationManager
 		}
 	}
 	
+	/**
+	 * If the filename supplied to this method is a file, this method associates the file to the correct 
+	 * interface by seeing if any Interface object has the same shortened name as the shortened name 
+	 * from the file (see getShortenedClassName(String str)).  If the filename corresponds to a directory 
+	 * this method recursively scans through the directory and associates the files.  This method uses 
+	 * the method associateFile(String fileName, String shortClassName) to associate the files.
+	 * @param Dir The filename of the file or directory to process.
+	 */
 	public void ProcessDirectoryOrFile(String Dir)
 	{
 			File dirFile = new File(Dir);

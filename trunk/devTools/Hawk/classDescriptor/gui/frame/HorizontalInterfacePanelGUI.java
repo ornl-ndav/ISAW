@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:41:50  bouzekc
+ * Documented file using javadoc statements.
+ *
  * Revision 1.1  2004/02/07 05:08:50  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -56,6 +59,13 @@ import javax.swing.JPanel;
 
 import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 
+/**
+ * This class is a window displaying information about the supplied Interface by using JPanels 
+ * (containing specific information about the Interface) placed horizontally across the window.  
+ * Currently, this class is incomplete and will probably be removed.
+ * @author Dominic Kramer
+ * @deprecated
+ */
 public class HorizontalInterfacePanelGUI extends JFrame implements ActionListener
 {
 	protected Interface selectedInterface;
