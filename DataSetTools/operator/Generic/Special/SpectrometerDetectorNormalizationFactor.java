@@ -32,6 +32,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/07/29 21:44:02  dennis
+ *  Now uses scattering angle, rather than angle PHI in plane
+ *  for calculating multiple scattering corrections.  NOTE: This
+ *  is not strictyly correct, but should be a useful approximation.
+ *  Also, put debug printout in if (debug) statement.
+ *
  *  Revision 1.4  2002/07/16 19:35:18  dennis
  *  SLABMS() now returns NaN if the angle PHI is too small.
  *  This is trapped in the calling code and cal_FF[j] is set
@@ -158,6 +164,9 @@ import  DataSetTools.operator.Parameter;
 public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial 
                                                      implements Serializable
 {
+  boolean debug = false;                // set true to enable some debug prints
+
+
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
    * Construct an operator with a default parameter list.  If this
@@ -274,6 +283,7 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
     
     XScale           E_scale;
     float            spherical_coords[];
+    float            scattering_angle;
     int              num_data = ds.getNum_entries();
     AttributeList    attr_list;
     float            cal_FF[] = new float[num_data]; 
@@ -299,7 +309,8 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
                                        // calculate energies at bin boundaries
         energy_in        = energy_in_obj.floatValue();
         float EI = energy_in;
-        spherical_coords = position.getSphericalCoords();
+  //    spherical_coords = position.getSphericalCoords();
+        scattering_angle = position.getScatteringAngle();
         
         e_vals  = data.getX_scale().getXs();
         y_vals  = data.getCopyOfY_values();
@@ -361,7 +372,9 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
             }
           }
 
-        float XMS = SLABMS(180.0f*spherical_coords[1] /
+//        float XMS = SLABMS(180.0f*spherical_coords[1] /
+//                    (float)Math.PI, energy_in, THETS );
+        float XMS = SLABMS(180.0f*scattering_angle /
                     (float)Math.PI, energy_in, THETS );
   
         if ( XMS == Float.NaN )            // 7/16/2002, D.M., use NaN to 
@@ -426,7 +439,7 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
 
 
 
-  static float SLABMS(float PHI, float energy, float THETS )
+  private float SLABMS(float PHI, float energy, float THETS )
   {
     float ECON   = 5.2276f*1000000;
     float WVCON  = 1.5885f*1000;
@@ -546,8 +559,9 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
 
    XMS = RATIO;
 
-   System.out.println("5. MULT  SC  PHI = "  + PHI + " FIRST = " + FIRST +
-                      " SECOND = " + SECOND + " XMS = " + XMS );
+   if ( debug )
+     System.out.println("5. MULT  SC  PHI = "  + PHI + " FIRST = " + FIRST +
+                        " SECOND = " + SECOND + " XMS = " + XMS );
    return XMS;
   }
 }
