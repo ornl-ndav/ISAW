@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.35  2004/03/10 23:29:50  rmikk
+ * Place a SwingWorker around the lines where the script is executed.  This means
+ * that InputBox can be used here, views of DataSets can be played with, etc.
+ *
  * Revision 1.34  2004/02/07 18:32:04  rmikk
  * Added Code for parameter type DSSEttableFieldString
  *
@@ -227,6 +231,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import java.beans.*; 
 import java.util.Vector;
+import ExtTools.SwingWorker;
 
 
 /**
@@ -1637,7 +1642,7 @@ public class ScriptOperator  extends  GenericOperator
     }
     return Res;
   }
-
+    static Operator SO=null;
     /**
      * Allows running of Scripts without Isaw and/or the CommandPane
      */
@@ -1648,7 +1653,7 @@ public class ScriptOperator  extends  GenericOperator
             System.exit( 0 );
         if( args.length < 1)
             System.exit( 0 );
-        Operator SO=null;
+        
         try{
           SO = IsawLite.fromScript( args[ 0 ] );
         }catch(InstantiationError e){
@@ -1677,26 +1682,46 @@ public class ScriptOperator  extends  GenericOperator
             System.out.println("Error ="+args[0]+"--"+((IScriptProcessor)SO).getErrorMessage());
             System.exit(-1);
         }
+        
         boolean dialogbox=false;
+        SwingWorker worker = new SwingWorker() {
+         
+         
+
+          public Object construct(){
+           
+             
+           
         if( SO.getNum_parameters() > 0){
-            JParametersDialog JP = new JParametersDialog(SO, null, null, null ,true);
+            JParametersDialog JP = new JParametersDialog(SO, null, null, null ,false);
             JP.addWindowListener( new WindowAdapter(){
                 public void windowClosed(WindowEvent e){
                   System.exit(0);
                 }
               } );
-            dialogbox=true;
+            
         }else{
             Object XX = SO.getResult();
-            System.out.println("Result =" +XX );        
+            System.out.println("Result =" +XX ); 
+            return XX;       
         }
-
-        if( SO != null)
+           return null;
+       
+        }
+      
+          public void finished(){
+            if( SO != null)
             if( ((IScriptProcessor)SO).getErrorMessage() != null )
                 if( ((IScriptProcessor)SO).getErrorMessage().length() > 0)
                     System.out.println("An Error occurred "
                                        +((IScriptProcessor)SO).getErrorMessage());
-        if(!dialogbox)System.exit( 0 );
-    }
-
+           
+          }
+       
+       
+    };
+ worker.start();
+ 
+   };//Swing Worker class
+ 
 }
