@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.10  2004/07/01 19:19:26  rmikk
+ * Removed unused Variable
+ *
  * Revision 1.9  2004/03/15 19:33:53  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -257,7 +260,6 @@ public class XYDataTable  extends GenericSave
 public static void main( String args[])
   {System.out.println("XYDataTable");
    String Used[];
-   int used[];
    Used = new String[3];
    Used[2] = "error";
    Used[0] = "xval";
