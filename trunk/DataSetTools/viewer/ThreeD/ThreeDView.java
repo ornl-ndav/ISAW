@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2001/07/10 22:20:46  dennis
+ * Now imports DataSetTools/instruments
+ *
  * Revision 1.10  2001/07/10 19:04:34  dennis
  * First attempt at using the new detector "segment"
  * information to draw individual detectors.
@@ -74,6 +77,7 @@ package DataSetTools.viewer.ThreeD;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import DataSetTools.components.image.*;
+import DataSetTools.instruments.*;
 import DataSetTools.viewer.*;
 import DataSetTools.math.*;
 import DataSetTools.components.containers.*;
@@ -776,7 +780,7 @@ private class ViewMouseMotionAdapter extends MouseMotionAdapter
    {
      // System.out.println("Mouse moved at: " + e.getPoint() );
      Point pt = e.getPoint();
-     int index = threeD_panel.pickID( e.getX(), e.getY(), 10 );
+     int index = threeD_panel.pickID( e.getX(), e.getY(), 15 );
      if ( index != last_index )
      {
        last_index = index;
