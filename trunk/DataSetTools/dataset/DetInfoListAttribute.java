@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/06/05 20:35:59  dennis
+ *  The toString method now only converts the first 5 DetectorInfo objects
+ *  to a string.
+ *
  *  Revision 1.2  2001/07/10 19:37:14  dennis
  *  Now imports DataSetTools.instruments.*
  *
@@ -56,8 +60,6 @@ import DataSetTools.instruments.*;
  * @see DataSetTools.dataset.DoubleAttribute
  * @see DataSetTools.dataset.DetPosAttribute
  * @see DataSetTools.dataset.DetInfoAttribute
- *
- * @version 1.0  
  */
 
 public class DetInfoListAttribute extends Attribute
@@ -136,6 +138,10 @@ public class DetInfoListAttribute extends Attribute
        
     DetInfoListAttribute other_attr = (DetInfoListAttribute)attr; 
 
+//    if ( values.length+other_attr.values.length > 20 )// ineffiecient for
+//      return;                                         // long lists, just keep
+                                                        // up to 20.
+
     DetectorInfo temp[] = new DetectorInfo[
                                        values.length+other_attr.values.length ];
     int i        = 0,
@@ -200,9 +206,15 @@ public class DetInfoListAttribute extends Attribute
   public String getStringValue()
   {
     String s = new String();
-    for ( int i = 0; i < values.length; i++ )
-      s += values[i].toString();
-
+    if ( values.length < 5 )
+      for ( int i = 0; i < values.length; i++ )
+        s += values[i].toString();
+    else
+    {
+      for ( int i = 0; i < 5; i++ )
+        s += values[i].toString();
+      s += "...";
+    }
     return s;
   }
 
