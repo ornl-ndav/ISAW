@@ -3,6 +3,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/07/13 22:23:03  dennis
+ *  Removed control-M characters
+ *
  *  Revision 1.3  2000/07/10 22:24:02  dennis
  *  July 10, 2000 version... many changes
  *

@@ -4,8 +4,11 @@
  *  99/06/02, 1.01, Added methods to set the attribute's name and value.
  *                  Added method "compare" to compare objects.
  *                  Removed method "greater_than" to compare objects.
- * ---------------------------------------------------------------------------
+ *
  *  $Log$
+ *  Revision 1.4  2000/07/13 22:23:39  dennis
+ *  Removed control-M characters
+ *
  *  Revision 1.3  2000/07/10 22:23:59  dennis
  *  July 10, 2000 version... many changes
  *
