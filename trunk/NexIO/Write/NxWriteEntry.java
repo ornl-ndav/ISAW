@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/04/01 20:53:38  rmikk
+ * Fixed a logical error
+ *
  * Revision 1.3  2002/03/18 20:58:38  dennis
  * Added initial support for TOF Diffractometers.
  * Added support for more units.
@@ -69,13 +72,16 @@ public class NxWriteEntry
    public boolean processDS( NxWriteNode node, DataSet DS)
     {NxNodeUtils nu = new NxNodeUtils();
      NxData_Gen ne = new NxData_Gen();
+     
      int ranks[],intval[];
      char cc = 0;
      errormessage = "Null or improper inputs to NxEntry processor";
      if( node == null)
         return true;
+     
      if( DS == null) 
         return true;
+     
      errormessage =  "";
      NxWriteNode n1 ;
      Object X = DS.getAttributeValue( Attribute.RUN_NUM);
@@ -146,7 +152,7 @@ public class NxWriteEntry
             errormessage += ";"+errormessage;         
         }
       }
-
+    
 /* 
      X = DS.getAttributeValue( Attribute.INST_NAME);
      NxWriteNode NxInstr = node.newChildNode( "Instrument","NXinstrument");
@@ -171,6 +177,7 @@ public class NxWriteEntry
      
        String analysis = it.getNexAnalysisName( instr_type);
        n1 = node.newChildNode( "analysis", "SDS");
+       System.out.println("analysis name and instr type="+analysis+","+instr_type);
        ranks = new int[1];
        ranks[0] = 1;
        intval = new int[1];
@@ -188,7 +195,7 @@ public class NxWriteEntry
           analysis = "";
           }
        
-        {
+        else{
         
           ranks = new int[1];
           ranks[0] = analysis.length()+1;
@@ -197,7 +204,7 @@ public class NxWriteEntry
           n1.setNodeValue( (analysis+cc).getBytes(), Types.Char, ranks); 
           if( n1.getErrorMessage() != "")
             errormessage += ";"+errormessage;         
-       }
+          }
       }
 
 
