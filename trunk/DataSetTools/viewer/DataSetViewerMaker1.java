@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/05/14 15:06:08  rmikk
+ *  Removed unused variables
+ *
  *  Revision 1.11  2004/05/06 17:32:05  rmikk
  *  Eliminated bad log messages.
  *  Set the time in the ArrayMaker when the pointed at message occurs
@@ -183,8 +186,9 @@ public class DataSetViewerMaker1  extends DataSetViewer
      
      viewComp.addActionListener( new CompActionListener());
      setLayout( new GridLayout( 1,1));
+     JScrollPane Controls = new JScrollPane( East);
      add( new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
-                  viewComp.getDisplayPanel(), East, ImagePortion));
+                  viewComp.getDisplayPanel(), Controls, ImagePortion));
 
      invalidate();
      addAncestorListener( new myAncestorListener());

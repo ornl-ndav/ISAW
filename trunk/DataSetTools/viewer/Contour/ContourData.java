@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2004/05/14 15:04:56  rmikk
+ *  Removed unused variables
+ *
  *  Revision 1.27  2004/03/15 19:33:59  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -216,7 +219,6 @@ public class ContourData
       maxrows = -1;
       maxcols = -1;
       //int[][] k = new int[ds.getNum_entries() + 1][3];
-      int w = 0;
 
       x_scale = data_set.getData_entry(0).getX_scale();
       ds = (DataSet)(dsSave.clone());
@@ -263,13 +265,10 @@ public class ContourData
       if( mode !=0)
          return getSGTDataSpecial( X);
       // X = (float)1261.596;		//Set time slice parameter, t=X=0
-      int i, 
-          j,
-          G,
-          row,
+      int row,
           col,
           w = 0;
-      SimpleGrid sg;
+      
       SGTMetaData xMeta;
       SGTMetaData yMeta;
       SGTMetaData zMeta;
@@ -375,7 +374,7 @@ public class ContourData
   double[] values;
   boolean bg=false;
   public SGTData getSGTDataSpecial( float X )
-   {SimpleGrid sg;
+   {
     SGTMetaData xMeta;
     SGTMetaData yMeta;
     SGTMetaData zMeta;
@@ -442,7 +441,7 @@ public class ContourData
                    +","+ax1+","+ax2+","+row+","+col
                 );
               } 
-          double y = 0,y1 = 0, y2 = 0;
+          double y = 0;
          
           if( indx >=0)
            if( indx < yy.length)// D.getX_scale().getNum_x())
@@ -454,16 +453,16 @@ public class ContourData
          if( (y != 0) &&(index1 !=index2))
            { 
             double yx=y;
-            boolean full=true;
+            
             if( indx ==(int)index1)
               {
                y =y - ( index1-(int)index1)*yx;
-               full = indx == index1;
+               //full = indx == index1;
                }
             if( indx == (int)index2)
               {
                 y= y - (1-index2+(int)index2)*yx;
-                full = indx == index2;
+                //full = indx == index2;
                }
             values[ col*nrowws+row ]+=y;
             Groupss[ col*nrowws+row ] = i;
@@ -589,8 +588,7 @@ public class ContourData
    Data D = ds.getData_entry( G);  
    float time=D.getX_scale().getX(indx);
    float value = Axis3.getValue( G, indx);
-   int oindx=indx;
-   float ovalue = value, otime = time;
+  
    if( value > lastTime)
        indx--;
    else if( value < lastTime- (maxAx3-minAx3)/2/ntimes)

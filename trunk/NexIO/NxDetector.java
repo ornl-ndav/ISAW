@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/05/14 15:03:26  rmikk
+ * Removed unused variables
+ *
  * Revision 1.7  2004/02/16 02:15:55  bouzekc
  * Removed unused import statements.
  *
@@ -83,8 +86,8 @@ public class NxDetector{
     if(  !node.getNodeClass().equals( "NXdetector" ) ) 
       return true;
     NXData_util ut = new NXData_util();
-    float rho[], phi[], theta[];
-    rho = phi = theta = null;
+    float rho[];
+    rho  = null;
     //distance
     NxNode X = node.getChildNode( "distance" );
    
@@ -98,16 +101,16 @@ public class NxDetector{
     
     if( X != null ){
       Object val = X.getNodeValue();
-      if( val != null )
-        phi = ut.Arrayfloatconvert( val );
+     // if( val != null )
+     //   phi = ut.Arrayfloatconvert( val );
     }
     //theta
     X = node.getChildNode( "theta" );
    
     if( X != null){
       Object val = X.getNodeValue();
-      if( val != null )
-        theta = ut.Arrayfloatconvert( val );
+      //if( val != null )
+       // theta = ut.Arrayfloatconvert( val );
     }
     int l;
     if( rho == null ){

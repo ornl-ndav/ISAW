@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/05/14 15:03:52  rmikk
+ * Removed unused variables
+ *
  * Revision 1.10  2004/03/15 19:37:54  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -140,7 +143,7 @@ public class NxWriteDetector{
     float theta[]      = new float[array_length];
     float solidAngle[] = new float[array_length];
     float rawAngle[]   = new float[array_length];
-    float Det2Thet[]   = new float[array_length];
+   // float Det2Thet[]   = new float[array_length];
     float Tot_Count[]  = new float[array_length];
 
     int Group_ID[]     = new int[array_length];
@@ -408,7 +411,6 @@ public class NxWriteDetector{
   private static void SetUpIsawAttributes1(NxWriteNode nxData_Monitor, 
                                     int startIndex, int endIndex, DataSet DS ){
     float coords[];
-    DetectorPosition DP;
     NxWriteNode n1;
     Data DB;
     NxWriteNode node = nxData_Monitor;
@@ -430,7 +432,6 @@ public class NxWriteDetector{
 
     int   Time_Field_Type[] = null;
     int   Group_ID[]        = null;
-    int   ndetectors        = DS.getNum_entries();
 
     for( int i = startIndex ; i < endIndex ; i++ ){
       DB = DS.getData_entry( i );
@@ -752,7 +753,6 @@ public class NxWriteDetector{
                              int endIndex ){
      errormessage = "Improper NxDetector inputs";
    
-     char cc = 0;
      if( node == null )
        return true;
      if( DS == null )
@@ -982,7 +982,6 @@ public class NxWriteDetector{
 
     int   Time_Field_Type[] = null;
     int   Group_ID[]        = null;
-    int   ndetectors        = DS.getNum_entries();
 
     for( int i = startIndex ; i < endIndex ; i++ ){
       Data DB = DS.getData_entry( i );

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/05/14 15:03:51  rmikk
+ * Removed unused variables
+ *
  * Revision 1.11  2004/02/16 02:19:23  bouzekc
  * Removed unused imports.
  *
@@ -100,7 +103,6 @@ public class NxWriter{
    * appending files
    */
   public int getNumHistograms(){
-    int res = 0;
     return node.getNumClasses( "NXentry" );
   }
 
@@ -116,10 +118,7 @@ public class NxWriter{
    * NOTE: To Save an experiment, call the Append function twice
    */
   private void Append1( DataSet[] Monitors , DataSet[] Histogram){
-    int n;
-    String runTitle = null;
-    Object run_title = null;
-   
+    int n;  
     
     int instrType = getInstrumentType( Monitors, Histogram);
     NxWriteMonitor nm = new NxWriteMonitor(instrType);
@@ -157,16 +156,13 @@ public class NxWriter{
           }
         }
       }
-    for( int i = 0; i < n ; i++ ){
-      String S;       
+    for( int i = 0; i < n ; i++ ){      
       if( Histogram != null ){
         n1 = nxentry.newChildNode( //"Histogram" + 
                                    // new Integer( i+kNxentries ).toString() ,
                                   Histogram[i].getTitle()+":"+i,"NXdata" );
         
-        int kk =1;
         
-        NxWriteData nxd = new NxWriteData(instrType);
            
       }else if ( Monitors != null ){
         n1 = node.newChildNode( "Histogram0", "NXentry" );
@@ -218,18 +214,13 @@ public class NxWriter{
    */
   public void Append( DataSet[] Monitors , DataSet[] Histogram){
     int n;
-    String runTitle = null;
-    Object run_title = null;
    
     int instrType = getInstrumentType( Monitors, Histogram);
-    NxWriteMonitor nm = new NxWriteMonitor(instrType);
-    NxWriteNode n1, n2;
     
     if( Histogram == null ) 
       n = 1;
     else 
       n = Histogram.length;
-    n1 = n2 = null;
     NxWriteInstrument nw = new NxWriteInstrument( instrType);
     
     int kNxentries = getNumHistograms();
@@ -258,8 +249,7 @@ public class NxWriter{
           }
         }
       }
-    for( int i = 0; i < n ; i++ ){
-      String S;       
+    for( int i = 0; i < n ; i++ ){     
       if( Histogram != null ){
         
            

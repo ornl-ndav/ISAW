@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2004/05/14 15:03:25  rmikk
+ * Removed unused variables
+ *
  * Revision 1.22  2004/02/16 02:15:54  bouzekc
  * Removed unused import statements.
  *
@@ -210,7 +213,6 @@ public class ExtGetDS{
    NxEntryStateInfo EntryState = new NxEntryStateInfo( EntryNode,FileState);
    DataSet DS;
    int instrType = -1; 
-   Inst_Type it = new Inst_Type();
    
    instrType = (new Inst_Type()).getIsawInstrNum( EntryState.description );
    
@@ -269,7 +271,6 @@ public class ExtGetDS{
     
     String Analysis = getAnalysis( nd2 );
     
-    Inst_Type it = new Inst_Type();
     int instrType = (new Inst_Type()).getIsawInstrNum( Analysis );
   
    
@@ -514,7 +515,7 @@ public class ExtGetDS{
  
   //  Obsolete
   private boolean ProcessNxentryNode( NxNode node, DataSet DS, NxNode nxdata ){
-    int i , nchildren ;
+    int  nchildren ;
     boolean res ;
     NXentry_TOFNDGS Entry ;
     errormessage = "" ;

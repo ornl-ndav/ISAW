@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2004/05/14 15:05:27  rmikk
+ * Removed unused variables
+ *
  * Revision 1.13  2004/05/06 17:33:36  rmikk
  * Added a setTime Method to the interface
  * Added an argument to the Selected2D constructor
@@ -194,8 +197,7 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
         float PointedAtTime) {
 
         Data D = DS.getData_entry(PointedAtGroupIndex);
-        int GroupID = D.getGroup_ID();
-        int row = -1, col = 0;
+        int GroupID = D.getGroup_ID();       
 
         if (D != null) {
             for (int i = 0; i < tbArray.getNumRows(); i++) {

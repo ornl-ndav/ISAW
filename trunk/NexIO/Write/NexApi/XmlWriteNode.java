@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2004/05/14 15:04:04  rmikk
+ * Removed unused variables
+ *
  * Revision 1.5  2004/03/11 19:46:43  bouzekc
  * Removed java.lang import as this is included by default.
  *
@@ -101,7 +104,7 @@ public class XmlWriteNode extends NexWriteUtil{
       }
       
     Write( fout);
-    NxNodeUtils nu = new NxNodeUtils();
+   // NxNodeUtils nu = new NxNodeUtils();
     /*System.out.println(" key values=");
       for(Enumeration E = linkInfo.keys();E.hasMoreElements();)
       {System.out.println(E.nextElement());
@@ -194,7 +197,6 @@ public class XmlWriteNode extends NexWriteUtil{
   }
    
   public String Stringify( Object Value, int type, int rank[]){
-    int l=1 ;
     String S ="";
     if( (rank == null) ||(Value == null))
       return S;
@@ -210,7 +212,7 @@ public class XmlWriteNode extends NexWriteUtil{
     errormessage ="";
     if( rank.length <= 0)
       return S;
-    int i, size=1;
+    int i;
     if( rank.length == 1){
       for (i = 0 ; i < Array.getInt( rank , 0 ); i++)
         if( type == Types.Int)
@@ -278,7 +280,7 @@ public class XmlWriteNode extends NexWriteUtil{
     xvals[0] = 1.3f; xvals[1] = -3.4f; xvals[2] = 1.1f;
     rank[0] = 3;
     XX.addAttribute("numb", xvals, Types.Float, rank );
-    NxWriteNode U = XX.newChildNode( "entry1", "NXentry");
+    //NxWriteNode U = XX.newChildNode( "entry1", "NXentry");
     NxWriteNode UV= XX.newChildNode( "title", "SDS");
     rank[0] =3;
     UV.addAttribute( "units", ("sec").getBytes(), Types.Char, rank);

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/05/14 15:03:26  rmikk
+ * Removed unused variables
+ *
  * Revision 1.11  2004/02/16 02:15:55  bouzekc
  * Removed unused import statements.
  *
@@ -131,10 +134,10 @@ public class NXentry_TOFNDGS implements NXentry{
   public boolean processDS( DataSet DS, NxNode NxData ){
     NxNode datanode, instrNode;
     NxData_Gen util = new NxData_Gen();
-    boolean monitorDS, HistDS;
+    boolean monitorDS;
     
     monitorDS = false;
-    HistDS = false;
+    //HistDS = false;
     NxNodeUtils nu = new NxNodeUtils();
     
     if( monitorNames == null )

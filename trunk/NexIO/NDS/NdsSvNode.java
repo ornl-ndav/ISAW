@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2004/05/14 15:02:15  rmikk
+ * Removed unused variables
+ *
  * Revision 1.5  2002/11/27 23:28:56  pfpeterson
  * standardized header
  *
@@ -103,7 +106,6 @@ public class NdsSvNode implements NxNode{
   
   public NxNode getChildNode(String NodeName){
     String S1;
-    int i;
     errormessage="";
     //System.out.println("      getchildNode w name"+getDef());
     try{
@@ -167,7 +169,6 @@ public class NdsSvNode implements NxNode{
       return null;
     }
 
-    int n=0;
     S1=nds.getStringData();
     
     Vector V = new Vector();
@@ -309,7 +310,6 @@ public class NdsSvNode implements NxNode{
   }
 
   public Object getAttrValue(String AttrName){
-    Object X;
     String def;
     errormessage="";
     try{
@@ -345,7 +345,7 @@ public class NdsSvNode implements NxNode{
     String S1=nds.getStringData();
     if(S1==null) return null;
     if(S1.length()<=0) return null;
-    int n=0;int i;
+    int i;
     int k=S1.indexOf(AttrName+'@');
     errormessage="No such Attribute";
     

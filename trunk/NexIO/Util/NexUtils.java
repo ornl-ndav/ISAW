@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/05/14 15:02:52  rmikk
+ * Removed unused variables
+ *
  * Revision 1.6  2004/03/15 19:37:54  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -172,12 +175,12 @@ public class NexUtils implements INexUtils{
               ConvertDataTypes.UnitsAdjust( distance, Xunits,"m",1.0f,0.0f);
               az = NxDetector.getChildNode( "azimuthal_angle");
               if( az != null){
-                 String units = ConvertDataTypes.StringValue( az.getAttrValue("units"));
+                // String units = ConvertDataTypes.StringValue( az.getAttrValue("units"));
                  azimuth =ConvertDataTypes.floatArrayValue(az.getNodeValue());
                  ConvertDataTypes.UnitsAdjust( azimuth, Xunits,"radians",1.0f,0.0f);
                  az = NxDetector.getChildNode( "polar_angle");
                  if( az != null){
-                    units = ConvertDataTypes.StringValue( az.getAttrValue("units"));
+                    //units = ConvertDataTypes.StringValue( az.getAttrValue("units"));
                     polar=ConvertDataTypes.floatArrayValue(az.getNodeValue());
                     ConvertDataTypes.UnitsAdjust( polar, Xunits,"radians",1.0f,0.0f);
                  }
@@ -211,7 +214,7 @@ public class NexUtils implements INexUtils{
      }
      
     //------------------ set up grids and pixel info list attributes ---------
-     int ngrids, ngrid_dimensions, nrows, ncols;
+     int  nrows, ncols;
      if( distance == null)
         return false;
      int startGridNum = 1+ Maxx(DS, startDSindex);//Grid_util.getAreaGridIDs(DS));
@@ -230,7 +233,6 @@ public class NexUtils implements INexUtils{
         return setErrorMessage("Dimensions of the data and positions are out of line");
      ncols = 1;
      nrows = 1;
-     int c = 0;
      if( nDistDims ==1) if( distDimensions[0] == 1) nDistDims --;
      if( nDataDims -1 -nDistDims >=2){
         ncols = dataState.dimensions[ nDistDims+1 ];
@@ -239,10 +241,9 @@ public class NexUtils implements INexUtils{
      }else if( nDataDims -1 -nDistDims >=1)
         nrows = dataState.dimensions[ nDistDims  ];
      
-     ngrids = (DS.getNum_entries() -startDSindex)/nrows/ncols;
+    // ngrids = (DS.getNum_entries() -startDSindex)/nrows/ncols;
      int row = 1, col= 1, grid =0;
      UniformGrid Grid = null;
-     Tran3D Matrix ;
      for( int i = startDSindex; i < DS.getNum_entries(); i++){
         Data db = DS.getData_entry( i);
         if( (row ==1) && ( col ==1)&&((nrows>1) ||(ncols > 1))){  //set up new grid
@@ -430,8 +431,8 @@ public class NexUtils implements INexUtils{
                              NxDataNode.getNodeName());
      int length = dimensions[ dimensions.length -1];
      float[] data = ConvertDataTypes.floatArrayValue(dataNode.getNodeValue());
-     String YUnits = ConvertDataTypes.StringValue(
-                                      dataNode.getAttrValue("units"));
+     //String YUnits = ConvertDataTypes.StringValue(
+     //                                 dataNode.getAttrValue("units"));
      
      if( data == null) return setErrorMessage( "No data in NxData");
      if( (DataInf.axisName == null) || (DataInf.axisName.length < 1) ) 

@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/05/14 15:03:27  rmikk
+ * Removed unused variables
+ *
  * Revision 1.11  2004/02/16 02:15:55  bouzekc
  * Removed unused import statements.
  *
@@ -203,7 +206,6 @@ public class NxInstrument{
     Object[] k = DetectorInf.keySet().toArray();
     for( int i = 0; i< k.length; i++){
       Vector V =(Vector) DetectorInf.get( k[i]);
-      NxNode nd =(NxNode) V.elementAt(0);
     }
   }
 
@@ -216,7 +218,6 @@ public class NxInstrument{
 
     int ax1;
     int ax2;
-    NxNode nDef = null;
 
     ax1 = ax2 = 0;  //undefined-0; true-1;false-(-1)
     errormessage = " Improper inputs to matchNode";
