@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2005/03/07 02:53:49  dennis
+ * Improved handling of case where the S(E,Q) array is NOT written
+ * to a file.  Now an empty string, "", can be used for the filename
+ * to disable writing to a file, and no error message is generated.
+ *
  * Revision 1.12  2005/02/09 20:04:45  dennis
  * Now also propagates error estimates from the input DataSet
  * to produce error estimate for S(Q,E).
@@ -136,7 +141,10 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
    *  @param  n_E_bins    The number of "bins" to be used between min_E and
    *                      max_E.
    *  @param  file_name   The name of the file to which the array of S(Q,E)
-   *                      values are written.
+   *                      values are written.  If the named file cannot be
+   *                      opened, the file will not be written.  A zero 
+   *                      length string, "", can be used to disable writing
+   *                      the file.
    */
 
   public SpectrometerTofToQE( DataSet     ds,
@@ -256,6 +264,10 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     s.append("@param max_E The maximum energy value to include.\n");
     s.append("@param n_E_bins The number of \"bins\" to be used between ");
     s.append("min_E and max_E.\n");
+    s.append("@param file_name The name of the file to which the array ");
+    s.append("of S(Q,E) values are written.  If the named file cannot be ");
+    s.append("opened, the file will not be written.  A zero length string ");
+    s.append("can be used to disable writing the file.");
     s.append("@return A new DataSet which is the result of converting the ");
     s.append("input DataSet's X-axis units to Q values and its Y-axis units ");
     s.append("to energy.\n");
@@ -568,11 +580,11 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
                                      err_vals );
       if ( err != null )
       {
-        SharedData.addmsg( err.toString() );
-        return err;
+        SharedData.addmsg( "Didn't write S(E,Q), " + new_ds + ", to file" );
+        return new_ds;
       }
       else
-        SharedData.addmsg( "Wrote S(E,Q) to file " + file_name );
+        SharedData.addmsg( "Wrote S(E,Q), " + new_ds + ", to file "+file_name);
     }
     
     return new_ds;
