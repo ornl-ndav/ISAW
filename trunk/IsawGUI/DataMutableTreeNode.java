@@ -3,6 +3,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.5  2001/07/31 16:00:51  neffk
+ * added the extinguish() method to help reclaim this object's memory
+ * when it's removed from the tree.
+ *
  * Revision 1.4  2001/07/20 16:36:10  neffk
  * log error: fixed removeFromNode() in previous revision
  *
@@ -53,6 +57,17 @@ public class DataMutableTreeNode
     this.parent = parent;
     name = new String(  "Group #" + d.getGroup_ID()  );
     setUserObject( d );
+  }
+
+
+  /**
+   * attempts to make all references to this object null
+   */ 
+  public void extinguish()
+  {
+    data = null;
+    name = null;
+    setParent( null );
   }
 
 
