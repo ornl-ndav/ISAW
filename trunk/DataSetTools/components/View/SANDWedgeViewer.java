@@ -33,6 +33,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.43  2005/01/18 23:01:54  millermi
+ * - Changed ImageListener to no longer listen for SelectionOverlay events,
+ *   but rather for ImageViewComponent events. This simplifies the
+ *   listener and makes it work more reliably.
+ * - Fixed "upside wedge" bug.
+ *
  * Revision 1.42  2004/12/05 05:23:29  millermi
  * - Fixed eclipse warnings.
  *
@@ -378,7 +384,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   private String[] wedgelabels;
   private String[] ringlabels;
   private String   datafile;
-  private boolean os_region_added = false;
+  //private boolean os_region_added = false;
   private boolean integrate_by_ring = true; // If false, integrate wrt radii,
                                             // summing over an angle.
 
@@ -448,8 +454,8 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       if( os != null )
       {
         os = ((ObjectState)os).get(SelectionOverlay.SELECTED_REGIONS);
-	if( os != null )
-          os_region_added = true;
+	//if( os != null )
+        //  os_region_added = true;
       }
       if( ivc != null )
         ivc.setObjectState( (ObjectState)temp );
@@ -894,6 +900,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 						           yinfo.getMax(),      
 						           xinfo.getMax(),
 						           yinfo.getMin() ) );
+      // Image bounds are consistent with those set in ImageJPanel.
       image_to_world_tran.setSource( 0.001f, 0.001f,
                                      iva.getNumColumns()-0.001f,
 				     iva.getNumRows()-0.001f );
@@ -1219,7 +1226,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	end_x = start_x + def_pts[5].y;
 	theta = def_pts[5].y;
 	// The average radius in pixel coords.
-	pix_avg_radius = Math.abs((def_pts[4].x - center.x)/2f);
+	pix_avg_radius = Math.abs((def_pts[4].x - center.x));
       }
       end_point = new floatPoint2D( def_pts[1].x, def_pts[1].y );
     }
@@ -1260,7 +1267,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	end_x = start_x + def_pts[5].y;
 	theta = def_pts[5].y;
 	// The average radius in pixel coords.
-	pix_avg_radius = Math.abs((def_pts[4].x - center.x)/2f);
+	pix_avg_radius = Math.abs((def_pts[4].x - center.x));
       }
       end_point = new floatPoint2D( def_pts[1].x, def_pts[1].y );
     }
@@ -1298,7 +1305,10 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	end_x = 360;
 	theta = 360;
 	// The average radius in pixel coords.
-	pix_avg_radius = Math.abs((def_pts[1].x - center.x)/2f);
+	// Average the major and minor axes: [(maj-cen) + (min-cen)]/2
+	// or (maj+min-2*cen)/2 
+	pix_avg_radius = Math.abs((def_pts[1].x + def_pts[1].y -
+	                           (center.x+center.y))/2f);
       }
       float image_radius = def_pts[1].x - center.x;
                                       // The following end_point calculation
@@ -1530,7 +1540,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       data_set.addData_entry( new_spectrum ); 
       data_set.setSelectFlag( data_set.getNum_entries() - 1, true );
     }
-  }
+  } // End of integrate()
  
  /*
   * This method efficiently finds what bin to put data in.
@@ -1737,11 +1747,17 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
   private class ImageListener implements ActionListener
   {
     public void actionPerformed( ActionEvent ae )
-    {
+    {      
+      /* This code was replaced when the ImageViewComponent stopped sending
+       * SelectionOverlay messaging Strings. These message strings were
+       * replaced by ImageViewComponent.SELECTED_CHANGED. The commented code
+       * is slightly more efficient than the replacing code since only new
+       * selections are integrated, whereas new code reintegrates all
+       * selections each time a selection is added or removed.
+       *
       String message = ae.getActionCommand();
       // get all of the selections, we only care about the last one.
       Region[] selectedregions = ivc.getSelectedRegions();
-        
       if( message.equals(SelectionOverlay.REGION_ADDED) )
       {	
         // REGION_ADDED message coming from setObjectState(), need to look
@@ -1807,19 +1823,80 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
       }
       else if( message.equals(SelectionOverlay.ALL_REGIONS_REMOVED) )
       {
-	// if no data, don't allow view manager to be viewed.
-	oldview.setVisible(false);
-	// unselect all data so they will not be displayed.
+        // If oldview not initialized, no regions were removed.
+	if( oldview != null )
+	{
+	  // if no data, don't allow view manager to be viewed.
+	  oldview.setVisible(false);
+	  // unselect all data so they will not be displayed.
+          data_set.clearSelections();
+          data_set.removeAll_data_entries();
+	  // the update revises the tempDataSet, and the notify causes
+	  // the graphs to be updated.
+	  oldview.update(data_set, IObserver.DATA_CHANGED);
+	  data_set.notifyIObservers( IObserver.SELECTION_CHANGED );
+	  sandcontrolpane.selectionChanged();
+	  sandcontrolpane.setIntegrateRadioEnabled(true);
+	}
+      }*/
+      String message = ae.getActionCommand();
+      // Get all of the selections from the ImageViewComponent.
+      Region[] selectedregions = ivc.getSelectedRegions();
+      // If a region is added or removed this if statement will update the
+      // graph.
+      if( message.equals(ImageViewComponent.SELECTED_CHANGED) )
+      {
+        // Clear data_set since the data is reproduced each time.
         data_set.clearSelections();
         data_set.removeAll_data_entries();
-	// the update revises the tempDataSet, and the notify causes
-	// the graphs to be updated.
-	oldview.update(data_set, IObserver.DATA_CHANGED);
-	data_set.notifyIObservers( IObserver.SELECTION_CHANGED );
+	
+        // Integrate each region. This is slightly less efficient than the code
+	// above, but simplifies the implementation. The integrate function
+	// will also build entries for the data_set.
+        for( int i = 0; i < selectedregions.length; i++ )
+          integrate( selectedregions[i], i );
+	
+	// If no data entries exist, do not create or display a view manager.
+	if( data_set.getNum_entries() <= 0 )
+	{
+	  if( oldview != null && oldview.isVisible() )
+	    oldview.setVisible(false);
+	  data_set.notifyIObservers(IObserver.SELECTION_CHANGED);
+	  sandcontrolpane.selectionChanged();
+	  sandcontrolpane.setIntegrateRadioEnabled(true);
+	  return;
+	}
+	
+	// if a viewmanager has not been created but there are entries to be
+	// displayed, make one.
+	if( oldview == null )
+	{
+          oldview = new ViewManager( data_set, IViewManager.SELECTED_GRAPHS );
+          oldview.setDefaultCloseOperation( JFrame.HIDE_ON_CLOSE );
+	  oldview.addComponentListener( new VisibleListener() );
+	  oldview.addWindowListener( new ClosingListener() );
+	  oldview.setDataSet(data_set);
+	}
+	else
+	{
+	  // the update revises the tempDataSet, and the notify causes
+	  // the graphs to be updated.
+	  oldview.update(data_set, IObserver.DATA_CHANGED);
+	  data_set.notifyIObservers(IObserver.SELECTION_CHANGED);
+	  if( !oldview.isVisible() )
+	  {
+            WindowShower shower = new WindowShower(oldview);
+            java.awt.EventQueue.invokeLater(shower);
+            shower = null;
+	  }
+	  // if visible, bring it to the front.
+	  else
+	    oldview.toFront();
+	}
 	sandcontrolpane.selectionChanged();
-	sandcontrolpane.setIntegrateRadioEnabled(true);
+	sandcontrolpane.setIntegrateRadioEnabled(false);
       }
-      else if( message.equals(IViewComponent.POINTED_AT_CHANGED) )
+      else if( message.equals(ImageViewComponent.POINTED_AT_CHANGED) )
       {
 	data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED );
 	//System.out.println("Pointed At Changed " + 
@@ -2075,7 +2152,10 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     }
   
    /*
-    * This class listeners for messages send by the editor.
+    * This class listeners for messages send by the editor. Since defining
+    * points for a region were originally obtained from mouse events, this
+    * class will artificially create defining points for a region specified
+    * by the control panel.
     */ 
     private class EditorListener implements ActionListener
     {
@@ -2131,7 +2211,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	                                  (values[1] + values[2]) );
 	    wc_pts[4] = new floatPoint2D( (values[0] + values[2]),
 	                                  (values[1] - values[2]) );
-	    // use trig to find p1 (see WedgeCursor)
+	    // use trig to find p1 (see WedgeCursor class)
 	    double theta_p1 = (double)(values[3] - values[4]/2);
 	    // convert theta from degrees to radians
 	    theta_p1 = theta_p1 * Math.PI / 180;
@@ -2139,7 +2219,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	                                  values[2]*(float)Math.cos(theta_p1),
 					  values[1] +
 	                                  values[2]*(float)Math.sin(theta_p1));
-	    // use trig to find rp1 (see WedgeCursor)
+	    // use trig to find rp1 (reflection of p1, see WedgeCursor)
 	    double theta_rp1 = (double)(values[3] + values[4]/2);
 	    // convert theta from degrees to radians
 	    theta_rp1 = theta_rp1 * Math.PI / 180;
@@ -2150,12 +2230,13 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
 	    // define angles so WedgeRegion can use them.
 	    float arcangle = values[4];
 	    // make sure values are on interval [0,360)
-	    while( arcangle < 0 )
+	    if( arcangle < 0 )
 	      arcangle = -arcangle;
 	    while( arcangle >= 360 )
 	      arcangle -= 360;
 	    
 	    float startangle = values[3] - arcangle/2;
+	    // Make start angle on interval [0,360]
 	    while( startangle >= 360 )
 	      startangle -= 360;
 	    while( startangle < 0 )
