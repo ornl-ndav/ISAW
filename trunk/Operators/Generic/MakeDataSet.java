@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.9  2005/01/05 21:13:35  rmikk
+ * Eliminated a Warning
+ *
  * Revision 1.8  2004/06/29 21:48:31  rmikk
  * Fixed error if the xbins do not come in as a vector of vectors
  *
@@ -200,7 +203,7 @@ public class MakeDataSet implements Wrappable {
               return new ErrorString( "Cannot convert xvals to a float[]");
             xscl = new VariableXScale(O);
         
-        } catch (Exception ss) {
+        } catch (RuntimeException ss) {
             return new ErrorString(ss);
         }
    
