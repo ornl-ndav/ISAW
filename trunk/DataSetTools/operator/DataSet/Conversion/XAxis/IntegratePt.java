@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2005/01/02 17:54:05  rmikk
+ * Trapped for a null pointer exception error
+ *
  * Revision 1.7  2004/08/17 20:38:29  rmikk
  * Set the operator several times
  *
@@ -315,10 +318,15 @@ public class IntegratePt extends
       JHist = new int[numrows][numcols][nchannels];
       id = gr.ID();
       //gr.setData_entries(DS);
+      if( gr == null)
+         return  null;
       for( int i=1; i<= numrows;i++)
         for( int j = 1; j <= numcols; j++)
           for( int k=0; k< nchannels -1; k++)
-            JHist[i-1][j-1][k] =(int) gr.getData_entry(j,i).getY_values()[k];
+            if(gr.getData_entry(j,i) != null)
+               JHist[i-1][j-1][k] =(int) gr.getData_entry(j,i).getY_values()[k];
+            else
+               JHist[i-1][j-1][k] = 0;
     }
     setintField(op1,"ISX",ISX) ;
     setintField(op1,"ISY",ISY) ;
