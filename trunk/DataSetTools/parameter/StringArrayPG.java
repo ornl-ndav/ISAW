@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/08/28 02:32:36  bouzekc
+ * Modified to work with new VectorPG.
+ *
  * Revision 1.9  2003/08/15 23:50:06  bouzekc
  * Modified to work with new IParameterGUI and ParameterGUI
  * classes.  Commented out testbed main().
@@ -64,9 +67,14 @@ import DataSetTools.util.PGActionListener;
 
 public class StringArrayPG extends VectorPG{
 
-  public StringArrayPG( String Prompt, Object value){ 
-    super( new StringPG("Enter String",""),"Enter String List");
-    setValue( value);
+  public StringArrayPG( String name, Object val){ 
+    super( name, val );
+    innerParam =  new StringPG("Enter String", "");
+  }
+
+  public StringArrayPG( String name, Object val, boolean valid ) {
+    super( name, val, valid );
+    innerParam = new StringPG("Enter String", "");
   }
 
   /*
@@ -84,7 +92,7 @@ public class StringArrayPG extends VectorPG{
     jf.setSize( 500,100);
     jf.invalidate();
     jf.show();
-  }*/      
+  }*/
   public Object clone(){
     StringArrayPG faap = new StringArrayPG( getName(), getValue());
     return (Object)faap;
