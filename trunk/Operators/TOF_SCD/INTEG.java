@@ -107,7 +107,7 @@ public class INTEG implements Wrappable,HiddenOperator{
 
     int[][] RANGE= new int[((4))-1+1][((5))-1+1];
 
-    float[][] SDATA= new float[((NXS))-1+1][((NYS))-1+1];
+    float[][] SDATA= new float[((85))-1+1][((85))-1+1];
 
     float[] SIGI= new float[((5))-1+1];
 
@@ -182,9 +182,9 @@ public class INTEG implements Wrappable,HiddenOperator{
 }
 }
     MAXP1=(int)((MAXP[(int)(((1))-1)]));
-    if((((((((MAXX[(int)(((1))-1)])<(5)||(MAXX[(int)(((1))-1)])>(NXS-4))||(MAXY[
-      (int)(((1))-1)])<(5))||(MAXY[(int)(((1))-1)])>(NYS-4))||(MAXZ)<(2))||(
-        MAXZ)>((((WLNUM-3))))))){
+    if((((((((MAXX[(int)(((1))-1)])<(5)||(MAXX[(int)(((1))-1)])>(81))||(MAXY[(
+      int)(((1))-1)])<(5))||(MAXY[(int)(((1))-1)])>(81))||(MAXZ)<(2))||(MAXZ)>((
+        ((WLNUM-3))))))){
       REFLAG=(int)((500));
       return null;
       }
@@ -206,18 +206,21 @@ public class INTEG implements Wrappable,HiddenOperator{
         }
       for(J=(int)((JJ-1));util.Sign(1)*J<=util.Sign(1)*((JJ+1));J+=(int)1){
         for(I=(int)((II-1));util.Sign(1)*I<=util.Sign(1)*((II+1));I+=(int)1){
-          if(((JHIST[(int)(((I))-1)][(int)(((J))-1)][(int)(((KRANGE[(int)(((K))-
-            1)]))-1)])>(MAXP[(int)(((K))-1)]))){
-            MAXP[(int)(((K))-1)]=(int)((JHIST[(int)(((I))-1)][(int)(((J))-1)][(
-              int)(((KRANGE[(int)(((K))-1)]))-1)]));
-            MAXX[(int)(((K))-1)]=(int)((I));
-            MAXY[(int)(((K))-1)]=(int)((J));
-            PEAK[(int)(((1))-1)][(int)(((K))-1)]=(int)((I));
-            PEAK[(int)(((3))-1)][(int)(((K))-1)]=(int)((J));
-            PEAK[(int)(((2))-1)][(int)(((K))-1)]=(int)((PEAK[(int)(((1))-1)][(
-              int)(((K))-1)]));
-            PEAK[(int)(((4))-1)][(int)(((K))-1)]=(int)((PEAK[(int)(((3))-1)][(
-              int)(((K))-1)]));
+          if(((((((((I)>(0)&&(J)>(0))&&(K)>(0))&&(KRANGE[(int)(((K))-1)])>(0))
+            &&(I)<=(NXS))&&(J)<=(NYS))&&(KRANGE[(int)(((K))-1)])<=(WLNUM)))){
+            if(((JHIST[(int)(((I))-1)][(int)(((J))-1)][(int)(((KRANGE[(int)(((K)
+              )-1)]))-1)])>(MAXP[(int)(((K))-1)]))){
+              MAXP[(int)(((K))-1)]=(int)((JHIST[(int)(((I))-1)][(int)(((J))-1)][
+                (int)(((KRANGE[(int)(((K))-1)]))-1)]));
+              MAXX[(int)(((K))-1)]=(int)((I));
+              MAXY[(int)(((K))-1)]=(int)((J));
+              PEAK[(int)(((1))-1)][(int)(((K))-1)]=(int)((I));
+              PEAK[(int)(((3))-1)][(int)(((K))-1)]=(int)((J));
+              PEAK[(int)(((2))-1)][(int)(((K))-1)]=(int)((PEAK[(int)(((1))-1)][(
+                int)(((K))-1)]));
+              PEAK[(int)(((4))-1)][(int)(((K))-1)]=(int)((PEAK[(int)(((3))-1)][(
+                int)(((K))-1)]));
+              }
             }
 }
 }
