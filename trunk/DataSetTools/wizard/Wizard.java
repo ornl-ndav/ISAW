@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.47  2003/06/30 17:11:40  bouzekc
+ * Moved enabling/disabling of navigation buttons into a
+ * private method.  This allows the inner SwingWorker class to
+ * correctly enable/disable the buttons.
+ *
  * Revision 1.46  2003/06/30 15:16:23  bouzekc
  * Added executeNoGUI() method to allow execution of the
  * Wizard without creating the GUI.
@@ -1126,35 +1131,57 @@ public abstract class Wizard implements PropertyChangeListener {
     form_panel.validate(  );
     form_num = index;
 
-    // enable/disable the navigation buttons
-    if( index >= ( forms.size(  ) - 1 ) ) {
-      next_button.setEnabled( false );
-    } else {
-      next_button.setEnabled( true );
-    }
-
-    if( index >= ( forms.size(  ) - 2 ) ) {
-      last_button.setEnabled( false );
-    } else {
-      last_button.setEnabled( true );
-    }
-
-    if( index <= 0 ) {
-      back_button.setEnabled( false );
-    } else {
-      back_button.setEnabled( true );
-    }
-
-    if( index <= 1 ) {
-      first_button.setEnabled( false );
-    } else {
-      first_button.setEnabled( true );
-    }
+    this.enableNavButtons( true, index );
 
     if( forms.size(  ) == 1 ) {
       form_label.setText( f.getTitle(  ) );
     } else {
       form_label.setText( "Form " + ( index + 1 ) + ": " + f.getTitle(  ) );
+    }
+  }
+
+  /**
+   *  Utility to enable/disable the Wizard navigation buttons.
+   *
+   *  @param   enable            true to enable, false to disable.
+   *
+   *  @param  index              The index of the Form to enable/disable
+   *                             navigation buttons on.
+   */
+  private void enableNavButtons( boolean enable, int index ) {
+    if( enable ) {
+      exec_button.setEnabled( true );
+      exec_all_button.setEnabled( true );
+      clear_button.setEnabled( true );
+
+      // enable/disable the navigation buttons
+      if( index >= ( forms.size(  ) - 1 ) ) {
+        next_button.setEnabled( false );
+      } else {
+        next_button.setEnabled( true );
+      }
+
+      if( index >= ( forms.size(  ) - 2 ) ) {
+        last_button.setEnabled( false );
+      } else {
+        last_button.setEnabled( true );
+      }
+
+      if( index <= 0 ) {
+        back_button.setEnabled( false );
+      } else {
+        back_button.setEnabled( true );
+      }
+
+      if( index <= 1 ) {
+        first_button.setEnabled( false );
+      } else {
+        first_button.setEnabled( true );
+      }
+    } else {
+      for( int i = 0; i < wizComponents.length; i++ ) {
+        wizComponents[i].setEnabled( false );
+      }
     }
   }
 
@@ -1587,9 +1614,7 @@ public abstract class Wizard implements PropertyChangeListener {
      */
     public Object construct(  ) {
       //can't have users mutating the values!
-      for( int i = 0; i < wizComponents.length; i++ ) {
-        wizComponents[i].setEnabled( false );
-      }
+      enableNavButtons( false, getCurrentFormNumber(  ) );
 
       this.enableFormParams( false );
 
@@ -1597,9 +1622,7 @@ public abstract class Wizard implements PropertyChangeListener {
       exec_forms( formNum );
       populateViewMenu(  );
 
-      for( int i = 0; i < wizComponents.length; i++ ) {
-        wizComponents[i].setEnabled( true );
-      }
+      enableNavButtons( true, getCurrentFormNumber(  ) );
 
       this.enableFormParams( true );
 
