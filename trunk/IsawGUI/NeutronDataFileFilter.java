@@ -3,6 +3,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.4  2001/08/15 22:34:23  chatterjee
+ * Added new constructor with a boolean parameter to indicate the filter options
+ * Filters for the save dialog can differ from the open dialog box.
+ *
  * Revision 1.3  2001/08/02 19:15:31  neffk
  * added *.isd, ISAW's binary data format, to the filter.
  *
@@ -31,16 +35,20 @@ public class NeutronDataFileFilter
   public final static String NEXUS       = "nxs";
   public final static String RUNFILE     = "run";
   public final static String ISAW_NATIVE = "isd";
-
+  boolean SaveFilter;
 
   public NeutronDataFileFilter()
   {
     super();
+    SaveFilter = false;
   }
-
+  public NeutronDataFileFilter( boolean SaveFilter)
+   {super();
+       this.SaveFilter = SaveFilter;
+   }
 
   public boolean accept( File f )
-  {
+  {  
     if(  f.isDirectory()  ) 
       return true;
 
@@ -62,17 +70,17 @@ public class NeutronDataFileFilter
       return true;
 
     String extension = getExtension( filename );
-    if( 
+   if( 
       extension != null  &&
       (
         extension.equals( HDF         ) ||
-        extension.equals( NEXUS       ) ||
-        extension.equals( RUNFILE     ) ||
+        extension.equals( NEXUS       ) ||        
         extension.equals( ISAW_NATIVE ) 
       )
     )
       return true;
-
+    else if( extension != null && extension.equals( RUNFILE) && !SaveFilter )
+       return true;
     else 
       return false;
   }
@@ -83,11 +91,15 @@ public class NeutronDataFileFilter
    */ 
   public String getDescription()
   {
-    return new String( 
+    String S = new String( 
       "Neutron Data Files (*." + HDF         + ", " +
                           "*." + NEXUS       + ", " +
-                          "*." + RUNFILE     + ", " +
-                          "*." + ISAW_NATIVE + ")"  );
+                          
+                          "*." + ISAW_NATIVE   );
+   if(!SaveFilter)
+       S += ",  *." + RUNFILE  ;
+   S += ")";
+   return S;
   }
 
 
