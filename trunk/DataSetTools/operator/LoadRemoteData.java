@@ -31,6 +31,9 @@
  * Modified:
  *  
  *  $Log$
+ *  Revision 1.4  2001/08/10 19:54:11  dennis
+ *  Changed to new default tcp server port.
+ *
  *  Revision 1.3  2001/08/09 15:45:28  dennis
  *  Added user name and password parameters
  *
@@ -126,7 +129,7 @@ public class LoadRemoteData extends    GenericLoad
     Parameter parameter = new Parameter("Host name", new String("") );
     addParameter( parameter );
 
-    int port = TCPServer.DEFAULT_SERVER_PORT_NUMBER;
+    int port = TCPServer.DEFAULT_SERVER_TCP_PORT;
     parameter = new Parameter("Port (eg. 6088)", new Integer(port) );
     addParameter( parameter );
 
