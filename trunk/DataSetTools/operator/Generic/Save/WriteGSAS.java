@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/11/26 16:52:42  pfpeterson
+ * reformating
+ *
  * Revision 1.3  2002/05/20 20:23:12  pfpeterson
  * Added checkbox to allow for numbering banks as the
  * raw data does or sequentially.
@@ -71,87 +74,80 @@ import DataSetTools.writer.*;
 import DataSetTools.gsastools.*;
 import java.util.*;
 
-/** This is an operator shell around the Save gsas File menu option in ISAW.
- *  The Title in Menu's that refers to this is <B>Save As gsas</b>.<BR>
- *  The Command in Scripts used to refer to this operation is <B>gsasOut</b>.
+/**
+ * This is an operator shell around the Save gsas File menu option in
+ * ISAW.  The Title in Menu's that refers to this is <B>Save As
+ * gsas</b>. The Command in Scripts used to refer to this operation is
+ * <B>SaveGSAS</b>.
  */
-public class WriteGSAS extends GenericSave
-{
+public class WriteGSAS extends GenericSave{
+  public WriteGSAS(){
+    super( "Save as GSAS " );
+    setDefaultParameters();
+  }
 
-   public WriteGSAS()
-    {
-     super( "Save as GSAS " );
-     setDefaultParameters();
-    }
+  /** 
+   * @param DS The data set that is to be saved in gsas format
+   * @param filename the name of the file where the data will be saved
+   */
+  public WriteGSAS( DataSet MS, DataSet DS, String filename, Boolean em,
+                    Boolean sn ){
+    super( "Save as GSAS File" );
+    parameters = new Vector();
+    addParameter( new Parameter("Monitor" , MS ));
+    addParameter( new Parameter("Data Set" , DS ));
+    addParameter( new Parameter("Output File", filename ));
+    addParameter( new Parameter("Export Monitor", em));
+    addParameter( new Parameter("Sequential Bank Numbering", sn));
+  }
 
-   /** 
-    *@param DS  The data set that is to be saved in gsas format
-    *@param filename the name of the file where the data will be saved
-    */
-   public WriteGSAS( DataSet MS, DataSet DS, String filename,
-                     Boolean em, Boolean sn )
-    {
-     super( "Save as GSAS File" );
-     parameters = new Vector();
-     addParameter( new Parameter("Monitor" , MS ));
-     addParameter( new Parameter("Data Set" , DS ));
-     addParameter( new Parameter("Output File", filename ));
-     addParameter( new Parameter("Export Monitor", em));
-     addParameter( new Parameter("Sequential Bank Numbering", sn));
-    }
-
-   public void setDefaultParameters()
-    {
-     parameters = new Vector();
-     addParameter( new Parameter("Monitor" , new DataSet("","") ));
-     addParameter( new Parameter("Data Set" , new DataSet("","") ));
-     addParameter( new Parameter("Output File", "filename"));
-     addParameter( new Parameter("Export Monitor", Boolean.TRUE));
-     addParameter( new Parameter("Sequential Bank Numbering", Boolean.FALSE));
-    }  
+  public void setDefaultParameters(){
+    parameters = new Vector();
+    addParameter( new Parameter("Monitor" , new DataSet("","") ));
+    addParameter( new Parameter("Data Set" , new DataSet("","") ));
+    addParameter( new Parameter("Output File", "filename"));
+    addParameter( new Parameter("Export Monitor", Boolean.TRUE));
+    addParameter( new Parameter("Sequential Bank Numbering", Boolean.FALSE));
+  }  
    
   /** 
    * Returns <B>SaveGSAS</b>, the command used by scripts to refer to this
    * operation
    */ 
-   public String getCommand()
-    {
-      return "SaveGSAS";
-    }
+  public String getCommand(){
+    return "SaveGSAS";
+  }
 
   /** 
-   * executes the gsas command, saving the data to the file in gsas form.
+   * executes the gsas command, saving the data to the file in gsas
+   * form.
    *
    * @return  "Success" only
    */
-   public Object getResult()
-    { 
-      DataSet MS       =(DataSet)( getParameter(0).getValue());
-      DataSet DS       =(DataSet)( getParameter(1).getValue());
-      String  filename =(String) ( getParameter(2).getValue());
-      boolean em       =((Boolean)(getParameter(3).getValue())).booleanValue();
-      boolean sn       =((Boolean)(getParameter(4).getValue())).booleanValue();
+  public Object getResult(){
+    DataSet MS       =(DataSet)( getParameter(0).getValue());
+    DataSet DS       =(DataSet)( getParameter(1).getValue());
+    String  filename =(String) ( getParameter(2).getValue());
+    boolean em       =((Boolean)(getParameter(3).getValue())).booleanValue();
+    boolean sn       =((Boolean)(getParameter(4).getValue())).booleanValue();
 
-      //System.out.println("(WG)NUMBERING: "+sn);
-      GsasWriter gw=new GsasWriter(filename,em,sn);
-      gw.writeDataSets(new DataSet[] {MS , DS});
+    //System.out.println("(WG)NUMBERING: "+sn);
+    GsasWriter gw=new GsasWriter(filename,em,sn);
+    gw.writeDataSets(new DataSet[] {MS , DS});
 
-      return "Success";
-    }
+    return "Success";
+  }
 
   /** 
    * Creates a clone of this operator.
    */
-   public Object clone()
-   {
-     WriteGSAS W = new WriteGSAS();
-     W.CopyParametersFrom( this );
-     return W;
-   }
+  public Object clone(){
+    WriteGSAS W = new WriteGSAS();
+    W.CopyParametersFrom( this );
+    return W;
+  }
 
-   public static void main( String args[])
-   {
-     System.out.println("WriteGSAS test... operator compiled and can run");
-   }
-  
+  public static void main( String args[]){
+    System.out.println("WriteGSAS test... operator compiled and can run");
+  }
 }
