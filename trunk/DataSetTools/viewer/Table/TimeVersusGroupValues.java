@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/11/06 21:26:43  rmikk
+ * Added a method for handling selected rows and columns.
+ *   Not implemented yet
+ *
  * Revision 1.4  2003/11/06 20:05:25  rmikk
  * Eliminated null pointer exceptions when the state was
  *    initially null
@@ -610,6 +614,16 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
      return X;
     }
 
+
+ public void SelectRegion( ISelectedRegion region){
+
+    if( region instanceof SelectedRegion2D){
+       SelectedRegion2D Region = (SelectedRegion2D) region;
+       
+
+
+    }
+  }
   //-------------------------- Event Listeners ---------------------------------
   
 
