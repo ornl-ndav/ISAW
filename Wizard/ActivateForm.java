@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/06/06 16:21:33  pfpeterson
+ * Now use new parameters.
+ *
  * Revision 1.1  2002/05/28 20:35:08  pfpeterson
  * Moved files
  *
@@ -40,6 +43,7 @@ package Wizard;
 
 import java.io.*;
 import DataSetTools.wizard.*;
+import DataSetTools.parameter.*;
 import Operators.Calculator.*;
 
 /**
@@ -109,9 +113,9 @@ public class ActivateForm extends Form{
      *          result value and return true in that case.
      */
     public boolean execute(){
-        WizardParameter param;
+        IParameterGUI param;
         String result;
-        
+        //System.out.println("ActivateForm.execute()");
         if( (editable_params.length!=4) || (result_params.length!=3) ){
             if(editable_params.length!=4)
                 wizard.status_display.append("Wizard calling form "
@@ -125,48 +129,59 @@ public class ActivateForm extends Form{
         }
 
         param=wizard.getParameter("Composition");
-        String material=(String)param.getNewValue();
+        String material=(String)param.getValue();
+        param.setValid(true);
 
         param=wizard.getParameter("Mass");
-        float mass=((Float)param.getNewValue()).floatValue();
+        float mass=((FloatPG)param).getfloatValue();
         if(mass<=0f){
-            param.unSet();
+            param.setValid(false);
             wizard.status_display.append("Invalid Mass Specified: "+mass);
             return false;
+        }else{
+            param.setValid(true);
         }
 
         param=wizard.getParameter("Current");
-        float current=((Float)param.getNewValue()).floatValue();
+        float current=((FloatPG)param).getfloatValue();
         if(current<=0f){
-            param.unSet();
+            param.setValid(false);
             wizard.status_display.append("Invalid Current Specified: "
                                          +current);
             return false;
+        }else{
+            param.setValid(true);
         }
 
         param=wizard.getParameter("InstrumentFac");
-        float inst_fac=((Float)param.getNewValue()).floatValue();
+        float inst_fac=((FloatPG)param).getfloatValue();
         if(inst_fac<=0f){
-            param.unSet();
+            param.setValid(false);
             wizard.status_display.append("Invalid Instrument Factor "
                                          +"Specified: "+inst_fac);
             return false;
+        }else{
+            param.setValid(true);
         }
 
+        //System.out.println(material+" "+mass+" "+current+" "+inst_fac);
         param=wizard.getParameter("Contact");
-        ActivateContact ac=new ActivateContact(material,mass,current,inst_fac);
+        ActivateContact ac=new ActivateContact(material,mass);
         result=(String)ac.getResult();
         param.setValue(new String(result));
+        //System.out.println(param);
 
         param=wizard.getParameter("Storage");
         ActivateStorage as=new ActivateStorage(material,current,inst_fac);
         result=(String)as.getResult();
         param.setValue(new String(result));
+        //System.out.println(param);
 
         param=wizard.getParameter("Prompt");
-        ActivatePrompt ap=new ActivatePrompt(material,current,inst_fac);
+        ActivatePrompt ap=new ActivatePrompt(material);
         result=(String)ap.getResult();
         param.setValue(new String(result));
+        //System.out.println(param);
 
         return true;
     } 
