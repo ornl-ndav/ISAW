@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/08/28 02:09:50  bouzekc
+ *  Added a try...catch block to trap a NumberFormatException which occurred
+ *  when a minus sign was typed in.  This occurred because of the large
+ *  number of PropertyChangeEvents being fired.
+ *
  *  Revision 1.9  2003/08/15 23:50:05  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -118,7 +123,12 @@ public class IntegerPG extends StringEntryPG implements ParamUsesString{
     public Object getValue(){
         Object val=super.getValue();
         if(val instanceof String){
-            return new Integer((String)val);
+            try{
+              return new Integer((String)val);
+            }catch( NumberFormatException nfe ) {
+              //probably just a minus sign.  We will return a 0.
+              return new Integer( 0 );
+            }
         }else if(val instanceof Integer){
             return (Integer)val;
         }else{
