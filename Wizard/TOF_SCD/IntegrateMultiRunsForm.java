@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.15  2003/06/19 16:21:15  bouzekc
+ * Changed SCD calibration file line to be a constant parameter
+ * when the HAS_CONSTANTS flag is on.
+ *
  * Revision 1.14  2003/06/18 23:34:25  bouzekc
  * Parameter error checking now handled by superclass Form.
  *
@@ -203,7 +207,7 @@ public class IntegrateMultiRunsForm extends Form
     //don't monkey around with the run numbers and such if this form
     //relies on previously calculated values
     if(HAS_CONSTANTS)
-      setParamTypes(new int[]{0,1,2,3,5}, new int[]{4,6,7,8,9}, new int[]{10});
+      setParamTypes(new int[]{0,1,2,3,5,8}, new int[]{4,6,7,9}, new int[]{10});
     else
       setParamTypes(null, new int[]{0,1,2,3,4,5,6,7,8,9}, new int[]{10});
   }
