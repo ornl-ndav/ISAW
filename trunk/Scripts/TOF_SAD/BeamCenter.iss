@@ -1,4 +1,5 @@
-# Beam Center Finder
+# Beam Center Finder Script
+$ CATEGORY = Operator,Instrument Type,TOF_NSAS
 #@overview- This script finds the center of the beam in a sand instrument
 #@param DSfilename- The name of the DataSet used to determine the center of the beam
 #@param SensFilename- the name of the file with the sensitivity data(from Flood Run)
