@@ -31,10 +31,8 @@
   * Modified:
   *
   *  $Log$
-  *  Revision 1.23  2001/06/20 21:18:57  chatter
-  *  Removed Properties tab from the command view.
-  *  Added menuitem "Edit IsawProps" that will display the
-  *  IsawProps.dat file and let user edit and save it.
+  *  Revision 1.24  2001/06/20 21:43:47  chatter
+  *  Loading of Nexus files added via the IsawGUI.util.loadRunfile method.
   *
   *  Revision 1.19  2001/06/14 14:54:01  chatter
   *  Removed Images_Directory and the jnexus.dll path from IsawProps.dat
@@ -943,20 +941,29 @@
  		                   file_name[i] = files[i].getPath();
  
                                 System.out.println("Print the files in listB  " +file_name[i]);
- 
-              			 RunfileRetriever r = new RunfileRetriever( file_name[i] );
+                                 util.appendDoc(sessionLog, "Load " + '"' +file_name[i] + '"' );
+
+
+                                 dss = util.loadRunfile(file_name[i]);
+                                 addDataSets(dss, file_name[i]);
+
+
+
+              			/* RunfileRetriever r = new RunfileRetriever( file_name[i] );
               			 int numberOfDataSets = r.numDataSets();
                           
   					 dss = new DataSet[numberOfDataSets];
-                                for (int j = 0; j < numberOfDataSets;j++)
-                                
+                                for (int j = 0; j < numberOfDataSets;j++)                                
                                   dss[j] = r.getDataSet(j); 
-                                  jtui.addDataSets(dss, files[i].getName());
+                                jtui.addDataSets(dss, files[i].getName());
+                               */
  				    
                              }
- 		
+                            if(dss[1]!=null)
+ 				   { 		
                              jdvui.ShowDataSet( dss[1], "Internal Frame", IViewManager.IMAGE ); 
- 
+                             dss[1].notifyIObservers(IObserver.POINTED_AT_CHANGED);
+ 			         }
                              setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
  
  		    		    }
