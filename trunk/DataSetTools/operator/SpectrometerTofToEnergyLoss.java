@@ -1,5 +1,8 @@
 /*
- * @(#)SpectrometerTofToEnergyLoss.java   0.1  99/06/15   Dennis Mikkelson
+ * @(#)SpectrometerTofToEnergyLoss.java   0.2  99/06/15   Dennis Mikkelson
+ *
+ *                                 99/08/16   Added constructor to allow
+ *                                            calling operator directly
  *             
  * This operator converts a neutron time-of-flight DataSet to energy.  The
  * DataSet must contain spectra with attributes giving the detector position
@@ -13,7 +16,6 @@ import  java.io.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
-import  graph.*;
 
 /**
   *  Convert a neutron time-of-flight DataSet to energy loss.. 
@@ -22,11 +24,15 @@ import  graph.*;
 public class SpectrometerTofToEnergyLoss extends    DataSetOperator 
                                          implements Serializable
 {
-  /* --------------------------- CONSTRUCTOR ------------------------------ */
+  /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
+  /**
+   * Construct an operator with a default parameter list.  If this
+   * constructor is used, the operator must be subsequently added to the
+   * list of operators of a particular DataSet.  Also, meaningful values for
+   * the parameters should be set ( using a GUI ) before calling getResult()
+   * to apply the operator to the DataSet this operator was added to.
+   */
 
-                                     // The constructor calls the super
-                                     // class constructor, then sets up the
-                                     // list of parameters.
   public SpectrometerTofToEnergyLoss( )
   {
     super( "Convert to Energy Loss" );
@@ -38,21 +44,51 @@ public class SpectrometerTofToEnergyLoss extends    DataSetOperator
     parameter = new Parameter( "Max Energy Loss(meV)", new Float(50.0) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Number of Bins ", new Float(200.0) );
+    parameter = new Parameter( "Number of Bins ", new Integer( 500) );
     addParameter( parameter );
   }
 
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct an operator for a specified DataSet and with the specified
+   *  parameter values so that the operation can be invoked immediately
+   *  by calling getResult().
+   *
+   *  @param  ds          The DataSet to which the operation is applied
+   *  @param  min_E       The minimum energy loss value to be binned
+   *  @param  max_E       The maximum energy loss value to be binned
+   *  @param  num_E       The number of "bins" to be used between min_E and
+   *                      max_E
+   */
+
+  public SpectrometerTofToEnergyLoss( DataSet     ds,
+                                      float       min_E,
+                                      float       max_E,
+                                      int         num_E )
+  {
+    this();                         // do the default constructor, then set
+                                    // the parameter value(s) by altering a
+                                    // reference to each of the parameters
+
+    Parameter parameter = getParameter( 0 );
+    parameter.setValue( new Float( min_E ) );
+
+    parameter = getParameter( 1 );
+    parameter.setValue( new Float( max_E ) );
+
+    parameter = getParameter( 2 );
+    parameter.setValue( new Integer( num_E ) );
+
+    setDataSet( ds );               // record reference to the DataSet that
+                                    // this operator should operate on
+  }
 
   /* ---------------------------- getResult ------------------------------- */
 
-                                     // The concrete operation extracts the
-                                     // current value of the scalar to add 
-                                     // and returns the result of adding it
-                                     // to each point in each data block.
   public Object getResult()
   {
                                      // get the current data set
-     DataSetTools.dataset.DataSet ds = this.getDataSet();
+    DataSet ds = this.getDataSet();
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
@@ -64,7 +100,7 @@ public class SpectrometerTofToEnergyLoss extends    DataSetOperator
                                      "Scattering Intensity" );
 
     // #### must take care of the operation log... this starts with it empty
-     DataSetTools.dataset.DataSet new_ds = factory.getDataSet(); 
+    DataSet new_ds = factory.getDataSet(); 
     new_ds.copyOp_log( ds );
     new_ds.addLog_entry( "Converted to Energy Loss" );
 
@@ -144,7 +180,7 @@ public class SpectrometerTofToEnergyLoss extends    DataSetOperator
         new_ds.addData_entry( new_data );      
       }
     }
-   // ChopTools.chop_dataDrawer.drawgraphDataSet(new_ds);
+    ChopTools.chop_dataDrawer.drawgraphDataSet(new_ds);
     return new_ds;
   }  
 
