@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.28  2003/03/05 14:21:08  rmikk
+ * Fixed error.  The conditional part of an if or elseif statement
+ *   is not executed if no other lines in the same block are
+ *   executed
+ *
  * Revision 1.27  2003/02/24 13:28:17  rmikk
  * Improved update method to allow scripts to send values to
  *    variables.  For use in wizards
@@ -612,21 +617,24 @@ public class ScriptProcessor  extends ScriptProcessorOperator
                 j = S.toUpperCase().lastIndexOf("THEN") ;
 
         boolean b;
-        
-        int kk =ExecLine.execute( S, i, j);
-        if( ExecLine.getErrorCharPos()>=0){
-            seterror(ExecLine.getErrorCharPos(), ExecLine.getErrorMessage());
-            lerror= line;
-            return line;
+        Object X;
+        if(!execute)
+             X = new Boolean(true);
+        else{
+           int kk =ExecLine.execute( S, i, j);
+           if( ExecLine.getErrorCharPos()>=0){
+               seterror(ExecLine.getErrorCharPos(), ExecLine.getErrorMessage());
+               lerror= line;
+               return line;
+           }
+           kk = ExecLine.skipspaces( S, 1,kk);
+           if( kk < j ){
+               seterror( kk, "Extra Characters at the end of command");
+               lerror = line;
+               return line;
+           }  
+           X = ExecLine.getResult();
         }
-        kk = ExecLine.skipspaces( S, 1,kk);
-        if( kk < j ){
-            seterror( kk, "Extra Characters at the end of command");
-            lerror = line;
-            return line;
-        }  
-        Object X = ExecLine.getResult();
-        
         if( X instanceof Integer)
             if( ((Integer)X).intValue()==0) X = new Boolean(false);
             else X = new Boolean(true);
