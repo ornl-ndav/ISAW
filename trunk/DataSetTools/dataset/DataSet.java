@@ -30,7 +30,15 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.43  2004/06/15 15:42:43  dennis
+ *    Now prevents users from adding Data blocks, observers, attributes, etc. to
+ *  the EMPTY_DATA_SET singleton.  Enforces the immutability of the
+ *  EMPTY_DATA_SET object by adding conditional statements to check for the
+ *  EMPTY_DATA_SET to methods that alter the DataSet.
+ *    Minor improvement to code format.
+ *
  *  Revision 1.42  2004/05/25 20:04:37  kramer
+ *
  *  Implemented the new inherited methods from the interface IAttributeList that
  *  get attribute values.
  *
@@ -271,6 +279,7 @@ public class DataSet implements IAttributeList,
     setTitle( title );
   }
 
+
   /**
    * Constructs an empty data set with the specified title, initial log 
    * string, units and labels. 
@@ -314,6 +323,7 @@ public class DataSet implements IAttributeList,
     this( title, log_info, "X UNITS", "X LABEL", "Y UNITS", "Y LABEL");
   }
 
+
   /**
   * Constructs an empty data set with no log info and an empty string for
   * the title.  This routine creates a data set that will then be filled up
@@ -325,26 +335,31 @@ public class DataSet implements IAttributeList,
   *         <li> false means that the XMLread assumes that the DataSet tag has
   *              been read but NOT its xml attributes
   *          </ul>
-  *  @see #XMLread( java.io.InputStream)
+  *  @see #XMLread( java.io.InputStream )
   */ 
-  public DataSet( boolean xmlStandAlone)
-  { this("",(String)(null));
+  public DataSet( boolean xmlStandAlone )
+  { 
+    this("",(String)(null));
     this.xmlStandAlone = xmlStandAlone;
   }
 
-   /**
+
+ /**
   * Constructs an empty data set with no log info and an empty string for
   * the title.  This routine creates a data set that will then be filled up
   * by the XMLread method<P>
   *
   *  xmlStandAlone   will be set to false
- 
-  *  @see #XMLread( java.io.InputStream)
-  */ 
- public DataSet( )
-  { this("",(String)(null));
+  *
+  *  @see #XMLread( java.io.InputStream )
+  */
+  public DataSet( )
+  { 
+    this("",(String)(null));
     this.xmlStandAlone = false;
   }
+
+
   /**
    *  Add the specified object to the list of observers to notify when this
    *  observable object changes.
@@ -354,6 +369,11 @@ public class DataSet implements IAttributeList,
    */
    public void addIObserver( IObserver iobs )
    {
+     if ( this == EMPTY_DATA_SET )
+     {
+       System.out.println("WARNING: Adding IObserver to EMPTY_DATA_SET");
+       return;
+     }
      observers.addIObserver( iobs );
    }
 
@@ -396,6 +416,7 @@ public class DataSet implements IAttributeList,
      observers.notifyIObservers( this, reason );
    }
 
+
   /**
    *  Get a copy of the list of observers.  This method is needed for
    *  serializing a DataSet.  In particular, if a DataSet is serialized, all
@@ -424,9 +445,13 @@ public class DataSet implements IAttributeList,
    */
    public void setIObserverList( IObserverList list )
    {
+     if ( this == EMPTY_DATA_SET )
+     { 
+       System.out.println("WARNING: EMPTY_DATA_SET.setIObserverList() called");
+       return;
+     }
      observers = (IObserverList)list.clone();
    }
-
 
 
   /**
@@ -521,6 +546,7 @@ public class DataSet implements IAttributeList,
     return flag;
   }
 
+
   /**
    *  Toggle the selected flag of the specified Data object to the specified 
    *  value.  If the index is not valid, there is no effect.
@@ -535,6 +561,7 @@ public class DataSet implements IAttributeList,
     else
       System.out.println("Error: toggleSelectFlag called with invalid index");
   }
+
 
   /**
    *  Get the index of the most recently selected Data object in this DataSet.
@@ -612,6 +639,12 @@ public class DataSet implements IAttributeList,
    */
   public void setSelectedInterval( ClosedInterval interval  )
   {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.setSelectedIntervall() " +
+                         "called");
+      return;
+    }
     selected_interval = interval;
   }
 
@@ -783,6 +816,7 @@ public class DataSet implements IAttributeList,
       return INVALID_INDEX;
   }
 
+
   /**
    *  Clear all group_ID information in this DataSet by setting all group IDs
    *  to INVALID_GROUP_ID.
@@ -850,6 +884,7 @@ public class DataSet implements IAttributeList,
       pointed_at_index = INVALID_INDEX;
   }
 
+
   /**
    *  Get the index of a Data object that is to be considered "pointed at"
    *  temporarily by the user. 
@@ -877,8 +912,15 @@ public class DataSet implements IAttributeList,
    */
   public void setPointedAtX( float x )
   {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.setPointedAtX() called");
+      return;
+    }
+
     pointed_at_x = x;
   }
+
 
   /**
    *  Get the "x" value that is to be considered "pointed at"
@@ -903,6 +945,12 @@ public class DataSet implements IAttributeList,
    */
   public void setTitle( String title ) 
   { 
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.setTitle() called");
+      return;
+    }
+
     this.title = title; 
 
     StringAttribute title_attr = new StringAttribute( Attribute.TITLE, title );
@@ -921,14 +969,27 @@ public class DataSet implements IAttributeList,
    */
   public void setOp_log( OperationLog op_log ) 
   { 
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.setOp_log() called");
+      return;
+    }
+
     this.op_log = (OperationLog)op_log.clone(); 
   }
+
 
   /**
    * Copy the operation log from the specified the data set
    */
   public void copyOp_log( DataSet data_set )
   { 
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.copyOp_log() called");
+      return;
+    }
+
     this.op_log = (OperationLog)data_set.getOp_log().clone();
   }
 
@@ -941,6 +1002,12 @@ public class DataSet implements IAttributeList,
    */
   public void addLog_entry( String log_info )
   {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.addLog_entry() called");
+      return;
+    }
+
     this.op_log.addEntry( log_info );
   }
 
@@ -1015,6 +1082,12 @@ public class DataSet implements IAttributeList,
    */
   public void addData_entry( Data entry )
   {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.addData_entry() called");
+      return;
+    }
+
     data.addElement( entry );
   }
 
@@ -1031,11 +1104,18 @@ public class DataSet implements IAttributeList,
    */
   public void insertData_entry( Data entry, int index )
   {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.insertData_entry() called");
+      return;
+    }
+
     if ( index >= 0 && index < data.size() )
       data.insertElementAt( entry, index );
     else
       data.addElement( entry );
   }
+
 
   /**
    * Replaces the Data object at the spcecified position in the list of Data 
@@ -1077,20 +1157,27 @@ public class DataSet implements IAttributeList,
    */
   public boolean replaceData_entry_with_id( Data entry, int group_id )
   {
-      int id=-1;
-      for( int i=0 ; i<this.getNum_entries() ; i++ ){
-          if(group_id==this.getData_entry(i).getGroup_ID()){
-              id=i;
-              i=this.getNum_entries();
-          }
-      }
-      if(id==-1){
-          this.addData_entry(entry);
-      }else{
-          this.replaceData_entry(entry,id);
-      }
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.replaceData_entry_with_id()"+
+                         " called");
+      return false;
+    }
 
-      return true;
+    int index = -1;
+    for( int i=0 ; i<this.getNum_entries() ; i++ )
+      if( group_id == this.getData_entry(i).getGroup_ID() )
+      {
+        index = i;
+        i     = this.getNum_entries();
+      }
+    
+    if( index == -1 )
+      this.addData_entry( entry );
+    else
+      this.replaceData_entry( entry, index );
+
+    return true;
   }
 
 
@@ -1102,7 +1189,8 @@ public class DataSet implements IAttributeList,
    */
   public void removeData_entry( int index )
   {
-     data.removeElementAt( index );
+    if ( index >= 0 && index < data.size() )
+      data.removeElementAt( index );
   }
 
 
@@ -1134,8 +1222,6 @@ public class DataSet implements IAttributeList,
   }
 
 
-
-
   /**
    * Returns the number of operators for the DataSet
    */
@@ -1151,9 +1237,11 @@ public class DataSet implements IAttributeList,
    */
   public DataSetOperator getOperator( int index )
   {
-     return (DataSetOperator)operators.elementAt( index );
+     if ( index >= 0 && index < operators.size() )
+       return (DataSetOperator)operators.elementAt( index );
+     else
+       return null;
   }
-
 
 
   /**
@@ -1190,6 +1278,12 @@ public class DataSet implements IAttributeList,
    */
   public void addOperator( DataSetOperator operator )
   {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.addOperator() called");
+      return;
+    }
+
     operator.setDataSet( this );
     operators.addElement( operator );
     operator.setDefaultParameters();
@@ -1252,6 +1346,7 @@ public class DataSet implements IAttributeList,
     return range;
   }
 
+
   /**
    * Get the range of Y values for the collection of Data objects in this
    * data set.
@@ -1288,8 +1383,6 @@ public class DataSet implements IAttributeList,
   }
 
 
-
-
   /**
    * Get the maximum number of X steps for the Data objects in this DataSet.
    *
@@ -1318,7 +1411,6 @@ public class DataSet implements IAttributeList,
   }
 
 
-
   /**
    * Returns true if the current DataSet has the same x and y units as the
    * specified DataSet. 
@@ -1339,53 +1431,97 @@ public class DataSet implements IAttributeList,
        return false;
   }
 
+
   /**
    * Returns the units for the "X" axis 
    */
   public String getX_units() { return x_units; }
+
 
   /**
    * Sets the units for the "X" axis 
    *
    * @param  units   String giving the units for the "X" axis
    */
-  public void setX_units( String units ) { this.x_units = units; }
+  public void setX_units( String units )
+  { 
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.setX_units() called");
+      return;
+    }
+
+    this.x_units = units; 
+  }
+
 
   /**
    * Returns the label for the "X" axis 
    */
   public String getX_label() { return x_label; }
 
+
   /**
    * Sets the label for the "X" axis 
    *
    * @param  label  String giving the label for the "X" axis
    */
-  public void setX_label( String label ) { this.x_label = label; }
+  public void setX_label( String label ) 
+  { 
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.setX_label() called");
+      return;
+    }
+
+    this.x_label = label; 
+  }
+
 
   /**
    * Returns the units for the "Y" scale 
    */
   public String getY_units() { return y_units; }
 
+
   /**
    * Sets the units for the "Y" scale 
    *
    * @param  units   String giving the units for the "Y" axis
    */
-  public void setY_units( String units ) { this.y_units = units; }
+  public void setY_units( String units ) 
+  { 
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.setY_units() called");
+      return;
+    }
+
+     this.y_units = units; 
+  }
+
 
   /**
    * Returns the label for the "Y" axis 
    */
   public String getY_label() { return y_label; }
 
+
   /**
    * Sets the label for the "Y" axis 
    *
    * @param  label  String giving the label for the "Y" axis
    */
-  public void setY_label( String label ) { this.y_label = label; }
+  public void setY_label( String label ) 
+  { 
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.setY_label() called");
+      return;
+    }
+
+    this.y_label = label; 
+  }
 
  
   /** 
@@ -1402,6 +1538,7 @@ public class DataSet implements IAttributeList,
       ((Data)data.elementAt(i)).setLabel( name );
   }
 
+
   /**
    *  Get a reference to the list of attributes for this DataSet object.
    *
@@ -1409,8 +1546,15 @@ public class DataSet implements IAttributeList,
    */
   public AttributeList getAttributeList()
   {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.getAttributeList() called");
+      return new AttributeList();
+    }
+
     return attr_list;
   }
+
 
   /**
    *  Set the list of attributes for this DataSet object to be a COPY of the 
@@ -1418,12 +1562,19 @@ public class DataSet implements IAttributeList,
    */
   public void setAttributeList( AttributeList attr_list )
   {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.setAttributeList() called");
+      return;
+    }
+
     if ( !attr_list.equals( this.attr_list ))             // only clone if it's
       this.attr_list = (AttributeList)attr_list.clone();  // a new attr_list
 
     setTitle( this.title );   // force the attribute list to contain the
                               // correct title
   }
+
 
   /**
    * Gets the number of attributes set for this object.
@@ -1432,6 +1583,7 @@ public class DataSet implements IAttributeList,
   {
     return attr_list.getNum_attributes();
   }
+
 
   /**
    * Remove the attribute at the specified index from the list of
@@ -1442,6 +1594,7 @@ public class DataSet implements IAttributeList,
   public void removeAttribute( int index ){
       attr_list.removeAttribute(index);
   }
+
 
   /**
    * Remove the attribute with the specified name from the list of
@@ -1454,6 +1607,7 @@ public class DataSet implements IAttributeList,
       attr_list.removeAttribute( name );
   }
 
+
   /**
    * Set the value of the specified attribute in the list of attributes.
    * If the attribute is already present in the list, the value is changed
@@ -1465,6 +1619,12 @@ public class DataSet implements IAttributeList,
    */
   public void setAttribute( Attribute attribute )
   {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.setAttribute() called");
+      return;
+    }
+
     attr_list.setAttribute( attribute );
   }
 
@@ -1484,8 +1644,15 @@ public class DataSet implements IAttributeList,
    */
   public void setAttribute( Attribute attribute, int index )
   {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.setAttribute(,) called");
+      return;
+    }
+
     attr_list.setAttribute( attribute, index );
   }
+
 
   /**
    * Get the attribute at the specified index from the list of
@@ -1497,6 +1664,7 @@ public class DataSet implements IAttributeList,
   {
     return attr_list.getAttribute( index );
   }
+
   
   /**
    * Get the attribute with the specified name from the list of
@@ -1535,7 +1703,6 @@ public class DataSet implements IAttributeList,
   }
 
 
-
   /**
    *  Sort the list of Data entries based on the specified attribute.  At this
    *  time Java's sort method will be used regardless of the sort_type 
@@ -1555,7 +1722,6 @@ public class DataSet implements IAttributeList,
    *  @return    This returns true if the DataSet entries were sorted and 
    *             returns false otherwise.
    */
-
   public boolean Sort( String attr_name, boolean increasing, int sort_type )
   {
     if ( data.size() <= 1 )      // empty or short list is sorted by default
@@ -1579,7 +1745,6 @@ public class DataSet implements IAttributeList,
    *  @return    This returns true if the DataSet entries were sorted and
    *             returns false otherwise.
    */
-
   public boolean JavaSort( String attr_name, boolean increasing )
   {
     int n = data.size();
@@ -1623,6 +1788,7 @@ public class DataSet implements IAttributeList,
     return last_sort_attribute;
   }
 
+
   /**
    * Combine the attribute list of the specified DataSet with the attribute
    * list of the current DataSet to obtain a new attribute list for the
@@ -1633,6 +1799,13 @@ public class DataSet implements IAttributeList,
    */
    public void CombineAttributeList( DataSet ds )
    {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.CombineAttributeList() "+
+                         "called");
+      return;
+    }
+
      attr_list.combine( ds.getAttributeList() );
    }
 
@@ -1654,6 +1827,12 @@ public class DataSet implements IAttributeList,
   {
     if ( ds == null )
       return;
+
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.shallowCopy() called");
+      return;
+    }
 
     if ( this.equals( ds ) )
     {
@@ -1694,6 +1873,7 @@ public class DataSet implements IAttributeList,
     this.notifyIObservers( IObserver.DATA_CHANGED );
   }
 
+
   /**
    *  Copy the contents of another DataSet into the current DataSet.  This
    *  performs a complete "deep copy" EXCEPT for the list of observers and the
@@ -1708,6 +1888,12 @@ public class DataSet implements IAttributeList,
     if ( this.equals( ds ) )
     {
       this.notifyIObservers( IObserver.DATA_CHANGED );
+      return;
+    }
+
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.copy() called");
       return;
     }
 
@@ -1751,13 +1937,18 @@ public class DataSet implements IAttributeList,
   }
 
 
-
   /**
    * Clone the current DataSet, including the operation log, the list of
    * operators and the list of individual Data objects.
    */
-   public Object clone()
+  public Object clone()
   {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.clone() called");
+      return this;
+    }
+    
     DataSet new_ds = empty_clone();
                                       // now copy the list of Data objects.
     Data d;
@@ -1779,8 +1970,14 @@ public class DataSet implements IAttributeList,
    * Clone an EMPTY DataSet with the same title, units, label, operation log,
    * and operators as the original data set.
    */
-   public DataSet empty_clone()
+  public DataSet empty_clone()
   {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.empty_clone() called");
+      return this;
+    }
+
     DataSet new_ds = new DataSet( getTitle(),           // get a new data set
                                   (OperationLog) getOp_log().clone(),
                                   getX_units(),
@@ -1807,12 +2004,22 @@ public class DataSet implements IAttributeList,
     return new_ds;
   }
 
+ 
+ /**
+  *  Set flag to indicate whether this DataSet will be written as a complete
+  *  "stand alone" XML file, or will be written as part of a larger XML file
+  *  when the XMLwrite method is called. 
+  *
+  *  @param standalone  True means the DataSet will be written as a complete
+  *                     XML file.
+  */
   public void setStandAlone( boolean standalone)
-    {
-      xmlStandAlone = standalone;
-    }
+  {
+     xmlStandAlone = standalone;
+  }
 
-  /**
+
+ /**
   * Implements the IXmlIO interface.  This routine "writes" the
   * dataset. In standalone mode it writes the xml header.
   *
@@ -1826,7 +2033,8 @@ public class DataSet implements IAttributeList,
   *
   */
   public boolean XMLwrite( OutputStream stream, int mode )
-  { StringBuffer SS = new StringBuffer(200);
+  { 
+    StringBuffer SS = new StringBuffer(200);
     if( xmlStandAlone)
     { SS.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
      
@@ -1876,19 +2084,8 @@ public class DataSet implements IAttributeList,
     return true;
   }
 
-  //Internal to external names for fields
-  private String XLateDSFields=":TITLE;"+
-                               DSFieldString.TITLE+":"+
-                              "X_UNITS;"+
-                               DSFieldString.X_UNITS+":"+
-                              "X_LABEL;"+
-                               DSFieldString.X_LABEL+":"+ 
-                              "Y_LABEL;"+
-                               DSFieldString.Y_LABEL+":"+ 
-                              "Y_UNITS;"+
-                               DSFieldString.Y_UNITS+":";
 
-  /**
+ /**
   * Implements the IXmlIO interface.  This routine "reads" the
   * dataset. In standalone mode it reads past the xml header. All reads 
   * assume the starting tag ( here DataSet) has already been consumed
@@ -1901,6 +2098,24 @@ public class DataSet implements IAttributeList,
   */
   public boolean XMLread( InputStream stream )
   { 
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.XMLread() called");
+      return false;
+    }
+
+    // String to ranslate internal to external names for fields
+    String XLateDSFields=":TITLE;"+
+                               DSFieldString.TITLE+":"+
+                              "X_UNITS;"+
+                               DSFieldString.X_UNITS+":"+
+                              "X_LABEL;"+
+                               DSFieldString.X_LABEL+":"+
+                              "Y_LABEL;"+
+                               DSFieldString.Y_LABEL+":"+
+                              "Y_UNITS;"+
+                               DSFieldString.Y_UNITS+":";
+
     String Tag;
     if( xmlStandAlone)
     { Tag = xml_utils.getTag( stream);
@@ -2000,6 +2215,8 @@ public class DataSet implements IAttributeList,
      
     return true;
   }
+
+
   /**
    *  Provide an identifier string for this DataSet
    */
@@ -2009,8 +2226,10 @@ public class DataSet implements IAttributeList,
   }
   
   
-  /**
-  *  Invokes the method {@link AttributeList#getAttributeTitle() getAttributeTitle()} from {@link AttributeList AttributeList}
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getAttributeTitle() getAttributeTitle()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getAttributeTitle()
@@ -2018,8 +2237,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getAttributeTitle();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getAttributeLabel() getAttributeLabel()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method
+  *    {@link AttributeList#getAttributeLabel() getAttributeLabel()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getAttributeLabel()
@@ -2027,8 +2249,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getAttributeLabel();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getDS_TAG() getDS_TAG()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getDS_TAG() getDS_TAG()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public int getDS_TAG()
@@ -2036,8 +2261,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getDS_TAG();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getUser() getUser()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getUser() getUser()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getUser()
@@ -2045,8 +2273,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getUser();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getInstrumentName() getInstrumentName()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getInstrumentName() getInstrumentName()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getInstrumentName()
@@ -2054,8 +2285,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getInstrumentName();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getInstrumentType() getInstrumentType()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getInstrumentType() getInstrumentType()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public int getInstrumentType()
@@ -2063,8 +2297,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getInstrumentType();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getFileName() getFileName()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getFileName() getFileName()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getFileName()
@@ -2072,8 +2309,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getFileName();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getRunTitle() getRunTitle()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getRunTitle() getRunTitle()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getRunTitle()
@@ -2081,8 +2321,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getRunTitle();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getRunNumber() getRunNumber()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getRunNumber() getRunNumber()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public int[] getRunNumber()
@@ -2090,8 +2333,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getRunNumber();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getEndDate() getEndDate()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getEndDate() getEndDate()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getEndDate()
@@ -2099,8 +2345,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getEndDate();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getEndTime() getEndTime()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getEndTime() getEndTime()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getEndTime()
@@ -2108,8 +2357,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getEndTime();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getStartDate() getStartDate()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getStartDate() getStartDate()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getStartDate()
@@ -2117,8 +2369,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getStartDate();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getStartTime() getStartTime()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getStartTime() getStartTime()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getStartTime()
@@ -2126,8 +2381,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getStartTime();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getUpdateTime() getUpdateTime()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getUpdateTime() getUpdateTime()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getUpdateTime()
@@ -2135,8 +2393,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getUpdateTime();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getDetectorPosition() getDetectorPosition()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getDetectorPosition() getDetectorPosition()} from
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public DetectorPosition getDetectorPosition()
@@ -2144,8 +2405,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getDetectorPosition();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getRawAngle() getRawAngle()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getRawAngle() getRawAngle()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getRawAngle()
@@ -2153,8 +2417,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getRawAngle();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getRawDistance() getRawDistance()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getRawDistance() getRawDistance()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getRawDistance()
@@ -2162,8 +2429,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getRawDistance();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getSolidAngle() getSolidAngle()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getSolidAngle() getSolidAngle()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getSolidAngle()
@@ -2171,8 +2441,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getSolidAngle();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getOmega() getOmega()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getOmega() getOmega()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getOmega()
@@ -2180,8 +2453,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getOmega();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getDelta2Theta() getDelta2Theta()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getDelta2Theta() getDelta2Theta()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getDelta2Theta()
@@ -2189,8 +2465,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getDelta2Theta();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getEfficiencyFactor() getEfficiencyFactor()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getEfficiencyFactor() getEfficiencyFactor()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getEfficiencyFactor()
@@ -2198,8 +2477,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getEfficiencyFactor();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getDetectorIDs() getDetectorIDs()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getDetectorIDs() getDetectorIDs()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public int[] getDetectorIDs()
@@ -2207,8 +2489,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getDetectorIDs();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getSegmentIDs() getSegmentIDs()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getSegmentIDs() getSegmentIDs()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public int[] getSegmentIDs()
@@ -2216,8 +2501,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getSegmentIDs();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getGroupID() getGroupID()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getGroupID() getGroupID()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public int getGroupID()
@@ -2225,8 +2513,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getGroupID();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getTimeFieldType() getTimeFieldType()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getTimeFieldType() getTimeFieldType()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public int getTimeFieldType()
@@ -2234,8 +2525,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getTimeFieldType();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getCrate() getCrate()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getCrate() getCrate()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public int[] getCrate()
@@ -2243,8 +2537,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getCrate();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getSlot() getSlot()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getSlot() getSlot()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public int[] getSlot()
@@ -2252,8 +2549,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getSlot();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getInput() getInput()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getInput() getInput()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public int[] getInput()
@@ -2261,8 +2561,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getInput();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getDetectorCENDistance() getDetectorCENDistance()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getDetectorCENDistance() getDetectorCENDistance()}
+  *    from {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getDetectorCENDistance()
@@ -2270,8 +2573,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getDetectorCENDistance();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getDetectorCENAngle() getDetectorCENAngle()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getDetectorCENAngle() getDetectorCENAngle()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getDetectorCENAngle()
@@ -2279,8 +2585,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getDetectorCENAngle();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getDetectorCENHeight() getDetectorCENHeight()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getDetectorCENHeight() getDetectorCENHeight()} from
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getDetectorCENHeight()
@@ -2288,8 +2597,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getDetectorCENHeight();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getDetectorDataGrid() getDetectorDataGrid()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getDetectorDataGrid() getDetectorDataGrid()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public IDataGrid getDetectorDataGrid()
@@ -2297,8 +2609,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getDetectorDataGrid();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getInitialPath() getInitialPath()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getInitialPath() getInitialPath()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getInitialPath()
@@ -2306,8 +2621,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getInitialPath();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getEnergyIn() getEnergyIn()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getEnergyIn() getEnergyIn()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getEnergyIn()
@@ -2315,8 +2633,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getEnergyIn();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getNominalEnergyIn() getNominalEnergyIn()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getNominalEnergyIn() getNominalEnergyIn()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getNominalEnergyIn()
@@ -2324,8 +2645,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getNominalEnergyIn();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getEnergyOut() getEnergyOut()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getEnergyOut() getEnergyOut()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getEnergyOut()
@@ -2333,8 +2657,12 @@ public class DataSet implements IAttributeList,
     return attr_list.getEnergyOut();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getNominalSourceToSampleTOF() getNominalSourceToSampleTOF()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getNominalSourceToSampleTOF()
+  *                         getNominalSourceToSampleTOF()} from
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getNominalSourceToSampleTOF()
@@ -2342,8 +2670,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getNominalSourceToSampleTOF();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getSourceToSampleTOF() getSourceToSampleTOF()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getSourceToSampleTOF() getSourceToSampleTOF()} from
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getSourceToSampleTOF()
@@ -2351,8 +2682,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getSourceToSampleTOF();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getT0Shift() getT0Shift()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getT0Shift() getT0Shift()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getT0Shift()
@@ -2360,8 +2694,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getT0Shift();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getSampleChi() getSampleChi()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getSampleChi() getSampleChi()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getSampleChi()
@@ -2369,8 +2706,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getSampleChi();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getSamplePhi() getSamplePhi()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getSamplePhi() getSamplePhi()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getSamplePhi()
@@ -2378,8 +2718,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getSamplePhi();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getSampleOmega() getSampleOmega()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getSampleOmega() getSampleOmega()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getSampleOmega()
@@ -2387,8 +2730,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getSampleOmega();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getSampleOrientation() getSampleOrientation()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getSampleOrientation() getSampleOrientation()} from
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public SampleOrientation getSampleOrientation()
@@ -2396,8 +2742,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getSampleOrientation();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getSampleName() getSampleName()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getSampleName() getSampleName()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getSampleName()
@@ -2405,8 +2754,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getSampleName();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getTemperature() getTemperature()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getTemperature() getTemperature()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getTemperature()
@@ -2414,8 +2766,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getTemperature();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getPressure() getPressure()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getPressure() getPressure()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getPressure()
@@ -2423,8 +2778,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getPressure();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getMagneticField() getMagneticField()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getMagneticField() getMagneticField()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float[] getMagneticField()
@@ -2432,8 +2790,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getMagneticField();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getNumberOfPulses() getNumberOfPulses()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getNumberOfPulses() getNumberOfPulses()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public int getNumberOfPulses()
@@ -2441,8 +2802,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getNumberOfPulses();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getTotalCount() getTotalCount()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getTotalCount() getTotalCount()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getTotalCount()
@@ -2450,8 +2814,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getTotalCount();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getQValue() getQValue()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getQValue() getQValue()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getQValue()
@@ -2459,8 +2826,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getQValue();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getGSASCalib() getGSASCalib()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getGSASCalib() getGSASCalib()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public GsasCalib getGSASCalib()
@@ -2468,8 +2838,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getGSASCalib();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getGSASIParm() getGSASIParm()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getGSASIParm() getGSASIParm()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getGSASIParm()
@@ -2477,8 +2850,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getGSASIParm();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getLatticeParam() getLatticeParam()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getLatticeParam() getLatticeParam()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float[] getLatticeParam()
@@ -2486,8 +2862,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getLatticeParam();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getOrientMatrix() getOrientMatrix()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getOrientMatrix() getOrientMatrix()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getOrientMatrix()
@@ -2495,8 +2874,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getOrientMatrix();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getOrientFile() getOrientFile()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getOrientFile() getOrientFile()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getOrientFile()
@@ -2504,8 +2886,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getOrientFile();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getCellVolume() getCellVolume()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getCellVolume() getCellVolume()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getCellVolume()
@@ -2513,8 +2898,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getCellVolume();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getSCDCalid() getSCDCalid()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getSCDCalid() getSCDCalid()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getSCDCalid()
@@ -2522,8 +2910,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getSCDCalid();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getSCDCalibFile() getSCDCalibFile()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getSCDCalibFile() getSCDCalibFile()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getSCDCalibFile()
@@ -2531,8 +2922,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getSCDCalibFile();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getPixelInfoList() getPixelInfoList()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getPixelInfoList() getPixelInfoList()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public PixelInfoList getPixelInfoList()
@@ -2540,8 +2934,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getPixelInfoList();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getDSType() getDSType()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getDSType() getDSType()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getDSType()
@@ -2549,8 +2946,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getDSType();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getTimeOffset() getTimeOffset()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getTimeOffset() getTimeOffset()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public float getTimeOffset()
@@ -2558,8 +2958,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getTimeOffset();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getStartTimeSec() getStartTimeSec()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getStartTimeSec() getStartTimeSec()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public int getStartTimeSec()
@@ -2567,8 +2970,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getStartTimeSec();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getTimeOfDay() getTimeOfDay()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getTimeOfDay() getTimeOfDay()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getTimeOfDay()
@@ -2576,8 +2982,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getTimeOfDay();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getDayOfMonth() getDayOfMonth()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getDayOfMonth() getDayOfMonth()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getDayOfMonth()
@@ -2585,8 +2994,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getDayOfMonth();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getUnknown() getUnknown()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getUnknown() getUnknown()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getUnknown()
@@ -2594,8 +3006,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getUnknown();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getInvalidDataSet() getInvalidDataSet()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getInvalidDataSet() getInvalidDataSet()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getInvalidDataSet()
@@ -2603,8 +3018,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getInvalidDataSet();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getMonitorData() getMonitorData()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getMonitorData() getMonitorData()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getMonitorData()
@@ -2612,8 +3030,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getMonitorData();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getSampleData() getSampleData()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getSampleData() getSampleData()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getSampleData()
@@ -2621,8 +3042,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getSampleData();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getPulseHeightData() getPulseHeightData()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getPulseHeightData() getPulseHeightData()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getPulseHeightData()
@@ -2630,8 +3054,11 @@ public class DataSet implements IAttributeList,
     return attr_list.getPulseHeightData();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getTemperatureData() getTemperatureData()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getTemperatureData() getTemperatureData()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getTemperatureData()
@@ -2639,14 +3066,24 @@ public class DataSet implements IAttributeList,
     return attr_list.getTemperatureData();
   }
 
-  /**
-  *  Invokes the method {@link AttributeList#getPressureData() getPressureData()} from {@link AttributeList AttributeList}
+
+ /**
+  *  Invokes the method 
+  *    {@link AttributeList#getPressureData() getPressureData()} from 
+  *    {@link AttributeList AttributeList}
   *  on the field attr_list.
   */
   public String getPressureData()
   {
     return attr_list.getPressureData();
   }
+
+
+/* -----------------------------------------------------------------------
+ *
+ *  PRIVATE METHODS
+ *
+ */
 
   /*
    *  Trace the finalization of objects
@@ -2674,10 +3111,16 @@ public class DataSet implements IAttributeList,
  *  and new fields that are required in the current version but are not 
  *  present in the serialized version being read.
  */
-
   private void readObject( ObjectInputStream s ) throws IOException, 
                                                         ClassNotFoundException 
   {
+    if ( this == EMPTY_DATA_SET )
+    {
+      System.out.println("WARNING: EMPTY_DATA_SET.readObject() called");
+      return;
+    }
+
+
     s.defaultReadObject();               // read basic information
 
     if ( IsawSerialVersion != 1 )
