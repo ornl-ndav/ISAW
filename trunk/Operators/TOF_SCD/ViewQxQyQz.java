@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/08/30 19:45:49  rmikk
+ * Eliminated reference to a operator used only for testing
+ *
  * Revision 1.1  2002/08/30 15:36:13  rmikk
  * Initial Checkin
  *
@@ -250,8 +253,7 @@ public class ViewQxQyQz extends GenericTOF_SCD
          System.exit(0);
         }
        */
-      Operator op = new Operators.ChgOp( ds);
-      op.getResult();
+     
      
     ViewQxQyQz V = new ViewQxQyQz( ds, S );
     System.out.println( V.getResult());
