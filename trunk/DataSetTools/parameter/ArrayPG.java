@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2003/09/15 22:48:54  bouzekc
+ *  initGUI(Vector) now calls setValue() if the passed-in value is not null.
+ *
  *  Revision 1.28  2003/09/13 23:29:45  bouzekc
  *  Moved calls from setValid(true) to validateSelf().
  *
@@ -312,64 +315,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
 
       return new Vector(  );
     }
-
-    /*if( S == null ) {
-       return null;
-       }
-       //now, the array may come in in a "bad" format...i.e. [String1, String2],
-       //rather than ["String1","String2"] which is what execOneLine expects.  So,
-       //we'll parse the String into a Vector
-       String temp          = S;
-       String expansion;
-       String frontTemp;
-       String backTemp;
-       Vector elements      = new Vector(  );
-       Vector expanded;
-       execOneLine execLine = new execOneLine(  );
-       int colIndex;
-       //pull out the brackets
-       temp   = temp.replace( '[', ' ' );
-       temp   = temp.replace( ']', ' ' );
-       //pull out the quotes
-       temp = temp.replace( '"', ' ' );
-       //extract the elements
-       StringTokenizer st = new StringTokenizer( temp, "," );
-       while( st.hasMoreTokens(  ) ) {
-         //trim out the white space
-         elements.add( st.nextToken(  ).trim(  ) );
-       }
-       //expand on a:b...if this is here, it will be an element in the Vector.
-       //Backwards traverse so we can remove a:b elements and parse them
-       for( int k = elements.size(  ) - 1; k >= 0; k-- ) {
-         //ignore bad types...we will assume that they wanted a String
-         expansion   = elements.elementAt( k )
-                               .toString(  );
-         colIndex = expansion.indexOf( ":" );
-         if( colIndex > 0 ) {
-           //we need to trap things like C:\\windows
-           frontTemp   = expansion.substring( 0, colIndex );
-           backTemp    = expansion.substring( colIndex + 1, expansion.length(  ) );
-           try {
-             //try this as a digit:digit pair.  We don't care about the parse,
-             //just whether or not we can
-             Integer.parseInt( frontTemp );
-             Integer.parseInt( backTemp );
-             //if we got this far, we are good to go, so remove the element
-             elements.remove( k );
-             //assuming this is an integer expansion, and execOneLine needs "[]"
-             expansion = "[" + expansion + "]";
-             //add the Collection (i.e. new Vector)
-             elements.addAll( k, parseLine( execLine, expansion ) );
-           } catch( NumberFormatException nfe ) {
-             //not an expandable integer list, so just drop this exception on the
-             //floor
-           }
-         }
-       }
-       //now return it to the correct String format
-       S = ArrayPG.ArraytoString( elements );
-       //now we can send it to execOneLine
-       return parseLine( execLine, S );*/
   }
 
   /**
@@ -475,6 +420,9 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     if( initialized ) {
       return;  // don't initialize more than once
     }
+    if( init_values != null ) {
+      setValue( init_values );
+    }
 
     entrywidget = new EntryWidget( new JTextField( ArraytoString( value ) ) );
 
@@ -553,6 +501,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
      int dy = 70;
      Vector vals = new Vector(  );
      vals.add( "C:\\\\Windows\\System" );
+     vals.add( "C:\\\\Windows\\System\\My Documents" );
      vals.add( "/home/myhome/atIPNS" );
      vals.add( "some/more\\random@garbage!totry2" );
      vals.add( "10:15" );
@@ -567,7 +516,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
         fpg = new ArrayPG( "b", vals );
         System.out.println( fpg );
         fpg.setEnabled( false );
-        fpg.init(  );
+        fpg.initGUI( null  );
         fpg.showGUIPanel( 0, y );
         y += dy;
         vals = new Vector(  );
@@ -577,7 +526,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
         fpg = new ArrayPG( "c", vals, false );
         System.out.println( fpg );
         fpg.setEnabled( false );
-        fpg.init(  );
+        fpg.initGUI( null );
         fpg.showGUIPanel( 0, y );
         y += dy;
         vals = new Vector(  );
@@ -587,10 +536,10 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
         fpg = new ArrayPG( "d", vals, true );
         System.out.println( fpg );
         fpg.setDrawValid( true );
-        fpg.init( vals );
+        fpg.initGUI( vals );
         fpg.showGUIPanel( 0, y );
-        y += dy;
-     }*/
+        y += dy;*/
+     }
 
   /**
    * Determines how many elements are of the same class.
