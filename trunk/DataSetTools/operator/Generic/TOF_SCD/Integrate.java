@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.34  2004/03/01 20:51:22  dennis
+ * Minor efficiency improvement in checkReal()
+ * Removed extraneous {...} in integrateDetector()
+ *
  * Revision 1.33  2004/01/24 20:20:45  bouzekc
  * Removed unused variables and unused imports.  Made unused private method
  * getObs a public static method.
@@ -724,13 +728,11 @@ public class Integrate extends GenericTOF_SCD{
       return new ErrorString("no minimum pixel found");
 
     // get the calibration for this
-    {
-      float[] calib=(float[])data.getAttributeValue(Attribute.SCD_CALIB);
-      if(calib==null)
-        return new ErrorString("Could not find calibration for detector "
-                               +detnum);
-      pkfac.calib(calib);
-    }
+    
+    float[] calib=(float[])data.getAttributeValue(Attribute.SCD_CALIB);
+    if(calib==null)
+     return new ErrorString("Could not find calibration for detector " +detnum);
+    pkfac.calib(calib);
 
     // get the xscale from the data to give to the new peaks objects
     XScale times=data.getX_scale();
@@ -1005,8 +1007,8 @@ public class Integrate extends GenericTOF_SCD{
        {
          intensity = getObs( ds, ids[i][j], k );
          slice_total += intensity;
-         if ( i >= first_x  &&  i <= last_x &&    // check if pixel in peak region
-              j >= first_y  &&  j <= last_y )     // of this slice
+         if ( i >= first_x  &&  i <= last_x &&    // check if pixel in peak 
+              j >= first_y  &&  j <= last_y )     // region of this slice
            p_sig_plus_back += intensity;
 
          if ( intensity > slice_peak )
@@ -1559,12 +1561,11 @@ public class Integrate extends GenericTOF_SCD{
    * Determines whether the peak can be within the realspace limits specified
    */
   private static boolean checkReal(Peak peak, float[][] lim){
-    float xcm=peak.xcm();
-    float ycm=peak.ycm();
     float wl=peak.wl();
-
     if(wl==0f) return false;
 
+    float xcm=peak.xcm();
+    float ycm=peak.ycm();
     if( xcm>=lim[0][0] && xcm<=lim[0][1] ){
       if( ycm>=lim[1][0] && ycm<=lim[1][1] ){
         if( wl>=lim[2][0] && wl<=lim[2][1] ){
