@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.71  2003/03/20 22:48:13  dennis
+ *  Calculate OMEGA using raw angle instead of focused angle.
+ *
  *  Revision 1.70  2003/03/17 23:25:58  dennis
  *  Fixed bug introduced with new DataGrid concept.  Now (again)
  *  properly interprets Runfile.RawFlightPath() as sample to
@@ -983,13 +986,6 @@ private float CalculateEIn()
       final_path = getAverageFlightPath(group_segments, histogram_num, false);
     }
 
-   //if ( instrument_type == InstrumentType.TOF_SCD )  // ###### temporary fix
-   //      angle -= (float)Math.PI;                    // for SCD since runfile
-                                                       // rotates detector to
-                                                       // plus 90 degrees.
-                                                       // 1 of 2 places this is
-                                                       // adjusted !!!
-
     // We should probably use the following to form weighted average of 
     // effective detector angles, heights and flight path lengths, for all 
     // other instruments, but for now, it doesn't work since the detector
@@ -1043,7 +1039,11 @@ private float CalculateEIn()
     // Omega
     if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
     {
-      float omega = tof_calc.Omega( angle * 180 / 3.14159264f );
+      float raw_angle = 0f;
+      if ( group_segments.length >= 0 )
+        raw_angle = (float)run_file.RawDetectorAngle( group_segments[0] );
+
+      float omega = tof_calc.Omega( raw_angle );
       FloatAttribute omega_attr = new FloatAttribute( Attribute.OMEGA, omega );
       attr_list.setAttribute( omega_attr );
     }
