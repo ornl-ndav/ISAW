@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.4  2002/03/04 20:29:54  pfpeterson
+ * Updated mac support.
+ *
  * Revision 1.3  2002/02/18 21:57:09  pfpeterson
  * Fixed nexus and windows problem.
  *
@@ -87,6 +90,8 @@ public class IsawInstaller extends JFrame
     // fields
     private static final String WIN_ID      = "windows";
     private static final String LIN_ID      = "linux";
+    private static final String SUN_ID      = "sunos";
+    private static final String MAC_ID      = "mac";
     private static final String UNKNOWN_ID  = "unknown";
 
     // button and label stuff
@@ -140,14 +145,23 @@ public class IsawInstaller extends JFrame
      */
     private String getOS(){
 	String osS=System.getProperty("os.name");
+        osS=osS.trim();
 	if( osS != null ){
+            int index=osS.indexOf(" ");
+            if(index>0){
+                osS=osS.substring(0,index);
+            }
 	    osS=osS.toLowerCase();
 	    if(osS.startsWith(WIN_ID)){
 		operating_system=WIN_ID;
 	    }else if(osS.startsWith(LIN_ID)){
 		operating_system=LIN_ID;
+            }else if(osS.startsWith(SUN_ID)){
+                operating_system=SUN_ID;
+            }else if(osS.startsWith(MAC_ID)){
+                operating_system=MAC_ID;
 	    }else{
-		System.err.println("OS ("+os+") not known");
+		System.err.println("OS ("+osS+") not known");
 		operating_system=UNKNOWN_ID;
 	    }
 	}else{
@@ -282,6 +296,10 @@ public class IsawInstaller extends JFrame
 	    filename=filename+"Isaw_exec.bat";
 	}else if(operating_system.equals(LIN_ID)){
 	    filename=filename+"Isaw_exec.sh";
+        }else if(operating_system.equals(SUN_ID)){
+            filename=filename+"Isaw_exec.sh";
+        }else if(operating_system.equals(MAC_ID)){
+	    filename=filename+"Isaw_exec.bat";
 	}else{
 	    return null;
 	}
@@ -332,6 +350,10 @@ public class IsawInstaller extends JFrame
     private String getJavaExec(){
 	String filename=java.getText();
 	if(operating_system.equals(WIN_ID)){
+	    java.setText("n/a");
+	    return null;
+	}
+	if(operating_system.equals(MAC_ID)){
 	    java.setText("n/a");
 	    return null;
 	}
@@ -401,6 +423,7 @@ public class IsawInstaller extends JFrame
      */
     private void writeBatch(){
 	String filename=batch.getText();
+        if((filename==null)||(filename.equals(NO_BATCH)))return;
 
 	File batchF=new File(filename);
 	if(batchF.exists()){
@@ -459,9 +482,8 @@ public class IsawInstaller extends JFrame
 		+"rem --"+newline
 		+"rem java -cp sgt_v2.jar;IPNS.jar;jnexus.jar;sdds.jar;."
 		+" IsawGUI.Isaw"+newline;
-
 	}else if(operating_system.equals(LIN_ID)){
-	    content="#!/bin/sh\n"
+	    content="#!/bin/sh"+newline
 		+"ISAW="+isaw_home+newline
 		+"JAVA="+java_home+newline
 		+"export LD_LIBRARY_PATH="+lib_home+newline
@@ -469,6 +491,19 @@ public class IsawInstaller extends JFrame
 		+"$JAVA -cp $ISAW:$ISAW/Isaw.jar:$ISAW/IPNS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
 		+" IsawGUI.Isaw"+newline;
+	}else if(operating_system.equals(SUN_ID)){
+	    content="#!/bin/sh"+newline
+		+"ISAW="+isaw_home+newline
+		+"JAVA="+java_home+newline
+		+"export LD_LIBRARY_PATH="+lib_home+newline
+		+"cd $ISAW"+newline
+		+"$JAVA -cp $ISAW:$ISAW/Isaw.jar:$ISAW/IPNS.jar:"+
+		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
+		+" IsawGUI.Isaw"+newline;
+        }else if(operating_system.equals(MAC_ID)){
+	    content="cd "+isaw_home+newline
+                +"java -mx128000000 -cp Isaw.jar:sgt_v2.jar:IPNS.jar"
+		+":jnexus.jar:sdds.jar:.  IsawGUI.Isaw"+newline;
 	}else{
 	    System.err.println("Unknown operating system: "+operating_system);
 	    return;
@@ -484,15 +519,15 @@ public class IsawInstaller extends JFrame
 	    System.err.println("Exception in writeBatch: "+e);
 	}
 
-	if(operating_system.equals(LIN_ID)){
+	if(operating_system.equals(LIN_ID) || operating_system.equals(SUN_ID)){
 	    Process proc = null;
 	    try{
 		proc=Runtime.getRuntime().exec("chmod +x "+filename);
 		proc.waitFor();
 	    }catch(InterruptedException e){
-		System.err.println("Could not change acess of batch file: "+e);
+		System.err.println("Could not change access of batch file: "+e);
 	    }catch(IOException e){
-		System.err.println("Could not change acess of batch file: "+e);
+		System.err.println("Could not change access of batch file: "+e);
 	    }finally{
 		if(proc!=null)proc.destroy();
 	    }
@@ -1113,6 +1148,10 @@ public class IsawInstaller extends JFrame
 		    // install file
 		}else if( operating_system.equals(LIN_ID) ){
 		    return true; // don't install file
+                }else if( operating_system.equals(SUN_ID) ){
+                    return true; // don't install file
+                }else if( operating_system.equals(MAC_ID) ){
+                    return true; // don't install file
 		}else if( operating_system.equals(UNKNOWN_ID) ){
 		    // install file
 		}
@@ -1121,6 +1160,10 @@ public class IsawInstaller extends JFrame
 		    return true; // don't install file
 		}else if( operating_system.equals(LIN_ID) ){
 		    // install file
+                }else if( operating_system.equals(SUN_ID) ){
+                    return true; // don't install file
+                }else if( operating_system.equals(MAC_ID) ){
+                    return true; // don't install file
 		}else if( operating_system.equals(UNKNOWN_ID) ){
 		    // install file
 		}
