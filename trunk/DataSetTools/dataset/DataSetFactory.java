@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2002/07/31 16:33:59  dennis
+ *  Now adds SCDQxyz operator to SCD DataSets and
+ *  adds DiffractometerQxyz operator to SAD DataSets
+ *
  *  Revision 1.23  2002/07/17 20:36:56  dennis
  *  Added DataSetAdd_1, DataSetSubtract_1, DataSetMultiply_1,
  *  DataSetDivide_1 operators.
@@ -126,6 +130,7 @@ import DataSetTools.operator.DataSet.TOF_DG_Spectrometer.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.operator.DataSet.Conversion.YAxis.*;
 import DataSetTools.operator.DataSet.Conversion.XYAxis.*;
+import DataSetTools.operator.DataSet.Information.XAxis.*;
 import DataSetTools.operator.DataSet.Math.Scalar.*;
 import DataSetTools.operator.DataSet.Math.DataSet.*;
 import DataSetTools.operator.DataSet.Math.Analyze.*;
@@ -358,6 +363,7 @@ public class DataSetFactory implements Serializable
     {                                                      // when SCD properly
       new_ds.addOperator( new DiffractometerTofToD() );    // supported
       new_ds.addOperator( new DiffractometerTofToQ() );
+      new_ds.addOperator( new SCDQxyz() );
       new_ds.addOperator( new DiffractometerTofToEnergy() );
       new_ds.addOperator( new DiffractometerTofToWavelength() );
       new_ds.addOperator( new TrueAngle() );
@@ -366,6 +372,7 @@ public class DataSetFactory implements Serializable
     {                                                      // when SAD properly
       new_ds.addOperator( new DiffractometerTofToD() );    // supported
       new_ds.addOperator( new DiffractometerTofToQ() );
+      new_ds.addOperator( new DiffractometerQxyz() );
       new_ds.addOperator( new DiffractometerTofToEnergy() );
       new_ds.addOperator( new DiffractometerTofToWavelength() );
       new_ds.addOperator( new TrueAngle() );
