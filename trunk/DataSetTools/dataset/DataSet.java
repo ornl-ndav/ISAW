@@ -11,6 +11,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/07/11 21:17:47  dennis
+ *  Added method getIndex_of_data() to get the index of a specific Data block in the DataSet
+ *
  *  Revision 1.3  2000/07/10 22:23:54  dennis
  *  July 10, 2000 version... many changes
  *
@@ -715,6 +718,28 @@ public class DataSet implements IAttributeList,
        return (Data)data.elementAt( index ); 
      else
        return null;
+  }
+
+
+  /**
+   * Find the position of a Data block in this DataSet. 
+   *
+   * @param  d   The Data block to find in the DataSet 
+   *
+   * @return The index at which the Data block occurs in the DataSet, if
+   *         it is present in the DataSet, returns -1 otherwise.
+   *       
+   */
+  public int getIndex_of_data( Data d )
+  {
+     if ( d == null )
+       return INVALID_INDEX;
+
+     for ( int index = 0; index < data.size(); index++ )
+       if ( d == (Data)data.elementAt( index ) )
+         return index;
+     
+     return INVALID_INDEX;
   }
 
 
