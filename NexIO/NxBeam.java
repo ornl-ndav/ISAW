@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2005/03/16 17:47:58  rmikk
+ * Used static references for static methods
+ *
  * Revision 1.4  2002/11/27 23:28:17  pfpeterson
  * standardized header
  *
@@ -69,7 +72,7 @@ public class NxBeam{
       Object O = n1.getNodeValue();
       float x[];
       float f;
-      x = nu.Arrayfloatconvert( O );
+      x = NXData_util.Arrayfloatconvert( O );
       if( x!= null)
         if( x.length > 0)
           f = x[0];
@@ -97,7 +100,7 @@ public class NxBeam{
       Object O = n1.getNodeValue();
       float x[];
       float f;
-      x = nu.Arrayfloatconvert( O );
+      x = NXData_util.Arrayfloatconvert( O );
       if( x!= null)
         if( x.length > 0)
           f = x[0];
