@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.23  2003/09/16 22:50:58  bouzekc
+ * Modified slightly to work with the upgraded RadioButtonPG.
+ *
  * Revision 1.22  2003/09/13 23:08:34  bouzekc
  * Now sets the value of the matrix selection parameter to "From a File"
  * upon initialization.
@@ -120,7 +123,7 @@ import DataSetTools.wizard.*;
 
 import Operators.TOF_SCD.*;
 
-import java.awt.event.*;
+import java.beans.*;
 
 import java.io.File;
 
@@ -134,7 +137,7 @@ import java.util.Vector;
  * entire peaks file. Other than that, it functions in a similar manner to
  * IndexJ.
  */
-public class IndexJForm extends Form implements ActionListener {
+public class IndexJForm extends Form implements PropertyChangeListener {
   //~ Static fields/initializers ***********************************************
 
   protected static int RUN_NUMBER_WIDTH = 5;
@@ -232,7 +235,7 @@ public class IndexJForm extends Form implements ActionListener {
     addParameter( new LoadFilePG( "Matrix File to Load", "", false ) );  //8
     addParameter( new IntArrayPG( "Restrict Runs", "", false ) );  //9
     addParameter( new LoadFilePG( "JIndex Log", " ", false ) );  //10
-    ( ( RadioButtonPG )getParameter( 7 ) ).addActionListener( this );
+    rpg.addPropertyChangeListener( IParameter.VALUE, this );
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
@@ -477,17 +480,13 @@ public class IndexJForm extends Form implements ActionListener {
   }
 
   /**
-   * Required for ActionListener implementation.  This disables/enables the
-   * LoadFilePG for the matrix file depending on the RadioButtonPG's state.
-   *
-   * @param ae The triggering ActionEvent.
+   * Method to listen for changes on the RadioButtonPG.
    */
-  public void actionPerformed( ActionEvent ae ) {
-    if( ae.getActionCommand(  )
-            .equals( FROM_FILE ) ) {
+  public void propertyChange( PropertyChangeEvent pce ) {
+    Object newVal = pce.getNewValue(  );
+    if( newVal == FROM_FILE ) {
       ( ( IParameterGUI )getParameter( 8 ) ).setEnabled( true );
-    } else if( ae.getActionCommand(  )
-                   .equals( FROM_LSQRS ) ) {
+    } else if( newVal == FROM_LSQRS ) {
       ( ( IParameterGUI )getParameter( 8 ) ).setEnabled( false );
     }
   }
