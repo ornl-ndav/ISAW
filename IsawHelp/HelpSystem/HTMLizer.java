@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2002/12/09 16:45:10  pfpeterson
+ * Put parameter type in command line in italics.
+ *
  * Revision 1.7  2002/12/09 15:50:45  pfpeterson
  * Small changes in the formatting of the HTML code and shortened some lines
  * in the source. Changes to the HTML are:
@@ -374,7 +377,7 @@ public class HTMLizer
 	
 	for( int i = 0; i < num_params; i++ )
 	{
-	    html.append(v[0].elementAt(i) + " ");
+	    html.append("<I>"+v[0].elementAt(i) + "</I> ");
 	    html.append(v[1].elementAt(i));
 	    
 	    if( i == (num_params - 1) )
