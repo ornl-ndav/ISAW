@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.40  2003/10/11 19:05:47  bouzekc
+ * Now implements clone() using reflection.  Changed return type of getParam()
+ * from IParameterGUI to ParameterGUI.  Removed unused imports and variables.
+ *
  * Revision 1.39  2003/09/23 02:29:02  bouzekc
  * Removed getInnerParam() method as it duplicated another method's
  * functionality.
@@ -201,17 +205,11 @@ package DataSetTools.parameter;
 import DataSetTools.components.ParametersGUI.ArrayEntryJFrame;
 import DataSetTools.components.ParametersGUI.EntryWidget;
 
-import DataSetTools.util.PropertyChanger;
-import DataSetTools.util.StringUtil;
-
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
 import java.beans.*;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import java.util.*;
 
@@ -230,16 +228,13 @@ public abstract class VectorPG extends ParameterGUI
   //~ Static fields/initializers ***********************************************
 
   public static final String DATA_CHANGED = "Data Changed";
+  private static final String TYPE        = "Array";
 
   //~ Instance fields **********************************************************
 
   private ParameterGUI innerParam;
-  private ArrayEntryJFrame GUI            = null;
-  private JButton vectorButton            = null;
-  private Vector listeners                = new Vector(  );
-  private JDialog entryDialog;
-  private JFrame entryFrame;
-  private final String TYPE               = "Array";
+  private ArrayEntryJFrame GUI = null;
+  private JButton vectorButton = null;
 
   //~ Constructors *************************************************************
 
@@ -309,7 +304,6 @@ public abstract class VectorPG extends ParameterGUI
     if( GUI != null ) {
       GUI.setValue( value );
     }
-    validateSelf(  );
   }
 
   /**
@@ -352,6 +346,46 @@ public abstract class VectorPG extends ParameterGUI
   }
 
   /**
+   * Implements clone for this VectorPG.  Overridden due to the internal
+   * ParameterGUI that VectorPG holds.
+   *
+   * @return A cloned copy of this VectorPG.
+   */
+  public Object clone(  ) {
+    try {
+      Class klass           = this.getClass(  );
+      Constructor construct = klass.getConstructor( 
+          new Class[]{ String.class, Object.class } );
+      VectorPG pg           = ( VectorPG )construct.newInstance( 
+          new Object[]{ null, null } );
+      pg.setName( new String( this.getName(  ) ) );
+      pg.setValue( this.getValue(  ) );
+      pg.setDrawValid( this.getDrawValid(  ) );
+      pg.setValid( this.getValid(  ) );
+
+      ParameterGUI internalParam = this.getParam(  );
+
+      if( internalParam != null ) {
+        pg.setParam( ( ParameterGUI ) internalParam.clone(  ) );
+      }
+
+      if( this.initialized ) {
+        pg.initGUI( new Vector(  ) );
+      }
+
+      return pg;
+    } catch( InstantiationException e ) {
+      throw new InstantiationError( e.getMessage(  ) );
+    } catch( IllegalAccessException e ) {
+      throw new IllegalAccessError( e.getMessage(  ) );
+    } catch( NoSuchMethodException e ) {
+      throw new NoSuchMethodError( e.getMessage(  ) );
+    } catch( InvocationTargetException e ) {
+      throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
+    }
+  }
+
+  /**
    * Initializes this VectorPG.  In general, this method should work well as a
    * GUI initializer for VectorPG's derived classes.  However, if you need to
    * overwrite it for any reason, you may wish to call this method, since the
@@ -369,16 +403,13 @@ public abstract class VectorPG extends ParameterGUI
     if( V != null ) {  // Usually is null so use the previous value
       setValue( V );
     }
-
     GUI = new ArrayEntryJFrame( innerParam );
     GUI.addPropertyChangeListener( DATA_CHANGED, this );
     GUI.setValue( getValue(  ) );
     vectorButton   = new JButton( innerParam.getName(  ) );
     entrywidget    = new EntryWidget(  );
-
     entrywidget.add( vectorButton );
     vectorButton.addActionListener( GUI );
-
     super.initGUI(  );
   }
 
@@ -390,7 +421,6 @@ public abstract class VectorPG extends ParameterGUI
     if( pce.getPropertyName(  ) == DATA_CHANGED ) {
       setValue( pce.getNewValue(  ) );
     }
-
     super.propertyChange( pce );
   }
 
@@ -437,7 +467,7 @@ public abstract class VectorPG extends ParameterGUI
   /**
    * Gets this VectorPG's parameter.
    */
-  protected final IParameterGUI getParam(  ) {
+  protected final ParameterGUI getParam(  ) {
     return innerParam;
   }
 
@@ -460,7 +490,6 @@ public abstract class VectorPG extends ParameterGUI
           allTheSame = false;
         }
       }
-
       setValid( allTheSame );
     } else {
       setValid( false );
