@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2004/01/24 22:22:25  bouzekc
+ * Removed unused imports and local variables.
+ *
  * Revision 1.13  2003/08/26 14:04:31  rmikk
  * Used DiffractometerVecQ to get the Q vector so sand data
  *   can be viewed
@@ -47,8 +50,6 @@
 package DataSetTools.viewer.Contour;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
-import DataSetTools.instruments.*;
-import java.lang.*;
 import DataSetTools.operator.DataSet.Information.XAxis.*;
 
 public class  QxQyQzAxesHandler implements IAxesHandler

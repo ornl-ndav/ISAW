@@ -28,13 +28,14 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2004/01/24 22:22:24  bouzekc
+ * Removed unused imports and local variables.
+ *
  * Revision 1.2  2002/11/27 23:24:30  pfpeterson
  * standardized header
  *
  */
 package DataSetTools.viewer.Contour;
-
-import DataSetTools.dataset.*;
 
 public interface IAxesHandler
   {
