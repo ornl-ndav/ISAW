@@ -155,7 +155,7 @@ public class ActivateStorage extends GenericCalculator
 	    rs="no activation";
 	}
 	
-	rs=rs+" ["+material.toString()+"]";
+	//rs=rs+" ["+material.toString()+"]";
 	return rs;
   }
 
