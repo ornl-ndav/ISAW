@@ -34,6 +34,7 @@ package DataSetTools.operator.Generic.TOF_SCD;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.instruments.*;
+import DataSetTools.util.LoadFileString;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.TextFileReader;
 import DataSetTools.retriever.RunfileRetriever;
@@ -109,7 +110,7 @@ public class RealSpacePeaks extends GenericTOF_SCD{
   {
     parameters = new Vector();
     addParameter( new Parameter("Vector of Peaks",  new Vector() ) );
-    addParameter( new Parameter("Calibration File", new String() ) );
+    addParameter( new Parameter("Calibration File", new LoadFileString() ) );
   }
 
  /* ----------------------------- getResult ------------------------------ */ 
@@ -121,8 +122,8 @@ public class RealSpacePeaks extends GenericTOF_SCD{
   */
   public Object getResult()
   {
-    Vector  peaks       =  (Vector)(getParameter(0).getValue());
-    String  calib_file  =  (String)(getParameter(1).getValue());
+    Vector peaks      = (Vector)(getParameter(0).getValue());
+    String calib_file = ((LoadFileString)(getParameter(1).getValue())).toString();
 
     if(!this.readCalib(calib_file)){
 	return peaks;
