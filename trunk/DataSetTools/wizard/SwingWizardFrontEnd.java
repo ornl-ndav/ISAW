@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2004/04/21 18:04:42  bouzekc
+ * Now uses the WindowShower class.
+ *
  * Revision 1.16  2004/04/21 17:56:06  bouzekc
  * Removed method that set the wizard progress bar to an indeterminate state.
  *
@@ -133,17 +136,17 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
 
   //~ Instance fields **********************************************************
 
-  private JFrame frame;
-  private JPanel form_panel;
-  private JLabel form_label;
-  private JMenu view_menu;
-  private CommandHandler command_handler;
-  private JFileChooser fileChooser;
+  private JFrame           frame;
+  private JPanel           form_panel;
+  private JLabel           form_label;
+  private JMenu            view_menu;
+  private CommandHandler   command_handler;
+  private JFileChooser     fileChooser;
   private AbstractButton[] wizButtons;
-  private JProgressBar formProgress;
-  private JProgressBar wizProgress;
-  private String help_message = "Help not available for Wizard";
-  private Wizard wiz          = null;
+  private JProgressBar     formProgress;
+  private JProgressBar     wizProgress;
+  private String           help_message = "Help not available for Wizard";
+  private Wizard           wiz          = null;
 
   //~ Constructors *************************************************************
 
@@ -181,9 +184,9 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * @return the File that has been retrieved.
    */
   public final File getFile( boolean saving ) {
-    int result;
+    int    result;
     String save_file_abs_path;
-    File save_file;
+    File   save_file;
 
     if( fileChooser == null ) {
       initFileChooser(  );
@@ -211,7 +214,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     }
 
     if( saving && save_file.exists(  ) ) {
-      int choice;
+      int          choice;
       StringBuffer s = new StringBuffer(  );
 
       s.append( "You are about to overwrite " );
@@ -293,15 +296,15 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    */
   public final void displayAndSaveErrorMessage( 
     Throwable e, String errFile, StringBuffer errMess ) {
-    String errDir         = wiz.getErrorDirectory(  );
-    StringBuffer message  = errMess;
-    GregorianCalendar cal = new GregorianCalendar(  );
-    int month             = cal.get( Calendar.MONTH );
-    int day               = cal.get( Calendar.DAY_OF_MONTH );
-    String time           = String.valueOf( month ) + "_" +
+    String            errDir  = wiz.getErrorDirectory(  );
+    StringBuffer      message = errMess;
+    GregorianCalendar cal     = new GregorianCalendar(  );
+    int               month   = cal.get( Calendar.MONTH );
+    int               day     = cal.get( Calendar.DAY_OF_MONTH );
+    String            time    = String.valueOf( month ) + "_" +
       String.valueOf( day );
 
-    errFile               = errFile + time + ".err";
+    errFile = errFile + time + ".err";
     message.append( "\nPlease see the " );
     message.append( errFile );
     message.append( " file in\n" );
@@ -429,11 +432,11 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    *        parameter viewer for.
    */
   final void displayParameterViewer( String com ) {
-    Form f;
+    Form          f;
     IParameterGUI iparam;
-    boolean done;
-    int index;
-    int num_params;
+    boolean       done;
+    int           index;
+    int           num_params;
 
     f            = wiz.getCurrentForm(  );
     done         = false;
@@ -513,10 +516,10 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * current Form.
    */
   final void populateViewMenu(  ) {
-    JMenuItem jmi;
-    Form f;
+    JMenuItem     jmi;
+    Form          f;
     IParameterGUI iparam;
-    Object val;
+    Object        val;
 
     f = wiz.getCurrentForm(  );
 
@@ -567,7 +570,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    */
   final void showFormHelpMessage(  ) {
     HTMLizer form_htmlizer = new HTMLizer(  );
-    Form f                 = wiz.getCurrentForm(  );
+    Form     f = wiz.getCurrentForm(  );
 
     if( f != null ) {
       String html = form_htmlizer.createHTML( f );
@@ -629,7 +632,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * @param html The help message to display.
    */
   private void displayHelpMessage( String tempTitle, String html ) {
-    JFrame help_frame     = new JFrame( tempTitle );
+    JFrame    help_frame  = new JFrame( tempTitle );
     Dimension screen_size = Toolkit.getDefaultToolkit(  ).getScreenSize(  );
 
     help_frame.setSize( 
@@ -654,7 +657,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * @param url The URL that contains the HTML page.
    */
   private void displayURL( String tempTitle, URL url ) {
-    JFrame help_frame     = new JFrame( tempTitle );
+    JFrame    help_frame  = new JFrame( tempTitle );
     Dimension screen_size = Toolkit.getDefaultToolkit(  ).getScreenSize(  );
 
     help_frame.setSize( 
@@ -705,11 +708,11 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * Makes the GUI for this WizardFrontEnd.
    */
   private void makeGUI(  ) {
-    Box formControlsBox       = Box.createHorizontalBox(  );
-    Box wizardControlsBox     = Box.createHorizontalBox(  );
-    Box statusBox             = Box.createHorizontalBox(  );
-    Box executionBox          = Box.createVerticalBox(  );
-    Box commBox               = Box.createVerticalBox(  );
+    Box     formControlsBox   = Box.createHorizontalBox(  );
+    Box     wizardControlsBox = Box.createHorizontalBox(  );
+    Box     statusBox         = Box.createHorizontalBox(  );
+    Box     executionBox      = Box.createVerticalBox(  );
+    Box     commBox           = Box.createVerticalBox(  );
     JButton exec_all_button   = new JButton( EXEC_ALL_COMMAND );
     JButton first_button      = new JButton( FIRST_COMMAND );
     JButton back_button       = new JButton( BACK_COMMAND );
@@ -719,19 +722,19 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     JButton clear_button      = new JButton( CLEAR_COMMAND );
     JButton clear_all_button  = new JButton( CLEAR_ALL_COMMAND );
 
-    wizButtons[EXEC_ALL_IND]  = exec_all_button;
-    wizButtons[EXEC_IND]      = exec_button;
-    wizButtons[CLEAR_IND]     = clear_button;
-    wizButtons[FIRST_IND]     = first_button;
-    wizButtons[BACK_IND]      = back_button;
-    wizButtons[NEXT_IND]      = next_button;
-    wizButtons[LAST_IND]      = last_button;
-    wizButtons[CLEAR_ALL_IND] = clear_all_button;
+    wizButtons[EXEC_ALL_IND]    = exec_all_button;
+    wizButtons[EXEC_IND]        = exec_button;
+    wizButtons[CLEAR_IND]       = clear_button;
+    wizButtons[FIRST_IND]       = first_button;
+    wizButtons[BACK_IND]        = back_button;
+    wizButtons[NEXT_IND]        = next_button;
+    wizButtons[LAST_IND]        = last_button;
+    wizButtons[CLEAR_ALL_IND]   = clear_all_button;
 
-    JPanel work_area          = new JPanel( new BorderLayout(  ) );
-    JPanel controlsArea       = new JPanel( new BorderLayout(  ) );
-    JPanel navControlsBox     = new JPanel( new GridLayout(  ) );
-    JMenuBar menu_bar         = new JMenuBar(  );
+    JPanel   work_area          = new JPanel( new BorderLayout(  ) );
+    JPanel   controlsArea   = new JPanel( new BorderLayout(  ) );
+    JPanel   navControlsBox = new JPanel( new GridLayout(  ) );
+    JMenuBar menu_bar       = new JMenuBar(  );
 
     initProgressBars(  );
     frame.setJMenuBar( menu_bar );
@@ -811,12 +814,12 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
    * @return Array of JMenus to add to a menu bar.
    */
   private JMenu[] makeMenu(  ) {
-    JMenu[] menuList      = new JMenu[4];
-    JMenu file_menu       = new JMenu( "File" );
-    JMenu project_menu    = new JMenu( "Project Directory" );
-    JMenu help_menu       = new JMenu( "Help" );
+    JMenu[] menuList     = new JMenu[4];
+    JMenu   file_menu    = new JMenu( "File" );
+    JMenu   project_menu = new JMenu( "Project Directory" );
+    JMenu   help_menu    = new JMenu( "Help" );
 
-    view_menu             = new JMenu( VIEW_MENU );
+    view_menu = new JMenu( VIEW_MENU );
 
     JMenuItem wizard_help = new JMenuItem( WIZARD_HELP_COMMAND );
     JMenuItem form_help   = new JMenuItem( FORM_HELP_COMMAND );
@@ -852,9 +855,15 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
 
   /**
    * Shows the GUI for this Wizard by calling the outer Frame's show() method.
+   * Do not call this until the GUI has been built.  This uses the
+   * WindowShower  class due to issues with calling aJFrame.show() in the main
+   * thread.
    */
   private void showGUI(  ) {
-    frame.show(  );
+    WindowShower ws = new WindowShower( frame );
+
+    EventQueue.invokeLater( ws );
+    ws = null;
   }
 
   //~ Inner Classes ************************************************************
@@ -883,7 +892,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   private class CommandHandler implements ActionListener {
     //~ Instance fields ********************************************************
 
-    private Wizard wizard;
+    private Wizard       wizard;
     private WizardWorker worker;
 
     //~ Constructors ***********************************************************
@@ -906,8 +915,8 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
      * @param event The triggering ActionEvent
      */
     public void actionPerformed( ActionEvent event ) {
-      String command = event.getActionCommand(  );
-      int curFormNum = wizard.getCurrentFormNumber(  );
+      String command    = event.getActionCommand(  );
+      int    curFormNum = wizard.getCurrentFormNumber(  );
 
       if( command == FIRST_COMMAND ) {
         showForm( 0 );
@@ -976,7 +985,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
     private void displayFileBrowser( String type ) {
       JFileChooser fChooser = new JFileChooser( 
           wizard.getProjectsDirectory(  ) );
-      int result            = fChooser.showOpenDialog( 
+      int          result = fChooser.showOpenDialog( 
           new JFrame( type + "..." ) );
 
       if( result != JFileChooser.CANCEL_OPTION ) {
@@ -1004,7 +1013,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
   private class WizardWorker extends SwingWorker {
     //~ Instance fields ********************************************************
 
-    private int formNum   = 0;
+    private int    formNum = 0;
     private Wizard wizard;
 
     //~ Constructors ***********************************************************
@@ -1073,7 +1082,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
      * @param enable Whether to enable parameters or not.
      */
     private void enableFormParams( boolean enable ) {
-      Form f            = wizard.getCurrentForm(  );
+      Form  f           = wizard.getCurrentForm(  );
       int[] var_indices = f.getVarParamIndices(  );
 
       for( int j = 0; j < var_indices.length; j++ ) {
