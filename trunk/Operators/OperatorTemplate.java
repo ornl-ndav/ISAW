@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/02/14 13:29:05  dennis
+ * Added getDocumentation() method. (Tyler Stelzer)
+ *
  * Revision 1.4  2002/11/27 23:29:54  pfpeterson
  * standardized header
  *
@@ -170,6 +173,44 @@ public class OperatorTemplate extends GenericSpecial
     op.CopyParametersFrom( this );
     return op;
   }
+  
+  
+  public String getDocumentation()
+    {
+      StringBuffer Res = new StringBuffer();
+      Res.append("@overview This operator provides a \"template\" for writing");
+       Res.append(" operator \"plug-ins\" for Isaw.");
+      
+      Res.append("@algorithm To make a custom operator for use with ISAW,");
+       Res.append(" rename this file, then modify the class name, and title");
+       Res.append(" to an appropriate name, such as MyOperator.java for the");
+       Res.append(" file and MyOperator for the class. Place the new file in");
+       Res.append(" the Operators subdirectory of the Isaw home directory,");
+       Res.append(" or of your home directory.  Next, modify the parameters,");
+       Res.append(" command name and the calculation performed as needed. ");
+       Res.append(" This template includes a main program that can be used");
+       Res.append(" to test the operator separately.  You should also modify");
+       Res.append(" the main program appropriately, to separately test your");
+       Res.append(" operator. The operator must be compiled before Isaw is");
+       Res.append(" started, so that Isaw can load the class file.  PLEASE");
+       Res.append(" ALSO REPLACE THE TEMPLATE COMMENTS WITH COMMENTS");
+       Res.append(" APPROPRIATE FOR YOUR OPERATOR.");
+
+      Res.append("@param  ds          Sample DataSet to process.");
+      Res.append("@param  int_val     Sample integer parameter.");
+      Res.append("@param  float_val   Sample float parameter.");
+      Res.append("@param  bool_val    Sample boolean parameter.");
+      Res.append("@param  string_val  Sample String parameter.");
+      
+      Res.append("@return If successful, this template just returns a String");
+       Res.append(" indicating what the parameters were, and that the");
+       Res.append(" operator executed.");
+
+  
+     return Res.toString();
+    }
+    
+    
 
  /* ------------------------------- main --------------------------------- */ 
  /** 
