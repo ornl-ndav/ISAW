@@ -31,6 +31,9 @@
  * Modified:
  *  
  *  $Log$
+ *  Revision 1.3  2001/08/09 15:45:28  dennis
+ *  Added user name and password parameters
+ *
  *  Revision 1.2  2001/08/07 21:37:29  dennis
  *  Added support for ndsRetriver.
  *
@@ -86,6 +89,8 @@ public class LoadRemoteData extends    GenericLoad
    */
    public LoadRemoteData( String           host,
                           int              port,
+                          String           user_name,
+                          String           password,
                           String           file_name,
                           ServerTypeString server_type ) 
    {
@@ -98,9 +103,15 @@ public class LoadRemoteData extends    GenericLoad
       parameter.setValue( new Integer(port) );
 
       parameter = getParameter(2);
-      parameter.setValue( file_name );
+      parameter.setValue( user_name );
 
       parameter = getParameter(3);
+      parameter.setValue( password );
+
+      parameter = getParameter(4);
+      parameter.setValue( file_name );
+
+      parameter = getParameter(5);
       parameter.setValue( new ServerTypeString( server_type.toString() ) );
    } 
 
@@ -119,7 +130,15 @@ public class LoadRemoteData extends    GenericLoad
     parameter = new Parameter("Port (eg. 6088)", new Integer(port) );
     addParameter( parameter );
 
-    parameter = new Parameter("File Name(hrcs1797.run)", new String("") );
+    String user_name = System.getProperty( "user.name" );
+    parameter = new Parameter("User name", user_name );
+    addParameter( parameter );
+
+    String password = TCPServer.DEFAULT_PASSWORD;
+    parameter = new Parameter("Password", password );
+    addParameter( parameter );
+
+    parameter = new Parameter("File Name (eg. hrcs1797.run)", new String("") );
     addParameter( parameter );
 
     parameter = new Parameter("Server Type", new ServerTypeString() );
@@ -146,27 +165,24 @@ public class LoadRemoteData extends    GenericLoad
    */
    public Object getResult()
    {
-     String  host = (String)getParameter(0).getValue();
-     int     port = ((Integer)getParameter(1).getValue()).intValue();
-     String  file_name   = (String)getParameter(2).getValue();
+     String  host      = (String)getParameter(0).getValue();
+     int     port      = ((Integer)getParameter(1).getValue()).intValue();
+     String  user_name = (String)getParameter(2).getValue();
+     String  password  = (String)getParameter(3).getValue();
+     String  file_name = (String)getParameter(4).getValue();
 
-     Object obj = getParameter(3).getValue();
-     ServerTypeString sts = (ServerTypeString)obj;
-     String server_type = sts.toString();
-//     String  server_type = (String)
-//                 ((ServerTypeString)getParameter(3).getValue()).toString();
+     Object obj         = getParameter(5).getValue();
+     String server_type = ((ServerTypeString)obj).toString();
 
-     String user_name = System.getProperty( "user.name" );
-     String password  = "IPNS";
+     user_name = user_name.trim();
+     if ( user_name.length() <= 0 ) 
+       user_name = System.getProperty( "user.name" );
 
      String  data_source_name = host      + ";" +
                                 port      + ";" +
                                 user_name + ";" +
                                 password  + ";" +
                                 file_name;
-
-     System.out.println("In LoadRemote operator, name = " + data_source_name); 
-     file_name = file_name.trim();
 
      Retriever r;
      if ( server_type.equals( ServerTypeString.LIVE_DATA_SERVER ) )
@@ -200,7 +216,6 @@ public class LoadRemoteData extends    GenericLoad
 
      else
      {
-       System.out.println("Getting " + n_ds + " DataSets");
        DataSet ds[] = new DataSet[ n_ds ];
        for ( int i = 0; i < ds.length; i++ )
          ds[i] = r.getDataSet(i);
