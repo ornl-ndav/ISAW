@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/03/15 19:36:55  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.3  2004/03/15 03:37:03  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -44,19 +48,15 @@
  */
 package Operators.TOF_SCD;
 
-import DataSetTools.math.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
-import DataSetTools.util.*;
 import DataSetTools.trial.*;
-import DataSetTools.functions.*;
 import DataSetTools.dataset.*;
 
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Functions.*;
 
-import java.io.*;
 import java.util.*;
 
 import IPNS.Runfile.*;

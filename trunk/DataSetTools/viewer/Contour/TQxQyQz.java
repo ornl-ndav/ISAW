@@ -28,6 +28,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2004/03/15 19:33:59  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.10  2004/03/15 03:29:00  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -75,8 +79,6 @@ import DataSetTools.util.*;
 import Operators.Generic.*;
 import DataSetTools.operator.DataSet.*; 
 import DataSetTools.operator.*;
-import DataSetTools.components.ui.*;
-import DataSetTools.math.*;
 
 public class TQxQyQz  extends ContourView
   {

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/03/15 19:39:18  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.1  2003/10/21 21:14:01  dennis
  *  CommandObject for remote execution of operators.
  *
@@ -38,7 +42,6 @@
 package NetComm;
 
 import java.io.*;
-import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 
 /**

@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2004/03/15 19:36:52  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.9  2004/03/15 03:36:58  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -52,7 +56,6 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
 import DataSetTools.viewer.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 

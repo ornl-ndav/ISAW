@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2004/03/15 19:33:59  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.26  2004/03/15 03:28:59  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -140,10 +144,9 @@ import gov.noaa.pmel.sgt.dm.*;
 import java.awt.*;
 import java.util.*;
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
 import java.awt.event.*;
 import DataSetTools.viewer.*;
-import DataSetTools.components.View.ViewControls.*;
+
 /**
  * Provides a mechanism for selecting and viewing portions of an Area Detector
  * Data Set using SGT's contour plot

@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2004/03/15 19:36:52  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.2  2003/03/03 18:54:31  dennis
  *  Syntax "fix" in case obj_in is an Array.
  *
@@ -43,7 +47,6 @@ import  java.io.*;
 import  java.util.*;
 import  java.lang.reflect.Array;
 import  DataSetTools.operator.*;
-import  DataSetTools.util.*;
 import  DataSetTools.operator.Generic.Batch.*;
 
 /**

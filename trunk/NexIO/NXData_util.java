@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2004/03/15 19:37:53  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.23  2004/03/15 03:36:01  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -109,8 +113,6 @@ package NexIO;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Sys.StringUtil;
 import DataSetTools.dataset.*;
-import DataSetTools.math.*;
-
 
 /**
  * A utility package used by many NxData implementers

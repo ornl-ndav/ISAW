@@ -32,17 +32,19 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/15 19:40:21  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.1  2003/01/27 15:01:36  rmikk
  * Initial Commit. The java applet in the htm page
  *
  */
+ package IsawHelp;
+ 
 import java.applet.*;
 import java.awt.*;
 import java.net.*;
-import IsawGUI.*;
-import java.awt.event.*;
-import java.awt.*;
-import javax.swing.*;
 
 /** This applet is run in a browser. It diplays the Introductory Isaw Help
 */

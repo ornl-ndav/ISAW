@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 19:37:54  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.6  2004/03/15 03:36:02  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -54,7 +58,6 @@
 
 package NexIO.Util;
 import NexIO.*;
-import DataSetTools.math.*;
 import DataSetTools.dataset.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 

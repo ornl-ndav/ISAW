@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/15 19:36:52  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.7  2004/03/15 03:36:58  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -63,8 +67,6 @@ import DataSetTools.operator.DataSet.EditList.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
-import DataSetTools.util.*;
-import DataSetTools.math.*;
 import gov.anl.ipns.MathTools.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.SpecialStrings.*;

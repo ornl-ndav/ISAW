@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/03/15 19:33:59  dennis
+ *  Removed unused imports after factoring out view components,
+ *  math and utilities.
+ *
  *  Revision 1.4  2004/03/15 03:29:00  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -48,11 +52,10 @@
  *
 */
 
-
 package DataSetTools.viewer.Contour;
+
 import gov.anl.ipns.MathTools.Geometry.*;
 import DataSetTools.dataset.*;
-import DataSetTools.math.*;
 
 /** A phi axis Handler returns a phi value given a Group index and "time" index.
 *   The time index can also be determined given a phi value and Group index. Note:

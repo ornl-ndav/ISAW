@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2004/03/15 19:33:59  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.11  2004/03/15 03:29:01  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -89,16 +93,14 @@ import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
 
 import java.awt.event.*;
-import DataSetTools.components.View.*;
-import DataSetTools.components.View.Menu.*;
 import javax.swing.*; 
 import javax.swing.event.*;
 import java.util.*;
 import DataSetTools.dataset.*;
 import java.awt.*;
-import DataSetTools.util.*;
 import java.lang.reflect.*;
 import DataSetTools.operator.DataSet.Attribute.*;
+
 /**
   *  This class is the "ArrayMaker" part of a DataSetViewer that can be used
   *  to sort and select Data Blocks from a DataSet.

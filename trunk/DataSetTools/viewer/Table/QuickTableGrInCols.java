@@ -30,6 +30,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.6  2004/03/15 19:34:00  dennis
+ * Removed unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.5  2004/03/15 03:29:02  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -56,8 +60,6 @@ import gov.anl.ipns.Util.Messaging.*;
 import javax.swing.*;
 import java.awt.event.*;
 import DataSetTools.viewer.*;
-import DataSetTools.util.*;
-
 
 /** This Class Creates a "quick interactive" table view that displays
 *   channel numbers versus groups in columns. The columns can show counts,
