@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2003/06/25 21:41:01  bouzekc
+ * Added hook parameters for minimum peak count threshold
+ * and channels to keep.
+ *
  * Revision 1.12  2003/06/25 21:33:18  bouzekc
  * Reformatted for indenting and spacing consistency.
  *
@@ -120,17 +124,33 @@ public class LsqrsJ extends GenericTOF_SCD {
     LoadFilePG lfpg = new LoadFilePG( "Peaks file", null );
 
     lfpg.setFilter( new PeaksFilter(  ) );
+
+    //1
     addParameter( lfpg );
+
+    //2
     addParameter( 
       new IntArrayPG( "Restrict Run Numbers (blank for all)", null ) );
+
+    //3
     addParameter( 
       new IntArrayPG( "Restrict Sequence Numbers (blank for all)", null ) );
+
+    //4
     addParameter( new StringPG( "Transform Matrix", identmat ) );
 
     SaveFilePG sfpg = new SaveFilePG( "Matrix file to write to", null );
 
     sfpg.setFilter( new MatrixFilter(  ) );
+
+    //5
     addParameter( sfpg );
+
+    //6
+    addParameter( new IntegerPG( "Minimum Peak Threshold", 0, false ) );
+
+    //7
+    addParameter( new IntArrayPG( "Channels to Keep", "1:100", false ) );
   }
 
   /**
