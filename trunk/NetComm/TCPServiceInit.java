@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/08/10 19:33:07  dennis
+ *  Now exits if an exception occurs while setting up the socket.
+ *  (This happens if the socket is already in use.)
+ *
  *  Revision 1.4  2001/04/23 19:44:22  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -113,6 +117,8 @@ import java.net.*;
       catch ( Exception e )
       {
         System.out.println( "Error setting up ThreadedTCPComm " + e );
+        e.printStackTrace();
+        System.exit(1);
       }
     }
   }
