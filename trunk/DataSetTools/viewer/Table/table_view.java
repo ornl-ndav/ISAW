@@ -31,9 +31,11 @@
  * Modified:
 * 
  * $Log$
- * Revision 1.7  2001/08/14 16:12:22  rmikk
- * Major restructuring of the GUI so more options were
- * visible
+ * Revision 1.8  2001/08/15 14:13:16  rmikk
+ * Added scroll pane to one of the lists.
+ * Reset the data sets SetField operator parameters to
+ *   default parameters so as not to interfere with subsequent
+ *   uses of this operator.
  *
  * Revision 1.6  2001/08/14 01:59:00  rmikk
  * Improved layout.
@@ -247,7 +249,7 @@ public class table_view extends JPanel implements ActionListener
        Nuse[ Fields.length ] = -1;
        JPbl.add( new JScrollPane( unsel , 
           JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED ,
-           JScrollPane.HORIZONTAL_SCROLLBAR_NEVER ) ,
+           JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED ) ,
                        BorderLayout.CENTER );
        JPanel JP2 = new JPanel();
        JP2.setLayout( new GridLayout( 6 , 1 ));
@@ -696,6 +698,7 @@ public class table_view extends JPanel implements ActionListener
         
             JParametersDialog JP = new JParametersDialog( newOp , null ,
                                        null , null );
+            op.setDefaultParameters();
             useAll = false;
            }
        else if( e.getSource().equals( fileView ))
