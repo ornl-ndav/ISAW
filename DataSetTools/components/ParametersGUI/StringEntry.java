@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/09/11 19:21:26  bouzekc
+ *  Added a constructor that does not require a column number.
+ *
  *  Revision 1.3  2003/06/10 14:49:15  pfpeterson
  *  Fix a null pointer exception in setStringFilter.
  *
@@ -101,6 +104,20 @@ public class StringEntry extends JTextField implements //StringFilterer,
         //System.out.println("d");
         //System.out.println("StringEntry(String, int, StringFilterer)");
         //System.out.println("e");
+    }
+
+    /**
+     * Constructor for instances where you don't want to set the number of
+     * columns.
+     *
+     * @param value The value of this StringEntry.
+     * @param sf The StringFilterer to use.
+     */
+    public StringEntry(String value, StringFilterer sf) {
+        super();
+        this.setStringFilter(sf);
+        this.filterdoc.setPropBind(this.propBind);
+        super.setText(value);
     }
 
     /**
