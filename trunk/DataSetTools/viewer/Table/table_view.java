@@ -31,6 +31,10 @@
  * Modified:
 * 
  * $Log$
+ * Revision 1.7  2001/08/14 16:12:22  rmikk
+ * Major restructuring of the GUI so more options were
+ * visible
+ *
  * Revision 1.6  2001/08/14 01:59:00  rmikk
  * Improved layout.
  * Added line indicating the selected indicies.
@@ -65,11 +69,14 @@ import DataSetTools.util.*;
 import java.io.*;
 import javax.swing.table.*;
 import IsawGUI.*;
+import java.awt.image.*;
+
 import DataSetTools.components.ParametersGUI.*;
 
 /** A form of the table view that is run without any GUI
  */
-public class table_view extends JPanel implements ActionListener
+public class table_view extends JPanel implements ActionListener 
+                                               
   { 
 
     String Fields[] = { "Title", "X_units", "Y_units", "X_label", "Y_label",
@@ -91,6 +98,33 @@ public class table_view extends JPanel implements ActionListener
                      null ,Attribute.RAW_ANGLE , Attribute.SOLID_ANGLE ,
                      "x" , "y"  , "e" }; 
 
+
+    protected static int right_arrow[] = {0,1,0,0,0,0,0,0,
+                                          0,1,1,0,0,0,0,0,
+                                          0,1,1,1,0,0,0,0,
+                                          0,1,1,1,1,1,1,0,
+                                          0,1,1,1,1,1,1,1,
+                                          0,1,1,1,1,0,0,0,
+                                          0,1,1,0,0,0,0,0,
+                                          0,1,0,0,0,0,0,0};
+   protected static int up_arrow[] ={0,0,0,0,1,0,0,0,
+                                     0,0,0,1,1,0,0,0,
+                                     0,0,0,1,1,1,0,0,
+                                     0,0,1,1,1,1,0,0,
+                                     0,0,1,1,1,1,1,0,
+                                     0,1,1,1,1,1,1,0,
+                                     0,1,1,1,1,1,1,1,
+                                     1,1,1,1,1,1,1,1};
+
+   protected static int down_arrow[] ={1,1,1,1,1,1,1,1,
+                                       0,1,1,1,1,1,1,1,
+                                       0,1,1,1,1,1,1,0,
+                                       0,0,1,1,1,1,1,0,
+                                       0,0,1,1,1,1,0,0,
+                                       0,0,0,1,1,1,0,0,
+                                       0,0,0,1,1,0,0,0,
+                                       0,0,0,1,0,0,0,0};
+
    int nDSfields = 5;
    int nDSattr = 4;   
    int nDBattr = 11;                        
@@ -109,9 +143,9 @@ public class table_view extends JPanel implements ActionListener
                          consoleView;
   
    ButtonGroup  GotoRadioButtons = new ButtonGroup();
-   JMenuItem  selectEdit;
-   JCheckBoxMenuItem selectAllEdit;
-   JRadioButtonMenuItem  DBSeqOpt, 
+   JButton  selectEdit;
+   JCheckBox selectAllEdit;
+   JRadioButton  DBSeqOpt, 
                   DBPairedOpt;
    ButtonGroup radios = new ButtonGroup();
 
@@ -202,6 +236,9 @@ public class table_view extends JPanel implements ActionListener
        unselModel = new DefaultListModel();
 
        unsel = new JList( unselModel ); 
+       unsel.setBorder( BorderFactory.createTitledBorder(
+          BorderFactory.createEtchedBorder() , "Possible Fields" ));
+       
        Nuse = new int[ Fields.length + 1 ];
        for( int i = 0 ; i < Fields.length ; i++ )
           {unselModel.addElement( Fields[ i ] );
@@ -214,8 +251,8 @@ public class table_view extends JPanel implements ActionListener
                        BorderLayout.CENTER );
        JPanel JP2 = new JPanel();
        JP2.setLayout( new GridLayout( 6 , 1 ));
-       Add = new JButton( "Add" );
-       Remove = new JButton( "Remove" );
+       Add = new JButton( "Add>" );
+       Remove = new JButton( "<Remove" );
        JP2.add( new JLabel("" ));
        JP2.add( new JLabel("" ));
        JP2.add( Add );
@@ -233,10 +270,20 @@ public class table_view extends JPanel implements ActionListener
        sel = new JList( selModel ); 
        use = new int[ Fields.length+ 1 ];
         Arrays.fill( use , -1 );
+       sel.setBorder( BorderFactory.createTitledBorder(
+          BorderFactory.createEtchedBorder() , "Display Fields" ));
        JPbr.add( sel , BorderLayout.CENTER );
         JP2 = new JPanel( new GridLayout( 6 , 1 ));
-       Up = new JButton( "Up" );
-       Down = new JButton( "Down" );
+      /* Image R_arrw = createImage(new MemoryImageSource(8, 8, 
+                                  right_arrow, 0, 8));
+       Image U_arrw = createImage(new MemoryImageSource(8, 8, 
+                                  up_arrow, 0, 8));
+       Image D_arrw = createImage(new MemoryImageSource(8, 8, 
+                                  down_arrow, 0, 8));
+      */
+
+       Up = new JButton( "Up" );//new ImageIcon( U_arrw));
+       Down = new JButton( "Down" );//new ImageIcon( D_arrw))
        JP2.add( new JLabel( "" ));
        JP2.add( new JLabel( "" ));
        JP2.add( Up );
@@ -248,43 +295,90 @@ public class table_view extends JPanel implements ActionListener
        JP.add(JPbr );
        Up.addActionListener( this );
        Down.addActionListener( this );
+       JP.setBorder( BorderFactory.createTitledBorder(
+                     BorderFactory.createLineBorder( Color.black ),
+                     "Display"));
        add( JP ,BorderLayout.CENTER );       
 
        // Bottom status panel
       
-       fileView = new JRadioButtonMenuItem( "Save to File" ,false);
-       tableView = new JRadioButtonMenuItem( "Table",false );
-       consoleView = new JRadioButtonMenuItem( "Console" ,true);   
+        fileView = new JRadioButtonMenuItem( "Save to File" ,false);
+       tableView = new JRadioButtonMenuItem( "Make a Table",false );
+       consoleView = new JRadioButtonMenuItem( "Write to Console" ,true);   
        fileView.addActionListener( this );  
        consoleView.addActionListener( this );  
-       tableView.addActionListener( this );    
+       tableView.addActionListener( this );          
        GotoRadioButtons.add( fileView );
        GotoRadioButtons.add( tableView );       
        GotoRadioButtons.add ( consoleView);
+       
+      
+       
        GO = new JButton( "Display");
        GO.addActionListener( this );
-       JMenu Goto= new JMenu( "   To:   ");
-       JMenuBar GG = new JMenuBar();
-        GG.add(Goto);
+      
+       /* GG.add(Goto);
        Goto.add( fileView);
        Goto.add( tableView);
        Goto.add( consoleView);
+       */
+       SelectedIndecies = new JLabel( );
+       setSelectedGRoup_Display( IntList.ToString( DS[0].
+                                 getSelectedIndices() ) );
 
-       SelectedIndecies = new JLabel( "Selected Indices="+IntList.ToString(
-                                     DS[0].getSelectedIndices() )+"     ");
-
-       selectEdit = new JMenuItem( "Select Group indicies" );
-       selectAllEdit = new JCheckBoxMenuItem( "Select All Groups" , false );
-       DBSeqOpt = new JRadioButtonMenuItem( "List Groups Sequentially" ,
+       selectEdit = new JButton( "Select Group indicies" );
+       selectEdit.addActionListener( this );
+       selectAllEdit = new JCheckBox( "Use All Groups" , false );
+       DBSeqOpt = new JRadioButton( "List Groups Sequentially" ,
                                            true );
-       DBPairedOpt = new JRadioButtonMenuItem( "List Groups in Columns" ,
+       DBPairedOpt = new JRadioButton( "List Groups in Columns" ,
                                                false); 
        DBSeqOpt.addActionListener( this );
        DBPairedOpt.addActionListener( this );
        selectAllEdit.addActionListener( this );    
        radios.add( DBSeqOpt );
        radios.add( DBPairedOpt );
-       JMenu Options = new JMenu( "  Options   ");
+       // New Layout
+           Box RightPanel = new Box( BoxLayout.Y_AXIS );
+           RightPanel.add( new JLabel ("Controls", SwingConstants.CENTER ));
+           JPanel Selects = new JPanel( new GridLayout( 3,1 ));
+           Selects.add( SelectedIndecies );
+           Selects.add ( selectEdit );
+           Selects.add( selectAllEdit );
+           Selects.setBorder( BorderFactory.createEtchedBorder() );
+           RightPanel.add( Selects );
+
+           JPanel Grouping = new JPanel( new GridLayout( 2, 1 ));
+           Grouping.add( DBSeqOpt);
+           Grouping.add( DBPairedOpt );
+           Grouping.setBorder( BorderFactory.createEtchedBorder() );
+           RightPanel.add( Grouping);
+        
+          // RightPanel.add( Box.createVerticalGlue() );
+ 
+           JPanel Output = new JPanel( new GridLayout( 4, 1));
+           Output.add( fileView );
+           Output.add( tableView );
+           Output.add( consoleView );
+           Output.add( GO);          
+           Output.setBorder( BorderFactory.createEtchedBorder() );
+           RightPanel.add( Output );
+
+           //Spacing
+           //JP = new JPanel();
+           //JP.setPreferredSize( new Dimension( 20, 5000 ) );
+           //Output.add( JP );
+          
+           RightPanel.add( Box.createVerticalGlue() );
+         /*  RightPanel.setBorder( BorderFactory.createTitledBorder(
+                     BorderFactory.createLineBorder( Color.black ),
+                     "Controls"));
+         */
+
+        add( RightPanel, BorderLayout.EAST );
+       //End new layout
+       // Old layout
+       /*JMenu Options = new JMenu( "  Options   ");
        Options.add( selectEdit );
        Options.add( selectAllEdit );
        Options.add( new JSeparator() );
@@ -297,9 +391,28 @@ public class table_view extends JPanel implements ActionListener
        BottomPanel.add( GG);
        //BottomPanel.add( Options );
        BottomPanel.add( Box.createHorizontalGlue());
+       BottomPanel.add( Goto );
+       Goto.addItemListener( this );
        BottomPanel.add( GO);
-       add(BottomPanel, BorderLayout.SOUTH );
+        add(BottomPanel, BorderLayout.SOUTH );
+       */
+       //End old layout
+      
      }
+   public void setSelectedGRoup_Display( String S )
+     { String Res ="Selected indicies:";
+       
+       if( S == null)
+          Res += "None        ";
+       else if( S.length() <1)
+          Res += "None         ";
+       else if( S.length() >15)
+         Res += S.substring( 0,11)+"...";
+       else
+         Res += S;
+       SelectedIndecies.setText( Res+"    " );
+
+     } 
  /**
 *  Restores the state of this system to the way it was the previous time
 * the ViewManager visited this module.<BR>
