@@ -26,6 +26,9 @@
  * Initial revision
  *
  * $Log$
+ * Revision 1.2  2004/02/04 18:58:03  dennis
+ * Fixed error in spelling a parameter name in a javadoc comment.
+ *
  * Revision 1.1  2004/01/28 21:57:56  bouzekc
  * Added to CVS.  Changed package to ExtTools.compiler, moved original log,
  * changed at symbol in email in author tag to "_at_".  Formatted code.
@@ -1268,7 +1271,7 @@ public class DynamicCompiler {
   /**
    * Extracts a local class name.
    *
-   * @param mainClassNames a string specifying the fully qualified names of the
+   * @param mainClassName a string specifying the fully qualified names of the
    *        class to be compiled
    *
    * @return a string containing the local class name
