@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2001/06/29 18:36:19  dennis
+ *  Now uses components: ColorScaleMenu and ColorScaleImage
+ *  to change and display the current color scale.
+ *
  *  Revision 1.18  2001/06/08 22:07:42  dennis
  *  setDataSet() now always sets the ZoomRegion in the state
  *  object.
@@ -495,44 +499,8 @@ private void AddOptionsToMenu()
   JMenu option_menu = menu_bar.getMenu( OPTION_MENU_ID );
 
                                                      // color options
-  JMenu color_menu = new JMenu( "Color Scale..." );
+  JMenu color_menu = new ColorScaleMenu( option_menu_handler );
   option_menu.add( color_menu );
-
-  JMenuItem button = new JMenuItem( IndexColorMaker.HEATED_OBJECT_SCALE );
-  button.addActionListener( option_menu_handler );
-  color_menu.add( button );
-
-  button = new JMenuItem( IndexColorMaker.HEATED_OBJECT_SCALE_2 );
-  button.addActionListener( option_menu_handler );
-  color_menu.add( button );
-
-  button = new JMenuItem( IndexColorMaker.GRAY_SCALE );
-  button.addActionListener( option_menu_handler );
-  color_menu.add( button );
-
-  button = new JMenuItem( IndexColorMaker.NEGATIVE_GRAY_SCALE );
-  button.addActionListener( option_menu_handler );
-  color_menu.add( button );
-
-  button = new JMenuItem( IndexColorMaker.GREEN_YELLOW_SCALE );
-  button.addActionListener( option_menu_handler );
-  color_menu.add( button );
-
-  button = new JMenuItem( IndexColorMaker.RAINBOW_SCALE );
-  button.addActionListener( option_menu_handler );
-  color_menu.add( button );
-
-  button = new JMenuItem( IndexColorMaker.OPTIMAL_SCALE );
-  button.addActionListener( option_menu_handler );
-  color_menu.add( button );
-
-  button = new JMenuItem( IndexColorMaker.MULTI_SCALE );
-  button.addActionListener( option_menu_handler );
-  color_menu.add( button );
-
-  button = new JMenuItem( IndexColorMaker.SPECTRUM_SCALE );
-  button.addActionListener( option_menu_handler );
-  color_menu.add( button );
                                                // multiplot graph options
   JMenu multiplot_menu = new JMenu( "Graph Selected (" + MAX_PLOTS + " Max)" );
 
@@ -727,11 +695,7 @@ private Component MakeControlArea()
   n_bins_ui = new TextValueUI( "Num Bins", num_cols-1 );
   control_area.add( n_bins_ui ); 
                                                   // make a color scale bar
-  float color_scale_data[][] = new float[1][255];
-  for ( int i = -127; i <= 127; i++ )
-    color_scale_data[0][i+127] = i;
-  color_scale_image = new ImageJPanel();
-  color_scale_image.setData( color_scale_data, false );
+  color_scale_image = new ColorScaleImage();
   color_scale_image.setNamedColorModel( getState().getColor_scale(), false );
   control_area.add( color_scale_image );
 
