@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.17  2003/07/14 16:33:39  bouzekc
+ * Made log file parameter's initial value empty.
+ *
  * Revision 1.16  2003/07/08 23:08:12  bouzekc
  * Removed brackets from within getDocumentation().
  *
@@ -190,38 +193,27 @@ public class IndexJForm extends Form {
   public void setDefaultParameters(  ) {
     parameters = new Vector(  );
 
-    //0
-    addParameter( new IntArrayPG( "Run Numbers", null, false ) );
+    addParameter( new IntArrayPG( "Run Numbers", null, false ) );  //0
 
-    //1
-    addParameter( new DataDirPG( "Peaks File Path", null, false ) );
+    addParameter( new DataDirPG( "Peaks File Path", null, false ) );  //1
 
-    //2
-    addParameter( new StringPG( "Experiment Name", null, false ) );
+    addParameter( new StringPG( "Experiment Name", null, false ) );  //2
 
-    //3
-    addParameter( new FloatPG( "Delta (h)", 0.10f, false ) );
+    addParameter( new FloatPG( "Delta (h)", 0.10f, false ) );  //3
 
-    //4
-    addParameter( new FloatPG( "Delta (k)", 0.10f, false ) );
+    addParameter( new FloatPG( "Delta (k)", 0.10f, false ) );  //4
 
-    //5
-    addParameter( new FloatPG( "Delta (l)", 0.10f, false ) );
+    addParameter( new FloatPG( "Delta (l)", 0.10f, false ) );  //5
 
-    //6
-    addParameter( new BooleanPG( "Update Peaks File", true, false ) );
+    addParameter( new BooleanPG( "Update Peaks File", true, false ) );  //6
 
-    //7
-    addParameter( new BooleanPG( "Specify a Matrix File?", false, false ) );
+    addParameter( new BooleanPG( "Specify a Matrix File?", false, false ) );  //7
 
-    //8
-    addParameter( new LoadFilePG( "Matrix File to Load", "", false ) );
+    addParameter( new LoadFilePG( "Matrix File to Load", "", false ) );  //8
 
-    //9
-    addParameter( new IntArrayPG( "Restrict Runs", "", false ) );
+    addParameter( new IntArrayPG( "Restrict Runs", "", false ) );  //9
 
-    //10
-    addParameter( new LoadFilePG( "JIndex Log", null, false ) );
+    addParameter( new LoadFilePG( "JIndex Log", " ", false ) );  //10
 
     if( HAS_CONSTANTS ) {
       setParamTypes( 
