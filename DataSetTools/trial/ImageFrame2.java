@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/09/16 18:10:49  dennis
+ * Made calibrations on both image axes linear.
+ *
  * Revision 1.12  2004/09/15 22:03:50  millermi
  * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
  *   Adding a second log required the boolean parameter to be changed
@@ -281,7 +284,7 @@ public class ImageFrame2 extends JFrame
     va2D.setAxisInfo( AxisInfo.X_AXIS, 0f, 10000f, 
     		        "TestX","TestUnits", AxisInfo.LINEAR );
     va2D.setAxisInfo( AxisInfo.Y_AXIS, 0f, 1500f, 
-    			"TestY","TestYUnits", AxisInfo.TRU_LOG );
+    			"TestY","TestYUnits", AxisInfo.LINEAR );
     va2D.setTitle("ImageFrame Test");
     new ImageFrame2( va2D );
     // test setData() 10 times
