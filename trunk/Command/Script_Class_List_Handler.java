@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.38  2003/03/06 22:50:53  pfpeterson
+ * Added a boolean to decide whether or not a script is reloaded when
+ * asked for. This shortens the initial loading of ISAW by ~25% since
+ * the scripts are not reloaded at startup.
+ *
  * Revision 1.37  2003/02/21 19:35:44  pfpeterson
  * Changed calls to fixSeparator appropriate (not deprecated) method.
  *
@@ -139,6 +144,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
     private static boolean first = true;
     public  static boolean LoadDebug = false;
     private final int MIN_DIR_NAME__LENGTH=3;
+    protected static boolean reload_scripts=true;
 
     /**
      * The System property user.home,ISAW_HOME, GROUP_HOME,
@@ -465,23 +471,23 @@ public class Script_Class_List_Handler  implements OperatorHandler{
      * Gets the index-th operator in the master list of operators
      */
     public Operator getOperator( int index ){
-        Operator X = getOp1( CommandListIndex(index) );
-        if( X == null )
-            return null;
-        if( X instanceof ScriptOperator ){ // Maybe will get these to retain
-                                           // their parameter values too
-            String filename = ((ScriptOperator)X).getFileName();
-            return new ScriptOperator( filename );
+      Operator X = getOp1( CommandListIndex(index) );
+      if(reload_scripts){
+        if(X==null)  
+          return null;
+        else if( X instanceof ScriptOperator ){ // Maybe will get these to
+                                           // retain their parameter values too
+          String filename = ((ScriptOperator)X).getFileName();
+          return new ScriptOperator( filename );
         }else{ //Will try to have these operators retain their parameter values
-            /*Class C = X.getClass();
-              try{
-              return (Operator)(C.newInstance());
-              }
-              catch(Exception s)
-              { return null;}*/
-            return X;
+          return X;
         }
+
+      }else{
+        return X;
+      }
     }
+
     /**
      * Gets the index-th operator in the master list of DataSet operators
      */
