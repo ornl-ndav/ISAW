@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/24 20:06:14  rmikk
+ * Added Field to the process command so their is access
+ * to and from linked data
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
@@ -50,7 +54,7 @@ public interface NxData
   *@param  DS  the existing DataSet that is to be filled out
   *@return  error status: true if there is an error otherwise false
   */
-   public boolean processDS( NxNode node , DataSet DS );
+   public boolean processDS( NxNode node , NxNode instrNode, DataSet DS );
 
   /** Returns an error or warning message or "" if none
   */
