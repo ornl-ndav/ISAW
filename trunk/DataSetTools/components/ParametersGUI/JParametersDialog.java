@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2001/11/19 19:01:53  dennis
+ *   Added a new constructor that lets this dialog box be modal. (Ruth)
+ *
  *  Revision 1.18  2001/11/09 18:16:20  dennis
  *  1. Eliminated reporting of the command is "UNKNOWN".
  *  2. Set the Result label to "" before executing a getResult.
@@ -129,17 +132,24 @@ public class JParametersDialog implements Serializable,
                                  //w/o a reference to the actual tree.
     IDataSetListHandler ds_src;
     
-    
     public JParametersDialog( Operator  op, 
                               IDataSetListHandler ds_src, 
                               Document  sessionLog, 
                               IObserver io )
+     { this( op, ds_src,sessionLog, io , false);
+       
+       
+      }
+    public JParametersDialog( Operator  op, 
+                              IDataSetListHandler ds_src, 
+                              Document  sessionLog, 
+                              IObserver io , boolean modal )
     {   
         this.op =op;
         this.ds_src = ds_src;
         this.sessionLog = sessionLog;    
         this.io = io;
-        opDialog = new JDialog( new JFrame(), op.getTitle(), false );
+        opDialog = new JDialog( new JFrame(), op.getTitle(), modal);
         //opDialog.addComponentListener( new MyComponentListener());       
         int Size = 0 ;
         int Size1 = 0;
