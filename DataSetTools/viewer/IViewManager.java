@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/07/16 21:36:11  rmikk
+ *  Change TABLE to represent the "Advanced Table"
+ *
  *  Revision 1.6  2002/07/10 19:38:21  rmikk
  *  Added a string for the Contour view
  *
@@ -72,7 +75,7 @@ public interface IViewManager extends IObserver
   public static final String IMAGE           = "Image View";
   public static final String SCROLLED_GRAPHS = "Scrolled Graph View";
   public static final String SELECTED_GRAPHS = "Selected Graph View";
-  public static final String TABLE           = "Table View";
+  public static final String TABLE           = "Advanced Table";
   public static final String THREE_D         = "3D View";
   public static final String CONTOUR         = "Contour View";
   public void setDataSet( DataSet ds );
