@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.70  2003/08/16 01:34:56  bouzekc
+ * Is now more aggressive when trying to determine if a File exists in
+ * convertXMLtoParameters().
+ *
  * Revision 1.69  2003/08/14 20:13:20  bouzekc
  * Now uses a TextFileReader when loading Forms.
  *
@@ -1231,6 +1235,7 @@ public abstract class Wizard implements PropertyChangeListener {
     String paramValue;
     String paramValidity;
     String typeEnd;
+    Object trimmer;
     StringBuffer temp      = new StringBuffer(  );
     StringTokenizer st;
     int nameStartInd;
@@ -1299,28 +1304,40 @@ public abstract class Wizard implements PropertyChangeListener {
             validStartInd + VALIDSTART.length(  ), validEndInd );
         curParam.setValid( new Boolean( paramValidity ).booleanValue(  ) );
 
+        trimmer = curParam.getValue(  );
+
         if( curParam instanceof DataSetPG ) {
           curParam.setValid( false );  //DataSets not valid
         } else if( ( curParam instanceof BrowsePG ) ) {
           //if the value for the BrowsePG was bad (as can happen all too easily
           //with Scripts) or the file is not found, set it invalid
           if( 
-            ( curParam.getValue(  ) == null ) ||
-              !( new File( curParam.getValue(  ).toString(  ) ).exists(  ) ) ) {
+            
+            //try every trick we can to see if the File exists
+            ( trimmer == null ) ||
+              !( new File( trimmer.toString(  ).replace( '\"', ' ' ).trim(  ) ).exists(  ) ) ) {
             curParam.setValid( false );
           }
         } else if( curParam instanceof ArrayPG || curParam instanceof VectorPG ) {
-          Vector v = ( Vector )( curParam.getValue(  ) );
-
-          if( ( v == null ) || v.isEmpty(  ) ) {
+          if( trimmer == null ) {
             curParam.setValid( false );
-          } else {  //Test the assumption
+          } else {
+            Vector v = ( Vector )trimmer;
 
-            for( int k = 0; k < v.size(  ); k++ ) {
-              if( !( new File( v.elementAt( k ).toString(  ) ).exists(  ) ) ) {
-                curParam.setValid( false );
+            if( ( v == null ) || v.isEmpty(  ) ) {
+              curParam.setValid( false );
+            } else {  //Test the assumption
 
-                break;
+              for( int k = 0; k < v.size(  ); k++ ) {
+                trimmer = v.elementAt( k );
+
+                if( 
+                  !( new File( 
+                      trimmer.toString(  ).replace( '\"', ' ' ).trim(  ) ).exists(  ) ) ) {
+                  curParam.setValid( false );
+
+                  break;
+                }
               }
             }
           }
