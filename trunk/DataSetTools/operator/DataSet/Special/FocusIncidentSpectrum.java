@@ -1,5 +1,5 @@
 /*
- * File:   FocusIncidentSpectrum.java     
+ * File:   FocusIncidentSpectrum.java
  *
  * Copyright (C) 2000, Dennis Mikkelson
  *
@@ -30,8 +30,11 @@
  * Modified:
  *
  * Programmer:  Dennis Mikkelson
- *             
+ *
  * $Log$
+ * Revision 1.5  2003/01/13 17:20:56  dennis
+ * Added getDocumentation(), main test program and javadocs on getResult()
+ *
  * Revision 1.4  2002/11/27 23:19:19  pfpeterson
  * standardized header
  *
@@ -55,14 +58,16 @@ import  DataSetTools.util.*;
 import  DataSetTools.math.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.retriever.*;
 
 /**
-  *  This operator focusses the incident spectrum from a beam monitor to a
-  *  bank of detectors at a specified total flight path length and range 
-  *  of angles. This based on the FORTRAN SUBROUTINE inc_spec_focus from IPNS. 
+  *  This operator focuses the incident spectrum from a beam monitor to a
+  *  bank of detectors at a specified total flight path length and range
+  *  of angles. This based on the FORTRAN SUBROUTINE inc_spec_focus from IPNS.
   */
 
-public class  FocusIncidentSpectrum  extends   DS_Special 
+public class  FocusIncidentSpectrum  extends   DS_Special
                                                implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -86,18 +91,18 @@ public class  FocusIncidentSpectrum  extends   DS_Special
    *  by calling getResult().
    *
    *  @param  ds            The DataSet containing the monitor Data that is to
-   *                        be focussed
-   *  @param  group_id      The group_id of the monitor Data block 
-   *  @param  t_min         Smallest tof to which the spectrum is focussed.
-   *  @param  t_max         Largest tof to which the spectrum is focussed.
-   *  @param  num_bins      Number of time bins to be used for the focussed 
+   *                        be focused
+   *  @param  group_id      The group_id of the monitor Data block
+   *  @param  t_min         Smallest tof to which the spectrum is focused.
+   *  @param  t_max         Largest tof to which the spectrum is focused.
+   *  @param  num_bins      Number of time bins to be used for the focused
    *                        spectrum.
-   *  @param  path_length   The total flight path length for the focussed 
+   *  @param  path_length   The total flight path length for the focused
    *                        spectrum
-   *  @param  theta         The nominal angle for the focussed spectrum 
-   *  @param  theta_min     The minimum angle for the focussed spectrum 
-   *  @param  theta_max     The maximum angle for the focussed spectrum 
-   *  @param  new_group_id  The group_id to be used for the focussed spectrum 
+   *  @param  theta         The nominal angle for the focused spectrum
+   *  @param  theta_min     The minimum angle for the focused spectrum
+   *  @param  theta_max     The maximum angle for the focused spectrum
+   *  @param  new_group_id  The group_id to be used for the focused spectrum
    */
 
   public FocusIncidentSpectrum( DataSet      ds,
@@ -148,7 +153,8 @@ public class  FocusIncidentSpectrum  extends   DS_Special
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, IncSpecFocus
+   * @return the command name to be used with script processor: in this case,
+   * IncSpecFocus
    */
    public String getCommand()
    {
@@ -156,7 +162,7 @@ public class  FocusIncidentSpectrum  extends   DS_Special
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -192,9 +198,59 @@ public class  FocusIncidentSpectrum  extends   DS_Special
     addParameter( parameter );
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator focuses the incident spectrum from ");
+    s.append("a beam monitor to a bank of detectors at a specified total ");
+    s.append("flight path length and range of angles.\n");
+    s.append("@assumptions The specified group ID corresponds to a valid ");
+    s.append("data entry.  Furthermore, it is assumed that the absolute ");
+    s.append("values of the Y and Z cartesian coordinates of the detector ");
+    s.append("position are less than or equal to 0.01.\n");
+    s.append("@algorithm First this operator acquires the monitor data ");
+    s.append("corresponding to the group_id given.\n");
+    s.append("Then it creates a new XScale using tmin, tmax, and num_bins.\n");
+    s.append("Finally it uses the new XScale, the monitor data, path_length, ");
+    s.append("theta, theta_min, theta_max, and new_group_ID to create a new ");
+    s.append("DataSet.\n");
+    s.append("It does this by using the IncSpecFocus method from the ");
+    s.append("DataSetTools math library.   Note that this method is based on ");
+    s.append("the FORTRAN SUBROUTINE inc_spec_focus from IPNS.\n");
+    s.append("@param ds The DataSet containing the monitor Data that is to ");
+    s.append("be focused.\n");
+    s.append("@param group_id The group_id of the monitor Data block.\n");
+    s.append("@param t_min Smallest tof to which the spectrum is focused.\n");
+    s.append("@param t_max Largest tof to which the spectrum is focused.\n");
+    s.append("@param num_bins Number of time bins to be used for the ");
+    s.append("focused spectrum.\n");
+    s.append("@param path_length The total flight path length for the ");
+    s.append("focused spectrum.\n");
+    s.append("@param theta The nominal angle for the focused spectrum.\n");
+    s.append("@param theta_min The minimum angle for the focused spectrum.\n");
+    s.append("@param theta_max The maximum angle for the focused spectrum.\n");
+    s.append("@param new_group_id The group_id to be used for the focused ");
+    s.append("spectrum.\n");
+    s.append("@return DataSet which consists of the focused incident spectrum");
+    s.append(" from the specified beam monitor data.\n");
+    s.append("@error Returns an error if the specified group ID does not ");
+    s.append("correspond to a valid data entry.\n");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+   *  Calculates the incident energy of a neutron beam based on the pulse
+   *  data from the two beam monitors contained in the input DataSet.
+   *
+   *  @return DataSet which consists of the focused incident spectrum from
+   *  the specified beam monitor data.
+   */
   public Object getResult()
   {                                  // get the parameters
 
@@ -208,14 +264,14 @@ public class  FocusIncidentSpectrum  extends   DS_Special
     float theta_max    = ( (Float)(getParameter(7).getValue()) ).floatValue();
     int   new_group_id = ( (Integer)(getParameter(8).getValue()) ).intValue();
 
-                                     // get the current data set and do the 
+                                     // get the current data set and do the
                                      // operation
     DataSet ds = this.getDataSet();
 
     Data monitor_data = ds.getData_entry_with_id( group_id );
     if ( monitor_data == null )
     {
-      ErrorString message = new ErrorString( 
+      ErrorString message = new ErrorString(
                            "ERROR: no data entry with the group_ID "+group_id );
       System.out.println( message );
       return message;
@@ -224,15 +280,16 @@ public class  FocusIncidentSpectrum  extends   DS_Special
     boolean is_histogram = monitor_data.isHistogram();
     if ( !is_histogram )
     {
-      monitor_data = new HistogramTable( monitor_data, 
-                                         false, 
+      monitor_data = new HistogramTable( monitor_data,
+                                         false,
                                          monitor_data.getGroup_ID() );
     }
 
     XScale new_x_scale = new UniformXScale( t_min, t_max, num_bins+1 );
 
+
     Data new_data = tof_data_calc.IncSpecFocus( monitor_data,
-                                                new_x_scale, 
+                                                new_x_scale,
                                                 path_length,
                                                 theta,
                                                 theta_min,
@@ -242,13 +299,13 @@ public class  FocusIncidentSpectrum  extends   DS_Special
     DataSet new_ds = ds.empty_clone();
     new_ds.addData_entry( new_data );
 
-    return new_ds;  
-  }  
+    return new_ds;
+  }
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current FocusIncidentSpectrum Operator.  The list of 
-   * parameters and the reference to the DataSet to which it applies are 
+   * Get a copy of the current FocusIncidentSpectrum Operator.  The list of
+   * parameters and the reference to the DataSet to which it applies are
    * also copied.
    */
   public Object clone()
@@ -262,5 +319,81 @@ public class  FocusIncidentSpectrum  extends   DS_Special
     return new_op;
   }
 
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+  DataSet ds1 = null, new_ds;
+  int groupID, numBins, newGroupID;
+  float tMin, tMax, pathLength, thetaG, thetaMin, thetaMax;
+  StringBuffer m = new StringBuffer();
+  FocusIncidentSpectrum op;
+
+  groupID = 26;
+  numBins = 4;
+  newGroupID = 26;
+
+  tMin = (float) 10.0;
+  tMax = (float) 90.0;
+  pathLength = (float) 100.0;
+  thetaG = (float) 0.5;
+  thetaMin = (float) 0.0;
+  thetaMax = (float) 3.14;
+
+  String file_name = "/home/groups/SCD_PROJECT/SampleRuns/hrcs2447.run";
+                      //"D:\\ISAW\\SampleRuns\\hrcs2447.run";
+
+  try
+  {
+    RunfileRetriever rr = new RunfileRetriever( file_name );
+    ds1 = rr.getDataSet(1);
+    //ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+  }
+  catch(Exception e)
+  {
+    System.err.println("Error opening file");
+  }
+
+  try
+  {
+     op = new FocusIncidentSpectrum( ds1, groupID, 
+                                     tMin, tMax, numBins, 
+                                     pathLength,
+                                     thetaG, 
+                                     thetaMin, thetaMax,
+                                     newGroupID );
+
+     Object result = op.getResult();
+
+
+
+     //display the DataSet
+     if( result instanceof DataSet )
+     {
+       new_ds = (DataSet) result;
+       System.out.println(new_ds.getData_entry(1).toString());
+       ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+     }
+
+     else
+     {
+       m.append("\nAn error occurred when calling getResult() for ");
+       m.append("FocusIncidentSpectrum:\n\n");
+       m.append(result.toString());
+     }
+
+     m.append("\nThe results of calling getDocumentation() for ");
+     m.append("FocusIncidentSpectrum are:\n\n");
+     m.append(op.getDocumentation());
+
+     System.out.print(m.toString());
+   }
+   catch(Exception e)
+   {
+     System.err.println("An error occurred while running the operator.");
+   }
+  }
 
 }
