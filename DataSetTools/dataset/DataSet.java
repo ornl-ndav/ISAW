@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2001/07/02 16:41:43  dennis
+ *  Added methods:
+ *    getAttribute( index )
+ *    getAttribute( name )
+ *
  *  Revision 1.17  2001/06/29 22:05:21  dennis
  *  Removed un-needed calls to System.gc
  *  (They introduced a large time delay!!)
@@ -1255,12 +1260,35 @@ public class DataSet implements IAttributeList,
     attr_list.setAttribute( attribute, index );
   }
 
+  /**
+   * Get the attribute at the specified index from the list of
+   * attributes. If the index is invalid, this returns null.
+   * 
+   * @param  index  The position of the attribute in the list of attributes.
+   */
+  public Attribute getAttribute( int index )
+  {
+    return attr_list.getAttribute( index );
+  }
+  
+  /**
+   * Get the attribute with the specified name from the list of
+   * attributes.  If the named attribute is not in the list, this
+   * returns null.
+   * 
+   * @param  name  The name of the attribute value to get.
+   */
+  public Attribute getAttribute( String name )
+  { 
+    return attr_list.getAttribute( name );
+  }
+
 
   /**
    * Get the value of the attribute at the specified index from the list of
    * attributes. If the index is invalid, this returns null.
    *
-   * @param  name  The name of the attribute value to get.
+   * @param  index  The position of the attribute in the list of attributes.
    */
   public Object  getAttributeValue( int index )
   {
