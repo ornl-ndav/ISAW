@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.46  2004/03/19 17:18:43  dennis
+ *  Removed unused variables
+ *
  *  Revision 1.45  2004/03/15 06:10:55  dennis
  *  Removed unused import statements.
  *
@@ -799,7 +802,6 @@ private void BuildViewMenu()
 
  public void BuildTableMenu( JMenu Tables )
  { 
-    int n= TableViewMenuComponents.getNMenuItems();
     ViewMenuHandler view_menu_handler = new ViewMenuHandler();
     if( table_MenuComp == null)
       table_MenuComp = new TableViewMenuComponents();
@@ -974,7 +976,6 @@ private float solve( float new_x ) // find what x in the original DataSet maps
     public void actionPerformed( ActionEvent e )
     {
       String action = e.getActionCommand();
-      boolean changed;
 
       if ( action.equals( SUM_SELECTED ))
       {

@@ -53,6 +53,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2004/03/19 17:17:33  dennis
+ * Removed unused variables
+ *
  * Revision 1.19  2004/03/15 06:10:56  dennis
  * Removed unused import statements.
  *
@@ -318,8 +321,7 @@ public class blind {
       // d is the determinant of the basis vectors if close to zero,
       // then basis are coplanar.  Interchange the kth peak with one
       // of the basis.
-      int    tempI=0;
-      double tempD=0.0;
+
       if (Math.abs(xa[0]*ya[1]-xa[1]*ya[0]) >= 0.05 
           || Math.abs(xa[0]*za[1]-xa[1]*za[0]) >= 0.05 
           || Math.abs(ya[0]*za[1]-ya[1]*za[0]) >= 0.05)  {
@@ -563,7 +565,7 @@ public class blind {
     int d= 0,s1= 0,s2= 0,s3= 0;
     int [] ll= new int[(3) * (lmt)];
     int ha= 0,hb= 0,hc= 0,da= 0,Goto=0;
-    boolean trace=false;
+    boolean trace = false;
     int i= 0,j= 0,m1= 0,m2= 0,m3= 0,jdum= 0,idum= 0;
     int n= 0,kka= 0,lb= 0,kkdum= 0,m= 0,k= 0,l= 0,mm= 0;
     int idumc= 0,iduma= 0,kk= 0,idumb= 0;

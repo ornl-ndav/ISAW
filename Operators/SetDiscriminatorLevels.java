@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/03/19 17:10:54  dennis
+ * Removed unused variables
+ *
  * Revision 1.10  2004/03/15 19:36:53  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -64,7 +67,6 @@ import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.peak.*;
-import gov.anl.ipns.Util.Numeric.*;
 
 import java.util.*;
 
@@ -256,8 +258,6 @@ public class SetDiscriminatorLevels extends GenericSpecial
                    upper_list[];        // arrays that could be written out
     float          delta  = 
              (float) Math.sqrt( -2 * Math.log(Math.sqrt(2*Math.PI)*upper_frac));
-
-    ClosedInterval range  = p_ds.getYRange();   
 
     lower_list = new int[ n_data ];
     upper_list = new int[ n_data ];
