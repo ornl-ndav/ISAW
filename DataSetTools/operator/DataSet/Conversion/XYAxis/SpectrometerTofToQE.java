@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/01/24 19:20:17  bouzekc
+ * Removed unused variables in main().
+ *
  * Revision 1.5  2003/01/14 19:18:52  dennis
  * Added getDocumentation(), basic main test program and java docs
  * for getResult().  (Chris Bouzek)
@@ -481,11 +484,11 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     float minQ, maxQ, minE, maxE;
     int Ebins, Qbins;
 
-    minE = (float)4.0;
-    maxE = (float)250;
+    minE = 4.0f;
+    maxE = 250f;
     Ebins = 500;
-    minQ = (float)0.225;
-    maxQ = (float)3.2;
+    minQ = 0.225f;
+    maxQ = 3.2f;
     Qbins = 500;
 
     String file_name = "/home/groups/SCD_PROJECT/SampleRuns/hrcs2447.run ";
@@ -494,11 +497,11 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     {
        RunfileRetriever rr = new RunfileRetriever( file_name );
        DataSet ds1 = rr.getDataSet(1);
-       ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+        new ViewManager(ds1, IViewManager.IMAGE);
        SpectrometerTofToQE op =
              new SpectrometerTofToQE(ds1, minQ, maxQ, Qbins, minE, maxE, Ebins);
        DataSet new_ds = (DataSet)op.getResult();
-       ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+       new ViewManager(new_ds, IViewManager.IMAGE);
        System.out.println(op.getDocumentation());
     }
     catch(Exception e)
