@@ -98,24 +98,28 @@ public class ContourView extends DataSetViewer
    float[] times;
    int ncolors = 200;
    int nlevels = 16;
-   ViewerState state = null;
+   ViewerState state = null;  
    JLabel time_label = new JLabel( "" );
    SplitPaneWithState main = null;
-   public ContourView( DataSet ds, ViewerState state )
+   public ContourView( DataSet ds, ViewerState state1 )
    {
 
-      super( ds, state );  // Records the data_set and current ViewerState
+      super( ds, state1 );  // Records the data_set and current ViewerState
       // object in the parent class and then
       // sets up the menu bar with items handled by the
       // parent class.
       data_set = ds;
+      state = state1;
       if( !validDataSet() )
       {
          return;
       }
       sliderTime_index = 0;
-      this.state = state;
-
+      
+      if( state1 == null)
+        { state = new ViewerState();
+         System.out.println("state1 is null");
+        }
       /*
        * Create a new ViewManager to contain the graph.
        */
@@ -129,10 +133,35 @@ public class ContourView extends DataSetViewer
       //main.setLayout(new BorderLayout());
       jm = menu_bar.getMenu( DataSetViewer.OPTION_MENU_ID );
       jm.add( new ColorScaleMenu( new ColorActionListener() ) );
+
+      JMenuItem jmi;
+      JMenu cont_style=new JMenu("Contour Style");
+      jm.add( cont_style);
+      /*jmi = new JMenuItem("AREA_FILL");
+      cont_style.add( jmi);
+      jmi.addActionListener( new MyContStyleListener());
+
+      jmi = new JMenuItem("AREA_FILL_CONTOUR");
+      cont_style.add( jmi);
+      jmi.addActionListener( new MyContStyleListener());
+  */
+      jmi = new JMenuItem("RASTER_CONTOUR");
+      cont_style.add( jmi);
+      jmi.addActionListener( new MyContStyleListener());
+
+      jmi = new JMenuItem("CONTOUR");
+      cont_style.add( jmi);
+      jmi.addActionListener( new MyContStyleListener());
+
+      jmi = new JMenuItem("RASTER");
+      cont_style.add( jmi);
+      jmi.addActionListener( new MyContStyleListener());
+
       ac = new AnimationController();
 
       ac.addActionListener( new MyAction() );
-      setData( data_set, GridAttribute.RASTER_CONTOUR );
+    
+      setData( data_set, state.get_int( ViewerState.CONTOUR_STYLE) );
       JPanel jpEast = new JPanel();
 
       BoxLayout blay = new BoxLayout( jpEast, BoxLayout.Y_AXIS );
@@ -149,6 +178,11 @@ public class ContourView extends DataSetViewer
       main.addComponentListener( new MyComponentListener() );
       main.validate();
    }
+
+  public ViewerState getState()
+   {return state;
+   }
+
 
 
    private void setData( DataSet ds, int GridContourAttribute )
@@ -186,6 +220,7 @@ public class ContourView extends DataSetViewer
          ac.setBorderTitle( data_set.getX_label() );
          ac.setTextLabel( data_set.getX_units() + "=" );
       }
+      state.set_int("Contour.Style", GridContourAttribute);
       if( !( rpl_ == null ) )
          if( main != null )
          {
@@ -236,7 +271,9 @@ public class ContourView extends DataSetViewer
    {
       super.setDataSet( ds );
       data_set = ds;
-      setData( ds, GridAttribute.RASTER_CONTOUR );
+      int GridAt = state.get_int("Contour.Style");
+     
+      setData( ds, GridAt );
       rpl_.draw();
    }
 
@@ -261,11 +298,28 @@ public class ContourView extends DataSetViewer
           gridAttr_.setColorMap(ii);
           //will have to redraw whole thing init_rpl, 
           */
-         init( data_set, GridAttribute.RASTER_CONTOUR );
+         init( data_set, state.get_int("Contour.Style"));
          rpl_.draw();
       }
    }
-
+   class MyContStyleListener implements ActionListener
+   {
+      public void actionPerformed( ActionEvent evt)
+      {if( evt.getActionCommand().equals("AREA_FILL"))
+         state.set_int("Contour.Style",GridAttribute.AREA_FILL );
+      else if( evt.getActionCommand().equals("AREA_FILL_CONTOUR"))
+         state.set_int("Contour.Style",GridAttribute.AREA_FILL_CONTOUR );
+      else if( evt.getActionCommand().equals("RASTER_CONTOUR"))
+         state.set_int("Contour.Style",GridAttribute.RASTER_CONTOUR );
+      else if( evt.getActionCommand().equals("CONTOUR"))
+         state.set_int("Contour.Style",GridAttribute.CONTOUR );
+      else if( evt.getActionCommand().equals("RASTER"))
+         state.set_int("Contour.Style",GridAttribute.RASTER );
+      System.out.println("new state is "+state.get_int("Contour.Style")+evt.getActionCommand());
+      setData( data_set , state.get_int("Contour.Style"));
+      rpl_.draw();
+      }
+   }
    JPanel makeButtonPanel()
    {
       JPanel button = new JPanel();
@@ -393,7 +447,7 @@ public class ContourView extends DataSetViewer
        * ColorKey on a separate Pane object.
        */
       rpl = new JPlotLayout( true, false, false, "ISAW Layout", null, true );
-      rpl.setEditClasses( false );
+      rpl.setEditClasses( true );
 
       /*
        * Create a GridAttribute for CONTOUR style.
@@ -414,7 +468,7 @@ public class ContourView extends DataSetViewer
       IndexedColorMap cmap = createColorMap( datar, state, clevels );
 
       gridAttr_.setColorMap( cmap );
-      gridAttr_.setStyle( GridAttribute.RASTER_CONTOUR );
+      gridAttr_.setStyle( state.get_int("Contour.Style"));
 
       /*
        * Add the grid to the layout and give a label for
