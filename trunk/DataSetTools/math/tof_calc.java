@@ -4,6 +4,10 @@
  *  Ported to Java from tof_vis_calc.c
  * 
  *  $Log$
+ *  Revision 1.6  2000/07/31 13:36:47  dennis
+ *  Added methods to "smooth" functions by averaging nearby points.  One version
+ *  just smooths the functions, the other version also calculates new error values.
+ *
  *  Revision 1.5  2000/07/26 20:47:00  dennis
  *  Now allow zero parameter in velocity<->energy conversions
  *
@@ -348,6 +352,143 @@ public static final float  RADIANS_PER_DEGREE  = 0.01745332925f;
     return( true );
   }
 
+
+/* -------------------------- CLSmoothFunction ------------------------- */
+/**
+ *  Smooth a function.  This algorithm smooths a tabulated function by 
+ *  replacing sets of points with "nearly equal" x values with a new point
+ *  obtained by averaging the x and y values.  "x values" are considered
+ *  "nearly equal" if the distance between them is less than the total length
+ *  of the interval divided by a specified number of steps.
+ *  
+ *  @param  iX       The original array of x values.  This will be altered and
+ *                   the new smoothed x values will be returned in the initial
+ *                   part of this array. 
+ *  @param  iY       The original array of y values.  This will be altered and
+ *                   the new smoothed y values will be returned in the initial
+ *                   part of this array. 
+ *  @param  err      The original array of error values.  This will be altered
+ *                   and the new error values will be returned in the initial
+ *                   part of this array. 
+ *  @param  n_steps  The approximate number of steps to use for the new 
+ *                   smoothed function.
+ *
+ *  @return The number of entries in iX, iY and err that were used for the 
+ *          smoothed function.
+ *  
+ */
+ public static int CLSmooth( float iX[], float iY[], float err[], int n_steps )
+ {
+   int   i,          // indexes the next point to process in the list
+         smoothed_i, // indexes the averaged point to insert in the list 
+         n_summed;
+   float step,
+         x_start,
+         x_sum,
+         y_sum,
+         err_sum;
+                                                   // need at least 2 points
+   if ( iX.length  <= 1         || 
+        iY.length  <  iX.length || 
+        err.length <  iX.length || 
+        n_steps    <  1 )
+     return 0;
+
+   step = ( iX[iX.length-1] - iX[0] ) / n_steps;
+
+   i          = 0;           
+   smoothed_i = 0;   
+   while ( i < iX.length )  // look for groups of "nearly equal" x values
+   {
+     x_start  = iX[i];                         // record the current point
+     n_summed = 1;
+     x_sum    = iX[i];
+     y_sum    = iY[i];
+     err_sum  = err[i] * err[i];
+     i++;                                    // sum all nearly equal points
+     while ( i < iX.length && iX[i]-x_start <= step )
+     {
+       n_summed++;
+       x_sum   += iX[i]; 
+       y_sum   += iY[i]; 
+       err_sum += err[i] * err[i];
+       i++;
+     } 
+                                           // save the average x, y and error
+                                           // in the earlier part of the list
+     iX [ smoothed_i ] = x_sum / n_summed;
+     iY [ smoothed_i ] = y_sum / n_summed;
+     err[ smoothed_i ] = (float)Math.sqrt( err_sum ) / n_summed; 
+     smoothed_i++;
+   }
+
+   return smoothed_i;
+ }
+
+
+/* -------------------------- CLSmoothFunction ------------------------- */
+/**
+ *  Smooth a function.  This algorithm smooths a tabulated function by
+ *  replacing sets of points with "nearly equal" x values with a new point
+ *  obtained by averaging the x and y values.  "x values" are considered
+ *  "nearly equal" if the distance between them is less than the total length
+ *  of the interval divided by a specified number of steps.
+ * 
+ *  @param  iX       The original array of x values.  This will be altered and
+ *                   the new smoothed x values will be returned in the initial
+ *                   part of this array.
+ *  @param  iY       The original array of y values.  This will be altered and
+ *                   the new smoothed y values will be returned in the initial
+ *                   part of this array.
+ *  @param  n_steps  The approximate number of steps to use for the new
+ *                   smoothed function.
+ *
+ *  @return The number of entries in iX and iY that were used for the
+ *          smoothed function.
+ *
+ */
+ public static int CLSmooth( float iX[], float iY[], int n_steps )
+ {
+   int   i,          // indexes the next point to process in the list
+         smoothed_i, // indexes the averaged point to insert in the list
+         n_summed;
+   float step,
+         x_start,
+         x_sum,
+         y_sum;
+                                                   // need at least 2 points
+   if ( iX.length  <= 1         ||
+        iY.length  <  iX.length ||
+        n_steps    <  1 )
+     return 0;
+
+   step = ( iX[iX.length-1] - iX[0] ) / n_steps;
+
+   i          = 0;
+   smoothed_i = 0;
+   while ( i < iX.length )  // look for groups of "nearly equal" x values
+   {
+     x_start  = iX[i];                         // record the current point
+     n_summed = 1;
+     x_sum    = iX[i];
+     y_sum    = iY[i];
+     i++;                                    // sum all nearly equal points
+     while ( i < iX.length && iX[i]-x_start <= step )
+     {
+       n_summed++;
+       x_sum   += iX[i];
+       y_sum   += iY[i];
+       i++;
+     }
+                                           // save the average x, y 
+                                           // in the earlier part of the list
+     iX [ smoothed_i ] = x_sum / n_summed;
+     iY [ smoothed_i ] = y_sum / n_summed;
+     smoothed_i++;
+   }
+
+   return smoothed_i;
+ }
 
 
 /* --------------------------- Energy -------------------------------- */
