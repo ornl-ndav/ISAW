@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/08/21 15:16:53  rmikk
+ * Fixed error
+ *
  * Revision 1.1  2003/07/25 16:37:15  rmikk
  * Initial checkin
  *
@@ -93,7 +96,6 @@ public class ReadTransmission extends GenericTOF_SAD{
    public Object getResult(){
      String filename = ((LoadFilePG)(getParameter(0))).getStringValue();
      int    ntimes = ((IntegerPG)(getParameter(1))).getintValue();
-
      Vector V =new Vector();
      V.addElement( new float[0]);
       FileInputStream fin = null;
@@ -117,7 +119,6 @@ public class ReadTransmission extends GenericTOF_SAD{
          return new ErrorString( " not enough data");
        float[] yvals = (float[])(V.firstElement());
      
-
     //-------------- Read in Efficiency error values ----------------------
      V.setElementAt( new float[0], 0);
      S = FileIO.Read(fin, V,Format,ntimes , null);
@@ -131,11 +132,10 @@ public class ReadTransmission extends GenericTOF_SAD{
        if( nn !=ntimes)
          return new ErrorString( " not enough data");
        float[] errors = (float[])(V.lastElement());
-
    //--------------- Read Last line with Run Numbers --------------
       V .setElementAt( new String[0],0);
      
-       S = FileIO.Read(fin, V,"S30",ntimes , null);
+       S = FileIO.Read(fin, V,"S30",1 , null);
    //                --- check for errors ---
        if( S instanceof ErrorString)
          if( S.toString() != FileIO.NO_MORE_DATA){}
@@ -148,7 +148,6 @@ public class ReadTransmission extends GenericTOF_SAD{
 
      String S8 = ((String[])V.elementAt(0))[0];
      String[] runNums = StringUtil.extract_tokens( S8.trim(), "- ");
-
    //---------------------- NOW make the Data Sets------------------------
 
      DataSet Transmission = new DataSet("Tr-"+runNums[0], new OperationLog(),
