@@ -18,34 +18,35 @@ public interface FortranParserConstants {
   int ARRAY_VARIABLE = 12;
   int STRING = 13;
   int FLOATING_POINT = 14;
-  int INT_IDENT = 15;
-  int FLOAT_IDENT = 16;
-  int MULTI_VARIABLE = 17;
-  int CHAR_VARIABLE = 18;
-  int MATH_INT_VAR = 19;
-  int MATH_FLOAT_VAR = 20;
-  int MATH_VAR = 21;
-  int FORTRAN_ABS = 22;
-  int FORTRAN_SQRT = 23;
-  int FORTRAN_SIN = 24;
-  int FORTRAN_ASIN = 25;
-  int FORTRAN_COS = 26;
-  int FORTRAN_ACOS = 27;
-  int FORTRAN_TAN = 28;
-  int FORTRAN_ATAN = 29;
-  int FORTRAN_LOG = 30;
-  int FORTRAN_EXP = 31;
-  int FORTRAN_FLOAT_FUN = 32;
-  int FORTRAN_TRUNC_FUN = 33;
-  int FORTRAN_MOD_FUN = 34;
-  int FORTRAN_FLOOR_FUN = 35;
-  int FORTRAN_FRACTION_FUN = 36;
-  int FORTRAN_INT = 37;
-  int FORTRAN_REAL = 38;
-  int FORTRAN_DOUBLE = 39;
-  int FORTRAN_LOGICAL = 40;
-  int FORTRAN_CHAR_1 = 41;
-  int FORTRAN_CHAR_2 = 42;
+  int BOOL_CONSTANT = 15;
+  int INT_IDENT = 16;
+  int FLOAT_IDENT = 17;
+  int MULTI_VARIABLE = 18;
+  int CHAR_VARIABLE = 19;
+  int MATH_INT_VAR = 20;
+  int MATH_FLOAT_VAR = 21;
+  int MATH_VAR = 22;
+  int FORTRAN_ABS = 23;
+  int FORTRAN_SQRT = 24;
+  int FORTRAN_SIN = 25;
+  int FORTRAN_ASIN = 26;
+  int FORTRAN_COS = 27;
+  int FORTRAN_ACOS = 28;
+  int FORTRAN_TAN = 29;
+  int FORTRAN_ATAN = 30;
+  int FORTRAN_LOG = 31;
+  int FORTRAN_EXP = 32;
+  int FORTRAN_FLOAT_FUN = 33;
+  int FORTRAN_TRUNC_FUN = 34;
+  int FORTRAN_MOD_FUN = 35;
+  int FORTRAN_FLOOR_FUN = 36;
+  int FORTRAN_FRACTION_FUN = 37;
+  int FORTRAN_INT = 38;
+  int FORTRAN_REAL = 39;
+  int FORTRAN_DOUBLE = 40;
+  int FORTRAN_LOGICAL = 41;
+  int FORTRAN_CHAR_1 = 42;
+  int FORTRAN_CHAR_2 = 43;
 
   int DEFAULT = 0;
 
@@ -65,6 +66,7 @@ public interface FortranParserConstants {
     "<ARRAY_VARIABLE>",
     "<STRING>",
     "<FLOATING_POINT>",
+    "<BOOL_CONSTANT>",
     "<INT_IDENT>",
     "<FLOAT_IDENT>",
     "<MULTI_VARIABLE>",
