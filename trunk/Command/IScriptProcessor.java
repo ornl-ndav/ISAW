@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/10/10 02:28:52  bouzekc
+ * Now extends IObservable.
+ *
  * Revision 1.4  2003/10/10 00:50:04  bouzekc
  * Now extends IDataSetListHandler, PropertyChanger, IObserver, and
  * PropertyChangeListener.  Added setPropertyChangeList(), setTitle(),
@@ -51,7 +54,8 @@ import DataSetTools.operator.Generic.*;
  * NOTE: Implementations of this should also implement Generic Operator
  */
 public interface IScriptProcessor extends IDataSetListHandler, PropertyChanger, 
-                                          IObserver, PropertyChangeListener {
+                                          IObserver, PropertyChangeListener, 
+                                          IObservable {
 
     //ISAW Interface routines
     /**
@@ -63,14 +67,6 @@ public interface IScriptProcessor extends IDataSetListHandler, PropertyChanger,
      */
     public void  addDataSet(DataSet dss);
  
-    /**
-     * The IObserver is usually ISAW. If the script creates a new Data
-     * Set it can be sent to "all IOBSERVERS"
-     */
-    public void  addIObserver(IObserver iobs);
-    public  void  deleteIObserver(IObserver iobs) ;
-    public void deleteIObservers() ;
-    
  /**
   * This is the document to log actions performed by the script.
   * Hopefully the log document will eventually be executable to redo a
