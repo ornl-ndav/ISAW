@@ -28,6 +28,16 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.4  2003/06/09 21:56:05  bouzekc
+ * Updated documentation.
+ * Added constructor to set HAS_CONSTANTS to reduce
+ * the number of calls to setDefaultParameters().
+ * Updated parameter names.
+ * Removed code for the "firstTime" variable from
+ * setDefaultParameters - no longer needed.
+ * Overrode makeGUI() to set the transformation matrix
+ * back to identity matrix if LsqrsJ is run more than once.
+ *
  * Revision 1.3  2003/06/06 15:12:03  bouzekc
  * Added log message header to file.
  *
@@ -56,7 +66,7 @@ public class LsqrsJForm extends Form
 
   /* This one is used to determine whether or not to use the identity matrix.
      It can be externally set using setFirstTime(boolean) in this class. */
-  private boolean firstTime = true; 
+  private static boolean firstTime = true; 
 
   /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
   /**
@@ -68,6 +78,18 @@ public class LsqrsJForm extends Form
     this.setDefaultParameters();
   }
 
+  /**
+   *  Construct a Form using the default parameter list.
+   *
+   *  @param hasConstParams         boolean indicating whether
+   *                                this Form should have constant
+   *                                parameters.
+   */
+  public LsqrsJForm(boolean hasConstParams)
+  {
+    super( "LsqrsJForm", hasConstParams );
+    this.setDefaultParameters();
+  }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
@@ -107,25 +129,17 @@ public class LsqrsJForm extends Form
     //2
     addParameter(new StringPG( "Experiment Name", null));
     //3
-    addParameter(new IntArrayPG("Restrict Sequence Numbers (blank for all)",null));
+    addParameter(new IntArrayPG(
+                   "Restrict Peaks Sequence Numbers (blank for all)", null));
     //4
     addParameter(new StringPG("Transform Matrix",identmat));
     //5
     addParameter(new ArrayPG("Matrix Files", new Vector()));
 
-    /*a little convoluted, but necessary to set it up for the identity
-     matrix only version of this Form.*/
     if(HAS_CONSTANTS)
-      if(firstTime)
-        setParamTypes(new int[]{0,1,2},new int[]{3,4}, new int[]{5});
-      else
-        setParamTypes(new int[]{0,1,2,4},new int[]{3}, new int[]{5});
-        
+      setParamTypes(new int[]{0,1,2},new int[]{3,4}, new int[]{5});
     else  //standalone or first time form
-      if(firstTime)
-        setParamTypes(null, new int[]{0,1,2,3,4}, new int[]{5});
-      else
-        setParamTypes(new int[]{4}, new int[]{0,1,2,3}, new int[]{5});
+      setParamTypes(null, new int[]{0,1,2,3,4}, new int[]{5});
 
   }
 
@@ -266,8 +280,8 @@ public class LsqrsJForm extends Form
       xFormMat = identmat;
 
     //peaks file
-    peaksName = peaksDir + "/" + expName + ".peaks";
-    peaksName = StringUtil.setFileSeparator(peaksName);
+    peaksName = StringUtil.setFileSeparator(
+                  peaksDir + "/" + expName + ".peaks");
 
     for(int i = 0; i < runsArray.length; i++)
     {
@@ -277,8 +291,8 @@ public class LsqrsJForm extends Form
                .Format
                .integerPadWithZero(runsArray[i], RUN_NUMBER_WIDTH);
 
-      matFileName = peaksDir + "/ls" + expName + runNum + ".mat";
-      matFileName = StringUtil.setFileSeparator(matFileName);
+      matFileName = StringUtil.setFileSeparator(
+                      peaksDir + "/ls" + expName + runNum + ".mat");
       matNamesVec.add(matFileName);
 
       SharedData.addmsg("LsqrsJ is creating " + matFileName + " for " + peaksName);
@@ -303,12 +317,21 @@ public class LsqrsJForm extends Form
   }
 
   /**
-   *  Used to set the firstTime class variable so that the 
-   *  LsqrsJForm does not try to apply the transformation matrix 
-   *  twice.
+   *  Overridden so that the identity matrix can be used on any iterations 
+   *  of Lsqrs.  
    */
-  public void setFirstTime(boolean first)
+  protected void makeGUI()
   {
-    this.firstTime = first;
+    //after the first time through, we don't want to change the
+    //identity matrix
+    if(firstTime)
+      firstTime = false;
+    else
+    {
+      ((IParameterGUI)getParameter(4)).setValue(identmat);
+      ((IParameterGUI)getParameter(4)).setEnabled(false);
+    }
+    
+    super.makeGUI();
   }
 }
