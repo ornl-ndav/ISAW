@@ -31,6 +31,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/08/28 17:26:50  dennis
+ *  First complete version.  This now produces DataSets, with the attributes
+ *  needed for the SCD analysis routines.  The input file MUST be a concatenation
+ *  of a specific type of file from the Ideas MC Simulation package, with a
+ *  header added that includes information about the detector position and size.
+ *  (Some of the information is NOT present in the raw files, and some is added
+ *  to the header as a convenience.)
+ *
  *  Revision 1.1  2003/08/27 22:32:30  dennis
  *  Initial, incomplete form of reader for the specific type
  *  of file output from the IDEAS MC simulation codes for the
@@ -44,6 +52,8 @@ import java.io.*;
 import java.util.Vector;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
+import DataSetTools.instruments.*;
+import DataSetTools.viewer.*;
 import DataSetTools.util.*;
 
 /**
@@ -136,6 +146,10 @@ public class IdeasRetriever extends Retriever{
                                 " by " + slice[0].length );
           }
         }
+
+        data_set = BuildDataSet( time_ranges, slices, grid, l1, detd, deta );
+        if ( data_set != null )
+          numDataSets = 1; 
      }
      catch ( Throwable th )
      {
@@ -224,7 +238,7 @@ public class IdeasRetriever extends Retriever{
   /* --------------------------- GetTimeRange --------------------------- */
   /**
    *  Get the time range for the next slice in the file.  Return null if the
-   *  end of the file is reached.
+   *  end of the file is reached.  The times will be returned in microseconds.
    */
   private ClosedInterval GetTimeRange( TextFileReader tfr ) throws IOException
   {
@@ -253,8 +267,9 @@ public class IdeasRetriever extends Retriever{
      if ( debug )
        System.out.println( "Time range end:   " + val_2_str );
 
-     float val_1 = Float.parseFloat( val_1_str );
-     float val_2 = Float.parseFloat( val_2_str );
+                                          // get time-of-flight in microseconds
+     float val_1 = 1000000 * Float.parseFloat( val_1_str );
+     float val_2 = 1000000 * Float.parseFloat( val_2_str );
      return new ClosedInterval( val_1, val_2 );
   }
 
@@ -287,6 +302,94 @@ public class IdeasRetriever extends Retriever{
     return slice;
   }
 
+
+  /* ----------------------------- BuildDataSet --------------------------- */
+  /*
+   *  Build a data set from the vector of time ranges, slice data and 
+   *  data grid.
+   */
+  private DataSet BuildDataSet( Vector      time_ranges, 
+                                Vector      slices, 
+                                UniformGrid grid,
+                                float       initial_path,
+                                float       detd,
+                                float       deta   )
+  {
+    DataSetFactory dsf = new DataSetFactory( "Simulated Data" );
+    DataSet ds = dsf.getTofDataSet( InstrumentType.TOF_SCD );
+
+    if ( slices.size() <= 0 || slices.size() != time_ranges.size() )
+    {
+       System.out.println("Error reading time ranges and slices: sizes wrong");
+       System.out.println("Number of slices     = " + slices.size() );
+       System.out.println("Number of tof ranges = " + time_ranges.size() );
+       return null;
+    }
+
+    int n_slices = slices.size();                    // put all slices into
+    int n_rows   = grid.num_rows();                  // a 3D array
+    int n_cols   = grid.num_rows();
+    float vol_data[][][] = new float[n_slices][][];
+    for ( int i = 0; i < n_slices; i++ )
+      vol_data[i] = (float[][])slices.elementAt(i);
+
+    ClosedInterval interval = null;                  // extract the x-scale
+    float xs[] = new float[ n_slices + 1 ];
+    for ( int i = 0; i < n_slices; i++ )
+    {
+      interval = (ClosedInterval)time_ranges.elementAt(i);
+      xs[i] = interval.getStart_x();
+    }
+    xs[n_slices] = interval.getEnd_x();
+    VariableXScale xscale = new VariableXScale( xs );
+
+    Attribute initial_path_attr = new FloatAttribute( Attribute.INITIAL_PATH,
+                                                      initial_path );
+    Attribute detd_attr = new FloatAttribute( Attribute.DETECTOR_CEN_DISTANCE,
+                                              detd );
+    Attribute deta_attr = new FloatAttribute( Attribute.DETECTOR_CEN_ANGLE,
+                                              deta );
+    SampleOrientation orient = new IPNS_SCD_SampleOrientation( 0, 0, 0 );
+    Attribute orient_attr = new SampleOrientationAttribute
+                                ( Attribute.SAMPLE_ORIENTATION, orient ); 
+    for ( int row = 0; row < n_rows; row++ )
+      for ( int col = 0; col < n_cols; col++ )
+      {
+        float ys[] = new float[n_slices];
+        for ( int i = 0; i < n_slices; i++ )
+          ys[i] = vol_data[i][row][col];
+
+        int id = row * n_cols + col + 1;
+        Data d = new HistogramTable( xscale, ys, id );
+
+        IPixelInfo  pixel = new DetectorPixelInfo( id, 
+                                                  (short)(row+1), 
+                                                  (short)(col+1), 
+                                                  grid );
+        PixelInfoList          pil      = new PixelInfoList( pixel );
+        PixelInfoListAttribute pil_attr = 
+                     new PixelInfoListAttribute(Attribute.PIXEL_INFO_LIST,pil);
+
+        d.setAttribute( pil_attr );
+        d.setAttribute( initial_path_attr );
+        d.setAttribute( detd_attr );
+        d.setAttribute( deta_attr );
+        d.setAttribute( orient_attr );
+        
+        ds.addData_entry( d );
+      }
+    
+    ds.setAttribute( initial_path_attr );
+    ds.setAttribute( detd_attr );
+    ds.setAttribute( deta_attr );
+    ds.setAttribute( orient_attr );
+    grid.setData_entries( ds );
+    Grid_util.setEffectivePositions( ds, grid.ID() );        
+
+    return ds;
+  }
+
+
   /**
    * Main method for testing purposes only.
    */
@@ -305,7 +408,6 @@ public class IdeasRetriever extends Retriever{
     System.out.println( "NUMDS: "+ sim_ret.numDataSets() );
 
     DataSet ds = sim_ret.getDataSet(0);
-    
+    ViewManager vm = new ViewManager( ds, ViewManager.IMAGE );    
   }
 }
-
