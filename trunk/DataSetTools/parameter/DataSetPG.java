@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/03/15 03:28:40  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.16  2003/12/15 01:51:44  bouzekc
  *  Removed unused imports.
  *
@@ -86,10 +90,10 @@
 
 package DataSetTools.parameter;
 
+import gov.anl.ipns.Util.Messaging.IObserver;
 import DataSetTools.components.ParametersGUI.HashEntry;
 import DataSetTools.dataset.*;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.IObserver;
 
 /**
  * This is a superclass to take care of many of the common details of

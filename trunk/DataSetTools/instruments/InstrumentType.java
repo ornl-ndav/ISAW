@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/03/15 03:28:15  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.12  2003/10/15 01:40:46  hammonds
  *  Fix spelling for reflectometer
  *
@@ -45,6 +49,8 @@
  *
  */
 package DataSetTools.instruments;
+
+import gov.anl.ipns.Util.Sys.*;
 
 import java.io.*;
 import DataSetTools.util.*;

@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/03/15 03:36:02  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.9  2004/02/16 02:19:23  bouzekc
  * Removed unused imports.
  *
@@ -66,10 +70,12 @@ package NexIO.Write;
 import NexIO.*;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
-import DataSetTools.util.StringUtil;
 //import java.io.*;
 import NexIO.Util.*;
 //import DataSetTools.util.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Sys.StringUtil;
+
 import java.util.*;
 
 /**

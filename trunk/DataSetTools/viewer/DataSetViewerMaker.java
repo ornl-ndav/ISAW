@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/03/15 03:28:58  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.13  2004/03/10 23:40:57  millermi
  *  - Changed IViewComponent interface, no longer
  *    distinguish between private and shared controls/
@@ -70,6 +74,11 @@
  */
 
 package DataSetTools.viewer;
+
+import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.ViewTools.Components.OneD.*;
+import gov.anl.ipns.ViewTools.Components.ViewControls.*;
+import gov.anl.ipns.ViewTools.UI.*;
 
 import javax.swing.*;
 import javax.swing.event.*;

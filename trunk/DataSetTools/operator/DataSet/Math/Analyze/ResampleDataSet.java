@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/03/15 03:28:31  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.6  2004/01/24 19:35:08  bouzekc
  *  Removed unused imports.
  *
@@ -51,6 +55,9 @@
  */
 
 package DataSetTools.operator.DataSet.Math.Analyze;
+
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  java.util.Vector;

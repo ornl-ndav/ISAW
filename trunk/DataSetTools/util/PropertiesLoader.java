@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/03/15 03:28:53  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.12  2003/02/13 17:29:11  pfpeterson
  *  Moved decision making for image directory from SplashWindowFrame.
  *
@@ -143,7 +147,7 @@ public class PropertiesLoader implements java.io.Serializable
             def=get("ISAW_HOME")+"/images/";
         }else if( prop.equals(ViewerState.COLOR_SCALE) ){
             def=
-             DataSetTools.components.image.IndexColorMaker.HEATED_OBJECT_SCALE;
+             gov.anl.ipns.ViewTools.Panels.Image.IndexColorMaker.HEATED_OBJECT_SCALE;
         }else if( prop.equals(ViewerState.REBIN) ){
             def="true";
         }else if( prop.equals(ViewerState.H_SCROLL) ){

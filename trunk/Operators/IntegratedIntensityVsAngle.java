@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 03:36:58  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.6  2003/02/14 13:28:32  dennis
  * Added getDocumentation() method. (Tyler Stelzer)
  *
@@ -61,6 +65,10 @@ import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.util.*;
 import DataSetTools.math.*;
+import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+
 import java.util.*;
 
 /** 

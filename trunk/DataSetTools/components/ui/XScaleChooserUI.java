@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/03/15 03:28:04  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.6  2002/11/27 23:13:34  pfpeterson
  *  standardized header
  *
@@ -47,6 +51,8 @@
  */
 
 package DataSetTools.components.ui;
+
+import gov.anl.ipns.ViewTools.UI.*;
 
 import java.awt.*;
 import java.awt.event.*;

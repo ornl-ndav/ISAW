@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2004/03/15 03:28:44  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.14  2004/01/05 23:33:11  dennis
  * Now checks if value returned by VecQToTOF.intensityAtQ() is >= 0
  * since now -1 is returned instead of 0, to indicate that the Q vector
@@ -103,6 +107,15 @@ import DataSetTools.math.*;
 import DataSetTools.instruments.*;
 import DataSetTools.components.containers.*;
 import DataSetTools.util.*;
+import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.ViewTools.Panels.Image.*;
+import gov.anl.ipns.ViewTools.Panels.ThreeD.*;
+import gov.anl.ipns.ViewTools.UI.*;
+
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;

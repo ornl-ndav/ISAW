@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2004/03/15 03:29:02  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.10  2004/02/16 05:25:04  millermi
  * - Added methods getErrors(), setErrors(), setSquareRootErrors(),
  *   and getErrorValue() which allow an array of errors to be
@@ -76,6 +80,12 @@
 package DataSetTools.viewer.Table;
 import DataSetTools.components.View.*;
 import DataSetTools.components.View.Menu.*;
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.ViewTools.Components.*;
+import gov.anl.ipns.ViewTools.Components.Menu.*;
+import gov.anl.ipns.ViewTools.UI.*;
+
 import java.util.*;
 import java.awt.event.*;
 import javax.swing.*;

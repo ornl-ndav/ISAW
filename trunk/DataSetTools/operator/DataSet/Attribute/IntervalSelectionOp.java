@@ -29,6 +29,10 @@
 
  *
  * $Log$
+ * Revision 1.5  2004/03/15 03:28:23  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.4  2003/12/16 00:03:16  bouzekc
  * Removed unused imports.
  *
@@ -46,6 +50,8 @@
 
 package DataSetTools.operator.DataSet.Attribute;
 
+import gov.anl.ipns.Util.Messaging.IObserver;
+
 import java.io.Serializable;
 import java.util.Vector;
 
@@ -53,7 +59,6 @@ import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Parameter;
-import DataSetTools.util.IObserver;
 import DataSetTools.util.Interval;
 
 /**

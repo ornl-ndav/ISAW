@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/03/15 03:28:15  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.5  2004/01/22 02:32:15  bouzekc
  *  Removed/commented out unused imports/variables.
  *
@@ -50,10 +54,10 @@
  */
 package DataSetTools.gsastools;
 
+import gov.anl.ipns.Util.Numeric.Format;
+import gov.anl.ipns.Util.Sys.StringUtil;
 import DataSetTools.dataset.XScale;
-import DataSetTools.util.Format;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.StringUtil;
 
 /**
  * This class is intended to contain the bank header information for

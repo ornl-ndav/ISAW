@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 03:28:29  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.6  2004/01/07 14:47:56  dennis
  * Changed operator title to SCDQxyz_Dennis.java, to distinguish this
  * from SCDQxyz.  This file may still be useful for testing purposes,
@@ -63,6 +67,9 @@
  */
 
 package DataSetTools.operator.DataSet.Information.XAxis;
+
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  java.util.*;

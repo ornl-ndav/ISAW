@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/03/15 03:27:23  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.9  2002/11/27 23:12:35  pfpeterson
  *  standardized header
  *
@@ -44,6 +48,8 @@
  */
  
 package DataSetTools.components.ParametersGUI;
+
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import javax.swing.*;
 import DataSetTools.operator.*;

@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2004/03/15 03:37:02  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.17  2004/01/30 02:38:51  bouzekc
  *  Removed unused variables and an unused private method to pad a String
  *  with spaces on the left.  This method will likely be moved to
@@ -95,6 +99,9 @@
  */
 
 package Operators.TOF_SCD;
+
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  java.util.Vector;

@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2004/03/15 03:29:05  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.3  2003/06/13 22:00:20  bouzekc
  * Now extends RobustFileFilter to take care of common
  * functionality.
@@ -40,7 +44,7 @@
  */
 package DataSetTools.wizard.util;
 
-import DataSetTools.util.RobustFileFilter;
+import gov.anl.ipns.Util.File.RobustFileFilter;
 
 /**
  * Filters out .wsf (Wizard Save File) files.

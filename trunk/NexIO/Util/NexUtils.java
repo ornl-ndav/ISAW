@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/03/15 03:36:02  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.4  2003/12/21 18:27:00  rmikk
  * Reduced Class Cast Exceptions by using ConvertDataTypes.StringValue method
  *   instead of (String) cast
@@ -55,6 +59,8 @@ import NexIO.*;
 import NexIO.State.*;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+
 import java.util.*;
 import DataSetTools.util.*;
 

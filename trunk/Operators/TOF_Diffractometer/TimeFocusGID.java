@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/03/15 03:37:02  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.7  2004/01/30 02:26:34  bouzekc
  * Removed unused variables and imports.
  *
@@ -56,6 +60,10 @@
  */
 package Operators.TOF_Diffractometer;
 
+import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+import gov.anl.ipns.Util.Numeric.IntList;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+
 import java.util.Vector;
 
 import DataSetTools.dataset.Attribute;
@@ -64,14 +72,11 @@ import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.DetPosAttribute;
 import DataSetTools.dataset.XScale;
 import DataSetTools.gsastools.GsasCalib;
-import DataSetTools.math.DetectorPosition;
 import DataSetTools.math.tof_data_calc;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.Generic.TOF_Diffractometer.GenericTOF_Diffractometer;
 import DataSetTools.retriever.RunfileRetriever;
-import DataSetTools.util.ErrorString;
-import DataSetTools.util.IntList;
 import DataSetTools.viewer.IViewManager;
 import DataSetTools.viewer.ViewManager;
 

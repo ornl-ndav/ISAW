@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2004/03/15 03:27:28  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.29  2004/03/10 23:37:27  millermi
  * - Changed IViewComponent interface, no longer
  *   distinguish between private and shared controls/
@@ -208,6 +212,29 @@
 
 package DataSetTools.components.View;
 
+import gov.anl.ipns.Util.File.RobustFileFilter;
+import gov.anl.ipns.Util.File.TextFileReader;
+import gov.anl.ipns.Util.Messaging.IObserver;
+import gov.anl.ipns.Util.Numeric.Format;
+import gov.anl.ipns.Util.Numeric.floatPoint2D;
+import gov.anl.ipns.Util.Sys.PrintComponentActionListener;
+import gov.anl.ipns.Util.Sys.SaveImageActionListener;
+import gov.anl.ipns.Util.Sys.WindowShower;
+import gov.anl.ipns.ViewTools.Components.*;
+import gov.anl.ipns.ViewTools.Components.Cursor.SelectionJPanel;
+import gov.anl.ipns.ViewTools.Components.Menu.MenuItemMaker;
+import gov.anl.ipns.ViewTools.Components.Menu.ViewMenuItem;
+import gov.anl.ipns.ViewTools.Components.Region.*;
+import gov.anl.ipns.ViewTools.Components.Transparency.SelectionOverlay;
+import gov.anl.ipns.ViewTools.Components.TwoD.ImageViewComponent;
+import gov.anl.ipns.ViewTools.Components.ViewControls.CursorOutputControl;
+import gov.anl.ipns.ViewTools.Components.ViewControls.FieldEntryControl;
+import gov.anl.ipns.ViewTools.Components.ViewControls.PanViewControl;
+import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
+import gov.anl.ipns.ViewTools.Panels.Transforms.*;
+import gov.anl.ipns.ViewTools.UI.FontUtil;
+import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
+
 import javax.swing.*;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -230,29 +257,10 @@ import javax.swing.border.LineBorder;
 import javax.swing.text.html.HTMLEditorKit;
 
 import DataSetTools.components.image.*;
-import DataSetTools.components.containers.SplitPaneWithState;
-import DataSetTools.components.View.TwoD.ImageViewComponent;
-import DataSetTools.components.View.Menu.MenuItemMaker;
-import DataSetTools.components.View.Menu.ViewMenuItem;
-import DataSetTools.components.View.Transparency.SelectionOverlay;
 import DataSetTools.components.View.Region.*;
-import DataSetTools.components.View.Cursor.SelectionJPanel;
-import DataSetTools.components.View.ViewControls.CursorOutputControl;
-import DataSetTools.components.View.ViewControls.FieldEntryControl;
-import DataSetTools.components.View.ViewControls.PanViewControl;
-import DataSetTools.components.View.ViewControls.ViewControl;
-import DataSetTools.util.TextFileReader;
-import DataSetTools.util.RobustFileFilter;
-import DataSetTools.util.floatPoint2D;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.WindowShower;
-import DataSetTools.util.Format;
-import DataSetTools.util.IObserver;
-import DataSetTools.util.FontUtil;
 import DataSetTools.viewer.IViewManager;
 import DataSetTools.viewer.ViewManager;
-import DataSetTools.viewer.PrintComponentActionListener;
-import DataSetTools.viewer.SaveImageActionListener;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.FunctionTable;

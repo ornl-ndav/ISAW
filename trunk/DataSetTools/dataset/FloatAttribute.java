@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/03/15 03:28:06  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.11  2003/03/10 20:59:07  dennis
  *  Use exponential format for the string form of small values.
  *  The default format previously just displayed 0.
@@ -62,9 +66,11 @@
 
 package  DataSetTools.dataset;
 
+import gov.anl.ipns.Util.File.*;
+import gov.anl.ipns.Util.Numeric.Format;
+
 import java.text.*;
 import java.io.*;
-import DataSetTools.util.Format;
 
 /**
  * The concrete class for an attribute whose value is a float.  

@@ -30,12 +30,19 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/03/15 03:35:22  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.1  2003/10/21 21:23:25  dennis
  *  Server to execute operators sent to it from clients
  *  on remote systems.
  *
  */
 package NetComm;
+
+import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.*;
 
 import java.io.*;
 import java.util.*;

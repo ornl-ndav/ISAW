@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.31  2004/03/15 03:37:40  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.30  2004/02/11 04:10:55  bouzekc
  * Uses the new Wizard classes that have indeterminate progress bars.
  *
@@ -137,6 +141,9 @@
  */
 package Wizard.TOF_SCD;
 
+import gov.anl.ipns.Util.Numeric.IntList;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -151,8 +158,6 @@ import DataSetTools.parameter.IntArrayPG;
 import DataSetTools.parameter.LoadFilePG;
 import DataSetTools.parameter.RadioButtonPG;
 import DataSetTools.parameter.StringPG;
-import DataSetTools.util.ErrorString;
-import DataSetTools.util.IntList;
 import DataSetTools.util.SharedData;
 import DataSetTools.wizard.Form;
 import Operators.TOF_SCD.IndexJ;
@@ -527,7 +532,7 @@ public class IndexJForm extends Form implements PropertyChangeListener {
    * @return The runNumber padded with leading zeroes.
    */
   private String formatRunNum( int runNumber ) {
-    return DataSetTools.util.Format.integerPadWithZero( 
+    return gov.anl.ipns.Util.Numeric.Format.integerPadWithZero( 
       runNumber, RUN_NUMBER_WIDTH );
   }
 

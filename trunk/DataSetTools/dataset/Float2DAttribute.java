@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/03/15 03:28:06  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.7  2004/01/22 02:19:05  bouzekc
  *  Removed unused imports and local variables.
  *
@@ -66,13 +70,15 @@
 
 package  DataSetTools.dataset;
 
+import gov.anl.ipns.Util.File.*;
+import gov.anl.ipns.Util.Sys.StringUtil;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.util.Vector;
 
-import DataSetTools.util.StringUtil;
 
 /**
  * The concrete class for an attribute whose value is a two dimensional 

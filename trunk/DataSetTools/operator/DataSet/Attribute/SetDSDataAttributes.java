@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 03:28:24  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.6  2003/10/20 21:43:08  dennis
  * Fixed minor javadoc error so it builds cleanly with
  * jdk 1.4.2_01
@@ -52,6 +56,8 @@
  */
 
 package DataSetTools.operator.DataSet.Attribute;
+
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  java.util.Vector;

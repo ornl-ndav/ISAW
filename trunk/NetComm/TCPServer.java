@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/03/15 03:35:22  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.12  2003/03/14 20:38:21  dennis
  *  Server log messages now (again) include the user name
  *  of the user making the requests.
@@ -47,6 +51,8 @@
  *
  */
 package NetComm;
+
+import gov.anl.ipns.Util.Sys.*;
 
 import java.io.*;
 import java.util.*;

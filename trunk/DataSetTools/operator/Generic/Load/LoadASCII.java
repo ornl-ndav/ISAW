@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 03:28:33  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.6  2004/01/24 19:48:25  bouzekc
  * Removed unused local variable.
  *
@@ -54,6 +58,11 @@
  */
 package DataSetTools.operator.Generic.Load;
 
+import gov.anl.ipns.Util.File.TextFileReader;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
+import gov.anl.ipns.Util.Sys.StringUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
@@ -66,10 +75,6 @@ import DataSetTools.dataset.StringAttribute;
 import DataSetTools.dataset.VariableXScale;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
-import DataSetTools.util.ErrorString;
-import DataSetTools.util.LoadFileString;
-import DataSetTools.util.StringUtil;
-import DataSetTools.util.TextFileReader;
 
 /** 
  *  This operator provides a means to load an N-column ascii data file

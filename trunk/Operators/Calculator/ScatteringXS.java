@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/03/15 03:36:59  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.1  2003/02/04 16:02:59  pfpeterson
  *  Added to CVS.
  *
@@ -40,7 +44,8 @@ package Operators.Calculator;
 import DataSetTools.materials.*;
 import DataSetTools.operator.Generic.Calculator.*;
 import DataSetTools.parameter.*;
-import DataSetTools.util.ErrorString;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+
 import java.text.DecimalFormat;
 import java.util.Vector;
 

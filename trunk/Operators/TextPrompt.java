@@ -28,6 +28,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/03/15 03:36:59  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.4  2004/01/30 02:19:39  bouzekc
  *  Removed unused imports and variables.
  *
@@ -43,6 +47,9 @@
  */
 
 package Operators;
+
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.io.*;
 import java.util.*;

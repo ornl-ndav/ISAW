@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.29  2004/03/15 03:37:40  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.28  2004/02/11 04:10:56  bouzekc
  * Uses the new Wizard classes that have indeterminate progress bars.
  *
@@ -134,11 +138,12 @@
  */
 package Wizard.TOF_SCD;
 
+import gov.anl.ipns.Util.Numeric.IntList;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+
 import java.util.Vector;
 
 import DataSetTools.parameter.*;
-import DataSetTools.util.ErrorString;
-import DataSetTools.util.IntList;
 import DataSetTools.util.SharedData;
 import DataSetTools.wizard.Form;
 import Operators.TOF_SCD.LsqrsJ;
@@ -363,7 +368,7 @@ public class LsqrsJForm extends Form {
     }
 
     for( int i = 0; i < runsArray.length; i++ ) {
-      runNum        = DataSetTools.util.Format.integerPadWithZero( 
+      runNum        = gov.anl.ipns.Util.Numeric.Format.integerPadWithZero( 
           runsArray[i], RUN_NUMBER_WIDTH );
       matFileName   = peaksDir + "ls" + expName + runNum + ".mat";
       matNamesVec.add( matFileName );

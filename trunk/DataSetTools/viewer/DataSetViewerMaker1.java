@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/03/15 03:28:58  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.8  2004/03/10 23:40:57  millermi
  *  - Changed IViewComponent interface, no longer
  *    distinguish between private and shared controls/
@@ -63,6 +67,10 @@
  *
  *  Revision 1.4  2003/08/08 15:48:24  dennis
  *  Added GPL copyright information and $Log$
+ *  Added GPL copyright information and Revision 1.9  2004/03/15 03:28:58  dennis
+ *  Added GPL copyright information and Moved view components, math and utils to new source tree
+ *  Added GPL copyright information and gov.anl.ipns.*
+ *  Added GPL copyright information and
  *  Added GPL copyright information and Revision 1.8  2004/03/10 23:40:57  millermi
  *  Added GPL copyright information and - Changed IViewComponent interface, no longer
  *  Added GPL copyright information and   distinguish between private and shared controls/
@@ -100,11 +108,17 @@
 
 package DataSetTools.viewer;
 
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.ViewTools.Components.*;
+import gov.anl.ipns.ViewTools.Components.Menu.*;
+import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
+import gov.anl.ipns.ViewTools.UI.*;
+
 import javax.swing.*;
 import DataSetTools.dataset.*;
 import DataSetTools.components.View.*;
 import DataSetTools.components.View.Menu.*;
-import DataSetTools.components.View.ViewControls.ViewControl;
 import java.awt.event.*;
 import java.awt.*;
 import DataSetTools.components.containers.*;

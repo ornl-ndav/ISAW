@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/03/15 03:27:21  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.8  2003/12/14 19:20:40  bouzekc
  *  Removed unused imports.
  *
@@ -66,13 +70,14 @@
  */
 package DataSetTools.components.ParametersGUI;
 
+import gov.anl.ipns.Util.File.RobustFileFilter;
+
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.Vector;
 import javax.swing.filechooser.FileFilter;
-import DataSetTools.util.RobustFileFilter;
     
 public class BrowseButtonListener implements ActionListener{
     public static int SAVE_FILE  = 1;

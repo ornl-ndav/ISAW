@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2004/03/15 03:28:35  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.10  2004/01/24 19:58:59  bouzekc
  *  Removed/commented out unused variables/imports.
  *
@@ -69,6 +73,8 @@
 
 package DataSetTools.operator.Generic.Special;
 
+import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+
 import java.io.Serializable;
 import java.util.Vector;
 
@@ -78,7 +84,6 @@ import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.DataSetFactory;
 import DataSetTools.dataset.UniformXScale;
-import DataSetTools.math.DetectorPosition;
 import DataSetTools.operator.Parameter;
 import DataSetTools.parameter.IParameter;
 

@@ -27,6 +27,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.7  2004/03/15 03:28:22  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.6  2004/02/07 19:48:47  rmikk
  * Catches PyExceptions instead of the subclass PySyntaxError
  * Attempts to return a meaningful line number
@@ -62,6 +66,10 @@ import DataSetTools.util.*;
 import org.python.core.*;
 
 import org.python.util.*;
+
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.*;
 
 import java.beans.*;
 

@@ -53,6 +53,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2004/03/15 03:39:41  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.17  2003/10/14 22:14:59  dennis
  * Fixed javadoc comment so that it builds cleanly on jdk 1.4.2
  *
@@ -122,10 +126,14 @@
 
 package IPNSSrc;
 
+import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.Util.File.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+
 import java.util.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.dataset.*;
-import DataSetTools.math.LinearAlgebra;
 import DataSetTools.util.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import java.text.DecimalFormat;
@@ -1058,7 +1066,7 @@ public class blind {
    */
   public static void main( String args[]){
     String filename = args[0];
-    int[] seq = DataSetTools.util.IntList.ToArray(args[1]);
+    int[] seq = gov.anl.ipns.Util.Numeric.IntList.ToArray(args[1]);
     if( seq == null)
       System.exit(0);
     if( seq.length < 1)

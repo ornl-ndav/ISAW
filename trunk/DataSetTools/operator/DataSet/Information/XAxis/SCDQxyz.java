@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2004/03/15 03:28:29  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.13  2004/01/25 00:00:52  dennis
  * If the sample orientation attribute is missing ( eg. when
  * data is loaded from a NeXus file) this now send a message
@@ -72,6 +76,9 @@
  */
 
 package DataSetTools.operator.DataSet.Information.XAxis;
+
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  java.util.*;

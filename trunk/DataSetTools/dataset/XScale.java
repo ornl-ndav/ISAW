@@ -31,6 +31,10 @@
  *
  *
  *  $Log$
+ *  Revision 1.19  2004/03/15 03:28:09  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.18  2003/07/09 14:39:40  dennis
  *  The getI(x) method returns the index of the "Least Upper Bound"
  *  of x in the x-values of this XScale.  The new method getI_GLB(x)
@@ -82,6 +86,8 @@
  */
 
 package  DataSetTools.dataset;
+
+import gov.anl.ipns.Util.Numeric.*;
 
 import java.io.*;
 import DataSetTools.util.*;

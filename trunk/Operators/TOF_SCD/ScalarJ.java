@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2004/03/15 03:37:03  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.13  2004/01/30 02:37:44  bouzekc
  * Removed unused variables.
  *
@@ -95,15 +99,16 @@
 
 package Operators.TOF_SCD;
 
-import DataSetTools.math.LinearAlgebra;
 import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.parameter.*;
-import DataSetTools.util.ErrorString;
 import DataSetTools.util.FilenameUtil;
-import DataSetTools.util.Format;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.TextFileReader;
+import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.Util.File.TextFileReader;
+import gov.anl.ipns.Util.Numeric.Format;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Vector;

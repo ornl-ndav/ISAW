@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2004/03/15 03:28:15  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.27  2004/01/22 02:32:15  bouzekc
  *  Removed/commented out unused imports/variables.
  *
@@ -97,6 +101,9 @@ package DataSetTools.gsastools;
 
 import DataSetTools.dataset.*;
 import DataSetTools.util.*; 
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Numeric.*;
+
 import java.io.*;
 //import java.text.*;
 import DataSetTools.math.*;

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2004/03/15 03:28:47  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.18  2003/11/20 19:36:51  rmikk
  *  Added a method, URLSpacetoSpace, to convert %20
  *  to spaces.
@@ -84,6 +88,8 @@
  *
  */ 
 package DataSetTools.util;
+
+import gov.anl.ipns.Util.Sys.*;
 
 import java.awt.*;
 import java.io.*;
