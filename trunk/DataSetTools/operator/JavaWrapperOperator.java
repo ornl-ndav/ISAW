@@ -32,6 +32,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.15  2004/04/19 14:00:27  rmikk
+ * String parameter values are retained
+ * MediaList parameters were added
+ * SpecialString parameters do not create type mismatch errors
+ *
  * Revision 1.14  2004/03/15 19:33:50  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -266,7 +271,7 @@ public class JavaWrapperOperator extends GenericOperator {
             addParameter( new IntegerPG( name, val ) );
             //StringPG
           } else if( ( type == Character.TYPE ) || ( type == String.class ) ) {
-            addParameter( new StringPG( name, null ) );
+            addParameter( new StringPG( name, val ) );
           } else if( ( type.isArray(  ) ) || ( type == Vector.class ) ) {
             //ArrayPG
             addParameter( new ArrayPG( name, val ) );
@@ -285,7 +290,16 @@ public class JavaWrapperOperator extends GenericOperator {
             addParameter( new LoadFilePG( name, val ) );
           } else if( type == SaveFileString.class ) {
             addParameter( new SaveFilePG( name, val ) );
-          } else if( type == StringChoiceList.class ) {
+          }else if (type == MediaList.class){
+             MediaList ml = new MediaList();
+             Vector choices = new Vector(); 
+             for( int iii=0; iii< ml.num_strings(); iii++)
+                choices.addElement(ml.getString(iii));
+             ChoiceListPG Ch= new ChoiceListPG( name,val);
+            
+             Ch.addItems(choices);
+             addParameter( Ch);
+          }else if( type == StringChoiceList.class ) {
             addParameter( 
               new ChoiceListPG( 
                 name, ( ( StringChoiceList )val ).getStrings(  ) ) );
@@ -334,7 +348,8 @@ public class JavaWrapperOperator extends GenericOperator {
               Array.set( fieldParams[k].get( wrapped ), 1, myVect.get( m ) );
             }
           }
-        } else if( fieldParams[k].getType(  ) == StringChoiceList.class ) {
+        } //else if( fieldParams[k].getType(  ) instanceof SpecialString ) {
+        else if( SpecialString.class.isAssignableFrom(fieldParams[k].getType(  )) ) {
           SpecialString ss = ( SpecialString )fieldParams[k].get( wrapped );
 
           ss.setString( values[k].toString(  ) );
