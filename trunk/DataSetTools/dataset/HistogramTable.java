@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/04/11 21:09:21  dennis
+ *  Fixed bug in HistogramTable copy constructor.  Must
+ *  create new x_scale before using init() to set up the
+ *  y_values.
+ *
  *  Revision 1.2  2002/04/04 18:21:44  dennis
  *  The constructor that takes a Data object now also copies
  *  the attributes as well as the selected and hide flags.
@@ -133,39 +138,42 @@ public class HistogramTable extends    TabulatedData
   {
     super( d.x_scale, null, group_id );
 
-    init( d.getY_values() );
-    this.setErrors( d.getErrors() );
+    float new_x_values[] = null;
+    int   n_bins = 0;
 
     if ( !d.isHistogram() )                  // we need to convert to histogram 
     {
-      float temp_x_values[] = d.getX_values();
-      int n_bins = temp_x_values.length;
+      float old_x_values[] = d.getX_values();
+      n_bins = old_x_values.length;
 
-      float new_x_values[]  = new float[ n_bins + 1 ];
-      new_x_values[0] = temp_x_values[0] 
-                            - (temp_x_values[1] - temp_x_values[0]) / 2; 
+      new_x_values = new float[ n_bins + 1 ];
+      new_x_values[0] = old_x_values[0] 
+                            - (old_x_values[1] - old_x_values[0]) / 2; 
       for ( int i = 1; i < n_bins; i++ )
-        new_x_values[i] = (temp_x_values[i-1] + temp_x_values[i]) / 2.0f;
-      new_x_values[n_bins] = temp_x_values[n_bins-1] 
-                      + (temp_x_values[n_bins-1] - temp_x_values[n_bins-2]) / 2; 
+        new_x_values[i] = (old_x_values[i-1] + old_x_values[i]) / 2.0f;
+      new_x_values[n_bins] = old_x_values[n_bins-1] 
+                      + (old_x_values[n_bins-1] - old_x_values[n_bins-2]) / 2; 
       x_scale = new VariableXScale( new_x_values ); // #### check if uniform?
+    }
 
-      if ( multiply )
-      {
-        if ( errors == null )
-          for ( int i = 0; i < n_bins; i++ )
-          {
-            float dx = new_x_values[i+1] - new_x_values[i];
-            y_values[i] = y_values[i] * dx;
-          }
-          else
-          for ( int i = 0; i < n_bins; i++ )
-          {
-            float dx = new_x_values[i+1] - new_x_values[i];
-            y_values[i] = y_values[i] * dx;
-            errors[i]   = errors[i] * dx;        //#### how should
-          }                                      // errors be treated?
-       }
+    init( d.getY_values() );
+    this.setErrors( d.getErrors() );
+
+    if ( !d.isHistogram() && multiply )
+    {
+      if ( errors == null )
+        for ( int i = 0; i < n_bins; i++ )
+        {
+          float dx = new_x_values[i+1] - new_x_values[i];
+          y_values[i] = y_values[i] * dx;
+        }
+      else
+        for ( int i = 0; i < n_bins; i++ )
+        {
+          float dx = new_x_values[i+1] - new_x_values[i];
+          y_values[i] = y_values[i] * dx;
+          errors[i]   = errors[i] * dx;        //#### how should
+        }                                      // errors be treated?
     }
     AttributeList attr_list = d.getAttributeList();
     setAttributeList( attr_list );
