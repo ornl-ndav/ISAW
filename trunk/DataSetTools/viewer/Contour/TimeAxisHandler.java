@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2004/01/24 22:44:57  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.4  2003/10/15 03:43:13  bouzekc
  *  Fixed javadoc errors.
  *
@@ -50,7 +53,6 @@
 
 package DataSetTools.viewer.Contour;
 import DataSetTools.dataset.*;
-import DataSetTools.math.*;
 
 /** A Time axis Handler returns a time value given a Group index and "time" index.
 *   The time index can also be determined given a time value and Group index. Note:
