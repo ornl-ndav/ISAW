@@ -30,6 +30,9 @@
 
  *
  * $Log$
+ * Revision 1.10  2004/01/24 22:58:30  bouzekc
+ * Removed redundant assigment of the parent node.
+ *
  * Revision 1.9  2003/12/16 00:00:49  bouzekc
  * Removed unused imports.
  *
@@ -75,7 +78,6 @@ public class DataMutableTreeNode
 
   public DataMutableTreeNode( Data d )
   {
-    this.parent = parent;
     name=d.getLabel();
     setUserObject( d );
   }
