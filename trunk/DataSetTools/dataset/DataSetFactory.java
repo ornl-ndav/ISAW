@@ -31,9 +31,14 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.26  2002/08/01 22:25:27  rmikk
- *  Added Row/Column dataset operator to the appropriate
- *    instruments
+ *  Revision 1.27  2002/08/01 22:52:00  dennis
+ *  Re-inserted changes removed by Ruth.
+ *
+ *  Revision 1.25  2002/08/01 19:40:34  dennis
+ *    Added methods to "refurbish" DataSets with appropriate sets of operators.
+ *    addOperators( ds )
+ *    addOperators( ds, instrument_type )
+ *    addMonitorOperators( ds, instrument_type )
  *
  *  Revision 1.24  2002/07/31 16:33:59  dennis
  *  Now adds SCDQxyz operator to SCD DataSets and
@@ -277,58 +282,69 @@ public class DataSetFactory implements Serializable
       new_ds.addLog_entry( log_info );
                                                     // add the list of generic
                                                     // data set operations
-    new_ds.addOperator( new DataSetScalarAdd() );
-    new_ds.addOperator( new DataSetScalarSubtract() );
-    new_ds.addOperator( new DataSetScalarMultiply() );
-    new_ds.addOperator( new DataSetScalarDivide() );
-
-    new_ds.addOperator( new DataSetAdd() );
-    new_ds.addOperator( new DataSetSubtract() );
-    new_ds.addOperator( new DataSetMultiply() );
-    new_ds.addOperator( new DataSetDivide()   );
-
-    new_ds.addOperator( new DataSetAdd_1() );
-    new_ds.addOperator( new DataSetSubtract_1() );
-    new_ds.addOperator( new DataSetMultiply_1() );
-    new_ds.addOperator( new DataSetDivide_1() );
-
-    new_ds.addOperator( new IntegrateGroup() );
-    new_ds.addOperator( new CalculateMomentOfGroup() );
-    new_ds.addOperator( new DataSetCrossSection() );
-    new_ds.addOperator( new FitPolynomialToGroup() );
-    new_ds.addOperator( new FitExpressionToGroup() );
-
-    new_ds.addOperator( new DeleteByAttribute() );
-    new_ds.addOperator( new SumByAttribute() );
-    new_ds.addOperator( new ExtractByAttribute() );
-
-    new_ds.addOperator( new DataSetSort() );
-    new_ds.addOperator( new DataSetMultiSort() );
-
-    new_ds.addOperator( new DeleteCurrentlySelected() );
-    new_ds.addOperator( new SumCurrentlySelected() );
-    new_ds.addOperator( new ExtractCurrentlySelected() );
-
-    new_ds.addOperator( new DataSetMerge() );
-    new_ds.addOperator( new ResampleDataSet() );
-    new_ds.addOperator( new ConvertHistogramToFunction() );
-    new_ds.addOperator( new ConvertFunctionToHistogram() );
-
-    new_ds.addOperator( new TofToChannel() );     // convert to channel for any
-                                                  // DataSet
-//    new_ds.addOperator( new IntervalSelectionOp() );
-    new_ds.addOperator( new GetDataAttribute() );
-    new_ds.addOperator( new SetDataAttribute() );
-    new_ds.addOperator( new GetDSAttribute() );
-    new_ds.addOperator( new SetDSAttribute() );
-    new_ds.addOperator( new SetDSDataAttributes() );
-    new_ds.addOperator( new GetField() );
-    new_ds.addOperator( new SetField() );
-    new_ds.addOperator( new LoadOffsets() );
-    new_ds.addOperator( new LoadGsasCalib() );
-
-    new_ds.addOperator( new PlotterOp() );
+    addOperators( new_ds );
     return new_ds;
+  }
+
+  /**
+   * Configure an existing DataSet by adding the set of operators
+   * appropriate to all DataSets.
+   *
+   * @param  ds               The DataSet to which the operators are added.
+   */
+  static public void addOperators( DataSet ds )
+  {
+    ds.addOperator( new DataSetScalarAdd() );
+    ds.addOperator( new DataSetScalarSubtract() );
+    ds.addOperator( new DataSetScalarMultiply() );
+    ds.addOperator( new DataSetScalarDivide() );
+
+    ds.addOperator( new DataSetAdd() );
+    ds.addOperator( new DataSetSubtract() );
+    ds.addOperator( new DataSetMultiply() );
+    ds.addOperator( new DataSetDivide()   );
+
+    ds.addOperator( new DataSetAdd_1() );
+    ds.addOperator( new DataSetSubtract_1() );
+    ds.addOperator( new DataSetMultiply_1() );
+    ds.addOperator( new DataSetDivide_1() );
+
+    ds.addOperator( new IntegrateGroup() );
+    ds.addOperator( new CalculateMomentOfGroup() );
+    ds.addOperator( new DataSetCrossSection() );
+    ds.addOperator( new FitPolynomialToGroup() );
+    ds.addOperator( new FitExpressionToGroup() );
+
+    ds.addOperator( new DeleteByAttribute() );
+    ds.addOperator( new SumByAttribute() );
+    ds.addOperator( new ExtractByAttribute() );
+
+    ds.addOperator( new DataSetSort() );
+    ds.addOperator( new DataSetMultiSort() );
+
+    ds.addOperator( new DeleteCurrentlySelected() );
+    ds.addOperator( new SumCurrentlySelected() );
+    ds.addOperator( new ExtractCurrentlySelected() );
+
+    ds.addOperator( new DataSetMerge() );
+    ds.addOperator( new ResampleDataSet() );
+    ds.addOperator( new ConvertHistogramToFunction() );
+    ds.addOperator( new ConvertFunctionToHistogram() );
+
+    ds.addOperator( new TofToChannel() );     // convert to channel for any
+                                                  // DataSet
+//    ds.addOperator( new IntervalSelectionOp() );
+    ds.addOperator( new GetDataAttribute() );
+    ds.addOperator( new SetDataAttribute() );
+    ds.addOperator( new GetDSAttribute() );
+    ds.addOperator( new SetDSAttribute() );
+    ds.addOperator( new SetDSDataAttributes() );
+    ds.addOperator( new GetField() );
+    ds.addOperator( new SetField() );
+    ds.addOperator( new LoadOffsets() );
+    ds.addOperator( new LoadGsasCalib() );
+
+    ds.addOperator( new PlotterOp() );
   }
 
   /**
@@ -355,62 +371,112 @@ public class DataSetFactory implements Serializable
     DataSet new_ds = getDataSet();   // Get a DataSet with generic operators
                                      // then add any special purpose operators
 
+    addOperators( new_ds, instrument_type );
+    return new_ds;
+  }
+
+  /**
+   * Configure an existing DataSet by adding the set of operators 
+   * appropriate to a particular instrument type to the DataSet.
+   *
+   * @param  ds               The DataSet to which the operators are added.
+   *
+   * @param  instrument_type  Code for the type of instrument for which
+   *                          the DataSet is to be configured.  The codes
+   *                          are in DataSetTools/instrument/InstrumentType.java   *                          InstrumentType.TOF_DIFFRACTOMETER
+   *                          InstrumentType.TOF_SCD
+   *                          InstrumentType.TOF_SAD
+   *                          InstrumentType.TOF_DG_SPECTROMETER
+   *                          InstrumentType.TOF_IDG_SPECTROMETER
+   *                          InstrumentType.TOF_REFLECTROMETER
+   */
+  static public void addOperators( DataSet ds, int instrument_type )
+  {
     if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
     {
-      new_ds.addOperator( new DiffractometerTofToD() );
-      new_ds.addOperator( new DiffractometerTofToQ() );
-      new_ds.addOperator( new DiffractometerTofToEnergy() );
-      new_ds.addOperator( new DiffractometerTofToWavelength() );
-      new_ds.addOperator( new TrueAngle() );
+      ds.addOperator( new DiffractometerTofToD() );
+      ds.addOperator( new DiffractometerTofToQ() );
+      ds.addOperator( new DiffractometerTofToEnergy() );
+      ds.addOperator( new DiffractometerTofToWavelength() );
+      ds.addOperator( new TrueAngle() );
     }
     else if ( instrument_type == InstrumentType.TOF_SCD )  // will be different
     {                                                      // when SCD properly
-      new_ds.addOperator( new DiffractometerTofToD() );    // supported
-      new_ds.addOperator( new DiffractometerTofToQ() );
-      new_ds.addOperator( new SCDQxyz() );
-      new_ds.addOperator( new GetDetectorInfo_op());
-      new_ds.addOperator( new DiffractometerTofToEnergy() );
-      new_ds.addOperator( new DiffractometerTofToWavelength() );
-      new_ds.addOperator( new TrueAngle() );
+      ds.addOperator( new GetDetectorInfo_op() );          // supported
+      ds.addOperator( new DiffractometerTofToD() );
+      ds.addOperator( new DiffractometerTofToQ() );
+      ds.addOperator( new SCDQxyz() );
+      ds.addOperator( new DiffractometerTofToEnergy() );
+      ds.addOperator( new DiffractometerTofToWavelength() );
+      ds.addOperator( new TrueAngle() );
     }
     else if ( instrument_type == InstrumentType.TOF_SAD )  // will be different
     {                                                      // when SAD properly
-      new_ds.addOperator( new DiffractometerTofToD() );    // supported
-      new_ds.addOperator( new DiffractometerTofToQ() );
-      new_ds.addOperator( new DiffractometerQxyz() );
-      new_ds.addOperator( new GetDetectorInfo_op() );
-      new_ds.addOperator( new DiffractometerTofToEnergy() );
-      new_ds.addOperator( new DiffractometerTofToWavelength() );
-      new_ds.addOperator( new TrueAngle() );
+      ds.addOperator( new GetDetectorInfo_op() );          // supported
+      ds.addOperator( new DiffractometerTofToD() );
+      ds.addOperator( new DiffractometerTofToQ() );
+      ds.addOperator( new DiffractometerQxyz() );
+      ds.addOperator( new DiffractometerTofToEnergy() );
+      ds.addOperator( new DiffractometerTofToWavelength() );
+      ds.addOperator( new TrueAngle() );
     }
     else if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
     {
-      new_ds.addOperator( new SpectrometerEvaluator() );
-      new_ds.addOperator( new SpectrometerNormalizer());
-      new_ds.addOperator( new SpectrometerMacro() );
-      new_ds.addOperator( new SpectrometerTofToEnergyLoss() );
-      new_ds.addOperator( new SpectrometerTofToEnergy() );
-      new_ds.addOperator( new SpectrometerTofToWavelength() );
-      new_ds.addOperator( new DoubleDifferentialCrossection() );
-//      new_ds.addOperator( new SpectrometerTofToQ() );
-      new_ds.addOperator( new SpectrometerTofToQE() );
-      new_ds.addOperator( new TrueAngle() );
+      ds.addOperator( new SpectrometerEvaluator() );
+      ds.addOperator( new SpectrometerNormalizer());
+      ds.addOperator( new SpectrometerMacro() );
+      ds.addOperator( new SpectrometerTofToEnergyLoss() );
+      ds.addOperator( new SpectrometerTofToEnergy() );
+      ds.addOperator( new SpectrometerTofToWavelength() );
+      ds.addOperator( new DoubleDifferentialCrossection() );
+//      ds.addOperator( new SpectrometerTofToQ() );
+      ds.addOperator( new SpectrometerTofToQE() );
+      ds.addOperator( new TrueAngle() );
     }
     else if ( instrument_type == InstrumentType.TOF_IDG_SPECTROMETER )
     {                                                    // will be different
                                                          // when IDG_S properly
-      new_ds.addOperator( new TrueAngle() );             // supported  
+      ds.addOperator( new TrueAngle() );                 // supported  
     }
     else if ( instrument_type == InstrumentType.TOF_REFLECTROMETER )
     {                                                    // will be different
                                                          // when REFLT properly
-      new_ds.addOperator( new TrueAngle() );             // supported  
+      ds.addOperator( new TrueAngle() );                 // supported  
     }
     else
         DataSetTools.util.SharedData.status_pane.add(
                  //System.out.println(
                  "WARNING: Unsupported instrument type in DataSetFactory" );
-
-    return new_ds;
   }
+
+  /**
+   * Configure an existing DataSet by adding the set of operators
+   * appropriate to the monitors on a particular instrument type,
+   * to the DataSet.
+   *
+   * @param  ds               The DataSet to which the operators are added.
+   *
+   * @param  instrument_type  Code for the type of instrument for which
+   *                          the DataSet is to be configured.  The codes
+   *                          are in DataSetTools/instrument/InstrumentType.java   *                          InstrumentType.TOF_DIFFRACTOMETER
+   *                          InstrumentType.TOF_SCD
+   *                          InstrumentType.TOF_SAD
+   *                          InstrumentType.TOF_DG_SPECTROMETER
+   *                          InstrumentType.TOF_IDG_SPECTROMETER
+   *                          InstrumentType.TOF_REFLECTROMETER
+   */
+  static public void addMonitorOperators( DataSet ds, int instrument_type )
+  {
+    if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
+    {
+      ds.addOperator( new EnergyFromMonitorDS() );
+      ds.addOperator( new MonitorPeakArea() );
+    }
+    else if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
+      ds.addOperator( new FocusIncidentSpectrum() );
+
+    ds.addOperator( new MonitorTofToEnergy() );
+    ds.addOperator( new MonitorTofToWavelength() );
+  }
+
 }
