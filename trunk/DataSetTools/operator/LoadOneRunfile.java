@@ -2,6 +2,9 @@
  * @(#)LoadOneRunfile.java     0.2  2000/07/21  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.3  2000/07/21 21:38:15  dennis
+ *  Removed one unused variable and fixed documentation
+ *
  *  Revision 1.2  2000/07/21 20:54:38  dennis
  *  Now uses mask to omit specified groups
  *
@@ -94,16 +97,13 @@ public class LoadOneRunfile extends    Operator
   /* ----------------------------- getResult ---------------------------- */
   /**
    * Returns the object that is the result of applying this operation.  This
-   * should be called after setting the appropriate parameters.  
+   * should be called after setting the appropriate parameters.
    *
-   * @return  The result of carrying out this operation is returned as a Java
-   *          Object.
+   * @return  Returns an array with all DataSets in the runfile, if the 
+   *          runfile could opened.
    */
    public Object getResult()
    {
-     RunfileRetriever rr;
-     DataSet          datasets[] = new DataSet[2];
-
                                           // get the parameters specifying the
                                           // runs         
      String    file_name   = (String)getParameter(0).getValue();
@@ -111,8 +111,7 @@ public class LoadOneRunfile extends    Operator
 
      int       masked_ids[] = IntList.ToArray( group_mask ); 
 
-                                        // try to bring in the first run and
-                                        // record the monitor peaks if needed
+     RunfileRetriever rr;
      rr = new RunfileRetriever( file_name );
      int n_ds      = rr.numDataSets();
      if ( n_ds <= 0 )
