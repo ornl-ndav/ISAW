@@ -32,6 +32,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/07/16 19:35:18  dennis
+ *  SLABMS() now returns NaN if the angle PHI is too small.
+ *  This is trapped in the calling code and cal_FF[j] is set
+ *  to zero in that case.
+ *
  *  Revision 1.3  2002/03/13 16:19:24  dennis
  *  Converted to new abstract Data class.
  *
@@ -138,7 +143,7 @@ import  DataSetTools.operator.Parameter;
  *
  *  <p><b>Returns:</b><ul>
  *     This returns a new DataSet containing three Data blocks.  The first
- *     Data block has the experimentally determined efficienciesr. The second
+ *     Data block has the experimentally determined efficiencies. The second
  *     has the calculated efficiencies based on Vineyard's approximation
  *     for multiple scattering ( J.R.D. Copley et al., Nucl. Instr. Method 
  *     107, 501(1973) ).  The third has the ratio of the calculated to 
@@ -356,14 +361,20 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
             }
           }
 
-
         float XMS = SLABMS(180.0f*spherical_coords[1] /
                     (float)Math.PI, energy_in, THETS );
-
-        if (1/XMS>0.000001) 
+  
+        if ( XMS == Float.NaN )            // 7/16/2002, D.M., use NaN to 
+          cal_FF[j] = 0;                   // indicate invalid, and take 
+        else                               // cal_FF = 0 in those cases
           cal_FF[j]= 1/XMS;
+
+        /*                                 // older version, 1/XMS evaluates
+        if (1/XMS>0.000001)                // to infinity in case XMS == 0, and
+          cal_FF[j]= 1/XMS;                // so cal_FF[j] was set to infinity
         else
           cal_FF[j] = 0;
+        */
 
         exp_FF[j]=sum;
         if( exp_FF[j] < 0.00001f || 1/XMS < 0.000001)
@@ -449,12 +460,13 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
     float EXPO = -SIGR*TP;
     float SCAT = SIGS/SIGR;
     float  XMS = 0;
+/*  
     if ( Math.abs(PHI) < 0.01f )
     {
-      System.out.println("Quit for samll PHI");
-      return 0.0f;
-    }
-
+      System.out.println("Quit for samll PHI: PHI = " + PHI);
+      return 1.0f;                           // 7/16/2002, D.M., just let the
+    }                                        // calculation produce NaN and
+*/                                           // trap NaN in the calling code
     float PHIR = PHI * PI/ 180.0f;
     float CP = (float)Math.cos(PHIR);
     float SP = (float)Math.sin(PHIR);
