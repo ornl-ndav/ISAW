@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2002/03/14 23:41:51  dennis
+ *  Now implements Serializable.
+ *
  *  Revision 1.20  2002/03/13 16:08:31  dennis
  *  Data class is now an abstract base class that implements IData
  *  interface. FunctionTable and HistogramTable are concrete derived
@@ -40,12 +43,14 @@
  */
 package DataSetTools.dataset;
 
+import java.io.*;
 import DataSetTools.dataset.XScale;
 import DataSetTools.dataset.IAttributeList;
 import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Attribute;
 
-public abstract class Data implements IData 
+public abstract class Data implements IData,
+                                      Serializable 
 {
   protected int          group_id;  //NOTE: we force a Data object to have an
                                     // id and also keep the same id as an
