@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/07/12 18:21:22  pfpeterson
+ *  Added convenience methods to releave the duty of casting from
+ *  the caller.
+ *
  *  Revision 1.6  2002/07/12 15:31:56  pfpeterson
  *  Add default value for ColorScale property.
  *
@@ -59,6 +63,7 @@ package DataSetTools.util;
 import java.util.*;
 import java.io.*;
 import IsawGUI.DefaultProperties;
+import DataSetTools.viewer.ViewerState;
 
 /**
  *  Constructing an object of this class will load the system properties
@@ -116,10 +121,9 @@ public class PropertiesLoader implements java.io.Serializable
   }
   
     /**
-     * Convenience method that calls get(prop,def) with the
-     * appropriate default value.
+     * Private method containing all of the defaults that exists
      */
-    public String get(String prop){
+    private String getDefault(String prop){
         String def=null;
         if( prop.equals("Isaw_Width") ){
             def="0.8";
@@ -129,15 +133,41 @@ public class PropertiesLoader implements java.io.Serializable
             def="0.2";
         }else if( prop.equals("Status_Height") ){
             def="0.2";
-        }else if( prop.equals(DataSetTools.viewer.ViewerState.COLOR_SCALE ) ){
+        }else if( prop.equals(ViewerState.COLOR_SCALE) ){
             def=
              DataSetTools.components.image.IndexColorMaker.HEATED_OBJECT_SCALE;
+        }else if( prop.equals(ViewerState.REBIN) ){
+            def="true";
+        }else if( prop.equals(ViewerState.H_SCROLL) ){
+            def="false";
+        }else if( prop.equals(ViewerState.H_SCROLL_POSITION) ){
+            def="0";
+        }else if( prop.equals(ViewerState.POINTED_AT_INDEX) ){
+            def="0";
+        }else if( prop.equals(ViewerState.V_AZIMUTH) ){
+            def="45";
+        }else if( prop.equals(ViewerState.V_ALTITUDE) ){
+            def="20";
+        }else if( prop.equals(ViewerState.V_DISTANCE) ){
+            def="-1";
+        }else if( prop.equals(ViewerState.V_DETECTORS) ){
+            def="NOT_DRAWN";
+        }else if( prop.equals(ViewerState.V_GROUPS) ){
+            def="NOT_DRAWN";
+        }else if( prop.equals(ViewerState.BRIGHTNESS) ){
+            def="40";
+        }else if( prop.equals(ViewerState.AUTO_SCALE) ){
+            def="0";
         }
-        /*if(def!=null){  // testing information
-          System.out.println(prop+" gets default "+def);
-          } */
+        return def;
+    }
 
-        return this.get(prop,def);
+    /**
+     * Convenience method that calls get(prop,def) with the
+     * appropriate default value.
+     */
+    public String get(String prop){
+        return this.get(prop,this.getDefault(prop));
     }
 
     /**
@@ -154,6 +184,124 @@ public class PropertiesLoader implements java.io.Serializable
             rs=System.getProperty(prop,def);
         }
         return rs;
+    }
+
+    /**
+     * Determines the system property using appropriate default values
+     * if necessary.
+     */
+    protected Boolean getBoolean(String prop){
+        return this.getBoolean(prop,this.getDefault(prop));
+    }
+
+    /**
+     * Determines the system property using appropriate default values
+     * if necessary.
+     */
+    protected Boolean getBoolean(String prop, String def){
+        String property=this.get(prop,def);
+        Boolean val=null;
+
+        if(property!=null)
+            val=new Boolean(prop);
+
+        return val;
+    }
+
+    /**
+     * Determines the system property using appropriate default values
+     * if necessary.
+     */
+    protected Double getDouble(String prop){
+        return this.getDouble(prop,this.getDefault(prop));
+    }
+
+    /**
+     * Determines the system property using appropriate default values
+     * if necessary.
+     */
+    protected Double getDouble(String prop, String def){
+        String property=this.get(prop,def);
+        Double val=null;
+
+        if(property!=null)
+            try{
+                val=new Double(property);
+            }catch(NumberFormatException e){
+                // let it drop on the floor
+            }
+
+        if(val==null && def!=null)
+            try{
+                val=new Double(def);
+            }catch(NumberFormatException e){
+                // let it drop on the floor
+            }
+        return val;
+    }
+
+    /**
+     * Determines the system property using appropriate default values
+     * if necessary.
+     */
+    protected Float getFloat(String prop){
+        return this.getFloat(prop,this.getDefault(prop));
+    }
+
+    /**
+     * Determines the system property using appropriate default values
+     * if necessary.
+     */
+    protected Float getFloat(String prop, String def){
+        String property=this.get(prop,def);
+        Float val=null;
+
+        if(property!=null)
+            try{
+                val=new Float(property);
+            }catch(NumberFormatException e){
+                // let it drop on the floor
+            }
+
+        if(val==null && def!=null)
+            try{
+                val=new Float(def);
+            }catch(NumberFormatException e){
+                // let it drop on the floor
+            }
+        return val;
+    }
+
+    /**
+     * Determines the system property using appropriate default values
+     * if necessary.
+     */
+    protected Integer getInteger(String prop){
+        return this.getInteger(prop,this.getDefault(prop));
+    }
+
+    /**
+     * Determines the system property using appropriate default values
+     * if necessary.
+     */
+    protected Integer getInteger(String prop, String def){
+        String property=this.get(prop,def);
+        Integer val=null;
+
+        if(property!=null)
+            try{
+                val=new Integer(property);
+            }catch(NumberFormatException e){
+                // let it drop on the floor
+            }
+
+        if(val==null && def!=null)
+            try{
+                val=new Integer(def);
+            }catch(NumberFormatException e){
+                // let it drop on the floor
+            }
+        return val;
     }
 
 }
