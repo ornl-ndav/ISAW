@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/11/26 22:13:56  dennis
+ * dded getDocumentation() method and modified main program.(Mike Miller)
+ *
  * Revision 1.1  2002/07/31 14:54:50  pfpeterson
  * Added to CVS.
  *
@@ -47,7 +50,7 @@ import java.util.Vector;
 
 /** 
  *  This operator adds a DataSetOperator to a given DataSet. It first
- *  tries the specified classname then tries prepending the
+ *  tries the specified classname, then tries prepending the
  *  appropriate amount of "DataSetTools.operator.DataSet" if that did
  *  not work.
  */
@@ -77,6 +80,31 @@ public class AddDataSetOperator extends GenericSpecial{
 	addParameter( new Parameter("DataSet", ds) );
 	addParameter( new Parameter("Operator Name", opString) );
     }
+    
+/* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns a string of the description/attributes of AddDataSetOperator
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator adds a dataset operator to ");
+    Res.append("a given dataset.\n");
+    Res.append("@algorithm Given a data set and an operator name, ");
+    Res.append("the operator will be added to the corresponding ");
+    Res.append("dataset.\n");
+    Res.append("@param ds\n");
+    Res.append("@param opString\n");
+    Res.append("@return a confirmation message, Successful or Failed.");
+    Res.append("@error Invalid Operator Name: null or empty string \n"); 
+    Res.append("@error Null DataSet in AddDataSetOperator \n");
+    Res.append("@error Invalid Operator Name: op_name");
+    Res.append("@error Invalid Operator Name: cannot be instatiated \n"); 
+    
+    return Res.toString();
+    
+  }
     
     /** 
      * Get the name of this operator to use in scripts. In this case
@@ -190,12 +218,16 @@ public class AddDataSetOperator extends GenericSpecial{
 	
         System.out.println("OPERATOR:"+opName);
 
-	String filename="/IPNShome/pfpeterson/data/CsC60/SEPD18805.RUN";
+	String filename="/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
+	//String filename="/IPNShome/pfpeterson/data/CsC60/SEPD18805.RUN";
 	//String filename="/IPNShome/pfpeterson/data/ge_10k/glad4606.run";
 	RunfileRetriever rr = new RunfileRetriever( filename );
 	DataSet ds = rr.getDataSet(1);
 
 	AddDataSetOperator op = new AddDataSetOperator( ds, opName);
         System.out.println("RESULT: "+op.getResult());
+	
+	// Raw documentation data dumped to console
+	System.out.println( op.getDocumentation() );
     }
 }
