@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/02/24 20:47:40  dennis
+ *  Now checks that reply to status request starts with "Status:"
+ *
  *  Revision 1.9  2003/02/24 13:42:31  dennis
  *  Switched to use CommandObject instead of compound String command.
  *
@@ -185,7 +188,7 @@ abstract public class RemoteDataRetriever extends    Retriever
         server_alive = true;
 
       String answer = (String)obj;
-      if ( answer.equals( DataSetServer.ANSWER_OK ) )
+      if ( answer.startsWith( TCPComm.STATUS ) )
         return true;
       else
       {
