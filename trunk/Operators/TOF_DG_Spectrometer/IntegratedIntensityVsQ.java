@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/14 13:31:38  dennis
+ * Added getDocumentation() method. (Tyler Stelzer)
+ *
  * Revision 1.3  2002/11/27 23:30:33  pfpeterson
  * standardized header
  *
@@ -241,5 +244,51 @@ public class IntegratedIntensityVsQ extends GenericTOF_DG_Spectrometer{
         Operator op = new IntegratedIntensityVsQ();
         op.CopyParametersFrom( this );
         return op;
+    }
+    
+    
+    public String getDocumentation()
+    {
+      StringBuffer Res = new StringBuffer();
+      Res.append("@overview This operator produces a DataSet with one entry,");
+       Res.append(" a Data block giving the integrated intensity of a");
+       Res.append(" histogram over a specified interval, as a tabulated");
+       Res.append(" function of the scattering angle 2*theta.");
+      
+      Res.append("@algorithm Check for degenerate cases. Get the original");
+       Res.append(" y units and label. Make DataSet with new title and");
+       Res.append(" modified y units and label. Copy and update the log.");
+       Res.append(" Copy the list of attributes.  Sort the DataSet based on");
+       Res.append(" the effective position.  This orders it by scattering");
+       Res.append(" angle. For each Data block, find the integrated intensity");
+       Res.append(" on [a,b] and the scattering angle.  Use method");
+       Res.append(" IntegrateHistogram to take care of partial bins. There");
+       Res.append(" may be several groups with the same Q, so we need to");
+       Res.append(" combine them to keep distinct x's.  Copy non-duplicates");
+       Res.append(" into arrays of the proper size.  Make a new Data block");
+       Res.append(" with the new x and y values and group ID 1. The x values");
+       Res.append(" must be increasing, and they will be since the DataSet");
+       Res.append(" was sorted on the detector position.");
+
+      Res.append("@param ds DataSet for which the integrated intensity vs");
+       Res.append(" group angle will be calculated.");
+      Res.append("@param a Left endpoint of interval where the histogram is");
+       Res.append(" integrated.");
+      Res.append("@param b Right endpoint of interval where the histogram is");
+       Res.append("integrated.");
+      
+      Res.append("@return If successful, this operator produces a DataSet");
+       Res.append("containing the integrated intensity of a spectrum over the");
+       Res.append("specified interval [a,b].  If the original DataSet is");
+       Res.append(" null, or the interval is invalid, or some Data block of");
+       Res.append(" the original DataSet does not have a detector position");
+       Res.append(" attribute, an error message is returned.");
+      
+      Res.append("@error DataSet is null in IntegratedIntensityVsQ");
+      Res.append("@error [a,b] invalid in IntegratedIntensityVsQ:");
+      Res.append("@error NO DetectorPosition for group < group id >");
+
+  
+     return Res.toString();
     }
 }
