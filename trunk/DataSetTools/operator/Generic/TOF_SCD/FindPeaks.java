@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2003/02/06 16:02:57  dennis
+ * Added getDocumentation() method. (Shannon Hintzman)
+ *
  * Revision 1.13  2003/01/31 17:50:58  pfpeterson
  * Fixed bug with array indices going out of bounds.
  *
@@ -107,6 +110,30 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     return "FindPeaks";
   }
   
+  /* ------------------------ getDocumentation ---------------------------- */
+ 
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    
+    Res.append("@overview This program finds the peaks in a column slice and");
+    Res.append(" compares them to adjacent columns.");
+ 
+    Res.append("@algorithm This program finds the peaks in a column slice and");
+    Res.append(" compares them to adjacent columns, depending on the current ");
+    Res.append("parameters given.");
+        
+    Res.append("@param data_set - DataSet to find peak in.");
+    Res.append("@param moncount - Integrated Monitor");
+    Res.append("@param maxNumPeaks - Maximum Number of Peaks");
+    Res.append("@param min_count - Minimum number of counts peak must have.");
+    
+    Res.append("@return Returns a vector of Peak objects.");
+    
+    return Res.toString();
+  }
+
+
   /* ----------------------- setDefaultParameters ------------------------- */ 
   /** 
    * Sets default values for the parameters.  This must match the data types 
