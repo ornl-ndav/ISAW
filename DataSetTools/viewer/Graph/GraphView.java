@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2001/06/04 22:45:18  dennis
+ *  Now uses DS_Util.getData_ID_String() to construct border labels for the
+ *  graphs.
+ *
  *  Revision 1.10  2001/06/04 18:11:41  dennis
  *  All drawing now goes through DrawSpecifiedGraph().
  *  Added option to rebin data for graph.
@@ -551,18 +555,13 @@ private void DrawSpecifiedGraph( int index )
 
   JPanel border_panel = (JPanel)h_graph[ index ].getParent();
   TitledBorder border = (TitledBorder)border_panel.getBorder();
-  String border_label = data_block.toString();
-
-  String update_time = (String)
-                       (data_block.getAttributeValue(Attribute.UPDATE_TIME));
-  if ( update_time != null )
-    border_label = border_label + ", " + update_time;
+//  String border_label = data_block.toString();
+  String border_label = DS_Util.getData_ID_String( getDataSet(), index );
 
   if ( data_block.isSelected() )
   {
     h_graph[index].setColor( Color.blue, 0, false );
     border.setTitleColor( Color.blue );
-    border_label += " (Selected)";
     was_selected[index] = true;
   }
   else
