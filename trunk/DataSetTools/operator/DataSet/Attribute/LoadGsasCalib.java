@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/09/27 15:02:03  pfpeterson
+ *  Makes sure iparm file is readable and exists.
+ *
  *  Revision 1.3  2002/08/06 21:29:06  pfpeterson
  *  Fixed small bug with the specification of the parameter file.
  *
@@ -140,6 +143,14 @@ public class LoadGsasCalib extends    DS_Attribute {
             ((Boolean)getParameter(1).getValue()).booleanValue();
         if(DEBUG)System.out.println("seq_numbering="+this.seq_numbering);
         TextFileReader fr=null;
+
+        File iparmfile=new File(iparm);
+        if(! iparmfile.exists() ){
+            return new ErrorString(iparm+" does not exist");
+        }
+        if(! iparmfile.canRead() ){
+            return new ErrorString(iparm+" is not readable");
+        }
 
         try{
             fr = new TextFileReader(iparm);
