@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.60  2003/07/23 21:53:39  rmikk
+ * Fixed error in setting operands to an operator when too
+ * few operand values are given.
+ *
  * Revision 1.59  2003/07/15 16:43:19  rmikk
  * Removed a Display window from the Vector of open
  * displays when the window is closed.  This is done as
@@ -2768,7 +2772,10 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     */
     private void SetOpParameters ( Operator op , Vector Args , int start ){
         int k;
-        for( k = 0 ; k < op.getNum_parameters() ; k++ ){
+        int nn = op.getNum_parameters();
+        if( Args.size()- start < nn)
+            nn = Args.size() - start;
+        for( k = 0 ; k < nn ; k++ ){
             if( (Args.elementAt( k + start ) instanceof String)  &&  
                 (op.getParameter( k ).getValue( ) instanceof SpecialString) ){
                 if( op.getParameter(k).getValue() != null){
