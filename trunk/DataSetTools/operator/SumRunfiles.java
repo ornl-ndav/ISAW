@@ -4,6 +4,10 @@
  *  Renamed from MultiRunfileLoader.java
  *  
  *  $Log$
+ *  Revision 1.5  2000/08/03 21:42:10  dennis
+ *  Now calls FilenameUtil.fixCase() to check for case errors in basic
+ *  filename
+ *
  *  Revision 1.4  2000/07/31 15:44:48  dennis
  *  Now uses SpecialStrings for the paramters so that the GUI can create
  *  appropriate components.
@@ -266,13 +270,18 @@ public class SumRunfiles extends    Operator
                variance_1 = 0;
      float     centroid;
 
-     file_name = path + InstrumentType.formIPNSFileName( instrument, runs[0] );
-     System.out.println( "Opening " + file_name );
+     String temp_file_name = path + 
+                  InstrumentType.formIPNSFileName( instrument, runs[0] );
+     file_name = FilenameUtil.fixCase( temp_file_name );
+     if ( file_name == null )
+       return new ErrorString("ERROR: "+temp_file_name+" not found");
 
+     System.out.println( "Opening " + file_name );
+     
      try
      {
-       first_runfile = new Runfile( file_name );
        rr            = new RunfileRetriever( file_name );
+       first_runfile = new Runfile( file_name );
 
                              // load the first run's monitors and histogram
        datasets[0] = rr.getFirstDataSet(Retriever.MONITOR_DATA_SET);
