@@ -30,6 +30,9 @@
  *
  *
  * $Log$
+ * Revision 1.14  2003/03/28 19:24:47  pfpeterson
+ * Removed a debug statement.
+ *
  * Revision 1.13  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -498,8 +501,6 @@ public class JDataTreeRingmaster
 
       public void actionPerformed( ActionEvent item_e )
       {
-        System.out.println( "MultipleDataSetMenuItemListener" );
-
         if(  item_e.getActionCommand() == MENU_SELECT  )
           tree.selectNodesWithPaths( tps );
 
