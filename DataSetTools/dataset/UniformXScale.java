@@ -1,10 +1,19 @@
 /*
- * @(#)UniformXScale.java     1.0  98/06/08  Dennis Mikkelson
+ * @(#)UniformXScale.java     
  *
- * ---------------------------------------------------------------------------
+ * Programmer:  Dennis Mikkelson
+ *
  *  $Log$
+ *  Revision 1.4  2000/12/07 22:27:21  dennis
+ *  Added methods getStep(),
+ *                extend(),
+ *
+ *  Added main() with test code for extend() method.
+ *
+ *  Uses partial double precision for calculating the x values.
+ *
  *  Revision 1.3  2000/07/10 22:24:06  dennis
- *  July 10, 2000 version... many changes
+ *  July 10, 2000 version... many changes, added to CVS repository
  *
  *  Revision 1.3  2000/05/12 15:41:35  dennis
  *  Made UniformXScales IMMUTABLE so that they may be shared.  This required
@@ -15,7 +24,6 @@
  *
  *  Revision 1.2  2000/05/11 16:00:45  dennis
  *  Added RCS logging
- *
  *
  */
 
@@ -65,20 +73,30 @@ public class UniformXScale extends XScale implements Serializable
    */
   public float[] getXs()
   {
-    float step    = 0;
-    float start_x = getStart_x();
-    float end_x   = getEnd_x();
-    int   num_x   = getNum_x();
-
-    float x[]  = new float[num_x];
-    if ( num_x > 1 )
-      step = (end_x - start_x) / (num_x - 1);
+    double step = getStep();
+    float x[]   = new float[num_x];
 
     for ( int i = 0; i < num_x; i++ )
-      x[i] = start_x + i * step;
+      x[i] = (float)( start_x + i * step );
 
     return x;
   }
+
+  /**
+   * Get the separation between successive x values for this XScale.
+   *
+   * @return  The distance between two successive x values in this XScale.
+   */
+  public double getStep()
+  {
+    double step    = 0;
+
+    if ( num_x > 1 )
+      step = (end_x - start_x) / (double)(num_x - 1);
+
+    return step;
+  }
+
 
   /**
    *  Constructs a new UniformXScale that extends over the smallest interval
@@ -95,15 +113,99 @@ public class UniformXScale extends XScale implements Serializable
      return new UniformXScale( temp_start_x, temp_end_x, temp_num_x ); 
    }
 
+
+  /**
+   *  Constructs a new UniformXScale that extends over the smallest interval
+   *  containing both this XScale and the specifed XScale.  The spacing between
+   *  points is the same as for the current XScale and the start_x of the
+   *  new XScale is choosen so that the division points of the current XScale
+   *  are still used.
+   *
+   *  @param  other_scale  The x scale that is used to extend the current XScale
+   *
+   *  @return  A new UniformXScale is returned that covers the union
+   *           of the intervals covered by the current XScale and the
+   *           other XScale.
+   */
+
+   public XScale extend( XScale other_scale )
+   {
+     float temp_start_x = Math.min( this.start_x, other_scale.start_x );
+     float temp_end_x   = Math.max( this.end_x,   other_scale.end_x );
+     int   temp_num_x   = Math.max( this.num_x,   other_scale.num_x );
+
+                                                       // keep current delta_x
+     double delta_x;
+     if ( num_x > 1 )
+       delta_x = ( end_x - start_x ) / (double)(num_x-1); 
+     else
+       return new UniformXScale( temp_start_x, temp_end_x, temp_num_x );
+
+     int n_steps_to_start = (int)Math.round((start_x-temp_start_x)/delta_x);
+     temp_start_x = (float)(start_x - n_steps_to_start * delta_x);
+
+     int n_steps_to_end = (int)Math.round((temp_end_x-temp_start_x)/delta_x); 
+     temp_end_x = (float)(temp_start_x + n_steps_to_end * delta_x);
+
+     temp_num_x = (int)Math.round( (temp_end_x - temp_start_x) / delta_x ) + 1;
+
+     return new UniformXScale( temp_start_x, temp_end_x, temp_num_x );
+   }
+
+
   /**
    * Creates a new UniformXScale object with the same data as the original
    * UniformXScale object.
    */
   public Object clone()
   {
-    UniformXScale copy = new UniformXScale( getStart_x(), 
-                                            getEnd_x(),
-                                            getNum_x()  );
+    UniformXScale copy = new UniformXScale( start_x, end_x, num_x );
     return( copy );
+  }
+
+  /*
+   * main program for basic testing only
+   */
+  public static void main( String args[] )
+  {
+    XScale    scale = new UniformXScale(    10,    12, 11 );
+    XScale u1_scale = new UniformXScale(  8.5f,  9.5f, 11 );
+    XScale u2_scale = new UniformXScale(  9.5f, 10.5f, 11 );
+    XScale u3_scale = new UniformXScale( 10.5f, 11.5f, 11 );
+    XScale u4_scale = new UniformXScale( 11.5f, 12.5f, 11 );
+    XScale u5_scale = new UniformXScale( 12.5f, 13.5f, 11 );
+    XScale u6_scale = new UniformXScale(  9.5f, 12.5f, 11 );
+
+    float v1_x[] = {   8.5f,  8.75f,  9.0f,  9.25f,  9.5f };
+    float v2_x[] = {   9.5f,  9.75f, 10.0f, 10.25f, 10.5f };
+    float v3_x[] = {  10.5f, 10.75f, 11.0f, 11.25f, 11.5f };
+    float v4_x[] = {  11.5f, 11.75f, 12.0f, 12.25f, 12.5f };
+    float v5_x[] = {  12.5f, 12.75f, 13.0f, 13.25f, 13.5f };
+    float v6_x[] = {   9.5f, 10.0f,  11.0f, 12.0f,  12.5f };
+
+    XScale v1_scale = new VariableXScale ( v1_x );
+    XScale v2_scale = new VariableXScale ( v2_x );
+    XScale v3_scale = new VariableXScale ( v3_x );
+    XScale v4_scale = new VariableXScale ( v4_x );
+    XScale v5_scale = new VariableXScale ( v5_x );
+    XScale v6_scale = new VariableXScale ( v6_x );
+
+//    XScale extended = scale.extend( u1_scale );     // uniform scale extend
+//    XScale extended = scale.extend( u2_scale );
+//    XScale extended = scale.extend( u3_scale );
+//    XScale extended = scale.extend( u4_scale );
+//    XScale extended = scale.extend( u5_scale );
+    XScale extended = scale.extend( u6_scale );
+
+//    XScale extended = scale.extend( v1_scale );    // variable scale extend
+//    XScale extended = scale.extend( v2_scale );
+//    XScale extended = scale.extend( v3_scale );
+//    XScale extended = scale.extend( v4_scale );
+//    XScale extended = scale.extend( v5_scale );
+//    XScale extended = scale.extend( v6_scale );
+
+    float x[] = extended.getXs();
+    for ( int i = 0; i < x.length; i++ )
+      System.out.println( x[i] );
   }
 }
