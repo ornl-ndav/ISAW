@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2004/03/15 19:35:31  dennis
+ * Rmoved unused imports after factoring out view components,
+ * math and utilities.
+ *
  * Revision 1.16  2004/03/15 03:31:25  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -70,7 +74,6 @@
 package IsawGUI;
 
 import DataSetTools.dataset.*;
-import DataSetTools.util.*;
 import gov.anl.ipns.Util.Messaging.*;
 
 import java.awt.*;
