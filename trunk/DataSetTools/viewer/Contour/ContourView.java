@@ -36,6 +36,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2002/08/30 15:33:47  rmikk
+ *    -Used the Range of Y values(Contour intensities) from ContourData.java
+ *    -Fixed some Units indicators
+ *
  *  Revision 1.14  2002/08/23 13:51:08  rmikk
  *  -Eliminated some dead code
  *  -Added a color scale ( Need to elongate JFrame to see it
@@ -479,8 +483,14 @@ public class ContourView extends DataSetViewer
       */
      if( ac != null )
        {
-        ac.setBorderTitle( data_set.getX_label() );
-        ac.setTextLabel( data_set.getX_units() + "=" );
+        if( axis3 == null)
+          {ac.setBorderTitle( data_set.getX_label() );
+           ac.setTextLabel( data_set.getX_units() + "=" );
+          }
+      else
+        {ac.setBorderTitle( axis3.getAxisName());
+         ac.setTextLabel( axis3.getAxisUnits()+"=");
+         }
        }
      state.set_int("Contour.Style", GridContourAttribute);
      if( ( main != null ) )
@@ -922,7 +932,7 @@ public class ContourView extends DataSetViewer
        */
       //To use a variable scale determined at each time increment use the first
       //Range2D declaration, otherwise, use the second one.
-      ClosedInterval cli = getDataSet().getYRange();
+      ClosedInterval cli = cd.getYRange();
       double[] Aclev = clevelsFrom( cli);
       nlevels = Aclev.length;
       Range2D datar = new Range2D( cli.getStart_x(), cli.getEnd_x(),
@@ -1080,8 +1090,8 @@ public class ContourView extends DataSetViewer
         {Choice2 = 2; Choice3 = 1;}
       else if( c=='c')
         {Choice1 = 1; Choice2 = 2; Choice3 = 0;}
-      DataSetOperator op = ds.getOperator( "Convert to Q");
-      op.setParameter(new Parameter("nbins", new Integer(100)),2);
+      /*DataSetOperator op = ds.getOperator( "Convert to Q");
+      op.setParameter(new Parameter("nbins", new Integer(0)),2);
       Object O = op.getResult();
       if( O instanceof DataSet)
          ds = (DataSet)O;
@@ -1089,9 +1099,16 @@ public class ContourView extends DataSetViewer
         {System.out.println( O);
          System.exit(0);
         }
+      */
+      Operator op = new Operators.ChgOp( ds);
+      op.getResult();
       QxQyQzAxesHandler Qax = new QxQyQzAxesHandler(ds);
       IAxisHandler Axis1, Axis2, Axis3;
-      System.out.println("Choice 1,2,3="+Choice1+","+Choice2+","+Choice3);
+      System.out.println("ds size x_units="+ds.getNum_entries()+ds.getX_units());
+      Data D = ds.getData_entry( 960);
+      NexIO.NxNodeUtils nd= new NexIO.NxNodeUtils();
+      //System.out.println("x="+nd.Showw( D.getX_scale().getXs()));
+      //System.out.println("y="+nd.Showw( D.getY_values()));
       if( Choice1 == 0)
         Axis1 = Qax.getQxAxis();
       else if( Choice1 ==1)
@@ -1112,9 +1129,13 @@ public class ContourView extends DataSetViewer
         Axis3 = Qax.getQyAxis();
       else
         Axis3 = Qax.getQzAxis();
+    System.out.println("============== qx,qy,qz data ===========");
+    for( int kk=0;kk<5;kk++)
+      System.out.println( Axis1.getValue(0,kk)+","+Axis2.getValue(0,kk)+
+              ","+Axis3.getValue(0,kk));
+    ViewerState vs = new ViewerState();
     
-    
-    ContourView cv = new ContourView( ds, new ViewerState(),Axis1,Axis2,Axis3);
+    ContourView cv = new ContourView( ds, null ,Axis1,Axis2,Axis3);
     jf.getContentPane().setLayout( new GridLayout(1,1));
     jf.getContentPane().add(cv);
     jf.validate();
@@ -1361,7 +1382,6 @@ public class ContourView extends DataSetViewer
       { //JPlotLayout jp = (JPlotLayout)(e.getSource());
          gov.noaa.pmel.sgt.Layer L = rpl_.getFirstLayer();
          gov.noaa.pmel.sgt.Graph g = L.getGraph();
-
         
          if( !( g instanceof CartesianGraph ) )
             return;
@@ -1372,7 +1392,7 @@ public class ContourView extends DataSetViewer
          double row = cg.getYPtoU( L.getYDtoP( e.getY() ) );
          int index = cd.getGroupIndex( row, col );
          float time = cd.getTime( row, col);
-       
+         
          if( index < 0)
            {dct.showConversions( 0.0f, -1 ); 
             return;
@@ -1382,7 +1402,7 @@ public class ContourView extends DataSetViewer
            {dct.showConversions( 0.0f, -1 ); 
             return;
            }
-        
+          
          data_set.setPointedAtIndex( index);
          
          data_set.setPointedAtX( time);
