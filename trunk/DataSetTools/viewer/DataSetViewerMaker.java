@@ -16,6 +16,7 @@ public class DataSetViewerMaker  extends DataSetViewer
    ViewerState state;
    IVirtualArray1D viewArray;
    FunctionViewComponent viewComp;
+   DataSetData update_array;
 
    public DataSetViewerMaker( DataSet ds, ViewerState state, IVirtualArray1D viewArray, 
                                FunctionViewComponent viewComp)
@@ -63,7 +64,17 @@ public class DataSetViewerMaker  extends DataSetViewer
      }
   public void redraw( String reason)
     {
+       if ( !validDataSet() )
+         return;
 
+       if( reason.equals( "SELECTION CHANGED" ) )
+       { 
+          update_array = new DataSetData( getDataSet() );
+          viewComp.dataChanged(update_array);
+         // viewComp.getGraphJPanel().repaint();
+       }
+       else if( reason.equals( "POINTED AT CHANGED" )) 
+          viewComp.dataChanged();
     }
   public class ArrayActionListener  implements ActionListener
     {
