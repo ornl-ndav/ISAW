@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/01/24 19:48:52  bouzekc
+ *  Removed unused imports.  Removed unused variables in main().
+ *
  *  Revision 1.1  2003/12/15 00:50:30  rmikk
  *  Initial Checkin. This operators lets a subset of the data sets stored in
  *    a file be retrieved
@@ -45,13 +48,11 @@ import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.util.*;
-import IPNS.Runfile.*;
-import DataSetTools.operator.Parameter;
 import DataSetTools.parameter.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.awt.*;
-import DataSetTools.parameter.*;
+
 /**
  * Operator to load all data sets from one IPNS runfile
  *
@@ -269,9 +270,8 @@ public class LoadSelDataSets extends    GenericLoad
       {
         DataSet datasets[] = (DataSet[])result;
 
-        ViewManager viewmanager;
         for ( int i = 0; i < datasets.length; i++ )
-          viewmanager = new ViewManager( datasets[i], IViewManager.IMAGE );
+          new ViewManager( datasets[i], IViewManager.IMAGE );
       }
       else
         System.out.println( result.toString() );
