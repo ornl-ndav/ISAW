@@ -1,3 +1,9 @@
+/*
+ * $Log$
+ * Revision 1.2  2003/10/17 02:56:07  bouzekc
+ * Fixed javadoc errors.  Added Log message tag.
+ *
+ */
 package Jama;
 
    /** Cholesky Decomposition.
@@ -36,8 +42,8 @@ public class CholeskyDecomposition implements java.io.Serializable {
  * ------------------------ */
 
    /** Cholesky algorithm for symmetric and positive definite matrix.
-   @param  A   Square, symmetric matrix.
-   @return     Structure to access L and isspd flag.
+   This is a structure to access L and isspd flag.
+   @param  Arg   Square, symmetric matrix.
    */
 
    public CholeskyDecomposition (Matrix Arg) {
@@ -143,8 +149,7 @@ public class CholeskyDecomposition implements java.io.Serializable {
       return isspd;
    }
 
-   /** Return triangular factor.
-   @return     L
+   /** @return triangular factor.
    */
 
    public Matrix getL () {
@@ -154,8 +159,8 @@ public class CholeskyDecomposition implements java.io.Serializable {
    /** Solve A*X = B
    @param  B   A Matrix with as many rows as A and any number of columns.
    @return     X so that L*L'*X = B
-   @exception  IllegalArgumentException  Matrix row dimensions must agree.
-   @exception  RuntimeException  Matrix is not symmetric positive definite.
+   @throws  IllegalArgumentException  Matrix row dimensions must agree.
+   @throws  RuntimeException  Matrix is not symmetric positive definite.
    */
 
    public Matrix solve (Matrix B) {
