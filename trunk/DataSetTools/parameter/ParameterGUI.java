@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/08/16 02:05:33  bouzekc
+ *  Fixed NullPointerException when adding PropertyChangeListeners to the
+ *  entrywidget in addPCLToWidget().
+ *
  *  Revision 1.12  2003/08/15 23:21:15  bouzekc
  *  Removed init() method.  Added documentation to help make it clearer what
  *  to do to create a ParameterGUI.
@@ -477,7 +481,11 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
 
       pcl = ( PropertyChangeListener )propListeners.elementAt( i );
 
-      entrywidget.addPropertyChangeListener( temp, pcl );
+      if( temp != null ) {
+        entrywidget.addPropertyChangeListener( temp, pcl );
+      } else {
+        entrywidget.addPropertyChangeListener( pcl );
+      }
     }
   }
 
