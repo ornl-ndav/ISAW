@@ -29,6 +29,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.2  2003/07/08 18:10:30  bouzekc
+ * Now uses SharedData.getProperty to get the Script_Path
+ * directory.  Added comments.
+ *
  * Revision 1.1  2003/07/02 17:11:27  bouzekc
  * Added to CVS.
  *
@@ -37,30 +41,32 @@ package Wizard.Examples;
 
 import DataSetTools.parameter.IParameterGUI;
 
+import DataSetTools.util.SharedData;
+import DataSetTools.util.StringUtil;
+
 import DataSetTools.wizard.*;
 
 
 /**
- *  This class has a main program that constructs a Wizard to show how
- *  ScriptForms can be created and have their result parameters linked
- *  together.
+ * This class has a main program that constructs a Wizard to show how
+ * ScriptForms can be created and have their result parameters linked
+ * together.
  */
 public class ScriptExampleWizard extends Wizard {
+  //~ Constructors *************************************************************
+
   /**
-   *
-   *  Default constructor.  Sets standalone in Wizard to true.
+   * Default constructor.  Sets standalone in Wizard to true.
    */
   public ScriptExampleWizard(  ) {
     this( true );
   }
 
   /**
-   *  Constructor for setting the standalone variable in Wizard.
+   * Constructor for setting the standalone variable in Wizard.
    *
-   *  @param standalone          Boolean indicating whether the
-   *                             Wizard stands alone (true) or
-   *                             is contained in something else
-   *                             (false).
+   * @param standalone Boolean indicating whether the Wizard stands alone
+   *        (true) or is contained in something else (false).
    */
   public ScriptExampleWizard( boolean standalone ) {
     super( "Example Wizard for Script Forms", standalone );
@@ -75,9 +81,19 @@ public class ScriptExampleWizard extends Wizard {
     this.setHelpMessage( s.toString(  ) );
   }
 
+  //~ Methods ******************************************************************
+
   /**
-   *  Adds and coordinates the necessary Forms for this Wizard.
-   *
+   * Method for running the Script Example wizard as standalone.
+   */
+  public static void main( String[] args ) {
+    ScriptExampleWizard w = new ScriptExampleWizard( true );
+
+    w.showForm( 0 );
+  }
+
+  /**
+   * Adds and coordinates the necessary Forms for this Wizard.
    */
   private void createAllForms(  ) {
     //here is where we link all of our parameters.
@@ -88,11 +104,17 @@ public class ScriptExampleWizard extends Wizard {
       { 3, 3 }
     };  //experiment name
 
+    String scriptsDir = SharedData.getProperty( "Script_Path" );
+
+    //Script.java, which is ultimately called to create a new ISS script, uses
+    //forward slashes.  We are sending the String to setFileSeparator, however,
+    //to remove extra slashes.
     ScriptForm peaks = new ScriptForm( 
-        "/IPNShome/bouzekc/ISAW/Scripts/find_multiple_peaks.iss", "LoadFile",
-        "Peaks File" );
+        StringUtil.setFileSeparator( scriptsDir + "/find_multiple_peaks.iss" ),
+        "LoadFile", "Peaks File" );
     ScriptForm integrate = new ScriptForm( 
-        "/IPNShome/bouzekc/ISAW/Scripts/integrate_multiple_runs.iss", "LoadFile",
+        StringUtil.setFileSeparator( 
+          scriptsDir + "/integrate_multiple_runs.iss" ), "LoadFile",
         "Integrated Peaks File", new int[]{ 0, 1, 2, 3 } );
 
     this.addForm( peaks );
@@ -100,15 +122,5 @@ public class ScriptExampleWizard extends Wizard {
 
     //use Form's method to actually link the parameters
     super.linkFormParameters( fpi );
-  }
-
-  /**
-   *  Method for running the Script Example wizard
-   *   as standalone.
-   */
-  public static void main( String[] args ) {
-    ScriptExampleWizard w = new ScriptExampleWizard( true );
-
-    w.showForm( 0 );
   }
 }
