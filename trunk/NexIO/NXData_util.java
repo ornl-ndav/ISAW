@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2002/03/18 21:09:15  dennis
+ * Now does getDimension immediately after it's set.
+ *
  * Revision 1.8  2002/03/13 16:24:21  dennis
  * Converted to new abstract Data class.
  *
@@ -394,13 +397,13 @@ public static void setOtherAttributes( NxNode detNode ,Data newData, int index)
     
      float[] Ax1 = Arrayfloatconvert(Ax1nd.getNodeValue( ));
      float[] fdata = Arrayfloatconvert( datand.getNodeValue());
+     int[] ndims=datand.getDimension();
      float[] Ax2;
      if( Ax2nd==null)
           {Ax2= new float[1];
            Ax2[0]=1;}
       else Ax2= Arrayfloatconvert(Ax2nd.getNodeValue());
 
-     int[] ndims=datand.getDimension();
      if( Ax1 == null )
         {errormessage = node.getErrorMessage() + " for field " + axis1;
          return true;
