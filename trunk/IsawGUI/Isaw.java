@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.88  2002/03/14 22:27:19  dennis
+ *  Changed default version to 1.3.0 alpha.
+ *
  *  Revision 1.87  2002/03/12 20:37:48  chatterjee
  *  Added SDDS functionality
  *
@@ -1930,7 +1933,7 @@ public class Isaw
 
     System.out.print("Loading " + TITLE + " Release ");
     if(SharedData.VERSION.equals("Unknown_Version")){
-        System.out.println("1.2.1 alpha");
+        System.out.println("1.3.0 alpha");
     }else{
         System.out.println(SharedData.VERSION );
     }
