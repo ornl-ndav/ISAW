@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2004/03/13 23:36:18  bouzekc
+ * Changed clearValue() to clear().
+ *
  * Revision 1.15  2004/02/11 04:10:02  bouzekc
  * Uses the new wizard classes with the indeterminate progress bars.
  *
@@ -275,7 +278,7 @@ public class TimeFocusGroupForm extends Form implements Serializable {
     tfgr = ( ArrayPG )super.getParameter( ( NUM_BANKS * 3 ) + 1 );
 
     //clear it out when the form is re-run
-    tfgr.clearValue(  );
+    tfgr.clear(  );
 
     edit_len = super.getParamType( Form.VAR_PARAM ).length;
 
