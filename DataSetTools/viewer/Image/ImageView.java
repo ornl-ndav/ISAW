@@ -2,6 +2,10 @@
  * @(#)ImageView.java  1.1 2000/04/28 Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.5  2000/10/10 19:52:07  dennis
+ *  "Pointed At" Data block and cursor readouts now update with mouse
+ *  click as well as with mouse drag operation.
+ *
  *  Revision 1.4  2000/10/03 21:19:42  dennis
  *  Now uses ImageJPanel method to set the color model.
  *
@@ -703,8 +707,10 @@ private void MakeConnections()
    log_scale_slider.addMouseListener( new LogScaleMouseHandler() );
 
    image_Jpanel.addMouseMotionListener( new ImageMouseMotionAdapter() );
+   image_Jpanel.addMouseListener( new ImageMouseAdapter() );
    image_Jpanel.addMouseListener( new ImageZoomMouseHandler() );
    h_graph.addMouseMotionListener( new HGraphMouseMotionAdapter() );
+   h_graph.addMouseListener( new HGraphMouseAdapter() );
 
    x_range_ui.addActionListener( new X_Range_Listener() );
    n_bins_ui.addActionListener( new NumBins_Listener() );
@@ -922,7 +928,6 @@ private void DrawHGraph( Data data_block, int graph_num, boolean pointed_at )
 }
 
 
-
 /* -------------------------- UpdateHGraphReadout ------------------------- */
 
 private void UpdateHGraphReadout( )
@@ -931,6 +936,7 @@ private void UpdateHGraphReadout( )
   int row = getDataSet().getPointedAtIndex();
   graph_table.showConversions( float_pt.x, float_pt.y, row );
 }
+
 
 /* -------------------------- SyncHGraphScrollBar ------------------------- */
 
@@ -957,6 +963,38 @@ private void SyncHGraphScrollBar()
                         (hg_bar_max - hg_bar_min) / (hi_bar_max - hi_bar_min));
                         
   hg_bar.setValue( hg_bar_value );
+}
+ 
+
+/* ------------------------- ProcessImageMouseEvent ------------------------ */
+
+private Point ProcessImageMouseEvent( MouseEvent e, 
+                                      int        last_image_row,
+                                      int        last_image_col  )
+{
+  Point pix_pt          = image_Jpanel.getCurrent_pixel_point();
+  int row = image_Jpanel.ImageRow_of_PixelRow( pix_pt.y );
+  int col = image_Jpanel.ImageCol_of_PixelCol( pix_pt.x );
+
+  if ( row != last_image_row )
+  {
+    if ( getDataSet().getPointedAtIndex() != row )  // only change if needed
+    { 
+      getDataSet().setPointedAtIndex( row );
+      getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
+    }
+    DrawSelectedHGraphs();
+  }
+
+  if ( col != last_image_col || row != last_image_row )
+    UpdateImageReadout( row );
+
+  SyncHGraphScrollBar();
+
+  if ( track_image_cursor_button.getState() )
+    SetGraphCursorFromImage();
+
+  return new Point( col, row );
 }
 
 
@@ -1054,42 +1092,39 @@ private class ImageZoomMouseHandler extends    MouseAdapter
 }
 
 
+
 /* ------------------------ ImageMouseMotionAdapter ------------------------ */
 
 private class ImageMouseMotionAdapter extends    MouseMotionAdapter
                                       implements Serializable
 {
-   int last_image_row = -1;
-   int last_image_col = -1;
+   int last_image_row = -1;           // Record the last postion, so we don't
+   int last_image_col = -1;           // do more work than needed as the 
+                                      // mouse is dragged.
 
    public void mouseDragged( MouseEvent e )
    {
+     Point last_pt = ProcessImageMouseEvent(e, last_image_row, last_image_col);
 
-     Point pix_pt          = image_Jpanel.getCurrent_pixel_point();
-     int row = image_Jpanel.ImageRow_of_PixelRow( pix_pt.y );
-     int col = image_Jpanel.ImageCol_of_PixelCol( pix_pt.x );
-
-     if ( row != last_image_row )
-     {
-       getDataSet().setPointedAtIndex( row );
-       DrawSelectedHGraphs(); 
-       getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
-     }
-
-     if ( col != last_image_col || row != last_image_row )
-       UpdateImageReadout( row );
-
-     SyncHGraphScrollBar();
-       
-     if ( track_image_cursor_button.getState() )
-       SetGraphCursorFromImage();
-
-     last_image_row = row;
-     last_image_col = col;
+     last_image_row = last_pt.y;
+     last_image_col = last_pt.x;
    }
 }
 
 
+/* --------------------------- ImageMouseAdapter --------------------------- */
+
+private class ImageMouseAdapter extends    MouseAdapter
+                                implements Serializable
+{
+   public void mousePressed( MouseEvent e )
+   {
+     ProcessImageMouseEvent(e, -1, -1);
+   }
+}
+
+
+/* ----------------------- HGraphMouseMotionAdapter ----------------------- */
 
 private class HGraphMouseMotionAdapter extends    MouseMotionAdapter
                                        implements Serializable
@@ -1100,6 +1135,20 @@ private class HGraphMouseMotionAdapter extends    MouseMotionAdapter
    }
 }
 
+
+/* -------------------------- HGraphMouseAdapter -------------------------- */
+
+private class HGraphMouseAdapter extends    MouseAdapter
+                                 implements Serializable
+{
+   public void mousePressed( MouseEvent e )
+   {
+     UpdateHGraphReadout();
+   }
+}
+
+
+/* --------------------------- SelectionKeyAdapter ------------------------- */
 
 private class SelectionKeyAdapter extends     KeyAdapter
                                   implements Serializable
