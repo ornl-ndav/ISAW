@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.79  2003/09/15 22:27:16  bouzekc
+ * Now traps errors that occur when the number of parameters in the .wsf file
+ * don't match the number of parameters in the Form.
+ *
  * Revision 1.78  2003/09/13 20:56:32  bouzekc
  * Now adds itself to Forms as a PropertyChangeListener for property name
  * IParameter.VALUE and adds its progress bars as PropertyChangeListeners
@@ -1285,13 +1289,17 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       //start the parameter parsing for the Form
       for( int j = 0; j < cur_form.getNum_parameters(  ); j++ ) {
         //get the parameter
-        curParam       = ( IParameterGUI )( cur_form.getParameter( j ) );
+        curParam        = ( IParameterGUI )( cur_form.getParameter( j ) );
 
         //get the parameter name from the file
-        nameStartInd   = xml.indexOf( NAMESTART );
-        nameEndInd     = xml.indexOf( NAMEEND );
-        paramName      = xml.substring( 
-            nameStartInd + NAMESTART.length(  ), nameEndInd );
+        nameStartInd    = xml.indexOf( NAMESTART );
+        nameEndInd      = xml.indexOf( NAMEEND );
+        paramName       = null;
+
+        try {
+          paramName = xml.substring( 
+              nameStartInd + NAMESTART.length(  ), nameEndInd );
+        } catch( StringIndexOutOfBoundsException se ) {}
 
         //compare it to the Form parameter name
         if( !( curParam.getName(  ).equals( paramName ) ) ) {
@@ -1339,6 +1347,28 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
       //end the Parameter parsing for the Form
     }
+  }
+
+  /**
+   * Utility to display a JOptionPane with an error message when a file is not
+   * loaded successfully.  Also writes the error to loadwizard.err in the
+   * current directory.
+   *
+   * @param e The Throwable generated when the attempt was made to load the WSF
+   *        file.
+   * @param file The file the attempt was made to load.
+   */
+  private void displayAndSaveErrorMessage( Throwable e, File file ) {
+    JOptionPane.showMessageDialog( 
+      save_frame,
+      "Error loading " + file.toString(  ) + ".\nThe file is possibly " +
+      "not correct for this Wizard.\nPlease see the loadWizard.err file in " +
+      "this directory for more information.\n", "ERROR",
+      JOptionPane.ERROR_MESSAGE );
+
+    String errFile = StringUtil.setFileSeparator( 
+        SharedData.getProperty( "user.dir" ) + "/loadWizard.err" );
+    TextWriter.writeStackTrace( errFile, e );
   }
 
   /**
@@ -1484,17 +1514,10 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
       //now convert the xml to usable data
       convertXMLtoParameters( s );
-    } catch( IOException e ) {
-      JOptionPane.showMessageDialog( 
-        save_frame,
-        "Error loading " + file.toString(  ) + ".\nThe file is possibly " +
-        "not correct for this Wizard.\nPlease see the loadWizard.err file in " +
-        "this directory for more information.\n", "ERROR",
-        JOptionPane.ERROR_MESSAGE );
-
-      String errFile = StringUtil.setFileSeparator( 
-          SharedData.getProperty( "user.dir" ) + "/loadWizard.err" );
-      TextWriter.writeStackTrace( errFile, e );
+    } catch( IOException ioe ) {
+      displayAndSaveErrorMessage( ioe, file );
+    } catch( StringIndexOutOfBoundsException sioe ) {
+      displayAndSaveErrorMessage( sioe, file );
     } finally {
       //now we want to return to a state where the Wizard can listen to
       //property changes
