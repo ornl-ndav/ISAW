@@ -30,6 +30,20 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/04/15 15:09:16  dennis
+ *  Added methods WriteAllParams() and ReadParams() to write and
+ *  read the state of all possible instrument parameters.  This
+ *  allows the parameters calculated by one run of the optimization
+ *  to be used as the starting values for another run (presumably
+ *  refining a different set of parameters).  The parameters are
+ *  written to the file SCDcalib.results by default.  This file
+ *  also contains the local basis vectors for the detectors, in
+ *  case the detector orientation was optimized.
+ *  Added more information to the SCDcalib.log file.
+ *  Added operators parameters to choose whether to start with default
+ *  instrument parameter values, or to read them from SCDcalib.results.
+ *  Updated documentation to reflect the new features.
+ *
  *  Revision 1.8  2004/04/02 17:50:05  dennis
  *  Now displays and logs comparisons between measured and theoretical
  *  values for row, col and tof, for each of the detectors used in
@@ -106,8 +120,8 @@ import IPNS.Runfile.*;
  */
 public class SCDcalib extends GenericTOF_SCD 
 {
-
   private static final String  TITLE = "SCD Calibration";
+  public  static final String  DEFAULT_PARAMETERS_FILE = "SCDcalib.results";
 
   /* ------------------------ Default constructor ------------------------- */
   /**
@@ -182,6 +196,9 @@ public class SCDcalib extends GenericTOF_SCD
    *  @param use_rot      Flag indicating whether or not an arbitrary rotation
    *                      of each detector should be allowed, specified by
    *                      Euler angles in the laboratory coordinate system.
+   *  @param read_params  Flag indicating whether or not to read initial values
+   *                      for the parameters from a file.
+   *  @param param_file   File from which the initial values would be read.
    */
   public SCDcalib( String   peaksfile,
                    String   runfile,
@@ -202,7 +219,9 @@ public class SCDcalib extends GenericTOF_SCD
                    boolean  use_xoff,
                    boolean  use_yoff,
                    boolean  use_dist,
-                   boolean  use_rot   )
+                   boolean  use_rot,
+                   boolean  read_params,
+                   String   param_file )
   {
     this();
     parameters = new Vector();
@@ -236,6 +255,10 @@ public class SCDcalib extends GenericTOF_SCD
     addParameter( new Parameter("Refine det y_offset", new Boolean(use_yoff)) );
     addParameter( new Parameter("Refine det distance", new Boolean(use_dist)) );
     addParameter( new Parameter("Refine det rotation", new Boolean(use_rot)) );
+
+    addParameter( new Parameter("LOAD INITIAL VALUES FROM FILE", 
+                  new Boolean( read_params ) ));
+    addParameter( new LoadFilePG("ALL PARAMETERS FILE", param_file) );
   }
 
 
@@ -265,6 +288,23 @@ public class SCDcalib extends GenericTOF_SCD
     Res.append(" peak positions (the peaks file) and one of the runfiles ");
     Res.append(" that was used to produce the peaks file are needed, as ");
     Res.append(" well as the lattice parameters for the known sample. ");
+    Res.append(" NOTE: This operator automatically writes two files to ");
+    Res.append(" the current directory.  The first file, SCDcalib.results, ");
+    Res.append(" contains the results of the calibration, including the ");
+    Res.append(" internal form of all supported parameters, the local ");
+    Res.append(" coordinate basis vectors for the detectors, and the ");
+    Res.append(" basic calibration values currently (4/15/04) used by ");
+    Res.append(" the SCD reduction codes, in the 'usual' form.  This file ");
+    Res.append(" can also be read by the operator, to get initial values ");
+    Res.append(" for the parameters, instead of using nominal values from ");
+    Res.append(" the runfile.  The second file that is automatically ");
+    Res.append(" produced is SCDcalib.log.  This log file contains the ");
+    Res.append(" initial values used for this run, some progress reports ");
+    Res.append(" on the optimization, written while it's in progress, lists ");
+    Res.append(" of theoretical versus measured row, col and tof values for ");
+    Res.append(" all detectors, and the resulting parameters in");
+    Res.append(" internal form.");
+
     Res.append("@algorithm The calibration codes calculate where peaks ");
     Res.append(" should occur in Q-space (theoretical positions) based ");
     Res.append(" on the lattice parameters, as well as where the ");
@@ -281,72 +321,107 @@ public class SCDcalib extends GenericTOF_SCD
     Res.append(" of them simultaneously.  For example, if the detector ");
     Res.append(" distance is allowed to vary, the detector width and ");
     Res.append(" height should be kept fixed. ");
+
     Res.append("@param  peaksfile - SCD peaks file containing the ");
     Res.append(" observed peaks.");
+
     Res.append("@param  runfile - Runfile for one of the runs that ");
     Res.append(" produced the peaks file (we assume all runs use the same ");
     Res.append(" time bins and detector positions).");
+
     Res.append("@param  a - Lattice parameter, 'a b c' must correspond ");
     Res.append(" to the order of the axes in the peaksfile.");
+
     Res.append("@param  b - Lattice parameter, 'a b c' must correspond ");
     Res.append(" to the order of the axes in the peaksfile.");
+
     Res.append("@param  c - Lattice parameter, 'a b c' must correspond ");
     Res.append(" to the order of the axes in the peaksfile.");
+
     Res.append("@param  alpha - Lattice parameter, 'alpha beta gamma' ");
     Res.append(" angles must correspond to the order of the axes in the ");
     Res.append(" peaks file");
+
     Res.append("@param  beta - Lattice parameter, 'alpha beta gamma' ");
     Res.append(" angles must correspond to the order of the axes in the ");
     Res.append(" peaks file");
+
     Res.append("@param  gamma - Lattice parameter, 'alpha beta gamma' ");
     Res.append(" angles must correspond to the order of the axes in the ");
     Res.append(" peaks file");
+
     Res.append("@param  max_steps - The maximum number of iteration ");
     Res.append(" steps for the optimization. ");
+
     Res.append("@param  tol_exp - he exponent for the tolerance. ");
     Res.append(" The iteration stops when the normalized relative ");
     Res.append(" change in the parameters is less than 10^tol_exp.");
     Res.append(" Values of -10 to -16 should work.");
+
     Res.append("@param use_L1 - Flag indicating whether or not the ");
     Res.append(" value of L1 should be allowed to vary from it's ");
     Res.append(" nominal value.");
+
     Res.append("@param use_t0 - Flag indicating whether or not the ");
     Res.append(" value of t0 should be allowed to vary from it's ");
     Res.append(" nominal value.");
+
     Res.append("@param use_A - Flag indicating whether or not the ");
     Res.append(" value of A in the wavelength dependent time-of-flight " );
     Res.append(" shift equation (calibrated_tof=A*tof+t0), should be allowed ");
     Res.append(" to vary from it's nominal value of 1.");
+
     Res.append("@param use_ssh - Flag indicating whether or not the ");
     Res.append(" sample position should be shifted from the center of the ");
     Res.append(" goniometer. The shift values SX, SY, SZ are shifts in ");
     Res.append(" the laboratory X,Y,Z coordinate system, when the ");
     Res.append(" goniometer angles are all set to 0.");
+
     Res.append("@param use_width - Flag indicating whether or not the ");
     Res.append(" width of the detectors should be allowed to vary from ");
     Res.append(" their nominal values. ");
+
     Res.append("@param use_height - Flag indicating whether or not the ");
     Res.append(" height of the detectors should be allowed to vary from ");
     Res.append(" their nominal values. ");
+
     Res.append("@param use_xoff - Flag indicating whether or not the ");
     Res.append(" detectors can be offset in the x direction in the ");
     Res.append(" xy coordinate system on the face of the detector, staying ");
     Res.append(" in the original plane of the detector. ");
+
     Res.append("@param use_yoff - Flag indicating whether or not the ");
     Res.append(" detectors can be offset in the y direction in the ");
     Res.append(" xy coordinate system on the face of the detector, staying ");
     Res.append(" in the original plane of the detector. ");
+
     Res.append("@param use_dist - Flag indicating whether or not the  ");
     Res.append(" distance from the detector to the sample can be varied, ");
     Res.append(" for each detector.");
+
     Res.append("@param use_rot - Flag indicating whether or not an ");
     Res.append(" arbitrary rotation of each detector should be allowed, ");
     Res.append(" specified by Euler angles in the laboratory ");
     Res.append(" coordinate system. ");
+
+    Res.append("@param read_params - Flag indicating whether or not ");
+    Res.append(" to read initial values for the parameters from a file. ");
+
+    Res.append("@param param_file - File from which the initial values ");
+    Res.append(" would be read.  This file should have the parameters listed ");
+    Res.append(" in EXACTLY the same form as in the file SCDcal.results.");
+    Res.append(" NOTE: If the read_params box is checked, and the default ");
+    Res.append(" file name is used, then the last SCDcal.results file ");
+    Res.append(" that was written will be read and those parameter values ");
+    Res.append(" will be used as a starting point for the next optimization. ");
+    Res.append(" This is a convenient way to refine iteratively on different ");
+    Res.append(" sets of parameters.");
+
     Res.append("@return A vector containing entries giving the ");
     Res.append(" values of the instrument parameters followed by the ");
     Res.append(" names of the instrument paramters.  Most of the results ");
     Res.append(" are currently displayed on the system console. ");
+
     return Res.toString();
   }
 
@@ -391,6 +466,11 @@ public class SCDcalib extends GenericTOF_SCD
     addParameter( new Parameter("Refine det y_offset", new Boolean(true)) ); 
     addParameter( new Parameter("Refine det distance", new Boolean(false)) ); 
     addParameter( new Parameter("Refine det rotation", new Boolean(false)) ); 
+
+    addParameter( new Parameter("LOAD INITIAL VALUES FROM FILE", 
+                  new Boolean(false) ));
+    addParameter( new LoadFilePG("ALL PARAMETERS FILE",
+                                  DEFAULT_PARAMETERS_FILE) ); 
   }
 
  
@@ -467,6 +547,173 @@ public class SCDcalib extends GenericTOF_SCD
 
 
   /**
+   *  Write all of the parameters names and values to the specified stream
+   *
+   *  @param  out      The print stream to write to
+   *  @param  names    The list of parameter names
+   *  @param  values   The list of parameter values
+   *  @param  is_used  The list of flags indicating whether or not the 
+   *                   parameter is refined.
+   */
+  private void ShowInitalValues( PrintStream out,
+                                 String      names[],
+                                 double      values[],
+                                 boolean     is_used[]  )
+  {
+    out.println("------------- Initial Parameter Values ---------------");
+    for ( int i = 0; i < values.length; i++ )
+    {
+      if ( is_used[i] )
+        out.print("  ");
+      else
+        out.print("* ");
+      out.println( names[i] +" = " + values[i] );
+    }
+  }
+ 
+  /**
+   *  Write all of the parameters names and values to the specified stream
+   *
+   *  @param  out    The print stream to write to
+   *  @param  names  The list of parameter names
+   *  @param  values The list of parameter values
+   *  @param  s_dev  One standard deviation error distance in Q
+   *  @param  grids  Array of the data grids
+   */
+  private void WriteAllParams( PrintStream    out, 
+                               String         names[], 
+                               double         values[],
+                               double         s_dev,
+                               UniformGrid_d  grids[]    )
+  {
+    if ( out == null )
+    {
+      SharedMessages.addmsg("WARNING: Results file doesn't exist" );
+      return;
+    }
+
+    int max_label_length = 0;
+    for ( int i = 0; i < names.length; i++ )
+      if ( max_label_length < names[i].length() )
+        max_label_length = names[i].length();
+
+    out.println("#");
+    out.println("# ALL POSSIBLE CALIBRATION PARAMETERS " ); 
+    out.println("# " + (new Date()).toString() );
+    out.println("# Lengths in meters");
+    out.println("# Times in microseconds");
+    out.println("# Angles in degrees");
+    out.println("#");
+    out.println("# One standard deviation error distance in Q = " + s_dev );
+    out.println("#");
+    for ( int i = 0; i < grids.length; i++ )
+    {
+      out.println("# Orientation of Detector " + grids[i].ID() + "-----------");
+      double comp[] = grids[i].x_vec().get();
+      out.println("# local x_vector:  ( " +
+                           Format.real(comp[0], 10, 6, false) + ", " +
+                           Format.real(comp[1], 10, 6, false) + ", " +
+                           Format.real(comp[2], 10, 6, false) + ") " 
+                           );
+
+      comp = grids[i].y_vec().get();
+      out.println("# local y_vector:  ( " +
+                           Format.real(comp[0], 10, 6, false) + ", " +
+                           Format.real(comp[1], 10, 6, false) + ", " +
+                           Format.real(comp[2], 10, 6, false) + ") "
+                           );
+
+      comp = grids[i].z_vec().get();
+      out.println("# detector normal: ( " + 
+                           Format.real(comp[0], 10, 6, false) + ", " +
+                           Format.real(comp[1], 10, 6, false) + ", " +
+                           Format.real(comp[2], 10, 6, false) + ") "
+                           );
+      out.println("#");
+    }
+    out.println("#");
+
+    for ( int i = 0; i < values.length; i++ )
+    {
+      out.print( names[i] + ": " );
+      int pad = max_label_length - names[i].length(); 
+      for (int space = 0; space < pad; space ++ )
+        out.print(" ");
+      if ( values[i] >= 0 )
+        out.println ( " " + values[i] );
+      else
+        out.println ( values[i] );
+    }
+  }
+
+
+  /**
+   *  Read parameter values from a file. 
+   *
+   *  @param  filename   The name of the file to read from. 
+   *  @param  names      The list of parameter names
+   *  @param  values     The list of parameter values
+   */
+  private void ReadParams( String filename, String names[], double values[])
+  {
+    FileReader fr = null;
+    BufferedReader br = null;
+    System.out.println("Trying to read parameters: " + filename );
+    try
+    {
+      fr = new FileReader( filename );
+      if ( fr == null )
+        System.out.println("ERROR: couldn't make FileReader " + filename );
+      else
+        System.out.println("SUCCESS: made FileReader " + filename );
+
+      br = new BufferedReader( fr );
+      String line;
+                                                // skip leading comment lines
+      line = br.readLine(); 
+      System.out.println("READ -> " + line );
+      while ( line != null && line.startsWith("#") )
+      {
+        line = br.readLine(); 
+        System.out.println("READ -> " + line );
+      }
+
+      String name;
+      String val_string;
+      double value;
+      int    colon_index;
+      while ( line != null )
+      {
+        colon_index = line.indexOf( ":" );
+        if ( colon_index > 0 )                // try to find the parameter name
+        {
+          name = line.substring( 0, colon_index );
+          name.trim();
+          for ( int i = 0; i < names.length; i++ )
+            if ( name.equalsIgnoreCase( names[i] ) )
+            {
+               val_string = line.substring( colon_index + 1 ); 
+               val_string.trim();
+               value = Double.parseDouble( val_string );      
+               values[i] = value;
+            }
+        }
+        line = br.readLine();
+        System.out.println("READ -> " + line );
+      } 
+      br.close();
+      fr.close();
+    }
+    catch ( Exception e )
+    {
+      SharedMessages.addmsg("WARNING: Problem reading parameter from file: " );
+      SharedMessages.addmsg(" " + filename );
+      e.printStackTrace();
+    }
+  }
+
+
+  /**
    * Uses the current values of the parameters to calcuate calibrated values
    * for the instrument parameters.
    *
@@ -476,9 +723,9 @@ public class SCDcalib extends GenericTOF_SCD
    */
   public Object getResult() 
   {
-    String peaksfile = getParameter(0).getValue().toString();
-    String runfile   = getParameter(1).getValue().toString();
-    String logname   = "SCDcalib.log";
+    String peaksfile  = getParameter(0).getValue().toString();
+    String runfile    = getParameter(1).getValue().toString();
+    String logname    = "SCDcalib.log";
 
     float  lat_params[] = new float[6];
     for ( int i = 0; i < 6; i++ )
@@ -498,11 +745,16 @@ public class SCDcalib extends GenericTOF_SCD
     boolean use_dist  = ((Boolean)(getParameter(18).getValue())).booleanValue();
     boolean use_rot   = ((Boolean)(getParameter(19).getValue())).booleanValue();
 
+    boolean read_params = 
+                        ((Boolean)(getParameter(20).getValue())).booleanValue();
+    String  param_file  = getParameter(21).getValue().toString(); 
+
+                                                      // open the log file
     PrintStream log_print = null;
     try
     {
-      File log_file          = new File( logname );
-      OutputStream log_os    = new FileOutputStream( log_file );
+      File log_file       = new File( logname );
+      OutputStream log_os = new FileOutputStream( log_file );
       log_print = new PrintStream( log_os );
     }
     catch ( Exception e )
@@ -609,6 +861,9 @@ public class SCDcalib extends GenericTOF_SCD
       det_count++;
     }
 
+    if ( read_params )
+      ReadParams( param_file, parameter_names, parameters );
+
     boolean is_used[] = new boolean[n_params];
     for ( int i = 0; i < n_params; i++ )
       is_used[i] = true;
@@ -650,14 +905,10 @@ public class SCDcalib extends GenericTOF_SCD
                                  lattice_params,
                                  log_print );
 
-    for ( int i = 0; i < parameters.length; i++ )
-    {
-      if ( is_used[i] )
-        System.out.print("  ");
-      else
-        System.out.print("* ");
-      System.out.println( parameter_names[i] +" = " + parameters[i] );
-    }
+                                                      // show initial values
+    ShowInitalValues( System.out, parameter_names, parameters, is_used );
+    ShowInitalValues( log_print, parameter_names, parameters, is_used );
+
     System.out.println("Before fit... params are");
     log_print.println("Before fit... params are");
     error_f.ShowProgress( System.out );
@@ -717,6 +968,7 @@ public class SCDcalib extends GenericTOF_SCD
     error_f.ShowOldCalibrationInfo( System.out );
     error_f.ShowOldCalibrationInfo( log_print  );
 
+                                             // log & show row, col, tof errors
     int id_list[] = error_f.getAllGridIDs();
     for ( int count = 0; count < id_list.length; count++ )
     {
@@ -757,6 +1009,28 @@ public class SCDcalib extends GenericTOF_SCD
       MakeDisplay( "Theoretical vs Measured TOF, ID " + det_id, 
                    "Time", "us", tof_pairs );
     }
+                                                   // record the results file
+    String resultname = DEFAULT_PARAMETERS_FILE;
+    PrintStream result_print = null;
+    try
+    {
+      File result_file       = new File( resultname );
+      OutputStream result_os = new FileOutputStream( result_file );
+      result_print = new PrintStream( result_os );
+    }
+    catch ( Exception results_exeception )
+    {
+      SharedMessages.addmsg("WARNING: Couldn't open results file: "
+                            + resultname );
+    }
+
+    UniformGrid_d grid_arr[] = error_f.getAllGrids();
+    double s_dev = error_f.getStandardDeviationInQ();
+    WriteAllParams( log_print, parameter_names, parameters, s_dev, grid_arr );
+    WriteAllParams( result_print, parameter_names, parameters, s_dev, grid_arr);
+    WriteAllParams( System.out, parameter_names, parameters, s_dev, grid_arr );
+    error_f.ShowOldCalibrationInfo( result_print  );
+    result_print.close();
     log_print.close();
 
     float results[] = new float[ parameters.length ];
