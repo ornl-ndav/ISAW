@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2001/08/14 20:29:40  dennis
+ *  Added ExtractCurrentlySelected operator.
+ *
  *  Revision 1.13  2001/08/14 19:44:47  dennis
  *  Removed IntervalSelectionOp since it was not working correctly.
  *
@@ -241,15 +244,16 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new DataSetCrossSection() );
     new_ds.addOperator( new FitPolynomialToGroup() );
 
+    new_ds.addOperator( new DeleteByAttribute() );
     new_ds.addOperator( new SumByAttribute() );
     new_ds.addOperator( new ExtractByAttribute() );
 
     new_ds.addOperator( new DataSetSort() );
     new_ds.addOperator( new DataSetMultiSort() );
 
-    new_ds.addOperator( new DeleteByAttribute() );
     new_ds.addOperator( new DeleteCurrentlySelected() );
     new_ds.addOperator( new SumCurrentlySelected() );
+    new_ds.addOperator( new ExtractCurrentlySelected() );
 
     new_ds.addOperator( new DataSetMerge() );
     new_ds.addOperator( new ResampleDataSet() );
