@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/11/09 19:27:52  dennis
+ * Passes in a null monitor DataSet to gsas_filemaker, since the
+ * gsas_filemaker was changed to require a monitor DataSet.
+ *
  * Revision 1.3  2001/11/09 15:59:01  dennis
  * Fixed minor error in documentation.
  *
@@ -103,7 +107,7 @@ public class WriteGSAS extends GenericSave
       DataSet DS       = (DataSet)( getParameter(0).getValue());
       String  filename = (String) (getParameter(1).getValue());
 
-      gsas_filemaker gsas_output = new gsas_filemaker( DS, filename );
+      gsas_filemaker gsas_output = new gsas_filemaker( null, DS, filename );
       return "Success";
     }
 
