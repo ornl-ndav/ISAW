@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.58  2004/03/23 14:35:08  rmikk
+ *  Invoked the dialog and help frames using the WindowShower mechanism
+ *  Added a dispose method
+ *
  *  Revision 1.57  2004/03/15 23:57:39  dennis
  *  Changed some instances to static methods to be through the
  *  class name instead of an instance.
@@ -609,8 +613,11 @@ public class JParametersDialog implements Serializable,
         opDialog.setSize((int)(.4* Width) , new Float(Size +.8).intValue());
         opDialog.validate();
        
-        opDialog.show();       
-        opDialog.setVisible(true);
+        
+        WindowShower windShow = new WindowShower( opDialog);
+        EventQueue.invokeLater( windShow);
+         
+        //opDialog.setVisible(true);
        
       }
        
@@ -927,7 +934,10 @@ public class JParametersDialog implements Serializable,
       opDialog.dispose();     
     } 
   }
+  public void dispose(){
 
+     opDialog.dispose();
+  }
   public class HelpButtonListener implements ActionListener{
 
     public void actionPerformed(ActionEvent ev){
@@ -945,8 +955,9 @@ public class JParametersDialog implements Serializable,
       JScrollPane scroll =new JScrollPane( jedPane);
       jf.getContentPane().add( scroll );
       jf.setSize( (int)(screenwidth/2), (int)(3*screenheight/4) );
-     
-      jf.show();
+       WindowShower windShow = new WindowShower( jf);
+        EventQueue.invokeLater( windShow);;       
+      //jf.show();
     } 
   }
 }
