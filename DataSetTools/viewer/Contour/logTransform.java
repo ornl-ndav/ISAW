@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/09/04 16:09:57  rmikk
+ *  Improved range for intensities
+ *
  *  Revision 1.7  2003/08/11 22:11:32  rmikk
  *  Improves the color response to match the other views better.
  *
@@ -172,13 +175,16 @@ public class logTransform  implements Transform
         }
         double x = bu+ mu*(u-ustart);
         double y = a*Math.log( x+ b)/Math.log(10)+K;
-        //System.out.println("xy="+x+","+y+","+a+","+K);
+        //stem.out.println("xy="+x+","+y+","+a+","+K);
         if( y >=100)
           return pend;
         if( y <=0)
           return pstart;
         
-      return (y-bp)/mp;
+       double uu=pstart+(y-bp)/mp;
+       if( uu < pstart) return pstart;
+       if( uu > pend) return pend;
+       return uu;
 	
       }
 
@@ -192,9 +198,10 @@ public class logTransform  implements Transform
          return ustart;
         if( p>pend)
           return uend;
-        double y = mp*p+bp;
+        double y = mp*(p-pstart)+bp;
         double x= Math.pow(10.0,(y-K)/a) -b;
         double u = (x-bu)/mu +ustart;
+        System.out.println("a,K="+a+","+K+","+x+","+y+","+u);
         if( u<ustart)
           return ustart;
         if( u > uend)
@@ -202,17 +209,26 @@ public class logTransform  implements Transform
         return u;
        }
 
+  //from mapped to 0 to 100(p)   to mapped to .1 to 100(u)
    private void calc()
     { 
-      mu = 99.9/(uend-ustart);
+      mu = 99.9/(uend-ustart);   //x = mu(u-ustart)+bu
       bu =.1f;
-      mp = 100/(pend-pstart);
+      mp = 100/(pend-pstart);   //y = mp(p-pstart)+bp
       bp=0;
-      float u = (1 - intensity/100);
-      u = u*u*u;
-       a = 30+ 70*u;
-       b = 0 ;
-       K = 37-137*u;
+      float u = intensity;     // y = a*Math.log( x+ b)/Math.log(10)+K;
+      a = 332.2;
+      if( intensity > 50)
+        a = 4.7418*(intensity-50)+332.3;
+      if( intensity <50)
+        b = intensity*2;
+      else b = 100;
+      if( intensity < 60) K= 100-a*Math.log(100+b)/Math.log(10);
+      else K = -a*Math.log(.1+b)/Math.log(10);
+       //a = 30+ 70*u;
+      //b= 0 ;
+      // K = 37-137*u;
+     
      }
 
    /** Unused
@@ -240,7 +256,7 @@ public class logTransform  implements Transform
       }
    */
     //double f = (new Double( args[0])).doubleValue();
-   for( double x = .1; x<100; x+=10)
+   for( double x = .1; x<=100.3; x+=10)
       System.out.println( x+"  "+lt.getTransP(x));
    }	
    }
