@@ -30,34 +30,34 @@ Output_Path ="c:/sand_lpsd_runs/"
 ThickA = [0.1,0.1,0.1,0.1,0.1]
 
 # Sample Transmission runs:
-TransSFileA = [24104,22365,22367,22369,22371]
+TransSFileA = [24201,22367,22369,22371]
 
 # Sample Scattering runs:
-SampleFileA = [24105,22366,22368,22370,22372]
+SampleFileA = [24201,22368,22370,22372]
 
 # Background Transmission runs:
-BackGroundTFileA = [24106,22373,22373,22373,22373] 
+BackGroundTFileA = [24158,22373,22373,22373] 
 
 # Background scattering runs:
-BackGroundFileA = [24107,22374,22374,22374,22374] 
+BackGroundFileA = [24158,22374,22374,22374] 
 
 # Cadmium Transmission runs:
-CadmiumTFileA = [24110,22225,22225,22225,22225]  
+CadmiumTFileA = [24166,22225,22225,22225]  
 
 # Cadmium scattering runs:
-CadmiumFileA = [24111,22226,22226,22226,22226] 
+CadmiumFileA = [24166,22226,22226,22226,22226] 
 
 # Use Cadmium runs in transmission calculations (true/false)?
 useCadmiumRunA = [true,true,true,true,true,true,true,true,true] 
 
 # Open Camera transmission runs
-CameraTFileA = [24106,22215,22215,22215,22215] 
+CameraTFileA = [24158,22215,22215,22215,22215] 
 
 # Sensitivity .dat files (use Sensitivity.iss script to produce them)
-SensFileA = [23237,22205,22205,22205,22205] 
+SensFileA = [22205,22205,22205,22205] 
 
 # Efficiency .dat files (use Efficiency.iss sccript to produce them)
-EffFileA = [23452,22227,22227,22227,22227] 
+EffFileA = [24159,22227,22227,22227,22227] 
 
 #For transmission: Is background different from empty camera?
 useEmptyCellA = [false,false,false,false,false]
@@ -137,9 +137,9 @@ Echo("Loading Background Transmission "&Cell)
 #========== Calculation of transmission for sample/camera ====================
 if useCadmiumRun == true
   load Input_Path&inst&CadmiumFile&ext, "Cadm"
-  DSS = CalcTransmission( Samp[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+  DSS = CalcTransmission( Samp[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,3)
 else
-   DSS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+   DSS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,3)
 endif
 send DSS
 Table(DSS, true, "File", Output_Path&"T"&TransSFile&CameraFile&".dat", "0:1", "HGT,F" , false)
@@ -153,9 +153,9 @@ Echo("Sample/Camera Transmission done ")
 
 #========== Calculation of transmission for background/camera ====================
 if useCadmiumRun == true
-DSC = CalcTransmission( Cell[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+DSC = CalcTransmission( Cell[0],Empty[0],Cadm[0],Data[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,3)
 else
-DSC = CalcTransmission( Cell[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+DSC = CalcTransmission( Cell[0],Empty[0],Samp[0] ,Data[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight,1,3)
 endif
 TransBFile = Output_Path&"T"&BackGroundTFile&CameraFile&".cf"
 PrintFlood( DSC,TransBFile, "Transmission")
@@ -211,12 +211,12 @@ Res=Reduce_KCL(TransS,TransB,Eff,Sens[0],qu,RUNSds[0],RUNSds[1],RUNBds[0],RUNBds
 #Display Res[1], "NEW Selected Graph View"
 #SelectGroups( Res[2], "Group ID",0.0,0.0,"Between Max and Min", "Set Select")
 #Display Res[2], "NEW Selected Graph View"
-for i in [0:2]
+for j in [0:2]
   if  NQxBins < 0
-  send Res[i]
-     Print3Col1D(Res[i], Output_Path&GetField(Res[i], "Title")&".dat","Reduce Results", NeutronDelay)
+  send Res[j]
+     Print3Col1D(Res[j], Output_Path&GetField(Res[j], "Title")&".dat","Reduce Results", NeutronDelay)
   else
-    Print4Col2D1Chan( Res[i], Output_Path&GetField(Res[i], "Title")&".dat")
+    Print4Col2D1Chan( Res[j], Output_Path&GetField(Res[j], "Title")&".dat")
   endif
 endfor
 if do_2D == true
@@ -228,7 +228,10 @@ Echo (Output_Path&GetField(Res[1], "Title") )
 Echo (Output_Path&GetField(Res[2], "Title") )
 #Display "Finished Reduce"
 #ExitDialog()
-
+Res=null
+RunSDS = null
+RUNCds = null
+RunBDS = null
 endfor
 
 Display "Finished"
