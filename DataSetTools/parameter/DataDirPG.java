@@ -1,5 +1,5 @@
 /*
- * File:  DataDirPG.java 
+ * File:  DataDirPG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2004/03/12 20:10:28  bouzekc
+ *  Added javadoc comments.
+ *
  *  Revision 1.18  2003/12/15 01:45:30  bouzekc
  *  Removed unused imports.
  *
@@ -95,142 +98,159 @@
  *
  *
  */
-
 package DataSetTools.parameter;
-import java.lang.String;
-import java.io.File;
+
 import DataSetTools.components.ParametersGUI.*;
+
 import DataSetTools.util.*;
 
-/**
- * This is a particular case of the BrowsePG used for loading a single
- * file. The value is a string.
- */
-public class DataDirPG extends BrowsePG{
-    private static String TYPE     = "DataDir";
+import java.io.File;
 
-    // ********** Constructors **********
-    public DataDirPG(String name, Object value){
-        this(name,value,false);
-        this.setDrawValid(false);
-    }
-    
-    public DataDirPG(String name, Object value, boolean valid){
-        super(name,value,valid);
-        if(value!=null)
-        {
-          if(!(value instanceof String))
-            value = value.toString();
-          if( ((String)value).length()>0 )
-          {
-            File file=new File((String)value);
-            if(file.exists()){
-              if(file.isFile()){
-                this.setValue(file.getParent());
-              }
-            }
+import java.lang.String;
+
+
+/**
+ * This is a particular case of the BrowsePG used for loading a single file.
+ * The value is a string.
+ */
+public class DataDirPG extends BrowsePG {
+  //~ Static fields/initializers ***********************************************
+
+  private static String TYPE = "DataDir";
+
+  //~ Constructors *************************************************************
+
+  /**
+   * Creates a new DataDirPG object.
+   *
+   * @param name The name.
+   * @param value The initial value.
+   */
+  public DataDirPG( String name, Object value ) {
+    this( name, value, false );
+    this.setDrawValid( false );
+  }
+
+  /**
+   * Creates a new DataDirPG object.
+   *
+   * @param name The name.
+   * @param value The initial value.
+   * @param valid Whether this PG should be considered initially valid.
+   */
+  public DataDirPG( String name, Object value, boolean valid ) {
+    super( name, value, valid );
+
+    if( value != null ) {
+      if( !( value instanceof String ) ) {
+        value = value.toString(  );
+      }
+
+      if( ( ( String )value ).length(  ) > 0 ) {
+        File file = new File( ( String )value );
+
+        if( file.exists(  ) ) {
+          if( file.isFile(  ) ) {
+            this.setValue( file.getParent(  ) );
           }
         }
-        this.setType(TYPE);
-        this.setValid(valid);
-        super.choosertype = BrowseButtonListener.DIR_ONLY;
-    }
-
-    // ********** IParameter requirements **********
-
-    /**
-     * Returns the value of the parameter. While this is a generic
-     * object specific parameters will return appropriate
-     * objects. There can also be a 'fast access' method which returns
-     * a specific object (such as String or DataSet) without casting.
-     */
-    public Object getValue()
-    {
-      String str = FilenameUtil.setForwardSlash(
-                     super.getValue().toString());
-      if( !str.endsWith("/") ){
-        str += "/";
       }
-      
-      return str;
     }
 
-    /*
-     * Testbed.
-     */
-    /*public static void main(String args[]){
-        DataDirPG fpg;
-        //y position and delta y, so that multiple windows can 
-        //be displayed without too much overlap
-        int y=0, dy=70;
-        
-        String defString="/IPNShome/bouzekc/IsawProps.dat";
+    this.setType( TYPE );
+    this.setValid( valid );
+    super.choosertype = BrowseButtonListener.DIR_ONLY;
+  }
 
-        fpg=new DataDirPG ("Enabled, not valid, no filters",defString);
-        System.out.println(fpg);
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-        
-        //disabled browse button GUI
-        fpg=new DataDirPG ("Disabled, not valid, no filters",defString);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
+  //~ Methods ******************************************************************
 
-        fpg=new DataDirPG ("Disabled, not valid, no filters",defString,false);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
+  /**
+   * Returns the value of the parameter. While this is a generic object
+   * specific parameters will return appropriate objects. There can also be a
+   * 'fast access' method which returns a specific object (such as String or
+   * DataSet) without casting.
+   */
+  public Object getValue(  ) {
+    String str = FilenameUtil.setForwardSlash( super.getValue(  ).toString(  ) );
 
-        fpg=new DataDirPG ("Valid, enabled, no filters",defString,true);
-        System.out.println(fpg);
-        fpg.setDrawValid(true);
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        
-        fpg=new DataDirPG ("Enabled, not valid, multiple filters",defString);
-        System.out.println(fpg);
-        //add some FileFilters
-        fpg.addFilter(new ExpFilter());
-        fpg.addFilter(new IntegrateFilter());
-        fpg.addFilter(new MatrixFilter());
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
+    if( !str.endsWith( "/" ) ) {
+      str += "/";
+    }
 
-        fpg=new DataDirPG ("Enabled, not valid, one filter",defString);
-        System.out.println(fpg);
-        //add some FileFilters
-        fpg.addFilter(new IntegrateFilter());
-        fpg.initGUI(null);
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-    }*/
+    return str;
+  }
 
-    /**
-     * Validates this DataDirPG.  A DataDirPG is considered valid if and only
-     * if getValue() returns a String which references an actual directory.  
-     */
-    public void validateSelf(  ) {
-      Object val = getValue(  );
-      
-      if( val != null ) {
-      
-        File file = new File( val.toString(  ) );
-        
-        if( file.exists(  ) && file.isDirectory(  ) ) { 
-          setValid( true );
-        } else {
-          setValid( false );
-        }
+  /*
+   * Testbed.
+   */
+  /*public static void main(String args[]){
+     DataDirPG fpg;
+     //y position and delta y, so that multiple windows can
+     //be displayed without too much overlap
+     int y=0, dy=70;
+  
+     String defString="/IPNShome/bouzekc/IsawProps.dat";
+     fpg=new DataDirPG ("Enabled, not valid, no filters",defString);
+     System.out.println(fpg);
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+  
+     //disabled browse button GUI
+     fpg=new DataDirPG ("Disabled, not valid, no filters",defString);
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     fpg=new DataDirPG ("Disabled, not valid, no filters",defString,false);
+     System.out.println(fpg);
+     fpg.setEnabled(false);
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     fpg=new DataDirPG ("Valid, enabled, no filters",defString,true);
+     System.out.println(fpg);
+     fpg.setDrawValid(true);
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+  
+     fpg=new DataDirPG ("Enabled, not valid, multiple filters",defString);
+     System.out.println(fpg);
+     //add some FileFilters
+     fpg.addFilter(new ExpFilter());
+     fpg.addFilter(new IntegrateFilter());
+     fpg.addFilter(new MatrixFilter());
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     fpg=new DataDirPG ("Enabled, not valid, one filter",defString);
+     System.out.println(fpg);
+     //add some FileFilters
+     fpg.addFilter(new IntegrateFilter());
+     fpg.initGUI(null);
+     fpg.showGUIPanel(0,y);
+     y+=dy;
+     }*/
+
+  /**
+   * Validates this DataDirPG.  A DataDirPG is considered valid if and only if
+   * getValue() returns a String which references an actual directory.
+   */
+  public void validateSelf(  ) {
+    Object val = getValue(  );
+
+    if( val != null ) {
+      File file = new File( val.toString(  ) );
+
+      if( file.exists(  ) && file.isDirectory(  ) ) {
+        setValid( true );
       } else {
         setValid( false );
       }
+    } else {
+      setValid( false );
     }
+  }
 }
