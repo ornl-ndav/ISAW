@@ -54,11 +54,9 @@ public class JAttributesDialog implements Serializable
 	    int x = screenSize.width - size.width;
 	    opDialog.setLocation(x, y);
   
- 
         int num_attributes = attr_list.getNum_attributes();
         opDialog.getContentPane().setLayout(new GridLayout(num_attributes+4,1));
-
-        
+      
         for (int i = 0; i<num_attributes; i++)
         {  
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
@@ -86,8 +84,7 @@ public class JAttributesDialog implements Serializable
             opDialog.getContentPane().add(attrGUI.getGUISegment());
             vparamGUI.addElement(attrGUI);
            }
-           
-         
+                    
          //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
             
         }
@@ -103,13 +100,12 @@ public class JAttributesDialog implements Serializable
                  opDialog.getContentPane().add(buttonpanel);
                  opDialog.setVisible(true);
       }
-       
+      
        public AttributeList getAttributeList()
        {
         return attr_list;
        }
-  
-   
+     
       public class ApplyButtonHandler implements ActionListener
       {
          public void actionPerformed(ActionEvent ev) 
@@ -122,8 +118,7 @@ public class JAttributesDialog implements Serializable
                Attribute attr = (Attribute)aGUI.getAttribute();
                attr_list.setAttribute(attr);
                
-             }
-             
+             }            
             resultsLabel.setText("Result: Operation completed");
          }
       } 
@@ -134,5 +129,4 @@ public class JAttributesDialog implements Serializable
               opDialog.dispose();     
     } 
     }
-   
 }

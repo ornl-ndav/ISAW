@@ -214,7 +214,7 @@ public class SelectFileData extends JPanel implements Serializable
          public void actionPerformed(ActionEvent ev) 
          {    
             String attrname = (String)combobox.getSelectedItem();
-            AttributeNameString attr_name = new AttributeNameString(attrname);
+            String attr_name = new String(attrname);
             float min = Float.valueOf(jta1.getText()).floatValue();
             float max = Float.valueOf(jta2.getText()).floatValue();
             String s1 = jta1.getText();
@@ -251,7 +251,7 @@ public class SelectFileData extends JPanel implements Serializable
             {
                 DataSet new_ds = extract_summed_Data(file_name, attr_name, keep, min, max);
                 DataSetOperator  op1;
-                op1 = new SumSelectedData(new_ds, attr_name, keep, 0, file_name.length-1);
+                op1 = new SumByAttribute(new_ds, attr_name, keep, 0, file_name.length-1);
                 DataSet mergedDS1 = (DataSet)op1.getResult(); 
                 treeUI.addDataSet(mergedDS1);
                 
@@ -289,7 +289,7 @@ public class SelectFileData extends JPanel implements Serializable
          }
     }
     
-    public Object extract_Data(String[] file_name, AttributeNameString attr_name,
+    public Object extract_Data(String[] file_name, String attr_name,
                                 boolean keep, float min, float max )
   {
     DataSet          ds;
@@ -321,9 +321,9 @@ public class SelectFileData extends JPanel implements Serializable
       ds = r.getDataSet( ds_num );          
                                        // form DataSet with selected entries
                                        // from the histogram using the
-                                       // SelectData operator
+                                       // ExtractByAttribute operator
       ds.addLog_entry("Loaded Runfiles " +ds.toString())   ;                              
-      op = new SelectData( ds, attr_name, keep, min, max );
+      op = new ExtractByAttribute( ds, attr_name, keep, min, max );
       ds = (DataSet)op.getResult();   
       
       if ( i <= 0 )                    // first time through, initialize new_ds
@@ -345,7 +345,7 @@ public class SelectFileData extends JPanel implements Serializable
  
  
 
-  public DataSet extract_summed_Data(String[] file_name, AttributeNameString attr_name, boolean keep, float min, float max )
+  public DataSet extract_summed_Data(String[] file_name, String attr_name, boolean keep, float min, float max )
   {
     DataSet          ds;
     DataSet          new_ds = null;
@@ -372,10 +372,10 @@ public class SelectFileData extends JPanel implements Serializable
       ds = r.getDataSet( ds_num );          
                                    // form simple DataSet with one entry by
                                    // summing the selected spectra using the
-                                   // SumSelectedData operator
+                                   // SumByAttribute operator
        ds.addLog_entry("Loaded  " +ds.toString())   ;                             
                                   
-      op = new SumSelectedData( ds, attr_name,keep, min, max );
+      op = new SumByAttribute( ds, attr_name,keep, min, max );
       ds = (DataSet)op.getResult();   
 
       if ( i <= 0 )                    // first time through, initialize new_ds
@@ -394,7 +394,7 @@ public class SelectFileData extends JPanel implements Serializable
   }  
   
   
-  public DataSet[] sumAll_Files(String[] file_name //,AttributeNameString attr_name,
+  public DataSet[] sumAll_Files(String[] file_name //,String attr_name,
                                // boolean keep, float min, float max 
                                )
   {
@@ -427,7 +427,7 @@ public class SelectFileData extends JPanel implements Serializable
       for (int j = 0; j< numberOfDataSets;j++)
       {     
             dss[j] = r.getDataSet(j);
-            op = new DataSetAdd(ds[j], dss[j]);
+            op = new DataSetAdd(ds[j], dss[j], true);
             ds[j] = (DataSet)op.getResult();
            //ds[j].addLog_entry( "Loaded Runfiles " +ds[j].toString());
        }                 

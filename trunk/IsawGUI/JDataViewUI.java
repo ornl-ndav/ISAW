@@ -15,6 +15,7 @@
 package IsawGUI;
 
 import java.awt.*;
+import java.awt.print.*;
 import java.awt.event.*;
 import java.awt.Frame.*;
 import java.util.*;
@@ -30,76 +31,100 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 import javax.swing.border.*;
 import java.util.zip.*;
+import OverplotView.*;
 
 /**
+ * The display area for the images and graphs for ISAW. It defines different methods 
+ * to control the layout of the different image and graph windows.
+ * 
  *
  * @version 1.1  
  */
 
 public class JDataViewUI extends JDesktopPane implements Serializable
 {
-    private int xoffset = 0, yoffset = 0;
-    private int w = 500, h = 450;
-    Toolkit toolkit;
-    JInternalFrame sel_frame;
+  private int xoffset = 0, yoffset = 0;
+  private int w = 500, h = 450;
+  Toolkit toolkit;
+  JInternalFrame sel_frame;
+  ViewManager         view_manager   = null;
+  InternalViewManager i_view_manager = null;
 
-    ViewManager         view_manager   = null;
-    InternalViewManager i_view_manager = null;
-
-    public JDataViewUI()
-    {
-        toolkit = getToolkit();
-    }
+  /**
+    * Create a new JDataViewUI and sets the border.
+    *   
+    */
+  public JDataViewUI()
+  {
+    toolkit = getToolkit();
+    MatteBorder mb = 	new MatteBorder(4,4,4,4, Color.lightGray);
+    setBorder(new CompoundBorder( mb, new EtchedBorder (EtchedBorder.LOWERED,Color.gray, 
+                                                                Color.lightGray)));
+  }
     
-    /**
-     *  Create a ViewManager to hold the specified DataSet.  The ViewManager
-     *  can be in an internal or external frame.  It can also be initialized
-     *  with any of the available types of viewers.
-     * 
-     *  @param   ds        Reference to the DataSet to be viewed
-     *  @param   frame     String specifying whether to use an internal or
-     *                     external frame for the ViewManager
-     *  @param   view_type Specifies the initial viewer type for to be used
-     *                     by the ViewManager.  Currently, this can be one
-     *                     of IViewManager.IMAGE  or
-     *                        IViewManager.SCROLLED_GRAPHS
-     *
-     *  @see DataSetTools.viewer.IViewManager
-     *  @see DataSetTools.viewer.ViewManager
-     *  @see DataSetTools.viewer.InternalViewManager
-     */
-    public void ShowDataSet(DataSet ds, String frame, String view_type )
+  /**
+    *  Create a ViewManager to hold the specified DataSet.  The ViewManager
+    *  can be in an internal or external frame.  It can also be initialized
+    *  with any of the available types of viewers.
+    * 
+    *  @param   ds        Reference to the DataSet to be viewed
+    *  @param   frame     String specifying whether to use an internal or
+    *                     external frame for the ViewManager
+    *  @param   view_type Specifies the initial viewer type for to be used
+    *                     by the ViewManager.  Currently, this can be one
+    *                     of IViewManager.IMAGE  or
+    *                        IViewManager.SCROLLED_GRAPHS
+    *
+    *  @see DataSetTools.viewer.IViewManager
+    *  @see DataSetTools.viewer.ViewManager
+    *  @see DataSetTools.viewer.InternalViewManager
+    */
+  public void ShowDataSet(DataSet ds, String frame, String view_type )
+  {
+    if (frame == "Internal Frame")
     {
-      if (frame == "Internal Frame")
+      i_view_manager = new InternalViewManager( ds, view_type );
+	i_view_manager.setResizable(true);
+	i_view_manager.setIconifiable(true);
+    	i_view_manager.setMaximizable(true);    
+	i_view_manager.setClosable(true);
+
+      add( i_view_manager );
+      i_view_manager.toFront();
+    }		
+    else if (frame == "External Frame")
+     view_manager = new ViewManager( ds, view_type );
+  }
+
+  public JFrame ShowSelectedGraphView(DataSet ds )
+  {
+    JFrame jf = new JFrame(ds.getTitle());
+    OverplotView.SelectedGraphView sgv = new OverplotView.SelectedGraphView(ds);
+    jf.getContentPane().add(sgv);
+     sgv.setVisible(true);
+    return jf;
+    
+    
+  }
+
+
+
+  public void closeAll() 
+  {
+    JInternalFrame[] frames = getAllFrames();
+    for(int i=0; i < frames.length; ++i) 
+    {
+      if(!frames[i].isIcon()) 
       {
-       i_view_manager = new InternalViewManager( ds, view_type );
-	 i_view_manager.setResizable(true);
-	 i_view_manager.setIconifiable(true);
-    	 i_view_manager.setMaximizable(true);    
-	 i_view_manager.setClosable(true);
-
-       add( i_view_manager );
-       i_view_manager.toFront();
-      }		
-      else if (frame == "External Frame")
-       view_manager = new ViewManager( ds, view_type );
-    }
-
-     
-     public void closeAll() {
-	JInternalFrame[] frames = getAllFrames();
-
-	for(int i=0; i < frames.length; ++i) {
-		if(!frames[i].isIcon()) {
-			try {
-				frames[i].setIcon(true);
-			}
-			catch(java.beans.PropertyVetoException ex) {
-				System.out.println("iconification vetoed!");
-			}
+        try {
+		frames[i].setIcon(true);
 		}
+	  catch(java.beans.PropertyVetoException ex) {
+	        System.out.println("iconification vetoed!");
+	       }
 	}
     }
+  }
 	
     
 	
@@ -169,42 +194,6 @@ public class JDataViewUI extends JDesktopPane implements Serializable
 		    		System.gc();
 		            System.runFinalization();
 	    }
-	    
-	    
-	       public void printImage() 
-		{
-            JInternalFrame[] frames = getAllFrames();
-           
-             for(int i=0; i < frames.length; ++i) 
-		    {
-		        
-		        
-                      if (frames[i].isSelected())
-                         sel_frame =  frames[i];
-                         
-		    }
-		    
-		   // PrintUtilities.printComponent(sel_frame) ;
-		    
-           // Properties properties =new Properties();
-            JFrame frame  = new JFrame();
-                frame.setContentPane(frames[0]) ;  
-            frame.setContentPane(getSelectedFrame());
-            PrintJob pj = toolkit.getPrintJob(frame,"Print Image", null);
-
-				  
-				if(pj!=null)
-				      {  
-				        frame.printAll(pj.getGraphics());
-					    //sel_frame.printAll(pj.getGraphics());
-				
-					    pj.getGraphics().dispose();
-					    pj.end();
-					  }
-					    else
-					    System.out.println("The printjob is null");
-		
-	    }
 
 
 	   public JInternalFrame getSelectedFrame() 
@@ -217,4 +206,6 @@ public class JDataViewUI extends JDesktopPane implements Serializable
 		    }
 		    return null;
 	    }
+
+
 }   

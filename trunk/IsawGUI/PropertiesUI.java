@@ -25,12 +25,12 @@ import javax.swing.border.*;
  *  @version 1.0
  */
 
-public class JPropertiesUI extends  JPanel implements IObserver, Serializable
+public class PropertiesUI extends  JPanel implements IObserver, Serializable
 {
 	private   JTable table;
 	private DataSet ds;
 
-	 public JPropertiesUI()
+	 public PropertiesUI()
 	 {
 
            	DefaultTableModel dtm = new DefaultTableModel();
@@ -68,12 +68,10 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
                                           // be important, but setting the 
                                           // size get's the table to fill out
                                           // the available space.
-		ExcelAdapter myAd = new ExcelAdapter(table);
-
 	 }
 
  /**
-    *  Update the JPropertiesUI due to a change in the DataSet.  This method
+    *  Update the PropertiesUI due to a change in the DataSet.  This method
     *  should be called by the DataSet's notification method, when the DataSet
     *  is changed.
     *
@@ -101,7 +99,7 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
 		showAttributes(ds.getAttributeList());
       	// System.out.println("Error: ViewManager update called with wrong DataSet");
       	if ( (String)reason == DESTROY )
-       			System.out.println("Reason:" + reason );
+       			System.out.println("ERROR: Destroy in PropertiesUI:" + reason );
     
 		else if ( (String)reason == SELECTION_CHANGED )
 			{

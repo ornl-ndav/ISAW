@@ -8,7 +8,7 @@
 package IsawGUI;
 
 import javax.swing.*;
-//import javax.swing.*;
+import javax.swing.border.*;
 import DataSetTools.*;
 import DataSetTools.operator.*;
 import java.awt.*;
@@ -24,18 +24,20 @@ import java.io.Serializable;
 public class JIntegerParameterGUI extends JParameterGUI implements Serializable
 {
     private JPanel segment;
-    private JTextArea intText;
+    private JTextField intText;
     
     public JIntegerParameterGUI(Parameter parameter)
     { 
        super(parameter);
        
        String value = ((Integer)parameter.getValue()).toString();
-       intText = new JTextArea();
+       JLabel label = new JLabel(parameter.getName());
+       label.setPreferredSize(new Dimension(170,25));
+       intText = new JTextField(20);
        intText.setText(value);
        segment = new JPanel();
-       segment.setLayout(new GridLayout(1,2));
-       segment.add(new JLabel(parameter.getName()));
+       segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5));
+       segment.add(label);
        segment.add(intText);
    
     }

@@ -9,7 +9,7 @@ package IsawGUI;
 
 import javax.swing.*;
 //import javax.swing.*;
-import DataSetTools.*;
+//import DataSetTools.*;
 import DataSetTools.operator.*;
 import java.awt.*;
 import java.util.zip.*;
@@ -36,7 +36,8 @@ public class JBooleanParameterGUI extends JParameterGUI implements Serializable
        
        
        segment = new JPanel();
-       segment.setLayout(new GridLayout(1,2));
+       //segment.setLayout(new GridLayout(1,2));
+       segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5)); 
        segment.add(new JLabel(""));
        jcb = new JCheckBox(parameter.getName(),value);
        segment.add(jcb);

@@ -18,7 +18,7 @@ or
 
         try
         {
-            if (windows)
+            if (windows )
             {
                 // cmd = 'rundll32 url.dll,FileProtocolHandler http://...'
                 cmd = WIN_PATH + " " + WIN_FLAG + " " + url;

@@ -21,8 +21,8 @@ import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 
 /**
- * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
- * ChopTools and graph packages.
+ * The class used to load multiple runfiles. Displays a list of
+ * runfiles to choose from and loads selected runfiles.
  *
  * @version 1.0  
  */
@@ -47,6 +47,7 @@ public class LoadFiles extends JFrame
     private Vector loadedElements;
     private JTreeUI treeUI;
     private String dir;
+    private String separator;
 
     private JDataViewUI jdvui;
     
@@ -250,8 +251,9 @@ public class LoadFiles extends JFrame
             System.out.println("Now inside the Load Button  ");
             int size = listB.getModel().getSize();
             String[] file_name = new String[size];
+		separator = System.getProperty("file.separator");
             
-            file_name[0] =dir+listB.getModel().getElementAt(0).toString();
+            file_name[0] =dir+separator+listB.getModel().getElementAt(0).toString();
             System.out.println("name of the file or type is" +file_name[0]);
 
 
@@ -294,7 +296,7 @@ public class LoadFiles extends JFrame
          DataSet[] dss=null;
             for (int i =0; i<size; i++)
             {
-            file_name[i] =dir  +listB.getModel().getElementAt(i).toString();
+            file_name[i] =dir  +separator+listB.getModel().getElementAt(i).toString();
             //System.out.println("Print the dir name " +dir);
             //System.out.println("Print the files in listB  " +file_name[i]);
              RunfileRetriever r = new RunfileRetriever( file_name[i] );
@@ -338,7 +340,7 @@ public class LoadFiles extends JFrame
                 //Selection, update text field.
                 removeButton.setEnabled(true);
                 String name = listB.getSelectedValue().toString();
-                fileName.setText(fd.getDirectory()+name);
+                fileName.setText(fd.getDirectory()+"\\"+name);
             } 
             
             if (listA.getSelectedIndex() != -1) 

@@ -1,0 +1,155 @@
+/*
+ * @(#)Util.java     0.7  00/05/31  Alok Chatterjee
+ *
+ * 0.7  00/05/31  A Utility class that provides different methods like load, 
+ * 			delete(to be added later) etc.
+ * 
+ */
+ 
+package IsawGUI;
+
+import IPNS.Runfile.*;
+import IPNS.Runfile.Header.*;
+import DataSetTools.dataset.*;
+import DataSetTools.util.*;
+import DataSetTools.retriever.*;
+import javax.swing.text.*; 
+import java.io.*; 
+import javax.swing.filechooser.*;
+
+/**
+ * Utility class for ISAW. 
+ *
+ * @version 0.7  
+ */
+
+
+public class Util
+{ 
+  public Util()
+  {
+  }
+  
+ /**
+  * This returns an array of DataSets that are created from a runfile. 
+  *
+  * @filename String that gives the absolute path for a runfile  
+  */
+  public DataSet[] loadRunfile(String filename)
+  {
+     // System.out.println("Filename is before" +filename);
+      filename = StringUtil.fixSeparator(filename);
+     // System.out.println("Filename is after" +filename);
+
+  	RunfileRetriever r = new RunfileRetriever(filename);
+      int numberOfDataSets = r.numDataSets();
+      DataSet[] dss = new DataSet[numberOfDataSets];
+      for (int i = 0; i< numberOfDataSets; i++)
+           dss[i] = r.getDataSet(i);
+
+	return dss;
+  }
+
+
+ public Document openDoc(String filename)
+ {
+	FileReader fr; 
+    
+	if(filename == null)
+	   return null;
+       try{
+	   File f = new File(filename); 
+         try{ 
+         	 fr = new FileReader( f ) ; 
+            }
+          catch (FileNotFoundException s){return null;}
+
+           int c , offset ; 
+	   String line ; 
+         Document doc = new PlainDocument() ; 
+ 
+	     
+           line = "" ; offset = 0 ; 
+           for( c = fr.read() ; c != -1 ;   )
+	       {  
+                line = line + new Character( ( char )c ).toString() ; 
+                if( c < ' ' ) //assumes the new line character
+			{ 
+                    doc.insertString( offset , line , null ) ; 
+		        offset+=line.length() ; 
+                    line = "" ; 
+                   }
+		
+                 c = fr.read() ; 
+              }
+               //offset is doc.getLength(?)-1
+		  if( line.length() > 0 )doc.insertString( offset , line , null ) ; 
+                  fr.close() ;
+			return doc; 	    
+	  }
+	  catch( Exception s )
+         {return null; }
+       
+ }
+
+public void appendDoc( Document doc , String S)
+   {
+     if( doc == null )return;
+     int end = doc.getLength();
+    // if( S.length()>0)
+     //   if( S.charAt( S.length() - 1) < ' ')
+         //  S = S.substring( 0 , S.length() - 1);
+     try{
+       doc.insertString( end , S+ "\n" , null);
+        }
+     catch( Exception s)
+       {System.out.println("Error in appendDoc="+s); }
+
+   }
+
+
+public String saveDoc(Document doc, String filename)
+{
+ if (doc ==null)
+  {return null;}
+  Element line ;
+ if(filename == null)
+  {return null;}
+   File f = new File(filename);
+	     try{ 
+                 FileWriter fw = new FileWriter( f ) ; 
+                
+	         int i ; 
+		 
+                 Element  root ; 
+
+                 root = doc.getDefaultRootElement() ; 
+		 
+                 for( i = 0 ; i < root.getElementCount() ; i++ )
+                    {line = root.getElement( i ) ; 
+		    
+		         fw.write( doc.getText( line.getStartOffset() , line.getEndOffset() - 
+                           line.getStartOffset() - 1 ) ) ; 
+                     fw.write( "\n" ) ; 
+                     }
+		     fw.close() ; 
+                 return null;
+                
+	         }
+	     catch( IOException s )
+                     {return "Status: Unsuccessful"  ; }
+          catch( javax.swing.text.BadLocationException s )
+                 {return "status Usuccessful";                 }
+	      
+                   
+         
+      
+
+
+
+
+}
+
+
+
+}
