@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2001/07/25 18:10:27  dennis
+ *  Now uses new "generic" methods to get/set state information
+ *  in the ViewerState object.
+ *
  *  Revision 1.23  2001/07/23 16:22:04  dennis
  *  Fixed error: no longer using "==" for String comparison.
  *
@@ -309,7 +313,7 @@ public void redraw( String reason )
       pt.y = pt.y * ( n_data - 1 )/ n_data + 0.5f;
       image_Jpanel.set_crosshair_WC( pt );
 
-      getState().setPointedAtIndex( index );
+      getState().set_int( ViewerState.POINTED_AT_INDEX, index );
     }
   }
   else
@@ -429,7 +433,8 @@ private void init()
     removeAll();
   }
   image_Jpanel = new ImageJPanel();
-  image_Jpanel.setNamedColorModel( getState().getColor_scale(), true );
+  image_Jpanel.setNamedColorModel( 
+                   getState().get_String( ViewerState.COLOR_SCALE), true );
                                                // make box to contain both the
                                                // image and selection indicator
   Box image_area = new Box( BoxLayout.X_AXIS );
@@ -562,12 +567,12 @@ private void AddOptionsToMenu()
 
                                                     // Horizontal scroll option
   JCheckBoxMenuItem cb_button = new JCheckBoxMenuItem( HORIZONTAL_SCROLL );
-  cb_button.setState( getState().getHorizontal_scrolling() );
+  cb_button.setState( getState().get_boolean( ViewerState.H_SCROLL ) );
   cb_button.addActionListener( option_menu_handler );
   option_menu.add( cb_button );
 
   cb_button = new JCheckBoxMenuItem( H_GRAPH_REBINNED );
-  cb_button.setState( getState().getRebin() );
+  cb_button.setState( getState().get_boolean( ViewerState.REBIN ) );
   cb_button.addActionListener( option_menu_handler );
   option_menu.add( cb_button );
 
@@ -629,7 +634,7 @@ private void MakeImage( boolean redraw_flag )
 
   MakeSelectionImage( redraw_flag );
 
-  if ( getState().getHorizontal_scrolling() )
+  if ( getState().get_boolean( ViewerState.H_SCROLL ) )
     SetHorizontalScrolling( true );                   // this was needed to
                                                       // switch DataSets after
                                                       // HScroll was enabled   
@@ -698,7 +703,8 @@ private Component MakeControlArea()
 
                                                   // make a color scale bar
   color_scale_image = new ColorScaleImage();
-  color_scale_image.setNamedColorModel( getState().getColor_scale(), true );
+  color_scale_image.setNamedColorModel( 
+                       getState().get_String( ViewerState.COLOR_SCALE), true );
   control_area.add( color_scale_image );
 
   log_scale_slider.setPreferredSize( new Dimension(120,50) );
@@ -825,7 +831,7 @@ private void MakeConnections()
 /* ------------------------ SetHorizontalScrolling ------------------------ */
 private void SetHorizontalScrolling( boolean state )
 {
-  getState().setHorizontal_scrolling( state );
+  getState().set_boolean( ViewerState.H_SCROLL, state );
   left_split_pane.setVisible( false );
   image_Jpanel.SetHorizontalScrolling( state );
   if ( state )                                 // position the image scroll bar
@@ -833,8 +839,9 @@ private void SetHorizontalScrolling( boolean state )
     JScrollBar scroll_bar = image_scroll_pane.getHorizontalScrollBar();
     int min = scroll_bar.getMinimum();
     int max = scroll_bar.getMaximum();
-    int position = (int) 
-               ((max-min) * getState().getHorizontal_scroll_fraction() + min ); 
+    int position = (int) ((max-min)  
+                        * getState().get_float(ViewerState.H_SCROLL_POSITION) 
+                        + min ); 
     scroll_bar.setValue( position );
   }
   image_scroll_pane.doLayout();
@@ -968,7 +975,7 @@ private void DrawDefaultDataBlock()
   {                                      // none, try to draw the last one
                                          // that was pointed at.
 
-    int last_pointed_at = getState().getPointedAtIndex();
+    int last_pointed_at = getState().get_int( ViewerState.POINTED_AT_INDEX );
     if (last_pointed_at >= 0 && last_pointed_at < getDataSet().getNum_entries())
     {
       DrawHGraph( last_pointed_at, 0, true );
@@ -982,7 +989,7 @@ private void DrawDefaultDataBlock()
       {
         DrawHGraph( 0, 0, true );
         getDataSet().setPointedAtIndex(0);
-        getState().setPointedAtIndex(0);
+        getState().set_int( ViewerState.POINTED_AT_INDEX, 0 );
         getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
       }
 
@@ -1001,7 +1008,7 @@ private void DrawHGraph( int index, int graph_num, boolean pointed_at )
 
   float x[];
   float y[];
-  if ( getState().getRebin() )
+  if ( getState().get_boolean( ViewerState.REBIN ) )
   {
     XScale x_scale = getXConversionScale();
     x = x_scale.getXs();
@@ -1101,7 +1108,7 @@ private void SyncHGraphScrollBar()
   }                      
   hg_bar.setValue( hg_bar_value );
 
-  getState().setHorizontal_scroll_fraction( fraction );
+  getState().set_float( ViewerState.H_SCROLL_POSITION, fraction );
 }
  
 
@@ -1122,7 +1129,7 @@ private Point ProcessImageMouseEvent( MouseEvent e,
     if ( getDataSet().getPointedAtIndex() != row )  // only change if needed
     { 
       getDataSet().setPointedAtIndex( row );
-      getState().setPointedAtIndex( row );
+      getState().set_int( ViewerState.POINTED_AT_INDEX, row );
       getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
     }
     DrawSelectedHGraphs();
@@ -1334,14 +1341,14 @@ private class ConsumeKeyAdapter extends     KeyAdapter
        else if ( action.equals( H_GRAPH_REBINNED ) )
        {
          boolean state = ((JCheckBoxMenuItem)e.getSource()).getState();
-         getState().setRebin( state );
+         getState().set_boolean( ViewerState.REBIN, state );
          DrawSelectedHGraphs();
        }
        else
        {
          image_Jpanel.setNamedColorModel( action, true );
          color_scale_image.setNamedColorModel( action, true );
-         getState().setColor_scale( action );
+         getState().set_String( ViewerState.COLOR_SCALE, action );
        }
     }
   }
