@@ -8,20 +8,22 @@
 #
 # $Date$
 
-Load "C:\Documents and Settings\worlton\Desktop\ICANS\SampleRuns\gppd12358.run","ds"
+$ filename LoadFileString Runfile
+
+Load filename,"ds"
 
 spec_id = 54 
 start   = 14921.0
 end     = 15292.0
 degree  = 4 
 
-new_ds=FitPoly( ds[1], spec_id, start, end, degree, start, end, 0 );
+new_ds=FitPoly( ds[1], spec_id, start, end, degree, start, end, 0 )
 
 new_ds = Merge( ds[1], new_ds )
 
-#Sort( new_ds, "Group ID", true, false );
+#Sort( new_ds, "Group ID", true, false )
 
-new_ds=ExtAtt( new_ds, "Group ID", true, 54.0, 54.0 );
+new_ds=ExtAtt( new_ds, "Group ID", true, 54.0, 54.0 )
 
 Display new_ds
 

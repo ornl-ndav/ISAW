@@ -24,7 +24,7 @@ degree=2
 for i in [2:27]
   start = 1000.0 * i
   end   = 1000.0 * (i+1)
-  temp_ds=FitPoly( ds[0], 75, start,  end, degree, start, end, 0 );
+  temp_ds=FitPoly( ds[0], 75, start,  end, degree, start, end, 0 )
   ds[0]=Merge( ds[0], temp_ds )
 endfor
 
