@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/03/26 23:19:37  pfpeterson
+ *  Implements IObserver so can drop references to DESTROYed DataSets.
+ *  Also improved error checking in addItem and setValue.
+ *
  *  Revision 1.7  2003/03/25 19:40:47  pfpeterson
  *  Sets value to EMPTY_DATA_SET when attempt is made to set value to null.
  *
@@ -57,16 +61,18 @@
 
 package DataSetTools.parameter;
 
+import DataSetTools.components.ParametersGUI.HashEntry;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.util.SharedData;
+import DataSetTools.util.IObserver;
 import java.util.Vector;
 
 /**
  * This is a superclass to take care of many of the common details of
  * Array Parameter GUIs.
  */
-public class DataSetPG extends ChooserPG{
+public class DataSetPG extends ChooserPG implements IObserver{
     // static variables
     private   static String TYPE     = "DataSet";
     protected static int    DEF_COLS = ChooserPG.DEF_COLS;
@@ -98,7 +104,40 @@ public class DataSetPG extends ChooserPG{
      * DataSet.
      */
     public void addItem( Object val){
-        if(val instanceof DataSet) super.addItem(val);
+      if(val==null){
+        super.addItem(DataSet.EMPTY_DATA_SET);
+      }else{
+        if(val instanceof DataSet){
+          super.addItem(val);
+          ((DataSet)val).addIObserver(this);
+        }else{
+          throw new ClassCastException(val+" cannot be cast as a DataSet");
+        }
+      }
+    }
+
+    // ********** IObserver requirements **********
+    public void update(Object observed, Object reason){
+      if( !(reason instanceof String) ) return; // reason should be a string
+      if( ! (IObserver.DESTROY.equals((String)reason)) )
+        return;                                      // must be a destroy event
+      if( !(observed instanceof DataSet) ) return; // must be a DataSet
+
+      // -- remove references to the DataSet
+      // from choices
+      this.vals.remove(observed);
+      // from GUI
+      if(this.initialized) ((HashEntry)this.entrywidget).removeItem(observed);
+      // from the value      
+      if(this.value==observed){
+        if(this.vals!=null && this.vals.size()>0)
+          this.value=this.vals.elementAt(0); // set to first choice
+        else
+          this.value=DataSet.EMPTY_DATA_SET; // or empty dataset
+      }
+
+      // stop listening
+      ((DataSet)observed).deleteIObserver(this);
     }
 
     // ********** IParameter requirements **********
@@ -126,7 +165,10 @@ public class DataSetPG extends ChooserPG{
       if(value==null){
         super.setValue(DataSet.EMPTY_DATA_SET);
       }else{
-        super.setValue(value);
+        if( value instanceof DataSet )
+          super.setValue(value);
+        else
+          throw new ClassCastException(value+" cannot be cast as a DataSet");
       }
     }
 
