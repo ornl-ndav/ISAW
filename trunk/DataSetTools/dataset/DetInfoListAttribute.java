@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/06/14 20:59:24  rmikk
+ *  Implements IXmlIO interface
+ *
  *  Revision 1.3  2002/06/05 20:35:59  dennis
  *  The toString method now only converts the first 5 DetectorInfo objects
  *  to a string.
@@ -48,6 +51,9 @@ package  DataSetTools.dataset;
 
 import DataSetTools.util.*;
 import DataSetTools.instruments.*;
+import DataSetTools.dataset.*;
+import java.io.*;
+import java.util.*;
 
 /**
  * The concrete class for an attribute whose value is a list of DetectorInfo
@@ -62,7 +68,8 @@ import DataSetTools.instruments.*;
  * @see DataSetTools.dataset.DetInfoAttribute
  */
 
-public class DetInfoListAttribute extends Attribute
+public class DetInfoListAttribute extends Attribute implements  IXmlIO
+                                                   
 {
   private DetectorInfo[] values;
 
@@ -76,6 +83,11 @@ public class DetInfoListAttribute extends Attribute
     setValue( values );
   }
 
+  public DetInfoListAttribute()
+  {
+    super("");
+    setValue(new DetectorInfo[0]);
+  }
 
   /**
    * Returns reference to the list of DetectorInfo objects for this attribute,
@@ -218,6 +230,170 @@ public class DetInfoListAttribute extends Attribute
     return s;
   }
 
+ /**
+  * Implements the IXmlIO interface.  This routine "writes" the
+  * DetectorInfoListAttribute. In standalone mode it writes the xml header.
+  *
+  * @param  stream  the OutputStream to which the xml data is to be written
+  * @param  mode    Either IXmlIO.Base64 to write spectra information 
+  *                 efficiently or IXmlIO.Normal to produce ASCII values
+  *
+  * @returns  true if successful otherwise false
+  */
+  public boolean XMLwrite( OutputStream stream, int mode )
+  {try
+     {StringBuffer SS = new StringBuffer(1000);
+     if( values == null)
+       return true;
+     if( values.length <1 )
+       return true;
+     SS.append( "<DetInfoListAttribute>\n");
+     SS.append( "<name>");
+     SS.append(name);
+     SS.append("</name>\n");
+     SS.append( "<value>"+"\n");
+     SS.append( "<DetectorInfoList size =\"");
+      SS.append(""+values.length+"\">\n");
+     stream.write(SS.substring(0).getBytes());
+     for( int i=0; i<values.length ; i++)
+        values[i].XMLwrite( stream, mode);
+     stream.write("</DetectorInfoList>\n".getBytes());
+     stream.write( ("</value>"+"\n").getBytes());
+     stream.write("</DetInfoListAttribute>\n".getBytes());
+     return true;
+     }
+    catch( Exception s)
+     {return xml_utils.setError("Exception="+s.getMessage());
+      }
+  }
+  
+ /**
+  * Implements the IXmlIO interface.  This routine "reads" the
+  * DetInfoListAttribute. In standalone mode it writes the xml header.
+  *
+  * @param  stream  the OutputStream to which the xml data is to be written
+  * @param  mode    Either IXmlIO.Base64 to write spectra information 
+  *                 efficiently or IXmlIO.Normal to produce ASCII values
+  *
+  * @returns  true if successful otherwise false
+  *
+  public boolean XMLread( InputStream stream )
+  {Vector V = new Vector();
+   try
+     {  String Tag = xml_utils.getTag( stream );
+        if( Tag == null)
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        if( !xml_utils.skipAttributes( stream ))
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        if(!Tag.equals("name"))
+           return xml_utils.setError(" No Name tag in DetInfoList");
+        name = xml_utils.getValue( stream );
+        if( name == null)
+          return xml_utils.setError(xml_utils.getErrorMessage()); 
+
+        Tag = xml_utils.getEndTag( stream);
+         if( Tag == null)
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        if( !xml_utils.skipAttributes( stream ))
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        if(!Tag.equals("/name"))
+           return xml_utils.setError(" No /Name tag in DetInfoList");
+
+        Tag = xml_utils.getTag( stream );
+        if( Tag == null)
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        if( !xml_utils.skipAttributes( stream ))
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        if(!Tag.equals("value"))
+           return xml_utils.setError(" No Name tag in DetInfoList");
+//---------------------------------------
+        Tag = xml_utils.getTag( stream );
+        if( Tag == null)
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        if(!Tag.equals("DetectorInfoList"))
+           return xml_utils.setError(" Need DetectorInfoList tag in DetInfoList");
+        V= xml_utils.getNextAttribute( stream);
+        if(V== null)
+          return xml_utils.setError( xml_utils.getErrorMessage());
+        if( V.size() < 1) 
+           return xml_utils.setError( "Array tag needs a class attribute");
+       
+        int size= -1;
+        if( V.firstElement().equals("size"))
+           try{
+             size = (new Integer( (String)(V.lastElement()))).intValue();
+              }
+           catch( Exception ss)
+              {return xml_utils.setError("size attribute of Array not an int");
+              }
+        else
+           {V= xml_utils.getNextAttribute( stream);
+            if(V== null)
+              return xml_utils.setError( xml_utils.getErrorMessage());
+            if( V.size() < 1) 
+              return xml_utils.setError( "Array tag needs a class attribute");
+            V = (Vector)(V.elementAt(0));
+            try{
+              size = (new Integer( (String)(V.lastElement()))).intValue();
+              }
+             catch( Exception ss)
+              {return xml_utils.setError("size attribute of Array not an int");
+              }
+            }
+         if(size <=0)
+           return xml_utils.setError( "size attribute in Array must be set");
+      
+        if( !xml_utils.skipAttributes( stream ))
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        
+//--------------------------------------
+        values= new DetectorInfo[ size ];
+        for( int i = 0; i< size; i++)
+         {
+           Tag = xml_utils.getTag( stream );
+           if( Tag == null)
+             return xml_utils.setError(xml_utils.getErrorMessage());
+           String cl_name ="";
+           if(!Tag.equals("DetectorInfo"))
+             return xml_utils.setError( "Tag must be Struct in Det Info");
+           
+           if( !xml_utils.skipAttributes( stream ))
+              return xml_utils.setError(xml_utils.getErrorMessage());
+           values[i] = new DetectorInfo();
+           if(!values[i].XMLread(stream))
+               return false;
+          }
+         
+        Tag = xml_utils.getTag( stream);
+        if( Tag == null)
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        if( !xml_utils.skipAttributes( stream ))
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        if( !Tag.equals("/DetectorInfoList"))
+          return xml_utils.setError("Improper end Tag in DetInfoList");
+        
+        Tag = xml_utils.getTag( stream);
+        if( Tag == null)
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        if( !xml_utils.skipAttributes( stream ))
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        if( !Tag.equals("/value"))
+          return xml_utils.setError("Improper DetInfoList Attr end Tag in DetInfoList");
+        
+        Tag = xml_utils.getTag( stream );
+        if( Tag == null)
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        if( !xml_utils.skipAttributes( stream ))
+          return xml_utils.setError(xml_utils.getErrorMessage());
+        if( !Tag.equals("/DetInfoListAttribute"))
+          return xml_utils.setError("Improper value end Tag in DetInfoList"+Tag+
+            "/DetInfoListAttribute");
+        return true;       
+     }
+    catch( Exception s)
+     {return xml_utils.setError("Exception="+s.getMessage());
+     }
+  }
   /**
    * Returns a string representation of the (name,value) pair for this
    * attribute

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/06/14 21:00:28  rmikk
+ *  Implements IXmlIO interface
+ *
  *  Revision 1.4  2002/04/19 15:42:30  dennis
  *  Revised Documentation
  *
@@ -98,6 +101,12 @@ public class HistogramTable extends    TabulatedData
     super( x_scale, y_values, group_id );
     init( y_values );  
   }
+
+  public HistogramTable( XScale x_scale)
+   {
+    super( x_scale, new float[x_scale.getNum_x()-1], -1);
+   
+   }
 
   /**
    * Constructs a Data object by specifying an "X" scale, 
