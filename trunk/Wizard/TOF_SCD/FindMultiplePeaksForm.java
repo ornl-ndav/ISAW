@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.33  2004/04/21 19:29:00  dennis
+ * Made names for parameter indices protected instead of private,
+ * so that they can be used by wizards that use this form.
+ *
  * Revision 1.32  2004/04/21 19:13:21  dennis
  * Added min and max time channel parameters and pass them through
  * to FindPeaks() operator.
@@ -187,19 +191,19 @@ public class FindMultiplePeaksForm extends Form {
   private WritePeaks wrPeaks;
                                                // FYI, parameter indices, as set in
                                                // setDefaultParameters() method
-  private int DATA_DIR_PARAM     = 0;
-  private int OUT_DIR_PARAM      = 1;
-  private int RUN_NUM_PARAM      = 2;
-  private int EXP_NAME_PARAM     = 3;
-  private int NUM_PEAKS_PARAM    = 4;
-  private int MIN_INTENS_PARAM   = 5;
-  private int MIN_TIME_PARAM     = 6;
-  private int MAX_TIME_PARAM     = 7;
-  private int APPEND_PARAM       = 8;
-  private int CALIB_LINE_PARAM   = 9;
-  private int CALIB_FILE_PARAM   = 10;
-  private int ROWS_TO_KEEP_PARAM = 11;
-  private int PEAK_FILE_PARAM    = 12;
+  protected int DATA_DIR_PARAM     = 0;
+  protected int OUT_DIR_PARAM      = 1;
+  protected int RUN_NUM_PARAM      = 2;
+  protected int EXP_NAME_PARAM     = 3;
+  protected int NUM_PEAKS_PARAM    = 4;
+  protected int MIN_INTENS_PARAM   = 5;
+  protected int MIN_TIME_PARAM     = 6;
+  protected int MAX_TIME_PARAM     = 7;
+  protected int APPEND_PARAM       = 8;
+  protected int CALIB_LINE_PARAM   = 9;
+  protected int CALIB_FILE_PARAM   = 10;
+  protected int ROWS_TO_KEEP_PARAM = 11;
+  protected int PEAK_FILE_PARAM    = 12;
 
   //~ Constructors *************************************************************
 
