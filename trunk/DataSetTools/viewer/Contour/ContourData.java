@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/07/30 14:35:59  rmikk
+ *  Improved handling of differing XScales.
+ *
  *  Revision 1.4  2002/07/25 20:55:22  rmikk
  *  The times now reflect if the Data is Histogram or Function
  *     Data.
@@ -69,7 +72,8 @@ public class ContourData
 {
 
    SGTData data_;
-   DataSet ds;
+   DataSet ds,
+           dsSave;
    double maxvalue = -1,
           minvalue = -1;
    int maxrows, 
@@ -78,14 +82,17 @@ public class ContourData
    int[][] groups = null;
    double[] axis1, 
             axis2;
+   XScale x_scale ;
    //*****************************************************************************************
    //						Constructors
    //*****************************************************************************************
    public ContourData( DataSet data_set )
    {
       ds = data_set;
+      dsSave = data_set;
       maxvalue = 0;
       minvalue = 9999999;
+      
       //Load area detector data
       //Build a vector holding the row and column entries
       maxrows = -1;
@@ -139,6 +146,11 @@ public class ContourData
          axis2[row] = row;
       for( int col = 0; col < maxcols + 1; col++ )
          axis1[col] = col;
+
+     x_scale = data_set.getData_entry(0).getX_scale();
+     ds = (DataSet)(dsSave.clone());
+     for( int j=0; j< ds.getNum_entries(); j++)
+       ds.getData_entry(j).resample( x_scale,0);
    }
 
 
@@ -169,6 +181,7 @@ public class ContourData
 
       maxvalue = -1;
       minvalue = -1;
+      
       for( col = 0; col < maxcols + 1; col++ )
       {
          for( row = 0; row < maxrows + 1; row++ )
@@ -179,18 +192,29 @@ public class ContourData
             else
             {
                Data db = ds.getData_entry( G );
-
-               values[w] = db.getY_value( X, 0 );
+               values[w] = db.getY_value( X,0);
+               //if( x_scale != null)
+               //   db.resample( x_scale , 0);
+              /* float[] yvalues = db.getY_values( x_scale, 0);
+               int ii = x_scale.getI( X );
+               if( db.isHistogram()) ii--;
+               if( ii < 0) 
+                  values[w] = 0;
+               else if( ii > yvalues.length)
+                  values[w] = 0;
+               else
+                 values[w] = yvalues[ii];
                if( values[w] > maxvalue )
                   maxvalue = values[w];
                if( values[w] < minvalue )
                   minvalue = values[w];
+              */
             }
 
             w = w + 1;
          }
       }
-
+     
       // Create SGTGrid from axis and data
       SimpleGrid sl;
 
@@ -213,13 +237,14 @@ public class ContourData
     */
    public float[] getTimeRange()
    {
-      XScale x_scale;
+     //XScale x_scale;
       //Read in the first data entry and get the range of time values. While
       //there could be missing data in the returned array, we will take a
       //chance and say that the first detector will give us good data.
       Data db = ds.getData_entry( 0 );
 
-      x_scale = db.getX_scale();
+      if( x_scale == null)
+         x_scale = db.getX_scale();
       float[] times = new float[x_scale.getNum_x()];
 
       times = x_scale.getXs();
@@ -242,7 +267,17 @@ public class ContourData
       return lastTime;
    }
 
-
+   public void setXScale( XScale xscale)
+    { if( xscale == null)
+        x_scale = ds.getData_entry(0).getX_scale();
+      else
+        {x_scale = xscale;
+        
+         }
+      ds =(DataSet)( dsSave.clone());
+      for( int j=0; j< ds.getNum_entries(); j++)
+        ds.getData_entry(j).resample( x_scale,0);
+     }
    public int getGroupIndex( double row, double col )
    {
       int r, c;
@@ -257,10 +292,14 @@ public class ContourData
          c++;
       else if( c - col > .5 )
          c--;
+      if( (r<=0) ||(col <=0))
+        System.out.println("with neg Group row,col="+r+","+c);
       if( r <= 0 )
          return -1;
       if( c <= 0 )
          return -1;
+      if( (r > maxrows) ||(c>maxcols))
+        System.out.println("with neg Group row,col="+r+","+c+"max="+maxrows+","+maxcols);
       if( r > maxrows )
          return -1;
       if( c > maxcols )
