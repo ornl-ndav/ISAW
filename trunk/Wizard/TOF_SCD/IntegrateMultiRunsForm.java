@@ -26,8 +26,12 @@
  *
  * This work was supported by the National Science Foundation under grant
  * number DMR-0218882.
- *
+ * 
  * $Log$
+ * Revision 1.36  2004/08/06 14:41:47  rmikk
+ * Now uses the new Integrate1 class.  This class allows for several different
+ * integrate one Peak options, including an experimental option.
+ *
  * Revision 1.35  2004/05/21 19:03:21  dennis
  * Changed instrument name from SCD to SCD0.  This was needed to fix
  * file name problems when SCD run numbers went from 9999 to 10000.
@@ -169,8 +173,7 @@ import gov.anl.ipns.Util.Numeric.IntList;
 import gov.anl.ipns.Util.SpecialStrings.ErrorString;
 
 import java.util.Vector;
-
-
+import Operators.TOF_SCD.*;
 /**
  * This Form is a "port" of the script used to integrate multiple SCD runs.  It
  * "knows" to apply the lsxxxx.expName.mat file to the SCDxxxx.run in the
@@ -186,7 +189,7 @@ public class IntegrateMultiRunsForm extends Form {
   private Vector choices;
   protected final String SCDName = "SCD0";
   private LoadOneHistogramDS loadHist;
-  private Integrate integrate;
+  private Integrate1 integrate;
   private LoadSCDCalib loadSCD;
 
   //~ Constructors *************************************************************
@@ -277,8 +280,16 @@ public class IntegrateMultiRunsForm extends Form {
       new IntegerPG( 
         "SCD Calibration File Line to Use", new Integer( -1 ), false ) );  //8
     addParameter( new BooleanPG( "Append to File?", Boolean.FALSE, false ) );  //9
-    addParameter( 
-      new BooleanPG( "Use Shoe Box (NOT max I/sigI)", false, false ) );  //10
+    ChoiceListPG clPG = new ChoiceListPG("Integrate 1 peak method",Integrate1.OLD_INTEGRATE);
+    clPG.addItem(Integrate1.SHOE_BOX);
+    clPG.addItem(Integrate1.NEW_INTEGRATE);
+    
+    clPG.addItem(Integrate1.TOFINT);
+    clPG.addItem(Integrate1.EXPERIMENTAL);
+	
+    addParameter(clPG);
+    //addParameter( 
+    //  new BooleanPG( "Use Shoe Box (NOT max I/sigI)", false, false ) );  //10
     addParameter( new IntArrayPG( "Box Delta x (col) Range", "-2:2", false ) );  //11
     addParameter( new IntArrayPG( "Box Delta y (row) Range", "-2:2", false ) );  //12
     setResultParam( new LoadFilePG( "Integrated Peaks File ", " ", false ) );  //13
@@ -324,6 +335,7 @@ public class IntegrateMultiRunsForm extends Form {
     s.append( "@param line2use SCD calibration file line to use.\n" );
     s.append( "@param append True/false indicating whether to append to the " );
     s.append( ".integrate file.\n" );
+    s.append( "@param  Intgrate method, MaxItoSigI-old or new, TOFINT, or Experimental");
     s.append( "@return A Boolean indicating success or failure of the Form's " );
     s.append( "execution.\n" );
     s.append( "@error Invalid raw data path.\n" );
@@ -366,7 +378,7 @@ public class IntegrateMultiRunsForm extends Form {
     int[] runsArray;
     String boxDeltaX;
     String boxDeltaY;
-
+    String IntegMethod;
     //get raw data directory
     param            = ( IParameterGUI )super.getParameter( 0 );
     rawDir           = param.getValue(  ).toString(  );
@@ -415,8 +427,8 @@ public class IntegrateMultiRunsForm extends Form {
     append           = ( ( BooleanPG )param ).getbooleanValue(  );
 
     //shoebox parameters
-    param            = ( IParameterGUI )super.getParameter( 10 );
-    useShoeBox       = ( ( BooleanPG )param ).getbooleanValue(  );
+    IntegMethod  = super.getParameter( 10 ).toString();
+    
     param            = ( IParameterGUI )super.getParameter( 11 );
     boxDeltaX        = ( ( IntArrayPG )param ).getStringValue(  );
     param            = ( IParameterGUI )super.getParameter( 12 );
@@ -432,7 +444,7 @@ public class IntegrateMultiRunsForm extends Form {
     //Operators here, then just set their parameters in the loop
     createIntegrateOperators( 
       calibFile, SCDline, integName, sliceRange, timeSliceDelta, append,
-      centerType, useShoeBox, boxDeltaX, boxDeltaY );
+      centerType, IntegMethod, boxDeltaX, boxDeltaY );
 
     //validate the parameters and set the progress bar variables
     Object validCheck = validateSelf(  );
@@ -523,10 +535,10 @@ public class IntegrateMultiRunsForm extends Form {
    */
   private void createIntegrateOperators( 
     String calibFile, int SCDline, String integName, String sliceRange,
-    int timeSliceDelta, boolean append, String centerType, boolean useShoeBox,
+    int timeSliceDelta, boolean append, String centerType, String IntegMethod,
     String boxDeltaX, String boxDeltaY ) {
     loadHist    = new LoadOneHistogramDS(  );
-    integrate   = new Integrate(  );
+    integrate   = new Integrate1(  );
     loadSCD     = new LoadSCDCalib(  );
 
     //LoadOneHistogramDS
@@ -546,9 +558,9 @@ public class IntegrateMultiRunsForm extends Form {
     integrate.getParameter( 5 ).setValue( new Integer( timeSliceDelta ) );
     integrate.getParameter( 6 ).setValue( new Integer( 1 ) );
     integrate.getParameter( 7 ).setValue( new Boolean( append ) );
-    integrate.getParameter( 8 ).setValue( new Boolean( useShoeBox ) );
+    integrate.getParameter( 8 ).setValue( IntegMethod);
     integrate.getParameter( 9 ).setValue( boxDeltaX );
-    integrate.getParameter( 10 ).setValue( boxDeltaY );
+    integrate.getParameter( 10 ).setValue( boxDeltaY);
 
     //LoadSCDCalib
     loadSCD.getParameter( 0 ).setValue( calibFile );
