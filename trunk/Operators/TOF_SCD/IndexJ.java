@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.20  2004/01/30 02:31:05  bouzekc
+ * Removed unused variables and changed the call to getNumIndexed() to static.
+ *
  * Revision 1.19  2003/12/15 02:10:48  bouzekc
  * Removed unused imports.
  *
@@ -238,11 +241,8 @@ public class IndexJ extends    GenericTOF_SCD {
    * Runs scalar using the specified parameters
    */
   public Object getResult(){
-    ErrorString eString     = null;
     String      peaksfile   = null;  // peaks filename
     String      matrixfile  = null;  // matrix filename
-    String      dir         = null;  // directory that the files are all in
-    String      expname     = null;  // the experiment name
     String      logfile     = null;  // the index.log file
     File        file        = null;  // for tests
     int         index       = 0;     // for chopping up strings
@@ -457,7 +457,7 @@ public class IndexJ extends    GenericTOF_SCD {
 
 
     // return the log file name and print the number of indexed peaks
-    SharedData.addmsg(this.getNumIndexed(peaks));
+    SharedData.addmsg(IndexJ.getNumIndexed(peaks));
     return logfile;
   }  
   
