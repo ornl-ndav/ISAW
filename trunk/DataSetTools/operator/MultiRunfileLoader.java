@@ -2,8 +2,8 @@
  * @(#)MultiRunfileLoader.java     0.1  2000/06/13  Dennis Mikkelson
  *
  *  $Log$
- *  Revision 1.2  2000/07/13 14:26:22  dennis
- *  First pass at adding monitor statistics to OpLog as files are loaded
+ *  Revision 1.3  2000/07/13 22:22:04  dennis
+ *  Made improvements to calculation and formatting of Monitor Statistics
  *
  *  Revision 1.1  2000/07/10 22:36:11  dennis
  *  July 10, 2000 version... many changes
@@ -114,52 +114,53 @@ public class MultiRunfileLoader extends    Operator
                                                    // Monitor #1 statistics
       float area_1, 
             centroid_1,
-            variance_1;
+            std_1;
 
-      float position_1 = mon_1[0].getPosition();
-      float fwhm_1     = mon_1[0].getFWHM();
+      float position_1      = mon_1[0].getPosition();
+      float fwhm_1          = mon_1[0].getFWHM();
+      float extent_factor_1 = mon_1[0].getExtent_factor();
 
-      float a1 = position_1 - 5 * fwhm_1;
-      float b1 = position_1 + 5 * fwhm_1;
+      float a1 = position_1 - extent_factor_1/2 * fwhm_1;
+      float b1 = position_1 + extent_factor_1/2 * fwhm_1;
 
                                                    // Monitor #2 statistics
       float area_2,
             centroid_2,
-            variance_2;
+            std_2;
 
-      float position_2 = mon_2[0].getPosition();
-      float fwhm_2     = mon_2[0].getFWHM();
+      float position_2      = mon_2[0].getPosition();
+      float fwhm_2          = mon_2[0].getFWHM();
+      float extent_factor_2 = mon_2[0].getExtent_factor();
 
-      float a2 = position_2 - 5 * fwhm_2;
-      float b2 = position_2 + 5 * fwhm_2;
+      float a2 = position_2 - extent_factor_2/2 * fwhm_2;
+      float b2 = position_2 + extent_factor_2/2 * fwhm_2;
                                                    // Now add the data from
                                                    // from all the monitors to
                                                    // the DataSet log
-      ds.addLog_entry("On interval [ " + a1 + ", " + b1 + " ]");
-      ds.addLog_entry("On interval [ " + a2 + ", " + b2 + " ]");
+
+      ds.addLog_entry("M1: On interval [ " + a1 + ", " + b1 + " ]");
+      ds.addLog_entry("M2: On interval [ " + a2 + ", " + b2 + " ]");
+      ds.addLog_entry(
+      "   RUN     M1:AREA   CENTROID     STD    M2:AREA   CENTROID     STD");
       for ( int i = 0; i < mon_1.length; i++ )
       {
-         mon_1[i].setEvaluationMode( IPeak.PEAK_PLUS_BACKGROUND );
+         mon_1[i].setEvaluationMode( IPeak.PEAK_ONLY );
          area_1     = mon_1[i].Area( a1, b1);
          centroid_1 = mon_1[i].Moment( a1, b1, 0, 1) / area_1;
-         variance_1 = mon_1[i].Moment( a1, b1, 2) / area_1;
-/*
-         variance_1 = mon_1[i].Moment( 
-              mon_1[i].getPosition() - 5 * mon_1[i].getFWHM(), 
-              mon_1[i].getPosition() + 5 * mon_1[i].getFWHM(), 2) / area_1;
-*/
-         mon_2[i].setEvaluationMode( IPeak.PEAK_PLUS_BACKGROUND );
+         std_1      = (float)Math.sqrt( mon_1[i].Moment( a1, b1, 2) / area_1 );
+
+         mon_2[i].setEvaluationMode( IPeak.PEAK_ONLY );
          area_2     = mon_2[i].Area( a2, b2);
          centroid_2 = mon_2[i].Moment( a2, b2, 0, 1) / area_2;
-         variance_2 = mon_2[i].Moment( a2, b2, 2) / area_2;
+         std_2      = (float)Math.sqrt( mon_2[i].Moment( a2, b2, 2) / area_2 );
 
          ds.addLog_entry( run_names[i] + " " +
-                          area_1       + " " +
-                          centroid_1   + " " +
-                          variance_1   + "  " +
-                          area_2       + " " +
-                          centroid_2   + " " +
-                          variance_2 );
+                          Format.integer(area_1, 8)       + "  " +
+                          Format.real(centroid_1, 8, 2)   + "  " +
+                          Format.real(std_1, 6, 2)        + "   " +
+                          Format.integer(area_2, 8)       + "  " +
+                          Format.real(centroid_2, 8, 2)   + "  " +
+                          Format.real(std_2, 6, 2)   ); 
       }  
    }
 
@@ -229,8 +230,8 @@ public class MultiRunfileLoader extends    Operator
                                       // the first monitor pulse from the first
                                       // runfile
        {
-         mon_1[0] = new HistogramDataPeak( datasets[0].getData_entry(0) );
-         mon_2[0] = new HistogramDataPeak( datasets[0].getData_entry(1) );
+         mon_1[0] = new HistogramDataPeak( datasets[0].getData_entry(0), 7.7 );
+         mon_2[0] = new HistogramDataPeak( datasets[0].getData_entry(1),  10 );
          float position = mon_1[0].getPosition();
          float fwhm     = mon_1[0].getFWHM();
 
@@ -278,8 +279,8 @@ public class MultiRunfileLoader extends    Operator
                                           // current runfile and compare to 
                                           // the values from the first runfile
            {
-             mon_1[i] = new HistogramDataPeak( monitor_ds.getData_entry(0) );
-             mon_2[i] = new HistogramDataPeak( monitor_ds.getData_entry(1) );
+             mon_1[i] = new HistogramDataPeak(monitor_ds.getData_entry(0),7.7);
+             mon_2[i] = new HistogramDataPeak(monitor_ds.getData_entry(1), 10);
              float position = mon_1[i].getPosition();
              float fwhm     = mon_1[i].getFWHM();
 
@@ -353,30 +354,29 @@ public class MultiRunfileLoader extends    Operator
                                        true );
 */
 /*  Test case 2 ..........................
-      int runs[] = new int[2];
-      runs[0] = 2444;
-      runs[1] = 2451;
+*/
+      int runs[] = new int[1];
+      runs[0] = 2447;
 
       MultiRunfileLoader loader = new MultiRunfileLoader(
                                       "/IPNShome/dennis/ARGONNE_DATA/",
                                       "hrcs",
                                        runs,
                                        true );
-*/
+
 
 /*  Test case 3 .......................... 
-*/
-      int runs[] = new int[4];
-      runs[1] = 978;
+      int runs[] = new int[3];
       runs[0] = 979;
-      runs[2] = 980;
-      runs[3] = 981;
+      runs[1] = 980;
+      runs[2] = 981;
   
       MultiRunfileLoader loader = new MultiRunfileLoader(
                                       "/IPNShome/dennis/ARGONNE_DATA/",
                                       "HRCS",
                                        runs,
                                        true );
+*/
 
 
       Object result = loader.getResult();
