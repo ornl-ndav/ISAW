@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/10/03 16:39:00  rmikk
+ * -Fixed it so that now it gets the same numbers as the Vax
+ * -Added documentation for the two new arguments to Center
+ *
  * Revision 1.3  2003/09/27 13:29:12  rmikk
  * Added 2 new parameters, Xdim and Ydim, and a variable useOldCode
  *
@@ -58,7 +62,7 @@ public class Center extends GenericTOF_SAD{
 
   float BS = 1.5f/100.0f;
   float XMAX = 3.5f/100.0f;//length in cm of square around center to use
-  public static boolean useOldCode = false;
+  public static boolean useOldCode = true;
  
   public Center(){
     super( "Beam Center");
@@ -73,6 +77,8 @@ public class Center extends GenericTOF_SAD{
   *    @param  EndTimeChannel   The ending time channel to use
   *    @param  Xoff    Initial guess for X offset of the beam from Center
   *    @param  Yoff   Initial guess for the Y offset of the beam from Center
+  *    @param  Xdim    The width of the area detector
+  *    @param  Ydim   The height of the area detector
   */
   public Center( DataSet DS, DataSet SensDS, int StartTimeChannel,
         int EndTimeChannel, float Xoff, float Yoff, float Xdim, float Ydim){
@@ -167,11 +173,14 @@ public class Center extends GenericTOF_SAD{
     float SavXoff,SavYoff;
     float[] Rowcm = new float[ DSGrid.num_rows()],
             Colcm = new float[DSGrid.num_cols()];
+   
     for( int i = 0; i< DSGrid.num_rows(); i++)
-        if( Ydim <= -1)
+        if( Ydim <=0)
           Rowcm[i] = DSGrid.y( i+1.0f, 2.0f);
         else
           Rowcm[i] = -Ydim/2 + Ydim/DSGrid.num_rows()*( i+.5f);
+   
+    
 
     for( int j = 0; j< DSGrid.num_cols(); j++)
         if( Xdim <= 0)
@@ -179,6 +188,7 @@ public class Center extends GenericTOF_SAD{
         else
           Colcm[j] = -Xdim/2 + Xdim/DSGrid.num_cols()*( j+.5f);
 
+    
     float[] RowCenters = new float[ DSGrid.num_rows()];
     float[] ColCenters = new float[ DSGrid.num_cols()];
     float[] RowCentWts = new float[ DSGrid.num_rows()];
@@ -188,14 +198,7 @@ public class Center extends GenericTOF_SAD{
     int count = 0;
     boolean done = false;
     float Cx=0,Cwx=0,Cy=0;
-   /*System.out.println("Data----------------------");
-    for( int i = 54; i<=77;i++){
-      for( int j=54;j<=77;j++)
-         System.out.print(CollapsedData[i][j]+"\t");
-      System.out.println("");
-    }
-   System.out.println("-----------End Data-------------");
-   */
+    System.out.println("   Xoff\t\t   Yoff");
     while( !done){
       
        SavXoff=Xoff;
@@ -210,7 +213,7 @@ public class Center extends GenericTOF_SAD{
        Arrays.fill( ColCentWts ,0.0f);
        for( row = rstart; row <= rend; row++)
          for( col = cstart; col <= cend; col++)
-           if( (Rowcm[row-1]-Yoff)*(Rowcm[row-1]-Yoff)+
+           if( (Rowcm[row-1]- Yoff)*(Rowcm[row-1]-Yoff)+
                  (Colcm[col-1]-Xoff)*(Colcm[col-1]-Xoff) >= BS*BS){
               ColCenters[col-1] += (Rowcm[row-1]-Yoff)*CollapsedData[row][col];
               RowCenters[row-1] += (Colcm[col-1]-Xoff)*CollapsedData[row][col];
@@ -225,22 +228,20 @@ public class Center extends GenericTOF_SAD{
            RowCenters[row-1] = RowCenters[row-1]/RowCentWts[row-1];
          else
            RowCenters[row -1] = 0.0f;
-       
+
        for( col = cstart; col <=cend; col++)
          if( ColCentWts[col-1] > 1E-5)
            ColCenters[col-1] = ColCenters[col-1]/ColCentWts[col-1];
          else
            ColCenters[col-1] = 0.0f;
+ 
      
-     
-     float YAve = CalcXave( CollapsedData,Rowcm, ColCenters,rstart,rend, Yoff,
-                   Xoff,  Colcm)/2.0f +Yoff;
-     float XAve = CalcYave (CollapsedData,Colcm, RowCenters,cstart,cend, Xoff,
-                   Yoff, Rowcm)/2.0f+Xoff;
+     float YAve = CalcXave( CollapsedData,Rowcm, ColCenters,cstart,cend, Yoff,
+                   Xoff,  Colcm) +Yoff;
+     float XAve = CalcYave (CollapsedData,Colcm, RowCenters,rstart,rend, Xoff,
+                   Yoff, Rowcm)+Xoff;
     
-     //System.out.println("Xoff,yoff="+XAve+","+YAve+","+rstart+","+rend+","+cstart+","+cend);
-
-    //System.out.println(XAve+"\t"+YAve+"\t"+(Cx/Cwx+Xoff) +"\t"+(Cy/Cwx+Yoff));
+     System.out.println(XAve+"\t"+YAve+"\t"+(Cx/Cwx+Xoff) +"\t"+(Cy/Cwx+Yoff));
      Xoff = XAve;
      Yoff = YAve;
     if( Math.abs( SavXoff-Xoff) <.000009)
@@ -276,12 +277,14 @@ public class Center extends GenericTOF_SAD{
      //System.out.println("CalcxAve--yoffset");
      for( int j = minrow; j<= maxrow; j++){
        int IPrim = Findind( Rowcm, ColCenters[j-1]+Yoff,true) -1 +1;
+       if( IPrim < 1)
+          IPrim = 1;
        if( debug)
        System.out.print("J"+j+"\t"+
               (ColCenters[j-1]+Yoff));
        float v2 =CollapsedData[ IPrim+1][j];
        float v1 =CollapsedData[ IPrim][j];
-       if( (Rowcm[IPrim]-Yoff)*(Rowcm[IPrim+1-1]-Yoff)+
+       if( (Rowcm[IPrim]-Yoff)*(Rowcm[IPrim]-Yoff)+
                  (Colcm[j-1]-Xoff)*(Colcm[j-1]-Xoff) < BS*BS)
          v2 =0;
 
@@ -290,10 +293,17 @@ public class Center extends GenericTOF_SAD{
          v1 =0;
                 
        float Delta = (v2-v1)/
-                (Rowcm[IPrim+1-1] -Rowcm[IPrim-1-1]);
-       float S = v1 +Delta*(ColCenters[j-1]+Yoff -Rowcm[IPrim-1]);
+                (Rowcm[IPrim] -Rowcm[IPrim-1]);
+       float S;
+       if(!useOldCode)
+           S = v1 +Delta*(ColCenters[j-1]+Yoff -Rowcm[IPrim-1]);
+       else
+           S = v1+Delta*(ColCenters[j-1] -ColCenters[IPrim-1]) ;
+      
        SUXB += S*ColCenters[j-1];
        SUX += S;
+       //System.out.println("    "+j+","+S+","+ColCenters[j-1]);
+
        if( debug)
          System.out.println(CollapsedData[ IPrim][j]+"\t"+S+"\t"+
                CollapsedData[ IPrim+1][j]);
@@ -314,25 +324,26 @@ public class Center extends GenericTOF_SAD{
    //System.out.println("CalcYAve-coloffset");
    for( int j = mincol; j<=maxcol; j++){
        int IPrim = Findind( Colcm, RowCenters[j-1] +Xoff, true) -1+1;
+       if(IPrim < 1)
+          IPrim =1;
        if( debug)
        System.out.print("J"+j+"\t"+
               (RowCenters[j-1]));
        float v2 =CollapsedData[ j][IPrim+1];
        float v1 =CollapsedData[ j][IPrim];
-       if( (Colcm[IPrim]-Yoff)*(Colcm[IPrim+1-1]-Yoff)+
-                 (Rowcm[j-1]-Xoff)*(Rowcm[j-1]-Xoff) < BS*BS)
+       if( (Colcm[IPrim]-Xoff)*(Colcm[IPrim+1-1]-Xoff)+
+                 (Rowcm[j-1]-Yoff)*(Rowcm[j-1]-Yoff) < BS*BS)
          v2 =0;
 
        if( (Colcm[IPrim-1]-Xoff)*(Colcm[IPrim-1]-Xoff)+
                  (Rowcm[j-1]-Yoff)*(Rowcm[j-1]-Yoff) < BS*BS)
          v1 =0;
        float Delta = (v2-v1)/
-                 (Colcm[IPrim+1-1] -Colcm[IPrim -1-1]);
+                 (Colcm[IPrim] -Colcm[IPrim -1]);
        float S;
-       if( !useOldCode)
-           S =v1 +Delta*(RowCenters[j-1]+Xoff -Colcm[IPrim-1]);
-       else
-           S = v1+Delta*(RowCenters[j-1]+Xoff -RowCenters[IPrim-1]);
+      
+       S =v1 +Delta*(RowCenters[j-1]+Xoff -Colcm[IPrim-1]);
+      
        //ERROR??                                              RowCenters here  
        SUYB += S*RowCenters[j-1];
        SUY += S;  
@@ -369,6 +380,8 @@ public class Center extends GenericTOF_SAD{
       Res.append( "Center");
       Res.append( "@param  Yoff   Initial guess for the Y offset of the beam ");
       Res.append( "from Center");
+      Res.append( "@param  Xdim    The width of the area detector");
+      Res.append( "@param  Ydim   The height of the area detector");
       Res.append( "@return  A Vector with 5 entries.  The first is the X offset");
       Res.append( "(cm) of the beam.  The second is the Y offset(cm).  The third ");
       Res.append( "is the collapsed Data for use for a visual check using another ");
