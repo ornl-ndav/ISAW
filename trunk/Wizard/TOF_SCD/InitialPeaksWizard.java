@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/06/19 16:20:32  bouzekc
+ * Now uses Wizard's linkFormParameters() to link the
+ * parameters in the parameter table.
+ *
  * Revision 1.2  2003/06/11 22:44:31  bouzekc
  * Added Wizard help message.
  *
@@ -112,25 +116,17 @@ public class InitialPeaksWizard extends Wizard
     OperatorForm lsqrsjform = new OperatorForm(new LsqrsJ(), LOADFILETYPE,
                                                "LsqrsJ matrix file");
 
-    //link the peaks file
-    blindjform.setParameter(peaksform.getParameter(fpi[0][0]), fpi[0][1]);
-    indexjform.setParameter(peaksform.getParameter(fpi[0][0]), fpi[0][2]);
-    lsqrsjform.setParameter(peaksform.getParameter(fpi[0][0]), fpi[0][4]);
-
-    //link the matrix file
-    indexjform.setParameter(blindjform.getParameter(fpi[1][1]), fpi[1][2]);
-    scalarjform.setParameter(blindjform.getParameter(fpi[1][1]), fpi[1][3]);
-    lsqrsjform.setParameter(blindjform.getParameter(fpi[1][1]), fpi[1][4]);
-
     this.addForm(peaksform);
     this.addForm(blindjform );
     this.addForm(indexjform );
     this.addForm(scalarjform );
     this.addForm(lsqrsjform );  
+
+    super.linkFormParameters(fpi);
   }
 
   /**
-   *  Method for running the Time Focus Group wizard 
+   *  Method for running the Initial Peaks wizard 
    *   as standalone.
    */
   public static void main(String args[])
