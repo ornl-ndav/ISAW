@@ -4,6 +4,11 @@
  * ---------------------------------------------------------------------------
  *
  *  $Log$
+ *  Revision 1.4  2000/08/01 20:56:38  dennis
+ *  In calculate linear background, now trap return value of -1
+ *  from get_index_of() method in the case that the x value searched for
+ *  is larger than the last entry in x_vals[]
+ *
  *  Revision 1.3  2000/07/17 15:21:12  dennis
  *  Added convenience routines to compute area and moments over the default
  *  extent of the peak.
@@ -573,6 +578,8 @@ public class HistogramDataPeak implements IPeak,
 
      int  i_min = arrayUtil.get_index_of( x_min, x_vals );
      int  i_max = arrayUtil.get_index_of( x_max, x_vals );
+     if ( i_max < 0 )
+       i_max = x_vals.length - 1;
 
      if ( i_min - 5  < 0 )                   // make sure that the indices stay
        i_min = 5;                            // valid
