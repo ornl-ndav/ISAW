@@ -34,6 +34,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/09/15 22:05:02  millermi
+ * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
+ *   Adding a second log required the boolean parameter to be changed
+ *   to an int. These changes may affect any ObjectState saved configurations
+ *   made prior to this version.
+ *
  * Revision 1.4  2004/03/15 19:36:54  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -177,8 +183,10 @@ public class ViewArray extends GenericLoad implements HiddenOperator{
            Yunits=getParameter(9).getValue().toString();
     
     VirtualArray2D Varray= new VirtualArray2D( data);
-    Varray.setAxisInfo( AxisInfo.X_AXIS,minx,maxx,Xlabel,Xunits,true);
-    Varray.setAxisInfo( AxisInfo.Y_AXIS,miny,maxy,Ylabel,Yunits,true);
+    Varray.setAxisInfo( AxisInfo.X_AXIS,minx,maxx,
+                        Xlabel,Xunits,AxisInfo.LINEAR);
+    Varray.setAxisInfo( AxisInfo.Y_AXIS,miny,maxy,
+                        Ylabel,Yunits,AxisInfo.LINEAR);
     (new ViewerSim(new ImageViewComponent(Varray))).show();
     
     return "Success";

@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/09/15 22:03:51  millermi
+ * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
+ *   Adding a second log required the boolean parameter to be changed
+ *   to an int. These changes may affect any ObjectState saved configurations
+ *   made prior to this version.
+ *
  * Revision 1.6  2004/05/17 13:53:42  rmikk
  * Filled out IvirtualArray2D methods so they return more than null
  *
@@ -91,7 +97,7 @@ public class dummyIVirtualArray2D implements IVirtualArray2D{
    * info is being altered.
    */
    public void setAxisInfo( int axis, float min, float max,
-                              String label, String units, boolean islinear ){
+                              String label, String units, int scale ){
    }
    
   /**

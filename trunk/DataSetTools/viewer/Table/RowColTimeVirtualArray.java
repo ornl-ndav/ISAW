@@ -1,4 +1,3 @@
-
 /*
  * File: RowColTimeVirtualArray.java
  *
@@ -31,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2004/09/15 22:03:52  millermi
+ * - Updated LINEAR, TRU_LOG, and PSEUDO_LOG setting for AxisInfo class.
+ *   Adding a second log required the boolean parameter to be changed
+ *   to an int. These changes may affect any ObjectState saved configurations
+ *   made prior to this version.
+ *
  * Revision 1.15  2004/07/29 13:36:42  rmikk
  * Fixed the names for the keys of some more of the ViewerState variables
  *
@@ -190,7 +195,7 @@ public class RowColTimeVirtualArray extends
    * info is being altered.
    */
   public void setAxisInfo( int axis, float min, float max,
-                           String label, String units, boolean islinear )
+                           String label, String units, int scale )
     {
     }
 
