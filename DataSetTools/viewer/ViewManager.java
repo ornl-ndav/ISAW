@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2003/03/04 20:25:35  dennis
+ *  Title on window is now set properly if the contents of the DataSet
+ *  are changed to a different run.
+ *
  *  Revision 1.32  2002/12/09 13:11:21  dennis
  *  Now checks for valid "pointed at" index, before using it as index
  *  into list of (possibly) reordered Data blocks.
@@ -218,6 +222,13 @@ public class ViewManager extends    JFrame
     */ 
    public void setDataSet( DataSet ds )
    {
+     if ( ds == dataSet )               // no change, just the same DataSet
+     {
+       if ( ds != null )
+         setTitle( ds.toString() );
+       return;
+     }
+
      dataSet.deleteIObserver( this );
      dataSet = ds;
      makeTempDataSet( true );
@@ -336,6 +347,10 @@ public class ViewManager extends    JFrame
        return;
 
      String r_string = (String)reason;
+  
+     if ( debug_view_manager )
+       System.out.println("ViewManager UPDATE : " + r_string );
+
      if ( observed == dataSet )             // message about original dataSet
      {
        if ( r_string.equals( DESTROY ))
@@ -350,6 +365,7 @@ public class ViewManager extends    JFrame
        {
          makeTempDataSet( false );
          viewer.setDataSet( tempDataSet );
+         setTitle( dataSet.toString() );
          System.gc();
        }
        else if ( r_string.equals( POINTED_AT_CHANGED )  )
