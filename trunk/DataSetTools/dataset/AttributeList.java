@@ -3,6 +3,11 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.3  2000/07/26 19:15:41  dennis
+ *  Now has method add() that will allow adding the values of a specified
+ *  attribute from two lists and setting the summed attribute into the
+ *  current list.
+ *
  *  Revision 1.2  2000/07/10 22:23:52  dennis
  *  July 10, 2000 version... many changes
  *
@@ -337,6 +342,39 @@ public class AttributeList implements Serializable
    
       this.attributes = new_list.attributes;
    }
+
+  /**
+   * Add the specified attribute values from two attribute lists and set
+   * the resulting sum as the attribtue value in the current attribute list.
+   * This method is intended to be called after combining attribute lists to
+   * implement special behavior for those attributes where the default 
+   * "combine" behavior is not correct.
+   *
+   *  @param  attr_list  The attribute list that is to be combined with the
+   *                      current attribute list.
+   */
+   public void add( String        attr_name,
+                    AttributeList attr_list_1,
+                    AttributeList attr_list_2 )
+   {
+      Attribute     attr_1,
+                    attr_2;
+                                         // get references to attributes from
+                                         // the lists
+      attr_1 = attr_list_1.getAttribute( attr_name );
+      attr_2 = attr_list_2.getAttribute( attr_name );
+
+      if ( attr_1 != null  && attr_2 != null ) 
+      {                                  // the attributes are in the lists
+                                         // so make a copy then add and put in
+                                         // the list
+         attr_1 = (Attribute)attr_1.clone();
+         attr_1.add( attr_2 );    
+         setAttribute( attr_1 ); 
+      }      
+   }
+
+
 
   /**
    * Return a new Data object containing a copy of the x_scale, y_values
