@@ -4,6 +4,10 @@
  * Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2001/01/31 14:25:19  dennis
+ *  Added Exit() method to break the TCP connection to the remote
+ *  server and free up the TCP socket.
+ *
  *  Revision 1.1  2001/01/29 21:14:10  dennis
  *  Initial version of retriever for "live" data.
  *
@@ -24,7 +28,6 @@ import NetComm.*;
 public class LiveDataRetriever extends    Retriever 
                                implements Serializable
 {
-  public final static int LIVE_SERVER_PORT = 6088;
   public static final int TIMEOUT_MS       = 60000;
 
   int     num_data_sets=0;  // the number of distinct DataSets for this server 
@@ -45,10 +48,11 @@ public class LiveDataRetriever extends    Retriever
 
     try
     {
-      Socket sock = new Socket(data_source_name, LIVE_SERVER_PORT );
+      Socket sock = new Socket( data_source_name, 
+                                LiveDataServer.SERVER_PORT_NUMBER );
       tcp_io      = new TCPComm( sock, TIMEOUT_MS );
 
-      num_data_sets    = 2;
+      num_data_sets = 2;
     }
     catch( Exception e ) 
     {
@@ -134,11 +138,30 @@ public class LiveDataRetriever extends    Retriever
     return null;
   }
 
+/**
+ *  Break the connection with the LiveDataServer. 
+ *
+ */
+  public void Exit()
+  {
+    try
+    {
+      tcp_io.Send( new TCPCommExitClass() );
+    }
+    catch ( Exception e )
+    {
+      System.out.println( "Exception in LiveDataRetriever.Exit():" + e );
+    }
+  }
+
+
+/* -------------------------------- main --------------------------------- */
+
   public static void main( String args[] )
   {
 //  String server_name =  "mscs138.mscs.uwstout.edu";
-//  String server_name =  "dmikk.mscs.uwstout.edu";
-  String server_name =  "mandrake.pns.anl.gov";
+    String server_name =  "dmikk.mscs.uwstout.edu";
+//  String server_name =  "mandrake.pns.anl.gov";
 
     System.out.println("====================================================");
     System.out.println("Making retriever to get DataSets from:" + server_name);
@@ -150,5 +173,7 @@ public class LiveDataRetriever extends    Retriever
 
     DataSet          hist_ds    = retriever.getDataSet(1);
     ViewManager histogram_vm = new ViewManager( hist_ds, IViewManager.IMAGE );
+
+    retriever.Exit();
   }
 }
