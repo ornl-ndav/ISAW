@@ -1,6 +1,5 @@
-#
+# Simple script to demonstrate concatenating strings.
 # $Date$
-# xxxxxx
-#$$ x    String     x=
-#$$ y    String   y=
+$ x    String     x=
+$ y    String   y=
 Display x&y
