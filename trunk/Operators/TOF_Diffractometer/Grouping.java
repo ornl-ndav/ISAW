@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/03/19 22:36:43  pfpeterson
+ * Now carries over Data that was not grouped. Also added a parameter
+ * for deciding whether a new DataSet is created or not.
+ *
  * Revision 1.7  2003/02/26 16:02:56  dennis
  * Fixed problem with missing group.  (Chris Bouzek)
  *
@@ -97,11 +101,12 @@ public class Grouping extends GenericTOF_Diffractometer{
      *            	 spectra in the DataSet that should be grouped.
      *  @param new_gid   The group id of the new datablock created.
      */
-    public Grouping( DataSet ds, String  group_str, int new_gid ){
+    public Grouping( DataSet ds, String group_str, int new_gid, boolean newDS){
         this(); 
         getParameter(0).setValue(ds);
         getParameter(1).setValue(group_str);
         getParameter(2).setValue(new Integer(new_gid));
+        getParameter(3).setValue(new Boolean(newDS));
     }
 
   /* ---------------------------- getDocumentation -------------------------- */
@@ -153,10 +158,11 @@ public class Grouping extends GenericTOF_Diffractometer{
      */
     public void setDefaultParameters(){
         parameters = new Vector();
-        addParameter( new DataSetPG("DataSet parameter",
+        addParameter( new Parameter("DataSet parameter",
                                     DataSet.EMPTY_DATA_SET) );
         addParameter( new StringPG("List of Group IDs to focus", "") );
         addParameter( new IntegerPG("New Group ID", 1) );
+        addParameter( new BooleanPG("Make New DataSet",false));
     }
 
   /* ------------------------------ getResult ----------------------------- */
@@ -173,6 +179,7 @@ public class Grouping extends GenericTOF_Diffractometer{
         DataSet ds        =  (DataSet)(getParameter(0).getValue());
         String  group_str =  (String) (getParameter(1).getValue());
         int new_gid=((Integer)(getParameter(2).getValue())).intValue();
+        boolean newDS   = ((Boolean)getParameter(3).getValue()).booleanValue();
         
         // sanity checks
         if ( ds == null )
@@ -252,9 +259,17 @@ public class Grouping extends GenericTOF_Diffractometer{
         // pack it all up and return the grouped data
         Data new_d=Data.getInstance(d.getX_scale(),y,dy,new_gid);
         new_d.setAttributeList(d.getAttributeList());
-        DataSet new_ds=ds.empty_clone();
+        DataSet new_ds=null;
+        if(newDS)
+          new_ds=(DataSet)ds.clone();
+        else
+          new_ds=ds;
+
         new_ds.addLog_entry("Grouped " + group_str + " to group " + new_gid);
-        //d.setGroup_ID(new_gid);
+
+        for( int i=0 ; i<gid.length ; i++ )
+          new_ds.removeData_entry_with_id(gid[i]);
+
         new_ds.addData_entry(new_d);
         return new_ds;
     }
@@ -282,11 +297,12 @@ public class Grouping extends GenericTOF_Diffractometer{
             RunfileRetriever rr = new RunfileRetriever( filename );
             DataSet ds = rr.getDataSet(1);
             // make operator and call it
-            Operator op = new TimeFocus(ds, "", 10.0f, 2.0f, true);
+            String gid="44:73";
+            Operator op = new TimeFocusGID(ds, gid, 10.0f, 2.0f, true);
             Object result = op.getResult();
             
             if(result instanceof DataSet ){
-              op = new Grouping( (DataSet)result, "44:73", 2 );
+              op = new Grouping( (DataSet)result, gid, 44,true );
               result = op.getResult();
               if ( result instanceof DataSet ){      // we got a DataSet back
                                                 // so show it and original
