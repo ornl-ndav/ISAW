@@ -30,7 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.52  2005/01/05 15:38:11  rmikk
+ *  Now adds the Print and Save Image menu items automatically to the
+ *  File menu if the DataSetViewer does not do it.
+ *
  *  Revision 1.51  2004/08/24 18:52:18  rmikk
+ *
  *  Caught errors on viewer initialization and returned null
  *
  *  Revision 1.50  2004/08/04 22:14:23  rmikk
@@ -748,6 +753,24 @@ private void BuildFileMenu()
   button = new JMenuItem( CLOSE_LABEL );
   button.addActionListener( file_menu_handler );
   file_menu.add( button );
+ 
+  boolean hasSaveImage = false;
+  boolean hasPrint = false;
+  for( int i=0; (i< file_menu.getItemCount())  ;
+                                                     i++){
+     String text = file_menu.getItem( i ).getText();
+     if( text.equals("Save Image"))
+        hasSaveImage = true;
+     else if( text.equals("Print"))
+        hasPrint = true;
+  }
+  
+  if( !hasPrint )
+     file_menu.add( gov.anl.ipns.Util.Sys.PrintComponentActionListener.
+          getActiveMenuItem("Print", viewer));
+  if( !hasSaveImage)
+     file_menu.add( gov.anl.ipns.Util.Sys.SaveImageActionListener.
+             getActiveMenuItem("Save Image", viewer)); 
 }
 
 private void BuildEditMenu()
