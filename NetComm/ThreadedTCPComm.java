@@ -8,6 +8,9 @@
  *               Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2001/02/15 22:00:14  dennis
+ *  Minor improvement in documentation
+ *
  *  Revision 1.1  2001/01/30 23:27:40  dennis
  *  Initial version, network communications for ISAW.
  *
@@ -42,13 +45,15 @@ public class ThreadedTCPComm extends TCPComm
    *
    *  @param  socket      The socket to use 
    *  @param  timeout_ms  The time out period for communications on this
-   *                      socket.
+   *                      socket.  If timeout_ms <= 0, the time out period
+   *                      will be infinite.
    *  @param  user        The object whose ProcessData() method is called
    *                      when an object is received on the specified socket. 
    */
 
-  public ThreadedTCPComm( Socket sock, int timeout_ms, ITCPUser user ) 
-                                                               throws Exception
+  public ThreadedTCPComm( Socket sock, 
+                          int timeout_ms, 
+                          ITCPUser user   )    throws Exception
   { 
     super( sock, timeout_ms );
     this.user   = user;
