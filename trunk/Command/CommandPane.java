@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.52  2003/03/21 19:27:25  rmikk
+ * Reset Error and other conditions before running a script
+ *
  * Revision 1.51  2003/03/06 22:53:48  pfpeterson
  * No longer gives or receives StatusPane with anyone.
  *
@@ -637,6 +640,8 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
             if( e.getSource().equals( CP.Run ) ){
                  fixUP(CP.Commands.getDocument());
                  CP.SP.setDocument(CP.Commands.getDocument());
+                 CP.SP.reset();
+                 CP.SP.resetError();
                  
                  CP.SP.setDefaultParameters();
                  if( CP.SP.getErrorCharPos() >= 0){
