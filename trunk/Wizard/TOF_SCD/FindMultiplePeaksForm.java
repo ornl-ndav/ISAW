@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.17  2003/06/26 22:24:21  bouzekc
+ * Added to getDocumentation() to explain error that occurred
+ * when trying to append to a peaks file that does not exist.
+ *
  * Revision 1.16  2003/06/25 20:25:34  bouzekc
  * Unused private variables removed, reformatted for
  * consistency.
@@ -240,6 +244,10 @@ public class FindMultiplePeaksForm extends Form {
     s.append( "@param peaksFile Peaks filename that data is written to.\n" );
     s.append( "@return A Boolean indicating success or failure of the Form's " );
     s.append( "execution.\n" );
+    s.append( "@error If you specify that you want to append to the peaks " );
+    s.append( "file and the file does not exist, you will get an error " );
+    s.append( "from WriteSCDExp saying that it cannot find the file.  " );
+    s.append( "To fix this, uncheck the \"append to file\" box.\n" );
     s.append( "@error An error is returned if a valid experiment name is not " );
     s.append( "entered.\n" );
     s.append( "@error An error is returned if a valid number of peaks is not " );
