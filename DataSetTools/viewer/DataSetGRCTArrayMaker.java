@@ -34,6 +34,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/05/18 13:58:07  rmikk
+ * -Added more titles to the Animation controllers
+ * -Time channels now done correctly
+ * -Size of the dimension Frame decreased
+ *
  * Revision 1.1  2004/05/17 13:55:08  rmikk
  * Initial Checkin
  *
@@ -162,7 +167,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet, IVirtualArra
           xvals[i]=(float)i;
        ACS[4].setFrame_values( xvals);
        ACS[4].setBorderTitle("DataSet");
-       ACS[4].setTextLabel("");
+       ACS[4].setTextLabel("DataSet");
        ACS[4].addActionListener( new DataSetAnimActionListener());
 
      }
@@ -207,7 +212,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet, IVirtualArra
           xvals[i]=(float)(i+1);
        ACS[2].setFrame_values( xvals);
        ACS[2].setBorderTitle("Column");
-       ACS[2].setTextLabel("");
+       ACS[2].setTextLabel("Column");
        ACS[2].addActionListener( new ColAnimActionListener());
 
      }
@@ -230,7 +235,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet, IVirtualArra
           xvals[i]=(float)(i+1);
        ACS[1].setFrame_values( xvals);
        ACS[1].setBorderTitle("Row");
-       ACS[1].setTextLabel("");
+       ACS[1].setTextLabel("Row");
        ACS[1].addActionListener( new RowAnimActionListener());
      }
     if( MaxChannels < 2){
@@ -246,12 +251,12 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet, IVirtualArra
        ACS[0] = new AnimationController();
        Xscales[0]= new XScaleChooserUI("Time","us",MinTime, MaxTime,0);
        Xscales[0].addActionListener( new TimeXsclActionListener());
-       float[] xvals = new float[20];
+       float[] xvals = new float[MaxChannels];
        for( int i=0; i<xvals.length; i++)
-          xvals[i]= MinTime+i*(MaxTime-MinTime)/20.f;
+          xvals[i]= i;//MinTime+i*(MaxTime-MinTime)/MaxChannels;
        ACS[0].setFrame_values( xvals);
        ACS[0].setBorderTitle("Time");
-       ACS[0].setTextLabel("");
+       ACS[0].setTextLabel("Channel");
        ACS[0].addActionListener( new TimeAnimActionListener());
     }
     Handler[0] = new TimeHandler( MinTime,MaxTime,MaxChannels,0);
@@ -750,8 +755,11 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet, IVirtualArra
  private AxisInfo getAxisInfo( int dim, boolean b){
       int f=dim;
       if( dim==0)//time
+        if(Xscales[0].getXScale()!=null)
          return new AxisInfo( MinTime,MaxTime, DataSets[0].getX_label(),
              DataSets[0].getX_units(), true);
+        else
+          return new AxisInfo(0, MaxChannels-1,"Channel","",true);     
       else if( f==1)//row
         
          return new AxisInfo((float)1,(float)MaxRows, "Row","",true);
@@ -1266,7 +1274,7 @@ class ButtonListener implements ActionListener{
         Frm = new FinishJFrame("Dimension order");
         Frm.addWindowListener( new FrmWindowListener( ));
         Frm.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE);
-        Frm.setSize( 600,400);
+        Frm.setSize(250,150);
         Frm.getContentPane().add( new MyJPanel( NstepDims,Permutation));
         Frm.show();
       }
@@ -1303,12 +1311,12 @@ class MyJPanel extends JPanel{
      Coord2 = new JList(S);
      Coord1.setBorder(BorderFactory.createTitledBorder(
                           BorderFactory.createLoweredBevelBorder(),
-                          "Horizontal axis"
+                          "Horz axis"
                                                       ) 
                     );
      Coord2.setBorder(BorderFactory.createTitledBorder(
                           BorderFactory.createLoweredBevelBorder(),
-                          "Vertical axis"
+                          "Vert axis"
                                                       ) 
                     );
      add(Coord1);
