@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.20  2002/07/12 18:26:40  rmikk
+ *  Used the Constructor with the state variable for starting
+ *    the Selected Graph view.
+ *
  *  Revision 1.19  2002/07/12 15:38:59  rmikk
  *  Added code to include the Contour View
  *
@@ -238,7 +242,7 @@ public class InternalViewManager extends    JInternalFrame
       else if ( view_type.equals( THREE_D ))
         viewer = new ThreeDView( tempDataSet, state );
       else if ( view_type.equals( SELECTED_GRAPHS ))             // use either
-        viewer = new GraphableDataManager( tempDataSet );        // Kevin's or
+        viewer = new GraphableDataManager( tempDataSet, state );        // Kevin's or
 //        viewer = new ViewerTemplate( tempDataSet, state );     // Template  
       else if ( view_type.equals( TABLE ) )
         viewer = new TabView( tempDataSet, state );
