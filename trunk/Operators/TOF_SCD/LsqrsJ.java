@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2003/06/25 16:34:32  bouzekc
+ * Filled out getDocumentation(), removed extraneous
+ * debug print messages.
+ *
  * Revision 1.9  2003/06/09 22:00:30  bouzekc
  * getResult() now returns the name of the log file
  * and prints a message to SharedData.
@@ -119,13 +123,38 @@ public class LsqrsJ extends GenericTOF_SCD{
     StringBuffer sb=new StringBuffer(80*5);
 
     // overview
-    sb.append("@overview This is a java version of \"LSQRS\" maintained by A.J.Schultz and originally written by J.Marc Overhage in 1979. This version is updated to use different methods for finding determining the best UB matrix.");
+    sb.append("@overview This is a java version of \"LSQRS\" maintained by ");
+    sb.append("A.J.Schultz and originally written by J.Marc Overhage in ");
+    sb.append("1979. This version is updated to use different methods for ");
+    sb.append("finding determining the best UB matrix.");
+    //assumptions
+    sb.append( "@assumptions The peaks file exists and the transformation " );
+    sb.append( "matrix is valid." );
+    //algorithm
+    sb.append("@algorithm The reflections are read in from the peaks file.  ");
+    sb.append("Then peaks that are not within the selected sequence numbers, ");
+    sb.append("not within the h, k, and l delta values, and not within the ");
+    sb.append("selected histogram are trimmed out.  Next the hkl and q ");
+    sb.append("matrix are created, and the transformation matrix is ");
+    sb.append("applied.  The UB matrix is calculated, and lattice ");
+    sb.append("parameters and cell volume are calculated.  Next the ");
+    sb.append("uncertainties and derivatives are calculated, and the sigmas ");
+    sb.append("are accumulated and turned into \"actual\" sigmas.  At this ");
+    sb.append("point, the log file and matrix file are written and/or ");
+    sb.append("updated.");
     // parameters
-    //sb.append("@param int restrictions on the resulting symmetry");
+    sb.append("@param peaksFile The peaks file to load. ");
+    sb.append("@param restrictRuns The run numbers to restrict. ");
+    sb.append("@param restrictSeq The sequence numbers to restrict. ");
+    sb.append("@param xFormMat The transformation matrix to use. ");
+    sb.append("@param matFile The matrix to write to. ");
     // return
-    //sb.append("@return tells user to look at the console for results");
+    sb.append("@return If successful, returns the name of the matrix file ");
+    sb.append("was written.  If no matrix file was written, it merely ");
+    sb.append("returns \"Success\"");
     // error
-    //sb.append("@error anything wrong with the specified directory");
+    sb.append("@error If the peaks file is not found or cannot be read from.");
+    sb.append("@error If the matrix file is not found or cannot be written to.");
 
     return sb.toString();
   }
@@ -260,10 +289,6 @@ public class LsqrsJ extends GenericTOF_SCD{
       hkl[i][2]=Math.round(peak.l());
       q[i]=peak.getUnrotQ();
     }
-/* REMOVE
-    System.out.println("HKL="+arrayToString(hkl));
-    System.out.println("Q="+arrayToString(q));
-*/
 
     // apply the transformation matrix
     if(matrix!=null){
@@ -330,23 +355,8 @@ public class LsqrsJ extends GenericTOF_SCD{
     // add chisq to the logBuffer
     logBuffer.append("\nchisq[Qobs-Qexp]: "+Format.real(chisq,8,5)+"\n");
 
-/* REMOVE
-    System.out.println("UB="+arrayToString(UB));
-    System.out.println("CHISQ="+chisq);
-*/
-
-/* REMOVE
-    // reset UB for a quick test
-    UB=new double[][]{{-0.010955,-0.008296,-0.375428},
-                      { 0.202690, 0.201401, 0.000154},
-                      { 0.126577,-0.120317, 0.005069}};
-*/
-
     // calculate lattice parameters and cell volume
     double[] abc=Util.abc(UB);
-/* REMOVE
-    System.out.println("ABC="+arrayToString(abc));
-*/
 
     // determine uncertainties
     double[] sig_abc=new double[7];
@@ -374,7 +384,6 @@ public class LsqrsJ extends GenericTOF_SCD{
       }
 
       // turn the 'sigmas' into actual sigmas
-      //System.out.println("CHI="+chisq+" FREE="+numFreedom); REMOVE
       double delta=chisq/numFreedom;
       for( int i=0 ; i<sig_abc.length ; i++ )
         sig_abc[i]=Math.sqrt(delta*sig_abc[i]);
