@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/04 21:37:16  dennis
+ * Added getDocumentation() method. (Chris Bouzek)
+ *
  * Revision 1.3  2002/11/27 23:30:33  pfpeterson
  * standardized header
  *
@@ -131,6 +134,49 @@ public class SetIncidentEnergy extends    GenericTOF_DG_Spectrometer
     addParameter( new Parameter( "Create new DataSet?", new Boolean(false) ) );
   }
 
+ /* ---------------------- getDocumentation --------------------------- */
+ /**
+ *  Returns the documentation for this method as a String.  The format
+ *  follows standard JavaDoc conventions.
+ */
+ public String getDocumentation()
+ {
+   StringBuffer s = new StringBuffer("");
+   s.append("@overview This operator sets a new incident energy value for ");
+   s.append("a time-of-flight DataSet for a direct geometry spectrometer.  ");
+   s.append("Each time bin boundary for each spectrum in the DataSet is ");
+   s.append("adjusted based on the new incident energy specified. \n");
+   s.append("@assumptions The input DataSet's X units must be time values.\n");
+   s.append("The DataSet must not be empty or null.\n");
+   s.append("The new incident energy must be valid.\n");
+   s.append("@algorithm First the current incident energy and initial ");
+   s.append("flight path is used to recalculate the source to sample time ");
+   s.append("that was originally used (t_old).\n");
+   s.append("Then the new incident energy and initial flight path is used ");
+   s.append("to calculate a new source to sample time (t_new).\n");
+   s.append("The difference (t_new - t_old) is then subtracted from each ");
+   s.append("bin boundary of each spectrum.\n");
+   s.append("Finally the new incident energy is recorded in each Data ");
+   s.append("block as the incident energy, and an entry is appended to the ");
+   s.append("DataSet's log indicating that the incident energy was set to ");
+   s.append("the new incident energy value.\n");
+   s.append("@param ds DataSet to do the flight path correction for.\n"); 
+   s.append("@param new_e_in New value to use for the incident energy.\n");
+   s.append("@param make_new_ds Flag that determines whether a new DataSet ");
+   s.append("is constructed, or the Data blocks of the original DataSet ");
+   s.append("are just altered.\n");
+   s.append("@return If make_new_ds is true, this returns a new DataSet ");
+   s.append("with the new ENERGY_IN and adjusted time channels, otherwise ");
+   s.append("it just returns the same DataSet with new ENERGY_IN and ");
+   s.append("adjusted time channels.\n");
+   s.append("@error Returns an error if the input DataSet is null.\n");
+   s.append("@error Returns an error if the input DataSet's X units are not ");
+   s.append("in time values\n");
+   s.append("@error Returns an error if the DataSet is empty.\n");
+   s.append("@error Returns an error if the new incident energy is invalid.\n");
+   return s.toString();
+ }
+  
  /* ----------------------------- getResult ------------------------------ */ 
  /** 
   * 
@@ -201,13 +247,19 @@ public class SetIncidentEnergy extends    GenericTOF_DG_Spectrometer
   {
      System.out.println( "Test of SetIncidentEnergy starting...");
                                                                // load a DataSet
-     String filename = "/usr/local/ARGONNE_DATA/hrcsdata/hrcs3005.run";
+     //String filename = "/usr/local/ARGONNE_DATA/hrcsdata/hrcs3005.run";
+     String filename = "D:\\ISAW\\SampleRuns\\\\hrcs2955.run";
      RunfileRetriever rr = new RunfileRetriever( filename );
      DataSet ds = rr.getDataSet(1);
                                                                // make operator
                                                                // and call it
      SetIncidentEnergy op = new SetIncidentEnergy( ds, 100, true );
      Object obj = op.getResult();
+     
+     /*--- added by Chris Bouzek ----*/
+     System.out.println("Documentation: " + op.getDocumentation());
+     /*------------------------------*/
+     
      if ( obj instanceof DataSet )                   // we got a DataSet back
      {                                               // so show it and original
        DataSet new_ds = (DataSet)obj;
