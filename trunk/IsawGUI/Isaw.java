@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.70  2002/01/09 15:45:11  rmikk
+ *  Changed the message given when an exception occurs.
+ *  Also return from this procedure after this exception
+ *     occurred
+ *
  *  Revision 1.69  2002/01/08 21:26:52  rmikk
  *  Fixed the File filter on a Save dialog box to exclude
  *  Run files
@@ -1135,7 +1140,8 @@ public class Isaw
           }
           catch( Exception e ) 
           {
-            System.out.println( "Choose a DataSet to Save" );
+            System.out.println( "Error "+e );
+            return;
           } 
          
         }
