@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/06/17 16:14:22  pfpeterson
+ * Makes sure that the filename stored has forward slashes for the directory.
+ *
  * Revision 1.6  2003/06/13 14:59:02  pfpeterson
  * Changed some fields from private to protected.
  *
@@ -55,6 +58,7 @@
 
 package Command;
 
+import DataSetTools.util.FilenameUtil;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.BadLocationException;
@@ -77,7 +81,7 @@ public class Script extends Object{
 
   public Script(String filename){
     this();
-    this.filename=filename;
+    this.filename=FilenameUtil.setForwardSlash(filename);
     this.reload();
   }
 
