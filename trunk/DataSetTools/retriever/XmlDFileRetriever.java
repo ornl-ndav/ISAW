@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/06/24 19:10:22  rmikk
+ *  Fixed errors in calculating and reporting the number of data sets
+ *
  *  Revision 1.6  2004/03/15 19:33:57  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -67,8 +70,8 @@ public class XmlDFileRetriever extends Retriever
   ZipFile zf = null;
   //DSPositioner posn;
   InputStream fi=null;
-  int nDataSets = -1;
-  Vector V;
+  int nDataSets = 0;
+  Vector V;// Contains the entry byte offsets to the start of the data sets
   boolean errFile = false;
   public XmlDFileRetriever( String data_source_name )
    {super( data_source_name);
@@ -137,7 +140,7 @@ public class XmlDFileRetriever extends Retriever
             if( mode == 0)
              { mode =1;
                V.add( new Integer( nbytesStart-1));
-                  
+               nDataSets++;  
                nbytesStart = -1;
                sb.setLength(0);
                
@@ -192,11 +195,15 @@ public class XmlDFileRetriever extends Retriever
  /**
  *  Returns the number of data sets in this file
  */
- public int numDataSets()
+ public int numDataSets(){
+    return V.size();
+ }
+ private int numDataSets1()
   { if( nDataSets >=0)
        return nDataSets;
-  
-   if(errFile)
+    else
+       return -1;// Found in constructor
+   /*if(errFile)
      { 
        return 0;
      }
@@ -256,6 +263,7 @@ public class XmlDFileRetriever extends Retriever
      { xml_utils.setError("value of DataSetList size attribute improper");
        return 0;
      }
+  */
   }
  private boolean locate( InputStream stream, int data_set_num)
   {if( errFile) 
