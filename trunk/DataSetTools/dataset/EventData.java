@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/06/28 20:54:09  dennis
+ *  Removed unneeded import statement.
+ *
  *  Revision 1.1  2002/06/19 22:54:06  dennis
  *  Prototype classes for event data.
  *
@@ -41,7 +44,6 @@ package  DataSetTools.dataset;
 
 import java.io.*;
 import DataSetTools.math.*;
-import DataSetTools.functions.*;
 import DataSetTools.util.*;
 import DataSetTools.viewer.*;
 import DataSetTools.functions.*;
