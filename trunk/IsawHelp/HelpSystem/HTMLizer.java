@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2002/12/10 17:55:52  pfpeterson
+ * Speed improvements. This is done by moving everything out of the constructor and
+ * making variables static. op_vector and help_dir are only filled in right before
+ * they are used (which is never from the ISAW main window). This cuts the time for
+ * normal use of this operator from a couple of seconds to a couple of mili-seconds.
+ *
  * Revision 1.10  2002/12/10 16:49:41  pfpeterson
  * Fixed formating and some javadocs.
  *
@@ -104,40 +110,20 @@ import DataSetTools.operator.DataSet.*;
  * used with JavaHelp 1.1.3.
  */
 public class HTMLizer{
-  private String         help_dir;
-  private File           help_out;
-  private FileWriter     out;
-  private BufferedReader reader;
-  private String         op_name;
-  private Vector         op_vector;
+  private static String         help_dir  = null;
+  private        File           help_out  = null;
+  private        FileWriter     out       = null;
+  private        BufferedReader reader    = null;
+  private        String         op_name   = null;
+  private static Vector         op_vector = null;
 
   /* -----------------CONSTRUCTOR----------------------------------------- */
   /**
-   * Constructs an HTMLizer which writes to a file Help.htm using a
-   * FileWriter.
+   * Constructs an HTMLizer. This constructor does nothing.
    */
   public HTMLizer(){
-    // get a list of all Operators
-    op_vector = createOperatorVector();
-
-    try{
-      PropertiesLoader loader = new PropertiesLoader("IsawProps.dat");
-      String isaw_help = SharedData.getProperty("Help_Directory");
-      if ( isaw_help != null ){
-        help_dir = isaw_help + "/HelpSystem/html";
-      }else{
-        isaw_help = SharedData.getProperty("ISAW_HOME");
-        if ( isaw_help != null )
-          help_dir = isaw_help + "/IsawHelp/HelpSystem/html";
-        else
-          help_dir = "/HelpSystem/html";
-      }
-      // SharedData.addmsg("Writing files to " + help_dir);
-    }catch(RuntimeException e){
-      e.printStackTrace();
-    }//catch
-    help_dir=FilenameUtil.fixSeparator(help_dir);
-  }//constructor()
+    // does nothing
+  }
 
   /* ---------------------- createAllHelpFiles --------------------------- */
   /** 
@@ -146,6 +132,10 @@ public class HTMLizer{
    * Operators is produced.
    */
   public void createAllHelpFiles(){
+    // create the list of operators if it doesn't already exist
+    if(op_vector==null || op_vector.size()==0)
+      op_vector=createOperatorVector();
+
     int op_vector_size = op_vector.size();
     Operator op;
     String op_class;
@@ -172,6 +162,10 @@ public class HTMLizer{
    * @return null if the Operator op_in is not found
    */
   public String dynamicDocCreation(String op_in_class){
+    // create the list of operators if it doesn't already exist
+    if(op_vector==null || op_vector.size()==0)
+      op_vector=createOperatorVector();
+
     int op_vector_size = op_vector.size();
     Operator op;
     String op_class;
@@ -407,6 +401,25 @@ public class HTMLizer{
    * successful
    */
   public boolean writeFile(String operator_class, String body){
+    if(help_dir==null || help_dir.length()==0 ){
+      try{
+        String isaw_help = SharedData.getProperty("Help_Directory");
+        if ( isaw_help != null ){
+          help_dir = isaw_help + "/HelpSystem/html";
+        }else{
+          isaw_help = SharedData.getProperty("ISAW_HOME");
+          if ( isaw_help != null )
+            help_dir = isaw_help + "/IsawHelp/HelpSystem/html";
+          else
+            help_dir = "/HelpSystem/html";
+        }
+        // SharedData.addmsg("Writing files to " + help_dir);
+      }catch(RuntimeException e){
+        e.printStackTrace();
+      }//catch
+      help_dir=FilenameUtil.fixSeparator(help_dir);
+    }
+
     try{
       help_out = new File(help_dir, operator_class + "Help.html"); 
       out = new FileWriter(help_out);
@@ -704,13 +717,13 @@ public class HTMLizer{
     System.out.println();
     System.out.println("Creating JavaHelp HTML documentation....please wait.");
     HTMLizer helpfile = new HTMLizer();	
-    //create documentation for all operators
-    if( args.length <= 0 )
+
+    if( args.length <= 0 ){ //create documentation for all operators
       helpfile.createAllHelpFiles();
-    //create documentation for one operator
-    else
+    }else{ //create documentation for one operator
       helpfile.createOneHelpFile(args[0]);
-    
+    }
+
     System.exit(0);
   }//main
 
