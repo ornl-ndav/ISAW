@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2001/07/30 20:08:24  rmikk
+ *  Fixed Return type on writeDataSets to void
+ *
  *  Revision 1.1  2001/07/30 18:56:53  dennis
  *  Base class for objects that write DataSets to files.
  *
@@ -76,6 +79,6 @@ public abstract class Writer implements Serializable
      * the monitor DataSet for histograms H1, H2, H3 and the M2 is the monitor
      * DataSet for histograms H3 and H4.
      */
-    public abstract DataSet writeDataSets( DataSet ds[] );
+    public abstract void writeDataSets( DataSet ds[] );
 
 }
