@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/01/28 23:01:38  dennis
+ * Added getDocumentation() method.  Also, now closes file if an
+ * exception is encountered. (Chris Bouzek)
+ *
  * Revision 1.10  2002/11/27 23:22:20  pfpeterson
  * standardized header
  *
@@ -105,19 +109,60 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
     addParameter( new Parameter("Vector of Peaks", new Vector() ) );
     addParameter( new Parameter("Append", Boolean.FALSE) );
   }
-  
+    /* ---------------------- getDocumentation --------------------------- */
+    /**
+     *  Returns the documentation for this method as a String.  The format
+     *  follows standard JavaDoc conventions.
+     */
+    public String getDocumentation()
+    {
+      StringBuffer s = new StringBuffer("");
+      s.append("@overview This operator is a small building block of an ");
+      s.append("ISAW version of A.J. Schultz's PEAKS program. This ");
+      s.append("operator writes out a list of x, y, and time bins and ");
+      s.append("intensities to the specified file in a format specified ");
+      s.append("by Art.\n");
+      s.append("@assumptions The specified file does not already exist.\n");
+      s.append("Alternatively, if the specified file exists, it is OK to ");
+      s.append("overwrite it.\n");
+      s.append("It is furthermore assumed that the specified peaks Vector ");
+      s.append("contains valid peak information.\n");
+      s.append("@algorithm This operator first determines the last sequence ");
+      s.append("number in the file, if we are appending to the file.\n");
+      s.append("Then it obtains the general information, sample ");
+      s.append("orientation, and the integrated monitor intensity from the ");
+      s.append("peaks Vector.\n");
+      s.append("Next it opens the specified file.\n");
+      s.append("Then it writes a general information header and the general ");
+      s.append("information to the file.  It also writes a peaks field ");
+      s.append("header and peak information to the file.\n");
+      s.append("Finally, it closes the file.\n");
+      s.append("@param file Filename to print to.\n");
+      s.append("@param peaks Vector of peaks.\n");
+      s.append("@param append Value indicating whether to append to ");
+      s.append("the specified file or not.\n");
+      s.append("@return String containing the value of the specified file, ");
+      s.append("which is summary information for the peaks data written to the ");
+      s.append("file as well as the file's path.\n");
+      s.append("@error If any error occurs, this operator simply lets it ");
+      s.append("\"drop\" (i.e. execution stops).  Whatever was contained ");
+      s.append("in the file at the time of the error is then returned.\n");
+      return s.toString();
+    }	
   /* ----------------------------- getResult ------------------------------ */ 
   /** 
-   *  Executes this operator using the values of the current parameters.
+   *  Writes a list of x,y, and time bins and intensities to the specified
+   *  file.
    *
-   *  @return If successful, this operator prints out a list of x,y,time
-   *  bins and intensities.
+   *  @return String containing the value of the specified file, which is 
+   *  summary information for the peaks data written to the file as well as 
+   *  the file's path. (if successful).
    */
   public Object getResult(){
     String  file   = getParameter(0).getValue().toString();
     Vector  peaks  = (Vector)(getParameter(1).getValue());
     boolean append = ((Boolean)(getParameter(2).getValue())).booleanValue();
-    OutputStreamWriter outStream;
+    OutputStreamWriter outStream = null;
     int     seqnum_off = 0;
     
     // determine the last sequence number in the file if we are appending
@@ -173,12 +218,24 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
           outStream.write(((Peak)peaks.elementAt(i)).toString()+"\n");
         }
       }
-      
+
       // flush and close the buffered file stream
       outStream.flush();
       outStream.close();
     }catch(Exception e){
-      // let it drop on the floor
+      //file may not be closed
+      try{
+        if( outStream != null )
+	{
+	  // flush and close the buffered file stream
+          outStream.flush();
+          outStream.close(); 
+	}
+      }
+      
+      catch(Exception e2){
+        //let it drop on the floor
+      }
     }
     
     return file;
@@ -227,7 +284,7 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
     }
   }
   
-  /* ----------------------------- formating ------------------------------ */ 
+  /* ----------------------------- formatting ------------------------------ */ 
   /**
    * Format an integer by padding on the left.
    */
@@ -268,10 +325,12 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
    */
   public static void main( String args[] ){
     
-    String outfile="/IPNShome/pfpeterson/ISAW/DataSetTools/"
-      +"operator/Generic/TOF_SCD/lookatme.rfl";
+    //String outfile="/IPNShome/pfpeterson/ISAW/DataSetTools/"
+    //  +"operator/Generic/TOF_SCD/lookatme.rfl";
     //String outfile="/IPNShome/pfpeterson/lookatme.rfl";
-    String datfile="/IPNShome/pfpeterson/data/SCD/SCD06496.RUN";
+    //String datfile="/IPNShome/pfpeterson/data/SCD/SCD06496.RUN";
+    String outfile="/home/groups/SCD_PROJECT/SampleRuns/SCD_QUARTZ/lookatme.rfl";
+    String datfile="/home/groups/SCD_PROJECT/SampleRuns/SCD_QUARTZ/SCD06496.RUN";
     DataSet mds = (new RunfileRetriever(datfile)).getDataSet(0);
     DataSet rds = (new RunfileRetriever(datfile)).getDataSet(1);
     
@@ -286,6 +345,10 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
     
     WritePeaks wo = new WritePeaks(outfile,peaked,Boolean.FALSE);
     System.out.println(wo.getResult());
+    
+    /* -------------- added by Chris Bouzek --------------------- */
+    System.out.println("Documentation: " + wo.getDocumentation());
+    /* ---------------------------------------------------------- */
     
     System.exit(0);
   }
