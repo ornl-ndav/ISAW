@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2001/12/07 21:45:49  pfpeterson
+ * Put the order of parsing directories back to correct order.
+ *
  * Revision 1.19  2001/12/07 20:40:30  pfpeterson
  * Corrected directory parser to not double load operators and scripts if isaw is installed in $HOME/ISAW. We still should account for multiply defined directories within the GROUP#_HOME listings.
  *
@@ -177,19 +180,6 @@ public class Script_Class_List_Handler  implements OperatorHandler
          }
         int g = 0;
        
-        String ScrPaths = System.getProperty( "ISAW_HOME" );
-        if( ScrPaths != null )
-          if(ScrPaths.length()>0)
-           {ScrPaths=ScrPaths.replace('\\','/');
-            if( ScrPaths.charAt(ScrPaths.length()-1) =='/')
-                ScrPaths=ScrPaths.substring(0, ScrPaths.length()-1);
-	    if(!ScrPaths.equals(ScrPaths2)){
-		processPaths(ScrPaths+"/Operators") ;
-		processPaths(ScrPaths+"/Scripts") ;
-            }
-           }
-
-
        String ScrPaths1 = System.getProperty( "GROUP_HOME" );
        while(ScrPaths1 != null)
         {
@@ -198,8 +188,7 @@ public class Script_Class_List_Handler  implements OperatorHandler
             if( ScrPaths1.charAt(ScrPaths1.length()-1) == '/')
                 ScrPaths1=ScrPaths1.substring(0, ScrPaths1.length()-1);
           
-            if( !ScrPaths.equals(ScrPaths))
-	    if(!ScrPaths.equals(ScrPaths2)){
+	    if(!ScrPaths1.equals(ScrPaths2)){
               processPaths(ScrPaths1+"/Operators") ;
               processPaths(ScrPaths1+"/Scripts") ;
 	    }
@@ -212,6 +201,20 @@ public class Script_Class_List_Handler  implements OperatorHandler
          }
 
        
+        String ScrPaths = System.getProperty( "ISAW_HOME" );
+        if( ScrPaths != null )
+          if(ScrPaths.length()>0)
+           {ScrPaths=ScrPaths.replace('\\','/');
+            if( ScrPaths.charAt(ScrPaths.length()-1) =='/')
+                ScrPaths=ScrPaths.substring(0, ScrPaths.length()-1);
+            if( !ScrPaths.equals(ScrPaths1))
+	    if(!ScrPaths.equals(ScrPaths2)){
+		processPaths(ScrPaths+"/Operators") ;
+		processPaths(ScrPaths+"/Scripts") ;
+            }
+           }
+
+
        
  
          toggleDebug(); 
