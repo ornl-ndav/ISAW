@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/09/11 21:21:44  bouzekc
+ *  Updated to work with new Form class.
+ *
  *  Revision 1.13  2003/08/14 19:43:56  bouzekc
  *  Fixed javadoc error.
  *
@@ -281,11 +284,11 @@ public class SaveAsGSASForm extends Form implements Serializable {
     param     = ( IParameterGUI )super.getParameter( 6 );
     seq_num   = ( ( BooleanPG )param ).getbooleanValue(  );
 
-    Object superRes = super.getResult(  );
+    Object validCheck = validateSelf(  );
 
     //had an error, so return
-    if( superRes instanceof ErrorString ) {
-      return superRes;
+    if( validCheck instanceof ErrorString ) {
+      return validCheck;
     }
 
     //set the increment amount

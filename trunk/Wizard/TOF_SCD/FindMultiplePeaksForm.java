@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.25  2003/09/11 21:22:28  bouzekc
+ * Updated to work with new Form class.
+ *
  * Revision 1.24  2003/08/28 20:55:25  bouzekc
  * Set histDS and Operator DataSet parameters to null when they are not used.
  * This should avoid an out of memory error.
@@ -398,11 +401,11 @@ public class FindMultiplePeaksForm extends Form {
       calibFile, maxPeaks, minIntensity, saveName, expFile, SCDline );
 
     //validate the parameters and set the progress bar variables
-    Object superRes = super.getResult(  );
+    Object validCheck = validateSelf(  );
 
     //had an error, so return
-    if( superRes instanceof ErrorString ) {
-      return superRes;
+    if( validCheck instanceof ErrorString ) {
+      return validCheck;
     }
 
     //set the increment amount

@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.10  2003/09/11 21:21:44  bouzekc
+ * Updated to work with new Form class.
+ *
  * Revision 1.9  2003/07/03 15:19:12  bouzekc
  * Added and formatted class and javadoc comments.  Removed
  * unused inner protected constructor (this Form has only only
@@ -238,11 +241,11 @@ public class LoadMultiHistogramsForm extends Form implements Serializable {
     histograms.clearValue(  );
     monitors.clearValue(  );
 
-    Object superRes = super.getResult(  );
+    Object validCheck = validateSelf(  );
 
     //had an error, so return
-    if( superRes instanceof ErrorString ) {
-      return superRes;
+    if( validCheck instanceof ErrorString ) {
+      return validCheck;
     }
 
     //set the increment amount
