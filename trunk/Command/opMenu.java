@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2001/06/26 14:44:44  rmikk
+ * Changed DataSetListHandler to IDataSetListHandler
+ *
  * Revision 1.9  2001/06/25 21:49:40  rmikk
  * Added Parameter to JParametersDialog
  *
@@ -62,17 +65,17 @@ import java.io.*;
 public class opMenu extends JMenu 
 {OperatorHandler op;
  MActionListener ML;
-  DataSetListHandler DS;
+  IDataSetListHandler DS;
 
 /**
 * @param op   Gets the list of operators to be placed in this menu
 * @param DS  Gets the list of Data Sets that can be used for parameters
 * @param logdoc the log file to place log comments
 * @param iobs  an iobserver of these operations
-*@see #OperatorHandler , #DataSetTools.components.ParametersGUI.DataSetListHandler , 
+*@see #OperatorHandler , #DataSetTools.components.ParametersGUI.IDataSetListHandler , 
 *@see #DataSetTools.util.IObserver
 */
-public opMenu(OperatorHandler op , DataSetListHandler DS, Document logdoc , IObserver iobs)
+public opMenu(OperatorHandler op , IDataSetListHandler DS, Document logdoc , IObserver iobs)
   {super("Operations");
    this.op = op;
    this.DS = DS;
@@ -154,10 +157,10 @@ public opMenu(OperatorHandler op , DataSetListHandler DS, Document logdoc , IObs
 
 private class MActionListener implements ActionListener
   {OperatorHandler op;
-   DataSetListHandler DS;
+   IDataSetListHandler DS;
   Document logdoc;
   IObserver iobs;
-    public MActionListener( OperatorHandler op,DataSetListHandler DS , Document logdoc, IObserver iobs)
+    public MActionListener( OperatorHandler op,IDataSetListHandler DS , Document logdoc, IObserver iobs)
        {this.op = op;
         this.DS = DS;
         this.logdoc=logdoc;  
