@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2004/07/31 23:12:05  rmikk
+ * Removed unused imports
+ *
  * Revision 1.1  2004/06/18 22:22:41  rmikk
  * Initial Checkin
  *
@@ -40,8 +43,8 @@ package Operators.TOF_SCD;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
-import Command.*;
-import java.io.*;
+//import Command.*;
+//import java.io.*;
 import DataSetTools.dataset.*;
 
 
