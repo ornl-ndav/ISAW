@@ -45,12 +45,12 @@ public class JlocDataSetParameterGUI extends JParameterGUI
 	  {
            System.out.println("Global data set is null");
           }          
-        else if( ds != null)
-        for( int i=0; i< ds.length; i++)
-	  {              
+        else 
+          for( int i=0; i< ds.length; i++)
+	    {              
                combobox.addItem(ds[i]);
                      
-          }
+             }
         
         segment = new JPanel();
         segment.setLayout(new GridLayout(1,2));
@@ -71,9 +71,15 @@ public class JlocDataSetParameterGUI extends JParameterGUI
     { Parameter P;
        
        DataSet ds = (DataSet)combobox.getSelectedItem();
-       P = getParameter();
-        P.setValue(ds);
-        return P;
+       
+	  
+       P = super.getParameter();
+       
+          P.setValue(ds);
+          return P;
+	  
+       
+      
     }
 
 }
