@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/11/06 20:05:25  rmikk
+ * Eliminated null pointer exceptions when the state was
+ *    initially null
+ * Eliminated warnings by removing paths from the
+ *    ViewMenuItems
+ *
  * Revision 1.3  2003/10/28 19:58:13  rmikk
  * Fixed javadoc errors
  *
@@ -85,7 +91,7 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
           this.state = new ViewerState();
         initState();
         //Check state 
-     
+        state = this.state;
         if( (Groups == null) || (Groups.length < 1))
           {
            Groups = new int[1];
@@ -96,10 +102,10 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
         AllIndices = new int[ DS.getNum_entries() ];
         for( int i = 0; i < DS.getNum_entries() ; i++ )
             AllIndices[i]=i;
-        if( state.get_boolean(ViewerState.TIMEVSGROUPTABLE_SHOWALL))
+        if( this.state.get_boolean(ViewerState.TIMEVSGROUPTABLE_SHOWALL))
            setGroups( AllIndices);
-        setErrInd( state.get_boolean(ViewerState.TIMEVSGROUPTABLE_SHOWERR),
-              state.get_boolean(ViewerState.TIMEVSGROUPTABLE_SHOWIND));
+        setErrInd( this.state.get_boolean(ViewerState.TIMEVSGROUPTABLE_SHOWERR),
+              this.state.get_boolean(ViewerState.TIMEVSGROUPTABLE_SHOWIND));
      
        }
 
@@ -454,8 +460,8 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
         jmInd = new JCheckBoxMenuItem("Show Indicies");
         jmInd.addActionListener( new CheckBoxListener());
         jmInd.setSelected( state.get_boolean( ViewerState.TIMEVSGROUPTABLE_SHOWIND));
-        Res[0] = new ViewMenuItem("Options",jmErr);
-        Res[1] = new ViewMenuItem("Options",jmInd);
+        Res[0] = new ViewMenuItem(jmErr);
+        Res[1] = new ViewMenuItem(jmInd);
         
        }
      //if( JMenuName.equals( "File"))
@@ -468,7 +474,7 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
         Res[2] = new ViewMenuItem("File", item);
         JMenuItem sv= new JMenuItem( "Save Table to a File");
         sv.addActionListener( new SaveFileListener());
-        Res[3] =new ViewMenuItem("File",sv);
+        Res[3] =new ViewMenuItem(sv);
         return Res;
        }
 
