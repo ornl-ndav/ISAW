@@ -53,14 +53,14 @@ public class JStringAttributeGUI extends JAttributeGUI implements Serializable
     public Attribute getAttribute()
     {
         
-        String s = stringText.getText();
-        if(s.equalsIgnoreCase("NaN"))
-        attr = new StringAttribute(attr.getName(),(String)attr.getStringValue());
-        else{
-        //String value = String.valueOf(s).S
-        ((StringAttribute)attr).setStringValue(s);
-        }
-        return attr;
+      String s = stringText.getText();
+      if(s.equalsIgnoreCase("NaN"))
+      attr = new StringAttribute(attr.getName(),(String)attr.getStringValue());
+      else{
+      //String value = String.valueOf(s).S
+      attr = new StringAttribute(attr.getName(),s);
+      }
+      return attr;
     }
 
 }
