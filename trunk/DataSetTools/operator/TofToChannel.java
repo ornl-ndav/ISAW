@@ -217,7 +217,7 @@ public class TofToChannel extends  XAxisConversionOperator
       max_chan = temp;
     }
 
-    XScale new_channel_scale;
+    UniformXScale new_channel_scale;
     if ( num_chan <= 0 )                             // calculate the default
       num_chan = (int)(max_chan-min_chan+1);         // number of channels.
 
@@ -256,9 +256,9 @@ public class TofToChannel extends  XAxisConversionOperator
       new_data.setSqrtErrors();  
       new_data.setAttributeList( attr_list );  
 
-      if ( new_channel_scale != null )           // rebin if a valid scale was
-        new_data.ReBin( new_channel_scale );     // specified
- 
+      if ( new_channel_scale != null )                    // resample if a valid
+          new_data.ResampleUniformly( new_channel_scale );// scale was specified
+
       new_ds.addData_entry( new_data );      
     }
 
