@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/10/30 20:43:56  dennis
+ *  Removed @see tag that referred to the OverplotView, since
+ *  OverplotView has been replaced by the new selected graph view.
+ *
  *  Revision 1.12  2002/12/10 22:13:35  pfpeterson
  *  Fixed javadoc
  *
@@ -53,8 +57,7 @@ import  javax.swing.*;
  *  @see DataSetTools.viewer.Graph.GraphView
  *  @see DataSetTools.viewer.ThreeD.ThreeDView
  *  @see DataSetTools.viewer.Table.TabView
- *  @see DataSetTools.viewer.OverplotView.GraphableDataManager
- *
+ *  @see DataSetTools.viewer.Contour.ContourView
  */ 
 
 public abstract class DataSetViewer extends    JPanel
