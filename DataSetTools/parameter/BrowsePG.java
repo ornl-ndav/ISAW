@@ -1,5 +1,5 @@
 /*
- * File:  BrowsePG.java 
+ * File:  BrowsePG.java
  *
  * Copyright (C) 2002, Peter F. Peterson
  *
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2004/03/12 20:11:41  bouzekc
+ *  Code reformat and added javadocs.
+ *
  *  Revision 1.32  2003/12/15 01:45:30  bouzekc
  *  Removed unused imports.
  *
@@ -147,218 +150,264 @@
  *
  *
  */
-
 package DataSetTools.parameter;
-import javax.swing.*;
-import javax.swing.filechooser.*;
-import java.util.Vector;
-import java.lang.String;
-import java.beans.*;
-import java.io.File;
+
 import DataSetTools.components.ParametersGUI.*;
+
 import DataSetTools.util.*;
+
+import java.beans.*;
+
+import java.io.File;
+
+import java.lang.String;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+
+import java.util.Vector;
+
+import javax.swing.*;
+import javax.swing.filechooser.*;
+
 
 /**
  * This is a superclass to take care of many of the common details of
  * BrowsePGs.
  */
-abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
-    private static String TYPE     = "Browse";
+public abstract class BrowsePG extends ParameterGUI implements ParamUsesString {
+  //~ Static fields/initializers ***********************************************
 
-    protected static int VIS_COLS  = 12;
-    protected static int HIDE_COLS = StringPG.DEF_COLS;
+  private static String TYPE     = "Browse";
+  protected static int VIS_COLS  = 12;
+  protected static int HIDE_COLS = StringPG.DEF_COLS;
 
-    protected StringEntry innerEntry  = null;
-    protected JButton     browse      = null;
-    protected Vector      filter_vector;
-    protected transient BrowseButtonListener browselistener;
-    protected int choosertype;
-    
-    private int defaultindex;
+  //~ Instance fields **********************************************************
 
-    // ********** Constructors **********
-    
-    public BrowsePG(String name, Object val){
-        super( name, val );
-        this.setType(TYPE);
+  protected StringEntry innerEntry                        = null;
+  protected JButton browse                                = null;
+  protected Vector filter_vector;
+  protected transient BrowseButtonListener browselistener;
+  protected int choosertype;
+  private int defaultindex;
+
+  //~ Constructors *************************************************************
+
+  /**
+   * Creates a new BrowsePG object.
+   *
+   * @param name The name.
+   * @param value The initial value.
+   */
+  public BrowsePG( String name, Object val ) {
+    super( name, val );
+    this.setType( TYPE );
+  }
+
+  /**
+   * Creates a new BrowsePG object.
+   *
+   * @param name The name.
+   * @param value The initial value.
+   * @param valid Whether this PG should be considered initially valid.
+   */
+  public BrowsePG( String name, Object val, boolean valid ) {
+    super( name, val, valid );
+    this.setType( TYPE );
+
+    if( ( val == null ) || ( val.toString(  ).length(  ) <= 0 ) ) {
+      String datadir = SharedData.getProperty( "Data_Directory" );
+
+      this.setValue( datadir );
     }
 
-    public BrowsePG(String name, Object val, boolean valid){
-        super( name, val, valid );
-        this.setType(TYPE);
-        if(val==null || val.toString().length()<=0){
-          String datadir=SharedData.getProperty("Data_Directory");
-          this.setValue(datadir);
-        }
-        this.setValid(valid);
-        this.filter_vector = new Vector();
-        choosertype = BrowseButtonListener.LOAD_FILE;
-        defaultindex = -1;
-    }
+    this.setValid( valid );
+    this.filter_vector   = new Vector(  );
+    choosertype          = BrowseButtonListener.LOAD_FILE;
+    defaultindex         = -1;
+  }
 
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-      try {
-        Class klass = this.getClass(  );
-        Constructor construct = 
-          klass.getConstructor( new Class[]{ String.class, Object.class } );
-        BrowsePG pg = 
-          ( BrowsePG )construct.newInstance( new Object[] { null, null } );
-        pg.setName( new String( this.getName(  ) ) );
-        pg.setValue( this.getValue(  ) );
-        pg.setDrawValid( this.getDrawValid(  ) );
-        pg.setValid( this.getValid(  ) );
-        pg.filter_vector = this.filter_vector;
+  //~ Methods ******************************************************************
 
-        if( this.getInitialized() ) {
-          pg.initGUI( null );
-          pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
-        }
+  /**
+   * Set the FileFilter to be used when the browse button is pressed
+   */
+  public void setFilter( FileFilter filefilter ) {
+    boolean found = false;
 
-        if( getPropListeners(  ) != null ) {
-          java.util.Enumeration e = getPropListeners(  ).keys(  );
-          PropertyChangeListener pcl = null;
-          String propertyName = null;
+    for( int i = 0; i < filter_vector.size(  ); i++ ) {
+      if( filter_vector.elementAt( i ).getClass(  ).isInstance( filefilter ) ) {
+        found          = true;
+        defaultindex   = i;
 
-          while( e.hasMoreElements(  ) ) {
-            pcl            = ( PropertyChangeListener )e.nextElement(  );
-            propertyName   = ( String )getPropListeners(  ).get( pcl );
-
-            pg.addPropertyChangeListener( propertyName, pcl );
-          }
-        }
-
-        return pg;
-      } catch( InstantiationException e ) {
-        throw new InstantiationError( e.getMessage(  ) );
-      } catch( IllegalAccessException e ) {
-        throw new IllegalAccessError( e.getMessage(  ) );
-      } catch( NoSuchMethodException e ) {
-        throw new NoSuchMethodError( e.getMessage(  ) );
-      } catch( InvocationTargetException e ) {
-        throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
+        break;
       }
     }
 
-    // ********** ParamUsesString requirements **********
+    if( !found ) {
+      this.addFilter( filefilter );
+      defaultindex = filter_vector.size(  ) - 1;
+    }
+  }
 
-    public String getStringValue(){
-        return (String)this.getValue();
+  /**
+   * DOCUMENT ME!
+   *
+   * @param value DOCUMENT ME!
+   */
+  public void setStringValue( String value ) {
+    this.setValue( value );
+  }
+
+  // ********** ParamUsesString requirements **********
+  public String getStringValue(  ) {
+    return ( String )this.getValue(  );
+  }
+
+  /**
+   * Sets the value of the parameter.
+   */
+  public void setValue( Object val ) {
+    String svalue = "";
+
+    if( val == null ) {
+      svalue = "";
+    } else {
+      svalue = val.toString(  );
     }
 
-    public void setStringValue(String value){
-      this.setValue(value);
+    if( svalue.length(  ) <= 0 ) {
+      svalue = "";
     }
 
-    // ********** IParameter requirements **********
-
-    /**
-     * Returns the value of the parameter. While this is a generic
-     * object specific parameters will return appropriate
-     * objects. There can also be a 'fast access' method which returns
-     * a specific object (such as String or DataSet) without casting.
-     */
-    public Object getValue(){
-        String val=super.getValue().toString();
-
-        if(this.getInitialized()){
-            val=((JTextField)this.innerEntry).getText();
-        }
-
-        return FilenameUtil.setForwardSlash(val.toString());
+    if( this.getInitialized(  ) ) {
+      ( ( JTextField )this.innerEntry ).setText( svalue );
     }
 
-    /**
-     * Sets the value of the parameter.
-     */
-    public void setValue(Object val){
-        String svalue="";
-        if(val==null)
-          svalue="";
-        else
-          svalue=val.toString();
-        
-        if(svalue.length()<=0) svalue="";
+    //always update the internal value
+    super.setValue( svalue );
+  }
 
-        if(this.getInitialized()){
-          ((JTextField)this.innerEntry).setText(svalue);
-        }
-        //always update the internal value
-        super.setValue(svalue);
+  // ********** IParameter requirements **********
+
+  /**
+   * Returns the value of the parameter. While this is a generic object
+   * specific parameters will return appropriate objects. There can also be a
+   * 'fast access' method which returns a specific object (such as String or
+   * DataSet) without casting.
+   */
+  public Object getValue(  ) {
+    String val = super.getValue(  ).toString(  );
+
+    if( this.getInitialized(  ) ) {
+      val = ( ( JTextField )this.innerEntry ).getText(  );
     }
 
-    // ********** IParameterGUI requirements **********
-    /**
-     * Allows for initialization of the GUI after instantiation.
-     */
-    public void initGUI(Vector init_values){
-        if(this.getInitialized()) return; // don't initialize more than once
-        if(init_values!=null){
-            if(init_values.size()==1){
-                // the init_values is what to set as the value of the parameter
-                this.setValue(init_values.elementAt(0));
-            }else{
-                // something is not right, should throw an exception
-            }
-        }
-        innerEntry=new StringEntry(this.getStringValue(),StringPG.DEF_COLS);
-        browse=new JButton("Browse");
-        if(browselistener == null){
-          browselistener = new BrowseButtonListener(innerEntry,
-                                     choosertype,this.filter_vector);
-          browselistener.setFileFilter(defaultindex);
-        }
-        browse.addActionListener(browselistener);
-        setEntryWidget(new EntryWidget(  ));
-        EntryWidget wijit = getEntryWidget();
+    return FilenameUtil.setForwardSlash( val.toString(  ) );
+  }
 
-        wijit.add(innerEntry);
-        wijit.add(browse);
-        this.setEnabled(this.getEnabled());
-        super.initGUI();
-    }
+  /**
+   * Adds a FileFilter.
+   */
+  public void addFilter( FileFilter filefilter ) {
+    filter_vector.add( filefilter );
+  }
 
-    /**
-     * Set the FileFilter to be used when the browse button is pressed
-     */
-    public void setFilter( FileFilter filefilter){
-      boolean found = false;
-      for( int i = 0; i < filter_vector.size(); i ++ ){
-        if(filter_vector.elementAt(i).getClass().isInstance(filefilter)){
-          found = true;
-          defaultindex = i;
-          break;
+  /**
+   * Definition of the clone method.
+   */
+  public Object clone(  ) {
+    try {
+      Class klass           = this.getClass(  );
+      Constructor construct = klass.getConstructor( 
+          new Class[]{ String.class, Object.class } );
+      BrowsePG pg           = ( BrowsePG )construct.newInstance( 
+          new Object[]{ null, null } );
+
+      pg.setName( new String( this.getName(  ) ) );
+      pg.setValue( this.getValue(  ) );
+      pg.setDrawValid( this.getDrawValid(  ) );
+      pg.setValid( this.getValid(  ) );
+      pg.filter_vector = this.filter_vector;
+
+      if( this.getInitialized(  ) ) {
+        pg.initGUI( null );
+        pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
+      }
+
+      if( getPropListeners(  ) != null ) {
+        java.util.Enumeration e    = getPropListeners(  ).keys(  );
+        PropertyChangeListener pcl = null;
+        String propertyName        = null;
+
+        while( e.hasMoreElements(  ) ) {
+          pcl            = ( PropertyChangeListener )e.nextElement(  );
+          propertyName   = ( String )getPropListeners(  ).get( pcl );
+          pg.addPropertyChangeListener( propertyName, pcl );
         }
       }
 
-      if(!found)
-      {
-        this.addFilter(filefilter);
-        defaultindex = filter_vector.size() - 1;
-      }
+      return pg;
+    } catch( InstantiationException e ) {
+      throw new InstantiationError( e.getMessage(  ) );
+    } catch( IllegalAccessException e ) {
+      throw new IllegalAccessError( e.getMessage(  ) );
+    } catch( NoSuchMethodException e ) {
+      throw new NoSuchMethodError( e.getMessage(  ) );
+    } catch( InvocationTargetException e ) {
+      throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
+    }
+  }
+
+  // ********** IParameterGUI requirements **********
+
+  /**
+   * Allows for initialization of the GUI after instantiation.
+   */
+  public void initGUI( Vector init_values ) {
+    if( this.getInitialized(  ) ) {
+      return;  // don't initialize more than once
     }
 
-    /**
-     * Adds a FileFilter.
-     */
-    public void addFilter(FileFilter filefilter){
-        filter_vector.add(filefilter);
-    }
-
-    /**
-     * Validates this BrowsePG.  A BrowsePG is considered valid if the file or
-     * directory it references exists.
-     */
-    public void validateSelf(  ) {
-      if( getValue(  ) != null && 
-          new File( getValue(  ).toString(  ) ).exists(  ) ) {
-        setValid( true );
+    if( init_values != null ) {
+      if( init_values.size(  ) == 1 ) {
+        // the init_values is what to set as the value of the parameter
+        this.setValue( init_values.elementAt( 0 ) );
       } else {
-        setValid( false );
+        // something is not right, should throw an exception
       }
     }
+
+    innerEntry   = new StringEntry( this.getStringValue(  ), StringPG.DEF_COLS );
+    browse       = new JButton( "Browse" );
+
+    if( browselistener == null ) {
+      browselistener = new BrowseButtonListener( 
+          innerEntry, choosertype, this.filter_vector );
+      browselistener.setFileFilter( defaultindex );
+    }
+
+    browse.addActionListener( browselistener );
+    setEntryWidget( new EntryWidget(  ) );
+
+    EntryWidget wijit = getEntryWidget(  );
+
+    wijit.add( innerEntry );
+    wijit.add( browse );
+    this.setEnabled( this.getEnabled(  ) );
+    super.initGUI(  );
+  }
+
+  /**
+   * Validates this BrowsePG.  A BrowsePG is considered valid if the file or
+   * directory it references exists.
+   */
+  public void validateSelf(  ) {
+    if( 
+      ( getValue(  ) != null ) &&
+        new File( getValue(  ).toString(  ) ).exists(  ) ) {
+      setValid( true );
+    } else {
+      setValid( false );
+    }
+  }
 }
