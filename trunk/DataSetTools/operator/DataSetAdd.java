@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/07/25 18:13:54  dennis
+ *  Minor improvement in java docs.
+ *
  *  Revision 1.7  2001/06/01 21:18:00  rmikk
  *  Improved documentation for getCommand() method
  *
@@ -38,7 +41,7 @@
  *  Added copyright and GPL info at the start of the file.
  *
  *  Revision 1.5  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
+ *    Introduced additional abstract classes to better categorize the operators.
  *  Existing operators were modified to be derived from one of the new abstract
  *  classes.  The abstract base class hierarchy is now:
  *
@@ -109,6 +112,10 @@ import  DataSetTools.util.*;
   *  that they have the same units, the same number of data values and extend 
   *  over the same X-interval.
   *
+  *  The tile of this operator is "Add a DataSet".
+  *
+  *  The command name for this operator is "Add".
+  *
   *  @see DataSetOperator
   *  @see Operator
   */
@@ -164,7 +171,8 @@ public class DataSetAdd extends    DataSetOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case Add
+   * @return  the command name to be used with script processor: 
+   *          in this case Add
    */
    public String getCommand()
    {
