@@ -13,11 +13,11 @@
 
 # @return   Success or an error string.  A Dat file containing the efficiencies is written  
 
-$ CadmiumFileName     LoadFileString("C:/Argonne/sand/wrchen03/INS/sand19452.run") Cadmium Filename
-$ SensitivityFileName LoadFileString("C:/ISAW/SampleRuns/sens19878A.dat")   Sensitivity Dat File
-$ SaveFileName        SaveFileString("C:/ISAW/SampleRuns/EFR19452A.dat")   Save Dat file to 
-$ XOFF                Float(0.0)                               Enter Xoffset of beam in cm
-$ YOFF                Float(0.0)                               Enter Yoffset of beam in cm
+$ CadmiumFileName     LoadFileString("C:/new_das_runs/sand20270.run") Cadmium with BS removed Filename
+$ SensitivityFileName LoadFileString("C:/test_output/sens20337.dat")   Sensitivity Dat File
+$ SaveFileName        SaveFileString("C:/test_output/EFR20270.dat")   Save Dat file to 
+$ XOFF                Float(0.15)                               Enter Xoffset of beam in cm
+$ YOFF                Float(0.62)                               Enter Yoffset of beam in cm
 $ Radius              Float( 5.0)                              Radius to use
 $ DelayNeutron        Float( .0011)                            Delayed Neutron Fraction
 
@@ -36,6 +36,5 @@ DS = EffRatio( CadDS[1], CadDS[0], SensDS[0], XOFF, YOFF,Radius, DelayNeutron)
 Print3Col1D( DS[1],SaveFileName, "Efficiency",DelayNeutron)
 
 Display "Finished"
-
 
 
