@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/01/14 18:58:15  bouzekc
+ * Code reformat.
+ *
  * Revision 1.8  2004/01/11 00:25:50  bouzekc
  * Removed experimental look and feel code.
  *
@@ -882,7 +885,7 @@ class SwingWizardFrontEnd implements IGUIWizardFrontEnd {
       } else if( command == CLEAR_ALL_COMMAND ) {
         wizard.invalidate( 0 );
       } else if( command == CLEAR_COMMAND ) {
-        wizard.invalidate( curFormNum);
+        wizard.invalidate( curFormNum );
       } else if( command == EXEC_ALL_COMMAND ) {
         worker = new WizardWorker( wizard );
         worker.setFormNumber( wizard.getNumForms(  ) - 1 );
