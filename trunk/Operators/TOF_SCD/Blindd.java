@@ -27,6 +27,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/02/21 16:57:52  pfpeterson
+ * Now creates instance of blind and works with instance variables
+ * and methods.
+ *
  * Revision 1.5  2003/02/20 21:41:23  pfpeterson
  * Simplified code by extracting some functionality out into private
  * methods and using the ReadPeaks operator to load in the peaks
@@ -209,17 +213,18 @@ public class Blindd extends  GenericTOF_SCD {
     intW LMT = new intW(0);
      
     // perform the calculation
-    blind.blaue( peaks,xx,yy,zz,LMT,seq,1);
+    blind BLIND=new blind();
+    BLIND.blaue( peaks,xx,yy,zz,LMT,seq);
     double[] b= new double[9];
     doubleW dd= new doubleW(.08);
     intW mj= new intW(0);
-    blind.bias(peaks.size()+3,xx,yy,zz,b,0,3,dd,4.0,mj,seq,1,123,0);
+    BLIND.bias(peaks.size()+3,xx,yy,zz,b,0,3,dd,4.0,mj,seq,123,0);
 
     // write the log file
     int index=matrixfile.lastIndexOf("/");
     if(index>=0){
       String logfile=matrixfile.substring(0,index+1)+"blind.log";
-      if(!blind.writeLog(logfile))
+      if(!BLIND.writeLog(logfile))
         SharedData.addmsg("WARNING: Failed to create logfile");
     }else{
       SharedData.addmsg("WARNING: Could not create logfile, bad filename");
@@ -227,7 +232,7 @@ public class Blindd extends  GenericTOF_SCD {
         
 
     // write the matrix file
-    return writeMatFile(matrixfile);
+    return writeMatFile(matrixfile,BLIND);
   }
     
   /* ------------------------------- clone -------------------------------- */ 
@@ -278,7 +283,6 @@ public class Blindd extends  GenericTOF_SCD {
     for( int i=0 ; i<rawpeaks.size()&&seqnum_num<seq.length ; i++ ){
       peak=(Peak)rawpeaks.elementAt(i);
       if(peak.seqnum()==seq[seqnum_num]){
-        System.out.println(peak);
         float[] dat=new float[9];
         dat[5]=peak.xcm();
         dat[6]=peak.ycm();
@@ -300,23 +304,23 @@ public class Blindd extends  GenericTOF_SCD {
    * Write out the orientation matrix and lattice parameters to the
    * matrix file.
    */
-  private Object writeMatFile(String filename){
+  private Object writeMatFile(String filename, blind BLIND){
     // create matrix file contents
     DecimalFormat df = new DecimalFormat("##0.000000;#0.000000");
     StringBuffer sb= new StringBuffer(10*3+1);
     for( int i=0;i<3;i++){
       for (int j=0;j<3;j++)
-        sb.append(format(df.format( blind.u[3*j+i]),10));
+        sb.append(format(df.format( BLIND.u[3*j+i]),10));
       sb.append("\n");
     }
     df = new DecimalFormat("#####0.000;####0.000");
-    sb.append(format(df.format( blind.D1),10));
-    sb.append(format(df.format( blind.D2),10));
-    sb.append(format(df.format( blind.D3),10));
-    sb.append(format(df.format( blind.D4),10));
-    sb.append(format(df.format( blind.D5),10));
-    sb.append(format(df.format( blind.D6),10));
-    sb.append(format(df.format( blind.cellVol),10));
+    sb.append(format(df.format( BLIND.D1),10));
+    sb.append(format(df.format( BLIND.D2),10));
+    sb.append(format(df.format( BLIND.D3),10));
+    sb.append(format(df.format( BLIND.D4),10));
+    sb.append(format(df.format( BLIND.D5),10));
+    sb.append(format(df.format( BLIND.D6),10));
+    sb.append(format(df.format( BLIND.cellVol),10));
     sb.append("\n");
     for( int i=0; i < 7; i++)
       sb.append(format(df.format(0.0),10));
