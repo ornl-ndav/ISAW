@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2001/08/16 20:31:32  rmikk
+ * Fixed the javadocs
+ *
  * Revision 1.4  2001/08/10 13:41:11  rmikk
  * Added Code to return error information
  *
@@ -81,7 +84,7 @@ public class NexusRetriever extends Retriever
   * @param  the data set index
   * @return the type( Histogram/monitor/invalid/etc.) of the data 
   *
-  *@see DataSetTools.retriever.Retriever.data_source_name
+  *@see DataSetTools.retriever.dataSource
 
   */ 
    public   int getType( int data_set_num ) 
