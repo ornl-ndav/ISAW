@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2005/01/10 16:18:13  rmikk
+ * Now processes a data set that has LPSD's and area grids
+ *
  * Revision 1.12  2004/12/23 19:56:56  rmikk
  * Fixed indentation and added blank lines for spacing
  * Now writes Nexus standard version 1.0 format. This includes NXgeometry
@@ -97,7 +100,7 @@ public class NxWriteData {
     String axis3Link = "axis3";
     int MIN_GRID_SIZE = 8;  //if grid ==null or numrows*numcols <MIN_GRID_SIZE
     //   the detector will be saved as individual pixels
-    int MAX_GRID_SIZE = 8; // if grid larger than this, will not be merged
+    int MAX_GRID_SIZE = 100; // if grid larger than this, will not be merged
     int Inst_Type;
 
     public NxWriteData(int Inst_Type) {
@@ -710,8 +713,8 @@ public class NxWriteData {
             else 
                 nNXdatas++;
 
-            //if(ProcessGroupedGrids( nodeEntr, nxInstr, DS, makelinks, grids))
-            //  return -1;
+            if(ProcessGroupedGrids( nodeEntr, nxInstr, DS, makelinks, grids))
+                return -1;
         return 1;    
 
     }
