@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2003/10/11 18:54:56  bouzekc
+ *  Implemented clone() using reflection.
+ *
  *  Revision 1.27  2003/09/16 22:43:30  bouzekc
  *  Clarified documentation for class users and subclass writers.
  *
@@ -142,6 +145,9 @@ import DataSetTools.util.PropertyChanger;
 import java.awt.*;
 
 import java.beans.*;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 import java.util.Vector;
 
@@ -407,14 +413,36 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
-   * Clones this ParameterGUI.
+   * Definition of the clone method.  Uses reflection so that derived classes
+   * don't need to write their own clone methods, although they can if they
+   * need to.
    */
   public Object clone(  ) {
-    return this.clone(  );
-    /*ParameterGUI pg=new ParameterGUI(this.name,this.value,this.valid);
-       pg.setDrawValid(this.getDrawValid());
-       pg.initialized=false;
-       return pg;*/
+    try {
+      Class klass           = this.getClass(  );
+      Constructor construct = klass.getConstructor( 
+          new Class[]{ String.class, Object.class } );
+      ParameterGUI pg       = ( ParameterGUI )construct.newInstance( 
+          new Object[]{ null, null } );
+      pg.setName( new String( this.getName(  ) ) );
+      pg.setValue( this.getValue(  ) );
+      pg.setDrawValid( this.getDrawValid(  ) );
+      pg.setValid( this.getValid(  ) );
+
+      if( this.initialized ) {
+        pg.initGUI( null );
+      }
+
+      return pg;
+    } catch( InstantiationException e ) {
+      throw new InstantiationError( e.getMessage(  ) );
+    } catch( IllegalAccessException e ) {
+      throw new IllegalAccessError( e.getMessage(  ) );
+    } catch( NoSuchMethodException e ) {
+      throw new NoSuchMethodError( e.getMessage(  ) );
+    } catch( InvocationTargetException e ) {
+      throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
+    }
   }
 
   /**
