@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.33  2002/02/22 20:33:47  pfpeterson
+ * Operator Reorganization.
+ *
  * Revision 1.32  2002/02/11 21:32:18  rmikk
  * Fixed a bug that occurred with the new StringChoiceList.
  * The fix was a major fix that could break the other SpecialStrings
@@ -157,6 +160,7 @@ import javax.swing.text.*;
 import java.awt.event.*;
 import javax.swing.border.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.*;
 import java.beans.*;
 import java.util.*;
 import java.util.zip.*;
