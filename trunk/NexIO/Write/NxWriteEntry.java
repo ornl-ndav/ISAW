@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/12/08 20:57:49  rmikk
+ * Moved the writing of duration from NXbeam to NXentry
+ *
  * Revision 1.7  2003/11/24 14:05:31  rmikk
  * Changed the analysis field to the description field.
  * Added a NXsample subclass to this NXentry class
@@ -183,11 +186,30 @@ public class NxWriteEntry{
         errormessage += ";"+errormessage;         
     }
 
-    //move to NxSample
-    
    
     
-  /*  X = DS.getAttributeValue( Attribute.SAMPLE_NAME);
+    // duration 
+    Object O = DS.getAttributeValue( Attribute.NUMBER_OF_PULSES );
+    if( O != null ){
+      if( O instanceof Number ){
+        float f = ( ( Number )O ).floatValue();
+        float[] ff = new float[1];
+        ff[0] = f/30.0f;
+        int[] rank = new int[1];
+        rank[0] = 1;
+        n1 = node.newChildNode( "duration" ,"SDS" );
+        n1.setNodeValue( ff , Types.Float , rank ); 
+        if( n1.getErrorMessage() != "" );
+        errormessage += ":" + n1.getErrorMessage();
+        n1.addAttribute("units",("msec"+(char)0).getBytes(),Types.Char,
+                        Inst_Type.makeRankArray(5,-1,-1,-1,-1));
+      }  
+    }
+
+     
+    //Moved to NXsample
+    
+    /*X = DS.getAttributeValue( Attribute.SAMPLE_NAME);
     if( X !=  null){
       String Samp_name = ne.cnvertoString( X);
       if( Samp_name != null){
@@ -209,7 +231,7 @@ public class NxWriteEntry{
       
       }
     }
-   */
+ */
  
     NxWriteLog writelog1 = new NxWriteLog( 6);
     NxWriteNode logNode = node.newChildNode( "log_6","NXlog");
