@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2001/06/04 14:10:27  rmikk
+ * Did not add Scripts that had errors with their construction.
+ *
  * Revision 1.4  2001/06/01 21:14:13  rmikk
  * Added Documentation for javadocs etc.
  *
@@ -238,7 +241,8 @@ private  void add( String filename , Vector opList)
     String Extension = filename.substring( i + 1 );
     if( Extension.equalsIgnoreCase("iss"))
       {ScriptOperator X = new ScriptOperator( filename );
-       add( X );
+       if(X.getErrorMessage().length()<=0) 
+          add( X );
       }
     else
       { Operator X = getClassInst( filename );
