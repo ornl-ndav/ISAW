@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/07/22 19:16:41  dennis
+ * Replaced local constant: HOM = 0.3955974, for 'h' / mass of neutron
+ * by value calculated from physical constants in tof_calc.
+ *
  * Revision 1.4  2003/01/14 19:02:08  dennis
  * Added getDocumentation() and main test program. (Chris Bouzek)
  *
@@ -77,7 +81,9 @@ import DataSetTools.retriever.*;
 
 public class SCDhkl extends  XAxisInformationOp implements Serializable{
     private static final double PI  = Math.PI;
-    private static final double HOM = 0.3955974;
+//    private static final double HOM = 0.3955974;
+                                                           // more accurate;
+    private static final double HOM = tof_calc.ANGST_PER_US_PER_MM / 10;  
     private float[][] invU;
     private float[][] UB;
 
