@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2001/08/09 16:04:40  dennis
+ *  Added debug_view_manager flag.
+ *  Now checks viewer != null to check if the viewer has been
+ *  destroyed before an update message is processed.
+ *
  *  Revision 1.13  2001/07/27 15:56:02  dennis
  *  Now passes in 0 as default number of bins for conversion operators.
  *  In this case, the conversion operators should use the number of
@@ -148,8 +153,10 @@ public class ViewManager extends    JFrame
                          implements IViewManager,
                                     Serializable
 {
+   public static boolean debug_view_manager   = false;
+
    private   ViewManager     view_manager = null;
-   private   DataSetViewer   viewer;
+   private   DataSetViewer   viewer = null;
    private   ViewerState     state = null;
    private   DataSet         dataSet;
    private   DataSet         tempDataSet;
@@ -180,6 +187,7 @@ public class ViewManager extends    JFrame
 
    private static final String SHOW_ALL             = "Show All";
    private static final String NO_CONVERSION_OP     = "None";
+
     
    /**  
     *  Accepts a DataSet and view type and creates an instance of a 
@@ -203,7 +211,8 @@ public class ViewManager extends    JFrame
       dataSet = ds; 
       if ( ds == null )
         System.out.println("ERROR: ds is null in ViewManager constructor");
-      dataSet.addIObserver( this );
+      else
+        dataSet.addIObserver( this );
 
       addWindowListener(new WindowAdapter()
       {
@@ -231,9 +240,15 @@ public class ViewManager extends    JFrame
      dataSet.deleteIObserver( this );
      dataSet = ds;
      makeTempDataSet( true );
-     ds.addIObserver( this );
+     if ( ds != null )
+     {
+       ds.addIObserver( this );
+       setTitle( ds.toString() );
+     }
 
-     viewer.setDataSet( tempDataSet ); 
+     if ( viewer != null )
+       viewer.setDataSet( tempDataSet ); 
+
      System.gc();
    }
 
@@ -296,8 +311,8 @@ public class ViewManager extends    JFrame
    */
    public void destroy()
    {
-     dataSet.deleteIObserver( view_manager );
-     tempDataSet.deleteIObserver( view_manager );
+     dataSet.deleteIObserver( this );
+     tempDataSet.deleteIObserver( this );
      viewer = null;
      dispose(); 
      System.gc();
@@ -318,12 +333,16 @@ public class ViewManager extends    JFrame
     */
    public void update( Object observed, Object reason )
    {
-     if ( !( reason instanceof String) )   // we only deal with Strings
+     if ( viewer == null )
      {
-//     System.out.println("ERROR: ViewManager update called with wrong reason");
+       if ( debug_view_manager )
+         System.out.println("ERROR: ViewManager Previously Destroyed .......");
        return;
      }
- 
+
+     if ( !( reason instanceof String) )   // we only deal with Strings
+       return;
+
      String r_string = (String)reason;
      if ( observed == dataSet )             // message about original dataSet
      {
