@@ -32,6 +32,13 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.19  2004/03/17 22:58:48  dennis
+ * Added gov.jar to list of jar files on classpath.  This was needed
+ * due to splitting the view, math and utilities from ISAW into the
+ * gov.anl.ipns package.
+ * Also changed reference from /IPNShome/pfpeterson/packup to
+ * /IPNShome/IsawMake/packup
+ *
  * Revision 1.18  2004/01/08 17:58:17  bouzekc
  * Removed unused local variables.
  *
@@ -580,13 +587,13 @@ public class IsawInstaller extends JFrame
 		+"cd "+isaw_home+newline
 		+"path %PATH%;./lib"+newline
 		+"java -mx128m -cp \""+fixSeparator(isaw_home)
-                +";Isaw.jar;sgt_v2.jar;IPNS.jar;jnexus.jar;sdds.jar;"
+                +";Isaw.jar;sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;"
                 +"jhall.jar;.\" IsawGUI.Isaw"+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
 		+newline
 		+"rem --"+newline
-		+"rem java -cp sgt_v2.jar;IPNS.jar;jnexus.jar;sdds.jar;."
+		+"rem java -cp sgt_v2.jar;gov.jar;IPNS.jar;jnexus.jar;sdds.jar;."
 		+" IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(LIN_ID)){
 	    content="#!/bin/sh"+newline
@@ -594,7 +601,7 @@ public class IsawInstaller extends JFrame
 		+"JAVA="+java_home+newline
 		+"export LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
-		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/IPNS.jar:"+
+		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
 		+":$ISAW/jhall.jar IsawGUI.Isaw"+newline;
 	}else if(operating_system.equals(SUN_ID)){
@@ -603,7 +610,7 @@ public class IsawInstaller extends JFrame
 		+"JAVA="+java_home+newline
 		+"LD_LIBRARY_PATH="+lib_home+newline
 		+"cd $ISAW"+newline
-		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/IPNS.jar:"+
+		+"$JAVA -mx128m -cp $ISAW:$ISAW/Isaw.jar:$ISAW/gov.jar:$ISAW/IPNS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
 		+":$ISAW/jhall.jar IsawGUI.Isaw"+newline;
         }else if(operating_system.equals(MAC_ID)){
@@ -612,6 +619,7 @@ public class IsawInstaller extends JFrame
                 +isaw_home+":"
                 +isaw_home+"/Isaw.jar:"
                 +isaw_home+"/sgt_v2.jar:"
+                +isaw_home+"/gov.jar:"
                 +isaw_home+"/IPNS.jar:"
                 +isaw_home+"/jnexus.jar:"
                 +isaw_home+"/sdds.jar:"
@@ -674,7 +682,7 @@ public class IsawInstaller extends JFrame
                 System.err.println("Name of archive not found");
             }
         }else{
-            File dir=new File("/IPNShome/pfpeterson/packup/");
+            File dir=new File("/IPNShome/IsawMake/packup/");
             if(dir.isDirectory() && dir.exists() ){
                 File F[];
                 F = dir.listFiles();
