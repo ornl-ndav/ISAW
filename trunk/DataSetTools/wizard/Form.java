@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.42  2003/09/13 23:31:27  bouzekc
+ * Made the internal JPanel transient.
+ *
  * Revision 1.41  2003/09/13 20:54:56  bouzekc
  * Now properly adds external PropertyChangeListeners to a ParameterGUI when
  * a property name is specified.
@@ -256,7 +259,7 @@ public abstract class Form extends Operator implements PropertyChanger {
   //~ Instance fields **********************************************************
 
   private final boolean DEBUG = false;
-  protected JPanel panel;  // panel that the Wizard will draw
+  protected transient JPanel panel;  // panel that the Wizard will draw
   private int[][] param_ref   = null;
 
   //used for standalone or first Forms.  Default is standalone.
