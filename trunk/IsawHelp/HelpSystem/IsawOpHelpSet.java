@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/03/06 23:25:41  pfpeterson
+ * Changed call from fixSeparator to appropriate method.
+ *
  * Revision 1.3  2002/12/02 15:23:21  rmikk
  * Includes ALL of the commandPane help.
  *
@@ -49,7 +52,7 @@ import javax.swing.tree.*;
 import java.awt.*;
 import Command.*;
 import java.io.*;
-
+import DataSetTools.util.StringUtil;
 import DataSetTools.operator.*;
 
 /** A javax.help.HelpSet that gets all information on the data sets from Memory
@@ -167,7 +170,7 @@ public class IsawOpHelpSet extends HelpSet
             return null;        
          if( "/\\".indexOf(hpath.charAt( hpath.length() -1 )) < 0)
             hpath +='/';
-         String S = DataSetTools.util.StringUtil.fixSeparator( hpath + "Command/CommandPane.html" );
+         String S = StringUtil.setFileSeparator( hpath + "Command/CommandPane.html" );
        
          if( !(new File( S )).exists())
             return null;
