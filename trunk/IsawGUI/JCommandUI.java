@@ -2,6 +2,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.16  2002/03/08 23:02:15  dennis
+ * System Properties display now uses JTextArea instead of
+ * JTextField.  Needed for jdk 1.4.0
+ *
  * Revision 1.15  2001/08/15 22:32:08  chatterjee
  * Added a JPanelwithToolBar with a SAVE button to the sessionLog tab pane
  *
@@ -62,7 +66,7 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
      private DefaultMutableTreeNode root;
      private JTable table;
      public JTabbedPane jtp;
-     private JTextField textArea;
+     private JTextArea textArea;
      private JPanel livePanel;
      Document sessionLog=null;
      DefaultTreeModel model;
@@ -99,7 +103,7 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
 
 
         Runtime rt = Runtime.getRuntime();         
-     textArea = new JTextField(
+     textArea = new JTextArea(
        "Build Date: " + SharedData.BUILD_DATE + "\n" +
 
        "Total JVM Memory in bytes = "+ rt.totalMemory() + "\n" +
