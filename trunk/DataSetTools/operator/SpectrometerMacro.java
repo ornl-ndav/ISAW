@@ -98,8 +98,8 @@ public class SpectrometerMacro extends    DataSetOperator
 
     Parameter parameter;
 
-    parameter = new Parameter( "Select Proper Monitor",
-                              new DataSet("Monitor DataSet", "Empty DataSet") );
+    parameter = new Parameter( "Monitor DataSet",
+                                DataSet.EMPTY_DATA_SET );
   
     addParameter( parameter );
    
