@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/04/26 13:11:28  rmikk
+ *  Added Documentation
+ *  Fixed imports for new structure
+ *  null constructor is now public
+ *  Used the new version on xml_utils.AttribXMLread
+ *
  *  Revision 1.11  2004/03/15 06:10:36  dennis
  *  Removed unused import statements.
  *
@@ -67,6 +73,8 @@ package  DataSetTools.dataset;
 
 import java.text.*;
 import java.io.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+import java.util.*;
 /**
  * The concrete class for an attribute whose value is a double.  
  *
@@ -112,7 +120,7 @@ public class DoubleAttribute extends    Attribute
     this.value = value;
   }
 
-  private DoubleAttribute( )
+ public DoubleAttribute( )
   {
     super( "" );
     this.value = 0.0;
@@ -172,14 +180,30 @@ public class DoubleAttribute extends    Attribute
                                 (this.value + attr.getNumericValue()) );
   }
 
+
+  /**
+    *  This method writes the information in this DoubleAttribute to the
+    *  output stream in the xml format
+    */
   public boolean XMLwrite( OutputStream stream, int mode )
   {
       return xml_utils.AttribXMLwrite( stream, mode, this);
   }
 
+  
+  /**
+    *  This method reads the information in the Input stream and updates the
+    *  DoubleAttribute with these values
+    */
+
   public boolean XMLread( InputStream stream )
   {
-    return xml_utils.AttribXMLread(stream, this);
+    Object Res= xml_utils.AttribXMLread(stream, new DoubleAttribute());
+    if( Res instanceof ErrorString)
+       return false;
+    value =((Float) (((Vector)Res).lastElement())).doubleValue();
+	name =((String) (((Vector)Res).firstElement())).toString();
+	return true;//new DoubleAttribute(name,value);
   }
 
   /**
