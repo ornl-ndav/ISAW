@@ -21,6 +21,7 @@ $Category=Operator;Generic;TOF_SAD
 V =BeamCenter(DSfilename, SensFilename, startTimeChan,EndTimeChan, Xoff,Yoff)
 Display "X offset="&V[0]
 Display "Y offset="&V[1]
+Reverse(V[2])
 ViewArray( V[2], "Center" ,V[3,0],V[3,1],V[3,2],V[3,3], "row","col","cm","cm")
-return "Success"
+return "X offset="&V[0]&"   Y offset="&V[1]
 
