@@ -31,6 +31,11 @@
  * Modified:
  *  
  *  $Log$
+ *  Revision 1.5  2001/08/13 23:33:16  dennis
+ *  Now has separate error messages for bad user name and bad password.
+ *  Uses RemoteDataRetriever.error_message() to generate string form
+ *  of error message in some cases.
+ *
  *  Revision 1.4  2001/08/10 19:54:11  dennis
  *  Changed to new default tcp server port.
  *
@@ -204,18 +209,14 @@ public class LoadRemoteData extends    GenericLoad
      if ( n_ds == RemoteDataRetriever.BAD_FILE_NAME )
        return new ErrorString( "File " + file_name + " NOT FOUND" );
      
-     else if ( n_ds == RemoteDataRetriever.BAD_USER_OR_PASSWORD )
-       return new ErrorString( "Bad user name or password" );
-       
      else if ( n_ds == RemoteDataRetriever.SERVER_DOWN )
        return new ErrorString( "Can't connect to " + host + " on " + port );
        
      else if ( n_ds == RemoteDataRetriever.WRONG_SERVER_TYPE )
        return new ErrorString( "Wrong sever type: " + server_type +
                                " on " + host + " port " + port );
-       
      else if ( n_ds <= 0 )
-       return new ErrorString( "No DataSets available" );
+       return new ErrorString( RemoteDataRetriever.error_message( n_ds ) );
 
      else
      {
