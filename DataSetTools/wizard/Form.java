@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2003/06/24 22:36:52  bouzekc
+ * Removed unused variables.
+ *
  * Revision 1.20  2003/06/23 18:23:23  bouzekc
  * Pretty print formatting.
  *
@@ -335,7 +338,6 @@ public abstract class Form extends Operator implements Serializable,
    * setParamTypes}.
    */
   protected final void enableParameters(  ) {
-    IParameterGUI param = null;
     boolean enable      = false;
 
     for( int i = 0; i < param_ref.length; i++ ) {
