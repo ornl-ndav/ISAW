@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2005/01/14 23:32:37  rmikk
+ * Fixed some logical errors in saving.  Eliminated( erroneously?) the 
+ * dimensions with size 1.
+ *
  * Revision 1.14  2005/01/10 17:30:36  rmikk
  * Fixed javadoc error
  *
@@ -755,12 +759,13 @@ public class NxWriteData {
                             IDataGrid grid2 = getAreaGrid(DS, grids[j]);
 
                             if (grid2 != null)
-                                if (grid2.num_rows() * grid2.num_cols() >= MIN_GRID_SIZE)
-                                    if (grid2.num_rows() * grid2.num_cols() < MAX_GRID_SIZE)
+                                if (grid2.num_rows() == grid1.num_rows())
+                                    if (grid2.num_cols() == grid1.num_cols() )
                                         if (grid2.getData_entry(1, 1).getX_scale() == xscl)
-                                            if (j < i) 
+                                            if (j < i){ 
                                                 already = true;
-                                            else { 
+                                              
+                                            }else { 
                                                 GridClass[j] = NGridClasses;
                                                 set = true;
                                             }
@@ -853,8 +858,8 @@ public class NxWriteData {
 
                     coords = Types.convertToNexus(coords[0], coords[2], coords[1]);
                     distance[det] = coords[0];
-                    azim[det] = coords[1];
-                    polar[det] = coords[2];
+                    azim[det] = coords[2];
+                    polar[det] = coords[1];
           
                     //float[] xcoords= grid.x_vec().get();
                     float[] ycoords = grid.x_vec().get();
@@ -963,31 +968,36 @@ public class NxWriteData {
         DataSet DS, int det) {
 
         NxWriteNode node = nxData.newChildNode("data", "SDS");
-
-        node.setNodeValue(data, Types.Float, util.setRankArray(data));
+        int[] ranks = util.setRankArray(data,false);
+        float[]data1=(float[])Types.linearlizeArray(data,4,ranks,Types.Float);
+        ranks = util.setRankArray(data,true);
+        node.setNodeValue(data1, Types.Float,ranks);
         util.writeStringAttr(node, "units", DS.getX_units());
         util.writeStringAttr(node, "label", DS.getTitle());
         util.writeStringAttr(node, "link", DS.getTitle() + "_G2" + det);
         util.writeIntAttr(node, "signal", 1);
 
         node = nxData.newChildNode("errors", "SDS");
-        node.setNodeValue(errors, Types.Float, util.setRankArray(errors));
+        ranks = util.setRankArray(errors,false);
+        float[]errors1=(float[])Types.linearlizeArray(errors,4,ranks,Types.Float);
+        util.setRankArray(errors,true);
+        node.setNodeValue(errors1, Types.Float,ranks);
         util.writeStringAttr(node, "units", DS.getX_units());
 
         nxData.addLink(DS.getTitle() + "_G2" + det);
       
         node = util.writeFA_SDS(nxData, "x_offset", row_cm, 
-                    util.setRankArray(row_cm));
+                    util.setRankArray(row_cm,false));
         util.writeIntAttr(node, "axis", 2);
         util.writeStringAttr(node, "link", DS.getTitle() + "_G2" + det);
         util.writeStringAttr(node, "label", DS.getTitle());
  
         node = util.writeFA_SDS(nxData, "y_offset", col_cm, 
-                    util.setRankArray(col_cm));
+                    util.setRankArray(col_cm,false));
         util.writeIntAttr(node, "axis", 3);
      
         node = util.writeFA_SDS(nxData, "DetIDS", DetNums, 
-                    util.setRankArray(DetNums));
+                    util.setRankArray(DetNums,false));
 
         return false;
 
