@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/06/09 22:28:51  pfpeterson
+ * Fleshed out NOGUI methods and added functionality to allow user to
+ * specify a file to take input from in NOGUI mode.
+ *
  * Revision 1.4  2003/06/02 15:25:08  pfpeterson
  * Trivial change to check mail notification.
  *
@@ -47,6 +51,7 @@
  */
 package IsawGUI;
 
+import Command.Script;
 import Command.Script_Class_List_Handler;
 import Command.ScriptOperator;
 import DataSetTools.components.ParametersGUI.JParametersDialog;
@@ -55,6 +60,7 @@ import DataSetTools.operator.Operator;
 import DataSetTools.parameter.IParameter;
 import DataSetTools.parameter.DataSetPG;
 import DataSetTools.parameter.StringPG;
+import DataSetTools.parameter.ParamUsesString;
 import DataSetTools.util.DataDirectoryString;
 import DataSetTools.util.ErrorString;
 import DataSetTools.util.LoadFileString;
@@ -74,9 +80,10 @@ import java.util.Vector;
  * methods for specifying it.
  */
 public class IsawLite{
-  public static transient boolean                   LoadDebug = true;
-  public static transient Script_Class_List_Handler SCLH      = null;
-  public static           boolean                   GUI       = true;
+  public static transient boolean                   LoadDebug   = false;
+  public static transient Script_Class_List_Handler SCLH        = null;
+  public static           boolean                   GUI         = true;
+  public static           Script                    inputScript = null;
 
   /**
    * Do not allow anyone to instantiate this class.
@@ -87,8 +94,12 @@ public class IsawLite{
    * Factored out code to print a message to line and exit.
    */
   private static void exit(String message, int code){
-    if(message!=null && message.length()>0)
-      System.out.println(message);
+    if(message!=null && message.length()>0){
+      if(message.endsWith("\n"))
+        System.out.print(message);
+      else
+        System.out.println(message);
+    }
     System.exit(code);
   }
 
@@ -216,6 +227,7 @@ public class IsawLite{
 
     for( int i=0 ; i<num_param ; i++ ){
       iparm=operator.getParameter(i);
+      if(iparm instanceof ParamUsesString) continue;
       if(iparm instanceof DataSetPG) return true;
       value=iparm.getValue();
       if(value instanceof DataSet) return true;
@@ -237,29 +249,65 @@ public class IsawLite{
   }
 
   /**
+   * Deals with the real low level user interaction
+   */
+  private static String interactUser(String prompt){
+    System.out.print(prompt);
+
+    String answer = null;
+    try{
+      InputStreamReader inStr = new InputStreamReader(System.in);
+      BufferedReader br = new BufferedReader(inStr);
+      answer = br.readLine();
+      if ( answer==null || answer.length() == 0 ) return null;
+    }catch (IOException e){
+      // let it drop on the floor
+    }
+
+    return answer;
+  }
+
+  private static String buildPrompt(String prompt, String defValue){
+    if(defValue!=null && defValue.trim().length()>0)
+      prompt=prompt+"( Default: "+defValue+" )";
+    return prompt+": ";
+  }
+
+  public static String getType(IParameter iparm){
+    String type=iparm.getType();
+    if(type!=null) return type;
+
+    Object val=iparm.getValue();
+    if(val instanceof int[])
+      return "Array";
+    else if(val instanceof float[])
+      return "Array";
+    else{
+      String name=val.getClass().getName().toString();
+      int index=name.lastIndexOf(".");
+      if(index>=0)
+        return name.substring(index+1);
+      else
+        return name;
+    }
+  }
+
+  /**
    * Deals with nogui interactions. This modifies the parameter in
    * place and returns an ErrorString if anything goes wrong.
    */
   public static ErrorString readUser(IParameter iparm){
     String inPrompt = iparm.getName();
-    String inType   = iparm.getType();
+    String inType   = getType(iparm);
     String inDef    = null;
 
-    // fix up the type
-    if(inType==null){
-      Object val=iparm.getValue();
-      if(val instanceof int[])
-        inType="Array";
-      else if(val instanceof float[])
-        inType="Array";
-      else{
-        String name=val.getClass().getName().toString();
-        int index=name.lastIndexOf(".");
-        if(index>=0)
-          inType=name.substring(index+1);
-        else
-          inType=name;
-      }
+    // take advantage of the interface
+    if(iparm instanceof ParamUsesString){
+      String result=interactUser(buildPrompt(iparm.getName(),
+                                   ((ParamUsesString)iparm).getStringValue()));
+      if(result!=null)
+        ((ParamUsesString)iparm).setStringValue(result);
+      return null;
     }
 
     // fix up the default value
@@ -268,6 +316,7 @@ public class IsawLite{
     else
       inDef=iparm.getValue().toString();
 
+    // deal with the user
     Object newVal=readUser(inPrompt,inType,inDef);
     if( newVal instanceof ErrorString){
       return (ErrorString)newVal;
@@ -281,81 +330,111 @@ public class IsawLite{
    * Deals with the nogui interactions.
    */
   public static Object readUser(String inPrompt, String inType, String inDef){
-    System.out.print(inPrompt);
-    if ( !inDef.trim().equals("") ) {
-      System.out.print( "( Default: " + inDef + " )");
-    }
-    System.out.println(":");
 
-    if ( !(inType.equals("String") || inType.equals("Integer") || 
-	   inType.equals("Float") || inType.equals("Array") ||
-	   inType.equals("Boolean") || inType.equals("DataDirectoryString") ||
-	   inType.equals("LoadFileString") || 
-	   inType.equals("SaveFileString") ) ) {
-      return new ErrorString("Invalid Type:" + inType );
+    // interact with the user
+    String inLine=null;
+    inLine=interactUser(buildPrompt(inPrompt,inDef));
+    if(inLine==null) inLine=inDef;
+
+    // return the result
+    return typeToVal(inType,inLine);
+  }
+
+  private static ErrorString setParam(IParameter param, String value){
+    // print the prompt
+    System.out.print(param.getName()+": ");
+
+    // just leave the initial value
+    if(value==null || value.length()<=0){
+      Object paramVal=param.getValue();
+      if(paramVal==null)
+        System.out.println();
+      else
+        System.out.println(param.getValue().toString());
+      return null;
     }
 
-    String inLine = new String();
-    try{
-      InputStreamReader inStr = new InputStreamReader(System.in);
-      BufferedReader br = new BufferedReader(inStr);
-      inLine = br.readLine();
-      if ( inLine.length() == 0 ) inLine = inDef;
-    }catch (IOException e){
-      // let it drop on the floor
+    // print out the value we are setting to
+    System.out.println(value);
+
+    // 'use' the ease of the interface
+    if(param instanceof ParamUsesString){
+      ((ParamUsesString)param).setStringValue(value);
+      return null;
     }
 
-    if( inType.equals("String") ){
-      return inLine;
-    }else if( inType.equals("DataDirectoryString") ){
-      return new DataDirectoryString(inLine);
-    }else if( inType.equals("LoadFileString") ){
-      return new LoadFileString(inLine);
-    }else if( inType.equals("SaveFileString") ){
-      return new SaveFileString(inLine);
-    }else if( inType.equals("Float") ){
+    // set up for the hard way
+    Object newValue=typeToVal(getType(param),value);
+    if(newValue instanceof ErrorString)
+      return (ErrorString)newValue;
+    else
+      param.setValue(newValue);
+
+    return null;
+  }
+
+  public static Object typeToVal(String type, String val){
+    // check that the type is supported
+    if ( !(type.equals("String") || type.equals("Integer") || 
+	   type.equals("Float") || type.equals("Array") ||
+	   type.equals("Boolean") || type.equals("DataDirectoryString") ||
+	   type.equals("LoadFileString") || 
+	   type.equals("SaveFileString") ) ) {
+      return new ErrorString("Invalid Type:" + type );
+    }
+
+    // process the result
+    if( type.equals("String") ){
+      return val;
+    }else if( type.equals("DataDirectoryString") ){
+      return new DataDirectoryString(val);
+    }else if( type.equals("LoadFileString") ){
+      return new LoadFileString(val);
+    }else if( type.equals("SaveFileString") ){
+      return new SaveFileString(val);
+    }else if( type.equals("Float") ){
       try {
-	Float inFloat = new Float(inLine);
+	Float inFloat = new Float(val);
 	return inFloat;
       }catch( NumberFormatException e){
-	return new ErrorString( "Value: " + inLine 
+	return new ErrorString( "Value: " + val 
 				+ " could not be cast as a Float");
       }
-    }else if( inType.equals("Integer") ){
+    }else if( type.equals("Integer") ){
       try {
-	Integer inInteger = new Integer( inLine );
+	Integer inInteger = new Integer( val );
 	return inInteger;
       }catch ( NumberFormatException e ){
-	return new ErrorString( "Value: " + inLine 
+	return new ErrorString( "Value: " + val 
 				+ " could not be cast as an Integer");
       }
-    }else if (inType.equals("Boolean")) {
-      inLine=inLine.toUpperCase();
-      if ( inLine.equals("TRUE") || inLine.equals("YES") )
+    }else if (type.equals("Boolean")) {
+      val=val.toUpperCase();
+      if ( val.equals("TRUE") || val.equals("YES") )
 	return new Boolean(true);
-      else if (inLine.equals("FALSE") || inLine.equals("NO") )
+      else if (val.equals("FALSE") || val.equals("NO") )
 	return new Boolean(false);
       else
-	return new ErrorString("TextPrompt: Value " + inLine +
+	return new ErrorString("TextPrompt: Value " + val +
 			       "could not be cast as a Boolean");
-    }else if( inType.equals("Array") ) {
+    }else if( type.equals("Array") ) {
       Vector ov = new Vector();
-      inLine = inLine.trim();
-      if ( inLine.charAt(0) != '[' && 
-	   inLine.charAt(inLine.trim().length() -1) != ']' ) {
+      val = val.trim();
+      if ( val.charAt(0) != '[' && 
+	   val.charAt(val.trim().length() -1) != ']' ) {
         return new ErrorString( "Arrays must be enclosed in " +
                                 "braces e.g. [1:8,13] or [1.4,4.5,8.6]" );
       }
-      inLine = inLine.substring(1,inLine.length()-1);
+      val = val.substring(1,val.length()-1);
       int lastInd = 0;
       int ind = 0;
       while (ind != -1) {
 	String part = new String();
-	ind = inLine.indexOf(",", lastInd );
+	ind = val.indexOf(",", lastInd );
 	if (ind != -1 )
-	  part = inLine.substring( lastInd, ind );
+	  part = val.substring( lastInd, ind );
 	else 
-	  part = inLine.substring( lastInd );
+	  part = val.substring( lastInd );
 	
 	lastInd = ind+1;
 	part=part.trim();
@@ -394,6 +473,21 @@ public class IsawLite{
     }
   }
 
+  private static void printHelp(int level){
+    String generic="USAGE: IsawLite [#parameters] "
+                                         +"<CommandName/ClassName/ScriptFile>";
+
+    if(level<=0)
+      exit(generic,-1);
+    else
+      exit(generic+"\n"
+           +"-nogui     execute without gui\n"
+           +"-d         print debug messages\n"
+           +"-h         print usage statement\n"
+           +"-help      print this help message\n"
+           +"-i <file>  use <file> for input\n",-1);
+  }
+
   /**
    * Allows running of Scripts and Operators without Isaw and/or the
    * CommandPane
@@ -401,8 +495,7 @@ public class IsawLite{
   public static void main( String args [] ){
     // show usage information if there are not enough parameters
     if( (args==null) || (args.length<1) )
-      exit("USAGE: IsawLite [#parameters] "
-           +"<CommandName/ClassName/ScriptFile>",-1);
+      printHelp(0);
 
     // useful variables
     Operator operator  = null;
@@ -413,6 +506,25 @@ public class IsawLite{
     for( int i=0 ; i<args.length ; i++ ){
       if(args[i].equals("-nogui") || args[i].equals("--nogui") ){
         GUI=false; // nogui mode
+      }else if(args[i].equals("-h")){
+        printHelp(0); // print short help
+      }else if(args[i].equals("--help") || args[i].equals("-help")){
+        printHelp(1); // print full help
+      }else if(args[i].equals("-d")){
+        LoadDebug=true; // print debug messages
+      }else if(args[i].startsWith("-i")){
+        GUI=false; // switch to nogui mode
+        String filename=args[i].substring(2); // redirect input
+        if(filename==null || filename.length()<=0 ){
+          i++;
+          if(i>=args.length)
+            printHelp(0);
+          filename=args[i];
+        }          
+        if(filename==null || filename.length()<0)
+          printHelp(0);
+        else
+          inputScript=new Script(filename);
       }else{
         try{
           num_param=Integer.parseInt(args[i].trim()); // number of parameters
@@ -422,12 +534,20 @@ public class IsawLite{
       }
     }
 
+    if(command==null || command.length()<=0)
+      printHelp(0);
+
     // print out what was found from the command line
     if(LoadDebug){
       System.out.println("====================");
       System.out.println("COMMAND="+command);
       System.out.println("NUMPARM="+num_param);
       System.out.println("NOGUI  ="+(!GUI));
+      if( inputScript!=null )
+        System.out.println("SCRIPT LOADED WITH "+inputScript.numLines()
+                           +" LINES");
+      else
+        System.out.println("SCRIPT NOT LOADED");
       System.out.println("====================");
     }
 
@@ -465,11 +585,20 @@ public class IsawLite{
         num_param=operator.getNum_parameters();
         IParameter iparm=null;
         ErrorString error=null;
-        for( int i=0 ; i<num_param ; i++ ){
-          iparm=operator.getParameter(i);
-          error=readUser(iparm);
-          if(error!=null)
-            exit(error.toString(),-1);
+        if(inputScript!=null){
+          for( int i=0 ; i<num_param ; i++ ){
+            iparm=operator.getParameter(i);
+            error=setParam(iparm,inputScript.getLine(i).trim());
+            if(error!=null)
+              exit(error.toString(),-1);
+          }
+        }else{
+          for( int i=0 ; i<num_param ; i++ ){
+            iparm=operator.getParameter(i);
+            error=readUser(iparm);
+            if(error!=null)
+              exit(error.toString(),-1);
+          }
         }
         result=operator.getResult();
       }
