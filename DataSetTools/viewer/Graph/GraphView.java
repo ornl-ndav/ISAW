@@ -4,6 +4,10 @@
  * Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.6  2001/02/09 14:20:15  dennis
+ *  Added last update time to graph title, if it is present as
+ *  a Data attribute.
+ *
  *  Revision 1.5  2000/12/07 22:44:00  dennis
  *  Now shows raw data rather than resampling the data uniformly
  *  before drawing the graphs.
@@ -438,6 +442,11 @@ private void DrawGraphs( )
     String border_label = data_block.toString();
     if ( data_block.isSelected() )
       border_label += " (Selected)";
+
+    String update_time = (String)
+                         (data_block.getAttributeValue(Attribute.UPDATE_TIME));
+    if ( update_time != null )
+      border_label = border_label + ", " + update_time;
 
     JPanel border_panel = new JPanel();
     TitledBorder border = new TitledBorder( LineBorder.createBlackLineBorder(),
