@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/07/17 21:44:50  bouzekc
+ *  Now returns values with forward slashes, rather than
+ *  backslashes.
+ *
  *  Revision 1.13  2003/07/16 18:54:42  bouzekc
  *  innerPanel now uses GridLayout to ensure that the widgets
  *  are a usable size.
@@ -95,7 +99,7 @@ import java.beans.*;
 import java.io.File;
 import java.awt.*;
 import DataSetTools.components.ParametersGUI.*;
-import DataSetTools.util.SharedData;
+import DataSetTools.util.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
 import DataSetTools.util.PropertyChanger;
 
@@ -169,7 +173,7 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString,
         }else{
             value=(String)this.value;
         }
-        return value;
+        return FilenameUtil.setForwardSlash(value.toString());
     }
 
     /**
