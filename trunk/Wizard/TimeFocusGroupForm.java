@@ -28,11 +28,19 @@
  * Modified: 
  *
  * $Log$
+ * Revision 1.2  2003/03/19 23:07:37  pfpeterson
+ * Expanded TimeFocusGroupForm to allow for up to 20 'banks' to be
+ * focused and grouped. (Chris Bouzek)
+ *
  * Revision 1.1  2003/03/19 15:07:51  pfpeterson
  * Added to CVS. (Chris Bouzek)
  *
  * Revision 1.5  2003/03/13 19:00:52  dennis
  * Added $Log$
+ * Added Revision 1.2  2003/03/19 23:07:37  pfpeterson
+ * Added Expanded TimeFocusGroupForm to allow for up to 20 'banks' to be
+ * Added focused and grouped. (Chris Bouzek)
+ * Added
  * Added Revision 1.1  2003/03/19 15:07:51  pfpeterson
  * Added Added to CVS. (Chris Bouzek)
  * Added comment to include revision information.
@@ -52,6 +60,7 @@ import Operators.TOF_Diffractometer.*;
 import DataSetTools.util.*;
 import javax.swing.*;
 import java.awt.*;
+import javax.swing.border.*;
 
 /**
  *  This class defines a form for time focusing spectra in
@@ -60,6 +69,11 @@ import java.awt.*;
 public class TimeFocusGroupForm extends    Form
                               implements Serializable
 {
+  private IParameterGUI[] ipgs;
+  private int new_GID;
+  private Float angle, path;
+  private String focusing_GIDs;
+  
   /**
    *  Construct a TimeFocusGroupForm to time focus and group the spectra in a 
    *  DataSet using the arguments in operands[].  This constructor basically
@@ -83,9 +97,67 @@ public class TimeFocusGroupForm extends    Form
     help.append("DataSets.\nNote that whatever you put in for parameters will affect ");
     help.append("ALL DataSets in the list.\n");
     setHelpMessage( help.toString() );
-
-
   }
+
+  /**
+   *  This builds the portions of the default form panel that contain a
+   *  list of parameters inside of a panel with a titled border.  It is
+   *  used to build up to three portions, corresponding to the constant,
+   *  user-specified and result parameters.
+   *
+   *  @param  title  The title to put on the border
+   *  @param  params The names of the parameter to include in this sub-panel
+   */
+  protected JPanel build_param_panel( String title, String params[] )
+  {
+    if ( params == null || params.length <= 0 )
+      return null;
+
+    JPanel sub_panel;
+    TitledBorder border;
+    int num_params;
+    final int NUM_IDS = 20;
+    
+    num_params = params.length;
+    sub_panel = new JPanel();
+    border = new TitledBorder(LineBorder.createBlackLineBorder(), title);
+    border.setTitleFont( FontUtil.BORDER_FONT );
+    sub_panel.setBorder( border );
+    
+    //multiple grid entry
+    if( title == VAR_FRAME_HEAD )
+    {
+      sub_panel.setLayout( new GridLayout( 0, 3 ) );
+      ipgs = new IParameterGUI[num_params];
+    }      
+    else
+      sub_panel.setLayout( new GridLayout( params.length, 1 ) );
+       
+    //get the params
+    for ( int i = 0; i < num_params; i++ )
+    {
+      IParameterGUI param = wizard.getParameter( params[i] );
+      param.init();
+      
+      
+      if( title == VAR_FRAME_HEAD )
+      {
+        ipgs[i] = param;
+        
+        if( i < 3 )  //add the labels on this pass
+          sub_panel.add(param.getLabel());
+      }
+      else
+        sub_panel.add( param.getGUIPanel() );
+          
+    }
+     
+      if( title == VAR_FRAME_HEAD )
+        for( int i = 0; i < num_params; i++ )
+          sub_panel.add(ipgs[i].getEntryWidget());
+
+    return sub_panel;
+  } 
 
   /**
    *  Time focuses and groups the Vector of DataSets and loads them
@@ -101,11 +173,8 @@ public class TimeFocusGroupForm extends    Form
     Vector hist_ds_vec;
     Operator tf, gro;
     Object obj, result;
-    DataSet hist_ds, time_focused, grouped;
-    int num_ds, new_GID;
-    float angle, path;
-    boolean make_new_ds;
-    String focusing_GIDs;
+    DataSet hist_ds;
+    int num_ds, p_index, edit_len;
     IParameterGUI param;
     DataSet ds;
 
@@ -113,61 +182,12 @@ public class TimeFocusGroupForm extends    Form
     histograms = (ArrayPG)wizard.getParameter("RunList");
     hist_ds_vec = (Vector)histograms.getValue();
 
-    //get the user input parameters
-    param = wizard.getParameter("FocusIDs");
-    focusing_GIDs = ((StringPG)param).getStringValue();
-    if( !focusing_GIDs.equals("") )
-    {
-      //set the new group ID
-      new_GID = new Integer(focusing_GIDs.substring(0,1)).intValue();
-      param.setValid(true);
-    }
-    else
-    {
-      param.setValid(false);
-      SharedData.addmsg(
-        "You must enter at least one valid group ID.\n");
-      return false;  
-    }    
-
-    param = wizard.getParameter("NewAngle");
-
-    obj = param.getValue();
-    if( obj != null && obj instanceof Float)
-    {
-      angle = ((Float)obj).floatValue();
-      param.setValid(true);
-    }
-    else
-    {
-      param.setValid(false);
-      SharedData.addmsg(
-        "The new angle must be a float value.\n");
-      return false;
-    }
-
-    param = wizard.getParameter("NewFPath");
-    //needs to be an error check here-if the
-    //parameter is entered as "" it will
-    //throw a java.lang.NumberFormatException
-    obj = param.getValue();
-    if( obj != null && obj instanceof Float)
-    {
-      path = ((Float)obj).floatValue();
-      param.setValid(true);
-    }
-    else
-    {
-      param.setValid(false);
-      SharedData.addmsg(
-        "The new path must be a float value.\n");
-      return false;
-    }
-
     //get the time focus/group result parameter
     tfgr = (ArrayPG)wizard.getParameter("TimeFocusGroupResults");
     //clear it out when the form is re-run
     tfgr.clearValue();
+    
+    edit_len = editable_params.length;
 
     //make sure list exists
     if( hist_ds_vec != null )
@@ -181,15 +201,28 @@ public class TimeFocusGroupForm extends    Form
 
         if( obj instanceof DataSet )
         {
-          hist_ds = (DataSet)obj;
+        hist_ds = (DataSet)obj;
+        p_index = 0;
+        
+        while( p_index < edit_len )
+        { 
+          focusing_GIDs = (String)this.getEditableParamValue(ipgs[p_index]);
+          angle = ((Float)this.getEditableParamValue(ipgs[p_index + 1]));
+          path = ((Float)this.getEditableParamValue(ipgs[p_index + 2]));
+          
+          //was there an error entering params?
+          if( focusing_GIDs == null || angle == null || path == null )
+          {
+            System.out.println("ERROR");
+            return false;               
+          }   
 
           //time_focus the DataSet
-
           if( hist_ds != DataSet.EMPTY_DATA_SET )
           {
             //do NOT make a new DataSet
             tf = new TimeFocusGID(hist_ds, focusing_GIDs,
-                               angle, path, false);
+                               angle.floatValue(), path.floatValue(), false);
             result = tf.getResult();
           }
           else
@@ -198,16 +231,17 @@ public class TimeFocusGroupForm extends    Form
             return false;
           }
 
-          //make sure we are working with DataSets
-          //TimeFocus will always return a DataSet unless it
-          //hits an error (as of 02/17/2003)
           if( result instanceof DataSet )
           {
-            time_focused = (DataSet)result;
+            hist_ds = (DataSet)result;
             SharedData.addmsg(hist_ds + " time focused.\n");
-            //group it
-            gro = new Grouping(time_focused, focusing_GIDs, new_GID);
-            result = gro.getResult();
+            
+            //must have a list of group IDs in order to group it
+            if( focusing_GIDs.length() != 0 )
+            { //DO NOT make a new DataSet
+              gro = new Grouping(hist_ds, focusing_GIDs, new_GID, false);
+              result = gro.getResult();
+            }
           }
           else
           {
@@ -222,8 +256,8 @@ public class TimeFocusGroupForm extends    Form
           //check the grouped DataSet for correctness
           if( result instanceof DataSet )
           {
-            grouped = (DataSet)result;
-            SharedData.addmsg(time_focused + " grouped.\n");
+            hist_ds = (DataSet)result;
+            SharedData.addmsg(hist_ds + " grouped.\n");
           }
           else
           {
@@ -231,19 +265,23 @@ public class TimeFocusGroupForm extends    Form
               SharedData.addmsg(result.toString() + "\n");
             else
               SharedData.addmsg("Could not group DataSet: "
-                                + time_focused);
+                                + hist_ds);
             return false;
           }          
           
+          p_index += 3;
+        }//while
           //add the time focused DataSet to time focused results
-          tfgr.addItem(grouped);
-        }
+          tfgr.addItem(hist_ds);
+        }//if
         else //something went wrong in previous form
         {
           SharedData.addmsg("Encountered non-DataSet.\n");
           return false;
-        }
-      }
+        }       
+        
+      }//for( num_ds )
+      
       tfgr.setValid(true);
       SharedData.addmsg("Finished time focusing and grouping DataSets.\n\n");
       return true;
@@ -256,5 +294,70 @@ public class TimeFocusGroupForm extends    Form
     }
 
   }
+  
+  private Object getEditableParamValue(IParameterGUI param)
+  {
+    Object obj;
+    if( param.getName().equals( 
+      wizard.getParameter( editable_params[0] ).getName() ) )
+    {     
+      String focusing_GIDs;
+      //get the user input parameters
+      focusing_GIDs = ((IntArrayPG)param).getStringValue();
+      if( focusing_GIDs instanceof String )
+      {
+        //set the new group ID
+        if( focusing_GIDs.length() > 0 )
+          new_GID = new Integer(focusing_GIDs.substring(0,1)).intValue();
+        else 
+          new_GID = 1;
+          
+        param.setValid(true);
+        return focusing_GIDs;
+      }
+      else
+      {
+        new_GID = 1;
+        param.setValid(true);
+        return new String("1");
+      } 
+    }
+    else if( param.getName().equals( 
+      wizard.getParameter( editable_params[1] ).getName() ) )
+    {
+      Float angle;
+      obj = param.getValue();
+      if( obj instanceof Float)
+      {
+        angle = ((Float)obj);
+        param.setValid(true);
+        return angle;
+      }
+      else
+      {
+        param.setValid(true);
+        return new Float(1.0f);
+      }
+    }
+    else if( param.getName().equals( 
+      wizard.getParameter( editable_params[2] ).getName() ) )
+    {
+      Float path;
+      obj = param.getValue();
+      if( obj instanceof Float)
+      {
+        path = ((Float)obj);
+        param.setValid(true);
+        return path;
+      }
+      else
+      {
+        param.setValid(true);
+        return new Float(1.0f);
+      }
+    }
+    else
+      return null;
+  } 
 
 }
