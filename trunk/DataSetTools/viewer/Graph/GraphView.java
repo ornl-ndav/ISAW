@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2002/10/04 14:42:26  dennis
+ *  Now handles "Pointed At" messages properly.
+ *
  *  Revision 1.22  2002/07/12 18:40:21  dennis
  *  Now traps for invalid (null) XScale from the x_scale_ui
  *  and uses the result from getXRange() for the DataSet as
@@ -165,6 +168,7 @@ public class GraphView extends    DataSetViewer
 { 
   private static final String HORIZONTAL_SCROLL = "Horizontal Scroll";
   private static final String DO_REBIN          = "Graph Rebinned Data";
+  private static final int    GRAPH_HEIGHT      = 100;
 
                                                     // Image and border
   SplitPaneWithState   main_split_pane = null;
@@ -177,6 +181,8 @@ public class GraphView extends    DataSetViewer
 
   private GraphJPanel  h_graph[]        = null;
   private boolean      was_selected[]   = null;
+  private boolean      graph_sent_pointed_at = false;
+
                                               // panel for the horizontal graph
   JPanel viewport = new JPanel();
   int    viewport_preferred_width = 300;
@@ -234,7 +240,10 @@ public void redraw( String reason )
     DrawSelectedGraphs();
 
   else if ( reason.equals( IObserver.POINTED_AT_CHANGED ))
-    DrawPointedAtGraph();
+    if ( graph_sent_pointed_at )
+      graph_sent_pointed_at = false;             // ignore message from itself
+    else
+      DrawPointedAtGraph();
 
   else if ( reason.equals( XScaleChooserUI.X_RANGE_CHANGED ) )
     DrawWithNewXRange();
@@ -503,9 +512,60 @@ private void SetHorizontalScrolling( boolean state )
 
   int  num_data_blocks = getDataSet().getNum_entries();
   viewport.setPreferredSize( new Dimension( viewport_preferred_width, 
-                                            100*num_data_blocks ) );
+                                            GRAPH_HEIGHT*num_data_blocks ) );
 
   hgraph_scroll_pane.doLayout();
+}
+
+
+/* -------------------------- SyncVScrollBar ------------------------- */
+
+private void SyncVScrollBar()
+{
+  JScrollBar v_bar = hgraph_scroll_pane.getVerticalScrollBar();
+
+  if ( v_bar == null || !v_bar.isVisible() )
+    return;
+
+  DataSet ds = getDataSet();
+  if ( ds == null )
+    return;
+
+  int n_rows = ds.getNum_entries();
+  if ( n_rows <= 3 )
+    return;
+
+  int row = ds.getPointedAtIndex();
+  if ( row == DataSet.INVALID_INDEX )
+    return;
+
+  float v_bar_min  = v_bar.getMinimum();
+  float v_bar_max  = v_bar.getMaximum();
+  float bar_height  = v_bar.getSize().height;
+
+  if ( bar_height >= n_rows*GRAPH_HEIGHT )      // scrolling not needed
+    return;
+
+  float fraction = 0;
+  int   v_bar_value;
+
+  if ( v_bar_max == v_bar_min )
+    v_bar_value = 0;
+  else
+  {
+    fraction = ((row+0.5f)*GRAPH_HEIGHT-bar_height/2) /   
+               (float)(n_rows*GRAPH_HEIGHT-bar_height);
+
+    if ( fraction < 0 )
+      fraction = 0;
+    if ( fraction > 1 )
+      fraction = 1;
+    v_bar_value = (int)( v_bar_min +
+                        (v_bar_max - v_bar_min - bar_height) * fraction );
+  }
+  v_bar.setValue( v_bar_value );
+
+  getState().set_float( ViewerState.V_SCROLL_POSITION, fraction );
 }
 
 
@@ -616,29 +676,43 @@ private void DrawSelectedGraphs()
 
 private void DrawPointedAtGraph()
 {
-                                      // actually, for now, since we are NOT
-                                      // tracking the cursor or anything like
-                                      // that, we don't need to do anything.
-/*
-  if ( h_graph == null )              // nothing to do yet 
-    return;
+  int index = getDataSet().getPointedAtIndex();
 
-  int pointed_at_row = getDataSet().getPointedAtIndex();
-  DrawSpecifiedGraph( pointed_at_row );
-*/
+  GraphJPanel graph = null;
+  if ( h_graph != null )
+    if ( index >= 0 && index < h_graph.length )
+      graph = h_graph[index];
+
+  if ( graph != null )
+  {
+    Point pt = new Point(0,0);
+    for ( int i = 0; i < h_graph.length; i++ )    // turn off all crosshairs
+      if ( h_graph[i].isDoingCrosshair() )        // before scrolling
+         h_graph[i].stop_crosshair(pt);       
+
+    SyncVScrollBar(); 
+
+    floatPoint2D float_pt = new floatPoint2D();
+    float_pt.x = getDataSet().getPointedAtX();
+    float_pt.y = graph.getY_value( float_pt.x, 0 );
+    graph.set_crosshair_WC( float_pt ); 
+
+    UpdateHGraphReadout( graph );
+  }
+
 }
 
 /* -------------------------- DrawSpecifiedGraph ------------------------- */
 
-private void DrawSpecifiedGraph( int index )
+private boolean DrawSpecifiedGraph( int index )
 {
   if ( h_graph == null )              // nothing to do yet
-    return;
+    return false;
 
   int  num_data_blocks = getDataSet().getNum_entries();
 
   if ( index < 0 || index >= num_data_blocks )
-    return;                           // index is invalid, so nothing to do
+    return false;                      // index is invalid, so nothing to do
 
   Data data_block = getDataSet().getData_entry( index );
 
@@ -681,6 +755,7 @@ private void DrawSpecifiedGraph( int index )
   h_graph[index].setX_bounds( x_min, x_max );
 
   border.setTitle( border_label );
+  return true;
 }
 
 
@@ -745,6 +820,33 @@ private void UpdateHGraphRange()
   }
 }
 
+
+/* -------------------------- doUpdateForMouse --------------------------- */
+
+private void doUpdateForMouse( MouseEvent e )
+{
+   GraphJPanel gp = (GraphJPanel)e.getComponent();
+   DataSet     ds = getDataSet();
+
+   int   last_data_block = ds.getPointedAtIndex();
+   float last_x          = ds.getPointedAtX();
+
+   int   row   = getBlockNumber( gp );
+   float new_x = gp.getCurrent_WC_point().x;
+
+   if ( row   != last_data_block ||                  // only update if needed
+        new_x != last_x          ||
+        ds.getNum_entries() == 1   )
+   {
+     ds.setPointedAtIndex( row );
+     ds.setPointedAtX( new_x );
+     UpdateHGraphReadout( gp );
+     graph_sent_pointed_at = true;
+     ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+   }
+}
+
+
 /* -------------------------------------------------------------------------
  *
  *  INTERNAL CLASSES
@@ -770,19 +872,7 @@ private class HGraphMouseMotionAdapter extends    MouseMotionAdapter
 {
    public void mouseDragged( MouseEvent e )
    {
-     int last_data_block = -1;
-     GraphJPanel gp = (GraphJPanel)e.getComponent();     
-
-     int row = getBlockNumber( gp );
-     if ( row != last_data_block ||                  // only update if needed
-          getDataSet().getNum_entries() == 1 )
-     {
-       getDataSet().setPointedAtIndex( row );
-       last_data_block = row;
-       getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
-     }
-
-     UpdateHGraphReadout( gp );
+     doUpdateForMouse( e );
    }
 }
 
@@ -793,18 +883,7 @@ private class HGraphMouseAdapter extends    MouseAdapter
 {
    public void mousePressed( MouseEvent e )
    {
-     int last_data_block = -1;
-     GraphJPanel gp = (GraphJPanel)e.getComponent();
-
-     int row = getBlockNumber( gp );
-     if ( row != last_data_block )
-     {
-       getDataSet().setPointedAtIndex( row );
-       last_data_block = row;
-       getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
-     }
-
-     UpdateHGraphReadout( gp );
+     doUpdateForMouse( e );
    }
 }
 
