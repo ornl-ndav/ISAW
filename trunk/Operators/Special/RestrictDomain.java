@@ -31,6 +31,17 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/06/27 05:35:49  dennis
+ * Changed to use resample() method on Data block to obtain the new
+ * Data restricted to smaller interval.  This is less efficient than
+ * the previous version for histogramed Data, but will work for all
+ * types of Data blocks (tables, models and event).  It also fixes an
+ * incompatibiltiy of the original version with previous versions of
+ * ISAW, due to recent change of XScale.restrict() to calculate the
+ * new right hand endpoint using getI_GLB() instead of getI().  This
+ * introduced an off by one error when used with previous versions
+ * of ISAW.
+ *
  * Revision 1.1  2004/06/25 15:31:01  dennis
  * This operator restricts the domain of a DataSet to a specified
  * subinterval of the original x-scale.
@@ -132,7 +143,6 @@ public class RestrictDomain implements Wrappable
     else
       new_ds = ds;
                                       
-    int    id;
     Data   d,
            new_d;
     XScale x_scale = null,
@@ -142,10 +152,7 @@ public class RestrictDomain implements Wrappable
            end;
     int    first_i = 0,
            last_i = 0;
-    float  ys[],
-           new_ys[];
-    float  errors[],
-           new_errors[];
+
     Vector new_data = new Vector();
                                          // go through list backwards, since 
                                          // we may be deleting some Data blocks.
@@ -171,7 +178,6 @@ public class RestrictDomain implements Wrappable
       }
       else                                      // make new data block
       {
-        id = d.getGroup_ID();
         if ( x_scale != last_x_scale )          // different x_scale so we
         {                                       // need a new restricted x_scale
            first_i = x_scale.getI( x_min );
@@ -189,35 +195,14 @@ public class RestrictDomain implements Wrappable
         }
         else                                    // make new data block
         { 
-          if ( d.isHistogram() )
-            new_ys = new float[ last_i - first_i ];     // one less y than x
-          else
-            new_ys = new float[ last_i - first_i + 1 ]; // one value per x
-
-          ys = d.getY_values();
-          for ( int k = 0; k < new_ys.length; k++ )
-            new_ys[k] = ys[ k + first_i ];
-
-          if ( d.isSqrtErrors() )
-          {
-            new_d = Data.getInstance(new_x_scale, new_ys, null, id );
-            new_d.setSqrtErrors( true );
-          }
-          else
-          {
-            errors     = d.getErrors();
-            new_errors = new float[ new_ys.length ];
-            for ( int k = 0; k < new_ys.length; k++ )
-              new_errors[k] = errors[ k + first_i ];
-            new_d = Data.getInstance( new_x_scale, new_ys, new_errors, id );
-          }
-          new_d.setAttributeList( d.getAttributeList() );
-          new_d.setSelected( d.isSelected() ); 
-
           if ( make_new_ds )
+          {
+            new_d = (Data)d.clone();
+            new_d.resample( new_x_scale, IData.SMOOTH_NONE );
             new_data.add( new_d );
+          }
           else
-            ds.replaceData_entry( new_d, i );
+            d.resample( new_x_scale, IData.SMOOTH_NONE );    
 
           n_changed++;
         }
