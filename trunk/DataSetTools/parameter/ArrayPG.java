@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2003/09/16 22:46:50  bouzekc
+ *  Removed addition of this as a PropertyChangeListener.  This is already done
+ *  in ParameterGUI.  This should fix the excessive events being fired.
+ *
  *  Revision 1.31  2003/09/16 19:57:12  bouzekc
  *  Removed the protected variable "value" which interfered with the superclass
  *  constructor and methods.  Modified existing methods to cast "value" to a
@@ -433,7 +437,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
     //we'll set a really small preferred size and let the Layout Manager take
     //over at that point
     entrywidget.setPreferredSize( new Dimension( 2, 2 ) );
-    entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
     super.initGUI(  );
   }
 

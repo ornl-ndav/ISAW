@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/09/16 22:46:55  bouzekc
+ * Removed addition of this as a PropertyChangeListener.  This is already done
+ * in ParameterGUI.  This should fix the excessive events being fired.
+ *
  * Revision 1.5  2003/09/13 23:29:47  bouzekc
  * Moved calls from setValid(true) to validateSelf().
  *
@@ -322,7 +326,6 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
 
     entrywidget.add( createButton, BorderLayout.SOUTH );
 
-    entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
     createButton.addActionListener( new UniformXScalePGListener(  ) );
     super.initGUI(  );
   }
