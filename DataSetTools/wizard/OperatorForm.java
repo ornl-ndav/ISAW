@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.29  2003/10/15 03:38:05  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.28  2003/10/11 20:46:08  bouzekc
  * Fixed bug where the result parameter did not properly validate.
  *
@@ -338,7 +341,7 @@ public class OperatorForm extends Form implements HiddenOperator {
    * the operator, change its value and then set the parameter back at the
    * same index.
    *
-   * @param iparam The IParameter to set.
+   * @param parameter The IParameter to set.
    * @param index The index in the list of parameters of the parameter that is
    *        to be set.  "index" must be between 0 and the number of parameters
    *        - 1.
