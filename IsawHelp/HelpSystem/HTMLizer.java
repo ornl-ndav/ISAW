@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/06/10 20:57:51  bouzekc
+ * Fixed ArrayIndexOutOfBoundsException which occurred if the
+ * number of @param's did not match the number or actual
+ * parameters.  Removed some embedded tabs and fixed some
+ * indenting problems.
+ *
  * Revision 1.13  2003/03/06 23:25:41  pfpeterson
  * Changed call from fixSeparator to appropriate method.
  *
@@ -607,9 +613,9 @@ public class HTMLizer{
    *  be found for this method, its primary use is for the JavaHelp System.
    *
    *  @param m The String to convert to HTML
-   *  @param v The vector of parameters
+   *  @param paramsVec The vector of parameters
    */
-  private String convertToHTML(String m, Vector[] v)
+  private String convertToHTML(String m, Vector[] paramsVec)
   {
     // eliminate "garbage" information
     m = m.substring(m.indexOf('@'));
@@ -675,7 +681,7 @@ public class HTMLizer{
       if ( (param_count <= 1) && (error_count <= 1) )
       {
         s.append("<table BORDER=\"1\" CELLPADDING=\"3\" CELLSPACING=\"0\" ");
-		s.append("WIDTH=\"100%\">\n");
+        s.append("WIDTH=\"100%\">\n");
         s.append("<tr BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\n");
         s.append("<td COLSPAN=1><font SIZE=\"+2\">\n");
         s.append("<b>");
@@ -703,7 +709,10 @@ public class HTMLizer{
 		if( param_count >= 1 )
 		{
 		  s.append("<b>");
-		  s.append(v[0].elementAt(param_count - 1).toString());
+                  //this traps errors where the number of @param's
+                  //is greater than the actual number of parameters.
+                  if( (param_count ) <= paramsVec[0].size() ) 
+		    s.append(paramsVec[0].elementAt(param_count - 1).toString());
 		  s.append("</b> ");
 		}
       }
@@ -729,13 +738,11 @@ public class HTMLizer{
         s.append(m.substring(space + 1, header));
       }
       else if( header < (m.length() - 1) )
-      {     
-		// use the regular space index
+      {	// use the regular space index
         s.append(m.substring(header + 1, space));
       }
       else
-      {                         
-		// end of string, explicitly kill the loop
+      {	// end of string, explicitly kill the loop
         header = m.length();
       }
 
@@ -750,20 +757,16 @@ public class HTMLizer{
       }
 
       // close the unordered parameter list
-      if( param_count >= v[0].size() )
+      if( param_count >= paramsVec[0].size() )
         s.append("</ul>\n");
       //aesthetic spacing
       s.append("\n<br>\n");
-    }
-	
-	//note: this is not a perfect fix.  If any tags come after the 
-	//@error tag, this will not work as intended, since it relies on the
+    }	//note: this is not a perfect fix.  If any tags come after the
+        //@error tag, this will not work as intended, since it relies on the
 	//@error tag being the last one.  Repeat: this is a temporary fix.
-	
-	//close the unordered error list
+        //close the unordered error list
 	if( error_count >=1 )
-		s.append("</ul>\n");
-	
+		s.append("</ul>\n");	
     return s.toString();
 
   }
