@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.69  2003/03/11 21:51:16  dennis
+ *  Supports both rotations by DetRot1() (tilts detector towards the sample)
+ *  and DetRot2() (rotates detector about normal to detector surface)
+ *
  *  Revision 1.68  2003/03/10 22:20:41  dennis
  *  Now supports some non-vertical orientation of LPSDs.  Specifically,
  *  the rotation specified by DetRot2 in IPNS runfiles is now handled.
@@ -1271,33 +1275,60 @@ private float CalculateEIn()
          det_pos.setCylindricalCoords( det_dist, det_angle, det_height );
          Vector3D det_cen = new Vector3D( det_pos );
  
-         Vector3D y_vec;
+                             // construct orthonormal coordinate system for
+                             // the detector, with z_vec normal to the surface
+                             // of the detector at the center of the detector,
+                             // x_vec in the direction of the detector rows and
+                             // y_vec in the direction of the detector columns.
+                             // That is, as a point moves in the y-direction
+                             // the row numbers change.  This coordinate 
+                             // system is first established with y_vec vertical
+                             // and the detector rotated about a vertical axis
+                             // through it's center, so that normal (z_vec)
+                             // points towards the sample (or towards a point
+                             // directly above or below the sample).
+                             // Subsequently, the detector may be tilted about
+                             // it's x-axis as specified by DetRot1, and/or 
+                             // rotated about it's z-axis as specified by 
+                             // DetRot2.
                                          // assume y_vec in detector coords 
-                                         // is vertical in lab coords
+                                         // is initially vertical in lab coords
+         Vector3D y_vec;
          y_vec = new Vector3D( 0, 0, 1 );
-                                         // make the normal to the detector be
-                                         // unit vector pointing from center
-                                         // back to origin
+                                         // temporarily make z_vec to be a
+                                         // vector pointing from center
+                                         // of the detector back to origin
          Vector3D z_vec   = new Vector3D( det_cen ); 
-         z_vec.normalize();
          z_vec.multiply(-1);
                                          // make the x_vec in detector coords
                                          // so we have a right hand system
          Vector3D x_vec   = new Vector3D();
          x_vec.cross( y_vec, z_vec );
          x_vec.normalize();
+                                        // now make z_vec a unit normal 
+                                        // perpendicular to x and y
+         z_vec.cross( x_vec, y_vec );
+
+         if ( run_file.DetRot1( id ) != 0 )        // tip the whole detector
+         {                                         // towards the sample
+           float angle = run_file.DetRot1( id );
+           Tran3D rot_mat = new Tran3D();
+           rot_mat.setRotation( angle, x_vec );
+           rot_mat.apply_to( y_vec, y_vec );
+           rot_mat.apply_to( z_vec, z_vec );
+         }
 
          if ( run_file.DetRot2( id ) != 0 )        // rotate whole detector
-         {
-           float angle = run_file.DetRot2( id );
+         {                                         // about axis perpendicular
+           float angle = run_file.DetRot2( id );   // to "face" of detector
            Tran3D rot_mat = new Tran3D();
            rot_mat.setRotation( angle, z_vec );
            rot_mat.apply_to( x_vec, x_vec );
            rot_mat.apply_to( y_vec, y_vec );
          }
 
-         int n_cols = run_file.NumSegs2( id );     // NumSegs2 gives n_cols 
          int n_rows = run_file.NumSegs1( id );     // NumSegs1 gives n_rows
+         int n_cols = run_file.NumSegs2( id );     // NumSegs2 gives n_cols 
 
          int det_type = run_file.DetectorType( id );
          float width  = DC5.WIDTH[ det_type ]/100;
