@@ -6,6 +6,8 @@
 # for these parameters
 # $Date$
 
+$Category=Operator, Instrument Type, TOF_NPD
+
 $ run_numbers         Array                  Enter run numbers like [1,2:5]
 $ lowAng              Float                  Low angle for merging
 $ highAng             Float                  High angle for merging
