@@ -2,6 +2,9 @@
  * @(#)DoubleDifferentialCrossection.java   0.1  2000/07/25   Dennis Mikkelson
  *             
  *  $Log$
+ *  Revision 1.10  2000/09/11 23:05:01  dennis
+ *  Added fudge factor parameter and boolean to control it.
+ *
  *  Revision 1.9  2000/08/08 21:15:58  dennis
  *  Commented out some debug/informational prints.
  *
@@ -82,6 +85,11 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
    *
    *  @param  ds               The sample DataSet for which the double 
    *                           differential crossection is to be calculated 
+   *  @param  ff_ds            DataSet containing "fudge factors" calculated
+   *                           from a vanadium run.
+   *  @param  use_ff_ds        Boolean flag indicating whether ff_ds contains
+   *                           "fudge factors" to use, or to just use ff==1
+   *                           in the calculation.
    *  @param  peak_area        The area of the peak in monitor 1.
    *  @param  atoms            The number of "scattering units" in the sample
    *                           exposed to the beam times 10 ** -24.
@@ -91,6 +99,8 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
    */
 
   public DoubleDifferentialCrossection( DataSet    ds,
+                                        DataSet    ff_ds,
+                                        boolean    use_ff_ds,
                                         float      peak_area,
                                         float      atoms,
                                         boolean    make_new_ds )
@@ -99,12 +109,18 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
     Parameter parameter = getParameter( 0 );
-    parameter.setValue( new Float(peak_area) );
+    parameter.setValue( ff_ds );
 
     parameter = getParameter( 1 );
-    parameter.setValue( new Float(atoms) );
+    parameter.setValue( new Boolean( use_ff_ds ) );
 
     parameter = getParameter( 2 );
+    parameter.setValue( new Float(peak_area) );
+
+    parameter = getParameter( 3 );
+    parameter.setValue( new Float(atoms) );
+
+    parameter = getParameter( 4 );
     parameter.setValue( new Boolean( make_new_ds ) );
 
     setDataSet( ds );               // record reference to the DataSet that
@@ -129,8 +145,14 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter("Monitor 1 Peak Area",
-                                         new Float(100000) );
+    Parameter parameter = new Parameter( "Fudge factor DataSet",
+                              new DataSet("FF_DataSet", "Empty DataSet") );
+    addParameter( parameter );
+
+    parameter = new Parameter( "use FF_DataSet?", new Boolean(false) );
+    addParameter( parameter );
+
+    parameter = new Parameter("Monitor 1 Peak Area", new Float(100000) );
     addParameter( parameter );
 
     parameter = new Parameter("Atoms in sample (times 10**-24)",new Float(1.0));
@@ -148,12 +170,30 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
                                                    // get the current data set
     DataSet ds  = getDataSet();
                                                     // get the parameters
-    float   peak_area  = ((Float)(getParameter(0).getValue()) ).floatValue();
-    float   atoms      = ((Float)(getParameter(1).getValue()) ).floatValue();
-    boolean make_new_ds=((Boolean)getParameter(2).getValue()).booleanValue();
+    DataSet ff_ds      = (DataSet)(getParameter(0).getValue());
+    boolean use_ff_ds  =((Boolean)getParameter(1).getValue()).booleanValue();
+    float   peak_area  = ((Float)(getParameter(2).getValue()) ).floatValue();
+    float   atoms      = ((Float)(getParameter(3).getValue()) ).floatValue();
+    boolean make_new_ds=((Boolean)getParameter(4).getValue()).booleanValue();
 
     if ( atoms <= 0 )
       return new ErrorString("ERROR: Number of atoms must be greater than 0");
+
+                            // if we are using fudge factors, get the ff values
+                            // check that there are the correct number of them
+    float ff_vals[] = null; 
+    if ( use_ff_ds )
+    {
+      if ( ff_ds.getNum_entries() != 3 )
+        return new ErrorString("ERROR: ff_ds should have 3 Data blocks");
+      
+      Data ff_data;
+      ff_data = ff_ds.getData_entry( 2 );
+      ff_vals = ff_data.getY_values();
+      if ( ff_vals.length != ds.getNum_entries() )
+        return new ErrorString("ERROR: wrong number of ff_vals, " + 
+                                ff_vals.length );
+    }
 
     DataSet new_ds = null;
     if ( make_new_ds )
@@ -240,6 +280,8 @@ public class DoubleDifferentialCrossection extends    DataSetOperator
                                         // the number of atoms in the, sample
                                         // and the incident beam flux 
       scale_factor = 1000.0f / (solid_angle * atoms * flux * tsec);
+      if ( use_ff_ds )
+        scale_factor *= ff_vals[index];
 
                                         // compensate for detector efficiency
                                         // as a function of neutron velocity   
