@@ -23,8 +23,7 @@ $ DelayNeutron        Float( .0011)                            Delayed Neutron F
 
 $ Title = Efficiency From File
 $ Command = Efficiency
-$ Category = Operator, Generic, TOF_SAD, Scripts
-
+$ Category = Operator, Instrument Type, TOF_NSAS 
 
 
 n= load( CadmiumFileName, "CadDS")

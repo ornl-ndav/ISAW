@@ -16,13 +16,13 @@
 #@return The scale factor.  The Selected Graph View will be open with the dataset
 #  correpsonding to the New File and the Polynomial DataSet merged and selected
 
+$Category=Operator,Instrument Type, TOF_NSAS
 
 $StandFile  LoadFileString("C:\ISAW\batesnist.dat")   Standard File
 $NewFile    LoadFileString("C:\ISAW\sn17.dat")        New File
 $Qmin        Float(.03)                          Min Q to use
 $Qmax        Float(.1)                          Max Q to use
 $degree     Integer(3)                          polynomial degree for fitting
-$Category=Operator,Generic,TOF_SAD,Scripts
 
 #--------------- Call Scale Operator----------------
 V =Scale(StandFile,NewFile,Qmin,Qmax,degree)

@@ -16,9 +16,9 @@ $DeadDetectorLevel Float( .5)                   Enter the level indicating a dea
 $num_rows          Integer(16389)                   Enter the num of rows in the LPSDs
 $num_cols          Integer(18948)                   Enter the num of cols in the LPSDs
 
-$Title = Calculate Sensitivity
-$Command = Sensitivity
-$Category=Operator,Generic,TOF_SAD,Scripts
+$Title = lpsd Calculate Sensitivity
+$Command = lpsd_Sensitivity
+$Category = Operator, Instrument Type, TOF_NSAS
 
 n= load( runFileName, "SensData")
 #send SensData[1]

@@ -28,7 +28,7 @@ $ sqrtWeight        Boolean( true)    Use 1/sqrt(y) for weightin
 
 $ Title = Calculate Transmission
 $ Command = Transmission
-$ Category = Operator, Generic, TOF_SAD, Scripts
+$ Category = Operator, Instrument Type, TOF_NSAS 
 
 load SampleFileName, "Samp"
 load EmptyFileName, "Empty"
