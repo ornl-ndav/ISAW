@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/04/26 13:18:30  rmikk
+ *  null constructor is now public
+ *  Added documentation
+ *  Uses the new xml_utils Attr Read method redesigned for immutable
+ *   Attributes
+ *
  *  Revision 1.16  2004/03/15 06:10:38  dennis
  *  Removed unused import statements.
  *
@@ -71,7 +77,7 @@
 package  DataSetTools.dataset;
 
 import gov.anl.ipns.Util.Numeric.*;
-
+import gov.anl.ipns.Util.SpecialStrings.*;
 import java.io.*;
 /**
  * The concrete class for an attribute whose value is a list of integers.  
@@ -85,7 +91,7 @@ import java.io.*;
  *
  * @version 1.0  
  */
-
+import java.util.*;
 public class IntListAttribute extends Attribute
 {
   // NOTE: any field that is static or transient is NOT serialized.
@@ -120,7 +126,7 @@ public class IntListAttribute extends Attribute
     System.arraycopy( values, 0, this.values, 0, values.length ); 
   }
 
-  private IntListAttribute( )
+  public IntListAttribute( )
   {
     super( "" );
 
@@ -152,15 +158,36 @@ public class IntListAttribute extends Attribute
      return( new_array );
    }
 
+
+  /**
+    *  This method writes the information from this IntListAttribute to the
+    *  OutputStream in an xml format
+    */
   public boolean XMLwrite( OutputStream stream, int mode )
   {
     return xml_utils.AttribXMLwrite( stream, mode, this);
   }
 
-  public boolean XMLread( InputStream stream )
+
+
+  /**
+    *  This method reads information from the InputStream ands assigns these
+    *  values to the appropriate fields of this IntListAttribute.
+    *  It is assumed that the leading tag has been consumed before this
+    *  routine starts
+    */
+  public  boolean XMLread( InputStream stream )
   {
-    return xml_utils.AttribXMLread(stream, this);
-  }
+	
+   Object Res= xml_utils.AttribXMLread(stream, new IntListAttribute());
+	if( Res instanceof ErrorString)
+	   return false;
+	String value =( (((Vector)Res).lastElement())).toString();
+	values = IntList.ToArray(value);
+	name =((String) (((Vector)Res).firstElement())).toString();
+	return true;//(Attribute)(new IntListAttribute(name,IntList.ToArray(value)));
+ }
+  
 
   /**
    * Combine the value of this attribute with the value of the attribute

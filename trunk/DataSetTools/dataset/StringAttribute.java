@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/04/26 13:19:21  rmikk
+ *  null constructor is now public
+ *  Added documentation
+ *  Uses the new xml_utils Attr Read method redesigned for immutable
+ *   Attributes
+ *
  *  Revision 1.11  2004/03/15 06:10:38  dennis
  *  Removed unused import statements.
  *
@@ -68,7 +74,8 @@
  */
 
 package  DataSetTools.dataset;
-
+import java.util.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 import java.io.*;
 /**
  * The concrete class for an attribute whose value is a string.  
@@ -112,7 +119,7 @@ public class StringAttribute extends Attribute
     this.value = value;
   }
 
- private StringAttribute()
+ public StringAttribute()
   {
     super( "" );
     this.value = "";
@@ -157,20 +164,40 @@ public class StringAttribute extends Attribute
   }
 
 
+  /**
+    *  This method writes the information in this StringAttribute to the Output
+    *  stream in an xml format
+    */
   public boolean XMLwrite( OutputStream stream, int mode )
-    {return xml_utils.AttribXMLwrite( stream, mode, this);
+  {
+    return xml_utils.AttribXMLwrite( stream, mode, this);
 
-     }
-  public boolean XMLread( InputStream stream )
-    {return xml_utils.AttribXMLread(stream, this);
-    }
+  }
+
+
+  /**
+    *  This method reads information from the InputStream and assigns it to the
+    *  appropriate fields of this StringAttribute
+    *  This method assumes that the leading tag has been consumed.
+    */
+  public  boolean XMLread( InputStream stream )
+  { 
+    Object Res= xml_utils.AttribXMLread(stream, new StringAttribute("",""));
+    if( Res instanceof ErrorString)
+      return false;
+    name =( (((Vector)Res).firstElement())).toString();
+    value =((String) (((Vector)Res).lastElement())).toString();
+    return true;//(Attribute)(new StringAttribute(name,value));
+  }
+
+
 
   /**
    * Returns the String value of this attribute as a String.
    */
   public String getStringValue()
   {
-     return value;
+    return value;
   }
 
   /**
@@ -178,7 +205,7 @@ public class StringAttribute extends Attribute
    */
   public String toString()
   {
-     return this.getName() + ": " + this.value;
+    return this.getName() + ": " + this.value;
   }
 
 /* -----------------------------------------------------------------------
