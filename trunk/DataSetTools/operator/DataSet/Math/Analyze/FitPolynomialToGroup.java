@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/07/16 19:07:36  dennis
+ * Fixed improper comparison with Float.NaN
+ *
  * Revision 1.9  2004/03/19 17:20:50  dennis
  * Removed unused variable(s)
  *
@@ -305,7 +308,7 @@ public class  FitPolynomialToGroup  extends    AnalyzeOp
                                                 // Then, do the curve fitting
     double coeff[] = new double [ degree + 1 ];
     double error   = CurveFit.Polynomial( x, y, coeff, false );
-    if ( error == Double.NaN )
+    if ( Double.isNaN( error ) )
       return new ErrorString("ERROR: couldn't fit data with polynomial");
 
                                         // Now evaluate the fitted curve at
