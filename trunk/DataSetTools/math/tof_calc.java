@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.13  2001/07/12 16:32:42  dennis
+ *  Modified calculation of "omega".
+ *
  *  Revision 1.12  2001/07/10 20:23:24  dennis
  *  Added method to calculate Omega()
  *
@@ -478,13 +481,16 @@ public static float SpectrometerQ( float e_in_meV,
 
 /* ------------------------------- Omega -------------------------------- */
 /**
- *  Calculates "Omega" defined as (two_theta/2 + 135) mod 180
+ *  Calculates "Omega"
  */
 public static float Omega( float two_theta )
 {
-  float temp = (two_theta/2 + 135);
+  float alpha = (two_theta/2 + 135);
   
-  return (temp % 180);
+  if ( alpha < 135 )
+    return alpha;
+  else
+    return (alpha - 180);
 }
 
 }
