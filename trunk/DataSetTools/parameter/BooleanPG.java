@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/08/15 03:52:32  bouzekc
+ *  Removed unnecessary initialization=true statement.
+ *
  *  Revision 1.4  2003/06/11 22:17:49  pfpeterson
  *  Fixed bug with setting value. Added functionality to deal with integers
  *  in setValue.
@@ -192,7 +195,6 @@ public class BooleanPG extends ParameterGUI
     ((JCheckBox)entrywidget).addActionListener(this);
     this.setEnabled(this.getEnabled());
     super.initGUI();
-    this.initialized=true;
   }
 
   /**
