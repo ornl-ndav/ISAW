@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/07/25 21:02:44  rmikk
+ * Fixed code to work better with subranges of rows and
+ *   or columns.
+ *
  * Revision 1.3  2002/07/24 20:03:04  rmikk
  * Added methods to get correspondences between the
  *   JTable row and column and the associated Group Index
@@ -69,18 +73,18 @@ import java.io.*;
  */
 public class Time_Slice_TableModel extends TableViewModel implements ActionListener
 {
-   int MaxRow, 
+   int MaxRow,
        MaxCol;
    float Time;
    float MinTime = Float.NEGATIVE_INFINITY,
          MaxTime = Float.POSITIVE_INFINITY;
    int[] RC_to_Group;
    DataSet DS;
-   boolean err, 
+   boolean err,
            ind;
-   int tMinrow, 
+   int tMinrow,
        tMaxrow;
-   int tMincol, 
+   int tMincol,
        tMaxcol;
 
    /** Constructor for this table model of the Data Set DS at time time
@@ -150,8 +154,10 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
                RC_to_Group[( r - 1 ) * ( MaxCol ) + ( c - 1 )] = i;
       }
 
-      //int x= RC_to_Group[ MaxCol+2];
-      //System.out.println( "Row 2 col 3 indx & grp="+ x+","+DS.getData_entry(x).getGroup_ID());
+      
+      for( int i = 0; i < RC_to_Group.length; i++ )
+         if( RC_to_Group[i] != i )
+            System.out.println( "MISSed at " + i + "Group =" + RC_to_Group[i] );
    }
 
 
@@ -306,13 +312,21 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
     * @return   The table row #(starting at 0) or -1 if none.
     */
    public int getRow( int GroupIndx, float time )
-   {
+   {  //System.out.println("in getRow GroupIndx="+GroupIndx+","+tMinrow+","+tMaxrow);
       if( GroupIndx < 0 )
          return -1;
-      for( int r = 0; r < getRowCount(); r++ )
-         for( int c = 0; c < getColumnCount(); c++ )
+      for( int r = 0; r < MaxRow; r++ )
+         for( int c = 0; c < MaxCol; c++ )
+         {//System.out.print(r*MaxCol+c+" ");
             if( RC_to_Group[ r * MaxCol + c] == GroupIndx )
-               return r;
+            {//System.out.println("   Found row ="+r);
+               if( r > tMaxrow )
+                  return -1;
+               else
+                  return r - tMinrow;
+            }
+         }
+         //System.out.println("");    
       return -1;
    }
 
@@ -324,13 +338,16 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
     * @return   The table column #(starting at 0) or -1 if none.
     */
    public int getCol( int GroupIndx, float time )
-   {
+   {   //System.out.println("in getCol GroupIndx="+GroupIndx+","+tMinrow+","+tMaxrow);
       if( GroupIndx < 0 )
          return -1;
-      for( int r = 0; r < getRowCount(); r++ )
-         for( int c = 0; c < getColumnCount(); c++ )
+      for( int r = 0; r < MaxRow; r++ )
+         for( int c = 0; c < MaxCol; c++ )
             if( RC_to_Group[ r * MaxCol + c] == GroupIndx )
-               return c;
+            {  //System.out.println("   Found col ="+c);
+               if( c <= tMaxcol )
+                  return c - tMincol;
+            }
       return -1;
    }
 
@@ -349,7 +366,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          return new Integer( 0 );
 
       float[] xvals = DS.getData_entry( Grp ).getX_scale().getXs();
- 
+
       int index = DS.getData_entry( Grp ).getX_scale().getI( Time );
 
       float dx = ( xvals[1] - xvals[0] ) / 10.0f;
@@ -364,8 +381,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          index = -1;
 
       else if( java.lang.Math.abs( xvals[index] - Time ) < .1 * dx )
-      {
-      }
+      {}
       else
          index = -1;
       int n = 1;
@@ -382,7 +398,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          yvals = DS.getData_entry( Grp ).getErrors();
       else //if( field ==1)
          return new Float( 0.0f + index );
-        
+
       if( index < 0 )
          return new Integer( 0 );
       else if( index >= yvals.length )
@@ -467,7 +483,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
 
       tbmod.setRowRange( 2, 6 );
       tbmod.setColRange( 2, 10 );
-     
+
       JTable jtab = new JTable( tbmod );
 
       jtab.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
