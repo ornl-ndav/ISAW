@@ -43,7 +43,7 @@
 */
 package Command; 
 
-import IsawGUI.Isaw.*; 
+//import IsawGUI.Isaw.*; 
 import IsawGUI.*; 
 import java.io.*; 
 import DataSetTools.retriever.*; 
@@ -100,7 +100,7 @@ public class CommandPane  extends JPanel
     File SelectedFile = null;
     Document logDocument = null;
 
-    private boolean Debug = true;
+    private boolean Debug = false;
     private Document MacroDocument = null;
 
     /** Constructor with Visual Editor and no data sets from outside this program
@@ -195,9 +195,9 @@ public class CommandPane  extends JPanel
      Open = Save = Help = Clear = null ;  
      Commands = null ; 
      try{
-        System.setProperty( "Scriptpath", "C:\\Ruth\\ISAW\\Scripts\\");
-        System.setProperty("DataDirectory" , "C:\\Ruth\\ISAW\\SampleRuns\\");
-         System.setProperty("DefaultInstrument" , "hrcs");
+        //System.setProperty( "Scriptpath", "C:\\Ruth\\ISAW\\Scripts\\");
+        //System.setProperty("DataDirectory" , "C:\\Ruth\\ISAW\\SampleRuns\\");
+         //System.setProperty("DefaultInstrument" , "hrcs");
      
        FilePath = System.getProperty("Scriptpath");
         if( Debug )System.out.println( "FilePath is "+FilePath);
@@ -262,6 +262,7 @@ public class CommandPane  extends JPanel
            Immediate.addKeyListener( new MyKeyListener(this)) ;        
 	 
            JSplitPane JPS = new JSplitPane(JSplitPane.VERTICAL_SPLIT) ; 
+           JPS.setResizeWeight( .8);
            JScrollPane X =  new JScrollPane( Commands ) ; 
            X.setBorder( new TitledBorder( "Prgm Editor" ) ) ; 
           
@@ -1687,7 +1688,7 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
      if( e.getSource().equals( Run ) ) 
        {//MacroDocument = Commands.getDocument();
         //Parameter P[] = GUIgetParameters();
-       // MacroDocument = null;
+        //MacroDocument = null;
         
         doc = Commands.getDocument() ; 	
         StatusLine.setText( "" ) ; 
