@@ -5,6 +5,11 @@ package IsawGUI;
  *
  *
  * $Log$
+ * Revision 1.8  2001/07/23 14:05:26  neffk
+ * continued to replace low-level JTree modifcations with methods
+ * in JDataTree.  clearing selections and deleting nodes are now internal
+ * to JDataTree, making this class much easier to maintain.
+ *
  * Revision 1.7  2001/07/20 16:44:09  neffk
  * reflected changes made in JDataTree.  tree is more encapsulated,
  * so some methods had to be changed to use JDataTree methods instead
@@ -279,47 +284,16 @@ public class JDataTreeRingmaster
       public void actionPerformed( ActionEvent item_e )
       {
         if(  item_e.getActionCommand() == MENU_SELECT  )
-        {
-          DataMutableTreeNode node = (DataMutableTreeNode)(  tps[0].getLastPathComponent()  );
-          for( int i=0;  i<tps.length;  i++ )
-          {
-            node = (DataMutableTreeNode)(  tps[i].getLastPathComponent()  );
-            Data d = node.getUserObject();
-            d.setSelected( true );
-          }
-                                    //find the DataSet that these Data objects
-                                    //belong to and have it notify its IObservers
-          DataSet ds = tree.getDataSet( node );
-          ds.notifyIObservers( IObserver.SELECTION_CHANGED );
-        }
+          tree.selectNodesWithPaths( tps );
 
         else if(  item_e.getActionCommand() == MENU_CLEAR  )
-        {
-          for( int i=0;  i<tps.length;  i++ )
-          {
-            DataMutableTreeNode dmtn = (DataMutableTreeNode)(  tps[i].getLastPathComponent()  );
-            Data d = (Data)dmtn.getUserObject();
-            d.setSelected( false );
-   
-            DataSet ds = traverseUpToDataSet( tps[0] );
-            ds.notifyIObservers( IObserver.SELECTION_CHANGED );
-          }
-        }
+          tree.clearSelections();
 
         else if(  item_e.getActionCommand() == MENU_CLEAR_ALL  )
-        {
-          DataSet _ds = traverseUpToDataSet( tps[0] );
-          for( int i=0;  i<_ds.getNum_entries();  i++ )
-            _ds.getData_entry(i).setSelected( false );
-
-          DataSet ds = traverseUpToDataSet( tps[0] );
-          ds.notifyIObservers( IObserver.SELECTION_CHANGED );
-        }
+          tree.clearSelections();
 
         else if(  item_e.getActionCommand() == MENU_DELETE  )
-        {
           tree.deleteNodesWithPaths( tps );
-        }
       }
     }
     MultipleDataBlockMenuItemListener item_listener = null;
@@ -382,26 +356,24 @@ public class JDataTreeRingmaster
       public void actionPerformed( ActionEvent item_e )
       {
         if(  item_e.getActionCommand() == MENU_SELECT  )
-        {
           tree.selectNodesWithPaths( tps );
-        }
+
         if(  item_e.getActionCommand() == MENU_DELETE  )
-        {
           tree.deleteNodesWithPaths( tps );
-        }
       }
     }
 
 
     singleDataSetMenuItemListener item_listener = new singleDataSetMenuItemListener( tps );
-//    JMenuItem select_item = new JMenuItem( MENU_SELECT );
-//              //select_item.setMnemonic( KeyEvent.VK_S );
-//              select_item.addActionListener( item_listener );
+    JMenuItem select_item = new JMenuItem( MENU_SELECT );
+              //select_item.setMnemonic( KeyEvent.VK_S );
+              select_item.addActionListener( item_listener );
     JMenuItem delete_item = new JMenuItem( MENU_DELETE );
               //delete_item.setMnemonic( KeyEvent.VK_X );
               delete_item.addActionListener( item_listener );
     JPopupMenu popup_menu = new JPopupMenu( "SingleDataSetPopupMenu" );
                popup_menu.add( delete_item );
+               popup_menu.add( select_item );
                popup_menu.add( ops_popup_menu );
                popup_menu.show(  e.getComponent(), e.getX(), e.getY()  );
   }
@@ -414,7 +386,63 @@ public class JDataTreeRingmaster
    */
   public void MultipleDataSetPopupMenu( TreePath[] tps, MouseEvent e )
   {
-    System.out.println( "MultipleDataSetPopupMenu(...)" );
+    DataSetMutableTreeNode node = (DataSetMutableTreeNode)(  tps[0].getLastPathComponent()  );
+    DataSet ds = node.getUserObject();
+
+    int num_ops = ds.getNum_operators();                //create a sub-menu
+    Operator ds_ops[] = new Operator[num_ops];          //for the current
+    for( int i = 0; i < num_ops; i++ )                  //DataSet objects
+      ds_ops[i] = ds.getOperator(i);
+
+                               //get the DataSet objects to which we will 
+                               //apply the operator.  we'll assume that all
+                               //of the TreePath objects have been filtered
+                               //and that they are all DataSetMutableTreeNodes.
+                               //karma--
+    DataSet[] dss = new DataSet[ tps.length ];
+    for( int i=0;  i<tps.length;  i++ )
+      dss[i] = (DataSet)(  ( (DataSetMutableTreeNode)tps[i].getLastPathComponent() ).getUserObject()  );
+
+                               //create the actual menu
+    JMenu ops_popup_menu = new JMenu( "Operations" );
+    OperatorMenu om = new OperatorMenu();
+    JOperationsMenuHandler popup_listener = new JOperationsMenuHandler( dss, tree, true );
+    om.build( ops_popup_menu, ds_ops, popup_listener );
+    ops_popup_menu.setPopupMenuVisible( true );
+
+    class MultipleDataSetMenuItemListener implements ActionListener
+    {
+      TreePath[] tps;
+ 
+      public MultipleDataSetMenuItemListener( TreePath[] tps_ )
+      {
+        tps = tps_;
+      }
+
+
+      public void actionPerformed( ActionEvent item_e )
+      {
+        if(  item_e.getActionCommand() == MENU_SELECT  )
+          tree.selectNodesWithPaths( tps );
+
+        if(  item_e.getActionCommand() == MENU_DELETE  )
+          tree.deleteNodesWithPaths( tps );
+      }
+    }
+
+
+    MultipleDataSetMenuItemListener item_listener = new MultipleDataSetMenuItemListener( tps );
+    JMenuItem select_item = new JMenuItem( MENU_SELECT );
+              //select_item.setMnemonic( KeyEvent.VK_S );
+              select_item.addActionListener( item_listener );
+    JMenuItem delete_item = new JMenuItem( MENU_DELETE );
+              //delete_item.setMnemonic( KeyEvent.VK_X );
+              delete_item.addActionListener( item_listener );
+    JPopupMenu popup_menu = new JPopupMenu( "MultipleDataSetPopupMenu" );
+               popup_menu.add( delete_item );
+               popup_menu.add( select_item );
+               popup_menu.add( ops_popup_menu );
+               popup_menu.show(  e.getComponent(), e.getX(), e.getY()  );
   }
 
 
@@ -429,33 +457,35 @@ public class JDataTreeRingmaster
 
     class ExperimentMenuItemListener implements ActionListener
     {
+      TreePath[] tps;
 
-      public ExperimentMenuItemListener()
+      public ExperimentMenuItemListener( TreePath[] tps )
       {
+        this.tps = tps;
       }
 
 
       public void actionPerformed( ActionEvent item_e )
       {
         if(  item_e.getActionCommand() == MENU_SELECT  )
-        {
-        }
+          tree.selectNodesWithPaths( tps );
+
         if(  item_e.getActionCommand() == MENU_DELETE  )
-        {
-        }
+          tree.deleteNodesWithPaths( tps );
       }
     }
 
 
-    ExperimentMenuItemListener item_listener = new ExperimentMenuItemListener();
-//    JMenuItem select_item = new JMenuItem( MENU_SELECT );
-//              //select_item.setMnemonic( KeyEvent.VK_S );
-//              select_item.addActionListener( item_listener );
+    ExperimentMenuItemListener item_listener = new ExperimentMenuItemListener( tps );
+    JMenuItem select_item = new JMenuItem( MENU_SELECT );
+              //select_item.setMnemonic( KeyEvent.VK_S );
+              select_item.addActionListener( item_listener );
     JMenuItem delete_item = new JMenuItem( MENU_DELETE );
               //delete_item.setMnemonic( KeyEvent.VK_X );
               delete_item.addActionListener( item_listener );
     JPopupMenu popup_menu = new JPopupMenu( "SingleDataSetPopupMenu" );
                popup_menu.add( delete_item );
+               popup_menu.add( select_item );
                popup_menu.show(  e.getComponent(), e.getX(), e.getY()  );
   }
 
@@ -499,7 +529,8 @@ public class JDataTreeRingmaster
     if( node instanceof DataMutableTreeNode )
     {
       System.out.println( "Data object selected in tree" );
-/*
+
+/* TODO: fix selection behavior for Data objects
                                       //we can only deal w/ selections from 
                                       //one DataSet at a time, so we'll 
                                       //arbitrarily choose the DataSet 
