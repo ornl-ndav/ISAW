@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2005/03/23 02:13:26  dennis
+ *  Removed unnecessary semicolons.
+ *
  *  Revision 1.7  2004/03/15 19:36:52  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -41,7 +44,8 @@
  *  Removed unused imports and variables.
  *
  *  Revision 1.4  2003/04/22 21:51:41  hammonds
- *  Fixed problem with CastClassExeption due to inconsistant use of Parameter vs iParameter(LoadFilePG) Class.
+ *  Fixed problem with CastClassExeption due to inconsistant use of Parameter 
+ *  vs iParameter(LoadFilePG) Class.
  *
  *  Revision 1.3  2003/03/03 20:12:54  hammonds
  *  Documentation cleanup.  Convert to new Parameter types.
@@ -51,7 +55,6 @@
  *
  *  Revision 1.1  2003/02/13 14:14:54  hammonds
  *  Added as a method to read an array into a Script.
- *
  *
  */
 
@@ -157,7 +160,7 @@ public class LoadScriptArray extends GenericBatch implements Serializable
 
     TextFileReader f = null;
     String line;
-    Vector[] data_out = new Vector[0];;
+    Vector[] data_out = new Vector[0];
     Vector data_out_V = new Vector();
    
     try
@@ -283,7 +286,7 @@ public class LoadScriptArray extends GenericBatch implements Serializable
   public static void main( String args[] )
   {
 
-      String filename = new String();;
+      String filename = new String();
       Integer num_head = new Integer (0);
       Integer num_data = new Integer (0);
       Integer num_col = new Integer (0);
