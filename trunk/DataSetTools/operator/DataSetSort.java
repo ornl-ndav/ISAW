@@ -5,6 +5,9 @@
  *             
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/11/07 15:55:02  dennis
+ *  Replace "group" by "Group" in operator title.
+ *
  *  Revision 1.4  2000/07/10 22:36:00  dennis
  *  July 10, 2000 version... many changes
  *
@@ -51,7 +54,7 @@ public class DataSetSort  extends    DataSetOperator
 
   public DataSetSort( )
   {
-    super( "Sort on ONE group attribute" );
+    super( "Sort on ONE Group attribute" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
