@@ -3,6 +3,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.4  2001/07/23 13:59:31  neffk
+ * added a selected flag.
+ *
  * Revision 1.3  2001/07/20 16:33:08  neffk
  * fixed a synch problem, fixed removeFromParent().  removed a redundant
  * index check; karma--;
@@ -36,7 +39,7 @@ public class DataSetMutableTreeNode
   private MutableTreeNode parent      = null;
   private Vector          data_nodes  = null;
   private String          name        = null;
-
+  private boolean         selected    = false;
 
   public DataSetMutableTreeNode( DataSet ds )
   {
@@ -51,6 +54,24 @@ public class DataSetMutableTreeNode
     return name;
   }
 
+
+  /**
+   * test to see if this item is selected.
+   */ 
+  public boolean isSelected()
+  {
+    return selected;
+  }
+
+
+  /**
+   * set or clear this object's selection status.
+   */ 
+  public void setSelected( boolean selected )
+  {
+    this.selected = selected;
+  }
+    
 
 /*------------------------------=[ TreeNode ]=--------------------------------*/
 
@@ -86,7 +107,6 @@ public class DataSetMutableTreeNode
 
   public int getIndex( TreeNode node )
   {
-    System.out.println(  "size in DataSetMutableTreeNode: " + data_nodes.size()  );
     return data_nodes.indexOf( node );
   }
 
