@@ -34,6 +34,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2001/08/14 19:21:58  dennis
+ *  status now returns no data message if the DAS has never sent it
+ *  any data yet.
+ *
  *  Revision 1.20  2001/08/14 15:08:02  dennis
  *  Added support for status.
  *
@@ -483,6 +487,12 @@ public class LiveDataServer extends    DataSetServer
          if ( status.startsWith( RemoteDataRetriever.DAS_OFFLINE_STRING ) )
          {
            tcp_io.Send( status );
+           return;
+         }
+
+         if ( status.startsWith( RemoteDataRetriever.NO_DATA_SETS_STRING ) )
+         {
+           tcp_io.Send( status + DateUtil.default_string() );
            return;
          }
 
