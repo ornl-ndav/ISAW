@@ -11,6 +11,7 @@ import javax.swing.*;
 import DataSetTools.wizard.*;
 import DataSetTools.util.*;
 import DataSetTools.operator.*;
+import DataSetTools.parameter.*;
 
 public class ExampleWizard 
 {
@@ -22,13 +23,13 @@ public class ExampleWizard
 
                                                         // define the master
                                                         // list of parameters
-    w.setParameter( "Name", new WizardParameter( "My Name","Dennis", true ));
+    w.setParameter( "Name", new StringPG( "My Name","Dennis", true ));
     w.setParameter( "Height", 
-                   new WizardParameter( "My Height", new Float(6.42), false ));
+                   new FloatPG( "My Height", new Float(6.42), false ));
     w.setParameter( "Age", 
-                   new WizardParameter( "My Age", new Float( 51 ), false ));
+                   new FloatPG( "My Age", new Float( 51 ), false ));
     w.setParameter( "YourAge", 
-          new WizardParameter( "Your Age", new Float( 51 ), true ));
+          new FloatPG( "Your Age", new Float( 51 ), true ));
 
                                           // Create forms using the parameters
                                           // Since the base Form class execute()

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/06/06 16:21:37  pfpeterson
+ * Now use new parameters.
+ *
  * Revision 1.1  2002/05/28 20:35:13  pfpeterson
  * Moved files
  *
@@ -54,6 +57,7 @@ import javax.swing.*;
 import DataSetTools.wizard.*;
 import DataSetTools.util.*;
 import DataSetTools.operator.*;
+import DataSetTools.parameter.*;
 
 
 /**
@@ -81,19 +85,19 @@ public class MathWizard
                                                       // define the entries in
                                                       // in the master list
     w.setParameter( "Value 1", 
-                    new WizardParameter( "Enter Value 1",new Float(1), false));
+                    new FloatPG( "Enter Value 1",new Float(1), false));
     w.setParameter( "Value 2", 
-                    new WizardParameter( "Enter Value 2",new Float(2), false));
+                    new FloatPG( "Enter Value 2",new Float(2), false));
     w.setParameter( "Value 3", 
-                    new WizardParameter( "Enter Value 3",new Float(3), false));
+                    new FloatPG( "Enter Value 3",new Float(3), false));
     w.setParameter( "Result 1", 
-                    new WizardParameter( "Result 1",new Float(0), false ));
+                    new FloatPG( "Result 1",new Float(0), false ));
     w.setParameter( "Result 2", 
-                    new WizardParameter( "Result 2",new Float(0), false ));
+                    new FloatPG( "Result 2",new Float(0), false ));
     w.setParameter( "Result 3", 
-                    new WizardParameter( "Result 3",new Float(0), false ));
+                    new FloatPG( "Result 3",new Float(0), false ));
     w.setParameter( "Result 4", 
-                    new WizardParameter( "Result 4",new Float(0), false ));
+                    new FloatPG( "Result 4",new Float(0), false ));
 
                                                     // Specifiy the parameters
                                                     // used by the forms and
@@ -109,18 +113,15 @@ public class MathWizard
     Form form1 = new SubtracterExampleForm(  edit_parms_1, out_parms_1, w );
     w.add( form1 );
 
-    String edit_parms_2[]  = { "Value 1", "Value 2", "Value 3" };
-    String const_parms_2[] = { "Result 1", "Result 2" };
+    String const_parms_2[] = { "Value 1", "Value 2", "Value 3",
+                               "Result 1", "Result 2" };
     String out_parms_2[]   = {"Result 3"};
-    Form form2 = new MultiplierExampleForm(  const_parms_2, edit_parms_2, 
-                                             out_parms_2, w );
+    Form form2 = new MultiplierExampleForm(  const_parms_2, out_parms_2, w );
     w.add( form2 );
 
-    String edit_parms_3[]  = { "Value 2" };
-    String const_parms_3[] = { "Result 2" };
+    String const_parms_3[] = { "Value 2", "Result 2" };
     String out_parms_3[]   = {"Result 4"};
-    Form form3 = new DividerExampleForm(  const_parms_3, edit_parms_3, 
-                                          out_parms_3, w );
+    Form form3 = new DividerExampleForm(  const_parms_3, out_parms_3, w );
     w.add( form3 );
 
     w.show(0);

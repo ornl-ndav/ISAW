@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/06/06 16:21:39  pfpeterson
+ * Now use new parameters.
+ *
  * Revision 1.1  2002/05/28 20:35:15  pfpeterson
  * Moved files
  *
@@ -45,6 +48,7 @@ package Wizard;
 
 import java.io.*;
 import DataSetTools.wizard.*;
+import DataSetTools.parameter.*;
 
 /**
  *  This class defines a form for subtracting two numbers under the control
@@ -68,7 +72,7 @@ public class SubtracterExampleForm extends    Form
    */
   public SubtracterExampleForm( String operands[], String result[], Wizard w )
   {
-    super("Subtract two Numbers", null, operands, result, w );
+    super("Subtract two Numbers", operands, null, result, w );
 
     String help = "This form let's you subtract the numbers \n";
     for ( int i = 0; i < operands.length && i < 2; i++ )
@@ -87,18 +91,18 @@ public class SubtracterExampleForm extends    Form
   public boolean execute()
   {
     float difference;
-    WizardParameter param;
+    FloatPG param;
 
-    param = wizard.getParameter( editable_params[0] );
-    Float val = (Float)param.getNewValue();
-    difference = val.floatValue();
+    param = (FloatPG)wizard.getParameter( const_params[0] );
+    difference = param.getfloatValue();
+    param.setValid(true);
 
-    param = wizard.getParameter( editable_params[1] );
-    val = (Float)param.getNewValue();
-    difference = difference - val.floatValue();
+    param = (FloatPG)wizard.getParameter( const_params[1] );
+    difference=difference- param.getfloatValue();
+    param.setValid(true);
    
-    param = wizard.getParameter( result_params[0] );
-    param.setValue( new Float(difference) );
+    param = (FloatPG)wizard.getParameter( result_params[0] );
+    param.setfloatValue( difference );
     return true;
   } 
 

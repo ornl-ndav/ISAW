@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/06/06 16:21:36  pfpeterson
+ * Now use new parameters.
+ *
  * Revision 1.1  2002/05/28 20:35:11  pfpeterson
  * Moved files
  *
@@ -48,6 +51,7 @@ package Wizard;
 
 import java.io.*;
 import DataSetTools.wizard.*;
+import DataSetTools.parameter.*;
 
 /**
  *  This class defines a form for dividing two numbers under the control
@@ -68,15 +72,13 @@ public class DividerExampleForm extends    Form
    *                    in this case only result[0] is used.
    *  @param  w         The wizard controlling this form.
    */
-  public DividerExampleForm( String constants[], String operands[], String result[], Wizard w )
+  public DividerExampleForm( String constants[], String result[], Wizard w )
   {
-    super("Divide two Numbers", constants, operands, result, w );
+    super("Divide two Numbers", constants, null, result, w );
 
     String help = "This form let's you divide the numbers \n";
     for ( int i = 0; i < constants.length && i < 2; i++ )
       help = help + "  " + constants[i] + "\n";
-    for ( int i = 0; i < operands.length && i < 2; i++ )
-      help = help + "  " + operands[i] + "\n";
     setHelpMessage( help );
   }
 
@@ -91,21 +93,20 @@ public class DividerExampleForm extends    Form
   public boolean execute()
   {
     float quotient = Float.NaN;
-    WizardParameter param;
+    FloatPG param;
 
-    param = wizard.getParameter( editable_params[0] );
-    Float denom = (Float)param.getNewValue();
-    if ( denom.floatValue() == 0 )
+    param = (FloatPG)wizard.getParameter( const_params[0] );
+    float denom = param.getfloatValue();
+    if ( denom == 0 ){
       quotient = Float.NaN;
-    else
-    { 
-      param = wizard.getParameter( const_params[0] );
-      Float num = (Float)param.getNewValue();
-      quotient = num.floatValue() / denom.floatValue();
+    }else{
+      param = (FloatPG)wizard.getParameter( const_params[1] );
+      float num = param.getfloatValue();
+      quotient = num / denom;
     }
 
-    param = wizard.getParameter( result_params[0] );
-    param.setValue( new Float(quotient) );
+    param = (FloatPG)wizard.getParameter( result_params[0] );
+    param.setfloatValue( quotient );
     return true;
   } 
 
