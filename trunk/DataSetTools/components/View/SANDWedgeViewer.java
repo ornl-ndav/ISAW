@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.34  2004/04/16 18:58:58  millermi
+ * - Removed parenthesis from units passed to the ViewManager.
+ *
  * Revision 1.33  2004/04/12 03:44:44  millermi
  * - Removed parenthesis from x and y units.
  * - Changed initial size to 700 x 525, which expanded the
@@ -801,7 +804,7 @@ public class SANDWedgeViewer extends JFrame implements IPreserveState,
     data_set   = new DataSet("Intensity vs Q in Region", 
                              "Calculated Intensity vs Q in Region");
 
-    data_set.setX_units("(Inverse Angstroms)" );
+    data_set.setX_units("Inverse Angstroms" );
     data_set.setX_label("Q" );
 
     data_set.setY_units("" );
