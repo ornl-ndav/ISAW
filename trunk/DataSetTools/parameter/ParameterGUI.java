@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2003/11/23 02:12:18  bouzekc
+ *  Now properly clones the label.
+ *
  *  Revision 1.34  2003/11/23 01:18:02  bouzekc
  *  Refactored getPropertyChangeSupport() and setPropertyChangeSupport() into
  *  firePropertyChange(), as this is the functionality that derived classes
@@ -489,6 +492,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
       ParameterGUI pg       = ( ParameterGUI )construct.newInstance( 
           new Object[]{ null, null } );
       pg.setName( new String( this.getName(  ) ) );
+      pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
       pg.setValid( this.getValid(  ) );

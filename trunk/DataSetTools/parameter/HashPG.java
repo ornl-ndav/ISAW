@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/11/23 02:12:17  bouzekc
+ *  Now properly clones the label.
+ *
  *  Revision 1.15  2003/11/19 04:06:53  bouzekc
  *  This class is now a JavaBean.  Added code to clone() to copy all
  *  PropertyChangeListeners.
@@ -174,6 +177,7 @@ abstract public class HashPG extends ParameterGUI{
         pg.setValue( this.getValue(  ) );
         pg.setDrawValid( this.getDrawValid(  ) );
         pg.setValid( this.getValid(  ) );
+        pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
 
         if( keys != null && vals != null && keys.size(  ) > 0 && 
             vals.size(  ) > 0 ) {

@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2003/11/23 02:12:18  bouzekc
+ *  Now properly clones the label.
+ *
  *  Revision 1.25  2003/11/23 01:18:46  bouzekc
  *  Now calls firePropertyChange() directly.
  *
@@ -373,6 +376,7 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
       pg.setValid( this.getValid(  ) );
+      pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
 
       if( radioChoices != null ) {
         pg.radioChoices = ( Hashtable )radioChoices.clone(  );
