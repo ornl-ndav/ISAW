@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.89  2002/04/08 18:22:15  pfpeterson
+ *  Added properties to set JSplitPanel portions on startup.
+ *
  *  Revision 1.88  2002/03/14 22:27:19  dennis
  *  Changed default version to 1.3.0 alpha.
  *
@@ -510,6 +513,9 @@ public class Isaw
   JTextArea propsText = new JTextArea(5,20);
   JFrame kp;
 
+  JSplitPane upper_sp;
+  JSplitPane main_sp;
+
 
   /**
    * Creates a JFrame that displays different Isaw components.
@@ -531,11 +537,13 @@ public class Isaw
 
     jpui = new JPropertiesUI();
     jpui.setPreferredSize( new Dimension(200, 200) );
+    //jpui.setPreferredSize( new Dimension(400, 200) );
     jpui.setMinimumSize(new Dimension(20, 50));
 
 
     jcui = new JCommandUI( cp, sessionLog, jpui );
     jcui.setPreferredSize( new Dimension( 700, 50 ) );
+    //jcui.setPreferredSize( new Dimension( 500, 50 ) );
     jcui.setMinimumSize(new Dimension(20, 50));  
 
     MouseListener ml = new MouseListener();
@@ -545,6 +553,7 @@ public class Isaw
     kl.init();
    
     jdt.setPreferredSize(new Dimension(200, 500));
+    //jdt.setPreferredSize(new Dimension(400, 500));
     jdt.setMinimumSize(new Dimension(20, 50));
     jdt.addTreeSelectionListener(  new TreeSelectionHandler( this )  );
         
@@ -591,20 +600,30 @@ public class Isaw
                                            rightPane,
                                            0.25f);
 */
-    JSplitPane sp= new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
-                                           leftPane, 
-                                           rightPane, 
-                                           0.20f);
-
-    JSplitPane sp1= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT,
-                                            sp,
-                                      StatusPanel,
-                                            0.80f );
-   
+    JSplitPane sp;
+    JSplitPane sp1;
+    {
+        float tree_width=
+            (new Float(System.getProperty("Tree_Width","0.2"))).floatValue();
+        upper_sp= new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
+                                    leftPane, 
+                                    rightPane, 
+                                    tree_width);
+        
+        float status_height=
+           (new Float(System.getProperty("Status_Height","0.2"))).floatValue();
+        main_sp= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT,
+                                     upper_sp,
+                                     StatusPanel,
+                                     1f-status_height );
+        /* System.out.println("tree_width="+tree_width
+           +" status_height="+status_height); */
+    }
+    //upper_sp.setDividerLocation((double)0.5f);
        
-    sp.setOneTouchExpandable(true);
+    upper_sp.setOneTouchExpandable(true);
     Container con = getContentPane();
-    con.add(sp1);
+    con.add(main_sp);
   }
     
  
@@ -1933,9 +1952,14 @@ public class Isaw
 
     System.out.print("Loading " + TITLE + " Release ");
     if(SharedData.VERSION.equals("Unknown_Version")){
-        System.out.println("1.3.0 alpha");
+        System.out.print("1.3.0");
     }else{
-        System.out.println(SharedData.VERSION );
+        System.out.print(SharedData.VERSION );
+    }
+    if(SharedData.BUILD_DATE.equals("Unknown_Build_Date")){
+        System.out.println("");
+    }else{ 
+        System.out.println(" Built "+SharedData.BUILD_DATE);
     }
     JFrame Isaw = new Isaw( args );
     Isaw.pack();
@@ -1952,6 +1976,7 @@ public class Isaw
         } 
       } 
     );  
+    //Isaw.addActionListener(new WindowResizeListener());
   }
  
 
@@ -2278,5 +2303,13 @@ public class Isaw
     }
   }
 
-
+    /* class WindowResizeListener implements ActionListener{
+       public void WindowResizeListener(){
+       
+       }
+       
+       public void actionPerformed(ActionEvent ev){
+       System.out.println("WindowEvent:"+ev.toString());
+       }
+       } */
 }
