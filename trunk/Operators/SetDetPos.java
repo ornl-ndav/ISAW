@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/05/07 14:55:05  dennis
+ * Cleaned up some formatting problems.
+ *
  * Revision 1.4  2004/03/15 03:36:58  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -57,6 +60,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.dataset.*;
 import java.util.*;
+import gov.anl.ipns.MathTools.Geometry.*;
 
 /** 
  *  This operator provides a way to set the detector position attribute for
@@ -97,9 +101,12 @@ public class SetDetPos extends GenericSpecial
     parameters = new Vector();
     addParameter( new Parameter("DataSet parameter", ds) );
     addParameter( new Parameter("integer parameter", new Integer(int_val) ) );
-    addParameter( new Parameter("Cylinder radius parameter", new Float(float_val1) ) );
-    addParameter( new Parameter("Azimuth_angle parameter", new Float(float_val2) ) );
-    addParameter( new Parameter(" Z parameter", new Float(float_val3) ) );
+    addParameter( new Parameter("Cylinder radius parameter", 
+                                 new Float(float_val1) ) );
+    addParameter( new Parameter("Azimuth_angle parameter", 
+                                 new Float(float_val2) ) );
+    addParameter( new Parameter("Z parameter", 
+                                 new Float(float_val3) ) );
   }
 
  /* ---------------------------- getCommand ------------------------------- */ 
@@ -143,7 +150,7 @@ public class SetDetPos extends GenericSpecial
     s.append("cylindrical coordinates of a DetectorPosition object. \n");
     s.append("'int_val' refers to the data block in 'ds' that the user ");
     s.append("wants to set the detector position attribute of. \n");
-    s.append("The given DataSet 'ds' is not empty.\n");                                                                       //                           		                                                                                                              
+    s.append("The given DataSet 'ds' is not empty.\n");
     s.append("@algorithm A detector position is created using the three ");
     s.append("float parameters to form its cylindrical coordinates.  An ");
     s.append("attribute associates the name of the detector with its ");
@@ -181,7 +188,7 @@ public class SetDetPos extends GenericSpecial
     float   float_val2 = ((Float)  (getParameter(3).getValue())).floatValue();
     float   float_val3 = ((Float)  (getParameter(4).getValue())).floatValue();
 
-    gov.anl.ipns.MathTools.Geometry.DetectorPosition detpos = new gov.anl.ipns.MathTools.Geometry.DetectorPosition(  );
+    DetectorPosition detpos = new DetectorPosition(  );
      detpos.setCylindricalCoords(float_val1, float_val2, float_val3); 
     Attribute attr = new DetPosAttribute( Attribute.DETECTOR_POS, detpos);
     ds.getData_entry( group_index ).setAttribute(attr);
