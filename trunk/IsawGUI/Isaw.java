@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.149  2003/08/08 18:00:07  dennis
+ *  Added new Selected Graph view to menus.  Cleaned up handling of
+ *  viewer selection.
+ *  Now when a new viewer is popped up, the "Pointed At" data block
+ *  will only be set to the first Data block, if it was not previously
+ *  set to a valid value.
+ *
  *  Revision 1.148  2003/08/06 19:50:01  dennis
  *  Changed version to 1.5.1 alpha 11
  *
@@ -414,12 +421,13 @@ public class Isaw
   private static final String REMOVE_NODE_MI     = "Remove Selected Node(s)";
 
   private static final String VIEW_M             = "View";
-  private static final String IMAGE_VIEW_MI      = "Image View";
-  private static final String SCROLL_VIEW_MI     = "Scrolled Graph View";
-  private static final String SELECTED_VIEW_MI   = "Selected Graph View";
-  private static final String THREED_VIEW_MI     = "3D View";
-  private static final String TABLE_VIEW_MI      =  IViewManager.TABLE;
-  private static final String CONTOUR_VIEW_MI    = "Contour View";
+  private static final String IMAGE_VIEW_MI      = IViewManager.IMAGE;
+  private static final String SCROLL_VIEW_MI     = IViewManager.SCROLLED_GRAPHS;
+  private static final String SELECTED_VIEW_MI   = IViewManager.SELECTED_GRAPHS;
+  private static final String SELECTED_VIEW_2_MI = IViewManager.SELECTED_GRAPH2;
+  private static final String THREED_VIEW_MI     = IViewManager.THREE_D;
+  private static final String TABLE_VIEW_MI      = IViewManager.TABLE;
+  private static final String CONTOUR_VIEW_MI    = IViewManager.CONTOUR;
   private static final String LOG_VIEW_MI        = "Log View";
 
   private static final String INSTR_VIEW_M       = "Instrument Info";
@@ -669,6 +677,7 @@ public class Isaw
     JMenuItem imageView   = new JMenuItem( IMAGE_VIEW_MI );
     JMenuItem s_graphView = new JMenuItem( SCROLL_VIEW_MI );
     JMenuItem graphView   = new JMenuItem( SELECTED_VIEW_MI );
+    JMenuItem graphView2  = new JMenuItem( SELECTED_VIEW_2_MI );
     JMenuItem threeDView = new JMenuItem( THREED_VIEW_MI );
     JMenuItem tableView = new JMenuItem( TABLE_VIEW_MI );
     JMenu Tables= new JMenu("Selected Table View");
@@ -754,6 +763,7 @@ public class Isaw
     vMenu.add( contourView );
     vMenu.add(s_graphView);
     vMenu.add(graphView);
+    vMenu.add(graphView2);
     
     
     vMenu.add( Tables );
@@ -784,7 +794,7 @@ public class Isaw
     dbload.addActionListener( menu_item_handler );
     
     graphView.addActionListener(menu_item_handler); 
-         
+    graphView2.addActionListener(menu_item_handler); 
     s_graphView.addActionListener(menu_item_handler); 
 
     threeDView.addActionListener(menu_item_handler); 
@@ -1176,8 +1186,6 @@ public class Isaw
           return;
         return;
       }
-                       
-
 
                                   //browse ANL database for data files.
                                   //in the future, this menu item probably
@@ -1263,84 +1271,30 @@ public class Isaw
       if( s.equals( SharedData.getProperty("Inst13_Name") )  )
         setupLiveDataServer( "Inst13_Path" );
  
-      if( s.equals(IMAGE_VIEW_MI) )
+      if( s.equals(IMAGE_VIEW_MI)      || 
+          s.equals(SELECTED_VIEW_MI)   ||
+          s.equals(SELECTED_VIEW_2_MI) ||
+          s.equals(SCROLL_VIEW_MI)     || 
+          s.equals(THREED_VIEW_MI)     ||
+          s.equals(TABLE_VIEW_MI)      ||
+          s.equals(CONTOUR_VIEW_MI)
+          )
       {
         DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
         if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
-          new ViewManager( ds, IViewManager.IMAGE );
-          ds.setPointedAtIndex( 0 );
-          ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+          new ViewManager( ds, s );
+                                         // only set pointed at if not set
+          if ( ds.getPointedAtIndex() == DataSet.INVALID_INDEX ){ 
+            ds.setPointedAtIndex( 0 );
+            ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+          }
+
         }else{
           SharedData.addmsg( "nothing is currently highlighted in the tree" );
         }
-      }
-                 
-                 
-      if( s.equals(SELECTED_VIEW_MI) )  
-      {
-        
-        DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
-          new ViewManager( ds, IViewManager.SELECTED_GRAPHS );
-          ds.setPointedAtIndex( 0 );
-          ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-        }else{
-            SharedData.addmsg("nothing is currently highlighted in the tree" );
-        }
-      }
-                         
-                 
-      if( s.equals(SCROLL_VIEW_MI) )
-      {   
-        DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
-          new ViewManager( ds, IViewManager.SCROLLED_GRAPHS );
-          ds.setPointedAtIndex( 0 );
-          ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-        }else{
-            SharedData.addmsg("nothing is currently highlighted in the tree" );
-        }
-      }
-                 
-
-      if( s.equals(THREED_VIEW_MI) )
-      {   
-        DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
-            new ViewManager( ds, IViewManager.THREE_D );
-            ds.setPointedAtIndex( 0 );
-            ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-        }else{
-            SharedData.addmsg("nothing is currently highlighted in the tree" );
-        }
         return;
       }
-
-      if( s.equals(TABLE_VIEW_MI) )
-      {   
-        DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
-            new ViewManager( ds, IViewManager.TABLE );
-            ds.setPointedAtIndex( 0 );
-            ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-        }else{
-            SharedData.addmsg("nothing is currently highlighted in the tree" );
-        }
-        return;
-      }
-
-      if( s.equals(CONTOUR_VIEW_MI) )
-      {   
-        DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
-        if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
-            new ViewManager( ds, IViewManager.CONTOUR);
-            ds.setPointedAtIndex( 0 );
-            ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-        }else{
-            SharedData.addmsg("nothing is currently highlighted in the tree" );
-        }
-        return;
-      }
+                 
       if( s.equals(LOG_VIEW_MI) )
       {   
         SDDS.java.SDDSedit.sddsEdit frame = new SDDS.java.SDDSedit.sddsEdit();
