@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/08/28 15:00:09  rmikk
+ *  Added Code to support Several Area Detectors
+ *
  *  Revision 1.16  2003/05/12 15:58:19  rmikk
  *  Removed debug prints
  *  getTime now returns better times corresponding to a
@@ -96,7 +99,7 @@
  */
 package DataSetTools.viewer.Contour;
 
-
+import javax.swing.*;
 import gov.noaa.pmel.sgt.demo.*;
 import gov.noaa.pmel.sgt.dm.*;
 import IsawGUI.Util;
@@ -107,7 +110,8 @@ import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
-
+import java.awt.event.*;
+import DataSetTools.components.View.ViewControls.*;
 /**
  * Provides a mechanism for selecting and viewing portions of an Area Detector
  * Data Set using SGT's contour plot
@@ -134,6 +138,9 @@ public class ContourData
    XScale x_scale ;
    IAxisHandler Axis1,Axis2,Axis3;
    int mode =0;
+   int DetNum = -1;
+   int[] DetNums = null;
+   UniformGrid grid;
    //*****************************************************************************************
    //						Constructors
    //*****************************************************************************************
@@ -150,6 +157,7 @@ public class ContourData
      this.Axis2= Axis2;
      this.Axis3= Axis3;
      SetUpInfo( ds, Axis1, Axis2, Axis3);
+     SetUpDetNums();
    
     }
   public ContourData( DataSet data_set )
@@ -166,6 +174,7 @@ public class ContourData
       int[][] k = new int[ds.getNum_entries() + 1][3];
       int w = 0;
 
+     /*
       for( int i = 0; i < ds.getNum_entries(); i++ )
       {
          Data db = ds.getData_entry( i );
@@ -221,17 +230,26 @@ public class ContourData
          groups[ k[i][0] ][ k[i][1] ] = k[i][2];
 
       }
-      axis1 = new double[ ( maxcols + 1 ) ];
-      axis2 = new double[ ( maxrows + 1 ) ];
-      for( int row = 0; row < maxrows + 1; row++ )
-         axis2[row] = row;
-      for( int col = 0; col < maxcols + 1; col++ )
-         axis1[col] = col;
-
+     */
+      SetUpDetNums();
+      if( DetNum < 0){
+         ThetPhiData( ds, new thetaAxisHandler( ds), new phiAxisHandler( ds), 
+                        new TimeAxisHandler( ds ));
+         return;
+      }
+      
+      axis1 = new double[ grid.num_cols() ];
+      axis2 = new double[  grid.num_rows() ];
+      for( int row = 0; row < axis2.length; row++ )
+         axis2[row] = row+1;
+      for( int col = 0; col < axis1.length; col++ )
+         axis1[col] = col+1;
+     
      x_scale = data_set.getData_entry(0).getX_scale();
      ds = (DataSet)(dsSave.clone());
      for( int j=0; j< ds.getNum_entries(); j++)
        ds.getData_entry(j).resample( x_scale,0);
+     grid.setDataEntriesInAllGrids(ds);
    }
 
 
@@ -258,23 +276,21 @@ public class ContourData
 
       //Given the group indecies and time slice, we look up the row, column, and y value and store
       //them in separate 1d arrays.  Axis data itself will be integer values.  The axis arrays
-      //will hold no reapeated values. (ie values.size = axis1.size * axis2.size)
-      double[] values = new double[ ( maxrows + 1 ) * ( maxcols + 1 ) ];
+      //will hold no repeated values. (ie values.size = axis1.size * axis2.size)
+      double[] values = new double[ ( grid.num_rows() ) * ( grid.num_cols()) ];
 
       maxvalue = -1;
       minvalue = -1;
       
-      for( col = 0; col < maxcols + 1; col++ )
+      for( col = 1; col <= grid.num_cols(); col++ )
       {
-         for( row = 0; row < maxrows + 1; row++ )
+         for( row = 1; row <= grid.num_rows(); row++ )
          {
-            G = groups[row][col];
-            if( G < 0 )
-               values[w] = 0.0f;
-            else
-            {
-               Data db = ds.getData_entry( G );
-               values[w] = db.getY_value( X,0);
+            Data db = grid.getData_entry(row,col);
+            if( db != null)
+              values[w] = db.getY_value( X,0);
+            else{
+              values[w] = 0.0;
             }
 
             w = w + 1;
@@ -287,7 +303,6 @@ public class ContourData
       xMeta = new SGTMetaData( "Column", "");
       yMeta = new SGTMetaData( "Row", "" );
       zMeta = new SGTMetaData( ds.getY_label(), ds.getY_units() );
-   
       sl = new SimpleGrid( values, axis1, axis2, "Area Detector Data" );
       sl.setXMetaData( xMeta );
       sl.setYMetaData( yMeta );
@@ -600,6 +615,7 @@ public class ContourData
          ds =(DataSet)( dsSave.clone());
          for( int j=0; j< ds.getNum_entries(); j++)
             ds.getData_entry(j).resample( x_scale,0);
+         grid.setDataEntriesInAllGrids(ds);
         }
       else if( xscale != null)
        { ntimes = xscale.getNum_x();
@@ -629,15 +645,15 @@ public class ContourData
      
       if( mode == 0)
         {
-         if( r <= 0 )
+         if( r <= 1 )
          return -1;
-         if( c <= 0 )
+         if( c <= 1 )
          return -1;
-         if( r > maxrows )
+         if( r > grid.num_rows() )
           return -1;
-         if( c > maxcols )
+         if( c > grid.num_cols() )
            return -1;
-         return groups[r][c];
+         return ds.getIndex_of_data(grid.getData_entry( r,c));
          }
       else //returns user coordinates
          { float R;
@@ -742,4 +758,54 @@ public class ContourData
      //            +minAx3+","+maxAx3);
      //System.out.println("nrows, ncols="+nrowws+","+ncolls);
     }//SetUp
+
+   public void SetUpDetNums(){
+      DetNums = Grid_util.getAreaGridIDs( ds);
+      if( DetNums != null)
+        if( DetNums.length >0)
+          DetNum = DetNums[0];
+      grid = (UniformGrid)(Grid_util.getAreaGrid( ds, DetNum));
+      grid.setDataEntriesInAllGrids(ds);
+
+   }
+  LabelCombobox  DetChoices = null;
+  public JComponent[] getControls(){
+    if( DetNums == null)
+      return new JComponent[0];
+    if( DetNums.length <2)
+      return new JComponent[0];
+    if( DetChoices == null){
+      String[] choices = new String[ DetNums.length];
+      for( int i =0; i< choices.length; i++)
+        choices[i] = ""+DetNums[i];
+      DetChoices = new LabelCombobox("Detectors", choices);
+      DetChoices.cbox.addActionListener( new DetectorActionListener());
+    }
+    
+    JComponent[] Res = new JComponent[1];
+    Res[0] = DetChoices;
+    return Res;
+  }
+  ActionListener DataChangeListener = null;
+  public void addDataChangeListener( ActionListener listener){
+    DataChangeListener = listener;
+  }
+  class DetectorActionListener implements ActionListener{
+    public void actionPerformed( ActionEvent evt){
+    int choice= DetNum;
+    try{
+       choice = (new Integer( (String)DetChoices.cbox.getSelectedItem())).
+                 intValue();
+    }catch( Exception ss){};
+    if( choice != DetNum){
+      DetNum = choice;
+      grid = (UniformGrid)Grid_util.getAreaGrid( ds, DetNum);
+      DataChangeListener.actionPerformed( new ActionEvent(this,
+          ActionEvent.ACTION_PERFORMED,"DataChange"));
+    }
+   } 
+
+  }//class DetectorActionListener
+  
+
 }
