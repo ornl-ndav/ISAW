@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.62  2003/07/16 18:11:48  bouzekc
+ * Now opens up the Wizard save/load dialog in whatever
+ * directory the user loads the Wizard in.
+ *
  * Revision 1.61  2003/07/16 16:28:09  bouzekc
  * Now handles command line arguments in this base class.
  *
@@ -1499,7 +1503,7 @@ public abstract class Wizard implements PropertyChangeListener {
 
     //start out in the ISAW_HOME directory
     fileChooser.setCurrentDirectory( 
-      new File( SharedData.getProperty( "ISAW_HOME" ) ) );
+      new File( SharedData.getProperty( "user.dir" ) ) );
   }
 
   /**
