@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/10/08 21:41:18  dennis
+ * If a directory is not found, the exception message now
+ * contains the name of the directory that was not found.
+ *
  * Revision 1.6  2003/09/09 23:30:38  bouzekc
  * Fixed NullPointerException when type is not defined in ParameterGUIs.
  *
@@ -233,7 +237,7 @@ public class ParameterClassList{
     if(DEBUG) System.out.println("Looking in "+dir);
     File paramDir=new File(dir);
     if( !(paramDir.exists()) || !(paramDir.isDirectory()) )
-      throw new InstantiationError("Could not find directory");
+      throw new InstantiationError("Could not find directory " + dir);
 
     // get the list of all possible classes
     File[] files=paramDir.listFiles();
