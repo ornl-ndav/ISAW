@@ -99,7 +99,7 @@ public class JDataViewUI extends JDesktopPane implements Serializable
   public JFrame ShowSelectedGraphView(DataSet ds )
   {
     JFrame jf = new JFrame(ds.getTitle());
-    OverplotView.SelectedGraphView sgv = new OverplotView.SelectedGraphView(ds);
+    OverplotView.GraphableDataManager sgv = new OverplotView.GraphableDataManager(ds);
     jf.getContentPane().add(sgv);
      sgv.setVisible(true);
     return jf;
