@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/09/09 22:59:57  bouzekc
+ * Implemented validateSelf() and changed superclass to FloatArrayPG.
+ *
  * Revision 1.1  2003/09/09 00:31:55  bouzekc
  * Added to CVS.
  *
@@ -62,7 +65,7 @@ import javax.swing.JFrame;
  * although there are two "fast-access" methods that directly return an XScale
  * and a Vector, respectively.
  */
-public class VariableXScalePG extends VectorPG implements IXScalePG {
+public class VariableXScalePG extends FloatArrayPG implements IXScalePG {
   //~ Constructors *************************************************************
 
   /**
