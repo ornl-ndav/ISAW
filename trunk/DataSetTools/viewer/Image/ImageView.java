@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.40  2003/02/22 23:14:37  dennis
+ *  Added a couple of checks for null DataSet and null Data blocks.
+ *
  *  Revision 1.39  2002/12/01 16:13:35  dennis
  *  Now handles case of null Data block by using a row of zeros.
  *
@@ -622,6 +625,9 @@ private void MakeImage( boolean redraw_flag )
 
 private void MakeSelectionImage( boolean redraw_flag )
 {
+  if ( getDataSet() == null )                         // nothing to do....
+    return;
+
   int   num_rows = getDataSet().getNum_entries();
   if ( num_rows == 0 )
     return;
@@ -638,6 +644,9 @@ private void MakeSelectionImage( boolean redraw_flag )
   for ( int i = first_row; i <= last_row; i++ )
   {
     data_block = getDataSet().getData_entry(i);
+    if ( data_block == null )                       // something is wrong so
+      return;                                       // we can't proceed.
+
     if ( data_block.isSelected() )
       sel_image_data[i-first_row][1] = 1;
     else
