@@ -27,6 +27,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/05/12 19:25:06  pfpeterson
+ * Small changes to work with changes in IPNSsrc.blind
+ *
  * Revision 1.4  2003/04/30 19:52:52  pfpeterson
  * Changed to reflect changes in IPNSsrc.blind.
  *
@@ -315,12 +318,15 @@ public class BlindJ extends  GenericTOF_SCD {
     float[][] UB=new float[3][3];
     for( int i=0 ; i<3 ; i++ )
       for( int j=0 ; j<3 ; j++ )
-        UB[i][j]=(float)BLIND.u[3*i+j];
+        UB[i][j]=(float)BLIND.UB[i][j];
 
     // create a lattice parameters vector
     float[] abc=new float[7];
-    for(int i=0 ; i<abc.length ; i++ )
-      abc[i]=(float)BLIND.abc[i];
+    {
+      double[] myABC=Util.abc(BLIND.UB);
+      for( int i=0 ; i<7 ; i++ )
+        abc[i]=(float)myABC[i];
+    }
 
     // create a sigma matrix
     float[] sig={0f,0f,0f,0f,0f,0f,0f};
