@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2003/10/30 17:23:17  dennis
+ *  Removed import of DataSetTools.viewer.OverplotView
+ *
  *  Revision 1.34  2003/10/30 17:16:06  dennis
  *  Removed "OLD Selected Graph View" that used SGT.
  *
@@ -80,7 +83,6 @@ import DataSetTools.viewer.Image.*;
 import DataSetTools.viewer.ThreeD.*;
 import DataSetTools.viewer.Table.*;
 import DataSetTools.viewer.Contour.*;
-import DataSetTools.viewer.OverplotView.*;
 import DataSetTools.viewer.ViewerTemplate.*;
 import DataSetTools.components.View.*;
 import DataSetTools.components.View.OneD.*;
