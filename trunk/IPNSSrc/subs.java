@@ -58,6 +58,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/05/12 19:24:26  pfpeterson
+ * Removed code that is no longer used.
+ *
  * Revision 1.5  2003/02/21 16:54:05  pfpeterson
  * Removed commented out code.
  *
@@ -173,55 +176,4 @@ public class subs {
     return;
   }
 
-  /**
-   * @see #tstvol(double[])
-   */
-  public static void tstvol (double [] u, doubleW volume)  {
-    volume.val=tstvol(u);
-    return;
-  }
-
-  /**
-   *
-   */
-  public static double tstvol (double [] u){
-    int u_offset=0;
-    double [] a= new double[(3)];
-    double [] b= new double[(3)];
-    double [] c= new double[(3)];
-    double [] axb= new double[(3)];
-    double volume=0.0;
-
-    a[0] = u[0 + 0*3 + u_offset];
-    a[1] = u[0 + 1*3 + u_offset];
-    a[2] = u[0 + 2*3 + u_offset];
-    b[0] = u[1 + 0*3 + u_offset];
-    b[1] = u[1 + 1*3 + u_offset];
-    b[2] = u[1 + 2*3 + u_offset];
-    c[0] = u[2 + 0*3 + u_offset];
-    c[1] = u[2 + 1*3 + u_offset];
-    c[2] = u[2 + 2*3 + u_offset];
-
-    cross(b,c,axb);
-
-    volume = a[0]*axb[0]+a[1]*axb[1]+a[2]*axb[2];
-    volume = 1./volume;
-
-    return volume;
-  }
-
-  /**
-   * Calculate the cross product C = A X B
-   */
-  public static void cross (double [] a, double [] b, double [] c)  {
-    int a_offset=0;
-    int b_offset=0;
-    int c_offset=0;
-
-    c[0+c_offset] = a[1+a_offset]*b[2+b_offset]-a[2+a_offset]*b[1+b_offset];
-    c[1+c_offset] = a[2+a_offset]*b[0+b_offset]-a[0+a_offset]*b[2+b_offset];
-    c[2+c_offset] = a[0+a_offset]*b[1+b_offset]-a[1+a_offset]*b[0+b_offset];
-
-    return;
-  }
 }
