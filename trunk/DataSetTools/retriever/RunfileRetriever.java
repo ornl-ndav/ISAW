@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.43  2002/04/24 19:07:40  pfpeterson
+ *  Updated to add the raw detector center distance and angle
+ *  attributes when the instrument is of the SCD type.
+ *
  *  Revision 1.42  2002/03/18 21:16:56  dennis
  *  If the calculated incident energy is invalid, just use the nominal
  *  incident energy.
@@ -777,7 +781,7 @@ private float CalculateEIn()
 
     // SCD sample orientation, Sample Chi, Sample Phi, Sample Omega
     if ( instrument_type == InstrumentType.TOF_SCD )
-      AddSCD_SamplePosition( attr_list );
+        AddSCD_SamplePosition( attr_list );
 
     ds.setAttributeList( attr_list );
   }
@@ -1010,6 +1014,9 @@ private float CalculateEIn()
                                               group_segments[id].Depth(),
                                               group_segments[id].Efficiency() );
       det_info_list[id] = det_info;
+
+      if(instrument_type==InstrumentType.TOF_SCD)
+           Add_DetectorCenterPosition(attr_list,group_segments[id].DetID());
     }
 
     if ( group_segments.length > 0 )           // add the DetInfoListAttribute
@@ -1078,14 +1085,34 @@ private float CalculateEIn()
   private void AddSCD_SamplePosition( AttributeList attr_list )
   {
     FloatAttribute float_attr;
-    float_attr = new FloatAttribute( "Sample Chi", (float)run_file.Chi() );
+    float_attr = 
+        new FloatAttribute( Attribute.SAMPLE_CHI,  (float)run_file.Chi() );
     attr_list.setAttribute( float_attr );
-    float_attr = new FloatAttribute( "Sample Phi", (float)run_file.Phi() );
+    float_attr = 
+        new FloatAttribute( Attribute.SAMPLE_PHI,  (float)run_file.Phi() );
     attr_list.setAttribute( float_attr );
-    float_attr = new FloatAttribute("Sample Omega", (float)run_file.Omega() );
+    float_attr = 
+        new FloatAttribute( Attribute.SAMPLE_OMEGA, (float)run_file.Omega() );
     attr_list.setAttribute( float_attr );
   }
 
+  /**
+   * Add raw Detector (not segment) angle and secondary flight path to
+   * the list of attributes.
+   *
+   * @param attr_list The list of attributes to which the detector
+   *                  attributes are added.
+   * @param id        Detector number.
+   */
+    private void Add_DetectorCenterPosition( AttributeList attr_list, int id ){
+        FloatAttribute float_attr;
+        float_attr = new FloatAttribute( Attribute.DETECTOR_CEN_DISTANCE,
+                                         (float)run_file.RawFlightPath(id));
+        attr_list.setAttribute( float_attr );
+        float_attr = new FloatAttribute( Attribute.DETECTOR_CEN_ANGLE,
+                                         (float)run_file.RawDetectorAngle(id));
+        attr_list.setAttribute( float_attr );
+    }
 
 
  /**
