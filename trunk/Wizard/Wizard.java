@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/04/12 20:53:06  pfpeterson
+ * More updates to the GUI.
+ *
  * Revision 1.3  2002/04/11 22:35:32  pfpeterson
  * Big changes including:
  *   - new GUI (layout works better)
@@ -74,15 +77,18 @@ import DataSetTools.util.*;
  */
 
 public class Wizard implements Serializable{
+    // size of the window
     private static final int FRAME_WIDTH   = 600;
     private static final int FRAME_HEIGHT  = 500;
-    private static final int BUTTON_HEIGHT =  30;
-    private static final int LARGE         = 2000;
     
+    // string constants for the menus and buttons
     private static final String EXIT_COMMAND        = "Exit";
-    private static final String BACK_COMMAND        = "<<-- Back";
+    private static final String FIRST_COMMAND       = "First";
+    private static final String BACK_COMMAND        = "Back";
+    private static final String NEXT_COMMAND        = "Next";
+    private static final String LAST_COMMAND        = "Last";
+    private static final String CLEAR_COMMAND       = "Clear All";
     private static final String EXEC_COMMAND        = "Execute";
-    private static final String NEXT_COMMAND        = "Next-->>";
     private static final String HELP_ABOUT_COMMAND  = "About";
     private static final String WIZARD_HELP_COMMAND = "on Wizard";
     private static final String FORM_HELP_COMMAND   = "on Current Form";
@@ -91,67 +97,86 @@ public class Wizard implements Serializable{
     private static final String SAVE_WIZARD_COMMAND = "Save Wizard";
     private static final String LOAD_WIZARD_COMMAND = "Load Wizard";
 
+    // default help and about messages
     private String help_message  = "Help not available for Wizard";
     private String about_message = "Default Help About Message";
+    private boolean standalone   = true;
     
-    private   JFrame    frame;
-    private   String    title;
-    private   Hashtable master_list;
-    private   Vector    forms;
-    private   int       form_num;
-    private   JPanel    form_panel;
-    public    Frame     help_frame = null;
+    // the status pane
     public static TextArea status_display = new TextArea();
-    private JButton back_button;
-    private JButton next_button;
-    private JButton exec_button;
-    private JLabel title_label;
+
+    // instance variables
+    private JFrame       frame;
+    private String       title;
+    private Hashtable    master_list;
+    private Vector       forms;
+    private int          form_num;
+    private JPanel       form_panel;
+    private JButton      first_button;
+    private JButton      back_button;
+    private JButton      next_button;
+    private JButton      last_button;
+    private JLabel       form_label;
     private JProgressBar progress;
     
     /**
-     * The only constructor.
+     * The legacy constructor
      * 
      * @param title Name displayed at top of window.
      */
     public Wizard( String title ){
+        this(title,true);
+    }
+
+    /**
+     * The full constructor
+     *
+     * @param title Name displayed at top of window
+     * @param standalone If is running by itself
+     */
+    public Wizard( String title, boolean standalone){
         status_display = new TextArea();
         this.title  = title;
         master_list = new Hashtable();
         forms       = new Vector();
         form_num    = -1;
         form_panel  = new JPanel();
-        title_label = new JLabel(" ",SwingConstants.CENTER);
+        form_label = new JLabel(" ",SwingConstants.CENTER);
         
         GridBagConstraints gbc=new GridBagConstraints();
         gbc.fill      = GridBagConstraints.HORIZONTAL;
-        gbc.weightx   = 3.0;
-        gbc.anchor    = GridBagConstraints.NORTHWEST;
+        gbc.weightx   = 1.0;
+        gbc.anchor    = GridBagConstraints.WEST;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         
-        //Box      work_area    = new Box( BoxLayout.Y_AXIS );
-        JPanel   work_area    = new JPanel( new GridBagLayout() );
-        JPanel   button_panel = new JPanel();
-        JMenuBar menu_bar     = new JMenuBar();
-        JMenu    file_menu    = new JMenu("File");
-        JMenu    help_menu    = new JMenu("Help");
-        
+        JPanel   work_area      = new JPanel( new GridBagLayout() );
+        JPanel   button_panel   = new JPanel( new GridBagLayout() );
+        JPanel   progress_panel = new JPanel( new GridBagLayout() );
+        JMenuBar menu_bar       = new JMenuBar();
+        JMenu    file_menu      = new JMenu("File");
+        JMenu    help_menu      = new JMenu("Help");
+
         frame = new JFrame( title );
         frame.setJMenuBar( menu_bar );
-        frame.setBounds( 0,0, FRAME_WIDTH, FRAME_HEIGHT );
         frame.addWindowListener( new CloseWizardWindow() );
-        /*frame.getContentPane().setLayout( new GridBagLayout());
-          frame.getContentPane().add( title_label,gbc );
-          frame.getContentPane().add( work_area,gbc );*/
         frame.getContentPane().add( work_area );
+        {
+            int screenheight=(int)
+                Toolkit.getDefaultToolkit().getScreenSize().getHeight();
+            frame.setBounds( (screenheight*4/3-FRAME_WIDTH)/2, 
+                             (screenheight-FRAME_HEIGHT)*3/10,
+                             FRAME_WIDTH, FRAME_HEIGHT );
+        }
         
         JMenuItem help_about  = new JMenuItem( HELP_ABOUT_COMMAND );
         JMenuItem wizard_help = new JMenuItem( WIZARD_HELP_COMMAND );
         JMenuItem form_help   = new JMenuItem( FORM_HELP_COMMAND );
         help_menu.add( help_about );
+        help_menu.addSeparator();
         help_menu.add( wizard_help );
         help_menu.add( form_help );
         
-        JScrollPane form_splitpane=new JScrollPane(form_panel,
+        JScrollPane form_scrollpane=new JScrollPane(form_panel,
                                  JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                  JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         
@@ -160,62 +185,92 @@ public class Wizard implements Serializable{
         JMenuItem save_wizard = new JMenuItem( SAVE_WIZARD_COMMAND ); 
         JMenuItem load_wizard = new JMenuItem( LOAD_WIZARD_COMMAND ); 
         JMenuItem exit_item   = new JMenuItem( EXIT_COMMAND ); 
+        save_form.setEnabled(false);
+        load_form.setEnabled(false);
+        save_wizard.setEnabled(false);
+        load_wizard.setEnabled(false);
         file_menu.add( save_form );
         file_menu.add( load_form );
+        file_menu.addSeparator();
         file_menu.add( save_wizard );
         file_menu.add( load_wizard );
+        file_menu.addSeparator();
         file_menu.add( exit_item );
         menu_bar.add(file_menu);
         menu_bar.add(help_menu);
         
         // add the title to the panel
-        work_area.add( title_label,gbc );
+        work_area.add( form_label,gbc );
 
         // add the form to the panel
         gbc.weighty=50.0;
         gbc.fill=GridBagConstraints.BOTH;
         form_panel.setLayout( new GridLayout(1,1) );
-        //form_panel.setPreferredSize( new Dimension( FRAME_WIDTH, LARGE ));
-        work_area.add(form_splitpane,gbc);
+        work_area.add(form_scrollpane,gbc);
         
         // add the progress bar to the panel
         gbc.weighty=1.0;
         gbc.fill=GridBagConstraints.HORIZONTAL;
+        work_area.add(progress_panel,gbc);
+        JButton clear_button = new JButton( CLEAR_COMMAND );
         progress = new JProgressBar();
-        progress.setString("");
+        progress.setString("Execute Progress");
         progress.setStringPainted(true);
         progress.setMaximum(2);
         progress.setValue(0);
-        work_area.add(progress,gbc);
+        gbc.fill=GridBagConstraints.NONE;
+        gbc.gridwidth=GridBagConstraints.RELATIVE;
+        progress_panel.add( clear_button, gbc );
+        gbc.weightx=20.0;
+        gbc.fill=GridBagConstraints.HORIZONTAL;
+        gbc.gridwidth=GridBagConstraints.REMAINDER;
+        progress_panel.add( progress,     gbc );
         
-        // add the buttons to the panel
+        // add the navigation buttons to the panel
         gbc.weightx=1.0;
-        gbc.gridwidth=1;
-        back_button = new JButton( BACK_COMMAND );
-        exec_button = new JButton(EXEC_COMMAND);
-        next_button = new JButton( NEXT_COMMAND );
+        gbc.gridwidth=GridBagConstraints.REMAINDER;
+        gbc.fill=GridBagConstraints.HORIZONTAL;
+        work_area.add(button_panel,gbc);
+        first_button         = new JButton( FIRST_COMMAND );
+        back_button          = new JButton( BACK_COMMAND  );
+        next_button          = new JButton( NEXT_COMMAND  );
+        last_button          = new JButton( LAST_COMMAND  );
+        JButton exec_button  = new JButton( EXEC_COMMAND  );
         back_button.setEnabled(false);
         next_button.setEnabled(false);
-        work_area.add( back_button, gbc );
-        work_area.add( exec_button, gbc );
+        gbc.gridwidth=1;
+        gbc.fill=GridBagConstraints.NONE;
+        button_panel.add( first_button, gbc );
+        button_panel.add( back_button,  gbc );
+        gbc.weightx=20;
+        gbc.anchor=GridBagConstraints.CENTER;
+        button_panel.add( exec_button,  gbc );
+        gbc.weightx=1;
+        gbc.anchor=GridBagConstraints.EAST;
+        button_panel.add( next_button,  gbc );
         gbc.gridwidth=GridBagConstraints.REMAINDER;
-        work_area.add( next_button, gbc );
+        button_panel.add( last_button,  gbc );
 
         // add the status to the panel
+        gbc.fill=GridBagConstraints.HORIZONTAL;
+        gbc.anchor=GridBagConstraints.WEST;
         work_area.add( status_display,gbc );
         
-        CommandHandler command_handler = new CommandHandler();
-        save_form  .addActionListener( command_handler );
-        load_form  .addActionListener( command_handler );
-        save_wizard.addActionListener( command_handler );
-        load_wizard.addActionListener( command_handler );
-        back_button.addActionListener( command_handler );
-        exec_button.addActionListener( command_handler );
-        next_button.addActionListener( command_handler );
-        help_about .addActionListener( command_handler );
-        wizard_help.addActionListener( command_handler );
-        form_help  .addActionListener( command_handler );
-        exit_item  .addActionListener( command_handler );
+        CommandHandler command_handler = new CommandHandler(this);
+        save_form   .addActionListener( command_handler );
+        load_form   .addActionListener( command_handler );
+        save_wizard .addActionListener( command_handler );
+        load_wizard .addActionListener( command_handler );
+        first_button.addActionListener( command_handler );
+        back_button .addActionListener( command_handler );
+        next_button .addActionListener( command_handler );
+        last_button .addActionListener( command_handler );
+        clear_button.addActionListener( command_handler );
+        exec_button .addActionListener( command_handler );
+        help_about  .addActionListener( command_handler );
+        wizard_help .addActionListener( command_handler );
+        form_help   .addActionListener( command_handler );
+        exit_item   .addActionListener( command_handler );
         
         frame.show();
     }
@@ -316,19 +371,29 @@ public class Wizard implements Serializable{
         form_panel.validate();
         form_num = index;
         
-        // enable/disable the forward and back buttons
+        // enable/disable the navigation buttons
         if( index>=forms.size()-1 ){
             next_button.setEnabled(false);
         }else{
             next_button.setEnabled(true);
+        }
+        if( index>=forms.size()-2){
+            last_button.setEnabled(false);
+        }else{
+            last_button.setEnabled(true);
         }
         if( index<=0 ){
             back_button.setEnabled(false);
         }else{
             back_button.setEnabled(true);
         }
+        if(index<=1){
+            first_button.setEnabled(false);
+        }else{
+            first_button.setEnabled(true);
+        }
         
-        title_label.setText("Form "+(index+1)+": "+f.getTitle());
+        form_label.setText("Form "+(index+1)+": "+f.getTitle());
     }
     
     
@@ -339,8 +404,8 @@ public class Wizard implements Serializable{
         status_display.append("close(): Not Fully Implemented\n");
         save();
         frame.dispose();
-        System.exit(0);     // this should only be done if this is running as
-                            // a stand alone application
+        if(standalone) System.exit(0); // this should only be done if this is
+                                       // running as a stand alone application
     }
     
     
@@ -402,18 +467,12 @@ public class Wizard implements Serializable{
     /**
      *  Show the specified String in the help frame.
      *
-     *  @param str   The message to display in the help frame.
+     *  @param str   The message to display in a dialog.
+     *  @param title The title of the dialog.
      */
-    private void ShowHelpMessage( String str ){
-        if ( help_frame == null ){
-            help_frame  = new Frame( "Help..." );
-            help_frame.setSize(400,200);
-            help_frame.addWindowListener( new HideHelpWindow() );
-        }
-        help_frame.removeAll();
-        TextArea text  = new TextArea(str);
-        help_frame.add(text);
-        help_frame.show();
+    private void ShowHelpMessage( String str, String title ){
+        JOptionPane.showMessageDialog(this.frame,str,title,
+                                      JOptionPane.INFORMATION_MESSAGE);
     }
 
     /* ---------------- Internal Event Handler Classes --------------------- */
@@ -428,30 +487,20 @@ public class Wizard implements Serializable{
     }
 
     /**
-     *  This class diposes of the help frame when the user closes it.
-     */
-    private class HideHelpWindow extends WindowAdapter{
-        public void windowClosing( WindowEvent event ){
-            help_frame.dispose();
-            help_frame = null;
-        }  
-    }
-
-    /**
      *  This class handles all of the commands from buttons and menu
      *  items.
      */
     private class CommandHandler implements ActionListener{
+        private Wizard wizard;
+        private CommandHandler(Wizard wiz){
+            this.wizard=wiz;
+        }
         public void actionPerformed( ActionEvent event ){
             String command = event.getActionCommand();
             
-            if ( command.equals( NEXT_COMMAND ) ){
-                if ( form_num+1 < forms.size() ){
-                    form_num++;
-                    show(form_num);
-                }else{
-                    status_display.append( "NO MORE FORMS, CAN'T ADVANCE\n" );
-                }
+            if ( command.equals( FIRST_COMMAND) ){
+                form_num=0;
+                show(form_num);
             }else if ( command.equals( BACK_COMMAND ) ){
                 if ( form_num-1 >= 0 ){
                     form_num--;
@@ -459,6 +508,19 @@ public class Wizard implements Serializable{
                 }else{
                     status_display.append( "FORM 0 SHOWN, CAN'T STEP BACK\n" );
                 }
+            }else if ( command.equals( NEXT_COMMAND ) ){
+                if ( form_num+1 < forms.size() ){
+                    form_num++;
+                    show(form_num);
+                }else{
+                    status_display.append( "NO MORE FORMS, CAN'T ADVANCE\n" );
+                }
+            }else if ( command.equals( LAST_COMMAND ) ){
+                form_num=forms.size()-1;
+                show(form_num);
+            }else if ( command.equals( CLEAR_COMMAND ) ){
+                invalidate(0);
+                progress.setValue(0);
             }else if ( command.equals( EXEC_COMMAND ) ){
                 Form f = getCurrentForm();
                 // execute the previous forms
@@ -473,18 +535,15 @@ public class Wizard implements Serializable{
                 }
                 
                 // invalidate subsequent forms
-                for( int i=form_num+1 ; i<forms.size() ; i++ ){
-                    f=getForm(i);
-                    f.setCompleted(false);
-                }
+                invalidate(form_num+1);
             }else if ( command.equals( HELP_ABOUT_COMMAND ) ){
-                ShowHelpMessage( about_message );
+                ShowHelpMessage( about_message, "About: "+wizard.title );
             }else if ( command.equals( WIZARD_HELP_COMMAND ) ){
-                ShowHelpMessage( help_message );
+                ShowHelpMessage( help_message, "Help: "+wizard.title );
             }else if ( command.equals( FORM_HELP_COMMAND ) ){
                 Form f = getCurrentForm();
                 if ( f != null )
-                    ShowHelpMessage( f.getHelpMessage() );
+                    ShowHelpMessage(f.getHelpMessage(),"Help: "+f.getTitle());
             }else if ( command.equals( SAVE_WIZARD_COMMAND ) ){
                 save();
             }else if ( command.equals( LOAD_WIZARD_COMMAND ) ){
@@ -501,6 +560,15 @@ public class Wizard implements Serializable{
                 close();
             }
         } 
+        /**
+         * Invalidate all forms starting with the number specified.
+         */
+        private void invalidate(int start){
+            for( int i=start ; i<forms.size() ; i++ ){
+                getForm(i).setCompleted(false);
+            }
+        }
+
     }
     
     /**
