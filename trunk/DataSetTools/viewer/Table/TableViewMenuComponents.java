@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/10/07 14:47:11  rmikk
+ *  Uses the specialized DataSet viewer,QuickGrIncols,
+ *     that uses the  DS_XY_TableModel.
+ *
  *  Revision 1.7  2002/08/21 15:46:55  rmikk
  *   If there are no selected Groups the pointed At group or if none,group 0 is selected
  *
@@ -148,9 +152,11 @@ public class TableViewMenuComponents
         DS.setSelectFlag(indx, true);
        }
     if( view_type.indexOf("Group x vs y")==0)
+      
       return new TableView( DS, state,"HGT,F");//tv.getGenTableModel( DS,LM,"HGT,F",DS.getSelectedIndices() ));
     if( view_type.indexOf("x vs Group y")==0)
-       return new TableView( DS, state,"HT,GF");//tv.getGenTableModel( DS,LM,"HT,FG",DS.getSelectedIndices() ));
+      return new QuickTableGrInCols( DS, state );
+       //return new TableView( DS, state,"HT,GF");//tv.getGenTableModel( DS,LM,"HT,FG",DS.getSelectedIndices() ));
    
        //return new TableView( DS, state,"HTI,JF");//tv.getGenTableModel( DS,LM,"HTI,JF",DS.getSelectedIndices() ));
     
