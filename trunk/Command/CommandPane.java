@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2001/07/11 20:53:22  rmikk
+ * Change the Prgm on the Command Pane buttons to the
+ * word "Script"
+ *
  * Revision 1.25  2001/07/03 22:14:17  rmikk
  * Added Code to eliminate the "UNKNOWN" description at
  * the top of the JParametersDialog
@@ -206,10 +210,10 @@ public void setLogDoc(Document doc)
         Rectangle R = getBounds() ; 
         
       
-        Run = new JButton( "Run Prgm" ) ; 
+        Run = new JButton( "Run Script" ) ; 
        
-        Open = new JButton( "Open Prgm" ) ; 
-        Save = new JButton( "Save Prgm" ) ; 
+        Open = new JButton( "Open Script" ) ; 
+        Save = new JButton( "Save Script" ) ; 
         Help = new JButton( "Help" ) ; 
         Clear = new JButton("Clear");
         Run.addActionListener( new MyMouseListener(this ) ) ; 
