@@ -12,6 +12,7 @@
 #  - if the calibration file is not specified then the real space
 #  conversion is not performed
 
+$ CATEGORY = Operators,Generic,TOF_SCD
 $ path                DataDirectoryString    Raw Data Path
 $ outpath             DataDirectoryString    Output Data Path
 $ run_numbers         Array                  Run Number
