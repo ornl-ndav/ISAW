@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.3  2003/02/20 19:45:00  dennis
+ *  Now implements Serializable.
+ *
  *  Revision 1.2  2003/02/07 18:41:55  dennis
  *  Added merge() method for combining lists of pixels.
  *  Added serial version ID and ReadObject methods needed for "stable"
@@ -49,7 +52,7 @@ import java.util.*;
 /**
  */  
 
-public class PixelInfoList 
+public class PixelInfoList implements Serializable
 {
   // NOTE: any field that is static or transient is NOT serialized.
   //
