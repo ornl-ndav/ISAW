@@ -31,9 +31,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/06/10 20:19:17  dennis
+ *  Added getI(x) and getX(i) methods to get individual points and positions
+ *  of individual points in the list.
+ *  Added instance variable "step" to avoid recalculating it every time it's
+ *  needed.
+ *
  *  Revision 1.5  2001/04/25 19:04:10  dennis
  *  Added copyright and GPL info at the start of the file.
- *
  *
  *  Revision 1.4  2000/12/07 22:27:21  dennis
  *  Added methods getStep(),
@@ -91,20 +96,26 @@ public class UniformXScale extends XScale implements Serializable
    *
    * @see DataSetTools.dataset.XScale
    */
+
+   double step; 
+
    public UniformXScale( float start_x, float end_x, int num_x )
    {
      super( start_x, end_x, num_x );
+     if ( num_x > 1 )
+       step = (end_x - start_x) / (double)(num_x - 1);
+     else
+       step = 0;
    }
 
 
   /**
-   * Returns the array of "X" values.  The array will have num_x entries.   
+   * @return the array of "X" values.  The array will have num_x entries.   
    * The "X" values are uniformly spaced and are calculated from start_x, 
    * end_x and num_x.
    */
   public float[] getXs()
   {
-    double step = getStep();
     float x[]   = new float[num_x];
 
     for ( int i = 0; i < num_x; i++ )
@@ -113,6 +124,66 @@ public class UniformXScale extends XScale implements Serializable
     return x;
   }
 
+
+  /**
+   *  Get the ith x-value from this XScale.
+   *
+   *  @param  i    The position of the x-value that is needed.  This should be
+   *               between 0 and the number_of_x_values - 1.
+   *
+   *  @return The x value in position i in the "list" of x-values for this
+   *          x scale.  If there is no such x value, this will return Float.NaN.   */
+  public float getX( int i )
+  {
+    if ( i < 0 || i >= num_x )
+      return Float.NaN;
+
+    return (float)(start_x + i * step);
+  }
+
+
+  /**
+   *  Get the position of the specified x-value in this XScale.
+   *
+   *  @param  x    The x value to find in the "list" of x values represented
+   *               by this x scale.
+   *
+   *  @return The position "i" in the list of x-values, where the specified  
+   *          x occurs, if it is in the list.  If the specified x is less
+   *          than or equal to the last x in the "list", this function returns
+   *          the index of the first x that is greater than or equal to the 
+   *          specified x.  If the specified x value is above the end of 
+   *          the x scale, the number of points in the x scale is returned.  
+   */
+  public int getI( float x )
+  {
+    int position;
+
+    if (step <= 0 )                             // one point x_scale
+    {
+      if ( x <= start_x )
+        return 0;
+      else
+        return 1;
+    }
+    else                                        // non-degenerate scale
+    {
+      position = (int)Math.ceil( (x-start_x)/step ); 
+      if ( position < 0 )
+        position = 0;
+      else if ( position > num_x )
+        position = num_x;     
+
+      if ( position > 0 )
+      {
+        if ( getX(position-1) == x )
+          return position - 1; 
+      }
+      return position;
+    }
+  }
+
+
   /**
    * Get the separation between successive x values for this XScale.
    *
@@ -120,11 +191,6 @@ public class UniformXScale extends XScale implements Serializable
    */
   public double getStep()
   {
-    double step    = 0;
-
-    if ( num_x > 1 )
-      step = (end_x - start_x) / (double)(num_x - 1);
-
     return step;
   }
 
@@ -166,19 +232,16 @@ public class UniformXScale extends XScale implements Serializable
      int   temp_num_x   = Math.max( this.num_x,   other_scale.num_x );
 
                                                        // keep current delta_x
-     double delta_x;
-     if ( num_x > 1 )
-       delta_x = ( end_x - start_x ) / (double)(num_x-1); 
-     else
+     if ( num_x <= 1 )
        return new UniformXScale( temp_start_x, temp_end_x, temp_num_x );
 
-     int n_steps_to_start = (int)Math.round((start_x-temp_start_x)/delta_x);
-     temp_start_x = (float)(start_x - n_steps_to_start * delta_x);
+     int n_steps_to_start = (int)Math.round((start_x-temp_start_x)/step);
+     temp_start_x = (float)(start_x - n_steps_to_start * step);
 
-     int n_steps_to_end = (int)Math.round((temp_end_x-temp_start_x)/delta_x); 
-     temp_end_x = (float)(temp_start_x + n_steps_to_end * delta_x);
+     int n_steps_to_end = (int)Math.round((temp_end_x-temp_start_x)/step); 
+     temp_end_x = (float)(temp_start_x + n_steps_to_end * step);
 
-     temp_num_x = (int)Math.round( (temp_end_x - temp_start_x) / delta_x ) + 1;
+     temp_num_x = (int)Math.round( (temp_end_x - temp_start_x) / step ) + 1;
 
      return new UniformXScale( temp_start_x, temp_end_x, temp_num_x );
    }
@@ -238,5 +301,15 @@ public class UniformXScale extends XScale implements Serializable
     float x[] = extended.getXs();
     for ( int i = 0; i < x.length; i++ )
       System.out.println( x[i] );
+
+    System.out.println("Position of 0    " + extended.getI( 0.0f ) );
+    System.out.println("Position of 8    " + extended.getI( 8.0f ) );
+    System.out.println("Position of 9    " + extended.getI( 9.0f ) );
+    System.out.println("Position of 9.4  " + extended.getI( 9.4f ) );
+    System.out.println("Position of 9.75 " + extended.getI( 9.75f ) );
+    System.out.println("Position of 10   " + extended.getI( 10.0f ) );
+    System.out.println("Position of 12.4 " + extended.getI( 12.4f ) );
+    System.out.println("Position of 130  " + extended.getI( 130.0f ) );
+
   }
 }
