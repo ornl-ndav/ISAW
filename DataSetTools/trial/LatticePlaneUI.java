@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/07/28 15:44:39  dennis
+ * Made default value (0,0,0).
+ *
  * Revision 1.4  2004/03/15 06:10:53  dennis
  * Removed unused import statements.
  *
@@ -68,7 +71,7 @@ public class LatticePlaneUI extends ActiveJPanel
   private TextValueUI  miller_value;  
   private String       title;
 
-  private float        normal[]  = { 1, 2, 3, 4 };
+  private float        normal[]  = { 0, 0, 0, 1 };
   private float        sigma     = 1;
   private float        d_spacing = 1;
 
