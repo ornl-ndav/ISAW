@@ -31,7 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/12/01 20:03:46  kramer
+ * Fixed some of the javadoc statements so that there weren't @param
+ * arguments referring to variables that didn't exist.
+ *
  * Revision 1.8  2004/11/04 00:00:48  kramer
+ *
  * Modified this operator to use the classes in the package
  * gov.anl.ipns.MathTools.Smoothing to do the actual work of smoothing data.
  *
@@ -514,14 +519,9 @@ public class SavitzkyGolayFilter extends GenericSpecial
    }
    
    /**
-    * 
-    * @param data
+    * @param data  
     * @param xmin  The raw minimum x value as passed to this operator.
     * @param xmax  The raw maximum x value as passed to this operator.
-    * @param c
-    * @param nL
-    * @param nR
-    * @param M
     */
    private boolean quickSmoothDataObject(QuickSavitzkyGolaySmoother smoother,
                                          Data data, float xmin, float xmax)  
