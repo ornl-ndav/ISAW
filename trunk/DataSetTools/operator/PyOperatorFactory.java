@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/07/02 18:59:29  bouzekc
+ * Fixed grammar and spelling errors in javadocs and added
+ * javdocs to initInterpreter().
+ *
  * Revision 1.3  2003/06/18 20:38:11  pfpeterson
  * Gets classname from PyScript.
  *
@@ -59,7 +63,7 @@ import org.python.util.PythonInterpreter;
  * 
  * NOTE: All operators created from a single instance of the factory
  * will share name-space. In practice this should not be a problem,
- * and can be remidied by creating a new instance of the
+ * and can be remedied by creating a new instance of the
  * PyOperatorFactory.
  */
 public class PyOperatorFactory extends Object implements OperatorFactory{
@@ -85,6 +89,11 @@ public class PyOperatorFactory extends Object implements OperatorFactory{
     this.initInterpreter(args);
   }
 
+  /**
+   *  Initializes the internal PythonInterpreter.
+   *
+   *  @param  argv[]        Array of arguments to send to the interpreter.
+   */
   protected void initInterpreter(String[] argv){
     // get preProperties, postProperties, and systemProperties
     Properties postProps = new Properties();
@@ -106,7 +115,7 @@ public class PyOperatorFactory extends Object implements OperatorFactory{
   }
 
   /**
-   * generate an operator instance from the given python file
+   *  Generate an operator instance from the given python file.
    */
   public Operator getInstance(String filename) throws IllegalStateException,
                                                       InstantiationError,
