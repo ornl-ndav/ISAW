@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/11/25 20:11:31  rmikk
+ *  Added a Save Image as a submenu of the File Menu
+ *
  *  Revision 1.8  2003/11/21 18:16:41  dennis
  *  Added call to repaint() method in setDataSet(), so that the
  *  axes are redrawn when the DataSet is changed.  This happens
@@ -105,6 +108,7 @@ public class DataSetViewerMaker  extends DataSetViewer
           East.add( CompPcontrols[i]);  
       
       PrintComponentActionListener.setUpMenuItem( getMenuBar(), this);
+      SaveImageActionListener.setUpMenuItem( getMenuBar(), this);
       East.add( Box.createRigidArea(new Dimension(30,500)) );    
       viewArray.addActionListener( new ArrayActionListener());
       viewComp.addActionListener( new CompActionListener());

@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2003/11/25 20:12:03  rmikk
+ *  Added a Save Image as a submenu of the File Menu
+ *
  *  Revision 1.36  2003/10/30 21:10:26  dennis
  *  Removed unneeded import of gov.noaa.pmel.sgt.demo, which
  *  caused a problem with javadoc 1.4.2_02
@@ -313,6 +316,7 @@ public class ContourView extends DataSetViewer
 
      DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( menu_bar, this );
      
+     DataSetTools.viewer.SaveImageActionListener.setUpMenuItem( menu_bar, this);
      jm = menu_bar.getMenu( DataSetViewer.OPTION_MENU_ID );
      jm.add( new ColorScaleMenu( new ColorActionListener() ) );
 
