@@ -27,6 +27,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/05/13 20:17:46  pfpeterson
+ * Changed to work with most recent version of IPNSSrc.blind
+ *
  * Revision 1.5  2003/05/12 19:25:06  pfpeterson
  * Small changes to work with changes in IPNSsrc.blind
  *
@@ -74,7 +77,7 @@ import DataSetTools.util.IntList;
 import DataSetTools.util.SharedData;
 import java.util.Vector;
 import DataSetTools.parameter.*;
-import IPNSSrc.*;
+import IPNSSrc.blind;
 
 /** 
  * This operator takes a peaks file and a list of sequence numbers in
@@ -219,26 +222,21 @@ public class BlindJ extends  GenericTOF_SCD {
     double[] xx = new double[peaks.size()+3];
     double[] yy = new double[peaks.size()+3];
     double[] zz = new double[peaks.size()+3];
-    intW LMT = new intW(0);
      
     // perform the calculation
     blind BLIND=new blind();
-    BLIND.blaue( peaks,xx,yy,zz,LMT,seq);
-    double[] b= new double[9];
-    doubleW dd= new doubleW(.08);
-    intW mj= new intW(0);
-    BLIND.bias(peaks.size()+3,xx,yy,zz,b,0,3,dd,4.0,mj,seq,123,0);
+    ErrorString error=BLIND.blaue( peaks,xx,yy,zz,seq);
+    if(error!=null) return error;
+    BLIND.bias(peaks.size()+3,xx,yy,zz,seq);
 
     // write the log file
     int index=matrixfile.lastIndexOf("/");
-    if(index>=0){
-      String logfile=matrixfile.substring(0,index+1)+"blind.log";
-      if(!BLIND.writeLog(logfile))
+    String dir="";
+
+    if(index>=0)
+      dir=matrixfile.substring(0,index+1);
+    if(!BLIND.writeLog(dir+"blind.log"))
         SharedData.addmsg("WARNING: Failed to create logfile");
-    }else{
-      SharedData.addmsg("WARNING: Could not create logfile, bad filename");
-    }
-        
 
     // write the matrix file
     return writeMatFile(matrixfile,BLIND);
@@ -292,16 +290,7 @@ public class BlindJ extends  GenericTOF_SCD {
     for( int i=0 ; i<rawpeaks.size()&&seqnum_num<seq.length ; i++ ){
       peak=(Peak)rawpeaks.elementAt(i);
       if(peak.seqnum()==seq[seqnum_num]){
-        float[] dat=new float[9];
-        dat[5]=peak.xcm();
-        dat[6]=peak.ycm();
-        dat[7]=peak.wl();
-        dat[0]=peak.chi();
-        dat[1]=peak.phi();
-        dat[2]=peak.omega();
-        dat[3]=peak.detA();
-        dat[4]=peak.detD();
-        peaks.add(dat);
+        peaks.add(peak);
         seqnum_num++;
       }
     }
