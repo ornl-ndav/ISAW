@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/12/08 22:11:03  dennis
+ * Now uses single copy of HTMLizer from SharedData. (Ruth)
+ *
  * Revision 1.3  2002/12/02 15:39:50  rmikk
  * Gets the html page from the ..\HTMLizer  class
  *
@@ -106,7 +109,7 @@ public class Handler extends URLStreamHandler
        if( op == null )
           page= "No Such Operator";
        else
-          page = (new HTMLizer()). createHTML( op );
+          page = DataSetTools.util.SharedData.HTMLPageMaker. createHTML( op );
 
        
         setDoInput(true);
