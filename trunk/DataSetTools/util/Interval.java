@@ -3,6 +3,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.4  2001/08/03 20:31:53  neffk
+ * modified create_endpoints(...) to create a DoubleAttribute for
+ * sorting purposes.
+ *
  * Revision 1.3  2001/07/11 16:33:27  neffk
  * 0) no longer return unused part of the parameter string in the
  *    constructor
@@ -19,16 +23,17 @@
 
 package DataSetTools.util;
 
-import DataSetTools.util.*;
+import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.DetPosAttribute;
 import DataSetTools.dataset.DoubleAttribute;
 import DataSetTools.dataset.FloatAttribute;
 import DataSetTools.dataset.IntAttribute;
-import DataSetTools.dataset.StringAttribute;
 import DataSetTools.dataset.IntListAttribute;
 import DataSetTools.dataset.StringAttribute;
-import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.StringAttribute;
+import DataSetTools.util.*;
+import java.lang.IllegalArgumentException;
 
 import java.lang.Integer;
 
@@ -38,7 +43,7 @@ import java.lang.Integer;
 
 public class Interval 
 {
-  final private String SEPERATOR = ":";
+  public static final String SEPARATOR = ":";
 
   private int      defaultEndpoint = 0;
   private String   attr_type = null;
@@ -70,37 +75,50 @@ public class Interval
    * by two values seperated by a colon, enclosed in () or [], depending
    * on if the interval is open or closed.  for example, to specify an
    * interval of GROUP_ID's from 10 to 100, use 'GROUP_ID[10:100]'.
+   *
+   * essentially, this method parses two (2) double values, which are 
+   * then used in conjunction w/ each Attribute object's getNumericValue()
+   * method.
    */
   public Interval( String str )
   {
-    System.out.println( "I" );
 
+              //keep track of whether each endpoint is
+              //'closed' (e.g. closed = [ or ])
+    boolean cl = false,
+            cr = false;
+
+    int i,j,k,index = 0;
     String start_value = null, 
            end_value   = null;
-    int i,j,k,index = 0;
+
 
     str = str.trim();  //remove whitespace on ends
 
     //find the beginning of the endpoint
     i = str.indexOf( '[' );
     j = str.indexOf( '(' );
-    k = str.indexOf( SEPERATOR );
+    k = str.indexOf( SEPARATOR );
     if(  i < 0  &&  j < 0  ||  k < 0  )
-    {
-      System.out.println( "marker not found" );
-//      return new String();
-    }
+      throw new IllegalArgumentException( "marker not found" );
+
     if(  i > 0  &&  j > 0  )
     {
       if( i > j )
         index = j;
       else
+      {
         index = i;
+        cl = true;
+      }
     }
     else
     {
       if( i > j )
+      {
         index = i;
+        cl = true;
+      }
       else
         index = j;
     }
@@ -117,39 +135,41 @@ public class Interval
     }
 
 
-//    System.out.println( "start value: " + start_value );
-
-
-   //find the end of the endpoint and make a copy of it, leaving
-   //the rest of the string alone
-//    System.out.println( "str: " + str );
-    k = str.indexOf( SEPERATOR );
+                       //find the end of the endpoint 
+                       //and make a copy of it, leaving
+                       //the rest of the string alone
+    k = str.indexOf( SEPARATOR );
     i = str.indexOf( ']' );
     j = str.indexOf( ')' );
     if(  i < 0  &&  j < 0  ||  k < 0  )
-    {
-      System.out.println( "marker not found" );
-//      return new String();
-    }
+      throw new IllegalArgumentException( 
+        "unmatched marker.  use [3:4] or (3:4)" );
+
     if(  i > 0  &&  j > 0  )
     {
       if( i > j )
         index = j;
       else
+      {
         index = i;
+        cr = true;
+      }
     }
     else
     {
       if( i > j )
+      {
         index = i;
+        cr = true;
+      }
       else
         index = j;
     }
 
     if(  index > k  )
     {
-      end_value = str.substring(k+1,i);
-      str = str.substring(i+1,str.length());
+      end_value = str.substring(k+1,index);
+      str = str.substring(index+1,str.length());
     }
     else
     {
@@ -164,8 +184,8 @@ public class Interval
 //    System.out.println( "start: [" + start_value + "]" );   
 //    System.out.println( "end:   [" + end_value   + "]" );   
 
-    create_endpoints( start_value, end_value );
-//    return str;
+    create_endpoints( start_value, end_value,
+                      cl,          cr );
   }
 
 
@@ -194,20 +214,20 @@ public class Interval
    */
   public void set( Endpoint e1, Endpoint e2 )
   {
-    //are values are the same?
+                      //are values are the same?
     if( e1.isBefore(e2) )
     {
       low =  e1;
       high = e2;
     }
-    else
+    else if(  e2.isBefore(e1)  )
     {
       low =  e2;
       high = e1;
     }
     
-    //are the names the same?  assign lexigraphically
-    if(  e1.getAttr().getName().equals( e2.getAttr().getName() )  )
+                      //are the names the same?  assign lexigraphically
+    else if(  e1.getAttr().getName().equals( e2.getAttr().getName() )  )
     {
       //e1 comes first
       if( e1.getAttr().getName().compareTo(e2.getAttr().getName()) < 0 )
@@ -407,137 +427,33 @@ public class Interval
   }
 
   
-  private void create_endpoints( String v1, String v2 )
+  private void create_endpoints( String v1,  String v2, 
+                                 boolean cl, boolean cr )
   {
     Endpoint e1 = null,
              e2 = null;
 
-    if(  attr_type.equals( Attribute.DELTA_2THETA )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.DETECTOR_IDS )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.DETECTOR_POS )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.DS_TAG )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.EFFICIENCY_FACTOR )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.END_DATE )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.END_TIME )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.ENERGY_IN )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.ENERGY_OUT )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.FILE_NAME )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.GROUP_ID )  )
-    {
-      Integer i1 = new Integer( v1 );
-      Integer i2 = new Integer( v2 );
-      e1 = new Endpoint(  new IntAttribute( attr_type, i1.intValue() ),
-                          true  );
-      e2 = new Endpoint(  new IntAttribute( attr_type, i2.intValue() ),
-                          true  );
-      set( e1, e2 );
-    }
-    else if(  attr_type.equals( Attribute.INITIAL_PATH )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.INST_NAME )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.INST_TYPE )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.MAGNETIC_FIELD )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.NOMINAL_ENERGY_IN )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.NUMBER_OF_PULSES )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.PRESSURE )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.Q_VALUE )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.RAW_ANGLE )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.RUN_NUM )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.RUN_TITLE )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.SAMPLE_NAME )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.SOLID_ANGLE )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.TEMPERATURE )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.TIME_FIELD_TYPE )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.TITLE )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.TOTAL_COUNT )  )
-    {
-      System.out.println( "not implemented" );
-    }
-    else if(  attr_type.equals( Attribute.UPDATE_TIME )  )
-    {
-      System.out.println( "not implemented" );
-    }
+    Double value = new Double( v1 );
+    if(  value.isNaN()  )
+      System.out.println( "number not found" );
     else
     {
-      System.out.println( "bad attribute type" );
+      DoubleAttribute attr = new DoubleAttribute(  attr_type, 
+                                                   value.doubleValue()  );
+      e1 = new Endpoint( attr, cl );
     }
+
+    value = new Double( v2 );
+    if(  value.isNaN()  )
+      System.out.println( "number not found" );
+    else
+    {
+      DoubleAttribute attr = new DoubleAttribute(  attr_type, 
+                                                   value.doubleValue()  );
+      e2 = new Endpoint( attr, cr );
+    }   
+    
+    set( e1, e2 );
   }
 
 }
