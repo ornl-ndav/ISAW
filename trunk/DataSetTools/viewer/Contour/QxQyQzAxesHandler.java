@@ -97,6 +97,10 @@ public class  QxQyQzAxesHandler
         { float[] Q = getQunitVect( GroupIndex);
           if( (Value ==0) ||(Q[0]==0))
             return -1;
+          if( GroupIndex < 0)
+             return -1;
+          if( GroupIndex >= ds.getNum_entries())
+             return -1;
           Data D = ds.getData_entry( GroupIndex);
           if( D == null)
               return -1;
@@ -111,6 +115,8 @@ public class  QxQyQzAxesHandler
               return -1;
            if( i <= 0)
               return -1;
+           
+             
            float y1 = xsc.getX(i-1);
            float y2 = xsc.getX( i);
            if( y2 <= y1)
@@ -121,6 +127,8 @@ public class  QxQyQzAxesHandler
        public float getMaxAxisValue(int GroupIndex)
         {float[] Q = getQunitVect( GroupIndex);
          Data D = ds.getData_entry( GroupIndex);
+         if( D == null)
+            return Float.NaN;
          XScale xscl =D.getX_scale();
          if( Q[0] >=0)
             return xscl.getEnd_x() *Q[0];
@@ -130,6 +138,8 @@ public class  QxQyQzAxesHandler
       public float getMinAxisValue(int GroupIndex)
         {float[] Q = getQunitVect( GroupIndex);
          Data D = ds.getData_entry( GroupIndex);
+          if( D == null)
+            return Float.NaN;
          XScale xscl =D.getX_scale();
          if( Q[0] >=0)
              return xscl.getStart_x() *Q[0];
@@ -190,9 +200,14 @@ public class  QxQyQzAxesHandler
      *  this Group
      */
       public float  getXindex( int GroupIndex, float Value)
-        { float[] Q = getQunitVect( GroupIndex);
+        {  if( GroupIndex < 0)
+             return -1;
+           if( GroupIndex >= ds.getNum_entries())
+             return -1;
+          float[] Q = getQunitVect( GroupIndex);
           if( (Value ==0) || (Q[1] == 0))
             return -1;
+           
            Data D = ds.getData_entry( GroupIndex);
           if( D == null)
               return -1;
@@ -217,6 +232,8 @@ public class  QxQyQzAxesHandler
        public float getMaxAxisValue(int GroupIndex)
         {float[] Q = getQunitVect( GroupIndex);
          Data D = ds.getData_entry( GroupIndex);
+          if( D == null)
+            return Float.NaN;
          XScale xscl =D.getX_scale();
          if( Q[1] >=0)
             return xscl.getEnd_x() *Q[1];
@@ -226,6 +243,8 @@ public class  QxQyQzAxesHandler
       public float getMinAxisValue(int GroupIndex)
         {float[] Q = getQunitVect( GroupIndex);
          Data D = ds.getData_entry( GroupIndex);
+          if( D == null)
+            return Float.NaN;
          XScale xscl =D.getX_scale();
          if( Q[1] >=0)
              return xscl.getStart_x() *Q[1];
@@ -282,6 +301,10 @@ public class  QxQyQzAxesHandler
             return -1;
            if( Q[2] == 0)
              return -1;
+           if( GroupIndex < 0)
+             return -1;
+           if( GroupIndex >= ds.getNum_entries())
+             return -1;
            XScale xsc = ds.getData_entry(GroupIndex).getX_scale();
            int i = xsc.getI(Value/Q[2]);
            /*if( i >= D.getX_scale().getNum_x())
@@ -302,6 +325,8 @@ public class  QxQyQzAxesHandler
        public float getMaxAxisValue(int GroupIndex)
         {float[] Q = getQunitVect( GroupIndex);
          Data D = ds.getData_entry( GroupIndex);
+          if( D == null)
+            return Float.NaN;
          XScale xscl =D.getX_scale();
          if( Q[2] >=0)
             return xscl.getEnd_x() *Q[2];
@@ -311,6 +336,8 @@ public class  QxQyQzAxesHandler
       public float getMinAxisValue(int GroupIndex)
         {float[] Q = getQunitVect( GroupIndex);
          Data D = ds.getData_entry( GroupIndex);
+         if( D == null)
+            return Float.NaN;
          XScale xscl =D.getX_scale();
          if( Q[2] >=0)
              return xscl.getStart_x() *Q[2];
