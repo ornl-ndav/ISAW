@@ -29,6 +29,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.44  2004/07/28 18:28:37  rmikk
+ * Improved code for setting the selected Data blocks to work with larger
+ *   DataSets
+ *
  * Revision 1.43  2004/06/18 19:18:05  rmikk
  * Eliminated a lor of unused variables
  *
@@ -2555,8 +2559,13 @@ public class table_view extends JPanel implements ActionListener
             A = null;
          else
             A = IntList.ToArray( S.toString() );
-         int j = 0;
-
+         //int j = 0;
+         
+         DS.clearSelections();
+         if( A != null)
+           for( int i=0; i< A.length; i++)
+              DS.setSelectFlag(A[i],true);
+        /*
          for( int i = 0; i < DS.getNum_entries(); i++ )
          {
             DS.setSelectFlag( i, false );
@@ -2569,6 +2578,7 @@ public class table_view extends JPanel implements ActionListener
                   }
 
          }
+        */
          DS.notifyIObservers( IObserver.SELECTION_CHANGED );
          return "Success";
 
