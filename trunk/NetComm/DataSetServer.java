@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/10/15 03:05:49  bouzekc
+ *  Fixed javadoc errors.
+ *
  *  Revision 1.9  2003/10/14 22:04:22  dennis
  *  Fixed javadoc comment to build cleanly with jdk 1.4.2
  *
@@ -54,9 +57,9 @@ import DataSetTools.util.*;
  *  methods and a list of data directories that are used by both 
  *  LiveDataServers and FileDataServers
  *
- *  @see LiveDataServer 
- *  @see FileDataServer 
- *  @see TCPServer 
+ *  @see NetComm.LiveDataServer 
+ *  @see NetComm.FileDataServer 
+ *  @see NetComm.TCPServer 
  */
 
 public class DataSetServer extends TCPServer 
@@ -82,7 +85,7 @@ public class DataSetServer extends TCPServer
    *  command line it is used as the data directory.  If not, the current
    *  directory is used.
    *
-   *  @param String dataDirectory
+   *  @param data_directory The data directory to add.
    */
   public void addDataDirectory( String data_directory )
   {
