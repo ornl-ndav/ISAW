@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.86  2005/01/10 15:55:07  dennis
+ *  Removed empty statement.
+ *
  *  Revision 1.85  2004/07/08 16:02:46  dennis
  *  Added TOF_SAD to list of supported instrument types in java docs.
  *
@@ -982,7 +985,7 @@ private float CalculateEIn()
                         "Exception in RunfileRetriever.AddSpectrumAttributes");
         System.out.println("Exception is " + e );
         e.printStackTrace();
-      };
+      }
     }
 
     // Pixel Info List.....

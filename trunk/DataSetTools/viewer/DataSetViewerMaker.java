@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2005/01/10 15:55:08  dennis
+ *  Removed empty statement.
+ *
  *  Revision 1.17  2004/07/02 19:17:31  serumb
  *  Added code to get the menu items from the view component.
  *
@@ -96,7 +99,6 @@ import javax.swing.*;
 import javax.swing.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.components.View.*;
-import java.awt.event.*;
 import java.awt.*;
 
 import gov.anl.ipns.ViewTools.Components.OneD.VirtualArrayList1D;
@@ -185,9 +187,10 @@ public class DataSetViewerMaker  extends DataSetViewer
     viewComp.kill();
     }
     public void ancestorAdded(AncestorEvent event){
-    };
+    }
+    
     public void ancestorMoved(AncestorEvent event){
-    };
+    }
   }
 
   }//DataSetViewerMaker
