@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2003/07/09 21:24:31  dennis
+ *  Added test main program.
+ *
  *  Revision 1.1  2003/02/21 18:35:14  dennis
  *  Initial version of object that keeps a DataSet in compressed form.
  *
@@ -39,6 +42,7 @@ package  DataSetTools.dataset;
 
 import java.io.*;
 import DataSetTools.util.*;
+import DataSetTools.retriever.*;
 
 /**
  *  This class records a compressed form of an entire DataSet in an array
@@ -124,6 +128,44 @@ public class CompressedDataSet implements Serializable
     byte new_bytes[] = new byte[ ds_bytes.length ];
     System.arraycopy( ds_bytes, 0, new_bytes, 0, ds_bytes.length );
     return ds_bytes;
+  }
+
+
+
+  /* ----------------------------- main --------------------------------- */
+  /** 
+   *  main program for test purposes
+   */
+  static public void main( String args[] )
+  { 
+    String file_name = null;
+    String default_name = "/usr/local/ARGONNE_DATA/SCD_QUARTZ/scd06496.run";
+
+    if ( args.length > 0 )
+      file_name = args[0];
+    else
+      file_name = default_name;
+
+    RunfileRetriever rr = new RunfileRetriever(file_name);
+  
+    DataSet ds = rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
+    
+    CompressedDataSet comp_ds = new CompressedDataSet( ds );
+    System.out.println("Compressed DataSet size = " + comp_ds.size() );
+
+    Data d;
+    for ( int i = 0; i < ds.getNum_entries(); i++ )
+    {
+      d = ds.getData_entry(i);
+      float y[] = d.getY_values();
+      for ( int j = 0; j < y.length; j++ )
+        if ( y[j]  < 3 )
+          y[j] = 0;                                  // set background to zero
+    }   
+
+    CompressedDataSet comp_ds2 = new CompressedDataSet( ds );
+    System.out.println("Reduced, compressed DataSet size = " + comp_ds2.size());
+
   }
 
 } 
