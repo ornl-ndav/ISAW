@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/08/15 23:50:04  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.9  2003/07/23 21:54:31  rmikk
  *  Fixed an error that occurred but should not have happened
  *
@@ -178,34 +182,35 @@ public class FloatPG extends StringEntryPG implements ParamUsesString{
         this.setValue(new Float(val.trim()));
     }
 
-    // ********** IParameterGUI requirements **********
-    static void main(String args[]){
+    /*
+     * Testbed.
+     */
+    /*public static void main(String args[]){
         FloatPG fpg;
 
         fpg=new FloatPG("a",new Float(1f));
         System.out.println(fpg);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new FloatPG("b",new Float(10f));
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new FloatPG("c",new Float(1000f),false);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new FloatPG("d",new Float(100f),true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
-
-    }
+    }*/
 
     /**
      * Definition of the clone method.

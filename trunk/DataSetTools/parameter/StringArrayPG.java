@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/08/15 23:50:06  bouzekc
+ * Modified to work with new IParameterGUI and ParameterGUI
+ * classes.  Commented out testbed main().
+ *
  * Revision 1.8  2003/06/23 16:12:28  bouzekc
  * Reformatted for consistent indenting.
  *
@@ -65,11 +69,14 @@ public class StringArrayPG extends VectorPG{
     setValue( value);
   }
 
-  public static void main( String args[] ){
+  /*
+   * Testbed.
+   */
+  /*public static void main( String args[] ){
     JFrame jf = new JFrame("Test");
     jf.getContentPane().setLayout( new GridLayout( 1,2));
     StringArrayPG IaPg = new StringArrayPG( "Enter String list", null);
-    IaPg.init();
+    IaPg.initGUI(null);
     jf.getContentPane().add(IaPg.getGUIPanel());
     JButton  jb = new JButton("Result");
     jf.getContentPane().add(jb);
@@ -77,7 +84,7 @@ public class StringArrayPG extends VectorPG{
     jf.setSize( 500,100);
     jf.invalidate();
     jf.show();
-  }      
+  }*/      
   public Object clone(){
     StringArrayPG faap = new StringArrayPG( getName(), getValue());
     return (Object)faap;

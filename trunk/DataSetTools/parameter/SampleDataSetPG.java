@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/08/15 23:50:05  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.6  2003/04/25 15:39:39  pfpeterson
  *  Improved support for null values which are automatically converted
  *  to EMPTY_DATA_SET.
@@ -119,10 +123,10 @@ public class SampleDataSetPG extends DataSetPG{
         return false;
     }
 
-    /**
+    /*
      * Main method for testing purposes.
      */
-    static void main(String args[]){
+    /*public static void main(String args[]){
         SampleDataSetPG fpg;
         int y=0, dy=70;
 
@@ -166,32 +170,32 @@ public class SampleDataSetPG extends DataSetPG{
         // now actually test things
         fpg=new SampleDataSetPG("a",ds[0]);
         System.out.println(fpg);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new SampleDataSetPG("b",ds[0]);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new SampleDataSetPG("c",ds[0],false);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new SampleDataSetPG("d",ds[0],true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
-    }
+    }*/
 
     /**
      * Definition of the clone method.

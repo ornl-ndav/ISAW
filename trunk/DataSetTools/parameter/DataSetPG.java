@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/08/15 23:50:04  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.8  2003/03/26 23:19:37  pfpeterson
  *  Implements IObserver so can drop references to DESTROYed DataSets.
  *  Also improved error checking in addItem and setValue.
@@ -172,10 +176,10 @@ public class DataSetPG extends ChooserPG implements IObserver{
       }
     }
 
-    /**
+    /*
      * Main method for testing purposes.
      */
-    static void main(String args[]){
+    /*public static void main(String args[]){
         DataSetPG fpg;
         int y=0, dy=70;
 
@@ -183,7 +187,7 @@ public class DataSetPG extends ChooserPG implements IObserver{
         if(args.length==1){
             filename=args[0];
         }else{
-            filename="/IPNShome/pfpeterson/data/CsC60/SEPD18805.RUN";
+            filename="/home/coldfire/ISAW/SampleRuns/SCD06497.RUN";
         }
 
         RunfileRetriever rr=new RunfileRetriever(filename);
@@ -194,32 +198,31 @@ public class DataSetPG extends ChooserPG implements IObserver{
 
         fpg=new DataSetPG("a",ds[0]);
         System.out.println(fpg);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new DataSetPG("b",ds[0]);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new DataSetPG("c",ds[0],false);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new DataSetPG("d",ds[0],true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
-
-    }
+    }*/
 
     /**
      * Definition of the clone method.

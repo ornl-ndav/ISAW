@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/08/15 23:50:05  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.6  2003/04/25 15:39:39  pfpeterson
  *  Improved support for null values which are automatically converted
  *  to EMPTY_DATA_SET.
@@ -122,7 +126,7 @@ public class MonitorDataSetPG extends DataSetPG{
     /**
      * Main method for testing purposes.
      */
-    static void main(String args[]){
+    /*public static void main(String args[]){
         MonitorDataSetPG fpg;
         int y=0, dy=70;
 
@@ -142,7 +146,7 @@ public class MonitorDataSetPG extends DataSetPG{
             }
         }
         if(runfile==null){
-            runfile="/IPNShome/pfpeterson/data/CsC60/SEPD18805.RUN";
+            runfile="/home/pfpeterson/data/CsC60/SEPD18805.RUN";
         }
         if(nexusfile==null){
             nexusfile="/IPNShome/pfpeterson/data/nexus/nexus_all.nxs";
@@ -166,32 +170,31 @@ public class MonitorDataSetPG extends DataSetPG{
         // now actually test things
         fpg=new MonitorDataSetPG("a",ds[0]);
         System.out.println(fpg);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new MonitorDataSetPG("b",ds[0]);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new MonitorDataSetPG("c",ds[0],false);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new MonitorDataSetPG("d",ds[0],true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
-
-    }
+    }*/
 
     /**
      * Definition of the clone method.

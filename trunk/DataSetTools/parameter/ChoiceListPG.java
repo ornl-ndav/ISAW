@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/08/15 23:50:04  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.8  2003/06/03 22:00:28  rmikk
  *  Checked for a null initial value before reporting the
  *     incorrect data type warning
@@ -112,10 +116,10 @@ public class ChoiceListPG extends ChooserPG{
         }
     }
 
-    /**
+    /*
      * Main method for testing purposes.
      */
-    static void main(String args[]){
+    /*public static void main(String args[]){
         ChoiceListPG fpg;
         int y=0, dy=70;
 
@@ -128,32 +132,31 @@ public class ChoiceListPG extends ChooserPG{
 
         fpg=new ChoiceListPG("a",choices[0]);
         System.out.println(fpg);
-        fpg.init(choices);
+        fpg.initGUI(choices);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new ChoiceListPG("b",choices[0]);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init(choices);
+        fpg.initGUI(choices);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new ChoiceListPG("c",choices[0],false);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init(choices);
+        fpg.initGUI(choices);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new ChoiceListPG("d","q",true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
-        fpg.init(choices);
+        fpg.initGUI(choices);
         fpg.showGUIPanel(0,y);
         y+=dy;
-
-    }
+    }*/
 
     /**
      * Definition of the clone method.

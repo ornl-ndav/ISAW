@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/08/15 23:50:05  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.8  2003/06/06 18:53:37  pfpeterson
  *  Now extends StringEntryPG and implements ParamUsesString.
  *
@@ -108,33 +112,35 @@ public class IntArrayPG extends StringEntryPG implements ParamUsesString{
       this.setValue(val);
     }
 
-    static void main(String args[]){
+    /*
+     * Testbed.
+     */
+    /*public static void main(String args[]){
         IntArrayPG fpg;
 
         fpg=new IntArrayPG("a","0:1");
         System.out.println(fpg);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new IntArrayPG("b","0:2");
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new IntArrayPG("c","0:3",false);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new IntArrayPG("d","0:4",true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
-
-    }
+    }*/
 
     /**
      * Definition of the clone method.

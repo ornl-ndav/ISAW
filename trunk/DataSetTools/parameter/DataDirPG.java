@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/08/15 23:50:04  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.13  2003/08/14 18:43:20  bouzekc
  *  Modified getValue() to put a trailing slash on when one does not exist.
  *
@@ -145,7 +149,10 @@ public class DataDirPG extends BrowsePG{
       return str;
     }
 
-    public static void main(String args[]){
+    /*
+     * Testbed.
+     */
+    /*public static void main(String args[]){
         DataDirPG fpg;
         //y position and delta y, so that multiple windows can 
         //be displayed without too much overlap
@@ -155,7 +162,7 @@ public class DataDirPG extends BrowsePG{
 
         fpg=new DataDirPG ("Enabled, not valid, no filters",defString);
         System.out.println(fpg);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel(0,y);
         y+=dy;
         
@@ -163,21 +170,21 @@ public class DataDirPG extends BrowsePG{
         fpg=new DataDirPG ("Disabled, not valid, no filters",defString);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new DataDirPG ("Disabled, not valid, no filters",defString,false);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new DataDirPG ("Valid, enabled, no filters",defString,true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel(0,y);
         
         fpg=new DataDirPG ("Enabled, not valid, multiple filters",defString);
@@ -186,7 +193,8 @@ public class DataDirPG extends BrowsePG{
         fpg.addFilter(new ExpFilter());
         fpg.addFilter(new IntegrateFilter());
         fpg.addFilter(new MatrixFilter());
-        fpg.init();
+        fpg.initGUI(null);
+        fpg.showGUIPanel(0,y);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
@@ -194,10 +202,10 @@ public class DataDirPG extends BrowsePG{
         System.out.println(fpg);
         //add some FileFilters
         fpg.addFilter(new IntegrateFilter());
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel(0,y);
         y+=dy;
-    }
+    }*/
 
     /**
      * Definition of the clone method.

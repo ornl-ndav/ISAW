@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/08/15 23:50:06  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.7  2003/05/29 21:41:05  bouzekc
  *  Removed the init(Vector init_values) method.  Now uses
  *  BrowsePG's init method, and sets the file selection type
@@ -87,7 +91,10 @@ public class SaveFilePG extends BrowsePG{
         super.choosertype = BrowseButtonListener.SAVE_FILE;
     }
 
-    public static void main(String args[]){
+    /*
+     * Testbed.
+     */
+    /*public static void main(String args[]){
         SaveFilePG fpg;
         //y position and delta y, so that multiple windows can 
         //be displayed without too much overlap
@@ -97,7 +104,7 @@ public class SaveFilePG extends BrowsePG{
 
         fpg=new SaveFilePG("Enabled, not valid, no filters",defString);
         System.out.println(fpg);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel(0,y);
         y+=dy;
         
@@ -105,21 +112,21 @@ public class SaveFilePG extends BrowsePG{
         fpg=new SaveFilePG("Disabled, not valid, no filters",defString);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new SaveFilePG("Disabled, not valid, no filters",defString,false);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new SaveFilePG("Valid, enabled, no filters",defString,true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel(0,y);
 
         fpg=new SaveFilePG("Enabled, not valid, multiple filters",defString);
@@ -128,7 +135,7 @@ public class SaveFilePG extends BrowsePG{
         fpg.addFilter(new ExpFilter());
         fpg.addFilter(new IntegrateFilter());
         fpg.addFilter(new MatrixFilter());
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
@@ -136,10 +143,10 @@ public class SaveFilePG extends BrowsePG{
         System.out.println(fpg);
         //add some FileFilters
         fpg.addFilter(new IntegrateFilter());
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel(0,y);
         y+=dy;
-    }
+    }*/
 
     /**
      * Definition of the clone method.

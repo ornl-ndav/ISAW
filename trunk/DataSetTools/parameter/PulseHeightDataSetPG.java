@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/08/15 23:50:05  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.7  2003/06/06 18:54:00  pfpeterson
  *  No longer prints warning message when setting value to null.
  *
@@ -120,10 +124,10 @@ public class PulseHeightDataSetPG extends DataSetPG{
         return false;
     }
 
-    /**
+    /*
      * Main method for testing purposes.
      */
-    static void main(String args[]){
+    /*public static void main(String args[]){
         PulseHeightDataSetPG fpg;
         int y=0, dy=70;
 
@@ -167,32 +171,31 @@ public class PulseHeightDataSetPG extends DataSetPG{
         // now actually test things
         fpg=new PulseHeightDataSetPG("a",ds[0]);
         System.out.println(fpg);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new PulseHeightDataSetPG("b",ds[0]);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new PulseHeightDataSetPG("c",ds[0],false);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
 
         fpg=new PulseHeightDataSetPG("d",ds[0],true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
-        fpg.init(ds);
+        fpg.initGUI(ds);
         fpg.showGUIPanel(0,y);
         y+=dy;
-
-    }
+    }*/
 
     /**
      * Definition of the clone method.

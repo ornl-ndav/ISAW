@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/08/15 23:50:05  bouzekc
+ *  Modified to work with new IParameterGUI and ParameterGUI
+ *  classes.  Commented out testbed main().
+ *
  *  Revision 1.8  2003/06/12 18:58:28  bouzekc
  *  Fixed bug with setting value.
  *
@@ -167,33 +171,35 @@ public class IntegerPG extends StringEntryPG implements ParamUsesString{
         this.setValue(new Integer(value));
     }
 
-    static void main(String args[]){
+    /*
+     * Testbed.
+     */
+    /*public static void main(String args[]){
         IntegerPG fpg;
 
         fpg=new IntegerPG("a",new Integer(1));
         System.out.println(fpg);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new IntegerPG("b",new Integer(10));
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new IntegerPG("c",new Integer(100),false);
         System.out.println(fpg);
         fpg.setEnabled(false);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
 
         fpg=new IntegerPG("d",new Integer(1000),true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
-        fpg.init();
+        fpg.initGUI(null);
         fpg.showGUIPanel();
-
-    }
+    }*/
 
     /**
      * Definition of the clone method.
