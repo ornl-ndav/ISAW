@@ -1,7 +1,7 @@
 /*
  * File:  LoadSelDataSets.java 
  *
- * Copyright (C) 2000, Dennis Mikkelson
+ * Copyright (C) 2003, Ruth Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,7 +17,7 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
@@ -30,14 +30,15 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2004/01/29 18:15:13  dennis
+ *  Fixed copyright information, and javadoc error.
+ *
  *  Revision 1.2  2004/01/24 19:48:52  bouzekc
  *  Removed unused imports.  Removed unused variables in main().
  *
  *  Revision 1.1  2003/12/15 00:50:30  rmikk
  *  Initial Checkin. This operators lets a subset of the data sets stored in
  *    a file be retrieved
- *
- *
  */
 
 package DataSetTools.operator.Generic.Load;
@@ -62,8 +63,8 @@ import java.awt.*;
 public class LoadSelDataSets extends    GenericLoad 
                             implements Serializable, ActionListener
 {
-
    JDialog jf=null;
+
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
    * Construct an operator with a default parameter list.  If this constructor
@@ -82,17 +83,13 @@ public class LoadSelDataSets extends    GenericLoad
    *  that the operation can be invoked immediately by calling getResult().
    *
    *  @param  file_name   The fully qualified runfile name
-   *  @param  group_mask  A list of group IDs that should be omitted
-   *
    */
-   public LoadSelDataSets( String   file_name)
+   public LoadSelDataSets( String file_name)
    {
       this( );
 
       IParameter parameter = getParameter(0);
       parameter.setValue( file_name );
-    
-     
    } 
 
   /* -------------------------- setDefaultParameters ----------------------- */
@@ -103,9 +100,7 @@ public class LoadSelDataSets extends    GenericLoad
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    
     addParameter( new LoadFilePG("Enter Filename", null));
-   
   }
 
   /*----------------------------getDocumentation-----------------------------*/
@@ -114,7 +109,8 @@ public class LoadSelDataSets extends    GenericLoad
    {
    	StringBuffer Res = new StringBuffer();
 	
-	Res.append("@overview This operator loads only selecte data sets from a file");
+	Res.append("@overview This operator loads only selected data sets ");
+        Res.append("from a file");
 	
 	Res.append("@algorithm A file is read in.  If there are no DataSets ");
     	Res.append("found in the file, then an ErrorString is returned.  ");
@@ -123,17 +119,20 @@ public class LoadSelDataSets extends    GenericLoad
 	Res.append("and stored in the array.");
 	
 	Res.append("@param file_name The fully qualified file name");
-	Res.append("  Another dialog box appears after the execution of this operator ");
-        Res.append(" starts that allows for the selection of the desired data sets in ");
+	Res.append("  Another dialog box appears after the execution of ");
+        Res.append("this operator ");
+        Res.append("starts that allows for the selection of the desired ");
+        Res.append("data sets in ");
         Res.append(" this file "); 
-	Res.append("@return Returns an array with all the selected DataSets in the ");
-        Res.append("file, if the file could be opened.");
+
+	Res.append("@return Returns an array with all the selected DataSets ");
+        Res.append("in the file, if the file could be opened.");
 	
 	Res.append("@error No DataSets in \"filename\".");
 	
 	return Res.toString();
-   
    }
+
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
@@ -156,12 +155,9 @@ public class LoadSelDataSets extends    GenericLoad
    *          runfile could be opened.
    */
    public Object getResult()
-   {
-                                          // get the parameters specifying the
+   {                                      // get the parameters specifying the
                                           // runs         
      String    file_name   = (String)getParameter(0).getValue();
-
-
      
      Retriever rr = null;
      try{
@@ -238,7 +234,6 @@ public class LoadSelDataSets extends    GenericLoad
             k++;
           }
     return Res;
-
   }
 
   private String NameOF( int DS_type){
