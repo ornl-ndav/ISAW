@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/10/25 22:18:22  pfpeterson
+ *  Uses MatrixFilter for choosing orientation matrix file.
+ *
  *  Revision 1.2  2002/09/25 16:42:04  pfpeterson
  *  Now adds SCDhkl operator to the DataSet. Also removed dead code,
  *  updated variable names and updated documentation.
@@ -60,6 +63,8 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.Information.XAxis.SCDhkl;
+import  DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
+import  DataSetTools.parameter.*;
 import  DataSetTools.retriever.RunfileRetriever;
 
 /**
@@ -102,8 +107,9 @@ public class LoadOrientation extends    DS_Attribute {
                                       // the parameter value(s) by altering a
                                       // reference to each of the parameters
 
-        parameters=new Vector();
-        addParameter( new Parameter("Orientation Matrix File", orient) );
+        getParameter(0).setValue(orient.toString());
+        //parameters=new Vector();
+        //addParameter( new Parameter("Orientation Matrix File", orient) );
 
         setDataSet( ds );         // record reference to the DataSet that
                                   // this operator should operate on
@@ -127,8 +133,12 @@ public class LoadOrientation extends    DS_Attribute {
     public void setDefaultParameters(){
         parameters = new Vector();  // must do this to clear any old parameters
         
-        addParameter(new Parameter( "Orientation Matrix File",
-                                    new LoadFileString("")));
+        LoadFilePG lfpg=new LoadFilePG("Orientation Matrix File",null);
+        lfpg.setFilter(new MatrixFilter());
+        addParameter(lfpg);
+
+        /*addParameter(new Parameter( "Orientation Matrix File",
+          new LoadFileString("")));*/
     }
     
     
