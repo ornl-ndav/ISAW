@@ -31,6 +31,17 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/11/12 00:15:46  dennis
+ *  Made immutable by:
+ *  1. remove setValue() method
+ *  2. add() & combine() methods now return a new Attribute
+ *
+ *  Also:
+ *  3. Since it is now immutable, clone() method is not needed and
+ *     was removed
+ *  4. Default constructor is now private, since the value can't
+ *     be set from outside of the class
+ *
  *  Revision 1.7  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -106,11 +117,12 @@ public class StringAttribute extends Attribute
     this.value = value;
   }
 
- public StringAttribute()
+ private StringAttribute()
   {
     super( "" );
     this.value = "";
   }
+
   /**
    * Returns the String value of this attribute as a generic object. 
    */
@@ -118,19 +130,6 @@ public class StringAttribute extends Attribute
   {
     return value;
   } 
-
-  /**
-   * Set the value for the String attribute using a generic object.  The actual
-   * class of the object must be a String.
-   */
-  public boolean setValue( Object obj )
-  {
-    if ( !(obj instanceof String) )
-      return false;
-
-    value = (String)obj;
-    return true;
-  }  
 
   /**
    * Combine the value of this attribute with the value of the attribute
@@ -143,7 +142,7 @@ public class StringAttribute extends Attribute
    *  @param   attr   An attribute whose string value is to be concatenated
    *                  with the value of the this attribute.
    */
-  public void combine( Attribute attr )
+  public Attribute combine( Attribute attr )
   {
      if ( !(this.value.equalsIgnoreCase(attr.getStringValue()))    &&
             this.value.lastIndexOf( attr.getStringValue())  == -1  &&
@@ -153,11 +152,15 @@ public class StringAttribute extends Attribute
        {
          if ( this.value.length() + attr.getStringValue().length() 
               > MAX_LABEL_LENGTH )
-           return;                                        // don't concatenate
+           return this;                                   // don't concatenate
        }
-       this.value = this.value + "," + attr.getStringValue();
+       String new_value = this.value + "," + attr.getStringValue();
+       return new StringAttribute( name, new_value );
      }
+
+     return this;  // by default, if we can't do anything
   }
+
 
   public boolean XMLwrite( OutputStream stream, int mode )
     {return xml_utils.AttribXMLwrite( stream, mode, this);
@@ -175,30 +178,12 @@ public class StringAttribute extends Attribute
      return value;
   }
 
-
-  /**
-   * Set the String value of this attribute using a String.
-   */
-  public void setStringValue( String value )
-  {
-     this.value = value;
-  }
-
-
   /**
    * Returns the name and value strings for this attribute
    */
   public String toString()
   {
      return this.getName() + ": " + this.value;
-  }
-
-  /**
-   * Returns a copy of the current attribute
-   */
-  public Object clone()
-  {
-    return new StringAttribute( this.getName(), value );
   }
 
 /* -----------------------------------------------------------------------

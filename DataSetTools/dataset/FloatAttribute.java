@@ -31,6 +31,17 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/11/12 00:15:46  dennis
+ *  Made immutable by:
+ *  1. remove setValue() method
+ *  2. add() & combine() methods now return a new Attribute
+ *
+ *  Also:
+ *  3. Since it is now immutable, clone() method is not needed and
+ *     was removed
+ *  4. Default constructor is now private, since the value can't
+ *     be set from outside of the class
+ *
  *  Revision 1.8  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -110,11 +121,12 @@ public class FloatAttribute extends Attribute
     this.value = value;
   }
 
-  public FloatAttribute(  )
+  private FloatAttribute(  )
   {
     super( "" );
     this.value = 0.0f;
   }
+
   /**
    * Returns the float value of this attribute, as a generic object.
    */
@@ -122,24 +134,6 @@ public class FloatAttribute extends Attribute
   {
     return( new Float(value) );
   } 
-
-  /**
-   * Set the value for the float attribute using a generic object.  The actual
-   * class of the object must be a Float object.
-   */
-  public boolean setValue( Object obj )
-  {
-    if ( obj instanceof Double )
-      value = ((Double)obj).floatValue();
-    else if ( obj instanceof Float )
-      value = ((Float)obj).floatValue();
-    else if ( obj instanceof Integer )
-      value = ((Integer)obj).floatValue();
-    else
-      return false;
-
-    return true;
-  }   
 
   /**
    * Returns the float value of this attribute as a float.
@@ -150,47 +144,49 @@ public class FloatAttribute extends Attribute
    }
 
   /**
-   * Set the value for the float attribute using a float.
-   */
-  public void setFloatValue( float value )
-  {
-    this.value = value;
-  }
-
-  /**
    * Combine the value of this attribute with the value of the attribute
-   * passed as a parameter to obtain a new value for this attribute.  The
-   * new value is just the average of the values of the two attributes.
+   * passed as a parameter to obtain a new Attribute.  The value of the
+   * new Attribute is the average of the values of the two attributes.
    *
    *  @param   attr   An attribute whose value is to be "combined" with the 
    *                  value of the this attribute.
    *
+   *  @return A new FloatAttribute whose value is the average of the value
+   *          of the current attribute and the numeric value of the
+   *          specified attribute, attr.
    */
-  public void combine( Attribute attr )
+  public Attribute combine( Attribute attr )
   {
-     this.value = (float)( this.value + attr.getNumericValue() ) / 2;
+     return new FloatAttribute( name,
+                               (this.value + (float)attr.getNumericValue())/2);
   }
 
   /**
    * Add the value of the specified attribute to the value of this
-   * attribute obtain a new value for this attribute.  
+   * attribute obtain a new Attribute.  
    *
    *  @param   attr   An attribute whose value is to be "added" to the
    *                  value of the this attribute.
    *
+   *  @return A new FloatAttribute whose value is the sum of the value
+   *          of the current attribute and the numeric value of the
+   *          specified attribute, attr.
    */
-  public void add( Attribute attr )
+  public Attribute add( Attribute attr )
   {
-     this.value = (float)( this.value + attr.getNumericValue() );
+    return new FloatAttribute( name,
+                               (this.value + (float)attr.getNumericValue()) );
   }
 
   public boolean XMLwrite( OutputStream stream, int mode )
-    {return xml_utils.AttribXMLwrite( stream, mode, this);
+  {
+    return xml_utils.AttribXMLwrite( stream, mode, this);
+  }
 
-     }
   public boolean XMLread( InputStream stream )
-    {return xml_utils.AttribXMLread(stream, this);
-    }
+  {
+    return xml_utils.AttribXMLread(stream, this);
+  }
 
   /**
    * Get a numeric value to be used for sorting based on this attribute.
@@ -216,14 +212,6 @@ public class FloatAttribute extends Attribute
   public String toString()
   {
      return this.getName() + ": " + this.getStringValue();
-  }
-
-  /**
-   * Returns a copy of the current attribute
-   */
-  public Object clone()
-  {
-    return new FloatAttribute( this.getName(), value );
   }
 
 /* -----------------------------------------------------------------------
