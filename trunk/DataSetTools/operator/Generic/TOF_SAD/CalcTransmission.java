@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/07/25 16:31:11  rmikk
+ * Log file information is now written to the console
+ *
  * Revision 1.5  2003/07/24 18:48:42  rmikk
  * Fixed an array out of bounds error
  *
@@ -148,6 +151,7 @@ public class CalcTransmission extends GenericTOF_SAD {
   *     and rebinned to the corresponding histogram.
   */
   public Object getResult(){
+     log = new StringBuffer(1000);
      DataSet Sample = ((MonitorDataSetPG)getParameter(0)).getDataSetValue();
      DataSet Empty = ((MonitorDataSetPG)getParameter(1)).getDataSetValue();
      DataSet Cadmium = ((MonitorDataSetPG)getParameter(2)).getDataSetValue();
@@ -161,6 +165,8 @@ public class CalcTransmission extends GenericTOF_SAD {
    
      if( !useCadmium)
         Cadmium = null;
+     log.append("number of monitor detectors :");
+     log.append(Format.integer((double)( Sample.getNum_entries()),4)+"\n");
      //--------------- Neutron Delay
      Sample = (DataSet)(Sample.clone());
      Empty = (DataSet)(Empty.clone());
@@ -259,7 +265,16 @@ public class CalcTransmission extends GenericTOF_SAD {
       if( Cadmium != null)
          Cadmium.getData_entry(2).resample(xscl,IData.SMOOTH_NONE);
 
+     ReportToLog1( Sample);
+     ReportToLog2( Sample);
 
+     ReportToLog2( Empty);
+
+     if( Cadmium != null)
+       ReportToLog2( Cadmium);
+
+     ReportToLog3( Sample, Empty, Cadmium);
+     Command.ScriptUtil.display( Sample);
     
      //------------ Calculate downstream monitor Relative monitors-------
      DataSet RelCadmium = null;
@@ -379,6 +394,7 @@ public class CalcTransmission extends GenericTOF_SAD {
         xterm = xterm*xx;
       }
     }
+    System.out.println( log.toString());
     return tr;
     
      
@@ -467,5 +483,93 @@ public class CalcTransmission extends GenericTOF_SAD {
 
   
   }
+  //Gives widths of time bins
 
+  private void ReportToLog1( DataSet ds){
+    
+     log.append("    I          WIDTH-M1           WIDTH-M2\n");
+     float initialPath1 = ((FloatAttribute)(ds.getData_entry(0).
+                        getAttribute( Attribute.INITIAL_PATH))).getFloatValue();
+
+     float initialPath2 = ((FloatAttribute)(ds.getData_entry(2).
+                        getAttribute( Attribute.INITIAL_PATH))).getFloatValue();
+     float[] lvals = ds.getData_entry(0).getX_scale().getXs();
+     float[] xvals=cvrtToTime( lvals, initialPath1,ds.getData_entry(0));
+     float[] lvals1=ds.getData_entry(2).getX_scale().getXs();
+     float[] xvals1 =cvrtToTime( lvals1, initialPath2,ds.getData_entry(2));
+     
+     for( int i=0; i+1< xvals.length; i++){
+        log.append(Format.integer( i+1.0,5));
+        log.append( Format.doubleExp( (double)(xvals[i+1]-xvals[i]),19));
+       
+        log.append( Format.doubleExp( (double)(xvals1[i+1]-xvals1[i]),19));
+        System.out.println(xvals[i]+","+xvals1[i]);
+        log.append("\n");
+     }
+    log.append("\n\n");
+
+
+  }
+
+  private void ReportToLog2( DataSet ds){
+
+   
+    log.append("***********************************************\n");
+    log.append(" LAMBDA    M1-pancake-sample   M2trans-BSMon-sample\n");
+    
+     float[] lvals = ds.getData_entry(0).getX_scale().getXs();
+     //float[] xvals=cvrtToTime( lvals, initialPath,ds.getData_entry(0));
+     float[] lvals1=ds.getData_entry(2).getX_scale().getXs();
+     //float[] xvals1 =cvrtToTime( lvals1, initialPath,ds.getData_entry(2));
+     float[] yvals1= ds.getData_entry(0).getY_values();
+     float[] yvals2 = ds.getData_entry(2).getY_values();
+     for( int i=0;i+1< lvals.length; i++){
+        log.append(Format.real((lvals[i]+lvals[i+1])/2.0, 12,6));
+        log.append(Format.integer( (double)yvals1[i],12));
+
+        log.append(Format.integer( (double)yvals2[i],12));
+       
+        log.append("\n");
+     }
+    log.append("\n\n");
+  }
+
+  private double getTotCount( Data Db){
+    double Res;
+   return ((Float) (Db.getAttribute( Attribute.TOTAL_COUNT).getValue())).doubleValue();
+  }
+  private void ReportToLog3(DataSet Sample,DataSet Empty, DataSet Cadmium){
+      log.append("         UPSTREAM MON      Beamstop MON             PROTONS\n");
+      log.append(" SAMPLE  = "+Format.integer(getTotCount(Sample.getData_entry(0)),10));
+      log.append( Format.integer(getTotCount(Sample.getData_entry(2)),20));
+      
+      log.append( Format.integer(getTotCount(Sample.getData_entry(1)),20)+"\n");
+
+
+      log.append(" EMPTY   = "+Format.integer(getTotCount(Empty.getData_entry(0)),10));
+      log.append( Format.integer(getTotCount(Empty.getData_entry(2)),20));
+      
+      log.append( Format.integer(getTotCount(Empty.getData_entry(1)),20)+"\n");
+
+      if( Cadmium == null)
+         return;
+      log.append(" CADMIUM = "+Format.integer(getTotCount(Cadmium.getData_entry(0)),10));
+      log.append( Format.integer(getTotCount(Cadmium.getData_entry(2)),20));
+      
+      log.append( Format.integer(getTotCount(Cadmium.getData_entry(1)),20)+"\n");
+      
+
+  }
+  private float[] cvrtToTime( float[] lvals1, float initialPath, Data db){
+    DetectorPosition dp =(DetectorPosition)
+                  db.getAttributeValue(Attribute.DETECTOR_POS);
+    System.out.println("Det Pos="+StringUtil.toString(dp.getCartesianCoords())+
+          "for "+db);
+    float L2 = dp.getCartesianCoords()[0];
+    float[] xvals = new float[ lvals1.length];
+    for( int i = 0; i< xvals.length; i++)
+      xvals[i] = tof_calc.TOFofWavelength( L2+initialPath, lvals1[i]);
+    return xvals;
+    
+  }
 }//CalcTransmisson
