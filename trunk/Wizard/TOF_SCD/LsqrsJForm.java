@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.8  2003/06/11 23:04:08  bouzekc
+ * No longer uses StringUtil.setFileSeparator as DataDirPG
+ * now takes care of this.
+ *
  * Revision 1.7  2003/06/11 22:48:42  bouzekc
  * Added parameters so that the identity matrix is used for the
  * iteration step.  Added parameters so that the user can view
@@ -259,8 +263,7 @@ public class LsqrsJForm extends Form
     //get input file directory 
     //should be no need to check this for validity
     param = (IParameterGUI)super.getParameter(1);
-    peaksDir = StringUtil.setFileSeparator(
-                 param.getValue().toString() + "/");
+    peaksDir = param.getValue().toString();
 
     //gets the experiment name
     param = (IParameterGUI)super.getParameter(2);
