@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2003/12/15 02:51:31  bouzekc
+ *  Changed call to execOneLine's Vect_to_String to call upon the class name
+ *  rather than an instance, as the method is static.  Removed creation of
+ *  an execOneLine instance immmediately before this call, as it was no longer
+ *  needed.
+ *
  *  Revision 1.35  2003/12/15 01:39:13  bouzekc
  *  Removed unused imports.
  *
@@ -305,8 +311,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
       return "[]";
     }
 
-    Command.execOneLine execLine = new Command.execOneLine(  );
-    String res                   = execLine.Vect_to_String( V );
+    String res                   = execOneLine.Vect_to_String( V );
 
     return res;
   }
