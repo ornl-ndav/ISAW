@@ -34,6 +34,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2001/06/06 21:05:09  dennis
+ *  Now sends DataSet.EMPTY_DATA_SET clone if the requested
+ *  DataSet is null, or doesn't exist.
+ *
  *  Revision 1.9  2001/04/23 19:44:14  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -316,21 +320,26 @@ public class LiveDataServer implements IUDPUser,
         {
           System.out.println("Processing GET DS " + command );
           int index = extractIntParameter( command );
-          if ( index >= 0 && index < ds_type.length )   //valid DataSet index
-          {
-            DataSet ds = (DataSet)(data_set[ index ].clone());
-            if ( ds != null )     // must remove observers before sending
-            {
+
+          if ( index >= 0 && index < ds_type.length )   // valid DataSet index
+          {                                             // so get a copy of a
+                                                        // snapshot of the ds
+            DataSet source_ds = data_set[ index ];
+            DataSet ds        = (DataSet)(source_ds.clone());
+
+            if ( ds != null )                           // remove observers
+            {                                           // before sending
               System.out.println("Trying to send " + ds );
               ds.deleteIObservers(); 
               tcp_io.Send( ds  );
               System.out.println("Finished sending " + ds );
             }
+            else                                       
+              tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
           }
-          else                                         // bad index, return
-          {
+
+          else                                          
             tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
-          }
         }
       }
       catch ( Exception e )
