@@ -33,6 +33,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2003/06/18 19:48:23  bouzekc
+ * Instantiated getResult() to provide initialization of
+ * PropertyChanger values and provide a hook for superclass
+ * parameter checking.
+ *
  * Revision 1.16  2003/06/17 20:26:53  bouzekc
  * Updated documentation.
  *
@@ -164,6 +169,9 @@ public abstract class Form extends Operator implements Serializable,
   protected boolean HAS_CONSTANTS = false; 
 
   protected PropertyChangeSupport propBind;
+
+  //used for the progress bars
+  protected float newPercent, oldPercent, increment;
 
   /**
    *  Construct a form with the given title to work with 
@@ -507,6 +515,18 @@ public abstract class Form extends Operator implements Serializable,
   {
    param.setValid(false);
    return this.errorOut(errmessage);
+  }
+
+  /**
+   *  Overridden to some functionality for child Forms.
+   */
+  public Object getResult()
+  {
+    //for progress bars
+    newPercent = oldPercent = increment = 0;
+    //not created yet
+    //this.checkParameterValidity();
+    return null;
   }
 
   /* -------------------- PropertyChanger methods --------------------------*/
