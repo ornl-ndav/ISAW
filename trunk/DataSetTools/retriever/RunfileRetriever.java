@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2001/07/10 19:36:24  dennis
+ *  Now imports DataSetTools/instruments/DetectorInfo
+ *
  *  Revision 1.26  2001/07/10 18:59:16  dennis
  *  First attempt at using the new detector "segment"
  *  methods from the IPNS/Runfile package.
@@ -155,6 +158,7 @@ package DataSetTools.retriever;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.instruments.InstrumentType;
+import DataSetTools.instruments.DetectorInfo;
 import IPNS.Runfile.*;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
