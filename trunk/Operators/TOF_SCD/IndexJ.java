@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2003/05/07 18:37:53  dennis
+ * removed redundant code that created parameters vector twice.
+ *
  * Revision 1.9  2003/03/14 22:51:47  pfpeterson
  * More appropriately sets the reflection flag.
  *
@@ -116,8 +119,6 @@ public class IndexJ extends    GenericTOF_SCD {
   public void setDefaultParameters(){
     parameters = new Vector();  // must do this to create empty list of 
                                 // parameters
-    
-    parameters=new Vector();
     LoadFilePG peaksfilepg=new LoadFilePG("Peaks file",null);
     peaksfilepg.setFilter(new PeaksFilter());
     addParameter(peaksfilepg);
