@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/01/24 22:02:38  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.3  2003/11/06 21:25:09  rmikk
  * Introduces a new method necessary for Selecting
  *    DataSets in a table
@@ -44,11 +47,6 @@
 
 
 package DataSetTools.viewer;
-import java.awt.event.*;
-import javax.swing.*;
-import DataSetTools.components.View.Menu.*;
-
-
 
 /**
 *    This interface contains methods and fields necessary for Generators.

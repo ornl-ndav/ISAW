@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2004/01/24 22:02:38  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.10  2003/12/16 23:13:32  dennis
  *  Removed calls to getSharedControls() and getPrivateControls() for
  *  the IVirtualArray1D, since these methods were removed from the
@@ -64,9 +67,7 @@ import DataSetTools.components.View.*;
 import DataSetTools.components.View.OneD.*;
 import java.awt.event.*;
 import java.awt.*;
-import DataSetTools.viewer.*;
 import DataSetTools.components.containers.*;
-import DataSetTools.viewer.*;
 
 
 public class DataSetViewerMaker  extends DataSetViewer

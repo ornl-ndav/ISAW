@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/01/24 22:02:38  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.6  2003/12/11 22:09:20  rmikk
  *  Added a kill command to remove orphaned windows
  *
@@ -54,6 +57,9 @@
  *
  *  Revision 1.4  2003/08/08 15:48:24  dennis
  *  Added GPL copyright information and $Log$
+ *  Added GPL copyright information and Revision 1.7  2004/01/24 22:02:38  bouzekc
+ *  Added GPL copyright information and Removed unused imports.
+ *  Added GPL copyright information and
  *  Added GPL copyright information and Revision 1.6  2003/12/11 22:09:20  rmikk
  *  Added GPL copyright information and Added a kill command to remove orphaned windows
  *  Added GPL copyright information and
@@ -86,13 +92,9 @@ import javax.swing.*;
 import DataSetTools.dataset.*;
 import DataSetTools.components.View.*;
 import DataSetTools.components.View.Menu.*;
-import DataSetTools.components.View.OneD.*;
-import DataSetTools.components.View.TwoD.*;
 import java.awt.event.*;
 import java.awt.*;
-import DataSetTools.viewer.*;
 import DataSetTools.components.containers.*;
-import DataSetTools.viewer.*;
 import DataSetTools.viewer.Table.*;
 import Command.*;
 import DataSetTools.components.ui.*;
