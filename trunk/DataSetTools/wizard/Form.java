@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.46  2003/11/11 20:36:12  bouzekc
+ * Now calls Operator's addParameter() in addParameter().
+ *
  * Revision 1.45  2003/11/05 02:11:34  bouzekc
  * Added check for a null result parameter in setResultParam.
  *
@@ -459,6 +462,7 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( propBind != null ) {
       propBind.addPropertyChangeListener( property, pcl );
     }
+
     this.addListenerToParameters( property, pcl );
   }
 
@@ -473,6 +477,7 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( propBind != null ) {
       propBind.addPropertyChangeListener( pcl );
     }
+
     this.addListenerToParameters( null, pcl );
   }
 
@@ -567,6 +572,7 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( ( result == null ) || ( result.length <= 0 ) ) {
       result = null;
     }
+
     param_ref = new int[][]{ constant, variable, result };
   }
 
@@ -578,7 +584,7 @@ public abstract class Form extends Operator implements PropertyChanger {
    *        for this object.
    */
   protected void addParameter( IParameterGUI iparam ) {
-    parameters.addElement( iparam );
+    super.addParameter( iparam );
   }
 
   /**
@@ -600,14 +606,17 @@ public abstract class Form extends Operator implements PropertyChanger {
 
     JPanel sub_panel = new JPanel(  );
     Box subBox       = Box.createVerticalBox(  );
+
     sub_panel.add( subBox );
 
     TitledBorder border;
+
     border = new TitledBorder( LineBorder.createBlackLineBorder(  ), title );
     sub_panel.setBorder( border );
 
     for( int i = 0; i < num.length; i++ ) {
       IParameterGUI param = ( IParameterGUI )getParameter( num[i] );
+
       param.initGUI( null );
       subBox.add( param.getGUIPanel(  ) );
     }
@@ -656,6 +665,7 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( panel == null ) {
       panel = new JPanel(  );
     }
+
     panel.removeAll(  );
     panel.add( container );
   }
@@ -736,6 +746,7 @@ public abstract class Form extends Operator implements PropertyChanger {
     if( DEBUG ) {
       box.setBackground( Color.red );
     }
+
     prepGUI( box );
 
     JPanel sub_panel;
@@ -750,6 +761,7 @@ public abstract class Form extends Operator implements PropertyChanger {
         }
       }
     }
+
     this.enableParameters(  );
   }
 
