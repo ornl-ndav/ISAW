@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2002/04/01 20:09:10  rmikk
+ * Improved the Axis Write Handler.
+ * Added getMonitorName and getLinkName for specific instrument types.
+ *
  * Revision 1.5  2002/03/18 21:06:49  dennis
  * Fixed indexing error.
  *
@@ -68,8 +72,8 @@ public class Inst_Type
                                  InstrumentType.TOF_DIFFRACTOMETER};
 
 
-    /** Initializes correspondence tables
-   */
+ /** Initializes correspondence tables
+ */
  public Inst_Type()
    { if( HT == null)
       {HT = new Hashtable();
@@ -86,7 +90,8 @@ public class Inst_Type
 */
  public int getIsawInstrNum( String NexusAnalysisName )
    {
-   Integer I = (Integer )( HT.get( NexusAnalysisName ) );
+   Integer I = (Integer )( HT.get( NexusAnalysisName.trim() ) );
+   
    if( I == null)
      return InstrumentType.UNKNOWN;
    int i = I.intValue();
@@ -111,12 +116,79 @@ public String getNexAnalysisName( int IsawInstrNum)
 /// more to get NxEntry Handlers, NxData Handlers, etc...
  /** Handles the node writing for the NxData axis entries.  Returns Link Name or
   * null of the data
+  * @param num  axis number num
   *@param kk   Each axisWrite handler has a different kk, So returned links have diff names
   *@return  null or the link name
   * Will expand to 3 axis and different linkages
   * Data Sets from begin to end index have all the same time field type
   */
-  public static String AxisWriteHandler(int num,int kk,int instrType, NxWriteNode nxdata, 
+  public  String AxisWriteHandler(int num,int kk,int instrType, NxWriteNode nxdata, 
+                NxWriteNode nxdetector,
+                          DataSet DS, int beginIndex, int endIndex )
+
+    {if( DS == null) return null;
+      if( (beginIndex < 0)||(beginIndex>=endIndex)) return null;
+ 
+      if( endIndex > DS.getNum_entries()) return null;
+      if( beginIndex >= endIndex) return null;
+
+      String S = getLinkAxisName( instrType, num);
+      if( S == null) return null;
+
+      if( S.equals("time_of_flight"))
+         {NxWriteNode ntof =makeXvalnode( DS,  beginIndex, endIndex,  nxdetector); 
+          ntof.addAttribute("axis", makeRankArray(1,-1,-1,-1,-1),Types.Int,
+                   makeRankArray( 1,-1,-1,-1,-1));
+           
+           ntof.setLinkHandle(("axis"+num)+kk);
+           return ("axis"+num)+kk;
+          }
+      if( S.equals("phi"))
+        { float[] phi=new float[endIndex - beginIndex];
+         for( int i = beginIndex;i<endIndex;i++)
+           {Data D = DS.getData_entry(i );
+            Attribute  A = D.getAttribute( Attribute.DETECTOR_POS);
+            if( A == null)
+              { SharedData.status_pane.add("No Detector position attribute");
+                return null;
+              }
+            phi[i-beginIndex] = 
+	      ((DetPosAttribute)A).getDetectorPosition().getScatteringAngle();
+	    
+            }
+         NxWriteNode nphi = nxdetector.newChildNode("phi","SDS");
+         nphi.setNodeValue( phi, Types.Float, makeRankArray(phi.length,-1,-1,-1,-1));
+         nphi.addAttribute("units",("radians"+(char)0).getBytes(),Types.Char, 
+               makeRankArray(8,-1,-1,-1,-1));
+         nphi.addAttribute("axis", makeRankArray(2,-1,-1,-1,-1),Types.Int,
+              makeRankArray(num,-1,-1,-1,-1));
+         nphi.addAttribute("long_name",("Scattering Angle"+(char)0 ).getBytes(),Types.Char,
+               makeRankArray(18,-1,-1,-1,-1));
+         nphi.setLinkHandle(("axis"+num)+kk);
+        
+           return ("axis"+num)+kk;
+ 
+         }
+      if( S.equals("id"))
+        {int[] id= new int[endIndex-beginIndex];
+        for( int i = beginIndex;i<endIndex;i++)
+           {Data D = DS.getData_entry(i );
+            
+                id[i-beginIndex] = D.getGroup_ID();
+           }
+         NxWriteNode ndId = nxdetector.newChildNode( "id","SDS");
+         ndId.setNodeValue( id, Types.Int, makeRankArray (id.length,-1,-1,-1,-1));
+         ndId.addAttribute( "axis", makeRankArray(2,-1,-1,-1,-1),Types.Int,
+               makeRankArray(num,-1,-1,-1,-1));
+         ndId.setLinkHandle(("axis"+num)+kk);
+         return ("axis"+num)+kk;
+        }
+    //add more axis that can be linked here
+     return null;
+       
+
+     }
+  private static String AxisWriteHandler1(int num,int kk,int instrType, NxWriteNode nxdata, 
                 NxWriteNode nxdetector,
                           DataSet DS, int beginIndex, int endIndex )
     {
@@ -167,7 +239,7 @@ public String getNexAnalysisName( int IsawInstrNum)
          
          } 
      else if(  (num == 2) && (instrType != InstrumentType.TOF_DIFFRACTOMETER))
-       { 
+       { //phi will be 2nd axis
          float[] phi=new float[endIndex - beginIndex];
          for( int i = beginIndex;i<endIndex;i++)
            {Data D = DS.getData_entry(i );
@@ -293,6 +365,45 @@ public static NxWriteNode makeXvalnode(DataSet DS, int beginIndex,int endIndex, 
     return Result;
     
     }
+
+
+/** Sets special monitor names associated with an instrType for writing and suggestion for 
+*   reading
+*
+*@param instrType  the instrument type
+*@param GroupIndex  The position of the Monitor in the Monitor data set
+*@return  The string representation of the monitor name
+*/
+public  String getMonitorName( int instrType, int GroupIndex)
+  { if( instrType == getIsawInstrNum("TOFNPD"))
+      { if( GroupIndex ==0)
+          return "upstream";
+        else if( GroupIndex ==1)
+           return "downstream";
+        
+       }
+    return "monitor"+GroupIndex;
+
+   }
+/** Returns axis names that are linked between NXdata and NXdetector
+*/
+public  String getLinkAxisName(int instrType, int axisNum)
+  { if( instrType == getIsawInstrNum("TOFNDGS"))
+      {if(axisNum ==1) return "time_of_flight";
+       else return "phi";
+    
+       }
+    else 
+       if( axisNum ==1) return "time_of_flight";
+       else if( axisNum ==2) return "id";
+       
+    return "";
+
+
+
+
+   }
+
 /** Test program for procedures in this module
 */
 public static void main( String args[])
