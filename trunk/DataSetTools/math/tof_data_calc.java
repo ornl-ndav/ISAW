@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2002/07/10 15:57:21  pfpeterson
+ *  Contains time focusing code.
+ *
  *  Revision 1.12  2002/07/08 15:43:52  pfpeterson
  *  Added simple time focusing method.
  *
@@ -469,6 +472,36 @@ public static XScale DiffractometerFocus(XScale scale,
         }
         new_scale=new VariableXScale(x_vals);
     }
+    return new_scale;
+}
+
+/**
+ * Performs timefocusing on the provided XScale using the specified
+ * DIFCs.
+ *
+ * @param scale       The XScale to focus.
+ * @param dif_c       DIFC that the data block is currently at.
+ * @param focus_dif_c DIFC that the data will be focused to.
+ */
+public static XScale DiffractometerFocus(XScale scale,
+                                         float dif_c, float focus_dif_c){
+    XScale new_scale=null;
+    float x_vals[]=scale.getXs();
+    float scalar=1f;
+
+    if(focus_dif_c>0f)
+        scalar=scalar*focus_dif_c;
+
+    if(dif_c>0f)
+        scalar=scalar/dif_c;
+
+    if(scalar!=1f){
+        for( int i=0 ; i<x_vals.length ; i++ ){
+            x_vals[i]*=scalar;
+        }
+        new_scale=new VariableXScale(x_vals);
+    }
+
     return new_scale;
 }
 
