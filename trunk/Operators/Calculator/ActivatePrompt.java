@@ -145,7 +145,7 @@ public class ActivatePrompt extends GenericCalculator
 	    rs="no activation";
 	}
 
-	rs=rs+" ["+material.toString()+"]";
+	//rs=rs+" ["+material.toString()+"]";
 	return rs;
   }
 
