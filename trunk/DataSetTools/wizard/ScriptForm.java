@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/07/03 14:08:53  bouzekc
+ * Added all missing javadoc comments and formatted existing
+ * comments.
+ *
  * Revision 1.10  2003/07/02 18:52:08  bouzekc
  * Fixed javadoc spelling error.
  *
@@ -51,27 +55,26 @@ import DataSetTools.util.*;
 
 
 /**
- * The ScriptForm class is an extension of Form designed to work
- * with Scripts.  Although a Form is an Operator,
- * by creating an ScriptForm, it becomes easier to implement
- * many of the methods by using ScriptOperator.
+ * The ScriptForm class is an extension of Form designed to work with Scripts.
+ * Although a Form is an Operator, by creating an ScriptForm, it becomes
+ * easier to implement many of the methods by using ScriptOperator.
  */
 public class ScriptForm extends OperatorForm {
+  //~ Constructors *************************************************************
+
   /**
-   *  Construct an ScriptForm with the title "Script Form."
-   *
+   * Construct an ScriptForm with the title "Script Form."
    */
   public ScriptForm(  ) {
     super( "Script Form" );
   }
 
   /**
-   *  Construct an ScriptForm with the given filename.
-   *  This creates a ScriptOperator, and allows the use of that
-   *  Operator for the getResult() method.
+   * Construct an ScriptForm with the given filename. This creates a
+   * ScriptOperator, and allows the use of that Operator for the getResult()
+   * method.
    *
-   *  @param  filename           The Script file name to use.
-   *
+   * @param filename The Script file name to use.
    */
   public ScriptForm( String filename ) {
     //must have super() call be the first, but we want only the Script
@@ -86,18 +89,13 @@ public class ScriptForm extends OperatorForm {
   }
 
   /**
-   *  Construct a ScriptForm with the given Script file name and
-   *  result parameter type.
+   * Construct a ScriptForm with the given Script file name and result
+   * parameter type.
    *
-   *  @param  filename        The Script file name to use
-   *
-   *  @param  type            The IParameterGUI type of the result
-   *                          parameter.  e.g. for a LoadFilePG,
-   *                          use "LoadFile"
-   *
-   *  @param  name            The name of the result parameter.
-   *                          e.g. "log file"
-   *
+   * @param filename The Script file name to use
+   * @param type The IParameterGUI type of the result parameter.  e.g. for a
+   *        LoadFilePG, use "LoadFile"
+   * @param name The name of the result parameter. e.g. "log file"
    */
   public ScriptForm( String filename, String type, String name ) {
     this( filename );
@@ -108,23 +106,16 @@ public class ScriptForm extends OperatorForm {
   }
 
   /**
-   *  Construct a ScriptForm with the given Script file name and
-   *  result parameter type. This constructor allows setting of the
-   *  constant parameters.
+   * Construct a ScriptForm with the given Script file name and result
+   * parameter type. This constructor allows setting of the constant
+   * parameters.
    *
-   *  @param  filename        The Script file name to use for this form
-   *
-   *  @param  type            The IParameterGUI type of the result
-   *                          parameter.  e.g. for a LoadFilePG,
-   *                          use "LoadFile"
-   *
-   *  @param  name            The name of the result parameter.
-   *                          e.g. "log file"
-   *
-   *  @param indices          The array of indices that represent constant
-   *                          parameters for this Form.
-   *
-   *
+   * @param filename The Script file name to use for this form
+   * @param type The IParameterGUI type of the result parameter.  e.g. for a
+   *        LoadFilePG, use "LoadFile"
+   * @param name The name of the result parameter. e.g. "log file"
+   * @param indices The array of indices that represent constant parameters for
+   *        this Form.
    */
   public ScriptForm( String filename, String type, String name, int[] indices ) {
     this( filename );
@@ -135,8 +126,10 @@ public class ScriptForm extends OperatorForm {
     setDefaultParameters(  );
   }
 
+  //~ Methods ******************************************************************
+
   /**
-   *  Testbed.
+   * Testbed.
    */
   public static void main( String[] args ) {
     ScriptForm form = new ScriptForm( 
