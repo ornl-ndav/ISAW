@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/06/09 20:30:21  pfpeterson
+ *  Fixed problem with null values in the GUI.
+ *
  *  Revision 1.1  2003/06/06 18:48:49  pfpeterson
  *  Added to CVS.
  *
@@ -122,7 +125,9 @@ abstract public class StringEntryPG extends ParameterGUI{
       }
     }
 
-    entrywidget=new StringEntry(this.value.toString(),DEF_COLS,FILTER);
+    String val="";
+    if(this.value!=null) val=this.value.toString();
+    entrywidget=new StringEntry(val,DEF_COLS,FILTER);
     entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
     this.setEnabled(this.getEnabled());
     super.initGUI();
