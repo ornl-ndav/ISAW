@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.129  2003/03/07 21:11:37  pfpeterson
+ *  Now creates a single instance of various listeners for the menus
+ *  rather than anonymous listers for each menu item. Speed improvement
+ *  of ~30% during initial startup.
+ *
  *  Revision 1.128  2003/03/06 23:00:53  pfpeterson
  *  No longer passes StatusPane to anyone. Changed default version,
  *  removed some dead code, and lined up some blocks.
@@ -599,10 +604,16 @@ public class Isaw
     JMenuItem threeDView = new JMenuItem( THREED_VIEW_MI );
     JMenuItem tableView = new JMenuItem( TABLE_VIEW_MI );
     JMenu Tables= new JMenu("Selected Table View");
+
+    // set up some listeners for later use
+    MenuItemHandler menu_item_handler          =new MenuItemHandler();
+    AttributeMenuItemHandler attr_menu_handler =new AttributeMenuItemHandler();
+    LoadMenuItemHandler load_menu_handler      =new LoadMenuItemHandler();
+
     for( int k=0; k< TableViewMenuComponents.getNMenuItems(); k++)
     {
       JMenuItem jmi= new JMenuItem(TableViewMenuComponents.getNameMenuItem(k));
-      jmi.addActionListener( new MenuItemHandler());
+      jmi.addActionListener(menu_item_handler);
       Tables.add(jmi);
     }
     JMenuItem contourView = new JMenuItem( CONTOUR_VIEW_MI );
@@ -665,7 +676,7 @@ public class Isaw
         JMenuItem dummy = new JMenuItem(SS);
         dummy.setToolTipText( SharedData.getProperty("Inst"
                                   +new Integer(ii).toString().trim()+"_Path"));
-        dummy.addActionListener( new MenuItemHandler());
+        dummy.addActionListener(menu_item_handler);
         LiveData.add(dummy);
       }
     }
@@ -694,42 +705,42 @@ public class Isaw
     hMenu.add(ftpLink);
     hMenu.add(docLink);
 
-    fileExit.addActionListener(       new MenuItemHandler()        );
-    Runfile.addActionListener(        new LoadMenuItemHandler()    );
-    LiveData.addActionListener(       new LoadMenuItemHandler()    );
+    fileExit.addActionListener(menu_item_handler);
+    Runfile.addActionListener(load_menu_handler);
+    LiveData.addActionListener(load_menu_handler);
 
     script_loader.addActionListener(  new ScriptLoadHandler(this)  );
 
-    fileSaveData.addActionListener(   new MenuItemHandler()        );
-    //fileSaveDataAs.addActionListener( new MenuItemHandler()        );
-    dbload.addActionListener(         new MenuItemHandler()        );
+    fileSaveData.addActionListener( menu_item_handler );
+    //fileSaveDataAs.addActionListener( menu_item_handler );
+    dbload.addActionListener( menu_item_handler );
     
-    graphView.addActionListener(new MenuItemHandler()); 
+    graphView.addActionListener(menu_item_handler); 
          
-    s_graphView.addActionListener(new MenuItemHandler()); 
+    s_graphView.addActionListener(menu_item_handler); 
 
-    threeDView.addActionListener(new MenuItemHandler()); 
-    imageView.addActionListener(new MenuItemHandler());  
-    tableView.addActionListener(new MenuItemHandler());  
-    contourView.addActionListener(new MenuItemHandler());  
-    logView.addActionListener(new MenuItemHandler());      
+    threeDView.addActionListener(menu_item_handler); 
+    imageView.addActionListener(menu_item_handler);  
+    tableView.addActionListener(menu_item_handler);  
+    contourView.addActionListener(menu_item_handler);  
+    logView.addActionListener(menu_item_handler);      
     
-    fileLoadDataset.addActionListener(new MenuItemHandler());
-    removeSelectedNode.addActionListener(new MenuItemHandler());
-    editProps.addActionListener(new AttributeMenuItemHandler());
-    editAttributes.addActionListener(new AttributeMenuItemHandler());
-    editSetAttribute.addActionListener(new AttributeMenuItemHandler());
-    setGroupAttributes.addActionListener(new AttributeMenuItemHandler());
-    clearSelection.addActionListener(new AttributeMenuItemHandler());
+    fileLoadDataset.addActionListener(menu_item_handler);
+    removeSelectedNode.addActionListener(menu_item_handler);
+    editProps.addActionListener(attr_menu_handler);
+    editAttributes.addActionListener(attr_menu_handler);
+    editSetAttribute.addActionListener(attr_menu_handler);
+    setGroupAttributes.addActionListener(attr_menu_handler);
+    clearSelection.addActionListener(attr_menu_handler);
     
-    helpAbout.addActionListener(new MenuItemHandler());
-    helpOperations.addActionListener(new MenuItemHandler());
-    helpCommandPane.addActionListener(new MenuItemHandler());
-    glossary.addActionListener(new MenuItemHandler());
-    apiDocs.addActionListener(new MenuItemHandler());
-    homeLink.addActionListener(new MenuItemHandler());
-    ftpLink.addActionListener(new MenuItemHandler());
-    docLink.addActionListener(new MenuItemHandler());
+    helpAbout.addActionListener(menu_item_handler);
+    helpOperations.addActionListener(menu_item_handler);
+    helpCommandPane.addActionListener(menu_item_handler);
+    glossary.addActionListener(menu_item_handler);
+    apiDocs.addActionListener(menu_item_handler);
+    homeLink.addActionListener(menu_item_handler);
+    ftpLink.addActionListener(menu_item_handler);
+    docLink.addActionListener(menu_item_handler);
    
     menuBar.add(fMenu);
     menuBar.add(eMenu);
