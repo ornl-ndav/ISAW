@@ -34,6 +34,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2001/06/08 16:13:24  dennis
+ *  Change PORT to DEFAULT_PORT and now allow specifying
+ *  different ports.
+ *
  *  Revision 1.10  2001/06/06 21:05:09  dennis
  *  Now sends DataSet.EMPTY_DATA_SET clone if the requested
  *  DataSet is null, or doesn't exist.
@@ -113,8 +117,8 @@ public class LiveDataServer implements IUDPUser,
   public static final String COMMAND_GET_DS_TYPE = "COMMAND:GET_DATA_SET_TYPE ";
   public static final String COMMAND_GET_NUM_DS  = "COMMAND:GET_NUM_DATA_SETS";
 
-  public  static final int MAGIC_NUMBER       = 483719513;
-  public  static final int SERVER_PORT_NUMBER = 6088;
+  public  static final int MAGIC_NUMBER               = 483719513;
+  public  static final int DEFAULT_SERVER_PORT_NUMBER = 6088;
 
   private static final int DELAY_COUNT        = 300;
 
@@ -164,13 +168,23 @@ public class LiveDataServer implements IUDPUser,
     RunfileRetriever rr = new RunfileRetriever( file_name );
 
     int num_data_sets = rr.numDataSets();
-    data_set = new DataSet[ num_data_sets ];
-    ds_type = new int[ num_data_sets ];
-    for ( int i = 0; i < num_data_sets; i++ )
+
+    if ( num_data_sets != 0 )
     {
-      ds_type[i] = rr.getType( i ); 
-      data_set[i] = rr.getDataSet( i ); 
-      SetToZero( data_set[i] );
+      data_set = new DataSet[ num_data_sets ];
+      ds_type = new int[ num_data_sets ];
+      for ( int i = 0; i < num_data_sets; i++ )
+      {
+        ds_type[i] = rr.getType( i ); 
+        data_set[i] = rr.getDataSet( i ); 
+        SetToZero( data_set[i] );
+      }
+    }
+    else
+    {
+      System.out.println("ERROR: Invalid runfile: " + file_name );
+      data_set = new DataSet[0];
+      ds_type  = new int[0];
     }
 
     rr = null;
@@ -513,6 +527,13 @@ public class LiveDataServer implements IUDPUser,
 
   public static void main(String args[])
   {
+    System.out.println("Live Data Server:");
+    System.out.println("You may specify up to three parameters on the ");
+    System.out.println("command line.  You can omit trailing parameters, but ");
+    System.out.println("not leading parameters.  The possible parameters are:");
+    System.out.println(" 1) The data directory from which to read the runfile");
+    System.out.println(" 2) The UDP port for the server use for the DAS" );
+    System.out.println(" 3) The TCP port for the server use for clients" );
     String dataDirectory = null;
     Date date = new Date( System.currentTimeMillis() );
     System.out.println("Date = " + date );
@@ -529,19 +550,38 @@ public class LiveDataServer implements IUDPUser,
 			   + " will be current directory" );
     }
     server.SetDataDirectory( dataDirectory );
+
+
                                          // Start the UPD receiver to listen
                                          // for data from the DAS
     System.out.println("Starting UDP receiver...");
     UDPReceive udp_comm;
-    udp_comm = new UDPReceive( DASOutputTest.DAS_UDP_PORT, server );
+    if ( args.length >=2 )
+    {
+      int udp_port = Integer.parseInt( args[1] );
+      udp_comm = new UDPReceive( udp_port, server );
+    }
+    else
+      udp_comm = new UDPReceive( DASOutputTest.DEFAULT_DAS_UDP_PORT, server );
+
     udp_comm.setPriority(Thread.MAX_PRIORITY);
     udp_comm.start();
     System.out.println("UDP receiver started.");
     System.out.println();
+
+
                                          // Start the TCP server to listen 
                                          // for clients requesting data
     System.out.println("Starting TCP server...");
-    TCPServiceInit TCPinit = new TCPServiceInit( server, SERVER_PORT_NUMBER);
+    TCPServiceInit TCPinit;
+    if ( args.length >=3 )
+    {
+      int tcp_port = Integer.parseInt( args[2] );
+      TCPinit = new TCPServiceInit( server, tcp_port );
+    }
+    else
+      TCPinit = new TCPServiceInit( server, DEFAULT_SERVER_PORT_NUMBER );
+
     TCPinit.start();
     System.out.println("TCP server started.");
     System.out.println();
