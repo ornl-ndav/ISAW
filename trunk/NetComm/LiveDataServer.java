@@ -34,6 +34,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2001/08/13 23:42:05  dennis
+ *  ProcessCommand() now calls super.ProcessCommand() for commands
+ *  that are not handled.
+ *
  *  Revision 1.17  2001/08/10 20:19:59  dennis
  *  Main program exits if help message was requested.
  *
@@ -447,6 +451,9 @@ public class LiveDataServer extends    DataSetServer
         else                                          
           tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
       }
+   
+      else
+        super.ProcessCommand( command, tcp_io );
     }
     catch ( Exception e )
     {

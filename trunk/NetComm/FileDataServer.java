@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2001/08/13 23:42:02  dennis
+ *  ProcessCommand() now calls super.ProcessCommand() for commands
+ *  that are not handled.
+ *
  *  Revision 1.1  2001/08/10 21:59:18  dennis
  *  Renamed from FileDataSetServer.
  *
@@ -158,11 +162,7 @@ public class FileDataServer extends DataSetServer
         }
   
         else
-        {
-           System.out.println( "Command not recognized in FileDataServer");
-           System.out.println( "ProcessCommand() --> " + command );
-           tcp_io.Send( ANSWER_NOT_OK );
-        }
+           super.ProcessCommand( command, tcp_io );
       }
       catch ( Exception e )
       {
