@@ -41,6 +41,24 @@ public class  QxQyQzAxesHandler
       Q[0]= xyz[0]/L;Q[1]= xyz[1]/L;Q[2]= xyz[2]/L;
       return Q;
       }
+   public void setX_scale( int GroupIndex , XScale xscale)
+     {  if( GroupIndex < 0)
+           return;
+        if( GroupIndex >= ds.getNum_entries())
+           return;
+        if( xscale == null)
+          xscale = ds.getData_entry( 0).getX_scale();
+        ds.getData_entry( GroupIndex).resample( xscale,0);
+     }
+
+    public XScale getX_scale(int GroupIndex)
+     {  if( GroupIndex < 0)
+           return null;
+        if( GroupIndex >= ds.getNum_entries())
+           return null;
+        return ds.getData_entry( GroupIndex).getX_scale();
+     }
+
    class QxAxisHandler implements IAxisHandler
      {
        public QxAxisHandler(){}
@@ -75,18 +93,30 @@ public class  QxQyQzAxesHandler
      /** Returns the xIndex that has the given axis value = Value for  
      *  this Group
      */
-      public int  getXindex( int GroupIndex, float Value)
+      public float  getXindex( int GroupIndex, float Value)
         { float[] Q = getQunitVect( GroupIndex);
           if( (Value ==0) ||(Q[0]==0))
             return -1;
-           Data D = ds.getData_entry( GroupIndex);
+          Data D = ds.getData_entry( GroupIndex);
           if( D == null)
               return -1;
-           int i = D.getX_scale().getI(Value/Q[0]);
-           if( i >= D.getX_scale().getNum_x())
+           XScale xsc = D.getX_scale();
+           int i = xsc.getI(Value/Q[0]);
+           /*if( i >= D.getX_scale().getNum_x())
              return -1;
            if( D.isHistogram()) i--;
            return i;
+           */
+           if( i >= xsc.getNum_x())
+              return -1;
+           if( i <= 0)
+              return -1;
+           float y1 = xsc.getX(i-1);
+           float y2 = xsc.getX( i);
+           if( y2 <= y1)
+              return i;
+           return i-1+(int)((Value/Q[0]-y1)/(y2-y1));
+          
          }
        public float getMaxAxisValue(int GroupIndex)
         {float[] Q = getQunitVect( GroupIndex);
@@ -108,6 +138,16 @@ public class  QxQyQzAxesHandler
         
         }
 
+     /** Needs to be set to determine corresponding indecies.
+     *
+     */
+     public void setXScale( int GroupIndex , XScale xscale)
+      { setX_scale( GroupIndex, xscale);
+      }
+
+     public XScale getXScale(int GroupIndex)
+      {  return getX_scale( GroupIndex); 
+       }
 
       }
    class QyAxisHandler implements IAxisHandler
@@ -149,18 +189,30 @@ public class  QxQyQzAxesHandler
      /** Returns the xIndex that has the given axis value = Value for  
      *  this Group
      */
-      public int  getXindex( int GroupIndex, float Value)
+      public float  getXindex( int GroupIndex, float Value)
         { float[] Q = getQunitVect( GroupIndex);
           if( (Value ==0) || (Q[1] == 0))
             return -1;
            Data D = ds.getData_entry( GroupIndex);
           if( D == null)
               return -1;
-           int i = D.getX_scale().getI(Value/Q[1]);
-           if( i >= D.getX_scale().getNum_x())
+           
+           XScale xsc = D.getX_scale();
+           int i = xsc.getI(Value/Q[1]);
+           /*if( i >= D.getX_scale().getNum_x())
              return -1;
            if( D.isHistogram()) i--;
            return i;
+           */
+           if( i >= xsc.getNum_x())
+              return -1;
+           if( i <= 0)
+              return -1;
+           float y1 = xsc.getX(i-1);
+           float y2 = xsc.getX( i);
+           if( y2 <= y1)
+              return i;
+           return i-1+(int)((Value/Q[1]-y1)/(y2-y1));
          }
        public float getMaxAxisValue(int GroupIndex)
         {float[] Q = getQunitVect( GroupIndex);
@@ -181,6 +233,13 @@ public class  QxQyQzAxesHandler
             return xscl.getEnd_x()*Q[1];   
         
         }
+    public void setXScale( int GroupIndex , XScale xscale)
+      { setX_scale( GroupIndex, xscale);
+      }
+
+     public XScale getXScale(int GroupIndex)
+      {  return getX_scale( GroupIndex); 
+       }
 
 
       }
@@ -217,18 +276,28 @@ public class  QxQyQzAxesHandler
      /** Returns the xIndex that has the given axis value = Value for  
      *  this Group
      */
-      public int  getXindex( int GroupIndex, float Value)
+      public float  getXindex( int GroupIndex, float Value)
         { float[] Q = getQunitVect( GroupIndex);
           if( Value ==0)
             return -1;
-           Data D = ds.getData_entry( GroupIndex);
-           if( D == null)
-              return -1;
-           int i = D.getX_scale().getI(Value/Q[2]);
-           if( i >= D.getX_scale().getNum_x())
+           if( Q[2] == 0)
              return -1;
-           if( D.isHistogram() &&( i>0)) i--;
+           XScale xsc = ds.getData_entry(GroupIndex).getX_scale();
+           int i = xsc.getI(Value/Q[2]);
+           /*if( i >= D.getX_scale().getNum_x())
+             return -1;
+           if( D.isHistogram()) i--;
            return i;
+           */
+           if( i >= xsc.getNum_x())
+              return -1;
+           if( i <= 0)
+              return -1;
+           float y1 = xsc.getX(i-1);
+           float y2 = xsc.getX( i);
+           if( y2 <= y1)
+              return i;
+           return i-1+(int)((Value/Q[2]-y1)/(y2-y1));
          }
        public float getMaxAxisValue(int GroupIndex)
         {float[] Q = getQunitVect( GroupIndex);
@@ -248,6 +317,13 @@ public class  QxQyQzAxesHandler
          else
             return xscl.getEnd_x()*Q[2];   
         
+        }
+      public void setXScale( int GroupIndex , XScale xscale)
+        {setX_scale( GroupIndex, xscale);
+        }
+
+      public XScale getXScale(int GroupIndex)
+        {return getX_scale( GroupIndex); 
         }
 
 
