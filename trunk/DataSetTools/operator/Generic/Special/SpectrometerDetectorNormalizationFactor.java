@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/07/16 19:02:46  dennis
+ *  Fixed improper comparison with Float.NaN
+ *
  *  Revision 1.11  2004/03/15 03:28:35  dennis
  *  Moved view components, math and utils to new source tree
  *  gov.anl.ipns.*
@@ -328,14 +331,14 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
         float XMS = SLABMS(180.0f*scattering_angle /
                     (float)Math.PI, energy_in, THETS );
   
-        if ( XMS == Float.NaN )            // 7/16/2002, D.M., use NaN to 
+        if ( Float.isNaN( XMS ) )          // 7/16/2002, D.M., use NaN to 
           cal_FF[j] = 0;                   // indicate invalid, and take 
         else                               // cal_FF = 0 in those cases
-          cal_FF[j]= 1/XMS;
+          cal_FF[j] = 1/XMS;
 
         /*                                 // older version, 1/XMS evaluates
         if (1/XMS>0.000001)                // to infinity in case XMS == 0, and
-          cal_FF[j]= 1/XMS;                // so cal_FF[j] was set to infinity
+          cal_FF[j] = 1/XMS;               // so cal_FF[j] was set to infinity
         else
           cal_FF[j] = 0;
         */
