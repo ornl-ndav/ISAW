@@ -12,6 +12,9 @@
  *                                 Added documentation for all routines
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.14  2000/08/01 19:06:07  dennis
+ *  Now sets sqrt(counts) errors on initial spectrum data
+ *
  *  Revision 1.13  2000/07/31 20:49:05  dennis
  *  Now calculates effective positions weighted by solid angles ONLY for
  *  direct geometry spectrometers.  For all other instruments, just use
@@ -421,6 +424,7 @@ public class RunfileRetriever extends    Retriever
               x_scale = new VariableXScale( bin_boundaries );
 
             spectrum = new Data( x_scale, raw_spectrum, group_id );
+            spectrum.setSqrtErrors();
 
             // Add the relevant attributes ----------------------------------
             AddSpectrumAttributes( instrument_type,
