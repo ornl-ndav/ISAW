@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/04/02 15:02:46  pfpeterson
+ * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
+ *
  * Revision 1.3  2002/11/27 23:31:16  pfpeterson
  * standardized header
  *
@@ -64,53 +67,60 @@ public class MultiplierExampleForm extends    Form
 {
 
   /**
-   *  Construct a MultiplierExampleForm to multiply the parameters named in
-   *  the list operands[] and place the result in the parameter named by
-   *  result[0].  This constructor basically just calls the super class
-   *  constructor and builds an appropriate help message for the form.
-   *
-   *  @param  operands  The list of names of parameters to be multiplied.
-   *  @param  result    The list of names of parameters to be calculated,
-   *                    in this case only result[0] is used.
-   *  @param  w         The wizard controlling this form.
+   *  Default constructor.  Creates an AdderExampleForm and calls
+   *  setDefaultParameters.
    */
-  public MultiplierExampleForm( String constants[], String result[], Wizard w )
+  public MultiplierExampleForm( )
   {
-    super("Multiply the Numbers", constants, null, result, w );
-
-    String help = "This form let's you multiply the numbers \n";
-    for ( int i = 0 ; i < constants.length ; i++ )
-        help = help + "  " + constants[i] + "\n";
-    setHelpMessage( help );
+    super("Multiplier example Form");
+    this.setDefaultParameters();
   }
 
   /**
-   *  This overrides the execute() method of the super class and provides
-   *  the code that actually does the calculation.
    *
-   *  @return This always returns true, though a more robust version might
-   *          check that the values were valid numbers and only set the
-   *          result value and return true in that case.
+   *  Attempts to set reasonable default parameters for this form.
    */
-  public boolean execute()
+  public void setDefaultParameters()
+  {
+    addParameter(new FloatPG("Value 1", new Float(1), false));
+    addParameter(new FloatPG("Value 2", new Float(2), false));
+    addParameter(new FloatPG("Value 3", new Float(3), false));
+    addParameter(new FloatPG("Result 1", new Float(1), false));
+    addParameter(new FloatPG("Result 2", new Float(3), false));
+    addParameter(new FloatPG("Result 3", new Float(3), false));
+    setParamTypes(new int[]{0,1,2,3}, null, new int[]{4,5});
+  }
+
+  /**
+   *  Returns the String command used for invoking this
+   *  Form in a Script.
+   */
+  public String getCommand()
+  {
+    return "MULTIPLIEREXAMPLEFORM";
+  }
+
+  /**
+   *
+   *  Subtracts an array of floats.
+   *  
+   *  @return A Boolean indicating success or failure.  This
+   *  Form is "dumb", i.e. it only returns true.
+   */
+  public Object getResult()
   {
     float product = 1.0f;
     FloatPG param;
-
-    /*for ( int i = 0; i < editable_params.length; i++ ){
-      param = (FloatPG)wizard.getParameter( editable_params[i] );
-      product *= param.getfloatValue();
-      param.setValid(true);
-      }*/
-    for( int i = 0 ; i < const_params.length ; i++ ){
-        param=(FloatPG)wizard.getParameter( const_params[i] );
+    int[] const_indices = super.getParamType(CONST_PARAM);
+    for( int i = 0 ; i < const_indices.length ; i++ ){
+        param=(FloatPG)super.getParameter( i );
         product *= param.getfloatValue();
         param.setValid(true);
     }
 
-    param = (FloatPG)wizard.getParameter( result_params[0] );
+    param = (FloatPG)super.getParameter( const_indices.length );
     param.setfloatValue( product );
-    return true;
+    return new Boolean(true);
   } 
 
 }

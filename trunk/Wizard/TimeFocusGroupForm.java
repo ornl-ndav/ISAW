@@ -28,18 +28,16 @@
  * Modified: 
  *
  * $Log$
- * Revision 1.2  2003/03/19 23:07:37  pfpeterson
- * Expanded TimeFocusGroupForm to allow for up to 20 'banks' to be
- * focused and grouped. (Chris Bouzek)
+ * Revision 1.3  2003/04/02 15:02:46  pfpeterson
+ * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
  *
  * Revision 1.1  2003/03/19 15:07:51  pfpeterson
  * Added to CVS. (Chris Bouzek)
  *
  * Revision 1.5  2003/03/13 19:00:52  dennis
  * Added $Log$
- * Added Revision 1.2  2003/03/19 23:07:37  pfpeterson
- * Added Expanded TimeFocusGroupForm to allow for up to 20 'banks' to be
- * Added focused and grouped. (Chris Bouzek)
+ * Added Revision 1.3  2003/04/02 15:02:46  pfpeterson
+ * Added Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
  * Added
  * Added Revision 1.1  2003/03/19 15:07:51  pfpeterson
  * Added Added to CVS. (Chris Bouzek)
@@ -73,44 +71,158 @@ public class TimeFocusGroupForm extends    Form
   private int new_GID;
   private Float angle, path;
   private String focusing_GIDs;
+  public static final int NUM_BANKS = 20;
   
   /**
-   *  Construct a TimeFocusGroupForm to time focus and group the spectra in a 
-   *  DataSet using the arguments in operands[].  This constructor basically
-   *  just calls the super class constructor and builds an appropriate
-   *  help message for the form.
-   *
-   *  @param  constants The list of names of parameters to be time focused
-                        and grouped.
-   *  @param  operands  The list of names of parameters to use for the
-   *                    time focusing and grouping    .
-   *  @param  result    The list of names of parameters which have been
-   *                    time focused and grouped.
-   *  @param  w         The wizard controlling this form.
+   *  Construct a TimeFocusGroupForm.  This constructor also
+   *  calls setDefaultParameters in order to set the permission
+   *  type of the parameters.
+   *  
    */
-  public TimeFocusGroupForm( String constants[], String operands[], String result[], Wizard w )
+  public TimeFocusGroupForm( )
   {
-    super("Time focus DataSets", constants, operands, result, w );
-
-    StringBuffer help = new StringBuffer();
-    help.append("This form lets you time focus and group the spectra in one or more ");
-    help.append("DataSets.\nNote that whatever you put in for parameters will affect ");
-    help.append("ALL DataSets in the list.\n");
-    setHelpMessage( help.toString() );
+    super("Time focus and group DataSets");
+    this.setDefaultParameters();
   }
 
   /**
-   *  This builds the portions of the default form panel that contain a
-   *  list of parameters inside of a panel with a titled border.  It is
-   *  used to build up to three portions, corresponding to the constant,
-   *  user-specified and result parameters.
    *
-   *  @param  title  The title to put on the border
-   *  @param  params The names of the parameter to include in this sub-panel
+   *  Full constructor.  Uses the input parameters to create
+   *  a TimeFocusGroupForm without the need to externally
+   *  set the parameters.  getResult() may 
+   *  be called immediately after using this constructor.
+   *
+   *  @param hist_array       Array of histograms that  you
+   *                          wish to time focus and group.
+   *
+   *  @param focus_IDs        IDs to focus.
+   *
+   *  @param foc_angle            Focusing angle.
+   *
+   *  @param new_path         The new path.
+   *
+   *  @param tf_array         The array which you wish to store
+   *                          the time focused histograms in.
    */
-  protected JPanel build_param_panel( String title, String params[] )
+  public TimeFocusGroupForm(ArrayPG hist_array,
+                            IntArrayPG focus_IDs,
+                            FloatPG foc_angle,
+                            FloatPG new_path,
+                            ArrayPG tf_array)                         
   {
-    if ( params == null || params.length <= 0 )
+    this();
+    setParameter(hist_array, 0);
+    setParameter(focus_IDs, 1);
+    setParameter(foc_angle, 2);
+    setParameter(new_path, 3);
+    setParameter(tf_array, 4);
+  }  
+                       
+  /**
+   *
+   *  Attempts to set reasonable default parameters for this form.
+   *  Included in this is a default setting of the DataSet array
+   *  corresponding to the respective runfiles' loaded histograms, 
+   *  as well as the corresponding type of the parameter (editable, 
+   *  result, or constant).  Since this is for a bank of 20
+   *  detectors, the setup is for 60 editable parameters.  This
+   *  can be changed by changing the constant.
+   */
+  public void setDefaultParameters()
+  {
+    addParameter(new ArrayPG("Histograms", new Vector(), false));
+    for( int i = 0; i < NUM_BANKS; i ++ )
+    {
+      addParameter(new IntArrayPG("Focusing IDs", new String(""), false));
+      addParameter(new FloatPG( "Focusing angle", new Float(0.5f), false));
+      addParameter(new FloatPG( "New Path", new Float(1.0f), false));
+    }
+    addParameter(new ArrayPG( "Time focused histograms", new Vector(), false));
+ 
+    int[] editable_params = new int[NUM_BANKS*3];
+    for( int i = 0; i < editable_params.length; i++ )
+      editable_params[i] = i + 1;
+
+    setParamTypes(new int[]{0},editable_params,new int[]{NUM_BANKS*3+1});
+
+  }
+
+  /**
+   *
+   *  Documentation for this OperatorForm.  Follows javadoc
+   *  conventions.
+   *
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer();
+    s.append("@overview This Form is designed for time focusing ");
+    s.append("and grouping spectra stored an ArrayPG of DataSets, under ");
+    s.append("the control of a Wizard.\n");
+    s.append("@assumptions It is assumed that the specified DataSets are, ");
+    s.append("non-empty.  In addition, it is assumed that the specifed ");
+    s.append("group IDs exist.\n");
+    s.append("@algorithm This Form time focuses and then groups each DataSet ");
+    s.append("in the ArrayPG, using the specified group IDs, new path, and ");
+    s.append("new angle.  It then stores the results in another ArrayPG.\n");
+    s.append("@param hist_array Array of histograms that you wish to time ");
+    s.append("focus and group.\n");
+    s.append("@param focus_IDs Group IDs to focus.\n");
+    s.append("@param foc_angle Focusing angle.\n");
+    s.append("@param new_path The new path.\n");
+    s.append("@param tf_array The array which you wish to store the time ");
+    s.append("focused and grouped results in.\n");
+    s.append("@return Presently, returns a Boolean which indicates either ");
+    s.append("success or failure.\n");
+    s.append("@error Returns a Boolean false if the specified group IDs do ");
+    s.append("not exist.\n");
+    s.append("@error Returns a Boolean false if the specified angle <= 0");
+    s.append("@error Returns a Boolean false if the new path <= 0");
+    s.append("@error Returns a Boolean false if the DataSet is empty");
+    return s.toString();
+  }
+
+  /**
+   *  Returns the String command used for invoking this
+   *  Form in a Script.
+   */
+  public String getCommand()
+  {
+    return "TIMEFOCUSGROUPFORM";
+  }
+
+  protected void makeGUI(){
+    Box box=new Box(BoxLayout.Y_AXIS);
+    super.prepGUI(box);
+    JPanel sub_panel;
+    int[] param_type=null;
+
+    for( int i=0 ; i<3 ; i++){
+      param_type=getParamType(i);
+      if(param_type!=null || param_type.length>0){
+        if(i==VAR_PARAM)
+          sub_panel=build_focus_grid(param_type);
+        else
+          sub_panel=super.build_param_panel(PARAM_NAMES[i],param_type);
+        if(sub_panel!=null) box.add(sub_panel);
+      }
+    }
+
+    super.enableParameters();
+  }
+
+  /**
+   *  This builds the 'editable' portion of the form. It provides a
+   *  grid for multiple detector banks.
+   *
+   *  @param num an int array of which parameter populate the
+   *  sub-panel
+   */
+  protected JPanel build_focus_grid( int num[] )
+  {
+    String title=PARAM_NAMES[VAR_PARAM];
+
+    if ( parameters == null || parameters.size() <= 0 )
       return null;
 
     JPanel sub_panel;
@@ -118,43 +230,32 @@ public class TimeFocusGroupForm extends    Form
     int num_params;
     final int NUM_IDS = 20;
     
-    num_params = params.length;
+    num_params = num.length;
     sub_panel = new JPanel();
     border = new TitledBorder(LineBorder.createBlackLineBorder(), title);
     border.setTitleFont( FontUtil.BORDER_FONT );
     sub_panel.setBorder( border );
     
     //multiple grid entry
-    if( title == VAR_FRAME_HEAD )
-    {
-      sub_panel.setLayout( new GridLayout( 0, 3 ) );
-      ipgs = new IParameterGUI[num_params];
-    }      
-    else
-      sub_panel.setLayout( new GridLayout( params.length, 1 ) );
+    sub_panel.setLayout( new GridLayout( 0, 3 ) );
+    ipgs = new IParameterGUI[num.length];
        
     //get the params
     for ( int i = 0; i < num_params; i++ )
     {
-      IParameterGUI param = wizard.getParameter( params[i] );
+      IParameterGUI param = (IParameterGUI)parameters.elementAt(num[i]);;
       param.init();
       
       
-      if( title == VAR_FRAME_HEAD )
-      {
-        ipgs[i] = param;
+      ipgs[i] = param;
         
-        if( i < 3 )  //add the labels on this pass
-          sub_panel.add(param.getLabel());
-      }
-      else
-        sub_panel.add( param.getGUIPanel() );
+      if( i < 3 )  //add the labels on this pass
+        sub_panel.add(param.getLabel());
           
     }
      
-      if( title == VAR_FRAME_HEAD )
-        for( int i = 0; i < num_params; i++ )
-          sub_panel.add(ipgs[i].getEntryWidget());
+    for( int i = 0; i < num_params; i++ )
+      sub_panel.add(ipgs[i].getEntryWidget());
 
     return sub_panel;
   } 
@@ -166,7 +267,7 @@ public class TimeFocusGroupForm extends    Form
    *  @return true if all of the parameters are valid and all hist_ds
    *  can be time focused and grouped; false if any significant error occurs
    */
-  public boolean execute()
+  public Object getResult()
   {
     SharedData.addmsg("Executing...\n");
     ArrayPG histograms, tfgr;
@@ -179,15 +280,15 @@ public class TimeFocusGroupForm extends    Form
     DataSet ds;
 
     //get the DataSet array
-    histograms = (ArrayPG)wizard.getParameter("RunList");
+    histograms = (ArrayPG)super.getParameter(0);
     hist_ds_vec = (Vector)histograms.getValue();
 
     //get the time focus/group result parameter
-    tfgr = (ArrayPG)wizard.getParameter("TimeFocusGroupResults");
+    tfgr = (ArrayPG)super.getParameter(NUM_BANKS*3+1);
     //clear it out when the form is re-run
     tfgr.clearValue();
     
-    edit_len = editable_params.length;
+    edit_len = super.getParamType(Form.VAR_PARAM).length;
 
     //make sure list exists
     if( hist_ds_vec != null )
@@ -214,7 +315,7 @@ public class TimeFocusGroupForm extends    Form
           if( focusing_GIDs == null || angle == null || path == null )
           {
             System.out.println("ERROR");
-            return false;               
+            return new Boolean(false);               
           }   
 
           //time_focus the DataSet
@@ -228,7 +329,7 @@ public class TimeFocusGroupForm extends    Form
           else
           {
             SharedData.addmsg("Encountered empty DataSet: " + hist_ds);
-            return false;
+            return new Boolean(false);
           }
 
           if( result instanceof DataSet )
@@ -250,7 +351,7 @@ public class TimeFocusGroupForm extends    Form
             else
               SharedData.addmsg("Could not time focus DataSet: "
                                 + hist_ds);
-            return false;
+            return new Boolean(false);
           }
           
           //check the grouped DataSet for correctness
@@ -266,7 +367,7 @@ public class TimeFocusGroupForm extends    Form
             else
               SharedData.addmsg("Could not group DataSet: "
                                 + hist_ds);
-            return false;
+            return new Boolean(false);
           }          
           
           p_index += 3;
@@ -277,20 +378,20 @@ public class TimeFocusGroupForm extends    Form
         else //something went wrong in previous form
         {
           SharedData.addmsg("Encountered non-DataSet.\n");
-          return false;
+          return new Boolean(false);
         }       
         
       }//for( num_ds )
       
       tfgr.setValid(true);
       SharedData.addmsg("Finished time focusing and grouping DataSets.\n\n");
-      return true;
+      return new Boolean(true);
     }
     //broke, need to return false to let the wizard know
     else
     {
       SharedData.addmsg("No histograms selected.\n");
-      return false;
+      return new Boolean(false);
     }
 
   }
@@ -298,8 +399,8 @@ public class TimeFocusGroupForm extends    Form
   private Object getEditableParamValue(IParameterGUI param)
   {
     Object obj;
-    if( param.getName().equals( 
-      wizard.getParameter( editable_params[0] ).getName() ) )
+    //get the focus IDs
+    if( param.getName().equals( super.getParameter(1).getName()) )
     {     
       String focusing_GIDs;
       //get the user input parameters
@@ -319,11 +420,11 @@ public class TimeFocusGroupForm extends    Form
       {
         new_GID = 1;
         param.setValid(true);
-        return new String("1");
+        return "1";
       } 
     }
-    else if( param.getName().equals( 
-      wizard.getParameter( editable_params[1] ).getName() ) )
+    //get focus angle
+    else if( param.getName().equals(super.getParameter(2).getName()) )
     {
       Float angle;
       obj = param.getValue();
@@ -339,8 +440,8 @@ public class TimeFocusGroupForm extends    Form
         return new Float(1.0f);
       }
     }
-    else if( param.getName().equals( 
-      wizard.getParameter( editable_params[2] ).getName() ) )
+    //get path
+    else if( param.getName().equals(super.getParameter(3).getName() ) )
     {
       Float path;
       obj = param.getValue();
