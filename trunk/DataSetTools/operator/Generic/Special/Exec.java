@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/09/17 22:32:28  pfpeterson
+ *  Modified to take advantage of new SysUtil class.
+ *
  *  Revision 1.4  2002/07/29 18:22:56  pfpeterson
  *  Started working out the details of calling code interactively.
  *
@@ -120,42 +123,20 @@ public class Exec extends    GenericSpecial {
         Process process=null;
         String output=null;
         String error=null;
-        String input=null;
-        boolean interactive=false; // start of interactive coding
 
         try{
-            process=Runtime.getRuntime().exec(command);
-            InputStream  in_stream  = process.getInputStream();
-            OutputStream out_stream = process.getOutputStream();
-            InputStream  err_stream = process.getErrorStream();
-            InputStreamReader  in_reader  = new InputStreamReader(in_stream);
-            OutputStreamWriter out_write  = new OutputStreamWriter(out_stream);
-            InputStreamReader  err_reader = new InputStreamReader(err_stream);
-            InputStreamReader  sys_reader = new InputStreamReader(System.in);
-            BufferedReader in  = new BufferedReader(in_reader);
-            BufferedWriter out = new BufferedWriter(out_write);
-            BufferedReader err = new BufferedReader(err_reader);
-            BufferedReader sys = new BufferedReader(sys_reader);
+            process=SysUtil.startProcess(command,null);
+            BufferedReader in  = SysUtil.getSTDINreader(process);
+            BufferedWriter out = SysUtil.getSTDOUTwriter(process);
+            BufferedReader err = SysUtil.getSTDERRreader(process);
             while(true){
                 output=in.readLine();
                 error=err.readLine();
-                if( output==null && error==null ){
-                    if(!interactive)break;
-                    input=sys.readLine();
-                    if(input==null || input.length()<=0)
-                        break;
-                }else{
-                    if(input!=null){
-                        System.out.println("IN:"+input);
-                        out.write(input,0,input.length());
-                        out.newLine();
-                        out.flush();
-                    }
-                    if(error!=null)
-                        System.err.println(error);
-                    if(output!=null)
-                        System.out.println(output);
-                }
+                if(error!=null)
+                    System.err.println(error);
+                if(output!=null)
+                    System.out.println(output);
+                if( output==null && error==null ) break;
             }
             process.waitFor();
         }catch(IOException e){
@@ -163,10 +144,11 @@ public class Exec extends    GenericSpecial {
         }catch(InterruptedException e){
             SharedData.addmsg("InterruptedException reported: "+e.getMessage());
         }finally{
-            if(process!=null)
+            if(process!=null){
                 return new Integer(process.exitValue());
-            else
-                return new Integer(-1);
+            }else{
+                return "Could not start process";
+            }
         }
     }  
 
