@@ -1,9 +1,9 @@
-
+package Command;
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
-class QuickBoxes 
+public class QuickBoxes 
   { public static int  B_OK = 8;   
     public static int B_Yes    = 4;
     public static int B_No     = 2;
