@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.55  2001/08/16 00:40:18  rmikk
+ *  NDS  server was set to notify Isaw and not the JTree
+ *
  *  Revision 1.54  2001/08/15 22:28:49  chatterjee
  *  Rearranged File menu and incorporated the Remote File Server & added a Table View
  *  Used new JFileChooser in some cases
@@ -704,7 +707,8 @@ public class Isaw
              else
                {JMenuItem Server= new JMenuItem( S );
                 RemoteData.add( Server);
-                Server.addActionListener( new RemoteMenuHandler( Isaw.this, sessionLog ));
+                Server.addActionListener( new RemoteMenuHandler( Isaw.this, 
+                      sessionLog ));
                 i++;
                }            
            }
@@ -717,7 +721,8 @@ public class Isaw
              else
                {JMenuItem Server= new JMenuItem( S );
                 RemoteData.add( Server);
-                Server.addActionListener( new RemoteMenuHandler( jdt, sessionLog ));
+                Server.addActionListener( new RemoteMenuHandler( Isaw.this, 
+                          sessionLog ));
                 i++;
                }            
            }
@@ -1451,7 +1456,7 @@ public class Isaw
         
         jcui.showLog(ds);
 
-//        JTable table = jcui.showDetectorInfo(ds);
+        JTable table = jcui.showDetectorInfo(ds);
 //        table.hasFocus();  
         jpui.showAttributes( ds.getAttributeList() );
 
