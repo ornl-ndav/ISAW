@@ -8,6 +8,9 @@
 #@param Xoff- the initial guess for the X offset in cm
 #@param Yoff- the intial guess for the Yoffset in cm
 #
+$Command =CenterDisplay
+$Title= Find and Show Center
+$Category=Operator, Instrument Type, TOF_NSAS
 
 $ DSfilename   LoadFileString("/IPNShome/sand/data/sand22218.run")   Enter DataSet Name
 $ SensFilename LoadFileString("/IPNShome/sand/GeorgeUser/sens22205.dat")  Enter Sensitivity FileName
@@ -15,9 +18,6 @@ $StartTimeChan  Integer(11)  Enter Starting TimeChannel
 $EndTimeChan  Integer(70)   Enter EndTimeChannel
 $Xoff     Float(0)    Enter Xoff estimate
 $Yoff    Float(0)   Enter Yoff Estimate
-$Command =CenterDisplay
-$Title= Find and Show Center
-$Category=Operator, Generic, TOF_SAD, Scripts
 
 V =BeamCenter(DSfilename, SensFilename, startTimeChan,EndTimeChan, Xoff,Yoff)
 
