@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.44  2005/01/31 23:48:27  dennis
+ *  Added attributes ENERGY and ENERGY_TRANSFER, for use with ToQE operator.
+ *
  *  Revision 1.43  2004/03/15 06:10:35  dennis
  *  Removed unused import statements.
  *
@@ -444,6 +447,23 @@ abstract public class Attribute implements Serializable,
    * Initial Path length from the source to the sample.
    */ 
   public static final String  INITIAL_PATH      = "Initial Path";
+
+  /**
+   * ENERGY_TRANSFER = "Energy Transfer" is the name of a float Attribute 
+   * giving the energy transfer for a Data block or set with constant energy
+   * transfer.
+   *
+   * The unit of measurement is a meV (milli electron volts).      
+   */   
+  public static final String  ENERGY_TRANSFER = "Energy Transfer";
+
+  /**
+   * ENERGY = "Energy" is the name of a float Attribute 
+   * giving the energy for a Data block or set with constant energy.
+   *
+   * The unit of measurement is a meV (milli electron volts).      
+   */
+  public static final String  ENERGY = "Energy";
   
   /**
    * ENERGY_IN = "Energy In" is the name of a float Attribute giving the
