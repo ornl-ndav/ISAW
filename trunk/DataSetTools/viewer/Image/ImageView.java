@@ -2,6 +2,12 @@
  * @(#)ImageView.java  1.1 2000/04/28 Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.7  2000/12/15 05:09:40  dennis
+ *  Now convert histograms to functions before generating the image.
+ *  This was needed because if histograms with very different
+ *  x-scales are rebinned to form an image, the intensities of the
+ *  image may be misleading.
+ *
  *  Revision 1.6  2000/11/07 15:24:11  dennis
  *  Added docs on public methods.
  *  Draws crosshair cursor for POINTED_AT_CHANGED message.
@@ -545,7 +551,13 @@ private void MakeImage( boolean redraw_flag )
   {
     data_block = getDataSet().getData_entry(i);
     rebinned_data_block = (Data)data_block.clone();
-    rebinned_data_block.ResampleUniformly( x_scale );
+
+    if ( !rebinned_data_block.isFunction() )           // need to treat it as
+      rebinned_data_block.ConvertToFunction( false );  // intensity for image
+                                                       // display when starting
+                                                       // with widely different
+                                                       // sizes of x-bins
+    rebinned_data_block.ResampleUniformly( x_scale );  
 
     image_data[i] = rebinned_data_block.getY_values();
   }
