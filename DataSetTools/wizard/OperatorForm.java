@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.12  2003/07/02 15:35:32  bouzekc
+ * Fixed javadoc error.
+ *
  * Revision 1.11  2003/06/27 22:23:42  bouzekc
  * Reformatted for consistency.
  *
@@ -126,7 +129,8 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator {
    *  Construct an OperatorForm with the given Operator and
    *  result parameter type.
    *  This allows the use of that Operator for the getResult()
-   *  method.
+   *  method.  In addition, this constructor allows setting of the constant
+   *  parameters.
    *
    *  @param  op              The Operator to use for this form
    *
@@ -261,8 +265,7 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator {
       for( int i = 0; i < var_indices.length; i++ ) {
         var_indices[i] = ( ( Integer )tempIndices[i] ).intValue(  );
       }
-    }
-    else {  //no constant parameters
+    } else {  //no constant parameters
 
       for( int i = 0; i < num_params; i++ ) {
         var_indices[i] = i;
