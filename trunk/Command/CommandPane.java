@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.53  2003/04/21 19:21:34  pfpeterson
+ * Sets the filename on the script editor border when saving a file.
+ *
  * Revision 1.52  2003/03/21 19:27:25  rmikk
  * Reset Error and other conditions before running a script
  *
@@ -308,7 +311,8 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
         Opn.addPropertyChangeListener( Sav);
         Opn.addPropertyChangeListener( this );   
         this.addPropertyChangeListener(Sav);
-        Opn.addPropertyChangeListener( this ) ; 
+        Opn.addPropertyChangeListener( this ); 
+        Sav.addPropertyChangeListener( this );
         Open.addActionListener( Opn);
         Save.addActionListener( Sav );
 
@@ -375,10 +379,11 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
      * displayed in the Status line </ul>
      */ 
     public void propertyChange( PropertyChangeEvent evt ){
+        String filename=null;
         if( evt.getSource() instanceof OpenFileToDocListener ){
             OpenFileToDocListener opn =
                 (OpenFileToDocListener)(evt.getSource());
-            String filename = opn.getFileName();
+            filename = opn.getFileName();
             if(Debug) System.out.println("CP:"+filename);
             CommandSP.setBorder(new TitledBorder( "Prgm Editor:"+filename ));
             PC.firePropertyChange("filename", null, filename);
@@ -399,7 +404,14 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
               Language.setSelectedIndex( 0 );
             else
               Language.setSelectedIndex( 1 );
+        }else if(evt.getSource() instanceof SaveDocToFileListener ){
+          filename=((SaveDocToFileListener)evt.getSource()).getFileName();
+        }else{
+          return;
         }
+        
+        if(filename!=null)
+          CommandSP.setBorder(new TitledBorder( "Prgm Editor:"+filename ));
     }
 
     /**
