@@ -31,6 +31,12 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.17  2002/02/16 15:57:47  rmikk
+ * -Fixed error when no Groups were selected and the "UseAll" was selected
+ * -Added a file close at the end of the Showw routine so users who enter only
+ *  through this Showw routine will have the file closed
+ * -Turned off the autoresize of the JTable so the scrolling now works nicely
+ *
  * Revision 1.16  2002/02/11 21:41:55  rmikk
  * Major Change to the previous version.  Now all fields,DataSet Attributes, and
  * Data block[0] attributes are used.  The non-GUI interface is also changed and
@@ -792,6 +798,7 @@ public class table_view extends JPanel implements ActionListener
        // Table Pane
        DTM = new DefaultTableModel();
        JTb = new JTable( DTM );
+       JTb.setAutoResizeMode( JTable.AUTO_RESIZE_OFF);
         EA = new ExcelAdapter( JTb );
        // The HeaderInfo Pane
        HeaderInfoPane = new JTextArea (20, 50 );
@@ -1212,7 +1219,7 @@ public void Showw1( DataSet DSS[], DefaultListModel selModel,  String  order,
     else done = true;
     }
    
-
+    OutputClose();
    }
 
 
@@ -1296,14 +1303,16 @@ public void Showw( DataSet DSS[], DefaultListModel selModel,  String  order,
                OutputEndField();
              }             
           }
+         OutputClose();
       }
     else //paired
      {
       float xvals[]; 
       xvals = null;     
       DataSet DS = DSS[ i ];
+      
       if( XYcol )           
-            xvals = MergeXvals( 0, DS, null, UseAll ,null);                   
+            xvals = MergeXvals( 0, DS, null, UseAll ,SelIndecies);                   
       int n = 1;
       if( xvals != null )
          n = xvals.length;
@@ -1383,7 +1392,7 @@ public void Showw( DataSet DSS[], DefaultListModel selModel,  String  order,
 
 
        }//for k
-           
+       OutputClose();
       }//end paired Data Blocks
 
     }
@@ -1391,13 +1400,18 @@ public void Showw( DataSet DSS[], DefaultListModel selModel,  String  order,
   // Unions all x values in the selected group of data sets
   private float[] MergeXvals ( int dbi , DataSet DS , float xvals[]
                                , boolean UseAll, int[] SelIndices )
-    {if(SelIndices == null)
+    { if(SelIndices == null)
          SelIndices = DS.getSelectedIndices() ;
-     if(SelIndices == null) return xvals;
-     if( dbi >= SelIndices.length )
+     else if(SelIndices == null) 
+         if(!useAll)return xvals;
+     if( UseAll &&(dbi> DS.getNum_entries()))
+         return xvals;  
+     else if( dbi >= SelIndices.length )
         return xvals; 
      if( dbi < 0) return xvals;
-     int db=SelIndices[dbi];
+     int db;
+     if( UseAll) db=dbi;
+     else db=SelIndices[dbi];
      if( xvals == null )       
        { Data DB = DS.getData_entry( db );
          //if( !DB.isSelected() )
