@@ -46,7 +46,15 @@ public class JPropertiesUI extends  JPanel implements IObserver, Serializable
            	showAttributes(  new AttributeList() );
 	 }  
 	 
-	 
+/*	  public void addIObserver(IObserver iobs) 
+        {this.addIObserver( iobs );
+        }
+*/
+      public JTable getPropsTable()
+	 {
+          return table;
+       }
+
 	 public void showAttributes( AttributeList attr_list)
 	 {
 	    Vector heading = new Vector();
