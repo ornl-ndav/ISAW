@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2001/08/17 19:01:04  rmikk
+ * Added error checking in case the file could not be created
+ *
  * Revision 1.2  2001/07/30 20:11:42  rmikk
  * No longer implements Writer
  *
@@ -61,6 +64,8 @@ public class NxWriter
  public NxWriter( NxWriteNode node)
    {this.node = node;
     errormessage= "";
+    if( node == null)
+	errormessage = NxNodeUtils.ER_BADFILE;
     nn= new NxNodeUtils();
     nd = new NxData_Gen();    
     //get Global Attributes here and append to 
@@ -260,8 +265,8 @@ public static void main( String args[] )
   if(args != null) if( args.length > 0)
      filename = args[0];
   
-  //NexWriteNode nwr = new NexWriteNode( filename  + ".nxs" );
-   XmlWriteNode nwr = new XmlWriteNode( filename + ".xml" );
+  NexWriteNode nwr = new NexWriteNode( filename  + ".nxs" );
+  // XmlWriteNode nwr = new XmlWriteNode( filename + ".xml" );
    if( nwr.getErrorMessage() != "")
        System.out.println( "Error 1="+nwr.getErrorMessage());
  //  if( nwr instanceof NexIO.Write.NxWriteNode)
@@ -281,8 +286,8 @@ public static void main( String args[] )
     {DSS = UT.loadRunfile( filename + ".run" );
  
    
-    DSH = new DataSet[1];
-    DSM = new DataSet[ DSS.length - 1 ];
+    DSM = new DataSet[1];
+    DSH = new DataSet[ DSS.length - 1 ];
     DSM[0] = DSS[0];
     for( int k = 1; k < DSS.length; k++ )
       DSH[k-1] = DSS[k];
