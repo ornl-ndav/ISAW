@@ -6,6 +6,10 @@ package OverplotView.graphics;
  * graphical output panel
  *
  * $Log$
+ * Revision 1.4  2001/06/29 14:17:47  neffk
+ * graph no longer has a stray line going from the origin to the end of the
+ * spectra.  also, this class no longer extends JApplet.
+ *
  * Revision 1.3  2001/06/28 22:08:46  neffk
  * GraphableData --> SGTData converter in complete.  it graphs all data, making
  * appropriate changes for tabulated functions or histogram data.
@@ -46,7 +50,7 @@ import DataSetTools.dataset.AttributeList;
 import DataSetTools.dataset.Data;
 
 public class sgtGraphableDataGraph 
-  extends JApplet
+//  extends JApplet
   implements IGraphableDataGraph
 { 
 
@@ -130,11 +134,11 @@ public class sgtGraphableDataGraph
                                 //a histogram, with a 'bump' for every bin.
     else                        
     {
-      double[] x = new double[  x_values.length * 2  ]; 
-      double[] y = new double[  x_values.length * 2  ];
-      for( int i=0, j=0;  i<x_values.length;  i+=2, j++ )
+      double[] x = new double[  x_values.length * 2 - 2 ]; 
+      double[] y = new double[  y_values.length * 2     ];
+
+      for( int i=0;  i<y_values.length;  i++ )
       {
-                             
 /*
         //
         // draws the histogram with sides.  if this is used in the
@@ -155,10 +159,11 @@ public class sgtGraphableDataGraph
         //
         // draws the histogram as a series of connected horizontal lines
         //
-        x[i] = x_values[j];      //left end
-        y[i] = y_values[j];      //  ...
-        x[i+1] = x_values[j+1];  //right end
-        y[i+1] = y_values[j];    //  ...
+        x[ i*2 ] = x_values[i];      //left end
+        y[ i*2 ] = y_values[i];      //  ...
+        x[ i*2 + 1 ] = x_values[i+1];  //right end
+        y[ i*2 + 1 ] = y_values[i];    //  ...
+
       }
       x_values = x;
       y_values = y;
@@ -218,7 +223,7 @@ public class sgtGraphableDataGraph
                               null, 
                               false );
 
-      for( int i=1;  i<data.size();  i++ )
+      for( int i=0;  i<data.size();  i++ )
         //ltsl.addData( (SGTData)data.get(i), ""+i );
         //ltsl.addData( (Collection)data.get(i), ""+i );
         ltsl.addData( (SGTLine)data.get(i), ""+i );
