@@ -15,6 +15,8 @@ import java.lang.*;
 import java.io.File.*;
 import javax.swing.*;
 import javax.swing.event.*;
+//import javax.swing.*;
+//import javax.swing.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 
@@ -45,21 +47,29 @@ public class ListFiles extends JFrame
     private Vector loadedElements;
     private JTreeUI treeUI;
     private FileDialog fd;
+    String dirName;
     
-    public ListFiles(JTreeUI treeUI) {
+    public ListFiles(JTreeUI treeUI,String dirName) {
         super("File Loader");
          this.treeUI = treeUI;
+         this.dirName = dirName;
+         
         listModelA = new DefaultListModel();
         listModelB = new DefaultListModel();
        
-        fd = new FileDialog(new Frame(), "Choose Folder", FileDialog.LOAD);
-        //fd.setDirectory("H:\\UPDATE\\Data");
+      /*  fd = new FileDialog(new Frame(), "Choose Folder", FileDialog.LOAD);
+        fd.setDirectory(dirName);
         fd.show();
+        
         theResults = new Vector();
         loadedElements = new Vector();
         File f = new File(fd.getDirectory(), fd.getFile());
-        String dir = fd.getDirectory();
-        String[] fileList = new File(dir).list();//dir listing
+         dirName = fd.getDirectory();
+         
+         */
+         theResults = new Vector();
+        loadedElements = new Vector();
+        String[] fileList = new File(dirName).list();//dir listing
      
         for(int i = 0; i<fileList.length; i++)
         {
@@ -104,7 +114,7 @@ public class ListFiles extends JFrame
 
         
         String name = listA.getSelectedValue().toString();
-        fileName.setText(dir+name);
+        fileName.setText(dirName+name);
 
 
         
@@ -151,6 +161,7 @@ public class ListFiles extends JFrame
             try{
                     if(listB.getSelectedIndex()!= -1)
                     {
+                         int index = listB.getSelectedIndex();
                     Object[] rightSelected = listB.getSelectedValues();
                     int[] rightSelectedIndices= listB.getSelectedIndices();
                     String[] value = new String[rightSelectedIndices.length];
@@ -160,7 +171,10 @@ public class ListFiles extends JFrame
                     for (int i = 0; i<rightSelectedIndices.length; ++i)
                     {
                         listModelB.removeElementAt(rightSelectedIndices[i] -i);
-                        listB.setSelectedIndex(i);
+                        if (index == listModelB.getSize())
+                        index--;
+                        //otherwise select same index
+                        listB.setSelectedIndex(index);
                     }
                     for(int i = 0; i<rightSelectedIndices.length; i++)
                     {
@@ -189,6 +203,7 @@ public class ListFiles extends JFrame
 
     try{
         if(listA.getSelectedIndices()!= null){
+             int index = listA.getSelectedIndex();
             Object[] leftSelected = listA.getSelectedValues();
             String[] value = new String[leftSelected.length];
            
@@ -199,7 +214,10 @@ public class ListFiles extends JFrame
              {
              listModelA.removeElementAt(leftSelectedIndices[i] -i);
             
-             listA.setSelectedIndex(i);
+             if (index == listModelA.getSize())
+                index--;
+                //otherwise select same index
+               listA.setSelectedIndex(index);
              }
               for(int i = 0; i<leftSelected.length; i++)
             {
@@ -223,8 +241,9 @@ public class ListFiles extends JFrame
             for (int i =0; i<size; i++)
             {
              
-            file_name[i] =fd.getDirectory()+listB.getModel().getElementAt(i).toString();
+           // file_name[i] =fd.getDirectory()+listB.getModel().getElementAt(i).toString();
           // System.out.println("Print the files in listB  " +file_name[i]);
+          file_name[i] =dirName+listB.getModel().getElementAt(i).toString();
             }
           
            SelectFileData sfd = new SelectFileData(file_name,treeUI);

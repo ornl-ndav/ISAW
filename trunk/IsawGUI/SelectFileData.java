@@ -1,7 +1,7 @@
 /*
  * @(#)SelectFileData.java     1.0  99/09/02  Alok Chatterjee
  *
- * 1.0  99/09/02  Added the comments and made this a part of package IsawTools
+ * 1.0  99/09/02  Added the comments and made this a part of package IsawGUI
  * 
  */
  
@@ -34,31 +34,33 @@ public class SelectFileData extends JPanel implements Serializable
     private JDialog opDialog;
     private JTextArea dsText;
     private JComboBox combobox;
-    private JRadioButton jrb1, jrb2;
+    private JRadioButton jrb1, jrb2, jrb3;
     private JCheckBox jck1, jck2;
     private JTextField jta1, jta2;
     private JPanel segment1, segment2, segment3, segment4, segment5;
     private JLabel resultsLabel = new JLabel("Result");
+    private DataSet new_ds;
     
     String[] file_name;
+    String dirName;
     boolean keep= true; 
-    boolean sum, summed;
+    boolean keepAll = false;
+    boolean sumSpectra, sumFiles;
     private JTreeUI treeUI;  
     
     public SelectFileData(String[] f_name, JTreeUI treeUI) 
     {
          this.treeUI = treeUI;
- 
+        
+         
          file_name = new String[f_name.length];
          for (int i =0; i<f_name.length; i++)
-         {
             file_name[i] = f_name[i];
-            //System.out.println("Print the files in f_name " +file_name[i]);
-         }
+            
         opDialog = new JDialog();
         opDialog.setSize(650,480);
         opDialog.getContentPane().add(new JLabel("Load Files based on Selected Attribute Range"));
-
+        
         //Center the opdialog frame 
 	    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	    Dimension size = opDialog.getSize();
@@ -86,35 +88,31 @@ public class SelectFileData extends JPanel implements Serializable
         segment2.add(new JLabel(""));
         jrb1 = new JRadioButton("Include Selected Range",true);
         jrb2 = new JRadioButton("Exclude Selected Range",false);
+        jrb3 = new JRadioButton("Include All Range",false);
         
         segment2.add(jrb1);
         segment2.add(jrb2);
+        segment2.add(jrb3);
         segment2.setBorder(new TitledBorder(""));
         ButtonGroup group1 = new ButtonGroup();
         group1.add(jrb1);
 	    group1.add(jrb2);
+	    group1.add(jrb3);
         
         segment3 = new JPanel();
         segment3.setLayout(new GridLayout(1,2));
         segment3.add(new JLabel(""));
         jck1 = new JCheckBox("Sum over Spectra",false);
         jck2 = new JCheckBox("Sum over Files", false);
- 
-        
-        segment3.add(jck1);
-       // segment3.add(jck2);
- 
 
-        //segment3.setBorder(new TitledBorder(""));
+        segment3.add(jck1);
+        segment3.add(jck2);
         
         segment4 = new JPanel();
         segment4.setLayout(new GridLayout(1,2));
         segment4.add(new JLabel("Range Minimum: "));
         jta1 = new JTextField();
         jta1.setSize(200, 100);
-       
-       //jta1.setNextFocusableComponent(jta2);
-      
         segment4.add(jta1);
 
          
@@ -124,10 +122,6 @@ public class SelectFileData extends JPanel implements Serializable
         jta2 = new JTextField();
         jta2.setSize(200, 100);
         segment5.add(jta2);
-        
-       // ButtonGroup group2 = new ButtonGroup();
-	   // group2.add(jck1);
-	   // group2.add(jck2);
 
         opDialog.getContentPane().add(segment2);
         opDialog.getContentPane().add(segment1);
@@ -147,14 +141,17 @@ public class SelectFileData extends JPanel implements Serializable
         opDialog.getContentPane().add(buttonpanel);
         opDialog.setVisible(true);
 
-        jrb1.addItemListener(new ItemListener(){
+        jrb1.addItemListener(new ItemListener()
+     
+        {
             public void itemStateChanged(ItemEvent ex) 
             {
               keep =true;
+              
              if(!jrb1.isSelected()) 
              {
-               // jrb2.setEnabled(false);
-                keep = false;
+                keep = true;
+                keepAll = false;
              }
             }
         }) ;
@@ -164,21 +161,34 @@ public class SelectFileData extends JPanel implements Serializable
         {
             public void itemStateChanged(ItemEvent ex) 
             {
-                if(jrb2.isSelected()) 
+               if(jrb2.isSelected()) 
                 {
-                   // jrb1.setEnabled(false);
                     keep = false;
+                    keepAll = false;  
                 }
             }
         }) ;
+        
+        jrb3.addItemListener(new ItemListener()
+        {
+            public void itemStateChanged(ItemEvent ex) 
+            {
+               if(jrb3.isSelected()) 
+                {
+                    keepAll = true;
+                    keep=false;
+                }
+            }
+        });
         
          jck1.addItemListener(new ItemListener()
         {
             public void itemStateChanged(ItemEvent ex) 
             {
                 if(!jck1.isSelected()) 
-                  sum = false;
-                else sum = true;
+                 {resultsLabel.setText("Result:");
+                  sumSpectra = false;}
+                else sumSpectra = true;
             }
         }) ;
         
@@ -187,8 +197,9 @@ public class SelectFileData extends JPanel implements Serializable
             public void itemStateChanged(ItemEvent ex) 
             {
                 if(!jck2.isSelected()) 
-                    summed =false;
-                else summed = true;
+                { resultsLabel.setText("Result:");
+                    sumFiles =false;}
+                else sumFiles = true;
        
             }
         }) ;
@@ -196,7 +207,8 @@ public class SelectFileData extends JPanel implements Serializable
 
     }
     
-    
+   
+            
     public class ApplyButtonHandler implements ActionListener
       {
          public void actionPerformed(ActionEvent ev) 
@@ -205,10 +217,14 @@ public class SelectFileData extends JPanel implements Serializable
             AttributeNameString attr_name = new AttributeNameString(attrname);
             float min = Float.valueOf(jta1.getText()).floatValue();
             float max = Float.valueOf(jta2.getText()).floatValue();
-
+            String s1 = jta1.getText();
+            String s2= jta2.getText();
+            //if(s1.equalsIgnoreCase("NaN") || s2.equalsIgnoreCase("NaN") )
+            //min=5;
+            //max=10;
  
-          for (int i =0; i<file_name.length; i++)
-          System.out.println("Print the files in file_name  " +file_name[i]);
+          //for (int i =0; i<file_name.length; i++)
+          /*System.out.println("Print the files in file_name  " +file_name[i]);
           
           System.out.println("The attributes in keep are "+keep);
           System.out.println("The attributes in attr_list are " +attr_name ); 
@@ -217,15 +233,53 @@ public class SelectFileData extends JPanel implements Serializable
           System.out.println("The attributes in attr_list are " +min ); 
           System.out.println("The attributes in attr_list are " +max ); 
           System.out.println("The attributes in sum are "+sum); 
-          System.out.println("The attributes in summed are "+summed);
+          System.out.println("The attributes in sumFiles are "+sumFiles);*/
+           
          opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-           if(sum)
-            extract_summed_Data(file_name, attr_name, keep, min, max);
-            else 
-            extract_Data(file_name, attr_name, keep, min, max);
+           if(sumSpectra && !sumFiles)
+           {    DataSet new_ds = extract_summed_Data(file_name, attr_name, keep, min, max);
+                treeUI.addDataSet(new_ds);
+                
+           }
+           if(!sumFiles && !sumSpectra) 
+            {
+                extract_Data(file_name, attr_name, keep, min, max);
+          
+            }    
+            
+           if(sumFiles && sumSpectra)
+            {
+                DataSet new_ds = extract_summed_Data(file_name, attr_name, keep, min, max);
+                DataSetOperator  op1;
+                op1 = new SumSelectedData(new_ds, attr_name, keep, 0, file_name.length-1);
+                DataSet mergedDS1 = (DataSet)op1.getResult(); 
+                treeUI.addDataSet(mergedDS1);
+                
+            }
+            
+            if(sumFiles && !sumSpectra) 
+            {
+                
+               
+                //sumAll_Files(file_name, attr_name, keep, min, max);
+                sumAll_Files(file_name); 
+                System.out.println("now before executing sumAll_Files");
+                
+            }    
+             if(keepAll) 
+            {
+
+                //sumAll_Files(file_name, attr_name, keep, min, max);
+                sumAll_Files(file_name); 
+                System.out.println("now before executing sumAll_Files");
+                
+            }    
+           
             opDialog.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            resultsLabel.setText("Loading Files Completed");
+            resultsLabel.setText("Result: Loading Files Completed");
+           System.out.println("The keepAll are "+keepAll); 
          }
+        
       } 
     
     public class ExitButtonHandler implements ActionListener
@@ -268,15 +322,16 @@ public class SelectFileData extends JPanel implements Serializable
                                        // form DataSet with selected entries
                                        // from the histogram using the
                                        // SelectData operator
+      ds.addLog_entry("Loaded Runfiles " +ds.toString())   ;                              
       op = new SelectData( ds, attr_name, keep, min, max );
       ds = (DataSet)op.getResult();   
-
+      
       if ( i <= 0 )                    // first time through, initialize new_ds
         new_ds = (DataSet)ds.empty_clone();     // and attributes from the selected ds
       else
         new_ds.CombineAttributeList( ds );  // subsequently, combine attributes
                                             // from the selected ds
-
+       // new_ds.addLog_entry( "Loaded Runfiles " +ds.toString());
                                       // add the data entries from the selected
                                       // DataSet to the new DataSet
       for ( int k = 0; k < ds.getNum_entries(); k++ )
@@ -290,7 +345,7 @@ public class SelectFileData extends JPanel implements Serializable
  
  
 
-  public Object extract_summed_Data(String[] file_name, AttributeNameString attr_name, boolean keep, float min, float max )
+  public DataSet extract_summed_Data(String[] file_name, AttributeNameString attr_name, boolean keep, float min, float max )
   {
     DataSet          ds;
     DataSet          new_ds = null;
@@ -318,6 +373,8 @@ public class SelectFileData extends JPanel implements Serializable
                                    // form simple DataSet with one entry by
                                    // summing the selected spectra using the
                                    // SumSelectedData operator
+       ds.addLog_entry("Loaded  " +ds.toString())   ;                             
+                                  
       op = new SumSelectedData( ds, attr_name,keep, min, max );
       ds = (DataSet)op.getResult();   
 
@@ -326,16 +383,61 @@ public class SelectFileData extends JPanel implements Serializable
       else
         new_ds.CombineAttributeList( ds );  // subsequently, combine attributes
                                             // from the summed ds
-
+      //  new_ds.addLog_entry( "Loaded Runfiles " +ds.toString());
       d = ds.getData_entry(0);         // add the one data entry from the  
       d.setGroup_ID( i );              // summed DataSet as entry #i
       new_ds.addData_entry( d );           
     }
   System.out.println("Processing file FINISHED"  );
-  treeUI.addDataSet(new_ds);
+  //treeUI.addDataSet(new_ds);
     return new_ds;
   }  
   
+  
+  public DataSet[] sumAll_Files(String[] file_name //,AttributeNameString attr_name,
+                               // boolean keep, float min, float max 
+                               )
+  {
+    DataSet []         ds;
+  
+    RunfileRetriever r0,r ;
+    //int              ds_num;
+    //boolean          is_histogram = false;
+    DataSetOperator  op;
+    
+
+    if ( file_name.length <= 0 )       // nothing to process
+      return null;
+      
+      r0 = new RunfileRetriever( file_name[0] );
+      int numberOfDataSets0 = r0.numDataSets();
+      ds = new DataSet[numberOfDataSets0];
+        for (int i = 0; i< numberOfDataSets0;i++)
+             ds[i] = r0.getDataSet(i);
+      
+//file_name.length gives us the size of the array of file names to be loaded
+    for ( int i = 1; i < file_name.length; i++ )
+    {
+      System.out.println("Processing file " + i );
+
+      r = new RunfileRetriever( file_name[i] );
+      int numberOfDataSets = r.numDataSets();
+      DataSet[] dss = new DataSet[numberOfDataSets];
+      
+      for (int j = 0; j< numberOfDataSets;j++)
+      {     
+            dss[j] = r.getDataSet(j);
+            op = new DataSetAdd(ds[j], dss[j]);
+            ds[j] = (DataSet)op.getResult();
+           //ds[j].addLog_entry( "Loaded Runfiles " +ds[j].toString());
+       }                 
+    }
+     for (int j = 0; j< numberOfDataSets0;j++)
+        treeUI.addDataSet(ds[j]);
+    System.out.println("Processing file FINISHED"  );
+    //treeUI.addDataSet(new_ds);
+    return ds;
+  }  
   
   public void keyPressed(KeyEvent evt)
   {
@@ -348,80 +450,4 @@ public class SelectFileData extends JPanel implements Serializable
    }
 
   }
-  
-  /*
-  public Object extract_summed_File_Data(String[] file_name, AttributeNameString attr_name, boolean keep, float min, float max )
-  {
-    DataSet          ds;
-    DataSet          new_ds = null;
-    Data             d;
-    RunfileRetriever r;
-    int              ds_num;
-    boolean          is_histogram = false;
-    DataSetOperator  op;
-    
-    /////////////////////////////////
-    
-     int size = file_name.length;
-     
-            for (int i =0; i<size; i++)
-            {
-             
-                          
-            }
-    
-    
-    /////////////////////////////
-
-    for ( int i = 0; i < file_name.length; i++ )
-    {
-        RunfileRetriever r = new RunfileRetriever( file_name[i] );
-        int numberOfDataSets = r.numDataSets();
-        DataSet[] dss = new DataSet[numberOfDataSets];
-
-         for (int j = 0; j< numberOfDataSets;j++)
-              dss[j] = r.getDataSet(j);
-       DataSet ds_to_add = (DataSet)dss[j+1];
-
-                                     // get the current data set
-    DataSet ds = dss[0];
-
-    System.out.println( "ds        = " + ds );
-    System.out.println( "ds_to_add = " + ds_to_add );
-
-    if ( !ds.SameUnits( ds_to_add ) )// DataSets are NOT COMPATIBLE TO COMBINE
-      {
-        ErrorString message = new ErrorString(
-                           "ERROR: DataSets have different units" );
-        System.out.println( message );
-        return message;
-      }
-                                     // construct a new data set with the same
-                                     // title, units, and operations as the
-                                     // current DataSet, ds
-    DataSet new_ds = (DataSet)ds.empty_clone(); 
-    new_ds.addLog_entry( "Added " + ds_to_add );
-
-                                            // do the operation
-    int num_data = ds.getNum_entries();
-    Data data,
-         add_data,
-         new_data;
-    for ( int i = 0; i < num_data; i++ )
-    {
-      data = ds.getData_entry( i );        // get reference to the data entry
-
-      add_data = ds_to_add.getData_entry_with_id( data.getGroup_ID() );
- 
-      if ( add_data != null )              // there is a corresponding entry
-      {                                    // to try to add
-        new_data = data.add( add_data );  
-        if ( new_data != null )            // if they could be added
-          new_ds.addData_entry( new_data );      
-      }
-  System.out.println("Processing file FINISHED"  );
-  treeUI.addDataSet(new_ds);
-    return new_ds;
-  }  
- */
 }
