@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/07/02 17:07:26  pfpeterson
+ * Now uses string constants defined in IsawGUI.Isaw and adds
+ * operator for Q->Wavelength.
+ *
  * Revision 1.1  2002/06/19 21:58:05  pfpeterson
  * Added to CVS.
  *
@@ -44,6 +48,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  IsawGUI.Isaw;
 
 /**
  * This operator converts a wavelength DataSet for a Diffractometer,
@@ -125,8 +130,10 @@ public class DiffractometerWavelengthToQ extends XAxisConversionOp{
             Qmax=scale.getEnd_x();
             if( Float.isNaN(Qmax) || Float.isInfinite(Qmax) ) Qmax=20f;
         }
-        addParameter( new Parameter( "Min Q(Inv(A))", new Float(Qmin) ) );
-        addParameter( new Parameter( "Max Q(Inv(A))", new Float(Qmax) ) );
+        addParameter( new Parameter( "Min Q("+Isaw.InvAngstrom+")",
+                                     new Float(Qmin) ) );
+        addParameter( new Parameter( "Max Q("+Isaw.InvAngstrom+")",
+                                     new Float(Qmax) ) );
         addParameter( new Parameter( Parameter.NUM_BINS, new Integer(1000) ) );
     }
     
@@ -139,7 +146,7 @@ public class DiffractometerWavelengthToQ extends XAxisConversionOp{
      *  x values.
      */
     public String new_X_label(){
-        return new String( "Q(Inv(A))" );
+        return new String( "Q("+Isaw.InvAngstrom+")" );
     }
 
 
@@ -269,6 +276,7 @@ public class DiffractometerWavelengthToQ extends XAxisConversionOp{
             }
         }
         new_ds.addOperator(new DiffractometerQToD());
+        new_ds.addOperator(new DiffractometerQToWavelength());
         
         return new_ds;
     }  
