@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/11/16 19:01:22  bouzekc
+ * Added capability to execute Operators remotely in noGUI mode.
+ *
  * Revision 1.8  2003/10/29 01:36:57  bouzekc
  * Now considers -h as a request for the full help message.
  *
@@ -94,6 +97,7 @@ public class IsawLite{
   public static transient Script_Class_List_Handler SCLH        = null;
   public static           boolean                   GUI         = true;
   public static           Script                    inputScript = null;
+  private static          boolean                   isRemote    = false;
 
   /**
    * Do not allow anyone to instantiate this class.
@@ -505,6 +509,7 @@ public class IsawLite{
            +"-nogui     execute without gui\n"
            +"-d         print debug messages\n"
            +"-help      print this help message\n"
+           +"-remote    execute Operators remotely.  Only works in nogui mode.\n"
            +"-i <file>  use <file> for input\n",-1);
     }
   }
@@ -532,6 +537,9 @@ public class IsawLite{
         printHelp(1); // print full help
       }else if(args[i].equals("-d")){
         LoadDebug=true; // print debug messages
+      }else if(args[i].equals("-remote")){
+        isRemote=true; //use getResultRemotely
+        GUI=false;
       }else if(args[i].startsWith("-i")){
         GUI=false; // switch to nogui mode
         String filename=args[i].substring(2); // redirect input
@@ -591,7 +599,11 @@ public class IsawLite{
     Object result=null;
     num_param=operator.getNum_parameters();
     if(num_param==0){
-      result=operator.getResult();
+      if(isRemote) {
+        result=operator.getResultRemotely();
+      }else{
+        result=operator.getResult();
+      }
     }else if(num_param>0){
       if(GUI){ // GUI mode
         JParametersDialog diag=new JParametersDialog(operator,null,null,null);
@@ -620,7 +632,11 @@ public class IsawLite{
               exit(error.toString(),-1);
           }
         }
-        result=operator.getResult();
+        if(isRemote) {
+          result=operator.getResultRemotely();
+        }else{
+          result=operator.getResult();
+        }
       }
     }else{
       exit("Unusual number of parameters (less than zero)",-1);
