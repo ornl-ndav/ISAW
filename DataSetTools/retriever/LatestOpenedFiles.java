@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/12/14 18:22:50  rmikk
+ * Added the new DataSets to the ISAW program completely. Now, the datablock attributes
+ * should appear
+ *
  * Revision 1.2  2003/12/11 19:27:15  rmikk
  * Printed a stack trace if an exception occurs while loading
  *    the file
@@ -72,7 +76,7 @@ public class LatestOpenedFiles{
     */
   public static void setUpMenuItems( JMenu Menuu , JDataTree tree , 
                                                            IObserver IOBs ){
-    
+     
      Preferences pref = null;
      try{
         pref = Preferences.userNodeForPackage( 
@@ -82,7 +86,7 @@ public class LatestOpenedFiles{
                                                 "No Preferences " + s1 );
         return;
      }
-
+ 
      Menuu.addSeparator();
      
      for( int i = 0 ; i < NSavedFiles ; i++ ){
@@ -108,9 +112,10 @@ public class LatestOpenedFiles{
     *  Duplicates are eliminated
     * @param Filename  the new file name to be saved to the appropriate 
     *     preferences
+    * @return true if this was a new file
     */
-  public static void addNewOpenedFile( String Filename ){
-
+  public static boolean addNewOpenedFile( String Filename ){
+    
      Preferences pref = null;
      try{
         pref = Preferences.userNodeForPackage( 
@@ -118,11 +123,11 @@ public class LatestOpenedFiles{
      }catch( Exception s1 ){
         ( new JOptionPane() ).showMessageDialog( null , "No Preferences " +
                                        s1 );
-        return;
+          return false;
      }
     
      if( isInPrefs( Filename , pref ) )
-        return;
+        return false;
 
      //Move all the Preference key values up by "1"
 
@@ -136,7 +141,7 @@ public class LatestOpenedFiles{
      }
 
      pref.put( "File0" , Filename );
-    
+     return true;
   }
 
 
@@ -145,7 +150,7 @@ public class LatestOpenedFiles{
     *  Attempts to replace large parts of the path by ... so final name
     *  name has a length 40 characters
     */
-  private static String Mangle( String fName ){
+  public static String Mangle( String fName ){
 
      String fName1 = fName.replace( '\\' , '/' );
      int i = fName1.lastIndexOf( '/' );
@@ -197,20 +202,19 @@ class MyActionListener implements ActionListener{
   public void actionPerformed( ActionEvent evt ){
     
      DataSet[] DSS = null;
-
      try{
         DSS = ScriptUtil.load( filename );
-
         filename = filename.replace( '\\' , '/' );
         int l = filename.lastIndexOf( '/' );
+        String filename1=filename;
         if( l >= 0 ) 
-           filename = filename.substring( l + 1 );
-
-        tree.addExperiment( DSS , filename );
+           filename1 = filename.substring( l + 1 );
+      
+        //tree.addExperiment( DSS , filename1 );
 
         if( IOBs != null )
-           for( int j = 0 ; j< DSS.length ; j++ )
-              DSS[j].addIObserver( IOBs );
+             IOBs.update( tree, DSS);
+  
 
      }catch( Exception ss ){
 
