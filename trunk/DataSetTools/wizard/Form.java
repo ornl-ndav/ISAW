@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2003/07/02 21:57:07  bouzekc
+ * Reformatting update.
+ *
  * Revision 1.25  2003/06/30 16:01:40  bouzekc
  * Fixed bug where a StringEntryPG would return null for its
  * StringFilter and halt the parameter validation process.
@@ -664,12 +667,12 @@ public abstract class Form extends Operator implements PropertyChanger {
         //need to check input against the StringFilterer
         StringFilterer sf = ( ( StringEntryPG )ipg ).getStringFilter(  );
 
-        if(sf == null){
+        if( sf == null ) {
           //not every StringEntryPG will have a specific StringFilterer.  This
           //assumes that either (a) there is a *.* filter on the parameter, or
           //(b) someone has decided that it is OK to run the Form with an
           //invalid parameter (mainly used in No GUI cases).
-          ipg.setValid(true);
+          ipg.setValid( true );
         } else if( sf.isOkay( 0, ipg.getValue(  ).toString(  ), "" ) ) {
           ipg.setValid( true );
         } else {
