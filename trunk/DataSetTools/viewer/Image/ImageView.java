@@ -4,6 +4,10 @@
  *  Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.12  2001/03/02 17:04:45  dennis
+ *  Now only restores the zoom region if the DataSet is using the
+ *  same units and labels as the previous DataSet.
+ *
  *  Revision 1.11  2001/03/01 23:14:58  dennis
  *  Now saves the zoom region and restores it when the
  *  viewer is given a new DataSet.
@@ -188,7 +192,7 @@ public ImageView( DataSet data_set, ViewerState state )
 
   init();
   MakeImage( false );
-  getState().setZoomRegion( image_Jpanel.getLocalWorldCoords() );
+  getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(), data_set );
 
   DrawDefaultDataBlock();
 }
@@ -248,7 +252,12 @@ public void setDataSet( DataSet ds )
   super.setDataSet( ds );
   init(); 
   redraw( NEW_DATA_SET );
-  image_Jpanel.setLocalWorldCoords( getState().getZoomRegion() );
+                                                        // restore the old zoom 
+                                                        // region if it's valid 
+  CoordBounds zoom_region = getState().getZoomRegion( ds );
+  if ( zoom_region != null )
+    image_Jpanel.setLocalWorldCoords( zoom_region );
+
   DrawDefaultDataBlock();
   setVisible(true);
 }
@@ -1199,14 +1208,16 @@ private class ImageZoomMouseHandler extends    MouseAdapter
     if ( e.getClickCount() == 2 )                 // zoom out to full view 
     {
       MakeSelectionImage( true );
-      getState().setZoomRegion( image_Jpanel.getGlobalWorldCoords() );
+      getState().setZoomRegion( image_Jpanel.getGlobalWorldCoords(),
+                                getDataSet()  );
     }
   }
 
   public void mouseReleased(MouseEvent e)         // zoom in to sub region 
   {
     MakeSelectionImage( true );
-    getState().setZoomRegion( image_Jpanel.getLocalWorldCoords() );
+    getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(),
+                              getDataSet()  );
   }
 }
 
