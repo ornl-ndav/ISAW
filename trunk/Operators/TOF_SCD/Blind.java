@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/11/21 21:54:38  pfpeterson
+ *  Updated to use new error checking feature in SysUtil.
+ *
  *  Revision 1.9  2002/11/01 15:50:18  pfpeterson
  *  Commented out lines which check if the directory is writable
  *  (win32 java bug), modified returned ErrorStrings, only looks
@@ -135,12 +138,13 @@ public class Blind extends    GenericTOF_SCD {
    * Runs blind.
    */
   public Object getResult(){
-    String peaksfile = (getParameter(0).getValue()).toString();
-    String seq_nums  = (getParameter(1).getValue()).toString();
-    int index;
-    String direc;
-    String matfile   = "blind.mat";
-    int seqs[]       = IntList.ToArray(seq_nums);
+    ErrorString eString   = null;
+    String      peaksfile = (getParameter(0).getValue()).toString();
+    String      seq_nums  = (getParameter(1).getValue()).toString();
+    int         index;
+    String      direc;
+    String      matfile   = "blind.mat";
+    int         seqs[]    = IntList.ToArray(seq_nums);
     
     // first check if the OS is acceptable
     if(! SysUtil.isOSokay(SysUtil.LINUX_WINDOWS) )
@@ -192,88 +196,90 @@ public class Blind extends    GenericTOF_SCD {
     try{
       process=SysUtil.startProcess(command,direc);
       BufferedReader in=SysUtil.getSTDINreader(process);
+      BufferedReader err=SysUtil.getSTDERRreader(process);
       BufferedWriter out=SysUtil.getSTDOUTwriter(process);
       
       // skip over the first couple of lines
-      SysUtil.jumpline(in,"LAUE INDEXER");
+      SysUtil.jumpline(in,err,"LAUE INDEXER");
       
       // We are going to use a peaks file
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       while( output==null || output.indexOf("Input reflection from")<0 ){
         if( output!=null && output.length()>0){
           System.out.println(output);
         }
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
       }
       SysUtil.writeline(out,"y");
       System.out.println(output+"y");
       
       // enter the name of the peaks file
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       while( output==null || output.indexOf("Experiment name")<0 ){
         if(output!=null) System.out.print(output);
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
       }
       SysUtil.writeline(out,peaksfile);
       System.out.println(output+peaksfile);
       
       // enter the reflections
       for(int i=0 ; i<seqs.length ; i++ ){
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
         SysUtil.writeline(out,Integer.toString(seqs[i]));
         System.out.println(output+seqs[i]);
       }
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       SysUtil.writeline(out,"");
       System.out.println(output);
       
       // print out all the other information give from program
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       while( output==null || (output.indexOf("STORE THE MATRIX")<0
                               && output.indexOf("PROGRAM TERMINATING")<0)){
         if(output!=null) System.out.println(output);
-        output=SysUtil.readline(in);
+        output=SysUtil.readline(in,err);
       }
       if(output.indexOf("TERMINATING")>0){
         while( output==null || output.indexOf("D=")<0 ){
           if(output!=null) System.out.println(output);
-          output=SysUtil.readline(in) ;
+          output=SysUtil.readline(in,err) ;
         }
         System.out.println(output);
-        
         return new ErrorString("Abnormal termination of Blind");
       }
       
       // save to a matrix file
       SysUtil.writeline(out,"y");
       System.out.println(output+"y");
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       SysUtil.writeline(out,"1");      // must choose (1) since experiment
       System.out.println(output+"1");  // file does not exist
-      output=SysUtil.readline(in);
+      output=SysUtil.readline(in,err);
       SysUtil.writeline(out,matfile);
       System.out.println(output+matfile);
       
       // keep writing out information until the last line
-      output=SysUtil.readline(in);
-      SysUtil.jumpline(in,"To analyze the cell");
+      output=SysUtil.readline(in,err);
+      SysUtil.jumpline(in,err,"To analyze the cell");
       
       // wait for the process to terminate
       process.waitFor();
+      if(process.exitValue()!=0)
+        return new ErrorString("("+process.exitValue()+")");
     }catch(IOException e){
       SharedData.addmsg("IOException reported: "+e.getMessage());
+      process=null;
     }catch(InterruptedException e){
       SharedData.addmsg("InterruptedException reported: "+e.getMessage());
-    }finally{
-      if(process!=null){
-        if(process.exitValue()!=0){
-          return new ErrorString("("+process.exitValue()+")");
-        }else{
-          return direc+'/'+matfile;
-        }
-      }else{
-        return new ErrorString("Something went wrong");
-      }
+      process=null;
+    }
+
+    if(process==null){
+      return new ErrorString("Something went wrong");
+    }else if(eString!=null){
+      return eString;
+    }else{
+      return direc+'/'+matfile;
     }
   }  
   
