@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.111  2002/08/06 21:32:42  pfpeterson
+ *  Fixed a filefilter bug where it kept two copies of the selected
+ *  filter and added gsas files to the load dialog.
+ *
  *  Revision 1.110  2002/07/17 20:13:12  pfpeterson
  *  Commented out the 'Search Database search' and 'Log View' menu items.
  *
@@ -1389,6 +1393,7 @@ public class Isaw
             fc.setCurrentDirectory(  new File( filename )  );
             fc.setMultiSelectionEnabled( false );
 	    fc.resetChoosableFileFilters();
+            fc.addChoosableFileFilter( new DataSetTools.gsastools.GsasFileFilter() );
             fc.addChoosableFileFilter(  new NeutronDataFileFilter( true )  ); 
             fc.addChoosableFileFilter(  new NexIO.NexusfileFilter()  );
            // fc.addChoosableFileFilter(  new IPNS.Runfile.RunfileFilter()  );
@@ -2230,10 +2235,16 @@ public class Isaw
       JFrame frame = new JFrame();
       fc.setCurrentDirectory(  new File( data_dir )  );
       fc.setMultiSelectionEnabled( true );
-      fc.setFileFilter(  new NeutronDataFileFilter()  ); 
-      fc.addChoosableFileFilter( new NexIO.NexusfileFilter()  );
-      fc.addChoosableFileFilter( new DataSetTools.retriever.SDDSFileFilter() );
-      fc.addChoosableFileFilter( new IPNS.Runfile.RunfileFilter()  );
+      if(!(load_filter instanceof NeutronDataFileFilter))
+          fc.setFileFilter(  new NeutronDataFileFilter()  ); 
+      if(!(load_filter instanceof DataSetTools.retriever.SDDSFileFilter))
+          fc.addChoosableFileFilter( new DataSetTools.retriever.SDDSFileFilter() );
+      if(!(load_filter instanceof DataSetTools.gsastools.GsasFileFilter))
+          fc.addChoosableFileFilter( new DataSetTools.gsastools.GsasFileFilter() );
+      if(!(load_filter instanceof NexIO.NexusfileFilter))
+          fc.addChoosableFileFilter( new NexIO.NexusfileFilter()  );
+      if(!(load_filter instanceof IPNS.Runfile.RunfileFilter))
+          fc.addChoosableFileFilter( new IPNS.Runfile.RunfileFilter()  );
       Dimension d = new Dimension(650,300);
       fc.setPreferredSize(d);
       if (load_filter!=null) fc.setFileFilter(load_filter);
