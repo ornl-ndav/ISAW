@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/10/03 15:42:45  dennis
+ *  Changed setSqrtErrors() to setSqrtErrors(boolean) in Data classes.
+ *  Added use_sqrt_errors flag to Data base class and changed derived
+ *  classes to use this.  Added isSqrtErrors() method to check state
+ *  of flag.  Derived classes now check this flag and calculate rather
+ *  than store the errors if the use_sqrt_errors flag is set.
+ *
  *  Revision 1.7  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -107,8 +114,8 @@ public abstract class TabulatedData extends    Data
                                              // REMOVING FIELDS, IF
                                              // readObject() CAN FIX ANY
                                              // COMPATIBILITY PROBLEMS
-  protected float  y_values[];
-  protected float  errors[];
+  protected float   y_values[];
+  protected float   errors[];
 
   /**
    * Constructs a Data object by specifying an "X" scale, "Y" values
@@ -123,8 +130,9 @@ public abstract class TabulatedData extends    Data
   {
     super( x_scale, group_id );
     this.y_values = y_values;
-    this.errors   = null;
-  }
+    this.errors   = null;                     // by default, there will be no
+    setSqrtErrors( false );                   // error estimates recorded or 
+  }                                           // calculated
 
 
   /**
@@ -252,14 +260,27 @@ public float[] getY_values( XScale x_scale, int smooth_flag ) //#############
 
 
   /**
-   * Returns a reference to the list of the error values.  If no error values 
+   * Returns a reference to a list of the error values.  If no error values 
    * have been set, this returns null.
    *
    * @return the list of error estimates for this Data object. 
    */
   public float[] getErrors()
   { 
-    return errors;
+    if ( isSqrtErrors() && y_values != null )      // calculate the errors
+    {
+      float sqrt_errors[] = new float[ y_values.length ];
+      for ( int i = 0; i < sqrt_errors.length; i++ )
+        if ( y_values[i] >= 0 )
+          sqrt_errors[i] = (float)Math.sqrt( y_values[i] );
+        else
+          sqrt_errors[i] = (float)Math.sqrt( -y_values[i] );
+
+      return sqrt_errors;
+    }
+
+    else
+      return errors;
   }
 
 
@@ -268,40 +289,43 @@ public float[] getY_values( XScale x_scale, int smooth_flag ) //#############
    * the specified array.  If there are more error values than y values in
    * the data object, only the first "y_values.length" entries from the
    * error list will be used.  If there are fewer error values than y values,
-   * the errors for the remaining y values will be set to 0. 
+   * the errors for the remaining y values will be set to 0. If the error array
+   * is null, there will be no recorded or calculated error bounds for this
+   * Data block.
    *
    * @param   err        Array of error bounds to be used for this data 
    *                     object. 
    */ 
   public void setErrors( float  err[] )
   {
+    super.setSqrtErrors( false );
     if ( err == null )
+      errors = null;
+    else
     {
-      this.errors = null;
-      return;
+      errors = new float[ y_values.length ];
+      int length = Math.min( y_values.length, err.length );
+      System.arraycopy( err, 0, errors, 0, length ); 
+      for ( int i = length; i < errors.length; i++ )
+        errors[i] = 0;
     }
-
-    this.errors = new float[ this.y_values.length ];
-    int length = Math.min( y_values.length, err.length );
-    System.arraycopy( err, 0, this.errors, 0, length ); 
-    for ( int i = length; i < this.errors.length; i++ )
-      this.errors[i] = 0;
   }
 
   /**
-    * Set the error array for this data object to the square root of the
-    * corresponding y value.
-    */ 
-  public void setSqrtErrors( )
+   *  Specify whether the errors are to be estimated as the square root of
+   *  the y values.  If use_sqrt is true, the error estimates will be   
+   *  calculated "on the fly" rather than storing them.
+   *
+   *  @param use_sqrt If true, error estimates will be calculated as the
+   *                  square root of the y values, if false, no error estimates
+   *                  will be recorded for this Data block, unless they are
+   *                  set using setErrors().
+   */
+  public void setSqrtErrors( boolean use_sqrt )
   {
-    this.errors = new float[ this.y_values.length ];
-    for ( int i = 0; i < this.errors.length; i++ )
-    {
-      if ( this.y_values[i] >= 0 )
-        this.errors[i] = (float)Math.sqrt( this.y_values[i] );
-      else
-        this.errors[i] = (float)Math.sqrt( -this.y_values[i] );
-    }
+    super.setSqrtErrors( use_sqrt );
+    if ( use_sqrt )
+      errors = null;
   }
 
 
