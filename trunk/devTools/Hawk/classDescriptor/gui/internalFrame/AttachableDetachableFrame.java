@@ -85,13 +85,9 @@ public abstract class AttachableDetachableFrame extends JInternalFrame implement
 	  protected JDesktopPane pane;
 	  
 	/**
-	 * Create a new AttachableDetachableFrame.  A JFrame or JInternalFrame will be made using 
-	 * each class's default constructor.  A JFrame or JInternalFrame will be made depending on 
-	 * the parameter supplied.  Also the JMenu "attachDetachMenu" is created.  Any class subclassing 
-	 * this class can therefore use the attachDetach menu in their constructors after calling 
-	 * super(int,HawkDesktop,JDesktopPane).
-	 * @param tp The frame's type.  Either JFRAME or JINTERNALFRAME should be supplied.  If 
-	 * another value is supplied, JFRAME is used.
+	 * Create a new AttachableDetachableFrame.  Also the JMenu "attachDetachMenu" is created.  
+	 * Any class subclassing this class can therefore use the attachDetach menu in their 
+	 * constructors after calling this constructor.
 	 */
 	public AttachableDetachableFrame(HawkDesktop parentDesktop, JDesktopPane parentPane)
 	{

@@ -107,11 +107,10 @@ public class SingleUMLJPanel extends JPanel implements ActionListener
 	/**
 	 * Create a new SingleUMLJPanel.
 	 * @param INTF The Interface object whose data is written.
-	 * @param title The title of the window.
 	 * @param shortJava True if you want a name to be shortened if it is a java name.  For 
 	 * example, java.lang.String would be shortened to String.
 	 * @param shortOther True if you want a name to be shortened if it is a non-java name.
-	 * @param desk The HawkDesktop that this window is on.
+	 * @param ecf The frame that this panel can control (ie dispose).
 	 */
 	public SingleUMLJPanel(Interface INTF, boolean shortJava, boolean shortOther, ExternallyControlledFrame ecf)
 	{		
@@ -224,12 +223,7 @@ public class SingleUMLJPanel extends JPanel implements ActionListener
 	}
 
 	/**
-	 * This fills in the JTextArea with an ASCII version of the UML diagram representing 
-	 * the Interface.
-	 * @param intF The Interface object whose data is analyzed.
-	 * @param shortJava True if you want a name to be shortened if it is a java name.  For 
-	 * example, java.lang.String would be shortened to String.
-	 * @param shortOther True if you want a name to be shortened if it is a non-java name.
+	 * Writes an ASCII version and an HTML version of the UML diagram in the GUI.
 	 */
 	public void fillGUI()
 	{

@@ -69,10 +69,8 @@ public abstract class AbstractShortenedPreferencesManager extends AbstractColorf
 	 * instantiated.
 	 * @param shortenJavaWordsByDefault      True if java words should be shortened by default.
 	 * @param shortenJavaText                          The text shown on the JCheckBox, shortenJavaBox.
-	 * @param shortenJava                                 True if the JCheckBox, shortenJavaBox, should be selected.
 	 * @param shortenOtherWordsByDefault     True if non-java words should be shortened by default.
 	 * @param shortenOtherText                        The text shown on the JCheckBox, shortenOtherBox.
-	 * @param shortenOther                                True if the JCheckBox, shortenOtherBox, should be selected.
 	 */
 	public AbstractShortenedPreferencesManager(boolean shortenJavaWordsByDefault, String shortenJavaText, boolean shortenOtherWordsByDefault, String shortenOtherText)
 	{
