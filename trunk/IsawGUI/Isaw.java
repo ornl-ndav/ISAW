@@ -31,6 +31,10 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.40  2001/07/24 18:58:16  neffk
+  *  operations menu contains only "[empty]" when the current selections
+  *  is not a DataSet object.
+  *
   *  Revision 1.39  2001/07/24 14:34:43  neffk
   *  adding DataSet objects to the tree is now cleaner.  there is
   *  the distinction between new and modified objects, and the
@@ -41,7 +45,7 @@
   *
   *  Revision 1.38  2001/07/23 19:23:48  neffk
   *  added isForced(String) and removeForec(String) so that people
-  *  can force a file to be loaded, regardless of the file extension .
+  *  can force a file to be loaded, regardless of the file extension.
   *  currently IPNS will not load a files that have changed names.
   *
   *  Revision 1.37  2001/07/23 18:33:50  neffk
@@ -317,14 +321,14 @@ public class Isaw
     jpui.setMinimumSize(new Dimension(20, 50));
 
 
-    jcui = new JCommandUI(cp, sessionLog,jpui);
+    jcui = new JCommandUI( cp, sessionLog, jpui );
     jcui.setPreferredSize( new Dimension( 700, 50 ) );
     jcui.setMinimumSize(new Dimension(20, 50));  
 
     jdt = new JDataTree();
     jdt.setPreferredSize(new Dimension(200, 500));
     jdt.setMinimumSize(new Dimension(20, 50));
-    jdt.addTreeSelectionListener(  new TreeSelectionHandler()  );
+    jdt.addTreeSelectionListener(  new TreeSelectionHandler( this )  );
         
               //checks for various command line options.
               //some options are acted upon immediatly,
@@ -587,7 +591,6 @@ public class Isaw
     for(int i =0; i<dss.length; i++)
     {
       cp.addDataSet( dss[i] );
-      dss[i].addIObserver(jdt);
       dss[i].addIObserver(jpui);
       dss[i].addIObserver(jcui);
     }
@@ -599,10 +602,9 @@ public class Isaw
    */
   public void addModifiedDataSet( DataSet ds )
   {
-    cp.addDataSet( ds );
     jdt.addToModifiedExperiment( ds );
 
-    ds.addIObserver(jdt);
+    cp.addDataSet( ds );
     ds.addIObserver(jpui);
     ds.addIObserver(jcui);
   }
@@ -1272,12 +1274,27 @@ public class Isaw
     */
   private class TreeSelectionHandler implements TreeSelectionListener
   {
+                    //keep a reference to the frame that ISAW resides
+                    //within so we have access to the menu within this
+                    //listener
+    JFrame isaw_frame = null;
+
+    /* 
+     *
+     */
+    public TreeSelectionHandler( JFrame frame )
+    {
+      isaw_frame = frame;
+    }
+    
 
     /*
      * creates menu of operators if appropriate for the current selection
      */
     public void valueChanged( TreeSelectionEvent e )
     {
+      System.out.println( "tree selection changed" );
+
                                                   //deal w/ unselection events
       if( e.getNewLeadSelectionPath() == null )
       {
@@ -1297,8 +1314,11 @@ public class Isaw
       MutableTreeNode node = jdt.getSelectedNode();
       if(  node instanceof Experiment  )
       {
-        oMenu = new JMenu( OPERATOR_M );
+        System.out.println( "Experiment selected" );
+
+        oMenu.removeAll();
         oMenu.add(  new JMenuItem( "[empty]" )  );
+    
         return; 
       }
 
@@ -1310,7 +1330,7 @@ public class Isaw
 
         JTable table = jcui.showDetectorInfo(ds);
         table.hasFocus();  
-        jpui.showAttributes(ds.getAttributeList());
+        jpui.showAttributes( ds.getAttributeList() );
 
                               //since the Operations menu is sensitive
                               //to tree selections, we have to look 
@@ -1329,7 +1349,7 @@ public class Isaw
 
       else if(  node instanceof DataMutableTreeNode  )
       {
-        oMenu = new JMenu( OPERATOR_M );
+        oMenu.removeAll();
         oMenu.add(  new JMenuItem( "[empty]" )  );
         return; 
       }
