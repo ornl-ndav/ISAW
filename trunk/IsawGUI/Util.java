@@ -78,7 +78,10 @@ public class Util
  public void Save( String filename, DataSet ds, IDataSetListHandler lh)
    { 
      Operator X = null;
-     if ( filename.endsWith( "nxs" )  ||
+     
+     if( filename== null) return;
+     else if( filename.length()<4) return;
+     else if ( filename.endsWith( "nxs" )  ||
            filename.endsWith( "NXS" )  ||
            filename.endsWith( "hdf" )  ||
            filename.endsWith( "HDF" )  )
@@ -92,7 +95,20 @@ public class Util
          
          return;  
         }
-     
+    
+    else 
+      { int i= filename.lastIndexOf('.');
+        
+        if( i<0) return;
+        if( ".GSA;.GDAT;.GSAS;".indexOf(filename.toUpperCase().substring(i))
+             >=0)
+         { 
+           DataSetTools.gsastools.gsas_filemaker XX =
+               new DataSetTools.gsastools.gsas_filemaker( null, ds, filename); 
+          }
+        return;
+      }
+   
    X.setParameter( new Parameter("filename",filename ), 2);
    
    JParametersDialog JP = new JParametersDialog( X , lh,
