@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/01/09 00:00:38  rmikk
+ * Eliminated debug printing
+ * Changed results so they can be used by ISAW scripts
+ *
  * Revision 1.4  2003/10/03 16:39:00  rmikk
  * -Fixed it so that now it gets the same numbers as the Vax
  * -Added documentation for the two new arguments to Center
@@ -139,11 +143,21 @@ public class Center extends GenericTOF_SAD{
      float Ydim = ((FloatPG)getParameter(7)).getfloatValue()/100.0f;
 
      //------------- Set up Grids ---------------------------------
-     int[] GridIDs = Grid_util.getAreaGridIDs( DS);
+    int[] GridIDs = Grid_util.getAreaGridIDs( DS);
+     if( GridIDs == null)
+        return new ErrorString("No Data Set Grids set up for "+ DS.toString());
+     if( GridIDs.length < 1)
+        return new ErrorString("No Data Set Grids set up for "+ DS.toString());
+     
+
      UniformGrid DSGrid =(UniformGrid)Grid_util.getAreaGrid( DS, GridIDs[0]);
      DSGrid.setDataEntriesInAllGrids( DS);
 
      GridIDs = Grid_util.getAreaGridIDs(SensDS);
+     if( GridIDs == null)
+        return new ErrorString("No Sensitivity Data Set Grids set up for "+ SensDS.toString());
+     if( GridIDs.length < 1)
+        return new ErrorString("No Sensitivity Data Set Grids set up for "+ SensDS.toString());
      UniformGrid SensGrid =(UniformGrid)Grid_util.getAreaGrid( SensDS,GridIDs[0]);
      SensGrid.setDataEntriesInAllGrids( SensDS);
      StartTimeChan--; EndTimeChan --;
@@ -223,6 +237,10 @@ public class Center extends GenericTOF_SAD{
               Cy +=(Rowcm[row-1]-Yoff)*CollapsedData[row][col];
               Cwx +=CollapsedData[row][col];
            }
+       
+     
+       //for(col = cstart;col<=cend; col++)System.out.print( ColCenters[col-1]+" ");
+
        for( row = rstart; row <=rend; row++)
          if( RowCentWts[row-1] > 1E-5)
            RowCenters[row-1] = RowCenters[row-1]/RowCentWts[row-1];
@@ -241,9 +259,10 @@ public class Center extends GenericTOF_SAD{
      float XAve = CalcYave (CollapsedData,Colcm, RowCenters,rstart,rend, Xoff,
                    Yoff, Rowcm)+Xoff;
     
-     System.out.println(XAve+"\t"+YAve+"\t"+(Cx/Cwx+Xoff) +"\t"+(Cy/Cwx+Yoff));
+     //System.out.println(XAve+"\t"+YAve+"\t"+(Cx/Cwx+Xoff) +"\t"+(Cy/Cwx+Yoff));
      Xoff = XAve;
      Yoff = YAve;
+    System.out.println( XAve+"\t\t"+YAve);
     if( Math.abs( SavXoff-Xoff) <.000009)
        if( Math.abs( SavYoff-Yoff) <.000009) 
           done = true;
@@ -251,14 +270,26 @@ public class Center extends GenericTOF_SAD{
     if( count >= 60)//60
        done = true;
     }//While not Done
+
    Vector V = new Vector();
    V.addElement( new Float( Xoff*100f));
    V.addElement( new Float( Yoff*100f));
    V.addElement( CollapsedData);
-   V.addElement( RowCenters);// multiply these by 100 too
-   V.addElement( ColCenters);
+   Vector V1 = new Vector();
+   V1.addElement( new Float(100*Colcm[0]));
+   V1.addElement( new Float(100*Colcm[Colcm.length-1]));
+   V1.addElement( new Float(100*Rowcm[0]));
+   V1.addElement( new Float(100*Rowcm[Rowcm.length-1]));
+   V.addElement( V1);
    return V;
   }//getResult
+  private float[] mult( float[]x, float v){
+    if( x == null)
+       return x;
+    for( int i=0; i < x.length; i++)
+       x[i] *=v;
+    return x;
+  }
   private int Findind(float[] Rowcm,float val, boolean start){
      int Res = Arrays.binarySearch( Rowcm, val);
      if( Res < 0)
@@ -385,8 +416,8 @@ public class Center extends GenericTOF_SAD{
       Res.append( "@return  A Vector with 5 entries.  The first is the X offset");
       Res.append( "(cm) of the beam.  The second is the Y offset(cm).  The third ");
       Res.append( "is the collapsed Data for use for a visual check using another ");
-      Res.append( "operator(not done yet).  The Final two elements of the returned");
-      Res.append( " Vector are the row and column centers(resp.) in meters.");
+      Res.append( "operator(ViewArray).  The Final element of the returned");
+      Res.append( " Vector is a Vector whose elements are minx,maxx,miny and maxy cm.");
 
 
       Res.append( "@assumptions  The pixels within 1.5cm of the Xoffset and ");
