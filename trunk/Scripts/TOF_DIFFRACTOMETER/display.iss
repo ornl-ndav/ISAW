@@ -6,13 +6,15 @@
 # Kappa : Creates 8 banks of data with selected detectors
 # Pressure : Creates 1 bank of data with available detectors and focus to 100 degrees.
 # Choice is given to display dialog box.
-# $Date$
 
-# Modify $Date$ : Ashfia Huq , ID's should remain the same (bad detectors are turned off using the discriminator levels)
+# Modify $Date$ : Ashfia Huq , 
+# ID's should remain the same (bad detectors are turned off using the 
+# discriminator levels)
 #Write 3 column format (FXYE for GSAS)
 #Resample bins(for constant binning) to start at 2000 micro sec and end at 32000 micro sec with dT = 5 micro sec.
 #For dT/T binning make sure to check box so that data is not resampled
 
+$Category=Operator, Instrument Type, TOF_NPD
 
 $Sort_d_by_Omega		Boolean(true)	Sort_d_by_Omega (Indiv detectors)
 $Standard        		Boolean(false)	Standard (5B, sum & T focus)

@@ -5,9 +5,11 @@
 # Miller : All other detectors turned off except 90 degree bank.
 # Kappa : 8 banks of data with selected detectors
 # Pressure : 1 bank of data with available detectors and focus to 100 degrees.
-# $Date$
 
-# Modify $Date$ : Ashfia Huq , ID's should remain the same (bad detectors are turned off using the discriminator levels
+# Modify $Date$ : Ashfia Huq , ID's should remain 
+# the same (bad detectors are turned off using the discriminator levels
+
+$Category=Operator, Instrument Type, TOF_NPD
 
 $Standard	Boolean(true)          (1) Standard (5B, sum & T focus)
 $Focus_all_tth	Boolean(false)         (2) Focus_all_2Thet (4B focus to 125)		
