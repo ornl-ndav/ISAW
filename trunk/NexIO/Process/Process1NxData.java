@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/12/23 13:15:22  rmikk
+ * Added the NxEntryInfo to the States list so that the version number
+ *   is available.
+ * Popped the added StateInfo from the State list
+ *
  * Revision 1.2  2003/12/09 14:40:18  rmikk
  * Fixed javadoc warnings
  *
@@ -87,6 +92,7 @@ public class Process1NxData implements IProcessNxData {
   public boolean processDS( NxNode NxEntryNode ,NxNode NxDataNode , 
               NxNode NxInstrument, DataSet DS , NxfileStateInfo States,
               int startGroupID ){
+                
      int firstIndex = DS.getNum_entries();
 
      NxDataStateInfo DataState = new NxDataStateInfo( NxDataNode, 
@@ -98,7 +104,8 @@ public class Process1NxData implements IProcessNxData {
 
      States.Push( InstrumentState);
        
-     
+     NxEntryStateInfo EntryState = new NxEntryStateInfo(NxEntryNode, States);
+     States.Push( EntryState);
      NxNode NxDetectorNode = NexUtils.getCorrespondingNxDetector( DataState.linkName,
               NxInstrument);
      NxDetectorStateInfo DetState = null;
@@ -113,17 +120,23 @@ public class Process1NxData implements IProcessNxData {
         States.Push( DetState);
      NexUtils  nxut = new NexUtils();
      boolean res= nxut.setUpNxData (DS,NxDataNode,DataState.startGroupID,States);
-     if( res) 
+     if( res){ 
+        States.Pop();States.Pop();States.Pop();
+        if(DetState != null)
+           States.Pop();
         return setErrorMessage(nxut.getErrorMessage( ));
-
-     // Here get the correct setUpNxDetectorAttribg  
-     
+     }
+         
      if( NxDetectorNode != null)
         res = nxut.setUpNXdetectorAttributes( DS, NxDataNode,NxDetectorNode,
                                          firstIndex, States);
-  
+                                         
+     States.Pop();States.Pop();States.Pop();
+     if(DetState != null)
+        States.Pop();
+          
      if( res)
-         return setErrorMessage(nxut.getErrorMessage( ));
+        return setErrorMessage(nxut.getErrorMessage( ));
      
      return false;
   } 
