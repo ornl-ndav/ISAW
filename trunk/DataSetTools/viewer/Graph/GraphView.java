@@ -3,6 +3,12 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.3  2000/10/10 19:54:10  dennis
+ *  redraw() due to selection changes now only draws graphs for which the
+ *  selection status changed.  This is much more efficient.
+ *  Cursor readout and "Pointed At" data block now changes with mouse
+ *  click as well as with mouse drag event.
+ *
  *  Revision 1.2  2000/08/02 01:50:42  dennis
  *  Now calls Data.ResampleUniformly() instead of Data.ReBin()
  *
@@ -62,8 +68,8 @@ public class GraphView extends    DataSetViewer
   private JPanel       graph_data_panel  = new JPanel();
   private DataSetXConversionsTable graph_table;
 
-  private GraphJPanel  h_graph[]         = null;
-
+  private GraphJPanel  h_graph[]        = null;
+  private boolean      was_selected[]   = null;
                                               // panel for the horizontal graph
   JPanel viewport = new JPanel();
   int    viewport_preferred_width = 300;
@@ -101,7 +107,14 @@ public GraphView( DataSet data_set )
 
 public void redraw( String reason )
 {
-  DrawGraphs();
+  if ( reason == IObserver.SELECTION_CHANGED )
+    DrawSelectedGraphs();
+
+  else if ( reason == IObserver.POINTED_AT_CHANGED )
+    DrawPointedAtGraph();
+
+  else
+    DrawGraphs();
 }
 
 
@@ -360,7 +373,9 @@ private void DrawGraphs( )
   }
 
   int  num_data_blocks = getDataSet().getNum_entries();
-  h_graph = new GraphJPanel[ num_data_blocks ];
+
+  h_graph      = new GraphJPanel[ num_data_blocks ];
+  was_selected = new boolean[ num_data_blocks ];
 
   viewport.setLayout( new GridLayout(num_data_blocks, 1) );
   viewport.setPreferredSize( new Dimension(viewport_preferred_width, 
@@ -398,6 +413,7 @@ private void DrawGraphs( )
     h_graph[i].setGlobalWorldCoords( graph_bounds );
 
     h_graph[i].addMouseMotionListener( new HGraphMouseMotionAdapter() );
+    h_graph[i].addMouseListener( new HGraphMouseAdapter() );
 
     String border_label = data_block.toString();
     if ( data_block.isSelected() )
@@ -408,9 +424,15 @@ private void DrawGraphs( )
                       border_label );
     border.setTitleFont( FontUtil.BORDER_FONT );
     if ( data_block.isSelected() )
+    {
       border.setTitleColor( Color.blue );
-    else 
+      was_selected[i] = true;
+    }
+    else
+    { 
       border.setTitleColor( Color.black );
+      was_selected[i] = false;
+    }
 
     border_panel.setBorder( border );
 
@@ -418,12 +440,102 @@ private void DrawGraphs( )
     border_panel.add( h_graph[i] );
     viewport.add( border_panel );
   }
+
   if ( horizontal_scroll_state )
-    SetHorizontalScrolling( horizontal_scroll_state );// this was needed to
+    SetHorizontalScrolling( horizontal_scroll_state );
 
   viewport.setVisible(true);
-  viewport.repaint();           // is this needed?
+//  viewport.repaint();           // is this needed?
 }
+
+/* -------------------------- DrawSelectedGraphs ------------------------- */
+
+private void DrawSelectedGraphs()
+{
+  if ( h_graph == null )              // nothing to do yet
+    return;
+
+  int  num_data_blocks = getDataSet().getNum_entries();
+
+                                      // redraw the graphs with a different
+                                      // selection status
+  for ( int i = 0; i < num_data_blocks; i++ )
+    if ( getDataSet().isSelected(i) && !was_selected[i]  || 
+        !getDataSet().isSelected(i) &&  was_selected[i]   )
+      DrawSpecifiedGraph( i );
+
+                                      // update the selection status
+  for ( int i = 0; i < num_data_blocks; i++ )
+    was_selected[i] = getDataSet().isSelected(i);
+}
+
+
+
+/* -------------------------- DrawPointedAtGraph ------------------------- */
+
+private void DrawPointedAtGraph()
+{
+                                      // actually, for now, since we are NOT
+                                      // tracking the cursor or anything like
+                                      // that, we don't need to do anything.
+/*
+  if ( h_graph == null )              // nothing to do yet 
+    return;
+
+  int pointed_at_row = getDataSet().getPointedAtIndex();
+  DrawSpecifiedGraph( pointed_at_row );
+*/
+}
+
+/* -------------------------- DrawSpecifiedGraph ------------------------- */
+
+private void DrawSpecifiedGraph( int index )
+{
+  if ( h_graph == null )              // nothing to do yet
+    return;
+
+  int  num_data_blocks = getDataSet().getNum_entries();
+
+  if ( index < 0 || index >= num_data_blocks )
+    return;                           // index is invalid, so nothing to do
+
+  float x_min = x_range_ui.getMin();
+  float x_max = x_range_ui.getMax();
+  int num_cols = (int)n_bins_ui.getValue();
+  UniformXScale x_scale = new UniformXScale( x_min, x_max, num_cols );
+ 
+                                                           // rebin the Data
+  Data temp_data_block = getDataSet().getData_entry( index );
+  Data data_block = (Data)temp_data_block.clone();
+  data_block.ResampleUniformly( x_scale );
+
+  JPanel border_panel = (JPanel)h_graph[ index ].getParent();
+  TitledBorder border = (TitledBorder)border_panel.getBorder();
+  String border_label = data_block.toString();
+
+  if ( data_block.isSelected() )
+  {
+    h_graph[index].setColor( Color.blue, 0, false );
+    border.setTitleColor( Color.blue );
+    border_label += " (Selected)";
+    was_selected[index] = true;
+  }
+  else
+  {
+    h_graph[index].setColor( Color.black, 0, false );
+    border.setTitleColor( Color.black );
+    was_selected[index] = false;
+  }
+
+  float x[] = data_block.getX_scale().getXs();
+  float y[] = data_block.getY_values();
+  h_graph[index].setData( x, y, 0, true );
+
+  border.setTitle( border_label );
+  border_panel.repaint();
+}
+
+
 
 /* ---------------------------- getBlockNumber --------------------------- */
 
@@ -496,10 +608,9 @@ private class HGraphScaleEventHandler implements ChangeListener,
 private class HGraphMouseMotionAdapter extends    MouseMotionAdapter
                                        implements Serializable
 {
-   int last_data_block = -1;
-
    public void mouseDragged( MouseEvent e )
    {
+     int last_data_block = -1;
      GraphJPanel gp = (GraphJPanel)e.getComponent();     
 
      int row = getBlockNumber( gp );
@@ -513,6 +624,27 @@ private class HGraphMouseMotionAdapter extends    MouseMotionAdapter
      UpdateHGraphReadout( gp );
    }
 }
+
+private class HGraphMouseAdapter extends    MouseAdapter
+                                 implements Serializable
+{
+   public void mousePressed( MouseEvent e )
+   {
+     int last_data_block = -1;
+     GraphJPanel gp = (GraphJPanel)e.getComponent();
+
+     int row = getBlockNumber( gp );
+     if ( row != last_data_block )
+     {
+       getDataSet().setPointedAtIndex( row );
+       last_data_block = row;
+       getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
+     }
+
+     UpdateHGraphReadout( gp );
+   }
+}
+
 
   /**
    *  Trace the finalization of objects
