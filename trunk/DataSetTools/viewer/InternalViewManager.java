@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2001/08/14 21:51:05  dennis
+ *  The destroy() method now sends closing event instead of closing
+ *  the view manager itself..  Added method free_resouces() to
+ *  close down the view manager as previously done by destroy().
+ *
  *  Revision 1.15  2001/08/14 15:17:41  dennis
  *  Added check for num entries <=0 and dataSet null.
  *
@@ -56,6 +61,7 @@
  *    windowClosing  with  internalFrameClosing
  *    WindowAdapter  with  InternalFrameAdapter
  *    WindowEvent    with  InternalFrameEvent
+ *    WINDOW_CLOSING with  INTERNAL_FRAME_CLOSING 
  *
  */
  
@@ -153,7 +159,7 @@ public class InternalViewManager extends    JInternalFrame
       {
         public void InternalFrameClosing(InternalFrameEvent ev)
         {
-          destroy();
+          free_resources();
         }
       });
 
@@ -243,16 +249,15 @@ public class InternalViewManager extends    JInternalFrame
    }
 
   /**
-   *  Destroy the current InternalViewManager and remove it from the list of 
-   *  observers of the current DataSet.
+   *  Send INTERNAL_FRAME_CLOSING event to shutdown the ViewManager cleanly and
+   *  completely.
    */
    public void destroy()
    {
-     dataSet.deleteIObserver( this );
-     tempDataSet.deleteIObserver( this );
-     viewer = null;
-     dispose(); 
-     System.gc();
+     InternalFrameEvent win_ev = 
+            new InternalFrameEvent( view_manager,
+                                    InternalFrameEvent.INTERNAL_FRAME_CLOSING );
+     view_manager.dispatchEvent( win_ev );
    }
 
    /**
@@ -376,6 +381,20 @@ public class InternalViewManager extends    JInternalFrame
  *
  *  Private Methods
  */
+
+  /**
+   *  Destroy the current ViewManager and remove it from the list of
+   *  observers of the current DataSet when window closing event is received.
+   */
+   private void free_resources()
+   {
+     dataSet.deleteIObserver( this );
+     tempDataSet.deleteIObserver( this );
+     viewer = null;
+     dispose();
+     System.gc();
+   }
+
 
    private void makeTempDataSet( boolean use_default_conversion_range )
    {
