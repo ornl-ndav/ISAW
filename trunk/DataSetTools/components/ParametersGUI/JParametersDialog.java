@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2003/02/26 16:06:37  pfpeterson
+ *  First pass at multi-threading the apply button.
+ *
  *  Revision 1.35  2003/02/19 16:49:20  pfpeterson
  *  Now leaves the default value alone, if exists, in DataDirectoryString,
  *  LoadFileString, SaveFileString, and InstrumentNameString.
@@ -118,6 +121,7 @@ import DataSetTools.util.*;
 import javax.swing.text.*;
 import java.lang.reflect.Array;
 import javax.swing.text.html.*;
+import ExtTools.SwingWorker;
 
 public class JParametersDialog implements Serializable,
                                IObservable
@@ -138,6 +142,9 @@ public class JParametersDialog implements Serializable,
                                  //w/o a reference to the actual tree.
     IDataSetListHandler ds_src;
     StatusPane stat_pane=null;
+
+    JButton apply = null;
+    JButton exit = null;
 
   private static int screenwidth=0; // for help dialog
   private static int screenheight=0;
@@ -474,8 +481,8 @@ public class JParametersDialog implements Serializable,
         JPanel buttonpanel = new JPanel( );
         buttonpanel.setLayout(new FlowLayout());
                
-        JButton apply = new JButton("Apply");
-        JButton exit = new JButton("Exit");
+        apply = new JButton("Apply");
+        exit = new JButton("Exit");
         JButton help  = new JButton( "Help" );
           
         buttonpanel.add(apply);
@@ -579,7 +586,9 @@ public class JParametersDialog implements Serializable,
       JParameterGUI pGUI;
       String s="";
 
-      resultsLabel.setText("");
+      apply.setEnabled(false);
+      exit.setEnabled(false);
+      resultsLabel.setText("working ...");
 
       if(op instanceof DataSetOperator)
       {
@@ -612,7 +621,31 @@ public class JParametersDialog implements Serializable,
          if(op instanceof java.beans.Customizer)
            ((java.beans.Customizer)op).addPropertyChangeListener( stat_pane);
          }
-      Object result = op.getResult();
+
+      // create a subclass of SwingWorker to call getResult()
+      final SwingWorker worker = new SwingWorker() {
+          public Object construct(){
+            Result=op.getResult();
+            return Result;
+          }
+          public void finished(){
+            apply.setEnabled(true);
+            exit.setEnabled(true);
+            processResult();
+          }
+        };
+      worker.start();
+    }
+
+    /**
+     * Method for dealing with the result of an operator. This checks
+     * the type of the result, notifies the appropriate listeners, and
+     * sets the resultLabel in the dialog.
+     */
+    void processResult(){
+      Object result = Result;
+      String s="";
+
       if(stat_pane !=null)
         {if( op instanceof IusesStatusPane)
           ((IusesStatusPane)op).addStatusPane( null);
