@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/25 16:42:04  pfpeterson
+ *  Now adds SCDhkl operator to the DataSet. Also removed dead code,
+ *  updated variable names and updated documentation.
+ *
  *  Revision 1.1  2002/08/22 15:13:59  pfpeterson
  *  Added to cvs.
  *
@@ -55,13 +59,12 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.operator.DataSet.Information.XAxis.SCDhkl;
 import  DataSetTools.retriever.RunfileRetriever;
-import  DataSetTools.gsastools.GsasCalib;
 
 /**
- * This operator loads the time-of-flight to d-space conversion
- * parameters from a GSAS instrument parameter file. The only lines
- * that are read are the ICONS lines.
+ * This operator loads a orientation matrix and lattice parameters
+ * from a matrix file produced by blind
  */
 
 public class LoadOrientation extends    DS_Attribute {
@@ -91,16 +94,16 @@ public class LoadOrientation extends    DS_Attribute {
      *  invoked immediately by calling getResult().
      *
      *  @param  ds          The DataSet to which the operation is applied
-     *  @param  iparm       The name of the iparm file.
+     *  @param  orient      The name of the iparm file.
      */
 
-    public LoadOrientation(DataSet ds, LoadFileString  iparm){
+    public LoadOrientation(DataSet ds, LoadFileString  orient){
         this();                       // do the default constructor, then set
                                       // the parameter value(s) by altering a
                                       // reference to each of the parameters
 
         parameters=new Vector();
-        addParameter( new Parameter("Orientation Matrix File", iparm) );
+        addParameter( new Parameter("Orientation Matrix File", orient) );
 
         setDataSet( ds );         // record reference to the DataSet that
                                   // this operator should operate on
@@ -131,6 +134,10 @@ public class LoadOrientation extends    DS_Attribute {
     
     /* -------------------------- getResult ----------------------------- */
     
+    /**
+     * Associate the orientation matrix and lattice parameter to the
+     * DataSet. The information is read from a matrix file.
+     */
     public Object getResult(){  
         DataSet ds = getDataSet();
         String iparm = getParameter(0).getValue().toString();
@@ -141,10 +148,10 @@ public class LoadOrientation extends    DS_Attribute {
         File orient_file=new File(iparm);
         if( !orient_file.exists()){
             SharedData.addmsg("No such file: "+iparm);
-            return FAILURE;
+            return new ErrorString(FAILURE);
         }else if( orient_file.isDirectory()){
             SharedData.addmsg("Is a directory: "+iparm);
-            return FAILURE;
+            return new ErrorString(FAILURE);
         }
 
         float[]   lat    = new float[6];
@@ -154,7 +161,7 @@ public class LoadOrientation extends    DS_Attribute {
             fr = new TextFileReader(iparm);
             for( int i=0 ; i<3 ; i++ ){
                 for( int j=0 ; j<3 ; j++ ){
-                    orient[i][j]=fr.read_float();
+                    orient[j][i]=fr.read_float();
                 }
                 fr.read_line();
             }
@@ -176,10 +183,10 @@ public class LoadOrientation extends    DS_Attribute {
                                        +e.getMessage());
                 }
             }else{
-                return FAILURE;
+                return new ErrorString(FAILURE);
             }
         }
-        if(!success) return FAILURE;
+        if(!success) return new ErrorString(FAILURE);
 
         // print out debug information
         if(DEBUG){
@@ -210,134 +217,12 @@ public class LoadOrientation extends    DS_Attribute {
         ds.setAttribute(new Float1DAttribute(Attribute.LATTICE_PARAM,lat));
         ds.setAttribute(new Float2DAttribute(Attribute.ORIENT_MATRIX,orient));
         ds.addLog_entry("Read Orientation Matrix From File: "+iparm);
+
+        // add the hkl information operator to the DataSet
+        ds.addOperator(new SCDhkl());
+
         return SUCCESS;
     }  
-
-    /**
-     * Determines the bank number and goobles the tag it may or may
-     * not be attached to. 
-     */
-    private int readBankNum(TextFileReader fr, String tag){
-        String temp=null;
-        try{
-            fr.read_String(3);
-            int banknum=fr.read_int(3);
-            fr.read_String(6);
-            return banknum;
-            /*temp=fr.read_String();
-              if(temp.endsWith(tag)){
-              int index=temp.indexOf(tag);
-              temp=temp.substring(0,index);
-              return (new Integer(temp)).intValue();
-              }else{
-              fr.unread();
-              int banknum=fr.read_int();
-              fr.read_String();
-              return banknum;
-              }*/
-        }catch(IOException e){
-            System.err.println("IOException: "+e.getMessage());
-            return -1;
-        }
-    }
-
-    /**
-     * Method to associate the gsas information with the data block
-     * specified.
-     */
-    private void associate(int bankNum,float dif_c,float dif_a,float t_zero){
-        GsasCalibAttribute calibAttr;
-        Data d=this.getData(bankNum);
-        if(d==null)return;
-
-        // add the attribute to the data block
-        if(DEBUG)System.out.println(bankNum+"A,C,T:"+dif_c+", "+dif_a+", "
-                                    +t_zero);
-        calibAttr=new GsasCalibAttribute(Attribute.GSAS_CALIB,
-                                         new GsasCalib(dif_c,dif_a,t_zero));
-        d.setAttribute(calibAttr);
-    }
-
-    /**
-     * Associate the detector position with the given Data block.
-     *
-     * @param bankNum The bank number.
-     * @param l_one   The source to sample distace.
-     * @param l_two   The sample to detector distace.
-     * @param bragg   The bragg angle of the detector in degrees,
-     *                frequently called two-theta.
-     */
-    private void assocDetPos(int bankNum,float l_one,float l_two,float bragg){
-        Data d  = this.getData(bankNum);
-        if(d==null)return;
-
-        if(DEBUG)System.out.println(bankNum+"L,L,B:"+l_one+", "+l_two
-                                    +", "+bragg);
-        // set the primary flight path
-        FloatAttribute l_one_attr=new FloatAttribute(Attribute.INITIAL_PATH,
-                                                     l_one);
-        d.setAttribute(l_one_attr);
-
-        // set the detector position relative to the sample
-        DetectorPosition det_pos=(DetectorPosition)
-            d.getAttributeValue(Attribute.DETECTOR_POS);
-        if(det_pos!=null){
-            float[] cyl_coords=det_pos.getCylindricalCoords();
-            det_pos.setCylindricalCoords(l_two,(float)(bragg*Math.PI/180f),
-                                         cyl_coords[2]);
-        }else{
-            Position3D pos=new Position3D();
-            pos.setCylindricalCoords(l_two,(float)(bragg*Math.PI/180f),0f);
-            det_pos=new DetectorPosition(pos);
-        }
-        d.setAttribute(new DetPosAttribute(Attribute.DETECTOR_POS,det_pos));
-    }
-    /**
-     * Associate the detector azimuthal angle with the given data block.
-     *
-     * @param tilt    The angle of the detector out of the scattering 
-     *                plane in degrees. 
-     */
-    private void assocDetAzm(int bankNum, float tilt){
-        Data d = this.getData(bankNum);
-        if(d==null)return;
-        
-        if(DEBUG)System.out.println(bankNum+"T:"+tilt);
-        DetectorPosition det_pos=(DetectorPosition)
-            d.getAttributeValue(Attribute.DETECTOR_POS);
-        if(det_pos!=null){
-            float[] sph_coords=det_pos.getSphericalCoords();
-            det_pos.setSphericalCoords(sph_coords[0],
-                                       (float)((90f-tilt)*Math.PI/180f),
-                                       sph_coords[1]);
-        }else{
-            Position3D pos=new Position3D();
-            pos.setSphericalCoords(0f, (float)((90f-tilt)*Math.PI/180f), 0f);
-            det_pos=new DetectorPosition(pos);
-        }
-        d.setAttribute(new DetPosAttribute(Attribute.DETECTOR_POS,det_pos));
-    }
-
-    /**
-     * Get the appropriate Data block according to numbering scheme.
-     */
-    private Data getData(int bankNum){
-        DataSet ds = getDataSet();
-        Data    d  = null;
-
-        // get the appropriate data block
-        if(DEBUG)System.out.print(bankNum+": ");
-        d=ds.getData_entry_with_id(bankNum);
-
-        // don't bother if can't do anything
-        if(d==null){ 
-            if(DEBUG)System.out.println("failed");
-            return null;
-        }else{
-            return d;
-        }
-        
-    }
 
     /* ---------------------------- clone ----------------------------- */
     /**
