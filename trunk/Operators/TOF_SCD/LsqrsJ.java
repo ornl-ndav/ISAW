@@ -29,6 +29,14 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.24  2003/08/05 21:41:20  dennis
+ * Set new hkl values into the Peak objects, after transforming the
+ * hkl values by the transform specified by Scalar.  This fixes the
+ * problem of the old hkl values being written to the lsqrs.log file.
+ * Also, now limits the number of '*' used to flag peaks whose hkl
+ * values differ from the theoretical values to one '*' per 0.1
+ * difference in hkl, up to a max of ten.
+ *
  * Revision 1.23  2003/07/28 20:21:39  dennis
  * The log file now includes the "fractional" hkl values corresponding
  * to a peak, as well as the integer hkl values.  Also, the difference
@@ -493,6 +501,13 @@ public class LsqrsJ extends GenericTOF_SCD {
       }
     }
 
+    // set the new transformed hkl values back into the peaks objects. D.M.
+    for( int i = 0; i < hkl.length; i++ ) {
+      peak = ( Peak )peaks.elementAt( i );
+      peak.sethkl((float)hkl[i][0], (float)hkl[i][1], (float)hkl[i][2], false);
+    }
+
+
     // calculate ub
     double[][] UB = new double[3][3];
     double chisq  = 0.;
@@ -552,7 +567,7 @@ public class LsqrsJ extends GenericTOF_SCD {
 
 /* This "should" eventually work, for writing out the values that correspond
    to the integerized hkl, but the peak requires the calibration information
-   which is not currently available.  Also, the 
+   which is not currently available.  
 
         Peak exact_peak = (Peak)peak.clone();
                                  // now trigger the peak to recalculate it's
@@ -572,8 +587,9 @@ public class LsqrsJ extends GenericTOF_SCD {
                           Format.real( exact_peak.getUnrotQ()[2], 7, 3 ) +"\n");
 */
         logBuffer.append( Format.string("",73) +
-          Format.real( Tq[0][i], 7, 3 ) + Format.real( Tq[1][i], 7, 3 ) +
-          Format.real( Tq[2][i], 7, 3 ) + "\n" );
+                          Format.real( Tq[0][i], 7, 3 ) + 
+                          Format.real( Tq[1][i], 7, 3 ) +
+                          Format.real( Tq[2][i], 7, 3 ) + "\n" );
 
                                               // print out third line, with 
                                               // fractional hkl values and
@@ -588,11 +604,13 @@ public class LsqrsJ extends GenericTOF_SCD {
                        Math.abs( obs_hkl[1][i] - peak.k() ) +
                        Math.abs( obs_hkl[2][i] - peak.l() );
 
-        int n_stars = (int)( error / 0.1 );
-
         logBuffer.append( "   Del =" + Format.real( error, 6, 3 ) + " " ); 
 
-        while ( n_stars > 0 )               // show one "*" for .1 error in hkl
+                                              // show one "*" for each .1 error
+        int n_stars = (int)( error / 0.1 );   // in hkl, up to 10.
+        if ( n_stars > 10 )
+          n_stars = 10;
+        while ( n_stars > 0 )     
         {
           logBuffer.append( "*" ); 
           n_stars--;
@@ -661,7 +679,7 @@ public class LsqrsJ extends GenericTOF_SCD {
         for( int l = 0; l < 7; l++ ) {
           for( int m = 0; m < 3; m++ ) {
             for( int n = 0; n < 3; n++ ) {
-              sig_abc[l] += ( derivatives[m][l] * VC[m][n] * derivatives[n][l] );
+              sig_abc[l] += (derivatives[m][l] * VC[m][n] * derivatives[n][l]);
             }
           }
         }
