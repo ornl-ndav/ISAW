@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2001/07/03 22:14:58  rmikk
+ * Added Code that will eliminate the "UNKOWN" at the
+ * top of the JParameterDialog box.
+ *
  * Revision 1.7  2001/06/26 14:42:33  rmikk
  * -Changed DataSetListHandler to IDataSetListHandler
  * -Removed references to the session log
@@ -133,6 +137,7 @@ public class ScriptProcessor  extends GenericOperator
       
         MacroDocument =new Util().openDoc( TextFileName);
         setDefaultParameters();
+        Title = TextFileName;
     
     }
 
@@ -166,7 +171,9 @@ public class ScriptProcessor  extends GenericOperator
       ExecLine.setLogDoc( doc);
     }
 
-
+    public void setTitle( String title)
+    {Title = title;
+    }
     private void initialize()
     {
       
