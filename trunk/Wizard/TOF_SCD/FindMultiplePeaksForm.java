@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.11  2003/06/17 16:49:56  bouzekc
+ * Now uses InstrumentType.formIPNSFileName to get the
+ * file name.  Changed to work with new PropChangeProgressBar.
+ *
  * Revision 1.10  2003/06/16 23:04:30  bouzekc
  * Now set up to use the multithreaded progress bar in
  * DataSetTools.components.ParametersGUI.
@@ -67,6 +71,7 @@ import  DataSetTools.dataset.DataSet;
 import  DataSetTools.operator.DataSet.Math.Analyze.*;
 import  DataSetTools.operator.Generic.Load.LoadOneHistogramDS;
 import  DataSetTools.operator.Generic.Load.LoadMonitorDS;
+import  DataSetTools.instruments.InstrumentType;
 
 /**
  * 
@@ -234,10 +239,10 @@ public class FindMultiplePeaksForm extends Form
     SharedData.addmsg("Executing...\n");
     IParameterGUI param;
     int maxPeaks, minIntensity, SCDline;
-    float increment;
+    float newPercent, oldPercent, increment;
     Float monCount;
     String rawDir, outputDir, saveName, expName, calibFile, loadName;
-    String runNum, expFile;
+    String expFile, IPNSName;
     boolean appendToFile, first; 
     Vector peaksVec;
     DataSet histDS, monDS;
@@ -348,17 +353,13 @@ public class FindMultiplePeaksForm extends Form
 
     //set the increment amount
     increment = (1.0f / runsArray.length) * 100.0f;
+    newPercent = oldPercent = 0;
 
     for(int i = 0; i < runsArray.length; i++)
     {
-      /*load the histogram and monitor for the current run. 
-        We don't want to remove the leading zeroes!*/
-      runNum = DataSetTools
-               .util
-               .Format
-               .integerPadWithZero(runsArray[i], RUN_NUMBER_WIDTH);
+      IPNSName = InstrumentType.formIPNSFileName(SCDName, runsArray[i]);
 
-      loadName = rawDir + SCDName + runNum + ".RUN";
+      loadName = rawDir + IPNSName;
 
       SharedData.addmsg("Loading " + loadName + ".");
 
@@ -447,9 +448,9 @@ public class FindMultiplePeaksForm extends Form
       }
 
       //fire a property change event off to any listeners
-      //again, these are incremental changes in order to fit in with the
-      //overall Wizard progress bar
-      super.fireValueChangeEvent(-1, (int)increment);
+      oldPercent = newPercent;
+      newPercent += increment;
+      super.fireValueChangeEvent((int)oldPercent, (int)newPercent);
     }
   
     SharedData.addmsg("--- Done finding peaks. ---");
