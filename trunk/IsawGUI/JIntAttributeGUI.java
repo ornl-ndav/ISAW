@@ -58,7 +58,7 @@ public class JIntAttributeGUI extends JAttributeGUI implements Serializable
         attr = new IntAttribute(attr.getName(),(int)attr.getNumericValue());
         else{
         int value = Integer.valueOf(s).intValue();
-        ((IntAttribute)attr).setIntValue(value);
+        attr = new IntAttribute(attr.getName(),value);
         }
         return attr;
     }
