@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.202  2004/05/21 15:25:11  dennis
+ *  Changed version to 1.7.1 alpha 6
+ *
  *  Revision 1.201  2004/05/18 13:54:16  rmikk
  *  Now supports NsavedFiles(int) and ShortSavedFilename(true/false) in
  *     IsawProps.dat
@@ -734,7 +737,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.7.1 alpha 5";
+          version="1.7.1 alpha 6";
         else
           version=SharedData.VERSION;
 
