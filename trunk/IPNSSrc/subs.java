@@ -58,6 +58,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/02/21 16:54:05  pfpeterson
+ * Removed commented out code.
+ *
  * Revision 1.4  2003/02/18 19:33:50  dennis
  * Removed ^M characters.
  *
@@ -127,31 +130,14 @@ public class subs {
      * INITIALLY ASSUME DETA = 0.0 DEG. AND THE ORIGIN IS AT THE REAL
      * CRYSTAL.
      */
-    //yd = (xcm/r2)/wl;
-    //$ ARt xd = -(detd/r2)/wl;
-    //xd =detd/r2/wl;
-    //if (deta != 0.0)  {
-    // C
-    // C***  ROTATE TO CORRECT DETECTOR ANGLE
-    // C
-    //Art$$ ang = -deta/rad;
-    //ang= deta/rad;
-    //xt = xd;
-    //yt = yd;
-    //xd = xt*Math.cos(ang)+yt*Math.sin(ang);
-    //yd = -xt*Math.sin(ang)+yt*Math.cos(ang);
-    //***************** NEW *********************************
     ang = deta/rad;
     xd = detd*Math.cos(ang)+ xcm*Math.sin(ang);
     yd = detd*Math.sin(ang) -ycm*Math.cos(ang);
     
     yd = yd/r2/wl;
     xd  = xd/r2/wl;
+
     // TRANSLATE ORIGIN TO RECIPROCAL LATTICE ORIGIN
- 
-    // Close if()
-    // C
-    //Art xd = (1.0/wl)+xd;
     xd=-(1.0/wl)+xd;
 
     /*
@@ -162,26 +148,22 @@ public class subs {
      */
     cp = Math.cos(phi/rad);
     sp = Math.sin(phi/rad);
-    /*  $$Arts. Note the transformation is the inverse
-        cc = Math.cos(-chi/rad);
-        sc = Math.sin(-chi/rad);
-    */
     
     cc = Math.cos(chi/rad);
     sc = Math.sin(chi/rad);
     co = Math.cos(-omega/rad);
     so = Math.sin(-omega/rad);
-    // C***  OMEGA ROTATION
+    // OMEGA ROTATION
     xt = xd;
     yt = yd;
     xg.val = xt*co+yt*so;
     yg.val = -xt*so+yt*co;
-    // C***  CHI ROTATION
+    // CHI ROTATION
     yt = yg.val;
     zt = zd;
     yg.val = yt*cc+zt*sc;
     zg.val = -yt*sc+zt*cc;
-    // C***  PHI ROTATION
+    // PHI ROTATION
     xt = xg.val;
     yt = yg.val;
     xg.val = xt*cp+yt*sp;
@@ -242,4 +224,4 @@ public class subs {
 
     return;
   }
-} // End class.
+}
