@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/18 21:10:14  dennis
+ * Now uses atan2(,) to find angles
+ *
  * Revision 1.1  2001/07/24 20:12:52  rmikk
  * Initial submition
  *
@@ -82,16 +85,17 @@ public class Types
      else
          phi = 0.0f;
      r1 = (float)Math.sqrt( x1*x1+y1*y1);
-     if( r != 0)
-         theta = (float)Math.acos( x1/ r);
-     else
-         theta = 0.0f;
+     
+         theta = (float)Math.atan2( y1, x1);
+     
      float coords[];
    
      coords = new float[3];
      coords[0] = rho;
      coords[1] = phi;
-     coords[2] = theta;
+     
+           coords[2] = theta;
+     
      return coords;
 
     }
@@ -121,15 +125,16 @@ public class Types
      else
          phi = 0.0f;
      r1 = (float)Math.sqrt( x1*x1+y1*y1);
-     if( r != 0)
-         theta =(float) Math.acos( x1/ r);
-     else
-         theta = 0.0f;
+     
+         theta =(float) Math.atan2(y1, x1);
+     
      float coords[];
      coords = new float[3];
      coords[0] = rho;
      coords[1] = phi;
-     coords[2] = theta;
+     
+       coords[2] = theta;
+     
     // System.out.println("::"+rho+","+phi+","+theta);
     return coords;
     }
