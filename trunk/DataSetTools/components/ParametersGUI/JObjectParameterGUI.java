@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/08/07 20:59:38  rmikk
+ * Changed segments layout to a 3 by 2 grid and included
+ * a beveled border
+ *
  * Revision 1.3  2001/06/26 18:37:35  dennis
  * Added Copyright and GPL license.
  * Removed un-needed imports and improved
@@ -72,18 +76,13 @@ public class JObjectParameterGUI extends    JParameterGUI
        intText.setText("");
 
        segment = new JPanel();
-       segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5)); 
+       segment.setLayout(new GridLayout( 3,2)); 
 
-       JPanel P = new JPanel();
-       P.setLayout( new GridLayout( 3 , 1 ));
-       P.add(new JLabel(parameter.getName(),javax.swing.SwingConstants.CENTER));
-       P.add(new JLabel("Select DataType", javax.swing.SwingConstants.CENTER));
-       P.add( new JLabel("Form Array ", javax.swing.SwingConstants.CENTER ) );
-       segment.add( P );
-
-       P = new JPanel();
-       P.setLayout(new GridLayout( 3,1));
-       P.add(intText);
+      
+      
+       segment.add(new JLabel("  "+parameter.getName()));
+       segment.add(intText);
+       segment.add(new JLabel("  Select DataType"));
 
        DataType= new JComboBox();
        DataType.addItem("Integer");
@@ -91,12 +90,13 @@ public class JObjectParameterGUI extends    JParameterGUI
        DataType.addItem("String");
 
        DataType.setEditable(false);
-       P.add(DataType);
+       segment.add(DataType);
 
+       segment.add( new JLabel("  Form Array? "));    
        Array= new JCheckBox("Array" , false);
-       P.add(Array);
-       segment.add( P );
-       segment.setBorder( new LineBorder( Color.black) ); 
+       segment.add(Array);
+       segment.setBorder( BorderFactory.createEtchedBorder(
+                           EtchedBorder.LOWERED));    
        DataType.addItemListener( this);
     }
     
