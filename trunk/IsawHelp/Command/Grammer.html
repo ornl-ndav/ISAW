@@ -10,42 +10,43 @@
 <li>
 It is NOT case sensitive except (presently) for the Data set Commands</li>
 
-<br>&nbsp;
+
 <p>&nbsp;
 <li>
 There is one instruction per line</li>
 
-<br>&nbsp;
+
 <p>&nbsp;
 <li>
 Expressions are possible anywhere a constant or variable occurs, except
 as the target of an assignment statement</li>
 
-<br>&nbsp;
+
 <p>&nbsp;
 <li>
 See <a href="ComDes.html">Commands</a> for supported commands</li>
 
-<br>&nbsp;
+
 <p>&nbsp;
 <li>
 true and false are supported ONLY as arguments of functions. No algebra
 is allowed for these.</li>
 
-<br>&nbsp;
+
 <p>&nbsp;
 <li>
 Float constants must have a decimal point. Integers constants do NOT have
-a decimal point.</li>
+a decimal point.</li><P>
 
 <li>
-The REM statement as the first "command" on a line is considered documentation</li>
+The REM statement as the first "command" on a line is considered documentation</li><P>
 
 <li>
-Presently there are no if- then- else or subroutines structures</li>
+The if- elseif- else -endif structure has been implemented<Br>
+"Then" is allowed at the end of an if or elseif line.<BR>
+</li>
 
-<br>&nbsp;
-<p>&nbsp;
+<P>
 <li>
 for loop is implemented as follows:</li>
 
@@ -60,7 +61,7 @@ The list at the right can only be a list of numbers, strings, or variables
 and expressions.
 <p>To denote RANGES use :. For example
 <p>[1<b> :</b> N] or [ 1 , 3 ,&nbsp; 8 <b>: </b>15 , 2 ]
-<p>The Ranges only work for integers and can be decreasing.</ul>
+<p>The Ranges only work for integers and can be decreasing.</ul><P>
 
 <li>
 An ON ERROR - ELSE ERROR - END ERROR structure has been set up</li>
@@ -72,6 +73,19 @@ A form of arrays have been implemented as follow:</li>
 
 <ul>&nbsp;Res[1] is Res1
 <p>Res[i] is Res3 if i evaluates to 3 Res[2*i+1] is Res7 if i is 3</ul>
+<P><P>
+<LI> <A name = "Macro">MACRO</a> Syntax <ul>
+     <LI> The First two lines are comment lines starting with #.<BR>
+          These can give a title and a description<P>
+     <LI> The next lines are Describe the parameters of this macro in the following form, with 
+          ONE LINE PER PARAMETER<P><UL><B>
+          #$$ MacroVariableName&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&   DataType &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;& Message
+          </b></ul><P>
+          DataType is either Int, Integer, Float , String, or DataSet (Not Case Sensitive)<P>
+          MacroVariableName is the name the commands use to refer to the variable<P>
+     <LI> The lines that follow are regular Commands. 
+          </ul>
+    </ul>
 </ul>
 
 </body>
