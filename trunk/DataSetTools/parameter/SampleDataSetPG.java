@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/04/25 15:39:39  pfpeterson
+ *  Improved support for null values which are automatically converted
+ *  to EMPTY_DATA_SET.
+ *
  *  Revision 1.5  2002/11/27 23:22:43  pfpeterson
  *  standardized header
  *
@@ -103,10 +107,12 @@ public class SampleDataSetPG extends DataSetPG{
      * its DS_TYPE Attribute.
      */
     private static boolean isSampleDataSet( Object ds ){
-        if(ds instanceof DataSet){
+        if(ds==null){
+          return true;
+        }else if(ds instanceof DataSet){
             String type = (String)
                 ((DataSet)ds).getAttributeValue(Attribute.DS_TYPE);
-            if(type.equals(Attribute.SAMPLE_DATA)){
+            if(type==null || type.equals(Attribute.SAMPLE_DATA)){
                 return true;
             }
         }
