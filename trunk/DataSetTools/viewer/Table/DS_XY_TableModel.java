@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/10/28 15:59:29  rmikk
+ * Added setErrInd and setGroups public methods to set
+ *   the selected Groups and whether the Error or Index
+ *   values are displayed
+ *
  * Revision 1.13  2003/10/15 03:43:12  bouzekc
  * Fixed javadoc errors.
  *
@@ -139,8 +144,34 @@ public class DS_XY_TableModel extends TableViewModel
        if( includeIndex ) 
            ncolsPgroup++ ;
       }
-
-
+  private float[] getXvals(){
+           xvals = table_view.MergeXvals( 0, DS, (float[])null, false, Groups ); 
+           if(xvals == null)
+             return null;
+           if( xvals.length > 1 ) 
+               dx = xvals[ 1 ] -  xvals[ 0 ];
+           else 
+                dx = 0;
+           for( int i = 1; i + 1 < xvals.length; i++ )
+               if( ( xvals[ i + 1 ] - xvals[ i ] ) < dx )
+                   dx = xvals[ i + 1 ] - xvals[ i ];
+          return xvals;
+   }
+  /** Must do a reset
+  */
+  public void setErrInd( boolean error, boolean index){
+        includeErrors = error;
+        includeIndex = index;
+        ncolsPgroup = 1;
+       if(  includeErrors ) 
+           ncolsPgroup++ ;
+       if( includeIndex ) 
+           ncolsPgroup++ ;
+  }
+   public void setGroups( int[] Groups){
+     this.Groups = Groups;
+     xvals = getXvals();
+   }
 
    /** Returns the number of rows 
    */
@@ -508,9 +539,8 @@ public class DS_XY_TableModel extends TableViewModel
 
 
 
-    /** 
-     * Test program.  Uses a run filename as the argument
-    *@param  args The filename to test
+    /** Test program.  Have a run filename as the argument.
+    * args[0] is the filename to test
     */
    public static void main( String args[] )
       {
