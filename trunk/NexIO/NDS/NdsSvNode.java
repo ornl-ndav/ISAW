@@ -10,7 +10,7 @@ public class NdsSvNode implements NxNode
   { public Vector Node;//1st filename,NXFile, 2nd node name comma class class
     NDSClient nds;
     String errormessage;
-  
+     int[] IDim=null;
    public NdsSvNode(Vector N, NDSClient nds)
     {Node = N;
      this.nds=nds;
@@ -192,9 +192,13 @@ public class NdsSvNode implements NxNode
         return n;
      }
    public int[] getDimension()
-     { if( !(getNodeClass().equals("SDS"))) return null;
-       if(nds== null) return null;
-       return nds.getDimension();
+     { 
+       if( !(getNodeClass().indexOf("SDS")==0)) 
+          return null;
+       if( nds== null) 
+          return null;
+       return IDim;//nds.getDimension();
+        
       }
    public Object getNodeValue()
     { errormessage="improper node for Value";
@@ -222,8 +226,10 @@ public class NdsSvNode implements NxNode
        {errormessage=nds.getStringData();
         return null;
        }
+       IDim = nds.getDimension();
        }
       catch(IOException s){errormessage=s.getMessage(); return null;}
+      
       k=nds.getType();
       //System.out.println("type ="+k);
       if(k==NDSClient.FLOAT)
