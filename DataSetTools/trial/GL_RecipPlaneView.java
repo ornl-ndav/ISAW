@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/08/09 15:27:00  dennis
+ * Moved code that assigns hkl values to peaks using the currently
+ * selected plane normal directions, into it's own private method.
+ * Added code to calculate least squares fitted orientation matrix,
+ * based on assigned hkl values.
+ *
  * Revision 1.9  2004/08/04 23:11:18  dennis
  * Removed redundant MouseMotionListener.
  * "Center" point is now just changed by changing the VRP, since the
@@ -1318,11 +1324,11 @@ public class GL_RecipPlaneView
   /*
    *  Get Lines object containing contour lines with constant TOF value
    */
-  public GL_Shape getTimeContours( IDataGrid grid,
-                                   Tran3D    combinedR,
-                                   float     initial_path,
-                                   float     t0,
-                                   float     level     )
+  private GL_Shape getTimeContours( IDataGrid grid,
+                                    Tran3D    combinedR,
+                                    float     initial_path,
+                                    float     t0,
+                                    float     level     )
   {
     Data d = grid.getData_entry(1,1);
 
@@ -1375,11 +1381,11 @@ public class GL_RecipPlaneView
   /*
    *  Get Lines object containing contour lines with constant row value
    */
-  public GL_Shape getRowContours( IDataGrid grid,
-                                  Tran3D    combinedR,
-                                  float     initial_path,
-                                  float     t0,
-                                  float     level    )
+  private GL_Shape getRowContours( IDataGrid grid,
+                                   Tran3D    combinedR,
+                                   float     initial_path,
+                                   float     t0,
+                                   float     level    )
   {
     Data d = grid.getData_entry(1,1);
 
@@ -1440,11 +1446,11 @@ public class GL_RecipPlaneView
   /*
    *  Get Lines object containing contour lines with constant column value
    */
-  public GL_Shape getColContours( IDataGrid grid,
-                                  Tran3D    combinedR,
-                                  float     initial_path,
-                                  float     t0,
-                                  float     level  )
+  private GL_Shape getColContours( IDataGrid grid,
+                                   Tran3D    combinedR,
+                                   float     initial_path,
+                                   float     t0,
+                                   float     level  )
   {
     Data d = grid.getData_entry(1,1);
 
@@ -1728,7 +1734,7 @@ public class GL_RecipPlaneView
 
   /* -------------------------- ProjectPoints ----------------------- */
  
-  public Data ProjectPoints( Vector3D points[], Vector3D normal, int id )
+  private Data ProjectPoints( Vector3D points[], Vector3D normal, int id )
   {
     float dist;
     int   bin;
@@ -1759,7 +1765,7 @@ public class GL_RecipPlaneView
 
 /* --------------------------- ProjectPointsUniformly --------------------- */
 
-  public DataSet ProjectPointsUniformly( Vector3D points[], int n_steps )
+  private DataSet ProjectPointsUniformly( Vector3D points[], int n_steps )
   {
     DataSetFactory ds_factory = new DataSetFactory(
                                        "Projection parallel to planes" );
@@ -1819,7 +1825,7 @@ public class GL_RecipPlaneView
 
 
   /* ---------------------------- FFT -------------------------------- */
-  public DataSet FFT( DataSet ds )
+  private DataSet FFT( DataSet ds )
   {
 //  DataSetFactory ds_factory = new DataSetFactory( "FFT of projections" );
     DataSetFactory ds_factory = 
@@ -1841,10 +1847,9 @@ public class GL_RecipPlaneView
   }
 
 
-
   /* ---------------------------- FFT -------------------------------- */
  
-  public Data FFT( Data d )
+  private Data FFT( Data d )
   {
      float complex_data[] = new float[2*FFT_DATA_LENGTH];
      float re,
@@ -1883,7 +1888,7 @@ public class GL_RecipPlaneView
    *  largest peak frequency beyond the "DC term".  This turns out to be the
    *  fundamental frequency in the type of spectra we encounter here.
    */
-  public float findFundamental( float fft_array[] )
+  private float findFundamental( float fft_array[] )
   {
                                // find the first valley using moving averages
     int n_averaged = 4;
@@ -1940,7 +1945,7 @@ public class GL_RecipPlaneView
 
 /* -------------------------- makeQR_factors ------------------------- */
 
-  public boolean makeQR_factors()
+  private boolean makeQR_factors()
   {
     if ( all_vectors == null || all_vectors.length < DIMENSION )
     {
@@ -1962,6 +1967,50 @@ public class GL_RecipPlaneView
   }
 
 
+/* ---------------------------- assignHKLs -------------------------------- */
+
+  private void assignHKLs()
+  {
+    float h_vals[] = h_plane_ui.get_normal();
+    float k_vals[] = k_plane_ui.get_normal();
+    float l_vals[] = l_plane_ui.get_normal();
+
+    if ( h_vals == null || k_vals == null || l_vals == null )
+    {
+      System.out.println("ERROR: must have h,k,l normals set");
+      return;
+    }
+
+    Vector3D a = new Vector3D( h_vals );
+    Vector3D b = new Vector3D( k_vals );
+    Vector3D c = new Vector3D( l_vals );
+
+    a.multiply( h_plane_ui.get_d_spacing() );
+    b.multiply( k_plane_ui.get_d_spacing() );
+    c.multiply( l_plane_ui.get_d_spacing() );
+
+    Vector3D q;
+    float mag_a = (float)(2*Math.PI/a.length());
+    float mag_b = (float)(2*Math.PI/b.length());
+    float mag_c = (float)(2*Math.PI/c.length());
+    a.normalize();
+    b.normalize();
+    c.normalize();
+    for ( int i = 0; i < all_peaks.size(); i++ )
+    {
+       PeakData pd = (PeakData)all_peaks.elementAt(i);
+       q = new Vector3D( (float)pd.qx, (float)pd.qy, (float)pd.qz );
+       float h = q.dot(a)/mag_a;
+       float k = q.dot(b)/mag_b;
+       float l = q.dot(c)/mag_c;
+       pd.h = h;
+       pd.k = k;
+       pd.l = l;
+    }
+  }
+
+
+
 /* ------------------------- refinePlane ----------------------------- */
 /**
  *  Calculate a refined normal vector as a 3 or 4 dimensional vector and
@@ -1971,7 +2020,7 @@ public class GL_RecipPlaneView
  *          DIMENSION == 4, this returns: {n1,n2,n3,n4,err,d}, where n4
  *          represents a shift.  
  */
-  public float[] refinePlane(Vector3D normal, float q_step)
+  private float[] refinePlane(Vector3D normal, float q_step)
   {
     double r[] = new double[all_vectors.length];
     double q_dist;
@@ -2013,7 +2062,7 @@ public class GL_RecipPlaneView
  *          DIMENSION == 4, this returns: {n1,n2,n3,n4,err,d}, where n4
  *          represents a shift.  
  */
-  public float[] refinePlane(Vector3D normal)
+  private float[] refinePlane(Vector3D normal)
   {
     Data d = ProjectPoints( all_vectors, normal, 1 );
     d = FFT( d );
@@ -2062,7 +2111,7 @@ public class GL_RecipPlaneView
  * Go through the FFT ds refine the normals and only keep the FFT's for 
  * which the refined normals are distinct.
  */
-  public DataSet FilterFFTds( DataSet fft_ds, float err_threshold )
+  private DataSet FilterFFTds( DataSet fft_ds, float err_threshold )
   {
     DataSet new_ds = fft_ds.empty_clone();
     new_ds.setTitle("Filtered FFT DataSet");
@@ -2666,7 +2715,44 @@ private class WriteFileListener implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
   {
-    PeakData.WritePeakData( all_peaks, "fft_peaks.dat" );
+    if ( all_peaks.size() < 3 )
+    {
+      System.out.println("ERROR: Not enough peaks to fit: " + all_peaks.size());
+      return;
+    }
+
+    assignHKLs();
+    
+    int k = all_peaks.size();                 // number of vectors for BestFit
+    double M[][]   = new double[3][3];
+    double q[][]   = new double[k][3];
+    double hkl[][] = new double[k][3];
+
+    for ( int i = 0; i < all_peaks.size(); i++ )
+    {
+      PeakData pd = (PeakData)all_peaks.elementAt(i);
+      q[i][0] = pd.qx;
+      q[i][1] = pd.qy;
+      q[i][2] = pd.qz;
+      hkl[i][0] = Math.round( pd.h );
+      hkl[i][1] = Math.round( pd.k );
+      hkl[i][2] = Math.round( pd.l );
+    }
+
+    double std_dev = LinearAlgebra.BestFitMatrix( M, hkl, q );
+    std_dev = std_dev / k;
+    System.out.println("Standard deviation for fit = " + std_dev );
+
+    for ( int i = 0; i < 3; i++ )
+      for ( int j = 0; j < 3; j++ )
+         M[i][j] /= (2 * Math.PI );
+
+    LinearAlgebra.print( M );
+
+    double lat_parms[] = lattice_calc.LatticeParamsOfUB( M );
+    LinearAlgebra.print( lat_parms );
+
+//    PeakData.WritePeakData( all_peaks, "fft_peaks.dat" );
   }
 }
 
@@ -2697,27 +2783,6 @@ private class LatticeParameterListener implements ActionListener
     c.multiply( l_plane_ui.get_d_spacing() ); 
     
     showLatticeParameters( a, b, c );
-
-    Vector3D q;
-    float mag_a = (float)(2*Math.PI/a.length());
-    float mag_b = (float)(2*Math.PI/b.length());
-    float mag_c = (float)(2*Math.PI/c.length());
-    a.normalize();
-    b.normalize();
-    c.normalize();
-    for ( int i = 0; i < all_peaks.size(); i++ )
-    {
-       PeakData pd = (PeakData)all_peaks.elementAt(i);
-       q = new Vector3D( (float)pd.qx, (float)pd.qy, (float)pd.qz );
-       float h = q.dot(a)/mag_a;
-       float k = q.dot(b)/mag_b;
-       float l = q.dot(c)/mag_c;
-//     System.out.print  ("q = "+ pd.qx + ", " + pd.qy + ", " + pd.qz );
-//     System.out.println(" hkl = "+ h + ", " + k + ", " + l ); 
-       pd.h = h;
-       pd.k = k;
-       pd.l = l;
-    }    
   }
 }
 
