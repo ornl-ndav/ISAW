@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.88  2003/10/15 05:35:45  bouzekc
+ * Overloaded setHelpMessage to take a File object for more detailed
+ * help on wizards.
+ *
  * Revision 1.87  2003/10/15 03:38:01  bouzekc
  * Fixed javadoc errors.
  *
@@ -646,10 +650,43 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    * Set the help message that will be displayed when the user requests help
    * with this wizard.
    *
-   * @param help_message String giving the help message to use for this wizard.
+   * @param helpMess The help message.
    */
-  public void setHelpMessage( String help_message ) {
-    this.help_message = help_message;
+  public void setHelpMessage( String helpMess ) {
+    this.help_message = helpMess;
+  }
+
+  /**
+   * Set the help message that will be displayed when the user requests help
+   * with this wizard.
+   *
+   * @param helpFile File containing the help message.
+   */
+  public void setHelpMessage( File helpFile ) {
+    StringBuffer s     = new StringBuffer(  );
+    TextFileReader tfr = null;
+    String fileName    = helpFile.getName(  );
+    fileName           = FilenameUtil.setForwardSlash( fileName );
+
+    try {
+      tfr = new TextFileReader( fileName );
+
+      while( !tfr.eof(  ) ) {
+        s.append( tfr.read_line(  ) );
+        s.append( "\n" );
+      }
+      tfr.close(  );
+      this.help_message = s.toString(  );
+    } catch( IOException ioe ) {
+      try {
+        if( tfr != null ) {
+          tfr.close(  );
+        }
+      } catch( IOException ioe2 ) {
+        //drop it on the floor
+      }
+      SharedData.addmsg( "File " + fileName + " could not be read." );
+    }
   }
 
   /**
@@ -947,8 +984,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    * This method tries take away some of the tedious work of handling command
    * line options when running the Wizard.
    *
-   * @param argv The String array of command line arguments that is sent to
-   *        the main() method of the derived Wizards.
+   * @param argv The String array of command line arguments that is sent to the
+   *        main() method of the derived Wizards.
    */
   public void wizardLoader( String[] argv ) {
     String helpMessage = "Options\t\tDescription\t\t\tCommand line input\n" +
@@ -1289,17 +1326,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   }
 
   /**
-   * Show the specified String in the help frame.
-   *
-   * @param str The message to display in a dialog.
-   * @param title The title of the dialog.
-   */
-  private void ShowHelpMessage( String str, String title ) {
-    JOptionPane.showMessageDialog( 
-      this.frame, str, title, JOptionPane.INFORMATION_MESSAGE );
-  }
-
-  /**
    * Converts a StringBuffer which holds an XML String of IParameterGUI and
    * Form information into data that the Wizard can understand.
    *
@@ -1439,6 +1465,25 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
     String saveFile = StringUtil.setFileSeparator( errDir + "/" + errFile );
     TextWriter.writeStackTrace( saveFile, e );
+  }
+
+  /**
+   * Utility to display an HTML formatted help message.
+   *
+   * @param tempTitle The title to use.
+   * @param html The help message to display.
+   */
+  private void displayHelpMessage( String tempTitle, String html ) {
+    JFrame help_frame     = new JFrame( tempTitle );
+    Dimension screen_size = Toolkit.getDefaultToolkit(  )
+                                   .getScreenSize(  );
+    help_frame.setSize( 
+      new Dimension( 
+        ( int )( screen_size.getWidth(  ) / 2 ),
+        ( int )( screen_size.getHeight(  ) / 2 ) ) );
+    help_frame.getContentPane(  )
+              .add( new JScrollPane( new JEditorPane( "text/html", html ) ) );
+    help_frame.show(  );
   }
 
   /**
@@ -1698,16 +1743,18 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   private void showFormHelpMessage(  ) {
     HTMLizer form_htmlizer = new HTMLizer(  );
     String html            = form_htmlizer.createHTML( this.getCurrentForm(  ) );
-    JFrame help_frame      = new JFrame( title );
-    Dimension screen_size  = Toolkit.getDefaultToolkit(  )
-                                    .getScreenSize(  );
-    help_frame.setSize( 
-      new Dimension( 
-        ( int )( screen_size.getWidth(  ) / 2 ),
-        ( int )( screen_size.getHeight(  ) / 2 ) ) );
-    help_frame.getContentPane(  )
-              .add( new JScrollPane( new JEditorPane( "text/html", html ) ) );
-    help_frame.show(  );
+    displayHelpMessage( this.title, html );
+  }
+
+  /**
+   * Show the specified String in the help frame.  This is for the wizard help
+   * message
+   *
+   * @param str The message to display in a dialog.
+   * @param title The title of the dialog.
+   */
+  private void showHelpMessage( String str, String title ) {
+    displayHelpMessage( title, str );
   }
 
   /**
@@ -1943,9 +1990,9 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
         worker.setFormNumber( form_num );
         worker.start(  );
       } else if( command.equals( HELP_ABOUT_COMMAND ) ) {
-        ShowHelpMessage( about_message, "About: " + wizard.title );
+        showHelpMessage( about_message, "About: " + wizard.title );
       } else if( command.equals( WIZARD_HELP_COMMAND ) ) {
-        ShowHelpMessage( help_message, "Help: " + wizard.title );
+        showHelpMessage( help_message, "Help: " + wizard.title );
       } else if( command.equals( FORM_HELP_COMMAND ) ) {
         Form f = getCurrentForm(  );
 
