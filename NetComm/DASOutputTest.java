@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2001/06/08 16:13:22  dennis
+ *  Change PORT to DEFAULT_PORT and now allow specifying
+ *  different ports.
+ *
  *  Revision 1.8  2001/06/07 21:14:48  dennis
  *  Added periodic call to System.gc().
  *
@@ -82,10 +86,10 @@ import DataSetTools.retriever.*;
  */  
 public class DASOutputTest
 {
-  public static final int    DAS_UDP_PORT        = 6087;
-  public static final String INSTRUMENT_COMPUTER = "dmikk.mscs.uwstout.edu";
-//public static final String INSTRUMENT_COMPUTER = "mscs138.mscs.uwstout.edu";
-//public static final String INSTRUMENT_COMPUTER = "mandrake.pns.anl.gov";
+  public static final int    DEFAULT_DAS_UDP_PORT = 6080;
+//  public static final String INSTRUMENT_COMPUTER  = "dmikk.mscs.uwstout.edu";
+//public static final String INSTRUMENT_COMPUTER  = "mscs138.mscs.uwstout.edu";
+public static final String INSTRUMENT_COMPUTER  = "mandrake.pns.anl.gov";
 
   byte    buffer[]    = new byte[ 65536 ];
   String  file_name   = null;
@@ -174,19 +178,6 @@ public class DASOutputTest
                         + INSTRUMENT_COMPUTER );
     System.out.println("=================================================");
  
-                                                // make an output channel for
-                                                // for UDP packets on the port
-    UDPSend sender = null;
-    try
-    {
-      sender = new UDPSend( INSTRUMENT_COMPUTER, DAS_UDP_PORT );
-    }
-    catch(Exception u)
-    {
-      System.out.println("ERROR starting DASOutputTest: " + u);
-      System.exit(1);
-    }
-
     if ( args.length <= 0 )
     { 
       System.out.println("ERROR: you must specifiy a runfile to use for");
@@ -195,9 +186,30 @@ public class DASOutputTest
       System.out.println("       abbreviated instrument name and an integer ");
       System.out.println("       run number." );
       System.out.println("       Try 'java NetComm.DASOutputTest  HRCS  2447'");
+      System.out.println("NOTE:  You can also specify a third parameter");
+      System.out.println("       giving the UDP port number to use");
 
       System.exit(1);
     } 
+                                                // make an output channel for
+                                                // for UDP packets on the port
+    UDPSend sender = null;
+    try
+    {
+      if ( args.length >= 3 )
+      {
+        int port_num = Integer.parseInt( args[2] );
+        sender = new UDPSend( INSTRUMENT_COMPUTER, port_num );
+      }
+      else
+        sender = new UDPSend( INSTRUMENT_COMPUTER, DEFAULT_DAS_UDP_PORT );
+    }
+    catch(Exception u)
+    {
+      System.out.println("ERROR starting DASOutputTest: " + u);
+      System.exit(1);
+    }
+
 
     DASOutputTest test = new DASOutputTest();
 
