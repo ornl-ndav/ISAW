@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.66  2003/02/18 20:25:24  dennis
+ *  Switched to add one SampleOrientation attribute instead of separate
+ *  phi, chi and omega values.
+ *
  *  Revision 1.65  2003/02/17 22:24:12  pfpeterson
  *  Updated deprecated method calls to what is now used.
  *
@@ -205,9 +209,8 @@ public class RunfileRetriever extends    Retriever
   private IntListAttribute run_num_attr      = null;
   private FloatAttribute   num_pulses_attr   = null;
   private FloatAttribute   initial_path_attr = null;
-  private FloatAttribute   scd_chi_attr      = null;
-  private FloatAttribute   scd_phi_attr      = null;
-  private FloatAttribute   scd_omega_attr    = null;
+  private SampleOrientationAttribute 
+                           scd_sample_orientation_attr = null;
   private FloatAttribute   nominal_eff_attr 
                             = new FloatAttribute(Attribute.EFFICIENCY_FACTOR,1);
   private Hashtable        det_cen_dist_attrs  = new Hashtable();
@@ -826,7 +829,7 @@ private float CalculateEIn()
 
     // SCD sample orientation, Sample Chi, Sample Phi, Sample Omega
     if ( instrument_type == InstrumentType.TOF_SCD )
-        AddSCD_SamplePosition( attr_list );
+        AddSCD_SampleOrientation( attr_list );
 
     // User Name
     str_attr = new StringAttribute( Attribute.USER, run_file.UserName() );
@@ -878,7 +881,7 @@ private float CalculateEIn()
 
     // SCD sample orientation, Sample Chi, Sample Phi, Sample Omega
     if ( instrument_type == InstrumentType.TOF_SCD )
-      AddSCD_SamplePosition( attr_list );
+      AddSCD_SampleOrientation( attr_list );
 
     // Detector and Segment ID lists ..........
     int det_ids[] = new int[ group_segments.length ];
@@ -1180,28 +1183,23 @@ private float CalculateEIn()
 
 
   /**
-   *  Add "shared" Chi, Phi and Omega attributes for the sample orientation for 
-   *  SCD instruments. 
+   *  Add "shared" SampleOrientation attribute for SCD instruments. 
    *
    *  @param  attr_list  The list of attributes to which the orientation
-   *                     attributes are added.  
+   *                     attribute is added.  
    */
-  private void AddSCD_SamplePosition( AttributeList attr_list )
+  private void AddSCD_SampleOrientation( AttributeList attr_list )
   {
-    if ( scd_chi_attr == null )
-      scd_chi_attr = 
-        new FloatAttribute( Attribute.SAMPLE_CHI,  (float)run_file.Chi() );
-    attr_list.setAttribute( scd_chi_attr );
-
-    if ( scd_phi_attr == null )
-      scd_phi_attr = 
-        new FloatAttribute( Attribute.SAMPLE_PHI,  (float)run_file.Phi() );
-    attr_list.setAttribute( scd_phi_attr );
-
-    if ( scd_omega_attr == null )
-      scd_omega_attr = 
-        new FloatAttribute( Attribute.SAMPLE_OMEGA, (float)run_file.Omega() );
-    attr_list.setAttribute( scd_omega_attr );
+    if ( scd_sample_orientation_attr == null )
+    {
+      SampleOrientation so = new IPNS_SCD_SampleOrientation(
+                                      (float)run_file.Phi(),
+                                      (float)run_file.Chi(), 
+                                      (float)run_file.Omega() );
+      scd_sample_orientation_attr = new SampleOrientationAttribute(
+                                        Attribute.SAMPLE_ORIENTATION, so );
+    }
+    attr_list.setAttribute( scd_sample_orientation_attr );
   }
 
   /**
