@@ -38,6 +38,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2003/08/12 14:31:47  rmikk
+ *  Added the SaveDataSetActionListener Menu item to save
+ *    the current data set
+ *
  *  Revision 1.31  2003/07/14 20:31:30  rmikk
  *  -Fixed error when Xscale is rebinned
  *
@@ -247,6 +251,7 @@ public class ContourView extends DataSetViewer
    float time_mouse =Float.NaN; //sent back to redraw
    protected IAxesHandler Transf;
    MyMouseListener cursors;
+   SaveDataSetActionListener SaveDS;
   public ContourView( DataSet ds, ViewerState state1 )
      { this( ds, state1, null,null,null);
       }
@@ -265,6 +270,8 @@ public class ContourView extends DataSetViewer
      data_set = ds;
      Transf = null;
      state = state1;
+     SaveDS = new SaveDataSetActionListener(ds);
+     SaveDS.setUpMenuItem( getMenuBar());
      if( !validDataSet() )
        {
         return;
@@ -751,6 +758,7 @@ public class ContourView extends DataSetViewer
    {
       super.setDataSet( ds );
       data_set = ds;
+      SaveDS.setDataSet( ds);
       int GridAt = state.get_int("Contour.Style");
       acChange = XConvChange = XsclChange = true;
       setData( ds, GridAt );
