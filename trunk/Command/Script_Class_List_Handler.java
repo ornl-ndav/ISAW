@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2001/06/05 16:50:35  rmikk
+ * Changed props.dat to IsawProps.dat
+ *
  * Revision 1.7  2001/06/05 16:38:08  rmikk
  * Fixed potential error in getNextPath to catch only
  * repeated paths not repeated subpaths
@@ -570,7 +573,7 @@ public static void main( String args[] )
    String path = System.getProperty("user.home")+"\\";
        path = StringUtil.fixSeparator(path);
        try {
-	    FileInputStream input = new FileInputStream(path + "props.dat" );
+	    FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
           isawProp.load( input );
 	   
           System.setProperties(isawProp);  
