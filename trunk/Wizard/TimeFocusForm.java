@@ -133,15 +133,20 @@ public class TimeFocusForm extends    Form
           //time_focus the DataSets
           for( int j = 0; j < num_datasets; j++ )
           {
-	           ds = datasets[j];
-	           
-	           if( ds != DataSet.EMPTY_DATA_SET )
-	           {
+            ds = datasets[j];
+            
+            if( ds != DataSet.EMPTY_DATA_SET )
+            {
               tf = new TimeFocus(ds, focusing_IDs, 
                                  angle, path, make_new_ds);
               obj = tf.getResult();
             }
-            
+            else
+            {
+              SharedData.addmsg("Encountered empty DataSet: "+j);
+              return false;
+            }
+
             //make sure we are working with DataSets
             //TimeFocus will always return a DataSet unless it 
             //hits an error (as of 02/17/2003)
@@ -152,11 +157,12 @@ public class TimeFocusForm extends    Form
             }
             else
             {
-	             if( obj instanceof ErrorString )
-                       SharedData.addmsg(obj.toString() + "\n");
-	             else
-                       SharedData.addmsg("Could not focus DataSet: "
-                                         +datasets[j]);
+              if( obj instanceof ErrorString )
+                SharedData.addmsg(obj.toString() + "\n");
+              else
+                SharedData.addmsg("Could not focus DataSet: "
+                                  +datasets[j]);
+              return false;
             }
           }
           //add the time focused DataSet array to time focused results
