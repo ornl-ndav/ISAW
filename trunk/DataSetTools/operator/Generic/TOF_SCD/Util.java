@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/03/20 21:56:54  pfpeterson
+ * Centroid now deals with ArrayOutOfBoundsException in an appropriate manner.
+ *
  * Revision 1.4  2003/02/13 17:03:44  pfpeterson
  * Methods to determine detector center angle and distance now try to
  * get attribute before calculating.
@@ -213,15 +216,21 @@ public class Util{
     int row=(int)Math.round(peak.y());
     int time=(int)Math.round(peak.z());
     Data data=null;
-    for( int i=col-3 ; i<=col+3 ; i++ ){
-      for( int j=row-3 ; j<=row+3 ; j++ ){
-        //        if( (i>groups.length-1) || (j>groups[0].length-1) )
-        //peak.reflag(peak20)
-        data=ds.getData_entry(ids[i][j]);
-        surround[i-col+3][j-row+3][0]=data.getY_values()[time-1];
-        surround[i-col+3][j-row+3][1]=data.getY_values()[time  ];
-        surround[i-col+3][j-row+3][2]=data.getY_values()[time+1];
+    try{
+      for( int i=col-3 ; i<=col+3 ; i++ ){
+        for( int j=row-3 ; j<=row+3 ; j++ ){
+          //        if( (i>groups.length-1) || (j>groups[0].length-1) )
+          //peak.reflag(peak20)
+          data=ds.getData_entry(ids[i][j]);
+          if(data==null) return null;
+          surround[i-col+3][j-row+3][0]=data.getY_values()[time-1];
+          surround[i-col+3][j-row+3][1]=data.getY_values()[time  ];
+          surround[i-col+3][j-row+3][2]=data.getY_values()[time+1];
+        }
       }
+    }catch(ArrayIndexOutOfBoundsException e){
+      peak.reflag(reflag+20);
+      return peak;
     }
                                               
 
