@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/07/07 15:51:45  bouzekc
+ * Added getDocumentation().
+ *
  * Revision 1.4  2003/02/18 20:22:16  dennis
  * Switched to use SampleOrientation attribute instead of separate
  * phi, chi and omega values.
@@ -190,6 +193,25 @@ public class SCDQxyz_Dennis extends  XAxisInformationOp
       return fmt.format(Q[0])+","+fmt.format(Q[1])+","+fmt.format(Q[2]);
    }
 
+  /**
+   *  @return javadoc-style documentation for this Operator.
+   */
+  public String getDocumentation(  ) {
+    StringBuffer s = new StringBuffer(  );
+
+    s.append( "@overview This operator uses the chi, phi and omega " );
+    s.append( "attributes of a single crystal diffractometer DataSet to " );
+    s.append( "produce a string giving the values of Qx, Qy, Qz for a " );
+    s.append( "specific bin in a histogram, in a frame of reference " );
+    s.append( "attached to the crystal, ( chi = 0, phi = 0 and omega = 0 ). ");
+    s.append( "This Operator is meant as a temporary solution.\n" );
+    s.append( "@param ds The DataSet to which the operation is applied.\n" );
+    s.append( "@param i Index of the Data block to use.\n" );
+    s.append( "@param tof The time-of-flight at which Qx,Qy,Qz is to be " );
+    s.append( "obtained.\n" );
+
+    return s.toString(  );
+  }
 
   /* ---------------------------- getResult ------------------------------- */
 
