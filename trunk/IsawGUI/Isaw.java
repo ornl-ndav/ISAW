@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.113  2002/08/15 18:49:01  pfpeterson
+ *  Added a verbose, '-v', switch and updated the default version
+ *  number.
+ *
  *  Revision 1.112  2002/08/12 19:13:37  pfpeterson
  *  Changed the default version if being run from cvs.
  *
@@ -705,7 +709,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version")){
-            version="1.4.0";
+            version="1.4.1alpha";
         }else{
             version=SharedData.VERSION;
         }
@@ -2130,9 +2134,11 @@ public class Isaw
   public static void main( String[] args ) 
   {
     for( int i=0 ; i<Array.getLength(args) ; i++ ){
-        if("--version".equals(args[i]) || "-v".equals(args[i])){
+        if("--version".equals(args[i])){
             System.out.println(getVersion(true));
             System.exit(0);
+        }else if("-v".equals(args[i])){
+            Script_Class_List_Handler.LoadDebug=true;
         }
     }
 
