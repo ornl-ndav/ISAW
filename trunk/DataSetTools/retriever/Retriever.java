@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/05/07 18:41:47  dennis
+ *  Reset default mode to load all attributes.
+ *
  *  Revision 1.13  2004/04/12 21:27:43  dennis
  *  Set default to NOT include diagnostic attributes.
  *  Added DETECTOR_CEN_ANGLE and DETECTOR_CEN_DISTANCE to
@@ -87,7 +90,7 @@ public abstract class Retriever implements Serializable
     protected static boolean add_scd_attrs = true;
     protected static boolean add_dgs_attrs = true;
     protected static boolean add_igs_attrs = true;
-    protected static boolean add_diagnostic_attrs = false;
+    protected static boolean add_diagnostic_attrs = true;
 
     public static final int  INVALID_DATA_SET      = 0;
     public static final int  MONITOR_DATA_SET      = 1;
