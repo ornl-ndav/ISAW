@@ -64,13 +64,17 @@ The data sets will be displayed in an external viewer of type IMAGE.<P>
 <b>*Display Object Expr, String ImageType</b></li>
 
 <br>&nbsp;ImageType should be either "IMAGE" , "SCROLLED_GRAPHS" ,
-"SELECTED_GRAPHS" or THREE_D</ol>
+"SELECTED_GRAPHS", "TABLE", or "THREE_D" without quotes(")</ol>
 </ul>
 
 <hr><a NAME="Send"></a>Send
-<ul><b>Send DataSet</b>
+<ul><LI><b>Send DataSet</b>
 <ul>This command sends the data set back to anyone that is an IObserver
 Listener</ul>
+  <LI> <b> Send Object Reason , Object ObservedObject</b>
+   <ul> Sends this information to all IObservers. Note order is reversed relative to the
+      IObserver update
+   </ul>
 </ul>
 
 <hr><a NAME="Save"></a>Save
