@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2005/01/07 17:26:41  rmikk
+ *  Added the fields that were possible return values for getCategoryList
+ *     method that were in IWrappedWithCategoryList.
+ *
  *  Revision 1.36  2005/01/02 17:59:34  rmikk
  *  Added a getSource Method for producing documentation.
  *  
@@ -156,6 +160,25 @@ abstract public class Operator implements Serializable
                                  // method are chosen from these and used to
                                  // generate menus.
    public static final String  OPERATOR                 = "Operator";
+  /**
+     *   String arrays that are usable return value of the getCategoryList
+     *   method.
+     */
+    public static final String[] TOF_NSAS= {"operator","Instrument Type",
+                                                    "TOF_NSAS"};
+                                     
+    public static final String[] TOF_NSCD={"operator","Instrument Type",
+                                                      "TOF_NSCD"};
+                                                     
+    public static final String[] TOF_NPD={"operator","Instrument Type",
+                                                      "TOF_NPD"};
+                                                     
+    public static final String[] TOF_NDGS={"operator","Instrument Type",
+                                                         "TOF_NDGS"};
+                                                        
+    public static final String[] TOF_NGLAD={"operator","Instrument Type",
+                                                        "TOF_NGLAD"};
+   
 
    private static String[] categoryList=null;
 
