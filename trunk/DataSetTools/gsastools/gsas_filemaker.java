@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2001/11/21 19:59:10  pfpeterson
+ *  Fixed bug of array indexing. Added feature where if 0deg monitor has zero counts 180deg monitor is printed in file.
+ *
  *  Revision 1.9  2001/11/20 21:37:06  pfpeterson
  *  Modified GSAS data file format to reflect new found information.
  *
@@ -91,25 +94,33 @@ public class gsas_filemaker
 	    S = S +" ";
 	opw.write( S +"\n");
 	
-	// write the total counts in the upstream (2tth=0) monitor(s)
+	// write the total counts in the monitor(s)
         if ( mon_ds != null )                // allow this to still work without
 	    {                                // a monitor data set specified.
-		//Data mon_1 = mon_ds.getData_entry(0);
-		//Float result =(Float)
-		//    (mon_1.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT));
-
 		float result = 0.0f;
-
-		for( int i=0 ; i<3 ; i++ ){
+		// confirm that there is something in the upstream monitor(s)
+		for( int i=0 ; i<mon_ds.getNum_entries() ; i++ ){
 		    Data mon = mon_ds.getData_entry(i);
-		    //DetectorPosition pos = (DetectorPosition)
-		    //mon.getAttributeList().getAttributeValue(Attribute.DETECTOR_POS);
 		    Float ang = (Float)
 			mon.getAttributeList().getAttributeValue(Attribute.RAW_ANGLE);
 		    if( ang.floatValue() == 0.0f ){
 			Float count = (Float)
 			    mon.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
 			result=result+count.floatValue();
+		    }
+		}
+
+		// if there isn't then use the downstream monitor(s)
+		if( result == 0.0f ){
+		    for( int i=0 ; i<mon_ds.getNum_entries() ; i++ ){
+			Data mon = mon_ds.getData_entry(i);
+			Float ang = (Float)
+			    mon.getAttributeList().getAttributeValue(Attribute.RAW_ANGLE);
+			if( (ang.floatValue() == 180f) || (ang.floatValue()== -180f) ){
+			    Float count = (Float)
+				mon.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
+			    result=result+count.floatValue();
+			}
 		    }
 		}
 
