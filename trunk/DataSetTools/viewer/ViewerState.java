@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2001/06/04 20:04:20  dennis
+ *  Added rebin flag for GraphView.
+ *
  *  Revision 1.6  2001/04/26 14:21:42  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -70,6 +73,7 @@ import  DataSetTools.dataset.*;
 public class ViewerState  implements Serializable
 {
   private String        color_scale;
+  private boolean       rebin;
   private boolean       horizontal_scrolling;
   private float         horizontal_scroll_fraction;
   private int           pointed_at_index;
@@ -87,6 +91,7 @@ public class ViewerState  implements Serializable
     public ViewerState( )
     {
       color_scale                = IndexColorMaker.HEATED_OBJECT_SCALE;
+      rebin                      = false;
       horizontal_scrolling       = false;
       horizontal_scroll_fraction = 0.5f;
       pointed_at_index           = 0;
@@ -120,6 +125,29 @@ public class ViewerState  implements Serializable
    {
      color_scale = scale_name;
    }
+
+
+   /**
+    *  Get the state of the rebin flag.
+    *
+    *  @return  the value of the rebin flag.
+    */
+   public boolean getRebin()
+   {
+     return rebin;
+   }
+
+   /**
+    *  Set the state of the rebin flag.
+    *
+    *  @param  rebin  flag indicating whether or not the data should be 
+    *                 rebinned 
+    */
+   public void setRebin( boolean rebin )
+   {
+     this.rebin = rebin;
+   }
+
 
    /**
     *  Get the state of the horizontal scrolling flag. 
