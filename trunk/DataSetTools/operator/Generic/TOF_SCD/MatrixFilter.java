@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/06/03 15:37:24  bouzekc
+ *  Removed *.matrix from getDescription().
+ *
  *  Revision 1.2  2002/11/27 23:22:20  pfpeterson
  *  standardized header
  *
@@ -76,7 +79,7 @@ public class MatrixFilter extends    FileFilter {
    * Returns a description that will appear in the dialog
    */
   public String getDescription(){
-    return "matrix files (*.mat, *.matrix)";
+    return "matrix files (*.mat)";
   }
 
 }
