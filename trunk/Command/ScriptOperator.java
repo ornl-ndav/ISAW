@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2003/11/22 20:39:29  rmikk
+ * The main program now executes Jython operators as well as Isaw Scripts
+ *
  * Revision 1.29  2003/10/10 01:56:58  bouzekc
  * Removed CTRL-M characters.
  *
@@ -1644,15 +1647,20 @@ public class ScriptOperator  extends  GenericOperator
             System.exit( 0 );
         if( args.length < 1)
             System.exit( 0 );
-        ScriptOperator SO=null;
+        Operator SO=null;
         try{
-          SO = new ScriptOperator( args[ 0 ] );
+          SO = IsawLite.fromScript( args[ 0 ] );
         }catch(InstantiationError e){
           System.out.println("ERROR:"+e.getMessage());
           System.exit(-1);
         }
-        if( SO!=null && SO.getErrorMessage().length() > 0){
-            System.out.println("Error ="+args[0]+"--"+SO.getErrorMessage());
+        if( !(SO instanceof IScriptProcessor)){
+           System.out.println("Impropert type of Script");
+           System.exit(-1);
+        }
+        if( SO!=null && ((IScriptProcessor)SO).getErrorMessage()!= null &&
+                        ((IScriptProcessor)SO).getErrorMessage().length() > 0){
+            System.out.println("Error ="+args[0]+"--"+((IScriptProcessor)SO).getErrorMessage());
             System.exit(-1);
         }
         boolean dialogbox=false;
@@ -1670,10 +1678,10 @@ public class ScriptOperator  extends  GenericOperator
         }
 
         if( SO != null)
-            if( SO.getErrorMessage() != null )
-                if( SO.getErrorMessage().length() > 0)
+            if( ((IScriptProcessor)SO).getErrorMessage() != null )
+                if( ((IScriptProcessor)SO).getErrorMessage().length() > 0)
                     System.out.println("An Error occurred "
-                                       +SO.getErrorMessage());
+                                       +((IScriptProcessor)SO).getErrorMessage());
         if(!dialogbox)System.exit( 0 );
     }
 
