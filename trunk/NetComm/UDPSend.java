@@ -6,6 +6,11 @@
  *               Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2001/03/01 21:01:34  dennis
+ *  Modified to work with jdk1.1.7.  To do this, the remote machine
+ *  address and port number are saved a placed in each UDP packet,
+ *  rather than using the Java 2 connect() method on a socket.
+ *
  *  Revision 1.1  2001/01/30 23:27:53  dennis
  *  Initial version, network communications for ISAW.
  *
@@ -25,7 +30,9 @@ import java.io.*;
 public class UDPSend
 {
   private DatagramSocket sock;
-  
+  private InetAddress    address;        // for jdk 1.1.7, we need to record
+  private int            port;           // address and port and send them
+                                         // with each packet.
   /**
    *  Construct a UPDSend object given the destination host and the port
    *  number to use when data is to be sent.
@@ -38,9 +45,11 @@ public class UDPSend
   public UDPSend( String host, int port ) throws UnknownHostException,
                                                  SocketException
   { 
-    InetAddress address = InetAddress.getByName( host );   
+    address = InetAddress.getByName( host );   
+    this.port = port;
+
     sock = new DatagramSocket();
-    sock.connect( address, port );
+//    sock.connect( address, port );     // Not available in jdk 1.1.7
   }
  
   /**
@@ -59,7 +68,8 @@ public class UDPSend
     DatagramPacket pack = null;
     try
     {
-      pack = new DatagramPacket( data, length );
+//    pack = new DatagramPacket( data, length );                 // java 1.2&1.3
+      pack = new DatagramPacket( data, length, address, port );  // jdk 1.1.7
       sock.send( pack );
     }
     catch ( Exception e )
