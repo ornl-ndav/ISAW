@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2001/08/09 16:44:56  rmikk
+ * Eliminated System.out's in the Showw routines
+ *
  * Revision 1.5  2001/07/26 20:51:19  rmikk
  * Used StringFromBytes Method to fix titles, etc.
  *
@@ -258,11 +261,11 @@ public class NxNodeUtils
 */
 public String ShowwArr( Object X )
   {String Res="["; 
-  System.out.println("in ShowArr"+X.getClass());
+  //System.out.println("in ShowArr"+X.getClass());
 
    if( X instanceof int[]) 
     {int u[] = (int[])X;
-     Res =("int"+u.length+":")+Res;
+     //Res =("int"+u.length+":")+Res;
      for( int i = 0; i < java.lang.Math.min(100, u.length); i++)    
       {Res =Res+u[i];
        if( i<u.length-1)Res = Res+",";
@@ -270,73 +273,73 @@ public String ShowwArr( Object X )
      if( u.length >100)
          Res += (",......");
      
-     System.out.println("int length="+u.length);
+    // System.out.println("int length="+u.length);
      }
    else if( X instanceof short[])
     {short u[] = (short[])X;
-     Res =("short"+u.length+":")+Res;
+     //Res =("short"+u.length+":")+Res;
      for( int i = 0; i <java.lang.Math.min(100, u.length); i++)    
       {Res =Res+u[i];
        if( i<u.length-1)Res = Res+",";
       } 
          if( u.length >100)
            Res += (",......");
-     System.out.println("short length="+u.length);
+     //System.out.println("short length="+u.length);
      }
    else if( X instanceof Object[])
     {Object u[] = (Object[])X;
-     Res =("Object"+u.length+":")+Res;
+     //Res =("Object"+u.length+":")+Res;
      for( int i = 0; i < java.lang.Math.min(100, u.length); i++)        
       {Res =Res+Showw(u[i]);
        if( i<u.length-1)Res = Res+",";
       } 
          if( u.length >100)
           Res += (",......");
-      System.out.println("short length="+u.length);  
+      //System.out.println("short length="+u.length);  
      } 
     else if( X instanceof byte[])
     {byte u[] = (byte[])X;
-     Res=("byte"+u.length+":")+Res;
+     //Res=("byte"+u.length+":")+Res;
      for( int i = 0; i < java.lang.Math.min(100, u.length); i++)     
       {Res =Res+(char)u[i];
        if( i<u.length-1)Res = Res+",";
       }
         if( u.length >100)
           Res += (",......");
-      System.out.println("byte length="+u.length);    
+      //System.out.println("byte length="+u.length);    
      } 
    else if( X instanceof long[]) 
     {long u[] = (long[])X;
-     Res =("long"+u.length+":")+Res;
+     //Res =("long"+u.length+":")+Res;
      for( int i = 0; i < java.lang.Math.min(100, u.length); i++)    
       {Res =Res+u[i];
        if( i<u.length-1)Res = Res+",";
       } 
          if( u.length >100)
             Res+=(",......");
-     System.out.println("long length="+u.length);        
+     //System.out.println("long length="+u.length);        
      }
    else if( X instanceof float[])
     {float u[] = (float[])X;
-     Res= "float"+u.length+":"+Res;
+    // Res= "float"+u.length+":"+Res;
      for( int i = 0; i < java.lang.Math.min(100, u.length); i++)    
       {Res =Res+u[i];
        if( i<u.length-1)Res = Res+",";
       }
        if( u.length >100)
           Res += (",......"); 
-     System.out.println("float length="+u.length);    
+     //System.out.println("float length="+u.length);    
      } 
    else if( X instanceof double[]) 
     {double u[] = (double[])X;
-       Res=("double"+u.length+":")+Res;
+       //Res=("double"+u.length+":")+Res;
      for( int i = 0; i < java.lang.Math.min(100, u.length); i++)    
       {Res =Res+u[i];
        if( i<u.length-1)Res = Res+",";
       } 
         if( u.length >100)
           Res += (",......");
-     System.out.println("double length="+u.length); 
+     //System.out.println("double length="+u.length); 
     }   
    else if( X instanceof Vector )
      {int n=((Vector)X).size();
@@ -346,12 +349,12 @@ public String ShowwArr( Object X )
         } 
        if( n  >=100)
           Res += (",......");
-      System.out.println("Vector length="+ n);  
+      //System.out.println("Vector length="+ n);  
      } 
      
    else
-    {System.out.println("SHnot supported"+X.getClass());
-     return null;
+    {//System.out.println("SHnot supported"+X.getClass());
+     return X.toString();
     }
    return Res+"]";
      
