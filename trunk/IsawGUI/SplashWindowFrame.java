@@ -37,7 +37,7 @@ public class SplashWindowFrame extends JFrame {
 
 
        splashIm = Toolkit.getDefaultToolkit(
-           ).getImage(ipath+"Images/Isaw.gif");
+           ).getImage(ipath+"images/Isaw.gif");
        mt.addImage(splashIm,0);
        try {
           mt.waitForID(0);
