@@ -2,6 +2,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.12  2001/08/02 19:45:20  neffk
+ * fixed delete operation for Data objects.  also changed some string
+ * comparisons to use .equals() instead of the == operator.
+ *
  * Revision 1.11  2001/07/31 19:55:01  neffk
  * made significant improvements, including a better way to add data
  * into the tree as Experiments or modified data.  added many new
@@ -493,15 +497,18 @@ public class JDataTree
 
     else if( node instanceof DataMutableTreeNode )
     {
-//      getMyModel().removeNodeFromParent( node );
-      getMyModel().extinguishNode( node );
 
       DataMutableTreeNode data_node = (DataMutableTreeNode)node;
       int group_id = data_node.getUserObject().getGroup_ID();
 
       DataSetMutableTreeNode dataset_node = (DataSetMutableTreeNode)data_node.getParent();
       ds = (DataSet)dataset_node.getUserObject();
-      ds.removeData_entry_with_id( group_id );
+//      ds.removeData_entry_with_id( group_id );
+
+                 //remove node from the tree 
+                 //and free up the memory
+      getMyModel().removeNodeFromParent( node );
+      getMyModel().extinguishNode( node );
 
                  //if we deleted a Data object
                  //we might have to notify it's 
@@ -609,6 +616,8 @@ public class JDataTree
 
     if( observed instanceof DataSet  &&  reason instanceof String )
     {
+      String reason_str = (String)reason;
+
       DataSet ds = (DataSet)observed;
 
                        //if update has been called from this object
@@ -617,13 +626,12 @@ public class JDataTree
       if( ds_node == null )
         return;
 
-      if( (String)reason == DESTROY )
+      if( reason_str.equals(DESTROY) )
       {
-        System.out.println(  "deleting: " + ( (DataSet)observed ).toString()  );
         deleteNode(  observed, true  );
       }
 
-      else if( (String)reason == DATA_REORDERED )
+      else if( reason_str.equals(DATA_REORDERED) )
       {
                                        //force tree to update its leaves
                                        //to reflect the reordered Data 
@@ -632,7 +640,7 @@ public class JDataTree
       }
 
 
-      else if ( (String)reason == DATA_DELETED )
+      else if ( reason_str.equals(DATA_DELETED) )
       {
         if(  ds_node != null  )  //karma++
         {
@@ -641,12 +649,12 @@ public class JDataTree
         }
       }
 
-      else if ( (String)reason == SELECTION_CHANGED )
+      else if ( reason_str.equals(SELECTION_CHANGED) )
       {
         //TODO: figure out what to do for this IObserver message
       }
 
-      else if ( (String)reason == POINTED_AT_CHANGED )
+      else if ( reason_str.equals(POINTED_AT_CHANGED) )
       {
       }
 
