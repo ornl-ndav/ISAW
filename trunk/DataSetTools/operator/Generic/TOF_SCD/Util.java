@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/04/21 14:15:02  pfpeterson
+ * Changed detector_angle, and detector_distance to look at the attributes
+ * of one of the spectra rather than the DataSet.
+ *
  * Revision 1.7  2003/04/09 16:21:26  pfpeterson
  * Moved the code to write a matrix file here from BlindJ.
  *
@@ -79,11 +83,9 @@ public class Util{
    */
   static public float detector_angle(DataSet ds){
     Data data=ds.getData_entry(0); 
-
-    Object attr_val=ds.getAttributeValue(Attribute.DETECTOR_CEN_ANGLE);
-    if(attr_val!=null && attr_val instanceof Float){
+    Object attr_val=data.getAttributeValue(Attribute.DETECTOR_CEN_ANGLE);
+    if(attr_val!=null && attr_val instanceof Float)
       return ((Float)attr_val).floatValue();
-    }
 
     PixelInfoListAttribute pil_attr =
           (PixelInfoListAttribute)data.getAttribute(Attribute.PIXEL_INFO_LIST);
@@ -126,10 +128,9 @@ public class Util{
     PixelInfoListAttribute pil_attr;
     Data data=ds.getData_entry(0);
    
-    Object attr_val=ds.getAttributeValue(Attribute.DETECTOR_CEN_DISTANCE);
-    if(attr_val!=null && attr_val instanceof Float){
+    Object attr_val=data.getAttributeValue(Attribute.DETECTOR_CEN_DISTANCE);
+    if(attr_val!=null && attr_val instanceof Float)
       return ((Float)attr_val).floatValue();
-    }
 
     pil_attr =
           (PixelInfoListAttribute)data.getAttribute(Attribute.PIXEL_INFO_LIST);
