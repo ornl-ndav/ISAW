@@ -29,6 +29,10 @@
  *
  *
  * $Log$
+ * Revision 1.14  2003/07/02 16:00:30  bouzekc
+ * Fixed javadoc error, added constructor for creating an
+ * OperatorForm with a given title.
+ *
  * Revision 1.13  2003/07/02 15:37:38  bouzekc
  * No longer implements Serializable.
  *
@@ -81,13 +85,23 @@ public class OperatorForm extends Form implements HiddenOperator {
   private int[] constIndices;
 
   /**
+   *  Construct an OperatorForm with the title "Operator Form".
+   *
+   */
+  public OperatorForm(  ) {
+    super( "Operator Form" );
+    this.result_param = null;
+    this.setDefaultParameters(  );
+  }
+
+  /**
    *  Construct an OperatorForm with the given title.
    *
    *  @param  title           The title to show on this form
    *
    */
-  public OperatorForm(  ) {
-    super( "Operator Form" );
+  public OperatorForm( String title ) {
+    super( title );
     this.result_param = null;
     this.setDefaultParameters(  );
   }
