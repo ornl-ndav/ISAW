@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/05/10 20:42:24  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.7  2004/03/15 19:33:58  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -126,7 +132,7 @@ public class SimpleBuildDataSetDemo
 
                                                         // create a viewer for
                                                         // the DataSet 
-    ViewManager view_manager = new ViewManager( test_ds, IViewManager.IMAGE );
+    new ViewManager( test_ds, IViewManager.IMAGE );
   } 
 
 }

@@ -29,6 +29,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2004/05/10 20:42:28  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.1  2004/05/07 17:56:59  dennis
  * Moved operators that extend GenericSpecial from Operators
  * to Operators/Special
@@ -342,8 +348,8 @@ public class Crunch extends GenericSpecial
 	Object obj = op.getResult();
 	if(obj instanceof DataSet ){
 	    DataSet new_ds=(DataSet)obj;
-	    ViewManager vm1 = new ViewManager(     ds, IViewManager.IMAGE );
-	    ViewManager vm2 = new ViewManager( new_ds, IViewManager.IMAGE );
+	    new ViewManager(     ds, IViewManager.IMAGE );
+	    new ViewManager( new_ds, IViewManager.IMAGE );
 	}else{
 	    System.out.println( "Operator returned: " + obj );
 	}

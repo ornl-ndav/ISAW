@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2004/05/10 20:42:30  dennis
+ *  Test program now just instantiates a ViewManager to diplay
+ *  calculated DataSet, rather than keeping a reference to it.
+ *  This removes an Eclipse warning about a local variable that is
+ *  not read.
+ *
  *  Revision 1.14  2004/03/19 17:10:54  dennis
  *  Removed unused variables
  *
@@ -351,9 +357,7 @@ public class FrequencyDistributionFunction
     {
       System.out.println("DSDODE returned:" + ddif_ds );
       if ( ddif_ds instanceof DataSet )
-      {
-        ViewManager vm1 = new ViewManager((DataSet)ddif_ds,IViewManager.IMAGE);
-      }
+        new ViewManager((DataSet)ddif_ds,IViewManager.IMAGE);
     }
 
    op = new ScatteringFunction( (DataSet)ddif_ds, 1, true );
@@ -364,9 +368,7 @@ public class FrequencyDistributionFunction
     {
       System.out.println("SCAT returned:" + scat_ds );
       if ( scat_ds instanceof DataSet )
-      {
-        ViewManager vm3 = new ViewManager((DataSet)scat_ds,IViewManager.IMAGE);
-      }
+        new ViewManager((DataSet)scat_ds,IViewManager.IMAGE);
     }
     
    op = new FrequencyDistributionFunction( (DataSet)scat_ds, true );
@@ -377,10 +379,7 @@ public class FrequencyDistributionFunction
     {
       System.out.println("FFUN returned:" + freq_dis_ds );
       if ( freq_dis_ds instanceof DataSet )
-      {
-        ViewManager vm4 = 
-                    new ViewManager((DataSet)freq_dis_ds,IViewManager.IMAGE);
-      }
+        new ViewManager((DataSet)freq_dis_ds,IViewManager.IMAGE);
     }
     
    System.out.println("Documentation: " + op.getDocumentation()); 

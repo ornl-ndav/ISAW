@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/05/10 20:42:23  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.6  2004/03/15 06:10:53  dennis
  * Removed unused import statements.
  *
@@ -93,7 +99,6 @@ public class ProcessGLAD
     String   calibration_run = "/IPNShome/dennis/ARGONNE_DATA/GLAD4701.RUN";
 
     RunfileRetriever rr; 
-    ViewManager view_manager; 
 
     // Load the empty can run and monitors...................................
     rr = new RunfileRetriever( calibration_run ); 
@@ -158,11 +163,11 @@ public class ProcessGLAD
                           true, 
                           false );
     op.getResult();
-    view_manager = new ViewManager( processed_ds, IViewManager.IMAGE );
+    new ViewManager( processed_ds, IViewManager.IMAGE );
 
     op = new DiffractometerTofToQ( processed_ds, 0, 30, 1000 );
     Q_ds = (DataSet)op.getResult();
-    view_manager = new ViewManager( Q_ds, IViewManager.IMAGE );
+    new ViewManager( Q_ds, IViewManager.IMAGE );
 
     System.out.println();
     System.out.println("=================================================");

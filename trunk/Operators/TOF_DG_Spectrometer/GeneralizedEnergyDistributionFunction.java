@@ -31,6 +31,12 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.10  2004/05/10 20:42:30  dennis
+ *  Test program now just instantiates a ViewManager to diplay
+ *  calculated DataSet, rather than keeping a reference to it.
+ *  This removes an Eclipse warning about a local variable that is
+ *  not read.
+ *
  *  Revision 1.9  2004/03/15 19:36:54  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -408,9 +414,7 @@ public class GeneralizedEnergyDistributionFunction
     {
       System.out.println("DSDODE returned:" + ddif_ds );
       if ( ddif_ds instanceof DataSet )
-      {
-        ViewManager vm1 = new ViewManager((DataSet)ddif_ds,IViewManager.IMAGE);
-      }
+        new ViewManager((DataSet)ddif_ds,IViewManager.IMAGE);
     }
 
    op = new ScatteringFunction( (DataSet)ddif_ds, 1, true );
@@ -421,9 +425,7 @@ public class GeneralizedEnergyDistributionFunction
     {
       System.out.println("SCAT returned:" + scat_ds );
       if ( scat_ds instanceof DataSet )
-      {
-        ViewManager vm3 = new ViewManager((DataSet)scat_ds,IViewManager.IMAGE);
-      }
+        new ViewManager((DataSet)scat_ds,IViewManager.IMAGE);
     }
     
    //ignoring Debye-Waller effects for test, so enter 1.0 for DW parameter
@@ -437,9 +439,7 @@ public class GeneralizedEnergyDistributionFunction
     {
       System.out.println("GFUN returned:" + gen_dis_ds );
       if ( gen_dis_ds instanceof DataSet )
-      {
-        ViewManager vm4 = new ViewManager((DataSet)gen_dis_ds,IViewManager.IMAGE);
-      }
+        new ViewManager((DataSet)gen_dis_ds,IViewManager.IMAGE);
     }
     
     System.out.println("Documentation: " + op.getDocumentation());

@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2004/05/10 20:42:20  dennis
+ *  Test program now just instantiates a ViewManager to diplay
+ *  calculated DataSet, rather than keeping a reference to it.
+ *  This removes an Eclipse warning about a local variable that is
+ *  not read.
+ *
  *  Revision 1.9  2004/03/15 06:10:37  dennis
  *  Removed unused import statements.
  *
@@ -236,7 +242,7 @@ public class FunctionModel extends    ModeledData
       ds.addData_entry( gaussian_data );
     }
 
-    ViewManager vm = new ViewManager( ds, IViewManager.IMAGE );
+    new ViewManager( ds, IViewManager.IMAGE );
   }
 
 }

@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/05/10 20:42:22  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.7  2004/03/15 06:10:52  dennis
  * Removed unused import statements.
  *
@@ -104,35 +110,32 @@ public class DataSetDemo1
     RunfileRetriever rr;    // The RunfileRetriever object calls John's runfile
                             // package and returns the data as DataSets
 
-    ViewManager view_manager;  // Variable to hold reference to a ViewManager
-                               // that will display a DataSet
-
                                            // Load and show run A monitors &
     rr = new RunfileRetriever( run_A );    // histograms
     A_monitor_ds = rr.getDataSet( 0 );
-    view_manager = new ViewManager( A_monitor_ds, IViewManager.SCROLLED_GRAPHS);
+    new ViewManager( A_monitor_ds, IViewManager.SCROLLED_GRAPHS);
 
     A_histogram_ds = rr.getDataSet( 1 );
-    view_manager = new ViewManager( A_histogram_ds, IViewManager.IMAGE );
+    new ViewManager( A_histogram_ds, IViewManager.IMAGE );
 
                                             // Load and show run B monitors &
     rr = new RunfileRetriever( run_B );     // histograms
     B_monitor_ds = rr.getDataSet( 0 );
-    view_manager = new ViewManager( B_monitor_ds, IViewManager.SCROLLED_GRAPHS);
+    new ViewManager( B_monitor_ds, IViewManager.SCROLLED_GRAPHS);
 
     B_histogram_ds = rr.getDataSet( 1 );
-    view_manager = new ViewManager( B_histogram_ds, IViewManager.IMAGE );
+    new ViewManager( B_histogram_ds, IViewManager.IMAGE );
 
                                             // add the monitors together
     DataSetOperator adder;                  // and show the results
     adder = new DataSetAdd( A_monitor_ds, B_monitor_ds, true );
     monitor_ds = (DataSet)adder.getResult();
-    view_manager = new ViewManager( monitor_ds, IViewManager.SCROLLED_GRAPHS);
+    new ViewManager( monitor_ds, IViewManager.SCROLLED_GRAPHS);
 
                                             // add the histograms together
                                             // and show the results
     adder = new DataSetAdd( A_histogram_ds, B_histogram_ds, true );
     histogram_ds = (DataSet)adder.getResult();
-    view_manager = new ViewManager( histogram_ds, IViewManager.IMAGE );
+    new ViewManager( histogram_ds, IViewManager.IMAGE );
   } 
 } 

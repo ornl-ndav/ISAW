@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/05/10 20:42:23  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.5  2004/03/15 06:10:52  dennis
  * Removed unused import statements.
  *
@@ -68,15 +74,13 @@ public static void main(String args[])
   rr = new RunfileRetriever( run_A ); 
   A_histogram_ds = rr.getDataSet( 1 );
   rr = null;
-
-  ViewManager view_manager_A = null;  
-  view_manager_A = new ViewManager( A_histogram_ds, IViewManager.IMAGE );
+ 
+  new ViewManager( A_histogram_ds, IViewManager.IMAGE );
 
   DataSet_IO.SaveDataSet( A_histogram_ds, "serialized_data.bin" );
   B_histogram_ds = DataSet_IO.LoadDataSet( "serialized_data.bin" );
 
-  ViewManager view_manager_B = null;
-  view_manager_B = new ViewManager( B_histogram_ds, IViewManager.IMAGE );
+  new ViewManager( B_histogram_ds, IViewManager.IMAGE );
   }
 
 } 

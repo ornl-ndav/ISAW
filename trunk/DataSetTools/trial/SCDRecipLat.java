@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2004/05/10 20:42:24  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.17  2004/05/03 16:27:55  dennis
  * Removed one unused local variable.
  *
@@ -885,7 +891,7 @@ public class SCDRecipLat
 
     System.out.println("Projecting points on test plane 4......");
     DataSet ds = ProjectPoints( test_plane4, all_vectors );
-    ViewManager vm = new ViewManager( ds, IViewManager.IMAGE ); 
+    new ViewManager( ds, IViewManager.IMAGE ); 
     System.out.println("Done Projecting points on test plane 4.");
 
 //    ds = ProjectPointsRandomly( all_vectors );
@@ -894,11 +900,11 @@ public class SCDRecipLat
     ds.addIObserver( new FFTListener() );
 
     System.out.println("Done Projecting points uniformly.");
-    vm = new ViewManager( ds, IViewManager.IMAGE ); 
+    new ViewManager( ds, IViewManager.IMAGE ); 
 
     ds = FFT( ds );
     ds.addIObserver( new FFTListener() );
-    vm = new ViewManager( ds, IViewManager.IMAGE ); 
+    new ViewManager( ds, IViewManager.IMAGE ); 
                                                 // calculate new origin and
                                                 // basis vectors for the plane
     float old_c = origin.dot( n );

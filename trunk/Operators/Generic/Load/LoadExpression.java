@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/05/10 20:42:28  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.9  2004/04/26 13:37:50  rmikk
  * Added the standard operators to the resultant data set
  *
@@ -332,9 +338,7 @@ public class LoadExpression extends GenericLoad
                                                  // if the operator produced a
                                                  // a DataSet, pop up a viewer
     if ( obj instanceof DataSet )
-    {
-      ViewManager vm = new ViewManager( (DataSet)obj, IViewManager.IMAGE );
-    }
+      new ViewManager( (DataSet)obj, IViewManager.IMAGE );
 
     System.out.println("Test of LoadExpression done.");
   }

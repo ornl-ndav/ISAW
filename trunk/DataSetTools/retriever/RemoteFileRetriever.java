@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/05/10 20:42:22  dennis
+ *  Test program now just instantiates a ViewManager to diplay
+ *  calculated DataSet, rather than keeping a reference to it.
+ *  This removes an Eclipse warning about a local variable that is
+ *  not read.
+ *
  *  Revision 1.7  2004/03/15 06:10:52  dennis
  *  Removed unused import statements.
  *
@@ -208,7 +214,7 @@ public class RemoteFileRetriever extends    RemoteDataRetriever
     if ( monitor_ds != null )
     {
       System.out.println("Got DataSet " + monitor_ds );
-      ViewManager monitor_vm = new ViewManager( monitor_ds, IViewManager.IMAGE);
+      new ViewManager( monitor_ds, IViewManager.IMAGE);
     }
     else
       System.out.println("ERROR: no monitor data set");
@@ -217,7 +223,7 @@ public class RemoteFileRetriever extends    RemoteDataRetriever
     if ( hist_ds != null )
     {
       System.out.println("Got DataSet " + hist_ds );
-      ViewManager hist_vm = new ViewManager( hist_ds, IViewManager.IMAGE );
+      new ViewManager( hist_ds, IViewManager.IMAGE );
     }
     else
       System.out.println("ERROR: no histogram data set");
@@ -226,7 +232,7 @@ public class RemoteFileRetriever extends    RemoteDataRetriever
     if ( monitor_ds != null )
     {
       System.out.println("Got DataSet " + monitor_ds );
-      ViewManager monitor_vm = new ViewManager( monitor_ds, IViewManager.IMAGE);
+      new ViewManager( monitor_ds, IViewManager.IMAGE);
     }
     else
       System.out.println("ERROR: no monitor data set");

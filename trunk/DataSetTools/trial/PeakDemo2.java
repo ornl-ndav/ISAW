@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/05/10 20:42:23  dennis
+ * Test program now just instantiates a ViewManager to diplay
+ * calculated DataSet, rather than keeping a reference to it.
+ * This removes an Eclipse warning about a local variable that is
+ * not read.
+ *
  * Revision 1.7  2004/03/19 17:19:50  dennis
  * Removed unused variable(s)
  *
@@ -78,9 +84,6 @@ public class PeakDemo2
     RunfileRetriever rr;    // The RunfileRetriever object calls John's runfile
                             // package and returns the data as DataSets
 
-    ViewManager view_manager;  // Variable to hold reference to a ViewManager
-                               // that will display a DataSet
-
                                            // Load and run A monitors  
     rr = new RunfileRetriever( run_A ); 
     A_monitor_ds = rr.getDataSet( 0 );
@@ -119,6 +122,6 @@ public class PeakDemo2
                         peak.Area(peak.getPosition() - 1.5f * peak.getFWHM(),
                                   peak.getPosition() + 1.5f * peak.getFWHM()) );
     }
-    view_manager = new ViewManager( A_monitor_ds, IViewManager.IMAGE );
+    new ViewManager( A_monitor_ds, IViewManager.IMAGE );
   }
 } 
