@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/06/11 14:56:17  pfpeterson
+ * Small updates to documentation.
+ *
  * Revision 1.2  2002/06/06 16:15:44  pfpeterson
  * Now use new parameters.
  *
@@ -80,7 +83,6 @@ import DataSetTools.components.ParametersGUI.*;
  *  needed, the MakeGUI() method can also be overridden in sub classes. 
  *
  *  @see Wizard
- *  @see WizardParameter
  *  @see Wizard.MathWizard 
  *  @see Wizard.AdderExampleForm
  */
