@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/06/30 22:26:33  bouzekc
+ * Fixed comment to reflect change in ArrayEntryJPanel.
+ *
  * Revision 1.13  2003/06/24 20:23:11  bouzekc
  * Cleaned up import statements.
  *
@@ -387,7 +390,7 @@ public abstract class VectorPG extends ParameterGUI
   }
 
   /**
-   *  Triggered when the "OK" button in the ArrayEntryJPanel is clicked.
+   *  Triggered when the "Done" button in the ArrayEntryJPanel is clicked.
    */
   public void propertyChange( PropertyChangeEvent evt ) {
     value = ( GUI.getValues(  ) );
