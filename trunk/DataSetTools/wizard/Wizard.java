@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2003/06/12 21:20:17  bouzekc
+ * Fixed bug where save() would crash if a null value was
+ * used.  Updated convertXMLtoParameters to be smarter -
+ * it now knows about tags and can set validity of
+ * parameters based on several types and factors.
+ *
  * Revision 1.25  2003/06/10 21:53:43  bouzekc
  * Modified populateViewMenu to show LoadFilePGs and
  * SaveFilePGs rather than BrowseFilePGs (no sense showing
@@ -351,6 +357,7 @@ public abstract class Wizard implements PropertyChangeListener{
       StringBuffer s = new StringBuffer();
       Form f;
       String temp;
+      Object obj;
       IParameterGUI ipg;
       FileWriter fw = null;
 
@@ -374,15 +381,23 @@ public abstract class Wizard implements PropertyChangeListener{
             s.append(ipg.getName());
             s.append("</Name>\n");
             s.append("<Value>");
-            temp = ipg.getValue().toString();
-            if((temp == null) || (temp.equals("")))
+            
+            if(ipg != null)  //parameter is not null
+              obj = ipg.getValue();
+            else //parameter is null, so set value to null
+              obj = null;
+                            
+            if((obj == null) || ( obj.toString().length() <= 0 ))
               s.append("emptyString");
             else
             {
-              s.append(temp);
+              s.append(obj.toString());
               s.append("");
             }
             s.append("</Value>\n");
+            s.append("<Valid>");
+            s.append(ipg.getValid());
+            s.append("</Valid>\n");
             s.append("</");
             s.append(ipg.getType());
             s.append(">\n");
@@ -477,59 +492,110 @@ public abstract class Wizard implements PropertyChangeListener{
      *  @param s The StringBuffer that holds the parameter
      *           information.
      */
-    private void convertXMLtoParameters(StringBuffer s)
+    private void convertXMLtoParameters(StringBuffer s) throws IOException
     {
-      String x = s.toString(), token_string;
-      StringBuffer f = new StringBuffer(), temp = new StringBuffer();
+      final String NAMESTART = "<Name>";
+      final String NAMEEND = "</Name>";
+      final String VALUESTART = "<Value>";
+      final String VALUEEND = "</Value>";
+      final String VALIDSTART = "<Valid>";
+      final String VALIDEND = "</Valid>";
+    
+      String xml, token_string, paramName, paramValue, paramValidity, typeEnd;
+      StringBuffer temp = new StringBuffer();
       StringTokenizer st;
-      int rightbracket, leftbracket, index, num_params;
+      int formNum, equalsIndex, nameStartInd, nameEndInd, valueStartInd, 
+          valueEndInd, validStartInd, validEndInd, typeEndInd;
       Form cur_form;
-      IParameterGUI ipg;
+      IParameterGUI curParam;
 
-      //trim up the newline characters
-      st = new StringTokenizer(x, "\n");
+      xml = s.toString();
+
+      //remove the newline characters
+      st = new StringTokenizer(xml, "\n");
       while(st.hasMoreTokens())
         temp.append(st.nextToken());
-      x = temp.toString();
-
-      //trim the string to remove all <> stuff
-      rightbracket = x.indexOf('>');
-      leftbracket = x.indexOf('<');
-
-      while( (rightbracket >= 0) && (leftbracket >=0) )
+      xml = temp.toString();
+      
+      //start going through the Forms
+      for(int i = 0; i < forms.size(); i++)
       {
-        if(leftbracket >= 1)
-        {
-          //found something useful.  Keep it.
-          f.append((x.substring(0, leftbracket)).trim());
-          f.append(";");
-        }
+        cur_form = this.getForm(i);
 
-        x = x.substring(rightbracket + 1, x.length());
-        rightbracket = x.indexOf('>');
-        leftbracket = x.indexOf('<');
-      }
-      x = f.toString();
-      st = new StringTokenizer(x, ";");
-
-      for( int j = 0; j < this.getNumForms(); j ++)
-      {
-        index = 0;
-        cur_form = this.getForm(j);
-        num_params = cur_form.getNum_parameters();
-        while((index < num_params) && (st.hasMoreTokens()))
+        //start the parameter parsing for the Form
+        for(int j = 0; j < cur_form.getNum_parameters(); j++)
         {
-          ipg = (IParameterGUI)(cur_form.getParameter(index));
-          if(ipg.getName().equals(st.nextToken()));
-          {
-            token_string = st.nextToken();
-            //catch the case where user entered no value
-            if(!token_string.equals("emptyString"))
-              if(!(ipg instanceof ArrayPG))  //don't enter a value for ArrayPGs
-                ipg.setValue(token_string);
+          //get the parameter
+          curParam = (IParameterGUI)(cur_form.getParameter(j));
+
+          //get the parameter name from the file
+          nameStartInd = xml.indexOf(NAMESTART);
+          nameEndInd = xml.indexOf(NAMEEND);
+          paramName = xml.substring(nameStartInd + NAMESTART.length(),
+                                    nameEndInd);
+          //System.out.println(paramName);
+
+          //compare it to the Form parameter name
+          if(!(curParam.getName().equals(paramName)))
+            throw new IOException("Parameter " + 
+                                  paramName + 
+                                  " does not match Form parameter " +
+                                  curParam.getName());
+      
+          //get the parameter value from the file
+          valueStartInd = xml.indexOf(VALUESTART);
+          valueEndInd = xml.indexOf(VALUEEND);
+          paramValue = xml.substring(valueStartInd + VALUESTART.length(),
+                                    valueEndInd);
+          curParam.setValue(paramValue);
+          //System.out.println(paramValue);
+
+          //get/set the parameter validity
+          if(curParam instanceof DataSetPG)
+            curParam.setValid(false);  //DataSets not valid
+          else if((curParam instanceof BrowsePG))
+          { 
+            if(new File(curParam.getValue().toString()).exists())
+              curParam.setValid(true);
+            else
+              curParam.setValid(false);
           }
-          index++;
+          else if((curParam instanceof ArrayPG) || 
+                  (curParam instanceof VectorPG) )
+          {
+            Vector v = (Vector)(curParam.getValue());
+            //set the parameter valid initially.  If we check the elements, and
+            //any one of them fails our valid file test, we will invalidate the
+            //parameter.
+            curParam.setValid(true);
+            for(int k = 0; k < v.size(); k++)
+              if( !(new File( v.elementAt(k).toString() ).exists()) )
+              {
+                curParam.setValid(false);
+                break;
+              }
+          }
+
+          else //some other form of simple PG that we can easily validate
+          {
+            validStartInd = xml.indexOf(VALIDSTART);
+            validEndInd = xml.indexOf(VALIDEND);
+            paramValidity = xml.substring(validStartInd + VALIDSTART.length(),
+                                        validEndInd);
+            curParam.setValid(new Boolean(paramValidity).booleanValue());
+            //System.out.println(paramValidity);
+          }
+
+          //find the index of the ending for the parameter, e.g. </DataDir>
+          typeEnd = "</" + ((IParameterGUI)curParam).getType() + ">";
+          //System.out.println(typeEnd);
+          typeEndInd = xml.indexOf(typeEnd);
+          xml = xml.substring(typeEndInd + typeEnd.length(),
+                              xml.length());
+          //System.out.println(xml);
+
         }
+        //end the Parameter parsing for the Form
       }
     }
 
