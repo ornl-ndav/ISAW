@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.52  2003/06/26 13:55:18  bouzekc
+ * Removed unused local variables.
+ *
  * Revision 1.51  2003/06/18 18:17:26  pfpeterson
  * Removed dead code and implemented PropertyChanger.
  *
@@ -423,7 +426,6 @@ public class ScriptProcessor  extends ScriptProcessorOperator
 
       if( S !=  null ){
         int i ; 
-        char c ; 
         for( i = S.length() - 1 ;  i >=  0  ;  i-- ){
           if( S.charAt( i ) <=  ' ' )S = S.substring( 0 , i ) ; 
           else i = -1 ; 
@@ -489,7 +491,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   private int executeForBlock( Script script , int start , boolean execute, 
                                int onerror ){
     String var; 
-    int i, j, k, n; 
+    int i, j, n; 
     int line;  
     String S; 
     Vector V;
@@ -589,8 +591,6 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   }
 
   private int executeErrorBlock( Script script, int start, boolean execute ){
-    String var;      
-    int i, j, k; 
     int line; 
     String S; 
     int mode; 
@@ -1146,11 +1146,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    * keeping track of line numbers.
    */
   private static String getLine( Document Doc, int start, boolean Continued ){
-    String var;
-    int i, j, k;
-    int line;
     String S;
-    boolean mode;
     Element  E, F;
        
     if( Doc == null ) 
@@ -1437,7 +1433,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
           S = S + getParameter( i ).getValue().toString();            
         ExecLine.resetError() ;
                 
-        int j = ExecLine.execute ( S , 0 , S.length());
+        /*int j = */ExecLine.execute ( S , 0 , S.length());
         perror =ExecLine.getErrorCharPos() ;
                 
         if( perror >= 0 )
