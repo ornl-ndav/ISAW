@@ -213,13 +213,9 @@ public class FindMultiplePeaksForm extends Form
         runsArray = IntList.ToArray(obj.toString());
         param.setValid(true);
     }
-    else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
-         "ERROR: you must enter one or more valid run numbers.\n");
-       return new Boolean(false);
-    }
+   else
+     return errorOut(param,
+       "ERROR: you must enter one or more valid run numbers.\n");
 
     //get experiment name
     param = (IParameterGUI)super.getParameter( 3 );
@@ -230,12 +226,8 @@ public class FindMultiplePeaksForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
+      return errorOut(param,
          "ERROR: you must enter a valid experiment name.\n");
-       return new Boolean(false);
-    }
 
     //get maximum number of peaks to find
     param = (IParameterGUI)super.getParameter( 4 );
@@ -246,12 +238,8 @@ public class FindMultiplePeaksForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
+      return errorOut(param,
          "ERROR: you must enter a valid number of peaks.\n");
-       return new Boolean(false);
-    }
 
     //get minimum intensity of peaks
     param = (IParameterGUI)super.getParameter( 5 );
@@ -262,12 +250,8 @@ public class FindMultiplePeaksForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
+      return errorOut(param,
          "ERROR: you must enter a valid minimum peak intensity.\n");
-       return new Boolean(false);
-    }
 
     //get append to file value
     param = (IParameterGUI)super.getParameter( 6 );
@@ -284,12 +268,8 @@ public class FindMultiplePeaksForm extends Form
         param.setValid(true);
     }
     else
-    {
-       param.setValid(false);
-       SharedData.addmsg(
+      return errorOut(param,
          "ERROR: you must enter a valid calibration file name.\n");
-       return new Boolean(false);
-    }
 
     first = true;
     //the name for the saved file
@@ -306,8 +286,7 @@ public class FindMultiplePeaksForm extends Form
 
       loadName = rawDir + SCDName + runNum + ".RUN";
 
-      /*get the histogram from runfile retriever.
-      histNum = some RunfileRetriever thing;*/
+      /*get the histogram.  We want to retrieve the first one.*/
       histNum = 1;
       
       /*If you want to be able to use a group mask,
@@ -319,10 +298,7 @@ public class FindMultiplePeaksForm extends Form
       if(obj instanceof DataSet)
         histDS = (DataSet)obj;
       else
-      {
-        SharedData.addmsg(obj.toString());
-        return new Boolean(false);
-      }
+        return errorOut("LoadOneHistogramDS failed: " + obj.toString());
 
       obj = new LoadMonitorDS(loadName).getResult();
 
@@ -330,10 +306,7 @@ public class FindMultiplePeaksForm extends Form
       if(obj instanceof DataSet)
         monDS = (DataSet)obj;
       else
-      {
-        SharedData.addmsg(obj.toString());
-        return new Boolean(false);
-      }
+        return errorOut("LoadMonitorDS failed: " + obj.toString());
 
       SharedData.addmsg("Finding peaks for ");
       SharedData.addmsg(histDS.toString());
@@ -344,18 +317,12 @@ public class FindMultiplePeaksForm extends Form
       if(obj instanceof Float)
         monCount = (Float)obj;
       else
-      {
-        SharedData.addmsg("IntegrateGroup failed:\n" + obj.toString());
-        return new Boolean(false);
-      }
+        return errorOut("IntegrateGroup failed: " + obj.toString());
 
       //load calibration data 
       obj = new LoadSCDCalib(histDS, calibFile , 1 ,"").getResult();
       if(obj instanceof ErrorString)
-      {
-        SharedData.addmsg(obj.toString());
-        return new Boolean(false);
-      }
+        return errorOut("LoadSCDCalib failed: " + obj.toString());
 
       // find peaks
       obj = new FindPeaks(histDS, monCount.floatValue(), maxPeaks, 
@@ -364,10 +331,7 @@ public class FindMultiplePeaksForm extends Form
       if(obj instanceof Vector)
         peaksVec = (Vector)obj;
       else
-      {
-        SharedData.addmsg("FindPeaks failed:\n" + obj.toString());
-        return new Boolean(false);
-      }
+        return errorOut("FindPeaks failed: " + obj.toString());
 
       //"centroid" (find the center) the peaks
       obj = new CentroidPeaks(histDS, peaksVec).getResult();
@@ -375,19 +339,13 @@ public class FindMultiplePeaksForm extends Form
       if(obj instanceof Vector)
         peaksVec = (Vector)obj;
       else
-      {
-        SharedData.addmsg("CentroidPeaks failed:\n" + obj.toString());
-        return new Boolean(false);
-      }
+        return errorOut("CentroidPeaks failed: " + obj.toString());
 
       // write out the results to the .peaks file
       obj = new WritePeaks(saveName, peaksVec, 
                      new Boolean(appendToFile)).getResult();
       if(obj instanceof ErrorString)
-      {
-        SharedData.addmsg("WritePeaks failed:\n" + obj.toString());
-        return new Boolean(false);
-      }
+        return errorOut("WritePeaks failed: " + obj.toString());
 
 
       //write the SCD experiment file
@@ -395,10 +353,7 @@ public class FindMultiplePeaksForm extends Form
                    appendToFile).getResult();
 
       if(obj instanceof ErrorString)
-      {
-        SharedData.addmsg("WriteExp failed:\n" + obj.toString());
-        return new Boolean(false);
-      }
+        return errorOut("WriteExp failed: " + obj.toString());
                    
       if( first )
       {
