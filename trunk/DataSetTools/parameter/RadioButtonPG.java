@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/08/22 20:31:39  bouzekc
+ *  Modified to work with EntryWidget.
+ *
  *  Revision 1.12  2003/08/15 23:50:05  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -105,8 +108,7 @@ import javax.swing.*;
  * choice) parameters.  It contains an inner Vector of JRadioButtons, as well
  * as a logical ButtonGroup to link them together.
  */
-public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
-  ActionListener, PropertyChanger {
+public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
   //~ Static fields/initializers ***********************************************
 
   private static final String TYPE = "RadioButton";
@@ -119,7 +121,6 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
   private Vector radioChoices;
   private Vector extListeners      = null;
   private ButtonGroup radioGroup;
-  private PropertyChangeSupport pcs;
 
   //~ Constructors *************************************************************
 
@@ -148,7 +149,6 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     this.type                 = TYPE;
     this.initialized          = false;
     this.ignore_prop_change   = false;
-    pcs                       = new PropertyChangeSupport( this );
   }
 
   /**
@@ -179,8 +179,12 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
   public void setEnabled( boolean enableMe ) {
     enabled = enableMe;
 
-    if( getEntryWidget(  ) != null ) {
+    if( ( getEntryWidget(  ) != null ) && ( radioButtons != null ) ) {
       entrywidget.setEnabled( enabled );
+
+      for( int i = 0; i < radioButtons.size(  ); i++ ) {
+        ( ( JRadioButton )radioButtons.get( i ) ).setEnabled( enableMe );
+      }
     }
   }
 
@@ -263,22 +267,40 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     return value;
   }
 
-  /**
-   * This sets the inner state of the RadioButtonPG, so that getValue(  ) works
-   * correctly.
+  /*
+   * Main method for testing purposes.
    *
-   * @param e The triggering ActionEvent.
+   * @param args Unused.
    */
-  public void actionPerformed( ActionEvent e ) {
-    Object oldVal = getValue(  );
+  /*public static void main( String[] args ) {
+     JFrame mainWindow = new JFrame(  );
+     RadioButtonPG rpg = new RadioButtonPG( "Tester", true );
+     rpg.addItem( "Choice 1" );
+     rpg.addItem( "Choice 2" );
+     rpg.addItem( "Choice 3" );
+     rpg.addItem( "Choice 3" );
+     //rpg.setValue( 2 );
+     System.out.println( rpg.getValue(  ) );
+     rpg.initGUI( null );
+     //rpg.setValue( "Choice 5" );
+     //rpg.setValue( "Choice 1" );
+     System.out.println( rpg.getValue(  ) );
+     rpg.showGUIPanel(  );
+     }*/
 
-    //System.out.println( "Previous value: " + getValue(  ) );
-    this.value = e.getActionCommand(  );
+  /**
+   * Utility method to allow adding external action listeners to this PG's list
+   * of ActionListeners.  This will not do much unless the PG's GUI has been
+   * initialized.
+   *
+   * @param al The ActionListener to add.
+   */
+  public void addActionListener( ActionListener al ) {
+    if( extListeners == null ) {
+      extListeners = new Vector( 5, 2 );
+    }
 
-    //System.out.println( "New value: " + getValue(  ) );
-    this.setValid( false );
-    pcs.firePropertyChange( 
-      new PropertyChangeEvent( this, IParameter.VALUE, oldVal, getValue(  ) ) );
+    extListeners.add( al );
   }
 
   /**
@@ -318,40 +340,15 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
   }
 
   /**
-   * @param pcl The property change listener to be added.
+   * Definition of the clone method.
    */
-  public void addPropertyChangeListener( PropertyChangeListener pcl ) {
-    pcs.addPropertyChangeListener( pcl );
-    addPCLToVector( pcl );
+  public Object clone(  ) {
+    RadioButtonPG pg = new RadioButtonPG( this.name, this.valid );
 
-    if( initialized ) {
-      if( radioButtons != null ) {
-        for( int i = 0; i < radioButtons.size(  ); i++ ) {
-          ( ( JRadioButton )radioButtons.elementAt( i ) ).addPropertyChangeListener( 
-            pcl );
-        }
-      }
-    }
-  }
+    pg.setDrawValid( this.getDrawValid(  ) );
+    pg.initialized = false;
 
-  /**
-   * @param pcl The property change listener to be added.
-   * @param prop The property to listen for.
-   */
-  public void addPropertyChangeListener( 
-    String prop, PropertyChangeListener pcl ) {
-    pcs.addPropertyChangeListener( prop, pcl );
-
-    addPCLToVector( prop, pcl );
-
-    if( initialized ) {
-      if( radioButtons != null ) {
-        for( int i = 0; i < radioButtons.size(  ); i++ ) {
-          ( ( JRadioButton )radioButtons.elementAt( i ) ).addPropertyChangeListener( 
-            prop, pcl );
-        }
-      }
-    }
+    return pg;
   }
 
   /**
@@ -367,7 +364,8 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     //one column grid.  Also, if we create the GUI stuff before we add items,
     //we can let addItem take care of adding it to the button group, entry
     //widget, and Vector of buttons.
-    entrywidget    = new JPanel( new GridLayout( 0, 1 ) );
+    entrywidget = new EntryWidget(  );
+    entrywidget.setLayout( new GridLayout( 0, 1 ) );
     radioButtons   = new Vector(  );
     radioGroup     = new ButtonGroup(  );
 
@@ -381,75 +379,10 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
       }
     }
 
+    entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
+
     this.setEnabled( this.getEnabled(  ) );
     super.initGUI(  );
-  }
-
-  /*
-   * Main method for testing purposes.
-   *
-   * @param args Unused.
-   */
-  /*public static void main( String[] args ) {
-    JFrame mainWindow = new JFrame(  );
-    RadioButtonPG rpg = new RadioButtonPG( "Tester", true );
-
-    rpg.addItem( "Choice 1" );
-    rpg.addItem( "Choice 2" );
-    rpg.addItem( "Choice 3" );
-    rpg.addItem( "Choice 3" );
-    rpg.setValue( 2 );
-    System.out.println( rpg.getValue(  ) );
-    rpg.initGUI( null );
-
-    //rpg.setValue( "Choice 5" );
-    rpg.setValue( "Choice 1" );
-    System.out.println( rpg.getValue(  ) );
-    rpg.showGUIPanel(  );
-  }*/
-
-  /**
-   * Utility method to allow adding external action listeners to this PG's list
-   * of ActionListeners.  This will not do much unless the PG's GUI has been
-   * initialized.
-   *
-   * @param al The ActionListener to add.
-   */
-  public void addActionListener( ActionListener al ) {
-    if( extListeners == null ) {
-      extListeners = new Vector( 5, 2 );
-    }
-
-    extListeners.add( al );
-  }
-
-  /**
-   * Definition of the clone method.
-   */
-  public Object clone(  ) {
-    RadioButtonPG pg = new RadioButtonPG( this.name, this.valid );
-
-    pg.setDrawValid( this.getDrawValid(  ) );
-    pg.initialized = false;
-
-    return pg;
-  }
-
-  /**
-   * @param pcl The property change listener to be removed.
-   */
-  public void removePropertyChangeListener( PropertyChangeListener pcl ) {
-    pcs.removePropertyChangeListener( pcl );
-    removePCLFromVector( pcl );
-
-    if( initialized ) {
-      if( radioButtons != null ) {
-        for( int i = 0; i < radioButtons.size(  ); i++ ) {
-          ( ( JRadioButton )radioButtons.elementAt( i ) ).removePropertyChangeListener( 
-            pcl );
-        }
-      }
-    }
   }
 
   /**
@@ -490,7 +423,6 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString,
     radioButtons.add( tempButton );
     radioGroup.add( tempButton );
     entrywidget.add( tempButton );
-    tempButton.addActionListener( this );
 
     //add the external listeners
     if( extListeners != null ) {
