@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/07/18 16:43:51  dennis
+ *  Now supports multiple area detectors as well as multiple runs.
+ *  The L1, TO and the area detector's width, height and shift in it's
+ *  initial plane are refined simultaneously.  Resulting instrument
+ *  parameters are printed.
+ *
  *  Revision 1.1  2003/07/17 21:49:49  dennis
  *  SCD calibration program with fixed distance to detector.
  *  This version handles different runs with one detector.
@@ -61,26 +67,22 @@ import DataSetTools.functions.*;
 public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
                     implements Serializable
 {
-  public static final int N_PARAMS    = 6;
   public static final int L1_INDEX    = 0;
   public static final int T0_INDEX    = 1;
-  public static final int DET_W_INDEX = 2;
-  public static final int DET_H_INDEX = 3;
-  public static final int DET_X_INDEX = 4;
-  public static final int DET_Z_INDEX = 5;
-//  public static final int DET_Y_INDEX = 6;
-                                                  // OLD DETECTOR
+  public static final int DET_BASE_INDEX = 2;
+  public static final int N_DET_PARAMS   = 4;   // number of params per detector
+                                                // OLD DETECTOR
 //  public static final int    N_ROWS   = 85;
 //  public static final int    N_COLS   = 85;
 //  public static final double DET_SIZE = 0.25;  
-//  public static final double DET_D    = 0.32;
-//  public static final double DET_A    = -90.0;
 
-  public static final int    N_ROWS   = 150;     // NEW ONE DETECTOR, HIGH RES
-  public static final int    N_COLS   = 150;
+//  public static final int    N_ROWS   = 150;     // NEW DETECTOR, HIGH RES
+//  public static final int    N_COLS   = 150;
+//  public static final double DET_SIZE = 0.15;
+
+  public static final int    N_ROWS   = 100;     // NEW DETECTOR, LOW RES
+  public static final int    N_COLS   = 100;
   public static final double DET_SIZE = 0.15;
-  public static final double DET_D    = 0.25;
-  public static final double DET_A    = -90.0;
 
   public static final double DET_Z    = 0.0;
   public static final double L1       = 9.378;
@@ -104,7 +106,8 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
   int  eval_count = 0;
 
   Hashtable gon_rotation;
-  Hashtable nominal_position;
+  Hashtable grids;
+  Vector    nominal_position;
 
   /**
    *  Construct a function defined on the grid of (x,y) values specified, 
@@ -115,7 +118,7 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
    public SCDcal_fixed_DetD( 
                   int                 run[],         
                   int                 det_id[],
-                  DetectorPosition_d  det_position[],
+                  Hashtable           grids,
                   SampleOrientation_d orientation[],
                   double              hkl[][],
                   double              tof[], 
@@ -129,6 +132,7 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
      n_peaks = run.length;
      this.run = run;
      this.id =  det_id;
+     this.grids = grids;
      this.hkl = hkl;
      this.tof = tof;
      this.row = row;
@@ -154,6 +158,12 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
      System.out.println("Lattice Parameters");
      LinearAlgebra.print( lat_par );
 
+     for ( int i = 0; i < 3; i++ )
+       for ( int j = 0; j < 3; j++ )
+         B_theoretical[i][j] *= 2*Math.PI;
+     System.out.println("Final B_theoretical = " );
+     LinearAlgebra.print( B_theoretical );
+
      gon_rotation     = new Hashtable();
      for ( int i = 0; i < run.length; i++ )
      {
@@ -170,20 +180,10 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
        }
      }
 
-     nominal_position = new Hashtable();
-     for ( int i = 0; i < run.length; i++ )
-     {
-       Integer key = new Integer( run[i] );
-       Object  val = nominal_position.get( key );
-       if ( val == null )
-         nominal_position.put( key, det_position[i] ); 
-     }
-
-     for ( int i = 0; i < 3; i++ )
-       for ( int j = 0; j < 3; j++ )
-         B_theoretical[i][j] *= 2*Math.PI;
-     System.out.println("Final B_theoretical = " );
-     LinearAlgebra.print( B_theoretical );
+     nominal_position = new Vector();
+     Enumeration e = grids.elements();
+     while ( e.hasMoreElements() )
+       nominal_position.add( ((UniformGrid_d)e.nextElement()).position() ); 
 
      qxyz_theoretical = new double[n_peaks][3];
      qxyz_observed    = new double[n_peaks][3];
@@ -223,26 +223,37 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
   public void setParameters( double parameters[] )
   {
     super.setParameters( parameters );
+
+    int index = DET_BASE_INDEX;
+    Enumeration e = grids.elements();
+    int det_count = 0;
+    while ( e.hasMoreElements() )
+    {
+      UniformGrid_d grid = (UniformGrid_d)e.nextElement();
+      Vector3D_d nom_pos = (Vector3D_d)nominal_position.elementAt(det_count);
+      double width = parameters[ index ];
+      index++;
+      double height = parameters[ index ];
+      index++;
+      double x_off = parameters[ index ];
+      index++;
+      double y_off = parameters[ index ];
+      index++;
+      grid.setWidth( width );
+      grid.setHeight( height );
+    
+      Vector3D_d center = new Vector3D_d( nom_pos );
+      Vector3D_d x_vec = grid.x_vec();
+      Vector3D_d y_vec = grid.y_vec();
+      x_vec.multiply( x_off );
+      y_vec.multiply( y_off );
+      center.add( x_vec ); 
+      center.add( y_vec ); 
+      grid.setCenter( center );
+
+      det_count++;
+    }
    
-    int id = 1;                                   // one detector for now
-
-    double x = parameters[ DET_X_INDEX ];
-//  double y = parameters[ DET_Y_INDEX ];
-    double y = -DET_D;
-    double z = parameters[ DET_Z_INDEX ];
-    double w = parameters[ DET_W_INDEX ];
-    double h = parameters[ DET_H_INDEX ];
-
-    Vector3D_d center = new Vector3D_d( x, y, z );
-    Vector3D_d y_vec  = new Vector3D_d( 0, 0, 1 ); // For now assume the 
-                                                   // detector is vertical
-    Vector3D_d x_vec  = new Vector3D_d();
-    x_vec.cross( center, y_vec );
-    x_vec.normalize();
-    grid = new UniformGrid_d( id, "m", center, x_vec, y_vec, w, h, 0.001, 
-                              N_ROWS, N_COLS );
-
-//    System.out.println("GRID = " + grid );
     find_qxyz_observed();
     find_U_and_B_observed();
     find_qxyz_theoretical();
@@ -282,6 +293,7 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
     double       coords[];
     for ( int peak = 0; peak < n_peaks; peak++ )
     {
+      UniformGrid_d grid = (UniformGrid_d)grids.get( new Integer( id[peak] ) );
       position = new DetectorPosition_d( grid.position( row[peak], col[peak] ));
       qxyz     = tof_calc_d.DiffractometerVecQ(position, l1, tof[peak] + t0);  
       coords = qxyz.getCartesianCoords();
@@ -381,6 +393,7 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
       double counts[] = null;
       SampleOrientation_d orientation[]  = null;
       DetectorPosition_d  det_position[] = null;
+      Hashtable grids = new Hashtable();
       try
       {
         TextFileReader tfr = new TextFileReader( args[0] );
@@ -395,6 +408,7 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
         counts = new double[n_peaks];
         orientation  = new SampleOrientation_d[n_peaks];
         det_position = new DetectorPosition_d[n_peaks];
+
         for ( int i = 0; i < n_peaks; i++ )
         {
           line_type = tfr.read_int();
@@ -425,6 +439,25 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
 
             line_type = tfr.read_int();
             det_info_read = true;
+            Integer key = new Integer( det[i] );
+            if ( grids.get(key) == null )            // new detector, so add it
+            {
+              Vector3D_d center = new Vector3D_d( 
+                                       det_d *  Math.cos(det_a * Math.PI/180),
+                                       det_d *  Math.sin(det_a * Math.PI/180),
+                                       0  );
+              Vector3D_d y_vec = new Vector3D_d( 0, 0, 1 ); 
+              Vector3D_d x_vec = new Vector3D_d(); 
+              x_vec.cross( center, y_vec );
+              x_vec.normalize();
+              UniformGrid_d grid = new UniformGrid_d
+                                   ( det[i], "m", 
+                                     center, x_vec, y_vec, 
+                                     DET_SIZE, DET_SIZE, 0.001, 
+                                     N_ROWS, N_COLS );
+              grids.put( key, grid );
+              System.out.println("grid = " + grid );
+            }
           }
           if ( !det_info_read )
           {
@@ -451,29 +484,45 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
       }
                                                    // set up the list of 
                                                    // parameters and names
-      String parameter_names[]       = new String[N_PARAMS];
+
+      int n_params = DET_BASE_INDEX + N_DET_PARAMS * grids.size();
+      System.out.println("NUMBER OF PARAMETERS = " + n_params );
+      String parameter_names[]       = new String[n_params];
       parameter_names[ L1_INDEX ]    = "L1";
       parameter_names[ T0_INDEX ]    = "T0";
-      parameter_names[ DET_W_INDEX ] = "Det Width";
-      parameter_names[ DET_H_INDEX ] = "Det Height";
-      parameter_names[ DET_X_INDEX ] = "Det center x";
-//      parameter_names[ DET_Y_INDEX ] = "Det center y";
-      parameter_names[ DET_Z_INDEX ] = "Det center z";
 
-      double parameters[] = new double[N_PARAMS];
+      double parameters[] = new double[n_params];
       parameters[ L1_INDEX ]    = L1;
       parameters[ T0_INDEX ]    = 0.0;
-      parameters[ DET_W_INDEX ] = DET_SIZE;
-      parameters[ DET_H_INDEX ] = DET_SIZE;
-      parameters[ DET_X_INDEX ] = DET_D * Math.cos( DET_A * Math.PI/180 );
-//      parameters[ DET_Y_INDEX ] = DET_D * Math.sin( DET_A * Math.PI/180 );
-      parameters[ DET_Z_INDEX ] = 0.0;
+
+      int index = DET_BASE_INDEX;
+      Enumeration e = grids.elements();
+      while ( e.hasMoreElements() )
+      {
+        UniformGrid_d grid = (UniformGrid_d)e.nextElement();
+        int id = grid.ID();
+        parameter_names[index] = "Det " + id + " Width";
+        parameters[index] = grid.width();
+        index++; 
+
+        parameter_names[index] = "Det " + id + " Height";
+        parameters[index] = grid.height();
+        index++;
+
+        parameter_names[index] = "Det " + id + " x_offset";
+        parameters[index] = 0;
+        index++;
+
+        parameter_names[index] = "Det " + id + " y_offset";
+        parameters[index] = 0;
+        index++;
+      } 
                                                      // build the one variable
                                                      // function
       SCDcal_fixed_DetD error_f = new SCDcal_fixed_DetD( 
                                               run, 
                                               det,
-                                              det_position,
+                                              grids,
                                               orientation,
                                               hkl,
                                               tof, row, col,
@@ -484,23 +533,23 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
                                                      // noise and "fake" sigmas
       double z_vals[] = new double[ n_peaks ]; 
       double sigmas[] = new double[ n_peaks ]; 
-      double index[]  = new double[ n_peaks ];
+      double x_index[] = new double[ n_peaks ];
       for ( int i = 0; i < n_peaks; i++ )
       {
         z_vals[i] = 0;
-        sigmas[i] = 1.0/Math.sqrt( counts[i] );
+//      sigmas[i] = 1.0/Math.sqrt( counts[i] );
 //      sigmas[i] = Math.sqrt( counts[i] );
-//      sigmas[i] = 1.0;
-        index[i]  = i;
+        sigmas[i] = 1.0;
+        x_index[i]  = i;
       }
 /*
-      double vals[]   = error_f.getValues( index );
+      double vals[]   = error_f.getValues( x_index );
       System.out.println("error_f evaluated at all points = ");
       LinearAlgebra.print( vals );
       for ( int k = 0; k < parameters.length; k++ )
       {
         System.out.println("Derivatives with respect to " + parameter_names[k]);
-        double derivs[] = error_f.get_dFdai(index,k);
+        double derivs[] = error_f.get_dFdai(x_index,k);
         LinearAlgebra.print( derivs );
       }
 */
@@ -508,7 +557,7 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
                                            // build the data fitter and display 
                                            // the results.
       MarquardtArrayFitter fitter = 
-        new MarquardtArrayFitter(error_f, index, z_vals, sigmas, 1.0e-10, 2000);
+      new MarquardtArrayFitter(error_f, x_index, z_vals, sigmas, 1.0e-16, 2000);
 
       double p_sigmas[];
       double p_sigmas_2[];
@@ -543,17 +592,31 @@ public class SCDcal_fixed_DetD extends    OneVarParameterizedFunction
 
       System.out.println();
       error_f.show_progress( error_f.B_observed, true );
-      System.out.println();
-      System.out.print( Format.real( 100*coefs[0], 9, 3 ) );
-      System.out.print( Format.real( coefs[1], 8, 3 ) );
-      double x2cm = 100*coefs[2]/N_COLS;             // this is step between
-      double y2cm = 100*coefs[3]/N_ROWS;             // pixel centers
-      double xLeft  = 100*coefs[4] - x2cm*N_COLS/2.0; // this is to edge of det
-      double yLower = 100*coefs[5] - y2cm*N_ROWS/2.0; // not center of first pix
-      System.out.print( Format.real( x2cm, 11, 6 ) );
-      System.out.print( Format.real( y2cm, 11, 6 ) );
-      System.out.print( Format.real( xLeft,  11, 6 ) );
-      System.out.print( Format.real( yLower, 11, 6 ) );
-      System.out.println();      
+
+      int i = DET_BASE_INDEX;
+      e = grids.elements();
+      while ( e.hasMoreElements())
+      {
+        UniformGrid_d grid = (UniformGrid_d)e.nextElement();
+        System.out.println();
+        System.out.println("USING DETECTOR: " + grid.ID());
+        System.out.println();
+
+        System.out.print( Format.real( 100*coefs[0], 9, 3 ) );
+        System.out.print( Format.real( coefs[1], 8, 3 ) );
+        double x2cm = 100*coefs[i]/N_COLS;             // this is step between
+        i++;                                           // pixel centers
+        double y2cm = 100*coefs[i]/N_ROWS;  
+        i++;
+        double xLeft  = 100*coefs[i] - x2cm*N_COLS/2.0;//this is to edge of det
+        i++;                                           //not center of first pix
+        double yLower = 100*coefs[i] - y2cm*N_ROWS/2.0;
+        i++;
+        System.out.print( Format.real( x2cm, 11, 6 ) );
+        System.out.print( Format.real( y2cm, 11, 6 ) );
+        System.out.print( Format.real( xLeft,  11, 6 ) );
+        System.out.print( Format.real( yLower, 11, 6 ) );
+        System.out.println();      
+      } 
     }
 }
