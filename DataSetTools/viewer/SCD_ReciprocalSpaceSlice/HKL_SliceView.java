@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/03/04 20:59:39  dennis
+ * Now allows selecting the slice plane in either HKL or Qxyz
+ * and independently allows displaying the plane in either
+ * HKL or Qxyz.
+ *
  * Revision 1.4  2004/03/03 23:22:28  dennis
  * Implemented option to select slice in HKL but display it in Q.
  *
@@ -230,7 +235,6 @@ public class HKL_SliceView extends DataSetViewer
 
   public void redraw( String reason )
   {
-    System.out.println( "redraw of viewer called ..........." + reason );
     if ( !valid_ds )
     {
       image_container.removeAll();
@@ -352,7 +356,6 @@ public class HKL_SliceView extends DataSetViewer
    */
   private void setAxesAndTitle( IVirtualArray2D va2D )
   {
-    System.out.println("setAxesAndTitle called .....................");
     SlicePlane3D plane = slice_selector.getPlane();
  
     Vector3D origin = plane.getOrigin();
@@ -573,10 +576,42 @@ public class HKL_SliceView extends DataSetViewer
     if ( slice_selector.getDisplayMode() == SliceSelectorUI.HKL_MODE )
     {                                           
                                                     // Display in HKL space
-      slice = extractHKL_Slice( plane, width, height, thickness, step );
+      if ( slice_selector.getSliceMode() == SliceSelectorUI.QXYZ_MODE )
+      {
+        SlicePlane3D new_plane = MapPlaneToHKL( plane );
+        float scale = 1/ScaleFactor( plane );
+
+        width     *= scale;
+        height    *= scale;
+        thickness *= scale;
+        step      *= scale;
+        plane      = new_plane;
+
+        slice = extractHKL_Slice( plane, width, height, thickness, step );
+      }
+      else
+        slice = extractHKL_Slice( plane, width, height, thickness, step );
+
       va2D = new VirtualArray2D( slice );
-      setAxesAndTitle( va2D );
+
+      if ( isAligned( plane ) )
+      {
+        setHKL_Title( plane.getOrigin(), plane.getNormal(), va2D );
+        setHKL_Axis( AxisInfo.X_AXIS, -width/2.0f, width/2.0f, 
+                     plane.getOrigin(), plane.getU(), va2D );
+        setHKL_Axis( AxisInfo.Y_AXIS, -height/2.0f, height/2.0f, 
+                     plane.getOrigin(), plane.getV(), va2D );
+      }
+      else
+      {
+        setGeneralTitle( plane.getOrigin(), plane.getNormal(), va2D );
+        setGeneralAxis( AxisInfo.X_AXIS,
+                        -width/2.0f, width/2.0f, plane.getU(), va2D );
+        setGeneralAxis( AxisInfo.Y_AXIS,
+                       -height/2.0f, height/2.0f, plane.getV(), va2D );
+      }
     }
+
     else                                            // Display in Qxyz space
     {
       if ( slice_selector.getSliceMode() == SliceSelectorUI.HKL_MODE )
@@ -584,7 +619,6 @@ public class HKL_SliceView extends DataSetViewer
         SlicePlane3D new_plane = MapPlaneToQ( plane );
         float scale = ScaleFactor( plane );
 
-        System.out.println("scale = " + scale );
         width     *= scale;
         height    *= scale;
         thickness *= scale;
@@ -672,16 +706,6 @@ public class HKL_SliceView extends DataSetViewer
   }
 
 
-  /* --------------------- ChangeSliceSelectionMode ----------------------- */
-  /*
-   * Convert the current plane specifications to the new mode and set
-   * the new plane into the selector.
-   */
-  private void ChangeSliceSelectionMode()
-  {
-    System.out.println("SHOULD NOW CHANGE SLICE SELECTION MODE");
-  }
-
 
   /* ----------------------- MapPlaneToQ -------------------------------- */
   /*
@@ -693,15 +717,72 @@ public class HKL_SliceView extends DataSetViewer
     Vector3D u      = new Vector3D( plane.getU() );
     Vector3D v      = new Vector3D( plane.getV() );
 
-    System.out.println("plane = " + plane );
-    System.out.println("mat   = " + orientation_matrix );
-    
     orientation_matrix.apply_to( origin, origin );
     orientation_matrix.apply_to( u, u );
     orientation_matrix.apply_to( v, v );
 
-    System.out.println("new plane = " + new SlicePlane3D( origin, u, v ) );
-    return new SlicePlane3D( origin, u, v );
+    return new SlicePlane3D( origin, u, v );  // Note: constructing the new
+                                              // plane from these vectors WILL
+                                              // build new orthonormal vectors
+                                              // in the plane object
+  }
+
+
+  /* ----------------------- MapPlaneToHKL ------------------------------ */
+  /*
+   *  Map the specified plane from Q to HKL, as nearly as possible.
+   */
+  private SlicePlane3D MapPlaneToHKL( SlicePlane3D plane )
+  {
+    Vector3D origin = new Vector3D( plane.getOrigin() );
+    Vector3D u      = new Vector3D( plane.getU() );
+    Vector3D v      = new Vector3D( plane.getV() );
+
+    Tran3D inverse = new Tran3D( orientation_matrix );
+    inverse.invert();
+    inverse.transpose();
+
+    inverse.apply_to( origin, origin );
+    inverse.apply_to( u, u );
+    inverse.apply_to( v, v );
+
+    return new SlicePlane3D( origin, u, v );  // Note: constructing the new
+                                              // plane from these vectors WILL
+                                              // build new orthonormal vectors
+                                              // in the plane object
+  }
+
+
+  /* ------------------------- isAligned ------------------------------- */
+  /*
+   *  Check whether or not the specified plane is aligned with the coordinate
+   *  axes.
+   */
+  private boolean isAligned( SlicePlane3D plane )
+  {
+    final double THRESHOLD = 0.9999;   // if dot products are this close to
+                                       //  +- 1 then we assume the plane is
+                                       // aligned with the coordinate axes.
+
+    Vector3D i_vec = new Vector3D( 1, 0, 0 );
+    Vector3D j_vec = new Vector3D( 0, 1, 0 );
+    Vector3D k_vec = new Vector3D( 0, 0, 1 );
+
+    Vector3D u = plane.getU();
+    if (  Math.abs( u.dot( i_vec ) ) < THRESHOLD  &&
+          Math.abs( u.dot( j_vec ) ) < THRESHOLD  &&
+          Math.abs( u.dot( k_vec ) ) < THRESHOLD   )
+      return false; 
+    
+    Vector3D v = plane.getV();
+    if (  Math.abs( v.dot( i_vec ) ) < THRESHOLD  &&
+          Math.abs( v.dot( j_vec ) ) < THRESHOLD  &&
+          Math.abs( v.dot( k_vec ) ) < THRESHOLD   )
+      return false;   
+
+                   // since the planes u,v,n vectors are orthonormal, we don't
+                   // need to check the plane normal.
+    return true;
   }
 
 
@@ -738,9 +819,20 @@ public class HKL_SliceView extends DataSetViewer
     public void actionPerformed( ActionEvent e )
     {
       String message = e.getActionCommand();
-      System.out.println( "Command = " + message );
+
       if ( message.equals( ISlicePlaneSelector.SLICE_MODE_CHANGED ) )
-        ChangeSliceSelectionMode();
+      {
+        // transform values in the selector to the new space
+        SlicePlane3D plane = slice_selector.getPlane();
+
+        if ( slice_selector.getSliceMode() == SliceSelectorUI.QXYZ_MODE )
+          plane = MapPlaneToQ( plane );
+        else
+          plane = MapPlaneToHKL( plane );
+
+        slice_selector.setPlane( plane );
+        redraw( "Slice Changed" );
+      }
       else
         redraw( "Slice Changed" );
     }
@@ -760,7 +852,6 @@ public class HKL_SliceView extends DataSetViewer
       {
         setCurrentPoint( ivc.getPointedAt() );
       }
-      //System.out.println( "cursor moved " + e );
     }
   }
 
