@@ -28,6 +28,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/07/09 20:20:36  dennis
+ * Now adds GetPixelInfo_op to the efficiency and mask DataSets,
+ * so that col,row readouts are supported.  Clears selections on
+ * the efficiency and mask DataSets.  Sets new Y units and labels
+ * on the efficiency DataSet.
+ *
  * Revision 1.2  2003/07/07 20:42:05  dennis
  * Now returns an array with two DataSets.  The first DataSet stores
  * the detector efficiencies and the second DataSet stores the mask
@@ -48,6 +54,8 @@ package DataSetTools.operator.Generic.TOF_SAD;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.*;
+import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.instruments.*;
 import DataSetTools.util.*;
 import DataSetTools.retriever.*;
@@ -174,8 +182,6 @@ public class DetectorSensitivity extends GenericTOF_SAD
    */
   public Object getResult()
   {
-    System.out.println("Starting getResult()..." );
-
     DataSet ds         = (DataSet)(getParameter(0).getValue());
     float   dead_level = ((Float)(getParameter(1).getValue())).floatValue();
     float   hot_level  = ((Float)(getParameter(2).getValue())).floatValue();
@@ -249,10 +255,8 @@ public class DetectorSensitivity extends GenericTOF_SAD
         d.setAttributeList( list );
       }
     eff_ds.setTitle( eff_ds.getTitle() + " Detector Efficiency" );
-    eff_ds.setX_units("number");
-    eff_ds.setX_label("Detector");
-    eff_ds.setY_units("number");
-    eff_ds.setY_label("Relative Efficiency");
+    eff_ds.setY_units("Efficiency");
+    eff_ds.setY_label("Detector Relative Efficiency");
   
     //
     // Now rebin the Data down to one bin.  We assume there is only one 
@@ -265,8 +269,6 @@ public class DetectorSensitivity extends GenericTOF_SAD
     for ( int i = 0; i < eff_ds.getNum_entries(); i++ )
       eff_ds.getData_entry(i).resample( new_scale, IData.SMOOTH_NONE );
 
-    System.out.println("Resampled entries..." );
-    
     // 
     // Next, calculate the total counts and average counts for all pixels 
     //
@@ -366,12 +368,12 @@ public class DetectorSensitivity extends GenericTOF_SAD
     // Now make the "Mask" DataSet
     //
     DataSetFactory ds_f = new DataSetFactory( "Pixel Mask",
-                                              "number",
+                                              "Mask number",
                                               "Mask",
-                                              "number",
+                                              "flag",
                                               "Mask Value"      );
     DataSet    mask_ds = ds_f.getDataSet();
-    XScale     scale = new UniformXScale(0,0,1);
+    XScale     scale = new UniformXScale(0,1,2);
     float      y[];
     int        id;
     Data       new_d;
@@ -402,19 +404,19 @@ public class DetectorSensitivity extends GenericTOF_SAD
         mask_ds.addData_entry( new_d );
       }
 
-    System.out.println("Grid = " + mask_grid );
-    System.out.println("Mask Grid = " + mask_grid );
-
     if ( !mask_grid.setData_entries( mask_ds ) )
       return new ErrorString("Can't set the Mask grid entries");
-/*    
+
+    eff_ds.addOperator( new GetPixelInfo_op() );
+    mask_ds.addOperator( new GetPixelInfo_op() );
+
+    eff_ds.clearSelections();
+    mask_ds.clearSelections();
+    
     Vector result = new Vector(2);
     result.addElement( eff_ds );
-*/ 
-    DataSet result[] = new DataSet[2];
-    result[0] = eff_ds;
-    result[1] = mask_ds;
-  
+    result.addElement( mask_ds );
+
     return result;
   }
 
