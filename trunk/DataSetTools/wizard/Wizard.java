@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.99  2004/01/08 14:57:46  bouzekc
+ * Collapsed import statements.
+ *
  * Revision 1.98  2004/01/06 23:15:10  bouzekc
  * Fixed constructor so that standalone flag was actually read.
  *
@@ -457,8 +460,7 @@ import java.io.*;
 
 import java.net.URL;
 
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.*;
 
 
 /**
@@ -575,11 +577,11 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    * @param standalone If is running by itself
    */
   public Wizard( String title, boolean standalone ) {
-    modified     = false;
-    this.title   = title;
-    forms        = new Vector(  );
-    form_num     = -1;
-    this.standalone = standalone;
+    modified          = false;
+    this.title        = title;
+    forms             = new Vector(  );
+    form_num          = -1;
+    this.standalone   = standalone;
 
     //command_handler   = new CommandHandler( this );
     tryToLoadProjectsDir(  );
@@ -892,9 +894,10 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       "#3:\t\tLoad with a template or \n" +
       "\t\tpreviously saved file\t\t[WizardSaveFile]\n";
     frontEnd = new SwingWizardFrontEnd( this );
-    
-    for( int i = 0; i < this.getNumForms(); i++ ) {
-		getForm( i ).addPropertyChangeListener( frontEnd.getFormProgressIndicator());
+
+    for( int i = 0; i < this.getNumForms(  ); i++ ) {
+      getForm( i )
+        .addPropertyChangeListener( frontEnd.getFormProgressIndicator(  ) );
     }
 
     if( argv.length == 0 ) {
