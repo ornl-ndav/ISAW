@@ -1,6 +1,6 @@
 
 
-/*
+/* 
  * File:  DataSetGRCTArrayMaker.java 
  *             
  * Copyright (C) 2004, Ruth Mikkelson
@@ -35,6 +35,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/08/04 22:11:17  rmikk
+ * Made the pointed at more robust and accurate.
+ * Incorporated and tested the ObjectState into this module
+ *
  * Revision 1.8  2004/07/29 19:44:56  rmikk
  * Fixed some errors
  * Can now change the number of bins and bin ranges for All? dimensions
@@ -78,16 +82,16 @@ import java.util.*;
 import java.awt.event.*;
 import gov.anl.ipns.ViewTools.UI.*;
 import DataSetTools.components.ui.*;
-import DataSetTools.viewer.*;
-import gov.anl.ipns.ViewTools.*;
+//import DataSetTools.viewer.*;
+//import gov.anl.ipns.ViewTools.*;
 import javax.swing.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.*;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
 import java.awt.*;
 import gov.anl.ipns.Util.Sys.*;
-import DataSetTools.viewer.Table.*;
-import gov.anl.ipns.ViewTools.Components.Transparency.*;
+//import DataSetTools.viewer.Table.*;
+//import gov.anl.ipns.ViewTools.Components.Transparency.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.Messaging.*;
 
@@ -97,8 +101,6 @@ import gov.anl.ipns.Util.Messaging.*;
  *  represent a display row and any other one can represent a display column. 
  *  The other dimensions( if more than 1 ) have animation controllers to step 
  *   through their values
- * TODO: Add routines to set horizontal and vertical dimensions from outside
- * TODO: Add routines? to replace the Animation and XScaleUser controls
  */
 public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet, 
                                                IVirtualArray2D, IPreserveState {
@@ -129,7 +131,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
     XScaleChooserUI[] Xscales;
     DataSetXConversionsTable  DSConversions;
     JPanel[] savXScales = null;
-
+    MyJPanel order;
     int NstepDims = 5;
     //----------------- GUI Elements-----------------
     JButton Dimension;
@@ -161,31 +163,14 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
     }
 
 
-
+   float[] initPixel_min = { 0f,1f,1f,0f,0f };
+   float[] initPixel_max = {1f,2f,2f,1f,1f};
+   int[] initPermutation ={0 , 1, 2, 3, 4};
 
     // Initializes min's and max's in each dimension( DS,Grid,Col,Row and time)
-    //   and initializes all controls, and dimension handlers
+    //   and initializes all controls, and dimension handlers. The Object state has
+    // not been initialized yet
     private void init() {
-        pixel_min = new float[ 5 ] ;
-        pixel_max = new float[ 5 ] ;
-        Arrays.fill( pixel_min, 0f );
-        Arrays.fill( pixel_max, 1f );
-        pixel_min[ 1 ] ++;
-        pixel_min[ 2 ] ++;
-        pixel_max[ 1 ] ++;
-        pixel_max[ 2 ] ++;
-        if(state != null){
-          if(state.get("pixel_min") != null)
-            pixel_min = (float[])state.get("pixel_min");
-          if(state.get("pixel_max") != null)
-            pixel_min = (float[])state.get("pixel_max");
-        }
-           
-        Permutation = new int[ 5 ] ;
-        for ( int i = 0; i < 5; i++ )
-            Permutation[ i ]  = i;
-        if( state != null) if(state.get("Permutation")!= null) 
-           Permutation =(int[])state.get("Permutation");
         //----------- Get ranges of rows,cols,etc in the set of data sets-----
         Vector V = new Vector();
 
@@ -231,11 +216,15 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         for ( int i = 0; i < V.size(); i++ )
             GridNums[ i ]  = ( ( Integer) ( V.elementAt( i ) ) ).intValue();
         java.util.Arrays.sort( GridNums );        
-        //TODO Make 2D array of Grids
+       
 
         //--------------Set up Controls --------------------   
         // Eliminate cases so do not step thru dimensions of length 2
      
+        
+        if( state == null)
+           state = getObjectState( true);
+        SetUpVariables( state);
         ACS = new AnimationController[ 5 ] ;
         Xscales = new XScaleChooserUI[ 5 ] ;
         if ( DataSets.length < 2 ) {
@@ -295,7 +284,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
              if( state != null)
                nsteps = this.getInt((Integer) state.get("NGridChan"),nsteps);
             ACS[ 3 ]  = new AnimationController();
-            Xscales[ 3 ]  = new XScaleChooserUI( "GridNum", "index", start, end, nsteps );
+            Xscales[ 3 ]  = new XScaleChooserUI( "Grids", "index", start, end, nsteps );
             Xscales[ 3 ] .addActionListener( new GridXsclActionListener() );
             float[] xvals = new float[  end-start ] ;
 
@@ -436,26 +425,6 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             ACS[ 0 ] .addActionListener( new TimeAnimActionListener( ) );
 
         }
-       if( state == null)
-         state = getObjectState( true);
-       state.reset("pixel_min", pixel_min);
-       state.reset("pixel_max", pixel_max);
-        //---------- Set up Handlers--------------------------
-        Handler[ 0 ]  = new TimeHandler( getFloat((Float)state.get("MinTimex"),0f),
-                                         getFloat((Float)state.get("MaxTimex"),MaxTime),
-                                         MaxChannels, getInt((Integer)state.get("NtimeChan"),0));//0f, MaxTime, MaxChannels, 0 );
-        Handler[ 1 ]  = new RowHandler( getInt((Integer)state.get("StartRow"),1),
-                                        getInt((Integer)state.get("EndRow"),MaxRows),
-                                        getInt((Integer)state.get("NrowChan"),0));//1, MaxRows, 0 );
-        Handler[ 2 ]  = new ColHandler( getInt((Integer)state.get("StartCol"),1),
-                                        getInt((Integer)state.get("EndCol"),MaxCols),
-                                        getInt((Integer)state.get("NcolChan"),0));//1, MaxCols, 0 );
-        Handler[ 3 ]  = new GridHandler( getInt((Integer)state.get("MinGridindx"),0),
-                                         getInt((Integer)state.get("MaxGridindx"), GridNums.length - 1),
-                                         getInt((Integer)state.get("NGridChan"),0));//0, GridNums.length - 1, 0 );
-        Handler[ 4 ]  = new DataSetHandler( getInt((Integer)state.get("MinDSindx"),0),
-                                            getInt((Integer)state.get("MaxDSindx"), DataSets.length - 1),
-                                            getInt((Integer)state.get("NDssChan"),0));//0, DataSets.length - 1, 0 );
 
         for ( int i = 0; i < 2; i++ )
             SetEnabled( ACS[ Permutation[ i ] ], false );
@@ -463,7 +432,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
             //-----------Set up Control list---------------
         //Dimension = new JButton( "Dimensions" );
         //Dimension.addActionListener( new ButtonListener() );
-        MyJPanel order = new MyJPanel( NstepDims, Permutation);
+        order = new MyJPanel( NstepDims, Permutation);
         AnimXscls = new ViewControl[ 2 + 2 * NstepDims ] ;
         AnimXscls[ 0 ]  = new ViewControlMaker(order );
         DSConversions = new DataSetXConversionsTable(DataSets[0]);
@@ -486,13 +455,101 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
    
     }//init
 
+    private void SetUpVariables( ObjectState state){
+      if( state == null)
+         return;
+        pixel_min = (float[])state.get("pixel_min");
+        pixel_max = (float[])state.get("pixel_max");
+        
+        Permutation =(int[])state.get("Permutation");
+      
+        //---------- Set up Handlers--------------------------
+        Handler[ 0 ]  = new TimeHandler( getFloat((Float)state.get("MinTimex"),0f),
+                                         getFloat((Float)state.get("MaxTimex"),MaxTime),
+                                         MaxChannels, getInt((Integer)state.get("NtimeChan"),0));//0f, MaxTime, MaxChannels, 0 );
+        Handler[ 1 ]  = new RowHandler( getInt((Integer)state.get("StartRow"),1),
+                                        getInt((Integer)state.get("EndRow"),MaxRows),
+                                        getInt((Integer)state.get("NrowChan"),0));//1, MaxRows, 0 );
+        Handler[ 2 ]  = new ColHandler( getInt((Integer)state.get("StartCol"),1),
+                                        getInt((Integer)state.get("EndCol"),MaxCols),
+                                        getInt((Integer)state.get("NcolChan"),0));//1, MaxCols, 0 );
+        Handler[ 3 ]  = new GridHandler( getInt((Integer)state.get("MinGridindx"),0),
+                                         getInt((Integer)state.get("MaxGridindx"), GridNums.length - 1),
+                                         getInt((Integer)state.get("NGridChan"),0));//0, GridNums.length - 1, 0 );
+        Handler[ 4 ]  = new DataSetHandler( getInt((Integer)state.get("MinDSindx"),0),
+                                            getInt((Integer)state.get("MaxDSindx"), DataSets.length - 1),
+                                            getInt((Integer)state.get("NDssChan"),0));//0, DataSets.length - 1, 0 );
+
+       
+    }
+   
+    //Makes Controls have the appropriate values
+    String[] ControlLabel ={"Time",     "Row",    "Column",  "Grid",       "DataSet"};
+    String[] ControlUnits ={"Channel",  "",        "",        "index",     "index"};
+    String[] ControlMinVal ={"MinTimex","StartRow","StartCol","MinGridindx", "MinDSindex"};
+    String[] ControlMaxVal ={"MaxTimex","EndRow",  "EndCol",  "MaxGridindx","MaxDSindex"};
+    String[] ControlNSteps ={"NtimeChan","NrowChan","NcolChan","NGridChan",  "NDssChan"};
+    private void SetUpControls( ObjectState state){
+       if( state.get("NtimeChan").equals(new Integer(0)))
+           ControlUnits[0] = "Channel";
+       else
+           ControlUnits[0] ="us";
+       order.showPermutation( Permutation);
+       for( int i=0; i< 5; i++)
+         if( ACS[i] != null){
+          float start =0;
+          if( i==0)
+            start = this.getFloat((Float) state.get(ControlMinVal[i]),start);
+          else
+            start = ((Integer)state.get(ControlMinVal[i])).intValue();
+          float end =MaxChannels;
+          if( i==0)
+            end = this.getFloat((Float) state.get(ControlMaxVal[i]),end);
+          else
+            end = ((Integer)state.get(ControlMaxVal[i])).intValue();
+          int nsteps = 0;
+          nsteps = this.getInt((Integer) state.get(ControlNSteps[i]),nsteps);
+          //ACS[ i ]  = new AnimationController();
+          String units =ControlUnits[i];
+          if( nsteps ==0)
+              if( i == 0)
+                  units ="Channel";
+          //Xscales[ i ]  = new XScaleChooserUI( ControlLabel[i], units, start, 
+           //                                                  end, nsteps );
+          Xscales[i].set(units, start,  end, nsteps );
+          
+          float[] xvals= null;
+          if( nsteps ==0){
+            xvals = new float[ (int)end-(int)start ] ;
+
+          for ( int j = (int)start; j < (int)end; j++ ){
+                xvals[ j -(int)start]  = (float)j;//MinTime+i*( MaxTime-MinTime )/MaxChannels;
+           }
+          }else{
+             xvals = new float[nsteps];
+             for( int j=0;j < nsteps; j++ ){
+               xvals[j] = start + j*(end-start)/nsteps;
+             }
+          }
+          ACS[ i ] .setFrame_values( xvals );
+          ACS[ i ] .setBorderTitle( ControlLabel[i]);
+          if( i ==3)
+              units ="IDs";
+          ACS[i].setTextLabel(units);
+       }
+    }
+
+
+    
    //---------------------- IPreserveState Methods-----------------------
    public void setObjectState(ObjectState new_state){
       if( new_state != null)
          state = new_state;
       else
          state = getObjectState( true);
-         
+       
+      SetUpVariables( state);     
+      SetUpControls( state);
       notifyListeners( IArrayMaker.DATA_CHANGED );
       
          
@@ -502,9 +559,9 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
      
       if( is_default){
         ObjectState st = new ObjectState();
-        st.insert("Permutation",Permutation );
-        st.insert("pixel_min", pixel_min);
-        st.insert("pixel_max",pixel_max);
+        st.insert("Permutation",initPermutation );
+        st.insert("pixel_min", initPixel_min);
+        st.insert("pixel_max",initPixel_max);
         st.insert("MinTimex", new Float(0));
         st.insert("MaxTimex", new Float(MaxChannels));
         st.insert("NtimeChan",new Integer(0));
@@ -726,37 +783,37 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
       
       float time;
       if(Permutation[0]==0 )
-        time =col;// (Handler[0].getMax(fy)+Handler[0].getMin(fy))/2;
+        time =col;
       else if( Permutation[1] ==0)
-        time =row;//(Handler[0].getMax(fx)+Handler[0].getMin(fx))/2;
+        time =row;
       else
          time = (pixel_min[0]+pixel_max[0])/2;
       return time;
     }
     private int getDataBlockIndex( float rowDispl, float colDispl){
-      int fx = (int)(rowDispl+.5f);
-      int fy = (int)(colDispl+.5f);
+      int DisplayRow = (int)(rowDispl+.5f);
+      int DisplayCol = (int)(colDispl+.5f);
       int row, col;//row on detector and column on detector
           if(Permutation[0] ==1)
-             row = (int)(Handler[1].getMax(fy-1)+Handler[1].getMin(fy-1))/2;
+             row = (int)(Handler[1].getMax(DisplayCol-1)+Handler[1].getMin(DisplayCol-1))/2;
           else if( Permutation[1] ==1)
-              row =(int)((Handler[1].getMax(fx-1)+Handler[1].getMin(fx-1))/2);
+              row =(int)((Handler[1].getMax(DisplayRow-1)+Handler[1].getMin(DisplayRow-1))/2);
           else
              row =(int)(pixel_min[1]+pixel_max[1])/2;
          if( check(row,1, MaxRows)) return -1;
      
          if(Permutation[0] ==2)
-            col = (int)(Handler[2].getMax(fy-1)+Handler[2].getMin(fy-1))/2;
+            col = (int)(Handler[2].getMax(DisplayCol-1)+Handler[2].getMin(DisplayCol-1))/2;
          else if( Permutation[1] ==2)
-            col =(int)((Handler[2].getMax(fx-1)+Handler[2].getMin(fx-1))/2);
+            col =(int)((Handler[2].getMax(DisplayRow-1)+Handler[2].getMin(DisplayRow-1))/2);
          else
             col =(int)(pixel_min[2]+pixel_max[2])/2;
          if( check(col,1, MaxCols)) return -1;
          int GridNum;
          if(Permutation[0] ==3)
-            GridNum = (int)(Handler[3].getMax(fy)+Handler[3].getMin(fy))/2;
+            GridNum = (int)(Handler[3].getMax(DisplayCol)+Handler[3].getMin(DisplayCol))/2;
          else if( Permutation[1] ==3)
-            GridNum =(int)((Handler[3].getMax(fx)+Handler[3].getMin(fx))/2);
+            GridNum =(int)((Handler[3].getMax(DisplayRow)+Handler[3].getMin(DisplayRow))/2);
          else
             GridNum =(int)(pixel_min[3]+pixel_max[3])/2;
          if( check(GridNum,0, Grids.length-1)) return -1;
@@ -784,8 +841,11 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
      Data D = DataSets[0].getData_entry(DSindx);
      if( D == null)
        return;
-     if( getInt((Integer)state.get("NtimeChan"),0)==0)//time is an index convert to time
-         time = D.getX_scale().getX((int)(time-.01));
+     if( getInt((Integer)state.get("NtimeChan"),0)==0){//time is an index convert to time
+         XScale xscl = D.getX_scale();
+         time = .5f*( xscl.getX((int)(time))+
+                  xscl.getX((int)(Math.min( time+1, xscl.getEnd_x() ))));
+     }
          
     
      this.DSConversions.showConversions( time, DSindx);
@@ -824,19 +884,19 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                      ((Integer)V.elementAt(2)).intValue());
         if( GridIndx < 0)
           return null;
-        int rowDet = ((Integer)V.elementAt(0)).intValue();
-        int colDet =   ((Integer)V.elementAt(1)).intValue();
-        Setind( 1,rowDet);
-        Setind( 2, colDet);
-        Setind( 3, GridIndx);
+        int rowDet = ((Integer)V.elementAt(1)).intValue();
+        int colDet =   ((Integer)V.elementAt(0)).intValue();
+        boolean changed=Setind( 1,rowDet);
+        changed = changed || Setind( 2, colDet);
+        changed = changed ||Setind( 3, GridIndx);
         int timeChan=-1;
         if( state.get("NtimeChan").equals( new Integer(0))){
           timeChan = DataSets[0].getData_entry(DSindx).getX_scale().getI(time);
-          Setind(0,timeChan);
+          changed = changed ||Setind(0,timeChan);
         }else{
-          SetindF(0, time);
+          changed= changed || SetindF(0, time);
         }
-        notifyListeners( IArrayMaker.DATA_CHANGED );
+        if( changed )notifyListeners( IArrayMaker.DATA_CHANGED );
         return getDisplayRowCol( rowDet,colDet,GridIndx, time, timeChan);
       }//if PointedAtChanged
       return null;
@@ -878,32 +938,42 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
      if( val > last) return -1;
      return (int)((val-first)/(last-first)*Nsteps); 
    }
+   
    //Sets the indices and Animation Control frame for
    // Dimensions not in display 
-   private void Setind( int dim, int val){
+   private boolean Setind( int dim, int val){
      int indx = -1;
      if( Permutation[0] == dim)
-        return ;
+        return false;
      if( Permutation[1] == dim)
-        return;
-    
+        return false;
+    if( ACS[dim]== null)
+      return false;
     indx =indexOf( dim, (float)val);
+    if( ACS[dim].getFrameNumber() == indx)
+      return false;
     pixel_min[dim] = Handler[dim].getMin(indx);
     pixel_max[dim] = Handler[dim].getMax(indx);
     if(ACS[dim]!= null)
        ACS[dim].setFrameNumber( indx);
+    return true;
     
    }
-   private void SetindF( int dim, float val){
+   private boolean SetindF( int dim, float val){
       int indx = -1;
       if( Permutation[0] == dim)
-         return;
+         return false;
       if( Permutation[1] == dim)
-         return;
-     
-     indx =indexOf(dim,val); 
+         return false;
+      if( ACS[dim] == null)
+         return false;
+     indx =indexOf(dim,val);
+     if( ACS[dim].getFrameNumber() == indx)
+       return false; 
      pixel_min[dim] = Handler[dim].getMin(indx);
      pixel_max[dim] = Handler[dim].getMax(indx);
+     ACS[dim].setFrameNumber( indx);
+     return true;
     }
     /**
      *    Returns the time corresponding to the given Selected Data
@@ -2894,8 +2964,7 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
                 Frm.setDefaultCloseOperation( WindowConstants.
                                                         DISPOSE_ON_CLOSE );
                 Frm.setSize( 250, 150 );
-                Frm.getContentPane().add( new MyJPanel( NstepDims, 
-                                                             Permutation  ) );
+                Frm.getContentPane().add( order  ) ;
                 Frm.show();
 
             }
@@ -2999,7 +3068,12 @@ public class DataSetGRCTArrayMaker  implements IArrayMaker_DataSet,
         }
 
 
+        public void showPermutation(int[] Perm ){
+            Permutation = Perm;
+            Coord1.setSelectedIndex(Permutation[0]);
+            Coord2.setSelectedIndex(Permutation[1]);
 
+         }
 
         /**
          * Invoked when the submit button is pressed. This method adjusts the
