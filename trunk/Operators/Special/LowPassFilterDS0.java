@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/09/29 22:45:36  kramer
+ * Changed the title to "Butterworth Low Pass Filter 0" to distinguish this
+ * operator from the regular "Butterworth Low Pass Filter" in the GUI.
+ *
  * Revision 1.1  2004/07/26 22:12:09  taoj
  * test version.
  *
@@ -83,7 +87,7 @@ import jnt.FFT.*;
 
 public class LowPassFilterDS0 extends GenericSpecial
 {
-  private static final String TITLE = "Butterworth Low Pass Filter";
+  private static final String TITLE = "Butterworth Low Pass Filter 0";
 
  /* ------------------------- DefaultConstructor -------------------------- */
  /** 
