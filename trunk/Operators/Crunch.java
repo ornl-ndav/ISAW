@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2004/04/29 21:14:22  dennis
+ * Now steps through the list of Data blocks based on index
+ * rather than group ID.
+ *
  * Revision 1.10  2004/03/15 19:36:52  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -166,96 +170,104 @@ public class Crunch extends GenericSpecial{
      *  detectors (if successful).
      */
     public Object getResult(){
-	DataSet ds        = (DataSet)(getParameter(0).getValue());
-	float   min_count = ((Float) (getParameter(1).getValue())).floatValue();
-	float   width     = ((Float) (getParameter(2).getValue())).floatValue();
-	boolean mk_new_ds = ((Boolean)(getParameter(3).getValue())).booleanValue();
+      DataSet ds        = (DataSet)(getParameter(0).getValue());
+      float   min_count = ((Float) (getParameter(1).getValue())).floatValue();
+      float   width     = ((Float) (getParameter(2).getValue())).floatValue();
+      boolean mk_new_ds =((Boolean)(getParameter(3).getValue())).booleanValue();
 
-	if( ds==null )
-	    return new ErrorString( "DataSet is null in Crunch" );
+      if( ds==null )
+        return new ErrorString( "DataSet is null in Crunch" );
 
-	// initialize new data set to be the same as the old
-	String       title = ds.getTitle();
-	OperationLog oplog = ds.getOp_log();
-	String     x_units = ds.getX_units();
-	String     x_label = ds.getX_label();
-	String     y_units = ds.getY_units();
-	String     y_label = ds.getY_label();
-	DataSet     new_ds = null;
+      // initialize new data set to be the same as the old
+      DataSet  new_ds = null;
+      if(mk_new_ds){
+        new_ds=(DataSet)ds.clone();
+      }else{
+        new_ds=ds;
+      }
 
-        // initialize new_ds
-        if(mk_new_ds){
-            new_ds=(DataSet)ds.clone();
-        }else{
-            new_ds=ds;
-        }
+      // first remove detectors below min_count
+      int[] bad_det = new int[new_ds.getNum_entries()];
+      int bi=0;
+ 
+      int n_data = new_ds.getNum_entries();
+      for( int i = n_data - 1; i >= 0; i-- )
+      {
+        Data det = new_ds.getData_entry(i);
+        if( det == null )  
+          continue;
+        Float count = (Float)
+               det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
+        if( count.floatValue() < min_count )
+          new_ds.removeData_entry(i);
+      }
 
-	// first remove detectors below min_count
-	int[] bad_det = new int[new_ds.getNum_entries()];
-	int bi=0;
-	int MAX_ID=new_ds.getMaxGroupID();
-	for( int i=1 ; i<=MAX_ID ; i++ ){
-	    Data det=new_ds.getData_entry_with_id(i);
-	    if( det == null ){ continue; }
-	    Float count=(Float)
-		det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
-	    if( count.floatValue() < min_count ){
-		new_ds.removeData_entry_with_id(i);
-	    }
-	}
+      // find the average total counts
+      float avg=0f;
+      float num_det=0f;
+      for( int i = 0; i < new_ds.getNum_entries(); i++ )
+      {
+        Data det = new_ds.getData_entry(i);
+        if( det == null ) 
+          continue; 
+        Float count = (Float)
+               det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
+        avg = avg + count.floatValue();
+        if( DEBUG )
+          System.out.println( i + "  " + count );
+        num_det++;
+      }
 
-	// find the average total counts
-	float avg=0f;
-	float num_det=0f;
-	for( int i=1 ; i<=MAX_ID ; i++ ){
-	    Data det=new_ds.getData_entry_with_id(i);
-	    if( det == null ){ continue; }
-	    Float count=(Float)
-	       det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
-	    avg=avg+count.floatValue();
-	    if(DEBUG)System.out.println(i+"  "+count);
-	    num_det++;
-	}
-	if(num_det!=0f){
-	    avg=avg/num_det;
-	}else{
-	    avg=0f;
-	}
+      if( num_det != 0f )
+        avg = avg / num_det;
+      else
+        avg = 0f;
 	
-	float dev=0f;
-	if( avg != 0f ){
-	    // find the stddev of the total counts
-	    for( int i=1 ; i<=MAX_ID ; i++ ){
-		Data det=new_ds.getData_entry_with_id(i);
-		if( det==null ){ continue; }
-		Float count=(Float)
-		    det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
-		dev=dev+(avg-count.floatValue())*(avg-count.floatValue());
-	    }
-	    if(avg!=0){ dev=dev/(num_det-1f); }
-	    dev=(float)Math.sqrt((double)dev);
-	    if(DEBUG)System.out.println(num_det+"  "+avg+"  "+dev);
+      float dev = 0f;
+      if( avg != 0f )
+      {
+        // find the stddev of the total counts
+        for( int i = 0; i < new_ds.getNum_entries(); i++ )
+        {
+          Data det = new_ds.getData_entry(i);
+          if( det == null )
+            continue;
+          Float count = (Float)
+                det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
+          dev = dev + (avg-count.floatValue())*(avg-count.floatValue());
+      }
+
+      if(avg != 0)
+        dev = dev / (num_det - 1f); 
+      dev = (float)Math.sqrt( (double)dev );
+      if(DEBUG)System.out.println( num_det + "  "+avg+"  "+dev );
 	    
-	    // remove detectors outside of width*sigma
-	    width=width*dev;
-	    for( int i=1 ; i<=MAX_ID ; i++ ){
-		Data det=new_ds.getData_entry_with_id(i);
-		if( det==null ){ continue; }
-		Float count=(Float)
-		    det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
-		float diff=(float)Math.abs((double)(avg-count.floatValue()));
-		if( diff>width ){
-		    new_ds.removeData_entry_with_id(i);
-		    if(DEBUG)System.out.println("removing det"+i+" with "
-                                                +count+" total counts");
-		}
-	    }
-	}
-	
-	new_ds.addLog_entry("Applied Crunch( "+ds+", "
-                            +min_count+", "+width/dev+" )");
-	return new_ds;
+      // remove detectors outside of width * sigma
+      width = width * dev;
+      n_data = new_ds.getNum_entries();
+      for( int i= n_data-1 ; i >= 0; i-- )
+      {
+        Data det = new_ds.getData_entry(i);
+        if( det == null )
+         continue; 
+        Float count = (Float)
+               det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
+        float diff = (float)Math.abs(avg-count.floatValue());
+        if( diff > width )
+        {
+          new_ds.removeData_entry(i);
+          if(DEBUG)System.out.println("removing det"+i+" with "
+                                       +count+" total counts");
+        }
+      }
     }
+	
+    new_ds.addLog_entry("Applied Crunch( " + ds + 
+                        ", " + min_count + 
+                        ", " + width/dev + 
+                        ", " + mk_new_ds + " )");
+    return new_ds;
+  }
     
     /* ------------------------------- clone -------------------------------- */ 
     /** 
