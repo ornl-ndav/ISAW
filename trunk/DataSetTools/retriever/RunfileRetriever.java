@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.61  2003/02/10 16:06:20  dennis
+ *  Commented out debug print
+ *
  *  Revision 1.60  2003/02/10 15:21:51  dennis
  *  Now adds detector grid to DataSet attributes and PixelList
  *  to Data block attributes, for SCD and SAD instruments only.
@@ -1318,7 +1321,7 @@ private float CalculateEIn()
                                                    width, height, depth,
                                                    n_rows, n_cols );
 
-         System.out.println("Uniform Grid = " + data_grid );
+         //System.out.println("Uniform Grid = " + data_grid );
 
          data_grid_attr = new DetectorDataGridAttribute( 
                                    Attribute.DETECTOR_DATA_GRID,
