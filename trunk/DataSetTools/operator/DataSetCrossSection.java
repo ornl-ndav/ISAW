@@ -31,6 +31,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.12  2001/07/16 15:16:19  dennis
+ *  Fixed bug ( missed integral of last group ).
+ *
  *  Revision 1.11  2001/06/04 20:02:47  dennis
  *  Modified to use Quick Sort on DataSet, when possible.
  *
@@ -223,7 +226,7 @@ public class DataSetCrossSection extends    AnalyzeOp
                 ((AttributeNameString)getParameter(2).getValue()).toString();
 
                                      // get the current data set
-    DataSet ds = this.getDataSet();
+    DataSet ds   = this.getDataSet();
     int num_data = ds.getNum_entries();
     Data data;
     float x_vals[] = null;
@@ -302,7 +305,7 @@ public class DataSetCrossSection extends    AnalyzeOp
     float distinct_attribute_val[] = new float[ num_data ];
     int num_distinct = 0;
     int i = 0;
-    while ( i < num_data - 1 )
+    while ( i < num_data )
     {
        float total_val = integral_val[i];
        int   num_same  = 1;
