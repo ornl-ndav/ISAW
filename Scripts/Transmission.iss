@@ -14,11 +14,11 @@
 # @return  null or an ErrorString.   The result will be written to a file
 
 
-$ SampleFileName    LoadFileString("C:\Argonne\sand\wrchen03\sand19990.run")   Enter Sample run
-$ EmptyFileName     LoadFileString("C:\Argonne\sand\wrchen03\sand19934.run")    Enter Empty run
-$ useCadmiumRun     Boolean( true)    Use CadmiumRun?
-$ CadmiumFileName   LoadFileString("C:\Argonne\sand\wrchen03\sand19936.run")    Enter Cadmium Run
-$ SaveFileName      SaveFileString("C:\ISAW\SampleRuns\T1999019934.dat")    Dat file to save Transm results
+$ SampleFileName    LoadFileString("C:\ISAW\SampleRuns\ins\sand20266.run")   Enter Sample run
+$ EmptyFileName     LoadFileString("C:\ISAW\SampleRuns\ins\sand20275.run")    Enter Empty run
+$ useCadmiumRun     Boolean( false)    Use CadmiumRun?
+$ CadmiumFileName   LoadFileString("C:\ISAW\SampleRuns\ins\sand20281.run")    Enter Cadmium Run
+$ SaveFileName      SaveFileString("C:\ISAW\SampleRuns\T1999019934.d2t")    Dat file to save Transm results
 $ NeutronDelay      Float( .0011)     Neutron Delay Fraction
 $ polyfitIndx1      Integer( 11)      First time channel for poly fit, or -1 if no fit
 $ polyfitIndx2      Integer( 68)      Last time channel for poly fit, or -1 if no fit
@@ -34,7 +34,7 @@ if useCadmiumRun == true
   load CadmiumFileName, "Cadm"
   DS = CalcTransmission( Samp[0],Empty[0],Cadm[0],Samp[1],useCAdmiumRun,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
 else
-   DS = CalcTransmission( Samp[0],Empty[0], null ,Samp[1],NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
+   DS = CalcTransmission( Samp[0],Empty[0],Samp[0] ,Samp[1],false,NeutronDelay, polyfitIndx1,polyfitIndx2,polyDegree,sqrtWeight)
 endif
 PrintFlood( DS,SaveFileName, "Transmission")
 Display "Finished"
