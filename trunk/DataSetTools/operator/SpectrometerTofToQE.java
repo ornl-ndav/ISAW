@@ -29,7 +29,7 @@ import  DataSetTools.util.*;
   *
   */
 
-public class SpectrometerTofToQE extends  DataSetOperator 
+public class SpectrometerTofToQE extends    DataSetOperator 
                                  implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -100,10 +100,10 @@ public class SpectrometerTofToQE extends  DataSetOperator
   {
     parameters = new Vector();  // must do this to clear any old parameters
 
-    Parameter parameter = new Parameter( "Min Q", new Float(0) );
+    Parameter parameter = new Parameter( "Min Q", new Float(0.0f) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Max Q", new Float(20) );
+    parameter = new Parameter( "Max Q", new Float(20.0f) );
     addParameter( parameter );
 
     parameter = new Parameter( Parameter.NUM_BINS, new Integer(200));
@@ -201,7 +201,7 @@ public class SpectrometerTofToQE extends  DataSetOperator
       if ( position == null )
       {
         ErrorString message = new ErrorString(
-                    "ERROR: no DETECTOR_POS attribute in TrueAngle operator");
+                    "ERROR: no DETECTOR_POS attribute in QE operator");
         return message;
       }
      
@@ -210,7 +210,7 @@ public class SpectrometerTofToQE extends  DataSetOperator
       if ( delta_theta_obj == null )
       {
         ErrorString message = new ErrorString(
-                    "ERROR: no DELTA_2THETA attribute in TrueAngle operator");
+                    "ERROR: no DELTA_2THETA attribute in QE operator");
         return message;
       }
 
@@ -303,7 +303,7 @@ public class SpectrometerTofToQE extends  DataSetOperator
    */
   public Object clone()
   {
-    TrueAngle new_op = new TrueAngle( );
+    SpectrometerTofToQE new_op = new SpectrometerTofToQE( );
                                                  // copy the data set associated
                                                  // with this operator
     new_op.setDataSet( this.getDataSet() );
