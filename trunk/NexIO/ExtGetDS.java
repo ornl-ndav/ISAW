@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2001/07/24 20:01:41  rmikk
+ * Major Reorganization to allow several NXdata's for one
+ * DataSet ( Group those with like x values)
+ *
  * Revision 1.2  2001/07/17 13:52:50  rmikk
  * Added Changes to get more fields
  *
@@ -159,22 +163,22 @@ public DataSet getDataSet( int data_set_num )
    NxNode nd = node.getChildNode( 
                     ( String )( nEntries.elementAt( nxentry ) ) ) ;
    AttributeList AL = getGlobalAttributes() ;
-  System.out.println("****Instrument type ****");
+  
    String Analysis = getAnalysis( nd );
-   System.out.print("Analysis="+Analysis+":");
+   
    Inst_Type it = new Inst_Type();
    int instrType = it.getIsawInstrNum( Analysis );
-    System.out.print("inst1Type ="+instrType+"::");
+   
    if( (Analysis == null) ||(Analysis ==""))
      {Object OO = nd.getAttrValue( "isaw_instr_type");
-      System.out.print("inside"+ OO+"::");
+      
      if(OO != null) if( OO instanceof int[])
      if( Array.getLength( OO) > 0)
        { instrType = ((int[])OO)[0];
         
        }
      }
-    System.out.println("END instr type ="+instrType);
+   
    DataSetFactory DSF = new DataSetFactory( "" ) ;
    DataSet DS = DSF.getTofDataSet(instrType) ;   
    DS.setAttributeList( AL ) ;
@@ -183,6 +187,7 @@ public DataSet getDataSet( int data_set_num )
      {String S = "M" ;
       if( getType( data_set_num ) == ( Retriever.HISTOGRAM_DATA_SET ) )
           S = "H" ;
+      else nhists++;
        S = S + nhists ;
        String F = filename ;
        int k = filename.lastIndexOf( "." ) ;
@@ -267,6 +272,8 @@ private String getAnalysis( NxNode node)
           }
 	if( nmon > 0 )
             nmon = 1 ;
+        if( ndats > 0)
+            ndats = 1;
        nmonitors.addElement( new Integer( nmon ) ) ;
        ndatasets.addElement( new Integer( ndats ) ) ;
        }
@@ -317,13 +324,14 @@ private String getAnalysis( NxNode node)
  
        if( S.equals( "TOFNDGS" ) )
            {Entry = new NXentry_TOFNDGS( node , DS ) ;
-            DS.setAttribute( new IntAttribute( Attribute.INST_TYPE ,
-                              InstrumentType.TOF_DG_SPECTROMETER ) ) ;      
+	   //DS.setAttribute( new IntAttribute( Attribute.INST_TYPE ,
+	   //                  InstrumentType.TOF_DG_SPECTROMETER ) ) ;      
            }
        else 
            {Entry = new NXentry_TOFNDGS( node , DS ) ;
             Entry.setNxData( new NxData_Gen(  ) ) ;
            }
+      
        res = Entry.processDS( DS , index ) ;
        if( Entry.getErrorMessage()!= "" )
 	   errormessage  += ";" + Entry.getErrorMessage() ;
