@@ -28,6 +28,11 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ * $Log$
+ * Revision 1.7  2003/07/02 18:16:02  bouzekc
+ * Added log header.
+ *
+ *
  */
 package DataSetTools.wizard;
 
