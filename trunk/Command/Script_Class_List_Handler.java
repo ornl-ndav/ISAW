@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.46  2003/06/26 22:31:43  rmikk
+ * Added a try -catch structure around the new ScriptOperator
+ *   statement to catch the newly thrown exceptionss
+ *
  * Revision 1.45  2003/06/17 22:21:12  pfpeterson
  * Format changes to javadocs.
  *
@@ -927,13 +931,21 @@ public class Script_Class_List_Handler  implements OperatorHandler{
 
         String Extension = filename.substring( i + 1 );
         if( Extension.equalsIgnoreCase("iss")){ // it is a script
-            ScriptOperator X = new ScriptOperator( filename );
+            try{ScriptOperator X = new ScriptOperator( filename );
             if(X.getErrorMessage().length()<=0){
                 add( X );
                 if( LoadDebug )
                     System.out.println( "OK" );
             }else if( LoadDebug ){
                 System.out.println( "NO "+X.getErrorMessage() );
+            }
+            }
+           catch( Throwable uu)
+            {
+               if( LoadDebug )
+                System.out.println( "NO "+uu.getMessage() );
+
+
             }
         }else if(Extension.equalsIgnoreCase("py")){
           // try to get the factory instance
