@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2003/11/23 01:18:02  bouzekc
+ *  Refactored getPropertyChangeSupport() and setPropertyChangeSupport() into
+ *  firePropertyChange(), as this is the functionality that derived classes
+ *  really need.
+ *
  *  Revision 1.33  2003/11/20 01:43:50  bouzekc
  *  Removed final keyword from propertyChange().
  *
@@ -221,7 +226,8 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   // extra instance variables
   private boolean initialized;
   private boolean ignorePropertyChange;
-  private PropertyChangeSupport propertyChangeSupport;
+  private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( 
+      this );
   private Hashtable propListeners        = new Hashtable(  );
 
   //~ Constructors *************************************************************
@@ -252,7 +258,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     setDrawValid( true );
     setInitialized( false );
     setIgnorePropertyChange( false );
-    setPropertyChangeSupport( new PropertyChangeSupport( this ) );
   }
 
   //~ Methods ******************************************************************
@@ -443,8 +448,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    */
   public final void addPropertyChangeListener( PropertyChangeListener pcl ) {
     propListeners.put( pcl, UNKNOWN_PROPERTY );
-    getPropertyChangeSupport(  )
-      .addPropertyChangeListener( pcl );
+    propertyChangeSupport.addPropertyChangeListener( pcl );
 
     if( getInitialized(  ) ) {
       getEntryWidget(  )
@@ -464,8 +468,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   public final void addPropertyChangeListener( 
     String prop, PropertyChangeListener pcl ) {
     propListeners.put( pcl, prop );
-    getPropertyChangeSupport(  )
-      .addPropertyChangeListener( prop, pcl );
+    propertyChangeSupport.addPropertyChangeListener( prop, pcl );
 
     if( getInitialized(  ) ) {
       getEntryWidget(  )
@@ -495,14 +498,13 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
       }
 
       if( propListeners != null ) {
-        Enumeration e = propListeners.keys(  );
+        Enumeration e              = propListeners.keys(  );
         PropertyChangeListener pcl = null;
-        String propertyName = null;
+        String propertyName        = null;
 
         while( e.hasMoreElements(  ) ) {
           pcl            = ( PropertyChangeListener )e.nextElement(  );
           propertyName   = ( String )propListeners.get( pcl );
-
           pg.addPropertyChangeListener( propertyName, pcl );
         }
       }
@@ -530,8 +532,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
       return;
     }
     this.setValid( false );
-    getPropertyChangeSupport(  )
-      .firePropertyChange( ev );
+    propertyChangeSupport.firePropertyChange( ev );
   }
 
   /**
@@ -544,8 +545,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    */
   public final void removePropertyChangeListener( PropertyChangeListener pcl ) {
     propListeners.remove( pcl );
-    getPropertyChangeSupport(  )
-      .removePropertyChangeListener( pcl );
+    propertyChangeSupport.removePropertyChangeListener( pcl );
 
     if( getInitialized(  ) ) {
       getEntryWidget(  )
@@ -616,25 +616,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    */
   protected final Hashtable getPropListeners(  ) {
     return this.propListeners;
-  }
-
-
-  /**
-   * Mutator method for child classes to set the PropertyChangeSupport.
-   *
-   * @param pcs The new PropertyChangeSupport to use.
-   */
-  protected final void setPropertyChangeSupport( PropertyChangeSupport pcs ) {
-    this.propertyChangeSupport = pcs;
-  }
-
-  /**
-   * Accessor method for child classes to get the PropertyChangeSupport.
-   *
-   * @return The PropertyChangeSupport associated with this ParameterGUI.
-   */
-  protected final PropertyChangeSupport getPropertyChangeSupport(  ) {
-    return this.propertyChangeSupport;
   }
 
   /**
@@ -739,6 +720,25 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   }
 
   /**
+   * Method to return an Enumeration of the PropertyChangeListeners for this
+   * ParameterGUI.
+   *
+   * @return The Enumeration of PropertyChangeListeners.
+   */
+  protected Enumeration getPropertyChangeListeners(  ) {
+    return propListeners.keys(  );
+  }
+
+  /**
+   * Utility method to fire PropertyChangeEvents.
+   *
+   * @param event The event to fire.
+   */
+  protected void firePropertyChange( PropertyChangeEvent event ) {
+    propertyChangeSupport.firePropertyChange( event );
+  }
+
+  /**
    * When this is called, all of the internal PropertyChangeListeners will be
    * added to the entrywidget.
    */
@@ -780,5 +780,4 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     this.validCheck.setVisible( this.getDrawValid(  ) );
     this.setName( this.getName(  ) );
   }
-
 }
