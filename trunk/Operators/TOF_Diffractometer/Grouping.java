@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/02/26 16:02:56  dennis
+ * Fixed problem with missing group.  (Chris Bouzek)
+ *
  * Revision 1.6  2003/02/24 23:32:59  dennis
  * Un-commented the print USAGE statement.
  *
@@ -180,6 +183,7 @@ public class Grouping extends GenericTOF_Diffractometer{
 
         // get the list of group ids
         int gid[] = IntList.ToArray( group_str );
+                
         if(DEBUG)System.out.println("Grouping: "+gid[0]+" to "
                                   +gid[gid.length-1]);
 
@@ -208,6 +212,13 @@ public class Grouping extends GenericTOF_Diffractometer{
                     }
                 }
             }
+        }
+        
+        //handle the case where no valid group IDs are sent in
+        if( d == null )
+        {  
+          return new ErrorString(
+            "No data entries with group ID(s) " + group_str + "\n");
         }
         
         // normalize the data by the number of blocks combined to make
