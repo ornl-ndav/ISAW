@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2002/09/19 15:57:21  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.17  2002/08/19 17:07:05  pfpeterson
  * Reformated file to make it easier to read.
  *
@@ -101,6 +104,7 @@ import java.awt.event.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.components.ParametersGUI.*;
+import DataSetTools.parameter.*;
 import DataSetTools.util.*;
 import java.beans.*;
 import java.io.*;
@@ -414,7 +418,7 @@ public class ScriptOperator extends GenericOperator
         return SP.setParameter( parameter,index);
     }
     
-    public Parameter getParameter( int index){
+    public IParameter getParameter( int index){
         return SP.getParameter( index );
     }
 

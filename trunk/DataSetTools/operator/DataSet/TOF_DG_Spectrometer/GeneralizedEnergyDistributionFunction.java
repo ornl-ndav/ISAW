@@ -32,6 +32,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.4  2002/09/19 16:03:09  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.3  2002/03/13 16:19:17  dennis
  *  Converted to new abstract Data class.
  *
@@ -118,6 +121,7 @@ import  DataSetTools.math.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.Math.Analyze.*;
 import  DataSetTools.operator.DataSet.Conversion.XAxis.*;
+import  DataSetTools.parameter.*;
 
 /**
   *  Compute the Generalized Energy Distribution Function for a direct 
@@ -181,7 +185,7 @@ public class GeneralizedEnergyDistributionFunction
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new Float(temperature) );
 
     parameter = getParameter( 1 );

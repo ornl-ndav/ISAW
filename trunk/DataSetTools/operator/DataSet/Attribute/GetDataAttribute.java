@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:00:04  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.1  2002/02/22 21:00:06  pfpeterson
  *  Operator reorganization.
  *
@@ -81,6 +84,7 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
   *  Allows the user to get attributes from the Data blocks in a DataSet
@@ -127,7 +131,7 @@ public class GetDataAttribute extends    DS_Attribute
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
-    Parameter parameter ;
+    IParameter parameter ;
 
     parameter = getParameter( 0 );
     parameter.setValue( index);

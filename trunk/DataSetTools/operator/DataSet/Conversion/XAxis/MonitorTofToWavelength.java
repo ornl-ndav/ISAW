@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/09/19 16:00:34  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.3  2002/07/08 20:46:08  pfpeterson
  *  Now uses String constants in FontUtil.
  *
@@ -54,6 +57,7 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.DataSet.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
  * This operator converts a beammonitor time-of-flight DataSet to wavelength.
@@ -105,7 +109,7 @@ public class MonitorTofToWavelength extends    XAxisConversionOp
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new Float( min_wl ) );
 
     parameter = getParameter( 1 );

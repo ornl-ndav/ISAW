@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/09/19 16:05:49  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.5  2002/07/29 21:44:02  dennis
  *  Now uses scattering angle, rather than angle PHI in plane
  *  for calculating multiple scattering corrections.  NOTE: This
@@ -131,6 +134,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
  * This operator calculates detector normalization factors for a direct 
@@ -203,7 +207,7 @@ public class SpectrometerDetectorNormalizationFactor extends    GenericSpecial
   {
     this();
 
-    Parameter parameter = getParameter(0);
+    IParameter parameter = getParameter(0);
     parameter.setValue( ds );
 
     parameter = getParameter(1);

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:02:21  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.1  2002/02/22 21:02:59  pfpeterson
  *  Operator reorganization.
  *
@@ -121,6 +124,7 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
+import  DataSetTools.parameter.*;
 
 /**
   *  Sum Data blocks specified by an attribute to form a new DataSet 
@@ -172,7 +176,7 @@ public class SumByAttribute extends    DataSetOp
     this();                         // do the default constructor, then set
                                     // the parameter value(s)
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new AttributeNameString(attr_name) );
 
     parameter = getParameter( 1 );

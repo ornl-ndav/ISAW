@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/09/19 15:58:50  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.2  2002/08/30 19:45:49  rmikk
  * Eliminated reference to a operator used only for testing
  *
@@ -47,6 +50,7 @@ package Operators.TOF_SCD;
 
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
+import DataSetTools.parameter.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.viewer.Contour.*;
@@ -91,7 +95,7 @@ public class ViewQxQyQz extends GenericTOF_SCD
    {
       super( TITLE );
 
-      Parameter parameter = getParameter(0);
+      IParameter parameter = getParameter(0);
       parameter.setValue( ds );
       StringChoiceList sl= new  StringChoiceList(choice_list);
       sl.setString( choice);

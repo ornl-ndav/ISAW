@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:00:11  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.1  2002/09/17 20:28:12  dennis
  *  Operator to set Group ID on all Data blocks in a Data set.
  *
@@ -47,6 +50,7 @@ import  java.util.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
   * This operator sets the Group IDs for all Data blocks in a DataSet.  The
@@ -99,7 +103,7 @@ public class SetGroupIDs extends    DS_Attribute
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( ids );
 
     setDataSet( ds );               // record reference to the DataSet that

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:02:18  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.1  2002/07/17 20:28:39  dennis
  *  Mathematical operation between one Data block of a second
  *  DataSet and all Data blocks of the current DataSet.
@@ -45,6 +48,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
+import  DataSetTools.parameter.*;
 
 /**
   *  Multiply one Data "block" from a second DataSet times all Data "blocks"
@@ -102,7 +106,7 @@ public class DataSetMultiply_1 extends DataSetOp
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( ds_2 );
 
     parameter = getParameter( 1 );

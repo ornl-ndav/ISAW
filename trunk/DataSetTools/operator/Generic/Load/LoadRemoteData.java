@@ -31,6 +31,9 @@
  * Modified:
  *  
  *  $Log$
+ *  Revision 1.3  2002/09/19 16:05:35  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.2  2002/04/08 14:08:46  dennis
  *  Changed default port to 6089
  *
@@ -66,6 +69,7 @@ import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import NetComm.*;
 import DataSetTools.operator.Parameter;
+import DataSetTools.parameter.*;
 
 /**
  * Operator to load all of the DataSets from a remote data source.  
@@ -111,7 +115,7 @@ public class LoadRemoteData extends    GenericLoad
    {
       super( "Load Remote Data" );
 
-      Parameter parameter = getParameter(0);
+      IParameter parameter = getParameter(0);
       parameter.setValue( host );
 
       parameter = getParameter(1);

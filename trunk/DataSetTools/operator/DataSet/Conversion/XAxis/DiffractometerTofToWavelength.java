@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2002/09/19 16:00:30  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.6  2002/07/23 18:12:58  dennis
  * Fixed javadoc comment.
  *
@@ -128,6 +131,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
  * This operator converts a neutron time-of-flight DataSet for a Diffractometer,
@@ -176,7 +180,7 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new Float( min_wl ) );
 
     parameter = getParameter( 1 );

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/09/19 16:01:09  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.2  2002/07/15 19:38:30  dennis
  *  Now requests use of Java's sort method when a STABLE sort
  *  is required.
@@ -107,6 +110,7 @@ import  java.util.Vector;
 import  DataSetTools.util.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
   * This operator sorts a DataSet based on multiple attributes of the Data 
@@ -177,7 +181,7 @@ public class DataSetMultiSort  extends    DS_EditList
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );            // first attribute
+    IParameter parameter = getParameter( 0 );            // first attribute
     parameter.setValue( new AttributeNameString(attr_name_1) );
 
     parameter = getParameter( 1 );

@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:05:18  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.1  2002/02/22 20:57:19  pfpeterson
  *  Operator reorganization.
  *
@@ -78,6 +81,7 @@ package DataSetTools.operator.Generic.Batch;
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
  * This operator prints the result of calling an object's toString() method
@@ -109,7 +113,7 @@ public class EchoObject extends    GenericBatch
   public EchoObject( Object ob )
   {
     this();
-    Parameter parameter = getParameter(0);
+    IParameter parameter = getParameter(0);
     parameter.setValue( ob );
   }
 

@@ -32,6 +32,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.4  2002/09/19 15:58:06  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.3  2002/04/19 19:40:41  dennis
  *  Fixed "broken" @see javadoc comments.
  *
@@ -126,6 +129,7 @@ import  DataSetTools.retriever.*;
 import  DataSetTools.operator.*;
 import  DataSetTools.operator.Generic.TOF_DG_Spectrometer.*;
 import  DataSetTools.viewer.*;
+import  DataSetTools.parameter.*;
 
 /**
   *  Compute the Generalized Energy Distribution Function for a direct 
@@ -180,7 +184,7 @@ public class GeneralizedEnergyDistributionFunction
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( ds );
 
     parameter = getParameter( 1 );

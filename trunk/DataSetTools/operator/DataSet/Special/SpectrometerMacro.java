@@ -35,6 +35,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/09/19 16:02:54  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.2  2002/03/05 19:26:06  pfpeterson
  * Updated @see references in javadocs.
  *
@@ -93,6 +96,7 @@ import  DataSetTools.retriever.*;
 import  ChopTools.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.Conversion.XAxis.*;
+import  DataSetTools.parameter.*;
 
 
 /**
@@ -134,7 +138,7 @@ public class SpectrometerMacro extends    DS_Special
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( monitor_ds );
 
     parameter = getParameter( 1 );

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/09/19 15:58:49  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.1  2002/08/02 22:51:07  dennis
  * Very crude, marginally useful form of reciprocal lattice viewer in
  * the form of an operator.
@@ -41,6 +44,7 @@ package Operators.TOF_SCD;
 
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
+import DataSetTools.parameter.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.dataset.*;
@@ -83,7 +87,7 @@ public class SCDReciprocalLattice extends GenericTOF_SCD
    {
       super( TITLE );
 
-      Parameter parameter = getParameter(0);
+      IParameter parameter = getParameter(0);
       parameter.setValue( path );
 
       parameter = getParameter(1);

@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/09/19 16:05:19  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.1  2002/02/22 20:57:21  pfpeterson
  * Operator reorganization.
  *
@@ -51,6 +54,7 @@ import  java.util.*;
 import  DataSetTools.operator.Operator;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.Generic.Batch.GenericBatch;
+import  DataSetTools.parameter.*;
 
 /**
  * This operator pauses the program.
@@ -81,7 +85,7 @@ public class pause extends  GenericBatch
   public pause(   int      ms        )
   {
     this();
-    Parameter parameter = getParameter(0);
+    IParameter parameter = getParameter(0);
     parameter.setValue( new Integer( ms ) );
   }
 

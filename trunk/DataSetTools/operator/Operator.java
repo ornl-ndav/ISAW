@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2002/09/19 16:04:59  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.15  2002/05/29 22:45:46  dennis
  *  Uncommented some String definitions.
  *
@@ -129,6 +132,7 @@ package DataSetTools.operator;
 
 import java.util.Vector;
 import java.io.*;
+import DataSetTools.parameter.IParameter;
 
 /**
  * The base class for operators.  An operator object provides information about
@@ -290,9 +294,9 @@ abstract public class Operator implements Serializable
     *  @param   parameter   The new (name, value) pair to be added to the list
     *                       of parameters for this object.
     */
-   protected void addParameter( Parameter parameter )
+   protected void addParameter( IParameter parameter )
    {
-     parameters.addElement( parameter.clone() );
+       parameters.addElement( parameter.clone() );
    }
 
   /* ---------------------------- getNum_parameters ------------------------ */
@@ -321,10 +325,10 @@ abstract public class Operator implements Serializable
    *           of parameters for this object.  If the index is invalid,
    *           this returns null.
    */
-  public Parameter getParameter( int index )
+  public IParameter getParameter( int index )
   {
     if ( index >= 0 && index < parameters.size() )
-      return( (Parameter)parameters.elementAt( index ) );
+      return( (IParameter)parameters.elementAt( index ) );
     else
       return null;
   }
@@ -348,14 +352,14 @@ abstract public class Operator implements Serializable
    *           has a different data type than the parameter at the given
    *           index.
    */
-  public boolean setParameter( Parameter parameter, int index )
+  public boolean setParameter( IParameter parameter, int index )
   { 
     if ( index < 0 || index >= parameters.size() )
       return false;
                                              // NOTE: object parameters are
                                              //       represented using null
    
-    Object value = ((Parameter)parameters.elementAt( index )).getValue();
+    Object value = ((IParameter)parameters.elementAt( index )).getValue();
     if (  value == null || parameter.getValue() == null ||
           value.getClass() == parameter.getValue().getClass() ) 
     {
@@ -402,7 +406,19 @@ abstract public class Operator implements Serializable
 
     parameters.removeAllElements();
     for ( int i = 0; i < num_param; i++ )
-      addParameter( (Parameter)op.getParameter(i).clone() );
+      addParameter( (IParameter)op.getParameter(i).clone() );
   }
 
+  /**
+   * Returns a string containing the end-user documentation for the
+   * new help system.
+   */
+  public String getDocumentation(){
+      return "This is the placeholder documentation. The full documentation needs to be written using the following options in a manner consistent with JavaDocs\n\n"
+          +"@overview\n\n"
+          +"@assumptions\n\n"
+          +"@algorithm\n\n"
+          +"@param\n\n"
+          +"@return";
+  }
 } 

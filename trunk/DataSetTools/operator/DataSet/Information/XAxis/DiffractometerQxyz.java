@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/09/19 16:01:29  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.1  2002/07/31 16:28:00  dennis
  * Calculate vector Q in laboratory frame of reference for a
  * diffractometer ( eg. SAND )
@@ -47,6 +50,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
  *  This operator produces a string giving the values of Qx, Qy, Qz
@@ -83,7 +87,7 @@ public class DiffractometerQxyz extends    XAxisInformationOp
   {
     this();                        
 
-    Parameter parameter = getParameter(0); 
+    IParameter parameter = getParameter(0); 
     parameter.setValue( new Integer(i) );
     
     parameter = getParameter(1); 
