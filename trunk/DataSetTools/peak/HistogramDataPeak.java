@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/03/18 21:19:13  dennis
+ *  Now omits first and last few channels when searching for peak.
+ *  Also, if the peak is too near either end of the array, the linear
+ *  background is just set to 0.
+ *
  *  Revision 1.6  2002/03/13 16:15:23  dennis
  *  Converted to new abstract Data class.
  *
@@ -151,9 +156,11 @@ public class HistogramDataPeak implements IPeak,
        return;
      }
 
-     position_index = 0;                          // search for peak value
-     float amplitude  = y_vals[0];
-     for ( int i = 0; i < y_vals.length; i++ )
+     position_index = 0;                          // search for peak value using
+                                                  // interior channels only
+     float amplitude  = y_vals[MIN_NUM_CHANNELS/2];
+     for ( int i = MIN_NUM_CHANNELS/2; 
+               i < y_vals.length-MIN_NUM_CHANNELS/2; i++ )
        if ( y_vals[i] > amplitude )
        {
          amplitude = y_vals[i];
@@ -607,17 +614,18 @@ public class HistogramDataPeak implements IPeak,
   {
      float x_min = getPosition() - getFWHM() * width_factor;
      float x_max = getPosition() + getFWHM() * width_factor;
-
      int  i_min = arrayUtil.get_index_of( x_min, x_vals );
      int  i_max = arrayUtil.get_index_of( x_max, x_vals );
-     if ( i_max < 0 )
-       i_max = x_vals.length - 1;
 
-     if ( i_min - 5  < 0 )                   // make sure that the indices stay
-       i_min = 5;                            // valid
-
-     if ( i_max + 5 >= y_vals.length )
-       i_max = y_vals.length - 6;
+                                     // if not enough data, set background = 0
+     if ( i_max > y_vals.length - 6 || i_max < 6  ||
+          i_min > y_vals.length - 7 || i_min < 5  ||
+          i_min >= i_max                             )
+     {
+       slope     = 0;            
+       intercept = 0;
+       return;
+     }
 
      float x_sum = 0;                            // average points left of
      float y_sum = 0;                            // the peak
