@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2002/03/18 21:37:17  dennis
+ *  Now adds Label attribute, initialized as the Group ID.
+ *  getCopyOfY_values() and getCopyOfErrors() now check whether
+ *  or not the array is null before trying to copy it.
+ *
  *  Revision 1.21  2002/03/14 23:41:51  dennis
  *  Now implements Serializable.
  *
@@ -116,6 +121,9 @@ public abstract class Data implements IData,
     setGroup_ID( group_id );
     selected = 0;
     hide     = false;
+    StringAttribute attr = new StringAttribute( Attribute.LABEL, 
+                                                "Group " + group_id );
+    attr_list.setAttribute( attr );
   }
 
   /**
@@ -387,9 +395,14 @@ public abstract class Data implements IData,
   public float[]  getCopyOfY_values()       
   {
     float y_vals[]   = getY_values();
-    float new_vals[] = new float[ y_vals.length ];
-    System.arraycopy( y_vals, 0, new_vals, 0, y_vals.length );
-    return new_vals;
+    if ( y_vals != null )
+    {
+      float new_vals[] = new float[ y_vals.length ];
+      System.arraycopy( y_vals, 0, new_vals, 0, y_vals.length );
+      return new_vals;
+    }
+    else
+      return null;
   } 
 
   /**
@@ -398,9 +411,14 @@ public abstract class Data implements IData,
   public float[]  getCopyOfErrors()       
   {
     float errors[]   = getErrors();
-    float new_vals[] = new float[ errors.length ];
-    System.arraycopy( errors, 0, new_vals, 0, errors.length );
-    return new_vals;
+    if ( errors != null )
+    {
+      float new_vals[] = new float[ errors.length ];
+      System.arraycopy( errors, 0, new_vals, 0, errors.length );
+      return new_vals;
+    }
+    else
+      return null;
   } 
 
 
