@@ -23,15 +23,17 @@
  *           University of Wisconsin-Stout
  *           Menomonie, WI 54751, USA
  *
- * This work was supported by the Intense Pulsed Neutron Source Division
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0218882, and by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
- * This work was supported by the National Science Foundation under
- * grant number
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2004/03/01 18:32:48  dennis
+ * Fixed acknowlegement in documentation.
+ *
  * Revision 1.3  2004/02/16 19:46:26  bouzekc
  * Now implements HiddenOperator to keep it out of the menus.
  *
