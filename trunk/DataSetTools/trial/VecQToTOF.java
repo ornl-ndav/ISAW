@@ -31,9 +31,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2004/07/14 16:48:22  dennis
+ *  Modified the method intensityAtQ() to work for DataSets containing
+ *  functions as well as histograms.
+ *
  *  Revision 1.20  2004/07/01 16:55:14  rmikk
- *  Added new Static methods for converting between the Q Vector, x,y,time,
- *    and xcm,ycm, and wl.  These methods start with Q in lab coordinates
+ *  Added new Static methods for converting between the Q Vector, x,y,time
+ *  and xcm,ycm, and wl, using Grids instead of DataSets.  These methods 
+ *  start with Q in lab coordinates
  *
  *  Revision 1.19  2004/05/03 16:26:14  dennis
  *  Removed unused local variable.
@@ -339,7 +344,6 @@ public class VecQToTOF
     System.out.println("det_width, height = " + det_width + 
                                          ", " + det_height  );
 */
-
     det_center = new Vector3D( corner1 );   // find "center" as average of
     det_center.multiply( 0.5f );            // two opposite corners
     temp.set( corner2 );
@@ -612,6 +616,7 @@ public class VecQToTOF
     return result;
 }
 
+
 /* -------------------------- intensityAtQ ------------------------------ */
 /**
  *  Calculate the interpolated intensity based on a specified q vector.  
@@ -723,21 +728,32 @@ public class VecQToTOF
         val[i][j] = 0.0f;                              // bin since we can't 
       else                                             // interpolate
       {
-        float bin_mid = (x_vals[index] + x_vals[index+1]) / 2;
-        if ( tof > bin_mid )
+        if ( d.isHistogram() )
+        {
+          float bin_mid = (x_vals[index] + x_vals[index+1]) / 2;
+          if ( tof > bin_mid )
+          {
+            first_index = index;
+            last_index = index+1;
+            first_mid = bin_mid;
+            last_mid = (x_vals[last_index] + x_vals[last_index+1]) / 2;
+          }
+          else
+          {
+            first_index = index-1;
+            last_index = index;
+            first_mid = (x_vals[first_index] + x_vals[first_index+1]) / 2;
+            last_mid = bin_mid;
+          }
+        }
+        else   // must be function, so x-values are already at bin centers
         {
           first_index = index;
-          last_index = index+1;
-          first_mid = bin_mid;
-          last_mid = (x_vals[last_index] + x_vals[last_index+1]) / 2;
+          last_index  = index+1;
+          first_mid = x_vals[index];
+          last_mid  = x_vals[last_index];
         }
-        else
-        {
-          first_index = index-1;
-          last_index = index;
-          first_mid = (x_vals[first_index] + x_vals[first_index+1]) / 2;
-          last_mid = bin_mid;
-        }
+
         tof_frac = (tof - first_mid)/(last_mid - first_mid);
         val[i][j] = (1-tof_frac) * y_vals[first_index] + 
                         tof_frac * y_vals[last_index];
@@ -763,37 +779,38 @@ public class VecQToTOF
     return intensity;
   }
 
+
+  /* ------------------------- getDetectorCenter ------------------------- */
   /**
    * Gets an accurate position of the detector's center
    * @param grid  The grid object describing the detector
    * @return  The position in 3D for the center of the grid
    */
-  private static Vector3D getDetectorCenter( IDataGrid grid)
+  private static Vector3D getDetectorCenter( IDataGrid grid )
   {
-    
     Vector3D corner1 = grid.position( 1, 1 );    
     Vector3D corner2 = grid.position( grid.num_rows(), grid.num_cols() );
     Vector3D temp = new Vector3D( corner1 );
     temp.subtract( corner2 );
-    Vector3D det_center = new Vector3D( corner1 );   // find "center" as average of
-    det_center.multiply( 0.5f );            // two opposite corners
+    Vector3D det_center = new Vector3D( corner1 );   // find "center" as average
+    det_center.multiply( 0.5f );                     // of two opposite corners
     temp.set( corner2 );
     temp.multiply( 0.5f );
     det_center.add( temp );
     return det_center;
-    
  }
  
  
+  /* -----------------------------  RCofQVec ----------------------------- */
   /**
    * Determines the row and column of the pixel on grid corresponding to the
    * Q vector( the Q with 2PI in lab coordinates). 
    * @param Qlab_w2pi  The Q vector with 2PI in lab coordinates
    * @param grid       The grid describing the detector
    * @return  two floats: the first is the row(index) and the second is 
-   *            the column
+   *          the column
    */
-  public static float[] RCofQVec( Vector3D Qlab_w2pi, IDataGrid grid)
+  public static float[] RCofQVec( Vector3D Qlab_w2pi, IDataGrid grid )
   {
     if( Qlab_w2pi == null)
       return null;
@@ -838,22 +855,23 @@ public class VecQToTOF
     Res[0]= f_row;
     Res[1] =f_col;
     return Res;
-     
   }
   
+
+  /* -------------------------- XcmYcmofQVec ----------------------------- */
   /**
    * Determines the distance from the center(cm) of the pixel on grid 
    * corresponding to the Q vector( the Q with 2PI in lab coordinates). 
+   *
    * @param Qlab_w2pi  The Q vector with 2PI in lab coordinates
    * @param grid       The grid describing the detector
+   *
    * @return  two floats: the first is the distance in the grid.x_vec 
    *           direction and the second is the distance(cm) in the
    *           grid.y_vec direction. 
-   *                    
    */
   public static float[] XcmYcmofQVec( Vector3D Qlab_w2pi, IDataGrid grid)
   {
-    
     float[]RC = RCofQVec( Qlab_w2pi, grid);
     if( RC == null)
       return null;
@@ -861,19 +879,23 @@ public class VecQToTOF
     Res[0] = grid.x(RC[0],RC[1])*100;
     Res[1] = grid.y(RC[0],RC[1])*100;
     return Res;
-    
  }
+
  
+ /* --------------------------- TofofQVec ------------------------------ */
  /**
   * Determines the TOF corresponding to the Q vector( the Q with 2PI in lab
   *      coordinates).  
-   * @param Qlab_w2pi  The Q vector with 2PI in lab coordinates
-   * @param grid       The grid describing the detector
+  *
+  * @param Qlab_w2pi            The Q vector with 2PI in lab coordinates
+  * @param grid                 The grid describing the detector
   * @param initial_path_length  The length(m) from source to sample
+  *
   * @return The time of flight for this Q vector.
   */
-  public static float TofofQVec( Vector3D Qlab_w2pi, IDataGrid grid, 
-                             float initial_path_length )
+  public static float TofofQVec( Vector3D   Qlab_w2pi, 
+                                 IDataGrid  grid, 
+                                 float      initial_path_length )
   {
     float[] RC = RCofQVec(Qlab_w2pi, grid);
     if( RC == null)
@@ -884,24 +906,28 @@ public class VecQToTOF
     float angle = (float)( Math.acos( pix_position.dot( unit_k ) ));
 
     float tof = tof_calc.TOFofDiffractometerQ( angle,
-                               initial_path_length+final_path,
-                               Qlab_w2pi.length() );
+                                               initial_path_length+final_path,
+                                               Qlab_w2pi.length() );
     return tof;                            
   }
   
+
+  /* ---------------------------- WlofQVec ------------------------------ */
   /**
-   * Determines the wavelength corresponding to the Q vector( the Q with 2PI in lab
-   *      coordinates).  
-    * @param Qlab_w2pi  The Q vector with 2PI in lab coordinates
-    * @param grid       The grid describing the detector
+   * Determines the wavelength corresponding to the Q vector( the Q with 2PI 
+   * in lab coordinates).  
+   *
+   * @param Qlab_w2pi  The Q vector with 2PI in lab coordinates
+   * @param grid       The grid describing the detector
    * @param initial_path_length  The length(m) from source to sample
+   *
    * @return The wavelength for this Q vector.
    */
-  public static float WlofQVec( Vector3D Qlab_w2pi, IDataGrid grid, 
-                                               float initial_path_length ) 
+  public static float WlofQVec( Vector3D  Qlab_w2pi, 
+                                IDataGrid grid, 
+                                float     initial_path_length ) 
   {
     float t = TofofQVec( Qlab_w2pi, grid, initial_path_length );
-        
     return tof_calc.Wavelength( initial_path_length+Qlab_w2pi.length() , t );
   }
   
