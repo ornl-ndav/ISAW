@@ -261,8 +261,10 @@ C	TOTAL, NET
    this.RUNBds= RUNBds;
    this.RUNCds=RUNCds ;
    this.qu=qu;
-
-    
+    XAxisConversionOp  opQ =(XAxisConversionOp) (RUNSds[1].getOperator("Convert to Q"));
+    System.out.println( "QQQ="+ opQ.getClass()+"::"+ 
+              opQ.convert_X_Value(RUNSds[1].getData_entry(0).getX_scale().getX(0),0));
+        
 
          RUNS=(((IntListAttribute)(RUNSds[0].getAttribute( Attribute.RUN_NUM))).getIntegerValue())[0];
 
@@ -437,6 +439,9 @@ C	TOTAL, NET
    tof_data_calc.SubtractDelayedNeutrons( (TabulatedData)RUNCds[1].getData_entry(1),
                                       30f,BETADN);
 
+    opQ =(XAxisConversionOp) (RUNSds[1].getOperator("Convert to Q"));
+    System.out.println( "QQQ del fra="+ opQ.getClass()+"::"+ 
+              opQ.convert_X_Value(RUNSds[1].getData_entry(0).getX_scale().getX(0),0));
    
   
     
@@ -448,6 +453,12 @@ C	TOTAL, NET
    
      RUNCds[1] =convertToLambda(RUNCds[1]);
      RUNCds[0] =convertToLambda(RUNCds[0]);
+
+    opQ =(XAxisConversionOp) (RUNSds[1].getOperator("Convert to Q"));
+    System.out.println( "QQQ cvt lambda="+ opQ.getClass()+"::"+ 
+              opQ.convert_X_Value(RUNSds[1].getData_entry(0).getX_scale().getX(0),0));
+
+    System.out.println("Cvr to llamda?"+RUNSds[1].getOperator("Convert to Wavelength"));
     /*PixelInfoList pilist7= (PixelInfoList)(SampleHist.getData_entry(0).
                              getAttribute( Attribute.PIXEL_INFO_LIST).getValue());
     IDataGrid grid7=   (pilist7.pixel(0)).DataGrid();
@@ -473,7 +484,11 @@ C	TOTAL, NET
 
     LAMBDA = xscl.getXs();
  
-
+    opQ =(XAxisConversionOp) (RUNSds[1].getOperator("Convert to Q"));
+    System.out.println( "QQQ cvt lamb 1="+ opQ.getClass()+"::"+ 
+              opQ.convert_X_Value(RUNSds[1].getData_entry(0).getX_scale().getX(0),0));
+   
+    System.out.println("Cvr to llamda?"+RUNSds[1].getOperator("Convert to Wavelength"));
 
   
 	 this.SCALE = this.SCALE/THICK;
@@ -1166,6 +1181,12 @@ C	RUNS.  NORMALIZE AND CORRECT THIS DATA TO PRODUCE I(X,Y,SLICE)
      if( Res instanceof String)
           return new ErrorString( "AB"+(String)Res);
     RelSamp = (DataSet) Res;
+
+    XAxisConversionOp  opQ =(XAxisConversionOp) (RelSamp.getOperator("Convert to Q"));
+    System.out.println( "QQQRelsamp="+ opQ.getClass()+"::"+ 
+              opQ.convert_X_Value(RelSamp.getData_entry(0).getX_scale().getX(0),0));
+   
+    System.out.println("Cvr to llamda?"+RelSamp.getOperator("Convert to Wavelength"));
    System.out.println( "ration samp to monitor"+RelSamp.getData_entry(2).getY_values()[4]);
    RelSamp.setTitle("Samp to MOnitor");
 
@@ -1191,6 +1212,11 @@ C	RUNS.  NORMALIZE AND CORRECT THIS DATA TO PRODUCE I(X,Y,SLICE)
           return new ErrorString( "AG:"+(String)Res);
    RelSamp = (DataSet) Res;
      RelSamp.setTitle("Sample rel Monitor - CAdmium");
+    opQ =(XAxisConversionOp) (RelSamp.getOperator("Convert to Q"));
+    System.out.println( "QQQRelsamp-cad="+ opQ.getClass()+"::"+ 
+              opQ.convert_X_Value(RelSamp.getData_entry(0).getX_scale().getX(0),0));
+
+    System.out.println("Cvr to llamda?"+RelSamp.getOperator("Convert to Wavelength"));
       System.out.println( "ratio Samp-cad to monitor"+RelSamp.getData_entry(2).getY_values()[4]);
       Res = (new DataSetSubtract(RelBackground, RelCadmium,true)).getResult();
        if( Res instanceof ErrorString)
@@ -1208,6 +1234,11 @@ C	RUNS.  NORMALIZE AND CORRECT THIS DATA TO PRODUCE I(X,Y,SLICE)
           return new ErrorString( "AK:"+(String)Res);
      RelSamp = (DataSet) Res;
      RelSamp.setTitle( "Adj Samp div by Transm");
+    opQ =(XAxisConversionOp) (RelSamp.getOperator("Convert to Q"));
+    System.out.println( "QQQRelsamp-cad/trans="+ opQ.getClass()+"::"+ 
+              opQ.convert_X_Value(RelSamp.getData_entry(0).getX_scale().getX(0),0));
+
+    System.out.println("Cvr to llamda?"+RelSamp.getOperator("Convert to Wavelength"));
      System.out.println( "ratio Samp-cad dvi trans to monitor"+RelSamp.getData_entry(2).getY_values()[4]);
     TransB.setX_units( RelBackground.getX_units());
      Res = (new DataSetDivide_1(RelBackground, TransB,TransB.getData_entry(0).getGroup_ID(),true)).getResult();
@@ -1234,6 +1265,11 @@ C	RUNS.  NORMALIZE AND CORRECT THIS DATA TO PRODUCE I(X,Y,SLICE)
      if( Res instanceof String)
           return new ErrorString( "AM:"+(String)Res);
      RelSamp = (DataSet) Res;
+    opQ =(XAxisConversionOp) (RelSamp.getOperator("Convert to Q"));
+    System.out.println( "QQQRelsampdiv weight="+ opQ.getClass()+"::"+ 
+              opQ.convert_X_Value(RelSamp.getData_entry(0).getX_scale().getX(0),0));
+
+    System.out.println("Cvr to llamda?"+RelSamp.getOperator("Convert to Wavelength"));
     System.out.println( "ratio Samp-cad div weight"+RelSamp.getData_entry(2).getY_values()[4]);
     Res = (new DataSetDivide(RelBackground, weight,true)).getResult();
        if( Res instanceof ErrorString)
@@ -1260,16 +1296,10 @@ C	RUNS.  NORMALIZE AND CORRECT THIS DATA TO PRODUCE I(X,Y,SLICE)
      XScale xscll = new VariableXScale( qu);
 
      Operator opp = null;
-    try{
-    ScriptUtil.save(  "SampN0XOFF.isd",RelSamp);
-    ScriptUtil.save( "weightNOXoff.isd",weight);
     AdjustGrid( RelSamp, XOFF,YOFF);
-    AdjustGrid( weight, XOFF,YOFF);
+    AdjustGrid( RelBackground, XOFF,YOFF);
     AdjustGrid( weight, XOFF,YOFF);
 
-    ScriptUtil.save( "SampXOFF.isd",RelSamp);
-    ScriptUtil.save( "weightXoff.isd",weight);
-    }catch( Exception ss1){System.out.println("save errora"+ss1);}
     Res= (new DiffractometerWavelengthToQ(RelSamp, 0f,100f,0)).getResult();
     if( Res instanceof ErrorString)
       return Res;
@@ -1285,8 +1315,6 @@ C	RUNS.  NORMALIZE AND CORRECT THIS DATA TO PRODUCE I(X,Y,SLICE)
       return Res;
     weight = (DataSet)Res;
    try{
-    ScriptUtil.save(  "SampXOFFQ.isd",RelSamp);
-    ScriptUtil.save( "weightXoffQ.isd",weight);
    Resample( RelSamp, xscll);
    Resample( RelBackground, xscll);
    Resample( weight, xscll);
@@ -1304,7 +1332,11 @@ C	RUNS.  NORMALIZE AND CORRECT THIS DATA TO PRODUCE I(X,Y,SLICE)
    System.out.println("SCALE="+SCALE);
  
    Res =(new DataSetScalarMultiply(RelSamp, SCALE, false)).getResult();
-
+   try{
+   ScriptUtil.save( "RelSamp_WeightSCALE.isd", RelSamp);
+      }
+   catch(Exception sss){System.out.println("Could not save RelSamp_WeightSCALE"+
+                     sss.toString());}
    if(Res instanceof ErrorString)
      return new ErrorString( "AA:"+Res.toString());
    else if( Res instanceof String)
@@ -1333,18 +1365,23 @@ C	RUNS.  NORMALIZE AND CORRECT THIS DATA TO PRODUCE I(X,Y,SLICE)
 
     
      
-      EliminateBadDetectors( RelSamp, Sens);
-      EliminateBadDetectors( RelBackground, Sens);
-      EliminateBadDetectors( weight, Sens);
+    //  EliminateBadDetectors( RelSamp, Sens);
+     // EliminateBadDetectors( RelBackground, Sens);
+      //EliminateBadDetectors( weight, Sens);
       Res = (new DataSetSubtract( RelSamp, RelBackground, true)).getResult();
       if(Res instanceof ErrorString)
           return Res;
       RelDiff = (DataSet)Res;
+      RelSamp.setTitle("RelSamp Before summing");
+      weight.setTitle("weight Before Summing");
+      ScriptUtil.display(RelSamp);
+      ScriptUtil.display( weight);
       DataSet SSampQ = SumAllDetectors(RelSamp);
       DataSet SBackQ = SumAllDetectors(RelBackground);
       DataSet SDifQ = SumAllDetectors(RelDiff);
       DataSet Sweight =SumAllDetectors(weight);
-
+      SSampQ.setTitle("SampSumQ");
+      ScriptUtil.display( SSampQ.clone() );
       Res=(new DataSetDivide( SSampQ,Sweight,false)).getResult();
       if(Res instanceof ErrorString)
           return Res;      
@@ -2353,11 +2390,16 @@ private void Resample( DataSet DS, XScale xscl){
 }
 
 
-private  DataSet makeNewSensEffDS( DataSet Sens, DataSet Eff, XScale xscl, DataSet RelSamp){
+private  DataSet makeNewSensEffDS( DataSet Sens, DataSet Eff, XScale xscl, 
+                                                  DataSet RelSamp){
+
+
   DataSet Res = new DataSet("Sens_Eff_Prod",new OperationLog(),RelSamp.getX_units(),
             RelSamp.getX_label(), RelSamp.getY_units(), RelSamp.getY_label());
 
-  DataSetFactory.addOperators( Res);
+
+
+  //DataSetFactory.addOperators( Res);
   float[] Eff_yvals = Eff.getData_entry(0).getY_values();
   float[] Eff_errors =Eff.getData_entry(0).getErrors();
   System.out.println("Sens="+Sens);
@@ -2436,7 +2478,8 @@ private  DataSet makeNewSensEffDS( DataSet Sens, DataSet Eff, XScale xscl, DataS
 
 private DataSet SumAllDetectors( DataSet ds){
   
-  Object Res = ( new SumByAttribute( ds,"Group ID",true, 0f,20f+ ds.getNum_entries() )).getResult();
+  Object Res = ( new SumByAttribute( ds,"Group ID",true, 0f,20f+ ds.getNum_entries() ))
+                           .getResult();
    if( Res instanceof ErrorString)
      return null;
   ds.clearSelections();
@@ -2445,7 +2488,7 @@ private DataSet SumAllDetectors( DataSet ds){
 
 }
 
-public void AdjustGrid( DataSet ds, float xoff, float yoff){
+public void AdjustGrid( DataSet ds, float xoff, float yoff){ 
 
     int ids[] = Grid_util.getAreaGridIDs( ds );
     if ( ids.length != 1 )
@@ -2453,9 +2496,20 @@ public void AdjustGrid( DataSet ds, float xoff, float yoff){
     IDataGrid grid = Grid_util.getAreaGrid( ds, ids[0] );
     Vector3D pos = grid.position();
     pos.add( new Vector3D(0,-xoff,yoff));
-
+     System.out.println("Befor Detpos="+StringUtil.toString(
+                        ((DetectorPosition)ds.getData_entry(0).getAttributeValue(
+                Attribute.DETECTOR_POS)).getCartesianCoords()));
+     System.out.println("-------------------");
+     System.out.println( grid.toString());
     ((UniformGrid)grid).setCenter(pos);
-    Grid_util.setEffectivePositions( ds, grid.ID() );
+    System.out.println("xxxx effpos res="+
+            Grid_util.setEffectivePositions( ds, grid.ID() ));
+     System.out.println("    ---After----");
+     System.out.println( grid.toString());
+    
+     System.out.println("After Detpos="+StringUtil.toString( 
+                    ((DetectorPosition)ds.getData_entry(0).getAttributeValue(
+                Attribute.DETECTOR_POS)).getCartesianCoords()));
 
 }
 
@@ -2471,7 +2525,7 @@ public void AdjustGrid( DataSet ds, float xoff, float yoff){
          BETADN = 0.0011f;
          SCALE = 843000f;
 //
-         qu[0] = 0.00359f;
+         qu[0] = 0.0011f;
 				 for(int i = 1; i<117; i++)
          {
             qu[i] = qu[i-1]*1.05f ;
@@ -2495,7 +2549,8 @@ public void AdjustGrid( DataSet ds, float xoff, float yoff){
     System.out.println("Trans="+TransS+"::"+TransB+"::"+Eff+"::"+Sens);
     Reduce_KCL Reduce_KCL = new Reduce_KCL( TransS[0], TransB[0], 
              Eff[0], Sens[0], qu, RUNSds, RUNBds, RUNCds,BETADN,SCALE, .1f,
-              .000725f,.006909f);
+             //     0f,0f);
+              -.000725f,-.006909f);
     Object O= Reduce_KCL.getResult();
     System.out.println("Finished O="+O);
     Vector V =(Vector)O;
