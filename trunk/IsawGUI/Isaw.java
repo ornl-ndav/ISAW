@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.54  2001/08/15 22:28:49  chatterjee
+ *  Rearranged File menu and incorporated the Remote File Server & added a Table View
+ *  Used new JFileChooser in some cases
+ *
  *  Revision 1.53  2001/08/14 19:25:29  chatterjee
  *  Fixed the LiveData for HRMECS.Does not throw up the FileDialog when Live Data for HRMECS is chosen
  *
@@ -255,12 +259,17 @@ public class Isaw
   private static final String VERSION            = "Release 1.1";
 
   private static final String FILE_M             = "File";
-  private static final String LOAD_DATA_MI       = "Load Data File(s)";
+  private static final String LOAD_DATA_M        = "Load Data";
   private static final String LOAD_LIVE_DATA_M   = "Load Live Data";
+  private static final String LOAD_LOCAL_DATA_MI = "Local";
+  private static final String LOAD_REMOTE_DATA_M = "Remote";
+
+
   private static final String LOAD_SCRIPT_MI     = "Load Script";
-  private static final String LOAD_ISAW_DATA_MI  = "Load ISAW Data";
-  private static final String SAVE_ISAW_DATA_MI  = "Save ISAW Data";
-  private static final String GSAS_EXPORT_MI     = "Export GSAS File";
+  
+
+  private static final String SAVE_ISAW_DATA_MI  = "Save As";
+  private static final String GSAS_EXPORT_MI     = "Export As GSAS File";
   private static final String DB_IMPORT_MI       = "Search Database";
   private static final String EXIT_MI            = "Exit";
 
@@ -277,6 +286,8 @@ public class Isaw
   private static final String SCROLL_VIEW_MI     = "Scrolled Graph View";
   private static final String SELECTED_VIEW_MI   = "Selected Graph View";
   private static final String THREED_VIEW_MI     = "3D View";
+  private static final String TABLE_VIEW_MI      = "Table View";
+
   private static final String INSTR_VIEW_M       = "Instrument Info";
 
   private static final String MACRO_M            = "Macros";
@@ -445,10 +456,13 @@ public class Isaw
     JMenuBar menuBar = new JMenuBar();
 
     JMenu fMenu = new JMenu( FILE_M );
-    JMenuItem Runfile = new JMenuItem( LOAD_DATA_MI ); 
-    JMenu LiveData = new JMenu( LOAD_LIVE_DATA_M ); 
-    JMenuItem script_loader = new JMenuItem( LOAD_SCRIPT_MI );       
-    JMenuItem fileLoadDataset = new JMenuItem( LOAD_ISAW_DATA_MI );
+       JMenu fileLoadDataset = new JMenu( LOAD_DATA_M );
+        JMenuItem Runfile = new JMenuItem( LOAD_LOCAL_DATA_MI ); 
+        JMenu LiveData = new JMenu( LOAD_LIVE_DATA_M );
+        JMenu RemoteData = new JMenu( LOAD_REMOTE_DATA_M );
+
+     JMenuItem script_loader = new JMenuItem( LOAD_SCRIPT_MI );       
+    
     JMenuItem fileSaveData = new JMenuItem( SAVE_ISAW_DATA_MI );
     JMenuItem fileSaveDataAs = new JMenuItem( GSAS_EXPORT_MI );
     JMenuItem dbload = new JMenuItem( DB_IMPORT_MI );
@@ -469,6 +483,7 @@ public class Isaw
     JMenuItem s_graphView = new JMenuItem( SCROLL_VIEW_MI );
     JMenuItem graphView   = new JMenuItem( SELECTED_VIEW_MI );
     JMenuItem threeDView = new JMenuItem( THREED_VIEW_MI );
+    JMenuItem tableView = new JMenuItem( TABLE_VIEW_MI );
     JMenu instrumentInfoView = new JMenu( INSTR_VIEW_M );
 
 
@@ -518,10 +533,15 @@ public class Isaw
     JMenuItem m_CHEXS  = new JMenuItem( CHEXS_MACRO_MI );
  
     fMenu.add(dbload);
-    fMenu.add(Runfile);
-    fMenu.add(LiveData);
-    fMenu.add(script_loader);
     fMenu.add(fileLoadDataset);
+    fileLoadDataset.add(Runfile);
+    fileLoadDataset.add(LiveData);
+    fileLoadDataset.add(RemoteData);
+      SetUpRemoteData( RemoteData, jdt); 
+
+
+    fMenu.add(script_loader);
+    
     fMenu.addSeparator();
     fMenu.add(fileSaveData);
     fMenu.add(fileSaveDataAs);
@@ -573,6 +593,7 @@ public class Isaw
     vMenu.add(s_graphView);
     vMenu.add(graphView);
     vMenu.add(threeDView);
+    vMenu.add( tableView );
     vMenu.add(instrumentInfoView);         
       
     hMenu.add(helpISAW);
@@ -593,7 +614,7 @@ public class Isaw
 
     threeDView.addActionListener(new MenuItemHandler()); 
     imageView.addActionListener(new MenuItemHandler());  
-         
+    tableView.addActionListener(new MenuItemHandler());      
     HRMECS.addActionListener(new MenuItemHandler());
     LRMECS.addActionListener(new MenuItemHandler());
     HIPD.addActionListener(new MenuItemHandler());
@@ -672,6 +693,36 @@ public class Isaw
     }
   }
 
+   private void SetUpRemoteData( JMenu RemoteData, IObserver jdt)
+       {
+          int i=1;
+          boolean done =false;
+          while (!done )
+          {  String S= System.getProperty("IsawFileServer"+i+"_Name");
+             
+             if( S == null) done = true;
+             else
+               {JMenuItem Server= new JMenuItem( S );
+                RemoteData.add( Server);
+                Server.addActionListener( new RemoteMenuHandler( Isaw.this, sessionLog ));
+                i++;
+               }            
+           }
+
+          i=1;
+          done =false;
+          while (!done )
+          {  String S= System.getProperty("NDSFileServer"+i+"_Name");
+             if( S == null) done = true;
+             else
+               {JMenuItem Server= new JMenuItem( S );
+                RemoteData.add( Server);
+                Server.addActionListener( new RemoteMenuHandler( jdt, sessionLog ));
+                i++;
+               }            
+           }
+
+        }//SetUpRemote 
 
   /**
    * Adds a modified DataSet to the JTree.
@@ -934,11 +985,12 @@ public class Isaw
   /*
    *
    */ 
+  //$$$$ eliminate
   private class LoadMenuItemHandler implements ActionListener 
   {
     public void actionPerformed( ActionEvent e ) 
     {
-      if(  e.getActionCommand().equals( LOAD_DATA_MI )  )
+      if(  e.getActionCommand().equals( LOAD_LOCAL_DATA_MI )  )
         load_runfiles( false, null );
     }
   }
@@ -964,7 +1016,7 @@ public class Isaw
       if( s.equals(EXIT_MI) )
         System.exit(0);
                     
-      if( s.equals(SAVE_ISAW_DATA_MI) )
+      if( s.equals( SAVE_ISAW_DATA_MI ))
       {
         MutableTreeNode node = jdt.getSelectedNode();
         if( node instanceof DataSetMutableTreeNode )
@@ -972,24 +1024,32 @@ public class Isaw
           try
           {
             String title = new String( "Please choose the File to save" );
-            FileDialog fc = new FileDialog(  new Frame(), 
-                                             title, 
-                                             FileDialog.SAVE  );
-            fc.setDirectory(  System.getProperty( "user.home" )  );
-            fc.show();
+            fc.setCurrentDirectory(  new File( System.getProperty("user.home") )  );
+            fc.setMultiSelectionEnabled( false );
+            fc.setFileFilter(  new NeutronDataFileFilter( true )  ); 
+            if(  (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION ) ) 
+                return;
+             
+            setCursor(  Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR )  );                        
                         
-            File f = new File(  fc.getDirectory(), fc.getFile()  );
+            File f =  fc.getSelectedFile();
             DataSet ds = ( (DataSetMutableTreeNode)node ).getUserObject();
-            if(   !DataSet_IO.SaveDataSet(  ds, f.toString()  )   )   
-            System.out.println("Could not save File");
+           // if(   !DataSet_IO.SaveDataSet(  ds, f.toString()  )   )   
+           // System.out.println("Could not save File");
+             util.Save( f.toString(), ds,  jdt );
+           setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+//String filename, DataSet ds, IDataSetListHandler lh)
+
           }
           catch( Exception e ) 
           {
             System.out.println( "Choose a DataSet to Save" );
-          }   
+          } 
+         
         }
         else
           return;
+        return;
       }
                        
 
@@ -1001,6 +1061,7 @@ public class Isaw
       {
         BrowserControl bc = new BrowserControl();
         bc.displayURL( DB_URL );
+        return;
       }
 
                                   //loads a file that was stored using
@@ -1008,7 +1069,7 @@ public class Isaw
                                   //instead of other neutron data formats.
                                   //hence, there is only one DataSet object
                                   //to be loaded.
-      if( s.equals(LOAD_ISAW_DATA_MI) )
+      if( s.equals(LOAD_LOCAL_DATA_MI) )
       {
         try
         {
@@ -1246,9 +1307,23 @@ public class Isaw
         }
         else
           System.out.println( "nothing is currently highlighted in the tree" );
+        return;
       }
 
-                 
+      if( s.equals(TABLE_VIEW_MI) )
+      {   
+        DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
+        if(  ds != DataSet.EMPTY_DATA_SET  )
+        {
+          new ViewManager( ds, IViewManager.TABLE );
+          ds.setPointedAtIndex( 0 );
+          ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+        }
+        else
+          System.out.println( "nothing is currently highlighted in the tree" );
+        return;
+      }
+           
       if( s.equals(ABOUT_MI) )
       {
         String dir =  System.getProperty("Help_Directory")+ "/Help.html";
