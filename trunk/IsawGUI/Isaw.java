@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.138  2003/06/23 21:58:24  dennis
+ *  Changed version number to 1.5.1_a3
+ *
  *  Revision 1.137  2003/06/17 21:41:20  pfpeterson
  *  Brought back the separate thread for initializing Script_Class_List_Handler.
  *
@@ -554,7 +557,7 @@ public class Isaw
         String val="";
 
         if(SharedData.VERSION.equals("Unknown_Version"))
-          version="1.5.1 alpha 3";
+          version="1.5.1 alpha 4";
         else
           version=SharedData.VERSION;
 
