@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2001/07/16 14:25:24  dennis
+ *  Now extends GenericOperator, so it appears in the GUI
+ *
  *  Revision 1.10  2001/06/01 21:18:00  rmikk
  *  Improved documentation for getCommand() method
  *
@@ -83,7 +86,7 @@ import  DataSetTools.components.ui.*;
  * 
  */
 
-public class DataSetPrint extends    Operator 
+public class DataSetPrint extends    GenericOperator 
                                      implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
