@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/08/06 17:10:36  bouzekc
+ * Fixed bug where a call to parseText crashed the parsing.
+ *
  * Revision 1.1  2003/08/05 23:08:42  bouzekc
  * Added to CVS.
  *
@@ -45,6 +48,7 @@ public class ParameterGUIParser {
   //don't want to continually recreate this thing
   private static ParameterGUIParser myParser;
   private static boolean expandVectorIntoElements = true;
+  private static boolean standalone = false;
   
   /**
    * Method used to run the ParameterGUIParser for testing purposes.
@@ -54,6 +58,7 @@ public class ParameterGUIParser {
    * @throws ParseException If anything goes wrong during parsing
    */
   public static void main( String args[] ) throws ParseException {
+    standalone = true;
     myParser = new ParameterGUIParser( System.in );
     myParser.ExpansionList(  );
   }
@@ -69,10 +74,15 @@ public class ParameterGUIParser {
    * @throws ParseException If anything goes wrong during parsing
    */
   public static Vector parseText( String text ) throws ParseException {
+    standalone = false;
+    //need a semicolon on the end
+    if( text.indexOf( ";" ) < 0 ) {
+      text = text.trim(  ) + ";";
+    }
     if( myParser == null ) {
       myParser = new ParameterGUIParser( new StringReader( text )  );
     }
-    return myParser.Expansion(  );
+    return myParser.ExpansionList(  );
   }
      
 
@@ -189,23 +199,30 @@ TOKEN : {
                                  ( ["e", "E"] ( <DIGIT>)+ )? >
 }
 
-void ExpansionList(  ) : {
-  Vector expandedList;
+Vector ExpansionList(  ) : {
+  Vector expandedList = null;
 }
 { 
   {
-    System.out.println( "Please type in an expression with or without " +
-      " brackets, (e.g. [5:8], [5,6,7], [\"john\"]. 5:10:2) or ^D to quit:\n" );
+    if( standalone ) {
+      System.out.println( "Please type in an expression with or without " +
+        " brackets, (e.g. [5:8], [5,6,7], [\"john\"]. 5:10:2) or ^D to quit:\n" );
+    }
   }
   ( expandedList = Expansion(  ) ";"{
       //a semicolon ends the expansion
       //print the parsed expression
-      System.out.println( expandedList );
-      System.out.println(  );
-      System.out.println( "Please type in another expression in brackets or ^D to quit:" );
-      System.out.println(  );
+      if( standalone ) {
+        System.out.println( expandedList );
+        System.out.println(  );
+        System.out.println( "Please type in another expression in brackets or ^D to quit:" );
+        System.out.println(  );
+      }
     }
   )*
+  {
+    return expandedList;
+  }
   <EOF>
 }
 
