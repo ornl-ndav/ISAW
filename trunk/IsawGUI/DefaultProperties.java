@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2005/01/10 16:15:39  rmikk
+ *  Documented the new Property GROUPx_NAME in the IsawProps.dat file
+ *
  *  Revision 1.27  2004/07/29 14:16:26  dennis
  *  Changed default color scale to Heat 2.
  *
@@ -274,7 +277,8 @@ public class DefaultProperties{
         rs.append(eol).append("#").append(eol)
             .append("ISAW_HOME=").append(IsawHome).append(eol)
             .append("#GROUP_HOME=").append(UserHome).append(separator)
-            .append("ipns").append(eol);
+            .append("ipns").append(eol)
+             .append("#GROUP_NAME=").append("My Scripts").append(eol);
         if(IsawHome.equals("DEFAULT")){
             defstr="#";
         }
