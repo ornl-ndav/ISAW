@@ -3,6 +3,13 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/11/07 15:26:36  dennis
+ *  Includes ViewerState object in constructor and uses ViewerState for
+ *  horizontal scrolling state.
+ *  Consumes key events, so that the cursor arrow keys don't also scroll
+ *  the scrolled panes.  This caused errors in the XOR drawing of the
+ *  crosshair cursor on windows.
+ *
  *  Revision 1.3  2000/10/10 19:54:10  dennis
  *  redraw() due to selection changes now only draws graphs for which the
  *  selection status changed.  This is much more efficient.
@@ -77,11 +84,10 @@ public class GraphView extends    DataSetViewer
                                       JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                       JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
                                           );
-  private boolean      horizontal_scroll_state = false;
 
   private JSlider      hgraph_scale_slider = new JSlider( JSlider.HORIZONTAL,
                                                           0, 1000, 0 );
-  UniformXScale        y_range;
+  ClosedInterval       y_range;
 
 /* --------------------------------------------------------------------------
  *
@@ -90,9 +96,9 @@ public class GraphView extends    DataSetViewer
  */
 
 /* ------------------------------------------------------------------------ */
-public GraphView( DataSet data_set ) 
+public GraphView( DataSet data_set, ViewerState state ) 
 {
-  super(data_set);       
+  super( data_set, state );       
   AddOptionsToMenu();
 
   init();
@@ -184,7 +190,7 @@ public static void main(String[] args)
                                                     // the data set
   }
 
-  GraphView graph_view = new GraphView( data_set );
+  GraphView graph_view = new GraphView( data_set, null );
   JFrame f = new JFrame("Test for GraphView class");
   f.setBounds(0,0,600,400);
   f.setJMenuBar( graph_view.getMenuBar() );
@@ -213,6 +219,8 @@ private void init()
                                       JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                       JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
                                           );
+  hgraph_scroll_pane.getHorizontalScrollBar().addAdjustmentListener(
+                                            new HScrollBarListener() );
 
   main_split_pane = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
                                             MakeHorGraphArea(),
@@ -246,7 +254,7 @@ private void AddOptionsToMenu()
   JMenu option_menu = menu_bar.getMenu( OPTION_MENU_ID );
                                                     // Horizontal scroll option
   JCheckBoxMenuItem cb_button = new JCheckBoxMenuItem( HORIZONTAL_SCROLL );
-  cb_button.setState( false );
+  cb_button.setState( getState().getHorizontal_scrolling() );
   cb_button.addActionListener( option_menu_handler );
   option_menu.add( cb_button );
 }
@@ -344,9 +352,17 @@ private void MakeConnections()
 /* --------------------- SetHorizontalScrolling ------------------------ */
 private void SetHorizontalScrolling( boolean state )
 {
-  horizontal_scroll_state = state;
+  getState().setHorizontal_scrolling( state );
   if ( state )
+  {
     viewport_preferred_width = (int)n_bins_ui.getValue();
+    JScrollBar scroll_bar = hgraph_scroll_pane.getHorizontalScrollBar();
+    int min = scroll_bar.getMinimum();
+    int max = scroll_bar.getMaximum();
+    int position = (int)
+               ((max-min) * getState().getHorizontal_scroll_fraction() + min );
+    scroll_bar.setValue( position );
+  }
   else
     viewport_preferred_width = 300;
 
@@ -441,8 +457,8 @@ private void DrawGraphs( )
     viewport.add( border_panel );
   }
 
-  if ( horizontal_scroll_state )
-    SetHorizontalScrolling( horizontal_scroll_state );
+  if ( getState().getHorizontal_scrolling() )
+    SetHorizontalScrolling( true );
 
   viewport.setVisible(true);
 //  viewport.repaint();           // is this needed?
@@ -681,6 +697,8 @@ private class SelectionKeyAdapter extends    KeyAdapter
     int row = getBlockNumber( gp );
 
     KeySelect.ProcessKeySelection( getDataSet(), row, e );
+
+    e.consume();
   }
 }
 
@@ -703,5 +721,24 @@ private class SelectionKeyAdapter extends    KeyAdapter
      }
   }
 
+  private class HScrollBarListener implements AdjustmentListener,
+                                              Serializable
+  {
+    public void adjustmentValueChanged( AdjustmentEvent e )
+    {
+      // record the new scroll bar postion
+  
+      JScrollBar bar = hgraph_scroll_pane.getHorizontalScrollBar();
+      float bar_min   = bar.getMinimum();
+      float bar_max   = bar.getMaximum();
+      float bar_value = bar.getValue();
+      float fraction  = 0;
+      if ( bar_max == bar_min )
+        fraction = 0;
+      else
+        fraction = (bar_value - bar_min)/(bar_max - bar_min);
+      getState().setHorizontal_scroll_fraction( fraction );
+    }
+  }
 
 }
