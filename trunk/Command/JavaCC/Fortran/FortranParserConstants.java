@@ -20,35 +20,38 @@ public interface FortranParserConstants {
   int BOOL_CONST = 14;
   int EMPTY_FORTRAN_COMMENT = 15;
   int FORTRAN_COMMENT = 16;
-  int INT_IDENT = 17;
-  int FLOAT_IDENT = 18;
-  int CHAR_VARIABLE = 19;
-  int MATH_INT_VAR = 20;
-  int MATH_FLOAT_VAR = 21;
-  int SIMPLE_MATH_COMP = 22;
-  int FORTRAN_MATH_FUN = 23;
-  int FORTRAN_ABS = 24;
-  int FORTRAN_FLOAT_FUN = 25;
-  int FORTRAN_TRUNC_FUN = 26;
-  int FORTRAN_MOD_FUN = 27;
-  int FORTRAN_FRACTION_FUN = 28;
-  int OPERATOR = 29;
-  int SIMPLE_EXPRESSION = 30;
-  int NESTED_EXPRESSION = 31;
-  int FORTRAN_EXPRESSION = 32;
-  int COND_OPS = 33;
-  int COND_START = 34;
-  int SINGLE_IF = 35;
-  int ELSE_COND = 36;
-  int START_MULTI_IF = 37;
-  int END_IF = 38;
-  int FORTRAN_DO_START = 39;
-  int FORTRAN_END_DO = 40;
-  int VAR_ASSIGN = 41;
-  int F_VAR = 42;
-  int FORTRAN_VARIABLE = 43;
-  int FORTRAN_CHAR_1 = 44;
-  int FORTRAN_CHAR_2 = 45;
+  int FUNCTION_START = 17;
+  int FUNCTION_END = 18;
+  int FUNCTION_RETURN = 19;
+  int INT_IDENT = 20;
+  int FLOAT_IDENT = 21;
+  int CHAR_VARIABLE = 22;
+  int MATH_INT_VAR = 23;
+  int MATH_FLOAT_VAR = 24;
+  int SIMPLE_MATH_COMP = 25;
+  int FORTRAN_MATH_FUN = 26;
+  int FORTRAN_ABS = 27;
+  int FORTRAN_FLOAT_FUN = 28;
+  int FORTRAN_TRUNC_FUN = 29;
+  int FORTRAN_MOD_FUN = 30;
+  int FORTRAN_FRACTION_FUN = 31;
+  int OPERATOR = 32;
+  int SIMPLE_EXPRESSION = 33;
+  int NESTED_EXPRESSION = 34;
+  int FORTRAN_EXPRESSION = 35;
+  int COND_OPS = 36;
+  int COND_START = 37;
+  int SINGLE_IF = 38;
+  int ELSE_COND = 39;
+  int START_MULTI_IF = 40;
+  int END_IF = 41;
+  int FORTRAN_DO_START = 42;
+  int FORTRAN_END_DO = 43;
+  int VAR_ASSIGN = 44;
+  int F_VAR = 45;
+  int FORTRAN_VARIABLE = 46;
+  int FORTRAN_CHAR_1 = 47;
+  int FORTRAN_CHAR_2 = 48;
 
   int DEFAULT = 0;
 
@@ -70,6 +73,9 @@ public interface FortranParserConstants {
     "<BOOL_CONST>",
     "<EMPTY_FORTRAN_COMMENT>",
     "<FORTRAN_COMMENT>",
+    "<FUNCTION_START>",
+    "<FUNCTION_END>",
+    "<FUNCTION_RETURN>",
     "<INT_IDENT>",
     "<FLOAT_IDENT>",
     "<CHAR_VARIABLE>",
