@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.49  2002/07/31 21:52:41  dennis
+ *  Fixed bug that caused the first monitor Data block to not
+ *  be loaded.
+ *
  *  Revision 1.48  2002/07/31 16:38:36  dennis
  *  Corrects SCD detector position to -90 degrees.
  *  Added methods to get portions of histograms:
@@ -540,12 +544,24 @@ public class RunfileRetriever extends    Retriever
 
     int ids[] = new int[ last_id - first_id + 1 ];
     int id = first_id;
+    int     ds_type = getType( data_set_num );
+    boolean monitor_group;
+    int     n_used = 0;
     for ( int i = 0; i < ids.length; i++ )
-    {
-      ids[i] = id;
+    { 
+      monitor_group = run_file.IsSubgroupBeamMonitor(id);
+      if (  monitor_group && ds_type == MONITOR_DATA_SET  ||
+           !monitor_group && ds_type != MONITOR_DATA_SET  )
+      {
+        ids[n_used] = id;
+        n_used++; 
+      }
       id++;
     }
-    return ids;
+
+    int available_ids[] = new int[ n_used ];
+    System.arraycopy( ids, 0, available_ids, 0, n_used );
+    return available_ids;
   }
 
 
@@ -733,7 +749,7 @@ private float CalculateEIn()
 
      for ( group_id = first_id; group_id <= last_id; group_id++ )
      {
-      if ( Arrays.binarySearch( ids, group_id ) > 0 ) // skip if not in the list
+      if ( Arrays.binarySearch( ids, group_id ) >= 0 )// skip if not in the list
       {
        Segment group_segments[] = run_file.SegsInSubgroup( group_id );
 
