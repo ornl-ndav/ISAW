@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.18  2003/03/07 21:17:11  dennis
+ * Now really destroys the LiveDataMonitor when the Exit button
+ * is pressed, rather than just setting the reference to it
+ * to null.
+ *
  * Revision 1.17  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -201,7 +206,10 @@ class MyHandler implements ActionListener
        {this.obj = obj;
        }
     public void actionPerformed(ActionEvent e)
-       { obj = null;
+       { 
+         if ( obj instanceof LiveDataMonitor )
+           ((LiveDataMonitor)obj).destroy();
+         obj = null;
          System.gc();
          jtp.remove( jtp.getSelectedIndex()); 
       }
