@@ -26,12 +26,15 @@
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  * This work was supported by the National Science Foundation under
- * grant number
+ * grant number DMR-0218882.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
  * $Log$
+ * Revision 1.4  2004/01/08 23:31:07  bouzekc
+ * Added NSF grant number to header.
+ *
  * Revision 1.3  2004/01/08 22:29:30  bouzekc
  * Now extends GenericOperator.  Changed createCategoryList() to
  * getCategoryList() due to reflection problems.  Modified to allow
@@ -217,7 +220,7 @@ public class JavaWrapperOperator extends GenericOperator {
    * Testbed.
    */
   public static void main( String[] args ) {
-    Operators.TOF_SCD.WrappedCrunch2 crunch = new Operators.TOF_SCD.WrappedCrunch2(  );
+    Operators.WrappedCrunch crunch = new Operators.WrappedCrunch(  );
     JavaWrapperOperator wrapper    = new JavaWrapperOperator( crunch );
     /*DataSet temp                   = new DataSetTools.retriever.RunfileRetriever(
        "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
