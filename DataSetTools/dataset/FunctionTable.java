@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/06/14 21:00:17  rmikk
+ *  Implements IXmlIO interface
+ *
  *  Revision 1.4  2002/04/19 15:42:28  dennis
  *  Revised Documentation
  *
@@ -124,6 +127,19 @@ public class FunctionTable extends    TabulatedData
     this.setErrors( errors );
   }
 
+  /**
+  * Constructs a Data object with the specified X scale.  The Y values are all zero,
+  * the errors are null, and the group id's are -1<P>
+  * This constructor is needed to get the XMLread to read a Data Object.
+  *
+  * @param   x_scale   the list of x values for this data object 
+  * 
+  * @see TabulatedData#XMLread( java.io.InputStream ) 
+  */
+  public FunctionTable( XScale x_scale)
+  { super( x_scale, new float[ x_scale.getNum_x()], -1); 
+ 
+  }
 
   /**
    * Constructs a FunctionTable Data object from another Data object.

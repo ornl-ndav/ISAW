@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/06/14 21:00:01  rmikk
+ *  Implements IXmlIO interface
+ *
  *  Revision 1.5  2001/04/25 19:03:46  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -47,7 +50,7 @@
 package  DataSetTools.dataset;
 
 import java.text.*;
-
+import java.io.*;
 /**
  * The concrete class for an attribute whose value is a double.  
  *
@@ -74,6 +77,11 @@ public class DoubleAttribute extends Attribute
     this.value = value;
   }
 
+  public DoubleAttribute( )
+  {
+    super( "" );
+    this.value = 0.0;
+  }
 
   /**
    * Returns the double value of this attribute, as a generic object.
@@ -145,6 +153,13 @@ public class DoubleAttribute extends Attribute
      this.value = ( this.value + attr.getNumericValue() );
   }
 
+  public boolean XMLwrite( OutputStream stream, int mode )
+    {return xml_utils.AttribXMLwrite( stream, mode, this);
+
+     }
+  public boolean XMLread( InputStream stream )
+    {return xml_utils.AttribXMLread(stream, this);
+    }
 
   /**
    * Get a numeric value to be used for sorting based on this attribute.
