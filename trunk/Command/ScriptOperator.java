@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.39  2004/08/05 23:35:19  rmikk
+ * The user specified value for the DataDirectoryString parameter is now used
+ *
  * Revision 1.38  2004/03/17 20:25:08  dennis
  * Fixed @see tag that was broken when view components, math and
  * util were moved to gov package.
@@ -1455,7 +1458,7 @@ public class ScriptOperator  extends  GenericOperator
       addParameter( new ArrayPG( Prompt, InitValue));
     }else if( DataType.equals("DATADIRECTORYSTRING")){
      
-      addParameter( new DataDirPG( Prompt, null));
+      addParameter( new DataDirPG( Prompt, InitValue));
                                  //  new DataDirectoryString(EliminateQuotes(DirPath))));
     }else if( DataType.equals("DSSETTABLEFIELDSTRING")){
       
