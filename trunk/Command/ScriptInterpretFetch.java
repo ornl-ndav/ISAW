@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/07/31 22:28:17  rmikk
+ * Changed an Exception catch to a throwable catch
+ *
  * Revision 1.2  2003/06/11 21:13:29  pfpeterson
  * More explicit about what is caught when trying to get the python
  * interpreter.
@@ -75,7 +78,7 @@ public class ScriptInterpretFetch
         {
           return new pyScriptProcessor( doc ); 
         }
-      catch( NoClassDefFoundError ss)
+      catch( Throwable ss)
         {
           return null;
         }
