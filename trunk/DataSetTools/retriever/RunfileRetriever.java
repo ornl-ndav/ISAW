@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.67  2003/03/10 20:57:48  dennis
+ *  Calculation of solid angle now uses segment length and width values
+ *  from the IPNS package, rather than the whole detector length and
+ *  width values.
+ *
  *  Revision 1.66  2003/02/18 20:25:24  dennis
  *  Switched to add one SampleOrientation attribute instead of separate
  *  phi, chi and omega values.
@@ -1596,7 +1601,6 @@ private float CalculateEIn()
   private float SegmentSolidAngle( Segment seg )
   {
     float solid_angle = 0;
-    int   type;
     float area,
           length,
           width,
@@ -1604,20 +1608,27 @@ private float CalculateEIn()
           nom_radius,
           nom_height,
           nom_dist;
-
-    type   = run_file.DetectorType( seg );
+                                          // calculate using detector info      
+/*
+    int type = run_file.DetectorType( seg );
     length = DC5.LENGTH[ type ] / 100;   // convert cm to m
 //    width  = DC5.WIDTH[ type ] / 100;    // convert cm to m
     width = .0254f;                        // assume 1" outside diameter to
                                              // match Chun's results
+*/
+
+    length = seg.Length()/100;           // calculate using info about segment
+    width  = seg.Width()/100;            // convert cm to m
 
     nom_radius = (float) run_file.RawFlightPath( seg );
     nom_height = (float) run_file.RawDetectorHeight( seg );
     nom_dist   = (float) Math.sqrt( nom_radius * nom_radius +
                                       nom_height * nom_height );
 
+                                        // compensate for effective path length
     raw_dist = (float) Math.sqrt( nom_dist * nom_dist -
                                   length * length / 12.0 );
+
     solid_angle += length*width / (raw_dist * raw_dist);
 //    System.out.println("Det ID = " + seg.detID() +
 //                       " type  = " + type + 
