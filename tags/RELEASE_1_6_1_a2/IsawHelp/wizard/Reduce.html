@@ -1,0 +1,53 @@
+<HTML><Body>
+
+<H1><Center> Reduce Wizard </Center></H1><P>
+
+This wizards executes the Reduce code for sand instruments.  The wizard assumes the
+following files have been created from the raw data:
+  <ol>
+   <li> Sensitivity File
+   <li> Efficiency File
+   <li> Background Transmission file
+   <li> (optional) Sample Transmission File.
+  </ol>
+
+  The wizard will calculate the processed Sample Transmission file if it has not yet been processed.<P>
+
+  There are options to select whether or not the information from the Background Transmission run
+  or Cadmium run is to be used.<P>
+
+  <ol> The data files processed by the sand wizard are
+   <li> The sample run
+   <li> The Background Run
+   <li> (optional)The Cadmium Run
+  </ol><P>
+   
+ All data is first rebinned to a common lambda scale. Also the Neutron delay  and 
+ the beam offset adjustments are made. Then the following calculations are made :
+ <ol>
+              <li> Calculate S1 =Sample/ Sample Monitor,  C1 = Cadmium/Cadmium Monitor  and
+                    B1 = Background/Background Monitor.  These monitors are the downstream monitors.
+                   
+              <li> Calculate Sample1 = (S1-C1)/sensitivity/Efficiency  and Background1 =
+                     (B1-C1)/sensitivity/Efficiency
+  </ol> 
+
+ <ul> Results can be either "1D" or "2D"
+    <li> "1D" results is just 3 spectra with q versus the adjusted intensity.  The adjusted intensity
+          is calculated as follows:
+          <Ul> The Sample1 and Background1 above are "rebinned" to a common q scale and all the spectra
+               are
+               summed(weighted).  This yields two spectra Sample2 and Background2. The third spectra is
+               Sample2-Background2.
+
+          </Ul>
+
+   <li> "2D" results is 3 2D spectra of Qx by Qy versus adjusted intensity which is calculated as follows:
+       <UL> Each "pixel" in Sample1 is converted to a Qx, Qy pixel and its weigthed intensity is added to the
+            corresponding Qx,Qy bin.  The same is done for Background1.  The results of these two operations
+            yields two 2D spectra.  The third is the difference of these results.
+      </ul>
+          
+
+
+</body></html>
