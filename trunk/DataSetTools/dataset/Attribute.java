@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2003/02/07 19:45:06  dennis
+ *  Added DETECTOR_DATA_GRID
+ *
  *  Revision 1.35  2003/02/07 19:05:51  dennis
  *  Added PIXEL_INFO_LIST String.
  *
@@ -196,6 +199,7 @@ abstract public class Attribute implements Serializable,
                                                   "Detector center angle";
   public static final String  DETECTOR_CEN_HEIGHT = 
                                                   "Detector center height";
+  public static final String  DETECTOR_DATA_GRID = "Detector data grid";
 
   public static final String  INITIAL_PATH      = "Initial Path";
   public static final String  ENERGY_IN         = "Energy In";
