@@ -29,6 +29,9 @@
 
  *
  * $Log$
+ * Revision 1.2  2003/10/20 16:33:07  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.1  2003/07/05 18:10:02  rmikk
  * Initial Checkin
  *
@@ -95,7 +98,7 @@ public class SelectGroups
    *  @param  MinValue    The minimum value to compare with the attribute value
    *  @param  MaxValue    The maximum value to compare with the attribute value
 
-   *  @param  Inside_out  Determines if the set or clear occurs when the
+   *  @param  Inside_Out  Determines if the set or clear occurs when the
    *                      attribute value is between our outside the max and min.
    *                      Use "Between Max and Min" or "Outside Max and Min"
 
@@ -234,7 +237,7 @@ public class SelectGroups
   /**
   *  Test program for this module and also ClearSelect
   *
-  * @param   args[0] contains the filename to use
+  *   args[0] contains the filename to use
   *   The last data set from the file is used
   */
   public static void main( String args[] )
