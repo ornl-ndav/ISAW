@@ -1,3 +1,22 @@
+
+/*
+ * $Id$
+ *
+ * $Log$
+ * Revision 1.3  2001/07/11 16:33:27  neffk
+ * 0) no longer return unused part of the parameter string in the
+ *    constructor
+ * 1) added getType() method
+ * 2) removed a few debug comments
+ *
+ * Revision 1.2  2001/06/19 20:34:51  neffk
+ * set( String ) is partailly working.  it only works for Attribute.GROUP_ID.
+ *
+ * Revision 1.1  2001/06/13 19:45:42  neffk
+ * used for interval selection.
+ *
+ */
+
 package DataSetTools.util;
 
 import DataSetTools.util.*;
@@ -14,34 +33,16 @@ import DataSetTools.dataset.Attribute;
 import java.lang.Integer;
 
 /**
- * $Id$
- *
  * container for arbitrary bounded intervals of Attributes.
- *
- * $Log$
- * Revision 1.2  2001/06/19 20:34:51  neffk
- * set( String ) is partailly working.  it only works for Attribute.GROUP_ID.
- *
- * Revision 1.1  2001/06/13 19:45:42  neffk
- * used for interval selection.
- *
- *
  */
+
 public class Interval 
 {
   final private String SEPERATOR = ":";
 
-  int              defaultEndpoint = 0;
-  String           attr_type = null;
+  private int      defaultEndpoint = 0;
+  private String   attr_type = null;
   private Endpoint low, high;
-
-
-  /**
-   * default constructor
-   */
-  public Interval()
-  {
-  }
 
 
   /**
@@ -64,28 +65,15 @@ public class Interval
 
 
   /**
-   * copy constructor.  initializes this object with Interval 'i', carefully
-   * cloning member data to ensure a "deep copy".
-   */
-  public Interval( Interval i )
-  {
-    low  = (Endpoint)i.getLow().clone();
-    high = (Endpoint)i.getHigh().clone();
-  }
-
-
-  /**
-   * initializes an interval from it's string representation.  the string
+   * parses an interval from it's string representation.  the string
    * representation of an interval is the name of the attribute, followed
    * by two values seperated by a colon, enclosed in () or [], depending
    * on if the interval is open or closed.  for example, to specify an
-   * interval of GROUP_ID's from 10 to 100, use 'GROUP_ID[10:100]'.  returns
-   * the unused part of the string.
+   * interval of GROUP_ID's from 10 to 100, use 'GROUP_ID[10:100]'.
    */
-  public String set( String str ) //throws Exception
+  public Interval( String str )
   {
-//    if( str.length < 5 )
-//      throw new Exception( "invalid input" );
+    System.out.println( "I" );
 
     String start_value = null, 
            end_value   = null;
@@ -93,14 +81,14 @@ public class Interval
 
     str = str.trim();  //remove whitespace on ends
 
-    //find the beginning of the endpoint && chop off leading nonsense
+    //find the beginning of the endpoint
     i = str.indexOf( '[' );
     j = str.indexOf( '(' );
     k = str.indexOf( SEPERATOR );
     if(  i < 0  &&  j < 0  ||  k < 0  )
     {
       System.out.println( "marker not found" );
-      return new String();
+//      return new String();
     }
     if(  i > 0  &&  j > 0  )
     {
@@ -141,7 +129,7 @@ public class Interval
     if(  i < 0  &&  j < 0  ||  k < 0  )
     {
       System.out.println( "marker not found" );
-      return new String();
+//      return new String();
     }
     if(  i > 0  &&  j > 0  )
     {
@@ -172,13 +160,26 @@ public class Interval
 //    System.out.println( "str: " + str );
 
 
-//    System.out.println( "type:  " + attr_type );
-//    System.out.println( "start: " + start_value );   
-//    System.out.println( "end:   " + end_value );   
+//    System.out.println( "type:  [" + attr_type   + "]" );
+//    System.out.println( "start: [" + start_value + "]" );   
+//    System.out.println( "end:   [" + end_value   + "]" );   
 
     create_endpoints( start_value, end_value );
-    return str;
+//    return str;
   }
+
+
+  /**
+   * copy constructor.  initializes this object with Interval 'i', carefully
+   * cloning member data to ensure a "deep copy".
+   */
+  public Interval( Interval i )
+  {
+    low  = (Endpoint)i.getLow().clone();
+    high = (Endpoint)i.getHigh().clone();
+  }
+
+
 
 
   /**
@@ -198,13 +199,11 @@ public class Interval
     {
       low =  e1;
       high = e2;
-      //System.out.println( "assigned!" );
     }
     else
     {
       low =  e2;
       high = e1;
-      //System.out.println( "assigned!" );
     }
     
     //are the names the same?  assign lexigraphically
@@ -215,14 +214,12 @@ public class Interval
       {
         low  = e1;  
         high = e2;
-        //System.out.println( "assigned!" );
       }
 
       else if( e1.getAttr().getName().compareTo(e2.getAttr().getName()) == 0 )
       {
         low  = e1;
         high = e2;
-        //System.out.println( "assigned!" );
       }
 
       //e1 comes last
@@ -230,7 +227,6 @@ public class Interval
       {
         low  = e2;
         high = e1;
-        //System.out.println( "assigned!" );
       }
     }
   }
@@ -270,8 +266,6 @@ public class Interval
   }
 
 
-
-
   /**
    * get the endpoint who is considered 'low' by comparison to the other
    * bound.  the 'low' bound is determined by the Attribute's .compare()
@@ -291,6 +285,15 @@ public class Interval
   public Endpoint getHigh()
   {
     return high;
+  }
+
+
+  /**
+   * get the name, or effective type, of this Inverval object.
+   */
+  public String getType()
+  {
+    return high.getAttr().getName();
   }
 
 
@@ -535,8 +538,6 @@ public class Interval
     {
       System.out.println( "bad attribute type" );
     }
-
-
   }
 
 }
