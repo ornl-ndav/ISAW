@@ -15,6 +15,11 @@
  * ---------------------------------------------------------------------------
  *
  *  $Log$
+ *  Revision 1.22  2001/03/01 20:48:02  dennis
+ *  Now gets the instrument type using the method InstrumentType()
+ *  from the IPNS.Runfile.Runfile class, rather than parsing the
+ *  file name.
+ *
  *  Revision 1.21  2001/02/22 21:00:46  dennis
  *  Improved error checking in getDataSet() method.
  *
@@ -110,8 +115,8 @@ package DataSetTools.retriever;
 
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
-import DataSetTools.instruments.*;
-import IPNS.Runfile.*;
+import DataSetTools.instruments.InstrumentType;
+import IPNS.Runfile.Runfile;
 import DataSetTools.math.*;
 import DataSetTools.util.*;
 import java.io.*;
@@ -131,6 +136,8 @@ public class RunfileRetriever extends    Retriever
   int[]   histogram;        // the histogram number corresponding to a specific
                             // DataSet number in this runfile.
   Runfile run_file;
+
+  private static int instrument_type = InstrumentType.UNKNOWN;
 
 /**
  *  Construct a runfile retriever for a specific file.
@@ -161,6 +168,7 @@ public class RunfileRetriever extends    Retriever
     try
     {
       run_file         = new Runfile( file_name );
+      instrument_type  = run_file.InstrumentType();
       num_histograms   = run_file.NumOfHistograms();
       data_set_type    = new int[ 3 * num_histograms ];
       histogram        = new int[ 3 * num_histograms ];
@@ -321,12 +329,10 @@ public class RunfileRetriever extends    Retriever
       return null;
 
 //    System.out.println("======= getting dataset for >>>" + data_source_name );
-    int instrument_type;
 
     if ( data_set_num < 0 || data_set_num >= num_data_sets )
       return null;
 
-    instrument_type = InstrumentType.getIPNSInstrumentType( data_source_name );
     return getDataSet( data_set_num, instrument_type );
   }
 
@@ -453,7 +459,7 @@ public class RunfileRetriever extends    Retriever
             // change times to sample to detector TOF for spectrometers 
             // and groups that are NOT beam monitors 
             // if there is valid source_to_sample information available
-          else if (instrument_type==InstrumentType.TOF_DG_SPECTROMETER &&
+          else if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER &&
                    !is_monitor                                           )
            {
              source_to_sample_tof = (float)run_file.SourceToSampleTime();
@@ -527,7 +533,7 @@ public class RunfileRetriever extends    Retriever
 
     // Instrument Type ........
     int list[] = new int[1];
-    list[0] = InstrumentType.getIPNSInstrumentType( file_name );
+    list[0] = instrument_type;
     int_list_attr = new IntListAttribute( Attribute.INST_TYPE, list );
     attr_list.setAttribute( int_list_attr );
 
