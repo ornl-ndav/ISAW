@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/05/25 19:09:16  rmikk
+ * -Added more documentation
+ * -Revised the Property Change handling
+ * -Fixed details to get VectorPG of VectorPG to work
+ *
  * Revision 1.2  2003/05/21 20:10:30  pfpeterson
  * Turned MyActionList into a private class so there is not conflicts
  * when compiling the whole package.
@@ -51,9 +56,11 @@ import java.util.*;
 
 /**
 *   This parameterGUI is the parent class of other parameterGUI's whose values are
-*   Vectors with common Object data types for the elements.  This GUI is best for
-*   medium sized list.  They are stored in a list box where the values can be editted
-*   deleted, and/or rearanged
+*   Vectors with a common Object data type for each elements.  This GUI is best for
+*   medium sized list.  The list appears in a list box where the values can be editted
+*   deleted, and/or rearanged.
+*
+*   A vector of choicelist should go through this constructor
 */
 public class VectorPG extends ParameterGUI implements PropertyChangeListener
   {
@@ -63,6 +70,7 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
     MJPanel GUI;
     JButton butt;
     JPanel buttonHolder;
+  
      
 /*   public VectorPG()
      { this( ObjectPG);
@@ -93,17 +101,16 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
        buttonHolder = new JPanel( new GridLayout( 1,1) );
        buttonHolder.add( butt );
        butt.addActionListener(  new ButtonListener());
-
-
-       }
+      }
 
    /**
-   *    Adds property change listeners for new values of the Vector
+   *    Adds property change listeners to listen for new Vector values
    */
    public void addPropertyChangeListener(PropertyChangeListener listener)
      {
        
-       GUI.addPropertyChangeListener( listener );
+       pcs.addPropertyChangeListener( listener );
+       
        GUI.addPropertyChangeListener( this );
       }
 
@@ -113,7 +120,7 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
    */
    public void removePropertyChangeListener(PropertyChangeListener listener)
      {
-       GUI.removePropertyChangeListener( listener);
+       pcs.removePropertyChangeListener( listener);
        GUI.removePropertyChangeListener( this );
       }
 
@@ -124,8 +131,10 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
      {
       public void propertyChange(PropertyChangeEvent evt)
         { 
-          setValue( GUI.getValues());
+          value = ( GUI.getValues());
           setValid( true );
+          
+          pcs.firePropertyChange(  evt );
         }
      }
 
@@ -145,12 +154,42 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
        enabled = enable;
      }
 
+   /**
+   *   Sets the value and displays these values in the associated JList.
+   */
    public void setValue( Object valuee)
      {
        
        value = valuee;
+       GUI.setValue( value);
+
       }
   
+   /**
+   *   Displays the JFrame with the list box containing the elements of the vector if
+   *   it is not already being displayed
+   */
+   public void showGUI()
+     {
+      if( isShowing) 
+            return;
+       JFrame jf = new JFrame( param.getName() );
+       jf.setSize( 500, 300);
+          
+       jf.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE);
+       jf.addWindowListener( new MyWindowListener() );
+          
+       jf.getContentPane().setLayout( new GridLayout( 1,1));
+
+       jf.getContentPane().add( GUI );
+       jf.invalidate();
+       isShowing = true;
+       jf.show();
+
+
+      }
+
+
    boolean isShowing = false;
    // Called when the original button is pressed. It creates the JFrame that stores the
    //  list box and editting buttons, etc.
@@ -159,20 +198,8 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
 
       
       public void actionPerformed( ActionEvent evt )
-        { if( isShowing) 
-               return;
-          JFrame jf = new JFrame( param.getName() );
-          jf.setSize( 500, 300);
-          
-          jf.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE);
-          jf.addWindowListener( new MyWindowListener() );
-          
-          jf.getContentPane().setLayout( new GridLayout( 1,1));
-
-          jf.getContentPane().add( GUI );
-          jf.invalidate();
-          jf.show();
-
+        { 
+          showGUI();
          }
       
 
@@ -193,10 +220,13 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
    public Object clone()
     {
       VectorPG v= new VectorPG( param, getName());
-      v.setValue( v.getValue());
+      v.setValue( value);
       return (Object)v;
     }
   
+   /**
+   *  The type name is the param's type name with the letters "Array" affixed to the end
+   */
    public String getType()
      {
        return typeName;
@@ -214,7 +244,7 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
 
    public void init( Vector V)
      {
-       setValue( V);
+       value = ( V);
        //super.init();
 
      }
@@ -226,6 +256,7 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
      JButton Delete,Add,Up,Down, Edit, OK, Show;
      PropertyChangeSupport pcs;
      Vector oldVector;
+     boolean firstAdd = false;
       public MJPanel()
         {
           super( new BorderLayout() );
@@ -263,8 +294,7 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
           OK.addActionListener( this);
           invalidate();
           pcs = new PropertyChangeSupport( this );
-         
- 
+          
          }
    
       private void move( int i)
@@ -288,8 +318,7 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
 
       private void newVal( int pos)
         {
-         if( isShowing)
-           return; 
+       
          position = pos;
         
          if( (pos >=0) && (pos < jlistModel.getSize()))
@@ -298,7 +327,21 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
              param.setValue( jlistModel.elementAt(pos));
     
            }
+         if( isShowing)
+           {
+            return; 
+            }
          param.init();
+         if( param instanceof VectorPG) // eliminate button, OK button reused
+           {
+             ((VectorPG)param).showGUI();
+              if( ! firstAdd)
+                {
+                 param.addPropertyChangeListener( new OOkActionListener() );
+                 firstAdd = true;
+                 }
+             return;
+           }
          JFrame jjf = new JFrame( param.getName());
          jjf.getContentPane().setLayout( new BorderLayout() );
          jjf.getContentPane().add( param.getGUIPanel(), BorderLayout.CENTER);
@@ -328,18 +371,29 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
          }
      
       int position = -1;
-      class OOkActionListener implements ActionListener
+      //Listens for the change in value of the List in the JFrame
+      class OOkActionListener implements ActionListener,  PropertyChangeListener
         {
 
+
+          public void propertyChange( PropertyChangeEvent evt)
+            {
+              actionPerformed( null);
+
+
+              }
           public void actionPerformed( ActionEvent evt )
             {
               Object O = param.getValue();
-              if( position < 0)
-                 jlistModel.addElement( O);
+              if( (position >=0) && (position < jlistModel.getSize()) )
+                 jlistModel.setElementAt( O, position);  
               else
-                 jlistModel.setElementAt( O, position);   
+                 jlistModel.addElement( O);
+             
+                  
            }
-         }
+         }//OOkActionListener
+
       public void actionPerformed( ActionEvent evt)
         {
           JButton butt = (JButton)(evt.getSource());
@@ -363,6 +417,9 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
           else if ( butt == Delete)
              {
               int j = jlist.getSelectedIndex();
+              position = -1;
+              if( j < 0)
+                 return;
               jlistModel.removeElementAt( j );
               if( j >=0)
                 if( j < jlistModel.getSize() )
@@ -411,6 +468,21 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
 
         }
 
+     public void setValue( Object valuee)
+       {
+        
+        if( jlistModel != null)
+         {
+            jlistModel.clear();
+            if( valuee != null)
+              if( valuee instanceof Vector)
+                 for( int i=0; i< ((Vector)valuee).size(); i++)
+                   jlistModel.addElement( ((Vector)valuee).elementAt(i));
+          }
+          position = -1;
+
+       }
+
      }//MJPanel
 
     /**
@@ -435,8 +507,7 @@ public class VectorPG extends ParameterGUI implements PropertyChangeListener
 
 
 
-      }      
-
+      }  
 static class MyActionList implements ActionListener
   {
    VectorPG vpf;
@@ -453,5 +524,7 @@ static class MyActionList implements ActionListener
 
       }
 
-   }
+   }    
+
   }
+
