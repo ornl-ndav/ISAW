@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/08/28 01:54:05  bouzekc
+ *  Modified to work with new ParameterGUI.
+ *
  *  Revision 1.8  2003/08/22 20:12:07  bouzekc
  *  Modified to work with EntryWidget.
  *
@@ -78,30 +81,30 @@ abstract public class HashPG extends ParameterGUI{
     private   Vector vals;
 
     // ********** Constructors **********
-    public HashPG(String name, Object value){
-        this(name,value,false,value.toString());
+    public HashPG(String name, Object val){
+        super( name, val );
+        addItem( val.toString(  ), val );
+        setValue( val );
     }
 
-    public HashPG(String name, Object value, boolean valid){
-        this(name,value,valid,value.toString());
+    public HashPG(String name, Object val, boolean valid){
+        super( name, val, valid );
+        addItem( val.toString(  ), val );
+        setValue( val );
     }
 
-    public HashPG(String name, Object value, String key){
-        this(name,value,false,key);
-        this.setDrawValid(false);
+    public HashPG(String name, Object val, String key){
+        super(name,val);
         this.type=TYPE;
+        addItem( key, val );
+        setValue( val );
     }
 
-    public HashPG(String name, Object value, boolean valid, String key){
-        this.addItem(key,value);
-        this.setName(name);
-        this.setValue(value);
-        this.setEnabled(true);
-        this.setValid(valid);
-        this.setDrawValid(true);
+    public HashPG(String name, Object val, boolean valid, String key){
+        super( name, val, valid );
         this.type=TYPE;
-        this.initialized=false;
-        this.ignore_prop_change=false;
+        addItem(key,value);
+        setValue( val );
     }
 
     // ********** Methods to deal with the hash **********
