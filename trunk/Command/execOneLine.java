@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2002/01/11 19:27:36  rmikk
+ * The Display view can now Display Tables
+ * The Send can now take 1 or 2 arguments
+ *
  * Revision 1.30  2001/11/27 18:39:57  dennis
  * Change the javadocs to reflect that this Save now works and it
  * only saves in java binary form. (Ruth)
@@ -1040,7 +1044,8 @@ public void addDataSet(DataSet dss, String vname)
  *@param      ds            The data set to be viewed
  *@param      DisplayType   The type of display
  *
- * NOTE: DisplayType must be "IMAGE" , "Scrolled_Graph", or "Selected_Graph"<Br>
+ * NOTE: DisplayType must be "IMAGE" , "Scrolled_Graph", "Table", Three_D",
+ *       or "Selected_Graph"<Br>
  *       FrameType must be "External Frame" or "Internal Frame". 
  */
     public void Display( DataSet ds , String DisplayType , String FrameType )
@@ -1055,6 +1060,8 @@ public void addDataSet(DataSet dss, String vname)
              X = IViewManager.SELECTED_GRAPHS;
          else if( DisplayType.toUpperCase().equals("THREE_D"))
 	     X = IViewManager.THREE_D;
+         else if( DisplayType.toUpperCase().equals("TABLE"))
+             X= IViewManager.TABLE;
          else
            { seterror( 1000 , ER_ImproperArgument+" "+ DisplayType );
              return;
@@ -1161,7 +1168,9 @@ public void addDataSet(DataSet dss, String vname)
        }
 
     
-
+   // Now usess two arguments.
+   // 1 arg --> IObserver.update( this, arg1)
+   //2 args--> IObserver.update( arg2,arg1)
     private int execSend(String S, int start, int end)
       {int i, j;
        i = skipspaces( S , 1 , start );
@@ -1169,10 +1178,26 @@ public void addDataSet(DataSet dss, String vname)
          { seterror( start , ER_MissingArgument);
            return i;
          }
+       Vector args;
        if( S.charAt(i) == '(' )
-          j = execute( S , i + 1 , end );
+          args = getArgs( S , i + 1 , end );
        else
-          j = execute( S , i  , end );
+          args = getArgs( S , i  , end );
+       if( args == null) 
+            {
+             return i;
+             }
+       if( (args.size() < 2) || (args.size()>3))
+          { seterror( i, "Internal Error 7A");
+            return i;
+           }
+        try{
+          j = ((Integer)(args.lastElement())).intValue();
+            }
+        catch( Exception uu)
+          {seterror( i, "Internal Error 7A");
+            return i;
+          }
        if( S.charAt( i ) == '(')
          if( (j < 0 ) || ( j >= S.length() ) || ( j >= end ))
            { seterror ( j , ER_MisMatchParens );
@@ -1190,7 +1215,7 @@ public void addDataSet(DataSet dss, String vname)
          return S.length() + 2;
        if(Debug)
 	   System.out.print("Send after error");
-       if( !( Result instanceof DataSet ) )
+     /*  if( !( Result instanceof DataSet ) )
          {if(Debug)
 	   System.out.println("in Not Correct Data Type");
           seterror( start , ER_ImproperArgument );
@@ -1198,8 +1223,24 @@ public void addDataSet(DataSet dss, String vname)
          }
        if(Debug)
 	   System.out.println("Send er observ");
-       ((DataSet)Result).addIObserver(this);
-       OL.notifyIObservers( this , Result );
+     */
+        Object arg1,arg2;
+        if( j<2) 
+           {arg1=this;
+            arg2= args.firstElement();
+           }
+        else
+           {
+              arg2= args.firstElement();
+              arg1= args.elementAt(1);
+           }
+       if( arg1 instanceof DataSet)
+          ((DataSet)arg1).addIObserver( this);
+
+       if( arg2 instanceof DataSet)
+          ((DataSet)arg2).addIObserver( this);
+ 
+       OL.notifyIObservers( arg1,arg2 );
        Result = null;
        return end;
       }
