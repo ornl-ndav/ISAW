@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/07/30 14:08:43  rmikk
+ * Fixed javadoc error
+ *
  * Revision 1.3  2004/06/18 18:31:22  rmikk
  * Now produces tokens for correctly for .  GT, etc.
  *
@@ -297,7 +300,6 @@ public class FortranTokenManager implements TokenManager,
     else if( column==1)
        quoteMode = false;
     if( cc<0) return 0;
-    
     if( cc<32){
        quoteMode=false;
        lineNum++;
@@ -348,10 +350,10 @@ public class FortranTokenManager implements TokenManager,
  
   /**
    *  Test program for this module
-   * @param args[0]  A filename for source Fortran code
+   * @param args args[0]  A filename for source Fortran code
    */
   public static void main( String args[]){
-   FortranTokenManager fm = new FortranTokenManager( args[0]);
+   //FortranTokenManager fm = new FortranTokenManager( args[0]);
    //int i=0;
   // for( Token c=fm.getNextWord(); c.kind!=EOF; c=fm.getNextWord()){
   //    System.out.println(i+"  "+c.kind+"::"+c.image+":"
