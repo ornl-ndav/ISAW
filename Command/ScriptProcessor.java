@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.56  2003/06/26 21:48:54  rmikk
+ * Reinstated commented out code to deal correctly(ignore) with
+ *  $  category = ...
+ *  $ Title =....
+ *  $ Command=
+ *
  * Revision 1.55  2003/06/26 14:37:34  bouzekc
  * Now makes only one call to String.toUpperCase() in
  * execute().
@@ -915,9 +921,9 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       vnames.addElement( VarName );
    
     // parse type and create a parameter
-    /*if( DataType.equals("=")){
-      // do nothing
-    }else*/ if( (DataType .equals( "INT") ) || ( DataType.equals( "INTEGER"))){
+    if( DataType.equals("=")){
+    //do nothing title= or category=
+    }else if( (DataType .equals( "INT") ) || ( DataType.equals( "INTEGER"))){
       if( InitValue == null)
         InitValue ="0";
       try {
