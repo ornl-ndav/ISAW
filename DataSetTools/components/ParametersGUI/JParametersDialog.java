@@ -29,6 +29,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2002/10/14 16:02:29  pfpeterson
+ *  Compares the parameter against the IParameterGUI interface rather
+ *  than the ParameterGUI abstract class. Also fixed a bug where ArrayPG
+ *  (that were not DataSetPG) did not produce a GUI.
+ *
  *  Revision 1.29  2002/09/30 18:41:11  rmikk
  *  Fixed a null pointer exception error
  *
@@ -258,13 +263,13 @@ public class JParametersDialog implements Serializable,
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
            Size1=-1;
            iparam = op.getParameter(i);
-           if( iparam instanceof ParameterGUI)
+           if( iparam instanceof IParameterGUI)
              {if( iparam instanceof DataSetPG)
                 ((DataSetPG)iparam).init((Object[])(ds_src.getDataSets()));
-              else if( !(iparam instanceof ArrayPG))
-                ((ParameterGUI) iparam).init( null);
-            
-              JComponent pp= ((ParameterGUI)iparam).getGUIPanel();
+              else
+                ((IParameterGUI)iparam).init(null);
+
+              JComponent pp= ((IParameterGUI)iparam).getGUIPanel();
               if( pp == null)
                 {System.out.println("GUIPanel null" + iparam.getClass());
                  return;
