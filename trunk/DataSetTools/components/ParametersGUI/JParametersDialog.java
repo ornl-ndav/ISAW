@@ -1,6 +1,7 @@
 /*
  * @(#)JParametersDialog.java     1.0  99/09/02  Alok Chatterjee
  *
+ *
  * 1.0  99/09/02  Added the comments and made this a part of package IsawGUI
  * 
  *
@@ -35,13 +36,6 @@ import DataSetTools.util.*;
 import java.util.zip.*;
 import java.io.Serializable;
 import javax.swing.text.*;
-
-/**
- * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
- * ChopTools and graph packages.
- *
- * @version 1.0  
- */
 
 public class JParametersDialog implements Serializable,
                                IObservable
