@@ -8,6 +8,9 @@
  *               Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.2  2001/01/31 14:19:47  dennis
+ *  Made the class public.
+ *
  *  Revision 1.1  2001/01/30 23:27:33  dennis
  *  Initial version, network communications for ISAW.
  *
@@ -29,7 +32,7 @@ import java.net.*;
  *  @see TCPComm
  *  @see LiveDataServer
  */
-  class TCPServiceInit extends Thread
+  public class TCPServiceInit extends Thread
   {
     ITCPUser     user;
     ServerSocket ssock;
