@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/08/01 14:38:09  rmikk
+ * Changed the DataSet INST_TYPE attribute to be tied
+ * solely to NXentries analysis field
+ *
  * Revision 1.1  2001/07/25 21:23:20  rmikk
  * Initial checkin
  *
@@ -137,7 +141,7 @@ public class NxWriteEntry
         }
       }
 
-/*  //Moved to NxWriteInstrument
+/* 
      X = DS.getAttributeValue( Attribute.INST_NAME);
      NxWriteNode NxInstr = node.newChildNode( "Instrument","NXinstrument");
      if( X != null)
@@ -152,24 +156,34 @@ public class NxWriteEntry
             errormessage += ";"+errormessage;         
        }
       }
+*/
        X = DS.getAttributeValue( Attribute.INST_TYPE);
     
     if( X != null)
       {int instr_type = ne.cnvertoint( X);
-      NexIO.Inst_Type it = new NexIO.Inst_Type();
+       NexIO.Inst_Type it = new NexIO.Inst_Type();
      
        String analysis = it.getNexAnalysisName( instr_type);
-      if( analysis == null)
-        {ranks = new int[1];
-         ranks[0] = 1;
-         intval = new int[1];
-         intval[0] = instr_type;
-         node.addAttribute("isaw_instr_type", intval, Types.Int, ranks);
-        }
-      else
-        if( analysis.length() > 0)
+       n1 = node.newChildNode( "analysis", "SDS");
+       ranks = new int[1];
+       ranks[0] = 1;
+       intval = new int[1];
+       intval[0] = instr_type;
+      
+       if( (analysis == null))
+         {
+           n1.addAttribute("isaw_instr_type", intval, Types.Int, ranks);
+          
+           analysis ="";
+          }
+       else if( analysis.length() <= 0)
+          {n1.addAttribute("isaw_instr_type", intval, Types.Int, ranks);
+	 
+          analysis = "";
+          }
+       
         {
-         n1 = node.newChildNode( "analysis", "SDS");
+        
           ranks = new int[1];
           ranks[0] = analysis.length()+1;
           
@@ -179,7 +193,7 @@ public class NxWriteEntry
             errormessage += ";"+errormessage;         
        }
       }
-*/
+
 
 
     X = DS.getAttributeValue( Attribute.SAMPLE_NAME);
