@@ -31,6 +31,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.17  2002/07/26 20:25:57  dennis
+ *  Added method DiffractometerVecQ() to calculate the Q vector
+ *  for elastic scattering.
+ *
  *  Revision 1.16  2002/07/10 15:57:44  pfpeterson
  *  Added gsas tof->d and tof->Q calculations.
  *
@@ -491,6 +495,56 @@ public static float  DiffractometerQ( float angle_radians,
   return (float)( 4.0 * Math.PI * Math.sin( theta_radians ) / wavelength );
 }
 
+
+/* ------------------------- DiffractometerVecQ ------------------------- */
+/**
+ *   Calculate a "Q" vector based on the detector position, total flight path
+ *   length and time of flight for a neutron that was scattered by a sample.
+ *
+ *   @param det_pos         The position of the detector, relative to the
+ *                          sample.
+ *   @param initial_path_m  The distance from the moderator to the sample 
+ *                          in meters.
+ *   @param time_us         The time in microseconds for the neutron to travel
+ *                          the distance from the moderator to the detector.
+ *
+ *   @return A vector position, "Q" with components in inverse Angstroms.
+ *
+ */
+
+public static Position3D DiffractometerVecQ( DetectorPosition  det_pos, 
+                                             float             initial_path_m,
+                                             float             time_us    )
+{
+  float       distance;
+  float       path_len_m;
+  float       angle_radians;
+  float       magnitude_Q;
+  Position3D  vector_Q = new Position3D();
+  float       xyz[];
+  float       magnitude_xyz;
+  float       scale;
+
+  distance      = det_pos.getDistance();
+  path_len_m    = distance + initial_path_m;
+  angle_radians = det_pos.getScatteringAngle();
+  magnitude_Q   = DiffractometerQ( angle_radians, path_len_m, time_us ); 
+
+  xyz = det_pos.getCartesianCoords();        // this is vector K'
+  xyz[0] -= distance;                        // now it's in the direction of
+                                             // vector Q = K' - K
+  magnitude_xyz = (float)Math.sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]+xyz[2]*xyz[2]);
+  scale = magnitude_Q/magnitude_xyz;
+  xyz[0] *= scale;
+  xyz[1] *= scale;
+  xyz[2] *= scale;                           // now it's really Q
+
+  vector_Q.setCartesianCoords( xyz[0], xyz[1], xyz[2] );
+  return vector_Q;
+}
+
+
+
 /**
  * Calculate a "Q" value based on the empirical relation used by gsas.
  *
@@ -607,7 +661,7 @@ public static float SpectrometerQ( float e_in_meV,
 
   if ( temp < 0.0f )
     {
-      System.out.println("ERROR in ChopQ ... sqrt of negative number");
+      System.out.println("ERROR in SpectrometerQ ... sqrt of negative number");
       return( -1.0f );
     }
   return (float)( Math.sqrt( temp / 2.0721 ) );
@@ -626,6 +680,34 @@ public static float Omega( float two_theta )
     return alpha;
   else
     return (alpha - 180);
+}
+
+/* --------------------------------- main -------------------------------- */
+/**
+ *  main program for test purposes only
+ */
+
+public static void main( String args[] )
+{
+  DetectorPosition det_pos = new DetectorPosition();
+  det_pos.setCartesianCoords( 0, 0.32f, 0 ); 
+
+  Position3D temp_pos = DiffractometerVecQ( det_pos, 9.459f, 3000 );
+  DetectorPosition pos = new DetectorPosition( temp_pos );
+  System.out.println( "Detector at = " + det_pos );
+  System.out.println( "Scatt. ang. = " + det_pos.getScatteringAngle() );
+  System.out.println( "Q at        = " + pos );
+  System.out.println( "magnitude_Q = " + pos.getDistance() );
+  System.out.println( "QScatt. ang.= " + pos.getScatteringAngle() );
+
+  det_pos.setCylindricalCoords( 0.349f, (float)(113.45*Math.PI/180), .121f );
+  temp_pos = DiffractometerVecQ( det_pos, 9.459f, 6000 );
+  pos = new DetectorPosition( temp_pos );
+  System.out.println( "Detector at = " + det_pos );
+  System.out.println( "Scatt. ang. = " + det_pos.getScatteringAngle() );
+  System.out.println( "Q at        = " + pos );
+  System.out.println( "magnitude_Q = " + pos.getDistance() );
+  System.out.println( "QScatt. ang.= " + pos.getScatteringAngle() );
 }
 
 }
