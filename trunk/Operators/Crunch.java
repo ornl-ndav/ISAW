@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2004/05/07 14:43:45  dennis
+ * Now notifies observers of Data blocks that are deleted.
+ * Now includes list of IDs that were removed in log message.
+ *
  * Revision 1.12  2004/05/03 18:05:07  dennis
  * Removed unused variables bad_det[] and bi.
  *
@@ -55,7 +59,6 @@
  * Revision 1.6  2002/11/27 23:29:54  pfpeterson
  * standardized header
  *
- *
  */
 package Operators;
 
@@ -65,6 +68,8 @@ import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.Messaging.*;
 
 import java.util.*;
 
@@ -76,18 +81,19 @@ import java.util.*;
  *  is found for the total counts, then detectors outside of the user
  *  specified number of sigma are removed (generally too many counts).
  */
-public class Crunch extends GenericSpecial{
+public class Crunch extends GenericSpecial
+{
     private static final String  TITLE = "Crunch";
     private static final boolean DEBUG = false;
 
-    /* ------------------------ Default constructor ------------------------- */ 
+    /* ----------------------- Default constructor ------------------------- */ 
     /**
      *  Creates operator with title "Operator Template" and a default
      *  list of parameters.
      */  
     public Crunch()
     {
-	super( TITLE );
+      super( TITLE );
     }
     
     /* ---------------------------- Constructor ----------------------------- */ 
@@ -101,38 +107,39 @@ public class Crunch extends GenericSpecial{
      *  @param  min_count   Minimum counts to keep bank
      *  @param  new_ds      Whether to make a new DataSet.
      */
-    public Crunch( DataSet ds, float width, float min_count, boolean new_ds ){
-
-	this(); 
-	parameters = new Vector();
-	addParameter( new Parameter("DataSet parameter", ds) );
-	addParameter( new Parameter("Minum counts to keep", new Float(min_count)));
-	addParameter( new Parameter("Number of sigma to keep", new Float(width)));
-        addParameter( new Parameter("Make new DataSet", new Boolean(new_ds)));
-
+    public Crunch( DataSet ds, float width, float min_count, boolean new_ds )
+    {
+      this(); 
+      parameters = new Vector();
+      addParameter( new Parameter("DataSet parameter", ds) );
+      addParameter( new Parameter("Minum counts to keep",new Float(min_count)));
+      addParameter( new Parameter("Number of sigma to keep", new Float(width)));
+      addParameter( new Parameter("Make new DataSet", new Boolean(new_ds)));
     }
     
-    /* --------------------------- getCommand ------------------------------- */ 
+    /* -------------------------- getCommand ------------------------------- */ 
     /** 
      * Get the name of this operator to use in scripts
      * 
      * @return  "Crunch", the command used to invoke this operator in Scripts
      */
-    public String getCommand(){
-	return "Crunch";
+    public String getCommand()
+    {
+      return TITLE;
     }
     
-    /* ----------------------- setDefaultParameters ------------------------- */ 
+    /* ----------------------- setDefaultParameters ------------------------ */ 
     /** 
      * Sets default values for the parameters.  This must match the
      * data types of the parameters.
      */
-    public void setDefaultParameters(){
-	parameters = new Vector();
-	addParameter(new Parameter("DataSet parameter",DataSet.EMPTY_DATA_SET ));
-	addParameter(new Parameter("Minimum counts to keep", new Float(0.0f)));
-	addParameter(new Parameter("Number of sigma to keep",new Float(2.0f)));
-        addParameter(new Parameter("Make new DataSet", new Boolean(false)));
+    public void setDefaultParameters()
+    {
+      parameters = new Vector();
+      addParameter(new Parameter("DataSet parameter",DataSet.EMPTY_DATA_SET ));
+      addParameter(new Parameter("Minimum counts to keep", new Float(0.0f)));
+      addParameter(new Parameter("Number of sigma to keep",new Float(2.0f)));
+      addParameter(new Parameter("Make new DataSet", new Boolean(false)));
     }
 
     /* ---------------------- getDocumentation --------------------------- */
@@ -159,35 +166,38 @@ public class Crunch extends GenericSpecial{
       s.append("@param min_count Minimum counts to keep.\n");
       s.append("@param width How many sigma around the average to keep.\n");
       s.append("@param new_ds Whether to make a new DataSet.\n");
-      s.append("@return DataSet containing the the original DataSet minus the ");
-      s.append("dead detectors.\n");
-      s.append("@error Returns an error if the specified DataSet ds is null.\n");
+      s.append("@return DataSet containing the the original DataSet minus ");
+      s.append("the dead detectors.\n");
+      s.append("@error Returns an error if the specified DataSet ");
+      s.append("ds is null.\n");
       return s.toString();
     }
     
-    /* ----------------------------- getResult ------------------------------ */ 
+    /* ----------------------------- getResult ----------------------------- */ 
     /** 
      *  Removes dead detectors from the specified DataSet.
      *
      *  @return DataSet containing the the original DataSet minus the dead 
      *  detectors (if successful).
      */
-    public Object getResult(){
+    public Object getResult()
+    {
       DataSet ds        = (DataSet)(getParameter(0).getValue());
       float   min_count = ((Float) (getParameter(1).getValue())).floatValue();
       float   width     = ((Float) (getParameter(2).getValue())).floatValue();
       boolean mk_new_ds =((Boolean)(getParameter(3).getValue())).booleanValue();
+
+      Vector dead_ones = new Vector();    // keep track of the ones removed
 
       if( ds==null )
         return new ErrorString( "DataSet is null in Crunch" );
 
       // initialize new data set to be the same as the old
       DataSet  new_ds = null;
-      if(mk_new_ds){
+      if(mk_new_ds)
         new_ds=(DataSet)ds.clone();
-      }else{
+      else
         new_ds=ds;
-      }
 
       // first remove detectors below min_count
       int n_data = new_ds.getNum_entries();
@@ -199,7 +209,10 @@ public class Crunch extends GenericSpecial{
         Float count = (Float)
                det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
         if( count.floatValue() < min_count )
+        {
+          dead_ones.add( new Integer( det.getGroup_ID() ) );
           new_ds.removeData_entry(i);
+        }
       }
 
       // find the average total counts
@@ -255,21 +268,37 @@ public class Crunch extends GenericSpecial{
         float diff = (float)Math.abs(avg-count.floatValue());
         if( diff > width )
         {
+          dead_ones.add( new Integer( det.getGroup_ID() ) );
           new_ds.removeData_entry(i);
           if(DEBUG)System.out.println("removing det"+i+" with "
                                        +count+" total counts");
         }
       }
     }
-	
-    new_ds.addLog_entry("Applied Crunch( " + ds + 
-                        ", " + min_count + 
-                        ", " + width/dev + 
-                        ", " + mk_new_ds + " )");
+
+    int final_list[] = null;
+    if( dead_ones.size() > 0 )
+    {
+      final_list = new int[ dead_ones.size() ];
+      for ( int i=0; i < dead_ones.size(); i++ )
+        final_list[i] = ((Integer)dead_ones.elementAt(i)).intValue();
+
+      Arrays.sort(final_list);
+
+      new_ds.addLog_entry("Applied Crunch( " + ds + 
+                          ", " + min_count + 
+                          ", " + width/dev + 
+                          ", " + mk_new_ds + " )\n" +
+                          "removed data blocks : " +
+                          IntList.ToString(final_list) + " )" );
+      if ( !mk_new_ds )
+        ds.notifyIObservers( IObserver.DATA_DELETED );
+    }
+
     return new_ds;
   }
     
-    /* ------------------------------- clone -------------------------------- */ 
+    /* ------------------------------ clone -------------------------------- */ 
     /** 
      *  Creates a clone of this operator.
      */
@@ -280,7 +309,7 @@ public class Crunch extends GenericSpecial{
     }
     
 
-    /* ------------------------------- main --------------------------------- */ 
+    /* ------------------------------ main --------------------------------- */ 
     /** 
      * Test program to verify that this will compile and run ok.  
      *
