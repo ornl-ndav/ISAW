@@ -6,6 +6,10 @@ package OverplotView;
  * graphing implemented by the sgt package
  *
  * $Log$
+ * Revision 1.4  2000/07/27 16:40:49  neffk
+ * graph is now isawGraph, instead of isawLineProfileLayout.  graph resizes to use
+ * full advantage of screen space as a result.
+ *
  * Revision 1.3  2000/07/17 14:55:21  neffk
  * sloppy checkin to correct previous checkin errors
  *
@@ -72,14 +76,15 @@ public class sgtSelectedGraph
      implements  SelectedGraph
 {
   
-  isawLineProfileLayout graph = null;
+//  isawLineProfileLayout graph = null;
+  isawGraph graph = null;
   JPanel graphPanel;
   private Vector dataBlocks;
   private Vector graphableDataBlocks;
   int dataCount;  //keeps track of how many data blocks  
                   //have been added to the graph (as
                   //opposed to dataBlocks)
-
+  boolean trace = false;
    
 
 
@@ -126,8 +131,13 @@ public class sgtSelectedGraph
 
     if(  graph == null  &&  instruction.draw()  )
     {
-      //System.out.println( "initializing graph..." );
-      graph = new isawLineProfileLayout( 0.5, 4.5, 0.5, 4.5, 5, 5 );
+      System.out.println( "initializing graph..." );
+      graph = new isawGraph(  new Point2D.Double( 0.0, 1.0 ),
+                              new Point2D.Double( 0.0, 1.0 ),
+                              10,
+                              3,
+                              0,
+                              0  );
       graphPanel.removeAll();
       graphPanel.setLayout(  new GridLayout( 1, 1 )  );
       graphPanel.add( graph );
@@ -170,7 +180,9 @@ public class sgtSelectedGraph
       graphPanel.revalidate();
 
 
-      if(  graphableDataBlocks.size() > 0  )
+      if(  ( graphableDataBlocks.size() > 0 )  &&  
+           ( graph.getSize().height > 0 )  &&
+           ( graph.getSize().width > 0 )  )
         graph.draw();
     }
 
@@ -190,7 +202,7 @@ public class sgtSelectedGraph
   {
     if(  graphableDataBlocks.size() > 0  ) 
     {
-      graph.clear();
+      graph.clearDataOnly();
       graphableDataBlocks.removeAllElements();
       dataCount = 0;
     }
@@ -209,7 +221,7 @@ public class sgtSelectedGraph
  
 
 
-  public isawLineProfileLayout getGraph()
+  public isawGraph getGraph()
   {
     return graph;
   }
@@ -221,7 +233,8 @@ public class sgtSelectedGraph
    */
   public void calculateGraphSize( Dimension d )
   {
-    System.out.println( "sgtSelectedGraph::calculateGraphSize(): " + d );
+    if( trace )
+      System.out.println( "sgtSelectedGraph::calculateGraphSize(): " + d );
 
     //System.out.println(  "xsize: " + graph.getXSize()  );
     //System.out.println(  "ysize: " + graph.getYSize()  );
@@ -231,23 +244,34 @@ public class sgtSelectedGraph
     double width = (double)d.width/100.0;
     double height = (double)d.height/100.0;
 
-    System.out.println( "adjusted width: " + width );
-    System.out.println( "adjusted height: " + height );
+/*
+    if( height < 2  &&  width < 2 )
+    {
+      System.out.println( "window is too small to draw graph" );
+      return;
+    }
+*/
 
-    graph.setXSize( width );
-    graph.setYSize( height ); 
-    graph.setXAxisP(  (width/10.0), width-(width/10.0)  );
-    graph.setYAxisP(  (height/10.0), height-(height/10.0)  );
 
-    System.out.println(  "xsize: " + graph.getXSize()  );
-    System.out.println(  "ysize: " + graph.getYSize()  );
-    System.out.println(  "width: " + graph.getXAxisP().toString()  );
-    System.out.println(  "height: " + graph.getYAxisP().toString()  );
+/*
+    System.out.println(  "adjusted width: " + (width/10.0) +
+                         " to " + (width-(width/10.0))  );
+    System.out.println(  "adjusted height: " + (height/10.0) +
+                         " to " + (height-(height/10.0))  );
 
-    //System.out.println(  "width: " + graph.getXAxisP().toString()  );
-    //System.out.println(  "height: " + graph.getYAxisP().toString()  );
 
-    graph.recalculateAxes();
+    System.out.println( "adjusted x size: " + width );
+    System.out.println( "adjusted y size: " + height );
+*/
+
+
+    graph.init(  new Point2D.Double( (width/10.0), width-(width/50) ),
+                 new Point2D.Double( (height/10.0), height-(width/50) ),
+                 width,
+                 height,
+                 0,
+                 0  );
+    redraw();
   }
 
 
