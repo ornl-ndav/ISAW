@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.52  2003/06/10 20:22:36  pfpeterson
+ * Only gets Script_Class_List_Handler when needed. Also added polymorphism
+ * for Integer to use Float.
+ *
  * Revision 1.51  2003/06/10 19:07:45  pfpeterson
  * Made Load(filename,varname) more forgiving with case for runfiles.
  *
@@ -223,7 +227,6 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      *  
      */
     public execOneLine(){
-        if(SH==null) SH=new Script_Class_List_Handler();
         initt();        
         OL = new IObserverList();        
         PC = new PropertyChangeSupport( this );
@@ -2278,6 +2281,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     }
 
     private Operator getSHOp( Vector Args, String Command){
+        if(SH==null) SH=new Script_Class_List_Handler();
         int i = SH.getOperatorPosition( Command );
         if( i < 0)
             return null;
@@ -2452,8 +2456,13 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
                 Float F = new Float(
                            ((Number)(Args.elementAt(k + start))).floatValue());
                 op.getParameter(k).setValue( F);
-            }else
+            }else if( op.getParameter(k).getValue() instanceof Integer){
+                Integer I = new Integer(
+                           ((Number)(Args.elementAt(k + start))).intValue());
+                op.getParameter(k).setValue( I);
+            }else{
                 op.getParameter( k ).setValue( Args.elementAt( k + start ) );
+            }
         }
     }
 
