@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2004/04/15 15:02:41  dennis
+ *  Refined the calculation of the shifted detector center so it will
+ *  also work for detectors not centered on the 'scattering plane'.
+ *  Added methods getAllGrids() and getStandardDeviationInQ() to
+ *  provide information to the top level SCDcalib operator for
+ *  logging purposes.
+ *
  *  Revision 1.14  2004/04/02 17:47:51  dennis
  *  Added method getAllGridIDs() to get the list of IDs used in the
  *  calibration.  Modified getMeasuredPeakPositions() and
@@ -162,6 +169,7 @@ public class SCDcal   extends    OneVarParameterizedFunction
   private Hashtable gon_rotation;
   private Hashtable grids;
   private Vector    nominal_position;
+  private double    standard_dev_in_Q = Double.MAX_VALUE;    
 
   private double    all_parameters[];   // full list of all possible params
   private String    all_parameter_names[];
@@ -379,13 +387,53 @@ public class SCDcal   extends    OneVarParameterizedFunction
 
       grid.setWidth( width );
       grid.setHeight( height );
-    
-      Vector3D_d center       = new Vector3D_d( nom_pos );
-      Vector3D_d minus_z_vec  = new Vector3D_d( center );
+/*
+      // NOTE: using this first block, the x and y offsets are interpreted 
+      //       as follows:  The y offset is in the vertical direction.  The
+      //       x offset is in a horizontal direction perpendicular to the 
+      //       line from the detector center to the sample.  This must be 
+      //       changed if the detector is not in the horizontal plane.
+      //       Offsets are measured from the nominal position of the detector.
+      //
+      Vector3D_d center      = new Vector3D_d( nom_pos );
+      Vector3D_d minus_z_vec = new Vector3D_d( center );
       minus_z_vec.normalize();
-      Vector3D_d y_vec  = new Vector3D_d( 0, 0, 1 );
-      Vector3D_d x_vec  = new Vector3D_d();
+      Vector3D_d y_vec = new Vector3D_d( 0, 0, 1 );
+      Vector3D_d x_vec = new Vector3D_d();
       x_vec.cross( minus_z_vec, y_vec );
+      x_vec.normalize();
+
+      Vector3D_d x_shift = new Vector3D_d( x_vec );
+      Vector3D_d y_shift = new Vector3D_d( y_vec );
+      x_shift.multiply( x_off );
+      y_shift.multiply( y_off );
+      center.normalize();
+      center.multiply( det_d );
+      center.add( x_shift ); 
+      center.add( y_shift ); 
+      grid.setCenter( center );
+*/
+
+      // NOTE: using this second block, the x and y offsets are interpreted 
+      //       as follows:  The x offset is in a horizontal plane perpendicular
+      //       to the line from the nominal center to the sample.  The
+      //       y offset is in a direction perpendicular to the x offset 
+      //       direction and perpendicular to the line from the detector 
+      //       center to the sample.  This version should work provided the
+      //       nominal detector center is not directly above or below the 
+      //       sample. 
+      //       Offsets are measured from the nominal position of the detector.
+      //
+      Vector3D_d center      = new Vector3D_d( nom_pos );
+      Vector3D_d minus_z_vec = new Vector3D_d( center );
+      minus_z_vec.normalize();
+      Vector3D_d vert_vec = new Vector3D_d( 0, 0, 1 );
+      Vector3D_d x_vec  = new Vector3D_d();
+      x_vec.cross( minus_z_vec, vert_vec );
+      Vector3D_d y_vec = new Vector3D_d();
+      y_vec.cross( x_vec, minus_z_vec );
+      x_vec.normalize();
+      y_vec.normalize();
 
       Vector3D_d x_shift = new Vector3D_d( x_vec );
       Vector3D_d y_shift = new Vector3D_d( y_vec );
@@ -542,8 +590,9 @@ public class SCDcal   extends    OneVarParameterizedFunction
 
 
   /** 
-   *  Get an array listing all of the grid IDs (i.e. detector IDs) for 
-   *  the peaks. 
+   *  Get an array listing all of the grid IDs (i.e. detector IDs) 
+   *
+   *  @return  an array of the detector IDs.
    */
   public int[] getAllGridIDs()
   {
@@ -555,6 +604,24 @@ public class SCDcal   extends    OneVarParameterizedFunction
 
      return ids;
   }
+
+
+  /** 
+   *  Get an array listing all of the data grids.
+   *
+   *  @return  an array of the detector double precision data grids.
+   */
+  public UniformGrid_d[] getAllGrids()
+  {
+     Object grid_objects[] = grids.values().toArray();
+     UniformGrid_d grids[] = new UniformGrid_d[ grid_objects.length ]; 
+
+     for ( int i = 0; i < grids.length; i++ )
+       grids[i] = (UniformGrid_d)grid_objects[i];
+
+     return grids;
+  }
+
 
 
   /**
@@ -647,6 +714,17 @@ public class SCDcal   extends    OneVarParameterizedFunction
 
 
   /**
+   *  Get the standard deviation in Q value that was last calculated.
+   *
+   *  @return  An estimate for the standard deviation in Q calculated as
+   *            Math.sqrt( sum_sq_errors/number_of_peaks ) 
+   */
+  public double getStandardDeviationInQ()
+  {
+    return standard_dev_in_Q;
+  }
+
+  /**
    *  Show the progress of the calibration calculation by printing the
    *  observed lattice parameters, standard deviation in the current 
    *  function values (i.e. differences between Q theoretical and
@@ -695,14 +773,14 @@ public class SCDcal   extends    OneVarParameterizedFunction
       index[i] = i;
 
     double vals[] = getValues( index );
-    double s_dev = 0;
+    double sum_sq_errors = 0;
     for ( int i = 0; i < vals.length; i++ )
-      s_dev += vals[i] * vals[i];
+      sum_sq_errors += vals[i] * vals[i];
 
-    s_dev = Math.sqrt( s_dev/vals.length );
+    standard_dev_in_Q = Math.sqrt( sum_sq_errors/vals.length );
 
     out.println();
-    out.println("One standard dev error distance in Q = " + s_dev );
+    out.println("One standard dev error distance in Q = " + standard_dev_in_Q );
 
                                        // finally, dump out the current
                                        // parameter estimates
