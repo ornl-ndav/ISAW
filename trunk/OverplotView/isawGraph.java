@@ -4,6 +4,10 @@ package  OverplotView;
  * $Id$
  *
  * $Log$
+ * Revision 1.2  2000/07/28 14:55:48  neffk
+ * reworked the zooming so that both vertical and horizontal aspects are
+ * changed with respect to the selection window.
+ *
  * Revision 1.1  2000/07/27 16:49:16  neffk
  * this is release USNS-ABLE
  *
@@ -613,8 +617,8 @@ public class isawGraph
     }
     if( data_good ) 
     {
-      setXRange(xTotalRange);
-      setYRange(yTotalRange, false);
+      setXRange( xTotalRange );
+      setYRange( yTotalRange );
     }
   }
 
@@ -636,36 +640,48 @@ public class isawGraph
    *
    * @param rnge new x range
    */
-  public void setXRange(Range2D rnge) {
+  public void setXRange( Range2D rnge ) 
+  {
+    //System.out.println(  "zoom: horiz: " + rnge.start + " to " + rnge.end  );
+
     Point2D.Double origin;
     PlainAxis xbot, yleft;
     Range2D xr, yr, xnRange;
     Layer layer = getFirstLayer();
     CartesianGraph graph = (CartesianGraph)layer.getGraph();
     LinearTransform xt = (LinearTransform)graph.getXTransform();
+
     xnRange = Graph.computeRange(rnge, 6);
     xt.setRangeU(xnRange);
-    try {
-      xbot = (PlainAxis)graph.getXAxis("Bottom Axis");
-      yleft = (PlainAxis)graph.getYAxis("Left Axis");
 
-      xbot.setRangeU(xnRange);
-      xbot.setDeltaU(xnRange.delta);
+    try 
+    {
+      xbot = (PlainAxis)graph.getXAxis( "Bottom Axis" );
+      yleft = (PlainAxis)graph.getYAxis( "Left Axis" );
+
+      xbot.setRangeU( xnRange );
+      xbot.setDeltaU( xnRange.delta );
 
       xr = xbot.getRangeU();
       yr = yleft.getRangeU();
-      origin = new Point2D.Double(xr.start, yr.start);
-      xbot.setLocationU(origin);
+      origin = new Point2D.Double( xr.start, yr.start );
+      xbot.setLocationU( origin );
 
-      yleft.setLocationU(origin);
+      yleft.setLocationU( origin );
 
       //set clipping
-      if(clipping_) {
+      if( clipping_ ) 
+      {
         setAllClip(xr.start, xr.end, yr.start, yr.end);
-      } else {
-        setAllClipping(false);
+      } 
+      else 
+      {
+        setAllClipping( false );
       }
-    } catch (AxisNotFoundException e) {}
+    } 
+    catch( AxisNotFoundException e ) 
+    {
+    }
   }
 
 
@@ -676,9 +692,11 @@ public class isawGraph
    * 
    * @param rnge new y range
    */
+/*
   public void setYRange(Range2D rnge) 
   {
   }
+*/
 
 
 
@@ -689,8 +707,11 @@ public class isawGraph
    * @param rnge new y range
    * @param testZUp test to see if Z is Up
    */
-  public void setYRange(Range2D rnge, boolean testZUp) 
+//  public void setYRange(Range2D rnge, boolean testZUp) 
+  public void setYRange( Range2D rnge ) 
   {
+    //System.out.println(  "zoom: vert: " + rnge.start + " to " + rnge.end  );
+
     SGTData grid;
     Point2D.Double origin;
     PlainAxis xbot, yleft;
@@ -699,6 +720,8 @@ public class isawGraph
     Layer layer = getFirstLayer();
     CartesianGraph graph = (CartesianGraph)layer.getGraph();
     LinearTransform yt = (LinearTransform)graph.getYTransform();
+
+/*
     if(testZUp) {
       grid = (SGTData)data_.elements().nextElement();
       if(!((SGTLine)grid).getYMetaData().isReversed()) {
@@ -707,14 +730,18 @@ public class isawGraph
         rnge.start = save;
       }
     }
+*/
+
     ynRange = Graph.computeRange(rnge, 6);
     yt.setRangeU(ynRange);
-    try {
+
+    try 
+    {
       xbot = (PlainAxis)graph.getXAxis("Bottom Axis");
       yleft = (PlainAxis)graph.getYAxis("Left Axis");
 
-      yleft.setRangeU(ynRange);
-      yleft.setDeltaU(ynRange.delta);
+      yleft.setRangeU( ynRange );
+      yleft.setDeltaU( ynRange.delta );
 
       xr = xbot.getRangeU();
       yr = yleft.getRangeU();
@@ -724,12 +751,18 @@ public class isawGraph
       xbot.setLocationU(origin);
 
       //set clipping
-      if(clipping_) {
+      if( clipping_ ) 
+      {
         setAllClip(xr.start, xr.end, yr.start, yr.end);
-      } else {
+      }
+      else 
+      {
         setAllClipping(false);
       }
-    } catch (AxisNotFoundException e) {}
+    } 
+    catch (AxisNotFoundException e) 
+    {
+    }
   }
 
 
