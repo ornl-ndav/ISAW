@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/05/06 17:36:56  rmikk
+ * Added time as part of the selected data
+ *
  * Revision 1.1  2003/10/27 15:08:56  rmikk
  * Initial Checkin
  *
@@ -45,10 +48,12 @@ package DataSetTools.viewer;
 */
 public class SelectedData2D implements ISelectedData{
   int row,col;
+  float time;
 
-  public SelectedData2D( int row, int col){
+  public SelectedData2D( int row, int col,float time){
     this.row = row;
     this.col = col;
+    this.time = time;
   }
   public int getRow(){
     return row;
@@ -56,7 +61,10 @@ public class SelectedData2D implements ISelectedData{
   public int getCol(){
     return col;
   }
+  public float getTime(){
+  	 return time;
+  }
   public String toString(){
-     return "row="+row+"   col="+col;
+     return "row="+row+"   col="+col+"   time="+time;
   }
 }
