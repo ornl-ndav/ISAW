@@ -9,6 +9,11 @@
  *               John Hammonds
  *
  *  $Log$
+ *  Revision 1.5  2001/02/15 22:10:24  dennis
+ *  Now makes clones of the monitor and histogram DataSets before sending
+ *  them.  This was needed since otherwise the DataSets would not actually
+ *  be sent if they were requested a second time.
+ *
  *  Revision 1.4  2001/02/06 22:06:41  dennis
  *  The directory where the current runfile will be found
  *  can now be specified on the command line.  If it is
@@ -208,12 +213,12 @@ public class LiveDataServer implements IUDPUser,
       {
         try
         {
-          DataSet ds            = null;
+          DataSet ds = null;
 
           if ( command.equalsIgnoreCase( "GET MONITORS" ) )
-            ds = mon_ds;
+            ds = (DataSet)(mon_ds.clone());
           else if ( command.equalsIgnoreCase( "GET HISTOGRAM" ) ) 
-            ds = hist_ds;
+            ds = (DataSet)(hist_ds.clone());
 
           if ( ds != null )     // must remove observers before sending
           {
@@ -222,7 +227,13 @@ public class LiveDataServer implements IUDPUser,
             System.out.println("Trying to send " + ds );
             tcp_io.Send( ds  );
             System.out.println("Finished sending " + ds );
-            ds.setIObserverList( observer_list ); 
+
+//          Data d = ds.getData_entry(0);         // for debug purposes only
+//          System.out.println( "For entry " + 0 + " Time = " +
+//                      (String)(d.getAttributeValue(Attribute.UPDATE_TIME)));
+
+//          ds.setIObserverList( observer_list ); // needed if ds is not a  
+                                                  // clone of mon_ds or hist_ds
           }
         }
         catch ( Exception e )
@@ -275,7 +286,7 @@ public class LiveDataServer implements IUDPUser,
       y[i] = spec_buffer[ i-first_channel ];
                                                       // set the time attribute 
     Date date = new Date( System.currentTimeMillis() );
-    Attribute attrib = new StringAttribute( Attribute.CURRENT_TIME, 
+    Attribute attrib = new StringAttribute( Attribute.UPDATE_TIME, 
                                             date.toString()         );
     d.setAttribute( attrib );
 
