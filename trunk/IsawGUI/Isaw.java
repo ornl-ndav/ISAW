@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.170  2003/12/08 23:31:30  dennis
+ *  Changed version to 1.6.0 alpha 6
+ *
  *  Revision 1.169  2003/12/02 01:01:20  bouzekc
  *  Removed unused imports.
  *
@@ -39,10 +42,9 @@
  *
  *  Revision 1.167  2003/11/30 19:18:06  rmikk
  *  Incorporated code to display the filenames of the last 4 DataSets that were
- *    opened in the File menu.  Selecting these new menu options will open those
- *    files.
+ *  opened in the File menu.  Selecting these new menu options will open those
+ *  files.
  *
-
  *  Revision 1.166  2003/11/21 16:20:16  dennis
  *  Changed version to 1.6.0 alpha 5
  *
@@ -622,7 +624,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.6.0 alpha 5";
+          version="1.6.0 alpha 6";
         else
           version=SharedData.VERSION;
 
