@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.36  2003/01/29 22:47:57  pfpeterson
+ * Added a check for InstantiationError when trying to make a new instance.
+ *
  * Revision 1.35  2002/11/27 23:12:10  pfpeterson
  * standardized header
  *
@@ -352,7 +355,10 @@ public class Script_Class_List_Handler  implements OperatorHandler{
                                                        +e.getMessage()+") ");
                         return null;
                     }catch(InstantiationException e){
-                        if(LoadDebug) System.out.print("(Cannot Instantiate) ");
+                        if(LoadDebug)System.out.print("(Cannot Instantiate) ");
+                        return null;
+                    }catch(InstantiationError e){
+                        if(LoadDebug)System.out.print("(Cannot Instantiate) ");
                         return null;
                     }catch(IllegalAccessException e){
                         if(LoadDebug) System.out.print("(IllegalAccess:"
