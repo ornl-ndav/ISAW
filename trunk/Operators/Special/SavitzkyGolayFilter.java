@@ -31,7 +31,22 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/10/05 00:55:03  kramer
+ * Modified the order of the parameters passed to this operator and created
+ * convenience methods to acquire each parameter.  The order of the
+ * parameters are:
+ * The DataSet to process
+ * The number of points to the left of the center to use
+ * The number of points to the right of the center to use
+ * The degree of the smoothing polynomial
+ * The Data blocks to use
+ * The x value where smoothing starts
+ * The x value where smoothing ends
+ * Use quick method
+ * Create new DataSet
+ *
  * Revision 1.5  2004/10/03 07:00:12  kramer
+ *
  * Now this operator can smooth a selected x range if the long method is used
  * as well as the quick method.
  *
@@ -113,9 +128,9 @@ public class SavitzkyGolayFilter extends GenericSpecial
    /** Whether the quick method should be used to smooth the data. */
    private static final boolean DEFAULT_USE_QUICK_METHOD   = true;
    /** The default x value where smoothing is started. */
-   private static final int DEFAULT_X_MIN = 0;
+   private static final float DEFAULT_X_MIN = 0;
    /** The default x value where smoothing ends. */
-   private static final int DEFAULT_X_MAX = 100000;
+   private static final float DEFAULT_X_MAX = 100000;
    /**
     * String that signals all Data objects/x values should be used in a 
     * calculation.
@@ -160,11 +175,11 @@ public class SavitzkyGolayFilter extends GenericSpecial
       getParameter(1).setValue(new Integer(nL));
       getParameter(2).setValue(new Integer(nR));
       getParameter(3).setValue(new Integer(M));
-      getParameter(4).setValue(new Boolean(createNewDS));
-      getParameter(5).setValue(new Boolean(useQuickMethod));
-      getParameter(6).setValue(dataBlockList);
-      getParameter(7).setValue(new Integer(xmin));
-      getParameter(8).setValue(new Integer(xmax));
+      getParameter(4).setValue(dataBlockList);
+      getParameter(5).setValue(new Integer(xmin));
+      getParameter(6).setValue(new Integer(xmax));
+      getParameter(7).setValue(new Boolean(createNewDS));
+      getParameter(8).setValue(new Boolean(useQuickMethod));
    }
    
    /** 
@@ -188,11 +203,110 @@ public class SavitzkyGolayFilter extends GenericSpecial
       addParameter( new Parameter("Number of points left of center", new Integer(DEFAULT_NL)));
       addParameter( new Parameter("Number of points right of center", new Integer(DEFAULT_NR)));
       addParameter( new Parameter("Degree of smoothing polynomial", new Integer(DEFAULT_M)));
-      addParameter( new Parameter("Create new data set", new Boolean(DEFAULT_CREATE_NEW_DATASET)));
-      addParameter( new Parameter("Use quick method", new Boolean(DEFAULT_USE_QUICK_METHOD)));
       addParameter( new Parameter("Data blocks to use", new IntListString("0:100000")));
-      addParameter( new Parameter("X min", new Integer(DEFAULT_X_MIN)));
-      addParameter( new Parameter("X max", new Integer(DEFAULT_X_MAX)));
+      addParameter( new Parameter("X value where smoothing starts", new Float(DEFAULT_X_MIN)));
+      addParameter( new Parameter("X value where smoothing ends", new Float(DEFAULT_X_MAX)));
+      addParameter( new Parameter("Use quick method", new Boolean(DEFAULT_USE_QUICK_METHOD)));
+      addParameter( new Parameter("Create new data set", new Boolean(DEFAULT_CREATE_NEW_DATASET)));
+   }
+   
+   /**
+    * Get the DataSet to use as specified by the user.
+    * @return The DataSet to use.
+    */
+   private DataSet getDataSet()
+   {
+      return (DataSet)getParameter(0).getValue();
+   }
+   
+   /**
+    * Get the number of points to the left of the center to use 
+    * in the calculation, as specified by the user.
+    * @return The number of points to the left of the center to 
+    *         use.
+    */
+   private int getNumPointsLeft()
+   {
+      return ((Integer)getParameter(1).getValue()).intValue();
+   }
+   
+   /**
+    * Get the number of points to the right of the center to use 
+    * in the calculation, as specified by the user.
+    * @return The number of points to the right of the center to 
+    *         use.
+    */
+   private int getNumPointsRight()
+   {
+      return ((Integer)getParameter(2).getValue()).intValue();
+   }
+   
+   /**
+    * Get the degree of the smoothing polynomial to use, as 
+    * specified by the user.
+    * @return The degree of the smoothing polynomial to use.
+    */
+   private int getDegreeOfPolynomial()
+   {
+      return ((Integer)getParameter(3).getValue()).intValue();
+   }
+   
+   /**
+    * Get a String representation of the Data objects to smooth, 
+    * as specified by the user.
+    * @return A String representation of the Data objects to smooth.  
+    *         For example, "1,2,10:15" would mean that Data objects 
+    *         1, 2, 10, 11, 12, 13, 14, 15 should be smoothed.  An 
+    *         {@link IntList IntList} can be used to convert this 
+    *         String to an array of integers.
+    */
+   private String getDataBlockRange()
+   {
+      return ((IntListString)getParameter(4).getValue()).toString();
+   }
+   
+   /**
+    * Get the minimum x value from which smoothing starts, as 
+    * specified by the user.
+    * @return The x value from which smoothing starts.
+    */
+   private float getXMin()
+   {
+      return ((Float)getParameter(5).getValue()).floatValue();
+   }
+   
+   /**
+    * Get the maximum x value at which smoothing stops, as 
+    * specified by the user.
+    * @return The x value at which smoothing stops.
+    */
+   private float getXMax()
+   {
+      return ((Float)getParameter(6).getValue()).floatValue();
+   }
+   
+   /**
+    * Get the user's response to the question if he/she wants 
+    * to use the quick method to smooth the data.
+    * @return True if the quick method should be used to 
+    *         smooth the data and false if it shouldn't be 
+    *         used.
+    */
+   private boolean getUseQuickMethod()
+   {
+      return ((Boolean)getParameter(7).getValue()).booleanValue();
+   }
+   
+   /**
+    * Get the user's response to the question if he/she wants a 
+    * new DataSet to be created from the smoothed data.
+    * @return True if a new DataSet should be created from the 
+    *         smoothed value.  False if the smoothed data should 
+    *         replace the data in the DataSet being smoothed.
+    */
+   private boolean getMakeNewDataSet()
+   {
+      return ((Boolean)getParameter(8).getValue()).booleanValue();
    }
    
    //TODO Make new documentation
@@ -224,16 +338,15 @@ public class SavitzkyGolayFilter extends GenericSpecial
       ElapsedTime timer = new ElapsedTime();
       timer.reset();
       
-      DataSet ds        = (DataSet)(getParameter(0).getValue());
-      int     nL        = ((Integer)(getParameter(1).getValue())).intValue();
-      int     nR        = ((Integer)(getParameter(2).getValue())).intValue();
-      int     M         = ((Integer)(getParameter(3).getValue())).intValue();
-      boolean makeNewDs = ((Boolean)getParameter(4).getValue()).booleanValue();
-      boolean useQuick  = ((Boolean)getParameter(5).getValue()).booleanValue();         
-      String  usedDataBlocksString = ((IntListString)getParameter(6).
-         getValue()).toString();
-      int     xmin      = ((Integer)getParameter(7).getValue()).intValue();
-      int     xmax      = ((Integer)getParameter(8).getValue()).intValue();
+      DataSet ds        = getDataSet();
+      int     nL        = getNumPointsLeft();
+      int     nR        = getNumPointsRight();
+      int     M         = getDegreeOfPolynomial();
+      boolean makeNewDs = getMakeNewDataSet();
+      boolean useQuick  = getUseQuickMethod();         
+      String  usedDataBlocksString = getDataBlockRange();
+      float   xmin      = getXMin();
+      float   xmax      = getXMax();
       
       /*
        * Now both methods support smoothing only specified group ids
@@ -307,8 +420,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
          //String usedXDomainString = ((IntListString)getParameter(7).
          //		getValue()).toString();
          
-         String usedDataBlocksString = ((IntListString)getParameter(6).
-         		getValue()).toString();
+         String usedDataBlocksString = getDataBlockRange();
          Object dataBounds = getDataObjectBounds(new_ds,usedDataBlocksString);
          
          if (dataBounds instanceof String && 
@@ -854,8 +966,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
       
       Data    currentData   = null;
       
-      String idBoundsString = ((IntListString)getParameter(6).
-         getValue()).toString();
+      String idBoundsString = getDataBlockRange();
       Object idBounds = getDataObjectBounds(new_ds,idBoundsString);
       
       if (idBounds instanceof ErrorString)
