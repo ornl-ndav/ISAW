@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2002/04/01 20:05:56  rmikk
+ * Each NXdata without a label attribute on its data field gives rise to a new data set.  The NXdata in a NXentry with the same label values are merged
+ *
  * Revision 1.7  2002/02/26 15:27:10  rmikk
  * Added a debug field.
  * Added code for the TOFNDGS instrument definition
@@ -67,6 +70,7 @@ import NexIO.NexApi.* ;
 import DataSetTools.dataset.* ;
 import DataSetTools.retriever.* ;
 import DataSetTools.viewer.* ;
+import DataSetTools.math.*;
 import IPNS.Runfile.* ;
 import java.util.* ;
 import java.lang.reflect.*;
@@ -83,9 +87,8 @@ public class ExtGetDS //extends Retriever
  {NxNode node ;
   String filename ;
   String errormessage ;
-  Vector nEntries ,  
-         nmonitors , 
-         ndatasets ;
+  Vector EntryDSs;
+  boolean setupDSs;
   boolean debug=false;
 /**
 *@param node   the NxNode used to communicate with the underlying datasource
@@ -96,7 +99,7 @@ public class ExtGetDS //extends Retriever
       this.node = node ;
       this.filename = filename ;
       errormessage = "" ;
-      nEntries = nmonitors = ndatasets = null ;
+      EntryDSs= new Vector() ;
       }
 /** Returns the type(  Histogram , Monitor , Invalid , etc. ) of the dataset
 *@param data_set_num  the data set whose type is desired
@@ -104,9 +107,9 @@ public class ExtGetDS //extends Retriever
 *@see DataSetTools.retriever.dataSource
 */
  public int getType(  int data_set_num )
-   {if( nEntries == null ) 
+   {if(!setupDSs ) 
         setUpPointers() ;
-    if( debug) System.out.println("in getType for "+data_set_num);
+   /* if( debug) System.out.println("in getType for "+data_set_num);
     int x , 
         p ;
     x = 0 ;
@@ -121,16 +124,26 @@ public class ExtGetDS //extends Retriever
            return Retriever.HISTOGRAM_DATA_SET ;
       p++  ;
      }
-   return Retriever.INVALID_DATA_SET ;
+   */
+   if( data_set_num < 0)
+     return Retriever.INVALID_DATA_SET ;
+   if( data_set_num >= EntryDSs.size())
+      return Retriever.INVALID_DATA_SET ;
+   Vector VV =(Vector)(EntryDSs.elementAt(data_set_num));
+   NxNode nd= (NxNode)(VV.lastElement());
+   if(nd.getNodeClass().equals("NXmonitor"))
+          return Retriever.MONITOR_DATA_SET ;
+   else
+           return Retriever.HISTOGRAM_DATA_SET ;
    }
 
 /** Returns the DataSet or null if a fatal error occurs
 *
 */
 public DataSet getDataSet( int data_set_num )
-   {if( nEntries == null ) 
+   {if( !setupDSs ) 
           setUpPointers() ;
-    int nxentry ,  
+   /* int nxentry ,  
          offset ;
     boolean monitor ;
     int x , 
@@ -174,21 +187,29 @@ public DataSet getDataSet( int data_set_num )
       {errormessage = "Improper Dataset number" + data_set_num ;
        return null ;
       } 
-
+   
    NxNode nd = node.getChildNode( 
                     ( String )( nEntries.elementAt( nxentry ) ) ) ;
+   */
+   if( (data_set_num <0) ||( data_set_num >= EntryDSs.size()))
+      {DataSetTools.util.SharedData.status_pane.add("invalid data set number "+data_set_num);
+       return  null;
+       }
+
+   NxNode nd2 ;
+   nd2= (NxNode)(((Vector)(EntryDSs.elementAt(data_set_num))).firstElement());
    AttributeList AL = getGlobalAttributes() ;
   
-   String Analysis = getAnalysis( nd );
+   String Analysis = getAnalysis( nd2 );
    
    Inst_Type it = new Inst_Type();
-   int instrType = it.getIsawInstrNum( Analysis );
-   
-   if( (Analysis == null) ||(Analysis =="")|| 
+   int instrType = (new Inst_Type()).getIsawInstrNum( Analysis );
+  
+   /*if( (Analysis == null) ||(Analysis =="")|| 
        (instrType ==InstrumentType.UNKNOWN))
      {
 
-        NxNode n2 = nd.getChildNode( "analysis");
+        NxNode n2 = nd2.getChildNode( "analysis");
         if( n2 != null)            
           { Object OO = n2.getAttrValue( "isaw_instr_type");
 	    if( OO instanceof int[])
@@ -197,13 +218,19 @@ public DataSet getDataSet( int data_set_num )
            
           }      
          }
-   
+   */
    DataSetFactory DSF = new DataSetFactory( "" ) ;
    DataSet DS = DSF.getTofDataSet(instrType) ;   
    DS.setAttributeList( AL ) ;
    DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType));
-   if( !ProcessNxentryNode( nd ,  DS ,  offset ) )
-     {String S = "M" ;
+   NxNode nDS = (NxNode)(((Vector)(EntryDSs.elementAt(data_set_num))).lastElement());
+   if( nDS.getNodeClass().equals("NXmonitor"))
+      DS.setAttribute( new StringAttribute(Attribute.DS_TYPE, Attribute.MONITOR_DATA));
+   else
+      DS.setAttribute( new StringAttribute(Attribute.DS_TYPE, Attribute.SAMPLE_DATA));
+      
+   if( !ProcessNxentryNode( nd2 ,  DS , nDS ) )
+     {/*String S = "M" ;
       if( getType( data_set_num ) == ( Retriever.HISTOGRAM_DATA_SET ) )
           S = "H" ;
       else nhists++;
@@ -217,16 +244,59 @@ public DataSet getDataSet( int data_set_num )
        if( k>= 0 )
          F = F.substring( k + 1 ) ;
        S = S + "_" + F ;
+       */
+       String S = nDS.getNodeName();
        DS.setTitle( S ) ;
+      
        DS.setAttribute( new StringAttribute( Attribute.FILE_NAME , filename ) ) ;
+       if( nDS.getNodeClass().equals("NXmonitor"))
+          { //ReOrderGroups(DS);
+            
+          }
        
-       return DS ;
+          
      }
     else
-     { DataSetTools.util.SharedData.status_pane.add( "ERROR:"+getErrorMessage()+" offset="+offset);
+     { DataSetTools.util.SharedData.status_pane.add( "ERROR:"+errormessage+" ds num="
+              +data_set_num);
       return DS; 
       }
+     return DS;
     }
+//For monitor data sets, the groups with the largest phi is 1
+private void ReOrderGroups( DataSet DS)
+ {/* boolean done=false;
+   Data sav;
+   while(!done)
+    { done=true;
+      for(int i=0;i+1<DS.getNum_entries();i++)
+       { Data D1= DS.getData_entry(i);
+         Data D2=DS.getData_entry(i+1);
+         if( D1.getX_scale().getXs().length>D2.getX_scale().getXs().length)
+          {done=false;
+           sav=D1;
+           D1=D2;
+           D2=sav;
+          }
+         else 
+          {DetPosAttribute A1,A2;
+           A1=(DetPosAttribute)D1.getAttribute(Attribute.DETECTOR_POS);
+           A2=(DetPosAttribute)D1.getAttribute(Attribute.DETECTOR_POS);
+           if( (A1 !=null) &&(A2 !=null))
+            if( java.lang.Math.abs(((DetectorPosition)A1.getValue()).getSphericalCoords()[2] ) >
+                java.lang.Math.abs(((DetectorPosition)A1.getValue()).getSphericalCoords()[2] ))
+              {done = false;
+               sav= D2;
+               D2=D1;
+               D1=sav;
+              }
+               
+  
+          }
+        }
+     }
+   */
+ }
 private AttributeList getGlobalAttributes()
    {AttributeList Res = new AttributeList() ;
    //Object X = node.getAttrValue( "file_name" ) ;
@@ -257,9 +327,24 @@ private String getAnalysis( NxNode node)
 /** returns the number of datasets in this file
 */
  public int numDataSets( )
-  { if( nEntries == null ) 
+  { if(!setupDSs) 
        setUpPointers() ;
-    int x , 
+   /* System.out.println("#data sets="+EntryDSs.size());
+    for(int i=0;i<EntryDSs.size();i++)
+      { Vector V;
+        V=(Vector)(EntryDSs.elementAt(i));
+         NxNode nd= (NxNode)(V.firstElement());
+         System.out.println(nd.show());
+         System.out.println("                 -------------------   ");
+          V=(Vector)(EntryDSs.elementAt(i));
+          nd= (NxNode)(V.lastElement());
+         System.out.println(nd.show());
+         System.out.println("==========================");
+      
+       }
+     */
+    return EntryDSs.size();
+    /*int x , 
         p ;
     x = 0 ; 
     p = 0 ;
@@ -272,10 +357,58 @@ private String getAnalysis( NxNode node)
       p++ ;
      }
    return  x ;
+   */
   }
 
  private void setUpPointers()
-  {int nmon ,  
+  {String labels=";";
+   setupDSs = true;
+   for( int i = 0; i<node.getNChildNodes();i++)
+     { NxNode nn=node.getChildNode(i);
+       if( nn.getNodeClass().equals( "NXentry" ) )
+        {boolean monitor=false;
+         for( int j = 0 ; j < nn.getNChildNodes() ; j++ )
+          {NxNode mm = nn.getChildNode( j ) ;
+           if( mm.getNodeClass().equals( "NXmonitor" ) )
+              { 
+               if(!monitor)
+               {Vector V = new Vector();
+               V.addElement(nn); V.addElement(mm);
+               EntryDSs.addElement( V);
+               monitor=true;
+                } 
+               }
+           else if( mm.getNodeClass().equals( "NXdata" ) )
+               { NxNode dat=mm.getChildNode("data");
+                 if(dat != null)
+                   { Object O= dat.getAttrValue("label");
+                     String S = new NxData_Gen().cnvertoString(O);
+                     Vector V = new Vector();
+                      V.addElement(nn); 
+                     if( (O == null)||(S ==null))
+                       V.addElement(mm);
+                     else if( labels.indexOf(";"+S+";") <0)
+                       {V.addElement(mm);
+                        labels+=S+";";
+                       }
+                     if( V.size() ==2)
+                        EntryDSs.addElement(V);
+                     }//if dat != null
+                else
+                  {Vector V=new Vector();
+                   V.addElement( nn);
+                   V.addElement( mm);
+                   EntryDSs.addElement(V);
+
+                   }
+
+
+                }//if NXdata node
+          }//for  NxEntries children
+         }//if( node class == NXentry
+     }
+
+  /*int nmon ,  
        ndats ;
    nEntries = new Vector() ;
    nmonitors = new Vector() ;
@@ -304,6 +437,7 @@ private String getAnalysis( NxNode node)
        }
      }
     if(debug) System.out.println("nmonitors, ndatasets="+nmon+","+ndats);
+   */
    } 
 
 /** Returns any errormessage or "" if none
@@ -313,17 +447,17 @@ private String getAnalysis( NxNode node)
      return errormessage ;
     }
  
- private boolean ProcessNxentryNode( NxNode node , DataSet DS , int index )
+ private boolean ProcessNxentryNode( NxNode node , DataSet DS ,  NxNode nxdata )
     {int i , 
         nchildren ;
      boolean res ;
      NXentry_TOFNDGS Entry ;
      errormessage = "" ;
-     if( index < 0 ) 
+   /*if( index < 0 ) 
        {
         errormessage = "improper index" + index ;
         return false ;
-        }
+        }*/
      nchildren = node.getNChildNodes() ;
     
      if( nchildren < 0 )
@@ -350,23 +484,24 @@ private String getAnalysis( NxNode node)
      
  
        if( S.equals( "TOFNDGS" ) )
-           {Entry = new NXentry_TOFNDGS( node , DS ) ;
+           {Entry = new NXentry_TOFNDGS( node , DS ,nxdata) ;
+            Entry.setNxData( new NxData_Gen() ) ;
 	   //DS.setAttribute( new IntAttribute( Attribute.INST_TYPE ,
 	   //                  InstrumentType.TOF_DG_SPECTROMETER ) ) ;      
            }
        else if( S.equals( "TOFNGS"))
-          {Entry = new NXentry_TOFNDGS( node , DS ) ;
+          {Entry = new NXentry_TOFNDGS( node , DS ,nxdata) ;
            Entry.setNxData( new NXdata_Fields("time_of_flight","phi","data"  ) ) ;
            Entry.monitorNames[0]="upstream";
            Entry.monitorNames[1]="downstream";
            }
       
        else
-           {Entry = new NXentry_TOFNDGS( node , DS ) ;
-            Entry.setNxData( new NxData_Gen(  ) ) ;
+           {Entry = new NXentry_TOFNDGS( node , DS ,nxdata ) ;
+            Entry.setNxData( new NxData_Gen() ) ;
            }
        if(debug)System.out.println("Start Process NXEntry");
-       res = Entry.processDS( DS , index ) ;
+       res = Entry.processDS(  DS , nxdata ) ;
        if( Entry.getErrorMessage()!= "" )
 	   errormessage  += ";" + Entry.getErrorMessage() ;
        if( !res )
@@ -392,7 +527,7 @@ private DataSet[] retrieveDS()
          if( child.getNodeClass().equals( "NXentry" ) )
             { 
               DataSet DS = new DataSet( "","" ) ;
-              if( !ProcessNxentryNode( child , DS , ndatasets ) )
+              if( !ProcessNxentryNode( child , DS , null))//ndatasets ) )
 		  {//System.out.println( "ProcessNxEntry error " + errormessage ) ;
                  if( errormessage.equals( "No more DataSets" ) ){}
                  else return null ;
@@ -471,12 +606,9 @@ public static void main( String args[] )
       System.exit( 0 ) ;
      }
    System.out.println( "num data sets = " + X.numDataSets() ) ;
-   System.out.println( X.nEntries.size() + "," + 
-                   X.nmonitors.size() + "," + X.ndatasets.size() ) ;
-   for( int i = 0 ; i < X.nEntries.size() ;i ++  )
-      System.out.println( X.nEntries.elementAt( i )+ "," + 
-                         X.nmonitors.elementAt( i ) + "," + 
-                         X.ndatasets.elementAt( i ) ) ;
+  // System.out.println( X.nEntries.size() + "," + 
+  //                 X.nmonitors.size() + "," + X.ndatasets.size() ) ;
+   
    for( int i = 0 ; i < X.numDataSets() ; i++  )
      {System.out.println( "Typexx = " + i ) ;
       DataSet DS = X.getDataSet( i ) ;
