@@ -32,6 +32,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.24  2005/01/02 17:55:59  rmikk
+ * Added a method go getWrappable for documenting the location of the
+ *    relevant code.
+ *
  * Revision 1.23  2004/06/16 21:59:53  rmikk
  * The ParameterGUI for n dimension arrays of int, float, double, short, 
  *    and long is now the RealArrayPG.  These arrays are now passed
@@ -417,6 +421,10 @@ public class JavaWrapperOperator extends GenericOperator {
     }
 
     return wrapped.getDocumentation(  );
+  }
+  
+  public Wrappable getWrappable(){
+    return wrapped;
   }
 
   /**
