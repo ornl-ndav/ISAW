@@ -30,6 +30,18 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/05/24 21:49:10  dennis
+ *  Major improvements:
+ *  1. No longer converts it's DataSet to Q, so different x-scales for
+ *     each pixel are no longer needed.  Also, it just needs a reference
+ *     to the Data associated with the DataGrid, so the Data blocks are
+ *     not cloned.  This reduces memory requirements.
+ *  2. Now uses a UniformGrid from the DataSet, rather than maintaining its
+ *     own set of references to the Data blocks.
+ *  3. Now works with the first area detector from any DataSet, including
+ *     the new area detector on SCD.  (Still needs minor changes to work
+ *     with DataSets containing data from multiple area detectors.)
+ *
  *  Revision 1.3  2003/02/18 20:19:53  dennis
  *  Switched to use SampleOrientation attribute instead of separate
  *  phi, chi and omega values.
@@ -59,30 +71,29 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.operator.DataSet.Math.Analyze.*;
 
-/** This class is responsible for mapping a vector Q point to an interpolated
+/** 
+ *  This class is responsible for mapping a vector Q point to an interpolated
  *  intensity value in the original time-of-flight DataSet.  NOTE: This version
- *  is a crude proof of concept and only works for the old SCD detector.  Some
- *  detector data is hard-coded for the old SCD detector in this version, since
- *  the representation of the detector information will be changed in the near
- *  future.
+ *  is still in the proof of concept stage and currently only handles the first
+ *  area detector in a run.
  */
 
 public class VecQToTOF
 {
   static final Vector3D unit_k = new Vector3D( 1, 0, 0 );
 
-  Data     data_blocks[][];
-  Vector3D det_center;  // center position of detector.
-  float    det_width,   // NOTE: det_center, width & height MUST be accurate.
-           det_height;  // and what they represent must be coordinated with the
-                        // rounding calculation. (Pixel centers, edges, etc.)
-  int      n_rows,
-           n_cols;
-  Vector3D u,           // basis vectors for detector 
-           v,
-           n;
+  IDataGrid grid;
 
   Tran3D   goniometerRinv;
+
+  Vector3D det_center;  // center position of detector.
+  Vector3D u, v, n;     // vectors defining coordinate axes on face of
+                        // detector and perpendicular to the detector.
+  int      n_rows,
+           n_cols;
+  float    det_width,
+           det_height;
+  float    initial_path;
 
   Vector3D q_center;    // unit q_vector in direction of q from center of
                         // detector
@@ -91,25 +102,84 @@ public class VecQToTOF
                         // cases where q would not have come from this 
                         // detector.
 
+  /** 
+   *  Construct a VecQToTOF conversion object, from the specified DataGrid.
+   *  The DataGrid must have had it's Data block references set, and the
+   *  Data blocks must be in terms of time-of-flight.  It must also have
+   *  a SampleOrientation defined and the initial flight path defined.
+   *  Currently this assumes that beyond a few monitors, the DataSet contains
+   *  the data from ONE area detector.
+   */
   VecQToTOF( DataSet ds )
   {
-                                                   // assume square detector
-                                                   // with spectra in order
-                                                   // from lower left to upper
-                                                   // right;
-    n_rows = (int)Math.round( Math.sqrt(ds.getNum_entries()) );
-    n_cols = n_rows;       
-    System.out.println("n_rows,cols = " + n_cols );
+    int n_data = ds.getNum_entries();
+    if ( n_data < 100 )
+    {
+      System.out.println("ERROR VecQToTOF constructor needs area detector");
+      return;
+    }
 
-    Vector3D corner1 = getPosition( ds.getData_entry(0) );    
-    Vector3D corner2 = getPosition( ds.getData_entry( ds.getNum_entries()-1) );
+    Data d = null;
+    PixelInfoList pil;
+    Attribute attr;
+    boolean area_detector_found = false;
+    int data_index = 1;
+    while ( !area_detector_found && data_index < n_data )
+    {
+      d = ds.getData_entry( data_index );
+      attr = d.getAttribute( Attribute.PIXEL_INFO_LIST );
+      if ( attr != null && attr instanceof PixelInfoListAttribute )
+      {
+        pil  = (PixelInfoList)attr.getValue();
+        grid = pil.pixel(0).DataGrid(); 
+        if ( grid.num_rows() > 1 && grid.num_cols() > 1 )
+          area_detector_found = true;
+      }
+      else 
+      {
+        System.out.println(
+             "ERROR: need PixelInfoList attribute in VecQToTOF constructor");
+        return;
+      }
+      data_index++;
+    }
+
+    if ( !grid.isData_entered() )
+      if ( !grid.setData_entries( ds ) )
+      {
+        System.out.println("ERROR: Can't set Data grid entries in VecQToTOF");  
+        return;
+      }
+
+//    System.out.println("DataGrid is : " + grid );
+
+    attr = d.getAttribute( Attribute.INITIAL_PATH );
+    if ( attr != null )
+      initial_path = (float)(attr.getNumericValue());
+    else
+      return;
+
+    n_rows = grid.num_rows();
+    n_cols = grid.num_cols();
+    u = grid.x_vec();
+    v = grid.y_vec();
+    n = grid.z_vec();
+    det_width  = grid.width();
+    det_height = grid.height();
+
+    Vector3D corner1 = grid.position( 0, 0 );    
+    Vector3D corner2 = grid.position( grid.num_rows()-1, grid.num_cols()-1 );
     Vector3D temp = new Vector3D( corner1 );
     temp.subtract( corner2 );
     float diag = temp.length();
-    
-    det_width  = (float)(diag/Math.sqrt( 2.0 ));
-    det_height = det_width;
-    System.out.println("det_width, height = " + det_width );
+/*
+    System.out.println("n_rows,cols = " + n_rows + ", " + n_cols );
+    System.out.println("u = " + u );
+    System.out.println("v = " + v ); 
+    System.out.println("n = " + n ); 
+    System.out.println("det_width, height = " + det_width + 
+                                         ", " + det_height  );
+*/
 
     det_center = new Vector3D( corner1 );   // find "center" as average of
     det_center.multiply( 0.5f );            // two opposite corners
@@ -117,36 +187,10 @@ public class VecQToTOF
     temp.multiply( 0.5f );
     det_center.add( temp );
 
-    u = new Vector3D( -1, 0, 0 );
-    v = new Vector3D(  0, 0, 1 );
-    n = new Vector3D(  0, 1, 0 );
-
     Tran3D goniometerR = makeGoniometerRotationInverse( ds );
     goniometerRinv = new Tran3D();
     goniometerRinv.set( goniometerR );
     goniometerRinv.transpose();
-/*
-    System.out.println("goniometerR = ");
-    System.out.println("" + goniometerR );
-
-    System.out.println("goniometerRinv = ");
-    System.out.println("" + goniometerRinv );
-*/
-
-    Operator op = new DiffractometerTofToQ( ds,0,20,0 );
-    ds = (DataSet)(op.getResult());
-
-    op = new ConvertHistogramToFunction( ds, false, false );
-    op.getResult();
-
-    data_blocks = new Data[n_rows][n_cols];
-    for ( int row = 0; row < n_rows; row++ )    // for simplicity, assume data
-      for ( int col = 0; col < n_cols; col++ )  // blocks are in row major order
-      {                                         // in the DataSet #########
-        data_blocks[row][col] = ds.getData_entry( row * n_cols + col );
-                                                // get rid of the attributes
-        data_blocks[row][col].setAttributeList( new AttributeList() ); 
-      }
 
     // To allow for quickly discarding q's that couldn't come from this 
     // detector & chi,phi,omega, we keep a unit vector in the direction of
@@ -156,27 +200,27 @@ public class VecQToTOF
     // This dot product is min_q_dot.  An arbitrary q_vec is discarded if
     // the dot product between q_vec and q_center is less than min_q_dot.
                                              
-                                                       // first find q_center
+                                                     // first find q_center
     q_center = new Vector3D( det_center );    
     q_center.normalize();
     q_center.subtract( unit_k ); 
     q_center.normalize();
     goniometerR.apply_to( q_center, q_center );
-                                                       // then find q_corner
-    Vector3D q_corner = new Vector3D( det_center );
-    Vector3D temp_u = new Vector3D( u );
-    temp_u.multiply( det_width/2 );
-    q_corner.add( temp_u );
-    Vector3D temp_v = new Vector3D( v );
-    temp_v.multiply( det_height/2 );
-    q_corner.add( temp_v );
+                                                     // then find q_corner at
+                                                     // both corners.
+    Vector3D q_corner1 = new Vector3D( corner1 );
+    q_corner1.normalize();
+    q_corner1.subtract( unit_k );
+    q_corner1.normalize();
+    goniometerR.apply_to( q_corner1, q_corner1 );
 
-    q_corner.normalize();
-    q_corner.subtract( unit_k );
-    q_corner.normalize();
-    goniometerR.apply_to( q_corner, q_corner );
+    Vector3D q_corner2 = new Vector3D( corner2 );
+    q_corner2.normalize();
+    q_corner2.subtract( unit_k );
+    q_corner2.normalize();
+    goniometerR.apply_to( q_corner2, q_corner2 );
                                                      // finally get min_q_dot
-    min_q_dot = q_center.dot( q_corner );
+    min_q_dot = Math.min( q_center.dot(q_corner1), q_center.dot(q_corner2) );
   }   
 
 
@@ -197,10 +241,10 @@ public class VecQToTOF
     Vector3D q1 = new Vector3D();
     goniometerRinv.apply_to( q_vec, q1 );
     q1.normalize();
-/*
-    System.out.println("q_vec = " + q_vec );
-    System.out.println("q1 = " + q1 );
-*/
+
+//    System.out.println("q_vec = " + q_vec );
+//    System.out.println("q1 = " + q1 );
+
     float q1_comp[] = q1.get();
     float alpha = -2*q1_comp[0];
 
@@ -211,13 +255,13 @@ public class VecQToTOF
     Vector3D k_prime = new Vector3D( unit_k );
     k_prime.add( q1 );
 
-//  System.out.println("k_prime = " + k_prime );
+//    System.out.println("k_prime = " + k_prime );
 
     float t = det_center.dot(n)/k_prime.dot(n);
     if ( t <= 0 )                // no solution, since the beam missed the
       return 0;                  // detector plane
     
-//  System.out.println("t = " + t );
+//    System.out.println("t = " + t );
 
     Vector3D det_point = new Vector3D( k_prime );
     det_point.multiply( t );
@@ -225,51 +269,51 @@ public class VecQToTOF
     det_point.subtract( det_center );
     float u_comp = det_point.dot( u );
     float v_comp = det_point.dot( v );
-//  System.out.println("u, v components = " + u_comp + ", " + v_comp );
+//    System.out.println("u, v components = " + u_comp + ", " + v_comp );
 
                                   // NOTE: the rounding MUST be checked !!!!!
-    int row = (int)Math.floor((n_cols-1)*(0.5 + v_comp/det_height));
-    int col = (int)Math.floor((n_rows-1)*(0.5 + u_comp/det_width)); 
-//  System.out.println("row, col = " + row + ", " + col );
+    int row = (int)grid.row( u_comp, v_comp );
+    int col = (int)grid.col( u_comp, v_comp ); 
+//    System.out.println("row, col = " + row + ", " + col );
  
-    if ( row < 0 || row >= n_rows-1 )
+    if ( row < 1 || row > n_rows )
       return 0; 
 
-    if ( col < 0 || col >= n_cols-1 )
+    if ( col < 1 || col > n_cols )
       return 0; 
 
     float mag_q = q_vec.length();
-    float intensity = data_blocks[row][col].getY_value( mag_q, 
-                                                        Data.SMOOTH_LINEAR ); 
-    intensity += data_blocks[row+1][col].getY_value(mag_q, Data.SMOOTH_LINEAR); 
-    intensity += data_blocks[row][col+1].getY_value(mag_q, Data.SMOOTH_LINEAR); 
-    intensity += data_blocks[row+1][col+1].getY_value(mag_q,Data.SMOOTH_LINEAR);
 
-//  System.out.println("mag_q = " + mag_q );
-//  System.out.println("intensity = " + intensity );
+    Data d = grid.getData_entry( row, col );
+    if ( d == null )
+    {
+      System.out.println("ERROR: No Data block at row, col = " + row + 
+                                                          ", " + col );
+      return 0;
+    }
+   
+    Vector3D pix_position = grid.position(row,col);
+    float final_path = pix_position.length();
+    pix_position.normalize();
+    float angle = (float)( Math.acos( pix_position.dot( unit_k ) ));
+ 
+    float tof = tof_calc.TOFofDiffractometerQ( angle, 
+                                               initial_path+final_path, 
+                                               mag_q );
 
-    float y[] = data_blocks[row][col].getY_values();
-    float x[] = data_blocks[row][col].getX_scale().getXs();
+    float intensity = d.getY_value( tof, Data.SMOOTH_LINEAR ); 
+
+//    float y[] = d.getY_values();
+//    float x[] = d.getX_scale().getXs();
 
 //    for ( int i = 0; i < y.length; i++ )
 //      System.out.println("i, x, y = " + i + ", " + x[i] + ", " + y[i] );
 
+//  System.out.println("mag_q = " + mag_q );
+//  System.out.println("tof   = " + tof   );
+//  System.out.println("intensity = " + intensity );
+
     return intensity;
-  }
-
-
- /* -------------------------- getPosition ------------------------------ */
- /*
-  *  Get the segment position as a Vector3D object
-  */
-  private Vector3D getPosition( Data d )
-  {
-    DetectorPosition pos = (DetectorPosition)
-                              d.getAttributeValue( Attribute.DETECTOR_POS );
-    Vector3D vector = new Vector3D();
-    float    coords[] = pos.getCartesianCoords();
-    vector.set( coords[0], coords[1], coords[2] );
-    return vector;
   }
 
  /* ------------------- makeGoniometerRotationInverse --------------------- */
