@@ -9,6 +9,9 @@
  *  2000/06/09  This operator was renamed from SumSelectedData 
  *             
  *  $Log$
+ *  Revision 1.2  2000/11/07 15:42:19  dennis
+ *  Replaced "Data blocks" with "Groups" in operator title.
+ *
  *  Revision 1.1  2000/07/10 22:36:24  dennis
  *  July 10, 2000 version... many changes
  *
@@ -62,7 +65,7 @@ public class SumByAttribute extends    DataSetOperator
 
   public SumByAttribute( )
   {
-    super( "Sum Data blocks based on Attribute" );
+    super( "Sum Groups based on Attribute" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
