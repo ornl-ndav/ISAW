@@ -1,113 +1,19 @@
 <html><body>
-<A href="CommandPane.html"> CONTENTS </a> ,  <a href ="Interfaces.html">Previous</a> <P>
-
-<H1> <Center> EXAMPLES</Center></h1>
-<OL type = "A">
-
-<li><P>
-Load  "C:/Ruth/Latest/SampleRuns/gppd9902.run"<br>
-Display M1_gppd9902<br><hr>
-<P><P>
-<li><P>
-Load  "C:/Ruth/Latest/SampleRuns/gppd9902.run"<br>
-Display CrossSect(M1_gppd9902,0.0,500.0,"Raw Detector Angle")<br>
-<hr><P><P>
-<li><P>
-R= "C:/Ruth/Latest/SampleRuns/gppd"<br>
-Load  P & " 9902.run"<br>
-P= DelAtt( M1_gppd9902,"Run Number",1.0,20.0,true,true)<br>
-Send P<br>
-<P><P><hr>
-<li><P>
-Load  "C:/Ruth/Latest/SampleRuns/gppd9902.run" , "TTT"<br>
-Display TTT[0]<br>
-<P><P><hr>
-<li><P>
+<A href="CommandPane.html">CONTENTS</a>
+<Center><h1>Examples</h1></Center>
+<ol type="A">
+ <li> <A href="Examples1.html#Aritmetic">Arithmetic, Assignment, Strings</a>
+ <li> <A href="Examples1.html#Arrays">Arrays</a>
+ <li> <A href="Examples1.html#For">For loops</a>
+ <li> <A href="Examples1.html#if">if-then-else</a>
+ <li> <A href="Examples1.html#error">on error</a>
+ <li> <A href="Examples1.html#Parameters">Parameters</a>
+ <li> <A href="Examples1.html#Batch">Batch</a>
+ <li> <A href="Examples1.html#DataSetsSimple">Data Sets (simple)</a>
+ <li> <A href="Examples1.html#DataSetAdvance">Data Sets (advanced)</a>
+</ol>
 
 
-x[0]=1<br>
-x[1]=3<br>
-x[2]=5<br>
-s=0<br>
-R="Res="<br>
-for i in [0 : 2]<ul>
-    s=s+x[i]<br>
-    R=R&s<br></ul>
-endfor<br>
-Display R<br>
-<P><P><hr>
-
-<li><P>
-x[0]=1<br>
-x[2]=5<br>
-S=0<br>
-R="Res="<br>
-for i in [0,1,2]<br>
-ON ERROR<ul>
-   S=S+x[i]<br>
-   R=R&S</ul>
-ELSE ERROR<ul>
-   R=R&"Z"</ul>
-END ERROR<br>
-endfor<br>
-Display R<P><P><P><hr>
-
-<li>
-<P><P>
-x = 1<BR>
-S=0<BR>
-if x<2<ul>
-  S=1</ul>
-elseif x >=5<ul>
-  S = S + 2</ul>
-else <ul>
-   S = S+4</ul>
-endif<BR>
-Display S<BR>
-<hr>
-<P><P>
-<li><A name = "Macro"></a><ul>
-
-#Test Macro-<br>
-#<br>
-#$$ Joe    Integer    Id<br>
-#$$  Tom  String   Name<br>
-#$$   X     float     float value<br>
-R = Tom<br>
-R = R&Joe&X<br>
-Display R<br>
-</ul>
-<hr><P><P>
-<li><ul>
-#Test Macro-With a Data Set<br>
-#<br>
-#$$ Joe    Integer    Id<br>
-#$$  Tom  String   Name<br>
-#$$   X     DataSet    ds<br>
-R = Tom<br>
-R = R&Joe<br>
-Display R<br>
-Display X<br>
-</ul>
-<hr><P><P>
- 
-<li><P><A name="Batch1"></a>
-import IsawGUI.*;<br>
-import CommandPane;<br>
-
-public class Batch <br>
-{CommandPane cp;<P><P><P>
 
 
-public static void main(String args[])<ul>
-    {Batch T;<br>
-    T = new Batch();<br>
-   T.cp = new CommandPane("C:\\Ruth\\Latest\\Test1.txt");<P>
-
-   
-   <P>
-}</ul>
-
-}
-</Ol><P><P><P><hr>
 </body></html>

@@ -5,7 +5,7 @@
    <meta name="GENERATOR" content="Mozilla/4.73 [en] (Windows NT 5.0; U) [Netscape]">
 </head>
 <body>
-<a href="CommandPane.html">CONTENTS</a> ,<a href ="ComDes.html">Previous</a> , <a href = "Interfaces.html">Next</a>
+<a href="CommandPane.html">CONTENTS</a>
 <ul>Features of the language
 <li>
 It is NOT case sensitive except (presently) for the Data set Commands</li>
@@ -29,8 +29,8 @@ See <a href="ComDes.html">Commands</a> for supported commands</li>
 
 <p>&nbsp;
 <li>
-true and false are supported ONLY as arguments of functions. No algebra
-is allowed for these.</li>
+ Logical variables and expressions are supported. The logical operators are AND, OR and NOT. Also the
+  relations are <, <=, >, >=, = or ==, and <></li>
 
 
 <p>&nbsp;
@@ -39,7 +39,7 @@ Float constants must have a decimal point. Integers constants do NOT have
 a decimal point.</li><P>
 
 <li>
-The REM statement or a # symbol as the first "command" on a line is considered documentation</li><P>
+The REM statement as the first "command" on a line is considered documentation</li><P>
 
 <li>
 The if- elseif- else -endif structure has been implemented<Br>
@@ -69,25 +69,9 @@ An ON ERROR - ELSE ERROR - END ERROR structure has been set up</li>
 <br>&nbsp;
 <p>&nbsp;
 <li>
-A form of arrays have been implemented as follow:</li>
-
-<ul>&nbsp;Res[1] is Res1
-<p>Res[i] is Res3 if i evaluates to 3 Res[2*i+1] is Res7 if i is 3</ul>
-<P><P>
-<LI> <A name = "Macro">MACRO</a> Syntax <ul>
-     <LI> The First two lines are comment lines starting with #.<BR>
-          These can give a title and a description<P>
-     <LI> The next lines are Describe the parameters of this macro in the following form, with 
-          ONE LINE PER PARAMETER<P><UL><B>
-          #$$ MacroVariableName&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   DataType &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Message
-          </b></ul><P>
-          DataType is either Int, Integer, Float , String, DataSet ,  DataDirectoryString , 
-          or InstrumentNameString  (Not Case Sensitive)<P>
-          MacroVariableName is the name the commands use to refer to the variable<P>
-     <LI> The lines that follow are regular Commands. 
-          </ul>
-    </ul>
+A rudimentary form of arrays has been implemented. There are NO array constants.</li>
 </ul>
 
 </body>
 </html>
+
