@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/02/18 22:45:57  pfpeterson
+ * Updated deprecated method.
+ *
  * Revision 1.6  2003/02/18 20:21:01  dennis
  * Switched to use SampleOrientation attribute instead of separate
  * phi, chi and omega values.
@@ -186,7 +189,7 @@ public class Integrate extends GenericTOF_SCD{
     // then get the Directory
     val=getParameter(1).getValue();
     if(val!=null){
-      path=FilenameUtil.fixSeparator(val.toString()+"/");
+      path=FilenameUtil.setForwardSlash(val.toString()+"/");
       File dir=new File(path);
       if(!dir.isDirectory())
         return new ErrorString("Path is not a directory");
@@ -200,7 +203,7 @@ public class Integrate extends GenericTOF_SCD{
       expname=val.toString();
       if(expname.length()==0)
         return new ErrorString("Experiment Name is null");
-      expfile=FilenameUtil.fixSeparator(path+expname+".x");
+      expfile=FilenameUtil.setForwardSlash(path+expname+".x");
       File file=new File(expfile);
       if(!file.exists())
         return new ErrorString("Could not find experiment file: "+file);
