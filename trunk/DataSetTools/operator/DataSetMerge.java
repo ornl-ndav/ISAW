@@ -9,6 +9,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/09/11 23:05:54  dennis
+ *  Added blank space in log message.
+ *
  *  Revision 1.4  2000/07/10 22:35:52  dennis
  *  July 10, 2000 version... many changes
  *
@@ -124,7 +127,7 @@ public class DataSetMerge extends    DataSetOperator
                                      // title, units, and operations as the
                                      // current DataSet, ds
     DataSet new_ds = ds.empty_clone(); 
-    new_ds.addLog_entry( "Merged with" + ds_to_merge );
+    new_ds.addLog_entry( "Merged with " + ds_to_merge );
     new_ds.CombineAttributeList( ds_to_merge );
 
                                            // do the operation
