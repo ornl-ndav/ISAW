@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/11/30 02:32:14  bouzekc
+ * Calls wizardLoader instead of showForm().
+ *
  * Revision 1.5  2003/04/02 15:02:46  pfpeterson
  * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
  *
@@ -157,6 +160,6 @@ public class MathWizard extends Wizard
   public static void main(String args[])
   {
     MathWizard w = new MathWizard(true);
-    w.showForm(0);
+    w.wizardLoader( args );
   }
 }

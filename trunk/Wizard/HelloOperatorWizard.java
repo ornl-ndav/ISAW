@@ -90,6 +90,6 @@ public class HelloOperatorWizard extends Wizard
   public static void main(String args[])
   {
     HelloOperatorWizard w = new HelloOperatorWizard(true);
-    w.showForm(0);
+    w.wizardLoader( args );
   }
 }
