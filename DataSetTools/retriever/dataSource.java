@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/10/20 16:40:35  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.6  2003/05/28 20:49:23  pfpeterson
  * Changed System.getProperty to SharedData.getProperty
  *
@@ -86,7 +89,7 @@ public class dataSource
   /**
    *  Check that the string has the right number of semi-colons.
    *
-   *  @ return  true if there are 4 semicolons, false otherwise.
+   *  @return  true if there are 4 semicolons, false otherwise.
    */
   public boolean check()
   {
@@ -104,7 +107,7 @@ public class dataSource
   /**
    *  Get the machine name, as the first entry in the string. 
    *
-   *  @ return  The string of characters before the first semicolon in
+   *  @return  The string of characters before the first semicolon in
    *            the data source String.  If there are no non-blank characters
    *            before the first semicolon, a blank string is returned.
    */
@@ -122,7 +125,7 @@ public class dataSource
   /**
    *  Get the port number, from the second entry in the string.
    *
-   *  @ return  The port number specified, or -1 if no positive integer
+   *  @return  The port number specified, or -1 if no positive integer
    *            value is listed between the first and second semicolons.
    */
   public int getPort()
@@ -148,7 +151,7 @@ public class dataSource
   /**
    *  Get the user name, from the third entry in the string.
    *
-   *  @ return  The string, if any, listed between the second and third 
+   *  @return  The string, if any, listed between the second and third 
    *            semicolons or an empty string is there is no such string.
    *            
    */
@@ -166,7 +169,7 @@ public class dataSource
   /**
    *  Get the password, from the fourth entry in the string.
    *
-   *  @ return  The string, if any, listed between the third and fourth 
+   *  @return  The string, if any, listed between the third and fourth 
    *            semicolons or an empty string is there is no such string.
    *            
    */
@@ -184,7 +187,7 @@ public class dataSource
   /**
    *  Get the file name, from the last entry in the string.
    *
-   *  @ return  The string, if any, listed after the fourth semicolons or 
+   *  @return  The string, if any, listed after the fourth semicolons or 
    *            an empty string is there is no such string.
    *            
    */
