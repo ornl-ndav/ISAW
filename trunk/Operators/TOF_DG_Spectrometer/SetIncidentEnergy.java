@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/06/03 22:34:28  dennis
+ * tof_calc.NewEnergyInData(,) is now used to adjust the spectra
+ * for a TOF_DG_Spectrometer, to the incident energy calculated from the
+ * beam monitors.
+ *
  * Revision 1.1  2002/03/18 21:42:55  dennis
  * Operator to adjust the time bin boundaries for a new incident
  * energy value.
@@ -163,36 +168,11 @@ public class SetIncidentEnergy extends    GenericTOF_DG_Spectrometer
                                           // for each spectrum, modify each
                                           // time channel to compensate for the
                                           // new incident energy 
-    float old_e_in;
-    float t_old;
-    float t_new;
-    float delta_t;
-    float initial_path; 
     for ( int i = 0; i < ds.getNum_entries(); i++ ) 
     {
       Data d = ds.getData_entry( i );
-      float x[] = d.getX_scale().getXs();   
-
-      Float Float_e = (Float)d.getAttribute(Attribute.ENERGY_IN).getValue();
-      Float Float_l = (Float)d.getAttribute(Attribute.INITIAL_PATH).getValue();
-      old_e_in     = Float_e.floatValue();
-      initial_path = Float_l.floatValue();
-      t_old = tof_calc.TOFofEnergy( initial_path, old_e_in ); 
-      t_new = tof_calc.TOFofEnergy( initial_path, new_e_in ); 
-      delta_t = t_new - t_old;
-
-      for ( int k = 0; k < x.length; k++ )
-        x[k] -= delta_t;
-                                          // make a new Data block with the new
-                                          // x values and same group ID, y
-                                          // values and attributes.
-      float y[] = d.getY_values();
-      XScale x_scale = new VariableXScale( x );
-      Data new_d = Data.getInstance( x_scale, y, d.getGroup_ID() );
-      new_d.setAttributeList( d.getAttributeList() );
-      new_d.setSqrtErrors();
-      new_d.setAttribute( new FloatAttribute(Attribute.ENERGY_IN,new_e_in) );
-      new_ds.replaceData_entry( new_d, i );   
+      d = tof_data_calc.NewEnergyInData( (TabulatedData)d, new_e_in );
+      new_ds.replaceData_entry( d, i );   
     }
 
     new_ds.addLog_entry("Set Incident Energy to " + new_e_in );
