@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2003/02/20 19:45:00  dennis
+ *  Now implements Serializable.
+ *
  *  Revision 1.1  2003/02/04 19:21:21  dennis
  *  Initial Version.
  *
@@ -50,7 +53,7 @@ import DataSetTools.math.*;
  * to that Data block.
  */  
 
-public interface IPixelInfo 
+public interface IPixelInfo extends Serializable
 {
   /**
    *  Get the ID of the current pixel.  This ID should be unique within the
