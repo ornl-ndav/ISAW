@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/06/20 15:26:43  pfpeterson
+ *  Modified to be used from JTextComponents rather than StringEntries.
+ *
  *  Revision 1.2  2002/06/14 14:17:58  pfpeterson
  *  Added more checks before firing a PropertyChangeEvent.
  *
@@ -55,16 +58,16 @@ import DataSetTools.util.*;
  * the package.
  */
 class FilteredDocument extends PlainDocument {
-    private StringEntry           textBox;
+    private JTextComponent        textBox;
     private Toolkit               toolkit;
     private PropertyChangeSupport propBind;
     private StringFilterer        filter;
     
     /**
      * The constructor allows for connecting back to the original
-     * JTextBox.
+     * JTextComponent.
      */
-    public FilteredDocument(StringEntry T, StringFilterer sf, 
+    public FilteredDocument(JTextComponent T, StringFilterer sf, 
                             PropertyChangeSupport pb){
         super();
         this.textBox  = T;
