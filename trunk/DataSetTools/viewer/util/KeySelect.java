@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/05/03 16:25:20  dennis
+ *  Removed unused local variables.
+ *
  *  Revision 1.5  2004/03/15 06:10:56  dennis
  *  Removed unused import statements.
  *
@@ -75,7 +78,6 @@ public final class KeySelect implements Serializable
                                           int      new_index, 
                                           KeyEvent e )
   {
-    char  key   = e.getKeyChar();
     int   code  = e.getKeyCode();
     int   last  = ds.getMostRecentlySelectedIndex();
 

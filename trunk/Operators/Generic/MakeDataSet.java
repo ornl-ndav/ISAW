@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.7  2004/05/03 16:23:38  dennis
+ * Removed unused local variables.
+ *
  * Revision 1.6  2004/03/15 19:36:53  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -195,12 +198,6 @@ public class MakeDataSet implements Wrappable {
         } catch (Exception ss) {
             return new ErrorString(ss);
         }
-
-        Object result = null;
-    
-        float[] yvalues = null;
-        float[] errors = null;
-        boolean hist = true;
    
         DataSet DS = new DataSet(Title, new OperationLog(), XUnits, XLabel, 
                                                                 YUnits, YLabel);
@@ -229,7 +226,7 @@ public class MakeDataSet implements Wrappable {
             DS.addOperator(new GetPixelInfo_op());
 
             if (theGrid != null)
-                theGrid.setDataEntriesInAllGrids(DS);
+              UniformGrid.setDataEntriesInAllGrids(DS);
         }
         return DS;
     }
