@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2002/10/24 19:34:07  pfpeterson
+ *  Implemented a debug flag for global use.
+ *
  *  Revision 1.11  2002/10/24 16:51:53  pfpeterson
  *  Removed references to SpectrometerPlotter.
  *
@@ -93,6 +96,8 @@ public class SharedData implements java.io.Serializable
   public static final PropertiesLoader isaw_props 
                                         = new PropertiesLoader("IsawProps.dat");
   
+  public static boolean DEBUG = false;
+
  public static final String VERSION     = "Unknown_Version";
  
   public static final String BUILD_DATE = "Unknown_Build_Date";
