@@ -32,7 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/06/04 23:29:21  kramer
+ * Fixed some Javadoc errors.
+ *
  * Revision 1.6  2004/05/26 20:17:27  kramer
+ *
  * Removed the following methods:
  *   private void promptForFileToSaveProject(Project pro)
  *   public void processSentEvent(ActionEvent event)
@@ -242,7 +246,7 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 	}
 		
 	/**
-	 * Get the window menu used to create new tabs, remove tabs, open new windows, etc. in a HawkDesktop as a popup menu.
+	 * Get the window menu used to create new tabs, remove tabs, open new windows, etc in a HawkDesktop as a popup menu.
 	 * @return The window menu from the JMenuBar obtained from getProjectJMenuBar().
 	 */
 	public JPopupMenu getWindowMenuAsPopupMenu()
