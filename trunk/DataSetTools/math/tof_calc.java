@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.14  2002/06/19 21:52:14  pfpeterson
+ *  Added more conversions between wl, d, and Q.
+ *
  *  Revision 1.13  2001/07/12 16:32:42  dennis
  *  Modified calculation of "omega".
  *
@@ -353,6 +356,39 @@ public static float  DSpacing( float angle_radians,
 }
 
 
+/* --------------------- DSpacingofDiffractometerQ ----------------------- */
+/**
+ *   Calculate a d-spacing based on the Q "value"
+ *
+ *   @param Q               The Q "value" of the neutron or x-ray (doesn't
+ *                          matter which).
+ *   
+ *   @return The magnitude of d in Angstroms.
+ *
+ */
+public static float DSpacingofDiffractometerQ( float Q ){
+   return (float)( 2.0 * Math.PI / Q );
+}
+
+/* ------------------------ DSpacingofWavelength ------------------------- */
+/**
+ *   Calculate a d-spacing based on the scattering angle and wavelength.
+ *
+ *   @param angle_radians   The angle between the neutron beam and the line
+ *                          from the sample to the detector, in radians. The
+ *                          angle is commonly refered to as the Bragg angle
+ *                          2_theta.
+ *   @param wavelength      The wavelength of the neutron or x-ray (doesn't
+ *                          matter which).
+ *   
+ *   @return The magnitude of d-spacing in Angstroms.
+ *
+ */
+public static float DSpacingofWavelength(float angle_radians,float wavelength){
+    float  theta_radians = Math.abs( angle_radians / 2.0f );
+    return (float)( wavelength/(2.0 * Math.sin( theta_radians )) );
+}
+
 /* ---------------------------- TOFofDSpacing ---------------------------- */
 /**
  *   Calculate the time-of-flight for a neutron based on the scattering angle, 
@@ -413,11 +449,45 @@ public static float  DiffractometerQ( float angle_radians,
   return (float)( 4.0 * Math.PI * Math.sin( theta_radians ) / wavelength );
 }
 
+/* -------------------- DiffractometerQofWavelength ---------------------- */
+/**
+ *   Calculate a "Q" value based on the scattering angle and wavelength.
+ *
+ *   @param angle_radians   The angle between the neutron beam and the line
+ *                          from the sample to the detector, in radians. The
+ *                          angle is commonly refered to as the Bragg angle
+ *                          2_theta.
+ *   @param wavelength      The wavelength of the neutron or x-ray (doesn't
+ *                          matter which).
+ *   
+ *   @return The magnitude of "Q" in inverse Angstroms.
+ *
+ */
+public static float DiffractometerQofWavelength(float angle_radians, 
+                                                float wavelength ){
+   float  theta_radians = Math.abs( angle_radians / 2.0f );
+   return (float)( 4.0 * Math.PI * Math.sin( theta_radians ) / wavelength );
+}
+
+/* --------------------- DiffractometerQofDSpacing ----------------------- */
+/**
+ *   Calculate a "Q" value based on the d-spacing
+ *
+ *   @param d_space         The d-spacing of the neutron or x-ray (doesn't
+ *                          matter which).
+ *   
+ *   @return The magnitude of "Q" in inverse Angstroms.
+ *
+ */
+public static float DiffractometerQofDSpacing( float d_space ){
+   return (float)( 2.0 * Math.PI / d_space );
+}
+
 /* ------------------------ TOFofDiffractometerQ -------------------------- */
 /**
- *   Calculate the time of flight for a neutron based on the scattering angle, i
- *   total flight path length and a "Q" value for a sample that scattered
- *   the neutron beam.
+ *   Calculate the time of flight for a neutron based on the
+ *   scattering angle, i total flight path length and a "Q" value for
+ *   a sample that scattered the neutron beam.
  *
  *   @param angle_radians   The angle between the neutron beam and the line
  *                          from the sample to the detector, in radians.
