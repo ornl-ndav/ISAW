@@ -31,6 +31,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2005/01/04 17:00:59  rmikk
+ * Eliminated unused imports
+ * Made a hidden operator because result is not a string
+ *
  * Revision 1.3  2004/07/31 23:07:25  rmikk
  * Removed unused imports.
  *
@@ -58,19 +62,16 @@ import java.util.Vector;
 
 import DataSetTools.operator.DataSet.Attribute.LoadOrientation;
 import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
-//import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
 import DataSetTools.operator.Generic.TOF_SCD.Peak;
-//import DataSetTools.operator.Generic.TOF_SCD.ReadPeaks;
-//import DataSetTools.operator.Generic.TOF_SCD.WritePeaks;
 import DataSetTools.parameter.*;
-//import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.SharedData;
 
 /**
  * This operator is intended to run A.J. Schultz's "index"
  * program. This is not heavily tested but works fairly well.
  */
-public class IndexJ_base extends    GenericTOF_SCD {
+public class IndexJ_base extends    GenericTOF_SCD implements 
+                              DataSetTools.operator.HiddenOperator{
   public static String command=null;
   private static final boolean DEBUG=false;
   public String log = "";
@@ -80,7 +81,7 @@ public class IndexJ_base extends    GenericTOF_SCD {
    * Construct an operator with a default parameter list.
    */
   public IndexJ_base( ){
-    super( "JIndex" );
+    super( "JIndex base" );
   }
   
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -172,7 +173,7 @@ public class IndexJ_base extends    GenericTOF_SCD {
   public Object getResult(){
     Vector      peaks   = null;  // peaks filename
     float[][]   matrix  = null;  // matrix filename
-    String      logfile     = null;  // the index.log file 
+    //String      logfile     = null;  // the index.log file 
     float       delta_h     = 0f;    // error in index (h) allowed
     float       delta_k     = 0f;    // error in index (k) allowed
     float       delta_l     = 0f;    // error in index (l) allowed
@@ -436,7 +437,7 @@ public class IndexJ_base extends    GenericTOF_SCD {
 
   /* --------------------------- MAIN METHOD --------------------------- */
   public static void main(String[] args){
-    String dir="/IPNShome/pfpeterson/data/SCD/";
+    //String dir="/IPNShome/pfpeterson/data/SCD/";
 
     IndexJ_base op = null;
     
