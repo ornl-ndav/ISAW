@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2005/01/10 15:28:50  dennis
+ * Removed unused imports.
+ *
  * Revision 1.1  2004/10/12 22:20:37  chatterjee
  * Operator to set the L2 distance (sample to detector).
  * Sets the L2 value in the dataset instead of the Runfile.
@@ -39,19 +42,12 @@
  */
 package DataSetTools.operator.Generic.TOF_SAD;
 
-import gov.anl.ipns.Util.Numeric.*;
-
 import java.util.Vector;
 
 import DataSetTools.dataset.*;
-import DataSetTools.math.*;
 import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
-import DataSetTools.components.View.*;
-import DataSetTools.operator.DataSet.Attribute.*;
-import gov.anl.ipns.Util.Sys.WindowShower;
 import gov.anl.ipns.MathTools.Geometry.Vector3D;
-import gov.anl.ipns.MathTools.Geometry.*;
 
 public class SetL2  extends GenericTOF_SAD{
 
