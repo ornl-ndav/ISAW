@@ -8,6 +8,10 @@
  *               Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.3  2001/02/20 23:11:56  dennis
+ *  Added more elaborate exception handling when an object is read from
+ *  the object input stream.
+ *
  *  Revision 1.2  2001/02/15 22:00:14  dennis
  *  Minor improvement in documentation
  *
@@ -92,9 +96,45 @@ public class ThreadedTCPComm extends TCPComm
           }
         }
       }
+      catch( ClassNotFoundException e )
+      {
+        System.out.println("ClassNotFoundException reading Object " + 
+                           "in TCP_thread.run() " + e );
+        e.printStackTrace();
+      }
+
+      catch( InvalidClassException e )
+      {
+        System.out.println("InvalidClassException reading Object " + 
+                           "in TCP_thread.run() " + e );
+        e.printStackTrace();
+      }
+
+      catch( StreamCorruptedException e )
+      {
+        System.out.println("StreamCorruptedException reading Object " +
+                           "in TCP_thread.run() " + e );
+        e.printStackTrace();
+      }
+
+      catch( OptionalDataException e )
+      {
+        System.out.println("OptionalDataException reading Object " +
+                           "in TCP_thread.run() " + e );
+        e.printStackTrace();
+      }
+
+      catch( IOException e )
+      {
+        System.out.println("IOException reading Object " +
+                           "in TCP_thread.run() " + e );
+        e.printStackTrace();
+      }
+
       catch( Exception e )
       {
         System.out.println("ERROR reading Object in TCP_thread.run() " + e ); 
+        e.printStackTrace();
       }
                            // if we get here, either the attempt to read an
                            // object failed, or we received an "exit" object.  
