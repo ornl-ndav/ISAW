@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.20  2003/06/23 18:23:23  bouzekc
+ * Pretty print formatting.
+ *
  * Revision 1.19  2003/06/19 16:17:21  bouzekc
  * Changed the validateParameterGUIs method to work only with
  * variable parameters.
@@ -119,22 +122,31 @@
  *
  *
  */
-
 package DataSetTools.wizard;
 
-import java.io.Serializable;
-import javax.swing.*;
-import javax.swing.border.*;
+import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
+
+import DataSetTools.dataset.DataSet;
+
+import DataSetTools.operator.*;
+
+import DataSetTools.parameter.*;
+
+import DataSetTools.util.*;
+
 import java.awt.Color;
 import java.awt.GridLayout;
+
 import java.beans.*;
-import DataSetTools.operator.*;
-import DataSetTools.parameter.*;
-import DataSetTools.util.*;
-import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
-import DataSetTools.dataset.DataSet;
+
 import java.io.File;
+import java.io.Serializable;
+
 import java.util.Vector;
+
+import javax.swing.*;
+import javax.swing.border.*;
+
 
 /**
  *  The Form class is controls one operation of the sequence of operations
@@ -144,117 +156,122 @@ import java.util.Vector;
  *  Derived classes should override the execute() method to actually do
  *  some operations involving the parameters.  The execute() method is
  *  responsible for using the input parameters and producing new values for
- *  the result parameters. If special layouts and parameter interfaces are 
- *  needed, the MakeGUI() method can also be overridden in sub classes. 
+ *  the result parameters. If special layouts and parameter interfaces are
+ *  needed, the MakeGUI() method can also be overridden in sub classes.
  *
  *  @see Wizard
- *  @see Wizard.MathWizard 
+ *  @see Wizard.MathWizard
  *  @see Wizard.AdderExampleForm
- */
-
-/**
+ *
  *  Note that Forms are set up by default as standalone Forms, or the first Form
- *  in a Wizard.  To set a Form to have constant parameters that rely on 
- *  values obtained from previous Forms, set the HAS_CONSTANTS variable to 
+ *  in a Wizard.  To set a Form to have constant parameters that rely on
+ *  values obtained from previous Forms, set the HAS_CONSTANTS variable to
  *  true by using the appropriate constructor.
  */
 public abstract class Form extends Operator implements Serializable,
-                                                       PropertyChanger{
-  private final boolean DEBUG=false;
+  PropertyChanger {
+  //~ Static fields/initializers ***********************************************
 
-  protected JPanel    panel;               // panel that the Wizard will draw
-  
   private static final String CONS_FRAME_HEAD = "CONSTANT PARAMETERS";
   private static final String VAR_FRAME_HEAD  = "USER SPECIFIED PARAMETERS";
   private static final String RES_FRAME_HEAD  = "RESULTS";
-  public static final String[] PARAM_NAMES =
-                             {CONS_FRAME_HEAD, VAR_FRAME_HEAD, RES_FRAME_HEAD};
+  public static final String[] PARAM_NAMES    = { CONS_FRAME_HEAD, VAR_FRAME_HEAD, RES_FRAME_HEAD };
+  public static final int CONST_PARAM         = 0;
+  public static final int VAR_PARAM           = 1;
+  public static final int RESULT_PARAM        = 2;
 
-  public static final int CONST_PARAM  = 0;
-  public static final int VAR_PARAM    = 1;
-  public static final int RESULT_PARAM = 2;
+  //~ Instance fields **********************************************************
 
-  private int[][]  param_ref = null;
+  private final boolean DEBUG = false;
+  protected JPanel panel;  // panel that the Wizard will draw
+  private int[][] param_ref   = null;
 
   //used for standalone or first Forms.  Default is standalone.
-  protected boolean HAS_CONSTANTS = false; 
-
+  protected boolean HAS_CONSTANTS          = false;
   protected PropertyChangeSupport propBind;
 
   //used for the progress bars
-  protected float newPercent, oldPercent, increment;
+  protected float newPercent;
+
+  //used for the progress bars
+  protected float oldPercent;
+
+  //used for the progress bars
+  protected float increment;
+
+  //~ Constructors *************************************************************
 
   /**
-   *  Construct a form with the given title to work with 
-   *  the specified Wizard.  
+   *  Construct a form with the given title to work with
+   *  the specified Wizard.
    *
    *  @param  title           The title to show on this form
    *
    */
-  public Form( String title )
-  {
-    super(title);
-    panel = null;
-    this.param_ref=null;
-    propBind = new PropertyChangeSupport(this);
-  } 
+  public Form( String title ) {
+    super( title );
+    panel            = null;
+    this.param_ref   = null;
+    propBind         = new PropertyChangeSupport( this );
+  }
 
   /**
-   *  Construct a form with the given title to work with 
+   *  Construct a form with the given title to work with
    *  the specified Wizard.  This constructor also allows
-   *  for setting whether or not this Form has constant 
+   *  for setting whether or not this Form has constant
    *  parameters.
    *
    *  @param  title           The title to show on this form
    *
    */
-  public Form( String title, boolean hasConstantParams )
-  {
-    this(title);
+  public Form( String title, boolean hasConstantParams ) {
+    this( title );
     this.HAS_CONSTANTS = hasConstantParams;
-  } 
+  }
+
+  //~ Methods ******************************************************************
 
   /* ---------------------------- addParameter ---------------------------- */
+
   /**
-   * Add the reference for the specified parameter to the list of parameters 
-   * for this operation object.  
+   * Add the reference for the specified parameter to the list of parameters
+   * for this operation object.
    *
    *  @param   iparam   The new IParameterGUI to be added to the list
    *                    of parameters for this object.
    */
-  protected void addParameter(IParameterGUI iparam)
-  {
-    parameters.addElement(iparam);
+  protected void addParameter( IParameterGUI iparam ) {
+    parameters.addElement( iparam );
   }
 
   /* ---------------------------- setParameter --------------------------- */
+
   /**
    * Set the parameter at the specified index in the list of parameters
    * for this Form.  The parameter that is set MUST have the same type
    * of value object as that was originally placed in the list of parameters
-   * using the addParameter() method.  
+   * using the addParameter() method.
    *
    *  @param  index    The index in the list of parameters of the parameter
    *                   that is to be set.  "index" must be between 0 and the
    *                   number of parameters - 1.
    *
-   *  @return  Returns true if the parameter was properly set, and returns 
+   *  @return  Returns true if the parameter was properly set, and returns
    *           false otherwise.  Specifically, it returns false if either
    *           the given index is invalid, or the specified parameter
    *           has a different data type than the parameter at the given
    *           index.
    */
-  public boolean setParameter(IParameterGUI iparam, int index)
-  {
-    return super.setParameter(iparam, index);
+  public boolean setParameter( IParameterGUI iparam, int index ) {
+    return super.setParameter( iparam, index );
   }
 
-  public boolean setParameter(IParameter iparam, int index)
-  {
-    if( iparam instanceof IParameterGUI )
-      return this.setParameter((IParameterGUI)iparam,index);
-    else
+  public boolean setParameter( IParameter iparam, int index ) {
+    if( iparam instanceof IParameterGUI ) {
+      return this.setParameter( ( IParameterGUI )iparam, index );
+    } else {
       return false;
+    }
   }
 
   /**
@@ -263,10 +280,13 @@ public abstract class Form extends Operator implements Serializable,
    * @param container where all of the gui components will be packed
    * into.
    */
-  protected final void prepGUI(java.awt.Container container){
-    if(panel==null) panel=new JPanel();
-    panel.removeAll();
-    panel.add(container);
+  protected final void prepGUI( java.awt.Container container ) {
+    if( panel == null ) {
+      panel = new JPanel(  );
+    }
+
+    panel.removeAll(  );
+    panel.add( container );
   }
 
   /**
@@ -280,23 +300,33 @@ public abstract class Form extends Operator implements Serializable,
    *  @see Form#prepGUI(java.awt.Container) prepGUI
    *  @see Form#enableParameters() enableParameters
    */
-  protected void makeGUI(){
-      if(DEBUG)System.out.println("IN makeGUI of "+this.getCommand());
-      Box box = new Box( BoxLayout.Y_AXIS );
-      if(DEBUG) box.setBackground(Color.red);
-      prepGUI(box);
-      JPanel sub_panel;
-      for(int i = 0; i < param_ref.length; i++)
-      {
-        if(param_ref[i]!=null && param_ref[i].length > 0){
-          // build the sub_panels
-          sub_panel = build_param_panel(PARAM_NAMES[i], param_ref[i]);
-          if ( sub_panel != null )
-            box.add( sub_panel );
+  protected void makeGUI(  ) {
+    if( DEBUG ) {
+      System.out.println( "IN makeGUI of " + this.getCommand(  ) );
+    }
+
+    Box box = new Box( BoxLayout.Y_AXIS );
+
+    if( DEBUG ) {
+      box.setBackground( Color.red );
+    }
+
+    prepGUI( box );
+
+    JPanel sub_panel;
+
+    for( int i = 0; i < param_ref.length; i++ ) {
+      if( ( param_ref[i] != null ) && ( param_ref[i].length > 0 ) ) {
+        // build the sub_panels
+        sub_panel = build_param_panel( PARAM_NAMES[i], param_ref[i] );
+
+        if( sub_panel != null ) {
+          box.add( sub_panel );
         }
       }
+    }
 
-      this.enableParameters();
+    this.enableParameters(  );
   }
 
   /**
@@ -304,61 +334,75 @@ public abstract class Form extends Operator implements Serializable,
    * types declared using {@link #setParamTypes(int[],int[],int[])
    * setParamTypes}.
    */
-  protected final void enableParameters(){
-      IParameterGUI param=null;
-      boolean enable=false;
+  protected final void enableParameters(  ) {
+    IParameterGUI param = null;
+    boolean enable      = false;
 
-      for(int i = 0; i < param_ref.length; i++)
-      {
-        if(param_ref[i]!=null && param_ref[i].length > 0){
-          enable=(i==VAR_PARAM); // only editable_params should be enabled
-          if(DEBUG) System.out.print(PARAM_NAMES[i]+"("+enable+")");
-          for( int j=0 ; j<param_ref[i].length ; j++ ){
-            ((IParameterGUI)getParameter(param_ref[i][j])).setEnabled(enable);
-            if(DEBUG) System.out.print(param_ref[i][j]+" ");
+    for( int i = 0; i < param_ref.length; i++ ) {
+      if( ( param_ref[i] != null ) && ( param_ref[i].length > 0 ) ) {
+        enable = ( i == VAR_PARAM );  // only editable_params should be enabled
+
+        if( DEBUG ) {
+          System.out.print( PARAM_NAMES[i] + "(" + enable + ")" );
+        }
+
+        for( int j = 0; j < param_ref[i].length; j++ ) {
+          ( ( IParameterGUI )getParameter( param_ref[i][j] ) ).setEnabled( 
+            enable );
+
+          if( DEBUG ) {
+            System.out.print( param_ref[i][j] + " " );
           }
-          if(DEBUG)System.out.println();
+        }
+
+        if( DEBUG ) {
+          System.out.println(  );
         }
       }
-    
+    }
   }
 
   /**
    * Method to set the parameter types. If you don't want one set then
    * pass in null or a zero length array.
    */
-  protected final void setParamTypes(int[] constant, int[] variable,
-                                                                 int[] result){
-    if(constant==null || constant.length<=0)
-      constant=null;
-    if(variable==null || variable.length<=0)
-      variable=null;
-    if(result==null || result.length<=0)
-      result=null;
+  protected final void setParamTypes( 
+    int[] constant, int[] variable, int[] result ) {
+    if( ( constant == null ) || ( constant.length <= 0 ) ) {
+      constant = null;
+    }
 
-    param_ref=new int[][]{constant,variable,result};
+    if( ( variable == null ) || ( variable.length <= 0 ) ) {
+      variable = null;
+    }
+
+    if( ( result == null ) || ( result.length <= 0 ) ) {
+      result = null;
+    }
+
+    param_ref = new int[][]{ constant, variable, result };
   }
 
   /**
    * Returns the array of indices for the different types of parameters
    */
-  protected final int[] getParamType(int type){
-    if(type==CONST_PARAM)
+  protected final int[] getParamType( int type ) {
+    if( type == CONST_PARAM ) {
       return param_ref[CONST_PARAM];
-    else if(type==VAR_PARAM)
+    } else if( type == VAR_PARAM ) {
       return param_ref[VAR_PARAM];
-    else if(type==RESULT_PARAM)
+    } else if( type == RESULT_PARAM ) {
       return param_ref[RESULT_PARAM];
-    else
-      throw new IndexOutOfBoundsException("Invalid type specified");
+    } else {
+      throw new IndexOutOfBoundsException( "Invalid type specified" );
+    }
   }
 
   /**
    *  Returns the array of indices for the variable parameters.
    */
-  public final int[] getVarParamIndices()
-  {
-    return this.getParamType(VAR_PARAM);
+  public final int[] getVarParamIndices(  ) {
+    return this.getParamType( VAR_PARAM );
   }
 
   /**
@@ -368,25 +412,31 @@ public abstract class Form extends Operator implements Serializable,
    *  user-specified and result parameters.
    *
    *  @param  title  The title to put on the border
-   *  @param  num    The reference to the particular parameters (i.e 
-   *                 editable, result, or constant) within the 
+   *  @param  num    The reference to the particular parameters (i.e
+   *                 editable, result, or constant) within the
    *                 parameters Vector.
    */
-  protected final JPanel build_param_panel( String title, int num[])
-  {
-    if( getNum_parameters()<=0 ) return null;
+  protected final JPanel build_param_panel( String title, int[] num ) {
+    if( getNum_parameters(  ) <= 0 ) {
+      return null;
+    }
 
-    JPanel       sub_panel = new JPanel();
+    JPanel sub_panel    = new JPanel(  );
     TitledBorder border;
-    border = new TitledBorder(LineBorder.createBlackLineBorder(), title);
+
+    border = new TitledBorder( LineBorder.createBlackLineBorder(  ), title );
+
     //border.setTitleFont( FontUtil.BORDER_FONT );
     sub_panel.setBorder( border );
     sub_panel.setLayout( new GridLayout( num.length, 1 ) );
-    for ( int i = 0; i < num.length; i++ ){
-        IParameterGUI param = (IParameterGUI)getParameter(num[i]);
-        param.init();
-        sub_panel.add( param.getGUIPanel() );
+
+    for( int i = 0; i < num.length; i++ ) {
+      IParameterGUI param = ( IParameterGUI )getParameter( num[i] );
+
+      param.init(  );
+      sub_panel.add( param.getGUIPanel(  ) );
     }
+
     return sub_panel;
   }
 
@@ -396,9 +446,10 @@ public abstract class Form extends Operator implements Serializable,
    *
    *  @returns The panel to display for this form.
    */
-  public JPanel getPanel()
-  {
-    if(panel==null) panel=new JPanel();
+  public JPanel getPanel(  ) {
+    if( panel == null ) {
+      panel = new JPanel(  );
+    }
 
     return panel;
   }
@@ -407,77 +458,94 @@ public abstract class Form extends Operator implements Serializable,
    *
    *  This is called when displaying or hiding the current form.  While
    *  this currently only sets the form to be visible or not, additional
-   *  functionality could be added so that it will ensure that the 
-   *  Form's execute() method is called before advancing to the next 
+   *  functionality could be added so that it will ensure that the
+   *  Form's execute() method is called before advancing to the next
    *  Form.  Replaces show() and hide().
    *
    *  @param boolean show true when you want the form to show, false
    *                      when you do not.
    */
-  public void setVisible(boolean show)
-  {
-    if(show){
-      this.makeGUI();
-      panel.validate();
-      panel.setVisible(show);
-    }else{
-      if(this.panel!=null)
-        panel.setVisible(show);
+  public void setVisible( boolean show ) {
+    if( show ) {
+      this.makeGUI(  );
+      panel.validate(  );
+      panel.setVisible( show );
+    } else {
+      if( this.panel != null ) {
+        panel.setVisible( show );
+      }
     }
   }
 
   /**
    *  Check whether or not this form has been successfully completed.
-   * 
+   *
    *  @return true if the form's operation has been successfully carried out
-   *               and none of the parameters have been subsequently altered 
+   *               and none of the parameters have been subsequently altered
    */
-  public boolean done(){
-      int areSet=0;
-      int totalParam=getNum_parameters();
+  public boolean done(  ) {
+    int areSet     = 0;
+    int totalParam = getNum_parameters(  );
 
-      if(totalParam<=0) return false;
+    if( totalParam <= 0 ) {
+      return false;
+    }
 
-      for(int i = 0; i < totalParam; i++)
-        if( ((IParameterGUI)this.getParameter(i)).getValid() )
-          areSet++;
+    for( int i = 0; i < totalParam; i++ ) {
+      if( ( ( IParameterGUI )this.getParameter( i ) ).getValid(  ) ) {
+        areSet++;
+      }
+    }
 
-      return (areSet==totalParam);
+    return ( areSet == totalParam );
   }
 
   /**
    *  Sets the valid state of all result parameters to false.
    */
-  public void invalidate(){
-    if(DEBUG)
-      System.out.println("invalidate");
-    if(this.getNum_parameters()<=0) return;
+  public void invalidate(  ) {
+    if( DEBUG ) {
+      System.out.println( "invalidate" );
+    }
 
-    int[] result_indices =this.getParamType(RESULT_PARAM);
-    if( result_indices==null || result_indices.length<=0) return;
+    if( this.getNum_parameters(  ) <= 0 ) {
+      return;
+    }
 
-    for( int i=0 ; i<result_indices.length ; i++ )
-      ((IParameterGUI)getParameter(result_indices[i])).setValid(false);
+    int[] result_indices = this.getParamType( RESULT_PARAM );
+
+    if( ( result_indices == null ) || ( result_indices.length <= 0 ) ) {
+      return;
+    }
+
+    for( int i = 0; i < result_indices.length; i++ ) {
+      ( ( IParameterGUI )getParameter( result_indices[i] ) ).setValid( false );
+    }
   }
-   
+
   /**
    *  Method to add PropertyChangeListeners to the Form's list
    *  of parameters.
    */
-  public void addParameterPropertyChangeListener(PropertyChangeListener w) 
-  {
+  public void addParameterPropertyChangeListener( PropertyChangeListener w ) {
     IParameterGUI param;
 
-    if(this.getNum_parameters()<=0) return;
-    int[] var_indices =this.getParamType(VAR_PARAM);
-    if( var_indices==null || var_indices.length<=0) return;
+    if( this.getNum_parameters(  ) <= 0 ) {
+      return;
+    }
 
-    for( int i=0 ; i<var_indices.length ; i++ )
-    {
-      param = (IParameterGUI)this.getParameter(var_indices[i]); 
-      if(param instanceof PropertyChanger){
-        ((PropertyChanger)param)
-          .addPropertyChangeListener(IParameter.VALUE,w);
+    int[] var_indices = this.getParamType( VAR_PARAM );
+
+    if( ( var_indices == null ) || ( var_indices.length <= 0 ) ) {
+      return;
+    }
+
+    for( int i = 0; i < var_indices.length; i++ ) {
+      param = ( IParameterGUI )this.getParameter( var_indices[i] );
+
+      if( param instanceof PropertyChanger ) {
+        ( ( PropertyChanger )param ).addPropertyChangeListener( 
+          IParameter.VALUE, w );
       }
     }
   }
@@ -493,20 +561,18 @@ public abstract class Form extends Operator implements Serializable,
    *  @return                      A new ErrorString containing the error
    *                               message.
    */
-  protected Object errorOut(Object errmessage)
-  {
-   String message;
-   if( errmessage instanceof String )
-   {
-     message = "FORM ERROR: " + errmessage;
-     SharedData.addmsg(message);
-   }
-   else
-   {
-     message = "FORM ERROR: " + errmessage.toString();
-     SharedData.addmsg(message);
-   }
-   return new ErrorString(message);
+  protected Object errorOut( Object errmessage ) {
+    String message;
+
+    if( errmessage instanceof String ) {
+      message = "FORM ERROR: " + errmessage;
+      SharedData.addmsg( message );
+    } else {
+      message = "FORM ERROR: " + errmessage.toString(  );
+      SharedData.addmsg( message );
+    }
+
+    return new ErrorString( message );
   }
 
   /**
@@ -522,10 +588,10 @@ public abstract class Form extends Operator implements Serializable,
    *  @return                      A new ErrorString containing the error
    *                               message.
    */
-  protected Object errorOut(IParameterGUI param, Object errmessage)
-  {
-   param.setValid(false);
-   return this.errorOut(errmessage);
+  protected Object errorOut( IParameterGUI param, Object errmessage ) {
+    param.setValid( false );
+
+    return this.errorOut( errmessage );
   }
 
   /**
@@ -535,84 +601,92 @@ public abstract class Form extends Operator implements Serializable,
    *              Boolean.TRUE or an ErrorString, depending on the whether the
    *              parameters successfully validated or not, respectively.
    */
-  public Object getResult()
-  {
+  public Object getResult(  ) {
     //for progress bars
     newPercent = oldPercent = increment = 0;
+
     //not created yet
-    return this.validateParameterGUIs();
+    return this.validateParameterGUIs(  );
   }
 
   /**
-   *  Convenience method for checking variable parameters.  Although it 
-   *  can be overwritten to provide a more customized approach to validating 
-   *  parameters, this should not usually be necessary, as the 
+   *  Convenience method for checking variable parameters.  Although it
+   *  can be overwritten to provide a more customized approach to validating
+   *  parameters, this should not usually be necessary, as the
    *  recommended approach is to retrieve all parameters, validate
    *  them using this method, then perform any special validations
    *  directly in the child class.
-   *  
-   *  @return     Either Boolean.TRUE or an ErrorString, depending on the 
-   *              whether the parameters successfully validated or not, 
+   *
+   *  @return     Either Boolean.TRUE or an ErrorString, depending on the
+   *              whether the parameters successfully validated or not,
    *              respectively.
    */
-  protected Object validateParameterGUIs()
-  {
+  protected Object validateParameterGUIs(  ) {
     IParameterGUI ipg;
     Object obj;
 
-    if(this.getNum_parameters() <= 0) 
-      return new ErrorString("No parameters to check");
-    int[] var_indices = this.getParamType(VAR_PARAM);
-    if( var_indices == null || var_indices.length <= 0) 
-      return new ErrorString("No variable parameters to check");
+    if( this.getNum_parameters(  ) <= 0 ) {
+      return new ErrorString( "No parameters to check" );
+    }
 
-    for( int i = 0; i < var_indices.length; i++ ){
-      ipg = (IParameterGUI)this.getParameter(var_indices[i]); 
-      if(ipg.getValid() == true)
+    int[] var_indices = this.getParamType( VAR_PARAM );
+
+    if( ( var_indices == null ) || ( var_indices.length <= 0 ) ) {
+      return new ErrorString( "No variable parameters to check" );
+    }
+
+    for( int i = 0; i < var_indices.length; i++ ) {
+      ipg = ( IParameterGUI )this.getParameter( var_indices[i] );
+
+      if( ipg.getValid(  ) == true ) {
         continue;
+      }
 
-      if(ipg instanceof DataSetPG){
-        obj = ipg.getValue();
-        if(obj != null && obj != DataSet.EMPTY_DATA_SET)
-          ipg.setValid(true);
-        else
-          return errorOut(ipg, 
-            "Parameter " + ipg.getName() + " is invalid.");
-      }
-      else if(ipg instanceof BrowsePG){ 
-        if(new File(ipg.getValue().toString()).exists())
-          ipg.setValid(true);
-        else
-          return errorOut(ipg, 
-            "Parameter " + ipg.getName() + " is invalid.");
-      }
-      else if(ipg instanceof ArrayPG){
-        Vector v = (Vector)(ipg.getValue());
-        if(v == null || v.isEmpty())
-          ipg.setValid(false);
-        else{  //assume it is valid, then test that assumption
-          ipg.setValid(true);
-          for(int k = 0; k < v.size(); k++){
-            if( !(new File( v.elementAt(k).toString() ).exists()) ){
-              ipg.setValid(false);
+      if( ipg instanceof DataSetPG ) {
+        obj = ipg.getValue(  );
+
+        if( ( obj != null ) && ( obj != DataSet.EMPTY_DATA_SET ) ) {
+          ipg.setValid( true );
+        } else {
+          return errorOut( 
+            ipg, "Parameter " + ipg.getName(  ) + " is invalid." );
+        }
+      } else if( ipg instanceof BrowsePG ) {
+        if( new File( ipg.getValue(  ).toString(  ) ).exists(  ) ) {
+          ipg.setValid( true );
+        } else {
+          return errorOut( 
+            ipg, "Parameter " + ipg.getName(  ) + " is invalid." );
+        }
+      } else if( ipg instanceof ArrayPG ) {
+        Vector v = ( Vector )( ipg.getValue(  ) );
+
+        if( ( v == null ) || v.isEmpty(  ) ) {
+          ipg.setValid( false );
+        } else {  //assume it is valid, then test that assumption
+          ipg.setValid( true );
+
+          for( int k = 0; k < v.size(  ); k++ ) {
+            if( !( new File( v.elementAt( k ).toString(  ) ).exists(  ) ) ) {
+              ipg.setValid( false );
+
               break;
             }
           }
         }
-      }
-      else if(ipg instanceof BooleanPG)
-        ipg.setValid(true);
-      else if(ipg instanceof StringEntryPG){
+      } else if( ipg instanceof BooleanPG ) {
+        ipg.setValid( true );
+      } else if( ipg instanceof StringEntryPG ) {
         //need to check input against the StringFilterer
-        StringFilterer sf = 
-          ((StringEntryPG)ipg).getStringFilter();
-        if(sf.isOkay(0, ipg.getValue().toString(), ""))
-          ipg.setValid(true);
-        else
-          return errorOut(ipg, 
-            "Parameter " + ipg.getName() + " is invalid.");
-      }
+        StringFilterer sf = ( ( StringEntryPG )ipg ).getStringFilter(  );
 
+        if( sf.isOkay( 0, ipg.getValue(  ).toString(  ), "" ) ) {
+          ipg.setValid( true );
+        } else {
+          return errorOut( 
+            ipg, "Parameter " + ipg.getName(  ) + " is invalid." );
+        }
+      }
       //for the remainder of the parameters, we will set them false.
       //HashPG can't really be checked - if the value is not found, the
       //value is set to a blank.  This is the default behavior of the JComboBox
@@ -622,52 +696,54 @@ public abstract class Form extends Operator implements Serializable,
       //VectorPG does not have a clean way to determine its validity.
       //To be safe we are going to let the subclasses work with these 
       //parameters to validate them, but we will not return an error.
-      else
-        ipg.setValid(false);
+      else {
+        ipg.setValid( false );
+      }
     }
+
     return Boolean.TRUE;
   }
 
   /* -------------------- PropertyChanger methods --------------------------*/
 
   /**
-   *  Adds the property change listener pcl to this Form's 
+   *  Adds the property change listener pcl to this Form's
    *  PropertyChangeSupport propBind variable.
    */
-  public void addPropertyChangeListener(String property, 
-                                        PropertyChangeListener pcl)
-  {
-    if(propBind != null)
-      propBind.addPropertyChangeListener(property, pcl);
+  public void addPropertyChangeListener( 
+    String property, PropertyChangeListener pcl ) {
+    if( propBind != null ) {
+      propBind.addPropertyChangeListener( property, pcl );
+    }
   }
 
   /**
-   *  Adds the property change listener pcl to this Form's 
+   *  Adds the property change listener pcl to this Form's
    *  PropertyChangeSupport propBind variable.
    */
-  public void addPropertyChangeListener(PropertyChangeListener pcl)
-  {
-    if(propBind != null)
-      propBind.addPropertyChangeListener(pcl);
+  public void addPropertyChangeListener( PropertyChangeListener pcl ) {
+    if( propBind != null ) {
+      propBind.addPropertyChangeListener( pcl );
+    }
   }
 
   /**
-   *  Removes the property change listener pcl from this Form's 
+   *  Removes the property change listener pcl from this Form's
    *  PropertyChangeSupport propBind variable.
    */
-  public void removePropertyChangeListener(PropertyChangeListener pcl)
-  {
-    if(propBind != null)
-      propBind.removePropertyChangeListener(pcl);
+  public void removePropertyChangeListener( PropertyChangeListener pcl ) {
+    if( propBind != null ) {
+      propBind.removePropertyChangeListener( pcl );
+    }
   }
 
   /**
    *  Utility method to fire property change events.
    */
-  protected void fireValueChangeEvent(int oldValue, int newValue)
-  {
-    if( propBind != null && oldValue != newValue )
-    propBind.firePropertyChange(PropChangeProgressBar.VALUE, 
-                                     oldValue, newValue);                     
+  protected void fireValueChangeEvent( int oldValue, int newValue ) {
+    if( ( propBind != null ) && ( oldValue != newValue ) ) {
+      propBind.firePropertyChange( 
+        PropChangeProgressBar.VALUE, oldValue, newValue );
+    }
   }
 }
