@@ -31,6 +31,23 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2004/05/27 14:22:56  dennis
+ *  No longer implements IObserver, and no longer adds itself as
+ *  an observer of the DataSets it has in it's list.  Making the
+ *  DataSetPG an observer of it's DataSets created circular references
+ *  between the DataSetPG and it's DataSets.  The circular references
+ *  created problems for the garbage collector and led to memory leaks.
+ *  Now, when a JParametersDialog box is popped up, a DataSetPG will get
+ *  a snapshot of the available DataSets that will be used as long as
+ *  that dialog box is active.  If a DataSet is deleted from the tree
+ *  while the dialog box is up, the user will still be able to choose
+ *  the DataSet deleted from the tree, until the dialog box is closed.
+ *  This will NOT lead to an invalid reference, since the DataSet will
+ *  continue to exist as long as the DataSetPG retains its reference to
+ *  it.  When the dialog is closed, any DataSets deleted from the tree
+ *  while the dialog was open can potentially be garbage collected, if
+ *  there are no other references to them.
+ *
  *  Revision 1.20  2004/05/21 22:02:01  dennis
  *  Fixed name of parameter in javadoc comment.
  *
@@ -98,19 +115,13 @@
  */
 package DataSetTools.parameter;
 
-import DataSetTools.components.ParametersGUI.HashEntry;
-
 import DataSetTools.dataset.*;
-
 import DataSetTools.util.SharedData;
-
-import gov.anl.ipns.Util.Messaging.IObserver;
-
 
 /**
  * Class to deal with lists of DataSets.
  */
-public class DataSetPG extends ChooserPG implements IObserver {
+public class DataSetPG extends ChooserPG {
   //~ Static fields/initializers ***********************************************
 
   private static String TYPE    = "DataSet";
@@ -206,7 +217,6 @@ public class DataSetPG extends ChooserPG implements IObserver {
     } else {
       if( val instanceof DataSet ) {
         super.addItem( val );
-        ( ( DataSet )val ).addIObserver( this );
       } else {
         throw new ClassCastException( val + " cannot be cast as a DataSet" );
       }
@@ -270,46 +280,6 @@ public class DataSetPG extends ChooserPG implements IObserver {
        fpg.initGUI(ds);
        fpg.showGUIPanel(0,y);
        y+=dy;*/
-  }
-
-  /**
-   * Required for IObserver implementation.
-   *
-   * @param observed The observed Object.
-   * @param reason The reason for the update-should be a String.
-   */
-  public void update( Object observed, Object reason ) {
-    if( !( reason instanceof String ) ) {
-      return;  // reason should be a string
-    }
-
-    if( !( IObserver.DESTROY.equals( ( String )reason ) ) ) {
-      return;  // must be a destroy event
-    }
-
-    if( !( observed instanceof DataSet ) ) {
-      return;  // must be a DataSet
-    }
-
-    this.vals.remove( observed );
-
-    // from GUI
-    if( this.getInitialized(  ) ) {
-      ( ( HashEntry )getEntryWidget(  ).getComponent( 0 ) ).removeItem( 
-        observed );
-    }
-
-    // from the value      
-    if( getValue(  ) == observed ) {
-      if( ( this.vals != null ) && ( this.vals.size(  ) > 0 ) ) {
-        setValue( this.vals.elementAt( 0 ) );  // set to first choice
-      } else {
-        setValue( DataSet.EMPTY_DATA_SET );  // or empty dataset
-      }
-    }
-
-    // stop listening
-    ( ( DataSet )observed ).deleteIObserver( this );
   }
 
   /**
