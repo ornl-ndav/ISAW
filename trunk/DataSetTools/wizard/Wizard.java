@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2003/04/28 16:17:58  pfpeterson
+ * Now recalls save/load filename. (Chris Bouzek)
+ *
  * Revision 1.16  2003/04/24 18:56:06  pfpeterson
  * Added functionality to save Wizards. (Chris Bouzek)
  *
@@ -108,8 +111,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import DataSetTools.util.*;
-import DataSetTools.parameter.IParameterGUI;
-import DataSetTools.parameter.ParameterViewer;
+import DataSetTools.parameter.*;
 import java.beans.*;
 import java.io.*;
 import DataSetTools.dataset.DataSet;
@@ -177,14 +179,12 @@ public abstract class Wizard implements PropertyChangeListener{
     private JProgressBar progress;
     private JMenu        view_menu;
     private CommandHandler command_handler;
-    
-    //-----------------------------------
-    protected boolean modified = false;
+    private boolean modified = false;
     private JFrame save_frame;
     private JFileChooser fileChooser;
     private ObjectOutputStream  output;
     private ObjectInputStream input;
-    //-----------------------------------
+    private File save_file;
 
     /**
      * The legacy constructor
@@ -210,25 +210,24 @@ public abstract class Wizard implements PropertyChangeListener{
         form_label  = new JLabel(" ",SwingConstants.CENTER);
         progress    = new JProgressBar();
         command_handler = new CommandHandler(this);
-
-        //-----------------------------------
         save_frame = new JFrame("Save Form as...");
-        //-----------------------------------
     }
 
-    //-----------------------------------
     /**
      *  Opens a file for input or output.
      *  
      *  @param saving  A boolean indicating whether you want to open the
      *                 file for saving (true) or loading (false)                      
      */
-    private File openFile(boolean saving)
+    private File getFile(boolean saving)
     {
       int result;
       JFileChooser fileChooser = new JFileChooser();
       fileChooser.setFileSelectionMode(
         JFileChooser.FILES_ONLY);
+
+      if((save_file !=null) && !save_file.toString().equals(""))
+        fileChooser.setSelectedFile(save_file);
 
       if(saving)
         result = fileChooser.showSaveDialog(save_frame);
@@ -239,6 +238,7 @@ public abstract class Wizard implements PropertyChangeListener{
         return null;
 
       File opened_file = fileChooser.getSelectedFile();
+      save_file = opened_file;
 
       if(saving && opened_file.exists())
       {
@@ -305,20 +305,17 @@ public abstract class Wizard implements PropertyChangeListener{
       Form f;
       String temp;
       IParameterGUI ipg;
+      FileWriter fw = null;
+
       try
       {
-        FileWriter fw = new FileWriter(file);
+        fw = new FileWriter(file);
         for(int i = 0; i < conc_forms.size(); i++)
         {
           s.append("<Form number=");
           s.append(i);
           s.append(">\n");
 
-          /* The I/O for the save() and load() is written
-             to use \n as a delimiter.  If you change it,
-             you must also change the method of reading
-             in convertXMLtoParameters.
-          */
           f = (Form)conc_forms.elementAt(i);
           for(int j = 0; j < f.getNum_parameters(); j++)
           {
@@ -326,18 +323,17 @@ public abstract class Wizard implements PropertyChangeListener{
             s.append("<");
             s.append(ipg.getType());
             s.append(">\n");
-            s.append("<Name>\n");
+            s.append("<Name>");
             s.append(ipg.getName());
-            s.append("\n");
             s.append("</Name>\n");
-            s.append("<Value>\n");
+            s.append("<Value>");
             temp = ipg.getValue().toString();
             if((temp == null) || (temp.equals("")))
-              s.append("emptyString\n");
+              s.append("emptyString");
             else
             {
               s.append(temp);
-              s.append("\n");
+              s.append("");
             }
             s.append("</Value>\n");
             s.append("</");
@@ -346,23 +342,31 @@ public abstract class Wizard implements PropertyChangeListener{
           }
           s.append("</Form>\n");
         }
-        /*output = new ObjectOutputStream(
-                  new FileOutputStream(file));
-
-        output.writeObject(conc_forms);
-
-        output.flush();*/
         fw.write(s.toString());
-        fw.close();
-        modified = false;
       }
-      catch(Exception e)
+      catch(IOException e)
       {
         e.printStackTrace();
         JOptionPane.showMessageDialog(save_frame,
           "Error saving file.  Please rerun the wizard and try again.",
           "ERROR",
           JOptionPane.ERROR_MESSAGE); 
+      }
+      finally
+      {
+        if(fw != null)
+        {
+          try
+          {
+            fw.close();
+            modified = false;
+            
+          }
+          catch(IOException e)
+          {
+            //let it drop on the floor
+          }
+        }
       }
     }
 
@@ -372,14 +376,14 @@ public abstract class Wizard implements PropertyChangeListener{
      */
     private void loadForms(File file)
     {
-      //Vector loadedforms = null;
       char ca;
       StringBuffer s = new StringBuffer();
       int good = -1;
+      FileReader fr = null;
 
       try
       {
-        FileReader fr = new FileReader(file);
+        fr = new FileReader(file);
 
         good = fr.read();
 
@@ -391,13 +395,8 @@ public abstract class Wizard implements PropertyChangeListener{
         }
 
         convertXMLtoParameters(s);
-        fr.close();
-        /*input = new ObjectInputStream(
-                  new FileInputStream(file));
-        Vector loadedforms = (Vector)input.readObject();*/
-        //return loadedforms;
       }
-      catch(Exception e)
+      catch(IOException e)
       {
         e.printStackTrace();
         JOptionPane.showMessageDialog(save_frame,
@@ -405,6 +404,22 @@ public abstract class Wizard implements PropertyChangeListener{
           "ERROR",
           JOptionPane.ERROR_MESSAGE);
       }
+      finally
+      {
+        if(fr != null)
+        {
+          try
+          {
+            fr.close();
+            modified = false;
+          }
+          catch(IOException e)
+          {
+            //let it drop on the floor
+          }
+        }
+      }
+        
     }
 
     /**
@@ -417,40 +432,38 @@ public abstract class Wizard implements PropertyChangeListener{
      */
     private void convertXMLtoParameters(StringBuffer s)
     {
-      String x = s.toString();
-      StringBuffer f = new StringBuffer();
+      String x = s.toString(), token_string;
+      StringBuffer f = new StringBuffer(), temp = new StringBuffer();
       StringTokenizer st;
       int rightbracket, leftbracket, index, num_params;
       Form cur_form;
       IParameterGUI ipg;
 
-      //trim the string to remove all <> stuff
+      //trim up the newline characters
+      st = new StringTokenizer(x, "\n");
+      while(st.hasMoreTokens())
+        temp.append(st.nextToken());
+      x = temp.toString();
 
+      //trim the string to remove all <> stuff
       rightbracket = x.indexOf('>');
       leftbracket = x.indexOf('<');
 
-      while( (rightbracket >= 0) )
+      while( (rightbracket >= 0) && (leftbracket >=0) )
       {
-        if(leftbracket <=1)
-        {
-          //kill the <Form=xx> substring and/or the <name/value> substring
-          x = x.substring(rightbracket + 1, x.length());
-        }
-        else
+        if(leftbracket >= 1)
         {
           //found something useful.  Keep it.
-          f.append(x.substring(0, leftbracket));
-          x = x.substring(rightbracket + 1, x.length());
-        }  
+          f.append((x.substring(0, leftbracket)).trim());
+          f.append(";");
+        }
+
+        x = x.substring(rightbracket + 1, x.length());
         rightbracket = x.indexOf('>');
         leftbracket = x.indexOf('<');
       }
       x = f.toString();
-
-      //the token delimiter relies on the way the 
-      //file is written.  To change it, you must
-      //also change the way the file is written.
-      st = new StringTokenizer(x, "\n");
+      st = new StringTokenizer(x, ";");
 
       for( int j = 0; j < this.getNumForms(); j ++)
       {
@@ -461,7 +474,13 @@ public abstract class Wizard implements PropertyChangeListener{
         {
           ipg = (IParameterGUI)(cur_form.getParameter(index));
           if(ipg.getName().equals(st.nextToken()));
-          ipg.setValue(st.nextToken());
+          {
+            token_string = st.nextToken();
+            //catch the case where user entered no value
+            if(!token_string.equals("emptyString"))
+              if(!(ipg instanceof ArrayPG))  //don't enter a value for ArrayPGs
+                ipg.setValue(token_string);
+          }
           index++;
         }
       }
@@ -475,13 +494,11 @@ public abstract class Wizard implements PropertyChangeListener{
       Vector loadedforms;
       File f;
       Form temp;
-      f = openFile(false);
+      f = getFile(false);
 
       if( f == null ) return false;
 
       loadForms(f);
-      //closeFile(output);
-      //forms = loadedforms;
       showForm(0);
       return true;
     }
@@ -496,13 +513,11 @@ public abstract class Wizard implements PropertyChangeListener{
       File file;
       if(modified)
       {
-        file = openFile(true);
+        file = getFile(true);
 
         if( file == null ) return;
 
         writeForms(forms, file);
-        
-      //  closeFile(input);
       }
     }
 
@@ -511,11 +526,18 @@ public abstract class Wizard implements PropertyChangeListener{
      */
     public void close()
     {
+      int save_me = 1;
       if(modified)
-        save();
+      {
+       save_me = JOptionPane.showConfirmDialog(null, 
+                   "Would you like to save your changes?",
+                   "Would you like to save your changes?",
+                    JOptionPane.YES_NO_OPTION);
+        if(save_me == 0)
+          save();
+      }
       System.exit(0);
     }
-    //-----------------------------------
 
     public int getNumForms()
     {
