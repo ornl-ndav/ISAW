@@ -1,10 +1,36 @@
 /*
- * Created on Mar 9, 2004
+ * File:  RemoveInterfaceGUI.java
  *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * Copyright (C) 2004 Dominic Kramer
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Dominic Kramer <kramerd@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA and by
+ * the National Science Foundation under grant number DMR-0218882.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
  */
-package devTools.Hawk.classDescriptor.gui.frame;
+ package devTools.Hawk.classDescriptor.gui.frame;
 
 import java.awt.Component;
 import java.awt.Font;
@@ -35,15 +61,27 @@ import devTools.Hawk.classDescriptor.modeledObjects.Project;
 import devTools.Hawk.classDescriptor.tools.InterfaceUtilities;
 
 /**
- * 
+ * Currently displays a JTree with custom fonts, icons, and tooltips.  It will be extended to allow the user 
+ * to remove interface objects from a Project.  This class is under construction.
  * @author Dominic Kramer
  */
 public class RemoveInterfaceGUI extends JFrame implements ActionListener, TreeSelectionListener
 {
+	/** The tree used. */
 	protected JTree tree;
+	/** The model used to describe the tree. */
 	protected DefaultTreeModel model;
+	/** The Project whose Interface objects are added to the tree. */
 	protected Project project;
 	
+	/**
+	 * Creates a RemoveInterfaceGUI.
+	 * @param pro The Project whose Interface objects are to be added to the tree.
+	 * @param packageShortJava True if package names are to be shortened if they are java names.
+	 * @param packageShortOther True if package names are to be shortened if they are non-java names.
+	 * @param classShortJava True if class names are to be shortened if they are java names.
+	 * @param classShortOther True if class names are to be shortened if they are non-java names.
+	 */
 	public RemoveInterfaceGUI(Project pro, boolean packageShortJava, boolean packageShortOther, boolean classShortJava, boolean classShortOther)
 	{
 		project = pro;
@@ -53,7 +91,8 @@ public class RemoveInterfaceGUI extends JFrame implements ActionListener, TreeSe
 		model = new DefaultTreeModel(rootNode);
 		tree = new JTree(model);
 		tree.setCellRenderer(new PackageRenderer());
-		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+		tree.addTreeSelectionListener(this);
 //		tree.putClientProperty("JTree.lineStyle","None");
 		ToolTipManager.sharedInstance().registerComponent(tree);
 		fillTree(rootNode,packageShortJava,packageShortOther,classShortJava,classShortOther);
@@ -76,6 +115,14 @@ public class RemoveInterfaceGUI extends JFrame implements ActionListener, TreeSe
 			,JOptionPane.INFORMATION_MESSAGE);
 	}
 	
+	/**
+	 * Places the Interface objects from the Project specified by the field project into the tree.
+	 * @param root The root of the tree.
+	 * @param packageShortJava True if package names are to be shortened if they are java names.
+	 * @param packageShortOther True if package names are to be shortened if they are non-java names.
+	 * @param classShortJava True if class names are to be shortened if they are java names.
+	 * @param classShortOther True if class names are to be shortened if they are non-java names.
+	 */	
 	public void fillTree(DefaultMutableTreeNode root, boolean packageShortJava, boolean packageShortOther, boolean classShortJava, boolean classShortOther)
 	{
 		Vector packageVec = InterfaceUtilities.getVectorOfVectorOfInterfaces(project.getInterfaceVec(), packageShortJava, packageShortOther, classShortJava, classShortOther);
@@ -95,6 +142,11 @@ public class RemoveInterfaceGUI extends JFrame implements ActionListener, TreeSe
 		model.reload();
 	}
 	
+	/**
+	 * Gets an ImageIcon holding the icon from the location specified by "location."
+	 * @param location The location of the icon.
+	 * @return An ImageIcon holding the icon or null if the icon could not be found.
+	 */
 	public ImageIcon getImageIcon(String location)
 	{
 		URL imageURL = ClassLoader.getSystemClassLoader().getResource(location);
@@ -105,16 +157,37 @@ public class RemoveInterfaceGUI extends JFrame implements ActionListener, TreeSe
 		return icon;
 	}
 	
+	/**
+	 * Handles action events.
+	 */
 	public void actionPerformed(ActionEvent e)
 	{
 	}
 	
+	/**
+	 * Handles tree selection events.
+	 */
 	public void valueChanged(TreeSelectionEvent event)
 	{
+		TreePath[] pathArr = event.getPaths();
+		Object ob = new Object();
+		for (int i=0; i<pathArr.length; i++)
+		{
+			ob = ((DefaultMutableTreeNode)pathArr[i].getLastPathComponent()).getUserObject();
+			System.out.println("i="+i);
+			System.out.println("    ob.getClass().getName()="+ob.getClass().getName());
+		}
 	}
 	
+	/**
+	 * Class which handles rendering the tree (giving it custom fonts, icons, and tooltips etc.).
+	 * @author Dominic Kramer
+	 */
 	public class PackageRenderer extends DefaultTreeCellRenderer
 	{
+		/**
+		 * Gets the custom component to add to the tree.
+		 */
 		public Component getTreeCellRendererComponent(JTree tree, Object ob, boolean isSelected, boolean isExpanded, boolean isLeaf, int rowNum, boolean isFocused)
 		{
 			super.getTreeCellRendererComponent(tree,ob,isSelected,isExpanded,isLeaf,rowNum,isFocused);
@@ -173,6 +246,10 @@ public class RemoveInterfaceGUI extends JFrame implements ActionListener, TreeSe
 		}
 	}
 	
+	/**
+	 * Specialized class used to place Interface objects into the tree and alter the text displayed in the tree.
+	 * @author Dominic Kramer
+	 */
 	public class InterfaceTreeNode
 	{
 		protected boolean shortenJava;
@@ -204,6 +281,10 @@ public class RemoveInterfaceGUI extends JFrame implements ActionListener, TreeSe
 		}
 	}
 	
+	/**
+	 * Specialized class used to place String objects into the tree and alter the text displayed in the tree.
+	 * @author Dominic Kramer
+	 */
 	public class PackageNameTreeNode
 	{
 		protected boolean shortenJava;
