@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.41  2003/10/15 02:30:44  bouzekc
+ *  Updated to correspond with correct spelling of reflectometer in IPNS
+ *  files.
+ *
  *  Revision 1.40  2003/09/20 19:14:58  dennis
  *  Added SumByAttributeNormSA() operator to DG_Spectrometer
  *  DataSets. (Alok)
@@ -340,7 +344,7 @@ public class DataSetFactory implements Serializable
    *                          InstrumentType.TOF_SAD
    *                          InstrumentType.TOF_DG_SPECTROMETER
    *                          InstrumentType.TOF_IDG_SPECTROMETER
-   *                          InstrumentType.TOF_REFLECTROMETER
+   *                          InstrumentType.TOF_REFLECTOMETER
    *
    * @return An empty DataSet with operators appropriate to a time-of-flight
    *         DataSet for the specified instrument type. 
@@ -401,12 +405,13 @@ public class DataSetFactory implements Serializable
    *
    * @param  instrument_type  Code for the type of instrument for which
    *                          the DataSet is to be configured.  The codes
-   *                          are in DataSetTools/instrument/InstrumentType.java   *                          InstrumentType.TOF_DIFFRACTOMETER
+   *                          are in DataSetTools/instrument/InstrumentType.java   
+   *                          InstrumentType.TOF_DIFFRACTOMETER
    *                          InstrumentType.TOF_SCD
    *                          InstrumentType.TOF_SAD
    *                          InstrumentType.TOF_DG_SPECTROMETER
    *                          InstrumentType.TOF_IDG_SPECTROMETER
-   *                          InstrumentType.TOF_REFLECTROMETER
+   *                          InstrumentType.TOF_REFLECTOMETER
    */
   static public void addOperators( DataSet ds, int instrument_type )
   {
@@ -457,7 +462,7 @@ public class DataSetFactory implements Serializable
                                                          // when IDG_S properly
       ds.addOperator( new TrueAngle() );                 // supported  
     }
-    else if ( instrument_type == InstrumentType.TOF_REFLECTROMETER )
+    else if ( instrument_type == InstrumentType.TOF_REFLECTOMETER )
     {                                                    // will be different
                                                          // when REFLT properly
       ds.addOperator( new TrueAngle() );                 // supported  
@@ -482,7 +487,7 @@ public class DataSetFactory implements Serializable
    *                          InstrumentType.TOF_SAD
    *                          InstrumentType.TOF_DG_SPECTROMETER
    *                          InstrumentType.TOF_IDG_SPECTROMETER
-   *                          InstrumentType.TOF_REFLECTROMETER
+   *                          InstrumentType.TOF_REFLECTOMETER
    */
   static public void addMonitorOperators( DataSet ds, int instrument_type )
   {
