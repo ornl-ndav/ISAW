@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2004/06/18 19:30:50  rmikk
+ * Eliminated an unused variable p
+ *
  * Revision 1.8  2004/04/21 22:34:57  bouzekc
  * Now retrieves the PREFERRED_BROWSER from IsawProps.dat under *NIX systems.
  * Defaults to Netscape if this tag is not found.
@@ -91,7 +94,8 @@ or
                 }
                 cmd = WIN_PATH + " " + WIN_FLAG + " " + url;
                 if(DEBUG) System.out.println("CMD="+cmd);
-                Process p = Runtime.getRuntime().exec(cmd);
+                //Process p = 
+                Runtime.getRuntime().exec(cmd);
             }
             else
             {
