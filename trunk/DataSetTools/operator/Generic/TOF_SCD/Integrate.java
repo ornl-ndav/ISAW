@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/03/26 16:29:37  pfpeterson
+ * Fixed background calculation. Small code reorganization for improved
+ * log writting.
+ *
  * Revision 1.11  2003/03/25 22:36:34  pfpeterson
  * Corrected a spelling error.
  *
@@ -577,8 +581,10 @@ public class Integrate extends GenericTOF_SCD{
     }
 
     float[][] IsigI=new float[zrange.length][2];
+    float Itot=0f;
+    float dItot=0f;
 
-    // integrate each time slice
+    // integrate each time slice and add (if appropriate)
     for( int k=0 ; k<zrange.length ; k++ ){
       if(zrange[k]<minZrange  || zrange[k]>maxZrange)
         continue;
@@ -591,30 +597,38 @@ public class Integrate extends GenericTOF_SCD{
         IsigI[k][0]=tempIsigI[0];
         IsigI[k][1]=tempIsigI[1];
         if(log!=null) log.append(" "+formatFloat(tempIsigI[0]/tempIsigI[1])
-                                 +"      Yes\n");
+                                 +"      ");
       }else{
-        if(log!=null) log.append(" "+formatFloat(0f)+"      No\n");
-        if(k==0)  // if this is the peak's time slice then something
-          return; // is wrong and we should just return
+        if(log!=null) log.append(" "+formatFloat(0f)+"      ");
+        if(k==0){  // if this is the peak's time slice then something
+                   // is wrong and we should just return
+          if(log!=null) log.append("No\n");
+          return;
+        }
         if(zrange[k]<zrange[0])
           minZrange=zrange[k];
         else if(zrange[k]>zrange[0])
           maxZrange=zrange[k];
       }
-    }
-    
-    // sum up everything
-    float Itot=IsigI[0][0];
-    float dItot=IsigI[0][1];
-    for( int i=1 ; i<zrange.length ; i++ ){
-      if( compItoDI(Itot,dItot,IsigI[i][0],IsigI[i][1]) ){
-        Itot=Itot+IsigI[i][0];
-        dItot=(float)Math.sqrt(dItot*dItot+IsigI[i][1]*IsigI[i][1]);
+      if(k==0){
+        if(log!=null) log.append("Yes\n");
+        Itot=IsigI[k][0];
+        dItot=IsigI[k][1];
       }else{
-        if(i>=3) i=zrange.length;
+        if( compItoDI(Itot,dItot,IsigI[k][0],IsigI[k][1]) ){
+          if(log!=null) log.append("Yes\n");
+          Itot=Itot+IsigI[k][0];
+          dItot=(float)Math.sqrt(dItot*dItot+IsigI[k][1]*IsigI[k][1]);
+        }else{
+          if(log!=null) log.append("No\n");
+          if(zrange[k]<zrange[0])
+            minZrange=zrange[k];
+          else if(zrange[k]>zrange[0])
+            maxZrange=zrange[k];
+        }
       }
     }
-
+    
     if(log!=null){
       log.append("***** Final       Ihkl = "+formatFloat(Itot)+"       sigI = "
                  +formatFloat(dItot)+"       I/sigI = ");
@@ -720,8 +734,10 @@ public class Integrate extends GenericTOF_SCD{
     int ibxmax=maxX+1;
     int ibymin=minY-1;
     int ibymax=maxY+1;
-    float stob=((float)(maxX-minX+1)*(maxY-minY+1))
-      /((float)(ibxmax-ibxmin+1)*(ibymax-ibymin+1));
+
+    float isigtot = (float)((maxX-minX+1)*(maxY-minY+1));
+    float ibktot  = (float)((ibxmax-ibxmin+1)*(ibymax-ibymin+1)-isigtot);
+    float stob    = isigtot/ibktot;
 
     float ibtot=0f;
     float istot=0f;
