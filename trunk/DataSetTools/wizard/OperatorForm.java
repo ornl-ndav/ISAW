@@ -64,6 +64,7 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
   {
     super("Operator Form");   
     this.result_param=null;
+    this.setDefaultParameters();
   } 
 
   /**
@@ -106,10 +107,16 @@ public class OperatorForm extends Form implements Serializable, HiddenOperator{
      Object result=form_op.getResult();
      if(result instanceof ErrorString){
        this.result_param.setValue(null);
-       SharedData.addmsg(result);
+       SharedData.addmsg("ERROR: " + result);
        return Boolean.FALSE;
      }
      this.result_param.setValue(result);
+     SharedData.addmsg("Success!\n" + result.toString());
+
+     //validate the parameters...if we got this far, assume
+     //that our parameters were OK.
+     for(int i = 0; i < getNum_parameters(); i++ )
+       ((IParameterGUI)getParameter(i)).setValid(true);
      return result;
    } 
 
