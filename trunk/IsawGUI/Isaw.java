@@ -70,7 +70,7 @@ public class Isaw extends JFrame implements Serializable, IObserver
     TreeSelectionModel selectionModel;
     Util util;
     CommandPane cp;
-    MyInternalFrame internalframe;
+   // MyInternalFrame internalframe;
 
     Properties isawProp;
     Object Script_Path, Data_Directory, Help_Directory, Default_Instrument, Instrument_Macro_Path, 
