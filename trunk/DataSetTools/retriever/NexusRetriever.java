@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/09/11 18:33:45  rmikk
+ * Caught some errors in the underlying jnexus system
+ *
  * Revision 1.8  2002/11/27 23:23:16  pfpeterson
  * standardized header
  *
@@ -67,6 +70,10 @@ public class NexusRetriever extends Retriever
           return;
          }
      ext = new ExtGetDS( node, dataSourceName ) ;
+     errormessage = ext.getErrorMessage();
+     if( errormessage != null)
+       if( errormessage.length() > 0)
+          ext = null;
     }
 
     /** 
