@@ -1,7 +1,7 @@
 /*
  * File:  gsas_filemaker.java
  *
- * Copyright (C) 1999, Dongfeng Chen 
+ * Copyright (C) 1999, Dongfeng Chen, Ruth Mikkelson, Alok Chatterjee 
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2001/06/08 23:24:25  chatter
+ *  Fixed GSAS write file for SEPD
+ *
  *  Revision 1.2  2001/04/25 19:26:07  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -53,56 +56,53 @@ import java.text.*;
 
 public class gsas_filemaker
 {                      
-    
+   
     public gsas_filemaker(){};
-
-    public static void gsasfilemaker( DataSet ds, String filename){
+   
+    public gsas_filemaker( DataSet ds, String filename){
   
-    File f= new File(filename +".dat");
+    File f= new File(filename);
     try{
         FileOutputStream op= new FileOutputStream(f);
         OutputStreamWriter opw = new OutputStreamWriter(op);
-         System.out.println("the file name is " +filename);
-         opw.write(ds.getTitle()+"                                                         \n");
+         System.out.println("the file name isx " +filename);
+         String S = ds.getTitle();
+        // opw.write("#" + "     BANK" + "    Ref Angle" + "     Total length");
+        // opw.write("\n");
+         for (int j = ds.getTitle().length(); j<80; j++)
+             S = S +" ";
+         System.out.println("filename length="+S.length());
+         opw.write( S +"\n");
          int en= ds.getNum_entries();
          int bank=0;
-         float [] step={5.0000000f,8.0000000f,10.0000000f};
-         for(int i=1; i<en; i+=2)
+        
+         for(int i=1; i<=en; i++)
         {
-            DecimalFormat df=new DecimalFormat("00000");
-            DecimalFormat dff=new DecimalFormat("00.0000000");
+            DecimalFormat df=new DecimalFormat(  "000000");
+            DecimalFormat dff=new DecimalFormat( "00.0000000");
+            DecimalFormat dff1 =new DecimalFormat("000000.0000000");
+            float [] y = ds.getData_entry(i-1).getCopyOfY_values();
             
-            float [] y = ds.getData_entry(i).getCopyOfY_values();
-            float [] yadd = ds.getData_entry(i+1).getCopyOfY_values();
-            bank++;
-//            String
-            if(bank==1){
-            opw.write("BANK       "+df.format(bank)+"       "+ df.format(y.length+1)+"       "+
-                      df.format(y.length/10+1)+" CONST   3000.0000000      5.0000000    \n");
-            }
-            else if (bank==2){
-            opw.write("BANK       "+df.format(bank)+"       "+ df.format(y.length+1)+"       "+
-                      df.format(y.length/10+1)+" CONST   3000.0000000      8.0000000    \n");
-            }
-            else if (bank==3){
-            opw.write("BANK       "+df.format(bank)+"       "+ df.format(y.length+1)+"       "+
-                      df.format(y.length/10+1)+" CONST   3000.0000000     10.0000000    \n");
-            }
-            
-            
+            DataSetTools.dataset.Data dd = ds.getData_entry(i-1);
+            DataSetTools.dataset.XScale xx = dd.getX_scale();
+            if(i==1)
+            System.out.println("dat="+i+","+xx.getEnd_x()+","+xx.getStart_x()+","+xx.getNum_x());
+            float binwidth = (xx.getEnd_x()-xx.getStart_x())/((float)xx.getNum_x() - 1);
+            opw.write("BANK   "+df.format( i )+"    "+ df.format(y.length)+"     "+
+                      df.format((int)(y.length/10.0+0.9))+" CONST  "+dff1.format(xx.getStart_x())+
+         "          "+dff.format(binwidth)+"    \n");
+         
+            System.out.println("last y ="+ y[y.length-1]);
             loop:for(int j=0; j<y.length; j+=10)
             {
-                  for(int l=j; l<j+10; l++){
-                  if(l==y.length) 
-                  {     
-                    opw.write("   00000\n");
-                    break loop;               
-                  }
-                  System.out.println( y[l]+yadd[l]);
-
-                  // NumberFormat nf = new NumberFormat("####0");
-
-                  opw.write("   "+df.format(y[l]+yadd[l]));
+                  for(int l=j+0; l<j+10; l++)
+                   {
+                      if(l>=y.length)  
+                       {    
+                        opw.write("        ");                
+                        }
+                      else 
+                        opw.write("  "+df.format(y[l]));
                   }
                   opw.write("\n");
                   
