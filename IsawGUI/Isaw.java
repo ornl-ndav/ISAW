@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.194  2004/03/22 20:45:40  dennis
+ *  Changed version to 1.7.0
+ *
  *  Revision 1.193  2004/03/19 17:15:57  dennis
  *  Created "anonymous" SplashPane to remove unused variable
  *
@@ -707,7 +710,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.7.0 alpha 1";
+          version="1.7.0";
         else
           version=SharedData.VERSION;
 
