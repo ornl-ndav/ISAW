@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/11/24 00:02:58  rmikk
+ * Eliminated some debugging prints
+ * If there is only one NXdetector, it is matched with all NXdata
+ *
  * Revision 1.9  2002/11/27 23:28:17  pfpeterson
  * standardized header
  *
@@ -198,8 +202,6 @@ public class NxInstrument{
     for( int i = 0; i< k.length; i++){
       Vector V =(Vector) DetectorInf.get( k[i]);
       NxNode nd =(NxNode) V.elementAt(0);
-      System.out.println(k[i]+"::("+nd.getNodeName()+","+nd.getNodeClass()
-                         +"),"+V.elementAt(1)+","+V.elementAt(2));
     }
   }
 
@@ -227,13 +229,16 @@ public class NxInstrument{
       return null;
 
     errormessage = "";
-
+    NxNode lastNxDetNode = null;
+    int NumNxDetectorNodes =0;
     for( int i = 0; i < instrNode.getNChildNodes(); i++ ){
       NxNode nx = instrNode.getChildNode( i );
       
       if( nx == null )
         errormessage += ";improper Instr Child" + i;
       else if( nx.getNodeClass().equals( "NXdetector" ) ){
+        NumNxDetectorNodes++;
+        lastNxDetNode = nx;
         ax1 = ax2 = 0;
         for( int j=0; (j<nx.getNChildNodes()) && (ax1>=0) && (ax2 >= 0); j++ ){
           NxNode n1 = nx.getChildNode( j );
@@ -274,7 +279,10 @@ public class NxInstrument{
         // if( nDef == null)nDef= nx; if no match use first
       }//else if child a detector node
     }//for i
-    return null;//nDef;
+    if( NumNxDetectorNodes == 1)
+       return lastNxDetNode;
+    else
+       return null;//nDef;
   }//matchNode
 
   /**
