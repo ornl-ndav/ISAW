@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2001/08/14 16:17:14  rmikk
+ *  The Dialog Box in now NOT modal
+ *
  *  Revision 1.14  2001/08/13 14:37:11  rmikk
  *  Increased size for operators with zero parameters.
  *  The first line under the title bar has the command name
@@ -122,7 +125,7 @@ public class JParametersDialog implements Serializable,
         this.ds_src = ds_src;
         this.sessionLog = sessionLog;    
         this.io = io;
-        opDialog = new JDialog( new JFrame(), op.getTitle(), true );
+        opDialog = new JDialog( new JFrame(), op.getTitle(), false );
         //opDialog.addComponentListener( new MyComponentListener());       
         int Size = 0 ;
         int Size1 = 0;
