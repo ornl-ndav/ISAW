@@ -27,6 +27,11 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.9  2005/01/02 17:58:04  rmikk
+ * Added a method to getFileName
+ * Changed copy constructor to just use just the filename of the old 
+ *    PyScriptOperator
+ *
  * Revision 1.8  2004/05/12 02:00:30  bouzekc
  * Added code to reformat and display Python error messages.  Some errors
  * are still not caught-some class using this one is reformatting them on its
@@ -134,8 +139,7 @@ public class PyScriptOperator extends GenericOperator
    */
   public PyScriptOperator( PyScriptOperator oldPSO ) {
     //set the filename and init the Operator
-    this( oldPSO.toString(  ) );
-
+    this( oldPSO.getFileName() );
     Object tempVal = null;
 
     //get the old parameters and set the new ones the same
@@ -204,6 +208,13 @@ public class PyScriptOperator extends GenericOperator
     return sDocs;
   }
 
+  /**
+   * Returns the filename for this operator
+   * @return  the filename for this script
+   */
+  public String getFileName(){
+     return scriptFile;
+  }
   /**
    * Accessor method to get the internal DataSet array.
    *
