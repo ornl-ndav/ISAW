@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2001/06/26 14:42:33  rmikk
+ * -Changed DataSetListHandler to IDataSetListHandler
+ * -Removed references to the session log
+ *
  * Revision 1.6  2001/06/07 19:01:43  rmikk
  * Added a Test to catch parameters with null values.
  *
@@ -81,7 +85,7 @@ public class ScriptProcessor  extends GenericOperator
                           implements  
 				      PropertyChangeListener , 
                                       IObservable ,  IObserver,
-                                      DataSetListHandler
+                                      IDataSetListHandler
 {    
   
  //***********************SECTION GUI****************
@@ -247,16 +251,17 @@ public class ScriptProcessor  extends GenericOperator
       {int line ; 
        Element E ; 
        if( Doc == null ) return ;      
-       if( MacroDocument == null)
-          new IsawGUI.Util().appendDoc( logDocument , "#$ Start Program Run");
-       else
-          new IsawGUI.Util().appendDoc(logDocument , "#$ Start Macro Run");
+       // if( MacroDocument == null)
+       //    new IsawGUI.Util().appendDoc( logDocument , "#$ Start Program Run");
+       // else
+       //    new IsawGUI.Util().appendDoc(logDocument , "#$ Start Macro Run");
 
        E = Doc.getDefaultRootElement() ; 
-       for( line = 0 ; line < E.getElementCount(); line ++)
+       /* for( line = 0 ; line < E.getElementCount(); line ++)
          { String S = getLine( Doc , line);
            new IsawGUI.Util().appendDoc(logDocument , S);
          }
+       */
        ExecLine.initt() ; 
       
 
@@ -274,11 +279,11 @@ public class ScriptProcessor  extends GenericOperator
               }
        
 
-       if( MacroDocument == null)
+       /*  if( MacroDocument == null)
 	  new IsawGUI.Util().appendDoc( logDocument , "#$ End Program Run");
        else
           new IsawGUI.Util().appendDoc(logDocument , "#$ End Macro Run");        
-      
+       */
          
     }
 
@@ -322,7 +327,7 @@ public class ScriptProcessor  extends GenericOperator
        }
       int k =lerror; 
       if( perror < 0)
-        { new IsawGUI.Util().appendDoc(logDocument , "#$ Start Macro Run");
+	  { //new IsawGUI.Util().appendDoc(logDocument , "#$ Start Macro Run");
           S="(";
           int line;
           if( Args != null)
@@ -331,16 +336,16 @@ public class ScriptProcessor  extends GenericOperator
               if( i+1 < Args.length) S = S+",";
              }
            S = S + ")";
-          new IsawGUI.Util().appendDoc(logDocument , "Args ="+S);
+	   //new IsawGUI.Util().appendDoc(logDocument , "Args ="+S);
 
           Element E = MacroDocument.getDefaultRootElement() ; 
-          for( line = 0 ; line < E.getElementCount(); line ++)
+	  /* for( line = 0 ; line < E.getElementCount(); line ++)
              { S = getLine( MacroDocument , line);
                 new IsawGUI.Util().appendDoc(logDocument , S);
               }
-
+	  */
           k = executeBlock( MacroDocument ,2 ,true ,0) ;
-          new IsawGUI.Util().appendDoc(logDocument , "#$ End Macro Run");
+          //new IsawGUI.Util().appendDoc(logDocument , "#$ End Macro Run");
          }
 
      //for(i = 0 ; i < (vnames.size()/2) ; i++)
@@ -1486,7 +1491,7 @@ public Object getResult()
        }// for i=0 to Num_parameters
       int k =lerror; 
       if( perror < 0)
-        { new IsawGUI.Util().appendDoc(logDocument , "#$ Start Macro Run");
+	  { //new IsawGUI.Util().appendDoc(logDocument , "#$ Start Macro Run");
           S="(";
           int line;
           
@@ -1496,16 +1501,16 @@ public Object getResult()
                     S = S + "," ;
              }
            S = S + ")";
-          new IsawGUI.Util().appendDoc(logDocument , "Args ="+S);
+	   //new IsawGUI.Util().appendDoc(logDocument , "Args ="+S);
 
           Element E = MacroDocument.getDefaultRootElement() ; 
-          for( line = 0 ; line < E.getElementCount(); line ++)
+	  /*  for( line = 0 ; line < E.getElementCount(); line ++)
              { S = getLine( MacroDocument , line);
                 new IsawGUI.Util().appendDoc(logDocument , S);
               }
-
+	  */
           k = executeBlock( MacroDocument ,0 ,true ,0) ;
-          new IsawGUI.Util().appendDoc(logDocument , "#$ End Macro Run");
+          //new IsawGUI.Util().appendDoc(logDocument , "#$ End Macro Run");
          }
 
     
