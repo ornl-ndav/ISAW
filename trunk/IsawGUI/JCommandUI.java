@@ -74,7 +74,8 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
 
 
         Runtime rt = Runtime.getRuntime();         
-	    textArea = new JTextField("Total JVM Memory in bytes = "+ rt.totalMemory()+"\n"
+	    textArea = new JTextField("Build Date: unknown\n"
+                                     +"Total JVM Memory in bytes = "+ rt.totalMemory()+"\n"
 	                             +"Free JVM Memory in bytes = "+ rt.freeMemory()+"\n"
 	                             +"\n"
 	                             +"Java Version = "+ System.getProperty("java.version") +"\n"
@@ -102,7 +103,7 @@ public class JCommandUI  extends JPanel  implements IObserver, Serializable
      //   String tab_names [] = {"DataSet Log", "Session Log", "Detector Info", "System Properties", "CommandPane"};
         
        jtp = new JTabbedPane();
-        jtp.addTab("Properties Panel", pp);
+        jtp.addTab("Attributes", pp);
         jtp.addTab("DataSet Log", pane);
         jtp.addTab("Session Log", njsp);
         jtp.addTab("System Props", ta);
