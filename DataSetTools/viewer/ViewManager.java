@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2002/07/10 19:39:03  rmikk
+ *  Added code to incorporate the Contour View
+ *
  *  Revision 1.18  2002/02/22 20:37:11  pfpeterson
  *  Operator reorganization.
  *
@@ -150,6 +153,7 @@ import DataSetTools.viewer.Graph.*;
 import DataSetTools.viewer.Image.*;
 import DataSetTools.viewer.ThreeD.*;
 import DataSetTools.viewer.Table.*;
+import DataSetTools.viewer.Contour.*;
 import OverplotView.*;                      // import this for Kevin's viewer
 import DataSetTools.viewer.ViewerTemplate.*;
 import java.awt.*;
@@ -306,6 +310,8 @@ public class ViewManager extends    JFrame
 //        viewer = new ViewerTemplate( tempDataSet, state );     // Template  
       else if ( view_type.equals( TABLE ) )
         viewer = new TabView( tempDataSet, state ); 
+      else if ( view_type.equals( CONTOUR ) )
+        viewer = new ContourView( tempDataSet, state ); 
       else
       {
         System.out.println( "ERROR: Unsupported view type in ViewManager:" );
@@ -650,6 +656,10 @@ private void BuildViewMenu()
   view_menu.add( button );
 
   button = new JMenuItem( TABLE );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
+
+  button = new JMenuItem( CONTOUR );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 }
