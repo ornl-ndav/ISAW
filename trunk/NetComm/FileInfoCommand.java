@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/02/20 00:08:38  dennis
+ *  Added toString() method.
+ *
  *  Revision 1.1  2003/02/19 21:56:49  dennis
  *  Intial version of command objects for client/server communication.
  *
@@ -116,6 +119,18 @@ public class FileInfoCommand extends CommandObject
     return dir_name;
   }
 
+  /**
+   *  Get String form for the command, file name and directory.
+   *
+   *  @return a multiline String containing the command, file name and
+   *          directory name.
+   */
+  public String toString()
+  {
+    return super.toString() + '\n' +
+           "filename  = "   + filename + '\n' +
+           "directory = "   + dir_name;
+  }
 
  /* ---------------------------- readObject ------------------------------- */
  /**
