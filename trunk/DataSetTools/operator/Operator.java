@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2002/05/29 22:45:46  dennis
+ *  Uncommented some String definitions.
+ *
  *  Revision 1.14  2002/04/08 15:36:27  dennis
  *  Added categories for X, Y and XY Axis Information operators.
  *
@@ -164,19 +167,17 @@ abstract public class Operator implements Serializable
    public static final String        XY_AXIS_INFORMATION= "XY Axes Information";
    public static final String      SPECIAL              = "Special";
 
-// ####### NOTE: THESE SHOULD BE UN-COMMENTED WHEN A NEW RELEASE IS MADE
-//               WITH INCOMPATIBLE OBJECT SERIALIZATION 
-// public static final String  TOF_DIFFRACTOMETER      = "TOF Diffractometer"; 
-// public static final String  TOF_SCD                 = "TOF SCD"; 
-// public static final String  TOF_SAD                 = "TOF SAD";
-// public static final String  TOF_REFLECTOMETER       = "TOF Reflectometer";
-// public static final String  TOF_DG_SPECTROMETER     = "TOF DG Spectrometer";
-// public static final String  TOF_IDG_SPECTROMETER    = "TOF IDG Spectrometer";
-// public static final String  TRIPLE_AXIS_SPECTROMETER  = "Triple Axis";
-// public static final String  MONO_CHROM_DIFFRACTOMETER = "Mono Chrom Diff";
-// public static final String  MONO_CHROM_SCD            = "Mono Chrom SCD";
-// public static final String  MONO_CHROM_SAD            = "Mono Chrom SAD";
-// public static final String  MONO_CHROM_REFLECTOMETER  = "Mono Chrom REFLECT";
+   public static final String  TOF_DIFFRACTOMETER      = "TOF Diffractometer"; 
+   public static final String  TOF_SCD                 = "TOF SCD"; 
+   public static final String  TOF_SAD                 = "TOF SAD";
+   public static final String  TOF_REFLECTOMETER       = "TOF Reflectometer";
+   public static final String  TOF_DG_SPECTROMETER     = "TOF DG Spectrometer";
+   public static final String  TOF_IDG_SPECTROMETER    = "TOF IDG Spectrometer";
+   public static final String  TRIPLE_AXIS_SPECTROMETER  = "Triple Axis";
+   public static final String  MONO_CHROM_DIFFRACTOMETER = "Mono Chrom Diff";
+   public static final String  MONO_CHROM_SCD            = "Mono Chrom SCD";
+   public static final String  MONO_CHROM_SAD            = "Mono Chrom SAD";
+   public static final String  MONO_CHROM_REFLECTOMETER  = "Mono Chrom REFLECT";
 
    private   String    title;
    protected Vector    parameters;
