@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/01/24 22:00:06  bouzekc
+ *  Now inherits from StringField.
+ *
  *  Revision 1.6  2003/12/14 19:20:41  bouzekc
  *  Removed unused imports.
  *
@@ -52,146 +55,86 @@
  *
  *
  */
- 
 package DataSetTools.components.ParametersGUI;
 
-import javax.swing.*; 
-import javax.swing.text.*; 
-import java.awt.Toolkit;
-import java.beans.*;
-import DataSetTools.parameter.*;
-
 /**
- * This class is intended to be used as a replacement for JTextField
- * whan a integer value is to be entered. The major difference is an
- * overridden insertString method which beeps when something that
- * isn't found in an integer is entered.
+ * This class is intended to be used as a replacement for JTextField whan a
+ * integer value is to be entered. The major difference is an overridden
+ * insertString method which beeps when something that isn't found in an
+ * integer is entered.
  */
-public class IntegerField extends JTextField {
-    private transient Toolkit toolkit;
-    private PropertyChangeSupport propBind=new PropertyChangeSupport(this);
+public class IntegerField extends StringField {
+  //~ Static fields/initializers ***********************************************
 
-    private static Character MINUS =new Character((new String("-")).charAt(0));
-    private static Character ZERO  =new Character((new String("0")).charAt(0));
+  private static Character MINUS = new Character( 
+      ( new String( "-" ) ).charAt( 0 ) );
+  private static Character ZERO  = new Character( 
+      ( new String( "0" ) ).charAt( 0 ) );
 
-    /**
-     * Constructs an IntegerField with the appropriate number of
-     * columns and the default value of zero.
-     */
-    public IntegerField(int columns){
-        this(0,columns);
-    }
+  //~ Constructors *************************************************************
 
-    /**
-     * Constructs an IntegerField with a specified default value and
-     * number of columns.
-     */
-    public IntegerField(int value, int columns) {
-        super((new Integer(value)).toString(),columns);
-        toolkit = Toolkit.getDefaultToolkit();
-    }
+  /**
+   * Constructs an IntegerField with the appropriate number of columns and the
+   * default value of zero.
+   */
+  public IntegerField( int columns ) {
+    this( 0, columns );
+  }
 
-    /** 
-     * A hook to override the insertString method.
-     */
-    protected Document createDefaultModel() {
-        return new WholeNumberDocument(this);
-    }
+  /**
+   * Constructs an IntegerField with a specified default value and number of
+   * columns.
+   */
+  public IntegerField( int value, int columns ) {
+    super( ( new Integer( value ) ).toString(  ), columns );
+  }
 
-    public void addPropertyChangeListener(String prop,
-                                          PropertyChangeListener pcl){
-        super.addPropertyChangeListener(prop,pcl);
-        if(propBind!=null) propBind.addPropertyChangeListener(prop,pcl);
-    }
-    public void addPropertyChangeListener(PropertyChangeListener pcl){
-        super.addPropertyChangeListener(pcl);
-        if(propBind!=null) propBind.addPropertyChangeListener(pcl);
-    }
-    public void removePropertyChangeListener(PropertyChangeListener pcl){
-        super.removePropertyChangeListener(pcl);
-        if(propBind!=null) propBind.removePropertyChangeListener(pcl);
-    }
+  //~ Methods ******************************************************************
 
-    /**
-     * Internal method to confirm that the text can be added.
-     */
-    private boolean isOkay(int offs, String inString, String curString){
-        char[]    source  = inString.toCharArray();
-        
-        for( int i=0 ; i < source.length ; i++ ){
-            if(Character.isDigit(source[i])){
-                if(ZERO.compareTo(new Character(source[i]))==0){
-                    if( offs+i==0 && curString.length()>0 ){
-                        return false;
-                    }else if(curString.startsWith(MINUS.toString())){
-                        if( offs+i==1 ){
-                            return false;
-                        }else{
-                            // do nothing
-                        }
-                    }else{
-                        // do nothing
-                    }
-                }else{
-                    // do nothing
-                }
-            }else if(MINUS.compareTo(new Character(source[i]))==0){
-                if(offs+i==0){
-                    if(curString.startsWith(MINUS.toString())){
-                        return false;
-                    }else{
-                        // do nothing
-                    }
-                }else{
-                    return false;
-                }
-            }else{
-                return false;
+  /**
+   * Internal method to confirm that the text can be added.  This checks that
+   * number is an integer.
+   *
+   * @param offset The offset to use for inserting.
+   * @param insertString The String to insert.
+   * @param currentString The String that currently exists in the StringField
+   */
+  protected boolean isOkay( 
+    int offset, String insertString, String currentString ) {
+    char[] source = insertString.toCharArray(  );
+
+    for( int i = 0; i < source.length; i++ ) {
+      if( Character.isDigit( source[i] ) ) {
+        if( ZERO.compareTo( new Character( source[i] ) ) == 0 ) {
+          if( ( ( offset + i ) == 0 ) && ( currentString.length(  ) > 0 ) ) {
+            return false;
+          } else if( currentString.startsWith( MINUS.toString(  ) ) ) {
+            if( ( offset + i ) == 1 ) {
+              return false;
+            } else {
+              // do nothing
             }
+          } else {
+            // do nothing
+          }
+        } else {
+          // do nothing
         }
-        
-        return true;
+      } else if( MINUS.compareTo( new Character( source[i] ) ) == 0 ) {
+        if( ( offset + i ) == 0 ) {
+          if( currentString.startsWith( MINUS.toString(  ) ) ) {
+            return false;
+          } else {
+            // do nothing
+          }
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
     }
 
-    /**
-     * Internal class to do all of the formatting checks.
-     */
-    protected class WholeNumberDocument extends PlainDocument {
-        private IntegerField textBox;
-        public WholeNumberDocument(IntegerField T){
-            super();
-            textBox=T;
-        }
-
-        /**
-         * Overrids the default insertString method. Insert if okay,
-         * beep if not.
-         */
-        public void insertString(int offs, String str, AttributeSet a) 
-            throws BadLocationException {
-            
-            String oldText=textBox.getText();
-            if(textBox.isOkay(offs,str,textBox.getText())){
-                super.insertString(offs,str,a);
-                if(propBind!=null)
-                    propBind.firePropertyChange(IParameter.VALUE,
-                                                oldText,textBox.getText());
-            }else{
-                toolkit.beep();
-            }
-        }
-
-        /** 
-         * Overrides the default remove method.
-         */
-        public void remove(int offs, int len) throws BadLocationException{
-            String oldText=textBox.getText();
-            super.remove(offs,len);
-            //System.out.println("value:"+oldText+"->"+textBox.getText());
-            if(propBind!=null)
-                propBind.firePropertyChange(IParameter.VALUE,
-                                            oldText,textBox.getText());
-        }
-
-    }
+    return true;
+  }
 }
