@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2002/10/03 15:50:50  dennis
+ *  Replace call to Data.setSqrtErrors() to Data.setSqrtErrors(true)
+ *
  *  Revision 1.20  2002/06/03 14:23:00  dennis
  *  Now sets the errors to sqrt(counts) when recieving a DataSet, since the
  *  errors are not set by the LiveDataServer.
@@ -269,7 +272,7 @@ public class LiveDataRetriever extends    RemoteDataRetriever
       for ( int i = 0; i < ds.getNum_entries(); i++ )
       {
         d = (TabulatedData)ds.getData_entry(i);
-        d.setSqrtErrors(); 
+        d.setSqrtErrors( true ); 
         float y[] = d.getY_values();
         float total = 0;
         for ( int j = 0; j < y.length; j++ )
