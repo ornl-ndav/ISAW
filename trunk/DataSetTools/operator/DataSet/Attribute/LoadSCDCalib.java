@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2003/05/15 18:43:39  pfpeterson
+ * Return string now tells detector number used.
+ *
  * Revision 1.8  2003/05/15 17:37:48  pfpeterson
  * Trimed off extra whitespace from result string.
  *
@@ -188,7 +191,7 @@ public class LoadSCDCalib extends DS_Attribute{
             }
         }
 
-        return "Using '"+this.descr.trim()+"'";
+        return "Using '"+this.descr.trim()+"' on det#"+this.detNum;
     }
     
     /** 
