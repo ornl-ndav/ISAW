@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/08/07 20:57:58  rmikk
+ *  Eliminated setPreferred size and set segment layout to a
+ *  grid layout
+ *
  *  Revision 1.3  2001/06/26 18:37:31  dennis
  *  Added Copyright and GPL license.
  *  Removed un-needed imports and improved
@@ -55,12 +59,12 @@ public class JFloatParameterGUI extends    JParameterGUI
        super(parameter);
        
        String value = ((Float)parameter.getValue()).toString();
-       JLabel label = new JLabel(parameter.getName());
-       label.setPreferredSize(new Dimension(170,25));
+       JLabel label = new JLabel("  "+parameter.getName());
+       //label.setPreferredSize(new Dimension(170,25));
        floatText = new JTextField(20);
        floatText.setText(value);
        segment = new JPanel();
-       segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5)); 
+       segment.setLayout(new GridLayout( 1, 2 )); 
        segment.add(label);
        segment.add(floatText);
     }

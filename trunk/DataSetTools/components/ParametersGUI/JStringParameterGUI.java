@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2001/08/07 20:59:01  rmikk
+ *  Eliminated setPreferred size and set segment layout to a
+ *  grid layout
+ *
  *  Revision 1.5  2001/08/06 22:15:52  rmikk
  *  Expanded to take care of the Special Strings that were not
  *  IStringLists
@@ -58,18 +62,14 @@ public class JStringParameterGUI extends JParameterGUI implements Serializable
     
     public JStringParameterGUI(Parameter parameter)
     { 
-       super(parameter);
-       String value;
-       
-           value = parameter.getValue().toString();
-      
-     
-       JLabel label = new JLabel(parameter.getName());
-       label.setPreferredSize(new Dimension(170,25));
+       super(parameter);       
+       String value = parameter.getValue().toString();
+  
+       JLabel label = new JLabel("  "+parameter.getName());      
        stringText = new JTextField(20);
        stringText.setText(value);
        segment = new JPanel();
-       segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5)); 
+       segment.setLayout(new GridLayout( 1, 2 )); 
        segment.add(label);
        segment.add(stringText);
     }

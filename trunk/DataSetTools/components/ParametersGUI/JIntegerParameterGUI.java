@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2001/08/07 20:58:16  rmikk
+ *  Eliminated setPreferred size and set segment layout to a
+ *  grid layout
+ *
  *  Revision 1.3  2001/06/26 18:37:33  dennis
  *  Added Copyright and GPL license.
  *  Removed un-needed imports and improved
@@ -54,13 +58,13 @@ public class JIntegerParameterGUI extends JParameterGUI implements Serializable
        super(parameter);
        
        String value = ((Integer)parameter.getValue()).toString();
-       JLabel label = new JLabel(parameter.getName());
-       label.setPreferredSize(new Dimension(170,25));
+       JLabel label = new JLabel("  "+parameter.getName());
+       //label.setPreferredSize(new Dimension(170,25));
        intText = new JTextField(20);
        intText.setText(value);
 
        segment = new JPanel();
-       segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5));
+       segment.setLayout(new GridLayout( 1 , 2 ) );
        segment.add(label);
        segment.add(intText);
     }
