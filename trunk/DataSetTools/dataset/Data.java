@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2002/04/19 15:42:26  dennis
+ *  Revised Documentation
+ *
  *  Revision 1.23  2002/04/04 18:10:08  dennis
  *  Moved implementation of stitch() and of scalar and DataSet
  *  add(), subtract(), multiply(), divide() to this level.
@@ -81,7 +84,25 @@ public abstract class Data implements IData,
   protected boolean       hide = false;
 
   /**
-   *  Create an instance of a FunctionData or HistogramData object.
+   *  Create an instance of a Data object representing a function or histogram.
+   *  Since the x & y values are specified, this form of getInstance() returns
+   *  a TabulatedData object.  If there is one more x value than there are 
+   *  y values a HistogramTable is returned.  Otherwise a FunctionTable is
+   *  returned.  When constructing the FunctionTable, extra values will be 
+   *  ignored and missing values will be taken to be 0.
+   *
+   *  @param  x_scale    The collection of x values for which the y values are
+   *                     tabulated.
+   *  @param  y_values   If there are one more x values than y_values, these
+   *                     y_values are assumed to represent the values at the
+   *                     centers of histogram bins given by the x values.
+   *                     Otherwise, the y_values are assumed to represent the
+   *                     values of a function at the specified x values.
+   *  @param  errors     Array of error estimates for the y_values.
+   *  @param  group_id   The group_id to use for this Data object.      
+   *
+   *  @return A HistogramTable or a FunctionTable object corresponding to the 
+   *          specified x, y and error values.  
    */ 
   public static Data getInstance( XScale x_scale, 
                                   float  y_values[], 
@@ -95,8 +116,23 @@ public abstract class Data implements IData,
   }
 
   /**
-   *  Create an instance of a FunctionData or HistogramData object, without
-   *  specified errors.
+   *  Create an instance of a Data object representing a function or histogram.    *  Since the x & y values are specified, this form of getInstance() returns
+   *  a TabulatedData object.  If there is one more x value than there are 
+   *  y values a HistogramTable is returned.  Otherwise a FunctionTable is
+   *  returned.  When constructing the FunctionTable, extra values will be 
+   *  ignored and missing values will be taken to be 0.
+   *
+   *  @param  x_scale    The collection of x values for which the y values are
+   *                     tabulated.
+   *  @param  y_values   If there are one more x values than y_values, these
+   *                     y_values are assumed to represent the values at the
+   *                     centers of histogram bins given by the x values.
+   *                     Otherwise, the y_values are assumed to represent the
+   *                     values of a function at the specified x values.
+   *  @param  group_id   The group_id to use for this Data object.
+   *
+   *  @return A HistogramTable or a FunctionTable object corresponding to the
+   *          specified x, y without error estimates.
    */
   public static Data getInstance( XScale x_scale,
                                   float  y_values[],
@@ -112,14 +148,11 @@ public abstract class Data implements IData,
   /**
    * Constructs a Data object with "X" scale and a group id for that Data 
    * object.  This will be called from the constructors of subclasses.  Any
-   * concrete derived class must manage the y-values associated with that
-   * subclass.
+   * concrete derived class must manage the y-value information associated 
+   * with that subclass.
    *
    * @param   x_scale   the list of x values for this data object
    * @param   group_id  an integer id for this data object
-   *
-   * @see DataSetTools.dataset.XScale
-   * @see DataSetTools.dataset.Attribute
    */
   public Data( XScale  x_scale, int group_id )
   {
@@ -134,10 +167,10 @@ public abstract class Data implements IData,
   }
 
   /**
-   * Sets the id of the Data object both as an instance variable and as
+   * Sets the ID of the Data object both as an instance variable and as
    * an attribute of the Data object.
    *
-   * @param  group_id   The id to use for the new group_id of the data object
+   * @param  group_id   The ID to use for the new group ID of the Data object
    */
   public void setGroup_ID( int group_id )
   {
@@ -148,8 +181,9 @@ public abstract class Data implements IData,
   }
 
   /**
-   * Returns a reference to the list of the error values.  If no error values
-   * have been set, this returns null.
+   *  Get the group ID for this Data block.
+   *
+   *  @return The ID used for this Data object.
    */
   public int getGroup_ID()
   {
@@ -174,7 +208,7 @@ public abstract class Data implements IData,
   }
 
   /**
-   *  get the selected flag of this Data block.
+   *  Get the selected flag of this Data block.
    *
    *  @return  true if this Data block is selected, false otherwise.
    */
@@ -203,7 +237,7 @@ public abstract class Data implements IData,
    *  Determine if this is the most recently selected Data block.
    *
    *  @return  true if this Data block is the most recently selected,
-   *  otherwise return false.
+   *           otherwise return false.
    */
   public boolean isMostRecentlySelected( )
   {
@@ -267,6 +301,8 @@ public abstract class Data implements IData,
 
   /**
    *  Get a copy of the list of attributes for this Data object.
+   *
+   *  @return A clone of the AttributeList for this Data object. 
    */
   public AttributeList getAttributeList()
   {
@@ -277,8 +313,10 @@ public abstract class Data implements IData,
   }
 
   /**
-   *  Set the list of attributes for this Data object to be a COPY of the
+   *  Replace the list of attributes for this Data object with a COPY of the
    *  specified list of attributes.
+   *
+   *  @param attr_list  The list of attributes to be copied to this Data object.
    */
   public void setAttributeList( AttributeList attr_list )
   {
@@ -290,6 +328,8 @@ public abstract class Data implements IData,
 
   /**
    * Gets the number of attributes set for this object.
+   *
+   *  @return the length of the AttributeList for this Data block. 
    */
   public int getNum_attributes()
   {
@@ -334,6 +374,8 @@ public abstract class Data implements IData,
    * attributes. If the index is invalid, this returns null.
    *
    * @param  index  The position of the attribute in the list of attributes.
+   *
+   * @return The Attribute is returned as a generic object. 
    */
   public Attribute getAttribute( int index )
   {
@@ -347,6 +389,8 @@ public abstract class Data implements IData,
    * returns null.
    *
    * @param  name  The name of the attribute value to get.
+   *
+   * @return The Attribute is returned as a generic object. 
    */
   public Attribute getAttribute( String name )
   {
@@ -359,6 +403,9 @@ public abstract class Data implements IData,
    * attributes. If the index is invalid, this returns null.
    *
    * @param  index  The position of the attribute in the list of attributes.
+   *
+   * @return The Object that is the specified Attribute's value is returned 
+   *         as a generic object. 
    */
   public Object  getAttributeValue( int index )
   {
@@ -371,6 +418,9 @@ public abstract class Data implements IData,
    * attributes.  If the named attribute is not in the list, this returns null.
    *
    * @param  name  The name of the attribute value to get.
+   *
+   * @return The Object that is the specified Attribute's value is returned 
+   *         as a generic object. 
    */
   public Object getAttributeValue( String name )
   {
@@ -378,7 +428,10 @@ public abstract class Data implements IData,
   }
 
   /**
-   * Returns a copy of the array of x values for this Data object 
+   * Returns a COPY of the array of x values represented by the x scale 
+   * for this Data object 
+   *
+   * @return The list of x values currently used by this Data object. 
    */
   public float[] getX_values()
   { 
@@ -387,6 +440,8 @@ public abstract class Data implements IData,
 
   /**
    * Returns a reference to the "X" scale for this Data object
+   *
+   * @return The XScale object used by this Data object. 
    */
   public XScale getX_scale() 
   { 
@@ -397,7 +452,10 @@ public abstract class Data implements IData,
   // array and then copy it and return a copy of it.  
 
   /**
-   *  Returns a reference to a new copy of the y_values
+   *  Get a copy of the y_values corresponding to the XScale for this Data 
+   *  object.
+   *
+   *  @return  A reference to a new copy of the y_values
    */
   public float[]  getCopyOfY_values()       
   {
@@ -413,7 +471,10 @@ public abstract class Data implements IData,
   } 
 
   /**
-   *  Returns a reference to a new copy of the errors 
+   *  Get a copy of the error estimates for the y_values for this Data 
+   *  object.
+   *
+   *  @return  A reference to a new copy of the error estimates. 
    */
   public float[]  getCopyOfErrors()       
   {
@@ -1011,18 +1072,12 @@ public abstract class Data implements IData,
   abstract public void    resample( XScale x_scale, int smooth_flag );
   abstract public Object  clone();
 
-  /* -------------------------------------------------------------------------
-   *
-   *  PRIVATE METHODS
-   *
-   */
-
   /**
     * Returns true or false depending on whether the two Data objects are
     * capable of being added, etc., based on the size and extent of their
     * x_scales.  If the XScales are NOT uniform, each corresponding point
     * of the XScales should probably be compared, however, this is not
-    * currently done.  Variable x_scales are assumed to be in compatible
+    * currently done.  Variable x_scales are assumed to be incompatible
     *
     *  @param  d     The Data object to be compared with the current data
     *                object.
