@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/04/01 20:52:48  rmikk
+ * Moved code into a method
+ * Incorporated Group_ID
+ *
  * Revision 1.2  2002/03/18 20:58:33  dennis
  * Added initial support for TOF Diffractometers.
  * Added support for more units.
@@ -54,7 +58,7 @@ public class NxWriteDetector
     String axis1Link; 
     String axis2Link; 
     String  axis3Link;
-    int instrType;
+    static int instrType;
     public NxWriteDetector(int instrType)
       {errormessage = "";
        this.axis1Link = "axis1"; 
@@ -83,7 +87,7 @@ public class NxWriteDetector
    }
 
   /** Sets up a lot of Isaw attributes
-  *@param  nxData_Monitor  a NXdata or NXmonitor node
+  *@param  nxData_Monitor  a NXdetector or NXmonitor node
   *@param  startIndex    the index of the starting DataSet block
   *@param  endIndex      One larger than the last index of the
   *                       ending DataSet block
@@ -93,7 +97,264 @@ public class NxWriteDetector
   *The distance is a required field in a Nexus File.  The other attributes
   * are attributes of this distance field along with theta .
   */
-  public static void SetUpIsawAttributes(NxWriteNode nxData_Monitor, 
+public static void SetUpIsawAttributes(NxWriteNode node, 
+           int startIndex, int endIndex, DataSet DS, boolean monitor )
+
+ {NxData_Gen ng = new NxData_Gen ();
+  NXData_util nu = new NXData_util();
+    Object XX;
+    float distance[], phi[],theta[],solidAngle[],rawAngle[],Det2Thet[], Tot_Count[];
+    int Group_ID[];
+    distance = new float[ endIndex - startIndex ];
+    phi = new float[endIndex-startIndex];
+    theta = new float[ endIndex - startIndex ];
+    solidAngle = new float[endIndex-startIndex];
+    rawAngle= new float[endIndex-startIndex];
+    Det2Thet= new float[endIndex-startIndex];
+    Tot_Count= new float[endIndex-startIndex];
+    Group_ID= new int[endIndex-startIndex];
+    int[] slot = new int[endIndex-startIndex];
+    int[] crate=new int[endIndex-startIndex];
+    int[] input =new int[endIndex-startIndex];
+    for( int i = startIndex ; i < endIndex ; i++ )
+       {Data DB = DS.getData_entry( i );
+        XX = DB.getAttributeValue( Attribute.DETECTOR_POS );
+        if( XX instanceof DetectorPosition )
+           { float[] coords;
+            coords = ( ( DetectorPosition )XX ).getSphericalCoords();
+            float coords1[];
+            
+            coords1 = Types.convertToNexus( coords[0], coords[2], coords[1]);
+            distance[ i -startIndex ] = coords1[ 0 ];
+            theta [ i-startIndex ] = coords1[  2 ];
+            phi[i-startIndex] = coords1[1];
+           
+           }
+         else
+           {distance[ i-startIndex ] = 0.0f;
+            theta [ i-startIndex ] = 0.0f;
+           }
+//solid angle
+         XX = DB.getAttributeValue( Attribute.SOLID_ANGLE );
+         if( XX == null) solidAngle = null;
+         if( XX != null )
+          {if( solidAngle == null )
+            {//solidAngle = new float[ endIndex - startIndex ];
+             for( int k = startIndex ; k < i ; k++ )
+               solidAngle[ k -startIndex ] = -1;
+             }
+           Float F = ng.cnvertoFloat( XX );
+           if( F != null )
+              solidAngle[ i - startIndex ] = F.floatValue();
+           else 
+              solidAngle[ i -startIndex ] = -1.0f;
+          }
+         else if( solidAngle != null )
+            solidAngle[ i - startIndex ] = -1.0f;
+
+/*//Delta_2Theta
+         XX = DB.getAttributeValue( Attribute.DELTA_2THETA );
+         if( XX != null )
+          {if( Det2Thet == null )
+            {Det2Thet = new float[ endIndex - startIndex ];
+             for( int k = startIndex ; k < i ; k++ )
+               Det2Thet[ k -startIndex ] = -1;
+             }
+           Float F = ng.cnvertoFloat( XX );
+           if( F != null )
+              Det2Thet[ i - startIndex ] = F.floatValue();
+           else 
+              Det2Thet[ i -startIndex ] = -1.0f;
+          }
+        else if( Det2Thet != null )
+            Det2Thet[ i - startIndex ] = -1.0f;
+*/
+//Raw Angle--------
+        XX = DB.getAttributeValue( Attribute.RAW_ANGLE );
+        if( XX == null) rawAngle = null;
+        if( XX != null )
+         {if( rawAngle == null )
+          {//rawAngle = new float[ endIndex - startIndex ];
+           for( int k = startIndex ; k < i ; k++ )
+             rawAngle[ k -startIndex ] = -1;
+           }
+          Float F = ng.cnvertoFloat( XX );
+          if( F != null )
+            rawAngle[ i - startIndex ] = F.floatValue();
+          else 
+            rawAngle[ i -startIndex ] = -1.0f;
+         }
+        else if( rawAngle != null )
+          rawAngle[ i - startIndex ] = -1.0f;
+
+/*//Time field type 
+        XX = DB.getAttributeValue( Attribute.TIME_FIELD_TYPE );
+        if( XX != null )
+         {if( Time_Field_Type  == null )
+           {Time_Field_Type = new int[ endIndex - startIndex ];
+            for( int k = startIndex ; k < i ; k++ )
+              Time_Field_Type[ k -startIndex ] = -1;
+            }
+          int F = ng.cnvertoint( XX );
+          if( F >= 0 )
+             Time_Field_Type[ i-startIndex ] = F;
+          else 
+              Time_Field_Type[ i-startIndex ] = -1;
+         }
+        else if( Time_Field_Type != null )
+           Time_Field_Type[ i-startIndex ] = -1;
+*/	
+//Group_ID
+       /* XX = DB.getAttributeValue( Attribute.GROUP_ID );
+        
+        if( XX == null) Group_ID[i-startIndex] = -1;
+        else if( XX != null )
+         {
+          int F = ng.cnvertoint( XX );
+          if( F >= 0 )
+             Group_ID[ i-startIndex ] = F;
+          else 
+             Group_ID[ i-startIndex ] = -1;
+         }
+        else if( Group_ID != null )
+            Group_ID[ i-startIndex ] = -1;
+	*/
+        Group_ID[i-startIndex] = DB.getGroup_ID();
+        
+
+//Total counts
+        XX = DB.getAttributeValue( Attribute.TOTAL_COUNT );
+        if( XX == null) Tot_Count = null;
+        if( XX != null )
+         {if( Tot_Count  == null )
+           {//Tot_Count = new float[ endIndex - startIndex ];
+            for( int k = startIndex ; k < i ; k++ )
+              Tot_Count[ k -startIndex ] = -1.0f;
+            }
+          Float  F = ng.cnvertoFloat(  XX );
+          if( F == null )
+             Tot_Count[ i-startIndex ] = -1.0f;
+          else if( F.floatValue() >= 0 )
+             Tot_Count[ i-startIndex ] = F.floatValue();
+          else 
+             Tot_Count[ i-startIndex ] = -1.0f;
+         }
+        else if( Tot_Count != null )
+           Tot_Count[ i-startIndex ] = -1.0f;
+//slot----
+        XX = DB.getAttributeValue( Attribute.SLOT );
+        if( XX == null)slot = null;
+        if( XX != null )
+         {if( slot == null )
+          {slot = new int[ endIndex - startIndex ];
+           for( int k = startIndex ; k < i ; k++ )
+             slot[ k -startIndex ] = -1;
+           }
+          float[] F = nu.Arrayfloatconvert( XX );
+          slot[ i-startIndex ] = -1;
+          if( F != null )
+            if(F.length >0)
+            slot[ i - startIndex ] = (int)(F[0]);
+        
+         }
+         else if( slot != null )
+           slot[ i - startIndex ] = -1;
+
+//crate
+         XX = DB.getAttributeValue( Attribute.CRATE );
+        if( XX == null) crate = null;
+        if( XX != null )
+         {if( crate == null )
+          {crate = new int[ endIndex - startIndex ];
+           for( int k = startIndex ; k < i ; k++ )
+             crate[ k -startIndex ] = -1;
+           }
+         float[] F = nu.Arrayfloatconvert( XX );
+          crate[ i-startIndex ] = -1;
+          if( F != null )
+            if(F.length >0)
+             crate[ i - startIndex ] =(int)( F[0]);
+         }
+        else if( crate != null )
+          crate[ i - startIndex ] = -1;
+
+//input
+        XX = DB.getAttributeValue( Attribute.INPUT );
+        if( XX == null) input = null;
+        if( XX != null )
+         {if( input == null )
+          {//input = new int[ endIndex - startIndex ];
+           for( int k = startIndex ; k < i ; k++ )
+             input[ k -startIndex ] = -1;
+           }
+          float[] F = nu.Arrayfloatconvert( XX );
+          input[ i-startIndex ] = -1;
+          if( F != null )
+            if(F.length >0)
+            input[ i - startIndex ] = (int)(F[0]);
+         }
+        else if( input != null )
+          input[ i - startIndex ] = -1;
+	
+     }// for i = startIndex to endIndex
+            
+     if( distance != null)
+       {NxWriteNode nn = node.newChildNode("distance","SDS");
+        nn.setNodeValue( distance,Types.Float, Inst_Type.makeRankArray( distance.length,-1,-1,-1,-1));
+        nn.addAttribute("units", ("m"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(2,-1,-1,-1,-1));
+        }
+     if( phi!=null)if(!LinkAxisMatch("phi",instrType,1,4))
+       {NxWriteNode nn = node.newChildNode("polar_angle","SDS");
+         nn.setNodeValue( phi,Types.Float, Inst_Type.makeRankArray( phi.length,-1,-1,-1,-1));
+         nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(8,-1,-1,-1,-1));
+       }
+      
+      if( !monitor)
+      if( solidAngle != null)
+        {NxWriteNode nn = node.newChildNode("solid_angle","SDS");
+         nn.setNodeValue( solidAngle,Types.Float, Inst_Type.makeRankArray( solidAngle.length,-1,-1,-1,-1));
+         nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(8,-1,-1,-1,-1));
+         }
+       if(rawAngle !=null)
+        {NxWriteNode nn = node.newChildNode("raw_angle","SDS");
+         nn.setNodeValue( rawAngle,Types.Float, Inst_Type.makeRankArray( rawAngle.length,-1,-1,-1,-1));
+         nn.addAttribute("units", ("degrees"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(8,-1,-1,-1,-1));
+        }
+       if( Tot_Count != null)
+         {NxWriteNode nn = node.newChildNode("integral","SDS");
+         nn.setNodeValue( Tot_Count,Types.Float, Inst_Type.makeRankArray( Tot_Count.length,-1,-1,-1,-1));
+         nn.addAttribute("units", ("counts"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(7,-1,-1,-1,-1));
+         }
+       if( Group_ID != null)
+          if( monitor || !LinkAxisMatch( "id",instrType, 1,5))
+         {NxWriteNode nn = node.newChildNode("id","SDS");
+         nn.setNodeValue( Group_ID,Types.Int, Inst_Type.makeRankArray( Group_ID.length,-1,-1,-1,-1));
+        
+          } 
+       if( theta != null)
+         {NxWriteNode nn = node.newChildNode("azimuthal_angle","SDS");
+         nn.setNodeValue( theta,Types.Float, Inst_Type.makeRankArray( theta.length,-1,-1,-1,-1));
+         nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(8,-1,-1,-1,-1));
+         }
+        if( slot != null)
+         {NxWriteNode nn = node.newChildNode("slot","SDS");
+         nn.setNodeValue( slot,Types.Int, Inst_Type.makeRankArray( slot.length,-1,-1,-1,-1));
+         //nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(8,-1,-1,-1,-1));
+         }
+
+       if( crate != null)
+         {NxWriteNode nn = node.newChildNode("crate","SDS");
+         nn.setNodeValue( crate,Types.Int, Inst_Type.makeRankArray( crate.length,-1,-1,-1,-1));
+         //nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(8,-1,-1,-1,-1));
+         }
+       if( input != null)
+         {NxWriteNode nn = node.newChildNode("input","SDS");
+         nn.setNodeValue( input,Types.Int, Inst_Type.makeRankArray( input.length,-1,-1,-1,-1));
+         //nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(8,-1,-1,-1,-1));
+         }
+    }
+  //obsolete
+  private static void SetUpIsawAttributes1(NxWriteNode nxData_Monitor, 
            int startIndex, int endIndex, DataSet DS )
   { float coords[];
     DetectorPosition DP;
@@ -207,7 +468,7 @@ public class NxWriteDetector
            Time_Field_Type[ i-startIndex ] = -1;
 	
 //Group_ID
-        XX = DB.getAttributeValue( Attribute.GROUP_ID );
+       /* XX = DB.getAttributeValue( Attribute.GROUP_ID );
         if( XX != null )
          {if( Group_ID  == null )
            {Group_ID = new int[ endIndex - startIndex ];
@@ -222,8 +483,9 @@ public class NxWriteDetector
          }
         else if( Group_ID != null )
             Group_ID[ i-startIndex ] = -1;
+       */
 	
-
+        Group_ID[i-startIndex]=DB.getGroup_ID();
 //Total counts
         XX = DB.getAttributeValue( Attribute.TOTAL_COUNT );
         if( XX != null )
@@ -258,8 +520,10 @@ public class NxWriteDetector
     if( Time_Field_Type != null )if( Time_Field_Type.length ==  rank[ 0 ] )
          n1.addAttribute( "time_field_type" , Time_Field_Type , 
                                        Types.Int , rank );
+       
     if( Group_ID != null )if( Group_ID.length == rank[ 0 ] )
-         n1.addAttribute( "group_id" , Group_ID ,Types.Int ,  rank );
+        if( !LinkAxisMatch("id",instrType,1,5) )
+         n1.addAttribute( "id" , Group_ID ,Types.Int ,  rank );
     if( Tot_Count != null )if( Tot_Count.length == rank[ 0 ] )
          n1.addAttribute( "total_count" , Tot_Count , Types.Float , rank );
     if( rawAngle != null )if( rawAngle.length == rank[ 0 ] )
@@ -395,7 +659,7 @@ public class NxWriteDetector
            Time_Field_Type[ i-startIndex ] = -1;
 */	
 //Group_ID
-        XX = DB.getAttributeValue( Attribute.GROUP_ID );
+       /* XX = DB.getAttributeValue( Attribute.GROUP_ID );
         
         if( XX == null) Group_ID[i-startIndex] = -1;
         else if( XX != null )
@@ -408,7 +672,9 @@ public class NxWriteDetector
          }
         else if( Group_ID != null )
             Group_ID[ i-startIndex ] = -1;
-	
+	*/
+        Group_ID[i-startIndex] = DB.getGroup_ID();
+        
 
 //Total counts
         XX = DB.getAttributeValue( Attribute.TOTAL_COUNT );
@@ -465,7 +731,9 @@ public class NxWriteDetector
          monitor = true;
      errormessage = "";
      //Time of flight done
-     float distance[], phi[],theta[],solidAngle[],rawAngle[],Det2Thet[], Tot_Count[];
+      SetUpIsawAttributes(node, 
+            startIndex,  endIndex, DS , monitor);
+    /* float distance[], phi[],theta[],solidAngle[],rawAngle[],Det2Thet[], Tot_Count[];
      int Group_ID[];
       distance = new float[ endIndex - startIndex ];
     phi = new float[endIndex-startIndex];
@@ -475,21 +743,21 @@ public class NxWriteDetector
     Det2Thet= new float[endIndex-startIndex];
      Tot_Count= new float[endIndex-startIndex];
       Group_ID= new int[endIndex-startIndex];
-      
+     
      PackInfo(DS,distance, phi,theta, solidAngle,rawAngle, Det2Thet,Tot_Count,  Group_ID,
          startIndex,endIndex);
-        
+       
      if( distance != null)
        {NxWriteNode nn = node.newChildNode("distance","SDS");
         nn.setNodeValue( distance,Types.Float, Inst_Type.makeRankArray( distance.length,-1,-1,-1,-1));
         nn.addAttribute("units", ("m"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(2,-1,-1,-1,-1));
         }
-     /* if( phi!=null) //if( instrType ==InstrumentType.TOF_DIFFRACTOMETER)
+     if( phi!=null)if(!LinkAxisMatch("phi",instrType,1,4))
        {NxWriteNode nn = node.newChildNode("phi","SDS");
          nn.setNodeValue( phi,Types.Float, Inst_Type.makeRankArray( phi.length,-1,-1,-1,-1));
          nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(8,-1,-1,-1,-1));
        }
-       */ //already done with axes
+      
       if( !monitor)
       if( solidAngle != null)
         {NxWriteNode nn = node.newChildNode("solid_angle","SDS");
@@ -499,7 +767,7 @@ public class NxWriteDetector
        if(rawAngle !=null)
         {NxWriteNode nn = node.newChildNode("raw_angle","SDS");
          nn.setNodeValue( rawAngle,Types.Float, Inst_Type.makeRankArray( rawAngle.length,-1,-1,-1,-1));
-         nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(8,-1,-1,-1,-1));
+         nn.addAttribute("units", ("degrees"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(8,-1,-1,-1,-1));
         }
        if( Tot_Count != null)
          {NxWriteNode nn = node.newChildNode("integral","SDS");
@@ -507,7 +775,7 @@ public class NxWriteDetector
          nn.addAttribute("units", ("counts"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(7,-1,-1,-1,-1));
          }
        if( Group_ID != null)
-          if( monitor ||(instrType != InstrumentType.TOF_DIFFRACTOMETER))
+          if( monitor || LinkAxisMatch( "id",instrType, 1,5))
          {NxWriteNode nn = node.newChildNode("id","SDS");
          nn.setNodeValue( Group_ID,Types.Int, Inst_Type.makeRankArray( Group_ID.length,-1,-1,-1,-1));
         
@@ -517,12 +785,22 @@ public class NxWriteDetector
          nn.setNodeValue( theta,Types.Float, Inst_Type.makeRankArray( theta.length,-1,-1,-1,-1));
          nn.addAttribute("units", ("radians"+(char)0).getBytes(),Types.Char, Inst_Type.makeRankArray(8,-1,-1,-1,-1));
          }
+      */
        return false;
     //  Get efficiencies  
     //Get crate
      
     }
-
+   private static boolean LinkAxisMatch( String axisName, int instrType, int minAxisNum, int maxAxisNum)
+    {if(axisName ==  null) 
+         return false;
+      for( int i=minAxisNum; i <=maxAxisNum; i++)
+        { 
+          if( axisName.equals((new Inst_Type()).getLinkAxisName( instrType, i)))
+            return true;
+         }
+     return false;
+     }
    private boolean processDSx( NxWriteNode node , DataSet DS , 
                            int startIndex , int endIndex )
     {
