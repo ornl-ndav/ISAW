@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/04/25 15:24:48  pfpeterson
+ *  Added more information when error encountered while reading a bank.
+ *
  *  Revision 1.5  2003/02/17 22:24:12  pfpeterson
  *  Updated deprecated method calls to what is now used.
  *
@@ -394,11 +397,12 @@ public class GsasRetriever extends Retriever{
             }
         }catch(IOException e){
             // let it drop on the floor but return failure
-            SharedData.addmsg("IOException:"+e.getMessage());
+            SharedData.addmsg("IOException [BANK"+bankNum+"]:"+e.getMessage());
             return false;
         }catch(NumberFormatException e){
             // let it drop on the floor but return failure
-            SharedData.addmsg("NumberFormatException:"+e.getMessage());
+            SharedData.addmsg("NumberFormatException [BANK"+bankNum+"]:"
+                              +e.getMessage());
             return false;
         }
         if(xscale==null) return false; // something went wrong
