@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/07/08 23:41:10  bouzekc
+ * Now uses pyScriptProcessor's initImports() method to
+ * interpret some blanket include statements.
+ *
  * Revision 1.4  2003/07/02 18:59:29  bouzekc
  * Fixed grammar and spelling errors in javadocs and added
  * javdocs to initInterpreter().
@@ -49,6 +53,7 @@ package DataSetTools.operator;
 
 import Command.PyScript;
 import Command.ParseError;
+import Command.pyScriptProcessor;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.MissingResourceException;
@@ -129,6 +134,8 @@ public class PyOperatorFactory extends Object implements OperatorFactory{
 
     // execute the file --> this throws the PyException
     try{ // one is faster, the other throws exceptions with the right filename
+      //execute some blanket import statements
+      pyScriptProcessor.initImports(interp);
       this.interp.exec(script.toString());
       //this.interp.execfile(script.getFilename());
     }catch(PyException e){
