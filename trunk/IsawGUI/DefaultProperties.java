@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/03/07 22:14:41  pfpeterson
+ *  Hopefully will work better with windows
+ *
  *  Revision 1.2  2002/03/04 20:31:02  pfpeterson
  *  Default properties file comments out more lines if ISAW is not found
  *  in the classpath.
@@ -47,8 +50,7 @@ package IsawGUI;
 import java.io.*;
 import java.io.IOException; 
 import java.util.Properties;
-import DataSetTools.util.StringUtil;
-import DataSetTools.util.SharedData;
+import DataSetTools.util.*;
 
  /**
   * The main class for ISAW. It is the GUI that ties together the 
@@ -177,6 +179,7 @@ public class DefaultProperties{
         int index=classpath.indexOf(pathsep);
         while( index>=0 ){
             dir=classpath.substring(0,index);
+            dir=FilenameUtil.fixSeparator(dir);
             //System.out.println("dir:"+dir);
             classpath=classpath.substring(index+1,classpath.length());
             if(dir.endsWith("Isaw.jar")){
@@ -187,7 +190,7 @@ public class DefaultProperties{
                 }
             }else{
                 String isawExec
-                    =File.separator+"IsawGUI"+File.separator+"Isaw.class";
+                    =separator+"IsawGUI"+separator+"Isaw.class";
                 File isIsaw=new File(dir+isawExec);
                 if(isIsaw.exists()){
                     System.out.println("Isaw found: "+isIsaw);
