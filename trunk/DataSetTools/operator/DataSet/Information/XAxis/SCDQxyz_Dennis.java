@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/18 20:22:16  dennis
+ * Switched to use SampleOrientation attribute instead of separate
+ * phi, chi and omega values.
+ *
  * Revision 1.3  2003/01/07 22:33:06  dennis
  * Changed to use routine makeEulerRotationInverse() from tof_calc to
  * build the matrix that "unwinds" the goniometer rotations.
@@ -57,6 +61,7 @@ import  java.text.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
+import  DataSetTools.instruments.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
 
@@ -215,23 +220,13 @@ public class SCDQxyz_Dennis extends  XAxisInformationOp
                                               // q is now in the fixed coord
                                               // system of the lab.  Rotate it
                                               // back to phi,chi,omega = 0,0,0
-     Float omega_Float = (Float)ds.getAttributeValue(Attribute.SAMPLE_OMEGA);
-     if ( omega_Float == null )
-       return new ErrorString("Missing OMEGA attribute");
+     SampleOrientation orientation =
+        (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
 
-     Float chi_Float   = (Float)ds.getAttributeValue(Attribute.SAMPLE_CHI);
-     if ( chi_Float == null )
-       return new ErrorString("Missing CHI attribute");
+     if (orientation == null) 
+       return new ErrorString("Missing SampleOrientation attribute");
 
-     Float phi_Float   = (Float)ds.getAttributeValue(Attribute.SAMPLE_PHI);
-     if ( phi_Float == null )
-       return new ErrorString("Missing PHI attribute");
-
-     float omega = omega_Float.floatValue();
-     float phi   = phi_Float.floatValue();
-     float chi   = chi_Float.floatValue();
-
-     Tran3D combinedR =tof_calc.makeEulerRotationInverse(phi, chi, -omega);
+     Tran3D combinedR =orientation.getGoniometerRotationInverse();
 
      float xyz[] = q_pos.getCartesianCoords();
      pt.set( xyz[0], xyz[1], xyz[2] );

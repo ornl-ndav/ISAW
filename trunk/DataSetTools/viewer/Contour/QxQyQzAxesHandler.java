@@ -28,6 +28,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/02/18 20:24:29  dennis
+ * Switched to use SampleOrientation attribute instead of separate
+ * phi, chi and omega values.
+ *
  * Revision 1.10  2002/11/27 23:24:29  pfpeterson
  * standardized header
  *
@@ -35,6 +39,7 @@
 package DataSetTools.viewer.Contour;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
+import DataSetTools.instruments.*;
 import java.lang.*;
 import DataSetTools.operator.DataSet.Information.XAxis.*;
 
@@ -56,14 +61,13 @@ public class  QxQyQzAxesHandler implements IAxesHandler
      { ds = DS;
        x_units = ds.getX_units();
        x_label= ds.getX_label();
-      Attribute A1 = ds.getAttribute( Attribute.SAMPLE_OMEGA);
-      Attribute A2 = ds.getAttribute( Attribute.SAMPLE_PHI);
-      Attribute A3 = ds.getAttribute( Attribute.SAMPLE_CHI);
+      SampleOrientation orientation =
+        (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
      
-      if( (A1 != null)&&(A2 !=null)&&(A3!=null))
-        {omega = (float)(Math.PI/180.*((FloatAttribute)A1).getFloatValue());
-          phi   = (float)(Math.PI/180.*((FloatAttribute)A2).getFloatValue());
-         chi   = (float)(Math.PI/180.*((FloatAttribute)A3).getFloatValue());
+      if( orientation != null )
+        {omega = orientation.getOmega();
+         phi   = orientation.getPhi();
+         chi   = orientation.getChi();
          co= Math.cos(-omega);
          so=Math.sin(-omega);
          cp=Math.cos(-phi);

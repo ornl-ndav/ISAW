@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2003/02/18 20:19:53  dennis
+ *  Switched to use SampleOrientation attribute instead of separate
+ *  phi, chi and omega values.
+ *
  *  Revision 1.2  2003/01/08 21:50:09  dennis
  *  Now calculated detector center, height, width & number of pixels from
  *  two corner pixels, assuming a square detector and that the spectra are
@@ -50,6 +54,7 @@ import DataSetTools.math.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ThreeD.*;
 import DataSetTools.dataset.*;
+import DataSetTools.instruments.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.operator.DataSet.Math.Analyze.*;
@@ -116,7 +121,7 @@ public class VecQToTOF
     v = new Vector3D(  0, 0, 1 );
     n = new Vector3D(  0, 1, 0 );
 
-    Tran3D goniometerR = makeGoniometerRotation( ds );
+    Tran3D goniometerR = makeGoniometerRotationInverse( ds );
     goniometerRinv = new Tran3D();
     goniometerRinv.set( goniometerR );
     goniometerRinv.transpose();
@@ -267,22 +272,18 @@ public class VecQToTOF
     return vector;
   }
 
- /* ------------------------ makeGoniometerRotation ------------------------ */
+ /* ------------------- makeGoniometerRotationInverse --------------------- */
  /*
   *  Make the cumulative rotation matrix to "unwind" the rotations by chi,
   *  phi and omega, to put the data into one common reference frame for the
   *  crystal.
   */
-  private Tran3D makeGoniometerRotation( DataSet ds )
+  private Tran3D makeGoniometerRotationInverse( DataSet ds )
   {
-      float omega = ((Float)ds.getAttributeValue(Attribute.SAMPLE_OMEGA))
-                         .floatValue();
-      float phi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_PHI))
-                         .floatValue();
-      float chi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_CHI))
-                         .floatValue();
+    SampleOrientation orientation =
+        (SampleOrientation)ds.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
 
-      return tof_calc.makeEulerRotationInverse( phi, chi, -omega );
+      return orientation.getGoniometerRotationInverse();
   }
 
 }
