@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2003/08/16 01:38:26  bouzekc
+ *  Fixed incorrect comment.
+ *
  *  Revision 1.22  2003/08/15 23:50:03  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -304,7 +307,6 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
   public static Vector StringtoArray( String S ) {
     try {
       //prep the string a little
-      //the ";" is needed for the ParameterGUIParser-it will be thrown away
       S = S.trim(  );
 
       return ParameterGUIParser.parseText( S );
