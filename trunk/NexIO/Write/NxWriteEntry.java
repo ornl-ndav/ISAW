@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/11/24 14:05:31  rmikk
+ * Changed the analysis field to the description field.
+ * Added a NXsample subclass to this NXentry class
+ * Add several NXlog subclasses for testing purposes.
+ *
  * Revision 1.6  2002/11/27 23:29:19  pfpeterson
  * standardized header
  *
@@ -55,7 +60,8 @@ import java.text.*;
 public class NxWriteEntry{
   String errormessage;
   int instrType;
-
+  public static String DESCRIPTION = "description";
+     //Changed from analysis
   public NxWriteEntry(int instrType){
     errormessage = "";
     this.instrType=instrType;
@@ -150,29 +156,12 @@ public class NxWriteEntry{
       }
     }
     
-/* 
-   X = DS.getAttributeValue( Attribute.INST_NAME);
-   NxWriteNode NxInstr = node.newChildNode( "Instrument","NXinstrument");
-   if( X != null)
-   {String instr_name = ne.cnvertoString( X);
-   if( instr_name != null)
-   {
-   n1 = NxInstr.newChildNode( "name", "SDS");
-   ranks = new int[1];
-   ranks[0] = instr_name.length() +1;
-   n1.setNodeValue( (instr_name+cc).getBytes(), Types.Char, ranks); 
-   if( n1.getErrorMessage() != "")
-   errormessage += ";"+errormessage;         
-   }
-   }
-*/
+
     int instr_type = instrType;
     NexIO.Inst_Type it = new NexIO.Inst_Type();
     
     String analysis = it.getNexAnalysisName( instr_type);
-    n1 = node.newChildNode( "analysis", "SDS");
-    System.out.println("analysis name and instr type="+analysis+","
-                       +instr_type);
+    n1 = node.newChildNode( DESCRIPTION, "SDS");
     ranks = new int[1];
     ranks[0] = 1;
     intval = new int[1];
@@ -194,26 +183,43 @@ public class NxWriteEntry{
         errormessage += ";"+errormessage;         
     }
 
-    X = DS.getAttributeValue( Attribute.SAMPLE_NAME);
+    //move to NxSample
+    
+   
+    
+  /*  X = DS.getAttributeValue( Attribute.SAMPLE_NAME);
     if( X !=  null){
       String Samp_name = ne.cnvertoString( X);
       if( Samp_name != null){
         NxWriteNode Instrnode = node.newChildNode( "sample", "NXsample");
-        n1 = Instrnode.newChildNode( "name", "SDS");
         ranks = new int[1];
         ranks[0] = Samp_name.length()+1;
-        n1.setNodeValue( (Samp_name+cc).getBytes(),Types.Char,ranks);
+        Instrnode.setNodeValue( (Samp_name+cc).getBytes(),Types.Char,ranks);
+
+        NxWriteLog writelog = new NxWriteLog( 7);
+        Instrnode.show();
+        NxWriteNode logNode = Instrnode.newChildNode( "log_7","NXlog");
+        if( writelog.processDS( logNode, null, 7))
+         errormessage += writelog.getErrorMessage();
+
+        NxWriteBeam writeBeam = new NxWriteBeam(instr_type);
+        NxWriteNode beamNode = Instrnode.newChildNode("Beam", "NXbeam");
+        if( writeBeam.processDS( beamNode, DS))
+          errormessage += writeBeam.getErrorMessage();
+      
       }
     }
-/*
-  n1 = NxInstr.newChildNode("detector", "NXdetector");
-  NxWriteDetector ndet = new NxWriteDetector();
-  if( ndet.processDS( n1 , DS ))
-  errormessage += ";"+ndet.getErrorMessage();
-  return false;
-  //Monitors and NxData already taken care of
-  //add attributes/fields run_number, and end_time and end_date
-*/
-    return false;
+   */
+ 
+    NxWriteLog writelog1 = new NxWriteLog( 6);
+    NxWriteNode logNode = node.newChildNode( "log_6","NXlog");
+    if( writelog1.processDS( logNode, null, 6))
+        errormessage += writelog1.getErrorMessage();
+
+
+    if( errormessage.length() <1)
+       return false;
+    else 
+       return true;
   }
 }
