@@ -5,6 +5,10 @@
  * each selection appropriatly.
  *
  * $Log$
+ * Revision 1.12  2001/07/18 17:05:30  neffk
+ * fixed bug that selected the incorrect operator.  also moved from
+ * JTreeUI to JDataTree.
+ *
  * Revision 1.11  2001/07/11 15:51:03  neffk
  * added a bool flag to allow operator to be applied on multiple
  * DataSet objects.  also, fixed a bug in the list of DataSet objects
@@ -26,7 +30,8 @@
  
 package IsawGUI;
 
-import DataSetTools.dataset.*;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.util.IObserver;
 import DataSetTools.operator.*;
 import DataSetTools.components.ParametersGUI.*;
 import java.awt.event.*;
@@ -40,24 +45,45 @@ public class JOperationsMenuHandler
   implements ActionListener, 
              Serializable
 {
+
+                          //these are the DataSet object(s) to
+                          //apply the operator to.  only the first
+                          //element is used when 'use_array' remains
+                          //false.  if 'use_array' is true, then the
+                          //operator is applied to all DataSet objects
+                          //in this array.
   private DataSet[] dss;
-  private JTreeUI treeUI;
-  Document sessionLog;
+
+                          //allows this menu acess to all of the DataSet
+                          //objects in the tree.
+  private JDataTree tree;  
   boolean use_array;
+
+                          //the sessionLog must be in scope so that 
+                          //messages can be appended to it.  since the 
+                          //intent of the log is to keep track of everything 
+                          //done to the DataSet object, we should update
+                          //the log when an operator is applied ...for
+                          //good karma.
+  Document sessionLog;
+
 
   /**
    * constructs this object with the appropriate links to ISAW's tree and
    * session log.
    */
-  public JOperationsMenuHandler( DataSet ds_, 
-                                 JTreeUI treeUI_, 
-                                 Document sessionLog_ )
+  public JOperationsMenuHandler( DataSet ds, 
+                                 JDataTree tree, 
+                                 Document sessionLog )
   {
-    dss = new DataSet[1];  dss[0] = ds_;
-    treeUI = treeUI_;
-    dss = (new DSgetArray( treeUI )).getDataSets(); 
-    sessionLog = sessionLog_;
+    dss = new DataSet[1];  
+    dss[0] = ds;
     use_array = false;
+
+    this.tree = tree;
+//    dss = tree.getDataSets(); 
+
+    this.sessionLog = sessionLog;
   }
 
 
@@ -66,27 +92,27 @@ public class JOperationsMenuHandler
    * session log.  the array of DataSet objects allows the JParametersDialog
    * to offer only selected DataSet objects as additional parameters.
    *
-   * @param dss_       the DataSet object or objects on which to operate.  
+   * @param dss        the DataSet object or objects on which to operate.  
    *                   by default, only the first element is used.  to override
-   *                   this behavior, set use_selected_dss.  this capability is
+   *                   this behavior, set use_array.  this capability is
    *                   provided so that the programmer can apply operators to
    *                   more than one DataSet object at a time.
-   * @param treeUI_    reference to a JTreeUI as a container of DataSet objects.
+   * @param tree       reference to a JDataTree as a container of DataSet objects.
    *                   this parameter is used to get a list of all of the 
    *                   DataSet objects that can be operated upon.  this is
    *                   distinct from the multiple DataSet capability that the
    *                   above parameter provides.
-   * @param use_array_ overrides default behavior of using only the first
-   *                   element in dss_.
+   * @param use_array  overrides default behavior of using only the first
+   *                   element in dss.
    */
-  public JOperationsMenuHandler( DataSet[] dss_, 
-                                 JTreeUI treeUI_,
-                                 boolean use_array_ )
+  public JOperationsMenuHandler( DataSet[] dss, 
+                                 JDataTree tree,
+                                 boolean use_array )
   {
-    dss = dss_;
-    treeUI = treeUI_;
+    this.dss = dss;
+    this.tree = tree;
     sessionLog = null;
-    use_array = use_array_;
+    use_array = use_array;
   }
 
 
@@ -97,27 +123,28 @@ public class JOperationsMenuHandler
   {
     String s = e.getActionCommand();
 
-    for( int i=0;  i<dss[0].getNum_operators();  i++ )
+    for( int dataset=0;  dataset<dss.length;  dataset++ )
     {
-      if( !use_array  )
-      {
-        if(   s.equalsIgnoreCase(  dss[0].getOperator(i).getTitle()  )   )
-        {
-          DSgetArray DSA = new DSgetArray( treeUI );  //DataSet objects to be
-          DataSet[] all_dss;                          //shown as additional args
-          all_dss = DSA.getDataSets();                //in JParameterDialog
+      DataSet ds = dss[ dataset ];
 
-          DataSetOperator op = dss[0].getOperator(i);
-          JParametersDialog pDialog = new JParametersDialog( op,
-                                                             all_dss, 
-                                                             sessionLog,
-                                                             treeUI );
-        }
-      }
-      else
+      for( int i=0;  i<dss[0].getNum_operators();  i++ )
       {
-        System.out.println( 
-          "JOperationsMenuHandler.actionPerformed(): not implemented" );
+        if( !use_array  )
+        {
+          if(   s.equalsIgnoreCase(  ds.getOperator(i).getTitle()  )   )
+          {
+            DataSetOperator op = ds.getOperator(i);
+            JParametersDialog pDialog = new JParametersDialog( op,
+                                                               tree, 
+                                                               sessionLog,
+                                                               (IObserver)tree );
+          }
+        }
+        else
+        {
+          System.out.println( 
+            "JOperationsMenuHandler.actionPerformed(...): feature not implemented" );
+        }
       }
     }
   }
