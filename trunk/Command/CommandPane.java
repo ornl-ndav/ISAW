@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.58  2003/07/01 21:42:48  rmikk
+ * Changed the Dialog box to be non-modal. It still reports
+ *    error conditions.
+ *
  * Revision 1.57  2003/06/02 22:29:46  rmikk
  * -Reduced the adding of IObservers to a Script.  This
  *  is done in the JParametersDialog, if the IObserver
@@ -663,10 +667,29 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
             CP = cp;
             this.jh = jh;
         }
+        private void ReportExecutionStatus(){
 
+          if( CP.SP.getErrorCharPos() >= 0){
+           
+            CP.PC.firePropertyChange("Display", null,"Error "
+                               +CP.SP.getErrorMessage()+" at position "
+                               +CP.SP.getErrorCharPos()+" on line "
+                               +CP.SP.getErrorLine()); 
+          CP.SP.setDocument( null);
+          CP.setErrorCursor( Commands, SP.getErrorLine(),
+                                     SP.getErrorCharPos());
+                                            }
+        }
+
+
+        
         public void actionPerformed( ActionEvent e ){
             Document doc ; 
-            if( e.getSource().equals( CP.Run ) ){
+            if( e.getActionCommand() == JParametersDialog.OPERATION_THROUGH){
+                ReportExecutionStatus();
+                return;
+            }
+            else if( e.getSource().equals( CP.Run ) ){
                  fixUP(CP.Commands.getDocument());
                  CP.SP.setDocument(CP.Commands.getDocument());
                  
@@ -696,7 +719,9 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
                          CP.SP.setTitle( "CommandPane");
                      JParametersDialog pDialog =
                          new JParametersDialog((GenericOperator)(CP.SP), SP, 
-                                              new PlainDocument(), CP, true);
+                                              new PlainDocument(), CP );
+                     pDialog.addActionListener( this );
+                     return;
                  }else{
                      CP.SP.setIObserverList( IObslist);
                      CP.SP.getResult();
