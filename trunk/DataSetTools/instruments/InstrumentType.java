@@ -2,13 +2,16 @@
  * @(#)InstrumentType.java     0.1  99/07/08  Dennis Mikkelson
  *
  *
- * ---------------------------------------------------------------------------   *  $Log$
- * ---------------------------------------------------------------------------   *  Revision 1.2  2000/07/10 22:24:44  dennis
- * ---------------------------------------------------------------------------   *  July 10, 2000 version... many changes
- * ---------------------------------------------------------------------------   *
- * ---------------------------------------------------------------------------   *  Revision 1.2  2000/05/11 16:42:51  dennis
- * ---------------------------------------------------------------------------   *  added RCS logging
- * ---------------------------------------------------------------------------   *
+ *  $Log$
+ *  Revision 1.3  2000/07/12 18:33:29  dennis
+ *  Added method formIPNSFileName() to construct a IPNS runfile
+ *  name from the path, instrument name and run number.
+ *
+ *  Revision 1.2  2000/07/10 22:24:44  dennis
+ *  July 10, 2000 version... many changes
+ *
+ *  Revision 1.2  2000/05/11 16:42:51  dennis
+ *  added RCS logging
  *
  */
 package DataSetTools.instruments;
@@ -142,6 +145,16 @@ public class InstrumentType implements Serializable
       return UNKNOWN;
   }
 
+
+ /**
+  *  Determine the type of an IPNS instrument based on the instrument name
+  *  alone.
+  *
+  *  @param  inst_name  The name of the instrument, such as "HRCS" or "GPPD"
+  *
+  *  @return            An integer code for the instrument type.  The
+  *                     integer codes are defined above.
+  */
  public static int getIPNSInstType( String  inst_name)
   {
     //String inst_name;
@@ -174,6 +187,44 @@ public class InstrumentType implements Serializable
     else
       return UNKNOWN;
   }
+
+ /**
+  *  Form an IPNS runfile name from a directory path, instrument name and
+  *  run number.
+  *
+  *  @param  path         Directory path for the runfile.  This must include
+  *                       the trailing path separator character, such as:
+  *                       /home/ipns_data/  NOT  /home/ipns_data
+  *  @param  instrument   The instrument name, such as HRCS or gppd.  If the
+  *                       first letter of the name is capitalized, all letters
+  *                       in the file name will be capitalized, otherwise,
+  *                       all letters in the file name will be lower case.
+  *  @param  run_num      Integer giving the run number.  If this integer has
+  *                       less than 4 digits, leading zeros will prepended on
+  *                       number when forming the file name.
+  *
+  *  @return  The full file name for the run file, such as 
+  *           /home/ipns_data/HRCS0978.RUN
+  */
+  
+  public static String formIPNSFileName( String path, 
+                                         String instrument,
+                                         int    run_num )
+  {
+    String num = ""+run_num;
+    String file_name;
+ 
+    while ( num.length() < 4 )
+      num = "0"+num;
+
+    if ( Character.isUpperCase( instrument.charAt(0) ) )
+      file_name = path+instrument+num+".RUN";
+    else
+      file_name = path+instrument+num+".run";
+
+    return file_name;
+  }
+
   /* ----------------------------- main ------------------------------------ */
 
   public static void main(String[] args)
