@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2001/06/08 23:20:24  chatter
+ *  Made Isaw an IObserver of LiveDataMonitor
+ *
  *  Revision 1.16  2001/06/08 14:55:49  dennis
  *  Removed unused try{} catch{} block.
  *
@@ -114,7 +117,7 @@ public class Isaw extends JFrame implements Serializable, IObserver
     Util util;
     CommandPane cp;
     MyInternalFrame internalframe;
-    
+    IObserver my_Isaw;
     Properties isawProp;
     Object Script_Path, Data_Directory, Help_Directory, Default_Instrument, Instrument_Macro_Path, 
     User_Macro_Path, Image_Path;
@@ -128,7 +131,7 @@ public class Isaw extends JFrame implements Serializable, IObserver
     {
        
        super("ISAW version 1.0");
-
+      my_Isaw = this;
 
 /*
          // Center ISAW in the screen
@@ -1357,7 +1360,8 @@ String url = "http://www.pns.anl.gov/CHEX/";
 			if(s == System.getProperty("Inst1_Name"))
                     { 
    				String instrument_computer = System.getProperty("Inst1_Path");
-				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer);
+                        objPanel.addIObserver(my_Isaw);    
                         String live_name = System.getProperty("Inst1_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);
                     }
@@ -1366,7 +1370,8 @@ String url = "http://www.pns.anl.gov/CHEX/";
                       { 
              
                         String instrument_computer = System.getProperty("Inst2_Path");
-				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer); 
+                          objPanel.addIObserver(my_Isaw);     
                         String live_name = System.getProperty("Inst2_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);
                         
@@ -1375,8 +1380,9 @@ String url = "http://www.pns.anl.gov/CHEX/";
                       {
                          
                         String instrument_computer = System.getProperty("Inst3_Path");
-				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
-                        String live_name = System.getProperty("Inst3_Name") + " Live Data" ;
+				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer);    
+                        objPanel.addIObserver(my_Isaw);  
+                       String live_name = System.getProperty("Inst3_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);
 
                       }
@@ -1384,57 +1390,65 @@ String url = "http://www.pns.anl.gov/CHEX/";
                    if(s == System.getProperty("Inst4_Name"))
                       {  
                         String instrument_computer = System.getProperty("Inst4_Path");
-				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
-                        String live_name = System.getProperty("Inst4_Name") + " Live Data" ;
+				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer);    
+                        objPanel.addIObserver(my_Isaw);  
+                   String live_name = System.getProperty("Inst4_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst5_Name"))
                       {                          
                         String instrument_computer = System.getProperty("Inst5_Path");
-				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
-                        String live_name = System.getProperty("Inst5_Name") + " Live Data" ;
+				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer);    
+                        objPanel.addIObserver(my_Isaw);  
+                           String live_name = System.getProperty("Inst5_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst6_Name"))
                       {  
                         String instrument_computer = System.getProperty("Inst6_Path");
-				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
-                        String live_name = System.getProperty("Inst6_Name") + " Live Data" ;
+				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer);    
+                        objPanel.addIObserver(my_Isaw);  
+                    String live_name = System.getProperty("Inst6_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst7_Name"))
                       {  
                         String instrument_computer = System.getProperty("Inst7_Path");
-				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
-                        String live_name = System.getProperty("Inst7_Name") + " Live Data" ;
+				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer);    
+                        objPanel.addIObserver(my_Isaw);  
+                       String live_name = System.getProperty("Inst7_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst8_Name"))
                       {  
                         String instrument_computer = System.getProperty("Inst8_Path");
-				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
-                        String live_name = System.getProperty("Inst8_Name") + " Live Data" ;
+				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer);    
+                        objPanel.addIObserver(my_Isaw);  
+                       String live_name = System.getProperty("Inst8_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst9_Name"))
                       {  
                         String instrument_computer = System.getProperty("Inst9_Path");
-				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
-                        String live_name = System.getProperty("Inst9_Name") + " Live Data" ;
+				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer);    
+                        objPanel.addIObserver(my_Isaw);  
+                       String live_name = System.getProperty("Inst9_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst10_Name"))
                       {  
                         String instrument_computer = System.getProperty("Inst10_Path");
-				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
-                        String live_name = System.getProperty("Inst10_Name") + " Live Data" ;
+				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer);    
+                        objPanel.addIObserver(my_Isaw);  
+                         String live_name = System.getProperty("Inst10_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst11_Name"))
                       {                          
                          String instrument_computer = System.getProperty("Inst11_Path");
-				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
-                        String live_name = System.getProperty("Inst11_Name") + " Live Data" ;
+				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer);    
+                        objPanel.addIObserver(my_Isaw);  
+                          String live_name = System.getProperty("Inst11_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);
 
                         
@@ -1507,14 +1521,14 @@ String url = "http://www.pns.anl.gov/CHEX/";
                    if(s == System.getProperty("Inst12_Name"))
                       {  
                         String instrument_computer = System.getProperty("Inst12_Path");
-				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer);    
                         String live_name = System.getProperty("Inst12_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);
                       }
                    if(s == System.getProperty("Inst13_Name"))
                       {  
                          String instrument_computer = System.getProperty("Inst13_Path");
-				JPanel objPanel = new LiveDataMonitor(instrument_computer);    
+				LiveDataMonitor objPanel = new LiveDataMonitor(instrument_computer);    
                         String live_name = System.getProperty("Inst13_Name") + " Live Data" ;
 				jcui.setTab(live_name, objPanel);                
                       }
@@ -1545,7 +1559,7 @@ String url = "http://www.pns.anl.gov/CHEX/";
                     DataSet ds = (DataSet)mtn.getUserObject();
                     System.out.println("inside gsaag" +ds);
                    //gsas_filemaker(ds, "F:\\GPPD10628.RUN;10" );
-                      DataSetTools.gsastools.gsas_file.gsasfilemaker(ds, filename);
+                      gsas_filemaker gg=new gsas_filemaker(ds, filename);
                        }
 
                  }
@@ -2379,7 +2393,7 @@ String url = "http://www.pns.anl.gov/CHEX/";
        		  return;
                 }
 
-     	//	if ( observed instanceof CommandPane )                       this should always be true!!!
+     	//	if ( observed instanceof CommandPane )                   should always be true!!!
      		{
                         
  			if ( reason instanceof DataSet )
@@ -2389,7 +2403,7 @@ String url = "http://www.pns.anl.gov/CHEX/";
 
                                 if ( node == null )    // ds1 is a NEW DataSet, add it as a modified DataSet
 				  		{ addDataSet( ds1 );
-				  		  jdvui.ShowDataSet(ds1,"External Frame",IViewManager.IMAGE);
+				  		  //jdvui.ShowDataSet(ds1,"External Frame",IViewManager.IMAGE);
 						}
                                 else
                                    System.out.println("ERROR: Currently we only insert a new DataSet");
