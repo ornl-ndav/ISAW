@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2001/07/02 20:48:21  dennis
+ * Added X-Conversions table.
+ *
  * Revision 1.7  2001/06/29 18:39:35  dennis
  * Now allows selection of color scales and temporarily
  * marks group positons using rectangles..
@@ -95,16 +98,17 @@ public class ThreeDView extends DataSetViewer
   private final int NUM_PSEUDO_COLORS   = 2 * NUM_POSITIVE_COLORS + 1;
   private final int ZERO_COLOR_INDEX    = NUM_POSITIVE_COLORS;
 
-  private ThreeD_JPanel       threeD_panel      = null; 
-  private Box                 control_panel     = null; 
-  private ImageJPanel         color_scale_image = null;
-  private AltAzController     view_control      = null;
-  private AnimationController frame_control     = null;
-  private SplitPaneWithState  split_pane        = null;
-  private byte                color_index[][]   = null;
-  private volatile Color      color_table[]     = null;
-  private IThreeD_Object      objects[]         = null;
-  private float               log_scale[]       = null;
+  private ThreeD_JPanel            threeD_panel      = null; 
+  private Box                      control_panel     = null; 
+  private ImageJPanel              color_scale_image = null;
+  private AltAzController          view_control      = null;
+  private AnimationController      frame_control     = null;
+  private SplitPaneWithState       split_pane        = null;
+  private byte                     color_index[][]   = null;
+  private volatile Color           color_table[]     = null;
+  private IThreeD_Object           objects[]         = null;
+  private float                    log_scale[]       = null;
+  private DataSetXConversionsTable conv_table        = null;
 
   private final String        GROUPS          = "Groups";
   private final String        AXES            = "AXES";
@@ -238,10 +242,10 @@ private void MakeThreeD_Scene()
     radius = 1;
   
   view_control.setViewAngle( 40 );
-  view_control.setAltitudeAngle( 30 );
-  view_control.setAzimuthAngle( 0 );
+  view_control.setAltitudeAngle( 20 );
+  view_control.setAzimuthAngle( 45 );
   view_control.setDistanceRange( 0.5f*radius, 5*radius );
-  view_control.setDistance( 4f*radius );
+  view_control.setDistance( 3f*radius );
   view_control.apply( true );
 
   draw_axes( radius/5 );
@@ -562,6 +566,17 @@ private void init()
   frame_control.setTextLabel( getDataSet().getX_units() );
   control_panel.add( frame_control );
 
+  conv_table = new DataSetXConversionsTable( getDataSet() );
+  JPanel conv_panel = new JPanel();
+  conv_panel.setLayout( new GridLayout(1,1) );
+  conv_panel.add( conv_table.getTable() );
+  TitledBorder border = new TitledBorder(
+                                    LineBorder.createBlackLineBorder(), 
+                                    "Pixel Data");
+  border.setTitleFont( FontUtil.BORDER_FONT );
+  conv_panel.setBorder( border );
+  control_panel.add( conv_panel );
+
   JPanel filler = new JPanel();
   filler.setPreferredSize( new Dimension( 120, 2000 ) );
   control_panel.add( filler );
@@ -576,8 +591,7 @@ private void init()
   if ( attr != null )
    title = attr.getStringValue();
 
-  TitledBorder border = new TitledBorder(
-                                    LineBorder.createBlackLineBorder(), title);
+  border = new TitledBorder( LineBorder.createBlackLineBorder(), title);
   border.setTitleFont( FontUtil.BORDER_FONT );
   setBorder( border );
             
@@ -643,6 +657,10 @@ class ViewMouseMotionAdapter extends MouseMotionAdapter
        {
          ds.setPointedAtIndex( index );
          ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+
+         float y_val = frame_control.getFrameValue();
+         if ( y_val != Float.NaN )
+           conv_table.showConversions( y_val, index );
        }
      }
    }
