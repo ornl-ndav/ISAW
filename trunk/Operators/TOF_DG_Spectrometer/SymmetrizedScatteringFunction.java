@@ -31,6 +31,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.10  2004/03/19 17:10:55  dennis
+ *  Removed unused variables
+ *
  *  Revision 1.9  2004/03/15 19:36:55  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -243,8 +246,6 @@ public class SymmetrizedScatteringFunction
                 "ERROR: temperature must be greater than 0");
 
     new_ds.addLog_entry("Calculated Symmetrized Scattering Function");
-
-    Float   Float_val;
 
     float x_vals[],
           y_vals[],

@@ -30,6 +30,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.11  2004/03/19 17:10:55  dennis
+ *  Removed unused variables
+ *
  *  Revision 1.10  2004/03/15 19:36:54  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -77,7 +80,6 @@
 
 package Operators.TOF_DG_Spectrometer;
 
-import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.Messaging.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
@@ -264,9 +266,6 @@ public class ScatteringFunction extends GenericTOF_DG_Spectrometer
     AttributeList attr_list;
     Float   Float_val;
 
-    DetectorPosition position;
-    float spherical_coords[];
-
     float x_vals[],
           y_vals[],
           new_y_vals[],
@@ -292,10 +291,6 @@ public class ScatteringFunction extends GenericTOF_DG_Spectrometer
 
       Float_val   = (Float)attr_list.getAttributeValue(Attribute.ENERGY_IN);
       energy_in   = Float_val.floatValue();
-
-      position = (DetectorPosition)
-                  attr_list.getAttributeValue(Attribute.DETECTOR_POS);
-      spherical_coords = position.getSphericalCoords();
 
       velocity_in = tof_calc.VelocityFromEnergy( energy_in );
       wvi = WVCON * velocity_in;

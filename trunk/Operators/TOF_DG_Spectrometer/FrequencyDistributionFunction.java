@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2004/03/19 17:10:54  dennis
+ *  Removed unused variables
+ *
  *  Revision 1.13  2004/03/15 19:36:54  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -213,7 +216,7 @@ public class FrequencyDistributionFunction
   {       
     System.out.println("Start f_fn_ds now!");
     
-    final float XKCON   = 0.086165f; // conversion factor 
+ // final float XKCON   = 0.086165f; // conversion factor 
 
                                                     // get the parameters
     DataSet ds          = (DataSet)(getParameter(0).getValue());
@@ -233,7 +236,6 @@ public class FrequencyDistributionFunction
     Float   Float_val;
 
     DetectorPosition position;
-    float spherical_coords[];
 
     float energy_in,
           energy_final,
@@ -260,7 +262,6 @@ public class FrequencyDistributionFunction
 
       position = (DetectorPosition)
                   attr_list.getAttributeValue(Attribute.DETECTOR_POS);
-      spherical_coords = position.getSphericalCoords();
 
       y_vals = data.getY_values();
       x_vals = data.getX_scale().getXs();

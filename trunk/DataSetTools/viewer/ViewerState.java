@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2004/03/19 17:18:44  dennis
+ *  Removed unused variables
+ *
  *  Revision 1.29  2004/03/15 06:10:55  dennis
  *  Removed unused import statements.
  *
@@ -174,8 +177,7 @@ public class ViewerState  implements Serializable
       state = new Hashtable();
                                                     // initialize state from
                                                     // IsawProps.dat file, if
-                                                    // possible.
-      SharedData sd = new SharedData();            
+                                                    // possible.  
       SharedData.isaw_props.reload();
                                                        // color scale ......
       String scale_name = SharedData.getProperty( COLOR_SCALE ); 
