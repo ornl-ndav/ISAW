@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2001/07/27 22:18:26  dennis
+ *  Added public final string BUILD_DATE.
+ *
  *  Revision 1.2  2001/07/26 19:52:53  dennis
  *  Removed build date and shared version number.
  *
@@ -58,4 +61,5 @@ public class SharedData implements java.io.Serializable
   public static final PropertiesLoader isaw_props 
                                         = new PropertiesLoader("IsawProps.dat");
   
+  public static final String BUILD_DATE = "Unknown_Build_Date";
 }
