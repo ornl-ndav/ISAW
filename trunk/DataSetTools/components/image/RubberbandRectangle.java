@@ -1,7 +1,10 @@
 /*
- * @(#) RubberbandRectangle.java  1.0    1998/07/29   Dennis Mikkelson
+ * @(#) RubberbandRectangle.java 
  *
  *  $Log$
+ *  Revision 1.4  2001/01/29 21:39:32  dennis
+ *  Now uses CVS version numbers.
+ *
  *  Revision 1.3  2000/07/10 22:17:02  dennis
  *  minor format change to documentation
  *
@@ -33,11 +36,13 @@ public class RubberbandRectangle extends    Rubberband
     public RubberbandRectangle(JPanel component) {
         super(component);
     }
+
     public void drawLast(Graphics graphics) {
         Rectangle rect = lastBounds();
         graphics.drawRect(rect.x, rect.y, 
                           rect.width, rect.height);
     }
+
     public void drawNext(Graphics graphics) {
         Rectangle rect = bounds();
         graphics.drawRect(rect.x, rect.y, 
