@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/02/24 20:59:14  pfpeterson
+ *  Now extends ChooserPG rather than ArrayPG.
+ *
  *  Revision 1.5  2002/11/27 23:22:42  pfpeterson
  *  standardized header
  *
@@ -60,10 +63,10 @@ import java.util.Vector;
  * This is a superclass to take care of many of the common details of
  * Array Parameter GUIs.
  */
-public class DataSetPG extends ArrayPG{
+public class DataSetPG extends ChooserPG{
     // static variables
     private   static String TYPE     = "DataSet";
-    protected static int    DEF_COLS = ArrayPG.DEF_COLS;
+    protected static int    DEF_COLS = ChooserPG.DEF_COLS;
 
     // ********** Constructors **********
     public DataSetPG(String name, Object value){
