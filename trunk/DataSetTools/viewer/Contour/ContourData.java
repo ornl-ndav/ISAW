@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/08/02 19:34:13  rmikk
+ *  Semi Fix to replace XScale features
+ *
  *  Revision 1.7  2002/08/01 22:10:54  rmikk
  *  Fixed some errors with the Arbitrary axis handler system
  *
@@ -250,6 +253,20 @@ public class ContourData
 
    }
 
+  private float CalcY( float[] yy, float index1, float index2)
+    {float Res =0;
+     for( int i = (int)index1 + 1; i <(int)index2 -1; i++)
+        Res += yy[i];
+     
+     if( (int)index1 < yy.length)
+        if( (int)index1 >=0)
+           Res += yy[(int)index1]*(index1 -(int)index1);
+     if( (int)index2 < yy.length)
+        if( (int)index2 >=0)
+           Res += yy[(int)index2]*(index2-(int)index2);
+     return Res;
+      
+    }
   int[] Groupss;
   double[] values;
   public SGTData getSGTDataSpecial( float X )
@@ -263,19 +280,30 @@ public class ContourData
     Groupss = new int[nrowws*ncolls+1];
     Arrays.fill( Groupss, -1);
     for( int i=0;i< ds.getNum_entries(); i++)
-      {int indx = Axis3.getXindex( i, X);
-       if( indx >= 0)
-         {float ax1= Axis1.getValue( i,indx);
+      {float index1 = Axis3.getXindex( i, X);
+       float index2 = Axis3.getXindex( i, X - (maxAx3 - minAx3)/ntimes);
+       if( index1 > 0)
+         {if( index2 <0) index2 = index1;
+          int indx = (int)(( index1 + index2)/2);
+          float ax1= Axis1.getValue( i,indx);
           float ax2 = Axis2.getValue( i,indx);
           int row = (int)( nrowws*(ax2-minAx2)/(maxAx2-minAx2));
           int col =(int)( ncolls*(ax1-minAx1)/(maxAx1-minAx1));
-          double y=0;
+          double y = 0,y1 = 0, y2 = 0;
           Data D =ds.getData_entry(i);
           if( indx >=0)
            if( indx < D.getX_scale().getNum_x())
             {//if( D.isHistogram() && indx >0) indx--;
             // y = D.getX_scale().getX(indx);
-               y = D.getY_values()[indx];
+               float[] yy =D.getY_values(); 
+               /*y1 =  yy[indx];
+               if( indx +1 < yy.length)
+                 y2 = yy[indx + 1];
+               else
+              */
+              y = CalcY(yy, index1,index2);
+               
+
             }
          if( y > 0)
            { //if(values[col*nrowws+row]>0)
@@ -318,7 +346,7 @@ public class ContourData
       //there could be missing data in the returned array, we will take a
       //chance and say that the first detector will give us good data.
       if( mode !=0)
-        { //System.out.println("in getTimeRange "+minAx3+","+maxAx3+","+ntimes);
+        { System.out.println("in getTimeRange "+minAx3+","+maxAx3+","+ntimes);
           return (new UniformXScale(minAx3,maxAx3, ntimes)).getXs();
         }
       Data db = ds.getData_entry( 0 );
@@ -349,22 +377,30 @@ public class ContourData
      int Group = getGroupIndex( row, col);
      if( Group < 0)
        return Float.NaN;
-     int time = Axis3.getXindex( Group, lastTime);
+     float time = Axis3.getXindex( Group, lastTime);
      Data D = ds.getData_entry(Group);
-     return D.getX_scale().getX(time);
+     return D.getX_scale().getX((int)(time));
       
    }
 
    public void setXScale( XScale xscale)
-    { if( xscale == null)
-        x_scale = ds.getData_entry(0).getX_scale();
-      else
-        {x_scale = xscale;
+     {if( mode ==0)
+        {if( xscale == null)
+            x_scale = ds.getData_entry(0).getX_scale();
+         else
+            x_scale = xscale;
         
-         }
-      ds =(DataSet)( dsSave.clone());
-      for( int j=0; j< ds.getNum_entries(); j++)
-        ds.getData_entry(j).resample( x_scale,0);
+         ds =(DataSet)( dsSave.clone());
+         for( int j=0; j< ds.getNum_entries(); j++)
+            ds.getData_entry(j).resample( x_scale,0);
+        }
+      else if( xscale != null)
+       { ntimes = xscale.getNum_x();
+         if( ntimes <10)
+             ntimes = 10;
+       }
+      else 
+         ntimes = 20;  
      }
 
    public int getGroupIndex( double row, double col )
@@ -411,7 +447,7 @@ public class ContourData
            c = (int) C;
            //System.out.println( "RCrc="+R+","+C+","+r+","+c +","+values[c*nrowws+r]);
            int G =Groupss[ c*nrowws+r];
-           int xIndex = Axis3.getXindex( G, lastTime);
+           float xIndex = Axis3.getXindex( G, lastTime);
           // System.out .println("Gr, A1,A2,time, timeIndex="+G+","+Axis1.getValue(G,xIndex)+","+
             //  Axis2.getValue( G, xIndex)+ ","+lastTime+","+Axis3.getValue(G,xIndex)+","+xIndex);
            return Groupss[ c*nrowws+r];
