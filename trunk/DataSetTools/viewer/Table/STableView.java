@@ -30,6 +30,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.13  2003/08/12 14:32:39  rmikk
+ * Added the JMenuItem,SaveDataSetActionListener, to save
+ *   the current data set
+ *
  * Revision 1.12  2003/06/18 20:37:28  pfpeterson
  * Changed calls for NxNodeUtils.Showw(Object) to
  * DataSetTools.util.StringUtil.toString(Object)
@@ -115,7 +119,7 @@ public class STableView  extends DataSetViewer
   DataSetXConversionsTable InfoTable;
   JPanel InfoTableHolder;
   ExcelAdapter EA;
-
+  SaveDataSetActionListener SaveDS;
   
   public STableView( DataSet DS, ViewerState state1, TableViewModel tabMod)
     {super( DS, state1);
@@ -125,11 +129,14 @@ public class STableView  extends DataSetViewer
         
         }
      this.ds = DS;
+     
      table_model = tabMod;
      initState( state );
      initFrMenuItems();
+     SaveDS = new SaveDataSetActionListener( DS);
+     SaveDS.setUpMenuItem( getMenuBar());
     }
-
+ 
 
   /** Initializes the whole viewer including the Menu items. The table Model has been
   *   set and the state initialized. The table model can be fixed a bit here.
@@ -137,9 +144,9 @@ public class STableView  extends DataSetViewer
   public void initFrMenuItems()
     {// Add the Menu Bars items
       JMenuBar menu_bar = getMenuBar();
-      JMenu jm = menu_bar.getMenu( DataSetViewer.FILE_MENU_ID );
 
-      JMenuItem sv= new JMenuItem( "Save to a File");
+      JMenu jm = menu_bar.getMenu( DataSetViewer.FILE_MENU_ID );
+      JMenuItem sv= new JMenuItem( "Save Table to a File");
       sv.addActionListener( new MyActionListener());
       jm.add(sv);
 
@@ -357,6 +364,7 @@ public class STableView  extends DataSetViewer
    { this.ds = ds;
     
      super.setDataSet( ds);
+     SaveDS.setDataSet( ds);
      boolean serr,sind;
      serr = jmErr.getState();
      sind = jmInd.getState(); 
