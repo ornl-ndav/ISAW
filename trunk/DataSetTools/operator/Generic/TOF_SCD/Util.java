@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/02/10 23:04:21  pfpeterson
+ * Changed the constructor from being public and throwing an
+ * InstantiationError to being private and doing nothing.
+ *
  * Revision 1.1  2003/01/30 21:07:23  pfpeterson
  * Added to CVS.
  *
@@ -43,9 +47,7 @@ public class Util{
   /**
    * Don't let anyone try to instantiate the class
    */
-  public Util(){
-    throw new InstantiationError("Util class only provides methods, "
-                                     +"not objects");
+  private Util(){
   }
 
   /**
