@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 20:46:02  kramer
+ * Added a new command line option --logo.
+ *
  * Revision 1.3  2004/03/12 19:46:19  bouzekc
  * Changes since 03/10.
  *
@@ -115,7 +118,36 @@ public class CommandLineManager
 		for (int i = 0; i<arr.length; i++)
 		{
 			String str = arr[i];
-			if (str.equals("--version") || str.equals("-V"))
+			if (str.equals("--logo"))
+			{
+				if (!unknown.trim().equals(""))
+					System.out.println("Unrecognized Option:  "+unknown);
+			    System.out.println("        _--_\n"+
+											"       /  O --\n"+
+											"      /     - | \n" +
+											"     /      |    \n" +
+										"    /        \\\n"+
+									"   /          |\n"+
+									"  /           |\n"+
+									" |           /\n"+
+									" |          /\n"+
+									" |         /\n"+
+									" |        /----------\n"+
+									" |       |           |\n"+
+									"  \\    _/-      -----\n"+
+									"   |  |   |    |\n"+
+									"   |  |   |    |\n"+
+									"   |  |   |    |\n"+
+									"    --    |    |\n"+
+									"          |    |\n"+
+									"  ---    /     /\n"+
+									" |   |  /     /\n"+
+									" |    -      |\n"+
+									"  \\         /\n"+
+									"   --------\n");
+				unknown = "";
+			}
+			else if (str.equals("--version") || str.equals("-V"))
 			{
 				if (!unknown.trim().equals(""))
 					System.out.println("Unrecognized Option:  "+unknown);
