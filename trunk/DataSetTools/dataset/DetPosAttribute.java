@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.15  2004/04/26 13:09:54  rmikk
+ *  Made the null constructor public
+ *  Added more documentation
+ *
  *  Revision 1.14  2004/03/15 06:10:36  dennis
  *  Removed unused import statements.
  *
@@ -113,7 +117,7 @@ public class DetPosAttribute extends Attribute
     this.value = new DetectorPosition( value );
   }
 
-  private DetPosAttribute()
+  public DetPosAttribute()
   {
     super("");
     this.value = new DetectorPosition();
@@ -138,6 +142,11 @@ public class DetPosAttribute extends Attribute
      return new DetectorPosition( value );
    }
 
+
+   /**
+     *  This method will write the information in this DetPosAttribute to the
+     *  output stream in the xml format
+     */
    public boolean XMLwrite( OutputStream stream, int mode )
     { 
       try
@@ -158,8 +167,15 @@ public class DetPosAttribute extends Attribute
          }
      }
 
-  public boolean XMLread( InputStream stream )
-    {try{
+  /**
+    * This method reads Detector Position Attribute information from the
+    * Input Stream and assigns the appropriate values to this Attribute.
+    * NOTE: This method assumes the initial tag, but not the attributes
+    * has been read
+    */
+  public  boolean XMLread( InputStream stream )
+  {
+    try{
 //-----------------get name v
       String Tag = xml_utils.getTag( stream );
       if( Tag == null)
@@ -197,8 +213,11 @@ public class DetPosAttribute extends Attribute
                             "missing DetectorPosition tag in Det Pos"+Tag); 
       if(!xml_utils.skipAttributes( stream))
          return xml_utils.setError( xml_utils.getErrorMessage());
-      if(!((Position3D)this.value).XMLread( stream))
+      value= new DetectorPosition();
+      if(!(((Position3D)value).XMLread(stream)))
           return false;
+//      if(!((Poition3D)this.value).XMLread( stream))
+//          return null;
 //-------------------- get End tags
       Tag =xml_utils.getTag( stream ); 
       if( Tag == null)
@@ -215,8 +234,9 @@ public class DetPosAttribute extends Attribute
         return xml_utils.setError("Tags not nested in Pos 3D"+Tag);
       if(!xml_utils.skipAttributes( stream ))
         return xml_utils.setError( xml_utils.getErrorMessage());
-      return true;
-    }
+      return true;//new DetPosAttribute(name, (DetectorPosition)value);
+      }
+   
     catch( Exception s)
     { return xml_utils.setError( "Exception ="+s.getMessage());
      }
