@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.16  2005/01/10 15:47:32  dennis
+ *  Removed unused imports.
+ *
  *  Revision 1.15  2004/11/11 19:50:44  millermi
  *  - No longer implements IAxisAddible since AxisOverlay2D is not used.
  *
@@ -68,7 +71,6 @@ import gov.anl.ipns.ViewTools.Components.TwoD.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
 import gov.anl.ipns.ViewTools.Components.Region.*;
 import gov.anl.ipns.ViewTools.UI.*;
-import gov.anl.ipns.ViewTools.Components.Transparency.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControlMaker;
 
