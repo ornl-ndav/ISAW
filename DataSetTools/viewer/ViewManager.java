@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.42  2004/01/29 00:02:57  dennis
+ *  Added HKL_SliceView
+ *
  *  Revision 1.41  2004/01/24 22:02:38  bouzekc
  *  Removed unused imports.
  *
@@ -139,6 +142,7 @@ import DataSetTools.viewer.Image.*;
 import DataSetTools.viewer.ThreeD.*;
 import DataSetTools.viewer.Table.*;
 import DataSetTools.viewer.Contour.*;
+import DataSetTools.viewer.SCD_ReciprocalSpaceSlice.*;
 import DataSetTools.components.View.*;
 import DataSetTools.components.View.OneD.*;
 import DataSetTools.parameter.*;
@@ -346,6 +350,8 @@ public class ViewManager extends    JFrame
         viewer = new GraphView( tempDataSet, state );
       else if ( view_type.equals( THREE_D ))
         viewer = new ThreeDView( tempDataSet, state );
+      else if ( view_type.equals( HKL_SLICE ) )
+        viewer = new HKL_SliceView( tempDataSet, state );
       else if ( view_type.equals( SELECTED_GRAPHS ))             // Brent's 
       {
         DataSetData dsd = new DataSetData( tempDataSet );
@@ -735,6 +741,10 @@ private void BuildViewMenu()
   view_menu.add( button );
 
   button = new JMenuItem( THREE_D );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
+
+  button = new JMenuItem( HKL_SLICE );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
   
