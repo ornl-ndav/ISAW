@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/12/15 02:06:10  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.6  2003/04/02 19:49:00  dennis
  * Added getDocumentation() method.  (Joshua Olson)
  *
@@ -42,12 +45,21 @@
 
 package Operators.TOF_SCD;
 
-import  java.io.*;
-import  java.util.Vector;
-import  DataSetTools.util.*;
-import  DataSetTools.operator.Parameter;
-import  DataSetTools.operator.Generic.TOF_SCD.*;
-import  DataSetTools.parameter.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.util.Vector;
+
+import DataSetTools.operator.Generic.TOF_SCD.GenericTOF_SCD;
+import DataSetTools.parameter.FloatPG;
+import DataSetTools.parameter.IParameter;
+import DataSetTools.parameter.LoadFilePG;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.FilenameUtil;
+import DataSetTools.util.SharedData;
+import DataSetTools.util.SysUtil;
+import DataSetTools.util.TextFileReader;
 
 /**
  * This operator is intended to run A.J. Schultz's "index"
