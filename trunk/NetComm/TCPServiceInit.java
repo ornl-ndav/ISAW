@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/04/08 15:35:11  dennis
+ *  Increased connect time out period from 20 sec to 60 sec.
+ *
  *  Revision 1.6  2001/08/30 20:05:33  dennis
  *  Added "catch" clauses to handle ( but not exit ) two other exceptions:
  *  StreamCorruptedException -> generated when a non-object is sent to the
@@ -116,8 +119,8 @@ import java.io.*;
     */
     public void run()
     {
-      final int USE_TIMEOUT_MS     = 0;       // Allow 20 seconds to make the
-      final int CONNECT_TIMEOUT_MS = 20000;   // connection, but once it is
+      final int USE_TIMEOUT_MS     = 0;       // Allow 60 seconds to make the
+      final int CONNECT_TIMEOUT_MS = 60000;   // connection, but once it is
                                               // made, let it be infinte.
                                               // ( zero is interpreted as 
                                               //   timeout = infinity )
