@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/06/05 14:36:27  dennis
+ * Now shows more significant digits in the normal, sigma and
+ * d_spacing readouts.
+ *
  * Revision 1.1  2003/06/03 17:02:19  dennis
  * UI for displaying information about planes in the reciprocal lattice.
  *
@@ -147,7 +151,7 @@ public class LatticePlaneUI extends ActiveJPanel
     for ( int i = 0; i < n_vals; i++ )
     {
       this.normal[i] = normal[i];
-      text += Format.real( normal[i], 3, 3 ) + " ";
+      text += Format.real( normal[i], 5, 5 ) + " ";
     }
 
     normal_label.setText( text );
@@ -182,8 +186,8 @@ public class LatticePlaneUI extends ActiveJPanel
     this.d_spacing = d_spacing;
     this.sigma     = sigma;
 
-    String d = Format.real( d_spacing, 4, 4 );
-    String s = Format.real( sigma, 4, 4 );
+    String d = Format.real( d_spacing, 5, 5 );
+    String s = Format.real( sigma, 5, 5 );
     d_sigma_label.setText( "d:" + d + "    " + FontUtil.SIGMA + ":" + s );
   }
 
