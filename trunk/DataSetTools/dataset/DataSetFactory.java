@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.40  2003/09/20 19:14:58  dennis
+ *  Added SumByAttributeNormSA() operator to DG_Spectrometer
+ *  DataSets. (Alok)
+ *
  *  Revision 1.39  2003/07/05 18:11:29  rmikk
  *  Added two new Attribute operators, ClearSelect and
  *  SelectGroups, to every DataSet.
@@ -443,6 +447,7 @@ public class DataSetFactory implements Serializable
       ds.addOperator( new SpectrometerTofToEnergyLoss() );
       ds.addOperator( new SpectrometerTofToEnergy() );
       ds.addOperator( new SpectrometerTofToWavelength() );
+      ds.addOperator( new SumByAttributeNormSA() );
 //      ds.addOperator( new SpectrometerTofToQ() );
       ds.addOperator( new SpectrometerTofToQE() );
       ds.addOperator( new TrueAngle() );
