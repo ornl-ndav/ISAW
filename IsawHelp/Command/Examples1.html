@@ -123,6 +123,140 @@ Display Y
 Display Z
 
 </pre>
+<hr><a NAME="Python"></a>
+<pre>
+
+# This is a simply Jython(Python) Script that reads in
+# a data set, adds two to every intensity value, then
+# displays the result and sends the result to all
+# IObservers( currently only IsawGUI.Isaw Observes)
+
+# This script cannot be installed. It can be run by
+# Command.CommandPane, Command.ScriptOperator, and
+# IsawGUI.Isaw( the Script tab)
+
+
+from DataSetTools.util  import *
+from java.util import Vector
+from Operators.Generic import *
+from Command import *
+from DataSetTools.operator.DataSet.Math.Scalar import *
+#------------------ Get Filename ---------------
+Prompt = Vector()
+Prompt.addElement("Enter FileName")
+Val = Vector()
+Val.addElement(LoadFileString())
+InputBox("FileName", Prompt, Val, Vector()).getResult()
+FileName = Val.elementAt(0).toString()
+
+#---------Get the DataSets ----------------
+
+DDS =ScriptUtil.load( FileName)
+n=1
+#--------------- Add 2 to Every intensity----------------
+DataSetScalarAdd( DDS[n],2.0,3==2).getResult()
+
+#-------------- Display the results --------------------
+ScriptUtil.display( DDS[n])
+
+#------------ Send it to ISAW ----------------------
+IOBS.notifyIObservers( DDS[n], DDS[n])
+</pre><P>
+<hr><a NAME="Python Operators"></a>
+<pre>
+
+#
+# File:  Reduce_Form1.py
+#
+# Copyright (C) 2003, Ruth Mikkelson
+#
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+#
+# Contact : Ruth Mikkelsonn <MikkelsonR@uwstout.edu>
+#           Advanced Photon Source Division
+#           Argonne National Laboratory
+#           9700 South Cass Avenue
+#           Argonne, IL 60439-4845, USA
+#
+# This work was supported by the National Science Foundation under grant
+# number DMR-0218882.
+#
+# Modified:
+#
+# $Log$
+# Revision 1.4  2003/11/22 20:43:57  rmikk
+# Added examples of Python scripting
+#
+# Revision 1.2  2003/07/14 20:37:41  bouzekc
+# Added parameters and code to trim out border pixels.  Now
+# returns the name of the peaks file.
+#
+# Revision 1.1  2003/07/08 23:42:44  bouzekc
+# Added to CVS (Chris Bouzek).
+#
+# 
+from DataSetTools.operator.Generic.TOF_SAD import *
+from Wizard.TOF_SAD import *
+class Reduce_Form1(GenericTOF_SAD):
+    def setDefaultParameters(self):
+        self.super__clearParametersVector()
+        FilePG =LoadFilePG("Sensitivity File(*.dat)",None)
+        FF = GenericFileFilter(".dat","Sensitivity File(*.dat)")
+        FilePG.addFilter(FF)
+        self.addParameter(FilePG )
+         
+        FilePG =LoadFilePG("Efficiency File",None)
+        FF = GenericFileFilter(".dat","Efficiency File(*.dat)")
+       
+        
+        FilePG.addFilter(FF)
+        FilePG.addFilter(FF)
+        self.addParameter(FilePG )
+        useBackTransmissionPG = BooleanPG("Use Background Transm", Boolean(3==3))
+        self.addParameter( useBackTransmissionPG)
+        FilePG=LoadFilePG("BackGround Transmission File",None)
+        FilePG.addFilter(GenericFileFilter(".cf","Transmission File(*.cf)"))
+        self.addParameter(FilePG)
+        useBackTransmissionPG.addPropertyChangeListener( PChangeListener( FilePG))
+    def getResult(self):
+        SensitivityFilename=self.getParameter(0).value
+        EfficiencyFilename=self.getParameter(1).value
+        
+        useBackGroundTransmission =self.getParameter(2).value
+        if useBackGroundTransmission: 
+           BackGroundTransmissionFilename=self.getParameter(2).value
+        else:
+           BackGroundTransmissionFilename =""
+        SensitivityDataSets = ReadFlood(SensitivityFilename, 128,128)
+        EfficiencyDataSet =Read3Col1D( EfficiencyFilename,"Efficiency")
+        n=EfficiencyDataSet.getData_entry(0).getX_scale().getNum_x()
+        if useBackGroundTransmission: 
+           BackGroundTransmissionDataSet =ReadTransmission(TransBFile,n)
+        else:
+           BackGroundTransmissionDataSet = DataSet.EMPTY_DATA_SET
+        V = Vector()
+        V.addElement( SensitivityDataSets[0])
+        V.addElement( EfficiencyDataSet)
+        V.addElement( BackGroundTransmissionDataSet)
+        return V;
+  
+           
+    def __init__(self):
+        Operator.__init__(self,"Select Calibration files")
+</pre><P>
 
 <hr><a NAME="DataSetsSimple"></a>
 <a href="Examples.html">EXAMPLES</a><P>
