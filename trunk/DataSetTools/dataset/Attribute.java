@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2002/06/05 13:47:14  dennis
+ *  Made "name" a protected field rather than private, since the name
+ *  will have to be read/written to XML files by subclasses.
+ *
  *  Revision 1.21  2002/03/28 19:34:39  pfpeterson
  *  Added new string constant for TIME_OFFSET attribute.
  *
@@ -219,7 +223,7 @@ abstract public class Attribute implements Serializable
   public static final String  SAMPLE_DATA        = "Sample Data";
   public static final String  PULSE_HEIGHT_DATA  = "Pulse Height";
  
-  private String name;
+  protected String name;
 
   /**
    *  Since Attribute is an abstract class, this constructor is never called
