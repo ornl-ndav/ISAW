@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/05/29 19:46:21  dennis
+ * Removed redundant construction of the Color list.
+ *
  * Revision 1.3  2001/05/29 15:06:47  dennis
  * Now shows colored markers with colors corresponding to TOF
  *
@@ -119,8 +122,6 @@ public ThreeDView( DataSet data_set, ViewerState state )
   JMenuItem button = new JMenuItem( "My new option" );
   button.addActionListener( option_menu_handler );
   option_menu.add( button );
-
-  MakeThreeD_Scene();
 }
 
 /* -----------------------------------------------------------------------
@@ -162,7 +163,6 @@ public void setDataSet( DataSet ds )
   setVisible( false );
   super.setDataSet( ds );
   init();
-  redraw( NEW_DATA_SET );
   setVisible( true );
 }
 
@@ -249,7 +249,7 @@ private void MakeThreeD_Scene()
   }
 
   MakeColorList();
-  set_colors( 50 );
+  set_colors( 0 );
 }
 
 
@@ -266,8 +266,6 @@ private void set_colors( int frame )
 
 private void MakeColorList()
 {
-  System.out.println("Start MakeColorList");
-
   DataSet ds = getDataSet();
   float   y_vals[][];
 
@@ -348,7 +346,6 @@ private void MakeColorList()
 
       colors[i][j] = color_table[index];
     }
-  System.out.println("End MakeColorList");
 }
 
 
