@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2001/07/24 20:07:35  rmikk
+ * Eliminated code for raw Angle.
+ *
  * Revision 1.2  2001/07/17 14:58:46  rmikk
  * Added More Attributes
  *
@@ -57,6 +60,7 @@ public String getErrorMessage()
   { 
     return errormessage;
    }
+
  /** Fills out an existing DataSet with information from the NXdetector
    * section of a Nexus datasource
   *@param node  the current node positioned to an NXdata part of a datasource
@@ -112,7 +116,7 @@ public boolean processDS( NxNode node ,  DataSet DS )
         l = java.lang.Math.min( l , DS.getNum_entries() );
     
     }
-  float min_angle, max_angle;
+  /*   float min_angle, max_angle;
   
   min_angle=max_angle=0.0f;
   if( phi != null) min_angle = phi[0];
@@ -139,7 +143,7 @@ public boolean processDS( NxNode node ,  DataSet DS )
               new DetectorPosition( P ) ) );           
 
     }
-
+  
 
   //efficiency
   NxData_Gen ng = new NxData_Gen();
@@ -170,7 +174,7 @@ public boolean processDS( NxNode node ,  DataSet DS )
     DB.setAttribute(new FloatAttribute( Attribute.RAW_ANGLE, f)); 
 
    }
-
+  */
 //Solid angle : need detector ID for ...Help
   return false;
   }
