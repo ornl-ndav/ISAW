@@ -28,6 +28,11 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.11  2003/06/17 20:36:36  bouzekc
+ * Fixed setDefaultParameters so all parameters have a
+ * visible checkbox.  Added more robust error checking on
+ * the raw and output directory parameters.
+ *
  * Revision 1.10  2003/06/16 14:52:28  bouzekc
  * Changed the matrix file load parameter to a LoadFilePG.
  *
@@ -148,27 +153,27 @@ public class IndexJForm extends Form
     parameters = new Vector();
 
     //0
-    addParameter(new IntArrayPG("Run Numbers",null));
+    addParameter(new IntArrayPG("Run Numbers",null, false));
     //1
-    addParameter(new DataDirPG("Peaks File Path",null));
+    addParameter(new DataDirPG("Peaks File Path",null, false));
     //2
-    addParameter(new StringPG("Experiment Name",null));
+    addParameter(new StringPG("Experiment Name",null, false));
     //3
-    addParameter(new FloatPG("Delta (h)",0.10f));
+    addParameter(new FloatPG("Delta (h)",0.10f, false));
     //4
-    addParameter(new FloatPG("Delta (k)",0.10f));
+    addParameter(new FloatPG("Delta (k)",0.10f, false));
     //5
-    addParameter(new FloatPG("Delta (l)",0.10f));
+    addParameter(new FloatPG("Delta (l)",0.10f, false));
     //6
-    addParameter(new BooleanPG("Update Peaks File",true));
+    addParameter(new BooleanPG("Update Peaks File",true, false));
     //7
-    addParameter(new BooleanPG("Specify a Matrix File?", false));
+    addParameter(new BooleanPG("Specify a Matrix File?", false, false));
     //8
-    addParameter(new LoadFilePG("Matrix File to Load", ""));
+    addParameter(new LoadFilePG("Matrix File to Load", "", false));
     //9
-    addParameter(new IntArrayPG("Restrict Runs", ""));
+    addParameter(new IntArrayPG("Restrict Runs", "", false));
     //10
-    addParameter(new LoadFilePG("JIndex Log",null));
+    addParameter(new LoadFilePG("JIndex Log",null, false));
 
 
     if(HAS_CONSTANTS)
@@ -353,10 +358,13 @@ public class IndexJForm extends Form
       if( !(new File(matName).exists()) )
         return errorOut(param,
                  "ERROR: The specified matrix file does not exist.");
+      else
+        param.setValid(true);
 
       //get the restrict runs value
       param = (IParameterGUI)super.getParameter(9);
       restrictRuns = (String)param.getValue().toString();
+      param.setValid(true);
                  
       SharedData.addmsg("IndexJ is updating " + peaksName + " with " + matName);
       indexJOp.getParameter(1).setValue(matName);
@@ -399,6 +407,7 @@ public class IndexJForm extends Form
     //set the indexj log file parameter
     param = (IParameterGUI)getParameter(10);
     param.setValue(obj);
+    param.setValid(true);
   
     SharedData.addmsg("--- IndexJForm finished. ---");
 
