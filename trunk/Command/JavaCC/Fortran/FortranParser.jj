@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2004/01/22 00:57:36  bouzekc
+ * Now accepts multidimensional arrays and empty comment lines.
+ *
  * Revision 1.16  2004/01/16 01:08:21  bouzekc
  * Added do loop capability.
  *
@@ -179,17 +182,17 @@ public class FortranParser {
     
     if( s.indexOf( LOGICAL ) >= 0 ) {
       type = BOOLEAN;
-      s = s.replaceAll( LOGICAL, "");
+      s = s.replaceFirst( LOGICAL, "");
     } else if( s.indexOf( F_DOUBLE ) >= 0 ) {
       type = J_DOUBLE;
-      s = s.replaceAll( F_DOUBLE, "");
+      s = s.replaceFirst( F_DOUBLE, "");
     } else if( ( ( s.indexOf( F_INT ) >= 0 ) ||
-                    ( s.startsWith( "i | j | k | l | m | n ") ) ) ) {
+                    ( s.startsWith( "i|j|k|l|m|n") ) ) ) {
       type = J_INT;
-      s = s.replaceAll( F_INT, "");
+      s = s.replaceFirst( F_INT, "");
     } else {
       type = FLOAT;
-      s = s.replaceAll( REAL, "");
+      s = s.replaceFirst( REAL, "");
     }
       
     StringBuffer buffer = new StringBuffer( type );
@@ -197,31 +200,38 @@ public class FortranParser {
     //make sure these get a semicolon
     appendSemiColon = true;
     s = s.trim(  );
+    
     //the parentheses should NOT be right at the beginning of the declaration
-    if( s.indexOf( "(" ) > 0 ) {    
-      String tokenList[] = s.split( "," );
+    if( s.indexOf( "(" ) > 0 ) {
+      //split based on parentheses    
+      String tokenListParen[] = s.split( "\\(|\\)" );
       //now go through the tokens, determining if an element is an array
-      String[] temp;
-      for( int i = 0; i < tokenList.length; i++ ) {
-        if( tokenList[i].indexOf( "(" ) >= 0 ) {
-          //change to Java style array delimiters
-          tokenList[i] = tokenList[i].replace( '(', '[' );
-          tokenList[i] = tokenList[i].replace( ')', ']' );
-          //this will split the String just after the variable name.  We
-          //will have to put the '[' back on however
-          temp = tokenList[i].split( "\\[" );
-          tokenList[i] = temp[0] + " = new " + type + "[" + temp[1];
+      String[] temp;      
+      
+      //note that the odd numbered tokens represent the number of array
+      //element(s).  For these, we need to replace commas with "][".
+      //For even numbered tokens, except for the first and last ones, we need
+      //to start with a "]" and end with a "[" when inserting them into the buffer
+      for( int i = 0; i < tokenListParen.length; i++ ) {
+        if( ( i % 2 ) != 0 ) {
+          buffer.append( tokenListParen[i].replaceAll( "\\s*,\\s*", "][" ) );
+        } else {
+          
+          if( i != 0 ) {
+            buffer.append( "]" );
+          }
 
-        }
-                
-        //put the token (array element or not) in
-        buffer.append( tokenList[i] );
-        
-        //basically, put the commas back in
-        if( i < tokenList.length - 1 ) {
-          buffer.append( "," );
+          buffer.append( tokenListParen[i] );
+          buffer.append( " = new " );
+          buffer.append( type );
+          
+          if( i != ( tokenListParen.length - 1  ) ) {
+            buffer.append( "[" );
+          }
         }
       }
+      
+      buffer.append( "]" );
     } else {
       //just return what we had after initial replacements
       buffer.append( s );
@@ -327,7 +337,9 @@ TOKEN: {
 TOKEN: {
   < #ARRAY_VARIABLE: (
     <VARIABLE> ( <WS> )* "(" ( <WS> )* 
-    ( <UNSIGNED_DIGIT> )+ ( <WS> )* ")" ( <WS> )*
+    ( <UNSIGNED_DIGIT> )+ ( <WS> )* 
+    ( "," ( <WS> )* ( <UNSIGNED_DIGIT> )+ ( <WS> )* )*
+    ")" ( <WS> )*
   ) >
 }
 
@@ -366,6 +378,13 @@ TOKEN: {
   < #BOOL_CONST: ( 
       ".TRUE." | ".FALSE." | ".true." | ".false."
   ) >
+}
+
+//empty Fortran comment
+TOKEN: {
+  < EMPTY_FORTRAN_COMMENT: (
+    ( "C" | "c" ) ( <WS> )*
+  )>
 }
 
 //This is the Fortran comment.  The C must be in the first column, following
@@ -763,6 +782,11 @@ String convertFortranTokens(  ) : {
   String tokenList[];
 }
 {
+  //matched an empty comment
+  t = <EMPTY_FORTRAN_COMMENT> {
+  return "//\n";
+  }
+|
   //matched a comment
   t = <FORTRAN_COMMENT> {
     s = t.image;
@@ -771,7 +795,7 @@ String convertFortranTokens(  ) : {
     s = "//" + s;
     return s;
   }
-|
+| 
   //some kind of math expression
   t = <FORTRAN_EXPRESSION> {
     return t.image;
