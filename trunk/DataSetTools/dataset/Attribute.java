@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2002/08/22 15:08:22  pfpeterson
+ *  Added string constants for lattice parameter, orientation matrix,
+ *  and unit cell volume.
+ *
  *  Revision 1.27  2002/08/06 14:00:15  pfpeterson
  *  Added constants for pressure and temperature data.
  *
@@ -239,6 +243,10 @@ abstract public class Attribute implements Serializable,
   public static final String  GSAS_CALIB        = "GSAS calibration";
   public static final String  GSAS_IPARM        =
                                               "GSAS Instrument Parameter File";
+  public static final String LATTICE_PARAM      = "Lattice Parameters";
+  public static final String ORIENT_MATRIX      = "Orientation Matrix";
+  public static final String ORIENT_FILE        = "Orientation File";
+  public static final String CELL_VOLUME        = "Unit Cell Volume";
 
   public static final String  DETECTOR_INFO_LIST = "Det Info List";
   public static final String  DETECTOR_INFO      = "Det Info";
