@@ -32,8 +32,8 @@
   * Modified:
   *
   *  $Log$
-  *  Revision 1.46  2001/07/31 15:04:41  chatter
-  *  Increased the ISAW split pane width to .90 of the screen width
+  *  Revision 1.47  2001/07/31 17:07:27  chatter
+  *  Added Split panes with "state" to fix the split pane size problem at different screen resolutions
   *
   *  Revision 1.45  2001/07/26 20:41:51  neffk
   *  fixed TreeListener to keep the 'Operator' menu current.  previously,
@@ -190,6 +190,7 @@ import Command.*;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.dataset.*;
+import DataSetTools.components.containers.*;
 import DataSetTools.gsastools.*;
 import DataSetTools.instruments.*;
 import DataSetTools.operator.*;
@@ -397,8 +398,8 @@ public class Isaw
     leftPane.setTopComponent(jdt);
     leftPane.setResizeWeight( LEFT_WEIGHT );
  
-    JSplitPane sp= new JSplitPane( JSplitPane.HORIZONTAL_SPLIT,
-                                   leftPane, rightPane);
+    JSplitPane sp= new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
+                                   leftPane, rightPane, 0.2f );
         
     sp.setOneTouchExpandable(true);
     Container con = getContentPane();
