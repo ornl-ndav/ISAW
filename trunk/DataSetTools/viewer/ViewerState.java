@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2004/05/03 16:25:19  dennis
+ *  Removed unused local variables.
+ *
  *  Revision 1.30  2004/03/19 17:18:44  dennis
  *  Removed unused variables
  *
@@ -158,7 +161,6 @@ public class ViewerState  implements Serializable
   public static final String TABLE_TS_DETNUM          ="TableTS_Detector Num";
 
   private Hashtable     state = null;
-  private int           pointed_at_index;
 
   private CoordBounds   zoom_region;                // the image zoom region
   private String        ds_x_label;                 // should only be restored
