@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2003/10/19 20:01:57  rmikk
+ * Added some documentation
+ * Fixed new units for time to be us
+ * Fixed error in calculating factor with a numeric prefix
+ *
  * Revision 1.17  2003/10/15 03:05:44  bouzekc
  * Fixed javadoc errors.
  *
@@ -101,6 +106,8 @@ public class NxNodeUtils{
   /**
    * Attempts to parse a date string with various formats including
    * "- ,/, and ." separators for month,year,day specifiers.
+   * @param  DateString  a String that represents a data
+   * @return The Date object corresponding to the DateString
    */
   public static Date parse( String DateString ){
     Date Result;
@@ -333,6 +340,11 @@ public class NxNodeUtils{
   }
   /**
    * Gives Factor to mulitply OldUnits to get NewUnits(ISAW units)
+   * @param  OldUnits  the units that are non ISAW units
+   * @param NewUnits  the ISAW units. Must be radians, meters,Kelvin,us,grams,
+   *                   Mev,or steradian
+   * @return the factor to multiply a quantity in old units to get to the new units
+   
    */
   public static float getConversionFactor( String OldUnits, String NewUnits ){
     if( NewUnits.equals( "radians" ) )
@@ -345,7 +357,7 @@ public class NxNodeUtils{
       return TempConversionFactor( OldUnits.trim() );
 
     //Solid angle
-    if( NewUnits.equals( "second" ) )
+    if( NewUnits.equals( "us" ) )
       return TimeConversionFactor( OldUnits.trim() );
 
     if( NewUnits.equals( "grams" ) )
@@ -384,7 +396,7 @@ public class NxNodeUtils{
       }catch( Exception ss){
         factor = 1;
       }
-    OldUnits = OldUnits.substring(0);
+    OldUnits = OldUnits.substring(n);
     if( "m;meter;met;".indexOf( OldUnits + ";" ) >= 0 )
       return factor*1;
     
@@ -421,7 +433,7 @@ public class NxNodeUtils{
   }
 
 
-  public static float TimeConversionFactor( String OldUnits ){ //seconds 
+  public static float TimeConversionFactor( String OldUnits ){ //us 
     int n = getNumericStart( OldUnits);
     float factor = 1;
     if( n >0)
@@ -431,6 +443,14 @@ public class NxNodeUtils{
       }catch( Exception ss){
         factor = 1;
       }
+    OldUnits = OldUnits.substring(n);
+    if( OldUnits == null)
+       return factor;
+    if( OldUnits.length() < 1)
+       return factor;
+    if( OldUnits.charAt(0)=='*')
+         OldUnits = OldUnits.substring(1);
+   
     if("s;sec;second;seconds;".indexOf(OldUnits+";") >=0)
       return factor*1000000.0f;
     if( "ms;msec;mseconds;msecond;millis;millisec;milliseconds".indexOf(OldUnits+";")>=0)
