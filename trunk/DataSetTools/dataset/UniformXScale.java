@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/06/25 16:57:03  dennis
+ *  restrict() method now uses getI_GLB(max) to get upper bound in interval.
+ *
  *  Revision 1.15  2004/03/19 17:22:05  dennis
  *  Removed unused variable(s)
  *
@@ -305,7 +308,7 @@ public class UniformXScale extends XScale implements Serializable
        return null;
 
      int i_min = getI( min );
-     int i_max = getI( max );
+     int i_max = getI_GLB( max );
 
      min = getX( i_min );
      max = getX( i_max );
