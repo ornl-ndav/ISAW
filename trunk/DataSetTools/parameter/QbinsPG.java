@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/09/27 13:22:49  rmikk
+ * Made dQ/Q the default
+ *
  * Revision 1.11  2003/09/15 20:48:05  bouzekc
  * Fixed bug where getValue() would crash if no GUI existed.  getValue() now
  * returns an empty Vector if the GUI does not exist.
@@ -191,7 +194,7 @@ public class QbinsPG  extends VectorPG{
         dQQ.setSelected(true);
         ButtonGroup Group = new ButtonGroup();
         Group.add( dQ); Group.add( dQQ);
-        dQ.setSelected( true );
+        //dQ.setSelected( true );
         JPanel jp = new JPanel( new GridLayout( 1,2));
         jp.add( dQ); jp.add( dQQ);
 
