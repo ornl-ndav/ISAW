@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2002/07/23 18:18:09  dennis
+ *  Added names for V_SCROLL_POSITION and POINTED_AT_X
+ *
  *  Revision 1.18  2002/07/15 14:37:32  rmikk
  *  The Contour.Style property's initial value can now come
  *    from the IsawProps.dat.  Also the default initial value is
@@ -121,7 +124,9 @@ public class ViewerState  implements Serializable
   public static final String REBIN             = "RebinFlag";
   public static final String H_SCROLL          = "HScrollFlag";
   public static final String H_SCROLL_POSITION = "HScrollPosition";
+  public static final String V_SCROLL_POSITION = "VScrollPosition";
   public static final String POINTED_AT_INDEX  = "PointedAtIndex";
+  public static final String POINTED_AT_X      = "PointedAtX";
   public static final String V_AZIMUTH         = "ViewAzimuthAngle";
   public static final String V_ALTITUDE        = "ViewAltitudeAngle";
   public static final String V_DISTANCE        = "ViewDistance";
@@ -131,7 +136,8 @@ public class ViewerState  implements Serializable
   public static final String AUTO_SCALE        = "Auto-Scale";
   public static final String TABLE_DATA        = "table_view Data";
    /** CONTOUR_STYLE(really "Contour.Style") is an int whose values can be
-   *          AREA_FILL(1), AREA_FILL_CONTOUR(4) ,CONTOUR(2) ,RASTER(0), or RASTER_CONTOUR(3) 
+   *          AREA_FILL(1), AREA_FILL_CONTOUR(4) ,CONTOUR(2) ,RASTER(0), 
+   *          or RASTER_CONTOUR(3) 
    */
   public static final String CONTOUR_STYLE     =  "Contour.Style";
 
