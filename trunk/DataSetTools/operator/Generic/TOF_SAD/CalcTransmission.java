@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/08/19 20:54:15  rmikk
+ * Eliminated a debug display in the middle of the code
+ *
  * Revision 1.6  2003/07/25 16:31:11  rmikk
  * Log file information is now written to the console
  *
@@ -274,7 +277,7 @@ public class CalcTransmission extends GenericTOF_SAD {
        ReportToLog2( Cadmium);
 
      ReportToLog3( Sample, Empty, Cadmium);
-     Command.ScriptUtil.display( Sample);
+     
     
      //------------ Calculate downstream monitor Relative monitors-------
      DataSet RelCadmium = null;
