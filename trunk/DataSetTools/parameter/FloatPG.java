@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/07/23 21:54:31  rmikk
+ *  Fixed an error that occurred but should not have happened
+ *
  *  Revision 1.8  2003/06/12 18:58:27  bouzekc
  *  Fixed bug with setting value.
  *
@@ -102,6 +105,10 @@ public class FloatPG extends StringEntryPG implements ParamUsesString{
 
         if(val instanceof Float)
           return val;
+        else if( val instanceof Number){
+          return new Float( ((Number)val).floatValue() );
+           
+        }
         else if(val instanceof String)
           return new Float((String)val);
         else
