@@ -29,6 +29,10 @@
 
  *
  * $Log$
+ * Revision 1.3  2003/07/07 15:50:26  bouzekc
+ * Added getDocumentation(), fixed code comment spelling
+ * errors.
+ *
  * Revision 1.2  2002/11/27 23:16:41  pfpeterson
  * standardized header
  *
@@ -52,7 +56,7 @@ import java.util.Vector;
 import DataSetTools.operator.Parameter;
 
 /**
- * selects Data objects in a single DataSet object based on an attribute
+ * Selects Data objects in a single DataSet object based on an attribute
  * name and value.
  */
 public class IntervalSelectionOp
@@ -110,16 +114,33 @@ public class IntervalSelectionOp
     addParameter( parameter );
   }
 
+  /**
+   *  @return javadoc-style documentation for this Operator.
+   */
+  public String getDocumentation(  ){
+    StringBuffer s = new StringBuffer(  );
+    s.append( "@overview Selects Data objects in a single DataSet Object " );
+    s.append( "based on a given interval." );
+    s.append( "@assumptions The DataSet is non-empty." );
+    s.append( "@algorithm Using the given interval, selects Data Objects " );
+    s.append( "from the DataSet.\n" );
+    s.append( "@param ds DataSet to perform the selection on.\n" );
+    s.append( "@param interval The interval to use for the selection.\n" );
+    s.append( "@return A Vector containing the group IDs of the selected " );
+    s.append( "Data Objects.\n" );
+
+    return s.toString(  );
+  }
 
   /**
-   * creates Interval objects from the string parameter and returns
-   * a Vector object of results, where each element of the Vector is
-   * the group id of selected Data objects.
+   * Creates Interval Objects from the string parameter and returns
+   * a Vector of results, where each element of the Vector is
+   * the group ID of selected Data objects.
    */
   public Object getResult()
   {
 
-                                 //an Object object compatible container
+                                 //an Object compatible container
                                  //that returns a list of the GROUP_ID's of
                                  //the Data objects that fell within this
                                  //interval
@@ -170,7 +191,7 @@ public class IntervalSelectionOp
       getDataSet().notifyIObservers( IObserver.SELECTION_CHANGED );
     }
 
-                                  //pack into a more appropriatly 
+                                  //pack into a more appropriately 
                                   //sized array
     int[] return_list = new int[ selected_so_far_count ];
     for(  int i=0;  i<selected_so_far_count;  i++ )
