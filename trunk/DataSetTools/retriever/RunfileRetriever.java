@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2001/08/16 01:18:23  dennis
+ *  Now sets the ID for the detector element using Segment.DetID() method.
+ *
  *  Revision 1.32  2001/08/13 15:06:43  dennis
  *  Added MonitorTofToEnergy conversion operator for beam monitors.
  *
@@ -840,7 +843,7 @@ public class RunfileRetriever extends    Retriever
       
       det_position.setCylindricalCoords( rho, seg_angle, seg_height );
 
-      DetectorInfo det_info = new DetectorInfo( 1, 
+      DetectorInfo det_info = new DetectorInfo( group_segments[id].DetID(), 
                                               group_members[id], 
                                               group_segments[id].Row(),
                                               group_segments[id].Column(),
