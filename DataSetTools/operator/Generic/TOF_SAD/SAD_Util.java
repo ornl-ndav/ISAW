@@ -30,6 +30,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/04/27 21:50:13  dennis
+ *   Added InterpolateDataSet() to interpolate and extend
+ * a DataSet over a new xscale.  If the new xscale covers a
+ * larger range than the current xscale, the first (or last)
+ * y-value will be used for x's beyond the current xscale.
+ *   Added some debug prints.
+ *
  * Revision 1.3  2004/04/27 15:23:23  dennis
  * Added RemoveAreaDetectorData() method for use by Reduce_LPSD.
  *
@@ -71,12 +78,17 @@ import java.util.*;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
 
+import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.Math.Analyze.*;
+
+
 /**
  *  This class contains static methods used for the small angle diffractometer
  *  Reduce codes.
  */
 public class SAD_Util
 { 
+   public static boolean debug = true;
   
    /**
     *  Don't instantiate this class
@@ -570,6 +582,20 @@ public class SAD_Util
             Cadmerr = D.getErrors();
             D = null;
 
+            if ( debug )
+            {
+            System.out.println("sampy.length      = " + sampy.length );
+            System.out.println("samperr.length    = " + samperr.length );
+            System.out.println("SampMony.length   = " + SampMony.length );
+            System.out.println("SampMonerr.length = " + SampMonerr.length );
+            System.out.println("Cadmy.length      = " + Cadmy.length );
+            System.out.println("Cadmerr.length    = " + Cadmerr.length );
+            System.out.println("CadmMony.length   = " + CadmMony.length );
+            System.out.println("CadmMonerr.length = " + CadmMonerr.length );
+            System.out.println("Transmy.length    = " + Transmy.length );
+            System.out.println("Transmerr.length  = " + Transmerr.length );
+            }
+
             for( int i = 0; i < sampy.length; i++ )
             {
                err1 = quoErr(sampy[i],samperr[i],SampMony[i],SampMonerr[i]);
@@ -581,7 +607,7 @@ public class SAD_Util
  
                if( useTransmission)
                {
-                 samperr[i] = quoErr( sampy[i], err3,Transmy[i],Transmerr[i]);
+                 samperr[i] = quoErr( sampy[i], err3, Transmy[i], Transmerr[i]);
                  sampy[i]   = sampy[i]/Transmy[i];
                }
                else
@@ -589,10 +615,10 @@ public class SAD_Util
             
                samperr[i] = quoErr( sampy[i], 
                                     samperr[i], 
-                                    sens*Effy[i],
+                                    sens * Effy[i],
                                     prodErr(sens, senserr, Effy[i], Efferr[i]));
                sampy[i]   = scale * sampy[i];
-               samperr[i] = samperr[i]*scale;
+               samperr[i] = samperr[i] * scale;
             }
        }//else sens ==0
      }
@@ -935,6 +961,71 @@ public class SAD_Util
      ds.addLog_entry( "Converted to Wavelength" );
      return ds;
    }
+
+
+  /* ------------------------ InterpolateDataSet ------------------------ */
+  /**
+   *  Create a new DataSet by interpolating between values in an
+   *  existing DataSet.  
+   *  Replace leading & trailing zeros with the first and last values
+   *  respectively.  This is needed since the input data may not cover
+   *  the full range of values needed for the new xscale.
+   *
+   */
+  public static DataSet InterpolateDataSet( DataSet ds, XScale xscale )
+  {
+
+    float x[]       = xscale.getXs();
+    float width1    = x[1] - x[0];
+    float mid_points[] = new float[ x.length - 1 ];
+    for ( int i = 0; i < mid_points.length; i++ )
+      mid_points[i] = (x[i] + x[i+1]) / 2;
+
+    XScale function_scale = new VariableXScale( mid_points );
+
+    Operator to_hist = new ConvertHistogramToFunction( ds, false, false );
+    to_hist.getResult();
+
+    ds.getData_entry(0).resample( function_scale, Data.SMOOTH_LINEAR );
+
+    Operator to_func = new ConvertFunctionToHistogram(ds, width1, false, false);
+    to_func.getResult();
+
+    XScale new_scale = ds.getData_entry(0).getX_scale();
+    System.out.println( "new_hist_scale = " + new_scale );
+
+    //
+    // Replace leading & trailing zeros with the first and last values
+    // respectively.  This is needed since the input data may not cover
+    // the full range of values needed for the new xscale.
+    // 
+    float y[] = ds.getData_entry(0).getY_values();
+    int first_nz = 0;
+    while ( first_nz < y.length && y[first_nz] <= 0 )
+      first_nz++;
+
+    if ( first_nz < y.length )
+      for ( int i = 0; i < first_nz; i++ )
+        y[i] = y[ first_nz ];
+
+    int last_nz = y.length - 1;
+    while ( last_nz > 0 && y[last_nz] <= 0 )
+      last_nz--;
+
+    if ( last_nz >= 0 )
+      for ( int i = last_nz + 1; i < y.length; i++ )
+        y[i] = y[ last_nz ];
+
+    if ( debug )
+    {
+      System.out.println("Resampled values ============================ " );
+      x = new_scale.getXs();
+      for ( int i = 0; i < y.length; i++ )
+        System.out.println( "x,y = " + x[i] + ", " + y[i] );
+      System.out.println("x,y = " + x[x.length-1] );
+    }
+    return ds;
+  }
 
 
    /* -------------------------- FixGroupIDs ------------------------- */
