@@ -31,9 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.63  2003/10/10 01:17:36  bouzekc
+ * Changed instantiation references from ScriptProcessor to ScriptOperator.
+ *
  * Revision 1.62  2003/10/10 01:05:04  bouzekc
  * Another attempt at removing CTRL-M characters.
- *
+ * 
  * Revision 1.61  2003/10/10 01:03:14  bouzekc
  * Removed Windows CTRL-M characters.
  *
@@ -228,7 +231,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
     PC         = new PropertyChangeSupport( this );
     IObslist   = new IObserverList(  );
     initt(  );
-    SP = new ScriptProcessor( Commands.getDocument(  ) );
+    SP = new ScriptOperator( Commands.getDocument(  ) );
   }
 
   //~ Methods ******************************************************************
@@ -278,7 +281,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
 
   /**
    * Allows for DataSets from external sources to be used by the
-   * ScriptProcessor
+   * ScriptOperator
    *
    * @param dss The data set that is to be added to this CommandPane unit
    */
@@ -491,7 +494,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
           filename, Commands.getDocument(  ) );
 
       if( sp == null ) {
-        sp = new ScriptProcessor( Commands.getDocument(  ) );
+        sp = new ScriptOperator( Commands.getDocument(  ) );
       }
       sp.addPropertyChangeListener( this );
       SP = sp;
@@ -501,7 +504,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
       addDataSets( SP );
 
       if( Language != null ) {
-        if( SP instanceof ScriptProcessor ) {
+        if( SP instanceof IScriptProcessor ) {
           Language.setSelectedIndex( 0 );
         } else {
           Language.setSelectedIndex( 1 );
@@ -729,7 +732,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
      */
     public void keyTyped( KeyEvent e ) {
       if( 'x' == 'y' ) {  //e.getKeyChar())   used for testing macros){
-        line = ScriptProcessor.getNextMacroLine( 
+        line = ScriptOperator.getNextMacroLine( 
             Commands.getDocument(  ), line );
         System.out.println( "line =" + line );
       }
@@ -757,7 +760,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
           new IsawGUI.Util(  ).appendDoc( CP.logDoc, "#$ Start Immediate Run" );
           new IsawGUI.Util(  ).appendDoc( 
             CP.logDoc,
-            ScriptProcessor.getLine( CP.Immediate.getDocument(  ), line ) );
+            ScriptOperator.getLine( CP.Immediate.getDocument(  ), line ) );
           CP.SP.addIObserver( CP );
           CP.SP.execute1( Immediate.getDocument(  ), line );
           CP.SP.deleteIObserver( CP );
@@ -946,11 +949,11 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
                   .equals( Language ) ) {
         int indx = Language.getSelectedIndex(  );
 
-        if( ( indx == 0 ) && ( SP instanceof ScriptProcessor ) ) {
+        if( ( indx == 0 ) && ( SP instanceof IScriptProcessor ) ) {
           return;
         }
 
-        if( ( indx != 0 ) && !( SP instanceof ScriptProcessor ) ) {
+        if( ( indx != 0 ) && !( SP instanceof IScriptProcessor ) ) {
           return;
         }
 
@@ -964,7 +967,7 @@ public class CommandPane extends JPanel implements PropertyChangeListener,
             Fname, Commands.getDocument(  ) );
 
         if( sp == null ) {
-          sp     = new ScriptProcessor( Commands.getDocument(  ) );
+          sp     = new ScriptOperator( Commands.getDocument(  ) );
           indx   = 0;
           SharedData.addmsg( "Jython not found" );
         }
