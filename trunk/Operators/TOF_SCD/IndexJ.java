@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2003/07/07 15:57:34  bouzekc
+ * Added missing param tags in constructor and
+ * getDocumentation().  Made capitalization consistent in
+ * parameter name in setDefaultParameters().
+ *
  * Revision 1.16  2003/06/11 21:59:40  bouzekc
  * Updated getDocumentation().
  *
@@ -119,6 +124,7 @@ public class IndexJ extends    GenericTOF_SCD {
    *  @param matrixfile The name of the file containing the
    *  orientation matrix. Currently must be a '.mat' file.
    *  @param delta The error parameter for indexing peaks (h = k = l)
+   *  @param update Whether to update the peaks file.
    */
   
   public IndexJ( String peaksfile, String matrixfile, float delta,
@@ -157,7 +163,7 @@ public class IndexJ extends    GenericTOF_SCD {
     //5
     addParameter(new FloatPG("Delta l",0.20f));
     //6
-    addParameter(new BooleanPG("update peaks file",true));
+    addParameter(new BooleanPG("Update peaks file",true));
   }
   
   /**
@@ -177,12 +183,15 @@ public class IndexJ extends    GenericTOF_SCD {
     sb.append("@param matrixfile name of the file containing the orientation ");
     sb.append("matrix. This can either be a matrix file \".mat\" or an ");
     sb.append("experiment file \".x\".");
+    sb.append("@param restrict_runs The run numbers to restrict the indexing ");
+    sb.append("of peaks to.");
     sb.append("@param delta_h the allowable uncertainty in the calculated ");
     sb.append("h value.");
     sb.append("@param delta_k the allowable uncertainty in the calculated ");
     sb.append("k value.");
     sb.append("@param delta_l the allowable uncertainty in the calculated ");
     sb.append("l value.");
+    sb.append("@param update Whether to update the peaks file. ");
     // return
     sb.append("@return The number of peaks indexed out of the total number present.");
     // error
