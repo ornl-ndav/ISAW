@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/10/15 03:18:33  bouzekc
+ *  Fixed javadoc errors.
+ *
  *  Revision 1.3  2003/03/03 17:02:34  pfpeterson
  *  Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -72,7 +75,7 @@ public class XmlDWriter extends Writer
   * Writes out the datasets in either an xml or in a zipped form of the
   * xml file( if extension is ".zip")
   * 
-  * @param DS[]  The array of data sets that will be written
+  * @param DS  The array of data sets that will be written
   */ 
   public void writeDataSets( DataSet DS[])
    { try{
@@ -125,7 +128,7 @@ public class XmlDWriter extends Writer
   
  /**
  * Test program for this module
- * @param  args[0] the filename where the data sets are saved<P>
+ * @param  args The filename where the data sets are saved.
  *
  * NOTE: The files loaded are the hrcs2447 and hrcs2995 run files
  */
