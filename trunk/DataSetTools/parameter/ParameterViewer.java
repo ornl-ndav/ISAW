@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/06/26 16:48:15  bouzekc
+ * Removed extraneous comment.
+ *
  * Revision 1.5  2003/06/26 16:46:46  bouzekc
  * Reformatted for readability.
  *
@@ -178,7 +181,6 @@ public class ParameterViewer implements ActionListener {
           ( tempName.indexOf( ".hdf" ) >= 0 ) ||
           ( tempName.indexOf( ".run" ) >= 0 ) ||
           ( tempName.indexOf( ".nxs" ) >= 0 ) ) ) {
-        //look at the peaks file
         obj = new ViewASCII( fileName ).getResult(  );
 
         if( obj instanceof ErrorString ) {
