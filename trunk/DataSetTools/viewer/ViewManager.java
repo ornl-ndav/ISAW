@@ -30,16 +30,23 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.53  2005/02/02 21:53:18  dennis
+ *  Added string constants for PRINT and SAVE_IMAGE options.
+ *  Re-ordered File menu items.  So close option is last.
+ *  Since some individual viewers already add a "PRINT" entry to
+ *  the file menu, additional work with viewers will be needed
+ *  to place "PRINT" third in the list of FILE actions.
+ *
  *  Revision 1.52  2005/01/05 15:38:11  rmikk
  *  Now adds the Print and Save Image menu items automatically to the
  *  File menu if the DataSetViewer does not do it.
  *
  *  Revision 1.51  2004/08/24 18:52:18  rmikk
- *
  *  Caught errors on viewer initialization and returned null
  *
  *  Revision 1.50  2004/08/04 22:14:23  rmikk
- *  DataSetViewers that implement IPreserveState can now support the Object State
+ *  DataSetViewers that implement IPreserveState can now support the Object 
+ *  State
  *
  *  Revision 1.49  2004/05/10 22:46:53  dennis
  *  Test program now just instantiates a ViewManager to diplay
@@ -230,8 +237,10 @@ public class ViewManager extends    JFrame
 
    private ObjectState Ostate = new ObjectState();
 
-   private static final String CLOSE_LABEL          = "Close Viewer";
    private static final String SAVE_NEW_DATA_SET    = "Save As New DataSet";
+   private static final String SAVE_IMAGE           = "Save Image";
+   private static final String PRINT                = "Print";
+   private static final String CLOSE_LABEL          = "Close Viewer";
 
    private static final String SUM_MENU           = "Sum";
    private static final String SUM_SELECTED       = "Sum Selected Data";
@@ -750,28 +759,30 @@ private void BuildFileMenu()
   button.addActionListener( file_menu_handler );
   file_menu.add( button );
 
-  button = new JMenuItem( CLOSE_LABEL );
-  button.addActionListener( file_menu_handler );
-  file_menu.add( button );
- 
   boolean hasSaveImage = false;
   boolean hasPrint = false;
-  for( int i=0; (i< file_menu.getItemCount())  ;
-                                                     i++){
+  for( int i=0; (i< file_menu.getItemCount()); i++)
+  {
      String text = file_menu.getItem( i ).getText();
-     if( text.equals("Save Image"))
+     if( text.equals(SAVE_IMAGE))
         hasSaveImage = true;
-     else if( text.equals("Print"))
+     else if( text.equals(PRINT))
         hasPrint = true;
   }
   
-  if( !hasPrint )
-     file_menu.add( gov.anl.ipns.Util.Sys.PrintComponentActionListener.
-          getActiveMenuItem("Print", viewer));
   if( !hasSaveImage)
      file_menu.add( gov.anl.ipns.Util.Sys.SaveImageActionListener.
-             getActiveMenuItem("Save Image", viewer)); 
+             getActiveMenuItem(SAVE_IMAGE, viewer)); 
+
+  if( !hasPrint ) 
+     file_menu.add( gov.anl.ipns.Util.Sys.PrintComponentActionListener.
+          getActiveMenuItem(PRINT, viewer));
+
+  button = new JMenuItem( CLOSE_LABEL );
+  button.addActionListener( file_menu_handler );
+  file_menu.add( button );
 }
+
 
 private void BuildEditMenu()
 {
