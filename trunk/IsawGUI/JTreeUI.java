@@ -2,6 +2,9 @@
  * @(#)JTreeUI.java     1.0  99/09/02  Alok Chatterjee
  *
  * $Log$
+ * Revision 1.9  2001/06/27 19:13:43  chatter
+ * Remove empty Line
+ *
  * Revision 1.8  2001/06/25 21:30:04  neffk
  * improved (incomplete) right-click menu functionality.
  *
@@ -40,6 +43,9 @@ import java.awt.datatransfer.*;
  *
  *
  * $Log$
+ * Revision 1.9  2001/06/27 19:13:43  chatter
+ * Remove empty Line
+ *
  * Revision 1.8  2001/06/25 21:30:04  neffk
  * improved (incomplete) right-click menu functionality.
  *
@@ -464,11 +470,7 @@ public class JTreeUI extends JPanel implements IObserver, Serializable
                        ( model ).insertNodeInto(level3,level2,index);
                   }  
 
-
-
-
    }
-
 
         else
         {
