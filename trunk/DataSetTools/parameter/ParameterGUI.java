@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2003/09/13 22:45:30  bouzekc
+ *  Removed direct call on entrywidget.setEnabled() to instance method call.
+ *
  *  Revision 1.24  2003/09/13 22:13:39  bouzekc
  *  Now uses a Hashtable rather than parallel Vectors to store the list of
  *  PropertyChangeListeners.
@@ -383,7 +386,6 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    */
   public Object clone(  ) {
     return this.clone(  );
-
     /*ParameterGUI pg=new ParameterGUI(this.name,this.value,this.valid);
        pg.setDrawValid(this.getDrawValid());
        pg.initialized=false;
@@ -462,7 +464,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     this.packupGUI(  );
     addPCLtoWidget(  );
     entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
-    entrywidget.setEnabled( this.getEnabled(  ) );
+    setEnabled( this.getEnabled(  ) );
   }
 
   /**
