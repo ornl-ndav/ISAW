@@ -11,6 +11,9 @@ package OverplotView;
  * @see DataSetTools.viewer.DataSetViewer\
  *
  * $Log$
+ * Revision 1.5  2000/07/27 16:42:46  neffk
+ * removed some debug information
+ *
  * Revision 1.4  2000/07/17 14:55:21  neffk
  * sloppy checkin to correct previous checkin errors
  *
@@ -211,7 +214,7 @@ public class SelectedGraphView
     graphPanel.addComponentListener(  new GraphSizeComponentAdapter()  );
 
     graph = new sgtSelectedGraph( graphPanel );
-//    graph.addComponentListener(  new GraphSizeComponentAdapter()  );
+    //graph.addComponentListener(  new GraphSizeComponentAdapter()  );
 
     manager = new GraphableDataManager( graph );
 
@@ -258,7 +261,7 @@ public class SelectedGraphView
   {
     public void componentResized( ComponentEvent c )
     {
-      //System.out.println("View Area resized: " + c.getComponent().getSize() );
+//      System.out.println("View Area resized: " + c.getComponent().getSize() );
 //      c.getLeftComponent().calculateGraphSize();
     }
   }
@@ -274,8 +277,8 @@ public class SelectedGraphView
   {
     public void componentResized( ComponentEvent c )
     {
-      System.out.println( "graphPanel resized" );
-      System.out.println( c.getComponent().getSize() );
+      //System.out.println( "graphPanel resized" );
+      //System.out.println( c.getComponent().getSize() );
     }
   }
 
@@ -296,9 +299,10 @@ public class SelectedGraphView
 
       Dimension graphD = new Dimension( width, height );
 
-      System.out.println( "controls resized: " + c.getComponent().getSize() );
-      System.out.println( "graph size: " + graphD  );
+      //System.out.println( "controls resized: " + c.getComponent().getSize() );
+      //System.out.println( "graph size: " + graphD  );
       graph.calculateGraphSize( graphD );
+
     }
   }
 
