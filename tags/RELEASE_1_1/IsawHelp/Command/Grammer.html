@@ -1,0 +1,78 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (Windows NT 5.0; U) [Netscape]">
+</head>
+<body>
+<a href="CommandPane.html">CONTENTS</a>
+<ul>Features of the language
+<li>
+It is NOT case sensitive except (presently) for the Data set Commands</li>
+
+
+<p>&nbsp;
+<li>
+There is one instruction per line</li>
+
+
+<p>&nbsp;
+<li>
+Expressions are possible anywhere a constant or variable occurs, except
+as the target of an assignment statement</li>
+
+
+<p>&nbsp;
+<li>
+See <a href="ComDes.html">Commands</a> for supported commands</li>
+
+
+<p>&nbsp;
+<li>
+ Logical variables and expressions are supported. The logical operators are AND, OR and NOT. Also the
+  relations are <, <=, >, >=, = or ==, and <></li>
+
+
+<p>&nbsp;
+<li>
+Float constants must have a decimal point. Integers constants do NOT have
+a decimal point.</li><P>
+
+<li>
+The REM statement as the first "command" on a line is considered documentation</li><P>
+
+<li>
+The if- elseif- else -endif structure has been implemented<Br>
+"Then" is allowed at the end of an if or elseif line.<BR>
+</li>
+
+<P>
+<li>
+for loop is implemented as follows:</li>
+
+<ul>&nbsp;
+<pre>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; For I in [1,3,5,6]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ENDFOR
+</pre>
+The list at the right can only be a list of numbers, strings, or variables
+and expressions.
+<p>To denote RANGES use :. For example
+<p>[1<b> :</b> N] or [ 1 , 3 ,&nbsp; 8 <b>: </b>15 , 2 ]
+<p>The Ranges only work for integers and can be decreasing.</ul><P>
+
+<li>
+An ON ERROR - ELSE ERROR - END ERROR structure has been set up</li>
+
+<br>&nbsp;
+<p>&nbsp;
+<li>
+Arrays variables have been fully implemented. See <a href="Examples1.html#Arrays">
+   Examples</a> for syntax</li>
+</ul>
+
+</body>
+</html>
+
