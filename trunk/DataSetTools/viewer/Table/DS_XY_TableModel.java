@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/06/07 22:36:49  pfpeterson
+ * Added some error checking and an option to specify the dataset
+ * number when running the main program.
+ *
  * Revision 1.1  2002/02/27 16:49:05  rmikk
  * Initial Checkin
  *
@@ -233,30 +237,34 @@ public class DS_XY_TableModel extends AbstractTableModel
 /** Test program.  Have a run filename as the argument
 *@param  the filename to test
 */
-public static void main( String args[] )
- {if( args == null )
-     {System.out.println( "Enter a filename" );
-      System.exit( 0 );
-     }
-  if( args.length < 1 )
-    {System.out.println( "Enter a filename" );
-      System.exit( 0 );
-     }
-  ;
+public static void main( String args[] ){
+    String filename="";
+    int k=-1;
+    if( args.length==1){
+        filename=args[0];
+    }else if( args.length==2){
+        filename=args[0];
+        k=(new Integer(args[1])).intValue();
+    }else{
+        System.err.println("SYNTAX: DS_XY_TableModel <filename> [DataSetNumber]");
+        System.exit(-1);
+    }
   
-  String filename = args[ 0 ];
- 
   DataSet[] DSS = ( new IsawGUI.Util( ) ).loadRunfile( filename );
   if( DSS == null)
      {System.out.println("Error No Data Sets");
       System.exit(0);
       }
-  int k= DSS.length-1;
+  if(k==-1) k= DSS.length-1;
+  if(k>=0 && k>=DSS.length){
+      System.err.println("ERROR: "+k+" must be less than "+DSS.length+" for "+filename);
+      System.exit(-1);
+  }
   int[] Groups = new int[ DSS[ k ].getNum_entries() ];
   for( int i = 0;i < Groups.length;i++ ) 
        Groups[ i ] = i;
    
-  DS_XY_TableModel tbMod = new DS_XY_TableModel( DSS[ 1 ] , Groups ,false );
+  DS_XY_TableModel tbMod = new DS_XY_TableModel( DSS[ k ] , Groups ,false );
   
   JTable jtb = new JTable( tbMod );
   jtb.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
@@ -264,6 +272,7 @@ public static void main( String args[] )
   JFrame jf = new JFrame( "Test" );
   jf.setSize( 400 , 400 );
   jf.getContentPane( ).add( new JScrollPane( jtb  ) );
+  jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   JMenuBar Mbar = new JMenuBar( );
   JMenu Optmenu = new JMenu( "options" );
   
@@ -274,5 +283,5 @@ public static void main( String args[] )
   jf.setJMenuBar( Mbar );
   jf.show();
   }
-
+      
  }
