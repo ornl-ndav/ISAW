@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/05/26 18:22:45  rmikk
+ *  Added Methods to getNum_x(), getStart_x(), and getEnd_x().  These 
+ *     methods can be used in the case where the returned XScale is null
+ *  Added a method to set the range, number of steps and units label without
+ *    having to create a new XScaleChooserUI
+ *
  *  Revision 1.8  2004/03/15 06:10:34  dennis
  *  Removed unused import statements.
  *
@@ -156,7 +162,52 @@ public class XScaleChooserUI extends    ActiveJPanel
     return ( new UniformXScale( x_min, x_max, num_x ) );
   }
 
-
+ /**
+  *  Returns the number of x values for a Histogram. This is the number of
+  * intervals +1.
+  * 
+  */
+ public int getNum_x()
+  {
+ 	return (int)Math.max((int)n_steps_ui.getValue(),0);
+  }
+ 
+ /**
+  * 
+  * @return  The starting x value for this XScaleChooser
+  */
+ public float getStart_x()
+   {
+   	return x_range_ui.getMin();
+   }
+   
+ /**
+  * 
+  * @return The ending x value for this XScaleChooser
+  */
+ public float getEnd_x()
+   {
+   	return x_range_ui.getMax();
+   }
+   
+   
+ /**
+  * Changes the information on this XScaleChooserUI
+  * @param UnitsLabel   The label for the units
+  * @param x_min        The minimum specified value 
+  * @param x_max        The maximum specified value
+  * @param Nsteps       The number of steps
+  */
+ public void set( String UnitsLabel, float x_min, 
+                                              float x_max, int Nsteps)
+   {
+   	if( UnitsLabel != null)
+   	   x_range_ui.setLabel( UnitsLabel);
+   	x_range_ui.setMin( x_min);
+   	x_range_ui.setMax(x_max);
+   	
+   	
+   }
 /* -------------------------------------------------------------------------
  *
  * INTERNAL CLASSES 
