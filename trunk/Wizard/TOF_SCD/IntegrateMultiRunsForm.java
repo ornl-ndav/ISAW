@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.9  2003/06/11 23:04:07  bouzekc
+ * No longer uses StringUtil.setFileSeparator as DataDirPG
+ * now takes care of this.
+ *
  * Revision 1.8  2003/06/11 22:45:19  bouzekc
  * Moved calls to setFileSeparator() out of the loop.
  *
@@ -253,15 +257,13 @@ public class IntegrateMultiRunsForm extends Form
     //get raw data directory
     //should be no need to check this for validity
     param = (IParameterGUI)super.getParameter( 0 );
-    rawDir = StringUtil.setFileSeparator(
-               param.getValue().toString() + "/");
+    rawDir = param.getValue().toString();
     param.setValid(true);
 
     //get output directory
     //should be no need to check this for validity
     param = (IParameterGUI)getParameter( 1 );
-    outputDir = StringUtil.setFileSeparator(
-                  param.getValue().toString() + "/");
+    outputDir = param.getValue().toString();
     param.setValid(true);
 
     //gets the run numbers

@@ -28,6 +28,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.9  2003/06/11 23:04:06  bouzekc
+ * No longer uses StringUtil.setFileSeparator as DataDirPG
+ * now takes care of this.
+ *
  * Revision 1.8  2003/06/11 22:43:59  bouzekc
  * Added code to input three delta values (h, k, and l).
  * Added code to allow specifying a matrix file to apply to
@@ -261,8 +265,7 @@ public class IndexJForm extends Form
 
     //gets the input path
     param = (IParameterGUI)super.getParameter(1);
-    peaksDir = StringUtil.setFileSeparator(
-                 param.getValue().toString() + "/");
+    peaksDir = param.getValue().toString();
     param.setValid(true);
 
     //gets the experiment name
