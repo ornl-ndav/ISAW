@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2005/01/10 15:21:18  dennis
+ *  Modified getCategoryList to put derived classes in proper place in
+ *  menu system.
+ *
  *  Revision 1.1  2004/05/07 16:11:57  dennis
  *  Base class for examples of Generic operators.
  *
@@ -38,6 +42,7 @@
 package DataSetTools.operator.Generic.Example;
 
 import java.io.*;
+import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.GenericOperator;
 
 /**
@@ -59,22 +64,20 @@ abstract public class GenericExample extends    GenericOperator
 
   /* ------------------------ getCategoryList ------------------------------ */
   /**
-   * Get an array of strings listing the operator category names of base
-   * classes for this operator.  The first entry in the array is the string:
+   * Get a list of strings giving the categories to be used when placing
+   * the operator in menus.  The first entry in the array must be the string:
    *
    *      Operator.OPERATOR
    *
-   * The last entry is the category of the last abstract base class that is
-   * is a base class for the current operator.
-   * 
-   * @return  A list of Strings specifying the category names of the abstract
-   * base classes from which this operator is derived.
+   * @return  An array of Strings specifying the category names to use 
+   *          for this operator. 
    */
   public String[] getCategoryList()
   {
     if(categoryList==null)
-      categoryList=createCategoryList();
+      categoryList = Operator.UTILS_EXAMPLES;
 
     return categoryList;
   }
+
 } 

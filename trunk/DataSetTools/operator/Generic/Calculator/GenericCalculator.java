@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2005/01/10 15:21:19  dennis
+ * Modified getCategoryList to put derived classes in proper place in
+ * menu system.
+ *
  * Revision 1.4  2003/06/16 19:06:33  pfpeterson
  * Removed old code and updated to work with new getCategoryList() code
  * in base operator class.
@@ -42,6 +46,7 @@
 package DataSetTools.operator.Generic.Calculator;
 
 import java.io.*;
+import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.GenericOperator;
 
 /**
@@ -67,22 +72,21 @@ abstract public class GenericCalculator extends    GenericOperator
 
   /* ------------------------ getCategoryList ------------------------------ */
   /**
-   * Get an array of strings listing the operator category names of base
-   * classes for this operator.  The first entry in the array is the string:
+   * Get a list of strings giving the categories to be used when placing
+   * the operator in menus.  The first entry in the array must be the string:
    *
    *      Operator.OPERATOR
    *
-   * The last entry is the category of the last abstract base class that is
-   * is a base class for the current operator.
-   * 
-   * @return  A list of Strings specifying the category names of the abstract
-   * base classes from which this operator is derived.
+   * @return  An array of Strings specifying the category names to use 
+   *          for this operator. 
    */
   public String[] getCategoryList()
   {
     if(categoryList==null)
-      categoryList=createCategoryList();
+      categoryList = Operator.UTILS_CALCULATORS;
 
     return categoryList;
   }
+
+
 } 
