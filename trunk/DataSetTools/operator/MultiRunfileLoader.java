@@ -2,6 +2,10 @@
  * @(#)MultiRunfileLoader.java     0.1  2000/06/13  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.4  2000/07/14 19:08:39  dennis
+ *  Added code to calculate additional information such as incident energy,
+ *  wavelength and wavenumber
+ *
  *  Revision 1.3  2000/07/13 22:22:04  dennis
  *  Made improvements to calculation and formatting of Monitor Statistics
  *
@@ -26,6 +30,7 @@ import DataSetTools.instruments.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.util.*;
+import DataSetTools.math.*;
 import DataSetTools.peak.*;
 import IPNS.Runfile.*;
 
@@ -356,7 +361,7 @@ public class MultiRunfileLoader extends    Operator
 /*  Test case 2 ..........................
 */
       int runs[] = new int[1];
-      runs[0] = 2447;
+      runs[0] = 2444;
 
       MultiRunfileLoader loader = new MultiRunfileLoader(
                                       "/IPNShome/dennis/ARGONNE_DATA/",
@@ -389,18 +394,65 @@ public class MultiRunfileLoader extends    Operator
         viewmanager = new ViewManager( datasets[1], IViewManager.IMAGE );
 
         float area[] = new float[2];
+        float time[] = new float[2];
         for ( int mon = 0; mon < 2; mon++ )
         {
           HistogramDataPeak peak = new HistogramDataPeak(
-                                             datasets[0].getData_entry(mon) );
+                                      datasets[0].getData_entry(mon), 8.5 );
           peak.PrintPeakInfo( "SUM: Monitor " + (mon+1), IPeak.PEAK_ONLY );
   
           float position = peak.getPosition();
           float fwhm     = peak.getFWHM();
-          area[mon] = peak.Area( position-2.5f*fwhm, position+2.5f*fwhm);
+          float extent_f = peak.getExtent_factor();
+          float a        = position - extent_f/2 * fwhm; 
+          float b        = position + extent_f/2 * fwhm; 
+          System.out.println("MONITOR "+ (mon+1)+": a = " + a + " b = " + b );
+          area[mon]      = peak.Area( a, b);
+          float centroid = peak.Moment( a, b, 0, 1) / area[mon];
+
+          time[mon] = centroid;
         }
 
+        // calculate the input energy from the monitor peak positions........
+
+        Data mon_1_data = datasets[0].getData_entry( 0 ); 
+        DetectorPosition position = (DetectorPosition)
+                         mon_1_data.getAttributeValue(Attribute.DETECTOR_POS);
+        float coords[] = position.getCartesianCoords();
+        float mon_1_x = coords[0];
+        
+        Data mon_2_data = datasets[0].getData_entry( 1 );
+        position = (DetectorPosition)
+                         mon_2_data.getAttributeValue(Attribute.DETECTOR_POS);
+        coords = position.getCartesianCoords();
+        float mon_2_x = coords[0];
+        
+        System.out.println("----------------------------------");
+        System.out.println("Mon 1 at x = "+mon_1_x+" Mon 2 at x = "+mon_2_x );
+        System.out.println("Mon 1 time = "+time[0]+" Mon 2 time = "+time[1] );
+        float energy = tof_calc.Energy( mon_2_x-mon_1_x, time[1]-time[0] );
+        float wave_len = tof_calc.Wavelength(mon_2_x-mon_1_x, time[1]-time[0]);
+        float wave_num = (float)(2*Math.PI/wave_len);
+        System.out.println("Energy     = "+ energy );
+        System.out.println("Wavelength = "+ wave_len );
+        System.out.println("Wavenumber = "+ wave_num );
+        System.out.println("----------------------------------");
+
+        System.out.println("Mon 1 to Mon 2 distance ="+(mon_2_x-mon_1_x));
+        System.out.println("Mon 1 to Mon 2 TOF      ="+(time[1]-time[0]));
+        System.out.println("Velocity                ="+
+                            ((mon_2_x-mon_1_x)/(time[1]-time[0])));
+        float velocity = tof_calc.VelocityFromEnergy(energy);
+        System.out.println("Velocity from E = " + velocity );
+        System.out.println("E from Velocity = " + 
+                            tof_calc.EnergyFromVelocity(velocity) );
+        System.out.println( "Wavelength from Velocity = " + 
+                             tof_calc.WavelengthFromVelocity( velocity ));
+        System.out.println( "Velocity from Wavelength = " + 
+                             tof_calc.VelocityFromWavelength( wave_len ));
+
         System.out.println("Ratio A2/A1 = " + area[1]/area[0] );
+        System.out.println("----------------------------------");
 
         System.out.println("Monitor Data Set Log...................."); 
         datasets[0].getOp_log().Print();
