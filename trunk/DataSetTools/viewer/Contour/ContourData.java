@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2002/11/25 13:48:27  rmikk
+ *  Added more bounds checking to eliminate "Array out of Bounds" exceptions
+ *
  *  Revision 1.11  2002/10/14 19:51:15  rmikk
  *  -Fixed a swap error
  *
@@ -542,7 +545,9 @@ public class ContourData
    int r = (int) (R +.5 );
    int c = (int) (C + .5);
    
-   int G =Groupss[ c*nrowws+r];
+   int G = -1;
+   if( c*nrowws+r < Groupss.length)
+       G = Groupss[ c*nrowws+r];
    int indx = Inds[c*nrowws+r]; 
    if( G == -1)
      return Float.NaN;
@@ -616,7 +621,10 @@ public class ContourData
            c = (int) (C + .5);
            
            //System.out.println( "RCrc="+R+","+C+","+row+","+col +","+values[c*nrowws+r]);
-           int G =Groupss[ c*nrowws+r];
+           
+           int G =-1;
+           if(c*nrowws+r < Groupss.length)
+              G = Groupss[ c*nrowws+r];
           // float xIndex = Axis3.getXindex( G, lastTime);
           // System.out .println("Gr, A1,A2,time, timeIndex="+G+","+Axis1.getValue(G,xIndex)+","+
             //  Axis2.getValue( G, xIndex)+ ","+lastTime+","+Axis3.getValue(G,xIndex)+","+xIndex);
