@@ -1,7 +1,7 @@
 /*
  * File:  ExitDialog.java 
  *
- * Copyright (C) 2002, Rut Mikkelsoj
+ * Copyright (C) 2002, Rut Mikkelson
  *                    
  *
  * This program is free software; you can redistribute it and/or
@@ -18,7 +18,7 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Ruth Mikkelson <mikkelsond@uwstout.edu>
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
  *           Menomonie, WI. 54751
@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/11/16 14:32:27  rmikk
+ * Improved Documentation
+ *
  * Revision 1.1  2002/09/23 14:08:56  rmikk
  * Initial checkin
  *
@@ -48,8 +51,9 @@ import  DataSetTools.operator.Generic.Batch.GenericBatch;
 import  DataSetTools.parameter.*;
 
 /**
- * This operator ExitDialogs the program.
- * 
+ * This operator is used by scripts to make the JParametersDialog box to exit if this
+ * is the last operator executed in a script or is the argument of the script Return statement.
+ * This is equivalent to pressing the Exit button in the JParametersDialog box.
  */
 
 public class ExitDialog extends  GenericBatch 
@@ -57,7 +61,7 @@ public class ExitDialog extends  GenericBatch
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
-   * Construct a default ExitDialog operator to ExitDialog one second.
+   * Construct a default ExitDialog operator.
    */
 
   public ExitDialog( )
@@ -65,12 +69,7 @@ public class ExitDialog extends  GenericBatch
     super( "Exit Dialogue " );
   }
 
-  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
-  /**
-   *  Construct a ExitDialog operator return an instance of the ExitClass
-   *
-   *
-   */
+
 
  
 
@@ -87,7 +86,7 @@ public class ExitDialog extends  GenericBatch
 
  /* -------------------------- setDefaultParmeters ------------------------- */
  /**
-  *  Set the ExitDialog to a default value of one second.
+  *  ExitDialog has no parameters. Initialize the parameter variable.
   */
   public void setDefaultParameters()
   {
@@ -98,7 +97,10 @@ public class ExitDialog extends  GenericBatch
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /** Returns an instance of an ExitClass.
+  * NOTE: This operator is used only by scripts. Java operators can just return
+  * a new ExitClass()
+  */
   public Object getResult()
   {
     return new ExitClass();
