@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2003/09/02 21:20:35  bouzekc
+ *  Now handles null values in the constructor and setValue() better.
+ *
  *  Revision 1.16  2003/08/28 02:28:11  bouzekc
  *  Removed setEnabled() method.
  *
@@ -142,8 +145,12 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    */
   public RadioButtonPG( String name, Object val ) {
     super( name, val );
-    addItem( val.toString(  ) );
-    setValue( val.toString(  ) );
+
+    if( val != null ) {
+      addItem( val.toString(  ) );
+      setValue( val.toString(  ) );
+    }
+
     this.type = TYPE;
   }
 
@@ -172,8 +179,11 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
       radioChoices = ( Vector )val;
     } else {
       radioChoices = new Vector(  );
-      addItem( val.toString(  ) );
-      setValue( val.toString(  ) );
+
+      if( val != null ) {
+        addItem( val.toString(  ) );
+        setValue( val.toString(  ) );
+      }
     }
 
     this.type = TYPE;
@@ -218,6 +228,11 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    *        name.  If the value does not exist, it will not be added.
    */
   public void setValue( Object sVal ) {
+    if( sVal == null ) {
+      //we can't really set it
+      return;
+    }
+
     String valName = sVal.toString(  );
 
     int radioIndex = getButtonIndex( valName );
