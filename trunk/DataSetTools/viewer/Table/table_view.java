@@ -30,6 +30,12 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.26  2002/06/12 13:41:59  rmikk
+ * Fixed the duplicate column detector method. Now the
+ * field XY_index is not repeated as much and in the
+ * time slice view Group fields are repeated if any table column
+ * represents a detector row or detector column
+ *
  * Revision 1.25  2002/06/11 16:13:20  rmikk
  * Optimized the file save function as follows:
  *   1. Used the StringBuffer instead of String
@@ -3451,13 +3457,16 @@ public class table_view extends JPanel implements ActionListener
          {
             char cc = order.charAt( commapos + 1 );
 
-            if( "FG".indexOf( cc ) >= 0 )
+            if( "FGIJ".indexOf( cc ) >= 0 )
                cc = order.charAt( commapos + 2 );
-            if( "FG".indexOf( cc ) >= 0 )
+            if( "FGIJ".indexOf( cc ) >= 0 )
                if( commapos + 3 >= order.length() )
                   return false;
                else
                   cc = order.charAt( commapos + 3 );
+            if( "FGIJ".indexOf( cc )>=0 )
+               return false;
+
             int ii = HGTF.indexOf( cc );
 
             if( item[ ii ] == 0 )
@@ -3471,7 +3480,9 @@ public class table_view extends JPanel implements ActionListener
             if( xvals == null )
                return false;
 
-            if( !( fi.toString().equals( "X values" ) ) )
+            if( !( (fi.toString().equals( "X values" ) )
+                   || (fi.toString().equals( "XY index" )) )
+              )
                return false;
 
             if( order.indexOf( 'T' ) > commapos )
