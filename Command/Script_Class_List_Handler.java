@@ -1,4 +1,10 @@
 package Command;
+/*
+* 5-20 -2001   Created by Ruth Mikkelson
+*
+*5-30-2001   Fixed a bug with int Operator adjust for classes
+*
+*/
 
 import Command.*;
 import java.io.*;
@@ -200,7 +206,7 @@ public  Operator getClassInst( String filename )
     pathlist=pathlist.replace('\\','/');
     pathlist=pathlist.replace(java.io.File.pathSeparatorChar,';');
     int i = filename.lastIndexOf('/' );
-    
+   
     if( i < 0 )
        return null;
     String CPath = filename.substring( 0 , i ).trim();
@@ -214,9 +220,10 @@ public  Operator getClassInst( String filename )
     for( path = getNextPath( pathlist, null ) ; path != null;
          path = getNextPath( pathlist, path ))
       {String Path1=path.trim();
+    
        if( Path1 != null )
          if( Path1.length() > 0 )
-           {if( Path1.lastIndexOf('/') >= 0)
+           {if( Path1.lastIndexOf('/') == Path1.length()-1)
               Path1=Path1.substring( 0, Path1.lastIndexOf('/' )).trim();
             if( Path1 !=null )
              if( Path1.length() > 0 )
@@ -224,7 +231,7 @@ public  Operator getClassInst( String filename )
                }
             }
           
-
+        
           if( CPath.indexOf(Path1 ) == 0 )
             {CPathFix = CPath.substring( Path1.length()+1);
              CPathFix =CPathFix.replace('/','.');
@@ -568,3 +575,4 @@ private  boolean ScompareLess( String s1, String s2)
 
   }
 }
+
