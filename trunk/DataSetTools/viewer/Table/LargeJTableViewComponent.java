@@ -30,6 +30,12 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.13  2004/08/04 22:18:23  rmikk
+ *  Started to implement IAxisAddible
+ *  Fixed the ViewMenuItems to include a path
+ *  Eliminated some unused code
+ *  Implemented the getPointedAt and setPointedAT to work like the ImageViewComponent
+ *
  *  Revision 1.12  2004/05/26 18:37:56  rmikk
  *  Removed unused variables
  *
@@ -48,13 +54,15 @@
  */
 
 package DataSetTools.viewer.Table;
-import DataSetTools.dataset.*;
+//import DataSetTools.dataset.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.StringFilter.*;
 import gov.anl.ipns.ViewTools.Components.*;
 import gov.anl.ipns.ViewTools.Components.TwoD.*;
 import gov.anl.ipns.ViewTools.Components.Menu.*;
 import gov.anl.ipns.ViewTools.Components.Region.*;
+import gov.anl.ipns.ViewTools.UI.*;
+import gov.anl.ipns.ViewTools.Components.Transparency.*;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControl;
 import gov.anl.ipns.ViewTools.Components.ViewControls.ViewControlMaker;
 
@@ -75,7 +83,7 @@ import DataSetTools.components.ParametersGUI.*;
 *   is handled here
 */
 public class LargeJTableViewComponent  extends JPanel implements IViewComponent2D,
-   DataSetViewerMethods
+   DataSetViewerMethods, IAxisAddible
  {
   IntTableModel table_model;
   IVirtualArray2D Array; 
@@ -88,12 +96,14 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
   JMenuItem  JMi, 
              JCp ;
   
+  ObjectState Ostate = null;
   ExcelAdapter EA;
   SaveDataSetActionListener SaveDS;
   StringEntry StEnt = null; 
   MAction myAction ;
   ComponentInputMap inp_map;
   ActionMap act_map;
+  AxisInfo  XAxis, YAxis;
   public LargeJTableViewComponent( ViewerState state1, IVirtualArray2D Array)
     {super( new GridLayout(1,1));
      state = state1;
@@ -101,6 +111,8 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
        {state = new ViewerState();
         
         }
+     XAxis = Array.getAxisInfo( 0);
+     YAxis = Array.getAxisInfo( 1);
      this.Array=Array;
      if( Array == null)
         this.Array = new dummyIVirtualArray2D();
@@ -139,7 +151,15 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
   */
   public void setObjectState( ObjectState new_state )
   {
-    System.out.println("***Currently Unimplemented***");
+    Ostate = new_state;
+    ViewerState st = (ViewerState)new_state.get("ViewerState");
+    if( st != null){
+       state= st;
+       //Now repaint with these
+      JscrlPane.validate();
+      JscrlPane.repaint();
+       
+    }
   }
  
  /**
@@ -153,8 +173,13 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
   */ 
   public ObjectState getObjectState( boolean isDefault )
   {
-    System.out.println("***Currently Unimplemented***");
-    return new ObjectState();
+    if( isDefault){
+      ObjectState defState = new ObjectState();
+      defState.insert("ViewerState", state);
+      return defState;
+    }
+ 
+    return Ostate;
   }
  
    private void SetUpNewJtb(){
@@ -166,6 +191,17 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
       jtb.setSelectionBackground( Color.lightGray);
       jtb.removeEditor();
       jtb.addMouseListener( new MyMouseListener());
+      /*JPanel jp = new JPanel( new BorderLayout());
+      JPanel west = new JPanel();
+      west.setPreferredSize( new Dimension( 40,0));
+      jp.add( west, BorderLayout.WEST);
+      jp.add(jtb, BorderLayout.CENTER);
+       JPanel North = new JPanel();
+      North.setPreferredSize( new Dimension( 0,40));
+      jp.add( North, BorderLayout.NORTH);
+       AxisOverlay2D axes =new AxisOverlay2D( this);
+       JPanel All = new JPanel();
+       */
       JscrlPane = new JScrollPane(jtb);
       add( JscrlPane );
       
@@ -357,37 +393,7 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
 
 
 
-   // Moved to IVirtualArray
-   /** Subclasses can redefine this for faster saves<P>
-   *   NOTE: the header information has already been written
-   */
-  /* public void SaveFileInfo(OutputStream fout)
-    {StringBuffer S= new StringBuffer();
-     try{
-     for( int i=0; i< table_model.getRowCount(); i++)
-       {if( S.length()>7000)
-          {fout.write(S.toString().getBytes());
-           S.setLength(0);
-          }
-        for(int j=0; j< table_model.getColumnCount(); j++)
-          {S.append( table_model.getValueAt(i,j));
-           if( j+1 < table_model.getColumnCount())
-              S.append( "\t");
-           else
-              S.append("\n");
-          }
-       }
-     if( S.length()>0)
-        fout.write(S.toString().getBytes());
-     fout.close( );
-     System.out.println( "Closed" ); 
-       }
-     catch( Exception s) 
-       {DataSetTools.util.SharedData.addmsg("Cannot close file "+s);
-        }
-   }
-
-*/
+   
 
    /** LargeJTableViewComponent Takes care of the POINTED_AT_CHANGED reason and locates the
    *   Scroll pane to the correct position.  Subclasses should take care of 
@@ -416,17 +422,7 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
         Rectangle Rscr = JscrlPane.getViewport().getViewRect();//getViewRect(); NG
         int width = Rscr.width;
         int height = Rscr.height;
-        //int nrows = height/ R.height;
-        //int ncols = width/R.width;
-       /* if( R.x > Rscr.x + Rscr.width/nrows*4)
-           if( R.x < Rscr.x -Rscr.width/nrows*4)
-             if( R.y > Rscr.y + Rscr.height/ncols*4)
-               if( R.y < Rscr.y -Rscr.height/ncols*4) 
-                 {jtb.setColumnSelectionInterval( col,col);
-                  jtb.setRowSelectionInterval(row,row);
-                   
-                 }
-         */        
+      
         Rectangle RR = R;
         RR.y = R.y - height/2;
         RR.x = R.x -width/2;
@@ -470,6 +466,18 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
      }
 //-------------IViewComponent2D Methods -----------
 	public void setPointedAt( floatPoint2D fpt ){
+              
+           if( Array.getNumColumns() <=0)
+              return ;
+           if( Array.getNumRows() <=0)
+               return ;
+           int col = (int)(Array.getNumColumns()*(fpt.x - XAxis.getMin())/(XAxis.getMax()-XAxis.getMin()));
+           
+           int row = (int)(Array.getNumRows()*(fpt.y - YAxis.getMax())/(YAxis.getMin()-YAxis.getMax()));
+           setPointedAt( new SelectedData2D( row, col, 0f));
+
+
+             
 	}
  
 	 /**
@@ -479,7 +487,19 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
 		*  @return The current point as a floatPoint2D.
 		*/ 
 		public floatPoint2D getPointedAt(){
-			return null;
+                    if( Array.getNumColumns() <=0)
+                       return null;
+                    if( Array.getNumRows() <=0)
+                       return null;
+	            SelectedData2D dat = (SelectedData2D)IgetPointedAt();
+                    int row = dat.getRow();
+                    int col = dat.getCol();
+                    float x =  XAxis.getMin()+(XAxis.getMax()-XAxis.getMin())*(col+.5f)/Array.getNumColumns();
+                    float y =  YAxis.getMax()+(YAxis.getMin()-YAxis.getMax())*(row+.5f)/Array.getNumRows();
+                    return new floatPoint2D( x,y);
+
+
+
 		}
 
 	 /**
@@ -507,6 +527,8 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
 		*/ 
 		public void dataChanged(IVirtualArray2D v2D){
 			setData( v2D);
+                        XAxis = v2D.getAxisInfo(0);
+                        YAxis = v2D.getAxisInfo(1);
 		}
 		
 //-------------END IViewComponent2D Methods---------------
@@ -622,9 +644,9 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
       calc.addActionListener( new IntegrateListener() );
       JMi.addActionListener( new MyJTableListener( jtb, table_model, EA ) );
       JCp.addActionListener( new MyJTableListener( jtb, table_model, EA ) );
-      Res[0] = new ViewMenuItem(JMi);
-      Res[1] = new ViewMenuItem(JCp);
-      Res[2] = new ViewMenuItem(calc);
+      Res[0] = new ViewMenuItem("Edit.SpreadSheet",JMi);
+      Res[1] = new ViewMenuItem("Edit.SpreadSheet",JCp);
+      Res[2] = new ViewMenuItem("Edit.SpreadSheet",calc);
       JMi.setToolTipText("Select All entries in the table");
       JCp.setToolTipText("Copy the selected items in the table to the Clipboard");
       calc.setToolTipText("Integrate selected region minus background"+
@@ -637,7 +659,7 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
         JMenuItem Sel1 = new JMenuItem( "Rectangle");
         Sel1.addActionListener( new SelectActionListener());
         Sel1.setToolTipText("Selects in application items highlighted in table");
-        Res[3] = new ViewMenuItem( Sel1);
+        Res[3] = new ViewMenuItem("Select", Sel1);
         return Res;
       }
    
@@ -770,6 +792,28 @@ public class LargeJTableViewComponent  extends JPanel implements IViewComponent2
           Float.NaN);
    }
 //--------------- End IViewComponent Methods ------------------------------
+//----------------- Start IAxisAddible Methods -----------------------------
+  public AxisInfo getAxisInformation( int axiscode){
+     return Array.getAxisInfo( axiscode);
+  }
+
+  public String getTitle(){
+     return Array.getTitle();
+  }
+
+  public int getPrecision(){
+     return 0;
+  } 
+
+  public java.awt.Font getFont(){
+
+     return  FontUtil.MONO_FONT;
+  } 
+
+  public Rectangle getRegionInfo(){
+    return getBounds();
+  }
+//----------------- End IAxisAddible Methods -----------------------------
  class IntTableModel  extends AbstractTableModel {//implements ITableModel NO
    IVirtualArray2D Array;
    public IntTableModel( IVirtualArray2D Array){
