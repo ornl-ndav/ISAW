@@ -30,6 +30,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2004/01/15 00:44:38  bouzekc
+ * Now handles single and multi line if statements.  Now more sophisticated
+ * when determining whether to append a semicolon to the end of a line.
+ *
  * Revision 1.12  2004/01/14 21:55:13  bouzekc
  * Fixed a bug with math expression parentheses.
  *
@@ -89,7 +93,7 @@ import java.util.*;
 public class FortranParser {
   //don't want to continually recreate this thing
   private static FortranParser myParser;
-  private static boolean expandVectorIntoElements = true;
+  private static boolean appendSemiColon = false;
   private static boolean standalone = false;
   
   /**
@@ -151,6 +155,8 @@ public class FortranParser {
     String s, String type ) { 
     StringBuffer buffer = new StringBuffer( type );
     buffer.append( " " );
+    //make sure these get a semicolon
+    appendSemiColon = true;
     
     //the parentheses should NOT be right at the beginning of the declaration
     if( s.indexOf( "(" ) > 0 ) {    
@@ -184,6 +190,16 @@ public class FortranParser {
 
     return buffer.toString(  );
   }
+  
+  /**
+   * Simply replaces any occurrences of opName in s with Math.opName.
+   * 
+   * @return The converted String.
+   */
+  private static String convertMath( String s, String opName ){
+    return s.replaceAll( opName, "Math." + opName );
+  }
+  
 }
      
 PARSER_END( FortranParser )
@@ -221,6 +237,20 @@ TOKEN : {
 //one or more whitespace characters
 TOKEN : {
   < #OPT_WS: ( <WHITESPACE> )* >
+}
+
+//left parentheses, surrounded by optional whitespace
+TOKEN: {
+  <#LPAREN: (
+    <OPT_WS> "(" <OPT_WS>
+  ) >
+}
+
+//right parentheses, surrounded by optional whitespace
+TOKEN: {
+  <#RPAREN: (
+    <OPT_WS> ")" <OPT_WS>
+  ) >
 }
 
 //represents a single digit unsigned integer
@@ -273,7 +303,7 @@ TOKEN : {
 TOKEN: {
   < #ARRAY_VARIABLE: (
     <OPT_WS>
-    <VARIABLE> "(" <OPT_WS> ( <UNSIGNED_DIGIT> )+ <OPT_WS> ")"
+    <VARIABLE> <LPAREN> ( <UNSIGNED_DIGIT> )+ <RPAREN>
     <OPT_WS>
   ) >
 }
@@ -425,8 +455,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_ABS: (
     <OPT_WS>
-    ( "abs(" | "iabs(" ) <MATH_VAR> ")"
-    <OPT_WS>
+    ( "abs" | "iabs" ) <LPAREN> <MATH_VAR> <RPAREN>
   ) >
 }
 
@@ -434,8 +463,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_SQRT: (
     <OPT_WS>
-    "sqrt(" <MATH_FLOAT_VAR> ")"
-    <OPT_WS>
+    "sqrt" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
   ) >
 }
 
@@ -443,8 +471,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_SIN: (
     <OPT_WS>
-    "sin(" <MATH_FLOAT_VAR> ")"
-    <OPT_WS>
+    "sin" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
   ) >
 }
 
@@ -452,8 +479,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_ASIN: (
     <OPT_WS>
-    "asin(" <MATH_FLOAT_VAR> ")"
-    <OPT_WS>
+    "asin" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
   ) >
 }
 
@@ -461,8 +487,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_COS: (
     <OPT_WS>
-    "cos(" <MATH_FLOAT_VAR> ")"
-    <OPT_WS>
+    "cos" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
   ) >
 }
 
@@ -470,8 +495,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_ACOS: (
     <OPT_WS>
-    "acos(" <MATH_FLOAT_VAR> ")"
-    <OPT_WS>
+    "acos" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
   ) >
 }
 
@@ -479,8 +503,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_TAN: (
     <OPT_WS>
-    "tan(" <MATH_FLOAT_VAR> ")"
-    <OPT_WS>
+    "tan" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
   ) >
 }
 
@@ -488,8 +511,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_ATAN: (
     <OPT_WS>
-    "atan(" <MATH_FLOAT_VAR> ")"
-    <OPT_WS>
+    "atan" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
   ) >
 }
 
@@ -497,8 +519,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_LOG: (
     <OPT_WS>
-    "log(" <MATH_FLOAT_VAR> ")"
-    <OPT_WS>
+    "log" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
   ) >
 }
 
@@ -506,8 +527,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_EXP: (
     <OPT_WS>
-    "exp(" <MATH_FLOAT_VAR> ")"
-    <OPT_WS>
+    "exp" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
   ) >
 }
 
@@ -515,8 +535,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_FLOAT_FUN: (
     <OPT_WS>
-    ( "float(" | "real(" ) <MATH_INT_VAR> ")"
-    <OPT_WS>
+    ( "float" | "real" ) <LPAREN> <MATH_INT_VAR> <RPAREN>
   ) >
 }
 
@@ -524,8 +543,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_TRUNC_FUN: (
     <OPT_WS>
-    "int(" <MATH_FLOAT_VAR> ")"
-    <OPT_WS>
+    "int" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
   ) >
 }
 
@@ -533,8 +551,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_MOD_FUN: (
     <OPT_WS>
-    "mod(" <MATH_INT_VAR> "," <MATH_FLOAT_VAR> ")"
-    <OPT_WS>
+    "mod" <LPAREN> <MATH_INT_VAR> "," <MATH_FLOAT_VAR> <RPAREN>
   ) >
 }
 
@@ -542,8 +559,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_FLOOR_FUN: (
     <OPT_WS>
-    "floor(" <MATH_FLOAT_VAR> ")"
-    <OPT_WS>
+    "floor" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
   ) >
 }
 
@@ -551,8 +567,7 @@ TOKEN: {
 TOKEN: {
   < FORTRAN_FRACTION_FUN: (
     <OPT_WS>
-    "fraction(" <MATH_FLOAT_VAR> ")"
-    <OPT_WS>
+    "fraction" <LPAREN> <MATH_FLOAT_VAR> <RPAREN>
   ) >
 }
 
@@ -586,35 +601,62 @@ TOKEN: {
 //and one operator, surrounded (optionally) by parentheses
 TOKEN: {
   < #SIMPLE_EXPRESSION: (
-    <OPT_WS> ( "(" )?
+    ( <LPAREN> )?
     <OPERAND> ( <OPERATOR> <OPERAND> )+
-    ( ")" )? <OPT_WS>
+    ( <RPAREN> )?
   ) >
 }
 
 TOKEN: {
   <#NESTED_EXPRESSION: (
-    <OPT_WS>
-    ( "(" )? ( <OPERAND> <OPERATOR> "(" )*
+    ( <LPAREN> )? ( <OPERAND> <OPERATOR> <LPAREN> )*
     <SIMPLE_EXPRESSION>
-    ( ")" <OPERATOR> <OPERAND> )* ( ")" )?
-    <OPT_WS>
+    ( <RPAREN> <OPERATOR> <OPERAND> )* ( <RPAREN> )?
   ) >
 }
 
 //the full set of expressions
 TOKEN: {
   <FORTRAN_EXPRESSION: (
-    <OPT_WS> ( ( <VARIABLE> <EQ> ) | "(" )?
+    ( ( <VARIABLE> <EQ> ) | <LPAREN> )?
     ( 
       ( <SIMPLE_EXPRESSION> | <NESTED_EXPRESSION> )
       ( <OPERATOR> 
         ( <SIMPLE_EXPRESSION> | <NESTED_EXPRESSION> ) 
       )* 
     )
-    ( ")" )?
+    ( <RPAREN> )?
     <OPT_WS>
   ) >
+}
+
+//~----------------------------------------------------------------------------
+// FORTRAN CONDITIONALS
+//~----------------------------------------------------------------------------
+
+//one line if statement
+TOKEN: {
+  < SINGLE_IF: (
+    <OPT_WS>
+    "if" <LPAREN> <OPERAND> ( ".lt." | ".gt." ) <OPERAND> <RPAREN>
+  ) >
+}
+
+//start of multi line if statement
+TOKEN: {
+  < START_MULTI_IF: (
+    <OPT_WS>
+    "if" <LPAREN> <OPERAND> ( ".lt." | ".gt." ) 
+    <OPERAND> <RPAREN> "then" 
+    <OPT_WS>
+  ) >
+}
+
+//end of multi-line if statement
+TOKEN: {
+  < END_IF: (
+    <OPT_WS> "endif" <OPT_WS> 
+   ) >
 }
 
 //~----------------------------------------------------------------------------
@@ -773,7 +815,12 @@ String convertFortranToJava(  ) : {
   )*
 
   {
-    return fCode.toString(  ).trim(  ) + ";\n";
+    if( appendSemiColon ) {
+      appendSemiColon = false;
+      return fCode.toString(  ) + ";\n";
+    } else {
+      return fCode.toString(  ) + "\n";
+    }
   }
 }
 
@@ -806,66 +853,88 @@ String convertFortranTokens(  ) : {
 |
   //variable assignment
   t = <VAR_ASSIGN> {
+    appendSemiColon = true;
     return t.image;
+  }
+|
+  //single line if
+  t = <SINGLE_IF> {
+    appendSemiColon = true;
+    return t.image.replaceAll( ".lt.", "<" ).replaceAll( ".gt.", ">" );
+  }
+|
+  //start of multi line if
+  t = <START_MULTI_IF> {
+    return t.image.replaceAll( ".lt.", "<" )
+                          .replaceAll( ".gt.", ">" )
+                          .replaceAll( "then", "{");
+  }
+|
+  //end if
+  t = <END_IF> {
+    return t.image.replaceAll( "endif", "}" );
   }
 |
   //matched the absolute function
   t = <FORTRAN_ABS> {
-    if( t.image.indexOf( "iabs" ) >= 0 ) {
-      return t.image.replaceAll( "iabs", "Math.abs" );
+    s = t.image;
+    if( s.indexOf( "iabs" ) >= 0 ) {
+      s.replaceAll( "iabs", "Math.abs" );
     } else {
-      return t.image.replaceAll( "abs", "Math.abs" );
+      s.replaceAll( "abs", "Math.abs" );
     }
+    
+    return s;
   }
 |
   //square root function
   t = <FORTRAN_SQRT> {
-    return t.image.replaceAll( "sqrt", "Math.sqrt" );
+    return convertMath( t.image, "sqrt" );
   }
 |
   //sine function
   t = <FORTRAN_SIN> {
-    return t.image.replaceAll( "sin", "Math.sin" );
+    return convertMath( t.image, "sin" );
   }
 |
   //arcsine function
   t = <FORTRAN_ASIN> {
-    return t.image.replaceAll( "asin", "Math.asin" );
+    return convertMath( t.image, "asin" );
   }
 |
   //cosine function
   t = <FORTRAN_COS> {
-    return t.image.replaceAll( "cos", "Math.cos" );
+    return convertMath( t.image, "cos" );
   }
 |
   //arccosine function
   t = <FORTRAN_ACOS> {
-    return t.image.replaceAll( "acos", "Math.acos" );
+    return convertMath( t.image, "acos" );
   }
 |
   //tangent function
   t = <FORTRAN_TAN> {
-    return t.image.replaceAll( "tan", "Math.tan" );
+    return convertMath( t.image, "tan" );
   }
 |
   //tangent function
   t = <FORTRAN_ATAN> {
-    return t.image.replaceAll( "atan", "Math.atan" );
+    return convertMath( t.image, "atan" );
   }
 |
   //log function
   t = <FORTRAN_LOG> {
-    return t.image.replaceAll( "log", "Math.log" );
+    return convertMath( t.image, "log" );
   }
 |
   //exp function
   t = <FORTRAN_EXP> {
-    return t.image.replaceAll( "exp", "Math.exp" );
+    return convertMath( t.image, "exp" );
   }
 |
   //floor function
   t = <FORTRAN_FLOOR_FUN> {
-    return t.image.replaceAll( "floor", "Math.floor" );
+    return convertMath( t.image, "floor" );
   }
 |
   //fraction function
@@ -940,6 +1009,7 @@ String convertFortranTokens(  ) : {
   //matched a character or character array where each variable is
   //explicitly given a length
   t = <FORTRAN_CHAR_1> {
+    appendSemiColon = true;
     s = t.image;
     buffer = new StringBuffer( "char " );
     
@@ -974,6 +1044,7 @@ String convertFortranTokens(  ) : {
   //matched a character or character array where each variable is
   //given a length specified in the character *n declaration
   t = <FORTRAN_CHAR_2> {
+    appendSemiColon = true;
     s = t.image;
     buffer = new StringBuffer( "char " );
     

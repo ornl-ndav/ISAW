@@ -8,53 +8,58 @@ public interface FortranParserConstants {
   int WHITESPACE = 2;
   int ONE_PLUS_WS = 3;
   int OPT_WS = 4;
-  int UNSIGNED_DIGIT = 5;
-  int DIGIT = 6;
-  int CHARACTER = 7;
-  int RESERVED_CHAR = 8;
-  int VAR_RESERVED_CHAR = 9;
-  int DIGICHAR = 10;
-  int VARIABLE = 11;
-  int ARRAY_VARIABLE = 12;
-  int STRING_COMP = 13;
-  int STRING = 14;
-  int FLOATING_POINT = 15;
-  int BOOL_CONST = 16;
-  int FORTRAN_COMMENT = 17;
-  int INT_IDENT = 18;
-  int FLOAT_IDENT = 19;
-  int EQ = 20;
-  int CHAR_VARIABLE = 21;
-  int MATH_INT_VAR = 22;
-  int MATH_FLOAT_VAR = 23;
-  int MATH_VAR = 24;
-  int FORTRAN_ABS = 25;
-  int FORTRAN_SQRT = 26;
-  int FORTRAN_SIN = 27;
-  int FORTRAN_ASIN = 28;
-  int FORTRAN_COS = 29;
-  int FORTRAN_ACOS = 30;
-  int FORTRAN_TAN = 31;
-  int FORTRAN_ATAN = 32;
-  int FORTRAN_LOG = 33;
-  int FORTRAN_EXP = 34;
-  int FORTRAN_FLOAT_FUN = 35;
-  int FORTRAN_TRUNC_FUN = 36;
-  int FORTRAN_MOD_FUN = 37;
-  int FORTRAN_FLOOR_FUN = 38;
-  int FORTRAN_FRACTION_FUN = 39;
-  int OPERATOR = 40;
-  int OPERAND = 41;
-  int SIMPLE_EXPRESSION = 42;
-  int NESTED_EXPRESSION = 43;
-  int FORTRAN_EXPRESSION = 44;
-  int VAR_ASSIGN = 45;
-  int FORTRAN_INT = 46;
-  int FORTRAN_REAL = 47;
-  int FORTRAN_DOUBLE = 48;
-  int FORTRAN_LOGICAL = 49;
-  int FORTRAN_CHAR_1 = 50;
-  int FORTRAN_CHAR_2 = 51;
+  int LPAREN = 5;
+  int RPAREN = 6;
+  int UNSIGNED_DIGIT = 7;
+  int DIGIT = 8;
+  int CHARACTER = 9;
+  int RESERVED_CHAR = 10;
+  int VAR_RESERVED_CHAR = 11;
+  int DIGICHAR = 12;
+  int VARIABLE = 13;
+  int ARRAY_VARIABLE = 14;
+  int STRING_COMP = 15;
+  int STRING = 16;
+  int FLOATING_POINT = 17;
+  int BOOL_CONST = 18;
+  int FORTRAN_COMMENT = 19;
+  int INT_IDENT = 20;
+  int FLOAT_IDENT = 21;
+  int EQ = 22;
+  int CHAR_VARIABLE = 23;
+  int MATH_INT_VAR = 24;
+  int MATH_FLOAT_VAR = 25;
+  int MATH_VAR = 26;
+  int FORTRAN_ABS = 27;
+  int FORTRAN_SQRT = 28;
+  int FORTRAN_SIN = 29;
+  int FORTRAN_ASIN = 30;
+  int FORTRAN_COS = 31;
+  int FORTRAN_ACOS = 32;
+  int FORTRAN_TAN = 33;
+  int FORTRAN_ATAN = 34;
+  int FORTRAN_LOG = 35;
+  int FORTRAN_EXP = 36;
+  int FORTRAN_FLOAT_FUN = 37;
+  int FORTRAN_TRUNC_FUN = 38;
+  int FORTRAN_MOD_FUN = 39;
+  int FORTRAN_FLOOR_FUN = 40;
+  int FORTRAN_FRACTION_FUN = 41;
+  int OPERATOR = 42;
+  int OPERAND = 43;
+  int SIMPLE_EXPRESSION = 44;
+  int NESTED_EXPRESSION = 45;
+  int FORTRAN_EXPRESSION = 46;
+  int SINGLE_IF = 47;
+  int START_MULTI_IF = 48;
+  int END_IF = 49;
+  int VAR_ASSIGN = 50;
+  int FORTRAN_INT = 51;
+  int FORTRAN_REAL = 52;
+  int FORTRAN_DOUBLE = 53;
+  int FORTRAN_LOGICAL = 54;
+  int FORTRAN_CHAR_1 = 55;
+  int FORTRAN_CHAR_2 = 56;
 
   int DEFAULT = 0;
 
@@ -64,6 +69,8 @@ public interface FortranParserConstants {
     "<WHITESPACE>",
     "<ONE_PLUS_WS>",
     "<OPT_WS>",
+    "<LPAREN>",
+    "<RPAREN>",
     "<UNSIGNED_DIGIT>",
     "<DIGIT>",
     "<CHARACTER>",
@@ -104,6 +111,9 @@ public interface FortranParserConstants {
     "<SIMPLE_EXPRESSION>",
     "<NESTED_EXPRESSION>",
     "<FORTRAN_EXPRESSION>",
+    "<SINGLE_IF>",
+    "<START_MULTI_IF>",
+    "<END_IF>",
     "<VAR_ASSIGN>",
     "<FORTRAN_INT>",
     "<FORTRAN_REAL>",
