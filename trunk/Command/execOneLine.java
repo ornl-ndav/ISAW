@@ -1,7 +1,7 @@
 
 /* 6-9-2000
    implemented Load, Display, Send(check) , Expressions with data sets, and Data Set Operators
-   Need to 
+   Ned to 
        extend the Load function to give variable names
        implement update and keep track of when a data set is changing
       need to implement vname[i] for looping
@@ -62,7 +62,7 @@ public class execOneLine implements IObservable ,
     public static final String ER_ExtraArguments              ="Extra Arguments";
     private Document logDocument = null;
 
-    private boolean Debug= false;
+    private boolean Debug= true;
 
    
 
@@ -203,7 +203,7 @@ public class execOneLine implements IObservable ,
         //System.out.println("XD");
         if(Debug)
 	    for(i = 0 ; i<ds.length ; i++)
-                System.out.println( "i:"+ds[i]);
+                System.out.println( "AddDataSet: ds[i]=:"+ds[i]);
       }
    
 /**
@@ -388,7 +388,7 @@ public class execOneLine implements IObservable ,
          {Result = null;
           return S.length();
          }
-       // Start to /* new stuff
+       // Start to new stuff
        else 
 	 { if((j1<S.length())&&(j1>=0)&&(j1 < end))
              if( S.charAt(j1) == '=' )
@@ -421,7 +421,7 @@ public class execOneLine implements IObservable ,
 	  Object R1 = Result;
 	  
                 if( Debug )
-                  System.out.println( "Aft operate R1,Result=" + R1 + "," + Result );
+                  System.out.println( "Aft operate Result=" + Result+","+ Result.getClass() );
 	  j = skipspaces( S , 1 , j );
           if( j > end) j = end;
 	  if( (j < 0) ||  (j >= S.length())|| ( j >= end) )
@@ -461,28 +461,52 @@ public class execOneLine implements IObservable ,
         { seterror( S.length(),"Internal ErrorSL");
           return start;
         }
+      Vector V;
       if( S.charAt( i ) == '(')
-           i++;
-      Vector V = getArgs( S , i , end);
+           V = getArgs( S , i + 1 , end);
+      else
+          V = getArgs(S , i ,end );
       if( V == null )
         return perror;
       if( V.size() <=1 )
         {seterror( start, "ER_MissingArgument");
          return start;
         }
-      int x = 0;
-      try{
-          j =((Integer)V.lastElement()).intValue(); 
-          x = 1;
-          j = skipspaces( S , 1, j );
+       if( perror >= 0)
+           {  perror = start;          
+              return perror;
+           }
+      j =((Integer)V.lastElement()).intValue(); 
+      j = skipspaces( S , 1, j );
           if( S.charAt( i ) == '(')
              if( (j >= end) || ( j >= S.length()))
                seterror( i, ER_MisMatchParens);
              else if( S.charAt( j ) != ')')
                seterror( i, ER_MisMatchParens);
-          if( perror >= 0)
-            return perror;
-
+             else j = skipspaces( S , 1 , j+1);
+      int x = 0;
+      if(Debug)
+        System.out.println("Load after Arg get");
+      try{
+          if( V.get( 0 ) instanceof DataSet[] )
+            {  if(Debug)  System.out.println("Load in Dataset[]");
+              DataSet DS[] = (DataSet [ ] ) V.get( 0 );
+              x = 1;
+              varname = null;
+              if( V.size( ) > 2 )
+                 varname = (String ) V.get ( 1 );
+               x = 2;
+              if( V.size( ) > 3 )
+                { seterror( start ,ER_ImproperArgument + (x+1) );
+                  return j; 
+                }
+              Load( DS , varname);
+              if( perror >= 0 )
+                perror = start + 2;
+              return j;
+            }
+           if(Debug) System.out.println("Load not DataSet");
+          x = 1;    
           filename = (String) V.get(0);
           x = 2;
           varname=null;
@@ -492,12 +516,17 @@ public class execOneLine implements IObservable ,
             {seterror( start, ER_ExtraArguments);
              return start;
             }
-         }
+        }
        catch( ClassCastException s)
           { seterror ( start, ER_ImproperArgument + " " +x);
             return end; 
           }
        dss = Load( filename , varname);
+       if( dss == null )
+         Result = null;
+       else
+           Result = new Integer( dss.length );
+       return j;
     /*
        // Get First Argument      
        i = start;
@@ -631,9 +660,44 @@ public class execOneLine implements IObservable ,
        else
          Result = null;
   */    
-       return skipspaces(S , 1 , j );
+     
       }
+   public void Load ( DataSet dss[] , String varname)
+    { int i;
+      DataSet DDs;
+      if( dss == null )
+        {seterror( 1000 , "Data File Improper" );
+         return ;
+        }
+       if( dss.length <= 0 )
+         {seterror( 1000 , "Data File Improper" );
+          return  ;
+         }
+        for( i = 0 ; i < dss.length ; i++ )
+         {DDs = eliminateSpaces( dss[i] );
+	  if( varname != null)
+	    if( varname.length() > 0 )
+		if( varname.toUpperCase().charAt(0) >'Z')
+		    {}
+                else if( varname.toUpperCase().charAt(0) < 'A')
+                    {}
+                else DDs.setTitle(varname + new Integer(i).toString().trim());
+            Object X = getVal( DDs.getTitle());
+    
+          if( X != null )
+            {seterror( 1000 , "DataFile already loadedX" );
+             return;
+            }
+     
+          Assign( DDs.getTitle() , DDs);
+        }
+           
+        
+         
+    
+    
 
+    }
 
 /**
 * Used by other parsers to load a file of data sets into the local space
@@ -681,7 +745,7 @@ public class execOneLine implements IObservable ,
             {
             }
           //else if( lds[j] != null )
-          else if( isInListDS( i , lds ) )
+          else if( isInListDS( j , lds ) )
             {seterror( 0 , "DataFile already loaded" );
              return null;
             }
@@ -705,7 +769,7 @@ public class execOneLine implements IObservable ,
 
       {int    i,
               j;
-       String DS;
+       DataSet DS;
 
    
       i = skipspaces(S,1,start);
@@ -713,6 +777,7 @@ public class execOneLine implements IObservable ,
       if( Debug )
         System.out.print("Disp A ,i" + i);
 
+/*
       if( (i < 0) ||  (i >= end) ||  (i >= S.length()) )
         {seterror( i , ER_MissingArgument);
          return i;
@@ -738,18 +803,90 @@ public class execOneLine implements IObservable ,
 	    return i;
            }
         }
+*/
+       i = start;
+      
+      if( (start < 0) || (start >= S.length()) || (start >= end))
+        { seterror( S.length(),"Internal ErrorSL");
+          return start;
+        }
+      Vector V;
+      if( S.charAt( i ) == '(')
+           V = getArgs( S , i + 1 , end);
+      else
+         V = getArgs( S , i , end );
+      if( V == null )
+        return perror;
+      if( V.size() <=1 )
+        {seterror( start, ER_MissingArgument);
+         return start;
+        }
+      else if( V.size() > 4)
+        { seterror( start, ER_ImproperArgument+"A" );
+          return start;
+        }
+      j =((Integer)V.lastElement()).intValue(); 
+      j = skipspaces( S , 1, j );
+      if( Debug)System.out.println("Display i,j="+i+","+j+","+start+","+S);
+      if( S.charAt( i ) == '(')
+        if( (j >= end) || ( j >= S.length()))
+          seterror( i, ER_MisMatchParens);
+        else if( S.charAt( j ) != ')')
+            seterror( i, ER_MisMatchParens);
+        else
+           j = skipspaces( S , 1 , j+1);
+      if( perror >= 0)
+        return perror;
 
-      if( Result == null ) 
-        {seterror( i , ER_ImproperArgument );
+      int x = 0;
+      String DisplayType="IMAGE"; 
+      String FrameType="External Frame";
+      try{
+          
+
+          x = 1;
+
+          DS = (DataSet) (V.get(0));
+          x = 2;
+          DisplayType="IMAGE";
+          if( V.size() >2)
+             DisplayType = (String)(V.get(1));
+          x=3;
+          FrameType ="External Frame";
+          if( V.size() >3 )
+            FrameType = (String) (V.get(2));
+          x = 4;
+          Display( DS , DisplayType , FrameType );
+          System.out.println("Return from Display1");
+          if( perror >= 0 ) 
+             perror = start;
+          return j;
+         }
+     catch( ClassCastException s)
+        { if( x > 1)
+          if( (Result == null) || (V.size() > 2 ) ) 
+            {seterror( i , ER_ImproperArgument+" " + x  );
+             if( x-1 < V.size())
+               System.out.println( "V and class = "+ V.get(i) +","+V.get(i).getClass());
+             else System.out.println("Aft Display args ="+ DisplayType+","+FrameType);
+             return i;
+            }
+        }
+      Result = (Object) V.get(0);
+      if( Debug )
+         System.out.println("In Display Res="+Result+Result.getClass());
+     
+      if( (Result == null) || (V.size() > 2 ) ) 
+        {seterror( i , ER_ImproperArgument+"B" );
          return i;
         }
    
 
-      if( Result instanceof DataSet )
-         { new JDataViewUI().ShowDataSet( (DataSet)Result , "External Frame" , IViewManager.IMAGE );
+     // if( Result instanceof DataSet )
+      //   { new JDataViewUI().ShowDataSet( (DataSet)Result , "External Frame" , IViewManager.IMAGE );
       
-         }
-      else
+       //  }
+     // else
 	{ String SS;
 	  SS = "Result= ";
   	 if( Result instanceof Integer )  
@@ -771,13 +908,18 @@ public class execOneLine implements IObservable ,
 
            }
 
-         else 
-           return end;
+         else if( Result == null)
+	     SS = "(null)";
+         else
+	     SS = SS + Result.toString();
+	     // return end;
          PC.firePropertyChange( "Display"  , null , (Object)SS );
 
          }
        Result = null;
-       return end;
+  
+      return end;
+  
       }
 
 /**
@@ -785,18 +927,29 @@ public class execOneLine implements IObservable ,
  *@param      ds            The data set to be viewed
  *@param      DisplayType   The type of display
  *
- * Not implemented yet
+ * NOTE: DisplayType must be "IMAGE" , "Scrolled_Graph", or "Selected_Graph"<Br>
+ *       FrameType must be "External Frame" or "Internal Frame"
  */
-    public void Display( DataSet ds , String DisplayType )
-      {
+    public void Display( DataSet ds , String DisplayType , String FrameType )
+      {  String X = null;
+         if( Debug) System.out.println( "IN DISPLAY1 args="+DisplayType +","+FrameType);
+         if( DisplayType.toUpperCase().equals("IMAGE")) X = IViewManager.IMAGE;
+         else if( DisplayType.toUpperCase().equals("SCROLLED_GRAPH")) X = IViewManager.SCROLLED_GRAPHS;
+         else if( DisplayType.toUpperCase().equals("SELECTED_GRAPH")) X = IViewManager.SELECTED_GRAPHS;
+         else
+           { seterror( 1000 , ER_ImproperArgument+" "+ DisplayType );
+             return;
+           }
+         new JDataViewUI().ShowDataSet( ds , FrameType, X );
       }
 
     private int  execSave( String S , int start, int end )
       { 
-	  if( ( start < 0) || (start >= S.length()  ) || ( start >= end) )
+	  /*if( ( start < 0) || (start >= S.length()  ) || ( start >= end) )
 	     {seterror(S.length(),"internal Errory");
 	      return S.length();
 	     }
+          
           int j=skipspaces( S, 1 , start );
           if( (j<0) || ( j >= S.length() )|| ( j >= end) )
 	    { seterror( j ,  ER_MissingArgument);
@@ -830,10 +983,72 @@ public class execOneLine implements IObservable ,
 	    { seterror ( j , ER_ImproperArgument);
 	      return j;
             }
-          String filename = (String) Result;
-          Save( Ds , filename );
-          if( perror >= 0) perror = j;
+         */
+       
+       int i = start;
+       int j;
+       String filename;
+      if( (start < 0) || (start >= S.length()) || (start >= end))
+        { seterror( S.length(),"Internal ErrorSL");
+          return start;
+        }
+      Vector V;
+      if( S.charAt( i ) == '(')
+           
+         V = getArgs( S , i + 1 , end);
+      else
+         V = getArgs( S , i , end );
+      if( V == null )
+        return perror;
+      if( V.size() <=1 )
+        {seterror( start, ER_MissingArgument);
+         return start;
+        }
+      else if( V.size() > 3)
+        { seterror( start, ER_ImproperArgument+"A" );
+          return start;
+        }
+      j =((Integer)V.lastElement()).intValue(); 
+      j = skipspaces( S , 1, j );
+      if( S.charAt( i ) == '(')
+        if( (j >= end) || ( j >= S.length()))
+          seterror( i, ER_MisMatchParens);
+        else if( S.charAt( j ) != ')')
+            seterror( i, ER_MisMatchParens);
+        else
+          j = skipspaces( S , 1 , j+1);
+      if( perror >= 0)
+        return perror;
+      if( (j < S.length()) &&( j < end )) j = skipspaces( S , 1 , j+1);
+      int x = 0;
+      DataSet DS;
+      try{
+          
+
+          x = 1;
+
+          DS = (DataSet) (V.get(0));
+          x = 2;
+          filename = null;
+          if( V.size() >2)
+             filename = (String)(V.get(1));
+          x=3;
+           Save( DS , filename );
+          if( perror >= 0) 
+             perror = j;
           return j; 
+          
+         }
+     catch( ClassCastException s)
+        { if( x > 1)
+          if( (Result == null) || (V.size() > 2 ) ) 
+            {seterror( i , ER_ImproperArgument+" " + x  );
+             
+             return i;
+            }
+        }
+          
+       return j;  
       }
 
 /**
@@ -846,16 +1061,19 @@ public class execOneLine implements IObservable ,
  */
     public void Save( DataSet ds , String filename )
     { //System.out.println("Start Save Sub with ds, filename "+ ds +","+filename);
-        try{  
-          FileOutputStream fos = new FileOutputStream(filename);
+       // try{  
+	    /*FileOutputStream fos = new FileOutputStream(filename);
           GZIPOutputStream gout = new GZIPOutputStream(fos);
           ObjectOutputStream oos = new ObjectOutputStream(gout);
           oos.writeObject(ds);
           oos.close();
+	    */
+	  if(!( new DataSet_IO().SaveDataSet( ds , filename)))
+            { seterror(1000, ER_OutputOperationInvalid);
            }
-        catch(Exception s)
+        //catch(Exception s)
 	  {
-	      seterror(1000, ER_OutputOperationInvalid);
+	     // seterror(1000, ER_OutputOperationInvalid);
              
 	  }
 
@@ -864,9 +1082,27 @@ public class execOneLine implements IObservable ,
     
 
     private int execSend(String S, int start, int end)
-      {int j;
-       j = skipspaces( S , 1 , start );
-       j = execute( S , j , end );
+      {int i, j;
+       i = skipspaces( S , 1 , start );
+       if( (i < 0) || ( i >= S.length()) || ( i >= end ))
+         { seterror( start , ER_MissingArgument);
+           return i;
+         }
+       if( S.charAt(i) == '(' )
+          j = execute( S , i + 1 , end );
+       else
+          j = execute( S , i  , end );
+       if( S.charAt( i ) == '(')
+         if( (j < 0 ) || ( j >= S.length() ) || ( j >= end ))
+           { seterror ( j , ER_MisMatchParens );
+             return j;
+           }
+         else if( S.charAt(j ) != ')')
+           { seterror ( j , ER_MisMatchParens );
+             return j;
+           }
+         else j++;
+       j = skipspaces( S , 1, j);        
        if(Debug)
 	   System.out.print("Send"+perror+","+j);
        if( perror >= 0 )
@@ -890,7 +1126,7 @@ public class execOneLine implements IObservable ,
  /**
    Sends the data set to all Iobservers
   *@param   ds    The data set that is to be sent
-  *@see  #addIObserver(DataSetTools.util.IObserver)addIobserver
+  *@see  DataSetTools.util.IObserverList#addIObserver(DataSetTools.util.IObserver) addIobserver<P>
   *
   * Not implemented yet. 
   */
@@ -907,6 +1143,20 @@ public class execOneLine implements IObservable ,
     public Object getResult()
       {return Result;
       }  
+/**
+*  Gets the ith global Data Set
+
+*/
+  public DataSet[] getGlobalDataset()
+    { if( Debug) 
+        {System.out.println( "in getGlobalDataSet") ;
+	if( ds == null )
+	 System.out.println("ds is null");
+        }
+      return ds;
+    }
+
+   
 // Executes an argument list.  Done when at end of string or a )
 // Assumes 1st character is not a left paren for the argument list
     //    public int execArgs(String S,int start,int end)
@@ -1295,7 +1545,10 @@ public class execOneLine implements IObservable ,
 	   {seterror( j , ER_IllegalCharacter );
 	    return null;
 	   }
-         i = skipspaces(S , 1, j+1 );
+         if( S.charAt(j) == ',')
+            i = skipspaces(S , 1, j+1 );
+         else
+            i = j;
          }//while not done
       Args.add(new Integer( i ));
       return Args;
@@ -1350,7 +1603,7 @@ public class execOneLine implements IObservable ,
  *      subtract,... will be used
 
  * Use getErrorCharPos to determine if an error occurred<br>
- *     @see getErrorCharPos
+ *     @see #getErrorCharPos()
  */
     public void operateArith( Object R1 , Object R2 , char c )
       {
@@ -1515,19 +1768,104 @@ public class execOneLine implements IObservable ,
       Args.add( DS );
       Args.add( Arg2 );
       Args.add(new Boolean (true));
+      
       DoDataSetOperation( Args , Arg );
     
       }
-
 /**
- * Executes most of the operations stored in a data set
+ * Find and Executes an  operation from lists of operations 
  * @param   Args     The vector of argument values
  * @param   Command  The command to be executed
  *@return
  *    The value in the variable Result
  *    An error if the operation is not defined or does not work
  */
-    public void DoDataSetOperation( Vector Args , String Command )
+    public void DoOperation( Vector Args, String Command )
+      { if(Debug)
+          System.out.println("Start DoOperation comm =" + Command);
+        Operator op = (new GenericOperatorList()).getOperator( Command );
+        if( op == null )
+          { if(Debug)
+              System.out.print("A");
+            DoDataSetOperation( Args, Command  );
+            return;
+          }
+        int i;
+        if(Debug)
+              System.out.print("B");
+        if( !checkArgs( Args, op , 0 ))
+          {  if(Debug)
+              System.out.print("C");
+            DoDataSetOperation( Args, Command  );
+            return;
+          }        
+        
+        SetOpParameters( op , Args , 0);
+        Result = op.getResult();
+        if( Result instanceof ErrorString )
+          {seterror (1000 , ((ErrorString)Result).toString() );
+	    if(Debug)
+               System.out.println("ErrorX Ocurred in get Result" + Result);
+	       Result = null;
+	  }
+
+
+      }
+   
+    private boolean checkArgs( Vector Args , Operator op , int start)
+     { int k ;
+       boolean fit =true;
+       Object Arg2;
+       if( op == null)
+         { System.out.println("Check no op");
+           return false;
+          }
+       if( Args == null )
+         if( op.getNum_parameters() != 0 )
+           return false;
+         else
+           return true;
+       if(Debug)
+         System.out.println("Check sizes = "+ Args.size() +","+ op.getNum_parameters());
+       if( op.getNum_parameters() !=  Args.size() -start )
+         return false;
+       for( k = 0; (k < op.getNum_parameters()) && fit ; k++ )          
+         { 
+           Arg2 = Args.get( k +start );
+           //if( Debug)
+	   // System.out.print("Check"+Arg2.getClass()+","+op.getParameter(k).getValue().getClass());
+           if( op.getParameter(k).getValue() == null)
+              {if(Debug) System.out.print("H");                         
+               }
+                
+	    else if( ( Arg2 instanceof String ) && 
+                          ( op.getParameter(k).getValue() instanceof AttributeNameString ) )
+	      {if(Debug)System.out.print("D");
+	      }
+                 
+            else if( Arg2.getClass().equals( op.getParameter( k ).getValue().getClass() ))
+	      {
+		 if( Debug ) System.out.print("E");
+              }
+                       
+	    else 
+               fit = false;
+	    if(Debug)System.out.println("F");                    
+					
+         }//For k
+        return fit;
+     }
+    private void SetOpParameters ( Operator op , Vector Args , int start )
+     {int k;
+      for( k = 0 ; k < op.getNum_parameters() ; k++ )
+        {if( (Args.get( k + start ) instanceof String)  &&  
+             (op.getParameter( k ).getValue( ) instanceof AttributeNameString) )
+            op.getParameter( k ).setValue( new AttributeNameString( (String)( Args.get(k + start) ) ));
+          else
+            op.getParameter( k ).setValue( Args.get( k + start ) );
+        }
+     }
+    private void DoDataSetOperation( Vector Args , String Command )
       {
        int i,k;
        Operator op;
@@ -1535,7 +1873,7 @@ public class execOneLine implements IObservable ,
        Object Arg2;
        boolean fit;
        if( !( Args.get(0)instanceof DataSet ) )
-	 {seterror( 1000 , "internalerror y" );
+	 {seterror( 1000 , ER_NoSuchOperator  );
 	  return;
 	 }
        DS = (DataSet)Args.get(0);
@@ -1547,53 +1885,25 @@ public class execOneLine implements IObservable ,
             System.out.print("OPList," + op.getCommand() + "," + op.getClass().toString() + "," + 
 			   op.getNum_parameters() + ",");
 	
-	   fit = true;       //.getClass().to.String()
-           
+	   //fit = true;       //.getClass().to.String()
+           fit = false;
            if( (op.getCommand().equals(Command) ) && 
                         (op.getNum_parameters() == Args.size()-1) )
-             {
-               for( k =0 ; (k < op.getNum_parameters()) && fit ; k++ )          
-                 { 
-                   Arg2 = Args.get( k + 1 );
-		  if( Debug )
-                         System.out.print(Arg2.getClass()+","+op.getParameter(k).getValue().getClass());
-                  if(op.getParameter(k).getValue() instanceof Object)
-                    {if(Debug) System.out.print("H");
-                    }  		 
-		  else if( ( Arg2 instanceof Float ) && 
-                             ( op.getParameter(k).getValue() instanceof Float ) )
-		      {if(Debug)System.out.print("A");
-		     }
-		  else if( ( Arg2 instanceof DataSet ) && 
-                              ( op.getParameter(k).getValue() instanceof DataSet ) )
-		      {if(Debug)System.out.print("B");
-		    }
-		  else if( ( Arg2 instanceof Integer ) && 
-                            ( op.getParameter(k).getValue() instanceof Integer ) )
-		      {if(Debug)System.out.print("C");
-		    }
-		  else if( ( Arg2 instanceof String ) && 
-                            ( op.getParameter(k).getValue() instanceof AttributeNameString ) )
-		      {if(Debug)System.out.print("D");
-		    }
-                  else if( ( Arg2 instanceof Boolean ) && 
-                                 (op.getParameter( k ).getValue() instanceof Boolean ) )
-		      {if(Debug)System.out.print("E");
-		    }
-                  
-		  else 
-                    fit = false;
+                 fit = checkArgs( Args , op , 1 );
+               
 		  if(Debug)System.out.println("F");                    
 					
-                }//For k
+                
 	       if(Debug)System.out.println("GG");
 	     if(fit)
-	       {for( k = 0 ; k < op.getNum_parameters() ; k++ )
+	       {/*for( k = 0 ; k < op.getNum_parameters() ; k++ )
                   {if( Args.get( k + 1 ) instanceof String )
                      op.getParameter( k ).setValue( new AttributeNameString( (String)( Args.get(k + 1) ) ));
                    else
                      op.getParameter( k ).setValue( Args.get( k + 1 ) );
                   }
+                 */
+                SetOpParameters( op , Args , 1);
 		Result = op.getResult();
 		   
                 if( Result instanceof ErrorString )
@@ -1605,7 +1915,7 @@ public class execOneLine implements IObservable ,
 		return;
                    
 		}         
-          }//if op correct class maybe
+      
        }//For i = 0
 
 	
@@ -1624,6 +1934,8 @@ public class execOneLine implements IObservable ,
          {seterror( S.length() + 2 , "internal errorp" );
 	  return start;
          }
+       if( Debug)
+         System.out.println( "In execOperation comm ="+Command);
        Vector Args = new Vector();
        int i , j;
        boolean done;
@@ -1652,10 +1964,10 @@ public class execOneLine implements IObservable ,
          }//while not done
 
        j = skipspaces( S , 1 , i + 1 );;
-       if( !( Args.get( 0 )instanceof DataSet ) )
-         {seterror(  i , ER_NotImplementedYet );
-	  return i;
-         }
+      // if( !( Args.get( 0 )instanceof DataSet ) )
+       //  {seterror(  i , ER_NotImplementedYet );
+	//  return i;
+       //  }
         
         if( Debug )
           System.out.println("Got to Here after arg");
@@ -1664,7 +1976,7 @@ public class execOneLine implements IObservable ,
       
         if(Debug)
           { System.out.print("Args = " + Args.size());
-            for(i2 = 1 ; i2 < Args.size() ; i2++)
+            for(i2 = 0 ; i2 < Args.size() ; i2++)
             System.out.print(Args.get(i2) + "," + Args.get(i2).getClass() + ",");
           System.out.println("");
           }
@@ -1684,7 +1996,7 @@ public class execOneLine implements IObservable ,
         if( Command != null )
           {if( Debug )
             System.out.println("Command=" + Command);
-          DoDataSetOperation( Args , Command );
+          DoOperation( Args , Command );
          if( perror >= 0 ) perror = start;
          }
        else
@@ -1706,7 +2018,7 @@ public class execOneLine implements IObservable ,
    *@param  S   A string used to refer to a variable 
    *@return  The value of this string or
    *         an error message if the variable is not found
-   *  @see getErrorCharPos
+   *  @see #getErrorCharPos()
    */
      public Object getVal( String S )
        {int i;
@@ -1922,9 +2234,17 @@ public class execOneLine implements IObservable ,
         return -1;
       } 
 
+  /**
+  *  Skips spaces in a string
+  * @param  S    String
+  * @param  dir   direction. positive skips forward<P>
+  * @param  start The starting index where the skipping starts
+  *
+  * @return  returns the position in the string where first nonspace occurs or
+  *         the end of the string ( dir > 0 ) or -1( dir < 0 )              
 
-
-     private int skipspaces(String   S, 
+  */
+     public int skipspaces(String   S, 
                       int       dir, 
                       int      start)
 
@@ -2258,7 +2578,7 @@ public class execOneLine implements IObservable ,
           if( ds != null )
             if( ( i >= 0 ) && ( i < ds.length ) )
 		{//DSPAssign( ds[i] , (DataSet)Result );
-	         ds[ i ] = (DataSet)((DataSet)Result).clone();;
+		  ds[ i ].copy((DataSet)Result);   //= (DataSet)((DataSet)Result).clone();;
                  return;
               }
           i = findd( vname , lds );
@@ -2299,11 +2619,7 @@ public class execOneLine implements IObservable ,
       }//end Assign
 
 
-      //This routine hopefully assigns dataset R to the contents of DataSet D. For parameterrs
-     private void DSPAssign( DataSet D , DataSet R)
-       { D = R;
-       }
-
+    
 
      public void update( Object observed_obj , Object reason )
        {
