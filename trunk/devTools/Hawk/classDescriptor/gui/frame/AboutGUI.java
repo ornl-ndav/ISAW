@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/05/26 19:27:01  kramer
+ * I made the gui display information using a JTabbedPane.  It can now also
+ * read the license from inside a jar file.
+ *
  * Revision 1.5  2004/03/12 19:46:14  bouzekc
  * Changes since 03/10.
  *
@@ -52,14 +56,13 @@ package devTools.Hawk.classDescriptor.gui.frame;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.InputStream;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
@@ -69,7 +72,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
 import devTools.Hawk.classDescriptor.tools.SystemsManager;
@@ -101,20 +104,58 @@ public class AboutGUI extends JFrame implements ActionListener
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());
 		
-		JPanel infoPanel = new JPanel();
-		infoPanel.setLayout(new GridLayout(10,0));
+			JTextArea descArea = new JTextArea();
+				descArea.setBackground(mainPanel.getBackground());
+				descArea.setEditable(false);
+				descArea.setLineWrap(false);
+				descArea.setText("    Hawk is a developer's tool which assists in the analysis of the\n" +
+										   "construction and implementation of java applications.  From an\n" +
+										   "application's .class files, Hawk can extract the classes,\n" +
+										   "interfaces, and abstract classes that compose the application.\n" +
+										   "    Hawk then allows you to view data about each class or\n" +
+										   "interface by viewing the class or interface's UML diagram,\n" +
+										   "source code, javadocs, or a shortened version of the source\n" +
+										   "code.\n" +
+										   "    In addition, Hawk can print information about about classes\n" +
+										   "and interfaces in a concise, compact document to a file.  Then,\n" +
+										   "you can decide if you want to, for example, print the document\n" +
+										   "or include it in a devolper's manual.");
+			JScrollPane descScrollPane = new JScrollPane(descArea);
+				
+			JTextArea infoArea = new JTextArea();
+				infoArea.setBackground(mainPanel.getBackground());
+				infoArea.setEditable(false);
+				infoArea.setLineWrap(false);
+				
+				StringBuffer infoBuffer = new StringBuffer();
+				infoBuffer.append("Version:  "+SystemsManager.getVersion()+"\n");
+				infoBuffer.append("Build Date:  "+SystemsManager.getBuildDate()+"\n");
+				infoBuffer.append("\n");
+				infoBuffer.append("Hawk is licensed under the GNU General Public Licensing Agreement\n");
+				infoBuffer.append("Copyright \251 2003-2004 Dominic D. Kramer\n");
+			infoArea.setText(infoBuffer.toString());
+		JScrollPane infoScrollPane = new JScrollPane(infoArea);
 		
-			infoPanel.add(new JSeparator());
-			infoPanel.add(new JLabel("Hawk "+SystemsManager.getVersion()));
-			infoPanel.add(new JSeparator());
-			infoPanel.add(new JLabel("    Hawk is brought to you by"));
-			infoPanel.add(new JLabel("    Dominic Kramer who can "));
-			infoPanel.add(new JLabel("    be contacted at"));
-			infoPanel.add(new JLabel("    kramerd@uwstout.edu."));
-			infoPanel.add(new JLabel("    Hawk is licensed under"));
-			infoPanel.add(new JLabel("    the GNU General Public"));
-			infoPanel.add(new JLabel("    Licensing Agreement"));
-	
+			JTextArea creditsArea = new JTextArea();
+				creditsArea.setBackground(mainPanel.getBackground());
+				creditsArea.setEditable(false);
+				creditsArea.setLineWrap(false);
+				
+				creditsArea.setText("Main Programmer:  "+SystemsManager.getAuthor()+"\n\n" +
+											 "A special thanks to:\n" +
+											 "  Dr. Dennis Mikkelson\n" +
+											 "  Dr. Ruth Mikkelson\n" +
+											 "  Chris Bouzek\n" +
+											 "  Mike Miller and\n" +
+											 "  Brent Serum\n\n" +
+											 "You can contact the author of this program at\n"+SystemsManager.getAuthorsEmailAddress());
+			JScrollPane creditsScrollPane = new JScrollPane(creditsArea);
+		
+		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane.addTab("General",infoScrollPane);
+		tabbedPane.addTab("Description",descScrollPane);
+		tabbedPane.addTab("Credits",creditsScrollPane);
+		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			JButton viewButton = new JButton("View License");
@@ -130,13 +171,19 @@ public class AboutGUI extends JFrame implements ActionListener
 		URL imageURL = ClassLoader.getSystemClassLoader().getResource("devTools/Hawk/classDescriptor/pixmaps/about_hawk.png");		
 		if (imageURL != null)
 			hawkIcon = new ImageIcon(imageURL);
-
-		mainPanel.add(new JLabel(hawkIcon), BorderLayout.NORTH);
-		mainPanel.add(infoPanel, BorderLayout.CENTER);
+		
+		JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+			JLabel hawkLabel = new JLabel("Hawk");
+			hawkLabel.setFont(new Font("Serif",Font.BOLD|Font.ITALIC,20));
+			titlePanel.add(hawkLabel);
+		
+		mainPanel.add(titlePanel, BorderLayout.NORTH);
+		mainPanel.add(new JLabel(hawkIcon), BorderLayout.WEST);
+		mainPanel.add(tabbedPane, BorderLayout.CENTER);
 		mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 		
 		pane.add(mainPanel);
-		pack();
+		setSize(475,321);
 	}
 	
 	/**
@@ -163,17 +210,21 @@ public class AboutGUI extends JFrame implements ActionListener
 			String line = "";
 			try
 			{
-				BufferedReader gnuReader = new BufferedReader(new FileReader("devTools.Hawk.classDescriptor.gui.license.LICENSE.txt"));
-          /*
-          FilenameUtil.setForwardSlash( 
-            SharedData.getProperty( "ISAW_HOME" ) +
-            "/devTools/Hawk/classDescriptor/gui/license/LICENSE.txt") );
-            */
-				while (line != null)
+				URL licenseURL = ClassLoader.getSystemClassLoader().getResource("devTools/Hawk/classDescriptor/gui/license/LICENSE.txt");
+				InputStream inputStream = licenseURL.openStream();
+		  /*
+		  FilenameUtil.setForwardSlash( 
+			SharedData.getProperty( "ISAW_HOME" ) +
+			"/devTools/Hawk/classDescriptor/gui/license/LICENSE.txt") );
+			*/
+				int num = inputStream.read();
+				StringBuffer buffer = new StringBuffer();
+				while (num != -1)
 				{
-					license.append(line+"\n");
-					line = gnuReader.readLine();
+					buffer.append(String.valueOf((char)num));
+					num = inputStream.read();
 				}
+				license.setText(buffer.toString());
 			}
 			catch (FileNotFoundException e)
 			{
