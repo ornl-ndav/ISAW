@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/04/12 21:27:43  dennis
+ *  Set default to NOT include diagnostic attributes.
+ *  Added DETECTOR_CEN_ANGLE and DETECTOR_CEN_DISTANCE to
+ *  java docs of the attribute levels.
+ *
  *  Revision 1.12  2004/04/09 19:26:55  dennis
  *  Added "add_sas_attrs" flag and "ANALYSIS" level.
  *
@@ -82,7 +87,7 @@ public abstract class Retriever implements Serializable
     protected static boolean add_scd_attrs = true;
     protected static boolean add_dgs_attrs = true;
     protected static boolean add_igs_attrs = true;
-    protected static boolean add_diagnostic_attrs = true;
+    protected static boolean add_diagnostic_attrs = false;
 
     public static final int  INVALID_DATA_SET      = 0;
     public static final int  MONITOR_DATA_SET      = 1;
@@ -210,6 +215,8 @@ public abstract class Retriever implements Serializable
      * -- 5 ------- scd_attrs ------------------------------------------------
      *  NUMBER_OF_PULSES     ( shared, used for SCD )
      *  SAMPLE_ORIENTATION   ( only added for SCD, shared by all spectra in run)
+     *  DETECTOR_CEN_DISTANCE
+     *  DETECTOR_CEN_ANGLE
      *
      * -- 6 -------- dgs_attrs -----------------------------------------------
      *  RAW_DISTANCE         ( used for HRMCS )
