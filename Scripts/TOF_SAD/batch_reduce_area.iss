@@ -20,6 +20,8 @@ Yoff =0.00705559
 #==================== Start of Input files ============================
 #======================================================================
 #======================================================================
+#Input_Path ="/IPNShome/sand/data/"
+#Output_Path ="/IPNShome/sand/GeorgeUser/"
 
 Input_Path ="c:/sand_lpsd_runs/"
 Output_Path ="c:/sand_lpsd_runs/"
