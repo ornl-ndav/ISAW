@@ -29,6 +29,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.3  2003/07/09 23:16:52  bouzekc
+ * Works with the new versions of ScriptForm and JyScriptForm.
+ *
  * Revision 1.2  2003/07/08 18:10:30  bouzekc
  * Now uses SharedData.getProperty to get the Script_Path
  * directory.  Added comments.
@@ -104,18 +107,11 @@ public class ScriptExampleWizard extends Wizard {
       { 3, 3 }
     };  //experiment name
 
-    String scriptsDir = SharedData.getProperty( "Script_Path" );
-
-    //Script.java, which is ultimately called to create a new ISS script, uses
-    //forward slashes.  We are sending the String to setFileSeparator, however,
-    //to remove extra slashes.
     ScriptForm peaks = new ScriptForm( 
-        StringUtil.setFileSeparator( scriptsDir + "/find_multiple_peaks.iss" ),
-        "LoadFile", "Peaks File" );
+        "/find_multiple_peaks.iss", "LoadFile", "Peaks File" );
     ScriptForm integrate = new ScriptForm( 
-        StringUtil.setFileSeparator( 
-          scriptsDir + "/integrate_multiple_runs.iss" ), "LoadFile",
-        "Integrated Peaks File", new int[]{ 0, 1, 2, 3 } );
+        "/integrate_multiple_runs.iss", "LoadFile", "Integrated Peaks File",
+        new int[]{ 0, 1, 2, 3 } );
 
     this.addForm( peaks );
     this.addForm( integrate );
