@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.19  2005/01/14 23:35:52  rmikk
+ * Fixed an "undocumented" restriction on blobs.  The size of the fastest 
+ *   growing dimensions must be equal to the max size of this dimension
+ *
  * Revision 1.18  2004/12/23 13:21:42  rmikk
  * Eliminated some warnings
  *
@@ -548,15 +552,15 @@ public class NexNode implements NxNode{
         errormessage = "No Data Here";
         return null;
       }
-
       // **Object array=CreateMultiArray(0,args[0],iDim,args[1]);
       int n = args[0];
+      int MaxBlobSize = java.lang.Math.max(iDim[n-1], MAX_BLOB_SIZE);
       int pos = -1,  //position in iDim where sub elements start  
           step = -1, // Number of blocks in that position that can be retrieved
                      // before getting above MAX_BLOB_SIZE
           lenn=-1;  // The number of float array elements that will be retrieved
                     // in each blob
-      if( iDim[n-1] >= MAX_BLOB_SIZE){
+      if( iDim[n-1] >= MaxBlobSize){
         pos = n-2;
         step = 1;
         lenn = 1;
@@ -569,17 +573,17 @@ public class NexNode implements NxNode{
          int Prod = iDim[n-1];
          pos = n-1;
          lenn = iDim[n-1];
-         while( (Prod < MAX_BLOB_SIZE)&&(pos >0)){
+         while( (Prod < MaxBlobSize)&&(pos >0)){
            pos--;
            Prod = Prod*iDim[pos]; 
-           if( Prod < MAX_BLOB_SIZE)
+           if( Prod < MaxBlobSize)
                lenn = Prod;
           
          }
-         if( Prod >= MAX_BLOB_SIZE){
+         if( Prod >= MaxBlobSize){
            
            Prod = Prod/iDim[pos];
-           step = MAX_BLOB_SIZE/Prod;
+           step = MaxBlobSize/Prod;
            if( step <1) step = 1;
         
          }else {
@@ -614,7 +618,7 @@ public class NexNode implements NxNode{
       }
 
       Object subarray = ((new NxNodeUtils()).CreateArray(args[1],
-                                java.lang.Math.min(MAX_BLOB_SIZE,TotLength)));
+                                java.lang.Math.min(MaxBlobSize,TotLength)));
       
       while( !done){
 
@@ -1166,12 +1170,16 @@ public class NexNode implements NxNode{
          initslabElement = NN.getRank();
       }else if( c == '6' ){
         Object X = NN.getNodeValue1();
-        
-        if( ( NN != null ) && ( X != null ) ){
-          System.out.println( "Class&Val=" + X.getClass() );
-          System.out.println( StringUtil.toString( X, false ) );
-        }else
-          System.out.println( "Check error message please" );
+        if( N <0)
+           N=0;
+        if( X != null)
+          if( X.getClass().isArray())
+             for(int jj=0; jj< 100; jj++){
+                 if( jj+N < Array.getLength(X))
+                    System.out.print( Array.get(X,jj+N)+"  ");
+                 if( (jj+12)%10 ==0)
+                    System.out.println(""); 
+             }
       }else if( c == '7' ){
         String SS = Node1.getLinkName();
         
