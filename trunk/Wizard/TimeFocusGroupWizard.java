@@ -70,17 +70,29 @@ public class TimeFocusGroupWizard
                                                       // in the master list
     //for CreateMultiFilesForm
     w.setParameter( "RunNumbers",
-                    new IntArrayPG( "Enter run numbers",
+                    new IntArrayPG( "Run numbers",
                     new String("12358"), false));
     w.setParameter( "DataDir",
-                    new DataDirPG( "Enter directory",new String(""), false));
+                    new DataDirPG( "Runfile Directory",new String(""), false));
     w.setParameter( "InstName",
-                    new InstNamePG( "Enter instrument name",
+                    new InstNamePG( "Instrument name",
                     new InstrumentNameString("GPPD"), false));
-
-    //for TimeFocusForm
+    w.setParameter( "HNum",
+                    new IntegerPG( "Histogram number",
+                    new Integer(1), false));
+    w.setParameter( "GMask",
+                    new IntArrayPG( "Group IDs to omit",
+                    new String(""), false));
+    w.setParameter( "MonitorRunNumbers",
+                    new IntArrayPG( "Monitor Run numbers",
+                    ((IntArrayPG)(w.getParameter( "RunNumbers" )))
+                    .getStringValue(), false));
     w.setParameter( "RunList",
                     new ArrayPG( "Run List", new Vector(), false));
+    w.setParameter( "MonitorRunList",
+                    new ArrayPG( "Monitor Run List", new Vector(), false));
+
+    //for TimeFocusForm
     w.setParameter( "TimeFocusResults",
                     new ArrayPG( "Time Focus Results", new Vector(), false));
     w.setParameter("FocusIDs",
@@ -101,30 +113,72 @@ public class TimeFocusGroupWizard
                    new Integer(1), false));
     w.setParameter( "GroupingResults",
                     new ArrayPG( "Grouping Results", new Vector(), false));
+
+    //for SaveAsGSASForm
+    w.setParameter("GSASDir",
+                   new DataDirPG( "Directory to save to",
+                   new String(""), false));
+    w.setParameter("GSASName",
+                   new StringPG("File name to save to",
+                   new String("GSAS"), false));
+    w.setParameter( "ExportMon",
+                    new BooleanPG("Export monitor DataSet?",
+                    new Boolean(false), false));
+    w.setParameter( "SeqNum",
+                    new BooleanPG("Use sequential bank numbering?",
+                    new Boolean(false), false));
+/*
+    //for LoadMonitorDSForm
+    w.setParameter( "MonitorRunNumbers",
+                    new IntArrayPG( "Enter run numbers",
+                    new String("12358"), false));
+    w.setParameter( "MonitorDataDir",
+                    new DataDirPG( "Enter directory",new String(""), false));
+    w.setParameter( "MonitorInstName",
+                    new InstNamePG( "Enter instrument name",
+                    new InstrumentNameString("GPPD"), false));
+    w.setParameter( "MonitorRunList",
+                    new ArrayPG( "Monitor Run List", new Vector(), false));*/
+
                                                     // Specify the parameters
                                                     // used by the forms and
                                                     // add the forms to the
                                                     // Wizard
 
     //open files form
-    String edit_parms[] = {"RunNumbers", "DataDir", "InstName"};
-    String result_parms[] = {"RunList"};
-    Form form0 = new CreateMultiFilesForm(  edit_parms, result_parms, w );
-    w.add( form0 );
+    String edit_parms0[] = {"RunNumbers", "DataDir", "InstName", "HNum", "GMask"};
+    String result_parms0[] = {"RunList", "MonitorRunList"};
+    Form form0 = new CreateMultiFilesForm(  edit_parms0, result_parms0, w );
+/*
+    //load monitor DS form
+    String edit_parms1[] = {"MonitorRunNumbers", "MonitorDataDir", "MonitorInstName"};
+    String result_parms1[] = {"MonitorRunList"};
+    Form form1 = new LoadMonitorDSForm(  edit_parms1, result_parms1, w );*/
 
     //time focus form
-    String const_parms1[] = {"RunList"};
-    String edit_parms1[] = {"FocusIDs", "NewAngle", "NewFPath", "MakeNewds"};
-    String result_parms1[] = {"TimeFocusResults"};
-    Form form1 = new TimeFocusForm(  const_parms1, edit_parms1, result_parms1, w );
-    w.add( form1 );
+    String const_parms2[] = {"RunList"};
+    String edit_parms2[] = {"FocusIDs", "NewAngle", "NewFPath", "MakeNewds"};
+    String result_parms2[] = {"TimeFocusResults"};
+    Form form2 = new TimeFocusForm(  const_parms2, edit_parms2, result_parms2, w );
 
     //grouping form
-    String const_parms2[] = {"TimeFocusResults"};
-    String edit_parms2[] = {"GroupStr", "NewGroupID"};
-    String result_parms2[] = {"GroupingResults"};
-    Form form2 = new GroupingForm(  const_parms2, edit_parms2, result_parms2, w );
-    w.add( form2 );
+    String const_parms3[] = {"TimeFocusResults"};
+    String edit_parms3[] = {"GroupStr", "NewGroupID"};
+    String result_parms3[] = {"GroupingResults"};
+    Form form3 = new GroupingForm(  const_parms3, edit_parms3, result_parms3, w );
+
+    //save as GSAS form
+    String const_parms4[] = {"GroupingResults"};
+    String edit_parms4[] = {"GSASDir", "GSASName", "ExportMon", "SeqNum"};
+    Form form4 = new SaveAsGSASForm( const_parms4, edit_parms4, w );
+
+    //add the forms
+    w.add( form0 );   //CreateMultiFilesForm
+    //w.add( form1 );   //LoadMonitorDSForm
+    w.add( form2 );   //TimeFocusForm
+    w.add( form3 );   //GroupingForm
+    w.add( form4 );   //SaveAsGSASForm
+
 
     w.show(0);
   }
