@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/03/18 20:59:02  dennis
+ * Added initial support for TOF Diffractometers.
+ * Added support for more units.
+ *
  * Revision 1.3  2001/08/17 19:01:04  rmikk
  * Added error checking in case the file could not be created
  *
@@ -50,6 +54,9 @@ import java.lang.*;
 import DataSetTools.dataset.*;
 import NexIO.NexApi.*;
 import IsawGUI.*;
+import IPNS.Runfile.*;
+import DataSetTools.util.*;
+
 /** Writes Nexus formatted files from DataSets
  */
 public class NxWriter 
@@ -97,6 +104,11 @@ public int getNumHistograms()
     {int n;
     String runTitle = null;
     Object run_title = null;
+   
+    //if( Monitors==null) System.out.print("null  : NHist=");
+    // else System.out.print( Monitors.length+"  :NHist=");
+   // if( Histogram == null) System.out.println("null  YYYYYYYYYYYYYYy");
+   // else System.out.println( Histogram.length+"YYYYYYYYYYYY");
   /*  if( Histogram.length > 0)
       {run_title = Histogram[0].getAttributeValue(
                                  Attribute.RUN_TITLE );
@@ -117,15 +129,17 @@ public int getNumHistograms()
      // System.out.println( "added run title =" + runTitle );
      }
     */
-    NxWriteMonitor nm = new NxWriteMonitor();
+    int instrType = getInstrumentType( Monitors, Histogram);
+    NxWriteMonitor nm = new NxWriteMonitor(instrType);
     NxWriteNode n1 , 
                 n2;
+    
     if( Histogram == null ) 
          n = 1;
     else 
           n = Histogram.length;
     n1 = n2 = null;
-    NxWriteInstrument nw = new NxWriteInstrument();
+    NxWriteInstrument nw = new NxWriteInstrument( instrType);
     int kNxentries = getNumHistograms();
     for( int i = 0; i<n ; i++ )
 	{String S;       
@@ -147,9 +161,9 @@ public int getNumHistograms()
             if( Monitors != null )
              if( i == 0 )
               for( int j = 0; j<Monitors.length; j++ )
+               if(Monitors[j]!=null)
                for( int k = 0; k< Monitors[j].getNum_entries(); k++ )
-		 {n2 = n1.newChildNode( "monitor" +kk// new Integer( j + 1 ).
-                                                  //toString() + "_" + k ,
+		 {n2 = n1.newChildNode( getMonitorName( instrType,kk,Monitors[j].getData_entry(k))
                                                    ,"NXmonitor" );
                 
                  kk++;
@@ -161,7 +175,8 @@ public int getNumHistograms()
               
                 }
              else//if not the first
-               { for( int j = 0; j<Monitors.length; j++ )
+               { for( j = 0; j<Monitors.length; j++ )
+                 if(Monitors[j] != null)
                  for( int k = 0; k < Monitors[j].getNum_entries(); k++ )
                   { n1.addLink( "MonLink" + ( j ) + "_" + k ); 
 	           // System.out.println( "in NxWriter-Wrote links" +  j  + "," );
@@ -169,7 +184,7 @@ public int getNumHistograms()
                }
 
 	 
-          NxWriteData nxd = new NxWriteData();
+          NxWriteData nxd = new NxWriteData(instrType);
           if( nxd.processDS( n1 ,nwNode , Histogram[i] , true ) )  
 	      {errormessage += ";" +  nxd.getErrorMessage();
 	      }
@@ -189,7 +204,7 @@ public int getNumHistograms()
 	      for( int k = 0; k< Monitors[j].getNum_entries(); k++ )
                  {n2 = n1.newChildNode( "monitor" + kk,//( j + 1 ) + "_" + k ,
                                     "NXmonitor" );
-                  nm = new NxWriteMonitor();
+                  nm = new NxWriteMonitor(instrType);
               
                   if( nm.processDS( n2 , Monitors[j] , k ) )
                      errormessage += ";" + nm.getErrorMessage();
@@ -199,15 +214,15 @@ public int getNumHistograms()
       
       
 
-       NxWriteEntry ne = new NxWriteEntry();  
+       NxWriteEntry ne = new NxWriteEntry(instrType);  
        if( ne.processDS( n1 , Histogram[i] ) )
          errormessage +=  ";" + ne.getErrorMessage();
 
-       NxWriteSample ns = new NxWriteSample();
+       NxWriteSample ns = new NxWriteSample(instrType);
        if( ns.processDS( n1 , Histogram[i] ) )
           errormessage +=  ";" + ns.getErrorMessage();
 
-       NxWriteBeam nb = new NxWriteBeam();
+       NxWriteBeam nb = new NxWriteBeam(instrType);
        if( nb.processDS( n1 , Histogram[i] ) )
           errormessage += ";" + nb.getErrorMessage();
       
@@ -244,6 +259,56 @@ public int getNumHistograms()
      errormessage = node.getErrorMessage();
      node.close();
     }
+//check for upstream and downstream angle
+private String getMonitorName( int instrType, int MonitorNum, Data DB)
+  { 
+    if( instrType == InstrumentType.TOF_DIFFRACTOMETER)
+           if( MonitorNum ==1) return "upstream";
+           else if( MonitorNum == 2) return "downstream";
+        /*   else
+             { SharedData.status_pane.add("TOF DIFFRACTOMETERS only have 2 monitors");
+               return "ERROR";
+             }
+        */
+    return "monitor"+MonitorNum;
+   }
+private int getInstrumentType( DataSet[] Monitors, DataSet[] Histograms)
+  { int type = InstrumentType.UNKNOWN;
+   
+    if( Monitors != null)
+      if( Monitors.length >0)
+       for(int i = 0; (i < Monitors.length)&&(type ==InstrumentType.UNKNOWN );i++)
+       if(Monitors[i] != null)
+       {
+        Attribute A =  Monitors[i].getAttribute( Attribute.INST_TYPE);
+        
+        if( A != null) 
+           if( A instanceof IntAttribute)
+              type = ((Integer)(A.getValue())).intValue();
+           else if( A instanceof IntListAttribute)
+              if(((IntListAttribute) A).getIntegerValue() != null)
+              if( ((IntListAttribute) A).getIntegerValue().length ==1)
+                type = ((IntListAttribute) A).getIntegerValue()[0];
+              
+        }
+     if( type != InstrumentType.UNKNOWN)
+       return type;
+    if( Histograms != null)
+     if( Histograms.length > 0)
+      for(int i = 0; (i < Histograms.length)&&(type == -2);i++)
+       {Attribute A =  Histograms[i].getAttribute( Attribute.INST_TYPE);
+       if( A != null) 
+           if( A instanceof IntAttribute)
+              type = ((Integer)(A.getValue())).intValue();
+           else if( A instanceof IntListAttribute)
+              if(((IntListAttribute) A).getIntegerValue() != null)
+              if( ((IntListAttribute) A).getIntegerValue().length ==1)
+                type = ((IntListAttribute)A).getIntegerValue()[0];
+        }
+     if( type != InstrumentType.UNKNOWN)
+       return type;
+     return IPNS.Runfile.InstrumentType.UNKNOWN;
+   }
 /** Test program for this NxWriter module
 *@param  args[0]  The filename sans extension
 *@result a new file with an extension .nxs will be created from filename.run
@@ -265,35 +330,35 @@ public static void main( String args[] )
   if(args != null) if( args.length > 0)
      filename = args[0];
   
-  NexWriteNode nwr = new NexWriteNode( filename  + ".nxs" );
-  // XmlWriteNode nwr = new XmlWriteNode( filename + ".xml" );
+  //NexWriteNode nwr = new NexWriteNode( filename  + ".nxs" );
+   XmlWriteNode nwr = new XmlWriteNode( filename + ".xml" );
    if( nwr.getErrorMessage() != "")
        System.out.println( "Error 1="+nwr.getErrorMessage());
  //  if( nwr instanceof NexIO.Write.NxWriteNode)
   //     System.out.print("is instance of");
-   System.out.println(nwr.getClass() +":"+nwr.getClass().getSuperclass()+":");
-   System.out.print("interfaces:");
-   Class x[];
-   x= nwr.getClass().getInterfaces();
-   if( x!= null)
-   for( i=0; i<  x.length; i++)
-     System.out.print( x[i]+":: ");
-   System.out.println("");
+ //  System.out.println(nwr.getClass() +":"+nwr.getClass().getSuperclass()+":");
+ //  System.out.print("interfaces:");
+ //  Class x[];
+//   x= nwr.getClass().getInterfaces();
+ //  if( x!= null)
+  // for( i=0; i<  x.length; i++)
+  //   System.out.print( x[i]+":: ");
+  // System.out.println("");
    NexIO.Write.NxWriteNode nwrx =  (NexIO.Write.NxWriteNode)nwr;
    NxWriter Writer = new NxWriter( nwrx  );
  //Has one monitor and one histogram
   for(  i = 0; i < n ; i++ )
     {DSS = UT.loadRunfile( filename + ".run" );
  
-   
-    DSM = new DataSet[1];
-    DSH = new DataSet[ DSS.length - 1 ];
-    DSM[0] = DSS[0];
-    for( int k = 1; k < DSS.length; k++ )
-      DSH[k-1] = DSS[k];
-    Writer.Append( DSM , DSH );
+    if( DSS != null)
+      {DSM = new DataSet[1];
+       DSH = new DataSet[ DSS.length - 1 ];
+       DSM[0] = DSS[0];
+       for( int k = 1; k < DSS.length; k++ )
+         DSH[k-1] = DSS[k];
+       Writer.Append( DSM , DSH );
   
-   
+       }
     System.out.println( " Error =" + Writer.getErrorMessage() ) ; 
      if( i+1 < n)
        filename = args [ i+1 ];
