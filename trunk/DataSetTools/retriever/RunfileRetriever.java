@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2001/07/04 15:23:58  dennis
+ *  Calculation of average heights and angles now uses the method
+ *  arrayUtil.SignedAbsSum().
+ *
  *  Revision 1.24  2001/06/28 14:09:25  dennis
  *  Now traps for height > final_path, which led to detector positions
  *  with NaN values.
@@ -786,9 +790,6 @@ public class RunfileRetriever extends    Retriever
     };
 
     spectrum.setAttributeList( attr_list );
-
-//    if ( Math.abs(group_id - 294) < 3 )
-//      ShowGroupDetectorInfo( group_id, histogram_num );
   }
 
 
@@ -806,14 +807,14 @@ public class RunfileRetriever extends    Retriever
   */
   private float getAverageFlightPath( int ids[], int hist_num, boolean raw )
   {
-    float total = 0;
+    float values[] = new float[ ids.length ];
     try
     {
       for ( int i = 0; i < ids.length; i++ )
         if ( raw )
-          total += run_file.RawFlightPath( ids[i] );
+          values[i] = (float)run_file.RawFlightPath( ids[i] );
         else
-          total += run_file.FlightPath( ids[i], hist_num );
+          values[i] = (float)run_file.FlightPath( ids[i], hist_num );
     }
     catch ( Exception e )
     {
@@ -821,7 +822,7 @@ public class RunfileRetriever extends    Retriever
       System.out.println( "Exception is " + e );
     }
 
-    return total / ids.length;
+    return arrayUtil.SignedAbsSum( values ) / values.length;
   }
 
 
@@ -844,17 +845,19 @@ public class RunfileRetriever extends    Retriever
                                       float    solid_angles[],
                                       boolean  raw )
   {
-    float total = 0;
-    float sum   = 0;
+    float values[] = new float[ ids.length ];
+    float tot_solid_ang = 0;
     try
     {
       for ( int i = 0; i < ids.length; i++ )
       {
         if ( raw )
-          total += solid_angles[i] * run_file.RawFlightPath( ids[i] );
+          values[i] = (float)( solid_angles[i] * 
+                               run_file.RawFlightPath( ids[i]) );
         else
-          total += solid_angles[i] * run_file.FlightPath( ids[i], hist_num );
-        sum   += solid_angles[i];
+          values[i] = (float)( solid_angles[i] * 
+                               run_file.FlightPath( ids[i], hist_num) );
+        tot_solid_ang += solid_angles[i];
       }
     }
     catch ( Exception e )
@@ -862,7 +865,7 @@ public class RunfileRetriever extends    Retriever
       System.out.println("Exception in RunfileRetriever.getAverageFlightPath:");      System.out.println( "Exception is " + e );
     }
 
-    return total / sum;
+    return arrayUtil.SignedAbsSum( values ) / tot_solid_ang;
   }
 
 
@@ -878,14 +881,14 @@ public class RunfileRetriever extends    Retriever
   */ 
   private float getAverageHeight( int ids[], boolean raw )
   {
-    float total = 0;
+    float values[] = new float[ ids.length ];
     try
     {
       for ( int i = 0; i < ids.length; i++ )
         if ( raw )
-          total += run_file.RawDetectorHeight( ids[i] );
+          values[i] = (float)run_file.RawDetectorHeight( ids[i] );
         else
-          total += run_file.DetectorHeight( ids[i] );
+          values[i] = (float)run_file.DetectorHeight( ids[i] );
     }
     catch ( Exception e )
     {
@@ -893,7 +896,7 @@ public class RunfileRetriever extends    Retriever
       System.out.println( "Exception is " + e );
     }
 
-    return total / ids.length;   
+    return arrayUtil.SignedAbsSum( values ) / ids.length;   
   }
 
 
@@ -911,17 +914,19 @@ public class RunfileRetriever extends    Retriever
   */
   private float getAverageHeight(int ids[], float solid_angles[], boolean raw)
   {
-    float total = 0;
-    float sum   = 0;
+    float values[] = new float[ ids.length ];
+    float tot_solid_ang = 0;
     try
     {
       for ( int i = 0; i < ids.length; i++ )
       {
         if ( raw )
-          total += solid_angles[i] * run_file.RawDetectorHeight( ids[i] );
+          values[i] = (float)( solid_angles[i] * 
+                               run_file.RawDetectorHeight( ids[i] ));
         else
-          total += solid_angles[i] * run_file.DetectorHeight( ids[i] );
-        sum   += solid_angles[i];
+          values[i] = (float)( solid_angles[i] * 
+                               run_file.DetectorHeight( ids[i] ));
+        tot_solid_ang += solid_angles[i];
       }
     }
     catch ( Exception e )
@@ -930,7 +935,7 @@ public class RunfileRetriever extends    Retriever
       System.out.println( "Exception is " + e );
     }
 
-    return total / sum;
+    return arrayUtil.SignedAbsSum( values ) / tot_solid_ang;
   }
 
 
