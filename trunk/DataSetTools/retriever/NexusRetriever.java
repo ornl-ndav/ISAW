@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2001/08/17 18:58:39  rmikk
+ * Incorporated more error handling if file cannot be read
+ *
  * Revision 1.5  2001/08/16 20:31:32  rmikk
  * Fixed the javadocs
  *
@@ -64,7 +67,11 @@ public class NexusRetriever extends Retriever
      node = ( NxNode )( new NexIO.NexApi.NexNode(  dataSourceName  ) ) ;
      if( node.getErrorMessage() != null)
        if( node.getErrorMessage().length() > 0)
-         errormessage = node.getErrorMessage();
+         {errormessage = node.getErrorMessage();
+	 System.out.println("Cannot Read File");
+         ext = null;
+         return;
+         }
      ext = new ExtGetDS( node, dataSourceName ) ;
     }
 
@@ -75,7 +82,9 @@ public class NexusRetriever extends Retriever
     *@see #getErrorMessage()
     */
   public DataSet getDataSet( int data_set_num ) 
-    {DataSet DS = ext.getDataSet( data_set_num ) ;
+    {if( ext == null )
+        return null;
+     DataSet DS = ext.getDataSet( data_set_num ) ;
      errormessage = ext.getErrorMessage() ;
      return DS ;
     }               
@@ -88,7 +97,9 @@ public class NexusRetriever extends Retriever
 
   */ 
    public   int getType( int data_set_num ) 
-     {int type = ext.getType( data_set_num ) ;
+     {if( ext == null)
+         return -1;
+      int type = ext.getType( data_set_num ) ;
       errormessage = ext.getErrorMessage() ;
       return type ;
      }           
