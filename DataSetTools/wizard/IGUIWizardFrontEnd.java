@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/02/23 17:53:50  bouzekc
+ * Changed signature on methods to set the progress bar indeterminate state.
+ *
  * Revision 1.2  2004/02/11 04:09:02  bouzekc
  * Removed the PropChangeProgressBar.  The progress bars now use the JDK 1.4
  * setIndeterminate() method.  This should take some work off of writing
@@ -77,18 +80,16 @@ interface IGUIWizardFrontEnd extends IWizardFrontEnd {
   //~ Methods ******************************************************************
 
   /**
-   * Utility method to set the Form progress bar indeterminate state.
-   *
-   * @param indet Whether the progress bar should be indeterminate.
+   * Utility method to set the Form progress bar indeterminate state
+   * to indeterminate.  updateFormProgress() should change it back.
    */
-  public void setFormProgressIndeterminate( boolean indet );
+  public void setFormProgressIndeterminate(  );
 
   /**
-   * Utility method to set the Wizard progress bar indeterminate state.
-   *
-   * @param indet Whether the progress bar should be indeterminate.
+   * Utility method to set the Wizard progress bar indeterminate state
+   * to indeterminate.  updateWizProgress() should change it back.
    */
-  public void setWizardProgressIndeterminate( boolean indet );
+  public void setWizardProgressIndeterminate(  );
 
   /**
    * Method to update the formProgress progress widget based on whether or not
