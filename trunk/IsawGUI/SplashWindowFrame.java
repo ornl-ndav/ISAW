@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/02/12 21:20:02  pfpeterson
+ *  Now checks properties for IMAGE_DIR before going to ISAW_HOME/images
+ *  for the splashscreen image.
+ *
  *  Revision 1.13  2002/12/11 17:25:20  pfpeterson
  *  Now scales image used in splash screen to the size of the splash screen.
  *
@@ -61,17 +65,21 @@ public class SplashWindowFrame extends    JFrame
   {
     super();
 
-    String ipath = SharedData.getProperty("ISAW_HOME");
-    if ( ipath == null )
-    {
-      System.out.println("WARNING: ISAW_HOME not defined in IsawProps.dat");
-      System.out.println("         Some help files, scripts and operators");
-      System.out.println("         may not be available.");
-      return;
+    String ipath=null;
+    ipath=SharedData.getProperty("IMAGE_DIR");
+    if(ipath==null || ipath.length()<=0){
+      ipath = SharedData.getProperty("ISAW_HOME");
+      if ( ipath == null ){
+        System.out.println("WARNING: ISAW_HOME not defined in IsawProps.dat");
+        System.out.println("         Some help files, scripts and operators");
+        System.out.println("         may not be available.");
+        return;
+      }else{
+        ipath=ipath+"/images/";
+      }
     }
     ipath = StringUtil.fixSeparator(ipath);
-    ipath = ipath.replace('\\','/');
-    splashIm = Toolkit.getDefaultToolkit().getImage(ipath+"/images/Isaw.gif");
+    splashIm = Toolkit.getDefaultToolkit().getImage(ipath+"Isaw.gif");
     splashIm=splashIm.getScaledInstance(width,height,Image.SCALE_FAST);
 
     MediaTracker mt = new MediaTracker(this);
