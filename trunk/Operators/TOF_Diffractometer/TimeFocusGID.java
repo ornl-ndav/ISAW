@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/04/17 20:38:33  pfpeterson
+ * Added a check that IntList returned a non-empty array.
+ *
  * Revision 1.4  2003/02/28 15:14:37  dennis
  * Added getDocumentation() method.  (Shannon Hintzman)
  *
@@ -228,6 +231,8 @@ public class TimeFocusGID extends GenericTOF_Diffractometer{
                                    + final_L_m );
         
         int ids[] = IntList.ToArray( group_str );
+        if(ids==null || ids.length==0)
+          return new ErrorString("Invalid Grouping specifier:"+group_str);
         
         DataSet new_ds;
         if ( make_new_ds )
