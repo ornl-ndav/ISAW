@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/08/17 19:02:19  rmikk
+ * Added error handling to catch cases where the file
+ * cannot be created. Did NOT let Nexus do this because
+ * it hung the system
+ *
  * Revision 1.3  2001/08/09 16:47:06  rmikk
  * Put a flush into the close to try to get files to be saved in
  * Unix systems.
@@ -76,22 +81,28 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode
 
   /**
   *@param filename   the name of a file written in the Nexus API format
+  *NOTE: This checks that the file can be successfully created
   */
   public NexWriteNode( String filename )
     {errormessage = "";
+     nf = null;
      int open_mode = NexusFile.NXACC_CREATE;
-     num_nxEntries = 0;
+     num_nxEntries = 0;     
      if( filename == null)
         { errormessage = " no Such File "+filename;
           return;
-        }
+        }    
      if( new File( filename).exists())
-       {open_mode = NexusFile.NXACC_RDWR;
-       
+       {open_mode = NexusFile.NXACC_RDWR;       
         num_nxEntries = -1;
        } 
+     else if( !canWrite( filename ))
+	 {errormessage= "CANNOT WRITE";
+          System.out.println(filename+" cannot write");
+           return;
+         }    
      try{
-      nf = new NexusFile( filename , open_mode ); 
+      nf = new NexusFile( filename , open_mode );       
       if( open_mode == NexusFile.NXACC_RDWR )
         {Hashtable HT = nf.groupdir();
          Enumeration E = HT.elements();
@@ -104,16 +115,20 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode
              if( X instanceof String)
              if( X != null)
               if( "NXentry".equals((String) X ))
-                 num_nxEntries++;
-           
+                 num_nxEntries++;           
            }
-        }
+        }     
       }
      catch( NexusException s )
-      {errormessage = s.getMessage();
+      {errormessage = NxNodeUtils.ER_BADFILE ;      
+       if( nf != null)
+         try{
+          nf.finalize();
+            }
+         catch( Throwable u){}
        nf = null;
       }
-    
+     
       this.filename = filename;
       children = new Vector();
       attributes = new Vector();
@@ -124,8 +139,41 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode
       type = -1;
       linkInfo = new Hashtable();
       parent = null;
+      errormessage = "";
+      
      }
 
+   private boolean canWrite( String filename )
+    {String F = filename.replace('\\','/');
+     int k = F.lastIndexOf('/');   
+     if( k < 0 )
+       return false;
+     String Path = F.substring( 0, k);    
+     if (!new File(Path).isDirectory())
+       return false;     
+    int j= F.lastIndexOf( '.' );
+    if( j< 0) j = F.length();
+    String Name = F.substring( k+1, j);
+    String Extension ="";
+    if( j < F.length())
+        Extension = F.substring(j+1);
+    
+    for( int i=0; i < Name.length(); i++)
+      {char c = ( Name.charAt( i ) ) ;       
+        if( Character.isLetter( c )){}
+        else if( Character.isDigit(c) && i > 0){}
+        else return false;
+      }
+  
+   for( int i=0; i<Extension.length(); i++)
+      {char c = ( Extension.charAt( i ) ) ;       
+        if( Character.isLetter( c )){}
+        else if( Character.isDigit( c ) && i > 0){}
+        else if( c=='_' && i>0){}
+        else return false;
+      }
+    return true;
+    }
    /** Returns the number of NXentries in this file
    *@param classname   Should be "NXentry"
    *@return  the number of NXentries in this file<br>
@@ -292,6 +340,10 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode
    */
     public void write()
     {boolean closed = false;
+     if( nf == null )
+        {errormessage ="file Not created";
+         return;
+        }
      if( Debug)System.out.println( "Writing"+ nodename+","+classname );
      if( classname.equals( "File" ) )
            errormessage = "";
@@ -495,9 +547,9 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode
     }
    //System.out.println( "PP after for loop"+nodename );
      try{
-    Hashtable HT = nf.attrdir();
+      //Hashtable HT = nf.attrdir();
     //Showw( "attributes"+nodename , HT );
-    HT = nf.groupdir();
+      //HT = nf.groupdir();
     //Showw( "groups"+nodename , HT );
    
     if( !classname.equals( "SDS" ) )
@@ -776,7 +828,8 @@ public static void main( String args[] )
      }
    char c = 0;
    String S1 = null;
-   String S2 = null;
+   String S2 = null; 
+  
    int ndims , type = NexIO.Types.Int;
    int ranks[] , values[];
    ranks  = values = null;
