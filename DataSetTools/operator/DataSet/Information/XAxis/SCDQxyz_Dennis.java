@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/01/07 22:33:06  dennis
+ * Changed to use routine makeEulerRotationInverse() from tof_calc to
+ * build the matrix that "unwinds" the goniometer rotations.
+ *
  * Revision 1.2  2002/11/27 23:18:10  pfpeterson
  * standardized header
  *
@@ -227,19 +231,7 @@ public class SCDQxyz_Dennis extends  XAxisInformationOp
      float phi   = phi_Float.floatValue();
      float chi   = chi_Float.floatValue();
 
-     Tran3D omegaR = new Tran3D();
-     Tran3D phiR   = new Tran3D();
-     Tran3D chiR   = new Tran3D();
-     Tran3D combinedR = new Tran3D();
-
-     phiR.setRotation( -phi, k_vec );       // "unwrap" the rotations to return
-     chiR.setRotation( -chi, i_vec );       // to laboratory frame of reference.
-     omegaR.setRotation( +omega, k_vec );
-
-     combinedR.setIdentity();
-     combinedR.multiply_by( phiR );
-     combinedR.multiply_by( chiR );
-     combinedR.multiply_by( omegaR );
+     Tran3D combinedR =tof_calc.makeEulerRotationInverse(phi, chi, -omega);
 
      float xyz[] = q_pos.getCartesianCoords();
      pt.set( xyz[0], xyz[1], xyz[2] );
