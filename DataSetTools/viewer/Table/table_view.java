@@ -31,6 +31,9 @@
  * Modified:
 * 
  * $Log$
+ * Revision 1.5  2001/08/13 16:08:47  rmikk
+ * Added method setDataSet
+ *
  * Revision 1.4  2001/08/13 14:39:36  rmikk
  * The header and the table in the table view is now in
  *    tabbed panes.
@@ -356,7 +359,11 @@ public class table_view extends JPanel implements ActionListener
        }
      */
      }
-
+  /** Sets the data set in case it has changed
+  */
+  public void setDataSet( DataSet ds )
+   {DSS[0] = ds;
+   }
   /** Sets the filename where the File view will be written.
   */
   public void setFileName( String filename )
