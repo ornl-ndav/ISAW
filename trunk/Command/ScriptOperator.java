@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.37  2004/03/15 23:58:31  dennis
+ * Changed some references to static methods to be through the
+ * class name instead of an instance.
+ *
  * Revision 1.36  2004/03/15 03:30:15  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -923,7 +927,7 @@ public class ScriptOperator  extends  GenericOperator
       }  
       Object U = ExecLine.getResult();
       if( !(U instanceof Vector) || (U==null)){
-        seterror( j+4, ExecLine.ER_IMPROPER_DATA_TYPE);
+        seterror( j+4, execOneLine.ER_IMPROPER_DATA_TYPE);
         lerror = start;
         return start;
       }
