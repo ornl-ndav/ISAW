@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/10/11 19:19:16  bouzekc
+ *  Removed clone() as the superclass now implements it using reflection.
+ *
  *  Revision 1.9  2003/09/09 23:06:28  bouzekc
  *  Implemented validateSelf().
  *
@@ -150,17 +153,6 @@ public class LoadFilePG extends BrowsePG{
         fpg.showGUIPanel(0,y);
         y+=dy;
     }*/
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        LoadFilePG pg=new LoadFilePG(this.name,this.value,this.valid);
-        pg.setDrawValid(this.getDrawValid());
-        pg.initialized=false;
-        pg.filter_vector=this.filter_vector;
-        return pg;
-    }
 
     /**
      * Validates this LoadFilePG.  A LoadFilePG is considered valid if

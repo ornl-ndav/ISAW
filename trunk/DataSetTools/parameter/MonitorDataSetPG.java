@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/10/11 19:19:16  bouzekc
+ *  Removed clone() as the superclass now implements it using reflection.
+ *
  *  Revision 1.10  2003/09/15 18:24:43  dennis
  *  Fixed bug in clone() method that assigned null to this.vals.
  *
@@ -218,19 +221,4 @@ public class MonitorDataSetPG extends DataSetPG{
         fpg.showGUIPanel(0,y);
         y+=dy;
     }*/
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        MonitorDataSetPG pg=
-            new MonitorDataSetPG(this.name,this.value,this.valid);
-       if( this.vals != null)
-          pg.vals=(Vector)this.vals.clone();
-        else 
-          pg.vals = null;
-        pg.setDrawValid(this.getDrawValid());
-        pg.initialized=false;
-        return pg;
-    }
 }

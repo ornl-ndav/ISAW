@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/10/11 19:19:15  bouzekc
+ *  Removed clone() as the superclass now implements it using reflection.
+ *
  *  Revision 1.10  2003/09/09 23:06:28  bouzekc
  *  Implemented validateSelf().
  *
@@ -160,20 +163,6 @@ public class ChoiceListPG extends ChooserPG{
         fpg.showGUIPanel(0,y);
         y+=dy;
     }*/
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        ChoiceListPG pg=new ChoiceListPG(this.name,this.value,this.valid);
-        if((this.vals) == null)
-          pg.vals = null;
-        else
-          pg.vals=(Vector)this.vals.clone();
-        pg.setDrawValid(this.getDrawValid());
-        pg.initialized=false;
-        return pg;
-    }
 
   /**
    * Validates this ChoiceListPG.  A valid ChoiceListPG is one where getValue()

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/10/11 19:19:15  bouzekc
+ *  Removed clone() as the superclass now implements it using reflection.
+ *
  *  Revision 1.15  2003/09/09 23:06:28  bouzekc
  *  Implemented validateSelf().
  *
@@ -209,17 +212,6 @@ public class DataDirPG extends BrowsePG{
         fpg.showGUIPanel(0,y);
         y+=dy;
     }*/
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        DataDirPG pg=new DataDirPG(this.name,this.value,this.valid);
-        pg.setDrawValid(this.getDrawValid());
-        pg.initialized=false;
-        pg.filter_vector=this.filter_vector;
-        return pg;
-    }
 
     /**
      * Validates this DataDirPG.  A DataDirPG is considered valid if and only
