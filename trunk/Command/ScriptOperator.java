@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.34  2004/02/07 18:32:04  rmikk
+ * Added Code for parameter type DSSEttableFieldString
+ *
  * Revision 1.33  2004/01/22 01:25:03  bouzekc
  * Removed unused local variables.
  *
@@ -1458,6 +1461,13 @@ public class ScriptOperator  extends  GenericOperator
       else
         addParameter( new SaveFilePG( Prompt, EliminateQuotes(InitValue) ));
                                      //new DSFieldString(InitValue.trim()) ));
+      DSSettableFieldString STS =new DSSettableFieldString();
+      
+      ChoiceListPG clpg = new ChoiceListPG( Prompt, EliminateQuotes(InitValue));
+      for( int i=0; i< STS.num_strings(); i++)
+         clpg.addItem( STS.getString(i));
+               
+      addParameter( new Parameter( Prompt , STS ));
     }else if( DataType.equals( "INSTRUMENTNAMESTRING")){
       String Instrument_Name = null;
       if(InitValue != null && InitValue.length() > 0)
