@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.1  2004/05/07 17:26:39  dennis
+ * Moved CenteredDifferences from Operators to Operators.Example
+ *
  * Revision 1.8  2004/03/15 19:36:52  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -56,10 +59,10 @@
  * centered difference value.
  *
  */
-package Operators;
+package Operators.Example;
 
 import DataSetTools.operator.*;
-import DataSetTools.operator.Generic.Special.*;
+import DataSetTools.operator.Generic.Example.*;
 import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
@@ -83,7 +86,7 @@ import java.util.*;
  *  a DataSet, applies the operator and then shows both the original and
  *  new DataSet.
  */
-public class CenteredDifferences extends GenericSpecial
+public class CenteredDifferences extends GenericExample
 {
   private static final String TITLE = "Centered Differences";
 
