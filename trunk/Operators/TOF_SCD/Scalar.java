@@ -44,6 +44,7 @@ import  DataSetTools.parameter.*;
  */
 public class Scalar extends    GenericTOF_SCD {
   private static Vector       choices   =null;
+  private static String       command   =null;
 
   /* ----------------------- DEFAULT CONSTRUCTOR ------------------------- */
   /**
@@ -146,30 +147,29 @@ public class Scalar extends    GenericTOF_SCD {
     String       choiceS = null;
     IParameter   iparm   = null;
     Object       value   = null;
-    String       fail    = "FAILED";
     StringBuffer matrix  = null;
     ErrorString  eString = null;
     
     // the first parameter is the directory to run in
     String     dir     = getParameter(0).getValue().toString();
     if( dir==null || dir.length()==0){
-      return new ErrorString(fail+": null/empty directory specified");
+      return new ErrorString("null/empty directory specified");
     }else{
       // check that the directory is okay
       File dirF=new File(dir);
       if(!dirF.exists())
-        return new ErrorString(fail+": "+dir+" does not exist");
+        return new ErrorString(dir+" does not exist");
       if(!dirF.isDirectory())
-        return new ErrorString(fail+": "+dir+" is not a directory");
-      if(!dirF.canWrite())
-        return new ErrorString(fail+": cannot write in "+dir);
+        return new ErrorString(dir+" is not a directory");
+      /*if(!dirF.canWrite())   // DOES NOT WORK ON WIN32
+	return new ErrorString("cannot write in "+dir);*/
 
       // now check the log file
       File log=new File(dir+"/blind.log");
       if(!log.exists())
-        return new ErrorString(fail+": blind.log does not exist");
+        return new ErrorString("blind.log does not exist");
       if(!log.canRead())
-        return new ErrorString(fail+": cannot read blind.log");
+        return new ErrorString("cannot read blind.log");
     }
 
 
@@ -182,7 +182,7 @@ public class Scalar extends    GenericTOF_SCD {
       if( value instanceof Float ){
         delta=((Float)value).floatValue();
       }else{
-        return new ErrorString(fail+": First parameter of incompatible type");
+        return new ErrorString("First parameter of incompatible type");
       }
     }
     
@@ -201,16 +201,18 @@ public class Scalar extends    GenericTOF_SCD {
     System.out.println("========================================");
     // first check if the OS is acceptable
     if(! SysUtil.isOSokay(SysUtil.LINUX_WINDOWS) )
-      return new ErrorString(fail+": must be using linux or windows system");
+      return new ErrorString("must be using linux or windows system");
       
     // declare some things
     Process process=null;
     String output=null;
-    String command=this.getFullScalarName();
+    if(command==null){
+      command=this.getFullScalarName();
+    }
     
     // exit out early if no scalar executable found
     if(command==null)
-      return new ErrorString(fail+": could not find scalar executable");
+      return new ErrorString("could not find scalar executable");
     System.out.println("EXE:"+command);
       
     // ------------------------------------------------------------
@@ -291,7 +293,7 @@ public class Scalar extends    GenericTOF_SCD {
     }finally{
       if(process!=null){
         if(process.exitValue()!=0){
-          return new ErrorString(fail+"("+process.exitValue()+")");
+          return new ErrorString("BAD EXIT("+process.exitValue()+")");
         }else{
           if(eString!=null)
             return eString;
@@ -299,7 +301,7 @@ public class Scalar extends    GenericTOF_SCD {
             return matrix.toString();
         }
       }else{
-        return new ErrorString(fail);
+        return new ErrorString("Something went wrong");
       }
     }
   }  
