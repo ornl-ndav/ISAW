@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/02/07 05:31:17  bouzekc
+ * Commented out debugging println.
+ *
  * Revision 1.1  2004/02/07 05:09:43  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -441,7 +444,7 @@ public class ProjectSelectorJPanel extends JPanel implements ActionListener, Lis
 		 */
 		public void processSentEvent(ActionEvent event)
 		{
-			System.out.println("command="+event.getActionCommand());
+			//System.out.println("command="+event.getActionCommand());
 			
 			if (event.getActionCommand().equals("exit"))
 			{
