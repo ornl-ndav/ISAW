@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.47  2003/06/09 22:28:45  rmikk
+ * Incorporated the ParameterList into the data types checked in scripts
+ *
  * Revision 1.46  2003/06/09 16:46:55  rmikk
  * ReAdded the data type IntList
  *
@@ -190,6 +193,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
   private String Title = "UNKNOWN";
   private String CategoryList="OPERATOR";
   private Script script=null;
+  private ParameterClassList param_types = new ParameterClassList();
   
   /**
    * Constructor to take care of the common parts of initializing the
@@ -883,6 +887,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     }else{
       InitValue=null;
     }
+    String DataType_C = DataType;
     DataType = DataType.toUpperCase();
 
     // get the prompt
@@ -893,7 +898,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
     // add name to list of variables
     if( !DataType.equals( "=" ))
       vnames.addElement( VarName );
-
+   
     // parse type and create a parameter
     if( DataType.equals("=")){
       VarName = VarName.toUpperCase();
@@ -1077,6 +1082,19 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       */
       addParameter ( new MonitorDataSetPG( Prompt, null) );
     }else{
+      IParameter param = param_types.getInstance( DataType_C);
+      if( param != null)
+        try{
+             param.setName( Prompt);
+             param.setValue( InitValue);
+             addParameter( param );
+             return true;
+            }
+        catch(Exception ss)
+          { 
+            DataSetTools.util.SharedData.addmsg( "Parameter Error="+ss); 
+           }
+    
       index=line.toUpperCase().indexOf(DataType);
       seterror( index , "Data Type not supported " + DataType);
       lerror = linenum;
