@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2003/10/09 19:34:15  rmikk
+ * Fixed the clone method to return a new Crunch2 instead of a
+ *   new Crunch
+ *
  * Revision 1.1  2002/12/09 20:03:24  pfpeterson
  * Added to CVS.
  *
@@ -203,7 +207,7 @@ public class Crunch2 extends GenericSpecial{
    * Creates a clone of this operator.
    */
   public Object clone(){ 
-    Operator op = new Crunch();
+    Operator op = new Crunch2();
     op.CopyParametersFrom( this );
     return op;
   }
