@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.52  2003/09/15 12:33:43  rmikk
+ *  Fixed an inequality error
+ *
  *  Revision 1.51  2003/09/14 18:04:33  rmikk
  *  -Removed all DataSets from the DataSetPG when the exit
  *    button is pressed.  Used ChooserPTG.removeItem
@@ -296,7 +299,7 @@ public class JParametersDialog implements Serializable,
              {if( iparam instanceof DataSetPG){
                 DSSS=ds_src.getDataSets();
                 if( DSSS != null)
-                for( int k =0; k> DSSS.length; k++)
+                for( int k =0; k< DSSS.length; k++)
                     ((DataSetPG)iparam).addItem( DSSS[k]);
                 ((DataSetPG)iparam).initGUI((Vector)null);
               }else
