@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2004/01/14 05:07:28  bouzekc
+ * Fixed most of the bugs with array variable declaration.
+ *
  * Revision 1.6  2004/01/14 04:37:43  bouzekc
  * Added remainder of geometric math functions, added code to handle
  * the Fortran fraction() function using Math.IEEERemainder().
@@ -145,13 +148,16 @@ public class FortranParser {
           //will have to put the '[' back on however
           temp = tokenList[i].split( "\\[" );
           tokenList[i] = temp[0] + " = new " + type + "[" + temp[1];
-        }
         
-        //put the array element in
-        buffer.append( tokenList[i] );
+          //put the array element in
+          buffer.append( tokenList[i] );
         
-        if( i < tokenList.length - 1 ) {
-          buffer.append( "," );
+          if( i < tokenList.length - 1 ) {
+            buffer.append( "," );
+          }
+        } else {
+          //just put the token back on
+          buffer.append( tokenList[i] );
         }
       }
     } else {
@@ -299,6 +305,15 @@ TOKEN : {
 //~----------------------------------------------------------------------------
 // FORTRAN SECTION
 //~----------------------------------------------------------------------------
+
+//handles the Fortran logical (i.e. boolean) constants
+TOKEN: {
+  < #BOOL_CONSTANT : (
+    <OPT_WS> ( 
+      ".TRUE." | ".FALSE." | ".true." | ".false."
+    ) <OPT_WS> 
+  ) >
+}
 
 //Recall that in Fortran, untyped variables starting with
 //an I, J, K, L, M, or N are considered integers, while untyped variables
