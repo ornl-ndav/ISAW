@@ -3,6 +3,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.2  2001/07/20 16:39:23  neffk
+ * fixed removeFromNode(), added some comments.
+ *
  * Revision 1.1  2001/07/18 19:10:59  neffk
  * encapsulates DataSet objects.
  *
@@ -15,6 +18,7 @@ import DataSetTools.util.IObserver;
 import java.util.Enumeration;
 import java.util.Vector;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 
 /**
@@ -193,13 +197,26 @@ public class Experiment
   }
 
 
+  /**
+   * removes this node from its parent by setting the parent's
+   * reference to this node equal to null. 
+   */
   public void removeFromParent()
   {
-    for( int i=0;  i<dataset_nodes.size();  i++ )
-      ( (DataSetMutableTreeNode)dataset_nodes.get(i) ).removeFromParent();
+    MutableTreeNode node = (MutableTreeNode)getParent();
+    DefaultMutableTreeNode root = null;
+    if( node instanceof DefaultMutableTreeNode )
+      root = (DefaultMutableTreeNode)node;
+    else
+      return;  //karma--
+
+    root.remove( this );
   }
 
 
+  /**
+   * sets the parent of this node
+   */ 
   public void setParent( MutableTreeNode node )
   {
     parent = node;
