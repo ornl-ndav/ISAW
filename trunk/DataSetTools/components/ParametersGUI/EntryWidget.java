@@ -29,6 +29,10 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.7  2003/10/20 22:43:08  bouzekc
+ * Now propagates the pressed key out as a PropertyChangeEvent new value
+ * when a key is pressed.
+ *
  * Revision 1.6  2003/10/06 23:57:55  bouzekc
  * Now sends out the value of AbstractButton's ActionEvents.  In particular,
  * if a JCheckBox is clicked, its value is propagated upwards as a
@@ -341,7 +345,8 @@ public class EntryWidget extends JPanel implements PropertyChanger,
    */
   public void keyTyped( KeyEvent e ) {
     propertyChange( 
-      new PropertyChangeEvent( this, IParameter.VALUE, "old", "new" ) );
+      new PropertyChangeEvent( this, IParameter.VALUE, "old",  
+                               String.valueOf( e.getKeyChar(  ) ) ) );
   }
 
   /**
