@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2001/07/20 18:15:45  dennis
+ *  Now uses new version of getXConversionScale that returns
+ *  an arbitrary XScale.  Currently it makes a UniformXScale
+ *  that covers the same range and uses the uniform XScale.
+ *
  *  Revision 1.9  2001/07/05 16:11:09  dennis
  *  Frame title is now set from the DataSet.
  *
@@ -105,6 +110,7 @@ package DataSetTools.viewer;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.util.*;
+import DataSetTools.components.ui.*;
 import DataSetTools.viewer.util.*;
 import DataSetTools.viewer.Graph.*;
 import DataSetTools.viewer.Image.*;
@@ -364,8 +370,8 @@ public class ViewManager extends    JFrame
          dataSet.notifyIObservers( reason );
        }
 
-       else if ( (String)reason == DataSetViewer.BINS_CHANGED ||
-                 (String)reason == DataSetViewer.X_RANGE_CHANGED    )
+       else if ( (String)reason == XScaleChooserUI.N_STEPS_CHANGED ||
+                 (String)reason == XScaleChooserUI.X_RANGE_CHANGED   )
        {
          if ( conversion_operator == null )
            viewer.redraw( (String)reason );
@@ -437,7 +443,17 @@ public class ViewManager extends    JFrame
      {
        DataSetOperator op = tempDataSet.getOperator( CurrentConversionName() ); 
        
-       UniformXScale x_scale = viewer.getXConversionScale();
+       UniformXScale x_scale;
+       XScale temp_scale = viewer.getXConversionScale();
+       if ( temp_scale == null )
+         x_scale = null;
+       else if ( temp_scale instanceof UniformXScale )
+         x_scale = (UniformXScale)temp_scale;
+       else
+         x_scale = new UniformXScale( temp_scale.getStart_x(),
+                                      temp_scale.getEnd_x(),
+                                      temp_scale.getNum_x() );
+         
        if ( x_scale == null || use_default_conversion_range ) 
          op.setDefaultParameters();
        else
