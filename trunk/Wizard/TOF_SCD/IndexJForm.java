@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.16  2003/07/08 23:08:12  bouzekc
+ * Removed brackets from within getDocumentation().
+ *
  * Revision 1.15  2003/07/03 14:23:46  bouzekc
  * Added all missing javadoc comments.
  *
@@ -244,8 +247,8 @@ public class IndexJForm extends Form {
     s.append( "it functions in a similar manner to IndexJ.\n" );
     s.append( "@assumptions It is assumed that:\n" );
     s.append( 
-      "The matrix files have the format \"<experiment name><run number>" );
-    s.append( ".mat\" or \"ls<experiment name><run number>.mat\"." );
+      "The matrix files have the format \"experiment name + run number " );
+    s.append( "+ .mat\" or \"ls + experiment name + run number + .mat\"." );
     s.append( "getResult() relies on this.\n" );
     s.append( "In addition, it is assumed that the peaks file and the matrix " );
     s.append( "files are in the same directory.\n" );

@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.18  2003/07/08 23:08:13  bouzekc
+ * Removed brackets from within getDocumentation().
+ *
  * Revision 1.17  2003/07/03 14:30:32  bouzekc
  * Added all missing javadoc comments and formatted existing
  * comments.  Arranged methods according to access privileges.
@@ -271,8 +274,8 @@ public class IntegrateMultiRunsForm extends Form {
     s.append( "@assumptions It is assumed that:\n" );
     s.append( "1. Data of interest is in histogram 2.\n" );
     s.append( "2. There is a matrix file for each run, in the format \"ls" );
-    s.append( "<experiment name><run number>.mat\" in the same directory as " );
-    s.append( "the peaks file\n." );
+    s.append( "+ experiment name + run number + .mat\" in the same " );
+    s.append( "directory as the peaks file\n." );
     s.append( 
       "@algorithm This Form first gets all the user input parameters, " );
     s.append( "then for each runfile, it loads the first histogram, the SCD " );
