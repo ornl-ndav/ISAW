@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/04/02 14:54:49  pfpeterson
+ * Major reworking to reflect that Form now subclasses Operator. (Chris Bouzek)
+ *
  * Revision 1.8  2003/03/19 15:01:30  pfpeterson
  * Also registers property change events from the parameters with
  * the wizard as well. (Chris Bouzek)
@@ -103,54 +106,102 @@ import DataSetTools.components.ParametersGUI.*;
  *  @see Wizard.AdderExampleForm
  */
 
-public class Form implements Serializable, PropertyChangeListener{
-  //private    boolean   completed;           // set by execute, if done ok
-  private    String    title;
-  private    String    help_message = "Help not available for this form ";
+public abstract class Form extends Operator implements Serializable{
+  private final boolean DEBUG=false;
 
   protected  Wizard    wizard;              // the Wizard using this form
   protected  JPanel    panel;               // panel that the Wizard will draw
+  
+  /*protected  int    const_params[];
+    protected  int    editable_params[];
+    protected  int    result_params[];*/
 
-  protected  String    const_params[];
-  protected  String    editable_params[];
-  protected  String    result_params[];
+  private static final String CONS_FRAME_HEAD = "CONSTANT PARAMETERS";
+  private static final String VAR_FRAME_HEAD  = "USER SPECIFIED PARAMETERS";
+  private static final String RES_FRAME_HEAD  = "RESULTS";
+  public static final String[] PARAM_NAMES =
+                             {CONS_FRAME_HEAD, VAR_FRAME_HEAD, RES_FRAME_HEAD};
 
-  protected static final String CONS_FRAME_HEAD = "CONSTANT PARAMETERS";
-  protected static final String VAR_FRAME_HEAD  = "USER SPECIFIED PARAMETERS";
-  protected static final String RES_FRAME_HEAD  = "RESULTS";
+  public static final int CONST_PARAM  = 0;
+  public static final int VAR_PARAM    = 1;
+  public static final int RESULT_PARAM = 2;
 
+  private int[][]  param_ref = null;
   /**
-   *  Construct a form with the given title and parameter names to work with 
-   *  the specified Wizard.  The actual parameters are obtained from the
-   *  wizard, using the names provided to the constructor.
+   *  Construct a form with the given title to work with 
+   *  the specified Wizard.  Note that the integer
+   *  arrays const_params, editable_params, and result_params
+   *  are used to provide references within the parameter Vector
+   *  so that the Form can properly call makeGUI().  If a subclass
+   *  overwrites this method, it must follow the same protocol.
    *
    *  @param  title           The title to show on this form
-   *  @param  const_params    The names of the parameters used in this 
-   *                          calculation that the user should NOT alter
-   *  @param  editable_parms  The names of the parameters used in this 
-   *                          calculation that should be input by the user
-   *  @param  result_params   The names of the parameters that will be 
-   *                          calculated by this form
-   *  @param  wizard          The Wizard that holds the master list of 
-   *                          parameters 
+   *
    */
-  public Form( String title,
-               String const_params[],
-               String editable_params[],
-               String result_params[],
-               Wizard wizard )
+  public Form( String title )
   {
-    this.title           = title;              
-    this.const_params    = const_params;
-    this.editable_params = editable_params;
-    this.result_params   = result_params;
-    this.wizard          = wizard;
+    super(title);   
+    
+    panel = null;
+    this.param_ref=null;
+    this.setDefaultParameters();
 
-    //completed      = false;
-    panel          = new JPanel();
-
-    makeGUI();
   } 
+
+  /* ---------------------------- addParameter ---------------------------- */
+  /**
+   * Add the reference for the specified parameter to the list of parameters 
+   * for this operation object.  
+   *
+   *  @param   iparam   The new IParameterGUI to be added to the list
+   *                    of parameters for this object.
+   */
+  protected void addParameter(IParameterGUI iparam)
+  {
+    parameters.addElement(iparam);
+  }
+
+  /* ---------------------------- setParameter --------------------------- */
+  /**
+   * Set the parameter at the specified index in the list of parameters
+   * for this Form.  The parameter that is set MUST have the same type
+   * of value object as that was originally placed in the list of parameters
+   * using the addParameter() method.  
+   *
+   *  @param  index    The index in the list of parameters of the parameter
+   *                   that is to be set.  "index" must be between 0 and the
+   *                   number of parameters - 1.
+   *
+   *  @return  Returns true if the parameter was properly set, and returns 
+   *           false otherwise.  Specifically, it returns false if either
+   *           the given index is invalid, or the specified parameter
+   *           has a different data type than the parameter at the given
+   *           index.
+   */
+  public boolean setParameter(IParameterGUI iparam, int index)
+  {
+    return super.setParameter(iparam, index);
+  }
+
+  public boolean setParameter(IParameter iparam, int index)
+  {
+    if( iparam instanceof IParameterGUI )
+      return this.setParameter((IParameterGUI)iparam,index);
+    else
+      return false;
+  }
+
+  /**
+   * This method takes care of the setting up the gui to build in.
+   *
+   * @param container where all of the gui components will be packed
+   * into.
+   */
+  protected final void prepGUI(java.awt.Container container){
+    if(panel==null) panel=new JPanel();
+    panel.removeAll();
+    panel.add(container);
+  }
 
   /**
    *  This method makes the GUI for the Form.  If a derived class
@@ -158,63 +209,83 @@ public class Form implements Serializable, PropertyChangeListener{
    *  the current JPanel, panel, since that is what is returned to the
    *  Wizard to show the form.  Also, this method is NOT just called
    *  at construction time, but is called each time the Form is shown
-   *  by the Wizard.  This guarantees that the paramter values will be
+   *  by the Wizard.  This guarantees that the parameter values will be
    *  properly displayed using their current values.
+   *  @see Form#prepGUI(java.awt.Container) prepGUI
+   *  @see Form#enableParameters() enableParameters
    */
   protected void makeGUI(){
+      if(DEBUG)System.out.println("IN makeGUI of "+this.getCommand());
       Box box = new Box( BoxLayout.Y_AXIS );
-      box.setBackground(Color.red);
-      //panel.setLayout( new GridLayout( 1, 1 ) );    
-      panel.removeAll();
-      panel.add(box); 
+      if(DEBUG) box.setBackground(Color.red);
+      prepGUI(box);
       JPanel sub_panel;
-      
-      if(const_params!=null){
-          sub_panel = build_param_panel(CONS_FRAME_HEAD, const_params);
-          if ( sub_panel != null ){
-              box.add( sub_panel ); 
-              for( int i=0 ; i<const_params.length ; i++ ){
-                  IParameterGUI param = wizard.getParameter(const_params[i]);
-                  param.setEnabled(false);
-                  if(param instanceof PropertyChanger){
-                      ((PropertyChanger)param)
-                          .addPropertyChangeListener(IParameter.VALUE,this);
-                      //the wizard needs to listen for property changes as well
-                      ((PropertyChanger)param)
-                          .addPropertyChangeListener(IParameter.VALUE,wizard);
-                  }
-              }
-          }
+
+      for(int i = 0; i < param_ref.length; i++)
+      {
+        if(param_ref[i]!=null && param_ref[i].length > 0){
+          // build the sub_panels
+          sub_panel = build_param_panel(PARAM_NAMES[i], param_ref[i]);
+          if ( sub_panel != null )
+            box.add( sub_panel );
+        }
       }
-      
-      if(editable_params!=null) {
-          sub_panel = build_param_panel(VAR_FRAME_HEAD,editable_params);
-          if ( sub_panel != null ){
-              box.add( sub_panel ); 
-              for( int i=0 ; i<editable_params.length ; i++ ){
-                  IParameterGUI param =wizard.getParameter(editable_params[i]);
-                  param.setEnabled(true);
-                  if(param instanceof PropertyChanger){
-                      ((PropertyChanger)param)
-                          .addPropertyChangeListener(IParameter.VALUE,this);
-                      ((PropertyChanger)param)
-                          .addPropertyChangeListener(IParameter.VALUE,wizard);
-                  }
-              }
+
+      this.enableParameters();
+  }
+
+  /**
+   * Sets the enable/disable state of the parameters according to the
+   * types declared using {@link #setParamTypes(int[],int[],int[])
+   * setParamTypes}.
+   */
+  protected final void enableParameters(){
+      IParameterGUI param=null;
+      boolean enable=false;
+
+      for(int i = 0; i < param_ref.length; i++)
+      {
+        if(param_ref[i]!=null && param_ref[i].length > 0){
+          enable=(i==VAR_PARAM); // only editable_params should be enabled
+          if(DEBUG) System.out.print(PARAM_NAMES[i]+"("+enable+")");
+          for( int j=0 ; j<param_ref[i].length ; j++ ){
+            ((IParameterGUI)getParameter(param_ref[i][j])).setEnabled(enable);
+            if(DEBUG) System.out.print(param_ref[i][j]+" ");
           }
+          if(DEBUG)System.out.println();
+        }
       }
-      
-      if(result_params!=null){
-          sub_panel = build_param_panel(RES_FRAME_HEAD, result_params);
-          if ( sub_panel != null ){
-              box.add( sub_panel ); 
-              for( int i=0 ; i<result_params.length ; i++ ){
-                  IParameterGUI param = 
-                      wizard.getParameter( result_params[i] );
-                  param.setEnabled(false);
-              }
-          }
-      }
+    
+  }
+
+  /**
+   * Method to set the parameter types. If you don't want one set then
+   * pass in null or a zero length array.
+   */
+  protected final void setParamTypes(int[] constant, int[] variable,
+                                                                 int[] result){
+    if(constant==null || constant.length<=0)
+      constant=null;
+    if(variable==null || variable.length<=0)
+      variable=null;
+    if(result==null || result.length<=0)
+      result=null;
+
+    param_ref=new int[][]{constant,variable,result};
+  }
+
+  /**
+   * Returns the array of indices for the different types of parameters
+   */
+  protected final int[] getParamType(int type){
+    if(type==CONST_PARAM)
+      return param_ref[CONST_PARAM];
+    else if(type==VAR_PARAM)
+      return param_ref[VAR_PARAM];
+    else if(type==RESULT_PARAM)
+      return param_ref[RESULT_PARAM];
+    else
+      throw new IndexOutOfBoundsException("Invalid type specified");
   }
 
   /**
@@ -224,22 +295,23 @@ public class Form implements Serializable, PropertyChangeListener{
    *  user-specified and result parameters.
    *
    *  @param  title  The title to put on the border
-   *  @param  params The names of the parameter to include in this sub-panel
+   *  @param  num    The reference to the particular parameters (i.e 
+   *                 editable, result, or constant) within the 
+   *                 parameters Vector.
    */
-  protected JPanel build_param_panel( String title, String params[] )
+  protected final JPanel build_param_panel( String title, int num[])
   {
-    if ( params == null || params.length <= 0 )
-      return null;
+    if( getNum_parameters()<=0 ) return null;
 
     JPanel       sub_panel = new JPanel();
     TitledBorder border;
     border = new TitledBorder(LineBorder.createBlackLineBorder(), title);
     border.setTitleFont( FontUtil.BORDER_FONT );
     sub_panel.setBorder( border );
-    sub_panel.setLayout( new GridLayout( params.length, 1 ) );
+    sub_panel.setLayout( new GridLayout( num.length, 1 ) );
     //sub_panel.setLayout( new BoxLayout( sub_panel,BoxLayout.Y_AXIS ) );
-    for ( int i = 0; i < params.length; i++ ){
-        IParameterGUI param = wizard.getParameter( params[i] );
+    for ( int i = 0; i < num.length; i++ ){
+        IParameterGUI param = (IParameterGUI)getParameter(num[i]);
         param.init();
         sub_panel.add( param.getGUIPanel() );
     }
@@ -254,163 +326,87 @@ public class Form implements Serializable, PropertyChangeListener{
    */
   public JPanel getPanel()
   {
+    if(panel==null) panel=new JPanel();
+
     return panel;
   }
 
   /**
-   *  Save the state of this form (NOT IMPLEMENTED YET)
-   */
-  public void save()
-  {
-    DataSetTools.util.SharedData.addmsg(title + " State save() Not Implemented\n");
-  }
-
-  /**
-   *  Load the state of this form (NOT IMPLEMENTED YET)
-   */
-  public boolean load()
-  {
-    DataSetTools.util.SharedData.addmsg(title + " State load() Not Implemented\n");
-    return false;
-  }
-
-  /**
-   *  This rebuilds the GUI for this form in the panel and makes it visible.
-   *  This will be called by the Wizard after adding the panel to it's 
-   *  form display area.
-   */
-  public void show()
-  {
-    makeGUI();
-    panel.validate();
-    panel.setVisible(true);
-  }
-
-  /**
-   *  This is called when the Wizard is no longer displaying the current 
-   *  form.  Currently this just sets the panel to be invisible.  Eventually,
-   *  additional parameters and logic could be added so that if the Wizard
-   *  is advancing to the next form and the current form has NOT been 
-   *  completed, then this will call execute to try to execute the form. 
    *
-   *  @return true or false to indicate whether or not the form was completed
-   *          properly.
-   */
-  public boolean hide()
-  {
-    panel.setVisible(false);
-    return true;         
-  }
-
-  /**
-   *  Specify the help message to use for this form.
+   *  This is called when displaying or hiding the current form.  While
+   *  this currently only sets the form to be visible or not, additional
+   *  functionality could be added so that it will ensure that the 
+   *  Form's execute() method is called before advancing to the next 
+   *  Form.  Replaces show() and hide().
    *
-   *  @param  help_message  This will typically be a multi-line string
-   *                        describing the operation carried out by this form.
+   *  @param boolean show true when you want the form to show, false
+   *                      when you do not.
    */
-  public void setHelpMessage( String help_message )
+  public void setVisible(boolean show)
   {
-     this.help_message = help_message;
-  }
-
-  /**
-   *  Get the help message for this form. 
-   *
-   *  @return  help_message  The help message to display for this form.
-   */
-  public String getHelpMessage()
-  {
-     return help_message;
-  }
-
-  /**
-   *  Carry out the operation controlled by this form.  This should set the
-   *  completed flag to true if the operation was successful.  This class
-   *  will be overridden in derived classes.
-   *
-   *  @return true if the operation was successfully carried out.
-   */
-  public boolean execute()
-  {
-    DataSetTools.util.SharedData.addmsg(title + " execute() Not Implemented\n");
-    // completed = .....
-    return false;
+    if(show){
+      this.makeGUI();
+      panel.validate();
+      panel.setVisible(show);
+    }else{
+      if(this.panel!=null)
+        panel.setVisible(show);
+    }
   }
 
   /**
    *  Check whether or not this form has been successfully completed.
-   *  (NOT IMPLEMENTED YET)
    * 
    *  @return true if the form's operation has been successfully carried out
    *               and none of the parameters have been subsequently altered 
    */
   public boolean done(){
-      IParameterGUI param;
       int areSet=0;
-      int totalParam=0;
-      if(const_params!=null){
-          totalParam+=const_params.length;
-          for( int i=0 ; i<const_params.length ; i++ ){
-              param=wizard.getParameter(const_params[i]);
-              if(param.getValid()) areSet++;
-          }
-      }
+      int totalParam=getNum_parameters();
 
-      if(editable_params!=null){
-          totalParam+=editable_params.length;
-          for( int i=0 ; i<editable_params.length ; i++ ){
-              param=wizard.getParameter(editable_params[i]);
-              if(param.getValid()) areSet++;
-          }
-      }
+      if(totalParam<=0) return false;
 
-      if(result_params!=null){
-          totalParam+=result_params.length;
-          for( int i=0 ; i<result_params.length ; i++ ){
-              param=wizard.getParameter(result_params[i]);
-              if(param.getValid()) areSet++;
-          }
-      }
-
-      /* System.out.println(areSet+" of "+totalParam+" are set ->"
-         +this.completed+"("+this.title+")"); */
+      for(int i = 0; i < totalParam; i++)
+        if( ((IParameterGUI)this.getParameter(i)).getValid() )
+          areSet++;
 
       return (areSet==totalParam);
   }
 
-    /**
-     * Accessor method to get the title for the form.
-     */
-    public String getTitle(){
-        return new String(this.title);
-    }
+  /**
+   *  Sets the valid state of all result parameters to false.
+   */
+  public void invalidate(){
+    if(DEBUG)
+      System.out.println("invalidate");
+    if(this.getNum_parameters()<=0) return;
 
-    /**
-     *  Sets the valid state of all result parameters to false.
-     */
-    public void invalidate(){
-      if(result_params!=null){
-        IParameterGUI param;
-        for( int i=0 ; i<result_params.length ; i++ ){
-          param=wizard.getParameter(result_params[i]);
-          param.setValid(false);
-        }
+    int[] result_indices =this.getParamType(RESULT_PARAM);
+    if( result_indices==null || result_indices.length<=0) return;
+
+    for( int i=0 ; i<result_indices.length ; i++ )
+      ((IParameterGUI)getParameter(result_indices[i])).setValid(false);
+  }
+   
+  /**
+   *  Method to add PropertyChangeListeners to the Form's list
+   *  of parameters.
+   */
+  public void addParameterPropertyChangeListener(PropertyChangeListener w) 
+  {
+    IParameterGUI param;
+
+    if(this.getNum_parameters()<=0) return;
+    int[] var_indices =this.getParamType(VAR_PARAM);
+    if( var_indices==null || var_indices.length<=0) return;
+
+    for( int i=0 ; i<var_indices.length ; i++ )
+    {
+      param = (IParameterGUI)this.getParameter(var_indices[i]); 
+      if(param instanceof PropertyChanger){
+        ((PropertyChanger)param)
+          .addPropertyChangeListener(IParameter.VALUE,w);
       }
     }
-
-    /**
-     * Method to invalidate the results if one of the properties changes.
-     */
-    public void propertyChange(PropertyChangeEvent ev){
-        int form_num=this.wizard.getCurrentFormNumber();
-        this.wizard.invalidate(form_num);
-    }
-
-  /**
-   *  main program for testing purposes
-   */
-  public static void main( String args[] )
-  {
-    System.out.println("Form Main");
   }
 }
