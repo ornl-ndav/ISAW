@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.19  2003/05/08 19:52:12  pfpeterson
+ * First pass at expanding to multiple detectors. There is a bug where it
+ * does not find any peaks in the -120 deg detector.
+ *
  * Revision 1.18  2003/04/21 15:07:30  pfpeterson
  * Integrates a fixed box for each time slice where the default integration
  * gives I/dI<5. Added ability to specify a specifix matrix file. Small bug
@@ -109,11 +113,28 @@ import java.util.Vector;
  * This is a ported version of A.J.Schultz's INTEGRATE program. 
  */
 public class Integrate extends GenericTOF_SCD{
-  private static final String       TITLE     = "Integrate";
-  private static       boolean      DEBUG     = false;
-  private static       Vector       choices   = null;
-  private              StringBuffer logBuffer = null;
-  
+  private static final String       TITLE       = "Integrate";
+  private static       boolean      DEBUG       = true;
+  private static       Vector       choices     = null;
+  private              StringBuffer logBuffer   = null;
+  private              float        chi         = 0f;
+  private              float        phi         = 0f;
+  private              float        omega       = 0f;
+  private              int          listNthPeak = 3;
+  private              int          centering   = 0;
+  /**
+   * how much to increase the integration size after I/dI has been maximized
+   */
+  private              int          incrSlice   = 0;
+  /**
+   * uncertainty in the peak location
+   */
+  private              int dX=2, dY=2, dZ=1;
+  /**
+   * integration range in z
+   */
+  private              int[] timeZrange={-1,3};
+
   /* ------------------------ Default constructor ------------------------- */ 
   /**
    * Creates operator with title "Integrate" and a default list of
@@ -131,11 +152,11 @@ public class Integrate extends GenericTOF_SCD{
    * @param ds DataSet to integrate
    * @param expfile The "experiment file" for the analysis.
    */
-  public Integrate( DataSet ds, String expfile){
+  public Integrate( DataSet ds){
     this(); 
 
     getParameter(0).setValue(ds);
-    getParameter(1).setValue(expfile);
+    // parameter 1 keeps its default value
     // parameter 2 keeps its default value
     // parameter 3 keeps its default value
     // parameter 4 keeps its default value
@@ -164,18 +185,25 @@ public class Integrate extends GenericTOF_SCD{
 
     if( choices==null || choices.size()==0 ) init_choices();
 
+    // parameter(0)
     addParameter( new Parameter("Data Set", new SampleDataSet() ) );
-    LoadFilePG lfpg=new LoadFilePG("Experiment File",null);
-    lfpg.setFilter(new ExpFilter());
-    addParameter( lfpg );//new Parameter("Experiment Name", new String()) );
-    lfpg=new LoadFilePG("Matrix File",null);
+    // parameter(1)
+    SaveFilePG sfpg=new SaveFilePG("Integrate File",null);
+    sfpg.setFilter(new IntegrateFilter());
+    addParameter(sfpg);
+    // parameter(2)
+    LoadFilePG lfpg=new LoadFilePG("Matrix File",null);
     lfpg.setFilter(new MatrixFilter());
     addParameter( lfpg );//new Parameter("Path",new DataDirectoryString()) );
+    // parameter(3)
     ChoiceListPG clpg=new ChoiceListPG("Centering", choices.elementAt(0));
     clpg.addItems(choices);
     addParameter(clpg);
+    // parameter(4)
     addParameter(new IntArrayPG("Time slice range","-1:3"));
+    // parameter(5)
     addParameter(new IntegerPG("Increase slice size by",0));
+    // parameter(6)
     addParameter(new IntegerPG("Log every nth Peak",3));
   }
   
@@ -220,15 +248,11 @@ public class Integrate extends GenericTOF_SCD{
    */
   public Object getResult(){
     Object val=null; // used for dealing with parameters
-    String expfile=null;
+    String integfile=null;
     DataSet ds;
     String matfile=null;
-//    String expname; REMOVE
     int threashold=1;
-    int centering=0;
     this.logBuffer=new StringBuffer();
-    int listNthPeak=3;
-    int incrSlice=0;
 
     // first get the DataSet
     val=getParameter(0).getValue();
@@ -241,19 +265,17 @@ public class Integrate extends GenericTOF_SCD{
       return new ErrorString("Value of first parameter must be a dataset");
     }
 
-    // then get the experiment file
+    // then the integrate file
     val=getParameter(1).getValue();
     if(val!=null){
-      expfile=val.toString();
-      if(expfile.length()==0)
-        return new ErrorString("Experiment Name is null");
-      expfile=FilenameUtil.setForwardSlash(expfile);
-      File file=new File(expfile);
-      if(!file.exists())
-        return new ErrorString("Could not find experiment file: "+file);
+      integfile=val.toString();
+      if(integfile.length()<=0)
+        return new ErrorString("Integrate filename is null");
+      integfile=FilenameUtil.setForwardSlash(integfile);
     }else{
-      return new ErrorString("Experiment Name is null");
+      return new ErrorString("Integrate filename is null");
     }
+
 
     // then get the matrix file
     val=getParameter(2).getValue();
@@ -272,7 +294,6 @@ public class Integrate extends GenericTOF_SCD{
     if( centering<0 || centering>=choices.size() ) centering=0;
 
     // then the time slice range
-    int[] timeZrange={-1,3}; // default
     {
       int[] myZrange=((IntArrayPG)getParameter(4)).getArrayValue();
       if(myZrange!=null && myZrange.length>=2){
@@ -289,19 +310,38 @@ public class Integrate extends GenericTOF_SCD{
     // then how often to log a peak
     listNthPeak=((IntegerPG)getParameter(6)).getintValue();
 
-    // now the uncertainty in the peak location
-    int dX=2, dY=2, dZ=1;
+
+    // get list of detectors
+    int[] det_number=null;
+    {
+      // determine all unique detector numbers
+      Integer detNum=null;
+      Vector innerDetNum=new Vector();
+      for( int i=0 ; i<ds.getNum_entries() ; i++ ){
+        detNum=new Integer(Util.detectorID(ds.getData_entry(i)));
+        if( ! innerDetNum.contains(detNum) ) innerDetNum.add(detNum);
+      }
+      // copy them over to the detector number array
+      det_number=new int[innerDetNum.size()];
+      for( int i=0 ; i<det_number.length ; i++ )
+        det_number[i]=((Integer)innerDetNum.elementAt(i)).intValue();
+    }
+    if(det_number==null)
+      return new ErrorString("Could not determine detector numbers");
 
     if(DEBUG){
       System.out.println("DataSet:"+ds);
-      System.out.println("ExpFile:"+expfile);
       System.out.println("MatFile:"+matfile);
+      System.out.print(  "DetNum :");
+      for( int i=0 ; i<det_number.length ; i++ )
+        System.out.print(det_number[i]+" ");
+      System.out.println();
     }
 
     // add the parameter values to the logBuffer
     logBuffer.append("---------- PARAMETERS\n");
     logBuffer.append(getParameter(0).getName()+" = "+ds.toString()+"\n");
-    logBuffer.append(getParameter(1).getName()+" = "+expfile+"\n");
+    logBuffer.append(getParameter(1).getName()+" = "+integfile+"\n");
     logBuffer.append(getParameter(2).getName()+" = "+matfile+"\n");
     logBuffer.append(getParameter(3).getName()+" = "
                      +choices.elementAt(centering)+"\n");
@@ -311,56 +351,9 @@ public class Integrate extends GenericTOF_SCD{
     logBuffer.append("Adjust center to nearest point with dX="+dX+" dY="+dY
                      +" dZ="+dZ+"\n");
 
-    // create the lookup table
-    int[][] ids=Util.createIdMap(ds);
-
-    // determine the boundaries of the matrix
-    int[] rcBound=getBounds(ids);
-    for( int i=0 ; i<4 ; i++ ){
-      if(rcBound[i]==-1)
-        return new ErrorString("Bad boundaries on row column matrix");
-    }
-
-    // grab pixel 1,1 to get some 'global' attributes from 
-    Data data=ds.getData_entry(ids[rcBound[0]][rcBound[1]]);
-    if(data==null)
-      return new ErrorString("no minimum pixel found");
-
-    // get the calibration for this
-    float[] calib=(float[])data.getAttributeValue(Attribute.SCD_CALIB);
-    if(calib==null){
-      LoadSCDCalib loadcalib=new LoadSCDCalib(ds,expfile,0,"");
-      Object res=loadcalib.getResult();
-      if(res instanceof ErrorString) return res;
-      calib=(float[])data.getAttributeValue(Attribute.SCD_CALIB);
-      if(calib==null)
-        return new ErrorString("Could not load calibration from experiment "
-                               +"file");
-    }
-
-    // get the xscale from the data to give to the new peaks objects
-    XScale times=data.getX_scale();
-
-    // determine the initial flight path
-    float init_path=0f;
-    {
-      Object L1=data.getAttributeValue(Attribute.INITIAL_PATH);
-      if(L1!=null){
-        if(L1 instanceof Float)
-          init_path=((Float)L1).floatValue();
-      }
-      L1=null;
-    }
-    if(init_path==0f)
-      return new ErrorString("initial flight path is zero");
-
-    // determine the detector postion
-    float detA=Util.detector_angle(ds);
-    float detA2=Util.detector_angle2(ds);
-    float detD=Util.detector_distance(ds,detA);
+    Data data=ds.getData_entry(0);
 
     // get the sample orientation
-    float chi=0f, phi=0f, omega=0f;
     {
       SampleOrientation orientation =
         (SampleOrientation)data.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
@@ -385,11 +378,7 @@ public class Integrate extends GenericTOF_SCD{
       UBval=null;
     }
     if(UB==null){ // try loading it
-      LoadOrientation loadorient=null;
-      if(matfile!=null)
-        loadorient=new LoadOrientation(ds, new LoadFileString(matfile));
-      else
-        loadorient=new LoadOrientation(ds, new LoadFileString(expfile));
+      LoadOrientation loadorient=new LoadOrientation(ds, matfile);
       Object res=loadorient.getResult();
       if(res instanceof ErrorString) return res;
       // try getting the value again
@@ -401,13 +390,21 @@ public class Integrate extends GenericTOF_SCD{
         UB=(float[][])UBval;
       UBval=null;
       if(UB==null) // now give up if it isn't there
-        return new ErrorString("Could not load orientation matrix from "
-                               +"experiment file");
+        return new ErrorString("Could not load orientation matrix");
     }
 
-    // determine the min and max pixel-times
-    int zmin=0;
-    int zmax=times.getNum_x()-1;
+    // determine the initial flight path
+    float init_path=0f;
+    {
+      Object L1=data.getAttributeValue(Attribute.INITIAL_PATH);
+      if(L1!=null){
+        if(L1 instanceof Float)
+          init_path=((Float)L1).floatValue();
+      }
+      L1=null;
+    }
+    if(init_path==0f)
+      return new ErrorString("initial flight path is zero");
 
     // get the run number
     int nrun=0;
@@ -422,27 +419,99 @@ public class Integrate extends GenericTOF_SCD{
       Nrun=null;
     }
 
-    // get the detector number
-    int detnum=0;
-    {
-      Attribute attr = ds.getData_entry(0).getAttribute(
-                                              Attribute.PIXEL_INFO_LIST );
-      if( attr != null && (attr instanceof PixelInfoListAttribute) )
-      {
-        PixelInfoList  pil  = (PixelInfoList)attr.getValue();
-        detnum = pil.pixel(0).DataGrid().ID();
-      }
-
-    }
-    if(detnum==0)
-      return new ErrorString("detector number not found");
-
     // create a PeakFactory for use throughout this operator
-    PeakFactory pkfac=new PeakFactory(nrun,detnum,init_path,detD,detA,detA2);
-    pkfac.calib(calib);
+    PeakFactory pkfac=new PeakFactory(nrun,0,init_path,0f,0f,0f);
     pkfac.UB(UB);
     pkfac.sample_orient(chi,phi,omega);
+
+    // create a vector for the results
+    Vector peaks=new Vector();
+
+    // integrate each detector
+    Vector innerPeaks=null;
+    ErrorString error=null;
+    for( int i=0 ; i<det_number.length ; i++ ){
+      System.out.println("integrating "+det_number[i]);
+      innerPeaks=new Vector();
+      error=integrateDetector(ds,innerPeaks,pkfac,det_number[i]);
+      System.out.println("ERR="+error);
+      if(error!=null) return error;
+      System.out.println("integrated "+innerPeaks.size()+" peaks");
+      if(innerPeaks!=null && innerPeaks.size()>0)
+        peaks.addAll(innerPeaks);
+    }
+
+    
+    // write out the logfile integrate.log
+    String logfile=integfile;
+    {
+      int index=logfile.lastIndexOf("/");
+      logfile=logfile.substring(0,index)+"/integrate.log";
+    }
+    String errmsg=this.writeLog(logfile);
+    if(errmsg!=null)
+      SharedData.addmsg(errmsg);
+
+    // write out the peaks
+    WritePeaks writer=new WritePeaks(integfile,peaks,Boolean.TRUE);
+    return writer.getResult();
+  }
+// ========== start of detector dependence
+
+  private ErrorString integrateDetector(DataSet ds, Vector peaks, 
+                                                PeakFactory pkfac, int detnum){
+    if(DEBUG) System.out.println("Integrating detector "+detnum);
+
+    // get the detector number
+    if(detnum<=0)
+      return new ErrorString("invalid detector number: "+detnum);
+    pkfac.detnum(detnum);
+
+    // create the lookup table
+    int[][] ids=Util.createIdMap(ds,detnum);
+    if(ids==null)
+      return new ErrorString("Could not create pixel map for det "+detnum);
+
+    // determine the boundaries of the matrix
+    int[] rcBound=getBounds(ids);
+    for( int i=0 ; i<4 ; i++ ){
+      if(rcBound[i]==-1)
+        return new ErrorString("Bad boundaries on row column matrix");
+    }
+
+    // grab pixel 1,1 to get some 'global' attributes from 
+    Data data=ds.getData_entry(ids[rcBound[0]][rcBound[1]]);
+    if(data==null)
+      return new ErrorString("no minimum pixel found");
+
+    // get the calibration for this
+    {
+      float[] calib=(float[])data.getAttributeValue(Attribute.SCD_CALIB);
+      if(calib==null)
+        return new ErrorString("Could not find calibration for detector "
+                               +detnum);
+      System.out.print("CALIB=");
+      for( int i=0 ; i<calib.length ; i++ )
+        System.out.print(calib[i]+" ");
+      System.out.println();
+      pkfac.calib(calib);
+    }
+
+    // get the xscale from the data to give to the new peaks objects
+    XScale times=data.getX_scale();
     pkfac.time(times);
+
+    // determine the detector postion
+    float detA=Util.detector_angle(ds,detnum);
+    float detA2=Util.detector_angle2(ds,detnum);
+    float detD=Util.detector_distance(ds,detnum);
+    pkfac.detA(detA);
+    pkfac.detA2(detA2);
+    pkfac.detD(detD);
+
+    // determine the min and max pixel-times
+    int zmin=0;
+    int zmax=times.getNum_x()-1;
 
     // add the position number to the logBuffer
     logBuffer.append("---------- PHYSICAL PARAMETERS\n");
@@ -454,6 +523,13 @@ public class Integrate extends GenericTOF_SCD{
     // determine the detector limits in hkl
     int[][] hkl_lim=minmaxhkl(pkfac, ids, times);
     float[][] real_lim=minmaxreal(pkfac, ids, times);
+    System.out.print("REAL LIMITS=");
+    for(int i=0 ; i<3 ; i++ ){
+      for( int j=0 ; j<2 ; j++ ){
+        System.out.print(real_lim[i][j]+" ");
+      }
+      System.out.println();
+    }
 
     // add the limits to the logBuffer
     logBuffer.append("---------- LIMITS\n");
@@ -473,23 +549,33 @@ public class Integrate extends GenericTOF_SCD{
     logBuffer.append("========== PEAK INTEGRATION ==========\n");
     logBuffer.append("listing information about every "+listNthPeak+" peak\n");
 
+    boolean printPeak=false; // REMOVE
     Peak peak=null;
-    Vector peaks=new Vector();
     int seqnum=1;
     // loop over all of the possible hkl values and create peaks
     for( int h=hkl_lim[0][0] ; h<=hkl_lim[0][1] ; h++ ){
       for( int k=hkl_lim[1][0] ; k<=hkl_lim[1][1] ; k++ ){
         for( int l=hkl_lim[2][0] ; l<=hkl_lim[2][1] ; l++ ){
           if( h==0 && k==0 && l==0 ) continue; // cannot have h=k=l=0
-          if( ! checkCenter(h,k,l,centering) ) // fails centering conditions
+          if( ! checkCenter(h,k,l,centering) ){ // fails centering conditions
+            if(printPeak) System.out.println(" NO CENTERING"); // REMOVE
             continue;
+          }
           peak=pkfac.getHKLInstance(h,k,l);
+          if(printPeak) System.out.print(peak.toString()); // REMOVE
           peak.nearedge(rcBound[0],rcBound[2],rcBound[1],rcBound[3],
                         zmin,zmax);
-          if( (peak.nearedge()>=2f) && (checkReal(peak,real_lim)) ){
-            peak.seqnum(seqnum);
-            peaks.add(peak);
-            seqnum++;
+          if( peak.nearedge()>=2f){
+            if( (checkReal(peak,real_lim)) ){
+              if(printPeak) System.out.println(" OK"); // REMOVE
+              peak.seqnum(seqnum);
+              peaks.add(peak);
+              seqnum++;
+            }else{
+              if(printPeak) System.out.println(" NOT REAL"); // REMOVE
+            }
+          }else{
+            if(printPeak) System.out.println(" BAD EDGE"); // REMOVE
           }
         }
       }
@@ -529,24 +615,8 @@ public class Integrate extends GenericTOF_SCD{
       }
     }
 
-    // write out the logfile integrate.log
-    String logfile=expfile;
-    {
-      int index=logfile.lastIndexOf("/");
-      logfile=logfile.substring(0,index)+"/integrate.log";
-    }
-    String errmsg=this.writeLog(logfile);
-    if(errmsg!=null)
-      SharedData.addmsg(errmsg);
-
-    // write out the peaks
-    String integfile=expfile;
-    {
-      int index=integfile.lastIndexOf(".");
-      integfile=integfile.substring(0,index)+".integrate";
-    }
-    WritePeaks writer=new WritePeaks(integfile,peaks,Boolean.TRUE);
-    return writer.getResult();
+    // things went well so return null
+    return null;
   }
 
   /**
@@ -910,7 +980,7 @@ public class Integrate extends GenericTOF_SCD{
 
     // use a fixed box
     if(IsigI[0]<=IsigI[1]*5f){
-      if(checkRange(ids,rng) )
+      if(checkRange(ids,init_rng) )
         IsigI=integrateSlice(ds,ids,init_rng,z);
       formatRange(init_rng,log);
       return IsigI;
@@ -1379,7 +1449,7 @@ public class Integrate extends GenericTOF_SCD{
     System.out.println("LoadOrientation.RESULT="+lo.getResult());
 
     // integrate the dataset
-    Integrate op = new Integrate( rds, prefix+"quartz.x" );
+    Integrate op = new Integrate( rds );
     Object res=op.getResult();
     // print the results
     System.out.print("Integrate.RESULT=");
