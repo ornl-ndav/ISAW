@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2003/12/12 18:15:18  dennis
+ *  Temporarily commented out code that waited for an image to finish
+ *  loading, using a MediaTracker.  This permitted the splash pane to
+ *  appear with the image "simultaneously".  This code was commented
+ *  out in a continuing attempt to fix intermittent problems with ISAW
+ *  starting.
+ *
  *  Revision 1.17  2003/12/11 18:24:52  dennis
  *    Now uses the WindowShower utility class to display the splash window
  *  from the Swing event handling thread, instead of showing it directly.
@@ -125,7 +132,7 @@ public class SplashWindowFrame extends    JFrame
       splashIm = splashIm.getScaledInstance( WIN_WIDTH, 
                                              WIN_HEIGHT, 
                                              Image.SCALE_FAST );
-
+/*
                                                   // use a media tracker to wait
       MediaTracker mt = new MediaTracker( this ); // for the image to load, so
       mt.addImage(splashIm,0);                    // when it appears, it pops 
@@ -134,7 +141,7 @@ public class SplashWindowFrame extends    JFrame
         mt.waitForID(0);
       }
       catch(InterruptedException ie){}
-
+*/
                                                   // center the splash screen
                                                   // on the monitor
       this.setSize( WIN_WIDTH, WIN_HEIGHT );
