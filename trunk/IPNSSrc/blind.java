@@ -53,6 +53,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/05/12 19:23:35  pfpeterson
+ * Removed code that is no longer used.
+ *
  * Revision 1.10  2003/05/09 18:58:36  pfpeterson
  * Improved log creation for easier code matenience.
  *
@@ -106,16 +109,13 @@ public class blind {
   private static final boolean DEBUG=false;
 
   //orientation matrix
-  public double[] u = null;
-  //Cell dimensions
-  public double[] abc; //a,b,c,alpha,beta,gamma,cellVol
+  public double[][] UB=null;
 
   public String errormessage="";
   private StringBuffer logBuffer;
 
   public blind(){
-    u=null;
-    abc=new double[7];
+    UB=null;
     errormessage="";
 
     // create the logfile contents
@@ -192,8 +192,8 @@ public class blind {
             yy[lmt.val-1]=y1.val;
             zz[lmt.val-1]=z1.val;
             if(DEBUG)
-              System.out.println("Q vals="+format(x1.val,4)+","
-                                 +format(y1.val,5)+","+format(z1.val,4));
+              System.out.println("Q vals="+format(x1.val,10,4)+","
+                                 +format(y1.val,10,4)+","+format(z1.val,10,4));
             if( Double.isNaN(xx[i]))SS+="xx";
             if( Double.isNaN(yy[i]))SS+="yy";
             if( Double.isNaN(zz[i]))SS+="zz";
@@ -586,9 +586,7 @@ public class blind {
         aair(b,a);
 
         printB("before Thh,B=",b);
-        booleanW BW= new booleanW(mm);
-        thh(hh,xx,yy,zz,a,jh,BW,dd.val,lmt);
-        mm= BW.val;
+        mm=thh(hh,xx,yy,zz,a,jh,dd.val,lmt);
 
         printB("aft Thh,B=",b);
         if (mw > 0.0 && mm)  
@@ -604,7 +602,7 @@ public class blind {
     }//while Goto==1
     int start=logBuffer.length();
     logBuffer.append("******************\n\n");
-    logBuffer.append(" ERROR LIMIT="+format(dd.val,2)+"\n\n");
+    logBuffer.append(" ERROR LIMIT="+format(dd.val,5,2)+"\n\n");
     logBuffer.append(" REDUCED CELL\n\n");
     System.out.print(logBuffer.substring(start));
     lst(hh,xx,yy,zz,a,jh,mw,b,d,lmt,seq,den,expnum,hstnum);
@@ -913,8 +911,8 @@ public class blind {
     if(DEBUG){
       System.out.println("Aair,l="+l[0]+","+l[1]+","+l[2]+","+l[3]+","+l[4]+","
                          +l[5]+","+l[6]+","+a.length+","+ab.length);
-      System.out.println("W="+format(w[0],4)+","+format(w[1],4)+","
-                         +format(w[2],4)+","+format(w[3],4));
+      System.out.println("W="+format(w[0],10,4)+","+format(w[1],10,4)+","
+                         +format(w[2],10,4)+","+format(w[3],10,4));
     }
     for( i=0 ; i<3 ; i++ ){
       a[2+i*3+ _a_offset] = ab[l[0]-1+i*3];
@@ -1014,9 +1012,8 @@ public class blind {
   /**
    *
    */
-  public void thh (double[] hh, double[] xx, double[] yy, double[] zz, 
-                          double [] a,  int [] jh, booleanW mm, double dd,
-                          int lmt){
+  public boolean thh (double[] hh, double[] xx, double[] yy, double[] zz, 
+                          double [] a,  int [] jh, double dd, int lmt){
     int xx_offset=0;
     int yy_offset=0;
     int zz_offset=0;
@@ -1026,6 +1023,7 @@ public class blind {
     int i= 0;
     int j= 0;
     int lb= 0;
+    boolean mm=false;
 
     for( i=3 ; i<lmt ; i++ ){
       for( j=0 ; j<3 ; j++ ){
@@ -1037,13 +1035,13 @@ public class blind {
           lb = (int)(hh[j+i*3+hh_offset]-0.5);
         }
         if (Math.abs(hh[j+i*3+hh_offset]-lb) > dd)  {
-          mm.val = true;
+          mm = true;
         }
         jh[j+i*3+jh_offset] = lb;
       }
     }
 
-    return;
+    return mm;
   }
 
   /**
@@ -1052,50 +1050,41 @@ public class blind {
   public void lst( double[] HH, double[] XX,double[] YY, double[] ZZ,
                    double[] A, int[] JH, double MW, double[] B,double D,
                    int LMT,int[] SEQ, double DEN, int EXPNUM, int HSTNUM){
-    double d=0;
     double[] AI = new double[9];
-    d=mi(B,AI);
-    abc[6] = 1.0/d;
+    double[] abc=new double[7];
+
+    // get the orientation matrix
+    mi(B,AI);
+    UB=new double[3][3];
+    for( int i=0 ; i<3 ; i++ ){
+      for( int j=0 ; j<3 ; j++ ){
+        UB[j][i]=B[j-3+3*(i+1)];
+      }
+    }
+
+    // get the lattice parameters
+    abc=Util.abc(UB);
+
+    // get the cell scalars
+    double[] scalars=Util.scalars(abc);
+
+    // print the volume and scalars
     int start=logBuffer.length();
-    logBuffer.append(" CELL VOLUME=  "+format(abc[6],1)+"\n\n");
-    printB("in aais,B,AI=",B,5);
-    printB("in aais,B,AI=",AI,3);
-
-    // calculate the cell scalars
-    double A2,B2,C2,DAB,DAC,DBC;
-    A2=AI[-3+3*1]*AI[-3+3*1]+AI[-3+3*2]*AI[-3+3*2]+AI[-3+3*3]*AI[-3+3*3];
-    B2=AI[-2+3*1]*AI[-2+3*1]+AI[-2+3*2]*AI[-2+3*2]+AI[-2+3*3]*AI[-2+3*3];
-    C2=AI[-1+3*1]*AI[-1+3*1]+AI[-1+3*2]*AI[-1+3*2]+AI[-1+3*3]*AI[-1+3*3];
-
-    DAB= AI[-3+3*1]*AI[-2+3*1]+AI[-3+3*2]*AI[-2+3*2]+AI[-3+3*3]*AI[-2+3*3];
-    DAC= AI[-3+3*1]*AI[-1+3*1]+AI[-3+3*2]*AI[-1+3*2]+AI[-3+3*3]*AI[-1+3*3] ;
-    DBC= AI[-2+3*1]*AI[-1+3*1]+AI[-2+3*2]*AI[-1+3*2]+AI[-2+3*3]*AI[-1+3*3];
-     
+    logBuffer.append(" CELL VOLUME=  "+format(abc[6],8,3)+"\n\n");
     logBuffer.append("*** CELL SCALARS ***\n");
-    logBuffer.append(format(A2,9,2)+format(B2,8,2)+format(C2,8,2)+"\n");
-    logBuffer.append(format(DBC,9,2)+format(DAC,8,2)+format(DAB,8,2)+"\n\n");
-    System.out.print(logBuffer.substring(start));
+    for( int i=0 ; i<6 ; i++ ){
+      logBuffer.append(format(scalars[i],9,2));
+      if(i==2 || i==5) logBuffer.append("\n");
+    }
+    logBuffer.append("\n");
 
-
-    // calculate the lattice parameters
-    abc[0]=Math.sqrt(A2);
-    abc[1]=Math.sqrt(B2);
-    abc[2]=Math.sqrt(C2);
-    abc[3]=DBC/(abc[1]*abc[2]);
-    abc[4]=DAC/(abc[0]*abc[2]);
-    abc[5]=DAB/(abc[0]*abc[1]);
-    abc[3]=57.296*Math.atan(Math.sqrt(1.-abc[3]*abc[3])/abc[3]);
-    if (abc[3] < 0) abc[3]=abc[3]+180.;
-    abc[4]=57.296*Math.atan(Math.sqrt(1.-abc[4]*abc[4])/abc[4]);
-    if (abc[4]< 0) abc[4]=abc[4]+180.;
-    abc[5]=57.296*Math.atan(Math.sqrt(1.-abc[5]*abc[5])/abc[5]);
-    if (abc[5] < 0) abc[5]=abc[5]+180.;
-    start=logBuffer.length();
+    // print the lattice parameters
     logBuffer.append("A="+format(abc[0],8,3)+"   B="+format(abc[1],8,3)
                      +"   C="+format(abc[2],8,3)+"\n");
     logBuffer.append("ALPHA="+format(abc[3],7,2)+"   BETA="+format(abc[4],7,2)
                      +"   GAMMA="+format(abc[5],7,2)+"\n\n");
 
+    // print the peak indices
     logBuffer.append("     #   SEQ     H     K     L\n");
     for(int  i=0;i<SEQ.length; i++){
       logBuffer.append(format(i+1,6,0)+format(SEQ[i],6,0)
@@ -1106,22 +1095,20 @@ public class blind {
     logBuffer.append("\n");
     System.out.print(logBuffer.substring(start));
      
-    u = new double[9];
-    for( int i=0 ; i<3 ; i++ ){
-      for( int j=0 ; j<3 ; j++ ){
-        u[i-3+3*(j+1)]=B[j-3+3*(i+1)];
-      }
-    }
- 
-    double vol=subs.tstvol(u);
-
-    if( vol < 0) 
+    // print out a warning message
+    if( abc[6] < 0) 
       if(DEBUG) System.out.println("Left handed system");
 
-    System.out.print("ORIENTATION MATRIX\n");
-    for(int i=0 ; i<3 ; i++ )
-      System.out.println(format(u[i-3+3*1],10,5)+format(u[i-3+3*2],10,5)
-                         +format(u[i-3+3*3],10,5));
+    // finally the orientation matrix
+    start=logBuffer.length();
+    logBuffer.append("ORIENTATION MATRIX\n");
+    for( int i=0 ; i<3 ; i++ ){
+      for( int j=0 ; j<3 ; j++ )
+        logBuffer.append(format(UB[j][i],10,5));
+      logBuffer.append("\n");
+    }
+    logBuffer.append("\n");
+    System.out.print(logBuffer.substring(start));
   }
    
   /**
@@ -1130,15 +1117,6 @@ public class blind {
   public boolean writeLog(String filename){
     FileOutputStream fout=null;
     StringBuffer sb=new StringBuffer(logBuffer.toString());
-
-    // create the matrix file
-    sb.append("ORIENTATION MATRIX\n");
-    for( int i=0 ; i<3 ; i++ ){
-      for( int j=0 ; j<3 ; j++ )
-        sb.append(format(u[i+j*3],9,5)+"  ");
-      sb.append("\n");
-    }
-    
 
     // write out the information
     try{
@@ -1290,16 +1268,6 @@ public class blind {
     intW mj= new intW(0);
     
     BLIND.bias(V.size()+3,xx,yy,zz,b,0,3,dd,4.0,mj,seq,123,0);
-    System.out.println("Orientation matrix=");
-    for( int i=0;i<3;i++){
-      for (int j=0;j<3;j++)
-        System.out.print(BLIND.u[3*j+i]+" ");
-      System.out.println("");
-    }
-
-    for( int i=0 ; i<BLIND.abc.length ; i++ )
-      System.out.print(BLIND.abc[i]+" ");
-    System.out.println();
   }
 
   private static void printB(String label, Object b){
@@ -1318,14 +1286,14 @@ public class blind {
     if(b instanceof double[]){
       length=((double[])b).length;
       for( int i=0 ; i<length ; i++ ){
-        System.out.print(format(((double[])b)[i],dec));
+        System.out.print(format(((double[])b)[i],5+dec,dec));
         if(i<length-1) System.out.print(",");
 
       }
     }else if(b instanceof int[]){
       length=((int[])b).length;
       for( int i=0 ; i<length ; i++ ){
-        System.out.print(format(((int[])b)[i],0));
+        System.out.print(Format.integer(((int[])b)[i],dec));
         if(i<length-1) System.out.print(",");
       }
     }else{
@@ -1334,25 +1302,7 @@ public class blind {
     System.out.println("");
   }
 
-  private static String format(double num,int dec){
-    DecimalFormat df=new DecimalFormat("0.00000");
-    df.setMinimumFractionDigits(dec);
-    df.setMaximumFractionDigits(dec);
-    if(num<0)
-      return df.format(num);
-    else
-      return " "+df.format(num);
-  }
-
   private static String format(double num,int total, int dec){
-    DecimalFormat df=new DecimalFormat("0.00000");
-    df.setMinimumFractionDigits(dec);
-    df.setMaximumFractionDigits(dec);
-
-    StringBuffer sb=new StringBuffer(df.format(num));
-    while(sb.length()<total)
-      sb.insert(0," ");
-
-    return sb.toString();
+    return Format.real(num,total,dec);
   }
 }
