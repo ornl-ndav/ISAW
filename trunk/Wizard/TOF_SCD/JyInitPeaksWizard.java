@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2003/11/30 02:33:35  bouzekc
+ * Calls wizardLoader() instead of showForm().
+ *
  * Revision 1.2  2003/11/05 02:20:30  bouzekc
  * Changed to work with new Wizard and Form design.
  *
@@ -101,17 +104,7 @@ public class JyInitPeaksWizard extends Wizard {
    */
   public static void main( String[] args ) {
     JyInitPeaksWizard w = new JyInitPeaksWizard( true );
-
-    //specified a --nogui switch but forgot to give a filename
-    if( args.length == 1 ) {
-      System.out.println( 
-        "USAGE: java Wizard.TOF_SCD.InitialPeaksWizard " +
-        "[--nogui] <Wizard Save File>" );
-    } else if( args.length == 2 ) {
-      w.executeNoGUI( args[1] );
-    } else {
-      w.showForm( 0 );
-    }
+    w.wizardLoader( args );
   }
 
   /**
