@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/01/22 01:41:27  bouzekc
+ *  Removed unused variables and unused imports.
+ *
  *  Revision 1.5  2002/11/27 23:12:34  pfpeterson
  *  standardized header
  *
@@ -43,7 +46,6 @@
 package DataSetTools.components.ParametersGUI;
 
 import javax.swing.*;
-import DataSetTools.*;
 import DataSetTools.operator.*;
 import java.awt.*;
 import java.io.*;

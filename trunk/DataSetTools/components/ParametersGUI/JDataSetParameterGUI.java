@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/01/22 01:41:27  bouzekc
+ *  Removed unused variables and unused imports.
+ *
  *  Revision 1.7  2002/11/27 23:12:34  pfpeterson
  *  standardized header
  *
@@ -50,7 +53,6 @@ import java.awt.*;
 public class JDataSetParameterGUI extends JParameterGUI
 {
     private JPanel    segment;
-    private JTextArea dsText;
     private JComboBox combobox;
     private DataSet   DS[];
 

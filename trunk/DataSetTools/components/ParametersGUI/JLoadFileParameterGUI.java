@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/01/22 01:41:27  bouzekc
+ *  Removed unused variables and unused imports.
+ *
  *  Revision 1.5  2003/12/15 02:17:29  bouzekc
  *  Removed unused imports.
  *
@@ -82,7 +85,6 @@ public class JLoadFileParameterGUI  extends JParameterGUI{
 
     public JLoadFileParameterGUI( Parameter  parameter){
         super(parameter);
-        this.filename = filename;
         GUI = new JPanel();
         //BoxLayout bl = new BoxLayout(GUI, BoxLayout.X_AXIS);
         GUI.setLayout( new GridLayout(1,2));
