@@ -32,6 +32,9 @@
  *
  *
  *  $Log$
+ *  Revision 1.11  2002/07/10 20:21:12  dennis
+ *  Removed debug print.
+ *
  *  Revision 1.10  2002/07/10 20:06:41  dennis
  *  Added getInstance() method to get uniform or variable XScale, as
  *  appropriate, from an array of x values.
@@ -145,10 +148,7 @@ abstract public class XScale implements Serializable
       float dx = x[1] - x[0];
       for ( int i = 2; i < x.length; i++ )
         if ( x[i] - x[i-1] != dx )
-        {
-          System.out.println("Variable XScale in XScale.getInstance()" );
           return new VariableXScale( x );
-        }
     }
                                 // if not Variable, or too short, it's Uniform  
     float min = Math.min( x[0], x[ x.length-1 ] );

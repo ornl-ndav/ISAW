@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2002/07/10 20:23:05  dennis
+ *  Removed debug print.
+ *
  *  Revision 1.14  2002/07/10 20:10:30  dennis
  *  NewEnergyInData() method that adjusts time scales for new Ein value
  *  for DG_Spectrometers now maintains a UniformXScale if the original Data
@@ -267,7 +270,6 @@ public static Data NewEnergyInData( TabulatedData  data,
   XScale x_scale;
   if ( data.getX_scale() instanceof UniformXScale )
   {
-    System.out.println("Energy Adjustment for UNIFORM X Scale");
     float start_x = data.getX_scale().getStart_x() - delta_t;
     float end_x   = data.getX_scale().getEnd_x()   - delta_t;
     int   num_x   = data.getX_scale().getNum_x();
