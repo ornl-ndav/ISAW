@@ -34,7 +34,14 @@ public class JlocDataSetParameterGUI extends JParameterGUI
     public JlocDataSetParameterGUI(Parameter parameter , DataSet ds[])
     { 
        super(parameter);
-       
+     /*
+       if(parameter != null )
+	   {System.out.print( parameter.getValue());
+            if( parameter.getValue() != null)
+              System.out.println( parameter.getValue().getClass());
+           }
+       System.out.println();
+      */
         combobox = new JComboBox();
     
         //combobox.addItem(ds);
@@ -71,7 +78,11 @@ public class JlocDataSetParameterGUI extends JParameterGUI
     { Parameter P;
        
        DataSet ds = (DataSet)combobox.getSelectedItem();
-       
+       if( ds == null)
+         ds = new DataSet("", "");
+      if( combobox.getItemCount() > 0)
+         ds = (DataSet)combobox.getItemAt( 0 );
+    // if there are no DataSets the combobox is not setup
 	  
        P = super.getParameter();
        
