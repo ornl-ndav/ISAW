@@ -6,6 +6,9 @@ package OverplotView.graphics;
  * graphical output panel
  *
  * $Log$
+ * Revision 1.8  2001/09/27 19:51:16  dennis
+ * Added editing for labels, line styles, etc.
+ *
  * Revision 1.7  2001/08/30 14:40:03  dennis
  * Added code to set the title for the line to
  * the line's title. This now is the group number. (Ruth)
@@ -83,6 +86,7 @@ public class sgtGraphableDataGraph
   {
     data = new Vector();
     attrs = new AttributeList();
+    ltsl = null;
   }
 
 
@@ -205,7 +209,9 @@ public class sgtGraphableDataGraph
         convert_GraphableData_to_SGTData( (GraphableData)gd.elementAt(i) )  );
   }
 
-
+public JPlotLayout getJPane()
+   { return ltsl;
+  }
   /**
    * draws the graph
    */
