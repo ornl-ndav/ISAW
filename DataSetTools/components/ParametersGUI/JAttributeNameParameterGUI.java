@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/08/15 02:07:49  rmikk
+ *  Set a selected item in the combo box corresponding to
+ *  the value of the parameter
+ *
  *  Revision 1.4  2001/08/10 18:38:27  rmikk
  *  Deleted the call to the opDialog's setPreferredSize method
  *
@@ -68,7 +72,7 @@ public class JAttributeNameParameterGUI extends JParameterGUI
           Attribute attr = attr_list.getAttribute(i);
           combobox.addItem(attr.getName());
        }
-        
+       combobox.setSelectedItem( parameter.getValue() );
        segment = new JPanel();
        segment.setLayout(new FlowLayout(FlowLayout.CENTER, 70, 5)); 
        
