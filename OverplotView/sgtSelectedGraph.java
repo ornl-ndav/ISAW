@@ -6,6 +6,9 @@ package OverplotView;
  * graphing implemented by the sgt package
  *
  * $Log$
+ * Revision 1.3  2000/07/17 14:55:21  neffk
+ * sloppy checkin to correct previous checkin errors
+ *
  * Revision 1.2  2000/07/07 21:57:13  neffk
  * changed the aspect ratio of the graph to 1:2 (vertical:horizontal)
  *
@@ -124,7 +127,7 @@ public class sgtSelectedGraph
     if(  graph == null  &&  instruction.draw()  )
     {
       //System.out.println( "initializing graph..." );
-      graph = new isawLineProfileLayout( "", null, false );
+      graph = new isawLineProfileLayout( 0.5, 4.5, 0.5, 4.5, 5, 5 );
       graphPanel.removeAll();
       graphPanel.setLayout(  new GridLayout( 1, 1 )  );
       graphPanel.add( graph );
@@ -220,23 +223,31 @@ public class sgtSelectedGraph
   {
     System.out.println( "sgtSelectedGraph::calculateGraphSize(): " + d );
 
-/*
-    System.out.println(  "x size (physical) " + graph.getXAxisP().toString()  );
-    System.out.println(  "y size (physical) " + graph.getYAxisP().toString()  );
-*/
+    //System.out.println(  "xsize: " + graph.getXSize()  );
+    //System.out.println(  "ysize: " + graph.getYSize()  );
+    //System.out.println(  "width: " + graph.getXAxisP().toString()  );
+    //System.out.println(  "height: " + graph.getYAxisP().toString()  );
 
-    Point2D.Double height = new Point2D.Double( 0, 1 );
-    Point2D.Double width = new Point2D.Double( 0, d.width/d.height );
+    double width = (double)d.width/100.0;
+    double height = (double)d.height/100.0;
 
-//    graph = new isawLineProfileLayout( width, height ); 
+    System.out.println( "adjusted width: " + width );
+    System.out.println( "adjusted height: " + height );
 
-//    graph.setYAxisP(  new Point2D.Double( 0, 1 )  );
-//    graph.setXAxisP(  new Point2D.Double( 0, (double)d.width/(double)d.height )  );
-//    graph.setOrigin(  new Point2D.Double( 0.0, -0.15 )  );
-//    redraw();
+    graph.setXSize( width );
+    graph.setYSize( height ); 
+    graph.setXAxisP(  (width/10.0), width-(width/10.0)  );
+    graph.setYAxisP(  (height/10.0), height-(height/10.0)  );
 
-    System.out.println(  "x size (physical) " + graph.getXAxisP().toString()  );
-    System.out.println(  "y size (physical) " + graph.getYAxisP().toString()  );
+    System.out.println(  "xsize: " + graph.getXSize()  );
+    System.out.println(  "ysize: " + graph.getYSize()  );
+    System.out.println(  "width: " + graph.getXAxisP().toString()  );
+    System.out.println(  "height: " + graph.getYAxisP().toString()  );
+
+    //System.out.println(  "width: " + graph.getXAxisP().toString()  );
+    //System.out.println(  "height: " + graph.getYAxisP().toString()  );
+
+    graph.recalculateAxes();
   }
 
 

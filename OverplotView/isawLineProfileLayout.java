@@ -27,7 +27,7 @@ import OverplotView.components.containers.*;
 /**
  * isawLineProfileLayout creates a pre-defined graphics layout for
  * profile data using LineCartesianGraph. This layout is application specific.
- *
+ 
  * @author Donald Denbo
  * @version $Revision$, $Date$
  * @see LineCartesianGraph
@@ -117,24 +117,27 @@ public class isawLineProfileLayout extends GraphicLayout
 /*-------------------------------=[ x-axis ]=---------------------------------*/
 
   /**
-   * set physical size of the x axis.  p.x = xMax_, p.y = xMin_ 
+   * set physical size of the x axis.  p.x = xMin_, p.y = xMax_ 
    *
    */
-  public void setXAxisP( Point2D.Double p ) 
+  public void setXAxisP( double min, double max ) 
   {
-    xMax_ = p.x;
-    xMin_ = p.y;
+    xMax_ = max;
+    xMin_ = min;
+    //inclear();
+    //recalculateAxes();
+    //init();
   }
 
 
 
   /*
-   * get physical size of the x axis.  p.x = xMax_, p.y = xMin_
+   * get physical size of the x axis.  p.x = xMin_, p.y = xMax_
    *
    */
   public Point2D.Double getXAxisP()
   {
-    return new Point2D.Double( xMax_, xMin_ );
+    return new Point2D.Double( xMin_, xMax_ );
   }
 
 
@@ -143,67 +146,107 @@ public class isawLineProfileLayout extends GraphicLayout
 
 
   /**
-   * set physical size of the y axis.  p.x = yMax_, p.y = yMin_ 
+   * set physical size of the y axis.  p.x = yMin_, p.y = yMax_ 
    *
    */
-  public void setYAxisP( Point2D.Double p )
+  public void setYAxisP( double min, double max )
   {
-    yMax_ = p.x;
-    yMin_ = p.y;
+    yMin_ = min;
+    yMax_ = max;
+    //clear();
+    //recalculateAxes();
+    //init();
   }
 
 
 
   /*
-   * get physical size of the y axis.  p.x = yMax_, p.y = yMin_
+   * get physical size of the y axis.  p.x = yMin_, p.y = yMax_
    *
    */
   public Point2D.Double getYAxisP()
   {
-    return new Point2D.Double( yMax_, yMin_ );
+    return new Point2D.Double( yMin_, yMax_ );
   }
+
+
+
+
+
+
+/*-------------------------------=[ sizes ]=----------------------------------*/
+
+  public void setXSize( double s )
+  {
+    xSize_ = s;
+    //System.out.println( "xsize: " + xSize_ );
+    //clear();
+    //recalculateAxes();
+    //init();
+  }
+
+
+
+  public void setYSize( double s )
+  {
+    ySize_ = s;
+    //System.out.println( "ysize: " + ySize_ );
+    //clear();
+    //recalculateAxes();
+    //init();
+  }
+
+
+
+  public double getXSize()
+  {
+    return xSize_;
+  }
+
+
+
+  public double getYSize()
+  {
+    return ySize_;
+  }
+
 
 
 
 /*----------------------------=[ constructors ]=------------------------------*/
 
-  /**
-   * Default constructor. No Logo image is used and the LineKey
-   * will be in the same Pane.
-   */
-  public isawLineProfileLayout() 
+
+  public isawLineProfileLayout( double xmin,
+                                double xmax,
+                                double ymin,
+                                double ymax,
+                                double xsize,
+                                double ysize )
   {
-    this("", null, false);
-    setTitles( "", "", "" );
-  }
-
-
-
-  public isawLineProfileLayout( Point2D.Double x, Point2D.Double y ) 
-  {
-    this("", null, false);
+    super( "test", null, new Dimension(400,300));
     setTitles( "", "", "" );
 
-    xMax_ = x.x;
-    xMin_ = x.y;
+    xSize_ = xsize;
+    xMax_ = xmax;
+    xMin_ = xmin;
 
-    yMax_ = y.x;
-    yMin_ = y.y;
+    ySize_ = ysize;
+    yMax_ = ymax;
+    yMin_ = ymin;
 
+    init();
   }
 
 
 
   /**
-   * isawLineProfileLayout constructor.
-   *
-   * @param id identifier
-   * @param img Logo image
-   * @param is_key_pane if true LineKey is in separate pane
    */
-  public isawLineProfileLayout( String id, Image img, boolean is_key_pane ) 
+  public void init()
   {
-    super(id, img, new Dimension(400,300));
+    String id = "test";
+    Image img = null;
+    boolean is_key_pane = false;
+
     Layer layer, key_layer;
     CartesianGraph graph;
     LinearTransform xt, yt;
@@ -953,7 +996,9 @@ public class isawLineProfileLayout extends GraphicLayout
   {
     data_.removeAllElements();
     Layer layer = getFirstLayer();
-    ((CartesianGraph)layer.getGraph()).setRenderer(null);
+    if(  (CartesianGraph)layer.getGraph() != null  ) 
+      ((CartesianGraph)layer.getGraph()).setRenderer(null);
+
     removeAll();
     add(layer);   // restore first layer
     lineKey_.clearAll();
@@ -961,6 +1006,53 @@ public class isawLineProfileLayout extends GraphicLayout
     if(keyPane_ != null)
       keyPane_.draw();
   }
+
+
+  /** 
+   * recalculates the axes and transforms for a graph without changing the
+   * data that is already attached to the graph
+   */
+  public void recalculateAxes()
+  {
+    Layer layer;
+    PlainAxis xbot = null, yleft = null;
+    try 
+    {
+      layer = getLayer("Layer 1");
+    } 
+    catch( LayerNotFoundException e ) 
+    {
+      return;
+    }
+    CartesianGraph graph = (CartesianGraph)layer.getGraph();
+
+    try 
+    {
+      xbot = (PlainAxis)graph.getXAxis( "Bottom Axis" );
+      yleft = (PlainAxis)graph.getYAxis( "Left Axis" );
+    }
+    catch (AxisNotFoundException e) 
+    {
+    }
+
+    //System.out.println(  xbot.getBounds().toString()  );
+    //System.out.println(  yleft.getBounds().toString()  );
+
+    xbot.setRangeP(  new Range2D( xMin_, xMax_ )  ); 
+    xbot.setLocationU(  new Point2D.Double( 0.0, 0.0 )  );
+
+    yleft.setRangeP(  new Range2D( yMin_, yMax_ )  ); 
+    yleft.setLocationU(  new Point2D.Double( 0.0, 0.0 )  );
+
+
+    LinearTransform xt, yt;
+    xt = (LinearTransform)graph.getXTransform();
+    //xt.setRangeU(new Range2D( xMin_, xMax_ )  );
+
+    yt = (LinearTransform)graph.getYTransform();
+    //yt.setRangeU(  new Range2D( yMin_, yMax_ )  );
+  }
+
 
 
   public void setKeyBoundsP(Rectangle2D.Double bounds)
