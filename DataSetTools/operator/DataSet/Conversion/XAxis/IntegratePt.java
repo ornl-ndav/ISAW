@@ -34,6 +34,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/07/30 14:51:35  rmikk
+ * Removed unused imports
+ *
  * Revision 1.3  2004/07/30 14:09:50  rmikk
  * Fixed javadoc errors
  *
@@ -51,7 +54,7 @@ package DataSetTools.operator.DataSet.Conversion.XAxis;
 import DataSetTools.dataset.*;
 import Operators.TOF_SCD.*;
 import DataSetTools.operator.*;
-import DataSetTools.operator.DataSet.*;
+//import DataSetTools.operator.DataSet.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 import java.util.*;
 import DataSetTools.parameter.*;
