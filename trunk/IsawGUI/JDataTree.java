@@ -29,7 +29,17 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.28  2004/07/14 21:57:53  kramer
+ * Now if the user has the tree collapsed and points at a spectrum in a viewer,
+ * the tree doesn't expand.  However, if it is already expanded it doesn't get
+ * collapsed either.  Also, if the user opens a viewer for a histogram and its
+ * corresponding node is expanded, the tree will scroll to display the node
+ * corresponding to a spectrum pointed at in the viewer.  If the histogram's
+ * node is collapsed, the spectrum's node is selected but the tree doesn't
+ * expand or scroll to display it.
+ *
  * Revision 1.27  2004/07/14 20:03:16  kramer
+ *
  * Fixed a NullPointerException that would occasionaly originate from
  * getSelectedNode().  I simplified the method to use more specific methods
  * from the JTree class, but the method's functionality is still the same.
@@ -753,12 +763,10 @@ public class JDataTree
                if (node != null)
                {
                   TreePath createdPath = createTreePathForNode(node);
-                  tree.getSelectionModel().clearSelection();
-                  //createdPath != null does not have to be checked because 
-                  //createTreePathForNode() will not return null
-                  //and tree.getSelectionModel().addSelectionPath(TreePath) 
-                  //ignores its TreePath argument if it is null
-                  tree.getSelectionModel().addSelectionPath(createdPath);
+                  boolean dsIsExpanded = tree.isExpanded(
+                                     createTreePathForNode(ds_node));
+                  //this method will check if createdPath is null
+                  addNodeToSelection(createdPath,dsIsExpanded);
                 }
             }
          }
@@ -784,28 +792,39 @@ public class JDataTree
   
   /**
    * Causes the node with the TreePath <code>
-   * path</code> (and only that node) 
-   * to be selected.  The tree 
-   * expands and scrolls to make the node 
-   * visible.  Note:  This method causes a 
-   * <code>TreeSelectionEvent</code> to be 
-   * fired.
+   * path</code> (and only the node with 
+   * TreePath <code>path</code>) to be selected.
+   * @param showNode If true, the tree will 
+   * be expanded and scroll to make the 
+   * node specified by <code>path</code> 
+   * visible.  If false, nothing will be done 
+   * to the tree (except to select the node).
    * @param path The TreePath corresponding 
    * to the node that is to selected.  Note:  
    * if <code>path</code> is null the tree 
    * remains unchanged.
    */
-  private void scrollToSelectNode(TreePath path)
+  private void addNodeToSelection(TreePath path, boolean showNode)
   {
      if (path != null)
      {
-        tree.setExpandsSelectedPaths(true);
-        tree.getSelectionModel().clearSelection();
-        tree.scrollPathToVisible(path);
-        tree.getSelectionModel().addSelectionPath(path);
+        tree.clearSelection();
+        if (showNode)
+        {
+           //this tells the tree to expand to 
+           //make the node visible
+           tree.setExpandsSelectedPaths(true);
+           tree.scrollPathToVisible(path);
+        }
+        else
+        {
+           //this method tells the tree not to expand (if it is 
+           //collapsed) to make the node visible.
+           tree.setExpandsSelectedPaths(false);  
+        }
+        tree.addSelectionPath(path);
      }
   }
-
 
   /*
    * get the DataSet object that a DataMutableTreeNode belongs to.  this'll
