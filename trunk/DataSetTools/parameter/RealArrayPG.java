@@ -17,20 +17,24 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Peter F. Peterson <pfpeterson@anl.gov>
- *           Intense Pulsed Neutron Source Division
- *           Argonne National Laboratory
- *           9700 South Cass Avenue, Bldg 360
- *           Argonne, IL 60439-4845, USA
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ * This work was supported by the National Science Foundation under
+ * grant number DMR-0218882
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2004/06/17 15:33:02  rmikk
+ *  Fixed the GPL
+ *
  *  Revision 1.2  2004/06/17 15:31:19  rmikk
  *  The visible GUI part of this PG now works as expected.  Again the
  *    RealArrayPG should not have the visible GUI showing for LARGE
