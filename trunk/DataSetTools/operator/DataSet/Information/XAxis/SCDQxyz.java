@@ -31,6 +31,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/09/25 16:45:06  pfpeterson
+ * Changed algorithm to be A.J. Schultz's. This has the benefit of
+ * using the SCD calibration if read into the Data's AttributeList.
+ * Also moved the calculation into getResult() which returns a
+ * Position3D of the Q-vector. The PointInfo method then just formats
+ * the result.
+ *
  * Revision 1.2  2002/09/19 16:01:30  pfpeterson
  * Now uses IParameters rather than Parameters.
  *
@@ -49,6 +56,7 @@ import  java.io.*;
 import  java.util.*;
 import  java.text.*; 
 import  DataSetTools.dataset.*;
+import  DataSetTools.instruments.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
@@ -64,6 +72,8 @@ import  DataSetTools.parameter.*;
 public class SCDQxyz extends  XAxisInformationOp 
                               implements Serializable
 {
+    private static final double PI = Math.PI;
+
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
    * Construct an operator with a default parameter list.  If this
@@ -146,9 +156,88 @@ public class SCDQxyz extends  XAxisInformationOp
    }
 
 
+  /* ---------------------------- getResult ------------------------------- */
+  /**
+   * Calculates the Q vector for the given time and spectrum. 
+   *
+   * @returns Position3D of the calculated Q.
+   */
+  public Object getResult(){
+     DataSet ds = this.getDataSet();
+     int   i    = ((Integer)(getParameter(0).getValue())).intValue();
+     float x    = ((Float)(getParameter(1).getValue())).floatValue();
+     Data    d  = ds.getData_entry(i);
+
+     float[] Q={0f,0f,0f};
+     float[] calib=(float[])d.getAttributeValue(Attribute.SCD_CALIB);
+     float init_path=
+         ((Float)d.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
+     float detD=((Float)
+             d.getAttributeValue(Attribute.DETECTOR_CEN_DISTANCE)).floatValue();
+     float detA=((Float)
+             d.getAttributeValue(Attribute.DETECTOR_CEN_ANGLE)).floatValue();
+
+     // set up the conversion to real-space
+     double distance=0.;
+     float wl=0f;
+     
+     Q[2]=x; // time is the time no matter what
+     if(calib!=null){ // use the SCD calibration to get to real space
+         // set up the initial position
+         DetInfoListAttribute detI=
+             (DetInfoListAttribute)d.getAttribute(Attribute.DETECTOR_INFO_LIST);
+         DetectorInfo det=((DetectorInfo[])detI.getValue())[0];
+         Q[0]=det.getColumn();
+         Q[1]=det.getRow();
+         
+         // convert to real-space, the 100 is to convert from cm to m
+         Q[0]=(calib[1]*(Q[0]-0.5f)+calib[3])/100f;
+         Q[1]=(calib[2]*(Q[1]-0.5f)+calib[4])/100f;
+         Q[2]=calib[0]+Q[2];
+     }else{ // use the detector position from the file
+         DetectorPosition pos=
+             (DetectorPosition)d.getAttributeValue(Attribute.DETECTOR_POS);
+         float[] coords=pos.getCylindricalCoords();
+         // the methods below assume cm, not meters
+         Q[0]=-1f*(float)(coords[0]*Math.sin(coords[1]-detA*PI/180.));
+         Q[1]=coords[2];
+     }
+     // now convert the wavelength
+     distance=init_path+Math.sqrt(detD*detD+(Q[0]*Q[0]+Q[1]*Q[1]));
+     wl=tof_calc.Wavelength((float)distance,Q[2]);
+     Q[2]=wl;
+
+     // get the sample orientation
+     float chi=((Float)
+                ds.getAttributeValue(Attribute.SAMPLE_CHI)).floatValue();
+     float phi=((Float)
+                ds.getAttributeValue(Attribute.SAMPLE_PHI)).floatValue();
+     float omega=((Float)
+                  ds.getAttributeValue(Attribute.SAMPLE_OMEGA)).floatValue();
+     
+     // do the actual conversion to 1/d
+     Q=cmtoqs(detA,detD,wl,Q);
+     if(Q==null) return null;
+     Q=rotSample(chi,phi,omega,Q);
+     if(Q==null) return null;
+
+
+     // now add the 2PI to get Q
+     for( int j=0 ; j<3 ; j++ ){
+         Q[j]=(float)(2*PI*Q[j]);
+     }
+
+     Position3D Qpos=new Position3D();
+     Qpos.setCartesianCoords(Q[0],Q[1],Q[2]);
+
+     return Qpos;
+   }
+
+
   /* ------------------------------ PointInfo ----------------------------- */
   /**
-   * Get Qx,Qy,Qz at the specified point.
+   * Get Qx,Qy,Qz at the specified point. This calls getResult for the
+   * actual calculation.
    *
    *  @param  x    the x-value (tof) for which the axis information is to be 
    *               obtained.
@@ -158,75 +247,23 @@ public class SCDQxyz extends  XAxisInformationOp
    *
    *  @return  information for the x axis at the specified x.
    */
-   public String PointInfo( float x, int i )
-   {
-     DataSet ds  = this.getDataSet();
-     Data    d   = ds.getData_entry(i);
-
-     DetectorPosition pos = (DetectorPosition)
-                             d.getAttributeValue( Attribute.DETECTOR_POS );
-
-     Vector3D pt    = new Vector3D();
-     Vector3D i_vec = new Vector3D( 1, 0, 0 );
-     Vector3D k_vec = new Vector3D( 0, 0, 1 );
-/*
-     Tran3D one_eighty_z = new Tran3D();             // "FIX" detector position
-     one_eighty_z.setRotation( 180, k_vec );         //  by rotating 180 deg
-     float xyz_det[] = pos.getCartesianCoords();     //  about z axis. Not 
-     pt.set( xyz_det[0], xyz_det[1], xyz_det[2] );   //  needed if runfile OK.
-     one_eighty_z.apply_to( pt, pt );
-     pos.setCartesianCoords(pt.get()[0], pt.get()[1], pt.get()[2]);
-*/
-     float initial_path = 
-             ((Float)d.getAttributeValue(Attribute.INITIAL_PATH)).floatValue(); 
- 
-     Position3D q_pos = tof_calc.DiffractometerVecQ(pos, initial_path, x);
-
-                                              // q is now in the fixed coord
-                                              // system of the lab.  Rotate it
-                                              // back to phi,chi,omega = 0,0,0 
-     float omega = ((Float)ds.getAttributeValue(Attribute.SAMPLE_OMEGA))
-                         .floatValue();
-     float phi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_PHI))
-                         .floatValue();
-     float chi   = ((Float)ds.getAttributeValue(Attribute.SAMPLE_CHI))
-                         .floatValue();
-
-     Tran3D omegaR = new Tran3D();
-     Tran3D phiR   = new Tran3D();
-     Tran3D chiR   = new Tran3D();
-     Tran3D combinedR = new Tran3D();
-
-     phiR.setRotation( -phi, k_vec );       // "unwrap" the rotations to return
-     chiR.setRotation( -chi, i_vec );       // to laboratory frame of reference.     omegaR.setRotation( +omega, k_vec );   
-
-     combinedR.setIdentity();
-     combinedR.multiply_by( phiR );
-     combinedR.multiply_by( chiR );
-     combinedR.multiply_by( omegaR );
-
-     float xyz[] = q_pos.getCartesianCoords();
-     pt.set( xyz[0], xyz[1], xyz[2] );
-     combinedR.apply_to( pt, pt );
-     q_pos.setCartesianCoords(pt.get()[0], pt.get()[1], pt.get()[2]);
-
-     NumberFormat f = NumberFormat.getInstance();
-     
-     return f.format(xyz[0]) + "," + f.format(xyz[1]) + "," + f.format(xyz[2]);
-   }
-
-
-  /* ---------------------------- getResult ------------------------------- */
-
-  public Object getResult()
-  {
-                                     // get the current data set
-    DataSet ds = this.getDataSet();
-    int   i    = ( (Integer)(getParameter(0).getValue()) ).intValue();
-    float tof  = ( (Float)(getParameter(1).getValue()) ).floatValue();
-
-    return PointInfo( tof, i );
-  }  
+  public String PointInfo( float x, int i ){
+      // set the parameters for getResult
+      getParameter(0).setValue(new Integer(i));
+      getParameter(1).setValue(new Float(x));
+      
+     // set up a number format to display the result
+      NumberFormat fmt = NumberFormat.getInstance();
+      fmt.setMinimumFractionDigits(3);
+      fmt.setMaximumFractionDigits(3);
+      
+      // let getResult calculate Q
+      Position3D Qpos=(Position3D)this.getResult();
+      if(Qpos==null) return "N/A";
+      float[] Q=Qpos.getCartesianCoords();
+      
+      return fmt.format(Q[0])+","+fmt.format(Q[1])+","+fmt.format(Q[2]);
+  }
 
 
   /* ------------------------------ clone ------------------------------- */
@@ -245,5 +282,69 @@ public class SCDQxyz extends  XAxisInformationOp
 
     return new_op;
   }
+
+  /**
+   * Convert the real-space position to Q
+   */
+  private float[] cmtoqs(float deta, float detd, float wl, float pos[]){
+      float[] post_d=new float[3];
+      float[] post_a=new float[3];
+      float[] post_l=new float[3];
+
+      // convert to 1/d
+      double r=Math.sqrt(pos[0]*pos[0]+pos[1]*pos[1]+detd*detd);
+      if(Double.isNaN(r) || Float.isNaN(pos[2])) return null;
+      if(r==0. || pos[2]==0f) return null;
+      post_d[0]=(float)(-1.*detd/(r*pos[2]));
+      post_d[1]=(float)(pos[0]/(r*pos[2]));
+      post_d[2]=(float)(pos[1]/(r*pos[2]));
+      
+      // rotate the detector to where it actually is
+      double cosa=Math.cos(-deta*PI/180.);
+      double sina=Math.sin(-deta*PI/180.);
+      post_a[0]=(float)(    post_d[0]*cosa+post_d[1]*sina);
+      post_a[1]=(float)(-1.*post_d[0]*sina+post_d[1]*cosa);
+      post_a[2]=post_d[2];
+
+      // translate the origin
+      post_l[0]=post_a[0]+(float)(1./wl);
+      post_l[1]=post_a[1];
+      post_l[2]=post_a[2];
+      
+      return post_l;
+  }
+
+  /**
+   * Rotate the sample orientation out of the Q-orientation
+   */
+  private float[] rotSample( float chi, float phi, float omega, float[] pos){
+      float[] post_ome=new float[3];
+      float[] post_chi=new float[3];
+      float[] post_phi=new float[3];
+      
+      // reverse omega rotation
+      double coso=Math.cos(omega*PI/180.);
+      double sino=Math.sin(omega*PI/180.);
+      post_ome[0]=(float)(pos[0]*coso-pos[1]*sino);
+      post_ome[1]=(float)(pos[0]*sino+pos[1]*coso);
+      post_ome[2]=pos[2];
+      
+      // reverse the chi rotation
+      double cosc=Math.cos(chi*PI/180.);
+      double sinc=Math.sin(chi*PI/180.);
+      post_chi[0]=post_ome[0];
+      post_chi[1]=(float)(post_ome[1]*cosc-post_ome[2]*sinc);
+      post_chi[2]=(float)(post_ome[1]*sinc+post_ome[2]*cosc);
+      
+      // reverse the phi rotation
+      double cosp=Math.cos(phi*PI/180.);
+      double sinp=Math.sin(phi*PI/180.);
+      post_phi[0]=(float)(    post_chi[0]*cosp+post_chi[1]*sinp);
+      post_phi[1]=(float)(-1.*post_chi[0]*sinp+post_chi[1]*cosp);
+      post_phi[2]=post_chi[2];
+      
+      return post_phi;
+  }
+
 
 }
