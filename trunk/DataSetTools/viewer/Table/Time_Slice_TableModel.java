@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/10/27 14:57:20  rmikk
+ * Eliminated resampling of Data.
+ *
  * Revision 1.14  2003/09/24 13:57:40  rmikk
  * Added accessor methods getDetNum, setDetNum, setErrInd
  *
@@ -106,7 +109,7 @@ import DataSetTools.instruments.*;
 import java.io.*;
 import javax.swing.*;
 import DataSetTools.components.View.ViewControls.*;
-
+import DataSetTools.util.*;
 
 /** Creates a table model the displays y values at a fixed time according to row
  * and column values of the group
@@ -133,6 +136,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    int num_rows,num_cols;
    XScale x_scale = null;
    int firstGroup =-1;
+   boolean bugg=false;
    /** Constructor for this table model of the Data Set DS at time time
     *@param  DS  the data set for which the model will present the data
     *@param  time  the time of this time slice
@@ -141,7 +145,6 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
            boolean showInd )
    {   
       Time = time;
-
       int[] row = new int[DS.getNum_entries()];
       int[] col = new int[DS.getNum_entries()];
 
@@ -215,7 +218,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
 
 
    public void setTime( float time )
-   {
+   { 
       Time = time;
    }
 
@@ -357,7 +360,6 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
 
       row = row + tMinrow;// -1;
       column = column + tMincol;// - 1;
-
       int Grp = DS.getIndex_of_data(Groups[ row+1][ column+1]);
           //RC_to_Group[row * ( MaxCol ) + column / n];
 
@@ -459,7 +461,6 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    {
 
       int Grp = getGroup( row, column );
-
       if( Grp < 0 )
          return "";
       if( Grp >= DS.getNum_entries() )
@@ -486,31 +487,35 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          index = -1;
       */
       int n = 1;
-     
       if( err ) n++;
       if( ind ) n++;
       int field = column - n * ( column / n );
 
       float[] yvals = null;
       Data db = (Data)(DS.getData_entry( Grp).clone());
-      if( x_scale != null)
-        db.resample( x_scale,0);
-      XScale xscl;
-      xscl = db.getX_scale();
-      int index = xscl.getI( Time );
-      if( index > 0)
+     // if( x_scale != null)
+     //   db.resample( x_scale,0);
+     // XScale xscl;
+     // xscl = db.getX_scale();
+     // int index = xscl.getI( Time );
+     /* if( index > 0)
         if( (xscl.getX( index)-Time) > xscl.getX( index-1)-Time )
           index = index -1;
      
       if( java.lang.Math.abs( Time -xscl.getX(index))<= 1E-5*java.lang.Math.abs(Time))
         return "";
+     */
+     
       if( field == 0 )
          yvals = db.getY_values();
       else if( field == 1 && err )
          yvals = db.getErrors();
       else
          return new Integer(Grp);//returns group index instead of time index
-      if( index < 0 )
+
+      
+      return SumVals(x_scale,db.getX_scale(),Time, yvals);
+      /*if( index < 0 )
          return new Integer( 0 );
       else if( yvals == null)
          return new Integer( 0 );
@@ -518,8 +523,46 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          return new Integer( 0 );
       else
          return( new Float( yvals[index] ) );
-
+     */
    }
+
+  /**
+  *     Integrates with interpolation all the yvalues in the time slice of
+  *     x_scale containing the time Time. dbX_scale give the xvalues corresp
+  *     to yvals
+  */
+  public Object SumVals( XScale x_scale, XScale dbX_scale, float Time, float[] yvals){
+      if( yvals == null)
+         return "";
+      int index = Arrays.binarySearch( x_scale.getXs(), Time);
+      if( index < 0) index = -index-1-1;
+      if( index < 0) return "";
+      if( index +1 >= x_scale.getNum_x()) return "";
+      int index_y = Arrays.binarySearch( dbX_scale.getXs(), x_scale.getX(index));
+      if( index_y < 0) index_y = -index_y -2 ;
+      if( index_y < 0) index_y = 0;
+      if( index_y  >= dbX_scale.getNum_x())
+          return "";
+      float V = 0;
+      float a = x_scale.getX(index);
+      float b = x_scale.getX(index+1);
+      for( int i= index_y ; (i < dbX_scale.getNum_x())&&(dbX_scale.getX(i) <= b); i++){
+          float p = 1;
+          if( dbX_scale.getX(i) < a)
+            p =(dbX_scale.getX(i+1) - a) /(dbX_scale.getX(i+1) - dbX_scale.getX(i));
+          if( i+1 >= dbX_scale.getNum_x()){
+            p=0;
+          }
+          else if( dbX_scale.getX(i+1) > b)
+             p *=(b - dbX_scale.getX(i))/
+                 (dbX_scale.getX(i+1) - dbX_scale.getX(i));
+          if( i < yvals.length)
+            V += yvals[i]*p;
+          if( bugg) System.out.println("99Val ="+V+","+i+","+yvals[i]);
+      }
+      return new Float(V); 
+
+  }
   public void setXScale( XScale xscale)
     { x_scale = xscale;
      }
