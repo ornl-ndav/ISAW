@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.67  2001/12/11 17:56:47  pfpeterson
+ *  Modified the help menu system. Now includes, About, Operations (old help), Command Pane, and links to online resources.
+ *
  *  Revision 1.66  2001/12/05 20:53:05  pfpeterson
  *  extended dual monitor support to cover more windows
  *
@@ -339,8 +342,17 @@ public class Isaw
 
   private static final String OPERATOR_M         = "Operations";
 
-  private static final String HELP_M             = "Help";
-  private static final String ABOUT_MI           = "About ISAW";
+  private static final String HELP_M          = "Help";
+  private static final String ABOUT_MI        = "About ISAW";
+  private static final String OPERATIONS_MI   = "Operations";
+  private static final String COMMAND_PANE_MI = "Command Pane";
+
+  private static final String HOME_LINK_MI    = "ISAW Homepage";
+  private static final String FTP_LINK_MI     = "ISAW FTP Site";
+  private static final String USERMAN_LINK_MI = "Online Documentation";
+  private static final String HOME_LINK       = "http://www.pns.anl.gov/ISAW/";
+  private static final String FTP_LINK        = "ftp://zuul.pns.anl.gov/isaw/";
+  private static final String USERMAN_LINK    = "ftp://zuul.pns.anl.gov/isaw/Documents/";
 
   private static final String CHEXS_LINK_MI  = "CHEXS Link";
   private static final String GLAD_LINK_MI   = "GLAD Link";
@@ -542,10 +554,14 @@ public class Isaw
 */
 
 
-    JMenu hMenu = new JMenu( HELP_M );
-    JMenuItem helpISAW = new JMenuItem( ABOUT_MI );
- 
-         
+    JMenu hMenu               = new JMenu( HELP_M );
+    JMenuItem helpAbout       = new JMenuItem( ABOUT_MI );
+    JMenuItem helpOperations  = new JMenuItem( OPERATIONS_MI );
+    JMenuItem helpCommandPane = new JMenuItem( COMMAND_PANE_MI );
+    JMenuItem homeLink        = new JMenuItem( HOME_LINK_MI );
+    JMenuItem ftpLink         = new JMenuItem( FTP_LINK_MI );
+    JMenuItem docLink         = new JMenuItem( USERMAN_LINK_MI );
+
     JMenuItem HRMECS = new JMenuItem( HRMECS_LINK_MI );
     JMenuItem LRMECS = new JMenuItem( LRMECS_LINK_MI );
     JMenuItem HIPD   = new JMenuItem( HIPD_LINK_MI );
@@ -638,7 +654,14 @@ public class Isaw
     vMenu.add( tableView );
     vMenu.add(instrumentInfoView);         
       
-    hMenu.add(helpISAW);
+    hMenu.add(helpAbout);
+    hMenu.add(helpOperations);
+    hMenu.add(helpCommandPane);
+    hMenu.addSeparator();
+    hMenu.add(homeLink);
+    hMenu.add(ftpLink);
+    hMenu.add(docLink);
+
     fileExit.addActionListener(       new MenuItemHandler()        );
     Runfile.addActionListener(        new LoadMenuItemHandler()    );
     LiveData.addActionListener(       new LoadMenuItemHandler()    );
@@ -701,7 +724,12 @@ public class Isaw
     setGroupAttributes.addActionListener(new AttributeMenuItemHandler());
     clearSelection.addActionListener(new AttributeMenuItemHandler());
     
-    helpISAW.addActionListener(new MenuItemHandler());
+    helpAbout.addActionListener(new MenuItemHandler());
+    helpOperations.addActionListener(new MenuItemHandler());
+    helpCommandPane.addActionListener(new MenuItemHandler());
+    homeLink.addActionListener(new MenuItemHandler());
+    ftpLink.addActionListener(new MenuItemHandler());
+    docLink.addActionListener(new MenuItemHandler());
    
     menuBar.add(fMenu);
     menuBar.add(eMenu);
@@ -1379,12 +1407,71 @@ public class Isaw
            
       if( s.equals(ABOUT_MI) )
       {
-        String dir =  System.getProperty("Help_Directory")+ "/Help.html";
-        BrowserControl H = new BrowserControl() ; 
-        H.displayURL( dir ) ;
+        String S=DataSetTools.util.FilenameUtil.helpDir("About.html");
+	HTMLPage H = new HTMLPage( S ) ;
+	Dimension D = getToolkit().getScreenSize();
+	// make the help window pop up centered and 60% of screen size
+	H.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height) ); 
+	H.setLocation((int)(.2*4*D.height/3), (int)(.2*D.height) );
+	try{
+	    H.show();
+	}
+	catch(Exception e){
+	    System.out.println("CANNOT FIND HELP FILE");
+	}
+        
+	H.show();
       } 
                 
- 
+      if( s.equals(OPERATIONS_MI) )
+      {
+        String S=DataSetTools.util.FilenameUtil.helpDir("Help.html");
+	HTMLPage H = new HTMLPage( S ) ;
+	Dimension D = getToolkit().getScreenSize();
+	// make the help window pop up centered and 60% of screen size
+	H.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height) ); 
+	H.setLocation((int)(.2*4*D.height/3), (int)(.2*D.height) );
+	try{
+	    H.show();
+	}
+	catch(Exception e){
+	    System.out.println("CANNOT FIND HELP FILE");
+	}
+        
+	H.show();
+      } 
+                
+      if( s.equals(COMMAND_PANE_MI) )
+      {
+	String S=DataSetTools.util.FilenameUtil.helpDir("Command/CommandPane.html");
+	//S="http://www.pns.anl.gov/ISAW/ISAW%20Tutorial_files/v3_document.htm";
+	HTMLPage H = new HTMLPage( S ) ;
+	Dimension D = getToolkit().getScreenSize();
+	// make the help window pop up centered and 60% of screen size
+	H.setSize((int)(.6*4*D.height/3) , (int)(.6*D.height) ); 
+	H.setLocation((int)(.2*4*D.height/3), (int)(.2*D.height) );
+	try{
+	    H.show();
+	}
+	catch(Exception e){
+	    System.out.println("CANNOT FIND HELP FILE");
+	}
+        
+	H.show();
+      } 
+                
+      if( s.equals(HOME_LINK_MI) ){
+	  bc.displayURL( HOME_LINK );
+      }
+
+      if( s.equals(FTP_LINK_MI) ){
+	  bc.displayURL( FTP_LINK );
+      }
+
+      if( s.equals(USERMAN_LINK_MI) ){
+	  bc.displayURL( USERMAN_LINK );
+      }
+
 
                                     //remove some node from the tree.  since
                                     //the tree could change drastically, we'll
