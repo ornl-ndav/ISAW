@@ -31,6 +31,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2001/06/27 18:37:53  rmikk
+ * Change USER_HOME to GROUP_HOME.
+ * Changed Category List to contain Isaw Scripts if the leading
+ *     directory part of the file matches ISAW_HOME
+ * Changed Category List to contain Group Scripts and user
+ *    Scripts if the leading part of the filename matches
+ *    GROUP_HOME and user.home resp.
+ *
  * Revision 1.9  2001/06/26 14:41:18  rmikk
  * -Used ISAW_HOME ,USER_HOME, and user.home
  * environmental variables to trim filename path.
@@ -119,26 +127,28 @@ public class ScriptOperator extends GenericOperator
         F = F.substring( 0, i );
         if( F.charAt(F.length()-1)!='/')
           F = F + "/";
-        String F2 = F;
-        String F3=F2;
-        String X ;//= System.getProperty( "Script_Path");
-       
-        //if( X != null )
-        //  {X = X.replace( '\\' , '/' );
-        //   X = X.replace(java.io.File.pathSeparatorChar,';');
-        //   F2 = adjust( F, X );
-        //   }
-        if( F2.equals(F))
-         {  X = System.getProperty( "ISAW_HOME");
+    //adjust F;
+       String MainCat=null;
+    
+   
+       String X;   
+       String F2 =F;
+       X = System.getProperty( "ISAW_HOME");
             
-            if(X!=null)
-               {X = X.replace( '\\', '/');
-                X.replace(java.io.File.pathSeparatorChar, ';');
-                F2 = adjust ( F , X );
-               }
-         } 
-	//if( F2.equals(F))
-         {  X = System.getProperty( "USER_HOME");
+          if(X!=null)
+             {X = X.replace( '\\', '/');
+              X.replace(java.io.File.pathSeparatorChar, ';');
+              F2 = adjust ( F , X );
+             }
+    
+       if( !(F2.equals(F)))
+          {MainCat = "Isaw Scripts";
+           F = F2;
+          }
+     
+       String F3=F;
+       if( MainCat == null)  
+         {  X = System.getProperty( "GROUP_HOME");
             
             if( X!=null)
                {X = X.replace( '\\', '/');
@@ -146,25 +156,35 @@ public class ScriptOperator extends GenericOperator
                 F3 = adjust ( F , X );
                }
          } 
-	if(F3.length() < F2.length()) F2 = F3;
-        //if( F2.length()== F.length() )
-         {  X = System.getProperty( "java.class.path");            
-            X = X.replace( '\\', '/');
-            X.replace(java.io.File.pathSeparatorChar, ';');
-            F3 = adjust ( F , X );
-         } 
-	if(F3.length() < F2.length()) F2 = F3;
-	 //  if( F2.equals(F))
+       if( !(F3.equals(F)))
+         { MainCat = "Group Scripts";
+           F = F3;
+         }
+      
+       if( MainCat == null)
          {  X = System.getProperty( "user.home");
-            
-            X = X.replace( '\\', '/');
-            X.replace(java.io.File.pathSeparatorChar, ';');
-            F3 = adjust ( F , X );
+            if( X != null)   
+              {X = X.replace( '\\', '/');
+               X.replace(java.io.File.pathSeparatorChar, ';');
+               F3 = adjust ( F , X );
+              }
          } 
-        if(F3.length() < F2.length()) F2 = F3;
-        if( !(F2.equals(F)))
-             F = F2;
-        else
+      if( !(F3.equals(F)))
+          {MainCat = "User Scripts";
+            F = F3;
+          }
+      if( MainCat == null)
+         {  X = System.getProperty( "java.class.path"); 
+            if( X != null)           
+              {X = X.replace( '\\', '/');
+               X.replace(java.io.File.pathSeparatorChar, ';');
+               F3 = adjust ( F , X );
+               F = F3;
+              }
+         } 
+	
+       
+        if(MainCat == null)
           { i =F.indexOf(':');
             if( i > 0 )
             F = F.substring( i + 1 );
@@ -185,7 +205,7 @@ public class ScriptOperator extends GenericOperator
         if( F.length()>1)
          for( i = F.indexOf( '/' ); i >= 0;  i = F.indexOf( '/' , i + 1 ) )
            c++;
-        
+       
         if( F.length()>1)
           categList = new String [ c + 1];
         else
@@ -193,19 +213,24 @@ public class ScriptOperator extends GenericOperator
 
         categList[ 0 ] = DataSetTools.operator.Operator.OPERATOR;
         j = 1 ;
-        
-        
+    
         int i1 = 0;
         if( F.length()>1)
         for( i = F.indexOf( '/' ); i >= 0;  i = F.indexOf( '/' , i + 1 ) )
-          {categList[j] = F.substring(i1, i );
+          {if((i1==0)&&(MainCat != null))
+              categList[j]=MainCat;
+            else
+               categList[j] = F.substring(i1, i );
            j++;
            i1 = i+1;
           }
          
 
         if( F.length()>1)
-         categList[ c ] = F.substring( i1 ) ;               
+          if((i1==0)&&(MainCat!=null))
+              categList[ c] = MainCat;
+          else
+              categList[ c ] = F.substring( i1 ) ;               
         
 
       }
