@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/03/18 20:58:44  dennis
+ * Added initial support for TOF Diffractometers.
+ * Added support for more units.
+ *
  * Revision 1.2  2001/08/01 14:38:53  rmikk
  * Moved the savind of  a DataSet's INSTR_TYPE to
  * NXentry .analysis
@@ -46,10 +50,11 @@ import DataSetTools.dataset.*;
 public class NxWriteInstrument
  { String errormessage;
    NxWriteNode node;
+   int instrType;
 
-   public NxWriteInstrument( )
+    public NxWriteInstrument(int instrType )
     {errormessage = "";
-     
+     this.instrType = instrType;
      }
 
    /** Returns an errormessage or "" if no error
@@ -75,7 +80,7 @@ public class NxWriteInstrument
       NxWriteNode ndNode = Instr.newChildNode( "detector" + startIndex , 
                                           "NXdetector" );
       
-      NxWriteDetector nd = new NxWriteDetector();
+      NxWriteDetector nd = new NxWriteDetector( instrType);
       nd.setLinkNames( axis1_link , axis2_link , null );
       if( nd.processDS( ndNode , DS , startIndex , endIndex ) )
         { errormessage  += ";" + nd.getErrorMessage();
@@ -120,25 +125,27 @@ public class NxWriteInstrument
                    
        }
       }
-     X = DS.getAttributeValue( Attribute.INST_TYPE );
     
-     if( X != null )
-      {int instr_type = ne.cnvertoint( X );
-       NexIO.Inst_Type it = new NexIO.Inst_Type();
+     /* //goes to NXEntry
+       X = DS.getAttributeValue( Attribute.INST_TYPE );
+    
+       if( X != null )
+        {int instr_type = ne.cnvertoint( X );
+         NexIO.Inst_Type it = new NexIO.Inst_Type();
      
-       String analysis = it.getNexAnalysisName( instr_type );
-       n1 =  NxInstr.newChildNode( "analysis" , "SDS" );
+         String analysis = it.getNexAnalysisName( instr_type );
+         n1 =  NxInstr.newChildNode( "analysis" , "SDS" );
          ranks = new int[1];
          ranks[0] = 1;
          intval = new int[1];
          intval[0] = instr_type;
-       if( analysis == null )
-        {
-         n1.addAttribute( "isaw_instr_type" , intval , 
+        if( analysis == null )
+         {
+           n1.addAttribute( "isaw_instr_type" , intval , 
                                Types.Int , ranks );
-        }
-       else if(analysis.length() <= 0)
-                n1.addAttribute( "isaw_instr_type" , intval , 
+          }
+        else if(analysis.length() <= 0)
+                  n1.addAttribute( "isaw_instr_type" , intval , 
                                Types.Int , ranks );
         else
         {
@@ -151,8 +158,8 @@ public class NxWriteInstrument
           if( n1.getErrorMessage() != "" )
             errormessage += ";" + errormessage;         
 	}
-      }
-
+      
+    */
     if( DS.getNum_entries() > 0 )
          { Object XX = DS.getData_entry( 0  ).getAttributeValue(
                                     Attribute.INITIAL_PATH ); 	
