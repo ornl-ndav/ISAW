@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2002/09/25 16:47:47  pfpeterson
+ *  Now adds LoadSCDCalib operator to SCD data.
+ *
  *  Revision 1.30  2002/09/17 20:29:50  dennis
  *  Now adds operator SetGroupIDs to all DataSets
  *
@@ -422,6 +425,7 @@ public class DataSetFactory implements Serializable
       ds.addOperator( new DiffractometerTofToWavelength() );
       ds.addOperator( new TrueAngle() );
       ds.addOperator( new LoadOrientation() );
+      ds.addOperator( new LoadSCDCalib() );
     }
     else if ( instrument_type == InstrumentType.TOF_SAD )  // will be different
     {                                                      // when SAD properly
