@@ -31,6 +31,13 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.37  2001/07/23 18:33:50  neffk
+  *  make the -F option more robust by checking filename estensions.
+  *  prints out success and failure messages on the console.  not that the
+  *  interactive file chooser does not force users to use filenames w/
+  *  correct extension.  see NuetronDataFileChooser to see how to force
+  *  filenames when using -F to load files.
+  *
   *  Revision 1.36  2001/07/23 13:55:47  neffk
   *  now uses ViewManager instead of JDataViewUI.  JDataViewUI has been
   *  removed from the source tree.  also, fixed some more indentation
@@ -1676,11 +1683,29 @@ public class Isaw
        //loads files in batch mode
     else
     {
-      File[] files = new File[ filenames.length ];
+      NeutronDataFileFilter filter = new NeutronDataFileFilter();
+
+                                       //count how many files are
+                                       //of the correct formatt by
+      int count = 0;                   //checking file extension
       for( int i=0;  i<filenames.length;  i++ )
-        files[i] = new File( filenames[i] );
-        
+        if(  filter.accept_filename( filenames[i] )  )
+          count++;
+
+                                       //load the files w/ acceptable
+                                       //names
+      File[] files = new File[ count ];
+      for( int i=0;  i<filenames.length;  i++ )
+        if(  filter.accept_filename( filenames[i] )  )
+        {
+          System.out.println( "loading: " + filenames[i] );
+          files[i] = new File( filenames[i] );
+        }
+        else
+          System.out.println(  "failed: " + filenames[i]  );
+
       load_files( files );
+
     }
   }
 
