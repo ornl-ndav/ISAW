@@ -31,20 +31,27 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/24 20:09:34  rmikk
+ * Added several other attributes.
+ * Incorporated an equals to determine if two separate pieces
+ * of data are really links of each other
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
  */
 package NexIO;
 import DataSetTools.dataset.*;
-
+import NexIO.*;
+import java.lang.reflect.*;
 /** This class is used to process the NXinstrument information in a Nexus
 *data source
 */
 public class NxInstrument
 {String errormessage;
  public NxInstrument()
-   {errormessage = "";}
+   {errormessage = "";
+   }
 
 /**Returns error and/or warning messages or "" if none
 */
@@ -53,6 +60,70 @@ public class NxInstrument
      return errormessage;
    }
 
+ public NxNode matchNode( NxNode instrNode, String ax1Link, String ax2Link)
+  {NxData_Gen ng = new NxData_Gen();
+  //System.out.print("in match");
+   int ax1,ax2;
+   NxNode nDef= null;
+   ax1=ax2=0;  //undefined-0; true-1;false-(-1)
+   errormessage =" Improper inputs to matchNode";
+   
+   if( instrNode == null)
+    return null;
+   if( (ax1Link == null)||(ax2Link == null ))
+    return null;
+   if( !instrNode.getNodeClass().equals("NXinstrument" ))
+     return null;
+  
+   errormessage = "";
+   //System.out.print( "n instr children="+instrNode.getNChildNodes());
+   for( int i = 0; i< instrNode.getNChildNodes(); i++)
+    {NxNode nx = instrNode.getChildNode( i );
+   // System.out.print("inst child"+i+nx.getNodeName()+"::");
+     if( nx == null)
+      errormessage +=";improper Instr Child"+i;
+     else if( nx.getNodeClass().equals("NXdetector"))
+       { ax1=ax2=0;
+        for( int j = 0; (j < nx.getNChildNodes()) &&(ax1 >=0)
+                            &&(ax2 >= 0); j++)
+           {NxNode n1 = nx.getChildNode( j );
+            //System.out.print("Det Child"+n1.getNodeName()+"::");
+            if( n1 == null)
+               errormessage +="improper Det Child"+j;
+            else
+              {Object X = n1.getAttrValue( "axis");
+               if( X != null)
+                 {int axnum =ng.cnvertoint(X);
+                 // System.out.print("X"+i+","+axnum);
+                  if( ng.getErrorMessage()!="")
+                      System.out.println("ERROR ="+
+                               ng.getErrorMessage());
+                  if( ng.getErrorMessage() == "")
+                   {if(axnum == 1)
+                      if( n1.equals( ax1Link))
+                        ax1 = 1;
+                      else
+                        ax1=-1;
+                    else if( axnum == 2)
+                       if( n1.equals( ax2Link))
+                         ax2 = 1;
+                       else
+                         ax2 = -1;
+                   }//if ng.error ==""
+                  }//if X!=null
+               }//else n1 ==null
+            }//for j
+           //System.out.print("Y"+ax1+","+ax2);
+           if( (ax1 >0) &&(ax2) > 0)
+                 return nx;
+           if( nDef == null) nDef= nx;
+           }//else if child a detector node
+       }//for i
+    return nDef;
+    }//matchNode
+
+   
+ 
  /** Fills out an existing DataSet with information from the NXinstrument
    * section of a Nexus datasource
   *@param node  the current node positioned to an NXinstrument part of a datasource
@@ -77,17 +148,26 @@ public class NxInstrument
      if( S!= null ) 
         DS.setAttribute( new StringAttribute( Attribute.INST_NAME , S ) );
      }
-    for( int i = 0 ; i < node.getNChildNodes() ; i++ )
+  //NXdetector stuff done in NXdata
+     for( int i = 0 ; i < node.getNChildNodes() ; i++ )
      {NxNode tnode = node.getChildNode( i );
-      if( tnode.getNodeClass().equals( "NXdetector" ) )
-        {
-          NxDetector nd = new NxDetector();	
-         if( nd.processDS( tnode ,  DS ) )
-          {
-            errormessage = errormessage+":"+nd.getErrorMessage();
-           }
-         }
+      if( tnode.getNodeClass().equals( "NXsource" ) )
+	{NxNode tnode1 = tnode.getChildNode("distance");
+         if( tnode1 == null)
+           return false;
+         Object O = tnode1.getNodeValue();
+         if( O != null)if( O instanceof float[])
+           if( Array.getLength( O ) == 1)
+          { float f = ((float[])O)[0];
+           
+              DS.setAttribute( new FloatAttribute( Attribute.INITIAL_PATH,
+                                                     f));
+          }
+         
+        }
      }
+   
+  
   if( errormessage.length() > 0 )
     return true;
   return false;
