@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/06/11 22:17:49  pfpeterson
+ *  Fixed bug with setting value. Added functionality to deal with integers
+ *  in setValue.
+ *
  *  Revision 1.3  2003/06/06 18:54:39  pfpeterson
  *  Implements ParamUsesString.
  *
@@ -111,6 +115,8 @@ public class BooleanPG extends ParameterGUI
   /**
    * Overrides the default version of setValue to properly deal with
    * booleans.
+   *
+   * For integers, zero is false, everything else is true.
    */
   public void setValue(Object value){
     Boolean booval=null;
@@ -121,6 +127,13 @@ public class BooleanPG extends ParameterGUI
       booval=(Boolean)value;
     }else if(value instanceof String){
       this.setStringValue((String)value);
+      return;
+    }else if(value instanceof Integer){
+      int intval=((Integer)value).intValue();
+      if(intval==0)
+        booval=Boolean.FALSE;
+      else
+        booval=Boolean.TRUE;
     }else{
       throw new ClassCastException("Could not coerce "
                                 +value.getClass().getName()+" into a Boolean");
