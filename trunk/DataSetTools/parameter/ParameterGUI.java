@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2003/08/28 02:25:08  bouzekc
+ *  Made setEnabled final.  This is to avoid recoding, since the EntryWidget
+ *  has a recursive setEnabled method.
+ *
  *  Revision 1.18  2003/08/28 01:30:39  bouzekc
  *  Added constructors to do initialization for all ParameterGUIs.  Added code
  *  in initGUI() to add this as a PropertyChangeListener to the EntryWidget
@@ -206,7 +210,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    * @param enable Whether to enable the EntryWidget associated with this
    *        ParamterGUI or not.
    */
-  public void setEnabled( boolean enable ) {
+  public final void setEnabled( boolean enable ) {
     this.enabled = enable;
 
     if( entrywidget != null ) {
