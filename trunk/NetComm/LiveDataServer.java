@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.46  2004/05/03 16:24:21  dennis
+ *  Removed unused integer codes.
+ *
  *  Revision 1.45  2004/03/19 17:12:52  dennis
  *  Removed unused variable
  *
@@ -167,10 +170,6 @@ public class LiveDataServer extends    DataSetServer
   private static final int DELAY_COUNT        = 3000;
   private static final int OLD_THRESHOLD      = 10000;  // ms until we call the
                                                         // data old;
-  private static final int START_READ_ACCESS  = 0;
-  private static final int STOP_READ_ACCESS   = 1;
-  private static final int START_WRITE_ACCESS = 2;
-  private static final int STOP_WRITE_ACCESS  = 3;
 
   private  int     delay_counter   = 0;             // only issue DATA_CHANGED
                                                     // messages when we have
