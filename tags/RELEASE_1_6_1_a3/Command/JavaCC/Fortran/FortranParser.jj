@@ -1,0 +1,581 @@
+/*
+ * File:  FortranParser.jj
+ *
+ * Copyright (C) 2003, Chris M. Bouzek
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ *           Chris Bouzek <coldfusion78@yahoo.com>
+ *
+ * This work was supported by the National Science Foundation under grant
+ * number DMR-0218882.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * $Log$
+ * Revision 1.2  2004/01/07 15:54:54  bouzekc
+ * Added abs(), sqrt(), float(), and int() function recognition.
+ *
+ * Revision 1.1  2004/01/06 23:13:49  bouzekc
+ * Added to CVS.  Only bare functionality exists at this point.
+ *
+ */
+PARSER_BEGIN( FortranParser )
+package Command.JavaCC.Fortran;
+
+import java.io.StringReader;
+
+import java.util.*;
+
+public class FortranParser {
+  //don't want to continually recreate this thing
+  private static FortranParser myParser;
+  private static boolean expandVectorIntoElements = true;
+  private static boolean standalone = false;
+  
+  /**
+   * Method used to run the FortranParser for testing purposes.
+   *
+   * @param args Unused.
+   *
+   * @throws ParseException If anything goes wrong during parsing
+   */
+  public static void main( String args[] ) throws ParseException {
+    standalone = true;
+    myParser = new FortranParser( System.in );
+    myParser.parseCode(  );
+  }
+
+  /**
+   *  Used to call the parser from an outside class.  Returns a String in Java
+   *  for each line of Fortran code.
+   *
+   * @param text The text to parse.
+   *
+   * @return The result of the parsing.
+   *
+   * @throws ParseException If anything goes wrong during parsing
+   */
+  public static String parseText( String text ) throws ParseException {
+    standalone = false;
+    //need a semicolon on the end
+    if( text.indexOf( ";" ) < 0 ) {
+      text = text.trim(  ) + ";";
+    }
+    if( myParser == null ) {
+      myParser = new FortranParser( new StringReader( text )  );
+    } else {
+      myParser.ReInit( new StringReader( text )  );
+    }
+    String line = myParser.parseCode(  );
+
+    if( line == null || line.length(  ) <= 0 ) {
+      return "";
+    }  else  {
+      return line;
+    }
+  }
+  
+  /**
+   * Method to convert fromFortran style array and variable 
+   * declaration to Java style array and variable declaration.
+   * If no array declarations exist, this essentially just converts from
+   * Fortran type declaration to Java type declaration.
+   * 
+   * @param s The String to convert Fortran arrays from.
+   * @param type The type (e.g. int) of the array.
+   * 
+   * @return The String representing the passed in String converted
+   *                 to Java style arrays.
+   */
+  private static String convertToJavaStyle( 
+    String s, String type ) { 
+    StringBuffer buffer = new StringBuffer( type );
+    buffer.append( " " );
+    
+    //the parentheses should NOT be right at the beginning of the declaration
+    if( s.indexOf( "(" ) > 0 ) {    
+      
+      String tokenList[] = s.split( "\\s+|\\s*,\\s*" );
+      //now go through the tokens, determining if an element is an array
+      String[] temp;
+      for( int i = 0; i < tokenList.length; i++ ) {
+        if( tokenList[i].indexOf( "(" ) >= 0 ) {
+          //change to Java style array delimiters
+          tokenList[i] = tokenList[i].replace( '(', '[' );
+          tokenList[i] = tokenList[i].replace( ')', ']' );
+          //this will split the String just after the variable name.  We
+          //will have to put the '[' back on however
+          temp = tokenList[i].split( "\\[" );
+          tokenList[i] = temp[0] + " = new " + type + "[" + temp[1];
+        }
+        buffer.append( tokenList[i] );
+        
+        if( i < tokenList.length - 1 ) {
+          buffer.append( "," );
+        }
+      }
+    } else {
+      //just return what we had after initial replacements
+      buffer.append( s );
+    }  
+
+    return buffer.toString(  );
+  }
+}
+     
+PARSER_END( FortranParser )
+
+SKIP : {
+  "\n" | "\r"
+}
+
+TOKEN : {
+  < DIGIT: ( "+" | "-" )? ( ["0"-"9"] )+ >
+}
+
+TOKEN : {
+  < #UNSIGNED_DIGIT: ( ["0"-"9"] )+ >
+}
+
+TOKEN : {
+  < WHITESPACE: (" " | "\t" )+ >
+}
+
+TOKEN : {
+  < #CHARACTER: ( ["a"-"z"] | ["A"-"Z"] | "_" | "-" )+ >
+}
+
+TOKEN : {
+  < #RESERVED_CHAR: ( ~["a"-"z", "A"-"Z", "0"-"9", " ", "\t", "|", "\\", ":", 
+                        "\n", "\r", "/", "\""] ) >
+}
+
+TOKEN : {
+  < #VAR_RESERVED_CHAR: ["|", "\\", "/"] >
+}
+
+TOKEN : {
+  < #VARIABLE_COMP:  ( 
+    <CHARACTER> | 
+    <DIGIT> | 
+    <VAR_RESERVED_CHAR> 
+  ) >
+}
+
+TOKEN : {
+  < #VARIABLE : ( 
+    ( 
+      ( <CHARACTER> )+ ( <VARIABLE_COMP> )* 
+    ) 
+  ) >
+}
+
+TOKEN: {
+  < #ARRAY_VARIABLE: (
+    <VARIABLE> "(" <UNSIGNED_DIGIT> ")"
+  ) >
+}
+
+TOKEN : {
+  < #DIGICHAR : ( 
+    <DIGIT> | <CHARACTER>
+  ) >
+}
+
+TOKEN : {
+  < STRING: (
+    ( "\"" )+ ( 
+      <DIGIT> | 
+      <CHARACTER> | 
+      <RESERVED_CHAR> |
+      <VAR_RESERVED_CHAR> | 
+      <WHITESPACE> | 
+      <FLOATING_POINT> |
+      ":" 
+    )* ( "\"" )+ 
+  ) >
+}
+
+TOKEN : {
+  < FLOATING_POINT: (
+    ( 
+      ( 
+        ( <DIGIT> )+ ( "." )? ( <UNSIGNED_DIGIT> )* 
+      ) 
+      | 
+      ( 
+        "." ( <UNSIGNED_DIGIT> )+ 
+      ) 
+    ) 
+    ( 
+      ["e", "E"] ( <DIGIT>)+ 
+    )? 
+  ) >
+}
+
+TOKEN : {
+  < #EMPTY_ARRAY: "[" ( <WHITESPACE> )* "]" >
+}
+
+//Fortran tokens.  Recall that in Fortran, untyped variables starting with
+//an I, J, K, L, M, or N are considered integers, while untyped variables
+//starting with any other letter are considered reals.
+TOKEN: {
+  < #INT_IDENT: ( "i" | "j" | "k" | "l" | "m" | "n" | "I" | "J" | "K" | "L" "M" | "N" ) >
+}
+
+TOKEN: {
+  < #FLOAT_IDENT: ( ["a"-"h"] | ["o"-"z"] | ["A"-"H"] | ["O"-"Z"] ) >
+}
+
+//created to ease code-eye when dealing with declarations of 
+//arrays and scalars in the same line
+TOKEN: {
+  < #MULTI_VARIABLE: (
+    <VARIABLE> | <ARRAY_VARIABLE> 
+  ) >
+}
+
+//Fortran has a non-C like way of declaring character arrays so we
+//need to watch out for variables like "character 6 charA" (character
+//array of length 6
+TOKEN: {
+  < #CHAR_VARIABLE: ( 
+    <VARIABLE> " *" ( <UNSIGNED_DIGIT> )+ 
+  ) >
+}
+
+TOKEN: {
+  <#MATH_VAR: (
+    <FLOATING_POINT> | <DIGICHAR>
+  ) >
+}
+
+TOKEN: {
+  < FORTRAN_ABS: (
+    ( "abs(" | "iabs(" ) ( <WHITESPACE> )* ( <MATH_VAR> )+ 
+    ( <WHITESPACE> )* ")"
+  ) >
+}
+
+TOKEN: {
+  < FORTRAN_SQRT: (
+    "sqrt(" ( <WHITESPACE> )* ( <MATH_VAR> )+ 
+    ( <WHITESPACE> )* ")"
+  ) >
+}
+
+TOKEN: {
+  < FORTRAN_FLOAT_FUN: (
+    ( "float(" | "real(" ) ( <WHITESPACE> )* ( <DIGICHAR> )+ 
+    ( <WHITESPACE> )* ")"
+  ) >
+}
+
+TOKEN: {
+  < FORTRAN_INT_FUN: (
+    "int(" ( <WHITESPACE> )* ( <MATH_VAR> )+
+    ( <WHITESPACE> )* ")"
+  ) >
+}
+
+TOKEN: {
+  < FORTRAN_MOD_FUN: (
+    "mod(" ( <WHITESPACE> )* ( <DIGICHAR> )+
+    ( <WHITESPACE> )* ")"
+  ) >
+}
+
+//integer variable
+TOKEN : {
+  < FORTRAN_INT: ( 
+    ( "integer " | <INT_IDENT> ) <MULTI_VARIABLE> ( 
+      ( <WHITESPACE> )* "," ( <WHITESPACE> )* 
+      <MULTI_VARIABLE> 
+    )* 
+  ) >
+}
+
+//floating point variable
+TOKEN : {
+  < FORTRAN_REAL: ( 
+    ( "real " | <FLOAT_IDENT> ) <MULTI_VARIABLE> ( 
+      ( <WHITESPACE> )* "," ( <WHITESPACE> )* 
+      <MULTI_VARIABLE> 
+    )* 
+  ) >
+}
+
+//double-precision floating point variable
+TOKEN : {
+  < FORTRAN_DOUBLE: ( 
+    "double " <MULTI_VARIABLE> ( 
+      ( <WHITESPACE> )* "," ( <WHITESPACE> )* 
+      <MULTI_VARIABLE> 
+    )* 
+  ) >
+}
+
+//complex number variable.  We don't have the capability to handle
+//this yet, so we'll leave it out
+/*TOKEN : {
+  < FORTRAN_COMPLEX: ( 
+    "complex " <VARIABLE> ( 
+      ( <WHITESPACE> )* "," ( <WHITESPACE> )* <VARIABLE> 
+    )* 
+  ) >
+}*/
+
+//boolean (i.e. logical) variable
+TOKEN : {
+  < FORTRAN_LOGICAL: ( 
+    "logical " <MULTI_VARIABLE> ( 
+      ( <WHITESPACE> )* "," ( <WHITESPACE> )* 
+      <MULTI_VARIABLE> 
+    )* 
+  ) >
+}
+
+//character variable where each char array length is specified directly
+TOKEN : {
+  < FORTRAN_CHAR_1: ( 
+    "character " <CHAR_VARIABLE> ( 
+      ( <WHITESPACE> )* "," ( <WHITESPACE> )* <CHAR_VARIABLE> 
+    )* 
+  ) >
+}
+
+//character variable where the length is specified at the beginning of the 
+//array declaration
+TOKEN: {
+  < FORTRAN_CHAR_2: ( 
+    "character" ( <WHITESPACE> )* "*" ( <UNSIGNED_DIGIT> )+ 
+    <WHITESPACE> <VARIABLE> ( 
+      ( <WHITESPACE> )* "," 
+      ( <WHITESPACE> )* <VARIABLE> )* 
+    ) >
+}
+
+/**
+ * This method goes through a line of Fortran code, converting it to Java.
+ * It also has the ability to test the parser by checking the standalone
+ * quality and bringing up a command line prompt if it should run 
+ * standalone.
+ * 
+ * @return The converted Fortran-to-Java code.
+ */
+String parseCode(  ) : {
+  String codeLine = "";
+}
+{ 
+  {
+    if( standalone ) {
+      System.out.println( "Please type in a line of Fortran code " +
+        "or ^D to quit:\n" );
+    }
+  }
+  ( codeLine = convertFortranToJava(  ) ";"{
+      //a newline ends the expansion, and the parser expects one, so tack it on
+      //print the parsed expression
+      if( standalone ) {
+        System.out.println( codeLine );
+        System.out.println(  );
+        System.out.println( "Please type in another line of Fortran code or ^D to quit:" );
+        System.out.println(  );
+      }
+    }
+  )*
+  {
+    return codeLine;
+  }
+  <EOF>
+}
+
+/**
+ * This method actually converts the line of Fortran to Java.
+ * 
+ * @return A line of code converted from Fortran to Java. 
+ */
+String convertFortranToJava(  ) : {
+  StringBuffer fCode = new StringBuffer(  );
+  String fToken;
+}
+{
+  //this stuff should be unnecessary
+  /*fToken = convertFortranTokens(  ) {
+    fCode.append( fToken );
+    fCode.append( " " );
+  }*/
+  ( ( ( <WHITESPACE> )* ) fToken = convertFortranTokens(  ) {
+    fCode.append( fToken );
+    fCode.append( " " );
+  }
+  )*
+
+  {
+    return fCode.toString(  ).trim(  );
+  }
+}
+
+/**
+ * This method goes through the tokens defined earlier in this file and 
+ * changes each to a Java token.
+ * 
+ * @return The converted token.
+ */
+String convertFortranTokens(  ) : {
+  Token t;
+  String s;
+  StringBuffer buffer;
+  String[] tokenList;
+}
+{
+  t = <FORTRAN_ABS> {
+    if( t.image.indexOf( "iabs" ) >= 0 ) {
+      return t.image.replaceAll( "iabs", "Math.abs" );
+    } else {
+      return t.image.replaceAll( "abs", "Math.abs" );
+    }
+  }
+|
+  t = <FORTRAN_SQRT> {
+    return t.image.replaceAll( "sqrt", "Math.sqrt" );
+  }
+| 
+  t = <FORTRAN_FLOAT_FUN> {
+    if( t.image.indexOf( "float" ) >= 0 ) {
+      return t.image.replaceAll( "float", "rint" );
+    } else {
+      return t.image.replaceAll( "real", "rint" );
+    }
+  }
+|
+  t = <FORTRAN_INT_FUN> {
+    return t.image.replaceAll( "int", "round" );
+  }
+|
+  t = <FORTRAN_MOD_FUN> {
+    s = t.image;
+    s = s.replaceAll( "\"mod\" | \\) | \\(", "" );
+    s = s.replaceAll( ",", "%" );
+    return s + ";";
+  }
+|
+  //matched an integer
+  t = <FORTRAN_INT> {
+    t.image = ( t.image.replaceAll( "integer", "" ) + ";" ).trim(  );
+    return convertToJavaStyle( t.image, "int" );
+  }
+|
+  //matched a floating point
+  t = <FORTRAN_REAL> {
+    t.image = ( t.image.replaceAll( "real", "" ) + ";" ).trim(  );
+    return convertToJavaStyle( t.image, "float" );
+  }
+|
+  //matched a double-precision floating point
+  t = <FORTRAN_DOUBLE> {
+    t.image = ( t.image.replaceAll( "double precision", "" ) + ";" ).trim(  );
+    return convertToJavaStyle( t.image, "double" );
+  }
+|
+  //matched a boolean
+  t = <FORTRAN_LOGICAL> {
+    t.image = ( t.image.replaceAll( "logical", "" ) + ";" ).trim(  );
+    return convertToJavaStyle( t.image, "boolean" );
+  }
+|
+  //matched a character or character array where each variable is
+  //explicitly given a length
+  t = <FORTRAN_CHAR_1> {
+    s = t.image;
+    buffer = new StringBuffer( "char " );
+    
+    //dump the "character" stuff
+    s = ( s.replaceAll( "character", "" ) ).trim(  );
+    //now we will create character arrays for each of the Fortran
+    //character declarations.  The assumption is that we will have a 
+    //comma delimited list of name, number pairs at this point
+    tokenList = s.split( "\\s+|\\s*,\\s*" );
+    
+    for( int i = 0; i < tokenList.length; i = i + 2 ) {
+      System.out.println( "TOKEN " + tokenList[i] );
+      buffer.append( tokenList[i] );
+      buffer.append( " = new char[" );
+      buffer.append( tokenList[i].replaceAll( "\\*", "" ) );
+      buffer.append( "]" );
+      
+      if( i < tokenList.length - 2 ) {
+        buffer.append( "," );
+      }
+    }
+    
+    buffer.append( ";" );
+    
+    return buffer.toString();
+  }
+|
+  //matched a character or character array where each variable is
+  //given a length specified in the character *n declaration
+  t = <FORTRAN_CHAR_2> {
+    s = t.image;
+    buffer = new StringBuffer( "char " );
+    
+    //dump the "character" stuff
+    s = ( s.replaceAll( "character", "" ) ).trim(  );
+    //break the declarations up by comma and space.  The first token is
+    //the number to use for length
+    
+    tokenList = s.split( "\\s+|\\s*,\\s*" );
+    String length = tokenList[0].replaceAll( "\\*", "" );
+    
+    for( int i = 1; i < tokenList.length; i++ ) {
+      buffer.append( tokenList[i] );
+      buffer.append( " = new char[" );
+      //first element is array length
+      buffer.append( length );
+      buffer.append( "]" );
+      
+      if( i < tokenList.length - 1 ) {
+        buffer.append( "," );
+      }
+    }
+    
+    buffer.append( ";" );
+    
+    return buffer.toString();
+  }
+|
+  //matched a digit
+  t = <DIGIT> {
+    return t.image;
+  }
+|
+  //matched a float
+  t = <FLOATING_POINT> {
+    return t.image;
+  }
+|
+  //matched a String
+  t = <STRING> {
+    return t.image;
+  }
+}
