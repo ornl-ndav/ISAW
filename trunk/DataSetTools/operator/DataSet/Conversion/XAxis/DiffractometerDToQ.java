@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/07/08 20:46:00  pfpeterson
+ * Now uses String constants in FontUtil.
+ *
  * Revision 1.2  2002/07/02 17:07:24  pfpeterson
  * Now uses string constants defined in IsawGUI.Isaw and adds
  * operator for Q->Wavelength.
@@ -48,7 +51,6 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
-import  IsawGUI.Isaw;
 
 /**
  * This operator converts a d-spacing DataSet for a Diffractometer to Q.
@@ -128,8 +130,8 @@ public class DiffractometerDToQ extends XAxisConversionOp{
             Qmax=scale.getEnd_x();
             if( Float.isNaN(Qmax) || Float.isInfinite(Qmax) ) Qmax=20f;
         }
-        addParameter( new Parameter( "Min Q("+Isaw.InvAngstrom+")", new Float(Qmin) ) );
-        addParameter( new Parameter( "Max Q("+Isaw.InvAngstrom+")", new Float(Qmax) ) );
+        addParameter( new Parameter( "Min Q("+FontUtil.INV_ANGSTROM+")", new Float(Qmin) ) );
+        addParameter( new Parameter( "Max Q("+FontUtil.INV_ANGSTROM+")", new Float(Qmax) ) );
         addParameter( new Parameter( Parameter.NUM_BINS, new Integer(1000) ) );
     }
     
@@ -142,7 +144,7 @@ public class DiffractometerDToQ extends XAxisConversionOp{
      *  x values.
      */
     public String new_X_label(){
-        return new String( "Q("+Isaw.InvAngstrom+")" );
+        return new String( "Q("+FontUtil.INV_ANGSTROM+")" );
     }
 
 

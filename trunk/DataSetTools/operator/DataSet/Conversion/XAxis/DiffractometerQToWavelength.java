@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/07/08 20:46:02  pfpeterson
+ * Now uses String constants in FontUtil.
+ *
  * Revision 1.1  2002/07/02 17:05:53  pfpeterson
  * Added to CVS.
  *
@@ -44,7 +47,6 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
-import  IsawGUI.Isaw;
 
 /**
  * This operator converts a Q DataSet for a Diffractometer, to
@@ -126,8 +128,8 @@ public class DiffractometerQToWavelength extends XAxisConversionOp{
             wlmax=scale.getEnd_x();
             if( Float.isNaN(wlmax) || Float.isInfinite(wlmax) ) wlmax=20f;
         }
-        addParameter( new Parameter( "Min Wavelength("+Isaw.Angstrom+")", new Float(wlmin) ) );
-        addParameter( new Parameter( "Max Wavelength("+Isaw.Angstrom+")", new Float(wlmax) ) );
+        addParameter( new Parameter( "Min Wavelength("+FontUtil.ANGSTROM+")", new Float(wlmin) ) );
+        addParameter( new Parameter( "Max Wavelength("+FontUtil.ANGSTROM+")", new Float(wlmax) ) );
         addParameter( new Parameter( Parameter.NUM_BINS, new Integer(1000) ) );
     }
     
@@ -140,7 +142,7 @@ public class DiffractometerQToWavelength extends XAxisConversionOp{
      *  x values.
      */
     public String new_X_label(){
-        return new String( Isaw.Lambda+"("+Isaw.Angstrom+")" );
+        return new String( FontUtil.LAMBDA+"("+FontUtil.ANGSTROM+")" );
     }
 
 
