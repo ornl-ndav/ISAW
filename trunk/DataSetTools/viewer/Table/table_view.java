@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.31  2003/02/12 19:45:15  dennis
+ * Switched to use PixelInfoList instead of SegmentInfoList
+ *
  * Revision 1.30  2003/01/15 20:54:30  dennis
  * Changed to use SegmentInfo, SegInfoListAttribute, etc.
  *
@@ -2729,20 +2732,15 @@ public class table_view extends JPanel implements ActionListener
          {
             Data DB = DS.getData_entry( Groups[ i ] );
 
-            SegInfoListAttribute dla = ( SegInfoListAttribute )
-                                 DB.getAttribute( Attribute.SEGMENT_INFO_LIST );
-            DataSetTools.instruments.SegmentInfo da = null;
+            PixelInfoListAttribute dla = ( PixelInfoListAttribute )
+                                 DB.getAttribute( Attribute.PIXEL_INFO_LIST );
+            DataSetTools.dataset.IPixelInfo da = null;
 
-            if( dla != null )
-            {
-               DataSetTools.instruments.SegmentInfo[] Dla =
-                  ( DataSetTools.instruments.SegmentInfo[] )( dla.getValue() );
+            if( dla != null )                                // get first pixel
+              da = ((PixelInfoList)dla.getValue()).pixel(0);
 
-               if( Dla != null )
-                  if( Dla.length > 0 )
-                     da = Dla[ 0 ];
-            }
-            if( da == null )
+            /* this case should not occur
+            if( da == null )                                // get single pixel
             {
                SegInfoAttribute sia = ( SegInfoAttribute )
                                  ( DB.getAttribute( Attribute.SEGMENT_INFO ) );
@@ -2750,6 +2748,7 @@ public class table_view extends JPanel implements ActionListener
                if( sia != null )
                   da = sia.getSegmentInfo();
             }
+            */
 
             if( da == null )
             {
@@ -2760,8 +2759,8 @@ public class table_view extends JPanel implements ActionListener
             else
             {
                rc = new int[ 2 ];
-               rc[ 0 ] = da.getRow();
-               rc[ 1 ] = da.getColumn();
+               rc[ 0 ] = (int)da.row();
+               rc[ 1 ] = (int)da.col();
 
                if( rc[ 0 ] > MaxRows )
                   MaxRows = rc[ 0 ];
@@ -3611,10 +3610,10 @@ public class table_view extends JPanel implements ActionListener
 
             if( DB == null )
                hasRC = false;
-            else if( DB.getAttribute( Attribute.SEGMENT_INFO_LIST ) != null )
+            else if( DB.getAttribute( Attribute.PIXEL_INFO_LIST ) != null )
                hasRC = true;
-            else if( DB.getAttribute( Attribute.SEGMENT_INFO ) != null )
-               hasRC = true;
+// D.M.,no  else if( DB.getAttribute( Attribute.PIXEL_INFO ) != null )
+// PIXELINFO   hasRC = true;
             else
                hasRC = false;
 
