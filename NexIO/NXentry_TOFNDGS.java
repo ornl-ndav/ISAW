@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/17 14:58:20  rmikk
+ * Added More attributes
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
@@ -90,6 +93,7 @@ public boolean processDS( DataSet DS, int index )
     boolean monitorDS, HistDS ;
     monitorDS = false ;
     HistDS = false ;
+   NxNodeUtils nu = new NxNodeUtils();
     errormessage = "improper index" ;
     if( index < 0 ) 
       return false ;
@@ -175,14 +179,48 @@ public boolean processDS( DataSet DS, int index )
          DS.setAttribute( new IntAttribute( Attribute.RUN_NUM,  rn ) ); 
        
       }
+   X =  node.getChildNode( "title" ) ;
+    if( X!= null )
+      {  Object val =  X.getNodeValue() ;
+         String rn1 =  new NxData_Gen().cnvertoString( val ) ;
+       
+         DS.setAttribute( new StringAttribute( Attribute.RUN_TITLE,  rn1 ) ); 
+       
+      }
+
+      X =  node.getChildNode( "duration" ) ;
+    if( X!= null )
+      {  Object val =  X.getNodeValue() ;
+         Float ff =  new NxData_Gen().cnvertoFloat( val ) ;
+         if( ff != null)
+           {
+            DS.setAttribute( new FloatAttribute( Attribute.NUMBER_OF_PULSES,  
+                      ff.floatValue()*30.0f   ));
+           } 
+       
+      }
     X = node.getChildNode( "end_time" ) ;
     if( X!= null )
       {  Object val = X.getNodeValue() ;
           String rn1,
                  rn = new NxData_Gen().cnvertoString( val ) ;
           if( rn!= null )
-	      { 
-               try{
+	      { Date D = nu.parse( rn);
+                if( D == null)
+                  {rn1 =rn;
+                   rn = null;
+                  }
+                else
+                  {GregorianCalendar C = new GregorianCalendar();
+                   C.setTime( D);
+                   int year= C.get(Calendar.YEAR);
+                   if( year <500) C.set(Calendar.YEAR, year+1900);
+                   rn1 = ""+C.get(Calendar.YEAR)+"-"+(1+C.get(Calendar.MONTH))+
+                         "-"+C.get(Calendar.DAY_OF_MONTH);
+                   rn = ""+C.get(Calendar.HOUR_OF_DAY)+":"+C.get(Calendar.MINUTE)+
+                          ":"+C.get(Calendar.SECOND);
+                  }
+		  /*try{
                     Date DD = new SimpleDateFormat().parse( rn ) ;
                     rn1 = ""+ DD.getMonth() + "/" + DD.getDay() + 
                            "/" + DD.getYear() ;
@@ -192,6 +230,7 @@ public boolean processDS( DataSet DS, int index )
                 catch( ParseException s )
                    {rn1 = rn ; rn = null ;
                   }
+                 */
                 DS.setAttribute( new StringAttribute( Attribute.END_DATE, 
                                                        rn1  ) ) ;
               if( rn!= null )
@@ -219,12 +258,22 @@ public boolean processDS( DataSet DS, int index )
           else
             errormessage += ";" + ns.getErrorMessage() ;
         }
+      else if( C.equals( "NXbeam"))
+        {NxBeam nb = new NxBeam();
+        if( nb.processDS( datanode, DS))
+          errormessage +=";"+nb.getErrorMessage();
+	}
     
      }
     return false ;
     }//process DS
   
  }
+
+
+
+
+
 
 
 
