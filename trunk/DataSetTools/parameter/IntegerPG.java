@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/06/12 14:20:20  pfpeterson
+ *  Added two convenience constructors to create the parameter
+ *  with an int.
+ *
  *  Revision 1.1  2002/06/06 16:14:34  pfpeterson
  *  Added to CVS.
  *
@@ -55,18 +59,19 @@ public class IntegerPG extends StringPG{
     public IntegerPG(String name, Object value){
         super(name,value);
         this.type=TYPE;
-        /*this(name,value,false);
-          this.setDrawValid(false);*/
     }
 
     public IntegerPG(String name, Object value, boolean valid){
         super(name,value,valid);
         this.type=TYPE;
-        /*this.setName(name);
-          this.setValue(value);
-          this.setEnabled(true);
-          this.setValid(valid);
-          this.setDrawValid(true);*/
+    }
+
+    public IntegerPG(String name, int value){
+        this(name, new Integer(value));
+    }
+
+    public IntegerPG(String name, int value, boolean valid){
+        this(name, new Integer(value), valid);
     }
 
     // ********** IParameter requirements **********
