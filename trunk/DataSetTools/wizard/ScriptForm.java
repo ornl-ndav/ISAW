@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/07/02 18:17:40  bouzekc
+ * No longer implements Serializable.
+ *
  * Revision 1.7  2003/07/02 18:16:02  bouzekc
  * Added log header.
  *
@@ -65,7 +68,7 @@ import javax.swing.border.*;
  * by creating an ScriptForm, it becomes easier to implement
  * many of the methods by using ScriptOperator.
  */
-public class ScriptForm extends OperatorForm implements Serializable {
+public class ScriptForm extends OperatorForm {
   /**
    *  Construct an ScriptForm with the title "Script Form."
    *
