@@ -1,4 +1,7 @@
 # $Date$
+
+$Category=Operator, Instrument Type, TOF_NDGS
+
 $ path DataDirectoryString Path
 
 atoms = 1.0
