@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.135  2003/06/16 18:56:41  pfpeterson
+ *  Script_Class_List_Handler is initialized in a second thread as soon
+ *  as possible. Modified timing prints (slightly).
+ *
  *  Revision 1.134  2003/06/16 16:48:51  bouzekc
  *  Changed accept_filename to acceptFileName to correspond
  *  with the new FileFilters.
@@ -298,6 +302,7 @@ import DataSetTools.retriever.*;
 import DataSetTools.util.*;
 import DataSetTools.viewer.*;
 import DataSetTools.viewer.Table.*;
+import ExtTools.SwingWorker;
 import IPNS.Runfile.*;
 import java.applet.*;
 import java.applet.*;
@@ -459,11 +464,8 @@ public class Isaw
   {
     super( TITLE+" "+getVersion(false) );
                       //used for loading runfiles
-    if(showTiming){
+    if(showTiming)
       System.out.println("00:"+(System.currentTimeMillis()-time)/1000.);
-      time=System.currentTimeMillis();
-      System.out.println("RESETING TIMER");
-    }
     util = new Util(); 
     Vector mm = util.listProperties();
     JScrollPane tt = util.viewProperties();
@@ -1727,13 +1729,30 @@ public class Isaw
     }
   }
 
-
+  /**
+   * Cuts a new thread to initialize Script_Class_List_Handler
+   */
+  private static void initScriptList(){
+    ExtTools.SwingWorker worker=new ExtTools.SwingWorker(){
+        public Object construct(){
+          try{
+            new Script_Class_List_Handler(); // UNCOMMENT
+          }catch(RuntimeException e){
+            // do nothing
+          }finally{
+            return null;
+          }
+        }
+      };
+    worker.start();
+  }
 
    /**
     * entry point for the ISAW application.
     */
   public static void main( String[] args ) 
   {
+    initScriptList(); // initialize Script_Class_List_Handler
     for( int i=0 ; i<Array.getLength(args) ; i++ ){
         if("--version".equals(args[i])){
             System.out.println(getVersion(true));
