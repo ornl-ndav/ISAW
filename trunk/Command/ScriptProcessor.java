@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.38  2003/03/21 19:29:11  rmikk
+ * Reset This modules error variables, too, in resetErrors
+ *
  * Revision 1.37  2003/03/17 20:17:57  pfpeterson
  * Fixed a problem with macro lines. This is done by (internally)
  * inserting a space on either side of a '=' sign so the parsing
@@ -319,6 +322,9 @@ public class ScriptProcessor  extends ScriptProcessorOperator
    */
   public void resetError(){
     ExecLine.resetError();
+    perror = -1;
+    lerror = -1;
+    serror = "";
   }
   
   /**
