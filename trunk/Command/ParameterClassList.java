@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/06/09 21:10:40  bouzekc
+ * Fixed bug in constructor where initialized was not set
+ * to true.
+ * Made DEBUG non-final so it can be changed for releases.
+ *
  * Revision 1.2  2003/06/06 19:46:44  pfpeterson
  * Implemented processJar, factoring out some common code in the process.
  *
@@ -65,7 +70,7 @@ import java.util.zip.ZipFile;
  */
 public class ParameterClassList{
   static       Hashtable paramList   = null;
-  static final boolean   DEBUG       = true;
+  static       boolean   DEBUG       = false;
   static       boolean   initialized = false;
   static final String    matchname   =
                        FilenameUtil.setForwardSlash("DataSetTools/parameter/");
@@ -83,6 +88,8 @@ public class ParameterClassList{
       else
         processDir();
     }
+
+    initialized = true;
 
     if(DEBUG) System.out.println("Found "+paramList.size()+" parameters");
   }
@@ -317,6 +324,7 @@ public class ParameterClassList{
    * prints the result to the console.
    */
   public static void main(String[] args){
+    DEBUG = true;
     ParameterClassList PL=new ParameterClassList();
   }
 }
