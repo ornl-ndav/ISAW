@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/06/16 23:05:26  bouzekc
+ * Now implements PropertyChanger.
+ *
  * Revision 1.14  2003/06/09 22:09:08  bouzekc
  * Added constructor for setting HAS_CONSTANTS on
  * initialization, and removed the method which previously
@@ -112,6 +115,7 @@ import java.beans.*;
 import DataSetTools.operator.*;
 import DataSetTools.parameter.*;
 import DataSetTools.util.*;
+import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
 
 /**
  *  The Form class is controls one operation of the sequence of operations
@@ -135,7 +139,8 @@ import DataSetTools.util.*;
  *  values obtained from previous Forms, set the HAS_CONSTANTS variable to 
  *  true by using the appropriate constructor.
  */
-public abstract class Form extends Operator implements Serializable{
+public abstract class Form extends Operator implements Serializable,
+                                                       PropertyChanger{
   private final boolean DEBUG=false;
 
   protected JPanel    panel;               // panel that the Wizard will draw
@@ -155,6 +160,8 @@ public abstract class Form extends Operator implements Serializable{
   //used for standalone or first Forms.  Default is standalone.
   protected boolean HAS_CONSTANTS = false; 
 
+  protected PropertyChangeSupport propBind;
+
   /**
    *  Construct a form with the given title to work with 
    *  the specified Wizard.  
@@ -167,6 +174,7 @@ public abstract class Form extends Operator implements Serializable{
     super(title);
     panel = null;
     this.param_ref=null;
+    propBind = new PropertyChangeSupport(this);
   } 
 
   /**
@@ -180,7 +188,7 @@ public abstract class Form extends Operator implements Serializable{
    */
   public Form( String title, boolean hasConstantParams )
   {
-    super(title);
+    this(title);
     this.HAS_CONSTANTS = hasConstantParams;
   } 
 
@@ -496,5 +504,48 @@ public abstract class Form extends Operator implements Serializable{
   {
    param.setValid(false);
    return this.errorOut(errmessage);
+  }
+
+  /* -------------------- PropertyChanger methods --------------------------*/
+
+  /**
+   *  Adds the property change listener pcl to this Form's 
+   *  PropertyChangeSupport propBind variable.
+   */
+  public void addPropertyChangeListener(String property, 
+                                        PropertyChangeListener pcl)
+  {
+    if(propBind != null)
+      propBind.addPropertyChangeListener(property, pcl);
+  }
+
+  /**
+   *  Adds the property change listener pcl to this Form's 
+   *  PropertyChangeSupport propBind variable.
+   */
+  public void addPropertyChangeListener(PropertyChangeListener pcl)
+  {
+    if(propBind != null)
+      propBind.addPropertyChangeListener(pcl);
+  }
+
+  /**
+   *  Removes the property change listener pcl from this Form's 
+   *  PropertyChangeSupport propBind variable.
+   */
+  public void removePropertyChangeListener(PropertyChangeListener pcl)
+  {
+    if(propBind != null)
+      propBind.removePropertyChangeListener(pcl);
+  }
+
+  /**
+   *  Utility method to fire property change events.
+   */
+  protected void fireValueChangeEvent(int oldValue, int newValue)
+  {
+    if( propBind != null && oldValue != newValue )
+    propBind.firePropertyChange(PropChangeProgressBar.VALUE, 
+                                     oldValue, newValue);                     
   }
 }
