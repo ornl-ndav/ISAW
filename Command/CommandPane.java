@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.51  2003/03/06 22:53:48  pfpeterson
+ * No longer gives or receives StatusPane with anyone.
+ *
  * Revision 1.50  2003/03/06 15:51:36  pfpeterson
  * Changed to work with SharedData's private StatusPane.
  *
@@ -323,8 +326,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
      * for Data Set Parameters.
      */
     public void getExecScript( String fname, IObserver X,
-                               IDataSetListHandler ds_src, Document  DocLog,
-                                                              StatusPane sp){
+                               IDataSetListHandler ds_src, Document  DocLog){
         int i;
         String S;
         Object RES;
@@ -338,9 +340,8 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
             return ;
         }
         new IsawGUI.Util().appendDoc(logDoc,"#$ Script File Execute "+fname);
-        DataSetTools.components.ParametersGUI.JParametersDialog pDialog = 
-            new DataSetTools.components.ParametersGUI.JParametersDialog
-            (cp, ds_src, logDoc ,X, false, sp);
+        JParametersDialog pDialog = new JParametersDialog(cp, ds_src, logDoc,
+                                                          X, false);
     }
     
     /**
@@ -660,7 +661,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
                          CP.SP.setTitle( "CommandPane");
                      JParametersDialog pDialog =
                          new JParametersDialog((GenericOperator)(CP.SP), SP, 
-                                               new PlainDocument(), null, true);
+                                              new PlainDocument(), null, true);
                  }else
                      CP.SP.getResult();
         
