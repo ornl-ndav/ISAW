@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2002/07/17 19:10:55  rmikk
+ *  Fixed up the table views menu choices and reordered
+ *    the view menu
+ *
  *  Revision 1.21  2002/07/16 21:37:55  rmikk
  *  Introduced support for the other quick table views
  *
@@ -317,7 +321,7 @@ public class ViewManager extends    JFrame
       else if ( view_type.equals( SELECTED_GRAPHS ))             // use either
         viewer = new GraphableDataManager( tempDataSet, state );        // Kevin's or
 //        viewer = new ViewerTemplate( tempDataSet, state );     // Template  
-      else if ( view_type.equals( "Advanced Table")) //TABLE ) )
+      else if ( view_type.equals( TABLE)) //TABLE ) )
          viewer = new TabView( tempDataSet, state ); 
       else if ( view_type.equals( CONTOUR ) )
         viewer = new ContourView( tempDataSet, state ); 
@@ -656,6 +660,14 @@ private void BuildViewMenu()
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
+  button = new JMenuItem( THREE_D );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
+  
+  button = new JMenuItem( CONTOUR );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
+
   button = new JMenuItem( SCROLLED_GRAPHS );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
@@ -664,22 +676,17 @@ private void BuildViewMenu()
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
-  button = new JMenuItem( THREE_D );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
   
-  JMenu Tables = new JMenu( "Tables");
+  JMenu Tables = new JMenu( "Selected Table View");
   view_menu.add( Tables);
   
   BuildTableMenu( Tables);
 
- /* button = new JMenuItem( TABLE );
+  button = new JMenuItem( TABLE );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
- */
-  button = new JMenuItem( CONTOUR );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
+ 
+
 }
 
  public void BuildTableMenu( JMenu Tables)
@@ -690,11 +697,12 @@ private void BuildViewMenu()
    
      table_MenuComp.addMenuItems( Tables , view_menu_handler);
     
-    Tables.addSeparator();  
+   /* Tables.addSeparator();  
     JMenuItem button;
     button = new JMenuItem( "Advanced Table");
     button.addActionListener( view_menu_handler );
     Tables.add( button );
+   */
 
 
   }
