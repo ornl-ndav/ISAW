@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/11/12 22:01:10  dennis
+ *  Constructor now makes copy of array of values, to guarantee that
+ *  the Attribute is immutable.
+ *
  *  Revision 1.2  2002/11/12 00:26:33  dennis
  *  Made immutable by:
  *  1. remove setValue() method
@@ -94,7 +98,9 @@ public class Float1DAttribute extends Attribute{
      */
     public Float1DAttribute( String name, float[] value ){
         super( name );
-        this.value = value;
+                                          // copy the values into a new array
+        this.value = new float[ value.length ];
+        System.arraycopy( value, 0, this.value, 0, value.length );
     }
     
     private Float1DAttribute(){
