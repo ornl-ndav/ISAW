@@ -10,6 +10,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.5  2000/07/31 20:54:48  dennis
+ *  Added CLSmooth routine to smooth function Data
+ *
  *  Revision 1.4  2000/07/26 19:16:49  dennis
  *  Adding two Data blocks now also adds the values of attributes:
  *  NUMBER_OF_PULSES and TOTAL_COUNT.
@@ -529,6 +532,83 @@ public float getY_value( float x_value )
     }
     x_scale  = new_X;
   }
+
+
+  /**
+   * Smooth this Data object by resampling/averaging the y values and errors
+   * of the current data so that there are roughly the specified number of
+   * samples of the data.
+   *
+   * @param  num_X    This specifies the approximate number of "x" values to 
+   *                  be used
+   */
+  public void CLSmooth( int num_X )
+  {
+    boolean function;
+    float   old_x[] = null;
+
+    if ( x_scale.getNum_x() == y_values.length )          // function
+    {
+      function = true;
+      old_x  = x_scale.getXs();
+    }
+    else if (  x_scale.getNum_x() == y_values.length+1 )  // histogram 
+    {                                                     // so use bin centers
+      function = false;                                   // for the x values
+      float temp_x[] = x_scale.getXs();
+      old_x = new float[ temp_x.length -1 ];
+      for ( int i = 0; i < old_x.length; i++ )
+        old_x[i] = (temp_x[i] + temp_x[i+1]) / 2;
+    }
+    else
+    {
+      System.out.println("ERROR: invalid Data block in CLSmooth");
+      return;
+    }
+                                                        // now do the smoothing
+   if ( errors != null )
+     num_X = tof_calc.CLSmooth( old_x, y_values, errors, num_X );
+   else
+     num_X = tof_calc.CLSmooth( old_x, y_values, num_X );
+
+                                                // put the y values and
+                                                // errors in right size arrays
+   float new_y[]   = new float[num_X];
+   System.arraycopy( y_values, 0, new_y, 0, num_X );
+   y_values = new_y;
+
+   if ( errors != null )
+   {
+     float new_err[]   = new float[num_X];
+     System.arraycopy( errors, 0, new_err, 0, num_X );
+     errors = new_err;
+   }
+                                                // copy over the x values, or
+                                                // synthesize bin boundaries
+                                                // as needed and make XScale
+   if ( function )
+   {
+     float new_x[] = new float[num_X];
+     System.arraycopy( old_x, 0, new_x, 0, num_X );
+     x_scale = new VariableXScale( new_x );
+   }
+   else                                    
+   {
+     float new_x[] = new float[num_X+1];              
+
+     new_x[0] = old_x[0] - ( old_x[1] - old_x[0] ) / 2; 
+
+     for ( int i = 1; i < num_X; i++ ) 
+       new_x[i] = ( old_x[i-1] + old_x[i] ) / 2;
+
+     new_x[num_X] = old_x[num_X-1] + ( old_x[num_X-1] - old_x[num_X-2] ) / 2;
+
+     x_scale = new VariableXScale( new_x );
+   }
+
+  }
+
+
 
   /**
     * Returns true or false depending on whether the two Data objects are
