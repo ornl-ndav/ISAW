@@ -31,6 +31,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/03/03 16:05:33  dennis
+ * Added table of conversions (not active yet).
+ * Placed slice selector, image controls, and table of conversions
+ * in three tabbed panes.
+ * Added cursor x,y readout.
+ * Fixed bug with calculation of number of rows & columns to use
+ * when extracting slice.  (col & row were transposed)
+ * Now preserves the aspect ratio.
+ *
  * Revision 1.2  2004/02/02 23:55:23  dennis
  * Added additional Axes labels for special case of
  * constant h,k or l planes.  Added code to select
@@ -67,6 +76,7 @@ import java.io.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
+import javax.swing.JComponent.*;
 
 /**
  * Provides a mechanism for selecting and viewing slices through reciprocal
@@ -89,12 +99,14 @@ public class HKL_SliceView extends DataSetViewer
   private SplitPaneWithState split_pane;
   private JPanel             image_container; 
   private JPanel             ivc_controls; 
-  private Box                control_panel; 
+  private JPanel             control_panel; 
   private SliceSelectorUI    slice_selector;
 
   // the ivc must be reconstructed whenever the rows and colums change.
 
   private ImageViewComponent ivc = null;
+  private DataSetXConversionsTable image_table = 
+                                   new DataSetXConversionsTable( getDataSet() );
 
   // the Q_SliceExtractor, orientation matrix and valid flag must be 
   // reconstructed whenever the DataSet is changed
@@ -106,6 +118,8 @@ public class HKL_SliceView extends DataSetViewer
   private boolean valid_ds = false; 
 
   private boolean debug = false;
+
+  private CursorOutputControl cursor_output = null;
 
 /* --------------------------------------------------------------------------
  *
@@ -127,10 +141,19 @@ public class HKL_SliceView extends DataSetViewer
 
     image_container = new JPanel();
     image_container.setLayout( new GridLayout(1,1) );
+    image_container.setPreferredSize( new Dimension(5000,0) );
 
-    control_panel = new Box( BoxLayout.Y_AXIS );
+    control_panel = new JPanel(); 
+    control_panel.setMinimumSize( new Dimension(220,0) );
+    control_panel.setLayout( new BorderLayout() );
+
+    JPanel common_controls = new JPanel();
+    common_controls.setPreferredSize( new Dimension(220,85) );
+    common_controls.setLayout( new GridLayout(2,1) );
+
     ivc_controls  = new JPanel();
     ivc_controls.setLayout( new GridLayout(1,1) );
+
     split_pane    = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
                                             image_container,
                                             control_panel,
@@ -145,13 +168,33 @@ public class HKL_SliceView extends DataSetViewer
     border.setTitleFont( FontUtil.BORDER_FONT );
     control_panel.setBorder( border );
 
-    // control_panel.setLayout( new GridLayout(2,1) );
-    control_panel.add( ivc_controls );
-    control_panel.add( slice_selector );
+    image_table = new DataSetXConversionsTable( getDataSet() );
+    JPanel table_panel = new JPanel();
+    table_panel.setLayout( new BorderLayout() );
+    JPanel filler = new JPanel();
+    table_panel.add( image_table.getTable(), BorderLayout.NORTH );
+    table_panel.add( filler, BorderLayout.CENTER );
+
+    // put ivc_controls and slice_selector in a tabbed pane
+    JTabbedPane tabbed_pane = new JTabbedPane();
+    tabbed_pane.setFont( FontUtil.LABEL_FONT );
+    tabbed_pane.addTab( "View", ivc_controls );
+    tabbed_pane.addTab( "Slice", slice_selector );
+    tabbed_pane.addTab( "Conv", table_panel );
+    control_panel.add( tabbed_pane, BorderLayout.CENTER ); 
+    control_panel.add( common_controls, BorderLayout.NORTH );
 
     ivc = new ImageViewComponent( new VirtualArray2D( 1, 1 ) );
+    ivc.preserveAspectRatio( true );
+    ivc.addActionListener( new ImageListener() );
+
     image_container.removeAll();
     image_container.add( ivc.getDisplayPanel() );
+
+    String cursor_labels[] = {"X","Y"};
+    cursor_output = new CursorOutputControl( cursor_labels );
+    cursor_output.setTitle("Current Position");
+    setCurrentPoint( new floatPoint2D(0,0) );
 
     Box controls = new Box(BoxLayout.Y_AXIS);
     JComponent[] ctrl = ivc.getSharedControls();
@@ -160,11 +203,18 @@ public class HKL_SliceView extends DataSetViewer
       if ( ctrl[i] instanceof ControlCheckboxButton )
         ((ControlCheckboxButton)ctrl[i]).setButtonFont( FontUtil.LABEL_FONT );
 
-      if ( !( ctrl[i] instanceof ControlColorScale ) )
+      if ( ctrl[i] instanceof ControlSlider )
+        common_controls.add(ctrl[i]);
+      else
         controls.add(ctrl[i]);
     }
+
     ivc_controls.removeAll();
     ivc_controls.add( controls );
+
+    common_controls.add( cursor_output );
+   
+    split_pane.validate();
 
     setDataSet( data_set );
   }
@@ -174,7 +224,6 @@ public class HKL_SliceView extends DataSetViewer
    *  PUBLIC METHODS
    *
    */
-
 
   public void redraw( String reason )
   {
@@ -197,22 +246,7 @@ public class HKL_SliceView extends DataSetViewer
       image_container.add( ivc.getDisplayPanel() );
     }
 
-    int n_rows = ( oddNumRows() - 1 ) / 2;
-    int n_cols = ( oddNumCols() - 1 ) / 2;
-    SlicePlane3D plane = slice_selector.getPlane();
-    Vector3D origin = plane.getOrigin();
-    Vector3D u      = plane.getU();
-    Vector3D v      = plane.getV();
-    u.multiply( slice_selector.getSliceWidth()/2 );
-    v.multiply( slice_selector.getSliceHeight()/2 );
-    
-    float slice[][];
-    if ( orientation_matrix != null )
-      slice = extractor.HKL_Slice( orientation_matrix,
-                                   origin, u, v,
-                                   n_rows, n_cols );
-    else
-      slice = extractor.Q_Slice( origin, u, v, n_rows, n_cols );
+    float slice[][] = extractSlice();
 
     System.out.println("Recalculated slice....." );
     if ( slice != null )
@@ -386,6 +420,8 @@ public class HKL_SliceView extends DataSetViewer
                                 "," + Format.real( vector.get()[2], 5 ) + ")",
                        units,
                        true );
+     System.out.println("setGeneralAxis : " + va2D.getAxisInfo( 0 ) );
+     System.out.println("setGeneralAxis : " + va2D.getAxisInfo( 1 ) );
   } 
 
 
@@ -429,6 +465,8 @@ public class HKL_SliceView extends DataSetViewer
     else 
       setGeneralAxis( axis_num, min, max, vector, va2D );
 
+     System.out.println("setHKLAxis : " + va2D.getAxisInfo( 0 ) );
+     System.out.println("setHKLAxis : " + va2D.getAxisInfo( 1 ) );
   }
 
 
@@ -556,13 +594,55 @@ public class HKL_SliceView extends DataSetViewer
   }
 
 
+  /* ------------------------- extractSlice -------------------------- */
+  /*
+   *  Actually get the slice with the appropriate center, width, height
+   *  and thicknes.
+   *
+   */
+  private float[][] extractSlice()
+  {
+    int n_rows = ( oddNumRows() - 1 ) / 2;
+    int n_cols = ( oddNumCols() - 1 ) / 2;
+    SlicePlane3D plane = slice_selector.getPlane();
+    Vector3D origin = plane.getOrigin();
+    Vector3D u      = plane.getU();
+    Vector3D v      = plane.getV();
+    u.multiply( slice_selector.getSliceWidth()/2 );
+    v.multiply( slice_selector.getSliceHeight()/2 );
+
+    float slice[][];
+    if ( orientation_matrix != null )
+      slice = extractor.HKL_Slice( orientation_matrix,
+                                   origin, u, v,
+                                   n_cols, n_rows );
+    else
+      slice = extractor.Q_Slice( origin, u, v, n_cols, n_rows );
+ 
+    return slice;
+  }
+
+ 
+  /* -------------------------- setCurrentPoint ------------------------- */
+  /*
+   * This method will set the current world coord point, displayed by the
+   * cursor readout.
+   */
+  private void setCurrentPoint( floatPoint2D current_pt )
+  {
+    cursor_output.setValue( 0, current_pt.x );
+    cursor_output.setValue( 1, current_pt.y );
+  }
+
+
   /* -------------------------------------------------------------------------
    *
    *  INTERNAL CLASSES
    *
    */
 
-  /**
+  /* --------------------------- SliceListener -------------------------- */
+  /*
    *  Listen for new slice selection
    */
   private class SliceListener implements ActionListener
@@ -574,27 +654,44 @@ public class HKL_SliceView extends DataSetViewer
     }
   }
 
+
+  /* -------------------------- ImageListener -------------------------- */
+  /*
+   *  Listen for messages from the ImageViewComponent movement 
+   */
+  private class ImageListener implements ActionListener
+  {
+    public void actionPerformed( ActionEvent e )
+    {
+      String message = e.getActionCommand();
+      if ( message.equals( IViewComponent.POINTED_AT_CHANGED ) )
+      {
+        setCurrentPoint( ivc.getPointedAt() );
+      }
+      //System.out.println( "cursor moved " + e );
+    }
+  }
+
+
   /* ----------------------------- main ------------------------------------ */
   /*
    *  For testing purposes only
    */
   public static void main(String[] args)
   {
-    String file_name ="/home/dennis/ARGONNE_DATA/SCD_QUARTZ_2_DET/scd08336.run";
+    String dir_name = "/usr2/ARGONNE_DATA/";
+    String file_name = dir_name + "SCD_QUARTZ_2_DET/scd08336.run";
     RunfileRetriever rr = new RunfileRetriever( file_name );
     DataSet ds = rr.getDataSet(2);
     rr = null;
 
-    String orientation_file = 
-                       "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/junk.mat";
+    String orientation_file = dir_name + "SCD_QUARTZ_2_DET/junk.mat";
     Operator op = new LoadOrientation( ds, orientation_file );
     op.getResult();
 
-    String calib_file_name =
-                      "/usr/local/ARGONNE_DATA/SCD_QUARTZ_2_DET/instprm.dat";
+    String calib_file_name = dir_name + "SCD_QUARTZ_2_DET/instprm.dat";
     LoadSCDCalib load_cal = new LoadSCDCalib( ds, calib_file_name, -1, null );
     load_cal.getResult();
-
 
     HKL_SliceView view = new HKL_SliceView( ds, null );
     JFrame f = new JFrame("Test for HKL_SliceView");
