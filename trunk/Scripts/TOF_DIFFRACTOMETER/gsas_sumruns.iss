@@ -19,6 +19,8 @@
 
 # Modify Date: 2005/1/18 16:03:04  : Ashfia Huq , ID's should remain the same (bad detectors are turned off using the discriminator levels
 
+$Category=Macros, Instrument Type, TOF_NPD
+
 $Standard		Boolean(true)        Standard (5B, sum & T focus)
 $Focus_all_tth	Boolean(false)       Focus_all_2Theta (4B focus to 125)		
 $Miller		Boolean(false)       Miller (Only 90 deg detectors) 
