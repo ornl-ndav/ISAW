@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.40  2002/10/23 19:59:08  pfpeterson
+ * When editing a file, the Save button now defaults to the file
+ * being edited.
+ *
  * Revision 1.39  2002/08/19 17:06:57  pfpeterson
  * Reformated file to make it easier to read.
  *
@@ -255,9 +259,9 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
      * Creates the JPanel for editing and executing scripts
      */
     public CommandPane(){
+        PC = new PropertyChangeSupport( this );
         initt();
         SP = new ScriptProcessor(  Commands.getDocument());     
-        PC = new PropertyChangeSupport( this );
     }
 
     /**
@@ -278,8 +282,8 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
      * have the Display and Clear property for the Status Pane
      */
     public void addPropertyChangeListener(PropertyChangeListener listener){
-        PC.addPropertyChangeListener( listener );
-        SP.addPropertyChangeListener( listener);
+        if(PC!=null) PC.addPropertyChangeListener( listener );
+        if(SP!=null) SP.addPropertyChangeListener( listener);
     }
 
     /**
@@ -358,7 +362,8 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
 
         Opn.addPropertyChangeListener( Sav);
         Opn.addPropertyChangeListener( this );   
-        
+        this.addPropertyChangeListener(Sav);
+
         Open.addActionListener( Opn);
         Save.addActionListener( Sav );
         
@@ -422,7 +427,9 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
             OpenFileToDocListener opn =
                 (OpenFileToDocListener)(evt.getSource());
             String filename = opn.getFileName();
+            System.out.println("CP:"+filename);
             CommandSP.setBorder(new TitledBorder( "Prgm Editor:"+filename ));
+            PC.firePropertyChange("filename", null, filename);
         }
     }
 
