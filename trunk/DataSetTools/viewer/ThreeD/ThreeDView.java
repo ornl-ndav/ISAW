@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2001/07/20 16:54:39  dennis
+ * Now uses an XScaleChooserUI to let the user specify new
+ * x_scales.  Also uses method Data.getY_values( x_scale )
+ * to get resampled y_values.
+ *
  * Revision 1.14  2001/07/18 13:40:40  dennis
  * Implemented rebinning capabilities.
  *
@@ -85,6 +90,7 @@ package DataSetTools.viewer.ThreeD;
 
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
+import DataSetTools.viewer.util.*;
 import DataSetTools.components.image.*;
 import DataSetTools.instruments.*;
 import DataSetTools.viewer.*;
@@ -139,8 +145,7 @@ public class ThreeDView extends DataSetViewer
   private ThreeD_JPanel            threeD_panel      = null; 
 
   private Box                      control_panel     = null; 
-  private TextRangeUI              x_range_ui        = null;
-  private TextValueUI              n_bins_ui         = null;
+  private XScaleChooserUI          x_scale_ui        = null;
   private ImageJPanel              color_scale_image = null;
   private JSlider                  log_scale_slider  = new JSlider();
   private AltAzController          view_control      = null;
@@ -222,8 +227,8 @@ public void redraw( String reason )
         threeD_panel.set_crosshair( pixel_point );
       }
    }
-   else if ( reason.equals(BINS_CHANGED) ||
-             reason.equals(X_RANGE_CHANGED)   )
+   else if ( reason.equals( XScaleChooserUI.N_STEPS_CHANGED ) ||
+             reason.equals( XScaleChooserUI.X_RANGE_CHANGED )   )
    {
      MakeColorList();
      set_colors( frame_control.getFrameNumber() );
@@ -263,20 +268,17 @@ public void setDataSet( DataSet ds )
 
 /* ------------------------ getXConversionScale -------------------------- */
  /**
-  *  Return a range of X values specified by the user to be used to
-  *  control X-Axis conversions.
+  *  Return an XScale specified by the user to be used to control X-Axis 
+  *  conversions.
   *
   *  @return  The current values from the number of bins control and the
   *           x range control form the Xscale that is returned.
   *
   */
- public UniformXScale getXConversionScale()
+ public XScale getXConversionScale()
   {
-    int num_bins = (int)n_bins_ui.getValue();
-    float x_min = x_range_ui.getMin();
-    float x_max = x_range_ui.getMax();
-
-    return ( new UniformXScale( x_min, x_max, num_bins ) );
+    XScale x_scale = x_scale_ui.getXScale();
+    return x_scale;
   }
 
 
@@ -466,54 +468,31 @@ private void MakeColorList()
   if ( num_rows == 0 ) 
     return;
 
-  UniformXScale x_scale = getXConversionScale();
-  int   num_cols   = x_scale.getNum_x() + 1;
-  int   num_frames = num_cols - 1;
+  XScale x_scale = getXConversionScale();
+  int   num_x    = x_scale.getNum_x();
+  int   num_frames;
+
+  if ( num_x == 1 )                         // single point, get one frame by
+    num_frames = 1;                         // sampling.
+  else
+    num_frames = num_x - 1;
+
   float x_min      = x_scale.getStart_x();
   float x_max      = x_scale.getEnd_x();
 
-  x_scale = new UniformXScale( x_min, x_max, num_cols );
+  color_index = new byte[ num_rows ][ num_frames ];
 
-//  System.out.println("num_rows = " + num_rows );
-//  System.out.println("num_cols = " + num_cols );
-//  System.out.println("num_frames = " + num_frames );
-
-  if ( num_frames == 0 )
-    return;
-  
-  color_index = new byte[num_rows][ num_frames ];
-
-//  System.out.println("MakeColorList: Rebinning.....");
   y_vals = new float[num_rows][];
   Data  data_block;
 
-  if ( num_frames > 1 ) 
-  for ( int i = 0; i < num_rows; i++ )
+  for ( int i = 0; i < num_rows; i++ )    // interval
   {
     data_block = ds.getData_entry(i);
-    data_block = (Data)data_block.clone();
-    data_block.ResampleUniformly( x_scale );
-    y_vals[i] = data_block.getY_values();
+    y_vals[i] = data_block.getY_values( x_scale ); 
   }
-
-  else if ( num_frames == 1 )           // ResampleUniformly seems to fail if
-  for ( int i = 0; i < num_rows; i++ )  // there is only one frame!! 
-  {
-    data_block = ds.getData_entry(i);
-    data_block = (Data)data_block.clone();
-    float temp_y[] = data_block.getY_values();
-    float sum = 0;
-    for ( int j = 0; j < temp_y.length; j++ )
-      sum += temp_y[j];
-
-    y_vals[i] = new float[1];
-    y_vals[i][0] = sum;
-  }
-
+ 
   float x_vals[]     = x_scale.getXs();
   float frame_vals[] = new float[ num_frames ];
-//  System.out.println("x_vals length = " + x_vals.length );
-//  System.out.println("frame_vals length = " + frame_vals.length );
 
   if ( x_vals.length > num_frames )
     for ( int i = 0; i < num_frames; i++ ) 
@@ -524,7 +503,6 @@ private void MakeColorList()
  
   frame_control.setFrame_values( frame_vals );
 
-//  System.out.println("MakeColorList: finding extrema.....");
   float max_data = Float.NEGATIVE_INFINITY;
   float min_data = Float.POSITIVE_INFINITY;
   float val;
@@ -550,7 +528,6 @@ private void MakeColorList()
   else
     scale_factor = 0;
 
-//  System.out.println("MakeColorList: building index table.....");
   int index;
   for ( int i = 0; i < y_vals.length; i++ )
    for ( int j = 0; j < num_frames; j++ )
@@ -922,16 +899,14 @@ private void init()
 
   String label = getDataSet().getX_units();
   UniformXScale x_scale  = getDataSet().getXRange();
-  float x_min = x_scale.getStart_x();
-  float x_max = x_scale.getEnd_x();
-  x_range_ui = new TextRangeUI(label, x_min, x_max );
-  x_range_ui.addActionListener( new X_Range_Listener() );
-  control_panel.add( x_range_ui );
-
-  int num_cols = getDataSet().getMaxXSteps();
-  n_bins_ui = new TextValueUI( "Num Bins", num_cols-1 );
-  n_bins_ui.addActionListener( new NumBins_Listener() );
-  control_panel.add( n_bins_ui );
+  float x_min  = x_scale.getStart_x();
+  float x_max  = x_scale.getEnd_x();
+  int n_steps = getDataSet().getMaxXSteps();
+  if ( getDataSet().getData_entry(0).isHistogram() )
+    n_steps = n_steps - 1;
+  x_scale_ui = new XScaleChooserUI( "X Scale", label, x_min, x_max, n_steps );
+  x_scale_ui.addActionListener( new XScaleListener() );
+  control_panel.add( x_scale_ui );
 
   color_scale_image = new ColorScaleImage();
   color_scale_image.setNamedColorModel( getState().getColor_scale(), false );
@@ -1174,26 +1149,15 @@ private class FrameControlListener implements ActionListener
     }
   }
 
-/* ------------------------ X_Range_Listener ----------------------------- */
+/* ------------------------ XScaleListener ----------------------------- */
 
-  private class X_Range_Listener implements ActionListener,
-                                            Serializable
+  private class XScaleListener implements ActionListener,
+                                          Serializable
   {
      public void actionPerformed(ActionEvent e)
      {
-       getDataSet().notifyIObservers( X_RANGE_CHANGED );
-     }
-  }
-
-
-/* ------------------------ NumBins_Listener ----------------------------- */
-
-  private class NumBins_Listener implements ActionListener,
-                                            Serializable
-  {
-     public void actionPerformed(ActionEvent e)
-     {
-       getDataSet().notifyIObservers( BINS_CHANGED );
+       String action  = e.getActionCommand();
+       getDataSet().notifyIObservers( action );
      }
   }
 

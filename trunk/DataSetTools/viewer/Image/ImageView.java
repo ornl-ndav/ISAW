@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2001/07/20 16:53:25  dennis
+ *  Now uses an XScaleChooserUI to let the user specify new
+ *  x_scales.  Also uses method Data.getY_values( x_scale )
+ *  to get resampled y_values.
+ *
  *  Revision 1.21  2001/07/17 20:43:38  dennis
  *  Now checks validDataSet() before using it.
  *  Removed un-used doLayout() method.
@@ -214,8 +219,7 @@ public class ImageView extends    DataSetViewer
   private SplitPaneWithState   main_split_pane = null;
   private SplitPaneWithState   left_split_pane = null;
 
-  private TextRangeUI  x_range_ui;
-  private TextValueUI  n_bins_ui;
+  private XScaleChooserUI      x_scale_ui      = null;
 
   private JPanel                   image_data_panel  = new JPanel();
   private DataSetXConversionsTable image_table;
@@ -350,22 +354,18 @@ public void setDataSet( DataSet ds )
 
 /* ------------------------ getXConversionScale -------------------------- */
  /**
-  *  Return a range of X values specified by the user to be used to
-  *  control X-Axis conversions.  
+  *  Return an XScale specified by the user to be used to control X-Axis 
+  *  conversions.
   *
-  *  @return  The current values from the number of bins control and the 
+  *  @return  The current values from the number of bins control and the
   *           x range control form the Xscale that is returned.
   *
   */
- public UniformXScale getXConversionScale()
+ public XScale getXConversionScale()
   {
-    int num_bins = (int)n_bins_ui.getValue();
-    float x_min = x_range_ui.getMin();
-    float x_max = x_range_ui.getMax();
-
-    return ( new UniformXScale( x_min, x_max, num_bins ) );
+    XScale x_scale = x_scale_ui.getXScale();
+    return x_scale;
   }
-
 
 
 /* ----------------------------- main ------------------------------------ */
@@ -583,24 +583,15 @@ private void MakeImage( boolean redraw_flag )
 
   float   image_data[][];
   Data    data_block;
-  Data    rebinned_data_block;
 
   int     num_rows = getDataSet().getNum_entries();
 
-  UniformXScale x_scale = getXConversionScale();
-  int   num_cols = x_scale.getNum_x() + 1;
+  UniformXScale x_scale = (UniformXScale)getXConversionScale();
+  int   num_cols = x_scale.getNum_x();
   float x_min    = x_scale.getStart_x();
   float x_max    = x_scale.getEnd_x();
 
-  x_scale = new UniformXScale( x_min, x_max, num_cols );
-
-//  System.out.println("XRange is        " + x_scale );
-//  System.out.println("Making image with" + num_rows + " rows" );
-//  System.out.println("num_cols         " + num_cols );
-//  System.out.println("on interval [" + x_min + ", " + x_max + "]" );
-
-  if ( num_cols < 2 ||
-       num_rows < 1   )    // #### degenerate size of JPanel, so just return
+  if ( num_cols < 1 || num_rows < 1   )      // #### degenerate size of JPanel
     return;
 
   image_data = new float[ num_rows ][];
@@ -608,17 +599,7 @@ private void MakeImage( boolean redraw_flag )
   for ( int i = 0; i < num_rows; i++ )
   {
     data_block = getDataSet().getData_entry(i);
-    rebinned_data_block = (Data)data_block.clone();
-/*
-    if ( !rebinned_data_block.isFunction() )           // need to treat it as
-      rebinned_data_block.ConvertToFunction( false );  // intensity for image
-                                                       // display when starting
-                                                       // with widely different
-                                                       // sizes of x-bins
-*/
-    rebinned_data_block.ResampleUniformly( x_scale );  
-
-    image_data[i] = rebinned_data_block.getY_values();
+    image_data[i] = data_block.getY_values( x_scale );
   }
                               // set the log scale and image data, but don't
                               // remake the image yet. It's done when the
@@ -626,7 +607,21 @@ private void MakeImage( boolean redraw_flag )
   image_Jpanel.changeLogScale( log_scale_slider.getValue(), false );
   image_Jpanel.setData( image_data, redraw_flag );
 
-  CoordBounds bounds = new CoordBounds( x_min, 0, x_max, num_rows-1 );
+                                          // use slightly different coordinate
+                                          // system for functions and histograms
+  CoordBounds bounds;
+  if ( image_data[0].length < num_cols )                 // histogram
+    bounds = new CoordBounds( x_min, 0, x_max, num_rows-1 );
+  else                  
+  {                                                      // function
+    float delta_x;
+    if ( num_cols > 1 )
+      delta_x = (x_max - x_min) / (num_cols -1);
+    else
+      delta_x = 0;
+    bounds = new CoordBounds( x_min-delta_x/2, 0, x_max+delta_x/2, num_rows-1 );  
+  }
+
   image_Jpanel.initializeWorldCoords( bounds );
 
   MakeSelectionImage( redraw_flag );
@@ -692,13 +687,12 @@ private Component MakeControlArea()
   UniformXScale x_scale  = getDataSet().getXRange();
   float x_min = x_scale.getStart_x();
   float x_max = x_scale.getEnd_x();
-  x_range_ui = new TextRangeUI(label, x_min, x_max );
-  x_range_ui.setPreferredSize( new Dimension(120, 50) );
-  control_area.add( x_range_ui );
+  int n_steps = getDataSet().getMaxXSteps();
+  if ( getDataSet().getData_entry(0).isHistogram() )
+    n_steps = n_steps - 1;
+  x_scale_ui = new XScaleChooserUI( "X Scale", label, x_min, x_max, n_steps );
+  control_area.add( x_scale_ui );
 
-  int num_cols = getDataSet().getMaxXSteps();
-  n_bins_ui = new TextValueUI( "Num Bins", num_cols-1 );
-  control_area.add( n_bins_ui ); 
                                                   // make a color scale bar
   color_scale_image = new ColorScaleImage();
   color_scale_image.setNamedColorModel( getState().getColor_scale(), false );
@@ -818,9 +812,7 @@ private void MakeConnections()
    h_graph.addMouseMotionListener( new HGraphMouseMotionAdapter() );
    h_graph.addMouseListener( new HGraphMouseAdapter() );
 
-   x_range_ui.addActionListener( new X_Range_Listener() );
-   n_bins_ui.addActionListener( new NumBins_Listener() );
-  
+   x_scale_ui.addActionListener( new XScaleListener() );
 
    SelectionKeyAdapter key_adapter = new SelectionKeyAdapter();
    image_Jpanel.addKeyListener( key_adapter );
@@ -1004,20 +996,19 @@ private void DrawHGraph( int index, int graph_num, boolean pointed_at )
 {
   Data  data_block = getDataSet().getData_entry( index );
 
+  float x[];
+  float y[];
   if ( getState().getRebin() )
   {
-    UniformXScale x_scale = getXConversionScale();
-    int num_cols = x_scale.getNum_x() + 1;
-    float x_min  = x_scale.getStart_x();
-    float x_max  = x_scale.getEnd_x();
-    x_scale = new UniformXScale( x_min, x_max, num_cols );
-
-    data_block = (Data)data_block.clone();
-    data_block.ResampleUniformly( x_scale );
+    XScale x_scale = getXConversionScale();
+    x = x_scale.getXs();
+    y = data_block.getY_values( x_scale );
   }
-  
-  float x[] = data_block.getX_scale().getXs();
-  float y[] = data_block.getY_values();
+  else
+  {
+    x = data_block.getX_scale().getXs();
+    y = data_block.getY_values();
+  }
 
   Color color_list[] = { 
                          Color.red, 
@@ -1365,26 +1356,15 @@ private class ConsumeKeyAdapter extends     KeyAdapter
   }
 
 
-/* ------------------------ X_Range_Listener ----------------------------- */
+/* ------------------------ XScaleListener ----------------------------- */
 
-  private class X_Range_Listener implements ActionListener,
-                                            Serializable
+  private class XScaleListener implements ActionListener,
+                                          Serializable
   {
      public void actionPerformed(ActionEvent e)
      {
-       getDataSet().notifyIObservers( X_RANGE_CHANGED );
-     }
-  }
-
-
-/* ------------------------ NumBins_Listener ----------------------------- */
-
-  private class NumBins_Listener implements ActionListener,
-                                            Serializable
-  {
-     public void actionPerformed(ActionEvent e)
-     {
-       getDataSet().notifyIObservers( BINS_CHANGED );
+       String action  = e.getActionCommand();
+       getDataSet().notifyIObservers( action );
      }
   }
 
