@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/03/25 23:47:59  pfpeterson
+ *  All file separators in the file are '/' not '' b/c it confuses
+ *  java. Added more comments to deal with confusion of DEFAULT
+ *  property.
+ *
  *  Revision 1.4  2002/03/12 21:16:42  pfpeterson
  *  Removed log file line since it is no longer used by anyone.
  *
@@ -189,6 +194,7 @@ public class DefaultProperties{
                 System.out.println("Isaw found: "+dir);
                 index=dir.indexOf("Isaw.jar")-1;
                 if(index>0){
+                    dir=StringUtil.fixSeparator(dir);
                     return dir.substring(0,dir.indexOf("Isaw.jar")-1);
                 }
             }else{
@@ -197,6 +203,7 @@ public class DefaultProperties{
                 File isIsaw=new File(dir+isawExec);
                 if(isIsaw.exists()){
                     System.out.println("Isaw found: "+isIsaw);
+                    dir=StringUtil.fixSeparator(dir);
                     return dir;
                 }
             }
@@ -209,7 +216,7 @@ public class DefaultProperties{
         }
         
         System.err.println("WARNING: Could not find ISAW "
-                           +"- Edit Properties File");
+        +"- Edit Properties File");
         return "DEFAULT";
     }
 
@@ -228,8 +235,12 @@ public class DefaultProperties{
             +"#"+newline
             +newline
             +"#"+newline
-            +"# Directory Options"+newline
-            +"#"+newline
+            +"# Directory Options";
+        if(IsawHome.equals("DEFAULT")){
+            rs=rs+" - replace the word DEFAULT with"+newline
+                 +"# the location of the ISAW home directory";
+        }
+        rs=rs+newline+"#"+newline
             +"ISAW_HOME="+IsawHome+newline
             +"#GROUP_HOME="+UserHome+separator+"ipns"+newline;
         if(IsawHome.equals("DEFAULT")){
