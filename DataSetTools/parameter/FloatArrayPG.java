@@ -31,6 +31,9 @@
  *
  *
  * $Log$
+ * Revision 1.11  2003/10/11 19:19:16  bouzekc
+ * Removed clone() as the superclass now implements it using reflection.
+ *
  * Revision 1.10  2003/09/09 23:06:28  bouzekc
  * Implemented validateSelf().
  *
@@ -83,10 +86,6 @@ public class FloatArrayPG extends VectorPG{
     jf.invalidate();
     jf.show();
   }*/
-  public Object clone(){
-    FloatArrayPG faap = new FloatArrayPG( getName(), getValue());
-    return (Object)faap;
-  }       
 
   /**
    * Validates this FloatArrayPG.  A FloatArrayPG is considered valid if it

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/10/11 19:19:17  bouzekc
+ *  Removed clone() as the superclass now implements it using reflection.
+ *
  *  Revision 1.10  2003/09/11 19:51:44  bouzekc
  *  Fixed bug where validateSelf() would not work correctly if the file to
  *  save did not exist.
@@ -154,17 +157,6 @@ public class SaveFilePG extends BrowsePG{
         fpg.showGUIPanel(0,y);
         y+=dy;
     }*/
-
-    /**
-     * Definition of the clone method.
-     */
-    public Object clone(){
-        SaveFilePG pg=new SaveFilePG(this.name,this.value,this.valid);
-        pg.setDrawValid(this.getDrawValid());
-        pg.initialized=false;
-        pg.filter_vector=this.filter_vector;
-        return pg;
-    }
 
     /**
      * Validates this SaveFilePG.  A SaveFilePG is considered valid if
