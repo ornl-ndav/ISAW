@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.104  2004/02/23 17:55:54  bouzekc
+ * Changed method calls to SwingWizardFrontEnd's modified methods.
+ *
  * Revision 1.103  2004/02/11 04:09:02  bouzekc
  * Removed the PropChangeProgressBar.  The progress bars now use the JDK 1.4
  * setIndeterminate() method.  This should take some work off of writing
@@ -1008,10 +1011,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       //only do something if the Form is not done
       if( !f.done(  ) ) {
         if( frontEnd instanceof IGUIWizardFrontEnd ) {
-          ( ( IGUIWizardFrontEnd )frontEnd ).setFormProgressIndeterminate( 
-            true );
-          ( ( IGUIWizardFrontEnd )frontEnd ).setWizardProgressIndeterminate( 
-            true );
+          ( ( IGUIWizardFrontEnd )frontEnd ).setFormProgressIndeterminate(   );
+          ( ( IGUIWizardFrontEnd )frontEnd ).setWizardProgressIndeterminate(   );
         }
 
         /*if( this.IamRemote ) {
@@ -1054,8 +1055,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     }
 
     if( frontEnd instanceof IGUIWizardFrontEnd ) {
-      ( ( IGUIWizardFrontEnd )frontEnd ).setFormProgressIndeterminate( false );
-      ( ( IGUIWizardFrontEnd )frontEnd ).setWizardProgressIndeterminate( false );
       ( ( IGUIWizardFrontEnd )frontEnd ).updateFormProgress(  );
       ( ( IGUIWizardFrontEnd )frontEnd ).updateWizardProgress(  );
     }
