@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2004/01/24 22:22:25  bouzekc
+ * Removed unused imports and local variables.
+ *
  * Revision 1.7  2003/05/19 15:20:42  rmikk
  * -Now uses the DataSetTools.components.ui.PlaneSelector
  *    control.
@@ -67,9 +70,6 @@ import DataSetTools.operator.DataSet.*;
 import DataSetTools.operator.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.math.*;
-import DataSetTools.util.SharedData.*;
-import DataSetTools.math.*;
-import DataSetTools.operator.DataSet.*;
 
 public class TQxQyQz  extends ContourView
   {
