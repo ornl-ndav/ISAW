@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2003/06/12 18:47:42  pfpeterson
+ *  Updated javadocs to reflect a idiosycracy of Script_Class_List_Handler.
+ *
  *  Revision 1.23  2003/06/11 21:23:49  pfpeterson
  *  Added functionality to getCommand to work better with Jython operators.
  *
@@ -86,6 +89,16 @@ import DataSetTools.parameter.IParameter;
  * an operation, including a title, parameter names and types.  It also has 
  * methods to set the required parameters and to get the result of performing 
  * the operation, as an object.
+ *
+ * <B>NOTE:</B> No class should directly extend Operator. Instead they
+ * should extend either {@link
+ * DataSetTools.operator.Generic.GenericOperator GenericOperator} or
+ * {@link DataSetTools.operator.DataSet.DataSetOperator
+ * DataSetOperator}. If it does not then they will not be categorized
+ * by {@link Command.Script_Class_ListHandler
+ * Script_Class_List_Handler}. The effect of this is that the operatr
+ * will not be added to menus, will not be found by the help system,
+ * and will not be available in scripts.
  */
 
 abstract public class Operator implements Serializable

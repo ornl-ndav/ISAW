@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.42  2003/06/12 18:49:22  pfpeterson
+ * Updated javadocs to reflect a idiosycracy of Script_Class_List_Handler.
+ *
  * Revision 1.41  2003/06/06 21:31:17  pfpeterson
  * Switch order of checks in getInstance(classname) to properly
  * report Interfaces.
@@ -143,6 +146,16 @@ import DataSetTools.parameter.*;
 /** 
  * Gets and Saves all scripts and java GenericOperators in the
  * Path(s) of the system property Script_Path
+ *
+ * <B>NOTE:</B> No class should directly extend Operator. Instead they
+ * should extend either {@link
+ * DataSetTools.operator.Generic.GenericOperator GenericOperator} or
+ * {@link DataSetTools.operator.DataSet.DataSetOperator
+ * DataSetOperator}. If it does not then they will not be categorized
+ * by {@link Command.Script_Class_ListHandler
+ * Script_Class_List_Handler}. The effect of this is that the operatr
+ * will not be added to menus, will not be found by the help system,
+ * and will not be available in scripts.
  */
 public class Script_Class_List_Handler  implements OperatorHandler{
     //Contains ordering for Command Names
