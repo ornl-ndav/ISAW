@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/02/24 21:05:17  pfpeterson
+ * Changed to use IParameterGUI rather than IParameter.
+ *
  * Revision 1.4  2002/11/27 23:30:47  pfpeterson
  * standardized header
  *
@@ -56,6 +59,7 @@ import DataSetTools.util.*;
 import DataSetTools.math.*;
 import java.util.*;
 import DataSetTools.gsastools.GsasCalib;
+import DataSetTools.parameter.*;
 
 /** 
  *  This operator will focus one or more spectra in a DataSet to a specified
@@ -105,12 +109,11 @@ public class TimeFocus extends GenericTOF_Diffractometer
                     boolean make_new_ds )
   {
     this(); 
-    parameters = new Vector();
-    addParameter( new Parameter("DataSet parameter", ds) );
-    addParameter( new Parameter("List of IDs to focus", new String(group_str)));
-    addParameter( new Parameter("New Angle(degrees)", new Float(angle_deg) ) );
-    addParameter( new Parameter("New Final Path(m)", new Float(final_L_m) ) );
-    addParameter( new Parameter("Make New DataSet", new Boolean(make_new_ds)));
+    getParameter(0).setValue(ds);
+    getParameter(1).setValue(group_str);
+    getParameter(2).setValue(new Float(angle_deg));
+    getParameter(3).setValue(new Float(final_L_m));
+    getParameter(4).setValue(new Boolean(make_new_ds));
   }
 
  /* ---------------------------- getCommand ------------------------------- */ 
@@ -133,11 +136,11 @@ public class TimeFocus extends GenericTOF_Diffractometer
   public void setDefaultParameters()
   {
     parameters = new Vector();
-    addParameter( new Parameter("DataSet parameter", DataSet.EMPTY_DATA_SET) );
-    addParameter( new Parameter("List of IDs to focus", new String("") ) );
-    addParameter( new Parameter("New Angle(degrees)", new Float(90) ) );
-    addParameter( new Parameter("New Final Path(m)", new Float(1) ) );
-    addParameter( new Parameter("Make New DataSet", new Boolean(false) ) );
+    addParameter( new DataSetPG("DataSet parameter", DataSet.EMPTY_DATA_SET) );
+    addParameter( new StringPG("List of IDs to focus", "") );
+    addParameter( new FloatPG("New Angle(degrees)", 90) );
+    addParameter( new FloatPG("New Final Path(m)", 1) );
+    addParameter( new BooleanPG("Make New DataSet", false) );
   }
 
  /* ----------------------------- getResult ------------------------------ */ 
