@@ -32,6 +32,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.10  2004/03/06 19:07:41  rmikk
+ * It now handles the Vector Data Type
+ *
  * Revision 1.9  2004/02/16 19:45:44  bouzekc
  * Now handles HiddenOperator implementation by the Wrappable Object.
  *
@@ -164,7 +167,7 @@ public class JavaWrapperOperator extends GenericOperator {
             //StringPG
           } else if( ( type == Character.TYPE ) || ( type == String.class ) ) {
             addParameter( new StringPG( name, null ) );
-          } else if( type.isArray(  ) ) {
+          } else if( (type.isArray(  )) || ( type == Vector.class) ) {
             //ArrayPG
             addParameter( new ArrayPG( name, val ) );
           } else if( 
