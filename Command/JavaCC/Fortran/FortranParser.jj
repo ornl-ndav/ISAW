@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.20  2004/01/29 23:21:09  bouzekc
+ * Now puts a "public" modifier on all variables outside of functions.
+ *
  * Revision 1.19  2004/01/28 05:00:30  bouzekc
  * parseText() now looks for a newline rather than a semicolon for the line
  * end.
@@ -206,6 +209,11 @@ public class FortranParser {
     s = replaceTypes( s, false, primitive );
       
     StringBuffer buffer = new StringBuffer(  );
+    
+    if( !insideFunction ) {
+      //put a public on it
+      buffer.append( "public " );
+    }
     //make sure these get a semicolon
     appendSemiColon = true;
     s = s.trim(  );
@@ -981,6 +989,7 @@ String convertFortranTokens(  ) : {
   }
 |
   t = <FUNCTION_END> {
+    insideFunction = false;
     return "}";
   }
 |
