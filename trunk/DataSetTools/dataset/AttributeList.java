@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2004/04/26 13:00:33  rmikk
+ *  Incorporated support for PixelInfoListAttribute's grids.
+ *
  *  Revision 1.20  2004/03/19 17:22:05  dennis
  *  Removed unused variable(s)
  *
@@ -75,8 +78,8 @@
 package  DataSetTools.dataset;
 
 import gov.anl.ipns.Util.File.*;
-
-import java.util.Vector;
+import java.lang.reflect.*;
+import java.util.*;
 import java.io.*;
 
 /**
@@ -475,7 +478,6 @@ public class AttributeList implements Serializable,
                                          // results from adding them, in
                                          // the list
    }
- 
 
   /**
   * Implements the IXmlIO interface to let an AttributeList read itself
@@ -507,10 +509,10 @@ public class AttributeList implements Serializable,
         {
           Class AT = Class.forName( "DataSetTools.dataset."+Tag);
           Attribute A = (Attribute)(AT.newInstance());
-          boolean OK;
-        
-          OK= A.XMLread( stream );
-          if(!OK)
+          if( A instanceof PixelInfoListAttribute)
+             ((PixelInfoListAttribute)A).setGridIds(gridIDs);
+          boolean OK= A.XMLread( stream );
+          if(!OK )
             { return xml_utils.setError("ximproper read for "+Tag+","+
                    A.getClass());
             }
@@ -547,7 +549,10 @@ public class AttributeList implements Serializable,
     }
      
   }
-
+  Hashtable gridIDs = null;
+  public void setGridIDs( Hashtable gridIDs){
+  	this.gridIDs = gridIDs;
+  }
 
   /**
   * Implements the IXmlIO interface to let an AttributeList write itself
