@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.46  2004/06/24 22:23:42  rmikk
+ *  Incorporated ControlPanelWidth(%)
+ *
  *  Revision 1.45  2004/05/26 18:36:32  rmikk
  *  Removed unused variables
  *
@@ -532,7 +535,15 @@ public class ContourView extends DataSetViewer
      addControl( jpEast);
      jpEast.add( ConvTableHolder );
      jpEast.add( Box.createHorizontalGlue() );
-     main = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,  rpl_Holder,  jpEast, .70f);
+     float f=.70f;
+     if( state != null){
+           f = state.get_float("ControlPanelWidth(%)");
+           if( !Float.isNaN(f))
+             f = 1-f;
+           else
+             f = .70f;
+         }
+     main = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,  rpl_Holder,  jpEast,f);
     }
 
    class DataChangeListener implements ActionListener{
