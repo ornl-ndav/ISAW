@@ -1,3 +1,47 @@
+/*
+ * @(#)RunfileRetriever.java     1.1  2000/03/23  Dennis Mikkelson
+ *
+ * Modified:  
+ *    Alok Chatterjee, Fall 1999.  Added number of pulses and total counts
+ *                                 information.
+ *    Dennis Mikkelson, 3/23/2000  Added code to all catch{} blocks to print 
+ *                                 info about the exception.
+ *                                 Fixed bug in getting the total counts...
+ *                                   ( must pass group_id, NOT a detector id
+ *                                      to Get1DSum( ) )
+ *                                 Added documentation for all routines
+ * ---------------------------------------------------------------------------
+ *  $Log$
+ *  Revision 1.3  2000/07/10 22:49:46  dennis
+ *  July 10, 2000 version...many changes
+ *
+ *  Revision 1.22  2000/06/14 14:55:42  dennis
+ *  Added getFirstDataSet(type) to return the first monitor or first
+ *  histogram DataSet in the runfile.
+ *
+ *  Revision 1.21  2000/06/14 13:57:43  dennis
+ *  Changed to return histogram of raw counts rather than counts/microsecond
+ *
+ *  Revision 1.20  2000/06/14 13:56:13  dennis
+ *  Added rudimentary support for IDGSpectrometer and Reflectometer
+ *
+ *  Revision 1.19  2000/06/01 18:41:08  dennis
+ *  Changed separtor to "_" rather than blank in DataSet title.
+ *  Added solid angle, delta 2 theta and efficiency factor.
+ *
+ *  Revision 1.18  2000/05/18 21:26:47  dennis
+ *  Added the fully qualified file name as a DataSet attribute and
+ *  added the time field type as a Data block attribute.
+ *
+ *  Revision 1.17  2000/05/12 21:39:39  dennis
+ *  Now only creates Data blocks that share references to time field types,
+ *  if possible
+ *
+ *  Revision 1.16  2000/05/11 16:19:12  dennis
+ *  added RCS logging
+ *
+ *
+ */
 package DataSetTools.retriever;
 
 import DataSetTools.dataset.*;
@@ -7,6 +51,10 @@ import IPNS.Runfile.*;
 import DataSetTools.math.*;
 import java.io.*;
 
+/**
+ *  This class opens an IPNS Runfile and extracts DataSets corresponding to
+ *  monitors and sample histograms.
+ */
 public class RunfileRetriever extends    Retriever 
                               implements Serializable
 {
@@ -19,6 +67,11 @@ public class RunfileRetriever extends    Retriever
                             // DataSet number in this runfile.
   Runfile run_file;
 
+/**
+ *  Construct a runfile retriever for a specific file.
+ *
+ *  @param data_source_name  The fully qualified file name for the runfile.
+ */
   public RunfileRetriever(String data_source_name) 
   {
     super(data_source_name);
@@ -67,14 +120,39 @@ public class RunfileRetriever extends    Retriever
         }
       }
     }
-    catch( Exception e ) { System.out.println( e ); }
+    catch( Exception e ) 
+    {
+      System.out.println("Exception in RunfileRetriever constructor");
+      System.out.println("Exception is " +  e ); 
+    }
   }
 
+/**
+ *  Get the number of distinct DataSets contained in this runfile. 
+ *  The monitors are placed into one DataSet.  Any sample histograms are 
+ *  placed into separate DataSets.  
+ *   
+ *  @return the number of distinct DataSets in this runfile.
+ */  
   public int numDataSets()
   { 
     return num_data_sets;
   }
 
+/**
+ *  Get the type code of a particular DataSet in this runfile. 
+ *  The type codes include:
+ *
+ *     Retriever.INVALID_DATA_SET
+ *     Retriever.MONITOR_DATA_SET
+ *     Retriever.HISTOGRAM_DATA_SET
+ *
+ *  @param  data_set_num  The number of the DataSet in this runfile whose
+ *                        type code is needed.  data_set_num must be between
+ *                        0 and numDataSets()-1
+ *
+ *  @return the type code for the specified DataSet.
+ */ 
   public int getType( int data_set_num )
   {
     if ( data_set_num >= 0 && data_set_num < num_data_sets )
@@ -83,6 +161,15 @@ public class RunfileRetriever extends    Retriever
       return INVALID_DATA_SET;
   }
 
+/**
+ *  Get the histogram number of a particular DataSet in this runfile. 
+ *  
+ *  @param  data_set_num  The number of the DataSet in this runfile whose
+ *                        histogram number is needed.  data_set_num must be 
+ *                        between 0 and numDataSets()-1
+ *
+ *  @return the histogram number for the specified DataSet.
+ */ 
   public int getHistogramNum( int data_set_num )
   {
     if ( data_set_num >= 0 && data_set_num < num_data_sets )
@@ -91,9 +178,43 @@ public class RunfileRetriever extends    Retriever
       return INVALID_DATA_SET;
   }
 
+
+/**
+ *  Get the first DataSet in this runfile that has the specified type, 
+ *  histogram or monitor.  If no DataSet in the runfile has the specified 
+ *  type this returns null.
+ *
+ *  @param type  The type of the DataSet to retrieve from the runfile.
+ *               Retriever.HISTOGRAM_DATA_SET or Retriever.MONITOR_DATA_SET
+ *
+ *  @return  The first DataSet in the with the specified type, or null if
+ *           no such DataSet exists in the runfile.
+ */
+ public DataSet getFirstDataSet( int type )
+ {
+   if ( type != Retriever.HISTOGRAM_DATA_SET  &&
+        type != Retriever.MONITOR_DATA_SET  )
+     return null;
+
+   for ( int i = 0; i < num_data_sets; i++ )
+     if ( type == getType( i ) )
+       return getDataSet( i );
+
+   return null;
+ }
+
+/**
+ *  Get the specified DataSet from this runfile.
+ * 
+ *  @param  data_set_num  The number of the DataSet in this runfile 
+ *                        that is to be read from the runfile.  data_set_num
+ *                        must be between 0 and numDataSets()-1
+ *
+ *  @return the requested DataSet.
+ */
   public DataSet getDataSet( int data_set_num )
   {
-    System.out.println("======= getting dataset for >>>" + data_source_name );
+//    System.out.println("======= getting dataset for >>>" + data_source_name );
     int instrument_type;
 
     if ( data_set_num >= num_data_sets )
@@ -103,18 +224,34 @@ public class RunfileRetriever extends    Retriever
     return getDataSet( data_set_num, instrument_type );
   }
 
+
+/**
+ *  Get the specified DataSet from this runfile, based on the type of the
+ *  data in the runfile
+ *
+ *  @param  data_set_num     The number of the DataSet in this runfile
+ *                           that is to be read from the runfile.  data_set_num
+ *                           must be between 0 and numDataSets()-1
+ *
+ *  @param  instrument_type  Specifies the type of instrument for this runfile.
+ *                           Currently only:
+ *                               InstrumentType.TOF_DIFFRACTOMETER
+ *                               InstrumentType.TOF_DG_SPECTROMETER
+ *                           are supported.
+ *
+ *  @return the requested DataSet.
+ */
   private DataSet getDataSet( int data_set_num, int instrument_type )
   {
-    int               num_times;
-    XScale            x_scale;
+    int               num_times = 0;
+    XScale            x_scale = null;
     float[]           raw_spectrum;
     int               group_id;
-    int               det_id;
     Data              spectrum; 
     int               histogram_num;
     boolean           monitor;
     int               first_id, last_id;
-    float[]           bin_boundaries;
+    float[]           bin_boundaries = null;
     float             source_to_sample_tof;
     DataSet           data_set = null;
     String            title;
@@ -125,12 +262,12 @@ public class RunfileRetriever extends    Retriever
     if ( getType( data_set_num ) == MONITOR_DATA_SET )
       {
         monitor = true;
-        title = "M" + histogram_num + " " + title; 
+        title = "M" + histogram_num + "_" + title; 
       }
     else
       {
         monitor = false;    
-        title = "H" + histogram_num + " " + title; 
+        title = "H" + histogram_num + "_" + title; 
       }
  
     try
@@ -147,8 +284,16 @@ public class RunfileRetriever extends    Retriever
                                        "Scattering Intensity" );
      else if ( instrument_type == InstrumentType.TOF_DIFFRACTOMETER )
        ds_factory = new DiffractometerTofDataSetFactory( title );
+     else if ( instrument_type == InstrumentType.TOF_SCD )
+       ds_factory = new SCDTofDataSetFactory( title );
+     else if ( instrument_type == InstrumentType.TOF_SAD )
+       ds_factory = new SADTofDataSetFactory( title );
      else if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
        ds_factory = new SpectrometerTofDataSetFactory( title );
+     else if ( instrument_type == InstrumentType.TOF_IDG_SPECTROMETER )
+       ds_factory = new IDGSpectrometerTofDataSetFactory( title );
+     else if ( instrument_type == InstrumentType.TOF_REFLECTROMETER )
+       ds_factory = new ReflectometerTofDataSetFactory( title );
      else
        ds_factory = new DataSetFactory( title );
 
@@ -157,25 +302,33 @@ public class RunfileRetriever extends    Retriever
      AddDataSetAttributes( data_source_name, data_set );
 
      run_file.LeaveOpen();
+
+     int last_tf_type = Integer.MAX_VALUE;  // keep track of the previous time
+     int tf_type;                           // type so we only create new 
+     boolean new_tf_type;                   // XScales when needed.  
+
      for ( group_id = first_id; group_id <= last_id; group_id++ )
      {
       int[] group_members = run_file.IdsInSubgroup( group_id );
 
       if ( group_members.length > 0 )   // only deal with non-trivial groups
-      if ( monitor && run_file.IsSubgroupBeamMonitor(group_id) ||
-           !monitor && !run_file.IsSubgroupBeamMonitor(group_id) )
+      if ( monitor &&  run_file.IsSubgroupBeamMonitor(group_id) ||
+          !monitor && !run_file.IsSubgroupBeamMonitor(group_id) )
       {
-        det_id = group_members[0];    // representative det_id;
-
-        bin_boundaries = run_file.TimeChannelBoundaries(det_id, histogram_num);
-        num_times = bin_boundaries.length;
+        tf_type = run_file.TimeFieldType(group_id);
+        if ( tf_type == last_tf_type )       // only get the times if it's a
+          new_tf_type = false;               // new time field type
+        else
+        { 
+          bin_boundaries = run_file.TimeChannelBoundaries(group_id);
+          num_times = bin_boundaries.length;
+          new_tf_type = true;
+          last_tf_type = tf_type;
+        }
 
         if ( num_times > 1 )
         {
-          // raw_spectrum = run_file.Get1DSpectrum( det_id, histogram_num );
-        
            raw_spectrum = run_file.Get1DSpectrum( group_id );
-        
 
           if ( raw_spectrum.length >= 1 )
           {
@@ -183,10 +336,18 @@ public class RunfileRetriever extends    Retriever
             // and groups that are NOT beam monitors ------------------------ 
             source_to_sample_tof = (float)run_file.SourceToSampleTime();
             if (instrument_type==InstrumentType.TOF_DG_SPECTROMETER && !monitor)
-              for ( int i = 0; i < bin_boundaries.length; i++ )
-                 bin_boundaries[i] -= source_to_sample_tof;
+              if ( new_tf_type )
+                for ( int i = 0; i < bin_boundaries.length; i++ )
+                   bin_boundaries[i] -= source_to_sample_tof;
 
-            x_scale = new VariableXScale( bin_boundaries );
+          // DON'T DO THIS FOR NOW... WE'LL JUST DEAL WITH HISTOGRAMS
+          // change counts to counts per unit time
+          //  for ( int i = 0; i < raw_spectrum.length; i++ )
+          //    raw_spectrum[i] /= (bin_boundaries[i+1] - bin_boundaries[i]);
+
+            if ( new_tf_type )
+              x_scale = new VariableXScale( bin_boundaries );
+
             spectrum = new Data( x_scale, raw_spectrum, group_id );
 
             // Add the relevant attributes ----------------------------------
@@ -194,6 +355,7 @@ public class RunfileRetriever extends    Retriever
                                    histogram_num,
                                    group_id,
                                    group_members, 
+                                   tf_type,
                                    spectrum      );
  
             // Now add the spectrum to the DataSet -------------------------
@@ -205,16 +367,24 @@ public class RunfileRetriever extends    Retriever
 
     run_file.Close(); 
 
-    } catch( Exception e )
-      {
-         System.out.println( e );
-      }
+    } 
+    catch( Exception e )
+    {
+       System.out.println("Exception in RunfileRetriever.getDataSet()" );
+       System.out.println("Exception is " +  e );
+    }
 
     return data_set;
   }
 
 
-
+/**
+ *  Add the DataSet attributes to the specified DataSet.
+ *
+ *  @param  file_name  The file name for this DataSet.
+ *
+ *  @param  ds         The DataSet to which the attributes are added.
+ */
   private void AddDataSetAttributes( String   file_name,
                                      DataSet  ds        )
   {
@@ -222,6 +392,10 @@ public class RunfileRetriever extends    Retriever
     StringAttribute   str_attr;
     IntListAttribute  int_list_attr;
     AttributeList     attr_list = ds.getAttributeList();
+
+    // Fully qualified file name...
+    str_attr = new StringAttribute( Attribute.FILE_NAME, file_name );
+    attr_list.setAttribute( str_attr );
 
     // Instrument Name ........
     str_attr = new StringAttribute( Attribute.INST_NAME, 
@@ -252,7 +426,8 @@ public class RunfileRetriever extends    Retriever
     attr_list.setAttribute( str_attr );
     
     // Number of Pulses  ........
-    int_attr = new IntAttribute( Attribute.NUMBER_OF_PULSES, run_file.NumOfPulses() );
+    int_attr = new IntAttribute( Attribute.NUMBER_OF_PULSES, 
+                                 run_file.NumOfPulses() );
     attr_list.setAttribute( int_attr );
     
 
@@ -261,11 +436,21 @@ public class RunfileRetriever extends    Retriever
 
 
 
-
+/**
+ *  Add the Spectrum attributes to the specified Data block.
+ *
+ *  @param  instrument_type  The file name for this DataSet
+ *  @param  histogram_num    The histogram number for this group
+ *  @param  group_id         The group_id for this group
+ *  @param  group_members    The list of Detectors that belong to this group
+ *  @param  spectrum         The Data block to which the attributes are added  
+ *
+ */
   private void AddSpectrumAttributes( int     instrument_type,
                                       int     histogram_num,
                                       int     group_id,
                                       int     group_members[], 
+                                      int     tf_type,
                                       Data    spectrum )
   {
     StringAttribute   str_attr;
@@ -285,6 +470,10 @@ public class RunfileRetriever extends    Retriever
     int_list_attr =new IntListAttribute(Attribute.RUN_NUM, list );
     attr_list.setAttribute( int_list_attr );
 
+    // Time field type
+    int_attr = new IntAttribute( Attribute.TIME_FIELD_TYPE, tf_type );
+    attr_list.setAttribute( int_attr );
+
     // Detector ID list ..........
     int_list_attr = new IntListAttribute( Attribute.DETECTOR_IDS,
                                             group_members );
@@ -292,12 +481,16 @@ public class RunfileRetriever extends    Retriever
 
     // Initial flight path ............
     float_attr = new FloatAttribute( Attribute.INITIAL_PATH,
-                                     (float)run_file.RawFlightPath(group_members[0]) );
+                                     (float)run_file.SourceToSample() );
     attr_list.setAttribute( float_attr );
 
     // Initial energy ...........
     if ( instrument_type == InstrumentType.TOF_DG_SPECTROMETER )
     {
+      float_attr =new FloatAttribute(Attribute.NOMINAL_ENERGY_IN,
+                                     (float)run_file.EnergyIn() );
+      attr_list.setAttribute( float_attr );
+
       float_attr =new FloatAttribute(Attribute.ENERGY_IN,
                                      (float)run_file.EnergyIn() );
       attr_list.setAttribute( float_attr );
@@ -312,12 +505,22 @@ public class RunfileRetriever extends    Retriever
     }
 
     // Detector position ..........
-    angle      = (float)run_file.DetectorAngle(group_members[0], histogram_num);
+//  angle      = (float)run_file.DetectorAngle(group_members[0], histogram_num);
+    angle      = (float)getAverageAngle(group_members, histogram_num);
+ 
     angle      *= (float)(Math.PI / 180.0);
     height     = getAverageHeight( group_members );
     final_path = (float)run_file.FlightPath( group_members[0], histogram_num );
     float r    = (float)Math.sqrt( final_path * final_path - height * height );
     position.setCylindricalCoords( r, angle, height );
+
+    // Show effective position
+    float sphere_coords[] = position.getSphericalCoords();
+//    System.out.println("Group = " + group_id +
+//                       " R = " + sphere_coords[0] +
+//                       " Theta = " + sphere_coords[1]*180/3.14159265f +
+//                       " Phi = " + sphere_coords[2]*180/3.14159265f );
+
 
     pos_attr = new DetPosAttribute( Attribute.DETECTOR_POS, position );
     attr_list.setAttribute( pos_attr );
@@ -325,47 +528,153 @@ public class RunfileRetriever extends    Retriever
     // Raw Detector Angle ...........
     float_attr =new FloatAttribute(Attribute.RAW_ANGLE,
                       (float)run_file.RawDetectorAngle( group_members[0]) );
-                      //(float)run_file.RawDetectorAngle(1) );
     attr_list.setAttribute( float_attr );
+
+    // Delta 2 theta ( range of scattering angles covered ), assuming 1" tube
+    float det_width_factor = 1.45530928f;  // detector width in meters times
+                                           // 180/PI to convert from radians
+                                           // to degrees.
+    float delta_2theta = det_width_factor/final_path;
+    float_attr =new FloatAttribute(Attribute.DELTA_2THETA, delta_2theta  );
+    attr_list.setAttribute( float_attr );
+
+    // Solid angle
+    //float_attr =new FloatAttribute(Attribute.SOLID_ANGLE,
+    //                               run_file.SolidAngle( group_id ) );
+    float_attr =new FloatAttribute(Attribute.SOLID_ANGLE,
+                                   SolidAngle( group_id ) );
+    attr_list.setAttribute( float_attr );
+
+    // Efficiency Factor 
+    float_attr =new FloatAttribute(Attribute.EFFICIENCY_FACTOR, 1 );
+    attr_list.setAttribute( float_attr );
+
     
-    // Number of channels ...........
-    try{
-    float_attr =new FloatAttribute(Attribute.NUM_CHANNELS,
-                      (float)run_file.NumChannelsBinned(5));
-    attr_list.setAttribute( float_attr ); 
-    }
-    catch(Exception e){};
-   
-   
     // Total Counts  ........
     try{
-    float_attr = new FloatAttribute( Attribute.TOTAL_COUNT, (float)run_file.Get1DSum(group_members[0]));
+    float_attr = new FloatAttribute( Attribute.TOTAL_COUNTS, 
+                               (float)run_file.Get1DSum( group_id ));
     attr_list.setAttribute( float_attr );
     }
-    catch(Exception e) {};
-
+    catch(Exception e)
+    {
+      System.out.println("Exception in RunfileRetriever.AddSpectrumAttributes");
+      System.out.println("Exception is " + e );
+    };
 
     spectrum.setAttributeList( attr_list );
   }
 
 
 
-  // ##### could be put into class Runfile
+ /**
+  *  get the average "z" position for the detectors that are in the specified
+  *  group.  This routine should probably be put in the IPNS Runfile package.
+  *
+  *  @param  ids   Array of detector ids for this group
+  *  @return the averages of the "z" positions of the detectors in this group
+  */ 
   private float getAverageHeight( int ids[] )
   {
     float total = 0;
     try
     {
-    for ( int i = 0; i < ids.length; i++ )
-      total += run_file.DetectorHeight( ids[i] );
+      for ( int i = 0; i < ids.length; i++ )
+        total += run_file.DetectorHeight( ids[i] );
     }
     catch ( Exception e )
     {
-      System.out.println( e );
+      System.out.println( "Exception in RunfileRetriever.getAverageHeight:" );
+      System.out.println( "Exception is " + e );
     }
 
     return total / ids.length;   
   }
+
+
+
+ /**
+  *  get the average horizontal angle for the detectors that are in the 
+  *  specified group.  This routine should probably be put in the IPNS 
+  *  Runfile package.
+  *
+  *  @param  ids   Array of detector ids for this group
+  *  @return the averages of the horizontal angles of the detectors in this 
+  *          group
+  */
+  private float getAverageAngle( int ids[], int hist_num )
+  {
+    float total = 0;
+    try
+    {
+      for ( int i = 0; i < ids.length; i++ )
+      {
+//        total += run_file.DetectorAngle( ids[i], hist_num );
+        total += run_file.RawDetectorAngle( ids[i] );
+//        System.out.println("ID = " + ids[i] + 
+//                          " Angle = " + run_file.RawDetectorAngle( ids[i] ) );
+      }
+    }
+    catch ( Exception e )
+    {
+      System.out.println( "Exception in RunfileRetriever.getAverageAngle:" );
+      System.out.println( "Exception is " + e );
+    }
+
+    return total / ids.length;  
+  }
+
+
+ /**
+  *
+  *  Calculate the total solid angle for the specified group of detectors
+  * 
+  *  @param  group_id  The id of the group of detectors whose solid angle is
+  *                    to be computed.
+  *
+  *  @return The total solid angle 
+  */
+  private float SolidAngle( int group_id )
+  {
+    int ids[] = run_file.IdsInSubgroup( group_id );
+
+    float solid_angle = 0;
+    int   id,
+          type;
+    float area,
+          length,
+          width,
+          raw_dist,
+          nom_radius,
+          nom_height,
+          nom_dist;
+
+    for ( int det_count = 0; det_count < ids.length; det_count++ )
+    {
+      id     = ids[ det_count ];
+      type   = run_file.DetectorType( id );
+      length = Runfile.LENGTH[ type ] / 100;   // convert cm to m
+      width  = Runfile.WIDTH[ type ] / 100;    // convert cm to m
+
+      nom_radius = (float) run_file.RawFlightPath( id );           
+      nom_height = (float) run_file.DetectorHeight( id );           
+      nom_dist   = (float) Math.sqrt( nom_radius * nom_radius +
+                                      nom_height * nom_height );
+
+      raw_dist = (float) Math.sqrt( nom_dist * nom_dist -
+                                    length * length / 12.0 );
+      solid_angle += length*width / (raw_dist * raw_dist);  
+//      System.out.println("nom_dist = " + nom_dist +
+//                         "  raw_dist = " + raw_dist + 
+//                         " length = " + length +
+//                         " width = " + width );
+    }
+
+//    System.out.println("Group ID: "+ group_id + " SA = " + solid_angle );
+    return solid_angle; 
+
+  }
+
 
 
   public static void main(String[] args)
