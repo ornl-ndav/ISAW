@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/04/14 21:26:33  pfpeterson
+ *  Moved valid state into IParameterGUI.
+ *
  *  Revision 1.4  2002/11/27 23:22:43  pfpeterson
  *  standardized header
  *
@@ -78,17 +81,6 @@ public interface IParameter{
      * Sets the value of the parameter.
      */
     void   setValue(Object value);
-
-    /**
-     * Returns whether or not the parameter is valid. Currently used
-     * only by wizards.
-     */
-    boolean getValid();
-
-    /**
-     * Set the valid state of the parameter.
-     */
-    void   setValid(boolean valid);
 
     /**
      * Returns the string used in scripts to denote the particular
