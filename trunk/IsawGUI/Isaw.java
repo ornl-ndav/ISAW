@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.124  2003/01/27 15:06:22  rmikk
+ *  Added the New "Intro to Isaw" menu item under the
+ *     Help Menu
+ *
  *  Revision 1.123  2003/01/23 22:24:24  pfpeterson
  *  Removed a diagnostic print statement.
  *
@@ -727,6 +731,7 @@ public class Isaw
     hMenu.add(helpCommandPane);
     hMenu.add(glossary);
     hMenu.add(apiDocs);
+    hMenu.add( new IsawHelp.SiteHelp() );
     hMenu.addSeparator();
     hMenu.add(homeLink);
     hMenu.add(ftpLink);
