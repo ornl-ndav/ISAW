@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.40  2003/02/21 19:35:44  pfpeterson
+ * Changed calls to fixSeparator appropriate (not deprecated) method.
+ *
  * Revision 1.39  2003/01/02 20:45:26  rmikk
  * Includes two methods to setIObserverList and setPropertyChangeList
  *
@@ -693,7 +696,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             j;
         
         Util util = new Util();
-        filename = StringUtil.fixSeparator(filename);
+        filename = StringUtil.setFileSeparator(filename);
         String Ext;
         i= filename.lastIndexOf(".");
         if( i<0){ // Not supporting classnames yet

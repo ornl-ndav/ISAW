@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.23  2003/02/21 19:35:44  pfpeterson
+ * Changed calls to fixSeparator appropriate (not deprecated) method.
+ *
  * Revision 1.22  2002/11/27 23:12:10  pfpeterson
  * standardized header
  *
@@ -273,7 +276,7 @@ public class opMenu extends JMenu{
         java.util.Properties isawProp;
         isawProp = new java.util.Properties(System.getProperties());
         String path = System.getProperty("user.home")+"\\";
-        path = StringUtil.fixSeparator(path);
+        path = StringUtil.setFileSeparator(path);
         try {
 	    FileInputStream input = new FileInputStream(path+"IsawProps.dat");
             isawProp.load( input );
