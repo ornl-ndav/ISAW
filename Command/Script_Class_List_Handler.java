@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.53  2003/12/14 19:18:08  bouzekc
+ * Removed unused import statements.
+ *
  * Revision 1.52  2003/11/20 20:13:25  rmikk
  * Uses FilenameUtil.URLSpacetoSpace to eliminate the
  *   "%20"'s.
@@ -164,7 +167,6 @@
  */
 package Command;
 
-import Command.*;
 import java.io.*;
 import java.util.*;
 import java.util.zip.*;
@@ -173,7 +175,6 @@ import DataSetTools.util.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.operator.DataSet.DataSetOperator;
-import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.parameter.*;
 
 /** 
