@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2003/10/30 21:10:26  dennis
+ *  Removed unneeded import of gov.noaa.pmel.sgt.demo, which
+ *  caused a problem with javadoc 1.4.2_02
+ *
  *  Revision 1.18  2003/09/23 15:57:04  rmikk
  *  -Eliminated the persistent reference to the DataGrid. This
  *   grid is changed by other operators and other Viewers so
@@ -105,7 +109,6 @@
 package DataSetTools.viewer.Contour;
 
 import javax.swing.*;
-import gov.noaa.pmel.sgt.demo.*;
 import gov.noaa.pmel.sgt.dm.*;
 import IsawGUI.Util;
 import java.awt.*;
