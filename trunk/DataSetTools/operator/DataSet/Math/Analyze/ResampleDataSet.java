@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/01/24 19:35:08  bouzekc
+ *  Removed unused imports.
+ *
  *  Revision 1.5  2002/11/27 23:18:38  pfpeterson
  *  standardized header
  *
@@ -52,10 +55,8 @@ package DataSetTools.operator.DataSet.Math.Analyze;
 import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
-import  DataSetTools.operator.Operator;
 import  DataSetTools.parameter.*;
 
 /**

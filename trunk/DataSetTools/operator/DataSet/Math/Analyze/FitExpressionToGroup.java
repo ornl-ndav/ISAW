@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/01/24 19:35:08  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.5  2003/02/04 19:59:38  dennis
  * Copy the attributes so that the operators will still work.
  *
@@ -55,7 +58,6 @@ import  java.io.*;
 import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
-import  DataSetTools.math.*;
 import  DataSetTools.functions.*;
 import  DataSetTools.operator.Parameter;
 
