@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.33  2003/11/11 21:11:05  bouzekc
+ * Replaced calls to result_param with getResultParam() and setResultParam().
+ *
  * Revision 1.32  2003/11/11 20:44:30  bouzekc
  * Fixed bug that resulted from the transition to a specific result parameter.
  * The parameters should now be able to have listeners added and values
@@ -225,8 +228,8 @@ public class OperatorForm extends Form implements HiddenOperator {
     Vector temp = null;  //may need temporary index storage
 
     // set the result parameter
-    if( result_param == null ) {
-      result_param = new StringPG( "Result", null, false );
+    if( getResultParam(  ) == null ) {
+      setResultParam( new StringPG( "Result", null, false ) );
     }
 
     //acquire the number of internal operator parameters
@@ -296,7 +299,7 @@ public class OperatorForm extends Form implements HiddenOperator {
       ( ( IParameterGUI )this.getParameter( i ) ).setDrawValid( true );
     }
 
-    result_param.setDrawValid( true );
+    getResultParam(  ).setDrawValid( true );
 
     /*set the parameter types so we can build the GUI
        the result parameter is one after the last variable parameter
@@ -351,7 +354,7 @@ public class OperatorForm extends Form implements HiddenOperator {
   /**
    * Accessor method for the specified parameter.   Note that specifying one
    * more than the number of parameters will give the result parameter.  This
-   * is a fail-safe.
+   * is to maintain backward-compatibility.
    *
    * @param index The index of the parameter to retrieve.
    *
@@ -360,12 +363,10 @@ public class OperatorForm extends Form implements HiddenOperator {
   public IParameter getParameter( int index ) {
     if( form_op == null ) {
       return null;
-    }
-
-    if( index >= form_op.getNum_parameters(  ) ) {
-      return result_param;
-    } else {
+    } else if( index < form_op.getNum_parameters(  ) ) {
       return form_op.getParameter( index );
+    } else {
+      return getResultParam(  );
     }
   }
 
@@ -402,13 +403,13 @@ public class OperatorForm extends Form implements HiddenOperator {
 
     //Operator failed - exit out
     if( result instanceof ErrorString ) {
-      result_param.setValue( null );
+      getResultParam(  ).setValue( null );
 
       return errorOut( result.toString(  ) );
     }
 
-    result_param.setValue( result );
-    result_param.validateSelf(  );
+    getResultParam(  ).setValue( result );
+    getResultParam(  ).validateSelf(  );
 
     if( result != null ) {
       SharedData.addmsg( "Success! " + result.toString(  ) );
