@@ -30,7 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2005/03/28 22:47:40  dennis
+ * Removed TITLE attribute, since the DataSet already has a
+ * field for the title.
+ *
  * Revision 1.25  2005/02/10 00:20:12  kramer
+ *
  * Now this class will find and return DataSets made from NXlog nodes.
  *
  * Revision 1.24  2005/01/10 16:41:28  rmikk
@@ -263,7 +268,7 @@ public class ExtGetDS{
       DS.setAttribute( new StringAttribute( Attribute.DS_TYPE,Attribute.MONITOR_DATA));
    }
    
-   DS.setAttribute( new StringAttribute(  Attribute.TITLE , EntryNode.getNodeName() ) ) ;
+   DS.setTitle( EntryNode.getNodeName() );
    FileState.Push( EntryState);
    
    IProcessNxEntry entry = QueryNxEntry.getNxEntryProcessor(FileState, 

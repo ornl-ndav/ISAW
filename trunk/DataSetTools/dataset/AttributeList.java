@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2005/03/28 22:47:38  dennis
+ *  Removed TITLE attribute, since the DataSet already has a
+ *  field for the title.
+ *
  *  Revision 1.27  2005/01/10 15:53:33  dennis
  *  Removed empty if statements.
  *
@@ -656,18 +660,7 @@ public class AttributeList implements Serializable,
     return buffer;
   }
   
-  /*----------------------------------------------------------------------
-   * These methods are used to obtain attributes
-   */
-   /**
-    * Get the value of the attribute specified by <code>Attribute.TITLE</code> 
-    * or null if it can't be determined.
-    */
-   public String getAttributeTitle()
-   {
-	 return resolveStringAttribute(Attribute.TITLE);
-   }
-	
+
    /**
     * Get the value of the attribute specified by <code>Attribute.LABEL</code>
     * or null if it can't be determined.

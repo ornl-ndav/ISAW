@@ -30,7 +30,12 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.11  2005/03/28 22:47:40  dennis
+ *  Removed TITLE attribute, since the DataSet already has a
+ *  field for the title.
+ *
  *  Revision 1.10  2004/05/25 20:17:02  kramer
+ *
  *  Added methods that are used to get attribute values.
  *
  *  Revision 1.9  2004/03/15 06:10:37  dennis
@@ -167,8 +172,6 @@ public interface IAttributeList
   public Object getAttributeValue( String name );
   
   //These methods are used to get Attribute values.
-  /**Specified by {@link AttributeList#getAttributeTitle() getAttributeTitle()} from {@link AttributeList AttributeList}*/
-  public String getAttributeTitle();
   /**Specified by {@link AttributeList#getAttributeLabel() getAttributeLabel()} from {@link AttributeList AttributeList}*/
   public String getAttributeLabel();
   /**Specified by {@link AttributeList#getDS_TAG() getDS_TAG()} from {@link AttributeList AttributeList}*/
