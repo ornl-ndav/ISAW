@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2001/08/15 18:30:41  rmikk
+ * Returns an ERror bad file message
+ *
  * Revision 1.4  2001/07/26 20:52:23  rmikk
  * Changed Test program
  *
@@ -72,10 +75,10 @@ public class NexNode implements NxNode
       {errormessage="";
        this.filename = filename;
        try{
-       NF = new NexusFile( filename, NexusFile.NXACC_READ);
+        NF = new NexusFile( filename, NexusFile.NXACC_READ);
          }
        catch( NexusException s)
-         {errormessage= s.getMessage();
+	 {errormessage= NxNodeUtils.ER_BADFILE;//s.getMessage();
           NF = null;
          }
         Nodelistinfo= new Vector();
