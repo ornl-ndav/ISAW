@@ -31,6 +31,14 @@
   * Modified:
   *
   *  $Log$
+  *  Revision 1.39  2001/07/24 14:34:43  neffk
+  *  adding DataSet objects to the tree is now cleaner.  there is
+  *  the distinction between new and modified objects, and the
+  *  'add...' functions take care of IObserver notificatoin.  also changed
+  *  the path for IsawHelp and added the capability to grab multiple Data
+  *  objects, put them in a DataSet object automatically when selected
+  *  and viewed.  ISAW's title is fixed w/ a space, too.
+  *
   *  Revision 1.38  2001/07/23 19:23:48  neffk
   *  added isForced(String) and removeForec(String) so that people
   *  can force a file to be loaded, regardless of the file extension .
@@ -564,17 +572,21 @@ public class Isaw
 
  
   /**
-   * Adds DataSets to the JTree.  aslo makes the tree, properties and
-   * command userinterfaces observers of the datasets.
+   * Adds new DataSet objectss to the JTree.  this method should only
+   * be used to add the initial DataSet objects.  this method also
+   * makes the tree, properties and command ui observers 
+   * of the datasets.  Modified DataSet objects should be added by 
+   * calling 'addModifiedDataSet()'.  
    *
    * @param ds   Array of DataSets
    * @param name String identifying the Runfile
    */
-  public void addDataSets( DataSet[] dss, String name )
+  protected void addNewDataSets( DataSet[] dss, String name )
   {
     jdt.addExperiment( dss, name );
     for(int i =0; i<dss.length; i++)
     {
+      cp.addDataSet( dss[i] );
       dss[i].addIObserver(jdt);
       dss[i].addIObserver(jpui);
       dss[i].addIObserver(jcui);
@@ -584,21 +596,20 @@ public class Isaw
 
   /**
    * Adds a modified DataSet to the JTree.
-   *
-   * @param ds The modified DataSet to be added to the tree.
-   * 
    */
-  public void addDataSet( DataSet ds )
+  public void addModifiedDataSet( DataSet ds )
   {
-    DataSet[] dss = new DataSet[ 1 ];
-    dss[0] = ds;
- 
-    addDataSets( dss, "Modified" );
+    cp.addDataSet( ds );
+    jdt.addToModifiedExperiment( ds );
+
+    ds.addIObserver(jdt);
+    ds.addIObserver(jpui);
+    ds.addIObserver(jcui);
   }
  
 
   /**
-   * Implementation of the EDIT_ATTR_MI menu item's actions.
+   * the EDIT_ATTR_MI menu item's actions.
    */        
   private class AttributeMenuItemHandler implements ActionListener 
   {
@@ -959,8 +970,9 @@ public class Isaw
                           
                                 //add it to the tree and other 
                                 //dependants
-          addDataSet( ds );
-          cp.addDataSet( ds );
+          DataSet[] dss = new DataSet[1];  dss[0] = ds;
+          addNewDataSets(  dss, dss[0].toString()  );
+//          cp.addDataSet( ds );
         }
         catch( Exception e )
         {
@@ -1182,7 +1194,7 @@ public class Isaw
                  
       if( s == ABOUT_MI )
       {
-        String dir =  System.getProperty("user.dir")+ "/IsawHelp/Help.html";
+        String dir =  System.getProperty("Help_Directory")+ "/Help.html";
         BrowserControl H = new BrowserControl() ; 
         H.displayURL( dir ) ;
       } 
@@ -1584,7 +1596,7 @@ public class Isaw
     int y = (screenSize.height - window_height - 50);
     int x = (screenSize.width - window_width)/2;
 
-    System.out.println("Loading " + TITLE + VERSION );
+    System.out.println("Loading " + TITLE + " " + VERSION );
     JFrame Isaw = new Isaw( args );
     Isaw.pack();
     Isaw.setBounds(x,y,window_width,window_height);
@@ -1626,8 +1638,8 @@ public class Isaw
       {
                     //this must be a new DataSet object...
                     //put it in the modified folder on 
-                    //the tree.
-        addDataSet( ds );
+                    //the tree and send to command pane
+        addModifiedDataSet( ds );
       }
       else
         return;
@@ -1752,8 +1764,8 @@ public class Isaw
   {
     if(  files != null  &&  files.length > 0  )
       for( int i=0;  i<files.length;  i++ ) 
-        addDataSets(  util.loadRunfile(  files[i].getPath()  ), 
-                      files[i].getName()  );
+        addNewDataSets(  util.loadRunfile(  files[i].getPath()  ), 
+                         files[i].getName()  );
 
     util.appendDoc(  sessionLog, "Load " + files.toString()  );
   }
@@ -1802,10 +1814,24 @@ public class Isaw
                                 //if it's just one (1) DataSet object
                                 //nothing need be done... just return it
     node = (MutableTreeNode)tps[0].getLastPathComponent();
-    if(  node instanceof DataSetMutableTreeNode  )
+    if(  node instanceof DataSetMutableTreeNode  &&  tps.length == 1  )
      return ( (DataSetMutableTreeNode)node ).getUserObject(); 
 
-    return DataSet.EMPTY_DATA_SET;
+                                //if there are multiple selections of
+                                //Data objects, create an empty clone
+                                //of the containing DataSet and add
+                                //the selections to the clone.
+    DataSet new_ds = ds.empty_clone();
+    new_ds.addLog_entry( "clones w/ selected subset of spectra" );
+    for( int i=0;  i<tps.length;  i++ )
+    {
+      node = (MutableTreeNode)(  tps[i].getLastPathComponent()  );
+      if(  node instanceof DataMutableTreeNode && 
+           jdt.getDataSet( node ).equals( ds )  )
+        new_ds.addData_entry(  (  (DataMutableTreeNode)node  ).getUserObject()  );
+    }
+    
+    return new_ds;
   }
 
 }
