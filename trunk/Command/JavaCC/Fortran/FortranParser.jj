@@ -30,6 +30,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2004/01/14 01:54:33  bouzekc
+ * Cleaned up old, unused token statements, and more explicitly defined
+ * each token so that there is no ambiguity between the regular
+ * expression versions of each.  Added comments to each token and to the
+ * uncommented sections of Java code.
+ *
  * Revision 1.4  2004/01/14 01:30:28  bouzekc
  * Fixed bug in second type of character variable declaration handling.
  * All variables that are used outside of enclosing tokens are now able to
@@ -136,6 +142,8 @@ public class FortranParser {
           temp = tokenList[i].split( "\\[" );
           tokenList[i] = temp[0] + " = new " + type + "[" + temp[1];
         }
+        
+        //put the array element in
         buffer.append( tokenList[i] );
         
         if( i < tokenList.length - 1 ) {
@@ -171,79 +179,90 @@ SKIP : {
   "\n" | "\r"
 }
 
-TOKEN : {
-  < #ONE_PLUS_WS: ( <WHITESPACE> )+ >
-}
-
-TOKEN : {
-  < #OPT_WS: ( <WHITESPACE> )* >
-}
-
-TOKEN : {
-  < #UNSIGNED_DIGIT: ( ["0"-"9"] )+ >
-}
-
-TOKEN : {
-  < DIGIT: ( "+" | "-" )? <UNSIGNED_DIGIT> >
-}
-
+//whitespace: space or tab
 TOKEN : {
   < #WHITESPACE: (" " | "\t" ) >
 }
 
+//at least one whitespace character
 TOKEN : {
-  < #CHARACTER: ( ["a"-"z"] | ["A"-"Z"] | "_" | "-" )+ >
+  < #ONE_PLUS_WS: ( <WHITESPACE> )+ >
 }
 
+//one or more whitespace characters
+TOKEN : {
+  < #OPT_WS: ( <WHITESPACE> )* >
+}
+
+//represents a single digit unsigned integer
+TOKEN : {
+  < #UNSIGNED_DIGIT: ( ["0"-"9"] ) >
+}
+
+//represents a single digit integer with an optional +/-
+TOKEN : {
+  < DIGIT: ( "+" | "-" )? <UNSIGNED_DIGIT> >
+}
+
+//represents the characters a-z, A-Z, _, or -
+TOKEN : {
+  < #CHARACTER: ["a"-"z", "A"-"Z", "_", "-" ] >
+}
+
+//represents a set of reserved characters not generally usable in 
+//a normal character set
 TOKEN : {
   < #RESERVED_CHAR: ( ~["a"-"z", "A"-"Z", "0"-"9", " ", "\t", "|", "\\", ":", 
-                        "\n", "\r", "/", "\""] ) >
+                        "\n", "\r", "/", "\"", "+"] ) >
 }
 
+//represents a set of characters that cannot be used in a variable name
 TOKEN : {
   < #VAR_RESERVED_CHAR: ["|", "\\", "/"] >
 }
 
+//single unsigned digit or character
 TOKEN : {
-  < #VARIABLE_COMP:  ( 
-    <CHARACTER> | 
-    <DIGIT> | 
-    <VAR_RESERVED_CHAR> 
+  < #DIGICHAR : ( 
+    <UNSIGNED_DIGIT> | <CHARACTER>
   ) >
 }
 
+//represents a variable, which is composed of a leading character 
+//followed by any number of characters or unsigned digits, all 
+//"bracketed" by optional whitespace
 TOKEN : {
   < #VARIABLE : ( 
     ( <OPT_WS>
-      ( <CHARACTER> )+ ( <VARIABLE_COMP> )* 
+      ( <CHARACTER> )+ ( <DIGICHAR> )* 
     ) <OPT_WS>
   ) >
 }
 
+//Fortran array variable.  Variable name followed by a number in 
+//parentheses, all "bracketed" by optional whitespace
 TOKEN: {
   < #ARRAY_VARIABLE: (
     <OPT_WS>
-    <VARIABLE> "(" <OPT_WS> <UNSIGNED_DIGIT> <OPT_WS> ")"
+    <VARIABLE> "(" <OPT_WS> ( <UNSIGNED_DIGIT> )+ <OPT_WS> ")"
     <OPT_WS>
   ) >
 }
 
-TOKEN : {
-  < #DIGICHAR : ( 
-    <DIGIT> | <CHARACTER>
-  ) >
-}
-
+//String.  Represented by opening and closing double quotes, with
+//digits, characters, reserved characters, variable reserved characters,
+//one or more whitespaces, floating point numbers, :, '', 
+//all "bracketed" by optional whitespace
 TOKEN : {
   < STRING: (
     <OPT_WS>
     ( "\"" ) ( 
-      <DIGIT> | 
-      <CHARACTER> | 
+      <DIGICHAR> | 
       <RESERVED_CHAR> |
       <VAR_RESERVED_CHAR> | 
       <ONE_PLUS_WS> | 
       <FLOATING_POINT> |
+      <DIGIT> |
       ":" |
       "''" 
     )* ( "\"" )
@@ -251,6 +270,7 @@ TOKEN : {
   ) >
 }
 
+//floating point number "bracketed" by optional whitespace
 TOKEN : {
   < FLOATING_POINT: (
     <OPT_WS>
@@ -270,10 +290,6 @@ TOKEN : {
   ) >
 }
 
-TOKEN : {
-  < #EMPTY_ARRAY: <OPT_WS> "[" <OPT_WS> "]" <OPT_WS> >
-}
-
 //Fortran tokens.  Recall that in Fortran, untyped variables starting with
 //an I, J, K, L, M, or N are considered integers, while untyped variables
 //starting with any other letter are considered reals.
@@ -285,8 +301,8 @@ TOKEN: {
   < #FLOAT_IDENT: ( ["a"-"h"] | ["o"-"z"] | ["A"-"H"] | ["O"-"Z"] ) >
 }
 
-//created to ease code-eye when dealing with declarations of 
-//arrays and scalars in the same line
+//handles both scalar and array variable declarations.  Created to ease 
+//code-eye 
 TOKEN: {
   < #MULTI_VARIABLE: (
     <OPT_WS> ( 
@@ -296,8 +312,8 @@ TOKEN: {
 }
 
 //Fortran has a non-C like way of declaring character arrays so we
-//need to watch out for variables like "character 6 charA" (character
-//array of length 6
+//need to watch out for variables like "character *6 charA" (character
+//array of length 6.  This token handles those.
 TOKEN: {
   < #CHAR_VARIABLE: ( 
     <OPT_WS>
@@ -318,7 +334,7 @@ TOKEN: {
 }
 
 //This token is meant for math functions that will only accept
-//a floating point
+//a floating point or variables
 TOKEN: {
   <#MATH_FLOAT_VAR: (
     <OPT_WS> (
@@ -533,6 +549,7 @@ String convertFortranTokens(  ) : {
   String[] tokenList;
 }
 {
+  //matched the absolute function
   t = <FORTRAN_ABS> {
     if( t.image.indexOf( "iabs" ) >= 0 ) {
       return t.image.replaceAll( "iabs", "Math.abs" );
@@ -545,6 +562,7 @@ String convertFortranTokens(  ) : {
     return t.image.replaceAll( "sqrt", "Math.sqrt" );
   }
 | 
+  //matched the float() function
   t = <FORTRAN_FLOAT_FUN> {
     s = t.image;
     if( s.indexOf( "float" ) >= 0 ) {
@@ -558,12 +576,14 @@ String convertFortranTokens(  ) : {
     return s;
   }
 |
+  //matched the truncate function
   t = <FORTRAN_TRUNC_FUN> {
     s = t.image.replaceAll( "int", "" );
     
     s = "new Float" + s + ".intValue()";
   }
 |
+  //matched the mod() function
   t = <FORTRAN_MOD_FUN> {
     s = t.image;
     s = s.replaceAll( "mod", "" ).replaceAll( "\\)", "" ).replaceAll( "\\(", "" );
