@@ -29,6 +29,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2001/08/06 22:15:21  rmikk
+ *  Fixed IStringList and SpecialString parameter values to
+ *  return those values
+ *
  *  Revision 1.9  2001/08/06 20:16:29  rmikk
  *  Added IntListString parameter type.
  *  Added code to take care of DataSet[] results.
@@ -107,8 +111,9 @@ public class JParametersDialog implements Serializable,
             SS = SS +" on tree node "+((DataSetOperator)op).getDataSet();
         opDialog.getContentPane().add(new JLabel(SS));
         APH = new ApplyButtonHandler();
-         if( io != null) addIObserver(io);
-
+         if( io != null) 
+              addIObserver(io);
+        
         //Center the opdialog frame 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension size = opDialog.getSize();
@@ -153,7 +158,7 @@ public class JParametersDialog implements Serializable,
            else if(param.getValue() instanceof String)
              paramGUI = new JStringParameterGUI(param);
            else if(param.getValue() instanceof IntListString)
-             { param.setValue( param.getValue().toString());
+             { //param.setValue( param.getValue().toString());
                paramGUI = new JStringParameterGUI(param);
              }
            else if(param.getValue() instanceof Vector)
@@ -198,15 +203,18 @@ public class JParametersDialog implements Serializable,
                                  fixSeparator(DirPath+"\\");
             else
               DirPath = "";
-               param.setValue( DirPath );
+               param.setValue( new DataDirectoryString(DirPath) );
 
-            paramGUI = new JStringParameterGUI( param) ;
+            paramGUI = new JStringParameterGUI( param ) ;
           }
 
 
        
         else if (param.getValue() instanceof IStringList )
-        {
+         paramGUI = 
+              new JIStringListParameterGUI( param ,
+                                         (IStringList)(param.getValue()));
+/*        {
           AttributeList A = new AttributeList();
           int num_strings =
             ((IStringList)param.getValue()).num_strings();
@@ -219,7 +227,7 @@ public class JParametersDialog implements Serializable,
           }
           paramGUI =  new JAttributeNameParameterGUI(param  , A);
         }
-
+*/
 
         else if( param.getValue() instanceof InstrumentNameString)
         {
@@ -228,7 +236,7 @@ public class JParametersDialog implements Serializable,
           if( XX == null )
                XX = "";
 
-          param.setValue(XX);
+          param.setValue(new InstrumentNameString( XX ));
           paramGUI= new JStringParameterGUI( param);
         }
      
@@ -357,6 +365,7 @@ public class JParametersDialog implements Serializable,
              // DataSet[] dss = new DataSet[1];
              //   dss[0] = (DataSet)result;
                   //jtui.addDataSet((DataSet)result);
+        
                   
         OL.notifyIObservers( this , (DataSet)result); 
                 
@@ -366,9 +375,11 @@ public class JParametersDialog implements Serializable,
                 ((DataSet)result).toString()+"="+op.getCommand()+"(" +s +")");
      }
      else if( result instanceof DataSet[] )
-       {
-           for( int i = 0; i < ((DataSet[])result).length; i++)
-              OL.notifyIObservers( this, ((DataSet[])result)[i]);
+       { DataSet DSS[];
+         DSS = (DataSet[])result; 
+        
+           for( int i = 0; i < DSS.length; i++)
+              OL.notifyIObservers( this, DSS[i]);
         resultsLabel.setText("Operation completed");
         util.appendDoc(sessionLog,  
                 "DS[]="+op.getCommand()+"(" +s +")");      
