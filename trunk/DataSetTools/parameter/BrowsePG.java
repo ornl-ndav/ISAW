@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/03/03 16:32:06  pfpeterson
+ *  Only creates GUI once init is called.
+ *
  *  Revision 1.5  2003/02/07 16:19:17  pfpeterson
  *  Fixed bug in constructor where the value of 'valid' was not properly set.
  *
@@ -163,8 +166,7 @@ public class BrowsePG extends ParameterGUI{
         entrywidget.add(innerEntry);
         entrywidget.add(browse);
         this.setEnabled(this.getEnabled());
-        this.packupGUI();
-        this.initialized=true;
+        super.initGUI();
     }
 
     /**

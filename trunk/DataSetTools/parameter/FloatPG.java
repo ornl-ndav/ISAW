@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/03/03 16:32:06  pfpeterson
+ *  Only creates GUI once init is called.
+ *
  *  Revision 1.5  2002/11/27 23:22:42  pfpeterson
  *  standardized header
  *
@@ -146,8 +149,7 @@ public class FloatPG extends StringPG{
                                     new FloatFilter());
         entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
         this.setEnabled(this.getEnabled());
-        this.packupGUI();
-        this.initialized=true;
+        super.initGUI();
     }
 
     static void main(String args[]){

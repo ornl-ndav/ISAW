@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.2  2003/03/03 16:32:06  pfpeterson
+ *  Only creates GUI once init is called.
+ *
  *  Revision 1.1  2003/02/24 20:58:31  pfpeterson
  *  Added to CVS.
  *
@@ -156,8 +159,7 @@ abstract public class ChooserPG extends ParameterGUI{
     this.entrywidget=new HashEntry(this.vals);
     this.entrywidget.setEnabled(this.enabled);
     this.entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
-    this.packupGUI();
-    this.initialized=true;
+    super.initGUI();
   }
 
   /**
