@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/01/24 19:48:53  bouzekc
+ *  Removed unused imports.  Removed unused variables in main().
+ *
  *  Revision 1.8  2003/10/16 00:14:34  dennis
  *  Fixed javadocs to build cleanly with jdk 1.4.2
  *
@@ -537,9 +540,8 @@ public class SumRunfiles extends    GenericLoad
       {
         DataSet datasets[] = (DataSet[])result;
 
-        ViewManager viewmanager;
-        viewmanager = new ViewManager( datasets[0], IViewManager.IMAGE );
-        viewmanager = new ViewManager( datasets[1], IViewManager.IMAGE );
+        new ViewManager( datasets[0], IViewManager.IMAGE );
+        new ViewManager( datasets[1], IViewManager.IMAGE );
 
         float area[] = new float[2];
         float time[] = new float[2];

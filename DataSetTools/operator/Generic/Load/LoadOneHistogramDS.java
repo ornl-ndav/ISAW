@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/01/24 19:48:52  bouzekc
+ *  Removed unused imports.  Removed unused variables in main().
+ *
  *  Revision 1.6  2003/09/12 17:18:40  dennis
  *  If requested histgram is not found, the error string now includes
  *  the number of the histogram that was requested.
@@ -59,7 +62,6 @@ import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 import DataSetTools.viewer.*;
 import DataSetTools.util.*;
-import IPNS.Runfile.*;
 import DataSetTools.operator.Parameter;
 import DataSetTools.parameter.*;
 
@@ -235,8 +237,7 @@ public class LoadOneHistogramDS extends    GenericLoad
       {
         DataSet ds = (DataSet)result;
 
-        ViewManager viewmanager;
-        viewmanager = new ViewManager( ds, IViewManager.IMAGE );
+        new ViewManager( ds, IViewManager.IMAGE );
       }
       else
       	System.out.println(result.toString() );
