@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2003/10/15 03:56:38  bouzekc
+ *  Fixed javadoc errors.
+ *
  *  Revision 1.36  2003/09/11 17:22:41  rmikk
  *  Added a constructor that takes the ViewerState
  *  Extracted code to return a DataSetViewer given a DataSet,
@@ -197,9 +200,9 @@ public class ViewManager extends    JFrame
     *                    used.  The valid strings are listed in the interface,
     *                    IViewManager
     * 
-    *  @see IViewManager
-    *  @see DataSetViewer
-    *  @see DataSet
+    *  @see DataSetTools.viewer.IViewManager
+    *  @see DataSetTools.viewer.DataSetViewer
+    *  @see DataSetTools.dataset.DataSet
     */
    public ViewManager(DataSet ds, String view_type )
    {  this( ds,view_type, null);
@@ -213,11 +216,11 @@ public class ViewManager extends    JFrame
     *  @param  view_type String describing the initial type of viewer to be 
     *                    used.  The valid strings are listed in the interface,
     *                    IViewManager
-    *  @param   ViewerState The viewer state
+    *  @param   state    The viewer state
     * 
-    *  @see IViewManager
-    *  @see DataSetViewer
-    *  @see DataSet
+    *  @see DataSetTools.viewer.IViewManager
+    *  @see DataSetTools.viewer.DataSetViewer
+    *  @see DataSetTools.dataset.DataSet
     */  
    public ViewManager(DataSet ds, String view_type, ViewerState state ){
       super( ds.toString() );

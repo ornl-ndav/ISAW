@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/10/15 03:56:36  bouzekc
+ *  Fixed javadoc errors.
+ *
  *  Revision 1.8  2003/09/04 16:09:57  rmikk
  *  Improved range for intensities
  *
@@ -80,7 +83,10 @@ public class logTransform  implements Transform
     double mu,bu,mp,bp;
     double a,b,K;
     int sgn;
-   /** Transforms [ustart,uend] to [pstart, pend] as follows:<P>
+   /** 
+    * Transforms [ustart,uend] to [pstart, pend] as follows:
+    *
+    * <br><br>
    *   p = a*log( u+b) +K, where b is intensity -min(ustart,uend) and
    *  getTransU( pstart) = ustart and getTransu(pend) = uend.
    */
@@ -162,7 +168,10 @@ public class logTransform  implements Transform
     {return new Range2D( ustart,uend);
      }
 
-  /** Translate user value to its physical value<P>
+  /** 
+   * Translate user value to its physical value.
+   *
+   * <br>
   * Value out of range get mapped to their corresponding extreme values
   */
 
@@ -188,7 +197,10 @@ public class logTransform  implements Transform
 	
       }
 
-  /** Translate physical value to its user value<P>
+  /** 
+   * Translate physical value to its user value.
+   *
+   * <br>
   * Value out of range get mapped to their corresponding extreme values
   */
 
