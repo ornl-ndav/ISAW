@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2003/10/29 01:09:29  bouzekc
+ *  Made field ds_tools and method isAbstract() protected for use with the
+ *  JavaWrapperOperator.
+ *
  *  Revision 1.31  2003/10/23 16:56:16  bouzekc
  *  Added method getResultRemotely().
  *
@@ -136,7 +140,7 @@ abstract public class Operator implements Serializable
                                  // generate menus.
    public static final String  OPERATOR                 = "Operator";
 
-   private static final int dstools_length="DataSetTools.".length();
+   protected static final int dstools_length="DataSetTools.".length();
    private static String[] categoryList=null;
 
    public static final String DEFAULT_DOCS =  "This is the placeholder "
@@ -275,7 +279,7 @@ abstract public class Operator implements Serializable
     return StringUtil.split(category,".");
   }
 
-  static private boolean isAbstract(Class klass){
+  static protected boolean isAbstract(Class klass){
     int modifier=klass.getModifiers();
     return java.lang.reflect.Modifier.isAbstract(modifier);
   }
