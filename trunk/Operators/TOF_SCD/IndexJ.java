@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/05/20 19:42:19  pfpeterson
+ * Added parameter to restrict run number of indexed peaks.
+ *
  * Revision 1.11  2003/05/14 21:01:46  pfpeterson
  * Removed a debug print statement.
  *
@@ -128,6 +131,7 @@ public class IndexJ extends    GenericTOF_SCD {
     LoadFilePG matfilepg=new LoadFilePG("Matrix file",null);
     matfilepg.setFilter(new MatrixFilter());
     addParameter(matfilepg);
+    addParameter(new IntArrayPG("Restrict Runs",null));
     addParameter(new FloatPG("Delta",0.05f));
     addParameter(new BooleanPG("update peaks file",true));
   }
@@ -176,6 +180,8 @@ public class IndexJ extends    GenericTOF_SCD {
     float       delta       = 0f;    // error in index allowed
     boolean     update      = false; // update the peaks file
     int         crystallite = 1;     // placeholder for future feature
+    int[]       runs        = null;  // run numbers to index
+    int[]       seqs        = null;  // sequence numbers to index
 
     // get the peaks file name from the script and test it out
     peaksfile=getParameter(0).getValue().toString();
@@ -203,8 +209,20 @@ public class IndexJ extends    GenericTOF_SCD {
         return new ErrorString("file is not readable "+matrixfile);
     }
 
+    IParameter iparm=null;
+
+    // get the run numbers
+    iparm=getParameter(2);
+    if(iparm instanceof IntArrayPG){
+      runs=((IntArrayPG)iparm).getArrayValue();
+    }else{
+      String value=iparm.getValue().toString();
+      runs=IntList.ToArray(value);
+    }
+    if(runs==null || runs.length==0) runs=null;
+
     // get the delta parameter
-    IParameter iparm=getParameter(2);
+    iparm=getParameter(3);
     if(iparm instanceof FloatPG){
       delta=((FloatPG)iparm).getfloatValue();
     }else{
@@ -217,7 +235,7 @@ public class IndexJ extends    GenericTOF_SCD {
     }
 
     // find out if want to update peaks file
-    iparm=getParameter(3);
+    iparm=getParameter(4);
     if(iparm instanceof BooleanPG){
       update=((BooleanPG)iparm).getbooleanValue();
     }else{
@@ -260,11 +278,12 @@ public class IndexJ extends    GenericTOF_SCD {
       res=null;
     }
 
-    // add the orientation matrix to all of the peaks
+    // add the orientation matrix to all of the peaks with valid run numbers
     Peak peak=null;
     for( int i=0 ; i<peaks.size() ; i++ ){
       peak=(Peak)peaks.elementAt(i);
-      peak.UB(UB);
+      if(indexpeak(peak,runs,seqs))
+        peak.UB(UB);
     }
 
     // create a StringBuffer for the log
@@ -273,6 +292,8 @@ public class IndexJ extends    GenericTOF_SCD {
     // unindex peaks outside of the given deltas
     for( int i=0 ; i<peaks.size() ; i++ ){
       peak=(Peak)peaks.elementAt(i);
+      if( ! indexpeak(peak,runs,seqs) ) continue;
+
       float hMod=Math.abs(peak.h()-Math.round(peak.h()));
       float kMod=Math.abs(peak.k()-Math.round(peak.k()));
       float lMod=Math.abs(peak.l()-Math.round(peak.l()));
@@ -328,6 +349,35 @@ public class IndexJ extends    GenericTOF_SCD {
     return this.getNumIndexed(peaks);
   }  
   
+  /**
+   * Determine whether or not to update the peak by checking it
+   * against the list of allowed run numbers and sequence numbers
+   */
+  private static boolean indexpeak(Peak peak, int[] runs, int[] seqs){
+    boolean good_run=(runs==null);
+    boolean good_seq=(seqs==null);
+
+    if(! good_run){
+      for( int i=0 ; i<runs.length ; i++ ){
+        if( runs[i]==peak.nrun() ){
+          good_run=true;
+          break;
+        }
+      }
+    }
+
+    if(! good_seq){
+      for( int i=0 ; i<seqs.length ; i++ ){
+        if( seqs[i]==peak.seqnum() ){
+          good_seq=true;
+          break;
+        }
+      }
+    }
+
+    return ( good_run && good_seq );
+  }
+
   /**
    * Get a copy of the current SpectrometerEvaluator Operator.  The
    * list of parameters is also copied.
