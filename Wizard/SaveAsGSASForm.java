@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/07/03 15:07:05  bouzekc
+ *  Fixed odd CVS log entries due to double inclusion of the
+ *  log header tag.
+ *
  *  Revision 1.10  2003/06/25 20:24:43  bouzekc
  *  Unused private variables removed, reformatted for
  *  consistency.
@@ -66,42 +70,12 @@
  *  Revision 1.3  2003/03/19 15:07:04  pfpeterson
  *  Added the monitor DataSets as an explicit parameter and now creates
  *  filename from instrument name and run number. (Chris Bouzek)
- *
+ * 
  *  Revision 1.2  2003/03/13 19:04:14  dennis
- *  Added $Log$
- *  Added Revision 1.10  2003/06/25 20:24:43  bouzekc
- *  Added Unused private variables removed, reformatted for
- *  Added consistency.
- *  Added
- *  Added Revision 1.9  2003/06/18 23:09:46  bouzekc
- *  Added Parameter error checking now handled by superclass Form.
- *  Added
- *  Added Revision 1.8  2003/06/18 19:54:58  bouzekc
- *  Added Now pads run numbers less than 5 digits with zeroes.
- *  Added Uses errorOut() to indicate parameter errors.  More robust
- *  Added parameter error checking.  Now fires off property change
- *  Added events in a semi-intelligent way.  Uses super.getResult() for
- *  Added initializing PropertyChanger variables.
- *  Added
- *  Added Revision 1.7  2003/06/03 23:04:28  bouzekc
- *  Added Fixed full constructor to avoid excessive garbage
- *  Added collection.
- *  Added Fixed documentation to reflect constructor
- *  Added parameter changes.
- *  Added
- *  Added Revision 1.6  2003/06/02 22:25:05  bouzekc
- *  Added Fixed contact information.
- *  Added Added call to setDefaultParameters-needed to avoid
- *  Added NullPointerExceptions.
- *  Added
- *  Added Revision 1.5  2003/04/24 18:57:56  pfpeterson
- *  Added Various small bug fixes. (Chris Bouzek)
- *  Added
- *  Added Revision 1.3  2003/03/19 15:07:04  pfpeterson
- *  Added Added the monitor DataSets as an explicit parameter and now creates
- *  Added filename from instrument name and run number. (Chris Bouzek)
- *  Added comment to include revision information.
+ *  Added log header to include revision information.
  *
+ *  Revision 1.1  2003/03/11 19:49:52  pfpeterson
+ *  Chris Bouzek's next version of the wizard.
  *
  */
 package Wizard;
