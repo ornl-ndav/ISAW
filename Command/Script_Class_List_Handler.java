@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.47  2003/07/08 15:49:49  rmikk
+ * Caught a run-time error in creating Jython Scripts
+ *
  * Revision 1.46  2003/06/26 22:31:43  rmikk
  * Added a try -catch structure around the new ScriptOperator
  *   statement to catch the newly thrown exceptionss
@@ -944,8 +947,6 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             {
                if( LoadDebug )
                 System.out.println( "NO "+uu.getMessage() );
-
-
             }
         }else if(Extension.equalsIgnoreCase("py")){
           // try to get the factory instance
@@ -955,7 +956,13 @@ public class Script_Class_List_Handler  implements OperatorHandler{
             }catch(NoClassDefFoundError e){
               hasJython=false;
               pyOperatorFactory=null;
-            }
+            }catch( Throwable uv)
+               {
+                if( LoadDebug )
+                System.out.println( "NO "+uv.getMessage() );
+
+                }
+          
           }
           // error out if there is no jython
           if(!hasJython){
