@@ -31,7 +31,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/10/14 20:13:02  kramer
+ * If the specified group IDs don't exist or the specified x range is invalid
+ * the data isn't smoothed (because it can't be), a warning is sent to
+ * SharedData, and the original DataSet is returned (if a new DataSet was to
+ * be created).  Also, the operator now also logs (in the log of the DataSet
+ * being smoothed) the Data blocks that were smoothed and the x range that
+ * they were smoothed on.
+ *
  * Revision 1.6  2004/10/05 00:55:03  kramer
+ *
  * Modified the order of the parameters passed to this operator and created
  * convenience methods to acquire each parameter.  The order of the
  * parameters are:
@@ -95,6 +104,7 @@ import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.Generic.Special.GenericSpecial;
+import DataSetTools.util.SharedData;
 
 /**
  * An Operator for smoothing the data from Data blocks in a DataSet.  This class 
@@ -167,8 +177,9 @@ public class SavitzkyGolayFilter extends GenericSpecial
     * @param useQuickMethod True if the quick method for smoothing the data should 
     *                       be used and false otherwise.
     */
-   public SavitzkyGolayFilter(DataSet ds, int nL, int nR, int M, boolean createNewDS, boolean useQuickMethod, 
-   		IntList dataBlockList, int xmin, int xmax)
+   public SavitzkyGolayFilter(DataSet ds, int nL, int nR, int M, 
+         IntList dataBlockList, int xmin, int xmax, boolean useQuickMethod,
+            boolean createNewDS)
    {
       this();
       getParameter(0).setValue(ds);
@@ -178,8 +189,8 @@ public class SavitzkyGolayFilter extends GenericSpecial
       getParameter(4).setValue(dataBlockList);
       getParameter(5).setValue(new Integer(xmin));
       getParameter(6).setValue(new Integer(xmax));
-      getParameter(7).setValue(new Boolean(createNewDS));
-      getParameter(8).setValue(new Boolean(useQuickMethod));
+      getParameter(7).setValue(new Boolean(useQuickMethod));
+      getParameter(8).setValue(new Boolean(createNewDS));
    }
    
    /** 
@@ -199,7 +210,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
    public void setDefaultParameters()
    {
       parameters = new Vector();
-      addParameter( new Parameter("Data set to process", DataSet.EMPTY_DATA_SET) );
+      addParameter( new Parameter("DataSet to process", DataSet.EMPTY_DATA_SET) );
       addParameter( new Parameter("Number of points left of center", new Integer(DEFAULT_NL)));
       addParameter( new Parameter("Number of points right of center", new Integer(DEFAULT_NR)));
       addParameter( new Parameter("Degree of smoothing polynomial", new Integer(DEFAULT_M)));
@@ -207,7 +218,7 @@ public class SavitzkyGolayFilter extends GenericSpecial
       addParameter( new Parameter("X value where smoothing starts", new Float(DEFAULT_X_MIN)));
       addParameter( new Parameter("X value where smoothing ends", new Float(DEFAULT_X_MAX)));
       addParameter( new Parameter("Use quick method", new Boolean(DEFAULT_USE_QUICK_METHOD)));
-      addParameter( new Parameter("Create new data set", new Boolean(DEFAULT_CREATE_NEW_DATASET)));
+      addParameter( new Parameter("Create new DataSet", new Boolean(DEFAULT_CREATE_NEW_DATASET)));
    }
    
    /**
@@ -351,13 +362,14 @@ public class SavitzkyGolayFilter extends GenericSpecial
       /*
        * Now both methods support smoothing only specified group ids
       if (!useQuick && !usedDataBlocksString.equalsIgnoreCase(ALL))
-         return new ErrorString("  Specific group IDs can only be smoothed " +
+         return new ErrorString(
+            "Error:  Specific group IDs can only be smoothed " +
                "if the quick method is used.");
                */
       
       //first to test "ds"
       if (ds == null)
-         return new ErrorString("  Please specify a DataSet.");
+         return new ErrorString("Error:  Please specify a DataSet.");
       
       //now to determine if a copy of the DataSet should be used
       //or if the actual DataSet should be used
@@ -369,17 +381,25 @@ public class SavitzkyGolayFilter extends GenericSpecial
       
       //now to check the validity of the values entered
       if (nL<0)
-         return new ErrorString("  The number of points left of the center cannot be negative");
+        return new ErrorString(
+         "Error:  The number of points left of the center cannot be negative");
       if (nR<0)
-         return new ErrorString("  The number of points right of the center cannot be negative");
+        return new ErrorString(
+         "Error:  The number of points right of the center cannot be negative");
       if (M<0)
-         return new ErrorString("  The degree of the smoothing polynomial cannot be negative");
+        return new ErrorString(
+          "Error:  The degree of the smoothing polynomial cannot be negative");
       
       new_ds.addLog_entry("Savitzky-Golay Filtered");
       if (nR == 1)
-         new_ds.addLog_entry("  "+nL+" left and "+nR+" right point used with a polynomial of degree "+M);
+         new_ds.addLog_entry("  "+nL+" left and "+nR+
+               " right point were used with a polynomial of degree "+M);
       else
-         new_ds.addLog_entry("  "+nL+" left and "+nR+" right points used with a polynomial of degree "+M);
+         new_ds.addLog_entry("  "+nL+" left and "+nR+
+               " right points were used with a polynomial of degree "+M);
+      
+      new_ds.addLog_entry("  Attempting to use the x range, ["+
+            xmin+", "+xmax+"]");
       
       //now to use the appropriate smoothing algorithm
       Object returnedObject = null;
@@ -426,15 +446,23 @@ public class SavitzkyGolayFilter extends GenericSpecial
          if (dataBounds instanceof String && 
                ((String)dataBounds).equalsIgnoreCase(ALL))
          {
-         	for (int i=0; i<new_ds.getNum_entries(); i++)
-         	{
+            //keeps track if any data blocks were smoothed
+            boolean success = false;
+            //keeps track if a specific data object was smoothed
+            boolean semiSuccess = false;
+            
+            for (int i=0; i<new_ds.getNum_entries(); i++)
+            {
                //now to get the Data object to use
                  data = new_ds.getData_entry(i);
-               //TODO:  Change this so that it doesn't always say ALL
-               //       as the second argument.  Instead, this should be a 
-               //       String describing the x values to use.
-               quickSmoothDataObject(data,xmin,xmax,c,nL,nR,M);
-         	}
+               semiSuccess = quickSmoothDataObject(data,xmin,xmax,c,nL,nR,M);
+               success = success || semiSuccess;
+            }
+            
+            if (!success)
+               SharedData.addmsg("Warning:  No Data blocks could be " +
+                     "Savitsky-Golay smoothed with the specified values " +
+                        "on the DataSet " + new_ds);
          }
          else if (dataBounds instanceof int[])
          {
@@ -443,32 +471,51 @@ public class SavitzkyGolayFilter extends GenericSpecial
             //for (int i=0; i<dataIndexArray.length; i++)
             //   System.out.println("dataIndexArray["+i+"]="+dataIndexArray[i]);
             
-         	for (int i=0; i<dataIndexArray.length; i++)
+            //keeps track if any data blocks were smoothed
+            boolean success = false;
+            //keeps track if a specific data object was smoothed
+            boolean semiSuccess = false;
+            
+            for (int i=0; i<dataIndexArray.length; i++)
          	{
                 //now to get the Data object to use
          		  data = new_ds.getData_entry_with_id(dataIndexArray[i]);
+                 
                 //if data == null then there isn't a Data object for the 
                 //index "i".  Thus, ignore quick smoothing it.
                 if (data != null)
                 {
-                   //TODO:  Change this so that it doesn't always say ALL
-                   //       as the second argument.  Instead, this should be a 
-                   //       String describing the x values to use.
-                   quickSmoothDataObject(data,xmin,xmax,c,nL,nR,M);
+                   semiSuccess = 
+                      quickSmoothDataObject(data,xmin,xmax,c,nL,nR,M);
+                   success = success || semiSuccess;
                 }
           	}
+            
+            if (!success)
+               SharedData.addmsg("Warning:  No Data blocks could be " +
+                     "Savitsky-Golay smoothed with the specified values " +
+                        "on the DataSet " + new_ds);
          }
+         else if (dataBounds instanceof ErrorString)
+            return dataBounds;
+         else if (dataBounds instanceof DataSet)
+            return (DataSet)dataBounds;
          
          return new_ds;
       }
       else
-         return new ErrorString("  The data cannot be smoothed using the entered values.");
+         return new ErrorString(
+            "Error:  The data cannot be smoothed using the entered values.");
    }
    
    private Object getDataObjectBounds(DataSet ds, String dataBounds)
    {
       if (dataBounds.equalsIgnoreCase(ALL))
+      {
+         ds.addLog_entry(
+               "  All Data blocks from the DataSet were smoothed");
          return ALL;
+      }
       else
       {
          int[] dataArray = IntList.ToArray(dataBounds);
@@ -477,8 +524,6 @@ public class SavitzkyGolayFilter extends GenericSpecial
          int firstID = ds.getData_entry(0).getGroup_ID();
          int lastID = ds.getData_entry(ds.getNum_entries()-1).getGroup_ID();
          
-         Vector invalidIDVec = new Vector();
-
          for (int i=0; i<dataArray.length; i++)
          {
             if (dataArray[i]>=firstID && dataArray[i]<=lastID)
@@ -486,42 +531,22 @@ public class SavitzkyGolayFilter extends GenericSpecial
                actualArray[finalIndex] = dataArray[i];
                finalIndex++;
             }
-            else
-               invalidIDVec.add(new Integer(dataArray[i]));
          }
          
-         if (invalidIDVec.size() > 0)
+         if (finalIndex == 0)
          {
-            StringBuffer buffer = new StringBuffer("  Group ");
-            if (invalidIDVec.size()==1)
-            {
-               buffer.append("ID ");
-               buffer.append(invalidIDVec.elementAt(0));
-               buffer.append(" does ");
-            }
-            else
-            {
-               buffer.append("IDs ");
-               for (int i=0; i<(invalidIDVec.size()-1); i++)
-               {
-                  buffer.append(invalidIDVec.elementAt(i));
-                  if (invalidIDVec.size() >= 3)
-                     buffer.append(",");
-                  buffer.append(" ");
-               }
-               buffer.append("and ");
-               buffer.append(invalidIDVec.lastElement());
-               buffer.append(" do ");
-            }
-            
-            buffer.append("not exist for the data set ");
-            buffer.append(ds);
-               
-            ds.addLog_entry(buffer.toString());
+            SharedData.addmsg("Warning:  The DataSet "+ds+
+                  " does not contain any data blocks in the specified range");
+            return ds;
          }
          
          int[] finalArray = new int[finalIndex];
          System.arraycopy(actualArray,0,finalArray,0,finalIndex);
+         
+         ds.addLog_entry(
+            "  The data blocks with the following IDs were smoothed:  "+
+               IntList.ToString(finalArray));
+         
          return finalArray;
       }
    }
@@ -533,11 +558,17 @@ public class SavitzkyGolayFilter extends GenericSpecial
       float endX = data.getX_scale().getEnd_x();
       
       if (xmax < xmin)
+      {
          return null;
+      }
       else if (xmin > endX)
+      {
          return null;
+      }
       else if (xmax < startX)
+      {
          return null;
+      }
             
       float actualMin = startX;
       float actualMax = endX;
@@ -567,22 +598,24 @@ public class SavitzkyGolayFilter extends GenericSpecial
     * @param nR
     * @param M
     */
-   private void quickSmoothDataObject(Data data, float xmin, float xmax, float[][] c, int nL, int nR, int M)
+   private boolean quickSmoothDataObject(Data data, float xmin, float xmax, float[][] c, int nL, int nR, int M)
    {
       //get a copy of the Data object's y values
          float[] fCopy = data.getCopyOfY_values();
       //and a reference to its actual array of y values
          float[] f = data.getY_values();
-      
+         
       int[] xIndexRange = getXIndexRange(data,xmin,xmax);
       if (xIndexRange == null)
-         return;
+         return false;
       
       //NOTE:  If the Data object represents a histogram, the 
       //       range might have to be i=0; i<fCopy.length-1;
       //       But right now this should work.
       for (int i=xIndexRange[0]; i<=xIndexRange[1]; i++)
         f[i] = getQuickSmoothedValue(c,fCopy,i,nL,nR,M);
+      
+      return true;
       
       /*
       //int minIndex = 0;
@@ -961,8 +994,9 @@ public class SavitzkyGolayFilter extends GenericSpecial
    {
       //first to test if the numbers entered are valid
       if (nR+nL<M)
-         return new ErrorString("  The sum of the left and right points and " +
-               "1 must be at least equal to the degree of the polynomial");
+         return new ErrorString("Error:  The sum of the left and right " +
+               "points must be at least equal to one less than the degree " +
+                  "of the polynomial");
       
       Data    currentData   = null;
       
@@ -974,37 +1008,64 @@ public class SavitzkyGolayFilter extends GenericSpecial
       else if (idBounds instanceof String && 
                   ((String)idBounds).equalsIgnoreCase(ALL))
       {
+         //keeps track if any data object was smoothed
+         boolean success = false;
+         //keeps track if a specific data object was smoothed
+         boolean semiSuccess = false;
+         
          for (int i=0; i<new_ds.getNum_entries(); i++)
          {
             //now to get the current Data object
                currentData   = new_ds.getData_entry(i);
-            leastSquaresSmoothDataObject(currentData,nL,nR,M,xmin,xmax);
+            semiSuccess = 
+               leastSquaresSmoothDataObject(currentData,nL,nR,M,xmin,xmax);
+            success = success || semiSuccess;
          }
+         
+         if (!success)
+            SharedData.addmsg("Warning:  No Data blocks could be " +
+                  "Savitsky-Golay smoothed with the specified values " +
+                     "on the DataSet " + new_ds);
       }
       else if (idBounds instanceof int[])
       {
          int[] ids = (int[])idBounds;
+         
+         //keeps track if any data object was smoothed
+         boolean success = false;
+         //keeps track if a specific data object was smoothed
+         boolean semiSuccess = false;
+         
          for (int i=0; i<ids.length; i++)
          {
             currentData = new_ds.getData_entry_with_id(ids[i]);
             if (currentData != null)
-               leastSquaresSmoothDataObject(currentData,nL,nR,M,xmin,xmax);
-            else
-               System.out.println("The data block with id "+ids[i]+
-                     " could not be smoothed because it doesn't exist.");
+            {
+               semiSuccess = 
+                  leastSquaresSmoothDataObject(currentData,nL,nR,M,xmin,xmax);
+               success = success || semiSuccess;
+            }
          }
+         
+         if (!success)
+            SharedData.addmsg("Warning:  No Data blocks could be " +
+                  "Savitsky-Golay smoothed with the specified values " +
+                     "on the DataSet " + new_ds);
       }
+      else if (idBounds instanceof DataSet)
+         return (DataSet)idBounds;
       
       return new_ds;
    }
 
-   private void leastSquaresSmoothDataObject(Data currentData, 
+   private boolean leastSquaresSmoothDataObject(Data currentData, 
                         int nL, int nR, int M, float xmin, float xmax)
    {
       int[] xIndexArr = getXIndexRange(currentData,xmin,xmax);
       
-      if (xIndexArr != null)
-      {
+      if (xIndexArr == null)
+         return false;
+      
          //and its y values.  This is a copy of the array of y values
             float[] copyOfYValues = currentData.getCopyOfY_values();
          //and this is a reference to the actual array of y values
@@ -1024,7 +1085,8 @@ public class SavitzkyGolayFilter extends GenericSpecial
             if (!Float.isNaN(smoothedValue))
                actualYValues[yIndex] = smoothedValue;
          }
-      }
+         
+         return true;
    }
    
    /**
