@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/10/15 02:52:58  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.4  2002/11/27 23:28:17  pfpeterson
  * standardized header
  *
@@ -153,13 +156,13 @@ public class Types{
   
   /**
    * Test program for the convert to and from Nexus routines
+   * Prints coords[] the rho,phi, theta in the other system.
    *
-   * @param args[0] pho
-   * @param args[1] phi
-   * @param args[2] theta
-   * @param args[3] optional if absent From Nexus otherwise to Nexus
-   *
-   * @returns coords[] the rho,phi, theta in the other system
+   * @param args args[0] = pho
+   *             args[1] = phi
+   *             args[2] = theta
+   *             args[3] = optional. if absent, taken to be From Nexus
+   *                       otherwise to Nexus
    */
   public static void main( String args[]){
     float r ,t ,p, coords[];

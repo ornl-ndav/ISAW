@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/10/15 02:52:58  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.5  2002/11/27 23:29:19  pfpeterson
  * standardized header
  *
@@ -82,7 +85,9 @@ public class NxWriteDetector{
   /**
    * Sets the name of the axes that are linked with the NXdata fields
    *
-   * @param axis*Link the node name of the 1st axis, 2nd axis, etc.
+   * @param axis1Link The node name of the 1st axis
+   * @param axis2Link The node name of the 2nd axis
+   * @param axis3Link The node name of the 3rd axis
    *
    * NOTE: Default values are "axis1","axis2","axis3"
    */
@@ -95,15 +100,16 @@ public class NxWriteDetector{
   /**
    * Sets up a lot of Isaw attributes
    *
-   * @param nxData_Monitor a NXdetector or NXmonitor node
+   * @param node a NXdetector or NXmonitor node
    * @param startIndex the index of the starting DataSet block
    * @param endIndex One larger than the last index of the ending
    * DataSet block
    * @param DS The data set with the information
+   * @param monitor The monitor DataSet.
    *
    * NOTE: The Data Set Attributes saved here are Solid Angle, Raw
    * Angle, Delta 2theta, Time field Type, group id, Total Count,
-   * distance<BR> The distance is a required field in a Nexus File.
+   * distance.<br> The distance is a required field in a Nexus File.
    * The other attributes are attributes of this distance field along
    * with theta .
    */
