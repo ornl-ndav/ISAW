@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.26  2003/07/09 23:06:26  bouzekc
+ * Now uses validateParameterGUIs() in getResult().
+ *
  * Revision 1.25  2003/07/09 22:24:28  bouzekc
  * Now overrides getTitle().
  *
@@ -386,6 +389,21 @@ public class OperatorForm extends Form implements HiddenOperator {
    *         Object.
    */
   public Object getResult(  ) {
+    if( form_op == null ) {
+      return null;
+    }
+
+    //return early if we can't validate the parameters
+    Object allValid = super.validateParameterGUIs(  );
+
+    if( allValid instanceof ErrorString ) {
+      return errorOut( allValid.toString(  ) );
+    } else if( allValid instanceof Boolean ) {
+      if( ( ( Boolean )allValid ).booleanValue(  ) != true ) {
+        return errorOut( "Parameters are invalid." );
+      }
+    }
+
     Object result = form_op.getResult(  );
 
     //Operator failed - exit out
@@ -401,12 +419,6 @@ public class OperatorForm extends Form implements HiddenOperator {
       SharedData.addmsg( "Success! " + result.toString(  ) );
     } else {
       SharedData.addmsg( "Success!" );
-    }
-
-    //validate the parameters...if we got this far, assume
-    //that our parameters were OK.
-    for( int i = 0; i < getNum_parameters(  ); i++ ) {
-      ( ( IParameterGUI )getParameter( i ) ).setValid( true );
     }
 
     return result;
