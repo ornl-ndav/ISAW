@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.25  2003/09/15 22:23:12  dennis
+ * made boxDeltaX and boxDeltaY Strings, as needed by the IntArrayPG.
+ *
  * Revision 1.24  2003/09/15 18:02:45  bouzekc
  * Added parameters for Integrate's new "shoe box" parameters.
  *
@@ -325,9 +328,9 @@ public class IntegrateMultiRunsForm extends Form {
     int timeSliceDelta;
     int SCDline;
     DataSet histDS;
-    int[] runsArray;
-    int[] boxDeltaX;
-    int[] boxDeltaY;
+    int[]  runsArray;
+    String boxDeltaX;
+    String boxDeltaY;
 
     //get raw data directory
     param            = ( IParameterGUI )super.getParameter( 0 );
@@ -375,12 +378,14 @@ public class IntegrateMultiRunsForm extends Form {
     //get append to file value
     param            = ( IParameterGUI )super.getParameter( 9 );
     append           = ( ( BooleanPG )param ).getbooleanValue(  );
+
+    //shoebox parameters
     param            = ( IParameterGUI )super.getParameter( 11 );
     useShoeBox       = ( ( BooleanPG )param ).getbooleanValue(  );
     param            = ( IParameterGUI )super.getParameter( 12 );
-    boxDeltaX        = ( ( IntArrayPG )param ).getArrayValue(  );
+    boxDeltaX        = ( ( IntArrayPG )param ).getStringValue(  );
     param            = ( IParameterGUI )super.getParameter( 13 );
-    boxDeltaY        = ( ( IntArrayPG )param ).getArrayValue(  );
+    boxDeltaY        = ( ( IntArrayPG )param ).getStringValue(  );
 
     //the name for the saved *.integrate file
     integName        = outputDir + expName + ".integrate";
@@ -494,7 +499,7 @@ public class IntegrateMultiRunsForm extends Form {
   private void createIntegrateOperators( 
     String calibFile, int SCDline, String integName, String sliceRange,
     int timeSliceDelta, boolean append, String centerType, boolean useShoeBox,
-    int[] boxDeltaX, int[] boxDeltaY ) {
+    String boxDeltaX, String boxDeltaY ) {
     loadHist    = new LoadOneHistogramDS(  );
     integrate   = new Integrate(  );
     loadSCD     = new LoadSCDCalib(  );
