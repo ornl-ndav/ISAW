@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2003/10/27 01:31:39  bouzekc
+ * Modified to work with updated Forms.
+ *
  * Revision 1.12  2003/10/18 21:22:02  bouzekc
  * Now uses HTML file for help message.
  *
@@ -140,7 +143,7 @@ public class InitialPeaksWizard extends Wizard {
    */
   private void createAllForms(  ) {
     int[][] fpi                     = {
-      { 9, 0, 0, -1, 0, 0 },  //peaks file 
+      { 10, 0, 0, -1, 0, 0 },  //peaks file 
       { -1, 2, 1, 0, -1, -1 }
     };  //matrix
     FindMultiplePeaksForm peaksform = new FindMultiplePeaksForm(  );
