@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/05/09 18:48:25  pfpeterson
+ * Now prints out UB matrices after being multiplied by the transformation
+ * matrix. Also writes results to a log file.
+ *
  * Revision 1.7  2003/05/02 22:02:58  pfpeterson
  * Prints out lattice parameters resulting from each transformation matrix.
  *
@@ -83,6 +87,7 @@ import DataSetTools.util.FilenameUtil;
 import DataSetTools.util.Format;
 import DataSetTools.util.SharedData;
 import DataSetTools.util.TextFileReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Vector;
 
@@ -121,6 +126,7 @@ public class ScalarJ extends GenericTOF_SCD{
   private static final int A_EQ_C_NE_B = 3;
   private static final int A_NE_B_NE_C = 4;
 
+  private StringBuffer logBuffer=null;
   private double delta= 0.0;
   private int i= 0;
   private int [] k= new int[60];
@@ -209,6 +215,7 @@ public class ScalarJ extends GenericTOF_SCD{
    */
   public ScalarJ(){
     super("JScalar");
+    this.logBuffer=new StringBuffer();
   }
 
   /**
@@ -279,14 +286,19 @@ public class ScalarJ extends GenericTOF_SCD{
    * Uses the current values of the parameters to generate a result.
    */
   public Object getResult(){
-    String dir=getParameter(0).getValue().toString();
+    String matfile=getParameter(0).getValue().toString();
     delta=(double)((Float)getParameter(1).getValue()).floatValue();
     String Schoice=getParameter(2).getValue().toString();
     int choice=choices.indexOf(Schoice);
 
-    // check that the directory is okay
-    if(dir==null || dir.length()==0)
-      return new ErrorString("no directory specified");
+    // add information to the log
+    logBuffer.append("FILE   = "+matfile+"\n");
+    logBuffer.append("DELTA  = "+Format.real(delta,5,3)+"\n");
+    logBuffer.append("CHOICE = "+Schoice+"\n\n");
+
+    // check that the matrix file is okay
+    if(matfile==null || matfile.length()==0)
+      return new ErrorString("no matrix file specified");
 
     // check that delta is reasonable
     if(delta<=0.)
@@ -297,9 +309,9 @@ public class ScalarJ extends GenericTOF_SCD{
       return new ErrorString("Error undestanding restriction");
     
     // read in the blind logfile
-    String blindfile=FilenameUtil.setForwardSlash(dir);//+"/blind.log");
+    matfile=FilenameUtil.setForwardSlash(matfile);
     {
-      ErrorString error=readScalars(blindfile);
+      ErrorString error=readScalars(matfile);
       if(error!=null) return error;
     }
 
@@ -316,7 +328,42 @@ public class ScalarJ extends GenericTOF_SCD{
     // print the result
     printResult();
 
+    // print the results to the log file
+    int index=matfile.lastIndexOf("/");
+    if(index>=0){
+      String logfile=matfile.substring(0,index+1)+"scalar.log";
+      if(!writeLog(logfile))
+        SharedData.addmsg("WARNING: Error while writing scalar.log");
+    }else{
+      SharedData.addmsg("WARNING: Could not create logfile, bad filename");
+    }
+
+    logBuffer=null; // cut the log loose
     return "See console for result";
+  }
+
+  /**
+   * Writes the contents of logBuffer to the specified filename.
+   */
+  private boolean writeLog( String filename ){
+    FileOutputStream fout=null;
+    try{
+      fout=new FileOutputStream(filename);
+      fout.write(logBuffer.toString().getBytes());
+      fout.flush();
+    }catch(IOException e){
+      return false;
+    }finally{
+      if(fout!=null){
+        try{
+          fout.close();
+        }catch(IOException e){
+          // let it drop on the floor
+        }
+      }
+    }
+
+    return true;
   }
 
   /**
@@ -365,6 +412,15 @@ public class ScalarJ extends GenericTOF_SCD{
     double beta  = Math.acos(scalars[4]/(a*c));
     double gamma = Math.acos(scalars[5]/(a*b));
 
+    {
+      int start=logBuffer.length();
+      logBuffer.append(" LATTICE PARAMETERS\n");
+      logBuffer.append(Format.real(a,10,3)+Format.real(b,10,3)+Format.real(c,10,3)+"\n");
+      logBuffer.append(Format.real(alpha*180./Math.PI,10,3)+Format.real(beta*180./Math.PI,10,3)+Format.real(gamma*180./Math.PI,10,3)+"\n");
+      logBuffer.append("\n");
+      System.out.print(logBuffer.substring(start));
+    }
+
     sig[0] = 2.*delta*scalars[0];
     sig[1] = 2.*delta*scalars[1];
     sig[2] = 2.*delta*scalars[2];
@@ -383,9 +439,14 @@ public class ScalarJ extends GenericTOF_SCD{
     k[i-1] = 0;
     l[i-1] = 0;
 
-    for( int index=0 ; index<6 ; index++ ){
-      System.out.println(Format.real(scalars[index],10,3)
-                         +Format.real(sig[index],11,3));
+    {
+      int start=logBuffer.length();
+      logBuffer.append(" SCALARS");
+      for( int index=0 ; index<6 ; index++ ){
+        logBuffer.append(Format.real(scalars[index],10,3)
+                         +Format.real(sig[index],11,3)+"\n");
+      }
+      System.out.print(logBuffer.substring(start));
     }
 
     return true;
@@ -451,9 +512,11 @@ public class ScalarJ extends GenericTOF_SCD{
     try{
       tfr=new TextFileReader(logfile);
 
-      System.out.println((" "));
-      System.out.println((" Scalars obtained from the blind.log file."));
-      System.out.println((" "));
+      {
+        int start=logBuffer.length();
+        logBuffer.append("\n Scalars obtained from the blind.log file.\n\n");
+        System.out.print(logBuffer.substring(start));
+      }
 
       while(!tfr.eof()){
         if(tfr.read_line().trim().equalsIgnoreCase("*** CELL SCALARS ***"))
@@ -1071,11 +1134,13 @@ public class ScalarJ extends GenericTOF_SCD{
   private void printResult(){
     if(DEBUG) System.out.println("MARK05");
     if( k[0] == 0 || l[0] == 0 ){
-      System.out.println("NO MATCH");
-      System.out.println(" FOR SCALARS "
-                         +scalars[0]+" "+scalars[1]+" "+scalars[2]+" ");
-      System.out.println("             "
-                         +scalars[3]+" "+scalars[4]+" "+scalars[5]+" ");
+      int start=logBuffer.length();
+      logBuffer.append("NO MATCH\n");
+      logBuffer.append(" FOR SCALARS "
+                         +scalars[0]+" "+scalars[1]+" "+scalars[2]+"\n");
+      logBuffer.append("             "
+                         +scalars[3]+" "+scalars[4]+" "+scalars[5]+"\n");
+      System.out.print(logBuffer.substring(start));
       return;
     }
 
@@ -1095,43 +1160,50 @@ public class ScalarJ extends GenericTOF_SCD{
 
 
     double[][] transf=new double[3][3];
+    double[][] newmat=null;
     double[] abc=null;
     for( int n=0 ; n<imax ; n++ ){
       if( l[n]==npick || nchoice==NO_RESTRICTION || nchoice==SYMMETRIC ){
-        System.out.println(" ");
-        System.out.println(" CELL "+(n+1)+"  TYPE IS ");
-        System.out.println(" ");
-        System.out.println(" "+cell[l[n]-1]+" ");
-        System.out.println(" ");
-        System.out.println(" TRANSFORMATION MATRIX "+i+"  IS" );
-        System.out.println(" ");
+        int start=logBuffer.length();
+        logBuffer.append("\n CELL "+(n+1)+"  TYPE IS \n\n");
+        logBuffer.append(" "+cell[l[n]-1]+"\n\n");
+        logBuffer.append(" TRANSFORMATION MATRIX "+i+"  IS\n\n" );
         i++;
         nflag = true;
         for( int m=1 ; m<=3 ; m++ ){ // create transformation matrix
           for( int j=1 ; j<=3 ; j++ )
             transf[j-1][m-1]=trans[m+((j+3*k[n])*3)-13];
         }
-        for( int ii=0 ; ii<3 ; ii++ ){ // print the matrix
+        newmat=LinearAlgebra.mult(this.UB,transf);
+        for( int ii=0 ; ii<3 ; ii++ ){ // print the matrices
           for( int jj=0 ; jj<3 ; jj++ ){
-            System.out.print(Format.real(transf[jj][ii],4)+" ");
+            logBuffer.append(Format.real(transf[jj][ii],4)+" ");
           }
-          System.out.println();
+          if(ii==1)
+            logBuffer.append(" x UB = ");
+          else
+            logBuffer.append("        ");
+          for( int jj=0 ; jj<3 ; jj++ ){
+            logBuffer.append(Format.real(newmat[jj][ii],10,6)+" ");
+          }
+          logBuffer.append("\n");
         }
         abc=Util.abc(LinearAlgebra.mult(this.UB,transf));
-        System.out.println();
-        // print the lattice parameters
-        System.out.println("     a        b        c      alpha     beta    "
-                           +"gamma  cellvol");
+        logBuffer.append("\n");
+        logBuffer.append("      a          b          c        alpha       "
+                           +"beta      gamma     cellvol\n");
         for( int ii=0 ; ii<abc.length ; ii++ )
-          System.out.print(Format.real(abc[ii],8,2)+" ");
-        System.out.println();
+          logBuffer.append(Format.real(abc[ii],10,3)+" ");
+        logBuffer.append("\n");
+        System.out.print(logBuffer.substring(start));
       }
     }
 
+    int start=logBuffer.length();
     if(!nflag)
-      System.out.println((" NO MATCHES FOUND"));
-    System.out.println((" "));
-
+      logBuffer.append(" NO MATCHES FOUND");
+    logBuffer.append("\n");
+    System.out.print(logBuffer.substring(start));
 
   }  // ==================== end of printResult
 
