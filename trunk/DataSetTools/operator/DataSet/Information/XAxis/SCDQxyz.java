@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/01/06 22:43:31  dennis
+ * Adjusted signs to compensate for different coordinate system.
+ *
  * Revision 1.4  2002/11/27 23:18:10  pfpeterson
  * standardized header
  *
@@ -224,7 +227,7 @@ public class SCDQxyz extends  XAxisInformationOp
      if(Q==null) return null;
 
 
-     // now add the 2PI to get Q
+     // now multiply by 2PI to get Q
      for( int j=0 ; j<3 ; j++ ){
          Q[j]=(float)(2*PI*Q[j]);
      }
@@ -263,7 +266,7 @@ public class SCDQxyz extends  XAxisInformationOp
       Position3D Qpos=(Position3D)this.getResult();
       if(Qpos==null) return "N/A";
       float[] Q=Qpos.getCartesianCoords();
-      
+
       return fmt.format(Q[0])+","+fmt.format(Q[1])+","+fmt.format(Q[2]);
   }
 
@@ -302,6 +305,7 @@ public class SCDQxyz extends  XAxisInformationOp
       post_d[2]=(float)(pos[1]/(r*pos[2]));
       
       // rotate the detector to where it actually is
+      deta = -deta;                                 // Dennis, 10/1/2002
       double cosa=Math.cos(-deta*PI/180.);
       double sina=Math.sin(-deta*PI/180.);
       post_a[0]=(float)(    post_d[0]*cosa+post_d[1]*sina);
@@ -309,7 +313,7 @@ public class SCDQxyz extends  XAxisInformationOp
       post_a[2]=post_d[2];
 
       // translate the origin
-      post_l[0]=post_a[0]+(float)(1./wl);
+      post_l[0]=post_a[0]-(float)(1./wl);           // Dennis, 10/1/2002
       post_l[1]=post_a[1];
       post_l[2]=post_a[2];
       
@@ -332,6 +336,7 @@ public class SCDQxyz extends  XAxisInformationOp
       post_ome[2]=pos[2];
       
       // reverse the chi rotation
+      chi=-chi;                                      // Dennis, 10/1/2002
       double cosc=Math.cos(chi*PI/180.);
       double sinc=Math.sin(chi*PI/180.);
       post_chi[0]=post_ome[0];
