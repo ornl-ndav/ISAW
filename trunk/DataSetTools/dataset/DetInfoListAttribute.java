@@ -31,6 +31,18 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/11/12 00:47:20  dennis
+ *  Made immutable by:
+ *  1. remove setValue() method
+ *  2. add() & combine() methods now return a new Attribute
+ *  3. getValue() returns copy of the array value
+ *
+ *  Also:
+ *  4. Since it is now immutable, clone() method is not needed and
+ *     was removed
+ *  5. Default constructor is now private, since the value can't
+ *     be set from outside of the class
+ *
  *  Revision 1.8  2002/08/01 22:33:35  dennis
  *  Set Java's serialVersionUID = 1.
  *  Set the local object's IsawSerialVersion = 1 for our
@@ -112,16 +124,39 @@ public class DetInfoListAttribute extends Attribute implements  IXmlIO
    * Constructs a DetInfoListAttribute object using the specified name 
    * and values.
    */
-  public DetInfoListAttribute( String name, DetectorInfo values[] )
+  public DetInfoListAttribute( String name, DetectorInfo value[] )
   {
     super( name );
-    setValue( values );
+
+    if ( value == null )
+    {
+      values = null;
+      return;
+    }
+
+    int length  = value.length;
+    values = new DetectorInfo[ length ];
+
+    for ( int i = 0; i < values.length; i++ )
+      values[i] = new DetectorInfo( value[i] );
+
+    boolean in_order = true;
+    for ( int i = 0; i < values.length - 1; i++ )
+      if ( values[i].getSeg_num() > values[i+1].getSeg_num() )
+        in_order = false;
+
+    if ( !in_order )
+    {
+      System.out.println("Sorting DetectorInfoListAttribute");
+      Arrays.sort( values, new DetectorInfoComparator() );
+    }
   }
 
-  public DetInfoListAttribute()
+
+  private DetInfoListAttribute()
   {
     super("");
-    setValue(new DetectorInfo[0]);
+    values = new DetectorInfo[0];
  
   }
 
@@ -135,43 +170,6 @@ public class DetInfoListAttribute extends Attribute implements  IXmlIO
   } 
 
   /**
-   * Set the value for the int list attribute using a generic object.  The 
-   * actual class of the object must be an array of DetectorInfo objects.
-   */
-  public boolean setValue( Object obj )
-  {
-    if ( obj == null )
-      System.out.println("ERROR: null object in DetInfoListAttribute.setValue");
-
-    if ( obj instanceof DetectorInfo[] )
-    {
-      DetectorInfo  new_vals[] = (DetectorInfo[])obj;
-
-      int length  = new_vals.length;
-      values = new DetectorInfo[ length ];
-
-      for ( int i = 0; i < values.length; i++ )
-        values[i] = new DetectorInfo( new_vals[i] );
-
-      boolean in_order = true;
-      for ( int i = 0; i < values.length - 1; i++ )
-        if ( values[i].getSeg_num() > values[i+1].getSeg_num() )
-          in_order = false;
-
-      if ( !in_order )
-      {
-        System.out.println("Warning: " + 
-                           "values not ordered in DetInfoListAttribute");
-       // #### need yet another sort method!!!   arrayUtil.sort( this.values );
-      }
-    }
-    else
-      return false;
-    
-    return true;
-  }   
-
-  /**
    * Combine the value of this attribute with the value of the attribute
    * passed as a parameter to obtain a new value for this attribute.  The
    * new value is the result of merging the two lists of DetectorInfo objects.
@@ -179,10 +177,10 @@ public class DetInfoListAttribute extends Attribute implements  IXmlIO
    *  @param   attr   An attribute whose value is to be "combined" with the 
    *                  value of the this attribute.
    */
-  public void combine( Attribute attr )
+  public Attribute combine( Attribute attr )
   {
     if ( !(attr instanceof DetInfoListAttribute) )      // can't do it so don't 
-      return;                                          
+      return this;                                          
        
     DetInfoListAttribute other_attr = (DetInfoListAttribute)attr; 
 
@@ -195,26 +193,46 @@ public class DetInfoListAttribute extends Attribute implements  IXmlIO
     int i        = 0,
         j        = 0,
         num_used = 0;
-                                                             // merge the lists 
+                                               // merge the lists, only keeping
+                                               // keeping distinct segment ids
+    int last_seg = -1;
+    int seg_i;
+    int seg_j;
     while ( i < values.length && j < other_attr.values.length )    
     {
-      if ( values[ i ].getSeg_num() < other_attr.values[ j ].getSeg_num() )
+      seg_i = values[ i ].getSeg_num();
+      seg_j = other_attr.values[ j ].getSeg_num();
+      if ( seg_i < seg_j )
       {
-        temp[ num_used ] = values[i];
+        if ( seg_i != last_seg )
+        {
+          temp[ num_used ] = values[i];
+          last_seg = seg_i;
+          num_used++;
+        }
         i++;
       }
-      else if ( values[ i ].getSeg_num() > other_attr.values[ j ].getSeg_num() )
+      else if ( seg_i > seg_j )
       {
-        temp[ num_used ] = other_attr.values[ j ];
+        if ( seg_j != last_seg )
+        {
+          temp[ num_used ] = other_attr.values[ j ];
+          last_seg = seg_j;
+          num_used++;
+        }
         j++;
       }
-      else
+      else     // seg_i == seg_j, so use seg_i if it is not already in the list
       {
-        temp[ num_used ] = values[ i ];
+        if ( seg_i != last_seg )
+        {
+          temp[ num_used ] = values[i];
+          last_seg = seg_i;
+          num_used++;
+        }
         i++;
         j++;
       }
-      num_used++;
     }
 
     if ( i < values.length )
@@ -229,11 +247,13 @@ public class DetInfoListAttribute extends Attribute implements  IXmlIO
                         other_attr.values.length - j );
       num_used += other_attr.values.length - j;
     }
-      
                                                   // now copy the values into
-    values = new DetectorInfo[ num_used ];        // a new array for this
+                                                  // a new array for this
                                                   // attribute
-    System.arraycopy( temp, 0, values, 0, num_used );
+    DetectorInfo new_values[] = new DetectorInfo[ num_used ];
+    System.arraycopy( temp, 0, new_values, 0, num_used );
+    
+    return new DetInfoListAttribute( name, new_values );
   }
 
 
@@ -352,7 +372,8 @@ public class DetInfoListAttribute extends Attribute implements  IXmlIO
         if( Tag == null)
           return xml_utils.setError(xml_utils.getErrorMessage());
         if(!Tag.equals("DetectorInfoList"))
-           return xml_utils.setError(" Need DetectorInfoList tag in DetInfoList");
+           return xml_utils.setError(
+                             " Need DetectorInfoList tag in DetInfoList");
         V= xml_utils.getNextAttribute( stream);
         if(V== null)
           return xml_utils.setError( xml_utils.getErrorMessage());
@@ -424,7 +445,8 @@ public class DetInfoListAttribute extends Attribute implements  IXmlIO
         if( !xml_utils.skipAttributes( stream ))
           return xml_utils.setError(xml_utils.getErrorMessage());
         if( !Tag.equals("/value"))
-          return xml_utils.setError("Improper DetInfoList Attr end Tag in DetInfoList");
+          return xml_utils.setError(
+                           "Improper DetInfoList Attr end Tag in DetInfoList");
          
         Tag = xml_utils.getTag( stream );
         if( Tag == null)
@@ -448,14 +470,6 @@ public class DetInfoListAttribute extends Attribute implements  IXmlIO
   public String toString()
   {
     return this.getName() + ": " + this.getStringValue();
-  }
-
-  /**
-   * Returns a copy of the current attribute
-   */
-  public Object clone()
-  {
-    return new DetInfoListAttribute( this.getName(), values );
   }
 
 /* -----------------------------------------------------------------------
