@@ -1,11 +1,11 @@
-# 
+#Ashfia Huq August 2004 
 # Script to produce  gsas file for groups of detector IDs
 # of gppd runs in higher frame. Uses the time shift operator.  
 # Defaults set to second frame transformation.  
-# User can either display or write a gsas file or do both.
+# User can either display or write a gsas(FXYE)format file or do both.
 # $Date$
 
-$Category=Operator, Instrument Type, TOF_NPD
+# Modify $Date$ : Ashfia Huq , ID's should remain the same (bad detectors are turned off using the discriminator levels
 
 $Current Boolean(true)	Is this a Current Run ?
 
@@ -36,8 +36,8 @@ endif
 
 temp[1] = TimeShift(temp[1], 30.0, tshift,true)
 
-  id_val =["1:30,32:44,180:223","48:75,225:254","77:91,93:110,256:287","111:139,289:305,307:317","140:159"]
-  focus_val = [145,125,107,90,60]
+  	id_val =["1:44,180:223","48:75,225:254","77:110,256:286","111:139,289:317","140:162,166:176"]
+  	focus_val = [145,125,107,90,53]
   Display temp[1]
 
   if Prompt_det_ID == true
@@ -57,11 +57,10 @@ temp[1] = TimeShift(temp[1], 30.0, tshift,true)
 	endif	
 
 	if Create_gsas == true
-     	SaveGSAS( m_dsa, m_dsa, outputname&i&".gsa",false,true)
+     	Save3ColGSAS(temp[0], m_dsa, outputname&i&".gsa",true)
 	endif
 
      send m_dsa
    
 endfor
-
 
