@@ -2,6 +2,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.8  2001/07/25 19:24:51  neffk
+ * corrects the cosmetic problem of the tree being collapsed every
+ * time a new node is added to the 'Modified' node.
+ *
  * Revision 1.7  2001/07/25 19:17:25  neffk
  * automatically reloads the tree's data model to ensure that all
  * new nodes added to 'Modified' are shown.  this has the irritating
@@ -243,7 +247,7 @@ public class JDataTree
 //    getModifiedExperiment().insert(  ds_node, 0  );
     getModifiedExperiment().setUserObject( ds );
 
-    getMyModel().reload();
+    getMyModel().reload(  getModifiedExperiment()  );
 
   }
 
