@@ -9,6 +9,13 @@
  *               John Hammonds
  *
  *  $Log$
+ *  Revision 1.7  2001/02/22 20:56:48  dennis
+ *    Now handles all of the DataSets from a runfile.  It no longer assumes
+ *  that DataSet 0 is the monitor DataSet and that there is only one
+ *  histogram DataSet.
+ *    Now it handles commands to get the number of DataSets, get the type of
+ *  a specific DataSet and get a specific DataSet.
+ *
  *  Revision 1.6  2001/02/16 22:04:38  dennis
  *  Added array bounds checking on the information from the DAS to
  *  avoid problems if the DAS sends bad channel numbers.
@@ -65,6 +72,10 @@ import DataSetTools.util.*;
 public class LiveDataServer implements IUDPUser,
                                        ITCPUser
 {
+  public static final String COMMAND_GET_DS      = "COMMAND:GET_DATA_SET ";
+  public static final String COMMAND_GET_DS_TYPE = "COMMAND:GET_DATA_SET_TYPE ";
+  public static final String COMMAND_GET_NUM_DS  = "COMMAND:GET_NUM_DATA_SETS";
+
   public  static final int MAGIC_NUMBER       = 483719513;
   public  static final int SERVER_PORT_NUMBER = 6088;
   private static final int DELAY_COUNT        = 300;
@@ -78,8 +89,8 @@ public class LiveDataServer implements IUDPUser,
   private  String  instrument_name = null;
   private  int     run_number      = -1;
 
-  DataSet mon_ds;                                   // current monitor DataSet
-  DataSet hist_ds;                                  // current histogram DataSet
+  DataSet data_set[] = new DataSet[0];              // current DataSets
+  int     ds_type[]  = new int[0];                  // current DataSet types
 
   int     spec_buffer[] = new int[ 16384 ];         // buffer for one part of
                                                     // on spectrum
@@ -102,11 +113,18 @@ public class LiveDataServer implements IUDPUser,
 
     System.out.println( "FileName: " + file_name );
     RunfileRetriever rr = new RunfileRetriever( file_name );
-    mon_ds  = rr.getDataSet(0);
-    hist_ds = rr.getDataSet(1);
+
+    int num_data_sets = rr.numDataSets();
+    data_set = new DataSet[ num_data_sets ];
+    ds_type = new int[ num_data_sets ];
+    for ( int i = 0; i < num_data_sets; i++ )
+    {
+      ds_type[i] = rr.getType( i ); 
+      data_set[i] = rr.getDataSet( i ); 
+      SetToZero( data_set[i] );
+    }
+
     rr = null;
-    SetToZero( mon_ds );
-    SetToZero( hist_ds );
   }
 
   /**
@@ -197,16 +215,18 @@ public class LiveDataServer implements IUDPUser,
       start += 4;
     }
                                               // record the spectrum values in
-                                              // the monitor or histogram
-                                              // DataSet. 
-    if ( !RecordData( mon_ds, id, first_channel, num_channels, spec_buffer ) )
-      RecordData( hist_ds, id, first_channel, num_channels, spec_buffer );
+                                              // the first DataSet possible
+    int ds_num = 0;
+    while ( (ds_num < data_set.length) &&
+            !RecordData( data_set[ds_num], id, 
+                         first_channel, num_channels, spec_buffer) )
+      ds_num++;
 
     delay_counter++;                         // only notify observers after
     if ( delay_counter >= DELAY_COUNT )      // DELAY_COUNT pulses have been
     {                                        // processed.
-      mon_ds.notifyIObservers( IObserver.DATA_CHANGED );
-      hist_ds.notifyIObservers( IObserver.DATA_CHANGED );
+      for ( int i = 0; i < data_set.length; i++ )
+        data_set[i].notifyIObservers( IObserver.DATA_CHANGED );
       delay_counter = 0;
     }
   }
@@ -226,40 +246,83 @@ public class LiveDataServer implements IUDPUser,
   {
     if ( data_obj instanceof String )
     {
-      System.out.println("Received request " + data_obj );
       String command = (String)data_obj; 
+      System.out.println("Received request " + command );
+      try
       {
-        try
+        DataSet ds = null;
+
+        if (  command.equalsIgnoreCase( COMMAND_GET_NUM_DS ) )
         {
-          DataSet ds = null;
+          System.out.println("Processing GET NUM DS " + command );
+          tcp_io.Send( new Integer( data_set.length ) );
+        }
+        else if ( command.startsWith( COMMAND_GET_DS_TYPE ) )
+        {
+          System.out.println("Processing GET DS TYPE " + command );
+          int index = extractIntParameter( command );
 
-          if ( command.equalsIgnoreCase( "GET MONITORS" ) )
-            ds = (DataSet)(mon_ds.clone());
-          else if ( command.equalsIgnoreCase( "GET HISTOGRAM" ) ) 
-            ds = (DataSet)(hist_ds.clone());
-
-          if ( ds != null )     // must remove observers before sending
+          if ( index >= 0 && index < ds_type.length )
+            tcp_io.Send( new Integer( ds_type[ index ] ) );
+          else
+            tcp_io.Send( new Integer( Retriever.INVALID_DATA_SET ) );
+        }
+        else if ( command.startsWith( COMMAND_GET_DS ) )
+        {
+          System.out.println("Processing GET DS " + command );
+          int index = extractIntParameter( command );
+          if ( index >= 0 && index < ds_type.length )   //valid DataSet index
           {
-            IObserverList observer_list = ds.getIObserverList();
-            ds.deleteIObservers(); 
-            System.out.println("Trying to send " + ds );
-            tcp_io.Send( ds  );
-            System.out.println("Finished sending " + ds );
-
-//          Data d = ds.getData_entry(0);         // for debug purposes only
-//          System.out.println( "For entry " + 0 + " Time = " +
-//                      (String)(d.getAttributeValue(Attribute.UPDATE_TIME)));
-
-//          ds.setIObserverList( observer_list ); // needed if ds is not a  
-                                                  // clone of mon_ds or hist_ds
+            ds = (DataSet)(data_set[ index ].clone());
+            if ( ds != null )     // must remove observers before sending
+            {
+              System.out.println("Trying to send " + ds );
+              ds.deleteIObservers(); 
+              tcp_io.Send( ds  );
+              System.out.println("Finished sending " + ds );
+            }
+          }
+          else                                         // bad index, return
+          {
+            tcp_io.Send( DataSet.EMPTY_DATA_SET.clone() );
           }
         }
-        catch ( Exception e )
-        {
-          System.out.println("Error: couldn't send data "+e );
-        }  
       }
+      catch ( Exception e )
+      {
+        System.out.println("Error: LiveDataServer command: " + command);
+        System.out.println("Error: couldn't send data "+e );
+      }  
     }
+  }
+
+
+  /**
+   *  Extract the first integer value occuring in a command string.
+   *
+   *  @param command  A command string containing an integer parameter following
+   *                  a space ' ' character. 
+   */
+  private int extractIntParameter( String command )
+  {
+    int first_space = command.indexOf( " " );       // extract string following 
+                                                    // the first space, if
+                                                    // possible
+    if ( first_space < 0 )
+      return -1;
+    
+    command = command.substring( first_space + 1 );
+    command.trim();
+
+    int next_space = command.indexOf( " " );
+    String int_string = " ";
+    if ( next_space < 0 )
+      int_string = command;
+    else
+      int_string = command.substring( 0, next_space );
+
+    int parameter = (Integer.valueOf( int_string )).intValue();
+    return parameter;
   }
 
   /**
@@ -267,7 +330,7 @@ public class LiveDataServer implements IUDPUser,
    *
    *  @param  ds   The DataSet whose entries are to be zeroed out.
    */
-  public void SetToZero( DataSet ds )
+  private void SetToZero( DataSet ds )
   {
     float y[];
 
