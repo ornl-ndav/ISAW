@@ -2,6 +2,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.5  2001/07/24 15:36:52  neffk
+ * now adds DataSet objects and modified DataSet objects in a cleaner
+ * way.  also, the modified experiment is working correctly.
+ *
  * Revision 1.4  2001/07/23 13:58:55  neffk
  * added getExperiments() and improved some comments.
  *
@@ -91,6 +95,8 @@ public class JDataTree
 {
   private JTree tree;
 
+  private static final String MODIFIED_NODE_TITLE = "Modified";
+
   /**
    * the main container for various forms of data in the ISAW application.
    * the tree contains and visualizes the data on three levels--Experiments,
@@ -110,6 +116,10 @@ public class JDataTree
     tree.setShowsRootHandles( true );
     tree.putClientProperty("JTree.lineStyle", "Angled");
     tree.addMouseListener(  new MouseListener()  );
+
+    getMyModel().insertNodeInto(  new DefaultMutableTreeNode( MODIFIED_NODE_TITLE ),
+                                  (DefaultMutableTreeNode)getMyModel().getRoot(),
+                                  0  );
 
     setLayout(new GridLayout(1,1));
     setBorder(new CompoundBorder(new EmptyBorder(4,4,4,4), new EtchedBorder (EtchedBorder.RAISED)));
@@ -164,14 +174,32 @@ public class JDataTree
 
 
   /**
-   * add a new Experiment container to the tree.
+   * add a new Experiment container to the tree.  the new Experiment object
+   * is added to the bottom of the tree.
    */
   public void addExperiment( Experiment e )
   {
+    int child_count = (  (DefaultMutableTreeNode)getMyModel().getRoot()  ).getChildCount();
     getMyModel().insertNodeInto(  (MutableTreeNode)e, 
                                   (MutableTreeNode)tree.getModel().getRoot(), 
-                                  0  );
+                                  child_count  );
     tree.expandRow( 0 );      //make sure root node is expanded
+  }
+
+
+  /**
+   * adds a new Experiment object to the 'Modified' node of the tree.
+   * use this whenever a new DataSet/Experiment is created and needs
+   * to be added to the tree.  the Experiment is always added as the
+   * last node within the 'Modified' sub-root node.
+   */ 
+  public void addToModifiedExperiment( DataSet ds )
+  {
+    DataSetMutableTreeNode ds_node = new DataSetMutableTreeNode( ds );
+    int index = getModifiedRoot().getChildCount();
+    getMyModel().insertNodeInto(  (MutableTreeNode)ds_node, 
+                                  getModifiedRoot(), 
+                                  index  );
   }
 
 
@@ -444,10 +472,8 @@ public class JDataTree
       MutableTreeNode node = getNodeOfObject(reason);
 
       if( node == null )
-      {
-        DataSet[] dss = new DataSet[ 1 ];  dss[0] = ds;
-        addExperiment( dss, "Modified" );
-      }
+        addToModifiedExperiment( ds );
+
       else
       {
         System.out.println( "DataSet found" );
