@@ -5,6 +5,10 @@
  *                             ( Modified from SpectrometerTofToEnergy.java )
  *             
  *  $Log$
+ *  Revision 1.3  2000/08/02 01:43:55  dennis
+ *  Changed to use Data.ResampleUniformly() so that the operation can be
+ *  applied to functions as well as to histograms.
+ *
  *  Revision 1.2  2000/07/17 18:18:14  dennis
  *  Changed call to VelocityOfEnergy() to VelocityFromEnergy() since some
  *  math.tof_calc.java method names were changed for consistency.
@@ -237,7 +241,7 @@ public class SpectrometerTofToQ extends    XAxisConversionOperator
       max_Q = temp;
     }
 
-    XScale new_Q_scale;
+    UniformXScale new_Q_scale;
     if ( num_Q < 2 || min_Q >= max_Q )      // no valid scale set
       new_Q_scale = null;
     else
@@ -314,8 +318,8 @@ public class SpectrometerTofToQ extends    XAxisConversionOperator
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 
-        if ( new_Q_scale != null )              // rebin if a valid scale was
-          new_data.ReBin( new_Q_scale );        // specified
+        if ( new_Q_scale != null )                    // resample if a valid
+          new_data.ResampleUniformly( new_Q_scale );  // scale was specified
 
         new_ds.addData_entry( new_data );      
       }

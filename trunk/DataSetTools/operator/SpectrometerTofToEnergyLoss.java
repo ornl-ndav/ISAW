@@ -9,6 +9,10 @@
  *                                            XAxisConversionOperator
  *             
  *  $Log$
+ *  Revision 1.6  2000/08/02 01:42:23  dennis
+ *  Changed to use Data.ResampleUniformly() so that the operation can be
+ *  applied to functions as well as to histograms.
+ *
  *  Revision 1.5  2000/07/10 22:36:19  dennis
  *  July 10, 2000 version... many changes
  *
@@ -235,7 +239,7 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator
       max_E = temp;
     }
 
-    XScale new_e_scale;
+    UniformXScale new_e_scale;
     if ( num_E <= 1.0 || min_E >= max_E )       // no valid scale set
       new_e_scale = null;
     else
@@ -289,8 +293,8 @@ public class SpectrometerTofToEnergyLoss extends    XAxisConversionOperator
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 
-        if ( new_e_scale != null )              // rebin if a valid scale was
-          new_data.ReBin( new_e_scale );        // specified
+        if ( new_e_scale != null )                    // resample if a valid
+          new_data.ResampleUniformly( new_e_scale );  // scale was specified
 
         new_ds.addData_entry( new_data );      
       }
