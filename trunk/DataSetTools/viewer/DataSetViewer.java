@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/07/17 20:35:47  dennis
+ *  Added validDataSet() method to check for null or empty
+ *  DataSets.
+ *
  *  Revision 1.7  2001/04/26 14:21:33  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -160,6 +164,19 @@ public abstract class DataSetViewer extends    JPanel
       return data_set;
     }
 
+    /**
+     *  Check whether or not the DataSet is valid and non-empty.
+     */
+    public boolean validDataSet()
+    {
+      if ( data_set == null )
+        return false;
+
+      if ( data_set.getNum_entries() == 0 )
+        return false;
+
+      return true;
+    }
 
     /**
      *  Get a reference to a state object containing information about the
