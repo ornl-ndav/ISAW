@@ -1,4 +1,5 @@
 
+
 /*
  * File:  NxEntryStateInfo.java
  *
@@ -31,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/12/23 13:06:41  rmikk
+ * Updated to version 1.0.  Added a version field
+ *
  * Revision 1.2  2003/12/12 17:27:48  rmikk
  * If an NXentry has no "description" SDS field, the "analysis"(old) field is also
  *   checked
@@ -41,40 +45,51 @@
  */
 
 package NexIO.State;
+
+
 import NexIO.*;
 import NexIO.Util.*;
+
 
 /**
  *    This class contains state information needed to process an NXentry class
  *   of a NeXus file
  */ 
-public class NxEntryStateInfo extends StateInfo{
+public class NxEntryStateInfo extends StateInfo {
 
-  /**
-   *   The analysis type like TOFNPD, etc
-   */
-  public String description;
+    /**
+     *   The analysis type like TOFNPD, etc
+     */
+    public String description;
+  
+    public String version;
 
-  /**
-   *   The Name of the NXentry node
-   */
-  public String Name;
+    /**
+     *   The Name of the NXentry node
+     */
+    public String Name;
    
-  /**
-   *   Constructor
-   *   @param NxEntryNode  an NxNode containing information on a NeXus NXentry
-   *                       class
-   *   @param Params    a linked list of State information
-   */
-  public NxEntryStateInfo( NxNode NxEntryNode, 
-                NxfileStateInfo Params ){
-     Name = NxEntryNode.getNodeName();
-     description = NexUtils.getStringFieldValue( NxEntryNode,"description");
-     if( description == null)
-       description = NexUtils.getStringFieldValue( NxEntryNode,"analysis");
-
-  }
+    /**
+     *   Constructor
+     *   @param NxEntryNode  an NxNode containing information on a NeXus NXentry
+     *                       class
+     *   @param Params    a linked list of State information
+     */
+    public NxEntryStateInfo(NxNode NxEntryNode, 
+        NxfileStateInfo Params) {
+          
+        Name = NxEntryNode.getNodeName();
+        version = null;
+     
+        description = NexUtils.getStringFieldValue(NxEntryNode, "description");
+        if (description == null)
+            description = NexUtils.getStringFieldValue(NxEntryNode, "analysis");
+       
+        else
+            version = NexUtils.getStringAttributeValue(           
+                        NxEntryNode.getChildNode("description"), "version");
+     
+    }
   
 }
-
 
