@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/06/14 14:17:58  pfpeterson
+ *  Added more checks before firing a PropertyChangeEvent.
+ *
  *  Revision 1.1  2002/06/06 16:09:24  pfpeterson
  *  Added to CVS.
  *
@@ -76,7 +79,6 @@ class FilteredDocument extends PlainDocument {
      */
     public void insertString(int offs, String str, AttributeSet a) 
         throws BadLocationException {
-        //System.out.println("insertString("+offs+", "+str+"): "+filter);
 
         if(filter==null){
             super.insertString(offs,str,a);
@@ -88,8 +90,6 @@ class FilteredDocument extends PlainDocument {
             super.insertString(offs,str,a);
             if(propBind!=null)
                 this.fireValueChange(oldText,textBox.getText());
-            /*propBind.firePropertyChange(IParameter.VALUE,
-              oldText,textBox.getText());*/
         }else{
             toolkit.beep();
         }
@@ -101,15 +101,13 @@ class FilteredDocument extends PlainDocument {
     public void remove(int offs, int len) throws BadLocationException{
         String oldText=textBox.getText();
         super.remove(offs,len);
-        //System.out.println("value:"+oldText+"->"+textBox.getText());
         if(propBind!=null)
             this.fireValueChange(oldText,textBox.getText());
-        /*propBind.firePropertyChange(IParameter.VALUE,
-          oldText,textBox.getText());*/
     }
 
     private void fireValueChange(String oldValue, String newValue){
-        if(!oldValue.equals(newValue)){
+        if(propBind!=null && newValue!=null && newValue.length()>0 
+           && !oldValue.equals(newValue) ){
             propBind.firePropertyChange(IParameter.VALUE,oldValue,newValue);
         }
     }
