@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/10/07 16:33:26  pfpeterson
+ *  Added an epoch time so System.currentTimeMillis() can be
+ *  converted to an integer.
+ *
  *  Revision 1.9  2002/07/12 18:21:23  pfpeterson
  *  Added convenience methods to releave the duty of casting from
  *  the caller.
@@ -101,6 +105,8 @@ public class SharedData implements java.io.Serializable
   // be received by this version.  SpectromterPlotter is obsolete and should
   // be removed.
   public static final Operator old_op = new SpectrometerPlotter();
+
+  public static final long start_time=System.currentTimeMillis();
  
     /**
      * Convenience method to ease adding to the status pane.
