@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2003/03/14 21:19:26  pfpeterson
+ * Added hooks for writing out a logfile.
+ *
  * Revision 1.8  2003/03/14 16:18:13  pfpeterson
  * Added option to choose centering condition.
  *
@@ -74,9 +77,10 @@ import java.util.Vector;
  * This is a ported version of A.J.Schultz's INTEGRATE program. 
  */
 public class Integrate extends GenericTOF_SCD{
-  private static final String     TITLE   = "Integrate";
-  private static       boolean    DEBUG   = false;
-  private static       Vector     choices = null;
+  private static final String       TITLE     = "Integrate";
+  private static       boolean      DEBUG     = false;
+  private static       Vector       choices   = null;
+  private              StringBuffer logBuffer = null;
   
   /* ------------------------ Default constructor ------------------------- */ 
   /**
@@ -186,6 +190,7 @@ public class Integrate extends GenericTOF_SCD{
     String expname;
     int threashold=1;
     int centering=0;
+    this.logBuffer=new StringBuffer();
 
     // first get the DataSet
     val=getParameter(0).getValue();
@@ -418,6 +423,18 @@ public class Integrate extends GenericTOF_SCD{
       peaks.set(i,peak);
     }
 
+    // write out the logfile
+/* THIS WRITES OUT THE LOG FILE INTEGRATE.LOG
+    String logfile=expfile;
+    {
+      int index=logfile.lastIndexOf("/");
+      logfile=logfile.substring(0,index)+"/integrate.log";
+    }
+    String errmsg=this.writeLog(logfile);
+    if(errmsg!=null)
+      SharedData.addmsg(errmsg);
+*/
+
     // write out the peaks
     String intfile=expfile;
     {
@@ -428,6 +445,9 @@ public class Integrate extends GenericTOF_SCD{
     return writer.getResult();
   }
 
+  /**
+   * Create the vector of choices for the ChoiceListPG of centering.
+   */
   private void init_choices(){
     choices=new Vector();
     choices.add("primative");               // 0 
@@ -437,6 +457,37 @@ public class Integrate extends GenericTOF_SCD{
     choices.add("[f]ace centered");         // 4
     choices.add("[i] body centered");       // 5
     choices.add("[r]hombohedral centered"); // 6
+  }
+
+  /**
+   * This method takes the log created throughout the calculation and
+   * writes it to a file.
+   *
+   * @return a String if anything goes wrong, null otherwise.
+   */
+  private String writeLog(String logfile){
+    if( logBuffer==null || logBuffer.length()<=0 )
+      return "No information in log buffer";
+
+    FileOutputStream fout=null;
+
+    try{
+      fout=new FileOutputStream(logfile);
+      fout.write(logBuffer.toString().getBytes());
+      fout.flush();
+    }catch(IOException e){
+      return e.getMessage();
+    }finally{
+      if(fout!=null){
+        try{
+          fout.close();
+        }catch(IOException e){
+          // let it drop on the floor
+        }
+      }
+    }
+
+    return null;
   }
 
   /**
