@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2003/08/06 17:12:39  bouzekc
+ *  Removed debugging println() in stringtoArray().  Now prints the message
+ *  rather than the stacktrace when a ParseException is caught.
+ *
  *  Revision 1.20  2003/08/05 23:10:11  bouzekc
  *  StringtoArray() now uses JavaCC to parse input.
  *
@@ -294,14 +298,13 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @return A Vector of Objects corresponding to the Strings.
    */
   public static Vector StringtoArray( String S ) {
-    System.out.println(S);
     try{
       //prep the string a little
       //the ";" is needed for the ParameterGUIParser-it will be thrown away
-      S = S.trim(  ) + ";";
+      S = S.trim(  );
       return ParameterGUIParser.parseText( S );
     } catch( ParseException pe ) {
-      pe.printStackTrace(  );
+      System.out.println(  pe.getMessage(  ) );
       return new Vector(  );
     }
     /*if( S == null ) {
