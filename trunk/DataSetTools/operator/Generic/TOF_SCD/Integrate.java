@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2003/04/14 18:50:46  pfpeterson
+ * Fixed bug where observed intensity was not always found.
+ *
  * Revision 1.14  2003/04/14 16:14:05  pfpeterson
  * Reworked code that integrates time slices to parameterize the number
  * of slices to integrate.
@@ -868,7 +871,8 @@ public class Integrate extends GenericTOF_SCD{
     int y=(int)Math.round(peak.y());
     int z=(int)Math.round(peak.z());
 
-    int maxP=peak.ipkobs();
+    int maxP=(int)Math.round(getObs(ds,ids[x][y],z));
+    peak.ipkobs(maxP);
     int maxX=x;
     int maxY=y;
     int maxZ=z;
