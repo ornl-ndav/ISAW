@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/05/20 20:49:58  dennis
+ * Now constructs a new parameters vector in setDefaultParameters.
+ * (Ruth Mikkelson)
+ *
  * Revision 1.4  2003/04/02 15:02:46  pfpeterson
  * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
  *
@@ -78,6 +82,8 @@ public class AdderExampleForm extends    Form
    */
   public void setDefaultParameters()
   {
+    parameters = new Vector();
+
     addParameter(new FloatPG("Enter Value 1", new Float(1), false));
     addParameter(new FloatPG("Enter Value 2", new Float(2), false));
     addParameter(new FloatPG("Enter Value 3", new Float(3), false));
