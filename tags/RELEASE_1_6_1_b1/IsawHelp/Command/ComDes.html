@@ -1,0 +1,116 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (Windows NT 5.0; U) [Netscape]">
+</head>
+<body>
+<a href="CommandPane.html">CONTENTS</a>
+<p><a NAME="#rith"></a>Arithmetic Operations :+,-, *, /, &amp;, and ^(power)
+<ul>These binary operations(Except &amp;) can be between Data Sets, a Data
+Set and a float, between two integers, between two floats, or between two
+strings(&amp; only).
+<p>&nbsp;Mixed types are allowed and are converted. "&amp;" is always string
+add so non string data is converted to strings.
+<P> <B>Logical operations</B> AND, OR, operate on two booleans and NOT is a unary
+   operator. They are not case sensitive.<BR>
+<B>Relational operators</b> are >, >=, < , <= , <> , = or ==
+</ul>
+
+<hr>Assignment operator =
+<ul>To store a quantity in the local workspace memory, use "=" just like
+it is used in FORTRAN</ul>
+
+<hr><a NAME="Load"></a>Load
+<ul>
+<ol type="1">
+<h3>
+There are several forms of load. </h3>
+
+<li>
+<b>Load String Filename</b></li>
+
+<br><b>Load(String Filename)</b>
+<p>The names of the variables are names related to the file
+<li>
+<b>Load String Filename, String VariableName</b></li>
+
+<br><b>Load( String Filename , String VariableName )</b>
+<br>The names of the variables are varname[0], varname[1], varname[2], etc.
+<P>
+<li>
+<b>Integer Load String Filename</b></li>
+
+<br><b>Integer Load(String Filename)</b>
+<br><b>Integer Load String Filename, String VariableName</b>
+<br><b>Integer Load( String Filename , String VariableName )</b>
+
+<br>The return value is the number of datasets loaded.
+<br>These files are loaded into the local workspace</ol><P>
+<UL> NOTE: if the extension of the filename must correspond to a filetype of 
+   a supported file retriever.  Currently, extensions of run, isd, xmi(ISAW xml),
+    zip(zipped xml),sdds,gsa,gds,dat,bxs,hdf,and csd(IDEAS MC simulation).
+ </ul>
+</ul>
+
+<hr><a NAME="Display"></a>Display
+<ul>
+<ol type ="1">
+<li>
+<b>Display Object Expr</b></li>
+
+<br>&nbsp;The expression can be a variable or constant of any type.
+The data sets will be displayed in an external viewer of type IMAGE.<P>
+<li>
+<b>*Display Object Expr, String ImageType</b></li>
+
+<br>&nbsp;ImageType should be either "IMAGE" , "SCROLLED_GRAPHS" ,
+"SELECTED_GRAPHS", "TABLE", or "THREE_D" without quotes(") or
+ <ul>one of the following IN QUOTES, case sensitive, and with no leading and trailing
+     spaces:
+    <li> Contour View
+    <li> Group x vs y
+    <li> x vs Group y
+    <li> x,Row vs Col y
+    <li> Contour:Qx,Qy vs Qz
+    <li> Contour:Qx,Qz vs Qy
+    <li> Contour:Qy,Qz vs Qx
+    <li> Contour:Qxyz slices
+   </ul>
+  Note: As new Viewers appear in IsawGUI.Isaw under the View menu, they can be accessed by
+  replacing the ImageType by the name that appears on the menu item in quotes and case 
+  sensitive. Also, some of the above choices for ImageType may disappear when they are
+  renames or eliminated.
+</ol>
+</ul>
+
+<hr><a NAME="Send"></a>Send
+<ul><LI><b>Send DataSet</b>
+<ul>This command sends the data set back to anyone that is an IObserver
+Listener</ul>
+  <LI> <b> Send Object Reason , Object ObservedObject</b>
+   <ul> Sends this information to all IObservers. Note order is reversed relative to the
+      IObserver update
+   </ul>
+</ul>
+
+<hr><a NAME="Save"></a>Save
+<ul><b>Save DataSet, String Filename</b>
+<br>&nbsp;This will save the data set in a form specified by the extension.<P>
+  The current extensions for saving are:
+  <ul> gsa, gda, dat,isd,xmi,zip,nxs,hdj</ul>
+   
+  See <A href="#Load">Load</a></ul>
+
+
+<hr><a Name="Return"></a>Return
+<ul><li><b> Return  Expression</b><br>
+   The program exits and the value of the Expression is returned (from the getResult Method).
+   In scripts, this value can be assigned to another variable or used in expressions
+
+     <li><b> Return</b><br>
+    The program exits and a null value is returned
+</ul>
+</body>
+</html>
+

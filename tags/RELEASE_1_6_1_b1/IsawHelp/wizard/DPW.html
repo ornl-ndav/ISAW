@@ -1,0 +1,262 @@
+<!--
+  File: IPW.html
+ 
+  Copyright (C) 2003, Chris M. Bouzek
+ 
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License
+  as published by the Free Software Foundation; either version 2
+  of the License, or (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ 
+  Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+            Department of Mathematics, Statistics and Computer Science
+            University of Wisconsin-Stout
+            Menomonie, WI 54751, USA
+ 
+            Chris Bouzek <coldfusion78@yahoo.com>
+ 
+  This work was supported by the National Science Foundation under grant
+  number DMR-0218882.
+ 
+  For further information, see <http://www.pns.anl.gov/ISAW/>
+ 
+  $Log$
+  Revision 1.1  2003/10/18 21:26:05  bouzekc
+  Added to CVS.
+
+-->
+<html>
+	<head>
+		<title>SCD Wizard How-To</title>
+	</head>
+
+	<body>
+	<hr>
+	<center>
+	<font size=+3>Intro</font>
+	</center>
+	<hr>
+	The Wizards are meant as a tool to bridge the gap between analyzing data
+	using the ISAW program, which is a fully flexible analysis, and analyzing
+	data using scripts, which are fast but only run sequentially.<br><br>
+	The Wizards allow you to perform predetermined steps one at a time, view
+	intermediate results, and go back to change and/or optimize inputs in a
+	previous step.
+	<hr>
+	<center>
+	<font size=+3>Starting the SCD Wizards</font>
+	</center>
+	<hr>
+	The ISAW Wizards are not yet available from the main ISAW program.  You must
+	open a command prompt in order to run the wizards.  In addition, 
+	your classpath must be properly set up in order to run the Wizards.  If you
+	are running a downloaded version of ISAW, your classpath should be set
+	correctly already.  If you are using source from CVS or your classpath is not
+	set, you must set your classpath so that it includes the directory that you 
+	put the source code into.  You can also specify the classpath directly when
+	running the Wizards.  If you need to specify the classpath directly, you will
+	need to enter the full path to the ISAW installation directory (we will
+	denote this as ${ISAW_HOME}).<br><br>
+	To run the Wizards, type<br><br><code>
+	java Wizard.TOF_SCD.InitialPeaksWizard</code><br><br>
+	for the Initial Peaks Wizard, or<br><br><code>
+	java Wizard.TOF_SCD.DailyPeaksWizard</code><br><br>
+	for the Daily Peaks Wizard.  If these do not work for you, it is likely that
+	your classpath is incorrectly set.  A temporary fix is to specify the
+	classpath directly:<br><br><code>
+	java -cp $CLASSPATH:${ISAW_HOME} Wizard.TOF_SCD.InitialPeaksWizard</code><br><br>
+	for the Initial Peaks Wizard, or<br><br><code>
+	java -cp $CLASSPATH:${ISAW_HOME} Wizard.TOF_SCD.DailyPeaksWizard</code><br><br>
+	for the Daily Peaks Wizard.
+	<hr>
+	<center>
+	<font size=+3>General use of the Wizards</font>
+	</center>
+	<hr>
+	There are several ways to navigate through the Wizards.  The double arrow
+	buttons move to the first step or the last step and the single arrows move
+	one step forward or backward.<br><br>
+	To execute an intermediate step, you can click on the "Do" button, and to
+	execute all steps, you can click on the "Do All" button.  To view the results
+	and parameters of the intermediate steps, you can select "View" from the menu
+	bar then select the parameter you want to view.<br><br>
+	To get help on the Wizard or a particular step, you can click on the "Help"
+	option in the menu bar, then click on "On Wizard" or "On Current Form"
+	respectively.<br><br>
+	To save your progress, you can click on the "File" option in the menu bar,
+	then click on "Save Wizard State", then type the file name that you want to
+	save your progress to.  A ".wsf" extension is automatically appended to the
+	name.  In a similar manner, you can load a previously saved Wizard using
+	"File" then "Load Wizard State."<br><br>
+	Clicking on "Reset" or "Reset All" will clear the progress bar for the
+	current step or all steps, respectively.  This allows you to rerun one or
+	more steps without changing any parameters.<br><br>
+	To set a working or projects directory, select "Projects Directory" from the
+	wizard menu, then simply select the directory you want.  The projects directory 
+	will coerce the file browsers to initially open to your selected directory.
+
+	<!-- Daily Peaks Wizard -->
+
+	<hr>
+	<center>
+	<font size=+3>SCD Daily Peaks Wizard</font>
+	</center>
+	<hr>
+	This Wizard is meant to be used for multiple runs after a baseline has been
+	established using the Initial Peaks Wizard.  There are four steps in this 
+	Wizard:<br>
+	<ol>
+		<li>Finding peaks</li>
+		<li>Indexing the peaks</li>
+		<li>Refining the orientation matrix with a least squares routine.</li>
+		<li>Integrating the peaks.</li>
+	</ol>
+	Typically steps 2 and 3 are iterated over until you find an orientation
+	matrix that is satisfactory to you.
+	<hr>
+	<center>
+	<font size=+2>Description of steps and parameters</font>
+	</center>
+	<hr>
+
+	<ol>
+		<li>
+		<font size=+1>Finding Peaks</font><br><br>
+		Here is a screenshot of step 1 of the Wizard:<br><br>
+		<img src="images/DPForm1.jpg"><br><br>
+		This step is used to find peaks from a single run using several parameters.
+		The result is a peaks file.
+		<br><br>Its parameters are:<br>
+		<ol>
+			<li>Raw data path: This is the directory the runfiles are in (e.g.
+			C:\\ISAW\SampleRuns).  If you are using the Browse button to find this
+			directory, you must highlight the directory you want rather than going
+			into the directory.</li>
+			<li>Output data path: This is the directory you want the resultant output
+			to go to.</li>
+			<li>Run numbers: Here is where you enter the run number you want to
+			analyze.  For example, if you are analyzing SCD06497.RUN, you would enter
+			06497 or 6497 here.</li>
+			<li>Experiment name: This is the name of your experiment (e.g. quartz).
+			Note that this name will be used for the peaks file naming (e.g.
+			quartz.peaks).</li>
+			<li>Maximum number of peaks: This is the maximum number of peaks you want
+			listed in the peaks file.</li>
+			<li>Minimum peak intensity: The minimum intensity that a peak should have
+			to be included in a file.</li>
+			<li>Append data to file: If you have an existing peaks file that you wish
+			this analysis to be appended to, check this box.  In order for this to
+			work, the peaks file must be named, for example, quartz.peaks if your
+			experiment name is quartz.  If the file does not exist, you will get an
+			error.</li>
+			<li>SCD calibration file line to use: this is the line of the specified
+			calibration file to use for this analysis.  Putting a -1 here will select
+			the most recent data.</li>
+			<li>SCD calibration file: This is the fully qualified name of the 
+			calibration file to use (e.g. C:\\ISAW\SampleRuns\instprm.dat).
+			</li>
+			<li>Pixel rows and columns to keep: This is the range of values of the
+			detector pixel information to keep.  Note that a square detector is
+			assumed, so if you have a 100 x 100 pixel detector, and you want to
+			remove 10 pixels on each side (due to noise, etc.), you would put 10:90
+			in this field.</li>
+		</ol>
+		</li><br>
+
+		<li>
+		<font size=+1>Indexing the peaks</font><br><br>
+		Here is a screenshot of step 2 of the Wizard:<br><br>
+		<img src="images/DPForm2.jpg"><br><br>
+		This step is where you will index the peaks that were found in step 1.  
+		Its output is the file index.log.
+		<br><br>Its parameters are:<br>
+		<ol>
+			<li>Delta h: This is the allowable h uncertainty</li>
+			<li>Delta k: This is the allowable k uncertainty</li>
+			<li>Delta l: This is the allowable l uncertainty</li>
+			<li>Update peaks file: checking this box will update the peaks file with
+			the indexing information.</li>
+			<li>Get matrix file from: This allows you to select what matrix file to
+			use.  You can use a single matrix file (from the Initial Peaks Wizard or
+			an overall least squares fitted matrix) or
+			you can use the result of step 3, which is a set of matrix files for each
+			run number you have entered.<br><br>
+			The first time through the wizard, you will usually select "From a File."  
+			If you choose "From LsqrsJ", the Wizard will assume that there exists a
+			matrix file for each run as well as an overall matrix.
+			For example, if you are using runs 6496 to 6498, with the experiment name
+			quartz, the Wizard will expect to find lsquartz06496.mat,
+			lsquartz06497.mat, lsquartz06498.mat in the raw data path.<br><br>
+			When it finds these files, it will restrict the indexing of a run number 
+			to the least squares matrix corresponding to that name.  For example,
+			indexing of the peaks for run number 6497 will only be done using
+			lsquartz06497.mat.</li>
+			<li>Matrix file to load: This is only available if "From a File" is
+			selected in the previous parameter.  This allows you to select what
+			matrix file you want to use for indexing the peaks.</li>
+			<li>Restrict runs: This is only available if "From a File" is
+			selected in the previous parameter.  This allows you to restrict indexing
+			of the peaks using your selected matrix to certain runs.  Leaving this
+			blank will include all runs.</li>
+		</ol>
+		</li><br>
+
+		<li>
+		<font size=+1>Refining the orientation matrix</font><br><br>
+		Here is a screenshot of step 3 of the Wizard:<br><br>
+		<img src="images/DPForm3.jpg"><br><br>
+		This step is where you will refine the initial orientation matrix based on
+		the results of indexing the peaks.  Its output is the lsqrsj.log file, as 
+		well as an orientation matrix for each run number and an overall
+		orientation matrix.
+		<br><br>Its parameters are:<br>
+		<ol>
+			<li>Restrict peaks sequence numbers:  These are the sequence numbers that
+			you want to restrict the refinement of the matrix to.</li>
+			<li>Minimum peak intensity threshold: The minimum intensity that a peak 
+			should have to be included in the refinement.</li>
+			<li>Pixel rows and columns to keep: This is the range of values of the
+			detector pixel information to keep.  Note that a square detector is
+			assumed, so if you have a 100 x 100 pixel detector, and you want to
+			remove 10 pixels on each side (due to noise, etc.), you would put 10:90
+			in this field.</li>
+		</ol>
+		</li><br>
+
+		<li>
+		<font size=+1>Integrating the peaks</font><br><br>
+		Here is a screenshot of step 4 of the Wizard:<br><br>
+		<img src="images/DPForm4.jpg"><br><br>
+		This step is used to integrate the peaks from the multiple runs.  It can
+		also include any runs done using the Initial Peaks Wizard (i.e. it is not
+		limited to the run numbers that were entered in step 1).  Its output is 
+		experiment_name.integrate, the file of integrated peaks.
+		<br><br>Its parameters are:<br>
+		<ol>
+			<li>Run numbers: These are the run numbers that you want to integrate the
+			peaks for.</li>
+			<li>Centering type: This is the crystal center type to use (e.g. face
+			centered).</li>
+			<li>Time-slice range: This is the range to use for the time-slice.</li>
+			<li>Amount to increase slice size by: This is used as an increment value
+			for the time slice range.</li>
+			<li>Append to file: Check this box if you have a previous .integrate file
+			that you want the results of this step appended to.</li>
+			<li>Use shoe box: ????????</li>
+			<li>Box delta x (col) range: ????????? </li>
+			<li>Box delta y (row) range: ????????? </li>
+		</ol>
+		</li>
+	</ol>
+			<font size=-1>Copyright 2003 Chris M. Bouzek</font>
+	</body>
+</html>
