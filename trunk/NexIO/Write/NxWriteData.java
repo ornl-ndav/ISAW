@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/04/01 20:50:02  rmikk
+ * Each NXdata now has a name related to its DataSet Title
+ * A common label attribute is added to each NXdata from one data set. This, when read will by Isaw will merge these NXdata into one data set
+ *
  * Revision 1.2  2002/03/18 20:58:27  dennis
  * Added initial support for TOF Diffractometers.
  * Added support for more units.
@@ -136,14 +140,15 @@ public class NxWriteData
         {
           if( endIndex <= 0 ) 
              endIndex = DS.getNum_entries();
-          node = nodeEntr.newChildNode( "Data"+kk , "NXdata" );
+          node = nodeEntr.newChildNode( DS.getTitle()+"_"+kk , "NXdata" );
+          
           NxWriteNode nxdet = nxInstr.newChildNode("Detector"+kk,"NXdetector");
-         String nodeName=Inst_Type.AxisWriteHandler(1,kk,instrType,node,nxdet,DS,
+         String nodeName=(new Inst_Type()).AxisWriteHandler(1,kk,instrType,node,nxdet,DS,
               startIndex , endIndex);
          if( nodeName != null)
             node.addLink( nodeName);
          else System.out.println("UUUUUUUU axis 1 no link");
-         nodeName=Inst_Type.AxisWriteHandler(2,kk,instrType,node,nxdet,DS,
+         nodeName=(new Inst_Type()).AxisWriteHandler(2,kk,instrType,node,nxdet,DS,
               startIndex,endIndex);
          
          if( nodeName != null)
@@ -154,110 +159,7 @@ public class NxWriteData
          node.addLink( "NXdetector"+kk );
          //node.addLink( "axis1"+kk );
           //node.addLink( "axis2"+kk );
-/*  //Moved to NxDetector done 1st there
-          NxWriteNode n1 = node.newChildNode( "time_of_flight" , "SDS" );
-          String units , longname;
 
-        // time_of_flight  or axis = 1 
-          units = DS.getX_units();
-          longname = DS.getX_label();
-          if( units != null )
-	    {rank1 = new int[1];
-             rank1[0]= units.length()+1;
-             n1.addAttribute( "units" , ( units+cc ).getBytes() , 
-                    Types.Char , rank1 );
-             }
-          if( longname != null )
-           {rank1 = new int[1];
-            rank1[0]= longname.length()+1;
-            n1.addAttribute( "long_name" , ( longname+cc ).getBytes() , 
-                           Types.Char , rank1 );
-            } 
-          rank1 = new int[1];
-          rank1[0]= 1;
-          intval = new int[1];
-          intval[0]= 1;
-          n1.addAttribute( "axis" , intval , Types.Int , rank1 ); 
-        
-          rank1 = new int[1];     
-          rank1[0] = xvals.length;
-          n1.setNodeValue( xvalsPrev  , Types.Float  , rank1 );
-          n1.setLinkHandle( "axis1"+kk );
-          if( n1.getErrorMessage() != "" )
-            {errormessage = n1.getErrorMessage();
-             //System.out.println( "NxData A"+errormessage );
-             return true;
-            }
-        
-   
-         if( node.getErrorMessage() != "" )
-           {errormessage = node.getErrorMessage();
-            //System.out.println( "NxData B" );
-            return true;
-           }
-     //axis = 2    
-         float phi[] ;
-         phi = new float[ endIndex-startIndex];
-        
-        float coords[];
-        DetectorPosition DP;
-        for( j= startIndex ; j < endIndex ; j++ )
-         {Data DB2 = DS.getData_entry( j );
-          DP = ( DetectorPosition )DB2.getAttributeValue( 
-                                          Attribute.DETECTOR_POS );
-          if( DP == null ) phi[j] = j;
-          else
-             {
-             coords = DP.getSphericalCoords();
-            
-             coord = Types.convertToNexus( coords[0], coords[2], coords[1]);
-          
-             phi[j-startIndex] = coord[1]; 
-             }
-          }//for j = startIndex to endIndex
-        
-        NxWriteNode n2 = node.newChildNode( "phi" , "SDS" );
-	
-         units = DS.getY_units();
-         longname = DS.getY_label();
-         if( units != null )
-            {rank1 = new int[1];
-             rank1[0] = units.length()+1;
-             n2.addAttribute( "units" , ( units+cc ).getBytes() , 
-                              Types.Char , rank1 );
-            }
-          
-          if( longname != null )
-            {
-             rank1 = new int[1];
-             rank1[0] = longname.length()+1;
-             n2.addAttribute( "long_name" , ( longname+cc ).getBytes() , 
-                           Types.Char , rank1 );
-            } 
-          
-          rank1 = new int[1];
-          rank1[0] = 1;
-          intval = new int[1];
-          intval[0] = 2;
-          n2.addAttribute( "axis" , intval , Types.Int , rank1 ); 
-        
-         rank1 = new int[1];
-         rank1[0] = phi.length;
-         
-         n2.setNodeValue( phi , Types.Float , rank1 );
-	 
-         n2.setLinkHandle( "axis2"+kk );
-         if( n2.getErrorMessage() != "" )
-           {errormessage = n2.getErrorMessage();
-            return true;
-           }
-     
-     if( node.getErrorMessage() != "" )
-      {errormessage = node.getErrorMessage();
-       return true;
-      }
-*/  //End Moved to NxDetector
-    
    
     if( DS.getNum_entries() <=  0 )
        {errormessage = " No Data Entries";
@@ -284,6 +186,9 @@ public class NxWriteData
       }
    
     NxWriteNode n3 = node.newChildNode( "data", "SDS" );
+    n3.addAttribute("label", (DS.getTitle()+(char)0).getBytes(),NexIO.Types.Char,
+              NexIO.Inst_Type.makeRankArray(DS.getTitle().length()+1,-1,-1,-1,-1));
+          
     
     rank1 = new int[1];
     rank1[0] = 1;
