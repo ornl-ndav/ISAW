@@ -28,18 +28,18 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
- *
- *
  * Modified:
  * $Log$
+ * Revision 1.2  2005/01/10 15:35:59  dennis
+ * Added getCategoryList method to place operator in menu system.
+ *
  * Revision 1.1  2004/07/23 17:44:45  taoj
  * test version.
  *
-
  */
 package Operators.TOF_Diffractometer;
 
-import DataSetTools.operator.Wrappable;
+import DataSetTools.operator.*;
 import DataSetTools.math.tof_calc;
 import DataSetTools.dataset.Attribute;
 import DataSetTools.dataset.AttributeList;
@@ -53,10 +53,12 @@ import java.util.regex.Pattern;
 
 
 /**
- * This class subtracts the self-scattering part from sample differential cross section and converts vanadium
+ * This class subtracts the self-scattering part from sample differential 
+ * cross section and converts vanadium
  * calibration function to flux function for weighting;
  */
-public class GLADDistinct implements Wrappable {
+
+public class GLADDistinct implements Wrappable, IWrappableWithCategoryList {
   //~ Instance fields **********************************************************
   
   private boolean DEBUG = false;
@@ -71,7 +73,25 @@ public class GLADDistinct implements Wrappable {
   public float temperature = 300f;
   public float Wmin = 0.1f;
   public float Wmax = 6.0f;
+
   //~ Methods ******************************************************************
+
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.TOF_NGLAD;
+  }
+
 
   /**
    * @return The script name for this Operator.

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2005/01/10 15:36:00  dennis
+ * Added getCategoryList method to place operator in menu system.
+ *
  * Revision 1.2  2004/06/27 05:35:49  dennis
  * Changed to use resample() method on Data block to obtain the new
  * Data restricted to smaller interval.  This is less efficient than
@@ -46,7 +49,6 @@
  * This operator restricts the domain of a DataSet to a specified
  * subinterval of the original x-scale.
  *
- *
  */
 package Operators.Special;
 
@@ -57,13 +59,30 @@ import gov.anl.ipns.Util.SpecialStrings.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.Messaging.*;
 
-public class RestrictDomain implements Wrappable
+public class RestrictDomain implements Wrappable, IWrappableWithCategoryList
 {
   public DataSet ds          = DataSet.EMPTY_DATA_SET;
   public float   x_min       = Float.NEGATIVE_INFINITY; 
   public float   x_max       = Float.POSITIVE_INFINITY; 
   public boolean make_new_ds = true;
 
+  /* ------------------------ getCategoryList ------------------------------ */
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.UTILS_DATA_SET;
+  }
+
+  /* -------------------------- getCommand ------------------------------ */
   /**
    *  Get the command name for this operator
    *
@@ -74,6 +93,7 @@ public class RestrictDomain implements Wrappable
     return "RestrictDomain";
   }
 
+  /* ------------------------ getDocumentation -------------------------- */
   /**
    *  Get the documentation for this operator
    *
@@ -120,6 +140,7 @@ public class RestrictDomain implements Wrappable
     return s.toString(  );
   }
 
+  /* ---------------------------- calculate------------------------------- */
   /**
    *  Restrict the DataSet to the specified domain.
    */

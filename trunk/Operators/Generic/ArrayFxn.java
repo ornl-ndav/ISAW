@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.6  2005/01/10 15:36:01  dennis
+ * Added getCategoryList method to place operator in menu system.
+ *
  * Revision 1.5  2004/03/17 20:24:37  dennis
  * Fixed @see tag that was broken when view components, math and
  * util were moved to gov package.
@@ -68,13 +71,31 @@ import Command.*;
  *  of subcomponents, etc.) of these structures.
  */
 
-public class ArrayFxn implements Wrappable {
+public class ArrayFxn implements Wrappable, IWrappableWithCategoryList {
+
   //~ Instance fields **********************************************************
 
   public Vector ArrayHolder=new Vector();
   public String formula="2*x0^2+3";
 
   //~ Methods ******************************************************************
+
+
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.UTILS_CONVERSIONS;
+  }
+
 
   /**
     *  Returns "ArrayFxn" the name used by the scripting system to refer to

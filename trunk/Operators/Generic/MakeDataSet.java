@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.10  2005/01/10 15:36:01  dennis
+ * Added getCategoryList method to place operator in menu system.
+ *
  * Revision 1.9  2005/01/05 21:13:35  rmikk
  * Eliminated a Warning
  *
@@ -67,8 +70,7 @@
 
 package Operators.Generic;
 
-
-import DataSetTools.operator.Wrappable;
+import DataSetTools.operator.*;
 import gov.anl.ipns.MathTools.Geometry.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
 
@@ -82,10 +84,11 @@ import DataSetTools.operator.DataSet.Attribute.*;
  * Vectors of the Data along with the errors. 
  */
 
-public class MakeDataSet implements Wrappable {
+public class MakeDataSet implements Wrappable, IWrappableWithCategoryList {
  
     public Vector xbins = new Vector(); //must be one xbin for one DataSet
-    public Vector yvals = new Vector();// Can be float[chan],float[gr/det][chan],float[r][c][chan]
+    public Vector yvals = new Vector();// Can be float[chan],
+                                       // float[gr/det][chan], float[r][c][chan]
     // or float[det][r][c][chan]. int,double and vector will
     // be converted.
     public Vector errs = new Vector(); 
@@ -94,10 +97,28 @@ public class MakeDataSet implements Wrappable {
     public String XUnits = "Time units";
     public String YLabel = "Y label";
     public String YUnits = "Y units";
-    public Vector GridWidths = new Vector();  //Elements must be Floats,1 for @ grid
+    public Vector GridWidths = new Vector();  // Elements must be Floats,
+                                              // 1 for @ grid
     public Vector GridHeights = new Vector();
 
     private boolean hasRowCol = false;
+
+
+  /**
+   * Get an array of strings listing the operator category names  for 
+   * this operator. The first entry in the array is the 
+   * string: Operator.OPERATOR. Subsequent elements of the array determine
+   * which submenu this operator will reside in.
+   * 
+   * @return  A list of Strings specifying the category names for the
+   *          menu system 
+   *        
+   */
+  public String[] getCategoryList()
+  {
+    return Operator.UTILS_CONVERSIONS;
+  }
+
 
     /**
      * Entry via Java and Jython code. It Executes the calculate() method.
@@ -131,7 +152,6 @@ public class MakeDataSet implements Wrappable {
 
         return calculate();
     }       
-
     
 
     /**
