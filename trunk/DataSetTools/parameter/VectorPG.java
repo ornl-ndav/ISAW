@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2003/08/19 21:01:54  bouzekc
+ * Removed old entrywidget reference from initGUI().
+ *
  * Revision 1.23  2003/08/19 18:49:56  rmikk
  * Arrays retain their initial values.
  * An empty vector is returned instead of null
@@ -347,7 +350,6 @@ public abstract class VectorPG extends ParameterGUI
          setValue ( V );
     GUI     = new ArrayEntryJPanel( param );
     GUI.addPropertyChangeListener( this );
-    entrywidget = vectorButton;    //vectorButton is null here??????
     GUI.setValue( value );
     vectorButton   = new JButton( param.getName(  ) );
     entrywidget    = new JPanel( new GridLayout(  ) );
