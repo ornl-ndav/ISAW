@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/06/14 20:48:37  rmikk
+ *  Implements the IXmlIO interface
+ *
  *  Revision 1.9  2001/07/23 18:40:24  dennis
  *  Fixed error: no longer using "==" for String comparison.
  *
@@ -89,7 +92,8 @@ import java.io.*;
  * @version 1.0  
  */
 
-public class AttributeList implements Serializable
+public class AttributeList implements Serializable,
+                                      IXmlIO 
 {
   private Vector attributes;
 
@@ -312,9 +316,10 @@ public class AttributeList implements Serializable
   public Object getAttributeValue( String name )
   {
     Attribute attribute;
+    
 
     attribute = getAttribute( name );
-
+    
     if ( attribute != null )
       return attribute.getValue();
     else                                          // if not found, return null
@@ -438,8 +443,109 @@ public class AttributeList implements Serializable
          setAttribute( attr_1 ); 
       }      
    }
+ 
+
+  /**
+  * Implements the IXmlIO interface to let an AttributeList read itself
+  *
+  * @param  stream  the InputStream from which the data comes
+  * 
+  * @return  true if successful otherwise false
+  *
+  * Note: This routine assumes that the <AttributeList> tag has been read.
+  * Note: This routine reads the </AttributeList> tag
+  */
+  public boolean XMLread( InputStream stream )
+  {
+    try
+    {   
+      String Tag= xml_utils.getTag( stream);
+        
+      boolean done= Tag==null;
+      if(Tag == null)
+        { return xml_utils.setError( xml_utils.getErrorMessage() );
+            
+        }
+         
+      if( Tag != null)
+        done= Tag.equals("/AttributeList");
+         
+      while( !done)
+      { try
+        {
+          Class AT = Class.forName( "DataSetTools.dataset."+Tag);
+          Attribute A = (Attribute)(AT.newInstance());
+          if(!A.XMLread(stream))
+            { return xml_utils.setError("improper read for "+Tag);
+            }
+          setAttribute( A);
+               
+        }
+        catch( Exception s)
+        { xml_utils.setError("No class DataSetTools.dataset."+Tag 
+                   +" err="+s.getClass()+s.getMessage());
+                
+          xml_utils.skipBlock(stream);
+        }
+            
+        Tag= xml_utils.getTag( stream);
+        done= Tag==null;
+        if(Tag == null)
+        { return xml_utils.setError(xml_utils.getErrorMessage());
+              
+        }
+            
+        if( Tag != null)
+          done= Tag.equals("/AttributeList");
+      }
+         
+      if(!xml_utils.skipAttributes( stream))
+        return xml_utils.setError( xml_utils.getErrorMessage()); 
+
+      return true;
+    }
+    catch(Exception s)
+    { DataSetTools.util.SharedData.status_pane.add(
+          "Exception="+s.getMessage());
+       
+      return false;
+    }
+     
+  }
 
 
+  /**
+  * Implements the IXmlIO interface to let an AttributeList write itself
+  *
+  * @param  stream  the OutputStream from which the data comes
+  * 
+  * @return  true if successful otherwise false
+  *
+  * NOTE: This routine writes the <AttributeList> and </AttributeList> tags
+  */
+  public boolean XMLwrite( OutputStream stream, int mode )
+  { try
+    {
+      stream.write(("<AttributeList size= \""+attributes.size()+"\">\n").getBytes());
+      for(int i=0 ;i<attributes.size(); i++)
+      { Attribute A =(Attribute)(attributes.elementAt(i));
+         
+        if(!A.XMLwrite(stream,mode))
+          return false;
+              
+        stream.write("\n".getBytes());
+      }
+      stream.write("</AttributeList>\n".getBytes());
+      
+    }
+    catch(Exception s)
+    { 
+      return xml_utils.setError("Exception="+s.getClass()+","+
+                   s.getMessage());
+    }
+     
+    return true;
+  }
 
   /**
    * Return a new Data object containing a copy of the x_scale, y_values
