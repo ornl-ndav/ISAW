@@ -31,6 +31,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.13  2001/09/06 14:18:56  dennis
+ * Removed <control-M> characters.
+ *
  * Revision 1.12  2001/09/06 14:13:51  dennis
  * - The "Save to File", "Make a Table", and "Write to Console" radio
  *   buttons are now command buttons.  The Display command button is now deleted.
