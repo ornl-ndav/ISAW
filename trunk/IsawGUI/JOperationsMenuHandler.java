@@ -5,6 +5,9 @@
  * each selection appropriatly.
  *
  * $Log$
+ * Revision 1.17  2001/07/31 16:13:17  neffk
+ * operates correctly on multiple DataSet objects.
+ *
  * Revision 1.16  2001/07/25 20:50:59  neffk
  * removed some debug prinlns
  *
@@ -169,7 +172,7 @@ public class JOperationsMenuHandler
     {
       DataSet ds = dss_to_act_upon[ dataset ];
 
-      for( int i=0;  i<dss_to_act_upon[0].getNum_operators();  i++ )
+      for( int i=0;  i<ds.getNum_operators();  i++ )
       {
         if( !use_array  )
         {
