@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/05/22 21:35:38  pfpeterson
+ * Fixed bug so GUI mode works again.
+ *
  * Revision 1.2  2003/05/22 20:38:34  pfpeterson
  * First implementation of nogui mode. Copied code for working with
  * command line from Operators.TextPrompt.
@@ -70,7 +73,7 @@ import java.util.Vector;
 public class IsawLite{
   public static transient boolean                   LoadDebug = true;
   public static transient Script_Class_List_Handler SCLH      = null;
-  public static           boolean                   GUI       = false;
+  public static           boolean                   GUI       = true;
 
   /**
    * Do not allow anyone to instantiate this class.
@@ -443,9 +446,10 @@ public class IsawLite{
 
     // run the operator
     Object result=null;
-    if(operator.getNum_parameters()==0){
+    num_param=operator.getNum_parameters();
+    if(num_param==0){
       result=operator.getResult();
-    }else if(operator.getNum_parameters()>0){
+    }else if(num_param>0){
       if(GUI){ // GUI mode
         JParametersDialog diag=new JParametersDialog(operator,null,null,null);
         diag.addWindowListener( new WindowAdapter(){
@@ -474,6 +478,7 @@ public class IsawLite{
     if(result instanceof ErrorString)
       exit("ERROR: "+result.toString(),-1);
     else
-      exit("Result: "+result,0);
+      if(num_param==0 || !GUI)
+        exit("Result: "+result,0);
   }
 }
