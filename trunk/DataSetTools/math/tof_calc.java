@@ -30,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.21  2003/05/24 21:50:39  dennis
+ *  Fixed spelling of method name TOFofDiffractometerQ().
+ *
  *  Revision 1.20  2003/02/18 15:48:33  dennis
  *  Changed documentation for Euler rotation methods to explicitly
  *  state that angles are measured in degrees and are about the
@@ -354,6 +357,8 @@ public static float  DSpacing( float angle_radians,
   return (float)( wavelength / (2.0 * Math.sin( theta_radians ) ) ); 
 }
 
+
+/* ------------------------------ DSpacing ------------------------------- */
 /**
  * Calculate a "D" value based on the empirical relation used by gsas.
  *
@@ -521,6 +526,7 @@ public static Position3D DiffractometerVecQ( DetectorPosition  det_pos,
 
 
 
+/* ------------------------- DiffractometerQ --------------------------- */
 /**
  * Calculate a "Q" value based on the empirical relation used by gsas.
  *
@@ -594,10 +600,9 @@ public static float DiffractometerQofDSpacing( float d_space ){
  *           from the moderator to the detector.
  */
 
-public static float  TOFofDiffractomerQ( float angle_radians, 
-                                         float path_len_m, 
-                                         float Q_invA     )
-
+public static float  TOFofDiffractometerQ( float angle_radians, 
+                                           float path_len_m, 
+                                           float Q_invA     )
 {
   float  wavelength;
   float  theta_radians;
