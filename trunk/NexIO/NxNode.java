@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/24 20:10:44  rmikk
+ * Added and equals to determine if two entries are links
+ * of each other
+ *
  * Revision 1.1  2001/07/05 21:45:10  rmikk
  * New Nexus datasource IO handlers
  *
@@ -62,8 +66,17 @@ public interface NxNode
 
    public Object getAttrValue( String AttrName );
 
+   public String getLinkName();
+   
+   public boolean equals( String linkName);
    public void close();
 
    public String show();//for Debug purposes
    }
+
+
+
+
+
+
 
