@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.35  2002/12/11 22:25:26  pfpeterson
+ *  Removed reference to DoubleDifferentialCrossSection.
+ *
  *  Revision 1.34  2002/11/27 23:14:06  pfpeterson
  *  standardized header
  *
@@ -426,7 +429,6 @@ public class DataSetFactory implements Serializable
       ds.addOperator( new SpectrometerTofToEnergyLoss() );
       ds.addOperator( new SpectrometerTofToEnergy() );
       ds.addOperator( new SpectrometerTofToWavelength() );
-      ds.addOperator( new DoubleDifferentialCrossection() );
 //      ds.addOperator( new SpectrometerTofToQ() );
       ds.addOperator( new SpectrometerTofToQE() );
       ds.addOperator( new TrueAngle() );
