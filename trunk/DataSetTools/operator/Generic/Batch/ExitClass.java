@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/01/24 19:44:43  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.2  2002/11/27 23:20:52  pfpeterson
  * standardized header
  *
@@ -42,11 +45,6 @@
 package DataSetTools.operator.Generic.Batch;
 
 import  java.io.*;
-import  java.util.*;
-import  DataSetTools.operator.Operator;
-import  DataSetTools.operator.Parameter;
-import  DataSetTools.operator.Generic.Batch.GenericBatch;
-import  DataSetTools.parameter.*;
 
 /**
  * This defines an ExitClass, a possible return value supported by
