@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.46  2003/06/09 16:46:55  rmikk
+ * ReAdded the data type IntList
+ *
  * Revision 1.45  2003/06/03 22:01:42  rmikk
  * -Change to IParameterPG parameters
  *
@@ -998,6 +1001,9 @@ public class ScriptProcessor  extends ScriptProcessorOperator
         DirPath="";
       */
       addParameter(new SaveFilePG(Prompt,InitValue));
+    }else if( DataType.equals( "INTLIST" )){
+       addParameter( new IntArrayPG( Prompt, InitValue.trim() ));
+
     }else if (DataType.equals( "DSFIELDSTRING")){
       if( InitValue == null )
         addParameter( new Parameter( Prompt,new DSFieldString() ));
