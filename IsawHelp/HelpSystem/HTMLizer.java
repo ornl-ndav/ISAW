@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2002/12/10 15:12:10  pfpeterson
+ * Added method to clean up operator documentation before turning them into HTML.
+ *
  * Revision 1.8  2002/12/09 16:45:10  pfpeterson
  * Put parameter type in command line in italics.
  *
@@ -222,7 +225,7 @@ public class HTMLizer
     public void createOneHelpFile(String op_class)
     {
 	String s = dynamicDocCreation(op_class);
-	
+        
 	if( s != null )
 	    writeFile( op_class, s );
     }
@@ -335,7 +338,7 @@ public class HTMLizer
 	class_name = op.getClass().toString();
 	title = op.getTitle();
 	v = this.getParameterInfoList(op);
-	docs = op.getDocumentation();
+	docs = cleanDocumentation(op.getDocumentation());
 	num_params = v[0].size();
 
 	//remove the "class" from class_name
@@ -392,10 +395,10 @@ public class HTMLizer
 	//get the actual documentation
 	
 	// check that there is something to work with
-        if( docs == null || docs.length() == 0 || docs.equals(Operator.DEFAULT_DOCS) )
+        if( docs == null )
 	    html.append(createDefaultDocs(v));  
         else
-	    html.append( convertToHTML( op.getDocumentation(), v) );
+	    html.append( convertToHTML( docs, v) );
 
 	//html.append("<!-- ========= END OF OPERATOR DATA ========= -->");
 	html.append("</body>\n");
@@ -472,6 +475,108 @@ public class HTMLizer
 	    return "";
     }
     	
+
+  /**
+   * This method is inteded to clean up poorly formatted documentation
+   * Strings
+   */
+  private String cleanDocumentation( String orig){
+    // return null in the cases that this is truly bad
+    if( orig==null || orig.length()==0 || orig.equals(Operator.DEFAULT_DOCS) )
+      return null;
+
+    // turn the docs into a StringBuffer for easy manipulation
+    StringBuffer sb    = new StringBuffer(orig);
+    int          start = 0;
+    int          end   = 0;
+
+    // deal with a preamble (if it exists)
+    start=sb.toString().indexOf("@");
+    if(start<0) // just add an overview tag in front
+      sb.insert(0,"@overview ");
+    else if(start>0){ // deal with preamble appropriately
+      if(sb.toString().indexOf("@overview")>=0)
+        sb.delete(0,start);
+      else
+        sb.insert(0,"@overview ");
+    }
+
+    // cut out empty tags
+    start=sb.toString().indexOf("@");
+    end=sb.toString().indexOf("@",start+1);
+    while( start>=0 && end>=0 && start<end ){
+      if(isEmptyTag(sb.substring(start,end))){
+        sb.delete(start,end);
+        end=sb.toString().indexOf("@",start+1);
+      }else{
+        start=end; //sb.toString().indexOf("@",end+1);
+        end=sb.toString().indexOf("@",start+1);
+      }
+      if(end==-1) end=sb.length();
+    }
+    
+    // return what is appropriate
+    if(sb.length()==0)
+      return null;
+    else
+      return sb.toString();
+  }
+
+  private boolean isEmptyTag(String tag){
+    if( tag==null || tag.length()==0 ) return true;
+
+    if(tag.indexOf("@overview")==0){
+      if(tag.length()==9)
+        return true;
+      tag=tag.substring(9).trim();
+      if(tag.length()==0)
+        return true;
+      else
+        return false;
+    }else if(tag.indexOf("@assumptions")==0){
+      if(tag.length()==12)
+        return true;
+      tag=tag.substring(12).trim();
+      if(tag.length()==0)
+        return true;
+      else
+        return false;
+    }else if(tag.indexOf("@algorithm")==0){
+      if(tag.length()==10)
+        return true;
+      tag=tag.substring(10).trim();
+      if(tag.length()==0)
+        return true;
+      else
+        return false;
+    }else if(tag.indexOf("@param")==0){
+      if(tag.length()==6)
+        return true;
+      tag=tag.substring(6).trim();
+      if(tag.length()==0)
+        return true;
+      else
+        return false;
+    }else if(tag.indexOf("@return")==0){
+      if(tag.length()==7)
+        return true;
+      tag=tag.substring(7).trim();
+      if(tag.length()==0)
+        return true;
+      else
+        return false;
+    }else if(tag.indexOf("@error")==0){
+      if(tag.length()==6)
+        return true;
+      tag=tag.substring(6).trim();
+      if(tag.length()==0)
+        return true;
+      else
+        return false;
+    }else{
+      return true;
+    }
+  }
 
     /* -------------------------- convertToHTML() -------------------------- */
     /**
@@ -577,7 +682,7 @@ public class HTMLizer
 	    //check to see if @ or newline comes first
 	    while( header > newline && newline > 0)
 	    {
-		s.append("<br>");
+                s.append("<br>");  // converts '\n' to '<br>'
 		//grab text between \n and \n or \n and @
 		if( space != newline )
 		    s.append(m.substring(space + 1, newline));
