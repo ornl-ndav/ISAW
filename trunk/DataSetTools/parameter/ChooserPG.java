@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.6  2003/08/15 03:55:34  bouzekc
+ *  Removed unnecessary initialized=true statement.
+ *
  *  Revision 1.5  2003/08/02 04:52:23  bouzekc
  *  Fixed bug in init() which caused a reinitialization every time entrywidget
  *  was shown.  Now properly updates the GUI when init() is called.
@@ -182,7 +185,6 @@ abstract public class ChooserPG extends ParameterGUI{
     this.entrywidget.setEnabled(this.enabled);
     this.entrywidget.addPropertyChangeListener(IParameter.VALUE, this);
     super.initGUI();
-    this.initialized=true;
     //GUI won't properly update without this
     setValue(value);
   }
