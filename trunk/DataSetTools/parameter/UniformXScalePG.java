@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/10/11 19:11:53  bouzekc
+ * Now implements clone using reflection.
+ *
  * Revision 1.6  2003/09/16 22:46:55  bouzekc
  * Removed addition of this as a PropertyChangeListener.  This is already done
  * in ParameterGUI.  This should fix the excessive events being fired.
@@ -67,6 +70,9 @@ import DataSetTools.util.IntegerFilter;
 
 import java.awt.*;
 import java.awt.event.*;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 import java.util.Vector;
 
@@ -108,7 +114,6 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
    */
   public UniformXScalePG( String name, Object val ) {
     super( name, val );
-
     this.type = TYPE;
   }
 
@@ -124,7 +129,6 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
    */
   public UniformXScalePG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-
     this.type = TYPE;
   }
 
@@ -141,9 +145,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     this( name, null );
 
     UniformXScale scale = new UniformXScale( start, end, steps );
-
     setValue( scale );
-
     this.type = TYPE;
   }
 
@@ -162,9 +164,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     this( name, null, valid );
 
     UniformXScale scale = new UniformXScale( start, end, steps );
-
     setValue( scale );
-
     this.type = TYPE;
   }
 
@@ -252,7 +252,6 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     if( scale != null ) {
       this.value = scale;
     }
-    validateSelf(  );
   }
 
   /**
@@ -304,12 +303,10 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     if( vals != null ) {
       setValue( vals );
     }
-
     entrywidget = new EntryWidget(  );
     entrywidget.setLayout( new BorderLayout(  ) );
 
     JPanel innerPanel = new JPanel(  );
-
     innerPanel.setLayout( new GridLayout( 0, 2 ) );
     innerPanel.add( new JLabel( "Start value" ) );
     start = new StringEntry( "", new FloatFilter(  ) );
@@ -323,9 +320,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     entrywidget.add( innerPanel, BorderLayout.CENTER );
 
     JButton createButton = new JButton( CREATE_LABEL );
-
     entrywidget.add( createButton, BorderLayout.SOUTH );
-
     createButton.addActionListener( new UniformXScalePGListener(  ) );
     super.initGUI(  );
   }
@@ -336,7 +331,6 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
   public static void main( String[] args ) {
     UniformXScalePG uxpg = new UniformXScalePG( "TestUniformXScalePG", null );
     Vector tester        = new Vector(  );
-
     tester.add( new Float( 1.6f ) );
     tester.add( new Float( 6.6f ) );
     tester.add( new Float( 11.6f ) );
@@ -348,13 +342,43 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     System.out.println( "With a UniformXScale value" );
 
     UniformXScale ux = new UniformXScale( 1.0f, 10.0f, 4 );
-
     uxpg.setValue( ux );
     System.out.println( uxpg.getValue(  ) );
     System.out.println( uxpg.getXScaleValue(  ) );
-
     uxpg.initGUI( null );
     uxpg.showGUIPanel(  );
+  }
+
+  /**
+   * Definition of the clone method.  Overwritten because internally the value
+   * is stored using a UniformXScale.
+   */
+  public Object clone(  ) {
+    try {
+      Class klass           = this.getClass(  );
+      Constructor construct = klass.getConstructor( 
+          new Class[]{ String.class, Object.class } );
+      UniformXScalePG pg    = ( UniformXScalePG )construct.newInstance( 
+          new Object[]{ null, null } );
+      pg.setName( new String( this.getName(  ) ) );
+      pg.setValue( pg.getXScaleValue(  ) );
+      pg.setDrawValid( this.getDrawValid(  ) );
+      pg.setValid( this.getValid(  ) );
+
+      if( this.initialized ) {
+        pg.initGUI( null );
+      }
+
+      return pg;
+    } catch( InstantiationException e ) {
+      throw new InstantiationError( e.getMessage(  ) );
+    } catch( IllegalAccessException e ) {
+      throw new IllegalAccessError( e.getMessage(  ) );
+    } catch( NoSuchMethodException e ) {
+      throw new NoSuchMethodError( e.getMessage(  ) );
+    } catch( InvocationTargetException e ) {
+      throw new RuntimeException( e.getTargetException(  ).getMessage(  ) );
+    }
   }
 
   /**
@@ -373,7 +397,6 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
     float startNum = Float.parseFloat( start.getText(  ) );
     float endNum   = Float.parseFloat( end.getText(  ) );
     int stepNum    = Integer.parseInt( steps.getText(  ) );
-
     setValue( new UniformXScale( startNum, endNum, stepNum ) );
   }
 
