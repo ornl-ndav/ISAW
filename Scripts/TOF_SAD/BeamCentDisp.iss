@@ -9,19 +9,22 @@
 #@param Yoff- the intial guess for the Yoffset in cm
 #
 
-$ DSfilename   LoadFileString("C:\ISAW\SampleRuns\sand19879.run")   Enter DataSet Name
-$ SensFilename LoadFileString("C:\ISAW\SampleRuns\sens19878.dat")  Enter Sensitivity FileName
+$ DSfilename   LoadFileString("/IPNShome/sand/data/sand22218.run")   Enter DataSet Name
+$ SensFilename LoadFileString("/IPNShome/sand/GeorgeUser/sens22205.dat")  Enter Sensitivity FileName
 $StartTimeChan  Integer(11)  Enter Starting TimeChannel
-$EndTimeChan  Integer(68)   Enter EndTimeChannel
+$EndTimeChan  Integer(70)   Enter EndTimeChannel
 $Xoff     Float(0)    Enter Xoff estimate
 $Yoff    Float(0)   Enter Yoff Estimate
 $Command =CenterDisplay
 $Title= Find and Show Center
 $Category=Operator;Generic;TOF_SAD
+
 V =BeamCenter(DSfilename, SensFilename, startTimeChan,EndTimeChan, Xoff,Yoff)
+
 Display "X offset="&V[0]
 Display "Y offset="&V[1]
+
 Reverse(V[2])
 ViewArray( V[2], "Center" ,V[3,0],V[3,1],V[3,2],V[3,3], "row","col","cm","cm")
-return "X offset="&V[0]&"   Y offset="&V[1]
 
+return "X offset="&V[0]&"   Y offset="&V[1]
