@@ -36,6 +36,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2002/09/25 14:00:19  rmikk
+ *  Defined state variable Contour.Intensity to eliminate error
+ *    messages
+ *
  *  Revision 1.16  2002/08/30 18:08:13  rmikk
  *  -Eliminated reference to a test operator ChgOp in the
  *   main program
@@ -248,6 +252,7 @@ public class ContourView extends DataSetViewer
         state.set_float("ContourTimeMin", xx.getStart_x());
         state.set_float("ContourTimeMax",xx.getEnd_x());
         state.set_boolean(ViewerState.CONTOUR_DATA, true);
+        state.set_int("Contour.Intensity", 50);
        }
      Xscl = new XScaleChooserUI( getDataSet().getX_label(), getDataSet().getX_units(),
                         state.get_float("ContourTimeMin"), state.get_float("ContourTimeMax"),
