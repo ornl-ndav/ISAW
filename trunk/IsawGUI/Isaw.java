@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.108  2002/07/16 21:47:27  rmikk
+ *  Add menu items and handlers for the quick table viewers
+ *
  *  Revision 1.107  2002/07/12 18:24:12  pfpeterson
  *  Uses new methods of SharedData for getting properties.
  *
@@ -410,6 +413,7 @@ import DataSetTools.operator.*;
 import DataSetTools.retriever.*;
 import DataSetTools.util.*;
 import DataSetTools.viewer.*;
+import DataSetTools.viewer.Table.*;
 import IPNS.Runfile.*;
 import java.applet.*;
 import java.applet.*;
@@ -482,7 +486,7 @@ public class Isaw
   private static final String SCROLL_VIEW_MI     = "Scrolled Graph View";
   private static final String SELECTED_VIEW_MI   = "Selected Graph View";
   private static final String THREED_VIEW_MI     = "3D View";
-  private static final String TABLE_VIEW_MI      = "Table View";
+  private static final String TABLE_VIEW_MI      =  IViewManager.TABLE;
   private static final String CONTOUR_VIEW_MI    = "Contour View";
   private static final String LOG_VIEW_MI        = "Log View";
 
@@ -779,6 +783,21 @@ public class Isaw
     JMenuItem graphView   = new JMenuItem( SELECTED_VIEW_MI );
     JMenuItem threeDView = new JMenuItem( THREED_VIEW_MI );
     JMenuItem tableView = new JMenuItem( TABLE_VIEW_MI );
+    JMenu Tables= new JMenu("Quick Tables");
+    for( int k=0; k< TableViewMenuComponents.getNMenuItems(); k++)
+      {JMenuItem jmi= new JMenuItem( TableViewMenuComponents.getNameMenuItem( k ) );
+       jmi.addActionListener( new MenuItemHandler());
+       Tables.add(jmi);
+       jmi= new JMenuItem( TableViewMenuComponents.getNameMenuItem( k ) +" w err");
+       jmi.addActionListener( new MenuItemHandler());
+       Tables.add(jmi);
+       jmi= new JMenuItem( TableViewMenuComponents.getNameMenuItem( k ) +" w indx");
+       jmi.addActionListener( new MenuItemHandler());
+       Tables.add(jmi);
+       jmi= new JMenuItem( TableViewMenuComponents.getNameMenuItem( k )+" w err,indx" );
+       jmi.addActionListener( new MenuItemHandler());
+       Tables.add(jmi);
+       }
     JMenuItem contourView = new JMenuItem( CONTOUR_VIEW_MI );
     JMenuItem logView = new JMenuItem( LOG_VIEW_MI );
     JMenu instrumentInfoView = new JMenu( INSTR_VIEW_M );
@@ -899,6 +918,7 @@ public class Isaw
     vMenu.add(graphView);
     vMenu.add(threeDView);
     vMenu.add( tableView );
+    vMenu.add( Tables );
     vMenu.add( contourView );
     vMenu.add( logView );
     vMenu.add(instrumentInfoView);         
@@ -1784,6 +1804,19 @@ public class Isaw
                                     //and the messy details of deleting nodes.
       if( s.equals(REMOVE_NODE_MI) )
           jdt.deleteSelectedNodes(); 
+
+     for( int k=0; k< TableViewMenuComponents.getNMenuItems(); k++)
+       if( s.indexOf(TableViewMenuComponents.getNameMenuItem( k)) == 0)
+         { DataSet ds = getViewableData(  jdt.getSelectedNodePaths()  );
+           if(  ds != DataSet.EMPTY_DATA_SET  && ds != null){
+             ds.setPointedAtIndex( 0 );
+             new ViewManager( ds, s);
+             ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
+           }else{
+            SharedData.status_pane.add( "nothing is currently highlighted in the tree" );
+           }
+          return;
+         } 
     }
 
 
