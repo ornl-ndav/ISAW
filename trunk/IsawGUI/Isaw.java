@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.102  2002/06/14 15:58:30  pfpeterson
+ *  Changed all System.getProperty to SharedData.getProperty. Also
+ *  leave the creation of the default properties file the SharedData.
+ *
  *  Revision 1.101  2002/06/11 19:19:13  pfpeterson
  *  Removed three lines to increase stability of the JSplitPanes.
  *
@@ -695,8 +699,8 @@ public class Isaw
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
         /* read in values for default screen size from system properties */
-        sys_width=Double.parseDouble(System.getProperty("Isaw_Width","0.8"));
-        sys_height=Double.parseDouble(System.getProperty("Isaw_Height","0.4"));
+        sys_width=Double.parseDouble(SharedData.getProperty("Isaw_Width"));
+        sys_height=Double.parseDouble(SharedData.getProperty("Isaw_Height"));
         //System.out.println("("+sys_width+","+sys_height+")");
 
         /* assume a 4:3 aspect ratio for the monitor */
@@ -858,13 +862,13 @@ public class Isaw
     boolean found =true;
     for( int ii=1;  ii<14 && found;  ii++ )
     {
-      String SS = System.getProperty("Inst"+new Integer(ii).toString().trim()+"_Name");
+      String SS = SharedData.getProperty("Inst"+new Integer(ii).toString().trim()+"_Name");
       if( SS == null) 
         found=false;
       else
       {
         JMenuItem dummy = new JMenuItem(SS);
-        dummy.setToolTipText( System.getProperty("Inst"+new Integer(ii).toString().trim()+"_Path"));
+        dummy.setToolTipText( SharedData.getProperty("Inst"+new Integer(ii).toString().trim()+"_Path"));
         dummy.addActionListener( new MenuItemHandler());
         LiveData.add(dummy);
       }
@@ -998,7 +1002,7 @@ public class Isaw
           int i=1;
           boolean done =false;
           while (!done )
-          {  String S= System.getProperty("IsawFileServer"+i+"_Name");
+          {  String S= SharedData.getProperty("IsawFileServer"+i+"_Name");
              
              if( S == null) done = true;
              else
@@ -1013,7 +1017,7 @@ public class Isaw
           i=1;
           done =false;
           while (!done )
-          {  String S= System.getProperty("NDSFileServer"+i+"_Name");
+          {  String S= SharedData.getProperty("NDSFileServer"+i+"_Name");
              if( S == null) done = true;
              else
                {JMenuItem Server= new JMenuItem( S );
@@ -1208,9 +1212,9 @@ public class Isaw
       {
 	//String SS;
         if( filename == null)
-              filename = System.getProperty( "Script_Path" );
+              filename = SharedData.getProperty( "Script_Path" );
         if( filename == null )
-          filename = System.getProperty( "user.home" );
+          filename = SharedData.getProperty( "user.home" );
 
         JFileChooser fc = new JFileChooser();
         fc.setCurrentDirectory(new File(filename));
@@ -1331,7 +1335,7 @@ public class Isaw
           { 
             String title = new String( "Please choose the File to save" );
             if(filename ==  null)
-               filename =System.getProperty("user.home");
+               filename =SharedData.getProperty("user.home");
             fc.setCurrentDirectory(  new File( filename )  );
             fc.setMultiSelectionEnabled( false );
 	    fc.resetChoosableFileFilters();
@@ -1388,7 +1392,7 @@ public class Isaw
       if( s.equals(LOAD_LOCAL_DATA_MI) )
       {
         try
-        { if( filename == null) filename= System.getProperty("user.home");
+        { if( filename == null) filename= SharedData.getProperty("user.home");
                                              //create a file dialog box and get
                                              //which file to open
           String msg = new String( "Please choose the File to open" );
@@ -1512,43 +1516,43 @@ public class Isaw
  
     //menuitem for macro loader below
  
-      if( s.equals( System.getProperty("Inst1_Name") )  )
+      if( s.equals( SharedData.getProperty("Inst1_Name") )  )
         setupLiveDataServer( "Inst1_Path" );
  
-      if( s.equals( System.getProperty("Inst2_Name") )  )
+      if( s.equals( SharedData.getProperty("Inst2_Name") )  )
         setupLiveDataServer( "Inst2_Path" );
 
-      if( s.equals( System.getProperty("Inst3_Name") )  )
+      if( s.equals( SharedData.getProperty("Inst3_Name") )  )
         setupLiveDataServer( "Inst3_Path" );
         
-      if( s.equals( System.getProperty("Inst4_Name") )  )
+      if( s.equals( SharedData.getProperty("Inst4_Name") )  )
         setupLiveDataServer( "Inst4_Path" );
 
-      if( s.equals( System.getProperty("Inst5_Name") )  )
+      if( s.equals( SharedData.getProperty("Inst5_Name") )  )
         setupLiveDataServer( "Inst5_Path" );
 
-      if( s.equals( System.getProperty("Inst6_Name") )  )
+      if( s.equals( SharedData.getProperty("Inst6_Name") )  )
         setupLiveDataServer( "Inst6_Path" );
 
-      if( s.equals( System.getProperty("Inst7_Name") )  )
+      if( s.equals( SharedData.getProperty("Inst7_Name") )  )
         setupLiveDataServer( "Inst7_Path" );
 
-      if( s.equals( System.getProperty("Inst8_Name") )  )
+      if( s.equals( SharedData.getProperty("Inst8_Name") )  )
         setupLiveDataServer( "Inst8_Path" );
 
-      if( s.equals( System.getProperty("Inst9_Name") ) ) 
+      if( s.equals( SharedData.getProperty("Inst9_Name") ) ) 
         setupLiveDataServer( "Inst9_Path" ); 
 
-      if( s.equals( System.getProperty("Inst10_Name") )  )
+      if( s.equals( SharedData.getProperty("Inst10_Name") )  )
         setupLiveDataServer( "Inst10_Path" );
 
-      if( s.equals( System.getProperty("Inst11_Name") )  )
+      if( s.equals( SharedData.getProperty("Inst11_Name") )  )
         setupLiveDataServer( "Inst11_Path" );
 
-      if( s.equals( System.getProperty("Inst12_Name") )  )
+      if( s.equals( SharedData.getProperty("Inst12_Name") )  )
         setupLiveDataServer( "Inst12_Path" );
 
-      if( s.equals( System.getProperty("Inst13_Name") )  )
+      if( s.equals( SharedData.getProperty("Inst13_Name") )  )
         setupLiveDataServer( "Inst13_Path" );
  
       /* if( s.equals(GSAS_EXPORT_MI) )
@@ -1755,7 +1759,7 @@ public class Isaw
      */ 
     public void setupLiveDataServer( String instr )
     {
-      String instrument_computer = System.getProperty( instr );
+      String instrument_computer = SharedData.getProperty( instr );
      // System.out.println( "loading: live data from " + instrument_computer );
 
       LiveDataMonitor monitor = new LiveDataMonitor( instrument_computer );
@@ -1766,7 +1770,7 @@ public class Isaw
       index=tab_name.indexOf("Path");
       if(index>0)
           tab_name=tab_name.substring(0,index)+"Name";
-      tab_name=System.getProperty(tab_name)+" Live Data";
+      tab_name=SharedData.getProperty(tab_name)+" Live Data";
 
       String name = instrument_computer+" Live Data";
       jcui.setTab( tab_name, monitor );
@@ -1915,7 +1919,7 @@ public class Isaw
      */
     public static boolean isWindowsPlatform()
     {
-        String os = System.getProperty("os.name");
+        String os = SharedData.getProperty("os.name");
 
         if ( os != null && os.startsWith(WIN_ID))
             return true;
@@ -1931,7 +1935,7 @@ public class Isaw
     private static void mw_resized(int width, int height){
         // Set the tree width
         double tree_widthD=
-            Double.parseDouble(System.getProperty("Tree_Width","0.2"));
+            Double.parseDouble(SharedData.getProperty("Tree_Width"));
         int tree_width=(int)tree_widthD;
         if(tree_width<=1.0){
             tree_width=(int)(tree_widthD*(double)upper_sp.getWidth());
@@ -1941,7 +1945,7 @@ public class Isaw
         // Set the status height. Remember that the divider location
         // is relative from the top of the pane.
         double status_heightD=
-            Double.parseDouble(System.getProperty("Status_Height","0.2"));
+            Double.parseDouble(SharedData.getProperty("Status_Height"));
         int status_height=(int)status_heightD;
         if(status_height>1.0){
             status_height=main_sp.getHeight()-status_height;
@@ -1994,7 +1998,7 @@ public class Isaw
     JScrollPane Z = new JScrollPane(propsText);
     kp.getContentPane().add(Z);
     kp.setVisible(true);
-    String path = System.getProperty("user.home")+"\\";
+    String path = SharedData.getProperty("user.home")+"\\";
     path = StringUtil.fixSeparator(path);
     String filename = path + "IsawProps.dat" ;
 
@@ -2015,7 +2019,7 @@ public class Isaw
     {
       String s=ev.getActionCommand();
 
-      String path = System.getProperty("user.home")+"\\";
+      String path = SharedData.getProperty("user.home")+"\\";
       path = StringUtil.fixSeparator(path);
       String filename = path + "IsawProps.dat" ;
                       
@@ -2051,21 +2055,10 @@ public class Isaw
         }
     }
 
-    Properties isawProp = new Properties(System.getProperties());
-    String path = System.getProperty("user.home")+"\\";
-    path = StringUtil.fixSeparator(path);
-    boolean windows = isWindowsPlatform();
-    
-    try{
-      FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
-      isawProp.load( input );
-      System.setProperties(isawProp);  
-      input.close();
-    }catch( IOException ex ){
-      DefaultProperties prop=new DefaultProperties();
-      prop.write();
-    }
+    // load IsawProps.dat into the system properties
+    SharedData.isaw_props.reload();
 
+    // show the splashscreen
     SplashWindowFrame sp = new SplashWindowFrame();
     Thread splash_thread = new Thread(sp);
     splash_thread.start();
@@ -2155,9 +2148,9 @@ public class Isaw
                 //loads files in an interactive mode
     if( !batch )
     {
-       if( data_dir==null) data_dir = System.getProperty( DATA_DIR_ENV );
+       if( data_dir==null) data_dir = SharedData.getProperty( DATA_DIR_ENV );
       if( data_dir == null )
-        data_dir = System.getProperty( "user.home" );
+        data_dir = SharedData.getProperty( "user.home" );
         
                                        //create and display the 
                                        //file chooser, load files
@@ -2472,7 +2465,7 @@ public class Isaw
             float tol=.01f;
             float pane_sizeF=(float)pane_size;
             float div_posF=(float)div_pos;
-            float prop=Float.parseFloat(System.getProperty(property,".2"));
+            float prop=Float.parseFloat(SharedData.getProperty(property));
             float newPercent=div_posF/pane_sizeF;
             float oldPercent=prop;
 
