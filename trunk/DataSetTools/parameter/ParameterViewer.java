@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/08/14 02:27:30  bouzekc
+ * Reformatted code.
+ *
  * Revision 1.6  2003/06/26 16:48:15  bouzekc
  * Removed extraneous comment.
  *
@@ -76,11 +79,13 @@ import javax.swing.*;
 
 
 /**
- *  Class for viewing IParameterGUIs.  Originally designed for the
- *  Wizards, so that DataSets and other parameters could be viewed
- *  after operations were performed.
+ * Class for viewing IParameterGUIs.  Originally designed for the Wizards, so
+ * that DataSets and other parameters could be viewed after operations were
+ * performed.
  */
 public class ParameterViewer implements ActionListener {
+  //~ Instance fields **********************************************************
+
   private IParameterGUI param;
   private JFrame holder;
   private JList selector;
@@ -94,18 +99,54 @@ public class ParameterViewer implements ActionListener {
   private final String VIEW   = "View";
   private final String CANCEL = "Cancel";
 
+  //~ Constructors *************************************************************
+
+  /**
+   * Creates a new ParameterViewer object.
+   *
+   * @param ipg DOCUMENT ME!
+   */
   public ParameterViewer( IParameterGUI ipg ) {
     param = ipg;
   }
 
+  //~ Methods ******************************************************************
+
   /**
+   * Displays parameters based on their types.
    *
-   * Shows the parameters according to a preferred viewing state.
-   * For example, a DataSet will be shown in a ViewManager, but a
-   * number (such as a Float) is simply displayed in a message
-   * box.  For parameters which can be selected from a list,
-   * such as an ArrayPG of DataSets, only one can be selected at a
-   * time.
+   * @param e The triggering ActionEvent.
+   */
+  public void actionPerformed( ActionEvent e ) {
+    int index;
+    Object obj;
+
+    if( e.getActionCommand(  )
+           .equals( CANCEL ) ) {
+      holder.dispose(  );
+    } else if( e.getActionCommand(  )
+                  .equals( VIEW ) ) {
+      index = selector.getSelectedIndex(  );
+
+      if( ( index >= 0 ) && ( items != null ) && ( items.size(  ) > 0 ) ) {
+        obj = items.elementAt( index );
+
+        //DataSet?
+        if( obj instanceof DataSet ) {
+          new ViewManager( ( DataSet )obj, IViewManager.IMAGE );
+        } else if( obj instanceof String ) {
+          tryToDisplayASCII( ( String )obj );
+        }
+      }
+    }
+  }
+
+  /**
+   * Shows the parameters according to a preferred viewing state. For example,
+   * a DataSet will be shown in a ViewManager, but a number (such as a Float)
+   * is simply displayed in a message box.  For parameters which can be
+   * selected from a list, such as an ArrayPG of DataSets, only one can be
+   * selected at a time.
    */
   public void showParameterViewer(  ) {
     Object obj;
@@ -150,8 +191,7 @@ public class ParameterViewer implements ActionListener {
         }
       } else if( obj instanceof String ) {  //see if it is a file
         tryToDisplayASCII( ( String )obj );
-      }
-      else {
+      } else {
         //handle some other IParameterGUI types
         JOptionPane.showMessageDialog( null, obj.toString(  ) );
       }
@@ -159,40 +199,8 @@ public class ParameterViewer implements ActionListener {
   }
 
   /**
-   *  Utility method to determine if a String points to a viewable
-   *  ASCII file.  It simply drops the String (i.e. does not display
-   *  it) if it is not a file.
-   */
-  private void tryToDisplayASCII( String fileName ) {
-    String tempName;
-    Object obj;
-
-    //try to determine if it is a viewable file
-    //is this a file we can read?
-    if( fileName.indexOf( '.' ) > 0 ) {
-      tempName = fileName.toLowerCase(  );
-
-      //ASCII files
-      //we don't want any windoze executables, or 
-      //any big ISAW data files
-      if( 
-        !( ( tempName.indexOf( ".sdds" ) >= 0 ) ||
-          ( tempName.indexOf( ".exe" ) >= 0 ) ||
-          ( tempName.indexOf( ".hdf" ) >= 0 ) ||
-          ( tempName.indexOf( ".run" ) >= 0 ) ||
-          ( tempName.indexOf( ".nxs" ) >= 0 ) ) ) {
-        obj = new ViewASCII( fileName ).getResult(  );
-
-        if( obj instanceof ErrorString ) {
-          SharedData.addmsg( obj.toString(  ) );
-        }
-      }
-    }
-  }
-
-  /**
-   *  Note that this relies mainly on what is in the String
-   *  array item_names in order to create the list
+   * Note that this relies mainly on what is in the String array item_names in
+   * order to create the list
    */
   private void makeSelectionList(  ) {
     if( item_names != null ) {
@@ -225,23 +233,33 @@ public class ParameterViewer implements ActionListener {
     }
   }
 
-  public void actionPerformed( ActionEvent e ) {
-    int index;
+  /**
+   * Utility method to determine if a String points to a viewable ASCII file.
+   * It simply drops the String (i.e. does not display it) if it is not a
+   * file.
+   */
+  private void tryToDisplayASCII( String fileName ) {
+    String tempName;
     Object obj;
 
-    if( e.getActionCommand(  ).equals( CANCEL ) ) {
-      holder.dispose(  );
-    } else if( e.getActionCommand(  ).equals( VIEW ) ) {
-      index = selector.getSelectedIndex(  );
+    //try to determine if it is a viewable file
+    //is this a file we can read?
+    if( fileName.indexOf( '.' ) > 0 ) {
+      tempName = fileName.toLowerCase(  );
 
-      if( ( index >= 0 ) && ( items != null ) && ( items.size(  ) > 0 ) ) {
-        obj = items.elementAt( index );
+      //ASCII files
+      //we don't want any windoze executables, or 
+      //any big ISAW data files
+      if( 
+        !( ( tempName.indexOf( ".sdds" ) >= 0 ) ||
+          ( tempName.indexOf( ".exe" ) >= 0 ) ||
+          ( tempName.indexOf( ".hdf" ) >= 0 ) ||
+          ( tempName.indexOf( ".run" ) >= 0 ) ||
+          ( tempName.indexOf( ".nxs" ) >= 0 ) ) ) {
+        obj = new ViewASCII( fileName ).getResult(  );
 
-        //DataSet?
-        if( obj instanceof DataSet ) {
-          new ViewManager( ( DataSet )obj, IViewManager.IMAGE );
-        } else if( obj instanceof String ) {
-          tryToDisplayASCII( ( String )obj );
+        if( obj instanceof ErrorString ) {
+          SharedData.addmsg( obj.toString(  ) );
         }
       }
     }
