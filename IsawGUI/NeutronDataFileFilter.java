@@ -3,6 +3,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.2  2001/07/23 20:36:04  neffk
+ * added a method to filter filenames using a String parameter instead
+ * of a File object.
+ *
  * Revision 1.1  2001/07/12 15:00:46  neffk
  * file filter that only shows neutron data files.
  *
@@ -36,7 +40,24 @@ public class NeutronDataFileFilter
     if(  f.isDirectory()  ) 
       return true;
 
-    String extension = getExtension(f);
+    return accept_filename(  f.getName()  );
+  }
+
+
+  /**
+   * provides filename checking capability where it's not convenient
+   * to use File objects as parameters.
+   */ 
+  public boolean accept_filename( String filename )
+  { 
+                                 //if the filename has a bang (!)
+                                 //appended to it, then accept it
+                                 //reguardless of its extension.
+    int bang_index = filename.lastIndexOf( '!' );
+    if(  bang_index == filename.length() - 1  )
+      return true;
+
+    String extension = getExtension( filename );
     if( 
       extension != null  &&
       (
@@ -51,7 +72,10 @@ public class NeutronDataFileFilter
       return false;
   }
 
-
+  
+  /**
+   * returns a description of this filter for use in the the file chooser.
+   */ 
   public String getDescription()
   {
     return new String( 
@@ -64,15 +88,14 @@ public class NeutronDataFileFilter
   /*
    * Get the extension of a file.
    */  
-  public static String getExtension( File f )
+  public static String getExtension( String filename )
   {
     String ext = null;
-    String s = f.getName();
-    int i = s.lastIndexOf('.');
+    int i = filename.lastIndexOf('.');
 
-    if (i > 0 &&  i < s.length() - 1) 
+    if (i > 0 &&  i < filename.length() - 1) 
     {
-      ext = s.substring(i+1).toLowerCase();
+      ext = filename.substring(i+1).toLowerCase();
     }
 
     return ext;
