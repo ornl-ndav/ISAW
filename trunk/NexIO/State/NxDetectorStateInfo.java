@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/12/23 12:55:24  rmikk
+ * Updated to NeXus standard version 1.0.  detector_number field is used
+ *    in addition to id.  The name of the NXgeometry field is determined.
+ *
  * Revision 1.1  2003/11/16 21:43:03  rmikk
  * Initial Checkin
  *
@@ -62,7 +66,20 @@ public class NxDetectorStateInfo extends StateInfo{
    *  The name of this NXdetector
    */
   public String Name;
-
+  
+  /**
+   *  starting and ending group ID if specified. Otherwise -1 until set.
+   */
+  public int startGroupID, endGroupID;
+  
+  /**
+   *  DetectorID field name. Either id or detector_number will be used
+   */
+  public String DetectorIDFieldName;
+  /**
+   *  The name of the child not of this NXdetector that is of the class NXgeometry
+   */
+  public String NxGeometryName;
   /**
    *   Constructor
    *  @param NxDetectorNode  the NxNode containing information on the NeXus 
@@ -72,20 +89,45 @@ public class NxDetectorStateInfo extends StateInfo{
    */
   public NxDetectorStateInfo( NxNode NxDetectorNode, 
                 NxfileStateInfo Params ){
+
+     startGroupID = endGroupID = -1;
+     DetectorIDFieldName = null;
+     NxGeometryName = null;
+     
      if( NxDetectorNode == null){
-        distance_dimension=azimuthal_dimension=polar_dimension=
-               solidAngle_dimension=null;
+        distance_dimension = azimuthal_dimension 
+           = polar_dimension = solidAngle_dimension = null;
         hasIntIDs= false;
         Name = null;
+        return;
      }
+     
      Name = NxDetectorNode.getNodeName();
+     
      NxNode node = NxDetectorNode.getChildNode( "id");
+     if( node == null){
+       
+        node = NxDetectorNode.getChildNode("detector_number");
+        if( node != null)
+           DetectorIDFieldName = "detector_number";  
+            
+     }
+     else
+        DetectorIDFieldName="id";
+        
      hasIntIDs = false;
      if( node != null){
+       
         Object O = node.getNodeValue();
         if( O != null)
            if( O instanceof int[])
-              hasIntIDs = true;
+              if(((int[])O).length>0){  
+                         
+                 hasIntIDs = true;
+                 startGroupID =((int[])O)[0];
+                 endGroupID =((int[])O)[((int[])O).length-1];
+                 
+              }
      } 
 
      distance_dimension = findDataDimension( NxDetectorNode, "distance");
@@ -93,7 +135,14 @@ public class NxDetectorStateInfo extends StateInfo{
      polar_dimension = findDataDimension( NxDetectorNode, "polar_angle");
      solidAngle_dimension = findDataDimension( NxDetectorNode, "solid_angle");
 
-     
+     for( int i = 0; i< NxDetectorNode.getNChildNodes();i++){
+       
+        NxNode N = NxDetectorNode.getChildNode(i);
+        if( N.getNodeClass().equals("NXgeometry"))
+           NxGeometryName = N.getNodeName();
+           
+     }
+       
 
 
    }//Constructor
@@ -108,7 +157,6 @@ public class NxDetectorStateInfo extends StateInfo{
      }
      
      return node.getDimension();
-
   }
  }
 
