@@ -70,16 +70,13 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
   *  the operator.
   *
   *  @param  file      Filename to print to
-  *  @param  mon_data  Monitor DataSet
   *  @param  peaks     Vector of peaks
   *  @param  append    Whether to append to specified file
   */
-    public WritePeaks( String file, DataSet mon_data, Vector peaks, 
-		       Boolean append){
+    public WritePeaks( String file, Vector peaks, Boolean append){
 	this(); 
 	parameters = new Vector();
 	addParameter( new Parameter("File Name", file) );
-	addParameter( new Parameter("Monitor", mon_data) );
 	addParameter( new Parameter("Vector of Peaks",peaks) );
 	addParameter( new Parameter("Append",append) );
   }
@@ -105,7 +102,6 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
   {
     parameters = new Vector();
     addParameter( new Parameter("File Name", "filename" ) );
-    addParameter( new Parameter("Monitor", DataSet.EMPTY_DATA_SET ) );
     addParameter( new Parameter("Vector of Peaks", new Vector() ) );
     addParameter( new Parameter("Append", Boolean.FALSE) );
   }
@@ -119,10 +115,9 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
   */
   public Object getResult()
   {
-    String  file       = (String) (getParameter(0).getValue());
-    DataSet mon_data   = (DataSet)(getParameter(1).getValue());
-    Vector  peaks      = (Vector) (getParameter(2).getValue());
-    boolean append     = ((Boolean)(getParameter(3).getValue())).booleanValue();
+    String  file       = getParameter(0).getValue().toString();
+    Vector  peaks      = (Vector)(getParameter(1).getValue());
+    boolean append     = ((Boolean)(getParameter(2).getValue())).booleanValue();
     OutputStreamWriter outStream;
     int     seqnum_off = 0;
 
@@ -141,13 +136,8 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
     float phi=((Peak)peaks.elementAt(0)).phi();
     float omega=((Peak)peaks.elementAt(0)).omega();
 
-    float moncnt=0.0f;
-    if(mon_data != null){
-	moncnt=((Float)
-	    (mon_data.getData_entry_with_id(1))
-	    .getAttributeValue(Attribute.TOTAL_COUNT)).floatValue();
-	//moncnt=Moncnt.floatValue();
-    }
+    // the integrated monitor intensity
+    float moncnt=((Peak)peaks.elementAt(0)).monct();
 
     try{
 	// open and initialize a buffered file stream
@@ -286,13 +276,16 @@ public class WritePeaks extends GenericTOF_SCD implements HiddenOperator{
 	DataSet mds = (new RunfileRetriever(datfile)).getDataSet(0);
 	DataSet rds = (new RunfileRetriever(datfile)).getDataSet(1);
 	
-	FindPeaks fo = new FindPeaks(rds,10,1);
+	float monct=((Float)(mds.getData_entry_with_id(1))
+                      .getAttributeValue(Attribute.TOTAL_COUNT)).floatValue();
+
+	FindPeaks fo = new FindPeaks(rds,monct,10,1);
 	Vector peaked=(Vector)fo.getResult();
 	
 	/* CentroidPeaks co=new CentroidPeaks(rds,peaked);
 	   peaked=(Vector)co.getResult(); */
 
-	WritePeaks wo = new WritePeaks(outfile,mds,peaked,Boolean.FALSE);
+	WritePeaks wo = new WritePeaks(outfile,peaked,Boolean.FALSE);
 	System.out.println(wo.getResult());
 
         System.exit(0);
