@@ -3,6 +3,11 @@
  *             
  *  Maintain list of generic operators and create instance of them as needed.  
  *
+ *  $Log$
+ *  Revision 1.8  2000/08/03 15:47:30  dennis
+ *  Added $Log to enable recording of comments.
+ *
+ *
  */
 
 package DataSetTools.operator;
