@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2003/07/14 20:31:30  rmikk
+ *  -Fixed error when Xscale is rebinned
+ *
  *  Revision 1.30  2003/06/18 20:37:10  pfpeterson
  *  Changed calls for NxNodeUtils.Showw(Object) to
  *  DataSetTools.util.StringUtil.toString(Object)
@@ -323,13 +326,9 @@ public class ContourView extends DataSetViewer
       
       
      boolean b= state.get_boolean(ViewerState.CONTOUR_DATA);
+     
      if( !b)
-       {state.set_int( "ContourTimeStep" , 0 );
-        UniformXScale xx = getDataSet().getXRange();
-        state.set_float("ContourTimeMin", xx.getStart_x());
-        state.set_float("ContourTimeMax",xx.getEnd_x());
-        state.set_boolean(ViewerState.CONTOUR_DATA, true);
-        state.set_int("Contour.Intensity", 50);
+       {setTimeRangeStateValues( getDataSet(),true);
        }
      Xscl = new XScaleChooserUI( getDataSet().getX_label(), getDataSet().getX_units(),
                         state.get_float("ContourTimeMin"), state.get_float("ContourTimeMax"),
@@ -419,6 +418,20 @@ public class ContourView extends DataSetViewer
      validate();
      rpldrawn=false;
     }
+
+  private  void setTimeRangeStateValues(DataSet ds, boolean setToZero){
+
+       
+        UniformXScale xx = ds.getXRange();
+        state.set_float("ContourTimeMin", xx.getStart_x());
+        state.set_float("ContourTimeMax",xx.getEnd_x());
+        if( setToZero)
+          state.set_int( "ContourTimeStep" , 0 );
+        
+        state.set_boolean(ViewerState.CONTOUR_DATA, true);
+        state.set_int("Contour.Intensity", 50);
+
+  }
 
   class MyMouseMotionListener implements MouseMotionListener
   {
@@ -596,6 +609,27 @@ public class ContourView extends DataSetViewer
          axis3 = Transf.getAxis( 2);
          cd = new ContourData( ds, axis1, axis2, axis3);
         }
+    if( XsclHolder == null)
+        {
+          XsclHolder = new JPanel( new GridLayout( 1,1 ));
+          XsclChange = true;
+         }
+    else if( XsclChange)
+        XsclHolder.remove( Xscl);
+
+     
+     if( XsclChange)
+       { 
+        setTimeRangeStateValues( ds, true );// the data has changed
+       
+        Xscl = new XScaleChooserUI( ds.getX_label(), ds.getX_units(),
+                 state.get_float("ContourTimeMin"), state.get_float("ContourTimeMax"),
+                  state.get_int("ContourTimeStep"));
+
+        Xscl.addActionListener( new MyXSCaleActionListener());
+        XsclHolder.add( Xscl);
+      }
+
      cd.setXScale( Xscl.getXScale() );
      times = cd.getTimeRange();
      
@@ -617,31 +651,23 @@ public class ContourView extends DataSetViewer
      else if( XConvChange)
         ConvTableHolder.remove( dctScroll );
 
-      
+ 
+     
+     
      if( XConvChange )
        {
         dct = new DataSetXConversionsTable( getDataSet() );
-        dct.showConversions(getDataSet().getPointedAtX(), 
+        if( Xscl.getXScale() != null)
+             dct.showConversions(getDataSet().getPointedAtX(), 
+                              getDataSet().getPointedAtIndex(), Xscl.getXScale());
+        else 
+             dct.showConversions(getDataSet().getPointedAtX(), 
                               getDataSet().getPointedAtIndex());
           
         dctScroll = new JScrollPane( dct.getTable() );
         ConvTableHolder.add( dctScroll );
        }
 
-     if( XsclHolder == null)
-        XsclHolder = new JPanel( new GridLayout( 1,1 ));
-     else if( XsclChange)
-        XsclHolder.remove( Xscl);
-
-     if( XsclChange)
-       {
-        Xscl = new XScaleChooserUI( getDataSet().getX_label(), getDataSet().getX_units(),
-                     state.get_float("ContourTimeMin"), state.get_float("ContourTimeMax"),
-                     state.get_int("ContourTimeStep"));
-
-        Xscl.addActionListener( new MyXSCaleActionListener());
-        XsclHolder.add( Xscl);
-       }
      init( ds, GridContourAttribute );
     }
 
@@ -675,7 +701,7 @@ public class ContourView extends DataSetViewer
            rpl_Holder.remove( rpl_);
           }
         else 
-           System.out.println("main != null && rpl_Holder is null");
+           DataSetTools.util.SharedData.addmsg("main != null && rpl_Holder is null");
      rpl_ = this.makeGraph( times[sliderTime_index], state );
       
    
@@ -938,6 +964,9 @@ public class ContourView extends DataSetViewer
        * Add the grid to the layout and give a label for
        * the ColorKey.
        */
+     
+      if( rpl==null)
+          DataSetTools.util.SharedData.addmsg("rpl is null");
       rpl.addData( newData, gridAttr_, "Color Scale" );
 
       /*
@@ -1329,16 +1358,22 @@ public class ContourView extends DataSetViewer
             return;
            }
         int Xindex = getPointedAtXindex();
-
-        if( PrevGroup != index)
+        
+        if( (PrevGroup != index) && notify)
           {notify = true;
            PrevGroup = index;
            if( dct != null )
              if( times != null)
                 if( axis3 ==null)
-                    dct.showConversions( times[Xindex], index );
+                    if( Xscl.getXScale() != null)
+                        dct.showConversions( times[Xindex], index, Xscl.getXScale() );
+                    else
+                        dct.showConversions( times[Xindex], index );
                 else
-                   dct.showConversions( x, index );
+                    if( Xscl.getXScale() != null)
+                       dct.showConversions( x, index, Xscl.getXScale() );
+                    else
+                       dct.showConversions( x, index);
             
            }
         if( axis3==null)
@@ -1357,9 +1392,13 @@ public class ContourView extends DataSetViewer
             sliderTime_index =ac.getFrameNumber();
             if( dct != null )
              if( times != null)
-                dct.showConversions( x, index );
+                if( Xscl.getXScale() != null)
+                    dct.showConversions( x, index ,Xscl.getXScale());
+                else
+                    dct.showConversions( x, index );
 
           }
+       notify = true;
        // if( notify)
           //data_set.notifyIObservers( IObserver.POINTED_AT_CHANGED);  
         }
@@ -1535,8 +1574,11 @@ public class ContourView extends DataSetViewer
          note_group=index;
         
          PrevGroup = index;
-        
-         dct.showConversions( time, index ); 
+         //System.out.println(" in MOuse click Xscale="+ Xscl.getXScale().getNum_x() );
+         if( Xscl.getXScale() != null)
+            dct.showConversions( time, index ,Xscl.getXScale()); 
+         else
+            dct.showConversions( time, index ); 
 
       }
 
@@ -1556,7 +1598,7 @@ public class ContourView extends DataSetViewer
          state.set_float("ContourTimeMin", xsc.getStart_x());
          state.set_float("ContourTimeMax",xsc.getEnd_x());
         }
-      acChange= XsclChange =true; XConvChange = false;
+      acChange= true;XsclChange= XConvChange = false;
       setData( getDataSet(), state.get_int("Contour.Style"));
       rpl_.draw();
       }
