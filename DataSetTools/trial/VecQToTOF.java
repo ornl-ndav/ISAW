@@ -30,6 +30,14 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/05/25 20:09:06  dennis
+ *  1. The method to calculate the intensity at a point now interpolates
+ *     using the values at the centers of eight neighboring bins.
+ *  2. Constructor now checks that the DataSet is a time of flight DataSet.
+ *  3  Constructor saves one copy of the time bins, IF the Data blocks
+ *     share a common time scale, so that the time bins don't need to be
+ *     recalculated, or obtained from each Data block when needed.
+ *
  *  Revision 1.4  2003/05/24 21:49:10  dennis
  *  Major improvements:
  *  1. No longer converts it's DataSet to Q, so different x-scales for
@@ -94,6 +102,8 @@ public class VecQToTOF
   float    det_width,
            det_height;
   float    initial_path;
+  float    x_vals[] = null;
+  boolean  same_xscale = false;
 
   Vector3D q_center;    // unit q_vector in direction of q from center of
                         // detector
@@ -112,10 +122,24 @@ public class VecQToTOF
    */
   VecQToTOF( DataSet ds )
   {
+    if ( ds == null )
+    {
+      System.out.println("ERROR: DataSet null in VecQToTOF constructor ");
+      return;
+    }
+
+    String units = ds.getX_units();
+    System.out.println("UNITS = " + units );
+    if ( !units.equalsIgnoreCase( "Time(us)" ) )
+    {
+      System.out.println("ERROR: need time-of-flight DataSet in VecQToTOF" );
+      return;
+    }
+    
     int n_data = ds.getNum_entries();
     if ( n_data < 100 )
     {
-      System.out.println("ERROR VecQToTOF constructor needs area detector");
+      System.out.println("ERROR: VecQToTOF constructor needs area detector");
       return;
     }
 
@@ -161,6 +185,27 @@ public class VecQToTOF
 
     n_rows = grid.num_rows();
     n_cols = grid.num_cols();
+                             // to make searching quicker, save one copy of the
+                             // bin boundaries for the TOF for this detector
+
+    same_xscale = true;
+    XScale xscale = grid.getData_entry( 1, 1 ).getX_scale();
+    int col;
+    int row = 1;
+    while ( same_xscale && row <= n_rows )
+    { 
+      col = 1;
+      while ( same_xscale && col <= n_cols ) 
+      {
+        if ( xscale != grid.getData_entry( row, col ).getX_scale() )
+          same_xscale = false; 
+        col++;
+      }
+      row++;
+    }
+    if ( same_xscale )
+      x_vals = grid.getData_entry( 1, 1 ).getX_scale().getXs();
+
     u = grid.x_vec();
     v = grid.y_vec();
     n = grid.z_vec();
@@ -271,37 +316,114 @@ public class VecQToTOF
     float v_comp = det_point.dot( v );
 //    System.out.println("u, v components = " + u_comp + ", " + v_comp );
 
-                                  // NOTE: the rounding MUST be checked !!!!!
-    int row = (int)grid.row( u_comp, v_comp );
-    int col = (int)grid.col( u_comp, v_comp ); 
+                                              // get "fractional" and integer
+                                              // row and col values for this
+                                              // pixel.
+    float f_row = grid.row( u_comp, v_comp );
+    float f_col = grid.col( u_comp, v_comp );
+    int row = Math.round( f_row );
+    int col = Math.round( f_col ); 
 //    System.out.println("row, col = " + row + ", " + col );
- 
-    if ( row < 1 || row > n_rows )
-      return 0; 
 
-    if ( col < 1 || col > n_cols )
+    int first_row,                     // find adjacent rows and cols
+        last_row;
+    int first_col, 
+        last_col;
+    if ( f_row > row )
+    {
+      first_row = row;
+      last_row = row + 1;
+    }
+    else
+    {
+      first_row = row-1;
+      last_row = row;
+    }
+
+    if ( f_col > col )
+    {
+      first_col = col;
+      last_col = col + 1;
+    }
+    else
+    {
+      first_col = col-1;
+      last_col = col;
+    }
+                                       // ignore points without four neighbors 
+    if ( first_row < 1 || last_row > n_rows )
+      return 0;                  
+                                
+    if ( first_col < 1 || last_col > n_cols )
       return 0; 
 
     float mag_q = q_vec.length();
-
-    Data d = grid.getData_entry( row, col );
-    if ( d == null )
+                                             // interpolate intensity at four
+    float val[][] = new float[2][2];         // neighboring pixels    
+    float first_mid,
+          last_mid;
+    int   first_index,
+          last_index;
+    float tof_frac;
+    
+    for ( int i = 0; i < 2; i++ )
+      for ( int j = 0; j < 2; j++ )
     {
-      System.out.println("ERROR: No Data block at row, col = " + row + 
-                                                          ", " + col );
-      return 0;
-    }
+      row = first_row + i;
+      col = first_col + j;
+      Data d = grid.getData_entry( row, col );
+      if ( d == null )
+      {
+        System.out.println("ERROR: No Data block at row, col = " + row + 
+                                                            ", " + col );
+        return 0;
+      }
    
-    Vector3D pix_position = grid.position(row,col);
-    float final_path = pix_position.length();
-    pix_position.normalize();
-    float angle = (float)( Math.acos( pix_position.dot( unit_k ) ));
+      Vector3D pix_position = grid.position(row,col);
+      float final_path = pix_position.length();
+      pix_position.normalize();
+      float angle = (float)( Math.acos( pix_position.dot( unit_k ) ));
  
-    float tof = tof_calc.TOFofDiffractometerQ( angle, 
-                                               initial_path+final_path, 
-                                               mag_q );
+      float tof = tof_calc.TOFofDiffractometerQ( angle, 
+                                                 initial_path+final_path, 
+                                                 mag_q );
+      if ( !same_xscale )
+        x_vals = d.getX_scale().getXs();
 
-    float intensity = d.getY_value( tof, Data.SMOOTH_LINEAR ); 
+      int index = arrayUtil.get_index_of( tof, x_vals );
+
+      float y_vals[] = d.getY_values();
+      if ( index <= 0 || index >= y_vals.length - 1 )  // ignore first and last
+        val[i][j] = 0.0f;                              // bin since we can't 
+      else                                             // interpolate
+      {
+        float bin_mid = (x_vals[index] + x_vals[index+1]) / 2;
+        if ( tof > bin_mid )
+        {
+          first_index = index;
+          last_index = index+1;
+          first_mid = bin_mid;
+          last_mid = (x_vals[last_index] + x_vals[last_index+1]) / 2;
+        }
+        else
+        {
+          first_index = index-1;
+          last_index = index;
+          first_mid = (x_vals[first_index] + x_vals[first_index+1]) / 2;
+          last_mid = bin_mid;
+        }
+        tof_frac = (tof - first_mid)/(last_mid - first_mid);
+        val[i][j] = (1-tof_frac) * y_vals[first_index] + 
+                        tof_frac * y_vals[last_index];
+      }
+    }
+
+    float row_frac = f_row - first_row;
+    float col_frac = f_col - first_col;
+    float intensity_0 = (1 - row_frac) * val[0][0] + row_frac * val[1][0] ;
+    float intensity_1 = (1 - row_frac) * val[0][1] + row_frac * val[1][1] ;
+    float intensity = (1 - col_frac) * intensity_0 + col_frac * intensity_1;
+   
 
 //    float y[] = d.getY_values();
 //    float x[] = d.getX_scale().getXs();
