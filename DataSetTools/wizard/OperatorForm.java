@@ -29,6 +29,10 @@
  *
  *
  * $Log$
+ * Revision 1.22  2003/07/03 14:12:02  bouzekc
+ * Added all missing javadoc comments and formatted existing
+ * comments.
+ *
  * Revision 1.21  2003/07/02 22:53:39  bouzekc
  * Sorted methods according to access rights.
  *
@@ -85,21 +89,27 @@ import java.util.Vector;
 
 
 /**
- * The OperatorForm class is an extension of Form designed to work
- * with an Operator Object.  Although a Form is an Operator,
- * by creating an OperatorForm, it becomes easier to implement
- * many of the methods.  In addition, an OperatorForm has the advantage of
- * automated parameter linking, so it can "return" more than one value.
+ * The OperatorForm class is an extension of Form designed to work with an
+ * Operator Object.  Although a Form is an Operator, by creating an
+ * OperatorForm, it becomes easier to implement many of the methods.  In
+ * addition, an OperatorForm has the advantage of automated parameter linking,
+ * so it can "return" more than one value.
  */
 public class OperatorForm extends Form implements HiddenOperator {
+  //~ Static fields/initializers ***********************************************
+
   private static ParameterClassList PL = null;
+
+  //~ Instance fields **********************************************************
+
   protected Operator form_op;
   protected IParameterGUI result_param;
   private int[] constIndices;
 
+  //~ Constructors *************************************************************
+
   /**
-   *  Construct an OperatorForm with the title "Operator Form".
-   *
+   * Construct an OperatorForm with the title "Operator Form".
    */
   public OperatorForm(  ) {
     super( "Operator Form" );
@@ -108,10 +118,9 @@ public class OperatorForm extends Form implements HiddenOperator {
   }
 
   /**
-   *  Construct an OperatorForm with the given title.
+   * Construct an OperatorForm with the given title.
    *
-   *  @param  title           The title to show on this form
-   *
+   * @param title The title to show on this form
    */
   public OperatorForm( String title ) {
     super( title );
@@ -120,12 +129,10 @@ public class OperatorForm extends Form implements HiddenOperator {
   }
 
   /**
-   *  Construct an OperatorForm with the given Operator.
-   *  This allows the use of that Operator for the getResult()
-   *  method.
+   * Construct an OperatorForm with the given Operator. This allows the use of
+   * that Operator for the getResult() method.
    *
-   *  @param  op             The Operator to use for this form
-   *
+   * @param op The Operator to use for this form
    */
   public OperatorForm( Operator op ) {
     super( op.getTitle(  ) );
@@ -134,20 +141,13 @@ public class OperatorForm extends Form implements HiddenOperator {
   }
 
   /**
-   *  Construct an OperatorForm with the given Operator and
-   *  result parameter type.
-   *  This allows the use of that Operator for the getResult()
-   *  method.
+   * Construct an OperatorForm with the given Operator and result parameter
+   * type. This allows the use of that Operator for the getResult() method.
    *
-   *  @param  op              The Operator to use for this form
-   *
-   *  @param  type            The IParameterGUI type of the result
-   *                          parameter.  e.g. for a LoadFilePG,
-   *                          use "LoadFile"
-   *
-   *  @param  name            The name of the result parameter.
-   *                          e.g. "log file"
-   *
+   * @param op The Operator to use for this form
+   * @param type The IParameterGUI type of the result parameter.  e.g. for a
+   *        LoadFilePG, use "LoadFile"
+   * @param name The name of the result parameter. e.g. "log file"
    */
   public OperatorForm( Operator op, String type, String name ) {
     this( op );
@@ -157,25 +157,16 @@ public class OperatorForm extends Form implements HiddenOperator {
   }
 
   /**
-   *  Construct an OperatorForm with the given Operator and
-   *  result parameter type.
-   *  This allows the use of that Operator for the getResult()
-   *  method.  In addition, this constructor allows setting of the constant
-   *  parameters.
+   * Construct an OperatorForm with the given Operator and result parameter
+   * type. This allows the use of that Operator for the getResult() method. In
+   * addition, this constructor allows setting of the constant parameters.
    *
-   *  @param  op              The Operator to use for this form
-   *
-   *  @param  type            The IParameterGUI type of the result
-   *                          parameter.  e.g. for a LoadFilePG,
-   *                          use "LoadFile"
-   *
-   *  @param  name            The name of the result parameter.
-   *                          e.g. "log file"
-   *
-   *  @param indices          The array of indices that represent constant
-   *                          parameters for this Form.
-   *
-   *
+   * @param op The Operator to use for this form
+   * @param type The IParameterGUI type of the result parameter.  e.g. for a
+   *        LoadFilePG, use "LoadFile"
+   * @param name The name of the result parameter. e.g. "log file"
+   * @param indices The array of indices that represent constant parameters for
+   *        this Form.
    */
   public OperatorForm( Operator op, String type, String name, int[] indices ) {
     this( op );
@@ -186,31 +177,28 @@ public class OperatorForm extends Form implements HiddenOperator {
     setDefaultParameters(  );
   }
 
-  /* ---------------------------- getCommand ------------------------------- */
+  //~ Methods ******************************************************************
 
   /**
-   * @return  the command name to be used with script processor
-   *
+   * @return the command name to be used with script processor
    */
   public String getCommand(  ) {
     return form_op.getCommand(  );
   }
 
   /**
-   *  Method to allow OperatorForms to set their constant parameters indices.
+   * Method to allow OperatorForms to set their constant parameters indices.
    *
-   *  @param  indices     Array of integers indicating which parameters should
-   *                      be constant.
+   * @param indices Array of integers indicating which parameters should be
+   *        constant.
    */
   public void setConstantParamIndices( int[] indices ) {
     HAS_CONSTANTS   = true;
     constIndices    = indices;
   }
 
-  /* -------------------------- setDefaultParameters ----------------------- */
-
   /**
-   *  Set the parameters to default values using the form_op Operator.
+   * Set the parameters to default values using the form_op Operator.
    */
   public void setDefaultParameters(  ) {
     // can't do anything without an operator
@@ -293,12 +281,10 @@ public class OperatorForm extends Form implements HiddenOperator {
     }
   }
 
-  /* ---------------------------- getNum_parameters ------------------------ */
-
   /**
    * Gets the number of parameters for this Form.
    *
-   *  @return  Returns the number of parameters that this operator has.
+   * @return Returns the number of parameters that this operator has.
    */
   public int getNum_parameters(  ) {
     if( form_op != null ) {
@@ -308,25 +294,23 @@ public class OperatorForm extends Form implements HiddenOperator {
     }
   }
 
-  /* ---------------------------- setParameter --------------------------- */
-
   /**
-   * Set the parameter at the specified index in the list of parameters
-   * for this Form.  The parameter that is set MUST have the same type
-   * of value object as that was originally placed in the list of parameters
-   * using the addParameter() method.  Typically, the "GUI" will get a parameter
-   * from the operator, change its value and then set the parameter back at
-   * the same index.
+   * Set the parameter at the specified index in the list of parameters for
+   * this Form.  The parameter that is set MUST have the same type of value
+   * object as that was originally placed in the list of parameters using the
+   * addParameter() method.  Typically, the "GUI" will get a parameter from
+   * the operator, change its value and then set the parameter back at the
+   * same index.
    *
-   *  @param  index    The index in the list of parameters of the parameter
-   *                   that is to be set.  "index" must be between 0 and the
-   *                   number of parameters - 1.
+   * @param iparam The IParameter to set.
+   * @param index The index in the list of parameters of the parameter that is
+   *        to be set.  "index" must be between 0 and the number of parameters
+   *        - 1.
    *
-   *  @return  Returns true if the parameter was properly set, and returns
-   *           false otherwise.  Specifically, it returns false if either
-   *           the given index is invalid, or the specified parameter
-   *           has a different data type than the parameter at the given
-   *           index.
+   * @return Returns true if the parameter was properly set, and returns false
+   *         otherwise.  Specifically, it returns false if either the given
+   *         index is invalid, or the specified parameter has a different data
+   *         type than the parameter at the given index.
    */
   public boolean setParameter( IParameter parameter, int index ) {
     if( ( index < 0 ) || ( index >= this.getNum_parameters(  ) ) ) {
@@ -346,20 +330,18 @@ public class OperatorForm extends Form implements HiddenOperator {
     }
   }
 
-  /* ----------------------------- getParameter -------------------------- */
-
   /**
-   * Get the parameter at the specified index from the list of parameters
-   * for this Form.  Note: This returns a reference to the specified
-   * parameter.  Consequently the value of the parameter can be altered.
+   * Get the parameter at the specified index from the list of parameters for
+   * this Form.  Note: This returns a reference to the specified parameter.
+   * Consequently the value of the parameter can be altered.
    *
-   *  @param  index    The index in the list of parameters of the parameter
-   *                   that is to be returned.  "index" must be between 0 and
-   *                   the number of parameters - 1.
+   * @param index The index in the list of parameters of the parameter that is
+   *        to be returned.  "index" must be between 0 and the number of
+   *        parameters - 1.
    *
-   *  @return  Returns the parameters at the specified position in the list
-   *           of parameters for this object.  If the index is invalid,
-   *           this returns null.
+   * @return Returns the parameters at the specified position in the list of
+   *         parameters for this object.  If the index is invalid, this
+   *         returns null.
    */
   public IParameter getParameter( int index ) {
     if( index < form_op.getNum_parameters(  ) ) {
@@ -369,16 +351,12 @@ public class OperatorForm extends Form implements HiddenOperator {
     }
   }
 
-  /* ----------------------------- getResult ---------------------------- */
-
   /**
-   * Returns the object that is the result of applying this operation.
-   * This should be called after setting the appropriate parameters.
-   * Derived classes will override this method with code that will
-   * carry out the required operation.
+   * Returns the object that is the result of applying this operation. This
+   * should be called after setting the appropriate parameters.
    *
-   * @return  The result of carrying out this operation is returned as a Java
-   *          Object.
+   * @return The result of carrying out this operation is returned as a Java
+   *         Object.
    */
   public Object getResult(  ) {
     Object result = form_op.getResult(  );
@@ -408,9 +386,10 @@ public class OperatorForm extends Form implements HiddenOperator {
   }
 
   /**
-   *  Used to set the class type of the result parameter by
-   *  passing in the type (as determined by getType()) of the
-   *  IParameterGUI.
+   * Used to set the class type of the result parameter by passing in the type
+   * (as determined by getType()) of the IParameterGUI.
+   *
+   * @param type The type of the IParameterGUI.
    */
   protected void setParamClass( String type ) {
     try {
