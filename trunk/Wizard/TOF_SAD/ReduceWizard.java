@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2004/01/05 15:24:22  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.2  2003/11/13 18:23:33  rmikk
  * -Added Hook to get Wizard documentation
  *
@@ -37,25 +40,13 @@
  */
 package Wizard.TOF_SAD;
 
-import DataSetTools.operator.*;
-
 import DataSetTools.parameter.*;
 
 import DataSetTools.util.*;
 
 import DataSetTools.wizard.*;
 
-import Operators.TOF_SCD.*;
-
-import java.awt.*;
-import java.awt.event.*;
-
 import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
-
 
 /**
  * This class constructs a Wizard used for initially finding peaks.  In this
