@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/10/28 19:57:58  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.1  2003/10/27 15:11:32  rmikk
  * Initial Checkin
  *
@@ -73,13 +76,13 @@ public class RowColTimeVirtualArray extends
 
   /**
   *    Constructor for this Virtual Array
-  *  @param DS-  The DataSet with the values in row and column
-  *  @param time -  The time Slice to show
-  *  @param showErrors-  If true, Errors will be displayed in addition to the
+  *  @param DS  The DataSet with the values in row and column
+  *  @param time   The time Slice to show
+  *  @param showErrors  If true, Errors will be displayed in addition to the
   *                       yvalues
-  *  @param showInd-  If true, the index of the group with the given row and column
+  *  @param showInd If true, the index of the group with the given row and column
   *           will be displayed.
-  *  @param  state- This stores state information for this viewer. Some state info is
+  *  @param  state This stores state information for this viewer. Some state info is
   *  <table><tr> <td>Name</td><td>Value Data Type and subrange info </td></tr>
   *  <tr> <td>TableTS_TimeInd</td><td>Integer from 0 to the number of time channels</td></tr>
   *  <tr> <td>TABLE_TS_NXSTEPS</td><td>Positive Integer. # of time steps</td></tr>
@@ -548,7 +551,7 @@ public class RowColTimeVirtualArray extends
 
   /**
   *    Get the DataSet Group corresponding to the given Selected Data
-  *    @param  Info- Should be a SelectedData2D Object
+  *    @param  Info Should be a SelectedData2D Object
   */
   public int getGroupIndex( ISelectedData Info)
     {
@@ -566,7 +569,7 @@ public class RowColTimeVirtualArray extends
   
   /**
   *    Returns the time corresponding to the given Selected Data
-  *    @param  Info- Should be a SelectedData2D Object
+  *    @param  Info Should be a SelectedData2D Object
   */
   public float getTime( ISelectedData Info)
     {
@@ -585,9 +588,9 @@ public class RowColTimeVirtualArray extends
   /**
   *    Returns the selected data corresponding to the give PointedAt
   *    condition
-  *    @param PointedAtGroupIndex -  The index in the DataSet of the group
+  *    @param PointedAtGroupIndex   The index in the DataSet of the group
   *             that is being pointed at
-  *    @param PointedAtTime- The time in question when the pointing takes
+  *    @param PointedAtTime The time in question when the pointing takes
   *          place
   *    @return  a SelectedData2D containing the row and column corresponding
   *              to the selected condition

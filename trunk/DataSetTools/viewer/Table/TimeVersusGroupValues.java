@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/10/28 19:58:13  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.2  2003/10/28 16:20:03  rmikk
  * It now deals with an initial null state correctly
  *
@@ -547,7 +550,7 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
   
   /**
   *    Get the DataSet Group corresponding to the given Selected Data
-  *    @param  Info- Should be a SelectedData2D Object
+  *    @param  Info Should be a SelectedData2D Object
   */
   public int getGroupIndex( ISelectedData Info)
     {
@@ -566,7 +569,7 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
 
   /**
   *    Returns the time corresponding to the given Selected Data
-  *    @param  Info- Should be a SelectedData2D Object
+  *    @param  Info Should be a SelectedData2D Object
   */
   public float getTime( ISelectedData Info)
     {
@@ -585,9 +588,9 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
   /**
   *    Returns the selected data corresponding to the give PointedAt
   *    condition
-  *    @param PointedAtGroupIndex -  The index in the DataSet of the group
+  *    @param PointedAtGroupIndex   The index in the DataSet of the group
   *             that is being pointed at
-  *    @param PointedAtTime- The time in question when the pointing takes
+  *    @param PointedAtTime The time in question when the pointing takes
   *          place
   *    @return  a SelectedData2D containing the row and column corresponding
   *              to the selected condition
