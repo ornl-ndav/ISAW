@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.26  2003/08/27 23:17:44  bouzekc
+ * Added constructor to set the centering type parameter (similar to other full
+ * constructor).
+ *
  * Revision 1.25  2003/07/07 15:54:25  bouzekc
  * Fixed errors and added missing param tags in
  * getDocumentation().  Renamed parameter from "Center" to
@@ -215,6 +219,30 @@ public class Integrate extends GenericTOF_SCD{
     getParameter(5).setValue(new Integer(slicedelta));
     getParameter(6).setValue(new Integer(lognum));
     getParameter(7).setValue(new Boolean(append));
+  }
+
+  /** 
+   * Creates operator with title "Integrate" and the specified list
+   * of parameters. The getResult method must still be used to execute
+   * the operator.  This is a convenience constructor so that a full
+   * Integrate Operator can be constructed without the need to 
+   * pass in IParameterGUIs.
+   *
+   * @param ds          DataSet to integrate
+   * @param integfile   The "integrate file" for the analysis.
+   * @param matfile     The matrix file to use for the analysis.
+   * @param choice      number for the centering type
+   * @param slicerange  The time slice range.
+   * @param slicedelta  The amount to increase slicesize by.
+   * @param lognum      The peak multiples to log - i.e. 3 logs
+   *                    1, 3, 6, 9...
+   * @param append      Append to file (true/false);
+   */
+  public Integrate( DataSet ds, String integfile, String matfile,
+                    int choice, String slicerange, int slicedelta, int lognum,
+                    boolean append){
+    this(ds, integfile, matfile, slicerange, slicedelta, lognum, append); 
+    getParameter(3).setValue(choices.elementAt(choice));
   }
   
   /* --------------------------- getCommand ------------------------------- */ 
