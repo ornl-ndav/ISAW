@@ -2,6 +2,10 @@
  *  File:  DiffractometerTofToQ.java 
  *             
  *  $Log$
+ *  Revision 1.3  2002/03/18 21:32:48  dennis
+ *  Now checks whether or not the errors array is null before attempting
+ *  to reverse the array.
+ *
  *  Revision 1.2  2002/03/13 16:19:17  dennis
  *  Converted to new abstract Data class.
  *
@@ -351,7 +355,8 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
             y_vals[i] = 0;
 */
         arrayUtil.Reverse( y_vals );
-        arrayUtil.Reverse( errors );
+        if ( errors != null )
+          arrayUtil.Reverse( errors );
 
         arrayUtil.Reverse( Q_vals );
         Q_scale = new VariableXScale( Q_vals );
