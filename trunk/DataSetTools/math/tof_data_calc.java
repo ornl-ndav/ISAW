@@ -6,8 +6,11 @@
  *  Basic time-of-flight calculations on DataSets and Data blocks
  *
  *  $Log$
+ *  Revision 1.6  2001/01/29 21:06:00  dennis
+ *  Now uses CVS revision numbers.
+ *
  *  Revision 1.5  2000/12/15 05:16:46  dennis
- *  Fixed bugs in preliminary version:
+ *  Fixed bugs in preliminary version of IncSpecFocus:
  *  1.Bank angles are really 2*theta
  *  2.Now works for very small angle ranges, eg. one detector
  *  3.New Data's Detector position was set wrong.
