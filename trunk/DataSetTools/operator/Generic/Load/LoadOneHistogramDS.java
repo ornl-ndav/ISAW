@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/12/10 21:56:21  dennis
+ *  Added getDocumentation() method. (Shannon Hintzman)
+ *
  *  Revision 1.4  2002/11/27 23:21:16  pfpeterson
  *  standardized header
  *
@@ -121,26 +124,56 @@ public class LoadOneHistogramDS extends    GenericLoad
     addParameter( parameter );
   }
 
-
+  /*----------------------------getDocumentation-----------------------------*/
+  
+   public String getDocumentation()
+   {
+   	StringBuffer Res = new StringBuffer();
+	
+	Res.append("@overview This operator loads a specific histogram from ");
+	Res.append("an IPNS runfile.");
+	
+	Res.append("@algorithm A file is read in.  If the specified ");
+    	Res.append("histogram is found in the file and could be opened, then ");
+	Res.append("any group IDs that should be omitted from it are, and ");
+	Res.append("the DataSet that contains the specified histogram is ");
+    	Res.append("returned, otherwise an ErrorString is returned.");
+	
+	Res.append("@param file_name The fully qualified runfile name");
+	Res.append("@param histogram The histogram number that should be ");
+	Res.append("loaded");
+	Res.append("@param group_mask A list of group IDs that should be ");
+	Res.append("omitted");
+	
+	Res.append("@return Returns a DataSet containing the specified ");
+	Res.append("histogram from the runfile if the runfile could be ");
+	Res.append("opened and the specified histogram existed, otherwise an ");
+	Res.append("ErrorString is returned.");
+	
+	Res.append("@error Requested histogram is not in \"filename\".");
+	
+	return Res.toString();
+   
+   }
+   
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, OneHist
-   *
+   * @return	the command name to be used with script processor: in this case,
+   *            	OneHist
    */
    public String getCommand()
    {
      return "OneHist";
    }
 
-
   /* ----------------------------- getResult ---------------------------- */
   /**
    * Returns the object that is the result of applying this operation.  This
    * should be called after setting the appropriate parameters.
    *
-   * @return  Returns a DataSet containing the specified histogram from
-   *          the runfile, if the runfile could opened and the specified
-   *          histogram existed.
+   * @return  Returns a DataSet containing the specified histogram from the
+   *          runfile if the runfile could be opened and the specified histogram
+   *          existed, otherwise an ErrorString is returned.
    */
    public Object getResult()
    {
@@ -178,7 +211,6 @@ public class LoadOneHistogramDS extends    GenericLoad
      return ds;
    }
 
-
    /* -------------------------------- main ------------------------------ */
    /* 
     * main program for test purposes only  
@@ -188,9 +220,9 @@ public class LoadOneHistogramDS extends    GenericLoad
    {
       String mask = "20:30,40:50";
       LoadOneHistogramDS loader = new LoadOneHistogramDS( 
-                                "/IPNShome/dennis/ARGONNE_DATA/hrcs2444.run",
-                                1,
-                                mask );
+                             "/home/groups/SCD_PROJECT/SampleRuns/hrcs2444.run",
+                             1,
+                             mask );
 
       Object result = loader.getResult();
       if ( result instanceof DataSet )
@@ -201,6 +233,8 @@ public class LoadOneHistogramDS extends    GenericLoad
         viewmanager = new ViewManager( ds, IViewManager.IMAGE );
       }
       else
-        System.out.println( result.toString() );
+      	System.out.println(result.toString() );
+	
+      System.out.println(loader.getDocumentation());
    } 
 } 

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/12/10 21:54:21  dennis
+ *  Added getDocumentation() method. (Shannon Hintzman)
+ *
  *  Revision 1.2  2002/11/27 23:21:43  pfpeterson
  *  standardized header
  *
@@ -54,8 +57,8 @@ import  DataSetTools.operator.Parameter;
 import  DataSetTools.retriever.RunfileRetriever;
 
 /**
- * This operator determines what the number of bins of a given
- * DataBlock over the specified range.
+ * This operator determines what the number of bins, of a given
+ * DataBlock, is over the specified range.
  */
 
 public class NumBins extends    GenericSpecial {
@@ -82,8 +85,7 @@ public class NumBins extends    GenericSpecial {
         addParameter(new Parameter("Group ID",id));
         addParameter(new Parameter("Minimum x",xmin));
         addParameter(new Parameter("Maximum x",xmax));
-    }
-
+    }  
     
     /* ------------------------- setDefaultParmeters ----------------------- */
     /**
@@ -100,7 +102,34 @@ public class NumBins extends    GenericSpecial {
         addParameter(new Parameter("Maximum x",
                                    new Float(Float.POSITIVE_INFINITY)));
     }
-    
+  /*----------------------------getDocumentation-----------------------------*/
+  
+   public String getDocumentation()
+   {
+   	StringBuffer Res = new StringBuffer();
+	
+	Res.append("@overview This operator determines what the number of ");
+ 	Res.append("bins, of a given DataBlock, is over the specified range.");
+	
+	Res.append("@algorithm If no upstream monitor is found \"-1\" is ");
+    	Res.append("returned.  Otherwise the max and mins are compared to ");
+	Res.append("make sure the max is larger than the min and ");
+	Res.append("we also make sure the bounds do not go outside the ");
+	Res.append("DataSet.  If our range is the entire DataBlock then we ");
+	Res.append("just return the total number of bins in the DataBlock.  ");
+	Res.append("If not, we check the DataBlock to see how many bins there");
+	Res.append(" are in our range and return the number of bins tallied ");
+	Res.append("in our range.");
+
+	Res.append("@param mds The monitor data set.");
+
+	Res.append("@return Returns the group id of the detector with the ");
+     	Res.append("largest TOTAL_COUNT attribute.  If no upstream monitor ");
+     	Res.append("is found it will return -1.");
+		
+	return Res.toString();
+   
+   }  
     /* --------------------------- getCommand ------------------------------ */
     /**
      * @return	the command name to be used with script processor.
@@ -184,6 +213,11 @@ public class NumBins extends    GenericSpecial {
         
         return new_op;
     }
+    
+   /* -------------------------------- main ------------------------------ */
+   /* 
+    * main program for test purposes only  
+    */
 
     public static void main(String[] args){
         String filename="";
@@ -205,8 +239,13 @@ public class NumBins extends    GenericSpecial {
             System.out.println("For "+filename+"(4)= "+op.getResult());
             op=new NumBins(ds,new Integer(5),xmin, xmax);
             System.out.println("For "+filename+"(5)= "+op.getResult());
-        }else{
-            System.out.println("USAGE: NumBins <filename>");
         }
+	else{
+            System.out.println("USAGE: NumBins <filename>");  
+        }
+	
+	NumBins n = new NumBins();
+	System.out.println(n.getResult().toString());
+	System.out.println(n.getDocumentation());
     }
 }
