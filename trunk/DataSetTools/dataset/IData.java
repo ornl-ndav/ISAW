@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/07/08 15:41:36  pfpeterson
+ *  Added SUM constant to be used by stitch operations.
+ *
  *  Revision 1.3  2002/04/19 15:42:31  dennis
  *  Revised Documentation
  *
@@ -52,6 +55,7 @@ public interface IData extends IAttributeList
   public static final int KEEP    = 1;           // constants to control how
   public static final int AVERAGE = 2;           // stitching is done where two
   public static final int DISCARD = 3;           // Data blocks overlap
+  public static final int SUM     = 4;
 
   public static final int SMOOTH_NONE   = 0; 
   public static final int SMOOTH_LINEAR = 1;
