@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2002/07/17 20:36:56  dennis
+ *  Added DataSetAdd_1, DataSetSubtract_1, DataSetMultiply_1,
+ *  DataSetDivide_1 operators.
+ *
  *  Revision 1.22  2002/07/12 22:27:35  dennis
  *  Added FitExpressionToGroup operator
  *
@@ -273,6 +277,11 @@ public class DataSetFactory implements Serializable
     new_ds.addOperator( new DataSetSubtract() );
     new_ds.addOperator( new DataSetMultiply() );
     new_ds.addOperator( new DataSetDivide()   );
+
+    new_ds.addOperator( new DataSetAdd_1() );
+    new_ds.addOperator( new DataSetSubtract_1() );
+    new_ds.addOperator( new DataSetMultiply_1() );
+    new_ds.addOperator( new DataSetDivide_1() );
 
     new_ds.addOperator( new IntegrateGroup() );
     new_ds.addOperator( new CalculateMomentOfGroup() );
