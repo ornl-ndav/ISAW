@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2003/03/26 21:06:22  pfpeterson
+ * Sets the reflection flag as discussed with A. Schultz.
+ *
  * Revision 1.16  2003/02/18 20:21:00  dennis
  * Switched to use SampleOrientation attribute instead of separate
  * phi, chi and omega values.
@@ -314,6 +317,10 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
             peak.seqnum(peakNum);
             peak.ipkobs((int)Math.round(I));
             peak.nearedge(minColumn,maxColumn,minRow,maxRow,minTime,maxTime);
+            if(peak.nearedge()<3)
+              peak.reflag(2);
+            else
+              peak.reflag(1);
             peaks.add(peak.clone());
             peakNum++;
           }
