@@ -118,7 +118,7 @@ public class Isaw extends JFrame implements Serializable, IObserver
        String path = System.getProperty("user.home")+"\\";
        path = StringUtil.fixSeparator(path);
        try {
-	    FileInputStream input = new FileInputStream(path + "props.dat" );
+	    FileInputStream input = new FileInputStream(path + "IsawProps.dat" );
           isawProp.load( input );
           Help_Directory = isawProp.getProperty("Help_Directory");
 	    Script_Path = isawProp.getProperty("Script_Path");
