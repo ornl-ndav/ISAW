@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.39  2002/12/01 16:13:35  dennis
+ *  Now handles case of null Data block by using a row of zeros.
+ *
  *  Revision 1.38  2002/11/27 23:24:57  pfpeterson
  *  standardized header
  *
@@ -576,7 +579,9 @@ private void MakeImage( boolean redraw_flag )
   for ( int i = 0; i < num_rows; i++ )
   {
     data_block = getDataSet().getData_entry(i);
-    if ( data_block.isHistogram() )
+    if ( data_block == null )
+      image_data[i] = new float[ num_cols ];         // row of zeros if no Data 
+    else if ( data_block.isHistogram() )
       image_data[i] = data_block.getY_values(histogram_scale,IData.SMOOTH_NONE);
     else
       image_data[i] = data_block.getY_values(function_scale,IData.SMOOTH_NONE);
