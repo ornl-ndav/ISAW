@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.14  2004/05/07 15:51:41  dennis
+ * Made log messages consistent for Crunch.java Crunch2.java
+ * OmitNullData.java.  Make appropriate log entry whether or
+ * not Data blocks were actually deleted.
+ *
  * Revision 1.13  2004/05/07 14:43:45  dennis
  * Now notifies observers of Data blocks that are deleted.
  * Now includes list of IDs that were removed in log message.
@@ -288,12 +293,18 @@ public class Crunch extends GenericSpecial
       new_ds.addLog_entry("Applied Crunch( " + ds + 
                           ", " + min_count + 
                           ", " + width/dev + 
-                          ", " + mk_new_ds + " )\n" +
-                          "removed data blocks : " +
-                          IntList.ToString(final_list) + " )" );
+                          ", " + mk_new_ds + 
+                          " ), removed Data blocks : " +
+                          IntList.ToString(final_list) );
       if ( !mk_new_ds )
         ds.notifyIObservers( IObserver.DATA_DELETED );
     }
+    else
+      new_ds.addLog_entry("Applied Crunch( " + ds +
+                          ", " + min_count +
+                          ", " + width/dev +
+                          ", " + mk_new_ds + 
+                          " ), and removed NO Data blocks " );
 
     return new_ds;
   }

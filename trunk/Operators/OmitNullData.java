@@ -29,6 +29,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2004/05/07 15:51:41  dennis
+ * Made log messages consistent for Crunch.java Crunch2.java
+ * OmitNullData.java.  Make appropriate log entry whether or
+ * not Data blocks were actually deleted.
+ *
  * Revision 1.4  2004/05/07 04:14:10  dennis
  * Now prints the group IDs of data blocks that are omitted, if
  * DEBUG is true.
@@ -234,12 +239,17 @@ import gov.anl.ipns.Util.Messaging.*;
 
         Arrays.sort(final_list);
       
-        new_ds.addLog_entry("Removed null data from ( " + ds + ", data blocks "
-                            + IntList.ToString(final_list) + " )" );
-
+        new_ds.addLog_entry("Applied OmitNullData( " + ds + 
+                            ", " + mk_new_ds + 
+                            " ), removed Data blocks : " +
+                            IntList.ToString(final_list) );
         if ( !mk_new_ds )
           ds.notifyIObservers( IObserver.DATA_DELETED );
       }
+      else
+        new_ds.addLog_entry("Applied OmitNullData to " + ds + 
+                            ", " + mk_new_ds +
+                            ", and removed NO Data blocks ");
 
       if( DEBUG )
       {
