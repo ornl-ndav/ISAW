@@ -30,6 +30,11 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.10  2003/03/19 16:52:53  rmikk
+ * Added the Intensity calculation for a selected region of the
+ * current table to the Edit/SpreadSheet menu item of the
+ * viewers for the two quick table views.
+ *
  * Revision 1.9  2003/03/07 20:56:36  rmikk
  * -Cell editing has been disables. Eliminates a lot of error messages.
  *
@@ -69,13 +74,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import DataSetTools.viewer.*;
+import DataSetTools.util.*;
 import IsawGUI.*;
 import java.io.*;
 import javax.swing.table.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.components.containers.*;
 import DataSetTools.util.*;
-
+import java.util.*;
 
 /** This class can be used as a Stub for all the special TableViewers in the old
 *   format.  It creates a DataSetViewer with one table at the left and one Xconversions
@@ -137,7 +143,13 @@ public class STableView  extends DataSetViewer
       jmInd.addActionListener( new CheckBoxListener());
       jm.add( jmErr);
       jm.add( jmInd);
-       
+      
+      JMenu Select = new JMenu( "Select");
+      menu_bar.add( Select);
+      JMenuItem Sel1 = new JMenuItem( "Rectangle");
+      Sel1.addActionListener( new SelectActionListener());
+      Select.add( Sel1);
+      
       if( state.get_String( ViewerState.TABLE_DATA).indexOf("Err")>0)
          jmErr.setState( true);
 
@@ -145,13 +157,148 @@ public class STableView  extends DataSetViewer
          jmInd.setState( true);
 
       jm= menu_bar.getMenu( DataSetViewer.EDIT_MENU_ID);
+      JMenu jSprSht= new JMenu( "SpreadSheet");
+      jm.add( jSprSht);
       JMi = new JMenuItem( "Select All" );
       JCp = new JMenuItem( "Copy Sel" );
-      jm.add( JMi);
-      jm.add( JCp);
+      jSprSht.add( JMi);
+      jSprSht.add( JCp);
+      JMenuItem calc = new JMenuItem( "Integrate");
+      jSprSht.add( calc);
+      calc.addActionListener( new IntegrateListener() );
+        
       initAftMenuItems();
      }
+  
+   class IntegrateListener implements ActionListener
+    {
 
+     private float floatValue( Object O)
+      {
+
+       if( O instanceof Number)
+         return ((Number)O).floatValue();
+
+       else if( O instanceof String)
+         return ( new Float( (String)O)).floatValue();
+       return 0.0f;
+       }
+     /** "Integrates" the selected cells, removing background (level =
+     *   average of bordering cells.  Also, error estimates are given
+     */
+     public void actionPerformed( ActionEvent evt)
+      {
+        int[] rows = jtb.getSelectedRows();
+        int[] cols = jtb.getSelectedColumns();
+        Arrays.sort( rows);
+        Arrays.sort( cols) ;
+        int nrows = getNlist( rows);
+        int ncols = getNlist( cols);
+        int firstRow = getFirstinList( rows);
+        int firstCol = getFirstinList( cols);
+        
+        rows= cols = null;
+        if( nrows <= 0)
+          return;
+        if( ncols <= 0)
+          return;
+        float SumSel = 0.0f, SumBorder = 0.0f;
+        int nSel =0, nBord = 0;
+        //Selected Area
+        float value;
+
+        for( int row = firstRow; row < firstRow + nrows; row++)
+          for( int col = firstCol; col < firstCol + ncols; col++)
+            {
+             value= floatValue(table_model.getValueAt( row, col));
+             SumSel += value;
+             nSel++;
+            }
+       //Top and Bottom Borders
+        for(int col = firstCol-1; col < firstCol + ncols + 1; col++)
+           if( (col >=0) && (col < table_model.getColumnCount()))
+             { if( firstRow - 1 >=0)
+                 {
+                  value= floatValue(table_model.getValueAt( firstRow - 1, col));
+                  SumBorder +=value;
+                  nBord++;
+                  }
+               if( firstRow + nrows < table_model.getRowCount())
+                 {
+                  value = floatValue(table_model.getValueAt( firstRow +nrows, col));
+                  SumBorder += value;
+                  nBord++;
+                  }
+              }
+         //Right and Left Borders
+         for(int  row = firstRow; row < firstRow + nrows; row++)
+           {
+             if( firstCol -1 >= 0)
+              {
+                value = floatValue(table_model.getValueAt( row, firstCol - 1));
+                SumBorder += value;
+                nBord++;
+              }   
+
+            if( firstCol + ncols < table_model.getColumnCount() )
+              {
+               value = floatValue(table_model.getValueAt( row, firstCol +ncols));
+               SumBorder += value;
+               nBord++;
+              }
+
+            }
+       
+        float Intensity =(SumSel - (nSel * SumBorder/nBord));
+        String S="Intensity=" + Intensity +"\n";
+        double p_over_b = (0.0 + nSel)/nBord;
+        double sigI =java.lang.Math.sqrt( SumSel + p_over_b*p_over_b*SumBorder);
+        S+= "(Poisson)Error = " + sigI;
+        S+="\n Intensity/error="+(Intensity/sigI);
+
+          
+       (new JOptionPane()).showMessageDialog( null, S);
+
+       }//actionPerformed
+
+     //Gets number of consecutive #'s in list starting from first in list
+    //Does NOT assume list is increasing
+     private int getNlist( int[] list)
+       {
+        if( list == null) 
+           return 0;
+        if( list.length <1)
+           return 0;
+        int F = getFirstinList( list);
+        if( F < 0) 
+           return 0;
+        int Res = 1;
+        boolean done =  Res >= list.length;
+        
+        while(!done)
+          if( list[ Res ] == F + Res)
+             {
+              Res++;
+              done = Res >= list.length;
+              
+              }
+          else
+             done = true;
+              
+        return Res;
+       }
+
+      private int getFirstinList( int[] list)
+       {
+         if( list== null)
+           return -1;
+         if( list.length < 1)
+           return -1;
+         return list[0];
+       }
+
+
+     }//class IntegrateListener
 
    /** fixes the table_model,Jtable(with Adapter) Xconversion table, etc.
    *  Subclasses that redefine this method should remove all components from main dataSetViewer 
@@ -502,7 +649,44 @@ public class STableView  extends DataSetViewer
           
          }
       }
+  /** Selects the groups that were highlighted
+  */
+  class SelectActionListener implements ActionListener
+    {
+     public void actionPerformed( ActionEvent evt)
+      {System.out.println("In select Action performed");
+       int[] cols = jtb.getSelectedColumns();
+       int[] rows = jtb.getSelectedRows();
+       System.out.println( "Rows="+ (new  NexIO.NxNodeUtils()).Showw( rows));
+       System.out.println( "cols="+ (new  NexIO.NxNodeUtils()).Showw( cols));
 
+       if( (cols == null) || ( rows == null))
+         return;
+       if( (cols.length < 1) ||(rows.length < 1))
+         return;
+       float minTime = -1, maxTime = -1;
+       ds.clearSelections();
+       System.out.println("Groups=");
+       for( int i=0; i< cols.length; i++)
+        for( int j=0; j < rows.length; j++)
+         { int Group = table_model.getGroup( rows[j], cols[i] ) ;
+           if( Group >= 0 )
+            if( Group < ds.getNum_entries())
+             ds.getData_entry( Group ).setSelected( true);
+           System.out.print( Group+"  ");
+           float time = table_model.getTime( rows[j], cols[i]);
+           if( (i == 0) &&( j== 0))
+             minTime = maxTime = time;
+           else if( time < minTime)
+             minTime = time;
+           else if( time > maxTime)
+             maxTime = time;
+         }
+       ds.setSelectedInterval(new ClosedInterval(minTime , maxTime ));
+       System.out.println("");
+
+     }
+    }//class SelectActionListener
 
    /** 
    *    Test program for this module. It requires one argument, the filename of a data set
