@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.81  2003/09/18 17:58:13  bouzekc
+ * Refactored wizard progress bar updating, fixing a bug that prevented
+ * the proper updating during execution of all Forms at once.
+ *
  * Revision 1.80  2003/09/16 21:06:34  bouzekc
  * Fixed bug where "Reset All" button was not properly enabled/disabled
  * and did not have any the Wizard as an ActionListener associated with it.
@@ -653,8 +657,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    */
   public int getLastValidFormNum(  ) {
     for( int i = 0; i < this.getNumForms(  ); i++ ) {
-      if( !getForm( i )
-               .done(  ) ) {
+      if( !getForm( i ).done(  ) ) {
         return i - 1;
       }
     }
@@ -726,6 +729,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     if( getProjectsDirectory(  ) != null ) {
       TextWriter.writeASCII( CONFIG_FILE, getProjectsDirectory(  ) );
     }
+
     System.exit( 0 );
   }
 
@@ -752,6 +756,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     int numParamsToLink;
     int nonNegFormIndex;
     int nonNegParamIndex;
+
     numForms          = paramTable[0].length;  //the columns in paramTable
     numParamsToLink   = paramTable.length;  //the rows in paramTable
     DEBUG             = false;
@@ -788,14 +793,16 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
               System.out.print( "Linking " + getForm( nonNegFormIndex ) + ": " );
               System.out.print( nonNegParamIndex + ": " );
               System.out.print( 
-                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex ).getName(  ) );
+                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex )
+                  .getName(  ) );
               System.out.print( " with " + getForm( colIndex ) + ": " );
               System.out.print( paramTable[rowIndex][colIndex] + ": " );
               System.out.println( 
-                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex ).getName(  ) );
+                getForm( nonNegFormIndex ).getParameter( nonNegParamIndex )
+                  .getName(  ) );
             }
-            getForm( colIndex )
-              .setParameter( 
+
+            getForm( colIndex ).setParameter( 
               getForm( nonNegFormIndex ).getParameter( nonNegParamIndex ),
               paramTable[rowIndex][colIndex] );
           }
@@ -811,11 +818,13 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    */
   public boolean load(  ) {
     File f;
+
     f = getFile( false );
 
     if( f == null ) {
       return false;
     }
+
     loadForms( f );
 
     int lastValidNum = getLastValidFormNum(  );
@@ -825,6 +834,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     } else {
       showForm( lastValidNum );
     }
+
     this.populateViewMenu(  );
 
     return true;
@@ -842,6 +852,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       modified = true;
       this.invalidate( this.getCurrentFormNumber(  ) );
     }
+
     this.populateViewMenu(  );
   }
 
@@ -865,6 +876,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
         return;
       }
+
       writeForms( file );
     }
   }
@@ -893,19 +905,11 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     if( f != null ) {
       f.setVisible( false );
     }
+
     form_panel.removeAll(  );
     f = getForm( index );  // show the specified form
     form_panel.add( f.getPanel(  ) );
     f.setVisible( true );
-
-    int lastForm = getLastValidFormNum(  );
-
-    //reset the progress bars - especially useful when loading up a Wizard
-    //from a file
-    wizProgress.setString( 
-      "Wizard Progress: " + ( lastForm + 1 ) + " of " + forms.size(  ) +
-      " Forms done" );
-    wizProgress.setValue( lastForm + 1 );
     form_panel.validate(  );
     form_num = index;
     this.enableNavButtons( true, index );
@@ -915,7 +919,9 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     } else {
       form_label.setText( "Form " + ( index + 1 ) + ": " + f.getTitle(  ) );
     }
+
     updateFormProgressBar(  );
+    updateWizardProgressBar(  );
   }
 
   /**
@@ -988,8 +994,11 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
           break;
         }
+
+        updateWizardProgressBar(  );
       }
     }
+
     invalidate( end + 1 );
   }
 
@@ -1000,16 +1009,11 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    */
   protected void invalidate( int start ) {
     for( int i = start; i < forms.size(  ); i++ ) {
-      getForm( i )
-        .invalidate(  );
+      getForm( i ).invalidate(  );
     }
 
-    int lastDone = getLastValidFormNum(  ) + 1;
-    wizProgress.setValue( lastDone );
-    wizProgress.setString( 
-      "Wizard Progress: " + ( lastDone ) + " of " + forms.size(  ) +
-      " Forms done" );
     updateFormProgressBar(  );
+    updateWizardProgressBar(  );
   }
 
   /**
@@ -1031,6 +1035,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     JButton exec_button       = new JButton( EXEC_COMMAND );
     JButton clear_button      = new JButton( CLEAR_COMMAND );
     JButton clear_all_button  = new JButton( CLEAR_ALL_COMMAND );
+
     wizButtons[EXEC_ALL_IND]  = exec_all_button;
     wizButtons[EXEC_IND]      = exec_button;
     wizButtons[CLEAR_IND]     = clear_button;
@@ -1044,11 +1049,11 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     JPanel controlsArea       = new JPanel( new BorderLayout(  ) );
     JPanel navControlsBox     = new JPanel( new GridLayout(  ) );
     JMenuBar menu_bar         = new JMenuBar(  );
+
     initProgressBars(  );
     frame.setJMenuBar( menu_bar );
     frame.addWindowListener( new CloseWizardWindow(  ) );
-    frame.getContentPane(  )
-         .add( work_area );
+    frame.getContentPane(  ).add( work_area );
     setInitialSize(  );
 
     JMenu[] menuList = makeMenu(  );
@@ -1098,6 +1103,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     // add the status to the panel
     if( standalone ) {
       JPanel statusPanel = SharedData.getStatusPane(  );
+
       statusBox.add( statusPanel );
 
       //status pane will grow very large if we let it
@@ -1108,6 +1114,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     for( int k = 0; k < wizButtons.length; k++ ) {
       wizButtons[k].addActionListener( command_handler );
     }
+
     enableNavButtons( true, 0 );
   }
 
@@ -1160,8 +1167,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     }
 
     //try to remember the previous value the user entered
-    if( ( save_file != null ) && !save_file.toString(  )
-                                             .equals( "" ) ) {
+    if( ( save_file != null ) && !save_file.toString(  ).equals( "" ) ) {
       fileChooser.setSelectedFile( save_file );
     }
 
@@ -1174,6 +1180,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     if( result == JFileChooser.CANCEL_OPTION ) {
       return null;
     }
+
     save_file = fileChooser.getSelectedFile(  );
 
     if( saving ) {
@@ -1187,6 +1194,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     if( saving && save_file.exists(  ) ) {
       String temp;
       StringBuffer s = new StringBuffer(  );
+
       s.append( "You are about to overwrite " );
       s.append( save_file.toString(  ) );
       s.append( ".\n  If this is OK, press " );
@@ -1208,8 +1216,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     }
 
     //somehow we got a bad file
-    if( ( save_file == null ) || save_file.getName(  )
-                                            .equals( "" ) ) {
+    if( ( save_file == null ) || save_file.getName(  ).equals( "" ) ) {
       JOptionPane.showMessageDialog( 
         save_frame, "Please enter a valid file name", "ERROR",
         JOptionPane.ERROR_MESSAGE );
@@ -1225,12 +1232,11 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    * Sets the wizard's opening size.
    */
   private void setInitialSize(  ) {
-    int screenheight = ( int )( Toolkit.getDefaultToolkit(  )
-                                       .getScreenSize(  )
+    int screenheight = ( int )( Toolkit.getDefaultToolkit(  ).getScreenSize(  )
                                        .getHeight(  ) * 0.75f );
-    int screenwidth  = ( int )( Toolkit.getDefaultToolkit(  )
-                                       .getScreenSize(  )
+    int screenwidth  = ( int )( Toolkit.getDefaultToolkit(  ).getScreenSize(  )
                                        .getWidth(  ) * 0.45f );
+
     frame.setBounds( 0, 0, screenwidth, screenheight );
   }
 
@@ -1284,6 +1290,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     while( st.hasMoreTokens(  ) ) {
       temp.append( st.nextToken(  ) );
     }
+
     xml = temp.toString(  );
 
     //start going through the Forms
@@ -1372,6 +1379,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
     String errFile = StringUtil.setFileSeparator( 
         SharedData.getProperty( "user.dir" ) + "/loadWizard.err" );
+
     TextWriter.writeStackTrace( errFile, e );
   }
 
@@ -1389,6 +1397,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     boolean done;
     int index;
     int num_params;
+
     f            = this.getCurrentForm(  );
     done         = false;
     index        = 0;
@@ -1403,6 +1412,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       if( done ) {
         new ParameterViewer( iparam ).showParameterViewer(  );
       }
+
       index++;
     }
   }
@@ -1458,16 +1468,11 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    * Initializes the progress bars.  Called from makeGUI().
    */
   private void initProgressBars(  ) {
-    //formProgress.setString( "Form Progress" );
-    wizProgress.setString( 
-      "Wizard Progress: 0 of " + forms.size(  ) + " Forms done" );
     formProgress.setStringPainted( true );
     wizProgress.setStringPainted( true );
     wizProgress.setMaximum( forms.size(  ) );
-    wizProgress.setValue( 0 );
-
-    //formProgress.setValue( 0 );
     updateFormProgressBar(  );
+    updateWizardProgressBar(  );
   }
 
   /**
@@ -1475,6 +1480,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    */
   private void launchProjectChooser(  ) {
     JFileChooser projChooser = new JFileChooser(  );
+
     projChooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
 
     if( getProjectsDirectory(  ) != null ) {
@@ -1550,6 +1556,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     JMenu file_menu       = new JMenu( "File" );
     JMenu project_menu    = new JMenu( "Project Directory" );
     JMenu help_menu       = new JMenu( "Help" );
+
     view_menu             = new JMenu( VIEW_MENU );
 
     JMenuItem help_about  = new JMenuItem( HELP_ABOUT_COMMAND );
@@ -1559,6 +1566,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     JMenuItem save_wizard = new JMenuItem( SAVE_WIZARD_COMMAND );
     JMenuItem load_wizard = new JMenuItem( LOAD_WIZARD_COMMAND );
     JMenuItem exit_item   = new JMenuItem( EXIT_COMMAND );
+
     help_menu.add( help_about );
     help_menu.addSeparator(  );
     help_menu.add( wizard_help );
@@ -1596,6 +1604,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     Form f;
     IParameterGUI iparam;
     Object val;
+
     f = this.getCurrentForm(  );
     view_menu.removeAll(  );
 
@@ -1611,8 +1620,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
         ( iparam instanceof DataSetPG ) || ( iparam instanceof ArrayPG ) ||
           ( iparam instanceof LoadFilePG ) || ( iparam instanceof SaveFilePG ) ||
           ( iparam instanceof StringPG &&
-          ( val.toString(  )
-                 .indexOf( '.' ) > 0 ) ) || iparam instanceof VectorPG ) {
+          ( val.toString(  ).indexOf( '.' ) > 0 ) ) ||
+          iparam instanceof VectorPG ) {
         jmi = new JMenuItem( iparam.getName(  ) );
         view_menu.add( jmi );
         jmi.addActionListener( command_handler );
@@ -1627,14 +1636,14 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     HTMLizer form_htmlizer = new HTMLizer(  );
     String html            = form_htmlizer.createHTML( this.getCurrentForm(  ) );
     JFrame help_frame      = new JFrame( title );
-    Dimension screen_size  = Toolkit.getDefaultToolkit(  )
-                                    .getScreenSize(  );
+    Dimension screen_size  = Toolkit.getDefaultToolkit(  ).getScreenSize(  );
+
     help_frame.setSize( 
       new Dimension( 
         ( int )( screen_size.getWidth(  ) / 2 ),
         ( int )( screen_size.getHeight(  ) / 2 ) ) );
-    help_frame.getContentPane(  )
-              .add( new JScrollPane( new JEditorPane( "text/html", html ) ) );
+    help_frame.getContentPane(  ).add( 
+      new JScrollPane( new JEditorPane( "text/html", html ) ) );
     help_frame.show(  );
   }
 
@@ -1653,6 +1662,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       while( !tfr.eof(  ) ) {
         s.append( tfr.read_line(  ) );
       }
+
       setProjectsDirectory( s.toString(  ) );
 
       return true;
@@ -1699,6 +1709,19 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
   }
 
   /**
+   * Updates the wizProgress bar showing the overall progress of the Wizard
+   * based on the last form completed at the time of the method call.
+   */
+  private void updateWizardProgressBar(  ) {
+    int lastDone = getLastValidFormNum(  ) + 1;
+
+    wizProgress.setValue( lastDone );
+    wizProgress.setString( 
+      "Wizard Progress: " + ( lastDone ) + " of " + forms.size(  ) +
+      " Forms done" );
+  }
+
+  /**
    * Write the Forms to a file, using the conc_forms Vector. The only things
    * actually written are the Form's IParameterGUI types, name, and value in
    * XML format along with XML tags for the Form index.
@@ -1733,13 +1756,13 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
           obj = null;
         }
 
-        if( ( obj == null ) || ( obj.toString(  )
-                                      .length(  ) <= 0 ) ) {
+        if( ( obj == null ) || ( obj.toString(  ).length(  ) <= 0 ) ) {
           s.append( "emptyString" );
         } else {
           s.append( obj.toString(  ) );
           s.append( "" );
         }
+
         s.append( "</Value>\n" );
         s.append( "<Valid>" );
         s.append( ipg.getValid(  ) );
@@ -1748,8 +1771,10 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
         s.append( ipg.getType(  ) );
         s.append( ">\n" );
       }
+
       s.append( "</Form>\n" );
     }
+
     TextWriter.writeASCII( file, s.toString(  ) );
     modified = false;
   }
@@ -1921,6 +1946,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
         String errFile = StringUtil.setFileSeparator( 
             SharedData.getProperty( "user.dir" ) + "/wizard.err" );
+
         TextWriter.writeStackTrace( errFile, e );
 
         //reset the progress bars by re-showing the Form
