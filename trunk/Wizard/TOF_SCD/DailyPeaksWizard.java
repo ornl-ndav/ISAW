@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.6  2003/06/30 16:05:52  bouzekc
+ * Now takes --nogui command line arguments.
+ *
  * Revision 1.5  2003/06/26 16:27:27  bouzekc
  * "Update Peaks File" now defaults to true.
  *
@@ -146,6 +149,15 @@ public class DailyPeaksWizard extends Wizard {
   public static void main( String[] args ) {
     DailyPeaksWizard w = new DailyPeaksWizard( true );
 
-    w.showForm( 0 );
+    //specified a --nogui switch but forgot to give a filename
+    if( args.length == 1 ) {
+      System.out.println( 
+        "USAGE: java Wizard.TOF_SCD.DailyPeaksWizard " +
+        "[--nogui] <Wizard Save File>" );
+    } else if( args.length == 2 ) {
+      w.executeNoGUI( args[1] );
+    } else {
+      w.showForm( 0 );
+    }
   }
 }
