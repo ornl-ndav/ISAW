@@ -31,6 +31,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.2  2002/07/25 21:01:12  rmikk
+ *  The times now reflect if the Data is Histogram or Function
+ *    Data.
+ *
  * Revision 1.1  2002/07/24 20:04:26  rmikk
  * Initial Checkin
  *
@@ -115,13 +119,21 @@ public class TimeSliceView  extends STableView
     int a = 0;
     if( !useAll )
       a = u[0];
-    float[] new_xvals = getDataSet().getData_entry(a).getX_values(); 
+    Data  D = getDataSet().getData_entry(a);
+    float[] new_xvals = D.getX_values(); 
     
       //table_view.MergeXvals( a,getDataSet(), null, useAll, getDataSet().getSelectedIndices());
+    if( D instanceof FunctionTable)
+      return new_xvals;
+    if( D instanceof FunctionModel)
+      return new_xvals;
+     
+    float[] Hxvals = new float[ new_xvals.length -1];
+    for( int i = 0; i< Hxvals.length; i++)
+       Hxvals[i] = (new_xvals[i]+new_xvals[i+1])/2.0f;
+    return Hxvals;
     
-  
     
-    return new_xvals;
     }
 
    /** Called by super's constructor or super.initAftMenuItems to fix up the TableViewModel 
