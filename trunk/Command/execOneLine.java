@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.61  2003/09/14 17:57:03  rmikk
+ * -Added code to reduce the holding on to Data Sets and
+ *  clearing out memory
+ *
  * Revision 1.60  2003/07/23 21:53:39  rmikk
  * Fixed error in setting operands to an operator when too
  * few operand values are given.
@@ -167,6 +171,7 @@ import java.beans.*;
 import java.util.*;
 import java.util.zip.*;
 import java.beans.*;
+import DataSetTools.parameter.*;
 /** 
  *  This class lexically analyzes, parses and executes one line of code using the values
  *  stored in variables  from the execution of previous lines of code
@@ -327,11 +332,13 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     }
 
   
+
    /**
      * Initialized the variables and workspace for a new run
      */
     public  void initt(){
-        
+        clearHT( BoolInfo);
+        BoolInfo = null;
         BoolInfo = new Hashtable();
         BoolInfo.put("FALSE",new Boolean(false));
         BoolInfo.put("TRUE", new Boolean(true));
@@ -348,16 +355,49 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         serror = "";
         lerror = -1;
         Result=null;
-        for(int i=0; i<Params.size();i++){
-            ds.remove(Params.elementAt(i));
-        }
+        clearVec( Params);
+        Params = null;
         Params= new Vector();
         
         //ds= new Hashtable();
+        ArrayInfo.clear();
+        ArrayInfo = null;
         ArrayInfo=new Hashtable();
+        System.gc();
     }
+   /**
+   *  Unfinished
+   *   Clears out entries in Vectors, Hashtables, Arrays, etc. and 
+   *   Makes them null.
+   */
+   public void Clearr( Object O){
+      if( O == null) return;
+      if( O instanceof Vector)
+          clearVec( (Vector)O);
+      else if( O instanceof Hashtable)
+          clearHT( (Hashtable)O);
+      else if( O.getClass().isArray()){
+        
 
-
+      }
+      else if( O instanceof IParameter){
+         Object O1 =((IParameter) O).getValue();
+         ((IParameter) O).setValue( new Object());
+         Clearr( O1);
+         O1 = null;
+        
+      }
+   }
+   public void clearHT( Hashtable  HT){
+     if( HT == null)
+       return;
+     HT.clear();
+   }
+   public void clearVec( Vector V){
+      if(V==null)
+        return;
+      V.removeAllElements();
+   }
  
 
    //*****************************  Listener set ups *******************
@@ -1276,10 +1316,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             arg2= args.firstElement();
             arg1= args.elementAt(1);
         }
-        if( arg1 instanceof DataSet)
-            ((DataSet)arg1).addIObserver( this);
-        if( arg2 instanceof DataSet)
-            ((DataSet)arg2).addIObserver( this);
+       
        
         OL.notifyIObservers( arg1,arg2 );
         Result = null;
@@ -2675,12 +2712,15 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
 
         Result = op.getResult();
         op.setDefaultParameters();
+        op = null;
+
+        /*op.setDefaultParameters();
 
         if( op instanceof IObservable)
             ((IObservable)op).deleteIObserver( this );
         if( op instanceof Customizer)
             ((Customizer)op).removePropertyChangeListener( this );
-        
+        */
         if( Result instanceof ErrorString ){
 
             seterror (1000 , ((ErrorString)Result).toString() );
@@ -3176,7 +3216,8 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
             if(i<V.size()-2){
                 d=((Vector)d).elementAt( indx);
             }else if(((Vector)d).size()>indx){
-                ((Vector)d).setElementAt(Result,indx); 
+              Object O1=  ((Vector)d).set(indx,Result); 
+              if( O1 != null) O1 = null;
             }else{
                 ((Vector)d).addElement(Result);
             }
@@ -3196,7 +3237,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     */
     public void Assign(String vname, Object Result){
         int   i,j;
-       
+        Object O;
         boolean found = true ;
         String nam = vname;
         if( Result instanceof Nulll)
@@ -3231,14 +3272,16 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
                 seterror(1000,ER_IMPROPER_DATA_TYPE+"G" );
                 return; 
             }
-            BoolInfo.put(vname.toUpperCase(),Result);         
+            O =BoolInfo.put(vname.toUpperCase(),Result);  
+           if( O != null) O = null;       
             
         }else if( Result instanceof Vector){
             if(found && !ArrayInfo.containsKey(vname)){
                 seterror(1000,ER_IMPROPER_DATA_TYPE+"H" );
                 return; 
             }
-            ArrayInfo.put(vname.toUpperCase(),Result);
+            O =ArrayInfo.put(vname.toUpperCase(),Result);
+            if( O != null) O = null;
         }else if( Result instanceof Integer ){ //what about array of integers??
             i = findd( vname , Ivalnames );
             if( Ivalnames == null ){
@@ -3358,13 +3401,14 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
              if(ds.containsKey(vname.toUpperCase().trim())){
                  D =(DataSet) ds.get(vname.toUpperCase().trim());
                  D.copy((DataSet)Result); //=(DataSet)((DataSet)Result).clone();
+                 Result = null;
                  return;
              }
               
              D =(DataSet) ((DataSet)Result).clone();
              
-             lds.put(vname.toUpperCase().trim(),D);
-             
+             O=lds.put(vname.toUpperCase().trim(),D);
+             if( O != null) O = null;
              return;
         }
       else{
@@ -3781,6 +3825,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
                         ds.remove( "ISAWDS"+tag);
                         (( DataSet)observed_obj).deleteIObserver( this );
                         observed_obj = null;
+                    
                   } 
         if( reason instanceof DataSet)  //Send Command from a subscript
             OL.notifyIObservers( observed_obj , reason );
