@@ -10,8 +10,11 @@ package OverplotView;
  * ----------
  *
  * $Log$
- * Revision 1.1  2001/06/21 15:44:42  neffk
- * redesign of OverplotView
+ * Revision 1.2  2001/06/27 16:50:10  neffk
+ * this class was formerly implementing IObserver and extending DataSetViewer,
+ * which forced redraw(...) and update(...).  these two functions are
+ * redundant, as well as the IObserver interface.  this class not longer
+ * implements IObserver, and update(...) has been removed.
  *
  * ----------
  */
@@ -21,51 +24,49 @@ import DataSetTools.viewer.DataSetViewer;
 import DataSetTools.util.IObserver;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.Vector;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import OverplotView.GraphableData;
+import OverplotView.graphics.sgtGraphableDataGraph;
 
 public class GraphableDataManager 
   extends DataSetViewer
-  implements IObserver
 {
 
   public static final String AUX_EXIT = "Auxiliry Exit";
 
+  private Vector                graphable_data;
+  private sgtGraphableDataGraph graph;
+
+
+  /**
+   * default constructor
+   */
   public GraphableDataManager( DataSet data_set )
   {
-    super(data_set);     // Records the data_set in the parent class and
-                         // sets up the menu bar with items handled by the
-                         // parent class.
+    super(data_set);
+    graph = new sgtGraphableDataGraph();
+    redraw( IObserver.DATA_CHANGED );
 
+    //modify the menu provided by DataSetViewer
     OptionMenuHandler option_menu_handler = new OptionMenuHandler();
     JMenu option_menu = menu_bar.getMenu( OPTION_MENU_ID );
-
     JMenuItem exitButton = new JMenuItem( AUX_EXIT );
     exitButton.addActionListener( option_menu_handler );
     option_menu.add( exitButton );
-
-//    addComponentListener(  new ViewComponentAdapter()  );
-
-    data_set.addIObserver( this );  
   }
 
-
-  public void update( Object obj, Object reason )
-  {
-    System.out.println( "update(...) called" );
-  }
-
-
+  
   /**
    * This will be called by the "outside world" if the contents of the
    * DataSet are changed and it is necesary to redraw the graphs using the
    * current DataSet.  one example of such a situationn is a change in 
    * selection.
    */
-  public void redraw( String reason )
+  public void redraw( String reason ) 
   {
-    System.out.println( "DataSetViewer> " + reason );
+    //System.out.println( "DataSetViewer> " + reason );
 
     if ( reason == IObserver.DESTROY )
     {
@@ -78,6 +79,8 @@ public class GraphableDataManager
     }
     else if( reason == IObserver.SELECTION_CHANGED )
     {
+      convert_Data_to_GraphableData();
+      redraw();
     }
     else if( reason == IObserver.POINTED_AT_CHANGED )
     {
@@ -85,6 +88,33 @@ public class GraphableDataManager
     else if( reason == IObserver.GROUPS_CHANGED )
     {
     }
+    else if( reason == IObserver.DATA_CHANGED )
+    {
+      convert_Data_to_GraphableData();
+      redraw();
+    }
+    else if( reason == IObserver.ATTRIBUTE_CHANGED )
+    {
+    }
+    else if( reason == IObserver.FIELD_CHANGED )
+    {
+    }
+    else if( reason == IObserver.HIDDEN_CHANGED )
+    {
+    }
+  }
+
+
+  /**
+   * brings the graphics objects up to date.  first, all currently selected
+   * data is added converted
+   */
+  public void redraw()
+  {
+    graph.init( graphable_data );
+    add(  graph.redraw()  );
+    validate();
+    //setVisable( true );
   }
 
 
@@ -100,6 +130,22 @@ public class GraphableDataManager
     this.redraw( IObserver.DATA_CHANGED );
   }
 
+
+/*--------------------------------=[ private ]=-------------------------------*/
+
+
+  /** 
+   * constructs a parallel of the selected Data blocks that are held by this
+   * DataSetViewer, but stores them as GraphableData objects.
+   */
+  private void convert_Data_to_GraphableData()
+  {
+    graphable_data = new Vector();
+    for( int i=0;  i<getDataSet().getNum_entries();  i++ )
+      if(  getDataSet().getData_entry(i).isSelected()  )
+        graphable_data.add(  
+          new GraphableData( getDataSet().getData_entry(i) )  );
+  }
 
 
   /**
