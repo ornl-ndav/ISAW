@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/08/11 22:15:18  dennis
+ * First version that uses calibration information.
+ *
  * Revision 1.11  2003/07/31 22:43:43  dennis
  * Changed call to WritePeakData to match new method name.
  *
@@ -120,6 +123,8 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
 import jnt.FFT.*;
+import DataSetTools.components.View.TwoD.ImageViewComponent;
+import DataSetTools.components.View.*;
 
 public class RecipPlaneView
 {
@@ -150,12 +155,14 @@ public class RecipPlaneView
   private float thresh_scale    = 20;
   private float LSQ_THRESHOLD   = 0.10f;
 
-  ImageFrame h_frame = null;
-  ImageFrame k_frame = null;
-  ImageFrame l_frame = null;
+  ImageFrame2 h_frame = null;
+  ImageFrame2 k_frame = null;
+  ImageFrame2 l_frame = null;
 
-  String path = null;
-  String run_nums = null;
+  String path       = null;
+  String run_nums   = null;
+  String calib_file = null;
+
   int    runs[];
   String threshold = "";
   String border_size = "";
@@ -180,6 +187,7 @@ public class RecipPlaneView
   int             global_obj_index = 0;  // needed to keep the pick ids distinct
   String          file_names[];
   Vector          data_sets;
+  Hashtable       calibrations = null;
   Vector3D        all_vectors[];
   double          QR_Rmat[][];           // "R" factor of QR factorization
   double          QR_Umat[][];           // Matrix containing unit vectors U
@@ -306,9 +314,134 @@ public class RecipPlaneView
   }
 
 
+/* ----------------------------- loadCalibrations -------------------- */
+  public void loadCalibrations( String file_name )
+  {
+    try 
+    {
+      TextFileReader tfr = new TextFileReader( path + file_name );
+      calibrations = new Hashtable();
+      tfr.read_line();
+      boolean done = false;
+      while ( !done && !tfr.end_of_data() )
+      {
+        int det_num = tfr.read_int();
+        float det_A   = tfr.read_float();
+        float det_D   = tfr.read_float();
+        float l1      = tfr.read_float();
+        float t0      = tfr.read_float();
+        float x2cm    = tfr.read_float();
+        float y2cm    = tfr.read_float();
+        float xleft   = tfr.read_float();
+        float ylower  = tfr.read_float();
+        String calib_name = tfr.read_line();
+
+        float calib[] = { det_A, det_D, l1, t0, x2cm, y2cm, xleft, ylower };
+        Integer key = new Integer( det_num );
+        if ( calibrations.get( key ) == null )    // new detector
+        {
+          System.out.println("Using calibration: " +calib_name + 
+                             " for " + det_num );
+          calibrations.put( key, calib );
+        }
+        else
+          done = true;                           // just use first calibrations
+      }
+    }
+    catch ( Exception e )
+    {
+      System.out.println("Exception reading calibration file is " + e );
+      e.printStackTrace();
+      calibrations = null;
+    }
+
+    if ( calibrations != null )
+    {
+      Enumeration e = calibrations.elements();
+      while ( e.hasMoreElements() )
+        LinearAlgebra.print( (float[])e.nextElement() );
+    }
+  }
+
+
+  public void applyCalibration( DataSet ds )
+  {
+    if ( calibrations == null )
+    {
+      System.out.println("No calibrations for DataSet " + ds );
+      return;
+    }
+  
+    int ids[] = Grid_util.getAreaGridIDs( ds );
+    for ( int i = 0; i < ids.length; i++ )
+    {
+      UniformGrid grid = (UniformGrid)Grid_util.getAreaGrid( ds, ids[i] );
+      float cal[] = (float[])calibrations.get( new Integer( ids[i] ) );
+      if ( cal == null )
+      {
+        System.out.println("Error: No calibration for detector ID " + ids[i] );
+        return;
+      }
+
+      Grid_util.setEffectivePositions( ds, ids[i] );
+
+      int n_rows = grid.num_rows();
+      int n_cols = grid.num_cols();
+      
+      float width  = n_cols * cal[4]/100;
+      float height = n_rows * cal[5]/100;
+
+      grid.setWidth( width );
+      grid.setHeight( height );
+
+      float xleft   = cal[6]/100;
+      float ylower  = cal[7]/100;
+      Vector3D base = grid.x_vec();
+      Vector3D up   = grid.y_vec();  
+      base.normalize();
+      up.normalize();
+
+      float xcenter = xleft  + width / 2;
+      float ycenter = ylower + height / 2;
+      Vector3D center = grid.position();
+
+      System.out.println("ORGINAL CENTER IS: " + center );
+      System.out.println("Shift in X is : " + xcenter );
+      System.out.println("Shift in Y is : " + ycenter );
+
+      base.multiply( xcenter );
+      up.multiply( ycenter );
+      center.add( base );
+      center.add( up );
+      grid.setCenter( center );
+      System.out.println("NEW CENTER IS: " + center );
+      
+      Attribute T0_attribute = new FloatAttribute( Attribute.T0_SHIFT, cal[3] );
+      Attribute l1_attribute = new FloatAttribute( Attribute.INITIAL_PATH, 
+                                                   cal[2]/100 );
+      for ( int row = 1; row <= n_rows; row++ )
+        for ( int col = 1; col <= n_cols; col++ )
+        {
+          grid.getData_entry( row, col ).setAttribute( l1_attribute );
+          grid.getData_entry( row, col ).setAttribute( T0_attribute );
+        }
+
+      System.out.println ("GRID IS " );
+      System.out.println ("" + grid );
+      // ################### NOT DONE YET
+    }
+
+  }
+
+
  /* ---------------------------- loadFiles --------------------------- */
   public void loadFiles()
   {
+    System.out.println("Specified calibration file is : " + calib_file );
+
+    if ( calib_file != null && calib_file.length() > 0 )
+      loadCalibrations( calib_file );
+
     runs = IntList.ToArray( run_nums );
     file_names = new String[ runs.length ];
 
@@ -332,9 +465,13 @@ public class RecipPlaneView
         Attribute attr = ds.getAttribute( Attribute.RUN_TITLE );
         System.out.println("Loaded run: " + attr.toString() + " -------------");
         data_sets.addElement(ds);
+
+        applyCalibration( ds );
       }
       ds = null;
     }
+
+
     System.out.println("DONE loading DataSets : " + data_sets.size() );
   }
 
@@ -477,6 +614,7 @@ public class RecipPlaneView
       IThreeD_Object objs[] = null;
       Vector3D pts[] = new Vector3D[1];
       pts[0]         = new Vector3D();
+      Attribute attr;
                                             // Assume all runs have the same
                                             // number of detectors in them
                                             // and each detector has a grid.
@@ -487,14 +625,32 @@ public class RecipPlaneView
       VecQToTOF transformer = (VecQToTOF)vec_q_transformer.elementAt(index);
       IDataGrid grid = transformer.getDataGrid();
       d = grid.getData_entry(1,1);
-      SampleOrientation orientation = 
-           (SampleOrientation)d.getAttributeValue(Attribute.SAMPLE_ORIENTATION);
-      float initial_path = (float)
-            d.getAttribute(Attribute.INITIAL_PATH).getNumericValue();
-      float det_a = (float)
-            d.getAttribute(Attribute.DETECTOR_CEN_ANGLE).getNumericValue();
-      float det_d = (float)
-            d.getAttribute(Attribute.DETECTOR_CEN_DISTANCE).getNumericValue();
+ 
+      SampleOrientation orientation = null;
+      attr = d.getAttribute(Attribute.SAMPLE_ORIENTATION);
+      if ( attr != null )
+        orientation = (SampleOrientation)attr.getValue();
+
+      float initial_path = 9.378f; 
+      attr = d.getAttribute(Attribute.INITIAL_PATH);
+      if ( attr != null )
+        initial_path = (float)attr.getNumericValue();
+
+      float t0 = 0; 
+      attr = d.getAttribute(Attribute.T0_SHIFT);
+      if ( attr != null )
+        t0 = (float)attr.getNumericValue();
+
+      float det_a = -90;
+      attr = d.getAttribute(Attribute.DETECTOR_CEN_ANGLE);
+      if ( attr != null )
+        det_a = (float)attr.getNumericValue();
+
+      float det_d = .25f;
+      attr = d.getAttribute(Attribute.DETECTOR_CEN_DISTANCE);
+      if ( attr != null )
+        det_d = (float)attr.getNumericValue();
+
       int n_bins = d.getX_scale().getNum_x() - 1;
       int n_objects = grid.num_rows() * grid.num_cols() * n_bins;
       objs = new IThreeD_Object[n_objects];
@@ -518,8 +674,8 @@ public class RecipPlaneView
           {
             if ( ys[j] > thresh_scale )
             {
-              t = (times[j] + times[j+1]) / 2;
-              q_pos = tof_calc.DiffractometerVecQ(pos,initial_path,t);
+              t = (times[j] + times[j+1]) / 2;     // shift by calibrated T)
+              q_pos = tof_calc.DiffractometerVecQ(pos,initial_path, t + t0 );
 
               cart_coords = q_pos.getCartesianCoords();
               pts[0].set( cart_coords[0], cart_coords[1], cart_coords[2] );
@@ -1091,8 +1247,9 @@ public class RecipPlaneView
        System.exit(0);
      }
 
-     path     = StringUtil.getCommand( 1, "-D", args );
-     run_nums = StringUtil.getCommand( 1, "-R", args );
+     path       = StringUtil.getCommand( 1, "-D", args );
+     run_nums   = StringUtil.getCommand( 1, "-R", args );
+     calib_file = StringUtil.getCommand( 1, "-C", args );
 
      if ( path.length() <= 0 || run_nums.length() <= 0 )
      {
@@ -1117,6 +1274,8 @@ public class RecipPlaneView
        "  -D<dir name>  specifies directory for data files (required)");
     System.out.println(
        "  -R<list of run numbers> specify runs to load (required)");
+    System.out.println(
+       "  -C<calibration file name> specify name of calibration file");
     System.out.println(
        "  -T<relative threshold> specify scale factor to apply to the");
     System.out.println(
@@ -1651,10 +1810,10 @@ private class PlaneListener implements ActionListener
        if ( normal == null || normal.length() < 0.99 )
          return;
 
-       String title     = null;
-       ImageFrame frame = null;
-       Vector3D   base  = null;
-       Vector3D   up    = null;
+       String title      = null;
+       ImageFrame2 frame = null;
+       Vector3D    base  = null;
+       Vector3D    up    = null;
 
        if ( plane_ui == h_plane_ui )
        {
@@ -1690,10 +1849,12 @@ private class PlaneListener implements ActionListener
        Vector3D origin = new Vector3D( normal );
        origin.multiply((float)(miller_index * Math.PI * 2/d_spacing) );
        float image[][] = make_slice( origin, normal, base, up );
+       VirtualArray2D va2d = new VirtualArray2D( image );
+       va2d.setTitle( title );
        if ( frame == null )
-         frame = new ImageFrame( image, title );
+         frame = new ImageFrame2( va2d );
        else 
-         frame.setData( image, title );
+         frame.setData( va2d );
 
        if ( plane_ui == h_plane_ui )
          h_frame = frame;
