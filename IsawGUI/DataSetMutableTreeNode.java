@@ -3,6 +3,12 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.5  2001/07/25 17:34:15  neffk
+ * changed 'name' to represent the tag and title of the DataSet object.
+ * the getTitle() method of DataSet returns the only the title, however
+ * the toString() method returns the title prepended w/ a tag number,
+ * making the DataSet object's apparent title unique within ISAW.
+ *
  * Revision 1.4  2001/07/23 13:59:31  neffk
  * added a selected flag.
  *
@@ -44,7 +50,7 @@ public class DataSetMutableTreeNode
   public DataSetMutableTreeNode( DataSet ds )
   {
     this.ds = ds;
-    name = ds.getTitle();
+    name = ds.toString();
     setUserObject( ds );
   }
 
