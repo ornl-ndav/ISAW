@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/06/18 18:10:26  pfpeterson
+ * Added a method to get the filename.
+ *
  * Revision 1.7  2003/06/17 16:14:22  pfpeterson
  * Makes sure that the filename stored has forward slashes for the directory.
  *
@@ -142,6 +145,13 @@ public class Script extends Object{
     this.fix_script();
     this.init_linenum(true);
     return true;
+  }
+
+  public String getFilename(){
+    if(this.filename!=null && this.filename.length()>0)
+      return this.filename;
+    else
+      return UNKNOWN;
   }
 
   /**
