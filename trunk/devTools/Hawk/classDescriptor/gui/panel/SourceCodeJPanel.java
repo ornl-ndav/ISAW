@@ -85,8 +85,7 @@ public class SourceCodeJPanel extends JPanel  implements ActionListener, MouseNo
 	/**
 	 * Create a new SourceCodeGUI.
 	 * @param INT The Interface object whose source code is to be displayed.
-	 * @param title The window's title.
-	 * @param comp The largest component onto which this panel is placed.
+	 * @param conFrame The frame that this panel can control (ie dispose).
 	 */
 	public SourceCodeJPanel(Interface INT, ExternallyControlledFrame conFrame)
 	{

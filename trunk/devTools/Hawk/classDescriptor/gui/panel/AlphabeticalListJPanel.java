@@ -32,7 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/06/04 23:40:08  kramer
+ * Fixed some Javadoc errors.
+ *
  * Revision 1.3  2004/05/26 20:03:23  kramer
+ *
  * Added the methods:
  *   getWaitingComponents()
  *   setEveryButtonIsSelected()
@@ -522,9 +526,6 @@ public class AlphabeticalListJPanel extends JPanel implements ActionListener, Li
 		
 	/**
 	 * Fill the list with the classes and interfaces from the Project object from the field project.
-	 * @param shortJava True if you want a name to be shortened if it is a java name.  For 
-	 * example, java.lang.String would be shortened to String.
-	 * @param shortOther True if you want a name to be shortened if it is a non-java name.
 	 */
 	public void fillList()//boolean shortJava, boolean shortOther)
 	{

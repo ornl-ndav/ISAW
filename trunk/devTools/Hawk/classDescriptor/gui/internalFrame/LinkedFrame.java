@@ -62,10 +62,7 @@ public abstract class LinkedFrame extends AttachableDetachableFrame implements A
 	/**
 	 * Creates a new LinkedFrame object.  Also, a view menu is created that allows the user to choose to view 
 	 * a class or interface's source code, javadoc, UML diagram, or shortened source code.  Thus any class 
-	 * subclassing this class already has a view menu created for it after calling 
-	 * super(int, HawkDesktop, JDesktopPane, Interface, boolean, boolean, boolean, boolean).
-	 * @param tp Either AttachableDetachableFrame.JFRAME or AttachableDetachableFrame.JINTERNALFRAME.  Used to 
-	 * specify if the frame should be a JFrame or JInternalFrame.
+	 * subclassing this class already has a view menu created for it after calling this constructor.
 	 * @param parentDesktop The HawkDesktop from which this frame originated.
 	 * @param parentPane The JDesktopPane in the HawkDesktop from which this frame originated.
 	 * @param intf The Interface whose data is to be displayed.

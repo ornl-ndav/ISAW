@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/06/04 23:42:12  kramer
+ * Fixed some Javadoc errors.
+ *
  * Revision 1.3  2004/03/12 19:46:20  bouzekc
  * Changes since 03/10.
  *
@@ -305,7 +308,8 @@ public class InterfaceUtilities
 	 *  This method returns the location in the Vector vec which contains the Vector of Interfaces which are
 	 *  all from package str.  
 	 * @param str The package name
-	 * @param vec The Vector of Vectors of Interface objects from the method getVectorOfVectorOfInterfaces(Vector, boolean, boolean)
+	 * @param vecOfVec The Vector of Vectors of Interface objects from the method 
+	 * <code>getVectorOfVectorOfInterfaces(Vector, boolean, boolean)</code>.
 	 * @return The location in vec where the Interfaces are from the package named str.  Returns -1 if the
 	 * location was not found.
 	 */
