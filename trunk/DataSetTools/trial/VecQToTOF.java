@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2003/06/04 19:11:50  dennis
+ *  Fixed bug in calculation of row, col, TOF based on Q.
+ *  QToXcmYcmWl() now returns x, y values in centimeters.
+ *  Fixed bug with finding the nth area detector.  (This
+ *  should be further improved.)
+ *
  *  Revision 1.7  2003/06/04 13:56:20  dennis
  *  Now supports two area detectors in one DataSet. Added constructor
  *    VecQToTOF( ds, det_num ).
@@ -100,9 +106,10 @@ import DataSetTools.operator.DataSet.Math.Analyze.*;
 
 /** 
  *  This class is responsible for mapping a vector Q point to an interpolated
- *  intensity value in the original time-of-flight DataSet.  NOTE: This version
- *  is still in the proof of concept stage and currently only handles the first
- *  area detector in a run.
+ *  point in the original time-of-flight DataSet for ONE area detector.
+ *  It also provides methods to find the interpolated intensity given a 
+ *  q vector, get the goniometer rotations used and get the underlying
+ *  DataGrid for the detector. 
  */
 
 public class VecQToTOF
@@ -184,7 +191,7 @@ public class VecQToTOF
     boolean area_detector_found  = false;
     boolean right_detector_found = false;
     int data_index = 1;
-    while ( !right_detector_found )
+    while ( !right_detector_found && data_index < n_data )
     {
       while ( !area_detector_found && data_index < n_data )
       {
@@ -286,6 +293,9 @@ public class VecQToTOF
     goniometerR    = orientation.getGoniometerRotation();
     goniometerRinv = orientation.getGoniometerRotationInverse();    
 
+//    System.out.println("R    = " + goniometerR );
+//    System.out.println("Rinv = " + goniometerRinv );
+
     // To allow for quickly discarding q's that couldn't come from this 
     // detector & chi,phi,omega, we keep a unit vector in the direction of
     // the q vector corresponding to the the detector center(q_center) as well 
@@ -361,8 +371,8 @@ public class VecQToTOF
     float col = result[1];
     float tof = result[2];
  
-    result[0] = grid.x( row, col );
-    result[1] = grid.y( row, col );
+    result[0] = grid.x( row, col ) * 100;         // convert to cm
+    result[1] = grid.y( row, col ) * 100;
 
     float final_path = grid.position( row, col ).length();
     result[2] = tof_calc.Wavelength( initial_path + final_path, tof );
@@ -399,7 +409,15 @@ public class VecQToTOF
     }
 
     float tof = result[2];
-    result[2] = arrayUtil.get_index_of( tof, x_vals );
+    int index = arrayUtil.get_index_of( tof, x_vals );
+    
+    if ( index < 0 || index >= x_vals.length-1 )
+      return null;
+
+    float fractional_channel = ( tof             - x_vals[index] ) /
+                               ( x_vals[index+1] - x_vals[index] );
+
+    result[2] = index + fractional_channel;
 
     return result;
   }
@@ -432,7 +450,7 @@ public class VecQToTOF
       return null;
 
     Vector3D q1 = new Vector3D();
-    goniometerRinv.apply_to( q_vec, q1 );
+    goniometerR.apply_to( q_vec, q1 );
     q1.normalize();
 
 //    System.out.println("q_vec = " + q_vec );
@@ -469,11 +487,15 @@ public class VecQToTOF
                                               // row and col values for this
                                               // pixel.
     float f_row = grid.row( u_comp, v_comp );
+//    System.out.println("f_row = " + f_row );
+
     int row = Math.round( f_row );
     if ( row < 1 || row > n_rows )
       return null;
 
     float f_col = grid.col( u_comp, v_comp );
+//    System.out.println("f_row = " + f_row );
+
     int col = Math.round( f_col ); 
     if ( col < 1 || col > n_cols )
       return null;
@@ -646,22 +668,30 @@ public class VecQToTOF
                        "/usr/local/ARGONNE_DATA/SCD_QUARTZ/scd06496.run" );
    DataSet ds = rr.getFirstDataSet( Retriever.HISTOGRAM_DATA_SET );
    VecQToTOF transformer = new VecQToTOF( ds );
+   System.out.println("Got Grid: " + transformer.getDataGrid() );
 
 //   Vector3D q_vec = new Vector3D( 0.8701965f, 6.3653164f, 0.8469445f );
-   Vector3D q_vec = new Vector3D( -0.31071144f, 6.3506145f, 0.8738657f );
+//   Vector3D q_vec = new Vector3D( -0.31071144f, 6.3506145f, 0.8738657f );
+   Vector3D q_vec = new Vector3D( -0.48379692f, 10.031614f, 4.6503353f );
    float rc_tof[] = transformer.QtoRowColTOF( q_vec );
+
  
-   System.out.println("Peak at: " );  
+   System.out.println("Peak at: --------------------------------------- " );  
+   System.out.println("Q is : " + q_vec );
    System.out.println("row = " + rc_tof[0] );  
    System.out.println("col = " + rc_tof[1] );  
    System.out.println("tof = " + rc_tof[2] );  
 
    float rc_chan[] = transformer.QtoRowColChan( q_vec );
+   System.out.println("Peak at: --------------------------------------- " );  
+   System.out.println("Q is : " + q_vec );
    System.out.println("row  = " + rc_chan[0] );  
    System.out.println("col  = " + rc_chan[1] );  
    System.out.println("chan = " + rc_chan[2] );  
 
    float xy_wl[]   = transformer.QtoXcmYcmWl( q_vec );
+   System.out.println("Peak at: --------------------------------------- " );  
+   System.out.println("Q is : " + q_vec );
    System.out.println("x  = " + xy_wl[0] );  
    System.out.println("y  = " + xy_wl[1] );  
    System.out.println("wl = " + xy_wl[2] );  
