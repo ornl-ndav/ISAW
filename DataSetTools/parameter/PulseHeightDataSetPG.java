@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2003/04/25 15:39:39  pfpeterson
+ *  Improved support for null values which are automatically converted
+ *  to EMPTY_DATA_SET.
+ *
  *  Revision 1.5  2002/11/27 23:22:42  pfpeterson
  *  standardized header
  *
@@ -106,7 +110,7 @@ public class PulseHeightDataSetPG extends DataSetPG{
         if(ds instanceof DataSet){
             String type = (String)
                 ((DataSet)ds).getAttributeValue(Attribute.DS_TYPE);
-            if(type.equals(Attribute.PULSE_HEIGHT_DATA)){
+            if(type==null || type.equals(Attribute.PULSE_HEIGHT_DATA)){
                 return true;
             }
         }
