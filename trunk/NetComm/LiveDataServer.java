@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.32  2003/02/24 20:37:05  dennis
+ *  Now consistently replies to status requests by sending a String
+ *  that begins with "Status:".
+ *
  *  Revision 1.31  2003/02/24 13:39:19  dennis
  *  Switched to use CommandObject instead of compound command Strings.
  *
@@ -509,24 +513,17 @@ public class LiveDataServer extends    DataSetServer
 
       else if ( command.getCommand() == CommandObject.GET_STATUS )
       {
-         if ( status.startsWith( RemoteDataRetriever.DAS_OFFLINE_STRING ) )
-         {
-           tcp_io.Send( status );
-           return true;
-         }
+         System.out.println("LiveDataServer GOT Status request...");
+         String reply = status;
 
-         if ( status.startsWith( RemoteDataRetriever.NO_DATA_SETS_STRING ) )
-         {
-           tcp_io.Send( status + DateUtil.default_string() );
-           return true;
-         }
+         if ( status.startsWith(RemoteDataRetriever.NO_DATA_SETS_STRING) )
+           reply = status + DateUtil.default_string();
 
-         long time_ms = System.currentTimeMillis();
-         if ( time_ms - last_time_ms > OLD_THRESHOLD )
-           tcp_io.Send( RemoteDataRetriever.DATA_OLD_STRING + last_time );
-         else
-           tcp_io.Send( status );
+         else if ( System.currentTimeMillis() - last_time_ms > OLD_THRESHOLD )
+           reply = RemoteDataRetriever.DATA_OLD_STRING + last_time;
 
+         tcp_io.Send( TCPComm.STATUS + reply );
+         System.out.println("LDS replied with: "+ TCPComm.STATUS + reply); 
          return true;
       }
    
