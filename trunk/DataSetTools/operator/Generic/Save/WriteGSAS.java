@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/04/25 15:41:39  pfpeterson
+ * Migrated to new parameters.
+ *
  * Revision 1.8  2003/03/20 19:23:14  pfpeterson
  * Changed default values after talking with J. Richardson.
  *
@@ -101,14 +104,14 @@ public class WriteGSAS extends GenericSave{
 
   public void setDefaultParameters(){
     parameters = new Vector();
-    addParameter( new Parameter("Monitor" , new DataSet("","") ));
-    addParameter( new Parameter("Data Set" , new DataSet("","") ));
+    addParameter( new MonitorDataSetPG("Monitor" , null));
+    addParameter( new SampleDataSetPG("Data Set" , null));
     //addParameter( new SaveFilePG("Output File", "filename"));
     SaveFilePG sfpg=new SaveFilePG("Output File",null);
     sfpg.setFilter(new GsasFileFilter());
     addParameter( sfpg );
-    addParameter( new Parameter("Export Monitor", Boolean.FALSE));
-    addParameter( new Parameter("Sequential Bank Numbering", Boolean.TRUE));
+    addParameter( new BooleanPG("Export Monitor", false));
+    addParameter( new BooleanPG("Sequential Bank Numbering", true));
   }  
    
   /** 
