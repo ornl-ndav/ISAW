@@ -1,5 +1,7 @@
 /*
- * @(#)DiffractometerTofToD.java   0.1  99/06/16   Dennis Mikkelson
+ * @(#)DiffractometerTofToD.java   0.2  99/06/16   Dennis Mikkelson
+ *                                      99/08/16   Added constructor to allow
+ *                                                 calling operator directly
  *             
  * This operator converts a neutron time-of-flight DataSet to D-spacing.  The
  * DataSet must contain spectra with attributes giving the detector position
@@ -22,11 +24,15 @@ import  DataSetTools.util.*;
 public class DiffractometerTofToD extends    DataSetOperator 
                                   implements Serializable
 {
-  /* --------------------------- CONSTRUCTOR ------------------------------ */
+  /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
+  /**
+   * Construct an operator with a default parameter list.  If this
+   * constructor is used, the operator must be subsequently added to the
+   * list of operators of a particular DataSet.  Also, meaningful values for
+   * the parameters should be set ( using a GUI ) before calling getResult()
+   * to apply the operator to the DataSet this operator was added to.
+   */
 
-                                     // The constructor calls the super
-                                     // class constructor, then sets up the
-                                     // list of parameters.
   public DiffractometerTofToD( )
   {
     super( "Convert to d-Spacing" );
@@ -35,13 +41,47 @@ public class DiffractometerTofToD extends    DataSetOperator
     parameter = new Parameter( "Min d(A)", new Float(0.0) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Max d(A)", new Float(5.0) );
+    parameter = new Parameter( "Max d(A)", new Float(4.0) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Number of Bins ", new Float(1000.0) );
+    parameter = new Parameter( "Number of Bins ", new Integer(2000) );
     addParameter( parameter );
   }
 
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct an operator for a specified DataSet and with the specified
+   *  parameter values so that the operation can be invoked immediately
+   *  by calling getResult().
+   *
+   *  @param  ds          The DataSet to which the operation is applied
+   *  @param  min_D       The minimum D value to be binned
+   *  @param  max_D       The maximum D value to be binned
+   *  @param  num_D       The number of "bins" to be used between min_D and 
+   *                      max_D
+   */
+
+  public DiffractometerTofToD( DataSet     ds,
+                               float       min_D,
+                               float       max_D, 
+                               int         num_D )
+  {
+    this();                         // do the default constructor, then set
+                                    // the parameter value(s) by altering a
+                                    // reference to each of the parameters
+
+    Parameter parameter = getParameter( 0 );
+    parameter.setValue( new Float( min_D ) );
+
+    parameter = getParameter( 1 );
+    parameter.setValue( new Float( max_D ) );
+
+    parameter = getParameter( 2 );
+    parameter.setValue( new Integer( num_D ) );
+
+    setDataSet( ds );               // record reference to the DataSet that
+                                    // this operator should operate on
+  }
 
   /* ---------------------------- getResult ------------------------------- */
 
@@ -74,7 +114,7 @@ public class DiffractometerTofToD extends    DataSetOperator
                                      // get the d-Spacing scale parameters 
     float min_D = ( (Float)(getParameter(0).getValue()) ).floatValue();
     float max_D = ( (Float)(getParameter(1).getValue()) ).floatValue();
-    int   num_D = ( (Float)(getParameter(2).getValue()) ).intValue() + 1;
+    int   num_D = ( (Integer)(getParameter(2).getValue()) ).intValue() + 1;
 
                                      // validate d-Spacing bounds
     if ( min_D > max_D )             // swap bounds to be in proper order
@@ -149,6 +189,7 @@ public class DiffractometerTofToD extends    DataSetOperator
           new_data.ReBin( new_d_scale );        // specified
 
         new_ds.addData_entry( new_data );      
+        new_ds.setAttributeList( attr_list ); // copy the attributes
       }
     }
 

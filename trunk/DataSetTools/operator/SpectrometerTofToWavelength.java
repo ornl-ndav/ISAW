@@ -1,10 +1,13 @@
 /*
- * @(#)SpectrometerTofToWavelength.java   0.1  99/06/17   Dennis Mikkelson
+ * @(#)SpectrometerTofToWavelength.java   0.2  99/06/17   Dennis Mikkelson
+ *
+ *                                 99/08/16   Added constructor to allow
+ *                                            calling operator directly
  *             
- * This operator converts neutron time-of-flight DataSet to wavelength.  The
- * DataSet must contain spectra with an attribute giving the detector position.
- * In addition, it is assumed that the XScale for the spectra represents the
- * time-of-flight from the sample to the detector. 
+ * This operator converts neutron time-of-flight DataSet for a Spectrometer
+ * to wavelength.  The DataSet must contain spectra with an attribute giving 
+ * the detector position. In addition, it is assumed that the XScale for the 
+ * spectra represents the time-of-flight from the SAMPLE to the detector. 
  */
 
 package DataSetTools.operator;
@@ -21,11 +24,15 @@ import  DataSetTools.util.*;
 public class SpectrometerTofToWavelength extends    DataSetOperator 
                                          implements Serializable
 {
-  /* --------------------------- CONSTRUCTOR ------------------------------ */
+  /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
+  /**
+   * Construct an operator with a default parameter list.  If this
+   * constructor is used, the operator must be subsequently added to the
+   * list of operators of a particular DataSet.  Also, meaningful values for
+   * the parameters should be set ( using a GUI ) before calling getResult()
+   * to apply the operator to the DataSet this operator was added to.
+   */
 
-                                     // The constructor calls the super
-                                     // class constructor, then sets up the
-                                     // list of parameters.
   public SpectrometerTofToWavelength( )
   {
     super( "Convert to Wavelength" );
@@ -34,20 +41,51 @@ public class SpectrometerTofToWavelength extends    DataSetOperator
     parameter = new Parameter( "Min Wavelength(A)", new Float(0.0) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Max Wavelength(A)", new Float(10.0) );
+    parameter = new Parameter( "Max Wavelength(A)", new Float(5.0) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Number of Bins ", new Float(1000.0) );
+    parameter = new Parameter( "Number of Bins ", new Integer( 500 ) );
     addParameter( parameter );
+  }
+
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct an operator for a specified DataSet and with the specified
+   *  parameter values so that the operation can be invoked immediately
+   *  by calling getResult().
+   *
+   *  @param  ds          The DataSet to which the operation is applied
+   *  @param  min_wl      The minimum wavelength value to be binned
+   *  @param  max_wl      The maximum wavelength value to be binned
+   *  @param  num_wl      The number of "bins" to be used between min_wl and
+   *                      max_wl
+   */
+
+  public SpectrometerTofToWavelength( DataSet     ds,
+                                      float       min_wl,
+                                      float       max_wl,
+                                      int         num_wl )
+  {
+    this();                         // do the default constructor, then set
+                                    // the parameter value(s) by altering a
+                                    // reference to each of the parameters
+
+    Parameter parameter = getParameter( 0 );
+    parameter.setValue( new Float( min_wl ) );
+
+    parameter = getParameter( 1 );
+    parameter.setValue( new Float( max_wl ) );
+
+    parameter = getParameter( 2 );
+    parameter.setValue( new Integer( num_wl ) );
+
+    setDataSet( ds );               // record reference to the DataSet that
+                                    // this operator should operate on
   }
 
 
   /* ---------------------------- getResult ------------------------------- */
 
-                                     // The concrete operation extracts the
-                                     // current value of the scalar to add 
-                                     // and returns the result of adding it
-                                     // to each point in each data block.
   public Object getResult()
   {
                                      // get the current data set
@@ -112,7 +150,8 @@ public class SpectrometerTofToWavelength extends    DataSetOperator
       position=(DetectorPosition)
                    attr_list.getAttributeValue(Attribute.DETECTOR_POS);
 
-      if( position != null )           // has needed attributes so convert to E 
+      if( position != null )           // has needed attributes so convert it 
+                                       // to wavelength
       { 
                                        // calculate wavelength at bin boundaries
         spherical_coords = position.getSphericalCoords();
@@ -124,7 +163,7 @@ public class SpectrometerTofToWavelength extends    DataSetOperator
 
         y_vals = data.getCopyOfY_values();
 
-        new_data = new Data( wl_scale, wl_vals, data.getGroup_ID() );
+        new_data = new Data( wl_scale, y_vals, data.getGroup_ID() );
                                                  // create new data block with 
         new_data.setSqrtErrors();                // non-uniform E_scale and 
                                                  // the original y_vals.

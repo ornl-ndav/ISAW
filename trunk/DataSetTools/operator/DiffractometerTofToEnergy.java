@@ -1,5 +1,8 @@
 /*
- * @(#)DiffractometerTofToEnergy.java   0.1  99/06/16   Dennis Mikkelson
+ * @(#)DiffractometerTofToEnergy.java   0.2  99/06/16   Dennis Mikkelson
+ *                                           99/08/16   Added constructor to 
+ *                                                      allow calling operator
+ *                                                      directly
  *             
  * This operator converts a neutron time-of-flight DataSet to energy.  The
  * DataSet must contain spectra with attributes giving the detector position
@@ -22,11 +25,15 @@ import  DataSetTools.util.*;
 public class DiffractometerTofToEnergy extends    DataSetOperator 
                                        implements Serializable
 {
-  /* --------------------------- CONSTRUCTOR ------------------------------ */
+  /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
+  /**
+   * Construct an operator with a default parameter list.  If this
+   * constructor is used, the operator must be subsequently added to the
+   * list of operators of a particular DataSet.  Also, meaningful values for
+   * the parameters should be set ( using a GUI ) before calling getResult()
+   * to apply the operator to the DataSet this operator was added to.
+   */
 
-                                     // The constructor calls the super
-                                     // class constructor, then sets up the
-                                     // list of parameters.
   public DiffractometerTofToEnergy( )
   {
     super( "Convert to Energy" );
@@ -38,8 +45,44 @@ public class DiffractometerTofToEnergy extends    DataSetOperator
     parameter = new Parameter( "Max Energy(meV)", new Float(500.0) );
     addParameter( parameter );
 
-    parameter = new Parameter( "Number of Bins ", new Float(200.0) );
+    parameter = new Parameter( "Number of Bins ", new Integer(1000) );
     addParameter( parameter );
+  }
+
+
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct an operator for a specified DataSet and with the specified
+   *  parameter values so that the operation can be invoked immediately
+   *  by calling getResult().
+   *
+   *  @param  ds          The DataSet to which the operation is applied
+   *  @param  min_E       The minimum energy value to be binned
+   *  @param  max_E       The maximum energy value to be binned
+   *  @param  num_E       The number of "bins" to be used between min_E and
+   *                      max_E
+   */
+
+  public DiffractometerTofToEnergy( DataSet     ds,
+                                    float       min_E,
+                                    float       max_E,
+                                    int         num_E )
+  {
+    this();                         // do the default constructor, then set
+                                    // the parameter value(s) by altering a
+                                    // reference to each of the parameters
+
+    Parameter parameter = getParameter( 0 );
+    parameter.setValue( new Float( min_E ) );
+
+    parameter = getParameter( 1 );
+    parameter.setValue( new Float( max_E ) );
+
+    parameter = getParameter( 2 );
+    parameter.setValue( new Integer( num_E ) );
+
+    setDataSet( ds );               // record reference to the DataSet that
+                                    // this operator should operate on
   }
 
 
@@ -74,7 +117,7 @@ public class DiffractometerTofToEnergy extends    DataSetOperator
                                      // get the energy scale parameters 
     float min_E = ( (Float)(getParameter(0).getValue()) ).floatValue();
     float max_E = ( (Float)(getParameter(1).getValue()) ).floatValue();
-    int   num_E = ( (Float)(getParameter(2).getValue()) ).intValue() + 1;
+    int   num_E = ( (Integer)(getParameter(2).getValue()) ).intValue() + 1;
 
                                      // validate energy bounds
     if ( min_E > max_E )             // swap bounds to be in proper order
@@ -148,6 +191,7 @@ public class DiffractometerTofToEnergy extends    DataSetOperator
           new_data.ReBin( new_e_scale );        // specified
 
         new_ds.addData_entry( new_data );      
+        new_ds.setAttributeList( attr_list ); // copy the attributes
       }
     }
 

@@ -86,7 +86,7 @@ public class DataSetMerge extends    DataSetOperator
                                      // title, units, and operations as the
                                      // current DataSet, ds
     DataSet new_ds = ds.empty_clone(); 
-    new_ds.addLog_entry( "Merged " +ds +" with " + ds_to_merge );
+    new_ds.addLog_entry( "Merged with" + ds_to_merge );
     new_ds.CombineAttributeList( ds_to_merge );
 
                                            // do the operation

@@ -1,5 +1,7 @@
 /*
- * @(#)DataSetSort.java   0.1  99/07/28   Dennis Mikkelson
+ * @(#)DataSetSort.java   0.2  99/07/28   Dennis Mikkelson
+ *                             99/08/16   Added constructor to allow
+ *                                        calling operator directly
  *             
  * This operator sorts a DataSet based on an attribute of the Data entries.
  *
@@ -18,14 +20,18 @@ import  DataSetTools.dataset.*;
 public class DataSetSort  extends    DataSetOperator 
                           implements Serializable
 {
-  /* --------------------------- CONSTRUCTOR ------------------------------ */
+  /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
+  /**
+   * Construct an operator with a default parameter list.  If this
+   * constructor is used, the operator must be subsequently added to the
+   * list of operators of a particular DataSet.  Also, meaningful values for
+   * the parameters should be set ( using a GUI ) before calling getResult()
+   * to apply the operator to the DataSet this operator was added to.
+   */
 
-                                     // The constructor calls the super
-                                     // class constructor, then sets up the
-                                     // list of parameters.
   public DataSetSort( )
   {
-    super( "Sort based on Group attribute" );
+    super( "Sort on one group attribute" );
 
     Parameter parameter = new Parameter("Group Attribute to Sort on",
                                new AttributeNameString("Raw Detector Angle") );
@@ -33,6 +39,38 @@ public class DataSetSort  extends    DataSetOperator
 
     parameter = new Parameter("Sort in Increasing Order?", new Boolean(true) );
     addParameter( parameter );
+  }
+
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct an operator for a specified DataSet and with the specified
+   *  parameter values so that the operation can be invoked immediately 
+   *  by calling getResult().
+   *
+   *  @param  ds          The DataSet to which the operation is applied
+   *  @param  attr_name   The name of that attribute to be used for the
+   *                      sort criterion
+   *  @param  increasing  Flag that indicates whether the sort should put
+   *                      the Data blocks in increasing or decreasing order
+   *                      based on the specified attribute
+   */
+
+  public DataSetSort( DataSet             ds,
+                      AttributeNameString attr_name,
+                      boolean             increasing   )
+  {
+    this();                         // do the default constructor, then set
+                                    // the parameter value(s) by altering a
+                                    // reference to each of the parameters
+
+    Parameter parameter = getParameter( 0 );
+    parameter.setValue( attr_name );
+
+    parameter = getParameter( 1 );
+    parameter.setValue( new Boolean( increasing ) );
+
+    setDataSet( ds );               // record reference to the DataSet that
+                                    // this operator should operate on
   }
 
 

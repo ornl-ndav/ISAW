@@ -1,5 +1,7 @@
 /*
- * @(#)DataSetSubtract.java   0.1  99/07/15   Dennis Mikkelson
+ * @(#)DataSetSubtract.java   0.2  99/07/15   Dennis Mikkelson
+ *                                 99/08/16   Added constructor to allow
+ *                                            calling operator directly
  *             
  * This operator subtracts two DataSets by subtracting the corresponding 
  * Data "blocks" in the DataSets.
@@ -20,11 +22,15 @@ import  DataSetTools.util.*;
 public class DataSetSubtract extends  DataSetOperator 
                                       implements Serializable
 {
-  /* --------------------------- CONSTRUCTOR ------------------------------ */
+  /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
+  /**
+   * Construct an operator with a default parameter list.  If this
+   * constructor is used, the operator must be subsequently added to the
+   * list of operators of a particular DataSet.  Also, meaningful values for
+   * the parameters should be set ( using a GUI ) before calling getResult()
+   * to apply the operator to the DataSet this operator was added to.
+   */
 
-                                     // The constructor calls the super
-                                     // class constructor, then sets up the
-                                     // list of parameters.
   public DataSetSubtract( )
   {
     super( "Subtract a DataSet" );
@@ -33,6 +39,30 @@ public class DataSetSubtract extends  DataSetOperator
                              "DataSet to Subtract", 
                              new DataSet("DataSetToSubtract","Empty DataSet"));
     addParameter( parameter );
+  }
+
+  /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
+  /**
+   *  Construct an operator for a specified DataSet and with the specified
+   *  parameter values so that the operation can be invoked immediately
+   *  by calling getResult().
+   *
+   *  @param  ds            The DataSet to which the operation is applied
+   *  @parm   ds_to_subract The DataSet to be subtracted from DataSet ds.
+   */
+
+  public DataSetSubtract( DataSet   ds,
+                          DataSet   ds_to_subtract )
+  {
+    this();                         // do the default constructor, then set
+                                    // the parameter value(s) by altering a
+                                    // reference to each of the parameters
+
+    Parameter parameter = getParameter( 0 );
+    parameter.setValue( ds_to_subtract );
+
+    setDataSet( ds );               // record reference to the DataSet that
+                                    // this operator should operate on
   }
 
 
@@ -61,8 +91,9 @@ public class DataSetSubtract extends  DataSetOperator
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
-    DataSet new_ds = (DataSet)ds.empty_clone(); 
+    DataSet new_ds = ds.empty_clone(); 
     new_ds.addLog_entry( "Subtracted " + ds_to_subtract );
+    new_ds.CombineAttributeList( ds_to_subtract );
 
                                             // do the operation
     int num_data = ds.getNum_entries();
