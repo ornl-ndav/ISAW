@@ -28,6 +28,11 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.12  2003/06/17 20:34:54  bouzekc
+ * Fixed setDefaultParameters so all parameters have a
+ * visible checkbox.  Added more robust error checking on
+ * the raw and output directory parameters.
+ *
  * Revision 1.11  2003/06/17 16:49:56  bouzekc
  * Now uses InstrumentType.formIPNSFileName to get the
  * file name.  Changed to work with new PropChangeProgressBar.
@@ -72,6 +77,7 @@ import  DataSetTools.operator.DataSet.Math.Analyze.*;
 import  DataSetTools.operator.Generic.Load.LoadOneHistogramDS;
 import  DataSetTools.operator.Generic.Load.LoadMonitorDS;
 import  DataSetTools.instruments.InstrumentType;
+import  java.io.File;
 
 /**
  * 
@@ -143,19 +149,21 @@ public class FindMultiplePeaksForm extends Form
   {
     parameters = new Vector();
     //0
-    addParameter(new DataDirPG( "Raw Data Path", "", false));
+    addParameter(new DataDirPG( "Raw Data Path", null, false));
     //1
-    addParameter(new DataDirPG("Peaks File Output Path", "", false));
+    addParameter(new DataDirPG("Peaks File Output Path", null, false));
     //2
     addParameter(new IntArrayPG("Run Numbers", "06496:06498", false));
     //3
     addParameter(new StringPG( "Experiment name", "quartz", false));
     //4
-    addParameter(new IntegerPG( "Maximum Number of Peaks", new Integer(50), false));
+    addParameter(new IntegerPG( "Maximum Number of Peaks", new Integer(50),
+                                 false));
     //5
     addParameter(new IntegerPG( "Minimum Peak Intensity", new Integer(3), false));
     //6
-    addParameter(new BooleanPG( "Append Data to File?", new Boolean(false), false));
+    addParameter(new BooleanPG( "Append Data to File?", new Boolean(false),
+                                false));
     //7
     addParameter(new IntegerPG( "SCD Calibration File Line to Use", 
                                 new Integer(-1), false));
@@ -163,7 +171,7 @@ public class FindMultiplePeaksForm extends Form
     addParameter(new LoadFilePG( "SCD Calibration File", 
                                  "/IPNShome/scd/instprm.dat", false));
     //9
-    addParameter(new LoadFilePG( "Peaks File ", "temp.peaks", false));
+    addParameter(new LoadFilePG( "Peaks File ", null, false));
     setParamTypes(null,new int[]{0,1,2,3,4,5,6,7,8}, new int[]{9});
   }
 
@@ -251,16 +259,20 @@ public class FindMultiplePeaksForm extends Form
     int[] runsArray;
 
     //get raw data directory
-    //should be no need to check this for validity
     param = (IParameterGUI)super.getParameter( 0 );
     rawDir = param.getValue().toString();
-    param.setValid(true);
+    if(new File(rawDir).exists())
+      param.setValid(true);
+    else
+      param.setValid(false);
 
     //get output directory
-    //should be no need to check this for validity
     param = (IParameterGUI)super.getParameter( 1 );
     outputDir = param.getValue().toString();
-    param.setValid(true);
+    if(new File(outputDir).exists())
+      param.setValid(true);
+    else
+      param.setValid(false);
 
     //gets the run numbers
     param = (IParameterGUI)super.getParameter(2);
