@@ -1,5 +1,5 @@
 /*
- * File: SetupReader.java
+ * File: LoadScriptArray.java
  *
  * Copyright (C) 1999, Alok Chatterjee
  *
@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/02/26 23:02:14  hammonds
+ *  Comment change only.
+ *
  *  Revision 1.1  2003/02/13 14:14:54  hammonds
  *  Added as a method to read an array into a Script.
  *
