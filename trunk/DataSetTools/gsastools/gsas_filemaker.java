@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2001/09/21 18:39:36  dennis
+ *  Removed some debugging println() statements.
+ *
  *  Revision 1.4  2001/06/25 20:11:44  chatter
  *  Added the header info in the GSAS output file
  *
@@ -96,7 +99,6 @@ public class gsas_filemaker
 
             opw.write ("#" + "     "+i+"     "+ref_angle+"     "+total_length);
             opw.write("\n");
-           System.out.println("Inside header");
         }
 
 
@@ -104,7 +106,6 @@ public class gsas_filemaker
 
          for (int j = ds.getTitle().length(); j<80; j++)
              S = S +" ";
-         System.out.println("filename length="+S.length());
          opw.write( S +"\n");
          int en= ds.getNum_entries();
          int bank=0;
@@ -118,14 +119,11 @@ public class gsas_filemaker
             
             DataSetTools.dataset.Data dd = ds.getData_entry(i-1);
             DataSetTools.dataset.XScale xx = dd.getX_scale();
-            if(i==1)
-            System.out.println("dat="+i+","+xx.getEnd_x()+","+xx.getStart_x()+","+xx.getNum_x());
             float binwidth = (xx.getEnd_x()-xx.getStart_x())/((float)xx.getNum_x() - 1);
             opw.write("BANK   "+df.format( i )+"    "+ df.format(y.length)+"     "+
                       df.format((int)(y.length/10.0+0.9))+" CONST  "+dff1.format(xx.getStart_x())+
          "          "+dff.format(binwidth)+"    \n");
          
-            System.out.println("last y ="+ y[y.length-1]);
             loop:for(int j=0; j<y.length; j+=10)
             {
                   for(int l=j+0; l<j+10; l++)
