@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.65  2003/02/17 22:24:12  pfpeterson
+ *  Updated deprecated method calls to what is now used.
+ *
  *  Revision 1.64  2003/02/17 18:43:13  dennis
  *  Fixed bug (file with grouped data could not be loaded).
  *  Also, now keep list of detector data grids, not detector data grid
@@ -226,7 +229,7 @@ public class RunfileRetriever extends    Retriever
     boolean   has_monitors;
     boolean   has_detectors;
     boolean   has_pulse_height;
-    String    file_name     = StringUtil.fixSeparator( data_source_name );
+    String    file_name     = StringUtil.setFileSeparator( data_source_name );
 
     file_name = FilenameUtil.fixCase( file_name );
     if ( file_name == null )
