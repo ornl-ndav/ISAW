@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/10/22 20:00:25  rmikk
+ * Fixed javadoc errors
+ *
  * Revision 1.2  2003/08/19 20:57:31  rmikk
  * Will print Histogram and Function data correctly
  *
@@ -251,9 +254,10 @@ public class Print3Col1D extends GenericTOF_SAD{
 
  }
  /**
- *  @param Args[0] name of a file storing a desired DataSet
- *  @param Args[1] filetype
- *  @param Args[2]  Delayed Neutron
+ *  Test program for this module
+ *  Args[0] name of a file storing a desired DataSet
+ *  Args[1] filetype
+ *  Args[2]  Delayed Neutron
  *  @return file will be written in current directory to xxx.dat
  */
  public static void main( String args[]){
