@@ -60,6 +60,7 @@ public class execOneLine implements IObservable ,
     public static final String ER_MissingBracket              =" Unpaired brackets";
     public static final String ER_ImproperDataType            =" Improper Data Type";
     public static final String ER_ExtraArguments              ="Extra Arguments";
+     public static final String ER_No_Result                  =" Result is null ";
     private Document logDocument = null;
 
     private boolean Debug= false;
@@ -2632,8 +2633,7 @@ public class execOneLine implements IObservable ,
          {i = findd( vname , ds );       
           if( ds != null )
             if( ( i >= 0 ) && ( i < ds.length ) )
-		{//DSPAssign( ds[i] , (DataSet)Result );
-		  ds[ i ].copy((DataSet)Result);   //= (DataSet)((DataSet)Result).clone();;
+		{ds[ i ].copy((DataSet)Result);   //= (DataSet)((DataSet)Result).clone();;
                  return;
               }
           i = findd( vname , lds );
@@ -2659,7 +2659,9 @@ public class execOneLine implements IObservable ,
 
           if( Debug )
             System.out.print("Assign2 i=" + i + "," + lds.length);
-       
+          if( Result == null )
+             { seterror( 1000, ER_No_Result);
+             }
           if( lds[i] == null )
 	    {
               lds[ i ] = (DataSet)((DataSet)Result).clone();
