@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2004/12/23 18:43:21  rmikk
+ * ELiminated a few warnings
+ *
  * Revision 1.8  2004/05/14 15:03:26  rmikk
  * Removed unused variables
  *
@@ -100,7 +103,7 @@ public class NxDetector{
     X = node.getChildNode( "phi" );
     
     if( X != null ){
-      Object val = X.getNodeValue();
+     // Object val = X.getNodeValue();
      // if( val != null )
      //   phi = ut.Arrayfloatconvert( val );
     }
@@ -108,7 +111,7 @@ public class NxDetector{
     X = node.getChildNode( "theta" );
    
     if( X != null){
-      Object val = X.getNodeValue();
+      //Object val = X.getNodeValue();
       //if( val != null )
        // theta = ut.Arrayfloatconvert( val );
     }
