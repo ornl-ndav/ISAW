@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.39  2005/01/20 21:51:43  dennis
+ *  Fixed minor javadoc error.
+ *
  *  Revision 1.38  2005/01/10 15:05:39  dennis
  *  Added string lists for menu categories for FILE: LOAD, SAVE, PRINT
  *  and UTILS: CALCULATORS, CONVERSIONS, EXAMPLES, DATA_SET and SYSTEM.
@@ -537,7 +540,7 @@ abstract public class Operator implements Serializable
  /**
   * Returns the filename or classname associated with this operator.  It 
   * translates ScriptOperators, PyScriptOperators, and wrappables.
-  * @param op  The operator of interest
+  *
   * @return   The filename or classname for the source of this operator
   */ 
  public String getSource(){
