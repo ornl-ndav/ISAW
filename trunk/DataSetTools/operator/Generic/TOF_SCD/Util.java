@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/04/09 16:21:26  pfpeterson
+ * Moved the code to write a matrix file here from BlindJ.
+ *
  * Revision 1.6  2003/03/26 20:52:45  pfpeterson
  * Finished implementing the setting of reflection flags as disscussed
  * with A.Schultz.
@@ -57,6 +60,10 @@ package DataSetTools.operator.Generic.TOF_SCD;
 import DataSetTools.dataset.*;
 import DataSetTools.instruments.*;
 import DataSetTools.math.*;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.Format;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class Util{
   /**
@@ -290,5 +297,61 @@ public class Util{
     // return the updated peak
     peak.reflag(reflag+10);
     return peak;
+  }
+
+  /**
+   * Write out the orientation matrix and lattice parameters to the
+   * matrix file.
+   *
+   * @param filename name of file to write to
+   * @param UB the orientation matrix. What is actually written is the
+   * transpose of what is used in memory.
+   * @param abc a float[7] with members (in order) being a, b, c,
+   * alpha, beta, gamma, Dvolume
+   * @param sig a float[8] with members (in order) being Da, Db, Dc,
+   * Dalpha, Dbeta, Dgamma, and Dvolume
+   *
+   * @return A descriptive ErrorString if anything goes wrong or null
+   * if all is well
+   */
+  public static ErrorString writeMatrix( String filename, float[][] UB,
+                                         float[] abc, float[] sig){
+    StringBuffer sb= new StringBuffer(10*3+1);
+
+    // the UB matrix
+    for( int i=0 ; i<3 ; i++ ){
+      for (int j=0 ; j<3 ;j++ )
+        sb.append(Format.real(UB[j][i],10,6));
+      sb.append("\n");
+    }
+
+    // lattice parameters
+    for( int i=0 ; i<7 ; i++ )
+      sb.append(Format.real(abc[i],10,3));
+    sb.append("\n");
+    // sigmas
+    for( int i=0; i < 7; i++)
+      sb.append(Format.real(sig[i],10,3));
+    sb.append("\n");
+
+    //Write results to the matrix file
+    FileOutputStream fout = null;
+    try{
+      fout = new FileOutputStream( filename );
+      fout.write( sb.toString().getBytes());
+      fout.flush();
+    }catch( IOException e){
+      return new ErrorString("Writing Matrix File: "+e.getMessage());
+    }finally{
+      if(fout!=null){
+        try{
+          fout.close();
+        }catch(IOException e){
+          // let it drop on the floor
+        }
+      }
+    }
+
+    return null;
   }
 }
