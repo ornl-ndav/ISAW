@@ -32,6 +32,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.19  2004/05/07 17:44:55  dennis
+ * Changed to use WrappedCrunch in the Operators/Examples
+ * directory instead of Operators.
+ *
  * Revision 1.18  2004/05/06 00:10:26  bouzekc
  * Replaced 3 method calls to get() with a local variable and one get() call.
  * No need for extra overhead.
@@ -152,13 +156,13 @@ public class JavaWrapperOperator extends GenericOperator {
    * Testbed.
    */
   public static void main( String[] args ) {
-    Operators.WrappedCrunch op = new Operators.WrappedCrunch(  );
+    Operators.Example.WrappedCrunch op = new Operators.Example.WrappedCrunch();
 
     //Operators.StringChoiceOp op = new Operators.StringChoiceOp(  );
     //Operators.MyFortran crunch = new Operators.MyFortran(  );
     JavaWrapperOperator wrapper = new JavaWrapperOperator( op );
 
-    /*DataSet temp                   = new DataSetTools.retriever.RunfileRetriever(
+    /*DataSet temp = new DataSetTools.retriever.RunfileRetriever(
        "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
        new DataSetTools.viewer.ViewManager(
          temp, DataSetTools.viewer.IViewManager.IMAGE );
@@ -215,8 +219,9 @@ public class JavaWrapperOperator extends GenericOperator {
         category = category.substring( 1, category.length(  ) );
       }
     } else if( category.startsWith( BIG_OP ) ) {
-      //however, we have to catch the oddball fact that "Operators" is not recognized
-      //the same way as "operator" is, i.e. we want "operator.Generic" rather than
+      //however, we have to catch the oddball fact that "Operators" 
+      //is not recognized the same way as "operator" is, 
+      //i.e. we want "operator.Generic" rather than
       //"Operators" for the start of the package name 
       category = category.replaceFirst( BIG_OP, "operator.Generic" );
     }
