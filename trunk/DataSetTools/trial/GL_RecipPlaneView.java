@@ -31,6 +31,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/07/26 21:50:51  dennis
+ * Now displays "voxel" extending between the eight corners of a bin that
+ * is above the current threshold, rather than just a cube centered at the
+ * bin center.
+ * Contour lines are now also omitted for regions in a specified border
+ * region.
+ * Changed name of PeakData to PeakData_d.
+ *
  * Revision 1.3  2004/07/23 13:19:32  dennis
  * Added capabilities to:
  *   - Load an orientation matrix
@@ -909,8 +917,8 @@ public class GL_RecipPlaneView
 //     non_zero_objs = getBoundaries( i );
 //     vec_Q_space.setObjects( BOUNDARY_OBJECTS+i, non_zero_objs);
 
-//     non_zero_objs = getContours( i, thresh_scale / 2 );
-//     vec_Q_space.setObjects( CONTOUR_OBJECTS+i, non_zero_objs);
+       non_zero_objs = getContours( i, thresh_scale / 2 );
+       vec_Q_space.setObjects( CONTOUR_OBJECTS+i, non_zero_objs);
 
 //     GL_Shape hkl_marks[] = getHKL_Marks( i );
 //     vec_Q_space.setObjects( MARK_OBJECTS+i, hkl_marks );
@@ -1032,15 +1040,19 @@ public class GL_RecipPlaneView
                 if ( color_index > 127 )
                   color_index = 127;
                 c = rgb_colors[ color_index ];
-//                objs[obj_index] = new Ball( pts[0], 0.03f, c );
                 float coords[] = pts[0].get();
-                objs[ obj_index ] =
-                              new Cube(coords[0], coords[1], coords[2], 0.04f);
+
+//                objs[ obj_index ] =
+//                            new Cube(coords[0], coords[1], coords[2], 0.04f);Z
+                objs[ obj_index ] = getVoxel( grid, row, col, times, j, 
+                                              t0, combinedR, initial_path );
+
                 objs[ obj_index ].setColor( c );
+
                 objs[obj_index].setPickID( global_obj_index );
                 obj_index++;
                 global_obj_index++;
-                PeakData pd = new PeakData();
+                PeakData_d pd = new PeakData_d();
                 pd.run_num = runs[run_num_index];
                 pd.orientation = new IPNS_SCD_SampleOrientation_d(
                                                       orientation.getPhi(), 
@@ -1087,6 +1099,7 @@ public class GL_RecipPlaneView
       return non_zero_objs;
   }
 
+
   /* -------------------------- getQ ---------------------------------- */
   /*
    *  Calculate the Q vector for the specified position and TOF
@@ -1102,6 +1115,42 @@ public class GL_RecipPlaneView
      combinedR.apply_to( q_vec, q_vec );
      return q_vec;
   }
+
+
+  /* ------------------------------ getVoxel ----------------------------- */
+  /*
+   *  Calculate the voxel for this the specified row, col, time
+   */
+  private GL_Shape getVoxel( IDataGrid grid, 
+                             int       row,
+                             int       col,
+                             float     times[],
+                             int       index,
+                             float     t0,
+                             Tran3D    combinedR,
+                             float     initial_path )
+  {
+      float first_t = times[index  ] + t0;
+      float last_t  = times[index+1] + t0;
+      Vector3D p00 = grid.position( row - 0.5f, col - 0.5f );
+      Vector3D p01 = grid.position( row - 0.5f, col + 0.5f );
+      Vector3D p11 = grid.position( row + 0.5f, col + 0.5f );
+      Vector3D p10 = grid.position( row + 0.5f, col - 0.5f );
+
+      Vector3D corner[][][] = new Vector3D[2][2][2];
+      corner[0][0][0] = getQ( combinedR, p00, first_t, initial_path );
+      corner[0][1][0] = getQ( combinedR, p10, first_t, initial_path );
+      corner[0][1][1] = getQ( combinedR, p11, first_t, initial_path );
+      corner[0][0][1] = getQ( combinedR, p01, first_t, initial_path );
+      corner[1][0][0] = getQ( combinedR, p00, last_t, initial_path );
+      corner[1][1][0] = getQ( combinedR, p10, last_t, initial_path );
+      corner[1][1][1] = getQ( combinedR, p11, last_t, initial_path );
+      corner[1][0][1] = getQ( combinedR, p01, last_t, initial_path );
+
+      Voxel region = new Voxel( corner );
+      return region;
+  }
+
 
   /* ---------------------------- getContours ---------------------------- */
   /*
@@ -1147,6 +1196,7 @@ public class GL_RecipPlaneView
      return result;
   }
 
+
   /* ------------------------ getTimeContours ------------------------- */
   /*
    *  Get Lines object containing contour lines with constant TOF value
@@ -1163,27 +1213,30 @@ public class GL_RecipPlaneView
     int   n_tbins  = d.getY_values().length;
     float t;
 
-    float arr[][] = new float[ grid.num_rows() ][ grid.num_cols() ];
+    float arr[][] = 
+      new float[ grid.num_rows() - 2*edge_pix ][ grid.num_cols() - 2*edge_pix ];
     Vector contours;
     Vector start = new Vector();
     Vector end   = new Vector();
     for ( int j = 0; j < n_tbins-1; j++ )
-    {
-      for ( int row = 1; row <= grid.num_rows(); row++ )
-        for ( int col = 1; col <= grid.num_cols(); col++ )
-          arr[row-1][col-1] = grid.getData_entry(row,col).getY_values()[j];
+    {                               // make array at this time slice using
+                                    // values inside of the edge_pix border
+      for ( int row = 1+edge_pix; row <= grid.num_rows()-edge_pix; row++ )
+        for ( int col = 1+edge_pix; col <= grid.num_cols()-edge_pix; col++ )
+          arr[row-1-edge_pix][col-1-edge_pix] = 
+                             grid.getData_entry(row,col).getY_values()[j];
 
       contours = Contour2D.contour( arr, level );
       t = (times[j] + times[j+1])/2;
       for ( int i = 0; i < contours.size()/2; i++ )
       {
         floatPoint2D p1 = (floatPoint2D)contours.elementAt( 2*i );
-        Vector3D pos_vec  = grid.position( 1+p1.y, 1+p1.x );
+        Vector3D pos_vec  = grid.position( 1+p1.y+edge_pix, 1+p1.x+edge_pix );
         Vector3D q_vec = getQ( combinedR, pos_vec, t + t0, initial_path );
         start.add( new Vector3D(q_vec) );
 
         floatPoint2D p2 = (floatPoint2D)contours.elementAt( 2*i + 1 );
-        pos_vec  = grid.position( 1+p2.y, 1+p2.x );
+        pos_vec  = grid.position( 1+p2.y+edge_pix, 1+p2.x+edge_pix );
         q_vec = getQ( combinedR, pos_vec, t + t0, initial_path );
         end.add( new Vector3D(q_vec) );
       }
@@ -1214,25 +1267,29 @@ public class GL_RecipPlaneView
     Data d = grid.getData_entry(1,1);
 
     float times[] = d.getX_scale().getXs();
-    int   n_tbins  = d.getY_values().length;
+    int   n_tbins = d.getY_values().length;
     float fract,
           t;
     int   t_index;
 
-    float arr[][] = new float[ grid.num_cols() ][ n_tbins ];
+    float arr[][] = new float[ grid.num_cols()-edge_pix ][ n_tbins ];
     Vector contours;
     Vector start = new Vector();
     Vector end   = new Vector();
-    for ( int row = 1; row <= grid.num_rows(); row++ )
+                                        // only make contours for rows inside
+                                        // border that is edge_pix wide. 
+    for ( int row = 1+edge_pix; row <= grid.num_rows()-edge_pix; row++ )
     {
-      for ( int col = 1; col <= grid.num_cols(); col++ )
-        arr[col-1] = grid.getData_entry(row,col).getY_values();
+                                        // copy data from each col in array
+                                        // array arr[] with shifted col index
+      for ( int col = 1+edge_pix; col <= grid.num_cols()-edge_pix; col++ )
+        arr[col-1-edge_pix] = grid.getData_entry(row,col).getY_values();
 
       contours = Contour2D.contour( arr, level );
       for ( int i = 0; i < contours.size()/2; i++ )
       {
         floatPoint2D p1 = (floatPoint2D)contours.elementAt( 2*i );
-        Vector3D pos_vec  = grid.position( row, 1+p1.y );
+        Vector3D pos_vec  = grid.position( row, 1+p1.y+edge_pix );
         t_index = (int)p1.x;
         fract = p1.x - t_index;
         t = times[t_index] + fract * (times[t_index+1] - times[t_index]);
@@ -1240,7 +1297,7 @@ public class GL_RecipPlaneView
         start.add( new Vector3D(q_vec) );
 
         floatPoint2D p2 = (floatPoint2D)contours.elementAt( 2*i + 1 );
-        pos_vec  = grid.position( row, 1+p2.y );
+        pos_vec  = grid.position( row, 1+p2.y+edge_pix );
         t_index = (int)p2.x;
         fract = p2.x - t_index;
         t = times[t_index] + fract * (times[t_index+1] - times[t_index]);
@@ -1275,25 +1332,29 @@ public class GL_RecipPlaneView
     Data d = grid.getData_entry(1,1);
 
     float times[] = d.getX_scale().getXs();
-    int   n_tbins  = d.getY_values().length;
+    int   n_tbins = d.getY_values().length;
     float fract,
           t;
     int   t_index;
 
-    float arr[][] = new float[ grid.num_rows() ][ n_tbins ];
+    float arr[][] = new float[ grid.num_rows()-edge_pix ][ n_tbins ];
     Vector contours;
     Vector start = new Vector();
     Vector end   = new Vector();
-    for ( int col = 1; col <= grid.num_cols(); col++ )
+                                        // only make contours for cols inside
+                                        // border that is edge_pix wide.  
+    for ( int col = 1+edge_pix; col <= grid.num_cols()-edge_pix; col++ )
     {
-      for ( int row = 1; row <= grid.num_rows(); row++ )
-        arr[row-1] = grid.getData_entry(row,col).getY_values();
+                                        // copy data from each row in array
+                                        // array arr[] with shifted row index
+      for ( int row = 1+edge_pix; row <= grid.num_rows()-edge_pix; row++ )
+        arr[row-1-edge_pix] = grid.getData_entry(row,col).getY_values();
 
       contours = Contour2D.contour( arr, level );
       for ( int i = 0; i < contours.size()/2; i++ )
       {
         floatPoint2D p1 = (floatPoint2D)contours.elementAt( 2*i );
-        Vector3D pos_vec  = grid.position( 1+p1.y, col );
+        Vector3D pos_vec  = grid.position( 1+p1.y+edge_pix, col );
         t_index = (int)p1.x;
         fract = p1.x - t_index;
         t = times[t_index] + fract * (times[t_index+1] - times[t_index]);
@@ -1301,7 +1362,7 @@ public class GL_RecipPlaneView
         start.add( new Vector3D(q_vec) );
 
         floatPoint2D p2 = (floatPoint2D)contours.elementAt( 2*i + 1 );
-        pos_vec  = grid.position( 1+p2.y, col );
+        pos_vec  = grid.position( 1+p2.y+edge_pix, col );
         t_index = (int)p2.x;
         fract = p2.x - t_index;
         t = times[t_index] + fract * (times[t_index+1] - times[t_index]);
@@ -1321,6 +1382,7 @@ public class GL_RecipPlaneView
     lines.setColor( gray );
     return lines;
   }
+
 
   /* ---------------------------- getBoundaries ---------------------------- */
   /*
@@ -1526,15 +1588,14 @@ public class GL_RecipPlaneView
   }
 
 
-
   /* ----------------------- get_data_points ---------------------------- */
   private Vector3D[] get_data_points()
   {
     Vector3D all_vectors[] = new Vector3D[ all_peaks.size() ];
-    PeakData pd;
+    PeakData_d pd;
     for ( int i = 0; i < all_vectors.length; i++ )
     {
-      pd = (PeakData)all_peaks.elementAt(i);
+      pd = (PeakData_d)all_peaks.elementAt(i);
       all_vectors[i] = new Vector3D((float)pd.qx, (float)pd.qy, (float)pd.qz );
     }
 
@@ -2478,7 +2539,7 @@ private class WriteFileListener implements ActionListener
 {
   public void actionPerformed( ActionEvent e )
   {
-    PeakData.WritePeakData( all_peaks, "fft_peaks.dat" );
+    PeakData_d.WritePeakData( all_peaks, "fft_peaks.dat" );
   }
 }
 
@@ -2519,7 +2580,7 @@ private class LatticeParameterListener implements ActionListener
     c.normalize();
     for ( int i = 0; i < all_peaks.size(); i++ )
     {
-       PeakData pd = (PeakData)all_peaks.elementAt(i);
+       PeakData_d pd = (PeakData_d)all_peaks.elementAt(i);
        q = new Vector3D( (float)pd.qx, (float)pd.qy, (float)pd.qz );
        float h = q.dot(a)/mag_a;
        float k = q.dot(b)/mag_b;
