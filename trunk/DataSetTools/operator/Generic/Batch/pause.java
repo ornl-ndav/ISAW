@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/03 18:15:22  dennis
+ * Added getDocumentation() method and java docs on getResult().
+ * (Shannon Hintzman).
+ *
  * Revision 1.3  2002/11/27 23:20:53  pfpeterson
  * standardized header
  *
@@ -83,21 +87,40 @@ public class pause extends  GenericBatch
     parameter.setValue( new Integer( ms ) );
   }
 
-
+  /* ---------------------------- getDocumentation -------------------------- */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    
+    Res.append("@overview This operator pauses the program.");
+ 
+    Res.append("@algorithm This operator pauses the program for the number ");
+    Res.append("milliseconds passed into the parameters and then returns a ");
+    Res.append("string that states how long it is pausing for.");
+    
+    Res.append("@param ms - The number of milliseconds to pause for.");
+    
+    Res.append("@return Returns a string, \"Pause for \"+ms+\" milli");
+    Res.append("-seconds\".");
+    
+    return Res.toString();
+  }
+  
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, Pause
+   * @return	the command name to be used with script processor: in this case,
+   *               Pause
    */
-   public String getCommand()
-   {
-     return "Pause";
-   }
+  public String getCommand()
+  {
+    return "Pause";
+  }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
- /**
-  *  Set the pause to a default value of one second.
-  */
+  /* -------------------------- setDefaultParmeters ------------------------ */
+  /**
+   *  Set the pause to a default value of one second.
+   */
   public void setDefaultParameters()
   {
      parameters = new Vector();  // must do this to create empty list of 
@@ -121,27 +144,27 @@ public class pause extends  GenericBatch
     return "Pause for "+ms+" milli-seconds";
   }  
 
-
-public static void do_pause(int time)
-{ 
-//  System.out.print("Pause for "+time +" millisecond! ");
-  try
+  /* ---------------------------- do_pause ------------------------------- */
+  public static void do_pause(int time)
   { 
-    Thread.sleep(time); 
+    try
+    { 
+      Thread.sleep(time); 
+    }
+    catch(Exception e)
+    { 
+      System.out.println("Exception in do_pause from pause operator"); 
+    }
   }
-  catch(Exception e)
-  { 
-    System.out.println("Exception in do_pause from pause operator"); 
+
+  /* ------------------------------ main --------------------------------- */
+  public static void main(String[] arg)
+  {
+    Operator ps = new pause();
+    ps.getResult();
+
+    ps = new pause(3000);
+    System.out.println(ps.getDocumentation() + "\n");
+    System.out.println(ps.getResult().toString());
   }
-}
-
-public static void main(String[] arg)
-{
-  Operator ps = new pause();
-  ps.getResult();
-
-  ps = new pause(3000);
-  ps.getResult();
-}
-
 }
