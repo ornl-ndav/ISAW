@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.50  2003/09/12 20:04:03  rmikk
+ *  -Fixed the use of DataSetPG to conform with the newer
+ *    concept of the init methods
+ *
  *  Revision 1.49  2003/08/25 17:55:45  rmikk
  *  Eliminated the UNKNOWN in the dialog box title
  *
@@ -289,9 +293,13 @@ public class JParametersDialog implements Serializable,
            Size1=-1;
            iparam = op.getParameter(i);
            if( iparam instanceof IParameterGUI)
-             {if( iparam instanceof DataSetPG)
-                ((DataSetPG)iparam).initGUI((Object[])(ds_src.getDataSets()));
-              else
+             {if( iparam instanceof DataSetPG){
+                DataSet[] DSs= (ds_src.getDataSets());
+                for( int j=0; j< DSs.length;j++)
+                  ((DataSetPG)iparam).addItem( DSs[j]);
+                ((DataSetPG)iparam).initGUI((Vector) null );
+              
+              }else
                 ((IParameterGUI)iparam).initGUI(null);
 
               JComponent pp= ((IParameterGUI)iparam).getGUIPanel();
