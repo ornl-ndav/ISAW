@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2003/06/17 20:28:33  bouzekc
+ * Added method to get last valid Form.  Fixed progress bar
+ * updating code to more accurately reflect the status of the
+ * Wizard and the Forms.
+ *
  * Revision 1.30  2003/06/17 16:43:49  bouzekc
  * Added dual progress bars, one for the overall progress and
  * one for the current Form progress.
@@ -936,15 +941,17 @@ public abstract class Wizard implements PropertyChangeListener{
         form_panel.add( f.getPanel() );
         f.setVisible(true);
 
+        int lastForm = this.getLastValidFormNum();
+
         //reset the progress bars - especially useful when loading up a Wizard
         //from a file
         if(f.done())
         {
           formProgress.setString(f + " Done");
-          /*wizProgress.setString("Wizard Progress: "+(getCurrentFormNumber() + 1)
-                                + " of " + forms.size() + " Forms done");*/
+          wizProgress.setString("Wizard Progress: "+ (lastForm + 1)
+                                + " of " + forms.size() + " Forms done");
           formProgress.setValue(FORM_PROGRESS);
-          //wizProgress.setValue(getCurrentFormNumber() + 1);
+          wizProgress.setValue(lastForm + 1);
         }
         else
         {
@@ -988,6 +995,21 @@ public abstract class Wizard implements PropertyChangeListener{
             form_label.setText("Form "+(index+1)+": "+f.getTitle());
         }
 
+    }
+
+    /**
+     *  Used to get the number of the last valid Form (i.e the Form that has
+     *  all of its parameters set to valid).
+     *
+     *  @return               The index of the last valid Form number.
+     */
+    public int getLastValidFormNum()
+    {
+      for(int i = 0; i < this.getNumForms(); i++)
+        if(!getForm(i).done())
+          return i - 1;
+
+      return forms.size() - 1;
     }
 
     /**
@@ -1068,8 +1090,10 @@ public abstract class Wizard implements PropertyChangeListener{
         //bar and label
         if(wizProgress.getValue()>start){
           wizProgress.setValue(start);
-          wizProgress.setString("Wizard Progress: "+(getCurrentFormNumber() + 1)
+          wizProgress.setString("Wizard Progress: "+ (start + 1)
                                 + " of " + forms.size() + " Forms done");
+          formProgress.setValue(0);
+          formProgress.setString(getForm(start) + " Progress");
         }
     }
 
@@ -1088,7 +1112,9 @@ public abstract class Wizard implements PropertyChangeListener{
      */
     protected void exec_forms(int end){
       modified = true;
-      Form f = getCurrentForm();
+      boolean failed = false;
+      Form f;
+
       // execute the previous forms
       for( int i=0 ; i <= end ; i++ ){
         f=getForm(i);
@@ -1100,18 +1126,20 @@ public abstract class Wizard implements PropertyChangeListener{
           
           if( (worked instanceof ErrorString) ||  
               (worked instanceof Boolean && (!((Boolean)worked).booleanValue())) ){
-            end=i-1;
+            failed = true;
+            end=i-1;  //index to the last "good" Form
             break;
           }
-          
         }
-        wizProgress.setValue((end+1));
-        wizProgress.setString("Wizard Progress: " + (getCurrentFormNumber()+1) +
-                              " of " + forms.size() + " Forms done");
-        formProgress.setValue(FORM_PROGRESS);
-        formProgress.setString(f + " Done");
+        if(!failed){
+          wizProgress.setValue((i+1));
+          wizProgress.setString("Wizard Progress: "+(i + 1)+
+                                " of " + forms.size() + " Forms done");
+          formProgress.setValue(FORM_PROGRESS);
+          formProgress.setString(f + " Done");
+        }
       }
-
+      
       invalidate(end+1);
     }
 
