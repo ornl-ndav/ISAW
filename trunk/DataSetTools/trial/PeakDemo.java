@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/02/28 19:57:39  dennis
+ * Modified import statements due to operator reorganization.
+ *
  * Revision 1.3  2002/01/29 13:52:19  dennis
  * Added code to find max value.
  *
@@ -43,6 +46,7 @@
 import javax.swing.*;
 
 import DataSetTools.dataset.*;
+import DataSetTools.dataset.Data;
 import DataSetTools.operator.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
