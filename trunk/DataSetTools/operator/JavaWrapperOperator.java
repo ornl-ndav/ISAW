@@ -32,6 +32,12 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2004/01/08 22:29:30  bouzekc
+ * Now extends GenericOperator.  Changed createCategoryList() to
+ * getCategoryList() due to reflection problems.  Modified to allow
+ * instantiation of ParameterGUIs from SpecialStrings.  Changed
+ * implementation of getCategoryList().
+ *
  * Revision 1.2  2003/10/30 18:38:33  bouzekc
  * Changed Operator name in main() to WrappedCrunch.
  *
@@ -42,6 +48,8 @@
 package DataSetTools.operator;
 
 import DataSetTools.dataset.*;
+
+import DataSetTools.operator.Generic.*;
 
 import DataSetTools.parameter.*;
 
@@ -57,7 +65,7 @@ import java.util.*;
  * calculation routines and still have their routines show up in ISAW as
  * Operators.
  */
-public class JavaWrapperOperator extends Operator {
+public class JavaWrapperOperator extends GenericOperator {
   //~ Instance fields **********************************************************
 
   private Field[] fieldParams;
@@ -74,8 +82,7 @@ public class JavaWrapperOperator extends Operator {
   public JavaWrapperOperator( Wrappable temp ) throws ClassCastException {
     super( temp.getClass(  ).getName(  ) );
     wrapped       = temp;
-    fieldParams   = wrapped.getClass(  )
-                           .getFields(  );
+    fieldParams   = wrapped.getClass(  ).getFields(  );
     setDefaultParameters(  );
   }
 
@@ -131,13 +138,24 @@ public class JavaWrapperOperator extends Operator {
             addParameter( new StringPG( name, null ) );
           } else if( type.isArray(  ) ) {
             //ArrayPG
-            addParameter( new ArrayPG( name, null ) );
-          } else if( type == DataSet.class ) {
-            addParameter( new DataSetPG( name, null ) );
+            addParameter( new ArrayPG( name, val ) );
+          } else if( 
+            ( type == DataSet.class ) || ( type == DataDirectoryString.class ) ) {
+            addParameter( new DataSetPG( name, val ) );
           } else if( type == UniformXScale.class ) {
-            addParameter( new UniformXScalePG( name, null ) );
+            addParameter( new UniformXScalePG( name, val ) );
           } else if( type == VariableXScale.class ) {
-            addParameter( new VariableXScalePG( name, null ) );
+            addParameter( new VariableXScalePG( name, val ) );
+          } else if( type == InstrumentNameString.class ) {
+            addParameter( new InstNamePG( name, val ) );
+          } else if( type == IntListString.class ) {
+            addParameter( new IntArrayPG( name, val ) );
+          } else if( type == LoadFileString.class ) {
+            addParameter( new LoadFilePG( name, val ) );
+          } else if( type == SaveFileString.class ) {
+            addParameter( new SaveFilePG( name, val ) );
+          } else if( type == StringChoiceList.class ) {
+            addParameter( new ChoiceListPG( name, val ) );
           }
         }
       } catch( IllegalAccessException iae ) {
@@ -184,27 +202,44 @@ public class JavaWrapperOperator extends Operator {
   }
 
   /**
+   * Accessor method for the title of this Operator.  Uses the file name  of
+   * the Wrappable internal instance.
+   *
+   * @return The title of this JavaWrapperOperator.
+   */
+  public String getTitle(  ) {
+    String[] packageNames = super.getTitle(  ).split( "\\." );
+
+    return packageNames[packageNames.length - 1];
+  }
+
+  /**
    * Testbed.
    */
   public static void main( String[] args ) {
-    Operators.WrappedCrunch crunch = new Operators.WrappedCrunch(  );
+    Operators.TOF_SCD.WrappedCrunch2 crunch = new Operators.TOF_SCD.WrappedCrunch2(  );
     JavaWrapperOperator wrapper    = new JavaWrapperOperator( crunch );
-    DataSet temp                   = new DataSetTools.retriever.RunfileRetriever( 
-        "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
-    new DataSetTools.viewer.ViewManager( 
-      temp, DataSetTools.viewer.IViewManager.IMAGE );
-    wrapper.getParameter( 0 )
-           .setValue( temp );
-    wrapper.getParameter( 1 )
-           .setValue( new Float( 0.0f ) );
-    wrapper.getParameter( 2 )
-           .setValue( new Float( 2.0f ) );
-    wrapper.getParameter( 3 )
-           .setValue( new Boolean( true ) );
+    /*DataSet temp                   = new DataSetTools.retriever.RunfileRetriever(
+       "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
+       new DataSetTools.viewer.ViewManager(
+         temp, DataSetTools.viewer.IViewManager.IMAGE );
+       wrapper.getParameter( 0 )
+              .setValue( temp );
+       wrapper.getParameter( 1 )
+              .setValue( new Float( 0.0f ) );
+       wrapper.getParameter( 2 )
+              .setValue( new Float( 2.0f ) );
+       wrapper.getParameter( 3 )
+              .setValue( new Boolean( true ) );
+       DataSet newDS = ( DataSet )wrapper.getResult(  );
+       new DataSetTools.viewer.ViewManager(
+         newDS, DataSetTools.viewer.IViewManager.IMAGE );*/
+    String[] catList = wrapper.getCategoryList(  );
 
-    DataSet newDS = ( DataSet )wrapper.getResult(  );
-    new DataSetTools.viewer.ViewManager( 
-      newDS, DataSetTools.viewer.IViewManager.IMAGE );
+    for( int i = 0; i < catList.length; i++ ) {
+      System.out.println( catList[i] );
+    }
+    System.out.println( wrapper.getCommand(  ) );
   }
 
   /**
@@ -213,24 +248,33 @@ public class JavaWrapperOperator extends Operator {
    *
    * @return A String array of the category list.
    */
-  protected String[] createCategoryList(  ) {
-    if( wrapped == null ) {
+  public String[] getCategoryList(  ) {
+    if( ( wrapped == null ) || !( wrapped instanceof Wrappable ) ) {
       return null;
     }
 
     // determine the correct abstract class
-    Class klass = wrapped.getClass(  );
+    Class wrappedKlass = wrapped.getClass(  );
+    Class wrapperKlass = this.getClass(  );
 
-    while( !Operator.isAbstract( klass ) ) {
-      klass = klass.getSuperclass(  );
+    while( !Operator.isAbstract( wrapperKlass ) ) {
+      wrapperKlass = wrapperKlass.getSuperclass(  );
     }
 
     // get the category name and shorten it
-    String category = klass.getPackage(  )
-                           .getName(  )
-                           .substring( dstools_length );
+    String category = wrapperKlass.getPackage(  ).getName(  );
+    category = category.substring( 
+        category.indexOf( "." ) + 1, category.length(  ) );
+
+    String wrappedCat = wrappedKlass.getPackage(  ).getName(  );
+    int dotIndex      = wrappedCat.indexOf( "." );
+
+    if( dotIndex >= 0 ) {
+      wrappedCat   = wrappedCat.substring( dotIndex + 1, wrappedCat.length(  ) );
+      category     = category + "." + wrappedCat;
+    }
 
     // split up into an array and return
-    return StringUtil.split( category, "." );
+    return category.split( "\\." );
   }
 }
