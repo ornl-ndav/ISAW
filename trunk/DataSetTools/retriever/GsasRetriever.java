@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2003/02/17 22:24:12  pfpeterson
+ *  Updated deprecated method calls to what is now used.
+ *
  *  Revision 1.4  2002/11/27 23:23:15  pfpeterson
  *  standardized header
  *
@@ -526,7 +529,7 @@ public class GsasRetriever extends Retriever{
 
         // look for the instrument parameter file and add its attributes
         if(this.iparmfile!=null){
-            String parmfile = StringUtil.fixSeparator(this.data_source_name);
+            String parmfile=StringUtil.setFileSeparator(this.data_source_name);
             int index       = parmfile.lastIndexOf("/");
             if(index>=0){
                 parmfile=parmfile.substring(0,index+1);
