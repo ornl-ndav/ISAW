@@ -29,6 +29,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.42  2004/04/19 14:02:37  rmikk
+ * Added # signs at the start of the log information of a DataSet that
+ *   is being saved
+ *
  * Revision 1.41  2004/03/15 19:34:01  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -1024,7 +1028,7 @@ public class table_view extends JPanel implements ActionListener
             {
                S += oplog.getEntryAt( j );
                if( j + 1 < oplog.numEntries() )
-                  S += "\n             ";
+                  S += "\n#             ";
             }
          OutputField( S );
          OutputEndField();
@@ -1504,6 +1508,7 @@ public class table_view extends JPanel implements ActionListener
             DataSet DS = DSS[ i ];
 
             columnHeader = true;
+            OutputField("#");
             for( int ii = 0; ii < selModel.size(); ii++ )
                OutputField( ( ( FieldInfo )( selModel.getElementAt( ii ) ) ).toString() );
             OutputEndField();
