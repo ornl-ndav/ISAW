@@ -32,6 +32,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.21  2004/06/03 16:39:56  rmikk
+ * Setting Special String and Array parameters of a Wrappable that were not
+ *   assigned an original value now no longer yields a null pointer exception
+ *
  * Revision 1.20  2004/05/09 21:41:28  bouzekc
  * Added code to clear DataSet values before returning the wrapped result.
  *
@@ -159,11 +163,12 @@ public class JavaWrapperOperator extends GenericOperator {
    * Testbed.
    */
   public static void main( String[] args ) {
-    Operators.Example.WrappedCrunch op = new Operators.Example.WrappedCrunch(  );
+   /* Operators.Example.WrappedCrunch op = new Operators.Example.WrappedCrunch(  );
 
     //Operators.StringChoiceOp op = new Operators.StringChoiceOp(  );
     //Operators.MyFortran crunch = new Operators.MyFortran(  );
     JavaWrapperOperator wrapper = new JavaWrapperOperator( op );
+   */
     /*DataSet temp = new DataSetTools.retriever.RunfileRetriever(
        "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
        new DataSetTools.viewer.ViewManager(
@@ -179,7 +184,7 @@ public class JavaWrapperOperator extends GenericOperator {
        DataSet newDS = ( DataSet )wrapper.getResult(  );
        new DataSetTools.viewer.ViewManager(
          newDS, DataSetTools.viewer.IViewManager.IMAGE );*/
-    String[] catList = wrapper.getCategoryList(  );
+    /*String[] catList = wrapper.getCategoryList(  );
 
     for( int i = 0; i < catList.length; i++ ) {
       System.out.println( catList[i] );
@@ -197,6 +202,52 @@ public class JavaWrapperOperator extends GenericOperator {
     System.out.println( wrapper.getParameter( 1 ) );
     System.out.print( "New value: " );
     System.out.println( clonedOp.getParameter( 1 ) );
+    */
+    Vector Vmain = new Vector();
+    Vector V = new Vector();
+      Vector V1 = new Vector();
+      V1.add( new Integer(1));
+      V1.add( new Integer(2));
+      V1.add( new Integer(3));
+    V.add(V1);
+    V1 = new Vector();
+          V1.add( new Integer(4));
+          V1.add( new Integer(5));
+          V1.add( new Integer(6));
+        V.add(V1);
+    V1 = new Vector();
+          V1.add( new Integer(7));
+          V1.add( new Integer(8));
+          V1.add( new Integer(9));
+    V.add(V1);
+    Vmain.add(V);
+    V = new Vector();
+         V1 = new Vector();
+         V1.add( new Integer(11));
+         V1.add( new Integer(12));
+         V1.add( new Integer(13));
+       V.add(V1);
+       V1 = new Vector();
+             V1.add( new Integer(14));
+             V1.add( new Integer(15));
+             V1.add( new Integer(16));
+           V.add(V1);
+       V1 = new Vector();
+             V1.add( new Integer(17));
+             V1.add( new Integer(18));
+             V1.add( new Integer(19));
+       V.add(V1);
+     Vmain.add(V);
+    
+    try{
+    
+    Object O = JavaWrapperOperator.cvrt((new Vector[0][0].getClass()),Vmain);
+    System.out.println("Res class="+O.getClass());
+    System.out.println("Res="+ gov.anl.ipns.Util.
+               Sys.StringUtil.toString(O));
+    }catch(Exception sss){
+      System.out.println("Exception occurred"+sss);
+    }
   }
 
   /**
@@ -297,6 +348,7 @@ public class JavaWrapperOperator extends GenericOperator {
             addParameter( new StringPG( name, val ) );
           } else if( ( type.isArray(  ) ) || ( type == Vector.class ) ) {
             //ArrayPG
+           
             addParameter( new ArrayPG( name, val ) );
           } else if( type == DataSet.class ) {
             addParameter( new DataSetPG( name, val ) );
@@ -380,15 +432,28 @@ public class JavaWrapperOperator extends GenericOperator {
 
             //iterate through the vector of values and set each of the field
             //param's values to the element value
+            /*Object rr = fieldParams[k].get( wrapped);//Could be null
+            System.out.println("rr="+rr+"::"+rr.getClass());
             for( int m = 0; m < myVect.size(  ); m++ ) {
               Array.set( fieldParams[k].get( wrapped ), 1, myVect.get( m ) );
             }
+           */
+           try{
+              fieldParams[k].set( wrapped, cvrt( fieldParams[k].getType(), myVect));
+           }catch(Exception ss){
+               return new ErrorString( "improp params "+ss.toString());
+           }
           }
         } else if( 
           SpecialString.class.isAssignableFrom( fieldParams[k].getType(  ) ) ) {
-          SpecialString ss = ( SpecialString )fieldParams[k].get( wrapped );
-
-          ss.setString( values[k].toString(  ) );
+          try{
+          
+          SpecialString spStr = (SpecialString)(fieldParams[k].getType().newInstance());
+          spStr.setString( values[k].toString());
+          fieldParams[k].set( wrapped,spStr);
+          }catch(Exception ss8){
+            return new ErrorString("Internal Error xxx389"+ss8);
+          }
         } else {
           fieldParams[k].set( wrapped, values[k] );
         }
@@ -450,4 +515,94 @@ public class JavaWrapperOperator extends GenericOperator {
       throw new RuntimeException( ite.getMessage(  ) );
     }
   }
+ 
+ /**
+  * 
+  * @param C  The desired Class to put parts of orig into
+  * @param orig  The variable with the data which is essentially
+  *             of the correct class except that it has Vectors
+  *             instead of arrays
+  * @return   The arrayified Vector
+  * @throws Exception  if this process is not possible
+  */
+ public static Object cvrt( Class C, Object orig) throws Exception{
+   if( C == null)
+     return null;
+   if( orig == null)
+     return null;
+     
+   if( C.isArray()){
+      Class C1 = C.getComponentType();
+      int n = Size(orig);
+      if( n < 0)
+         throw new IllegalArgumentException("# of Dimension do not correspond");
+      Object u = Array.newInstance( C1,Size( orig ));
+      for( int i = 0; i<Size(orig); i++)
+        Array.set(u,i, cvrt(C1,Elt(orig,i)));    
+     return u;
+   }
+  Class[] interfaces = C.getInterfaces();
+  boolean isCollection = false;
+  if( interfaces != null){
+    for( int i = 0; (i< interfaces.length) && !isCollection; i++)
+        if( interfaces[i] == Collection.class)
+          isCollection = true;
+  }
+  
+  if( isCollection){
+    Collection CC = (Collection)C.newInstance();
+    for( int i=0; i<Size(orig); i++)
+       CC.add( Elt(orig,i));
+     return CC;
+  }
+ if( !C.isPrimitive())
+ if(!C.isAssignableFrom( orig.getClass()))
+    throw new IllegalArgumentException( C.toString()+" and "+
+                     orig.getClass().toString()+" are incompatible");
+ if( C == orig.getClass())
+   return orig;
+ if( C == double.class)
+   return  new Double(((Number)orig).doubleValue());
+ if( C == float.class)
+   return new Float(((Number)orig).floatValue());
+ if( C == int.class)
+   return new Integer(((Number)orig).intValue());
+ return orig;
+  
+     
+   
+   
+ }
+ /**
+  * Returns the number of subcomponents of the given Object
+  * @param O  The Object whose length is desired.
+  * @return  Returns the number of components in the Array or Collection. If
+  *       of neither type -a is returned
+  */
+ public static int Size( Object O ){
+   if( O == null)
+     return -1;
+   if( O.getClass().isArray())
+     return Array.getLength(O);
+   if( O instanceof Collection )
+     return ((Collection)O).size();
+   return -1;
+ }
+ 
+ /**
+  *   Returns the ith component in the Object O
+  * @param O  The Object that may be made up of subcomponents
+  * @param i  The ith subcomponent
+  * @return   The ith component, if there is one, otherwise null is returned
+  */
+ public static Object Elt( Object O, int i){
+   if( i< 0)
+     return null;
+    if( i >= Size(O))
+      return null;
+    if( O.getClass().isArray())
+      return Array.get(O,i);
+    return ((Collection)O).toArray()[i];
+ }
+
 }
