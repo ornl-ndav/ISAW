@@ -33,13 +33,16 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/07/30 14:50:09  rmikk
+ * Removed unused imports
+ *
  * Revision 1.2  2004/06/04 22:01:54  rmikk
  * Added Documentation and GPL
  *
  */
 
 package Command.JavaCC.Fortran;
-import java.util.*;
+//import java.util.*;
 
 
 /**
