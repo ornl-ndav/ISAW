@@ -7,6 +7,9 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/07/11 22:40:01  dennis
+ *  @see reference fixed
+ *
  *  Revision 1.3  2000/07/10 22:58:58  dennis
  *  July 10, 2000 version... many changes
  *
@@ -36,7 +39,7 @@ import  javax.swing.*;
  *
  *  @see DataSetTools.viewer.Image.ImageView
  *  @see DataSetTools.viewer.Graph.GraphView
- *  @see DataSetTools.viewer.SelectedGraph.SelectedGraphView
+ *  @see OverplotView.SelectedGraphView
  *
  */ 
 
