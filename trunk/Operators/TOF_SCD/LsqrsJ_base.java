@@ -31,6 +31,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2005/01/04 17:02:11  rmikk
+ * Implements HiddenOperator.  The result is not a String or a DataSet
+ *
  * Revision 1.2  2004/07/31 23:08:24  rmikk
  * Removed unused imports
  *
@@ -64,7 +67,8 @@ import DataSetTools.util.SharedData;
  *  Finds the orientation matrix that is the best fit to the peak
  * positions and indexed h,k,l values for the peaks
  */
-public class LsqrsJ_base extends GenericTOF_SCD {
+public class LsqrsJ_base extends GenericTOF_SCD implements 
+                           DataSetTools.operator.HiddenOperator{
   //~ Static fields/initializers ***********************************************
 
   private static final double SMALL    = 1.525878906E-5;
