@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/02/20 00:08:38  dennis
+ *  Added toString() method.
+ *
  *  Revision 1.1  2003/02/19 21:56:49  dennis
  *  Intial version of command objects for client/server communication.
  *
@@ -198,6 +201,24 @@ public class GetDataCommand extends CommandObject
   public int getAttribute_mode()
   {
     return attr_mode;
+  }
+
+  /**
+   *  Get String form for the command, and command parameters.
+   *
+   *  @return a multiline String containing the command, file name and
+   *          other parameter values for this command.
+   */
+  public String toString()
+  {
+    return super.toString() + '\n' +
+           "filename  = "   + filename + '\n'  +
+           "ds_number = "   + ds_number + '\n' +
+           "group_ids = "   + group_ids + '\n' +
+           "min_x     = "   + min_x     + '\n' +
+           "max_x     = "   + max_x     + '\n' +
+           "rebin_factor = " + rebin_factor + '\n' +
+           "attr_mode    = " + attr_mode;
   }
 
  /* ---------------------------- readObject ------------------------------- */

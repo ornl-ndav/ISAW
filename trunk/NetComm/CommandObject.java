@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2003/02/20 00:08:38  dennis
+ *  Added toString() method.
+ *
  *  Revision 1.1  2003/02/19 21:56:49  dennis
  *  Intial version of command objects for client/server communication.
  *
@@ -69,6 +72,30 @@ public class CommandObject
   public static final int GET_FILE_SUMMARY = 120;// GetFileCommandObject, since 
                                                  // it requires a directory name
   public static final int END_FILE_CMDS   = 300; // BOUND ON FILE_COMMANDS
+
+  public static final int[] command_codes =    { INVALID,  
+                                                 EXIT,
+                                                 GET_STATUS,
+                                                 GET_DIRECTORIES,
+                                                 GET_DS_TYPES,
+                                                 GET_DS_NAME,
+                                                 GET_DS,
+                                                 GET_DATA_BLOCKS,
+                                                 GET_SUMMARY,
+                                                 GET_FILE_NAMES,
+                                                 GET_FILE_SUMMARY };
+
+  public static final String[] command_names = {"INVALID", 
+                                                "EXIT",
+                                                "GET_STATUS",
+                                                "GET_DIRECTORIES",
+                                                "GET_DS_TYPES",   
+                                                "GET_DS_NAME",
+                                                "GET_DS",
+                                                "GET_DATA_BLOCKS",
+                                                "GET_SUMMARY",
+                                                "GET_FILE_NAMES",
+                                                "GET_FILE_SUMMARY" };
 
   /**
    *  We define the serialVersionUID so that we can upgrade and maintain basic
@@ -141,6 +168,21 @@ public class CommandObject
   public String getPassword()
   {
     return password;
+  }
+
+  /**
+   *  Get the command code and name corresponding to the command code for 
+   *  this command.
+   *
+   *  @return String containing the command code and command name.
+   */
+  public String toString()
+  {
+    for ( int i = 0; i < command_codes.length; i++ )
+      if ( command_codes[i] == command )
+        return ("Command is: " + command + ":" + command_names[i] );
+
+    return ("Command code: " + command + " is invalid" );
   }
 
  /* ---------------------------- readObject ------------------------------- */
