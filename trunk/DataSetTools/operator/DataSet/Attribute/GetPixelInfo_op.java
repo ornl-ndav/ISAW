@@ -29,8 +29,12 @@
  *
  * Modified:
  *
- *
  * $Log$
+ * Revision 1.2  2003/02/13 21:15:46  dennis
+ * Fixed ordering to be "Col,Row" to match (x,y) convention
+ * on area detectors.  Cleaned up docs after change from
+ * detector to segment to pixel.
+ *
  * Revision 1.1  2003/02/12 21:45:08  dennis
  * Copied and modified from GetSegmentInfo_op.
  *
@@ -48,8 +52,6 @@
  *
  * Revision 1.1  2002/08/01 22:09:03  rmikk
  * Initial Checkin
- *
- *
  */
 package DataSetTools.operator.DataSet.Attribute;
 import DataSetTools.operator.DataSet.*;
@@ -65,15 +67,14 @@ import java.text.DecimalFormat;
 /** 
  *  
  */
-public class GetPixelInfo_op extends DS_Attribute
+public class GetPixelInfo_op extends    DS_Attribute
                              implements IDataBlockInfo
-
 {
-  private static final String TITLE = "Det Info";
+  private static final String TITLE = "Pixel Info";
 
  /* ------------------------ Default constructor ------------------------- */ 
  /**
-  *  Creates operator with titled "Get Det Info" and a default list
+  *  Creates operator with title "Pixel Info" and a default list
   *  of parameters. This operator gets some of the Pixel Info 
   *  information for this data block.
   */  
@@ -83,26 +84,15 @@ public class GetPixelInfo_op extends DS_Attribute
     
   }
 
-/* public java.lang.String getCategory()
-  { return DataSetOperator.X_AXIS_INFORMATION ;
-   }
-  String[] clist = { Operator.OPERATOR, 
-                    "Operator Add", 
-                     DataSetOperator.X_AXIS_INFORMATION };
-
-  public java.lang.String[] getCategoryList()
-   { return clist;
-   }
-*/
-
  /* ---------------------------- Constructor ----------------------------- */ 
  /** 
   *  Creates operator that will give the column and row values corresponding
-  *  to a given spectrum
-  * @param ds   The data set with the data block
-  * @param index  the position of the desired data block in the data block array<P>
-  * The getResult metho returns the column and row of the data block in a 
-  * vector
+  *  to a given spectrum.  The getResult method returns the column and row 
+  *  of the data block in a Vector of Integers.
+  *
+  * @param ds     The data set with the data block
+  * @param index  the position of the desired data block in the data 
+  *               block array<P>
   */
   public GetPixelInfo_op( DataSet ds, int index){
     this(); 
@@ -112,14 +102,14 @@ public class GetPixelInfo_op extends DS_Attribute
 
  /* ---------------------------- getCommand ------------------------------- */ 
  /** 
-  * Get the name of this operator, Row, to use in scripts
+  * Get the name of this operator to use in scripts
   * 
-  * @return  "Row", the command used to invoke this 
+  * @return  "PixelInfo", the command used to invoke this 
   *           operator in Scripts
   */
   public String getCommand()
   {
-    return "DetInf";
+    return "PixelInfo";
   }
 
  /* ------------------------ setDefaultParameters ------------------------- */ 
@@ -138,9 +128,9 @@ public class GetPixelInfo_op extends DS_Attribute
  /** 
   *  Executes this operator using the values of the current parameters.
   *
-  *  @return If successful, this operator returns the row(Integer) of 
-  *          the given data block
-  *  
+  *  @return If successful, this operator returns a Vector containing the
+  *  the column and row numbers of the data block indexed by the first
+  *  parameter.  Otherwise an error string is returned.
   */
   public Object getResult(){
     DataSet ds = getDataSet();
@@ -160,8 +150,8 @@ public class GetPixelInfo_op extends DS_Attribute
                                    "Data block has no PixelInfo in list");
     Vector V = new Vector();
     
-    V.addElement(new Integer((int)pil.row()));
     V.addElement(new Integer((int)pil.col()));
+    V.addElement(new Integer((int)pil.row()));
     return V;
     
   }
@@ -178,32 +168,36 @@ public class GetPixelInfo_op extends DS_Attribute
     return op;
   }
 
-/** Returns the Seg,row and col corresponding to the data block whose index is index
-*/
+ /** 
+  *  Returns a String containing the column and row numbers for the data block 
+  *  specified by the given index.  The specified index is set as the current
+  *  value of parameter 0 in the operator.
+  */
  public String DataInfo( int index )
-  { parameters= new Vector();
+  { 
+    parameters= new Vector();
     parameters.addElement( new Parameter("index", new Integer(index)));
     Object O= getResult();
+
     if( O instanceof ErrorString) 
       return "NaN";
     else if( O == null)
       return "null";
     else if( ! (O instanceof Vector))
-      
       return (new NexIO.NxNodeUtils()).Showw(O); 
+
     Vector V = (Vector)O;
     return V.elementAt(0)+","+V.elementAt(1);
-      
    }
-
 
  
- /** Returns "Det Seg:Row,Col"
- */
- public String DataInfoLabel( int i )
-  { return "Col,Row";
-   }
-   
+ /** 
+  *  Returns the String to use as a label.
+  */
+  public String DataInfoLabel( int i )
+  { 
+    return "Col,Row";
+  }
    
    
  public String getDocumentation()
