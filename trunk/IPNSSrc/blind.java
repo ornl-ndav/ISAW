@@ -54,6 +54,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/02/10 18:58:42  pfpeterson
+ * Uses the new version of tstvol.
+ *
  * Revision 1.3  2003/02/10 18:36:18  pfpeterson
  * Reformatted code.
  *
@@ -1195,10 +1198,9 @@ public class blind {
         u[i-4+3*j]=B[j-4+3*i];
         }
         
-    doubleW vol= new doubleW(0);
-    subs.tstvol( orgmat,vol);
+    double vol=subs.tstvol(orgmat);
 
-    if( vol.val < 0) 
+    if( vol < 0) 
       System.out.println("Left handed system");
     for(int i=1;i<=3;i++)
       System.out.println( orgmat[i-4+3*1]+"  "+orgmat[i-4+3*2]+"  "
