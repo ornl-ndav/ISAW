@@ -1,12 +1,16 @@
 /*
- * @(#)DataSetViewer.java   1.0  1999/01/10 Dahr Desai
- *                          1.01 2000/01/25 Dennis Mikkelson
+ * @(#)DataSetViewer.java 
+ *
+ *  Programmer: Dennis Mikkelson, 
+ *              Dahr Desai
  *
  *   1.01  Added methods to redraw() and set the DataSet to be viewed.  Also
  *         reorganized the menu bar and removed some unneeded methods. 
  *
- * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.6  2001/01/29 21:26:39  dennis
+ *  Now uses CVS version numbers.
+ *
  *  Revision 1.5  2000/12/07 23:04:17  dennis
  *  Now includes basic support for maintaining ViewerState.
  *
