@@ -29,6 +29,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2003/05/12 15:58:19  rmikk
+ *  Removed debug prints
+ *  getTime now returns better times corresponding to a
+ *     given row and column in the display
+ *
  *  Revision 1.15  2003/02/12 20:02:36  dennis
  *  Switched to use PixelInfoList instead of SegmentInfoList
  *
@@ -355,17 +360,14 @@ public class ContourData
     SGTMetaData yMeta;
     SGTMetaData zMeta;
     lastTime = X;
-    //System.out.println("in SGTData"+minAx1+","+minAx2+","+minAx3
-     //     +","+maxAx1+","+ maxAx2+","+maxAx3);
+
     values = new double[ nrowws*ncolls];
     Arrays.fill( values, 0.0f);
     Groupss = new int[nrowws*ncolls];
     Inds = new int[nrowws*ncolls];
     Arrays.fill( Groupss, -1);
     Arrays.fill( Inds, -1);
-    //int Trow=(int)( nrowws*(-4-minAx2)/(maxAx2-minAx2) );
-    //int Tcol =(int)( ncolls*(-4-minAx1)/(maxAx1-minAx1) );
-    //System.out.println("-------------------------------");
+
     float SS=0;
     for( int i=0;i< ds.getNum_entries(); i++)
       {float index1 = Axis3.getXindex( i, X);
@@ -412,10 +414,7 @@ public class ContourData
           if( col >= ncolls) col = ncolls -1;
           if( row < 0) row =0;
           if( col < 0) col = 0;
-          //System.out.println("  ax1,ax2,row,col="+ax1+","+ax2+","+row+","+col);
-          
-          //if( ax1 >=-7.1) if( ax1<-7) 
-            //if(ax2 >-8.1) if( ax2<-8)
+ 
             if( 2==3)
              if( indx >=0)if( indx < D.getX_scale().getNum_x())
              {bg = true;
@@ -433,13 +432,19 @@ public class ContourData
          
          bg=false;
          if( (y != 0) &&(index1 !=index2))
-           { //if(values[col*nrowws+row]>0)
-              // System.out.println("Dup "+row+","+col);
+           { 
             double yx=y;
+            boolean full=true;
             if( indx ==(int)index1)
-              y =y - ( index1-(int)index1)*yx;
+              {
+               y =y - ( index1-(int)index1)*yx;
+               full = indx == index1;
+               }
             if( indx == (int)index2)
-              y= y - (1-index2+(int)index2)*yx;
+              {
+                y= y - (1-index2+(int)index2)*yx;
+                full = indx == index2;
+               }
             values[ col*nrowws+row ]+=y;
             Groupss[ col*nrowws+row ] = i;
             Inds[ col*nrowws+row ] = indx;
@@ -453,15 +458,7 @@ public class ContourData
        
       }//if indx >=0
       }
-     /* System.out.println("Time ="+X);
-      for( int k=0; k<values.length;k++)
-        {
-         if( (values[k] >0)||(Groupss[k]>=0))
-          System.out.print("("+k+":"+values[k]+","+Groupss[k]+")  ");
-         }
-      System.out.println("___________________");
-      */
-    
+
       SimpleGrid sl;
       xMeta = new SGTMetaData( Axis1.getAxisName(), Axis1.getAxisUnits() );
       yMeta = new SGTMetaData( Axis2.getAxisName(), Axis2.getAxisUnits() );
@@ -541,11 +538,15 @@ public class ContourData
      return Ttime;
      */
     float R;
-    if( maxAx2 ==minAx2) R = 0;
-    else R = (int)((row-minAx2)/(maxAx2-minAx2)*nrowws);
+    if( maxAx2 ==minAx2) 
+       R = 0;
+    else 
+       R = (int)((row-minAx2)/(maxAx2-minAx2)*nrowws);
     float C ;
-    if( maxAx1 == minAx1)C = 0;
-    else C=(int) ((col -minAx1)/(maxAx1-minAx1)*ncolls);
+    if( maxAx1 == minAx1)
+        C = 0;
+    else 
+         C=(int) ((col -minAx1)/(maxAx1-minAx1)*ncolls);
  
 
    if( R<-.5) return Float.NaN;
@@ -561,8 +562,32 @@ public class ContourData
    int indx = Inds[c*nrowws+r]; 
    if( G == -1)
      return Float.NaN;
+   
+
+   
+
    Data D = ds.getData_entry( G);  
-   return D.getX_scale().getX(indx);
+   float time=D.getX_scale().getX(indx);
+   float value = Axis3.getValue( G, indx);
+   int oindx=indx;
+   float ovalue = value, otime = time;
+   if( value > lastTime)
+       indx--;
+   else if( value < lastTime- (maxAx3-minAx3)/2/ntimes)
+       indx++;
+
+   time=D.getX_scale().getX(indx);
+   value = Axis3.getValue( G, indx);
+   if( value <=lastTime)
+       
+    if( value >=lastTime- (maxAx3-minAx3)/2/ntimes)
+        return time;
+   
+   //No time with proper Axis3 value, get the best time for the Axis3 value
+   float xindex = Axis3.getXindex(G, lastTime- (maxAx3-minAx3)/2/ntimes );
+   indx = (int)(xindex+.5);
+   time=D.getX_scale().getX(indx);                   
+   return time;
    }
 
    public void setXScale( XScale xscale)
@@ -616,11 +641,15 @@ public class ContourData
          }
       else //returns user coordinates
          { float R;
-           if( maxAx2 ==minAx2) R = 0;
-           else R = (int)((row-minAx2)/(maxAx2-minAx2)*nrowws);
+           if( maxAx2 ==minAx2) 
+              R = 0;
+           else 
+              R = (int)((row-minAx2)/(maxAx2-minAx2)*nrowws);
            float C ;
-           if( maxAx1 == minAx1)C = 0;
-           else C=(int) ((col -minAx1)/(maxAx1-minAx1)*ncolls);
+           if( maxAx1 == minAx1)
+              C = 0;
+           else 
+              C=(int) ((col -minAx1)/(maxAx1-minAx1)*ncolls);
  
 
            if( R<-.5) return -1;
