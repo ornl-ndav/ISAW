@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2001/06/25 19:59:58  chatter
+ * Added Last Parameter to JParametersDialog Constructor
+ * in main program
+ *
  * Revision 1.8  2001/06/05 16:50:35  rmikk
  * Changed props.dat to IsawProps.dat
  *
@@ -629,11 +633,11 @@ public static void main( String args[] )
               System.out.println(BB.getOperatorPosition( S));
             else if( c=='1')
              { O1=BB.getOperator( n );
-               JParametersDialog JP=new JParametersDialog( O1,null,null);
+               JParametersDialog JP=new JParametersDialog( O1, null, null, null);
              }
             else if( c=='2')
               {O2=BB.getOperator( N);
-               JParametersDialog JP=new JParametersDialog( O2,null,null);
+               JParametersDialog JP=new JParametersDialog( O2,null,null , null);
 
               }
 
