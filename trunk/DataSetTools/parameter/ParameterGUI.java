@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2003/08/28 01:30:39  bouzekc
+ *  Added constructors to do initialization for all ParameterGUIs.  Added code
+ *  in initGUI() to add this as a PropertyChangeListener to the EntryWidget
+ *  and to properly set the enabled state.
+ *
  *  Revision 1.17  2003/08/28 00:52:40  bouzekc
  *  Fixed potential bug in setEnabled.
  *
@@ -143,6 +148,36 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
   private Vector propListeners = new Vector(  );
   private Vector nameList      = new Vector(  );
 
+  //~ Constructors *************************************************************
+
+  /**
+   * Constructor
+   *
+   * @param name The name of this ParameterGUI.
+   * @param val The initial value to set this ParameterGUI to.
+   */
+  public ParameterGUI( String name, Object val ) {
+    this( name, val, false );
+    setDrawValid( false );
+  }
+
+  /**
+   * Constructor
+   *
+   * @param name The name of this ParameterGUI.
+   * @param val The initial value to set this ParameterGUI to.
+   * @param valid Whether this VectorPG should be valid or not (initially).
+   */
+  public ParameterGUI( String name, Object val, boolean valid ) {
+    setName( name );
+    setValue( val );
+    setEnabled( true );
+    setValid( valid );
+    setDrawValid( true );
+    initialized          = false;
+    ignore_prop_change   = false;
+  }
+
   //~ Methods ******************************************************************
 
   /**
@@ -172,7 +207,8 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *        ParamterGUI or not.
    */
   public void setEnabled( boolean enable ) {
-    this.enabled=enable;
+    this.enabled = enable;
+
     if( entrywidget != null ) {
       entrywidget.setEnabled( enable );
     }
@@ -431,6 +467,8 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
     // put the gui together
     this.packupGUI(  );
     addPCLtoWidget(  );
+    entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
+    entrywidget.setEnabled( this.getEnabled(  ) );
   }
 
   /**
