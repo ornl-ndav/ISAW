@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 20:45:11  kramer
+ * Modified the method that gets a shortened source code representation of an
+ * interface to be able to have a tab placed in front of it.
+ *
  * Revision 1.3  2004/03/12 19:46:19  bouzekc
  * Changes since 03/10.
  *
@@ -102,7 +106,7 @@ public class ASCIIPrintFileManager extends PrintManager
 			
 			String tab = tabBuffer.toString();
 							
-				shortenedSource = intF.getStringInJavadocFormat(shortJava, shortOther);
+				shortenedSource = intF.getShortenedSourceCode("  ",shortJava, shortOther);
 				StringTokenizer tokenizer = new StringTokenizer(shortenedSource,"\n");
 				while (tokenizer.hasMoreTokens())
 					buffer.append(tab + tokenizer.nextToken() + "\n");
@@ -326,7 +330,7 @@ public class ASCIIPrintFileManager extends PrintManager
 				while (i<vec.size() && !gui.isCancelled())
 				{
 					StringBuffer buffer = new StringBuffer();
-					shortenedSource = ((Interface)vec.elementAt(i)).getStringInJavadocFormat(shortJava, shortOther);
+					shortenedSource = ((Interface)vec.elementAt(i)).getShortenedSourceCode("  ",shortJava, shortOther);
 					StringTokenizer tokenizer = new StringTokenizer(shortenedSource,"\n");
 					while (tokenizer.hasMoreTokens())
 					{
@@ -519,7 +523,7 @@ public class ASCIIPrintFileManager extends PrintManager
 				for (int i=0; i<vec.size(); i++)
 				{
 					Interface intf = (Interface)vec.elementAt(i);
-					intf.printSingleUMLAsString(this,tab,shortJava,shortOther);
+					writeBytes(intf.getSingleUMLAsString(tab,shortJava,shortOther));
 					writeBytes("\n");
 					currentValue++;
 					gui.setValue(currentValue);
