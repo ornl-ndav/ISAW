@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2002/01/08 19:48:38  rmikk
+ * Eliminated a null pointer exception that occurred when
+ * a command is not found.
+ *
  * Revision 1.23  2001/12/17 16:38:45  pfpeterson
  * Made the algorithm to prevent double operator listings stonger.
  *
@@ -754,6 +758,8 @@ public int getOperatorPosition( String CommName)
   {int i = find(CommName , Command_Compare);
    if( i < 0 )
       return i;
+    if( getOperatorCommand(i) == null) 
+        return -1;
     if(! getOperatorCommand(i).equals( CommName))
        return -1;
    int j = i-1;
