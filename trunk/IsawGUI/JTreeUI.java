@@ -1,7 +1,13 @@
 /*
- * @(#)JTreeUI.java     1.0  99/09/02  Alok Chatterjee
+ * $Id$ 
  *
  * $Log$
+ * Revision 1.10  2001/06/27 19:48:21  neffk
+ * cleaned up the code by moving the mouse listener to a more
+ * appropriate place in the file.  also cleaned up addDataSet(...) by
+ * giving variables more appropriate names, adding comments, and reducing
+ * the length of all lines to 80 characters or less
+ *
  * Revision 1.9  2001/06/27 19:13:43  chatter
  * Remove empty Line
  *
@@ -43,6 +49,12 @@ import java.awt.datatransfer.*;
  *
  *
  * $Log$
+ * Revision 1.10  2001/06/27 19:48:21  neffk
+ * cleaned up the code by moving the mouse listener to a more
+ * appropriate place in the file.  also cleaned up addDataSet(...) by
+ * giving variables more appropriate names, adding comments, and reducing
+ * the length of all lines to 80 characters or less
+ *
  * Revision 1.9  2001/06/27 19:13:43  chatter
  * Remove empty Line
  *
@@ -94,50 +106,8 @@ public class JTreeUI extends JPanel implements IObserver, Serializable
 
 
 
-/*--------------------------=[ start MouseAdapter ]=--------------------------*/
 
-    MouseListener ml = new MouseAdapter() 
-    {
-      final String MENU_SELECT    = "Select";
-      final String MENU_CLEAR     = "Clear Selection";
-      final String MENU_CLEAR_ALL = "Clear All Selections";
-
-      public void mousePressed(MouseEvent e) 
-//      public void mouseClicked(MouseEvent e) 
-      {
-        if(  tree.getSelectionCount() > 0  ) 
-        {
-          TreePath[] selectedPath = null;
-          TreePath[] tp           = tree.getSelectionPaths();  
-
-          int button1 =  e.getModifiers() & InputEvent.BUTTON1_MASK;
-          int button3 =  e.getModifiers() & InputEvent.BUTTON3_MASK;
-
-          JDataTreeRingmaster ringmaster = new JDataTreeRingmaster();
-
-          if(  button3 == InputEvent.BUTTON3_MASK  )
-          {
-            ringmaster.generatePopupMenu( tp, e );
-          }
-          else if(  button1 == InputEvent.BUTTON1_MASK  )
-          {
-            if(e.getClickCount() == 1) 
-            {
-              ringmaster.pointAtNode( tp );
-            }
-            else if(e.getClickCount() == 2) 
-            {
-              ringmaster.selectNode( tp );
-            }
-          }
-        }
-      }
-    };
-
-/*---------------------------=[ end MouseAdapter ]=---------------------------*/
-
-
-
+    MouseListener ml = new MouseListener( this );
     tree.addMouseListener(ml);
     JScrollPane pane = new JScrollPane(tree);
 
@@ -190,9 +160,11 @@ public class JTreeUI extends JPanel implements IObserver, Serializable
                 logTree.expandRow(1);
             }
 	 }	 
-
  
  
+  /**
+   *
+   */ 
   public DefaultMutableTreeNode getSelectedNode()
   {
     TreePath selectedPath = null;
@@ -208,16 +180,22 @@ public class JTreeUI extends JPanel implements IObserver, Serializable
 	  
 
 
-     public JTree getTree()
-     {
-        return tree;  
-     }
+  /**
+   *
+   */ 
+  public JTree getTree()
+  {
+    return tree;  
+  }
 
-     
-     public TreeModel getTreeModel()
-     {
-        return model;  
-     }
+   
+  /**
+   *
+   */ 
+  public TreeModel getTreeModel()
+  {
+    return model;  
+  }
      
 
   /**
@@ -256,32 +234,50 @@ public class JTreeUI extends JPanel implements IObserver, Serializable
     }   
   }
 
-     public void addDataSet(DataSet ds)
-     {
-        cp.addDataSet(ds);
-        DefaultMutableTreeNode level1 = (DefaultMutableTreeNode)root.getChildAt(0);
-        int index = root.getChildCount();
+
+  /**
+   * add a new DataSet object to the tree
+   */
+  public void addDataSet( DataSet ds )
+  {
+    cp.addDataSet( ds );                     //get the node that all 
+                                             //modified DataSet objects
+                                             //are children of
+    DefaultMutableTreeNode modified_ds_node = null;
+    modified_ds_node = (DefaultMutableTreeNode)root.getChildAt(0);
+ 
+                                             //make a node and use it to
+                                             //add our modified DataSet object
+                                             //to the tree
+    DefaultMutableTreeNode new_ds_node = new DefaultMutableTreeNode( ds );
+
+                                             //add it to the end of the tree
+    int index_of_modified_ds_node = modified_ds_node.getChildCount();
+    model.insertNodeInto( new_ds_node, 
+                          modified_ds_node, 
+                          index_of_modified_ds_node );
+
+                                             //now add the Data objects as
+                                             //children of the newly created
+                                             //DataSet object 
+    for( int i=0;  i<ds.getNum_entries();  i++ )
+    {
+      Data d = ds.getData_entry(i);
+      DefaultMutableTreeNode new_data_block = new DefaultMutableTreeNode( d ); 
+      int index_of_new_data_node = new_ds_node.getChildCount();
+      model.insertNodeInto( new_data_block, 
+                            new_ds_node, 
+                            index_of_new_data_node );
+    } 
+
+    ds.addIObserver(jpui);
+    ds.addIObserver(jcui);	
+  }   
 
 
-           
-                DefaultMutableTreeNode level2 = new DefaultMutableTreeNode(ds);
-                index = level1.getChildCount();
-                ( model ).insertNodeInto(level2,level1,index);
-
-                for (int k = 0; k < ds.getNum_entries() ; k++)
-                {
-                     Data entry = ds.getData_entry(k);
-                     DefaultMutableTreeNode level3 = new DefaultMutableTreeNode(entry); 
-                     index = level2.getChildCount();
-                     ( model ).insertNodeInto(level3,level2,index);
-		
-
-                } 
-		    ds.addIObserver(jpui);
-		    ds.addIObserver(jcui);	
-              
-    }   
-
+  /**
+   *
+   */
      public void openDataSet(DataSet ds, String name)
      {
         cp.addDataSet(ds);
@@ -329,21 +325,21 @@ public class JTreeUI extends JPanel implements IObserver, Serializable
    */
   public void update( Object observed, Object reason )
   {
-    //currently we only allow Strings & DataSets
     if(  !( reason instanceof String)  &&  !( reason instanceof DataSet)  )
       return;
-
-    if( reason instanceof DataSet )
-    {
+                                           
+                                            //if we're sent a DataSet object, 
+    if( reason instanceof DataSet )         //insert it into the tree & pop up 
+    {                                       //a viewer
       DataSet ds1 = (DataSet)reason;
       DefaultMutableTreeNode node = getNodeOfObject(reason);
 
-      if( node == null )    //ds1 is a NEW DataSet, add it as a modified DataSet
+      if( node == null )
       { 
         addDataSet( ds1 );
         jdvui.ShowDataSet(ds1,"External Frame",IViewManager.IMAGE);
       }
-      else      //System.out.println("ERROR: Currently we only insert a new DataSet");
+      else
         return;
     }         
 
@@ -384,9 +380,8 @@ public class JTreeUI extends JPanel implements IObserver, Serializable
 
       else if ( (String)reason == DATA_DELETED )
       {
-        System.out.println( "deleting..." );
         DefaultMutableTreeNode ds_node = getNodeOfObject( observed );
-        if(  ds_node != null  )  //for good karma
+        if(  ds_node != null  )  //karma++
         {
  
           //remove old JTree representation of the DataSet object
@@ -396,7 +391,6 @@ public class JTreeUI extends JPanel implements IObserver, Serializable
 
           //create a new JTree representation of the DataSet object
           DefaultMutableTreeNode new_ds_node = new DefaultMutableTreeNode( ds );
-          model.insertNodeInto( new_ds_node, parent, index_of_ds_node );
           for( int i=0;  i<ds.getNum_entries();  i++ )
           {
             Data d = ds.getData_entry(i);
@@ -405,6 +399,7 @@ public class JTreeUI extends JPanel implements IObserver, Serializable
                                   new_ds_node, 
                                   new_ds_node.getChildCount()  );  //add to end of branch
           }  
+          model.insertNodeInto( new_ds_node, parent, index_of_ds_node );
           tree.expandRow( index_of_ds_node );
         }
       }
@@ -419,8 +414,6 @@ public class JTreeUI extends JPanel implements IObserver, Serializable
         }
 
         DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
-
-    
 
         for(int i=node.getChildCount()-1; i>=0; i--)
         {
@@ -481,4 +474,55 @@ public class JTreeUI extends JPanel implements IObserver, Serializable
         return; 
        }           
     }
+
+/*--------------------------=[ start MouseAdapter ]=--------------------------*/
+
+    class MouseListener extends MouseAdapter
+    {
+      final String MENU_SELECT    = "Select";
+      final String MENU_CLEAR     = "Clear Selection";
+      final String MENU_CLEAR_ALL = "Clear All Selections";
+
+      JTreeUI tree_cp;
+
+      public MouseListener( JTreeUI tree_ )
+      {
+        tree_cp = tree_;
+      }
+
+
+      public void mousePressed(MouseEvent e) 
+//      public void mouseClicked(MouseEvent e) 
+      {
+        if(  tree.getSelectionCount() > 0  ) 
+        {
+          TreePath[] selectedPath = null;
+          TreePath[] tp           = tree.getSelectionPaths();  
+
+          int button1 =  e.getModifiers() & InputEvent.BUTTON1_MASK;
+          int button3 =  e.getModifiers() & InputEvent.BUTTON3_MASK;
+
+          JDataTreeRingmaster ringmaster = new JDataTreeRingmaster( tree_cp );
+                                                                     
+
+          if(  button3 == InputEvent.BUTTON3_MASK  )
+          {
+            ringmaster.generatePopupMenu( tp, e );
+          }
+          else if(  button1 == InputEvent.BUTTON1_MASK  )
+          {
+            if(e.getClickCount() == 1) 
+            {
+              ringmaster.pointAtNode( tp );
+            }
+            else if(e.getClickCount() == 2) 
+            {
+              ringmaster.selectNode( tp );
+            }
+          }
+        }
+      }
+    }
+
+/*---------------------------=[ end MouseAdapter ]=---------------------------*/
  }
