@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2001/06/07 16:45:09  dennis
+ *  Now periodically checks for a change in the number of DataSets
+ *  available and reinitializes its local data if this changes.
+ *
  *  Revision 1.6  2001/06/06 21:22:59  dennis
  *  Now uses ActionEvents to notify listeners that the Runfile
  *  has been changed.
@@ -131,6 +135,10 @@ public class LiveDataManager extends    Thread
  * Get the type of the specified data set from the current data source.
  * The type is an integer flag that indicates whether the data set contains
  * monitor data or data from other detectors.
+ *
+ *  @param  data_set_num  The number of the DataSet to be returned.
+ *
+ *  @return the type of the specified DataSet.
  */
 
   public int getType( int data_set_num )
@@ -146,10 +154,8 @@ public class LiveDataManager extends    Thread
 /**
  *  Get the specified DataSet from the current data source.
  * 
- *  @param  data_set_num  The number of the DataSet in this runfile 
- *                        that is to be read from the runfile.  data_set_num
- *                        must be between 0 and numDataSets()-1
- *
+ *  @param  data_set_num  The number of the DataSet to be returned.
+ *    
  *  @return the requested DataSet.
  */
   public DataSet getDataSet( int data_set_num )
@@ -286,8 +292,10 @@ public class LiveDataManager extends    Thread
   }
 
 
+/* -------------------------------- run --------------------------------- */
 /**
- *  This will sleep and periodically get new data from the LiveDataRetriever.
+ *  The run method for this LiveDataManager.  This will sleep and 
+ *  periodically check for new data from the LiveDataRetriever.
  */
  public void run()
  {
@@ -300,9 +308,13 @@ public class LiveDataManager extends    Thread
                                                     // end sooner if time_ms
                                                     // is altered. 
 
+       if (  retriever.numDataSets() != data_sets.length ) 
+         SetUpLocalCopies();                               
+
        for ( int i = 0; i < data_sets.length; i++ )
          if ( !ignore[i] )
            UpdateDataSetNow( i );
+     
      }
      catch ( Exception e )
      {
@@ -319,8 +331,12 @@ public class LiveDataManager extends    Thread
  */
 
 /* --------------------------- SetUpLocalCopies -------------------------- */
+/*
+ *  Construct or resize the local copies of the DataSets, together with
+ *  the types and "ignore" flags for the DataSets on the remote server.
+ */
 
-  private void SetUpLocalCopies()
+  synchronized private void SetUpLocalCopies()
   {
     if ( retriever != null )
     {
