@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/05/28 22:24:37  pfpeterson
+ *  Implements the IParameter interface.
+ *
  *  Revision 1.3  2001/04/26 19:10:14  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -46,7 +49,7 @@
 
 package  DataSetTools.operator;
 import java.io.*;
-
+import DataSetTools.parameter.*;
 
 /**
  * The class Parameter groups a name and generic object that is used to 
@@ -54,12 +57,13 @@ import java.io.*;
  *
  */
 
-public class Parameter extends Object implements Serializable
+public class Parameter extends Object implements Serializable, IParameter
 {
   public static final String NUM_BINS = "Number of Bins";
 
   private String name;
   private Object value;
+  private boolean valid;
 
   /**
    *  Construct a Parameter object using the specified name an value
@@ -68,8 +72,16 @@ public class Parameter extends Object implements Serializable
   {
     this.name  = name;
     this.value = value;
+    this.valid = false;
   }
 
+    /**
+     * Specify the name of the parameter.
+     */
+    public void setName(String name){
+        this.name=name;
+    }
+                        
   /**
    * Returns the name of the parameter
    */
@@ -108,5 +120,25 @@ public class Parameter extends Object implements Serializable
     return new_parameter;
   }
 
+    /**
+     * Accessor method.
+     */
+    public void setValid(boolean valid){
+        this.valid=valid;
+    }
+
+    /**
+     * Mutator method.
+     */
+    public boolean getValid(){
+        return this.valid;
+    }
+
+    /**
+     * This returns null. Should be overridden by subclasses.
+     */
+    public String getType(){
+        return null;
+    }
 
 }
