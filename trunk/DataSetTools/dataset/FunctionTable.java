@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2002/11/12 21:46:20  dennis
+ *  Use XScale.getInstance() rather than automatically creating a
+ *  variable XScale, so that we use a UniformXScale if possible.
+ *
  *  Revision 1.8  2002/10/03 15:42:46  dennis
  *  Changed setSqrtErrors() to setSqrtErrors(boolean) in Data classes.
  *  Added use_sqrt_errors flag to Data base class and changed derived
@@ -201,7 +205,7 @@ public class FunctionTable extends    TabulatedData
       for ( int i = 0; i < new_x_values.length; i++ )
         new_x_values[i] = (old_x_values[i] + old_x_values[i+1]) / 2.0f; 
 
-      x_scale = new VariableXScale( new_x_values );     //#### check if uniform?
+      x_scale = XScale.getInstance( new_x_values );     // checks if uniform!
     }
 
     init( d.getY_values() );
@@ -343,7 +347,7 @@ public class FunctionTable extends    TabulatedData
     else
       y_values = Sample.SmoothResample( x, y_values, nX, smooth_flag );
 
-    x_scale = (XScale)new_X.clone();
+    x_scale = new_X;
   }
 
   /*
