@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2002/06/18 19:29:41  rmikk
+ *  Fixed a minor error in XMLwrite
+ *
  *  Revision 1.23  2002/06/17 22:44:24  rmikk
  *  Add a method to set the standalone varible when writing
  *
@@ -1586,8 +1589,9 @@ public class DataSet implements IAttributeList,
   { StringBuffer SS = new StringBuffer(200);
     if( xmlStandAlone)
     { SS.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-      SS.append("<DataSet ");
+     
     }
+    SS.append("<DataSet ");
     SS.append(" version=\"0.0.0.0.1\" ");
     SS.append( "TITLE=\"");
     SS.append( title);
