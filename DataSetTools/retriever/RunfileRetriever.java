@@ -30,6 +30,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.74  2003/07/01 22:21:03  dennis
+ *  Fixed problem with VERY slow reading of GLAD data by replacing
+ *  call to setData_entries( ds ) for each DataGrid with a single
+ *  call to UniformGrid.setDataEntriesInAllGrids( ds ).  The original
+ *  code was O(N*N) while the new version is O(N).  Since N is about
+ *  20000 for GLAD, the old version was not practical.
+ *
  *  Revision 1.73  2003/05/24 21:12:07  dennis
  *  Now adds list of references to Data blocks to the UniformGrid object
  *  for each detector.
@@ -777,10 +784,9 @@ private float CalculateEIn()
        }
       }
     }
-
-    Enumeration e = det_data_grids.elements();
-    while ( e.hasMoreElements() )
-      ((IDataGrid)(e.nextElement())).setData_entries( data_set );
+                           // now add references to the Data blocks to each
+                           // of the Data grids used.                 
+    UniformGrid.setDataEntriesInAllGrids( data_set );
 
     run_file.Close(); 
 
@@ -1851,14 +1857,16 @@ private float CalculateEIn()
 
   public static void main(String[] args)
   {
+    String file_names[] = { "/usr/local/ARGONNE_DATA/glad0816.run" };
+//    String file_names[] = { "/home/dennis/glad7197.run" };
 //    String file_names[] = { "/usr/local/ARGONNE_DATA/SCD_QUARTZ/SCD06496.RUN" };
-    String file_names[] = { "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07940.RUN", 
+/*    String file_names[] = { "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07940.RUN", 
                             "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07941.RUN",
                             "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07942.RUN",
                             "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07943.RUN",
                             "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07944.RUN",
                             "/usr/local/ARGONNE_DATA/SCD_MnFl/SCD07945.RUN" };
-
+*/
     System.out.println("Start test program"); 
 
     RunfileRetriever rr;
