@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2002/02/26 21:17:01  pfpeterson
+ *  Unsupported instrument type error appears in status pane now.
+ *
  *  Revision 1.18  2002/02/22 20:35:07  pfpeterson
  *  Operator Reorganization.
  *
@@ -370,7 +373,8 @@ public class DataSetFactory implements Serializable
       new_ds.addOperator( new TrueAngle() );             // supported  
     }
     else
-      System.out.println(
+        DataSetTools.util.SharedData.status_pane.add(
+                 //System.out.println(
                  "WARNING: Unsupported instrument type in DataSetFactory" );
 
     return new_ds;
