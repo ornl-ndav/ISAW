@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/10/21 21:16:42  dennis
+ *  Fixed some errors with javadoc comments and other comments.
+ *  Removed redundant debug print.
+ *
  *  Revision 1.8  2003/10/20 22:11:21  dennis
  *  Server will now halt of started with either -h or -H to
  *  request help on usage.
@@ -61,13 +65,10 @@ import DataSetTools.retriever.*;
 import DataSetTools.util.*;
 
 /**
- *  This is a base class for servers that receive requests for DataSets and 
- *  sends them to clients on a network.
- *
- *  @see ITCPUser
- *  @see TCPComm
- *  @see ThreadedTCPComm
- *  @see TCPServiceInit 
+ *  This class implements a remote file server for files that can be 
+ *  read by ISAW.  The server receives requests for the number and type 
+ *  of DataSets in a file, or for particular DataSets in the file and 
+ *  sends the requested information to clients.
  */
 
 public class FileDataServer extends DataSetServer 
@@ -75,7 +76,10 @@ public class FileDataServer extends DataSetServer
 
   /* ---------------------------- Constructor -------------------------- */
   /**
-   *  Construct a FileDataServer with an empty list of DataSets.
+   *  Construct a FileDataServer with an empty list of directories.  
+   *  The addDataDirectory() method from the DataSetServer class must be
+   *  called to build the list of directories that will be searched when 
+   *  a particular file is requested. 
    */
    public FileDataServer()
    {
@@ -83,7 +87,6 @@ public class FileDataServer extends DataSetServer
      setServerName( "FileDataServer" );
      setLogFilename( "FileServerLog.txt" );
    }
-
 
 
   /* -------------------------- ProcessCommand -------------------------- */
@@ -104,13 +107,11 @@ public class FileDataServer extends DataSetServer
    {
       if ( debug_server )
         System.out.println("FileDataServer ProcessCommand called:"+command);
+
       try
       {
         if (  command.getCommand() == CommandObject.GET_DS_TYPES )
         {
-          if ( debug_server )
-            System.out.println("Processing " + command );
-
           String file_name = ((GetDataCommand)command).getFilename();
           Retriever r = get_retriever( file_name );
           if ( r == null )
@@ -130,9 +131,6 @@ public class FileDataServer extends DataSetServer
 
         else if ( command.getCommand() == CommandObject.GET_DS )
         { 
-                         // COMMAND_GET_DS command has the form:
-                         // COMMAND_GET_DS  <file_name>  <DataSet index>
-
           int index = ((GetDataCommand)command).getDataSetNumber();
           String file_name = ((GetDataCommand)command).getFilename();
           Retriever r = get_retriever( file_name );
@@ -148,7 +146,7 @@ public class FileDataServer extends DataSetServer
                 System.out.println("Trying to send " + ds );
               ds.deleteIObservers(); 
               data_name = ds.getTitle();
-              tcp_io.Send( ds  );
+              tcp_io.Send( ds );
             }
             else                                       
               tcp_io.Send( DataSet.EMPTY_DATA_SET );
