@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/03/28 20:54:29  pfpeterson
+ *  Resolved ISAW_HOME from ./ to an absolute directory.
+ *
  *  Revision 1.5  2002/03/25 23:47:59  pfpeterson
  *  All file separators in the file are '/' not '' b/c it confuses
  *  java. Added more comments to deal with confusion of DEFAULT
@@ -185,6 +188,9 @@ public class DefaultProperties{
         String classpath=System.getProperty("java.class.path");
         String dir;
         int index=classpath.indexOf(pathsep);
+        String $errmsg="WARNING: Could not find ISAW - "
+            +"Edit Properties File to point to correct ISAW_HOME";
+
         while( index>=0 ){
             dir=classpath.substring(0,index);
             dir=FilenameUtil.fixSeparator(dir);
@@ -195,7 +201,8 @@ public class DefaultProperties{
                 index=dir.indexOf("Isaw.jar")-1;
                 if(index>0){
                     dir=StringUtil.fixSeparator(dir);
-                    return dir.substring(0,dir.indexOf("Isaw.jar")-1);
+                    dir=dir.substring(0,dir.indexOf("Isaw.jar")-1);
+                    return this.resolveDir(dir);
                 }
             }else{
                 String isawExec
@@ -204,20 +211,32 @@ public class DefaultProperties{
                 if(isIsaw.exists()){
                     System.out.println("Isaw found: "+isIsaw);
                     dir=StringUtil.fixSeparator(dir);
-                    return dir;
+                    return this.resolveDir(dir);
                 }
             }
             index=classpath.indexOf(pathsep);
             if(index<0){
-                System.err.println("WARNING: Could not find ISAW "
-                                   +"- Edit Properties File");
+                shared.status_pane.add($errmsg);                   
                 return "DEFAULT";
             }
         }
         
-        System.err.println("WARNING: Could not find ISAW "
-        +"- Edit Properties File");
+        shared.status_pane.add($errmsg);
         return "DEFAULT";
+    }
+
+    /**
+     * Resolve the full path for a directory (get rid of ~ and .)
+     */
+    private String resolveDir(String origDir){
+        String dir=(new File(origDir)).getAbsolutePath();
+        dir=StringUtil.fixSeparator(dir);
+        int index=dir.indexOf("/.");
+        if(index>0){
+            dir=dir.substring(0,index);
+        }
+
+        return dir;
     }
 
     /**
@@ -228,8 +247,8 @@ public class DefaultProperties{
 
         rs=  "#"+newline
             +"# This is your ISAW properties file ... "+newline
-            +"# THE DIRECTORIES ON YOUR SYSTEM MUST MATCH THOSE"
-                                +" LISTED IN THIS FILE"+newline
+            +"# THE DIRECTORIES ON YOUR SYSTEM MUST"+newline
+            +"#   MATCH THOSE LISTED IN THIS FILE"+newline
             +"#"+newline
             +"# The '#' symbol denotes a commented line"+newline
             +"#"+newline
