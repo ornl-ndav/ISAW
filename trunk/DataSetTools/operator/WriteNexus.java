@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2001/08/14 20:26:08  dennis
+ * Changed title.
+ *
  * Revision 1.2  2001/08/01 19:04:25  dennis
  * Added information on possible extensions to filename default parameter.
  *
@@ -58,7 +61,7 @@ public class WriteNexus extends GenericSave
 *   set later
 */  
     public WriteNexus()
-    {super( "Write Data Set to Nexus(or xml) File");
+    {super( "Save as Nexus(or xml) File");
      setDefaultParameters();
     }
 
@@ -71,7 +74,7 @@ public class WriteNexus extends GenericSave
 *    the output will be to a nexus file
 */
     public WriteNexus( DataSet Monitor, DataSet Histogram, String filename )
-    {super( "Write Data Set to Nexus File");
+    {super( "Save as Nexus(or xml) File");
      parameters = new Vector();
      addParameter( new Parameter( "Monitor Data Set", Monitor));
      addParameter( new Parameter( "Histogram Data Set", Histogram));
