@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/01/12 20:04:31  bouzekc
+ * Added capability to change Form parameters.
+ *
  * Revision 1.1  2004/01/09 22:26:32  bouzekc
  * Added to CVS.
  *
@@ -56,6 +59,22 @@ import java.util.*;
  * not have the capability to view intermediate results.
  */
 class ConsoleWizardFrontEnd implements IWizardFrontEnd {
+  //~ Static fields/initializers ***********************************************
+
+  public static final int FIRST_COMMAND              = 1;
+  public static final int BACK_COMMAND               = 2;
+  public static final int NEXT_COMMAND               = 3;
+  public static final int LAST_COMMAND               = 4;
+  public static final int CLEAR_COMMAND              = 5;
+  public static final int CLEAR_ALL_COMMAND          = 6;
+  public static final int EXEC_COMMAND               = 7;
+  public static final int EXEC_ALL_COMMAND           = 8;
+  public static final int SAVE_WIZARD_COMMAND        = 9;
+  public static final int LOAD_WIZARD_COMMAND        = 10;
+  public static final int CHANGE_PARAMETER_COMMAND   = 11;
+  public static final int EXIT_COMMAND               = 12;
+  public static final String CHANGE_PARAMETER_PROMPT = "Change Parameter Value";
+
   //~ Instance fields **********************************************************
 
   private Wizard wiz = null;
@@ -81,15 +100,12 @@ class ConsoleWizardFrontEnd implements IWizardFrontEnd {
 
     //somehow read the file name in
     String saveFilePath = getStringInput(  );
-
-    File save_file            = new File( saveFilePath );
+    File save_file      = new File( saveFilePath );
 
     if( saving ) {
       //make sure the extension is on there
-      saveFilePath   = new WizardFileFilter(  ).appendExtension( 
-          saveFilePath );
-          
-      save_file            = new File( saveFilePath );
+      saveFilePath   = new WizardFileFilter(  ).appendExtension( saveFilePath );
+      save_file      = new File( saveFilePath );
     }
 
     if( saving && save_file.exists(  ) ) {
@@ -130,7 +146,7 @@ class ConsoleWizardFrontEnd implements IWizardFrontEnd {
 
       //read the response
       String save = getStringInput(  );
-      save   = save.toLowerCase(  );
+      save = save.toLowerCase(  );
 
       if( save.startsWith( "y" ) ) {
         wiz.save(  );
@@ -202,7 +218,7 @@ class ConsoleWizardFrontEnd implements IWizardFrontEnd {
 
     for( int i = 0; i < f.getNum_parameters(  ); i++ ) {
       param = ( ParameterGUI )f.getParameter( i );
-      System.out.print( param.getName(  ) + "\t\t" );
+      System.out.print( ( i + 1 ) + " " + param.getName(  ) + "\t\t" );
       System.out.println( param.getValue(  ) );
     }
     System.out.println( "Navigation: " );
@@ -226,6 +242,8 @@ class ConsoleWizardFrontEnd implements IWizardFrontEnd {
     System.out.println( IGUIWizardFrontEnd.SAVE_WIZARD_COMMAND );
     System.out.print( LOAD_WIZARD_COMMAND + "\t\t" );
     System.out.println( IGUIWizardFrontEnd.LOAD_WIZARD_COMMAND );
+    System.out.print( CHANGE_PARAMETER_COMMAND + "\t\t" );
+    System.out.println( CHANGE_PARAMETER_PROMPT );
     System.out.print( EXIT_COMMAND + "\t\t" );
     System.out.println( IGUIWizardFrontEnd.EXIT_COMMAND );
     wiz.setIgnorePropertyChanges( ignore );
@@ -285,7 +303,7 @@ class ConsoleWizardFrontEnd implements IWizardFrontEnd {
             showForm( --curFormNum );
           } else {
             System.out.println( "\nFORM 0 SHOWN, CAN'T STEP BACK\n" );
-            showForm( curFormNum  );
+            showForm( curFormNum );
           }
 
           break;
@@ -296,7 +314,7 @@ class ConsoleWizardFrontEnd implements IWizardFrontEnd {
             showForm( ++curFormNum );
           } else {
             System.out.println( "\nNO MORE FORMS, CAN'T ADVANCE\n" );
-            showForm( curFormNum  );
+            showForm( curFormNum );
           }
 
           break;
@@ -311,7 +329,7 @@ class ConsoleWizardFrontEnd implements IWizardFrontEnd {
         case ( CLEAR_COMMAND ): {
           wiz.invalidate( 0 );
           System.out.println( 
-             "\n****Form " + ( curFormNum + 1 ) + " reset****" );
+            "\n****Form " + ( curFormNum + 1 ) + " reset****" );
           showForm( curFormNum );
 
           break;
@@ -353,7 +371,19 @@ class ConsoleWizardFrontEnd implements IWizardFrontEnd {
           break;
         }
         
-        
+        case( CHANGE_PARAMETER_COMMAND ): {
+          System.out.print( "Enter the number of the parameter to change: ");
+          int paramNum = Integer.parseInt( getStringInput() ) - 1;
+          Form form = wiz.getCurrentForm();
+          //make sure we are not trying to edit an invalid parameter
+          if( paramNum < form.getNum_parameters() ) {
+            System.out.print( "Enter new value: ");
+            form.getParameter( paramNum ).setValue( getStringInput() );
+          }
+          showForm( curFormNum );
+          
+          break;
+        }
       }
     } catch( NumberFormatException nfe ) {
       System.out.println( "\nPlease select a valid choice\n" );
