@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.6  2003/01/29 17:52:07  dennis
+ * Added getDocumentation() method. (Chris Bouzek)
+ *
  * Revision 1.5  2003/01/15 20:57:30  dennis
  * Changed to used SegmentInfo, SegInfoListAttribute, etc.
  *
@@ -63,7 +66,7 @@ import DataSetTools.operator.Generic.Special.*;
 import DataSetTools.parameter.*;
 
 /**
- * This operator focusses the incident spectrum from a beam monitor to
+ * This operator focuses the incident spectrum from a beam monitor to
  * a bank of detectors at a specified total flight path length and
  * range of angles. This based on the FORTRAN SUBROUTINE
  * inc_spec_focus from IPNS. It is an overriden version of
@@ -138,8 +141,58 @@ public class  FocusIncidentSpectrum2 extends GenericSpecial
         }
     }
 
+    /* ---------------------- getDocumentation --------------------------- */
     /**
-     * Executes the operator using the current values of the parameters.
+     *  Returns the documentation for this method as a String.  The format
+     *  follows standard JavaDoc conventions.
+     */
+    public String getDocumentation()
+    {
+      StringBuffer s = new StringBuffer("");
+      s.append("@overview This operator focuses the incident spectrum from a ");
+      s.append("beam monitor to a bank of detectors at a specified total ");
+      s.append("flight path length and range of angles.\n");
+      s.append("Note that it is an overriden version of ");
+      s.append("DataSetTools.operator.DataSet.Special.FocusIncidentSpectrum ");
+      s.append("with a shorter parameter list.\n");
+      s.append("@assumptions The specified group_id of the monitor DataSet must ");
+      s.append("be a valid group ID.\n");
+      s.append("The specified new_group_id of the DataBlock must be a valid ");
+      s.append("group ID.\n");
+      s.append("@algorithm The calculations for this operator are based on the ");
+      s.append("FORTRAN SUBROUTINE inc_spec_focus from IPNS.  These are ");
+      s.append("in the file tof_data_calc in the DataSetTools/math/ ");
+      s.append("directory.\n");
+      s.append("First this operator retrieves the monitor data from the ");
+      s.append("specified group ID of the DataSet mds.  It also retrieves ");
+      s.append("the focusing data from the specified new_group_id of the ");
+      s.append("DataSet ds.\n");
+      s.append("It then retrieves the detector position, path length, theta ");
+      s.append("values, and segment information from the DataBlock to be ");
+      s.append("focused to.\n");
+      s.append("Then it uses the inc_spec_focus routine to calculate the ");
+      s.append("spectrum focus.\n");
+      s.append("Finally it makes an empty copy of the mds DataSet and copies ");
+      s.append("the focused data to the new DataSet.\n");    
+      s.append("@param mds The monitor DataSet that will be focused.\n");
+      s.append("@param group_id The group_id of the monitor DataBlock.\n");
+      s.append("@param ds The DataSet the monitor will be focused to.\n");
+      s.append("@param new_group_id  The group_id of the DataBlock the ");
+      s.append("monitor will be focused to.\n");
+      s.append("@return A new DataSet containing the focused incident ");
+      s.append("spectra.\n");
+      s.append("@error Returns an error if the specified group_id of the ");
+      s.append("monitor DataSet is not a valid group ID.\n");
+      s.append("@error Returns an error if the specified new_group_id of ");
+      s.append("the DataBlock is not a valid group ID. \n");
+      return s.toString();
+    }
+    
+    /**
+     * Focuses the incident spectra from the monitor DataSet mds's group_id to the 
+     * DataSet ds's new_group_id.
+     *
+     * @return New DataSet containing the focused incident spectra.
      */
     public Object getResult(){
         // get the parameter values
@@ -238,8 +291,15 @@ public class  FocusIncidentSpectrum2 extends GenericSpecial
             int monNum=((Integer)op.getResult()).intValue();
             op=new FocusIncidentSpectrum2(mds,monNum,ds,1);
             op.getResult();
+	    /*-- added by Chris Bouzek ---*/
+	    System.out.println("Documentation: " + op.getResult());
+	    /*----------------------------*/
         }else{
             System.out.println("USAGE: FocusIncidentSpectrum2 <filename>");
+	    /*-- added by Chris Bouzek ---*/
+	    Operator op=new FocusIncidentSpectrum2();
+	    System.out.println("Documentation: " + op.getDocumentation());
+	    /*----------------------------*/
         }
     }
     
