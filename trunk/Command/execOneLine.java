@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.36  2002/11/11 16:55:01  rmikk
+ * The NULL value now removes variables from the list of
+ *     variables that are not parameters.
+ *
  * Revision 1.35  2002/08/19 17:07:10  pfpeterson
  * Reformated file to make it easier to read.
  *
@@ -2639,6 +2643,8 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         //System.out.println("getvalArray res="+d);
         return d;
     }
+   class Nulll{
+    }
 
   /** 
    * Returns the value of the variable S
@@ -2652,7 +2658,8 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
    */
     public Object getVal( String S ){
         int i;
-        
+        if( S.toUpperCase().equals("NULL"))
+            return new Nulll();
         if(S.indexOf('[')>=0)
             return getValArray(S);
         if( ArrayInfo.containsKey(S.toUpperCase()))
@@ -3088,12 +3095,82 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         return i;
     }
 
+    public void removeVar( String vname){
+      
+        if( lds !=null)
+            if( lds.containsKey( vname.toUpperCase())){
+                 lds.remove( vname.toUpperCase());
+                 return;
+            } 
+        if( BoolInfo !=null)
+            if( BoolInfo .containsKey( vname.toUpperCase())){
+                 BoolInfo.remove( vname.toUpperCase());
+                 return;
+            }   
+        if( ArrayInfo !=null)
+            if( ArrayInfo.containsKey( vname.toUpperCase())){
+                 ArrayInfo.remove( vname.toUpperCase());
+                 return;
+            }
+      
+       int i;
+       if(Fvalnames !=null)
+       if( Fvalnames.length>0)
+       {for( i=0; (i < Fvalnames.length)  && (Fvalnames[ i ] != null)
+                       && (!Fvalnames[i].equals(vname.toUpperCase())) ; i++ )
+         {}
+        if( i< Fvalnames.length)
+          if( Fvalnames[i] != null )
+            if(Fvalnames[i].equals(vname.toUpperCase())){
+               for(int j = i; j + 1 < Fvalnames.length;j++){
+                  Fvalnames[j]=Fvalnames[j+1];
+                  Fvals[j]=Fvals[j+1];
+               }
+            Fvalnames[ Fvals.length - 1 ] = null;
+            return;
+            }       
+        }
+       if(Ivalnames !=null)
+       if( Ivalnames.length>0){
+        for( i=0; (i < Ivalnames.length)  && (Ivalnames[ i ] != null)
+                       && (!Ivalnames[i].equals(vname.toUpperCase())) ; i++ )
+         {}
+        if( i< Ivalnames.length)
+          if( Ivalnames[i] != null )
+            if(Ivalnames[i].equals(vname.toUpperCase())){
+               for(int j = i; j + 1 < Ivalnames.length;j++){
+                  Ivalnames[j]=Ivalnames[j+1];
+                  Ivals[j]=Ivals[j+1];
+               }
+            Ivalnames[ Ivals.length - 1 ] = null;
+            return;
+            }       
+        }
+       if(Svalnames !=null)
+       if( Svalnames.length>0){
+        for( i=0; (i < Svalnames.length)  && (Svalnames[ i ] != null)
+                       && (!Svalnames[i].equals(vname.toUpperCase())) ; i++ )
+         {}
+        if( i< Svalnames.length)
+           if( Svalnames[i] != null )
+            if(Svalnames[i].equals(vname.toUpperCase())){
+               for(int j = i; j + 1 < Svalnames.length;j++){
+                  Svalnames[j]=Svalnames[j+1];
+                  Svals[j]=Svals[j+1];
+               }
+            Svalnames[ Svals.length - 1 ] = null;
+            return;
+            }       
+        }
+      seterror( 1000 , ER_NoSuchVariable );
+    }
     public void AssignArray(String vname, Object Result){
         String S = vname;//fixx(S1);
         Object O;
         if(Debug)
             System.out.println("TOP ASsignArray vname,Result="
                                +vname+","+Result);
+         
         if( perror >=0 ) return ;
         int k= S.indexOf('[');
         Vector V = getArgs(S, k+1, S.length());
@@ -3172,6 +3249,10 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
        
         boolean found = true ;
         String nam = vname;
+        if( Result instanceof Nulll)
+           {removeVar( vname);
+            return;
+           }
         if(vname.indexOf('[')>=0)
             nam = vname.substring(0,vname.indexOf('[')   ).toUpperCase();
         Object X = getVal( nam );
