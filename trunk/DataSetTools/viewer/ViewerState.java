@@ -8,6 +8,9 @@
  *  set in a particular viewer.
  *
  *  $Log$
+ *  Revision 1.4  2001/03/01 23:14:10  dennis
+ *  Now allows saving one zoom region for an ImageView.
+ *
  *  Revision 1.3  2001/03/01 22:33:07  dennis
  *  Now saves the last "Pointed At" index.
  *
@@ -35,11 +38,12 @@ import  DataSetTools.components.image.*;
 
 public class ViewerState  implements Serializable
 {
-  private String   color_scale;
-  private boolean  horizontal_scrolling;
-  private float    horizontal_scroll_fraction;
-  private int      pointed_at_index;
-
+  private String        color_scale;
+  private boolean       horizontal_scrolling;
+  private float         horizontal_scroll_fraction;
+  private int           pointed_at_index;
+  private CoordBounds   zoom_region;
+ 
     /** 
      * Constructs a ViewerState object with default values for the
      * various state fields.  
@@ -50,6 +54,7 @@ public class ViewerState  implements Serializable
       horizontal_scrolling       = false;
       horizontal_scroll_fraction = 0.5f;
       pointed_at_index           = 0;
+      zoom_region                = new CoordBounds( 0, 1000, 0, 1000 );
     }
 
    /**
@@ -140,6 +145,26 @@ public class ViewerState  implements Serializable
    public void setPointedAtIndex( int index )
    {
       pointed_at_index = index;
+   }
+
+   /**
+    *  Get the last zoom region that was saved.
+    *
+    *  @return  The last saved zoom region.
+    */
+   public CoordBounds getZoomRegion()
+   {
+     return zoom_region;
+   }
+
+   /**
+    *  Save the specified zoom region.
+    *
+    *  @param  bounds Zoom region to be saved.
+    */
+   public void setZoomRegion( CoordBounds zoom_region )
+   {
+      this.zoom_region = (CoordBounds)(zoom_region.clone());
    }
 
 }
