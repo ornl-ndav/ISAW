@@ -27,6 +27,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2003/06/20 16:02:45  bouzekc
+ * Changed "Matrix filename" to "Matrix file" for
+ * consistency in viewing parameters in the Wizards.
+ *
  * Revision 1.9  2003/06/09 22:03:20  bouzekc
  * Changed label on sequence numbers parameter to
  * "Peak Sequence Numbers."
@@ -183,7 +187,7 @@ public class BlindJ extends  GenericTOF_SCD {
     addParameter( new IntArrayPG("Peak sequence numbers",
                                  "20:32,40,42") );
 
-    SaveFilePG matfilepg=new SaveFilePG("Matrix filename","" );
+    SaveFilePG matfilepg=new SaveFilePG("Matrix file","" );
     matfilepg.setFilter(new MatrixFilter());
     addParameter( matfilepg );
    
