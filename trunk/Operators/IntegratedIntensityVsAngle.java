@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/09/25 22:18:14  pfpeterson
+ * Now can integrate with limits being negative as well. Also fixed
+ * error when integrating function-table data.
+ *
  * Revision 1.3  2002/03/13 16:26:24  dennis
  * Converted to new abstract Data class.
  *
@@ -142,7 +146,7 @@ public class IntegratedIntensityVsAngle extends GenericSpecial
     if ( ds == null )
       return new ErrorString("DataSet is null in IntegratedIntensityVsAngle");
 
-    if ( a >= b || a < 0 || b < 0 )
+    if ( a >= b ) //|| a < 0 || b < 0 )
       return new ErrorString("[a,b] invalid in IntegratedIntensityVsAngle: " + 
                              "[ " + a + ", " + b + " ]" );
 
@@ -182,7 +186,11 @@ public class IntegratedIntensityVsAngle extends GenericSpecial
       Data d = ds.getData_entry( i );     // use method IntegrateHistogram to
       x_vals = d.getX_scale().getXs();    // take care of partial bins
       y_vals = d.getY_values();
-      area[i] = NumericalAnalysis.IntegrateHistogram( x_vals, y_vals, a, b );
+      if(d.isHistogram()){
+         area[i] = NumericalAnalysis.IntegrateHistogram( x_vals, y_vals, a, b );
+      }else{
+         area[i] = NumericalAnalysis.IntegrateFunctionTable( x_vals,y_vals,a,b);
+      }
 
                                           // NOTE: a DetectorPosition object 
                                           // can provide the position in 
