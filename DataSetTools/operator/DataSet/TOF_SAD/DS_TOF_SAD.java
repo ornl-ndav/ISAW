@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:26:58  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 21:05:12  pfpeterson
  *  Operator reorganization.
  *
@@ -47,7 +50,7 @@ import DataSetTools.operator.DataSet.DataSetOperator;
  * specialized operations on specific types of DataSets.
  *
  * @see DataSetOperator
- * @see MonitorPeakArea 
+ * @see DataSetTools.operator.DataSet.Special.MonitorPeakArea 
  *
  */
 

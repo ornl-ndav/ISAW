@@ -31,6 +31,9 @@
  * Modified:
  *  
  *  $Log$
+ *  Revision 1.2  2002/03/05 19:27:50  pfpeterson
+ *  Updated @see references in javadocs.
+ *
  *  Revision 1.1  2002/02/22 20:57:58  pfpeterson
  *  Operator reorganization.
  *
@@ -122,7 +125,7 @@ import DataSetTools.operator.DataSet.Math.DataSet.DataSetAdd;
  * histogram DataSet and MonitorDataSet.  The runs being loaded must have 
  * compatible detector grouping and time field schemes.
  *
- * @see Operator
+ * @see DataSetTools.operator.Operator
  */
 
 public class SumRunfiles extends    GenericLoad 

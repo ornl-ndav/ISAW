@@ -18,9 +18,9 @@ import  java.awt.*;
  * @author Tom Worlton
  * @version 1.0
  * @since August 10, 1999
- * @see DataSetTools.operator.SpectrometerEvaluator
- * @see DataSetTools.operator.SpectrometerNormalizer
- * @see DataSetTools.operator.SpectrometerTofToEnergyLoss
+ * @see DataSetTools.operator.DataSet.Special.SpectrometerEvaluator
+ * @see DataSetTools.operator.DataSet.Special.SpectrometerNormalizer
+ * @see DataSetTools.operator.DataSet.Conversion.XAxis.SpectrometerTofToEnergyLoss
  */
 
 public class chop_MacroTools 
