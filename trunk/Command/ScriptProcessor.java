@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.54  2003/06/26 14:28:26  bouzekc
+ * Commented out several empty if() blocks.
+ *
  * Revision 1.53  2003/06/26 14:11:24  bouzekc
  * Removed commented-out sections of code.
  *
@@ -438,16 +441,16 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       if( S == null ){
         if( Debug )
           System.out.println(" S is null " );
-      }else if( S.trim() == null){
+      /*}else if( S.trim() == null){
       }else if( S.trim().indexOf( "#") == 0 ){
-      }else if( S.trim().indexOf("$" ) == 0){
+      }else if( S.trim().indexOf("$" ) == 0){*/
       }else if( S.toUpperCase().trim().indexOf( "ELSE ERROR" ) == 0 ){
         return line ; 
       }else if( S.toUpperCase().trim().indexOf( "END ERROR" ) == 0 ){
         return line ; 
       }else if( S.toUpperCase().trim().indexOf( "ON ERROR" ) == 0 ){
         line = executeErrorBlock( script , line , exec ) ;               
-      }else if( onerror > 0 ){
+      /*}else if( onerror > 0 ){*/
       }else if( S.toUpperCase().trim().indexOf( "FOR " ) == 0 ){
         line = executeForBlock ( script , line , exec ,onerror ) ; 
       }else if( S.toUpperCase().trim().indexOf( "ENDFOR" ) == 0 ){
@@ -460,7 +463,7 @@ public class ScriptProcessor  extends ScriptProcessorOperator
         return line;
       }else if( S.toUpperCase().trim().equals("ENDIF")){
         return line;
-      }else if( S.trim().length() <= 0 ){
+      /*}else if( S.trim().length() <= 0 ){*/
       }else if( exec ){
         //can transverse a sequence of lines. On error , if then
         ExecLine.resetError();               
@@ -906,9 +909,9 @@ public class ScriptProcessor  extends ScriptProcessorOperator
       vnames.addElement( VarName );
    
     // parse type and create a parameter
-    if( DataType.equals("=")){
+    /*if( DataType.equals("=")){
       // do nothing
-    }else if( (DataType .equals( "INT") ) || ( DataType.equals( "INTEGER"))){
+    }else*/ if( (DataType .equals( "INT") ) || ( DataType.equals( "INTEGER"))){
       if( InitValue == null)
         InitValue ="0";
       try {
@@ -1128,12 +1131,12 @@ public class ScriptProcessor  extends ScriptProcessorOperator
         prevchar = S.charAt ( i );
       }else if( " \t".indexOf(S.charAt(i))>=0){
         //!!if( S.charAt ( i ) == ' ')
-        if( " +-*/^():[]{}," . indexOf(S.charAt(i + 1 )) >= 0){
-        }else if( i+1>= S.length()){
-        }else if( i < 1) {
-        }else if("+-*/^():[]{},".indexOf(S.charAt( i - 1 ) ) >= 0){
-        }else
-          Res = Res + S.charAt( i ) ; 
+        //if( " +-*/^():[]{}," . indexOf(S.charAt(i + 1 )) >= 0){
+        //}else if( i+1>= S.length()){
+        //}else if( i < 1) {
+        //}else if("+-*/^():[]{},".indexOf(S.charAt( i - 1 ) ) >= 0){
+        //}else
+        Res = Res + S.charAt( i ) ; 
         prevchar = ' ';
       }else{
         Res = Res + S.charAt(i);
