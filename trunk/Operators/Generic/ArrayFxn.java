@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2004/03/11 16:43:59  rmikk
+ * Fixed Javadoc error
+ *
  * Revision 1.1  2004/03/09 17:04:29  rmikk
  * Initial Checkin
  * This operator applies an algebraic expression(in x0) to all elements
@@ -107,7 +110,7 @@ public class ArrayFxn implements Wrappable {
     *     and round
     *   @return  A new Object of the same data type as ArrayHolder. Its values all 
     *     have the Rule applied to them
-    *   @see DataSetTools.function.FunctionTools
+    *   @see DataSetTools.functions.FunctionTools
     */
   public Object calculate( Vector ArrayHolder, String Rule){
 
@@ -261,7 +264,7 @@ public class ArrayFxn implements Wrappable {
 
   /**
     *  Test program for this module
-    *  @param  args[]  Enter the rule as the first argument
+    *  @param  args  Enter the rule as the first argument
     *  @return  returns the value when the rule is applied to
     *  {  {1.0f,2.0f,3.0f},{2.3f,3.5f,7.2f},{1f,3f,5f,7f}};
     */
