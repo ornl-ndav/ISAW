@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/06/10 22:33:42  pfpeterson
+ * Now only creates one string buffer when writting.
+ *
  * Revision 1.3  2002/06/10 21:46:07  rmikk
  * Optimized the save using StringBuffer's and the new
  *    methods in XScale to getX(i) and getI(x)
@@ -208,8 +211,7 @@ public class DS_XY_TableModel extends AbstractTableModel
       try
        {filename = jf.getSelectedFile().toString();
         File ff = new File( filename );
-        FileOutputStream fout = new FileOutputStream( ff );
-       
+        FileOutputStream fout = new FileOutputStream( ff );       
        
         StringBuffer S =new StringBuffer( 8192); 
         for( int i = 0; i < getRowCount(); i++ )
@@ -258,9 +260,7 @@ public class DS_XY_TableModel extends AbstractTableModel
              
                else 
                 { float[] vals;
-                 
-                  if( !includeErrors ||(  j  < 1 + Groups.length ) )
- 
+                  if( !includeErrors ||(  j  < 1 + Groups.length ) ) 
                     vals =  DB.getY_values();
                   else
                     vals = DB.getErrors();
@@ -283,7 +283,7 @@ public class DS_XY_TableModel extends AbstractTableModel
          if( S.length() >6000)
             {fout.write( (S.substring(0) ).getBytes() );
              
-             S=new StringBuffer( 8192);;
+             S.delete(0,S.length());
             }
           }
          fout.write( (S.substring(0)+ "\n" ).getBytes() ); 
@@ -327,7 +327,7 @@ public static void main( String args[] ){
   for( int i = 0;i < Groups.length;i++ ) 
        Groups[ i ] = i;
    
-  DS_XY_TableModel tbMod = new DS_XY_TableModel( DSS[ k ] , Groups ,false );
+  DS_XY_TableModel tbMod = new DS_XY_TableModel( DSS[ k ] , Groups ,true );
   
   JTable jtb = new JTable( tbMod );
   jtb.setAutoResizeMode( JTable.AUTO_RESIZE_OFF );
