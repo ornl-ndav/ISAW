@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/02/28 23:12:02  pfpeterson
+ * Made Script_Class_List_Handler a private static variable.
+ * ~7% improvement in time to load isaw.
+ *
  * Revision 1.14  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -90,24 +94,29 @@ class HTMLPage extends JFrame
    private
    JEditorPane editorPane = new JEditorPane();
    String OperatorPane = null;
-  private boolean isValid=false;
+   private boolean isValid=false;
+   private static Script_Class_List_Handler SH=null;
 
    /** Constructor and creator of the HTML viewer.
     *
     *@param  url  The url of the original page
     *
     *NOTE: This HTML Page has been customized as follows <OL Type = "A">
-    *<LI> If the href contains XX$netscape, the browser will appear pointing to the java docs for
-    *     the data set operators
-    *<LI> If the href contains XX$Panel1, Text will appear listing all the installed Generic 
-    *     operators with links for each of the operators containg further information
-    *<LI> if the href is XX$Panel2 with reference ref, text will appear giving further information
-    *     on the ref's operator.  This information includes the full class name or filename if
-    *     it is a script, the command, the title, and the argument data types.     
+    *<LI> If the href contains XX$netscape, the browser will appear
+    *pointing to the java docs for the data set operators
+    *<LI> If the href contains XX$Panel1, Text will appear listing all
+    *the installed Generic operators with links for each of the
+    *operators containg further information
+    *<LI> if the href is XX$Panel2 with reference ref, text will
+    *appear giving further information on the ref's operator.  This
+    *information includes the full class name or filename if it is a
+    *script, the command, the title, and the argument data types.
     */
    public
    HTMLPage( String url ){
       Container contentPane = getContentPane ();
+      if(SH==null)
+        SH = new Script_Class_List_Handler();
 		
       try
       { 
@@ -193,7 +202,6 @@ class HTMLPage extends JFrame
 
    private
    void SetText( JEditorPane JP, String ref ) {
-      Script_Class_List_Handler SH = new Script_Class_List_Handler();
       StringBuffer Textt = new StringBuffer("<HTML><BODY><A href=\"XX$Panel1\">BACK</a><P>");
 
       Textt.append(" <Center><H1>Operator</H1></Center><P>");
