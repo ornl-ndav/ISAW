@@ -3,13 +3,14 @@ package OverplotView;
 /**
  * $Id$
  *
- * container for data and state information associated with graphical
- * objects, including color, linetype, and offset.  offset information is
- * stored directly, but all other attributes are stored as 
- * DataSetTools.dataset.Attributes.  access these attributes with a call to
- * getAttributeList().
+ * container for data and state information associated with data that
+ * is intended for visualization.
  *
  * $Log$
+ * Revision 1.3  2001/06/28 22:02:45  neffk
+ * all data that is to be associated with the data is now stored as various
+ * types of Attributes.
+ *
  * Revision 1.2  2001/06/27 16:45:23  neffk
  * added toString() method
  *
@@ -18,20 +19,24 @@ package OverplotView;
  *
  */
 
-import DataSetTools.dataset.*;
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.AttributeList;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.ColorAttribute;
 import java.awt.Color;
 import java.lang.String;
-import java.util.*;
+//import java.util.;
 
 public class GraphableData
 {
 
   public static final String COLOR    = "Color";
   public static final String MARKER   = "Marker Type";
+  public static final String NAME     = "Name of this data";
   public static final String LINETYPE = "Line Type";
+  public static final String OFFSET   = "Absolute (addivite) Offset";
 
-  private Data          hidden_data;
-  private Data          visable_data;
+  private Data          data;
   private AttributeList attrs;
   private float         offset;
  
@@ -41,42 +46,30 @@ public class GraphableData
    */
   public GraphableData( Data d )
   {
-    hidden_data  = d;
-    visable_data = d;
+    data = d;
     offset = 0.0f;
+    attrs = new AttributeList();
   }
 
 
   /**
-   * allows the user to set the offset for this data.  'offset_' is an
-   * absolute value that's added directly to the y-values of this data
-   * block.  since this is absolute, it would be a good idea to make 
-   * scale selection UI objects select on [0:1] and calculate the offset 
-   * as a percent of the tallest data on the graph.
+   * associate information with this data.  use the fields provided
+   * by GraphableData as the 'name' parameter of each (sub class of) Attribute
+   * added to this data to provide a uniform way for recipients to find
+   * the information that they need.
    */
-  public void setOffset( float offset_ )
+  public void addAttribute( Attribute attr )
   {
-    offset = offset_;
-    calculateOffset();
+    attrs.addAttribute( attr );
   }
 
 
   /**
-   * allows the user access to the data that this object contains.  to ensure
-   * data is not offset, set offset to zero (0).
+   * returns a clone of the data.
    */
   public Data getData()
   {
-    return (Data)visable_data.clone();
-  }
-
-
-  /**
-   * get the (absolute) offset for this data.
-   */
-  public float getOffset()
-  {
-    return offset;
+    return (Data)data.clone();
   }
 
 
@@ -100,31 +93,11 @@ public class GraphableData
  
 
   /**
-   *
+   * provides a string representation of this GraphableData object.
    */
   public String toString()
   {
-    return hidden_data.toString();
-  }
- 
-
-/*----------------------------=[ private methods ]=---------------------------*/
-
-
-  /**
-   * calculates the adjusted_data.  offset is a quantity that is added
-   * directly to the dependant variable.     
-   */
-  private void calculateOffset()
-  {
-    float[] values = hidden_data.getY_values();
-    float[] od = new float[values.length];
-    for( int i=0; i<values.length; i++ )
-      od[i] = values[i] + offset;
-
-    visable_data = new Data(  hidden_data.getX_scale(), 
-                              od, 
-                              hidden_data.getGroup_ID()  );
+    return data.toString();
   }
 }
 
