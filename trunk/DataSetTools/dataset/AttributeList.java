@@ -2,6 +2,11 @@
  * @(#)AttributeList.java     1.01  99/07/9  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.7  2000/12/13 00:15:50  dennis
+ *  Modified setAttribute() method to leave the attribute that is set in
+ *  it's original position in the AttributeList, if it was originally in the
+ *  list.
+ *
  *  Revision 1.6  2000/11/10 22:52:10  dennis
  *  Trivial change to documentation.
  *
@@ -124,8 +129,23 @@ public class AttributeList implements Serializable
    */
   public void setAttribute( Attribute attribute )
   {
-    removeAttribute( attribute.getName() );
-    addAttribute( attribute );
+    boolean attr_set = false;
+    String  new_name = attribute.getName();
+    String  attr_name;
+
+    for ( int i = 0; i < attributes.size(); i++ )
+    {
+      attr_name = ((Attribute)attributes.elementAt( i )).getName();
+
+      if ( new_name.equalsIgnoreCase( attr_name) )
+      {
+        attributes.setElementAt( attribute, i );
+        attr_set = true;
+      }
+    }
+
+    if ( !attr_set )
+      addAttribute( attribute );
   }
 
   /**
