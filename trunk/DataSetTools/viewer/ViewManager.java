@@ -31,6 +31,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2002/10/02 22:04:15  dennis
+ *  Now check the result of calling the conversion operator.  If some Data
+ *  blocks are not converted, don't try to set the selection flags or
+ *  PointedAt indices, since the meaning of the indices has changes.
+ *  If a DataSet is not returned, just use the empty clone of the current
+ *  DataSet.
+ *
  *  Revision 1.25  2002/09/20 16:46:53  dennis
  *  Now uses IParameter rather than Parameter
  *
@@ -581,18 +588,27 @@ public class ViewManager extends    JFrame
          }
        }  
 
-       tempDataSet = (DataSet)op.getResult();
-       for ( int i = 0; i < num_new; i++ )     // preserve the selection flags
+       Object result = op.getResult();
+       if ( result instanceof DataSet )
        {
-         d = dataSet.getData_entry( original_index[i] );
-         tempDataSet.setSelectFlag( i, d );
+         tempDataSet = (DataSet)op.getResult();
+         if ( tempDataSet.getNum_entries() == num_new )// we didn't lose Data blocks, so
+         {
+           for ( int i = 0; i < num_new; i++ )         // preserve the selection flags
+           {
+             d = dataSet.getData_entry( original_index[i] );
+             tempDataSet.setSelectFlag( i, d );
+           }
+                                                       // preserve the pointed at index
+                                                       // if possible
+           int k = dataSet.getPointedAtIndex(); 
+           if ( k != DataSet.INVALID_INDEX )
+             if ( new_index[k] != DataSet.INVALID_INDEX )
+               tempDataSet.setPointedAtIndex( new_index[k] );
+         }
        }
-                                               // preserve the pointed at index
-                                               // if possible
-       int k = dataSet.getPointedAtIndex(); 
-       if ( k != DataSet.INVALID_INDEX )
-         if ( new_index[k] != DataSet.INVALID_INDEX )
-           tempDataSet.setPointedAtIndex( new_index[k] );
+       else
+         tempDataSet = dataSet.empty_clone();
     }
 
      tempDataSet.addIObserver( this );
