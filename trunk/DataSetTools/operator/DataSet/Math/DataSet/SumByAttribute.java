@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/12/06 14:40:55  dennis
+ *  getDocumentation() now includes name of parameter. (Chris Bouzek)
+ *
  *  Revision 1.4  2002/11/27 23:18:49  pfpeterson
  *  standardized header
  *
@@ -179,17 +182,18 @@ public class SumByAttribute extends    DataSetOp
     s.append("units, and operations as the current DataSet.  Sums the data ");
     s.append("blocks in the current DataSet according to the attribute, and ");
     s.append("uses the sum to fill the new DataSet.");
-    s.append("@param The DataSet for the operation.");
-    s.append("@param The name of the attribute to use for the selection criteria.");
-    s.append("@param A value of true if you want the data blocks which meet the ");
+    s.append("@param ds The DataSet for the operation.");
+    s.append("@param attr_name The name of the attribute to use for the selection ");
+    s.append("criteria.");
+    s.append("@param keep A value of true if you want the data blocks which meet the ");
     s.append("selection criteria to be included in the sum, or false if ");
     s.append("you do not.");
-    s.append("@param The lower bound of the selection criteria.");
-    s.append("@param The upper bound of the selection criteria.");
+    s.append("@param min The lower bound of the selection criteria.");
+    s.append("@param max The upper bound of the selection criteria.");
     s.append("@return A DataSet with one data block which consists of the summed ");
     s.append("values which met the selection criteria.");
-    s.append("@error Returns an error message if no selected data blocks meet the selection ");
-    s.append("criteria.");
+    s.append("@error Returns an error message if no selected data blocks meet the ");
+    s.append("selection criteria.");
     return s.toString();
   }
 
