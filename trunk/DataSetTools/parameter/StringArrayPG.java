@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/06/23 14:58:17  bouzekc
+ * Removed duplicate inner ActionListener class.  Now uses
+ * PGActionListener.
+ *
  * Revision 1.5  2003/06/18 20:36:41  pfpeterson
  * Changed calls for NxNodeUtils.Showw(Object) to
  * DataSetTools.util.StringUtil.toString(Object)
@@ -46,9 +50,9 @@
 package DataSetTools.parameter;
 
 import DataSetTools.util.StringUtil;
-import java.awt.event.*;
 import javax.swing.*;
 import java.awt.*;
+import DataSetTools.util.PGActionListener;
 
 public class StringArrayPG extends VectorPG
   {
@@ -82,20 +86,4 @@ public Object clone()
     return (Object)faap;
 
   }       
-static class MyActionList implements ActionListener
-  {
-   StringArrayPG  vpf;
-   public MyActionList( StringArrayPG vpg)
-     {
-
-       vpf = vpg;
-     }
-
-    public void actionPerformed( ActionEvent evt )
-      { 
-        (new JOptionPane()).showMessageDialog(null,"Result="+
-                                          StringUtil.toString(vpf.getValue()));
-
-      }
-   }
   }
