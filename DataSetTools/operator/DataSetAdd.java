@@ -22,6 +22,9 @@ import  DataSetTools.util.*;
   *  first Data block in the second DataSet with the same Group ID provided
   *  that they have the same units, the same number of data values and extend 
   *  over the same X-interval.
+  *
+  *  @see DataSetOperator
+  *  @see Operator
   */
 
 public class DataSetAdd extends    DataSetOperator 
@@ -82,9 +85,6 @@ public class DataSetAdd extends    DataSetOperator
 
                                      // get the current data set
     DataSet ds = this.getDataSet();
-
-    System.out.println( "ds        = " + ds );
-    System.out.println( "ds_to_add = " + ds_to_add );
 
     if ( !ds.SameUnits( ds_to_add ) )// DataSets are NOT COMPATIBLE TO COMBINE
       {

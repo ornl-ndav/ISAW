@@ -10,10 +10,28 @@ import java.io.*;
 import DataSetTools.dataset.*;
 
 /**
- * Root class for operators that operate on a DataSet object. Derived clases
- * must provide a constructor that sets up an appropriate list of operations
- * and implement the method "getResult()" to provide the result of carrying out
- * the operation.
+ *   Root class for operators that operate on a DataSet object.  This class 
+ * extends the generic Operator class by adding a DataSet member and methods 
+ * to get/set the DataSet member. 
+ *
+ *   A DataSetOperator is typically used in one of two ways.  First, the 
+ * operator might be added to the list of operators that work on a particular
+ * DataSet.  In this case, the DataSet associated with the operator is set
+ * by the DataSet's addOperator method.  If the default constructor for the
+ * specific DataSetOperator is used, any additional parameters required
+ * must be set later.  In particular, a GUI can get the operator from the 
+ * DataSet and have the user specify values for any remaining parameters.
+ * After the parameter values are set the getResult() method of the operator
+ * is used to carry out the operation.
+ *
+ *   Alternatively, an operator can be applied directly if the so-called
+ * "full constructor" is used.  A full constructor includes the DataSet
+ * that is associated with the operator, as well as values for all other 
+ * parameters needed by the operator.  In this case, the operation can be 
+ * carried out immediately by calling getResult().
+ *
+ * @see Operator
+ * @see DataSetAdd
  */
 
 abstract public class DataSetOperator extends Operator implements Serializable
@@ -55,4 +73,14 @@ abstract public class DataSetOperator extends Operator implements Serializable
    */
   abstract public Object clone();
 
+
+  /**
+   *  Trace the finalization of objects
+   */
+/*
+  protected void finalize() throws IOException
+  {
+    System.out.println( "finalize Operator" );
+  }
+*/
 } 
