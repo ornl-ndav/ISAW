@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/06/06 16:21:38  pfpeterson
+ * Now use new parameters.
+ *
  * Revision 1.1  2002/05/28 20:35:14  pfpeterson
  * Moved files
  *
@@ -48,6 +51,7 @@ package Wizard;
 
 import java.io.*;
 import DataSetTools.wizard.*;
+import DataSetTools.parameter.*;
 
 /**
  *  This class defines a form for multiplying a list of numbers under the 
@@ -68,13 +72,11 @@ public class MultiplierExampleForm extends    Form
    *                    in this case only result[0] is used.
    *  @param  w         The wizard controlling this form.
    */
-  public MultiplierExampleForm( String constants[], String operands[], String result[], Wizard w )
+  public MultiplierExampleForm( String constants[], String result[], Wizard w )
   {
-    super("Multiply the Numbers", constants, operands, result, w );
+    super("Multiply the Numbers", constants, null, result, w );
 
     String help = "This form let's you multiply the numbers \n";
-    for ( int i = 0 ; i < operands.length  ; i++ )
-        help = help + "  " + operands[i]  + "\n";
     for ( int i = 0 ; i < constants.length ; i++ )
         help = help + "  " + constants[i] + "\n";
     setHelpMessage( help );
@@ -91,21 +93,21 @@ public class MultiplierExampleForm extends    Form
   public boolean execute()
   {
     float product = 1.0f;
-    WizardParameter param;
+    FloatPG param;
 
-    for ( int i = 0; i < editable_params.length; i++ ){
-        param = wizard.getParameter( editable_params[i] );
-        Float val = (Float)param.getNewValue();
-        product *= val.floatValue();
-    }
+    /*for ( int i = 0; i < editable_params.length; i++ ){
+      param = (FloatPG)wizard.getParameter( editable_params[i] );
+      product *= param.getfloatValue();
+      param.setValid(true);
+      }*/
     for( int i = 0 ; i < const_params.length ; i++ ){
-        param=wizard.getParameter( const_params[i] );
-        Float val=(Float)param.getNewValue();
-        product*=val.floatValue();
+        param=(FloatPG)wizard.getParameter( const_params[i] );
+        product *= param.getfloatValue();
+        param.setValid(true);
     }
 
-    param = wizard.getParameter( result_params[0] );
-    param.setValue( new Float(product) );
+    param = (FloatPG)wizard.getParameter( result_params[0] );
+    param.setfloatValue( product );
     return true;
   } 
 

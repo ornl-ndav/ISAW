@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/06/06 16:21:35  pfpeterson
+ * Now use new parameters.
+ *
  * Revision 1.1  2002/05/28 20:35:10  pfpeterson
  * Moved files
  *
@@ -45,6 +48,7 @@ package Wizard;
 
 import java.io.*;
 import DataSetTools.wizard.*;
+import DataSetTools.parameter.*;
 
 /**
  *  This class defines a form for adding a list of numbers under the control
@@ -84,18 +88,18 @@ public class AdderExampleForm extends    Form
    */
   public boolean execute()
   {
-    WizardParameter param;
+    FloatPG param;
 
     float sum = 0.0f;
     for ( int i = 0; i < editable_params.length; i++ )
     {
-      param = wizard.getParameter( editable_params[i] );
-      Float val = (Float)param.getNewValue();
-      sum += val.floatValue();
+      param = (FloatPG)wizard.getParameter( editable_params[i] );
+      sum += param.getfloatValue();
+      param.setValid(true);
     } 
 
-    param = wizard.getParameter( result_params[0] );
-    param.setValue( new Float(sum) );
+    param = (FloatPG)wizard.getParameter( result_params[0] );
+    param.setfloatValue( sum );
     return true;
   } 
 
