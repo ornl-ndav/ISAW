@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.13  2003/01/31 17:50:58  pfpeterson
+ * Fixed bug with array indices going out of bounds.
+ *
  * Revision 1.12  2003/01/30 21:09:44  pfpeterson
  * Takes advantage of the PeakFactory class and utility class.
  *
@@ -218,8 +221,8 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     pkfac.L1(init_path);
 
     // stay off of the edges
-    for( int i=minColumn+1 ; i<maxColumn ; i++ ){  // loop over column
-      for( int j=minRow+1 ; j<maxRow ; j++ ){      // loop over row
+    for( int i=minColumn+1 ; i<maxColumn-1 ; i++ ){  // loop over column
+      for( int j=minRow+1 ; j<maxRow-1 ; j++ ){      // loop over row
         // set up datasets for adjacent pixels
         Dpp=data_set.getData_entry(ids[i-1][j-1]).getCopyOfY_values();
         Dpt=data_set.getData_entry(ids[i+0][j-1]).getCopyOfY_values();
@@ -230,7 +233,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
         Dnp=data_set.getData_entry(ids[i-1][j+1]).getCopyOfY_values();
         Dnt=data_set.getData_entry(ids[i+0][j+1]).getCopyOfY_values();
         Dnn=data_set.getData_entry(ids[i+1][j+1]).getCopyOfY_values();
-        for( int k=minTime+1 ; k<maxTime ; k++ ){ // loop over timeslice
+        for( int k=minTime+1 ; k<maxTime-1 ; k++ ){ // loop over timeslice
           float I=Dtt[k];
           if(I>min_count){
             if(I<Dpp[k-1]) continue;
