@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2001/07/25 18:15:27  dennis
+ *  Now trims the title from the runfile.
+ *
  *  Revision 1.28  2001/07/10 20:24:12  dennis
  *  Now adds "Omega" attribute to each spectrum.
  *
@@ -596,7 +599,9 @@ public class RunfileRetriever extends    Retriever
     attr_list.setAttribute( int_list_attr );
 
     // Run Title ........
-    str_attr = new StringAttribute( Attribute.RUN_TITLE, run_file.RunTitle() );
+    String title = run_file.RunTitle();
+    title = title.trim();
+    str_attr = new StringAttribute( Attribute.RUN_TITLE, title );
     attr_list.setAttribute( str_attr );
 
     // Run Number ...........
@@ -772,7 +777,7 @@ public class RunfileRetriever extends    Retriever
     attr_list.setAttribute( pos_attr );
 
     // Omega
-    float omega = tof_calc.Omega(position.getScatteringAngle()*180/3.14159264f);
+    float omega = tof_calc.Omega( angle * 180 / 3.14159264f );
     FloatAttribute omega_attr = new FloatAttribute( Attribute.OMEGA, omega );
     attr_list.setAttribute( omega_attr );
 
