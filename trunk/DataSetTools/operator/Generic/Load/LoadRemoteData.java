@@ -31,6 +31,9 @@
  * Modified:
  *  
  *  $Log$
+ *  Revision 1.2  2002/04/08 14:08:46  dennis
+ *  Changed default port to 6089
+ *
  *  Revision 1.1  2002/02/22 20:57:57  pfpeterson
  *  Operator reorganization.
  *
@@ -139,7 +142,7 @@ public class LoadRemoteData extends    GenericLoad
     addParameter( parameter );
 
     int port = TCPServer.DEFAULT_SERVER_TCP_PORT;
-    parameter = new Parameter("Port (eg. 6088)", new Integer(port) );
+    parameter = new Parameter("Port (eg. 6089)", new Integer(port) );
     addParameter( parameter );
 
     String user_name = System.getProperty( "user.name" );
