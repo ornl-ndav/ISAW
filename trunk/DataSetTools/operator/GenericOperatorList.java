@@ -4,6 +4,9 @@
  *  Maintain list of generic operators and create instance of them as needed.  
  *
  *  $Log$
+ *  Revision 1.10  2000/08/03 22:09:44  dennis
+ *  added operator to pause for a specified number of milli-seconds
+ *
  *  Revision 1.9  2000/08/03 21:45:49  dennis
  *  Added Dongfeng's utility for quick printing.
  *
@@ -36,7 +39,8 @@ public class GenericOperatorList implements Serializable
                                           "Mon",
                                           "OneHist",
                                           "FF",
-                                          "PrintDS"   };
+                                          "PrintDS",
+                                          "Pause"    };
 
   /**
    *  Private constructor ... don't let anyone instantiate this class
@@ -127,6 +131,9 @@ public class GenericOperatorList implements Serializable
 
     else if ( op_name.equals( "PrintDS" ) )
       return new DataSetPrint();
+
+    else if ( op_name.equals( "Pause" ) )
+      return new pause();
 
      return null;
   }
