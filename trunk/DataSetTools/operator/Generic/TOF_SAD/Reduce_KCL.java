@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2004/04/21 20:45:33  dennis
+ * Changed default value for beamstop size to 1.5, instead of 0.
+ * This allows the new version to work with old scripts for
+ * SAND.
+ *
  * Revision 1.24  2004/04/21 19:42:28  dennis
  * Added beamstop size to the test code in the main method.
  *
@@ -364,7 +369,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         addParameter( new IntegerPG("# Qx bins", new Integer(-1)));
         addParameter( new IntegerPG("#Qy bins", new Integer(-1)));
         addParameter( new BooleanPG("", new Boolean( true)));
-        addParameter( new FloatPG("Default beam stop dimensions", new Float(0.0f)));
+        addParameter( new FloatPG("Default beam stop dimensions", new Float(1.5f)));
     }
 
   /* ---------------------------- getResult ------------------------------- */
