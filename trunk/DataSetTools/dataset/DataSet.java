@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.29  2002/07/15 19:43:48  dennis
+ *  1. Added convenience method setData_label(name) that calls
+ *     setLabel(name) for each Data block in the DataSet.
+ *  2. Now uses Java's sort method from java.util.Arrays for use
+ *     when a STABLE sort method is needed.
+ *
  *  Revision 1.28  2002/07/11 18:18:44  dennis
  *  Added  serialVersionUID = 1L;
  *
@@ -162,7 +168,7 @@
 
 package  DataSetTools.dataset;
 
-import java.util.Vector;
+import java.util.*;
 import java.io.*;
 import java.lang.*;
 import DataSetTools.operator.*;
@@ -197,9 +203,9 @@ public class DataSet implements IAttributeList,
   public static final int INVALID_GROUP_ID = -1;
   public static final int INVALID_INDEX    = -1;
 
-  public static final int NOT_SORTED  = -1;
-  public static final int Q_SORT      =  0;
-  public static final int BUBBLE_SORT =  1;
+  public static final int NOT_SORTED = -1;
+  public static final int Q_SORT     =  0;
+  public static final int JAVA_SORT  =  1;
 
                                           // Some operators need a default 
                                           // DataSet to hold in a parameter.
@@ -1326,6 +1332,20 @@ public class DataSet implements IAttributeList,
    */
   public void setY_label( String label ) { this.y_label = label; }
 
+ 
+  /** 
+   *  Set the label field on all Data blocks in this DataSet to the specified
+   *  name.
+   *
+   *  @param name  String to use for the label field.
+   *
+   */
+  public void setData_label( String name )
+  {
+    int n = data.size();
+    for ( int i = 0; i < n; i++ )   
+      ((Data)data.elementAt(i)).setLabel( name );
+  }
 
   /**
    *  Get a copy of the list of attributes for this Data object.
@@ -1460,7 +1480,7 @@ public class DataSet implements IAttributeList,
 
   /**
    *  Sort the list of Data entries based on the specified attribute.  If
-   *  a stable sort is needed, specify BUBBLE_SORT, else specify Q_SORT.
+   *  a stable sort is needed, specify JAVA_SORT, else specify Q_SORT.
    *
    *  @param  attr_name   The name of the attribute on which to sort.  The
    *                      attr_name parameter must be the name of an attribute
@@ -1469,11 +1489,12 @@ public class DataSet implements IAttributeList,
    *  @param  increasing  Flag indicating whether to sort the list in 
    *                      increasing or decreasing order.
    *  @param  sort_type   Flag specifying the sort type, either
-   *                      DataSet.Q_SORT or DataSet.BUBBLE_SORT.
+   *                      DataSet.Q_SORT or DataSet.JAVA_SORT.
    *
    *  @return    This returns true if the DataSet entries were sorted and 
    *             returns false otherwise.
    */
+
   public boolean Sort( String attr_name, boolean increasing, int sort_type )
   {
     int n = data.size();
@@ -1481,15 +1502,17 @@ public class DataSet implements IAttributeList,
     if ( n <= 1 )            // empty or short list is sorted by default
       return true;
 
+    if (sort_type != Q_SORT)
+      return JavaSort( attr_name, increasing );
+
     int       position[] = new int[ n ];
     Attribute attr[]     = new Attribute[ n ];
 
-    AttributeList  attr_list;        // save the required attribute from each
+                                     // save the required attribute from each
     Attribute      one_attr;         // Data entry and the index of the Data
     for ( int i = 0; i < n; i++ )    // entry in arrays
     {
-      attr_list = getData_entry(i).getAttributeList();
-      one_attr = attr_list.getAttribute( attr_name );
+      one_attr = getData_entry(i).getAttribute( attr_name );
       if ( one_attr == null )
         return false;               // attribute missing from this Data object 
       
@@ -1497,10 +1520,7 @@ public class DataSet implements IAttributeList,
       position[i] = i;
     }
 
-    if ( sort_type == Q_SORT )
-      QSort( attr, position, 0, n-1, increasing );
-    else
-      BubbleSort( attr, position, increasing );
+    QSort( attr, position, 0, n-1, increasing );
 
                                                   // copy the data objects to
     Vector new_data = new Vector();               // a new vector in the right
@@ -1510,8 +1530,59 @@ public class DataSet implements IAttributeList,
     data = new_data;
 
     last_sort_attribute = attr_name;
+    setData_label( attr_name );
+
     return true;
   }
+
+
+  /**
+   *  Sort the list of Data entries based on the specified attribute using
+   *  the sort method provided by Java. 
+   *
+   *  @param  attr_name   The name of the attribute on which to sort.  The
+   *                      attr_name parameter must be the name of an attribute
+   *                      that is stored with every Data entry in this data
+   *                      set.
+   *  @param  increasing  Flag indicating whether to sort the list in
+   *                      increasing or decreasing order.
+   *
+   *  @return    This returns true if the DataSet entries were sorted and
+   *             returns false otherwise.
+   */
+
+  public boolean JavaSort( String attr_name, boolean increasing )
+  {
+    int n = data.size();
+                                                  // make sure all data blocks
+    for ( int i = 0; i < n; i++ )                 // have the needed attribute
+      if ( getData_entry(i).getAttribute( attr_name ) == null )
+        return false; 
+
+    Data list[] = new Data[n];
+    for ( int i = 0; i < n; i++ )
+      list[i] = getData_entry(i);
+
+    Arrays.sort( list, new DataComparator( attr_name ) );
+
+                                                  // copy the data objects to
+    Vector new_data = new Vector(n);              // a new vector in the right
+                                                  // order
+    if ( increasing )
+      for ( int i = 0; i < n; i++ )                
+        new_data.addElement( list[i] );
+    else
+      for ( int i = 0; i < n; i++ )
+        new_data.addElement( list[n-1-i] );
+
+    data = new_data;
+
+    last_sort_attribute = attr_name;
+    setData_label( attr_name );
+
+    return true;
+  }
+
 
   /**
    *  Get the name of the last attribute that was used to sort this DataSet.
@@ -1615,7 +1686,6 @@ public class DataSet implements IAttributeList,
   }
 
 
-
   /**
    * Clone an EMPTY DataSet with the same title, units, label, operation log,
    * and operators as the original data set.
@@ -1713,9 +1783,7 @@ public class DataSet implements IAttributeList,
                  s.getMessage());
     }
     
-
     return true;
-
   }
 
   //Internal to external names for fields
@@ -1756,7 +1824,6 @@ public class DataSet implements IAttributeList,
         if( Tag ==  null)
           return xml_utils.setError( xml_utils.getErrorMessage()); 
        }      
-
       
       if(!Tag.equals("DataSet"))
         return xml_utils.setError("Improper start tag. Should be DataSet" +Tag);
@@ -1787,9 +1854,6 @@ public class DataSet implements IAttributeList,
       if( V == null)
         return  xml_utils.setError( xml_utils.getErrorMessage());
       done = V.size()<2;
-       
-                  
-    
     }
     
     if( !xml_utils.skipAttributes( stream ))
@@ -1870,41 +1934,6 @@ public class DataSet implements IAttributeList,
  *  PRIVATE METHODS
  * 
  */
-
-/* ---------------------------- BubbleSort -------------------------------- */
-
-  private static void BubbleSort( Attribute list[], 
-                                  int       index[], 
-                                  boolean   increasing )
-  {
-   int pass, 
-       k;
-   int n = index.length;
-
-   if ( increasing )                                 // put in increasing order
-   {
-     for ( pass = 1; pass < n; pass++ )
-       for ( k = 0; k < n - pass; k++ )
-         if ( list[ index[k] ].compare( list[ index[k+1] ] ) > 0 )
-         {                                          
-           int temp   = index[k];
-           index[k]   = index[k+1];
-           index[k+1] = temp;
-         }
-    }
-    else                                              // put in decreasing order
-    {
-     for ( pass = 1; pass < n; pass++ )
-       for ( k = 0; k < n - pass; k++ )
-         if ( list[ index[k] ].compare( list[ index[k+1] ] ) < 0 )
-         {                                                
-           int temp   = index[k];
-           index[k]   = index[k+1];
-           index[k+1] = temp;
-         }
-    }
-  }
-
 
 /* ------------------------------- swap ---------------------------------- */
 
