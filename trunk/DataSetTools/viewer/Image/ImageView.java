@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.49  2005/03/31 22:34:38  dennis
+ *  Fixed option to use colored graphs by moving call to set graph
+ *  data before call to set graph color.  Earlier versions of
+ *  graphJPanel, allowd setting color and data in either order;
+ *  current version requires data to be set first.
+ *
  *  Revision 1.48  2004/07/16 18:30:17  dennis
  *  Fixed improper comparison with Float.NaN
  *
@@ -1053,7 +1059,16 @@ private void DrawHGraph( int index, int graph_num, boolean pointed_at )
                          Color.white 
                         };
 
-  if ( graph_num == 0 )
+  h_graph.setData( x, y, graph_num, false );
+  CoordBounds graph_bounds = h_graph.getGlobalWorldCoords();
+  CoordBounds image_bounds = image_Jpanel.getLocalWorldCoords();
+  graph_bounds.setBounds( image_bounds.getX1(), graph_bounds.getY1(),
+                          image_bounds.getX2(), graph_bounds.getY2() );
+
+  h_graph.initializeWorldCoords( graph_bounds );
+  h_graph.setX_bounds( image_bounds.getX1(), image_bounds.getX2() );
+
+  if ( graph_num == 0 ) 
   {
     String border_label = DS_Util.getData_ID_String( getDataSet(), index );
 
@@ -1068,7 +1083,7 @@ private void DrawHGraph( int index, int graph_num, boolean pointed_at )
 
     h_graph.setColor( Color.black, graph_num, false );
   }
-  else
+  else                       
   {
     if ( pointed_at )
       h_graph.setColor( Color.black, graph_num, false );
@@ -1082,14 +1097,6 @@ private void DrawHGraph( int index, int graph_num, boolean pointed_at )
         h_graph.setColor( Color.blue, graph_num, false );
     }
   }
-  h_graph.setData( x, y, graph_num, false );
-  CoordBounds graph_bounds = h_graph.getGlobalWorldCoords();
-  CoordBounds image_bounds = image_Jpanel.getLocalWorldCoords();
-  graph_bounds.setBounds( image_bounds.getX1(), graph_bounds.getY1(),
-                          image_bounds.getX2(), graph_bounds.getY2() );
-
-  h_graph.initializeWorldCoords( graph_bounds );
-  h_graph.setX_bounds( image_bounds.getX1(), image_bounds.getX2() );
 }
 
 
