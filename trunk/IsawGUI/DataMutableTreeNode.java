@@ -30,6 +30,11 @@
 
  *
  * $Log$
+ * Revision 1.11  2004/07/07 16:03:12  kramer
+ * Added a method to tag this node as selected or not.  Also, added a method
+ * to determine if the node is selected.  Selected here refers to the data
+ * object this node encapsulates as being selected.
+ *
  * Revision 1.10  2004/01/24 22:58:30  bouzekc
  * Removed redundant assigment of the parent node.
  *
@@ -67,17 +72,20 @@ public class DataMutableTreeNode
   private Data            data   = null;
   private MutableTreeNode parent = null;
   private String          name   = null;
+  private boolean         selected;
 
   /**
    * default constructor
    */ 
   public DataMutableTreeNode()
   {
+  	selected = false;
   }
 
 
   public DataMutableTreeNode( Data d )
   {
+  	this();
     name=d.getLabel();
     setUserObject( d );
   }
@@ -98,7 +106,21 @@ public class DataMutableTreeNode
   {
     return name;
   }
-
+  
+  /**
+   * Set if the data this node is representing is 
+   * currently selected in a viewer.  Note:  Selected 
+   * means that the user has "highlighted" the data, and 
+   * is not just pointing at it.
+   */
+  public void setSelected(boolean sel) { selected = sel; }
+  /**
+   * Determine if the data this node is representing is 
+   * currently selected in a viewer.  Note:  Selected 
+   * means that the user has "highlighted" the data, and 
+   * is not just pointing at it.
+   */
+  public boolean isSelected() { return selected; }
 
 /*------------------------------=[ TreeNode ]=--------------------------------*/
 
