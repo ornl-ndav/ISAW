@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/08/14 23:08:14  bouzekc
+ * Now handles StringBuffer values.  Will now display Strings as ASCII files
+ * using ViewASCII.
+ *
  * Revision 1.7  2003/08/14 02:27:30  bouzekc
  * Reformatted code.
  *
@@ -72,6 +76,8 @@ import DataSetTools.viewer.*;
 
 import java.awt.*;
 import java.awt.event.*;
+
+import java.io.*;
 
 import java.util.*;
 
@@ -155,6 +161,11 @@ public class ParameterViewer implements ActionListener {
     if( param != null ) {
       obj = param.getValue(  );
 
+      if( obj instanceof StringBuffer ) {
+        //make it a String right away
+        obj = obj.toString(  );
+      }
+
       //is it a DataSet?
       if( obj instanceof DataSet ) {
         new ViewManager( ( DataSet )obj, IViewManager.IMAGE );
@@ -234,34 +245,65 @@ public class ParameterViewer implements ActionListener {
   }
 
   /**
-   * Utility method to determine if a String points to a viewable ASCII file.
-   * It simply drops the String (i.e. does not display it) if it is not a
-   * file.
+   * Utility method to display ASCII text.  If the String given is a File, it
+   * reads the File.  If the String is text, it will create a temporary File
+   * so that the ViewASCII operator can display it.
+   *
+   * @param s The String (either filename or readable text) to display.
    */
-  private void tryToDisplayASCII( String fileName ) {
+  private void tryToDisplayASCII( String s ) {
     String tempName;
+    String fileName;
+
+    //try to see if it is a File or a String
+    File tempFile = new File( s );
     Object obj;
 
-    //try to determine if it is a viewable file
-    //is this a file we can read?
-    if( fileName.indexOf( '.' ) > 0 ) {
-      tempName = fileName.toLowerCase(  );
+    if( tempFile.exists(  ) && tempFile.isFile(  ) ) {
+      fileName = tempFile.toString(  );
 
-      //ASCII files
-      //we don't want any windoze executables, or 
-      //any big ISAW data files
-      if( 
-        !( ( tempName.indexOf( ".sdds" ) >= 0 ) ||
-          ( tempName.indexOf( ".exe" ) >= 0 ) ||
-          ( tempName.indexOf( ".hdf" ) >= 0 ) ||
-          ( tempName.indexOf( ".run" ) >= 0 ) ||
-          ( tempName.indexOf( ".nxs" ) >= 0 ) ) ) {
-        obj = new ViewASCII( fileName ).getResult(  );
+      //try to determine if it is a viewable file
+      //is this a file we can read?
+      if( fileName.indexOf( '.' ) > 0 ) {
+        tempName = fileName.toLowerCase(  );
 
-        if( obj instanceof ErrorString ) {
-          SharedData.addmsg( obj.toString(  ) );
+        //ASCII files
+        //we don't want any windoze executables, or 
+        //any big ISAW data files
+        if( 
+          
+          /*!*/ ( ( tempName.indexOf( ".sdds" ) >= 0 ) ||
+            ( tempName.indexOf( ".exe" ) >= 0 ) ||
+            ( tempName.indexOf( ".hdf" ) >= 0 ) ||
+            ( tempName.indexOf( ".run" ) >= 0 ) ||
+            ( tempName.indexOf( ".nxs" ) >= 0 ) ) ) {
+          return;
+
+          //obj = new ViewASCII( fileName ).getResult(  );
+          //if( obj instanceof ErrorString ) {
+          //SharedData.addmsg( obj.toString(  ) );
+          //}
         }
       }
+    } else {
+      try {
+        //ASCII text, so create a temporary File for viewing
+        tempFile = File.createTempFile( "results", null );
+        TextWriter.writeASCII( tempFile, s );
+        fileName = tempFile.toString(  );
+      } catch( IOException ioe ) {
+        SharedData.addmsg( "Unable to write temporary file " + tempFile );
+
+        //something went really wrong...we'll have to leave
+        return;
+      }
+    }
+
+    //now display the File
+    obj = new ViewASCII( fileName ).getResult(  );
+
+    if( obj instanceof ErrorString ) {
+      SharedData.addmsg( obj.toString(  ) );
     }
   }
 }
