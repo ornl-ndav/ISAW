@@ -87,7 +87,7 @@ public class CommandPane  extends JPanel
     String FilePath = null  ;                   // for macro storage and retrieval
     Document logDocument = null;
 
-    boolean Debug = false;
+    boolean Debug = true;
 
 
     /** Constructor with Visual Editor and no data sets from outside this program
@@ -426,6 +426,7 @@ public class CommandPane  extends JPanel
     private String SubsRangeVars( String VarIter)
       {int i, j, k, s, t ;
        String Res;
+       //System.out.println("IN SUBSRANVEVARS"+Debug);
        if( VarIter == null ) 
          return null;
        Res = "";
@@ -434,7 +435,10 @@ public class CommandPane  extends JPanel
        if(VarIter.charAt(0)!='[')
            return null;
        i = findQuote( VarIter, 1,1, ":", "(){}[]");
-       if(Debug)System.out.println("in subs i ="+i);
+       if( i < VarIter.length())
+	   if( VarIter.charAt(i) != ':')
+	       return VarIter;
+       if(Debug)System.out.println("in subs i ="+i+","+VarIter.length());
        while( (i < VarIter.length() ) && ( i>=0 ))
 	 {j = findQuote( VarIter, -1, i , ",[" , "(){}[]");
 	  k = findQuote( VarIter, +1, i , ",]" , "(){}[]");
@@ -456,9 +460,17 @@ public class CommandPane  extends JPanel
             {serror = ExecLine.getErrorMessage();
               return null;
             }
-          Res = Res + ExecLine.getResult().toString()+ VarIter.charAt(k);
+          if( ExecLine.getResult()!= null)
+              Res = Res + ExecLine.getResult().toString()+ VarIter.charAt(k);
+          else
+              {perror = i; serror = " No Result";
+               return null;
+               }
           s = k+1;
           i = findQuote(VarIter,1, k+1, ":","()[]{}");
+          if( i < VarIter.length())
+	    if( VarIter.charAt(i) != ':')
+	       i = VarIter.length() ;
  
          }
        Res = Res + VarIter.substring(s);
@@ -614,7 +626,7 @@ public class CommandPane  extends JPanel
        try{
           S = Doc.getText( F.getStartOffset() , F.getEndOffset() - F.getStartOffset() ) ; 
            }
-       catch( BadLocationException s )
+       catch( javax.swing.text.BadLocationException s )
 	  {seterror ( 0 , "Internal Errorc" ) ; 
 	   return line ; 
 	  }
@@ -645,7 +657,297 @@ public class CommandPane  extends JPanel
         }
     }
        */
+ public String delSpaces( String S)
+    { boolean quote,
+              onespace; 
+      int i ; 
+      String Res;
+      char prevchar;
+      if( S == null ) return null;
+      Res  = "";
+      quote = false;
+      onespace = false;
+      prevchar = 0; 
+      for ( i =0; i < S.length() ; i++)
+        {   
+        
+	 if( S.charAt( i) == '\"') 
+           {quote = ! quote;
+	    if( i > 0)
+	      if (!quote )
+		  if( S.charAt( i-1) == '\\') quote = !quote;
+            Res = Res + S.charAt ( i );
+            prevchar = S.charAt ( i );
+           }
+         else if( quote ) 
+           { Res = Res + S.charAt(i);
+              prevchar = S.charAt ( i );
+           }
+         else if( S.charAt ( i ) == ' ')
+	   {
+	       if( " +-*/^():[]{}," . indexOf(S.charAt(i + 1 )) >= 0)
+		   {}
+               else if( i+1>= S.length()){}
+               else if( i < 1) {}
+               else if("+-*/^():[]{},".indexOf(S.charAt( i - 1 ) ) >= 0)
+		   {}
+               else
+		   Res = Res + S.charAt( i ) ; 
+               prevchar = ' ';
+	   }
+         else
+	   {
+	       Res = Res + S.charAt(i);
+               prevchar = S.charAt(i);
+	   }
+  
 
+	}
+      return Res;
+
+     
+    }
+
+  private   int finddANDOR( String S1, int start, int end)
+    {int i , j; 
+     boolean found; 
+     found = false;
+     String S = S1.toUpperCase();
+     if( Debug) System.out.println( "start ,endfinddANDOR="+start +","+end);
+      for(i = findQuote( S.toUpperCase() , 1, start, "A", "{}[]()"); ( i < end ) && !found  ;
+           i = findQuote( S.toUpperCase() , 1, i, "A", "{}[]()"))
+       {if(Debug) System.out.print("AND i="+i);
+       if( i + 2 >= end) i = end;
+       else if(! (S.substring( i, i+3).toUpperCase().equals("AND")))
+	  i = i+1;
+        else if (i<=0) i = end;
+        else if ( "+-*(^/:[,".indexOf(S.charAt(i-1))>=0)
+          i = i+1;
+        else if( ! (") ]".indexOf( S.charAt( i - 1  )) >= 0 ))
+          i = i+1;
+        else if( i + 4 >= end)
+          i = end;
+        else if ( "+-*^/:[,".indexOf(S.charAt( i + 3 ) ) >= 0  )
+          i = i+1;
+       else if( (S.charAt(i+3 ) == ' ') &&( "+-*(^/:[,".indexOf(S.charAt( i + 4 ) ) >= 0))
+	   {i = i + 1;}
+      
+        else
+	  found = true;
+       
+      }
+     
+ // Look for first OR
+    found = false;
+    for(j = findQuote( S , 1, start, "O", "{}[]()" ); ( j < end ) && !found  ;
+          )
+      {
+	  if( Debug) System.out.print("Or j="+j);
+       if( j + 2 >= end) j = end;
+       else if (j<=0) j = end;
+       else if(! S.substring( j, j + 2 ).toUpperCase().equals( "OR" ))
+	  j = j+1;
+       
+        else if ( "+-*(^/:[," . indexOf(S.charAt( j - 1)) >=0 )
+          j = j+1;
+        else if( !(") ]" . indexOf(S.charAt( j - 1 ) ) >= 0 ))
+          j = j+1;
+        else if( j + 3 >= end)
+          j = end;
+        else if ( "+-*^/:[,".indexOf(S.charAt( j + 2 )) >= 0 )
+          j = j+1;
+        else if ( (S.charAt( j + 2) == ' ') && ("+-*(^/:[,".indexOf(S.charAt( j + 3 )) >= 0 ))
+	    j = j + 1;
+     
+        else
+	  found = true;
+      
+       if(!found) j = findQuote( S , 1, j, "O", "{}[]()" );
+         
+      }  
+   
+    if ( j < i ) 
+        return j ; 
+    else 
+        return i;   
+    }
+  public boolean evaluate (String S, int start, int end)
+    {int i , 
+         j, 
+         k , 
+         s;
+    boolean B1 , 
+	    B2 ,
+            eq;
+    char op;
+    Object Result;
+
+    S= delSpaces(S);
+    if( Debug) System.out.println("START eval"+start + ","+ end);
+    if (S == null) return false;
+    if( end > S.length()) end = S.length();
+    if( start < 0 ) start = 0;
+    if( start >= end ) return false;
+ 
+    
+     i = finddANDOR( S, start, end);
+     if( Debug) System.out.println("After finddANDOR i="+i);
+     if( i < end)
+       { op = 'A';
+	 if( "Oo".indexOf(S.charAt( i )) >= 0 ) op = 'O'; 
+       }
+     else op = 'X';
+    
+     if( i < end)  
+       {B1 = evaluate( S , start , i );
+        i = i+2;
+        if(op == 'A' ) i++;
+       }
+     else
+	 B1 = false;
+    
+     while( i < end)
+       {
+	   j = finddANDOR( S, i , end );
+           B2 = evaluate ( S , i , j );
+           if( op == 'A')
+	       B1 = B1 && B2;
+           else if( op == 'O')
+               B1 = B1 || B2;
+           else
+               { perror = i;
+                 return false;
+               }
+
+           op = 'X';
+           if( j< end)
+	     {
+               op = 'A';
+               if( "Oo".indexOf(S.charAt( j )) >= 0 ) op = 'O';
+	     }
+           else return B1;
+           i = j + 2;
+           if( op == 'A') i++;           
+
+       }
+     // GET here if no AND's and Or's in Sub expressions;
+     // Check for Not's
+     if( Debug)System.out.println("After And's and Or's");
+     if( S.charAt(start) == ' ') start++;
+     if( start +2 < end )
+       if( S.substring( start, start+3).toUpperCase().equals("NOT"))
+	 if(start + 4 < end)
+	     if( (( (S.charAt( start + 3 ) == ' ') &&( ! ( "+-*/^):, )".indexOf(S.charAt(start + 4)) >= 0)) ))||
+		 (  ! ("+-*/^):, )".indexOf(S.charAt(start + 3)) >= 0)  ) )
+	      { B1 = evaluate ( S , start + 3 , end );
+	        if( perror >= 0)
+                  return false;
+                return !B1;
+              }
+    //  No more AND's OR's or NOT's at top level.  Try parens around these
+    if( Debug )System.out.println("After Nots");
+     if ( S.charAt( start ) == ' ') start ++;
+     if( S.charAt( start ) == '(')
+	 { if( S.charAt( end-1 )== ' ') end --;
+	   if( S.charAt(end-1) != ')') 
+	       {perror =5; return false;}
+           return evaluate ( S, start + 1 , end - 1  );
+	 }
+    if( Debug )System.out.println("After parens");
+    //Now go for the < > etc
+    // For test purposes will just use numbers here
+
+    i = findQuote( S, 1, start, "<>=", "(){}[]"  );
+    if( i < end )
+       {   perror = -1;
+	  j = ExecLine.execute ( S , start , i);
+          perror = ExecLine.getErrorCharPos();
+          if(perror >= 0)
+            {
+              serror = ExecLine.getErrorMessage();
+              return false;
+            }
+          if( perror >= 0 )
+	      return false;//null
+          Object O1 = ExecLine.getResult();
+          if (i+1 >= end ) 
+            return false;
+          if( ">=".indexOf( S.charAt( i+1)) >= 0 ) j = i+2;
+          else j = i+1;
+          k = ExecLine.execute ( S , j, end );
+          perror = ExecLine.getErrorCharPos();
+          if(perror >= 0)
+            {
+              serror = ExecLine.getErrorMessage();
+              return false;
+            }
+          Result = ExecLine.getResult();
+          if( O1.equals(Result))
+	      eq = true;
+          else 
+              eq = false;
+          if( eq && ((S.charAt( i ) == '=') || (S.charAt( j-1 ) == '=')))
+	      return true;
+           ExecLine.operateArith( O1 , Result , '-' );
+           perror =ExecLine.getErrorCharPos();
+           if( perror >= 0)
+             {serror = ExecLine.getErrorMessage();
+              return false;
+             }
+           Object R2 = ExecLine.getResult();
+          if( Debug )System.out.println("Arith Result ="+R2);
+           if( (perror >= 0) && ((O1 instanceof String) || (R2 instanceof String)))
+	      {perror = -1; serror = "";
+	        B1 = StrLss( O1, Result);
+              
+	       }
+	   else if ( R2 instanceof Integer)
+	     {if( ((Integer)R2).intValue() < 0) B1 = true;
+	      else B1 = false;
+	     }
+	   else if (R2 instanceof Float)
+	     {if( ((Float)R2).floatValue() < 0) B1 = true;
+	      else B1 = false;
+               
+	     }
+           if( Debug) System.out.println( "Log res < ="+B1+","+i+","+j);
+           if( eq ) return false;
+           if( ( S.charAt( i ) =='<' ) && B1) return true;
+           if( (S.charAt( i ) == '>' ) && B1) return false;
+           if( (S.charAt( i ) == '>' ) && !B1) return true;
+        
+
+           if( (S.charAt(j-1) == '>') && !B1 ) return true;
+           return false;
+          
+          
+      } 
+   
+    j = ExecLine.execute ( S , start , end);
+    perror = ExecLine.getErrorCharPos();
+    if( perror >= 0)
+      {serror = ExecLine.getErrorMessage();
+       return false;
+       }
+    Result = ExecLine.getResult();
+    if( Result instanceof Integer)
+      if( ((Integer)Result).intValue() != 0)
+	 return true;
+      else
+        return false;
+    else if( Result instanceof Float)
+	if( ((Float)Result).floatValue() !=  0)
+	    return true;
+        else
+            return false;
+  
+      
+    return false;        
+	    
+  }
+ private boolean StrLss( Object O1 , Object O2)
+   { return false;
+   }
 //************************SECTION:EVENTS********************
     /**
      *adds an Iobserver to be notified when a new data Set is sent
