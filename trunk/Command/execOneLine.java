@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.47  2003/06/03 22:02:52  rmikk
+ * -Allows for other Viewer Types that can be added at
+ *   a later date
+ *
  * Revision 1.46  2003/04/25 22:21:07  pfpeterson
  * Changed Script_Class_List_Handler to be a class variable (rather
  * than instance) that is not initialized until the first instance
@@ -1009,8 +1013,9 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
         else if( DisplayType.toUpperCase().equals("TABLE"))
             X= IViewManager.TABLE;
         else{
-            seterror( 1000 , ER_ImproperArgument+" "+ DisplayType );
-            return;
+            X = DisplayType;
+            //seterror( 1000 , ER_ImproperArgument+" "+ DisplayType );
+            //return;
         }
         ViewManager  vm = new ViewManager(ds , X );
         
