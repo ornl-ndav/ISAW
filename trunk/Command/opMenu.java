@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2004/03/15 23:58:31  dennis
+ * Changed some references to static methods to be through the
+ * class name instead of an instance.
+ *
  * Revision 1.29  2004/03/15 03:30:17  dennis
  * Moved view components, math and utils to new source tree
  * gov.anl.ipns.*
@@ -140,7 +144,7 @@ public class opMenu extends JMenu{
         
         Operator myOperator=null;
         if( op instanceof Script_Class_List_Handler)
-          ((Script_Class_List_Handler)op).reload_scripts=false;
+          Script_Class_List_Handler.reload_scripts=false;
         for ( int i = 0; i < op.getNum_operators(); i++ ){
                                                // the list starts two entries, 
                                                // "Operator", "DataSetOperator"
@@ -210,7 +214,7 @@ public class opMenu extends JMenu{
           }
         }
         if( op instanceof Script_Class_List_Handler)
-          ((Script_Class_List_Handler)op).reload_scripts=true;
+          Script_Class_List_Handler.reload_scripts=true;
     }//constructor
 
     public void setOpMenuLabel( String newText){
