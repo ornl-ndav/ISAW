@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/07/08 23:40:11  bouzekc
+ * Added static method initImports() to take a
+ * PythonInterpreter and initialize a series of import
+ * statements.  Constructor now calls reset() to initialize
+ * the internal PythonInterpreter.
+ *
  * Revision 1.3  2003/07/08 16:42:04  bouzekc
  * Added all missing javadocs, reformatted for consistency.
  *
@@ -61,7 +67,6 @@ import java.util.*;
 
 import javax.swing.text.*;
 
-
 /**
  * This class interfaces the Scripting language to Jythons Interpreter class
  * The variable IOBS ( the list of observers ) and all the Isaw Data sets are
@@ -90,17 +95,13 @@ public class pyScriptProcessor extends ScriptProcessorOperator
    */
   public pyScriptProcessor( Document doc )
     {
-    this.doc     = doc;
-    Dsets        = new Vector(  );
-    logdoc       = null;
-    obss         = new IObserverList(  );
-    Pinterpret   = new PythonInterpreter(  );
-    Pinterpret.set( "IOBS", obss );
-    eos = new ByteArrayOutputStream(  );
-    Pinterpret.setErr( eos );
-    Pinterpret.setOut( new DisplayOStream(  ) );
-    PS             = new PropertyChangeSupport( this );
-    errormessage   = null;
+    this.doc   = doc;
+    Dsets      = new Vector(  );
+    logdoc     = null;
+    obss       = new IObserverList(  );
+
+    reset(  );  //reset also re-initializes the interpreter
+    PS = new PropertyChangeSupport( this );
     }
 
   //~ Methods ******************************************************************
@@ -366,6 +367,21 @@ public class pyScriptProcessor extends ScriptProcessorOperator
     }
 
   /**
+   * Executes a series of import statements.  It seems to not matter to the
+   * Python interpreter whether or not multiple copies of the same import
+   * statement are executed.
+   *
+   * @param pyInterp The PythonInterpreter to use to execute the statements.
+   */
+  public static void initImports( PythonInterpreter pyInterp )
+    {
+    String scriptsDir = SharedData.getProperty( "Script_Path" );
+
+    scriptsDir = StringUtil.setFileSeparator( scriptsDir + "/" );
+    pyInterp.execfile( scriptsDir + "default_imports.py" );
+    }
+
+  /**
    * Resets the PythonInterpreter.  The DataSets are added and the IOBS varible
    * is also re-added.
    */
@@ -386,6 +402,9 @@ public class pyScriptProcessor extends ScriptProcessorOperator
     Pinterpret.setErr( eos );
     Pinterpret.setOut( new DisplayOStream(  ) );
     errormessage = null;
+
+    //execute a series of default import statements
+    initImports( Pinterpret );
     }
 
   /**
