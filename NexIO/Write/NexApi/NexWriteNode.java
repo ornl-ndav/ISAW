@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/01/26 17:10:11  rmikk
+ * Files are now written HDF5
+ * The data is now compressed using the LZW compression
+ *    algorithm
+ *
  * Revision 1.9  2003/11/24 14:21:08  rmikk
  * Eliminated some commented out code
  * Added getNodeName method
@@ -93,7 +98,7 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
   public NexWriteNode( String filename ){
     errormessage = "";
     nf = null;
-    int open_mode = NexusFile.NXACC_CREATE;
+    int open_mode = NexusFile.NXACC_CREATE5;
     num_nxEntries = 0;     
     if( filename == null){
       errormessage = " no Such File "+filename;
@@ -403,7 +408,9 @@ public class  NexWriteNode implements NexIO.Write.NxWriteNode{
           }     
        
           nf.makedata(nodename,TypeConv.convertFrom(type),ranks.length,ranks);
+         
           nf.opendata( nodename );
+           nf.compress( NexusFile.NX_COMP_LZW);
           
         }else if(( ! classname.equals( "File" ) ) ){
           nf.makegroup( nodename , classname );
