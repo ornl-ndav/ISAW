@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/07/03 15:11:12  bouzekc
+ * Fixed odd CVS log entries due to double inclusion of log
+ * header tag.
+ *
  * Revision 1.9  2003/06/25 20:24:44  bouzekc
  * Unused private variables removed, reformatted for
  * consistency.
@@ -60,42 +64,12 @@
  * Revision 1.3  2003/04/02 15:02:46  pfpeterson
  * Changed to reflect new heritage (Forms are Operators). (Chris Bouzek)
  *
+ * Revision 1.2  2003/03/19 23:07:37  pfpeterson
+ * Expanded TimeFocusGroupForm to allow for up to 20 'banks' to be
+ * focused and grouped. (Chris Bouzek)
+ *
  * Revision 1.1  2003/03/19 15:07:51  pfpeterson
  * Added to CVS. (Chris Bouzek)
- *
- * Revision 1.5  2003/03/13 19:00:52  dennis
- * Added $Log$
- * Added Revision 1.9  2003/06/25 20:24:44  bouzekc
- * Added Unused private variables removed, reformatted for
- * Added consistency.
- * Added
- * Added Revision 1.8  2003/06/18 23:09:47  bouzekc
- * Added Parameter error checking now handled by superclass Form.
- * Added
- * Added Revision 1.7  2003/06/18 19:55:27  bouzekc
- * Added Uses errorOut() to indicate parameter errors.  More robust
- * Added parameter error checking.  Now fires off property change
- * Added events in a semi-intelligent way.  Uses super.getResult() for
- * Added initializing PropertyChanger variables.
- * Added
- * Added Revision 1.6  2003/06/03 23:05:17  bouzekc
- * Added Fixed full constructor to avoid excessive garbage
- * Added collection.
- * Added Fixed documentation to reflect constructor
- * Added parameter changes.
- * Added
- * Added Revision 1.5  2003/06/02 22:25:27  bouzekc
- * Added Fixed contact information.
- * Added Added call to setDefaultParameters-needed to avoid
- * Added NullPointerExceptions.
- * Added
- * Added Revision 1.4  2003/04/24 18:58:24  pfpeterson
- * Added Various small bug fixes. (Chris Bouzek)
- * Added
- * Added Revision 1.1  2003/03/19 15:07:51  pfpeterson
- * Added Added to CVS. (Chris Bouzek)
- * Added comment to include revision information.
- *
  *
  */
 package Wizard;
