@@ -32,6 +32,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2004/01/28 22:19:53  bouzekc
+ * Removed code to set the temporary compile directory, as it was no longer
+ * needed.  Added to the main() test method.
+ *
  * Revision 1.2  2004/01/28 22:12:26  bouzekc
  * Reformatted code.
  *
@@ -144,13 +148,14 @@ public class FortranOperatorFactory {
   }
 
   /**
-   * DOCUMENT ME!
+   * Testbed.
    *
-   * @param args DOCUMENT ME!
+   * @param args unused.
    */
   public static void main( String[] args ) {
-    FortranOperatorFactory.createFortranWrapped( 
+    Operator myop = FortranOperatorFactory.getInstance( 
       "/home/students/bouzekc/ISAW/Operators/MyFortran.f" );
+    System.out.println( myop.getResult(  ) );
   }
 
   /**
@@ -172,7 +177,7 @@ public class FortranOperatorFactory {
       //for the compiled classes
       compiler.setProperty( 
         "userDirPath", SharedData.getProperty( "ISAW_HOME" ) );
-      compiler.setProperty( "tempDirNameRoot", "" );
+      //compiler.setProperty( "tempDirNameRoot", "" );
       myWrapped = ( Wrappable )( compiler.compileClass( code ).newInstance(  ) );
     } catch( Exception iae ) {
       SharedData.addmsg( "Unable to compile converted Java class." );
