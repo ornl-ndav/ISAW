@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/01/24 19:39:49  bouzekc
+ *  Removed unused variables from main().
+ *
  *  Revision 1.5  2003/10/16 00:09:50  dennis
  *  Fixed javadocs to build cleanly with jdk 1.4.2
  *
@@ -218,11 +221,11 @@ public class DataSetScalarMultiply extends    ScalarOp
   public static void main( String[] args )
   {
     DataSet ds = DataSetFactory.getTestDataSet();
-    ViewManager viewer = new ViewManager(ds, ViewManager.IMAGE); 
+    new ViewManager(ds, ViewManager.IMAGE); 
 
     Operator op = new DataSetScalarMultiply( ds, 50, true );
     DataSet new_ds = (DataSet)op.getResult();
-    ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE); 
+    new ViewManager(new_ds, ViewManager.IMAGE); 
     
     System.out.println(op.getDocumentation());
     System.out.println(op.getResult().toString());
