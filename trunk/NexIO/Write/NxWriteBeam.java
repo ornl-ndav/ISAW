@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2005/01/10 16:17:16  rmikk
+ * Eliminated unused code
+ *
  * Revision 1.5  2003/12/08 20:56:41  rmikk
  * Moved the duration from NXbeam to NXentry
  *
@@ -115,24 +118,7 @@ public class NxWriteBeam{
                         Inst_Type.makeRankArray(4,-1,-1,-1,-1));
       }  
     } 
-    // duration <-- global attribute -->
-   /* O = DS.getAttributeValue( Attribute.NUMBER_OF_PULSES );
-    if( O != null ){
-      if( O instanceof Number ){
-        float f = ( ( Number )O ).floatValue();
-        ff = new float[1];
-        ff[0] = f/30.0f;
-        rank = new int[1];
-        rank[0] = 1;
-        n1 = node.newChildNode( "duration" ,"SDS" );
-        n1.setNodeValue( ff , Types.Float , rank ); 
-        if( n1.getErrorMessage() != "" );
-        errormessage += ":" + n1.getErrorMessage();
-        n1.addAttribute("units",("msec"+(char)0).getBytes(),Types.Char,
-                        Inst_Type.makeRankArray(5,-1,-1,-1,-1));
-      }  
-    }
-  */
+   
      NxWriteNode NxLognode = node.newChildNode("Log_2","NXlog");
     NxWriteLog writelog = new NxWriteLog( 5);
     writelog.processDS( NxLognode, null, 2); 
