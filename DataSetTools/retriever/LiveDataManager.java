@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2003/03/14 20:47:07  dennis
+ *  The UpdateDataSetNow() method now verifies that it actually
+ *  got a DataSet when one was requested.
+ *  If the DataManager's run method terminates, the TCP connection
+ *  is now exited.
+ *
  *  Revision 1.20  2003/03/10 06:05:00  dennis
  *  Now records the last command that was used to load the local
  *  copy of a DataSet and also the next command that should be
@@ -488,7 +494,15 @@ public class LiveDataManager extends    Thread
                               // so the run() method doesn't queue up another
                               // request for a DataSet.
 
-   DataSet temp_ds = (DataSet)retriever.getObjectFromServer( command );
+   Object  obj = retriever.getObjectFromServer( command );
+
+   if ( !(obj instanceof DataSet) )                    // lost connection 
+   {
+     send_message( retriever.status() );
+     return;
+   }
+
+   DataSet temp_ds = (DataSet)obj;
 
    if ( temp_ds == data_sets[data_set_num] )
      System.out.println("ERROR!!!! same data set" );
@@ -632,6 +646,8 @@ public class LiveDataManager extends    Thread
        e.printStackTrace();
      }
    }
+
+   retriever.Exit();          // shut down the tcp connection when we're done
  }
 
 
