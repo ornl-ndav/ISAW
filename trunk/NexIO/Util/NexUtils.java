@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2005/01/14 23:38:26  rmikk
+ * Fixed several errors in retrieving NXdata with several detectors.
+ *
  * Revision 1.8  2004/12/23 18:41:34  rmikk
  * Implements some of the NeXus standard version 1.0 changes like
  * NXgeomentry, description, etc.
@@ -202,12 +205,12 @@ public class NexUtils implements INexUtils {
                     x_dir = new Vector3D[ xx.length / 3 ];
                     y_dir = new Vector3D[ yy.length / 3 ];
             
-                    for ( int i = 0; i < xx.length / 3; i += 3 ) {
+                    for ( int i = 0; i < xx.length / 3; i++ ) {
               
-                        x_dir[ i ] = new Vector3D( xx[ i + 2 ] , xx[ i ] ,
-                                                             xx[ i + 1 ] );
-                        y_dir[ i ] = new Vector3D( yy[ i + 2 ] , yy[ i ] , 
-                                                             yy[ i + 1 ] );
+                        x_dir[ i ] = new Vector3D( xx[ 3*i + 2 ] , xx[ 3*i ] ,
+                                                             xx[ 3*i + 1 ] );
+                        y_dir[ i ] = new Vector3D( yy[ 3*i + 2 ] , yy[ 3*i ] , 
+                                                             yy[ 3*i + 1 ] );
               
                     }
                 }
@@ -1047,8 +1050,8 @@ public class NexUtils implements INexUtils {
         
             float[] res = new float[ dat.length / nparms ];
 
-            for (int  i = 0; i < res.length; i += nparms )
-                res[ i ] = dat[ i + pos_parm ];
+            for (int  i = 0; i < res.length; i++ )
+                res[ i ] = dat[ nparms*i + pos_parm ];
        
             return res;
             
