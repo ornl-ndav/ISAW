@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2003/07/02 22:52:10  bouzekc
+ * Sorted methods according to access rights.
+ *
  * Revision 1.26  2003/07/02 21:57:07  bouzekc
  * Reformatting update.
  *
@@ -243,19 +246,6 @@ public abstract class Form extends Operator implements PropertyChanger {
     this.HAS_CONSTANTS = hasConstantParams;
   }
 
-  /* ---------------------------- addParameter ---------------------------- */
-
-  /**
-   * Add the reference for the specified parameter to the list of parameters
-   * for this operation object.
-   *
-   *  @param   iparam   The new IParameterGUI to be added to the list
-   *                    of parameters for this object.
-   */
-  protected void addParameter( IParameterGUI iparam ) {
-    parameters.addElement( iparam );
-  }
-
   /* ---------------------------- setParameter --------------------------- */
 
   /**
@@ -291,168 +281,10 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   * This method takes care of the setting up the gui to build in.
-   *
-   * @param container where all of the gui components will be packed
-   * into.
-   */
-  protected final void prepGUI( java.awt.Container container ) {
-    if( panel == null ) {
-      panel = new JPanel(  );
-    }
-
-    panel.removeAll(  );
-    panel.add( container );
-  }
-
-  /**
-   *  This method makes the GUI for the Form.  If a derived class
-   *  overrides this method, it must build it's own user interface in
-   *  the current JPanel, panel, since that is what is returned to the
-   *  Wizard to show the form.  Also, this method is NOT just called
-   *  at construction time, but is called each time the Form is shown
-   *  by the Wizard.  This guarantees that the parameter values will be
-   *  properly displayed using their current values.
-   *  @see Form#prepGUI(java.awt.Container) prepGUI
-   *  @see Form#enableParameters() enableParameters
-   */
-  protected void makeGUI(  ) {
-    if( DEBUG ) {
-      System.out.println( "IN makeGUI of " + this.getCommand(  ) );
-    }
-
-    Box box = new Box( BoxLayout.Y_AXIS );
-
-    if( DEBUG ) {
-      box.setBackground( Color.red );
-    }
-
-    prepGUI( box );
-
-    JPanel sub_panel;
-
-    for( int i = 0; i < param_ref.length; i++ ) {
-      if( ( param_ref[i] != null ) && ( param_ref[i].length > 0 ) ) {
-        // build the sub_panels
-        sub_panel = build_param_panel( PARAM_NAMES[i], param_ref[i] );
-
-        if( sub_panel != null ) {
-          box.add( sub_panel );
-        }
-      }
-    }
-
-    this.enableParameters(  );
-  }
-
-  /**
-   * Sets the enable/disable state of the parameters according to the
-   * types declared using {@link #setParamTypes(int[],int[],int[])
-   * setParamTypes}.
-   */
-  protected final void enableParameters(  ) {
-    boolean enable = false;
-
-    for( int i = 0; i < param_ref.length; i++ ) {
-      if( ( param_ref[i] != null ) && ( param_ref[i].length > 0 ) ) {
-        enable = ( i == VAR_PARAM );  // only editable_params should be enabled
-
-        if( DEBUG ) {
-          System.out.print( PARAM_NAMES[i] + "(" + enable + ")" );
-        }
-
-        for( int j = 0; j < param_ref[i].length; j++ ) {
-          ( ( IParameterGUI )getParameter( param_ref[i][j] ) ).setEnabled( 
-            enable );
-
-          if( DEBUG ) {
-            System.out.print( param_ref[i][j] + " " );
-          }
-        }
-
-        if( DEBUG ) {
-          System.out.println(  );
-        }
-      }
-    }
-  }
-
-  /**
-   * Method to set the parameter types. If you don't want one set then
-   * pass in null or a zero length array.
-   */
-  protected final void setParamTypes( 
-    int[] constant, int[] variable, int[] result ) {
-    if( ( constant == null ) || ( constant.length <= 0 ) ) {
-      constant = null;
-    }
-
-    if( ( variable == null ) || ( variable.length <= 0 ) ) {
-      variable = null;
-    }
-
-    if( ( result == null ) || ( result.length <= 0 ) ) {
-      result = null;
-    }
-
-    param_ref = new int[][]{ constant, variable, result };
-  }
-
-  /**
-   * Returns the array of indices for the different types of parameters
-   */
-  protected final int[] getParamType( int type ) {
-    if( type == CONST_PARAM ) {
-      return param_ref[CONST_PARAM];
-    } else if( type == VAR_PARAM ) {
-      return param_ref[VAR_PARAM];
-    } else if( type == RESULT_PARAM ) {
-      return param_ref[RESULT_PARAM];
-    } else {
-      throw new IndexOutOfBoundsException( "Invalid type specified" );
-    }
-  }
-
-  /**
    *  Returns the array of indices for the variable parameters.
    */
   public final int[] getVarParamIndices(  ) {
     return this.getParamType( VAR_PARAM );
-  }
-
-  /**
-   *  This builds the portions of the default form panel that contain a
-   *  list of parameters inside of a panel with a titled border.  It is
-   *  used to build up to three portions, corresponding to the constant,
-   *  user-specified and result parameters.
-   *
-   *  @param  title  The title to put on the border
-   *  @param  num    The reference to the particular parameters (i.e
-   *                 editable, result, or constant) within the
-   *                 parameters Vector.
-   */
-  protected final JPanel build_param_panel( String title, int[] num ) {
-    if( getNum_parameters(  ) <= 0 ) {
-      return null;
-    }
-
-    JPanel sub_panel    = new JPanel(  );
-    TitledBorder border;
-
-    border = new TitledBorder( LineBorder.createBlackLineBorder(  ), title );
-
-    //border.setTitleFont( FontUtil.BORDER_FONT );
-    sub_panel.setBorder( border );
-    sub_panel.setLayout( new GridLayout( num.length, 1 ) );
-
-    for( int i = 0; i < num.length; i++ ) {
-      IParameterGUI param = ( IParameterGUI )getParameter( num[i] );
-
-      param.init(  );
-      sub_panel.add( param.getGUIPanel(  ) );
-    }
-
-    return sub_panel;
   }
 
   /**
@@ -467,6 +299,20 @@ public abstract class Form extends Operator implements PropertyChanger {
     }
 
     return panel;
+  }
+
+  /**
+   *  Overridden to some functionality for child Forms.
+   *
+   *  @return     The result of validateParameterGUIs(), which is either
+   *              Boolean.TRUE or an ErrorString, depending on the whether the
+   *              parameters successfully validated or not, respectively.
+   */
+  public Object getResult(  ) {
+    //for progress bars
+    newPercent = oldPercent = increment = 0;
+
+    return this.validateParameterGUIs(  );
   }
 
   /**
@@ -490,6 +336,35 @@ public abstract class Form extends Operator implements PropertyChanger {
         panel.setVisible( show );
       }
     }
+  }
+
+  /* -------------------- PropertyChanger methods --------------------------*/
+
+  /**
+   *  Adds the property change listener pcl to this Form's
+   *  PropertyChangeSupport propBind variable.
+   */
+  public void addPropertyChangeListener( 
+    String property, PropertyChangeListener pcl ) {
+    //this one is for the Form progress messages
+    if( propBind != null ) {
+      propBind.addPropertyChangeListener( property, pcl );
+    }
+
+    this.addListenerToParameters( pcl );
+  }
+
+  /**
+   *  Adds the property change listener pcl to this Form's
+   *  PropertyChangeSupport propBind variable.
+   */
+  public void addPropertyChangeListener( PropertyChangeListener pcl ) {
+    //this one is for the Form progress messages
+    if( propBind != null ) {
+      propBind.addPropertyChangeListener( pcl );
+    }
+
+    this.addListenerToParameters( pcl );
   }
 
   /**
@@ -539,6 +414,147 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
+   *  Removes the property change listener pcl from this Form's
+   *  PropertyChangeSupport propBind variable.
+   */
+  public void removePropertyChangeListener( PropertyChangeListener pcl ) {
+    if( propBind != null ) {
+      propBind.removePropertyChangeListener( pcl );
+    }
+  }
+
+  /**
+   * Returns the array of indices for the different types of parameters
+   */
+  protected final int[] getParamType( int type ) {
+    if( type == CONST_PARAM ) {
+      return param_ref[CONST_PARAM];
+    } else if( type == VAR_PARAM ) {
+      return param_ref[VAR_PARAM];
+    } else if( type == RESULT_PARAM ) {
+      return param_ref[RESULT_PARAM];
+    } else {
+      throw new IndexOutOfBoundsException( "Invalid type specified" );
+    }
+  }
+
+  /**
+   * Method to set the parameter types. If you don't want one set then
+   * pass in null or a zero length array.
+   */
+  protected final void setParamTypes( 
+    int[] constant, int[] variable, int[] result ) {
+    if( ( constant == null ) || ( constant.length <= 0 ) ) {
+      constant = null;
+    }
+
+    if( ( variable == null ) || ( variable.length <= 0 ) ) {
+      variable = null;
+    }
+
+    if( ( result == null ) || ( result.length <= 0 ) ) {
+      result = null;
+    }
+
+    param_ref = new int[][]{ constant, variable, result };
+  }
+
+  /* ---------------------------- addParameter ---------------------------- */
+
+  /**
+   * Add the reference for the specified parameter to the list of parameters
+   * for this operation object.
+   *
+   *  @param   iparam   The new IParameterGUI to be added to the list
+   *                    of parameters for this object.
+   */
+  protected void addParameter( IParameterGUI iparam ) {
+    parameters.addElement( iparam );
+  }
+
+  /**
+   *  This builds the portions of the default form panel that contain a
+   *  list of parameters inside of a panel with a titled border.  It is
+   *  used to build up to three portions, corresponding to the constant,
+   *  user-specified and result parameters.
+   *
+   *  @param  title  The title to put on the border
+   *  @param  num    The reference to the particular parameters (i.e
+   *                 editable, result, or constant) within the
+   *                 parameters Vector.
+   */
+  protected final JPanel build_param_panel( String title, int[] num ) {
+    if( getNum_parameters(  ) <= 0 ) {
+      return null;
+    }
+
+    JPanel sub_panel    = new JPanel(  );
+    TitledBorder border;
+
+    border = new TitledBorder( LineBorder.createBlackLineBorder(  ), title );
+
+    //border.setTitleFont( FontUtil.BORDER_FONT );
+    sub_panel.setBorder( border );
+    sub_panel.setLayout( new GridLayout( num.length, 1 ) );
+
+    for( int i = 0; i < num.length; i++ ) {
+      IParameterGUI param = ( IParameterGUI )getParameter( num[i] );
+
+      param.init(  );
+      sub_panel.add( param.getGUIPanel(  ) );
+    }
+
+    return sub_panel;
+  }
+
+  /**
+   * Sets the enable/disable state of the parameters according to the
+   * types declared using {@link #setParamTypes(int[],int[],int[])
+   * setParamTypes}.
+   */
+  protected final void enableParameters(  ) {
+    boolean enable = false;
+
+    for( int i = 0; i < param_ref.length; i++ ) {
+      if( ( param_ref[i] != null ) && ( param_ref[i].length > 0 ) ) {
+        enable = ( i == VAR_PARAM );  // only editable_params should be enabled
+
+        if( DEBUG ) {
+          System.out.print( PARAM_NAMES[i] + "(" + enable + ")" );
+        }
+
+        for( int j = 0; j < param_ref[i].length; j++ ) {
+          ( ( IParameterGUI )getParameter( param_ref[i][j] ) ).setEnabled( 
+            enable );
+
+          if( DEBUG ) {
+            System.out.print( param_ref[i][j] + " " );
+          }
+        }
+
+        if( DEBUG ) {
+          System.out.println(  );
+        }
+      }
+    }
+  }
+
+  /**
+   * This method takes care of the setting up the gui to build in.
+   *
+   * @param container where all of the gui components will be packed
+   * into.
+   */
+  protected final void prepGUI( java.awt.Container container ) {
+    if( panel == null ) {
+      panel = new JPanel(  );
+    }
+
+    panel.removeAll(  );
+    panel.add( container );
+  }
+
+  /**
    *  Convenience method for subclassed Forms to return an
    *  "invalid" message to the Wizard, and output an appropriate
    *  error message to the user.
@@ -583,17 +599,53 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   *  Overridden to some functionality for child Forms.
-   *
-   *  @return     The result of validateParameterGUIs(), which is either
-   *              Boolean.TRUE or an ErrorString, depending on the whether the
-   *              parameters successfully validated or not, respectively.
+   *  Utility method to fire property change events.
    */
-  public Object getResult(  ) {
-    //for progress bars
-    newPercent = oldPercent = increment = 0;
+  protected void fireValueChangeEvent( int oldValue, int newValue ) {
+    if( ( propBind != null ) && ( oldValue != newValue ) ) {
+      propBind.firePropertyChange( 
+        PropChangeProgressBar.VALUE, oldValue, newValue );
+    }
+  }
 
-    return this.validateParameterGUIs(  );
+  /**
+   *  This method makes the GUI for the Form.  If a derived class
+   *  overrides this method, it must build it's own user interface in
+   *  the current JPanel, panel, since that is what is returned to the
+   *  Wizard to show the form.  Also, this method is NOT just called
+   *  at construction time, but is called each time the Form is shown
+   *  by the Wizard.  This guarantees that the parameter values will be
+   *  properly displayed using their current values.
+   *  @see Form#prepGUI(java.awt.Container) prepGUI
+   *  @see Form#enableParameters() enableParameters
+   */
+  protected void makeGUI(  ) {
+    if( DEBUG ) {
+      System.out.println( "IN makeGUI of " + this.getCommand(  ) );
+    }
+
+    Box box = new Box( BoxLayout.Y_AXIS );
+
+    if( DEBUG ) {
+      box.setBackground( Color.red );
+    }
+
+    prepGUI( box );
+
+    JPanel sub_panel;
+
+    for( int i = 0; i < param_ref.length; i++ ) {
+      if( ( param_ref[i] != null ) && ( param_ref[i].length > 0 ) ) {
+        // build the sub_panels
+        sub_panel = build_param_panel( PARAM_NAMES[i], param_ref[i] );
+
+        if( sub_panel != null ) {
+          box.add( sub_panel );
+        }
+      }
+    }
+
+    this.enableParameters(  );
   }
 
   /**
@@ -695,55 +747,6 @@ public abstract class Form extends Operator implements PropertyChanger {
     }
 
     return Boolean.TRUE;
-  }
-
-  /* -------------------- PropertyChanger methods --------------------------*/
-
-  /**
-   *  Adds the property change listener pcl to this Form's
-   *  PropertyChangeSupport propBind variable.
-   */
-  public void addPropertyChangeListener( 
-    String property, PropertyChangeListener pcl ) {
-    //this one is for the Form progress messages
-    if( propBind != null ) {
-      propBind.addPropertyChangeListener( property, pcl );
-    }
-
-    this.addListenerToParameters( pcl );
-  }
-
-  /**
-   *  Adds the property change listener pcl to this Form's
-   *  PropertyChangeSupport propBind variable.
-   */
-  public void addPropertyChangeListener( PropertyChangeListener pcl ) {
-    //this one is for the Form progress messages
-    if( propBind != null ) {
-      propBind.addPropertyChangeListener( pcl );
-    }
-
-    this.addListenerToParameters( pcl );
-  }
-
-  /**
-   *  Removes the property change listener pcl from this Form's
-   *  PropertyChangeSupport propBind variable.
-   */
-  public void removePropertyChangeListener( PropertyChangeListener pcl ) {
-    if( propBind != null ) {
-      propBind.removePropertyChangeListener( pcl );
-    }
-  }
-
-  /**
-   *  Utility method to fire property change events.
-   */
-  protected void fireValueChangeEvent( int oldValue, int newValue ) {
-    if( ( propBind != null ) && ( oldValue != newValue ) ) {
-      propBind.firePropertyChange( 
-        PropChangeProgressBar.VALUE, oldValue, newValue );
-    }
   }
 
   /**

@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.21  2003/07/02 22:53:39  bouzekc
+ * Sorted methods according to access rights.
+ *
  * Revision 1.20  2003/07/02 20:09:48  bouzekc
  * Removed unused import statement.
  *
@@ -193,42 +196,15 @@ public class OperatorForm extends Form implements HiddenOperator {
     return form_op.getCommand(  );
   }
 
-  /* ----------------------------- getResult ---------------------------- */
-
   /**
-   * Returns the object that is the result of applying this operation.
-   * This should be called after setting the appropriate parameters.
-   * Derived classes will override this method with code that will
-   * carry out the required operation.
+   *  Method to allow OperatorForms to set their constant parameters indices.
    *
-   * @return  The result of carrying out this operation is returned as a Java
-   *          Object.
+   *  @param  indices     Array of integers indicating which parameters should
+   *                      be constant.
    */
-  public Object getResult(  ) {
-    Object result = form_op.getResult(  );
-
-    //Operator failed - exit out
-    if( result instanceof ErrorString ) {
-      result_param.setValue( null );
-
-      return errorOut( result.toString(  ) );
-    }
-
-    result_param.setValue( result );
-
-    if( result != null ) {
-      SharedData.addmsg( "Success! " + result.toString(  ) );
-    } else {
-      SharedData.addmsg( "Success!" );
-    }
-
-    //validate the parameters...if we got this far, assume
-    //that our parameters were OK.
-    for( int i = 0; i < getNum_parameters(  ); i++ ) {
-      ( ( IParameterGUI )getParameter( i ) ).setValid( true );
-    }
-
-    return result;
+  public void setConstantParamIndices( int[] indices ) {
+    HAS_CONSTANTS   = true;
+    constIndices    = indices;
   }
 
   /* -------------------------- setDefaultParameters ----------------------- */
@@ -317,17 +293,6 @@ public class OperatorForm extends Form implements HiddenOperator {
     }
   }
 
-  /**
-   *  Method to allow OperatorForms to set their constant parameters indices.
-   *
-   *  @param  indices     Array of integers indicating which parameters should
-   *                      be constant.
-   */
-  public void setConstantParamIndices( int[] indices ) {
-    HAS_CONSTANTS   = true;
-    constIndices    = indices;
-  }
-
   /* ---------------------------- getNum_parameters ------------------------ */
 
   /**
@@ -340,29 +305,6 @@ public class OperatorForm extends Form implements HiddenOperator {
       return form_op.getNum_parameters(  ) + 1;
     } else {
       return 0;
-    }
-  }
-
-  /* ----------------------------- getParameter -------------------------- */
-
-  /**
-   * Get the parameter at the specified index from the list of parameters
-   * for this Form.  Note: This returns a reference to the specified
-   * parameter.  Consequently the value of the parameter can be altered.
-   *
-   *  @param  index    The index in the list of parameters of the parameter
-   *                   that is to be returned.  "index" must be between 0 and
-   *                   the number of parameters - 1.
-   *
-   *  @return  Returns the parameters at the specified position in the list
-   *           of parameters for this object.  If the index is invalid,
-   *           this returns null.
-   */
-  public IParameter getParameter( int index ) {
-    if( index < form_op.getNum_parameters(  ) ) {
-      return form_op.getParameter( index );
-    } else {
-      return result_param;
     }
   }
 
@@ -402,6 +344,67 @@ public class OperatorForm extends Form implements HiddenOperator {
         return false;
       }
     }
+  }
+
+  /* ----------------------------- getParameter -------------------------- */
+
+  /**
+   * Get the parameter at the specified index from the list of parameters
+   * for this Form.  Note: This returns a reference to the specified
+   * parameter.  Consequently the value of the parameter can be altered.
+   *
+   *  @param  index    The index in the list of parameters of the parameter
+   *                   that is to be returned.  "index" must be between 0 and
+   *                   the number of parameters - 1.
+   *
+   *  @return  Returns the parameters at the specified position in the list
+   *           of parameters for this object.  If the index is invalid,
+   *           this returns null.
+   */
+  public IParameter getParameter( int index ) {
+    if( index < form_op.getNum_parameters(  ) ) {
+      return form_op.getParameter( index );
+    } else {
+      return result_param;
+    }
+  }
+
+  /* ----------------------------- getResult ---------------------------- */
+
+  /**
+   * Returns the object that is the result of applying this operation.
+   * This should be called after setting the appropriate parameters.
+   * Derived classes will override this method with code that will
+   * carry out the required operation.
+   *
+   * @return  The result of carrying out this operation is returned as a Java
+   *          Object.
+   */
+  public Object getResult(  ) {
+    Object result = form_op.getResult(  );
+
+    //Operator failed - exit out
+    if( result instanceof ErrorString ) {
+      result_param.setValue( null );
+
+      return errorOut( result.toString(  ) );
+    }
+
+    result_param.setValue( result );
+
+    if( result != null ) {
+      SharedData.addmsg( "Success! " + result.toString(  ) );
+    } else {
+      SharedData.addmsg( "Success!" );
+    }
+
+    //validate the parameters...if we got this far, assume
+    //that our parameters were OK.
+    for( int i = 0; i < getNum_parameters(  ); i++ ) {
+      ( ( IParameterGUI )getParameter( i ) ).setValid( true );
+    }
+
+    return result;
   }
 
   /**
