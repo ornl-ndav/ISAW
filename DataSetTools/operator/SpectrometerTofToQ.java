@@ -5,6 +5,10 @@
  *                             ( Modified from SpectrometerTofToEnergy.java )
  *             
  *  $Log$
+ *  Revision 1.2  2000/07/17 18:18:14  dennis
+ *  Changed call to VelocityOfEnergy() to VelocityFromEnergy() since some
+ *  math.tof_calc.java method names were changed for consistency.
+ *
  *  Revision 1.1  2000/07/10 22:36:20  dennis
  *  July 10, 2000 version... many changes
  *
@@ -176,8 +180,8 @@ public class SpectrometerTofToQ extends    XAxisConversionOperator
                                        e_out, 
                                        position.getScatteringAngle() );
 
-    float v_in  = tof_calc.VelocityOfEnergy( e_in ); 
-    float v_out = tof_calc.VelocityOfEnergy( e_out );
+    float v_in  = tof_calc.VelocityFromEnergy( e_in ); 
+    float v_out = tof_calc.VelocityFromEnergy( e_out );
 
     float Qx = (float) ( tof_calc.MN_KG / tof_calc.H_BAR_ES *
                      ( v_in - v_out * Math.sin( spherical_coords[2] ) *
@@ -282,8 +286,8 @@ public class SpectrometerTofToQ extends    XAxisConversionOperator
                                               position.getScatteringAngle() );
           */
 
-          float v_in  = tof_calc.VelocityOfEnergy( e_in ); 
-          float v_out = tof_calc.VelocityOfEnergy( e_out ); 
+          float v_in  = tof_calc.VelocityFromEnergy( e_in ); 
+          float v_out = tof_calc.VelocityFromEnergy( e_out ); 
 
           float Qx = (float) ( tof_calc.MN_KG / tof_calc.H_BAR_ES *
                      ( v_in - v_out * Math.sin( spherical_coords[2] ) *
