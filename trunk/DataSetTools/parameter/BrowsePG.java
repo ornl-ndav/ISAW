@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2003/09/12 23:53:53  bouzekc
+ *  Fixed null pointer bug in getValue().
+ *
  *  Revision 1.24  2003/09/12 23:49:47  bouzekc
  *  Changed call from setValid() to validateSelf() in getValue().
  *
@@ -191,13 +194,18 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
      * a specific object (such as String or DataSet) without casting.
      */
     public Object getValue(){
-        String value=null;
+        String val=null;
         if(this.initialized){
-            value=((JTextField)this.innerEntry).getText();
+            val=((JTextField)this.innerEntry).getText();
         }else{
-            value=(String)this.value;
+            val=(String)this.value;
         }
-        return FilenameUtil.setForwardSlash(value.toString());
+
+        if( value != null ) {
+          return FilenameUtil.setForwardSlash(value.toString());
+        } else {
+          return "";
+        }
     }
 
     /**
