@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2001/06/04 22:44:28  dennis
+ *  Now uses DS_Util.getData_ID_String() to construct border labels for the
+ *  horizontal graph.
+ *
  *  Revision 1.16  2001/05/29 15:09:09  dennis
  *  Now uses initializeWorldCoords to reset both the local and
  *  global transforms.
@@ -925,18 +929,16 @@ private void SetGraphCursorFromImage( )
 
 private boolean DrawPointedAtHGraph()
 {
-  Data pointed_at_data_block = null;
   int pointed_at_row = getDataSet().getPointedAtIndex();
+
   if ( pointed_at_row >= 0 )
   {
-    pointed_at_data_block = getDataSet().getData_entry( pointed_at_row );
-
     if ( remove_hidden_lines.getState() )
       h_graph.setRemoveHiddenLines( true );
     else 
       h_graph.setRemoveHiddenLines( false );
 
-    DrawHGraph( pointed_at_data_block, 0, true );
+    DrawHGraph( pointed_at_row, 0, true );
 
     return true;
   }
@@ -962,12 +964,8 @@ private int DrawSelectedHGraphs()
     else if ( current_multi_plot_mode == MULTI_PLOT_DIAGONAL )
       h_graph.setMultiplotOffsets( 10, 10 );
 
-    Data pointed_at_data_block = null;
     int pointed_at_row = getDataSet().getPointedAtIndex();
-    if ( pointed_at_row >= 0 )
-      pointed_at_data_block = getDataSet().getData_entry( pointed_at_row );
 
-    Data data_block = null;
     int draw_count = 0;
     int n_rows = getDataSet().getNum_entries();
     boolean too_many = false;
@@ -977,11 +975,10 @@ private int DrawSelectedHGraphs()
       if ( getDataSet().isSelected(i) )
       {
         draw_count++;
-        data_block = getDataSet().getData_entry( i );
-        if ( data_block == pointed_at_data_block )
-          DrawHGraph( data_block, draw_count, true );
+        if ( i == pointed_at_row )
+          DrawHGraph( i, draw_count, true );
         else
-          DrawHGraph( data_block, draw_count, false );
+          DrawHGraph( i, draw_count, false );
 
         num_drawn++;
       } 
@@ -1008,20 +1005,20 @@ private void DrawDefaultDataBlock()
                                          // that was pointed at.
 
     int last_pointed_at = getState().getPointedAtIndex();
-    Data data_block     = getDataSet().getData_entry( last_pointed_at );
-    if ( data_block != null )
+    if (last_pointed_at >= 0 && last_pointed_at < getDataSet().getNum_entries())
     {
-      DrawHGraph( data_block, 0, true );
+      DrawHGraph( last_pointed_at, 0, true );
       getDataSet().setPointedAtIndex( last_pointed_at );
       getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
     }
     else                                 // if none, try to draw data block 0
     {
-      data_block = getDataSet().getData_entry(0);
+      Data data_block = getDataSet().getData_entry(0);
       if ( data_block != null )
       {
-        DrawHGraph( data_block, 0, true );
+        DrawHGraph( 0, 0, true );
         getDataSet().setPointedAtIndex(0);
+        getState().setPointedAtIndex(0);
         getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
       }
 
@@ -1034,8 +1031,10 @@ private void DrawDefaultDataBlock()
 
 /* ---------------------------- DrawHGraph ----------------------------- */
 
-private void DrawHGraph( Data data_block, int graph_num, boolean pointed_at )
+private void DrawHGraph( int index, int graph_num, boolean pointed_at )
 {
+  Data  data_block = getDataSet().getData_entry( index );
+
   float x[] = data_block.getX_scale().getXs();
   float y[] = data_block.getY_values();
   Color color_list[] = { 
@@ -1051,14 +1050,7 @@ private void DrawHGraph( Data data_block, int graph_num, boolean pointed_at )
 
   if ( graph_num == 0 )
   {
-    String border_label = data_block.toString();
-    if ( data_block.isSelected() )
-      border_label += " (Selected)";
-
-    String update_time = (String)
-                         (data_block.getAttributeValue(Attribute.UPDATE_TIME));
-    if ( update_time != null )
-      border_label = border_label + ", " + update_time;
+    String border_label = DS_Util.getData_ID_String( getDataSet(), index );
 
     TitledBorder border = new TitledBorder( LineBorder.createBlackLineBorder(),
                                           border_label );
