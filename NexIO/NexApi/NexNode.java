@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2003/10/28 15:30:26  rmikk
+ * Fixed errors if file cannot be openned or created
+ *
  * Revision 1.11  2003/06/18 20:33:59  pfpeterson
  * Changed calls for NxNodeUtils.Showw(Object) to
  * DataSetTools.util.StringUtil.toString(Object)
@@ -148,7 +151,7 @@ public class NexNode implements NxNode{
   private boolean open(){
     int i, i1, k;
     boolean done = false;
-
+    if( NF== null) return false;
     i1 = 0;
     for( i = 0; ( i < Nodelistinfo.size() ) && ( i < currentOpenNode.size() ) 
            && !done; i++ ){
@@ -213,6 +216,7 @@ public class NexNode implements NxNode{
    */
   public int getNChildNodes(){
       errormessage = "";
+      if( NF == null) return 0;
       if( !open() )
         return -1;
       if( dirinfo == null )
@@ -318,6 +322,7 @@ public class NexNode implements NxNode{
    * Returns the number of attributes for this node
    */
   public int getNAttributes(){
+    if( NF == null) return 0;
     errormessage = "";
     if( !open() )
       return -1;
@@ -337,6 +342,7 @@ public class NexNode implements NxNode{
   
 
   public String getLinkName(){
+    if( NF == null) return null;
     if( !open() )
       return null;
     NXlink l = null;
@@ -364,6 +370,7 @@ public class NexNode implements NxNode{
 
 
   public boolean equals( String linkName ){
+    if( NF == null) return false;
     if( !open() )
       return false;
     
@@ -414,6 +421,7 @@ public class NexNode implements NxNode{
    * whose entries represent the length in that dimension
    */
   public int[] getDimension(){
+     if( NF == null) return null;
     if( !open() )
       return null;
     if( !( getNodeClass().equals( "SDS" ) ) )
@@ -447,7 +455,7 @@ public class NexNode implements NxNode{
     */
   public Object getNodeValue(){
     errormessage = "";
-
+    if( NF == null) return null;
     if( !open() )
       return null;
     int iDim[], args[];
@@ -742,6 +750,7 @@ public class NexNode implements NxNode{
   }
 
   private Object getData( String AttrName, int type, int length ){
+    if( NF == null) return null;
     NxNodeUtils NN = new NxNodeUtils();
 
     Object X = NN.CreateArray( type, length );
@@ -819,6 +828,7 @@ public class NexNode implements NxNode{
    * Returns the parent of this node or the top node
    */
   public NexNode getParent(){
+    if( NF == null) return null;
     errormessage = "";
     if( Nodelistinfo.size() < 1 )
       return this;
