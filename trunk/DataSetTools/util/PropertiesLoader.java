@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2001/08/02 15:47:19  dennis
+ *  Added is_loaded() method to check whether or not the properties file
+ *  was found and loaded ok.
+ *
  *  Revision 1.2  2001/07/24 16:33:49  dennis
  *  Added java docs for reload() method, now that it has
  *  been tested.
@@ -53,13 +57,27 @@ import java.io.*;
 
 public class PropertiesLoader implements java.io.Serializable 
 {
-  private String f_name = "";
+  private String  f_name = "";
+  private boolean loaded_ok = false;
+
 
   public PropertiesLoader( String file_name )
   {
     f_name = file_name;
     reload();
   }
+
+/**
+ *  Checks whether or not the properties file specified in the constructor
+ *  was loaded correctly.
+ *
+ *  @return  true if the properties has been properly loaded, false otherwise.
+ */
+  public boolean is_loaded()
+  {
+    return loaded_ok;
+  }
+
 
 /**
  *  Load or reload the properties file that was specified when this 
@@ -74,14 +92,16 @@ public class PropertiesLoader implements java.io.Serializable
     try
     {
       FileInputStream input = new FileInputStream( full_name );
-      Properties isawProp = new Properties( System.getProperties() );
-      isawProp.load( input );
-      System.setProperties( isawProp );
+      Properties new_props = new Properties( System.getProperties() );
+      new_props.load( input );
+      System.setProperties( new_props );
       input.close();
+      loaded_ok = true;
     }
     catch ( IOException e )
     {
       System.out.println("Properties file: " + f_name + " NOT FOUND" );
+      loaded_ok = false;
       return;
     }  
   }
