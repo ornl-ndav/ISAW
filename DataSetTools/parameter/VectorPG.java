@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2003/07/07 21:51:30  bouzekc
+ * Reorganized methods according to access privilege.
+ *
  * Revision 1.16  2003/07/07 21:42:18  bouzekc
  * Fixed bug where the JDialog wasn't fully listening to
  * window closing events and removed extraneous comments.
@@ -139,16 +142,17 @@ import javax.swing.*;
 
 
 /**
- *   This parameterGUI is the parent class of other parameterGUI's whose values
- *   are Vectors with a common Object data type for each elements.  This GUI is
- *   best for a medium sized list.  The list appears in a list box where the
- *   values can be edited deleted, and/or rearranged.
- *
- *   A vector of choicelist should go through this constructor
+ * This parameterGUI is the parent class of other parameterGUI's whose values
+ * are Vectors with a common Object data type for each elements.  This GUI is
+ * best for a medium sized list.  The list appears in a list box where the
+ * values can be edited deleted, and/or rearranged. A vector of choicelist
+ * should go through this constructor
  */
 public abstract class VectorPG extends ParameterGUI
   implements PropertyChangeListener, ActionListener, ParamUsesString,
     PropertyChanger {
+  //~ Instance fields **********************************************************
+
   private String typeName;
   private ParameterGUI param;
   private PropertyChangeSupport pcs;
@@ -159,16 +163,18 @@ public abstract class VectorPG extends ParameterGUI
   private JDialog entryDialog;
   private JFrame entryFrame;
 
+  //~ Constructors *************************************************************
+
   /**
-   *  Constructor
-   *  @param   param   A ParameterGUI that determines the data type of the
-   *                   elements of the resultant Vector.
-   *  @param  Prompt   the prompt string that appears on the  GUI( a button)
-   *                   and the resultant JFrame when the button is pressed
+   * Constructor
    *
-   *  The ParameterGUI is just a button in a JPanel.  When the button is
-   *  pressed a more complicated JFrame is created with the list box and
-   *  editing buttons.
+   * @param param A ParameterGUI that determines the data type of the elements
+   *        of the resultant Vector.
+   * @param Prompt the prompt string that appears on the  GUI( a button) and
+   *        the resultant JFrame when the button is pressed The ParameterGUI
+   *        is just a button in a JPanel.  When the button is pressed a more
+   *        complicated JFrame is created with the list box and editing
+   *        buttons.
    */
   public VectorPG( ParameterGUI param, String Prompt ) {
     super(  );
@@ -181,81 +187,39 @@ public abstract class VectorPG extends ParameterGUI
     buttonHolder   = null;
   }
 
+  //~ Methods ******************************************************************
+
   /**
-   *  Initializes this VectorPG.
+   * Accessor method to set the enable state of this parameter.
+   *
+   * @param enable Whether to set the parameter enabled or not.
    */
-  public void init(  ) {
-    GUI = new ArrayEntryJPanel( param );
-    GUI.addPropertyChangeListener( this );
-    entrywidget = vectorButton;
-    GUI.setValue( value );
-    vectorButton   = new JButton( param.getName(  ) );
-    buttonHolder   = new JPanel( new GridLayout( 1, 1 ) );
-    buttonHolder.add( vectorButton );
-    vectorButton.addActionListener( this );
+  public void setEnabled( boolean enable ) {
+    enabled = enable;
   }
 
   /**
-   *
-   * @return  The entrywidget associated with this ParameterGUI.
+   * @return The entrywidget associated with this ParameterGUI.
    */
   public JComponent getEntryWidget(  ) {
     return vectorButton;
   }
 
   /**
-   *  Adds an ActionListener to the Vector of ActionListeners held by this
-   *  ParameterGUI.
+   * Returns a JPanel that holds a button.  When the button is pressed, a new
+   * JFrame with more options appears.
+   */
+  public JPanel getGUIPanel(  ) {
+    return buttonHolder;
+  }
+
+  /**
+   * Sets the value and displays these values in the associated JList.
    *
-   *  @param  listener         The ActionListener to add.
+   * @param value The new value to set the VectorPG to.
    */
-  public void addActionListener( ActionListener listener ) {
-    listeners.addElement( listener );
-  }
-
-  /**
-   *  Removes an ActionListener from the Vector of ActionListeners held
-   *  by this ParameterGUI.
-   *
-   *  @param  listener         The ActionListener to remove.
-   */
-  public void removeActionListener( ActionListener listener ) {
-    listeners.remove( listener );
-  }
-
-  /**
-   *  Fires ActionEvents to the ActionListeners in this ParameterGUIs Vector of
-   *  ActionListeners.
-   */
-  public void notifyActionListeners( String command ) {
-    for( int i = 0; i < listeners.size(  ); i++ ) {
-      ( ( ActionListener )listeners.elementAt( i ) ).actionPerformed( 
-        new ActionEvent( this, ActionEvent.ACTION_PERFORMED, command ) );
-    }
-  }
-
-  //*********** PropertyChanger methods *********************************
-
-  /**
-   *    Adds property change listeners to listen for new Vector values
-   */
-  public void addPropertyChangeListener( PropertyChangeListener listener ) {
-    pcs.addPropertyChangeListener( listener );
-    GUI.addPropertyChangeListener( listener );
-  }
-
-  public void addPropertyChangeListener( 
-    String property, PropertyChangeListener listener ) {
-    pcs.addPropertyChangeListener( property, listener );
-    GUI.addPropertyChangeListener( property, listener );
-  }
-
-  /**
-   *    Removes the property change listener
-   */
-  public void removePropertyChangeListener( PropertyChangeListener listener ) {
-    pcs.removePropertyChangeListener( listener );
-    GUI.removePropertyChangeListener( listener );
+  public void setStringValue( String value ) {
+    this.value = ArrayPG.StringtoArray( value );
   }
 
   //*********** ParamUsesString methods *********************************
@@ -264,37 +228,17 @@ public abstract class VectorPG extends ParameterGUI
   }
 
   /**
-   *   Sets the value and displays these values in the associated JList.
-   *
-   *  @param  value               The new value to set the VectorPG to.
+   * The type name is the param's type name with the letters "Array" affixed to
+   * the end
    */
-  public void setStringValue( String value ) {
-    this.value = ArrayPG.StringtoArray( value );
-    checkValue(  );
-  }
-
-  protected void checkValue(  ) {}
-
-  /**
-   *    Gets the value of the Vector
-   */
-  public Object getValue(  ) {
-    return value;
+  public String getType(  ) {
+    return typeName;
   }
 
   /**
-   *  Accessor method to set the enable state of this parameter.
+   * Sets the value and displays these values in the associated JList.
    *
-   *  @param  enable             Whether to set the parameter enabled or not.
-   */
-  public void setEnabled( boolean enable ) {
-    enabled = enable;
-  }
-
-  /**
-   *   Sets the value and displays these values in the associated JList.
-   *
-   *  @param  newVal               The new value to set the VectorPG to.
+   * @param newVal The new value to set the VectorPG to.
    */
   public void setValue( Object newVal ) {
     if( newVal instanceof Vector ) {
@@ -311,26 +255,129 @@ public abstract class VectorPG extends ParameterGUI
   }
 
   /**
-   *   Displays the JFrame with the list box containing the elements of the
-   *   Vector.  If it is already being shown, this does nothing.
+   * Gets the value of the Vector
    */
-  protected void showEntryPanel(  ) {
-    if( entryFrame == null ) {
-      this.makeEntryPanel(  );
+  public Object getValue(  ) {
+    return value;
+  }
+
+  //*********** ActionListener methods *********************************
+
+  /**
+   * Called when the original button is pressed. It creates the JFrame that
+   * stores the list box and editing buttons, etc.
+   */
+  public void actionPerformed( ActionEvent evt ) {
+    String command = evt.getActionCommand(  );
+
+    if( command.equals( param.getName(  ) ) ) {
+      ;
     }
 
-    if( !entryFrame.isShowing(  ) ) {
-      //there must be a way to show this without remaking the GUI -
-      //setVisible(true) does NOT work
-      this.makeEntryPanel(  );
-      entryFrame.show(  );
-    } else {
-      return;
+    showEntryPanel(  );
+  }
+
+  /**
+   * Adds an ActionListener to the Vector of ActionListeners held by this
+   * ParameterGUI.
+   *
+   * @param listener The ActionListener to add.
+   */
+  public void addActionListener( ActionListener listener ) {
+    listeners.addElement( listener );
+  }
+
+  //*********** PropertyChanger methods *********************************
+
+  /**
+   * Adds a property change listener to listen for new Vector values
+   *
+   * @param listener The listener to add.
+   */
+  public void addPropertyChangeListener( PropertyChangeListener listener ) {
+    pcs.addPropertyChangeListener( listener );
+    GUI.addPropertyChangeListener( listener );
+  }
+
+  /**
+   * Adds a property change listener to listen for new Vector values
+   *
+   * @param property The property to listen for.
+   * @param listener The listener to add.
+   */
+  public void addPropertyChangeListener( 
+    String property, PropertyChangeListener listener ) {
+    pcs.addPropertyChangeListener( property, listener );
+    GUI.addPropertyChangeListener( property, listener );
+  }
+
+  /**
+   * Initializes this VectorPG.
+   */
+  public void init(  ) {
+    GUI = new ArrayEntryJPanel( param );
+    GUI.addPropertyChangeListener( this );
+    entrywidget = vectorButton;
+    GUI.setValue( value );
+    vectorButton   = new JButton( param.getName(  ) );
+    buttonHolder   = new JPanel( new GridLayout( 1, 1 ) );
+    buttonHolder.add( vectorButton );
+    vectorButton.addActionListener( this );
+  }
+
+  /**
+   * Initializes this VectorPG.
+   *
+   * @param V The Vector to use when initializing this VectorPG.
+   */
+  public void init( Vector V ) {
+    value = ( V );
+    init(  );
+  }
+
+  /**
+   * Fires ActionEvents to the ActionListeners in this ParameterGUIs Vector of
+   * ActionListeners.
+   */
+  public void notifyActionListeners( String command ) {
+    for( int i = 0; i < listeners.size(  ); i++ ) {
+      ( ( ActionListener )listeners.elementAt( i ) ).actionPerformed( 
+        new ActionEvent( this, ActionEvent.ACTION_PERFORMED, command ) );
     }
   }
 
   /**
-   *  Creates the entry panel for this VectorPG.
+   * Triggered when the "Done" button in the ArrayEntryJPanel is clicked.
+   */
+  public void propertyChange( PropertyChangeEvent evt ) {
+    value = ( GUI.getValues(  ) );
+    setValid( true );
+    pcs.firePropertyChange( evt );
+    entryFrame.setVisible( false );
+  }
+
+  /**
+   * Removes an ActionListener from the Vector of ActionListeners held by this
+   * ParameterGUI.
+   *
+   * @param listener The ActionListener to remove.
+   */
+  public void removeActionListener( ActionListener listener ) {
+    listeners.remove( listener );
+  }
+
+  /**
+   * Removes a property change listener.
+   *
+   * @param listener The listener to remove
+   */
+  public void removePropertyChangeListener( PropertyChangeListener listener ) {
+    pcs.removePropertyChangeListener( listener );
+    GUI.removePropertyChangeListener( listener );
+  }
+
+  /**
+   * Creates the entry panel for this VectorPG.
    */
   protected void makeEntryPanel(  ) {
     entryFrame = new JFrame( param.getName(  ) + " List" );
@@ -351,67 +398,44 @@ public abstract class VectorPG extends ParameterGUI
 
     //entryDialog.getContentPane(  ).setLayout( new GridLayout( 1, 1 ) );
     //entryDialog.getContentPane(  ).add( GUI );
-    entryFrame.getContentPane(  ).add( GUI );
+    entryFrame.getContentPane(  )
+              .add( GUI );
     GUI.addPropertyChangeListener( this );
   }
 
-  //*********** ActionListener methods *********************************
   /**
-   *  Called when the original button is pressed. It creates the JFrame that
-   *  stores the list box and editing buttons, etc.
+   * Displays the JFrame with the list box containing the elements of the
+   * Vector.  If it is already being shown, this does nothing.
    */
-  public void actionPerformed( ActionEvent evt ) {
-    String command = evt.getActionCommand(  );
-
-    if( command.equals( param.getName(  ) ) ) {
-      ;
+  protected void showEntryPanel(  ) {
+    if( entryFrame == null ) {
+      this.makeEntryPanel(  );
     }
 
-    showEntryPanel(  );
+    if( !entryFrame.isShowing(  ) ) {
+      //there must be a way to show this without remaking the GUI -
+      //setVisible(true) does NOT work
+      this.makeEntryPanel(  );
+      entryFrame.show(  );
+    } else {
+      return;
+    }
   }
 
-  /**
-   *  The type name is the param's type name with the letters "Array" affixed to the end
-   */
-  public String getType(  ) {
-    return typeName;
-  }
+  //~ Inner Classes ************************************************************
 
   /**
-   *  Returns a JPanel that holds a button.  When the button is pressed, a new
-   *  JFrame with more options appears.
-   */
-  public JPanel getGUIPanel(  ) {
-    return buttonHolder;
-  }
-
-  /**
-   *  Initializes this VectorPG.
-   *
-   *  @param  V         The Vector to use when initializing this VectorPG.
-   */
-  public void init( Vector V ) {
-    value = ( V );
-    init(  );
-  }
-
-  /**
-   *  Triggered when the "Done" button in the ArrayEntryJPanel is clicked.
-   */
-  public void propertyChange( PropertyChangeEvent evt ) {
-    value = ( GUI.getValues(  ) );
-    setValid( true );
-    pcs.firePropertyChange( evt );
-    entryFrame.setVisible( false );
-  }
-
-  /**
-   *  Triggers a property change event when the window is closed, and gives us
-   *  the values from the GUI.
+   * Triggers a property change event when the window is closed, and gives us
+   * the values from the GUI.
    */
   private class VectorPGWindowListener extends WindowAdapter {
     //~ Methods ****************************************************************
 
+    /**
+     * Executes when a window is closed.
+     *
+     * @param e The window close event.
+     */
     public void windowClosing( WindowEvent e ) {
       propertyChange( 
         new PropertyChangeEvent( 
