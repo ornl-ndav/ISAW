@@ -29,6 +29,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.2  2002/02/18 16:33:27  pfpeterson
+ * Changes the permission of Isaw_exec.sh to executable using the "chmod +x"
+ * system call. New line character is now System.getProperty("line.separator").
+ *
  * Revision 1.1  2002/02/13 20:42:19  pfpeterson
  * First version of unified installer in CVS.
  *
@@ -431,7 +435,7 @@ public class IsawInstaller extends JFrame
 	   ) java_home="java";
 
 	String content="";
-	String newline="\n"; // System.getProperty("line.separator");
+	String newline=System.getProperty("line.separator"); // "\n";
 
 	if(operating_system.equals(WIN_ID)){
 	    content="rem The '-mx' option specifies initial memory"
@@ -457,7 +461,8 @@ public class IsawInstaller extends JFrame
 		+"ISAW="+isaw_home+newline
 		+"JAVA="+java_home+newline
 		+"export LD_LIBRARY_PATH="+lib_home+newline
-		+"$JAVA -cp $ISAW/Isaw.jar:$ISAW/IPNS.jar:"+
+		+"cd $ISAW"+newline
+		+"$JAVA -cp $ISAW:$ISAW/Isaw.jar:$ISAW/IPNS.jar:"+
 		"$ISAW/jnexus.jar:$ISAW/sgt_v2.jar:$ISAW/sdds.jar"
 		+" IsawGUI.Isaw"+newline;
 	}else{
@@ -473,6 +478,21 @@ public class IsawInstaller extends JFrame
 	    outfile.close();
 	}catch(Exception e){
 	    System.err.println("Exception in writeBatch: "+e);
+	}
+
+	if(operating_system.equals(LIN_ID)){
+	    Process proc = null;
+	    System.out.println("chmod +x "+filename);
+	    try{
+		proc=Runtime.getRuntime().exec("chmod +x "+filename);
+		proc.waitFor();
+	    }catch(InterruptedException e){
+		System.err.println("Could not change acess of batch file: "+e);
+	    }catch(IOException e){
+		System.err.println("Could not change acess of batch file: "+e);
+	    }finally{
+		if(proc!=null)proc.destroy();
+	    }
 	}
 
 	return;
