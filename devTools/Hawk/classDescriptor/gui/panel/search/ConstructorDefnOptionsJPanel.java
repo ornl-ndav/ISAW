@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:31:52  bouzekc
+ * Documented file using javadoc statements.
+ * Removed the main method.
+ *
  * Revision 1.1  2004/02/07 05:15:50  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -43,20 +47,22 @@ package devTools.Hawk.classDescriptor.gui.panel.search;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 
-import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * Makes a panel which allows the user to enter search parameters that a constructor has to have.
+ * @author Dominic Kramer
  */
 public class ConstructorDefnOptionsJPanel extends AttributeDefnOptionsJPanel
 {
+	/** The panel containing field to specify the constructor's parameters. */
 	protected VectorOptionsJPanel parametersPanel;
-		
+	
+	/**
+	 * Make a new ConstructorDefnOptionsJPanel.
+	 */
 	public ConstructorDefnOptionsJPanel()
 	{
 		super();
@@ -64,27 +70,22 @@ public class ConstructorDefnOptionsJPanel extends AttributeDefnOptionsJPanel
 //		label.setText("Constructor");
 		remove(panelsPanel);
 		panelsPanel = new JPanel();
-		panelsPanel.setLayout(new GridLayout(3,0));
+		panelsPanel.setLayout(new GridLayout(6,0));
 		panelsPanel.add(charPanel);
 		panelsPanel.add(namePanel);
 		panelsPanel.add(parametersPanel);
+		panelsPanel.add(new JLabel());
+		panelsPanel.add(new JLabel());
+		panelsPanel.add(new JLabel());
 		add(panelsPanel, BorderLayout.CENTER);
 	}
 	
+	/**
+	 * Get the panel containing the fields to specify the Constructor's attributes.
+	 * @return The panel containing the fields to specify the Constructor's attributes.
+	 */
 	public VectorOptionsJPanel getParametersPanel()
 	{
 		return parametersPanel;
-	}
-
-	public static void main(String args[])
-	{
-		JFrame frame = new JFrame();
-		JPanel mainPanel = new JPanel();
-		mainPanel.setLayout(new BorderLayout());
-		ConstructorDefnOptionsJPanel panel = new ConstructorDefnOptionsJPanel();
-		mainPanel.add(panel, BorderLayout.CENTER);
-		frame.getContentPane().add(mainPanel);
-		frame.setVisible(true);
-		frame.pack();
 	}
 }

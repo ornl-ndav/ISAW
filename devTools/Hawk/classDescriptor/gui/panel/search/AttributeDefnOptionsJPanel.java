@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 18:27:23  bouzekc
+ * Documented file using javadoc statements.
+ * Removed the main method.
+ *
  * Revision 1.1  2004/02/07 05:15:49  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -43,26 +47,30 @@ package devTools.Hawk.classDescriptor.gui.panel.search;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 
-import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import devTools.Hawk.classDescriptor.modeledObjects.AttributeDefn;
-import devTools.Hawk.classDescriptor.modeledObjects.Interface;
 import devTools.Hawk.classDescriptor.tools.SearchUtilities;
 
 /**
- * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * Makes a panel which allows the user to enter search parameters that an attribute has to have.
+ * @author Dominic Kramer
  */
 public class AttributeDefnOptionsJPanel extends JPanel
 {
+	/** The panel holding the fields to specify the attribute's characteristics (public, static, final, etc.). */
 	protected VectorOptionsJPanel charPanel;
+	/** The panel holding the fields to specify the attribute's type. */
 	protected BasicOptionsJPanel typePanel;
+	/** The panel holding the fields to specify the attribute's name. */
 	protected BasicOptionsJPanel namePanel;
+	/** The panel which holds all of the other panels. */
 	protected JPanel panelsPanel;
 	
+	/**
+	 * Create a new AttributeDefnOptionsJPanel.
+	 */
 	public AttributeDefnOptionsJPanel()
 	{
 		charPanel = new VectorOptionsJPanel( "Characteristics:  ","Characteristic:  ","characteristics");
@@ -71,41 +79,45 @@ public class AttributeDefnOptionsJPanel extends JPanel
 		
 		setLayout(new BorderLayout());
 		panelsPanel = new JPanel();
-		panelsPanel.setLayout(new GridLayout(3,0));
+		panelsPanel.setLayout(new GridLayout(6,0));
 		panelsPanel.add(charPanel);
 		panelsPanel.add(typePanel);
 		panelsPanel.add(namePanel);
-		
+		panelsPanel.add(new JLabel());
+		panelsPanel.add(new JLabel());
+		panelsPanel.add(new JLabel());
 		add(panelsPanel, BorderLayout.CENTER);
 	}
 	
+	/**
+	 * Get the panel containing the fields to enter the attribute's name.
+	 */
 	public BasicOptionsJPanel getNamePanel()
 	{
 		return namePanel;
 	}
 	
+	/**
+	 * Get the panel containing the fields to specify the attribute's type.
+	 */
 	public BasicOptionsJPanel getTypePanel()
 	{
 		return typePanel;
 	}
 	
+	/**
+	 * Get the panel containing the fields to specify the attribute's characteristics (public, static, final, etc.).
+	 */
 	public VectorOptionsJPanel getCharPanel()
 	{
 		return charPanel;
 	}
 	
-	public static void main(String args[])
-	{
-		JFrame frame = new JFrame();
-		JPanel mainPanel = new JPanel();
-		mainPanel.setLayout(new BorderLayout());
-		AttributeDefnOptionsJPanel panel = new AttributeDefnOptionsJPanel();
-		mainPanel.add(panel, BorderLayout.CENTER);
-		frame.getContentPane().add(mainPanel);
-		frame.setVisible(true);
-		frame.pack();
-	}
-	
+	/**
+	 * Determines if the the AttributeDefn object matches the search parameters from this panel.
+	 * @param atD The AttributeDefn object to compare against.
+	 * @return True if the AttributeDefn object is a match.
+	 */
 	public boolean matchesWith(AttributeDefn atD)
 	{
 		boolean answer = SearchUtilities.stringMatches(namePanel.getTextFieldText(), atD.getAttribute_name(),namePanel.mustMatchContainWord(),namePanel.matchEntireWord(),namePanel.matchCaseSensitive());
@@ -118,10 +130,5 @@ public class AttributeDefnOptionsJPanel extends JPanel
 			}
 		}
 		return answer;
-	}
-	
-	public boolean matches(Interface intf)
-	{
-		return true;
 	}
 }
