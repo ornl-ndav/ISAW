@@ -31,6 +31,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.5  2002/11/18 17:30:14  rmikk
+ * Fixed an error that prevented saving the table
+ *
  * Revision 1.4  2002/10/07 14:45:27  rmikk
  * Tries to position viewport after an error and/or index
  *   column is added or deleted. Somewhat successful.
@@ -74,7 +77,7 @@ public class STableView  extends DataSetViewer
   protected TableViewModel table_model;
   DataSet ds;
   protected ViewerState state;
-  protected DataSet data_set;
+  //protected DataSet data_set;
   //String order;
   protected JTable jtb ;
   JScrollPane JscrlPane;
@@ -101,6 +104,8 @@ public class STableView  extends DataSetViewer
      initState( state );
      initFrMenuItems();
     }
+
+
   /** Initializes the whole viewer including the Menu items. The table Model has been
   *   set and the state initialized. The table model can be fixed a bit here.
   */
@@ -135,6 +140,7 @@ public class STableView  extends DataSetViewer
       jm.add( JCp);
       initAftMenuItems();
      }
+
 
    /** fixes the table_model,Jtable(with Adapter) Xconversion table, etc.
    *  Subclasses that redefine this method should remove all components from main dataSetViewer 
@@ -174,6 +180,8 @@ public class STableView  extends DataSetViewer
       add( main);
       jtb.addMouseListener( new MyMouseListener());
      }
+
+
   /** Sets the data set, table model, Xconversion table,and the JTable,and validates
   */
   public void setDataSet( DataSet ds)
@@ -191,6 +199,7 @@ public class STableView  extends DataSetViewer
      jtb.setModel( table_model);
      validate();
    }
+
 
  /** Initializes the state variables for the show error/index options<P>
   * Subclasses can add extra  state information and initializations before or after this.<P>
@@ -212,13 +221,24 @@ public class STableView  extends DataSetViewer
     { return table_model;
     }
 
+
+  /** Subclasses can add components above the info panel. This method is empty
+  *   in STable
+  *  @param  EastPanel  The EastPanel with BoxLayout( Vertical ). Add components hee
+  */
    public void AddComponentsAboveInfo( JPanel EastPanel)
     {
     }
   
+
+  /** Subclasses can add components below the info panel. This method is empty
+  *   in STable
+  *  @param  EastPanel  The EastPanel with BoxLayout( Vertical ). Add components hee
+  */
    public void AddComponentsBelowInfo(JPanel EastPanel)
     {
      }
+
   
    /** Subclasses can redefine this for faster saves<P>
    *   NOTE: the header information has already been written
@@ -247,12 +267,14 @@ public class STableView  extends DataSetViewer
      catch( Exception s) 
        {DataSetTools.util.SharedData.addmsg("Cannot close file "+s);
         }
-  
-    
-   
    }
 
-   /** does nothing
+
+
+   /** STable Takes care of the POINTED_AT_CHANGED reason and locates the
+   *   Scroll pane to the correct position.  Subclasses should take care of 
+   *   all other reasons and also call this method if the POINTED_AT groups
+   *   and channel change
    */
    public void redraw(String S)
      {if( S == IObserver.POINTED_AT_CHANGED )
@@ -330,6 +352,7 @@ public class STableView  extends DataSetViewer
      
      }
 
+
    public ViewerState getState()
      {return state;
      }
@@ -354,27 +377,27 @@ private class MyActionListener implements ActionListener
                StringBuffer S =new StringBuffer( 8192); 
               // Header Stuff
                S.append( "#Data Set");
-               S .append( data_set.toString());
+               S .append( ds.toString());
                S.append("\n");
                S.append("#Selected Groups\n");
 
       
                String SS = "NO SELECTED INDICES";
-               int[] SelInd = data_set.getSelectedIndices() ;
+               int[] SelInd = ds.getSelectedIndices() ;
                if( SelInd != null ) if( SelInd.length > 0 )
                   SS = (new NexIO.NxNodeUtils()).Showw( SelInd );
 
                S.append( "#     ");
-               S.append(data_set.toString());
+               S.append(ds.toString());
                S.append(":");
                S.append( SS );
 
                S.append("\n");
                S.append( "#Operations\n" );
                S.append( "#     ");
-               S.append(data_set.toString() );
+               S.append(ds.toString() );
                S.append(":");
-               OperationLog oplog = data_set.getOp_log();
+               OperationLog oplog = ds.getOp_log();
 
                if( oplog != null )
                   for( int j = 0; j < oplog.numEntries(); j++ )
@@ -395,11 +418,7 @@ private class MyActionListener implements ActionListener
                DataSetTools.util.SharedData.status_pane.add( "Cannot Save " + 
                          ss.getClass()+":"+ss );
               }
-        
-    
         }
-
-
      }
 
  
@@ -413,7 +432,8 @@ private class MyActionListener implements ActionListener
        }
     }
 
- /**Action Listener for the MenuItems to Select all and copy select
+
+  /**Action Listener for the MenuItems to Select all and copy select
     * in the JFrame containing the JTable
     */
    private class MyJTableListener implements ActionListener
@@ -445,6 +465,7 @@ private class MyActionListener implements ActionListener
         }
      }
 
+
    class MyMouseListener  extends MouseAdapter
      {
       public void mouseClicked(MouseEvent e)
@@ -454,13 +475,12 @@ private class MyActionListener implements ActionListener
           float Time = table_model.getTime(row,col);
           getDataSet().setPointedAtIndex( Group);
           getDataSet().setPointedAtX( Time);
-         
           getDataSet().notifyIObservers( IObserver.POINTED_AT_CHANGED );
           //InfoTable.showConversions( Time,Group);
           
          }
-
       }
+
 
    /** Test program for this module. It requires one argument, the filename
    */
