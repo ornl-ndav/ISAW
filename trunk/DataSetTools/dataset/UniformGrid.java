@@ -30,6 +30,11 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.6  2003/05/24 21:10:09  dennis
+ *  Added methods setData_entries(ds), getData_entry(row,col), and
+ *  isData_entered() to allow a UniformGrid to keep a list of references
+ *  to Data blocks associated with each pixel.
+ *
  *  Revision 1.5  2003/02/14 16:46:27  dennis
  *  Now uses row and column numbers starting at 1 instead of 0.
  *
@@ -106,6 +111,10 @@ public class UniformGrid implements IDataGrid
 
   private float     col_x_offset,    // offsets from center to center of boxs
                     row_y_offset;    // in row 0 and/or column 0;
+
+  private Data      data[][] = null;
+
+  private boolean   data_loaded = false;
 
   /**
    *  Construct a new UniformGrid object.
@@ -709,6 +718,121 @@ public class UniformGrid implements IDataGrid
   }
 
   /**
+   *  This method goes through the Data blocks of a DataSet and records
+   *  a reference to each of the Data blocks whose detector ID matches
+   *  the ID of this DataGrid.  References to the Data blocks are recorded
+   *  in a table, indexed by the row and column numbers.  This allows the
+   *  Data to be accessed based on (row, col) pairs by the getData_entry
+   *  method.  NOTE: The Data blocks in the DataSet must have PixelInfoLists
+   *  stored as an Attribute.PIXEL_INFO_LIST attribute.
+   *
+   *  @param  ds   The DataSet  from which references to Data blocks will
+   *               be obtained.
+   */
+  public boolean setData_entries( DataSet ds )
+  {
+    if ( ds == null )
+      return false;
+
+    int n_data = ds.getNum_entries();
+    if ( n_data <= 0 )
+      return false;
+
+    Data          d;
+    Attribute     attr;
+    int           row, 
+                  col;
+    PixelInfoList pil;
+
+    data_loaded = false;
+    data        = new Data[n_rows][n_cols];
+    for ( int i = 0; i < n_data; i++ )
+    {
+      d = ds.getData_entry(i);
+      attr = d.getAttribute( Attribute.PIXEL_INFO_LIST ); 
+      if ( attr != null && attr instanceof PixelInfoListAttribute )
+      {
+        pil = (PixelInfoList)attr.getValue();
+        for ( int j = 0; j < pil.num_pixels(); j++ )
+          if ( pil.pixel(j).gridID() == id )                // record reference 
+          {
+            row = Math.round(pil.pixel(j).row());
+            if ( row >= 1 && row <= n_rows )
+            {
+              col = Math.round(pil.pixel(j).col());
+              if ( col >= 1 && col <= n_cols )
+                data[row-1][col-1] = d;
+            }
+          }
+      }
+    } 
+
+    data_loaded = true;
+    row = 0;
+    while ( row < n_rows && data_loaded )
+    {
+      col = 0;
+      while ( col < n_cols && data_loaded )
+      {
+        if ( data[row][col] == null )
+          data_loaded = false;
+        else
+          col++;
+      }
+      row++;
+    }
+        
+    return data_loaded;
+  }
+
+
+  /**
+   *  Get the Data block from one pixel, if references to the Data blocks
+   *  have been set.
+   *
+   *  @param  row   the row number of the Data block, 1..n_rows
+   *  @param  col   the column number of the Data block, 1..n_cols
+   *
+   *  @return  The Data block corresponding to the specified row and column.
+   *           If no Data entriew have been set, or if row, col are out of
+   *           bounds, this returns null.
+   */
+  public Data getData_entry( int row, int col )
+  {
+    if ( data == null )
+      return null;
+
+    if ( row < 1 || row > n_rows || data[row-1] == null )
+      return null;
+
+    if ( col < 1 || col > n_cols ) 
+      return null;
+
+    return data[row-1][col-1];
+  }
+
+  /**
+   *  Check whether or not Data blocks have been set for each row and column
+   *  of this DataGrid.
+   *
+   *  @return  true if Data entries have been set for all of the pixels
+   *           and false if any pixel has a null Data block.
+   */
+  public boolean isData_entered()
+  {
+    return data_loaded;
+  }
+
+  /**
+   *  Clear all references to Data blocks.
+   */
+  public void clearData_entries()
+  {
+    data = null; 
+    data_loaded = false;
+  }
+
+  /**
    *  Write the data that defines the grid in a multi-line string.
    *
    *  @return A multi-line String listing the internal state information 
@@ -728,6 +852,7 @@ public class UniformGrid implements IDataGrid
     buffer.append("y_vec:" + y_vec() +'\n');
     buffer.append("z_vec:" + z_vec() +'\n');
     buffer.append("Units:" + units() +'\n');
+    buffer.append("Data Loaded: " + data_loaded );
     return buffer.toString();
   }
 
