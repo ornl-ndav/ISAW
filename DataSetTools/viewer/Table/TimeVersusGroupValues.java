@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/12/15 00:35:06  rmikk
+ * Now notifies observers of the data set when the selected groups are changed
+ *
  * Revision 1.7  2003/12/11 22:08:25  rmikk
  * Added a "kill" command needed to kill orphan windows
  *
@@ -650,6 +653,7 @@ public class TimeVersusGroupValues extends DS_XY_TableModel
              maxTime = time;
          }
        DS.setSelectedInterval(new ClosedInterval(minTime , maxTime ));
+       DS.notifyIObservers( IObserver.SELECTION_CHANGED);
 
     }
   }
