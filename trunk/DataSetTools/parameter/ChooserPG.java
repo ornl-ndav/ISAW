@@ -30,6 +30,9 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.31  2004/03/11 06:53:02  bouzekc
+ *  setValue() now handles a Vector of values.
+ *
  *  Revision 1.30  2004/03/11 06:20:39  bouzekc
  *  Added javadocs.
  *
@@ -172,7 +175,6 @@ public abstract class ChooserPG extends ParameterGUI {
    */
   public ChooserPG( String name, Object val ) {
     super( name, val );
-    setValue( val );
     this.setType( TYPE );
   }
 
@@ -185,7 +187,6 @@ public abstract class ChooserPG extends ParameterGUI {
    */
   public ChooserPG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-    setValue( val );
     this.setType( TYPE );
   }
 
@@ -207,7 +208,8 @@ public abstract class ChooserPG extends ParameterGUI {
   /**
    * Sets the value of the parameter.  This will add an item to the list if it
    * is not in there already.  This will simply return if the new value is
-   * null.
+   * null.  If the value is a Vector, this will add the items and set the
+   * value to the first element in the list.
    *
    * @param val The new value to be set.
    */
@@ -217,19 +219,34 @@ public abstract class ChooserPG extends ParameterGUI {
         vals = new Vector(  );
       }
 
-      //item is not in the list, so add it
-      if( vals.indexOf( val ) < 0 ) {
-        addItem( val );
-      }
+      if( val instanceof Vector ) {
+        Vector valArr = ( Vector )val;
 
-      //update the GUI part
-      if( this.getInitialized(  ) ) {
-        ( ( HashEntry )( getEntryWidget(  ).getComponent( 0 ) ) ).setSelectedItem( 
-          val );
-      }
+        addItems( valArr );
 
-      //always update the internal value
-      super.setValue( val );
+        //update the GUI part
+        if( this.getInitialized(  ) ) {
+          ( ( HashEntry )( getEntryWidget(  ).getComponent( 0 ) ) ).setSelectedItem( 
+            valArr.get( 0 ) );
+        }
+
+        //always update the internal value
+        super.setValue( valArr.get( 0 ) );
+      } else {
+        //item is not in the list, so add it
+        if( vals.indexOf( val ) < 0 ) {
+          addItem( val );
+        }
+
+        //update the GUI part
+        if( this.getInitialized(  ) ) {
+          ( ( HashEntry )( getEntryWidget(  ).getComponent( 0 ) ) ).setSelectedItem( 
+            val );
+        }
+
+        //always update the internal value
+        super.setValue( val );
+      }
     }
   }
 
