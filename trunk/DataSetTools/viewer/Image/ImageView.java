@@ -2,6 +2,15 @@
  * @(#)ImageView.java  1.1 2000/04/28 Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.6  2000/11/07 15:24:11  dennis
+ *  Added docs on public methods.
+ *  Draws crosshair cursor for POINTED_AT_CHANGED message.
+ *  Includes ViewerState object in constructor and uses ViewerState for
+ *  the color scale and horizontal scrolling state.
+ *  Consumes key events, so that the cursor arrow keys don't also scroll
+ *  the scrolled panes.  This caused errors in the XOR drawing of the
+ *  crosshair cursor on windows.
+ *
  *  Revision 1.5  2000/10/10 19:52:07  dennis
  *  "Pointed At" Data block and cursor readouts now update with mouse
  *  click as well as with mouse drag operation.
@@ -101,8 +110,8 @@ public class ImageView extends    DataSetViewer
                                                    // Image and border
   private ImageJPanel  image_Jpanel;   
   private ImageJPanel  selection_image;
+  private ImageJPanel  color_scale_image;
   private JScrollPane  image_scroll_pane;
-  private boolean      horizontal_scroll_state = false;
   private String       current_multi_plot_mode = MULTI_PLOT_DIAGONAL;
   private final int    MAX_PLOTS = 16;
 
@@ -125,9 +134,9 @@ public class ImageView extends    DataSetViewer
   private JSlider      log_scale_slider = new JSlider();
   private JSlider      hgraph_scale_slider = new JSlider(JSlider.HORIZONTAL,
                                                          0, 1000, 0);
-  private UniformXScale  y_range;
-  private float          x_min,
-                         x_max;
+  private ClosedInterval  y_range;
+  private float           x_min,
+                          x_max;
   
   private JCheckBoxMenuItem track_image_cursor_button = null;
   private JCheckBoxMenuItem use_color_button    = null;
@@ -139,9 +148,17 @@ public class ImageView extends    DataSetViewer
  */
 
 /* ------------------------------------------------------------------------ */
-public ImageView( DataSet data_set ) 
+/**
+ *   Construct and ImageView of the specified data_set, starting with the 
+ *   specified initial state.
+ *
+ *   @param  data_set   The DataSet to view.
+ *   @param  state      The initial state for the viewer.  If this is null,
+ *                      a default state will be used.
+ */
+public ImageView( DataSet data_set, ViewerState state ) 
 {
-  super(data_set);        
+  super( data_set, state );        
   AddOptionsToMenu();
 
   init();
@@ -156,7 +173,8 @@ public ImageView( DataSet data_set )
  *
  */
 
-/*
+/* ----------------------------- redraw --------------------------------- */
+/**
  * Redraw all or part of the image. The amount that needs to be redrawn is
  * determined by the "reason" parameter.  In addition to the reasons provided
  * by the base class, this also responds to the reason X_RANGE_CHANGED.
@@ -166,7 +184,6 @@ public ImageView( DataSet data_set )
  */
 public void redraw( String reason )
 {
-
   if ( reason == IObserver.SELECTION_CHANGED )
   {
     MakeSelectionImage( true );
@@ -175,10 +192,26 @@ public void redraw( String reason )
   else if ( reason == IObserver.POINTED_AT_CHANGED )
   {
     DrawSelectedHGraphs(); 
+    float n_data = getDataSet().getNum_entries();
+    if ( n_data > 0 )
+    {
+      floatPoint2D pt = image_Jpanel.getCurrent_WC_point();
+      pt.y = getDataSet().getPointedAtIndex();
+      pt.y = pt.y * ( n_data - 1 )/ n_data + 0.5f;
+      image_Jpanel.set_crosshair_WC( pt );
+    }
   }
   else
     MakeImage( true );
 }
+
+/* ----------------------------- setDataSet ------------------------------- */
+/**
+ * Specify a different DataSet to be shown by this viewer.
+ *
+ * @param  ds   The new DataSet to view  
+ *
+ */
 
 public void setDataSet( DataSet ds )
 {
@@ -189,6 +222,14 @@ public void setDataSet( DataSet ds )
   DrawDefaultDataBlock();
   setVisible(true);
 }
+
+/* ----------------------------- doLayout ------------------------------- */
+/**
+ * This method first resets the divider location and the calls the super class
+ * doLayout method.  This was an attempt at reducing the amount of "flicker"
+ * as internal frames were moved on a DeskTop.
+ *
+ */
 
 public void doLayout()
 {
@@ -205,6 +246,8 @@ public void doLayout()
   super.doLayout();
 }
 
+
+/* ------------------------ getXConversionScale -------------------------- */
  /**
   *  Return a range of X values specified by the user to be used to
   *  control X-Axis conversions.  
@@ -254,7 +297,7 @@ public static void main(String[] args)
                                                     // the data set
   }
 
-  ImageView image_view = new ImageView( data_set );
+  ImageView image_view = new ImageView( data_set, null );
   JFrame f = new JFrame("Test for ImageJPanel.class");
   f.setBounds(0,0,600,400);
   f.setJMenuBar( image_view.getMenuBar() );
@@ -282,6 +325,7 @@ private void init()
     removeAll();
   }
   image_Jpanel      = new ImageJPanel();
+  image_Jpanel.setNamedColorModel( getState().getColor_scale(), false );
                                                // make box to contain both the
                                                // image and selection indicator
   Box image_area = new Box( BoxLayout.X_AXIS );
@@ -320,7 +364,6 @@ private void init()
                                       JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                       JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
                                           );
-
   log_scale_slider = new JSlider();
   hgraph_scale_slider = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
 
@@ -451,7 +494,7 @@ private void AddOptionsToMenu()
 
                                                     // Horizontal scroll option
   JCheckBoxMenuItem cb_button = new JCheckBoxMenuItem( HORIZONTAL_SCROLL );
-  cb_button.setState( false );
+  cb_button.setState( getState().getHorizontal_scrolling() );
   cb_button.addActionListener( option_menu_handler );
   option_menu.add( cb_button );
 }
@@ -498,23 +541,12 @@ private void MakeImage( boolean redraw_flag )
 
   image_data = new float[ num_rows ][];
 
-//  AttributeList attr_list;
-//  Float solid_angle_obj;
-//  float solid_angle; 
   for ( int i = 0; i < num_rows; i++ )
   {
     data_block = getDataSet().getData_entry(i);
     rebinned_data_block = (Data)data_block.clone();
     rebinned_data_block.ResampleUniformly( x_scale );
 
-//    attr_list = data_block.getAttributeList();
-//    solid_angle_obj=(Float)attr_list.getAttributeValue(Attribute.SOLID_ANGLE);
-//    solid_angle = solid_angle_obj.floatValue();
-//    if ( solid_angle != 0 )
-//    {
-//      rebinned_data_block = rebinned_data_block.multiply( 1.0f/solid_angle );
-//      System.out.println("Scaling by 1/" + solid_angle );
-//    }
     image_data[i] = rebinned_data_block.getY_values();
   }
                               // set the log scale and image data, but don't
@@ -528,8 +560,8 @@ private void MakeImage( boolean redraw_flag )
 
   MakeSelectionImage( redraw_flag );
 
-  if ( horizontal_scroll_state )
-    SetHorizontalScrolling( horizontal_scroll_state );// this was needed to
+  if ( getState().getHorizontal_scrolling() )
+    SetHorizontalScrolling( true );                   // this was needed to
                                                       // switch DataSets after
                                                       // HScroll was enabled   
 }
@@ -596,6 +628,14 @@ private Component MakeControlArea()
   int num_cols = getDataSet().getMaxXSteps();
   n_bins_ui = new TextValueUI( "Num Bins", num_cols );
   control_area.add( n_bins_ui ); 
+                                                  // make a color scale bar
+  float color_scale_data[][] = new float[1][255];
+  for ( int i = -127; i <= 127; i++ )
+    color_scale_data[0][i+127] = i;
+  color_scale_image = new ImageJPanel();
+  color_scale_image.setData( color_scale_data, false );
+  color_scale_image.setNamedColorModel( getState().getColor_scale(), false );
+  control_area.add( color_scale_image );
 
   log_scale_slider.setPreferredSize( new Dimension(120,50) );
   log_scale_slider.setValue(50);
@@ -718,14 +758,24 @@ private void MakeConnections()
 
    SelectionKeyAdapter key_adapter = new SelectionKeyAdapter();
    image_Jpanel.addKeyListener( key_adapter );
+   h_graph.addKeyListener( new ConsumeKeyAdapter() );
 }
 
 /* ------------------------ SetHorizontalScrolling ------------------------ */
 private void SetHorizontalScrolling( boolean state )
 {
+  getState().setHorizontal_scrolling( state );
   left_split_pane.setVisible( false );
-  horizontal_scroll_state = state;
   image_Jpanel.SetHorizontalScrolling( state );
+  if ( state )                                 // position the image scroll bar
+  {
+    JScrollBar scroll_bar = image_scroll_pane.getHorizontalScrollBar();
+    int min = scroll_bar.getMinimum();
+    int max = scroll_bar.getMaximum();
+    int position = (int) 
+               ((max-min) * getState().getHorizontal_scroll_fraction() + min ); 
+    scroll_bar.setValue( position );
+  }
   image_scroll_pane.doLayout();
 
                                          // make the graph have same preferred
@@ -734,8 +784,11 @@ private void SetHorizontalScrolling( boolean state )
   Dimension preferred_size = image_Jpanel.getPreferredSize();
   preferred_size.height = 0;
   h_graph.my_setPreferredSize( preferred_size );
-
   h_graph.SetHorizontalScrolling( state );
+
+  if ( state )                            // position the graph scroll bar
+    SyncHGraphScrollBar();
+
   hgraph_scroll_pane.doLayout();
 
   left_split_pane.invalidate();
@@ -954,15 +1007,19 @@ private void SyncHGraphScrollBar()
 
   float hg_bar_min   = hg_bar.getMinimum();
   float hg_bar_max   = hg_bar.getMaximum();
+  float fraction     = 0;
   int   hg_bar_value;
 
   if ( hi_bar_max == hi_bar_min )
     hg_bar_value = 0;
   else
-    hg_bar_value = (int)(hg_bar_min  + (hi_bar_value - hi_bar_min) * 
-                        (hg_bar_max - hg_bar_min) / (hi_bar_max - hi_bar_min));
-                        
+  {
+    fraction = (hi_bar_value - hi_bar_min) / (hi_bar_max - hi_bar_min);
+    hg_bar_value = (int)(hg_bar_min + (hg_bar_max - hg_bar_min) * fraction );
+  }                      
   hg_bar.setValue( hg_bar_value );
+
+  getState().setHorizontal_scroll_fraction( fraction );
 }
  
 
@@ -1158,8 +1215,22 @@ private class SelectionKeyAdapter extends     KeyAdapter
     Point pix_pt = image_Jpanel.getCurrent_pixel_point();
     int   row    = image_Jpanel.ImageRow_of_PixelRow( pix_pt.y );
     KeySelect.ProcessKeySelection( getDataSet(), row, e );
+
+    e.consume();
   }
 }
+
+/* --------------------------- ConsumeKeyAdapter ------------------------- */
+
+private class ConsumeKeyAdapter extends     KeyAdapter
+                                implements Serializable
+{
+  public void keyPressed( KeyEvent e )
+  {
+    e.consume();
+  }
+}
+
 
   /**
    *  Trace the finalization of objects
@@ -1187,7 +1258,11 @@ private class SelectionKeyAdapter extends     KeyAdapter
          SetHorizontalScrolling( state );
        }
        else
+       {
          image_Jpanel.setNamedColorModel( action, true );
+         color_scale_image.setNamedColorModel( action, true );
+         getState().setColor_scale( action );
+       }
     }
   }
 
