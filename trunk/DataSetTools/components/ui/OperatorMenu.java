@@ -33,6 +33,9 @@
  *  organized according to the categories of the operators.
  *
  *  $Log$
+ *  Revision 1.9  2005/01/04 22:20:22  rmikk
+ *  Added ToolTips to these menu items
+ *
  *  Revision 1.8  2004/03/15 19:33:50  dennis
  *  Removed unused imports after factoring out view components,
  *  math and utilities.
@@ -134,6 +137,9 @@ public static void build( JMenu           main_menu,
                                              // tree, add the new operator title
     JMenuItem item = new JMenuItem( operators[i].getTitle() );
     item.addActionListener( listener );
+    String ToolTip = operators[i].getSource();
+    if( ToolTip != null)
+       item.setToolTipText(ToolTip);
     current_menu.add( item );
   }
 }
