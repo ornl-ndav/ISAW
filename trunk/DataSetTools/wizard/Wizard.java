@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.1  2002/05/28 20:36:00  pfpeterson
+ * Moved files
+ *
  * Revision 1.4  2002/04/12 20:53:06  pfpeterson
  * More updates to the GUI.
  *
@@ -50,7 +53,7 @@
  *
  */
 
-package Wizard;
+package DataSetTools.wizard;
 
 import java.util.*;
 import java.io.*;
@@ -78,7 +81,7 @@ import DataSetTools.util.*;
 
 public class Wizard implements Serializable{
     // size of the window
-    private static final int FRAME_WIDTH   = 600;
+    private static final int FRAME_WIDTH   = 650;
     private static final int FRAME_HEIGHT  = 500;
     
     // string constants for the menus and buttons
@@ -140,9 +143,14 @@ public class Wizard implements Serializable{
         master_list = new Hashtable();
         forms       = new Vector();
         form_num    = -1;
+        frame       = new JFrame( title );
         form_panel  = new JPanel();
-        form_label = new JLabel(" ",SwingConstants.CENTER);
-        
+        form_label  = new JLabel(" ",SwingConstants.CENTER);
+        progress    = new JProgressBar();
+    }
+    
+    
+    protected void makeGUI(){
         GridBagConstraints gbc=new GridBagConstraints();
         gbc.fill      = GridBagConstraints.HORIZONTAL;
         gbc.weightx   = 1.0;
@@ -156,7 +164,6 @@ public class Wizard implements Serializable{
         JMenu    file_menu      = new JMenu("File");
         JMenu    help_menu      = new JMenu("Help");
 
-        frame = new JFrame( title );
         frame.setJMenuBar( menu_bar );
         frame.addWindowListener( new CloseWizardWindow() );
         frame.getContentPane().add( work_area );
@@ -209,22 +216,23 @@ public class Wizard implements Serializable{
         work_area.add(form_scrollpane,gbc);
         
         // add the progress bar to the panel
-        gbc.weighty=1.0;
-        gbc.fill=GridBagConstraints.HORIZONTAL;
-        work_area.add(progress_panel,gbc);
         JButton clear_button = new JButton( CLEAR_COMMAND );
-        progress = new JProgressBar();
-        progress.setString("Execute Progress");
-        progress.setStringPainted(true);
-        progress.setMaximum(2);
-        progress.setValue(0);
-        gbc.fill=GridBagConstraints.NONE;
-        gbc.gridwidth=GridBagConstraints.RELATIVE;
-        progress_panel.add( clear_button, gbc );
-        gbc.weightx=20.0;
-        gbc.fill=GridBagConstraints.HORIZONTAL;
-        gbc.gridwidth=GridBagConstraints.REMAINDER;
-        progress_panel.add( progress,     gbc );
+        if(forms.size()>1){
+            gbc.weighty=1.0;
+            gbc.fill=GridBagConstraints.HORIZONTAL;
+            work_area.add(progress_panel,gbc);
+            progress.setString("Execute Progress");
+            progress.setStringPainted(true);
+            progress.setMaximum(forms.size());
+            progress.setValue(0);
+            gbc.fill=GridBagConstraints.NONE;
+            gbc.gridwidth=GridBagConstraints.RELATIVE;
+            progress_panel.add( clear_button, gbc );
+            gbc.weightx=20.0;
+            gbc.fill=GridBagConstraints.HORIZONTAL;
+            gbc.gridwidth=GridBagConstraints.REMAINDER;
+            progress_panel.add( progress,     gbc );
+        }
         
         // add the navigation buttons to the panel
         gbc.weightx=1.0;
@@ -238,18 +246,34 @@ public class Wizard implements Serializable{
         JButton exec_button  = new JButton( EXEC_COMMAND  );
         back_button.setEnabled(false);
         next_button.setEnabled(false);
-        gbc.gridwidth=1;
-        gbc.fill=GridBagConstraints.NONE;
-        button_panel.add( first_button, gbc );
-        button_panel.add( back_button,  gbc );
-        gbc.weightx=20;
-        gbc.anchor=GridBagConstraints.CENTER;
-        button_panel.add( exec_button,  gbc );
-        gbc.weightx=1;
-        gbc.anchor=GridBagConstraints.EAST;
-        button_panel.add( next_button,  gbc );
-        gbc.gridwidth=GridBagConstraints.REMAINDER;
-        button_panel.add( last_button,  gbc );
+        if(forms.size()>1){
+            gbc.gridwidth=1;
+            gbc.fill=GridBagConstraints.NONE;
+            if(forms.size()>2){
+                button_panel.add( first_button, gbc );
+            }
+            button_panel.add( back_button,  gbc );
+            gbc.weightx=20;
+            gbc.anchor=GridBagConstraints.CENTER;
+            gbc.fill=GridBagConstraints.HORIZONTAL;
+            button_panel.add( exec_button,  gbc );
+            gbc.weightx=1;
+            gbc.anchor=GridBagConstraints.EAST;
+            gbc.fill=GridBagConstraints.NONE;
+            if(forms.size()>2){
+                button_panel.add( next_button,  gbc );
+                gbc.gridwidth=GridBagConstraints.REMAINDER;
+                button_panel.add( last_button,  gbc );
+            }else{
+                gbc.gridwidth=GridBagConstraints.REMAINDER;
+                button_panel.add( next_button,  gbc );
+            }
+        }else{
+            gbc.anchor=GridBagConstraints.CENTER;
+            gbc.gridwidth=GridBagConstraints.REMAINDER;
+            button_panel.add( exec_button,  gbc );
+        }
+            
 
         // add the status to the panel
         gbc.fill=GridBagConstraints.HORIZONTAL;
@@ -271,11 +295,12 @@ public class Wizard implements Serializable{
         wizard_help .addActionListener( command_handler );
         form_help   .addActionListener( command_handler );
         exit_item   .addActionListener( command_handler );
-        
+    }
+
+    protected void showGUI(){
         frame.show();
     }
-    
-    
+
     /**
      *  This method adds a new parameter to the master list of
      *  parameters maintained by the Wizard.
@@ -351,6 +376,11 @@ public class Wizard implements Serializable{
      *  @param  index  The index of the form to show.
      */
     public void show( int index ){
+        if( !frame.isShowing()){
+            this.makeGUI();
+            this.showGUI();
+        }
+
         if ( index < 0 || index > forms.size()-1 ){  // invalid index
             status_display.append("Error: invalid form number in Wizard.show()"
                                   + index + "\n");
@@ -393,7 +423,12 @@ public class Wizard implements Serializable{
             first_button.setEnabled(true);
         }
         
-        form_label.setText("Form "+(index+1)+": "+f.getTitle());
+        if(forms.size()==1){
+            form_label.setText(f.getTitle());
+        }else{
+            form_label.setText("Form "+(index+1)+": "+f.getTitle());
+        }
+        
     }
     
     

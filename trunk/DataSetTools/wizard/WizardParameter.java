@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.1  2002/05/28 20:36:01  pfpeterson
+ * Moved files
+ *
  * Revision 1.3  2002/04/11 22:32:48  pfpeterson
  * Added some comments for the javadocs.
  *
@@ -44,9 +47,10 @@
  *
  */
 
-package Wizard;
+package DataSetTools.wizard;
 
 import java.awt.*;
+import java.beans.*;
 import javax.swing.*;
 import DataSetTools.operator.*;
 import DataSetTools.components.ParametersGUI.*;
@@ -195,6 +199,13 @@ public class WizardParameter extends Parameter
     extended_gui.setLayout( new GridLayout(1,1) );
     extended_gui.add( box );
     extended_gui.validate();
+    /* param_gui.addPropertyChangeListener(JParameterGUI.VALUE,
+       new PropertyChangeListener(){
+       public void propertyChange(PropertyChangeEvent ev){
+       System.out.println("(WP)value: "+ev.getOldValue()+"->"
+       +ev.getNewValue());
+       }
+       }); */
   }
 
 }
