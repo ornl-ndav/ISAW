@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2005/01/10 16:48:18  rmikk
+ *  Eliminated unused import
+ *
  *  Revision 1.4  2004/07/09 18:25:32  rmikk
  *  Now takes control of the value and allows null values
  *
@@ -58,7 +61,7 @@ import Command.execOneLine;
 
 import DataSetTools.components.ParametersGUI.EntryWidget;
 
-import DataSetTools.dataset.DataSet;
+//import DataSetTools.dataset.DataSet;
 
 import java.awt.*;
 
