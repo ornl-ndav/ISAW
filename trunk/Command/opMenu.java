@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.18  2002/02/22 20:33:48  pfpeterson
+ * Operator Reorganization.
+ *
  * Revision 1.17  2002/01/10 15:42:47  rmikk
  * Added an addStatusPane method.
  * Added this StatusPane to the JParametersDialog
@@ -84,6 +87,8 @@ import DataSetTools.util.*;
 import java.awt.event.*; 
 import javax.swing.text.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.*;
+import DataSetTools.operator.Generic.Batch.*;
 import java.io.*;
 
 /**  A Jmenu especially for lists of operators with a getCategorylist

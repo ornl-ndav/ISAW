@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2002/02/22 20:34:02  pfpeterson
+ *  Operator Reorganization.
+ *
  *  Revision 1.21  2002/01/11 22:04:58  rmikk
  *  -Change DataDirectory to Data_Directory
  *  -Added a new ParameterGUI to deal with DataDirectories
@@ -117,6 +120,8 @@ package DataSetTools.components.ParametersGUI;
 import javax.swing.*;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.DataSet.*;
+import DataSetTools.operator.DataSet.Attribute.*;
 import Command.*;
 import java.awt.event.*;
 import java.awt.*;

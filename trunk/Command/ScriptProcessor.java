@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2002/02/22 20:33:44  pfpeterson
+ * Operator Reorganization.
+ *
  * Revision 1.16  2001/11/27 18:40:44  dennis
  * Added code to set the Result to null after an
  * if statement if finished. (Ruth)
@@ -111,6 +114,7 @@ import javax.swing.text.*;
 import java.awt.event.*; 
 import javax.swing.border.*; 
 import DataSetTools.operator.*; 
+import DataSetTools.operator.Generic.*;
 import java.beans.*; 
 import java.util.Vector;
 //import Command.*;
@@ -121,8 +125,7 @@ import java.util.Vector;
  * results that are data sets. 
  */
 public class ScriptProcessor  extends ScriptProcessorOperator 
-                          implements  
-				      PropertyChangeListener , 
+                          implements  PropertyChangeListener , 
                                       IObservable ,  IObserver,
                                       IDataSetListHandler
 {    

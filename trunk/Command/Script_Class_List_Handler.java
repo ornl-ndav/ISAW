@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2002/02/22 20:33:46  pfpeterson
+ * Operator Reorganization.
+ *
  * Revision 1.26  2002/02/08 15:30:28  pfpeterson
  * Extracted method to add directories to list of possible ones into
  * separate method. Also added back the ability to parse GROUP_HOME
@@ -145,6 +148,7 @@ import java.util.*;
 import java.lang.*;
 import DataSetTools.util.*;
 import DataSetTools.operator.*;
+import DataSetTools.operator.Generic.*;
 import DataSetTools.components.ParametersGUI.*;
 
 /** Gets and Saves all scripts and java GenericOperators in the Path(s) of the system property
