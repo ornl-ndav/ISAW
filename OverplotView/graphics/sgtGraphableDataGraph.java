@@ -6,6 +6,9 @@ package OverplotView.graphics;
  * graphical output panel
  *
  * $Log$
+ * Revision 1.9  2001/12/21 17:54:27  dennis
+ * -Implemented offsets for graphs (Ruth)
+ *
  * Revision 1.8  2001/09/27 19:51:16  dennis
  * Added editing for labels, line styles, etc.
  *
@@ -94,7 +97,7 @@ public class sgtGraphableDataGraph
    * type converter.  this function converts GraphableData to SimpleLine
    * objects.
    */
-  private SGTData convert_GraphableData_to_SGTData( GraphableData d )
+  private SGTData convert_GraphableData_to_SGTData( GraphableData d ,float YShift1)
   {
                                            //set up names and units
                                            //meta data for each line
@@ -142,11 +145,19 @@ public class sgtGraphableDataGraph
                                 //force it to correspond to the value, or find
                                 //the center of the bin, or actually draw it as
                                 //a histogram, with a 'bump' for every bin.
+    float dx=0;
+    float dy =0;
+    Object F = d.getAttributeList().getAttributeValue( "Xshift");
+    if( F != null)
+       dx = ((Float) F).floatValue();
+    F = d.getAttributeList().getAttributeValue( "Yshift");
+    if( F != null)
+       dy = ((Float) F).floatValue()*YShift1;
     if( data_block.isHistogram()  )
     {
       double[] x = new double[  x_values.length * 2 - 2 ]; 
       double[] y = new double[  y_values.length * 2     ];
-
+   
       for( int i=0;  i<y_values.length;  i++ )
       {
 /*
@@ -167,10 +178,10 @@ public class sgtGraphableDataGraph
 
                               //draws the histogram as a series 
                               //of connected horizontal lines
-        x[ i*2 ] = x_values[i];
-        y[ i*2 ] = y_values[i];
-        x[ i*2 + 1 ] = x_values[i+1];
-        y[ i*2 + 1 ] = y_values[i];
+        x[ i*2 ] = x_values[i] +dx;
+        y[ i*2 ] = y_values[i]+dy;
+        x[ i*2 + 1 ] = x_values[i+1]+dx;
+        y[ i*2 + 1 ] = y_values[i]+dy;
 
       }
 
@@ -204,9 +215,14 @@ public class sgtGraphableDataGraph
   public void init( Vector gd )
   {
     data.removeAllElements();
+    Object XX = attrs.getAttributeValue( "Yshift");
+    float DY = 0.0f;
+    if( XX != null)
+       DY = ((Float)XX).floatValue();
+   
     for( int i=0;  i<gd.size();  i++ )
       data.addElement( 
-        convert_GraphableData_to_SGTData( (GraphableData)gd.elementAt(i) )  );
+        convert_GraphableData_to_SGTData( (GraphableData)gd.elementAt(i) ,DY) );
   }
 
 public JPlotLayout getJPane()
