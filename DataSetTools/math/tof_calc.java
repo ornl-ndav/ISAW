@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.18  2002/11/27 23:15:47  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.17  2002/07/26 20:25:57  dennis
  *  Added method DiffractometerVecQ() to calculate the Q vector
  *  for elastic scattering.
@@ -43,42 +45,6 @@
  *
  *  Revision 1.14  2002/06/19 21:52:14  pfpeterson
  *  Added more conversions between wl, d, and Q.
- *
- *  Revision 1.13  2001/07/12 16:32:42  dennis
- *  Modified calculation of "omega".
- *
- *  Revision 1.12  2001/07/10 20:23:24  dennis
- *  Added method to calculate Omega()
- *
- *  Revision 1.11  2001/04/25 20:56:54  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.10  2001/01/29 21:05:58  dennis
- *  Now uses CVS revision numbers.
- *
- *  Revision 1.9  2000/08/01 20:46:29  dennis
- *  Removed "sampling" related methods such as ReBin and CLSmooth
- *
- *  Revision 1.5  2000/07/26 20:47:00  dennis
- *  Now allow zero parameter in velocity<->energy conversions
- *
- *  Revision 1.4  2000/07/17 19:07:29  dennis
- *  Added methods to convert between energy and wavelength
- *
- *  Revision 1.3  2000/07/14 19:10:23  dennis
- *  Added methods to convert between velocity and energy and between
- *  velocity and wavelength.  Also added documentation to clarify the
- *  units used for parameters.
- *
- *  Revision 1.2  2000/07/10 22:25:15  dennis
- *  Now Using CVS 
- *
- *  Revision 1.5  2000/07/06 21:19:59  dennis
- *  added some constants for Planck's constant and added VelocityOfEnergy()
- *  function.
- *
- *  Revision 1.3  2000/05/11 16:08:13  dennis
- *  Added RCS logging
  *
  */
 

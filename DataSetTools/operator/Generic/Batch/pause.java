@@ -2,7 +2,6 @@
  * File:  pause.java 
  *
  * Copyright (C) 1999, Dongfeng Chen,
- *                     Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -32,19 +30,15 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2002/11/27 23:20:53  pfpeterson
+ * standardized header
+ *
  * Revision 1.2  2002/09/19 16:05:19  pfpeterson
  * Now uses IParameters rather than Parameters.
  *
  * Revision 1.1  2002/02/22 20:57:21  pfpeterson
  * Operator reorganization.
  *
- * Revision 1.5  2001/06/01 21:18:00  rmikk
- * Improved documentation for getCommand() method
- *
- * Revision 1.4  2001/04/26 19:12:15  dennis
- * Added copyright and GPL info at the start of the file.
- * 
- *   
  */
 
 package DataSetTools.operator.Generic.Batch;

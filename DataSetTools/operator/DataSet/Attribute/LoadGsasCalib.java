@@ -18,10 +18,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
  * Contact : Peter F. Peterson <pfpeterson@anl.gov>
- *           Intense Pulsed Neutron Source
+ *           Intense Pulsed Neutron Source Division
  *           Argonne National Laboratory
- *           Argonne, IL 60439-4845
- *           USA
+ *           9700 South Cass Avenue, Bldg 360
+ *           Argonne, IL 60439-4845, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/11/27 23:16:41  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.4  2002/09/27 15:02:03  pfpeterson
  *  Makes sure iparm file is readable and exists.
  *

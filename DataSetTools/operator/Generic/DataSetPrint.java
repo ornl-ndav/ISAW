@@ -1,8 +1,7 @@
 /*
  * File:  DataSetPrint.java  
  * 
- * Copyright (C) 2000, Dongfeng Chen,
- *                     Dennis Mikkelson
+ * Copyright (C) 2000, Dongfeng Chen, Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -32,67 +30,15 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/11/27 23:20:43  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.2  2002/09/19 16:05:07  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
  *  Revision 1.1  2002/02/22 20:56:51  pfpeterson
  *  Operator reorganization.
  *
- *  Revision 1.16  2001/08/10 18:40:53  rmikk
- *  Removed the System.exit commands and returned
- *  errormessages.
- *
- *  Revision 1.15  2001/07/23 15:42:39  dennis
- *  Now uses DataSet tile ( no tag ) for the filename to print to.
- *
- *  Revision 1.14  2001/07/23 15:34:46  dennis
- *  Added infomational messages to catch block for printing
- *  to file.
- *
- *  Revision 1.13  2001/07/20 18:17:00  dennis
- *  Made prompt for print destination more compact.
- *
- *  Revision 1.12  2001/07/16 22:49:50  dennis
- *  Modified it to work even if there are no error values present
- *  in the Data block.  Did some general "clean up".
- *
- *  Revision 1.11  2001/07/16 14:25:24  dennis
- *  Now extends GenericOperator, so it appears in the GUI
- *
- *  Revision 1.10  2001/06/01 21:18:00  rmikk
- *  Improved documentation for getCommand() method
- *
- *  Revision 1.9  2001/04/26 19:06:42  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.8  2000/11/07 15:56:13  dennis
- *
- *  Revision 1.7  2000/10/03 22:13:10  dennis
- *
- *  Now uses the constant empty DataSet, DataSet.EMPTY_DATA_SET,
- *   as a place holder for the DataSet parameter.
- *
- *  Revision 1.6  2000/08/17 19:19:07  dennis
- *  Moved OutputTable from DataSetTools/operator to DataSetTools/components/ui
- *
- *  Revision 1.5  2000/08/17 19:08:28  dennis
- *  Modified 08/13 by Dongfeng.  Now prints output into JTable for viewing, 
- *  copying and pasting.  Changed the output format. All of the output types 
- *  can be pasted neatly.
- *
- *  Revision 1.4  2000/08/08 21:12:52  dennis
- *  Now prints error values and uses tabs & number format to make the
- *  dislay neater.
- *
- *  Revision 1.3  2000/08/03 22:10:23  dennis
- *  Now uses tabs as separators
- *
- *  Revision 1.2  2000/08/03 21:49:13  dennis
- *  Moved JFrameMessageCHOP to DataSetTools/components/ui
- *
- *  Revision 1.1  2000/08/03 21:43:40  dennis
- *  Dongfeng's utility for quick printing.
- *   
  */
 
 package DataSetTools.operator.Generic;

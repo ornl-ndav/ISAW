@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/11/27 23:23:49  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.9  2002/07/18 21:30:52  dennis
  *  Corrected spelling of "NOT DRAWN".  Also, now trims the
  *  String returned by System.getProperty().
@@ -54,17 +56,6 @@
  *  Revision 1.4  2002/06/14 14:25:45  pfpeterson
  *  The start of a central location for getting system properties
  *  with appropriate default values.
- *
- *  Revision 1.3  2001/08/02 15:47:19  dennis
- *  Added is_loaded() method to check whether or not the properties file
- *  was found and loaded ok.
- *
- *  Revision 1.2  2001/07/24 16:33:49  dennis
- *  Added java docs for reload() method, now that it has
- *  been tested.
- *
- *  Revision 1.1  2001/07/23 19:03:18  dennis
- *  Utility class to load System properties one time.
  *
  */
 package DataSetTools.util;

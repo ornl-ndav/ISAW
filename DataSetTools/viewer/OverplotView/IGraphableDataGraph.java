@@ -1,32 +1,53 @@
-package DataSetTools.viewer.OverplotView;
-
-/**
- * $Id$
+/*
+ * File: IGraphableDataGraph.java
  *
- * defines a way for arbitrary graphics packages to play nice with
- * OverplotView.
+ * Copyright (C) 2001, Kevin Neff
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+
  *
  * $Log$
+ * Revision 1.2  2002/11/27 23:25:12  pfpeterson
+ * standardized header
+ *
  * Revision 1.1  2002/07/18 22:06:19  dennis
  * Moved separate OverplotView hiearchy into DataSetTools/viewer
  * hierarchy.
  *
- * Revision 1.2  2001/06/28 22:06:24  neffk
- * added setAttributeList( AttributeList l ) to the interface so that the
- * graph can store things like units, labels, and the title--things that are
- * global for all data on the graph.
- *
- * Revision 1.1  2001/06/27 18:32:35  neffk
- * changed the name of the interface to start w/ I.
- *
  */
 
+package DataSetTools.viewer.OverplotView;
 
 import DataSetTools.dataset.AttributeList;
 import java.util.Vector;
 import javax.swing.JComponent;
 
-
+/**
+ * defines a way for arbitrary graphics packages to play nice with
+ * OverplotView.
+ */
 public interface IGraphableDataGraph
 {
   public static final String TITLE      = "Graph Title";

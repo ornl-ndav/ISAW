@@ -20,8 +20,7 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,14 +30,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/11/27 23:28:17  pfpeterson
+ * standardized header
+ *
  * Revision 1.3  2002/11/20 16:14:40  pfpeterson
  * reformating
  *
  * Revision 1.2  2002/04/01 20:18:47  rmikk
  * Changed an argument to the ProcessDS method from the DataSet index to the NxNode of the first NXdata
- *
- * Revision 1.1  2001/07/05 21:45:10  rmikk
- * New Nexus datasource IO handlers
  *
  */
 package NexIO;

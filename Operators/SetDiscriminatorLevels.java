@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,16 +30,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2002/11/27 23:29:54  pfpeterson
+ * standardized header
+ *
  * Revision 1.5  2002/02/22 20:45:06  pfpeterson
  * Operator reorganization.
  *
  * Revision 1.4  2001/11/27 18:21:54  dennis
  * Added operator title to constructor java docs.
- *
- * Revision 1.3  2001/11/21 21:31:50  dennis
- * First attempt at an operator to automatically determine discriminator
- * levels.
- *
  *
  */
 package Operators;

@@ -20,29 +20,26 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/11/27 23:12:10  pfpeterson
+ * standardized header
+ *
  * Revision 1.4  2002/08/19 17:07:00  pfpeterson
  * Reformated file to make it easier to read.
  *
  * Revision 1.3  2002/01/09 19:29:43  rmikk
  * Added constructors so that the toolbar can be placed on
  *    any of the four corners.
- *
- * Revision 1.2  2001/08/14 19:32:09  chatterjee
- * MyHandler actionlistener has a class of its own now
- *
- * Revision 1.1  2001/08/14 16:47:51  rmikk
- * Initial checkin
  *
 */
 package Command;

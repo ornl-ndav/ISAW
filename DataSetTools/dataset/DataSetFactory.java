@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2002/11/27 23:14:06  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.33  2002/10/24 16:51:08  pfpeterson
  *  Removed references to old DGCS operators.
  *
@@ -82,70 +84,6 @@
  *
  *  Revision 1.18  2002/02/22 20:35:07  pfpeterson
  *  Operator Reorganization.
- *
- *  Revision 1.17  2001/08/16 19:36:19  dennis
- *  Added Ruth's PlotterOp instead of Dongfengs SpectrometerPlotter.
- *
- *  Revision 1.16  2001/08/16 19:20:05  dennis
- *  Removed DongFeng's SpectrometerPlotter.
- *
- *  Revision 1.15  2001/08/15 21:46:18  dennis
- *  Added DongFeng's SpectrometerPlotter to all DataSets.
- *
- *  Revision 1.14  2001/08/14 20:29:40  dennis
- *  Added ExtractCurrentlySelected operator.
- *
- *  Revision 1.13  2001/08/14 19:44:47  dennis
- *  Removed IntervalSelectionOp since it was not working correctly.
- *
- *  Revision 1.12  2001/07/11 19:09:26  neffk
- *  updated to automatically add the IntervalSelectionOp operator to
- *  all newly constructed DataSet objects.
- *
- *  Revision 1.11  2001/04/25 19:03:38  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.10  2001/04/02 20:48:53  dennis
- *  Now adds TofToChannel operator for any DataSet.
- *
- *  Revision 1.9  2000/12/07 22:23:37  dennis
- *  Added operators FitPolynomialToGroup(),
- *                  ConvertFunctionToHistogram()
- *
- *  Revision 1.8  2000/10/03 21:34:02  dennis
- *  Modified this factory to handle different types of time-of-flight
- *  instruments.
- *
- *  Revision 1.7  2000/08/03 15:49:36  dennis
- *  Added ResampleDataSet() and ConvertHistogramToFunction() operators
- *
- *  Revision 1.6  2000/08/03 03:16:32  dennis
- *  Added ResampleDataSet() operator
- *
- *  Revision 1.5  2000/07/17 20:59:02  dennis
- *  Added SetDSDataAttributes() operator
- *
- *  Revision 1.4  2000/07/17 13:38:31  dennis
- *  Added operators to get/set attributes & fields
- *
- *  Revision 1.3  2000/07/10 22:23:55  dennis
- *  Now using CVS 
- *
- *  Revision 1.18  2000/06/15 14:12:25  dennis
- *  Replaced 4 operators with renamed versions for consistency:
- *    Integrate()         replaced by    IntegrateGroup()
- *    CalculateMoment()   replaced by    CalculateMomentOfGroup()
- *    SumSelectedData()   replaced by    SumByAttribute()
- *    SelectData()        replaced by    ExtractByAttribute()
- *
- *  Revision 1.17  2000/06/08 15:10:16  dennis
- *  Added new operator DeleteByAttribute
- *
- *  Revision 1.16  2000/05/23 18:51:50  dennis
- *  removed sort on one attribute operator.
- *
- *  Revision 1.15  2000/05/11 16:00:45  dennis
- *  Added RCS logging
  *
  */
 

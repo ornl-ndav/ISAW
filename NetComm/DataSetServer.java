@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,36 +30,8 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.6  2001/09/20 17:37:55  dennis
- *  Fixed @see javadoc comment
- *
- *  Revision 1.5  2001/08/10 19:43:22  dennis
- *  Added methods to parse command line arguments and show usage.
- *  Also added methods to get and show data directories being used.
- *  Added code to add a directory separator at the end of a
- *  directory name, if it was not there.
- *
- *  Revision 1.4  2001/08/09 21:46:48  dennis
- *  Uses start_TCP() method to start the TCPServer.
- *
- *  Revision 1.3  2001/08/09 15:43:35  dennis
- *  Added command GET_NAME.
- *
- *  Revision 1.2  2001/08/07 21:27:25  dennis
- *    Removed command to get DS_TYPE and get NUM_DS... now only uses
- *  get DS_TYPES, for the whole list of types.  This is simpler,
- *  reduces the number of requests needed and allows LiveDataServer
- *  and FileDataServer to handle the same requests.
- *    extractIntParameter() now treats the last item in a command
- *  string as an int parameter.
- *    find_file() now tries upper and lower case versions of the
- *  file name as well as the original file specified.
- *
- *  Revision 1.1  2001/08/03 21:27:16  dennis
- *  Base class for TCP servers that process requests for DataSets.
- *  Maintains a list of directories and defines some commands.
- *  Extends TCPServer.
- *
+ *  Revision 1.7  2002/11/27 23:27:59  pfpeterson
+ *  standardized header
  *
  */
 package NetComm;

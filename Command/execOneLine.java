@@ -1,4 +1,3 @@
-
 /*op.getParameter(k).getValue()*
  * File:  execOneLine.java 
  *             
@@ -21,17 +20,20 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *
  * Modified:
  *
  * $Log$
+ * Revision 1.37  2002/11/27 23:12:10  pfpeterson
+ * standardized header
+ *
  * Revision 1.36  2002/11/11 16:55:01  rmikk
  * The NULL value now removes variables from the list of
  *     variables that are not parameters.
@@ -58,103 +60,6 @@
  * Change the javadocs to reflect that this Save now works and it
  * only saves in java binary form. (Ruth)
  *
- * Revision 1.29  2001/11/12 21:18:39  dennis
- *   1. & between a string and boolean or Vector now changes these
- *      non string data type to string.
- *
- *   2. Float parameters in operators now also match with
- *      integer arguments.
- *
- * Revision 1.28  2001/11/09 18:18:11  dennis
- * Fixed the method Vect_to_String to put quotes around the string entries.
- * Also, data sets are replaced by ISAWDS[tag number]
- *
- * Revision 1.27  2001/08/16 20:30:50  rmikk
- * Fixed the javadocs @see tags
- *
- * Revision 1.26  2001/08/15 14:15:30  rmikk
- * Set Default Parameters on all operators that had their
- *    parameters changed.  The data types of these operators
- *    will now be accurate when used later.
- *
- * Revision 1.25  2001/08/02 20:54:40  rmikk
- * This now supports the RETURN statement.
- *
- * Revision 1.24  2001/07/30 21:36:22  rmikk
- * Implemented  the Iobservable  delete event
- *
- * Revision 1.23  2001/07/20 16:36:28  rmikk
- * Fixed error that occurred when two operators have the
- * same command and neither match the arguments.
- *
- * Revision 1.22  2001/07/20 14:01:13  rmikk
- * 1. Enabled THREE_D displays of data sets.
- * 2. Can now load Nexus files using IsawGUI.Util's load
- *    function
- *
- * Revision 1.21  2001/06/29 19:12:02  rmikk
- * Eliminated a "check nop" system output
- *
- * Revision 1.20  2001/06/25 19:07:03  rmikk
- * Fixed error witj a:b+c to allow expressions after the :
- *
- * Revision 1.19  2001/06/04 20:15:36  rmikk
- * Fixed Documentation
- *
- 
- 6-9-2000
-   implemented Load, Display, Send(check) , Expressions with data sets, and Data Set Operators
-   Ned to 
-       extend the Load function to give variable names
-       implement update and keep track of when a data set is changing
-      need to implement vname[i] for looping
-   
- 7-5-2000
-   implemented getResult.
-   Tested a lot.  Released for testing
-
- 7-12-2000:
-   Introduced the symbols : < > and tightened the "end" parameter in 
-   execute( String, int,int ) to work with the outside For and If-Else-ENdif structures
-7-14-2000
-   Display now works with int[]
-
-9-14-2000
-  
-   -Fixed error report after the SEND command.  
-      The seterror routine can now reset the error to no error
-
-   -Implemented Boolean variables and expressions. 
-   -Implemented Load "isd" files(JVM Binary Data Set files).
-   -Implemented Load ".class" files( Not a filename. must be in ClassPath
-
-10-1-30
-  - Fixed errors in & 3 terms
-  - Fixed errors in AND and  OR ing 3 or more "terms"
-
-10-1-30
-  - Started to incorporate Variable names for Data Sets.
-    
-
-12-1-00
-  -Variable names for Datasets incorporated.  The title is no longer
-   used as the variable name
-  -Fixed error with ==
-  -Fixed error when  array index calculation had an error
-  -  & can be applied to a data set to yield its toString Value
- 
-12-12-00-
-  -Tested inequalities to get correct answer(operateCompare)
-  -fixed initt so all local string, data set and well as boolean variables are cleared(initt)
-      May cause some problems with the macro run??
-
-1/31/01-
-  -implemented arrays as Vectors. Includes multidimensional arrays.
-  - Bolstered variables to retain data type after first assignment
-
-2-21-
-  -Load with varname now makes this an array of DataSets  
-      
 */
 package Command;
 //import IsawGUI.Isaw.*;

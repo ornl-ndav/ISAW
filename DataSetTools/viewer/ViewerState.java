@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2002/11/27 23:24:18  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.21  2002/07/30 14:33:35  rmikk
  *  Added a ViewerState constant for the Contour View
  *
@@ -58,50 +60,6 @@
  *  Revision 1.14  2002/06/17 20:30:51  dennis
  *  ZoomRegion now only preserved if the number of spectra is the same
  *  (in addition to having the same title, axis labels and units).
- *
- *  Revision 1.13  2001/07/27 15:57:10  dennis
- *  Removed debug print.
- *
- *  Revision 1.12  2001/07/26 14:25:55  dennis
- *  Added Brightnes & Auto-Scale state variables.
- *
- *  Revision 1.11  2001/07/25 18:08:30  dennis
- *  Now initializes state from the system properties and
- *  stores most state info in a heap.  Added generic
- *  methods to get/set Strings, ints and floats by name
- *  in the state object.
- *
- *  Revision 1.10  2001/07/23 18:34:07  dennis
- *  Now gets default color scale from System.properties, if possible.
- *
- *  Revision 1.9  2001/07/17 20:36:47  dennis
- *  Changed default Rebin state to true.
- *
- *  Revision 1.8  2001/06/08 21:58:41  dennis
- *  Now also requires the DataSet titles to match before
- *  restoring the Zoom region state.
- *
- *  Revision 1.7  2001/06/04 20:04:20  dennis
- *  Added rebin flag for GraphView.
- *
- *  Revision 1.6  2001/04/26 14:21:42  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.5  2001/03/02 17:03:30  dennis
- *  Now checks whether the current DataSet uses the same axis units and
- *  labels before returning the zoom region.
- *
- *  Revision 1.4  2001/03/01 23:14:10  dennis
- *  Now allows saving one zoom region for an ImageView.
- *
- *  Revision 1.3  2001/03/01 22:33:07  dennis
- *  Now saves the last "Pointed At" index.
- *
- *  Revision 1.2  2001/01/29 21:26:50  dennis
- *  Now uses CVS version numbers.
- *
- *  Revision 1.1  2000/12/07 23:02:19  dennis
- *  Class to hold and transfer viewer options between various viewers.
  *
  */
 

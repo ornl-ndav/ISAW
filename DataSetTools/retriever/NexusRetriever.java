@@ -20,8 +20,7 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,22 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2002/11/27 23:23:16  pfpeterson
+ * standardized header
+ *
  * Revision 1.7  2002/07/29 18:47:24  rmikk
  * Added code to report errors to status pane and, if file
  *   cannot be opened to System.out.
- *
- * Revision 1.6  2001/08/17 18:58:39  rmikk
- * Incorporated more error handling if file cannot be read
- *
- * Revision 1.5  2001/08/16 20:31:32  rmikk
- * Fixed the javadocs
- *
- * Revision 1.4  2001/08/10 13:41:11  rmikk
- * Added Code to return error information
- *
- * Revision 1.3  2001/07/26 13:15:40  rmikk
- * New Nexus retriever that uses routines from the general
- * NexIO package.
  *
 */
 

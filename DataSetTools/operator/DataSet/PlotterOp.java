@@ -17,11 +17,10 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Ruth Mikkelson <mikkelsond@uwstout.edu>
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/11/27 23:16:27  pfpeterson
+ * standardized header
+ *
  * Revision 1.1  2002/02/22 20:59:44  pfpeterson
  * Operator reorganization.
  *
@@ -38,20 +40,6 @@
  * Removed commented out code that called Dongfeng's "graph" based plotter.
  * (Now uses SGT based plotting.)
  *
- * Revision 1.1  2001/08/16 19:25:29  dennis
- * Renamed version, derived from DongFengs SpectromterPlotter.  This
- * now pops up a viewer, and allows multiple selections.
- *
- * Revision 1.6  2001/08/15 18:35:17  rmikk
- * Redid to show several spectra and also to use Kevin's
- * SelectedGraphView from the ViewManager
- *
- * Revision 1.5  2001/06/01 21:18:00  rmikk
- * Improved documentation for getCommand() method
- *
- * Revision 1.4  2001/04/26 19:11:18  dennis
- * Added copyright and GPL info at the start of the file.
- * 
  */
 
 package DataSetTools.operator.DataSet;

@@ -17,11 +17,10 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Ruth Mikkelson <mikkelsond@uwstout.edu>
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,17 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/11/27 23:21:28  pfpeterson
+ * standardized header
+ *
  * Revision 1.1  2002/02/22 20:58:16  pfpeterson
  * Operator reorganization.
- *
- * Revision 1.3  2001/08/14 20:26:08  dennis
- * Changed title.
- *
- * Revision 1.2  2001/08/01 19:04:25  dennis
- * Added information on possible extensions to filename default parameter.
- *
- * Revision 1.1  2001/07/30 21:20:59  rmikk
- * Initial Checkin
  *
  */
 package DataSetTools.operator.Generic.Save;

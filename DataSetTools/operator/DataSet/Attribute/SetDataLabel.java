@@ -20,19 +20,19 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
- *
- * and by the National Science Foundation, Award No. DMR-0218882
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/11/27 23:16:41  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.3  2002/11/19 22:57:05  dennis
  *  Added getDocumentation() method and basic main test program. (Tyler Stelzer)
  *
