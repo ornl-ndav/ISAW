@@ -1,10 +1,11 @@
-package IsawGUI;
-
 /*
  * $Id$
  *
  *
  * $Log$
+ * Revision 1.12  2002/11/25 20:29:51  pfpeterson
+ * Moved the package definition to be below the GPL.
+ *
  * Revision 1.11  2001/07/31 19:50:02  neffk
  * fixed numerous errors in menu system.
  *
@@ -70,6 +71,7 @@ package IsawGUI;
  *
  */
 
+package IsawGUI;
 
 import DataSetTools.components.ui.OperatorMenu;
 import DataSetTools.components.ui.ViewMenu;
