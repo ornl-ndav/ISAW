@@ -30,6 +30,9 @@
  *
  * Modified:
  *
+ *  $Log$
+ *  Revision 1.4  2002/10/29 15:57:33  dennis
+ *  Added getDocumentation method, and $Log:$ tag. (Mike Miller)
  *
  *
  */
@@ -74,6 +77,29 @@ public class ActivateContact extends GenericCalculator
     parameters = new Vector();
     addParameter( new Parameter("Sample Composition", new String(sample) ) );
     addParameter( new Parameter("Sample Mass",        new Float(mass) ) );
+  }
+
+/* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns description/attributes of ActivateContacts
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator calculates and returns the ");
+    Res.append("contact dose (mrem/hr) for a given sample\n");
+    Res.append("@algorithm Given a sample and its mass ");
+    Res.append("the Total Contact Dose will be calculated\n");
+    Res.append("@param String sample\n");
+    Res.append("@param float mass_of_sample\n");
+    Res.append("@return the String containing the numerical value ");
+    Res.append("of the contact dose followed by unit'mrem/hr'\n"); 
+    Res.append("@error sample string is null, no set\n");
+    Res.append("@error sample not valid\n");
+    
+    return Res.toString();
+    
   }
 
  /* ---------------------------- getCommand ------------------------------- */ 
@@ -160,18 +186,20 @@ public class ActivateContact extends GenericCalculator
     op.CopyParametersFrom( this );
     return op;
   }
+  
 
  /* ------------------------------- main --------------------------------- */ 
  /** 
   * Test program to verify that this will complile and run ok.  
   *
   */
+  
   public static void main( String args[] )
   {
      System.out.println("Test of ActivateContact starting...");
      String material=null;
 
-     // Test the operator by constructing and running it, specifyinge
+     // Test the operator by constructing and running it, specifying
      // values for all of the parameters.
      material="Ge";
      ActivateContact op = new ActivateContact( material, 5.0f);
@@ -179,7 +207,7 @@ public class ActivateContact extends GenericCalculator
      System.out.println("Using "+material+", the operator returned: ");
      System.out.println( output );
 
-     // Test the operator by constructing and running it, specifyinge
+     // Test the operator by constructing and running it, specifying
      // values for all of the parameters.
      material="Si,Ge";
      op = new ActivateContact( material, 5.0f);
@@ -187,7 +215,7 @@ public class ActivateContact extends GenericCalculator
      System.out.println("Using "+material+", the operator returned: ");
      System.out.println( output );
 
-     // Test the operator by constructing and running it, specifyinge
+     // Test the operator by constructing and running it, specifying
      // values for all of the parameters.
      material="Y,Ba_2,Cu_3,O_7";
      op = new ActivateContact( material, 5.0f);
@@ -195,6 +223,9 @@ public class ActivateContact extends GenericCalculator
      System.out.println("Using "+material+", the operator returned: ");
      System.out.println( output );
 
+     // Will dump raw help information about the ActivateContact class to screen
+     System.out.println( op.getDocumentation() );
+  
      // Test the operator by constructing and running it, this time with the
      // default constructor.
      /* op = new ActivateStorage();
@@ -203,5 +234,6 @@ public class ActivateContact extends GenericCalculator
 	System.out.println( (String)obj ); */
 
      System.out.println("Test of ActivateStorage done.");
-  }
+     
+  } 
 }

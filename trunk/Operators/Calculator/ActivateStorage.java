@@ -30,6 +30,9 @@
  *
  * Modified:
  *
+ *  $Log$
+ *  Revision 1.3  2002/10/29 16:02:24  dennis
+ *  Added getDocumentation method, and $Log:$ tag. (Mike Miller)
  *
  *
  */
@@ -78,6 +81,31 @@ public class ActivateStorage extends GenericCalculator
     addParameter( new Parameter("Beam Current",       new Float(current) ) );
     addParameter( new Parameter("Instrument Factor",  new Float(inst_fac) ) );
   }
+
+/* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns description/attributes of ActivateStorage
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator calculates and returns the ");
+    Res.append("storage time (in days) for a given sample\n");
+    Res.append("@algorithm Given a sample, its beam current, and the ");
+    Res.append("instrument factor, the storage time will be calculated\n");
+    Res.append("@param String sample\n");
+    Res.append("@param float  current\n");
+    Res.append("@param float  inst_fac\n");
+    Res.append("@return the String containing the numerical value ");
+    Res.append("of the storage time followed by units (days)\n"); 
+    Res.append("@error sample string is null, no set\n");
+    Res.append("@error sample not valid\n");
+    
+    return Res.toString();
+    
+  }
+
 
  /* ---------------------------- getCommand ------------------------------- */ 
  /** 
@@ -212,6 +240,9 @@ public class ActivateStorage extends GenericCalculator
      output = (String)op.getResult();
      System.out.println("Using "+material+", the operator returned: ");
      System.out.println( output );
+     
+     // Will dump raw help information about the ActivateStorage class to screen
+     System.out.println( op.getDocumentation() );
 
      // Test the operator by constructing and running it, this time with the
      // default constructor.
