@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.86  2002/03/07 22:24:57  pfpeterson
+ *  Now using global version information.
+ *
  *  Revision 1.85  2002/03/04 20:31:03  pfpeterson
  *  Default properties file comments out more lines if ISAW is not found
  *  in the classpath.
@@ -372,7 +375,7 @@ public class Isaw
 {
      
   private static final String TITLE              = "ISAW";
-  private static final String VERSION            = "Release 1.2";
+    //private static final String VERSION            = "Release 1.2";
 
   private static final String FILE_M             = "File";
   private static final String LOAD_DATA_M        = "Load Data";
@@ -1922,7 +1925,12 @@ public class Isaw
     int y = (int)(screenSize.height - window_height)*3/4;
     int x = (int)(screenSize.height*4/3 - window_width)/2;
 
-    System.out.println("Loading " + TITLE + " " + VERSION );
+    System.out.print("Loading " + TITLE + " Release ");
+    if(SharedData.VERSION.equals("Unknown_Version")){
+        System.out.println("1.2.1 alpha");
+    }else{
+        System.out.println(SharedData.VERSION );
+    }
     JFrame Isaw = new Isaw( args );
     Isaw.pack();
     Isaw.setBounds(x,y,window_width,window_height);
