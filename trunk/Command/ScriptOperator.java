@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2003/06/13 20:08:12  pfpeterson
+ * Returns ScriptProcessor's getDocumentation if possible.
+ *
  * Revision 1.23  2003/05/28 18:53:45  pfpeterson
  * Changed System.getProperty to SharedData.getProperty
  *
@@ -345,6 +348,13 @@ public class ScriptOperator extends GenericOperator
     public void setDefaultParameters(){
         if(SP != null)
             SP.setDefaultParameters();
+    }
+
+    public String getDocumentation(){
+      if(SP!=null)
+        return SP.getDocumentation();
+      else
+        return super.getDocumentation();
     }
 
     /**
