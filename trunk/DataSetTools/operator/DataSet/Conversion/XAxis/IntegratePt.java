@@ -34,6 +34,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/08/02 20:09:00  rmikk
+ * ISX, ISY, and ISZ can now be set
+ * The Integrate one peak is now NOT static to this class
+ * A clone method now copies all the information of the Integrate one peak method
+ *
  * Revision 1.4  2004/07/30 14:51:35  rmikk
  * Removed unused imports
  *
@@ -69,7 +74,10 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
   DataSet DS;
   int[][][] JHist = null;
   int id =-1;
-  private static Wrappable op = new INTEG();
+  private Wrappable op = new INTEG();
+  int ISX = 1;
+  int ISY = 1;
+  int ISZ = 1;
   public IntegratePt(){
     super("Integrate1");
     DS = null;
@@ -169,13 +177,16 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
        return V;     
   }
  //----------------------- Wrappable plug-ins----------------------
-  public static void setIntgratePkOp( Wrappable op){
-    if( op ==  null)
-      IntegratePt.op = new INTEG();
-    if( !check(op))
-      IntegratePt.op = new INTEG();
-    else
-      IntegratePt.op = op;
+ public void setIntgratePkOp( Wrappable op1, int ISX ,int ISY,int ISZ){
+	if( op1 ==  null)
+	  op = new INTEG();
+	if( !check(op1))
+	  op = new INTEG();
+	else
+	  op = op1;
+	this.ISX = ISX;
+	this.ISY = ISY;
+	this.ISZ = ISZ;
     
   }
   
@@ -247,17 +258,17 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
       *  @param op  The wrappable that will actually integrate the peak
       *  @return  A Vector with two elements, ITOT, SIGI, null, or an ErrorString
       */
-  public Vector Integrate( float time, int dataBlockIndex, Wrappable op){
+  public Vector Integrate( float time, int dataBlockIndex, Wrappable op1){
   
     if( dataBlockIndex < 0)
       return null;
     if( Float.isNaN(time))
       return null;
-    if (op == null)
-      if( this.op != null)
-         op = this.op;
+    if (op1 == null)
+      if( op != null)
+         op1 = op;
       else
-         op = new INTEG();
+         op1 = new INTEG();
     //INTGT op = new INTGT();
    
     Data D = DS.getData_entry( dataBlockIndex);
@@ -294,18 +305,18 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
           for( int k=0; k< nchannels -1; k++)
             JHist[i-1][j-1][k] =(int) gr.getData_entry(j,i).getY_values()[k];
     }
-    setintField(op,"ISX",1) ;
-    setintField(op,"ISY",1) ;
-    setintField(op,"ISZ",1) ;
-    setintField(op,"X",col) ;
-    setintField(op,"Y",row) ; 
-    setintField(op,"Z",channel) ;
-    setintField(op,"NXS",numcols) ;
-    setintField(op,"NYS",numrows) ;
-    setintField(op,"WLNUM",nchannels) ;
-    setfloatField(op, "ITOT", 0f);
-    setObjField(op ,"JHIST", JHist);
-    setObjField(op,"NTIME", D.getX_scale().getXs());
+    setintField(op1,"ISX",ISX) ;
+    setintField(op1,"ISY",ISY) ;
+    setintField(op1,"ISZ",ISZ) ;
+    setintField(op1,"X",col) ;
+    setintField(op1,"Y",row) ; 
+    setintField(op1,"Z",channel) ;
+    setintField(op1,"NXS",numcols) ;
+    setintField(op1,"NYS",numrows) ;
+    setintField(op1,"WLNUM",nchannels) ;
+    setfloatField(op1, "ITOT", 0f);
+    setObjField(op1 ,"JHIST", JHist);
+    setObjField(op1,"NTIME", D.getX_scale().getXs());
 
     Object O = op.calculate();
     if( O instanceof ErrorString){
@@ -348,5 +359,13 @@ public class IntegratePt extends DataSetTools.operator.DataSet.Math.Analyze.Anal
       F.set(op,(val));  
     }catch(Exception ss){
     }
+  }
+  
+  public Object clone(){
+  	 IntegratePt Res = new IntegratePt();
+  	 Res.setDataSet( getDataSet());
+  	 Res.setIntgratePkOp( op, ISX,ISY,ISZ);
+  	 return Res;
+  	  
   }
 }
