@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/10/20 21:43:08  dennis
+ *  Fixed minor javadoc error so it builds cleanly with
+ *  jdk 1.4.2_01
+ *
  *  Revision 1.6  2003/10/20 16:33:51  rmikk
  *  Fixed javadoc errors
  *
@@ -93,7 +97,7 @@ public class SetDataAttribute extends    DS_Attribute
    *  @param  ds          The DataSet to which the operation is applied
    *  @param  index       The index of the data block whose attribute is to 
    *                      be set
-   *  @parm   Attrib      The Attribute to be set.
+   *  @param  Attrib      The Attribute to be set.
    *  @param  new_Value   The new value of the Attribute
    */
   public SetDataAttribute  ( DataSet              ds,
