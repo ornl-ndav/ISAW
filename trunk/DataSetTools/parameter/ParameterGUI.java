@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2003/11/20 01:43:50  bouzekc
+ *  Removed final keyword from propertyChange().
+ *
  *  Revision 1.32  2003/11/20 01:21:51  bouzekc
  *  Made several methods final.
  *
@@ -522,7 +525,7 @@ public abstract class ParameterGUI implements IParameterGUI, PropertyChanger,
    *
    * @param ev The triggering PropertyChangeEvent.
    */
-  public final void propertyChange( PropertyChangeEvent ev ) {
+  public void propertyChange( PropertyChangeEvent ev ) {
     if( getIgnorePropertyChange(  ) ) {
       return;
     }
