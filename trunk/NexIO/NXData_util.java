@@ -31,6 +31,14 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2002/04/01 20:16:42  rmikk
+ * Added routines to determine the name of the polar_angle and azimuthal angle.
+ * Reads in the slot, crate, and input values. Also the Data Label attribute is set.
+ * The Group ID is now used if it is in the NeXus File.
+ * Raw Angle is now converted to degrees
+ * Code moved to other routines has been deleted
+ * Set other Attribute method moved out of a loop
+ *
  * Revision 1.9  2002/03/18 21:09:15  dennis
  * Now does getDimension immediately after it's set.
  *
@@ -81,7 +89,7 @@ import DataSetTools.math.*;
  */
 public class NXData_util
  {String errormessage;
-  boolean debug=false;
+  boolean debug= false;
   int timeFieldType;
   public NXData_util()
    { timeFieldType = -1;
@@ -158,6 +166,21 @@ public class NXData_util
         for( i = 0 ; i < b.length ; i++ )
           res[ i ] = (float)b[i];//getfloatEntry( X , i );
        }
+     else if( X instanceof Float)
+      {float[] Res = new float[1];
+       Res[0]=((Float)X).floatValue();
+       return Res;
+       }
+     else if( X instanceof Integer)
+      {float[] Res = new float[1];
+       Res[0]=((Integer)X).floatValue();
+       return Res;
+       }
+     else if( X instanceof Long)
+      {float[] Res = new float[1];
+       Res[0]=((Long)X).floatValue();
+       return Res;
+       }
      else
        {String S = "";
         S = X.getClass(  ).toString( );
@@ -166,6 +189,7 @@ public class NXData_util
        //errormessage = "Not an Array data type: " + X.getClass();
         return null;
          }
+    
      return res;
    
     }
@@ -222,16 +246,32 @@ public class NXData_util
         return Float.NaN;
        }
      } 
+private  String getPhiName( NxNode detNode)
+  {NxNode nx= detNode.getChildNode("two_theta");
+   if( nx != null) return "two_theta";
 
-/** get attributes that are connected to the distance field of this
+    nx= detNode.getChildNode("polar_angle");
+   if( nx != null) return "polar_angle";
+
+   return "phi";
+   
+  
+   }
+private String getThetaName( NxNode detNode)
+   {if( getPhiName( detNode).equals("two_theta")) return "phi";
+    if( getPhiName( detNode).equals("polar_angle")) return "azimuthal_angle";
+    return "theta";
+   }
+/** get attributes that are connected to the NXdetector node corresponding to this
 *  node and assigns them to the appropriate data blocks
 */
-public static void setOtherAttributes( NxNode detNode ,Data newData, int index)
+public  void setOtherAttributes( NxNode detNode ,DataSet DS, int start_index,int end_index)
  {     NxData_Gen DD = new NxData_Gen();       
      float solidAngle[], distance[], theta[],Raw_Angle[],efficiency,
-              Delta_2Theta[], Total_Count[],phi[];
+              Delta_2Theta[], Total_Count[],phi[],slot[],crate[],input[];
      int Time_Field[],Group_ID[];
      solidAngle = distance = theta = Raw_Angle= Delta_2Theta = Total_Count = null;
+     slot=crate=input=null;
      phi = null;
      Time_Field = Group_ID=  null;
      efficiency = -1;
@@ -243,32 +283,46 @@ public static void setOtherAttributes( NxNode detNode ,Data newData, int index)
      if( X == null) return;
      if( !(X instanceof float[])) return;
      distance=(float[])X;
-     UnitsAdjust( distance, "m",(String)( ndis.getAttrValue("units")));
-     nx = detNode.getChildNode( "theta");
+     String S3 =DD.cnvertoString( ndis.getAttrValue("units"));
+     if( S3 !=null)
+        UnitsAdjust( distance, "m",S3);
+     String phin,thetn;
+     phin= this.getPhiName( detNode);
+     thetn = this.getThetaName( detNode);
+     nx = detNode.getChildNode( thetn);
      if( nx != null)
         {X = Arrayfloatconvert(nx.getNodeValue());
          if( X != null) if( X instanceof float[])
             {theta = (float[] ) X;
-             UnitsAdjust( theta,"radians",(String)( nx.getAttrValue("units")));
+             String S =DD.cnvertoString( nx.getAttrValue("units"));
+             if( S !=null)
+                UnitsAdjust( theta,"radians",S);
             }
          
         } 
-     nx = detNode.getChildNode( "phi");
+     nx = detNode.getChildNode( phin);
      if( nx != null)
         {X = Arrayfloatconvert(nx.getNodeValue());
          if( X != null) if( X instanceof float[])
             {phi = (float[] ) X;
-             UnitsAdjust( phi,"radians",(String)( nx.getAttrValue("units")));
+             String S =DD.cnvertoString( nx.getAttrValue("units"));
+             if( S !=null)
+               UnitsAdjust( phi,"radians",S);
             }
          
         } 
-	
+      NxNodeUtils  nut= new NxNodeUtils();	
       nx=( detNode.getChildNode("solid_angle"));
+      
       if( nx != null)
         { X=Arrayfloatconvert(nx.getNodeValue());
+         
           if( X != null)
 	    {solidAngle =(float[])(X);
-             UnitsAdjust( solidAngle,"radians", (String)(nx.getAttrValue("units")));
+             String S =DD.cnvertoString( nx.getAttrValue("units"));
+             if( S !=null)
+               UnitsAdjust( solidAngle,"radians", S.trim());
+           
             }
          }
 
@@ -287,10 +341,12 @@ public static void setOtherAttributes( NxNode detNode ,Data newData, int index)
         if( X!= null)if( X instanceof int[])
             Time_Field =(int[])X;
      */
-       nx =  detNode.getChildNode("group_id");
+       nx =  detNode.getChildNode("id");
        if( nx!= null)if( nx.getNodeValue() !=null) 
-         if( nx.getNodeValue()  instanceof int[])
-             Group_ID =(int[])X;
+        { 
+          if( nx.getNodeValue()  instanceof int[])
+             Group_ID =(int[])(nx.getNodeValue());
+         }
          
         nx = detNode.getChildNode( "efficiency");
         if( nx != null)
@@ -300,31 +356,100 @@ public static void setOtherAttributes( NxNode detNode ,Data newData, int index)
              if( ff.floatValue() != Float.NaN)
                 efficiency = ff.floatValue();
            }
+
         nx =  detNode.getChildNode("raw_angle");
         if(nx !=null)
            { X =Arrayfloatconvert(nx.getNodeValue());
              if( X!= null)
                 {Raw_Angle =(float[])(X);
-                 UnitsAdjust( Raw_Angle,"radians", (String)(nx.getAttrValue("units")));
+                 String S =DD.cnvertoString( nx.getAttrValue("units"));
+                 if( S !=null)
+                   { UnitsAdjust( Raw_Angle,"radians", S);
+                    }
                 }
             }
 
+       nx =  detNode.getChildNode("slot");
+        if(nx !=null)
+           { X =Arrayfloatconvert(nx.getNodeValue());
+             if( X!= null)
+                slot =(float[])(X);
+            }
+       nx =  detNode.getChildNode("crate");
+        if(nx !=null)
+           { X =Arrayfloatconvert(nx.getNodeValue());
+             if( X!= null)
+                crate =(float[])(X);
+
+            }
+      nx =  detNode.getChildNode("input");
+        if(nx !=null)
+           { X =Arrayfloatconvert(nx.getNodeValue());
+             if( X!= null)
+                input =(float[])(X);
+            }
+
         //newData.setGroup_ID( index );
-        if( Group_ID != null)
-           if( index < Group_ID.length)
-                newData.setGroup_ID( Group_ID[index] );
+         
+           for(int index=start_index;index<end_index;index++)
+             {Data DB=DS.getData_entry(index);
+              if( Group_ID != null)
+                {DB.setGroup_ID( Group_ID[index-start_index] );
+                 DB.setAttribute( new StringAttribute(Attribute.LABEL,
+                    "Group "+Group_ID[index-start_index]));
+                 }
+               else 
+                {DB.setGroup_ID( index );
+                DB.setAttribute(new StringAttribute(Attribute.LABEL, 
+                    "Group "+index));
+                 }
+                
+              if( Raw_Angle != null)
+                    DB.setAttribute( new FloatAttribute(Attribute.RAW_ANGLE,(float)
+                             ( Raw_Angle[index-start_index]*180/java.lang.Math.PI)));
+               if(solidAngle != null)// if( index <solidAngle.length)
+                  DB.setAttribute( new FloatAttribute(
+                      Attribute.SOLID_ANGLE, solidAngle[ index -start_index])); 
+                    
+
                
-        float d,p,t,s,ra;
-        int T;
-        d= p = t = s =ra =0;
-        T = 0;
-        if( distance != null)if( index <distance.length)
-               d= distance[ index];
+              if(Total_Count != null)// if( index <Total_Count.length)
+	           DB.setAttribute( new FloatAttribute(Attribute.TOTAL_COUNT,
+                             Total_Count[ index-start_index ]));
+
+              if(slot != null)// if( index <slot.length)
+                if( slot[index-start_index] >=0)
+	           DB.setAttribute( new IntAttribute(Attribute.SLOT,
+                            (int)( slot[ index-start_index ])));
+
+              if(crate != null)// if( index <crate.length)
+                   if( crate[index-start_index] >=0)
+	           DB.setAttribute( new IntAttribute(Attribute.CRATE,
+                            (int)( crate[ index-start_index ])));
+
+              if(input != null)// if( index <input.length)
+                   if(input[index-start_index] >=0)
+	           DB.setAttribute( new IntAttribute(Attribute.INPUT,
+                            (int)( input[ index-start_index ])));
+             float d,p,t,s,ra;
+             int T;
+         
+                 T = 0;
+              d=p=t=0.0f;
+              if( distance != null)if( index-start_index <distance.length)
+               d= distance[ index-start_index ];
        
-       if( theta != null ) if( index < theta.length)
-              t = theta[ index];
-       if( phi != null) if( index < phi.length)
-              p = phi[index];
+              if( theta != null ) if( index-start_index < theta.length)
+                 t = theta[ index-start_index ];
+              if( phi != null) if( index-start_index < phi.length)
+                  p = phi[index-start_index ]; 
+               Position3D p3d= new Position3D();
+              p3d.setSphericalCoords( d,t,p);
+              DB.setAttribute( new DetPosAttribute( 
+                 Attribute.DETECTOR_POS, convertToIsaw(d,p,t)));
+              }
+               
+        
         /*T=0;
         if(Time_Field != null) if( index <Time_Field.length)
             T = Time_Field[ index ];
@@ -332,49 +457,42 @@ public static void setOtherAttributes( NxNode detNode ,Data newData, int index)
            newData.setAttribute( new IntAttribute(Attribute.TIME_FIELD_TYPE,
                                      T));
         */
-         if(Raw_Angle != null) if( index <Raw_Angle.length)
-            ra = Raw_Angle[ index ];
-        if( Raw_Angle != null)
-           newData.setAttribute( new FloatAttribute(Attribute.RAW_ANGLE,
-                                     ra));
-        if(solidAngle != null) if( index <solidAngle.length)
-            s = solidAngle[ index ];
-        if( solidAngle != null)
-           newData.setAttribute( new FloatAttribute(Attribute.SOLID_ANGLE,
-                                     s));
-
-        if(Total_Count != null) if( index <Total_Count.length)
-	 s = Total_Count[ index ]; else s = 0;
-        if( Total_Count != null)
-           newData.setAttribute( new FloatAttribute(Attribute.TOTAL_COUNT,
-                                     s));
+         
+       
+       
+        
+ 
+    
 
 /*        if(Delta_2Theta != null) if( index <Delta_2Theta.length)
             s = Delta_2Theta[ index ]; else s = 0.0f;
         if( Delta_2Theta != null)
            newData.setAttribute( new FloatAttribute(Attribute.DELTA_2THETA,
                                      s));
-*/
+
        
-        newData.setAttribute( new DetPosAttribute( 
-                           Attribute.DETECTOR_POS, 
-                        convertToIsaw( d ,p,t))); 
+        
         if( efficiency >= 0.0f)
               newData.setAttribute( new FloatAttribute( 
                                Attribute.EFFICIENCY_FACTOR,
 	                       efficiency));
+*/
  } 
 
  /** Fills out an existing DataSet with information from the NXdata
    * section of a Nexus datasource
   *@param node  the current node positioned to an NXdata part of a datasource
+  *@param instrNode  The corresponding NXinstrument node for the NXentry
+  *@param  axis1, axis2, axis3  names for the three axes
+  *@param  dataname  the name of the NxData's (signal=1) field.
   *@param  DS  the existing DataSet that is to be filled out
   *@return  error status: true if there is an error otherwise false
   */
   public boolean processDS(  NxNode node , NxNode instrNode,  String axis1 ,  
                        String axis2 ,  String dataname ,  DataSet DS )
     {errormessage = "";
-    if(debug) System.out.println("NXdata:Axes="+axis1+","+axis2+","+dataname);
+    if(debug) 
+          System.out.println("NXdata:Axes="+axis1+","+axis2+","+dataname);
      NxNode Ax1nd = ( NxNode )( node.getChildNode( axis1 ) );
      if( Ax1nd == null )
         {errormessage = node.getErrorMessage( ) + " for field " + axis1;
@@ -408,7 +526,7 @@ public static void setOtherAttributes( NxNode detNode ,Data newData, int index)
         {errormessage = node.getErrorMessage() + " for field " + axis1;
          return true;
         }
-     //System.out.println( "ProcessDSE" + errormessage );
+   
 
      if(debug)System.out.println( "After get data node values");
      if((fdata == null ) )
@@ -557,7 +675,7 @@ public static void setOtherAttributes( NxNode detNode ,Data newData, int index)
      
      if( ylength <= 0 )
        {errormessage = "Axis 2 has no length";
-        System.out.println(errormessage);
+        DataSetTools.util.SharedData.status_pane.add(errormessage);
         return true;
        }
      xlength =nx;// datalength/ylength;
@@ -569,156 +687,51 @@ public static void setOtherAttributes( NxNode detNode ,Data newData, int index)
      float yvals[]; 
   
       if( debug)System.out.println( "DIMENSIONS="+ new NxNodeUtils().Showw(ndims));
-    /* int nx,ny;
- 
-     if( ndims != null ) 
-       if( ndims.length <2)
-         {nx= ndims[0]; ny= 1;
-          }
-       else
-           {nx= ndims[0];
-            ny=ndims[1];
-           }
-     else
-         {nx = -1;ny=-1;}
-      if( ny!=ylength)
-        if( ny >=0 )
-          if( ylength-ny ==1)
-            {ylength = ny; xlength =datalength/ylength;} 
-          else
-             {errormessage= "incorrect dimension";
-              System.out.println(errormessage+" ylength,ny="+ylength+","+ny);
-              return true;
-              }
-      if( xlength != nx)
-        if( nx >=0)
-         if( java.lang.Math.abs( xlength-nx)>1)
-               {errormessage="incorrect dimensions";
-                System.out.println(errormessage+" nx,xlength,ylength="+nx+","+xlength+","+nx);
-                return true;
-               }
-         else xlength =  nx;
-     */
+   
      yvals = new float[ xlength];
      
      //if( errormessage!= "" ) return false;
      int group_id = 0;
    
      String ax1Link = Ax1nd.getLinkName();
-   
+    
      String ax2Link;
      if( Ax2nd !=null) ax2Link = Ax2nd.getLinkName();
      else ax2Link= null;
    
-         
+    
 
 
      NxNode detNode = getCorrespNxDetector( node, instrNode, DS,ax1Link, ax2Link);  
                        //new NxInstrument().matchNode(instrNode,ax1Link, ax2Link);
   
-     
-    /* float solidAngle[], distance[], theta[],Raw_Angle[],efficiency,
-            Delta_2Theta[], Total_Count[];
-     int Time_Field[],Group_ID[];
-     solidAngle = distance = theta = Raw_Angle= Delta_2Theta =
-         Total_Count = null;
-     Time_Field = Group_ID=  null;
-     efficiency = -1;
-     NxNode nx,ndis;
-     //System.out.println("Detector Node="+ax1Link+","+ax2Link+","+
-     //              detNode.getNodeName() +","+node.getNodeName() );
-     if( detNode != null)
-	 { ndis = detNode.getChildNode( "distance");
-	 if( ndis != null)
-	     distance = Arrayfloatconvert(ndis.getNodeValue());
-         nx = detNode.getChildNode( "theta");
-	 if( nx != null)
-	     theta = Arrayfloatconvert(nx.getNodeValue());
-         
-	 if( ndis != null)
-	 { X=(ndis.getAttrValue("solid_angle"));
-           if( X != null)if( X instanceof float[])
-	     solidAngle =(float[])X;
-
-	   X=(ndis.getAttrValue("total_count"));
-           if( X != null)if( X instanceof float[])
-	     Total_Count =(float[])X;
-
-	   X=(ndis.getAttrValue("delta_2theta"));
-           if( X != null)if( X instanceof float[])
-	     Delta_2Theta =(float[])X;
-
-            X = ndis.getAttrValue("time_field_type");
-            if( X!= null)if( X instanceof int[])
-               Time_Field =(int[])X;
-
-            X = ndis.getAttrValue("group_id");
-            if( X!= null)if( X instanceof int[])
-               Group_ID =(int[])X;
-         
-            nx = detNode.getChildNode( "efficiency");
-            if( nx != null)
-             {X = nx.getNodeValue();
-              Float ff = DD.cnvertoFloat( X );
-              if( ff != null)
-               if( ff.floatValue() != Float.NaN)
-                 efficiency = ff.floatValue();
-             }
-             X = ndis.getAttrValue("raw_angle");
-             if( X instanceof float[])
-               Raw_Angle =(float[])X;
-	 }//distance node != null
-	 }//detNode != null
-     */
-    // float d,t,p,s,ra;
-    // int T;
-     group_id = 0;
-     
-   // if( Group_ID != null)
-    //    if( Group_ID.length < phi.length)
-    //       Group_ID = null;
+   
     
     if(debug)System.out.println("NXdata:ere put into dataset"+xlength);
    
     errormessage="";
-    
+    int startIndex= DS.getNum_entries();
     for( group_id=0;group_id < ny;group_id++)
-       {boolean error=false;
-        /*for( i = 0 ;( i < xlength )&&( !error) && (i < phi.length) ; i++ )
-          {yvals[ i ] =  fdata[i + group_id*xlength );
-           if(new Float(yvals[i]).isNaN()) error=true;
-           }
-        //if(debug)System.out.print(";DB "+group_id+","+error);
-        //if(debug) if( 20*(int)(group_id/20.0)==group_id)System.out.println("");
-        if( !error )
-	    {int xx=-1;
-           //if( Group_ID != null)
-           //    xx = Group_ID[ group_id ];
-          // else
-               xx = DS.getNum_entries();
-           newData = new Data( new VariableXScale( xvals ) , 
-                   yvals , xx );
-           
-            }
-        else 
-	    { done = true;
-	      
-              return false;
-             
-          
-             };
-        */
+       {
+        
         System.arraycopy(fdata,group_id*xlength,yvals,0,xlength);
         int xx = DS.getNum_entries();
+        
         newData = Data.getInstance( new VariableXScale( xvals ), yvals , xx );
-        setOtherAttributes(detNode ,newData, group_id);
+       
         if(timeFieldType >=0)
            newData.setAttribute( new IntAttribute(Attribute.TIME_FIELD_TYPE,timeFieldType));
+        
         DS.addData_entry( newData );
        }
-   if(debug)System.out.println("After Save 1 NXdata, errormessage="+errormessage);
+    int endIndex=DS.getNum_entries();
+    if( detNode != null)
+           setOtherAttributes(detNode ,DS, startIndex,endIndex);
+   if(debug)System.out.println("After Save 1 NXdata, errormessage="+errormessage+",ngroups="+ny);
    return false;
    }
+
+
 public static DetectorPosition convertToIsaw( float distance, float phi, float theta)
   {Position3D p3 = new Position3D();
   float coords[];
