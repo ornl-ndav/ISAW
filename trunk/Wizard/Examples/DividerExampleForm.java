@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/03/12 16:10:32  pfpeterson
+ * Updated to work better with disabling wizard feature.
+ *
  * Revision 1.1  2002/02/27 17:31:39  dennis
  * Example Form to allow dividing some parameters.
  * (Used by MathWizard.java)
@@ -62,11 +65,13 @@ public class DividerExampleForm extends    Form
    *                    in this case only result[0] is used.
    *  @param  w         The wizard controlling this form.
    */
-  public DividerExampleForm( String operands[], String result[], Wizard w )
+  public DividerExampleForm( String constants[], String operands[], String result[], Wizard w )
   {
-    super("Divide two Numbers", null, operands, result, w );
+    super("Divide two Numbers", constants, operands, result, w );
 
     String help = "This form let's you divide the numbers \n";
+    for ( int i = 0; i < constants.length && i < 2; i++ )
+      help = help + "  " + constants[i] + "\n";
     for ( int i = 0; i < operands.length && i < 2; i++ )
       help = help + "  " + operands[i] + "\n";
     setHelpMessage( help );
@@ -85,13 +90,13 @@ public class DividerExampleForm extends    Form
     float quotient = Float.NaN;
     WizardParameter param;
 
-    param = wizard.getParameter( editable_params[1] );
+    param = wizard.getParameter( editable_params[0] );
     Float denom = (Float)param.getNewValue();
     if ( denom.floatValue() == 0 )
       quotient = Float.NaN;
     else
     { 
-      param = wizard.getParameter( editable_params[0] );
+      param = wizard.getParameter( const_params[0] );
       Float num = (Float)param.getNewValue();
       quotient = num.floatValue() / denom.floatValue();
     }
