@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.15  2003/06/13 22:59:28  bouzekc
+ * Added processing of date information for scripts.  Removed
+ * yet more embedded tabs.
+ *
  * Revision 1.14  2003/06/10 20:57:51  bouzekc
  * Fixed ArrayIndexOutOfBoundsException which occurred if the
  * number of @param's did not match the number or actual
@@ -621,11 +625,18 @@ public class HTMLizer{
     m = m.substring(m.indexOf('@'));
 
     StringBuffer s = new StringBuffer();
+    //Date info for the scripts - has format "$ Date ... $"
+    int firstDateIndex = m.indexOf('$'), secondDateIndex;
+
     int header = m.indexOf('@');
     int space = m.indexOf(' ');
     int newline = m.indexOf("\n");
-    String header_name, table_title = "";
+    String header_name, date = null, table_title = "";
     int param_count = 0, error_count = 0;
+
+    //don't do a .equals() twice.  This is supposed to be fast, but we need to
+    //check if it is the overview tag for the "$ Date $" stuff
+    boolean isOverview = false;
 
     // check for valid index information
     if( space < 0 )
@@ -633,6 +644,17 @@ public class HTMLizer{
 
     if( newline < 0 )
       newline = m.length();
+
+    //found the "$ Date $" information so process it
+    if(firstDateIndex >= 0)
+    {
+      secondDateIndex = m.indexOf('$', firstDateIndex + 1);
+      //get all the date information from between the "$"'s
+      date = m.substring(firstDateIndex + 1, secondDateIndex );
+
+      //now toss that info - we don't want it in the String
+      m = m.substring(0, firstDateIndex) + m.substring(secondDateIndex + 1);
+    }
 
     // while we have information and the '@' exists
     while( header < m.length() && header >= 0 )
@@ -644,40 +666,46 @@ public class HTMLizer{
         table_title = "Overview";
         param_count = 0;
         error_count = 0;
+        isOverview = true;
       }
       else if( header_name.equals("@assumptions") )
       {
         table_title = "Assumptions";
         param_count = 0;
         error_count = 0;
+        isOverview = false;
       }
       else if( header_name.equals("@param") )
       {
         param_count += 1;
         table_title = "Parameters";
         error_count = 0;
+        isOverview = false;
       }
       else if( header_name.equals("@algorithm") )
       {
         table_title = "Algorithm";
         param_count = 0;
         error_count = 0;
+        isOverview = false;
       }
       else if( header_name.equals("@return") )
       {
         table_title = "Returns";
         param_count = 0;
         error_count = 0;
+        isOverview = false;
       }
       else if( header_name.equals("@error") )
       {
         error_count += 1;
         table_title = "Errors";
         param_count = 0;
+        isOverview = false;
       }
 
-	  //determine whether the table has been created already for parameter
-	  //and error lists
+      //determine whether the table has been created already for parameter
+      //and error lists
       if ( (param_count <= 1) && (error_count <= 1) )
       {
         s.append("<table BORDER=\"1\" CELLPADDING=\"3\" CELLSPACING=\"0\" ");
@@ -703,21 +731,21 @@ public class HTMLizer{
 
       //put in list items
       if( (param_count >= 1) || (error_count >= 1) )
-	  {
-	    s.append("<li>");
+      {
+        s.append("<li>");
 
-		if( param_count >= 1 )
-		{
-		  s.append("<b>");
-                  //this traps errors where the number of @param's
-                  //is greater than the actual number of parameters.
-                  if( (param_count ) <= paramsVec[0].size() ) 
-		    s.append(paramsVec[0].elementAt(param_count - 1).toString());
-		  s.append("</b> ");
-		}
+	if( param_count >= 1 )
+	{
+	  s.append("<b>");
+          //this traps errors where the number of @param's
+          //is greater than the actual number of parameters.
+          if( (param_count ) <= paramsVec[0].size() ) 
+          s.append(paramsVec[0].elementAt(param_count - 1).toString());
+          s.append("</b> ");
+        }
       }
 
-	  // put in line breaks
+      // put in line breaks
       // check to see if @ or newline comes first
       while( header > newline && newline > 0)
       {
@@ -761,6 +789,16 @@ public class HTMLizer{
         s.append("</ul>\n");
       //aesthetic spacing
       s.append("\n<br>\n");
+
+      //if we have date info, we need to put in a last modified table
+      if(isOverview && (date != null))
+      {
+        s.append("<br><b><font color=#FF0000>");
+        s.append("Last Modified: ");
+        s.append(date);
+        s.append("</b><br>");
+      }
+
     }	//note: this is not a perfect fix.  If any tags come after the
         //@error tag, this will not work as intended, since it relies on the
 	//@error tag being the last one.  Repeat: this is a temporary fix.
