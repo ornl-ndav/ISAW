@@ -3,6 +3,10 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/08/01 01:31:17  dennis
+ *  Changed so that if an attribute is present in the first list, but not the
+ *  second, the attribute from the first list used.
+ *
  *  Revision 1.3  2000/07/26 19:15:41  dennis
  *  Now has method add() that will allow adding the values of a specified
  *  attribute from two lists and setting the summed attribute into the
@@ -311,8 +315,12 @@ public class AttributeList implements Serializable
         this_attr  = getAttribute( i );
         attr_name  = this_attr.getName();
         other_attr = attr_list.getAttribute( attr_name );
-        if ( other_attr != null )     // there is a matching attribute, so
-        {                             // combine them and append the result 
+
+        if ( other_attr == null )             // there is no matching attribute
+          new_list.addAttribute( this_attr ); // just use the current attribute
+
+        else                              // combine them and append the result 
+        {  
           if ( attr_name == Attribute.DS_TAG )
             new_list.addAttribute( this_attr ); 
               // keep the DataSet tag from the first attribute list
