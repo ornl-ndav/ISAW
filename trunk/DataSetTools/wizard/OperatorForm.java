@@ -29,6 +29,10 @@
  *
  *
  * $Log$
+ * Revision 1.34  2003/11/13 17:46:16  bouzekc
+ * Overrides getTitle() so that its children have their titles displayed
+ * correctly.
+ *
  * Revision 1.33  2003/11/11 21:11:05  bouzekc
  * Replaced calls to result_param with getResultParam() and setResultParam().
  *
@@ -418,5 +422,19 @@ public class OperatorForm extends Form implements HiddenOperator {
     }
 
     return result;
+  }
+
+  /**
+   * Overrides getTitle() for the ScriptForm and JyScriptForm.  It is not
+   * really needed for actual OperatorForms.
+   *
+   * @return The title of the inner form_op.
+   */
+  public String getTitle(  ) {
+    if( form_op != null ) {
+      return form_op.getTitle(  );
+    }
+
+    return "UNKNOWN";
   }
 }
