@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.39  2003/09/11 20:09:58  bouzekc
+ * Removed dead code from validateParameterGUIs.
+ *
  * Revision 1.38  2003/09/10 00:36:45  bouzekc
  * Refactored to move duplicate functionality outside of class.  Now relies
  * on the ParameterGUIs themselves for validation purposes.
@@ -764,88 +767,6 @@ public abstract class Form extends Operator implements PropertyChanger {
       return Boolean.TRUE;
     }
   }
-
-  /*
-     if( ipg instanceof DataSetPG ) {
-       obj = ipg.getValue(  );
-       if( ( obj != null ) && ( obj != DataSet.EMPTY_DATA_SET ) ) {
-         ipg.setValid( true );
-       } else {
-         return errorOut(
-           ipg, "Parameter " + ipg.getName(  ) + " is invalid." );
-       }
-     } else if( ipg instanceof BrowsePG && !( ipg instanceof SaveFilePG ) ) {
-       if( new File( ipg.getValue(  ).toString(  ) ).exists(  ) ) {
-         ipg.setValid( true );
-       } else {
-         return errorOut(
-           ipg, "Parameter " + ipg.getName(  ) + " is invalid." );
-       }
-     } else if( ipg instanceof SaveFilePG ) {
-       String fileName = ipg.getValue(  )
-                            .toString(  );
-       File tempFile = new File( fileName );
-       if( ( fileName.indexOf( '.' ) > 0 ) && !( tempFile.isDirectory(  ) ) ) {
-         //not a directory and it has a '.' in its name, so we'll
-         //assume it is OK
-         ipg.setValid( true );
-       } else {
-         //don't have much choice-assume it is invalid
-         return errorOut(
-           ipg, "Parameter " + ipg.getName(  ) + " is invalid." );
-       }
-     } else if( ipg instanceof ArrayPG ) {
-       Vector v = ( Vector )( ipg.getValue(  ) );
-       if( ( v == null ) || v.isEmpty(  ) ) {
-         ipg.setValid( false );
-       } else {  //assume it is valid, then test that assumption
-         ipg.setValid( true );
-         for( int k = 0; k < v.size(  ); k++ ) {
-           if( !( new File( v.elementAt( k ).toString(  ) ).exists(  ) ) ) {
-             ipg.setValid( false );
-             break;
-           }
-         }
-       }
-     } else if( ipg instanceof BooleanPG ) {
-       ipg.setValid( true );
-     } else if( ipg instanceof RadioButtonPG ) {
-       if( ipg.getValue(  ) != null ) {
-         ipg.setValid( true );
-       } else {
-         return errorOut(
-           ipg,
-           "Parameter " + ipg.getName(  ) + " is invalid.  You " +
-           "must select a choice." );
-       }
-     } else if( ipg instanceof StringEntryPG ) {
-       //need to check input against the StringFilterer
-       StringFilterer sf = ( ( StringEntryPG )ipg ).getStringFilter(  );
-       if( sf == null ) {
-         //not every StringEntryPG will have a specific StringFilterer.  This
-         //assumes that either (a) there is a *.* filter on the parameter, or
-         //(b) someone has decided that it is OK to run the Form with an
-         //invalid parameter (mainly used in No GUI cases).
-         ipg.setValid( true );
-       } else if( sf.isOkay( 0, ipg.getValue(  ).toString(  ), "" ) ) {
-         ipg.setValid( true );
-       } else {
-         return errorOut(
-           ipg, "Parameter " + ipg.getName(  ) + " is invalid." );
-       }
-     }
-     //for the remainder of the parameters, we will set them true.
-     //HashPG can't really be checked - if the value is not found, the
-     //value is set to a blank.  This is the default behavior of the JComboBox
-     //that HashPG's HashEntry is built on.
-     //ChooserPG's really can't be checked - they have a built in
-     //mechanism to add non-existing values.
-     //VectorPG does not have a clean way to determine its validity.
-     //to help out OperatorForm, we will set them valid.
-     else {
-       ipg.setValid( true );
-     }
-     }*/
 
   /**
    * Utility method to add a property change listener to the parameters.
