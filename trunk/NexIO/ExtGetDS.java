@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2003/12/08 17:29:13  rmikk
+ * Added the DataSet operations to the data set
+ *
  * Revision 1.15  2003/11/23 23:53:19  rmikk
  * If a NxData does not have a link attribute one one of its fields
  *   the old system is used
@@ -193,14 +196,17 @@ public class ExtGetDS{
    NxfileStateInfo FileState = new NxfileStateInfo( node);
    NxEntryStateInfo EntryState = new NxEntryStateInfo( EntryNode,FileState);
    DataSet DS;
+   int instrType = -1;
    if( dsInf.NxdataNode != null){
       Inst_Type it = new Inst_Type();
-      int instrType = (new Inst_Type()).getIsawInstrNum( EntryState.description );
+    
+      instrType = (new Inst_Type()).getIsawInstrNum( EntryState.description );
  
   
       DataSetFactory DSF = new DataSetFactory( "" ) ;
       DS = DSF.getTofDataSet(instrType) ; 
-      DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType));  
+      DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType)); 
+       
    }else
       DS = new MonitorDataSet();
    DS.setAttributeList( AL ) ;
@@ -216,6 +222,8 @@ public class ExtGetDS{
       System.out.println("In ExtGetDS, errormessga="+errormessage);
       return null;
    }
+   DataSetFactory.addOperators( DS);
+   if( instrType >=0) DataSetFactory.addOperators( DS,instrType );
    return DS;
 
   }
