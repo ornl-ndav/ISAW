@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/07/19 22:16:45  rmikk
+ *  Fixed a minor error.  The last row and column now
+ *     reports conversion and info information
+ *
  *  Revision 1.2  2002/07/12 21:12:54  rmikk
  *  Included documentation to automatically record log messages
  *
@@ -186,6 +190,8 @@ public class ContourData{
 
    public int getGroupIndex( double row, double col)
     {int r,c;
+     
+    
      r = (int)(row);
      c = (int)(col);
      if( row - r > .5)
@@ -200,9 +206,9 @@ public class ContourData{
         return -1;
      if( c <=0)
         return -1;
-     if( r >= maxrows)
+     if( r > maxrows)
         return -1;
-     if( c >= maxcols)
+     if( c > maxcols)
         return -1;
      return groups[r][c];
      
