@@ -30,6 +30,10 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.34  2004/05/09 18:33:47  bouzekc
+ *  Now checks to be sure that if the GUI has been initialized, the values
+ *  in it are removed when clear() is called.
+ *
  *  Revision 1.33  2004/05/09 18:11:29  bouzekc
  *  Changed addItem(init_vals) to addItems(init_vals) in initGUI().
  *
@@ -317,7 +321,12 @@ public abstract class ChooserPG extends ParameterGUI {
   public void clear(  ) {
     if( vals != null ) {
       vals.clear(  );
-      super.setValue( null );
+      
+      if( getInitialized(  ) ) {
+        ( ( HashEntry )( getEntryWidget(  ).getComponent( 0 ) ) ).removeAllItems(  );
+      }
+      
+      setValue( null );
     }
   }
 
