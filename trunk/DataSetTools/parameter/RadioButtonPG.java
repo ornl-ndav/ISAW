@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2003/08/25 19:39:43  bouzekc
+ *  Fixed bug where getValue() did not return the value.
+ *
  *  Revision 1.13  2003/08/22 20:31:39  bouzekc
  *  Modified to work with EntryWidget.
  *
@@ -264,7 +267,25 @@ public class RadioButtonPG extends ParameterGUI implements ParamUsesString {
    * @return String label of the selected radio button.
    */
   public Object getValue(  ) {
-    return value;
+    if( !initialized ) {
+      return value;
+    } else if( radioButtons != null ) {
+      JRadioButton button;
+
+      for( int i = 0; i < radioButtons.size(  ); i++ ) {
+        button = ( JRadioButton )radioButtons.elementAt( i );
+
+        if( button.isSelected(  ) ) {
+          return button.getActionCommand(  );
+        }
+      }
+
+      //couldn't find anything
+      return null;
+    } else {
+      //couldn't get anything
+      return null;
+    }
   }
 
   /*
