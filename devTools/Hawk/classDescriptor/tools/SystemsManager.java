@@ -32,6 +32,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/03/11 19:05:01  bouzekc
+ * Documented file using javadoc statements.
+ * Added getAuthorsEmailAddress() method.
+ * Modified the printStackTrace() method to show a window informing the user that
+ * an error has occured.  It also prints an error log for the user.
+ * Added methods to obtain the file extension used by Hawk.
+ *
  * Revision 1.1  2004/02/07 05:10:48  bouzekc
  * Added to CVS.  Changed package name.  Uses RobustFileFilter
  * rather than ExampleFileFilter.  Added copyright header for
@@ -41,18 +48,24 @@
 package devTools.Hawk.classDescriptor.tools;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.swing.JOptionPane;
 
 /**
+ * This class contains static methods to get general information about Hawk such as 
+ * the location of needed files.  It also contains methods that may be used by any class, 
+ * such as the printStackTrace(Throwable e) that handles printing error messages to the 
+ * screen.  This allows no need for common code to be repeated multiple times in the code.
  * @author kramer
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class SystemsManager
 {
+	private SystemsManager()
+	{}
+	
 	/**
 	 *  This returns the class descriptor's home directory.  This will return on UNIX for example
 	 *  /home/bob/.hawk
@@ -63,38 +76,147 @@ public class SystemsManager
 		return (System.getProperty("user.home")+System.getProperty("file.separator")+".hawk");
 	}
 	
+	/**
+	 * Get Hawk's directory for storing temporary files.
+	 * @return Hawk's directory for temporary files.
+	 */
 	public static String getClassDescriptorTemporaryDirectory()
 	{
 		return (getClassDescriptorHomeDirectory()+System.getProperty("file.separator")+"temporary");
 	}
-		
+	
+	/**
+	 * This gets the file extension for native Hawk files with a period in from of it.
+	 * @return .hjp
+	 */
+	public static String getHawkFileExtension()
+	{
+		return "."+getHawkFileExtensionWithoutPeriod();
+	}
+	
+	/**
+	 * This gets the file extension for native Hawk files.
+	 * @return hjp
+	 */
+	public static String getHawkFileExtensionWithoutPeriod()
+	{
+		return "hjp";
+	}
+	
 		/**
-		 * 
+		 * Get the current version.
+		 * @return The version number.
 		 */
 		public static String getVersion()
 		{
-			return "0.8.02.2_1";
+			return "0.8.02.3-2";
 		}
 		
+		/**
+		 * Get the time that the release you are running was built.
+		 * @return The build date.
+		 */
 		public static String getBuildDate()
 		{
-			return "Friday February 6, 2004 at 03:22 PM CST";
+			return "Tuesday March 2, 2004 at 12:23 AM CST";
 		}
 		
+		/**
+		 * Get the author.
+		 * @return The author's name.
+		 */
 		public static String getAuthor()
 		{
 			return "Dominic Kramer";
 		}
 		
-		public static void printStackTrace(Throwable e)
+		/**
+		 * Get the author's email address.
+		 * @return The author's email address.
+		 */
+		public static String getAuthorsEmailAddress()
 		{
-			System.out.println("Exception Caught");
-			System.err.println(e);
-			StackTraceElement[] traceArray = e.getStackTrace();
-			for (int i = 0; i < traceArray.length; i++)
-				System.out.println("  "+traceArray[i]);
+			return "kramerd@uwstout.edu";
 		}
 		
+		/**
+		 * Displays a window telling the user that an error has occured, who to contact about the error, and 
+		 * describes that an error log was written to a file (whose name is given).  This method also prints a 
+		 * stack trace for the Throwable e to the file.  If there is an error displaying the window or printing the 
+		 * error log to the file an error message along with the error log is printed to the standard output.
+		 * @param e The exception or error to use.
+		 */
+		public static void printStackTrace(Throwable e)
+		{
+			String filename = System.getProperty("user.home")+System.getProperty("file.separator")+System.currentTimeMillis()+"HawkErrorLog.txt";
+			while ((new File(filename)).exists())
+				filename = System.getProperty("user.home")+System.getProperty("file.separator")+System.currentTimeMillis()+"HawkErrorLog.txt";
+			
+			try
+			{
+				PrintWriter writer = new PrintWriter(new FileOutputStream(filename));
+				writer.println("A "+e.getClass().getName()+" Exception Caught");
+				writer.println("Operating System:  "+System.getProperty("os.name"));
+				writer.println("Operating System Architecture:  "+System.getProperty("os.arch"));
+				writer.println("Operating System Version:  "+System.getProperty("os.version"));
+				writer.println("Classpath:  "+System.getProperty("java.class.path"));
+				writer.println("Java Version:  "+System.getProperty("java.version"));
+				writer.println("Java VM Specification Version:  "+System.getProperty("java.vm.specification.version"));
+				writer.println("Java VM Implementation Version:  "+System.getProperty("java.vm.version"));
+				System.err.println(e);
+				writer.println();
+				writer.println(e.getClass().getName());
+				StackTraceElement[] traceArray = e.getStackTrace();
+				for (int i = 0; i < traceArray.length; i++)
+					writer.println("  "+traceArray[i]);
+				
+				writer.close();
+				
+				JOptionPane opPane = new JOptionPane();
+				JOptionPane.showMessageDialog(opPane,
+					"An error has occured in Hawk possibly causing it to function incorrectly." +
+					"\nAn error report has been printed to the file "+filename+
+					"\nPlease send the error report along with the actual results, expected" +
+					"\nresults, and what you were doing when the error occured to "+
+					"\n"+getAuthorsEmailAddress()+" to have the error processed.  Your " +
+					"\nhelp in developing Hawk by sending error reports and comments is " +
+					"\ngreatly appreciated.",
+					"Error Caught",
+					JOptionPane.ERROR_MESSAGE);
+			}
+			catch (Exception error)
+			{
+				System.out.println("An error occured in Hawk possibly causing it to function incorrectly." +
+				"\nAn error log was being written to "+filename+" when an error occured." +
+				"\nThe error log is given below.");
+				System.out.println();
+				System.out.println("A "+e.getClass().getName()+" Exception Caught");
+				System.out.println("Operating System:  "+System.getProperty("os.name"));
+				System.out.println("Operating System Architecture:  "+System.getProperty("os.arch"));
+				System.out.println("Operating System Version:  "+System.getProperty("os.version"));
+				System.out.println("Classpath:  "+System.getProperty("java.class.path"));
+				System.out.println("Java Version:  "+System.getProperty("java.version"));
+				System.out.println("Java VM Specification Version:  "+System.getProperty("java.vm.specification.version"));
+				System.out.println("Java VM Implementation Version:  "+System.getProperty("java.vm.version"));
+				System.out.println();
+				System.err.println(e);
+				StackTraceElement[] traceArray = e.getStackTrace();
+				for (int i = 0; i < traceArray.length; i++)
+					System.out.println("  "+traceArray[i]);
+				System.out.println("\nPlease send the error report along with the actual results, expected" +
+				"\nresults, and what you were doing when the error occured to "+
+				"\n"+getAuthorsEmailAddress()+" to have the error processed.  Your " +
+				"\nhelp in developing Hawk by sending error reports and comments is " +
+				"\ngreatly appreciated.");
+			}
+		}
+		
+		/**
+		 * This method verifies that the Hawk home directory as well as Hawk's temporary 
+		 * directory exist.  If they do not, this method tries to make them.  If Hawk is safe to 
+		 * start (in other words the correct files and directories exist) this method returns true.
+		 * @return True if it is safe to start Hawk and false otherwise.
+		 */
 		public static boolean startClassDescriptor()
 		{
 			boolean answer = true;
@@ -172,7 +294,7 @@ public class SystemsManager
 				{
 					try
 					{
-						(new File(SystemsManager.getClassDescriptorHomeDirectory()+System.getProperty("file.separator")+"default.jdf")).createNewFile();
+						(new File(SystemsManager.getClassDescriptorHomeDirectory()+System.getProperty("file.separator")+"default"+getHawkFileExtension())).createNewFile();
 					}
 					catch(IOException e)
 					{
@@ -181,7 +303,7 @@ public class SystemsManager
 						answer = false;
 						JOptionPane oPane = new JOptionPane();
 						JOptionPane.showMessageDialog(oPane,
-							"Hawk could not start because the file "+getClassDescriptorHomeDirectory()+System.getProperty("file.separator")+"default.jdf\n" +
+							"Hawk could not start because the file "+getClassDescriptorHomeDirectory()+System.getProperty("file.separator")+"default"+getHawkFileExtension()+"\n" +
 									"could not be created.",
 							"Error",
 							JOptionPane.ERROR_MESSAGE);
@@ -205,6 +327,9 @@ public class SystemsManager
 			return answer;
 		}
 		
+		/**
+		 * Clears Hawk's directory which holds temporary files.
+		 */
 		public static void clearClassDescriptorTemporaryDirectory()
 		{
 			File tempDir = new File(getClassDescriptorTemporaryDirectory());
