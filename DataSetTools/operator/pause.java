@@ -1,34 +1,27 @@
 /*
- * @(#)print.java   0.1  00/08/02   Dongfeng Chen 
- *                                                    Dennis Mikkelson
+ * @(#)pause.java   1.0  2000/10/19   Dongfeng Chen 
+ *                                    Dennis Mikkelson
  *
- * 
+ * $LOG$ 
  *   
  */
 
 package DataSetTools.operator;
 
 import  java.io.*;
-import  java.util.Vector;
-import  DataSetTools.dataset.*;
-import  DataSetTools.math.*;
-import  DataSetTools.util.*;
+import  java.util.*;
 
 /**
- * This operator converts Print data information.
+ * This operator pauses the program.
  * 
  */
 
 public class pause extends  Operator 
-                                     implements Serializable
+                            implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
   /**
-   * Construct an operator with a default parameter list.  If this
-   * constructor is used, the operator must be subsequently added to the
-   * list of operators of a particular DataSet.  Also, meaningful values for
-   * the parameters should be set ( using a GUI ) before calling getResult()
-   * to apply the operator to the DataSet this operator was added to.
+   * Construct a default pause operator to pause one second.
    */
 
   public pause( )
@@ -38,20 +31,17 @@ public class pause extends  Operator
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
-   *  Construct an operator for a specified DataSet and with the specified
-   *  parameter values so that the operation can be invoked immediately
-   *  by calling getResult().
+   *  Construct a pause operator to pause for a specified number of 
+   *  milliseconds.
    *
-   *  @param  ds          The DataSet to which the operation is applied
+   *  @param  ms   The number of milliseconds to pause. 
    */
 
   public pause(   int      ms        )
   {
     this();
-
     Parameter parameter = getParameter(0);
     parameter.setValue( new Integer( ms ) );
-    
   }
 
 
@@ -67,16 +57,16 @@ public class pause extends  Operator
 
  /* -------------------------- setDefaultParmeters ------------------------- */
  /**
-  *  Set the parameters to default values.
+  *  Set the pause to a default value of one second.
   */
   public void setDefaultParameters()
   {
      parameters = new Vector();  // must do this to create empty list of 
                                  // parameters
 
-     Parameter parameter= new Parameter( " Pause for second: ", new Integer( 1 ) );
+     Parameter parameter= new Parameter("milliseconds to pause ", 
+                                         new Integer(1000) );
      addParameter( parameter );
-     
   }
 
 
@@ -85,7 +75,7 @@ public class pause extends  Operator
   public Object getResult()
   {
     int   ms  =( (Integer)(getParameter(0).getValue()) ).intValue() ;
-     System.out.print("Pause for "+(ms) +" milli-second! Please wait...\n ");
+    System.out.print("Pause for "+(ms) +" milli-second! Please wait...\n ");
 
     do_pause(ms);
 
@@ -95,13 +85,24 @@ public class pause extends  Operator
 
 public static void do_pause(int time)
 { 
- // System.out.print("Pause for "+time +" second! ");
-  try{Thread.sleep(time);}catch(Exception e){}
+//  System.out.print("Pause for "+time +" millisecond! ");
+  try
+  { 
+    Thread.sleep(time); 
+  }
+  catch(Exception e)
+  { 
+    System.out.println("Exception in do_pause from pause operator"); 
+  }
 }
+
 public static void main(String[] arg)
 {
-	Operator ps = new pause(3);
-      ps.getResult();
+  Operator ps = new pause();
+  ps.getResult();
+
+  ps = new pause(3000);
+  ps.getResult();
 }
 
 }
