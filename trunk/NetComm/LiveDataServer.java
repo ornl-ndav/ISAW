@@ -33,6 +33,13 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2002/11/30 22:18:52  dennis
+ *  Now keeps a list of references to all Data blocks indexed by the
+ *  segment id.  This allows immediately updating the correct Data block
+ *  when a new UDP packet is received, without having to search through
+ *  all DataSets to find the correct Data block.  This reduces the
+ *  computational load on the server.
+ *
  *  Revision 1.27  2002/11/29 22:50:36  dennis
  *  Now uses InstrumentType.formIPNSFileName() to form proper file name
  *  based on instrument name and run number from UDP packet.
@@ -82,7 +89,7 @@ public class LiveDataServer extends    DataSetServer
   public  static final int MAGIC_NUMBER         = 483719513;
   public  static final int DEFAULT_DAS_UDP_PORT = 6080;
 
-  private static final int DELAY_COUNT        = 300;
+  private static final int DELAY_COUNT        = 3000;
   private static final int OLD_THRESHOLD      = 10000;  // ms until we call the
                                                         // data old;
   private static final int START_READ_ACCESS  = 0;
@@ -106,6 +113,10 @@ public class LiveDataServer extends    DataSetServer
   int     ds_type[]     = new int[0];               // current DataSet types
   int     spec_buffer[] = new int[ 16384 ];         // buffer for one part of
                                                     // on spectrum
+
+  int     max_seg_id  = 0;                  // size of table of all Data blocks
+  Data    data_list[] = null;               // table of references to all Data
+                                            // blocks.
 
   /* ---------------------------- Constructor -------------------------- */
   /**
@@ -229,6 +240,7 @@ public class LiveDataServer extends    DataSetServer
 
     if ( rr != null )
     {
+      max_seg_id = 0;
       int num_data_sets = rr.numDataSets();
       if ( num_data_sets > 0 )
       {
@@ -241,6 +253,26 @@ public class LiveDataServer extends    DataSetServer
           SetToZero( data_set[i] );
         }
         data_name = data_set[0].getTitle();
+
+        if ( max_seg_id <= 0 )
+        {
+          data_list = null;
+          return;
+        }                                 // now build list of references to 
+                                          // the Data blocks, based on seg id
+                                          // NOTE: seg_id's start at 1
+        data_list = new Data[max_seg_id + 1]; 
+        Data d;
+        int  id;
+        for ( int i = 0; i < num_data_sets; i++ )
+        { 
+          for ( int k = 0; k < data_set[i].getNum_entries(); k++ )
+          {
+            d = data_set[i].getData_entry(k);
+            id = d.getGroup_ID(); 
+            data_list[id] = d;
+          }
+        }
         return;
       }
     }
@@ -340,16 +372,11 @@ public class LiveDataServer extends    DataSetServer
       start += 4;
     }
 
-                                              // record the spectrum values in
-                                              // the first DataSet possible
-    int ds_num = 0;
-    while ( (ds_num < data_set.length) &&
-            !RecordData( data_set[ds_num], id, 
-                         first_channel, num_channels, spec_buffer) )
-      ds_num++;
+    if ( !RecordData( id, first_channel, num_channels, spec_buffer ) )
+      System.out.println("Error: couldn't record id " + id ); 
 
     delay_counter++;                         // only notify observers after
-    if ( delay_counter >= DELAY_COUNT )      // DELAY_COUNT pulses have been
+    if ( delay_counter >= DELAY_COUNT )      // DELAY_COUNT spectra have been
     {                                        // processed.
       for ( int i = 0; i < data_set.length; i++ )
         data_set[i].notifyIObservers( IObserver.DATA_CHANGED );
@@ -460,13 +487,15 @@ public class LiveDataServer extends    DataSetServer
   /* ----------------------------- SetToZero ---------------------------- */
   /**
    *  Zero out all of the spectra in the specified DataSet.  Also, set the
-   *  errors to null, to save communication time.
+   *  errors to null, to save communication time and find the largest segment
+   *  id in this DataSet, so that a table of Data blocks can be built.
    *
    *  @param  ds   The DataSet whose entries are to be zeroed out.
    */
   private void SetToZero( DataSet ds )
   {
     float         y[];
+    int           seg_id;
     TabulatedData d;
 
     for ( int i = 0; i < ds.getNum_entries(); i++ )
@@ -476,27 +505,32 @@ public class LiveDataServer extends    DataSetServer
       y = d.getY_values();
       for ( int j = 0; j < y.length; j++ )
         y[j] = 0;
+
+      seg_id = d.getGroup_ID();
+      if ( seg_id > max_seg_id )
+        max_seg_id = seg_id; 
     }
   }
 
   /* --------------------------- RecordData ------------------------------ */
   /**
-   *  Record part of a spectrum in the specified DataSet.
+   *  Record the new part of a spectrum in the appropriate Data block.
    *
-   *  @param  ds            The DataSet in which to record the partial spectrum
    *  @param  id            The group ID of the spectrum to record
    *  @param  first_channel The first channel index in the partial spectrum
    *  @param  num_channels  The number of channels in the partial spectrum
    *  @param  spec_buffer   Buffer containing the partial spectrum data
    */
-  private boolean RecordData( DataSet ds,
-                              int     id,
+  private boolean RecordData( int     id,
                               int     first_channel,
                               int     num_channels,
                               int     spec_buffer[]  )
   {
-    Data d = ds.getData_entry_with_id( id );           // get the Data block
-    if ( d == null )
+    if ( data_list == null )                           // no list of Data blocks
+      return false;
+
+    Data d = data_list[id];
+    if ( d == null )                                   // no such spectrum
       return false;
 
     if ( first_channel < 0 || num_channels < 0 )       // nonsense, so bail out
