@@ -38,6 +38,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.28  2003/05/19 15:18:55  rmikk
+ *  -Added an addControl method for subclasses to add
+ *      their own specialized controls to the control panel
+ *  -Updated code to work for cases where axes are linear
+ *    combinations of other base axes.
+ *
  *  Revision 1.27  2003/05/12 16:01:41  rmikk
  *  Removed some commented out code.
  *  Eliminated a redraw when a mouse is clicked on the
@@ -428,12 +434,17 @@ public class ContourView extends DataSetViewer
     {jpEast.add( ac );
      jpEast.add(XsclHolder);
      jpEast.add(intensityHolder);  
+     addControl( jpEast);
      jpEast.add( ConvTableHolder );
      jpEast.add( Box.createHorizontalGlue() );
      main = new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,  rpl_Holder,  jpEast, .70f);
     }
 
+   public  void addControl( JPanel jpanel)
+    {
 
+     
+     }
    //Change the name of doLayou when changing this
    //Cannot get the column 2 items to draw correctly.
   JPanel acHolder, intensityHolder;
@@ -569,8 +580,15 @@ public class ContourView extends DataSetViewer
     {  
      if( axis1 == null)
         cd = new ContourData( ds );
-     else
+     else if( Transf == null)
         cd = new ContourData( ds, axis1, axis2, axis3);
+     else
+       { 
+         axis1 = Transf.getAxis( 0 );
+         axis2 = Transf.getAxis( 1 );
+         axis3 = Transf.getAxis( 2);
+         cd = new ContourData( ds, axis1, axis2, axis3);
+        }
      cd.setXScale( Xscl.getXScale() );
      times = cd.getTimeRange();
      
@@ -583,7 +601,8 @@ public class ContourView extends DataSetViewer
         else
            ac.setFrameValue( ds.getPointedAtX());
         sliderTime_index = ac.getFrameNumber();
-          
+        if( axis3 != null)
+           ac.setBorderTitle( axis3.getAxisName());  
           
        }
      if( ConvTableHolder == null )
