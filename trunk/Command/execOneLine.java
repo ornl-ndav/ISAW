@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.69  2004/01/29 18:17:29  dennis
+ * Fixed javadoc error.
+ *
  * Revision 1.68  2004/01/08 20:07:06  bouzekc
  * In co-operation with Ruth, removed unused variables and made two
  * unused private utility methods public static methods.
@@ -3617,17 +3620,19 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
      * The search will not search items between two parentheses or
      * BraceChars if the
      * search started outside the parenthsesis.
-     * @param  S  the string to search in
-     * @param start  the position in String S to start searching.
-     * @param SearchChars The "set" of characters to be found
-     * @param BraceChars  Pairs of characters represent start and end of
-     *                  "braces". The SearchChars between braces will not
-     *                   be found. 
+     * @param  S           the string to search in
+     * @param  start       the position in String S to start searching.
+     * @param  SrchChars   The "set" of characters to be found
+     * @param  brcpairs    Pairs of characters represent start and end of
+     *                     "braces". The SearchChars between braces will not
+     *                     be found. 
      *  @return the position of the found character or the end of the string
      */
 
-    public static int finddQuote( String S, int start, String SrchChars,
-                            String brcpairs ){
+    public static int finddQuote( String S, 
+                                  int    start, 
+                                  String SrchChars,
+                                  String brcpairs ){
         int i, j;
         int brclevel;
         boolean quote;

@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/01/29 18:16:53  dennis
+ *  Fixed javadoc error.
+ *
  *  Revision 1.7  2004/01/24 21:59:44  bouzekc
  *  Made inner class final.
  *
@@ -192,11 +195,13 @@ public abstract class StringField extends JTextField {
     /**
      * Overrides the default insertString method. Insert if okay, beep if not.
      * 
-     * @param offset The starting offset >= 0.
-     * @param insertString The String to insert.
-     * @param attributeSet The attributes for the inserted content.
+     * @param offset             The starting offset >= 0.
+     * @param insertString       The String to insert.
+     * @param contentsAttributes The attributes for the inserted content.
      */
-    public void insertString( int offset, String insertString, AttributeSet contentsAttributes )
+    public void insertString( int          offset, 
+                              String       insertString, 
+                              AttributeSet contentsAttributes )
       throws BadLocationException {
       String oldText = textBox.getText(  );
 
