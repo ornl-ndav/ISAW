@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.42  2003/06/18 20:35:08  pfpeterson
+ *  Changed calls for NxNodeUtils.Showw(Object) to
+ *  DataSetTools.util.StringUtil.toString(Object)
+ *
  *  Revision 1.41  2003/06/10 14:39:04  rmikk
  *  Initialized the ParameterGUI with init() instead of init(null)
  *
@@ -771,8 +775,7 @@ public class JParametersDialog implements Serializable,
 
      else
      {
-        resultsLabel.setText("Result ="+ 
-             (new NexIO.NxNodeUtils()).Showw( result));
+        resultsLabel.setText("Result ="+ StringUtil.toString( result));
         util.appendDoc(sessionLog, op.getCommand()+"(" +s +")");
      }
    }

@@ -1,5 +1,6 @@
 package DataSetTools.parameter;
 
+import DataSetTools.util.StringUtil;
 import java.awt.event.*;
 import javax.swing.*;
 import java.awt.*;
@@ -50,7 +51,7 @@ class MyActionList implements ActionListener
     public void actionPerformed( ActionEvent evt )
       { 
         (new JOptionPane()).showMessageDialog(null,"Result="+
-       (new NexIO.NxNodeUtils()).Showw(vpf.getValue()));
+                                          StringUtil.toString(vpf.getValue()));
 
       }
 

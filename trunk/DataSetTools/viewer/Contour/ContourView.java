@@ -38,6 +38,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2003/06/18 20:37:10  pfpeterson
+ *  Changed calls for NxNodeUtils.Showw(Object) to
+ *  DataSetTools.util.StringUtil.toString(Object)
+ *
  *  Revision 1.29  2003/05/28 20:55:44  pfpeterson
  *  Changed System.getProperty to SharedData.getProperty
  *
@@ -1026,10 +1030,8 @@ public class ContourView extends DataSetViewer
          if( args.length > 1)
           max = new Float( args[1]).floatValue();
         }
-      System.out.println(
-      (new NexIO.NxNodeUtils()).Showw(    
-      ContourView.clevelsFrom(new ClosedInterval( min, max)))
-                         );
+      System.out.println( StringUtil.toString( 
+                     ContourView.clevelsFrom(new ClosedInterval( min, max))) );
 
      }
    /** Standalone to get Contour views of Qx,Qy,Qz

@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2003/06/18 20:33:42  pfpeterson
+ * Changed calls for NxNodeUtils.Showw(Object) to
+ * DataSetTools.util.StringUtil.toString(Object)
+ *
  * Revision 1.15  2003/03/05 20:51:44  pfpeterson
  * Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -79,6 +83,7 @@ package NexIO;
 
 //import NexIO.NDS.*;
 import DataSetTools.dataset.*;
+import DataSetTools.util.StringUtil;
 import DataSetTools.viewer.*;
 import DataSetTools.math.*;
 //import NdsSvNode;
@@ -747,7 +752,7 @@ public class NXData_util{
      float yvals[];
 
      if( debug )
-       System.out.println( "DIMENSIONS=" + new NxNodeUtils().Showw( ndims ) );
+       System.out.println( "DIMENSIONS=" + StringUtil.toString( ndims ) );
 
      yvals = new float[ xlength];
      

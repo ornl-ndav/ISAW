@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/06/18 20:34:12  pfpeterson
+ * Changed calls for NxNodeUtils.Showw(Object) to
+ * DataSetTools.util.StringUtil.toString(Object)
+ *
  * Revision 1.5  2002/11/27 23:29:19  pfpeterson
  * standardized header
  *
@@ -51,6 +55,7 @@ package NexIO.Write;
 import NexIO.*;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
+import DataSetTools.util.StringUtil;
 import java.io.*;
 
 /**
@@ -371,7 +376,6 @@ public class NxWriteData{
 
   public static void main( String args[] ){
     NxWriteData nw = new NxWriteData(1);
-    NxNodeUtils nd = new NxNodeUtils();
     IsawGUI.Util ut = new IsawGUI.Util();
     DataSet dss[];
     dss = ut.loadRunfile( "C:\\SampleRuns\\gppd9898.run" );
@@ -379,20 +383,20 @@ public class NxWriteData{
     float xvals[];
     xvals = nw.MergeXvals( 0, dss[1] , null );
     System.out.println(  "*****final xval list= *****" );
-    System.out.println( nd.Showw( xvals ));
+    System.out.println( StringUtil.toString( xvals ));
     Data DB = dss[1].getData_entry( 0 );
     float ynew[] , xold[] , yold[];
     ynew = nw.Rebinn( DB , xvals );
     XScale XX = DB.getX_scale();
     xold = XX.getXs();
     yold = DB.getY_values();
-    System.out.println( "xold= "+nd.Showw( xold ) );
+    System.out.println( "xold= "+StringUtil.toString( xold ) );
     System.out.println( "" );
-    System.out.println( "xbew= "+nd.Showw( xvals ) );
+    System.out.println( "xbew= "+StringUtil.toString( xvals ) );
     System.out.println( "" );
-    System.out.println( "yold= "+nd.Showw( yold ) );
+    System.out.println( "yold= "+StringUtil.toString( yold ) );
     System.out.println( "" );
-    System.out.println( "ynew= "+nd.Showw( ynew ) );
+    System.out.println( "ynew= "+StringUtil.toString( ynew ) );
     System.out.println( "" );
   }
 }

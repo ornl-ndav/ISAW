@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/06/18 20:33:59  pfpeterson
+ * Changed calls for NxNodeUtils.Showw(Object) to
+ * DataSetTools.util.StringUtil.toString(Object)
+ *
  * Revision 1.10  2002/11/27 23:29:07  pfpeterson
  * standardized header
  *
@@ -51,7 +55,7 @@
  */
 package NexIO.NexApi;
 
-
+import DataSetTools.util.StringUtil;
 import neutron.nexus.*;
 import NexIO.*;
 import java.util.*;
@@ -963,7 +967,7 @@ public class NexNode implements NxNode{
         if( NA != null ){
           System.out.println("key="+NA.getItemName());
           System.out.println("Val="
-                             +new NxNodeUtils().Showw(NA.getItemValue()));
+                             +StringUtil.toString(NA.getItemValue()));
         }else
           System.out.println( "Error=" + NN.getErrorMessage() );
       }else if( c == 'c' ){
@@ -999,7 +1003,7 @@ public class NexNode implements NxNode{
         
         if( ( NN != null ) && ( X != null ) ){
           System.out.println( "Class&Val=" + X.getClass() );
-          System.out.println( new NxNodeUtils().Showw( X ) );
+          System.out.println( StringUtil.toString( X ) );
         }else
           System.out.println( "Check error message please" );
       }else if( c == '7' ){

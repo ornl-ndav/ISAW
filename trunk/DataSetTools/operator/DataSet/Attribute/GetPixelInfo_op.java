@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2003/06/18 20:36:13  pfpeterson
+ * Changed calls for NxNodeUtils.Showw(Object) to
+ * DataSetTools.util.StringUtil.toString(Object)
+ *
  * Revision 1.2  2003/02/13 21:15:46  dennis
  * Fixed ordering to be "Col,Row" to match (x,y) convention
  * on area detectors.  Cleaned up docs after change from
@@ -184,7 +188,7 @@ public class GetPixelInfo_op extends    DS_Attribute
     else if( O == null)
       return "null";
     else if( ! (O instanceof Vector))
-      return (new NexIO.NxNodeUtils()).Showw(O); 
+      return StringUtil.toString(O); 
 
     Vector V = (Vector)O;
     return V.elementAt(0)+","+V.elementAt(1);

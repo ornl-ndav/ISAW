@@ -29,6 +29,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.34  2003/06/18 20:37:28  pfpeterson
+ * Changed calls for NxNodeUtils.Showw(Object) to
+ * DataSetTools.util.StringUtil.toString(Object)
+ *
  * Revision 1.33  2003/05/28 20:56:50  pfpeterson
  * Changed System.getProperty to SharedData.getProperty
  *
@@ -833,7 +837,7 @@ public class table_view extends JPanel implements ActionListener
       String S;
 
       if( res != null )
-         S = new NexIO.NxNodeUtils().Showw( res );
+         S = StringUtil.toString( res );
       else
          S = "";
 
@@ -939,7 +943,6 @@ public class table_view extends JPanel implements ActionListener
       int i;
 
       header = true;
-      NexIO.NxNodeUtils nd = new NexIO.NxNodeUtils();
 
       // 1st line data set name( s )
       S = "#Data Set";
@@ -963,7 +966,7 @@ public class table_view extends JPanel implements ActionListener
          String SS = "NO SELECTED INDICES";
 
          if( SelInd != null ) if( SelInd.length > 0 )
-               SS = nd.Showw( SelInd );
+               SS = StringUtil.toString( SelInd );
 
          OutputField( "#     " + DSS[ i ].toString() + ":" + SS );
 
