@@ -29,6 +29,11 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.7  2002/03/26 20:47:08  pfpeterson
+ * More mac updates:
+ * - Set default file extension to 'applescript' (uncompiled code).
+ * - Extension for compiled code is 'scpt'.
+ *
  * Revision 1.6  2002/03/26 16:42:12  pfpeterson
  * Changed batch file to be an apple script.
  *
@@ -311,7 +316,7 @@ public class IsawInstaller extends JFrame
         }else if(operating_system.equals(SUN_ID)){
             filename=filename+"Isaw_exec.sh";
         }else if(operating_system.equals(MAC_ID)){
-	    filename=filename+"Isaw_exec.sh";
+	    filename=filename+"Isaw_exec.applescript";
 	}else{
 	    return null;
 	}
@@ -521,9 +526,6 @@ public class IsawInstaller extends JFrame
                 +isaw_home+"/jnexus.jar:"
                 +isaw_home+"/sdds.jar:. IsawGUI.Isaw\""+newline
                 +"end tell"+newline;
-	    /* content="cd "+isaw_home+newline
-               +"java -mx128000000 -cp Isaw.jar:sgt_v2.jar:IPNS.jar"
-               +":jnexus.jar:sdds.jar:.  IsawGUI.Isaw"+newline; */
 	}else{
 	    System.err.println("Unknown operating system: "+operating_system);
 	    return;
