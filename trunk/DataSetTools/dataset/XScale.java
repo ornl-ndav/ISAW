@@ -31,6 +31,10 @@
  *
  *
  *  $Log$
+ *  Revision 1.17  2003/02/24 13:33:54  dennis
+ *  Added method restrict() to restrict an XScale to the intersection
+ *  of the XScale and a ClosedInterval.
+ *
  *  Revision 1.16  2002/11/27 23:14:07  pfpeterson
  *  standardized header
  *
@@ -72,7 +76,10 @@
  */
 
 package  DataSetTools.dataset;
+
 import java.io.*;
+import DataSetTools.util.*;
+
 /**
  * The abstract root class for "X" scales used in data objects.  
  *
@@ -262,6 +269,20 @@ abstract public class XScale implements Serializable
    *           other XScale.  See the subclasses for specific behavior.
    */
    abstract public XScale extend( XScale other_scale );
+
+  /**
+   *  Constructs a new XScale that is the restriction of the current
+   *  XScale to the intersection of the ClosedInterval and the interval
+   *  of the current XScale.  If the intersection is empty, this method
+   *  returns null.
+   *
+   *  @param   interval  the interval the XScale is restricted to.
+   *
+   *  @return  A new XScale of the same type ( Uniform or Variable ) as the
+   *           current XScale is returned if the intersection is non-empty,
+   *           or null if the intersection is empty.
+   */
+   abstract public XScale restrict( ClosedInterval interval );
 
 
   /**

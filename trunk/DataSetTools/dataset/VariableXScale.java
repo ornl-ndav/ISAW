@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2003/02/24 13:33:54  dennis
+ *  Added method restrict() to restrict an XScale to the intersection
+ *  of the XScale and a ClosedInterval.
+ *
  *  Revision 1.9  2002/11/27 23:14:07  pfpeterson
  *  standardized header
  *
@@ -251,6 +255,40 @@ public class VariableXScale extends XScale implements Serializable
 
      return new VariableXScale( new_x );     // return the new XScale
    }
+
+
+  /**
+   *  Constructs a new XScale that is the restriction of the current
+   *  XScale to the intersection of the ClosedInterval and the interval
+   *  of the current XScale.  If the intersection is empty, this method
+   *  returns null.
+   *
+   *  @param   interval  the interval the XScale is restricted to.
+   *
+   *  @return  A new VariableXScale is returned if the intersection is 
+   *           non-empty, or null is returned if the intersection is empty.
+   */
+   public XScale restrict( ClosedInterval interval )
+   {
+     float min = interval.getStart_x();
+     float max = interval.getEnd_x();
+
+     if ( min >= end_x )
+       return null;
+
+     if ( max <= start_x )
+       return null;
+
+     int i_min = getI( min );
+     int i_max = getI( max );
+
+     float new_xs[] = new float[ i_max - i_min + 1 ];
+     for ( int i = 0; i < new_xs.length; i++ )
+       new_xs[i] = x[ i + i_min ];
+
+     return new VariableXScale( new_xs );
+   }
+
 
 
   /*
