@@ -40,7 +40,12 @@ import DataSetTools.viewer.*;
 import java.util.*;
 
 /** 
- *  This operator removes empty detectors from a data set. 
+ *  This operator removes detectors from a data set according to three
+ *  criteria, all involve the total counts. First it removes detectors
+ *  with zero counts. Next it removes detectors below the user
+ *  specified threshold. Finally the average and standard of deviation
+ *  is found for the total counts, then detectors outside of the user
+ *  specified number of sigma are removed (generally too many counts).
  */
 public class Crunch extends GenericSpecial{
     private static final String TITLE = "Crunch";
@@ -62,12 +67,16 @@ public class Crunch extends GenericSpecial{
      *  be used to execute the operator.
      *
      *  @param  ds          Sample DataSet to remove dead detectors from.
+     *  @param  min_count   Minimum counts to keep bank
+     *  @param  width       How many sigma around average to keep
      */
-    public Crunch( DataSet ds ){
+    public Crunch( DataSet ds, float width, float min_count ){
 
 	this(); 
 	parameters = new Vector();
 	addParameter( new Parameter("DataSet parameter", ds) );
+	addParameter( new Parameter("Minum counts to keep", new Float(min_count)));
+	addParameter( new Parameter("Number of sigma to keep", new Float(width)));
 
     }
     
@@ -89,6 +98,8 @@ public class Crunch extends GenericSpecial{
     public void setDefaultParameters(){
 	parameters = new Vector();
 	addParameter(new Parameter("DataSet parameter",DataSet.EMPTY_DATA_SET ));
+	addParameter(new Parameter("Minum counts to keep", new Float(0.0f)));
+	addParameter(new Parameter("Number of sigma to keep",new Float(2.0f)));
     }
     
     /* ----------------------------- getResult ------------------------------ */ 
@@ -100,6 +111,8 @@ public class Crunch extends GenericSpecial{
      */
     public Object getResult(){
 	DataSet ds        =  (DataSet)(getParameter(0).getValue());
+	float   min_count =  ((Float) (getParameter(1).getValue())).floatValue();
+	float   width     =  ((Float) (getParameter(2).getValue())).floatValue();
 	
 	if( ds==null )
 	    return new ErrorString( "DataSet is null in Crunch" );
@@ -115,7 +128,7 @@ public class Crunch extends GenericSpecial{
 					  oplog,
 					  x_units, x_label,
 					  y_units, y_label );
-	ds.addLog_entry("Applied Crunch");
+	ds.addLog_entry("Applied Crunch( "+ds+", "+min_count+", "+width+" )" );
 	Object obj=ds.clone();
 	if( obj instanceof DataSet ){
 	    new_ds = (DataSet)obj;
@@ -123,23 +136,82 @@ public class Crunch extends GenericSpecial{
 	    System.out.println( "Could not clone DataSet" );
 	}
 
+	// first remove empty detectors
 	int[] bad_det = new int[new_ds.getNum_entries()];
 	int bi=0;
 	int MAX_ID=new_ds.getMaxGroupID();
 	// remove the empty detectors
 	for( int i=1 ; i<=MAX_ID ; i++ ){
 	    Data det=new_ds.getData_entry_with_id(i);
-	    if( det == null ){
-		// do nothing
-	    }else{
+	    if( det == null ){ continue; }
+	    Float count=(Float)
+		det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
+	    if( count.floatValue() == 0 ){
+		new_ds.removeData_entry_with_id(i);
+	    }
+	}
+
+	// now remove the detectors below min count
+	if( min_count>0 ){
+	    for( int i=1 ; i<MAX_ID ; i++ ){
+		Data det=new_ds.getData_entry_with_id(i);
+		if( det == null ){ continue; }
 		Float count=(Float)
 		    det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
-		if( count.floatValue() == 0 ){
+		if( count.floatValue() < min_count ){
 		    new_ds.removeData_entry_with_id(i);
 		}
 	    }
 	}
+
+
+	// find the average total counts
+	float avg=0f;
+	float num_det=0f;
+	for( int i=1 ; i<=MAX_ID ; i++ ){
+	    Data det=new_ds.getData_entry_with_id(i);
+	    if( det == null ){ continue; }
+	    Float count=(Float)
+		det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
+	    avg=avg+count.floatValue();
+	    /* System.out.println(i+"  "+count); */
+	    num_det++;
+	}
+	if(num_det!=0f){
+	    avg=avg/num_det;
+	}else{
+	    avg=0f;
+	}
+	
+	float dev=0f;
+	if( avg != 0f ){
+	    // find the stddev of the total counts
+	    for( int i=1 ; i<=MAX_ID ; i++ ){
+		Data det=new_ds.getData_entry_with_id(i);
+		if( det==null ){ continue; }
+		Float count=(Float)
+		    det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
+		dev=dev+(avg-count.floatValue())*(avg-count.floatValue());
+	    }
+	    if(avg!=0){ dev=dev/(num_det-1f); }
+	    dev=(float)Math.sqrt((double)dev);
+	    /* System.out.println(num_det+"  "+avg+"  "+dev); */
 	    
+	    // remove detectors outside of width*sigma
+	    width=width*dev;
+	    for( int i=1 ; i<=MAX_ID ; i++ ){
+		Data det=new_ds.getData_entry_with_id(i);
+		if( det==null ){ continue; }
+		Float count=(Float)
+		    det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
+		float diff=(float)Math.abs((double)(avg-count.floatValue()));
+		if( diff>width ){
+		    new_ds.removeData_entry_with_id(i);
+		    /* System.out.println("removing det"+i+" with "+count+" total counts"); */
+		}
+	    }
+	}
+	
 	return new_ds;
     }
     
@@ -163,10 +235,11 @@ public class Crunch extends GenericSpecial{
 	System.out.println("Test of Crunch starting...");
 	
 	String filename="/IPNShome/pfpeterson/ISAW/SampleRuns/GPPD12358.RUN";
+	//String filename="/IPNShome/pfpeterson/data/ge_10k/glad4606.run";
 	RunfileRetriever rr = new RunfileRetriever( filename );
 	DataSet ds = rr.getDataSet(1);
 
-	Crunch op = new Crunch( ds );
+	Crunch op = new Crunch( ds, 2.0f, 1000f  );
 	Object obj = op.getResult();
 	if(obj instanceof DataSet ){
 	    DataSet new_ds=(DataSet)obj;
