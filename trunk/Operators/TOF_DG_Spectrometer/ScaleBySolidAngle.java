@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2004/08/24 03:16:25  dennis
+ * Now propagates error estimates in case of TabulatedData.
+ *
  * Revision 1.1  2004/08/23 20:32:02  dennis
  * Operator to multiply each spectrum by S/T where S is the solid
  * angle of the detector element(s) for that spectrum and T is
@@ -122,11 +125,19 @@ public class ScaleBySolidAngle implements Wrappable
     {
       Data d = new_ds.getData_entry(i);
       float scale = solid_angle[i]/total;
-      if ( d instanceof TabulatedData )       // just multiply, since then we
-      {                                       // don't need to clone attributes
-        float y[] = d.getY_values();
+      if ( d instanceof TabulatedData )       // just multiply ys & errors,
+      {                                       // since then don't need to
+        float y[] = d.getY_values();          // clone attributes
         for ( int j = 0; j < y.length; j++ )
           y[j] *= scale;
+
+        float errors[] = d.getErrors();
+        if ( errors != null )
+        {
+          for ( int j = 0; j < errors.length; j++ )
+            errors[j] *= scale;
+          ((TabulatedData)d).setErrors( errors );
+        }
       }
       else                                    // use the Data multiply method
       {                                       // to produce a new Data object
