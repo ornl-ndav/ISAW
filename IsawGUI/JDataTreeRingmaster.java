@@ -5,6 +5,11 @@ package IsawGUI;
  *
  *
  * $Log$
+ * Revision 1.7  2001/07/20 16:44:09  neffk
+ * reflected changes made in JDataTree.  tree is more encapsulated,
+ * so some methods had to be changed to use JDataTree methods instead
+ * of .getTree(), getModel(), and the like.
+ *
  * Revision 1.6  2001/07/18 16:58:08  neffk
  * constructor now takes a JDataTree instead of a JTreeUI.  many other
  * changes have been made in the process of switching over to JDataTree,
@@ -205,15 +210,7 @@ public class JDataTreeRingmaster
       public void actionPerformed( ActionEvent item_e )
       {
         if(  item_e.getActionCommand() == MENU_SELECT  )
-        {
-          DataMutableTreeNode node = (DataMutableTreeNode)(  tps[0].getLastPathComponent()  );
-          Data d = node.getUserObject();
-          d.setSelected( true );
-                                    //find the DataSet that these Data objects
-                                    //belong to and have it notify its IObservers
-          DataSet ds = tree.getDataSet( node );
-          ds.notifyIObservers( IObserver.SELECTION_CHANGED );
-        }
+          tree.selectNodesWithPaths( tps );
 
         else if(  item_e.getActionCommand() == MENU_CLEAR  )
         {
@@ -228,24 +225,12 @@ public class JDataTreeRingmaster
         }
 
         else if(  item_e.getActionCommand() == MENU_CLEAR_ALL  )
-        {
-          MutableTreeNode node = (MutableTreeNode)(  tps[0].getLastPathComponent()  );
-          DataSet ds = tree.getDataSet( node );
+          tree.clearSelections();
 
-          for( int i=0;  i<ds.getNum_entries();  i++ )
-            ds.getData_entry(i).setSelected( false );
-
-          ds.notifyIObservers( IObserver.SELECTION_CHANGED );
-        }
         else if(  item_e.getActionCommand() == MENU_DELETE  )
         {
           DataMutableTreeNode node = (DataMutableTreeNode)(  tps[0].getLastPathComponent()  );
-          DataSet ds = tree.getDataSet( node );
-
-          Data d = node.getUserObject();
-          ds.removeData_entry_with_id(  d.getGroup_ID()  );
-
-          ds.notifyIObservers( IObserver.DATA_DELETED );
+          tree.deleteNode( node, true );
         }
       }
     }
@@ -398,6 +383,7 @@ public class JDataTreeRingmaster
       {
         if(  item_e.getActionCommand() == MENU_SELECT  )
         {
+          tree.selectNodesWithPaths( tps );
         }
         if(  item_e.getActionCommand() == MENU_DELETE  )
         {
