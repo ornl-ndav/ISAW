@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2002/07/08 15:43:52  pfpeterson
+ *  Added simple time focusing method.
+ *
  *  Revision 1.11  2002/06/03 22:27:13  dennis
  *  Added method: NewEnergyInData( data, new_e_in ) to adjust a spectrum to
  *  to a new incident energy.  The time bin boundaries, as well as the
@@ -432,6 +435,42 @@ public static Data IncSpecFocus( Data    monitor_spec,
   return new_data;
 }
  
+/**
+ * Performs timefocusing on the provided XScale using the specified
+ * positions.
+ *
+ * @param scale       The Xscale to focus.
+ * @param path_length The total path length, in meters, the data was
+ *                    taken at.
+ * @param theta_rad   The angle, in radians, that the data was taken at.
+
+ * @param focus_path_length The total path length, in meters, the data
+ *                    was taken at.
+ * @param focus_theta_rad The angle, in radians, that the data was
+ *                    taken at.
+ */
+public static XScale DiffractometerFocus(XScale scale,
+                                         float path_length,
+                                         float theta_rad,
+                                         float focus_path_length,
+                                         float focus_theta_rad){
+    XScale new_scale=null;
+    float x_vals[]=scale.getXs();
+
+    float scalar=1f;
+    if(focus_path_length>0){
+        scalar*=focus_path_length/path_length;
+    }
+    scalar*=Math.sin(focus_theta_rad)/Math.sin(theta_rad);
+
+    if(scalar!=1.f){
+        for( int i=0 ; i<x_vals.length ; i++ ){
+            x_vals[i]*=scalar;
+        }
+        new_scale=new VariableXScale(x_vals);
+    }
+    return new_scale;
+}
 
 /* -------------------------------------------------------------------------
  *
