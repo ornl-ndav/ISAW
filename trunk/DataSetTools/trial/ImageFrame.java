@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/01/08 20:11:37  dennis
+ * Now shows blank frame and writes error message if a null image is
+ * specified.
+ *
  * Revision 1.1  2003/01/08 19:23:05  dennis
  * Initial version
  *
@@ -56,7 +60,7 @@ public class ImageFrame extends JFrame
     setTitle(title);
     setBounds(0,0,500,500);
     panel = new ImageJPanel();
-    panel.changeLogScale(30, true);
+    panel.changeLogScale(35, true);
     setData( values );
     getContentPane().add(panel);
     setVisible(true);
@@ -64,7 +68,16 @@ public class ImageFrame extends JFrame
 
   public void setData( float values[][] )
   {
-    panel.setData( values, true );
+    if ( values == null )
+    {
+      float empty_array[][] = new float[1][1];
+      panel.setData( empty_array, true );
+      System.out.println("No Image Plane Defined...!!");
+    }
+    else
+      panel.setData( values, true );
+     
+    show();
   }
 
   public static void main( String args[] )
