@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.27  2003/12/15 18:22:53  rmikk
+ *  Added several more Contour view states
+ *
  *  Revision 1.26  2003/12/15 00:37:39  rmikk
  *  Added a state for the Contour View to remember the new button, ShowAll in contour view
  *
@@ -128,6 +131,8 @@ public class ViewerState  implements Serializable
   */
   public static final String CONTOUR_DATA      =  "Contour.Data";
   public static final String CONTOUR_SHOWALL   ="Show All Groups";
+  public static final String CONTOUR_DETNUM   ="Detector Number";
+  public static final String CONTOUR_COLOR_SCALE   ="Contour Color Scale";
   public static final String TABLE_TS          ="Time Slice Table Data Set";
   public static final String TABLE_TS_ERR          ="TableTS_ShowError";
   public static final String TABLE_TS_IND          ="TableTS_ShowIndex";
@@ -167,7 +172,7 @@ public class ViewerState  implements Serializable
                                                        // color scale ......
       String scale_name = SharedData.getProperty( COLOR_SCALE ); 
       state.put( COLOR_SCALE, scale_name );
-
+      state.put( CONTOUR_COLOR_SCALE , scale_name);
                                                        // rebin ......
       Boolean rebin_flag = SharedData.getBooleanProperty( REBIN );
       state.put( REBIN, rebin_flag );
@@ -210,6 +215,7 @@ public class ViewerState  implements Serializable
       state.put(CONTOUR_STYLE, contour_style );
 
       state.put(CONTOUR_SHOWALL, new Boolean(true));
+      state.put(CONTOUR_DETNUM, new Integer(-1));
 
       state.put( TABLE_TS, "");
       state.put( TABLE_TS_ERR , new Boolean( false)); 
