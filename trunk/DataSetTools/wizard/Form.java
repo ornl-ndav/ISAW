@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.31  2003/07/09 22:48:11  bouzekc
+ * Now sets ChooserPGs, VectorPGs, and HashPGs valid by
+ * default in validateParameterGUIs.
+ *
  * Revision 1.30  2003/07/09 22:35:44  bouzekc
  * Made validateParameterGUIS() protected again.
  *
@@ -773,10 +777,9 @@ public abstract class Form extends Operator implements PropertyChanger {
       //ChooserPG's really can't be checked - they have a built in
       //mechanism to add non-existing values.
       //VectorPG does not have a clean way to determine its validity.
-      //To be safe we are going to let the subclasses work with these 
-      //parameters to validate them, but we will not return an error.
+      //to help out OperatorForm, we will set them valid.
       else {
-        ipg.setValid( false );
+        ipg.setValid( true );
       }
     }
 
