@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.29  2004/04/27 15:25:32  dennis
+ * Removed "timer" code that was temporarily used for performance
+ * testing.  Removed toVec() method used by main program... now uses
+ * toVec() from SAD_Util().
+ *
  * Revision 1.28  2004/04/26 19:01:42  dennis
  * Removed redundant log message.
  *
@@ -128,8 +133,6 @@ import DataSetTools.operator.DataSet.Math.DataSet.*;
 public class Reduce_KCL  extends GenericTOF_SAD{
 
     public static final int DEFAULT_NEDGE = 1;  // mask off edge detectors 
-
-    private boolean debug = false; 
 
    /* ---------------------------- Constructor  -------------------------- */
    /**
@@ -259,13 +262,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
      */
      public Object getResult()
      {
-        ElapsedTime timer = null;
-        if ( debug )
-        { 
-          System.out.println("Start of getResult()");
-          timer = new ElapsedTime();
-        }
-
         DataSet TransS=(DataSet)(getParameter(0).getValue());
         ((DataSetPG)getParameter(0)).clear();
 
@@ -319,20 +315,19 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         DataSet[] RUNBds = new DataSet[2];
         DataSet[] RUNCds = new DataSet[2];
 
-        RUNSds[0]= RUNSds0;
-        RUNSds[1]= RUNSds1;
-        RUNBds[0]= RUNBds0;
-        RUNBds[1]= RUNBds1;
+        RUNSds[0] = RUNSds0;
+        RUNSds[1] = RUNSds1;
+        RUNBds[0] = RUNBds0;
+        RUNBds[1] = RUNBds1;
         if( RUNCds0 != null)
         {
-          RUNCds[0]= RUNCds0;
-          RUNCds[1]= RUNCds1;
+          RUNCds[0] = RUNCds0;
+          RUNCds[1] = RUNCds1;
          }
 
         float qu[] = new float[ Qu.size() ];
-        for( int i=0; i < Qu.size(); i++){
+        for( int i=0; i < Qu.size(); i++)
           qu[i] = ((Number)Qu.elementAt(i)).floatValue();
-        }
         
         boolean make_2D;
         if ((NQxBins < 1) || (NQyBins < 1))
@@ -350,12 +345,12 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
         System.out.println("CERTAIN STARTING PARAMETERS ARE THE FOLLOWING");
         System.out.println();
-        System.out.println(" BEAM STOP RADIUS IN CM  =" + Radmin);
-        System.out.println(" DELAYED NEUTRON CORRECTION IS MADE =");
-        System.out.println(" THE DELAYED NEUTRON FRACTION =" + BETADN);
-        System.out.println(" MGO FILTER IS IN THE BEAM ");
+        System.out.println(" BEAM STOP RADIUS IN CM  =" + Radmin );
+        System.out.println(" DELAYED NEUTRON CORRECTION IS MADE =" );
+        System.out.println(" THE DELAYED NEUTRON FRACTION =" + BETADN );
+        System.out.println(" MGO FILTER IS IN THE BEAM " );
         System.out.println(" Number of X and Y edge Chans masked for AD=" + 
-                             String.valueOf(nedge));
+                             nedge );
 
         for( int i = 0; i < 1; i++ )
         {
@@ -387,15 +382,8 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         float[] tofs = RUNSds[1].getData_entry(num_data/2).getX_scale().getXs();
         tofs = SAD_Util.ConvertXsToWL(tofs, RUNSds[1], num_data / 2, false);
 
-        if( tofs[0] > tofs[1]) 
+        if( tofs[0] > tofs[1] ) 
           arrayUtil.Reverse(tofs);
-
-        if ( debug )
-        {
-          System.out.println("After ConvertXsToWL, time used = " 
-                             + timer.elapsed() );
-          timer.reset();
-        }
 
         XScale xscl = new VariableXScale( tofs );
         
@@ -403,19 +391,11 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         SAD_Util.ConvertToWL( RUNSds[1], xscl, false );  // sample
 
         SAD_Util.ConvertToWL( RUNBds[0], xscl, true );   // monitor
-        SAD_Util.ConvertToWL( RUNBds[1], xscl, false );  // backgron 
+        SAD_Util.ConvertToWL( RUNBds[1], xscl, false );  // background 
 
         SAD_Util.ConvertToWL( RUNCds[0], xscl, true );   // monitor
         SAD_Util.ConvertToWL( RUNCds[1], xscl, false );  // cadmium 
       
-        if ( debug )
-        {
-          System.out.println("After ConvertToWL RUNSds[0]...RUNCds[1], " +
-                             "time used = " + timer.elapsed());
-          System.out.println("xscl has " + xscl.getNum_x() );
-          timer.reset();
-        }
-
         float[] lambda = xscl.getXs();
 
         UniformGrid SampGrid = SAD_Util.SetUpGrid( RUNSds[1] );
@@ -433,8 +413,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         SAD_Util.AdjustGrid( RUNSds[1], XOFF, YOFF );
         SAD_Util.AdjustGrid( RUNBds[1], XOFF, YOFF );
 
-        CoordBounds bounds = SAD_Util.GetQRegion( SampGrid, lambda, qu );
-
         SAD_Util.ZeroAreaDetSens( SensGrid, SampGrid, Radmin, Radmax, nedge );
 
         SAD_Util.CalcRatios( RUNSds, RUNCds, cadIndex, TransS, true, 
@@ -448,6 +426,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
         if ( make_2D ) 
         {
+          CoordBounds bounds = SAD_Util.GetQRegion( SampGrid, lambda, qu );
           SampSQ = SAD_Util.SumQs_2D( RUNSds, Eff, Sens, sensIndex, MonitorInd,
                                       bounds, NQxBins, NQyBins );
           BackSQ = SAD_Util.SumQs_2D( RUNBds, Eff, Sens, sensIndex, MonitorInd,
@@ -496,22 +475,6 @@ public class Reduce_KCL  extends GenericTOF_SAD{
     }
      
 
-
-  /**
-   *  Utility for main program that just puts an array of floats
-   *  into a Vector
-   */
-  private static Vector toVec( float[] list)
-  {
-     if( list == null)
-       return new Vector();
-     Vector Res = new Vector();
-     for( int i = 0; i< list.length; i++)
-         Res.addElement( new Float( list[i]));
-     return Res;
-  }
-
-
   /* ----------------------------- Main ---------------------------------- */
     /**
      *   Main program for testing purposes
@@ -550,9 +513,9 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         }
 
         System.out.println("Before calling Reduce_KCLxxxxxxxxxxxxxxxxxxxxxxxx");
-        Reduce_KCL reduce_KCL = new Reduce_KCL(TransS[0], TransB[0],
-                Eff[0], Sens[0],toVec(qu), RUNSds[0], RUNSds[1],
-                RUNBds[0],RUNBds[1], RUNCds[0],RUNCds[1], BETADN, SCALE, .1f,
+        Reduce_KCL reduce_KCL = new Reduce_KCL( TransS[0], TransB[0],
+                Eff[0], Sens[0], SAD_Util.toVec(qu), RUNSds[0], RUNSds[1],
+                RUNBds[0], RUNBds[1], RUNCds[0], RUNCds[1], BETADN, SCALE, .1f,
                 //     0f,0f);
                 .000725f, .006909f, -200, -200, true, 1.5f );
         Object O = reduce_KCL.getResult();
