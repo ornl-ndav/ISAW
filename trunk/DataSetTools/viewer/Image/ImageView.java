@@ -2,6 +2,9 @@
  * @(#)ImageView.java  1.1 2000/04/28 Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.4  2000/10/03 21:19:42  dennis
+ *  Now uses ImageJPanel method to set the color model.
+ *
  *  Revision 1.3  2000/08/03 01:49:01  dennis
  *  Now sets the default graph as the "pointed" at Data block and notifies
  *  observers when the viewer starts.  This fixed a bug where the user had to
@@ -1135,8 +1138,7 @@ private class SelectionKeyAdapter extends     KeyAdapter
          SetHorizontalScrolling( state );
        }
        else
-         image_Jpanel.setColorModel( IndexColorMaker.getColorModel(action,128), 
-                                     true );
+         image_Jpanel.setNamedColorModel( action, true );
     }
   }
 
