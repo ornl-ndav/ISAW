@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2003/11/06 20:06:43  rmikk
+ * The Constructor now Throws an IllegalArgument
+ *    exception if the DataSet does not have enough info to
+ *    make a table
+ *
  * Revision 1.15  2003/10/27 14:57:20  rmikk
  * Eliminated resampling of Data.
  *
@@ -142,7 +147,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
     *@param  time  the time of this time slice
     */
    public Time_Slice_TableModel( DataSet DS, float time, boolean showErrors, 
-           boolean showInd )
+           boolean showInd ) throws IllegalArgumentException
    {   
       Time = time;
       int[] row = new int[DS.getNum_entries()];
@@ -156,6 +161,9 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       MaxRow = -1;
       MaxCol = -1;
       SetUpDetNums();
+      if( DetNums == null)
+          throw new IllegalArgumentException("DataSet does not have any Grids");
+
       MaxRow = num_rows;
       MaxCol = num_cols;
       tMinrow = 0;
@@ -613,6 +621,17 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       if( DetNums != null)
         if( DetNums.length >0)
           DetNum = DetNums[0];
+        else{
+          DetNum = -1;
+          DetNums = null;
+          return;
+        }
+       else{
+         DetNum = -1;
+         return;
+       }
+         
+
       grid = (UniformGrid)(Grid_util.getAreaGrid( DS, DetNum));
       grid.setDataEntriesInAllGrids(DS);
       SetUpGroups();
