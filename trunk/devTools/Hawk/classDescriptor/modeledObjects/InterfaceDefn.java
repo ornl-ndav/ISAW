@@ -32,6 +32,13 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 20:37:55  kramer
+ * Added the methods:
+ *   public String getEnclosingClassName(boolean shortJava)
+ *   public String getEnclosingClassName(boolean shortOther)
+ * Now if you get a shortened source code representation for this InterfaceDefn
+ * object, the package name is never shortened.
+ *
  * Revision 1.3  2004/03/12 19:46:18  bouzekc
  * Changes since 03/10.
  *
@@ -46,6 +53,7 @@ package devTools.Hawk.classDescriptor.modeledObjects;
 import java.awt.GridLayout;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.JLabel;
@@ -396,6 +404,37 @@ public class InterfaceDefn
 	{
 		return !isInner();
 	}
+
+	/**
+	 * Get the name of the enclosing class for the class or interface represented by this InterfaceDefn object, if it 
+	 * is an inner class or interface.  Otherwise the original class or interface's name is returned.
+	 * @return This class or interface's enclosing class if it is an inner class/interface or the 
+	 * class/interface itself if it is an outer class.
+	 */	
+	public String getEnclosingClassName()
+	{
+		return getEnclosingClassName(false,false);
+	}
+	
+	/**
+	 * Get the name of the enclosing class (in a formated form) for the class or interface represented by this 
+	 * InterfaceDefn object, if it is an inner class or interface.  Otherwise the original class or interface's name is returned.
+	 * @param shortJava True if the enclosing class's name is to be shortened if it is a java name.
+	 * @param shortOther True if the enclosing class's name is to be shortened if it is a non-java name.
+	 * @return This class or interface's enclosing class if it is an inner class/interface or the 
+	 * class/interface itself if it is an outer class.
+	 */
+
+	public String getEnclosingClassName(boolean shortJava, boolean shortOther)
+	{
+		String answer = "";
+		StringTokenizer tokenizer = new StringTokenizer(getInterface_name(shortJava,shortOther),"$");
+		if (tokenizer.hasMoreTokens())
+			answer = tokenizer.nextToken();
+		
+		return answer;
+	}
+	
 	
 	//-----these methods print to tile specified by the PrintWriter 'writer'
 	
@@ -569,7 +608,7 @@ public class InterfaceDefn
 		
 		if ( !(Package_Name.equals("")) )
 		{
-			impStr = impStr + "package "+getPackage_Name(shortJava, shortOther)+"\n\n";
+			impStr = impStr + "package "+getPackage_Name()+"\n\n";
 		}
 						
 		for (int i = 0; i < Interface_imports_vector.size(); i++)
@@ -579,7 +618,7 @@ public class InterfaceDefn
 		
 		str = InterfaceUtilities.makeStringFromVector(Interface_char_vector, ", ")+getInterface_type()+" "+getInterface_name(shortJava, shortOther);
 		
-		if ( !( (Interface_extends.equals("")) || (Interface_extends.equals(null)) ) )
+		if ( !( (Interface_extends == null) || (Interface_extends.equals("")) ) )
 			str = str + " extends " + getInterface_extends(shortJava, shortOther);
 		
 		if (Interface_implements_vector.size() != 0)
