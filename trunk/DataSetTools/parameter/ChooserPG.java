@@ -30,6 +30,10 @@
  *
  * Modified:
  *  $Log$
+ *  Revision 1.24  2004/01/14 18:41:12  bouzekc
+ *  Fixed a bug that occurred when calling setValue() when the internal
+ *  list was empty.
+ *
  *  Revision 1.23  2004/01/09 00:18:35  bouzekc
  *  setValue() now adds the item if it is not in the list already.
  *
@@ -198,24 +202,30 @@ abstract public class ChooserPG extends ParameterGUI{
 
   /**
    * Sets the value of the parameter.  This will add an item to the list
-   * if it is not in there already.
+   * if it is not in there already.  This will simply return if the new value
+   * is null
+   * 
+   * @param val The new value to be set.
    */
   public void setValue(Object val){
-    if(vals == null) {
-      return;
-    }
+    if(val != null) {
 
-    if(vals.indexOf(val) < 0) {
-      addItem( val );
-    }
+      if( vals == null ) {
+        vals = new Vector(  );
+      }
+      
+      if(vals.indexOf(val) < 0) {
+        addItem( val );
+      }
     
-    //update the GUI part
-    if(this.getInitialized() && val!=null){
-      ((HashEntry)(getEntryWidget().getComponent(0))).setSelectedItem(val);
-    }
+      //update the GUI part
+      if(this.getInitialized()){
+        ((HashEntry)(getEntryWidget().getComponent(0))).setSelectedItem(val);
+      }
 
-    //always update the internal value
-    super.setValue(val);
+      //always update the internal value
+      super.setValue(val);
+    }
   }
 
   // ********** IParameterGUI requirements **********
