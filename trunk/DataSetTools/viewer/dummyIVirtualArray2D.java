@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/05/17 13:53:42  rmikk
+ * Filled out IvirtualArray2D methods so they return more than null
+ *
  * Revision 1.5  2004/03/15 19:33:59  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -79,7 +82,7 @@ public class dummyIVirtualArray2D implements IVirtualArray2D{
    * info is being retrieved for.
    */
    public AxisInfo getAxisInfo( int axis ){
-        return null;
+        return new AxisInfo();
    }
    
   /**
@@ -130,9 +133,25 @@ public class dummyIVirtualArray2D implements IVirtualArray2D{
    * get values for array elements and ignore extra values.
    */
    public float[] getRowValues( int row_number, int from, int to ){
-         return null;
+		row_number =AdjustRowCol( row_number, getNumRows());
+				from =AdjustRowCol(from, getNumColumns());
+				to =AdjustRowCol(to, getNumColumns());
+				if( from > to) 
+					 return new float[0];
+				float[] Res = new float[ to-from +1];
+				for( int i = from; i <= to; i++)
+					 Res[ i - from] = getDataValue( row_number, i);
+
+				return Res;
    }
-   
+	private int AdjustRowCol( int row, int maxRows)
+		 {
+			if( row < 0) 
+				 return 0;
+			if( row >= maxRows) 
+				 return maxRows - 1;
+			return row;
+		 } 
   /**
    * Set values for a portion or all of a row.
    * The "from" and "to" values must be direct array reference, i.e.
@@ -152,7 +171,25 @@ public class dummyIVirtualArray2D implements IVirtualArray2D{
    * get values for array elements and ignore extra values.
    */
    public float[] getColumnValues( int column_number, int from, int to ){
-     return null;
+		if( column_number < 0)
+						return new float[0];
+				 if( column_number >= getNumColumns()) 
+						return new float[0];
+				 if( from <0) 
+						from =0;
+				 if( to < 0) 
+						to =0;
+				 if( from >= getNumRows()) 
+						from = getNumRows()-1;
+				 if( to >= getNumRows()) 
+						to = getNumRows()-1;
+				 if( from > to) 
+						 return new float[0];
+				 float[] Res = new float[ to-from +1];
+				 for( int i = from; i <= to; i++)
+						Res[ i - from] = getDataValue(  i,column_number);
+				 return Res;
+  
    }
    
   /**
@@ -163,7 +200,7 @@ public class dummyIVirtualArray2D implements IVirtualArray2D{
    * set values for array elements and ignore extra values.
    */
    public void setColumnValues( float[] values, int column_number, int start ){
-     return;
+     
    }
    
   /**
@@ -195,7 +232,17 @@ public class dummyIVirtualArray2D implements IVirtualArray2D{
    */ 
    public float[][] getRegionValues( int first_row, int last_row,
                                      int first_column, int last_column ){
-        return null;
+								first_row = AdjustRowCol( first_row, getNumRows());
+								last_row = AdjustRowCol( last_row, getNumRows());
+								first_column = AdjustRowCol( first_column, getNumColumns());
+								last_column = AdjustRowCol( last_column, getNumColumns());
+								if( first_row >last_row) first_row = last_row;
+								if( first_column >last_column) first_column = last_column;
+     														float[][]Res = new float[last_row-first_row+1][last_column-first_column+1];
+    
+																	for( int i = first_row; i<=last_row; i++)
+																		 Res[i] = getRowValues( i, first_column,last_column);
+																	return Res;
    }
   /**  
    * Sets values for a specified rectangular region. This method takes 
