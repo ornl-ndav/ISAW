@@ -12,6 +12,9 @@ package OverplotView.components.containers;
  *
  * changelog
  *  $Log$
+ *  Revision 1.8  2000/08/03 20:32:43  neffk
+ *  *** empty log message ***
+ *
  *  Revision 1.7  2000/07/28 14:49:18  neffk
  *  added an empty spectrum as i was grasping at straws while trying to figure
  *  out why the graph fails when it's resized with one spectrum selected.
@@ -133,6 +136,7 @@ public class GraphableDataManager
       data[ count++ ] = (GraphableData)((Iterator)it).next();
 
     //add data to graph
+    count = 0;
     for( int i=0;  i<data.length;  i++ )
       for( int j=0;  j<data.length; j++ )
       {
@@ -142,6 +146,9 @@ public class GraphableDataManager
         }
         else if(  data[j].getSelectionOrder() == i  )
         {
+          System.out.println( 
+            "offset order: " + new Integer(count).floatValue()  );
+
           data[j].setOffset( new Integer(count).floatValue() * abs_offset );
           RedrawInstruction instruction = new RedrawInstruction( false,
                                                                  true,
@@ -181,11 +188,12 @@ public class GraphableDataManager
     //add data in the order that corresponds to 'keys'
     for( int keyIndex=0;  keyIndex<size();  keyIndex++ )
     {
+      System.out.println( "index: " + keyIndex );
       if(   containsKey(  keys[keyIndex].toString()  )   )
       {
          data = (GraphableData)get( keys[keyIndex] );
 
-         System.out.println( "key: " + keys[keyIndex].toString()  );
+         //System.out.println( "key: " + keys[keyIndex].toString()  );
          if(  data.toString().compareTo( keys[keyIndex].toString() ) == 0  )
            System.out.println( "match" );
 
