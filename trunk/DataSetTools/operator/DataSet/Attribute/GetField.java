@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/02/03 19:05:50  dennis
+ *  Added getDocumentation() method and java docs on getResult().
+ *  (Mike Miller)
+ *
  *  Revision 1.3  2002/11/27 23:16:41  pfpeterson
  *  standardized header
  *
@@ -80,7 +84,7 @@ public class GetField extends    DS_Attribute
    *  by calling getResult().
    *
    *  @param  ds          The DataSet to which the operation is applied
-   *  @parm   Field        The Field to be gotten.
+   *  @param  Field       The Field to be gotten.
    *
    */
 
@@ -99,9 +103,31 @@ public class GetField extends    DS_Attribute
                                     // this operator should operate on
   }
 
+/* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns a string of the description/attributes of GetField
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator returns the value ");
+    Res.append("of the specified field.\n");
+    Res.append("@algorithm Given a data set and the field, ");
+    Res.append("the field value is found.\n");
+    Res.append("@param ds\n");
+    Res.append("@param field\n");
+    Res.append("@return an Object containing the field value\n"); 
+    Res.append("@error No such field\n");  
+    
+    return Res.toString();
+    
+  }
+
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, GetField
+   * @return	the command name to be used with script processor: in this case,
+   * GetField
    */
    public String getCommand()
    {
@@ -123,6 +149,27 @@ public class GetField extends    DS_Attribute
 
 
   /* ---------------------------- getResult ------------------------------- */
+  /**
+   * @return The return type is dependent on the desired field.
+   * Field               Return Type
+   * -------------       -----------
+   * Title               String
+   * X_Label             String
+   * X_Unit              String
+   * Y_Label             String
+   * Y_Unit              String
+   * Max_Samples         int
+   * X_Range             UniformXScale
+   * Y_Range             ClosedInterval
+   * Pointed_at_index    int
+   * Pointed_at_ID       Integer
+   * Num_Groups          Integer
+   * Group_IDs           String
+   * Num_Selected        Integer
+   * Selected_Groups     String
+   *
+   * Error String returned if field not found  
+   */
 
   public Object getResult()
     { 
@@ -224,6 +271,25 @@ public class GetField extends    DS_Attribute
     new_op.CopyParametersFrom( this );
 
     return new_op;
+  }
+
+  /* --------------------------- main ----------------------------------- */
+  /**
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    System.out.println("Test of GetField starting...");
+    
+    DataSet ds = DataSetFactory.getTestDataSet();
+    
+    GetField op = new GetField( ds, new DSFieldString(DSFieldString.TITLE) );
+    System.out.println("Results: " + op.getResult().toString() );
+ 
+    System.out.println();
+    System.out.println( op.getDocumentation() );
+    
+    System.out.println("Test of GetField done.");
   }
 
 }
