@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2004/01/24 23:23:24  bouzekc
+ * Removed unused variables.
+ *
  * Revision 1.7  2003/11/29 17:12:59  rmikk
  * Improved the javadocs
  * Changed the port number of memory: to a constant 322
@@ -618,8 +621,6 @@ class IsawTOC  extends TOCView
     {
      super( hs , name , label , params );
      this.hs = hs;
-     this.sh = sh;
-     this.operatorsOnly = operatorsOnly;
      ngeneric = sh.getNum_operators();
      ndatasets = sh.getNumDataSetOperators(); 
     
@@ -792,8 +793,7 @@ class IsawTOC  extends TOCView
   public static DefaultMutableTreeNode getTOC( int ngeneric , int ndatasets , 
                                           HelpSet hs ,  boolean operatorsOnly )
     {
-     DefaultMutableTreeNode topNode , parentNode;
-     parentNode = new DefaultMutableTreeNode();
+     DefaultMutableTreeNode topNode;
      TOCItem top = new TOCItem();
      top.setName( "Top" );
      topNode = new DefaultMutableTreeNode( top );
@@ -890,7 +890,6 @@ class IsawTOC  extends TOCView
               
               lastletter = (char)( lastletter + 5 ); 
              }
-        String idd = "Gen" + i;
         TOCItem ttt = (TOCItem)addNode( letters , title ,  
                      javax.help.Map.ID.create( "Gen" + i , hs ) , hs ).getUserObject();
         String[] cat = op.getCategoryList();
@@ -917,7 +916,6 @@ class IsawTOC  extends TOCView
               letters = addNode( DataSet , range , null , null );
               lastletter = (char)( lastletter + 5 ); 
              }
-        String idd = "Dat" + i;
         TOCItem ttt = (TOCItem)addNode(  letters , title ,  
                             javax.help.Map.ID.create( "Dat" + i ,  hs ) , hs ).getUserObject();
 
