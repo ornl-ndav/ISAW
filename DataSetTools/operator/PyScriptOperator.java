@@ -27,14 +27,16 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.2  2003/10/10 02:02:05  bouzekc
+ * Merged with pyScriptProcessor.
+ *
  * Revision 1.1  2003/08/11 18:01:58  bouzekc
  * Added to CVS.
  *
  */
 package DataSetTools.operator;
 
-import Command.PyScript;
-import Command.pyScriptProcessor;
+import Command.*;
 
 import DataSetTools.dataset.*;
 
@@ -54,23 +56,48 @@ import java.io.*;
 
 import java.util.*;
 
+import javax.swing.text.Document;
+
 
 /**
- * Operator for use with Jython/Python scripts.
+ * Operator for use with Jython/Python scripts.  This class can work with a
+ * Jython Script that has been specifically designed as an Operator (See
+ * find_multiple_peaks2.py in the ISAW scripts directory for an example of
+ * this) or it can work with "generic" Jython code.  Although there is a
+ * constructor and a few methods that can take javax.swing.text Documents,
+ * this class does NOT work internally with Documents.  Note also that
+ * although this will interpret all valid Jython code, if there is no class
+ * definition given, the only "Operator" method that will return meaningful
+ * results is getResult(), as the other methods rely on an existing class
+ * definition.
  */
-public class PyScriptOperator extends GenericOperator implements IObserver,
-  PropertyChanger {
+public class PyScriptOperator extends GenericOperator
+  implements IScriptProcessor {
   //~ Instance fields **********************************************************
 
-  private String scriptFile;
   private PythonInterpreter interp;
   private PyScript script;
-  private String classname;
+  private String scriptFile;
   private IObserverList obss;
   private Vector Dsets;
   private PropertyChangeSupport PS;
+  private String errormessage;
+  private ByteArrayOutputStream eos;
+  private boolean IAmOperator = false;
 
   //~ Constructors *************************************************************
+
+  /**
+   * Constructor for creating a PyScriptOperator out of a Document.
+   *
+   * @param inDoc The document containing the script
+   */
+  public PyScriptOperator( Document inDoc ) {
+    super( "UNKNOWN" );
+    scriptFile   = "UNKNOWN";
+    script       = new PyScript( inDoc );
+    initOperator(  );
+  }
 
   /**
    * Copy constructor for use in clone and where clone is unnecessary.  This
@@ -104,15 +131,9 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
    */
   public PyScriptOperator( String filename ) throws InstantiationError {
     super( filename );
-    Dsets        = new Vector(  );
     scriptFile   = filename;
-    obss         = new IObserverList(  );
-
-    //create the interpreter
-    reset(  );
-
-    //link the parameters here with the ones in the Jython namespace
-    setDefaultParameters(  );
+    script       = new PyScript( scriptFile );
+    initOperator(  );
   }
 
   //~ Methods ******************************************************************
@@ -121,9 +142,14 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
    * Accessor method for the categoryList. Uses the internal interpreter to
    * call the superclass method.
    *
-   * @return String array of the category list.
+   * @return String array of the category list. If this script does not truly
+   *         define an Operator, this returns super.getCategoryList().
    */
   public String[] getCategoryList(  ) {
+    if( !IAmOperator ) {
+      return super.getCategoryList(  );
+    }
+
     PyObject pyCatList = interp.eval( "innerClass.getCategoryList(  )" );
 
     //convert the PyObject to a useful Java Object
@@ -137,9 +163,14 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
    * Unless otherwise specified in the Python/Jython script, this is the name
    * of the file without the .py extension.
    *
-   * @return Command for using this Operator in Scripts.
+   * @return Command for using this Operator in Scripts. If this script does
+   *         not truly define an Operator, this returns super.getCommand(  ).
    */
   public String getCommand(  ) {
+    if( !IAmOperator ) {
+      return super.getCommand(  );
+    }
+
     PyObject pyDocs = interp.eval( "innerClass.getCommand(  )" );
 
     //convert the PyObject to a useful Java Object
@@ -157,7 +188,6 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
   public DataSet[] getDataSets(  ) {
     int numDsets = Dsets.size(  );
     DataSet[] DS;
-
     DS = new DataSet[numDsets];
 
     for( int i = 0; i < numDsets; i++ ) {
@@ -170,10 +200,16 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
   /**
    * Sets default parameters for this PyScriptOperator, using the
    * setDefaultParameters defined in the Python script.  Does nothing if the
-   * internal interpreter is null.  This method also calls reset(  ).
+   * internal interpreter is null.  This method also calls reset(  ). If this
+   * script does not truly define an Operator, this does nothing.
    */
   public void setDefaultParameters(  ) {
-    if( interp == null ) {
+    if( !IAmOperator ) {
+      //not an Operator, so not much to set here
+      return;
+    }
+
+    if( ( interp == null ) || ( script == null ) ) {
       //i.e. The constructor has not yet been called.
       return;
     }
@@ -189,18 +225,78 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
   }
 
   /**
+   * Takes a Document that contains valid Jython code so that this
+   * PyScriptOperator can operate on it.  Also resets the error message to
+   * null.  What this actually does is reset the internal Python script,
+   * determining whether or not the new script (Document) is a fully define
+   * Jython Operator and set things up accordingly.  One of the last things
+   * that gets done is a call to reset(  ).
+   *
+   * @param inDoc The Document to interpret.
+   */
+  public void setDocument( Document inDoc ) {
+    script = new PyScript( inDoc );
+    initOperator(  );
+  }
+
+  /**
    * Uses the interpreter to call the Java or Jython method (depending on which
    * is actually instantiated.
    *
-   * @return Javadoc-style documentation for this operator.
+   * @return Javadoc-style documentation for this operator. If this script does
+   *         not truly define an Operator, this returns the default docs.
    */
   public String getDocumentation(  ) {
+    if( !IAmOperator ) {
+      return super.getDocumentation(  );
+    }
+
     PyObject pyDocs = interp.eval( "innerClass.getDocumentation(  )" );
 
     //convert the PyObject to a useful Java Object
     String sDocs = ( String )pyDocs.__tojava__( String.class );
 
     return sDocs;
+  }
+
+  /**
+   * CURRENTLY NOT FULLY IMPLEMENTED.
+   *
+   * @return The position of the character in the script that generated an
+   *         error.
+   */
+  public int getErrorCharPos(  ) {
+    if( errormessage == null ) {
+      return -1;
+    }
+
+    if( errormessage.length(  ) < 1 ) {
+      return -1;
+    }
+
+    return 00;
+  }
+
+  /**
+   * CURRENTLY NOT FULLY IMPLEMENTED.
+   *
+   * @return The line number in the script that generated an error.
+   */
+  public int getErrorLine(  ) {
+    if( errormessage == null ) {
+      return -1;
+    }
+
+    return 00;
+  }
+
+  /**
+   * Gets the generated error message.
+   *
+   * @return The error message created from the script error.
+   */
+  public String getErrorMessage(  ) {
+    return errormessage;
   }
 
   /**
@@ -214,13 +310,23 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
   }
 
   /**
+   * Not implemented yet.
+   */
+  public void setLogDoc( Document doc ) {}
+
+  /**
    * Accessor method for getting the number of parameters that this
    * PyScriptOperator has. Uses the internal interpreter to call the
    * superclass method.
    *
-   * @return The number of parameters of this PyScriptOperator.
+   * @return The number of parameters of this PyScriptOperator. If this script
+   *         does not truly define an Operator, this returns 0.
    */
   public int getNum_parameters(  ) {
+    if( !IAmOperator ) {
+      return 0;
+    }
+
     PyObject pyNumParams = interp.eval( "innerClass.getNum_parameters(  )" );
 
     //convert the PyObject to a useful Java Object
@@ -235,8 +341,15 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
    *
    * @param param The new IParameter.
    * @param index The index of the parameter to set.
+   *
+   * @return Whether or not the parameter was successfully set. If this script
+   *         does not truly define an Operator, this returns false.
    */
   public boolean setParameter( IParameter param, int index ) {
+    if( !IAmOperator ) {
+      return false;
+    }
+
     //set the parameter in the Jython namespace
     interp.set( "tempParam", param );
 
@@ -255,9 +368,14 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
    *
    * @param index The index of the IParameter to get.
    *
-   * @return The given IParameter.
+   * @return The given IParameter. If this script does not truly define an
+   *         Operator, this returns null.
    */
   public IParameter getParameter( int index ) {
+    if( !IAmOperator ) {
+      return null;
+    }
+
     PyObject pyParam = interp.eval( "innerClass.getParameter( " + index + " )" );
 
     //convert the PyObject to a useful Java Object
@@ -277,91 +395,159 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
   }
 
   /**
-   * Calls the getResult defined in the Python script.
+   * Calls the getResult defined in the Python script. If this script does not
+   * truly define an Operator, this returns the result of attempting to
+   * execute the Jython script code.  <br>
+   * <br>
+   * If the Jython code does not define an Operator:<br>
+   * 
+   * <ul>
+   * <li>
+   * The variable "Result" must be assigned a value if you want this method to
+   * return something other than null.
+   * </li>
+   * <li>
+   * This method will only execute the leftmost statements.  That is, if  you
+   * define Jython functions, it will not execute code within them by itself.
+   * You must explicitly call those functions to execute them.
+   * </li>
+   * </ul>
+   * 
    *
    * @return Result of executing the Script.
    */
   public Object getResult(  ) {
-    PyObject pyResult = interp.eval( "innerClass.getResult(  )" );
+    if( !IAmOperator ) {
+      //we must be working with a document that does not have a class
+      //definition, so we'll try to just execute the document text
+      if( script == null ) {
+        return new ErrorString( "No code to translate" );
+      }
 
-    //convert the PyObject to a useful Java Object
-    Object oResult = pyResult.__tojava__( Object.class );
+      try {
+        reset(  );
 
-    return oResult;
+        //execute level 0 stuff
+        interp.exec( script.toString(  ) );
+
+        //interpreter hit an error when processing the document, so return it
+        if( eos.size(  ) > 0 ) {
+          errormessage = "Error:" + eos.toString(  );
+
+          return new ErrorString( "Error:" + eos.toString(  ) );
+        }
+
+        //we don't really have an inner class to work with here, so we will
+        //try to get the "Result" from the Jython code.  If we can't get it,
+        //then we have to assume that no one set it, and continue on.
+        PyObject pyResult = interp.get( "Result" );
+        Object result     = null;
+
+        if( pyResult != null ) {
+          result = ( Object )pyResult;
+        }
+
+        return result;
+      } catch( PySyntaxError s ) {
+        //hit some sort of Python syntax error
+        errormessage = "ERROR1:" + s.toString(  );
+
+        return new ErrorString( errormessage );
+      } catch( Exception s ) {
+        //some other exception-hopefully we don't ever hit this.
+        errormessage = "ERROR2:" + s.toString(  );
+
+        return new ErrorString( errormessage );
+      }
+    } else {
+      PyObject pyResult = interp.eval( "innerClass.getResult(  )" );
+
+      //convert the PyObject to a useful Java Object
+      Object oResult = pyResult.__tojava__( Object.class );
+
+      return oResult;
+    }
   }
 
   /**
-   * Testbed.
-   *
-   * @param args unused
+   * Does nothing here.  The title must be returned from the Jython script, and
+   * so until an Operator exists which can handle a title, this cannot be
+   * used.
    */
-  public static void main( String[] args ) {
-    /*PyScriptOperator pso = new PyScriptOperator(
-       "/home/coldfire/ISAW/Scripts/TestArrayPG.py" );
-       System.out.println( "Testing getTitle():" );
-       System.out.println( pso.getTitle(  ) );
-       System.out.println(  );
-       System.out.println( "Testing getCategoryList():" );
-       String[] categories = pso.getCategoryList(  );
-       for( int i = 0; i < categories.length; i++ ) {
-         System.out.println( categories[i] );
-       }
-       System.out.println(  );
-       System.out.println( "Testing getCommand():" );
-       System.out.println( pso.getCommand(  ) );
-       System.out.println(  );
-       System.out.println( "Testing getNum_parameters():" );
-       System.out.println( pso.getNum_parameters(  ) );
-       System.out.println(  );
-       System.out.println( "Testing getDocumentation():" );
-       System.out.println( pso.getDocumentation(  ) );
-       System.out.println(  );
-       System.out.println( "Testing change of parameters:" );
-       System.out.println( "Old parameter" + pso.getParameter( 0 ) );
-       pso.setParameter( new ArrayPG( "Enter Numbers", "20:30" ), 0 );
-       System.out.println( "New parameter" + pso.getParameter( 0 ) );
-       System.out.println(  );
-       System.out.println( "Testing getResult() with the default parameters:" );
-       System.out.println( pso.getResult(  ) );
-       System.out.println(  );
-       System.out.println( "Testing clone:" );
-       PyScriptOperator pso2 = ( PyScriptOperator )pso.clone(  );
-       System.out.println( "Setting Operator #1's parameter to \"99:123\"" );
-       pso.getParameter( 0 )
-          .setValue( "99:123" );
-       System.out.println( "Operator #1's parameter value:" );
-       System.out.println( pso.getParameter( 0 ).getValue(  ) );
-       System.out.println( "Operator #2's parameter value (original):" );
-       System.out.println( pso2.getParameter( 0 ).getValue(  ) );
-       System.out.println(  );*/
-    /*System.out.println( "Testing addParameter(...)" );
-       pso.testAddParameter(
-         new IntegerPG( "testParameter", new Integer( "5" ), false ) );
-       System.out.print( "There are now " + pso.getNum_parameters(  ) );
-       System.out.println( " parameters." );*/
-    /*System.out.println( "Testing clearParametersVector():" );
-       pso.clearParametersVector(  );
-       System.out.println( "After clearing, the number of parameters is: " );
-       System.out.println( pso.getNum_parameters(  ) );
-       System.out.println( "Testing createCategoryList():" );
-       categories = pso.testCCL(  );
-       for( int i = 0; i < categories.length; i++ ) {
-         System.out.println( categories[i] );
-       }*/
-    /*System.out.println(  );
-       System.out.println( "Op #1's parameters before copy: " );
-       System.out.println( pso.getParameter( 0 ).getValue(  ) );
-       System.out.println( "Op #2's parameters before copy: " );
-       System.out.println( pso2.getParameter( 0 ).getValue(  ) );
-       System.out.println( "Copying parameter from Op #1 to Op #2:" );
-       pso.CopyParametersFrom( pso2 );
-       System.out.println( "Op #1's parameters after copy: " );
-       System.out.println( pso.getParameter( 0 ).getValue(  ) );
-       System.out.println( "Op #2's parameters after copy: " );
-       System.out.println( pso2.getParameter( 0 ).getValue(  ) );
-       System.out.println( "Testing toString(  )" );
-       System.out.println( pso.toString(  ) );*/
-  }
+  public void setTitle( String title ) {}
+
+  /**
+   * Testbed.
+   */
+
+  /*public static void main( String[] args ) {
+     StringBuffer s       = new StringBuffer(  );
+        PyScriptOperator pso = new PyScriptOperator(
+            "/home/coldfire/ISAW/Scripts/TestArrayPG.py" );
+        System.out.println( "Testing getTitle():" );
+        System.out.println( pso.getTitle(  ) );
+        System.out.println(  );
+        System.out.println( "Testing getCategoryList():" );
+        String[] categories = pso.getCategoryList(  );
+        for( int i = 0; i < categories.length; i++ ) {
+          System.out.println( categories[i] );
+        }
+        System.out.println(  );
+        System.out.println( "Testing getCommand():" );
+        System.out.println( pso.getCommand(  ) );
+        System.out.println(  );
+        System.out.println( "Testing getNum_parameters():" );
+        System.out.println( pso.getNum_parameters(  ) );
+        System.out.println(  );
+        System.out.println( "Testing getDocumentation():" );
+        System.out.println( pso.getDocumentation(  ) );
+        System.out.println(  );
+        System.out.println( "Testing change of parameters:" );
+        System.out.println( "Old parameter" + pso.getParameter( 0 ) );
+        pso.setParameter( new ArrayPG( "Enter Numbers", "20:30" ), 0 );
+        System.out.println( "New parameter" + pso.getParameter( 0 ) );
+        System.out.println(  );
+        System.out.println( "Testing getResult() with the default parameters:" );
+        System.out.println( pso.getResult(  ) );
+        System.out.println(  );
+        System.out.println( "Testing clone:" );
+        PyScriptOperator pso2 = ( PyScriptOperator )pso.clone(  );
+        System.out.println( "Setting Operator #1's parameter to \"99:123\"" );
+        pso.getParameter( 0 )
+           .setValue( "99:123" );
+        System.out.println( "Operator #1's parameter value:" );
+        System.out.println( pso.getParameter( 0 ).getValue(  ) );
+        System.out.println( "Operator #2's parameter value (original):" );
+        System.out.println( pso2.getParameter( 0 ).getValue(  ) );
+        System.out.println(  );*/
+  /*System.out.println( "Testing addParameter(...)" );
+     pso.testAddParameter(
+       new IntegerPG( "testParameter", new Integer( "5" ), false ) );
+     System.out.print( "There are now " + pso.getNum_parameters(  ) );
+     System.out.println( " parameters." );*/
+  /*System.out.println( "Testing clearParametersVector():" );
+     pso.clearParametersVector(  );
+     System.out.println( "After clearing, the number of parameters is: " );
+     System.out.println( pso.getNum_parameters(  ) );
+     System.out.println( "Testing createCategoryList():" );
+     categories = pso.testCCL(  );
+     for( int i = 0; i < categories.length; i++ ) {
+       System.out.println( categories[i] );
+     }*/
+  /*System.out.println(  );
+     System.out.println( "Op #1's parameters before copy: " );
+     System.out.println( pso.getParameter( 0 ).getValue(  ) );
+     System.out.println( "Op #2's parameters before copy: " );
+     System.out.println( pso2.getParameter( 0 ).getValue(  ) );
+     System.out.println( "Copying parameter from Op #1 to Op #2:" );
+     pso.CopyParametersFrom( pso2 );
+     System.out.println( "Op #1's parameters after copy: " );
+     System.out.println( pso.getParameter( 0 ).getValue(  ) );
+     System.out.println( "Op #2's parameters after copy: " );
+     System.out.println( pso2.getParameter( 0 ).getValue(  ) );
+     System.out.println( "Testing toString(  )" );
+     System.out.println( pso.toString(  ) );
+     }*/
 
   /**
    * Gets the title (just the short script name) of this PyScriptOperator.
@@ -369,9 +555,14 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
    * outside of Jython's namespace), this returns a name that is useful for
    * drop down menu in ISAW.
    *
-   * @return The "short" name for the inner script.
+   * @return The "short" name for the inner script. If this script does not
+   *         truly define an Operator, this returns super.getTitle().
    */
   public String getTitle(  ) {
+    if( !IAmOperator ) {
+      return super.getTitle(  );
+    }
+
     PyObject pyString = interp.eval( "innerClass.getTitle(  )" );
 
     //convert the PyObject to a useful Java Object
@@ -381,17 +572,30 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
   }
 
   /**
+   * Gets the version of Python on the system.
+   *
+   * @return Formatted Python version number.
+   */
+  public String getVersion(  ) {
+    return "V1-PYth v" + PySystemState.version;
+  }
+
+  /**
    * Copy the parameter list from operator "op" to the current operator.  The
    * original list of parameters is cleared before copying the new parameter
-   * list. Uses the internal interpreter to call the superclass method.
+   * list. Uses the internal interpreter to call the superclass method. If
+   * this script does not truly define an Operator, this does nothing.
    *
    * @param op The operator object whose parameter list is to be  copied to the
    *        current operator.
    */
   public void CopyParametersFrom( Operator op ) {
+    if( !IAmOperator ) {
+      return;
+    }
+
     //set the operator in the Jython namespace
     interp.set( "tempOp", op );
-
     interp.exec( "innerClass.CopyParametersFrom( tempOp )" );
   }
 
@@ -403,7 +607,6 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
   public void addDataSet( DataSet dss ) {
     dss.addIObserver( this );
     Dsets.addElement( dss );
-
     interp.set( "ISAWDS" + dss.getTag(  ), dss );
   }
 
@@ -445,14 +648,12 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
    * @return A clone of this Operator.
    */
   public Object clone(  ) {
-    DataSet[] newDS = this.getDataSets(  );
-
+    DataSet[] newDS         = this.getDataSets(  );
     PyScriptOperator newPSO = new PyScriptOperator( this );
 
     for( int i = 0; i < newDS.length; i++ ) {
       newPSO.addDataSet( newDS[i] );
     }
-
     newPSO.setIObserverList( obss );
 
     return newPSO;
@@ -475,6 +676,58 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
   }
 
   /**
+   * Executes one line of the document.
+   *
+   * @param Doc The document to execute one line of.
+   * @param line The line to execute.
+   */
+  public void execute1( Document Doc, int line ) {
+    String codeLine = ScriptOperator.getLine( Doc, line );
+    resetError(  );
+
+    if( codeLine != null ) {
+      eos.reset(  );
+
+      try {
+        interp.exec( codeLine );
+      } catch( Exception s ) {
+        errormessage = s.getMessage(  );
+        SharedData.addmsg( errormessage );
+      }
+    }
+  }
+
+  /**
+   * Executes a series of import statements.  It seems to not matter to the
+   * Python interpreter whether or not multiple copies of the same import
+   * statement are executed.
+   *
+   * @param pyInterp The PythonInterpreter to use to execute the statements.
+   */
+  public static void initImports( PythonInterpreter pyInterp ) {
+    String scriptsDir = SharedData.getProperty( "ISAW_HOME" );
+
+    if( scriptsDir == null ) {
+      return;
+    }
+    scriptsDir = StringUtil.setFileSeparator( scriptsDir + "/Scripts/" );
+    pyInterp.execfile( scriptsDir + "default_imports.py" );
+  }
+
+  /**
+   * Executes when a PropertyChangeEvent Occurs
+   *
+   * @param e The property change Event.  NOTE: The only PropertyChangeEvent
+   *        processed has a name "Display"
+   */
+  public void propertyChange( PropertyChangeEvent e ) {
+    if( PS == null ) {
+      return;  // no one to notify
+    }
+    PS.firePropertyChange( e );
+  }
+
+  /**
    * Removes the given property change listener.
    *
    * @param The PropertyChangeListener to remove.
@@ -484,50 +737,43 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
   }
 
   /**
-   * Initializes the Python Interpreter if it is null.  Adds DataSets and the
-   * IOBS variable is also re-added.
+   * Creates a new Python Interpreter.  Adds DataSets and the IOBS variable is
+   * also re-added.  This also calls the interpreter's exec method on the
+   * script if the script exists.
    */
   public void reset(  ) throws InstantiationError {
     if( interp == null ) {
       //initialize the system state
       initInterpreter(  );
+    } else {
+      resetInterpreter(  );
     }
-
-    for( int i = 0; i < Dsets.size(  ); i++ ) {
-      DataSet DS = ( DataSet )( Dsets.elementAt( i ) );
-
-      interp.set( "ISAWDS" + DS.getTag(  ), DS );
-    }
-
-    interp.set( "IOBS", obss );
+    resetVariables(  );
 
     //just reload the script if it already exists
-    if( script == null ) {
-      script = new PyScript( scriptFile );
-
-      if( !script.isValid(  ) ) {
-        throw new InstantiationError( "Invalid Script Format" );
-      }
-    } else {
+    if( script != null ) {
       script.reload(  );
     }
 
-    // execute the file (level 0) --> this throws the PyException
-    try {  // one is faster, the other throws exceptions with the right filename
-      this.interp.exec( script.toString(  ) );
+    if( IAmOperator ) {
+      // execute the file (level 0) --> this throws the PyException
+      try {  // one is faster, the other throws exceptions with the right filename
+        interp.exec( script.toString(  ) );
 
-      //this.interp.execfile(script.getFilename());
-    } catch( PyException e ) {
-      e.printStackTrace(  );
-      throw script.generateError( e, scriptFile );
+        //interp.execfile(script.getFilename());
+      } catch( PyException e ) {
+        e.printStackTrace(  );
+        throw script.generateError( e, scriptFile );
+      }
+      interp.exec( "innerClass = " + script.getClassname(  ) + "(  )" );
     }
+  }
 
-    // get the name of the class within the file
-    classname = script.getClassname(  );
-
-    //create an instance of the class contained within the script so we can use
-    //it within this class
-    interp.exec( "innerClass = " + classname + "(  )" );
+  /**
+   * Resets the internal errormessage.
+   */
+  public void resetError(  ) {
+    errormessage = null;
   }
 
   /**
@@ -550,10 +796,15 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
 
   /**
    * Adds the given parameter to the list of parameters in Jython's namespace.
+   * If this script does not truly define an Operator, this does nothing.
    *
    * @param param The IParameter to add.
    */
   protected void addParameter( IParameter param ) {
+    if( !IAmOperator ) {
+      return;
+    }
+
     //set the parameter in the Jython namespace
     interp.set( "tempParam", param );
     interp.exec( "innerClass.addParameter( tempParam )" );
@@ -561,10 +812,17 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
 
   /**
    * Method to create a category list from this classes nearest abstract
-   * parent's package name.   Uses the internal interpreter to call the
+   * parent's package name.  Uses the internal interpreter to call the
    * superclass method.
+   *
+   * @return String array of the category list. If this script does not truly
+   *         define an Operator, this returns super.createCategoryList().
    */
   protected String[] createCategoryList(  ) {
+    if( !IAmOperator ) {
+      return super.createCategoryList(  );
+    }
+
     PyObject pyCatList = interp.eval( "innerClass.createCategoryList(  )" );
 
     //convert the PyObject to a useful Java Object
@@ -596,11 +854,76 @@ public class PyScriptOperator extends GenericOperator implements IObserver,
 
     // here's the initialization step
     PythonInterpreter.initialize( sysProps, postProps, null );
+    resetInterpreter(  );
+  }
 
+  /**
+   * Sets the internal IAmOperator variable, as well as calling reset(  ) to
+   * reset the interpreter variables and call setDefaultParameters if the
+   * script defines an operator.
+   */
+  private void initOperator(  ) {
+    if( script.isValid(  ) ) {
+      IAmOperator = true;
+    } else {
+      IAmOperator = false;
+    }
+    reset(  );
+
+    if( IAmOperator ) {
+      setDefaultParameters(  );
+    }
+  }
+
+  /**
+   * Creates a new Python interpreter and executes default_imports.py.
+   */
+  private void resetInterpreter(  ) {
     // instantiate AFTER initialize
     interp = new PythonInterpreter(  );
 
     //execute a series of default import statements
-    pyScriptProcessor.initImports( interp );
+    PyScriptOperator.initImports( interp );
+  }
+
+  /**
+   * Sets the variables (DataSets, IObservers, etc.) that we want the internal
+   * interpreter to hold on to.  The variables will be initialized if they do
+   * not exist.
+   */
+  private void resetVariables(  ) {
+    if( Dsets == null ) {
+      Dsets = new Vector(  );
+    }
+
+    if( obss == null ) {
+      obss = new IObserverList(  );
+    }
+
+    if( PS == null ) {
+      PS = new PropertyChangeSupport( this );
+    }
+
+    for( int i = 0; i < Dsets.size(  ); i++ ) {
+      DataSet DS = ( DataSet )( Dsets.elementAt( i ) );
+
+      //reset the internal DataSet variables
+      interp.set( "ISAWDS" + DS.getTag(  ), DS );
+    }
+
+    //reset the IObserver internal variable
+    interp.set( "IOBS", obss );
+
+    //reset the error stream
+    eos = new ByteArrayOutputStream(  );
+
+    //set the interpreter's error stream
+    interp.setErr( eos );
+
+    //set the interpreter's output stream
+    interp.setOut( new DisplayOStream(  ) );
+
+    //reset the error message
+    resetError(  );
   }
 }
