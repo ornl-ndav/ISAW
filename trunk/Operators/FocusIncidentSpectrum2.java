@@ -29,6 +29,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2002/09/19 15:57:38  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.2  2002/07/10 15:53:20  pfpeterson
  * Implements HiddenOperator.
  *
@@ -50,6 +53,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.Special.*;
 import DataSetTools.retriever.RunfileRetriever;
 import DataSetTools.operator.Generic.Special.*;
+import DataSetTools.parameter.*;
 
 /**
  * This operator focusses the incident spectrum from a beam monitor to
@@ -90,7 +94,7 @@ public class  FocusIncidentSpectrum2 extends GenericSpecial
                                    int new_group_id){
         this();
         
-        Parameter parameter = getParameter(0);
+        IParameter parameter = getParameter(0);
         parameter.setValue( mds );
 
         parameter=getParameter(1);

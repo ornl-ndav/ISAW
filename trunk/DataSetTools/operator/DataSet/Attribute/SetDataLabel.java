@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:00:09  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.1  2002/09/10 22:37:57  dennis
  *  Operator to set label on some or all Data blocks in a Data set.
  *
@@ -46,6 +49,7 @@ import  java.util.*;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
   * This operator specifies the label for some or all of the Data blocks in
@@ -97,7 +101,7 @@ public class SetDataLabel extends    DS_Attribute
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( label );
 
     parameter = getParameter( 1 );

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/09/19 16:05:33  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.2  2002/03/05 19:27:48  pfpeterson
  *  Updated @see references in javadocs.
  *
@@ -86,6 +89,7 @@ import DataSetTools.viewer.*;
 import DataSetTools.util.*;
 import IPNS.Runfile.*;
 import DataSetTools.operator.Parameter;
+import DataSetTools.parameter.*;
 
 /**
  * Operator to load a specific histogram from an IPNS runfile 
@@ -124,7 +128,7 @@ public class LoadOneHistogramDS extends    GenericLoad
    {
       super( "Load One Histogram" );
 
-      Parameter parameter = getParameter(0);
+      IParameter parameter = getParameter(0);
       parameter.setValue( file_name );
 
       parameter = getParameter(1);

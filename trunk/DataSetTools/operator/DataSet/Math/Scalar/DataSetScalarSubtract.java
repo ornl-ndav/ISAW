@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:02:36  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.1  2002/02/22 21:03:18  pfpeterson
  *  Operator reorganization.
  *
@@ -99,6 +102,7 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
+import  DataSetTools.parameter.*;
 
 /**
   * This operator subtracts a constant from the values of all data objects in a 
@@ -141,7 +145,7 @@ public class DataSetScalarSubtract extends    ScalarOp
     this();                         // do the default constructor, then set
                                     // the parameter value(s)
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new Float( value) );
 
     parameter = getParameter( 1 );

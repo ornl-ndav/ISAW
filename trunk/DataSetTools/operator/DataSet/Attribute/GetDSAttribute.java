@@ -34,6 +34,9 @@
  * This operator gets a DataSet Attribute
  *
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:00:02  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.1  2002/02/22 21:00:05  pfpeterson
  *  Operator reorganization.
  *
@@ -80,6 +83,7 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
   *  Allows the user to get attributes on a DataSet
@@ -122,7 +126,7 @@ public class GetDSAttribute extends  DS_Attribute
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( Attrib);
 
     setDataSet( ds );               // record reference to the DataSet that

@@ -31,6 +31,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.4  2002/09/19 16:03:11  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.3  2002/03/13 16:19:17  dennis
  *  Converted to new abstract Data class.
  *
@@ -113,6 +116,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.math.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
   *  Compute the scattering function for a direct geometry spectrometer 
@@ -164,7 +168,7 @@ public class ScatteringFunction extends    DS_TOF_DG_Spectrometer
     this();                         // do the default constructor, then set
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new Float(crossection) );
 
     parameter = getParameter( 1 );

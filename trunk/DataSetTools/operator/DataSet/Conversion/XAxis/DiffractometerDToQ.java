@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/09/19 16:00:23  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.3  2002/07/08 20:46:00  pfpeterson
  * Now uses String constants in FontUtil.
  *
@@ -51,6 +54,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
  * This operator converts a d-spacing DataSet for a Diffractometer to Q.
@@ -89,7 +93,7 @@ public class DiffractometerDToQ extends XAxisConversionOp{
                                         // the parameter value(s) by altering a
                                         // reference to each of the parameters
 
-        Parameter parameter = getParameter( 0 );
+        IParameter parameter = getParameter( 0 );
         parameter.setValue( new Float( Qmin ) );
         
         parameter = getParameter( 1 );

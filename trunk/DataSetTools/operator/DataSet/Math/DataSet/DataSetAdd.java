@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/09/19 16:02:13  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.2  2002/03/05 19:25:51  pfpeterson
  *  Updated @see references in javadocs.
  *
@@ -110,6 +113,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
+import  DataSetTools.parameter.*;
 
 /**
   *  Add corresponding Data "blocks" from the current DataSet to Data "blocks"
@@ -167,7 +171,7 @@ public class DataSetAdd extends    DataSetOp
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( ds_to_add );
 
     parameter = getParameter( 1 );

@@ -2,6 +2,9 @@
  *  File:  DiffractometerTofToQ.java 
  *             
  *  $Log$
+ *  Revision 1.9  2002/09/19 16:00:29  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.8  2002/07/15 16:52:42  pfpeterson
  *  Fixed bugs involving tof->d/Q conversions.
  *
@@ -115,6 +118,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 import  DataSetTools.gsastools.GsasCalib;
 
 /**
@@ -165,7 +169,7 @@ public class DiffractometerTofToQ extends    XAxisConversionOp
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new Float( min_Q ) );
 
     parameter = getParameter( 1 );

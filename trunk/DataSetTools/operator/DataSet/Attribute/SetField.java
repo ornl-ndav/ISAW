@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/09/19 16:00:10  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.1  2002/02/22 21:00:12  pfpeterson
  * Operator reorganization.
  *
@@ -88,6 +91,7 @@ import  java.util.Vector;
 import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
   * This operator sets a DataSet field 
@@ -131,7 +135,7 @@ public class SetField extends    DS_Attribute
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( Fieldname);
 
     parameter = getParameter( 1 );

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/09/19 16:02:17  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.2  2002/07/17 20:31:39  dennis
  *  Fixed form of comment
  *
@@ -107,6 +110,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
+import  DataSetTools.parameter.*;
 
 /**
   *  Multiply the corresponding Data "blocks" of the parameter DataSet times 
@@ -152,7 +156,7 @@ public class DataSetMultiply extends  DataSetOp
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( ds_to_multiply );
 
     parameter = getParameter( 1 );

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.32  2002/09/19 15:57:22  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.31  2002/08/19 22:01:49  pfpeterson
  * Added code to create a vector of DataSetOperators. Two lines
  * of code to call the new methods have been commented out until
@@ -160,6 +163,7 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.Generic.*;
 import DataSetTools.operator.DataSet.DataSetOperator;
 import DataSetTools.components.ParametersGUI.*;
+import DataSetTools.parameter.*;
 
 /** 
  * Gets and Saves all scripts and java GenericOperators in the
@@ -485,7 +489,7 @@ public class Script_Class_List_Handler  implements OperatorHandler{
         int n = X.getNum_parameters();
         if( (par_index<0) || (par_index>=n) ) return null;
 
-        Parameter P = X.getParameter( par_index );
+        IParameter P = X.getParameter( par_index );
         if( P == null ) return null;
 
         return P.getValue();

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/09/19 16:01:51  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.2  2002/03/05 19:25:42  pfpeterson
  *  Updated @see references in javadocs.
  *
@@ -103,6 +106,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.math.*;
 import  DataSetTools.operator.*;
+import  DataSetTools.parameter.*;
 
 /**
   *  Calculate the specified moment of the selected Data block over the  
@@ -164,7 +168,7 @@ public class  CalculateMomentOfGroup  extends    AnalyzeOp
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new Integer( group_id ) );
 
     parameter = getParameter( 1 );

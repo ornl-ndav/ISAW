@@ -33,6 +33,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2002/09/19 16:02:53  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.1  2002/02/22 21:03:44  pfpeterson
  *  Operator reorganization.
  *
@@ -82,6 +85,7 @@ import  DataSetTools.util.*;
 import  DataSetTools.retriever.*;
 import  ChopTools.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
  * This operator removes Data blocks that seem to come from defective detectors
@@ -128,7 +132,7 @@ public class SpectrometerEvaluator extends    DS_Special
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( monitor_ds );
 
     parameter = getParameter( 1 );

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/09/19 16:01:31  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.3  2002/07/31 16:10:28  dennis
  * Implements IDataPointInfo to display data in a viewer's
  * DataSetXConversionsTable.
@@ -55,6 +58,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
  *  This operator uses the StartTime attribute to produce a string giving 
@@ -92,7 +96,7 @@ public class XDateTime extends  XAxisInformationOp
   {
     this();                        
 
-    Parameter parameter = getParameter(0); 
+    IParameter parameter = getParameter(0); 
     parameter.setValue( new Integer(i) );
     
     parameter = getParameter(1); 

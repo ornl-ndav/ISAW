@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2002/09/19 16:02:22  pfpeterson
+ * Now uses IParameters rather than Parameters.
+ *
  * Revision 1.1  2002/02/22 21:03:00  pfpeterson
  * Operator reorganization.
  *
@@ -107,6 +110,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.operator.DataSet.DSOpsImplementation;
+import  DataSetTools.parameter.*;
 
 /**
   *  Replace Data blocks with the sum of the Data blocks.  Data blocks that 
@@ -160,7 +164,7 @@ public class SumCurrentlySelected  extends    DataSetOp
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new Boolean( status ) );
 
     parameter = getParameter( 1 );

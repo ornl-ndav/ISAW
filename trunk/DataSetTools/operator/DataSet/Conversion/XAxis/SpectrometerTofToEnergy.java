@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/09/19 16:00:35  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.3  2002/03/18 21:33:14  dennis
  *  Now checks whether or not the errors array is null before attempting
  *  to reverse the array.
@@ -123,6 +126,7 @@ import  DataSetTools.dataset.*;
 import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
+import  DataSetTools.parameter.*;
 
 /**
  * This operator converts a spectrometer time-of-flight DataSet to energy.  The
@@ -171,7 +175,7 @@ public class SpectrometerTofToEnergy extends    XAxisConversionOp
                                     // the parameter value(s) by altering a
                                     // reference to each of the parameters
 
-    Parameter parameter = getParameter( 0 );
+    IParameter parameter = getParameter( 0 );
     parameter.setValue( new Float( min_E ) );
 
     parameter = getParameter( 1 );

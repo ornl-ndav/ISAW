@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/09/19 16:05:32  pfpeterson
+ *  Now uses IParameters rather than Parameters.
+ *
  *  Revision 1.2  2002/03/05 19:27:47  pfpeterson
  *  Updated @see references in javadocs.
  *
@@ -86,6 +89,7 @@ import DataSetTools.viewer.*;
 import DataSetTools.util.*;
 import IPNS.Runfile.*;
 import DataSetTools.operator.Parameter;
+import DataSetTools.parameter.*;
 
 /**
  * Operator to load the Monitor DataSet from one IPNS runfile
@@ -120,7 +124,7 @@ public class LoadMonitorDS extends    GenericLoad
    {
       super( "Load Monitor DataSet" );
 
-      Parameter parameter = getParameter(0);
+      IParameter parameter = getParameter(0);
       parameter.setValue( file_name );
    } 
 
