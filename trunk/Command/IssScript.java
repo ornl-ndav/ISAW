@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2003/06/18 18:11:10  pfpeterson
+ * Fixed bug in the reload method where not all instance variables
+ * were reinitialized.
+ *
  * Revision 1.3  2003/06/17 17:00:13  pfpeterson
  * Added back in the ability to specify the category of the script using
  * the 'category' macro. The list should be comma delimited and should
@@ -82,6 +86,10 @@ public class IssScript extends Script{
   // ============================== PUBLIC UTILITY METHODS
   public boolean reload(){
     this.documentation=null;
+    this.command=null;
+    this.title=null;
+    this.categoryList=null;
+    this.hasDocumentation=true;
     return super.reload();
   }
 
