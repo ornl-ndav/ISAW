@@ -4,6 +4,8 @@ import javax.swing.*;
 import DataSetTools.operator.*;
 import javax.swing.filechooser.*;
 import java.awt.event.*;
+import DataSetTools.util.*;
+
 import java.io.*;
 public class JOneFileChooserParameterGUI  extends JParameterGUI
 {
@@ -30,7 +32,7 @@ public JOneFileChooserParameterGUI( Parameter  p)
   }
 public Parameter getParameter()
   { Parameter p = super.getParameter();
-    p.setValue( filename); 
+    p.setValue( new DataDirectoryString(filename)); 
     return p;
    }
 public void setFileFilter(  javax.swing.filechooser.FileFilter file_filter)
