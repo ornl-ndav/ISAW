@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.23  2004/03/04 21:57:01  dennis
+ *  Added two properties for controlling the size of a wizard.
+ *
  *  Revision 1.22  2003/12/15 01:51:44  bouzekc
  *  Removed unused imports.
  *
@@ -320,7 +323,13 @@ public class DefaultProperties{
             .append("#ViewAzimuthAngle=45.0").append(eol)
             .append("#ViewDistance=4.5").append(eol)
             .append("#Brightness=40").append(eol)
-            .append("#Auto-Scale=0.0").append(eol);
+            .append("#Auto-Scale=0.0").append(eol)
+            .append(eol)
+            .append("#").append(eol)
+            .append("# Wizard Options").append(eol)
+            .append("#").append(eol)
+            .append("WIZARD_WIDTH=700").append(eol)
+            .append("WIZARD_HEIGHT=600").append(eol);
 
       /* This causes more problems with nexus than it fixes. These
          lines are taken from the original code that was inside Isaw.java.
