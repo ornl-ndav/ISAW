@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.143  2003/07/31 19:26:47  rmikk
+ *  Caught Throwable and printed the strack trace in this
+ *  class
+ *
  *  Revision 1.142  2003/07/16 22:43:58  dennis
  *  Changed version to 1.5.1 alpha 8.
  *
@@ -1759,8 +1763,8 @@ public class Isaw
         public Object construct(){
           try{
             new Script_Class_List_Handler();
-          }catch(RuntimeException e){
-            // do nothing
+          }catch(Throwable e){
+            e.printStackTrace();
           }finally{
             return null;
           }
@@ -1829,7 +1833,7 @@ public class Isaw
                                   //this means that a new DataSet has
                                   //been created. 
     if ( reason instanceof DataSet )
-    {
+    { 
       DataSet ds = (DataSet)reason;
       MutableTreeNode node = jdt.getNodeOfObject( reason );
  
