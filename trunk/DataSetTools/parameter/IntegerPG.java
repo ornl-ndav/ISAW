@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/09/30 15:20:51  pfpeterson
+ *  Update clone method to return an object of this class.
+ *
  *  Revision 1.2  2002/06/12 14:20:20  pfpeterson
  *  Added two convenience constructors to create the parameter
  *  with an int.
@@ -181,5 +184,12 @@ public class IntegerPG extends StringPG{
         fpg.init();
         fpg.showGUIPanel();
 
+    }
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+        return (IntegerPG)super.clone();
     }
 }

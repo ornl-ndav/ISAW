@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2002/09/30 15:20:47  pfpeterson
+ *  Update clone method to return an object of this class.
+ *
  *  Revision 1.2  2002/06/12 14:20:00  pfpeterson
  *  Added two convenience constructors to create the parameter
  *  with a float.
@@ -166,5 +169,12 @@ public class FloatPG extends StringPG{
         fpg.init();
         fpg.showGUIPanel();
 
+    }
+
+    /**
+     * Definition of the clone method.
+     */
+    public Object clone(){
+        return (FloatPG)super.clone();
     }
 }
