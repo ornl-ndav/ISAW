@@ -2,6 +2,12 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.7  2001/07/25 19:17:25  neffk
+ * automatically reloads the tree's data model to ensure that all
+ * new nodes added to 'Modified' are shown.  this has the irritating
+ * side-effect that all branches of the tree collapse whenever a new
+ * DataSet object is produced.
+ *
  * Revision 1.6  2001/07/25 16:01:55  neffk
  * mouse listener is now instantiated in Isaw.java.  this was changed
  * so that the listener could have access to Isaw.this, allowing
@@ -229,10 +235,16 @@ public class JDataTree
    */ 
   public void addToModifiedExperiment( DataSet ds )
   {
+    System.out.println( "JDataTree: addToModifiedExerpiment(...)" );
+
     ds.addIObserver( this );
-    DataSetMutableTreeNode ds_node = new DataSetMutableTreeNode( ds );
+//    DataSetMutableTreeNode ds_node = new DataSetMutableTreeNode( ds );
 //    getModifiedExperiment().insert(  ds_node, getModifiedExperiment().getChildCount()  );
-    getModifiedExperiment().insert(  ds_node, 0  );
+//    getModifiedExperiment().insert(  ds_node, 0  );
+    getModifiedExperiment().setUserObject( ds );
+
+    getMyModel().reload();
+
   }
 
 
