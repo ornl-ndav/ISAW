@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/07/14 13:25:58  dennis
+ *  The constructor now throws an instantiation error if the
+ *  requested area detector was not found.
+ *
  *  Revision 1.8  2003/06/04 19:11:50  dennis
  *  Fixed bug in calculation of row, col, TOF based on Q.
  *  QToXcmYcmWl() now returns x, y values in centimeters.
@@ -221,6 +225,12 @@ public class VecQToTOF
       }
       if ( !right_detector_found )
         area_detector_found = false;    // start looking for the next area det
+    }
+
+    if ( !right_detector_found )
+    {
+      System.out.println("Didn't find right detector");
+      throw new InstantiationError("ERROR:Didn't find area det#"+det_num);
     }
 
     if ( !grid.isData_entered() )
