@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.34  2002/01/09 19:28:54  rmikk
+ * -Extracted the StatusPane from CommandPane
+ * -The status pane is now constructed and added in the
+ *    main program so CommandPane is still standalone with
+ *    a status pane
+ *
  * Revision 1.33  2001/12/21 17:50:20  dennis
  * 1: Almost completely separated out the status pane.
  * 2: Included a Save and Clear option on this status pane
@@ -212,7 +218,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener ,
     JTextArea  Commands , 
                Immediate ; 
 
-    StatusPane    StatusLine ; 
+   
 
     String FilePath = null  ;             // for macro storage and retrieval
     File SelectedFile = null;
@@ -227,9 +233,9 @@ public CommandPane()
     { 
       initt();
       SP = new ScriptProcessor(  Commands.getDocument());
-      SP.addPropertyChangeListener( StatusLine );
+      //SP.addPropertyChangeListener( StatusLine );
       PC = new PropertyChangeSupport( this );
-      PC.addPropertyChangeListener( StatusLine );
+      //PC.addPropertyChangeListener( StatusLine );
       //SP.addPropertyChangeListener( this );
      }
 
@@ -317,20 +323,10 @@ public void setLogDoc(Document doc)
             X = null;
           
 	  
-         StatusLine = new StatusPane( 3 , 50 ) ; 
-	 // StatusLine.setBackground( Color.white);
-         X = new JScrollPane( StatusLine);
-         X.setBorder(new TitledBorder( "Status" ));
-         JPanelwithToolBar YY = new JPanelwithToolBar("Save", "Clear",
-                           new SaveDocToFileListener( StatusLine.getDocument(), null),
-                           new ClearDocListener( StatusLine.getDocument()),
-                           X);
-	 //StatusLine.setBorder( new TitledBorder( "Status" ));
-         StatusLine.setEditable( false );
-         SplitPaneWithState Center= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT ,
-                      JPS,  YY,.80f);
-  
-        add(Center, BorderLayout.CENTER);         
+        
+     
+          add(JPS, BorderLayout.CENTER); 
+        //add(Center, BorderLayout.CENTER);         
 	 //add( X , BorderLayout.SOUTH ) ; 
  
      try{        
@@ -607,14 +603,28 @@ public static void  main( String args[] )
           System.out.println("Properties file could not be loaded due to error :" +ex);
        }
       JFrame F ;  
-    CommandPane P; 
+    CommandPane P;
+     StatusPane    StatusLine ;  
       F = new JFrame( "Command Pane" ); 
 
      P = new CommandPane(); 
      Dimension D = P.getToolkit().getScreenSize();
      F.setSize((int)(.6* D.width) , (int)(.7*D.height) ); 
      F.show() ;  
-     F.getContentPane().add( P ); 
+      StatusLine = new StatusPane( 3 , 50 ) ; 
+	 // StatusLine.setBackground( Color.white);
+         JScrollPane X = new JScrollPane( StatusLine);
+         X.setBorder(new TitledBorder( "Status" ));
+         JPanelwithToolBar YY = new JPanelwithToolBar("Save", "Clear",
+                           new SaveDocToFileListener( StatusLine.getDocument(), null),
+                           new ClearDocListener( StatusLine.getDocument()),
+                           X,BorderLayout.EAST);
+	 //StatusLine.setBorder( new TitledBorder( "Status" ));
+         StatusLine.setEditable( true);
+         SplitPaneWithState Center= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT ,
+                      P,  YY,.80f);
+     F.getContentPane().add( Center ); 
+     P.addPropertyChangeListener( StatusLine);
    
      F.validate(); 
   }
