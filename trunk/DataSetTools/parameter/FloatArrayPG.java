@@ -29,7 +29,13 @@ public class FloatArrayPG extends VectorPG
 
 
 
-      }      
+      }    
+public Object clone()
+  {
+    FloatArrayPG faap = new FloatArrayPG( getName(), getValue());
+    return (Object)faap;
+
+  }       
 
   }
 class MyActionList implements ActionListener
