@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/30 20:11:42  rmikk
+ * No longer implements Writer
+ *
  * Revision 1.1  2001/07/25 21:23:20  rmikk
  * Initial checkin
  *
@@ -46,7 +49,7 @@ import NexIO.NexApi.*;
 import IsawGUI.*;
 /** Writes Nexus formatted files from DataSets
  */
-public class NxWriter implements Writer
+public class NxWriter 
 {String errormessage; 
  NxWriteNode node;
  NxNodeUtils nn;
@@ -55,7 +58,7 @@ public class NxWriter implements Writer
 /** 
 *@param node  The Root node of the file to write
 */ 
- protected NxWriter( NxWriteNode node)
+ public NxWriter( NxWriteNode node)
    {this.node = node;
     errormessage= "";
     nn= new NxNodeUtils();
@@ -257,7 +260,8 @@ public static void main( String args[] )
   if(args != null) if( args.length > 0)
      filename = args[0];
   
-   NexWriteNode nwr = new NexWriteNode( filename  + ".nxs" );
+  //NexWriteNode nwr = new NexWriteNode( filename  + ".nxs" );
+   XmlWriteNode nwr = new XmlWriteNode( filename + ".xml" );
    if( nwr.getErrorMessage() != "")
        System.out.println( "Error 1="+nwr.getErrorMessage());
  //  if( nwr instanceof NexIO.Write.NxWriteNode)
@@ -290,7 +294,7 @@ public static void main( String args[] )
        filename = args [ i+1 ];
 
   }
-
+   nwrx.show();
    Writer.close();
   } 
 
