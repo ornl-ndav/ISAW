@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2001/08/13 15:04:12  dennis
+ * Shortened displayed title.
+ *
  * Revision 1.4  2001/06/01 21:18:00  rmikk
  * Improved documentation for getCommand() method
  *
@@ -95,7 +98,7 @@ public class  EnergyFromMonitorDS  extends    DS_Special
 
   public EnergyFromMonitorDS( )
   {
-    super( "Calculate initial energy from monitor DataSet" );
+    super( "Calculate Energy in using two monitors" );
   }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
@@ -117,7 +120,8 @@ public class  EnergyFromMonitorDS  extends    DS_Special
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: in this case, Emon
+   * @return  the command name to be used with script processor: 
+   *          in this case, Emon
    */
    public String getCommand()
    {
