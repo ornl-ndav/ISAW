@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.43  2004/08/02 20:05:00  rmikk
+ *  Added the integrate operator to SCD data sets
+ *
  *  Revision 1.42  2004/03/15 06:10:35  dennis
  *  Removed unused import statements.
  *
@@ -438,6 +441,7 @@ public class DataSetFactory implements Serializable
       ds.addOperator( new TrueAngle() );
       ds.addOperator( new LoadOrientation() );
       ds.addOperator( new LoadSCDCalib() );
+      ds.addOperator( new IntegratePt());
     }
     else if ( instrument_type == InstrumentType.TOF_SAD )  // will be different
     {                                                      // when SAD properly
