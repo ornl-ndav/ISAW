@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2003/12/30 13:42:49  rmikk
+ *  Changed the names for the three interactive table views.
+ *
  *  Revision 1.18  2003/12/11 19:29:22  rmikk
  *  Change Tom's view to Instrument Table and decreased the
  *    portion of the view assigned to the controls
@@ -114,6 +117,9 @@ public class TableViewMenuComponents
     JCheckBoxMenuItem jmErr=null; 
     JCheckBoxMenuItem jmInd=null;
     public static final String TOMS_VIEW = "Instrument Table";
+    public static final String GRX_Y="Serial y(x)";//"Group x vs y"old
+    public static final String X_GrY ="Parallel y(x)"; // old: x vs Group y
+    public static final String xR_Cy="Counts(x,y)"; //old:x,Row vs Col y
    public TableViewMenuComponents( )
      {error = false;
       index = false;
@@ -147,11 +153,11 @@ public class TableViewMenuComponents
     { if( i < 0)
          return null;
       if( i == 0)
-         return "Group x vs y";
+         return "GRX_Y";
       if( i == 1)
-         return "x vs Group y";
+         return "Parallel y(x)";
       if( i == 2 )
-         return "x,Row vs Col y";
+         return "Counts(x,y)";
       if( i == 3)
          return "Contour:Qx,Qy vs Qz";
       if( i == 4)
@@ -188,8 +194,8 @@ public class TableViewMenuComponents
  * Name associated with the Menu items
  */
  public DataSetViewer getDataSetViewer( String view_type, DataSet DS, ViewerState state)
-   { 
-     if(view_type.indexOf("x,Row vs Col y")==0)
+   {                      
+     if(view_type.indexOf("Counts(x,y)")==0)
        try{
            return new DataSetViewerMaker1(DS, state,
                    new RowColTimeVirtualArray( DS, 
@@ -219,9 +225,9 @@ public class TableViewMenuComponents
           indx = 0;
         DS.setSelectFlag(indx, true);
        }
-    if( view_type.indexOf("Group x vs y")==0)
+    if( view_type.indexOf("GRX_Y")==0)
       return new TableView( DS, state,"HGT,F");//tv.getGenTableModel( DS,LM,"HGT,F",DS.getSelectedIndices() ));
-    if( view_type.indexOf("x vs Group y")==0){
+    if( view_type.indexOf("Parallel y(x)")==0){
        TimeVersusGroupValues ArrayMaker = new TimeVersusGroupValues( DS,  
                               DS.getSelectedIndices(), false, false, state);
        LargeJTableViewComponent ViewComp =new LargeJTableViewComponent(state, new dummyIVirtualArray2D());
