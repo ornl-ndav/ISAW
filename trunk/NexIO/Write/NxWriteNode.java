@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/11/24 14:10:03  rmikk
+ * Improved the java docs
+ *
  * Revision 1.4  2002/11/27 23:29:19  pfpeterson
  * standardized header
  *
@@ -46,6 +49,16 @@ package NexIO.Write;
  * for Nexus files and Nexus-based XML files
  */
 public interface NxWriteNode{
+  /**
+  *    Gets the name of this node
+  */
+  public String getNodeName();
+  
+
+  /**
+   *   Allows this node to know its name
+   */
+  public void setNodeName( String NodeName);
   /**
    * returns error message or "" if none
    */
