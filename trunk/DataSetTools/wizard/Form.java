@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.43  2003/10/15 03:38:05  bouzekc
+ * Fixed javadoc errors.
+ *
  * Revision 1.42  2003/09/13 23:31:27  bouzekc
  * Made the internal JPanel transient.
  *
@@ -233,14 +236,14 @@ import javax.swing.border.*;
  * the input parameters and producing new values for the result parameters. If
  * special layouts and parameter interfaces are needed, the MakeGUI() method
  * can also be overridden in sub classes.
+ * <br><br>
  *
- * @see Wizard
- * @see Wizard.MathWizard
- * @see Wizard.AdderExampleForm Note that Forms are set up by default as
- *      standalone Forms, or the first Form in a Wizard.  To set a Form to
- *      have constant parameters that rely on values obtained from previous
- *      Forms, set the HAS_CONSTANTS variable to true by using the appropriate
- *      constructor.
+ * Note that Forms are set up by default as standalone Forms, or the first 
+ * Form in a Wizard.  To set a Form to have constant parameters that rely on 
+ * values obtained from previous Forms, set the HAS_CONSTANTS variable to true 
+ * by using the appropriate constructor.
+ *
+ * @see DataSetTools.wizard.Wizard
  */
 public abstract class Form extends Operator implements PropertyChanger {
   //~ Static fields/initializers ***********************************************
@@ -374,7 +377,7 @@ public abstract class Form extends Operator implements PropertyChanger {
    * execute() method is called before advancing to the next Form.  Replaces
    * show() and hide().
    *
-   * @param boolean show = true when you want the form to show, false when you
+   * @param show True when you want the form to show, false when you
    *        do not.
    */
   public void setVisible( boolean show ) {
@@ -705,9 +708,9 @@ public abstract class Form extends Operator implements PropertyChanger {
   }
 
   /**
-   * Validates this Form by calling validate(  ) on each ParameterGUI.<br>
-   * <br>
-   * . It also resets the progress bars.  Although it can be overwritten to
+   * Validates this Form by calling validateSelf(  ) on each ParameterGUI.
+   * 
+   * It also resets the progress bars.  Although it can be overwritten to
    * provide a more customized approach to validating parameters, this should
    * not usually be necessary, as the recommended approach is to retrieve all
    * parameters, validate them using this method, then perform any special
