@@ -20,17 +20,20 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *
  * Modified:
  *
  * $Log$
+ * Revision 1.24  2002/11/27 23:12:10  pfpeterson
+ * standardized header
+ *
  * Revision 1.23  2002/10/23 22:28:18  pfpeterson
  * Fixed a bug where a DataDirectoryString in a script was not
  * converted to the DataDirectoryString class.
@@ -58,65 +61,6 @@
  * Added code to set the Result to null after an
  * if statement if finished. (Ruth)
  *
- * Revision 1.15  2001/11/12 21:28:41  dennis
- *   1. Added Choice to the permissible data types for script parameters.
- *
- * Revision 1.14  2001/11/09 18:20:51  dennis
- *  1. Made changes so that the ScriptProcessor implements
- *     ScriptProcessorOperator
- *  2. In getResult, Parameters are directly assigned to variables
- *     using the execOneLine.Assign routine
- *  3. getLine, getNextMacroLine were changed to static methods
- *
- * Revision 1.13  2001/08/10 20:44:00  rmikk
- * Added a ServerTypeString for supported data types for
- * parameters in scripts
- *
- * Revision 1.12  2001/08/02 21:08:08  rmikk
- * Fixed up all Document files to take care of non \n characters
- * to terminate lines
- *
- * Revision 1.11  2001/08/02 20:54:01  rmikk
- * -Continuation of For, If, Else, Elseif, endif, endfor, and
- * on error(?) lines are now supported.
- * -This code now implements a RETURN command in the
- * command pane
- *
- * Revision 1.10  2001/08/02 16:22:10  rmikk
- * Incorporated the continuation character "\" for multiline
- * commands
- *
- * Revision 1.9  2001/08/01 19:12:54  rmikk
- * Fixed Array parameter handling
- *
- * Revision 1.8  2001/07/03 22:14:58  rmikk
- * Added Code that will eliminate the "UNKOWN" at the
- * top of the JParameterDialog box.
- *
- * Revision 1.7  2001/06/26 14:42:33  rmikk
- * -Changed DataSetListHandler to IDataSetListHandler
- * -Removed references to the session log
- *
- * Revision 1.6  2001/06/07 19:01:43  rmikk
- * Added a Test to catch parameters with null values.
- *
- * Revision 1.5  2001/06/04 20:14:51  rmikk
- * Updated Documentation.
- * Fixed Title = so no space after = needed
- *
- * Revision 1.4  2001/06/04 14:08:54  rmikk
- * Fixed error in SetDefaultParameters to allow space after
- * the = in the "parameter"  Title=
- *
- * Revision 1.3  2001/06/01 21:14:13  rmikk
- * Added Documentation for javadocs etc.
- *
-
-5-20-2001   Ruth Mikkelson  Separated the Processor part from the
-                            GUI. See CommandPane.java for previous docs 
-
-
-  
 */
 package Command; 
 

@@ -17,10 +17,10 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Ruth Mikkelson <Mikkelsonr@uwstout.edu>
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, Wisconsin 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -28,6 +28,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2002/11/27 23:27:28  pfpeterson
+ * standardized header
+ *
  * Revision 1.1  2002/11/18 17:57:14  dennis
  * Form set for Operator documentation using "virtual" html pages.(Ruth)
  *

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2002/11/27 23:23:49  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.12  2002/10/24 19:34:07  pfpeterson
  *  Implemented a debug flag for global use.
  *
@@ -59,21 +61,6 @@
  *  Added a Global StatusPane.  Everyone can write to this
  *  as follows:
  *     SharedData.status_pane.add( Value)
- *
- *  Revision 1.4  2001/08/16 19:34:07  dennis
- *  Temporarily added an instance of Dongfeng's SpectrometerPlotter, so that
- *  DataSets from an old server could be received properly.
- *
- *  Revision 1.3  2001/07/27 22:18:26  dennis
- *  Added public final string BUILD_DATE.
- *
- *  Revision 1.2  2001/07/26 19:52:53  dennis
- *  Removed build date and shared version number.
- *
- *  Revision 1.1  2001/07/23 19:04:20  dennis
- *  Utility class to intialize and/or contain data of which there
- *  should be only one copy and that will be shared by several
- *  packages.
  *
  */
 

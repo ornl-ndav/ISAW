@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/11/27 23:21:16  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.3  2002/09/19 16:05:33  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -39,43 +41,6 @@
  *
  *  Revision 1.1  2002/02/22 20:57:55  pfpeterson
  *  Operator reorganization.
- *
- *  Revision 1.4  2001/06/01 21:18:00  rmikk
- *  Improved documentation for getCommand() method
- *
- *  Revision 1.3  2001/04/26 19:10:04  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.2  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the operators.
- *  Existing operators were modified to be derived from one of the new abstract
- *  classes.  The abstract base class hierarchy is now:
- *
- *   Operator
- *
- *    -GenericOperator
- *       --GenericLoad
- *       --GenericBatch
- *
- *    -DataSetOperator
- *      --DS_EditList
- *      --DS_Math
- *         ---ScalarOp
- *         ---DataSetOp
- *         ---AnalyzeOp
- *      --DS_Attribute
- *      --DS_Conversion
- *         ---XAxisConversionOp
- *         ---YAxisConversionOp
- *         ---XYAxesConversionOp
- *      --DS_Special
- *
- *     To allow for automatic generation of hierarchial menus, each new operator
- *  should fall into one of these categories, or a new category should be
- *  constructed within this hierarchy for the new operator.
- *
- *  Revision 1.1  2000/07/21 21:40:27  dennis
- *  Operators to load one specified histogram
  *
  */
 

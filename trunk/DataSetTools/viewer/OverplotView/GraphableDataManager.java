@@ -1,15 +1,36 @@
-package DataSetTools.viewer.OverplotView; 
-
-/**
- * $Id$
- * ----------
+/*
+ * File: GraphableDataManager.java
  *
- * GraphableDataManager is the top level component for the SelectedGraphView.
- * it interacts with the ViewManager, acts as a container for the data to 
- * be graphed, and manages the the graphical representation of its data.
- * ----------
+ * Copyright (C) 2001, Kevin Neff
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI 54751, USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2002/11/27 23:25:12  pfpeterson
+ * standardized header
+ *
  * Revision 1.2  2002/09/18 14:04:35  dennis
  * Now uses Data.getLabel() method, rather than a "Label" attribute.
  *
@@ -46,45 +67,9 @@ package DataSetTools.viewer.OverplotView;
  * Fixed problem with redrawing display when selections were changed
  * in the ImageView. ( Ruth )
  *
- * Revision 1.9  2001/09/27 19:49:55  dennis
- * Added editing for labels, line styles, etc.
- *
- * Revision 1.8  2001/09/03 18:57:04  dennis
- * Redraws whole graph on any update.  Previously the axes labels were
- * not changed. (Ruth)
- *
- * Revision 1.7  2001/08/30 14:41:03  dennis
- * Changed the title of a line to the Group_ID
- * not its index. (Ruth)
- *
- * Revision 1.6  2001/08/15 18:29:15  rmikk
- * If no Data blocks are selected, A screen with that message
- *     appears.
- * The View now responds to notifications when the selected
- *    groups change and the data set changes.
- *
- * Revision 1.5  2001/08/13 14:40:46  rmikk
- * Added layout and event code to ensure that the graph takes
- * up the whole pane and that it shows at first and when
- * resized
- *
- * Revision 1.4  2001/06/29 16:29:25  neffk
- * integrated ColorAttribute class for storing color information in
- * GraphableData objects
- *
- * Revision 1.3  2001/06/28 22:05:04  neffk
- * data is converted to GraphableData on redraw() instead of an explicit call.
- * also, the conversion function creates (subclasses of) Attributes to store
- * things like offset and colors.  the constructor now sets units and labels in
- * the graph using Attributes.
- *
- * Revision 1.2  2001/06/27 16:50:10  neffk
- * this class was formerly implementing IObserver and extending DataSetViewer,
- * which forced redraw(...) and update(...).  these two functions are
- * redundant, as well as the IObserver interface.  this class not longer
- * implements IObserver, and update(...) has been removed.
- * ----------
  */
+package DataSetTools.viewer.OverplotView; 
+
  import DataSetTools.dataset.*;
 
 import DataSetTools.viewer.DataSetViewer;
@@ -100,6 +85,12 @@ import  DataSetTools.viewer.OverplotView.graphics.*;
 import java.awt.*;
 import java.awt.event.*;
 import gov.noaa.pmel.sgt.swing.*;
+
+/**
+ * GraphableDataManager is the top level component for the SelectedGraphView.
+ * it interacts with the ViewManager, acts as a container for the data to 
+ * be graphed, and manages the the graphical representation of its data.
+ */
 public class GraphableDataManager 
   extends DataSetViewer
 {

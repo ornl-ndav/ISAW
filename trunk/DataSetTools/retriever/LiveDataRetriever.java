@@ -1,8 +1,7 @@
 /*
  * File:  LiveDataRetriever.java      
  *
- * Copyright (C) 2001, Dennis Mikkelson,
- *                     Alok Chatterjee
+ * Copyright (C) 2001, Dennis Mikkelson, Alok Chatterjee
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -32,93 +30,15 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2002/11/27 23:23:16  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.21  2002/10/03 15:50:50  dennis
  *  Replace call to Data.setSqrtErrors() to Data.setSqrtErrors(true)
  *
  *  Revision 1.20  2002/06/03 14:23:00  dennis
  *  Now sets the errors to sqrt(counts) when recieving a DataSet, since the
  *  errors are not set by the LiveDataServer.
- *
- *  Revision 1.19  2001/10/17 18:35:21  dennis
- *  Now recalculates the Total Count attribute for each spectrum, as the
- *  DataSet is received, since the attributes were originally read from the
- *  runfile, with Total Count = 0.
- *
- *  Revision 1.18  2001/09/21 19:13:24  dennis
- *  The LiveDataServer now adds a log message giving the time to the
- *  DataSet.  The code to add the time log message was removed from
- *  the LiveDataRetriver.
- *
- *  Revision 1.17  2001/08/14 15:11:55  dennis
- *  Added status method.
- *
- *  Revision 1.16  2001/08/13 23:27:43  dennis
- *  Now has separate error messages for bad user name and bad password.
- *
- *  Revision 1.15  2001/08/09 15:24:06  dennis
- *  Put debug prints in "if (debug_retriever)" blocks.
- *
- *  Revision 1.14  2001/08/08 14:03:47  dennis
- *  Now returns null if the requested DataSet does not exist
- *  (to be consistent with other retrievers).
- *
- *  Revision 1.13  2001/08/07 21:35:33  dennis
- *  Now sends commands and returns error codes that are consistent
- *  with the RemoteFileRetriever.
- *
- *  Revision 1.12  2001/08/03 21:41:03  dennis
- *  Now extends RemoteDataRetriever, which provides basic communication to
- *  the server.
- *
- *  Revision 1.11  2001/07/16 22:44:58  dennis
- *  Added log message giving time the LiveData was obtained.
- *
- *  Revision 1.10  2001/06/11 17:58:43  dennis
- *  Made Exit() and MakeConnection() public so that they
- *  can be called from the LiveDataManager.  This was
- *  needed since the connection had be restarted to avoid
- *  a memory leak.
- *
- *  Revision 1.9  2001/06/08 16:15:18  dennis
- *  Now allows the port number to use to be specified after
- *  the dns name with a colon separator.
- *  eg. dmikk.mscs.uwstout.edu:6089
- *
- *  Revision 1.8  2001/06/07 16:39:30  dennis
- *  Now supports reconnection to the LiveDataServer, in case
- *  the connection to the server is lost, or could not be
- *  made when the retriever was constructed.  Added method
- *  isConnected() to report on the status of the connection.
- *  If the connection is lost, this will automatically try
- *  to reconnect whenever some information is requested
- *  from the server.
- *
- *  Revision 1.7  2001/04/25 21:57:49  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.6  2001/02/22 21:03:32  dennis
- *  Now gets all of the DataSets from the LiveDataServer.
- *  Also, changed methods for getting the number and types of DataSets
- *  to get that information from the LiveDataServer, rather than
- *  assuming that there were just two DataSets, a monitor and histogram
- *  DataSet.
- *
- *  Revision 1.5  2001/02/15 23:23:01  dennis
- *  Added finalize() method and made Exit() private.
- *  Now finalize() calls Exit().
- *
- *  Revision 1.4  2001/02/09 14:19:06  dennis
- *  Changed CURRENT_TIME attribute to UPDATE_TIME.
- *
- *  Revision 1.3  2001/02/02 20:53:51  dennis
- *  Added loop to display the CURRENT_TIME attribute for testing.
- *
- *  Revision 1.2  2001/01/31 14:25:19  dennis
- *  Added Exit() method to break the TCP connection to the remote
- *  server and free up the TCP socket.
- *
- *  Revision 1.1  2001/01/29 21:14:10  dennis
- *  Initial version of retriever for "live" data.
  *
  */
 package DataSetTools.retriever;

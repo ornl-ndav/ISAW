@@ -20,8 +20,7 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2002/11/27 23:29:19  pfpeterson
+ * standardized header
+ *
  * Revision 1.5  2002/11/20 16:15:39  pfpeterson
  * reformating
  *
@@ -40,13 +42,6 @@
  * Revision 1.3  2002/03/18 20:58:38  dennis
  * Added initial support for TOF Diffractometers.
  * Added support for more units.
- *
- * Revision 1.2  2001/08/01 14:38:09  rmikk
- * Changed the DataSet INST_TYPE attribute to be tied
- * solely to NXentries analysis field
- *
- * Revision 1.1  2001/07/25 21:23:20  rmikk
- * Initial checkin
  *
  */
 

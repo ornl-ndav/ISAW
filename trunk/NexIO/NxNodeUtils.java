@@ -20,8 +20,7 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2002/11/27 23:28:17  pfpeterson
+ * standardized header
+ *
  * Revision 1.12  2002/11/20 16:14:50  pfpeterson
  * reformating
  *
@@ -50,28 +52,6 @@
  * Revision 1.8  2002/02/26 15:46:41  rmikk
  * Fixed the utility Showw routine
  * Added a utility routine to getConversion factors
- *
- * Revision 1.7  2001/08/10 19:58:47  rmikk
- * Added Constant strings to refer to a few errors
- *
- * Revision 1.6  2001/08/09 16:44:56  rmikk
- * Eliminated System.out's in the Showw routines
- *
- * Revision 1.5  2001/07/26 20:51:19  rmikk
- * Used StringFromBytes Method to fix titles, etc.
- *
- * Revision 1.4  2001/07/25 21:18:30  rmikk
- * Added features to Showw vectors
- *
- * Revision 1.3  2001/07/24 20:11:12  rmikk
- * Eliminated a debug print
- *
- * Revision 1.2  2001/07/17 15:05:19  rmikk
- * Updated Show for arbitrary dim arrays and for large
- *    arrays(truncated after 100 entries)
- *
- * Revision 1.1  2001/07/05 21:45:10  rmikk
- * New Nexus datasource IO handlers
  *
  */
 package NexIO;

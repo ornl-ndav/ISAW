@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/11/27 23:29:54  pfpeterson
+ * standardized header
+ *
  * Revision 1.4  2002/09/25 22:18:14  pfpeterson
  * Now can integrate with limits being negative as well. Also fixed
  * error when integrating function-table data.

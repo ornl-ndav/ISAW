@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.6  2002/11/27 23:30:33  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.5  2002/09/19 15:58:08  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -56,67 +58,6 @@
  *
  *  Revision 1.11  2001/12/21 17:31:17  dennis
  *  Minor fix to documentation.
- *
- *  Revision 1.10  2001/06/01 21:18:00  rmikk
- *  Improved documentation for getCommand() method
- *
- *  Revision 1.9  2001/04/26 19:11:21  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.8  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the 
- *     operators.
- *  Existing operators were modified to be derived from one of the new abstract
- *  classes.  The abstract base class hierarchy is now:
- *
- *   Operator
- *
- *    -GenericOperator
- *       --GenericLoad
- *       --GenericBatch
- *
- *    -DataSetOperator
- *      --DS_EditList
- *      --DS_Math
- *         ---ScalarOp
- *         ---DataSetOp
- *         ---AnalyzeOp
- *      --DS_Attribute
- *      --DS_Conversion
- *         ---XAxisConversionOp
- *         ---YAxisConversionOp
- *         ---XYAxesConversionOp
- *      --DS_Special
- *
- *     To allow for automatic generation of hierarchial menus, each new operator
- *  should fall into one of these categories, or a new category should be
- *  constructed within this hierarchy for the new operator.
- *
- *  Revision 1.7  2000/10/03 22:09:55  dennis
- *  Now adds the operators:
- *    SpectrometerFrequencyDistributionFunction
- *    SpectrometerImaginaryGeneralizedSusceptibility
- *    SpectrometerSymmetrizedScatteringFunction
- *
- *  Revision 1.6  2000/08/09 17:09:35  dennis
- *  Removed extra clone of each Data block that was no longer needed since
- *  the CLSmooth operation is no longer done as part of this operator.
- *
- *  Revision 1.5  2000/08/08 21:14:05  dennis
- *  Now adds the GeneralizedEnergyDistribution function operator to the
- *  DataSet.
- *
- *  Revision 1.4  2000/08/03 21:42:48  dennis
- *  This version has been checked and works ok.
- *
- *  Revision 1.3  2000/08/03 16:18:09  dennis
- *  Now works for both functions and histograms
- *
- *  Revision 1.2  2000/07/28 13:56:45  dennis
- *  Added missing factor of 4PI in calculation
- *
- *  Revision 1.1  2000/07/26 22:36:56  dennis
- *  Initial version of Scattering Crossection function for Spectrometers
  *
  */
 

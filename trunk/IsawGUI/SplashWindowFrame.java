@@ -17,30 +17,25 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Alok Chatterjee achatterjee@anl.gov>
+ * Contact : Alok Chatterjee <achatterjee@anl.gov>
  *           Intense Pulsed Neutron Source Division
  *           Argonne National Laboratory
- *           9700 S. Cass Avenue, Bldg 360
- *           Argonne, IL 60440
- *           USA
+ *           9700 South Cass Avenue, Bldg 360
+ *           Argonne, IL 60439-4845, USA
  *
- * For further information, see http://www.pns.anl.gov/ISAW/>
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2002/11/27 23:27:07  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.11  2002/06/14 15:57:20  pfpeterson
  *  Use the ShareData.getProperty() method to get ISAW_HOME.
- *
- *  Revision 1.10  2001/08/16 01:38:35  chatterjee
- *  Changed the sleep time
- *
- *  Revision 1.9  2001/07/09 22:20:29  chatter
- *  Changed the sleep time to 10000
- *
- *  Revision 1.8  2001/06/26 20:20:38  dennis
- *  Now implements Runnable, so that the splash pane does not
- *  delay the loading of Isaw.
  *
  */
 

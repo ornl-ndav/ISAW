@@ -23,8 +23,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -34,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.26  2002/11/27 23:27:59  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.25  2002/06/03 14:12:50  dennis
  *  The server now sets the error arrays to null.  This saves the time to
  *  transmit the error arrays.  Also, since the error arrays were set on
@@ -43,103 +45,6 @@
  *  Revision 1.24  2001/12/10 22:05:24  dennis
  *  Now will pad run numbers with leading zeros, to length 4 when
  *  forming the file name string.
- *
- *  Revision 1.23  2001/09/21 19:10:25  dennis
- *  Now the LiveDataServer adds a Log message giving the time to
- *  the DataSet that is sent.
- *
- *  Revision 1.22  2001/09/20 17:38:10  dennis
- *  Fixed @see javadoc comment
- *
- *  Revision 1.21  2001/08/14 19:21:58  dennis
- *  status now returns no data message if the DAS has never sent it
- *  any data yet.
- *
- *  Revision 1.20  2001/08/14 15:08:02  dennis
- *  Added support for status.
- *
- *  Revision 1.19  2001/08/14 01:27:43  dennis
- *  Added missing "return".  One return is needed after each tcpio.Send().
- *
- *  Revision 1.18  2001/08/13 23:42:05  dennis
- *  ProcessCommand() now calls super.ProcessCommand() for commands
- *  that are not handled.
- *
- *  Revision 1.17  2001/08/10 20:19:59  dennis
- *  Main program exits if help message was requested.
- *
- *  Revision 1.16  2001/08/10 19:41:16  dennis
- *  Added methods to parse command line arguments and show usage.
- *  Also added methods to get/set the udp port being used.
- *  Removed unused method "TestAndSetAcessFlag".
- *
- *  Revision 1.15  2001/08/09 21:47:26  dennis
- *  Uses start_TCP() method to start the TCPServer.
- *
- *  Revision 1.14  2001/08/09 15:42:27  dennis
- *  Now checks if the retriever is null.
- *  Put some debug prints in "if (debug server)" blocks
- *
- *  Revision 1.13  2001/08/07 21:30:59  dennis
- *    Removed command to get DS_TYPE and get NUM_DS... now only uses
- *  get DS_TYPES, for the whole list of types.  This is simpler,
- *  reduces the number of requests needed and allows LiveDataServer
- *  and FileDataServer to handle the same requests.
- *
- *  Revision 1.12  2001/08/03 21:32:00  dennis
- *  Now derives from DataSetServer/TCPServer, to provide user name,
- *  password and logging features.
- *
- *  Revision 1.11  2001/06/08 16:13:24  dennis
- *  Change PORT to DEFAULT_PORT and now allow specifying
- *  different ports.
- *
- *  Revision 1.10  2001/06/06 21:05:09  dennis
- *  Now sends DataSet.EMPTY_DATA_SET clone if the requested
- *  DataSet is null, or doesn't exist.
- *
- *  Revision 1.9  2001/04/23 19:44:14  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.8  2001/03/02 17:07:14  dennis
- *  Added TestAndSetAccessFlag method that may in the future be used
- *  to prevent access to the DataSets while the runfile is being
- *  changed.
- *
- *  Revision 1.7  2001/02/22 20:56:48  dennis
- *    Now handles all of the DataSets from a runfile.  It no longer assumes
- *  that DataSet 0 is the monitor DataSet and that there is only one
- *  histogram DataSet.
- *    Now it handles commands to get the number of DataSets, get the type of
- *  a specific DataSet and get a specific DataSet.
- *
- *  Revision 1.6  2001/02/16 22:04:38  dennis
- *  Added array bounds checking on the information from the DAS to
- *  avoid problems if the DAS sends bad channel numbers.
- *  Also, made instance variables private, and only notify
- *  any observers of the dataset once every 300 pulses.
- *
- *  Revision 1.5  2001/02/15 22:10:24  dennis
- *  Now makes clones of the monitor and histogram DataSets before sending
- *  them.  This was needed since otherwise the DataSets would not actually
- *  be sent if they were requested a second time.
- *
- *  Revision 1.4  2001/02/06 22:06:41  dennis
- *  The directory where the current runfile will be found
- *  can now be specified on the command line.  If it is
- *  not specified, the current directory will be used.
- *
- *  Revision 1.3  2001/02/02 20:58:23  dennis
- *  Now gets the instrument name and run number from each UDP packet sent
- *  by the DAS.  If the instrument name or run number changes, the
- *  Histogram and Monitor DataSets will be re-initialized from the
- *  corresponding runfile.
- *
- *  Revision 1.2  2001/01/31 14:21:27  dennis
- *  Fixed error in javadoc comment.
- *
- *  Revision 1.1  2001/01/30 23:27:24  dennis
- *  Initial version, network communications for ISAW.
  *
  */
 package NetComm;

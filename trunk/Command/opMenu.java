@@ -20,17 +20,20 @@
  * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ *
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2002/11/27 23:12:10  pfpeterson
+ * standardized header
+ *
  * Revision 1.21  2002/08/19 17:09:37  pfpeterson
  * Switched AbstractButton.getLabel() to AbstractButton.getText()
  * so is no longer using deprecated api.
@@ -50,45 +53,6 @@
  * Added an addStatusPane method.
  * Added this StatusPane to the JParametersDialog
  *
- * Revision 1.16  2001/08/16 20:31:09  rmikk
- * Fixed the javadocs @see tags
- *
- * Revision 1.15  2001/08/14 16:16:19  rmikk
- * GenericBatch operators no longer show in opMenu
- *
- * Revision 1.14  2001/08/09 14:10:24  rmikk
- * Modified  So that submenues can also start at an arbitrary
- * position in the category list (if all menu options category
- * list agrees to n positions, those first n positions can be
- * omitted from the menu)
- *
- * Revision 1.13  2001/08/06 22:14:41  rmikk
- * Fixed Error so Data Sets are now sent to the tree
- *
- * Revision 1.12  2001/07/18 16:25:25  neffk
- * changed the DataSet[] parameter to IDataSetListHandler, a more
- * dynamic solution to having a current list of DataSet objects.
- *
- * Revision 1.11  2001/06/27 18:39:13  rmikk
- * Added the setOpMenuLabel to change the label from "Operations:
- *
- * Revision 1.10  2001/06/26 14:44:44  rmikk
- * Changed DataSetListHandler to IDataSetListHandler
- *
- * Revision 1.9  2001/06/25 21:49:40  rmikk
- * Added Parameter to JParametersDialog
- *
- * Revision 1.8  2001/06/25 16:38:57  rmikk
- * Incorporated tests for improper inputs
- *
- * Revision 1.7  2001/06/05 16:50:35  rmikk
- * Changed props.dat to IsawProps.dat
- *
- * Revision 1.6  2001/06/01 21:14:13  rmikk
- * Added Documentation for javadocs etc.
- *
- 
- *  5-25-2001  Created
  */
 package Command;
 

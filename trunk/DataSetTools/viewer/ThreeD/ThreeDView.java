@@ -1,4 +1,4 @@
-/**
+/*
  * File:  ThreeDView.java
  *
  * Copyright (C) 2001, Dennis Mikkelson
@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.26  2002/11/27 23:25:50  pfpeterson
+ * standardized header
+ *
  * Revision 1.25  2002/08/02 15:34:00  dennis
  * improved handling of POINTED_AT_CHANGED messages
  *
@@ -59,70 +61,6 @@
  *
  * Revision 1.19  2002/03/13 16:11:08  dennis
  * Converted to new abstract Data class.
- *
- * Revision 1.18  2001/07/26 19:51:24  dennis
- * Now uses/saves the Auto-Scale valuator values.
- *
- * Revision 1.17  2001/07/25 18:11:50  dennis
- * Now uses new "generic" methods to get/set state information
- * in the ViewerState object.  Also saves 3D view state info
- * in the ViewerState object.
- *
- * Revision 1.16  2001/07/23 16:31:34  dennis
- * Fixed error: no longer using "==" for String comparison.
- *
- * Revision 1.15  2001/07/20 16:54:39  dennis
- * Now uses an XScaleChooserUI to let the user specify new
- * x_scales.  Also uses method Data.getY_values( x_scale )
- * to get resampled y_values.
- *
- * Revision 1.14  2001/07/18 13:40:40  dennis
- * Implemented rebinning capabilities.
- *
- * Revision 1.13  2001/07/13 22:11:26  dennis
- * Now uses as many frames as there are channels in the
- * data.
- *
- * Revision 1.12  2001/07/12 16:31:35  dennis
- * Now allows choice of drawing "groups" using markers
- * and/or drawing individual detector segments using
- * markers or rectangles.
- *
- * Revision 1.10  2001/07/10 19:04:34  dennis
- * First attempt at using the new detector "segment"
- * information to draw individual detectors.
- *
- * Revision 1.9  2001/07/03 21:26:36  dennis
- * Added brightness control.
- *
- * Revision 1.8  2001/07/02 20:48:21  dennis
- * Added X-Conversions table.
- *
- * Revision 1.7  2001/06/29 18:39:35  dennis
- * Now allows selection of color scales and temporarily
- * marks group positons using rectangles..
- *
- * Revision 1.6  2001/06/28 20:28:19  dennis
- * Keeps list of bytes for color indices, rather than
- * a list of Color objects.  Also uses new form of
- * ThreeD_JPanel with named lists of 3D objects.
- *
- * Revision 1.5  2001/06/04 22:46:34  dennis
- * Now ignores selection changes.
- *
- * Revision 1.4  2001/05/29 19:46:21  dennis
- * Removed redundant construction of the Color list.
- *
- * Revision 1.3  2001/05/29 15:06:47  dennis
- * Now shows colored markers with colors corresponding to TOF
- *
- * Revision 1.2  2001/05/23 17:26:14  dennis
- * Now uses a ViewController to change the observer's
- * viewing position.
- *
- * Revision 1.1  2001/05/09 21:32:00  dennis
- * Viewer to display 3D view of Data block positions, if they have and
- * attribute that is of type Position3D.
  *
  */
 

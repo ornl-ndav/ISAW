@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -32,6 +31,9 @@
  *
  *
  *  $Log$
+ *  Revision 1.16  2002/11/27 23:14:07  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.15  2002/11/12 19:46:25  dennis
  *  Removed clone() method... since XScales are immutable, there is
  *  no need to clone() them.  Made start_x, end_x and num_x protected.
@@ -66,27 +68,6 @@
  *  Revision 1.8  2002/06/10 20:19:52  dennis
  *  Added getI(x) and getX(i) methods to get individual points and positions
  *  of individual points in the list.
- *
- *  Revision 1.7  2001/04/25 19:04:15  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.6  2000/12/07 22:30:33  dennis
- *  Added method extend().
- *
- *  Revision 1.5  2000/11/17 23:39:04  dennis
- *  Minor change to format of output in toString() method.
- *
- *  Revision 1.4  2000/07/31 20:54:11  dennis
- *  Added extra information to debug printout.
- *
- *  Revision 1.3  2000/07/10 22:24:08  dennis
- *  Now Using CVS 
- *
- *  Revision 1.3  2000/05/12 15:50:13  dennis
- *  removed DOS TEXT  ^M
- *
- *  Revision 1.2  2000/05/11 16:00:45  dennis
- *  Added RCS logging
  *
  */
 

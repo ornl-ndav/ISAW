@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.6  2002/11/27 23:30:33  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.5  2002/09/19 15:58:04  pfpeterson
  *  Now uses IParameters rather than Parameters.
  *
@@ -52,88 +54,6 @@
  *
  *  Revision 1.1  2002/01/11 22:10:52  dennis
  *  Generic version of spectrometer DataSet operator
- *
- *  Revision 1.15  2001/09/27 19:19:29  dennis
- *  Improved Documentation.
- *  Return ErrorString if we don't have a histogram.
- *  Removed unused variable.
- *
- *  Revision 1.14  2001/06/01 21:18:00  rmikk
- *  Improved documentation for getCommand() method
- *
- *  Revision 1.13  2001/04/26 19:08:58  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.12  2000/11/10 22:41:34  dennis
- *     Introduced additional abstract classes to better categorize the 
- *     operators.
- *
- *  Existing operators were modified to be derived from one of the new abstract
- *  classes.  The abstract base class hierarchy is now:
- *
- *   Operator
- *
- *    -GenericOperator
- *       --GenericLoad
- *       --GenericBatch
- *
- *    -DataSetOperator
- *      --DS_EditList
- *      --DS_Math
- *         ---ScalarOp
- *         ---DataSetOp
- *         ---AnalyzeOp
- *      --DS_Attribute
- *      --DS_Conversion
- *         ---XAxisConversionOp
- *         ---YAxisConversionOp
- *         ---XYAxesConversionOp
- *      --DS_Special
- *
- *     To allow for automatic generation of hierarchial menus, each new operator
- *  should fall into one of these categories, or a new category should be
- *  constructed within this hierarchy for the new operator.
- *
- *  Revision 1.11  2000/10/03 21:29:36  dennis
- *  Renamed FudgeFactor to DetectorNormalizationFactor.
- *
- *  Revision 1.10  2000/09/11 23:05:01  dennis
- *  Added fudge factor parameter and boolean to control it.
- *
- *  Revision 1.9  2000/08/08 21:15:58  dennis
- *  Commented out some debug/informational prints.
- *
- *  Revision 1.8  2000/08/03 21:43:01  dennis
- *  This version has been checked and works ok.
- *
- *  Revision 1.7  2000/08/02 01:46:48  dennis
- *  Calculate the correction factors for detector efficiency and path length
- *  by interpolation in a table, for faster calculation.  Also, put the
- *  correction factors in a Data block then multiply one time so that the
- *  errors are calculated by Data.multiply().
- *
- *  Revision 1.6  2000/07/26 22:38:31  dennis
- *  Fixed problem with interpolating in wrong table.
- *  Also, now adds the Scattering Function operator to the result of the
- *  Double Differential Crossection calculation.
- *
- *  Revision 1.5  2000/07/26 20:50:27  dennis
- *  now interpolates in tables of eff[] and fpcorr[] values to avoid
- *  recalculating these values for each point of the spectrum
- *
- *  Revision 1.4  2000/07/25 18:10:33  dennis
- *  Fixed error with tsec in calculation
- *
- *  Revision 1.3  2000/07/25 16:39:37  dennis
- *  Added monitor 1 peak area as a parameter and finished the calculation,
- *  including compensation for the scattered energy increment and the flux
- *
- *  Revision 1.2  2000/07/24 21:14:06  dennis
- *  Initial version, partially implemented
- *
- *  Revision 1.1  2000/07/24 16:05:17  dennis
- *  Operator to calculate the Double Differential Crossection for a 
- *  Spectrometer.
  *
  */
 

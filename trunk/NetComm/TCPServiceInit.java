@@ -22,8 +22,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -33,35 +32,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2002/11/27 23:27:59  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.7  2002/04/08 15:35:11  dennis
  *  Increased connect time out period from 20 sec to 60 sec.
- *
- *  Revision 1.6  2001/08/30 20:05:33  dennis
- *  Added "catch" clauses to handle ( but not exit ) two other exceptions:
- *  StreamCorruptedException -> generated when a non-object is sent to the
- *                              port, eg. by telnetting to the port.
- *  InterruptedIOException   -> generated when the connection process times
- *                              out, eg. by starting to telnet to the port
- *                              but not sending any additional data.
- *  There is currently a 20 second timeout period for making the connection
- *  and an infinite timeout period once the connection is successfully made.
- *
- *  Revision 1.5  2001/08/10 19:33:07  dennis
- *  Now exits if an exception occurs while setting up the socket.
- *  (This happens if the socket is already in use.)
- *
- *  Revision 1.4  2001/04/23 19:44:22  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.3  2001/02/15 21:25:28  dennis
- *  Changed the time out period to "0" which means an
- *  infinite timeout period
- *
- *  Revision 1.2  2001/01/31 14:19:47  dennis
- *  Made the class public.
- *
- *  Revision 1.1  2001/01/30 23:27:33  dennis
- *  Initial version, network communications for ISAW.
  *
  */
 package NetComm;

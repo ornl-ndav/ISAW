@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,45 +30,9 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.10  2001/09/20 17:40:27  dennis
- *  Fixed @see javadoc comment
+ *  Revision 1.11  2002/11/27 23:24:18  pfpeterson
+ *  standardized header
  *
- *  Revision 1.9  2001/07/20 16:57:48  dennis
- *  Removed string constants BINS_CHANGED and X_RANGE_CHANGED
- *  moved to XScaleChooserUI. Made getXConversionScale return
- *  a arbitray XScale object
- *
- *  Revision 1.8  2001/07/17 20:35:47  dennis
- *  Added validDataSet() method to check for null or empty
- *  DataSets.
- *
- *  Revision 1.7  2001/04/26 14:21:33  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.6  2001/01/29 21:26:39  dennis
- *  Now uses CVS version numbers.
- *
- *  Revision 1.5  2000/12/07 23:04:17  dennis
- *  Now includes basic support for maintaining ViewerState.
- *
- *  Revision 1.4  2000/07/11 22:40:01  dennis
- *  @see reference fixed
- *
- *  Revision 1.3  2000/07/10 22:58:58  dennis
- *  Now Using CVS 
- *
- *  Revision 1.15  2000/06/12 19:58:19  dennis
- *  Now implements Serializable
- *
- *  Revision 1.14  2000/05/16 22:37:36  dennis
- *  Added default implementation of getXConversionScale() and a couple of
- *  constant Strings to help communication between the viewer and ViewManager.
- *
- *  Revision 1.13  2000/05/11 15:50:58  dennis
- *  Added RCS logging
- *
- *   1.01  Added methods to redraw() and set the DataSet to be viewed.  Also
- *         reorganized the menu bar and removed some unneeded methods. 
  */
 
 package DataSetTools.viewer;

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.38  2002/11/27 23:24:57  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.37  2002/10/04 14:38:40  dennis
  *  Simplified calculation of scrolled image position when scrolling
  *  to the "Pointed At" spectrum.
@@ -75,158 +77,6 @@
  *
  *  Revision 1.28  2002/03/13 16:11:36  dennis
  *  Converted to new abstract Data class.
- *
- *  Revision 1.27  2001/08/16 01:20:27  dennis
- *  Now sends POINTED AT CHANGED messages when the mouse moves
- *  over the SAME Data block, if there is only one Data block.
- *
- *  Revision 1.26  2001/07/27 15:58:25  dennis
- *  Removed debug print.
- *
- *  Revision 1.25  2001/07/26 14:28:54  dennis
- *  Now preserves Brightness and Auto-Scale values in the
- *  ViewerState.
- *
- *  Revision 1.24  2001/07/25 18:10:27  dennis
- *  Now uses new "generic" methods to get/set state information
- *  in the ViewerState object.
- *
- *  Revision 1.23  2001/07/23 16:22:04  dennis
- *  Fixed error: no longer using "==" for String comparison.
- *
- *  Revision 1.22  2001/07/20 16:53:25  dennis
- *  Now uses an XScaleChooserUI to let the user specify new
- *  x_scales.  Also uses method Data.getY_values( x_scale )
- *  to get resampled y_values.
- *
- *  Revision 1.21  2001/07/17 20:43:38  dennis
- *  Now checks validDataSet() before using it.
- *  Removed un-used doLayout() method.
- *  Added option to draw HGraph using rebinned data.
- *  The image and HGraph are now drawn based on the
- *  x_scale obtained from getXConversionScale() method.
- *  requestFocus() is now called for the image panel
- *  by ProcessImageMouseEvent().
- *
- *  Revision 1.20  2001/07/02 21:02:29  dennis
- *  Removed internal class: LogScaleMouseHandler, that is no longer
- *  needed.  It was needed with early versions of jdk to work around
- *  a bug in the slider getValueIsAdjusting() method.
- *
- *  Revision 1.19  2001/06/29 18:36:19  dennis
- *  Now uses components: ColorScaleMenu and ColorScaleImage
- *  to change and display the current color scale.
- *
- *  Revision 1.18  2001/06/08 22:07:42  dennis
- *  setDataSet() now always sets the ZoomRegion in the state
- *  object.
- *
- *  Revision 1.17  2001/06/04 22:44:28  dennis
- *  Now uses DS_Util.getData_ID_String() to construct border labels for the
- *  horizontal graph.
- *
- *  Revision 1.16  2001/05/29 15:09:09  dennis
- *  Now uses initializeWorldCoords to reset both the local and
- *  global transforms.
- *
- *  Revision 1.15  2001/04/26 14:26:55  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.14  2001/04/02 20:42:42  dennis
- *  num_bins_ui is now properly initilized to max X steps - 1.
- *
- *  Revision 1.13  2001/03/30 19:25:58  dennis
- *  Now sets the state Zoom region to the current local world coordinates,
- *  after setting the current local world coordinates, since the Zoom region
- *  may have been altered ( by clipping it to the global world coordinate
- *  region ).
- *
- *  Revision 1.12  2001/03/02 17:04:45  dennis
- *  Now only restores the zoom region if the DataSet is using the
- *  same units and labels as the previous DataSet.
- *
- *  Revision 1.11  2001/03/01 23:14:58  dennis
- *  Now saves the zoom region and restores it when the
- *  viewer is given a new DataSet.
- *
- *  Revision 1.10  2001/03/01 22:32:10  dennis
- *  Now saves the last pointed at index and will redraw that
- *  Data block ( if possible ) as the default Data block, when
- *  a new DataSet is given to the viewer.
- *
- *  Revision 1.9  2001/02/09 14:20:35  dennis
- *  Added last update time to graph title, if it is present as
- *  a Data attribute.
- *
- *  Revision 1.8  2001/01/29 21:29:30  dennis
- *  Now uses CVS version numbers.
- *
- *  Revision 1.7  2000/12/15 05:09:40  dennis
- *  Now convert histograms to functions before generating the image.
- *  This was needed because if histograms with very different
- *  x-scales are rebinned to form an image, the intensities of the
- *  image may be misleading.
- *
- *  Revision 1.6  2000/11/07 15:24:11  dennis
- *  Added docs on public methods.
- *  Draws crosshair cursor for POINTED_AT_CHANGED message.
- *  Includes ViewerState object in constructor and uses ViewerState for
- *  the color scale and horizontal scrolling state.
- *  Consumes key events, so that the cursor arrow keys don't also scroll
- *  the scrolled panes.  This caused errors in the XOR drawing of the
- *  crosshair cursor on windows.
- *
- *  Revision 1.5  2000/10/10 19:52:07  dennis
- *  "Pointed At" Data block and cursor readouts now update with mouse
- *  click as well as with mouse drag operation.
- *
- *  Revision 1.4  2000/10/03 21:19:42  dennis
- *  Now uses ImageJPanel method to set the color model.
- *
- *  Revision 1.3  2000/08/03 01:49:01  dennis
- *  Now sets the default graph as the "pointed" at Data block and notifies
- *  observers when the viewer starts.  This fixed a bug where the user had to
- *  first move the mouse pointer on the image before moving it on the graph in
- *  order to use the cursor readouts on the graph.
- *
- *  Revision 1.2  2000/08/02 01:51:10  dennis
- *  Now calls Data.ResampleUniformly() instead of Data.ReBin()
- *
- *  Revision 1.1  2000/07/10 23:03:23  dennis
- *  Now Using CVS 
- *
- *  Revision 1.51  2000/07/03 21:14:22  dennis
- *  modified DrawPointedAtHGraph() to return a boolean indicating whether or
- *  not a graph was drawn.
- *  Modified DrawSelectedHGraphs() to return a count of the number of graphs
- *  drawn.
- *
- *  Added DrawDefaultDataBlock that tries to draw the selected HGraphs or the
- *  pointed at HGraphs.  If none are drawn, it draws Data block 0 if there is
- *  one.
- *
- *  Revision 1.50  2000/06/12 20:05:35  dennis
- *  now implements Seriaizable
- *
- *  Revision 1.49  2000/06/01 18:21:42  dennis
- *  now includes remove hidden lines option.
- *
- *  Revision 1.48  2000/05/24 22:45:07  dennis
- *  Added plotting of multiple [colored] [offset] graphs.
- *
- *  Revision 1.47  2000/05/18 20:58:08  dennis
- *  now draws the graphs of both the most recently selected graph AND the
- *  pointed at graph.
- *
- *  Revision 1.46  2000/05/18 20:05:22  dennis
- *  removed non-working Cursor setting code.
- *  Fixed problme with horizontal scroll bar visibility.
- *
- *  Revision 1.45  2000/05/16 22:25:07  dennis
- *  Added NUM_BINS control and method getXConversionScale()
- *
- *  Revision 1.44  2000/05/11 15:23:28  dennis
- *  added RCS logging
  *
  */
 package DataSetTools.viewer.Image;

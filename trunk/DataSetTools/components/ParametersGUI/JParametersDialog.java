@@ -17,18 +17,24 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Alok Chatterjee achatterjee@anl.gov>
+ * Contact : Alok Chatterjee <achatterjee@anl.gov>
  *           Intense Pulsed Neutron Source Division
  *           Argonne National Laboratory
- *           9700 S. Cass Avenue, Bldg 360
- *           Argonne, IL 60440
- *           USA
+ *           9700 South Cass Avenue, Bldg 360
+ *           Argonne, IL 60439-4845, USA
  *
- * For further information, see http://www.pns.anl.gov/ISAW/>
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
  *
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2002/11/27 23:12:35  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.30  2002/10/14 16:02:29  pfpeterson
  *  Compares the parameter against the IParameterGUI interface rather
  *  than the ParameterGUI abstract class. Also fixed a bug where ArrayPG
@@ -74,71 +80,6 @@
  *    IusesStatusPane and java.beans.Customizer interface
  *     (i.e. had addPropertyChangeListener)
  *
- *  Revision 1.19  2001/11/19 19:01:53  dennis
- *   Added a new constructor that lets this dialog box be modal. (Ruth)
- *
- *  Revision 1.18  2001/11/09 18:16:20  dennis
- *  1. Eliminated reporting of the command is "UNKNOWN".
- *  2. Set the Result label to "" before executing a getResult.
- *  3. Introduced an addWindowListener method.
- *
- *  Revision 1.17  2001/08/16 22:27:20  rmikk
- *  Got the initial size of the dialog box closer for 0 arguments and many arguments
- *
- *  Revision 1.16  2001/08/15 02:10:17  rmikk
- *  Removed the setDefaultParameters. Now the parameter
- *  values( except Object types) will retain their values.
- *  Restored only the Object parameters to the default
- *    Object value of null;
- *
- *  Revision 1.15  2001/08/14 16:17:14  rmikk
- *  The Dialog Box in now NOT modal
- *
- *  Revision 1.14  2001/08/13 14:37:11  rmikk
- *  Increased size for operators with zero parameters.
- *  The first line under the title bar has the command name
- *      for the operation not the title (which is in the title bar ).
- *
- *  Revision 1.13  2001/08/10 18:40:14  rmikk
- *  Adjusted the size of the dialog box to reduce the amount
- *  of excess space when  there are a lot of options
- *
- *  Revision 1.12  2001/08/09 14:12:25  rmikk
- *  Added a getResult method to the dialog box so that Java
- *  programmers can actually get the result of an operation.
- *  This could potentially make JParametersDialog into an
- *  InputBox in Java Programs.
- *
- *  Revision 1.11  2001/08/07 21:00:25  rmikk
- *  Changed opDialog's layout to a Box layout.  Fine tuned
- *  colors and centering.
- *
- *  Revision 1.10  2001/08/06 22:15:21  rmikk
- *  Fixed IStringList and SpecialString parameter values to
- *  return those values
- *
- *  Revision 1.9  2001/08/06 20:16:29  rmikk
- *  Added IntListString parameter type.
- *  Added code to take care of DataSet[] results.
- *
- *  Revision 1.8  2001/07/18 16:27:47  neffk
- *  now uses an IDataSetListHandler object to get/keep a current list
- *  of DataSet objects.
- *
- *  Revision 1.7  2001/07/11 16:27:38  neffk
- *  added IntervalSelectionOP as a valid type of GUI parameter.
- *
- *  Revision 1.6  2001/06/26 18:37:40  dennis
- *  Added Copyright and GPL license.
- *  Removed un-needed imports and improved
- *  code format.
- *
- *
- * 5-12-2001   Ruth Mikkelson Changed parameter from DataSetOperator to 
- *                            Operator in Constructor so it can be used with 
- *                            generic operators
- * 5-12-2001   Ruth Mikkelson added the Array parameterGUI
- * 5-17-2001   A null result is no longer shows as an error
  */
  
 //To Do:  Make it work when jtui is null

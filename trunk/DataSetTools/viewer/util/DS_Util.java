@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2002/11/27 23:26:11  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.9  2002/09/20 16:47:11  dennis
  *  Now uses IParameter rather than Parameter
  *
@@ -44,30 +46,6 @@
  *
  *  Revision 1.7  2002/02/22 20:38:17  pfpeterson
  *  Operator reorganization.
- *
- *  Revision 1.6  2001/07/23 16:39:26  dennis
- *  Fixed error: no longer using "==" for String comparison.
- *
- *  Revision 1.5  2001/07/02 16:43:59  dennis
- *  getData_ID_String() now gets an entire attribute and
- *  uses it's toString method.  This fixed a bug when the
- *  attribute value was an array of integers.
- *
- *  Revision 1.4  2001/06/04 22:42:24  dennis
- *  Added getData_ID_String() to construct border labels for the
- *  graphs in ImageView and GraphView
- *
- *  Revision 1.3  2001/04/26 14:38:57  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.2  2000/11/10 22:49:19  dennis
- *  Changed to use new Operator hierarchy.
- *
- *  Revision 1.1  2000/07/10 23:04:18  dennis
- *  Now Uses CVS 
- *
- *  Revision 1.1  2000/05/16 22:27:07  dennis
- *  Initial revision
  *
  */
 

@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.31  2002/11/27 23:24:18  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.30  2002/11/07 16:33:04  pfpeterson
  *  Closes viewer when message is recieved from the DataSet.
  *
@@ -84,106 +86,6 @@
  *  Revision 1.18  2002/02/22 20:37:11  pfpeterson
  *  Operator reorganization.
  *
- *  Revision 1.17  2001/08/14 21:51:08  dennis
- *  The destroy() method now sends closing event instead of closing
- *  the view manager itself..  Added method free_resouces() to
- *  close down the view manager as previously done by destroy().
- *
- *  Revision 1.16  2001/08/14 15:17:44  dennis
- *  Added check for num entries <=0 and dataSet null.
- *
- *  Revision 1.15  2001/08/13 16:19:39  dennis
- *  Added Ruth's Table view
- *
- *  Revision 1.14  2001/08/09 16:04:40  dennis
- *  Added debug_view_manager flag.
- *  Now checks viewer != null to check if the viewer has been
- *  destroyed before an update message is processed.
- *
- *  Revision 1.13  2001/07/27 15:56:02  dennis
- *  Now passes in 0 as default number of bins for conversion operators.
- *  In this case, the conversion operators should use the number of
- *  bins from the DataSet.
- *
- *  Revision 1.12  2001/07/23 16:55:26  dennis
- *  Fixed error: no longer using "==" for String comparison.
- *
- *  Revision 1.11  2001/07/20 19:04:58  dennis
- *  Removed @see InternalViewManager, since we no longer are using
- *  InternalViewManager.
- *
- *  Revision 1.10  2001/07/20 18:15:45  dennis
- *  Now uses new version of getXConversionScale that returns
- *  an arbitrary XScale.  Currently it makes a UniformXScale
- *  that covers the same range and uses the uniform XScale.
- *
- *  Revision 1.9  2001/07/05 16:11:09  dennis
- *  Frame title is now set from the DataSet.
- *
- *  Revision 1.8  2001/06/27 18:43:31  dennis
- *  Now uses Kevin's GraphableDataManager instead of
- *  Kevin's SelectedGraphView
- *
- *  Revision 1.7  2001/06/07 21:18:00  dennis
- *  Added calls to System.gc() where major changes are made
- *  to a view.
- *
- *  Revision 1.6  2001/05/30 22:14:16  dennis
- *  Enabled Kevin's viewer
- *
- *  Revision 1.5  2001/05/09 21:32:59  dennis
- *  Added code to include the ThreeDViewer
- *
- *  Revision 1.4  2001/04/26 14:21:40  dennis
- *  Added copyright and GPL info at the start of the file.
- *
- *  Revision 1.3  2001/01/29 21:28:04  dennis
- *  Print error message if the DataSet is null in the
- *  constructor.
- *  Also, now uses CVS version numbers.
- *
- *  Revision 1.2  2000/12/07 23:11:09  dennis
- *  Now includes basic support for maintaining ViewerState.
- *  Also refined some reasons for doing an update.
- *
- *  Revision 1.1  2000/07/10 22:59:16  dennis
- *  Now Using CVS 
- *
- *  Revision 1.23  2000/06/14 22:18:46  dennis
- *  changed order of parameters to SumCurrentlySelected() since the operator
- *  was changed.
- *
- *  Revision 1.22  2000/06/12 19:53:58  dennis
- *  Now implements Serializable and handles DATA_CHANGED notifications
- *
- *  Revision 1.20  2000/05/18 20:58:56  dennis
- *  made default Frame size slightly larger and removed unused "Show All"
- *  option.
- *
- *  Revision 1.19  2000/05/16 22:35:24  dennis
- *  Added code to get the XScale to use for X-axis conversions from the
- *  viewer.  Changed makeTempDataSet() to accept a boolean parameter that
- *  determines whether or not the default parameters of the conversion operator
- *  should be used.
- *
- *  Revision 1.18  2000/05/11 15:19:52  dennis
- *  Added RCS logging.
- *
- *  1.14 2000/05/10  Sum selected groups and delete selected groups are not
- *                   implemented using operators.
- *  1.13 2000/04/28  Temporarily removed Group and Hide operations.  Added
- *                   option to save the tempDataSet to the tree as a new
- *                   DataSet
- *  1.12 2000/04/11  Added edit menu options to Delete, Hide, Group the
- *                   un-selected items, as well as the selected items.
- *  1.11 2000/04/04  Dennis Mikkelson
- *                   Added translation arrays between indices in the original
- *                   DataSet and tempDataSet. "Pointed At" messages are now
- *                   transferred from one to the other.
- *   1.1 2000/03/30  Dennis Mikkelson
- *                   Changed it to pass a second "tempDataSet" to the viewers,
- *                   so that axis conversions can be done and hidden Data
- *                   blocks can be omitted.
  */
  
 package DataSetTools.viewer;

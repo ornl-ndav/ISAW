@@ -19,17 +19,21 @@
  *
  * Contact : Peter F. Peterson <pfpeterson@anl.gov>
  *           Intense Pulsed Neutron Source Division
- *           Argonne National Laboratory, 
+ *           Argonne National Laboratory
+ *           9700 South Cass Avenue, Bldg 360
  *           Argonne, IL 60439-4845, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
- * of Argonne National Laboratory, Argonne, IL 60439-4845, USA
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/11/27 23:23:15  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.3  2002/10/03 15:50:50  dennis
  *  Replace call to Data.setSqrtErrors() to Data.setSqrtErrors(true)
  *

@@ -3,7 +3,7 @@
  *
 *
  * Copyright (C) 2002, Ruth Mikkelson
-
+ *
  * This software is used with NOAA for full, free and open release.  It is
  * understood by the recipient/user that NOAA assumes no liability for any
  * errors contained in the code.  Although this software is released without
@@ -26,10 +26,10 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Ruth Mikkelson<MikkelsonR@uwstout.edu>
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2002/11/27 23:24:30  pfpeterson
+ *  standardized header
+ *
  *  Revision 1.5  2002/08/23 13:48:58  rmikk
  *  -Eliminated reporting a 0 delta value for  requested ranges
  *

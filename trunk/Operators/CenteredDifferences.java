@@ -20,8 +20,7 @@
  * Contact : Dennis Mikkelson <mikkelsond@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2002/11/27 23:29:54  pfpeterson
+ * standardized header
+ *
  * Revision 1.4  2002/03/13 16:26:22  dennis
  * Converted to new abstract Data class.
  *
@@ -41,9 +43,6 @@
  * Improved documentation.
  * Use average of x[i+1] and x[i-1] for the x position of the
  * centered difference value.
- *
- * Revision 1.1  2001/11/21 21:27:34  dennis
- * Example of user-supplied add-on operator.
  *
  */
 package Operators;

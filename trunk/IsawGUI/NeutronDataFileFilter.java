@@ -1,8 +1,38 @@
-
 /*
- * $Id$
+ * File: NeutronDataFileFilter.java
+ *
+ * Copyright (C) 2001, Kevin Neff
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Alok Chatterjee <achatterjee@anl.gov>
+ *           Intense Pulsed Neutron Source Division
+ *           Argonne National Laboratory
+ *           9700 South Cass Avenue, Bldg 360
+ *           Argonne, IL 60439-4845, USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+
  *
  * $Log$
+ * Revision 1.10  2002/11/27 23:27:07  pfpeterson
+ * standardized header
+ *
  * Revision 1.9  2002/08/06 21:30:37  pfpeterson
  * Gsas files are no longer accepted by this filter.
  *
@@ -16,23 +46,6 @@
  * Revision 1.6  2002/01/08 21:26:21  rmikk
  * Fixed the display of the filter to only show xm.,gsas and
  * isd output and input.
- *
- * Revision 1.5  2001/08/16 18:54:12  chatterjee
- * Reordered filter extension & labeled isd as temporary
- *
- * Revision 1.4  2001/08/15 22:34:23  chatterjee
- * Added new constructor with a boolean parameter to indicate the filter options
- * Filters for the save dialog can differ from the open dialog box.
- *
- * Revision 1.3  2001/08/02 19:15:31  neffk
- * added *.isd, ISAW's binary data format, to the filter.
- *
- * Revision 1.2  2001/07/23 20:36:04  neffk
- * added a method to filter filenames using a String parameter instead
- * of a File object.
- *
- * Revision 1.1  2001/07/12 15:00:46  neffk
- * file filter that only shows neutron data files.
  *
  */
 

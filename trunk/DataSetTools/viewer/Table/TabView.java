@@ -17,11 +17,10 @@
  * along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
  *
- * Contact : Ruth Mikkelson <mikkelsond@uwstout.edu>
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
  *           Department of Mathematics, Statistics and Computer Science
  *           University of Wisconsin-Stout
- *           Menomonie, WI. 54751
- *           USA
+ *           Menomonie, WI 54751, USA
  *
  * This work was supported by the Intense Pulsed Neutron Source Division
  * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
@@ -31,38 +30,8 @@
  * Modified:
  * 
  * $Log$
- * Revision 1.10  2001/08/17 21:16:50  rmikk
- * Fixed spelling of indices.  Gave better prompts and
- * titles
- *
- * Revision 1.9  2001/08/14 16:11:27  rmikk
- * Used subroutine to set the selected indices instead of
- * setting the text on the appropriate label
- *
- * Revision 1.8  2001/08/14 01:57:32  rmikk
- * Improved the Layout
- *
- * Revision 1.7  2001/08/13 16:23:34  dennis
- * Added constructor that takes a ViewerState parameter and
- * separated initialization code in an init() method.
- *
- * Revision 1.6  2001/08/13 16:07:48  rmikk
- * Used getDataSet before each Showw() in case the data
- * set changed
- *
- * Revision 1.5  2001/08/13 14:50:03  rmikk
- * Fixed misspelling of indices
- *
- * Revision 1.4  2001/08/13 14:38:02  rmikk
- * Improved a Menu title to indicate the indices are used in
- * selection.
- *
- * Revision 1.3  2001/08/09 21:49:59  rmikk
- * Added Documentation.
- * Incorporated Prompts to indicate that Group indices are
- *    needed not Group ID's.
- * Added Displayable Fields- Raw Angle, Solid Angle, and
- *   Group Index
+ * Revision 1.11  2002/11/27 23:25:37  pfpeterson
+ * standardized header
  *
  */
 
