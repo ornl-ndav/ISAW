@@ -1,3 +1,42 @@
+/*
+ * File:  ScriptOperator.java 
+ *             
+ * Copyright (C) 2001, Ruth Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
+ *
+ * $Log$
+ * Revision 1.5  2001/06/01 21:14:13  rmikk
+ * Added Documentation for javadocs etc.
+ *
+
+ * 5-25-2001   Created 
+ */
 package Command;
 
 
@@ -8,6 +47,9 @@ import DataSetTools.operator.*;
 import DataSetTools.util.*;
 import java.beans.*;
 import java.io.*;
+
+/**  Adds features to a ScriptProcessor to be more of an "Operator"
+ */
 public class ScriptOperator extends GenericOperator
                             implements IObservable,
                                        Customizer  //for property change events
@@ -20,6 +62,11 @@ public class ScriptOperator extends GenericOperator
    private ScriptProcessor SP;
    private String errorMessage ="";
    public static String ER_FILE_ERROR             = "File error ";
+   
+
+  /**
+ *@param  filename  The file with a script
+ */
    public ScriptOperator(  String filename )
      {  super("UNKNOWN");
         
@@ -34,17 +81,12 @@ public class ScriptOperator extends GenericOperator
           { errorMessage = ER_FILE_ERROR;
             return;
           }
-        
         SP = new ScriptProcessor( D );
-        
-
         if( SP.getErrorMessage().length( ) > 0 )
            {  errorMessage = SP.getErrorMessage();
               return;
             }
         int i, j;
-        
-
         j = filename.lastIndexOf( '.');
         if( j < 0 ) 
           j = filename.length();
@@ -57,26 +99,18 @@ public class ScriptOperator extends GenericOperator
         F = F.substring( 0, i );
         String F2 = F;
         String X = System.getProperty( "Script_Path");
-          
-
         if( X != null )
           {X = X.replace( '\\' , '/' );
            X = X.replace(java.io.File.pathSeparatorChar,';');
            F2 = adjust( F, X );
            }
-        
-
         if( F2.equals(F))
          {  X = System.getProperty( "java.class.path");
            X = X.replace( '\\', '/');
            X.replace(java.io.File.pathSeparatorChar, ';');
-          
-            F2 = adjust ( F , X );
-
-
+           F2 = adjust ( F , X );
          } 
          
-
         if( !(F2.equals(F)))
              F = F2;
         else
@@ -87,8 +121,6 @@ public class ScriptOperator extends GenericOperator
                 F = F.substring ( 1);
             }
         
-
-       //  System.out.println("Final"+F);
         F.trim();
         if(F.length() >0)
           if(F.charAt(0) == '/')
@@ -125,6 +157,10 @@ public class ScriptOperator extends GenericOperator
         
 
       }
+
+/**
+*  Shows this operator. For debugging
+*/
  public void show()
     {System.out.println( "Command ="+command );
      if(categList == null )
@@ -174,15 +210,29 @@ public class ScriptOperator extends GenericOperator
           }
          return F;
         }
+
+/** gets The title
+* NOTE:  A line "Title= prompt or title" is needed for special titles
+*/
 public String getTitle()
   { if( SP != null )
        return SP.getTitle();
     else 
-       return null;
+       return "UNKNOWN";
    }
+
+/**
+* @return category list
+* NOTE: It is calculated from the filename
+*/
 public String[] getCategoryList()
   {return categList;
   }
+
+/**
+*  @return  the last category entry
+*NOTE: This is calculated from the filename
+*/
 public String getCategory()
   {if(categList == null )
       return "UNKNOWN";
@@ -190,55 +240,91 @@ public String getCategory()
       return "UNKNOWN";
    return categList[categList.length-1];
   }
+
+
 public String getErrorMessage()
   { return errorMessage;
   }
+
+/** Sets the default parameters for this operator
+*
+* The parameters determine the data types of the arguments.  This
+* is an important part of a function
+*/
 public void setDefaultParameters()
   { if(SP != null)
        SP.setDefaultParameters();
+
      }
+
+/** Returns the Command that can be used by the ScriptProcessor to execute this script
+*
+*NOTE: This is determined by the filename
+*/
 public String getCommand()
   {if(command == null)
       return "unknown";
     return command;
   }
+
 public String getFileName()
   {return filename;
    }
+
+
 public int getErrorCharPos()
   { return SP.getErrorCharPos();
    }
+
+
 public int getErrorLine()
    {return SP.getErrorLine();
    }
+
+/** Gives the number of arguments to this "Script" function
+*/
 public int getNum_parameters()
   {return SP.getNum_parameters();
   }
 
+
 public boolean setParameter(Parameter parameter, int index)
   { return SP.setParameter( parameter,index);
   }
+
 public Parameter getParameter( int index)
   { return SP.getParameter( index );
   }
+
+
 public void addParameter( Parameter P)
   { return;
   }
+
 public void CopyParametersFrom( Operator op)
   { SP.CopyParametersFrom( op );
   }
+
+
 public void addPropertyChangeListener( PropertyChangeListener pl )
   {SP.addPropertyChangeListener( pl );
   }
+
+
 public void removePropertyChangeListener(PropertyChangeListener listener)
   { //SP.removePropertyChangeListener( listener);
    }
+
 public void setObject(Object bean)
   {
    }
+
+
 public void addIObserver( IObserver iobs )
  {SP.addIObserver( iobs );
  }
+
+
 public void deleteIObserver( IObserver iobs )
     {SP.deleteIObserver( iobs ) ; 
        
@@ -250,14 +336,20 @@ public void deleteIObserver( IObserver iobs )
      */
 
   public void deleteIObservers()
-    {SP.deleteIObservers() ; 
-     
-
+    {SP.deleteIObservers() ;   
     }
+
+/** Sets the document to log information
+*
+*@param  doc the document that gets the log information
+*NOTE: This document in the future will allow reexecuting a session
+*/
 public void setLogDoc( Document doc )
   {SP.setLogDoc(doc );
    }
  
+/** Executes the script and returns the result
+*/
 public Object getResult()
   { if( SP != null)
       { Object Res = SP.getResult();
@@ -267,6 +359,9 @@ public Object getResult()
      else
          return null;
    }
+
+/** Test program for this module
+*/
 public static void main( String args [] )
   {
    java.util.Properties isawProp;

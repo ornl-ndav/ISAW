@@ -1,3 +1,41 @@
+/*
+ * File:  Script_Class_List_Handler.java 
+ *             
+ * Copyright (C) 2001, Ruth Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
+ *
+ * $Log$
+ * Revision 1.4  2001/06/01 21:14:13  rmikk
+ * Added Documentation for javadocs etc.
+ *
+
+ */
 package Command;
 /*
 * 5-20 -2001   Created by Ruth Mikkelson
@@ -14,6 +52,9 @@ import DataSetTools.util.*;
 import DataSetTools.operator.*;
 import DataSetTools.components.ParametersGUI.*;
 
+/** Gets and Saves all scripts and java GenericOperators in the Path(s) of the system property
+ *Script_Path
+ */
 public class Script_Class_List_Handler  implements OperatorHandler
   {
      private static final Vector SortOnCommand = new Vector();  //Contains ordering for Command Names
@@ -23,9 +64,13 @@ public class Script_Class_List_Handler  implements OperatorHandler
      private static int Command_Compare =257;
      private static int File_Compare = 322;
      private static boolean first = true;
+/** The System property Script_Path is an input to this
+*/
      public Script_Class_List_Handler()
        {inittt();
         }
+   
+
      private void inittt()
       {  if( !first)
            return;
@@ -385,6 +430,8 @@ private int CommandListIndex(int index)
     int j = X.intValue();
     return j;
   }
+/** Gets the Command of the index-th operator
+*/
 public String getOperatorCommand( int index )
    {   Operator X = getOp1(CommandListIndex(index));
       if(X != null)  
@@ -392,9 +439,15 @@ public String getOperatorCommand( int index )
       else 
          return null;
    }
+/** Gets the number of operators in the master operator list
+*/
 public int getNum_operators()
   { return opList.size();
    }
+
+/** Gets the number of parameters(arguments) of the index-th operator
+*
+*/
 public int getNumParameters( int index )
   { Operator X = getOp1(CommandListIndex(index));
     if( X == null )
@@ -403,6 +456,9 @@ public int getNumParameters( int index )
        return X.getNum_parameters();
 
    }
+/** Gets the par_index-th parameter of the index-th operator int
+* the master operator list
+*/
 public Object getOperatorParameter( int index, int par_index)
    { 
     Operator X = getOp1(CommandListIndex(index));
@@ -420,6 +476,8 @@ public Object getOperatorParameter( int index, int par_index)
      
      
     }
+/** Gets the index-th operator in the master list of operators
+*/
 public Operator getOperator( int index )
    {
    Operator X = getOp1( CommandListIndex(index) );
@@ -438,6 +496,9 @@ public Operator getOperator( int index )
          { return null;}
       }
    }
+/** Gets the position in the master list of the first operator
+*   whose command name is CommName.
+*/
 public int getOperatorPosition( String CommName)
   {int i = find(CommName , Command_Compare);
    if( i < 0 )
@@ -453,13 +514,15 @@ public int getOperatorPosition( String CommName)
      }
    return i;
    }
-
+/** Gets an operator given its Command Name
+*/
 public Operator getOperator( String CommName)
   {int i = getOperatorPosition( CommName);
    if( i < 0)
      return null;
    return getOperator( i );
   }
+
 private String getString()
   {char c=0;
    String S ="";

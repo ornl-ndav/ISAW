@@ -1,3 +1,42 @@
+/*
+ * File:  CommandPane.java 
+ *             
+ * Copyright (C) 2001, Ruth Mikkelson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Ruth Mikkelson <mikkelsonr@uwstout.edu>
+ *           Department of Mathematics, Statistics and Computer Science
+ *           University of Wisconsin-Stout
+ *           Menomonie, WI. 54751
+ *           USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
+ *
+ * $Log$
+ * Revision 1.19  2001/06/01 21:14:12  rmikk
+ * Added Documentation for javadocs etc.
+ *
+
+
+
 /* 6/4/2000:
    a)Implemented GUI Interface to project
        i)Improve: Titles should not dissapear when scrolling
@@ -62,7 +101,10 @@
    - Converting CommandPane to an operator "successfully"
    - JFrame returned in a function call
 
-  
+5-20-2001
+   -Separated out the GUI part of CommandPane from the processor part
+    which went to ScriptProcessor.java
+   -Added a wide Cursor  
 */
 package Command; 
 
@@ -84,7 +126,7 @@ import java.beans.*;
 import java.util.Vector;
 import Command.*;
 
-/** Pane to enter and execute and handle commands
+/** Pane to enter, execute and handle commands
  *  A command can be executed immediately  or 
  *  A sequence of commands can all be executed.
  *      The Immediate commands are entered in the immediate window
@@ -109,21 +151,34 @@ public class CommandPane extends JPanel  implements PropertyChangeListener ,
 
     JTextArea    StatusLine ; 
 
-    String FilePath = null  ;                   // for macro storage and retrieval
+    String FilePath = null  ;             // for macro storage and retrieval
     File SelectedFile = null;
     Document logDoc=null;
     public ScriptProcessor  SP;
     boolean Debug = false;
- public CommandPane()
+/**
+*  Creates the JPanel for editing and executing scripts
+*/
+public CommandPane()
     { 
       initt();
       SP = new ScriptProcessor(  Commands.getDocument());
       SP.addPropertyChangeListener( this );
      }
+
+/**
+*  Set the Document that logs operations
+*
+*@param   doc  the Document that will receive log information
+*
+*NOTE: In the future the log document may be executable to redo
+*      a session
+*/
 public void setLogDoc(Document doc)
    { logDoc = doc;
      SP.setLogDoc( doc );
    }
+
  private void initt()
    {    JPanel JP;   
         Rectangle R = getBounds() ; 
@@ -187,23 +242,16 @@ public void setLogDoc(Document doc)
          StatusLine.setEditable( false );
 	 add( X , BorderLayout.SOUTH ) ; 
          
-     try{
-        //System.setProperty( "Scriptpath", "C:\\Ruth\\ISAW\\Scripts\\");
-        //System.setProperty("DataDirectory" , "C:\\Ruth\\ISAW\\SampleRuns\\");
-         //System.setProperty("DefaultInstrument" , "hrcs");
-     
-       FilePath = System.getProperty("Script_Path");
-      
-       
-            FilePath = DataSetTools.util.StringUtil.fixSeparator(FilePath);
-     
-     
-        if( Debug )System.out.println( "FilePath is "+FilePath);
-   
+     try{        
+       FilePath = System.getProperty("Script_Path");  
+       FilePath = DataSetTools.util.StringUtil.fixSeparator(FilePath);   
+       if( Debug )
+             System.out.println( "FilePath is "+FilePath);   
         }
      catch( Exception s) 
       {FilePath = null;
-       if( Debug ) System.out.println(" System properties could not be set");
+       if( Debug ) 
+          System.out.println(" System properties could not be set");
       }
 
 
@@ -222,72 +270,35 @@ public void setLogDoc(Document doc)
   {    int i;
        String S;
        Object RES;
-     
-       // SP.reset();
-        //Document doc = (new Util()).openDoc( fname ); 
-       
+         
 	 ScriptOperator cp = new ScriptOperator( fname );
          cp.addIObserver( X );
          cp.addPropertyChangeListener( this );
          cp.setLogDoc(DocLog);
         
         if( cp.getErrorCharPos() >= 0)
-          {//new Util().appendDoc( StatusLine.getDocument(), "setDefault Error "+CP.getErrorMessage()+" at position "+
-           //                         cp.getErrorCharPos()+" on line "+cp.getErrorLine()); 
-           //seterror( cp.getErrorCharPos(), cp.getErrorMessage() );
-           //lerror = cp.getErrorLine();
-          // cp.MacroDocument = null;
+          {
            return ;
           }
-        
-       
-        //if(  )
-           {
-             DataSetTools.components.ParametersGUI.JParametersDialog pDialog = 
+        DataSetTools.components.ParametersGUI.JParametersDialog pDialog = 
                 new DataSetTools.components.ParametersGUI.JParametersDialog(cp, DSS, new PlainDocument());
-           }
-       
-        
-       /*  Parameter P[] = cp.GUIgetParameters();
-         seterror( cp.getErrorCharPos(), cp.getErrorMessage());
-         lerror = cp.getErrorLine();
-         if( Debug)System.out.println("getExec agter getGUIParam"+perror+","+lerror+","+serror);
-         if( perror >= 0 )
-           { B = new MessageBox("Error="+serror+" on line "+ lerror + "at position "+ perror);
-           return "Error="+serror+" on line "+ lerror + "at position "+ perror;
-           }
-         if( Debug)System.out.println("Ere cp.execute" );
-         if(Debug)
-          {if( P == null) System.out.println("P is null");
-           else System.out.println("P has length"+ P.length);
-          }
-         cp.execute(P);
-         seterror( cp.getErrorCharPos(), cp.getErrorMessage());
-         lerror = cp.getErrorLine();
-         lerror = cp.getErrorLine();
-         if( Debug)
-	     System.out.println("End getExec err&result are"+perror+","+lerror+","+serror+","+cp.getResult());
-         
-         if( perror < 0 ) 
-	   {  Object O = cp.getResult();
-              String SS ;
-              if( O == null ) SS = "(null)"; else SS = O.toString();
-              if( cp.MPanel.StatusLine == null)
-                B = new MessageBox( SS );
-              
-               return cp.getResult();
-           }
-         if( cp.MPanel.StatusLine == null )
-         B = new MessageBox("Macro Error "+ serror +" on line"+lerror+" at position "+ perror);
-         return serror;
-        
-     */
-  }
+   }
 
+/**
+*  Allows for DataSets from external sources to be used by the ScriptProcessor
+*
+*@param   dss   The data set that is to be added to this CommandPane unit
+*/ 
   public void addDataSet( DataSet dss )   
     {  SP.addDataSet( dss );
      }
-   public void propertyChange( PropertyChangeEvent evt )
+/**
+*  Receives a PropertyChange Event. 
+*@param evt  the PropertyChangeEvent.
+*Note: The only event that is serviced is the one with the property name "Display".<BR>
+*<ul> The new value will be displayed in the Status line </ul>
+*/ 
+public void propertyChange( PropertyChangeEvent evt )
      {if(Debug)
 	System.out.println("IN PROPERTY CHANGEXXXXXX");
       if( evt.getPropertyName().equals( "Display" ) )    
@@ -305,16 +316,21 @@ public void setLogDoc(Document doc)
            
           }
 
-    }   
+    }
+/**
+* adds and IObserver.
+*@param iobs   The IObserver that is to be added
+*NOTE: This unit only notifies observers of a new DataSet
+*/   
  public void addIObserver(IObserver iobs) 
    {SP.addIObserver( iobs );
    }
                 
-  public void  deleteIObserver(IObserver iobs) 
+public void  deleteIObserver(IObserver iobs) 
     {  SP.deleteIObserver( iobs );
    }
                
-  public void  deleteIObservers() 
+public void  deleteIObservers() 
     { SP.deleteIObservers();
     }
                 
@@ -390,6 +406,9 @@ private class MyKeyListener  extends KeyAdapter
     }
   }//End MyKeyListener
 //*****************SECTION:MAIN********************
+/**
+* Test program for this unit- no args are used
+*/
 public static void  main( String args[] )
     { 
     java.util.Properties isawProp;
@@ -480,67 +499,10 @@ private  class MyMouseListener extends MouseAdapter implements ActionListener,
            return;
           }
                }
-    /* else if( e.getSource().equals( Run ) ) 
-       {doc = Commands.getDocument() ;
-        CP.SP.MacroDocument = doc;
-       
-        CP.SP.ExecLine.resetError() ; 
-        CP.SP.ExecLine.initt();
-        CP.SP.seterror( -1,"");
-        if(StatusLine != null)
-           StatusLine.setText("");
-        if(Immediate != null) 
-           Immediate.setText("");
-      
-        Parameter P[] = CP.SP.GUIgetParameters();
-       
-         if( CP.SP.getErrorCharPos() >= 0)
-          {new Util().appendDoc( StatusLine.getDocument(), "Error"+CP.SP.getErrorMessage()+" at position"+
-                                    CP.SP.getErrorCharPos()+"on line"+CP.SP.getErrorLine()); 
-           CP.SP.MacroDocument = null;
-           return;
-          }
-        if( P == null ) 
-          {CP.SP.MacroDocument = null;
-            return;
-          }          
-       
-        StatusLine.setText( "" ) ;        
-       
-       
-        if( P.length > 0 )
-          { CP.SP.execute( P ) ;
-            if( CP.SP.getErrorCharPos() >= 0)
-              new Util().appendDoc( StatusLine.getDocument(), "Error"+CP.SP.getErrorMessage()+" at position"+
-                                    CP.SP.getErrorCharPos()+"on line"+CP.SP.getErrorLine()); 
-          }
-        else
-         { CP.SP.MacroDocument = null; 
-           CP.SP.execute( doc ) ; 
-          }
-	CP.SP.MacroDocument = null;
-        if( CP.SP.getErrorCharPos() >= 0 )
-          {  new Util().appendDoc(StatusLine.getDocument(), "Status: Error " +  CP.SP.getErrorMessage() + " on line " 
-                                       + CP.SP.getErrorLine() + " character" + CP.SP.getErrorCharPos() ) ; 
-             Element E = doc.getDefaultRootElement();
-             if( CP.SP.getErrorLine() >= E.getElementCount()) 
-                Commands.setCaretPosition(doc.getLength()-1);
-             else if( CP.SP.getErrorLine() >= 0 )
-	       {int p;
-                Element Eline = E.getElement( CP.SP.getErrorLine());
-                p = Eline.getStartOffset() + CP.SP.getErrorCharPos() ;
-                if( p >= Eline.getEndOffset() ) p =Eline.getEndOffset();
-                Commands.setCaretPosition(p);
-                Commands.requestFocus();
-                    
-	       }
-          }
-       }
-   */
+   
      else if( e.getSource().equals( CP.Clear ))
       {if( CP.SP.ExecLine == null ) return;
-      // Commands.setText("");
-      // Immediate.setText("");
+    
        CP.SP.ExecLine.removeDisplays();
        CP.StatusLine.setText("");
        CP.SP.ExecLine.initt();
