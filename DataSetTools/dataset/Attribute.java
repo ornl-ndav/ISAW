@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2001/07/30 18:46:46  dennis
+ *  Added DS_TYPE attribute and some suggested type names.
+ *
  *  Revision 1.11  2001/07/10 19:08:39  dennis
  *  Added attributes for Omega, DETECTOR_INFO and
  *  DETECTOR_INFO_LIST.
@@ -102,7 +105,7 @@ import  DataSetTools.math.*;
 abstract public class Attribute implements Serializable
 {
 
-  // Suggested names for attributes for neutron scattering data sets.
+  // Suggested names for attributes for neutron scattering data sets:
 
   public static final String  TITLE             = "DataSet Name";
   public static final String  DS_TAG            = "DataSet Tag";
@@ -143,6 +146,16 @@ abstract public class Attribute implements Serializable
 
   public static final String  DETECTOR_INFO_LIST = "Det Info List";
   public static final String  DETECTOR_INFO      = "Det Info";
+
+  public static final String  DS_TYPE            = "Data Set Type";
+
+  // Suggested value Strings for DataSet attributes:
+
+  public static final String  UNKNOWN            = "Unknown";
+  public static final String  MONITOR_DATA       = "Monitor Data";
+  public static final String  SAMPLE_DATA        = "Sample Data";
+  public static final String  PULSE_HEIGHT_DATA  = "Pulse Height";
+
  
   private String name;
 
