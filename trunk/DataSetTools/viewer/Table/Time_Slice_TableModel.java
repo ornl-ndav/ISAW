@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2003/09/23 15:54:28  rmikk
+ * -Eliminated the persistent reference to the DataGrid. This
+ *  grid is changed by other operators and other Viewers so
+ * does not retain valid values
+ *
  * Revision 1.12  2003/09/05 21:45:16  rmikk
  * Implemented support for more than one detector
  *
@@ -121,6 +126,8 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    int DetNum = -1;
    int[] DetNums=null;
    UniformGrid grid = null;
+   Data[][] Groups = null;
+   int num_rows,num_cols;
    XScale x_scale = null;
    int firstGroup =-1;
    /** Constructor for this table model of the Data Set DS at time time
@@ -143,8 +150,8 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       MaxRow = -1;
       MaxCol = -1;
       SetUpDetNums();
-      MaxRow = grid.num_rows();
-      MaxCol = grid.num_cols();
+      MaxRow = num_rows;
+      MaxCol = num_cols;
       tMinrow = 0;
       tMaxrow = MaxRow - 1;
       tMincol = 0;
@@ -281,9 +288,9 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    /** returns the number of rows
     */
    public int getRowCount()
-   {  if( grid == null)
+   {  if( Groups == null)
         return 0;
-      if( grid.num_rows() < 0 )
+      if( num_rows < 0 )
          return 0;
       else
          return tMaxrow - tMinrow + 1;
@@ -295,12 +302,12 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
    public int getColumnCount()
    {
       int n = 1;
-      if( grid == null)
+      if( Groups == null)
        return 0;
       if( err ) n++;
       if( ind )  n++;
 
-      if( grid.num_rows() < 0 )
+      if( num_rows < 0 )
          return 0;
       else
          return( tMaxcol - tMincol + 1 ) * n;
@@ -337,7 +344,7 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
       row = row + tMinrow;// -1;
       column = column + tMincol;// - 1;
 
-      int Grp = DS.getIndex_of_data(grid.getData_entry( row+1, column+1));
+      int Grp = DS.getIndex_of_data(Groups[ row+1][ column+1]);
           //RC_to_Group[row * ( MaxCol ) + column / n];
 
       // if( doo)
@@ -551,8 +558,18 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
           DetNum = DetNums[0];
       grid = (UniformGrid)(Grid_util.getAreaGrid( DS, DetNum));
       grid.setDataEntriesInAllGrids(DS);
-
+      SetUpGroups();
    }
+   public void SetUpGroups(){
+      num_rows = grid.num_rows();
+      num_cols = grid.num_cols();
+      Groups = new Data[ 1+ num_rows][1+num_cols];
+      for( int row = 1; row <= num_rows; row++)
+        for( int col = 1; col <= num_cols; col++)
+           Groups[row][col] = grid.getData_entry(row,col);
+
+   } 
+
   LabelCombobox  DetChoices = null;
   public JComponent[] getControls(){
     if( DetNums == null)
@@ -585,8 +602,10 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
     if( choice != DetNum){
       DetNum = choice;
       grid = (UniformGrid)Grid_util.getAreaGrid( DS, DetNum);
+      grid.setDataEntriesInAllGrids( DS );
       MaxRow = grid.num_rows();
       MaxCol = grid.num_cols();
+      SetUpGroups();
       tMinrow = 0;
       tMaxrow = MaxRow - 1;
       tMincol = 0;
