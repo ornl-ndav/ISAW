@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2003/10/15 03:43:13  bouzekc
+ *  Fixed javadoc errors.
+ *
  *  Revision 1.3  2002/11/27 23:24:30  pfpeterson
  *  standardized header
  *
@@ -68,9 +71,12 @@ public class TimeAxisHandler implements IAxisHandler
     {return ds.getX_units();
     }
 
-  /** Gets the axis value for this Group and xvalue<P>
-  * NOTE: The y value can be gotten with getX( xIndex )
-  */
+  /** 
+   * Gets the axis value for this Group and xvalue.
+   *
+   * <br>
+   * NOTE: The y value can be gotten with getX( xIndex )
+   */
   public float  getValue( int GroupIndex, int xIndex)
     { if( xIndex < 0)
         return 0;
