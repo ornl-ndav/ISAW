@@ -1,0 +1,147 @@
+/*
+ * File:  DataSetPG.java 
+ *
+ * Copyright (C) 2002, Peter F. Peterson
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * Contact : Peter F. Peterson <pfpeterson@anl.gov>
+ *           Intense Pulse Neutron Source Division
+ *           Argonne National Laboratory
+ *           Argonne, IL 60439-4845, USA
+ *
+ * This work was supported by the Intense Pulsed Neutron Source Division
+ * of Argonne National Laboratory, Argonne, IL 60439-4845, USA.
+ *
+ * For further information, see <http://www.pns.anl.gov/ISAW/>
+ *
+ * Modified:
+ *
+ *  $Log$
+ *  Revision 1.1  2002/08/01 18:40:03  pfpeterson
+ *  Added to CVS.
+ *
+ *
+ */
+
+package DataSetTools.parameter;
+
+import DataSetTools.dataset.*;
+import DataSetTools.retriever.RunfileRetriever;
+import DataSetTools.util.SharedData;
+
+/**
+ * This is a superclass to take care of many of the common details of
+ * Array Parameter GUIs.
+ */
+public class DataSetPG extends ArrayPG{
+    // static variables
+    private   static String TYPE     = "DataSet";
+    protected static int    DEF_COLS = ArrayPG.DEF_COLS;
+
+    // ********** Constructors **********
+    public DataSetPG(String name, Object value){
+        super(name,value);
+        this.type=TYPE;
+        if(!(value instanceof DataSet))
+            SharedData.addmsg("WARN: Non-"+this.type
+                              +" in DataSetPG constructor");
+    }
+
+    public DataSetPG(String name, Object value, boolean valid){
+        super(name,value,valid);
+        this.type=TYPE;
+        if(!(value instanceof DataSet))
+            SharedData.addmsg("WARN: Non-"+this.type
+                              +" in DataSetPG constructor");
+    }
+
+    // ********** Methods to deal with the hash **********
+
+    /**
+     * Add a single DataSet to the vector of choices. This calls the
+     * superclass's method once it confirms the value to be added is a
+     * DataSet.
+     */
+    public void addItem( Object val){
+        if(val instanceof DataSet) super.addItem(val);
+    }
+
+    // ********** IParameter requirements **********
+
+    /**
+     * Returns the value of the parameter. While this is a generic
+     * object specific parameters will return appropriate
+     * objects. There can also be a 'fast access' method which returns
+     * a specific object (such as String or DataSet) without casting.
+     */
+    public DataSet getDataSetValue(){
+        Object value=this.getValue();
+        if(value instanceof DataSet){
+            return (DataSet)value;
+        }else{
+            return null;
+        }
+    }
+
+    /**
+     * Main method for testing purposes.
+     */
+    static void main(String args[]){
+        DataSetPG fpg;
+        int y=0, dy=70;
+
+        String filename=null;
+        if(args.length==1){
+            filename=args[0];
+        }else{
+            filename="/IPNShome/pfpeterson/data/CsC60/SEPD18805.RUN";
+        }
+
+        RunfileRetriever rr=new RunfileRetriever(filename);
+        DataSet[] ds=new DataSet[rr.numDataSets()];
+        for( int i=0 ; i<rr.numDataSets() ; i++ ){
+            ds[i]=rr.getDataSet(i);
+        }
+
+        fpg=new DataSetPG("a",ds[0]);
+        System.out.println(fpg);
+        fpg.init(ds);
+        fpg.showGUIPanel(0,y);
+        y+=dy;
+
+        fpg=new DataSetPG("b",ds[0]);
+        System.out.println(fpg);
+        fpg.setEnabled(false);
+        fpg.init(ds);
+        fpg.showGUIPanel(0,y);
+        y+=dy;
+
+        fpg=new DataSetPG("c",ds[0],false);
+        System.out.println(fpg);
+        fpg.setEnabled(false);
+        fpg.init(ds);
+        fpg.showGUIPanel(0,y);
+        y+=dy;
+
+        fpg=new DataSetPG("d",ds[0],true);
+        System.out.println(fpg);
+        fpg.setDrawValid(true);
+        fpg.init(ds);
+        fpg.showGUIPanel(0,y);
+        y+=dy;
+
+    }
+}
