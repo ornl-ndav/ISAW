@@ -32,6 +32,11 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2004/01/30 02:10:38  bouzekc
+ * Now handles Fields and values that represent primitive array type
+ * initializations (e.g. int num[] = {4,3}) as well as regular
+ * primitive array initializations.
+ *
  * Revision 1.4  2004/01/08 23:31:07  bouzekc
  * Added NSF grant number to header.
  *
@@ -191,8 +196,23 @@ public class JavaWrapperOperator extends GenericOperator {
         values[i] = ( ( ParameterGUI )parameters.get( i ) ).getValue(  );
       }
 
-      for( int k = 0; k < fieldParams.length; k++ ) {
-        fieldParams[k].set( wrapped, values[k] );
+      for( int k = 0; k < fieldParams.length; k++ ) {       
+        if( fieldParams[k].getType(  ).isArray(  ) ) {
+          //this means that we have hit an ArrayPG
+          //make sure we can go through the vector
+          if( values[k] instanceof Vector) {
+            Vector myVect = ( Vector )values[k];
+            
+            //iterate through the vector of values and set each of the field
+            //param's values to the element value
+            for( int m = 0; m < myVect.size(  ); m++ ) {
+              Array.set( fieldParams[k].get( wrapped ), 1, myVect.get( m ) );
+            }
+          }
+         // fieldParams[k].set( wrapped, values[k] );
+        } else {
+          fieldParams[k].set( wrapped, values[k] );
+        }
       }
 
       //send the values through calculate(...)
@@ -221,6 +241,7 @@ public class JavaWrapperOperator extends GenericOperator {
    */
   public static void main( String[] args ) {
     Operators.WrappedCrunch crunch = new Operators.WrappedCrunch(  );
+    //Operators.MyFortran crunch = new Operators.MyFortran(  );
     JavaWrapperOperator wrapper    = new JavaWrapperOperator( crunch );
     /*DataSet temp                   = new DataSetTools.retriever.RunfileRetriever(
        "/home/students/bouzekc/ISAW/SampleRuns/SCD06530.RUN" ).getDataSet( 1 );
@@ -243,6 +264,7 @@ public class JavaWrapperOperator extends GenericOperator {
       System.out.println( catList[i] );
     }
     System.out.println( wrapper.getCommand(  ) );
+    System.out.println( wrapper.getResult(  ) );
   }
 
   /**
