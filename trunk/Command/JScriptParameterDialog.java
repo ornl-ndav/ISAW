@@ -74,8 +74,8 @@ public class JScriptParameterDialog implements Serializable
        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
             
             param =((JParameterGUI)( V.get(i+1))).getParameter();
-            System.out.println("ISAW i and param class ="+ i+","+ param.getValue().getClass() +","+
-                    param.getName());
+	    // System.out.println("ISAW i and param class ="+ i+","+ param.getValue().getClass() +","+
+            //        param.getName());
             if (param.getValue() instanceof Float)
                 paramGUI = new JFloatParameterGUI(param);
             else if(param.getValue() instanceof Integer)
