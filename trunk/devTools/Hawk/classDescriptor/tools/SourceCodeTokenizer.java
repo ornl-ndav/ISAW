@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 21:04:39  kramer
+ * Dramatically changed how this class works.
+ *
  * Revision 1.3  2004/03/12 19:46:20  bouzekc
  * Changes since 03/10.
  *
@@ -43,232 +46,178 @@
  */
 package devTools.Hawk.classDescriptor.tools;
 
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
-/**
- * This class is used to break source code into tokens.  When, the next token from the source code is obtained from the method
- * nextToken(), the method looks at the next few characters in the String "str" and determines if the next section of the code is a 
- * slash star comment (a comment of the form /* . . . . *\/), slash slash comment (a comment of the form //.......\n), a javadocs 
- * comment (a comment of the form /** . . . . *\/), or actual code.  The next section is returned as an object that can be used to 
- * determine the section type.
- * @author Dominic Kramer
- */
 public class SourceCodeTokenizer
 {
+	private StringBuffer buffer;
+	private long currentIndex;
+	private int numOfLines;
 	/**
-	 * The String to tokenize.
+	 * This field contains the line number for the start of the last token obtained.
 	 */
-	protected String str;
+	private int initialLineNumber;
 	/**
-	 * The current offset in the string.
+	 * This field contains the index (from the StringBuffer 'buffer') from which 
+	 * the last token obtained starts.
 	 */
-	protected int offset;
-	/**
-	 * The current line number.
-	 */
-	protected int lineNumber;
-		
-	/**
-	 * Creates a SourceCodeTokenizer.
-	 * @param s The String to tokenize.
-	 */
-	public SourceCodeTokenizer(String s)
+	private long initialIndex;
+
+	public SourceCodeTokenizer(String fileName)
 	{
-		str = s;
-		offset = 0;
-		lineNumber = 0;
+		currentIndex  = 0;
+		numOfLines = 0;
+		initialIndex = 0;
+		initialLineNumber = numOfLines;
+		buffer = new StringBuffer();
+		try
+		{
+			BufferedReader reader = new BufferedReader(new FileReader(fileName));
+			int val = reader.read();
+			while (val != -1)
+			{
+				buffer.append((char)val);
+				val = reader.read();
+			}
+		}
+		catch (Throwable t)
+		{
+			SystemsManager.printStackTrace(t);
+		}
 	}
 	
-	/**
-	 * This returns a SourceCodeToken object which contains the information for the String representing the next token as well as
-	 * its type (i.e. Source Code, Slash Slash Comment, Slash Star Comment, or Javadocs).  A section in the code is either a comment 
-	 * section, a javadocs section, or a source code section.
-	 * @return The next section in the code
-	 */
+	protected char getCharAt(long index)
+	{
+		char tempChar = buffer.charAt((int)index);
+		if ((tempChar==10) || (tempChar==13))
+		{
+			if (currentIndex<buffer.length())
+				numOfLines++;
+		}
+		return tempChar;
+	}
+	
 	public SourceCodeToken nextToken()
 	{
 		SourceCodeToken token = null;
-		boolean source = false;
-		boolean commentDoubleSlash = false;
-		boolean commentSlashStar = false;
-		boolean javadocs = false;
-		int tempOffset = offset; //point to the next character
-		if (tempOffset < str.length())
+		if (currentIndex < buffer.length())
 		{
-			String next = String.valueOf(str.charAt(tempOffset));
-			if (next.equals("/"))
-			{
-				tempOffset++;
-				if (tempOffset < str.length())
+			StringBuffer tempBuffer = new StringBuffer();
+				if (currentIndex<buffer.length())
+					tempBuffer.append(getCharAt(currentIndex));
+				if ((currentIndex+1)<buffer.length())
+					tempBuffer.append(getCharAt(currentIndex+1));
+				
+				if (tempBuffer.toString().equals("//"))
 				{
-					next = String.valueOf(str.charAt(tempOffset));
-					if (next.equals("/"))
-						commentDoubleSlash = true;
-					else if (next.equals("*"))
-						commentSlashStar = true;
-						
-					tempOffset++;
-					if (tempOffset < str.length())
+					//process as a // comment
+					token = new SourceCodeToken(processAsSlashSlashComment(),initialIndex,initialLineNumber,SourceCodeToken.SLASH_SLASH_COMMENT);
+				}
+				else if (tempBuffer.toString().equals("/*"))
+				{
+					if ((currentIndex+2)<buffer.length())
+						tempBuffer.append(getCharAt(currentIndex+2));
+					if (tempBuffer.toString().equals("/**"))
 					{
-						next = String.valueOf(str.charAt(tempOffset));
-						if (next.equals("*"))
-						{
-							commentDoubleSlash = false;
-							commentSlashStar = false;
-							javadocs = true;
-						}
+						//process as a javadoc comment
+						token = new SourceCodeToken(processAsSlashStarOrJavadocComment(),initialIndex,initialLineNumber,SourceCodeToken.JAVADOCS);
+					}
+					else
+					{
+						//process as a /* comment
+						token = new SourceCodeToken(processAsSlashStarOrJavadocComment(),initialIndex,initialLineNumber,SourceCodeToken.SLASH_STAR_COMMENT);
 					}
 				}
+				else if (tempBuffer.toString().equals(""))
+				{
+					//then the end of the String has been reached
+					token = null;
+				}
 				else
-					source = true;
-			}
-			else
-				source = true;
+				{
+					//process as source
+					token = new SourceCodeToken(processAsSource(),initialIndex,initialLineNumber,SourceCodeToken.SOURCE_CODE);
+				}
 		}
-		
-		String newString = "";
-		if (source)
-		{
-			newString = processAsSource();
-			lineNumber++;
-			token = new SourceCodeToken(getVectorFromString(newString),lineNumber,SourceCodeToken.SOURCE_CODE);
-			lineNumber = token.getLastLineNumber();
-		}
-		else if (commentDoubleSlash)
-		{
-			newString = processAsDoubleSlashComment();
-			lineNumber++;
-			token = new SourceCodeToken(getVectorFromString(newString),lineNumber,SourceCodeToken.SLASH_SLASH_COMMENT);
-			lineNumber = token.getLastLineNumber();
-		}
-		else if (commentSlashStar)
-		{
-			newString = processAsSlashStarComment();
-			lineNumber++;
-			token = new SourceCodeToken(getVectorFromString(newString),lineNumber,SourceCodeToken.SLASH_STAR_COMMENT);
-			lineNumber = token.getLastLineNumber();
-		}
-		else if (javadocs)
-		{
-			newString = processAsSlashStarComment();
-			lineNumber++;
-			token = new SourceCodeToken(getVectorFromString(newString),lineNumber,SourceCodeToken.JAVADOCS);
-			lineNumber = token.getLastLineNumber();
-		}
-		
 		return token;
 	}
 	
 	/**
-	 * Takes the String supplied and breaks it into lines.  Each line is an element from the Vector returned.
-	 * @param str The String to use.
-	 * @return A Vector of Strings.
+	 * Get the next two characters concantenated together in a String.  If there 
+	 * is only one character left in the buffer, only that character (as a String) is returned.
 	 */
-	protected Vector getVectorFromString(String str)
+	private String getNextTwoChars()
 	{
-		Vector vec = new Vector();
-		StringTokenizer tokenizer = new StringTokenizer(str,"\n");
-		while(tokenizer.hasMoreTokens())
-			vec.add(tokenizer.nextToken());
-		
-		return vec;
+		StringBuffer tempBuffer = new StringBuffer();
+		if (currentIndex<buffer.length())
+			tempBuffer.append(getCharAt(currentIndex));
+		if ((currentIndex+1)<buffer.length())
+			tempBuffer.append(getCharAt(currentIndex+1));
+		return tempBuffer.toString();
 	}
 	
-	/**
-	 * Get the number of lines that make up the string str.
-	 * @return The number of lines that make up the string str.
-	 */
-	public int getNumberOfLinesInString()
+	private String processAsSource()
 	{
-		StringTokenizer tokenizer = new StringTokenizer(str,"\n");
-		return tokenizer.countTokens();
-	}
-
-	/**
-	 * This method assumes that offset starts from the start of a source code section.  It returns
-	 * the String representing all of the code until it reaches a /* or a // (Note /** is just a special version of /*).
-	 * @return The source code section
-	 */
-	protected String processAsSource()
-	{
-		String result = "";
-		String next = getNextChar();
-		while ( !(result.endsWith("//") || result.endsWith("/*")) && next != null)
+		initialLineNumber = numOfLines;
+		initialIndex = currentIndex;
+		StringBuffer tempBuffer = new StringBuffer();
+		String nextChars = getNextTwoChars();
+		while (!nextChars.equals("//") && !nextChars.equals("/*") && (currentIndex<buffer.length()))
 		{
-			result += next;
-			next = getNextChar();
+			tempBuffer.append(getCharAt(currentIndex));
+			currentIndex++;
+			nextChars = getNextTwoChars();
 		}
-		if (next != null)
-		{
-			if (result.endsWith("//") || result.endsWith("/*"))
-			{
-				result = result.substring(0,result.length()-2);
-				offset = offset - 2;
-			}
-			offset--;
-		}
-		
-		return result;
+		return tempBuffer.toString();
 	}
 	
-	
-	/**
-	 * This method assumes that offset starts from the start of a comment that uses a // for commenting.
-	 * It returns the String starting from offset until a \n is reached
-	 * @return The comment section
-	 */
-	protected String processAsDoubleSlashComment()
+	private String processAsSlashSlashComment()
 	{
-		String result = "";
-		String next = getNextChar();
-		while (!result.endsWith("\n") && result != null)
+		initialLineNumber = numOfLines;
+		initialIndex = currentIndex;
+		StringBuffer tempBuffer = new StringBuffer();
+		char currentChar = getCharAt(currentIndex);
+		while ((currentChar!='\n') && (currentChar!='\r') && (currentIndex<buffer.length()))
 		{
-			result += next;
-			next = getNextChar();
+			tempBuffer.append(currentChar);
+			currentIndex++;
+			currentChar = getCharAt(currentIndex);
 		}
-		if (next != null)
-			offset--;
-		
-		return result;
+		return tempBuffer.toString();
 	}
 	
-	/**
-	 * This method assumes that offset starts from the start of a /* or /** used for commenting.
-	 * It returns the String starting from offset util a *\/ is reached
-	 * @return
-	 */
-	protected String processAsSlashStarComment()
+	private String processAsSlashStarOrJavadocComment()
 	{
-		String result = "";
-		String next = getNextChar();
-		while (!result.endsWith("*/") && next != null)
+		initialLineNumber = numOfLines;
+		initialIndex = currentIndex;
+		StringBuffer tempBuffer = new StringBuffer();
+		String nextTwoChars = getNextTwoChars();
+		while (!nextTwoChars.equals("*/") && (currentIndex<buffer.length()))
 		{
-			result += next;
-			next = getNextChar();			
+			tempBuffer.append(getCharAt(currentIndex));
+			currentIndex++;
+			nextTwoChars = getNextTwoChars();
 		}
-		if (next != null)
-			offset--;
-			
-		return result;
+		if (currentIndex<buffer.length())
+			tempBuffer.append(getCharAt(currentIndex));
+		currentIndex++;
+		if (currentIndex<buffer.length())
+			tempBuffer.append(getCharAt(currentIndex)); //this will add the */ if possible
+		currentIndex++;
+		return tempBuffer.toString();
 	}
 	
-	/**
-	 * This returns the next character in str as a String or null if the end of the String has been reached.
-	 * @return The next character as a String.
-	 */
-	public String getNextChar()
+	public long getNumberOfLines()
 	{
-		String s = null;
-		if (offset < str.length())
+		int num = 0;
+		char currentChar = ' ';
+		for (int i=0; i<buffer.length(); i++)
 		{
-			s = String.valueOf(str.charAt(offset));
-			offset++;
+			currentChar = getCharAt(i);
+			if ((currentChar==10) || (currentChar==13))
+				num++;
 		}
-		//this was added to convert tabs into spaces
-		if ((s != null) && (s.equals("\t")))
-			s = "   ";
-			
-		return s;
+		return num;
 	}
 }
