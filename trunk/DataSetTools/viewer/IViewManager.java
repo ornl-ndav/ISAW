@@ -1,8 +1,12 @@
 /*
- * @(#)IViewManager.java  0.1  2000/02/14
+ * @(#)IViewManager.java 
  *
- * ---------------------------------------------------------------------------
+ *  Programmer: Dennis Mikkelson 
+ *
  *  $Log$
+ *  Revision 1.2  2001/01/29 21:26:48  dennis
+ *  Now uses CVS version numbers.
+ *
  *  Revision 1.1  2000/07/10 22:59:14  dennis
  *  July 10, 2000 version... many changes
  *
