@@ -1,7 +1,7 @@
 /*
  * File:  InternalViewManager.java
  *
- * Copyright (C) 1999, Dennis Mikkelson
+ * Copyright (C) 1999-2002, Dennis Mikkelson
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,76 +31,10 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.26  2002/10/07 19:35:57  dennis
- *  "Clear Selections" menu option now clears selections in the temporary
- *  DataSet as well as the original DataSet.  This fixes a bug where the
- *  "Clear Selection" failed to clear the selections on the viewer if an
- *  Axis Conversion had been done.
+ *  Revision 1.27  2002/10/08 15:45:35  dennis
+ *  Synced with ViewManager.java.  Now does conversions of "Pointed At X"
+ *  if the XAxis has been changed in this InternalViewManager.
  *
- *  Revision 1.25  2002/10/02 22:04:16  dennis
- *  Now check the result of calling the conversion operator.  If some Data
- *  blocks are not converted, don't try to set the selection flags or
- *  PointedAt indices, since the meaning of the indices has changes.
- *  If a DataSet is not returned, just use the empty clone of the current
- *  DataSet.
- *
- *  Revision 1.24  2002/09/20 16:46:52  dennis
- *  Now uses IParameter rather than Parameter
- *
- *  Revision 1.23  2002/07/19 14:59:29  pfpeterson
- *  Switched the OverplotView import statement to point at the new
- *  location.
- *
- *  Revision 1.22  2002/07/17 19:30:33  rmikk
- *  Changed the view menu options order
- *
- *  Revision 1.21  2002/07/16 21:38:34  rmikk
- *   Introduced support for the other quick table views
- *
- *  Revision 1.20  2002/07/12 18:26:40  rmikk
- *  Used the Constructor with the state variable for starting
- *    the Selected Graph view.
- *
- *  Revision 1.19  2002/07/12 15:38:59  rmikk
- *  Added code to include the Contour View
- *
- *  Revision 1.18  2002/02/25 17:05:01  pfpeterson
- *  Updated (again) for the new operator hierarchy.
- *
- *  Revision 1.17  2002/02/22 20:37:10  pfpeterson
- *  Operator reorganization.
- *
- *  Revision 1.16  2001/08/14 21:51:05  dennis
- *  The destroy() method now sends closing event instead of closing
- *  the view manager itself..  Added method free_resouces() to
- *  close down the view manager as previously done by destroy().
- *
- *  Revision 1.15  2001/08/14 15:17:41  dennis
- *  Added check for num entries <=0 and dataSet null.
- *
- *  Revision 1.14  2001/08/13 16:19:36  dennis
- *  Added Ruth's Table view
- *
- *  Revision 1.13  2001/08/09 16:07:52  dennis
- *  Now checks viewer != null to check if the viewer has been
- *  destroyed before an update message is processed.
- *
- *  Revision 1.12  2001/07/27 15:55:59  dennis
- *  Now passes in 0 as default number of bins for conversion operators.
- *  In this case, the conversion operators should use the number of
- *  bins from the DataSet.
- *
- *  Revision 1.11  2001/07/23 18:31:01  dennis
- *  ViewManager in a JInternalFrame, instead of in a JFrame.  This file is
- *  copied from ViewManager.java, then edited to replace:
- *
- *    JFrame         with  JInternalFrame
- *    ViewManager    with  InternalViewManager
- *    WindowListener with  InternalFrameListener
- *    windowClosing  with  internalFrameClosing
- *    WindowAdapter  with  InternalFrameAdapter
- *    WindowEvent    with  InternalFrameEvent
- *    WINDOW_CLOSING with  INTERNAL_FRAME_CLOSING 
  *
  */
  
@@ -109,8 +43,9 @@ package DataSetTools.viewer;
 import DataSetTools.dataset.*;
 import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
-import DataSetTools.operator.DataSet.Math.DataSet.*;
 import DataSetTools.operator.DataSet.EditList.*;
+import DataSetTools.operator.DataSet.Math.DataSet.*;
+import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.util.*;
 import DataSetTools.components.ui.*;
 import DataSetTools.viewer.util.*;
@@ -122,6 +57,7 @@ import DataSetTools.viewer.Contour.*;
 import DataSetTools.viewer.OverplotView.*;
 import DataSetTools.viewer.ViewerTemplate.*;
 import DataSetTools.parameter.*;
+import DataSetTools.math.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -129,11 +65,11 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 /**
- *  An InternalViewManager object manages viewers for a DataSet in an internal 
- *  frame.  It contains a menu bar that allows the user to select the type 
- *  of viewer to be used to view the DataSet and appropriate view options.  
- *  It also is an observer of the DataSet and will be notified of changes 
- *  in the DataSet.  Since a InternalViewManager is an  JInternalFrame, it can 
+ *  An InternalViewManager object manages viewers for a DataSet in an internal
+ *  frame.  It contains a menu bar that allows the user to select the type
+ *  of viewer to be used to view the DataSet and appropriate view options.
+ *  It also is an observer of the DataSet and will be notified of changes
+ *  in the DataSet.  Since a InternalViewManager is an  JInternalFrame, it can
  *  be closed by the user, or by the program.
  */
 
@@ -141,12 +77,14 @@ public class InternalViewManager extends    JInternalFrame
                                  implements IViewManager,
                                             Serializable
 {
+   public static boolean debug_view_manager   = false;
+
    private   InternalViewManager     view_manager = null;
    private   DataSetViewer   viewer = null;
-   private   ViewerState     state  = null;
+   private   ViewerState     state = null;
    private   DataSet         dataSet;
    private   DataSet         tempDataSet;
-   private   DataSetOperator conversion_operator = null;
+   private   XAxisConversionOp conversion_operator = null;
    private   int[]           original_index;      // records the index in the
                                                   // original dataSet that 
                                                   // corresponds to an index in
@@ -173,7 +111,7 @@ public class InternalViewManager extends    JInternalFrame
 
    private static final String SHOW_ALL             = "Show All";
    private static final String NO_CONVERSION_OP     = "None";
-    private TableViewMenuComponents table_MenuComp  = null;
+   private TableViewMenuComponents table_MenuComp   = null;
     
    /**  
     *  Accepts a DataSet and view type and creates an instance of a 
@@ -198,7 +136,7 @@ public class InternalViewManager extends    JInternalFrame
       if ( ds == null )
         System.out.println("ERROR: ds is null in InternalViewManager constr.");
       else
-         dataSet.addIObserver( this );
+        dataSet.addIObserver( this );
 
       addInternalFrameListener(new InternalFrameAdapter()
       {
@@ -211,7 +149,8 @@ public class InternalViewManager extends    JInternalFrame
       setBounds(0,0,600,425);
       makeTempDataSet( true );
       setView( view_type ); 
-      setVisible(true);
+      show();
+  //  setVisible(true);
       conversion_operator = null;
       System.gc();
    }
@@ -260,9 +199,11 @@ public class InternalViewManager extends    JInternalFrame
    {
      getContentPane().setVisible(false);
      getContentPane().removeAll();
+    
      if ( viewer != null )
-       state = viewer.getState();
-     viewer = null;
+         state = viewer.getState();
+
+      viewer = null;
       if ( view_type.equals( IMAGE ))
         viewer = new ImageView( tempDataSet, state );
       else if ( view_type.equals( SCROLLED_GRAPHS ))
@@ -270,20 +211,25 @@ public class InternalViewManager extends    JInternalFrame
       else if ( view_type.equals( THREE_D ))
         viewer = new ThreeDView( tempDataSet, state );
       else if ( view_type.equals( SELECTED_GRAPHS ))             // use either
-        viewer = new GraphableDataManager( tempDataSet, state );        // Kevin's or
+        viewer = new GraphableDataManager( tempDataSet, state ); // Kevin's or
 //        viewer = new ViewerTemplate( tempDataSet, state );     // Template  
-//      else if ( view_type.equals( TABLE ) )
- //       viewer = new TabView( tempDataSet, state );
-      else if( view_type.equals( CONTOUR))
-        viewer= new ContourView( tempDataSet, state);
+      else if ( view_type.equals( TABLE)) //TABLE ) )
+         viewer = new TabView( tempDataSet, state ); 
+      else if ( view_type.equals( CONTOUR ) )
+        viewer = new ContourView( tempDataSet, state ); 
       else
-      {if( table_MenuComp == null)
+      { 
+        if( table_MenuComp == null)
            table_MenuComp= new TableViewMenuComponents();
-        viewer = table_MenuComp.getDataSetViewer( view_type, tempDataSet, state);
-        System.out.println( "ERROR: Unsupported view type in InternalViewManager:" );
-        System.out.println( "      " + view_type );
-        System.out.println( "using " + IMAGE + " by default" );
-        viewer = new ImageView( tempDataSet, state );
+        viewer = table_MenuComp.getDataSetViewer(view_type, tempDataSet, state);
+        if( viewer == null)
+          {
+           System.out.println( 
+                       "ERROR: Unsupported view type in InternalViewManager:" );
+           System.out.println( "      " + view_type );
+           System.out.println( "using " + IMAGE + " by default" );
+           viewer = new ImageView( tempDataSet, state );
+          }
       }
       getContentPane().add(viewer);
       getContentPane().setVisible(true);
@@ -298,16 +244,17 @@ public class InternalViewManager extends    JInternalFrame
    }
 
   /**
-   *  Send INTERNAL_FRAME_CLOSING event to shutdown the ViewManager cleanly and
+   *  Send WINDOW_CLOSING event to shutdown the ViewManager cleanly and
    *  completely.
    */
    public void destroy()
    {
-     InternalFrameEvent win_ev = 
+     InternalFrameEvent win_ev =
             new InternalFrameEvent( view_manager,
                                     InternalFrameEvent.INTERNAL_FRAME_CLOSING );
      view_manager.dispatchEvent( win_ev );
    }
+
 
    /**
     *  Update the InternalViewManager due to a change in the DataSet.  This 
@@ -326,14 +273,15 @@ public class InternalViewManager extends    JInternalFrame
    {
      if ( viewer == null )
      {
-       if ( ViewManager.debug_view_manager )
-         System.out.println("ERROR: InternalViewManager Previously Destroyed.");
+       if ( debug_view_manager )
+         System.out.println(
+                   "ERROR: InternalViewManager Previously Destroyed .......");
        return;
      }
 
      if ( !( reason instanceof String) )   // we only deal with Strings
        return;
- 
+
      String r_string = (String)reason;
      if ( observed == dataSet )             // message about original dataSet
      {
@@ -354,9 +302,22 @@ public class InternalViewManager extends    JInternalFrame
          int index = dataSet.getPointedAtIndex();    // "pointed at" index if
          if ( index != DataSet.INVALID_INDEX )       //  valid and different 
            if ( new_index[ index ] != DataSet.INVALID_INDEX )
-             if ( new_index[ index ] != tempDataSet.getPointedAtIndex() )
              {
                tempDataSet.setPointedAtIndex( new_index[ index ] );
+               float new_x = dataSet.getPointedAtX();
+               if ( !Float.isNaN(new_x) )            // valid new_x is clamped
+               {                                     // and mapped by the conv.
+                 Data d = dataSet.getData_entry( index );          // operator
+                 float x_min = d.getX_scale().getStart_x();             
+                 float x_max = d.getX_scale().getEnd_x();             
+                 if ( new_x < x_min )
+                   new_x = x_min;
+                 if ( new_x > x_max )
+                   new_x = x_max;
+                 if ( conversion_operator != null )
+                   new_x = conversion_operator.convert_X_Value( new_x, index );
+               }
+               tempDataSet.setPointedAtX( new_x );
                viewer.redraw( (String)reason );
              }  
        }
@@ -379,6 +340,12 @@ public class InternalViewManager extends    JInternalFrame
        {
          int i = tempDataSet.getPointedAtIndex();
          dataSet.setPointedAtIndex( original_index[i] ); 
+
+         float new_x = tempDataSet.getPointedAtX();
+         float orig_x = new_x;
+         if ( conversion_operator != null && !Float.isNaN(new_x) )
+           orig_x = solve( new_x );
+         dataSet.setPointedAtX( orig_x ); 
          dataSet.notifyIObservers( POINTED_AT_CHANGED );
        }
 
@@ -412,7 +379,7 @@ public class InternalViewManager extends    JInternalFrame
 
      else
      {
-       System.out.println("ERROR: bad DataSet in InternalViewManager.update()" );
+       System.out.println("ERROR: bad DataSet in InternalViewManager.update()");
      }
    }
 
@@ -432,7 +399,7 @@ public class InternalViewManager extends    JInternalFrame
  */
 
   /**
-   *  Destroy the current ViewManager and remove it from the list of
+   *  Destroy the current InternalViewManager and remove it from the list of
    *  observers of the current DataSet when window closing event is received.
    */
    private void free_resources()
@@ -448,7 +415,7 @@ public class InternalViewManager extends    JInternalFrame
    private void makeTempDataSet( boolean use_default_conversion_range )
    {
                                                 // degnerate case, use original
-     if ( dataSet == null || dataSet.getNum_entries() <= 0 )
+     if ( dataSet == null || dataSet.getNum_entries() <= 0 )       
      {
        tempDataSet = dataSet;
        return;
@@ -494,7 +461,7 @@ public class InternalViewManager extends    JInternalFrame
        if ( x_scale == null || use_default_conversion_range ) 
        {
          op.setDefaultParameters();
-         IParameter p = op.getParameter(2);               // 0 means use the
+         IParameter p = op.getParameter(2);                // 0 means use the
          if ( p.getName().equals( Parameter.NUM_BINS ))   // number of bins
            p.setValue( new Integer( 0 ) );                // in the DataSet
        }
@@ -519,16 +486,17 @@ public class InternalViewManager extends    JInternalFrame
        if ( result instanceof DataSet )
        {
          tempDataSet = (DataSet)op.getResult();
-         if ( tempDataSet.getNum_entries() == num_new )// we didn't lose Data blocks, so
+         if ( tempDataSet.getNum_entries() == num_new )
+                                            // we didn't lose Data blocks, so
          {
-           for ( int i = 0; i < num_new; i++ )         // preserve the selection flags
+           for ( int i = 0; i < num_new; i++ ) // preserve the selection flags
            {
              d = dataSet.getData_entry( original_index[i] );
              tempDataSet.setSelectFlag( i, d );
            }
-                                                       // preserve the pointed at index
-                                                       // if possible
-           int k = dataSet.getPointedAtIndex();
+                                                // preserve the pointed at index
+                                                // if possible
+           int k = dataSet.getPointedAtIndex(); 
            if ( k != DataSet.INVALID_INDEX )
              if ( new_index[k] != DataSet.INVALID_INDEX )
                tempDataSet.setPointedAtIndex( new_index[k] );
@@ -618,10 +586,10 @@ private void BuildViewMenu()
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
- button = new JMenuItem( THREE_D );
+  button = new JMenuItem( THREE_D );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
-
+  
   button = new JMenuItem( CONTOUR );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
@@ -634,31 +602,33 @@ private void BuildViewMenu()
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
-  JMenu Tables = new JMenu( "Tables");
+  
+  JMenu Tables = new JMenu( "Selected Table View");
   view_menu.add( Tables);
   
   BuildTableMenu( Tables);
 
   button = new JMenuItem( TABLE );
- button.addActionListener( view_menu_handler );
- view_menu.add( button );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
  
-  
+
 }
 
-private void BuildTableMenu( JMenu Tables)
+ public void BuildTableMenu( JMenu Tables)
   { int n= TableViewMenuComponents.getNMenuItems();
     ViewMenuHandler view_menu_handler = new ViewMenuHandler();
      if( table_MenuComp == null)
         table_MenuComp = new TableViewMenuComponents();
    
      table_MenuComp.addMenuItems( Tables , view_menu_handler);
-   
-    Tables.addSeparator();  
+    
+   /* Tables.addSeparator();  
     JMenuItem button;
     button = new JMenuItem( "Advanced Table");
     button.addActionListener( view_menu_handler );
     Tables.add( button );
+   */
 
 
   }
@@ -685,7 +655,7 @@ private void BuildConversionsMenu()
   for ( int i = 0; i < n_ops; i++ )
   {
     op = dataSet.getOperator(i);
-    if ( op.getCategory().equals( Operator.X_AXIS_CONVERSION ))
+    if ( op instanceof XAxisConversionOp )
     {
       button = new JRadioButtonMenuItem( op.getTitle() );
       button.addActionListener( conversion_menu_handler );
@@ -717,7 +687,6 @@ private void BuildOptionMenu()
 }
 
 
-
 private String CurrentConversionName()     // get current conversion name
 {
   String name;     
@@ -728,6 +697,66 @@ private String CurrentConversionName()     // get current conversion name
  
   return name;
 }
+
+
+private float solve( float new_x ) // find what x in the original DataSet maps
+{                                  // maps to new_x in converted tempDataSet
+  if ( conversion_operator == null )
+    return new_x;
+
+  int index = dataSet.getPointedAtIndex();
+  XScale x_scale = dataSet.getData_entry(index).getX_scale();
+  float a = x_scale.getStart_x();
+  float b = x_scale.getEnd_x();
+  float f_a = conversion_operator.convert_X_Value( a, index );
+  float f_b = conversion_operator.convert_X_Value( b, index );
+
+  float f_min = Math.min( f_a, f_b );
+  float f_max = Math.max( f_a, f_b );
+  if ( new_x <= f_min )                // clamp the values at the ends of the
+  {                                    // Data blocks.  There are two cases,
+    if ( f_a <= f_b )                  // since the conversion may reverse the
+      return a;                        // order.
+    else
+      return b;
+  }
+
+  if ( new_x >= f_max )
+  {
+    if ( f_a <= f_b )
+      return b;
+    else
+      return a;
+  }
+
+  ConversionFunction f =
+                  new ConversionFunction(index, conversion_operator, new_x );
+
+  return (float)NumericalAnalysis.BisectionMethod( f, a, b, 20 );
+}
+
+
+  public class ConversionFunction implements IOneVariableFunction
+  {
+    private  int               index;
+    private  XAxisConversionOp op;
+    private  float             new_x;
+
+    public  ConversionFunction( int               index, 
+                                XAxisConversionOp op, 
+                                float             new_x )
+    {
+      this.index = index;
+      this.op    = op;
+      this.new_x = new_x;
+    }
+
+    public double getValue( double x )
+    {
+      return ( new_x - op.convert_X_Value( (float)x, index ) );
+    }
+  }
+
 
 /* -------------------------------------------------------------------------
  *
@@ -740,6 +769,7 @@ private String CurrentConversionName()     // get current conversion name
     public void actionPerformed( ActionEvent e )
     {
       String action = e.getActionCommand();
+
       if ( action.equals( CLOSE_LABEL ))
         destroy();
       else if ( action.equals( SAVE_NEW_DATA_SET ))
@@ -836,7 +866,9 @@ private String CurrentConversionName()     // get current conversion name
 
   private class ViewMenuHandler implements ActionListener,
                                            Serializable
-  {
+  {  boolean errors = false, 
+              index =false;
+    
     public void actionPerformed( ActionEvent e )
     {
       String action = e.getActionCommand();
@@ -856,7 +888,7 @@ private String CurrentConversionName()     // get current conversion name
       {
         JRadioButtonMenuItem button = (JRadioButtonMenuItem)e.getSource();
         button.setSelected(true);
-        conversion_operator = dataSet.getOperator( action );  
+        conversion_operator = (XAxisConversionOp)dataSet.getOperator( action ); 
         makeTempDataSet( true );
         viewer.setDataSet( tempDataSet );
       }
