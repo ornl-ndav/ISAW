@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2004/05/03 16:33:47  dennis
+ * Removed checkReal() method and "choices" and "centering"
+ * variables that are not used when integrating peaks from a file.
+ *
  * Revision 1.2  2004/03/31 18:29:37  dennis
  * Added parameter to allow user to specify peaks file to integrate.
  *
@@ -205,13 +209,11 @@ import java.util.Vector;
 public class IntegratePeakFile extends GenericTOF_SCD{
   private static final String       TITLE       = "IntegratePeakFile";
   private static       boolean      DEBUG       = false;
-  private static       Vector       choices     = null;
   private              StringBuffer logBuffer   = null;
   private              float        chi         = 0f;
   private              float        phi         = 0f;
   private              float        omega       = 0f;
   private              int          listNthPeak = 3;
-  private              int          centering   = 0;
   /**
    * how much to increase the integration size after I/dI has been maximized
    */
@@ -1452,26 +1454,6 @@ public class IntegratePeakFile extends GenericTOF_SCD{
     }else{
       peak.pixel(x,y,z); // move it onto integer pixel postion
     }
-  }
-
-  /**
-   * Determines whether the peak can be within the realspace limits specified
-   */
-  private static boolean checkReal(Peak peak, float[][] lim){
-    float wl=peak.wl();
-    if(wl==0f) return false;
-
-    float xcm=peak.xcm();
-    float ycm=peak.ycm();
-    if( xcm>=lim[0][0] && xcm<=lim[0][1] ){
-      if( ycm>=lim[1][0] && ycm<=lim[1][1] ){
-        if( wl>=lim[2][0] && wl<=lim[2][1] ){
-          return true;
-        }
-      }
-    }
-
-    return false;
   }
 
   
