@@ -30,6 +30,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.30  2003/07/09 15:08:51  dennis
+ * Uses new form of DataSetXConversionsTable.showConversions()
+ * method, which rebins to a specified XScale.  The conversions
+ * table now shows the correct counts at a pixel, when the
+ * viewer has constructed a rebinned data set.
+ *
  * Revision 1.29  2003/07/05 19:17:31  dennis
  * Adapted to the new form of the setNamedColorModel() method from the
  * ImageJPanel class.
@@ -228,7 +234,10 @@ public void redraw( String reason )
 
       int index = ds.getPointedAtIndex();
       if ( index != DataSet.INVALID_INDEX && last_pointed_at_x != Float.NaN ) 
-        conv_table.showConversions( last_pointed_at_x, index );
+      {
+        XScale x_scale = getXConversionScale();
+        conv_table.showConversions( last_pointed_at_x, index, x_scale );
+      }
 
       if ( ds.getPointedAtX() != Float.NaN      &&
            ds.getPointedAtX() != last_pointed_at_x )
@@ -1078,10 +1087,12 @@ private class ViewMouseMotionAdapter extends MouseMotionAdapter
          ds.setPointedAtIndex( index );
          redraw_cursor = false;
          ds.notifyIObservers( IObserver.POINTED_AT_CHANGED );
-
          float frame_val = frame_control.getFrameValue();
          if ( frame_val != Float.NaN )
-           conv_table.showConversions( frame_val, index );
+         {
+           XScale x_scale = getXConversionScale();
+           conv_table.showConversions( frame_val, index, x_scale );
+         }
        }
      }
    }
