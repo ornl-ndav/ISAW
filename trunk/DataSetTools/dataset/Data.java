@@ -1,15 +1,20 @@
 /*
- * @(#)Data.java     1.1  2000/04/25  Dennis Mikkelson
+ * @(#)Data.java 
+ *
+ * Programmer: Dennis Mikkelson
  *
  * Modified:  
  *
- *    2000/03/10 Dennis Mikkelson  Added selection and hidden flags and methods
- *
- *    2000/04/25 Dennis Mikkelson  Added getY_value( x )  to interpolate a
- *                                 y value at the specified x value
- *
- * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.10  2000/12/07 22:17:07  dennis
+ *  Added methods isHistogram(),
+ *                isFunction(),
+ *                Stitch(),
+ *                ConvertToHistogram(),
+ *                Resample()
+ *  Minor improvements to ConvertToFunction(),
+ *                        setSqrtErrors()
+ *
  *  Revision 1.9  2000/08/03 15:48:40  dennis
  *  Added ConvertHistogramToFunction() method
  *
@@ -36,7 +41,7 @@
  *  NUMBER_OF_PULSES and TOTAL_COUNT.
  *
  *  Revision 1.3  2000/07/10 22:23:53  dennis
- *  July 10, 2000 version... many changes
+ *  July 10, 2000 version... many changes, now using CVS
  *
  *  Revision 1.23  2000/06/08 15:12:28  dennis
  *  Added wrapper methods to directly set/get attributes without getting the
@@ -54,7 +59,10 @@
  *  Revision 1.20  2000/05/11 16:00:45  dennis
  *  Added RCS logging
  *
+ *    2000/04/25 Dennis Mikkelson  Added getY_value( x )  to interpolate a
+ *                                 y value at the specified x value
  *
+ *    2000/03/10 Dennis Mikkelson  Added selection and hidden flags and methods
  */
 
 package  DataSetTools.dataset;
@@ -81,6 +89,10 @@ import DataSetTools.util.*;
 public class Data implements IAttributeList,
                              Serializable
 {
+  public static final int KEEP    = 1; 
+  public static final int AVERAGE = 2;
+  public static final int DISCARD = 3;
+
   private int            group_id;  //NOTE: we force a Data object to have an
                                     // id and also keep the same id as an
                                     // attribute.  The id can only be
@@ -414,8 +426,46 @@ public float getY_value( float x_value )
   {
     this.errors = new float[ this.y_values.length ];
     for ( int i = 0; i < this.errors.length; i++ )
-      this.errors[i] = (float)Math.sqrt( this.y_values[i]);
+    {
+      if ( this.y_values[i] >= 0 )
+        this.errors[i] = (float)Math.sqrt( this.y_values[i] );
+      else
+        this.errors[i] = (float)Math.sqrt( -this.y_values[i] );
+    }
   }
+
+
+  /**
+    * Determine whether or not the current Data block has HISTOGRAM data.
+    * HISTOGRAM data records bin boundaries and a number of counts in each
+    * bin, so the number of x-values is one more than the number of y-values.
+    *
+    * @return  true if the number of x-values is one more than the number
+    *          of y-values.
+    */
+  public boolean isHistogram()
+  {
+    if ( x_scale.getNum_x() == y_values.length + 1 )
+      return true;
+    else
+      return false;
+  }  
+ 
+  /**
+    * Determine whether or not the current Data block has FUNCTION data.
+    * FUNCTION data records a y-value at each x-value, so the number of 
+    * x-values is equals the number of y-values.
+    *
+    * @return  true if the number of x-values is the same as the number of 
+    *          y-values.
+    */
+  public boolean isFunction()
+  {
+    if ( x_scale.getNum_x() == y_values.length )
+      return true;
+    else
+      return false;
+  } 
 
 
   /**
@@ -528,10 +578,180 @@ public float getY_value( float x_value )
     return temp;
   }
 
+  /**
+   *    "Stitch" another Data block together with the current Data block to form
+   *  a new Data block with the same attributes as the current Data block,
+   *  but whose data is a combination of the two.  
+   *
+   *    The other Data block will first be converted to the same type of
+   *  Data ( HISTOGRAM or FUNCTION ) as the current Data block.  Then a new
+   *  XScale is formed and the y-values from the two Data blocks are "stitched"
+   *  together over the new XScale.  The XScale for the new Data object covers 
+   *  an interval containing the union of the current Data's XScale and the 
+   *  other Data's XScale.
+   *
+   *    If the XScale of the current Data block is a uniform XScale, the new  
+   *  XScale will be a uniform XScale with the same spacing as the current 
+   *  XScale, aligned with the current XScale.  If the XScale of the current
+   *  Data block is a VariableXScale, the new XScale will be a VariableXScale
+   *  using the same x-values as the current Data's for the full extent of the
+   *  current Data's XScale.  In this case, the new VariableXScale will only
+   *  use the other_data's x-values for the interval covered by it's XScale
+   *  and NOT covered by the current Data's XScale.
+   *
+   *    The other_data object will be resampled over the new XScale before 
+   *  forming the y-values.  For the portion of the new XScale covered by 
+   *  only the current Data, the current Data's y-values are used.  For the  
+   *  portion of the new XScale covered by only the other Data's XScale, the 
+   *  other Data's y-values are used.  The y-values for portions of the 
+   *  intervals that overlap are selected from the current Data or the other 
+   *  Data's y-values, or the average of the y-values, as determined by the 
+   *  "overlap" parameter. 
+   *
+   *  @param  other_data  The other Data block whose data is to be combined
+   *                      with the current data. 
+   *  @param  overlap     Flag that indicates what should be done on the
+   *                      interval where the two Data blocks overlap ( if any ).
+   *                      This must be one of the constants:
+   * 
+   *                              Data.KEEP 
+   *                              Data.AVERAGE 
+   *                              Data.DISCARD
+   *
+   *                      indicating that the original Data's values should be
+   *                      kept, averaged with the other Data's values or 
+   *                      discarded and the other Data's values used instead.
+   *
+   *  @return  A new Data object with the same attributes as the current 
+   *           Data object, but whose data is a combination of the two.  The
+   *           XScale for the new DataObject 
+   */
+  public Data Stitch( Data other_data, int overlap )
+  {
+    Data  temp_data = (Data)other_data.clone();
+    Data  new_data  = (Data)this.clone();
+
+                                          // adjust temp_data to be of the same
+                                          // type ( histogram or function ) as
+                                          // new_data.
+    if ( new_data.isFunction() && temp_data.isHistogram() )
+      temp_data.ConvertToFunction( false );
+
+    else if ( new_data.isHistogram() && temp_data.isFunction() )
+      temp_data.ConvertToHistogram( false );
+
+                                         // set error values for new_data if
+                                         // needed and not present 
+    boolean has_error_info = false;  
+    if ( new_data.errors != null ) 
+    {
+      has_error_info = true;
+      if ( temp_data.errors == null )   // if no previouse error values set,
+        temp_data.setSqrtErrors();      // use the sqrt of number of counts
+    }
+                                        // record the extent of the original
+                                        // XScales
+    ClosedInterval interval = new ClosedInterval( new_data.x_scale.getStart_x(),
+                                                  new_data.x_scale.getEnd_x() );
+    ClosedInterval other_interval = 
+                           new ClosedInterval( temp_data.x_scale.getStart_x(),
+                                               temp_data.x_scale.getEnd_x() );
+
+                                          // extablish a new XScale as the
+                                          // common XScale for the Data blocks
+    XScale new_x_scale = new_data.x_scale.extend( temp_data.x_scale );
+    temp_data.Resample( new_x_scale );
+    new_data.Resample( new_x_scale );
+                                          // Now combine the y_values and errors
+    float x[] = new_x_scale.getXs();
+    if ( new_data.isFunction() )                   // use one x value to decide
+      for ( int i = 0; i < new_data.y_values.length; i++ )
+      {
+        if ( interval.contains( x[i] ) )             // keep the current y_value
+        {                                            // or alter it if necessary
+          if ( other_interval.contains( x[i] ) )
+            if ( overlap == Data.AVERAGE )
+            {
+              new_data.y_values[i] = ( new_data.y_values[i] + 
+                                       temp_data.y_values[i] )/2;
+              if ( has_error_info )
+                new_data.errors[i] = (float)Math.sqrt( 
+                                  new_data.errors[i] * new_data.errors[i] +
+                                 temp_data.errors[i] * temp_data.errors[i] )/2;
+            }
+            else if ( overlap == Data.DISCARD )
+            {
+              new_data.y_values[i] = temp_data.y_values[i];
+              if ( has_error_info )
+                new_data.errors[i] = temp_data.errors[i];
+            }
+        } 
+
+        else if ( other_interval.contains( x[i] ) )  // use the other y_value
+        { 
+          new_data.y_values[i] = temp_data.y_values[i];
+          if ( has_error_info )
+            new_data.errors[i] = temp_data.errors[i];
+        }
+        else
+        {
+          new_data.y_values[i] = 0;                  // neither interval
+          if ( has_error_info )
+            new_data.errors[i] = 0;
+        } 
+      }
+
+    else if ( new_data.isHistogram() )           // use bin boudaries to decide
+      for ( int i = 0; i < new_data.y_values.length; i++ )
+      {
+        if ( interval.contains( x[i] ) && 
+             interval.contains( x[i + 1] ) )         // keep the current y_value
+        {                                            // or alter it if necessary
+          if ( other_interval.contains( x[ i ] ) && 
+               other_interval.contains( x[ i + 1 ] ) )                         
+            if ( overlap == Data.AVERAGE )
+            {
+              new_data.y_values[i] = ( new_data.y_values[i] + 
+                                       temp_data.y_values[i] )/2;
+              if ( has_error_info )
+                new_data.errors[i] = (float)Math.sqrt( 
+                                  new_data.errors[i] * new_data.errors[i] +
+                                 temp_data.errors[i] * temp_data.errors[i] )/2;
+            }   
+            else if ( overlap == Data.DISCARD )
+            {
+              new_data.y_values[i] = temp_data.y_values[i];
+              if ( has_error_info )
+                new_data.errors[i] = temp_data.errors[i];
+            }
+        }
+
+        else if ( other_interval.contains( x[i] ) &&
+                  other_interval.contains( x[i+1] ) ) // use the other y_value
+        {
+          new_data.y_values[i] = temp_data.y_values[i]; 
+          if ( has_error_info )
+            new_data.errors[i] = temp_data.errors[i];
+        }
+        else
+        {
+          new_data.y_values[i] = 0;                  // neither interval
+          if ( has_error_info )
+            new_data.errors[i] = 0;
+        }
+      }
+ 
+    return new_data;
+  }
+
+
 
   /**
    *  Convert the Data to tablulated function Data if it is currently 
-   *  histogram Data.
+   *  histogram Data.  To do this, consider the histogram values to be 
+   *  samples of the function at the center of the histogram bin.  To 
+   *  divide by the bin width, to properly convert from a histogram to a
+   *  density function, the "divide" flag must be passed in as true.  
    *
    *  @param  divide    Flag that indicates whether the histogram values
    *                    should be divided by the width of the histogram bin.
@@ -549,14 +769,34 @@ public float getY_value( float x_value )
         temp_x = x_scale.getXs();
         for ( int i = 0; i < y_values.length; i++ )
           y_values[i] = y_values[i] / (temp_x[i+1] - temp_x[i]);
+
+        if ( errors != null )                     // assume no error in x values
+          for ( int i = 0; i < y_values.length; i++ )
+            errors[i] = errors[i] / (temp_x[i+1] - temp_x[i]);
       }
-                                     //  use bin centers for the x values
-      if ( x_scale instanceof UniformXScale )
-        x_scale = new UniformXScale( x_scale.getStart_x(),
-                                     x_scale.getEnd_x(),
-                                     x_scale.getNum_x()  ); 
-      else
+
+                                          //  use bin centers for the x values
+      if ( x_scale instanceof UniformXScale )  
       {
+        float start = x_scale.getStart_x();
+        float end   = x_scale.getEnd_x();
+        int   num_x = x_scale.getNum_x();
+        float step  = (float)((UniformXScale)x_scale).getStep();
+
+        if ( num_x > 2 )                               // Note: due to rounding
+          x_scale = new UniformXScale( start + step/2, // errors, if there are 
+                                       end   - step/2, // only two points, this 
+                                       num_x - 1  );   // could be an invalid 
+                                                       // XScale with end<start
+
+        else                                           // in that case, make
+                                                       // sure that start == end
+          x_scale = new UniformXScale( start + step/2,
+                                       start + step/2,
+                                       num_x - 1  );  
+      }
+      else                                             // VariableXScale, so
+      {                                                // calculate bin centers
         if ( temp_x == null )  // not assigned yet
           temp_x = x_scale.getXs();
         float new_x[] = new float[ y_values.length ];
@@ -567,7 +807,130 @@ public float getY_value( float x_value )
     }
   }
 
+  /**
+   *  Convert the Data to histogram Data block, if it is currently tabulated 
+   *  function Data.  This assumes that the tabulated function values are 
+   *  values at the bin centers of a corresponding histogram.  To multiply
+   *  the values by the bin widths, to properly convert from a density function
+   *  to a histogram, the "multiply" flag must be passed in as true. 
+   *
+   *  @param  width_1   Width of the first bin.  For VariableXScales, this is
+   *                    is used to determine the bin boundaries.  NOTE: this
+   *                    process is subject to rounding errors and should be
+   *                    avoided if possible.  If width_1 is less than or equal
+   *                    to zero, the distance between the first two x values
+   *                    will be used as a default.
+   *
+   *  @param  multiply  Flag that indicates whether the function values
+   *                    should be multiplied by the width of the histogram bin.
+   */
+  public void ConvertToHistogram( float width_1, boolean multiply )
+  {
+    if ( x_scale.getNum_x() == y_values.length+1 )   // histogram already
+      return;
 
+    if (  x_scale.getNum_x() == y_values.length )    // function 
+    {
+      float start    = x_scale.getStart_x();
+      float end      = x_scale.getEnd_x();
+      int   num_x    = x_scale.getNum_x();
+      float new_x[]  = null;                         // for the bin boundaries
+                                                     // if needed.
+
+      if ( x_scale instanceof UniformXScale )        // bin boundaries are 
+      {                                              // also uniformly spaced
+        float step  = (float)((UniformXScale)x_scale).getStep();
+        x_scale = new UniformXScale( start - step/2,
+                                     end   + step/2,
+                                     num_x + 1      );
+      }
+      else                                          // calculate the bin 
+      {                                             // boundaries
+        float old_x[]    = x_scale.getXs();
+
+        if ( width_1 <= 0 )
+        {
+          if ( old_x.length < 2 )
+          {
+            System.out.println("ERROR: bad width_1 in Data.ConvertToHistogram");
+            return;
+          }
+          width_1 = old_x[1] - old_x[0];
+        }
+        float half_width = width_1 / 2;
+
+        new_x    = new float[ num_x + 1 ]; 
+        new_x[0] = old_x[0] - half_width;
+
+        for ( int i = 1; i < num_x; i++ )
+        {
+          new_x[i]   = old_x[i-1] + half_width;
+          half_width = old_x[i]   - new_x[i];
+        }
+        new_x[ num_x ] = old_x[ num_x - 1 ] + half_width;
+        x_scale = new VariableXScale( new_x );
+      } 
+
+      if ( multiply )                   // multiply y values by the bin width
+      {
+        if ( new_x == null )
+          new_x = x_scale.getXs();
+
+        for ( int i = 0; i < y_values.length; i++ )
+          y_values[i] = y_values[i] * (new_x[i+1] - new_x[i]);
+
+        if ( errors != null )                     // assume no error in x values
+          for ( int i = 0; i < y_values.length; i++ )
+            errors[i] = errors[i] * (new_x[i+1] - new_x[i]);
+      }
+    }
+  }
+
+  /**
+   *  Convert the Data to histogram Data block, if it is currently tabulated
+   *  function Data.  This assumes that the tabulated function values are
+   *  values at the bin centers of a corresponding histogram.  To multiply
+   *  the values by the bin widths, to properly convert from a density function
+   *  to a histogram, the "multiply" flag must be passed in as true.  If 
+   *  a VariableXScale is used, the width of the first bin is taken to be 
+   *  1/2 the distance between the first two x-values, by default. 
+   *
+   *  @param  multiply  Flag that indicates whether the function values
+   *                    should be multiplied by the width of the histogram bin.
+   */
+   public void ConvertToHistogram( boolean multiply )
+   {
+     ConvertToHistogram( -1, multiply );
+   }
+
+  /**
+   *  Resample the Data block on an arbitrarily spaced set of points given by
+   *  the new_X scale parameter.  If the Data block is a tabulated function,
+   *  the function will just be interpolated at the specified points.  If the 
+   *  Data block is a histogram, the histogram will be re-binned to form a 
+   *  new histogram with the specified bin sizes.
+   *
+   *  @param new_X  The x scale giving the set of x values to use for the
+   *                 resampling and/or rebinning operation.
+   */
+  public void Resample( XScale new_X )
+  {
+    if ( x_scale.getNum_x() == y_values.length + 1 )   // histogram, so ReBin
+    {
+      ReBin( new_X );
+      return;
+    }
+                                             // otherwise, must be a function 
+                                             // so Resample
+    float x[]  = x_scale.getXs();
+    float nX[] = new_X.getXs();
+    y_values   = Sample.Resample( x, y_values, nX );
+
+    if ( errors != null )
+      errors = Sample.Resample( x, errors, nX );
+
+    x_scale = (XScale)new_X.clone();
+  }
 
   /**
    *  Resample the Data block on a uniformly spaced set of points given by
@@ -666,7 +1029,7 @@ public float getY_value( float x_value )
     {
       float new_errs[] = new float[ new_X.getNum_x() - 1 ];
       Sample.ReBin( x_scale.getXs(), old_ys, errors,
-                      new_X.getXs(),   new_ys, new_errs );
+                    new_X.getXs(),   new_ys, new_errs );
       y_values = new_ys;
       errors   = new_errs;
     }
@@ -713,9 +1076,7 @@ public float getY_value( float x_value )
     }
                                                         // now do the smoothing
    if ( errors != null )
-   {
      num_X = Sample.CLSmooth( old_x, y_values, errors, num_X );
-   }
    else
      num_X = Sample.CLSmooth( old_x, y_values, num_X );
 
@@ -1175,7 +1536,7 @@ public float getY_value( float x_value )
       last_index = y_values.length - 1;
 
     float x[] = x_scale.getXs();
-    for ( int i = first_index; i < last_index; i++ )
+    for ( int i = first_index; i <= last_index; i++ )
     {
       System.out.print( Format.integer( i, 6 ) + " ");
       System.out.print( Format.real( x[i], 15, 6 ) + " " );
@@ -1205,4 +1566,45 @@ public float getY_value( float x_value )
     System.out.println( "finalize Data" );
   }
 */
+
+  public static void main( String argv[] )
+  {
+    final int NUM_POINTS = 10000;
+    float y[] = new float[NUM_POINTS];
+
+    XScale x_scale = new UniformXScale( 0, 10, NUM_POINTS + 1 );
+
+                                          // Un-comment the following lines to
+                                          // use variable x scales.  That is
+                                          // more subject to rounding errors.
+//    float x[] = x_scale.getXs();          
+//    x_scale = new VariableXScale( x );
+
+    for ( int i = 0; i < NUM_POINTS; i++ )
+      y[i] = 10000;
+  
+    Data d = new Data( x_scale, y, 101010 );
+    d.setSqrtErrors();
+ 
+    System.out.println("As Histogram....");
+    if ( d.isHistogram() )
+      System.out.println("NOW HISTOGRAM" );
+    d.print( 0, 20 ); 
+    d.print( NUM_POINTS-20, NUM_POINTS ); 
+
+    d.ConvertToFunction( true );
+    System.out.println("As Function....");
+    if ( d.isFunction() )
+      System.out.println("NOW FUNCTION" );
+    d.print( 0, 20 ); 
+    d.print( NUM_POINTS-20, NUM_POINTS ); 
+
+    d.ConvertToHistogram( 10.0f/NUM_POINTS, true );
+    System.out.println("As Histogram AGAIN!!!....");
+    if ( d.isHistogram() )
+      System.out.println("NOW HISTOGRAM" );
+    d.print( 0, 20 );
+    d.print( NUM_POINTS-20, NUM_POINTS );
+  }
+
 }
