@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2001/06/25 21:49:40  rmikk
+ * Added Parameter to JParametersDialog
+ *
  * Revision 1.8  2001/06/25 16:38:57  rmikk
  * Incorporated tests for improper inputs
  *
@@ -183,7 +186,8 @@ private class MActionListener implements ActionListener
                if( iobs != null)
                  ((IObservable)opn).addIObserver( iobs );
            
-            JParametersDialog JP= new JParametersDialog( opn , dss, logdoc );
+            JParametersDialog JP= new JParametersDialog( opn , dss, 
+                       logdoc, null );
           
             if( opn instanceof IObservable)
                if( iobs != null)
