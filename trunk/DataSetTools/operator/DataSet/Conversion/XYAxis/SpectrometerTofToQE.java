@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.12  2005/02/09 20:04:45  dennis
+ * Now also propagates error estimates from the input DataSet
+ * to produce error estimate for S(Q,E).
+ *
  * Revision 1.11  2005/02/08 23:03:13  dennis
  * Added capability to print S(Q,E) to file.
  *
@@ -344,12 +348,11 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     // point in QE space.  The values at the grid of points in QE space
     // will be averaged.
 
-                                                   // set up arrays for S(Q,E)
-                                                   // and counters.
+                                               // set up arrays for S(Q,E),
+                                               // error estimates and counters.
     float QE_vals[][]   = new float[n_Q_bins][n_E_bins] ;
+    float err_vals[][]  = new float[n_Q_bins][n_E_bins] ;
     int   n_QE_vals[][] = new int[n_Q_bins][n_E_bins] ;
-    float old_QE_val;
-    int   count;
 
     int q_index,
         e_index;
@@ -357,6 +360,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
       for ( e_index = 0; e_index < n_E_bins; e_index++ )
       {
         QE_vals  [q_index][e_index] = 0.0f;
+        err_vals [q_index][e_index] = 0.0f;
         n_QE_vals[q_index][e_index] = 0;
       }
 
@@ -373,13 +377,15 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
                      q2,
                      q_val;
     float            e_val,
-                     y_val;
+                     y_val,
+                     err_val;
     float            spherical_coords[];
     AttributeList    attr_list;
 
     float            x_vals[],
                      center_x;
-    float            y_vals[];
+    float            y_vals[],
+                     errors[];
 
     //
     // Now step along each time-of-flight spectrum, calculate the Q,E
@@ -427,7 +433,8 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
                                              // the spectrum and map them to
                                              // the Q,E plane
       x_vals = data.getX_scale().getXs();
-      y_vals   = data.getY_values();
+      y_vals = data.getY_values();
+      errors = data.getErrors();
       for ( int col = 0; col < y_vals.length; col++ )
       {
         if ( data.isHistogram() )            // use energy at the bin center
@@ -457,8 +464,12 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
                                         // by delta E and delta Omega as in the
                                         // DSDODE operator
         y_val = y_vals[col] / (q2 - q1);
+        if ( errors != null )
+          err_val = errors[col] / (q2 - q1);
+        else
+          err_val = 0;
                                         // now map the y(Q,E) value to the
-                                        // array of values and average it with
+                                        // array of values and add it with
                                         // any previous values
 
         q_index = Math.round(( q_val - min_Q )/( max_Q - min_Q ) * n_Q_bins);
@@ -467,13 +478,23 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
         if ( q_index > 0 && q_index < n_Q_bins &&      // the value falls in
              e_index > 0 && e_index < n_E_bins   )     // the range we're using
         {
-          old_QE_val = QE_vals[q_index][e_index];
-          count      = n_QE_vals[q_index][e_index];
-          QE_vals[q_index][e_index] = (old_QE_val * count + y_val)/( count + 1);
-          n_QE_vals[q_index][e_index] = count + 1;
-        }
+          QE_vals[q_index][e_index]   += y_val;
+          n_QE_vals[q_index][e_index] += 1;
+          err_vals[q_index][e_index]  += err_val * err_val;  // accumulate sum
+        }                                                    // of variances
       }
     }
+
+   int n_samples;
+   for ( int row = 0; row < n_Q_bins; row++ )
+     for ( int col = 0; col < n_E_bins; col++ )
+       if ( n_QE_vals[row][col] > 0 )
+       {
+         n_samples = n_QE_vals[row][col]; 
+         QE_vals[row][col]  /= n_samples; 
+         err_vals[row][col]  = (float)Math.sqrt( err_vals[row][col] );
+         err_vals[row][col] /= n_samples;
+       }
 
                                         // this version uses cuts at constant E
    DataSetFactory factory = new DataSetFactory(
@@ -508,11 +529,14 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
     {                                          // i.e. using constant E values
 
       float const_e_slice[] = new float[ n_Q_bins ];
+      float slice_errors[]  = new float[ n_Q_bins ];
       for ( int row = 0; row < n_Q_bins; row++ )
+      {
         const_e_slice[row] = QE_vals[row][col];
+        slice_errors[row]  = err_vals[row][col];
+      }
 
-      new_data = Data.getInstance( Q_scale, const_e_slice, col+1 );
-
+      new_data = Data.getInstance( Q_scale, const_e_slice, slice_errors, col+1);
       e_val = col * (max_E - min_E) / n_E_bins + min_E;
       Attribute e_attr = new FloatAttribute( Attribute.ENERGY, e_val );  
       new_data.setAttribute( e_attr );
@@ -537,7 +561,11 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
 */
     if ( file_name != null )
     {
-      ErrorString err = PrintToFile(file_name, Q_scale, E_scale, QE_vals, null);
+      ErrorString err = PrintToFile( file_name, 
+                                     Q_scale, 
+                                     E_scale, 
+                                     QE_vals, 
+                                     err_vals );
       if ( err != null )
       {
         SharedData.addmsg( err.toString() );
@@ -577,7 +605,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
                                    XScale Q_scale, 
                                    XScale E_scale, 
                                    float  QE_vals[][],
-                                   float  errs[][] )
+                                   float  errors[][] )
   {
      FileOutputStream fout= null;
      try 
@@ -610,6 +638,7 @@ public class SpectrometerTofToQE extends    XYAxisConversionOp
             x = Q_scale.getX( row );
             y = E_scale.getX( col );
             val = QE_vals[row][col];
+            err = errors[row][col];
             buff.append( Format.real(x,15,5) );
             buff.append( Format.real(y,15,5) );
             buff.append( Format.real(val,15,5) );
