@@ -29,6 +29,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2002/07/10 15:53:20  pfpeterson
+ * Implements HiddenOperator.
+ *
  * Revision 1.1  2002/07/03 19:29:31  pfpeterson
  * Added to CVS.
  *
@@ -57,7 +60,8 @@ import DataSetTools.operator.Generic.Special.*;
  * shorter parameter list.
  */
 
-public class  FocusIncidentSpectrum2 extends GenericSpecial{//  FocusIncidentSpectrum{
+public class  FocusIncidentSpectrum2 extends GenericSpecial 
+                                                    implements HiddenOperator{
     private static final boolean DEBUG=false;
     /**
      * Construct an operator with a default parameter list.  If this
