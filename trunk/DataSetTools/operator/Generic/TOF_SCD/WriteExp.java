@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/01/15 20:54:26  dennis
+ * Changed to use SegmentInfo, SegInfoListAttribute, etc.
+ *
  * Revision 1.4  2002/12/20 20:26:48  pfpeterson
  * Now tries to get the user name from the AttributeList of the DataSet.
  *
@@ -512,7 +515,7 @@ public class WriteExp extends GenericTOF_SCD{
    */
   private void parseDetInfoList( DataSet ds ){
     Object           val        = null;
-    DetectorInfo     detInfo    = null;
+    SegmentInfo        segInfo    = null;
     //DetectorPosition lowerleft  = null;
     //DetectorPosition upperleft  = null;
     //DetectorPosition lowerright = null;
@@ -522,35 +525,35 @@ public class WriteExp extends GenericTOF_SCD{
     int              minrow     = 10000;
 
     for( int i=0 ; i<ds.getNum_entries() ; i++ ){
-      val=ds.getData_entry(i).getAttributeValue(Attribute.DETECTOR_INFO_LIST);
+      val=ds.getData_entry(i).getAttributeValue(Attribute.SEGMENT_INFO_LIST);
       if(val!=null){
-        if(val instanceof DetectorInfo[])
-          detInfo=((DetectorInfo[])val)[0];
-        else if(val instanceof DetectorInfo)
-          detInfo=(DetectorInfo)val;
+        if(val instanceof SegmentInfo[])
+          segInfo=((SegmentInfo[])val)[0];
+        else if(val instanceof SegmentInfo)
+          segInfo=(SegmentInfo)val;
         else
-          detInfo=null;
+          segInfo=null;
       }
 
-      if(detInfo!=null){
+      if(segInfo!=null){
         // get the row and column
-        col=detInfo.getColumn();
-        row=detInfo.getRow();
+        col=segInfo.getColumn();
+        row=segInfo.getRow();
 
         // check for special positions
         if(col<=mincol){ // could be lowerleft or upperleft
           mincol=col;
           if(row<=minrow){ // is lowerleft
             minrow=row;
-            //lowerleft=detInfo.getPosition();
+            //lowerleft=segInfo.getPosition();
             //}else if(row>=nrow){ // is upperleft
-            //upperleft=detInfo.getPosition();
+            //upperleft=segInfo.getPosition();
           }
         }else if(col>ncol){ // could be lowerright
           ncol=col;
           if(row<=minrow){ // is lowerright
             minrow=row;
-            //lowerright=detInfo.getPosition();
+            //lowerright=segInfo.getPosition();
           }
         }
 
@@ -568,7 +571,7 @@ public class WriteExp extends GenericTOF_SCD{
     //width  = 100f*lowerleft.distance(lowerright);
 
     // clear out some references
-    detInfo    = null;
+    segInfo    = null;
     //lowerleft  = null;
     //upperleft  = null;
     //lowerright = null;

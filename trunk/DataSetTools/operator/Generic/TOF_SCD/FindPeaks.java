@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.11  2003/01/15 20:54:26  dennis
+ * Changed to use SegmentInfo, SegInfoListAttribute, etc.
+ *
  * Revision 1.10  2002/11/27 23:22:20  pfpeterson
  * standardized header
  *
@@ -128,8 +131,8 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     //System.out.println("==================================");
     Data data=data_set.getData_entry(0);
     int numData=data_set.getNum_entries();
-    DetInfoListAttribute detI;
-    DetectorInfo det;
+    SegInfoListAttribute segI;
+    SegmentInfo seg;
     
     run_number=((int[])data_set.getAttributeValue(Attribute.RUN_NUM))[0];
     
@@ -138,14 +141,14 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     
     for( int i=0 ; i<numData ; i++ ){
       data=data_set.getData_entry(i);
-      detI=(DetInfoListAttribute)
-        data.getAttribute(Attribute.DETECTOR_INFO_LIST);
-      det=((DetectorInfo[])detI.getValue())[0];
+      segI=(SegInfoListAttribute)
+        data.getAttribute(Attribute.SEGMENT_INFO_LIST);
+      seg=((SegmentInfo[])segI.getValue())[0];
       pos[i][0]=i;
-      pos[i][1]=det.getDet_num();
-      pos[i][2]=det.getColumn();
-      pos[i][3]=det.getRow();
-      pos[i][4]=det.getDet_num();
+      pos[i][1]=seg.getDet_num();
+      pos[i][2]=seg.getColumn();
+      pos[i][3]=seg.getRow();
+      pos[i][4]=seg.getDet_num();
     }
     
     float init_path=((Float)data.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
@@ -454,8 +457,8 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
    * Find the detector angle by averaging over pixel angles.
    */
   static private float detector_angle(DataSet ds){
-    DetInfoListAttribute detI;
-    DetectorInfo det;
+    SegInfoListAttribute segI;
+    SegmentInfo seg;
     Data data=ds.getData_entry(0);
     float angle=0f;
     Float Fangle=new Float(0f);
@@ -469,10 +472,10 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     if(angle==0f){
       for( int i=0 ; i< ds.getNum_entries() ; i++ ){
         data=ds.getData_entry(i);
-        detI=(DetInfoListAttribute)
-          data.getAttribute(Attribute.DETECTOR_INFO_LIST);
-        det=((DetectorInfo[])detI.getValue())[0];
-        angle+=det.getPosition().getScatteringAngle();
+        segI=(SegInfoListAttribute)
+          data.getAttribute(Attribute.SEGMENT_INFO_LIST);
+        seg=((SegmentInfo[])segI.getValue())[0];
+        angle+=seg.getPosition().getScatteringAngle();
         total++;
         //System.out.println(total+":"+angle);
       }
@@ -495,8 +498,8 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   * distance.
   */
   static private float detector_distance(DataSet ds, float avg_angle){
-    DetInfoListAttribute detI;
-    DetectorInfo det;
+    SegInfoListAttribute segI;
+    SegmentInfo seg;
     Data data=ds.getData_entry(0);
     float angle=0f;
     float distance=0f;
@@ -511,16 +514,16 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     if(distance==0f){
       for( int i=0 ; i< ds.getNum_entries() ; i++ ){
         data=ds.getData_entry(i);
-        detI=(DetInfoListAttribute)
-          data.getAttribute(Attribute.DETECTOR_INFO_LIST);
-        det=((DetectorInfo[])detI.getValue())[0];
+        segI=(SegInfoListAttribute)
+          data.getAttribute(Attribute.SEGMENT_INFO_LIST);
+        seg=((SegmentInfo[])segI.getValue())[0];
         
-        angle=det.getPosition().getScatteringAngle();
+        angle=seg.getPosition().getScatteringAngle();
         angle=angle-2f*avg_angle/(float)Math.PI;
         
         angle=(float)Math.abs(Math.cos((double)angle));
         
-        distance+=angle*det.getPosition().getDistance();
+        distance+=angle*seg.getPosition().getDistance();
         total++;
       }
       distance=distance/((float)(total+1));

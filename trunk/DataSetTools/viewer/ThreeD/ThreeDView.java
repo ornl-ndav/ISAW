@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.27  2003/01/15 20:54:31  dennis
+ * Changed to use SegmentInfo, SegInfoListAttribute, etc.
+ *
  * Revision 1.26  2002/11/27 23:25:50  pfpeterson
  * standardized header
  *
@@ -683,14 +686,14 @@ private float draw_detectors()
   for ( int i = 0; i < n_data; i++ )
   {
     Data d = ds.getData_entry(i);
-    DetectorInfo det_info[] = (DetectorInfo[])
-                          d.getAttributeValue( Attribute.DETECTOR_INFO_LIST );
-    if ( det_info != null )
+    SegmentInfo seg_info[] = (SegmentInfo[])
+                          d.getAttributeValue( Attribute.SEGMENT_INFO_LIST );
+    if ( seg_info != null )
     {
-      objects = new IThreeD_Object[ det_info.length ];
-      for ( int k = 0; k < det_info.length; k++ )
+      objects = new IThreeD_Object[ seg_info.length ];
+      for ( int k = 0; k < seg_info.length; k++ )
       {
-        position= det_info[k].getPosition();
+        position= seg_info[k].getPosition();
 
         float coords[] = position.getCartesianCoords();
         point = new Vector3D( coords[0], coords[1], coords[2] );
@@ -704,8 +707,8 @@ private float draw_detectors()
             max_radius = radius;
 
           objects[k] = make_detector( point, 
-                                      det_info[k].getWidth()/100, 
-                                      det_info[k].getLength()/100,
+                                      seg_info[k].getWidth()/100, 
+                                      seg_info[k].getLength()/100,
                                       i );
         }
       }

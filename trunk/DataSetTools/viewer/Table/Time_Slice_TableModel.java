@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/01/15 20:54:29  dennis
+ * Changed to use SegmentInfo, SegInfoListAttribute, etc.
+ *
  * Revision 1.7  2002/11/27 23:25:37  pfpeterson
  * standardized header
  *
@@ -123,7 +126,8 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
 
       for( int i = 0; i < DS.getNum_entries(); i++ )
       {
-         DetInfoListAttribute Ax = ( DetInfoListAttribute )DS.getData_entry( i ).getAttribute( Attribute.DETECTOR_INFO_LIST );
+         SegInfoListAttribute Ax = ( SegInfoListAttribute )
+               DS.getData_entry(i).getAttribute( Attribute.SEGMENT_INFO_LIST );
 
          row[i] = -1;
          col[i] = -1;
@@ -131,12 +135,12 @@ public class Time_Slice_TableModel extends TableViewModel implements ActionListe
          {}
          else
          {
-            DetectorInfo[] Ab = ( DetectorInfo[] )( Ax.getValue() );
+            SegmentInfo[] Ab = ( SegmentInfo[] )( Ax.getValue() );
 
             if( Ab != null )
                if( Ab.length > 0 )
                {
-                  DetectorInfo B = Ab[0];
+                  SegmentInfo B = Ab[0];
 
                   row[i] = B.getRow();
                   col[i] = B.getColumn();

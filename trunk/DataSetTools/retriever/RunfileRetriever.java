@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.59  2003/01/15 20:54:26  dennis
+ *  Changed to use SegmentInfo, SegInfoListAttribute, etc.
+ *
  *  Revision 1.58  2002/12/20 20:25:51  pfpeterson
  *  Added user name to AttributeList of DataSet.
  *
@@ -140,7 +143,7 @@ import DataSetTools.operator.DataSet.*;
 import DataSetTools.operator.DataSet.Special.*;
 import DataSetTools.operator.DataSet.Conversion.XAxis.*;
 import DataSetTools.instruments.InstrumentType;
-import DataSetTools.instruments.DetectorInfo;
+import DataSetTools.instruments.SegmentInfo;
 import IPNS.Runfile.*;
 import IPNS.Calib.*;
 import DataSetTools.math.*;
@@ -1008,11 +1011,11 @@ private float CalculateEIn()
     float_attr =new FloatAttribute(Attribute.DELTA_2THETA, delta_2theta  );
     attr_list.setAttribute( float_attr );
 
-    // DetectorInfo ....
+    // SegmentInfo ....
 
-    DetectorInfo det_info_list[] = new DetectorInfo[ group_segments.length ];
+    SegmentInfo seg_info_list[] = new SegmentInfo[ group_segments.length ];
     DetectorPosition det_position;
-    DetectorInfo     det_info;
+    SegmentInfo      seg_info;
 
     for ( int id = 0; id < group_segments.length; id++ )
     {
@@ -1038,7 +1041,7 @@ private float CalculateEIn()
       
       det_position.setCylindricalCoords( rho, seg_angle, seg_height );
 
-      det_info = new DetectorInfo( group_segments[id].SegID(), 
+      seg_info = new SegmentInfo( group_segments[id].SegID(), 
                                    group_segments[id].DetID(), 
                                    group_segments[id].Row(),
                                    group_segments[id].Column(),
@@ -1047,7 +1050,7 @@ private float CalculateEIn()
                                    group_segments[id].Width(),
                                    group_segments[id].Depth(),
                                    group_segments[id].Efficiency() );
-      det_info_list[id] = det_info;
+      seg_info_list[id] = seg_info;
 
     }
 
@@ -1055,11 +1058,11 @@ private float CalculateEIn()
       if(instrument_type==InstrumentType.TOF_SCD)
          Add_DetectorCenterPosition(attr_list,group_segments[0].DetID());
 
-    if ( group_segments.length > 0 )           // add the DetInfoListAttribute
+    if ( group_segments.length > 0 )           // add the SegInfoListAttribute
     {
-      DetInfoListAttribute det_info_attr = new DetInfoListAttribute( 
-                             Attribute.DETECTOR_INFO_LIST, det_info_list );
-      attr_list.setAttribute( det_info_attr );
+      SegInfoListAttribute seg_info_attr = new SegInfoListAttribute( 
+                             Attribute.SEGMENT_INFO_LIST, seg_info_list );
+      attr_list.setAttribute( seg_info_attr );
                                                // add the crate, input & slot
                                                // info for the first segment
                                                // in the group
@@ -1548,7 +1551,7 @@ private float CalculateEIn()
 /**
  *  Show Group Detector Info
  */
-  private void ShowGroupDetectorInfo( int group_id, int hist )
+  private void ShowGroupSegmentInfo( int group_id, int hist )
   {
     Segment segs[] = run_file.SegsInSubgroup( group_id );
     int type; 
@@ -1664,7 +1667,7 @@ private float CalculateEIn()
     catch ( Exception e )
     {
       System.out.println( 
-                 "Exception in RunfileRetriever.ShowGroupDetectorInfo:" );
+                 "Exception in RunfileRetriever.ShowGroupSegmentInfo:" );
       System.out.println( "Exception is " + e );
       e.printStackTrace();
     }

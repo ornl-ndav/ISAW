@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2003/01/15 20:54:25  dennis
+ *  Changed to use SegmentInfo, SegInfoListAttribute, etc.
+ *
  *  Revision 1.35  2002/12/11 22:25:26  pfpeterson
  *  Removed reference to DoubleDifferentialCrossSection.
  *
@@ -404,7 +407,7 @@ public class DataSetFactory implements Serializable
     }
     else if ( instrument_type == InstrumentType.TOF_SCD )  // will be different
     {                                                      // when SCD properly
-      ds.addOperator( new GetDetectorInfo_op() );          // supported
+      ds.addOperator( new GetSegmentInfo_op() );           // supported
       ds.addOperator( new DiffractometerTofToD() );
       ds.addOperator( new DiffractometerTofToQ() );
       ds.addOperator( new SCDQxyz() );
@@ -416,7 +419,7 @@ public class DataSetFactory implements Serializable
     }
     else if ( instrument_type == InstrumentType.TOF_SAD )  // will be different
     {                                                      // when SAD properly
-      ds.addOperator( new GetDetectorInfo_op() );          // supported
+      ds.addOperator( new GetSegmentInfo_op() );           // supported
       ds.addOperator( new DiffractometerTofToD() );
       ds.addOperator( new DiffractometerTofToQ() );
       ds.addOperator( new DiffractometerQxyz() );
