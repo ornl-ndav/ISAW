@@ -20,6 +20,7 @@ import javax.swing.event.*;
 import DataSetTools.dataset.*;
 import DataSetTools.retriever.*;
 
+
 /**
  * The main class for ISAW. It is the GUI that ties together the DataSetTools, IPNS, 
  * ChopTools and graph packages.
@@ -47,15 +48,17 @@ public class LoadFiles extends JFrame
     private Vector loadedElements;
     private JTreeUI treeUI;
     private String dir;
+
+    private JDataViewUI jdvui;
     
-    public LoadFiles(JTreeUI treeUI, String dir) {
+    public LoadFiles(JTreeUI treeUI, String dir,JDataViewUI jdvui) {
         super("File Loader");
          this.treeUI = treeUI;
          this.dir= dir;
+	   this.jdvui = jdvui;
          
         listModelA = new DefaultListModel();
         listModelB = new DefaultListModel();
-        
         
        
        /* fd = new FileDialog(new Frame(), "Choose Folder", FileDialog.LOAD);
@@ -201,6 +204,7 @@ public class LoadFiles extends JFrame
                     }
 
                 }
+
         }
         catch(Exception ex){System.out.println("The exception is " +ex);}
         }
@@ -250,6 +254,10 @@ public class LoadFiles extends JFrame
             
             file_name[0] =dir+listB.getModel().getElementAt(0).toString();
             System.out.println("name of the file or type is" +file_name[0]);
+
+
+/////////////////////////////////////////////////////////////////////////////
+
             
            /* if(file_name[0].endsWith("zip"))
             {
@@ -275,9 +283,16 @@ public class LoadFiles extends JFrame
                 }
                 catch(Exception ex ){System.out.println("the exception in zip is "+ex);}
             } 
+
+           
            
         */
-         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+//////////////////////////////////////////////////////////////////////////////
+
+
+ setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+         DataSet[] dss=null;
             for (int i =0; i<size; i++)
             {
             file_name[i] =dir  +listB.getModel().getElementAt(i).toString();
@@ -285,12 +300,18 @@ public class LoadFiles extends JFrame
             //System.out.println("Print the files in listB  " +file_name[i]);
              RunfileRetriever r = new RunfileRetriever( file_name[i] );
              int numberOfDataSets = r.numDataSets();
-                         DataSet[] dss = new DataSet[numberOfDataSets];
-
-                        for (int j = 0; j< numberOfDataSets;j++)
+                         
+ dss = new DataSet[numberOfDataSets];
+                         for (int j = 0; j< numberOfDataSets;j++)
                             dss[j] = r.getDataSet(j);
-                            treeUI.addDataSets(dss, listB.getModel().getElementAt(i).toString());
-            }
+                            treeUI.addDataSets(dss, listB.getModel().getElementAt(i).toString());	
+				    
+
+		}
+		jdvui.drawImage(dss[1],"Internal Frame");
+
+
+
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
            
              dispose();  
