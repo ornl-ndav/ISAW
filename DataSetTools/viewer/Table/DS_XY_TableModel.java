@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2004/05/25 21:12:11  rmikk
+ * Eliminated an off by one error in the selected row
+ *
  * Revision 1.16  2004/01/24 22:41:14  bouzekc
  * Removed/commented out unused imports/variables.
  *
@@ -517,15 +520,14 @@ public class DS_XY_TableModel extends TableViewModel
    */
    public int getRow( int Group, float time )
      { int nn = Arrays.binarySearch( xvals, time ); 
-       
        if( nn < 0 )
          nn = -(  nn + 1 );
-       if( nn <0 ) nn = 0;
+       if( nn < 0 ) nn = 0;
        if( nn >= xvals.length )
           nn = xvals.length-1;
        
        if( nn > 0 )
-         if( (  time -xvals[nn-1] ) < (xvals[nn]-time ) )
+         //if( (  time -xvals[nn-1] ) < (xvals[nn]-time ) )
            nn--;
        return nn;
       }
