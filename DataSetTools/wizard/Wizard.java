@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.98  2004/01/06 23:15:10  bouzekc
+ * Fixed constructor so that standalone flag was actually read.
+ *
  * Revision 1.97  2003/12/16 00:51:27  bouzekc
  * Fixed bug that prevented Form progress indicator from advancing
  * incrementally.
@@ -576,6 +579,7 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
     this.title   = title;
     forms        = new Vector(  );
     form_num     = -1;
+    this.standalone = standalone;
 
     //command_handler   = new CommandHandler( this );
     tryToLoadProjectsDir(  );
