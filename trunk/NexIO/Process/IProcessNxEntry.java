@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/12/09 14:40:03  rmikk
+ * Fixed javadoc warnings
+ *
  * Revision 1.1  2003/11/23 23:43:21  rmikk
  * Initial Checkin
  *
@@ -55,12 +58,10 @@ public interface IProcessNxEntry {
    /**
     *     Method that fills out the DataSet DS from information in the NXdata
     *     node.
+    *     @param DS  the DataSet(not null) that is to be updated
     *     @param NxEntryNode An NxNode with information on the NeXus NXentry class.
     *     @param NxDataNode  An NxNode with information on the NeXus NXdata class.
-    *     @param NxinstrumentNode An NxNode with information on the NeXus 
-    *                           NXinstrument class.
-    *     @param DS    The DataSet(not null) that is to have info added to it
-    *     @param Params The linked list of state information
+    *     @param States The linked list of state information
     *     @param startGroupID The starting Group ID for the NEW data blocks that are
     *                          added
     */

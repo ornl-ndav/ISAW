@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/12/09 14:39:33  rmikk
+ * Fixed javadoc warnings
+ *
  * Revision 1.1  2003/11/23 23:47:35  rmikk
  * Initial Checkin
  *
@@ -57,7 +60,7 @@ public class QueryNxEntry {
    *   Returns the proper IProcessNxData class that is also properly configured
    *   @param State The linked list of state information
    *   @param NxDataNode  An NxNode with information on the NeXus NXdata class.
-   *   @param NxinstrumentNode An NxNode with information on the NeXus 
+   *   @param NxInstrumentNode An NxNode with information on the NeXus 
    *                        NXinstrument class.
    */
   public static IProcessNxEntry getNxEntryProcessor(NxfileStateInfo State, 
