@@ -27,6 +27,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/04/30 19:52:52  pfpeterson
+ * Changed to reflect changes in IPNSsrc.blind.
+ *
  * Revision 1.3  2003/04/09 16:23:48  pfpeterson
  * Moved the code to write a matrix file from here to
  * DataSetTools.operator.Generic.TOF_SCD.Util. Also cleaned up imports.
@@ -316,13 +319,8 @@ public class BlindJ extends  GenericTOF_SCD {
 
     // create a lattice parameters vector
     float[] abc=new float[7];
-    abc[0]=(float)BLIND.D1;
-    abc[1]=(float)BLIND.D2;
-    abc[2]=(float)BLIND.D3;
-    abc[3]=(float)BLIND.D4;
-    abc[4]=(float)BLIND.D5;
-    abc[5]=(float)BLIND.D6;
-    abc[6]=(float)BLIND.cellVol;
+    for(int i=0 ; i<abc.length ; i++ )
+      abc[i]=(float)BLIND.abc[i];
 
     // create a sigma matrix
     float[] sig={0f,0f,0f,0f,0f,0f,0f};
