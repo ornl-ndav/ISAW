@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.102  2004/01/14 18:59:00  bouzekc
+ * Fixed bug that wiped out loaded Form values when loading a file
+ * directly from the command line.
+ *
  * Revision 1.101  2004/01/09 22:27:43  bouzekc
  * Modified to work with both IWizardFrontEnds and IGUIWizardFrontEnds.
  *
@@ -931,8 +935,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
         System.out.println( helpMessage );
       } else {
         //assume we are loading a real File in graphical mode
-        this.loadForms( new File( argv[0] ) );
         createGUIInterface(  );
+        this.loadForms( new File( argv[0] ) );
         frontEnd.showLastValidForm(  );
       }
     } else {
