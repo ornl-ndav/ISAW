@@ -1,23 +1,21 @@
 #Ashfia Huq August 2004 
 # Script to produce  gsas file.  Allows user to choose one of the five general setups.
 # Standard (Five banks, focused to 145,125,107,90,53.  +ve and -ve sides summed.
-# Focus_all_tth : The consecutive four banks (not 53) are focussed to 125 degrees
+# Focus_all_tth : The consecutive four banks (not 50) are focussed to 125 degrees
 # Miller : All other detectors turned off except 90 degree bank.
 # Kappa : Creates 8 banks of data with selected detectors
 # Pressure : Creates 1 bank of data with available detectors and focus to 100 degrees.
 # Users have the option to display the data.
 # Choice is given to display dialog box.
 
-# Modify Date: 2005/02/17 23:11:32 : Ashfia Huq , ID's should remain 
-# the same (bad detectors are turned off using the discriminator levels)
+# CVS VERSION $Date$
 
+# Date: 2004/08/02 16:03:04
+
+# Modify Date: 2005/1/18 16:03:04 : Ashfia Huq , ID's should remain the same (bad detectors are turned off using the discriminator levels)
 #Write 3 column format (FXYE for GSAS) or ESD format(Original sequential format with no space)
 #Resample bins(for constant binning) to start at 2000 micro sec and end at 32000 micro sec with dT = 5 micro sec.
 #For dT/T binning make sure to check box so that data is not resampled
-
-# CVS VERSION $Date$
-
-$Category=Macros, Instrument Type, TOF_NPD
 
 $Standard		Boolean(true)        Standard (5B, sum & T focus)
 $Focus_all_tth	Boolean(false)       Focus_all_2Theta (4B focus to 125)		
@@ -27,11 +25,11 @@ $Pressure		Boolean(false)       Pressure (1B, selected detectors)
 
 $Current		Boolean(true)		Is this a Current Run ?
 
-$run_numbers		Array([23117])          				Enter run numbers like [23127]
-$path                	DataDirectoryString    					Inputname
-$path_archive		DataDirectoryString(C:/material/user-data/)	path_archive
-$instrument          	InstrumentNameString    				Instrument
-$outputname			DataDirectoryString(C:/material/testisaw/)  	outputname    
+$run_numbers	Array([21378])          				Enter run numbers like [21378]
+$path             DataDirectoryString    					Inputname
+$path_archive	DataDirectoryString(/IPNShome/gppduser/archive_data/)	path_archive
+$instrument       InstrumentNameString    				Instrument
+$outputname		DataDirectoryString(/IPNShome/gppduser/aaaUSER_data/)  	outputname     
 
 $FXYE_format		Boolean(true)		3 Column Format?	
 $dT_bin			Boolean(false)		dT/T binning ?
@@ -188,8 +186,8 @@ elseif Kappa == true
 		SaveGSAS(temp[0], m_dsa, outputname&i&".gsa",true,true)
 	endif
 		if Display_data == true
-		m_dsaT=ToD(m_dsa,0.15,2.3,6000)
-      	dss=Sort(m_dsaT,"Omega",true,true)
+		m_dsaT=ToD(m_dsa,0.15,3.3,6000)
+      	dss=Sort(m_dsaT,"Group ID",true,true)
 		Display dss
 		send dss	
 		endif
