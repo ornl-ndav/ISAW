@@ -17,7 +17,7 @@ $Xoff     Float(0)    Enter Xoff estimate
 $Yoff    Float(0)   Enter Yoff Estimate
 $Command =CenterDisplay
 $Title= Find and Show Center
-$Category=Operator;Generic;TOF_SAD
+$Category=Operator, Generic, TOF_SAD, Scripts
 
 V =BeamCenter(DSfilename, SensFilename, startTimeChan,EndTimeChan, Xoff,Yoff)
 
