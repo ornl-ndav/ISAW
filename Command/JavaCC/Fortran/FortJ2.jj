@@ -226,8 +226,12 @@ public class Fcvrt {
  public String getDefaultInitValue(String DataType,String[] Parameters)
              throws ParseException{
    if( Parameters != null)
-       if( Parameters.length > 0)
-          return "null";
+       if( Parameters.length > 0){
+          String S ="new "+DataType;
+          for(int i=0;i<Parameters.length;i++) 
+             S +="[0]";
+          return  S;
+         }
    if( DataType.equals("String"))
       return "null";
    if( DataType.equals("int"))
