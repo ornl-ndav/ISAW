@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2001/08/10 13:41:11  rmikk
+ * Added Code to return error information
+ *
  * Revision 1.3  2001/07/26 13:15:40  rmikk
  * New Nexus retriever that uses routines from the general
  * NexIO package.
@@ -56,6 +59,9 @@ public class NexusRetriever extends Retriever
     {super(  dataSourceName ) ;
      errormessage = "" ;
      node = ( NxNode )( new NexIO.NexApi.NexNode(  dataSourceName  ) ) ;
+     if( node.getErrorMessage() != null)
+       if( node.getErrorMessage().length() > 0)
+         errormessage = node.getErrorMessage();
      ext = new ExtGetDS( node, dataSourceName ) ;
     }
 
@@ -88,8 +94,15 @@ public class NexusRetriever extends Retriever
   * returns the total number of datasets of All Types
   */
    public   int  numDataSets() 
-      {int nsets = ext.numDataSets() ;
+      {if( errormessage !=null)
+        if( errormessage.length() > 0)
+          return  RemoteDataRetriever.BAD_FILE_NAME;
+       int nsets = ext.numDataSets() ;
+       
        errormessage = ext.getErrorMessage() ;
+       if( errormessage != null )
+         if( errormessage.length() > 0)
+           return RemoteDataRetriever.BAD_FILE_NAME;
        return nsets ;
       }
 
