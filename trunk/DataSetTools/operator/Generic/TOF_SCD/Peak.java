@@ -59,6 +59,7 @@ public class Peak{
     private int    detnum   = 0;
     private float  nearedge = 0;
     private float  detA     = 0f;
+    private float  detA2    = 0f;
     private float  detD     = 0f;
     private float  chi      = 0f;
     private float  phi      = 0f;
@@ -288,7 +289,7 @@ public class Peak{
      * Mutator method for the horizontal position.
      */
     public float xcm( float ax, float bx){
-	return 	this.xcm(ax*this.x() + bx);
+	return 	this.xcm(ax*(this.x()-0.5f) + bx);
     }
 
     /**
@@ -308,7 +309,7 @@ public class Peak{
      *  Mutator method for the vertical position.
      */
     public float ycm(float ay, float by){
-	return 	this.ycm(ay*this.y()+by);
+	return 	this.ycm(ay*(this.y()-0.5f)+by);
     }
 
     /**
@@ -351,13 +352,16 @@ public class Peak{
      *  Mutator method for the wavelength.
      */
     public float wl(float l1, float t0){
-	float h=(float)(1E6*6.62606876E-34); // in kg*cm*A/us
-	float m=(float)1.67492716E-27; // in kg
-	float l2=this.detD();
+	double h=(1E6*6.62606876E-34); // in kg*cm*A/us
+	double m=1.67492716E-27; // in kg
+        double hom=0.3955974; // h/m in cm*A/us
+	float l2=this.detD(); // in cm
+        //System.out.print("("+this.ipkobs()+")"+this.t());
 	//System.out.print(wl+"("+l1+","+l2+","+t0+")=");
 
 	// set the time to be the new time
 	this.t(this.t()+t0);
+        //System.out.println("->"+this.t());
 
 	// if any of the values are not properly defined set the wl to
 	// zero
@@ -367,13 +371,18 @@ public class Peak{
 	}
 
 	// calculate the corrected path length
-	float l=(float)Math.pow((double)l2,2.0)
-	    +(float)Math.pow((double)this.xcm(),2.0)
-	    +(float)Math.pow((double)this.ycm(),2.0);
-	l=l1+(float)Math.sqrt((double)l);
+	double ld=Math.pow((double)l2,2.0)
+            +Math.pow((double)this.xcm(),2.0)
+            +Math.pow((double)this.ycm(),2.0);
+        float l=l1+(float)Math.sqrt(ld);
+	/*float l=(float)Math.pow((double)l2,2.0)
+          +(float)Math.pow((double)this.xcm(),2.0)
+          +(float)Math.pow((double)this.ycm(),2.0);
+          l=l1+(float)Math.sqrt((double)l);*/
 
-	//System.out.println(h*(this.t())/(m*l));
-	return 	this.wl(h*(this.t())/(m*l));
+	//System.out.println("("+(l-l1)+"):"+(h*(this.t())/(m*l)));
+	//return this.wl((float)(h*this.t()/(m*l)));
+	return this.wl((float)(hom*(this.t())/l));
     }
 
     /**
@@ -515,6 +524,20 @@ public class Peak{
     public float detA(float DETA){
 	this.detA=DETA;
 	return this.detA();
+    }
+
+    /**
+     *  Accessor method for the second detector angle
+     */
+    public float detA2(){
+	return this.detA2;
+    }
+    /**
+     *  Mutator method for the second detector angle
+     */
+    public float detA2(float DETA){
+	this.detA2=DETA;
+	return this.detA2();
     }
 
     /**
