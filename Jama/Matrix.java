@@ -1,3 +1,9 @@
+/*
+ * $Log$
+ * Revision 1.2  2003/10/17 03:09:48  bouzekc
+ * Fixed javadoc errors.  Added log tag.
+ *
+ */
 package Jama;
 
 import java.text.NumberFormat;
@@ -104,7 +110,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
 
    /** Construct a matrix from a 2-D array.
    @param A    Two-dimensional array of doubles.
-   @exception  IllegalArgumentException All rows must have the same length
+   @throws  IllegalArgumentException All rows must have the same length
    @see        #constructWithCopy
    */
 
@@ -134,7 +140,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
    /** Construct a matrix from a one-dimensional packed array
    @param vals One-dimensional array of doubles, packed by columns (ala Fortran).
    @param m    Number of rows.
-   @exception  IllegalArgumentException Array length must be a multiple of m.
+   @throws  IllegalArgumentException Array length must be a multiple of m.
    */
 
    public Matrix (double vals[], int m) {
@@ -157,7 +163,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
 
    /** Construct a matrix from a copy of a 2-D array.
    @param A    Two-dimensional array of doubles.
-   @exception  IllegalArgumentException All rows must have the same length
+   @throws  IllegalArgumentException All rows must have the same length
    */
 
    public static Matrix constructWithCopy(double[][] A) {
@@ -268,7 +274,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
    @param i    Row index.
    @param j    Column index.
    @return     A(i,j)
-   @exception  ArrayIndexOutOfBoundsException
+   @throws  ArrayIndexOutOfBoundsException
    */
 
    public double get (int i, int j) {
@@ -276,12 +282,12 @@ public class Matrix implements Cloneable, java.io.Serializable {
    }
 
    /** Get a submatrix.
-   @param i0   Initial row index
+   @param i0  Initial row index
    @param i1   Final row index
    @param j0   Initial column index
    @param j1   Final column index
    @return     A(i0:i1,j0:j1)
-   @exception  ArrayIndexOutOfBoundsException Submatrix indices
+   @throws  ArrayIndexOutOfBoundsException Submatrix indices
    */
 
    public Matrix getMatrix (int i0, int i1, int j0, int j1) {
@@ -303,7 +309,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
    @param r    Array of row indices.
    @param c    Array of column indices.
    @return     A(r(:),c(:))
-   @exception  ArrayIndexOutOfBoundsException Submatrix indices
+   @throws  ArrayIndexOutOfBoundsException Submatrix indices
    */
 
    public Matrix getMatrix (int[] r, int[] c) {
@@ -326,7 +332,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
    @param i1   Final row index
    @param c    Array of column indices.
    @return     A(i0:i1,c(:))
-   @exception  ArrayIndexOutOfBoundsException Submatrix indices
+   @throws  ArrayIndexOutOfBoundsException Submatrix indices
    */
 
    public Matrix getMatrix (int i0, int i1, int[] c) {
@@ -346,10 +352,10 @@ public class Matrix implements Cloneable, java.io.Serializable {
 
    /** Get a submatrix.
    @param r    Array of row indices.
-   @param i0   Initial column index
-   @param i1   Final column index
+   @param j0   Initial column index
+   @param j1   Final column index
    @return     A(r(:),j0:j1)
-   @exception  ArrayIndexOutOfBoundsException Submatrix indices
+   @throws  ArrayIndexOutOfBoundsException Submatrix indices
    */
 
    public Matrix getMatrix (int[] r, int j0, int j1) {
@@ -371,7 +377,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
    @param i    Row index.
    @param j    Column index.
    @param s    A(i,j).
-   @exception  ArrayIndexOutOfBoundsException
+   @throws     ArrayIndexOutOfBoundsException
    */
 
    public void set (int i, int j, double s) {
@@ -384,7 +390,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
    @param j0   Initial column index
    @param j1   Final column index
    @param X    A(i0:i1,j0:j1)
-   @exception  ArrayIndexOutOfBoundsException Submatrix indices
+   @throws     ArrayIndexOutOfBoundsException Submatrix indices
    */
 
    public void setMatrix (int i0, int i1, int j0, int j1, Matrix X) {
@@ -403,7 +409,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
    @param r    Array of row indices.
    @param c    Array of column indices.
    @param X    A(r(:),c(:))
-   @exception  ArrayIndexOutOfBoundsException Submatrix indices
+   @throws     ArrayIndexOutOfBoundsException Submatrix indices
    */
 
    public void setMatrix (int[] r, int[] c, Matrix X) {
@@ -423,7 +429,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
    @param j0   Initial column index
    @param j1   Final column index
    @param X    A(r(:),j0:j1)
-   @exception  ArrayIndexOutOfBoundsException Submatrix indices
+   @throws     ArrayIndexOutOfBoundsException Submatrix indices
    */
 
    public void setMatrix (int[] r, int j0, int j1, Matrix X) {
@@ -443,7 +449,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
    @param i1   Final row index
    @param c    Array of column indices.
    @param X    A(i0:i1,c(:))
-   @exception  ArrayIndexOutOfBoundsException Submatrix indices
+   @throws     ArrayIndexOutOfBoundsException Submatrix indices
    */
 
    public void setMatrix (int i0, int i1, int[] c, Matrix X) {
@@ -735,7 +741,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
    /** Linear algebraic matrix multiplication, A * B
    @param B    another matrix
    @return     Matrix product, A * B
-   @exception  IllegalArgumentException Matrix inner dimensions must agree.
+   @throws  IllegalArgumentException Matrix inner dimensions must agree.
    */
 
    public Matrix times (Matrix B) {
@@ -763,7 +769,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
 
    /** LU Decomposition
    @return     LUDecomposition
-   @see LUDecomposition
+   @see Jama.LUDecomposition
    */
 
    public LUDecomposition lu () {
@@ -772,7 +778,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
 
    /** QR Decomposition
    @return     QRDecomposition
-   @see QRDecomposition
+   @see Jama.QRDecomposition
    */
 
    public QRDecomposition qr () {
@@ -781,7 +787,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
 
    /** Cholesky Decomposition
    @return     CholeskyDecomposition
-   @see CholeskyDecomposition
+   @see Jama.CholeskyDecomposition
    */
 
    public CholeskyDecomposition chol () {
@@ -790,7 +796,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
 
    /** Singular Value Decomposition
    @return     SingularValueDecomposition
-   @see SingularValueDecomposition
+   @see Jama.SingularValueDecomposition
    */
 
    public SingularValueDecomposition svd () {
@@ -799,7 +805,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
 
    /** Eigenvalue Decomposition
    @return     EigenvalueDecomposition
-   @see EigenvalueDecomposition
+   @see Jama.EigenvalueDecomposition
    */
 
    public EigenvalueDecomposition eig () {
