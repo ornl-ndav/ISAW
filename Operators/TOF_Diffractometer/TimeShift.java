@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.1  2004/05/07 17:42:49  dennis
+ * Moved TimeShift from Operators to Operators/TOF_Diffractometer
+ *
  * Revision 1.2  2004/04/28 19:12:18  dennis
  * Revised version, with debug flag false. (Tom Worlton)
  *
@@ -38,7 +41,7 @@
  *
  *
  */
-package Operators;
+package Operators.TOF_Diffractometer;
 
 import gov.anl.ipns.Util.SpecialStrings.*;
 import DataSetTools.dataset.*;
