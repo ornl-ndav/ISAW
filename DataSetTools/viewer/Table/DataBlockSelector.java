@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2003/12/18 13:05:49  rmikk
+ * Notifies observers of the data set that the selected data blocks have changed.
+ *   This makes this view more interactive with the other views
+ *
  * Revision 1.5  2003/12/14 18:41:58  rmikk
  * The Scattering angle column is now in degrees
  *
@@ -65,6 +69,7 @@ import javax.swing.event.*;
 import java.util.*;
 import DataSetTools.dataset.*;
 import java.awt.*;
+import DataSetTools.util.*;
 /**
   *  This class is the "ArrayMaker" part of a DataSetViewer that can be used
   *  to sort and select Data Blocks from a DataSet.
@@ -190,6 +195,9 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
                     DS.setSelectFlag(indx, true);
                 }
             }
+           
+        DS.notifyIObservers( IObserver.SELECTION_CHANGED);
+
         }
     }
 
@@ -851,6 +859,7 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
   class myClearActionListener implements ActionListener{
      public void actionPerformed( ActionEvent evt){
         DS.clearSelections();
+        DS.notifyIObservers( IObserver.SELECTION_CHANGED);
 
      }
 
