@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.4  2003/04/30 19:52:04  pfpeterson
+ * Moved lattice parameter calculation from orientation matrix into
+ * DataSetTools.operator.Generic.TOF_SCD.Util.
+ *
  * Revision 1.3  2003/04/28 16:39:24  pfpeterson
  * Changed calculation of chisq to agree with how the best fit matrix
  * is calculated.
@@ -272,7 +276,7 @@ public class LsqrsJ extends GenericTOF_SCD{
 */
 
     // calculate lattice parameters and cell volume
-    double[] abc=abc(UB);
+    double[] abc=Util.abc(UB);
 /* REMOVE
     System.out.println("ABC="+arrayToString(abc));
 */
@@ -289,7 +293,7 @@ public class LsqrsJ extends GenericTOF_SCD{
         // determine derivatives
         for( int j=0 ; j<3 ; j++ ){
           UB[i][j]=UB[i][j]+SMALL;
-          temp_abc=abc(UB);
+          temp_abc=Util.abc(UB);
           UB[i][j]=UB[i][j]-SMALL;
           for( int k=0 ; k<7 ; k++ )
             derivatives[j][k]=(temp_abc[k]-abc[k])/SMALL;
@@ -614,40 +618,6 @@ public class LsqrsJ extends GenericTOF_SCD{
     result.append("]");
 
     return result.toString();
-  }
-
-  /**
-   * Method to calculate the lattice parameters from a given UB matrix
-   */
-  private static double[] abc(double[][] UB){
-    double[] abc=new double[7];
-    double[][] UBtrans=new double[3][3];
-    for( int i=0 ; i<3 ; i++ )
-      for( int j=0 ; j<3 ; j++ )
-        UBtrans[i][j]=UB[j][i];
-    double[][] UBsquare=LinearAlgebra.mult(UBtrans,UB);
-     if(UBsquare==null) return null;
-    double[][] invUBsquare=LinearAlgebra.getInverse(UBsquare);
-    if(invUBsquare==null) return null;
-
-    // calculate a, b, c
-    abc[0]=Math.sqrt(invUBsquare[0][0]);
-    abc[1]=Math.sqrt(invUBsquare[1][1]);
-    abc[2]=Math.sqrt(invUBsquare[2][2]);
-
-    // calculate alpha, beta, gamma
-    abc[3]=invUBsquare[1][2]/(abc[1]*abc[2]);
-    abc[4]=invUBsquare[0][2]/(abc[0]*abc[2]);
-    abc[5]=invUBsquare[0][1]/(abc[0]*abc[1]);
-    abc[3]=Math.acos(abc[3])*180./Math.PI;
-    abc[4]=Math.acos(abc[4])*180./Math.PI;
-    abc[5]=Math.acos(abc[5])*180./Math.PI;
-
-    // calculate the cell volume
-    abc[6]=abc[0]*abc[1]*Math.sin(abc[5]*Math.PI/180.);
-    abc[6]=abc[6]/Math.sqrt(UBsquare[2][2]);
-
-    return abc;
   }
 
   /**
