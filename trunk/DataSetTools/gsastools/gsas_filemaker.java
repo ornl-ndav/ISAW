@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2001/11/08 22:28:49  chatterjee
+ *  Added lines required to be read as a PDF file. GSAS will ignore the extra lines.
+ *
  *  Revision 1.6  2001/09/21 19:11:35  dennis
  *  Improved label on file name that's printed to the console.
  *
@@ -57,7 +60,7 @@ import javax.swing.*;
 import java.text.DateFormat;
 import java.text.*;
 import DataSetTools.math.*;
-
+import DataSetTools.operator.*;
 /**
  * Transfer diffractometer Data Set histogram to GSAS file format.
  * @version 1.0
@@ -68,7 +71,7 @@ public class gsas_filemaker
    
     public gsas_filemaker(){};
    
-    public gsas_filemaker( DataSet ds, String filename){
+    public gsas_filemaker( DataSet mon_ds, DataSet ds, String filename){
   
     File f= new File(filename);
     try{
@@ -79,7 +82,7 @@ public class gsas_filemaker
         
 
 
-        opw.write("#" + "     BANK" + "     Ref Angle" + "     Total length");
+        opw.write("BANKS"  + "     Ref Angle" + "     Total length");
         opw.write("\n"); 
  	   int ein= ds.getNum_entries();
         
@@ -100,19 +103,23 @@ public class gsas_filemaker
             float cylindrical_coords[] = position.getCylindricalCoords();
             float ref_angle = (float)(cylindrical_coords[1]*180.0/(java.lang.Math.PI));
 
-            opw.write ("#" + "     "+i+"     "+ref_angle+"     "+total_length);
+            opw.write ("BANK" +i + "     "+ref_angle+"     "+total_length);
             opw.write("\n");
         }
-
-
-
 
          for (int j = ds.getTitle().length(); j<80; j++)
              S = S +" ";
          opw.write( S +"\n");
          int en= ds.getNum_entries();
          int bank=0;
+
         
+	  Data mon_1 = mon_ds.getData_entry(0);
+
+        Float result =(Float)(mon_1.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT));
+        opw.write ("MONITOR: " +result);
+        opw.write("\n");
+
          for(int i=1; i<=en; i++)
         {
             DecimalFormat df=new DecimalFormat(  "000000");
