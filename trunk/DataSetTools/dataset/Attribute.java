@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2001/08/16 14:35:39  rmikk
+ *  Added IntListString case BEFORE SpecialString so it will
+ *  be dealt with correctly
+ *
  *  Revision 1.12  2001/07/30 18:46:46  dennis
  *  Added DS_TYPE attribute and some suggested type names.
  *
@@ -334,15 +338,18 @@ abstract public class Attribute implements Serializable
     else if( value instanceof String)
       A = new StringAttribute( name , (String) value);
 
-    else if( value instanceof SpecialString)
-      A = new StringAttribute( name, value.toString());
-
+  
     else if( value instanceof DetectorPosition )
       A = new DetPosAttribute( name, (DetectorPosition)value );
 
     else if( value instanceof int[] )
       A = new IntListAttribute( name , (int[])value );
-
+    
+    else if( value instanceof IntListString)
+	{ 
+          A = new IntListAttribute( name, 
+            IntList.ToArray(((IntListString)value).toString()));
+        }
     else if( value instanceof Integer[] )          // copy values into an int[]
     {
       int n_vals = ((Integer[])value).length;
@@ -352,10 +359,13 @@ abstract public class Attribute implements Serializable
       A = new IntListAttribute( name , vals );
     }
 
+    else if( value instanceof SpecialString)
+      A = new StringAttribute( name, value.toString());
+
     else
       return new ErrorString(" can't build Attribute for " + 
                                value.getClass().getName()  );
-
+   
     return A;
   }
 
