@@ -30,9 +30,8 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.6  2003/01/09 17:35:01  dennis
- *  Added getDocumentation(), main test program and java docs on getResult()
- *  (Chris Bouzek)
+ *  Revision 1.7  2003/01/14 19:08:12  dennis
+ *  Minor documentation fix. (Chris Bouzek)
  *
  *  Revision 1.5  2002/11/27 23:17:04  pfpeterson
  *  standardized header
@@ -68,7 +67,7 @@ import  DataSetTools.viewer.*;
 import  DataSetTools.retriever.*;
 
 /**
- * This operator converts a beammonitor time-of-flight DataSet to wavelength.
+ * This operator converts a beam monitor time-of-flight DataSet to wavelength.
  * The DataSet must contain spectra corresponding to monitors along the beam
  * line with attributes giving the initial path length from the source to the
  * sample and the monitor position relative to the sample.  The monitor
@@ -239,7 +238,7 @@ public class MonitorTofToWavelength extends    XAxisConversionOp
   {
     StringBuffer s = new StringBuffer("");
     s.append("@overview This operator converts the X-axis units on a ");
-    s.append("DataSet from beammonitor time-of-flight to wavelength.\n");
+    s.append("beam monitor DataSet from time-of-flight to wavelength.\n");
     s.append("@assumptions The DataSet must contain spectra corresponding ");
     s.append("to monitors along the beam line with attributes giving the ");
     s.append("initial path length from the source to the sample and the ");
@@ -249,10 +248,10 @@ public class MonitorTofToWavelength extends    XAxisConversionOp
     s.append("source to the monitor.\n");
     s.append("@algorithm Creates a new DataSet which has the same ");
     s.append("title as the input DataSet, the same y-values as the input ");
-    s.append("DataSet, and whose X-axis units have been converted to wavelength.  ");
-    s.append("The new DataSet also has a message appended to its log ");
-    s.append("indicating that a conversion to units of wavelength on the X-axis ");
-    s.append("was done.\n");
+    s.append("DataSet, and whose X-axis units have been converted to ");
+    s.append("wavelength.  The new DataSet also has a message appended ");
+    s.append("to its log indicating that a conversion to units of ");
+    s.append("wavelength on the X-axis was done.\n");
     s.append("@param ds The DataSet to which the operation is ");
     s.append("applied.\n");
     s.append("@param min_wl The minimum wavelength value to be binned.\n");
@@ -266,13 +265,13 @@ public class MonitorTofToWavelength extends    XAxisConversionOp
 
   /* ---------------------------- getResult ------------------------------- */
   /**
-  	*  Converts the input DataSet to a DataSet which is identical
-  	*  except that the new DataSet's X-axis units have been converted from
-  	*  beammonitor time-of-flight to wavelength.
-  	*
-		*	 @return DataSet whose X-axis units have been converted from
-		*  beammonitor time-of-flight to wavelength.
-		*/
+   *  Converts the input beam monitor DataSet to a DataSet which is identical
+   *  except that the new DataSet's X-axis units have been converted from
+   *  time-of-flight to wavelength.
+   *
+   *  @return DataSet whose X-axis units have been converted from
+   *  time-of-flight to wavelength.
+   */
   public Object getResult()
   {
                                      // get the current data set
@@ -398,32 +397,32 @@ public class MonitorTofToWavelength extends    XAxisConversionOp
 
     return new_op;
   }
+
   /* --------------------------- main ----------------------------------- */
   /*
    *  Main program for testing purposes
    */
   public static void main( String[] args )
   {
-		float min_1 = (float).75, max_1 = (float)2.0;
-		String file_name =
-		"/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
-		//"D:\\ISAW\\SampleRuns\\GPPD12358.RUN";
+    float min_1 = (float).75, max_1 = (float)2.0;
+    String file_name = "/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
+                       //"D:\\ISAW\\SampleRuns\\GPPD12358.RUN";
 
-		try
-		{
-			RunfileRetriever rr = new RunfileRetriever( file_name );
-			DataSet ds1 = rr.getDataSet(1);
-    	ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
-    	MonitorTofToWavelength op =
-    			new MonitorTofToWavelength(ds1, min_1, max_1, 100);
-    	DataSet new_ds = (DataSet)op.getResult();
-    	ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
-			System.out.println(op.getDocumentation());
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
+    try
+    {
+       RunfileRetriever rr = new RunfileRetriever( file_name );
+       DataSet ds1 = rr.getDataSet(1);
+       ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+       MonitorTofToWavelength op =
+       new MonitorTofToWavelength(ds1, min_1, max_1, 100);
+       DataSet new_ds = (DataSet)op.getResult();
+       ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+       System.out.println(op.getDocumentation());
+    }
+    catch(Exception e)
+    {
+       e.printStackTrace();
+    }
   }
 
 }
