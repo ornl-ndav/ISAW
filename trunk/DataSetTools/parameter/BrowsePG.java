@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2003/11/23 02:12:17  bouzekc
+ *  Now properly clones the label.
+ *
  *  Revision 1.29  2003/11/19 04:06:53  bouzekc
  *  This class is now a JavaBean.  Added code to clone() to copy all
  *  PropertyChangeListeners.
@@ -207,6 +210,7 @@ abstract public class BrowsePG extends ParameterGUI implements ParamUsesString{
         pg.setDrawValid( this.getDrawValid(  ) );
         pg.setValid( this.getValid(  ) );
         pg.filter_vector = this.filter_vector;
+        pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
 
         if( this.getInitialized() ) {
           pg.initGUI( null );

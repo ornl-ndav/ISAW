@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2003/11/23 02:12:18  bouzekc
+ * Now properly clones the label.
+ *
  * Revision 1.8  2003/11/19 04:06:54  bouzekc
  * This class is now a JavaBean.  Added code to clone() to copy all
  * PropertyChangeListeners.
@@ -377,6 +380,7 @@ public class UniformXScalePG extends ParameterGUI implements IXScalePG {
       pg.setValue( pg.getXScaleValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
       pg.setValid( this.getValid(  ) );
+      pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
 
       if( this.getInitialized(  ) ) {
         pg.initGUI( null );

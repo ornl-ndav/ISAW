@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.43  2003/11/23 02:12:18  bouzekc
+ * Now properly clones the label.
+ *
  * Revision 1.42  2003/11/20 01:45:19  bouzekc
  * Removed addPropertyChangeListener(), removePropertyChangeListener() methods.
  * All requests for these should go through ParameterGUI.  Made getEntryFrame()
@@ -362,6 +365,7 @@ public abstract class VectorPG extends ParameterGUI
       pg.setValue( this.getValue(  ) );
       pg.setDrawValid( this.getDrawValid(  ) );
       pg.setValid( this.getValid(  ) );
+      pg.setLabel( new String( this.getLabel(  ).getText(  ) ) );
 
       ParameterGUI internalParam = this.getParam(  );
 
