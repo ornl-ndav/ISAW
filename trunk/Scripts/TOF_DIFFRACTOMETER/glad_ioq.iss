@@ -35,15 +35,15 @@
 # @param DoMerge -data merging switch;
 
 #???@return  null or an ErrorString.   The result will be written to a file
-#???$ Category = Operator, Generic, TOF_DIFFRACTOMETER, Scripts
+$Category=Operator, Instrument Type, TOF_NGLAD
 
 #================= Parameters ======================================
 
 # run files:
-$VanFile	LoadFileString() Vanadium run file:
+$VanFile LoadFileString() Vanadium run file:
 $SmpFile LoadFileString() Sample run file:
-$CanFile	LoadFileString()  Can run file:
-$BkgFile  LoadFileString()	Background run file:
+$CanFile LoadFileString() Can run file:
+$BkgFile LoadFileString() Background run file:
 
 # dead detector list:
 #$REDPAR LoadFileString() Bad detector list file:
