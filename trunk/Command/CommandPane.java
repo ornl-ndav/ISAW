@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.44  2002/12/08 22:09:05  dennis
+ * Now uses new Jhelp class. (Ruth)
+ *
  * Revision 1.43  2002/12/02 15:41:20  rmikk
  * The Command Pane's help button now uses the JHelp system if it is present
  *   otherwise the other system is used
@@ -715,13 +718,4 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
         }// end actionperformed 
     }//End mouseAdapter 
 
-   class Jhelp 
-    {
-      JComponent getHelpComponent()
-       {HelpSet hs = new IsawHelp.HelpSystem.IsawOpHelpSet( false);
-        JHelp jh = new JHelp( hs);
-         return jh;
-        }
-
-     }
 }
