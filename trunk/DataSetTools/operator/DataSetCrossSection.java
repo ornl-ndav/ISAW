@@ -31,6 +31,9 @@
  * Modified:
  *             
  *  $Log$
+ *  Revision 1.13  2001/07/23 19:00:17  dennis
+ *  Fixed error: no longer using "==" for String comparison.
+ *
  *  Revision 1.12  2001/07/16 15:16:19  dennis
  *  Fixed bug ( missed integral of last group ).
  *
@@ -248,9 +251,9 @@ public class DataSetCrossSection extends    AnalyzeOp
                           ds.getX_units() );
 
     new_ds.setX_label( attr_name );
-    if ( attr_name == Attribute.DETECTOR_POS ||
-         attr_name == Attribute.RAW_ANGLE    ||
-         attr_name == Attribute.TEMPERATURE    )
+    if ( attr_name.equals( Attribute.DETECTOR_POS )  ||
+         attr_name.equals( Attribute.RAW_ANGLE )     ||
+         attr_name.equals( Attribute.TEMPERATURE )    )
       new_ds.setX_units( "Degrees" );
     else
        new_ds.setX_units( attr_name );
