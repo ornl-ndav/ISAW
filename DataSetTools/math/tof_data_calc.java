@@ -30,6 +30,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.19  2003/03/19 23:38:31  dennis
+ *  Now uses different extent factors for the monitor peaks
+ *  (for low energy and high energy) when calculating the incident
+ *  energy from monitor peaks.  (Based on discussions with
+ *  Alexander Kolesnikov.)
+ *
  *  Revision 1.18  2003/02/12 21:46:45  dennis
  *  Changed NewEnergyInData() method to use RAW_DISTANCE attribute
  *  instead of calculating it as the average of the Segment distances.
@@ -88,10 +94,12 @@ import DataSetTools.instruments.*;
 public final class tof_data_calc
 {
 
-public static final float  MONITOR_PEAK_EXTENT_FACTOR = 1.0f;
+public static final float  HIGH_E_EXTENT = 2.0f;
+public static final float  LOW_E_EXTENT  = 3.0f;
                                   // determines interval over which the 
-                                  // monitor peaks are evaluated
- 
+                                  // monitor peaks are evaluated.  High E 
+                                  // value used at 300 meV and above, based
+                                  // on suggestion by Alexander Kolesnikov
   /**
    * Don't let anyone instantiate this class.
    */
@@ -119,28 +127,41 @@ public static final float  MONITOR_PEAK_EXTENT_FACTOR = 1.0f;
                                        // detector
      float centroid[] = new float[2];
      float x[]        = new float[2];
+     float energy = 0;
+     HistogramDataPeak peak;
+                                          // make initial estimate for energy
      for ( int i = 0; i < 2; i++ )
      {
-       HistogramDataPeak peak = 
-                  new HistogramDataPeak( mon[i], MONITOR_PEAK_EXTENT_FACTOR );
-
-       float area        = peak.Area();
-       centroid[i] = peak.Moment(0, 1) / area;
+       peak = new HistogramDataPeak( mon[i], 1 );  
 
        DetectorPosition position = (DetectorPosition)
                          mon[i].getAttributeValue(Attribute.DETECTOR_POS);
        float coords[] = position.getCartesianCoords();
        x[i] = coords[0];
+       centroid[i] = peak.getPosition();
      }
+     energy = tof_calc.Energy( x[1]-x[0], centroid[1]-centroid[0] );
+
+                                     // make refined estimate for energy using
+                                     // centroid with appropriate extent_factor
+     for ( int i = 0; i < 2; i++ )
+     {
+       if ( energy >= 300 )
+         peak = new HistogramDataPeak( mon[i], HIGH_E_EXTENT );
+       else 
+         peak = new HistogramDataPeak( mon[i], LOW_E_EXTENT );
+
+       float area  = peak.Area();
+       centroid[i] = peak.Moment(0, 1) / area;
+     }
+     energy = tof_calc.Energy( x[1]-x[0], centroid[1]-centroid[0] );
+
 
      System.out.println("EnergyFromMonitorData ");
-     System.out.println("Monitor 0 peak = " + x[0] + 
-                        " centroid = " + centroid[0] );
-     System.out.println("Monitor 1 peak = " + x[1] + 
-                        " centroid = " + centroid[1] );
-
-     float energy = tof_calc.Energy( x[1]-x[0], centroid[1]-centroid[0] );
-
+     System.out.println("Monitor 0 location = " + x[0] + 
+                        " peak centroid = " + centroid[0] );
+     System.out.println("Monitor 1 location = " + x[1] + 
+                        " peak centroid = " + centroid[1] );
      System.out.println("Energy = " + energy +" meV");
      return energy;
   }
