@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/06/26 15:00:06  rmikk
+ * Improved the getMacro( MacroName) method to get matches
+ *    ONLY if the line is _$_Title_= title (Underscores represent
+ *    0 or more spaces).  MacroName can be Command, Title,
+ *   or Category
+ *
  * Revision 1.6  2003/06/24 16:40:19  dennis
  * Removed debug print "UNKNOWN COMMAND"
  *
@@ -332,10 +338,16 @@ public class IssScript extends Script{
     for( int i=0 ; i<this.numLines() ; i++ ){
       line=getLine(i).trim();
       if(! line.startsWith("$") ) continue;
+      if( line.length() <2) continue;
+      line = line.substring( 1).trim();
       int index=line.toUpperCase().indexOf(name);
-      if( index<=0 ) continue;
+      if( index!=0 ) continue;
       index=line.indexOf("=");
-      return line.substring(index+1).trim();
+      if( index < 0)  continue;
+      if( line.substring( 0, index).trim().length() != name.length())
+         continue;
+      line = line.substring(index+1).trim();
+      return line;
     }
 
     return null;
@@ -384,3 +396,4 @@ public class IssScript extends Script{
     System.out.println(">>"+script.getDocumentation()+"<<");
   }
 }
+
