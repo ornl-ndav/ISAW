@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/09/26 21:45:05  pfpeterson
+ *  Now properly determines time maps.
+ *
  *  Revision 1.3  2002/08/06 21:26:15  pfpeterson
  *  Added hooks for returning an XScale associated with the TimeMap.
  *
@@ -74,25 +77,40 @@ public class TimeMap{
         mapno=0;
 
         // initialize temporary arrays
-        float[] xval      = xscale.getXs();
+        float[] orig_xval      = xscale.getXs();
+        float[] xval      = new float[orig_xval.length];
         int[]   temp_chan = new int  [xval.length];
         float[] temp_time = new float[xval.length];
         float[] temp_dt   = new float[xval.length];
 
+        // convert the xvals to ns
+        for( int i=0 ; i<xval.length ; i++ ){
+            xval[i]=(float)((int)(1000f*orig_xval[i]));
+            if( (int)(xval[i]%10)==9 ){
+                xval[i]+=1;
+            }else if( (int)(xval[i]%10)==8 ){
+                xval[i]+=2;
+            }else if( (int)(xval[i]%10)==2 ){
+                xval[i]-=2;
+            }else if( (int)(xval[i]%10)==1 ){
+                xval[i]-=1;
+            }
+        }
+
         // set up the first value in the temporary array
-        float dx=xval[1]-xval[0];
+        float dx=(xval[1]-xval[0]);
         temp_chan[0]=1;
         temp_time[0]=xval[0];
         temp_dt[0]=dx;
         nval++;
 
         // fill the temporary arrays
-        for( int i=1 ; i<xval.length ; i++ ){
-            if(xval[i]-xval[i-1]!=dx){
-                dx=xval[i]-xval[i-1];
-                temp_chan[i]=i;
-                temp_time[i]=xval[i];
-                temp_dt[i]=dx;
+        for( int i=0 ; i<xval.length-1 ; i++ ){
+            if((xval[i+1]-xval[i])!=dx){
+                dx=(xval[i+1]-xval[i]);
+                temp_chan[nval]=i+1;
+                temp_time[nval]=xval[i];
+                temp_dt[nval]=dx;
                 nval++;
             }
         }
@@ -105,6 +123,13 @@ public class TimeMap{
             chan[i] = temp_chan[i];
             time[i] = temp_time[i];
             dt[i]   = temp_dt[i];
+        }
+
+        // determine the clock width
+        this.clockwidth=increaseClock(time,dt);
+        for( int i=0 ; i<nval ; i++ ){
+            time[i] = time[i]/this.clockwidth;
+            dt[i]   = dt[i]/this.clockwidth;
         }
 
         // determine the number of records/lines when written out
@@ -240,7 +265,7 @@ public class TimeMap{
             sb.append(EOL);
             colcount=0;
         }
-        sb.append(Format.integer(tmax,8));
+        sb.append(Format.integer(tmax*1000/this.clockwidth,8));
         sb.append(Format.string(EOL,81-8-colcount));
                   
         // return a nice string
@@ -281,4 +306,46 @@ public class TimeMap{
         return true;
     }
 
+    private float increaseClock(float[] t, float[] dt){
+        int tcount=0;
+        int dtcount=0;
+        float newclock=0f;
+
+        // try a 125ns clockwidth
+        newclock=125f;
+        for( int i=0 ; i<t.length ; i++ ){
+            if(  (t[i]%newclock)==0f ) tcount++;
+            if( (dt[i]%newclock)==0f ) dtcount++;
+        }
+        if( tcount==dtcount && tcount!=0 ){
+            /*for( int i=0 ; i<t.length ; i++ ){
+              t[i]=t[i]/newclock;
+              dt[i]=dt[i]/newclock;
+              }*/
+            return newclock;
+        }
+
+        tcount=0;
+        dtcount=0;
+
+        // try a 100ns clockwidth
+        newclock=100f;
+        for( int i=0 ; i<t.length ; i++ ){
+            if(  (t[i]%newclock)==0f ) tcount++;
+            if( (dt[i]%newclock)==0f ) dtcount++;
+        }
+        if( tcount==dtcount && tcount!=0 ){
+            /*for( int i=0 ; i<t.length ; i++ ){
+              t[i]=t[i]/newclock;
+              dt[i]=dt[i]/newclock;
+              }*/
+            return newclock;
+        }
+
+        /*for( int i=0 ; i<t.length ; i++ ){
+          t[i]  =  t[i]*1000f;
+          dt[i] = dt[i]*1000f;
+          }*/
+        return 1000f;
+    }
 }
