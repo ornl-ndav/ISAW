@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2002/07/17 19:30:33  rmikk
+ *  Changed the view menu options order
+ *
  *  Revision 1.21  2002/07/16 21:38:34  rmikk
  *   Introduced support for the other quick table views
  *
@@ -585,6 +588,14 @@ private void BuildViewMenu()
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
+ button = new JMenuItem( THREE_D );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
+
+  button = new JMenuItem( CONTOUR );
+  button.addActionListener( view_menu_handler );
+  view_menu.add( button );
+
   button = new JMenuItem( SCROLLED_GRAPHS );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
@@ -593,21 +604,16 @@ private void BuildViewMenu()
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
-  button = new JMenuItem( THREE_D );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
-
- // button = new JMenuItem( TABLE );
- // button.addActionListener( view_menu_handler );
- // view_menu.add( button );
   JMenu Tables = new JMenu( "Tables");
   view_menu.add( Tables);
   
   BuildTableMenu( Tables);
 
-  button = new JMenuItem( CONTOUR );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
+  button = new JMenuItem( TABLE );
+ button.addActionListener( view_menu_handler );
+ view_menu.add( button );
+ 
+  
 }
 
 private void BuildTableMenu( JMenu Tables)
