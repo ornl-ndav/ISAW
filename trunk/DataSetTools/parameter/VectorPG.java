@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.39  2003/09/23 02:29:02  bouzekc
+ * Removed getInnerParam() method as it duplicated another method's
+ * functionality.
+ *
  * Revision 1.38  2003/09/13 23:29:47  bouzekc
  * Moved calls from setValid(true) to validateSelf().
  *
@@ -419,15 +423,6 @@ public abstract class VectorPG extends ParameterGUI
    */
   protected ArrayEntryJFrame getEntryFrame(  ) {
     return GUI;
-  }
-
-  /**
-   * Accessor method for subclasses to get the inner ParameterGUI.
-   *
-   * @return The inner ParameterGUI.
-   */
-  protected final ParameterGUI getInnerParam(  ) {
-    return innerParam;
   }
 
   /**
