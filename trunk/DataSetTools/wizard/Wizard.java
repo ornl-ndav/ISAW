@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/03/06 15:50:18  pfpeterson
+ * Changed to work with SharedData's private StatusPane.
+ *
  * Revision 1.10  2003/02/27 18:01:46  pfpeterson
  * Fixed bug when values are changed on forms, enlarged the status_pane,
  * and added some more debug statements.
@@ -321,7 +324,7 @@ public class Wizard implements Serializable{
         gbc.anchor=GridBagConstraints.WEST;
         gbc.weighty=5.0;
         if( standalone)
-          work_area.add(SharedData.status_pane, gbc);
+          work_area.add(SharedData.getStatusPane(), gbc);
 
         CommandHandler command_handler = new CommandHandler(this);
         save_form      .addActionListener( command_handler );

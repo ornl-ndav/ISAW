@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.50  2003/03/06 15:51:36  pfpeterson
+ * Changed to work with SharedData's private StatusPane.
+ *
  * Revision 1.49  2003/02/24 13:26:44  rmikk
  * Eliminated null pointer exception when jython is not available
  *
@@ -598,9 +601,9 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
         */
         SplitPaneWithState Center =
             new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT , P,
-                                 DataSetTools.util.SharedData.status_pane,.80f);
+                                    SharedData.getStatusPane(),.80f);
         F.getContentPane().add( Center ); 
-        P.addPropertyChangeListener( SharedData.status_pane);
+        P.addPropertyChangeListener( SharedData.getStatusPane());
         
         F.validate(); 
     }
