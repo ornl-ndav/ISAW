@@ -53,6 +53,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2004/07/14 17:15:49  rmikk
+ * Fixed FindPeaks constructor to include the added parameters
+ *
  * Revision 1.21  2004/04/21 19:09:17  dennis
  * Changed main test program to work with version of FindPeaks that
  * has min and max time channels as parameters.
@@ -180,7 +183,7 @@ public class blind {
     // set up the Q-vector arrays (xx,yy,zz)
     for( int i=0;i<length;i++){
         // copy information about the peak into local variables
-        Peak peak=(Peak)peaks.elementAt(i);
+        Peak peak=(Peak)(peaks.elementAt(i));
         angle[i+0]= peak.xcm();
         angle[i+1*xx.length]=peak.ycm();
         angle[i+2*xx.length]=peak.wl();
@@ -1093,7 +1096,7 @@ public class blind {
                                     "C:\\Ipns\\Isaw2\\SampleRuns\\instprm.dat",
                                              1,"0:7000");
         lcab.getResult(); 
-        FindPeaks fp = new FindPeaks( ds,0, 15,1, 0, 1000 );
+        FindPeaks fp = new FindPeaks( ds,0, 15,1, 0, 1000,new IntListString());
         V = (Vector)(fp.getResult());
         CentroidPeaks cp = new CentroidPeaks(ds, V);
 
