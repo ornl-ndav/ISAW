@@ -5,6 +5,10 @@
  *             
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.6  2000/08/02 20:18:27  dennis
+ *  Changed to use TrapIntegrate() for function data instead of just using
+ *  IntegrateHistogram for histogram data
+ *
  *  Revision 1.5  2000/07/10 22:35:50  dennis
  *  July 10, 2000 version... many changes
  *
@@ -205,8 +209,13 @@ public class DataSetCrossSection extends    DataSetOperator
       float x_vals[] = data.getX_scale().getXs();
       float y_vals[] = data.getY_values();
 
-      integral_val[i] = NumericalAnalysis.IntegrateHistogram( x_vals, y_vals, 
-                                                              a,      b );
+      if ( x_vals.length == y_vals.length + 1 )  // histogram
+        integral_val[i] = NumericalAnalysis.IntegrateHistogram( x_vals, y_vals, 
+                                                                a,      b );
+      else                                       // tabulated function
+        integral_val[i] = NumericalAnalysis.TrapIntegrate( x_vals, y_vals,
+                                                                a,      b );
+
       AttributeList attr_list = data.getAttributeList();
       Attribute     attr      = attr_list.getAttribute( attr_name );
       attribute_val[i]        = (float)attr.getNumericValue(); 
