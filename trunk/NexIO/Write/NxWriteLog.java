@@ -1,5 +1,7 @@
 package NexIO.Write;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import DataSetTools.dataset.DataSet;
 import NexIO.Inst_Type;
@@ -211,5 +213,36 @@ public class NxWriteLog
    
    public static void main(String[] args)
    {
+      GregorianCalendar cal = new GregorianCalendar();
+         cal.set(Calendar.YEAR,2005);
+         cal.set(Calendar.MONTH,00);
+         cal.set(Calendar.DAY_OF_MONTH,15);
+         cal.set(Calendar.HOUR_OF_DAY,7);
+         cal.set(Calendar.MINUTE,28);
+         cal.set(Calendar.SECOND,48);
+         cal.set(Calendar.MILLISECOND,250);
+         
+         //January 15, 2005 at 7:28 AM & 48 sec & 250 milliseconds
+         Date date1 = cal.getTime();
+         System.out.print("Date "+date1+" in ISO8601:  ");
+         System.out.println(NxNodeUtils.getISO8601String(date1));
+         
+         //January 15, 2005 at 7:28 AM & 48 sec & 0 milliseconds
+            cal.set(Calendar.MILLISECOND,0);         
+         date1 = cal.getTime();
+         System.out.print("Date "+date1+" in ISO8601:  ");
+         System.out.println(NxNodeUtils.getISO8601String(date1));
+         
+         //January 15, 2005 at 7:28 AM & 0 sec & 0 milliseconds
+            cal.set(Calendar.SECOND,0);
+         date1 = cal.getTime();
+         System.out.print("Date "+date1+" in ISO8601:  ");
+         System.out.println(NxNodeUtils.getISO8601String(date1));
+         
+         //January 15, 2005 at 7:28 AM & 0 sec & 250 milliseconds
+            cal.set(Calendar.MILLISECOND,250);
+         date1 = cal.getTime();
+         System.out.print("Date "+date1+" in ISO8601:  ");
+         System.out.println(NxNodeUtils.getISO8601String(date1));
    }
 }
