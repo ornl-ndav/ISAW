@@ -34,6 +34,10 @@
  * data set.
  *
  *  $Log$
+ *  Revision 1.4  2002/11/12 23:40:22  dennis
+ *  Added getDocumentation() and main() methods.  Added documentation to
+ *  getResult() method.  ( Modified by Shannon Hintzman )
+ *
  *  Revision 1.3  2002/10/09 21:14:58  dennis
  *  Added main program for testing purposes.
  *
@@ -163,7 +167,47 @@ public class DataSetScalarAdd extends    ScalarOp
     setDataSet( ds );               // record reference to the DataSet that
                                     // this operator should operate on 
   }
-
+  /* ---------------------------- getDocumentation -------------------------- */
+ 
+  public String getDocumentation()
+  {
+    StringBuffer Res = new StringBuffer();
+    
+    Res.append("@overview This operator adds a constant value to all data ");
+    Res.append("objects in a DataSet. When the operation is successful and a ");
+    Res.append("new DataSet is created,a reference to this new DataSet is ");
+    Res.append("returned. If a new DataSet is NOT created, the result is ");
+    Res.append("stored in the current DataSet and a reference to the current ");
+    Res.append("DataSet is returned. If the operation is NOT successful, an ");
+    Res.append("error string is returned.");
+     
+    Res.append("@algorithm If make a new DataSet is selected, construct a new");
+    Res.append("DataSet with the same title, units and operations as the ");
+    Res.append("current DataSet, add the constant value to each value of the ");
+    Res.append("current DataSet and store in a new DataSet. If it is not ");
+    Res.append("selected, the constant value will be added to each value of ");
+    Res.append("the current DataSet and replace the value in the current ");
+    Res.append("DataSet.");
+    
+    Res.append("@param ds - the current DataSet on which the operator will be");
+    Res.append(" performed.");
+    Res.append("@param value - the value to add to each point in each data ");
+    Res.append("block of the current DataSet.");
+    Res.append("@param make_new_ds - a boolean value which determines if a ");
+    Res.append("new DataSet is created or not.");
+    
+    Res.append("@return returns a new DataSet or an ErrorString.");
+    Res.append("If \"create a new DataSet\" is selected and operation is ");
+    Res.append("successful, a reference to a new DataSet will be returned. ");
+    Res.append("If the operation is successful without creating a new ");  
+    Res.append("DataSet, a reference to the current DataSet will be returned.");
+    Res.append(" If the operation is not successful, an ErrorString will be");
+    Res.append("returned.");
+    
+    Res.append("@error \"ERROR: unsupported operation in DoDSScalarOp\"");
+    
+    return Res.toString();
+  }
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
@@ -193,7 +237,14 @@ public class DataSetScalarAdd extends    ScalarOp
 
 
   /* ---------------------------- getResult ------------------------------- */
-
+  /**
+   * @return returns a DataSet or an Error String
+   * The return object may be a new DataSet containing the current DataSet 
+   * values with the constant value added if "Create a new DataSet" is 
+   * selected, the current data set with the constant value added if 
+   * "Create a new DataSet" was not selected, or an ErrorString if the 
+   * operation was invalid ("Error: unsupported operation in DoDSScalarOp").
+   */
   public Object getResult()
   {
     return DSOpsImplementation.DoDSScalarOp( this );
@@ -230,6 +281,9 @@ public class DataSetScalarAdd extends    ScalarOp
     Operator op = new DataSetScalarAdd( ds, 100, true );
     DataSet new_ds = (DataSet)op.getResult();
     ViewManager new_viewer = new ViewManager(new_ds, ViewManager.IMAGE); 
+    
+    System.out.println(op.getDocumentation() + "\n");
+    System.out.println(op.getResult().toString());
   }
 
 }
