@@ -32,6 +32,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/07/07 22:20:46  bouzekc
+ * Now gives focus to the entry widget when the panel is
+ * shown.  Highlights all text within an entrywidget if it
+ * is a JTextComponent.  Saves values when window is closed
+ * (bug fix from conversion back to JDialog).
+ *
  * Revision 1.7  2003/07/07 21:21:20  bouzekc
  * Reorganized methods according to access privilege.
  *
@@ -73,8 +79,7 @@ import DataSetTools.parameter.VectorPG;
 import DataSetTools.util.PropertyChanger;
 import DataSetTools.util.StringUtil;
 
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.*;
 
 import java.beans.PropertyChangeEvent;
@@ -84,6 +89,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.Vector;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 
 
 /**
@@ -214,9 +220,6 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
   }
 
   /**
-   * end PropertyChanger requirement
-   */
-  /**
    * Accessor method to get the values in the GUI.
    *
    * @return A Vector of String representations of the GUI elements.
@@ -236,9 +239,7 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     return V;
   }
 
-  /**
-   * ActionListener requirement
-   */
+  // ActionListener requirements.
   public void actionPerformed( ActionEvent evt ) {
     JButton actionButton = ( JButton )( evt.getSource(  ) );
 
@@ -247,8 +248,7 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     } else if( actionButton == Down ) {
       move( +1 );
     } else if( actionButton == Add ) {
-      //get the value from the data entry panel and add it
-      jlistModel.addElement( param.getValue(  ) );
+      updateData(  );
     } else if( actionButton == Change ) {
       int pos = jlist.getSelectedIndex(  );
 
@@ -291,36 +291,30 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     }
   }
 
-  /**
-   * PropertyChanger requirement
-   */
+  // PropertyChanger requirements.
   public void addPropertyChangeListener( PropertyChangeListener listener ) {
     pcs.addPropertyChangeListener( listener );
   }
 
   /**
-   * DOCUMENT ME!
+   * Adds a PropertyChangeListener
    *
-   * @param property DOCUMENT ME!
-   * @param listener DOCUMENT ME!
+   * @param property The name of the property to listen for.
+   * @param listener The PropertyChangeListener to add.
    */
   public void addPropertyChangeListener( 
     String property, PropertyChangeListener listener ) {
     pcs.addPropertyChangeListener( property, listener );
   }
 
-  /**
-   * end ActionListener requirement
-   */
-  /**
-   * KeyListener requirement
-   */
+  // KeyListener requirements.
+
   /**
    * We are interested in listening for the Enter key here.
    */
   public void keyPressed( KeyEvent evt ) {
     if( evt.getKeyCode(  ) == KeyEvent.VK_ENTER ) {
-      jlistModel.addElement( param.getValue(  ) );
+      updateData(  );
     }
   }
 
@@ -335,6 +329,23 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
   public void keyTyped( KeyEvent evt ) {}
 
   /**
+   * Overridden to set the focus to the entrywidget when this JPanel is shown.
+   *
+   * @param g Graphics object that is drawn on.
+   */
+  public void paint( Graphics g ) {
+    JComponent wijit = param.getEntryWidget(  );
+
+    wijit.requestFocus(  );
+
+    if( wijit instanceof JTextComponent ) {
+      ( ( JTextComponent )wijit ).selectAll(  );
+    }
+
+    super.paint( g );
+  }
+
+  /**
    * Needed for PropertyChangeListener implementation.
    *
    * @param evt The PropertyChangeEvent to listen for.
@@ -344,9 +355,9 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
   }
 
   /**
-   * DOCUMENT ME!
+   * Removes a PropertyChangeListener
    *
-   * @param listener DOCUMENT ME!
+   * @param listener The PropertyChangeListener to remove.
    */
   public void removePropertyChangeListener( PropertyChangeListener listener ) {
     pcs.removePropertyChangeListener( listener );
@@ -406,5 +417,22 @@ public class ArrayEntryJPanel extends JPanel implements ActionListener,
     jlistModel.removeElementAt( j );
     jlistModel.insertElementAt( V, j + i );
     jlist.setSelectedIndex( j + i );
+  }
+
+  /**
+   * Attempts to make entering data as easy as possible for the user by working
+   * with the entry widget to re-highlight text, etc. as well as actually
+   * entering data into the ParameterGUI.
+   */
+  private void updateData(  ) {
+    JComponent wijit = param.getEntryWidget(  );
+
+    //get the value from the data entry panel and add it
+    jlistModel.addElement( param.getValue(  ) );
+
+    if( wijit instanceof JTextComponent ) {
+      //re-highlight the text
+      ( ( JTextComponent )wijit ).selectAll(  );
+    }
   }
 }
