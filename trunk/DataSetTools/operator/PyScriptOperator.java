@@ -27,6 +27,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.5  2004/01/08 14:48:54  bouzekc
+ * Made call to generateError() static, as it is a static method.
+ *
  * Revision 1.4  2003/11/20 01:45:56  bouzekc
  * Made all methods final.
  *
@@ -573,7 +576,7 @@ public class PyScriptOperator extends GenericOperator
 
     //convert the PyObject to a useful Java Object
     String stringRep = ( String )pyString.__tojava__( String.class );
-
+   
     return stringRep;
   }
 
@@ -769,7 +772,7 @@ public class PyScriptOperator extends GenericOperator
         //interp.execfile(script.getFilename());
       } catch( PyException e ) {
         e.printStackTrace(  );
-        throw script.generateError( e, scriptFile );
+        throw PyScript.generateError( e, scriptFile );
       }
       interp.exec( "innerClass = " + script.getClassname(  ) + "(  )" );
     }
