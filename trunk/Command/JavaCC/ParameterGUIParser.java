@@ -28,7 +28,6 @@ public class ParameterGUIParser implements ParameterGUIParserConstants {
    *  Used to call the parser from an outside class.
    *
    * @param text The text to parse.
-   * @param restart Whether to reinitialize this parser.
    *
    * @return The result of the parsing.
    *

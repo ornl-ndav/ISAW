@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.8  2003/10/20 22:06:57  bouzekc
+ * Fixed javadoc error.  The javadocs are actually held in the .jj file.
+ *
  * Revision 1.7  2003/09/15 22:56:43  bouzekc
  * Now recognizes a space between words in a Windows file path when the
  * quotes are not supplied with the String.
@@ -84,7 +87,6 @@ public class ParameterGUIParser {
    *  Used to call the parser from an outside class.
    *
    * @param text The text to parse.
-   * @param restart Whether to reinitialize this parser.
    *
    * @return The result of the parsing.
    *
