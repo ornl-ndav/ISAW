@@ -31,6 +31,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.61  2001/09/06 22:20:26  dennis
+ *  Replaced keyPressed() method with keyReleased() method in the
+ *  KeyListener class, so that the information from the newly
+ *  pointed at node is shown, rather than the information from
+ *  the previous node.
+ *
  *  Revision 1.60  2001/09/04 17:16:11  chatterjee
  *  Added a key listener to allow for updates in the viewers as the
  *  nodes on the tree are pointed at using the up/down arrow keys.
@@ -2182,7 +2188,7 @@ public class Isaw
     }
 
 
-    public void keyPressed( KeyEvent e )
+    public void keyReleased( KeyEvent e )
     {
 
       if(  jdt.getSelectionCount() > 0  )
