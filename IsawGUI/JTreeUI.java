@@ -2,6 +2,9 @@
  * $Id$ 
  *
  * $Log$
+ * Revision 1.13  2001/07/11 16:39:28  neffk
+ * modified getSelectedNodes()
+ *
  * Revision 1.12  2001/07/02 20:30:46  neffk
  * added deleteNode( Object obj ) method.  also, deleting DataSet objects is
  * now done by calling <ds>.notifyIObservers( IObserver.DESTROY ), and the
@@ -171,7 +174,26 @@ public class JTreeUI
     else 
       return null;
   }
-	  
+	
+  
+  /**
+   * return a list of selected nodes.
+   */ 
+  public TreePath[] getSelectedNodes()
+  {
+/*
+    if(  tree.getSelectionCount() > 0  )
+    {
+      TreePath[] paths = new TreePath[ tree.getSelectionCount ];
+      paths = tree.getSelectionPaths();
+      return paths;
+    }
+    else 
+      return null;
+*/
+    TreePath[] tp = new TreePath[1];
+    return tp;
+  }
 
 
   /**
