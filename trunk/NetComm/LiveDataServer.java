@@ -33,6 +33,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.39  2003/03/07 22:44:38  dennis
+ *  Now supports GET_DS_X_RANGE command.
+ *  Improved handling of rebinning.
+ *
  *  Revision 1.38  2003/03/05 22:06:56  dennis
  *  Added command to get the range of IDs in a DataSet
  *
@@ -156,6 +160,8 @@ public class LiveDataServer extends    DataSetServer
   CompressedDataSet comp_ds[] = new CompressedDataSet[0];
   long    comp_time_ms[] = new long[0];
   int     num_updated[]  = new int[0];
+  float   min_tof[]      = new float[0];            // min/max tof for each 
+  float   max_tof[]      = new float[0];            // DataSet
   boolean new_comp_ds    = true;                    // flag indicating whether
                                                     // or not the compressed 
                                                     // DataSet is new
@@ -163,7 +169,7 @@ public class LiveDataServer extends    DataSetServer
   DataSet data_set[]     = new DataSet[0];          // current DataSets
   int     ds_type[]      = new int[0];              // current DataSet types
   int     spec_buffer[]  = new int[ 16384 ];        // buffer for one part of
-                                                    // on spectrum
+                                                    // spectrum
 
   int     max_seg_id  = 0;                  // size of table of all Data blocks
   int     ds_index[]  = new int[0];         // list of indices into data_set[]
@@ -302,6 +308,8 @@ public class LiveDataServer extends    DataSetServer
         comp_ds      = new CompressedDataSet[ num_data_sets ];
         comp_time_ms = new long[ num_data_sets ];
         num_updated  = new int[ num_data_sets ];
+        min_tof      = new float[ num_data_sets ];
+        max_tof      = new float[ num_data_sets ];
         for ( int i = 0; i < num_data_sets; i++ )
         {
           ds_type[i] = rr.getType( i ); 
@@ -311,6 +319,9 @@ public class LiveDataServer extends    DataSetServer
           comp_ds[i]      = null;
           comp_time_ms[i] = System.currentTimeMillis();
           num_updated[i]  = 0;
+          UniformXScale range = data_set[i].getXRange();
+          min_tof[i] = range.getStart_x();
+          max_tof[i] = range.getEnd_x();
         }
         data_name = data_set[0].getTitle();
 
@@ -507,6 +518,23 @@ public class LiveDataServer extends    DataSetServer
         }
         else
           tcp_io.Send( "0:0" );
+
+        return true;
+      }
+
+      else if ( command.getCommand() == CommandObject.GET_DS_X_RANGE )
+      {
+        int index = ((GetDataCommand)command).getDataSetNumber();
+
+        if ( index >= 0               &&
+             index < ds_type.length   &&
+             data_set[index] != null  &&
+             data_set[index].getNum_entries() > 0 )      // non-empty DataSet
+        {
+          tcp_io.Send( new ClosedInterval( min_tof[index], max_tof[index] ));
+        }
+        else
+          tcp_io.Send( new ClosedInterval( 0, 0 ) );
 
         return true;
       }
@@ -735,20 +763,41 @@ public class LiveDataServer extends    DataSetServer
 
     boolean must_rebin = false;
     XScale  x_scale = ds.getData_entry(0).getX_scale();
-    if ( min_tof < max_tof && min_tof > 0 )
+    if ( min_tof < max_tof && min_tof > 0 )              // may need to rebin
     { 
-      must_rebin = true;
-      x_scale = x_scale.restrict( new ClosedInterval(min_tof,max_tof) );
+      if ( min_tof < x_scale.getStart_x() )              // restrict to range
+        min_tof = x_scale.getStart_x();
+
+      if ( max_tof > x_scale.getEnd_x() )
+        max_tof = x_scale.getEnd_x();
+
+      if ( min_tof < max_tof                &&            // non-empty and
+           (min_tof > x_scale.getStart_x()  ||            // strictly smaller
+            max_tof < x_scale.getEnd_x()  ) )             // so must rebin
+      {
+        must_rebin = true;
+        x_scale = x_scale.restrict( new ClosedInterval(min_tof,max_tof) );
+      }
     }
 
-    if ( rebin > 1 && rebin <= x_scale.getNum_x() )
+    if ( rebin > 1 )
     {
       must_rebin = true;
       float bins[] = x_scale.getXs();
-      float new_bins[] = new float[ bins.length/rebin ];
-      for ( int i = 0; i < new_bins.length; i++ )
-        new_bins[i] = bins[i*rebin];
-      x_scale = new VariableXScale( new_bins );
+
+      if ( rebin >= bins.length )                     // find total counts in 
+      {                                               // this case.
+        x_scale = new UniformXScale(x_scale.getStart_x(), 
+                                    x_scale.getEnd_x(),
+                                    2 );
+      }
+      else
+      {
+        float new_bins[] = new float[ bins.length/rebin ];
+        for ( int i = 0; i < new_bins.length; i++ )
+          new_bins[i] = bins[i*rebin];
+        x_scale = new VariableXScale( new_bins );
+      }
     }
 
     for ( int i = 0; i < ids.length; i++ )
