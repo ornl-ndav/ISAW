@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.25  2003/06/17 16:39:39  pfpeterson
+ * Uses methods in ScriptProcessor for getCommand, getTitle, getDocumentation,
+ * and getCategoryList.
+ *
  * Revision 1.24  2003/06/13 20:08:12  pfpeterson
  * Returns ScriptProcessor's getDocumentation if possible.
  *
@@ -81,9 +85,7 @@ import java.io.*;
 public class ScriptOperator extends GenericOperator
               implements IObservable, Customizer{  //for property change events
     private String filename;
-    private String command;
     
-    private String categList[];
     private ScriptProcessor SP;
     private String errorMessage ="";
     public static String ER_FILE_ERROR             = "File error ";
@@ -100,156 +102,20 @@ public class ScriptOperator extends GenericOperator
         super("UNKNOWN");
         
         this.filename = filename;
-        command = null;
-        categList = null;
-        SP = null;
         errorMessage ="";
-        StringBuffer buffer=IsawGUI.Util.readTextFile(filename);
-        if(buffer==null || buffer.length()<=0){
-          errorMessage=ER_FILE_ERROR;
-          return;
-        }
-        
-        SP = new ScriptProcessor( buffer );
+        SP = new ScriptProcessor( filename );
         if( SP.getErrorMessage().length( ) > 0 ){
             errorMessage = SP.getErrorMessage();
             return;
         }
-       
-        int i, j;
-        j = filename.lastIndexOf( '.');
-        if( j < 0 ) 
-            j = filename.length();
-        
-        String F = FilenameUtil.setForwardSlash(filename);
-        i = F.lastIndexOf( '/', j);
-        if( i < 0 )
-            i = -1;
-        command = F.substring( i + 1, j );
-        
-        if( i >= 0)
-          F = F.substring( 0, i );
-        else
-          F = SharedData.getProperty("user.dir");
-        
-        if( F.charAt(F.length()-1)!='/')
-            F = F + "/";
-        //adjust F;
-        String MainCat=null;
-   
-        String X;   
-        String F2 =F;
-        X = SharedData.getProperty( "ISAW_HOME");
-        
-        if(X!=null){
-            X = FilenameUtil.setForwardSlash(X);
-            X.replace(java.io.File.pathSeparatorChar, ';');
-            F2 = adjust ( F , X );
-        }
-        
-        if( !(F2.equals(F))){
-            MainCat = "Isaw Scripts";
-            F = F2;
-        }
-        
-        String F3=F;
-        int g=0;
-        String grp ="";
-        
-        X = SharedData.getProperty( "GROUP_HOME");
-        while( (MainCat== null)&&(X !=null)){
-            if( MainCat == null){
-                if( X!=null){
-                    X = FilenameUtil.setForwardSlash(X);
-                    X.replace(java.io.File.pathSeparatorChar, ';');
-                    F3 = adjust ( F , X );
-                }
-            } 
-            if( !(F3.equals(F))){
-                MainCat = "Group"+grp+" Scripts";
-                F = F3;
-            }else{
-                g++;
-                grp=""+g;
-                grp=grp.trim();
-                X = SharedData.getProperty( "GROUP"+grp+"_HOME");
-            }
-        }
-        if( MainCat == null){
-            X = SharedData.getProperty( "user.home");
-            if( X != null){
-                X = FilenameUtil.setForwardSlash(X);
-                X.replace(java.io.File.pathSeparatorChar, ';');
-                F3 = adjust ( F , X );
-            }
-        } 
-        if( !(F3.equals(F))){
-            MainCat = "User Scripts";
-            F = F3;
-        }
-        if( MainCat == null){
-            X = SharedData.getProperty( "java.class.path"); 
-            if( X != null){
-                X = FilenameUtil.setForwardSlash(X);
-                X.replace(java.io.File.pathSeparatorChar, ';');
-                F3 = adjust ( F , X );
-                F = F3;
-            }
-        }
-       
-        if(MainCat == null){
-            i =F.indexOf(':');
-            if( i > 0 )
-                F = F.substring( i + 1 );
-            if( F.charAt( 0 ) == '/' )
-                F = F.substring ( 1);
-        }
-        
-        F.trim();
-       
-        if(F.length() >0)
-            if(F.charAt(0) == '/')
-                F =F.substring(1);
-        if(F.length() > 0 )
-            if( F.charAt(F.length()-1) =='/')
-                F = F.substring( 0, F.length()-1);
-        int c = 1;
-        
-        if( F.length()>1)
-            for( i = F.indexOf( '/' ); i >= 0;  i = F.indexOf( '/' , i + 1 ) )
-                c++;
-       
-        if( F.length()>1)
-            categList = new String [ c + 1];
-        else
-            categList = new String [ c ];
-        
-        categList[ 0 ] = DataSetTools.operator.Operator.OPERATOR;
-        j = 1 ;
-        
-        int i1 = 0;
-        if( F.length()>1)
-            for( i = F.indexOf( '/' ); i >= 0;  i = F.indexOf( '/' , i + 1 ) ){
-                if((i1==0)&&(MainCat != null))
-                    categList[j]=MainCat;
-                else
-                    categList[j] = F.substring(i1, i );
-                j++;
-                i1 = i+1;
-            }
-        
-        if( F.length()>1)
-            if((i1==0)&&(MainCat!=null))
-                categList[ c] = MainCat;
-            else
-                categList[ c ] = F.substring( i1 ) ;               
     }
     
     /**
      * Shows this operator. For debugging
      */
     public void show(){
-        System.out.println( "Command ="+command );
+        System.out.println( "Command ="+this.getCommand() );
+        String[] categList=this.getCategoryList();
         if(categList == null )
             System.out.println( "Cat list is null" );
         else{
@@ -304,13 +170,7 @@ public class ScriptOperator extends GenericOperator
      * titles
      */
     public String getTitle(){
-        if( SP != null ){
-            String S =SP.getTitle();
-            if( S.equals("UNKNOWN"))
-                S = getCommand();
-            return S;
-        }else
-            return "UNKNOWN";
+        return SP.getTitle();
     }
 
     /**
@@ -319,20 +179,7 @@ public class ScriptOperator extends GenericOperator
      * NOTE: It is calculated from the filename
      */
     public String[] getCategoryList(){
-        return categList;
-    }
-
-    /**
-     * @return  the last category entry
-     *
-     * NOTE: This is calculated from the filename
-     */
-    public String getCategory(){
-        if(categList == null )
-            return "UNKNOWN";
-        if( categList.length <= 0)
-            return "UNKNOWN";
-        return categList[categList.length-1];
+        return SP.getCategoryList();
     }
 
     public String getErrorMessage(){
@@ -351,10 +198,7 @@ public class ScriptOperator extends GenericOperator
     }
 
     public String getDocumentation(){
-      if(SP!=null)
         return SP.getDocumentation();
-      else
-        return super.getDocumentation();
     }
 
     /**
@@ -364,9 +208,7 @@ public class ScriptOperator extends GenericOperator
      *NOTE: This is determined by the filename
      */
     public String getCommand(){
-        if(command == null)
-            return "unknown";
-        return command;
+        return SP.getCommand();
     }
     
     public String getFileName(){
@@ -405,6 +247,7 @@ public class ScriptOperator extends GenericOperator
     }
     
     public void addPropertyChangeListener( PropertyChangeListener pl ){
+      if(SP!=null)
         SP.addPropertyChangeListener( pl );
     }
 
