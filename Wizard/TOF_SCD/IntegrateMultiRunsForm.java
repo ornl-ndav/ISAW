@@ -28,6 +28,12 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.6  2003/06/09 21:53:23  bouzekc
+ * Updated documentation.
+ * Added constructor to set HAS_CONSTANTS to reduce
+ * the number of calls to setDefaultParameters().
+ * Removed unused matrix name parameter and associate code.
+ *
  * Revision 1.5  2003/06/06 15:12:02  bouzekc
  * Added log message header to file.
  *
@@ -48,7 +54,9 @@ import  DataSetTools.operator.Generic.Load.LoadOneHistogramDS;
 /**
  * 
  *  This Form is a "port" of the script used to integrate 
- *  multiple SCD runs.
+ *  multiple SCD runs.  It "knows" to apply the 
+ *  lsxxxx.expName.mat file to the SCDxxxx.run in the peaks
+ *  file.
  */
 public class IntegrateMultiRunsForm extends Form
 {
@@ -67,6 +75,18 @@ public class IntegrateMultiRunsForm extends Form
     this.setDefaultParameters();
   }
 
+  /**
+   *  Construct a Form using the default parameter list.
+   *
+   *  @param hasConstParams         boolean indicating whether
+   *                                this Form should have constant
+   *                                parameters.
+   */
+  public IntegrateMultiRunsForm(boolean hasConstParams)
+  {
+    super( "IntegrateMultiRunsForm", hasConstParams );
+    this.setDefaultParameters();
+  }
 
   /* ---------------------- FULL CONSTRUCTOR ---------------------------- */
   /**
@@ -80,13 +100,12 @@ public class IntegrateMultiRunsForm extends Form
    *  @param calibfile          SCD calibration file.
    *  @param time_slice_range   The time-slice range
    *  @param increase_amt       Amount to increase slice size by.
-   *  @param matrix_name        The matrix file name to load.
    */
   
   public IntegrateMultiRunsForm(String rawpath, String outpath, String runnums,
                                 String expname, int ctype, String calibfile,
                                 String time_slice_range, 
-                                int increase_amt, String matrix_name)
+                                int increase_amt)
   {
     this();
     getParameter(0).setValue(rawpath);
@@ -97,7 +116,6 @@ public class IntegrateMultiRunsForm extends Form
     getParameter(5).setValue(calibfile);
     getParameter(6).setValue(time_slice_range);
     getParameter(7).setValue(new Integer(increase_amt));
-    getParameter(8).setValue(matrix_name);
   }
 
   /**
@@ -131,18 +149,14 @@ public class IntegrateMultiRunsForm extends Form
     addParameter(new IntegerPG("Amount to Increase Slice Size By", 
                                new Integer(1), false));
     //8
-    LoadFilePG lfpg=new LoadFilePG("Matrix File Name",null, false);
-    lfpg.setFilter(new MatrixFilter());
-    addParameter( lfpg );
-    //9
     addParameter(new LoadFilePG( "Integrated Peaks File ", "", false));
 
     //don't monkey around with the run numbers and such if this form
     //relies on previously calculated values
     if(HAS_CONSTANTS)
-      setParamTypes(new int[]{0,1,2,3,5,8}, new int[]{4,6,7}, new int[]{9});
+      setParamTypes(new int[]{0,1,2,3,5}, new int[]{4,6,7}, new int[]{8});
     else
-      setParamTypes(null, new int[]{0,1,2,3,4,5,6,7,8}, new int[]{9});
+      setParamTypes(null, new int[]{0,1,2,3,4,5,6,7}, new int[]{8});
   }
 
 
@@ -157,10 +171,13 @@ public class IntegrateMultiRunsForm extends Form
     StringBuffer s = new StringBuffer();
     s.append("@overview This Form is designed to find integrate peaks from ");
     s.append("multiple SCD RunFiles. ");
+    s.append("It \"knows\" to apply the lsxxxx.expName.mat file to the ");
+    s.append("SCDxxxx.run in the peaks file.\n");
     s.append("@assumptions It is assumed that:\n");
     s.append("1. Data of interest is in histogram 2.\n");
     s.append("2. There is a matrix file for each run, in the format \"ls");
-    s.append("<experiment name><run number>.mat\"\n.");
+    s.append("<experiment name><run number>.mat\" in the same directory as ");
+    s.append("the peaks file\n.");
     s.append("@algorithm This Form first gets all the user input parameters, ");
     s.append("then for each runfile, it loads the first histogram, the SCD ");
     s.append("calibration data, and calls Integrate.\n");
@@ -172,7 +189,6 @@ public class IntegrateMultiRunsForm extends Form
     s.append("@param calibfile SCD calibration file.\n");
     s.append("@param time_slice_range The time-slice range.\n");
     s.append("@param increase_amt Amount to increase slice size by.\n");
-    s.append("@param matrix_name The matrix file name to load.\n");
     s.append("@return A Boolean indicating success or failure of the Form's ");
     s.append("execution.\n");
     s.append("@error Invalid raw data path.\n");
@@ -294,18 +310,6 @@ public class IntegrateMultiRunsForm extends Form
       return errorOut(param,
         "ERROR: you must enter a valid integer to increment the slice size by.");
 
-    //get matrix file name
-    param = (IParameterGUI)getParameter( 8 );
-    obj = param.getValue();
-    if( obj != null && obj.toString().length() != 0 )
-    {
-        matrixName = obj.toString();
-        param.setValid(true);
-    }
-    else
-      return errorOut(param,
-         "ERROR: you must enter a matrix file name.");
-
     //the name for the saved *.integrate file
     integName = outputDir + "/" + expName + ".integrate";
     integName = StringUtil.setFileSeparator(integName);
@@ -329,8 +333,7 @@ public class IntegrateMultiRunsForm extends Form
 
       SharedData.addmsg("Loading " + loadName + ".");
 
-      /*get the histogram from runfile retriever.
-      histNum = some RunfileRetriever thing;*/
+      //get the histogram from runfile retriever.
       histNum = 1;
 
       /*If you want to be able to use a group mask,
@@ -353,8 +356,8 @@ public class IntegrateMultiRunsForm extends Form
 
       /*Gets matrix file "lsxxxx.mat" for each run
         The "1" means that every peak will be written to the integrate.log file.*/
-      matrixName = outputDir + "/ls" + expName + runNum + ".mat";
-      matrixName = StringUtil.setFileSeparator(matrixName);
+      matrixName = StringUtil.setFileSeparator(
+                     outputDir + "/ls" + expName + runNum + ".mat");
 
       SharedData.addmsg("Integrating run number " + runNum + ".");
 
