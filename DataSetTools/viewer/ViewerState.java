@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2004/06/25 18:26:05  rmikk
+ *  Changed initial value of ControlPanelWidth(%) from 75 to 25
+ *
  *  Revision 1.36  2004/06/24 19:12:02  rmikk
  *  Incorporated the state variable ControlPanelWidth(%)
  *
@@ -273,7 +276,7 @@ public class ViewerState  implements Serializable
 
       state.put( ViewerState.TIMEVSGROUPTABLE_SHOWERR, new Boolean(false));  
       state.put( ViewerState.TIMEVSGROUPTABLE_SHOWIND, new Boolean(false));
-      state.put( ViewerState.CONTROL_WIDTH , new Float( .75f));
+      state.put( ViewerState.CONTROL_WIDTH , new Float( 25f));
       zoom_region                = new CoordBounds( 0, 1000, 0, 1000 );
       ds_x_label = "";
       ds_y_label = "";
@@ -607,7 +610,7 @@ public class ViewerState  implements Serializable
 	   		}else if(tempString.startsWith("TableTimeSliceNxSteps")){
 	   			set_int("TableTimeSliceNxSteps", Integer.parseInt(tempString.substring(22)));
 	   		}else if(tempString.startsWith("ControlPanelWidth(%)"))
-                 set_float("ControlPanelWidth(%)", Float.parseFloat(tempString.substring(21)));
+                 set_float("ControlPanelWidth(%)",  Float.parseFloat(tempString.substring(21)));
         
 	   		
 	   	}
