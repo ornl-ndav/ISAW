@@ -109,9 +109,10 @@ public class Isaw extends JFrame implements Serializable, IObserver
 */  
 
 
-       
+   /*    
 	 PrinterJob pj = PrinterJob.getPrinterJob();
        mPageFormat = pj.defaultPage();
+   */
 	 isawProp = new Properties(System.getProperties());
        String path = System.getProperty("user.home")+"\\";
        path = StringUtil.fixSeparator(path);
@@ -943,7 +944,7 @@ public String getDescription(){
 
 			 }
 
-*/
+
                  try{
                   internalframe = new MyInternalFrame(jdvui.getSelectedFrame());
                    }
@@ -954,6 +955,8 @@ public String getDescription(){
            			job.print();
          		}
       		catch(PrinterException pe){System.out.println("Printer error:" +pe.getMessage());}
+
+*/
    		  }
                 
               

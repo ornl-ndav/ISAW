@@ -117,3 +117,4 @@ class URLWindow extends Frame
         }
     }
 }
+

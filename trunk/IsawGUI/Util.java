@@ -176,8 +176,7 @@ public String saveDoc(Document doc, String filename)
 	        data.addElement(oo);
        
        }
-        System.out.println("The vector properties are "+data.toString());
-       return data ;
+               return data ;
    }
 
    public JScrollPane viewProperties()
