@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2003/03/05 20:44:19  pfpeterson
+ * Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
+ *
  * Revision 1.7  2002/11/27 23:29:19  pfpeterson
  * standardized header
  *
@@ -250,7 +253,7 @@ public class NxWriter{
     }//For each histogram
     //     (( NexWriteNode )node ).show();
     if(errormessage !="")
-      DataSetTools.util.SharedData.status_pane.add(errormessage);
+      SharedData.addmsg(errormessage);
   }
 
   /**
@@ -292,7 +295,7 @@ public class NxWriter{
     if( Monitors !=null)
       if( Monitors.length > 0){
         if( Monitors.length >1)
-          DataSetTools.util.SharedData.status_pane.add("Only one monitor is "
+          SharedData.addmsg("Only one monitor is "
                            +"allowed for a set of data sets in Writer.Append");
         for( int k = 0; k < Monitors[0].getNum_entries(); k++){
           NxWriteNode nmonitor =
