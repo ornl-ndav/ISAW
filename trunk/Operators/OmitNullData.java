@@ -29,6 +29,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.3  2004/04/28 21:11:29  dennis
+ * Now also omits detectors at origin. (Bad position info)
+ * When DEBUG is on this now prints the reason the group was
+ * omitted.
+ * DEBUG set on.
+ *
  * Revision 1.2  2004/03/24 18:34:01  dennis
  * Converted to Unix text format.
  *
@@ -48,12 +54,19 @@ import DataSetTools.viewer.*;
 import java.util.*;
 import gov.anl.ipns.Util.Numeric.*;
 import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+
 /** 
  *  This operator removes null Data blocks from a DataSet.
  */
 public class OmitNullData extends GenericSpecial{
+
+    public static final String NULL_DATA_BLOCK = "Null Data Block";
+    public static final String LOW_COUNT       = "Low Count";
+    public static final String DETECTOR_AT_ORIGIN = "Detector at Origin";
+
     private static final String  TITLE = "OmitNullData";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     private static final int BUFFER_SIZE_INCREMENT = 100;
 
     /* ------------------------ Default constructor ------------------------ */ 
@@ -140,15 +153,9 @@ public class OmitNullData extends GenericSpecial{
 	    return new ErrorString( "DataSet is null in OmitNullData" );
 
 	// initialize new data set to be the same as the old
-	String       title = ds.getTitle();
-	OperationLog oplog = ds.getOp_log();
-	String     x_units = ds.getX_units();
-	String     x_label = ds.getX_label();
-	String     y_units = ds.getY_units();
-	String     y_label = ds.getY_label();
-	DataSet     new_ds = null;
-      int		dead_ones[];
-      int		ndead=0;
+	DataSet new_ds = null;
+        int     dead_ones[];
+        int     ndead= 0 ;
 
         // initialize new_ds
         if(mk_new_ds){
@@ -158,24 +165,51 @@ public class OmitNullData extends GenericSpecial{
         }
 
 	// Remove Data blocks with zero total count
-	int[] bad_det = new int[new_ds.getNum_entries()];
-      dead_ones = new int[BUFFER_SIZE_INCREMENT];
-      int min_count = 0;
-	int MAX_ID=new_ds.getMaxGroupID();
-	for( int i=1 ; i<=MAX_ID ; i++ ){
-	    Data det=new_ds.getData_entry_with_id(i);
-	    if( det == null ){ continue; }
-	    Float count=(Float)
-		det.getAttributeList().getAttributeValue(Attribute.TOTAL_COUNT);
-	    if( count.floatValue() <= min_count ){
-		new_ds.removeData_entry_with_id(i);
-            if( DEBUG ) {
-            System.out.println( 
-              "removing data group " + i + " with " + count + " total counts" );
-            }
+        dead_ones = new int[BUFFER_SIZE_INCREMENT];
+        int min_count = 0;
+
+        String    err_string = null;
+        int       n_data = ds.getNum_entries();
+        Attribute attr;
+	for( int i = n_data-1; i >= 0; i-- )   // go through list backwards so
+        {                                      // we can easily remove bad ones
+          err_string = null;
+          Data det = new_ds.getData_entry(i);
+
+          if( det == null )
+            err_string = NULL_DATA_BLOCK;
+
+          if ( err_string == null )
+          { 
+            attr = det.getAttribute(Attribute.TOTAL_COUNT);
+            if ( attr != null )
+            {
+              Float count = (Float)attr.getValue();
+              if( count.floatValue() <= min_count )
+                err_string = LOW_COUNT; 
+            } 
+          }
+
+          if ( err_string == null )
+          {
+            attr = det.getAttribute(Attribute.DETECTOR_POS);
+            if ( attr != null && attr.getValue() instanceof DetectorPosition )
+            {
+              DetectorPosition pos = (DetectorPosition)attr.getValue();
+              float sphere_coords[] = pos.getSphericalCoords();
+              if ( sphere_coords[0] <= 0 )
+                err_string = DETECTOR_AT_ORIGIN;
+            }  
+          }
+      
+          if ( err_string != null )
+          {
+            new_ds.removeData_entry(i);
             dead_ones = AppendToList ( i, dead_ones, ndead );
             ndead++;
-	    }
+            if ( DEBUG )
+              System.out.println("Removed Data " + i + ": " + err_string );
+	  }
 	}
       int final_list[] = new int[ ndead ];
       for ( int i=0; i < ndead; i++ )
