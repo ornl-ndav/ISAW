@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/08/28 03:38:40  bouzekc
+ * Changed innerParameter assignment to call to setParam().
+ *
  * Revision 1.9  2003/08/28 02:32:36  bouzekc
  * Modified to work with new VectorPG.
  *
@@ -67,12 +70,12 @@ public class IntegerArrayPG extends VectorPG{
 
   public IntegerArrayPG( String name, Object val){ 
     super( name, val );
-    innerParam =  new IntegerPG("Enter Integer", 0);
+    setParam( new IntegerPG("Enter Integer", 0) );
   }
 
   public IntegerArrayPG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-    innerParam = new IntegerPG("Enter Integer", 0);
+    setParam( new IntegerPG("Enter Integer", 0) );
   }
 
   public Object clone(){
