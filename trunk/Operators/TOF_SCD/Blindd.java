@@ -27,6 +27,11 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.5  2003/02/20 21:41:23  pfpeterson
+ * Simplified code by extracting some functionality out into private
+ * methods and using the ReadPeaks operator to load in the peaks
+ * information.
+ *
  * Revision 1.4  2003/02/14 21:19:26  dennis
  * Changed javadocs on getCommand() to the new command name.
  *
@@ -168,163 +173,61 @@ public class Blindd extends  GenericTOF_SCD {
    *  @see IPNSSrc.blind
    */
   public Object getResult(){
-    String filename=((LoadFilePG)getParameter(0)).getStringValue();
-    int[] seq= DataSetTools.util.IntList.ToArray(
-                               ((IntArrayPG)getParameter(1)).getStringValue());
-    String savFilename=((SaveFilePG)getParameter(2)).getStringValue();
+    // get the value of the parameters
+    String peakfile=((LoadFilePG)getParameter(0)).getStringValue();
+    int[] seq= IntList.ToArray(((IntArrayPG)getParameter(1)).getStringValue());
+    String matrixfile=((SaveFilePG)getParameter(2)).getStringValue();
      
-    if( filename == null)
-      return new ErrorString("Improper Peak filename");
-    if( seq == null)
+    // check that there is valid value for all of the parameters
+    if( peakfile==null || peakfile.length()<=0 )
+      return new ErrorString("Improper Peak filename: "+peakfile);
+    if( seq==null)
       return new ErrorString("Improper sequence numbers");
-    if( savFilename== null)
-      return new ErrorString("Improper save matrix filename");
-        
-    if( seq.length < 1)
+    if( matrixfile==null || matrixfile.length()<=0 )
+      return new ErrorString("Improper save matrix filename: "+matrixfile);
+    if( seq.length<=0)
       return new ErrorString(" No sequence numbers selected");
-    Vector V=new Vector();
-       
-    float chi=0.0f,
-      phi=0.0f,
-      omega=0.0f,
-      deta=0.0f,
-      detd=0.0f;
      
-    TextFileReader fin=null;
-    FileOutputStream fout = null;
-    try{ 
-      fin= new TextFileReader( filename);
-      fout = new FileOutputStream( savFilename );
-      fin.read_line();
-      int nseq= 0; 
-      while( (!fin.eof())&&(nseq < seq.length))
-        {int kk = fin.read_int();
-        if(kk==1)
-          {kk=fin.read_int();
-          kk=fin.read_int();
-          deta= (float)(fin.read_float() );
-          detd= (float) (fin.read_float());
-          detd= (float)(fin.read_float());
-          chi= (float)(fin.read_float());
-          phi=(float)( fin.read_float());
-          omega=(float) (fin.read_float());
+    // put information into the 'peaks' vector
+    Vector peaks=null;
+    {
+      Object res=getPeaks(peakfile,seq);
+      if(res instanceof ErrorString)
+        return res;
+      else if(res instanceof Vector)
+        peaks=(Vector)res;
+      else
+        return new ErrorString("Something went wrong");
+    }
 
-          fin.read_line();
-            
-          }
-        else if( kk==3)
-          {
-            int seqnum=fin.read_int();
-         
-            boolean done = seqnum <= seq[nseq];
-            while( !done) 
-              {nseq ++;
-              if(nseq >= seq.length)
-                done = true;
-              else
-                done = seqnum <= seq[nseq];
-              }
-            if( nseq < seq.length)
-              if( seqnum== seq[nseq])
-                {
-                  float[] dat = new float[9];
-                  dat[ 8]  = seqnum;
-                  kk = fin.read_int();
-                  kk = fin.read_int() ;
-                  kk = fin.read_int();
-                  float x = fin.read_float();
-                  float y = fin.read_float();
-                  float z = fin.read_float();
-           
-                  dat[ 5 ] = fin.read_float(); //xcm
-                  dat[ 6 ] = fin.read_float(); //ycm
-                  dat[ 7 ] = fin.read_float();//wl
-                  dat[ 0 ] = chi; 
-                  dat[ 1 ] = phi; 
-                  dat[ 2 ] = omega;
-                  dat[ 3 ] = deta;
-                  dat[ 4]  = detd;
-                  fin.read_line();
-          
-                  V.addElement(dat);
-                }
-              else  
-                fin.read_line();  
-            else 
-              fin.read_line();
-
-           
-          }
-        else
-          fin.read_line();
-        }
-    } 
-    catch( Exception s)
-      {return new ErrorString("error="+s);
-        
-      }
-
-     
-    if( V== null) 
+    // final setup for calculation
+    if( peaks==null || peaks.size()<=0) 
       return new ErrorString("No peaks");
-    if(V.size()<1)
-      return new ErrorString( "No peaks");
-    double[] xx,
-      yy,
-      zz;
-    xx = new double[V.size()+3];
-    yy = new double[V.size()+3];
-    zz = new double[V.size()+3];
+    double[] xx = new double[peaks.size()+3];
+    double[] yy = new double[peaks.size()+3];
+    double[] zz = new double[peaks.size()+3];
     intW LMT = new intW(0);
      
-    blind.blaue( V,xx,yy,zz,LMT,seq,1);
+    // perform the calculation
+    blind.blaue( peaks,xx,yy,zz,LMT,seq,1);
     double[] b= new double[9];
     doubleW dd= new doubleW(.08);
     intW mj= new intW(0);
-    
-    blind.bias(V.size()+3,xx,yy,zz,b,0,3,dd,4.0,mj,seq,1,123,0);
+    blind.bias(peaks.size()+3,xx,yy,zz,b,0,3,dd,4.0,mj,seq,1,123,0);
 
-    //Write results to the matrix file
-    try{
-      DecimalFormat df = new DecimalFormat("##0.000000;#0.000000");
-      StringBuffer sb= new StringBuffer(10*3+1);
-    
-      
-      for( int i=0;i<3;i++)
-        {for (int j=0;j<3;j++)
-          sb.append(format(df.format( blind.u[3*j+i]),10));
-        sb.append("\n");
-        //fout.write((blind.u[3*j+i]+" ").getBytes());
-        fout.write(sb.toString().getBytes());//"\n".getBytes());
-        sb.setLength( 0 );
-        }
-      df = new DecimalFormat("#####0.000;####0.000");
-     
-      sb.append(format(df.format( blind.D1),10));
-      sb.append(format(df.format( blind.D2),10));
-      sb.append(format(df.format( blind.D3),10));
-      sb.append(format(df.format( blind.D4),10));
-      sb.append(format(df.format( blind.D5),10));
-      sb.append(format(df.format( blind.D6),10));
-      sb.append(format(df.format( blind.cellVol),10));
-      //fout.write((blind.D1+" "+blind.D2+" "+blind.D3+" "+blind.D4+" "+
-      //                blind.D5+" "+blind.D6+" "+blind.cellVol).getBytes());
-      sb.append("\n");
-      fout.write( sb.toString().getBytes());
-      sb.setLength(0);
-      for( int i=0; i < 7; i++)
-        sb.append(format(df.format(0.0),10));
-      sb.append("\n");
-      fout.write( sb.toString().getBytes());
-      //fout.write(("\n 0  0  0  0  0  0  0 \n").getBytes());
-      fout.close();
+    // write the log file
+    int index=matrixfile.lastIndexOf("/");
+    if(index>=0){
+      String logfile=matrixfile.substring(0,index+1)+"blind.log";
+      if(!blind.writeLog(logfile))
+        SharedData.addmsg("WARNING: Failed to create logfile");
+    }else{
+      SharedData.addmsg("WARNING: Could not create logfile, bad filename");
     }
-    catch( Exception sss)
-      {
-        return new ErrorString( sss.toString());
-      }
-    return "Success";
-    	
+        
+
+    // write the matrix file
+    return writeMatFile(matrixfile);
   }
     
   /* ------------------------------- clone -------------------------------- */ 
@@ -337,12 +240,109 @@ public class Blindd extends  GenericTOF_SCD {
     return op;
   }
     
+  /* -------------------------- private methods --------------------------- */ 
+  /**
+   * Pad a string with spaces on the left
+   */
   static private String format(String rs, int length){
     while(rs.length()<length){
       rs=" "+rs;
     }
     return rs;
   }
+
+  /**
+   * Read in the peaks from the specified file. This returns the
+   * selected peaks (in proper format) to a vector that is returned to
+   * the caller.
+   */
+  private static Object getPeaks(String filename,int[] seq){
+    if(filename==null || filename.length()<=0)
+      return new ErrorString("Improper peak filename: "+filename);
+    if(seq==null || seq.length<=0)
+      return new ErrorString("No sequence numbers selected");
+
+    Vector peaks=new Vector();
+    Vector rawpeaks=null;
+    Operator readpeaks=new ReadPeaks(filename);
+    Object res=readpeaks.getResult();
+    if(res instanceof ErrorString)
+      return res;
+    else if(res instanceof Vector)
+      rawpeaks=(Vector)res;
+    else
+      return new ErrorString("Something went wrong reading peaks file: "
+                             +filename);
+    Peak peak=null;
+    int seqnum_num=0;
+    for( int i=0 ; i<rawpeaks.size()&&seqnum_num<seq.length ; i++ ){
+      peak=(Peak)rawpeaks.elementAt(i);
+      if(peak.seqnum()==seq[seqnum_num]){
+        System.out.println(peak);
+        float[] dat=new float[9];
+        dat[5]=peak.xcm();
+        dat[6]=peak.ycm();
+        dat[7]=peak.wl();
+        dat[0]=peak.chi();
+        dat[1]=peak.phi();
+        dat[2]=peak.omega();
+        dat[3]=peak.detA();
+        dat[4]=peak.detD();
+        peaks.add(dat);
+        seqnum_num++;
+      }
+    }
+
+    return peaks;
+  }
+
+  /**
+   * Write out the orientation matrix and lattice parameters to the
+   * matrix file.
+   */
+  private Object writeMatFile(String filename){
+    // create matrix file contents
+    DecimalFormat df = new DecimalFormat("##0.000000;#0.000000");
+    StringBuffer sb= new StringBuffer(10*3+1);
+    for( int i=0;i<3;i++){
+      for (int j=0;j<3;j++)
+        sb.append(format(df.format( blind.u[3*j+i]),10));
+      sb.append("\n");
+    }
+    df = new DecimalFormat("#####0.000;####0.000");
+    sb.append(format(df.format( blind.D1),10));
+    sb.append(format(df.format( blind.D2),10));
+    sb.append(format(df.format( blind.D3),10));
+    sb.append(format(df.format( blind.D4),10));
+    sb.append(format(df.format( blind.D5),10));
+    sb.append(format(df.format( blind.D6),10));
+    sb.append(format(df.format( blind.cellVol),10));
+    sb.append("\n");
+    for( int i=0; i < 7; i++)
+      sb.append(format(df.format(0.0),10));
+    sb.append("\n");
+
+    //Write results to the matrix file
+    FileOutputStream fout = null;
+    try{
+      fout = new FileOutputStream( filename );
+      fout.write( sb.toString().getBytes());
+      fout.flush();
+    }catch( IOException e){
+      return new ErrorString("Writing Matrix File: "+e.getMessage());
+    }finally{
+      if(fout!=null){
+        try{
+          fout.close();
+        }catch(IOException e){
+          // let it drop on the floor
+        }
+      }
+    }
+
+    return "Wrote file: "+filename;
+  }
+
   /* ------------------------------- main --------------------------------- */ 
   /** 
    * Standalong program to carry out the operations
