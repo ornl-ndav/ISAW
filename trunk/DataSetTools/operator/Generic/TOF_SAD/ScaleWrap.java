@@ -31,6 +31,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.2  2004/06/18 19:18:57  rmikk
+ * Eliminated unused variables
+ *
  * Revision 1.1  2004/04/26 13:37:00  rmikk
  * Initial Checkin
  *
@@ -231,13 +234,15 @@ public class ScaleWrap implements Wrappable {
     //------------ Calculate Polynomial Coefficients --------------
     //                Standard
     double[] coeff = new double[degree + 1];
-    double errr= CurveFit.Polynomial(xvalsA,
+    //double errr;
+     CurveFit.Polynomial(xvalsA,
                             yvalsA,coeff, false);
 
 
     //                Sample
     double[] coeffT = new double[degree + 1];
-    double errrT= CurveFit.Polynomial(xvalsTA,
+    //double errrT;
+     CurveFit.Polynomial(xvalsTA,
                             yvalsTA,coeffT, true);
 
 
