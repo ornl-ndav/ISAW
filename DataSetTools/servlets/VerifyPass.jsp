@@ -33,6 +33,9 @@
   Modified:
  
    $Log$
+   Revision 1.2  2004/02/13 03:00:53  bouzekc
+   Changed user name and password to "user" and "password."
+
    Revision 1.1  2004/02/13 02:59:58  bouzekc
    Added to CVS.
 
@@ -51,8 +54,8 @@
   String passWord = request.getParameter( "passWord" );
 
   if( 
-    ( userName.equals( "ODB" ) && !passWord.equals( "demon" ) ) ||
-    !userName.equals( "ODB" ) ) {
+    ( userName.equals( "user" ) && !passWord.equals( "password" ) ) ||
+    !userName.equals( "user" ) ) {
     HttpServletUtilities.gotoPage( this, "NoAccount.jsp", request, response );
   } else {
     HttpServletUtilities.gotoPage( this, "OperatorChooser.jsp", 
