@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/08/05 15:27:27  rmikk
+ * Added options for the ViewComponent to be a Table or an Image View
+ *
  * Revision 1.5  2004/08/04 22:12:15  rmikk
  * Fixed an error in the menu system
  *
@@ -81,18 +84,31 @@ public class ProffenViewController extends DataSetViewer implements
                         TotalObjectState;
     DataSetGRCTArrayMaker ArrayMaker;
     IViewComponent2D   Viewer;
-    ViewerState viewerState = null;  //Not used
-    
+    ViewerState state = null;  
+    int mode =0;
+    ViewControl[] vcomp;
+    ViewMenuItem[] Men;
+    ViewControl pan = null;
+    JPanel PanHolder = new JPanel( new GridLayout(1,1)),
+           intensityHolder = new JPanel( new GridLayout(1,1)),
+           colorHolder = new JPanel( new GridLayout(1,1)),
+           ViewHolder = new JPanel( new GridLayout(1,1)),
+           ViewPanel;
+           
 	/**
 	 * @param data_set  The DataSet to be viewed by this viewer
 	 */
 	public ProffenViewController(DataSet data_set) {
-		super(data_set); 
-        ArrayMaker = new DataSetGRCTArrayMaker(data_set, null);
-        Viewer = new ImageViewComponent( new VirtualArray2D(10,10));
-        //Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
+		this( data_set, null); 
+        /*ArrayMaker = new DataSetGRCTArrayMaker(data_set, null);
+        mode = state.get_int( ViewerState.SLICEVIEWMODE);
+        if( mode ==0)
+           Viewer = new ImageViewComponent( new VirtualArray2D(10,10));
+        else
+           Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
         Viewer.dataChanged((IVirtualArray2D) ArrayMaker.getArray());
 		init();
+		*/
 	}
   
 
@@ -102,12 +118,22 @@ public class ProffenViewController extends DataSetViewer implements
 	 */
 	public ProffenViewController(DataSet data_set, ViewerState state) {
 		super(data_set, state);
-        viewerState = state;
         ArrayMaker = new DataSetGRCTArrayMaker(data_set, null);
-        Viewer = new ImageViewComponent( new VirtualArray2D(10,10));
-        //Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
+        if( state == null)
+          state = new ViewerState();
+        
+        this.state = state;
+
+        mode = state.get_int( ViewerState.SLICEVIEWMODE);
+        if( mode ==0)
+           Viewer = new ImageViewComponent( new VirtualArray2D(10,10));
+        else
+           Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
+       
+        
         Viewer.dataChanged((IVirtualArray2D) ArrayMaker.getArray());
         init();
+        
 	
 	}
   
@@ -133,22 +159,37 @@ public class ProffenViewController extends DataSetViewer implements
        }
        ControlBlock.addTab("Conversions", ArrayControls[1]);
        //         ------------- for viewer -------------------
-       ViewControl[] vcomp = Viewer.getControls();
-       JPanel jp = new JPanel();
-       BoxLayout bLayout = new BoxLayout( jp, BoxLayout.Y_AXIS);
-       jp.setLayout( bLayout);
+       
+       ViewPanel = new JPanel( new GridLayout(1,1));
+       BoxLayout bLayout = new BoxLayout( ViewPanel, BoxLayout.Y_AXIS);
+       ViewPanel.setLayout( bLayout);
+        
+       SetUpNewViewer( );
+       
+       /*vcomp = Viewer.getControls();
        ViewControl pan = null;
        for( int i=0; i < vcomp.length; i++)
           if(vcomp[i].getTitle() != ImageViewComponent.PAN_NAME)
-             jp.add(vcomp[i]);
+             ViewPanel.add(vcomp[i]);
           else
              pan = vcomp[i];
-       ControlBlock.addTab("View", jp);
+       ControlBlock.addTab("View",ViewPanel);
+       
        //--------------- Add ControlBlock to Control Panel ----------
        ControlPanel.add( ControlBlock);
-       if( pan != null)
-           ControlPanel.add(pan);
+       if( pan != null){
+           PanHolder.add(pan);
+           ControlPanel.add(PanHolder);
+       }
+       Men = Viewer.getMenuItems();
+       JMenuBar menuBar = this.getMenuBar();
+       SetUpMenuItems( menuBar, Men);
+       */
+       ControlBlock.addTab("View",ViewPanel);
        
+       
+       ControlPanel.add( ControlBlock);
+       ControlPanel.add( PanHolder);
        //--------------- Set up DataSetViewer ------------------------
       Float F = new Float(20f) ;
       if( state_Controller != null)
@@ -157,16 +198,48 @@ public class ProffenViewController extends DataSetViewer implements
       if(!F.isNaN())
           f = F.floatValue();
       setLayout( new GridLayout(1,1));
+      ViewHolder.add( Viewer.getDisplayPanel());
       add( new SplitPaneWithState(JSplitPane.HORIZONTAL_SPLIT,
-                        Viewer.getDisplayPanel(), ControlPanel, 1-f/100));
+                        ViewHolder, ControlPanel, 1-f/100));
                         
      // -------------------- Set Up Menus ------------------------------------
-     ViewMenuItem[] Men = Viewer.getMenuItems();
+     
+     JRadioButtonMenuItem  ShowImage = new JRadioButtonMenuItem("Show Image"),
+                           ShowTable = new JRadioButtonMenuItem("Show Table");
+     ShowImage.addActionListener( new ChangeViewer( 0));
+     ShowTable.addActionListener( new ChangeViewer(1));
+     ButtonGroup MViewer = new ButtonGroup();
+     MViewer.add(ShowImage);
+     MViewer.add( ShowTable);
+     if( mode ==0)
+         ShowImage.setSelected(true);
+     else
+          ShowTable.setSelected( true);
      JMenuBar menuBar = this.getMenuBar();
-     SetUpMenuItems( menuBar, Men);
+     JMenu opt = menuBar.getMenu( DataSetViewer.OPTION_MENU_ID);
+     opt.add( ShowImage);
+     opt.add( ShowTable );
      invalidate();
     }
-    
+
+    private void SetUpNewViewer(){
+       vcomp = Viewer.getControls();
+       pan = null;
+       for( int i=0; i < vcomp.length; i++)
+          if(vcomp[i].getTitle() != ImageViewComponent.PAN_NAME)
+             ViewPanel.add(vcomp[i]);
+          else
+             pan = vcomp[i];
+       if( pan != null)
+         PanHolder.add(pan);
+       
+       //--------------- Add ControlBlock to Control Panel ----------
+      
+
+       Men = Viewer.getMenuItems();
+       JMenuBar menuBar = this.getMenuBar();
+       SetUpMenuItems(  menuBar, Men);
+    }
     private int indexx( int x, int def){
         if( x >=0)
           return x;
@@ -279,7 +352,7 @@ public class ProffenViewController extends DataSetViewer implements
   *   ProffenX where X = v(View),m(model) or c for (Controller)
   */
  public ViewerState getState(){
-     return viewerState;
+     return state;
  }
  
  public static void main( String args[]){
@@ -321,4 +394,72 @@ public class ProffenViewController extends DataSetViewer implements
       }  
    }
   }//ArrayMakerActionListener
+
+ // Changes from table view component to Image View component
+ class ChangeViewer implements ActionListener{
+    int mode;
+    public ChangeViewer( int mode){
+      this.mode = mode;
+    }  
+
+    public void actionPerformed( ActionEvent evt){
+       if( mode ==0)
+         if( Viewer instanceof ImageViewComponent)
+            return;
+       if( mode ==1)
+          if( !(Viewer instanceof ImageViewComponent))
+             return;
+       PanHolder.removeAll();
+       ViewPanel.removeAll();
+       ViewHolder.removeAll();
+       //eliminate menu items
+       JMenuBar bar = getMenuBar();
+       for( int i=0; i< Men.length; i++){
+         String path= Men[i].getPath();
+         int k = path.indexOf('.');
+         if( k < 0)
+             k = path.length();
+         String head =null;
+         if( k>0)
+            head = path.substring(0,k);
+         int kPos = 0;
+          if( head != null)
+         for( kPos = 0; (kPos < bar.getMenuCount()) && !head.equals( bar.getMenu(kPos).getText());
+                  kPos++){}
+         if( kPos >= bar.getMenuCount())
+           head = null;
+         if( head != null){
+           String next = Men[i].getItem().getText();
+           if( k < path.length()){
+             int k1 = path.indexOf( '.', k+1);
+             if( k1 < 0)
+                k1 = path.length();
+             next = path.substring( k+1,k1);
+           }
+           JMenu jmenu = bar.getMenu(kPos);
+           int kk =0;
+           for(  kk =0; (kk< jmenu.getItemCount()) && !jmenu.getItem(kk).getText().equals( next);
+                kk++){}
+           if( kk < jmenu.getItemCount())
+              jmenu.remove(kk);
+         }
+       
+       }//For each view menu component
+
+      //------------------ Now recreate the view-------------
+       if( mode ==0)
+           Viewer = new ImageViewComponent( new VirtualArray2D(10,10));
+       else
+           Viewer= new DataSetTools.viewer.Table.LargeJTableViewComponent(null,new VirtualArray2D(10,10));
+        
+       Viewer.dataChanged((IVirtualArray2D) ArrayMaker.getArray());
+      Viewer.addActionListener( new ViewerActionListener());
+      SetUpNewViewer();
+      
+      state.set_int( ViewerState.SLICEVIEWMODE, mode);
+    
+      ViewHolder.add( Viewer.getDisplayPanel()); 
+      ViewHolder.validate();
+    }
+ }//ChangeViewer
 }
