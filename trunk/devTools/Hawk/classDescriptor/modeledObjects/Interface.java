@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/05/26 20:33:36  kramer
+ * Optimized the methods that get a single uml printout or shortened source
+ * printout for the interface.
+ *
  * Revision 1.3  2004/03/12 19:46:18  bouzekc
  * Changes since 03/10.
  *
@@ -342,7 +346,7 @@ public class Interface
 	 * java.lang.String would be shortened to String.
 	 * @param shortOther Set this to true if you want non-java names in the UML diagram to be shortened.
 	 */
-	public void printSingleUMLAsString(RandomAccessFile raf, String tab, boolean shortJava, boolean shortOther)
+	public void printSingleUMLAsString1(RandomAccessFile raf, String tab, boolean shortJava, boolean shortOther)
 	{
 		try
 		{
@@ -403,25 +407,53 @@ public class Interface
 		int i = 0;
 		StringBuffer buffer = new StringBuffer();
 			
-		buffer.append(tab + ASCIIPrintFileManager.getOuterDivider(this, shortJava, shortOther) + "\n");
-		buffer.append(tab + ASCIIPrintFileManager.getInterfaceNameLine(this, shortJava, shortOther) + "\n");
-		buffer.append(tab + ASCIIPrintFileManager.getInnerDivider(this, shortJava, shortOther) + "\n");
+		buffer.append(tab);
+		buffer.append(ASCIIPrintFileManager.getOuterDivider(this, shortJava, shortOther));
+		buffer.append("\n");
+		buffer.append(tab);
+		buffer.append(ASCIIPrintFileManager.getInterfaceNameLine(this, shortJava, shortOther));
+		buffer.append("\n");
+		buffer.append(tab);
+		buffer.append(ASCIIPrintFileManager.getInnerDivider(this, shortJava, shortOther));
+		buffer.append("\n");
 	
 		for (i = 0; i < attSize; i++)
-			buffer.append(tab + ASCIIPrintFileManager.getAttributeLine(this, i, shortJava, shortOther) + "\n");
+		{
+			buffer.append(tab);
+			buffer.append(ASCIIPrintFileManager.getAttributeLine(this, i, shortJava, shortOther));
+			buffer.append("\n");
+		} 
 
 		if (attSize>0)
-			buffer.append(tab + ASCIIPrintFileManager.getInnerDivider(this, shortJava, shortOther) + "\n");
+		{
+			buffer.append(tab);
+			buffer.append(ASCIIPrintFileManager.getInnerDivider(this, shortJava, shortOther));
+			buffer.append("\n");
+		}
 			
 		for (i = 0; i < constSize; i++)
-			buffer.append(tab + ASCIIPrintFileManager.getConstructorLine(this, i, shortJava, shortOther) + "\n");
+		{
+			buffer.append(tab);
+			buffer.append(ASCIIPrintFileManager.getConstructorLine(this, i, shortJava, shortOther));
+			buffer.append("\n");
+		} 
+		
 		if (constSize>0)
-			buffer.append(tab + ASCIIPrintFileManager.getInnerDivider(this, shortJava, shortOther) + "\n");
+		{
+			buffer.append(tab);
+			buffer.append(ASCIIPrintFileManager.getInnerDivider(this, shortJava, shortOther));
+			buffer.append("\n");
+		}
 	
 		for (i = 0; i < methSize; i++)
-			buffer.append(tab + ASCIIPrintFileManager.getMethodLine(this, i, shortJava, shortOther) + "\n");
+		{
+			buffer.append(tab);
+			buffer.append(ASCIIPrintFileManager.getMethodLine(this, i, shortJava, shortOther));
+			buffer.append("\n");
+		}
 	
-		buffer.append(tab + ASCIIPrintFileManager.getOuterDivider(this, shortJava, shortOther));
+		buffer.append(tab);
+		buffer.append(ASCIIPrintFileManager.getOuterDivider(this, shortJava, shortOther));
 		
 		return buffer.toString();
 	}
@@ -772,76 +804,75 @@ public class Interface
 	/**
 	 * Get a String representing the Interface object.  The string is written to look like actual 
 	 * source code without constructor or method bodies and without comments.
+	 * @param tab The tab to put in front of the text.
 	 * @param shortJava Set this to true if you want java names to be shortened.  For example, 
 	 * java.lang.String would be shortened to String.
 	 * @param shortOther Set this to true if you want non-java names to be shortened.
 	 * @return A String representing the Interface object.
 	 */
-	public String getStringInJavadocFormat(boolean shortJava, boolean shortOther)
+	public String getShortenedSourceCode(String tab, boolean shortJava, boolean shortOther)
 	{
-		String str = "";
-		final String tab = "        ";
+		StringBuffer buffer = new StringBuffer(pgmDefn.getStringInJavadocFormat(shortJava, shortOther));
+		buffer.append(" \n");
 		
-		str = str + pgmDefn.getStringInJavadocFormat(shortJava, shortOther) + "\n";
-
+		buffer.append(tab);
 		if (attribute_vector.size() == 1)
-		{
-			str = str + tab + "Attribute\n";
-			str = str + tab + "=======\n";
-		}
+			buffer.append("Attribute\n");
 		else
-		{
-			str = str + tab + "Attributes\n";
-			str = str + tab + "=======\n";
-		}
+			buffer.append("Attributes\n");
+		buffer.append(tab);
+		buffer.append( "=======\n");
 		
 		for (int i = 0; i < attribute_vector.size(); i++)
 		{
-			str = str + tab + tab + ((AttributeDefn)(attribute_vector.elementAt(i))).getStringInJavadocFormat(shortJava, shortOther)+"\n";
-			str = str + "\n";
+			buffer.append(tab);
+			buffer.append(tab);
+			buffer.append(((AttributeDefn)(attribute_vector.elementAt(i))).getStringInJavadocFormat(shortJava, shortOther));
+			buffer.append(" \n");
+			//str = str + "\n";
 		}
 		
-		str = str + "\n";  //this makes a blank line
+		buffer.append(" \n");  //this makes a blank line
 		
+		buffer.append(tab);
 		if (const_vector.size() == 1)
-		{
-			str = str + tab + "Constructor\n";
-			str = str + tab + "=========\n";
-		}
+			buffer.append("Constructor\n");
 		else
-		{
-			str = str + tab + "Constructors\n";
-			str = str + tab + "=========\n";
-		}
+			buffer.append( "Constructors\n");
+		buffer.append(tab);
+		buffer.append("=========\n");
 		
 		for (int i = 0; i < const_vector.size(); i++)
 		{
-			str = str + tab + tab + ((ConstructorDefn)(const_vector.elementAt(i))).getStringInJavadocFormat(shortJava, shortOther)+"\n";
-			str = str + "\n";
+			buffer.append(tab);
+			buffer.append(tab);
+			buffer.append(((ConstructorDefn)(const_vector.elementAt(i))).getStringInJavadocFormat(shortJava, shortOther));
+			buffer.append(" \n");
+			//str = str + "\n";
 		}
 		
-		str = str + "\n";
-		
+		buffer.append(" \n");
+
+		buffer.append(tab);
 		if (method_vector.size() == 1)
-		{
-			str = str + tab + "Method\n";
-			str = str + tab + "======\n";
-		}
+			buffer.append("Method\n");
 		else
-		{
-			str = str + tab + "Methods\n";
-			str = str + tab + "======\n";
-		}
+			buffer.append("Methods\n");
+		buffer.append(tab);
+		buffer.append("======\n");
 		
 		for (int i = 0; i < method_vector.size(); i++)
 		{
-			str = str + tab + tab + ((MethodDefn)(method_vector.elementAt(i))).getStringInJavadocFormat(shortJava, shortOther)+"\n";
-			str = str + "\n";
+			buffer.append(tab);
+			buffer.append(tab);
+			buffer.append(((MethodDefn)(method_vector.elementAt(i))).getStringInJavadocFormat(shortJava, shortOther));
+			buffer.append(" \n");
+			//str = str + "\n";
 		}
 		
-		str = str + "}";
+		buffer.append("}");
 		
-		return str;
+		return buffer.toString();
 	}
 	
 	//this str is assumed to be read from a native Hawk file so the string
