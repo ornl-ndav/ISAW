@@ -18,7 +18,7 @@ import  ChopTools.*;
 import  DataSetTools.util.*;
 
 /**
-  *  Divide a data set by a constant scalar value 
+  *  Divide a data set by a constant scalar value, obtained from Monitor 1
   */
 
 public class SpectrometerNormalizer extends    DataSetOperator 
