@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.58  2003/07/11 21:43:37  bouzekc
+ * Now correctly populates view menu when loading a Wizard
+ * save file.
+ *
  * Revision 1.57  2003/07/09 21:28:45  bouzekc
  * Now catches Throwable in the SwingWorker.
  *
@@ -716,6 +720,8 @@ public abstract class Wizard implements PropertyChangeListener {
     } else {
       showForm( lastValidNum );
     }
+
+    this.populateViewMenu(  );
 
     //now we want to return to a state where the Wizard can listen to
     //property changes
