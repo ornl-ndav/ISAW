@@ -30,6 +30,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.14  2002/11/29 23:04:57  dennis
+ *  Now forms file name from instrument name and run number using
+ *  InstrumentType.formIPNSFileName().  Reduced delay between sending
+ *  spectra to 10ms every 10 spectra, to send scd data more quickly.
+ *
  *  Revision 1.13  2002/11/27 23:27:59  pfpeterson
  *  standardized header
  *
@@ -49,6 +54,7 @@ import NetComm.*;
 import DataSetTools.dataset.*;
 import DataSetTools.viewer.*;
 import DataSetTools.retriever.*;
+import DataSetTools.instruments.*;
 
 /**
  *  This class simulates the output of the DAS at IPNS to the LiveDataServer
@@ -136,10 +142,13 @@ public class DASOutputTest
     {
       Data d  = ds.getData_entry(i);
       int  id = d.getGroup_ID();
-      SendSpectrum( sender, id, (counter+1), d.getCopyOfY_values() );
 
-      try  { Thread.sleep(30); }
-      catch(Exception e){ System.out.println("sleep Exception"); } 
+      SendSpectrum( sender, id, (counter+1), d.getCopyOfY_values() );
+      if ( i % 10 == 0 )                           // pause every 10th spectrum
+      {
+        try  { Thread.sleep(10); }
+        catch(Exception e){ System.out.println("sleep Exception"); } 
+      }
     }  
     System.gc();
   }
@@ -200,16 +209,9 @@ public class DASOutputTest
       test.SendSpectrum( sender, 0, 1, new float[0] );
       System.exit( 0 );
     }                                                    // pad run_number with
-                                                         // leading 0's to at
-                                                         // least length 4.
-    String run_number_string = new String();
-    run_number_string = "" + test.run_number;
-    while ( run_number_string.length() < 4 )
-       run_number_string = "0" + run_number_string;
 
-    test.file_name = new String(test.inst_name, 0, test.inst_name.length);
-    test.file_name = test.file_name.toUpperCase();
-    test.file_name = test.file_name + run_number_string + ".RUN";
+   test.file_name = InstrumentType.formIPNSFileName( args[0],
+                                                     test.run_number );
 
     System.out.println( "Sending data for run " + test.file_name );
 
@@ -226,14 +228,20 @@ public class DASOutputTest
 
     rr = null;
 
+    System.out.println("USING FILE: " + test.file_name );
+    System.out.println("NUM DataSets = " + data_sets.length );
+
     int count = 0;
     while ( true )
     {
       System.out.println("Sent block " + count );
       count++;
-
+ 
       for ( int i = 0; i < data_sets.length; i++ )         // send each DataSet
         test.SendDataBlocks( sender, data_sets[i], count );
+
+      try  { Thread.sleep(500); }
+      catch(Exception e){ System.out.println("sleep Exception"); } 
     }
     
   }
