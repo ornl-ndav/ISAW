@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.5  2002/06/05 20:28:56  dennis
+ *  Now the combine() method will not form LABEL attributes longer than
+ *  a specified MAX length.
+ *
  *  Revision 1.4  2001/04/25 19:04:07  dennis
  *  Added copyright and GPL info at the start of the file.
  *
@@ -100,7 +104,8 @@ public class StringAttribute extends Attribute
    * passed as a parameter to obtain a new value for this attribute.  The
    * new value is obtained by concatenating the strings with a comma 
    * separator, provided that the two strings are not the same and that neither
-   * string is a substring of the other.
+   * string is a substring of the other. For an Attribute.LABEL value the
+   * length is limited to the maximum label length.
    *
    *  @param   attr   An attribute whose string value is to be concatenated
    *                  with the value of the this attribute.
@@ -110,7 +115,15 @@ public class StringAttribute extends Attribute
      if ( !(this.value.equalsIgnoreCase(attr.getStringValue()))    &&
             this.value.lastIndexOf( attr.getStringValue())  == -1  &&
             attr.getStringValue().lastIndexOf( this.value ) == -1  )
+     {
+       if ( this.name.equals( LABEL ) )                   // keep labels short 
+       {
+         if ( this.value.length() + attr.getStringValue().length() 
+              > MAX_LABEL_LENGTH )
+           return;                                        // don't concatenate
+       }
        this.value = this.value + "," + attr.getStringValue();
+     }
   }
 
 
