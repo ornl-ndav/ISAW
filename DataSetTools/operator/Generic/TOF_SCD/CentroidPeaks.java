@@ -52,96 +52,99 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
     private static final SharedData shared                = new SharedData();
     private              int        run_number            = -1;
 
-
- /* ------------------------ Default constructor ------------------------- */ 
- /**
-  *  Creates operator with title "Centroid Peaks" and a default list of
-  *  parameters.
-  */  
-    public CentroidPeaks()
-    {
+    /**
+     *  Creates operator with title "Centroid Peaks" and a default
+     *  list of parameters.
+     */  
+    public CentroidPeaks(){
 	super( TITLE );
     }
 
- /* ---------------------------- Constructor ----------------------------- */ 
- /** 
-  *  Creates operator with title "Centroid Peaks" and the specified list
-  *  of parameters. The getResult method must still be used to execute
-  *  the operator.
-  *
-  *  @param  data_set    DataSet to find peak in
-  *  @param  peaks       Vector of peaks. Normally created by FindPeaks.
-  */
+    /** 
+     *  Creates operator with title "Centroid Peaks" and the specified
+     *  list of parameters. The getResult method must still be used to
+     *  execute the operator.
+     *
+     *  @param data_set DataSet to find peak in
+     *  @param peaks Vector of peaks. Normally created by FindPeaks.
+     */
     public CentroidPeaks( DataSet data_set, Vector peaks){
 	this(); 
 	parameters = new Vector();
 	addParameter( new Parameter("Histogram", data_set) );
 	addParameter( new Parameter("Vector of Peaks", peaks) );
-  }
-
- /* ---------------------------- getCommand ------------------------------- */ 
- /** 
-  * Get the name of this operator to use in scripts
-  * 
-  * @return  "CentroidPeaks", the command used to invoke this 
-  *           operator in Scripts
-  */
-  public String getCommand()
-  {
-    return "CentroidPeaks";
-  }
-
- /* ------------------------ setDefaultParameters ------------------------- */ 
- /** 
-  * Sets default values for the parameters. This must match the data types 
-  * of the parameters.
-  */
-  public void setDefaultParameters()
-  {
-    parameters = new Vector();
-    addParameter( new Parameter("Histogram",       DataSet.EMPTY_DATA_SET ) );
-    addParameter( new Parameter("Vector of Peaks", new Vector())            );
-  }
-
- /* ----------------------------- getResult ------------------------------ */ 
- /** 
-  *  Executes this operator using the values of the current parameters.
-  *
-  *  @return If successful, this operator prints out a list of x,y,time
-  *  bins and intensities.
-  */
-  public Object getResult()
-  {
-    DataSet data_set = (DataSet)(getParameter(0).getValue());
-    Vector  peaks    = (Vector) (getParameter(1).getValue());
-    Vector  cpeaks   = new Vector();
-
-    float[] times=data_set.getData_entry(0).getX_scale().getXs();
-
-    Peak peak=new Peak();
-    for( int i=0 ; i<peaks.size() ; i++ ){
-	peak=(Peak)peaks.elementAt(i);
-	float[][][] surround=makeSurround(data_set,peak);
-	//System.out.print("t["+(int)peak.z()+" -> ");
-	peak=centroid(peak,surround);
-	//System.out.print(peak.z()+"]="+peak.t()+" -> ");
-	peak.t(times[(int)peak.z()],times[(int)peak.z()+1]);
-	//System.out.println(peak.t());
     }
 
-    return peaks;
-  }
+    /** 
+     * Get the name of this operator to use in scripts
+     * 
+     * @return "CentroidPeaks", the command used to invoke this
+     * operator in Scripts
+     */
+    public String getCommand(){
+        return "CentroidPeaks";
+    }
 
- /* --------------------------- makeSurround ----------------------------- */ 
+    /** 
+     * Sets default values for the parameters. This must match the
+     * data types of the parameters.
+     */
+    public void setDefaultParameters(){
+        parameters = new Vector();
+        addParameter( new Parameter("Histogram",DataSet.EMPTY_DATA_SET) );
+        addParameter( new Parameter("Vector of Peaks", new Vector()) );
+    }
+    
+    /** 
+     *  Executes this operator using the values of the current
+     *  parameters.
+     *
+     *  @return If successful, this operator prints out a list of
+     *  x,y,time bins and intensities.
+     */
+    public Object getResult(){
+        DataSet data_set = (DataSet)(getParameter(0).getValue());
+        Vector  peaks    = (Vector) (getParameter(1).getValue());
+        Vector  cpeaks   = new Vector();
+        
+        float[] times=data_set.getData_entry(0).getX_scale().getXs();
+        
+        Peak peak=new Peak();
+        for( int i=0 ; i<peaks.size() ; i++ ){
+            peak=(Peak)peaks.elementAt(i);
+            float[][][] surround=makeSurround(data_set,peak);
+            //System.out.print("t["+(int)peak.z()+" -> ");
+            peak=centroid(peak,surround);
+            //System.out.print(peak.z()+"]="+peak.t()+" -> ");
+            peak.t(times[(int)peak.z()],times[(int)peak.z()+1]);
+            //System.out.println(peak.t());
+        }
+
+        return peaks;
+    }
+    
+    /**
+     * This method takes a peak and finds the surrounding area needed
+     * for centroiding it.
+     *
+     * @return a 7x7x3 array of counts centered around the peak
+     */
     private float[][][] makeSurround( DataSet data, Peak peak){
-	float[][][] surround={{{0,0,0},{0,0,0},{0,0,0}},
-			      {{0,0,0},{0,0,0},{0,0,0}},
-			      {{0,0,0},{0,0,0},{0,0,0}}};
+	float[][][] surround=new float[7][7][3];
 	int column = (int)peak.x();
 	int row    = (int)peak.y();
 	int time   = (int)peak.z();
-	surround[1][1][1]=(float)peak.ipkobs();
 
+        // initialize the array
+        for( int i=0 ; i<surround.length ; i++ ){
+            for( int j=0 ; j<surround[0].length ; j++ ){
+                for( int k=0 ; k<surround[0][0].length ; k++ ){
+                    surround[i][j][k]=0f;
+                }
+            }
+        }
+
+        // fill the array with the appropriate values
 	int x;
 	int y;
 	Data spectrum;
@@ -156,44 +159,44 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
 	    x=det.getColumn();
 	    y=det.getRow();
             intens=spectrum.getCopyOfY_values();
-	    if(       x==column-1 && y==row-1 ){
-		surround[0][0][0]=getIntens(intens,time-1);
-		surround[0][0][1]=getIntens(intens,time  );
-		surround[0][0][2]=getIntens(intens,time+1);
-	    }else if( x==column-1 && y==row   ){
-		surround[0][1][0]=getIntens(intens,time-1);
-		surround[0][1][1]=getIntens(intens,time  );
-		surround[0][1][2]=getIntens(intens,time+1);
-	    }else if( x==column-1 && y==row+1 ){
-		surround[0][2][0]=getIntens(intens,time-1);
-		surround[0][2][1]=getIntens(intens,time  );
-		surround[0][2][2]=getIntens(intens,time+1);
-	    }else if( x==column   && y==row-1 ){
-		surround[1][0][0]=getIntens(intens,time-1);
-		surround[1][0][1]=getIntens(intens,time  );
-		surround[1][0][2]=getIntens(intens,time+1);
-	    }else if( x==column   && y==row   ){
-		surround[1][1][0]=getIntens(intens,time-1);
-		surround[1][1][1]=getIntens(intens,time  );
-		surround[1][1][2]=getIntens(intens,time+1);
-	    }else if( x==column   && y==row+1 ){
-		surround[1][2][0]=getIntens(intens,time-1);
-		surround[1][2][1]=getIntens(intens,time  );
-		surround[1][2][2]=getIntens(intens,time+1);
-	    }else if( x==column+1 && y==row-1 ){
-		surround[2][0][0]=getIntens(intens,time-1);
-		surround[2][0][1]=getIntens(intens,time  );
-		surround[2][0][2]=getIntens(intens,time+1);
-	    }else if( x==column+1 && y==row   ){
-		surround[2][1][0]=getIntens(intens,time-1);
-		surround[2][1][1]=getIntens(intens,time  );
-		surround[2][1][2]=getIntens(intens,time+1);
-	    }else if( x==column+1 && y==row+1 ){
-		surround[2][2][0]=getIntens(intens,time-1);
-		surround[2][2][1]=getIntens(intens,time  );
-		surround[2][2][2]=getIntens(intens,time+1);
-	    }
+            if( x>=column-3 && x<=column+3 && y>=row-3 && y<=row+3 ){
+                surround[x-column+3][y-row+3][0]=getIntens(intens,time-1);
+                surround[x-column+3][y-row+3][1]=getIntens(intens,time  );
+                surround[x-column+3][y-row+3][2]=getIntens(intens,time+1);
+            }
 	}
+        // lets add a bug to set the background to something bad and
+        // be in agreement with the original software
+	for( int i=0 ; i<data.getNum_entries() ; i++ ){
+            spectrum=data.getData_entry(i);
+            detI=(DetInfoListAttribute)
+                spectrum.getAttribute(Attribute.DETECTOR_INFO_LIST);
+            det=((DetectorInfo[])detI.getValue())[0];
+            x=det.getColumn();
+            y=det.getRow();
+            intens=spectrum.getCopyOfY_values();
+            if( y==1 ){
+                if(x>0 && x<=7){
+                    surround[x-1][y-1][0]=getIntens(intens,time-1);
+                    surround[x-1][y-1][1]=getIntens(intens,time  );
+                    surround[x-1][y-1][2]=getIntens(intens,time+1);
+                }
+            }
+        }
+        for( int i2=0 ; i2<7 ; i2++ ){
+            surround[i2][6][0]=surround[i2][0][0];
+            surround[i2][6][1]=surround[i2][0][1];
+            surround[i2][6][2]=surround[i2][0][2];
+        }
+        for( int i2=1 ; i2<6 ; i2++ ){
+            surround[0][i2][0]=surround[0][0][0];
+            surround[0][i2][1]=surround[0][0][1];
+            surround[0][i2][2]=surround[0][0][2];
+            surround[6][i2][0]=surround[6][0][0];
+            surround[6][i2][1]=surround[6][0][1];
+            surround[6][i2][2]=surround[6][0][2];
+        }
+        // end of the intentional bug
 
 	return surround;
     }
@@ -211,13 +214,17 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
             return intensity[time_bin];
     }
 
- /* ----------------------------- centroid ------------------------------- */ 
+    /**
+     * This does the actual centroiding. 
+     */
     private Peak centroid(Peak peak, float[][][] surround){
 
-	float asum=0.0f;
-	float xsum=0.0f;
-	float ysum=0.0f;
-	float zsum=0.0f;
+	double asum  = 0.;
+	double xsum  = 0.;
+	double ysum  = 0.;
+	double zsum  = 0.;
+        double back  = 0.;
+        double count = 0.;
 	
 	float x,y,z;
 	int reflag=peak.reflag();
@@ -228,64 +235,82 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
 	    return peak;
 	}
 
-	for( int I3=0 ; I3<3 ; I3++ ){
-	    for( int I2=0 ; I2<3 ; I2++ ){
-		for( int I1=0 ; I1<3 ; I1++ ){
-		    xsum+=surround[I1][I2][I3]*((float)I1+1.0f);
-		    ysum+=surround[I1][I2][I3]*((float)I2+1.0f);
-		    zsum+=surround[I1][I2][I3]*((float)I3+1.0f);
-		    asum+=surround[I1][I2][I3];
+	for( int k=0 ; k<3 ; k++ ){
+            // determine the background for this time slice
+            back=0.;
+            for( int j=0 ; j<7 ; j++ ){
+                for( int i=0 ; i<7 ; i++ ){
+                    if( i==0 || i==6 ){ // left and right borders
+                        back=back+(double)surround[i][j][k];
+                    }else{
+                        if( j==0 || j==6 ){ // top and bottom borders
+                            back=back+(double)surround[i][j][k];
+                        }
+                    }
+                }
+            }
+            back=back/24f; // normalize the background by number of points
+            // find the sums for the centroid
+	    for( int j=2 ; j<5 ; j++ ){
+		for( int i=2 ; i<5 ; i++ ){
+                    count=(double)surround[i][j][k]-back;
+		    xsum=xsum+count*((double)i+1.);
+		    ysum=ysum+count*((double)j+1.);
+		    zsum=zsum+count*(peak.z()+(double)k);
+		    asum=asum+count;
 		}
 	    }
 	}
 
+        // total count must be greater than zero for this to make sense
 	if(asum<=0){
 	    peak.reflag(reflag+30);
 	    return peak;
 	}
-	x=xsum/asum+(float)peak.x()-2;
-	y=ysum/asum+(float)peak.y()-2;
-	z=zsum/asum+(float)peak.z()-2;
+        // centroid the peaks
+	x=(float)(xsum/asum)+(float)peak.x()-4f;
+	y=(float)(ysum/asum)+(float)peak.y()-4f;
+	z=(float)(zsum/asum)-1f; // -1 is to convert to java counting
 
+        // find out how far the peaks were moved
 	float dx=Math.abs(x-(float)peak.x());
 	float dy=Math.abs(y-(float)peak.y());
 	float dz=Math.abs(z-(float)peak.z());
 
 	if( dx>1.0 || dy>1.0 || dz>1.0 ){
+            // don't shift positions if it is moving more than one bin
 	    peak.reflag(reflag+30);
 	    return peak;
 	}else{
+            // update the peak
 	    peak.x(x);
 	    peak.y(y);
 	    peak.z(z);
 	}
 
+        // return the updated peak
 	peak.reflag(reflag+10);
 	return peak;
     }
 
- /* ------------------------------- clone -------------------------------- */ 
- /** 
-  *  Creates a clone of this operator.
-  */
-  public Object clone()
-  { 
-    Operator op = new CentroidPeaks();
-    op.CopyParametersFrom( this );
-    return op;
-  }
+    /** 
+     *  Creates a clone of this operator.
+     */
+    public Object clone(){
+        Operator op = new CentroidPeaks();
+        op.CopyParametersFrom( this );
+        return op;
+    }
 
- /* ------------------------------- main --------------------------------- */ 
- /** 
-  * Test program to verify that this will complile and run ok.  
-  *
-  */
+    /** 
+     * Test program to verify that this will complile and run ok.
+     */
     public static void main( String args[] ){
 	
 	String datfile="/IPNShome/pfpeterson/data/SCD/SCD06496.RUN";
 	DataSet rds = (new RunfileRetriever(datfile)).getDataSet(1);
 	
-	FindPeaks fo = new FindPeaks(rds,10,1,false);
+	FindPeaks fo = new FindPeaks(rds,10,1);
 	Vector peaked=(Vector)fo.getResult();
 	Peak peak=new Peak();
 	for( int i=0 ; i<peaked.size() ; i++ ){
@@ -302,5 +327,6 @@ public class CentroidPeaks extends GenericTOF_SCD implements HiddenOperator{
 	    System.out.println(peak);
 	}
 	System.out.println("done with CentroidPeaks");
+        System.exit(0);
     }
 }
