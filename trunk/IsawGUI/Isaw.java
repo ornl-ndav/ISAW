@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.65  2001/11/30 23:14:58  pfpeterson
+ *  Changed the size and position of the main window to assume a 4:3 aspect ratio from the screen height. This should fix the dual monitor problem.
+ *
  *  Revision 1.64  2001/11/20 21:38:07  pfpeterson
  *  Revised GSAS Export menu to be more precise.
  *
@@ -1880,12 +1883,16 @@ public class Isaw
     splash_thread.start();
     splash_thread = null;
     sp = null;
+
+    /* assume a 4:3 aspect ratio for the monitor */
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    int window_height = (int)(screenSize.height*.40);
-    int window_width = (int)(screenSize.width*.80);        
-      
-    int y = (screenSize.height - window_height - 50);
-    int x = (screenSize.width - window_width)/2;
+    int window_height = (int)(screenSize.height*0.4);
+    int window_width = (int)(screenSize.height*4*0.8/3);
+
+    /* set the top left corner such that the window is centered
+     * horizontally and 3/4 of the way down vertically */
+    int y = (int)(screenSize.height - window_height)*3/4;
+    int x = (int)(screenSize.height*4/3 - window_width)/2;
 
     System.out.println("Loading " + TITLE + " " + VERSION );
     JFrame Isaw = new Isaw( args );
