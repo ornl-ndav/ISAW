@@ -28,6 +28,12 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.7  2003/05/19 15:20:42  rmikk
+ * -Now uses the DataSetTools.components.ui.PlaneSelector
+ *    control.
+ * -Tested and fixed code so this is now a DataSet viewer( possibly
+ *    not interactive)
+ *
  * Revision 1.6  2003/01/09 21:10:03  rmikk
  * Fixed the matrix corresponding to the three directions.
  *
@@ -59,15 +65,80 @@ import DataSetTools.util.*;
 import Operators.Generic.*;
 import DataSetTools.operator.DataSet.*; 
 import DataSetTools.operator.*;
-
+import DataSetTools.components.ui.*;
+import DataSetTools.math.*;
+import DataSetTools.util.SharedData.*;
+import DataSetTools.math.*;
+import DataSetTools.operator.DataSet.*;
 
 public class TQxQyQz  extends ContourView
   {
+    PlaneSelector PlaneControl;
+    float[][]  Or,IOr, T, IT , Ident;
+    DataSet ds;
+    String[] AxisName;
+    String[] AxisUnits;
+    ViewerState state;
+    JPanel PlaneSelHolder;
+    //  Or*(hkl)=Qxyz;   T*Qxyz = (hkl)
     public TQxQyQz( DataSet ds, ViewerState state)
       {super( ds, state, new QxQyQzAxesHandler( ds,null,null,null));
-       rpl_.addKeyListener( new MyKeyListener());
-       Experiment E =new Experiment(getDataSet(), Transf );
-       E.addOKListener( new ExperimentListener());
+       
+       //rpl_.addKeyListener( new MyKeyListener());
+       //Experiment E =new Experiment(getDataSet(), Transf );
+       //E.addOKListener( new ExperimentListener());
+        AxisName = new String[3];
+        AxisUnits= new String[3];
+        for( int i=0; i<3; i++)
+          {
+            IAxisHandler Iax = Transf.getAxis(i);
+            AxisName[i] = Iax.getAxisName();
+            AxisUnits[i] = Iax.getAxisUnits();
+           }
+        this.ds = ds;
+        PlaneControl = new PlaneSelector();
+        PlaneControl.add( PlaneSelector.CARD_3POINT_PLANE);
+        PlaneControl.add( PlaneSelector.CARD_DIRECTION);
+        for( int i=0; i< 3;i++)
+          for( int card = 0;card <2; card++)
+            PlaneControl.addPointListener( new PointListener( card,i), card,i);
+        PlaneControl.addPlaneChangeListener( new PlaneChangeListener());
+        PlaneSelHolder.add( PlaneControl );
+        Ident = new float[3][3];
+        for( int i=0; i<3;i++)
+          for( int j=0;j<3;j++)
+            if( i == j)
+              Ident[i][j]= 1.0f;
+            else
+              Ident[i][j] = 0.0f;
+       
+        Attribute A = ds.getAttribute( Attribute.ORIENT_MATRIX);
+        if( A == null)
+         {
+            Or = IOr = Ident;
+          }
+        else
+          {
+             Or = ((Float2DAttribute)A).getFloatValue();
+             if( Or == null) 
+               Or = Ident;
+             else
+               for( int i=0; i<2;i++)
+                   for( int j=0;j<2;j++) 
+                     Or[i][j] = (float)(Or[i][j]*2*java.lang.Math.PI);           
+             IOr = LinearAlgebra.getInverse(Or);
+             if( IOr == null)
+               { IOr= Or = Ident;
+                }
+
+             if( IOr != Ident)
+               { String[] Label = {"h", "k", "l"};
+                 for( int card = 0; card < 2; card++)
+                    PlaneControl.setLabel( card, 0, Label );
+               }
+           }
+          T = IOr;
+          IT = Or;
        }
 
     public void setDataSet( DataSet ds)
@@ -75,6 +146,116 @@ public class TQxQyQz  extends ContourView
        Transf = new QxQyQzAxesHandler( ds, null,null,null);
        super.setDataSet( ds );
        }
+
+   
+   /**
+   *   Adds the PlaneControl to jpanel and sets it up
+   *
+   */
+   public void addControl( JPanel jpanel)
+     {
+       PlaneSelHolder = new JPanel();
+       jpanel.add( PlaneSelHolder);
+
+     }
+
+   class PointListener implements ActionListener
+     {
+      int card,point;
+      public PointListener( int card, int point)
+        {
+         this.card = card;
+         this.point = point;
+        }
+  
+       public void actionPerformed( ActionEvent evt)
+         {
+           int Group = ds.getPointedAtIndex();
+           float time = ds.getPointedAtX();
+           if( Group< 0)
+             return;
+           if( Group >= ds.getNum_entries())
+             return;
+           if( card ==1)
+             if( point ==3)
+                return;
+           String S = "Find Qx, Qy, Qz";
+           if( Or != Ident)
+              S = "Find h, k, l";
+           DataSetOperator op = ds.getOperator(S);
+           if( op == null)
+             {
+               SharedData.addmsg( "No data set operator "+S);
+               return;
+             } 
+           op.setParameter(new Parameter( "", new Integer(Group)), 0) ;
+           op.setParameter( new Parameter("", new Float( time)), 1);
+           Object O = op.getResult();
+           if( O instanceof Position3D)
+             PlaneControl.setPoint( card, point, ((Position3D)O).getCartesianCoords());
+           else
+              SharedData.addmsg("error in getting coords:"+O);
+
+         }
+
+      }//PointChangeListener
+
+   class PlaneChangeListener implements ActionListener
+     {
+
+       public void actionPerformed( ActionEvent evt)
+        {float[] Opoint ;
+         Opoint = PlaneControl.getPoint( 0,0);
+         
+         T = new float[3][3];
+         T[0] = PlaneControl.getPoint( 0,1);
+         T[1]= PlaneControl.getPoint( 0,2);
+         T[2] = PlaneControl.getPoint(1,2);
+         
+         if( (Opoint == null) ||(T[0]==null) ||(T[1]==null) ||(T[2]==null))
+           { SharedData.addmsg("Not all points are set");
+             return;
+            }
+         for(int j=0; j<3; j++)
+           {
+            T[0][j] -=Opoint[j];
+            T[1][j] -=Opoint[j];
+            }
+         
+         T = LinearAlgebra.mult( Or,T);
+         
+         normalize( T[0] );  
+         float dotProd = T[0][0]*T[1][0]+T[0][1]*T[1][1]+T[0][2]*T[1][2];
+         for( int j=0; j< 3; j++)
+            T[1][j] -= dotProd*T[0][j];
+         normalize(T[1]);
+         normalize( T[2]);
+         float[][] TT = new float[3][3];
+         for( int i=0;i<3;i++)
+          for( int j=0; j<3; j++)
+            TT[i][j]= T[i][j];
+
+        
+         T =  LinearAlgebra.getInverse( TT );
+         if( T == null)
+           T = Ident;
+         Transf.setTransformation(T, null, null);
+
+         
+         setData( getDataSet(), getState().get_int( ViewerState.CONTOUR_STYLE) );
+         rpl_.draw();
+        }
+
+      }
+   public void normalize( float[] v)
+     {
+      float L =(float) java.lang.Math.sqrt( v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+      if( L == 0)
+        return;
+      v[0] = v[0]/L;
+      v[1]=v[1]/L;
+      v[2]=v[2]/L;
+      }
    public static void main( String args[])
    {JFrame jf = new JFrame("QxQyQz transform");
    
