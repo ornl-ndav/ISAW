@@ -30,6 +30,10 @@
 
  *
  * $Log$
+ * Revision 1.12  2003/08/28 18:54:31  dennis
+ * Added support for .csd files (concatenated files from the
+ * Ideas MC simulation program)
+ *
  * Revision 1.11  2003/06/13 22:01:15  bouzekc
  * Now extends RobustFileFilter to take care of common
  * functionality.  Removed setExtension() method and
@@ -84,6 +88,7 @@ public class NeutronDataFileFilter extends RobustFileFilter
     v.add(".run");
     v.add(".xmn");
     v.add(".gsa");
+    v.add(".csd");
     super.setExtensionList(v);
   }
 
