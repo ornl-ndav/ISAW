@@ -30,6 +30,10 @@
 
  *
  * $Log$
+ * Revision 1.8  2004/05/18 15:27:02  rmikk
+ * The toString method now returns the result of the DataSet's toString()
+ *    method.  Now changing the title WILL change what appears in the tree
+ *
  * Revision 1.7  2002/11/27 23:27:07  pfpeterson
  * standardized header
  *
@@ -81,7 +85,7 @@ public class DataSetMutableTreeNode
 
   public String toString()
   {
-    return name;
+    return ds.toString();
   }
 
 
