@@ -30,6 +30,9 @@
  * Modified:
  *             
  * $Log$
+ * Revision 1.3  2003/02/07 13:48:19  dennis
+ * Added getDocumentation() method. (Mike Miller)
+ *
  * Revision 1.2  2002/11/27 23:17:40  pfpeterson
  * standardized header
  *
@@ -95,6 +98,31 @@ public class ExtractCurrentlySelected extends DS_EditList
      
      
       }
+      
+ /* ---------------------------getDocumentation--------------------------- */
+ /**
+  *  Returns a string of the description/attributes of ExtractCurrentlySelected
+  *   for a user activating the Help System
+  */
+  public String getDocumentation()
+  { 
+    StringBuffer Res = new StringBuffer();
+    Res.append("@overview This operator extracts the selected or ");
+    Res.append("non-selected groups from the given dataset.");
+    Res.append("@algorithm Given a data set, a status, and whether to ");
+    Res.append("make a new dataset, the selected (status = true) or ");
+    Res.append("unselected (status = false) groups are extracted from ");
+    Res.append("the dataset.\n");
+    Res.append("@param ds\n");
+    Res.append("@param status\n");
+    Res.append("@param make_new_ds\n");
+    Res.append("@return a reference to the dataset\n"); 
+    Res.append("@error There is no Data Set\n");  
+    Res.append("@error Result has no entries\n");   
+    
+    return Res.toString();
+    
+  }
     /** Returns <B>ExtSel</b>, the command used by Scripts to refer to this
    * operator
    */
@@ -161,8 +189,15 @@ public class ExtractCurrentlySelected extends DS_EditList
  /** A Test program to see if the class  paths are set up correctly
  */
  public static void main( String args[] )
-   {System.out.println( "ExtractCurrentlySelected" );
-    ExtractCurrentlySelected CS = new ExtractCurrentlySelected();
+   {
+    System.out.println( "Test for ExtractCurrentlySelected started..." );
+    
+    DataSet ds = DataSetFactory.getTestDataSet();
+    
+    ExtractCurrentlySelected CS = new ExtractCurrentlySelected(ds, false, false);
+    System.out.println( CS.getResult().toString() );
+    System.out.println( CS.getDocumentation() );
+    System.out.println( "Test for ExtractCurrentlySelected finished..." );
    }
 
 
