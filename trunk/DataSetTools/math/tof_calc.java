@@ -4,9 +4,14 @@
  *  Ported to Java from tof_vis_calc.c
  * 
  *  $Log$
+ *  Revision 1.7  2000/08/01 14:36:25  dennis
+ *  Added version of ReBin that also calculates rebinned error values,
+ *  given error values for the original histogram.
+ *
  *  Revision 1.6  2000/07/31 13:36:47  dennis
  *  Added methods to "smooth" functions by averaging nearby points.  One version
- *  just smooths the functions, the other version also calculates new error values.
+ *  just smooths the functions, the other version also calculates new error 
+ *  values.
  *
  *  Revision 1.5  2000/07/26 20:47:00  dennis
  *  Now allow zero parameter in velocity<->energy conversions
@@ -244,6 +249,214 @@ public static final float  RADIANS_PER_DEGREE  = 0.01745332925f;
     return( true );
   }
 
+
+  /* ------------------------------ ReBin ---------------------------------- */
+  /**
+   * Constructs a new histogram by rearranging the counts of an input histogram
+   * into a new set of bins in a new histogram.  If a new histogram bin
+   * overlaps part of a bin of the input histogram, a number of counts
+   * proportional to the amount of the input bin covered by the new bin is
+   * assigned to the new bin.  If a new histogram bin entirely contains an
+   * input histogram bin, all of the counts from the input bin are assigned
+   * to the new bin.  The bins of the new histogram recieve the total of all
+   * such counts from bins in the input histogram that they contain, or
+   * partially overlap.  Also see the method "ResampleBin".
+   *
+   * @param   iX[]      Array of bin boundaries for the input histogram.  These
+   *                    can be an arbitrary non-decreasing sequence of X values.   * @param   iHist[]   Array of histogram values for the input histogram. The
+   *                    length of iHist[] must be one less than the length of
+   *                    iX[].
+   * @param   nX[]      Array of bin boundaries for the new histogram.  These
+   *                    can be an arbitrary non-decreasing sequence of X values.   * @param   nHist[]   Array of histogram values for the input histogram. The
+   *                    length of nHist[] must be one less than the length of
+   *                    nX[].
+   */
+
+  public static boolean ReBin( float iX[], float iHist[], float iErr[],
+                               float nX[], float nHist[], float nErr[] )
+  {
+    int  num_i, num_n;
+    int  n, k, i, il;
+    float  nXa, nXb,
+           iXa, iXb,
+           iXmin, iXmax,
+           nXmin, nXmax;
+    float  iXtemp;
+    float  sum, 
+           err,
+           err_sum;
+
+                                /* do some basic checks on validity of data */
+    num_i = iX.length - 1;
+    if ( num_i <= 0 )
+    {
+      System.out.println("ERROR in ReBin ... not enough input X values");
+      return( true );
+    }
+    iXmin = iX[ 0 ];
+    iXmax = iX[ num_i ];
+
+    num_n = nX.length - 1;
+    if ( num_n <= 0 )
+    {
+      System.out.println("ERROR in ReBin ... not enough output X values");
+      return( false );
+    }
+    nXmin = nX[ 0 ];
+    nXmax = nX[ num_n ];
+
+    if ( iHist.length != num_i )
+    {
+      System.out.println("ERROR in ReBin ... iHist size wrong");
+      return( false );
+    }
+    if ( nHist.length != num_n )
+    {
+      System.out.println("ERROR in ReBin ... nHist size wrong");
+      return( false );
+    }
+
+    if ( iErr.length != num_i )
+    {
+      System.out.println("ERROR in ReBin ... iErr size wrong");
+      return( false );
+    }
+    if ( nErr.length != num_n )
+    {
+      System.out.println("ERROR in ReBin ... nErr size wrong");
+      return( false );
+    }
+
+                                              /* check for degenerate cases */
+    if ( (nXmax <= iXmin) || (nXmin >= iXmax) ||
+         (nXmin >= nXmax) || (iXmin >= iXmax)  )
+    {
+      for ( n = 0; n < nHist.length; n++ )
+        nHist[n] = 0.0f;
+      return( true );
+    }
+
+                                  /* advance on new interval to first point */
+                                  /* nXa  >= start of input interval.       */
+    n   = 0;
+    nXa = nXmin;
+    while ( nXa < iXmin )
+    {
+      nHist[n] = 0.0f;
+      nErr[n]  = 0.0f;
+      n++;
+      nXa = nX[n];
+    }
+                               /* advance on input interval to first point  */
+                               /* >= nXa (if possible).  As we go, find sum */
+                               /* of initial bins in input histogram.       */
+    sum     = 0.0f;
+    err_sum = 0.0f;
+    i       = 0;
+    iXa     = iXmin;
+    while ( (iXa < nXa) && (i < num_i) )
+    {
+      sum     = sum + iHist[i];
+      err_sum = err_sum + iErr[i] * iErr[i];
+      i++;
+      iXa = iX[i];
+    }
+                                /* if we exceeded nXa, correct for partial  */
+                                /* bin and set iXa back to GLB of nXa       */
+    if ( (iXa > nXa) && (i > 0) )
+    {
+       sum     = sum - iHist[i-1] * (iXa - nXa)/(iXa - iX[i-1]);
+       err     = iErr[i-1] * (nXa - iX[i-1])/(iXa - iX[i-1]);
+       err_sum = err_sum - iErr[i-1] * iErr[i-1] + err * err;
+       i--;
+       iXa = iX[i];
+    }
+                               /* if there is an initial output bin for the */
+                               /* sum of the initial input bins, save sum.  */
+    if ( n > 0 )
+    {
+      nHist[n-1] = sum;
+      nErr[n-1]  = (float)Math.sqrt( err_sum );
+    }
+                               /* now deal with general case.  At this point */
+                               /* we know iXa = GLB( nXa )                   */
+    while ( (n < num_n) && (nXa < iXmax) )
+    {
+      nXb = nX[ n+1 ];
+      il = i + 1;
+      while ( (il < num_i) && (iX[il] < nXb) )
+        il++;
+
+      iXb = iX[ il ];
+      if ( il == i+1 )                /* [iXa, iXb] is just one subinterval  */
+        {
+                                   /* add portion of histogram corresponding */
+                                   /* overlapping part of the two intervals  */
+                                   /* [iXa, iXb] and [nXa, nXb]              */
+
+          if ( iXb < nXb )            /* we're at the end of input intervals */
+          {
+            sum = iHist[i] * ( iXb - nXa ) / ( iXb - iXa );
+            err = iErr[i]  * ( iXb - nXa ) / ( iXb - iXa );
+            err_sum = err * err;
+          }
+          else
+          {
+            sum = iHist[i] * ( nXb - nXa ) / ( iXb - iXa );
+            err = iErr[i]  * ( nXb - nXa ) / ( iXb - iXa );
+            err_sum = err * err;
+          }
+        }
+
+      else                          /* [iXa, iXb] contains >= 2 subintervals */
+        {
+                                             /* start with part of first bin */
+          iXtemp  = iX[ i+1 ];
+          sum     = iHist[i] * ( iXtemp - nXa ) / ( iXtemp - iXa );
+          err     = iErr[i]  * ( iXtemp - nXa ) / ( iXtemp - iXa );
+          err_sum = err * err;
+
+          for ( k = i + 1; k < il - 1; k++ )           /* add up middle bins */
+          {
+            sum     = sum + iHist[k];
+            err_sum = err_sum + iErr[k] * iErr[k];
+          }
+
+          if ( iXb < nXb )                /* we're at end of input intervals */
+          {                               /* so add all of last bin          */
+            sum = sum + iHist[il-1];
+            err_sum = err_sum + iErr[il-1] * iErr[il-1];
+          }
+          else                                       /* add part of last bin */
+          {
+            iXtemp = iX[il - 1];
+            sum = sum + iHist[il-1] * (nXb - iXtemp)/(iXb -iXtemp);
+            err = iErr[il-1] * (nXb - iXtemp)/(iXb -iXtemp);
+            err_sum = err_sum + err * err;
+          }
+        }
+
+      nHist[n] = sum;                   /* save result in new histogram */
+      nErr[n]  = (float)Math.sqrt( err_sum );
+
+      n++;                           /* advance to next bin in new histogram */
+      nXa = nXb;
+                                               /* advance in input histogram */
+                                               /* keeping iXa = GLB(nXa)     */
+      i   = il - 1;
+      iXa = iX[i];
+    }
+                                  /* fill out rest of new histogram (if any) */
+                                  /* with zeros.                             */
+
+    for ( k = n; k < num_n; k++ )
+    {
+      nHist[k] = 0.0f;
+      nErr[k]  = 0.0f;
+    }
+
+    return( true );
+  }
 
 
   /* --------------------------- ResampleBin ------------------------------ */
