@@ -33,6 +33,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.36  2003/03/05 19:49:04  dennis
+ *  GetSubsetDS now discards all attributes if the Attribute Mode is
+ *  set to NO_ATTRIBUTES, and discards crate, slot, input, efficiency
+ *  and "nominal" values if the Attribute Mode is set to
+ *  ANALYSIS_ATTRIBUTES.
+ *
  *  Revision 1.35  2003/02/24 21:09:14  dennis
  *  Moved STATUS string from TCPComm to TCPServer
  *
@@ -495,11 +501,17 @@ public class LiveDataServer extends    DataSetServer
             float max_tof = ((GetDataCommand)command).getMax_x();
             int   rebin   = ((GetDataCommand)command).getRebin_factor();
             String id_str = ((GetDataCommand)command).getGroup_ids();
+            int   attr_mode = ((GetDataCommand)command).getAttribute_mode();
             if ( ( min_tof <  max_tof  &&  min_tof > 0 )     || 
                    rebin   != 1                              ||
-                   !id_str.equals(CommandObject.ALL_IDS)     ) 
+                   !id_str.equals(CommandObject.ALL_IDS)     ||
+                   attr_mode != Attribute.FULL_ATTRIBUTES     ) 
             {
-              comp_ds = getSubsetDS( index, id_str, min_tof, max_tof, rebin );
+              comp_ds = getSubsetDS( index, 
+                                     id_str, 
+                                     min_tof, max_tof, 
+                                     rebin,
+                                     attr_mode );
             }
             else                                      // send full DataSet
             {
@@ -663,11 +675,16 @@ public class LiveDataServer extends    DataSetServer
     return comp_ds[index];
   }
 
+ /* ----------------------------- getSubsetDS ------------------------------ */
+ /*
+  *  Extract a subset of the requested DataSet using the specified parameters.
+  */
   private CompressedDataSet getSubsetDS( int    index, 
                                          String id_str, 
                                          float  min_tof, 
                                          float  max_tof, 
-                                         int    rebin )
+                                         int    rebin,
+                                         int    attr_mode )
   {
     DataSet ds =  data_set[index];
     
@@ -717,6 +734,32 @@ public class LiveDataServer extends    DataSetServer
           }
           new_ds.addData_entry( d );
         }
+
+   if ( attr_mode == Attribute.NO_ATTRIBUTES )
+     for ( int i = 0; i < new_ds.getNum_entries(); i++ )
+     {
+       AttributeList empty_list = new AttributeList();
+       Data d = ds.getData_entry(i);
+       d.setAttributeList( empty_list );
+     }
+
+   else if ( attr_mode == Attribute.ANALYSIS_ATTRIBUTES )
+     for ( int i = 0; i < new_ds.getNum_entries(); i++ )
+     {
+       String    name;
+       Data d = ds.getData_entry(i);
+       for ( int j = d.getNum_attributes()-1; j >= 0; j-- ) // go through each 
+       {                                                    // attribute list
+          name = d.getAttribute(j).getName();               // once
+          if ( name.equals( Attribute.CRATE )      ||
+               name.equals( Attribute.SLOT  )      ||
+               name.equals( Attribute.INPUT )      ||
+               name.equals( Attribute.NOMINAL_ENERGY_IN )            ||
+               name.equals( Attribute.NOMINAL_SOURCE_TO_SAMPLE_TOF ) ||
+               name.equals( Attribute.EFFICIENCY_FACTOR )            )
+             d.removeAttribute(j);
+       }
+     }
 
     return new CompressedDataSet( new_ds );
   }
