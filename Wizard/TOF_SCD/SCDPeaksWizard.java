@@ -29,6 +29,10 @@
  *
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
+ * $Log$
+ * Revision 1.3  2003/06/06 15:12:04  bouzekc
+ * Added log message header to file.
+ *
  */
 
 package Wizard.TOF_SCD;
