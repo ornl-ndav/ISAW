@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/12/15 02:06:09  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.10  2003/07/07 15:56:09  bouzekc
  * Added missing param tags in constructor and
  * getDocumentation().
@@ -70,16 +73,23 @@
  */
 package Operators.TOF_Diffractometer;
 
-import DataSetTools.operator.*;
-import DataSetTools.operator.Generic.TOF_Diffractometer.*;
-import DataSetTools.operator.DataSet.EditList.*;
-import DataSetTools.retriever.*;
-import DataSetTools.dataset.*;
-import DataSetTools.viewer.*;
-import DataSetTools.util.*;
-import DataSetTools.math.*;
-import java.util.*;
-import DataSetTools.parameter.*;
+import java.util.Vector;
+
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.math.DetectorPosition;
+import DataSetTools.operator.Operator;
+import DataSetTools.operator.Parameter;
+import DataSetTools.operator.Generic.TOF_Diffractometer.GenericTOF_Diffractometer;
+import DataSetTools.parameter.BooleanPG;
+import DataSetTools.parameter.IntegerPG;
+import DataSetTools.parameter.StringPG;
+import DataSetTools.retriever.RunfileRetriever;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.IntList;
+import DataSetTools.viewer.IViewManager;
+import DataSetTools.viewer.ViewManager;
 
 /** 
  *  This operator will group together the specified groups into a data set. 

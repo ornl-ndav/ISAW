@@ -33,6 +33,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.48  2003/12/15 02:06:09  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.47  2003/11/11 21:10:26  bouzekc
  * Made result_param private and added accessor method for it.
  *
@@ -216,30 +219,23 @@
  */
 package DataSetTools.wizard;
 
-import Command.ParameterClassList;
+import java.awt.Color;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 
 import DataSetTools.components.ParametersGUI.PropChangeProgressBar;
-
-import DataSetTools.dataset.DataSet;
-
-import DataSetTools.operator.*;
-
-import DataSetTools.parameter.*;
-
-import DataSetTools.util.*;
-
-import java.awt.Color;
-import java.awt.GridLayout;
-
-import java.beans.*;
-
-import java.io.File;
-import java.io.Serializable;
-
-import java.util.Vector;
-
-import javax.swing.*;
-import javax.swing.border.*;
+import DataSetTools.operator.Operator;
+import DataSetTools.parameter.IParameter;
+import DataSetTools.parameter.IParameterGUI;
+import DataSetTools.util.ErrorString;
+import DataSetTools.util.PropertyChanger;
+import DataSetTools.util.SharedData;
 
 
 /**

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/12/15 02:10:49  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.4  2003/02/14 13:31:38  dennis
  * Added getDocumentation() method. (Tyler Stelzer)
  *
@@ -47,15 +50,21 @@
  */
 package Operators.TOF_DG_Spectrometer;
 
-import DataSetTools.operator.*;
-import DataSetTools.operator.Generic.TOF_DG_Spectrometer.*;
-import DataSetTools.operator.DataSet.EditList.*;
-import DataSetTools.retriever.*;
-import DataSetTools.dataset.*;
-import DataSetTools.viewer.*;
-import DataSetTools.util.*;
-import DataSetTools.math.*;
-import java.util.*;
+import java.util.Vector;
+
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.DataSetFactory;
+import DataSetTools.dataset.VariableXScale;
+import DataSetTools.dataset.XScale;
+import DataSetTools.math.DetectorPosition;
+import DataSetTools.math.NumericalAnalysis;
+import DataSetTools.operator.Operator;
+import DataSetTools.operator.Parameter;
+import DataSetTools.operator.DataSet.EditList.DataSetSort;
+import DataSetTools.operator.Generic.TOF_DG_Spectrometer.GenericTOF_DG_Spectrometer;
+import DataSetTools.util.ErrorString;
 
 /** 
  *  This operator produces a DataSet with one entry, a Data block giving the

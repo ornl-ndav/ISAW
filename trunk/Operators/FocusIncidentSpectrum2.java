@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.8  2003/12/15 02:06:09  bouzekc
+ * Removed unused imports.
+ *
  * Revision 1.7  2003/02/12 21:54:44  dennis
  * Changed to use PixelInfoList instead of SegmentInfoList
  *
@@ -56,16 +59,25 @@
 
 package Operators;
 
-import java.io.*;
 import java.util.Vector;
-import DataSetTools.dataset.*;
-import DataSetTools.util.*;
-import DataSetTools.math.*;
-import DataSetTools.operator.*;
-import DataSetTools.operator.DataSet.Special.*;
+
+import DataSetTools.dataset.Attribute;
+import DataSetTools.dataset.Data;
+import DataSetTools.dataset.DataSet;
+import DataSetTools.dataset.HistogramTable;
+import DataSetTools.dataset.PixelInfoList;
+import DataSetTools.dataset.XScale;
+import DataSetTools.math.DetectorPosition;
+import DataSetTools.math.Vector3D;
+import DataSetTools.math.tof_data_calc;
+import DataSetTools.operator.HiddenOperator;
+import DataSetTools.operator.Operator;
+import DataSetTools.operator.Parameter;
+import DataSetTools.operator.Generic.Special.GenericSpecial;
+import DataSetTools.operator.Generic.Special.UpstreamMonitorID;
+import DataSetTools.parameter.IParameter;
 import DataSetTools.retriever.RunfileRetriever;
-import DataSetTools.operator.Generic.Special.*;
-import DataSetTools.parameter.*;
+import DataSetTools.util.SharedData;
 
 /**
  * This operator focuses the incident spectrum from a beam monitor to

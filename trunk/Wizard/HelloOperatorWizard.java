@@ -32,15 +32,8 @@
 
 package Wizard;
 
-import java.util.*;
-import java.io.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import DataSetTools.wizard.*;
-import DataSetTools.util.*;
-import DataSetTools.operator.*;
-import DataSetTools.parameter.*;
+import DataSetTools.wizard.OperatorForm;
+import DataSetTools.wizard.Wizard;
 import Operators.HelloOperator;
 
 /**
