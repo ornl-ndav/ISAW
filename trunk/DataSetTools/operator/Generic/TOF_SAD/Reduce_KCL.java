@@ -30,6 +30,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.22  2004/04/21 14:27:24  chatterjee
+ * Added a new parameter beam_stop dimension (bs_dim).
+ * Scripts calling Reduce_KCL will need to provide this number in cms.
+ * For SAND the value is 1.5 and for SASI 2.1.
+ *
  * Revision 1.21  2004/04/08 15:17:11  dennis
  * Now uses "new" DataSetPGs consistently and calls clear() after getting the
  * value from the DataSetPG, to avoid memory leaks.
@@ -127,9 +132,11 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
     private boolean debug = false; 
 
-    public static int Nedge = 1;      //mask off edge detectors or those
-    public static float Radmin = 1.5f / 100;//too close or too far from the origin
-    public static float Radmax = 100.0f / 100;
+    public static int Nedge = 1;                   //mask off edge detectors or those
+   // public static float Radmin = 1.5f / 100;     //too close from the origin for SAND detector
+    public  float Radmin;                          // = 2.1f / 100;too close from the origin for SASI detector
+    public static float Radmax = 100.0f / 100;     //too far from the origin for SAND detector
+    public float bs_dim;
     DataSet TransS, TransB, Eff, Sens;
     float[] qu;
     DataSet[]RUNBds = new DataSet[2];
@@ -275,25 +282,26 @@ public class Reduce_KCL  extends GenericTOF_SAD{
 
     /**
     *    Constructor for Reduce_KCL.
-    *    @param TransS   The sample Transmission data set
-    *    @param TransB   The background Transmission data set
-    *    @param  Eff     The Efficiency data set
-    *    @param Sens     The sensitivity data set
-    *    @param quV      The q bins if 1d or qxmin,qxmax, qymin, qymax
-    *    @param RUNSds0   the monitor  for the sample
-    *    @param RUNSds1   the Histogram  for the sample
-    *    @param RUNBds0  the  monitor for the Background
-    *    @param RUNBds1  the  Histogramfor the Background
-    *    @param RUNCds0  null or the monitor for the  Cadmium run
-    *    @param RUNCds1  null or the  Histogram for the  Cadmium run
-    *    @param BETADN  The delayed neutron fraction
-    *    @param SCALE   The scale factor to be applied to all data
-    *    @param  THICK  The sample thickness in m
-    *    @param  XOFF    The Xoffset of beam from the center in meters
-    *    @param  YOFF    The Yoffset of beam from center in meters
-    *    @param NQxBins  The number of Qx bins if 2D,otherwise use a neg number
-    *    @param NQyBins  The number of Qx bins if 2D,otherwise use a neg number 
+    *    @param TransS     The sample Transmission data set
+    *    @param TransB     The background Transmission data set
+    *    @param  Eff       The Efficiency data set
+    *    @param Sens       The sensitivity data set
+    *    @param quV        The q bins if 1d or qxmin,qxmax, qymin, qymax
+    *    @param RUNSds0    The monitor  for the sample
+    *    @param RUNSds1    The Histogram  for the sample
+    *    @param RUNBds0    The  monitor for the Background
+    *    @param RUNBds1    The  Histogramfor the Background
+    *    @param RUNCds0    null or the monitor for the  Cadmium run
+    *    @param RUNCds1    null or the  Histogram for the  Cadmium run
+    *    @param BETADN     The delayed neutron fraction
+    *    @param SCALE      The scale factor to be applied to all data
+    *    @param  THICK     The sample thickness in m
+    *    @param  XOFF      The Xoffset of beam from the center in meters
+    *    @param  YOFF      The Yoffset of beam from center in meters
+    *    @param NQxBins    The number of Qx bins if 2D,otherwise use a neg number
+    *    @param NQyBins    The number of Qx bins if 2D,otherwise use a neg number 
     *    @param useTransB  Use the background Transmission run
+    *    @param bs_dim     New beam stop dimensions
    */
  
 
@@ -301,7 +309,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         Vector quV, DataSet RUNSds0, DataSet RUNSds1, DataSet RUNBds0, 
         DataSet RUNBds1,DataSet RUNCds0,DataSet RUNCds1, float BETADN, 
         float SCALE, float THICK,
-        float XOFF, float YOFF, int NQxBins, int NQyBins, boolean useTransB) {
+        float XOFF, float YOFF, int NQxBins, int NQyBins, boolean useTransB, float bs_dim) {
         
         super( "Reduce");
         parameters = new Vector();
@@ -324,6 +332,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         addParameter( new IntegerPG("", new Integer(NQxBins)));
         addParameter( new IntegerPG("", new Integer(NQyBins)));
         addParameter( new BooleanPG("", new Boolean( useTransB)));
+        addParameter( new FloatPG("", new Float(bs_dim)));
       }
 
     public void setDefaultParameters(){
@@ -349,6 +358,7 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         addParameter( new IntegerPG("# Qx bins", new Integer(-1)));
         addParameter( new IntegerPG("#Qy bins", new Integer(-1)));
         addParameter( new BooleanPG("", new Boolean( true)));
+        addParameter( new FloatPG("Default beam stop dimensions", new Float(0.0f)));
     }
 
   /* ---------------------------- getResult ------------------------------- */
@@ -417,9 +427,20 @@ public class Reduce_KCL  extends GenericTOF_SAD{
         int NQxBins=((Integer)(getParameter(16).getValue())).intValue();
         int NQyBins=((Integer)(getParameter(17).getValue())).intValue();
         useTransB =((Boolean)(getParameter(18).getValue())).booleanValue();
+        float bs_dim=((Float)(getParameter(19).getValue())).floatValue();
+
         this.SCALE = SCALE;
         this.XOFF = XOFF;
         this.YOFF = YOFF;
+
+        this.bs_dim = bs_dim;
+
+        Radmin = bs_dim/100;
+
+
+        System.out.println("Radmin =  "+Radmin);
+
+
         REDUCEOUT = "S.OUT";
         DIVx = NQxBins;
         DIVy = NQyBins;
