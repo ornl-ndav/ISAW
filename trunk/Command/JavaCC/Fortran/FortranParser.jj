@@ -30,6 +30,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2004/01/14 21:55:13  bouzekc
+ * Fixed a bug with math expression parentheses.
+ *
  * Revision 1.11  2004/01/14 21:41:36  bouzekc
  * Now allows math expressions, assignment from math expressions, and
  * assignment to variables.
@@ -555,6 +558,10 @@ TOKEN: {
 
 //~----------------------------------------------------------------------------
 // FORTRAN EXPRESSIONS
+// These expression matches are extremely generous with
+// allowing parentheses.  They will, in fact, allow invalid expressions
+// However, both a Fortran compiler and a Java compiler should
+// catch these expressions.
 //~----------------------------------------------------------------------------
 
 //math operators
@@ -598,13 +605,14 @@ TOKEN: {
 //the full set of expressions
 TOKEN: {
   <FORTRAN_EXPRESSION: (
-    <OPT_WS> ( <VARIABLE> <EQ> )?
+    <OPT_WS> ( ( <VARIABLE> <EQ> ) | "(" )?
     ( 
       ( <SIMPLE_EXPRESSION> | <NESTED_EXPRESSION> )
       ( <OPERATOR> 
         ( <SIMPLE_EXPRESSION> | <NESTED_EXPRESSION> ) 
       )* 
     )
+    ( ")" )?
     <OPT_WS>
   ) >
 }
