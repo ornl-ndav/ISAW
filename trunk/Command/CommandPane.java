@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.49  2003/02/24 13:26:44  rmikk
+ * Eliminated null pointer exception when jython is not available
+ *
  * Revision 1.48  2003/02/21 19:35:44  pfpeterson
  * Changed calls to fixSeparator appropriate (not deprecated) method.
  *
@@ -384,6 +387,7 @@ public class CommandPane extends JPanel  implements PropertyChangeListener,
             SP.setIObserverList( IObslist );
             SP.setPropertyChangeList( PC );           
             addDataSets( SP );
+            if( Language != null)
             if( SP instanceof ScriptProcessor)
               Language.setSelectedIndex( 0 );
             else
