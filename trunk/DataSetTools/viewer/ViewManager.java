@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.43  2004/02/11 22:37:48  millermi
+ *  - Added getView() which returns the viewer type currently
+ *    being displayed in the ViewManager.
+ *
  *  Revision 1.42  2004/01/29 00:02:57  dennis
  *  Added HKL_SliceView
  *
@@ -339,9 +343,23 @@ public class ViewManager extends    JFrame
       BuildOptionMenu();
       System.gc();
    }
+   
+   /**
+    * Get the view type for this view manager. The view type Strings are
+    * listed in the IViewManager interface. Use getDataSetView() to actually
+    * get a DataSetViewer.
+    *
+    *  @return viewtype
+    *  @see DataSetTools.viewer.IViewManager
+    */
+   public String getView()
+   {
+     return viewType;
+   }
 
-   public static DataSetViewer getDataSetView( DataSet tempDataSet, String view_type,
-            ViewerState state){
+   public static DataSetViewer getDataSetView( DataSet tempDataSet,
+                                               String view_type,
+                                               ViewerState state){
       DataSetViewer viewer = null;
       
       if ( view_type.equals( IMAGE ))
