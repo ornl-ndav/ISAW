@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2001/08/09 15:33:18  dennis
+ *  Added concept of "data_name" and now handles command to
+ *  get the data_name.  Also added debug_server flag and
+ *  put debug prints in "if ( debug_server )" blocks.
+ *
  *  Revision 1.1  2001/08/03 21:25:33  dennis
  *  Base class for TCP servers, manages connections, user names and
  *  passwords.
@@ -57,18 +62,22 @@ import java.util.*;
 
 public class TCPServer implements ITCPUser
 {
-  public static final String COMMAND_PASSWORD_IS = "COMMAND:PASSWORD_IS ";
-  public static final String COMMAND_USER_IS     = "COMMAND:USER_IS ";
-  public static final String ANSWER_OK           = "OK";
-  public static final String ANSWER_NOT_OK       = "Not_OK";
+  public static final String COMMAND_PASSWORD_IS  = "COMMAND:PASSWORD_IS ";
+  public static final String COMMAND_USER_IS      = "COMMAND:USER_IS ";
+  public static final String COMMAND_GET_DATA_NAME= "COMMAND:GET_DATA_NAME ";
+  public static final String ANSWER_OK            = "OK";
+  public static final String ANSWER_NOT_OK        = "Not_OK";
 
-  public static final String UNKNOWN_USER        = "UNKNOWN";
-  public static final String FAIL_STRING         = "WRITE FAIL";
-  public static final String EXIT_STRING         = "EXIT";
-  public static final String INVALID_STRING      = "Bad user_name or password";
-  public static final String INVALID_COMMAND     = "Invalid Command";
+  public static final String UNKNOWN_USER         = "UNKNOWN";
+  public static final String FAIL_STRING          = "WRITE FAIL";
+  public static final String EXIT_STRING          = "EXIT";
+  public static final String INVALID_STRING       = "Bad user_name or password";
+  public static final String INVALID_COMMAND      = "Invalid Command";
 
   public static final int    DEFAULT_SERVER_PORT_NUMBER = 6088;
+  public static final String DEFAULT_PASSWORD = "IPNS";
+
+  public boolean debug_server = false;
 
   private    boolean password_ok = false;
   private    boolean user_ok     = false;
@@ -78,6 +87,8 @@ public class TCPServer implements ITCPUser
   private    String    log_filename = "TCPServerLog.txt";
   protected  String    server_name  = "TCPServer";
   private    String    start_time   = "";
+  protected  String    data_name    = "NONE";       // identifier for last
+                                                    // data processed.   
 
   /* ---------------------------- Constructor -------------------------- */
   /**
@@ -128,7 +139,6 @@ public class TCPServer implements ITCPUser
    synchronized public void ProcessCommand( String          command, 
                                             ThreadedTCPComm tcp_io   )
    {  
-      System.out.println("TCPSever ProcessCommand called");
       try
       {
         tcp_io.Send( ANSWER_NOT_OK );      // no operation was carried out
@@ -160,7 +170,8 @@ public class TCPServer implements ITCPUser
     if ( data_obj instanceof String )
     {
       String command = (String)data_obj; 
-      System.out.println("Received request " + command );
+      if ( debug_server )
+        System.out.println("Received request " + command );
       try
       {
         if ( command.startsWith( COMMAND_USER_IS ))  
@@ -195,6 +206,14 @@ public class TCPServer implements ITCPUser
           return;
         }
 
+        else if ( command.startsWith( COMMAND_GET_DATA_NAME ))
+        {
+          if ( user_ok && password_ok )
+            tcp_io.Send( data_name );
+          else
+            tcp_io.Send( ANSWER_NOT_OK );          
+        }
+
         MakeLogEntry( command, tcp_io.getInetAddressString(), false );
 
         if ( user_ok && password_ok )
@@ -220,6 +239,9 @@ public class TCPServer implements ITCPUser
       {
         System.out.println("Error: TCPServer command: " + command);
         System.out.println("Error: couldn't send data " + e ); 
+        System.out.println( "Exception is " + e );
+        e.printStackTrace();
+
         MakeLogEntry( FAIL_STRING + " for " + command,
                       tcp_io.getInetAddressString(), 
                       true );
@@ -229,7 +251,9 @@ public class TCPServer implements ITCPUser
 
     else if ( data_obj instanceof TCPCommExitClass )
     {
-      System.out.println("Exit received in TCPServer");
+      if ( debug_server )
+        System.out.println("Exit received in TCPServer");
+
       MakeLogEntry( EXIT_STRING, tcp_io.getInetAddressString(), true);
     }
 
@@ -287,10 +311,7 @@ public class TCPServer implements ITCPUser
 
     log.put( log_key, new LogEntry( command, requests ) );
     if ( write_file )
-    {
-      System.out.println("Write LOG FILE: ");
       WriteLogFile();
-    }
   }
 
   /* ---------------------------- WriteLogFile --------------------------- */
