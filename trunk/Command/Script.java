@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/04/02 14:52:51  pfpeterson
+ * Altered the fix_script() method to also remove carriage return, '
+'.
+ *
  * Revision 1.4  2003/03/21 17:27:35  pfpeterson
  * Now adds a "
  * " at the end of the script if it isn't already there.
@@ -166,10 +170,20 @@ public class Script extends Object{
 
   // ============================== PRIVATE UTILITY METHODS
   /**
-   * This method just appends a "\n" at the end of the script if it
-   * isn't already there.
+   * This method removes "\r" and appends a "\n" at the end of the
+   * script if it isn't already there.
    */
   private void fix_script(){
+    int index=this.script.indexOf("\r");
+    if( index>=0){
+      StringBuffer buffer=new StringBuffer(this.script);
+      while(index>0){
+        buffer.deleteCharAt(index);
+        index=buffer.toString().indexOf("\r");
+      }
+      this.script=buffer.toString();
+    }
+
     if(! this.script.endsWith("\n") ){
       this.script=this.script+"\n";
     }
