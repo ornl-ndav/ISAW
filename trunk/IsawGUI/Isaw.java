@@ -31,7 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.205  2004/07/28 20:15:06  dennis
+ *  Changed version to 1.7.1 alpha 8
+ *
  *  Revision 1.204  2004/07/12 22:26:56  kramer
+ *
  *  Added ISISFileFilter and AllInOneFileFilter to the filters used when loading
  *  files.  Now, the user can select to view only ISIS files or all of the files
  *  ISAW can understand.
@@ -745,7 +749,7 @@ public class Isaw
 
         if(SharedData.VERSION.equals("Unknown_Version"))
 
-          version="1.7.1 alpha 7";
+          version="1.7.1 alpha 8";
         else
           version=SharedData.VERSION;
 
