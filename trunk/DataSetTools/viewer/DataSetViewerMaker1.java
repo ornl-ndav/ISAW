@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/06/25 14:47:49  rmikk
+ *  Interpreted the value of ControlPanelWidth as a percent(not a decimal)
+ *
  *  Revision 1.15  2004/06/24 19:11:39  rmikk
  *  Incorporated the state variable ControlPanelWidth(%)
  *
@@ -203,7 +206,7 @@ public class DataSetViewerMaker1  extends DataSetViewer
     if( state != null){
        float f = state.get_float("ControlPanelWidth(%)");
        if( !Float.isNaN(f))
-        ImagePortion = 1-f;
+        ImagePortion = 1-f/100f;
      }
     
      if( ArrayScontrols.length+Compcontrols.length > 7){

@@ -38,6 +38,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.47  2004/06/25 14:47:28  rmikk
+ *  Interpreted the value of ControlPanelWidth as a percent(not a decimal)
+ *
  *  Revision 1.46  2004/06/24 22:23:42  rmikk
  *  Incorporated ControlPanelWidth(%)
  *
@@ -539,7 +542,7 @@ public class ContourView extends DataSetViewer
      if( state != null){
            f = state.get_float("ControlPanelWidth(%)");
            if( !Float.isNaN(f))
-             f = 1-f;
+             f = 1-f/100f;
            else
              f = .70f;
          }
