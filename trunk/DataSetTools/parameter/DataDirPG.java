@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/05/29 21:39:38  bouzekc
+ *  Removed the init(Vector init_values) method.  Now uses
+ *  BrowsePG's init method, and sets the file selection type
+ *  in the constructor.
+ *
  *  Revision 1.8  2003/03/03 16:32:06  pfpeterson
  *  Only creates GUI once init is called.
  *
@@ -69,6 +74,7 @@ import java.beans.*;
 import java.io.File;
 import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.util.SharedData;
+import DataSetTools.operator.Generic.TOF_SCD.*;
 
 /**
  * This is a particular case of the BrowsePG used for loading a single
@@ -95,64 +101,61 @@ public class DataDirPG extends BrowsePG{
         }
         this.type=TYPE;
         this.setValid(valid);
+        super.choosertype = BrowseButtonListener.DIR_ONLY;
     }
 
-    /**
-     * Allows for initialization of the GUI after instantiation.
-     */
-    public void init(Vector init_values){
-        if(this.initialized) return; // don't initialize more than once
-        if(init_values!=null){
-            if(init_values.size()==1){
-                // the init_values is what to set as the value of the parameter
-                this.setValue(init_values.elementAt(0));
-            }else{
-                // something is not right, should throw an exception
-            }
-        }
-        innerEntry=new StringEntry(this.getStringValue(),BrowsePG.VIS_COLS);
-        innerEntry.addPropertyChangeListener(IParameter.VALUE, this);
-        browse=new JButton("Browse");
-        browse.addActionListener(new BrowseButtonListener(innerEntry,
-                                   BrowseButtonListener.DIR_ONLY,this.filter));
-        entrywidget=new JPanel();
-        entrywidget.add(innerEntry);
-        entrywidget.add(browse);
-        this.setEnabled(this.getEnabled());
-        super.initGUI();
-    }
-
-    static void main(String args[]){
+    public static void main(String args[]){
         DataDirPG fpg;
+        //y position and delta y, so that multiple windows can 
+        //be displayed without too much overlap
         int y=0, dy=70;
-        String defString="/IPNShome/pfpeterson/IsawProps.dat";
+        
+        String defString="/IPNShome/bouzekc/IsawProps.dat";
 
-        fpg=new DataDirPG("a",defString);
+        fpg=new DataDirPG ("Enabled, not valid, no filters",defString);
         System.out.println(fpg);
         fpg.init();
         fpg.showGUIPanel(0,y);
         y+=dy;
-
-        fpg=new DataDirPG("b",defString);
-        System.out.println(fpg);
-        fpg.setEnabled(false);
-        fpg.init();
-        fpg.showGUIPanel(0,y);
-        y+=dy;
-
-        fpg=new DataDirPG("c",defString,false);
+        
+        //disabled browse button GUI
+        fpg=new DataDirPG ("Disabled, not valid, no filters",defString);
         System.out.println(fpg);
         fpg.setEnabled(false);
         fpg.init();
         fpg.showGUIPanel(0,y);
         y+=dy;
 
-        fpg=new DataDirPG("d",defString,true);
+        fpg=new DataDirPG ("Disabled, not valid, no filters",defString,false);
+        System.out.println(fpg);
+        fpg.setEnabled(false);
+        fpg.init();
+        fpg.showGUIPanel(0,y);
+        y+=dy;
+
+        fpg=new DataDirPG ("Valid, enabled, no filters",defString,true);
         System.out.println(fpg);
         fpg.setDrawValid(true);
         fpg.init();
         fpg.showGUIPanel(0,y);
+        
+        fpg=new DataDirPG ("Enabled, not valid, multiple filters",defString);
+        System.out.println(fpg);
+        //add some FileFilters
+        fpg.addFilter(new ExpFilter());
+        fpg.addFilter(new IntegrateFilter());
+        fpg.addFilter(new MatrixFilter());
+        fpg.init();
+        fpg.showGUIPanel(0,y);
+        y+=dy;
 
+        fpg=new DataDirPG ("Enabled, not valid, one filter",defString);
+        System.out.println(fpg);
+        //add some FileFilters
+        fpg.addFilter(new IntegrateFilter());
+        fpg.init();
+        fpg.showGUIPanel(0,y);
+        y+=dy;
     }
 
     /**
@@ -162,7 +165,7 @@ public class DataDirPG extends BrowsePG{
         DataDirPG pg=new DataDirPG(this.name,this.value,this.valid);
         pg.setDrawValid(this.getDrawValid());
         pg.initialized=false;
-        pg.filter=this.filter;
+        pg.filter_vector=this.filter_vector;
         return pg;
     }
 }
