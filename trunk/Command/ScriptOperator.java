@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.21  2003/03/10 19:27:06  pfpeterson
+ * Uses StringBuffer rather than Document. Also modernized some code.
+ *
  * Revision 1.20  2003/02/21 19:28:17  rmikk
  * Changed the Parameter argument to setParameter and addParameter
  *   to use IParameter instead of Parameter
@@ -67,7 +70,7 @@ import java.io.*;
  * Adds features to a ScriptProcessor to be more of an "Operator"
  */
 public class ScriptOperator extends GenericOperator
-               implements IObservable, Customizer{  //for property change events
+              implements IObservable, Customizer{  //for property change events
     private String filename;
     private String command;
     
@@ -91,15 +94,14 @@ public class ScriptOperator extends GenericOperator
         command = null;
         categList = null;
         SP = null;
-        IsawGUI.Util ut = new IsawGUI.Util();
-        Document D =ut.openDoc( filename ) ;
         errorMessage ="";
-        if((D == null) ||( filename == null )){
-            errorMessage = ER_FILE_ERROR;
-            return;
+        StringBuffer buffer=IsawGUI.Util.readTextFile(filename);
+        if(buffer==null || buffer.length()<=0){
+          errorMessage=ER_FILE_ERROR;
+          return;
         }
         
-        SP = new ScriptProcessor( D );
+        SP = new ScriptProcessor( buffer );
         if( SP.getErrorMessage().length( ) > 0 ){
             errorMessage = SP.getErrorMessage();
             return;
@@ -110,14 +112,16 @@ public class ScriptOperator extends GenericOperator
         if( j < 0 ) 
             j = filename.length();
         
-        String F = filename.replace('\\','/');
+        String F = FilenameUtil.setForwardSlash(filename);
         i = F.lastIndexOf( '/', j);
         if( i < 0 )
             i = -1;
         command = F.substring( i + 1, j );
         
-        if( i >= 0) F = F.substring( 0, i );
-        else F = System.getProperty("user.dir");
+        if( i >= 0)
+          F = F.substring( 0, i );
+        else
+          F = SharedData.getProperty("user.dir");
         
         if( F.charAt(F.length()-1)!='/')
             F = F + "/";
@@ -126,10 +130,10 @@ public class ScriptOperator extends GenericOperator
    
         String X;   
         String F2 =F;
-        X = System.getProperty( "ISAW_HOME");
+        X = SharedData.getProperty( "ISAW_HOME");
         
         if(X!=null){
-            X = X.replace( '\\', '/');
+            X = FilenameUtil.setForwardSlash(X);
             X.replace(java.io.File.pathSeparatorChar, ';');
             F2 = adjust ( F , X );
         }
@@ -143,11 +147,11 @@ public class ScriptOperator extends GenericOperator
         int g=0;
         String grp ="";
         
-        X = System.getProperty( "GROUP_HOME");
+        X = SharedData.getProperty( "GROUP_HOME");
         while( (MainCat== null)&&(X !=null)){
             if( MainCat == null){
                 if( X!=null){
-                    X = X.replace( '\\', '/');
+                    X = FilenameUtil.setForwardSlash(X);
                     X.replace(java.io.File.pathSeparatorChar, ';');
                     F3 = adjust ( F , X );
                 }
@@ -159,13 +163,13 @@ public class ScriptOperator extends GenericOperator
                 g++;
                 grp=""+g;
                 grp=grp.trim();
-                X = System.getProperty( "GROUP"+grp+"_HOME");
+                X = SharedData.getProperty( "GROUP"+grp+"_HOME");
             }
         }
         if( MainCat == null){
-            X = System.getProperty( "user.home");
+            X = SharedData.getProperty( "user.home");
             if( X != null){
-                X = X.replace( '\\', '/');
+                X = FilenameUtil.setForwardSlash(X);
                 X.replace(java.io.File.pathSeparatorChar, ';');
                 F3 = adjust ( F , X );
             }
@@ -175,9 +179,9 @@ public class ScriptOperator extends GenericOperator
             F = F3;
         }
         if( MainCat == null){
-            X = System.getProperty( "java.class.path"); 
+            X = SharedData.getProperty( "java.class.path"); 
             if( X != null){
-                X = X.replace( '\\', '/');
+                X = FilenameUtil.setForwardSlash(X);
                 X.replace(java.io.File.pathSeparatorChar, ';');
                 F3 = adjust ( F , X );
                 F = F3;
