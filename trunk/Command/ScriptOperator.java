@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2001/07/20 21:23:31  rmikk
+ * Fixed Main program so a script and or class file(?) can
+ * be executed as follows:
+ *     "java Command.ScriptProcessor  filename"
+ * The dialog box will pop up if there are any script parameters
+ *
  * Revision 1.10  2001/06/27 18:37:53  rmikk
  * Change USER_HOME to GROUP_HOME.
  * Changed Category List to contain Isaw Scripts if the leading
@@ -66,6 +72,7 @@ import javax.swing.text.*;
 //import Command.*;
 import java.lang.*;
 import DataSetTools.operator.*;
+import DataSetTools.components.ParametersGUI.*;
 import DataSetTools.util.*;
 import java.beans.*;
 import java.io.*;
@@ -442,11 +449,11 @@ public Object getResult()
          return null;
    }
 
-/** Test program for this module
+/** Allows running of Scripts without Isaw and/or the CommandPane
 */
 public static void main( String args [] )
   {
-   java.util.Properties isawProp;
+      /*java.util.Properties isawProp;
    isawProp = new java.util.Properties(System.getProperties());
    String path = System.getProperty("user.home")+"\\";
        path = StringUtil.fixSeparator(path);
@@ -462,15 +469,31 @@ public static void main( String args [] )
           System.out.println("Properties file could not be loaded due to error :" +ex);
        }
 
+*/
 
-
-
+  if( args == null)
+    System.exit( 0 );
+  if( args.length < 1)
+     System.exit( 0 );
   ScriptOperator SO;
-  SO = new ScriptOperator("C:/Ruth/Isaw/Scripts/MacDS.iss");
+  SO = new ScriptOperator( args[ 0 ] );
+  if( SO.getErrorMessage().length() > 0)
+   { System.out.println("Error ="+args[0]+"--"+SO.getErrorMessage());
+     System.exit( 0 );
+   }
+  if( SO.getNum_parameters() > 0)
+   {
+    JParametersDialog JP = new JParametersDialog( SO , null, null, null  );
+   }
+  else
+   {Object XX = SO.getResult();
+    System.out.print("Result =" +XX );        
+   }
 
-  System.out.println("xError ="+SO.getErrorMessage() );
-  System.out.println("filename="+SO.getFileName() );
-  SO.show();
+ if( SO != null)
+     if( SO.getErrorMessage() != null )
+  if( SO.getErrorMessage().length() > 0)
+    System.out.println("An Error occurred "+SO.getErrorMessage());
    }
  }
 
