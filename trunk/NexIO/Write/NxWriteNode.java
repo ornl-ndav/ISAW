@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2001/07/30 20:10:14  rmikk
+ * added a show() routine
+ *
  * Revision 1.1  2001/07/25 21:23:20  rmikk
  * Initial checkin
  *
@@ -95,6 +98,7 @@ public interface NxWriteNode
    *NOTE: ONLY the Root node invoke this operation
    */
     public void write();
+    public void show();
     public void close();
 
 }
