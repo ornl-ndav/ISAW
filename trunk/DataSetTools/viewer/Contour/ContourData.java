@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.33  2005/03/14 19:28:22  serumb
+ *  Now uses call to get combo box instead of public variable.
+ *
  *  Revision 1.32  2005/01/10 15:55:08  dennis
  *  Removed empty statement.
  *
@@ -832,7 +835,7 @@ public class ContourData
       for( int i =0; i< choices.length; i++)
         choices[i] = ""+DetNums[i];
       DetChoices = new LabelCombobox("Detectors", choices);
-      DetChoices.cbox.addActionListener( new DetectorActionListener());
+      DetChoices.getCBox().addActionListener( new DetectorActionListener());
       DetNum = state.get_int( ViewerState.CONTOUR_DETNUM);
       int find = FindIndex(DetNums, DetNum);
       if( find < 0)
@@ -866,7 +869,7 @@ public class ContourData
     public void actionPerformed( ActionEvent evt){
     int choice= DetNum;
     try{
-       choice = (new Integer( (String)DetChoices.cbox.getSelectedItem())).
+       choice = (new Integer( (String)DetChoices.getCBox().getSelectedItem())).
                  intValue();
     }catch( Exception ss){}
     if( choice != DetNum){
