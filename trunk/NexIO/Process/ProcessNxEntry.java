@@ -1,4 +1,5 @@
 
+
 /*
  * File:  ProcessNxEntry.java
  *
@@ -31,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/12/23 13:20:48  rmikk
+ * Fixed indentations and spacings between lines
+ *
  * Revision 1.5  2003/12/12 15:24:19  rmikk
  * The names of monitor data sets now start with Mon_ instead of M:
  *
@@ -50,11 +54,14 @@
  */
 
 package NexIO.Process;
+
+
 import NexIO.*;
 import NexIO.State.*;
 import DataSetTools.dataset.*;
 import NexIO.Util.*;
 import NexIO.Query.*;
+
 
 /**
  *   This class processes an NXentry.  There is only one of these. It uses
@@ -63,198 +70,209 @@ import NexIO.Query.*;
  *   Data Set.
  */
 
-public class ProcessNxEntry  implements IProcessNxEntry{
-  String errormessage="";
+public class ProcessNxEntry  implements IProcessNxEntry {
+    String errormessage = "";
 
+    /**
+     *  @return an errormessage or an empty string if there is no error
+     */
+    public String getErrorMessage() {
+        return errormessage;
+    }
 
-   /**
-    *  @return an errormessage or an empty string if there is no error
-    */
-  public String getErrorMessage(){
-     return errormessage;
-  }
-
-  
-  private boolean setErrorMessage( String message){
-     errormessage = message;
-     return true;
-  }
-
-   /**
-    *     Method that fills out the DataSet DS from information in the NXdata
-    *     or NXmonitor node. NXlog nodes will be added later
-    *     @param DS    The DataSet(not null) that is to have info added to it
-    *     @param NxEntryNode An NxNode with information on the NeXus NXentry class.
-    *     @param NxDataNode  An NxNode with information on the NeXus NXdata class.
-    *     @param States The linked list of state information
-    *     @param startGroupID The starting Group ID for the NEW data blocks that are
-    *                          added
-    */
-  public boolean processDS( DataSet DS, NxNode NxEntryNode , 
-              NxNode NxDataNode,  NxfileStateInfo States, int startGroupID ){
-     if( NxEntryNode == null){
-        errormessage = "null Entry node in ProcessNxEntry";
+    private boolean setErrorMessage(String message) {
+        errormessage = message;
         return true;
-     }
-     if( DS == null){
-        errormessage = "No Data Set in ProcessNxEntry";
-        return true;
-     }
-     boolean monitorDS = false;
-     if( NxDataNode == null){ // Monitor DataSet
-        int k = 0;
-        monitorDS = true;
-        DS.setTitle("Mon_"+ NxEntryNode.getNodeName());
-        Integer instType = ((Integer) DS.getAttributeValue( Attribute.INST_TYPE));
-        if( instType != null)
-        DataSetFactory.addMonitorOperators( DS,instType.intValue());
-        for( int child =0; child < NxEntryNode.getNChildNodes(); child++){
-           NxNode Child = NxEntryNode.getChildNode( child);
-           if( Child.getNodeClass().equals("NXmonitor")){
-              NxMonitor nxMon = new NxMonitor();
-              nxMon.setMonitorNum( startGroupID+k);
-              k++;
-              boolean res = nxMon.processDS(Child, DS);
-              if( res){
-                 errormessage = nxMon.getErrorMessage();
-                 return res;
-             }
-           }
+    }
+
+    /**
+     *     Method that fills out the DataSet DS from information in the NXdata
+     *     or NXmonitor node. NXlog nodes will be added later
+     *     @param DS    The DataSet(not null) that is to have info added to it
+     *     @param NxEntryNode An NxNode with information on the NeXus NXentry class.
+     *     @param NxDataNode  An NxNode with information on the NeXus NXdata class.
+     *     @param States The linked list of state information
+     *     @param startGroupID The starting Group ID for the NEW data blocks that are
+     *                          added
+     */
+    public boolean processDS(DataSet DS, NxNode NxEntryNode, 
+        NxNode NxDataNode, NxfileStateInfo States, int startGroupID) {
+        if (NxEntryNode == null) {
+            errormessage = "null Entry node in ProcessNxEntry";
+            return true;
         }
-     }else{  //Histogram Data Set  check if node class is NXlog
+        if (DS == null) {
+            errormessage = "No Data Set in ProcessNxEntry";
+            return true;
+        }
         
-        DS.setTitle( NxDataNode.getNodeName());
-        Integer instType = ((Integer) DS.getAttributeValue( Attribute.INST_TYPE));
-        //if( instType != null)
-        //DataSetFactory.addOperators( DS,  instType.intValue());
-        NxNode NxInstrumentNode = null;
-        NxNode NxBeamNode = null;
-        for( int child =0; (child < NxEntryNode.getNChildNodes()); child++){
-           NxNode Child = NxEntryNode.getChildNode( child);
-           if( Child.getNodeClass().equals("NXinstrument"))
-              NxInstrumentNode = Child;
-           else if( Child.getNodeClass().equals("NXbeam"))
-              NxBeamNode = Child;
-        }
+        boolean monitorDS = false;
 
-        //Query for process NxData
-        //get instrument Node
-
-        //Process1NxData proc = new Process1NxData();
-        IProcessNxData proc = QueryNxData.getNxDataProcessor( States, 
-               NxDataNode, NxInstrumentNode);
-        boolean res = proc.processDS(NxEntryNode, NxDataNode, NxInstrumentNode, 
-                                         DS, States, startGroupID);
-        if( res){
-           errormessage = proc.getErrorMessage();
-           return res;
-        } 
+        if (NxDataNode == null) { // Monitor DataSet
        
-     }
-     //--------------- Run Number DataSet Attribute ---------------
-     Integer run_num= NexUtils.getIntFieldValue( NxEntryNode, "run_number");
-     if( run_num != null ){
-        int[] runs = new int[1];
-        runs[0] = run_num.intValue();
-        DS.setAttribute( new IntListAttribute( Attribute.RUN_NUM, runs));
-     }
+            int k = 0;
 
-     //------------------ Title DataSet Attribute?? -----------------
-     ConvertDataTypes.addAttribute( DS,
-         ConvertDataTypes.CreateStringAttribute( Attribute.RUN_TITLE,
-               NexUtils.getStringFieldValue( NxEntryNode, "title")));
-   
-    //---------------- Number of pulses DataSet attribute ------------------
-    Float X = NexUtils.getFloatFieldValue(NxEntryNode, "duration" );
-    if(X !=null )
-       if(! X.isNaN())
-        DS.setAttribute( new FloatAttribute( Attribute.NUMBER_OF_PULSES,
-                                             X.floatValue()*30.f ) );
+            monitorDS = true;
+            DS.setTitle("Mon_" + NxEntryNode.getNodeName());
+        
+            Integer instType = ((Integer) DS.getAttributeValue(Attribute.INST_TYPE));
 
-     //---------------- End time and date -----------------------
+            if (instType != null)
+                DataSetFactory.addMonitorOperators(DS, instType.intValue());
+               
+            for (int child = 0; child < NxEntryNode.getNChildNodes(); child++) {
+          
+                NxNode Child = NxEntryNode.getChildNode(child);
 
-    //--------------Attributes from other NXentry children -----------
-      for( int i = 0; i < NxEntryNode.getNChildNodes(); i++ ){
-      NxNode datanode = NxEntryNode.getChildNode( i );
-      String C = datanode.getNodeClass();
+                if (Child.getNodeClass().equals("NXmonitor")) {
+             
+                    NxMonitor nxMon = new NxMonitor();
+
+                    nxMon.setMonitorNum(startGroupID + k);
+                    k++;
+              
+                    boolean res = nxMon.processDS(Child, DS);
+
+                    if (res) {
+                        errormessage = nxMon.getErrorMessage();
+                        return res;
+                    }
+                }
+            }
+        } else {  //Histogram Data Set  check if node class is NXlog
+        
+            DS.setTitle(NxDataNode.getNodeName());
       
-      if( C.equals( "NXinstrument" ) ){
-        NxInstrument nx = new NxInstrument();
-        
-        if( !monitorDS )
-          if( !nx.processDS( datanode, DS ) ){
-            // do nothing
-          }else
-            errormessage += ":" + nx.getErrorMessage();
-      }else  if( C.equals( "NXsample" ) ){
-        NxSample ns = new NxSample();
-        
-        if( !ns.processDS( datanode, DS ) ){
-          // do nothing
-        }else
-          errormessage += ";" + ns.getErrorMessage();
-      }else if( C.equals( "NXbeam" ) ){
-        NxBeam nb = new NxBeam();
-        
-        if( !monitorDS )
-          if( nb.processDS( datanode, DS ) )
-            errormessage += ";" + nb.getErrorMessage();
-      }
+            NxNode NxInstrumentNode = null;
+            NxNode NxBeamNode = null;
 
-    }
-    if( errormessage != null)
-      if( errormessage.length() >1)
-        return true;
-    Object X1 = DS.getAttributeValue( Attribute.RUN_NUM );
-    int[] run_numm = null;
+            for (int child = 0; (child < NxEntryNode.getNChildNodes()); child++) {
+                NxNode Child = NxEntryNode.getChildNode(child);
+
+                if (Child.getNodeClass().equals("NXinstrument"))
+                    NxInstrumentNode = Child;
+                else if (Child.getNodeClass().equals("NXbeam"))
+                    NxBeamNode = Child;
+            }
+
+            IProcessNxData proc = QueryNxData.getNxDataProcessor(States, 
+                    NxDataNode, NxInstrumentNode);
+            boolean res = proc.processDS(NxEntryNode, NxDataNode, NxInstrumentNode, 
+                    DS, States, startGroupID);
+
+            if (res) {
+                errormessage = proc.getErrorMessage();
+                return res;
+            } 
+       
+        }
+        //--------------- Run Number DataSet Attribute ---------------
+        Integer run_num = NexUtils.getIntFieldValue(NxEntryNode, "run_number");
+
+        if (run_num != null) {
+            int[] runs = new int[1];
+
+            runs[0] = run_num.intValue();
+            DS.setAttribute(new IntListAttribute(Attribute.RUN_NUM, runs));
+        }
+
+        //------------------ Title DataSet Attribute?? -----------------
+        ConvertDataTypes.addAttribute(DS,
+            ConvertDataTypes.CreateStringAttribute(Attribute.RUN_TITLE,
+                NexUtils.getStringFieldValue(NxEntryNode, "title")));
+   
+        //---------------- Number of pulses DataSet attribute ------------------
+        Float X = NexUtils.getFloatFieldValue(NxEntryNode, "duration");
+
+        if (X != null)
+            if (!X.isNaN())
+                DS.setAttribute(new FloatAttribute(Attribute.NUMBER_OF_PULSES,
+                        X.floatValue() * 30.f));
+
+            //--------------Attributes from other NXentry children -----------
+        for (int i = 0; i < NxEntryNode.getNChildNodes(); i++) {
+        
+            NxNode datanode = NxEntryNode.getChildNode(i);
+            String C = datanode.getNodeClass();
+      
+            if (C.equals("NXinstrument")) {
+                NxInstrument nx = new NxInstrument();
+        
+                if (!monitorDS)
+                    if (!nx.processDS(datanode, DS)) {// do nothing
+                    } else
+                        errormessage += ":" + nx.getErrorMessage();
+            } else  if (C.equals("NXsample")) {
+                NxSample ns = new NxSample();
+        
+                if (!ns.processDS(datanode, DS)) {// do nothing
+                } else
+                    errormessage += ";" + ns.getErrorMessage();
+            } else if (C.equals("NXbeam")) {
+                NxBeam nb = new NxBeam();
+        
+                if (!monitorDS)
+                    if (nb.processDS(datanode, DS))
+                        errormessage += ";" + nb.getErrorMessage();
+            }
+
+        }
+        if (errormessage != null)
+            if (errormessage.length() > 1)
+                return true;
+        
+        Object X1 = DS.getAttributeValue(Attribute.RUN_NUM);
+        int[] run_numm = null;
     
-    if( X1 != null )
-      if( X1 instanceof int[] )
-        run_numm = (int[])X1;
-    int npulses = -1;
+        if (X1 != null)
+            if (X1 instanceof int[])
+                run_numm = (int[]) X1;
+        int npulses = -1;
 
-    X1 = DS.getAttributeValue( Attribute.NUMBER_OF_PULSES );
-    if( X1 instanceof Number )
-      npulses = ( ( Number )X1 ).intValue();
+        X1 = DS.getAttributeValue(Attribute.NUMBER_OF_PULSES);
+        if (X1 instanceof Number)
+            npulses = ((Number) X1).intValue();
     
-    float initial_path = -1;
-    boolean  initialPathSet = false;
-    X1 = DS.getAttributeValue( Attribute.INITIAL_PATH );
-    if( X1 != null ) if( X1 instanceof Number ){
-      initial_path = ( ( Number )X1 ).floatValue();
-      initialPathSet = true  ;
+        float initial_path = -1;
+        boolean  initialPathSet = false;
+
+        X1 = DS.getAttributeValue(Attribute.INITIAL_PATH);
+        if (X1 != null) if (X1 instanceof Number) {
+                initial_path = ((Number) X1).floatValue();
+                initialPathSet = true;
+            }
+
+        for (int i = 0; i < DS.getNum_entries(); i++) {
+      
+            Data DB = DS.getData_entry(i);
+
+            if (run_numm != null)
+                DB.setAttribute(new IntListAttribute(Attribute.RUN_NUM, run_numm));
+        
+            if (npulses >= 0)
+                DB.setAttribute(new IntAttribute(Attribute.NUMBER_OF_PULSES, npulses));
+        
+            if (initialPathSet)
+                DB.setAttribute(new FloatAttribute(
+                        Attribute.INITIAL_PATH, initial_path));
+        }
+  
+        return false;
+        //Now Process Beam, etc.
+    } 
+
+    /**
+     *   Hook to add new fields to the class that are not in the processDS methods
+     *   parameters
+     */
+    public void setNewInfo(String Name, Object value) {}
+
+    /**
+     *   @return the current value of the new info associated with Name
+     */
+    public Object getNewInfo(String Name) {
+        return null;
     }
-
-    for( int i = 0; i < DS.getNum_entries(); i++ ){
-      Data DB = DS.getData_entry( i );
-
-      if( run_numm != null )
-        DB.setAttribute( new IntListAttribute( Attribute.RUN_NUM, run_numm ) );
-      if( npulses >= 0 )
-        DB.setAttribute(new IntAttribute(Attribute.NUMBER_OF_PULSES, npulses));
-      if( initialPathSet)
-        DB.setAttribute(new FloatAttribute(
-                                         Attribute.INITIAL_PATH,initial_path));
-    }
   
-     return false;
-    //Now Process Beam, etc.
-  } 
-
- 
-
- /**
-    *   Hook to add new fields to the class that are not in the processDS methods
-    *   parameters
-    */
-   public void setNewInfo( String Name, Object value){}
-
-   /**
-    *   @return the current value of the new info associated with Name
-    */
-   public Object getNewInfo( String Name){return null;}
-  
-  
- }
-
+}
 
