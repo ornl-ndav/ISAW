@@ -29,6 +29,9 @@
  *
  *
  * $Log$
+ * Revision 1.28  2003/10/11 20:46:08  bouzekc
+ * Fixed bug where the result parameter did not properly validate.
+ *
  * Revision 1.27  2003/09/11 21:21:30  bouzekc
  * Updated to work with new Form class.
  *
@@ -417,6 +420,7 @@ public class OperatorForm extends Form implements HiddenOperator {
     }
 
     result_param.setValue( result );
+    result_param.validateSelf(  );
 
     if( result != null ) {
       SharedData.addmsg( "Success! " + result.toString(  ) );
