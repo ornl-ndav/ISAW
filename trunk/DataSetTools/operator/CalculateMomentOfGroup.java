@@ -10,6 +10,10 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.2  2000/08/02 20:19:27  dennis
+ *  Changed to use TrapMoment() for function data instead of just using
+ *  HistogramMoment() for histogram data
+ *
  *  Revision 1.1  2000/07/10 22:35:47  dennis
  *  July 10, 2000 version... many changes
  *
@@ -178,10 +182,19 @@ public class  CalculateMomentOfGroup  extends    DataSetOperator
       float x_vals[] = data.getX_scale().getXs();
       float y_vals[] = data.getY_values();
 
-      float result = NumericalAnalysis.HistogramMoment( x_vals, y_vals, 
-                                                        a,      b, 
-                                                        center,
-                                                        moment     );
+      float result = 0;
+      if ( x_vals.length == y_vals.length + 1 )   // histogram
+         result = NumericalAnalysis.HistogramMoment( x_vals, y_vals, 
+                                                     a,      b, 
+                                                     center,
+                                                     moment     );
+
+      else                                        // function
+         result = NumericalAnalysis.TrapMoment( x_vals, y_vals, 
+                                                a,      b, 
+                                                center,
+                                                moment     );
+     
       return new Float( result );
     }
   }  
