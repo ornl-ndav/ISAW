@@ -29,6 +29,11 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.6  2003/10/06 23:57:55  bouzekc
+ * Now sends out the value of AbstractButton's ActionEvents.  In particular,
+ * if a JCheckBox is clicked, its value is propagated upwards as a
+ * PropertyChangeEvent.
+ *
  * Revision 1.5  2003/08/26 18:23:36  bouzekc
  * Default layout is now X-axis BoxLayout.
  *
@@ -177,8 +182,21 @@ public class EntryWidget extends JPanel implements PropertyChanger,
    * @param evt The triggering ActionEvent.
    */
   public void actionPerformed( ActionEvent evt ) {
+    Object source = evt.getSource(  );
+    Object oldVal = "old";
+    Object newVal = "new";
+
+    if( source instanceof AbstractButton ) {
+      if( source instanceof JCheckBox ) {
+        newVal = new Boolean( ( ( JCheckBox )source ).isSelected(  ) );
+        oldVal = new Boolean( !( ( JCheckBox )source ).isSelected(  ) );
+      } else {
+        newVal = ( ( AbstractButton )source ).getText(  );
+      }
+    }
+
     propertyChange( 
-      new PropertyChangeEvent( this, IParameter.VALUE, "old", "new" ) );
+      new PropertyChangeEvent( this, IParameter.VALUE, oldVal, newVal ) );
   }
 
   /**
