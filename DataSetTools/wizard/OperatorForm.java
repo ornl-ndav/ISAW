@@ -29,6 +29,10 @@
  *
  *
  * $Log$
+ * Revision 1.16  2003/07/02 16:21:02  bouzekc
+ * Made const_indices and setParamClass protected so
+ * ScriptForm can use them.
+ *
  * Revision 1.15  2003/07/02 16:07:54  bouzekc
  * Removed unnecessary references to "this".
  *
@@ -85,7 +89,7 @@ public class OperatorForm extends Form implements HiddenOperator {
   private static ParameterClassList PL = null;
   protected Operator form_op;
   protected IParameterGUI result_param;
-  private int[] constIndices;
+  protected int[] constIndices;
 
   /**
    *  Construct an OperatorForm with the title "Operator Form".
@@ -142,7 +146,10 @@ public class OperatorForm extends Form implements HiddenOperator {
   public OperatorForm( Operator op, String type, String name ) {
     this( op );
     setParamClass( type );
+
+    //after calling that, we need to call setDefaultParameters()
     result_param.setName( name );
+    setDefaultParameters(  );
   }
 
   /**
@@ -169,9 +176,11 @@ public class OperatorForm extends Form implements HiddenOperator {
   public OperatorForm( Operator op, String type, String name, int[] indices ) {
     this( op );
     setParamClass( type );
+
+    //after calling that, we need to call setDefaultParameters()
     result_param.setName( name );
-    super.HAS_CONSTANTS   = true;
-    constIndices          = indices;
+    HAS_CONSTANTS   = true;
+    constIndices    = indices;
     setDefaultParameters(  );
   }
 
@@ -301,9 +310,9 @@ public class OperatorForm extends Form implements HiddenOperator {
        the result parameter is one after the last variable parameter
        and so we'll set it to num_params.*/
     if( HAS_CONSTANTS ) {
-      super.setParamTypes( constIndices, var_indices, new int[]{ num_params } );
+      setParamTypes( constIndices, var_indices, new int[]{ num_params } );
     } else {
-      super.setParamTypes( null, var_indices, new int[]{ num_params } );
+      setParamTypes( null, var_indices, new int[]{ num_params } );
     }
   }
 
@@ -314,8 +323,8 @@ public class OperatorForm extends Form implements HiddenOperator {
    *                      be constant.
    */
   public void setConstantParamIndices( int[] indices ) {
-    super.HAS_CONSTANTS   = true;
-    this.constIndices     = indices;
+    HAS_CONSTANTS   = true;
+    constIndices    = indices;
   }
 
   /* ---------------------------- getNum_parameters ------------------------ */
@@ -399,7 +408,7 @@ public class OperatorForm extends Form implements HiddenOperator {
    *  passing in the type (as determined by getType()) of the
    *  IParameterGUI.
    */
-  private void setParamClass( String type ) {
+  protected void setParamClass( String type ) {
     try {
       if( PL == null ) {
         PL = new ParameterClassList(  );
