@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2001/08/03 21:36:04  dennis
+ * getUserName() now returns the user name from the System properties,
+ * if no user name is specified.
+ *
  * Revision 1.2  2001/08/01 21:52:52  dennis
  * Added java docs and changed methods to return blank strings instead of
  * null when fields are misssing.
@@ -140,7 +144,12 @@ public class dataSource
    */
   public String getUserName()
   {
-    return getInteriorString( 2 );
+    String user_name = getInteriorString( 2 );
+
+    if ( user_name.length() <= 0 )
+      user_name = System.getProperty("user.name");
+
+    return user_name;
   }
 
   /* ----------------------------- getPassWord ------------------------- */
