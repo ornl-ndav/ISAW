@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.67  2003/07/29 21:04:02  bouzekc
+ * Moved writeASCII() into DataSetTools.utilTextWriter.  An error file is
+ * now printed when a wsf file load operation fails.  Now uses TextWriter
+ * methods to print the stack trace when Throwables are encountered.
+ *
  * Revision 1.66  2003/07/29 00:37:59  bouzekc
  * Now prints the stack trace to writeASCII.err when an error is
  * encountered during writeASCII().
@@ -898,50 +903,6 @@ public abstract class Wizard implements PropertyChangeListener {
   }
 
   /**
-   * Utility to write to an ASCII file using a FileWriter.  Handles the
-   * possible exceptions in a generic manner.
-   *
-   * @param file2Write The File to write to.
-   * @param text2Write The String to write to the file.
-   */
-  public static void writeASCII( File file2Write, String text2Write ) {
-    FileWriter fw  = null;
-    PrintWriter pw = null;
-    String errFile = StringUtil.setFileSeparator( 
-        SharedData.getProperty( "user.dir" ) + "/writeASCII.err" );
-
-    try {
-      fw = new FileWriter( file2Write );
-      fw.write( text2Write );
-    } catch( IOException e ) {
-      e.printStackTrace(  );
-      JOptionPane.showMessageDialog( 
-        null,
-        "Error saving file: " + file2Write.toString(  ) +
-        ".  Please see writeASCII.err file.", "ERROR", JOptionPane.ERROR_MESSAGE );
-
-      try {
-        pw = new PrintWriter( new FileWriter( new File( errFile ) ) );
-        e.printStackTrace( pw );
-      } catch( IOException e2 ) {
-        //drop it on the floor
-      } finally {
-        if( pw != null ) {
-          pw.close(  );
-        }
-      }
-    } finally {
-      if( fw != null ) {
-        try {
-          fw.close(  );
-        } catch( IOException e ) {
-          //let it drop on the floor
-        }
-      }
-    }
-  }
-
-  /**
    * Execute all forms up to the number specified.
    *
    * @param end The number of the last Form to be executed.
@@ -1498,8 +1459,15 @@ public abstract class Wizard implements PropertyChangeListener {
     } catch( IOException e ) {
       JOptionPane.showMessageDialog( 
         save_frame,
-        "Error loading " + file.toString(  ) +
-        ".  Is that file for this Wizard?", "ERROR", JOptionPane.ERROR_MESSAGE );
+        "Error loading " + file.toString(  ) + ".\nThe file is possibly " +
+        "not correct for this Wizard.\nPlease see the loadWizard.err file in " +
+        "this directory for more information.\n", "ERROR",
+        JOptionPane.ERROR_MESSAGE );
+
+      String errFile = StringUtil.setFileSeparator( 
+          SharedData.getProperty( "user.dir" ) + "/loadWizard.err" );
+
+      TextWriter.writeStackTrace( errFile, e );
     } finally {
       //now we want to return to a state where the Wizard can listen to
       //property changes
@@ -1659,7 +1627,7 @@ public abstract class Wizard implements PropertyChangeListener {
       s.append( "</Form>\n" );
     }
 
-    Wizard.writeASCII( file, s.toString(  ) );
+    TextWriter.writeASCII( file, s.toString(  ) );
     modified = false;
   }
 
@@ -1805,7 +1773,7 @@ public abstract class Wizard implements PropertyChangeListener {
      * @return "Success" - unused.
      */
     public Object construct(  ) {
-      String message = "";
+      String message = "Success";
 
       //can't have users mutating the values!
       enableNavButtons( false, getCurrentFormNumber(  ) );
@@ -1831,9 +1799,7 @@ public abstract class Wizard implements PropertyChangeListener {
         String errFile = StringUtil.setFileSeparator( 
             SharedData.getProperty( "user.dir" ) + "/wizard.err" );
 
-        Wizard.writeASCII( new File( errFile ), e.toString(  ) );
-        e.printStackTrace(  );
-
+        TextWriter.writeStackTrace( errFile, e );
         message = "Failure";
 
         //reset the progress bars by re-showing the Form
@@ -1844,8 +1810,6 @@ public abstract class Wizard implements PropertyChangeListener {
         enableNavButtons( true, getCurrentFormNumber(  ) );
 
         this.enableFormParams( true );
-
-        message = "Success";
 
         return message;  //unused
       }
