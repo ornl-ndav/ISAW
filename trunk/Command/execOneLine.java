@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.56  2003/06/26 22:33:28  rmikk
+ * Removed reference to the never used static instance of the
+ *   Script_Class_List_Handler.  Eliminated a strange error.
+ *
  * Revision 1.55  2003/06/24 20:13:13  dennis
  * Now calls ScriptUtil.display(). (Ruth)
  *
@@ -216,7 +220,7 @@ public class execOneLine implements DataSetTools.util.IObserver,IObservable ,
     PropertyChangeSupport PC;
     
     // Contains user supplied operators 
-    static Script_Class_List_Handler SH = null;
+    //static Script_Class_List_Handler SH = null;
     
     //Error variables
     int perror;                      //position of error on a line
