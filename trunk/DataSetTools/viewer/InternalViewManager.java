@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2002/07/16 21:38:34  rmikk
+ *   Introduced support for the other quick table views
+ *
  *  Revision 1.20  2002/07/12 18:26:40  rmikk
  *  Used the Constructor with the state variable for starting
  *    the Selected Graph view.
@@ -146,6 +149,7 @@ public class InternalViewManager extends    JInternalFrame
 
    private static final String SHOW_ALL             = "Show All";
    private static final String NO_CONVERSION_OP     = "None";
+    private TableViewMenuComponents table_MenuComp  = null;
     
    /**  
     *  Accepts a DataSet and view type and creates an instance of a 
@@ -244,12 +248,14 @@ public class InternalViewManager extends    JInternalFrame
       else if ( view_type.equals( SELECTED_GRAPHS ))             // use either
         viewer = new GraphableDataManager( tempDataSet, state );        // Kevin's or
 //        viewer = new ViewerTemplate( tempDataSet, state );     // Template  
-      else if ( view_type.equals( TABLE ) )
-        viewer = new TabView( tempDataSet, state );
+//      else if ( view_type.equals( TABLE ) )
+ //       viewer = new TabView( tempDataSet, state );
       else if( view_type.equals( CONTOUR))
         viewer= new ContourView( tempDataSet, state);
       else
-      {
+      {if( table_MenuComp == null)
+           table_MenuComp= new TableViewMenuComponents();
+        viewer = table_MenuComp.getDataSetViewer( view_type, tempDataSet, state);
         System.out.println( "ERROR: Unsupported view type in InternalViewManager:" );
         System.out.println( "      " + view_type );
         System.out.println( "using " + IMAGE + " by default" );
@@ -591,16 +597,35 @@ private void BuildViewMenu()
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 
-  button = new JMenuItem( TABLE );
-  button.addActionListener( view_menu_handler );
-  view_menu.add( button );
+ // button = new JMenuItem( TABLE );
+ // button.addActionListener( view_menu_handler );
+ // view_menu.add( button );
+  JMenu Tables = new JMenu( "Tables");
+  view_menu.add( Tables);
+  
+  BuildTableMenu( Tables);
 
   button = new JMenuItem( CONTOUR );
   button.addActionListener( view_menu_handler );
   view_menu.add( button );
 }
 
+private void BuildTableMenu( JMenu Tables)
+  { int n= TableViewMenuComponents.getNMenuItems();
+    ViewMenuHandler view_menu_handler = new ViewMenuHandler();
+     if( table_MenuComp == null)
+        table_MenuComp = new TableViewMenuComponents();
+   
+     table_MenuComp.addMenuItems( Tables , view_menu_handler);
+   
+    Tables.addSeparator();  
+    JMenuItem button;
+    button = new JMenuItem( "Advanced Table");
+    button.addActionListener( view_menu_handler );
+    Tables.add( button );
 
+
+  }
 /*
  * Build the menu of conversion options and turn on the radio button for the 
  * currently active conversion operator.
