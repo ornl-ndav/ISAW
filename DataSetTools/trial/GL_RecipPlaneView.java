@@ -31,6 +31,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/07/30 13:36:14  dennis
+ * Number of points needed for the wire frame drawing the region
+ * of Q covered by the detector is now based on the number of rows
+ * and columns in the detector.
+ *
  * Revision 1.6  2004/07/29 14:04:40  dennis
  * Now uses Ruth's FinishJFrame rather than a JFrame, so that more
  * of the resources associated with the window are freed.  This is
@@ -1554,7 +1559,7 @@ public class GL_RecipPlaneView
     GL_Shape boundaries[] = new GL_Shape[3];
     boundaries[0] = new Lines( start, end );
 
-    Vector3D points[] = new Vector3D[397];                // inner face
+    Vector3D points[] = new Vector3D[2*n_rows + 2*n_cols - 3];   // inner face
     int index = 0;
     for ( int col = 1; col <= n_cols; col++ )
     {
