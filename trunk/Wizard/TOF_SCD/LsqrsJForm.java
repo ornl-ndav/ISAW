@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.18  2003/07/08 22:56:54  bouzekc
+ * Updated documentation.
+ *
  * Revision 1.17  2003/06/27 20:30:31  bouzekc
  * Removed the temporary parameter validation for peaks
  * intensity and threshold.
@@ -228,11 +231,6 @@ public class LsqrsJForm extends Form {
     s.append( "lsexpName.mat file which is produced for ALL runs." );
     s.append( "Other than that, it functions in a similar manner to " );
     s.append( "LsqrsJ.\n" );
-    s.append( "NOTE: although it resets the transformation matrix to the " );
-    s.append( "identity after the first iteration, the matrix can be reset " );
-    s.append( "at any time if you want to change it again when executing.\n" );
-    s.append( "NOTE: the transformation matrix is initially set to the " );
-    s.append( "identity matrix.\n" );
     s.append( "@assumptions The peaks file exists and the transformation " );
     s.append( "matrix is valid." );
     s.append( 
