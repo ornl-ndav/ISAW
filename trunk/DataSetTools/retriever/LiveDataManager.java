@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2001/08/08 14:01:40  dennis
+ *  Improved handling of list of ActionListeners and sending messages
+ *  to ActionListeners.
+ *  First stage integration of new error messages.
+ *
  *  Revision 1.10  2001/08/07 21:36:33  dennis
  *  Added error_flag and error codes.
  *
@@ -102,7 +107,7 @@ public class LiveDataManager extends    Thread
 
   public static final int    MIN_DELAY   = 10;       // minimum delay in seconds
   public static final int    MAX_DELAY   = 600;      // maximum delay in seconds
-  public static final String RUN_CHANGED = "Run Changed";
+  public static final String STATUS_CHANGED = "Status Changed";
 
   private Vector            listeners   = null;        
   private LiveDataRetriever retriever   = null;
@@ -298,11 +303,15 @@ public class LiveDataManager extends    Thread
   *  @param listener  An ActionListener whose ActionPerformed() method is
   *                   to be called when a DataSet with a new title is received.
   */
-
   public void addActionListener( ActionListener listener )
   {
+    for ( int i = 0; i < listeners.size(); i++ )       // don't add it if it's
+      if ( listeners.elementAt(i).equals( listener ) ) // already there
+        return;
+
     listeners.add( listener );
   }
+
 
  /* ------------------------ removeActionListener ------------------------ */
  /**
@@ -312,11 +321,24 @@ public class LiveDataManager extends    Thread
   *
   *  @param listener  The ActionListener to be removed.
   */
-
   public void removeActionListener( ActionListener listener )
   {
     listeners.remove( listener );
   }
+
+
+/* -------------------------- send_message ------------------------------- */
+/**
+ *  Send a message to all of the action listeners for this panel
+ */
+ public void send_message( String message )
+ {
+   for ( int i = 0; i < listeners.size(); i++ )
+   {
+     ActionListener listener = (ActionListener)listeners.elementAt(i);
+     listener.actionPerformed( new ActionEvent( this, 0, message ) );
+   }
+ }
 
 
 /* -------------------------------- run --------------------------------- */
@@ -346,6 +368,7 @@ public class LiveDataManager extends    Thread
      catch ( Exception e )
      {
        System.out.println("Exception in LiveDataManager.run() is:" + e );
+       e.printStackTrace();
      }
    }
  }
@@ -365,11 +388,22 @@ public class LiveDataManager extends    Thread
 
   synchronized private void SetUpLocalCopies()
   {
-    if ( retriever != null )
+    if ( retriever == null )
+    {
+      error_flag = NO_CONNECTION;
+      send_message( STATUS_CHANGED );
+    }
+
+    else
     {
       int num_ds      = retriever.numDataSets();
 
-      error_flag = num_ds; 
+      if ( error_flag != num_ds )
+      {
+        error_flag = num_ds; 
+        send_message( STATUS_CHANGED );
+      }
+
       if ( num_ds < 0 )    
         num_ds = 0;
 
@@ -412,12 +446,7 @@ public class LiveDataManager extends    Thread
                                                          // observers of the ds
         }
 
-      for ( int i = 0; i < listeners.size(); i++ )    // all of the listeners
-      {
-        ActionListener listener = (ActionListener)listeners.elementAt(i);
-        listener.actionPerformed( new ActionEvent( this, 0, RUN_CHANGED ) );
-      }
-
+      send_message( STATUS_CHANGED );
     }
   }
 
