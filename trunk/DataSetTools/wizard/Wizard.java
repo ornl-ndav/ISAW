@@ -32,6 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.77  2003/09/13 00:22:29  bouzekc
+ * Now sets the BrowsePG Form ParameterGUIs' directories to the project
+ * directory when loading a non-saved Wizard.  Removed an error message
+ * which was displayed when the wizard.cfg file was not found.
+ *
  * Revision 1.76  2003/09/12 23:39:21  bouzekc
  * Removed excessive lines between statements in long methods.
  *
@@ -915,6 +920,8 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
       "\t\tpreviously saved file\t\t[WizardSaveFile]\n";
 
     if( argv.length == 0 ) {
+      //set the projects directory for relevant parameters
+      this.setBrowsePGDirectory(  );
       this.showForm( 0 );
     } else if( argv.length == 1 ) {
       if( argv[0].equals( "--help" ) || argv[0].equals( "-h" ) ) {
@@ -1096,6 +1103,31 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
    */
   protected void showGUI(  ) {
     frame.show(  );
+  }
+
+  /**
+   * Sets the directory for BrowsePGs in the internal Forms to the projects
+   * directory if the projectsDirectory exists.
+   */
+  private void setBrowsePGDirectory(  ) {
+    if( ( getProjectsDirectory(  ) == null ) || ( getNumForms(  ) <= 0 ) ) {
+      return;
+    }
+
+    IParameterGUI ipg = null;
+    Form curForm      = null;
+
+    for( int i = 0; i < getNumForms(  ); i++ ) {
+      curForm = getForm( i );
+
+      for( int k = 0; k < curForm.getNum_parameters(  ); k++ ) {
+        ipg = ( IParameterGUI )curForm.getParameter( k );
+
+        if( ipg instanceof BrowsePG ) {
+          ipg.setValue( getProjectsDirectory(  ) );
+        }
+      }
+    }
   }
 
   /**
@@ -1593,9 +1625,6 @@ public abstract class Wizard implements PropertyChangeListener, Serializable {
 
       return true;
     } catch( IOException e ) {
-      System.err.println( 
-        "Error reading " + StringUtil.setFileSeparator( CONFIG_FILE ) );
-
       return false;
     } catch( NullPointerException ne ) {
       System.err.println( 
