@@ -1,5 +1,4 @@
 package ChopTools;
-
 import java.io.*;
 import java.awt.Insets;
 import java.text.DateFormat;
