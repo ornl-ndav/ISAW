@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.25  2003/08/28 01:34:44  bouzekc
+ *  Modified to work with new ParameterGUI.
+ *
  *  Revision 1.24  2003/08/22 20:12:08  bouzekc
  *  Modified to work with EntryWidget.
  *
@@ -167,8 +170,7 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @param val Value of this ArrayPG.
    */
   public ArrayPG( String name, Object val ) {
-    this( name, val, false );
-    setDrawValid( false );
+    super( name, val );
     type = TYPE;
   }
 
@@ -180,14 +182,8 @@ public class ArrayPG extends ParameterGUI implements ParamUsesString {
    * @param valid Whether it is valid or not.
    */
   public ArrayPG( String name, Object val, boolean valid ) {
-    setName( name );
-    setValue( val );
-    setEnabled( true );
-    setValid( valid );
-    setDrawValid( true );
+    super( name, val, valid );
     type                 = TYPE;
-    initialized          = false;
-    ignore_prop_change   = false;
   }
 
   //~ Methods ******************************************************************
