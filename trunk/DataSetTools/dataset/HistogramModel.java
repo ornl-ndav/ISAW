@@ -31,6 +31,11 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2002/04/11 21:05:29  dennis
+ *  Now uses the OneVariableFunction classes from package
+ *  DataSetTools.functions.  Also includes a main program
+ *  as a basic test.
+ *
  *  Revision 1.1  2002/04/04 19:47:18  dennis
  *  A histogram Data object whose values are
  *  determined by a function of one variable.
@@ -41,7 +46,8 @@ package  DataSetTools.dataset;
 
 import java.io.*;
 import DataSetTools.math.*;
-import DataSetTools.util.*;
+import DataSetTools.functions.*;
+import DataSetTools.viewer.*;
 
 /**
  * This class defines Data objects that represent frequency histograms where
@@ -199,6 +205,20 @@ public class HistogramModel extends    ModeledData
 
   public static void main( String argv[] )
   {
+    DataSet ds = new DataSet( "Sample Gaussian", "Initial Version" );
+
+    XScale x_scale = new UniformXScale( -5, 5, 500 );
+    OneVarFunction gaussian;
+    Data gaussian_data;
+    for ( int i = 0; i < 100; i++ )
+    {
+      gaussian      = new Gaussian( -5+i/10.0f, 1, 2 );
+      gaussian_data = new HistogramModel( x_scale, gaussian, i );
+      ds.addData_entry( gaussian_data );
+    }
+
+    ViewManager vm = new ViewManager( ds, IViewManager.IMAGE );
   }
+
 
 }
