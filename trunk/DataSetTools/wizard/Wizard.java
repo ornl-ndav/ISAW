@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.14  2003/03/19 15:03:24  pfpeterson
+ * Better implementation of the view menu. It is dynamically created
+ * to contain only valid parameters. (Chris Bouzek)
+ *
  * Revision 1.13  2003/03/13 15:31:20  pfpeterson
  * The next generation of parameter viewing. This allows any parameter
  * to be viewed. (Chris Bouzek).
@@ -102,6 +106,7 @@ import DataSetTools.util.*;
 import DataSetTools.parameter.*;
 import DataSetTools.viewer.*;
 import DataSetTools.dataset.DataSet;
+import java.beans.*;
 
 /**
  *  The Wizard class provides the top level control for a sequence of
@@ -120,7 +125,7 @@ import DataSetTools.dataset.DataSet;
  *  @see Form
  */
 
-public class Wizard implements Serializable{
+public class Wizard implements Serializable, PropertyChangeListener{
     // size of the window
     private static final int FRAME_WIDTH   = 650;
     private static final int FRAME_HEIGHT  = 500;
@@ -141,7 +146,6 @@ public class Wizard implements Serializable{
     private static final String LOAD_FORM_COMMAND   = "Load Current Form";
     private static final String SAVE_WIZARD_COMMAND = "Save Wizard";
     private static final String LOAD_WIZARD_COMMAND = "Load Wizard";
-    private static final String VIEW_DATASET        = "View DataSet";
     private static final String VIEW_MENU           = "View";
 
     // default help and about messages
@@ -256,11 +260,6 @@ public class Wizard implements Serializable{
         file_menu.addSeparator();
         file_menu.add( exit_item );
 
-        //view menu
-        JMenuItem view_ds   = new JMenuItem( VIEW_DATASET );
-        view_ds.setEnabled(true);
-        view_menu.add( view_ds );
-
         menu_bar.add(file_menu);
         menu_bar.add(view_menu);
         menu_bar.add(help_menu);
@@ -365,7 +364,6 @@ public class Wizard implements Serializable{
         wizard_help    .addActionListener( command_handler );
         form_help      .addActionListener( command_handler );
         exit_item      .addActionListener( command_handler );
-        view_ds        .addActionListener( command_handler );
         view_menu      .addActionListener( command_handler );
     }
 
@@ -644,76 +642,35 @@ public class Wizard implements Serializable{
      * at this point is creates a view menu and listeners for
      * every parameter, validated or not.
      */
-    private void populateViewMenu(int end)
+    private void populateViewMenu()
     {
       JMenuItem jmi;
+      String param_name;
+      
+      view_menu.removeAll();
       //get the keys
       Enumeration e = master_list.keys();
       while( e.hasMoreElements() ){
-        jmi = new JMenuItem(e.nextElement().toString());
-        view_menu.add(jmi);
-        jmi.addActionListener( command_handler );
+        param_name = (String)e.nextElement();
+        if( ((ParameterGUI)master_list.get(param_name)).getValid() )
+        {
+          jmi = new JMenuItem(param_name);
+          view_menu.add(jmi);
+          jmi.addActionListener( command_handler );
+        }
       }
 
     }
-
+    
     /**
-     *
-     * Shows the parameters according to a preferred viewing state.
-     * For example, a DataSet will be shown in a ViewManager, but a
-     * number (such as a Float) is simply displayed in a message
-     * box.
+     * Method to depopulate part of the view list if the 
+     * parameters change.
      */
-    protected void showParameterViewer(String param_name)
-    {
-      //see if the parameter actually exists
-      Object obj;
-      Vector v;
-      ViewManager vm;
-      JPopupMenu jpm;
-
-      obj = master_list.get(param_name);
-      if( obj != null && obj instanceof IParameterGUI )
-      {
-        obj = ((IParameterGUI)obj).getValue();
-
-        //is it a DataSet?
-        if( obj instanceof DataSet )
-          vm = new ViewManager((DataSet)obj,IViewManager.IMAGE);
-
-        //is it a Vector?
-        else if( obj instanceof Vector )
-        {
-          jpm = new JPopupMenu();
-          v = (Vector)obj;
-
-          for( int i = 0; i < v.size(); i++ )
-          {
-            obj = v.elementAt(i);
-            jpm.add(new JMenuItem(obj.toString()));
-
-            //is the element a DataSet?
-            if( obj instanceof DataSet )
-              vm = new ViewManager((DataSet)obj,IViewManager.IMAGE);
-
-            else
-            {
-              //do something else
-            }
-
-          }
-          //jpm.show(null, 100, 100);
-        }
-        else
-        {
-          //handle some other IParameterGUI types
-          JOptionPane.showMessageDialog(null, obj.toString());
-        }
-
-      }
+    public void propertyChange(PropertyChangeEvent ev){
+        this.populateViewMenu();
     }
 
-
+    
     /* ---------------- Internal Event Handler Classes --------------------- */
     /**
      *  This class handles all of the commands from buttons and menu
@@ -751,8 +708,10 @@ public class Wizard implements Serializable{
                 invalidate(0);
             }else if ( command.equals( EXEC_ALL_COMMAND) ){
                 exec_forms(forms.size()-1);
+                populateViewMenu();                
             }else if ( command.equals( EXEC_COMMAND ) ){
                 exec_forms(form_num);
+                populateViewMenu();
             }else if ( command.equals( HELP_ABOUT_COMMAND ) ){
                 ShowHelpMessage( about_message, "About: "+wizard.title );
             }else if ( command.equals( WIZARD_HELP_COMMAND ) ){
@@ -773,23 +732,13 @@ public class Wizard implements Serializable{
                 Form f = getCurrentForm();
                 if ( f != null )
                     f.load();
-            //this is a band-aid until I can figure out how to
-            //make a top level menu item listen to mouse
-            //clicks
-            }else if ( command.equals( VIEW_DATASET ) ){
-                populateViewMenu(form_num);
-            //this is what should really call the
-            //populateViewMenu()
             }else if ( command.equals( VIEW_MENU ) ){
-                populateViewMenu(form_num);
+                populateViewMenu();
             }else if ( command.equals( EXIT_COMMAND ) ){
                 close();
             }else{
-              //obviously, more sophistication here would be nice,
-              //but the method below will not crash if the
-              //command does not match up with an actual
-              //wizard parameter
-                showParameterViewer(command);
+              new ParameterViewer(
+                wizard.getParameter(command)).showParameterViewer();
             }
         }
 
