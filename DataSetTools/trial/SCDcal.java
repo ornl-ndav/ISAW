@@ -31,15 +31,10 @@
  * Modified:
  *
  *  $Log$
- *  Revision 1.2  2003/07/17 21:51:36  dennis
- *  Now uses data file that is more like "peaks" file.  Handles
- *  multiple runs with one detector.  (phi,chi,omega) angles
- *  now handled correctly.
- *
- *  Revision 1.1  2003/07/16 22:31:54  dennis
- *  Initial form of SCD calibration program.  Currently only works
- *  with one detector and one run, but most code needed for working
- *  with multiple detectors and multiple runs is in place.
+ *  Revision 1.3  2003/07/29 16:52:03  dennis
+ *  Added more parameters, now fits initial path (L1), tof offset and
+ *  scale (T0, A), sample shift (SX, SY, SZ), and Width, Height,
+ *  x&y offset, and detector orientation for each detector.
  *
  */
 
@@ -61,32 +56,19 @@ import DataSetTools.functions.*;
  * This is used with the Marquardt fitting code to calibrate SCD.
  */
 
-public class SCDcal extends    OneVarParameterizedFunction
-                    implements Serializable
+public class SCDcal   extends    OneVarParameterizedFunction
+                      implements Serializable
 {
-  public static final int N_PARAMS    = 7;
   public static final int L1_INDEX    = 0;
   public static final int T0_INDEX    = 1;
-  public static final int DET_W_INDEX = 2;
-  public static final int DET_H_INDEX = 3;
-  public static final int DET_X_INDEX = 4;
-  public static final int DET_Y_INDEX = 5;
-  public static final int DET_Z_INDEX = 6;
-                                                  // OLD DETECTOR
-//  public static final int    N_ROWS   = 85;
-//  public static final int    N_COLS   = 85;
-//  public static final double DET_SIZE = 0.25;  
-//  public static final double DET_D    = 0.32;
-//  public static final double DET_A    = -90.0;
-
-  public static final int    N_ROWS   = 150;     // NEW ONE DETECTOR, HIGH RES
-  public static final int    N_COLS   = 150;
-  public static final double DET_SIZE = 0.15;
-  public static final double DET_D    = 0.25;
-  public static final double DET_A    = -90.0;
+  public static final int A_INDEX     = 2;
+  public static final int SX_INDEX    = 3;
+  public static final int SY_INDEX    = 4;
+  public static final int SZ_INDEX    = 5;
+  public static final int DET_BASE_INDEX = 6;
+  public static final int N_DET_PARAMS   = 7;   // number of params per detector
 
   public static final double DET_Z    = 0.0;
-  public static final double L1       = 9.378;
 
   int    n_peaks;
   int    run[]; 
@@ -106,8 +88,10 @@ public class SCDcal extends    OneVarParameterizedFunction
   UniformGrid_d grid;
   int  eval_count = 0;
 
+  Hashtable gon_rotation_inverse;
   Hashtable gon_rotation;
-  Hashtable nominal_position;
+  Hashtable grids;
+  Vector    nominal_position;
 
   /**
    *  Construct a function defined on the grid of (x,y) values specified, 
@@ -115,9 +99,10 @@ public class SCDcal extends    OneVarParameterizedFunction
    *  are numbered in a sequence and the point's index in the sequence is 
    *  used as the one variable.
    */
-   public SCDcal( int                 run[],         
+   public SCDcal( 
+                  int                 run[],         
                   int                 det_id[],
-                  DetectorPosition_d  det_position[],
+                  Hashtable           grids,
                   SampleOrientation_d orientation[],
                   double              hkl[][],
                   double              tof[], 
@@ -131,6 +116,7 @@ public class SCDcal extends    OneVarParameterizedFunction
      n_peaks = run.length;
      this.run = run;
      this.id =  det_id;
+     this.grids = grids;
      this.hkl = hkl;
      this.tof = tof;
      this.row = row;
@@ -156,11 +142,18 @@ public class SCDcal extends    OneVarParameterizedFunction
      System.out.println("Lattice Parameters");
      LinearAlgebra.print( lat_par );
 
-     gon_rotation     = new Hashtable();
+     for ( int i = 0; i < 3; i++ )
+       for ( int j = 0; j < 3; j++ )
+         B_theoretical[i][j] *= 2*Math.PI;
+     System.out.println("Final B_theoretical = " );
+     LinearAlgebra.print( B_theoretical );
+
+     gon_rotation_inverse = new Hashtable();
+     gon_rotation         = new Hashtable();
      for ( int i = 0; i < run.length; i++ )
      {
        Integer key = new Integer( run[i] );
-       Object  val = gon_rotation.get( key );
+       Object  val = gon_rotation_inverse.get( key );
        if ( val == null )
        { 
          Tran3D_d tran = orientation[i].getGoniometerRotationInverse();
@@ -168,24 +161,21 @@ public class SCDcal extends    OneVarParameterizedFunction
          for ( int k = 0; k < 3; k++ )
            for ( int j = 0; j < 3; j++ )
              rotation[k][j] = tran.get()[k][j]; 
+         gon_rotation_inverse.put( key, rotation );
+
+         tran = orientation[i].getGoniometerRotation();
+         rotation = new double[3][3];
+         for ( int k = 0; k < 3; k++ )
+           for ( int j = 0; j < 3; j++ )
+             rotation[k][j] = tran.get()[k][j];
          gon_rotation.put( key, rotation );
        }
      }
 
-     nominal_position = new Hashtable();
-     for ( int i = 0; i < run.length; i++ )
-     {
-       Integer key = new Integer( run[i] );
-       Object  val = nominal_position.get( key );
-       if ( val == null )
-         nominal_position.put( key, det_position[i] ); 
-     }
-
-     for ( int i = 0; i < 3; i++ )
-       for ( int j = 0; j < 3; j++ )
-         B_theoretical[i][j] *= 2*Math.PI;
-     System.out.println("Final B_theoretical = " );
-     LinearAlgebra.print( B_theoretical );
+     nominal_position = new Vector();
+     Enumeration e = grids.elements();
+     while ( e.hasMoreElements() )
+       nominal_position.add( ((UniformGrid_d)e.nextElement()).position() ); 
 
      qxyz_theoretical = new double[n_peaks][3];
      qxyz_observed    = new double[n_peaks][3];
@@ -225,30 +215,60 @@ public class SCDcal extends    OneVarParameterizedFunction
   public void setParameters( double parameters[] )
   {
     super.setParameters( parameters );
+
+    int index = DET_BASE_INDEX;
+    Enumeration e = grids.elements();
+    int det_count = 0;
+    while ( e.hasMoreElements() )
+    {
+      UniformGrid_d grid = (UniformGrid_d)e.nextElement();
+      Vector3D_d nom_pos = (Vector3D_d)nominal_position.elementAt(det_count);
+      double width = parameters[ index ];
+      index++;
+      double height = parameters[ index ];
+      index++;
+      double x_off = parameters[ index ];
+      index++;
+      double y_off = parameters[ index ];
+      index++;
+      double phi = parameters[index];
+      index++;
+      double chi = parameters[index];
+      index++;
+      double omega = parameters[index];
+      index++;
+
+      grid.setWidth( width );
+      grid.setHeight( height );
+    
+      Vector3D_d center       = new Vector3D_d( nom_pos );
+      Vector3D_d minus_z_vec  = new Vector3D_d( center );
+      minus_z_vec.normalize();
+      Vector3D_d y_vec  = new Vector3D_d( 0, 0, 1 );
+      Vector3D_d x_vec  = new Vector3D_d();
+      x_vec.cross( minus_z_vec, y_vec );
+
+      Vector3D_d x_shift = new Vector3D_d( x_vec );
+      Vector3D_d y_shift = new Vector3D_d( y_vec );
+      x_shift.multiply( x_off );
+      y_shift.multiply( y_off );
+      center.add( x_shift ); 
+      center.add( y_shift ); 
+      grid.setCenter( center );
+
+      Tran3D_d euler_rotation = tof_calc_d.makeEulerRotation(phi, chi, omega);
+      euler_rotation.apply_to( x_vec, x_vec );
+      euler_rotation.apply_to( y_vec, y_vec );
+      grid.setOrientation( x_vec, y_vec );
+
+      det_count++;
+    }
    
-    int id = 1;                                   // one detector for now
-
-    double x = parameters[ DET_X_INDEX ];
-    double y = parameters[ DET_Y_INDEX ];
-    double z = parameters[ DET_Z_INDEX ];
-    double w = parameters[ DET_W_INDEX ];
-    double h = parameters[ DET_H_INDEX ];
-
-    Vector3D_d center = new Vector3D_d( x, y, z );
-    Vector3D_d y_vec  = new Vector3D_d( 0, 0, 1 ); // For now assume the 
-                                                   // detector is vertical
-    Vector3D_d x_vec  = new Vector3D_d();
-    x_vec.cross( center, y_vec );
-    x_vec.normalize();
-    grid = new UniformGrid_d( id, "m", center, x_vec, y_vec, w, h, 0.001, 
-                              N_ROWS, N_COLS );
-
-//    System.out.println("GRID = " + grid );
     find_qxyz_observed();
     find_U_and_B_observed();
     find_qxyz_theoretical();
 
-    show_progress( B_observed );
+    show_progress( B_observed, false );
   } 
 
   /**
@@ -276,18 +296,35 @@ public class SCDcal extends    OneVarParameterizedFunction
   {
     double l1 = parameters[L1_INDEX];
     double t0 = parameters[T0_INDEX];
-    
-    DetectorPosition_d position;
+    double a  = parameters[A_INDEX];
+    double sx = parameters[SX_INDEX];
+    double sy = parameters[SY_INDEX];
+    double sz = parameters[SZ_INDEX];
+
+    DetectorPosition_d pixel_position;
+    Vector3D_d         pixel_vec;
+    Vector3D_d         sample_shift;
+    double             sample_shift_array[] = {-sx, -sy, -sz};
     double             rotation[][] = null;
+    double             rotation_inv[][] = null;
     Position3D_d qxyz;
-    double       coords[];
+    double       coords[] = new double[3];
     for ( int peak = 0; peak < n_peaks; peak++ )
     {
-      position = new DetectorPosition_d( grid.position( row[peak], col[peak] ));
-      qxyz     = tof_calc_d.DiffractometerVecQ(position, l1, tof[peak] - t0);  
-      coords = qxyz.getCartesianCoords();
       rotation = (double[][])gon_rotation.get( new Integer( run[peak] ) );
-      mult_vector( rotation, coords, qxyz_observed[peak] );
+      mult_vector( rotation, sample_shift_array, coords );
+      sample_shift = new Vector3D_d( coords );
+
+      UniformGrid_d grid = (UniformGrid_d)grids.get( new Integer( id[peak] ) );
+      pixel_vec = grid.position( row[peak], col[peak] ); 
+      pixel_vec.add( sample_shift );
+      pixel_position = new DetectorPosition_d( pixel_vec );
+
+      qxyz = tof_calc_d.DiffractometerVecQ(pixel_position, l1, a*tof[peak]+t0); 
+      coords = qxyz.getCartesianCoords();
+      rotation_inv = (double[][])
+                     gon_rotation_inverse.get( new Integer( run[peak] ) );
+      mult_vector( rotation_inv, coords, qxyz_observed[peak] );
     }
   }
   
@@ -334,9 +371,9 @@ public class SCDcal extends    OneVarParameterizedFunction
   /**
    *
    */
-  private void show_progress( double B[][] )
+  private void show_progress( double B[][], boolean show )
   {
-    if ( eval_count % 1000 == 0 )
+    if ( eval_count % 1000 == 0 || show )
     {
       double my_B[][] = copy ( B );
       System.out.println( ""+eval_count/1000 );
@@ -354,8 +391,29 @@ public class SCDcal extends    OneVarParameterizedFunction
         s_dev += vals[i] * vals[i];
       s_dev = Math.sqrt( s_dev/vals.length );
       System.out.println("1 standard dev error distance in Q = " + s_dev );
+
+      for ( int i = 0; i < parameters.length; i ++ )
+      {
+        if ( (i - DET_BASE_INDEX) % N_DET_PARAMS == 0 )
+          System.out.println();
+        System.out.print( " " + Format.real(parameters[i], 12, 5 ) );
+      }
+      System.out.println();
     }
     eval_count++;
+  }
+
+
+  static private void show_parameter( String name, 
+                                      double value, 
+                                      double sig1, 
+                                      double sig2 )
+  {
+    System.out.print( Format.string(name,17)  );
+    System.out.print( Format.real(value,17,9) + " +- " );
+    System.out.print( Format.real(sig1, 17,9) + " +- " );
+    System.out.print( Format.real(sig2, 17,9) );
+    System.out.println();
   }
 
  /* -------------------------------------------------------------------------
@@ -365,6 +423,11 @@ public class SCDcal extends    OneVarParameterizedFunction
   */
     public static void main(String[] args)
     {
+      final int N_ROWS      = 100;       // Detector parameters, used for 
+      final int N_COLS      = 100;       // setting up DataGrids must come
+      final double DET_SIZE = 0.15;      // from somewhere.
+      final double L1       = 9.378;
+
       boolean det_info_read = false;
       int    n_peaks = 0;
       int    line_type;
@@ -382,6 +445,7 @@ public class SCDcal extends    OneVarParameterizedFunction
       double counts[] = null;
       SampleOrientation_d orientation[]  = null;
       DetectorPosition_d  det_position[] = null;
+      Hashtable grids = new Hashtable();
       try
       {
         TextFileReader tfr = new TextFileReader( args[0] );
@@ -396,6 +460,7 @@ public class SCDcal extends    OneVarParameterizedFunction
         counts = new double[n_peaks];
         orientation  = new SampleOrientation_d[n_peaks];
         det_position = new DetectorPosition_d[n_peaks];
+
         for ( int i = 0; i < n_peaks; i++ )
         {
           line_type = tfr.read_int();
@@ -426,6 +491,25 @@ public class SCDcal extends    OneVarParameterizedFunction
 
             line_type = tfr.read_int();
             det_info_read = true;
+            Integer key = new Integer( det[i] );
+            if ( grids.get(key) == null )            // new detector, so add it
+            {
+              Vector3D_d center = new Vector3D_d( 
+                                       det_d *  Math.cos(det_a * Math.PI/180),
+                                       det_d *  Math.sin(det_a * Math.PI/180),
+                                       0  );
+              Vector3D_d y_vec = new Vector3D_d( 0, 0, 1 ); 
+              Vector3D_d x_vec = new Vector3D_d(); 
+              x_vec.cross( center, y_vec );
+              x_vec.normalize();
+              UniformGrid_d grid = new UniformGrid_d
+                                   ( det[i], "m", 
+                                     center, x_vec, y_vec, 
+                                     DET_SIZE, DET_SIZE, 0.001, 
+                                     N_ROWS, N_COLS );
+              grids.put( key, grid );
+              System.out.println("grid = " + grid );
+            }
           }
           if ( !det_info_read )
           {
@@ -452,56 +536,91 @@ public class SCDcal extends    OneVarParameterizedFunction
       }
                                                    // set up the list of 
                                                    // parameters and names
-      String parameter_names[]       = new String[N_PARAMS];
-      parameter_names[ L1_INDEX ]    = "L1";
-      parameter_names[ T0_INDEX ]    = "T0";
-      parameter_names[ DET_W_INDEX ] = "Det Width";
-      parameter_names[ DET_H_INDEX ] = "Det Height";
-      parameter_names[ DET_X_INDEX ] = "Det center x";
-      parameter_names[ DET_Y_INDEX ] = "Det center y";
-      parameter_names[ DET_Z_INDEX ] = "Det center z";
 
-      double parameters[] = new double[N_PARAMS];
-      parameters[ L1_INDEX ]    = L1;
-      parameters[ T0_INDEX ]    = 0.0;
-      parameters[ DET_W_INDEX ] = DET_SIZE;
-      parameters[ DET_H_INDEX ] = DET_SIZE;
-      parameters[ DET_X_INDEX ] = DET_D * Math.cos( DET_A * Math.PI/180 );
-      parameters[ DET_Y_INDEX ] = DET_D * Math.sin( DET_A * Math.PI/180 );
-      parameters[ DET_Z_INDEX ] = 0.0;
+      int n_params = DET_BASE_INDEX + N_DET_PARAMS * grids.size();
+      System.out.println("NUMBER OF PARAMETERS = " + n_params );
+      String parameter_names[]     = new String[n_params];
+      parameter_names[ L1_INDEX ]  = "L1";
+      parameter_names[ T0_INDEX ]  = "T0";
+      parameter_names[ A_INDEX  ]  = "A(tof=A*t+T0)";
+      parameter_names[ SX_INDEX ]  = "SX";
+      parameter_names[ SY_INDEX ]  = "SY";
+      parameter_names[ SZ_INDEX ]  = "SZ";
+
+      double parameters[] = new double[n_params];
+      parameters[ L1_INDEX ]  = L1;
+      parameters[ T0_INDEX ]  = 0.0;
+      parameters[ A_INDEX  ]  = 1.0;
+      parameters[ SX_INDEX ]  = 0.0;
+      parameters[ SY_INDEX ]  = 0.0;
+      parameters[ SZ_INDEX ]  = 0.0;
+
+      int index = DET_BASE_INDEX;
+      Enumeration e = grids.elements();
+      while ( e.hasMoreElements() )
+      {
+        UniformGrid_d grid = (UniformGrid_d)e.nextElement();
+        int id = grid.ID();
+        parameter_names[index] = "Det " + id + "    Width";
+        parameters[index] = grid.width();
+        index++; 
+
+        parameter_names[index] = "Det " + id + "   Height";
+        parameters[index] = grid.height();
+        index++;
+
+        parameter_names[index] = "Det " + id + " x_offset";
+        parameters[index] = 0;
+        index++;
+
+        parameter_names[index] = "Det " + id + " y_offset";
+        parameters[index] = 0;
+        index++;
+
+        parameter_names[index] = "Det " + id + "      phi";
+        parameters[index] = 0;
+        index++;
+
+        parameter_names[index] = "Det " + id + "      chi";
+        parameters[index] = 0;
+        index++;
+
+        parameter_names[index] = "Det " + id + "    omega";
+        parameters[index] = 0;
+        index++;
+      } 
                                                      // build the one variable
                                                      // function
-      OneVarParameterizedFunction 
-                        error_f = new SCDcal( run, 
-                                              det,
-                                              det_position,
-                                              orientation,
-                                              hkl,
-                                              tof, row, col,
-                                              parameters, parameter_names ); 
+      SCDcal error_f = new SCDcal( run, 
+                                   det,
+                                   grids,
+                                   orientation,
+                                   hkl,
+                                   tof, row, col,
+                                   parameters, parameter_names ); 
 
                                                      // build the array of 
                                                      // function values with  
                                                      // noise and "fake" sigmas
       double z_vals[] = new double[ n_peaks ]; 
       double sigmas[] = new double[ n_peaks ]; 
-      double index[]  = new double[ n_peaks ];
+      double x_index[] = new double[ n_peaks ];
       for ( int i = 0; i < n_peaks; i++ )
       {
         z_vals[i] = 0;
 //      sigmas[i] = 1.0/Math.sqrt( counts[i] );
 //      sigmas[i] = Math.sqrt( counts[i] );
         sigmas[i] = 1.0;
-        index[i]  = i;
+        x_index[i]  = i;
       }
 /*
-      double vals[]   = error_f.getValues( index );
+      double vals[]   = error_f.getValues( x_index );
       System.out.println("error_f evaluated at all points = ");
       LinearAlgebra.print( vals );
       for ( int k = 0; k < parameters.length; k++ )
       {
         System.out.println("Derivatives with respect to " + parameter_names[k]);
-        double derivs[] = error_f.get_dFdai(index,k);
+        double derivs[] = error_f.get_dFdai(x_index,k);
         LinearAlgebra.print( derivs );
       }
 */
@@ -509,7 +628,7 @@ public class SCDcal extends    OneVarParameterizedFunction
                                            // build the data fitter and display 
                                            // the results.
       MarquardtArrayFitter fitter = 
-        new MarquardtArrayFitter(error_f, index, z_vals, sigmas, 1.0e-10, 500);
+      new MarquardtArrayFitter(error_f, x_index, z_vals, sigmas, 1.0e-16, 200);
 
       double p_sigmas[];
       double p_sigmas_2[];
@@ -520,8 +639,63 @@ public class SCDcal extends    OneVarParameterizedFunction
       coefs = error_f.getParameters();
       names = error_f.getParameterNames();
       for ( int i = 0; i < error_f.numParameters(); i++ )
-        System.out.println(names[i] + " = " + coefs[i] +
-                           " +- " + p_sigmas[i] +
-                           " +- " + p_sigmas_2[i] );
+        show_parameter( names[i], coefs[i], p_sigmas[i], p_sigmas_2[i] );
+
+      System.out.println();
+      System.out.println("RESULTS -----------------------------------------"); 
+      System.out.println("observed U matrix:");
+      LinearAlgebra.print( error_f.U_observed );
+      System.out.println("observed B matrix:");
+      LinearAlgebra.print( error_f.B_observed );
+      System.out.println("observed UB matrix:");
+      double UB[][] = LinearAlgebra.mult( error_f.U_observed, 
+                                          error_f.B_observed );
+      LinearAlgebra.print( UB );
+
+      System.out.println("Transpose of observed UB/(2PI)");
+      for ( int i = 0; i < 3; i++ )
+        for ( int j = 0; j < 3; j++ )
+          UB[i][j] /= (2*Math.PI);
+      UB = LinearAlgebra.getTranspose( UB );
+      LinearAlgebra.print( UB );
+
+      System.out.println();
+      error_f.show_progress( error_f.B_observed, true );
+
+      int i = DET_BASE_INDEX;
+      e = grids.elements();
+      while ( e.hasMoreElements())
+      {
+        UniformGrid_d grid = (UniformGrid_d)e.nextElement();
+        System.out.println();
+        System.out.println("USING DETECTOR: " + grid.ID());
+        System.out.println();
+
+        System.out.print( Format.real( 100*coefs[0], 9, 3 ) );
+        System.out.print( Format.real( coefs[1], 8, 3 ) );
+        double x2cm = 100*coefs[i]/N_COLS;             // this is step between
+        i++;                                           // pixel centers
+        double y2cm = 100*coefs[i]/N_ROWS;  
+        i++;
+        double xLeft  = 100*coefs[i] - x2cm*N_COLS/2.0;//this is to edge of det
+        i++;                                           //not center of first pix
+        double yLower = 100*coefs[i] - y2cm*N_ROWS/2.0;
+        i++;
+        phi = coefs[i];
+        i++;
+        chi = coefs[i];
+        i++;
+        omega = coefs[i];
+        i++;
+        System.out.print( Format.real( x2cm, 11, 6 ) );
+        System.out.print( Format.real( y2cm, 11, 6 ) );
+        System.out.print( Format.real( xLeft,  11, 6 ) );
+        System.out.print( Format.real( yLower, 11, 6 ) );
+        System.out.println();      
+        System.out.print( Format.real( phi, 11, 6 ) );
+        System.out.print( Format.real( chi, 11, 6 ) );
+        System.out.print( Format.real( omega, 11, 6 ) );
+        System.out.println();      
+      } 
     }
 }
