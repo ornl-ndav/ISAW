@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.12  2003/04/11 15:35:43  pfpeterson
+ * Added a method to return (Q/2PI)-vector for use in lsqrs.
+ *
  * Revision 1.11  2003/03/20 22:01:05  pfpeterson
  * First implementation of equals(Object). However, method will sometimes
  * return an incorrect true b/c not *all* of the instance variables are
@@ -864,6 +867,23 @@ public class Peak{
     post_l[2]=post_a[2];
 
     return post_l;
+  }
+
+  /*
+   * Returns 1/d vector (Q/2PI) in crystal reference frame.
+   */
+  public double[] getUnrotQ(){
+    float[]   Q=this.getQ();
+    float[][] invROT=LinearAlgebra.getInverse(this.ROT);
+    double[]  unrotQ={0.,0.,0.};
+
+    for( int i=0; i<3 ; i++ ){
+      for( int j=0 ; j<3 ; j++ ){
+        unrotQ[i]=unrotQ[i]+(double)(invROT[i][j]*Q[j]);
+      }
+    }
+
+    return unrotQ;
   }
 
   /**
