@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.2  2003/11/06 19:56:48  rmikk
+ * Added a method to get at the selected region
+ *
  * Revision 1.1  2003/10/27 15:06:29  rmikk
  * Initial Checkin
  *
@@ -56,4 +59,6 @@ public interface DataSetViewerMethods{
      
     public String[] getSharedMenuItemPath();
     public String[] getPrivateMenuItemPath();
+    public ISelectedRegion IgetSelectedRegion();
+  
 }
