@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2003/11/24 14:09:01  rmikk
+ * Eliminated some commented out code
+ * Wrote out errors
+ *
  * Revision 1.4  2002/11/27 23:29:19  pfpeterson
  * standardized header
  *
@@ -68,6 +72,8 @@ public class NxWriteMonitor{
   public String getErrorMessage(){
     return errormessage;
   }
+  
+  
 
   /**
    * Writes the information from the specified datablock to a
@@ -95,44 +101,13 @@ public class NxWriteMonitor{
       return true;
     errormessage = "";
     int i = datablock;
-      
-/*NxWriteNode n1 = node.newChildNode( "time_of_flight" , "SDS" );
-  String units , 
-  longname;
-  units = DS.getX_units();
-  longname = DS.getX_label();
-  if( units != null )
-  {rank1[ 0 ]= units.length() + 1;
-  n1.addAttribute( "units" , ( units + (char)0 ).getBytes() , 
-  Types.Char , rank1 );
-  }
-  if( longname != null )
-  {rank1[ 0 ]= longname.length() + 1;
-  n1.addAttribute( "long_name" , ( longname + (char)0 ).getBytes() , 
-  Types.Char , rank1 );
-  }
-*/
+    // --------- Time_of Flight node( Centered) --------------------------
     NxWriteNode n1 = Inst_Type.makeXvalnode( DS,datablock,datablock+1, node);
+
     n1.addAttribute( "axis",Inst_Type.makeRankArray(1,-1,-1,-1,-1), Types.Int,
                      Inst_Type.makeRankArray(1,-1,-1,-1,-1));
-/*rank1[ 0 ]= 1;
-  intval[ 0 ]= 1;
-  n1.addAttribute( "axis" , intval , Types.Int , rank1 ); 
-  
-  Data DB = DS.getData_entry( i );
-  XScale X = DB.getX_scale(); 
-  float[] xvals ;
-  xvals = X.getXs();
-  rank1[ 0 ] = xvals.length;
-  n1.setNodeValue( xvals , Types.Float , rank1 );
-*/
-/*X = DB.getX_scale(); 
-  xvals = new float[ 0 ];
-  xvals = X.getXs();
-  rank1[ 0 ] = xvals.length;
-  n1.setNodeValue( xvals , Types.Float , rank1 );
-*/
  
+    //------------- data Node ---------------------------
     NxWriteNode n2 = node.newChildNode( "data" , "SDS" );
     String units = DS.getY_units();
     String longname = DS.getY_label();
@@ -156,9 +131,26 @@ public class NxWriteMonitor{
     rank1[ 0 ] = xvals.length;
       
     n2.setNodeValue( xvals , Types.Float , rank1 );
+    //--------------------- error node ---------------------------
 
+    NxWriteNode n3 = node.newChildNode( "errors" , "SDS" );
+    units = DS.getX_units();
+    if( units != null ){
+      rank1[ 0 ] = units.length( ) + 1;
+      n3.addAttribute("units",(units+(char)0).getBytes(),Types.Char,rank1);
+    }
+
+    rank1[ 0 ] = 1;
+    intval = new int[ 1 ];
+    intval[ 0 ] = 1;
+    n3.addAttribute( "signal" , intval , Types.Int , rank1 ); 
+    xvals = new float[ 0 ];
+    xvals = DS.getData_entry(datablock).getErrors();
+    rank1[ 0 ] = xvals.length;
+    n3.setNodeValue( xvals , Types.Float , rank1 ); 
+   
     //range[2]
-      
+    //---------------- Other Attributes --------------------------  
     XScale uxs = DS.getData_entry(datablock).getX_scale();
     new NxWriteDetector(instrType).processDS( node,DS,datablock,datablock+1);
     float[] range = new float[2];
@@ -173,45 +165,6 @@ public class NxWriteMonitor{
 
           
     return false;
-    //Common code with NxDetector
-/*    DetectorPosition DP = 
-      ( DetectorPosition )DB.getAttributeValue( 
-      Attribute.DETECTOR_POS  );
-      if( DP != null )
-      {float coord[];
-      NxWriteNode n3 = node.newChildNode( "distance" , "SDS" );
-      coord = DP.getSphericalCoords();
-      float ff[] ;
-      ff = new float[ 1 ];
-      ff[ 0 ] = coord[ 0 ];
-      rank1[ 0 ] = 1;
-      n3.setNodeValue( ff , Types.Float  , rank1 );    
-      coord = Types.convertToNexus( coord[0] , coord[2], coord[1] ); 
-      ff = new float[ 1 ];
-      ff[ 0 ] = coord[ 1 ]; 
-      n3.addaAttribute( "phi" ,ff, Types.Float , rank1 );
-      ff = new float[ 1 ];
-      ff[ 0 ] = coord[ 2 ];
-      n3.addaAttribute( "theta" ,ff, Types.Float , rank1 );
-      
-      } 
-     
-      //get distance, tof arrays, etc. for this Monitor dataset
-      
-      // Group_id
-      
-      Object O = DB.getAttributeValue( Attribute.GROUP_ID );
-      System.out.println("TRYING to add group_id"+O.getClass());
-      if( O instanceof Integer)
-      { int group_id[], rank[];
-      group_id =new int[1];
-      group_id[0] = ((Integer) O).intValue();
-      rank = new int[1];
-      rank[0] = 1;
-      n2.addAttribute("group_id", group_id, Types.Int , 
-      rank );
-      
-      }
-*/
+
   }
 }
