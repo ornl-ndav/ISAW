@@ -29,6 +29,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/03/08 16:20:49  pfpeterson
+ *  Added method to disable the GUIs. This is to help out wizards.
+ *
  *  Revision 1.6  2001/08/07 20:59:01  rmikk
  *  Eliminated setPreferred size and set segment layout to a
  *  grid layout
@@ -80,6 +83,10 @@ public class JStringParameterGUI extends JParameterGUI implements Serializable
         return segment;
     }
 
+
+    public void setEnabled(boolean en){
+        this.stringText.setEnabled(en);
+    }
 
     public Parameter getParameter()
     {  String s = stringText.getText();
