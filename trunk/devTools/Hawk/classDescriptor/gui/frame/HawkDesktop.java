@@ -32,7 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/06/04 23:32:31  kramer
+ * Fixed some Javadoc errors.
+ *
  * Revision 1.4  2004/05/26 19:36:10  kramer
+ *
  * Added a popup listener.
  * Added inner classes:
  *   For creating the HawkDesktop's menu bar
@@ -241,7 +245,7 @@ public class HawkDesktop extends JFrame implements ActionListener
 	 * SystemsManager.getPixmapDirectory().  If the image can not be found, a JButton with the text, "title" on 
 	 * it is returned instead.  This method also gives the button a MetalBorders.ButtonBorder to make the 
 	 * buttons appear in a more compact format.
-	 * @param location The location to an image to place on the JButton
+	 * @param name The name of the image in the pixmap directory to place on the JButton
 	 * @param title The text to put on the JButton if the image could not be found
 	 * @return A JButton with an image or text on it
 	 */
@@ -397,7 +401,6 @@ public class HawkDesktop extends JFrame implements ActionListener
 		
 		/**
 		 * Create the JMenuBar that will be attached to a HawkDesktop gui.
-		 * @return The JMenuBar
 		 */
 		public HawkDesktopMenuBar(ProjectSelectorJPanel panel, HawkDesktop desk)
 		{

@@ -32,7 +32,11 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2004/06/04 23:27:59  kramer
+ * Fixed some Javadoc errors.
+ *
  * Revision 1.4  2004/05/26 20:37:55  kramer
+ *
  * Added the methods:
  *   public String getEnclosingClassName(boolean shortJava)
  *   public String getEnclosingClassName(boolean shortOther)
@@ -76,12 +80,12 @@ public class InterfaceDefn
 	
 	/**
 	 * This is a Vector of Strings each of which is one of the class or interface's characteristics
-	 * (i.e. public, abstract, final)
+	 * (ie public, abstract, final)
 	 */
 	protected Vector Interface_char_vector;  //i.e. public, abstract .... a vector of strings
 					   //this needs to be a vector because its size is not known at compile time
 	/**
-	 * The type (i.e. class or interface)
+	 * The type (ie class or interface)
 	 */
 	protected String Interface_type;  //i.e. class, interface
 	/**
