@@ -33,6 +33,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2001/08/14 01:30:32  dennis
+ *  Now initializes debug_tcp_comm to false
+ *
  *  Revision 1.7  2001/08/09 21:44:34  dennis
  *  Made debug flag static so that it is shared and settable from
  *  other classes.
@@ -81,7 +84,7 @@ import java.io.*;
  */
 public class TCPComm
 {
-  public static boolean        debug_tcp_comm;
+  public static boolean        debug_tcp_comm = false;
 
   protected Socket             sock;
   private   String             last_address_string = "";
