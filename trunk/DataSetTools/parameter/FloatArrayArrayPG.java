@@ -32,6 +32,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2003/09/09 23:06:28  bouzekc
+ * Implemented validateSelf().
+ *
  * Revision 1.9  2003/08/28 03:38:40  bouzekc
  * Changed innerParameter assignment to call to setParam().
  *
@@ -107,4 +110,14 @@ public class FloatArrayArrayPG extends VectorPG{
     FloatArrayArrayPG faap = new FloatArrayArrayPG( getName(), getValue());
     return (Object)faap;
   }     
+
+  /**
+   * Validates this FloatArrayArrayPG.  A FloatArrayArrayPG is considered 
+   * valid if it contains a FloatArrayPG with all Float elements.
+   */
+  public void validateSelf(  ) {
+    FloatArrayPG fpg = ( FloatArrayPG )getParam(  );
+    fpg.validateElements( new Float( 0.0f  ).getClass(  ) );
+    setValid( fpg.getValid(  ) );
+  }
 }

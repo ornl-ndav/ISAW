@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2003/09/09 23:06:29  bouzekc
+ * Implemented validateSelf().
+ *
  * Revision 1.6  2003/08/30 19:49:17  bouzekc
  * Now extends VectorPG.  Qbins1PG now implements Concatenator.  Moved Help
  * button functionality into ArrayEntryJFrame for a cleaner look.  Removed
@@ -107,6 +110,17 @@ public class QbinsPG  extends VectorPG{
           X.initGUI( new Vector());
       return X;
 
+   }
+
+   /**
+    * Validates this QbinsPG.  A QbinsPG is considered valid if its internal
+    * Qbins1PG parameter is valid.
+    */
+   public void validateSelf(  ) {
+     Qbins1PG qb1pg = ( Qbins1PG )getParam(  );
+     qb1pg.validateSelf(  );
+
+     setValid( qb1pg.getValid(  ) );
    }
 
   /**
@@ -220,6 +234,22 @@ public class QbinsPG  extends VectorPG{
           s = s+stepSize;
       }
       return temp;
+    }
+
+    /**
+     * Validates this Qbins1PG.  A Qbins1PG is considered valid if its
+     * getValue(  ) returns a non-null, non-empty Vector.
+     */
+    public void validateSelf(  ) {
+      Object val = getValue(  );
+
+      if( val != null && val instanceof Vector ) {
+        Vector elems = ( Vector )val;
+
+        setValid( elems.size(  ) > 0 );
+      } else {
+        setValid( false );
+      }
     }
   }//Qbins1
 

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.15  2003/09/09 23:06:28  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.14  2003/08/15 23:50:04  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -216,5 +219,26 @@ public class DataDirPG extends BrowsePG{
         pg.initialized=false;
         pg.filter_vector=this.filter_vector;
         return pg;
+    }
+
+    /**
+     * Validates this DataDirPG.  A DataDirPG is considered valid if and only
+     * if getValue() returns a String which references an actual directory.  
+     */
+    public void validateSelf(  ) {
+      Object val = getValue(  );
+      
+      if( val != null ) {
+      
+        File file = new File( val.toString(  ) );
+        
+        if( file.exists(  ) && file.isDirectory(  ) ) { 
+          setValid( true );
+        } else {
+          setValid( false );
+        }
+      } else {
+        setValid( false );
+      }
     }
 }

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/09/09 23:06:29  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.8  2003/08/15 23:50:05  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -123,4 +126,13 @@ public class MaterialPG extends StringPG implements ParamUsesString{
         pg.initialized=false;
         return pg;
     }
+
+    /**
+     * Validates this MaterialPG.  A valid MaterialPG is one where getValue()
+     * will pass through a MaterialFilter.
+     */
+    public void validateSelf(  ) {
+      setValid( getStringFilter(  ).isOkay( 0, getValue(  ).toString(  ), "" ) );
+    }
+
 }

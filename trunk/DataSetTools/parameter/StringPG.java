@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/09/09 23:06:31  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.8  2003/08/15 23:50:06  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -166,5 +169,13 @@ public class StringPG extends StringEntryPG implements ParamUsesString{
         spg.setDrawValid(this.getDrawValid());
         spg.initialized=false;
         return spg;
+    }
+
+    /**
+     * Validates this StringPG.  A StringPG is considered valid if its
+     * getValue() does not return null.
+     */
+    public void validateSelf(  ) {
+      setValid( ( getValue(  ) != null ) );
     }
 }

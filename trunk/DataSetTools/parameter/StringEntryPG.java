@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2003/09/09 23:06:31  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.11  2003/08/28 02:28:12  bouzekc
  *  Removed setEnabled() method.
  *
@@ -88,10 +91,18 @@ import javax.swing.*;
  * StringEntryPGs.
  */
 public abstract class StringEntryPG extends ParameterGUI {
+  //~ Static fields/initializers ***********************************************
+
   protected static final int DEF_COLS = 20;
-  protected StringFilterer FILTER     = null;
+
+  //~ Instance fields **********************************************************
+
+  protected StringFilterer FILTER = null;
+
+  //~ Constructors *************************************************************
 
   // ********** Constructors **********
+
   /**
    * Creates a StringEntryPG with the specified name and value.  Does NOT draw
    * the "valid" checkbox.
@@ -112,16 +123,29 @@ public abstract class StringEntryPG extends ParameterGUI {
    */
   public StringEntryPG( String name, Object val, boolean valid ) {
     super( name, val, valid );
-    this.type                 = "UNKNOWN";
+    this.type = "UNKNOWN";
+  }
+
+  //~ Methods ******************************************************************
+
+  /**
+   * Accessor method to allow access to the StringFilter so that the outside
+   * world can pre-check any values that it wants to send in.
+   *
+   * @return The StringFilterer (interface implemented by StringFilter) that
+   *         this PG uses.
+   */
+  public StringFilterer getStringFilter(  ) {
+    return FILTER;
   }
 
   // ********** IParameter requirements **********
 
   /**
-   * Returns the value of the parameter. While this is a generic
-   * object specific parameters will return appropriate
-   * objects. There can also be a 'fast access' method which returns
-   * a specific object (such as String or DataSet) without casting.
+   * Returns the value of the parameter. While this is a generic object
+   * specific parameters will return appropriate objects. There can also be a
+   * 'fast access' method which returns a specific object (such as String or
+   * DataSet) without casting.
    *
    * @return The value of this ParameterGUI.
    */
@@ -138,44 +162,8 @@ public abstract class StringEntryPG extends ParameterGUI {
   }
 
   /**
-   * Sets the value of the parameter.
-   *
-   * @param value The new value.
-   */
-  protected void setEntryValue( Object value ) {
-    if( this.initialized ) {
-      if( value == null ) {
-        ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( "" );
-      } else {
-        if( value instanceof String ) {
-          ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( ( String )value );
-        } else {
-          ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( value.toString(  ) );
-        }
-      }
-    } else {
-      return;
-    }
-
-    this.setValid( true );
-  }
-
-  /**
-   *  Accessor method to allow access to the StringFilter so that the outside
-   *  world can pre-check any values that it wants to send in.
-   *
-   *  @return                    The StringFilterer (interface implemented by
-   *                             StringFilter) that this PG uses.
-   */
-  public StringFilterer getStringFilter(  ) {
-    return FILTER;
-  }
-
-  // ********** IParameterGUI requirements **********
-
-  /**
    * Allows for initialization of the GUI after instantiation.
-   * 
+   *
    * @param init_values The initial values to use.
    */
   public void initGUI( Vector init_values ) {
@@ -194,14 +182,48 @@ public abstract class StringEntryPG extends ParameterGUI {
 
     if( this.value != null ) {
       entrywidget = new EntryWidget( 
-                      new StringEntry( this.value.toString(  ), DEF_COLS, FILTER ) );
+          new StringEntry( this.value.toString(  ), DEF_COLS, FILTER ) );
     } else {
-      entrywidget = new EntryWidget( 
-                      new StringEntry( "", DEF_COLS, FILTER ) );
+      entrywidget = new EntryWidget( new StringEntry( "", DEF_COLS, FILTER ) );
     }
 
     entrywidget.addPropertyChangeListener( IParameter.VALUE, this );
     this.setEnabled( this.getEnabled(  ) );
     super.initGUI(  );
+  }
+
+  /**
+   * Validates this StringEntryPG.  In general, a valid FloatPG is one that
+   * contains text that can go through its filter.  This is only valid for
+   * derived classes that use a StringFilterer.  Those that do not must
+   * implement their own validate() method.
+   */
+  public void validateSelf(  ) {
+    setValid( getStringFilter(  ).isOkay( 0, getValue(  ).toString(  ), "" ) );
+  }
+
+  /**
+   * Sets the value of the parameter.
+   *
+   * @param value The new value.
+   */
+  protected void setEntryValue( Object value ) {
+    if( this.initialized ) {
+      if( value == null ) {
+        ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( "" );
+      } else {
+        if( value instanceof String ) {
+          ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
+            ( String )value );
+        } else {
+          ( ( JTextField )( entrywidget.getComponent( 0 ) ) ).setText( 
+            value.toString(  ) );
+        }
+      }
+    } else {
+      return;
+    }
+
+    this.setValid( true );
   }
 }

@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/09/09 23:06:28  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.8  2003/08/15 23:50:05  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -157,5 +160,27 @@ public class LoadFilePG extends BrowsePG{
         pg.initialized=false;
         pg.filter_vector=this.filter_vector;
         return pg;
+    }
+
+    /**
+     * Validates this LoadFilePG.  A LoadFilePG is considered valid if
+     * getValue() returns a non-null String and the String references 
+     * a non-directory, existing, and readable File
+     */
+    public void validateSelf(  ) {
+      Object val = getValue(  );
+      
+      if( val != null ) {
+      
+        File file = new File( val.toString(  ) );
+        
+        if( file.exists(  ) && !file.isDirectory(  ) && file.canRead(  ) ) {
+          setValid( true );
+        } else {
+          setValid( false );
+        }
+      } else {
+        setValid( false );
+      }
     }
 }

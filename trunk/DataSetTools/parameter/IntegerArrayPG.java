@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2003/09/09 23:06:28  bouzekc
+ * Implemented validateSelf().
+ *
  * Revision 1.10  2003/08/28 03:38:40  bouzekc
  * Changed innerParameter assignment to call to setParam().
  *
@@ -99,4 +102,13 @@ public class IntegerArrayPG extends VectorPG{
     jf.invalidate();
     jf.show();
   }*/
+
+  /**
+   * Validates this IntegerArrayPG.  An IntegerArrayPG is considered valid if 
+   * it contains all Integer elements.
+   */
+  public void validateSelf(  ) {
+    validateElements( new Integer( 0 ).getClass(  ) );
+  }
+
 }

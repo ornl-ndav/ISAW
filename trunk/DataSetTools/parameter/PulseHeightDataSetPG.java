@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2003/09/09 23:06:29  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.8  2003/08/15 23:50:05  bouzekc
  *  Modified to work with new IParameterGUI and ParameterGUI
  *  classes.  Commented out testbed main().
@@ -107,6 +110,20 @@ public class PulseHeightDataSetPG extends DataSetPG{
         if(isPulseHeightDataSet(val)){
              super.addItem(val);
         }
+    }
+
+    /**
+     * Validates this PulseHeightDataSetPG.  A valid PulseHeightDataSetPG is one that
+     * passes DataSetPG's validateSelf() checks and also the more stringent
+     * requirement that the value be a pulse height DataSet.
+     */
+    public void validateSelf(  ) {
+      super.validateSelf(  );
+
+      //if it passed the superclasses checks, run it through ours
+      if( getValid(  ) ) {
+        setValid( isPulseHeightDataSet( getValue(  ) ) );
+      }
     }
 
     /**

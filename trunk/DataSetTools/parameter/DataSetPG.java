@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.11  2003/09/09 23:06:28  bouzekc
+ *  Implemented validateSelf().
+ *
  *  Revision 1.10  2003/08/22 20:12:07  bouzekc
  *  Modified to work with EntryWidget.
  *
@@ -236,5 +239,19 @@ public class DataSetPG extends ChooserPG implements IObserver{
         pg.setDrawValid(this.getDrawValid());
         pg.initialized=false;
         return pg;
+    }
+
+    /**
+     * Validates this DataSetPG.  A DataSetPG is considered valid if its value
+     * is not null and is not a DataSet.EMPTY_DATA_SET.
+     */
+    public void validateSelf(  ) {
+      Object obj = getValue(  );
+
+      if( ( obj != null ) && ( obj != DataSet.EMPTY_DATA_SET ) ) {
+        setValid( true );
+      } else {
+        setValid( false );
+      }
     }
 }
