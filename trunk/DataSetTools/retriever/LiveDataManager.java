@@ -30,6 +30,16 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.18  2003/03/04 20:37:40  dennis
+ *  Now keeps less state information and goes to the server
+ *  for simple requests.
+ *  Added method isGettingDS() that is checked by the LiveDataMonitor,
+ *  so that additional requests for large DataSets are rejected
+ *  while the LiveDataManager is busy getting a DataSet.
+ *  Added method getDataSetName() that is used by the LiveDataMonitor
+ *  to produce the list of available DataSets, without having to
+ *  first load the DataSets from the server.
+ *
  *  Revision 1.17  2002/11/27 23:23:16  pfpeterson
  *  standardized header
  *
@@ -71,11 +81,12 @@ public class LiveDataManager extends    Thread
   private Vector            listeners   = null;        
   private LiveDataRetriever retriever   = null;
   private DataSet           data_sets[] = new DataSet[0];
-  private int               ds_type[]   = new int[0];
   private boolean           ignore[]    = new boolean[0];
                                                       // flags to mark which
                                                       // data sets won't be
                                                       // automatically updated
+  private int               getting_ds  = -1;
+
   private int               time_ms     = 3*MIN_DELAY*1000;
   private int               error_flag  = RemoteDataRetriever.NOT_CONNECTED;
 
@@ -112,7 +123,7 @@ public class LiveDataManager extends    Thread
     if ( error_flag < 0 )
       return error_flag;
 
-    return data_sets.length;
+    return retriever.numDataSets();
   }
 
 /* -------------------------------- getType ------------------------------ */
@@ -128,10 +139,7 @@ public class LiveDataManager extends    Thread
 
   public int getType( int data_set_num )
   {
-    if ( data_set_num >= 0 && data_set_num < data_sets.length )
-      return ds_type[ data_set_num ];
-    else
-      return Retriever.INVALID_DATA_SET;
+    return retriever.getType( data_set_num );
   }
 
 
@@ -139,16 +147,66 @@ public class LiveDataManager extends    Thread
 /**
  *  Get the specified DataSet from the current data source.
  * 
- *  @param  data_set_num  The number of the DataSet to be returned.
+ *  @param  ds_num  The number of the DataSet to be returned.
  *    
  *  @return the requested DataSet.
  */
-  public DataSet getDataSet( int data_set_num )
+  public DataSet getDataSet( int ds_num )
   {
-    if ( data_set_num >= 0 && data_set_num < data_sets.length )
-      return data_sets[ data_set_num ];
-    else
+    if ( ds_num < 0 )
       return null;
+
+    if ( ds_num >= data_sets.length  &&
+         ds_num <  numDataSets() )
+      SetUpLocalCopies();
+
+    if ( ds_num >= 0 && ds_num < data_sets.length )      // valid ds_num, so 
+    {                                                    // work with copy
+      if ( data_sets[ ds_num ] == null || 
+          !data_sets[ ds_num ].getTitle().equals(getDataSetName(ds_num) ) )
+      {
+        UpdateDataSetNow( ds_num );                       // bad local copy
+      }
+      return data_sets[ds_num];          
+    }
+    else 
+      return null;
+
+  }
+
+
+/* ------------------------------ getDataSet ----------------------------- */
+/**
+ *  Get the specified portion of the specified DataSet from the current 
+ *  data source.
+ *
+ *  @param  data_set_num  The number of the DataSet to be returned.
+ *
+ *  @return the requested DataSet.
+ */
+  public DataSet getDataSet( int    data_set_num, 
+                             String group_ids,
+                             float  min_x,
+                             float  max_x,
+                             int    rebin_factor,
+                             int    attr_mode      )
+  {
+    return getDataSet( data_set_num );
+  }
+
+
+/* ---------------------------- getDataSetName ----------------------------- */
+/**
+ *  Get the name of the specified DataSet from the current data source.
+ *
+ *  @param  data_set_num  The number of the DataSet whose name is 
+ *                        to be returned.
+ *
+ *  @return the name of the specified DataSet.
+ */
+  public String getDataSetName( int data_set_num )
+  {
+    return retriever.getDataSetName( data_set_num );
   }
 
 
@@ -221,6 +279,21 @@ public class LiveDataManager extends    Thread
      return true;
  }
 
+
+/* ----------------------------- isGettingDS ----------------------------- */
+/**
+ *  Find out if the communications channel is currently busy getting a 
+ *  DataSet.
+ */
+ public boolean isGettingDS()
+ {
+   if ( getting_ds >= 0 )
+     return true;
+   else
+     return false;
+ }
+
+
 /* ---------------------------- UpdateDataSetNow -------------------------- */
 /**
  *  Request an immediate update of the specified DataSet.
@@ -236,25 +309,25 @@ public class LiveDataManager extends    Thread
    if ( data_set_num > data_sets.length - 1 )
      SetUpLocalCopies();
 
+   getting_ds = data_set_num; // if a thread starts to get a  DataSet, set flag
+                              // so the run() method doesn't queue up another
+                              // request for a DataSet.               
 
    DataSet temp_ds = retriever.getDataSet( data_set_num );
-   retriever.Exit();
-   retriever.MakeConnection();
 
    if ( temp_ds == data_sets[data_set_num] )
      System.out.println("ERROR!!!! same data set" );
 
    if ( temp_ds != null )
-   {                                             // check for change of DataSet
-                                                 // and re-initialize if needed
-
-     if ( data_sets[data_set_num] == null   ||
-         !temp_ds.getTitle().equals( data_sets[data_set_num].getTitle() ) )
-       SetUpLocalCopies();
-     else
-       data_sets[data_set_num].copy( temp_ds );  // copy notifies the observers
-                                                 // of the DataSets 
+   { 
+     if ( data_sets[data_set_num] == null )             // save new DataSet
+       data_sets[data_set_num] = temp_ds;
+     else                                               // or copy to current DS
+       data_sets[data_set_num].shallowCopy( temp_ds );  // copy notifies the
+                                                        // DataSet's observers
    }
+
+   getting_ds = -1;                                      // reset the flag
  }
 
  /* ------------------------ addActionListener -------------------------- */
@@ -292,7 +365,7 @@ public class LiveDataManager extends    Thread
 
 /* -------------------------- send_message ------------------------------- */
 /**
- *  Send a message to all of the action listeners for this panel
+ *  Send a message to all of the action listeners for this LiveDataManager
  */
  public void send_message( String message )
  {
@@ -319,30 +392,36 @@ public class LiveDataManager extends    Thread
          sleep( time_ms / 20 );                     // so a long sleep will
                                                     // end sooner if time_ms
                                                     // is altered. 
-       send_message( retriever.status() );
 
-       int n_ds = retriever.numDataSets();
-       if (  n_ds != data_sets.length ) 
-         SetUpLocalCopies();                               
-
-       else if ( n_ds != error_flag )
+       if ( getting_ds < 0 )                        // don't try talking to the
+                                                    // server if it's busy.
        {
-         error_flag = n_ds;
-         send_message(  DATA_CHANGED + "Run 1: " );
-       }
+         send_message( retriever.status() );        // notify LiveDataMonitor
+                                                    // what current status is
 
-       boolean new_runfile = false;
-       String name = retriever.getDataName();
-       if ( !name.equals( last_data_name ) )
-       {
-         last_data_name = name;
-         new_runfile = true; 
-       }
+         int n_ds = retriever.numDataSets();        // if number of DataSets
+         if (  n_ds != data_sets.length )           // changed, fix our lists
+           SetUpLocalCopies();                               
 
-       for ( int i = 0; i < data_sets.length; i++ )
-         if ( !ignore[i] || new_runfile )
-           UpdateDataSetNow( i );
-     
+         else if ( n_ds != error_flag )             // if error status changed
+         {                                          // notify LiveDataMonitor
+           error_flag = n_ds;
+           send_message(  DATA_CHANGED + "Run 1: " );
+         }
+
+         String name = retriever.getDataSetName(0);   // if the run changed,
+         if ( !name.equals( last_data_name ) )        // notify LiveDataMonitor
+         {
+           last_data_name = name;
+           send_message(  DATA_CHANGED + "Run 2: " + name );
+         }
+
+         for ( int i = 0; i < data_sets.length; i++ )    // update the DataSets
+         {
+           if ( !ignore[i] )                             // we are interested in
+             UpdateDataSetNow( i );
+         }
+       } 
      }
      catch ( Exception e )
      {
@@ -371,66 +450,45 @@ public class LiveDataManager extends    Thread
     {
       error_flag = RemoteDataRetriever.NOT_CONNECTED;
       send_message( DATA_CHANGED + "SetUpLocalCopies 1: " );
+      return;
     }
 
-    else
+    int num_ds = retriever.numDataSets();
+
+    if ( error_flag != num_ds )
     {
-      int num_ds      = retriever.numDataSets();
+      error_flag = num_ds; 
+      send_message(  DATA_CHANGED + "SetUpLocalCopies 2: " );
+    }
 
-      if ( error_flag != num_ds )
+    if ( num_ds < 0 )                          // error flag... lost the server
+      return;                                  // so just return, leaving local
+                                               // copies unchanged. 
+
+    int num_to_save = Math.min( num_ds, data_sets.length );
+
+    if ( num_ds != data_sets.length )           // we must resize our lists
+    {
+      DataSet new_data_sets[] = new DataSet[ num_ds ];
+      boolean new_ignore[]    = new boolean[ num_ds ];
+
+      for ( int i = 0; i < num_to_save; i++ )           // save what we can
+      {                                                 // of the old ones
+        new_data_sets[i] = data_sets[i];
+        new_ignore[i]    = ignore[i];
+      }
+      data_sets = new_data_sets;
+      ignore    = new_ignore;
+                                                        // initialize new ones
+      for ( int i = num_to_save; i < num_ds; i++ )
       {
-        error_flag = num_ds; 
-        send_message(  DATA_CHANGED + "SetUpLocalCopies 2: " );
+        data_sets[i] = null;
+        ignore[i]    = true;
       }
 
-      if ( num_ds < 0 )    
-        num_ds = 0;
-
-      int num_to_save = Math.min( num_ds, data_sets.length );
-
-      if ( num_ds != data_sets.length )           // we must resize our lists
-      {
-        DataSet new_data_sets[] = new DataSet[ num_ds ];
-        int     new_ds_type[]   = new int    [ num_ds ];
-        boolean new_ignore[]    = new boolean[ num_ds ];
-
-        for ( int i = 0; i < num_to_save; i++ )           // save what we can
-        {                                                 // of the old ones
-          new_data_sets[i] = data_sets[i];
-
-          DataSet temp_ds  = getValidDataSet( retriever.getDataSet(i) );
-          new_data_sets[i].copy( temp_ds );              // copy notifies any
-                                                         // observers of the ds
-          new_ignore[i]    = ignore[i];
-        }
-        data_sets = new_data_sets;
-        ds_type   = new_ds_type;
-        ignore    = new_ignore;
-                                                          // initialize new ones
-        for ( int i = num_to_save; i < num_ds; i++ )
-        {
-          ds_type[i]   = retriever.getType(i);
-          data_sets[i] = getValidDataSet( retriever.getDataSet(i) );
-          ignore[i]    = true;
-        }
-        send_message(  DATA_CHANGED + "SetUpLocalCopies 3: " );
-      }
-
-      else if ( num_ds > 0 )
-      {                                                 // refresh our existing 
-        for ( int i = 0; i < num_ds; i++ )              // lists
-        {
-          ds_type[i]   = retriever.getType(i);
-
-          DataSet temp_ds = getValidDataSet( retriever.getDataSet(i) );
-          data_sets[i].copy( temp_ds );                // copy notifies any
-                                                       // observers of the ds
-        }
-        send_message(  DATA_CHANGED + "SetUpLocalCopies 4: " );
-      }
+      send_message(  DATA_CHANGED + "SetUpLocalCopies 3: " );
     }
   }
-
 
   /*
    *  Get a valid DataSet that will be the specified DataSet if it is non-null
