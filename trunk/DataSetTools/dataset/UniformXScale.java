@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2002/06/11 20:51:38  dennis
+ *  Moved "step" instance variable before javadoc comment for the constructor
+ *  to avoid problem with javadoc.
+ *
  *  Revision 1.6  2002/06/10 20:19:17  dennis
  *  Added getI(x) and getX(i) methods to get individual points and positions
  *  of individual points in the list.
@@ -80,6 +84,8 @@ import java.io.*;
 
 public class UniformXScale extends XScale implements Serializable
 {
+  double step; 
+
   /**
    * Constructs a UniformXScale object by specifying the starting x, ending x 
    * and number of x values to be used.   For example, if the scale was to run 
@@ -96,8 +102,6 @@ public class UniformXScale extends XScale implements Serializable
    *
    * @see DataSetTools.dataset.XScale
    */
-
-   double step; 
 
    public UniformXScale( float start_x, float end_x, int num_x )
    {
