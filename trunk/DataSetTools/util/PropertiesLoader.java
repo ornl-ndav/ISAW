@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2002/06/14 14:25:45  pfpeterson
+ *  The start of a central location for getting system properties
+ *  with appropriate default values.
+ *
  *  Revision 1.3  2001/08/02 15:47:19  dennis
  *  Added is_loaded() method to check whether or not the properties file
  *  was found and loaded ok.
@@ -106,4 +110,31 @@ public class PropertiesLoader implements java.io.Serializable
     }  
   }
   
+    /**
+     * Convenience method that calls get(prop,def) with the
+     * appropriate default value.
+     */
+    public String get(String prop){
+        String def=null;
+
+        return this.get(prop,def);
+    }
+
+    /**
+     * Determines the system property using appropriate default values
+     * if necessary.
+     */
+    public String get(String prop, String def){
+        String rs=null;
+        if(!loaded_ok) reload();
+        
+        if(def==null || def.length()==0){
+            rs=System.getProperty(prop);
+        }else{
+            rs=System.getProperty(prop,def);
+        }
+        System.out.println("get("+prop+", "+def+")="+rs);
+        return rs;
+    }
+
 }
