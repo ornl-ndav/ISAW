@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.9  2002/12/20 17:11:01  dennis
+ * Added getDocumentation() method, java docs for getResult() and
+ * simple main test program. (Chris Bouzek)
+ *
  * Revision 1.8  2002/11/27 23:17:04  pfpeterson
  * standardized header
  *
@@ -66,6 +70,8 @@ import  DataSetTools.math.*;
 import  DataSetTools.util.*;
 import  DataSetTools.operator.Parameter;
 import  DataSetTools.parameter.*;
+import  DataSetTools.viewer.*;
+import  DataSetTools.retriever.*;
 
 /**
  * This operator converts a neutron time-of-flight DataSet for a Diffractometer,
@@ -75,7 +81,7 @@ import  DataSetTools.parameter.*;
  * time-of-flight from the SOURCE to the detector.
  */
 
-public class DiffractometerTofToWavelength extends    XAxisConversionOp 
+public class DiffractometerTofToWavelength extends    XAxisConversionOp
                                            implements Serializable
 {
   /* ------------------------ DEFAULT CONSTRUCTOR -------------------------- */
@@ -129,7 +135,7 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
 
   /* ---------------------------- getCommand ------------------------------- */
   /**
-   * @return	the command name to be used with script processor: 
+   * @return	the command name to be used with script processor:
    *            in this case, ToWL
    */
    public String getCommand()
@@ -138,7 +144,7 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
    }
 
 
- /* -------------------------- setDefaultParmeters ------------------------- */
+ /* -------------------------- setDefaultParameters ------------------------- */
  /**
   *  Set the parameters to default values.
   */
@@ -151,10 +157,10 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
     Parameter parameter;
 
     if ( scale == null )
-      parameter = new Parameter( "Min Wavelength("+FontUtil.ANGSTROM+")", 
-                                 new Float(0.0) );
+      parameter = new Parameter( "Min Wavelength("+FontUtil.ANGSTROM+")",
+                                  new Float(0.0) );
     else
-      parameter = new Parameter( "Min Wavelength("+FontUtil.ANGSTROM+")", 
+      parameter = new Parameter( "Min Wavelength("+FontUtil.ANGSTROM+")",
                                   new Float(scale.getStart_x()));
     addParameter( parameter );
 
@@ -162,7 +168,7 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
       parameter = new Parameter( "Max Wavelength("+FontUtil.ANGSTROM+")",
                                  new Float(5.0) );
     else
-      parameter = new Parameter( "Max Wavelength("+FontUtil.ANGSTROM+")", 
+      parameter = new Parameter( "Max Wavelength("+FontUtil.ANGSTROM+")",
                                   new Float(scale.getEnd_x()));
 
     addParameter( parameter );
@@ -228,10 +234,46 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
     return tof_calc.Wavelength( total_length, x );
   }
 
+  /* ---------------------- getDocumentation --------------------------- */
+  /**
+   *  Returns the documentation for this method as a String.  The format
+   *  follows standard JavaDoc conventions.
+   */
+  public String getDocumentation()
+  {
+    StringBuffer s = new StringBuffer("");
+    s.append("@overview This operator converts the X-axis units on a ");
+    s.append("DataSet from neutron time-of-flight to wavelength.");
+    s.append("@assumptions The DataSet must contain spectra with ");
+    s.append("attributes giving the detector position and source to sample ");
+    s.append("distance ( the initial flight path ). In addition, it is ");
+    s.append("assumed that the XScale for the spectra represents the ");
+    s.append("time-of-flight from the source to the detector.");
+    s.append("@algorithm Creates a new DataSet which has the same title ");
+    s.append("as the input DataSet, the same y-values as the input DataSet, ");
+    s.append("and whose X-axis units have been converted to wavelength.  ");
+    s.append("The new DataSet also has a message appended to its log ");
+    s.append("indicating that a conversion to units of wavelength on the ");
+    s.append("X-axis was done.  ");
+    s.append("Furthermore, two operators are added to the DataSet: ");
+    s.append("DiffractometerWavelengthToQ and DiffractometerWavelengthToD.");
+    s.append("@param ds The DataSet to which the operation is applied.");
+    s.append("@param min_wl The minimum wavelength value to be binned.");
+    s.append("@param max_wl The maximum wavelength value to be binned.");
+    s.append("@param num_wl The number of \"bins\" to be used between ");
+    s.append("min_wl and max_wl.");
+    s.append("@return A new DataSet which is the result of converting the ");
+    s.append("input DataSet's X-axis units to wavelength.");
+    return s.toString();
+  }
 
   /* ---------------------------- getResult ------------------------------- */
-
-
+  /**
+   *  Converts the input DataSet to a DataSet which is identical except that
+   *  the new DataSet's X-axis units have been converted to wavelength.
+   *
+   *  @return DataSet whose X-axis units have been converted to wavelength.
+   */
   public Object getResult()
   {
                                      // get the current data set
@@ -239,7 +281,7 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
                                      // construct a new data set with the same
                                      // title, units, and operations as the
                                      // current DataSet, ds
-    DataSetFactory factory = new DataSetFactory( 
+    DataSetFactory factory = new DataSetFactory(
                                      ds.getTitle(),
                                      "Angstroms",
                                      "Wavelength",
@@ -247,14 +289,14 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
                                      "Scattering Intensity" );
 
     // #### must take care of the operation log... this starts with it empty
-    DataSet new_ds = factory.getDataSet(); 
+    DataSet new_ds = factory.getDataSet();
     new_ds.copyOp_log( ds );
     new_ds.addLog_entry( "Converted to Wavelength" );
 
     // copy the attributes of the original data set
     new_ds.setAttributeList( ds.getAttributeList() );
 
-                                     // get the wavelength scale parameters 
+                                     // get the wavelength scale parameters
     float min_wl = ( (Float)(getParameter(0).getValue()) ).floatValue();
     float max_wl = ( (Float)(getParameter(1).getValue()) ).floatValue();
     int   num_wl = ( (Integer)(getParameter(2).getValue()) ).intValue() + 1;
@@ -271,10 +313,10 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
     if ( num_wl <= 1.0 || min_wl >= max_wl )       // no valid scale set
       new_wl_scale = null;
     else
-      new_wl_scale = new UniformXScale( min_wl, max_wl, num_wl );  
+      new_wl_scale = new UniformXScale( min_wl, max_wl, num_wl );
 
-                                            // now proceed with the operation 
-                                            // on each data block in DataSet 
+                                            // now proceed with the operation
+                                            // on each data block in DataSet
     Data             data,
                      new_data;
     DetectorPosition position;
@@ -296,7 +338,7 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
       attr_list = data.getAttributeList();
 
                                            // get the detector position and
-                                           // initial path length 
+                                           // initial path length
       position=(DetectorPosition)
                    attr_list.getAttributeValue(Attribute.DETECTOR_POS);
 
@@ -304,48 +346,48 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
                          attr_list.getAttributeValue(Attribute.INITIAL_PATH);
 
       if( position != null && initial_path_obj != null)
-                                           // has needed attributes 
-      {                                    // so convert it to wavelength 
+                                           // has needed attributes
+      {                                    // so convert it to wavelength
                                       // calculate wavelengths at bin boundaries
         initial_path     = initial_path_obj.floatValue();
         spherical_coords = position.getSphericalCoords();
         total_length     = initial_path + spherical_coords[0];
- 
+
         wl_vals           = data.getX_scale().getXs();
         for ( int i = 0; i < wl_vals.length; i++ )
           wl_vals[i] = tof_calc.Wavelength( total_length, wl_vals[i] );
-  
+
         wl_scale = new VariableXScale( wl_vals );
 
         y_vals  = data.getY_values();
         errors  = data.getErrors();
 
-        new_data = Data.getInstance( wl_scale, 
-                                     y_vals, 
-                                     errors, 
+        new_data = Data.getInstance( wl_scale,
+                                     y_vals,
+                                     errors,
                                      data.getGroup_ID() );
-                                                // create new data block with 
-                                                // non-uniform E_scale and 
+                                                // create new data block with
+                                                // non-uniform E_scale and
                                                 // the original y_vals.
         new_data.setAttributeList( attr_list ); // copy the attributes
 
                                                 // resample if a valid
         if ( new_wl_scale != null )             // scale was specified
-          new_data.resample( new_wl_scale, IData.SMOOTH_NONE ); 
+          new_data.resample( new_wl_scale, IData.SMOOTH_NONE );
 
-        new_ds.addData_entry( new_data );      
+        new_ds.addData_entry( new_data );
       }
     }
     new_ds.addOperator(new DiffractometerWavelengthToQ());
     new_ds.addOperator(new DiffractometerWavelengthToD());
 
     return new_ds;
-  }  
+  }
 
   /* ------------------------------ clone ------------------------------- */
   /**
-   * Get a copy of the current DDiffractometerTofToWavelength Operator.  The 
-   * list of * parameters and the reference to the DataSet to which it applies 
+   * Get a copy of the current DDiffractometerTofToWavelength Operator.  The
+   * list of * parameters and the reference to the DataSet to which it applies
    * are also copied.
    */
   public Object clone()
@@ -359,5 +401,31 @@ public class DiffractometerTofToWavelength extends    XAxisConversionOp
     return new_op;
   }
 
+  /* --------------------------- main ----------------------------------- */
+  /*
+   *  Main program for testing purposes
+   */
+  public static void main( String[] args )
+  {
+    float min_1 = (float).75, max_1 = (float)2.0;
+    String file_name = "/home/groups/SCD_PROJECT/SampleRuns/GPPD12358.RUN";
+                       /*"D:\\ISAW\\SampleRuns\\GPPD12358.RUN";*/
+
+    try
+    {
+      RunfileRetriever rr = new RunfileRetriever( file_name );
+      DataSet ds1 = rr.getDataSet(1);
+      ViewManager viewer = new ViewManager(ds1, IViewManager.IMAGE);
+      DiffractometerTofToWavelength op =
+                     new DiffractometerTofToWavelength(ds1, min_1, max_1, 100);
+      DataSet new_ds = (DataSet)op.getResult();
+      ViewManager new_viewer = new ViewManager(new_ds, IViewManager.IMAGE);
+      System.out.println(op.getDocumentation());
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
+  }
 
 }
