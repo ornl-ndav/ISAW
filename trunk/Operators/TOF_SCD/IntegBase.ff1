@@ -4,7 +4,7 @@
 
       INTEGER X,Y,Z,Nxs,Nys
       INTEGER REFLAG,WLNUM
-      REAL SDATA(85,85),IHKL(5),IHKLX,SIGI(5)
+      REAL SDATA(Nxs,Nys),IHKL(5),IHKLX,SIGI(5)
       REAL ITOT
       REAL ITOSIGI(5),ITOSIGIX
       CHARACTER PORM(5)
@@ -68,8 +68,8 @@ C      MAXZ = Z (time) channel for MAXP(1), which is max for entire peak.
 
       MAXP1 = MAXP(1)
 
-      IF (MAXX(1).LT.5 .OR. MAXX(1).GT.81
-     1      .OR. MAXY(1).LT.5 .OR. MAXY(1).GT.81
+      IF (MAXX(1).LT.5 .OR. MAXX(1).GT.NXS-4
+     1      .OR. MAXY(1).LT.5 .OR. MAXY(1).GT.NYS-4
      2      .OR. MAXZ.LT.2 .OR. MAXZ.GT.(WLNUM-3)) THEN
             REFLAG=500
             RETURN
@@ -498,7 +498,8 @@ c  !of total intensity at this point.
         CALL WRITEFLOAT( ITOSIGI(5),'F10.2')
         CALL WRITESTRING('          ')
         CALL WRITESTRING(PORM(5))
-
+        CALL WRITELN
+        CALL WRITELN
 
                   ENDIF
 
@@ -569,7 +570,7 @@ C----------------------------------------------------------------------
 
       ITOSIGI(1)=IHKL(1)/SIGI(1)
 
-      RETURN
+      
       END
 
 
