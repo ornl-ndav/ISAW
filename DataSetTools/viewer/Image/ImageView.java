@@ -1,7 +1,12 @@
 /**
- * @(#)ImageView.java  1.1 2000/04/28 Dennis Mikkelson
+ * @(#)ImageView.java
+ *
+ *  Programmer: Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.8  2001/01/29 21:29:30  dennis
+ *  Now uses CVS version numbers.
+ *
  *  Revision 1.7  2000/12/15 05:09:40  dennis
  *  Now convert histograms to functions before generating the image.
  *  This was needed because if histograms with very different
