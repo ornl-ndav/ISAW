@@ -2,6 +2,9 @@
  * @(#)MultiRunfileLoader.java     0.1  2000/06/13  Dennis Mikkelson
  *
  *  $Log$
+ *  Revision 1.5  2000/07/17 20:58:12  dennis
+ *  Simplified some calculations for log message and removed some extra prints.
+ *
  *  Revision 1.4  2000/07/14 19:08:39  dennis
  *  Added code to calculate additional information such as incident energy,
  *  wavelength and wavenumber
@@ -46,6 +49,7 @@ import IPNS.Runfile.*;
 public class MultiRunfileLoader extends    Operator 
                                 implements Serializable
 {
+
    public MultiRunfileLoader( String   path, 
                               String   instrument, 
                               int      run_numbers[],
@@ -111,11 +115,6 @@ public class MultiRunfileLoader extends    Operator
                         HistogramDataPeak mon_1[], 
                         HistogramDataPeak mon_2[]  )
    {
-      for ( int i = 0; i < mon_1.length; i++ )
-      {
-        mon_1[i].PrintPeakInfo( run_names[i]+" Monitor 1", IPeak.PEAK_ONLY);
-        mon_2[i].PrintPeakInfo( run_names[i]+" Monitor 2", IPeak.PEAK_ONLY);
-      }
                                                    // Monitor #1 statistics
       float area_1, 
             centroid_1,
@@ -131,7 +130,8 @@ public class MultiRunfileLoader extends    Operator
                                                    // Monitor #2 statistics
       float area_2,
             centroid_2,
-            std_2;
+            std_2,
+            ratio;
 
       float position_2      = mon_2[0].getPosition();
       float fwhm_2          = mon_2[0].getFWHM();
@@ -146,7 +146,7 @@ public class MultiRunfileLoader extends    Operator
       ds.addLog_entry("M1: On interval [ " + a1 + ", " + b1 + " ]");
       ds.addLog_entry("M2: On interval [ " + a2 + ", " + b2 + " ]");
       ds.addLog_entry(
-      "   RUN     M1:AREA   CENTROID     STD    M2:AREA   CENTROID     STD");
+  "   RUN     M1:AREA  CENTROID     STD    M2:AREA  CENTROID     STD   A2/A1");
       for ( int i = 0; i < mon_1.length; i++ )
       {
          mon_1[i].setEvaluationMode( IPeak.PEAK_ONLY );
@@ -158,6 +158,7 @@ public class MultiRunfileLoader extends    Operator
          area_2     = mon_2[i].Area( a2, b2);
          centroid_2 = mon_2[i].Moment( a2, b2, 0, 1) / area_2;
          std_2      = (float)Math.sqrt( mon_2[i].Moment( a2, b2, 2) / area_2 );
+         ratio      = area_2/area_1;
 
          ds.addLog_entry( run_names[i] + " " +
                           Format.integer(area_1, 8)       + "  " +
@@ -165,7 +166,8 @@ public class MultiRunfileLoader extends    Operator
                           Format.real(std_1, 6, 2)        + "   " +
                           Format.integer(area_2, 8)       + "  " +
                           Format.real(centroid_2, 8, 2)   + "  " +
-                          Format.real(std_2, 6, 2)   ); 
+                          Format.real(std_2, 6, 2)        + "  " +
+                          Format.real(ratio, 6, 3)   ); 
       }  
    }
 
@@ -235,18 +237,15 @@ public class MultiRunfileLoader extends    Operator
                                       // the first monitor pulse from the first
                                       // runfile
        {
-         mon_1[0] = new HistogramDataPeak( datasets[0].getData_entry(0), 7.7 );
-         mon_2[0] = new HistogramDataPeak( datasets[0].getData_entry(1),  10 );
-         float position = mon_1[0].getPosition();
-         float fwhm     = mon_1[0].getFWHM();
+         mon_1[0] = new HistogramDataPeak( datasets[0].getData_entry(0), 
+                               tof_data_calc.MONITOR_PEAK_EXTENT_FACTOR );
+         mon_2[0] = new HistogramDataPeak( datasets[0].getData_entry(1), 
+                               tof_data_calc.MONITOR_PEAK_EXTENT_FACTOR );
 
          mon_1[0].setEvaluationMode( IPeak.PEAK_ONLY );
-         float area_1 = mon_1[0].Area( position-2.5f*fwhm, position+2.5f*fwhm); 
-         centroid_1 = mon_1[0].Moment( position-2.5f*fwhm, 
-                                       position+2.5f*fwhm, 0, 1) / area_1; 
-         variance_1 = mon_1[0].Moment( position-2.5f*fwhm, 
-                                       position+2.5f*fwhm, 2) / area_1; 
-         mon_1[0].PrintPeakInfo( "First Run, Monitor 1", IPeak.PEAK_ONLY );
+         float area_1 = mon_1[0].Area( ); 
+         centroid_1 = mon_1[0].Moment( 0, 1) / area_1; 
+         variance_1 = mon_1[0].Moment( 2) / area_1; 
        } 
      }
      catch ( Exception e )
@@ -284,20 +283,15 @@ public class MultiRunfileLoader extends    Operator
                                           // current runfile and compare to 
                                           // the values from the first runfile
            {
-             mon_1[i] = new HistogramDataPeak(monitor_ds.getData_entry(0),7.7);
-             mon_2[i] = new HistogramDataPeak(monitor_ds.getData_entry(1), 10);
-             float position = mon_1[i].getPosition();
-             float fwhm     = mon_1[i].getFWHM();
+             mon_1[i] = new HistogramDataPeak(monitor_ds.getData_entry(0), 
+                                  tof_data_calc.MONITOR_PEAK_EXTENT_FACTOR );
+             mon_2[i] = new HistogramDataPeak(monitor_ds.getData_entry(1), 
+                                  tof_data_calc.MONITOR_PEAK_EXTENT_FACTOR );
 
              mon_1[i].setEvaluationMode( IPeak.PEAK_ONLY );
-             float area = mon_1[i].Area( position-2.5f*fwhm, 
-                                         position+2.5f*fwhm);
-             centroid = mon_1[i].Moment( position-2.5f*fwhm, 
-                                         position+2.5f*fwhm, 0, 1) / area;
+             float area = mon_1[i].Area( );
+             centroid = mon_1[i].Moment( 0, 1) / area;
 
-             mon_1[i].PrintPeakInfo("Current Run, Monitor 1",IPeak.PEAK_ONLY);
-
-             
              if ( Math.abs( centroid - centroid_1 ) < Math.sqrt(variance_1) )
                ok_to_add = true;
              else
@@ -398,7 +392,8 @@ public class MultiRunfileLoader extends    Operator
         for ( int mon = 0; mon < 2; mon++ )
         {
           HistogramDataPeak peak = new HistogramDataPeak(
-                                      datasets[0].getData_entry(mon), 8.5 );
+                                   datasets[0].getData_entry(mon), 
+                                   tof_data_calc.MONITOR_PEAK_EXTENT_FACTOR );
           peak.PrintPeakInfo( "SUM: Monitor " + (mon+1), IPeak.PEAK_ONLY );
   
           float position = peak.getPosition();
