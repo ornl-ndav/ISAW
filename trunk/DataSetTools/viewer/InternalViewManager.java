@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2001/08/09 16:07:52  dennis
+ *  Now checks viewer != null to check if the viewer has been
+ *  destroyed before an update message is processed.
+ *
  *  Revision 1.12  2001/07/27 15:55:59  dennis
  *  Now passes in 0 as default number of bins for conversion operators.
  *  In this case, the conversion operators should use the number of
@@ -81,8 +85,8 @@ public class InternalViewManager extends    JInternalFrame
                                             Serializable
 {
    private   InternalViewManager     view_manager = null;
-   private   DataSetViewer   viewer;
-   private   ViewerState     state = null;
+   private   DataSetViewer   viewer = null;
+   private   ViewerState     state  = null;
    private   DataSet         dataSet;
    private   DataSet         tempDataSet;
    private   DataSetOperator conversion_operator = null;
@@ -134,8 +138,9 @@ public class InternalViewManager extends    JInternalFrame
       
       dataSet = ds; 
       if ( ds == null )
-        System.out.println("ERROR: ds is null in InternalViewManager constructor");
-      dataSet.addIObserver( this );
+        System.out.println("ERROR: ds is null in InternalViewManager constr.");
+      else
+         dataSet.addIObserver( this );
 
       addInternalFrameListener(new InternalFrameAdapter()
       {
@@ -163,9 +168,15 @@ public class InternalViewManager extends    JInternalFrame
      dataSet.deleteIObserver( this );
      dataSet = ds;
      makeTempDataSet( true );
-     ds.addIObserver( this );
+     if ( ds != null )
+     {
+       ds.addIObserver( this );
+       setTitle( ds.toString() );
+     }
 
-     viewer.setDataSet( tempDataSet ); 
+     if ( viewer != null )
+       viewer.setDataSet( tempDataSet ); 
+
      System.gc();
    }
 
@@ -228,8 +239,8 @@ public class InternalViewManager extends    JInternalFrame
    */
    public void destroy()
    {
-     dataSet.deleteIObserver( view_manager );
-     tempDataSet.deleteIObserver( view_manager );
+     dataSet.deleteIObserver( this );
+     tempDataSet.deleteIObserver( this );
      viewer = null;
      dispose(); 
      System.gc();
@@ -250,11 +261,15 @@ public class InternalViewManager extends    JInternalFrame
     */
    public void update( Object observed, Object reason )
    {
-     if ( !( reason instanceof String) )   // we only deal with Strings
+     if ( viewer == null )
      {
-//     System.out.println("ERROR: InternalViewManager update called with wrong reason");
+       if ( ViewManager.debug_view_manager )
+         System.out.println("ERROR: InternalViewManager Previously Destroyed.");
        return;
      }
+
+     if ( !( reason instanceof String) )   // we only deal with Strings
+       return;
  
      String r_string = (String)reason;
      if ( observed == dataSet )             // message about original dataSet
