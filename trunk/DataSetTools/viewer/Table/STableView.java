@@ -30,6 +30,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.9  2003/03/07 20:56:36  rmikk
+ * -Cell editing has been disables. Eliminates a lot of error messages.
+ *
  * Revision 1.8  2003/03/03 16:58:52  pfpeterson
  * Changed SharedData.status_pane.add(String) to SharedData.addmsg(String)
  *
@@ -87,7 +90,7 @@ public class STableView  extends DataSetViewer
   protected ViewerState state;
   //protected DataSet data_set;
   //String order;
-  protected JTable jtb ;
+   public XJTable jtb;
   JScrollPane JscrlPane;
   protected JPanel TableHolder;
   JCheckBoxMenuItem jmErr=null; 
@@ -157,7 +160,7 @@ public class STableView  extends DataSetViewer
    public void initAftMenuItems()
      {
       table_model = fixTableModel( state , table_model, jmErr.getState(), jmInd.getState());
-      jtb = new JTable( table_model);
+      jtb = new XJTable( table_model);
       EA = new ExcelAdapter( jtb);
       jtb.setAutoResizeMode( JTable.AUTO_RESIZE_OFF);
       jtb.setColumnSelectionAllowed( true );
