@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.21  2004/07/28 18:29:33  rmikk
+ *  Prints a Stack trace if the initialization of a viewer causes an exception
+ *
  *  Revision 1.20  2004/01/24 22:41:15  bouzekc
  *  Removed/commented out unused imports/variables.
  *
@@ -204,6 +207,8 @@ public class TableViewMenuComponents
                                false, false, state),
                    new LargeJTableViewComponent(state, new dummyIVirtualArray2D()));  
        }catch( Exception ss){
+          DataSetTools.util.SharedData.addmsg( "Cannot create Counts(x,y) :"+ss);
+          ss.printStackTrace();
           return null;
        }
 
