@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.16  2004/03/12 22:34:32  serumb
+ * Now uses IVirtualArrayList1D.
+ *
  * Revision 1.15  2004/03/12 19:17:46  serumb
  * Added setAxisInfo method.
  *
@@ -73,7 +76,7 @@ import java.util.*;
  * so that the information is able to be viewed through the 
  * function view component.
  */ 
-public class DataSetData implements IVirtualArray1D
+public class DataSetData implements IVirtualArrayList1D
   {
      private DataSet ds;
      private AxisInfo x_info;
