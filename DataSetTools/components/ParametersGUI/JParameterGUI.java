@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.9  2004/03/15 03:27:21  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.8  2003/05/28 20:53:39  pfpeterson
  *  Changed System.getProperty to SharedData.getProperty
  *
@@ -53,6 +57,8 @@
  */
  
 package DataSetTools.components.ParametersGUI;
+
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.util.*;
 import java.awt.*;
@@ -147,7 +153,7 @@ abstract public class JParameterGUI
      {
        String DirPath = SharedData.getProperty("Data_Directory");
        if( DirPath != null )
-         DirPath = DataSetTools.util.StringUtil.setFileSeparator(DirPath+"\\");
+         DirPath = gov.anl.ipns.Util.Sys.StringUtil.setFileSeparator(DirPath+"\\");
        else
          DirPath = "";
 

@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.2  2004/03/15 03:28:37  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.1  2003/05/20 18:36:40  pfpeterson
  * Added to CVS.
  *
@@ -42,9 +46,10 @@ import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.IDataGrid;
 import DataSetTools.operator.DataSet.Attribute.LoadSCDCalib;
 import DataSetTools.operator.Operator;
-import DataSetTools.util.Format;
-import DataSetTools.util.TextFileReader;
 import DataSetTools.retriever.RunfileRetriever;
+import gov.anl.ipns.Util.File.TextFileReader;
+import gov.anl.ipns.Util.Numeric.Format;
+
 import java.io.IOException;
 
 /** 

@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.56  2004/03/15 03:27:22  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.55  2004/03/11 22:00:56  rmikk
  *  The arguments to the last run operator now appear in the session log
  *
@@ -178,6 +182,11 @@
 //        -IsawGUI: Get the JMenu up somewhere in Isaw's Menu bar
 //         Use Command.opMenu to plug in
 package DataSetTools.components.ParametersGUI;
+
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.*;
 
 import javax.swing.*;
 import DataSetTools.dataset.*;

@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/03/15 03:37:39  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.9  2004/01/30 02:46:05  bouzekc
  * Removed unused variable.
  *
@@ -64,10 +68,11 @@
 
 package Wizard;
 
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+
 import java.util.Vector;
 import DataSetTools.wizard.*;
 import DataSetTools.parameter.*;
-import DataSetTools.util.ErrorString;
 import DataSetTools.util.SharedData;
 import Operators.Calculator.*;
 

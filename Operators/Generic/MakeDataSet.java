@@ -31,6 +31,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2004/03/15 03:37:00  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.4  2004/03/10 17:58:15  rmikk
  * Added two parameters for width and height of grids
  *
@@ -52,6 +56,9 @@ package Operators.Generic;
 
 
 import DataSetTools.operator.Wrappable;
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+
 import java.lang.reflect.*;
 import java.util.*;
 import DataSetTools.dataset.*;

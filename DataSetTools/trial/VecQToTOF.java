@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2004/03/15 03:28:45  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.16  2004/03/10 17:52:44  dennis
  *  Put print in if (debug) statement
  *
@@ -125,6 +129,9 @@
  */
 
 package DataSetTools.trial;
+
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Numeric.*;
 
 import java.io.*;
 import DataSetTools.math.*;

@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.29  2004/03/15 03:30:17  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.28  2003/12/14 19:18:10  bouzekc
  * Removed unused import statements.
  *
@@ -77,6 +81,9 @@
  *
  */
 package Command;
+
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Sys.*;
 
 import javax.swing.*;
 import DataSetTools.dataset.*;

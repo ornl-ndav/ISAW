@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2004/03/15 03:28:41  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.23  2003/11/25 03:02:32  bouzekc
  *  Now only tries to clone the Label if it has been initialized.
  *
@@ -108,11 +112,11 @@ package DataSetTools.parameter;
 
 import DataSetTools.components.ParametersGUI.*;
 
-import DataSetTools.util.StringFilterer;
+
+import gov.anl.ipns.Util.StringFilter.StringFilterer;
 
 import java.beans.*;
 
-import java.lang.String;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 

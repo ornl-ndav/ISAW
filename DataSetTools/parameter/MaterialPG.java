@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.16  2004/03/15 03:28:40  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.15  2003/12/15 02:24:21  bouzekc
  *  Removed unused imports.
  *
@@ -81,8 +85,8 @@
  */
 
 package DataSetTools.parameter;
-import DataSetTools.util.MaterialFilter;
-import DataSetTools.util.StringFilterer;
+import gov.anl.ipns.Util.StringFilter.MaterialFilter;
+import gov.anl.ipns.Util.StringFilter.StringFilterer;
 
 /**
  * This is class is to deal with float parameters.

@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/15 03:28:43  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.3  2004/03/14 20:23:45  dennis
  * Put in package DataSetTools.trial
  *
@@ -49,6 +53,12 @@ import DataSetTools.functions.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.util.*;
 import DataSetTools.math.*;
+import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.MathTools.Functions.*;
+import gov.anl.ipns.Util.File.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+
 import java.lang.Math.*;
 import java.util.*;
 import DataSetTools.operator.Generic.TOF_SCD.*;
@@ -542,7 +552,7 @@ public class CalibSCD extends OneVarParameterizedFunction
       }
      else if( c=='e'){
          for(  int kk=0;kk< numParameters(); kk++)
-            System.out.print( DataSetTools.util.Format.real(get_dFdai( (double)k, kk),11)+"  ");
+            System.out.print( gov.anl.ipns.Util.Numeric.Format.real(get_dFdai( (double)k, kk),11)+"  ");
          System.out.println("");
      }
     }//end for

@@ -38,6 +38,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.42  2004/03/15 03:29:00  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.41  2003/12/15 23:49:06  bouzekc
  *  Removed unused imports.
  *
@@ -195,6 +199,15 @@
  */
 package DataSetTools.viewer.Contour;
 
+import gov.anl.ipns.Util.Messaging.IObserver;
+import gov.anl.ipns.Util.Numeric.ClosedInterval;
+import gov.anl.ipns.Util.Sys.StringUtil;
+import gov.anl.ipns.ViewTools.Panels.Cursors.CrosshairCursor;
+import gov.anl.ipns.ViewTools.Panels.Image.IndexColorMaker;
+import gov.anl.ipns.ViewTools.Panels.Transforms.CoordJPanel;
+import gov.anl.ipns.ViewTools.UI.AnimationController;
+import gov.anl.ipns.ViewTools.UI.ColorScaleMenu;
+import gov.anl.ipns.ViewTools.UI.SplitPaneWithState;
 import gov.noaa.pmel.sgt.CartesianGraph;
 import gov.noaa.pmel.sgt.ContourLevels;
 import gov.noaa.pmel.sgt.GridAttribute;
@@ -245,22 +258,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 
-import DataSetTools.components.containers.SplitPaneWithState;
-import DataSetTools.components.image.CoordJPanel;
-import DataSetTools.components.image.CrosshairCursor;
-import DataSetTools.components.image.IndexColorMaker;
-import DataSetTools.components.ui.AnimationController;
-import DataSetTools.components.ui.ColorScaleMenu;
 import DataSetTools.components.ui.DataSetXConversionsTable;
 import DataSetTools.components.ui.XScaleChooserUI;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.UniformXScale;
 import DataSetTools.dataset.XScale;
-import DataSetTools.util.ClosedInterval;
-import DataSetTools.util.IObserver;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.StringUtil;
 import DataSetTools.viewer.DataSetViewer;
 import DataSetTools.viewer.IViewManager;
 import DataSetTools.viewer.SaveDataSetActionListener;
@@ -370,9 +374,9 @@ public class ContourView extends DataSetViewer
      SprdSheet.add( Intensity);
      Intensity.addActionListener( new IntensityListener() );
 
-     DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( menu_bar, this );
+     gov.anl.ipns.Util.Sys.PrintComponentActionListener.setUpMenuItem( menu_bar, this );
      
-     DataSetTools.viewer.SaveImageActionListener.setUpMenuItem( menu_bar, this);
+     gov.anl.ipns.Util.Sys.SaveImageActionListener.setUpMenuItem( menu_bar, this);
      jm = menu_bar.getMenu( DataSetViewer.OPTION_MENU_ID );
      jm.add( new ColorScaleMenu( new ColorActionListener() ) );
 

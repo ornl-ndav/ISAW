@@ -29,6 +29,10 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.40  2004/03/15 03:29:03  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.39  2004/02/10 05:38:17  bouzekc
  * Now the added column name list has scrollbars (as needed).
  *
@@ -159,6 +163,12 @@ import DataSetTools.operator.*;
 import DataSetTools.operator.DataSet.*;
 import DataSetTools.operator.DataSet.Attribute.*;
 import DataSetTools.math.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.*;
+
 import javax.swing.*;
 import DataSetTools.dataset.*;
 import java.awt.*;

@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/03/15 03:28:58  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.2  2003/12/11 22:09:31  rmikk
  * Added a kill command to remove orphaned windows
  *
@@ -41,6 +45,9 @@
 
 
 package DataSetTools.viewer;
+import gov.anl.ipns.ViewTools.Components.*;
+import gov.anl.ipns.ViewTools.Components.Menu.*;
+
 import java.awt.event.*;
 import javax.swing.*;
 import DataSetTools.components.View.Menu.*;

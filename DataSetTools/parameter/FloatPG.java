@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.22  2004/03/15 03:28:40  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.21  2004/03/12 21:13:48  bouzekc
  *  Added clear() method.
  *
@@ -103,7 +107,7 @@
  */
 package DataSetTools.parameter;
 
-import DataSetTools.util.FloatFilter;
+import gov.anl.ipns.Util.StringFilter.FloatFilter;
 
 
 /**

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.24  2004/03/15 03:28:42  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.23  2004/02/17 19:08:05  dennis
  *  Added method to calculate the total counts after getting all
  *  or part of a DataSet.  This was previously done in the
@@ -89,9 +93,10 @@
  */
 package DataSetTools.retriever;
 
+import gov.anl.ipns.Util.Numeric.*;
+
 import java.io.*;
 import java.net.*;
-import java.lang.*;
 import java.util.*;
 import java.awt.event.*;
 import NetComm.*;

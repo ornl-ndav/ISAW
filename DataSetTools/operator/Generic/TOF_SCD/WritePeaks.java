@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2004/03/15 03:28:39  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.15  2004/01/24 20:31:16  bouzekc
  * Removed/commented out unused variables/imports.
  *
@@ -55,6 +59,9 @@
  */
 package DataSetTools.operator.Generic.TOF_SCD;
 
+import gov.anl.ipns.Util.File.TextFileReader;
+import gov.anl.ipns.Util.Sys.StringUtil;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -65,8 +72,6 @@ import java.util.Vector;
 import DataSetTools.operator.HiddenOperator;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
-import DataSetTools.util.StringUtil;
-import DataSetTools.util.TextFileReader;
 
 /** 
  * This operator is a small building block of an ISAW version of

@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2004/03/15 03:28:23  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.12  2003/12/15 02:20:38  bouzekc
  *  Removed unused imports.
  *
@@ -86,6 +90,10 @@
 
 package DataSetTools.operator.DataSet.Attribute;
 
+import gov.anl.ipns.Util.File.TextFileReader;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+import gov.anl.ipns.Util.SpecialStrings.LoadFileString;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
@@ -99,11 +107,8 @@ import DataSetTools.dataset.StringAttribute;
 import DataSetTools.operator.DataSet.Information.XAxis.SCDhkl;
 import DataSetTools.operator.Generic.TOF_SCD.MatrixFilter;
 import DataSetTools.parameter.LoadFilePG;
-import DataSetTools.util.ErrorString;
 import DataSetTools.util.FilenameUtil;
-import DataSetTools.util.LoadFileString;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.TextFileReader;
 
 /**
  * This operator loads a orientation matrix and lattice parameters
@@ -378,7 +383,7 @@ public class LoadOrientation extends    DS_Attribute {
         return new ErrorString("Error while reading matrix: "+e.getMessage());
       }
       
-      float det=(float)DataSetTools.math.LinearAlgebra.determinant(DataSetTools.math.LinearAlgebra.float2double(orient));
+      float det=(float)gov.anl.ipns.MathTools.LinearAlgebra.determinant(gov.anl.ipns.MathTools.LinearAlgebra.float2double(orient));
       
       if( det==0f )
         return new ErrorString("Zero determinant in orientation matrix");

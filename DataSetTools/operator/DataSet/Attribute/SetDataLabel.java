@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/03/15 03:28:24  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.5  2002/12/06 14:34:51  dennis
  *  Fixed spelling error in java doc tag. (Chris Bouzek)
  *
@@ -48,6 +52,9 @@
  */
 
 package DataSetTools.operator.DataSet.Attribute;
+
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  java.util.Vector;

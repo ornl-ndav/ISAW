@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 03:37:03  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.6  2003/10/15 02:17:30  bouzekc
  * Fixed javadoc errors.
  *
@@ -65,6 +69,12 @@ import DataSetTools.components.ThreeD.*;
 import DataSetTools.math.*;
 import DataSetTools.instruments.*;
 import DataSetTools.util.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.ViewTools.Panels.Image.*;
+import gov.anl.ipns.ViewTools.Panels.ThreeD.*;
+
 import java.util.*;
 import java.awt.*;
 import javax.swing.*;

@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 03:28:23  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.6  2004/01/22 02:39:54  bouzekc
  * Removed/commented out unused imports/variables.
  *
@@ -72,6 +76,9 @@ import DataSetTools.operator.DataSet.*;
 import DataSetTools.operator.Parameter;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.*;
+
 import java.util.*;
 
 /** 
@@ -148,16 +155,16 @@ public class GetPixelInfo_op extends    DS_Attribute
     int index =((Integer)getParameter(0).getValue()).intValue();
     Data db = ds.getData_entry( index);
     if( db == null)
-      return new DataSetTools.util.ErrorString(
+      return new gov.anl.ipns.Util.SpecialStrings.ErrorString(
                                   "No data block at position "+ index);
     Object O = db.getAttributeValue(Attribute.PIXEL_INFO_LIST);
     if( O == null)
-      return new DataSetTools.util.ErrorString( 
+      return new gov.anl.ipns.Util.SpecialStrings.ErrorString( 
                                   "Data block has no PixelInfoList Attribute");
     
     PixelInfoList pil = (PixelInfoList)O;
     if( pil.num_pixels() < 1)
-      return  new DataSetTools.util.ErrorString( 
+      return  new gov.anl.ipns.Util.SpecialStrings.ErrorString( 
                                    "Data block has no PixelInfo in list");
     Vector V = new Vector();
     

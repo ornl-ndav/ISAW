@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/03/15 03:28:34  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.3  2004/01/29 18:15:13  dennis
  *  Fixed copyright information, and javadoc error.
  *
@@ -42,6 +46,8 @@
  */
 
 package DataSetTools.operator.Generic.Load;
+
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.io.*;
 import java.util.*;

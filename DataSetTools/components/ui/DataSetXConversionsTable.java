@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.13  2004/03/15 03:27:58  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.12  2003/07/09 14:36:23  dennis
  * Added another form of the method showConversions(), that takes
  * a new XScale and calculates the y value based on Data rebinned
@@ -67,6 +71,8 @@
 
 
 package DataSetTools.components.ui;
+
+import gov.anl.ipns.ViewTools.UI.*;
 
 import java.io.*;
 import java.util.*;

@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.9  2004/03/15 03:36:58  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.8  2003/07/07 15:55:43  bouzekc
  * Added missing param tags in constructor and
  * getDocumentation().  Fixed spelling error in parameter
@@ -50,6 +54,8 @@ import DataSetTools.retriever.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import DataSetTools.viewer.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+
 import java.util.*;
 
 /** 

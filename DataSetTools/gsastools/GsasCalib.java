@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2004/03/15 03:28:14  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.3  2002/11/27 23:15:00  pfpeterson
  *  standardized header
  *
@@ -48,8 +52,11 @@
  */
 package DataSetTools.gsastools;
 
+//import gov.anl.ipns.Util.File.*;
+
 import java.io.*;
 import DataSetTools.dataset.*;
+import gov.anl.ipns.Util.File.IXmlIO;
 /*import DataSetTools.util.*; 
   import java.awt.*;
   import javax.swing.*;

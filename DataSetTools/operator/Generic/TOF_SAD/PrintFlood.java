@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/15 03:28:36  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.5  2003/10/22 20:07:22  rmikk
  * Fixed javadoc errors
  *
@@ -52,6 +56,9 @@
 package DataSetTools.operator.Generic.TOF_SAD;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
+import gov.anl.ipns.Util.File.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+
 import java.util.*;
 import DataSetTools.parameter.*;
 
@@ -195,7 +202,7 @@ public class PrintFlood  extends GenericTOF_SAD{
 
      String S="";
      if( run_num > 0)
-         S += DataSetTools.util.Format.string( ""+run_num, 6,false);
+         S += gov.anl.ipns.Util.Numeric.Format.string( ""+run_num, 6,false);
      S = S.trim();
      S += "-(PU-BE SOURCE)";
     V = new Vector();

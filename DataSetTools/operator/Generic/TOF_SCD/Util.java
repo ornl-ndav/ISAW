@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.17  2004/03/15 03:28:39  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.16  2004/01/24 20:31:16  bouzekc
  * Removed/commented out unused variables/imports.
  *
@@ -89,6 +93,13 @@
  */
 package DataSetTools.operator.Generic.TOF_SCD;
 
+import gov.anl.ipns.MathTools.LinearAlgebra;
+import gov.anl.ipns.MathTools.Geometry.Position3D;
+import gov.anl.ipns.MathTools.Geometry.Vector3D;
+import gov.anl.ipns.Util.File.TextFileReader;
+import gov.anl.ipns.Util.Numeric.Format;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -100,12 +111,6 @@ import DataSetTools.dataset.IntAttribute;
 import DataSetTools.dataset.IntListAttribute;
 import DataSetTools.dataset.PixelInfoList;
 import DataSetTools.dataset.PixelInfoListAttribute;
-import DataSetTools.math.LinearAlgebra;
-import DataSetTools.math.Position3D;
-import DataSetTools.math.Vector3D;
-import DataSetTools.util.ErrorString;
-import DataSetTools.util.Format;
-import DataSetTools.util.TextFileReader;
 
 public class Util{
   /**

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2004/03/15 03:35:22  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.11  2003/10/21 21:15:08  dennis
  *  Removed extractIntParameter() method that is no longer used.
  *
@@ -47,6 +51,8 @@
  *
  */
 package NetComm;
+
+import gov.anl.ipns.Util.Sys.*;
 
 import java.io.*;
 import java.util.*;

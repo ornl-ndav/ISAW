@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.9  2004/03/15 03:36:58  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.8  2003/12/15 02:06:09  bouzekc
  * Removed unused imports.
  *
@@ -59,6 +63,9 @@
 
 package Operators;
 
+import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+import gov.anl.ipns.MathTools.Geometry.Vector3D;
+
 import java.util.Vector;
 
 import DataSetTools.dataset.Attribute;
@@ -67,8 +74,6 @@ import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.HistogramTable;
 import DataSetTools.dataset.PixelInfoList;
 import DataSetTools.dataset.XScale;
-import DataSetTools.math.DetectorPosition;
-import DataSetTools.math.Vector3D;
 import DataSetTools.math.tof_data_calc;
 import DataSetTools.operator.HiddenOperator;
 import DataSetTools.operator.Operator;

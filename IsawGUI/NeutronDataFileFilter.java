@@ -30,6 +30,10 @@
 
  *
  * $Log$
+ * Revision 1.13  2004/03/15 03:31:25  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.12  2003/08/28 18:54:31  dennis
  * Added support for .csd files (concatenated files from the
  * Ideas MC simulation program)
@@ -60,7 +64,8 @@
 
 package IsawGUI;
 
-import DataSetTools.util.RobustFileFilter;
+import gov.anl.ipns.Util.File.RobustFileFilter;
+
 import java.util.Vector;
 
 /**

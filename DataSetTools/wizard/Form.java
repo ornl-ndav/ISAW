@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.52  2004/03/15 03:29:04  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.51  2004/02/11 04:09:02  bouzekc
  * Removed the PropChangeProgressBar.  The progress bars now use the JDK 1.4
  * setIndeterminate() method.  This should take some work off of writing
@@ -235,6 +239,9 @@ import DataSetTools.operator.Operator;
 import DataSetTools.parameter.*;
 
 import DataSetTools.util.*;
+
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import java.awt.Color;
 

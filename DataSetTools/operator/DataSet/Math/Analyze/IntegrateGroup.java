@@ -30,6 +30,10 @@
  * Modified:
  *             
  * $Log$
+ * Revision 1.5  2004/03/15 03:28:30  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.4  2002/11/27 23:18:38  pfpeterson
  * standardized header
  *
@@ -45,6 +49,9 @@
  */
 
 package DataSetTools.operator.DataSet.Math.Analyze;
+
+import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
 
 import  java.io.*;
 import  java.util.Vector;

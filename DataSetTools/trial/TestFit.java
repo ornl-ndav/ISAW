@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/03/15 03:28:44  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.1  2003/06/10 22:32:27  dennis
  *  Simple demo of Marquardt fitting for one variable functions,
  *  applied to what is really a two variable function.
@@ -37,6 +41,8 @@
  */
 
 package  DataSetTools.trial;
+
+import gov.anl.ipns.MathTools.Functions.*;
 
 import java.io.*;
 import java.util.*;

@@ -31,13 +31,17 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2004/03/15 03:28:42  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.1  2003/08/28 18:51:27  dennis
  *  File filter for concatenated Ideas MC simulation files.
  *
  */
 package DataSetTools.retriever;
 
-import DataSetTools.util.RobustFileFilter;
+import gov.anl.ipns.Util.File.RobustFileFilter;
 
 /**
  * FileFilter for concatenated files from the IDEAS MC simulation package.

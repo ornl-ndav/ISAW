@@ -30,6 +30,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2004/03/15 03:37:03  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.9  2004/01/30 02:32:07  bouzekc
  * Removed unused imports.
  *
@@ -70,6 +74,8 @@ import DataSetTools.parameter.*;
 import DataSetTools.viewer.Contour.*;
 import DataSetTools.dataset.*;
 import DataSetTools.util.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+
 import java.util.*;
 import java.awt.*;
 import javax.swing.*;

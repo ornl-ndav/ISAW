@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.6  2004/03/15 03:28:29  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.5  2004/01/24 19:30:52  bouzekc
  *  Removed unused variables in testbed main().
  *
@@ -49,6 +53,9 @@
  */
 
 package DataSetTools.operator.DataSet.EditList;
+
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Numeric.*;
 
 import  java.io.*;
 import  java.util.Vector;

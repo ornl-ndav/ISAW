@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/03/15 03:28:32  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.5  2003/02/28 14:53:47  pfpeterson
  *  Changed call of deprecated fixSeparator to setFileSeparator.
  *
@@ -48,6 +52,10 @@
  */
 
 package DataSetTools.operator.Generic;
+
+import gov.anl.ipns.Util.SpecialStrings.*;
+import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.ViewTools.UI.*;
 
 import  java.io.*;
 import  java.text.*;

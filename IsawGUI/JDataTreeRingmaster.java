@@ -30,6 +30,10 @@
  *
  *
  * $Log$
+ * Revision 1.16  2004/03/15 03:31:25  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.15  2003/12/16 00:00:49  bouzekc
  * Removed unused imports.
  *
@@ -45,6 +49,8 @@
  */
 
 package IsawGUI;
+
+import gov.anl.ipns.Util.Messaging.IObserver;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -65,7 +71,6 @@ import DataSetTools.components.ui.ViewMenu;
 import DataSetTools.dataset.Data;
 import DataSetTools.dataset.DataSet;
 import DataSetTools.operator.Operator;
-import DataSetTools.util.IObserver;
 import DataSetTools.viewer.ViewManager;
 
 

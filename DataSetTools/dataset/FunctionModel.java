@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/03/15 03:28:06  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.7  2003/07/23 15:06:51  dennis
  *  clone() method now also copies the use_sqrt_errors flag.
  *
@@ -61,6 +65,8 @@
  */
 
 package  DataSetTools.dataset;
+
+import gov.anl.ipns.MathTools.Functions.*;
 
 import java.io.*;
 import DataSetTools.math.*;

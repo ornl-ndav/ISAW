@@ -33,6 +33,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2004/03/15 03:27:28  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.3  2004/03/09 22:01:57  millermi
  * - Format numbers so they output in nice columns.
  * - Added column titles to describe each column.
@@ -50,10 +54,10 @@
  */ 
 package DataSetTools.components.View;
 
+import gov.anl.ipns.Util.File.TextWriter;
+import gov.anl.ipns.Util.Numeric.Format;
 import DataSetTools.dataset.Data;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.TextWriter;
-import DataSetTools.util.Format;
 
 /**
  * This class will write out the results of the SANDWedgeViewer to a file.

@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.3  2004/03/15 03:37:03  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.2  2003/08/05 23:03:25  dennis
  *  Added constructor to allow calling the operator from Java.
  *  Added javadocs and getDocumentation() method.
@@ -48,6 +52,9 @@ import DataSetTools.util.*;
 import DataSetTools.trial.*;
 import DataSetTools.functions.*;
 import DataSetTools.dataset.*;
+
+import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.MathTools.Functions.*;
 
 import java.io.*;
 import java.util.*;

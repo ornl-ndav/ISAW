@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.37  2004/03/15 03:28:05  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.36  2003/07/21 22:11:19  rmikk
  *  Fixed bug in stitch. Error array not allocated if
  *    square root errors were calculated( Dennis)
@@ -111,6 +115,10 @@
  *
  */
 package DataSetTools.dataset;
+
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.Util.File.*;
+import gov.anl.ipns.Util.Numeric.*;
 
 import java.io.*;
 import DataSetTools.math.*;

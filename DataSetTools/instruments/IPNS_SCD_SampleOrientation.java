@@ -30,12 +30,18 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.2  2004/03/15 03:28:15  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.1  2003/02/18 18:59:51  dennis
  *  Initial version.
  *
  */
 
 package  DataSetTools.instruments;
+
+import gov.anl.ipns.MathTools.Geometry.*;
 
 import java.io.*;
 import DataSetTools.math.*;

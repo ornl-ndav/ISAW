@@ -29,6 +29,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.10  2004/03/15 03:34:42  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.9  2004/02/04 18:15:44  dennis
  * Replaced assignment of values to local copies of the
  * Script_Class_List_Handler, and operatorsOnly flags in the
@@ -64,6 +68,8 @@
  */
 
 package IsawHelp.HelpSystem;
+import gov.anl.ipns.Util.Sys.StringUtil;
+
 import javax.help.*;
 import java.util.*;
 import java.net.*;
@@ -73,7 +79,6 @@ import java.awt.*;
 import Command.*;
 import java.io.*;
 import DataSetTools.util.SharedData;
-import DataSetTools.util.StringUtil;
 import DataSetTools.operator.*;
 
 /**  A javax.help.HelpSet that gets all information on the data sets operators

@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.8  2004/03/15 03:27:21  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.7  2004/02/10 05:30:56  bouzekc
  *  Uses IsawToolkit.beep() rather than Toolkit.beep().
  *
@@ -58,6 +62,8 @@
  */
  
 package DataSetTools.components.ParametersGUI;
+
+import gov.anl.ipns.Util.StringFilter.*;
 
 import javax.swing.text.*; 
 import java.beans.*;

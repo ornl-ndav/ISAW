@@ -32,6 +32,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.6  2004/03/15 03:27:23  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.5  2003/12/15 02:38:19  bouzekc
  *  Removed unused imports.
  *
@@ -52,15 +56,16 @@
  
 package DataSetTools.components.ParametersGUI;
 
+import gov.anl.ipns.Util.Messaging.PropertyChanger;
+import gov.anl.ipns.Util.StringFilter.StringFilter;
+import gov.anl.ipns.Util.StringFilter.StringFilterer;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 import javax.swing.JTextField;
 import javax.swing.text.Document;
 
-import DataSetTools.util.PropertyChanger;
-import DataSetTools.util.StringFilter;
-import DataSetTools.util.StringFilterer;
 
 /**
  * This class is intended to be used as a replacement for JTextField

@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2004/03/15 03:28:15  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.6  2002/11/27 23:15:00  pfpeterson
  *  standardized header
  *
@@ -53,8 +57,8 @@
  */
 package DataSetTools.gsastools;
 
+import gov.anl.ipns.Util.Numeric.Format;
 import DataSetTools.dataset.XScale;
-import DataSetTools.util.Format;
 
 public class TimeMap{
     private static String TIMEMAP = GsasUtil.TIMEMAP;

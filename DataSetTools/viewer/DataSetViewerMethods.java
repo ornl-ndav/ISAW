@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.3  2004/03/15 03:28:58  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.2  2003/11/06 19:56:48  rmikk
  * Added a method to get at the selected region
  *
@@ -41,6 +45,7 @@
 
 package DataSetTools.viewer;
 
+import gov.anl.ipns.ViewTools.Components.*;
 import DataSetTools.components.View.*;
 
 /**

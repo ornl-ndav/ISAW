@@ -28,6 +28,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.16  2004/03/15 03:29:00  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.15  2004/02/20 16:44:33  rmikk
  * Added an import so it would compile
  *
@@ -51,6 +55,7 @@
  *
  */
 package DataSetTools.viewer.Contour;
+import gov.anl.ipns.MathTools.Geometry.*;
 import DataSetTools.dataset.*;
 import DataSetTools.math.*;
 import DataSetTools.operator.DataSet.Information.XAxis.*;

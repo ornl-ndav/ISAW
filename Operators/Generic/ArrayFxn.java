@@ -30,6 +30,10 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.3  2004/03/15 03:36:59  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.2  2004/03/11 16:43:59  rmikk
  * Fixed Javadoc error
  *
@@ -43,6 +47,9 @@ package Operators.Generic;
 
 import DataSetTools.operator.*;
 import DataSetTools.util.*;
+import gov.anl.ipns.MathTools.Functions.FunctionTools.*;
+import gov.anl.ipns.Util.SpecialStrings.*;
+
 import java.util.*;
 import java.lang.reflect.*;
 import DataSetTools.functions.FunctionTools.*;

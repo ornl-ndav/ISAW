@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2004/03/15 03:28:44  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.6  2004/03/10 17:54:22  dennis
  * Added method getCalculators() that returns the list of VecQToTOF
  * objects used to calculale that tranformations between Q and
@@ -64,6 +68,10 @@
  */
 
 package DataSetTools.trial;
+
+import gov.anl.ipns.MathTools.*;
+import gov.anl.ipns.MathTools.Geometry.*;
+import gov.anl.ipns.ViewTools.Components.*;
 
 import java.util.*;
 import DataSetTools.dataset.*;

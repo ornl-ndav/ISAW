@@ -31,6 +31,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2004/03/15 03:37:01  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.5  2003/12/15 02:10:49  bouzekc
  * Removed unused imports.
  *
@@ -50,6 +54,10 @@
  */
 package Operators.TOF_DG_Spectrometer;
 
+import gov.anl.ipns.MathTools.NumericalAnalysis;
+import gov.anl.ipns.MathTools.Geometry.DetectorPosition;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+
 import java.util.Vector;
 
 import DataSetTools.dataset.Attribute;
@@ -58,13 +66,10 @@ import DataSetTools.dataset.DataSet;
 import DataSetTools.dataset.DataSetFactory;
 import DataSetTools.dataset.VariableXScale;
 import DataSetTools.dataset.XScale;
-import DataSetTools.math.DetectorPosition;
-import DataSetTools.math.NumericalAnalysis;
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Parameter;
 import DataSetTools.operator.DataSet.EditList.DataSetSort;
 import DataSetTools.operator.Generic.TOF_DG_Spectrometer.GenericTOF_DG_Spectrometer;
-import DataSetTools.util.ErrorString;
 
 /** 
  *  This operator produces a DataSet with one entry, a Data block giving the

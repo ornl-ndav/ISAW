@@ -27,6 +27,10 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.15  2004/03/15 03:37:02  dennis
+ * Moved view components, math and utils to new source tree
+ * gov.anl.ipns.*
+ *
  * Revision 1.14  2004/01/30 02:38:51  bouzekc
  * Removed unused variables and an unused private method to pad a String
  * with spaces on the left.  This method will likely be moved to
@@ -101,9 +105,10 @@ package Operators.TOF_SCD;
 
 import DataSetTools.operator.Operator;
 import DataSetTools.operator.Generic.TOF_SCD.*;
-import DataSetTools.util.ErrorString;
-import DataSetTools.util.IntList;
 import DataSetTools.util.SharedData;
+import gov.anl.ipns.Util.Numeric.IntList;
+import gov.anl.ipns.Util.SpecialStrings.ErrorString;
+
 import java.util.Vector;
 import DataSetTools.parameter.*;
 import IPNSSrc.blind;

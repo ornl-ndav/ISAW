@@ -30,6 +30,10 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.3  2004/03/15 03:28:07  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.2  2003/02/20 19:45:00  dennis
  *  Now implements Serializable.
  *
@@ -39,6 +43,8 @@
  */
 
 package  DataSetTools.dataset;
+
+import gov.anl.ipns.MathTools.Geometry.*;
 
 import java.io.*;
 import DataSetTools.math.*;

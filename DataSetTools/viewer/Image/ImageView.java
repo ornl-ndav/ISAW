@@ -30,6 +30,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.45  2004/03/15 03:29:01  dennis
+ *  Moved view components, math and utils to new source tree
+ *  gov.anl.ipns.*
+ *
  *  Revision 1.44  2003/12/12 18:12:25  dennis
  *  The "main" test program now uses the WindowShower utility class to
  *  display the ImageView from the Swing event handling thread, instead
@@ -111,6 +115,14 @@ import DataSetTools.dataset.*;
 import DataSetTools.util.*;
 import DataSetTools.viewer.*;
 import DataSetTools.viewer.util.*;
+import gov.anl.ipns.Util.Messaging.*;
+import gov.anl.ipns.Util.Numeric.*;
+import gov.anl.ipns.Util.Sys.*;
+import gov.anl.ipns.ViewTools.Panels.Graph.*;
+import gov.anl.ipns.ViewTools.Panels.Image.*;
+import gov.anl.ipns.ViewTools.Panels.Transforms.*;
+import gov.anl.ipns.ViewTools.UI.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -206,7 +218,7 @@ public ImageView( DataSet data_set, ViewerState state )
   if ( !validDataSet() )
     return;
   JMenuBar jmb= getMenuBar();
-  DataSetTools.viewer.PrintComponentActionListener.setUpMenuItem( jmb, this );
+  gov.anl.ipns.Util.Sys.PrintComponentActionListener.setUpMenuItem( jmb, this );
   init();
   MakeImage( false );
   getState().setZoomRegion( image_Jpanel.getLocalWorldCoords(), data_set );
