@@ -30,6 +30,9 @@
  *
  * Modified:
  * $Log$
+ * Revision 1.5  2003/01/15 20:57:30  dennis
+ * Changed to used SegmentInfo, SegInfoListAttribute, etc.
+ *
  * Revision 1.4  2002/11/27 23:29:54  pfpeterson
  * standardized header
  *
@@ -50,7 +53,7 @@ package Operators;
 import java.io.*;
 import java.util.Vector;
 import DataSetTools.dataset.*;
-import DataSetTools.instruments.DetectorInfo;
+import DataSetTools.instruments.SegmentInfo;
 import DataSetTools.util.*;
 import DataSetTools.math.*;
 import DataSetTools.operator.*;
@@ -176,19 +179,20 @@ public class  FocusIncidentSpectrum2 extends GenericSpecial
 
         // get information out of the data being focused to
         XScale new_x_scale=focus_data.getX_scale();
-        DetectorPosition detpos=(DetectorPosition)focus_data.getAttributeValue(Attribute.DETECTOR_POS);
+        DetectorPosition detpos = (DetectorPosition)
+                         focus_data.getAttributeValue(Attribute.DETECTOR_POS);
         float path_length=((Float)focus_data.getAttributeValue(Attribute.INITIAL_PATH)).floatValue();
         path_length+=detpos.getDistance();
         float theta=(float)(180.*detpos.getScatteringAngle()/Math.PI);
         float theta_min=theta;
         float theta_max=theta;
 
-        DetectorInfo[] dets
-            =(DetectorInfo[])focus_data.getAttributeValue(Attribute.DETECTOR_INFO_LIST);
+        SegmentInfo[] segs = (SegmentInfo[])
+                      focus_data.getAttributeValue(Attribute.SEGMENT_INFO_LIST);
 
         float tth;
-        for( int i=0 ; i<dets.length ; i++ ){
-            tth=(float)(180.*dets[i].getPosition().getScatteringAngle()/Math.PI);
+        for( int i=0 ; i<segs.length ; i++ ){
+            tth=(float)(180.*segs[i].getPosition().getScatteringAngle()/Math.PI);
             if(DEBUG) System.out.println("det["+i+"]="+tth);
             if(tth<theta_min) theta_min=tth;
             if(tth>theta_max) theta_max=tth;
