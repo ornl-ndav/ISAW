@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.5  2001/06/04 22:46:34  dennis
+ * Now ignores selection changes.
+ *
  * Revision 1.4  2001/05/29 19:46:21  dennis
  * Removed redundant construction of the Color list.
  *
@@ -136,6 +139,9 @@ public void redraw( String reason )
     // This will be called by the "outside world" if the contents of the
     // DataSet are changed and it is necesary to redraw the graphs using the
     // current DataSet.
+
+   if ( reason == IObserver.SELECTION_CHANGED )    // no selection display yet
+     return;
 
    if ( reason == IObserver.POINTED_AT_CHANGED )
    {
