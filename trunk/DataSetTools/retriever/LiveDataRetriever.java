@@ -32,6 +32,12 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.10  2001/06/11 17:58:43  dennis
+ *  Made Exit() and MakeConnection() public so that they
+ *  can be called from the LiveDataManager.  This was
+ *  needed since the connection had be restarted to avoid
+ *  a memory leak.
+ *
  *  Revision 1.9  2001/06/08 16:15:18  dennis
  *  Now allows the port number to use to be specified after
  *  the dns name with a colon separator.
@@ -199,17 +205,12 @@ public class LiveDataRetriever extends    Retriever
     return true;
   }
 
-/* -------------------------------------------------------------------------
- *
- *  PRIVATE METHODS
- *
- */
 
 /* --------------------------- MakeConnection ---------------------------- */
 /**
  *  Connect with the remote live data server.
  */
-  private boolean MakeConnection()
+  public boolean MakeConnection()
   {
     int    port;
     String remote_machine;
@@ -249,7 +250,7 @@ public class LiveDataRetriever extends    Retriever
 /**
  *  Break the connection with the LiveDataServer. 
  */
-  private void Exit()
+  public void Exit()
   {
     if ( tcp_io != null )
       try
