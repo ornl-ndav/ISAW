@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.13  2003/08/14 19:43:56  bouzekc
+ *  Fixed javadoc error.
+ *
  *  Revision 1.12  2003/07/03 15:22:13  bouzekc
  *  Added and formatted class and javadoc comments.
  *
@@ -122,9 +125,9 @@ public class SaveAsGSASForm extends Form implements Serializable {
    * without the need to externally set the parameters.  getResult() may be
    * called immediately after using this constructor.
    *
-   * @param tf_vector The Vector of time focused histograms that you wish to
+   * @param tf_array The Vector of time focused histograms that you wish to
    *        save in GSAS format.
-   * @param mon_vector The Vector of monitor DataSets that you wish to use for
+   * @param mon_array The Vector of monitor DataSets that you wish to use for
    *        the SaveAsGSAS operation.
    * @param run_nums The list of run numbers from the files that you loaded the
    *        histograms and monitors from.

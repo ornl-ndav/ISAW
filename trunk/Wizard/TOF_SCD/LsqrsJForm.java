@@ -28,6 +28,9 @@
  * number DMR-0218882.
  *
  * $Log$
+ * Revision 1.21  2003/08/14 19:41:15  bouzekc
+ * Fixed javadoc error.
+ *
  * Revision 1.20  2003/07/14 16:47:17  bouzekc
  * Added missing javadocs, reformatted to fit within 80 column
  * indent.
@@ -168,7 +171,7 @@ public class LsqrsJForm extends Form {
   /**
    * Full constructor for LsqrsJForm.
    *
-   * @param runnums The run numbers to use for naming the matrix files.
+   * @param runNums The run numbers to use for naming the matrix files.
    * @param peaksPath The path where the peaks file is.
    * @param expName The experiment name.
    * @param restrictSeq The sequence numbers to restrict.
