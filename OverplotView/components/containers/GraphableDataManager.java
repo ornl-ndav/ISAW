@@ -12,6 +12,10 @@ package OverplotView.components.containers;
  *
  * changelog
  *  $Log$
+ *  Revision 1.7  2000/07/28 14:49:18  neffk
+ *  added an empty spectrum as i was grasping at straws while trying to figure
+ *  out why the graph fails when it's resized with one spectrum selected.
+ *
  *  Revision 1.6  2000/07/27 16:36:08  neffk
  *  implemented GraphableDataManager as an extension of a Hashtable
  *
@@ -84,6 +88,20 @@ public class GraphableDataManager
     color_list[1] = new DataColor( Color.green );
     color_list[2] = new DataColor( Color.blue );
     color_list[3] = new DataColor( Color.black );
+
+/*
+    put(  new String( "test" ), 
+          new GraphableData( "test",
+                              new Data( new UniformXScale( 0, 1, 2 ),
+                                        { 0.0f, 1.0f },
+                                        42 ),
+                              new OperationLog(),
+                              "xunits",
+                              "xlable",
+                              "yunits",
+                              "ylable",
+                              "id"  )  );
+*/
   }
 
 
