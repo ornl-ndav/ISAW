@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.4  2002/10/03 15:53:23  dennis
+ * Replaced call to Data.setSqrtErrors() with Data.setSqrtErrors(true)
+ *
  * Revision 1.3  2002/03/13 16:26:26  dennis
  * Converted to new abstract Data class.
  *
@@ -236,7 +239,7 @@ public class FlightPathCorrection extends    GenericTOF_DG_Spectrometer
       XScale x_scale = new VariableXScale( x );
       Data new_d = Data.getInstance( x_scale, y, d.getGroup_ID() );
       new_d.setAttributeList( d.getAttributeList() );
-      new_d.setSqrtErrors();
+      new_d.setSqrtErrors(true);
       new_ds.replaceData_entry( new_d, i );   
     }
 
