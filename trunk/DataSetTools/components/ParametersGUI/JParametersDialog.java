@@ -32,6 +32,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.34  2003/01/29 17:08:51  pfpeterson
+ *  Made the help window that is brought up not editable.
+ *
  *  Revision 1.33  2002/12/09 16:31:59  pfpeterson
  *  Changed size of help window.
  *
@@ -714,6 +717,7 @@ public class JParametersDialog implements Serializable,
       
       JFrame jf = new JFrame( "operator "+op.getCommand());
       JEditorPane jedPane = new JEditorPane();
+      jedPane.setEditable(false);
       jedPane.setEditorKit( new HTMLEditorKit() );
       jedPane.setText(SharedData.HTMLPageMaker.createHTML(op));
       jf.getContentPane().add( new JScrollPane(jedPane) );
