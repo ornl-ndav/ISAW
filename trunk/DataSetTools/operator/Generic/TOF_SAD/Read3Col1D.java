@@ -32,6 +32,10 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.8  2004/04/19 14:06:25  rmikk
+ * Added the ability to read files created by the Table operator
+ * Closed the FileInputStream at the end and with errors.
+ *
  * Revision 1.7  2004/03/15 19:33:54  dennis
  * Removed unused imports after factoring out view components,
  * math and utilities.
@@ -67,12 +71,13 @@ import DataSetTools.parameter.*;
 import Command.*;
 
 /**
-* This module reads in efficiency files or Reduce files to produce a data set
+* This module reads in efficiency files, Reduce files, and 3 column files produced
+* from the Table operator to produce a data set
 
 */
 public class Read3Col1D extends GenericTOF_SAD{
    
-   private String FileTypes =";Efficiency;Reduce Results;";
+   private String FileTypes =";Efficiency;Reduce Results;Table;";
 
    /**
    *   Default Constructor for this operator whose title is Print 3Col for 1D.
@@ -85,7 +90,7 @@ public class Read3Col1D extends GenericTOF_SAD{
    /**
    *    Constructor for Read3Col1D(Title is Read 3Col for 1D)
    *    @param filename the name of the file,in 3Col format, with data set information
-   *    @param fileType  Either Efficiency or Reduce Results
+   *    @param fileType  Either "Efficiency", "Reduce Results", or "Table"
    */
    public Read3Col1D( String filename, String fileType){
       this();
@@ -103,6 +108,7 @@ public class Read3Col1D extends GenericTOF_SAD{
       parameters.add( new LoadFilePG( "Save File", null));
       ChoiceListPG list= new ChoiceListPG("File Type", Print3Col1D.EFFICIENCY);
       list.addItem( Print3Col1D.REDUCE);
+      list.addItem( "Table");
       parameters.add( list);
    }
 
@@ -113,8 +119,9 @@ public class Read3Col1D extends GenericTOF_SAD{
    public Object getResult(){
      String filename =   getParameter(0).getValue().toString();
      String fileType = getParameter(1).getValue().toString().trim();
-     if(FileTypes.indexOf( ";"+fileType+";")<0)
+     if(FileTypes.indexOf( ";"+fileType+";")<0){
         return new ErrorString( "File Type "+fileType+" is not supported");
+     }
      FileInputStream fin=null;   
      try{
        fin = new FileInputStream( filename);
@@ -123,24 +130,56 @@ public class Read3Col1D extends GenericTOF_SAD{
      }
      String Format = setFormat( fileType);
      int nelts=ReadHeader(fin, fileType);
-     
      Vector V = new Vector();
+     V.addElement("");
+     Object Res;// =FileIO.Read( fin, V,  "/", 1,null);
+     V = new Vector();
      V.addElement( new float[0]);
      V.addElement( new float[0]);
      V.addElement( new float[0]);
-     Object Res=FileIO.Read( fin, V,  Format, nelts,getEndConditions( fileType));
-     if( !(Res instanceof Integer))
-         return Res;
+     Res=FileIO.Read( fin, V,  Format, nelts,getEndConditions( fileType));
+     if( !(Res instanceof Integer)){
+         try{
+           fin.close();
+         }catch(Exception ss){}
+         return (Res);
+     }
      DataSet DS = createDataSet( (float[])V.elementAt(0), (float[])V.elementAt(1),
                        (float[])V.elementAt(2), fileType);
      DS.setAttribute( new StringAttribute( Attribute.FILE_NAME, filename));
      ReadTailer( fin,DS,fileType);
+     try{
+       fin.close();
+     }catch(Exception sss){}
      return DS;
    }
 
   private int ReadHeader( FileInputStream fin, String fileType){
      Vector V = new Vector();
      String Format= null;
+     if( fileType.equals("Table")){
+     //Read past comment lines
+       V.addElement( "String");
+       Format ="S1,/";
+       
+       Object Res = FileIO.Read( fin, V, Format,1,null);
+       Format="/,S1";
+       if( Res instanceof ErrorString)
+          return -1;
+       if( ((Integer)Res).intValue() !=1)
+         return -1;
+       while( ((String[])(V.elementAt(0)))[0].startsWith("#")){
+         Res = FileIO.Read( fin, V, Format,1,null);
+         if( Res instanceof ErrorString)
+           return -1;
+         if( ((Integer)Res).intValue() !=1)
+          return -1;
+         
+       }
+      
+         
+       return -1;
+     }
      if( fileType.equals( Print3Col1D.EFFICIENCY)){
         Integer N = new Integer(20);
         V.addElement( N);
@@ -168,7 +207,9 @@ public class Read3Col1D extends GenericTOF_SAD{
     Vector V = new Vector();
     Object Res=null;
     String Format= null;
-    if( fileType.equals( Print3Col1D.EFFICIENCY)){
+    if( fileType.equals("Table")){
+       
+    }else if( fileType.equals( Print3Col1D.EFFICIENCY)){
       V.addElement( "AD-TO-M1 EF RATIO19990");
       float Max =200;
       V.addElement( "DELAYED NEUTRON FRACTION =");
@@ -252,6 +293,8 @@ public class Read3Col1D extends GenericTOF_SAD{
   private String setFormat( String fileType){
      if( fileType.equals( Print3Col1D.EFFICIENCY)){
         return "F11.5,F15.5,F15.5,/";
+     }else if( fileType.equals("Table")){
+         return "/,F-10.5,E-18.5,E-18.5";
      }else{
        return "F-10.5,E-18.5,E-18.5,/";
      }
