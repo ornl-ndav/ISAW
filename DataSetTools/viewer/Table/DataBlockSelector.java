@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.17  2005/01/10 15:55:09  dennis
+ * Removed empty statement.
+ *
  * Revision 1.16  2004/10/09 14:10:51  rmikk
  * Added some bounds checking code to eliminate run time errors
  *
@@ -1008,15 +1011,15 @@ public class DataBlockSelector implements IArrayMaker_DataSet {
             Object o2) {
             if (selectedColumn < 0) return 0;
             if (selectedColumn >= tbArray.getNumColumns()) return 0;
-            if (!(o1 instanceof Integer)) return showError("o1 not INT");;
+            if (!(o1 instanceof Integer)) return showError("o1 not INT");
             if (!(o2 instanceof Integer)) return showError("o2 not INT");
             int row1 = ((Integer) o1).intValue();
             int row2 = ((Integer) o2).intValue();
 
-            if (row1 < 0) return showError("row1 neg");;
-            if (row2 < 0) return showError("row2 neg");;
+            if (row1 < 0) return showError("row1 neg");
+            if (row2 < 0) return showError("row2 neg");
             if (row1 >= GroupSort.length) return showError("row1 too large");
-            if (row2 >= GroupSort.length) return showError("row2 too large");;
+            if (row2 >= GroupSort.length) return showError("row2 too large");
             float v1, v2;
 
             try {

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.17  2005/01/10 15:55:08  dennis
+ *  Removed empty statement.
+ *
  *  Revision 1.16  2004/06/25 14:47:49  rmikk
  *  Interpreted the value of ControlPanelWidth as a percent(not a decimal)
  *
@@ -324,7 +327,7 @@ public class DataSetViewerMaker1  extends DataSetViewer
         }
         Conversions.showConversions( time, Group);                          
             
-       };
+       }
     }
 
 

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.4  2005/01/10 15:55:06  dennis
+ *  Removed empty statement.
+ *
  *  Revision 1.3  2004/07/14 16:51:20  dennis
  *  Temporarily added some restritions to the ID ranges to avoid problems
  *  with missing time regimes, etc.
@@ -672,7 +675,7 @@ public class IsisRetriever extends    Retriever
                         "Exception in RunfileRetriever.AddSpectrumAttributes");
         System.out.println("Exception is " + e );
         e.printStackTrace();
-      };
+      }
     }
 
     // Pixel Info List.....

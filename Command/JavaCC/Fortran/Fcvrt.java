@@ -35,6 +35,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.6  2005/01/10 15:55:03  dennis
+ * Removed empty statement.
+ *
  * Revision 1.5  2004/07/30 14:07:06  rmikk
  * Fixed javadoc errors
  *
@@ -316,7 +319,6 @@ public class Fcvrt implements FcvrtConstants {
       case END:
       case RETURN:
       case IDENTIFIER:
-        ;
         break;
       default:
         jj_la1[0] = jj_gen;
@@ -490,7 +492,6 @@ Token t;
         break;
       default:
         jj_la1[2] = jj_gen;
-        ;
       }
       s1 = RestofIf(0, params);
         {if (true) return s1;}
@@ -503,7 +504,6 @@ Token t;
         break;
       default:
         jj_la1[3] = jj_gen;
-        ;
       }
       s1 = RestofIf(1,params);
        if( !lastStatementSimple)
@@ -545,7 +545,6 @@ Token t;
         break;
       default:
         jj_la1[4] = jj_gen;
-        ;
       }
       jj_consume_token(EQUALS);
       s1 = Expression("");
@@ -579,7 +578,6 @@ Token t;
         break;
       default:
         jj_la1[6] = jj_gen;
-        ;
       }
       jj_consume_token(EQUALS);
       s = Expression("");
@@ -617,7 +615,6 @@ Token t;
         break;
       default:
         jj_la1[7] = jj_gen;
-        ;
       }
         if( mode >1) {if (true) throw new ParseException("Cannot have a sub/Funct line inside a body");}
         mode = 2;
@@ -661,7 +658,6 @@ Token t;
         break;
       default:
         jj_la1[9] = jj_gen;
-        ;
       }
       jj_consume_token(EQUALS);
       s = Expression("");
@@ -734,7 +730,6 @@ Token t;
         break;
       default:
         jj_la1[10] = jj_gen;
-        ;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LPAREN:
@@ -742,13 +737,11 @@ Token t;
         break;
       default:
         jj_la1[11] = jj_gen;
-        ;
       }
       label_2:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case COMMA:
-          ;
           break;
         default:
           jj_la1[12] = jj_gen;
@@ -762,7 +755,6 @@ Token t;
           break;
         default:
           jj_la1[13] = jj_gen;
-          ;
         }
             if( checkVariable( s3,-1))
                addVariable(s3,name,-1,params1);

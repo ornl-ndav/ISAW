@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.40  2005/01/10 15:55:02  dennis
+ * Removed empty statement.
+ *
  * Revision 1.39  2004/08/05 23:35:19  rmikk
  * The user specified value for the DataDirectoryString parameter is now used
  *
@@ -979,7 +982,7 @@ public class ScriptOperator  extends  GenericOperator
       if( !S.toUpperCase().trim().equals( "ENDFOR" ) ){
         seterror( 0 , "No EndFor for a FORx" + S ) ; 
         return kline ; 
-      };
+      }
                   
     }	//end for jj=    
         
@@ -1002,7 +1005,7 @@ public class ScriptOperator  extends  GenericOperator
     if(Debug) System.out.println("In exec Error" ); 
     if(script==null) return -1;
     if( start < 0 ) return start;
-    if(start>=script.numLines());
+//  if(start>=script.numLines());      // we can proceed
        
     S = script.getLine(start);
        
@@ -1703,7 +1706,7 @@ public class ScriptOperator  extends  GenericOperator
             System.exit(-1);
         }
         
-        boolean dialogbox=false;
+ //       boolean dialogbox=false;
         SwingWorker worker = new SwingWorker() {
          
          
@@ -1737,11 +1740,10 @@ public class ScriptOperator  extends  GenericOperator
                                        +((IScriptProcessor)SO).getErrorMessage());
            
           }
-       
-       
+        
     };
- worker.start();
- 
-   };//Swing Worker class
+    
+    worker.start();
+   }//Swing Worker class
  
 }

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.12  2005/01/10 15:55:06  dennis
+ *  Removed empty statement.
+ *
  *  Revision 1.11  2004/03/15 06:10:51  dennis
  *  Removed unused import statements.
  *
@@ -81,7 +84,7 @@ public class HistogramDataPeak implements IPeak,
                                // extent * fwhm centered at the peak position. 
 
   protected float  slope = 0;       // slope and y-intercept for linear  
-  protected float  intercept = 0;;  // background for this peak
+  protected float  intercept = 0;   // background for this peak
   protected float  x_vals[] = null;
   protected float  y_vals[] = null;
 

@@ -31,6 +31,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.7  2005/01/10 15:55:07  dennis
+ * Removed empty statement.
+ *
  * Revision 1.6  2004/05/25 12:29:28  rmikk
  * Removed unused variables
  *
@@ -98,7 +101,7 @@ public class CalibSCD extends OneVarParameterizedFunction
        this.CalibFileName = CalibFileName;
        this.detNum = detNum;
        //this.xscale = xscale;
-       parameters = new double[6];;
+       parameters = new double[6];
        if( SeqNums == null )
          Seq = null;
        else

@@ -30,6 +30,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.30  2005/01/10 15:55:04  dennis
+ *  Removed empty statement.
+ *
  *  Revision 1.29  2004/03/15 06:10:34  dennis
  *  Removed unused import statements.
  *
@@ -628,7 +631,7 @@ public class LiveDataMonitor extends    JPanel
 
       FixLabels();
     }
-  };
+  }
 
   /* ----------------------- UpdateButtonListener ------------------------- */
 

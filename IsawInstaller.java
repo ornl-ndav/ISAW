@@ -32,6 +32,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.25  2005/01/10 15:55:01  dennis
+ * Removed empty statement.
+ *
  * Revision 1.24  2004/07/28 21:31:46  dennis
  * Added ISIS.jar
  *
@@ -1296,13 +1299,13 @@ public class IsawInstaller extends JFrame
 	    }catch (Exception e){
 		System.out.println("In IsawInstaller.extract(): "+e);
 		if(zf!=null){ 
-		    try { zf.close(); } catch(IOException ioe) {;} 
+		    try { zf.close(); } catch(IOException ioe) {} 
 		}
 		if(out!=null){ 
-		    try{out.close();} catch(IOException ioe) {;} 
+		    try{out.close();} catch(IOException ioe) {} 
 		}
 		if(in!=null){ 
-		    try { in.close(); } catch(IOException ioe) {;} 
+		    try { in.close(); } catch(IOException ioe) {} 
 		}
 	    }
 	    app.closeMain(extracted);

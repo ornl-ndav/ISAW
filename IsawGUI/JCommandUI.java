@@ -29,6 +29,9 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * $Log$
+ * Revision 1.24  2005/01/10 15:55:10  dennis
+ * Removed empty statement.
+ *
  * Revision 1.23  2004/05/03 16:42:02  dennis
  * Removed unused variables: "livePanel" and "server_name"
  *
@@ -291,7 +294,7 @@ class MyHandler implements ActionListener
       
             }
             
-             catch(Exception e){};
+             catch(Exception e){}
   ExcelAdapter myAd = new ExcelAdapter(table);
 
 
