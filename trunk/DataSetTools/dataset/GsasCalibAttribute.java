@@ -31,6 +31,9 @@
  * Modified:
  * 
  *  $Log$
+ *  Revision 1.9  2004/04/26 13:14:44  rmikk
+ *  Made the null constructor public
+ *
  *  Revision 1.8  2004/03/15 06:10:37  dennis
  *  Removed unused import statements.
  *
@@ -125,7 +128,7 @@ public class GsasCalibAttribute extends   Attribute
         this.value = value;
     }
 
-    private GsasCalibAttribute(){
+    public GsasCalibAttribute(){
         super("");
         this.value = new GsasCalib(0f,0f,0f);
     }
@@ -171,59 +174,61 @@ public class GsasCalibAttribute extends   Attribute
             if( Tag == null)
                 return xml_utils.setError( xml_utils.getErrorMessage());
             if(!xml_utils.skipAttributes( stream))
-                return xml_utils.setError( xml_utils.getErrorMessage());
+                return  xml_utils.setError( xml_utils.getErrorMessage());
             if( !Tag.equals("name"))
-                return xml_utils.setError("name Tag Missing in GsasCalib");
+                return  xml_utils.setError("name Tag Missing in GsasCalib");
             name = xml_utils.getValue( stream);
             if( name == null)
-                return xml_utils.setError("name Tag Missing in GsasCalib");
+                return  xml_utils.setError("name Tag Missing in GsasCalib");
             
             Tag =xml_utils.getEndTag( stream );
             if( Tag == null)
-                return xml_utils.setError( xml_utils.getErrorMessage());
+                return  xml_utils.setError( xml_utils.getErrorMessage());
             if( !Tag.equals("/name"))
-                return xml_utils.setError("name Tag not nested in GsasCalib");
+                return  xml_utils.setError("name Tag not nested in GsasCalib");
             if(!xml_utils.skipAttributes( stream))
-                return xml_utils.setError( xml_utils.getErrorMessage());
+                return  xml_utils.setError( xml_utils.getErrorMessage());
             
             //----------------  get value field----------------
             Tag =xml_utils.getTag( stream );
             if( Tag == null)
-                return xml_utils.setError( xml_utils.getErrorMessage());
+                return  xml_utils.setError( xml_utils.getErrorMessage());
             if( !Tag.equals("value"))
-                return xml_utils.setError("missing value tag in GsasCalib"+Tag); 
+                return  xml_utils.setError("missing value tag in GsasCalib"+Tag); 
             if(!xml_utils.skipAttributes( stream))
-                return xml_utils.setError( xml_utils.getErrorMessage());
+                return  xml_utils.setError( xml_utils.getErrorMessage());
             //-----------actual values
             Tag =xml_utils.getTag( stream );
             if( Tag == null)
-                return xml_utils.setError( xml_utils.getErrorMessage());
+                return  xml_utils.setError( xml_utils.getErrorMessage());
             if( !Tag.equals("GsasCalib"))
-                return xml_utils.setError("missing GsasCalib tag in GsasCalib"+
+                return  xml_utils.setError("missing GsasCalib tag in GsasCalib"+
                                            Tag); 
             if(!xml_utils.skipAttributes( stream))
-                return xml_utils.setError( xml_utils.getErrorMessage());
-            if(!((GsasCalib)this.value).XMLread( stream))
+                return  xml_utils.setError( xml_utils.getErrorMessage());
+            value = new GsasCalib(1.0f,1.0f,1.0f);
+            
+            if(!(value.XMLread( stream)))
                 return false;
             //-------------------- get End tags
             Tag =xml_utils.getTag( stream ); 
             if( Tag == null)
-                return xml_utils.setError( xml_utils.getErrorMessage());
+                return  xml_utils.setError( xml_utils.getErrorMessage());
             if( !Tag.equals("/value"))
-                return xml_utils.setError("Tags not nested in GsasCalib"+Tag);
+                return  xml_utils.setError("Tags not nested in GsasCalib"+Tag);
             if(!xml_utils.skipAttributes( stream ))
-                return xml_utils.setError( xml_utils.getErrorMessage());
+                return  xml_utils.setError( xml_utils.getErrorMessage());
             
             Tag =xml_utils.getTag( stream ); 
             if( Tag == null)
-                return xml_utils.setError( xml_utils.getErrorMessage());
+                return  xml_utils.setError( xml_utils.getErrorMessage());
             if( !Tag.equals("/GsasCalibAttribute"))
-                return xml_utils.setError("Tags not nested in GsasCalib"+Tag);
+                return  xml_utils.setError("Tags not nested in GsasCalib"+Tag);
             if(!xml_utils.skipAttributes( stream ))
-                return xml_utils.setError( xml_utils.getErrorMessage());
-            return true;
+                return  xml_utils.setError( xml_utils.getErrorMessage());
+            return true;//(Attribute)(new GsasCalibAttribute( name,value));
         }catch( Exception s){
-            return xml_utils.setError( "Exception ="+s.getMessage());
+            return  xml_utils.setError( "Exception ="+s.getMessage());
         }
     }
 
