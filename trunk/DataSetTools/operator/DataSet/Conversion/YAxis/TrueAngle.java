@@ -30,6 +30,9 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.11  2005/01/10 15:29:30  dennis
+ * Removed some dead code.
+ *
  * Revision 1.10  2004/03/19 17:20:48  dennis
  * Removed unused variable(s)
  *
@@ -253,15 +256,12 @@ public class TrueAngle extends    YAxisConversionOp
     if ( n_bins <= 0 )                               // calculate the default
       n_bins = (int)(max_angle - min_angle);         // number of angle bins.
 
-    UniformXScale angle_scale = null;
     if ( n_bins <= 0 || min_angle >= max_angle )   // no valid range specified
     {
       ErrorString message = new ErrorString(
                       "ERROR: no valid angle range in TrueAngle operator");
       return message;
     }
-    else
-      angle_scale = new UniformXScale( min_angle, max_angle, n_bins + 1 );
 
                                                 // get common XScale for Data
     int num_cols = ds.getMaxXSteps();
