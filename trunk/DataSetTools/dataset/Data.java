@@ -10,6 +10,10 @@
  *
  * ---------------------------------------------------------------------------
  *  $Log$
+ *  Revision 1.4  2000/07/26 19:16:49  dennis
+ *  Adding two Data blocks now also adds the values of attributes:
+ *  NUMBER_OF_PULSES and TOTAL_COUNT.
+ *
  *  Revision 1.3  2000/07/10 22:23:53  dennis
  *  July 10, 2000 version... many changes
  *
@@ -582,7 +586,16 @@ public float getY_value( float x_value )
     else
       temp.errors = null;
 
+                                         // now take car of attributes... most
+                                         // will use the default combine method
+                                         // but some must really be added
     temp.CombineAttributeList( d );
+    temp.attr_list.add( Attribute.NUMBER_OF_PULSES,
+                        this.getAttributeList(),  
+                        d.getAttributeList()    );
+    temp.attr_list.add( Attribute.TOTAL_COUNT,
+                        this.getAttributeList(),  
+                        d.getAttributeList()    );
     return temp; 
   }
 
