@@ -29,6 +29,9 @@
  * Modified:
  * 
  * $Log$
+ * Revision 1.11  2002/08/15 18:40:41  pfpeterson
+ * Fixed the windows and mac batch file creation.
+ *
  * Revision 1.10  2002/05/29 21:14:57  pfpeterson
  * Now determines the name of the jar file through reflection. Also
  * added functionality for testing which uses the information as
@@ -296,6 +299,40 @@ public class IsawInstaller extends JFrame
         return filename;
     }
 
+    /**
+     * Fix the separator in a director/file listing to contain only
+     * forward slashes.
+     */
+    private static String fixSeparator(String filename){
+        String separator = "/";
+        String result    = null;
+
+        result = replace(filename, "\\\\", separator);
+        result = replace(result,   "\\",   separator);
+
+        return result;
+    }
+
+    private static String replace( String in_string, String old_chars,
+                                   String new_chars ){
+
+        if( in_string==null || old_chars==null || new_chars==null ) return null;
+
+        if(old_chars.equals(new_chars)) return in_string;
+
+        int start;
+        String result=in_string;
+
+        int from_index=0;
+        while( result.indexOf(old_chars,from_index)>=0 ){
+            start=result.indexOf( old_chars, from_index );
+            result=result.substring(0,start)+new_chars
+                +result.substring(start+old_chars.length());
+            from_index=start+new_chars.length();
+        }
+
+        return result;
+    }
 
     /* =================== make the batch file ==================== */
     /** 
@@ -519,8 +556,9 @@ public class IsawInstaller extends JFrame
 		+"rem --"+newline
 		+"cd "+isaw_home+newline
 		+"path %PATH%;./lib"+newline
-		+"java -mx128m -cp Isaw.jar;sgt_v2.jar;IPNS.jar"
-		+";jnexus.jar;sdds.jar;.  IsawGUI.Isaw"+newline
+		+"java -mx128m -cp "+fixSeparator(isaw_home)
+                +";Isaw.jar;sgt_v2.jar;IPNS.jar;jnexus.jar;sdds.jar;.  "
+                +"IsawGUI.Isaw"+newline
 		+"rem --"+newline
  		+"rem The following command is used to run from Isaw folder"
 		+newline
@@ -548,6 +586,7 @@ public class IsawInstaller extends JFrame
         }else if(operating_system.equals(MAC_ID)){
             content="tell application \"Terminal\""+newline
                 +"      do script with command \"java -mx128m -cp "
+                +isaw_home+":"
                 +isaw_home+"/Isaw.jar:"
                 +isaw_home+"/sgt_v2.jar:"
                 +isaw_home+"/IPNS.jar:"
