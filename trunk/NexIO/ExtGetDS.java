@@ -31,6 +31,12 @@
  * Modified:
  *
  * $Log$
+ * Revision 1.10  2002/10/02 19:56:54  dennis
+ * The instrument type attribute is now set to an array with one element.
+ * This maintains compatibility with the retrievers and allows
+ * NeXus files to be read properly from the RemoteFileRetriever, using
+ * the readObject() method in DataSet.java
+ *
  * Revision 1.9  2002/07/29 18:48:31  rmikk
  * Added code to determine if the Data Set Type is pulse height
  *
@@ -225,7 +231,11 @@ public DataSet getDataSet( int data_set_num )
    DataSetFactory DSF = new DataSetFactory( "" ) ;
    DataSet DS = DSF.getTofDataSet(instrType) ;   
    DS.setAttributeList( AL ) ;
-   DS.setAttribute( new IntAttribute( Attribute.INST_TYPE, instrType));
+
+   int list[] = new int[1];
+   list[0] = instrType;
+   DS.setAttribute( new IntListAttribute( Attribute.INST_TYPE, list ));
+
    NxNode nDS = (NxNode)(((Vector)(EntryDSs.elementAt(data_set_num))).lastElement());
    if( nDS.getNodeClass().equals("NXmonitor"))
       DS.setAttribute( new StringAttribute(Attribute.DS_TYPE, Attribute.MONITOR_DATA));
