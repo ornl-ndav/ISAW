@@ -31,6 +31,10 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.99  2002/05/28 21:22:27  pfpeterson
+ *  Changed mw SplitPaneWithState to JSPlitPane. Now resizing
+ *  is smoother.
+ *
  *  Revision 1.98  2002/04/29 15:14:19  pfpeterson
  *  Changed version.
  *
@@ -624,16 +628,16 @@ public class Isaw
                          
     cp.addPropertyChangeListener(SharedData.status_pane);
 
-    upper_sp= new SplitPaneWithState( JSplitPane.HORIZONTAL_SPLIT,
-                                      jdt, jcui, 0.2f);
+    upper_sp= new JSplitPane( JSplitPane.HORIZONTAL_SPLIT,
+                              jdt, jcui); 
     Component sp_comp[]=upper_sp.getComponents();
     for( int i=0 ; i<sp_comp.length ; i++ ){
         if(sp_comp[i] instanceof BasicSplitPaneDivider)
             sp_comp[i].addMouseListener(wrl);
     }
     
-    main_sp= new SplitPaneWithState( JSplitPane.VERTICAL_SPLIT,
-                                     upper_sp, StatusPanel, 1f-0.2f );
+    main_sp= new JSplitPane( JSplitPane.VERTICAL_SPLIT,
+                             upper_sp, StatusPanel);
     sp_comp=main_sp.getComponents();
     for( int i=0 ; i<sp_comp.length ; i++ ){
         if(sp_comp[i] instanceof BasicSplitPaneDivider)
