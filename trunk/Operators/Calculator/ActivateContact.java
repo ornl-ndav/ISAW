@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.7  2003/10/14 21:57:41  dennis
+ *  Fixed javadocs to build cleanly with jdk 1.4.2
+ *
  *  Revision 1.6  2003/02/04 16:28:14  pfpeterson
  *  Now uses IParameterGUI and changed returns on errors to ErrorString.
  *
@@ -39,14 +42,18 @@
  *
  *  Revision 1.4  2002/10/29 15:57:33  dennis
  *  Added getDocumentation method, and $Log$
- *  Added getDocumentation method, and Revision 1.6  2003/02/04 16:28:14  pfpeterson
- *  Added getDocumentation method, and Now uses IParameterGUI and changed returns on errors to ErrorString.
+ *  Added getDocumentation method, and Revision 1.7  2003/10/14 21:57:41  dennis
+ *  Added getDocumentation method, and Fixed javadocs to build cleanly with jdk 1.4.2
  *  Added getDocumentation method, and
- *  Added getDocumentation method, and Revision 1.5  2002/11/27 23:30:05  pfpeterson
+ *  Added getDocumentation method, and Revision 1.6  2003/02/04 16:28:14  
+ *  pfpeterson
+ *
+ *  Added getDocumentation method, and Now uses IParameterGUI and changed 
+ *  returns on errors to ErrorString.
+ *  Added getDocumentation method, and Revision 1.5  
+ *  2002/11/27 23:30:05  pfpeterson
  *  Added getDocumentation method, and standardized header
  *  Added getDocumentation method, and tag. (Mike Miller)
- *
- *
  */
 package Operators.Calculator;
 
@@ -77,14 +84,12 @@ public class ActivateContact extends GenericCalculator
 
  /* ---------------------------- Constructor ----------------------------- */ 
  /** 
-  *  Creates operator with title "ActivateStorage" and the specified
+  *  Creates operator with title "Activate Contact Dose" and the specified
   *  list of parameters.  The getResult method must still be used to
   *  execute the operator.
   *
   *  @param  sample      Sample material composition
   *  @param  mass        Sample mass
-  *  @param  current     Facility beam current
-  *  @param  inst_fac    Instrument factor
   */
   public ActivateContact( String sample, float mass){
     this(); 
