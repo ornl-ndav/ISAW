@@ -52,7 +52,6 @@ import java.text.DecimalFormat;
 public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     private static final String     TITLE                 = "Find Peaks";
     private              int        run_number            = -1;
-    private static       int        first_seq_num         = 1;
 
  /* ------------------------ Default constructor ------------------------- */ 
  /**
@@ -73,16 +72,13 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
   *  @param  data_set    DataSet to find peak in
   *  @param  min_count   Minimum number of counts peak must have
   */
-    public FindPeaks( DataSet data_set, int maxNumPeaks, int min_count,
-                                                         boolean stat_seq_num){
+    public FindPeaks( DataSet data_set, int maxNumPeaks, int min_count){
 	this(); 
 	parameters = new Vector();
     addParameter( new Parameter("Histogram", data_set) );
     addParameter( new Parameter("Maximum Number of Peaks",
                                 new Integer(maxNumPeaks)));
     addParameter( new Parameter("Minimum Counts", new Integer(min_count) ) );
-    addParameter( new Parameter("Static Sequence Number",
-                                new Boolean(stat_seq_num)));
   }
 
  /* ---------------------------- getCommand ------------------------------- */ 
@@ -108,7 +104,6 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     addParameter( new Parameter("Data Set", DataSet.EMPTY_DATA_SET ) );
     addParameter( new Parameter("Maximum Number of Peaks", new Integer(1000)));
     addParameter( new Parameter("Minimum Counts", new Integer(0) ) );
-    addParameter( new Parameter("Static Sequence Number", Boolean.FALSE));
   }
 
  /* ----------------------------- getResult ------------------------------ */ 
@@ -123,10 +118,6 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     DataSet data_set     =  (DataSet)(getParameter(0).getValue());
     int     maxNumPeaks  = ((Integer)(getParameter(1).getValue())).intValue();
     int     min_count    = ((Integer)(getParameter(2).getValue())).intValue();
-    boolean stat_seq_num = ((Boolean)(getParameter(3).getValue())).booleanValue();
-
-    // reset the first sequence number if specified
-    if(!stat_seq_num) first_seq_num=1;
 
     //System.out.print("====================================");
     //System.out.println("==================================");
@@ -360,7 +351,6 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
     }
 
     peaks=sortT(peaks);
-    first_seq_num+=peaks.size();
     return peaks;
   }
 
@@ -382,7 +372,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
 	    for( int i=0 ; i<peaks.size() ; i++ ){
 		if(((Peak)peaks.elementAt(i)).ipkobs()==maxPeak){
 		    peak=(Peak)peaks.elementAt(i);
-		    peak.seqnum(first_seq_num+sortPeaks.size());
+		    peak.seqnum(sortPeaks.size()+1);
 		    sortPeaks.add(peak.clone());
 		    peaks.remove(i);
 		    break;
@@ -410,7 +400,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
 	    for( int i=0 ; i<peaks.size() ; i++ ){
 		if(((Peak)peaks.elementAt(i)).z()==minT){
 		    peak=(Peak)peaks.elementAt(i);
-		    peak.seqnum(first_seq_num+sortPeaks.size());
+		    peak.seqnum(sortPeaks.size()+1);
 		    sortPeaks.add(peak.clone());
 		    peaks.remove(i);
 		    break;
@@ -558,7 +548,7 @@ public class FindPeaks extends GenericTOF_SCD implements HiddenOperator{
 	//op.getResult();
 
 	//System.out.println("Findpeaks("+datfile+",100,0)");
-	op = new FindPeaks( rds, 10, 20, false );
+	op = new FindPeaks( rds, 10, 20 );
 	Vector peaked=(Vector)op.getResult();
 	
 	//System.out.println(((int[])rds.getAttributeValue(Attribute.RUN_NUM))[0]);
