@@ -31,6 +31,9 @@
  * Modified:
  *
  *  $Log$
+ *  Revision 1.2  2001/08/07 21:32:51  dennis
+ *  Removed default non-blank password.
+ *
  *  Revision 1.1  2001/08/03 21:41:48  dennis
  *  Retriever for files from remote machine.
  *
@@ -67,7 +70,6 @@ public class RemoteFileRetriever extends    RemoteDataRetriever
   public RemoteFileRetriever( String data_source_name ) 
   {
     super(data_source_name);
-    password = "RemoteFileRetriever";
 
     if ( isConnected() )             // load up the DataSet type array and
     {                                // make room for the DataSets.
@@ -197,14 +199,14 @@ public class RemoteFileRetriever extends    RemoteDataRetriever
   public static void main( String args[] )
   {
 //  String server_name =  "mscs138.mscs.uwstout.edu";
-//    String server_name =  "dmikk.mscs.uwstout.edu";
-    String server_name =  "mandrake.pns.anl.gov";
+    String server_name =  "dmikk.mscs.uwstout.edu";
+//    String server_name =  "mandrake.pns.anl.gov";
 
     System.out.println("====================================================");
     System.out.println("Making retriever to get DataSets from:" + server_name);
     System.out.println("====================================================");
     RemoteFileRetriever retriever = new RemoteFileRetriever( 
-              server_name+";;;junk_pass;lrcs3000.nxs" );
+              server_name+";;;junk_pass;hrcs2447.run" );
 
     DataSet monitor_ds = retriever.getDataSet(0);
     if ( monitor_ds != null )
