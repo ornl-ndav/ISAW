@@ -29,8 +29,14 @@
  * For further information, see <http://www.pns.anl.gov/ISAW/>
  *
  * Modified:
-* 
+ * 
  * $Log$
+ * Revision 1.12  2001/09/06 14:13:51  dennis
+ * - The "Save to File", "Make a Table", and "Write to Console" radio
+ *   buttons are now command buttons.  The Display command button is now deleted.
+ * - The Prompt when Selecting Group indices is changed to include a
+ *   sample entry.  The sample entry in the text box has been deleted.
+ *
  * Revision 1.11  2001/08/30 14:35:58  dennis
  * Added a "Copy Selected" JMenuItem to the Select Menu
  * in the table's menu bar. (Ruth)
@@ -119,6 +125,7 @@ public class table_view extends JPanel implements ActionListener
                                           0,1,1,1,1,0,0,0,
                                           0,1,1,0,0,0,0,0,
                                           0,1,0,0,0,0,0,0};
+
    protected static int up_arrow[] ={0,0,0,0,1,0,0,0,
                                      0,0,0,1,1,0,0,0,
                                      0,0,0,1,1,1,0,0,
@@ -150,11 +157,11 @@ public class table_view extends JPanel implements ActionListener
             Up , 
             Down;
  
-   JRadioButtonMenuItem  fileView,  
-                         tableView, 
-                         consoleView;
+   JButton  fileView,  
+            tableView, 
+            consoleView;
   
-   ButtonGroup  GotoRadioButtons = new ButtonGroup();
+   
    JButton  selectEdit;
    JCheckBox selectAllEdit;
    JRadioButton  DBSeqOpt, 
@@ -162,7 +169,7 @@ public class table_view extends JPanel implements ActionListener
    ButtonGroup radios = new ButtonGroup();
 
    JLabel  SelectedIndecies;
-   JButton GO;
+   
     
    JList   unsel ,
            sel;
@@ -316,20 +323,14 @@ public class table_view extends JPanel implements ActionListener
 
        // Bottom status panel
       
-        fileView = new JRadioButtonMenuItem( "Save to File" ,false);
-       tableView = new JRadioButtonMenuItem( "Make a Table",true );
-       consoleView = new JRadioButtonMenuItem( "Write to Console" ,false);   
+        fileView = new JButton( "Save to File" );
+       tableView = new JButton( "Make a Table" );
+       consoleView = new JButton( "Write to Console" );   
        fileView.addActionListener( this );  
        consoleView.addActionListener( this );  
-       tableView.addActionListener( this );          
-       GotoRadioButtons.add( fileView );
-       GotoRadioButtons.add( tableView );       
-       GotoRadioButtons.add ( consoleView);
-       
-      
-       
-       GO = new JButton( "Display");
-       GO.addActionListener( this );
+       tableView.addActionListener( this );            
+     
+     
       
        /* GG.add(Goto);
        Goto.add( fileView);
@@ -370,11 +371,11 @@ public class table_view extends JPanel implements ActionListener
         
           // RightPanel.add( Box.createVerticalGlue() );
  
-           JPanel Output = new JPanel( new GridLayout( 4, 1));
+           JPanel Output = new JPanel( new GridLayout( 3, 1));
            Output.add( fileView );
            Output.add( tableView );
            Output.add( consoleView );
-           Output.add( GO);          
+                 
            Output.setBorder( BorderFactory.createEtchedBorder() );
            RightPanel.add( Output );
 
@@ -488,7 +489,7 @@ public class table_view extends JPanel implements ActionListener
       DBPairedOpt.setSelected( true );
      
      }
-   j = k;
+/*   j = k;
    //mode?
     k = state.indexOf( ";", j+1);
   
@@ -499,7 +500,7 @@ public class table_view extends JPanel implements ActionListener
       tableView.setSelected( true );
    else
       consoleView.setSelected( true );
-   
+*/   
    
    }
   
@@ -528,13 +529,14 @@ public class table_view extends JPanel implements ActionListener
     else
       S += ";";
   
-   if( fileView.isSelected())
+   /*if( fileView.isSelected())
      mode = 1;
    else if( tableView.isSelected())
      mode = 2;
    else if( consoleView.isSelected())
      mode = 0;
    S += mode+";";
+   */
    
     for( int i = 0; i < StateListeners.size(); i++ )
       (( StateListener)(StateListeners.elementAt( i ))).setState( S );
@@ -675,7 +677,7 @@ public class table_view extends JPanel implements ActionListener
         sel.requestFocus();
         setState();
        }
-      else if( e.getSource().equals( GO ) )
+   /* else if( e.getSource().equals( GO ) )
        { //System.out.println( "Sequential?"+ Sequent.isSelected() );
           //mode = OutputMode.getSelectedIndex();
           useAll = selectAllEdit.isSelected();
@@ -689,6 +691,7 @@ public class table_view extends JPanel implements ActionListener
            mode = 0;
           Showw( DSS, use , DBSeq, useAll );
        }
+   */
       else if( e.getSource().equals( selectEdit ))
           { 
             DataSet DS = DSS[0];               
@@ -698,8 +701,9 @@ public class table_view extends JPanel implements ActionListener
                return;
                }
             op.setDefaultParameters();
-            IntListString IString = new IntListString( "1,3:5" );        
-            Parameter PP = new Parameter( "Group Indices=" , IString );        
+            IntListString IString = new IntListString( );        
+            Parameter PP = new Parameter( "Group Indices (e.g. 1,3:5)" ,
+                                                IString );        
             op.setParameter( PP , 1 );        
        
             DSSettableFieldString argument = new DSSettableFieldString( 
@@ -722,20 +726,32 @@ public class table_view extends JPanel implements ActionListener
             int retStatus = JFC.showSaveDialog( null );
             if( retStatus == JFileChooser.APPROVE_OPTION )
                {File F = JFC.getSelectedFile();
-                filename = F.getPath().trim();          
+                filename = F.getPath().trim(); 
+                Showw();         
                }
            setState();
           }
+       else if( e.getSource().equals( tableView ))
+         { mode = 2;
+           Showw();
+           setState();
+         }
+       else if(e.getSource().equals( consoleView ))
+        { mode = 0;
+          Showw();
+          setState();
+        }
        else
         {  useAll = selectAllEdit.isSelected();
           DBSeq = DBSeqOpt.isSelected();
-          mode = 0;
+         /* mode = 0;
           if( fileView.isSelected())
              mode = 1;
           else if( tableView.isSelected())
              mode = 2;
           else if( consoleView.isSelected())
            mode = 0;
+          */
          
           setState();
         }
@@ -975,14 +991,14 @@ public class table_view extends JPanel implements ActionListener
   */
   public void Showw()
       { //useAll = UseAll.isSelected();
-        mode = 0;
+        /*mode = 0;
         if( fileView.isSelected())
            mode = 1;
         else if( tableView.isSelected())
            mode = 2;
         else if( consoleView.isSelected())
            mode = 0;
-        
+        */
         Showw( DSS, use, DBSeq, useAll );
       }
 
